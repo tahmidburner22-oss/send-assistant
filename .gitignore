@@ -6,3 +6,4 @@ data/
 *.db-wal
 dist/
 .DS_Store
+.env.local

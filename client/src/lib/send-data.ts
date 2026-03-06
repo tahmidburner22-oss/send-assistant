@@ -1,4 +1,4 @@
-// SEND Assistant — Core Data (Based on COBS Handbook & UK SEND Code of Practice)
+// Adaptly — Core Data (Based on COBS Handbook & UK SEND Code of Practice)
 
 export const subjects = [
   { id: "english", name: "English", icon: "BookOpen", color: "#7C3AED" },

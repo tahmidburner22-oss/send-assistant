@@ -11,15 +11,19 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { useApp, type Child, type Assignment, type Submission, type TimetableLesson } from "@/contexts/AppContext";
-import { yearGroups, sendNeeds } from "@/lib/send-data";
+import { yearGroups, sendNeeds, subjects } from "@/lib/send-data";
+import { useScheduler } from "@/hooks/useScheduler";
+import { TOPIC_BANK } from "@/lib/topic-bank";
+import { frequencyLabel } from "@/lib/scheduler";
 import {
   Plus, UserPlus, Copy, Trash2, Edit3, FileText, BookOpen,
   CheckCircle, Clock, AlertCircle, MessageSquare, TrendingUp,
-  ChevronLeft, Shield, Star, Send, Calendar, X
+  ChevronLeft, Shield, Star, Send, Calendar, X, Zap, BrainCircuit,
+  PlayCircle, PauseCircle, RotateCcw, Settings2
 } from "lucide-react";
 
 export default function Children() {
-  const { children, addChild, removeChild, updateChild, updateAssignment, updateSubmission } = useApp();
+  const { children, addChild, removeChild, updateChild, updateAssignment, updateSubmission, assignWork } = useApp();
   const [showAdd, setShowAdd] = useState(false);
   const [selectedChild, setSelectedChild] = useState<Child | null>(null);
   const [editChild, setEditChild] = useState<Child | null>(null);
@@ -36,6 +40,19 @@ export default function Children() {
   const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null);
   const [feedbackText, setFeedbackText] = useState("");
   const [markText, setMarkText] = useState("");
+
+  // AI Auto-Assignment Scheduler
+  const scheduler = useScheduler({
+    children,
+    assignWork,
+    onWorksheetGenerated: (childId, assignment) => {
+      // Refresh selectedChild so the new assignment appears in the Assignments tab
+      setSelectedChild(prev => {
+        if (!prev || prev.id !== childId) return prev;
+        return { ...prev, assignments: [...prev.assignments, assignment] };
+      });
+    },
+  });
 
   const handleAdd = async () => {
     if (!name || !yearGroup || !sendNeed) {
@@ -509,9 +526,10 @@ export default function Children() {
               </div>
 
               <Tabs defaultValue="assignments">
-                <TabsList className="w-full grid grid-cols-2 h-9">
+                <TabsList className="w-full grid grid-cols-3 h-9">
                   <TabsTrigger value="assignments" className="text-xs">Assignments ({selectedChild.assignments.length})</TabsTrigger>
                   <TabsTrigger value="submissions" className="text-xs">Submissions ({selectedChild.submissions.length})</TabsTrigger>
+                  <TabsTrigger value="scheduler" className="text-xs"><Zap className="h-3 w-3 mr-1" />Scheduler</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="assignments" className="mt-3 space-y-2">
@@ -573,6 +591,191 @@ export default function Children() {
                       <p className="text-[10px] text-brand mt-1.5">Click to review & give feedback →</p>
                     </div>
                   ))}
+                </TabsContent>
+
+                {/* ── AI Auto-Assignment Scheduler Tab ── */}
+                <TabsContent value="scheduler" className="mt-3 space-y-3">
+                  {(() => {
+                    const cfg = scheduler.getConfig(selectedChild.id);
+                    const isRunning = scheduler.generating[selectedChild.id] || false;
+                    const bank = TOPIC_BANK[cfg.subject] || TOPIC_BANK.mathematics;
+                    const currentTopicEntry = bank[cfg.topicIndex % bank.length];
+                    const prevTopicIdx = cfg.topicIndex === 0 ? null : ((cfg.topicIndex - 1) + bank.length) % bank.length;
+                    const prevTopicEntry = prevTopicIdx !== null ? bank[prevTopicIdx] : null;
+                    return (
+                      <div className="space-y-3">
+                        {/* Header */}
+                        <div className="flex items-start gap-2 p-3 rounded-xl bg-indigo-50 border border-indigo-200">
+                          <BrainCircuit className="h-4 w-4 text-indigo-600 mt-0.5 shrink-0" />
+                          <div>
+                            <p className="text-xs font-semibold text-indigo-800">AI Auto-Assignment Scheduler</p>
+                            <p className="text-xs text-indigo-600 mt-0.5">Automatically generates and assigns SEND-adapted worksheets for {selectedChild.name} on a rotating curriculum. Topics vary each time and include recall questions from the previous sheet.</p>
+                          </div>
+                        </div>
+
+                        {/* Subject */}
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-medium">Subject</Label>
+                          <Select
+                            value={cfg.subject}
+                            onValueChange={v => scheduler.updateSettings(selectedChild.id, { subject: v })}
+                          >
+                            <SelectTrigger className="h-9 text-xs"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              {subjects.map(s => <SelectItem key={s.id} value={s.id} className="text-xs">{s.name}</SelectItem>)}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        {/* Current + next topic preview */}
+                        <div className="p-2.5 rounded-lg bg-muted/40 border border-border/50 space-y-1.5">
+                          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Topic Queue</p>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded font-medium">Next</span>
+                            <span className="text-xs font-medium text-foreground">{currentTopicEntry?.topic}</span>
+                          </div>
+                          {prevTopicEntry && (
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded font-medium">Recall from</span>
+                              <span className="text-xs text-muted-foreground">{prevTopicEntry.topic}</span>
+                            </div>
+                          )}
+                          <p className="text-[10px] text-muted-foreground">Topics rotate automatically through the full {cfg.subject} curriculum ({bank.length} topics).</p>
+                        </div>
+
+                        {/* Frequency + Difficulty row */}
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-medium">Frequency</Label>
+                            <Select
+                              value={cfg.frequency}
+                              onValueChange={v => scheduler.updateSettings(selectedChild.id, { frequency: v as "daily" | "weekly" | "biweekly" })}
+                            >
+                              <SelectTrigger className="h-9 text-xs"><SelectValue /></SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="daily" className="text-xs">Daily</SelectItem>
+                                <SelectItem value="weekly" className="text-xs">Weekly</SelectItem>
+                                <SelectItem value="biweekly" className="text-xs">Every 2 Weeks</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-medium">Difficulty</Label>
+                            <Select
+                              value={cfg.difficulty}
+                              onValueChange={v => scheduler.updateSettings(selectedChild.id, { difficulty: v as "foundation" | "mixed" | "higher" })}
+                            >
+                              <SelectTrigger className="h-9 text-xs"><SelectValue /></SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="foundation" className="text-xs">Foundation</SelectItem>
+                                <SelectItem value="mixed" className="text-xs">Mixed</SelectItem>
+                                <SelectItem value="higher" className="text-xs">Higher</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+
+                        {/* Toggles row */}
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between p-2.5 rounded-lg bg-muted/50 border border-border/50">
+                            <Label className="text-xs font-medium">Include Answer Key</Label>
+                            <button
+                              onClick={() => scheduler.updateSettings(selectedChild.id, { includeAnswers: !cfg.includeAnswers })}
+                              className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                                cfg.includeAnswers ? "bg-brand" : "bg-muted-foreground/30"
+                              }`}
+                            >
+                              <span className={`inline-block h-3.5 w-3.5 rounded-full bg-white shadow transition-transform ${
+                                cfg.includeAnswers ? "translate-x-4.5" : "translate-x-0.5"
+                              }`} />
+                            </button>
+                          </div>
+                          <div className="flex items-center justify-between p-2.5 rounded-lg bg-muted/50 border border-border/50">
+                            <div>
+                              <Label className="text-xs font-medium">Include Recall Section</Label>
+                              <p className="text-[10px] text-muted-foreground">5 questions from the previous worksheet topic</p>
+                            </div>
+                            <button
+                              onClick={() => scheduler.updateSettings(selectedChild.id, { includeRecall: !cfg.includeRecall })}
+                              className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                                cfg.includeRecall ? "bg-brand" : "bg-muted-foreground/30"
+                              }`}
+                            >
+                              <span className={`inline-block h-3.5 w-3.5 rounded-full bg-white shadow transition-transform ${
+                                cfg.includeRecall ? "translate-x-4.5" : "translate-x-0.5"
+                              }`} />
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Last / Next run info */}
+                        {cfg.lastFiredAt && (
+                          <div className="flex items-center gap-4 p-2.5 rounded-lg bg-green-50 border border-green-200 text-xs">
+                            <div>
+                              <span className="text-green-700 font-medium">Last generated:</span>
+                              <span className="text-green-600 ml-1">{new Date(cfg.lastFiredAt).toLocaleDateString()}</span>
+                            </div>
+                            {cfg.nextFireAt && (
+                              <div>
+                                <span className="text-green-700 font-medium">Next due:</span>
+                                <span className="text-green-600 ml-1">{new Date(cfg.nextFireAt).toLocaleDateString()}</span>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                        {cfg.lastWorksheetTitle && (
+                          <div className="p-2.5 rounded-lg bg-amber-50 border border-amber-200">
+                            <p className="text-[10px] text-amber-700 font-medium">Last worksheet assigned:</p>
+                            <p className="text-xs text-amber-800 mt-0.5">{cfg.lastWorksheetTitle}</p>
+                            {cfg.lastKeyVocabulary.length > 0 && (
+                              <p className="text-[10px] text-amber-600 mt-1">Recall vocab: {cfg.lastKeyVocabulary.join(", ")}</p>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Action buttons */}
+                        <div className="flex gap-2">
+                          <Button
+                            onClick={() => scheduler.runNow(selectedChild)}
+                            disabled={isRunning}
+                            className="flex-1 h-9 bg-indigo-600 hover:bg-indigo-700 text-white text-xs"
+                          >
+                            {isRunning ? (
+                              <><RotateCcw className="h-3.5 w-3.5 mr-1.5 animate-spin" />Generating...</>
+                            ) : (
+                              <><PlayCircle className="h-3.5 w-3.5 mr-1.5" />Generate &amp; Assign Now</>
+                            )}
+                          </Button>
+                          {cfg.enabled ? (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-9 px-3 text-xs border-red-200 text-red-600 hover:bg-red-50"
+                              onClick={() => scheduler.disableScheduler(selectedChild.id)}
+                            >
+                              <PauseCircle className="h-3.5 w-3.5 mr-1" />Pause
+                            </Button>
+                          ) : (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-9 px-3 text-xs border-indigo-200 text-indigo-600 hover:bg-indigo-50"
+                              onClick={() => scheduler.enableScheduler(selectedChild.id)}
+                            >
+                              <Settings2 className="h-3.5 w-3.5 mr-1" />Enable Auto
+                            </Button>
+                          )}
+                        </div>
+
+                        {cfg.enabled && (
+                          <div className="flex items-center gap-2 p-2.5 rounded-lg bg-indigo-50 border border-indigo-200">
+                            <div className="h-2 w-2 rounded-full bg-indigo-500 animate-pulse" />
+                            <p className="text-xs text-indigo-700">Auto-scheduler active — new worksheet generated {frequencyLabel(cfg.frequency)} and assigned to {selectedChild.name} automatically.</p>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
                 </TabsContent>
               </Tabs>
             </CardContent>

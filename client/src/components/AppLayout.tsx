@@ -48,7 +48,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           <button onClick={() => setSidebarOpen(true)} className="p-2 -ml-2 rounded-lg hover:bg-muted transition-colors">
             <Menu className="w-5 h-5 text-foreground" />
           </button>
-          <h1 className="text-base font-semibold text-foreground">{currentPage?.label || "SEND Assistant"}</h1>
+          <h1 className="text-base font-semibold text-foreground">{currentPage?.label || "Adaptly"}</h1>
           <div className="w-9" />
         </div>
       </header>
@@ -78,7 +78,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                     <GraduationCap className="w-5 h-5 text-white" />
                   </div>
                   <div>
-                    <div className="font-semibold text-foreground text-sm">SEND Assistant</div>
+                    <div className="font-semibold text-foreground text-sm">Adaptly</div>
                     <div className="text-xs text-muted-foreground">For Schools</div>
                   </div>
                 </div>

@@ -248,7 +248,7 @@ export default function Settings() {
       <Card className="border-border/50">
         <CardContent className="p-4">
           <p className="text-xs text-muted-foreground text-center">
-            SEND Assistant for UK Teachers<br />
+            Adaptly for UK Teachers<br />
             <a href="/privacy" className="text-brand hover:underline">Privacy Policy</a> · <a href="/terms" className="text-brand hover:underline">Terms</a> · <a href="/help" className="text-brand hover:underline">Help Centre</a> · <a href="/ai-governance" className="text-brand hover:underline">AI Governance</a>
           </p>
         </CardContent>

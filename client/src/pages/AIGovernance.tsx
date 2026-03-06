@@ -12,7 +12,7 @@ export default function AIGovernance() {
 
         <div className="mb-8">
           <h1 className="text-3xl font-bold">AI Governance</h1>
-          <p className="text-muted-foreground mt-2">How we use artificial intelligence responsibly in SEND Assistant</p>
+          <p className="text-muted-foreground mt-2">How we use artificial intelligence responsibly in Adaptly</p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10">
@@ -38,14 +38,14 @@ export default function AIGovernance() {
 
         <div className="prose prose-sm max-w-none dark:prose-invert">
           <h2>Which AI Models We Use</h2>
-          <p>SEND Assistant is a <strong>Bring Your Own Key (BYOK)</strong> platform. This means you connect your own AI provider account. We support:</p>
+          <p>Adaptly is a <strong>Bring Your Own Key (BYOK)</strong> platform. This means you connect your own AI provider account. We support:</p>
           <ul>
             <li><strong>Groq</strong> — Llama 3.3 70B (default, free tier available)</li>
             <li><strong>Google Gemini</strong> — Gemini 2.0 Flash</li>
             <li><strong>OpenAI</strong> — GPT-4o Mini, GPT-4o</li>
             <li><strong>OpenRouter</strong> — Access to 100+ models</li>
           </ul>
-          <p>Your API key is stored in your browser and sent directly to the AI provider. SEND Assistant does not store your API key on our servers.</p>
+          <p>Your API key is stored in your browser and sent directly to the AI provider. Adaptly does not store your API key on our servers.</p>
 
           <h2>How AI Is Used</h2>
           <ul>
@@ -63,7 +63,7 @@ export default function AIGovernance() {
           </ul>
 
           <h2>No Anthropomorphisation</h2>
-          <p>SEND Assistant does not present AI as a human, person, or sentient being. All AI outputs are clearly labelled as AI-generated. We do not use language that implies the AI has feelings, opinions, or consciousness.</p>
+          <p>Adaptly does not present AI as a human, person, or sentient being. All AI outputs are clearly labelled as AI-generated. We do not use language that implies the AI has feelings, opinions, or consciousness.</p>
 
           <h2>Content Filtering and Safeguarding</h2>
           <p>All AI prompts and responses are automatically filtered for safeguarding concerns before being shown to users. If a prompt or response is flagged:</p>
@@ -77,13 +77,13 @@ export default function AIGovernance() {
           <h2>No Pupil Data Used for Training</h2>
           <p>We explicitly prohibit the use of pupil data for AI model training. Our Data Processing Agreement (DPA) includes contractual guarantees that:</p>
           <ul>
-            <li>Pupil data entered into SEND Assistant is never sent to AI providers</li>
+            <li>Pupil data entered into Adaptly is never sent to AI providers</li>
             <li>AI prompts contain only the information you explicitly type</li>
             <li>We do not use any data to fine-tune or train AI models</li>
           </ul>
 
           <h2>DfE AI Safety Standards Alignment</h2>
-          <p>SEND Assistant is designed to align with the <strong>Department for Education's AI Safety Standards for Education</strong> (2024):</p>
+          <p>Adaptly is designed to align with the <strong>Department for Education's AI Safety Standards for Education</strong> (2024):</p>
           <ul>
             <li>✓ Transparency about AI use</li>
             <li>✓ Human oversight of AI outputs</li>
@@ -94,7 +94,7 @@ export default function AIGovernance() {
           </ul>
 
           <h2>Accountability</h2>
-          <p>Questions about our AI use: <a href="mailto:ai@sendassistant.app">ai@sendassistant.app</a></p>
+          <p>Questions about our AI use: <a href="mailto:ai@adaptly.co.uk">ai@adaptly.co.uk</a></p>
         </div>
       </div>
     </div>

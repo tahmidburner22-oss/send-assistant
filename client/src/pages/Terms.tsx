@@ -12,10 +12,10 @@ export default function Terms() {
           <h1>Terms of Service</h1>
           <p className="text-muted-foreground text-sm">Last updated: March 2026 · Version 1.0</p>
 
-          <p>These Terms of Service ("Terms") govern your use of SEND Assistant ("the Service"). By creating an account or using the Service, you agree to these Terms. Please read them carefully.</p>
+          <p>These Terms of Service ("Terms") govern your use of Adaptly ("the Service"). By creating an account or using the Service, you agree to these Terms. Please read them carefully.</p>
 
           <h2>1. The Service</h2>
-          <p>SEND Assistant provides AI-powered tools to help UK educators support pupils with Special Educational Needs and Disabilities (SEND). The Service includes worksheet generation, story creation, differentiation tools, pupil management, and attendance tracking.</p>
+          <p>Adaptly provides AI-powered tools to help UK educators support pupils with Special Educational Needs and Disabilities (SEND). The Service includes worksheet generation, story creation, differentiation tools, pupil management, and attendance tracking.</p>
 
           <h2>2. Eligibility</h2>
           <p>The Service is intended for use by:</p>
@@ -27,7 +27,7 @@ export default function Terms() {
           <p>Users must be 18 or over. The Service is not intended for direct use by pupils.</p>
 
           <h2>3. School Accounts and Licences</h2>
-          <p>Schools subscribe to SEND Assistant under one of the following licence types:</p>
+          <p>Schools subscribe to Adaptly under one of the following licence types:</p>
           <ul>
             <li><strong>Free Trial</strong>: 30-day trial with full access, up to 5 users</li>
             <li><strong>Starter</strong>: Up to 10 users, core features</li>
@@ -56,7 +56,7 @@ export default function Terms() {
           </ul>
 
           <h2>6. Data Protection</h2>
-          <p>You are the data controller for pupil data you enter into the Service. We act as your data processor. A Data Processing Agreement (DPA) is available at <a href="/dpa">sendassistant.app/dpa</a> and is incorporated into these Terms by reference.</p>
+          <p>You are the data controller for pupil data you enter into the Service. We act as your data processor. A Data Processing Agreement (DPA) is available at <a href="/dpa">adaptly.co.uk/dpa</a> and is incorporated into these Terms by reference.</p>
 
           <h2>7. Safeguarding</h2>
           <p>You agree to:</p>
@@ -70,7 +70,7 @@ export default function Terms() {
           <p>You retain ownership of content you create using the Service. We retain ownership of the platform, software, and underlying AI infrastructure. You grant us a limited licence to process your content to deliver the Service.</p>
 
           <h2>9. Limitation of Liability</h2>
-          <p>To the maximum extent permitted by law, SEND Assistant's liability is limited to the fees paid in the 12 months preceding the claim. We are not liable for indirect, consequential, or incidental damages.</p>
+          <p>To the maximum extent permitted by law, Adaptly's liability is limited to the fees paid in the 12 months preceding the claim. We are not liable for indirect, consequential, or incidental damages.</p>
 
           <h2>10. Termination</h2>
           <p>Either party may terminate the subscription with 30 days' written notice. Upon termination, you may export your data for 30 days before it is deleted.</p>
@@ -82,7 +82,7 @@ export default function Terms() {
           <p>These Terms are governed by the laws of England and Wales. Disputes will be resolved in the courts of England and Wales.</p>
 
           <h2>13. Contact</h2>
-          <p>For questions about these Terms: <a href="mailto:legal@sendassistant.app">legal@sendassistant.app</a></p>
+          <p>For questions about these Terms: <a href="mailto:legal@adaptly.co.uk">legal@adaptly.co.uk</a></p>
         </div>
       </div>
     </div>

@@ -84,7 +84,7 @@ const plans = [
       "SLA guarantee",
     ],
     cta: "Contact Us",
-    ctaHref: "mailto:sales@sendassistant.app",
+    ctaHref: "mailto:sales@adaptly.co.uk",
     highlight: false,
   },
 ];
@@ -142,7 +142,7 @@ export default function Pricing() {
 
         <div className="mt-12 text-center">
           <p className="text-sm text-muted-foreground">All plans include UK data residency · GDPR compliant · No pupil data used for AI training</p>
-          <p className="text-sm text-muted-foreground mt-1">Questions? Email <a href="mailto:sales@sendassistant.app" className="text-brand hover:underline">sales@sendassistant.app</a></p>
+          <p className="text-sm text-muted-foreground mt-1">Questions? Email <a href="mailto:sales@adaptly.co.uk" className="text-brand hover:underline">sales@adaptly.co.uk</a></p>
         </div>
       </div>
     </div>
