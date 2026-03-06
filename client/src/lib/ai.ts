@@ -101,10 +101,13 @@ async function callGemini(systemPrompt: string, userPrompt: string, maxTokens: n
 async function callOpenRouter(systemPrompt: string, userPrompt: string, maxTokens: number): Promise<string> {
   const key = getStoredKey("openrouter");
   if (!key) throw new Error("No OpenRouter API key configured");
+  // Updated to currently-available free models (verified March 2026)
   const models = [
-    "meta-llama/llama-3.3-70b-instruct:free",
-    "mistralai/mistral-7b-instruct:free",
-    "google/gemma-2-9b-it:free",
+    "nvidia/nemotron-nano-9b-v2:free",
+    "liquid/lfm-2.5-1.2b-instruct:free",
+    "arcee-ai/trinity-mini:free",
+    "nvidia/nemotron-3-nano-30b-a3b:free",
+    "mistralai/mistral-small-3.1-24b-instruct:free",
   ];
   for (const model of models) {
     try {
@@ -189,32 +192,45 @@ async function callClaude(systemPrompt: string, userPrompt: string, maxTokens: n
   return content as string;
 }
 
-async function callHuggingFace(systemPrompt: string, userPrompt: string, _maxTokens: number): Promise<string> {
+async function callHuggingFace(systemPrompt: string, userPrompt: string, maxTokens: number): Promise<string> {
   const key = getStoredKey("huggingface");
   if (!key) throw new Error("No HuggingFace API key configured");
-  // Use Mistral-7B-Instruct via HuggingFace Inference API
-  const res = await fetch(
-    "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.3",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${key}`,
-      },
-      body: JSON.stringify({
-        inputs: `<s>[INST] ${systemPrompt}\n\n${userPrompt} [/INST]`,
-        parameters: { max_new_tokens: 1500, temperature: 0.7, return_full_text: false },
-      }),
+  // Updated to new HuggingFace Router endpoint (api-inference.huggingface.co deprecated)
+  const models = [
+    "Qwen/Qwen2.5-72B-Instruct",
+    "meta-llama/Llama-3.1-8B-Instruct",
+    "HuggingFaceH4/zephyr-7b-beta",
+  ];
+  for (const model of models) {
+    try {
+      const res = await fetch(
+        `https://router.huggingface.co/hf-inference/models/${model}/v1/chat/completions`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${key}`,
+          },
+          body: JSON.stringify({
+            model,
+            messages: [
+              { role: "system", content: systemPrompt },
+              { role: "user", content: userPrompt },
+            ],
+            max_tokens: maxTokens,
+            temperature: 0.7,
+          }),
+        }
+      );
+      if (!res.ok) continue;
+      const data = await res.json();
+      const content = data?.choices?.[0]?.message?.content;
+      if (content) return content as string;
+    } catch {
+      continue;
     }
-  );
-  if (!res.ok) {
-    const err = await res.text();
-    throw new Error(`HuggingFace ${res.status}: ${err.slice(0, 300)}`);
   }
-  const data = await res.json();
-  const content = Array.isArray(data) ? data[0]?.generated_text : data?.generated_text;
-  if (!content) throw new Error("HuggingFace returned empty response");
-  return content as string;
+  throw new Error("HuggingFace: all models failed");
 }
 
 // ─── Main fallback chain ─────────────────────────────────────────────────────

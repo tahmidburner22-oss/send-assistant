@@ -309,11 +309,58 @@ export default function Worksheets() {
   const handlePrint = () => {
     const style = document.createElement("style");
     style.id = "print-ws-style";
-    const teacherHide = viewMode === "student" ? ".teacher-section { display: none !important; }" : "";
-    style.textContent = "@media print { .no-print, nav, header { display: none !important; } " + teacherHide + " body { background: " + overlayBg + " !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; } .worksheet-content * { font-size: " + textSize + "px !important; } }";
+    const teacherHide = viewMode === "student"
+      ? ".teacher-section { display: none !important; } .answers { display: none !important; }"
+      : "";
+    // Comprehensive print CSS: hide all app chrome, only show worksheet content
+    style.textContent = `
+      @media print {
+        /* Hide all app chrome */
+        body > *:not(#root) { display: none !important; }
+        #root > *:not(.print-worksheet-wrapper) > *:not(.worksheet-content) { display: none !important; }
+        nav, header, aside, footer,
+        [data-sidebar], [role="navigation"],
+        [data-radix-popper-content-wrapper],
+        .no-print, .app-sidebar, .app-header {
+          display: none !important;
+        }
+        /* Show only worksheet */
+        .worksheet-content {
+          display: block !important;
+          position: fixed !important;
+          top: 0 !important; left: 0 !important;
+          width: 100% !important;
+          background: ${overlayBg} !important;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+        /* Font size override */
+        .worksheet-content * { font-size: ${textSize}px !important; }
+        .worksheet-content h1 { font-size: ${textSize + 8}px !important; }
+        .worksheet-content h2.worksheet-section-title { font-size: ${textSize + 2}px !important; }
+        /* Section page-break prevention */
+        .worksheet-section {
+          break-inside: avoid !important;
+          page-break-inside: avoid !important;
+        }
+        h2.worksheet-section-title {
+          break-after: avoid !important;
+          page-break-after: avoid !important;
+        }
+        table, .vocab-table, .diagram-section {
+          break-inside: avoid !important;
+          page-break-inside: avoid !important;
+        }
+        .teacher-section {
+          break-before: page !important;
+          page-break-before: always !important;
+        }
+        ${teacherHide}
+      }
+    `;
     document.head.appendChild(style);
     window.print();
-    setTimeout(() => document.getElementById("print-ws-style")?.remove(), 1000);
+    setTimeout(() => document.getElementById("print-ws-style")?.remove(), 1500);
   };
   // ─── AI Edit Section ────────────────────────────────────────────────────────
   const handleAiEditSection = async () => {
@@ -881,7 +928,7 @@ export default function Worksheets() {
                     "";
 
                   return (
-                    <div key={i} className={`mb-6 pl-3 ${isTeacherSection ? "border-l-4 border-yellow-400 teacher-section" : isAnswerSection ? "border-l-4 border-green-400" : sectionAccent}`}>
+                    <div key={i} className={`worksheet-section mb-6 pl-3 ${isTeacherSection ? "border-l-4 border-yellow-400 teacher-section" : isAnswerSection ? "border-l-4 border-green-400" : sectionAccent}`}>
                       <div className="flex items-center justify-between mb-2">
                         <h2 className="font-semibold text-purple-700 worksheet-section-title pb-1 border-b border-border/50"
                           style={{ fontSize: `${textSize + 2}px` }}>
