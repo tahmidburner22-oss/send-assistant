@@ -1,0 +1,360 @@
+import { Router, Request, Response } from "express";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import { v4 as uuidv4 } from "uuid";
+import speakeasy from "speakeasy";
+import QRCode from "qrcode";
+import db from "../db/index.js";
+import { JWT_SECRET, SESSION_TIMEOUT_MS, auditLog } from "../middleware/auth.js";
+import { requireAuth } from "../middleware/auth.js";
+import { sendPasswordReset, sendEmailVerification, sendWelcomeEmail } from "../email/index.js";
+
+const router = Router();
+
+// ── Register ──────────────────────────────────────────────────────────────────
+router.post("/register", async (req: Request, res: Response) => {
+  try {
+    const { email, password, displayName, schoolId, role = "teacher", inviteToken } = req.body;
+
+    if (!email || !password || !displayName) {
+      return res.status(400).json({ error: "Email, password and display name are required" });
+    }
+
+    // Email format validation
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ error: "Invalid email address" });
+    }
+
+    // Password strength
+    if (password.length < 8) {
+      return res.status(400).json({ error: "Password must be at least 8 characters" });
+    }
+
+    // Check email not already used
+    const existing = db.prepare("SELECT id FROM users WHERE email = ?").get(email);
+    if (existing) return res.status(409).json({ error: "An account with this email already exists" });
+
+    // Domain restriction check
+    if (schoolId) {
+      const school = db.prepare("SELECT * FROM schools WHERE id = ?").get(schoolId) as any;
+      if (school?.domain) {
+        const emailDomain = email.split("@")[1];
+        if (emailDomain !== school.domain) {
+          return res.status(403).json({
+            error: `Registration is restricted to @${school.domain} email addresses for this school`,
+          });
+        }
+      }
+    }
+
+    const hash = await bcrypt.hash(password, 12);
+    const verifyToken = uuidv4();
+    const userId = uuidv4();
+
+    db.prepare(`INSERT INTO users (id, school_id, email, display_name, password_hash, role, email_verify_token)
+      VALUES (?, ?, ?, ?, ?, ?, ?)`).run(userId, schoolId || null, email, displayName, hash, role, verifyToken);
+
+    // Send verification email (non-blocking)
+    sendEmailVerification(email, verifyToken).catch(console.error);
+
+    // If school exists, send welcome email
+    if (schoolId) {
+      const school = db.prepare("SELECT name FROM schools WHERE id = ?").get(schoolId) as any;
+      if (school) sendWelcomeEmail(email, displayName, school.name).catch(console.error);
+    }
+
+    auditLog(userId, schoolId || null, "user.register", "user", userId, { email, role }, req.ip);
+
+    res.status(201).json({ message: "Account created. Please verify your email." });
+  } catch (err: any) {
+    console.error("Register error:", err);
+    res.status(500).json({ error: "Registration failed" });
+  }
+});
+
+// ── Verify Email ──────────────────────────────────────────────────────────────
+router.get("/verify-email", (req: Request, res: Response) => {
+  const { token } = req.query as { token: string };
+  if (!token) return res.status(400).json({ error: "Token required" });
+
+  const user = db.prepare("SELECT * FROM users WHERE email_verify_token = ?").get(token) as any;
+  if (!user) return res.status(400).json({ error: "Invalid or expired verification link" });
+
+  db.prepare("UPDATE users SET email_verified = 1, email_verify_token = NULL WHERE id = ?").run(user.id);
+  auditLog(user.id, user.school_id, "user.email_verified", "user", user.id, {}, req.ip);
+
+  res.json({ message: "Email verified successfully. You can now log in." });
+});
+
+// ── Login ─────────────────────────────────────────────────────────────────────
+router.post("/login", async (req: Request, res: Response) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) return res.status(400).json({ error: "Email and password are required" });
+
+    const user = db.prepare("SELECT * FROM users WHERE email = ? AND is_active = 1").get(email) as any;
+    if (!user) return res.status(401).json({ error: "Invalid email or password" });
+
+    if (!user.password_hash) {
+      return res.status(401).json({ error: "This account uses Google Sign-In. Please use the Google button." });
+    }
+
+    const valid = await bcrypt.compare(password, user.password_hash);
+    if (!valid) return res.status(401).json({ error: "Invalid email or password" });
+
+    // Update last login
+    db.prepare("UPDATE users SET last_login_at = datetime('now') WHERE id = ?").run(user.id);
+
+    const mfaVerified = !user.mfa_enabled;
+    const token = createSessionToken(user, mfaVerified);
+    createSession(user.id, token, req);
+
+    auditLog(user.id, user.school_id, "user.login", "user", user.id, { email }, req.ip);
+
+    res.json({
+      token,
+      user: safeUser(user),
+      mfaRequired: !!user.mfa_enabled && !mfaVerified,
+    });
+  } catch (err) {
+    console.error("Login error:", err);
+    res.status(500).json({ error: "Login failed" });
+  }
+});
+
+// ── Google OAuth callback ─────────────────────────────────────────────────────
+// Frontend exchanges Google ID token; we verify and upsert user
+router.post("/google", async (req: Request, res: Response) => {
+  try {
+    const { idToken, googleId, email, displayName, photoUrl } = req.body;
+    if (!email || !googleId) return res.status(400).json({ error: "Google auth data missing" });
+
+    let user = db.prepare("SELECT * FROM users WHERE google_id = ? OR email = ?").get(googleId, email) as any;
+
+    if (!user) {
+      // Auto-register via Google
+      const userId = uuidv4();
+      db.prepare(`INSERT INTO users (id, email, display_name, google_id, role, email_verified)
+        VALUES (?, ?, ?, ?, 'teacher', 1)`).run(userId, email, displayName, googleId);
+      user = db.prepare("SELECT * FROM users WHERE id = ?").get(userId) as any;
+      auditLog(userId, null, "user.register_google", "user", userId, { email }, req.ip);
+    } else {
+      // Link Google ID if not set
+      if (!user.google_id) {
+        db.prepare("UPDATE users SET google_id = ?, email_verified = 1 WHERE id = ?").run(googleId, user.id);
+      }
+      if (!user.is_active) return res.status(403).json({ error: "Account deactivated" });
+    }
+
+    db.prepare("UPDATE users SET last_login_at = datetime('now') WHERE id = ?").run(user.id);
+
+    const token = createSessionToken(user, true);
+    createSession(user.id, token, req);
+
+    auditLog(user.id, user.school_id, "user.login_google", "user", user.id, { email }, req.ip);
+
+    res.json({ token, user: safeUser(user), mfaRequired: false });
+  } catch (err) {
+    console.error("Google auth error:", err);
+    res.status(500).json({ error: "Google authentication failed" });
+  }
+});
+
+// ── MFA Setup ─────────────────────────────────────────────────────────────────
+router.post("/mfa/setup", requireAuth, async (req: Request, res: Response) => {
+  const user = req.user!;
+  const secret = speakeasy.generateSecret({ name: `SEND Assistant (${user.email})`, length: 20 });
+
+  db.prepare("UPDATE users SET mfa_secret = ? WHERE id = ?").run(secret.base32, user.id);
+
+  const qrDataUrl = await QRCode.toDataURL(secret.otpauth_url!);
+  res.json({ secret: secret.base32, qrDataUrl });
+});
+
+// ── MFA Enable (confirm setup) ────────────────────────────────────────────────
+router.post("/mfa/enable", requireAuth, (req: Request, res: Response) => {
+  const { code } = req.body;
+  const user = db.prepare("SELECT * FROM users WHERE id = ?").get(req.user!.id) as any;
+
+  const valid = speakeasy.totp.verify({
+    secret: user.mfa_secret,
+    encoding: "base32",
+    token: code,
+    window: 1,
+  });
+
+  if (!valid) return res.status(400).json({ error: "Invalid verification code" });
+
+  db.prepare("UPDATE users SET mfa_enabled = 1 WHERE id = ?").run(user.id);
+  auditLog(user.id, user.school_id, "user.mfa_enabled", "user", user.id, {}, req.ip);
+  res.json({ message: "MFA enabled successfully" });
+});
+
+// ── MFA Verify (during login) ─────────────────────────────────────────────────
+router.post("/mfa/verify", (req: Request, res: Response) => {
+  const { token: sessionToken, code } = req.body;
+  if (!sessionToken || !code) return res.status(400).json({ error: "Token and code required" });
+
+  try {
+    const payload = jwt.verify(sessionToken, JWT_SECRET) as any;
+    const user = db.prepare("SELECT * FROM users WHERE id = ?").get(payload.id) as any;
+    if (!user) return res.status(401).json({ error: "User not found" });
+
+    const valid = speakeasy.totp.verify({
+      secret: user.mfa_secret,
+      encoding: "base32",
+      token: code,
+      window: 1,
+    });
+
+    if (!valid) return res.status(400).json({ error: "Invalid MFA code" });
+
+    // Invalidate old session, create new one with mfaVerified=true
+    db.prepare("DELETE FROM sessions WHERE token = ?").run(sessionToken);
+    const newToken = createSessionToken(user, true);
+    createSession(user.id, newToken, req);
+
+    auditLog(user.id, user.school_id, "user.mfa_verified", "user", user.id, {}, req.ip);
+    res.json({ token: newToken, user: safeUser(user) });
+  } catch {
+    res.status(401).json({ error: "Invalid session token" });
+  }
+});
+
+// ── MFA Disable ───────────────────────────────────────────────────────────────
+router.post("/mfa/disable", requireAuth, (req: Request, res: Response) => {
+  db.prepare("UPDATE users SET mfa_enabled = 0, mfa_secret = NULL WHERE id = ?").run(req.user!.id);
+  auditLog(req.user!.id, req.user!.schoolId, "user.mfa_disabled", "user", req.user!.id, {}, req.ip);
+  res.json({ message: "MFA disabled" });
+});
+
+// ── Forgot Password ───────────────────────────────────────────────────────────
+router.post("/forgot-password", async (req: Request, res: Response) => {
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ error: "Email required" });
+
+  // Always return success to prevent email enumeration
+  const user = db.prepare("SELECT * FROM users WHERE email = ? AND is_active = 1").get(email) as any;
+  if (user) {
+    const token = uuidv4();
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString(); // 1 hour
+    db.prepare("DELETE FROM password_resets WHERE user_id = ?").run(user.id);
+    db.prepare("INSERT INTO password_resets (id, user_id, token, expires_at) VALUES (?, ?, ?, ?)")
+      .run(uuidv4(), user.id, token, expiresAt);
+    sendPasswordReset(email, token).catch(console.error);
+    auditLog(user.id, user.school_id, "user.password_reset_requested", "user", user.id, {}, req.ip);
+  }
+
+  res.json({ message: "If an account exists with this email, a reset link has been sent." });
+});
+
+// ── Reset Password ────────────────────────────────────────────────────────────
+router.post("/reset-password", async (req: Request, res: Response) => {
+  const { token, password } = req.body;
+  if (!token || !password) return res.status(400).json({ error: "Token and new password required" });
+  if (password.length < 8) return res.status(400).json({ error: "Password must be at least 8 characters" });
+
+  const reset = db.prepare(
+    "SELECT * FROM password_resets WHERE token = ? AND used = 0 AND expires_at > datetime('now')"
+  ).get(token) as any;
+
+  if (!reset) return res.status(400).json({ error: "Invalid or expired reset link" });
+
+  const hash = await bcrypt.hash(password, 12);
+  db.prepare("UPDATE users SET password_hash = ? WHERE id = ?").run(hash, reset.user_id);
+  db.prepare("UPDATE password_resets SET used = 1 WHERE id = ?").run(reset.id);
+  // Invalidate all sessions
+  db.prepare("DELETE FROM sessions WHERE user_id = ?").run(reset.user_id);
+
+  auditLog(reset.user_id, null, "user.password_reset", "user", reset.user_id, {}, req.ip);
+  res.json({ message: "Password reset successfully. Please log in." });
+});
+
+// ── Logout ────────────────────────────────────────────────────────────────────
+router.post("/logout", requireAuth, (req: Request, res: Response) => {
+  const token = req.headers.authorization?.slice(7) || req.cookies?.token;
+  if (token) db.prepare("DELETE FROM sessions WHERE token = ?").run(token);
+  auditLog(req.user!.id, req.user!.schoolId, "user.logout", "user", req.user!.id, {}, req.ip);
+  res.clearCookie("token");
+  res.json({ message: "Logged out" });
+});
+
+// ── Current User (/session and /me are aliases) ─────────────────────────────
+const getCurrentUser = (req: Request, res: Response) => {
+  const user = db.prepare("SELECT * FROM users WHERE id = ?").get(req.user!.id) as any;
+  const school = user.school_id
+    ? db.prepare("SELECT * FROM schools WHERE id = ?").get(user.school_id)
+    : null;
+  res.json({ user: safeUser(user), school });
+};
+router.get("/session", requireAuth, getCurrentUser);
+router.get("/me", requireAuth, (req: Request, res: Response) => {
+  const user = db.prepare("SELECT * FROM users WHERE id = ?").get(req.user!.id) as any;
+  const school = user.school_id
+    ? db.prepare("SELECT * FROM schools WHERE id = ?").get(user.school_id)
+    : null;
+  res.json({ user: safeUser(user), school });
+});
+
+// ── Change Password ───────────────────────────────────────────────────────────
+router.post("/change-password", requireAuth, async (req: Request, res: Response) => {
+  const { currentPassword, newPassword } = req.body;
+  if (!currentPassword || !newPassword) return res.status(400).json({ error: "Both passwords required" });
+  if (newPassword.length < 8) return res.status(400).json({ error: "New password must be at least 8 characters" });
+
+  const user = db.prepare("SELECT * FROM users WHERE id = ?").get(req.user!.id) as any;
+  const valid = await bcrypt.compare(currentPassword, user.password_hash || "");
+  if (!valid) return res.status(400).json({ error: "Current password is incorrect" });
+
+  const hash = await bcrypt.hash(newPassword, 12);
+  db.prepare("UPDATE users SET password_hash = ? WHERE id = ?").run(hash, user.id);
+  auditLog(user.id, user.school_id, "user.password_changed", "user", user.id, {}, req.ip);
+  res.json({ message: "Password changed successfully" });
+});
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function createSessionToken(user: any, mfaVerified: boolean): string {
+  return jwt.sign(
+    {
+      id: user.id,
+      email: user.email,
+      displayName: user.display_name,
+      role: user.role,
+      schoolId: user.school_id,
+      mfaEnabled: !!user.mfa_enabled,
+      mfaVerified,
+    },
+    JWT_SECRET,
+    { expiresIn: "8h" }
+  );
+}
+
+function createSession(userId: string, token: string, req: Request) {
+  const expiresAt = new Date(Date.now() + SESSION_TIMEOUT_MS).toISOString();
+  db.prepare(`INSERT INTO sessions (id, user_id, token, ip_address, user_agent, expires_at)
+    VALUES (?, ?, ?, ?, ?, ?)`).run(
+    uuidv4(),
+    userId,
+    token,
+    req.ip,
+    req.headers["user-agent"] || null,
+    expiresAt
+  );
+}
+
+function safeUser(user: any) {
+  return {
+    id: user.id,
+    email: user.email,
+    displayName: user.display_name,
+    role: user.role,
+    schoolId: user.school_id,
+    mfaEnabled: !!user.mfa_enabled,
+    emailVerified: !!user.email_verified,
+    onboardingDone: !!user.onboarding_done,
+    lastLoginAt: user.last_login_at,
+    createdAt: user.created_at,
+  };
+}
+
+export default router;

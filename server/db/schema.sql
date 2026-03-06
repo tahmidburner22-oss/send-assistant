@@ -1,0 +1,271 @@
+-- SEND Assistant Database Schema
+-- Self-contained SQLite, no external dependencies
+
+PRAGMA journal_mode=WAL;
+PRAGMA foreign_keys=ON;
+
+-- Multi-Academy Trusts
+CREATE TABLE IF NOT EXISTS mats (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+-- Schools
+CREATE TABLE IF NOT EXISTS schools (
+  id TEXT PRIMARY KEY,
+  mat_id TEXT REFERENCES mats(id),
+  name TEXT NOT NULL,
+  urn TEXT UNIQUE,
+  address TEXT,
+  phase TEXT, -- primary/secondary/all-through
+  domain TEXT, -- e.g. school.sch.uk for domain-restricted registration
+  dsl_name TEXT,
+  dsl_email TEXT,
+  dsl_phone TEXT,
+  onboarding_complete INTEGER NOT NULL DEFAULT 0,
+  trial_ends_at TEXT,
+  licence_type TEXT DEFAULT 'trial', -- trial/starter/professional/enterprise
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+-- Users
+CREATE TABLE IF NOT EXISTS users (
+  id TEXT PRIMARY KEY,
+  school_id TEXT REFERENCES schools(id),
+  email TEXT UNIQUE NOT NULL,
+  display_name TEXT NOT NULL,
+  password_hash TEXT,
+  role TEXT NOT NULL DEFAULT 'teacher', -- mat_admin/school_admin/senco/teacher/ta
+  is_active INTEGER NOT NULL DEFAULT 1,
+  email_verified INTEGER NOT NULL DEFAULT 0,
+  email_verify_token TEXT,
+  mfa_enabled INTEGER NOT NULL DEFAULT 0,
+  mfa_secret TEXT,
+  google_id TEXT UNIQUE,
+  last_login_at TEXT,
+  onboarding_done INTEGER NOT NULL DEFAULT 0,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  deactivated_at TEXT,
+  deactivated_by TEXT
+);
+
+-- Password reset tokens
+CREATE TABLE IF NOT EXISTS password_resets (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES users(id),
+  token TEXT NOT NULL UNIQUE,
+  expires_at TEXT NOT NULL,
+  used INTEGER NOT NULL DEFAULT 0,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+-- Sessions
+CREATE TABLE IF NOT EXISTS sessions (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES users(id),
+  token TEXT NOT NULL UNIQUE,
+  ip_address TEXT,
+  user_agent TEXT,
+  expires_at TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+-- Audit logs
+CREATE TABLE IF NOT EXISTS audit_logs (
+  id TEXT PRIMARY KEY,
+  user_id TEXT REFERENCES users(id),
+  school_id TEXT REFERENCES schools(id),
+  action TEXT NOT NULL,
+  entity_type TEXT,
+  entity_id TEXT,
+  details TEXT, -- JSON
+  ip_address TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+-- Pupils (children)
+CREATE TABLE IF NOT EXISTS pupils (
+  id TEXT PRIMARY KEY,
+  school_id TEXT NOT NULL REFERENCES schools(id),
+  name TEXT NOT NULL,
+  year_group TEXT,
+  send_need TEXT,
+  code TEXT,
+  upn TEXT, -- Unique Pupil Number
+  dob TEXT,
+  is_active INTEGER NOT NULL DEFAULT 1,
+  created_by TEXT REFERENCES users(id),
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+-- Pupil audit trail
+CREATE TABLE IF NOT EXISTS pupil_audit (
+  id TEXT PRIMARY KEY,
+  pupil_id TEXT NOT NULL REFERENCES pupils(id),
+  changed_by TEXT REFERENCES users(id),
+  field_name TEXT NOT NULL,
+  old_value TEXT,
+  new_value TEXT,
+  changed_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+-- Safeguarding incidents
+CREATE TABLE IF NOT EXISTS safeguarding_incidents (
+  id TEXT PRIMARY KEY,
+  school_id TEXT NOT NULL REFERENCES schools(id),
+  pupil_id TEXT REFERENCES pupils(id),
+  reported_by TEXT NOT NULL REFERENCES users(id),
+  description TEXT NOT NULL,
+  ai_trigger TEXT, -- what AI output triggered this
+  severity TEXT NOT NULL DEFAULT 'low', -- low/medium/high/critical
+  status TEXT NOT NULL DEFAULT 'open', -- open/reviewed/closed
+  dsl_notified INTEGER NOT NULL DEFAULT 0,
+  dsl_notified_at TEXT,
+  reviewed_by TEXT REFERENCES users(id),
+  reviewed_at TEXT,
+  notes TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+-- AI content filter log
+CREATE TABLE IF NOT EXISTS ai_filter_log (
+  id TEXT PRIMARY KEY,
+  user_id TEXT REFERENCES users(id),
+  school_id TEXT REFERENCES schools(id),
+  prompt TEXT,
+  output TEXT,
+  flagged INTEGER NOT NULL DEFAULT 0,
+  flag_reason TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+-- Worksheets
+CREATE TABLE IF NOT EXISTS worksheets (
+  id TEXT PRIMARY KEY,
+  school_id TEXT REFERENCES schools(id),
+  created_by TEXT REFERENCES users(id),
+  title TEXT NOT NULL,
+  subject TEXT,
+  topic TEXT,
+  year_group TEXT,
+  send_need TEXT,
+  difficulty TEXT,
+  exam_board TEXT,
+  content TEXT,
+  teacher_content TEXT,
+  rating INTEGER,
+  rating_label TEXT,
+  overlay TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+-- Stories
+CREATE TABLE IF NOT EXISTS stories (
+  id TEXT PRIMARY KEY,
+  school_id TEXT REFERENCES schools(id),
+  created_by TEXT REFERENCES users(id),
+  title TEXT NOT NULL,
+  genre TEXT,
+  year_group TEXT,
+  send_need TEXT,
+  characters TEXT, -- JSON array
+  setting TEXT,
+  theme TEXT,
+  reading_level TEXT,
+  length TEXT,
+  content TEXT,
+  comprehension_questions TEXT, -- JSON array
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+-- Differentiations
+CREATE TABLE IF NOT EXISTS differentiations (
+  id TEXT PRIMARY KEY,
+  school_id TEXT REFERENCES schools(id),
+  created_by TEXT REFERENCES users(id),
+  task_content TEXT,
+  differentiated_content TEXT,
+  send_need TEXT,
+  year_group TEXT,
+  subject TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+-- Attendance records
+CREATE TABLE IF NOT EXISTS attendance_records (
+  id TEXT PRIMARY KEY,
+  school_id TEXT NOT NULL REFERENCES schools(id),
+  pupil_id TEXT NOT NULL REFERENCES pupils(id),
+  recorded_by TEXT REFERENCES users(id),
+  date TEXT NOT NULL,
+  am_status TEXT NOT NULL DEFAULT 'not-recorded',
+  am_reason TEXT,
+  pm_status TEXT NOT NULL DEFAULT 'not-recorded',
+  pm_reason TEXT,
+  notes TEXT,
+  recorded_at TEXT NOT NULL DEFAULT (datetime('now')),
+  UNIQUE(pupil_id, date)
+);
+
+-- Behaviour records
+CREATE TABLE IF NOT EXISTS behaviour_records (
+  id TEXT PRIMARY KEY,
+  school_id TEXT NOT NULL REFERENCES schools(id),
+  pupil_id TEXT NOT NULL REFERENCES pupils(id),
+  recorded_by TEXT REFERENCES users(id),
+  type TEXT NOT NULL, -- positive/concern
+  category TEXT,
+  description TEXT,
+  action_taken TEXT,
+  date TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+-- Ideas (community board)
+CREATE TABLE IF NOT EXISTS ideas (
+  id TEXT PRIMARY KEY,
+  school_id TEXT REFERENCES schools(id),
+  author_id TEXT REFERENCES users(id),
+  title TEXT NOT NULL,
+  description TEXT,
+  votes INTEGER NOT NULL DEFAULT 0,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+-- Assignments
+CREATE TABLE IF NOT EXISTS assignments (
+  id TEXT PRIMARY KEY,
+  pupil_id TEXT NOT NULL REFERENCES pupils(id),
+  assigned_by TEXT REFERENCES users(id),
+  title TEXT NOT NULL,
+  type TEXT NOT NULL, -- worksheet/story
+  content TEXT,
+  status TEXT NOT NULL DEFAULT 'not-started',
+  feedback TEXT,
+  mark TEXT,
+  progress INTEGER DEFAULT 0,
+  teacher_comment TEXT,
+  assigned_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+-- Cookie consent
+CREATE TABLE IF NOT EXISTS cookie_consents (
+  id TEXT PRIMARY KEY,
+  user_id TEXT REFERENCES users(id),
+  ip_address TEXT,
+  analytics INTEGER NOT NULL DEFAULT 0,
+  marketing INTEGER NOT NULL DEFAULT 0,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+-- Indexes
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_users_school ON users(school_id);
+CREATE INDEX IF NOT EXISTS idx_pupils_school ON pupils(school_id);
+CREATE INDEX IF NOT EXISTS idx_audit_user ON audit_logs(user_id);
+CREATE INDEX IF NOT EXISTS idx_audit_school ON audit_logs(school_id);
+CREATE INDEX IF NOT EXISTS idx_sessions_token ON sessions(token);
+CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id);
+CREATE INDEX IF NOT EXISTS idx_attendance_pupil_date ON attendance_records(pupil_id, date);

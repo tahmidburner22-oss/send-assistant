@@ -1,0 +1,330 @@
+import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { auth as authApi, data as dataApi, pupils as pupilsApi, getToken, setToken, clearToken } from "@/lib/api";
+
+// ── Types ─────────────────────────────────────────────────────────────────────
+export interface User {
+  id: string;
+  email: string;
+  displayName: string;
+  role: "mat_admin" | "school_admin" | "senco" | "teacher" | "ta";
+  schoolId: string | null;
+  mfaEnabled: boolean;
+  emailVerified: boolean;
+  onboardingDone: boolean;
+}
+
+export interface School {
+  id: string; name: string; urn?: string; domain?: string;
+  dslName?: string; dslEmail?: string; dslPhone?: string;
+  licenceType: string; trialEndsAt?: string; onboardingComplete: boolean;
+}
+
+export interface TimetableLesson {
+  day: string; // "Monday" | "Tuesday" etc.
+  period: number; // 1-8
+  subject: string;
+  teacher?: string;
+  room?: string;
+  startTime?: string;
+  endTime?: string;
+}
+
+export interface Child {
+  id: string; name: string; yearGroup: string; sendNeed: string;
+  code: string; upn?: string; dob?: string; createdAt: string;
+  assignments: Assignment[]; submissions: Submission[];
+  timetable?: TimetableLesson[];
+}
+
+export type AttendanceStatus = "attended" | "absent" | "not-recorded";
+
+export interface AttendanceRecord {
+  id: string; childId: string; date: string;
+  amStatus: AttendanceStatus; amReason?: string;
+  pmStatus: AttendanceStatus; pmReason?: string;
+  notes?: string; recordedAt: string; recordedBy: string;
+}
+
+export interface Assignment {
+  id: string; title: string; type: "worksheet" | "story"; content: string;
+  assignedAt: string; status: "not-started" | "started" | "completed";
+  feedback?: string; mark?: string; progress?: number; teacherComment?: string;
+}
+
+export interface Submission {
+  id: string; title: string; content: string; fileDataUrl?: string;
+  fileName?: string; fileType?: string; submittedAt: string;
+  feedback?: string; mark?: string; teacherComment?: string; question?: string;
+}
+
+export interface Worksheet {
+  id: string; title: string; subtitle?: string; subject: string; topic: string; yearGroup: string;
+  sendNeed?: string; difficulty: string; examBoard?: string; content: string;
+  teacherContent: string; createdAt: string; rating?: number; ratingLabel?: string; overlay?: string;
+  // Full sections array preserved for re-editing saved worksheets
+  sections?: Array<{ title: string; type: string; content: string; teacherOnly?: boolean; svg?: string; caption?: string }>;
+  metadata?: { subject?: string; topic?: string; yearGroup?: string; difficulty?: string; examBoard?: string; totalMarks?: number; estimatedTime?: string; adaptations?: string[]; phase?: string; };
+  isAI?: boolean;
+}
+
+export interface Story {
+  id: string; title: string; genre: string; yearGroup: string; sendNeed?: string;
+  characters: string[]; setting?: string; theme?: string; readingLevel: string;
+  length: string; content: string; comprehensionQuestions?: string[]; createdAt: string;
+}
+
+export interface Differentiation {
+  id: string; taskContent: string; differentiatedContent: string;
+  sendNeed?: string; yearGroup?: string; subject?: string; createdAt: string;
+}
+
+export interface Idea {
+  id: string; title: string; description: string; votes: number;
+  createdAt: string; author: string;
+}
+
+interface AppState {
+  loading: boolean;
+  user: User | null;
+  school: School | null;
+  children: Child[];
+  worksheetHistory: Worksheet[];
+  storyHistory: Story[];
+  differentiationHistory: Differentiation[];
+  attendanceRecords: AttendanceRecord[];
+  ideas: Idea[];
+  colorOverlay: string;
+  isLoggedIn: boolean;
+  mfaRequired: boolean;
+  pendingToken: string | null;
+}
+
+interface AppContextType extends AppState {
+  login: (email: string, password: string) => Promise<{ mfaRequired?: boolean; error?: string }>;
+  loginWithGoogle: (googleData: { googleId: string; email: string; displayName: string }) => Promise<void>;
+  logout: () => Promise<void>;
+  registerTeacher: (email: string, password: string, displayName: string, schoolId?: string) => Promise<{ error?: string }>;
+  verifyMfa: (code: string) => Promise<void>;
+  addChild: (child: Omit<Child, "id" | "code" | "createdAt" | "assignments" | "submissions">) => Promise<Child>;
+  removeChild: (id: string) => Promise<void>;
+  updateChild: (id: string, updates: Partial<Child>) => Promise<void>;
+  assignWork: (childId: string, assignment: Omit<Assignment, "id" | "assignedAt" | "status">) => void;
+  updateAssignment: (childId: string, assignmentId: string, updates: Partial<Assignment>) => void;
+  addSubmission: (childId: string, submission: Omit<Submission, "id" | "submittedAt">) => void;
+  updateSubmission: (childId: string, submissionId: string, updates: Partial<Submission>) => void;
+  saveWorksheet: (worksheet: Omit<Worksheet, "id" | "createdAt">) => Promise<Worksheet>;
+  updateWorksheet: (id: string, updates: Partial<Worksheet>) => Promise<void>;
+  saveStory: (story: Omit<Story, "id" | "createdAt">) => Promise<Story>;
+  saveDifferentiation: (diff: Omit<Differentiation, "id" | "createdAt">) => Promise<Differentiation>;
+  saveAttendance: (record: Omit<AttendanceRecord, "id" | "recordedAt">) => Promise<AttendanceRecord>;
+  updateAttendance: (id: string, updates: Partial<AttendanceRecord>) => void;
+  getAttendanceForChild: (childId: string, date?: string) => AttendanceRecord[];
+  getAttendanceForDate: (date: string) => AttendanceRecord[];
+  addIdea: (idea: Omit<Idea, "id" | "createdAt" | "votes">) => Promise<void>;
+  voteIdea: (id: string) => Promise<void>;
+  setColorOverlay: (overlay: string) => void;
+  refreshData: () => Promise<void>;
+}
+
+const AppContext = createContext<AppContextType | null>(null);
+
+function generateId() { return Math.random().toString(36).slice(2) + Date.now().toString(36); }
+
+export function AppProvider({ children: childrenProp }: { children: React.ReactNode }) {
+  const [state, setState] = useState<AppState>({
+    loading: true, user: null, school: null, children: [],
+    worksheetHistory: [], storyHistory: [], differentiationHistory: [],
+    attendanceRecords: [], ideas: [], colorOverlay: "none",
+    isLoggedIn: false, mfaRequired: false, pendingToken: null,
+  });
+
+  const loadUserData = useCallback(async () => {
+    try {
+      const [ws, stories, diffs, ideasData, pupilsData] = await Promise.allSettled([
+        dataApi.worksheets.list(),
+        dataApi.stories.list(),
+        dataApi.differentiations.list(),
+        dataApi.ideas.list(),
+        pupilsApi.list(),
+      ]);
+      setState(s => ({
+        ...s,
+        worksheetHistory: ws.status === "fulfilled" ? ws.value : s.worksheetHistory,
+        storyHistory: stories.status === "fulfilled" ? stories.value.map(mapStory) : s.storyHistory,
+        differentiationHistory: diffs.status === "fulfilled" ? diffs.value.map(mapDiff) : s.differentiationHistory,
+        ideas: ideasData.status === "fulfilled" ? ideasData.value.map(mapIdea) : s.ideas,
+        children: pupilsData.status === "fulfilled" ? pupilsData.value.map(mapPupil) : s.children,
+      }));
+    } catch (err) { console.error("Failed to load user data:", err); }
+  }, []);
+
+  useEffect(() => {
+    const token = getToken();
+    if (!token) { setState(s => ({ ...s, loading: false })); return; }
+    authApi.me()
+      .then(({ user, school }) => {
+        setState(s => ({ ...s, user, school, isLoggedIn: true, loading: false }));
+        loadUserData();
+      })
+      .catch(() => { clearToken(); setState(s => ({ ...s, loading: false })); });
+  }, []);
+
+  const refreshData = useCallback(async () => { await loadUserData(); }, [loadUserData]);
+
+  const login = useCallback(async (email: string, password: string) => {
+    try {
+      const result = await authApi.login(email, password);
+      if (result.mfaRequired) {
+        setState(s => ({ ...s, mfaRequired: true, pendingToken: result.token }));
+        return { mfaRequired: true };
+      }
+      setToken(result.token);
+      const { user, school } = await authApi.me();
+      setState(s => ({ ...s, user, school, isLoggedIn: true, mfaRequired: false, pendingToken: null }));
+      await loadUserData();
+      return {};
+    } catch (err: any) { return { error: err.message }; }
+  }, [loadUserData]);
+
+  const loginWithGoogle = useCallback(async (googleData: { googleId: string; email: string; displayName: string }) => {
+    const result = await authApi.googleAuth(googleData);
+    setToken(result.token);
+    const { user, school } = await authApi.me();
+    setState(s => ({ ...s, user, school, isLoggedIn: true }));
+    await loadUserData();
+  }, [loadUserData]);
+
+  const verifyMfa = useCallback(async (code: string) => {
+    const pendingToken = state.pendingToken;
+    if (!pendingToken) throw new Error("No pending MFA session");
+    const result = await authApi.mfaVerify(pendingToken, code);
+    setToken(result.token);
+    const { user, school } = await authApi.me();
+    setState(s => ({ ...s, user, school, isLoggedIn: true, mfaRequired: false, pendingToken: null }));
+    await loadUserData();
+  }, [state.pendingToken, loadUserData]);
+
+  const logout = useCallback(async () => {
+    try { await authApi.logout(); } catch {}
+    clearToken();
+    setState(s => ({ ...s, user: null, school: null, isLoggedIn: false, children: [], worksheetHistory: [], storyHistory: [], differentiationHistory: [], attendanceRecords: [], ideas: [] }));
+  }, []);
+
+  const registerTeacher = useCallback(async (email: string, password: string, displayName: string, schoolId?: string) => {
+    try { await authApi.register({ email, password, displayName, schoolId }); return {}; }
+    catch (err: any) { return { error: err.message }; }
+  }, []);
+
+  const addChild = useCallback(async (child: Omit<Child, "id" | "code" | "createdAt" | "assignments" | "submissions">) => {
+    const result = await pupilsApi.create({ name: child.name, yearGroup: child.yearGroup, sendNeed: child.sendNeed });
+    const newChild: Child = { ...child, id: result.id, code: result.code, createdAt: new Date().toISOString(), assignments: [], submissions: [] };
+    setState(s => ({ ...s, children: [...s.children, newChild] }));
+    return newChild;
+  }, []);
+
+  const removeChild = useCallback(async (id: string) => {
+    await pupilsApi.archive(id);
+    setState(s => ({ ...s, children: s.children.filter(c => c.id !== id) }));
+  }, []);
+
+  const updateChild = useCallback(async (id: string, updates: Partial<Child>) => {
+    await pupilsApi.update(id, { name: updates.name, yearGroup: updates.yearGroup, sendNeed: updates.sendNeed, timetable: updates.timetable });
+    setState(s => ({ ...s, children: s.children.map(c => c.id === id ? { ...c, ...updates } : c) }));
+  }, []);
+
+  const assignWork = useCallback((childId: string, assignment: Omit<Assignment, "id" | "assignedAt" | "status">) => {
+    const a: Assignment = { ...assignment, id: generateId(), assignedAt: new Date().toISOString(), status: "not-started" };
+    setState(s => ({ ...s, children: s.children.map(c => c.id === childId ? { ...c, assignments: [...c.assignments, a] } : c) }));
+  }, []);
+
+  const updateAssignment = useCallback((childId: string, assignmentId: string, updates: Partial<Assignment>) => {
+    setState(s => ({ ...s, children: s.children.map(c => c.id === childId ? { ...c, assignments: c.assignments.map(a => a.id === assignmentId ? { ...a, ...updates } : a) } : c) }));
+  }, []);
+
+  const addSubmission = useCallback((childId: string, submission: Omit<Submission, "id" | "submittedAt">) => {
+    const sub: Submission = { ...submission, id: generateId(), submittedAt: new Date().toISOString() };
+    setState(s => ({ ...s, children: s.children.map(c => c.id === childId ? { ...c, submissions: [...c.submissions, sub] } : c) }));
+  }, []);
+
+  const updateSubmission = useCallback((childId: string, submissionId: string, updates: Partial<Submission>) => {
+    setState(s => ({ ...s, children: s.children.map(c => c.id === childId ? { ...c, submissions: c.submissions.map(sub => sub.id === submissionId ? { ...sub, ...updates } : sub) } : c) }));
+  }, []);
+
+  const saveWorksheet = useCallback(async (worksheet: Omit<Worksheet, "id" | "createdAt">) => {
+    const result = await dataApi.worksheets.create(worksheet);
+    const w: Worksheet = { ...worksheet, id: result.id, createdAt: new Date().toISOString() };
+    setState(s => ({ ...s, worksheetHistory: [w, ...s.worksheetHistory] }));
+    return w;
+  }, []);
+
+  const updateWorksheet = useCallback(async (id: string, updates: Partial<Worksheet>) => {
+    await dataApi.worksheets.update(id, updates);
+    setState(s => ({ ...s, worksheetHistory: s.worksheetHistory.map(w => w.id === id ? { ...w, ...updates } : w) }));
+  }, []);
+
+  const saveStory = useCallback(async (story: Omit<Story, "id" | "createdAt">) => {
+    const result = await dataApi.stories.create(story);
+    const st: Story = { ...story, id: result.id, createdAt: new Date().toISOString() };
+    setState(s => ({ ...s, storyHistory: [st, ...s.storyHistory] }));
+    return st;
+  }, []);
+
+  const saveDifferentiation = useCallback(async (diff: Omit<Differentiation, "id" | "createdAt">) => {
+    const result = await dataApi.differentiations.create(diff);
+    const d: Differentiation = { ...diff, id: result.id, createdAt: new Date().toISOString() };
+    setState(s => ({ ...s, differentiationHistory: [d, ...s.differentiationHistory] }));
+    return d;
+  }, []);
+
+  const saveAttendance = useCallback(async (record: Omit<AttendanceRecord, "id" | "recordedAt">) => {
+    await pupilsApi.recordAttendance(record.childId, { date: record.date, amStatus: record.amStatus, amReason: record.amReason, pmStatus: record.pmStatus, pmReason: record.pmReason, notes: record.notes });
+    const r: AttendanceRecord = { ...record, id: generateId(), recordedAt: new Date().toISOString() };
+    setState(s => { const filtered = s.attendanceRecords.filter(x => !(x.childId === record.childId && x.date === record.date)); return { ...s, attendanceRecords: [r, ...filtered] }; });
+    return r;
+  }, []);
+
+  const updateAttendance = useCallback((id: string, updates: Partial<AttendanceRecord>) => {
+    setState(s => ({ ...s, attendanceRecords: s.attendanceRecords.map(r => r.id === id ? { ...r, ...updates } : r) }));
+  }, []);
+
+  const getAttendanceForChild = useCallback((childId: string) => state.attendanceRecords.filter(r => r.childId === childId), [state.attendanceRecords]);
+  const getAttendanceForDate = useCallback((date: string) => state.attendanceRecords.filter(r => r.date === date), [state.attendanceRecords]);
+
+  const addIdea = useCallback(async (idea: Omit<Idea, "id" | "createdAt" | "votes">) => {
+    const result = await dataApi.ideas.create({ title: idea.title, description: idea.description });
+    const i: Idea = { ...idea, id: result.id, votes: 0, createdAt: new Date().toISOString() };
+    setState(s => ({ ...s, ideas: [...s.ideas, i] }));
+  }, []);
+
+  const voteIdea = useCallback(async (id: string) => {
+    await dataApi.ideas.vote(id);
+    setState(s => ({ ...s, ideas: s.ideas.map(i => i.id === id ? { ...i, votes: i.votes + 1 } : i) }));
+  }, []);
+
+  const setColorOverlay = useCallback((overlay: string) => { setState(s => ({ ...s, colorOverlay: overlay })); }, []);
+
+  return (
+    <AppContext.Provider value={{ ...state, login, loginWithGoogle, logout, registerTeacher, verifyMfa, addChild, removeChild, updateChild, assignWork, updateAssignment, addSubmission, updateSubmission, saveWorksheet, updateWorksheet, saveStory, saveDifferentiation, saveAttendance, updateAttendance, getAttendanceForChild, getAttendanceForDate, addIdea, voteIdea, setColorOverlay, refreshData }}>
+      {childrenProp}
+    </AppContext.Provider>
+  );
+}
+
+export function useApp() {
+  const ctx = useContext(AppContext);
+  if (!ctx) throw new Error("useApp must be used within AppProvider");
+  return ctx;
+}
+
+function mapStory(s: any): Story {
+  return { ...s, characters: Array.isArray(s.characters) ? s.characters : JSON.parse(s.characters || "[]"), comprehensionQuestions: Array.isArray(s.comprehension_questions) ? s.comprehension_questions : JSON.parse(s.comprehension_questions || "[]") };
+}
+function mapDiff(d: any): Differentiation {
+  return { id: d.id, taskContent: d.task_content, differentiatedContent: d.differentiated_content, sendNeed: d.send_need, yearGroup: d.year_group, subject: d.subject, createdAt: d.created_at };
+}
+function mapIdea(i: any): Idea {
+  return { id: i.id, title: i.title, description: i.description, votes: i.votes, createdAt: i.created_at, author: i.author_name || "Unknown" };
+}
+function mapPupil(p: any): Child {
+  return { id: p.id, name: p.name, yearGroup: p.year_group || "", sendNeed: p.send_need || "", code: p.code || "", upn: p.upn, dob: p.dob, createdAt: p.created_at, assignments: [], submissions: [] };
+}
