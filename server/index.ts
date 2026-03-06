@@ -98,8 +98,8 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
 });
 
 // ── Start ─────────────────────────────────────────────────────────────────────
-// Initialise DB before starting
-import("./db/index.js").then(() => {
+import { initDb } from "./db/index.js";
+initDb().then(() => {
   app.listen(PORT, "0.0.0.0", () => {
     console.log(`🚀 SEND Assistant API running on http://localhost:${PORT}`);
     console.log(`   Environment: ${process.env.NODE_ENV || "development"}`);
