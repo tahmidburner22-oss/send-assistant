@@ -133,12 +133,92 @@
 
 /* Print styles for worksheets */
 @media print {
+  /* Hide everything except the worksheet */
+  body > *:not(#root) { display: none !important; }
   .no-print { display: none !important; }
   .print-only { display: block !important; }
-  body { background: white !important; }
+
+  /* Hide all app chrome: sidebar, nav, header, toolbar, buttons */
+  nav, header, aside, footer,
+  [data-sidebar], [role="navigation"],
+  .app-sidebar, .app-header, .app-nav,
+  .worksheet-toolbar, .worksheet-controls {
+    display: none !important;
+  }
+
+  /* Page setup */
+  @page {
+    size: A4 portrait;
+    margin: 18mm 18mm 20mm 18mm;
+  }
+
+  html, body {
+    background: white !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Worksheet container fills the page */
   .worksheet-content {
-    break-inside: avoid;
-    page-break-inside: avoid;
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  /* Card wrapper: remove shadow/border for print */
+  .worksheet-content > * {
+    box-shadow: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+  }
+
+  /* Each worksheet section must NOT split across pages */
+  .worksheet-section,
+  .worksheet-content > div > div > div {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    orphans: 3;
+    widows: 3;
+  }
+
+  /* Section headers stay with their content */
+  h2.worksheet-section-title {
+    break-after: avoid !important;
+    page-break-after: avoid !important;
+  }
+
+  /* Tables must not split */
+  table {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* Vocabulary pills */
+  .vocab-table {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* Diagram sections */
+  .diagram-section {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* Answer lines */
+  .answer-line {
+    break-inside: avoid !important;
+  }
+
+  /* Force a page break before teacher sections if needed */
+  .teacher-section {
+    break-before: page !important;
+    page-break-before: always !important;
   }
 }
 
