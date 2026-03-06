@@ -58,7 +58,7 @@ export default function Home() {
       {/* Welcome */}
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
         <h2 className="text-xl font-bold text-foreground">Welcome back, {user?.displayName || "Teacher"}</h2>
-        <p className="text-sm text-muted-foreground mt-1">Here's your SEND Assistant overview</p>
+        <p className="text-sm text-muted-foreground mt-1">Here's your Adaptly overview</p>
       </motion.div>
 
       {/* Stats */}

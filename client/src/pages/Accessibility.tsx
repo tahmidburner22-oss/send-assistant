@@ -12,13 +12,13 @@ export default function Accessibility() {
           <h1>Accessibility Statement</h1>
           <p className="text-muted-foreground text-sm">Last updated: March 2026</p>
 
-          <p>SEND Assistant is committed to making our platform accessible to everyone, including users with disabilities. We aim to meet <strong>WCAG 2.2 Level AA</strong> standards.</p>
+          <p>Adaptly is committed to making our platform accessible to everyone, including users with disabilities. We aim to meet <strong>WCAG 2.2 Level AA</strong> standards.</p>
 
           <h2>Our Commitment</h2>
           <p>As a platform designed for SEND educators, accessibility is central to our mission. We believe that the tools we build should be usable by everyone, regardless of disability or assistive technology.</p>
 
           <h2>Conformance Status</h2>
-          <p>SEND Assistant is <strong>partially conformant</strong> with WCAG 2.2 Level AA. We are actively working to achieve full conformance.</p>
+          <p>Adaptly is <strong>partially conformant</strong> with WCAG 2.2 Level AA. We are actively working to achieve full conformance.</p>
 
           <h2>What We Have Done</h2>
           <ul>
@@ -40,7 +40,7 @@ export default function Accessibility() {
           </ul>
 
           <h2>Testing</h2>
-          <p>We have tested SEND Assistant using:</p>
+          <p>We have tested Adaptly using:</p>
           <ul>
             <li>NVDA screen reader (Windows)</li>
             <li>VoiceOver (macOS and iOS)</li>
@@ -53,7 +53,7 @@ export default function Accessibility() {
           <h2>Feedback and Contact</h2>
           <p>If you experience any accessibility barriers, please contact us:</p>
           <ul>
-            <li>Email: <a href="mailto:accessibility@sendassistant.app">accessibility@sendassistant.app</a></li>
+            <li>Email: <a href="mailto:accessibility@adaptly.co.uk">accessibility@adaptly.co.uk</a></li>
             <li>We aim to respond within 5 working days</li>
           </ul>
 

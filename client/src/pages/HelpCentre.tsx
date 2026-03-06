@@ -11,7 +11,7 @@ const categories = [
     articles: [
       { q: "How do I register my school?", a: "Go to the login page and click 'Register your school'. You'll be guided through our onboarding wizard where you'll enter your school name, URN, and DSL contact details. Once complete, you can invite your team." },
       { q: "How do I invite teachers and TAs?", a: "As a school admin or SENCO, go to Settings > Users > Invite User. Enter their email address and select their role. They'll receive an email invitation to create their account." },
-      { q: "What is the onboarding tour?", a: "When you first log in, you'll see a guided tour highlighting the key features of SEND Assistant. You can restart the tour at any time from Settings > Help > Restart Tour." },
+      { q: "What is the onboarding tour?", a: "When you first log in, you'll see a guided tour highlighting the key features of Adaptly. You can restart the tour at any time from Settings > Help > Restart Tour." },
       { q: "How do I set up my API key for AI features?", a: "Go to Settings > AI Settings. You can enter your API key for Groq (free tier available), Google Gemini, OpenAI, or OpenRouter. Your key is stored securely in your browser and never sent to our servers." },
     ],
   },
@@ -42,7 +42,7 @@ const categories = [
       { q: "What is the DSL and why do I need to enter their details?", a: "The Designated Safeguarding Lead (DSL) is your school's safeguarding contact. We capture their details during onboarding so that safeguarding incidents can be automatically reported to them." },
       { q: "How does AI content filtering work?", a: "All AI prompts and responses are automatically scanned for safeguarding concerns. If a concern is detected, the content is blocked, a safeguarding incident is created, and your DSL is notified by email." },
       { q: "How do I report a safeguarding incident manually?", a: "Go to Settings > Safeguarding > Report Incident. Fill in the details and submit. Your DSL will be notified automatically." },
-      { q: "Is SEND Assistant KCSIE 2025 compliant?", a: "Yes. SEND Assistant is designed to align with Keeping Children Safe in Education 2025. Our KCSIE alignment documentation is available from Settings > Compliance." },
+      { q: "Is Adaptly KCSIE 2025 compliant?", a: "Yes. Adaptly is designed to align with Keeping Children Safe in Education 2025. Our KCSIE alignment documentation is available from Settings > Compliance." },
     ],
   },
   {
@@ -60,9 +60,9 @@ const categories = [
     title: "Compliance & Legal",
     articles: [
       { q: "Where is my data stored?", a: "All data is stored in UK data centres. We do not transfer personal data outside the UK/EEA." },
-      { q: "Does SEND Assistant use pupil data to train AI?", a: "No. Pupil data is never used to train AI models. Our Data Processing Agreement (DPA) includes contractual guarantees of this." },
-      { q: "How do I request a Data Processing Agreement (DPA)?", a: "Our DPA is available at sendassistant.app/dpa. To execute it formally for your school, email legal@sendassistant.app with your school name and URN." },
-      { q: "How do I submit a Subject Access Request?", a: "Email privacy@sendassistant.app with 'Subject Access Request' in the subject line. We will respond within 30 days." },
+      { q: "Does Adaptly use pupil data to train AI?", a: "No. Pupil data is never used to train AI models. Our Data Processing Agreement (DPA) includes contractual guarantees of this." },
+      { q: "How do I request a Data Processing Agreement (DPA)?", a: "Our DPA is available at adaptly.co.uk/dpa. To execute it formally for your school, email legal@adaptly.co.uk with your school name and URN." },
+      { q: "How do I submit a Subject Access Request?", a: "Email privacy@adaptly.co.uk with 'Subject Access Request' in the subject line. We will respond within 30 days." },
     ],
   },
 ];
@@ -106,7 +106,7 @@ export default function HelpCentre() {
 
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold">Help Centre</h1>
-          <p className="text-muted-foreground mt-2">Find answers to common questions about SEND Assistant</p>
+          <p className="text-muted-foreground mt-2">Find answers to common questions about Adaptly</p>
         </div>
 
         <div className="relative mb-8">
@@ -123,7 +123,7 @@ export default function HelpCentre() {
         {filtered.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground">
             <p>No articles found for "{search}"</p>
-            <p className="text-sm mt-1">Try a different search term or <a href="mailto:support@sendassistant.app" className="text-brand hover:underline">contact support</a></p>
+            <p className="text-sm mt-1">Try a different search term or <a href="mailto:support@adaptly.co.uk" className="text-brand hover:underline">contact support</a></p>
           </div>
         ) : (
           <div className="space-y-6">
@@ -149,7 +149,7 @@ export default function HelpCentre() {
           <h3 className="font-semibold mb-1">Still need help?</h3>
           <p className="text-sm text-muted-foreground mb-3">Our support team is available Monday–Friday, 8am–5pm</p>
           <Button asChild variant="outline">
-            <a href="mailto:support@sendassistant.app">Email Support</a>
+            <a href="mailto:support@adaptly.co.uk">Email Support</a>
           </Button>
         </div>
       </div>

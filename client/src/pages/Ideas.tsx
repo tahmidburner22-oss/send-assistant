@@ -31,7 +31,7 @@ export default function Ideas() {
   return (
     <div className="px-4 py-6 max-w-2xl mx-auto space-y-4">
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">Share and vote on feature ideas for SEND Assistant.</p>
+        <p className="text-sm text-muted-foreground">Share and vote on feature ideas for Adaptly.</p>
         <Dialog open={showAdd} onOpenChange={setShowAdd}>
           <DialogTrigger asChild>
             <Button size="sm" className="bg-brand hover:bg-brand/90 text-white">

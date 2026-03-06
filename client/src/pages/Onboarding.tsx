@@ -58,7 +58,7 @@ export default function Onboarding() {
             <GraduationCap className="w-7 h-7 text-white" />
           </div>
           <h1 className="text-2xl font-bold">Register Your School</h1>
-          <p className="text-sm text-muted-foreground mt-1">Set up SEND Assistant for your school in minutes</p>
+          <p className="text-sm text-muted-foreground mt-1">Set up Adaptly for your school in minutes</p>
         </div>
 
         {/* Step indicators */}
@@ -146,7 +146,7 @@ export default function Onboarding() {
                     <Check className="w-8 h-8 text-green-600" />
                   </div>
                   <h2 className="text-xl font-semibold">School registered!</h2>
-                  <p className="text-sm text-muted-foreground">Your school has been set up. Check your email to verify your account, then sign in to start using SEND Assistant.</p>
+                  <p className="text-sm text-muted-foreground">Your school has been set up. Check your email to verify your account, then sign in to start using Adaptly.</p>
                   <Button className="w-full bg-brand hover:bg-brand/90 text-white" onClick={() => setLocation("/")}>
                     Go to Sign In
                   </Button>

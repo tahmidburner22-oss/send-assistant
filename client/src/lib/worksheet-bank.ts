@@ -8,7 +8,7 @@ export interface BankWorksheet {
   topic: string;
   yearGroup: string;
   difficulty: string;
-  source: string; // "TES Style" | "Maths Genie Style" | "SEND Assistant"
+  source: string; // "TES Style" | "Maths Genie Style" | "Adaptly"
   tags: string[];
   content: string;
   teacherNotes: string;

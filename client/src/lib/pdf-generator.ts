@@ -317,7 +317,7 @@ class PdfBuilder {
       this.doc.setFont("helvetica", "normal");
       this.doc.setFontSize(8);
       this.doc.setTextColor(...GREY_TEXT);
-      this.doc.text(`SEND Assistant -- Page ${i} of ${this.pageCount}`, this.pageWidth / 2, footerY, { align: "center" });
+      this.doc.text(`Adaptly -- Page ${i} of ${this.pageCount}`, this.pageWidth / 2, footerY, { align: "center" });
       this.doc.text(new Date().toLocaleDateString("en-GB"), this.pageWidth - this.margin, footerY, { align: "right" });
     }
   }

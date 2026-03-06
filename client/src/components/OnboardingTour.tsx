@@ -9,7 +9,7 @@ const TOUR_KEY = "send_tour_done";
 
 const steps = [
   {
-    title: "Welcome to SEND Assistant! 👋",
+    title: "Welcome to Adaptly! 👋",
     description: "This quick tour will show you the key features. It only takes 2 minutes.",
     target: null,
   },

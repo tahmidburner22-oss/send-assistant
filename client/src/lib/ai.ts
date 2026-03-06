@@ -4,9 +4,15 @@
  * API keys stored in localStorage so users can update without redeploying.
  */
 
-// ─── Built-in keys (used directly — no module-level localStorage access) ────
+// ─── Built-in keys — loaded from Vite env vars (set in Railway / .env.local) ────
+// Set VITE_GROQ_KEY, VITE_OPENAI_KEY etc. in Railway environment variables.
 const BUILT_IN_KEYS: Record<string, string> = {
-  groq: "", // Set your Groq API key in Settings → AI Configuration,
+  groq: import.meta.env.VITE_GROQ_KEY ?? "",
+  gemini: import.meta.env.VITE_GEMINI_KEY ?? "",
+  openrouter: import.meta.env.VITE_OPENROUTER_KEY ?? "",
+  openai: import.meta.env.VITE_OPENAI_KEY ?? "",
+  claude: import.meta.env.VITE_CLAUDE_KEY ?? "",
+  huggingface: import.meta.env.VITE_HF_KEY ?? "",
 };
 
 // ─── Key storage helpers ─────────────────────────────────────────────────────
@@ -15,6 +21,8 @@ export const AI_KEY_STORAGE = {
   gemini: "adaptly_gemini_key",
   openrouter: "adaptly_openrouter_key",
   openai: "adaptly_openai_key",
+  claude: "adaptly_claude_key",
+  huggingface: "adaptly_huggingface_key",
 };
 
 export function getStoredKey(provider: keyof typeof AI_KEY_STORAGE): string {
@@ -106,7 +114,7 @@ async function callOpenRouter(systemPrompt: string, userPrompt: string, maxToken
           "Content-Type": "application/json",
           Authorization: `Bearer ${key}`,
           "HTTP-Referer": "https://adaptly.co.uk",
-          "X-Title": "Adaptly SEND Assistant",
+          "X-Title": "Adaptly Adaptly",
         },
         body: JSON.stringify({
           model,
@@ -154,16 +162,71 @@ async function callOpenAI(systemPrompt: string, userPrompt: string, maxTokens: n
   return content as string;
 }
 
+async function callClaude(systemPrompt: string, userPrompt: string, maxTokens: number): Promise<string> {
+  const key = getStoredKey("claude");
+  if (!key) throw new Error("No Claude API key configured");
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": key,
+      "anthropic-version": "2023-06-01",
+    },
+    body: JSON.stringify({
+      model: "claude-3-haiku-20240307",
+      max_tokens: maxTokens,
+      system: systemPrompt,
+      messages: [{ role: "user", content: userPrompt }],
+    }),
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`Claude ${res.status}: ${err.slice(0, 300)}`);
+  }
+  const data = await res.json();
+  const content = data?.content?.[0]?.text;
+  if (!content) throw new Error("Claude returned empty response");
+  return content as string;
+}
+
+async function callHuggingFace(systemPrompt: string, userPrompt: string, _maxTokens: number): Promise<string> {
+  const key = getStoredKey("huggingface");
+  if (!key) throw new Error("No HuggingFace API key configured");
+  // Use Mistral-7B-Instruct via HuggingFace Inference API
+  const res = await fetch(
+    "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.3",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${key}`,
+      },
+      body: JSON.stringify({
+        inputs: `<s>[INST] ${systemPrompt}\n\n${userPrompt} [/INST]`,
+        parameters: { max_new_tokens: 1500, temperature: 0.7, return_full_text: false },
+      }),
+    }
+  );
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`HuggingFace ${res.status}: ${err.slice(0, 300)}`);
+  }
+  const data = await res.json();
+  const content = Array.isArray(data) ? data[0]?.generated_text : data?.generated_text;
+  if (!content) throw new Error("HuggingFace returned empty response");
+  return content as string;
+}
+
 // ─── Main fallback chain ─────────────────────────────────────────────────────
 
-export type AIProvider = "groq" | "gemini" | "openrouter" | "openai";
+export type AIProvider = "groq" | "gemini" | "openrouter" | "openai" | "claude" | "huggingface";
 
 export async function callAI(
   systemPrompt: string,
   userPrompt: string,
   maxTokens = 2000
 ): Promise<{ text: string; provider: AIProvider }> {
-  const order: AIProvider[] = ["groq", "gemini", "openrouter", "openai"];
+  const order: AIProvider[] = ["groq", "gemini", "openrouter", "openai", "claude", "huggingface"];
   const errors: string[] = [];
 
   for (const provider of order) {
@@ -177,6 +240,8 @@ export async function callAI(
       if (provider === "groq") text = await callGroq(systemPrompt, userPrompt, maxTokens);
       else if (provider === "gemini") text = await callGemini(systemPrompt, userPrompt, maxTokens);
       else if (provider === "openrouter") text = await callOpenRouter(systemPrompt, userPrompt, maxTokens);
+      else if (provider === "claude") text = await callClaude(systemPrompt, userPrompt, maxTokens);
+      else if (provider === "huggingface") text = await callHuggingFace(systemPrompt, userPrompt, maxTokens);
       else text = await callOpenAI(systemPrompt, userPrompt, maxTokens);
       console.log(`[Adaptly AI] Success via ${provider}`);
       return { text, provider };
@@ -529,6 +594,42 @@ Write 2-3 paragraphs. Return plain text only.`;
  * The AI produces clean SVG markup that renders directly in the browser —
  * no external image API required.
  */
+// ─── Topic-aware diagram type hints ─────────────────────────────────────────
+function getDiagramHint(subject: string, topic: string): string {
+  const s = subject.toLowerCase();
+  const t = topic.toLowerCase();
+  if (s === "mathematics" || s === "maths") {
+    if (t.includes("fraction") || t.includes("ratio")) return "Draw a clearly labelled fraction bar or pie chart divided into equal parts. Show numerator and denominator labels. Include a number line below.";
+    if (t.includes("pythagoras") || t.includes("triangle")) return "Draw a right-angled triangle with sides labelled a, b, c (hypotenuse). Include the formula a²+b²=c² in a box. Mark the right-angle symbol.";
+    if (t.includes("circle") || t.includes("circumference") || t.includes("area")) return "Draw a large circle with clearly labelled radius, diameter, circumference. Include formulae boxes for area (πr²) and circumference (2πr).";
+    if (t.includes("graph") || t.includes("linear") || t.includes("quadratic") || t.includes("axes")) return "Draw x and y axes with arrows, origin labelled O. Include gridlines. Plot a sample curve or line with at least 3 labelled points.";
+    if (t.includes("angle") || t.includes("polygon") || t.includes("shape")) return "Draw the relevant polygon with all angles labelled. Include angle sum in a callout box.";
+    if (t.includes("vector") || t.includes("transformation")) return "Draw a coordinate grid with vectors or transformation arrows clearly labelled with direction and magnitude.";
+    return "Draw a relevant mathematical diagram with clearly labelled axes, shapes, or number lines appropriate for this topic.";
+  }
+  if (s === "science" || s === "biology") {
+    if (t.includes("cell")) return "Draw an animal cell and a plant cell side by side. Label: nucleus, cell membrane, cytoplasm, mitochondria. For plant cell also: cell wall, chloroplast, vacuole.";
+    if (t.includes("circuit") || t.includes("electric")) return "Draw a simple series circuit with a battery, bulb, switch, and ammeter. Use standard circuit symbols. Label current direction with arrows.";
+    if (t.includes("atom") || t.includes("electron")) return "Draw a Bohr model atom with nucleus (protons/neutrons) and electron shells. Label each shell with electron count.";
+    if (t.includes("photosynthesis")) return "Draw a leaf cross-section showing chloroplasts, stomata, sunlight arrows, CO₂ in, O₂ out, and water uptake from roots.";
+    if (t.includes("skeleton") || t.includes("bone") || t.includes("muscle")) return "Draw a simplified human skeleton outline with at least 8 major bones labelled (skull, spine, ribs, femur, tibia, humerus, radius, pelvis).";
+    if (t.includes("digestive") || t.includes("digestion")) return "Draw the human digestive system from mouth to anus. Label: mouth, oesophagus, stomach, small intestine, large intestine, liver, pancreas.";
+    if (t.includes("heart") || t.includes("blood")) return "Draw the human heart with four chambers labelled. Show blood flow direction with arrows. Label aorta, pulmonary artery, vena cava.";
+    if (t.includes("wave") || t.includes("sound") || t.includes("light")) return "Draw a transverse wave with amplitude, wavelength, crest and trough clearly labelled. Include the wave equation v=fλ in a box.";
+    return "Draw an accurate, labelled scientific diagram relevant to this biology/science topic.";
+  }
+  if (s === "geography") {
+    if (t.includes("river") || t.includes("erosion")) return "Draw a river cross-section showing erosion, transportation, and deposition zones. Label: source, meander, oxbow lake, mouth, floodplain.";
+    if (t.includes("volcano") || t.includes("tectonic")) return "Draw a cross-section of a volcano with magma chamber, vent, crater, lava flow. Label tectonic plates below.";
+    if (t.includes("weather") || t.includes("climate")) return "Draw a weather front diagram showing warm front, cold front, precipitation zones, and wind direction arrows.";
+    return "Draw a clear geographical diagram, map, or cross-section relevant to this topic with all features labelled.";
+  }
+  if (s === "history") {
+    return "Draw a horizontal timeline with at least 5 key events labelled with dates. Use arrows and callout boxes for important turning points.";
+  }
+  return "Draw a clear, well-labelled educational diagram most relevant to this topic for UK school students.";
+}
+
 export async function aiGenerateDiagram(params: {
   subject: string;
   topic: string;
@@ -536,43 +637,55 @@ export async function aiGenerateDiagram(params: {
   diagramType?: string;
   sendNeed?: string;
 }): Promise<{ svg: string; caption: string; provider?: string }> {
-  const system = `You are an expert educational diagram creator. You produce clean, well-labelled SVG diagrams for UK school worksheets.
-Rules:
-- Return ONLY valid SVG markup starting with <svg and ending with </svg>. No JSON, no markdown, no explanation.
-- Use a viewBox of "0 0 600 400" and set width="100%" height="auto"
-- Use clear, readable fonts: font-family="Arial, sans-serif"
-- Use a white background rect covering the full viewBox
-- Label all parts clearly with text elements
-- Use simple shapes: rect, circle, ellipse, line, path, polygon, text
-- For science: draw accurate diagrams (cell, circuit, atom, etc.)
-- For maths: draw graphs, geometric shapes, number lines, etc.
-- For geography: draw simple maps, diagrams, cross-sections
-- For history: draw timelines, maps, or relevant illustrations
-- Make it educational and age-appropriate for Year ${params.yearGroup}
-- Keep it clean and printable (no gradients, keep colours simple)
-- SEND adaptation: ${params.sendNeed ? `Simplify labels for ${params.sendNeed} — use larger text (font-size 14+), fewer labels, clear arrows` : "Standard labelling"}
-After the SVG, on a NEW LINE starting with CAPTION:, write a one-sentence caption for the diagram.`;
+  const topicHint = params.diagramType || getDiagramHint(params.subject, params.topic);
+  const sendAdapt = params.sendNeed
+    ? `SEND adaptation (${params.sendNeed}): Use font-size 16+ for all labels. Use thick strokes (stroke-width 2.5+). Fewer labels — max 6. Use high-contrast colours. Add clear directional arrows.`
+    : "Standard labelling. Font-size minimum 13. Stroke-width minimum 1.5.";
 
-  const diagramTypeHint = params.diagramType
-    ? `Diagram type requested: ${params.diagramType}`
-    : `Choose the most relevant diagram type for this topic.`;
+  const system = `You are an expert educational SVG diagram creator for UK school worksheets.
+You produce CLEAN, ACCURATE, WELL-LABELLED SVG diagrams that print perfectly.
 
-  const user = `Create an educational SVG diagram for:
+STRICT RULES — follow every one:
+1. Return ONLY valid SVG markup. Start with <svg and end with </svg>. No JSON, no markdown, no explanation text.
+2. viewBox="0 0 600 420" width="100%" height="auto"
+3. First child: <rect width="600" height="420" fill="white"/> (white background)
+4. font-family="Arial, sans-serif" on ALL text elements
+5. Use ONLY these SVG elements: rect, circle, ellipse, line, path, polygon, polyline, text, g, defs, marker
+6. Shapes: use fill="none" stroke="#1a1a1a" for outlines. Use fill="#e8f4fd" or similar pale fills for shapes.
+7. Labels: text fill="#1a1a1a", font-size between 13 and 18
+8. Arrows: use <marker> with markerEnd to draw arrowheads on lines
+9. NO external images, NO foreignObject, NO script, NO style blocks
+10. Keep it PRINTABLE: no gradients, no shadows, max 4 colours
+11. Make it ACCURATE and EDUCATIONAL — correct shapes, correct labels
+12. ${sendAdapt}
+
+After the closing </svg>, on a NEW LINE write: CAPTION: [one sentence description of the diagram]`;
+
+  const user = `Draw this educational diagram for UK school students:
 Subject: ${params.subject}
 Topic: ${params.topic}
 Year Group: ${params.yearGroup}
-${diagramTypeHint}
 
-Output the SVG first, then CAPTION: [one sentence description]`;
+Diagram specification: ${topicHint}
 
-  const { text, provider } = await callAI(system, user, 2500);
+Remember: SVG only, then CAPTION: on a new line.`;
+
+  const { text, provider } = await callAI(system, user, 3000);
 
   // Extract SVG and caption
   const svgMatch = text.match(/<svg[\s\S]*?<\/svg>/i);
   const captionMatch = text.match(/CAPTION:\s*(.+)/i);
 
   if (!svgMatch) {
-    throw new Error("AI did not return valid SVG");
+    // Fallback: generate a simple placeholder SVG
+    const fallbackSvg = `<svg viewBox="0 0 600 420" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg">
+  <rect width="600" height="420" fill="white"/>
+  <rect x="20" y="20" width="560" height="380" fill="none" stroke="#6366f1" stroke-width="2" rx="8"/>
+  <text x="300" y="200" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#6366f1" font-weight="bold">${params.topic}</text>
+  <text x="300" y="230" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#666">${params.subject} — ${params.yearGroup}</text>
+  <text x="300" y="260" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#999">Diagram placeholder — regenerate to get AI diagram</text>
+</svg>`;
+    return { svg: fallbackSvg, caption: `${params.topic} diagram`, provider };
   }
 
   const svg = svgMatch[0];

@@ -11,7 +11,7 @@ export default function DPA() {
         <div className="flex items-start justify-between mb-6">
           <div>
             <h1 className="text-3xl font-bold">Data Processing Agreement</h1>
-            <p className="text-muted-foreground mt-1 text-sm">For schools using SEND Assistant · March 2026</p>
+            <p className="text-muted-foreground mt-1 text-sm">For schools using Adaptly · March 2026</p>
           </div>
           <Button variant="outline" size="sm" onClick={() => window.print()} className="shrink-0">
             <Download className="w-4 h-4 mr-1" />Print / Save PDF
@@ -21,10 +21,10 @@ export default function DPA() {
         <div className="prose prose-sm max-w-none dark:prose-invert">
           <p>This Data Processing Agreement ("DPA") is entered into between:</p>
           <ul>
-            <li><strong>Controller</strong>: The school or Multi-Academy Trust ("School") subscribing to SEND Assistant</li>
-            <li><strong>Processor</strong>: SEND Assistant ("we", "us")</li>
+            <li><strong>Controller</strong>: The school or Multi-Academy Trust ("School") subscribing to Adaptly</li>
+            <li><strong>Processor</strong>: Adaptly ("we", "us")</li>
           </ul>
-          <p>This DPA forms part of the Terms of Service and governs the processing of personal data by SEND Assistant on behalf of the School.</p>
+          <p>This DPA forms part of the Terms of Service and governs the processing of personal data by Adaptly on behalf of the School.</p>
 
           <h2>1. Definitions</h2>
           <p>"Personal Data", "Processing", "Data Subject", "Controller", and "Processor" have the meanings given in the UK GDPR.</p>
@@ -34,7 +34,7 @@ export default function DPA() {
 
           <h2>3. Nature and Purpose of Processing</h2>
           <ul>
-            <li>Providing the SEND Assistant platform and its features</li>
+            <li>Providing the Adaptly platform and its features</li>
             <li>Storing and retrieving pupil profiles, worksheets, and attendance records</li>
             <li>Generating AI-assisted educational content</li>
             <li>Sending safeguarding notifications to the DSL</li>
@@ -67,7 +67,7 @@ export default function DPA() {
             <li><strong>Hosting provider</strong>: UK-based server infrastructure</li>
             <li><strong>Email service</strong>: Transactional email delivery (SMTP)</li>
           </ul>
-          <p>AI providers (Groq, Google, OpenAI, OpenRouter) are used only with your own API key and do not receive pupil personal data from SEND Assistant.</p>
+          <p>AI providers (Groq, Google, OpenAI, OpenRouter) are used only with your own API key and do not receive pupil personal data from Adaptly.</p>
 
           <h2>7. International Transfers</h2>
           <p>All personal data is stored and processed in the United Kingdom. We do not transfer personal data outside the UK/EEA.</p>
@@ -86,7 +86,7 @@ export default function DPA() {
           <p>We will notify the School within 72 hours of becoming aware of a personal data breach. Notification will include the nature of the breach, categories and approximate number of data subjects affected, and measures taken or proposed.</p>
 
           <h2>10. DPIA Support</h2>
-          <p>We have completed a Data Protection Impact Assessment (DPIA) for SEND Assistant. A copy is available on request from <a href="mailto:privacy@sendassistant.app">privacy@sendassistant.app</a>.</p>
+          <p>We have completed a Data Protection Impact Assessment (DPIA) for Adaptly. A copy is available on request from <a href="mailto:privacy@adaptly.co.uk">privacy@adaptly.co.uk</a>.</p>
 
           <h2>11. Termination</h2>
           <p>Upon termination of the subscription, the School may export all data for 30 days. After this period, all personal data will be permanently deleted from our systems, except audit logs which are retained for 7 years as required by law.</p>
@@ -94,7 +94,7 @@ export default function DPA() {
           <h2>12. Governing Law</h2>
           <p>This DPA is governed by the laws of England and Wales.</p>
 
-          <p className="text-muted-foreground text-xs mt-8">To execute this DPA formally for your school, please email <a href="mailto:legal@sendassistant.app">legal@sendassistant.app</a> with your school name and URN.</p>
+          <p className="text-muted-foreground text-xs mt-8">To execute this DPA formally for your school, please email <a href="mailto:legal@adaptly.co.uk">legal@adaptly.co.uk</a> with your school name and URN.</p>
         </div>
       </div>
     </div>

@@ -29,7 +29,7 @@ export default function NotFound() {
           </Button>
         </div>
         <p className="text-xs text-muted-foreground mt-8">
-          SEND Assistant · <a href="mailto:support@sendassistant.app" className="hover:underline">support@sendassistant.app</a>
+          Adaptly · <a href="mailto:support@adaptly.co.uk" className="hover:underline">support@adaptly.co.uk</a>
         </p>
       </motion.div>
     </div>

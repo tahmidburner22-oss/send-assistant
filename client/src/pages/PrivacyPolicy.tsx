@@ -12,12 +12,12 @@ export default function PrivacyPolicy() {
           <h1>Privacy Policy</h1>
           <p className="text-muted-foreground text-sm">Last updated: March 2026 · Version 1.0</p>
 
-          <p>This Privacy Policy explains how <strong>SEND Assistant</strong> ("we", "us", "our") collects, uses, and protects personal data when you use our platform. We are committed to full compliance with the <strong>UK General Data Protection Regulation (UK GDPR)</strong>, the <strong>Data Protection Act 2018</strong>, and the <strong>Privacy and Electronic Communications Regulations (PECR)</strong>.</p>
+          <p>This Privacy Policy explains how <strong>Adaptly</strong> ("we", "us", "our") collects, uses, and protects personal data when you use our platform. We are committed to full compliance with the <strong>UK General Data Protection Regulation (UK GDPR)</strong>, the <strong>Data Protection Act 2018</strong>, and the <strong>Privacy and Electronic Communications Regulations (PECR)</strong>.</p>
 
-          <p>We have written this policy in plain English so it is easy to understand. If you have any questions, please contact us at <a href="mailto:privacy@sendassistant.app">privacy@sendassistant.app</a>.</p>
+          <p>We have written this policy in plain English so it is easy to understand. If you have any questions, please contact us at <a href="mailto:privacy@adaptly.co.uk">privacy@adaptly.co.uk</a>.</p>
 
           <h2>1. Who We Are</h2>
-          <p>SEND Assistant is a software-as-a-service (SaaS) platform designed for UK schools and Multi-Academy Trusts (MATs) to support Special Educational Needs and Disabilities (SEND) education. We act as a <strong>data processor</strong> on behalf of schools (the data controllers) when processing pupil data.</p>
+          <p>Adaptly is a software-as-a-service (SaaS) platform designed for UK schools and Multi-Academy Trusts (MATs) to support Special Educational Needs and Disabilities (SEND) education. We act as a <strong>data processor</strong> on behalf of schools (the data controllers) when processing pupil data.</p>
 
           <h2>2. What Data We Collect</h2>
           <h3>Account holders (teachers, SENCOs, administrators)</h3>
@@ -42,7 +42,7 @@ export default function PrivacyPolicy() {
 
           <h2>3. How We Use Your Data</h2>
           <ul>
-            <li>To provide and improve the SEND Assistant platform</li>
+            <li>To provide and improve the Adaptly platform</li>
             <li>To authenticate users and maintain account security</li>
             <li>To generate AI-assisted educational content</li>
             <li>To send transactional emails (password resets, notifications)</li>
@@ -62,7 +62,7 @@ export default function PrivacyPolicy() {
           <p>All data is stored and processed in the <strong>United Kingdom</strong>. We do not transfer personal data outside the UK/EEA. Our servers are hosted in UK data centres.</p>
 
           <h2>6. AI and Third-Party Services</h2>
-          <p>SEND Assistant uses AI language models to generate educational content. When you use AI features:</p>
+          <p>Adaptly uses AI language models to generate educational content. When you use AI features:</p>
           <ul>
             <li>Your prompts are sent to the AI provider you configure (Groq, Google Gemini, OpenAI, or OpenRouter) using <strong>your own API key</strong></li>
             <li>We do not share pupil personal data with AI providers</li>
@@ -88,7 +88,7 @@ export default function PrivacyPolicy() {
             <li><strong>Data portability</strong> — receive your data in a machine-readable format</li>
             <li><strong>Object</strong> to processing based on legitimate interests</li>
           </ul>
-          <p>To exercise any of these rights, email <a href="mailto:privacy@sendassistant.app">privacy@sendassistant.app</a>. We will respond within 30 days.</p>
+          <p>To exercise any of these rights, email <a href="mailto:privacy@adaptly.co.uk">privacy@adaptly.co.uk</a>. We will respond within 30 days.</p>
 
           <h2>9. Cookies</h2>
           <p>We use the following cookies:</p>
@@ -113,7 +113,7 @@ export default function PrivacyPolicy() {
           <p>In the event of a personal data breach, we will notify affected schools within 72 hours and the ICO where required by law.</p>
 
           <h2>12. Contact and Complaints</h2>
-          <p>Data Protection contact: <a href="mailto:privacy@sendassistant.app">privacy@sendassistant.app</a></p>
+          <p>Data Protection contact: <a href="mailto:privacy@adaptly.co.uk">privacy@adaptly.co.uk</a></p>
           <p>If you are unhappy with how we handle your data, you have the right to complain to the <strong>Information Commissioner's Office (ICO)</strong>: <a href="https://ico.org.uk" target="_blank" rel="noopener noreferrer">ico.org.uk</a> or call 0303 123 1113.</p>
         </div>
       </div>
