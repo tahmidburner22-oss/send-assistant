@@ -74,6 +74,10 @@ router.post("/generate", requireAuth, async (req: Request, res: Response) => {
       response = await callOpenAI(systemPrompt || "", prompt, apiKey, model || "gpt-4o-mini", maxTokens);
     } else if (provider === "openrouter") {
       response = await callOpenRouter(systemPrompt || "", prompt, apiKey, model, maxTokens);
+    } else if (provider === "claude") {
+      response = await callClaude(systemPrompt || "", prompt, apiKey, maxTokens);
+    } else if (provider === "huggingface") {
+      response = await callHuggingFace(systemPrompt || "", prompt, apiKey, maxTokens);
     } else {
       return res.status(400).json({ error: "Unknown provider" });
     }
@@ -170,25 +174,102 @@ async function callOpenAI(system: string, user: string, key: string, model: stri
 }
 
 async function callOpenRouter(system: string, user: string, key: string, model: string, maxTokens: number): Promise<string> {
-  const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+  // Updated to currently-available free models (verified March 2026)
+  const fallbackModels = [
+    model,
+    "nvidia/nemotron-nano-9b-v2:free",
+    "liquid/lfm-2.5-1.2b-instruct:free",
+    "arcee-ai/trinity-mini:free",
+    "mistralai/mistral-small-3.1-24b-instruct:free",
+  ].filter(Boolean);
+
+  for (const m of fallbackModels) {
+    try {
+      const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${key}`,
+          "HTTP-Referer": "https://adaptly.co.uk",
+          "X-Title": "Adaptly",
+        },
+        body: JSON.stringify({
+          model: m,
+          messages: [
+            { role: "system", content: system || "You are a helpful SEND education assistant." },
+            { role: "user", content: user },
+          ],
+          max_tokens: maxTokens,
+        }),
+      });
+      if (!res.ok) continue;
+      const data = await res.json() as any;
+      const content = data?.choices?.[0]?.message?.content;
+      if (content) return content;
+    } catch {
+      continue;
+    }
+  }
+  throw new Error("OpenRouter: all models failed");
+}
+
+async function callClaude(system: string, user: string, key: string, maxTokens: number): Promise<string> {
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${key}`,
-      "HTTP-Referer": "https://sendassistant.app",
+      "x-api-key": key,
+      "anthropic-version": "2023-06-01",
     },
     body: JSON.stringify({
-      model: model || "meta-llama/llama-3.3-70b-instruct:free",
-      messages: [
-        { role: "system", content: system || "You are a helpful SEND education assistant." },
-        { role: "user", content: user },
-      ],
+      model: "claude-3-haiku-20240307",
       max_tokens: maxTokens,
+      system: system || "You are a helpful SEND education assistant.",
+      messages: [{ role: "user", content: user }],
     }),
   });
-  if (!res.ok) throw new Error(`OpenRouter ${res.status}: ${await res.text()}`);
+  if (!res.ok) throw new Error(`Claude ${res.status}: ${await res.text()}`);
   const data = await res.json() as any;
-  return data.choices[0].message.content;
+  return data.content[0].text;
+}
+
+async function callHuggingFace(system: string, user: string, key: string, maxTokens: number): Promise<string> {
+  // Updated to new HuggingFace Router endpoint (api-inference.huggingface.co deprecated)
+  const models = [
+    "Qwen/Qwen2.5-72B-Instruct",
+    "meta-llama/Llama-3.1-8B-Instruct",
+    "HuggingFaceH4/zephyr-7b-beta",
+  ];
+  for (const model of models) {
+    try {
+      const res = await fetch(
+        `https://router.huggingface.co/hf-inference/models/${model}/v1/chat/completions`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${key}`,
+          },
+          body: JSON.stringify({
+            model,
+            messages: [
+              { role: "system", content: system || "You are a helpful SEND education assistant." },
+              { role: "user", content: user },
+            ],
+            max_tokens: maxTokens,
+            temperature: 0.7,
+          }),
+        }
+      );
+      if (!res.ok) continue;
+      const data = await res.json() as any;
+      const content = data?.choices?.[0]?.message?.content;
+      if (content) return content;
+    } catch {
+      continue;
+    }
+  }
+  throw new Error("HuggingFace: all models failed");
 }
 
 export default router;
