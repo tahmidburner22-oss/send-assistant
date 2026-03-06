@@ -83,12 +83,21 @@ app.get("/api/health", (_, res) => {
 });
 
 // ── Serve static frontend in production ───────────────────────────────────────
-const distPath = path.join(__dirname, "..", "dist");
-if (!isDev && fs.existsSync(distPath)) {
+// In production, __dirname = dist/server/ so the built frontend is at dist/server/../
+// i.e. one level up from __dirname (the dist/ folder itself)
+const distPath = path.join(__dirname, "..");
+const indexHtml = path.join(distPath, "index.html");
+if (!isDev && fs.existsSync(indexHtml)) {
+  console.log(`📁 Serving static frontend from: ${distPath}`);
   app.use(express.static(distPath));
-  app.get("*", (_, res) => {
-    res.sendFile(path.join(distPath, "index.html"));
+  // SPA fallback — all non-API routes serve index.html
+  app.get("*", (req, res) => {
+    if (!req.path.startsWith("/api")) {
+      res.sendFile(indexHtml);
+    }
   });
+} else {
+  console.warn(`⚠️  Frontend not found at ${distPath} (isDev=${isDev})`);
 }
 
 // ── Error handler ─────────────────────────────────────────────────────────────
