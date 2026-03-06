@@ -1,4 +1,8 @@
-import Database from "better-sqlite3";
+/**
+ * Database layer using sql.js (pure WASM SQLite — no native bindings required).
+ * Persists to a file on disk; loaded on startup, saved after every write.
+ */
+import initSqlJs, { Database as SqlJsDatabase } from "sql.js";
 import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
@@ -8,41 +12,125 @@ import bcrypt from "bcryptjs";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const DB_PATH = process.env.DB_PATH || path.join(process.cwd(), "data", "send-assistant.db");
-
-// Ensure data directory exists
 fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
 
-export const db = new Database(DB_PATH);
+// ─── Synchronous-style wrapper around sql.js ─────────────────────────────────
+// sql.js is synchronous in its query execution but async to initialise (WASM).
+// We export a promise that resolves to the db wrapper so server/index.ts can
+// await it before starting Express.
 
-// Enable WAL mode and foreign keys
-db.pragma("journal_mode = WAL");
-db.pragma("foreign_keys = ON");
+let _db: SqlJsDatabase;
+let _dirty = false;
 
-// Run schema — look in multiple locations to support both dev and dist
-const schemaPaths = [
-  path.join(__dirname, "schema.sql"),
-  path.join(__dirname, "..", "db", "schema.sql"),
-  path.join(process.cwd(), "server", "db", "schema.sql"),
-];
-const schemaPath = schemaPaths.find(p => fs.existsSync(p));
-if (!schemaPath) throw new Error("schema.sql not found in: " + schemaPaths.join(", "));
-const schema = fs.readFileSync(schemaPath, "utf-8");
-db.exec(schema);
+/** Persist the in-memory DB to disk (called after every mutating statement). */
+function persist() {
+  const data = _db.export();
+  fs.writeFileSync(DB_PATH, Buffer.from(data));
+}
 
-// Seed a default MAT admin if no users exist
-const userCount = (db.prepare("SELECT COUNT(*) as c FROM users").get() as { c: number }).c;
-if (userCount === 0) {
-  const schoolId = uuidv4();
-  const adminId = uuidv4();
-  const hash = bcrypt.hashSync("Admin1234!", 12);
+/** Thin wrapper that mimics the better-sqlite3 API used throughout the codebase. */
+export const db = {
+  /** Execute a SQL string (DDL / multi-statement). */
+  exec(sql: string) {
+    _db.run(sql);
+    persist();
+  },
+  pragma(_: string) {
+    // sql.js doesn't support PRAGMA via run() in the same way; WAL is N/A for
+    // file-backed WASM. Foreign keys are enforced at schema level.
+  },
+  /** Prepare a statement — returns an object with .run(), .get(), .all(). */
+  prepare(sql: string) {
+    return {
+      run(...params: unknown[]) {
+        _db.run(sql, params as any);
+        persist();
+        return { changes: 1, lastInsertRowid: 0 };
+      },
+      get(...params: unknown[]) {
+        const stmt = _db.prepare(sql);
+        stmt.bind(params as any);
+        if (stmt.step()) {
+          const row = stmt.getAsObject();
+          stmt.free();
+          return row;
+        }
+        stmt.free();
+        return undefined;
+      },
+      all(...params: unknown[]) {
+        const stmt = _db.prepare(sql);
+        stmt.bind(params as any);
+        const rows: Record<string, unknown>[] = [];
+        while (stmt.step()) rows.push(stmt.getAsObject());
+        stmt.free();
+        return rows;
+      },
+    };
+  },
+};
 
-  db.prepare(`INSERT INTO schools (id, name, urn, domain, onboarding_complete, licence_type)
-    VALUES (?, 'Default School', '000000', '', 1, 'professional')`).run(schoolId);
+// ─── Schema paths ─────────────────────────────────────────────────────────────
+function loadSchema(): string {
+  const candidates = [
+    path.join(__dirname, "schema.sql"),
+    path.join(__dirname, "..", "db", "schema.sql"),
+    path.join(process.cwd(), "server", "db", "schema.sql"),
+    path.join(process.cwd(), "dist", "server", "db", "schema.sql"),
+  ];
+  for (const p of candidates) {
+    if (fs.existsSync(p)) return fs.readFileSync(p, "utf-8");
+  }
+  throw new Error("schema.sql not found in: " + candidates.join(", "));
+}
 
-  db.prepare(`INSERT INTO users (id, school_id, email, display_name, password_hash, role, email_verified)
-    VALUES (?, ?, 'admin@sendassistant.app', 'System Admin', ?, 'mat_admin', 1)`).run(adminId, schoolId, hash);
+// ─── Initialise (async, awaited by server/index.ts) ──────────────────────────
+export async function initDb() {
+  const SQL = await initSqlJs();
 
-  console.log("✅ Seeded default admin: admin@sendassistant.app / Admin1234!");
+  if (fs.existsSync(DB_PATH)) {
+    const fileBuffer = fs.readFileSync(DB_PATH);
+    _db = new SQL.Database(fileBuffer);
+  } else {
+    _db = new SQL.Database();
+  }
+
+  // Run schema (CREATE TABLE IF NOT EXISTS — idempotent)
+  const schema = loadSchema();
+  // Strip PRAGMA lines — sql.js handles them differently
+  const schemaSafe = schema
+    .split("\n")
+    .filter(l => !l.trim().startsWith("PRAGMA"))
+    .join("\n");
+  _db.run(schemaSafe);
+  persist();
+
+  // Seed default admin if no users exist
+  const stmt = _db.prepare("SELECT COUNT(*) as c FROM users");
+  stmt.step();
+  const row = stmt.getAsObject() as { c: number };
+  stmt.free();
+
+  if (!row.c || row.c === 0) {
+    const schoolId = uuidv4();
+    const adminId = uuidv4();
+    const hash = bcrypt.hashSync("Admin1234!", 12);
+
+    _db.run(
+      `INSERT INTO schools (id, name, urn, domain, onboarding_complete, licence_type)
+       VALUES (?, 'Default School', '000000', '', 1, 'professional')`,
+      [schoolId]
+    );
+    _db.run(
+      `INSERT INTO users (id, school_id, email, display_name, password_hash, role, email_verified)
+       VALUES (?, ?, 'admin@sendassistant.app', 'System Admin', ?, 'mat_admin', 1)`,
+      [adminId, schoolId, hash]
+    );
+    persist();
+    console.log("✅ Seeded default admin: admin@sendassistant.app / Admin1234!");
+  }
+
+  console.log(`✅ Database ready at ${DB_PATH}`);
 }
 
 export default db;

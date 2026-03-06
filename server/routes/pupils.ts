@@ -105,19 +105,14 @@ router.post("/bulk-import", requireAuth, requireMinRole("school_admin"), (req: R
   const insert = db.prepare(`INSERT OR IGNORE INTO pupils (id, school_id, name, year_group, send_need, code, upn, created_by)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`);
 
-  const insertMany = db.transaction((rows: typeof pupils) => {
-    let count = 0;
-    for (const p of rows) {
-      if (!p.name) continue;
-      const id = uuidv4();
-      const code = "P" + Math.random().toString(36).slice(2, 7).toUpperCase();
-      insert.run(id, req.user!.schoolId, p.name, p.yearGroup || null, p.sendNeed || null, code, p.upn || null, req.user!.id);
-      count++;
-    }
-    return count;
-  });
-
-  const count = insertMany(pupils);
+  let count = 0;
+  for (const p of pupils) {
+    if (!p.name) continue;
+    const id = uuidv4();
+    const code = "P" + Math.random().toString(36).slice(2, 7).toUpperCase();
+    insert.run(id, req.user!.schoolId, p.name, p.yearGroup || null, p.sendNeed || null, code, p.upn || null, req.user!.id);
+    count++;
+  }
   auditLog(req.user!.id, req.user!.schoolId ?? null, "pupils.bulk_imported", "school", req.user!.schoolId ?? undefined, { count }, req.ip ?? undefined);
   res.json({ message: `${count} pupils imported` });
 });
