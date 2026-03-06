@@ -29,8 +29,16 @@ app.use(helmet({
       styleSrc: ["'self'", "'unsafe-inline'", "fonts.googleapis.com"],
       fontSrc: ["'self'", "fonts.gstatic.com"],
       imgSrc: ["'self'", "data:", "https:"],
-      connectSrc: ["'self'", "https://api.groq.com", "https://generativelanguage.googleapis.com",
-        "https://api.openai.com", "https://openrouter.ai", "https://accounts.google.com"],
+      connectSrc: [
+        "'self'",
+        "https://api.groq.com",
+        "https://generativelanguage.googleapis.com",
+        "https://api.openai.com",
+        "https://openrouter.ai",
+        "https://api.anthropic.com",
+        "https://router.huggingface.co",
+        "https://accounts.google.com",
+      ],
       frameSrc: ["accounts.google.com"],
     },
   },
@@ -110,7 +118,7 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
 import { initDb } from "./db/index.js";
 initDb().then(() => {
   app.listen(PORT, "0.0.0.0", () => {
-    console.log(`🚀 SEND Assistant API running on http://localhost:${PORT}`);
+    console.log(`🚀 Adaptly API running on http://localhost:${PORT}`);
     console.log(`   Environment: ${process.env.NODE_ENV || "development"}`);
   });
 }).catch(err => {
