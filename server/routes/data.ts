@@ -148,4 +148,68 @@ router.get("/analytics", requireAuth, (req: Request, res: Response) => {
   res.json({ pupils, worksheets, stories, users, openIncidents: incidents });
 });
 
+// ── Behaviour Records ────────────────────────────────────────────────────────
+router.get("/behaviour", requireAuth, (req: Request, res: Response) => {
+  const schoolId = req.user!.schoolId;
+  const pupilId = req.query.pupilId as string | undefined;
+  let rows;
+  if (pupilId) {
+    rows = db.prepare(
+      `SELECT br.*, p.name as pupil_name, u.display_name as recorded_by_name
+       FROM behaviour_records br
+       LEFT JOIN pupils p ON br.pupil_id = p.id
+       LEFT JOIN users u ON br.recorded_by = u.id
+       WHERE br.school_id = ? AND br.pupil_id = ?
+       ORDER BY br.date DESC, br.created_at DESC LIMIT 200`
+    ).all(schoolId, pupilId);
+  } else {
+    rows = db.prepare(
+      `SELECT br.*, p.name as pupil_name, u.display_name as recorded_by_name
+       FROM behaviour_records br
+       LEFT JOIN pupils p ON br.pupil_id = p.id
+       LEFT JOIN users u ON br.recorded_by = u.id
+       WHERE br.school_id = ?
+       ORDER BY br.date DESC, br.created_at DESC LIMIT 500`
+    ).all(schoolId);
+  }
+  res.json(rows);
+});
+
+router.post("/behaviour", requireAuth, (req: Request, res: Response) => {
+  const { pupilId, type, category, description, actionTaken, date } = req.body;
+  if (!pupilId || !type || !date) return res.status(400).json({ error: "pupilId, type, date required" });
+  const id = `br_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  db.prepare(
+    `INSERT INTO behaviour_records (id, school_id, pupil_id, recorded_by, type, category, description, action_taken, date, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))`
+  ).run(id, req.user!.schoolId, pupilId, req.user!.id, type, category || null, description || null, actionTaken || null, date);
+  auditLog(req.user!.id, req.user!.schoolId, "behaviour.created", "behaviour_record", id, { pupilId, type }, req.ip);
+  res.status(201).json({ id, message: "Behaviour record created" });
+});
+
+router.delete("/behaviour/:id", requireAuth, (req: Request, res: Response) => {
+  const record = db.prepare("SELECT * FROM behaviour_records WHERE id=? AND school_id=?").get(req.params.id, req.user!.schoolId);
+  if (!record) return res.status(404).json({ error: "Not found" });
+  db.prepare("DELETE FROM behaviour_records WHERE id=?").run(req.params.id);
+  res.json({ message: "Deleted" });
+});
+
+// ── Parent Portal: behaviour records for a pupil ───────────────────────────
+router.get("/parent/behaviour/:pupilId", requireAuth, (req: Request, res: Response) => {
+  const schoolId = req.user!.schoolId;
+  const { pupilId } = req.params;
+  const pupil = db.prepare("SELECT * FROM pupils WHERE id=? AND school_id=?").get(pupilId, schoolId);
+  if (!pupil) return res.status(404).json({ error: "Pupil not found" });
+  const rows = db.prepare(
+    `SELECT br.id, br.type, br.category, br.description, br.action_taken, br.date,
+            u.display_name as recorded_by_name
+     FROM behaviour_records br
+     LEFT JOIN users u ON br.recorded_by = u.id
+     WHERE br.pupil_id = ? AND br.school_id = ?
+     ORDER BY br.date DESC LIMIT 100`
+  ).all(pupilId, schoolId);
+  res.json(rows);
+});
+
 export default router;
+

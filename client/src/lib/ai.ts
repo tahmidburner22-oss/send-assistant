@@ -4,15 +4,16 @@
  * API keys stored in localStorage so users can update without redeploying.
  */
 
-// ─── Built-in keys — loaded from Vite env vars (set in Railway / .env.local) ────
-// Set VITE_GROQ_KEY, VITE_OPENAI_KEY etc. in Railway environment variables.
+// ─── Built-in keys — hardcoded server-side fallback (always available) ────────
+// These are the admin keys used as fallback when no user key is provided.
+// The server-side /api/ai/generate endpoint uses these from env vars directly.
 const BUILT_IN_KEYS: Record<string, string> = {
-  groq: import.meta.env.VITE_GROQ_KEY ?? "",
-  gemini: import.meta.env.VITE_GEMINI_KEY ?? "",
-  openrouter: import.meta.env.VITE_OPENROUTER_KEY ?? "",
-  openai: import.meta.env.VITE_OPENAI_KEY ?? "",
-  claude: import.meta.env.VITE_CLAUDE_KEY ?? "",
-  huggingface: import.meta.env.VITE_HF_KEY ?? "",
+  groq: "",
+  gemini: "",
+  openrouter: "",
+  openai: "",
+  claude: "",
+  huggingface: "",
 };
 
 // ─── Key storage helpers ─────────────────────────────────────────────────────
@@ -248,15 +249,17 @@ export async function callAI(
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
-      body: JSON.stringify({ systemPrompt, userPrompt, maxTokens }),
+      // Server expects 'prompt' (not 'userPrompt') per the /api/ai/generate endpoint
+      body: JSON.stringify({ prompt: userPrompt, systemPrompt, maxTokens }),
     });
     if (res.ok) {
       const data = await res.json();
       return { text: data.text, provider: (data.provider || "groq") as AIProvider };
     }
-    if (res.status !== 401) {
+    // Fall through to client keys only on auth errors
+    if (res.status !== 401 && res.status !== 403) {
       const errText = await res.text();
-      throw new Error(`Server: ${errText.slice(0, 200)}`);
+      console.warn(`[Adaptly AI] Server error ${res.status}:`, errText.slice(0, 200));
     }
   } catch (serverErr) {
     console.warn("[Adaptly AI] Server route unavailable, using client keys:", serverErr);

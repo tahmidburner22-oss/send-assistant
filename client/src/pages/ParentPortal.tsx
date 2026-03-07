@@ -53,6 +53,8 @@ export default function ParentPortal() {
   const { children, addSubmission, updateAssignment, attendanceRecords } = useApp();
   const [code, setCode] = useState("");
   const [child, setChild] = useState<Child | null>(null);
+  const [behaviourRecords, setBehaviourRecords] = useState<any[]>([]);
+  const [behaviourLoading, setBehaviourLoading] = useState(false);
   const [viewContent, setViewContent] = useState<{ title: string; content: string } | null>(null);
   const [showSubmit, setShowSubmit] = useState(false);
   const [submitTitle, setSubmitTitle] = useState("");
@@ -79,6 +81,15 @@ export default function ParentPortal() {
     if (found) {
       setChild(found);
       toast.success(`Welcome! Viewing ${found.name}'s portal.`);
+      // Fetch behaviour records for this pupil from the server
+      setBehaviourLoading(true);
+      fetch(`/api/data/parent/behaviour/${found.id}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      })
+        .then(r => r.ok ? r.json() : [])
+        .then(data => { setBehaviourRecords(Array.isArray(data) ? data : []); })
+        .catch(() => setBehaviourRecords([]))
+        .finally(() => setBehaviourLoading(false));
     } else {
       toast.error("Invalid code. Please check and try again.");
     }
@@ -380,13 +391,17 @@ export default function ParentPortal() {
                 <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">
                   <span className="text-lg">📊</span> Recent Behaviour Log
                 </h3>
-                {((child as any).behaviourEvents || []).length === 0 ? (
+                {behaviourLoading ? (
+                  <div className="text-center py-6">
+                    <p className="text-sm text-muted-foreground">Loading behaviour records...</p>
+                  </div>
+                ) : behaviourRecords.length === 0 ? (
                   <div className="text-center py-6">
                     <div className="text-3xl mb-2">🌟</div>
                     <p className="text-sm font-medium text-foreground">No behaviour events recorded</p>
                     <p className="text-xs text-muted-foreground mt-1">Positive and other events logged by staff will appear here.</p>
                   </div>
-                ) : ((child as any).behaviourEvents || []).slice(0, 10).map((event: any, i: number) => (
+                ) : behaviourRecords.slice(0, 20).map((event: any, i: number) => (
                   <div key={i} className={`flex items-start gap-3 p-2 rounded-lg mb-2 ${
                     event.type === 'positive' ? 'bg-emerald-50 border border-emerald-200' :
                     event.type === 'concern' ? 'bg-amber-50 border border-amber-200' :
@@ -397,10 +412,12 @@ export default function ParentPortal() {
                     </span>
                     <div className="flex-1">
                       <div className="flex items-center justify-between">
-                        <p className="text-xs font-semibold">{event.title || event.type}</p>
-                        <p className="text-xs text-muted-foreground">{event.date ? new Date(event.date).toLocaleDateString() : ''}</p>
+                        <p className="text-xs font-semibold capitalize">{event.category || event.type}</p>
+                        <p className="text-xs text-muted-foreground">{event.date ? new Date(event.date).toLocaleDateString('en-GB') : ''}</p>
                       </div>
                       {event.description && <p className="text-xs text-muted-foreground mt-0.5">{event.description}</p>}
+                      {event.action_taken && <p className="text-xs text-blue-600 mt-0.5">Action: {event.action_taken}</p>}
+                      {event.recorded_by_name && <p className="text-xs text-muted-foreground mt-0.5">Recorded by: {event.recorded_by_name}</p>}
                     </div>
                   </div>
                 ))}
