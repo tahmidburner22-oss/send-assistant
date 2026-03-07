@@ -137,7 +137,7 @@ export async function initDb() {
     { provider: "openai",      envKey: "OPENAI_API_KEY",      model: "gpt-4o-mini" },
     { provider: "openrouter",  envKey: "OPENROUTER_API_KEY",  model: "nvidia/nemotron-nano-9b-v2:free" },
     { provider: "claude",      envKey: "CLAUDE_API_KEY",      model: "claude-3-haiku-20240307" },
-    { provider: "huggingface", envKey: "HF_API_KEY",          model: "Qwen/Qwen2.5-72B-Instruct" },
+    { provider: "huggingface", envKey: "HUGGINGFACE_API_KEY",  model: "Qwen/Qwen2.5-72B-Instruct" },
   ];
   for (const { provider, envKey, model } of adminKeyProviders) {
     const key = process.env[envKey];
