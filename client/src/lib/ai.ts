@@ -242,15 +242,31 @@ export async function callAI(
   userPrompt: string,
   maxTokens = 2000
 ): Promise<{ text: string; provider: AIProvider }> {
+  // Primary: route through server so admin API keys are used automatically for all users
+  try {
+    const res = await fetch("/api/ai/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ systemPrompt, userPrompt, maxTokens }),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      return { text: data.text, provider: (data.provider || "groq") as AIProvider };
+    }
+    if (res.status !== 401) {
+      const errText = await res.text();
+      throw new Error(`Server: ${errText.slice(0, 200)}`);
+    }
+  } catch (serverErr) {
+    console.warn("[Adaptly AI] Server route unavailable, using client keys:", serverErr);
+  }
+  // Fallback: locally stored keys (offline / dev)
   const order: AIProvider[] = ["groq", "gemini", "openrouter", "openai", "claude", "huggingface"];
   const errors: string[] = [];
-
   for (const provider of order) {
     const key = getStoredKey(provider as keyof typeof AI_KEY_STORAGE);
-    if (!key) {
-      errors.push(`${provider}: no key`);
-      continue;
-    }
+    if (!key) { errors.push(`${provider}: no key`); continue; }
     try {
       let text: string;
       if (provider === "groq") text = await callGroq(systemPrompt, userPrompt, maxTokens);
@@ -259,12 +275,9 @@ export async function callAI(
       else if (provider === "claude") text = await callClaude(systemPrompt, userPrompt, maxTokens);
       else if (provider === "huggingface") text = await callHuggingFace(systemPrompt, userPrompt, maxTokens);
       else text = await callOpenAI(systemPrompt, userPrompt, maxTokens);
-      console.log(`[Adaptly AI] Success via ${provider}`);
       return { text, provider };
     } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : String(e);
-      errors.push(`${provider}: ${msg}`);
-      console.warn(`[Adaptly AI] ${provider} failed:`, msg);
+      errors.push(`${provider}: ${e instanceof Error ? e.message : String(e)}`);
     }
   }
   throw new Error(`All AI providers failed:\n${errors.join("\n")}`);

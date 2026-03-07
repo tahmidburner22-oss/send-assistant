@@ -16,6 +16,8 @@ import { useApp, type Worksheet } from "@/contexts/AppContext";
 import { subjects, yearGroups, sendNeeds, examBoards, difficulties, colorOverlays } from "@/lib/send-data";
 import { generateWorksheet, type GeneratedWorksheet } from "@/lib/worksheet-generator";
 import { downloadWorksheetPdf } from "@/lib/pdf-generator";
+import { downloadHtmlAsPdf, printWorksheetElement } from "@/lib/pdf-generator-v2";
+import WorksheetRenderer from "@/components/WorksheetRenderer";
 import { worksheetBank, type BankWorksheet } from "@/lib/worksheet-bank";
 import { aiGenerateWorksheet, aiEditSection } from "@/lib/ai";
 import {
@@ -198,6 +200,8 @@ export default function Worksheets() {
     setRating(0);
     setVoiceAnswers({});
 
+    let generatedWs: AnyWorksheet | null = null;
+
     if (useAI) {
       try {
         const result = await aiGenerateWorksheet({
@@ -210,20 +214,42 @@ export default function Worksheets() {
           additionalInstructions,
           generateDiagram,
         });
-        setGenerated({ ...result, isAI: true } as AIWorksheet);
+        generatedWs = { ...result, isAI: true } as AIWorksheet;
         toast.success(generateDiagram ? "Worksheet with diagram generated!" : "Worksheet generated with AI!");
       } catch (err) {
         console.error("AI generation failed:", err);
         toast.error("AI generation failed — using local generator as fallback.");
-        const ws = generateWorksheet({ subject, topic, yearGroup, sendNeed: sendNeed || undefined, difficulty, examBoard, includeAnswers, additionalInstructions });
-        setGenerated(ws);
+        generatedWs = generateWorksheet({ subject, topic, yearGroup, sendNeed: sendNeed || undefined, difficulty, examBoard, includeAnswers, additionalInstructions });
       }
     } else {
       await new Promise(r => setTimeout(r, 800));
-      const ws = generateWorksheet({ subject, topic, yearGroup, sendNeed: sendNeed || undefined, difficulty, examBoard, includeAnswers, additionalInstructions });
-      setGenerated(ws);
+      generatedWs = generateWorksheet({ subject, topic, yearGroup, sendNeed: sendNeed || undefined, difficulty, examBoard, includeAnswers, additionalInstructions });
       toast.success("Worksheet generated!");
     }
+
+    if (generatedWs) {
+      setGenerated(generatedWs);
+      // Auto-save on generate so dashboard updates immediately
+      const ws = generatedWs;
+      const sectionsToSave = ws.sections.map(s => ({ ...s }));
+      const content = sectionsToSave.filter(s => !s.teacherOnly).map(s => `## ${s.title}\n${s.content}`).join("\n\n");
+      const teacherContent = sectionsToSave.map(s => `## ${s.title}\n${s.content}`).join("\n\n");
+      saveWorksheet({
+        title: ws.title,
+        subtitle: (ws as any).subtitle,
+        subject: ws.metadata.subject,
+        topic: ws.metadata.topic,
+        yearGroup: ws.metadata.yearGroup,
+        sendNeed: ws.metadata.sendNeed,
+        difficulty: ws.metadata.difficulty,
+        examBoard: ws.metadata.examBoard,
+        content, teacherContent, rating: 0, overlay: colorOverlay,
+        sections: sectionsToSave,
+        metadata: ws.metadata as any,
+        isAI: isAIWorksheet(ws),
+      }).catch(() => {}); // Silent auto-save
+    }
+
     setLoading(false);
   };
 
@@ -287,80 +313,37 @@ export default function Worksheets() {
     toast.success("Worksheet saved to history!");
   };
 
-  // ─── PDF Download ──────────────────────────────────────────────────────────
-  const handleDownloadPdf = () => {
-    if (!generated) return;
-    const editedWorksheet = {
-      ...generated,
-      sections: generated.sections.map((s, i) => ({
-        ...s,
-        content: editedSections[i] !== undefined ? editedSections[i] : s.content,
-      })),
-    } as GeneratedWorksheet;
-    downloadWorksheetPdf(editedWorksheet, {
-      viewMode,
-      overlayId: colorOverlay,
-      fontSize: Math.round(textSize * 0.85),
-    });
-    toast.success(`PDF downloaded (${viewMode} view)!`);
+  // ─── PDF Download (pixel-perfect HTML-to-PDF) ─────────────────────────────
+  const handleDownloadPdf = async () => {
+    if (!generated || !worksheetRef.current) return;
+    toast.info("Generating PDF...");
+    try {
+      const filename = `${generated.title.replace(/[^a-zA-Z0-9\s]/g, "").replace(/\s+/g, "_")}_${viewMode}.pdf`;
+      await downloadHtmlAsPdf(worksheetRef.current, filename, { overlayColor: overlayBg });
+      toast.success(`PDF downloaded (${viewMode} view)!`);
+    } catch (err) {
+      // Fallback to jsPDF
+      const editedWorksheet = {
+        ...generated,
+        sections: generated.sections.map((s, i) => ({
+          ...s,
+          content: editedSections[i] !== undefined ? editedSections[i] : s.content,
+        })),
+      } as GeneratedWorksheet;
+      downloadWorksheetPdf(editedWorksheet, { viewMode, overlayId: colorOverlay, fontSize: Math.round(textSize * 0.85) });
+      toast.success(`PDF downloaded!`);
+    }
   };
 
-  // ─── Print ─────────────────────────────────────────────────────────────────
+  // ─── Print (opens print-optimised window) ─────────────────────────────────
   const handlePrint = () => {
-    const style = document.createElement("style");
-    style.id = "print-ws-style";
-    const teacherHide = viewMode === "student"
-      ? ".teacher-section { display: none !important; } .answers { display: none !important; }"
-      : "";
-    // Comprehensive print CSS: hide all app chrome, only show worksheet content
-    style.textContent = `
-      @media print {
-        /* Hide all app chrome */
-        body > *:not(#root) { display: none !important; }
-        #root > *:not(.print-worksheet-wrapper) > *:not(.worksheet-content) { display: none !important; }
-        nav, header, aside, footer,
-        [data-sidebar], [role="navigation"],
-        [data-radix-popper-content-wrapper],
-        .no-print, .app-sidebar, .app-header {
-          display: none !important;
-        }
-        /* Show only worksheet */
-        .worksheet-content {
-          display: block !important;
-          position: fixed !important;
-          top: 0 !important; left: 0 !important;
-          width: 100% !important;
-          background: ${overlayBg} !important;
-          -webkit-print-color-adjust: exact;
-          print-color-adjust: exact;
-        }
-        /* Font size override */
-        .worksheet-content * { font-size: ${textSize}px !important; }
-        .worksheet-content h1 { font-size: ${textSize + 8}px !important; }
-        .worksheet-content h2.worksheet-section-title { font-size: ${textSize + 2}px !important; }
-        /* Section page-break prevention */
-        .worksheet-section {
-          break-inside: avoid !important;
-          page-break-inside: avoid !important;
-        }
-        h2.worksheet-section-title {
-          break-after: avoid !important;
-          page-break-after: avoid !important;
-        }
-        table, .vocab-table, .diagram-section {
-          break-inside: avoid !important;
-          page-break-inside: avoid !important;
-        }
-        .teacher-section {
-          break-before: page !important;
-          page-break-before: always !important;
-        }
-        ${teacherHide}
-      }
-    `;
-    document.head.appendChild(style);
-    window.print();
-    setTimeout(() => document.getElementById("print-ws-style")?.remove(), 1500);
+    if (!worksheetRef.current) return;
+    printWorksheetElement(worksheetRef.current, {
+      overlayColor: overlayBg,
+      viewMode,
+      textSize,
+      title: generated?.title,
+    });
   };
   // ─── AI Edit Section ────────────────────────────────────────────────────────
   const handleAiEditSection = async () => {
@@ -411,9 +394,6 @@ export default function Worksheets() {
   return (
     <div className="px-4 py-6 max-w-2xl mx-auto space-y-4">
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-        <div className="rounded-xl overflow-hidden mb-4 border border-border/50">
-          <img src="/images/worksheet-hero.webp" alt="Worksheets" className="w-full h-32 object-cover" />
-        </div>
       </motion.div>
 
       {!generated ? (
@@ -887,170 +867,66 @@ export default function Worksheets() {
             </div>
           )}
 
-          {/* Worksheet content */}
+          {/* Worksheet content — uses new WorksheetRenderer for pixel-perfect print/PDF */}
           <div ref={worksheetRef} className="worksheet-content" style={{ backgroundColor: overlayBg }}>
             <Card className="border-border/50 overflow-hidden" style={{ backgroundColor: overlayBg }}>
-              <CardContent className="p-5 sm:p-8" style={{ backgroundColor: overlayBg, fontSize: `${textSize}px` }}>
-                <div className="mb-6">
-                  <h1 className="font-bold text-foreground" style={{ fontSize: `${textSize + 8}px` }}>{generated.title}</h1>
-                  {(generated as any).subtitle && (
-                    <p className="text-muted-foreground mt-1" style={{ fontSize: `${textSize - 1}px` }}>{(generated as any).subtitle}</p>
-                  )}
-                  <div className="flex flex-wrap gap-1 mt-2">
-                    <Badge variant="outline" className="text-xs">{generated.metadata.yearGroup}</Badge>
-                    {generated.metadata.sendNeed && <Badge className="text-xs bg-purple-100 text-purple-700">{generated.metadata.sendNeed} adapted</Badge>}
-                    {generated.metadata.estimatedTime && <Badge variant="outline" className="text-xs"><Clock className="h-3 w-3 mr-0.5" />{generated.metadata.estimatedTime}</Badge>}
-                    {generated.metadata.totalMarks && <Badge variant="outline" className="text-xs"><Award className="h-3 w-3 mr-0.5" />{generated.metadata.totalMarks} marks</Badge>}
-                  </div>
-                </div>
-
-                {/* AI Diagram */}
-                {(generated as AIWorksheet).diagramUrl && (
-                  <div className="mb-4 text-center">
-                    <img src={(generated as AIWorksheet).diagramUrl!} alt="Generated diagram" className="max-w-xs mx-auto rounded-lg border border-gray-200 shadow-sm" />
-                    <p className="text-xs text-gray-400 mt-1">AI-generated diagram — SEND adaptations applied to text only</p>
+              <CardContent className="p-5 sm:p-8" style={{ backgroundColor: overlayBg }}>
+                <WorksheetRenderer
+                  worksheet={{
+                    title: generated.title,
+                    subtitle: (generated as any).subtitle,
+                    sections: generated.sections as any,
+                    metadata: generated.metadata as any,
+                    isAI: isAIWorksheet(generated),
+                  }}
+                  viewMode={viewMode}
+                  textSize={textSize}
+                  overlayColor={overlayBg}
+                  editedSections={editedSections}
+                  onSectionClick={(i) => { if (editMode) { setAiEditSectionIndex(i); setAiEditPrompt(""); } }}
+                  editMode={editMode}
+                />
+                {/* Legacy section rendering for edit mode textareas */}
+                {editMode && (
+                  <div className="mt-4 space-y-3">
+                    {generated.sections.map((section, i) => {
+                      if (viewMode === "student" && (section.type === "answers" || section.type === "adaptations" || section.teacherOnly)) return null;
+                      const currentContent = getSectionContent(i, section.content);
+                      return (
+                        <div key={i} className="border border-amber-300 rounded-lg p-3 bg-amber-50">
+                          <div className="flex items-center justify-between mb-2">
+                            <h3 className="font-semibold text-sm">{section.title}</h3>
+                            <Button size="sm" variant="ghost" className="h-6 px-2 text-xs text-indigo-600"
+                              onClick={() => { setAiEditSectionIndex(i); setAiEditPrompt(""); }}>
+                              <Wand2 className="h-3 w-3 mr-1" />AI Edit
+                            </Button>
+                          </div>
+                          <Textarea
+                            value={currentContent}
+                            onChange={e => setEditedSections(prev => ({ ...prev, [i]: e.target.value }))}
+                            className="min-h-[80px] text-sm border-amber-300"
+                            style={{ fontSize: `${textSize}px`, backgroundColor: overlayBg }}
+                          />
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
-
-                {generated.sections.map((section, i) => {
-                  if (viewMode === "student" && (section.type === "answers" || section.type === "adaptations" || section.teacherOnly)) return null;
-                  const currentContent = getSectionContent(i, section.content);
-                  const isAnswerSection = section.type === "answers" || section.type === "mark-scheme";
-                  const isTeacherSection = section.teacherOnly || section.type === "teacher-notes";
-                  const sectionAccent = 
-                    section.type === "guided" ? "border-l-4 border-l-blue-400" :
-                    section.type === "independent" ? "border-l-4 border-l-emerald-400" :
-                    section.type === "challenge" ? "border-l-4 border-l-purple-400" :
-                    section.type === "mark-scheme" ? "border-l-4 border-l-amber-400" :
-                    section.type === "teacher-notes" ? "border-l-4 border-l-rose-400" :
-                    section.type === "objective" ? "border-l-4 border-l-teal-400" :
-                    section.type === "example" ? "border-l-4 border-l-indigo-400" :
-                    "";
-
-                  return (
-                    <div key={i} className={`worksheet-section mb-6 pl-3 ${isTeacherSection ? "border-l-4 border-yellow-400 teacher-section" : isAnswerSection ? "border-l-4 border-green-400" : sectionAccent}`}>
-                      <div className="flex items-center justify-between mb-2">
-                        <h2 className="font-semibold text-purple-700 worksheet-section-title pb-1 border-b border-border/50"
-                          style={{ fontSize: `${textSize + 2}px` }}>
-                          {section.title}
-                          {isTeacherSection && <span className="ml-2 text-xs text-yellow-600 font-normal">(Teacher)</span>}
-                        </h2>
-                        {/* Voice-to-text button for practice sections */}
-                        {!isTeacherSection && (section.type === "independent" || section.type === "guided") && (
-                          <Button
-                            size="sm" variant="ghost"
-                            className="h-7 px-2 text-xs no-print"
-                            onClick={() => {
-                              setVoiceTargetSection(i);
-                              if (voiceListening && voiceTargetSection === i) stopListening();
-                              else startListening();
-                            }}
-                          >
-                            {voiceListening && voiceTargetSection === i
-                              ? <><MicOff className="h-3 w-3 text-red-500 mr-1" />Stop</>
-                              : <><Mic className="h-3 w-3 text-emerald-600 mr-1" />Speak Answer</>
-                            }
-                          </Button>
-                        )}
-                        {/* Edit with AI button */}
-                        <Button
-                          size="sm" variant="ghost"
-                          className="h-7 px-2 text-xs no-print text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50"
-                          onClick={() => { setAiEditSectionIndex(i); setAiEditPrompt(""); }}
-                        >
-                          <Wand2 className="h-3 w-3 mr-1" />Edit with AI
-                        </Button>
-                      </div>
-
-                      {section.type === "diagram" && (section as any).svg ? (
-                        <div className="diagram-section text-center">
-                          <div
-                            className="inline-block w-full max-w-xl border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm"
-                            dangerouslySetInnerHTML={{ __html: (section as any).svg }}
-                          />
-                          {(section as any).caption && (
-                            <p className="text-xs text-muted-foreground mt-2 italic">
-                              {(section as any).caption}
-                            </p>
-                          )}
-                          <p className="text-[10px] text-gray-400 mt-1">AI-generated diagram — labelled for {yearGroup || "this year group"}</p>
-                        </div>
-                      ) : section.type === "vocabulary" ? (
-                        <div className="vocab-table">
-                          {currentContent.includes("\n") && currentContent.includes("|") ? (
-                            <table className="w-full text-sm border-collapse">
-                              <thead>
-                                <tr className="bg-brand/10">
-                                  <th className="text-left p-2 border border-gray-200 font-semibold w-1/3">Term</th>
-                                  <th className="text-left p-2 border border-gray-200 font-semibold">Definition</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {currentContent.split("\n").filter(l => l.includes("|") && !l.trim().startsWith("TERM")).map((line, li) => {
-                                  const parts = line.split("|");
-                                  const term = parts[0]?.trim();
-                                  const def = parts.slice(1).join("|").trim();
-                                  return term && def ? (
-                                    <tr key={li} className={li % 2 === 0 ? "bg-white" : "bg-gray-50"}>
-                                      <td className="p-2 border border-gray-200 font-medium text-brand">{term}</td>
-                                      <td className="p-2 border border-gray-200">{def}</td>
-                                    </tr>
-                                  ) : null;
-                                })}
-                              </tbody>
-                            </table>
-                          ) : (
-                            <div className="flex flex-wrap gap-2">
-                              {currentContent.split(" | ").map((word, wi) => (
-                                <span key={wi} className="px-3 py-1 rounded-full font-medium bg-brand-light text-brand vocab-pill" style={{ fontSize: `${textSize - 2}px` }}>
-                                  {word}
-                                </span>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      ) : section.type === "review" ? (
-                        <div className="flex items-center gap-2 no-print">
-                          <span className="text-foreground" style={{ fontSize: `${textSize}px` }}>Rate this worksheet:</span>
-                          <div className="flex gap-1">
-                            {[1,2,3,4,5].map(s => (
-                              <button key={s} onClick={() => setRating(s)}>
-                                <Star className={`w-5 h-5 ${s <= rating ? "fill-amber-400 text-amber-400" : "text-gray-300"}`} />
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      ) : editMode ? (
-                        <Textarea
-                          value={currentContent}
-                          onChange={e => setEditedSections(prev => ({ ...prev, [i]: e.target.value }))}
-                          className="min-h-[100px] text-foreground/90 leading-relaxed border-amber-300 focus:border-amber-500"
-                          style={{ fontSize: `${textSize}px`, backgroundColor: overlayBg }}
-                        />
-                      ) : (
-                        <div className="leading-relaxed whitespace-pre-wrap text-foreground/90"
-                          style={{ fontSize: `${textSize}px` }}
-                          dangerouslySetInnerHTML={{ __html: formatContent(currentContent) }} />
-                      )}
-
-                      {/* Voice answer display */}
-                      {voiceAnswers[i] && !isTeacherSection && (
-                        <div className="mt-2 p-2 bg-emerald-50 border border-emerald-200 rounded text-sm no-print">
-                          <span className="text-emerald-700 font-medium">Voice answer: </span>
-                          <span>{voiceAnswers[i]}</span>
-                          <button onClick={() => setVoiceAnswers(prev => { const n = {...prev}; delete n[i]; return n; })} className="ml-2 text-gray-400 hover:text-gray-600">
-                            <X className="h-3 w-3 inline" />
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-
+                {/* Rating section */}
+                <div className="mt-4 pt-3 border-t border-border/50 flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">Rate this worksheet:</span>
+                  <div className="flex gap-1">
+                    {[1,2,3,4,5].map(s => (
+                      <button key={s} onClick={() => setRating(s)}>
+                        <Star className={`w-5 h-5 ${s <= rating ? "fill-amber-400 text-amber-400" : "text-gray-300"}`} />
+                      </button>
+                    ))}
+                  </div>
+                </div>
                 {/* SEND adaptations summary */}
                 {viewMode === "teacher" && ((generated as AIWorksheet).metadata?.adaptations ?? []).length > 0 && (
                   <div className="mt-4 p-3 bg-purple-50 border border-purple-200 rounded-lg">
-                    <h4 className="font-bold text-purple-800 text-sm mb-2">SEND Adaptations Applied (Text & Structure Only — Diagrams Unchanged)</h4>
+                    <h4 className="font-bold text-purple-800 text-sm mb-2">SEND Adaptations Applied</h4>
                     <ul className="text-sm text-purple-700 space-y-1">
                       {((generated as AIWorksheet).metadata.adaptations || []).map((a, i) => (
                         <li key={i} className="flex items-start gap-2"><CheckCircle className="h-4 w-4 text-purple-500 flex-shrink-0 mt-0.5" />{a}</li>

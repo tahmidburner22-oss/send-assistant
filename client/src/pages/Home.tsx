@@ -75,17 +75,6 @@ export default function Home() {
         </div>
       </motion.div>
 
-      {/* Hero Image */}
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-        <div className="rounded-xl overflow-hidden border border-border/50">
-          <img
-            src="/images/hero-education.webp"
-            alt="Inclusive classroom"
-            className="w-full h-40 sm:h-52 object-cover"
-          />
-        </div>
-      </motion.div>
-
       {/* Quick Actions */}
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
         <h3 className="text-base font-semibold text-foreground mb-3">Quick Actions</h3>

@@ -149,11 +149,31 @@ export const data = {
   completeOnboarding: () => apiFetch<any>("/data/onboarding-complete", { method: "POST" }),
 };
 
-// ── AI (proxied through backend for content filtering) ────────────────────────
+// ── AI (proxied through backend for content filtering) ────────────────────────────────────
 export const ai = {
   generate: (d: { prompt: string; systemPrompt?: string; provider?: string; model?: string; apiKey?: string; maxTokens?: number }) =>
     apiFetch<{ content: string; aiGenerated: boolean; flagged?: boolean; warning?: string }>("/ai/generate", {
       method: "POST",
       body: JSON.stringify(d),
     }),
+  ensemble: (d: { prompt: string; systemPrompt?: string; maxTokens?: number }) =>
+    apiFetch<{ content: string; provider: string; ensemble: boolean; contributors?: string; aiGenerated: boolean }>("/ai/ensemble", {
+      method: "POST",
+      body: JSON.stringify(d),
+    }),
+  providers: () => apiFetch<{ providers: Array<{ provider: string; model: string; source: string }> }>("/ai/providers"),
+  filterLog: () => apiFetch<any[]>("/ai/filter-log"),
+  stats: () => apiFetch<any>("/ai/stats"),
+  adminKeys: {
+    list: () => apiFetch<any[]>("/ai/admin/keys"),
+    set: (provider: string, apiKey: string, model?: string) =>
+      apiFetch<any>("/ai/admin/keys", { method: "POST", body: JSON.stringify({ provider, apiKey, model }) }),
+    remove: (provider: string) =>
+      apiFetch<any>(`/ai/admin/keys/${provider}`, { method: "DELETE" }),
+  },
+};
+
+// ── Admin data ────────────────────────────────────────────────────────────────────
+export const adminData = {
+  allWorksheets: () => apiFetch<any[]>("/data/admin/worksheets"),
 };
