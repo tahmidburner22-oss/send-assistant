@@ -254,11 +254,15 @@ export async function callAI(
     });
     if (res.ok) {
       const data = await res.json();
-      return { text: data.text, provider: (data.provider || "groq") as AIProvider };
+      // Server returns 'content' field (not 'text') — fix the field name
+      const content = data.content || data.text;
+      if (content) {
+        return { text: content, provider: (data.provider || "groq") as AIProvider };
+      }
     }
     // Fall through to client keys only on auth errors
     if (res.status !== 401 && res.status !== 403) {
-      const errText = await res.text();
+      const errText = await res.text().catch(() => "");
       console.warn(`[Adaptly AI] Server error ${res.status}:`, errText.slice(0, 200));
     }
   } catch (serverErr) {
