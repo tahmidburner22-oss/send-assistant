@@ -317,9 +317,11 @@ export default function Worksheets() {
   const handleDownloadPdf = async () => {
     if (!generated || !worksheetRef.current) return;
     toast.info("Generating PDF...");
+    // Target the inner worksheet-print-root for a clean capture (no UI chrome)
+    const printRoot = (worksheetRef.current.querySelector(".worksheet-print-root") as HTMLElement) || worksheetRef.current;
     try {
       const filename = `${generated.title.replace(/[^a-zA-Z0-9\s]/g, "").replace(/\s+/g, "_")}_${viewMode}.pdf`;
-      await downloadHtmlAsPdf(worksheetRef.current, filename, { overlayColor: overlayBg });
+      await downloadHtmlAsPdf(printRoot, filename, { overlayColor: overlayBg });
       toast.success(`PDF downloaded (${viewMode} view)!`);
     } catch (err) {
       // Fallback to jsPDF
@@ -335,9 +337,10 @@ export default function Worksheets() {
     }
   };
 
-  // ─── Print (opens print-optimised window) ─────────────────────────────────
+  // ─── Print (opens print-optimised window) ─────────────────────────────
   const handlePrint = () => {
     if (!worksheetRef.current) return;
+    // Pass the outer container; printWorksheetElement finds .worksheet-print-root internally
     printWorksheetElement(worksheetRef.current, {
       overlayColor: overlayBg,
       viewMode,

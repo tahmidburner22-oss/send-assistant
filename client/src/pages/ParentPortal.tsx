@@ -261,8 +261,9 @@ export default function ParentPortal() {
         </Card>
 
         <Tabs defaultValue="assignments">
-          <TabsList className="w-full grid grid-cols-5 h-10">
+          <TabsList className="w-full grid grid-cols-6 h-10">
             <TabsTrigger value="assignments" className="text-xs">Work</TabsTrigger>
+            <TabsTrigger value="behaviour" className="text-xs">Behaviour</TabsTrigger>
             <TabsTrigger value="timetable" className="text-xs">Timetable</TabsTrigger>
             <TabsTrigger value="submissions" className="text-xs">Submit</TabsTrigger>
             <TabsTrigger value="stories" className="text-xs">Stories</TabsTrigger>
@@ -331,6 +332,101 @@ export default function ParentPortal() {
                 </CardContent>
               </Card>
             ))}
+          </TabsContent>
+
+          {/* ─── BEHAVIOUR TAB ─── */}
+          <TabsContent value="behaviour" className="mt-4 space-y-3">
+            <Card className="border-border/50">
+              <CardContent className="p-4">
+                <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">
+                  <span className="text-lg">📋</span> Behaviour Support Plans
+                </h3>
+                {((child as any).behaviourPlans || []).length === 0 ? (
+                  <div className="text-center py-6">
+                    <div className="text-3xl mb-2">✅</div>
+                    <p className="text-sm font-medium text-foreground">No active behaviour support plans</p>
+                    <p className="text-xs text-muted-foreground mt-1">Your child's teacher will share any plans here when created.</p>
+                  </div>
+                ) : ((child as any).behaviourPlans || []).map((plan: any, i: number) => (
+                  <div key={i} className="border border-border/50 rounded-lg p-3 mb-2">
+                    <div className="flex items-start justify-between">
+                      <h4 className="font-semibold text-sm">{plan.title || 'Behaviour Support Plan'}</h4>
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                        plan.status === 'active' ? 'bg-emerald-100 text-emerald-700' :
+                        plan.status === 'review' ? 'bg-amber-100 text-amber-700' :
+                        'bg-gray-100 text-gray-600'
+                      }`}>{plan.status || 'Active'}</span>
+                    </div>
+                    {plan.summary && <p className="text-xs text-muted-foreground mt-2">{plan.summary}</p>}
+                    {plan.strategies && (
+                      <div className="mt-2">
+                        <p className="text-xs font-semibold text-foreground mb-1">Strategies:</p>
+                        <p className="text-xs text-muted-foreground">{plan.strategies}</p>
+                      </div>
+                    )}
+                    {plan.positiveTargets && (
+                      <div className="mt-2 p-2 rounded bg-emerald-50 border border-emerald-200">
+                        <p className="text-xs font-semibold text-emerald-700 mb-1">Positive Targets:</p>
+                        <p className="text-xs text-emerald-700">{plan.positiveTargets}</p>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+
+            <Card className="border-border/50">
+              <CardContent className="p-4">
+                <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">
+                  <span className="text-lg">📊</span> Recent Behaviour Log
+                </h3>
+                {((child as any).behaviourEvents || []).length === 0 ? (
+                  <div className="text-center py-6">
+                    <div className="text-3xl mb-2">🌟</div>
+                    <p className="text-sm font-medium text-foreground">No behaviour events recorded</p>
+                    <p className="text-xs text-muted-foreground mt-1">Positive and other events logged by staff will appear here.</p>
+                  </div>
+                ) : ((child as any).behaviourEvents || []).slice(0, 10).map((event: any, i: number) => (
+                  <div key={i} className={`flex items-start gap-3 p-2 rounded-lg mb-2 ${
+                    event.type === 'positive' ? 'bg-emerald-50 border border-emerald-200' :
+                    event.type === 'concern' ? 'bg-amber-50 border border-amber-200' :
+                    'bg-red-50 border border-red-200'
+                  }`}>
+                    <span className="text-lg flex-shrink-0">
+                      {event.type === 'positive' ? '⭐' : event.type === 'concern' ? '⚠️' : '📝'}
+                    </span>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs font-semibold">{event.title || event.type}</p>
+                        <p className="text-xs text-muted-foreground">{event.date ? new Date(event.date).toLocaleDateString() : ''}</p>
+                      </div>
+                      {event.description && <p className="text-xs text-muted-foreground mt-0.5">{event.description}</p>}
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+
+            <Card className="border-border/50">
+              <CardContent className="p-4">
+                <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">
+                  <span className="text-lg">🏆</span> Achievements &amp; Rewards
+                </h3>
+                <div className="text-center py-4">
+                  <div className="text-4xl mb-2">🌟</div>
+                  <p className="text-sm font-medium text-foreground">Achievements will appear here</p>
+                  <p className="text-xs text-muted-foreground mt-1">Stars, certificates, and rewards earned by your child will be shown here.</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-border/50 bg-blue-50 border-blue-200">
+              <CardContent className="p-4">
+                <p className="text-xs text-blue-700">
+                  <strong>Questions about behaviour?</strong> Please contact your child's teacher or SENCO directly through the school office. This portal is updated by staff regularly.
+                </p>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* ─── SUBMIT WORK TAB ─── */}
