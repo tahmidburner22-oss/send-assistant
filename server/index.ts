@@ -21,6 +21,11 @@ const app = express();
 const PORT = parseInt(process.env.PORT || "3001");
 const isDev = process.env.NODE_ENV !== "production";
 
+// ── Trust Railway's proxy so rate-limiter and IP detection work correctly ─────
+// Railway (and most cloud platforms) sit behind a load balancer that sets
+// X-Forwarded-For. Without this, express-rate-limit throws ERR_ERL_UNEXPECTED_X_FORWARDED_FOR.
+app.set("trust proxy", 1);
+
 // ── Security middleware ───────────────────────────────────────────────────────
 app.use(helmet({
   contentSecurityPolicy: {
@@ -64,6 +69,7 @@ const authLimiter = rateLimit({
   message: { error: "Too many requests. Please try again later." },
   standardHeaders: true,
   legacyHeaders: false,
+  validate: { xForwardedForHeader: false }, // Railway sets this header — don't error on it
 });
 
 const generalLimiter = rateLimit({
@@ -71,6 +77,7 @@ const generalLimiter = rateLimit({
   max: 200,
   standardHeaders: true,
   legacyHeaders: false,
+  validate: { xForwardedForHeader: false }, // Railway sets this header — don't error on it
 });
 
 // ── Body parsing ──────────────────────────────────────────────────────────────

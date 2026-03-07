@@ -503,7 +503,13 @@ Return EXACTLY this JSON structure (raw JSON only, no markdown):
     .replace(/^```\s*/i, "")
     .replace(/\s*```$/i, "")
     .trim();
-  const json = JSON.parse(cleaned);
+  let json: any;
+  try {
+    json = JSON.parse(cleaned);
+  } catch (parseErr) {
+    console.error("[Adaptly AI] JSON parse failed. Raw response:", text.slice(0, 300));
+    throw new Error(`AI returned invalid JSON. Raw: ${text.slice(0, 100)}`);
+  }
   const result: AIWorksheetResult = { ...json, isAI: true, provider };
 
   // Optionally generate and inject a diagram section
