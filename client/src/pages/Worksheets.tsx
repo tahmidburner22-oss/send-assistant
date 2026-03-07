@@ -20,6 +20,7 @@ import { downloadHtmlAsPdf, printWorksheetElement } from "@/lib/pdf-generator-v2
 import WorksheetRenderer from "@/components/WorksheetRenderer";
 import { worksheetBank, type BankWorksheet } from "@/lib/worksheet-bank";
 import { aiGenerateWorksheet, aiEditSection } from "@/lib/ai";
+import PrintOptionsDialog, { type PrintOptions } from "@/components/PrintOptionsDialog";
 import {
   FileText, Upload, Library, Sparkles, Download, Printer, Save, Star,
   Eye, GraduationCap, Palette, Edit3, Users, Check, ZoomIn, ZoomOut,
@@ -164,6 +165,7 @@ export default function Worksheets() {
   const [historyAiPrompt, setHistoryAiPrompt] = useState("");
   const [historyAiLoading, setHistoryAiLoading] = useState(false);
   const [historyViewMode, setHistoryViewMode] = useState<"teacher" | "student">("teacher");
+  const [showPrintDialog, setShowPrintDialog] = useState(false);
 
   const worksheetRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -337,13 +339,17 @@ export default function Worksheets() {
     }
   };
 
-  // ─── Print (opens print-optimised window) ─────────────────────────────
+  // ─── Print (opens PrintOptionsDialog) ─────────────────────────────────
   const handlePrint = () => {
+    setShowPrintDialog(true);
+  };
+
+  const handlePrintWithOptions = (options: PrintOptions) => {
     if (!worksheetRef.current) return;
-    // Pass the outer container; printWorksheetElement finds .worksheet-print-root internally
     printWorksheetElement(worksheetRef.current, {
       overlayColor: overlayBg,
-      viewMode,
+      viewMode: options.view,
+      layout: options.layout,
       textSize,
       title: generated?.title,
     });
@@ -1188,6 +1194,13 @@ export default function Worksheets() {
           })()}
         </DialogContent>
       </Dialog>
+
+      {/* Print Options Dialog */}
+      <PrintOptionsDialog
+        open={showPrintDialog}
+        onClose={() => setShowPrintDialog(false)}
+        onPrint={handlePrintWithOptions}
+      />
     </div>
   );
 }
