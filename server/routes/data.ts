@@ -9,8 +9,39 @@ const router = Router();
 router.get("/worksheets", requireAuth, (req: Request, res: Response) => {
   const rows = db.prepare(
     "SELECT * FROM worksheets WHERE school_id = ? ORDER BY created_at DESC"
-  ).all(req.user!.schoolId);
-  res.json(rows);
+  ).all(req.user!.schoolId) as any[];
+  // Map snake_case DB columns to camelCase expected by the client, and attach sections
+  const mapped = rows.map((r: any) => {
+    const sections = db.prepare(
+      "SELECT * FROM worksheet_sections WHERE worksheet_id = ? ORDER BY section_index ASC"
+    ).all(r.id) as any[];
+    return {
+      id: r.id,
+      title: r.title,
+      subject: r.subject,
+      topic: r.topic,
+      yearGroup: r.year_group,
+      sendNeed: r.send_need,
+      difficulty: r.difficulty,
+      examBoard: r.exam_board,
+      content: r.content,
+      teacherContent: r.teacher_content,
+      rating: r.rating,
+      ratingLabel: r.rating_label,
+      overlay: r.overlay,
+      createdAt: r.created_at,
+      sections: sections.map((s: any) => ({
+        title: s.title,
+        type: s.type,
+        content: s.content,
+        teacherOnly: !!s.teacher_only,
+        svg: s.svg,
+        caption: s.caption,
+        symbols: s.symbols ? JSON.parse(s.symbols) : undefined,
+      })),
+    };
+  });
+  res.json(mapped);
 });
 
 router.post("/worksheets", requireAuth, (req: Request, res: Response) => {
