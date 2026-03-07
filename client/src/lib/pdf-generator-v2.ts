@@ -67,11 +67,12 @@ export function printWorksheetElement(
   options: {
     overlayColor?: string;
     viewMode?: "teacher" | "student";
+    layout?: "together" | "per-page";
     textSize?: number;
     title?: string;
   } = {}
 ): void {
-  const { overlayColor = "white", viewMode = "student", textSize = 14, title = "Worksheet" } = options;
+  const { overlayColor = "white", viewMode = "student", layout = "together", textSize = 14, title = "Worksheet" } = options;
 
   // Extract just the worksheet-print-root inner HTML
   const printRoot = element.querySelector(".worksheet-print-root") as HTMLElement;
@@ -86,6 +87,9 @@ export function printWorksheetElement(
   const hideTeacher = viewMode === "student"
     ? `.ws-teacher-section { display: none !important; }`
     : `.ws-teacher-section { page-break-before: always; break-before: page; }`;
+  const perPageCss = layout === "per-page"
+    ? `.ws-section + .ws-section { page-break-before: always; break-before: page; }`
+    : "";
 
   const html = `<!DOCTYPE html>
 <html lang="en">
@@ -111,6 +115,7 @@ export function printWorksheetElement(
       .no-print { display: none !important; }
       .ws-section { page-break-inside: avoid; break-inside: avoid; }
       ${hideTeacher}
+      ${perPageCss}
     }
     @media screen {
       body { padding: 20mm; max-width: 794px; margin: 0 auto; }
