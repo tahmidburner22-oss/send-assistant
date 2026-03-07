@@ -6,133 +6,202 @@ import { filterContent } from "../lib/contentFilter.js";
 
 const router = Router();
 
-// ── Helper: get effective API key (user-supplied → admin DB key → env var) ────────────────
-const ENV_KEY_MAP: Record<string, string> = {
-  groq: process.env.GROQ_API_KEY || "",
-  gemini: process.env.GEMINI_API_KEY || "",
-  openai: process.env.OPENAI_API_KEY || "",
-  openrouter: process.env.OPENROUTER_API_KEY || "",
-  claude: process.env.CLAUDE_API_KEY || "",
-  huggingface: process.env.HUGGINGFACE_API_KEY || "",
-};
+// ── Provider priority order — server always tries all of these automatically ──
+const PROVIDER_ORDER = ["groq", "gemini", "openai", "openrouter", "claude", "huggingface"] as const;
+
+// ── Get the best available key for a provider (env var is always the baseline) ──
 function getEffectiveKey(provider: string, userKey?: string): string {
   if (userKey && userKey.trim()) return userKey.trim();
-  // Try admin DB key first
   try {
     const adminKey = db.prepare(
       "SELECT api_key FROM admin_api_keys WHERE provider = ?"
     ).get(provider) as any;
     if (adminKey?.api_key) return adminKey.api_key;
   } catch (_) {}
-  // Fall back to environment variable directly (always available, even on fresh deploy)
-  return ENV_KEY_MAP[provider] || ENV_KEY_MAP[provider.toLowerCase()] || "";
+  // Always fall back to Railway env vars — these are always set
+  const envMap: Record<string, string> = {
+    groq: process.env.GROQ_API_KEY || "",
+    gemini: process.env.GEMINI_API_KEY || "",
+    openai: process.env.OPENAI_API_KEY || "",
+    openrouter: process.env.OPENROUTER_API_KEY || "",
+    claude: process.env.CLAUDE_API_KEY || "",
+    huggingface: process.env.HUGGINGFACE_API_KEY || "",
+  };
+  return envMap[provider] || "";
 }
 
 function getAdminModel(provider: string): string {
-  const row = db.prepare(
-    "SELECT model FROM admin_api_keys WHERE provider = ?"
-  ).get(provider) as any;
-  return row?.model || "";
+  try {
+    const row = db.prepare(
+      "SELECT model FROM admin_api_keys WHERE provider = ?"
+    ).get(provider) as any;
+    return row?.model || "";
+  } catch (_) { return ""; }
 }
 
-// ── AI Proxy with content filtering ──────────────────────────────────────────
+// ── Core: call a single provider ─────────────────────────────────────────────
+async function callProvider(
+  provider: string,
+  system: string,
+  user: string,
+  key: string,
+  model: string,
+  maxTokens: number
+): Promise<string> {
+  switch (provider) {
+    case "groq":
+      return callGroq(system, user, key, model || "llama-3.3-70b-versatile", maxTokens);
+    case "gemini":
+      return callGemini(system, user, key, maxTokens);
+    case "openai":
+      return callOpenAI(system, user, key, model || "gpt-4o-mini", maxTokens);
+    case "openrouter":
+      return callOpenRouter(system, user, key, model, maxTokens);
+    case "claude":
+      return callClaude(system, user, key, maxTokens);
+    case "huggingface":
+      return callHuggingFace(system, user, key, maxTokens);
+    default:
+      throw new Error(`Unknown provider: ${provider}`);
+  }
+}
+
+// ── Auto-fallback: try every provider until one succeeds ─────────────────────
+async function callWithFallback(
+  system: string,
+  user: string,
+  maxTokens: number,
+  preferredProvider?: string
+): Promise<{ content: string; provider: string }> {
+  // Build ordered list: preferred first, then the rest
+  const order = preferredProvider
+    ? [preferredProvider, ...PROVIDER_ORDER.filter(p => p !== preferredProvider)]
+    : [...PROVIDER_ORDER];
+
+  const errors: string[] = [];
+
+  for (const provider of order) {
+    const key = getEffectiveKey(provider);
+    if (!key) {
+      errors.push(`${provider}: no key configured`);
+      continue;
+    }
+    try {
+      const model = getAdminModel(provider);
+      const content = await callProvider(provider, system, user, key, model, maxTokens);
+      if (content && content.trim()) {
+        console.log(`[AI] Success via ${provider}`);
+        return { content, provider };
+      }
+      errors.push(`${provider}: empty response`);
+    } catch (err: any) {
+      const msg = err?.message || String(err);
+      console.warn(`[AI] ${provider} failed: ${msg.slice(0, 120)}`);
+      errors.push(`${provider}: ${msg.slice(0, 80)}`);
+    }
+  }
+
+  throw new Error(`All AI providers failed:\n${errors.join("\n")}`);
+}
+
+// ── AI Proxy — auto-fallback, no manual key needed ───────────────────────────
 router.post("/generate", requireAuth, async (req: Request, res: Response) => {
   const { prompt, systemPrompt, provider, model, apiKey, maxTokens = 2000 } = req.body;
 
   if (!prompt) return res.status(400).json({ error: "Prompt required" });
 
-  // Filter the prompt
+  // Content filtering
   const promptFilter = filterContent(prompt);
   const logId = uuidv4();
 
-  db.prepare(`INSERT INTO ai_filter_log (id, user_id, school_id, prompt, flagged, flag_reason)
-    VALUES (?, ?, ?, ?, ?, ?)`).run(
-    logId, req.user!.id, req.user!.schoolId,
-    prompt.slice(0, 500),
-    promptFilter.flagged ? 1 : 0,
-    promptFilter.reason || null
-  );
+  try {
+    db.prepare(`INSERT INTO ai_filter_log (id, user_id, school_id, prompt, flagged, flag_reason)
+      VALUES (?, ?, ?, ?, ?, ?)`).run(
+      logId, req.user!.id, req.user!.schoolId,
+      prompt.slice(0, 500),
+      promptFilter.flagged ? 1 : 0,
+      promptFilter.reason || null
+    );
+  } catch (_) {}
 
   if (promptFilter.flagged && promptFilter.category === "safeguarding") {
-    const incidentId = uuidv4();
-    db.prepare(`INSERT INTO safeguarding_incidents (id, school_id, reported_by, description, ai_trigger, severity)
-      VALUES (?, ?, ?, ?, ?, ?)`).run(
-      incidentId, req.user!.schoolId, req.user!.id,
-      `AI prompt flagged: ${promptFilter.reason}`,
-      prompt.slice(0, 500),
-      promptFilter.severity || "medium"
-    );
-    const school = db.prepare("SELECT * FROM schools WHERE id = ?").get(req.user!.schoolId) as any;
-    if (school?.dsl_email) {
-      const { sendDSLIncidentAlert } = await import("../email/index.js");
-      db.prepare("UPDATE safeguarding_incidents SET dsl_notified=1, dsl_notified_at=datetime('now') WHERE id=?").run(incidentId);
-      sendDSLIncidentAlert(school.dsl_email, {
-        id: incidentId,
-        severity: promptFilter.severity || "medium",
-        description: `AI prompt flagged for safeguarding: ${promptFilter.reason}`,
-        reportedBy: req.user!.displayName,
-      }).catch(console.error);
+    try {
+      const incidentId = uuidv4();
+      db.prepare(`INSERT INTO safeguarding_incidents (id, school_id, reported_by, description, ai_trigger, severity)
+        VALUES (?, ?, ?, ?, ?, ?)`).run(
+        incidentId, req.user!.schoolId, req.user!.id,
+        `AI prompt flagged: ${promptFilter.reason}`,
+        prompt.slice(0, 500),
+        promptFilter.severity || "medium"
+      );
+      const school = db.prepare("SELECT * FROM schools WHERE id = ?").get(req.user!.schoolId) as any;
+      if (school?.dsl_email) {
+        const { sendDSLIncidentAlert } = await import("../email/index.js");
+        db.prepare("UPDATE safeguarding_incidents SET dsl_notified=1, dsl_notified_at=datetime('now') WHERE id=?").run(incidentId);
+        sendDSLIncidentAlert(school.dsl_email, {
+          id: incidentId,
+          severity: promptFilter.severity || "medium",
+          description: `AI prompt flagged for safeguarding: ${promptFilter.reason}`,
+          reportedBy: req.user!.displayName,
+        }).catch(console.error);
+      }
+      return res.status(400).json({
+        error: "Your input has been flagged for safeguarding review. Your DSL has been notified.",
+        flagged: true,
+        incidentId,
+      });
+    } catch (e) {
+      console.error("Safeguarding incident error:", e);
     }
-    return res.status(400).json({
-      error: "Your input has been flagged for safeguarding review. Your DSL has been notified.",
-      flagged: true,
-      incidentId,
-    });
-  }
-
-  // Resolve effective key (user key → admin server key)
-  const effectiveKey = getEffectiveKey(provider || "groq", apiKey);
-  const effectiveModel = model || getAdminModel(provider || "groq");
-
-  if (!effectiveKey) {
-    return res.status(400).json({ error: `No API key available for provider: ${provider || "groq"}. Please contact your administrator.` });
   }
 
   try {
-    let response: string;
+    // If user provided a specific key for a specific provider, try that first
+    // Otherwise auto-fallback across all configured providers
+    let result: { content: string; provider: string };
 
-    if (provider === "groq" || !provider) {
-      response = await callGroq(systemPrompt || "", prompt, effectiveKey, effectiveModel || "llama-3.3-70b-versatile", maxTokens);
-    } else if (provider === "gemini") {
-      response = await callGemini(systemPrompt || "", prompt, effectiveKey, maxTokens);
-    } else if (provider === "openai") {
-      response = await callOpenAI(systemPrompt || "", prompt, effectiveKey, effectiveModel || "gpt-4o-mini", maxTokens);
-    } else if (provider === "openrouter") {
-      response = await callOpenRouter(systemPrompt || "", prompt, effectiveKey, effectiveModel, maxTokens);
-    } else if (provider === "claude") {
-      response = await callClaude(systemPrompt || "", prompt, effectiveKey, maxTokens);
-    } else if (provider === "huggingface") {
-      response = await callHuggingFace(systemPrompt || "", prompt, effectiveKey, maxTokens);
+    if (apiKey && provider) {
+      // User supplied their own key — try that provider first, then auto-fallback
+      try {
+        const model = getAdminModel(provider);
+        const content = await callProvider(provider, systemPrompt || "", prompt, apiKey, model, maxTokens);
+        result = { content, provider };
+      } catch (_) {
+        result = await callWithFallback(systemPrompt || "", prompt, maxTokens, provider);
+      }
     } else {
-      return res.status(400).json({ error: "Unknown provider" });
+      // No user key — auto-fallback using server env vars (the normal path for all users)
+      result = await callWithFallback(systemPrompt || "", prompt, maxTokens, provider);
     }
 
-    const responseFilter = filterContent(response);
-    db.prepare("UPDATE ai_filter_log SET output=?, flagged=?, flag_reason=? WHERE id=?").run(
-      response.slice(0, 500),
-      responseFilter.flagged ? 1 : 0,
-      responseFilter.reason || null,
-      logId
-    );
+    const responseFilter = filterContent(result.content);
+    try {
+      db.prepare("UPDATE ai_filter_log SET output=?, flagged=?, flag_reason=? WHERE id=?").run(
+        result.content.slice(0, 500),
+        responseFilter.flagged ? 1 : 0,
+        responseFilter.reason || null,
+        logId
+      );
+    } catch (_) {}
 
     if (responseFilter.flagged) {
       return res.json({
-        content: response,
+        content: result.content,
+        provider: result.provider,
         warning: "This AI-generated content has been flagged for review.",
         flagged: true,
         aiGenerated: true,
       });
     }
 
-    res.json({ content: response, aiGenerated: true });
+    res.json({ content: result.content, provider: result.provider, aiGenerated: true });
   } catch (err: any) {
     console.error("AI proxy error:", err);
-    res.status(502).json({ error: err.message || "AI request failed" });
+    res.status(502).json({ error: "AI is temporarily unavailable. Please try again in a moment." });
   }
 });
 
 // ── Collaborative AI Ensemble ─────────────────────────────────────────────────
-// Runs multiple providers in parallel and synthesises the best response
 router.post("/ensemble", requireAuth, async (req: Request, res: Response) => {
   const { prompt, systemPrompt, maxTokens = 3000 } = req.body;
   if (!prompt) return res.status(400).json({ error: "Prompt required" });
@@ -142,27 +211,18 @@ router.post("/ensemble", requireAuth, async (req: Request, res: Response) => {
     return res.status(400).json({ error: "Content flagged for safeguarding review." });
   }
 
-  // Gather all available providers (admin keys + user keys)
-  const providers = ["groq", "gemini", "openai", "openrouter", "claude", "huggingface"];
-  const available = providers.filter(p => getEffectiveKey(p, req.body[`${p}Key`]));
+  // Run up to 3 providers in parallel (all using server env var keys)
+  const toRun = PROVIDER_ORDER.filter(p => getEffectiveKey(p)).slice(0, 3);
 
-  if (available.length === 0) {
-    return res.status(400).json({ error: "No AI providers configured. Please ask your administrator to set up API keys." });
+  if (toRun.length === 0) {
+    return res.status(400).json({ error: "No AI providers configured." });
   }
 
-  // Run up to 3 providers in parallel
-  const toRun = available.slice(0, 3);
   const results = await Promise.allSettled(
     toRun.map(async (p) => {
-      const key = getEffectiveKey(p, req.body[`${p}Key`]);
+      const key = getEffectiveKey(p);
       const model = getAdminModel(p);
-      let text: string;
-      if (p === "groq") text = await callGroq(systemPrompt || "", prompt, key, model || "llama-3.3-70b-versatile", maxTokens);
-      else if (p === "gemini") text = await callGemini(systemPrompt || "", prompt, key, maxTokens);
-      else if (p === "openai") text = await callOpenAI(systemPrompt || "", prompt, key, model || "gpt-4o-mini", maxTokens);
-      else if (p === "openrouter") text = await callOpenRouter(systemPrompt || "", prompt, key, model, maxTokens);
-      else if (p === "claude") text = await callClaude(systemPrompt || "", prompt, key, maxTokens);
-      else text = await callHuggingFace(systemPrompt || "", prompt, key, maxTokens);
+      const text = await callProvider(p, systemPrompt || "", prompt, key, model, maxTokens);
       return { provider: p, text };
     })
   );
@@ -172,16 +232,19 @@ router.post("/ensemble", requireAuth, async (req: Request, res: Response) => {
     .map(r => r.value);
 
   if (successes.length === 0) {
-    return res.status(502).json({ error: "All AI providers failed in ensemble mode." });
+    // Fall back to single provider auto-fallback
+    try {
+      const result = await callWithFallback(systemPrompt || "", prompt, maxTokens);
+      return res.json({ content: result.content, provider: result.provider, ensemble: false, aiGenerated: true });
+    } catch (err: any) {
+      return res.status(502).json({ error: "All AI providers failed." });
+    }
   }
 
-  // If only one succeeded, return it directly
   if (successes.length === 1) {
     return res.json({ content: successes[0].text, provider: successes[0].provider, ensemble: false, aiGenerated: true });
   }
 
-  // Synthesise: use the primary (first) response as base, note contributions
-  // For worksheets, the longest/most detailed response wins as primary
   const primary = successes.reduce((a, b) => a.text.length >= b.text.length ? a : b);
   const contributors = successes.map(s => s.provider).join(", ");
 
@@ -195,10 +258,11 @@ router.post("/ensemble", requireAuth, async (req: Request, res: Response) => {
   });
 });
 
-// ── Get available providers (for frontend to know what's configured) ──────────
+// ── Get available providers ───────────────────────────────────────────────────
 router.get("/providers", requireAuth, (_req: Request, res: Response) => {
-  const adminKeys = db.prepare("SELECT provider, model FROM admin_api_keys").all() as any[];
-  const available = adminKeys.map(k => ({ provider: k.provider, model: k.model, source: "admin" }));
+  const available = PROVIDER_ORDER
+    .filter(p => getEffectiveKey(p))
+    .map(p => ({ provider: p, source: "server" }));
   res.json({ providers: available });
 });
 
@@ -233,7 +297,7 @@ router.delete("/admin/keys/:provider", requireAuth, requireAdmin, (req: Request,
   res.json({ success: true });
 });
 
-// ── AI Filter Log (admin view) ────────────────────────────────────────────────
+// ── AI Filter Log ─────────────────────────────────────────────────────────────
 router.get("/filter-log", requireAuth, (req: Request, res: Response) => {
   const logs = db.prepare(
     `SELECT afl.*, u.display_name FROM ai_filter_log afl
@@ -243,7 +307,7 @@ router.get("/filter-log", requireAuth, (req: Request, res: Response) => {
   res.json(logs);
 });
 
-// ── AI Usage Stats (admin analytics) ─────────────────────────────────────────
+// ── AI Usage Stats ────────────────────────────────────────────────────────────
 router.get("/stats", requireAuth, requireAdmin, (req: Request, res: Response) => {
   const schoolId = req.user!.schoolId;
   const totalRequests = (db.prepare("SELECT COUNT(*) as c FROM ai_filter_log WHERE school_id=?").get(schoolId) as any)?.c || 0;
@@ -272,7 +336,7 @@ async function callGroq(system: string, user: string, key: string, model: string
       temperature: 0.7,
     }),
   });
-  if (!res.ok) throw new Error(`Groq ${res.status}: ${await res.text()}`);
+  if (!res.ok) throw new Error(`Groq ${res.status}: ${(await res.text()).slice(0, 200)}`);
   const data = await res.json() as any;
   return data.choices[0].message.content;
 }
@@ -289,7 +353,7 @@ async function callGemini(system: string, user: string, key: string, maxTokens: 
       }),
     }
   );
-  if (!res.ok) throw new Error(`Gemini ${res.status}: ${await res.text()}`);
+  if (!res.ok) throw new Error(`Gemini ${res.status}: ${(await res.text()).slice(0, 200)}`);
   const data = await res.json() as any;
   return data.candidates[0].content.parts[0].text;
 }
@@ -307,7 +371,7 @@ async function callOpenAI(system: string, user: string, key: string, model: stri
       max_tokens: maxTokens,
     }),
   });
-  if (!res.ok) throw new Error(`OpenAI ${res.status}: ${await res.text()}`);
+  if (!res.ok) throw new Error(`OpenAI ${res.status}: ${(await res.text()).slice(0, 200)}`);
   const data = await res.json() as any;
   return data.choices[0].message.content;
 }
@@ -366,7 +430,7 @@ async function callClaude(system: string, user: string, key: string, maxTokens: 
       messages: [{ role: "user", content: user }],
     }),
   });
-  if (!res.ok) throw new Error(`Claude ${res.status}: ${await res.text()}`);
+  if (!res.ok) throw new Error(`Claude ${res.status}: ${(await res.text()).slice(0, 200)}`);
   const data = await res.json() as any;
   return data.content[0].text;
 }
