@@ -10,14 +10,16 @@ export default function PrivacyPolicy() {
         </Button>
         <div className="prose prose-sm max-w-none dark:prose-invert">
           <h1>Privacy Policy</h1>
-          <p className="text-muted-foreground text-sm">Last updated: March 2026 · Version 1.0</p>
+          <p className="text-muted-foreground text-sm">Last updated: March 2026 · Version 2.0</p>
+
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 my-4 not-prose"><p className="text-sm font-semibold text-amber-800">Data Controller Notice</p><p className="text-sm text-amber-700 mt-1">The school or institution using this Platform is the <strong>Data Controller</strong> under UK GDPR for all personal data relating to their staff and students. The Platform Licensor acts only as a Data Processor. Schools are responsible for ensuring their use of this Platform complies with UK GDPR, DPA 2018, and all applicable safeguarding legislation.</p></div>
 
           <p>This Privacy Policy explains how <strong>Adaptly</strong> ("we", "us", "our") collects, uses, and protects personal data when you use our platform. We are committed to full compliance with the <strong>UK General Data Protection Regulation (UK GDPR)</strong>, the <strong>Data Protection Act 2018</strong>, and the <strong>Privacy and Electronic Communications Regulations (PECR)</strong>.</p>
 
           <p>We have written this policy in plain English so it is easy to understand. If you have any questions, please contact us at <a href="mailto:privacy@adaptly.co.uk">privacy@adaptly.co.uk</a>.</p>
 
           <h2>1. Who We Are</h2>
-          <p>Adaptly is a software-as-a-service (SaaS) platform designed for UK schools and Multi-Academy Trusts (MATs) to support Special Educational Needs and Disabilities (SEND) education. We act as a <strong>data processor</strong> on behalf of schools (the data controllers) when processing pupil data.</p>
+          <p>Adaptly is a software-as-a-service (SaaS) platform designed for UK schools and Multi-Academy Trusts (MATs) to support Special Educational Needs and Disabilities (SEND) education. The Licensor acts as a <strong>data processor</strong> on behalf of schools (the data controllers) when processing pupil data. <strong>The school (Licensee) is the Data Controller</strong> and bears full responsibility for all personal data entered into the Platform.</p>
 
           <h2>2. What Data We Collect</h2>
           <h3>Account holders (teachers, SENCOs, administrators)</h3>
@@ -112,8 +114,11 @@ export default function PrivacyPolicy() {
           <h2>11. Data Breach Notification</h2>
           <p>In the event of a personal data breach, we will notify affected schools within 72 hours and the ICO where required by law.</p>
 
-          <h2>12. Contact and Complaints</h2>
-          <p>Data Protection contact: <a href="mailto:privacy@adaptly.co.uk">privacy@adaptly.co.uk</a></p>
+          <h2>12. Limitation of Liability</h2>
+          <p>The Licensor accepts no liability for any data breach, safeguarding incident, or regulatory penalty arising from the Licensee's use of the Platform or from data entered by the Licensee or their Users. The Licensee indemnifies the Licensor against all such claims. See the Terms of Service for full details.</p>
+
+          <h2>13. Contact and Complaints</h2>
+          <p>Data Protection contact: <a href="mailto:admin@sendassistant.app">admin@sendassistant.app</a></p>
           <p>If you are unhappy with how we handle your data, you have the right to complain to the <strong>Information Commissioner's Office (ICO)</strong>: <a href="https://ico.org.uk" target="_blank" rel="noopener noreferrer">ico.org.uk</a> or call 0303 123 1113.</p>
         </div>
       </div>

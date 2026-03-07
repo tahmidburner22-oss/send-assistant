@@ -14,13 +14,25 @@ router.get("/worksheets", requireAuth, (req: Request, res: Response) => {
 });
 
 router.post("/worksheets", requireAuth, (req: Request, res: Response) => {
-  const { title, subject, topic, yearGroup, sendNeed, difficulty, examBoard, content, teacherContent, overlay } = req.body;
+  const { title, subject, topic, yearGroup, sendNeed, difficulty, examBoard, content, teacherContent, overlay, sections } = req.body;
   if (!title) return res.status(400).json({ error: "Title required" });
   const id = uuidv4();
   db.prepare(`INSERT INTO worksheets (id, school_id, created_by, title, subject, topic, year_group, send_need, difficulty, exam_board, content, teacher_content, overlay)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
     id, req.user!.schoolId, req.user!.id, title, subject, topic, yearGroup, sendNeed, difficulty, examBoard, content, teacherContent, overlay
   );
+  // Save sections if provided
+  if (Array.isArray(sections)) {
+    sections.forEach((s: any, idx: number) => {
+      db.prepare(`INSERT INTO worksheet_sections (id, worksheet_id, section_index, title, type, content, teacher_only, svg, caption, symbols)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
+        uuidv4(), id, idx, s.title || null, s.type || null, s.content || null,
+        s.teacherOnly ? 1 : 0, s.svg || null, s.caption || null,
+        s.symbols ? JSON.stringify(s.symbols) : null
+      );
+    });
+  }
+  auditLog(req.user!.id, req.user!.schoolId, "worksheet.created", "worksheet", id, { title, subject, yearGroup }, req.ip);
   res.status(201).json({ id });
 });
 
@@ -113,6 +125,16 @@ router.post("/onboarding-complete", requireAuth, (req: Request, res: Response) =
   db.prepare("UPDATE users SET onboarding_done = 1 WHERE id = ?").run(req.user!.id);
   auditLog(req.user!.id, req.user!.schoolId, "user.onboarding_completed", "user", req.user!.id, {}, req.ip);
   res.json({ message: "Onboarding marked complete" });
+});
+
+// ── Admin: all worksheets across school ──────────────────────────────────────
+router.get("/admin/worksheets", requireAuth, (req: Request, res: Response) => {
+  const rows = db.prepare(
+    `SELECT w.*, u.display_name as author_name FROM worksheets w
+     LEFT JOIN users u ON w.created_by = u.id
+     WHERE w.school_id = ? ORDER BY w.created_at DESC LIMIT 500`
+  ).all(req.user!.schoolId);
+  res.json(rows);
 });
 
 // ── Analytics summary ─────────────────────────────────────────────────────────

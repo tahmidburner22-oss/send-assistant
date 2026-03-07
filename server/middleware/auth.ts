@@ -63,6 +63,15 @@ export function requireAuth(req: Request, res: Response, next: NextFunction) {
   }
 }
 
+export function requireAdmin(req: Request, res: Response, next: NextFunction) {
+  if (!req.user) return res.status(401).json({ error: "Authentication required" });
+  const adminRoles = ["mat_admin", "school_admin"];
+  if (!adminRoles.includes(req.user.role)) {
+    return res.status(403).json({ error: "Admin access required" });
+  }
+  next();
+}
+
 export function requireRole(...roles: string[]) {
   return (req: Request, res: Response, next: NextFunction) => {
     if (!req.user) return res.status(401).json({ error: "Authentication required" });

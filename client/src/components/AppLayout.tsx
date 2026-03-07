@@ -5,8 +5,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Home, Sparkles, FileText, BookOpen, LayoutGrid, Users, Clock,
   BarChart3, Lightbulb, ExternalLink, Settings, Menu, X, GraduationCap, LogOut,
-  Calendar, TrendingUp, ClipboardList
+  Calendar, TrendingUp, ClipboardList, IdCard, CheckSquare, ShieldAlert, Heart,
+  HelpCircle, Table2, AlignLeft, Layers, CalendarDays, BookMarked, Ticket,
+  BookType, Mail, Shield, ChevronDown, ChevronRight
 } from "lucide-react";
+import { useState as useLocalState } from "react";
 
 const mainMenu = [
   { path: "/home", label: "Home", icon: Home },
@@ -20,7 +23,33 @@ const mainMenu = [
   { path: "/ideas", label: "Ideas", icon: Lightbulb },
 ];
 
-const toolsMenu = [
+const sendToolsMenu = [
+  { path: "/tools/iep-generator", label: "IEP / EHCP Goals", icon: Shield, color: "text-blue-600" },
+  { path: "/tools/social-stories", label: "Social Stories", icon: BookOpen, color: "text-purple-600" },
+  { path: "/tools/pupil-passport", label: "Pupil Passport", icon: IdCard, color: "text-amber-600" },
+  { path: "/tools/smart-targets", label: "SMART Targets", icon: CheckSquare, color: "text-teal-600" },
+  { path: "/tools/behaviour-plan", label: "Behaviour Support Plan", icon: ShieldAlert, color: "text-orange-600" },
+  { path: "/tools/wellbeing-support", label: "Wellbeing Support", icon: Heart, color: "text-red-500" },
+];
+
+const planningMenu = [
+  { path: "/tools/lesson-planner", label: "Lesson Planner", icon: CalendarDays, color: "text-green-600" },
+  { path: "/tools/medium-term-planner", label: "Medium Term Planner", icon: Calendar, color: "text-green-700" },
+  { path: "/tools/quiz-generator", label: "Quiz Generator", icon: HelpCircle, color: "text-indigo-600" },
+  { path: "/tools/rubric-generator", label: "Rubric / Mark Scheme", icon: Table2, color: "text-violet-600" },
+  { path: "/tools/comprehension-generator", label: "Comprehension", icon: BookMarked, color: "text-sky-600" },
+  { path: "/tools/exit-ticket", label: "Exit Ticket", icon: Ticket, color: "text-fuchsia-600" },
+  { path: "/tools/flash-cards", label: "Flash Cards", icon: Layers, color: "text-yellow-600" },
+  { path: "/tools/vocabulary-builder", label: "Vocabulary Builder", icon: BookType, color: "text-lime-700" },
+];
+
+const communicationMenu = [
+  { path: "/tools/report-comments", label: "Report Comments", icon: FileText, color: "text-rose-600" },
+  { path: "/tools/parent-newsletter", label: "Parent Newsletter", icon: Mail, color: "text-pink-600" },
+  { path: "/tools/text-rewriter", label: "Text Rewriter", icon: AlignLeft, color: "text-cyan-600" },
+];
+
+const classroomMenu = [
   { path: "/visual-timetable", label: "Visual Timetable", icon: Calendar },
   { path: "/behaviour-tracking", label: "Behaviour Tracking", icon: TrendingUp },
   { path: "/attendance", label: "Attendance", icon: ClipboardList },
@@ -31,7 +60,62 @@ const accountMenu = [
   { path: "/settings", label: "Settings", icon: Settings },
 ];
 
-const allMenuItems = [...mainMenu, ...toolsMenu, ...accountMenu];
+const allMenuItems = [
+  ...mainMenu, ...sendToolsMenu, ...planningMenu, ...communicationMenu, ...classroomMenu, ...accountMenu
+];
+
+function SidebarSection({
+  label, items, location, setSidebarOpen, defaultOpen = false
+}: {
+  label: string;
+  items: { path: string; label: string; icon: any; color?: string }[];
+  location: string;
+  setSidebarOpen: (v: boolean) => void;
+  defaultOpen?: boolean;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
+  const hasActive = items.some(i => location.startsWith(i.path));
+
+  return (
+    <>
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full px-3 py-2 flex items-center justify-between hover:bg-muted/50 transition-colors"
+      >
+        <span className={`text-[10px] font-semibold uppercase tracking-wider ${hasActive ? "text-brand" : "text-muted-foreground"}`}>
+          {label}
+        </span>
+        {open ? <ChevronDown className="w-3 h-3 text-muted-foreground" /> : <ChevronRight className="w-3 h-3 text-muted-foreground" />}
+      </button>
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="overflow-hidden"
+          >
+            {items.map(item => {
+              const Icon = item.icon;
+              const isActive = location.startsWith(item.path);
+              return (
+                <Link key={item.path} href={item.path} onClick={() => setSidebarOpen(false)}>
+                  <div className={`mx-2 px-3 py-2 rounded-lg flex items-center gap-3 transition-all text-sm ${
+                    isActive ? "bg-brand-light text-brand font-medium" : "text-foreground hover:bg-muted"
+                  }`}>
+                    <Icon className={`w-[16px] h-[16px] ${isActive ? "text-brand" : (item.color || "text-muted-foreground")}`} />
+                    <span className="text-xs">{item.label}</span>
+                  </div>
+                </Link>
+              );
+            })}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
+  );
+}
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -39,6 +123,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, logout } = useApp();
 
   const currentPage = allMenuItems.find(m => location.startsWith(m.path));
+
+  // Determine if any section is active for auto-open
+  const sendActive = sendToolsMenu.some(i => location.startsWith(i.path));
+  const planningActive = planningMenu.some(i => location.startsWith(i.path));
+  const commActive = communicationMenu.some(i => location.startsWith(i.path));
+  const classroomActive = classroomMenu.some(i => location.startsWith(i.path));
 
   return (
     <div className="min-h-screen bg-background">
@@ -79,7 +169,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                   </div>
                   <div>
                     <div className="font-semibold text-foreground text-sm">Adaptly</div>
-                    <div className="text-xs text-muted-foreground">For Schools</div>
+                    <div className="text-xs text-muted-foreground">SEND AI Platform</div>
                   </div>
                 </div>
                 <button onClick={() => setSidebarOpen(false)} className="p-1.5 rounded-lg hover:bg-muted transition-colors">
@@ -87,10 +177,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 </button>
               </div>
 
-              {/* Main Menu */}
+              {/* Menu */}
               <div className="flex-1 overflow-y-auto py-2">
+                {/* Main Menu — always visible, no collapse */}
                 <div className="px-3 py-2">
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Main Menu</span>
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Main</span>
                 </div>
                 {mainMenu.map(item => {
                   const Icon = item.icon;
@@ -107,44 +198,26 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                   );
                 })}
 
-                <div className="mx-3 my-3 border-t border-border/50" />
+                <div className="mx-3 my-2 border-t border-border/50" />
 
-                <div className="px-3 py-2">
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">SEND Tools</span>
-                </div>
-                {toolsMenu.map(item => {
-                  const Icon = item.icon;
-                  const isActive = location.startsWith(item.path);
-                  return (
-                    <Link key={item.path} href={item.path} onClick={() => setSidebarOpen(false)}>
-                      <div className={`mx-2 px-3 py-2.5 rounded-lg flex items-center gap-3 transition-all text-sm ${
-                        isActive ? "bg-brand-light text-brand font-medium" : "text-foreground hover:bg-muted"
-                      }`}>
-                        <Icon className="w-[18px] h-[18px]" />
-                        {item.label}
-                      </div>
-                    </Link>
-                  );
-                })}
+                {/* Collapsible sections */}
+                <SidebarSection label="SEND Tools" items={sendToolsMenu} location={location} setSidebarOpen={setSidebarOpen} defaultOpen={sendActive} />
+                <div className="mx-3 my-1 border-t border-border/30" />
+                <SidebarSection label="Planning & Assessment" items={planningMenu} location={location} setSidebarOpen={setSidebarOpen} defaultOpen={planningActive} />
+                <div className="mx-3 my-1 border-t border-border/30" />
+                <SidebarSection label="Communication" items={communicationMenu} location={location} setSidebarOpen={setSidebarOpen} defaultOpen={commActive} />
+                <div className="mx-3 my-1 border-t border-border/30" />
+                <SidebarSection label="Classroom Management" items={classroomMenu} location={location} setSidebarOpen={setSidebarOpen} defaultOpen={classroomActive} />
 
-                <div className="mx-3 my-3 border-t border-border/50" />
+                <div className="mx-3 my-2 border-t border-border/50" />
 
+                {/* Account */}
                 <div className="px-3 py-2">
                   <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Account</span>
                 </div>
                 {accountMenu.map(item => {
                   const Icon = item.icon;
                   const isActive = location.startsWith(item.path);
-                  if (item.external) {
-                    return (
-                      <Link key={item.path} href={item.path} onClick={() => setSidebarOpen(false)}>
-                        <div className="mx-2 px-3 py-2.5 rounded-lg flex items-center gap-3 transition-all text-sm text-foreground hover:bg-muted">
-                          <Icon className="w-[18px] h-[18px]" />
-                          {item.label}
-                        </div>
-                      </Link>
-                    );
-                  }
                   return (
                     <Link key={item.path} href={item.path} onClick={() => setSidebarOpen(false)}>
                       <div className={`mx-2 px-3 py-2.5 rounded-lg flex items-center gap-3 transition-all text-sm ${
@@ -156,6 +229,18 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                     </Link>
                   );
                 })}
+
+                {/* Admin link — only for admin users */}
+                {(user?.role === "school_admin" || user?.role === "mat_admin" || user?.email === "admin@sendassistant.app") && (
+                  <Link href="/admin" onClick={() => setSidebarOpen(false)}>
+                    <div className={`mx-2 px-3 py-2.5 rounded-lg flex items-center gap-3 transition-all text-sm ${
+                      location.startsWith("/admin") ? "bg-brand-light text-brand font-medium" : "text-foreground hover:bg-muted"
+                    }`}>
+                      <Shield className="w-[18px] h-[18px]" />
+                      Admin Panel
+                    </div>
+                  </Link>
+                )}
               </div>
 
               {/* User Info */}
@@ -166,9 +251,16 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium text-foreground truncate">{user?.displayName || "User"}</div>
-                    <div className="text-xs text-muted-foreground">{user?.role === "school_admin" || user?.role === "mat_admin" || user?.role === "senco" ? "Admin" : user?.role === "ta" ? "Teaching Assistant" : "Teacher"}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {user?.role === "school_admin" || user?.role === "mat_admin" ? "Administrator" :
+                       user?.role === "senco" ? "SENCO" :
+                       user?.role === "ta" ? "Teaching Assistant" : "Teacher"}
+                    </div>
                   </div>
-                  <button onClick={() => { logout(); setSidebarOpen(false); window.location.href = "/"; }} className="p-2 rounded-lg hover:bg-red-50 text-muted-foreground hover:text-red-600 transition-colors">
+                  <button
+                    onClick={() => { logout(); setSidebarOpen(false); window.location.href = "/"; }}
+                    className="p-2 rounded-lg hover:bg-red-50 text-muted-foreground hover:text-red-600 transition-colors"
+                  >
                     <LogOut className="w-4 h-4" />
                   </button>
                 </div>

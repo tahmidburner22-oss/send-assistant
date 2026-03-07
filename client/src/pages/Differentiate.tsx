@@ -100,13 +100,6 @@ export default function Differentiate() {
   return (
     <div className="px-4 py-6 max-w-2xl mx-auto space-y-6">
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-        <div className="rounded-xl overflow-hidden mb-4 border border-border/50">
-          <img
-            src="/images/differentiate-hero.webp"
-            alt="Differentiation"
-            className="w-full h-32 object-cover"
-          />
-        </div>
         <p className="text-sm text-muted-foreground">Adapt any task or activity for SEND students with evidence-based strategies.</p>
       </motion.div>
 

@@ -14,6 +14,7 @@ import schoolsRouter from "./routes/schools.js";
 import pupilsRouter from "./routes/pupils.js";
 import aiRouter from "./routes/ai.js";
 import dataRouter from "./routes/data.js";
+import adminRouter from "./routes/admin.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -84,10 +85,11 @@ app.use("/api/schools", schoolsRouter);
 app.use("/api/pupils", pupilsRouter);
 app.use("/api/ai", aiRouter);
 app.use("/api/data", dataRouter);
+app.use("/api/admin", adminRouter);
 
 // ── Health check ──────────────────────────────────────────────────────────────
 app.get("/api/health", (_, res) => {
-  res.json({ status: "ok", timestamp: new Date().toISOString(), version: "1.0.0" });
+  res.json({ status: "ok", timestamp: new Date().toISOString(), version: "2.0.0-SEND-FINAL" });
 });
 
 // ── Serve static frontend in production ───────────────────────────────────────

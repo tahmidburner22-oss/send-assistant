@@ -8,6 +8,7 @@ import { AppProvider } from "./contexts/AppContext";
 import CookieBanner from "./components/CookieBanner";
 import OnboardingTour from "./components/OnboardingTour";
 import SessionTimeout from "./components/SessionTimeout";
+import AIBestPracticesGate from "./components/AIBestPracticesGate";
 
 // Core pages
 import Home from "./pages/Home";
@@ -27,6 +28,25 @@ import BehaviourTracking from "./pages/BehaviourTracking";
 import Attendance from "./pages/Attendance";
 import AdminPanel from "./pages/AdminPanel";
 
+// New AI Tools
+import IEPGenerator from "./pages/tools/IEPGenerator";
+import SocialStories from "./pages/tools/SocialStories";
+import LessonPlanner from "./pages/tools/LessonPlanner";
+import ReportComments from "./pages/tools/ReportComments";
+import PupilPassport from "./pages/tools/PupilPassport";
+import SmartTargets from "./pages/tools/SmartTargets";
+import BehaviourPlan from "./pages/tools/BehaviourPlan";
+import QuizGenerator from "./pages/tools/QuizGenerator";
+import RubricGenerator from "./pages/tools/RubricGenerator";
+import TextRewriter from "./pages/tools/TextRewriter";
+import FlashCards from "./pages/tools/FlashCards";
+import MediumTermPlanner from "./pages/tools/MediumTermPlanner";
+import ComprehensionGenerator from "./pages/tools/ComprehensionGenerator";
+import ExitTicket from "./pages/tools/ExitTicket";
+import VocabularyBuilder from "./pages/tools/VocabularyBuilder";
+import WellbeingSupport from "./pages/tools/WellbeingSupport";
+import ParentNewsletter from "./pages/tools/ParentNewsletter";
+
 // Legal & Compliance
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import Terms from "./pages/Terms";
@@ -45,6 +65,7 @@ function ProtectedRoutes() {
   return (
     <AppLayout>
       <Switch>
+        {/* Core */}
         <Route path="/home" component={Home} />
         <Route path="/differentiate" component={Differentiate} />
         <Route path="/worksheets" component={Worksheets} />
@@ -59,6 +80,30 @@ function ProtectedRoutes() {
         <Route path="/behaviour-tracking" component={BehaviourTracking} />
         <Route path="/attendance" component={Attendance} />
         <Route path="/admin" component={AdminPanel} />
+
+        {/* SEND Tools */}
+        <Route path="/tools/iep-generator" component={IEPGenerator} />
+        <Route path="/tools/social-stories" component={SocialStories} />
+        <Route path="/tools/pupil-passport" component={PupilPassport} />
+        <Route path="/tools/smart-targets" component={SmartTargets} />
+        <Route path="/tools/behaviour-plan" component={BehaviourPlan} />
+        <Route path="/tools/wellbeing-support" component={WellbeingSupport} />
+
+        {/* Planning & Assessment */}
+        <Route path="/tools/lesson-planner" component={LessonPlanner} />
+        <Route path="/tools/medium-term-planner" component={MediumTermPlanner} />
+        <Route path="/tools/quiz-generator" component={QuizGenerator} />
+        <Route path="/tools/rubric-generator" component={RubricGenerator} />
+        <Route path="/tools/comprehension-generator" component={ComprehensionGenerator} />
+        <Route path="/tools/exit-ticket" component={ExitTicket} />
+        <Route path="/tools/flash-cards" component={FlashCards} />
+        <Route path="/tools/vocabulary-builder" component={VocabularyBuilder} />
+
+        {/* Communication */}
+        <Route path="/tools/report-comments" component={ReportComments} />
+        <Route path="/tools/parent-newsletter" component={ParentNewsletter} />
+        <Route path="/tools/text-rewriter" component={TextRewriter} />
+
         <Route component={NotFound} />
       </Switch>
     </AppLayout>
@@ -109,6 +154,7 @@ function App() {
             {/* Global overlays — rendered outside Router so they persist across navigation */}
             <CookieBanner />
             <OnboardingTour />
+            <AIBestPracticesGate />
             <SessionTimeout />
           </TooltipProvider>
         </AppProvider>

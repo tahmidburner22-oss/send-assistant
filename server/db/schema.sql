@@ -260,6 +260,38 @@ CREATE TABLE IF NOT EXISTS cookie_consents (
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
+-- Admin API Keys (server-side keys set by admin, used as fallback for all users)
+CREATE TABLE IF NOT EXISTS admin_api_keys (
+  id TEXT PRIMARY KEY,
+  provider TEXT NOT NULL UNIQUE, -- groq/gemini/openai/openrouter/claude/huggingface
+  api_key TEXT NOT NULL,
+  model TEXT, -- optional preferred model
+  updated_by TEXT REFERENCES users(id),
+  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+-- System settings (key-value store for admin-configurable settings)
+CREATE TABLE IF NOT EXISTS system_settings (
+  key TEXT PRIMARY KEY,
+  value TEXT NOT NULL,
+  updated_by TEXT REFERENCES users(id),
+  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+-- Worksheet sections (for full re-editing support)
+CREATE TABLE IF NOT EXISTS worksheet_sections (
+  id TEXT PRIMARY KEY,
+  worksheet_id TEXT NOT NULL REFERENCES worksheets(id) ON DELETE CASCADE,
+  section_index INTEGER NOT NULL,
+  title TEXT,
+  type TEXT,
+  content TEXT,
+  teacher_only INTEGER NOT NULL DEFAULT 0,
+  svg TEXT,
+  caption TEXT,
+  symbols TEXT -- JSON: array of {word, svgPath} for Widgit-style symbols
+);
+
 -- Indexes
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_users_school ON users(school_id);
