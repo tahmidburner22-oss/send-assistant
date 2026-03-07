@@ -9,7 +9,6 @@ import {
   HelpCircle, Table2, AlignLeft, Layers, CalendarDays, BookMarked, Ticket,
   BookType, Mail, Shield, ChevronDown, ChevronRight
 } from "lucide-react";
-import { useState as useLocalState } from "react";
 
 const mainMenu = [
   { path: "/home", label: "Home", icon: Home },
@@ -65,21 +64,32 @@ const allMenuItems = [
 ];
 
 function SidebarSection({
-  label, items, location, setSidebarOpen, defaultOpen = false
+  label, items, location, setSidebarOpen
 }: {
   label: string;
   items: { path: string; label: string; icon: any; color?: string }[];
   location: string;
   setSidebarOpen: (v: boolean) => void;
-  defaultOpen?: boolean;
 }) {
-  const [open, setOpen] = useState(defaultOpen);
+  // Persist collapse state per section; default to open (true) on first visit
+  const storageKey = `sidebar-section-${label.replace(/\s+/g, '-').toLowerCase()}`;
+  const [open, setOpen] = useState(() => {
+    const saved = localStorage.getItem(storageKey);
+    return saved === null ? true : saved === 'true';
+  });
+
+  const handleToggle = () => {
+    const next = !open;
+    setOpen(next);
+    localStorage.setItem(storageKey, String(next));
+  };
+
   const hasActive = items.some(i => location.startsWith(i.path));
 
   return (
     <>
       <button
-        onClick={() => setOpen(!open)}
+        onClick={handleToggle}
         className="w-full px-3 py-2 flex items-center justify-between hover:bg-muted/50 transition-colors"
       >
         <span className={`text-[10px] font-semibold uppercase tracking-wider ${hasActive ? "text-brand" : "text-muted-foreground"}`}>
@@ -123,12 +133,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, logout } = useApp();
 
   const currentPage = allMenuItems.find(m => location.startsWith(m.path));
-
-  // Determine if any section is active for auto-open
-  const sendActive = sendToolsMenu.some(i => location.startsWith(i.path));
-  const planningActive = planningMenu.some(i => location.startsWith(i.path));
-  const commActive = communicationMenu.some(i => location.startsWith(i.path));
-  const classroomActive = classroomMenu.some(i => location.startsWith(i.path));
 
   return (
     <div className="min-h-screen bg-background">
@@ -200,14 +204,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
                 <div className="mx-3 my-2 border-t border-border/50" />
 
-                {/* Collapsible sections */}
-                <SidebarSection label="SEND Tools" items={sendToolsMenu} location={location} setSidebarOpen={setSidebarOpen} defaultOpen={sendActive} />
+                {/* Collapsible sections — all open by default, collapse state persisted */}
+                <SidebarSection label="SEND Tools" items={sendToolsMenu} location={location} setSidebarOpen={setSidebarOpen} />
                 <div className="mx-3 my-1 border-t border-border/30" />
-                <SidebarSection label="Planning & Assessment" items={planningMenu} location={location} setSidebarOpen={setSidebarOpen} defaultOpen={planningActive} />
+                <SidebarSection label="Planning & Assessment" items={planningMenu} location={location} setSidebarOpen={setSidebarOpen} />
                 <div className="mx-3 my-1 border-t border-border/30" />
-                <SidebarSection label="Communication" items={communicationMenu} location={location} setSidebarOpen={setSidebarOpen} defaultOpen={commActive} />
+                <SidebarSection label="Communication" items={communicationMenu} location={location} setSidebarOpen={setSidebarOpen} />
                 <div className="mx-3 my-1 border-t border-border/30" />
-                <SidebarSection label="Classroom Management" items={classroomMenu} location={location} setSidebarOpen={setSidebarOpen} defaultOpen={classroomActive} />
+                <SidebarSection label="Classroom Management" items={classroomMenu} location={location} setSidebarOpen={setSidebarOpen} />
 
                 <div className="mx-3 my-2 border-t border-border/50" />
 
