@@ -6,14 +6,26 @@ import { filterContent } from "../lib/contentFilter.js";
 
 const router = Router();
 
-// ── Helper: get effective API key (user-supplied → admin server key) ──────────
+// ── Helper: get effective API key (user-supplied → admin DB key → env var) ────────────────
+const ENV_KEY_MAP: Record<string, string> = {
+  groq: process.env.GROQ_API_KEY || "",
+  gemini: process.env.GEMINI_API_KEY || "",
+  openai: process.env.OPENAI_API_KEY || "",
+  openrouter: process.env.OPENROUTER_API_KEY || "",
+  claude: process.env.CLAUDE_API_KEY || "",
+  huggingface: process.env.HUGGINGFACE_API_KEY || "",
+};
 function getEffectiveKey(provider: string, userKey?: string): string {
   if (userKey && userKey.trim()) return userKey.trim();
-  // Fall back to admin server-side key
-  const adminKey = db.prepare(
-    "SELECT api_key FROM admin_api_keys WHERE provider = ?"
-  ).get(provider) as any;
-  return adminKey?.api_key || "";
+  // Try admin DB key first
+  try {
+    const adminKey = db.prepare(
+      "SELECT api_key FROM admin_api_keys WHERE provider = ?"
+    ).get(provider) as any;
+    if (adminKey?.api_key) return adminKey.api_key;
+  } catch (_) {}
+  // Fall back to environment variable directly (always available, even on fresh deploy)
+  return ENV_KEY_MAP[provider] || ENV_KEY_MAP[provider.toLowerCase()] || "";
 }
 
 function getAdminModel(provider: string): string {
