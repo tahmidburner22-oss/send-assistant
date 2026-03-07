@@ -245,9 +245,15 @@ export async function callAI(
 ): Promise<{ text: string; provider: AIProvider }> {
   // Primary: route through server so admin API keys are used automatically for all users
   try {
+    // Include the JWT token from localStorage in the Authorization header.
+    // The server's requireAuth middleware reads from req.headers.authorization first.
+    // Without this header the request returns 401 and AI generation silently fails.
+    const storedToken = typeof localStorage !== 'undefined' ? localStorage.getItem('send_token') : null;
+    const reqHeaders: Record<string, string> = { "Content-Type": "application/json" };
+    if (storedToken) reqHeaders["Authorization"] = `Bearer ${storedToken}`;
     const res = await fetch("/api/ai/generate", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: reqHeaders,
       credentials: "include",
       // Server expects 'prompt' (not 'userPrompt') per the /api/ai/generate endpoint
       body: JSON.stringify({ prompt: userPrompt, systemPrompt, maxTokens }),
