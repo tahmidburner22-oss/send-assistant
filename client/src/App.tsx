@@ -62,8 +62,32 @@ import HelpCentre from "./pages/HelpCentre";
 import Onboarding from "./pages/Onboarding";
 
 import AppLayout from "./components/AppLayout";
+import { useApp } from "./contexts/AppContext";
+import { useLocation } from "wouter";
 
 function ProtectedRoutes() {
+  const { isLoggedIn, loading } = useApp();
+  const [, navigate] = useLocation();
+
+  // While the session is being restored from the token, show a loading screen
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center space-y-3">
+          <div className="w-10 h-10 border-2 border-brand border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-sm text-muted-foreground">Loading your session&hellip;</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Not logged in (or session timed out) — redirect to login
+  if (!isLoggedIn) {
+    // Use replace so the back button doesn't loop
+    window.location.replace("/login");
+    return null;
+  }
+
   return (
     <AppLayout>
       <Switch>
