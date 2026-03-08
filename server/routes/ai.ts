@@ -3,22 +3,29 @@ import { v4 as uuidv4 } from "uuid";
 import db from "../db/index.js";
 import { requireAuth, requireAdmin, auditLog } from "../middleware/auth.js";
 import { filterContent } from "../lib/contentFilter.js";
+import { getSchoolKey } from "./schoolApiKeys.js";
 
 const router = Router();
 
 // ── Provider priority order — server always tries all of these automatically ──
 const PROVIDER_ORDER = ["groq", "gemini", "openai", "openrouter", "claude", "huggingface"] as const;
 
-// ── Get the best available key for a provider (env var is always the baseline) ──
-function getEffectiveKey(provider: string, userKey?: string): string {
+// ── Get the best available key: school key → global admin key → env var ──────
+function getEffectiveKey(provider: string, userKey?: string, schoolId?: string): string {
   if (userKey && userKey.trim()) return userKey.trim();
+  // 1. School-level key (highest priority)
+  if (schoolId) {
+    const schoolEntry = getSchoolKey(schoolId, provider);
+    if (schoolEntry?.key) return schoolEntry.key;
+  }
+  // 2. Global admin key
   try {
     const adminKey = db.prepare(
       "SELECT api_key FROM admin_api_keys WHERE provider = ?"
     ).get(provider) as any;
     if (adminKey?.api_key) return adminKey.api_key;
   } catch (_) {}
-  // Always fall back to Railway env vars — these are always set
+  // 3. Railway env vars
   const envMap: Record<string, string> = {
     groq: process.env.GROQ_API_KEY || "",
     gemini: process.env.GEMINI_API_KEY || "",
@@ -30,7 +37,11 @@ function getEffectiveKey(provider: string, userKey?: string): string {
   return envMap[provider] || "";
 }
 
-function getAdminModel(provider: string): string {
+function getAdminModel(provider: string, schoolId?: string): string {
+  if (schoolId) {
+    const schoolEntry = getSchoolKey(schoolId, provider);
+    if (schoolEntry?.model) return schoolEntry.model;
+  }
   try {
     const row = db.prepare(
       "SELECT model FROM admin_api_keys WHERE provider = ?"
@@ -71,23 +82,36 @@ async function callWithFallback(
   system: string,
   user: string,
   maxTokens: number,
-  preferredProvider?: string
+  preferredProvider?: string,
+  schoolId?: string
 ): Promise<{ content: string; provider: string }> {
-  // Build ordered list: preferred first, then the rest
-  const order = preferredProvider
-    ? [preferredProvider, ...PROVIDER_ORDER.filter(p => p !== preferredProvider)]
-    : [...PROVIDER_ORDER];
+  // Build ordered list: school providers first, then global
+  let order: string[];
+  if (schoolId) {
+    const schoolProviders = (db.prepare(
+      "SELECT provider FROM school_api_keys WHERE school_id=? AND enabled=1 ORDER BY updated_at DESC"
+    ).all(schoolId) as any[]).map((r: any) => r.provider);
+    const remaining = (PROVIDER_ORDER as readonly string[]).filter(p => !schoolProviders.includes(p));
+    const fullOrder = [...schoolProviders, ...remaining];
+    order = preferredProvider
+      ? [preferredProvider, ...fullOrder.filter(p => p !== preferredProvider)]
+      : fullOrder;
+  } else {
+    order = preferredProvider
+      ? [preferredProvider, ...(PROVIDER_ORDER as readonly string[]).filter(p => p !== preferredProvider)]
+      : [...PROVIDER_ORDER];
+  }
 
   const errors: string[] = [];
 
   for (const provider of order) {
-    const key = getEffectiveKey(provider);
+    const key = getEffectiveKey(provider, undefined, schoolId);
     if (!key) {
       errors.push(`${provider}: no key configured`);
       continue;
     }
     try {
-      const model = getAdminModel(provider);
+      const model = getAdminModel(provider, schoolId);
       const content = await callProvider(provider, system, user, key, model, maxTokens);
       if (content && content.trim()) {
         console.log(`[AI] Success via ${provider}`);
@@ -167,11 +191,11 @@ router.post("/generate", requireAuth, async (req: Request, res: Response) => {
         const content = await callProvider(provider, systemPrompt || "", prompt, apiKey, model, maxTokens);
         result = { content, provider };
       } catch (_) {
-        result = await callWithFallback(systemPrompt || "", prompt, maxTokens, provider);
+        result = await callWithFallback(systemPrompt || "", prompt, maxTokens, provider, req.user!.schoolId || undefined);
       }
     } else {
-      // No user key — auto-fallback using server env vars (the normal path for all users)
-      result = await callWithFallback(systemPrompt || "", prompt, maxTokens, provider);
+      // No user key — auto-fallback using school keys first, then global
+      result = await callWithFallback(systemPrompt || "", prompt, maxTokens, provider, req.user!.schoolId || undefined);
     }
 
     const responseFilter = filterContent(result.content);

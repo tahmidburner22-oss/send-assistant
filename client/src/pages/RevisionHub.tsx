@@ -66,20 +66,45 @@ export default function RevisionHub() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const recognitionRef = useRef<any>(null);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [selectedVoiceName, setSelectedVoiceName] = useState("");
 
-  // Cancel speech on unmount
+  // Load voices — browsers load them asynchronously
   useEffect(() => {
-    return () => { window.speechSynthesis?.cancel(); };
+    const loadVoices = () => {
+      const all = window.speechSynthesis?.getVoices() || [];
+      const english = all.filter(v => v.lang.startsWith("en"));
+      setAvailableVoices(english);
+      if (!selectedVoiceName && english.length > 0) {
+        // Prefer a natural-sounding GB or US voice
+        const pick =
+          english.find(v => v.lang === "en-GB" && /natural|enhanced|premium/i.test(v.name)) ||
+          english.find(v => v.lang === "en-GB") ||
+          english.find(v => v.lang === "en-US" && /natural|enhanced|premium/i.test(v.name)) ||
+          english[0];
+        setSelectedVoiceName(pick.name);
+      }
+    };
+    loadVoices();
+    window.speechSynthesis?.addEventListener("voiceschanged", loadVoices);
+    return () => {
+      window.speechSynthesis?.removeEventListener("voiceschanged", loadVoices);
+      window.speechSynthesis?.cancel();
+    };
   }, []);
 
-  // ── Speech controls ────────────────────────────────────────────────────────
-  const startSpeech = (rate = speechRate) => {
+  // ── Speech controls ────────────────────────────────────────────────────────────────────────────────
+  const startSpeech = (rate = speechRate, voiceName = selectedVoiceName) => {
     if (!podcastScript) return;
     window.speechSynthesis.cancel();
     const utt = new SpeechSynthesisUtterance(podcastScript);
-    utt.lang = "en-GB";
+    const voices = window.speechSynthesis.getVoices();
+    const voice = voices.find(v => v.name === voiceName);
+    if (voice) { utt.voice = voice; utt.lang = voice.lang; }
+    else utt.lang = "en-GB";
     utt.rate = rate;
-    utt.pitch = 1;
+    utt.pitch = 1.05;
+    utt.volume = 1;
     utt.onend = () => setIsPlaying(false);
     utt.onerror = () => setIsPlaying(false);
     utteranceRef.current = utt;
@@ -394,7 +419,7 @@ export default function RevisionHub() {
             </div>
 
             {/* Speed control */}
-            <div className="flex items-center justify-center gap-2">
+            <div className="flex items-center justify-center gap-2 flex-wrap">
               <Volume2 className="w-4 h-4 text-muted-foreground" />
               <span className="text-xs text-muted-foreground mr-1">Speed:</span>
               {[0.75, 1, 1.25, 1.5, 2].map(r => (
@@ -410,6 +435,29 @@ export default function RevisionHub() {
                 </button>
               ))}
             </div>
+
+            {/* Voice selector */}
+            {availableVoices.length > 1 && (
+              <div className="flex items-center justify-center gap-2">
+                <span className="text-xs text-muted-foreground">Voice:</span>
+                <select
+                  value={selectedVoiceName}
+                  onChange={e => {
+                    setSelectedVoiceName(e.target.value);
+                    if (isPlaying) {
+                      window.speechSynthesis.cancel();
+                      setIsPlaying(false);
+                      setTimeout(() => startSpeech(speechRate, e.target.value), 100);
+                    }
+                  }}
+                  className="text-xs bg-muted border border-border rounded-lg px-2 py-1 text-foreground max-w-[200px] truncate"
+                >
+                  {availableVoices.map(v => (
+                    <option key={v.name} value={v.name}>{v.name.replace(/Microsoft |Google /, "").replace(/ \(.*\)/, "")} ({v.lang})</option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             {/* Interrupt button */}
             {!interrupted && (
