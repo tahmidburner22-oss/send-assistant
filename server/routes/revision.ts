@@ -24,17 +24,41 @@ const EDGE_VOICE_MAP: Record<string, string> = {
   ru:    "ru-RU-SvetlanaNeural",
 };
 
-async function edgeTTS(text: string, language: string): Promise<Buffer> {
-  const lang = language.split("-")[0].toLowerCase();
-  const voice = EDGE_VOICE_MAP[language] || EDGE_VOICE_MAP[lang] || "en-GB-SoniaNeural";
+// Split text into sentence-boundary chunks of ~400 chars for parallel processing
+function splitIntoChunks(text: string, maxLen = 400): string[] {
+  // Split on sentence-ending punctuation followed by whitespace
+  const sentences = text.split(/(?<=[.!?])\s+/);
+  const chunks: string[] = [];
+  let current = "";
+  for (const s of sentences) {
+    const candidate = current ? current + " " + s : s;
+    if (candidate.length > maxLen && current) {
+      chunks.push(current.trim());
+      current = s;
+    } else {
+      current = candidate;
+    }
+  }
+  if (current.trim()) chunks.push(current.trim());
+  return chunks.filter(c => c.length > 0);
+}
+
+async function ttsOneChunk(text: string, voice: string): Promise<Buffer> {
   const tts = new MsEdgeTTS();
   await tts.setMetadata(voice, OUTPUT_FORMAT.AUDIO_24KHZ_96KBITRATE_MONO_MP3);
   const { audioStream } = await tts.toStream(text);
-  const chunks: Buffer[] = [];
-  for await (const chunk of audioStream) {
-    chunks.push(chunk as Buffer);
-  }
-  return Buffer.concat(chunks);
+  const parts: Buffer[] = [];
+  for await (const chunk of audioStream) parts.push(chunk as Buffer);
+  return Buffer.concat(parts);
+}
+
+async function edgeTTS(text: string, language: string): Promise<Buffer> {
+  const lang = language.split("-")[0].toLowerCase();
+  const voice = EDGE_VOICE_MAP[language] || EDGE_VOICE_MAP[lang] || "en-GB-SoniaNeural";
+  const chunks = splitIntoChunks(text, 400);
+  // Process all chunks in parallel for speed, then concatenate in order
+  const buffers = await Promise.all(chunks.map(c => ttsOneChunk(c, voice)));
+  return Buffer.concat(buffers);
 }
 
 const router = Router();
