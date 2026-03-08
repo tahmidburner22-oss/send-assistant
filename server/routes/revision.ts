@@ -2,7 +2,35 @@ import { Router, Request, Response } from "express";
 import multer from "multer";
 import { requireAuth } from "../middleware/auth.js";
 import db from "../db/index.js";
-import * as googleTTS from "google-tts-api";
+import { spawn } from "child_process";
+import { fileURLToPath } from "url";
+import path from "path";
+
+const __tts_dir = path.dirname(fileURLToPath(import.meta.url));
+
+function edgeTTS(text: string, language: string): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    // tts_helper.py is at server/tts_helper.py relative to the project root (process.cwd())
+    // This works both locally (tsx watch) and on Railway (node dist/server/index.js)
+    const scriptPath = path.join(process.cwd(), "server", "tts_helper.py");
+    const payload = JSON.stringify({ text, language, rate: "+5%" });
+    const proc = spawn("python3", [scriptPath], { stdio: ["pipe", "pipe", "pipe"] });
+    const out: Buffer[] = [];
+    const errBufs: Buffer[] = [];
+    proc.stdout.on("data", (d: Buffer) => out.push(d));
+    proc.stderr.on("data", (d: Buffer) => errBufs.push(d));
+    proc.on("close", (code: number) => {
+      if (code !== 0) {
+        reject(new Error(`Edge TTS exited ${code}: ${Buffer.concat(errBufs).toString().trim()}`));
+      } else {
+        resolve(Buffer.concat(out));
+      }
+    });
+    proc.on("error", reject);
+    proc.stdin.write(payload);
+    proc.stdin.end();
+  });
+}
 
 const router = Router();
 
@@ -357,7 +385,9 @@ router.post("/quiz", requireAuth, async (req: Request, res: Response) => {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // POST /api/revision/tts
-// Convert podcast script to speech via free Google TTS (fallback) or OpenAI (if key exists)
+// Convert podcast script to natural speech using Microsoft Edge Neural TTS
+// (free, no key required, human-quality voices for 14+ languages)
+// Falls back to OpenAI TTS if an API key is configured.
 // Body: { text, voice?, language? }
 // Returns: audio/mpeg stream
 // ─────────────────────────────────────────────────────────────────────────────
@@ -368,7 +398,7 @@ router.post("/tts", requireAuth, async (req: Request, res: Response) => {
       return res.status(400).json({ error: "text is required" });
     }
 
-    // 1. Try OpenAI TTS if a key is available
+    // 1. Try OpenAI TTS if a key is configured (premium upgrade path)
     let openaiKey = "";
     const schoolId = (req as any).user?.schoolId;
     if (schoolId) {
@@ -392,66 +422,33 @@ router.post("/tts", requireAuth, async (req: Request, res: Response) => {
     if (openaiKey) {
       const validVoices = ["alloy", "echo", "fable", "onyx", "nova", "shimmer"];
       const selectedVoice = validVoices.includes(voice) ? voice : "nova";
-      const trimmedText = text.slice(0, 4000);
-
       try {
         const ttsRes = await fetch("https://api.openai.com/v1/audio/speech", {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${openaiKey}` },
-          body: JSON.stringify({
-            model: "tts-1",
-            input: trimmedText,
-            voice: selectedVoice,
-            response_format: "mp3",
-          }),
+          body: JSON.stringify({ model: "tts-1-hd", input: text.slice(0, 4096), voice: selectedVoice, response_format: "mp3" }),
         });
-
         if (ttsRes.ok) {
-          res.setHeader("Content-Type", "audio/mpeg");
           const buffer = Buffer.from(await ttsRes.arrayBuffer());
+          res.setHeader("Content-Type", "audio/mpeg");
+          res.setHeader("Content-Length", buffer.byteLength.toString());
           return res.send(buffer);
         }
       } catch (err) {
-        console.warn("[TTS] OpenAI failed, falling back to Google:", err);
+        console.warn("[TTS] OpenAI failed, using Edge TTS:", err);
       }
     }
 
-    // 2. Free Google TTS (unlimited, no key required)
-    // Splits long text into ≤200-char chunks automatically, then we combine all MP3 buffers
-    const lang = language.split("-")[0] || "en";
-
-    // Limit to ~3000 chars (~3-4 minutes of speech) to keep response fast
-    const chunks = googleTTS.getAllAudioUrls(text.slice(0, 3000), {
-      lang,
-      slow: false,
-      host: "https://translate.google.com",
-    });
-
-    if (!chunks || chunks.length === 0) {
-      throw new Error("Google TTS returned no audio chunks");
+    // 2. Free Microsoft Edge Neural TTS — natural, human-sounding, no key required
+    console.log(`[TTS] Edge TTS: lang=${language}, chars=${text.length}`);
+    const audio = await edgeTTS(text, language);
+    if (!audio || audio.byteLength < 100) {
+      throw new Error("Edge TTS returned empty audio");
     }
-
-    // Fetch all chunks with a proper browser User-Agent (required by Google)
-    const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
-    const audioBuffers: Buffer[] = [];
-    for (const chunk of chunks) {
-      const googleRes = await fetch(chunk.url, { headers: { "User-Agent": UA } });
-      if (!googleRes.ok) {
-        console.warn(`[TTS] Google chunk failed: ${googleRes.status} for "${chunk.shortText.slice(0, 30)}"`);
-        continue;
-      }
-      audioBuffers.push(Buffer.from(await googleRes.arrayBuffer()));
-    }
-
-    if (audioBuffers.length === 0) {
-      throw new Error("All Google TTS chunks failed");
-    }
-
-    const combined = Buffer.concat(audioBuffers);
     res.setHeader("Content-Type", "audio/mpeg");
-    res.setHeader("Content-Length", combined.byteLength.toString());
+    res.setHeader("Content-Length", audio.byteLength.toString());
     res.setHeader("Cache-Control", "no-store");
-    res.send(combined);
+    res.send(audio);
 
   } catch (err: any) {
     console.error("Revision TTS error:", err);
