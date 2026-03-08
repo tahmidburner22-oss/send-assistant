@@ -71,6 +71,7 @@
     "express-rate-limit": "^8.3.0",
     "express-session": "^1.19.0",
     "framer-motion": "^12.23.22",
+    "google-tts-api": "^2.0.2",
     "helmet": "^8.1.0",
     "html2canvas": "^1.4.1",
     "input-otp": "^1.4.2",
