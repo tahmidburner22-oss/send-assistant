@@ -2,34 +2,39 @@ import { Router, Request, Response } from "express";
 import multer from "multer";
 import { requireAuth } from "../middleware/auth.js";
 import db from "../db/index.js";
-import { spawn } from "child_process";
-import { fileURLToPath } from "url";
-import path from "path";
+import { MsEdgeTTS, OUTPUT_FORMAT } from "msedge-tts";
 
-const __tts_dir = path.dirname(fileURLToPath(import.meta.url));
+// Language code → Microsoft Edge Neural TTS voice
+const EDGE_VOICE_MAP: Record<string, string> = {
+  en:    "en-GB-SoniaNeural",
+  "en-GB": "en-GB-SoniaNeural",
+  "en-US": "en-US-JennyNeural",
+  es:    "es-ES-ElviraNeural",
+  fr:    "fr-FR-DeniseNeural",
+  de:    "de-DE-KatjaNeural",
+  it:    "it-IT-ElsaNeural",
+  pt:    "pt-PT-RaquelNeural",
+  ar:    "ar-EG-SalmaNeural",
+  zh:    "zh-CN-XiaoxiaoNeural",
+  ja:    "ja-JP-NanamiNeural",
+  hi:    "hi-IN-SwaraNeural",
+  ur:    "ur-PK-UzmaNeural",
+  pl:    "pl-PL-ZofiaNeural",
+  tr:    "tr-TR-EmelNeural",
+  ru:    "ru-RU-SvetlanaNeural",
+};
 
-function edgeTTS(text: string, language: string): Promise<Buffer> {
-  return new Promise((resolve, reject) => {
-    // tts_helper.py is at server/tts_helper.py relative to the project root (process.cwd())
-    // This works both locally (tsx watch) and on Railway (node dist/server/index.js)
-    const scriptPath = path.join(process.cwd(), "server", "tts_helper.py");
-    const payload = JSON.stringify({ text, language, rate: "+5%" });
-    const proc = spawn("python3", [scriptPath], { stdio: ["pipe", "pipe", "pipe"] });
-    const out: Buffer[] = [];
-    const errBufs: Buffer[] = [];
-    proc.stdout.on("data", (d: Buffer) => out.push(d));
-    proc.stderr.on("data", (d: Buffer) => errBufs.push(d));
-    proc.on("close", (code: number) => {
-      if (code !== 0) {
-        reject(new Error(`Edge TTS exited ${code}: ${Buffer.concat(errBufs).toString().trim()}`));
-      } else {
-        resolve(Buffer.concat(out));
-      }
-    });
-    proc.on("error", reject);
-    proc.stdin.write(payload);
-    proc.stdin.end();
-  });
+async function edgeTTS(text: string, language: string): Promise<Buffer> {
+  const lang = language.split("-")[0].toLowerCase();
+  const voice = EDGE_VOICE_MAP[language] || EDGE_VOICE_MAP[lang] || "en-GB-SoniaNeural";
+  const tts = new MsEdgeTTS();
+  await tts.setMetadata(voice, OUTPUT_FORMAT.AUDIO_24KHZ_96KBITRATE_MONO_MP3);
+  const { audioStream } = await tts.toStream(text);
+  const chunks: Buffer[] = [];
+  for await (const chunk of audioStream) {
+    chunks.push(chunk as Buffer);
+  }
+  return Buffer.concat(chunks);
 }
 
 const router = Router();

@@ -38,13 +38,19 @@ const LANGUAGES = [
   { code: "ru", label: "Russian" },
 ];
 
-const TTS_VOICES = [
-  { id: "nova", label: "Nova - Natural Female" },
-  { id: "shimmer", label: "Shimmer - Warm Female" },
-  { id: "onyx", label: "Onyx - Deep Male" },
-  { id: "fable", label: "Fable - Expressive Male" },
-  { id: "alloy", label: "Alloy - Neutral" },
-  { id: "echo", label: "Echo - Balanced Male" },
+// Edge TTS voice options (Microsoft Neural voices, free, no key required)
+const EDGE_VOICES = [
+  { id: "en-GB-SoniaNeural",    label: "Sonia (British Female)" },
+  { id: "en-US-JennyNeural",    label: "Jenny (American Female)" },
+  { id: "en-GB-RyanNeural",     label: "Ryan (British Male)" },
+  { id: "en-US-GuyNeural",      label: "Guy (American Male)" },
+  { id: "en-AU-NatashaNeural",  label: "Natasha (Australian Female)" },
+  { id: "en-IN-NeerjaNeural",   label: "Neerja (Indian Female)" },
+];
+
+const TTS_ENGINE_OPTIONS = [
+  { id: "edge",    label: "Neural AI Voice (Microsoft Edge)" },
+  { id: "browser", label: "Browser Voice (built-in)" },
 ];
 
 function getAuthHeaders(extra: Record<string, string> = {}): Record<string, string> {
@@ -85,11 +91,11 @@ export default function RevisionHub() {
   const [loadingQuiz, setLoadingQuiz] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   // TTS state
-  const [selectedVoice, setSelectedVoice] = useState("nova");
+  const [ttsEngine, setTtsEngine] = useState<"edge" | "browser">("edge"); // "edge" = Microsoft Neural, "browser" = Web Speech API
+  const [edgeVoice, setEdgeVoice] = useState("en-GB-SoniaNeural");
   const [selectedLanguage, setSelectedLanguage] = useState("en");
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [audioLoading, setAudioLoading] = useState(false);
-  const [usingBrowserTTS, setUsingBrowserTTS] = useState(false);
   const [browserVoices, setBrowserVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [selectedBrowserVoice, setSelectedBrowserVoice] = useState("");
 
@@ -98,14 +104,17 @@ export default function RevisionHub() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
 
-  // Load browser voices as fallback
+  // Load browser voices
   useEffect(() => {
     const load = () => {
       const all = window.speechSynthesis?.getVoices() || [];
-      const eng = all.filter(v => v.lang.startsWith("en"));
-      setBrowserVoices(eng);
-      if (!selectedBrowserVoice && eng.length > 0) {
-        const pick = eng.find(v => /natural|enhanced|premium/i.test(v.name)) || eng[0];
+      setBrowserVoices(all);
+      if (!selectedBrowserVoice && all.length > 0) {
+        // Prefer a high-quality English voice as default
+        const pick =
+          all.find(v => /natural|enhanced|premium/i.test(v.name) && v.lang.startsWith("en")) ||
+          all.find(v => v.lang.startsWith("en")) ||
+          all[0];
         setSelectedBrowserVoice(pick.name);
       }
     };
@@ -121,14 +130,28 @@ export default function RevisionHub() {
     return () => { if (audioUrl) URL.revokeObjectURL(audioUrl); };
   }, [audioUrl]);
 
-  // Neural TTS: call server endpoint, fall back to browser speech if no key
-  const generateAudio = async (script: string, voice = selectedVoice, lang = selectedLanguage) => {
+  // Generate audio — either Microsoft Edge Neural TTS (server) or browser Web Speech API
+  const generateAudio = async (
+    script: string,
+    engine: "edge" | "browser" = ttsEngine,
+    voice: string = edgeVoice,
+    lang: string = selectedLanguage
+  ) => {
     if (!script) return;
-    setAudioLoading(true);
-    setAudioUrl(null);
-    setUsingBrowserTTS(false);
-    setIsPlaying(false);
+    // Stop any current playback
     window.speechSynthesis?.cancel();
+    if (audioRef.current) { audioRef.current.pause(); audioRef.current.src = ""; }
+    setAudioUrl(null);
+    setIsPlaying(false);
+
+    if (engine === "browser") {
+      // Browser Web Speech API — no server call needed
+      toast.info("Browser voice ready — press Play to listen.");
+      return;
+    }
+
+    // Edge Neural TTS via server
+    setAudioLoading(true);
     try {
       const token = localStorage.getItem("send_token");
       const res = await fetch("/api/revision/tts", {
@@ -137,18 +160,30 @@ export default function RevisionHub() {
         credentials: "include",
         body: JSON.stringify({ text: script, voice, language: lang }),
       });
-      if (res.ok && res.headers.get("content-type")?.includes("audio")) {
-        const blob = await res.blob();
-        const url = URL.createObjectURL(blob);
-        setAudioUrl(url);
-        setUsingBrowserTTS(false);
-        toast.success("Podcast audio ready! Press play to listen.");
+      if (res.ok) {
+        const contentType = res.headers.get("content-type") ?? "";
+        if (contentType.includes("audio")) {
+          const blob = await res.blob();
+          if (blob.size > 1000) {
+            const url = URL.createObjectURL(blob);
+            setAudioUrl(url);
+            toast.success("Neural podcast ready — press Play!");
+          } else {
+            throw new Error("Audio blob too small");
+          }
+        } else {
+          // Server returned JSON error
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.error || "TTS returned non-audio response");
+        }
       } else {
-        setUsingBrowserTTS(true);
-        toast.info("Using browser voice for playback.");
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || `TTS server error ${res.status}`);
       }
-    } catch {
-      setUsingBrowserTTS(true);
+    } catch (err: any) {
+      console.error("[TTS] Edge TTS failed:", err);
+      toast.error(`Neural TTS failed: ${err.message}. Switching to browser voice.`);
+      setTtsEngine("browser");
     } finally {
       setAudioLoading(false);
     }
@@ -174,12 +209,12 @@ export default function RevisionHub() {
 
   const togglePlay = () => {
     if (!podcastScript) return;
-    if (audioUrl && !usingBrowserTTS) {
+    if (ttsEngine === "edge" && audioUrl && audioRef.current) {
       const audio = audioRef.current;
-      if (!audio) return;
       if (isPlaying) { audio.pause(); setIsPlaying(false); }
-      else { audio.play(); setIsPlaying(true); }
+      else { audio.play().catch(e => console.error("Audio play error:", e)); setIsPlaying(true); }
     } else {
+      // Browser TTS
       if (isPlaying) { window.speechSynthesis.pause(); setIsPlaying(false); }
       else if (window.speechSynthesis.paused) { window.speechSynthesis.resume(); setIsPlaying(true); }
       else startBrowserSpeech();
@@ -188,7 +223,7 @@ export default function RevisionHub() {
 
   const handleInterrupt = () => {
     if (isPlaying) {
-      if (audioUrl && !usingBrowserTTS) audioRef.current?.pause();
+      if (ttsEngine === "edge" && audioRef.current) audioRef.current.pause();
       else window.speechSynthesis.pause();
       setIsPlaying(false);
     }
@@ -200,7 +235,7 @@ export default function RevisionHub() {
     setInterrupted(false);
     setQuestion("");
     setAnswer("");
-    if (audioUrl && !usingBrowserTTS) { audioRef.current?.play(); setIsPlaying(true); }
+    if (ttsEngine === "edge" && audioUrl && audioRef.current) { audioRef.current.play(); setIsPlaying(true); }
     else if (window.speechSynthesis.paused) { window.speechSynthesis.resume(); setIsPlaying(true); }
   };
 
@@ -245,7 +280,7 @@ export default function RevisionHub() {
       setDocumentText(data.text || "");
       setPodcastScript(data.script || "");
       if (data.script) {
-        await generateAudio(data.script, selectedVoice, selectedLanguage);
+        await generateAudio(data.script, ttsEngine, edgeVoice, selectedLanguage);
       }
     } catch (err: any) {
       toast.error(err.message || "Failed to process document");
@@ -387,19 +422,35 @@ export default function RevisionHub() {
               </div>
               <div className="space-y-1.5">
                 <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5" /> AI Voice
+                  <Sparkles className="w-3.5 h-3.5" /> Voice Engine
                 </label>
                 <select
-                  value={selectedVoice}
-                  onChange={e => setSelectedVoice(e.target.value)}
+                  value={ttsEngine}
+                  onChange={e => setTtsEngine(e.target.value as "edge" | "browser")}
                   className="w-full text-sm bg-muted border border-border rounded-lg px-3 py-2 text-foreground"
                 >
-                  {TTS_VOICES.map(v => (
+                  {TTS_ENGINE_OPTIONS.map(v => (
                     <option key={v.id} value={v.id}>{v.label}</option>
                   ))}
                 </select>
               </div>
             </div>
+            {ttsEngine === "edge" && (
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                  <Volume2 className="w-3.5 h-3.5" /> Neural Voice
+                </label>
+                <select
+                  value={edgeVoice}
+                  onChange={e => setEdgeVoice(e.target.value)}
+                  className="w-full text-sm bg-muted border border-border rounded-lg px-3 py-2 text-foreground"
+                >
+                  {EDGE_VOICES.map(v => (
+                    <option key={v.id} value={v.id}>{v.label}</option>
+                  ))}
+                </select>
+              </div>
+            )}
             <div
               className="border-2 border-dashed border-brand/30 rounded-2xl p-8 text-center space-y-4 cursor-pointer hover:border-brand/60 hover:bg-brand/5 transition-all"
               onClick={() => fileInputRef.current?.click()}
@@ -466,7 +517,7 @@ export default function RevisionHub() {
           <div>
             <h1 className="text-base font-bold text-foreground">Revision Hub</h1>
             <p className="text-xs text-muted-foreground">
-              {usingBrowserTTS ? "Browser voice active" : "Neural voice active"} -{" "}
+              {ttsEngine === "browser" ? "Browser voice" : "Neural voice (Edge)"} ·{" "}
               {LANGUAGES.find(l => l.code === selectedLanguage)?.label ?? "English"}
             </p>
           </div>
@@ -511,9 +562,9 @@ export default function RevisionHub() {
               <div className="flex-1 min-w-0">
                 <p className="font-semibold text-foreground">Your Revision Podcast</p>
                 <p className="text-xs text-muted-foreground">
-                  {usingBrowserTTS
-                    ? "Browser voice active"
-                    : `Voice: ${TTS_VOICES.find(v => v.id === selectedVoice)?.label ?? selectedVoice}`}
+                  {ttsEngine === "browser"
+                    ? `Browser voice — ${selectedBrowserVoice || "built-in"}`
+                    : `Neural: ${EDGE_VOICES.find(v => v.id === edgeVoice)?.label ?? edgeVoice}`}
                 </p>
               </div>
               {isPlaying && (
@@ -570,33 +621,40 @@ export default function RevisionHub() {
               </div>
               <div className="space-y-1">
                 <label className="text-xs text-muted-foreground flex items-center gap-1">
-                  <Sparkles className="w-3 h-3" /> AI Voice
+                  <Sparkles className="w-3 h-3" /> Voice Engine
                 </label>
                 <select
-                  value={selectedVoice}
-                  onChange={e => setSelectedVoice(e.target.value)}
+                  value={ttsEngine}
+                  onChange={e => setTtsEngine(e.target.value as "edge" | "browser")}
                   className="w-full text-xs bg-muted border border-border rounded-lg px-2 py-1.5 text-foreground"
                 >
-                  {TTS_VOICES.map(v => (
+                  {TTS_ENGINE_OPTIONS.map(v => (
                     <option key={v.id} value={v.id}>{v.label}</option>
                   ))}
                 </select>
               </div>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              className="w-full gap-2 text-xs"
-              disabled={audioLoading}
-              onClick={() => generateAudio(podcastScript, selectedVoice, selectedLanguage)}
-            >
-              {audioLoading
-                ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Generating audio...</>
-                : <><Sparkles className="w-3.5 h-3.5" /> Re-generate with selected voice and language</>}
-            </Button>
-            {usingBrowserTTS && browserVoices.length > 1 && (
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground">Browser voice:</span>
+            {ttsEngine === "edge" && (
+              <div className="space-y-1">
+                <label className="text-xs text-muted-foreground flex items-center gap-1">
+                  <Volume2 className="w-3 h-3" /> Neural Voice
+                </label>
+                <select
+                  value={edgeVoice}
+                  onChange={e => setEdgeVoice(e.target.value)}
+                  className="w-full text-xs bg-muted border border-border rounded-lg px-2 py-1.5 text-foreground"
+                >
+                  {EDGE_VOICES.map(v => (
+                    <option key={v.id} value={v.id}>{v.label}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+            {ttsEngine === "browser" && browserVoices.length > 1 && (
+              <div className="space-y-1">
+                <label className="text-xs text-muted-foreground flex items-center gap-1">
+                  <Volume2 className="w-3 h-3" /> Browser Voice
+                </label>
                 <select
                   value={selectedBrowserVoice}
                   onChange={e => {
@@ -607,7 +665,7 @@ export default function RevisionHub() {
                       setTimeout(() => startBrowserSpeech(speechRate), 100);
                     }
                   }}
-                  className="text-xs bg-muted border border-border rounded-lg px-2 py-1 text-foreground flex-1 truncate"
+                  className="w-full text-xs bg-muted border border-border rounded-lg px-2 py-1.5 text-foreground"
                 >
                   {browserVoices.map(v => (
                     <option key={v.name} value={v.name}>
@@ -617,6 +675,17 @@ export default function RevisionHub() {
                 </select>
               </div>
             )}
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full gap-2 text-xs"
+              disabled={audioLoading}
+              onClick={() => generateAudio(podcastScript, ttsEngine, edgeVoice, selectedLanguage)}
+            >
+              {audioLoading
+                ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Generating audio...</>
+                : <><Sparkles className="w-3.5 h-3.5" /> Re-generate audio</>}
+            </Button>
             {!interrupted && (
               <Button
                 variant="outline"
