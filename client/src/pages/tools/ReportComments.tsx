@@ -14,7 +14,7 @@ export default function ReportComments() {
       icon={<FileCheck className="w-5 h-5 text-white" />}
       accentColor="bg-emerald-600"
       fields={[
-        { id: "studentName", label: "Student Name", type: "text", placeholder: "e.g. Emma Johnson", required: true, span: "half" },
+        { id: "studentName", label: "Student Initials", type: "text", placeholder: "e.g. E.J.", required: true, span: "half", maxLength: 4, hint: "Initials only (max 4 chars) — do not enter full names (GDPR)" },
         { id: "pronoun", label: "Pronoun", type: "select", options: [{ value: "She/her", label: "She/her" }, { value: "He/him", label: "He/him" }, { value: "They/them", label: "They/them" }], required: true, span: "half" },
         { id: "subject", label: "Subject", type: "select", options: subjects, required: true, span: "half" },
         { id: "yearGroup", label: "Year Group", type: "select", options: years, required: true, span: "half" },

@@ -13,7 +13,7 @@ export default function IEPGenerator() {
       icon={<Target className="w-5 h-5 text-white" />}
       accentColor="bg-purple-600"
       fields={[
-        { id: "studentName", label: "Student Name", type: "text", placeholder: "e.g. Jamie Smith", required: true, span: "half" },
+        { id: "studentName", label: "Student Initials", type: "text", placeholder: "e.g. J.S.", required: true, span: "half", maxLength: 4, hint: "Initials only (max 4 chars) — do not enter full names (GDPR)" },
         { id: "yearGroup", label: "Year Group", type: "select", options: yearGroups, required: true, span: "half" },
         { id: "sendNeed", label: "Primary SEND Need", type: "select", options: sendNeeds, required: true, span: "half" },
         { id: "area", label: "Area of Need (EHCP)", type: "select", options: areas, required: true, span: "half" },

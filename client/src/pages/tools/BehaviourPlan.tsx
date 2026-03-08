@@ -9,7 +9,7 @@ export default function BehaviourPlan() {
       icon={<ShieldAlert className="w-5 h-5 text-white" />}
       accentColor="bg-orange-600"
       fields={[
-        { id: "studentName", label: "Student Name", type: "text", placeholder: "e.g. Marcus Williams", required: true, span: "half" },
+        { id: "studentName", label: "Student Initials", type: "text", placeholder: "e.g. M.W.", required: true, span: "half", maxLength: 4, hint: "Initials only (max 4 chars) — do not enter full names (GDPR)" },
         { id: "yearGroup", label: "Year Group", type: "text", placeholder: "e.g. Year 6", required: true, span: "half" },
         { id: "behaviours", label: "Behaviours of Concern", type: "textarea", placeholder: "Describe the specific behaviours — what, when, how often, how severe?", required: true, span: "full" },
         { id: "triggers", label: "Known Triggers / Antecedents", type: "textarea", placeholder: "What tends to trigger or precede these behaviours?", span: "full" },

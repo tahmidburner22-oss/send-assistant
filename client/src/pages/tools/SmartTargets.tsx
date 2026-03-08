@@ -12,7 +12,7 @@ export default function SmartTargets() {
       icon={<CheckSquare className="w-5 h-5 text-white" />}
       accentColor="bg-teal-600"
       fields={[
-        { id: "studentName", label: "Student Name", type: "text", placeholder: "e.g. Lily Chen", required: true, span: "half" },
+        { id: "studentName", label: "Student Initials", type: "text", placeholder: "e.g. L.C.", required: true, span: "half", maxLength: 4, hint: "Initials only (max 4 chars) — do not enter full names (GDPR)" },
         { id: "yearGroup", label: "Year Group", type: "text", placeholder: "e.g. Year 3", required: true, span: "half" },
         { id: "sendNeed", label: "SEND Need", type: "select", options: sendNeeds, required: true, span: "half" },
         { id: "area", label: "Target Area", type: "select", options: areas, required: true, span: "half" },

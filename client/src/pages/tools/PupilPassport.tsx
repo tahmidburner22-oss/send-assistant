@@ -11,7 +11,7 @@ export default function PupilPassport() {
       icon={<IdCard className="w-5 h-5 text-white" />}
       accentColor="bg-amber-600"
       fields={[
-        { id: "studentName", label: "Student Name", type: "text", placeholder: "e.g. Oliver Brown", required: true, span: "half" },
+        { id: "studentName", label: "Student Initials", type: "text", placeholder: "e.g. O.B.", required: true, span: "half", maxLength: 4, hint: "Initials only (max 4 chars) — do not enter full names (GDPR)" },
         { id: "yearGroup", label: "Year Group", type: "text", placeholder: "e.g. Year 4", required: true, span: "half" },
         { id: "sendNeed", label: "Primary SEND Need", type: "select", options: sendNeeds, required: true, span: "half" },
         { id: "pronoun", label: "Pronoun", type: "select", options: [{ value: "She/her", label: "She/her" }, { value: "He/him", label: "He/him" }, { value: "They/them", label: "They/them" }], span: "half" },

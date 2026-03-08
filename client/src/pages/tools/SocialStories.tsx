@@ -15,7 +15,7 @@ export default function SocialStories() {
       icon={<BookHeart className="w-5 h-5 text-white" />}
       accentColor="bg-rose-500"
       fields={[
-        { id: "studentName", label: "Student's Name", type: "text", placeholder: "e.g. Alex", required: true, span: "half" },
+        { id: "studentName", label: "Student Initials", type: "text", placeholder: "e.g. A.J.", required: true, span: "half", maxLength: 4, hint: "Initials only (max 4 chars) — do not enter full names (GDPR)" },
         { id: "ageRange", label: "Age Range", type: "select", options: ages, required: true, span: "half" },
         { id: "situation", label: "Situation / Topic", type: "select", options: situations, required: true, span: "half" },
         { id: "customSituation", label: "Or describe a custom situation", type: "text", placeholder: "e.g. Moving to secondary school", span: "half" },
