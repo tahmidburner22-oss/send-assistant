@@ -214,6 +214,18 @@ router.post("/upload", requireAuth, upload.single("document"), async (req: Reque
       return res.status(400).json({ error: "Could not extract readable text from this file. Please try a different file." });
     }
 
+    // Language for the podcast script (passed from client as form field)
+    const language = (req.body?.language || "en").toString().slice(0, 5);
+    const LANG_NAMES: Record<string, string> = {
+      en: "English", es: "Spanish", fr: "French", de: "German", it: "Italian",
+      pt: "Portuguese", ar: "Arabic", zh: "Chinese", ja: "Japanese",
+      hi: "Hindi", ur: "Urdu", pl: "Polish", tr: "Turkish", ru: "Russian",
+    };
+    const langName = LANG_NAMES[language] || "English";
+    const langInstruction = language === "en"
+      ? ""
+      : `\n       - IMPORTANT: Write the ENTIRE podcast script in ${langName}. All explanations, examples, transitions, and the closing line must be in ${langName}.`;
+
     // First pass: ask AI to identify and extract only the core educational content
     const cleanedContent = await callWithFallback(
       `You are a document analyst. Your job is to extract ONLY the core educational content from the text below.
@@ -225,21 +237,20 @@ router.post("/upload", requireAuth, upload.single("document"), async (req: Reque
     );
 
     const script = await callWithFallback(
-      `You are an expert educational podcast host creating a revision podcast for UK students aged 11-18.
+      `You are an expert educational podcast host creating a revision podcast for students aged 11-18.
        Your job is to transform study notes into a rich, engaging spoken explanation — like a brilliant teacher talking directly to a student.
 
        CRITICAL RULES:
-       - Write ONLY natural spoken English — absolutely no bullet points, no markdown, no headers, no asterisks
+       - Write ONLY natural spoken language — absolutely no bullet points, no markdown, no headers, no asterisks
        - Do NOT just read the notes back. EXPLAIN everything as if the student has never heard it before
        - Break down every concept step by step with clear reasoning
        - Use real-world analogies and relatable examples to make abstract ideas stick
        - Define any technical terms the moment you use them
-       - Connect ideas together: "This links to what we said earlier about..."
-       - Use natural speech patterns: "Now, here's where it gets interesting...", "Think of it this way...", "The key thing to remember is...", "A lot of students get confused here, so let's be really clear..."
-       - Vary your sentence length — mix short punchy sentences with longer explanations
+       - Connect ideas together naturally
+       - Use natural speech patterns and vary your sentence length
        - Aim for 600-900 words of spoken script (about 4-6 minutes of audio)
        - Do NOT start with "Welcome" or "In this podcast" — open with the first key concept immediately
-       - End with: "And that covers everything for this topic. When you're ready, hit the quiz button to test yourself — good luck!"`,
+       - End with a brief encouragement to take the quiz${langInstruction}`,
       `Educational content to turn into a podcast:\n\n${cleanedContent}`,
       1200
     );
@@ -340,6 +351,85 @@ router.post("/quiz", requireAuth, async (req: Request, res: Response) => {
   } catch (err: any) {
     console.error("Revision quiz error:", err);
     res.status(500).json({ error: err.message || "Failed to generate quiz" });
+  }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// POST /api/revision/tts
+// Convert podcast script to natural human-sounding speech via OpenAI TTS
+// Body: { text, voice?, language? }
+// Returns: audio/mpeg stream OR 402 JSON if no key (client falls back to browser speech)
+// ─────────────────────────────────────────────────────────────────────────────
+router.post("/tts", requireAuth, async (req: Request, res: Response) => {
+  try {
+    const { text, voice = "nova", language = "en" } = req.body;
+    if (!text || text.length < 10) {
+      return res.status(400).json({ error: "text is required" });
+    }
+
+    // Resolve OpenAI key: school key first, then global admin, then env
+    let openaiKey = "";
+    const schoolId = (req as any).user?.schoolId;
+    if (schoolId) {
+      try {
+        const row = db.prepare(
+          "SELECT api_key FROM school_api_keys WHERE school_id=? AND provider='openai' LIMIT 1"
+        ).get(schoolId) as any;
+        if (row?.api_key) openaiKey = row.api_key;
+      } catch { /* ignore */ }
+    }
+    if (!openaiKey) {
+      try {
+        const row = db.prepare(
+          "SELECT api_key FROM admin_api_keys WHERE provider='openai' LIMIT 1"
+        ).get() as any;
+        if (row?.api_key) openaiKey = row.api_key;
+      } catch { /* ignore */ }
+    }
+    if (!openaiKey) openaiKey = process.env.OPENAI_API_KEY || "";
+
+    if (!openaiKey) {
+      return res.status(402).json({ error: "no_tts_key", message: "No OpenAI key configured — using browser voice" });
+    }
+
+    // OpenAI TTS voices: alloy, echo, fable, onyx, nova, shimmer
+    // nova & shimmer are the most natural-sounding female voices
+    // onyx & fable are the most natural-sounding male voices
+    const validVoices = ["alloy", "echo", "fable", "onyx", "nova", "shimmer"];
+    const selectedVoice = validVoices.includes(voice) ? voice : "nova";
+
+    // Trim to 4000 chars per chunk (OpenAI TTS limit ~4096 tokens)
+    // For longer scripts, we send the first chunk only
+    const trimmedText = text.slice(0, 4000);
+
+    const ttsRes = await fetch("https://api.openai.com/v1/audio/speech", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${openaiKey}`,
+      },
+      body: JSON.stringify({
+        model: "tts-1-hd",
+        input: trimmedText,
+        voice: selectedVoice,
+        response_format: "mp3",
+        speed: 1.0,
+      }),
+    });
+
+    if (!ttsRes.ok) {
+      const errText = await ttsRes.text();
+      console.error("TTS API error:", ttsRes.status, errText.slice(0, 200));
+      return res.status(502).json({ error: "tts_failed", message: "TTS generation failed — using browser voice" });
+    }
+
+    res.setHeader("Content-Type", "audio/mpeg");
+    res.setHeader("Cache-Control", "no-store");
+    const buffer = Buffer.from(await ttsRes.arrayBuffer());
+    res.send(buffer);
+  } catch (err: any) {
+    console.error("Revision TTS error:", err);
+    res.status(500).json({ error: err.message || "TTS failed" });
   }
 });
 
