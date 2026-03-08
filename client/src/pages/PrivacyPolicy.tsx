@@ -1,5 +1,5 @@
 import { Shield, Mail, Clock, Database, Users, Lock, FileText, ChevronLeft } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 
 const Section = ({ icon, title, children }: { icon: React.ReactNode; title: string; children: React.ReactNode }) => (
@@ -20,7 +20,7 @@ const Row = ({ label, value }: { label: string; value: string }) => (
 );
 
 export default function PrivacyPolicy() {
-  const navigate = useNavigate();
+  const [, navigate] = useLocation();
   const updated = "8 March 2026";
 
   return (
@@ -268,7 +268,7 @@ export default function PrivacyPolicy() {
 
         {/* Back button */}
         <div className="pt-4 border-t">
-          <Button variant="outline" size="sm" onClick={() => navigate(-1)} className="gap-1.5">
+          <Button variant="outline" size="sm" onClick={() => navigate("/")} className="gap-1.5">
             <ChevronLeft className="w-4 h-4" /> Back
           </Button>
         </div>

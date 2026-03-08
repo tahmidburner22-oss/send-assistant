@@ -7,7 +7,7 @@ import {
   BarChart3, Lightbulb, ExternalLink, Settings, Menu, X, GraduationCap, LogOut,
   Calendar, TrendingUp, ClipboardList, IdCard, CheckSquare, ShieldAlert, Heart,
   HelpCircle, Table2, AlignLeft, Layers, CalendarDays, BookMarked, Ticket,
-  BookType, Mail, Shield, ChevronDown, ChevronRight, ScrollText
+  BookType, Mail, Shield, ChevronDown, ChevronRight, ScrollText, Headphones
 } from "lucide-react";
 
 const mainMenu = [
@@ -16,6 +16,7 @@ const mainMenu = [
   { path: "/worksheets", label: "Worksheets", icon: FileText },
   { path: "/stories", label: "Stories", icon: BookOpen },
   { path: "/past-papers", label: "Past Papers", icon: ScrollText },
+  { path: "/revision-hub", label: "Revision Hub", icon: Headphones },
   { path: "/templates", label: "Templates", icon: LayoutGrid },
   { path: "/children", label: "Children", icon: Users },
   { path: "/history", label: "History", icon: Clock },
