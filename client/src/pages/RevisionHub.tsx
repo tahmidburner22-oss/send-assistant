@@ -150,16 +150,22 @@ export default function RevisionHub() {
       return;
     }
 
-    // Edge Neural TTS via server
+    // Edge Neural TTS via server — with 60s timeout, auto-falls back to browser voice
     setAudioLoading(true);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => {
+      controller.abort();
+    }, 60000); // 60 second hard timeout
     try {
       const token = localStorage.getItem("send_token");
       const res = await fetch("/api/revision/tts", {
         method: "POST",
         headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
         credentials: "include",
+        signal: controller.signal,
         body: JSON.stringify({ text: script, voice, language: lang }),
       });
+      clearTimeout(timeoutId);
       if (res.ok) {
         const contentType = res.headers.get("content-type") ?? "";
         if (contentType.includes("audio")) {
@@ -172,7 +178,6 @@ export default function RevisionHub() {
             throw new Error("Audio blob too small");
           }
         } else {
-          // Server returned JSON error
           const data = await res.json().catch(() => ({}));
           throw new Error(data.error || "TTS returned non-audio response");
         }
@@ -181,9 +186,17 @@ export default function RevisionHub() {
         throw new Error(data.error || `TTS server error ${res.status}`);
       }
     } catch (err: any) {
+      clearTimeout(timeoutId);
+      const isTimeout = err?.name === "AbortError";
       console.error("[TTS] Edge TTS failed:", err);
-      toast.error(`Neural TTS failed: ${err.message}. Switching to browser voice.`);
+      if (isTimeout) {
+        toast.info("Neural TTS took too long — switching to browser voice and playing now.");
+      } else {
+        toast.error(`Neural TTS failed: ${err.message}. Switching to browser voice.`);
+      }
+      // Auto-switch to browser TTS and start playing immediately
       setTtsEngine("browser");
+      setTimeout(() => startBrowserSpeech(), 300);
     } finally {
       setAudioLoading(false);
     }
