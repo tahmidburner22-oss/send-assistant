@@ -142,10 +142,10 @@ export default function RevisionHub() {
         const url = URL.createObjectURL(blob);
         setAudioUrl(url);
         setUsingBrowserTTS(false);
-        toast.success("Neural podcast ready! Press play to listen.");
+        toast.success("Podcast audio ready! Press play to listen.");
       } else {
         setUsingBrowserTTS(true);
-        toast.info("Using browser voice. Add an OpenAI key in Settings for a more natural voice.");
+        toast.info("Using browser voice for playback.");
       }
     } catch {
       setUsingBrowserTTS(true);
@@ -512,8 +512,8 @@ export default function RevisionHub() {
                 <p className="font-semibold text-foreground">Your Revision Podcast</p>
                 <p className="text-xs text-muted-foreground">
                   {usingBrowserTTS
-                    ? "Browser voice - add an OpenAI key in Settings for neural audio"
-                    : `Neural voice: ${TTS_VOICES.find(v => v.id === selectedVoice)?.label ?? selectedVoice}`}
+                    ? "Browser voice active"
+                    : `Voice: ${TTS_VOICES.find(v => v.id === selectedVoice)?.label ?? selectedVoice}`}
                 </p>
               </div>
               {isPlaying && (
