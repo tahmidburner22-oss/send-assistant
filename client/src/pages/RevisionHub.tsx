@@ -23,10 +23,14 @@ type AnswerState = "unanswered" | "correct" | "wrong" | "explained";
 type Tab = "podcast" | "quiz";
 
 // ── API helpers ───────────────────────────────────────────────────────────────
+function getAuthHeaders(extra: Record<string, string> = {}): Record<string, string> {
+  const token = localStorage.getItem("send_token");
+  return token ? { Authorization: `Bearer ${token}`, ...extra } : extra;
+}
 async function apiPost(path: string, body: Record<string, any>) {
   const res = await fetch(`/api/revision${path}`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...getAuthHeaders() },
     credentials: "include",
     body: JSON.stringify(body),
   });
@@ -128,6 +132,7 @@ export default function RevisionHub() {
       formData.append("document", file);
       const res = await fetch("/api/revision/upload", {
         method: "POST",
+        headers: getAuthHeaders(),
         credentials: "include",
         body: formData,
       });
