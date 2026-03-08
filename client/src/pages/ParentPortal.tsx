@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
@@ -251,6 +251,7 @@ export default function ParentPortal() {
   const [behaviourRecords, setBehaviourRecords] = useState<any[]>([]);
   const [behaviourLoading, setBehaviourLoading] = useState(false);
   const [viewContent, setViewContent] = useState<{ title: string; content: string } | null>(null);
+  const [openSection, setOpenSection] = useState<string | null>("assignments");
   const [showSubmit, setShowSubmit] = useState(false);
   const [submitTitle, setSubmitTitle] = useState("");
   const [submitContent, setSubmitContent] = useState("");
@@ -471,19 +472,29 @@ export default function ParentPortal() {
           </CardContent>
         </Card>
 
-        <Tabs defaultValue="assignments">
-          <TabsList className="w-full grid grid-cols-7 h-10">
-            <TabsTrigger value="assignments" className="text-xs">Work</TabsTrigger>
-            <TabsTrigger value="behaviour" className="text-xs">Behaviour</TabsTrigger>
-            <TabsTrigger value="timetable" className="text-xs">Timetable</TabsTrigger>
-            <TabsTrigger value="submissions" className="text-xs">Submit</TabsTrigger>
-            <TabsTrigger value="stories" className="text-xs">Stories</TabsTrigger>
-            <TabsTrigger value="attendance" className="text-xs">Attendance</TabsTrigger>
-            <TabsTrigger value="past-papers" className="text-xs">Papers</TabsTrigger>
-          </TabsList>
-
-          {/* ─── ASSIGNMENTS TAB ─── */}
-          <TabsContent value="assignments" className="mt-4 space-y-2">
+        {/* ─── ACCORDION SECTIONS ─── */}
+        {([
+          { id: "assignments", label: "📚 Assignments", emoji: "📚" },
+          { id: "behaviour", label: "📋 Behaviour", emoji: "📋" },
+          { id: "timetable", label: "📅 Timetable", emoji: "📅" },
+          { id: "submissions", label: "📤 Submit Work", emoji: "📤" },
+          { id: "stories", label: "📖 Story Generator", emoji: "📖" },
+          { id: "attendance", label: "✅ Attendance", emoji: "✅" },
+          { id: "past-papers", label: "📝 Past Papers", emoji: "📝" },
+        ] as { id: string; label: string; emoji: string }[]).map(sec => (
+          <div key={sec.id} className="rounded-2xl border border-border/60 overflow-hidden shadow-sm bg-white">
+            <button
+              onClick={() => setOpenSection(openSection === sec.id ? null : sec.id)}
+              className="w-full flex items-center justify-between px-4 py-3 bg-white hover:bg-muted/40 transition-colors"
+            >
+              <span className="font-semibold text-sm text-foreground">{sec.label}</span>
+              {openSection === sec.id
+                ? <ChevronUp className="w-4 h-4 text-muted-foreground" />
+                : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+            </button>
+            {openSection === sec.id && (
+              <div className="border-t border-border/40 p-4">
+        {sec.id === "assignments" && <div className="space-y-2">
             {child.assignments.length === 0 ? (
               <Card className="border-border/50">
                 <CardContent className="p-8 text-center">
@@ -544,10 +555,8 @@ export default function ParentPortal() {
                 </CardContent>
               </Card>
             ))}
-          </TabsContent>
-
-          {/* ─── BEHAVIOUR TAB ─── */}
-          <TabsContent value="behaviour" className="mt-4 space-y-3">
+        </div>}
+        {sec.id === "behaviour" && <div className="space-y-3">
             <Card className="border-border/50">
               <CardContent className="p-4">
                 <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">
@@ -645,10 +654,8 @@ export default function ParentPortal() {
                 </p>
               </CardContent>
             </Card>
-          </TabsContent>
-
-          {/* ─── SUBMIT WORK TAB ─── */}
-          <TabsContent value="submissions" className="mt-4 space-y-3">
+        </div>}
+        {sec.id === "submissions" && <div className="space-y-3">
             <Card className="border-border/50">
               <CardContent className="p-4">
                 <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">
@@ -760,10 +767,8 @@ export default function ParentPortal() {
                 ))}
               </div>
             )}
-          </TabsContent>
-
-          {/* ─── STORY TIME TAB ─── */}
-          <TabsContent value="stories" className="mt-4 space-y-4">
+        </div>}
+        {sec.id === "stories" && <div className="space-y-4">
             {!storyResult ? (
               <Card className="border-border/50">
                 <CardContent className="p-4 space-y-4">
@@ -1008,9 +1013,8 @@ export default function ParentPortal() {
                 )}
               </div>
             )}
-          </TabsContent>
-
-          <TabsContent value="attendance" className="mt-4 space-y-4">
+        </div>}
+        {sec.id === "attendance" && <div className="space-y-4">
             {(() => {
               const recs = attendanceRecords
                 .filter((r: AttendanceRecord) => r.childId === child.id)
@@ -1082,10 +1086,8 @@ export default function ParentPortal() {
                 </>
               );
             })()}
-          </TabsContent>
-
-          {/* ─── TIMETABLE TAB ─── */}
-          <TabsContent value="timetable" className="mt-4">
+        </div>}
+        {sec.id === "timetable" && <div>
             {(() => {
               const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
               const periods = [1, 2, 3, 4, 5, 6, 7, 8];
@@ -1222,14 +1224,12 @@ export default function ParentPortal() {
                 </div>
               );
             })()}
-          </TabsContent>
-
-          {/* ─── PAST PAPERS TAB ─── */}
-          <TabsContent value="past-papers" className="mt-4 space-y-4">
-            <PastPapersPanel />
-          </TabsContent>
-
-        </Tabs>
+        </div>}
+        {sec.id === "past-papers" && <div><PastPapersPanel /></div>}
+              </div>
+            )}
+          </div>
+        ))}
       </div>
 
       {/* View Content Dialog */}
