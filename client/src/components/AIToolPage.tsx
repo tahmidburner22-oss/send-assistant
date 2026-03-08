@@ -1,14 +1,18 @@
 /**
  * AIToolPage — reusable shell for all AI tool pages.
- * Handles: form → generate → display → save/print/PDF
+ * Handles: form → generate → display → edit (AI or manual) → save/print/PDF
  */
 import { useState, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
-import { Sparkles, RefreshCw, Printer, Download, Copy, Save, ChevronLeft } from "lucide-react";
+import {
+  Sparkles, RefreshCw, Printer, Download, Copy, Save, ChevronLeft,
+  PenLine, X, Check, Loader2,
+} from "lucide-react";
 import { callAI } from "@/lib/ai";
 import { downloadHtmlAsPdf, printWorksheetElement } from "@/lib/pdf-generator-v2";
 
@@ -46,6 +50,8 @@ function formatAIText(text: string): string {
     .replace(/$/, "</p>");
 }
 
+type EditMode = "none" | "manual" | "ai";
+
 export default function AIToolPage({
   title, description, icon, accentColor, fields, buildPrompt, formatOutput, outputTitle,
 }: AIToolPageProps) {
@@ -54,6 +60,12 @@ export default function AIToolPage({
   const [result, setResult] = useState<string | null>(null);
   const [provider, setProvider] = useState<string>("");
   const outputRef = useRef<HTMLDivElement>(null);
+
+  // Edit state
+  const [editMode, setEditMode] = useState<EditMode>("none");
+  const [manualText, setManualText] = useState("");
+  const [aiPrompt, setAiPrompt] = useState("");
+  const [aiEditLoading, setAiEditLoading] = useState(false);
 
   const setValue = (id: string, val: string) => setValues(prev => ({ ...prev, [id]: val }));
 
@@ -65,6 +77,7 @@ export default function AIToolPage({
     }
     setLoading(true);
     setResult(null);
+    setEditMode("none");
     try {
       const { system, user, maxTokens } = buildPrompt(values);
       const { text, provider: p } = await callAI(system, user, maxTokens || 2500);
@@ -99,6 +112,24 @@ export default function AIToolPage({
     } catch {
       toast.error("PDF generation failed. Try Print instead.");
     }
+  };
+
+  // ── AI edit ─────────────────────────────────────────────────────────────────
+  const handleAiEdit = async () => {
+    if (!aiPrompt.trim() || !result) return;
+    setAiEditLoading(true);
+    try {
+      const system = `You are an expert SEND teacher editing AI-generated educational content. Apply the user's instruction to the content and return the full updated content. Keep the same general format and structure. Return only the updated content — no extra commentary.`;
+      const user = `Tool: ${title}\nCurrent content:\n${result}\n\nInstruction: ${aiPrompt}\n\nReturn the full updated content:`;
+      const { text } = await callAI(system, user, 3000);
+      setResult(text.trim());
+      setEditMode("none");
+      setAiPrompt("");
+      toast.success("Content updated with AI!");
+    } catch {
+      toast.error("AI edit failed. Please try again.");
+    }
+    setAiEditLoading(false);
   };
 
   const formattedOutput = result ? (formatOutput ? formatOutput(result) : formatAIText(result)) : "";
@@ -173,7 +204,7 @@ export default function AIToolPage({
           <div className="space-y-3">
             {/* Toolbar */}
             <div className="flex flex-wrap gap-2 items-center">
-              <Button variant="outline" size="sm" onClick={() => setResult(null)}>
+              <Button variant="outline" size="sm" onClick={() => { setResult(null); setEditMode("none"); }}>
                 <ChevronLeft className="w-3.5 h-3.5 mr-1" />New
               </Button>
               {provider && (
@@ -181,7 +212,50 @@ export default function AIToolPage({
                   <Sparkles className="h-3 w-3 mr-1" />{provider}
                 </Badge>
               )}
-              <div className="ml-auto flex gap-2">
+              <div className="ml-auto flex flex-wrap gap-2">
+                {/* Edit buttons — only shown when not in edit mode */}
+                {editMode === "none" && (
+                  <>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="gap-1.5 border-brand/40 text-brand hover:bg-brand-light"
+                      onClick={() => setEditMode("ai")}
+                    >
+                      <Sparkles className="w-3.5 h-3.5" />Edit with AI
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="gap-1.5"
+                      onClick={() => { setManualText(result); setEditMode("manual"); }}
+                    >
+                      <PenLine className="w-3.5 h-3.5" />Edit Manually
+                    </Button>
+                  </>
+                )}
+                {/* Cancel buttons in edit mode */}
+                {editMode === "ai" && (
+                  <Button variant="outline" size="sm" className="gap-1.5 text-amber-600 border-amber-300"
+                    onClick={() => { setEditMode("none"); setAiPrompt(""); }}>
+                    <X className="w-3.5 h-3.5" />Cancel
+                  </Button>
+                )}
+                {editMode === "manual" && (
+                  <>
+                    <Button variant="outline" size="sm" className="gap-1.5 text-amber-600 border-amber-300"
+                      onClick={() => setEditMode("none")}>
+                      <X className="w-3.5 h-3.5" />Cancel
+                    </Button>
+                    <Button
+                      size="sm"
+                      className="bg-brand hover:bg-brand/90 text-white gap-1.5"
+                      onClick={() => { setResult(manualText); setEditMode("none"); toast.success("Changes saved!"); }}
+                    >
+                      <Check className="w-3.5 h-3.5" />Save Changes
+                    </Button>
+                  </>
+                )}
                 <Button variant="outline" size="sm" onClick={handleCopy}>
                   <Copy className="w-3.5 h-3.5 mr-1" />Copy
                 </Button>
@@ -194,20 +268,64 @@ export default function AIToolPage({
               </div>
             </div>
 
-            {/* Output */}
-            <Card className="border-border/50">
-              <CardContent className="p-6" ref={outputRef}>
-                {outputTitle && (
-                  <h2 className="font-bold text-lg mb-4 text-foreground border-b pb-2">
-                    {outputTitle(values)}
-                  </h2>
-                )}
-                <div
-                  className="prose prose-sm max-w-none text-foreground/90 leading-relaxed"
-                  dangerouslySetInnerHTML={{ __html: formattedOutput }}
+            {/* AI edit panel */}
+            {editMode === "ai" && (
+              <div className="rounded-lg border border-brand/30 bg-brand-light/30 p-3 space-y-2">
+                <p className="text-xs font-medium text-brand flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  Describe what you'd like to change
+                </p>
+                <Textarea
+                  value={aiPrompt}
+                  onChange={e => setAiPrompt(e.target.value)}
+                  placeholder="e.g. Make it simpler for Year 3, add more examples, shorten the introduction…"
+                  className="text-sm min-h-[80px] resize-none"
+                  disabled={aiEditLoading}
+                  onKeyDown={e => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) handleAiEdit(); }}
                 />
-              </CardContent>
-            </Card>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    className="bg-brand hover:bg-brand/90 text-white gap-1.5"
+                    onClick={handleAiEdit}
+                    disabled={aiEditLoading}
+                  >
+                    {aiEditLoading
+                      ? <><Loader2 className="w-3.5 h-3.5 animate-spin" />Editing…</>
+                      : <><Sparkles className="w-3.5 h-3.5" />Apply AI Edit</>}
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={() => { setEditMode("none"); setAiPrompt(""); }} disabled={aiEditLoading}>
+                    <X className="w-3.5 h-3.5 mr-1" />Cancel
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Manual edit textarea */}
+            {editMode === "manual" && (
+              <Textarea
+                value={manualText}
+                onChange={e => setManualText(e.target.value)}
+                className="text-sm font-mono min-h-[300px] resize-y"
+              />
+            )}
+
+            {/* Output — hidden in manual edit mode */}
+            {editMode !== "manual" && (
+              <Card className="border-border/50">
+                <CardContent className="p-6" ref={outputRef}>
+                  {outputTitle && (
+                    <h2 className="font-bold text-lg mb-4 text-foreground border-b pb-2">
+                      {outputTitle(values)}
+                    </h2>
+                  )}
+                  <div
+                    className="prose prose-sm max-w-none text-foreground/90 leading-relaxed"
+                    dangerouslySetInnerHTML={{ __html: formattedOutput }}
+                  />
+                </CardContent>
+              </Card>
+            )}
 
             <Button variant="outline" onClick={handleGenerate} disabled={loading} className="w-full">
               {loading ? <><RefreshCw className="w-4 h-4 mr-2 animate-spin" />Regenerating...</> : <><RefreshCw className="w-4 h-4 mr-2" />Regenerate</>}

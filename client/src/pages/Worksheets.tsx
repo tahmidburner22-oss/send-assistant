@@ -25,7 +25,7 @@ import {
   FileText, Upload, Library, Sparkles, Download, Printer, Save, Star,
   Eye, GraduationCap, Palette, Edit3, Users, Check, ZoomIn, ZoomOut,
   Mic, MicOff, Image, Search, Clock, Award, ChevronRight, ChevronDown,
-  AlertCircle, CheckCircle, RefreshCw, FileDown, X, Wand2, History, Trash2, Info
+  AlertCircle, CheckCircle, RefreshCw, FileDown, X, Wand2, History, Trash2, Info, PenLine
 } from "lucide-react";
 
 // ─── Voice-to-text hook ─────────────────────────────────────────────────────
@@ -810,10 +810,25 @@ export default function Worksheets() {
             <Button variant="outline" size="sm" onClick={() => setShowOverlayPicker(!showOverlayPicker)}>
               <Palette className="w-3.5 h-3.5 mr-1.5" /> Overlay
             </Button>
-            <Button variant="outline" size="sm" onClick={() => setEditMode(!editMode)}
-              className={editMode ? "bg-amber-100 border-amber-300 text-amber-700" : ""}>
-              <Edit3 className="w-3.5 h-3.5 mr-1.5" /> {editMode ? "Done Editing" : "Edit"}
-            </Button>
+            {!editMode ? (
+              <>
+                <Button variant="outline" size="sm"
+                  className="gap-1.5 border-brand/40 text-brand hover:bg-brand-light"
+                  onClick={() => setEditMode(true)}>
+                  <Sparkles className="w-3.5 h-3.5" />Edit with AI
+                </Button>
+                <Button variant="outline" size="sm" className="gap-1.5"
+                  onClick={() => setEditMode(true)}>
+                  <PenLine className="w-3.5 h-3.5" />Edit Manually
+                </Button>
+              </>
+            ) : (
+              <Button variant="outline" size="sm"
+                className="bg-amber-100 border-amber-300 text-amber-700 gap-1.5"
+                onClick={() => setEditMode(false)}>
+                <Check className="w-3.5 h-3.5" />Done Editing
+              </Button>
+            )}
             <Button variant="outline" size="sm" onClick={handleDownloadPdf} className="text-brand border-brand/30 hover:bg-brand-light">
               <FileDown className="w-3.5 h-3.5 mr-1.5" /> PDF
             </Button>
