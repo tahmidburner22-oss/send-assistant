@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { subjects, allYears, allBoards } from "@/data/pastPapers";
+import { subjects, allYears, allBoards } from "@/lib/pastPapers";
 import { ScrollText, FileText, CheckSquare, ChevronDown, ChevronUp, Filter, X, ExternalLink } from "lucide-react";
 
 const colorMap: Record<string, { bg: string; border: string; text: string; badge: string }> = {

@@ -21,7 +21,7 @@ import {
   Calendar, MapPin, User2, ChevronLeft, ChevronRight as ChevronRightIcon,
   PenLine, Check, Loader2, ScrollText, ExternalLink, Filter, ChevronDown, ChevronUp
 } from "lucide-react";
-import { subjects as pastPaperSubjects, allYears as ppAllYears, allBoards as ppAllBoards } from "@/data/pastPapers";
+import { subjects as pastPaperSubjects, allYears as ppAllYears, allBoards as ppAllBoards } from "@/lib/pastPapers";
 import { Link } from "wouter";
 
 // Comprehension questions generator (same as Stories page)
