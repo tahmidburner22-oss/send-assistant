@@ -55,7 +55,7 @@ export default function PastPapers() {
         <div>
           <h1 className="text-2xl font-bold text-foreground">GCSE Past Papers</h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Free question papers and mark schemes from AQA, Edexcel and OCR — all links open official exam board pages.
+            Free question papers and mark schemes from AQA, Edexcel and OCR — click any button to download the PDF directly.
           </p>
         </div>
       </div>
@@ -200,6 +200,7 @@ export default function PastPapers() {
                                   href={paper.paperUrl}
                                   target="_blank"
                                   rel="noopener noreferrer"
+                                  download
                                   className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors"
                                 >
                                   <FileText className="w-3.5 h-3.5" /> Paper
@@ -208,6 +209,7 @@ export default function PastPapers() {
                                   href={paper.markSchemeUrl}
                                   target="_blank"
                                   rel="noopener noreferrer"
+                                  download
                                   className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition-colors"
                                 >
                                   <CheckSquare className="w-3.5 h-3.5" /> Mark Scheme
@@ -218,8 +220,8 @@ export default function PastPapers() {
                         </div>
 
                         <p className="text-[10px] text-muted-foreground mt-3 flex items-center gap-1">
-                          <ExternalLink className="w-3 h-3" />
-                          Opens official {eb.board} website — PDFs are free to download
+                          <FileText className="w-3 h-3" />
+                          Direct PDF downloads from Physics &amp; Maths Tutor
                         </p>
                       </div>
                     ))}
@@ -233,7 +235,7 @@ export default function PastPapers() {
 
       {/* Footer note */}
       <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 text-sm text-blue-700">
-        <strong>About these resources:</strong> All links open the official assessment resources pages on AQA, Pearson/Edexcel, and OCR websites where question papers and mark schemes can be downloaded free of charge. New papers are added by the exam boards each year.
+        <strong>About these resources:</strong> Clicking Paper or Mark Scheme downloads the PDF directly — no sign-in required. Papers are hosted by Physics &amp; Maths Tutor and sourced from AQA, Edexcel and OCR.
       </div>
     </div>
   );

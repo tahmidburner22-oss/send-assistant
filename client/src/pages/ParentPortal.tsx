@@ -203,6 +203,7 @@ function PastPapersPanel() {
                                   href={paper.paperUrl}
                                   target="_blank"
                                   rel="noopener noreferrer"
+                                  download
                                   className="inline-flex items-center gap-1 px-2 py-1 text-[10px] font-medium rounded-md bg-blue-600 text-white hover:bg-blue-700"
                                 >
                                   <FileText className="w-3 h-3" /> Paper
@@ -211,6 +212,7 @@ function PastPapersPanel() {
                                   href={paper.markSchemeUrl}
                                   target="_blank"
                                   rel="noopener noreferrer"
+                                  download
                                   className="inline-flex items-center gap-1 px-2 py-1 text-[10px] font-medium rounded-md bg-emerald-600 text-white hover:bg-emerald-700"
                                 >
                                   <CheckCircle className="w-3 h-3" /> MS
@@ -220,8 +222,8 @@ function PastPapersPanel() {
                           ))}
                         </div>
                         <p className="text-[9px] text-muted-foreground mt-2 flex items-center gap-1">
-                          <ExternalLink className="w-2.5 h-2.5" />
-                          Opens official {eb.board} website — free to download
+                          <FileText className="w-2.5 h-2.5" />
+                          Direct PDF downloads — no sign-in required
                         </p>
                       </div>
                     ))}
@@ -236,8 +238,7 @@ function PastPapersPanel() {
       {/* Info note */}
       <div className="bg-blue-50 border border-blue-200 rounded-xl p-3">
         <p className="text-[10px] text-blue-700 leading-relaxed">
-          <strong>About these resources:</strong> All papers are from official exam board websites (AQA, Edexcel, OCR).
-          Clicking Paper or MS (Mark Scheme) opens the official assessment resources page where PDFs can be downloaded free of charge.
+          <strong>About these resources:</strong> Clicking Paper or MS downloads the PDF directly — no sign-in required. Papers are hosted by Physics &amp; Maths Tutor and sourced from AQA, Edexcel and OCR.
         </p>
       </div>
     </div>
