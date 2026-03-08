@@ -65,6 +65,10 @@ export default function AdminPanel() {
   const [savingKey, setSavingKey] = useState<string | null>(null);
   const [liveLog, setLiveLog] = useState<string[]>([]);
   const logRef = useRef<HTMLDivElement>(null);
+  const [breaches, setBreaches] = useState<any[]>([]);
+  const [showBreachForm, setShowBreachForm] = useState(false);
+  const [breachForm, setBreachForm] = useState({ title: "", description: "", data_types: [] as string[], affected_count: "", severity: "medium" });
+  const [savingBreach, setSavingBreach] = useState(false);
 
   const canAccess = user && (
     ["mat_admin", "school_admin", "senco"].includes(user.role) ||
@@ -73,15 +77,16 @@ export default function AdminPanel() {
 
   useEffect(() => {
     if (!canAccess) return;
-    Promise.all([
+        Promise.all([
       schoolsApi.listUsers().catch(() => []),
       pupilsApi.listIncidents().catch(() => []),
       schoolsApi.auditLogs().catch(() => []),
       fetch("/api/admin/stats", { credentials: "include" }).then(r => r.ok ? r.json() : null).catch(() => null),
       fetch("/api/admin/ai-keys", { credentials: "include" }).then(r => r.ok ? r.json() : {}).catch(() => ({})),
-    ]).then(([u, i, a, s, k]) => {
+      fetch("/api/admin/breach-log", { credentials: "include" }).then(r => r.ok ? r.json() : { breaches: [] }).catch(() => ({ breaches: [] })),
+    ]).then(([u, i, a, s, k, b]) => {
       setUsers(u || []); setIncidents(i || []); setAuditLogs(a || []);
-      setStats(s); setApiKeys(k || {});
+      setStats(s); setApiKeys(k || {}); setBreaches((b as any)?.breaches || []);
     }).catch(() => toast.error("Failed to load admin data"))
       .finally(() => setLoading(false));
   }, [canAccess]);
@@ -209,6 +214,7 @@ export default function AdminPanel() {
           <TabsTrigger value="analytics" className="text-xs py-1.5 flex-1"><BarChart3 className="w-3.5 h-3.5 mr-1" />Analytics</TabsTrigger>
           <TabsTrigger value="safeguarding" className="text-xs py-1.5 flex-1"><AlertTriangle className="w-3.5 h-3.5 mr-1" />Safe</TabsTrigger>
           <TabsTrigger value="logs" className="text-xs py-1.5 flex-1"><Terminal className="w-3.5 h-3.5 mr-1" />Logs</TabsTrigger>
+          <TabsTrigger value="breach" className="text-xs py-1.5 flex-1"><Shield className="w-3.5 h-3.5 mr-1" />Breaches</TabsTrigger>
           <TabsTrigger value="settings" className="text-xs py-1.5 flex-1"><Settings2 className="w-3.5 h-3.5 mr-1" />System</TabsTrigger>
         </TabsList>
 
@@ -522,6 +528,148 @@ export default function AdminPanel() {
             </CardContent>
           </Card>
         </TabsContent>
+        {/* ── GDPR BREACH LOG ── */}
+        <TabsContent value="breach" className="space-y-4 mt-4">
+          <Card className="border-border/50">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                  <Shield className="w-4 h-4 text-red-500" /> GDPR Data Breach Log
+                  <span className="text-xs font-normal text-muted-foreground ml-1">(Art. 33/34 UK GDPR)</span>
+                </CardTitle>
+                <Button size="sm" variant="outline" className="text-xs gap-1 border-red-200 text-red-600 hover:bg-red-50" onClick={() => setShowBreachForm(v => !v)}>
+                  {showBreachForm ? "Cancel" : "+ Report Breach"}
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {showBreachForm && (
+                <div className="border border-red-200 rounded-xl p-4 space-y-3 bg-red-50/40">
+                  <p className="text-xs font-semibold text-red-700">Report a new data breach — you must notify the ICO within 72 hours if the breach is likely to result in a risk to individuals.</p>
+                  <div className="space-y-1">
+                    <Label className="text-xs">Breach Title *</Label>
+                    <Input className="text-sm" placeholder="e.g. Unauthorised access to pupil records" value={breachForm.title} onChange={e => setBreachForm(f => ({ ...f, title: e.target.value }))} />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs">Description *</Label>
+                    <textarea className="w-full text-sm bg-background border border-border rounded-lg px-3 py-2 min-h-[80px] resize-none" placeholder="Describe what happened, when it was discovered, and how..." value={breachForm.description} onChange={e => setBreachForm(f => ({ ...f, description: e.target.value }))} />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs">Data Types Involved *</Label>
+                    <div className="flex flex-wrap gap-2">
+                      {["Names", "Email addresses", "SEND data", "Behaviour records", "Attendance records", "Safeguarding data", "Passwords", "Financial data"].map(dt => (
+                        <button key={dt} type="button"
+                          className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
+                            breachForm.data_types.includes(dt)
+                              ? "bg-red-100 border-red-400 text-red-700"
+                              : "bg-muted border-border text-muted-foreground hover:border-red-300"
+                          }`}
+                          onClick={() => setBreachForm(f => ({
+                            ...f,
+                            data_types: f.data_types.includes(dt)
+                              ? f.data_types.filter(x => x !== dt)
+                              : [...f.data_types, dt]
+                          }))}
+                        >{dt}</button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <Label className="text-xs">Estimated Affected Individuals</Label>
+                      <Input className="text-sm" type="number" min="0" placeholder="0" value={breachForm.affected_count} onChange={e => setBreachForm(f => ({ ...f, affected_count: e.target.value }))} />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">Severity</Label>
+                      <select className="w-full text-sm bg-background border border-border rounded-lg px-3 py-2" value={breachForm.severity} onChange={e => setBreachForm(f => ({ ...f, severity: e.target.value }))}>
+                        <option value="low">Low</option>
+                        <option value="medium">Medium</option>
+                        <option value="high">High</option>
+                        <option value="critical">Critical</option>
+                      </select>
+                    </div>
+                  </div>
+                  <Button className="w-full bg-red-600 hover:bg-red-700 text-white text-sm" disabled={savingBreach || !breachForm.title || !breachForm.description || breachForm.data_types.length === 0}
+                    onClick={async () => {
+                      setSavingBreach(true);
+                      try {
+                        const r = await fetch("/api/admin/breach-log", {
+                          method: "POST", credentials: "include",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ ...breachForm, affected_count: Number(breachForm.affected_count) || 0 }),
+                        });
+                        if (!r.ok) throw new Error((await r.json()).error);
+                        toast.success("Breach reported and logged to audit trail");
+                        setShowBreachForm(false);
+                        setBreachForm({ title: "", description: "", data_types: [], affected_count: "", severity: "medium" });
+                        const updated = await fetch("/api/admin/breach-log", { credentials: "include" }).then(r => r.json());
+                        setBreaches(updated.breaches || []);
+                      } catch (err: any) { toast.error(err.message); }
+                      setSavingBreach(false);
+                    }}
+                  >{savingBreach ? "Saving..." : "Submit Breach Report"}</Button>
+                </div>
+              )}
+              {breaches.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Shield className="w-8 h-8 mx-auto mb-2 opacity-30" />
+                  <p className="text-sm">No breaches reported</p>
+                  <p className="text-xs mt-1">Use this log to record any data incidents for ICO compliance</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {breaches.map((b: any) => {
+                    const severityColour: Record<string, string> = { low: "bg-blue-100 text-blue-700", medium: "bg-amber-100 text-amber-700", high: "bg-orange-100 text-orange-700", critical: "bg-red-100 text-red-700" };
+                    const statusColour: Record<string, string> = { open: "bg-red-100 text-red-700", investigating: "bg-amber-100 text-amber-700", resolved: "bg-green-100 text-green-700", closed: "bg-gray-100 text-gray-600" };
+                    return (
+                      <div key={b.id} className="border border-border rounded-xl p-4 space-y-2">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold text-foreground">{b.title}</p>
+                            <p className="text-xs text-muted-foreground mt-0.5">{b.description}</p>
+                          </div>
+                          <div className="flex gap-1.5 flex-shrink-0">
+                            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${severityColour[b.severity] || "bg-gray-100 text-gray-600"}`}>{b.severity}</span>
+                            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusColour[b.status] || "bg-gray-100 text-gray-600"}`}>{b.status}</span>
+                          </div>
+                        </div>
+                        <div className="flex flex-wrap gap-1">
+                          {(b.data_types || "").split(", ").filter(Boolean).map((dt: string) => (
+                            <span key={dt} className="text-xs bg-muted px-2 py-0.5 rounded-full text-muted-foreground">{dt}</span>
+                          ))}
+                        </div>
+                        <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                          <span>{b.affected_count} affected</span>
+                          <span>Reported: {new Date(b.created_at).toLocaleDateString("en-GB")}</span>
+                          <span className={b.ico_notified ? "text-green-600" : "text-amber-600"}>{b.ico_notified ? "✓ ICO notified" : "⚠ ICO not yet notified"}</span>
+                        </div>
+                        {b.status === "open" && (
+                          <div className="flex gap-2 pt-1">
+                            <Button size="sm" variant="outline" className="text-xs h-7"
+                              onClick={async () => {
+                                await fetch(`/api/admin/breach-log/${b.id}`, { method: "PATCH", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ico_notified: 1 }) });
+                                setBreaches(bs => bs.map(x => x.id === b.id ? { ...x, ico_notified: 1 } : x));
+                                toast.success("ICO notification recorded");
+                              }}
+                            >Mark ICO Notified</Button>
+                            <Button size="sm" variant="outline" className="text-xs h-7"
+                              onClick={async () => {
+                                await fetch(`/api/admin/breach-log/${b.id}`, { method: "PATCH", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: "resolved", resolved_at: new Date().toISOString() }) });
+                                setBreaches(bs => bs.map(x => x.id === b.id ? { ...x, status: "resolved" } : x));
+                                toast.success("Breach marked as resolved");
+                              }}
+                            >Mark Resolved</Button>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
       </Tabs>
     </div>
   );

@@ -189,6 +189,16 @@ async function callOpenRouter(system: string, user: string, key: string, model: 
   throw new Error("OpenRouter: all models failed");
 }
 
+// Wrap a promise with a timeout
+function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error(`${label} timed out after ${ms / 1000}s`)), ms)
+    ),
+  ]);
+}
+
 async function callWithFallback(system: string, user: string, maxTokens: number): Promise<string> {
   const errors: string[] = [];
   for (const provider of PROVIDER_ORDER) {
@@ -196,11 +206,12 @@ async function callWithFallback(system: string, user: string, maxTokens: number)
     if (!key) { errors.push(`${provider}: no key`); continue; }
     try {
       const model = getAdminModel(provider);
-      let content = "";
-      if (provider === "groq") content = await callGroq(system, user, key, model, maxTokens);
-      else if (provider === "gemini") content = await callGemini(system, user, key, maxTokens);
-      else if (provider === "openai") content = await callOpenAI(system, user, key, model, maxTokens);
-      else if (provider === "openrouter") content = await callOpenRouter(system, user, key, model, maxTokens);
+      let callPromise: Promise<string>;
+      if (provider === "groq") callPromise = callGroq(system, user, key, model, maxTokens);
+      else if (provider === "gemini") callPromise = callGemini(system, user, key, maxTokens);
+      else if (provider === "openai") callPromise = callOpenAI(system, user, key, model, maxTokens);
+      else callPromise = callOpenRouter(system, user, key, model, maxTokens);
+      const content = await withTimeout(callPromise, 25000, provider);
       if (content?.trim()) {
         console.log(`[Revision AI] Success via ${provider}`);
         return content;
@@ -284,19 +295,11 @@ router.post("/upload", requireAuth, upload.single("document"), async (req: Reque
       ? ""
       : `\n       - IMPORTANT: Write the ENTIRE podcast script in ${langName}. All explanations, examples, transitions, and the closing line must be in ${langName}.`;
 
-    // First pass: ask AI to identify and extract only the core educational content
-    const cleanedContent = await callWithFallback(
-      `You are a document analyst. Your job is to extract ONLY the core educational content from the text below.
-       Remove: page numbers, headers, footers, author names, publication dates, copyright notices, table of contents entries, references/bibliography, URLs, and any administrative boilerplate.
-       Keep: all subject matter, explanations, definitions, examples, key concepts, facts, and arguments.
-       Return ONLY the cleaned educational content as plain text. Do not add any commentary or labels.`,
-      `Document text:\n\n${rawText}`,
-      2000
-    );
-
+    // Single-pass: clean + generate script in one AI call to halve latency
     const script = await callWithFallback(
       `You are an expert educational podcast host creating a revision podcast for students aged 11-18.
-       Your job is to transform study notes into a rich, engaging spoken explanation — like a brilliant teacher talking directly to a student.
+       You will receive raw document text which may contain headers, page numbers, and boilerplate — ignore all of that.
+       Your job is to transform the CORE EDUCATIONAL CONTENT into a rich, engaging spoken explanation — like a brilliant teacher talking directly to a student.
 
        CRITICAL RULES:
        - Write ONLY natural spoken language — absolutely no bullet points, no markdown, no headers, no asterisks
@@ -309,7 +312,7 @@ router.post("/upload", requireAuth, upload.single("document"), async (req: Reque
        - Aim for 600-900 words of spoken script (about 4-6 minutes of audio)
        - Do NOT start with "Welcome" or "In this podcast" — open with the first key concept immediately
        - End with a brief encouragement to take the quiz${langInstruction}`,
-      `Educational content to turn into a podcast:\n\n${cleanedContent}`,
+      `Document text to turn into a podcast script:\n\n${rawText.slice(0, 6000)}`,
       1200
     );
 

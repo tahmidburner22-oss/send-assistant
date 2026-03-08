@@ -319,3 +319,25 @@ CREATE TABLE IF NOT EXISTS school_api_keys (
   UNIQUE(school_id, provider)
 );
 CREATE INDEX IF NOT EXISTS idx_school_api_keys_school ON school_api_keys(school_id);
+
+-- ── GDPR Data Breach Notification Log (Art. 33/34 UK GDPR) ──────────────────
+CREATE TABLE IF NOT EXISTS breach_log (
+  id TEXT PRIMARY KEY,
+  school_id TEXT REFERENCES schools(id) ON DELETE CASCADE,
+  reported_by TEXT REFERENCES users(id),
+  title TEXT NOT NULL,
+  description TEXT NOT NULL,
+  data_types TEXT NOT NULL,         -- comma-separated: names, emails, SEND data, etc.
+  affected_count INTEGER DEFAULT 0, -- estimated number of affected individuals
+  severity TEXT NOT NULL DEFAULT 'medium', -- low | medium | high | critical
+  status TEXT NOT NULL DEFAULT 'open',     -- open | investigating | resolved | closed
+  ico_notified INTEGER NOT NULL DEFAULT 0, -- 1 = ICO notified within 72hrs
+  ico_reference TEXT,               -- ICO case reference if notified
+  subjects_notified INTEGER NOT NULL DEFAULT 0, -- 1 = affected data subjects notified
+  containment_action TEXT,          -- steps taken to contain the breach
+  resolved_at TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_breach_log_school ON breach_log(school_id);
+CREATE INDEX IF NOT EXISTS idx_breach_log_status ON breach_log(status);

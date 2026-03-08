@@ -176,4 +176,78 @@ router.get("/test-ai/:provider", requireAuth, requireAdmin, async (req: Request,
   }
 });
 
+// ── GDPR Breach Log (Art. 33/34 UK GDPR) ────────────────────────────────────
+
+// GET /api/admin/breach-log  — list all breaches for the school
+router.get("/breach-log", requireAuth, requireAdmin, (req: Request, res: Response) => {
+  try {
+    const user = (req as any).user;
+    const rows = db.prepare(
+      `SELECT b.*, u.name as reporter_name, u.email as reporter_email
+       FROM breach_log b
+       LEFT JOIN users u ON b.reported_by = u.id
+       WHERE b.school_id = ? OR b.school_id IS NULL
+       ORDER BY b.created_at DESC LIMIT 100`
+    ).all(user.schoolId || user.school_id || "") as any[];
+    res.json({ breaches: rows });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/admin/breach-log  — report a new breach
+router.post("/breach-log", requireAuth, requireAdmin, (req: Request, res: Response) => {
+  try {
+    const user = (req as any).user;
+    const { title, description, data_types, affected_count, severity } = req.body;
+    if (!title || !description || !data_types) {
+      return res.status(400).json({ error: "title, description, and data_types are required" });
+    }
+    const id = `breach_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+    db.prepare(
+      `INSERT INTO breach_log (id, school_id, reported_by, title, description, data_types, affected_count, severity)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+    ).run(
+      id,
+      user.schoolId || user.school_id || null,
+      user.id,
+      title,
+      description,
+      Array.isArray(data_types) ? data_types.join(", ") : data_types,
+      affected_count || 0,
+      severity || "medium"
+    );
+    // Log to audit trail
+    try {
+      db.prepare(
+        `INSERT INTO audit_logs (id, action, user_id, created_at) VALUES (?, ?, ?, datetime('now'))`
+      ).run(`al_${Date.now()}`, `DATA_BREACH_REPORTED: ${title}`, user.id);
+    } catch (_) {}
+    res.json({ ok: true, id });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// PATCH /api/admin/breach-log/:id  — update status, ICO notification, containment
+router.patch("/breach-log/:id", requireAuth, requireAdmin, (req: Request, res: Response) => {
+  try {
+    const { status, ico_notified, ico_reference, subjects_notified, containment_action, resolved_at } = req.body;
+    db.prepare(
+      `UPDATE breach_log SET
+        status = COALESCE(?, status),
+        ico_notified = COALESCE(?, ico_notified),
+        ico_reference = COALESCE(?, ico_reference),
+        subjects_notified = COALESCE(?, subjects_notified),
+        containment_action = COALESCE(?, containment_action),
+        resolved_at = COALESCE(?, resolved_at),
+        updated_at = datetime('now')
+       WHERE id = ?`
+    ).run(status, ico_notified, ico_reference, subjects_notified, containment_action, resolved_at, req.params.id);
+    res.json({ ok: true });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 export default router;
