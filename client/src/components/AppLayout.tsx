@@ -15,12 +15,12 @@ const mainMenu = [
   { path: "/differentiate", label: "Differentiate", icon: Sparkles },
   { path: "/worksheets", label: "Worksheets", icon: FileText },
   { path: "/stories", label: "Stories", icon: BookOpen },
+  { path: "/past-papers", label: "Past Papers", icon: ScrollText },
   { path: "/templates", label: "Templates", icon: LayoutGrid },
   { path: "/children", label: "Children", icon: Users },
   { path: "/history", label: "History", icon: Clock },
   { path: "/analytics", label: "Analytics", icon: BarChart3 },
   { path: "/ideas", label: "Ideas", icon: Lightbulb },
-  { path: "/past-papers", label: "Past Papers", icon: ScrollText },
 ];
 
 const sendToolsMenu = [

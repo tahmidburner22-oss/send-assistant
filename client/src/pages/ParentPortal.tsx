@@ -19,8 +19,9 @@ import {
   MessageSquare, Image, Paperclip, ZoomIn, ZoomOut,
   CalendarDays, CheckCircle2, XCircle, MinusCircle, Sun, Sunset, TrendingUp,
   Calendar, MapPin, User2, ChevronLeft, ChevronRight as ChevronRightIcon,
-  PenLine, Check, Loader2
+  PenLine, Check, Loader2, ScrollText, ExternalLink, Filter, ChevronDown, ChevronUp
 } from "lucide-react";
+import { subjects as pastPaperSubjects, allYears as ppAllYears, allBoards as ppAllBoards } from "@/data/pastPapers";
 import { Link } from "wouter";
 
 // Comprehension questions generator (same as Stories page)
@@ -48,6 +49,199 @@ function storyToHtml(md: string, textSize: number): string {
     .replace(/\n\n/g, `</p><p style="font-size:${textSize}px" class="mb-3 leading-relaxed">`)
     .replace(/^/, `<p style="font-size:${textSize}px" class="mb-3 leading-relaxed">`)
     + '</p>';
+}
+
+// ─────────────────────────────────────────────
+// Past Papers Panel (used inside Parent Portal)
+// ─────────────────────────────────────────────
+const ppColorMap: Record<string, { bg: string; border: string; text: string; badge: string }> = {
+  blue:    { bg: "bg-blue-50",    border: "border-blue-200",    text: "text-blue-700",    badge: "bg-blue-100 text-blue-700" },
+  green:   { bg: "bg-green-50",   border: "border-green-200",   text: "text-green-700",   badge: "bg-green-100 text-green-700" },
+  purple:  { bg: "bg-purple-50",  border: "border-purple-200",  text: "text-purple-700",  badge: "bg-purple-100 text-purple-700" },
+  emerald: { bg: "bg-emerald-50", border: "border-emerald-200", text: "text-emerald-700", badge: "bg-emerald-100 text-emerald-700" },
+  orange:  { bg: "bg-orange-50",  border: "border-orange-200",  text: "text-orange-700",  badge: "bg-orange-100 text-orange-700" },
+  indigo:  { bg: "bg-indigo-50",  border: "border-indigo-200",  text: "text-indigo-700",  badge: "bg-indigo-100 text-indigo-700" },
+  teal:    { bg: "bg-teal-50",    border: "border-teal-200",    text: "text-teal-700",    badge: "bg-teal-100 text-teal-700" },
+  amber:   { bg: "bg-amber-50",   border: "border-amber-200",   text: "text-amber-700",   badge: "bg-amber-100 text-amber-700" },
+  cyan:    { bg: "bg-cyan-50",    border: "border-cyan-200",    text: "text-cyan-700",    badge: "bg-cyan-100 text-cyan-700" },
+  slate:   { bg: "bg-slate-50",   border: "border-slate-200",   text: "text-slate-700",   badge: "bg-slate-100 text-slate-700" },
+  yellow:  { bg: "bg-yellow-50",  border: "border-yellow-200",  text: "text-yellow-700",  badge: "bg-yellow-100 text-yellow-700" },
+  pink:    { bg: "bg-pink-50",    border: "border-pink-200",    text: "text-pink-700",    badge: "bg-pink-100 text-pink-700" },
+};
+
+function PastPapersPanel() {
+  const [selectedYear, setSelectedYear] = useState<string>("All");
+  const [selectedBoard, setSelectedBoard] = useState<string>("All");
+  const [expandedSubject, setExpandedSubject] = useState<string | null>(null);
+
+  const filteredSubjects = pastPaperSubjects.map(s => ({
+    ...s,
+    filteredBoards: s.examBoards
+      .filter(eb => selectedBoard === "All" || eb.board === selectedBoard)
+      .map(eb => ({
+        ...eb,
+        papers: eb.papers.filter(p => selectedYear === "All" || p.year === parseInt(selectedYear)),
+      }))
+      .filter(eb => eb.papers.length > 0),
+  })).filter(s => s.filteredBoards.length > 0);
+
+  return (
+    <div className="space-y-4">
+      {/* Header */}
+      <div className="flex items-center gap-3">
+        <div className="w-9 h-9 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0">
+          <ScrollText className="w-4 h-4 text-blue-600" />
+        </div>
+        <div>
+          <h3 className="font-semibold text-foreground text-sm">GCSE Past Papers</h3>
+          <p className="text-xs text-muted-foreground">Free papers & mark schemes from official exam boards</p>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <Card className="border-border/50">
+        <CardContent className="p-3 space-y-3">
+          <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+            <Filter className="w-3.5 h-3.5" /> Filter
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="block text-[10px] font-medium text-muted-foreground mb-1">Year</label>
+              <select
+                value={selectedYear}
+                onChange={e => setSelectedYear(e.target.value)}
+                className="w-full text-xs border border-border rounded-lg px-2 py-1.5 bg-background focus:outline-none focus:ring-1 focus:ring-emerald-400"
+              >
+                <option value="All">All Years</option>
+                {ppAllYears.map(y => <option key={y} value={y}>{y}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-[10px] font-medium text-muted-foreground mb-1">Exam Board</label>
+              <select
+                value={selectedBoard}
+                onChange={e => setSelectedBoard(e.target.value)}
+                className="w-full text-xs border border-border rounded-lg px-2 py-1.5 bg-background focus:outline-none focus:ring-1 focus:ring-emerald-400"
+              >
+                <option value="All">All Boards</option>
+                {ppAllBoards.map(b => <option key={b} value={b}>{b}</option>)}
+              </select>
+            </div>
+          </div>
+          {(selectedYear !== "All" || selectedBoard !== "All") && (
+            <button
+              onClick={() => { setSelectedYear("All"); setSelectedBoard("All"); }}
+              className="text-[10px] text-red-500 hover:text-red-700 flex items-center gap-1"
+            >
+              <X className="w-3 h-3" /> Clear filters
+            </button>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Subject list */}
+      {filteredSubjects.length === 0 ? (
+        <Card className="border-border/50">
+          <CardContent className="p-6 text-center">
+            <ScrollText className="w-8 h-8 mx-auto mb-2 text-muted-foreground opacity-40" />
+            <p className="text-sm font-medium text-foreground">No papers found</p>
+            <p className="text-xs text-muted-foreground mt-1">Try adjusting your filters.</p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="space-y-2">
+          {filteredSubjects.map(subject => {
+            const colors = ppColorMap[subject.color] ?? ppColorMap.blue;
+            const isExpanded = expandedSubject === subject.id;
+            const totalPapers = subject.filteredBoards.reduce((sum, eb) => sum + eb.papers.length, 0);
+            return (
+              <div key={subject.id} className={`rounded-xl border-2 ${colors.border} overflow-hidden`}>
+                {/* Subject header */}
+                <button
+                  onClick={() => setExpandedSubject(isExpanded ? null : subject.id)}
+                  className={`w-full flex items-center justify-between p-3 ${colors.bg}`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-xl">{subject.icon}</span>
+                    <div className="text-left">
+                      <p className={`text-sm font-semibold ${colors.text}`}>{subject.name}</p>
+                      <p className="text-[10px] text-muted-foreground">
+                        {totalPapers} paper{totalPapers !== 1 ? "s" : ""}
+                        {" · "}{subject.filteredBoards.map(eb => eb.board).join(", ")}
+                      </p>
+                    </div>
+                  </div>
+                  {isExpanded
+                    ? <ChevronUp className={`w-4 h-4 ${colors.text}`} />
+                    : <ChevronDown className={`w-4 h-4 ${colors.text}`} />}
+                </button>
+
+                {/* Papers list */}
+                {isExpanded && (
+                  <div className="bg-white divide-y divide-border/40">
+                    {subject.filteredBoards.map(eb => (
+                      <div key={eb.board} className="p-3">
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${colors.badge} mb-2 inline-block`}>
+                          {eb.board}
+                        </span>
+                        <div className="space-y-1.5 mt-1">
+                          {eb.papers.map((paper, idx) => (
+                            <div key={idx} className="flex items-start justify-between gap-2 py-1.5">
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs font-medium text-foreground leading-tight">{paper.title}</p>
+                                <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                                  {paper.tier && (
+                                    <span className={`text-[9px] px-1.5 py-0.5 rounded font-medium ${
+                                      paper.tier === "Higher" ? "bg-purple-100 text-purple-700" : "bg-green-100 text-green-700"
+                                    }`}>{paper.tier}</span>
+                                  )}
+                                  <span className="text-[9px] text-muted-foreground">{paper.series} {paper.year}</span>
+                                </div>
+                              </div>
+                              <div className="flex gap-1.5 flex-shrink-0">
+                                <a
+                                  href={paper.paperUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 px-2 py-1 text-[10px] font-medium rounded-md bg-blue-600 text-white hover:bg-blue-700"
+                                >
+                                  <FileText className="w-3 h-3" /> Paper
+                                </a>
+                                <a
+                                  href={paper.markSchemeUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 px-2 py-1 text-[10px] font-medium rounded-md bg-emerald-600 text-white hover:bg-emerald-700"
+                                >
+                                  <CheckCircle className="w-3 h-3" /> MS
+                                </a>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                        <p className="text-[9px] text-muted-foreground mt-2 flex items-center gap-1">
+                          <ExternalLink className="w-2.5 h-2.5" />
+                          Opens official {eb.board} website — free to download
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Info note */}
+      <div className="bg-blue-50 border border-blue-200 rounded-xl p-3">
+        <p className="text-[10px] text-blue-700 leading-relaxed">
+          <strong>About these resources:</strong> All papers are from official exam board websites (AQA, Edexcel, OCR).
+          Clicking Paper or MS (Mark Scheme) opens the official assessment resources page where PDFs can be downloaded free of charge.
+        </p>
+      </div>
+    </div>
+  );
 }
 
 export default function ParentPortal() {
@@ -278,13 +472,14 @@ export default function ParentPortal() {
         </Card>
 
         <Tabs defaultValue="assignments">
-          <TabsList className="w-full grid grid-cols-6 h-10">
+          <TabsList className="w-full grid grid-cols-7 h-10">
             <TabsTrigger value="assignments" className="text-xs">Work</TabsTrigger>
             <TabsTrigger value="behaviour" className="text-xs">Behaviour</TabsTrigger>
             <TabsTrigger value="timetable" className="text-xs">Timetable</TabsTrigger>
             <TabsTrigger value="submissions" className="text-xs">Submit</TabsTrigger>
             <TabsTrigger value="stories" className="text-xs">Stories</TabsTrigger>
             <TabsTrigger value="attendance" className="text-xs">Attendance</TabsTrigger>
+            <TabsTrigger value="past-papers" className="text-xs">Papers</TabsTrigger>
           </TabsList>
 
           {/* ─── ASSIGNMENTS TAB ─── */}
@@ -1027,6 +1222,11 @@ export default function ParentPortal() {
                 </div>
               );
             })()}
+          </TabsContent>
+
+          {/* ─── PAST PAPERS TAB ─── */}
+          <TabsContent value="past-papers" className="mt-4 space-y-4">
+            <PastPapersPanel />
           </TabsContent>
 
         </Tabs>
