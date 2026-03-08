@@ -905,21 +905,24 @@ export default function Worksheets() {
           <div ref={worksheetRef} className="worksheet-content" style={{ backgroundColor: overlayBg }}>
             <Card className="border-border/50 overflow-hidden" style={{ backgroundColor: overlayBg }}>
               <CardContent className="p-5 sm:p-8" style={{ backgroundColor: overlayBg }}>
-                <WorksheetRenderer
-                  worksheet={{
-                    title: generated.title,
-                    subtitle: (generated as any).subtitle,
-                    sections: generated.sections as any,
-                    metadata: generated.metadata as any,
-                    isAI: isAIWorksheet(generated),
-                  }}
-                  viewMode={viewMode}
-                  textSize={textSize}
-                  overlayColor={overlayBg}
-                  editedSections={editedSections}
-                  onSectionClick={undefined}
-                  editMode={false}
-                />
+                {/* Show WorksheetRenderer only when NOT in edit mode */}
+                {!editMode && (
+                  <WorksheetRenderer
+                    worksheet={{
+                      title: generated.title,
+                      subtitle: (generated as any).subtitle,
+                      sections: generated.sections as any,
+                      metadata: generated.metadata as any,
+                      isAI: isAIWorksheet(generated),
+                    }}
+                    viewMode={viewMode}
+                    textSize={textSize}
+                    overlayColor={overlayBg}
+                    editedSections={editedSections}
+                    onSectionClick={undefined}
+                    editMode={false}
+                  />
+                )}
                 {/* Inline section edit rendering (Manual + AI) */}
                 {editMode && (
                   <div className="mt-4 space-y-3">
