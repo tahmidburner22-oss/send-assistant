@@ -254,9 +254,10 @@ export default function History() {
                         onClick={saveWorksheetEdits}>
                         {saving
                           ? <><CheckCircle className="h-3.5 w-3.5 mr-1 animate-spin" />Saving…</>
-                        : <><Save className="h-3.5 w-3.5 mr-1" />Save Changes</>}
-                    </Button>
-                  )}
+                          : <><Save className="h-3.5 w-3.5 mr-1" />Save Changes</>}
+                      </Button>
+                    </>)
+                  }
 
                   {/* Print */}
                   <Button size="sm" variant="outline" onClick={() => window.print()}>
