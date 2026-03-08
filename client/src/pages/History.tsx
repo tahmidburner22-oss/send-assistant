@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -8,7 +8,8 @@ import { motion } from "framer-motion";
 import { useApp } from "@/contexts/AppContext";
 import { callAI } from "@/lib/ai";
 import { subjects, sendNeeds } from "@/lib/send-data";
-import { FileText, BookOpen, Star, Eye, Trash2, Clock, Edit3, Save, X, GraduationCap, CheckCircle, Sparkles, PenLine, Loader2 } from "lucide-react";
+import { FileText, BookOpen, Star, Eye, Trash2, Clock, Edit3, Save, X, GraduationCap, CheckCircle, Sparkles, PenLine, Loader2, UserPlus } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import type { Worksheet, Story } from "@/contexts/AppContext";
 
@@ -27,7 +28,27 @@ function buildSections(ws: Worksheet): Section[] {
 }
 
 export default function History() {
-  const { worksheetHistory, storyHistory, updateWorksheet } = useApp();
+  const { worksheetHistory, storyHistory, updateWorksheet, children, assignWork } = useApp();
+
+  // ── Assign to student state ─────────────────────────────────────────────────
+  const [assignItem, setAssignItem] = useState<{ title: string; type: "worksheet" | "story"; content: string } | null>(null);
+  const [assignChildId, setAssignChildId] = useState<string>("");
+  const [assigning, setAssigning] = useState(false);
+
+  const handleAssign = useCallback(async () => {
+    if (!assignItem || !assignChildId) return;
+    setAssigning(true);
+    try {
+      await assignWork(assignChildId, { title: assignItem.title, type: assignItem.type, content: assignItem.content });
+      toast.success(`Assigned to student successfully!`);
+      setAssignItem(null);
+      setAssignChildId("");
+    } catch {
+      toast.error("Failed to assign. Please try again.");
+    } finally {
+      setAssigning(false);
+    }
+  }, [assignItem, assignChildId, assignWork]);
 
   // ── Worksheet viewer/editor state ──────────────────────────────────────────
   const [selectedWs, setSelectedWs] = useState<Worksheet | null>(null);
@@ -38,6 +59,7 @@ export default function History() {
   const [editType, setEditType] = useState<"none" | "manual" | "ai">("none");
   const [aiEditPrompt, setAiEditPrompt] = useState("");
   const [aiEditLoading, setAiEditLoading] = useState(false);
+  const [aiEditSectionIndex, setAiEditSectionIndex] = useState<number | null>(null);
   const [storyEditType, setStoryEditType] = useState<"none" | "manual" | "ai">("none");
   const [storyAiPrompt, setStoryAiPrompt] = useState("");
   const [storyAiLoading, setStoryAiLoading] = useState(false);
@@ -138,9 +160,14 @@ export default function History() {
                         )}
                       </div>
                     </div>
-                    <Button variant="outline" size="sm" onClick={e => { e.stopPropagation(); openWorksheet(ws); }}>
-                      <Eye className="w-3.5 h-3.5" />
-                    </Button>
+                    <div className="flex gap-1.5">
+                      <Button variant="outline" size="sm" title="Assign to student" onClick={e => { e.stopPropagation(); setAssignItem({ title: ws.title, type: "worksheet", content: ws.content || "" }); }}>
+                        <UserPlus className="w-3.5 h-3.5" />
+                      </Button>
+                      <Button variant="outline" size="sm" onClick={e => { e.stopPropagation(); openWorksheet(ws); }}>
+                        <Eye className="w-3.5 h-3.5" />
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
               </motion.div>
@@ -170,9 +197,14 @@ export default function History() {
                     <p className="text-xs text-muted-foreground mt-0.5">{story.genre} · {story.yearGroup} · {story.length}</p>
                     <span className="text-[10px] text-muted-foreground">{new Date(story.createdAt).toLocaleDateString()}</span>
                   </div>
-                  <Button variant="outline" size="sm" onClick={e => { e.stopPropagation(); openStory(story); }}>
-                    <Eye className="w-3.5 h-3.5" />
-                  </Button>
+                  <div className="flex gap-1.5">
+                    <Button variant="outline" size="sm" title="Assign to student" onClick={e => { e.stopPropagation(); setAssignItem({ title: story.title, type: "story", content: story.content || "" }); }}>
+                      <UserPlus className="w-3.5 h-3.5" />
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={e => { e.stopPropagation(); openStory(story); }}>
+                      <Eye className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             </motion.div>
@@ -505,6 +537,42 @@ export default function History() {
               )}
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Assign to Student dialog ── */}
+      <Dialog open={!!assignItem} onOpenChange={open => { if (!open) { setAssignItem(null); setAssignChildId(""); } }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><UserPlus className="w-4 h-4" /> Assign to Student</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-1">
+            <div>
+              <p className="text-sm text-muted-foreground mb-1">Assigning: <span className="font-medium text-foreground">{assignItem?.title}</span></p>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium">Select Student</label>
+              {children.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No students added yet. Go to the Children page first.</p>
+              ) : (
+                <Select value={assignChildId} onValueChange={setAssignChildId}>
+                  <SelectTrigger><SelectValue placeholder="Choose a student..." /></SelectTrigger>
+                  <SelectContent>
+                    {children.map(c => (
+                      <SelectItem key={c.id} value={c.id}>{c.name} — Year {c.yearGroup}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
+            <div className="flex gap-2 justify-end pt-1">
+              <Button variant="outline" size="sm" onClick={() => { setAssignItem(null); setAssignChildId(""); }}>Cancel</Button>
+              <Button size="sm" disabled={!assignChildId || assigning} onClick={handleAssign}>
+                {assigning ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1" /> : <UserPlus className="w-3.5 h-3.5 mr-1" />}
+                Assign
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

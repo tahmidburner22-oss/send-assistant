@@ -6,12 +6,20 @@ import { sendDSLIncidentAlert } from "../email/index.js";
 
 const router = Router();
 
-// ── List Pupils ───────────────────────────────────────────────────────────────
+// ── List Pupils (with assignments, attendance, behaviour) ────────────────────
 router.get("/", requireAuth, (req: Request, res: Response) => {
   const pupils = db.prepare(
     "SELECT * FROM pupils WHERE school_id = ? AND is_active = 1 ORDER BY name"
-  ).all(req.user!.schoolId);
-  res.json(pupils);
+  ).all(req.user!.schoolId) as any[];
+
+  const enriched = pupils.map(p => {
+    const assignments = db.prepare("SELECT * FROM assignments WHERE pupil_id = ? ORDER BY assigned_at DESC").all(p.id);
+    const attendance = db.prepare("SELECT * FROM attendance_records WHERE pupil_id = ? ORDER BY date DESC").all(p.id);
+    const behaviour = db.prepare("SELECT * FROM behaviour_records WHERE pupil_id = ? ORDER BY date DESC LIMIT 100").all(p.id);
+    return { ...p, assignments, attendance, behaviour };
+  });
+
+  res.json(enriched);
 });
 
 // ── Get Single Pupil ──────────────────────────────────────────────────────────
@@ -161,6 +169,30 @@ router.put("/safeguarding/incidents/:id", requireAuth, requireMinRole("senco"), 
     .run(status, notes, req.user!.id, req.params.id, req.user!.schoolId);
   auditLog(req.user!.id, req.user!.schoolId ?? null, "safeguarding.incident_updated", "incident", req.params.id, { status }, req.ip ?? undefined);
   res.json({ message: "Incident updated" });
+});
+
+// ── Assignments ──────────────────────────────────────────────────────────────
+router.post("/:id/assignments", requireAuth, (req: Request, res: Response) => {
+  const pupil = db.prepare("SELECT id FROM pupils WHERE id = ? AND school_id = ?").get(req.params.id, req.user!.schoolId);
+  if (!pupil) return res.status(404).json({ error: "Pupil not found" });
+  const { title, type, content } = req.body;
+  if (!title || !type) return res.status(400).json({ error: "title and type required" });
+  const id = uuidv4();
+  db.prepare(`INSERT INTO assignments (id, pupil_id, assigned_by, title, type, content, status)
+    VALUES (?, ?, ?, ?, ?, ?, 'not-started')`).run(id, req.params.id, req.user!.id, title, type, content || null);
+  auditLog(req.user!.id, req.user!.schoolId ?? null, "assignment.created", "assignment", id, { title, type }, req.ip ?? undefined);
+  res.status(201).json({ id });
+});
+
+router.put("/:id/assignments/:assignmentId", requireAuth, (req: Request, res: Response) => {
+  const { status, feedback, mark, progress, teacherComment } = req.body;
+  db.prepare(`UPDATE assignments SET
+    status=COALESCE(?,status), feedback=COALESCE(?,feedback),
+    mark=COALESCE(?,mark), progress=COALESCE(?,progress),
+    teacher_comment=COALESCE(?,teacher_comment)
+    WHERE id=? AND pupil_id=?`)
+    .run(status ?? null, feedback ?? null, mark ?? null, progress ?? null, teacherComment ?? null, req.params.assignmentId, req.params.id);
+  res.json({ message: "Assignment updated" });
 });
 
 // ── Attendance ────────────────────────────────────────────────────────────────

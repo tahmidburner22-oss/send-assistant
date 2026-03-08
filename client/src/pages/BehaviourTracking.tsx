@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { useApp } from "@/contexts/AppContext";
+import { pupils as pupilsApi } from "@/lib/api";
 import { sendNeeds } from "@/lib/send-data";
 import {
   Plus, TrendingUp, TrendingDown, Minus, Calendar, Clock,
@@ -77,6 +78,7 @@ export default function BehaviourTracking() {
   const { children } = useApp();
   const [entries, setEntries] = useState<BehaviourEntry[]>([]);
   const [selectedChildId, setSelectedChildId] = useState<string>("");
+  const [loadingEntries, setLoadingEntries] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
   const [selectedEntry, setSelectedEntry] = useState<BehaviourEntry | null>(null);
   const [dateFilter, setDateFilter] = useState<string>("");
@@ -93,6 +95,37 @@ export default function BehaviourTracking() {
   const [newWorksheetCompletion, setNewWorksheetCompletion] = useState<number | undefined>(undefined);
   const [newDate, setNewDate] = useState(new Date().toISOString().split("T")[0]);
   const [newTime, setNewTime] = useState(new Date().toTimeString().slice(0, 5));
+
+  // Load behaviour records from server when a child is selected
+  const loadBehaviourForChild = async (childId: string) => {
+    if (!childId) return;
+    setLoadingEntries(true);
+    try {
+      const pupil = await pupilsApi.get(childId);
+      if (Array.isArray(pupil.behaviour)) {
+        const mapped: BehaviourEntry[] = pupil.behaviour.map((r: any) => ({
+          id: r.id,
+          childId: r.pupil_id,
+          date: r.date,
+          time: r.time || "00:00",
+          type: r.type as BehaviourType,
+          category: r.category || "",
+          description: r.description || "",
+          trigger: r.trigger as TriggerType | undefined,
+          triggerNotes: r.trigger_notes || undefined,
+          strategy: r.action_taken || undefined,
+          outcome: r.outcome || undefined,
+        }));
+        setEntries(prev => {
+          // Replace entries for this child, keep others
+          const others = prev.filter(e => e.childId !== childId);
+          return [...others, ...mapped];
+        });
+      }
+    } catch { /* ignore */ } finally {
+      setLoadingEntries(false);
+    }
+  };
 
   const selectedChild = children.find(c => c.id === selectedChildId);
 
@@ -139,25 +172,36 @@ export default function BehaviourTracking() {
     };
   }, [entries, selectedChildId]);
 
-  const addEntry = () => {
+  const addEntry = async () => {
     if (!selectedChildId) { toast.error("Please select a child first."); return; }
     if (!newCategory || !newDescription) { toast.error("Please fill in category and description."); return; }
-    const entry: BehaviourEntry = {
-      id: Date.now().toString(),
-      childId: selectedChildId,
-      date: newDate,
-      time: newTime,
-      type: newType,
-      category: newCategory,
-      description: newDescription,
-      trigger: newTrigger,
-      triggerNotes: newTriggerNotes,
-      strategy: newStrategy,
-      outcome: newOutcome,
-      worksheetCompletion: newWorksheetCompletion,
-    };
-    setEntries(prev => [...prev, entry]);
-    toast.success("Behaviour entry recorded.");
+    try {
+      const result = await pupilsApi.recordBehaviour(selectedChildId, {
+        type: newType,
+        category: newCategory,
+        description: newDescription,
+        actionTaken: newStrategy || null,
+        date: newDate,
+      });
+      const entry: BehaviourEntry = {
+        id: result.id || Date.now().toString(),
+        childId: selectedChildId,
+        date: newDate,
+        time: newTime,
+        type: newType,
+        category: newCategory,
+        description: newDescription,
+        trigger: newTrigger,
+        triggerNotes: newTriggerNotes,
+        strategy: newStrategy,
+        outcome: newOutcome,
+        worksheetCompletion: newWorksheetCompletion,
+      };
+      setEntries(prev => [...prev, entry]);
+      toast.success("Behaviour entry recorded.");
+    } catch {
+      toast.error("Failed to save behaviour entry.");
+    }
     setNewCategory(""); setNewDescription(""); setNewTriggerNotes(""); setNewStrategy(""); setNewOutcome(""); setNewWorksheetCompletion(undefined);
     setShowAdd(false);
   };
@@ -207,7 +251,7 @@ export default function BehaviourTracking() {
               {children.length === 0 ? (
                 <p className="text-sm text-muted-foreground">No children added yet. Go to the Children page to add students.</p>
               ) : (
-                <Select value={selectedChildId} onValueChange={setSelectedChildId}>
+                <Select value={selectedChildId} onValueChange={v => { setSelectedChildId(v); loadBehaviourForChild(v); }}>
                   <SelectTrigger className="h-10"><SelectValue placeholder="Choose a student..." /></SelectTrigger>
                   <SelectContent>
                     {children.map(c => (
