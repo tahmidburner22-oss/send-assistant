@@ -108,8 +108,8 @@ interface AppContextType extends AppState {
   addChild: (child: Omit<Child, "id" | "code" | "createdAt" | "assignments" | "submissions">) => Promise<Child>;
   removeChild: (id: string) => Promise<void>;
   updateChild: (id: string, updates: Partial<Child>) => Promise<void>;
-  assignWork: (childId: string, assignment: Omit<Assignment, "id" | "assignedAt" | "status">) => void;
-  updateAssignment: (childId: string, assignmentId: string, updates: Partial<Assignment>) => void;
+  assignWork: (childId: string, assignment: Omit<Assignment, "id" | "assignedAt" | "status">) => Promise<void>;
+  updateAssignment: (childId: string, assignmentId: string, updates: Partial<Assignment>) => Promise<void>;
   addSubmission: (childId: string, submission: Omit<Submission, "id" | "submittedAt">) => void;
   updateSubmission: (childId: string, submissionId: string, updates: Partial<Submission>) => void;
   saveWorksheet: (worksheet: Omit<Worksheet, "id" | "createdAt">) => Promise<Worksheet>;
@@ -147,13 +147,18 @@ export function AppProvider({ children: childrenProp }: { children: React.ReactN
         dataApi.ideas.list(),
         pupilsApi.list(),
       ]);
+      const mappedPupils = pupilsData.status === "fulfilled" ? pupilsData.value.map(mapPupil) : null;
+      const attendanceRecords = pupilsData.status === "fulfilled"
+        ? pupilsData.value.flatMap((p: any) => Array.isArray(p.attendance) ? p.attendance.map(mapAttendanceRecord) : [])
+        : null;
       setState(s => ({
         ...s,
         worksheetHistory: ws.status === "fulfilled" ? ws.value : s.worksheetHistory,
         storyHistory: stories.status === "fulfilled" ? stories.value.map(mapStory) : s.storyHistory,
         differentiationHistory: diffs.status === "fulfilled" ? diffs.value.map(mapDiff) : s.differentiationHistory,
         ideas: ideasData.status === "fulfilled" ? ideasData.value.map(mapIdea) : s.ideas,
-        children: pupilsData.status === "fulfilled" ? pupilsData.value.map(mapPupil) : s.children,
+        children: mappedPupils ?? s.children,
+        attendanceRecords: attendanceRecords ?? s.attendanceRecords,
       }));
     } catch (err) { console.error("Failed to load user data:", err); }
   }, []);
@@ -232,12 +237,14 @@ export function AppProvider({ children: childrenProp }: { children: React.ReactN
     setState(s => ({ ...s, children: s.children.map(c => c.id === id ? { ...c, ...updates } : c) }));
   }, []);
 
-  const assignWork = useCallback((childId: string, assignment: Omit<Assignment, "id" | "assignedAt" | "status">) => {
-    const a: Assignment = { ...assignment, id: generateId(), assignedAt: new Date().toISOString(), status: "not-started" };
+  const assignWork = useCallback(async (childId: string, assignment: Omit<Assignment, "id" | "assignedAt" | "status">) => {
+    const result = await pupilsApi.createAssignment(childId, { title: assignment.title, type: assignment.type, content: assignment.content });
+    const a: Assignment = { ...assignment, id: result.id, assignedAt: new Date().toISOString(), status: "not-started" };
     setState(s => ({ ...s, children: s.children.map(c => c.id === childId ? { ...c, assignments: [...c.assignments, a] } : c) }));
   }, []);
 
-  const updateAssignment = useCallback((childId: string, assignmentId: string, updates: Partial<Assignment>) => {
+  const updateAssignment = useCallback(async (childId: string, assignmentId: string, updates: Partial<Assignment>) => {
+    await pupilsApi.updateAssignment(childId, assignmentId, updates).catch(() => {});
     setState(s => ({ ...s, children: s.children.map(c => c.id === childId ? { ...c, assignments: c.assignments.map(a => a.id === assignmentId ? { ...a, ...updates } : a) } : c) }));
   }, []);
 
@@ -325,6 +332,14 @@ function mapDiff(d: any): Differentiation {
 function mapIdea(i: any): Idea {
   return { id: i.id, title: i.title, description: i.description, votes: i.votes, createdAt: i.created_at, author: i.author_name || "Unknown" };
 }
+function mapAssignment(a: any): Assignment {
+  return { id: a.id, title: a.title, type: a.type, content: a.content || "", assignedAt: a.assigned_at, status: a.status || "not-started", feedback: a.feedback, mark: a.mark, progress: a.progress, teacherComment: a.teacher_comment };
+}
+function mapAttendanceRecord(r: any): AttendanceRecord {
+  return { id: r.id, childId: r.pupil_id, date: r.date, amStatus: r.am_status, amReason: r.am_reason, pmStatus: r.pm_status, pmReason: r.pm_reason, notes: r.notes, recordedAt: r.recorded_at, recordedBy: r.recorded_by || "" };
+}
 function mapPupil(p: any): Child {
-  return { id: p.id, name: p.name, yearGroup: p.year_group || "", sendNeed: p.send_need || "", code: p.code || "", upn: p.upn, dob: p.dob, createdAt: p.created_at, assignments: [], submissions: [] };
+  const assignments = Array.isArray(p.assignments) ? p.assignments.map(mapAssignment) : [];
+  const submissions = Array.isArray(p.submissions) ? p.submissions : [];
+  return { id: p.id, name: p.name, yearGroup: p.year_group || "", sendNeed: p.send_need || "", code: p.code || "", upn: p.upn, dob: p.dob, createdAt: p.created_at, assignments, submissions };
 }
