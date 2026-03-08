@@ -1,13 +1,13 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import {
-  Upload, Play, Pause, SkipBack, SkipForward, MessageSquare,
+  Upload, Play, Pause, MessageSquare,
   Mic, MicOff, Send, RefreshCw, ChevronRight, CheckCircle2,
   XCircle, HelpCircle, BookOpen, Headphones, Brain, Loader2,
-  Volume2, VolumeX, FileText, ArrowRight
+  FileText, ArrowRight, Volume2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -19,7 +19,7 @@ interface QuizQuestion {
   correct: number;
   explanation: string;
 }
-type AnswerState = "unanswered" | "correct" | "wrong" | "explained";
+type AnswerState = "unanswered" | "correct" | "wrong";
 type Tab = "podcast" | "quiz";
 
 // ── API helpers ───────────────────────────────────────────────────────────────
@@ -48,10 +48,8 @@ export default function RevisionHub() {
   const [uploading, setUploading] = useState(false);
   const [documentText, setDocumentText] = useState("");
   const [podcastScript, setPodcastScript] = useState("");
-  const [audioSrc, setAudioSrc] = useState("");
   const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
+  const [speechRate, setSpeechRate] = useState(1);
   const [interrupted, setInterrupted] = useState(false);
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
@@ -65,42 +63,45 @@ export default function RevisionHub() {
   const [loadingQuiz, setLoadingQuiz] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
 
-  const audioRef = useRef<HTMLAudioElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const recognitionRef = useRef<any>(null);
+  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
 
-  // ── Audio controls ─────────────────────────────────────────────────────────
+  // Cancel speech on unmount
   useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    const onTime = () => setCurrentTime(audio.currentTime);
-    const onMeta = () => setDuration(audio.duration);
-    const onEnd = () => setIsPlaying(false);
-    audio.addEventListener("timeupdate", onTime);
-    audio.addEventListener("loadedmetadata", onMeta);
-    audio.addEventListener("ended", onEnd);
-    return () => {
-      audio.removeEventListener("timeupdate", onTime);
-      audio.removeEventListener("loadedmetadata", onMeta);
-      audio.removeEventListener("ended", onEnd);
-    };
-  }, [audioSrc]);
+    return () => { window.speechSynthesis?.cancel(); };
+  }, []);
 
-  const togglePlay = () => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    if (isPlaying) { audio.pause(); setIsPlaying(false); }
-    else { audio.play(); setIsPlaying(true); }
+  // ── Speech controls ────────────────────────────────────────────────────────
+  const startSpeech = (rate = speechRate) => {
+    if (!podcastScript) return;
+    window.speechSynthesis.cancel();
+    const utt = new SpeechSynthesisUtterance(podcastScript);
+    utt.lang = "en-GB";
+    utt.rate = rate;
+    utt.pitch = 1;
+    utt.onend = () => setIsPlaying(false);
+    utt.onerror = () => setIsPlaying(false);
+    utteranceRef.current = utt;
+    window.speechSynthesis.speak(utt);
+    setIsPlaying(true);
   };
 
-  const seek = (delta: number) => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    audio.currentTime = Math.max(0, Math.min(audio.duration, audio.currentTime + delta));
+  const togglePlay = () => {
+    if (!podcastScript) return;
+    if (isPlaying) {
+      window.speechSynthesis.pause();
+      setIsPlaying(false);
+    } else if (window.speechSynthesis.paused) {
+      window.speechSynthesis.resume();
+      setIsPlaying(true);
+    } else {
+      startSpeech();
+    }
   };
 
   const handleInterrupt = () => {
-    if (audioRef.current && isPlaying) { audioRef.current.pause(); setIsPlaying(false); }
+    if (isPlaying) { window.speechSynthesis.pause(); setIsPlaying(false); }
     setInterrupted(true);
     setAnswer("");
   };
@@ -109,13 +110,20 @@ export default function RevisionHub() {
     setInterrupted(false);
     setQuestion("");
     setAnswer("");
+    if (window.speechSynthesis.paused) {
+      window.speechSynthesis.resume();
+      setIsPlaying(true);
+    }
   };
 
-  const formatTime = (s: number) => {
-    if (!s || isNaN(s)) return "0:00";
-    const m = Math.floor(s / 60);
-    const sec = Math.floor(s % 60);
-    return `${m}:${sec.toString().padStart(2, "0")}`;
+  const changeRate = (rate: number) => {
+    setSpeechRate(rate);
+    const wasPlaying = isPlaying;
+    window.speechSynthesis.cancel();
+    setIsPlaying(false);
+    if (wasPlaying) {
+      setTimeout(() => startSpeech(rate), 100);
+    }
   };
 
   // ── File upload ────────────────────────────────────────────────────────────
@@ -123,7 +131,8 @@ export default function RevisionHub() {
     setUploading(true);
     setDocumentText("");
     setPodcastScript("");
-    setAudioSrc("");
+    window.speechSynthesis?.cancel();
+    setIsPlaying(false);
     setQuestions([]);
     setCurrentQIndex(0);
     setScore({ correct: 0, total: 0 });
@@ -143,10 +152,7 @@ export default function RevisionHub() {
       const data = await res.json();
       setDocumentText(data.text || "");
       setPodcastScript(data.script || "");
-      if (data.audioBase64) {
-        setAudioSrc(`data:audio/mp3;base64,${data.audioBase64}`);
-      }
-      toast.success("Document processed! Your revision podcast is ready.");
+      toast.success("Document processed! Press play to start your revision podcast.");
     } catch (err: any) {
       toast.error(err.message || "Failed to process document");
     } finally {
@@ -185,20 +191,12 @@ export default function RevisionHub() {
   const toggleVoice = () => {
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognition) { toast.error("Voice input not supported in this browser"); return; }
-    if (isListening) {
-      recognitionRef.current?.stop();
-      setIsListening(false);
-      return;
-    }
+    if (isListening) { recognitionRef.current?.stop(); setIsListening(false); return; }
     const recognition = new SpeechRecognition();
     recognition.lang = "en-GB";
     recognition.continuous = false;
     recognition.interimResults = false;
-    recognition.onresult = (e: any) => {
-      const transcript = e.results[0][0].transcript;
-      setQuestion(transcript);
-      setIsListening(false);
-    };
+    recognition.onresult = (e: any) => { setQuestion(e.results[0][0].transcript); setIsListening(false); };
     recognition.onerror = () => setIsListening(false);
     recognition.onend = () => setIsListening(false);
     recognitionRef.current = recognition;
@@ -211,11 +209,7 @@ export default function RevisionHub() {
     if (!documentText) return;
     if (append) setLoadingMore(true); else setLoadingQuiz(true);
     try {
-      const data = await apiPost("/quiz", {
-        documentText,
-        count: 5,
-        existingQuestions: questions,
-      });
+      const data = await apiPost("/quiz", { documentText, count: 5, existingQuestions: questions });
       if (append) {
         setQuestions(prev => [...prev, ...(data.questions || [])]);
       } else {
@@ -240,18 +234,12 @@ export default function RevisionHub() {
     const q = questions[currentQIndex];
     const isCorrect = idx === q.correct;
     setAnswerState(isCorrect ? "correct" : "wrong");
-    setScore(prev => ({
-      correct: prev.correct + (isCorrect ? 1 : 0),
-      total: prev.total + 1,
-    }));
+    setScore(prev => ({ correct: prev.correct + (isCorrect ? 1 : 0), total: prev.total + 1 }));
   };
 
   const nextQuestion = () => {
     const nextIdx = currentQIndex + 1;
-    // If we're 2 from the end, load more in background
-    if (nextIdx >= questions.length - 2 && !loadingMore) {
-      loadQuiz(true);
-    }
+    if (nextIdx >= questions.length - 2 && !loadingMore) loadQuiz(true);
     if (nextIdx < questions.length) {
       setCurrentQIndex(nextIdx);
       setSelectedOption(null);
@@ -260,7 +248,6 @@ export default function RevisionHub() {
   };
 
   const currentQ = questions[currentQIndex];
-  const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
   // ── Empty state ────────────────────────────────────────────────────────────
   if (!documentText && !uploading) {
@@ -283,35 +270,39 @@ export default function RevisionHub() {
             {/* Feature cards */}
             <div className="grid grid-cols-3 gap-3">
               {[
-                { icon: <Headphones className="w-5 h-5" />, label: "AI Podcast", desc: "Listen to your notes" },
-                { icon: <MessageSquare className="w-5 h-5" />, label: "Ask Questions", desc: "Interrupt anytime" },
-                { icon: <Brain className="w-5 h-5" />, label: "Unlimited Quiz", desc: "Interactive MCQs" },
-              ].map(f => (
-                <div key={f.label} className="bg-muted/50 rounded-xl p-3 text-center space-y-1.5">
-                  <div className="w-9 h-9 rounded-lg bg-brand/10 flex items-center justify-center mx-auto text-brand">{f.icon}</div>
-                  <p className="text-xs font-semibold">{f.label}</p>
-                  <p className="text-xs text-muted-foreground">{f.desc}</p>
+                { icon: Headphones, label: "AI Podcast", desc: "Spoken revision from your notes" },
+                { icon: MessageSquare, label: "Interrupt & Ask", desc: "Ask questions mid-podcast" },
+                { icon: Brain, label: "Smart Quiz", desc: "Unlimited interactive questions" },
+              ].map(({ icon: Icon, label, desc }) => (
+                <div key={label} className="bg-muted/40 rounded-xl p-3 text-center space-y-1.5">
+                  <div className="w-8 h-8 rounded-lg bg-brand/10 flex items-center justify-center mx-auto">
+                    <Icon className="w-4 h-4 text-brand" />
+                  </div>
+                  <p className="text-xs font-semibold text-foreground">{label}</p>
+                  <p className="text-xs text-muted-foreground leading-tight">{desc}</p>
                 </div>
               ))}
             </div>
 
-            {/* Drop zone */}
+            {/* Upload zone */}
             <div
-              className="border-2 border-dashed border-brand/30 rounded-2xl p-10 text-center cursor-pointer hover:border-brand/60 hover:bg-brand/5 transition-all"
+              className="border-2 border-dashed border-brand/30 rounded-2xl p-8 text-center space-y-4 cursor-pointer hover:border-brand/60 hover:bg-brand/5 transition-all"
               onClick={() => fileInputRef.current?.click()}
               onDrop={onDrop}
               onDragOver={e => e.preventDefault()}
             >
-              <div className="w-14 h-14 rounded-2xl bg-brand/10 flex items-center justify-center mx-auto mb-4">
+              <div className="w-14 h-14 rounded-2xl bg-brand/10 flex items-center justify-center mx-auto">
                 <Upload className="w-7 h-7 text-brand" />
               </div>
-              <p className="font-semibold text-foreground mb-1">Drop your document here</p>
-              <p className="text-sm text-muted-foreground mb-4">PDF or text file — up to 10MB</p>
-              <Button className="bg-brand hover:bg-brand/90 text-white">
-                <Upload className="w-4 h-4 mr-2" /> Choose File
+              <div>
+                <p className="font-semibold text-foreground">Drop your notes here</p>
+                <p className="text-sm text-muted-foreground mt-1">PDF, Word (.docx), or plain text — up to 10MB</p>
+              </div>
+              <Button className="bg-brand hover:bg-brand/90 text-white gap-2">
+                <Upload className="w-4 h-4" /> Choose File
               </Button>
             </div>
-            <input ref={fileInputRef} type="file" accept=".pdf,.txt,.doc,.docx" className="hidden" onChange={onFileChange} />
+            <input ref={fileInputRef} type="file" accept=".pdf,.txt,.docx,text/plain,application/pdf" className="hidden" onChange={onFileChange} />
           </div>
         </div>
       </div>
@@ -323,20 +314,17 @@ export default function RevisionHub() {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center space-y-4">
-          <div className="w-16 h-16 rounded-2xl bg-brand/10 flex items-center justify-center mx-auto animate-pulse">
-            <Headphones className="w-8 h-8 text-brand" />
+          <div className="w-16 h-16 rounded-2xl bg-brand/10 flex items-center justify-center mx-auto">
+            <Loader2 className="w-8 h-8 text-brand animate-spin" />
           </div>
-          <div>
-            <p className="font-semibold text-foreground">Creating your revision podcast…</p>
-            <p className="text-sm text-muted-foreground mt-1">Extracting text, writing script, generating audio</p>
-          </div>
-          <Loader2 className="w-6 h-6 text-brand animate-spin mx-auto" />
+          <p className="font-semibold text-foreground">Processing your document…</p>
+          <p className="text-sm text-muted-foreground">Extracting text and writing your revision podcast script</p>
         </div>
       </div>
     );
   }
 
-  // ── Main UI ────────────────────────────────────────────────────────────────
+  // ── Main view ──────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
@@ -347,30 +335,26 @@ export default function RevisionHub() {
           </div>
           <div>
             <h1 className="text-base font-bold text-foreground">Revision Hub</h1>
-            <p className="text-xs text-muted-foreground truncate max-w-[200px]">Document loaded</p>
+            <p className="text-xs text-muted-foreground">Document loaded — ready to revise</p>
           </div>
         </div>
-        <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} className="gap-1.5">
+        <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={() => { window.speechSynthesis?.cancel(); setDocumentText(""); setPodcastScript(""); setIsPlaying(false); }}>
           <Upload className="w-3.5 h-3.5" /> New document
         </Button>
-        <input ref={fileInputRef} type="file" accept=".pdf,.txt,.doc,.docx" className="hidden" onChange={onFileChange} />
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b px-6">
-        {([
-          { id: "podcast", label: "Podcast", icon: <Headphones className="w-4 h-4" /> },
-          { id: "quiz", label: "Quiz", icon: <Brain className="w-4 h-4" /> },
-        ] as { id: Tab; label: string; icon: React.ReactNode }[]).map(t => (
+      <div className="flex border-b">
+        {(["podcast", "quiz"] as Tab[]).map(t => (
           <button
-            key={t.id}
-            onClick={() => { setTab(t.id); if (t.id === "quiz" && questions.length === 0) loadQuiz(); }}
+            key={t}
+            onClick={() => setTab(t)}
             className={cn(
-              "flex items-center gap-1.5 px-4 py-3 text-sm font-medium border-b-2 transition-colors",
-              tab === t.id ? "border-brand text-brand" : "border-transparent text-muted-foreground hover:text-foreground"
+              "flex-1 py-3 text-sm font-medium transition-colors capitalize",
+              tab === t ? "text-brand border-b-2 border-brand" : "text-muted-foreground hover:text-foreground"
             )}
           >
-            {t.icon} {t.label}
+            {t === "podcast" ? "🎧 Podcast" : "🧠 Quiz"}
           </button>
         ))}
       </div>
@@ -378,47 +362,53 @@ export default function RevisionHub() {
       {/* ── PODCAST TAB ─────────────────────────────────────────────────────── */}
       {tab === "podcast" && (
         <div className="flex-1 flex flex-col p-6 gap-4 max-w-2xl mx-auto w-full">
-          {/* Audio player card */}
-          <div className="bg-gradient-to-br from-brand/10 to-brand/5 rounded-2xl p-6 space-y-4">
+
+          {/* Player card */}
+          <div className="bg-gradient-to-br from-brand/10 to-brand/5 rounded-2xl p-6 space-y-5">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-xl bg-brand flex items-center justify-center flex-shrink-0">
                 <Headphones className="w-6 h-6 text-white" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-semibold text-foreground">Your Revision Podcast</p>
-                <p className="text-xs text-muted-foreground">AI-narrated from your document</p>
+                <p className="text-xs text-muted-foreground">AI-narrated from your document • Browser voice</p>
               </div>
+              {isPlaying && (
+                <div className="flex gap-0.5 items-end h-5">
+                  {[1,2,3,4].map(i => (
+                    <div key={i} className="w-1 bg-brand rounded-full animate-pulse" style={{ height: `${[60,100,80,40][i-1]}%`, animationDelay: `${i*0.1}s` }} />
+                  ))}
+                </div>
+              )}
             </div>
 
-            {/* Progress bar */}
-            <div className="space-y-1">
-              <input
-                type="range" min={0} max={duration || 100} value={currentTime}
-                onChange={e => { if (audioRef.current) audioRef.current.currentTime = Number(e.target.value); }}
-                className="w-full h-1.5 accent-brand cursor-pointer"
-              />
-              <div className="flex justify-between text-xs text-muted-foreground">
-                <span>{formatTime(currentTime)}</span>
-                <span>{formatTime(duration)}</span>
-              </div>
-            </div>
-
-            {/* Controls */}
+            {/* Play/Pause button */}
             <div className="flex items-center justify-center gap-4">
-              <Button variant="ghost" size="icon" onClick={() => seek(-10)} className="text-muted-foreground">
-                <SkipBack className="w-5 h-5" />
-              </Button>
               <Button
                 size="icon"
                 onClick={togglePlay}
-                className="w-14 h-14 rounded-full bg-brand hover:bg-brand/90 text-white shadow-lg"
-                disabled={!audioSrc}
+                className="w-16 h-16 rounded-full bg-brand hover:bg-brand/90 text-white shadow-lg"
               >
-                {isPlaying ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6" />}
+                {isPlaying ? <Pause className="w-7 h-7" /> : <Play className="w-7 h-7" />}
               </Button>
-              <Button variant="ghost" size="icon" onClick={() => seek(10)} className="text-muted-foreground">
-                <SkipForward className="w-5 h-5" />
-              </Button>
+            </div>
+
+            {/* Speed control */}
+            <div className="flex items-center justify-center gap-2">
+              <Volume2 className="w-4 h-4 text-muted-foreground" />
+              <span className="text-xs text-muted-foreground mr-1">Speed:</span>
+              {[0.75, 1, 1.25, 1.5, 2].map(r => (
+                <button
+                  key={r}
+                  onClick={() => changeRate(r)}
+                  className={cn(
+                    "px-2.5 py-1 rounded-lg text-xs font-medium transition-colors",
+                    speechRate === r ? "bg-brand text-white" : "bg-muted text-muted-foreground hover:bg-muted/80"
+                  )}
+                >
+                  {r}×
+                </button>
+              ))}
             </div>
 
             {/* Interrupt button */}
@@ -433,19 +423,6 @@ export default function RevisionHub() {
               </Button>
             )}
           </div>
-
-          {/* Hidden audio element */}
-          {audioSrc && <audio ref={audioRef} src={audioSrc} preload="auto" />}
-
-          {/* No audio fallback — show script */}
-          {!audioSrc && podcastScript && (
-            <div className="bg-muted/40 rounded-xl p-4 space-y-2">
-              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                <FileText className="w-4 h-4" /> Podcast Script (audio unavailable)
-              </div>
-              <p className="text-sm leading-relaxed text-foreground">{podcastScript}</p>
-            </div>
-          )}
 
           {/* Q&A panel */}
           {interrupted && (
@@ -492,7 +469,7 @@ export default function RevisionHub() {
             </div>
           )}
 
-          {/* Script preview (collapsed) */}
+          {/* Script preview */}
           {podcastScript && (
             <details className="group">
               <summary className="cursor-pointer text-sm text-muted-foreground hover:text-foreground flex items-center gap-1.5 select-none">
@@ -555,22 +532,17 @@ export default function RevisionHub() {
                   const isCorrect = idx === currentQ.correct;
                   const revealed = answerState !== "unanswered";
 
-                  let style = "border-border bg-background hover:bg-muted/50 hover:border-brand/40";
+                  let style = "border-border bg-background hover:bg-muted/50 hover:border-brand/40 cursor-pointer";
                   if (revealed && isCorrect) style = "border-green-500 bg-green-50 dark:bg-green-950/30";
                   else if (revealed && isSelected && !isCorrect) style = "border-red-400 bg-red-50 dark:bg-red-950/30";
-                  else if (!revealed) style = "border-border bg-background hover:bg-muted/50 hover:border-brand/40 cursor-pointer";
 
                   return (
                     <button
                       key={idx}
                       onClick={() => selectOption(idx)}
                       disabled={revealed}
-                      className={cn(
-                        "w-full text-left flex items-center gap-3 p-4 rounded-xl border-2 transition-all",
-                        style
-                      )}
+                      className={cn("w-full text-left flex items-center gap-3 p-4 rounded-xl border-2 transition-all", style)}
                     >
-                      {/* Letter badge */}
                       <span className={cn(
                         "w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0",
                         revealed && isCorrect ? "bg-green-500 text-white" :
@@ -587,6 +559,17 @@ export default function RevisionHub() {
                 })}
               </div>
 
+              {/* I don't know button */}
+              {answerState === "unanswered" && (
+                <Button
+                  variant="outline"
+                  className="w-full text-muted-foreground gap-2"
+                  onClick={() => { setSelectedOption(null); setAnswerState("wrong"); setScore(prev => ({ ...prev, total: prev.total + 1 })); }}
+                >
+                  <HelpCircle className="w-4 h-4" /> I don't know — show me the answer
+                </Button>
+              )}
+
               {/* Explanation */}
               {answerState !== "unanswered" && (
                 <div className={cn(
@@ -599,7 +582,7 @@ export default function RevisionHub() {
                     "text-sm font-semibold",
                     answerState === "correct" ? "text-green-700 dark:text-green-400" : "text-amber-700 dark:text-amber-400"
                   )}>
-                    {answerState === "correct" ? "✓ Correct!" : "✗ Not quite — here's why:"}
+                    {answerState === "correct" ? "✓ Correct! Well done." : `✗ The correct answer is: ${currentQ.options[currentQ.correct]}`}
                   </p>
                   <p className="text-sm text-foreground leading-relaxed">{currentQ.explanation}</p>
                 </div>
@@ -625,6 +608,7 @@ export default function RevisionHub() {
               <div className="text-center space-y-4">
                 <Brain className="w-12 h-12 text-brand mx-auto" />
                 <p className="font-semibold">Ready to test yourself?</p>
+                <p className="text-sm text-muted-foreground">Generate unlimited questions from your document</p>
                 <Button className="bg-brand hover:bg-brand/90 text-white gap-2" onClick={() => loadQuiz()}>
                   <Brain className="w-4 h-4" /> Generate Quiz
                 </Button>
