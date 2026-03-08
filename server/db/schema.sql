@@ -301,3 +301,21 @@ CREATE INDEX IF NOT EXISTS idx_audit_school ON audit_logs(school_id);
 CREATE INDEX IF NOT EXISTS idx_sessions_token ON sessions(token);
 CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id);
 CREATE INDEX IF NOT EXISTS idx_attendance_pupil_date ON attendance_records(pupil_id, date);
+
+-- Per-school AI API keys (set by school admin, used by all users in that school)
+-- Keys are stored encrypted using AES-256-GCM with a server-side secret
+CREATE TABLE IF NOT EXISTS school_api_keys (
+  id TEXT PRIMARY KEY,
+  school_id TEXT NOT NULL REFERENCES schools(id) ON DELETE CASCADE,
+  provider TEXT NOT NULL, -- groq/gemini/openai/openrouter/claude/huggingface/custom
+  provider_label TEXT, -- display name for custom providers
+  api_key_encrypted TEXT NOT NULL, -- AES-256-GCM encrypted
+  api_key_iv TEXT NOT NULL, -- initialisation vector for decryption
+  base_url TEXT, -- for custom/self-hosted providers
+  model TEXT, -- preferred model for this provider
+  enabled INTEGER NOT NULL DEFAULT 1,
+  added_by TEXT REFERENCES users(id),
+  updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+  UNIQUE(school_id, provider)
+);
+CREATE INDEX IF NOT EXISTS idx_school_api_keys_school ON school_api_keys(school_id);

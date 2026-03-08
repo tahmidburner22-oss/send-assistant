@@ -159,20 +159,45 @@ async function callWithFallback(system: string, user: string, maxTokens: number)
 
 // ── Extract text from uploaded buffer ────────────────────────────────────────
 async function extractText(buffer: Buffer, mimetype: string): Promise<string> {
+  let raw = "";
   if (mimetype === "text/plain" || mimetype === "application/octet-stream") {
-    return buffer.toString("utf-8").slice(0, 15000);
-  }
-  if (mimetype === "application/pdf") {
+    raw = buffer.toString("utf-8");
+  } else if (mimetype === "application/pdf") {
     try {
       const pdfParse = (await import("pdf-parse/lib/pdf-parse.js" as any)).default
         || (await import("pdf-parse" as any)).default;
       const data = await pdfParse(buffer);
-      return (data.text || "").slice(0, 15000);
+      raw = data.text || "";
     } catch (_) {
-      return buffer.toString("utf-8").slice(0, 15000);
+      raw = buffer.toString("utf-8");
     }
+  } else {
+    raw = buffer.toString("utf-8");
   }
-  return buffer.toString("utf-8").slice(0, 15000);
+
+  // ── Clean common PDF noise ────────────────────────────────────────────────
+  const lines = raw.split(/\n/);
+  const cleaned = lines
+    .map(l => l.trim())
+    .filter(l => {
+      if (!l) return false;
+      // Remove standalone page numbers (e.g. "1", "Page 1", "- 1 -")
+      if (/^[-–—]?\s*page\s*\d+\s*[-–—]?$/i.test(l)) return false;
+      if (/^\d{1,3}$/.test(l)) return false;
+      // Remove common header/footer patterns
+      if (/^(all rights reserved|copyright|confidential|www\.|http|©|\bversion\b|\brev\b|\bdraft\b)/i.test(l)) return false;
+      // Remove lines that are just dashes, dots, or underscores
+      if (/^[\-_\.=\s]{3,}$/.test(l)) return false;
+      // Remove very short fragments (single chars, lone numbers)
+      if (l.length < 3) return false;
+      return true;
+    })
+    .join(" ")
+    // Collapse multiple spaces
+    .replace(/\s{2,}/g, " ")
+    .trim();
+
+  return cleaned.slice(0, 15000);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -189,19 +214,34 @@ router.post("/upload", requireAuth, upload.single("document"), async (req: Reque
       return res.status(400).json({ error: "Could not extract readable text from this file. Please try a different file." });
     }
 
+    // First pass: ask AI to identify and extract only the core educational content
+    const cleanedContent = await callWithFallback(
+      `You are a document analyst. Your job is to extract ONLY the core educational content from the text below.
+       Remove: page numbers, headers, footers, author names, publication dates, copyright notices, table of contents entries, references/bibliography, URLs, and any administrative boilerplate.
+       Keep: all subject matter, explanations, definitions, examples, key concepts, facts, and arguments.
+       Return ONLY the cleaned educational content as plain text. Do not add any commentary or labels.`,
+      `Document text:\n\n${rawText}`,
+      2000
+    );
+
     const script = await callWithFallback(
-      `You are an enthusiastic, friendly educational podcast host.
-       Convert the provided study material into an engaging spoken podcast script.
-       Rules:
-       - Write in natural spoken English — no bullet points, no markdown, no headers
-       - Use a warm, encouraging tone suitable for students aged 11-18
-       - Break complex ideas into simple explanations with relatable examples
-       - Occasionally say things like "Now here's the interesting part..." or "Let's think about this..."
-       - Keep it between 300-500 words so it's a focused revision session
-       - Do NOT say "In this podcast" or "Welcome to" — just dive straight into the content
-       - End with: "That's everything for this topic. Tap the quiz button when you're ready to test yourself!"`,
-      `Study material to convert:\n\n${rawText}`,
-      800
+      `You are an expert educational podcast host creating a revision podcast for UK students aged 11-18.
+       Your job is to transform study notes into a rich, engaging spoken explanation — like a brilliant teacher talking directly to a student.
+
+       CRITICAL RULES:
+       - Write ONLY natural spoken English — absolutely no bullet points, no markdown, no headers, no asterisks
+       - Do NOT just read the notes back. EXPLAIN everything as if the student has never heard it before
+       - Break down every concept step by step with clear reasoning
+       - Use real-world analogies and relatable examples to make abstract ideas stick
+       - Define any technical terms the moment you use them
+       - Connect ideas together: "This links to what we said earlier about..."
+       - Use natural speech patterns: "Now, here's where it gets interesting...", "Think of it this way...", "The key thing to remember is...", "A lot of students get confused here, so let's be really clear..."
+       - Vary your sentence length — mix short punchy sentences with longer explanations
+       - Aim for 600-900 words of spoken script (about 4-6 minutes of audio)
+       - Do NOT start with "Welcome" or "In this podcast" — open with the first key concept immediately
+       - End with: "And that covers everything for this topic. When you're ready, hit the quiz button to test yourself — good luck!"`,
+      `Educational content to turn into a podcast:\n\n${cleanedContent}`,
+      1200
     );
 
     res.json({ text: rawText, script, audioBase64: "" });

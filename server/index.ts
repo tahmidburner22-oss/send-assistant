@@ -17,6 +17,7 @@ import dataRouter from "./routes/data.js";
 import adminRouter from "./routes/admin.js";
 import gdprRouter from "./routes/gdpr.js";
 import revisionRouter from "./routes/revision.js";
+import schoolApiKeysRouter from "./routes/schoolApiKeys.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -176,6 +177,7 @@ app.use("/api/data", dataRouter);
 app.use("/api/admin", adminRouter);
 app.use("/api/gdpr", gdprRouter);
 app.use("/api/revision", aiLimiter, revisionRouter);
+app.use("/api/school-keys", schoolApiKeysRouter);
 
 // ── Health check ──────────────────────────────────────────────────────────────
 app.get("/api/health", (_, res) => {
