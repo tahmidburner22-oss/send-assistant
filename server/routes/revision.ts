@@ -1,30 +1,161 @@
 import { Router, Request, Response } from "express";
 import multer from "multer";
 import { requireAuth } from "../middleware/auth.js";
-import OpenAI from "openai";
-import fs from "fs";
-import path from "path";
-import os from "os";
+import db from "../db/index.js";
 
 const router = Router();
-
-// ── OpenAI client (TTS uses OpenAI directly) ──────────────────────────────────
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY || "" });
 
 // ── Multer — memory storage, max 10MB for documents ──────────────────────────
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+  limits: { fileSize: 10 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
-    const allowed = ["application/pdf", "text/plain", "application/msword",
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document"];
+    const allowed = [
+      "application/pdf",
+      "text/plain",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ];
     if (allowed.includes(file.mimetype) || file.originalname.endsWith(".txt")) {
       cb(null, true);
     } else {
-      cb(new Error("Only PDF and text files are supported"));
+      cb(new Error("Only PDF, Word, and text files are supported"));
     }
   },
 });
+
+// ── Multi-provider AI helpers (same pattern as ai.ts) ────────────────────────
+const PROVIDER_ORDER = ["groq", "gemini", "openai", "openrouter"] as const;
+
+function getEffectiveKey(provider: string): string {
+  try {
+    const row = db.prepare(
+      "SELECT api_key FROM admin_api_keys WHERE provider = ?"
+    ).get(provider) as any;
+    if (row?.api_key) return row.api_key;
+  } catch (_) {}
+  const envMap: Record<string, string> = {
+    groq: process.env.GROQ_API_KEY || "",
+    gemini: process.env.GEMINI_API_KEY || "",
+    openai: process.env.OPENAI_API_KEY || "",
+    openrouter: process.env.OPENROUTER_API_KEY || "",
+  };
+  return envMap[provider] || "";
+}
+
+function getAdminModel(provider: string): string {
+  try {
+    const row = db.prepare(
+      "SELECT model FROM admin_api_keys WHERE provider = ?"
+    ).get(provider) as any;
+    return row?.model || "";
+  } catch (_) { return ""; }
+}
+
+async function callGroq(system: string, user: string, key: string, model: string, maxTokens: number): Promise<string> {
+  const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
+    body: JSON.stringify({
+      model: model || "llama-3.3-70b-versatile",
+      messages: [{ role: "system", content: system }, { role: "user", content: user }],
+      max_tokens: maxTokens,
+      temperature: 0.7,
+    }),
+  });
+  if (!res.ok) throw new Error(`Groq ${res.status}: ${(await res.text()).slice(0, 200)}`);
+  const data = await res.json() as any;
+  return data.choices[0].message.content;
+}
+
+async function callGemini(system: string, user: string, key: string, maxTokens: number): Promise<string> {
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: system ? `${system}\n\n${user}` : user }] }],
+        generationConfig: { maxOutputTokens: maxTokens, temperature: 0.7 },
+      }),
+    }
+  );
+  if (!res.ok) throw new Error(`Gemini ${res.status}: ${(await res.text()).slice(0, 200)}`);
+  const data = await res.json() as any;
+  return data.candidates[0].content.parts[0].text;
+}
+
+async function callOpenAI(system: string, user: string, key: string, model: string, maxTokens: number): Promise<string> {
+  const res = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
+    body: JSON.stringify({
+      model: model || "gpt-4o-mini",
+      messages: [{ role: "system", content: system }, { role: "user", content: user }],
+      max_tokens: maxTokens,
+    }),
+  });
+  if (!res.ok) throw new Error(`OpenAI ${res.status}: ${(await res.text()).slice(0, 200)}`);
+  const data = await res.json() as any;
+  return data.choices[0].message.content;
+}
+
+async function callOpenRouter(system: string, user: string, key: string, model: string, maxTokens: number): Promise<string> {
+  const fallbackModels = [
+    model,
+    "nvidia/nemotron-nano-9b-v2:free",
+    "mistralai/mistral-small-3.1-24b-instruct:free",
+  ].filter(Boolean);
+  for (const m of fallbackModels) {
+    try {
+      const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${key}`,
+          "HTTP-Referer": "https://adaptly.co.uk",
+          "X-Title": "Adaptly",
+        },
+        body: JSON.stringify({
+          model: m,
+          messages: [{ role: "system", content: system }, { role: "user", content: user }],
+          max_tokens: maxTokens,
+        }),
+      });
+      if (!res.ok) continue;
+      const data = await res.json() as any;
+      const content = data.choices?.[0]?.message?.content;
+      if (content) return content;
+    } catch (_) {}
+  }
+  throw new Error("OpenRouter: all models failed");
+}
+
+async function callWithFallback(system: string, user: string, maxTokens: number): Promise<string> {
+  const errors: string[] = [];
+  for (const provider of PROVIDER_ORDER) {
+    const key = getEffectiveKey(provider);
+    if (!key) { errors.push(`${provider}: no key`); continue; }
+    try {
+      const model = getAdminModel(provider);
+      let content = "";
+      if (provider === "groq") content = await callGroq(system, user, key, model, maxTokens);
+      else if (provider === "gemini") content = await callGemini(system, user, key, maxTokens);
+      else if (provider === "openai") content = await callOpenAI(system, user, key, model, maxTokens);
+      else if (provider === "openrouter") content = await callOpenRouter(system, user, key, model, maxTokens);
+      if (content?.trim()) {
+        console.log(`[Revision AI] Success via ${provider}`);
+        return content;
+      }
+      errors.push(`${provider}: empty response`);
+    } catch (err: any) {
+      const msg = (err?.message || String(err)).slice(0, 100);
+      console.warn(`[Revision AI] ${provider} failed: ${msg}`);
+      errors.push(`${provider}: ${msg}`);
+    }
+  }
+  throw new Error(`All AI providers failed. Please configure an API key in Admin Settings. Details: ${errors.join(" | ")}`);
+}
 
 // ── Extract text from uploaded buffer ────────────────────────────────────────
 async function extractText(buffer: Buffer, mimetype: string): Promise<string> {
@@ -33,33 +164,21 @@ async function extractText(buffer: Buffer, mimetype: string): Promise<string> {
   }
   if (mimetype === "application/pdf") {
     try {
-      // Dynamic import to handle ESM/CJS boundary
-      const pdfParse = (await import("pdf-parse/lib/pdf-parse.js" as any)).default || (await import("pdf-parse" as any)).default;
+      const pdfParse = (await import("pdf-parse/lib/pdf-parse.js" as any)).default
+        || (await import("pdf-parse" as any)).default;
       const data = await pdfParse(buffer);
       return (data.text || "").slice(0, 15000);
-    } catch (e) {
-      // Fallback: try reading as text
+    } catch (_) {
       return buffer.toString("utf-8").slice(0, 15000);
     }
   }
   return buffer.toString("utf-8").slice(0, 15000);
 }
 
-// ── Call AI (uses env OPENAI_API_KEY via openai SDK) ─────────────────────────
-async function callAI(system: string, user: string, maxTokens = 2000): Promise<string> {
-  const res = await openai.chat.completions.create({
-    model: "gpt-4.1-mini",
-    messages: [{ role: "system", content: system }, { role: "user", content: user }],
-    max_tokens: maxTokens,
-    temperature: 0.7,
-  });
-  return res.choices[0]?.message?.content || "";
-}
-
 // ─────────────────────────────────────────────────────────────────────────────
 // POST /api/revision/upload
-// Extract text + generate podcast script + generate TTS audio
-// Returns: { text, script, audioBase64 }
+// Extract text + generate podcast script
+// Returns: { text, script }  — audio is handled client-side via Web Speech API
 // ─────────────────────────────────────────────────────────────────────────────
 router.post("/upload", requireAuth, upload.single("document"), async (req: Request, res: Response) => {
   try {
@@ -67,12 +186,11 @@ router.post("/upload", requireAuth, upload.single("document"), async (req: Reque
 
     const rawText = await extractText(req.file.buffer, req.file.mimetype);
     if (!rawText || rawText.trim().length < 50) {
-      return res.status(400).json({ error: "Could not extract readable text from this file" });
+      return res.status(400).json({ error: "Could not extract readable text from this file. Please try a different file." });
     }
 
-    // Generate engaging podcast/audiobook script
-    const script = await callAI(
-      `You are an enthusiastic, friendly educational podcast host. 
+    const script = await callWithFallback(
+      `You are an enthusiastic, friendly educational podcast host.
        Convert the provided study material into an engaging spoken podcast script.
        Rules:
        - Write in natural spoken English — no bullet points, no markdown, no headers
@@ -86,23 +204,7 @@ router.post("/upload", requireAuth, upload.single("document"), async (req: Reque
       800
     );
 
-    // Generate TTS audio using OpenAI
-    let audioBase64 = "";
-    try {
-      const ttsResponse = await openai.audio.speech.create({
-        model: "tts-1",
-        voice: "nova",
-        input: script.slice(0, 4096), // TTS limit
-        speed: 1.0,
-      });
-      const audioBuffer = Buffer.from(await ttsResponse.arrayBuffer());
-      audioBase64 = audioBuffer.toString("base64");
-    } catch (ttsErr) {
-      console.error("TTS error:", ttsErr);
-      // Return script without audio — client can use browser TTS as fallback
-    }
-
-    res.json({ text: rawText, script, audioBase64 });
+    res.json({ text: rawText, script, audioBase64: "" });
   } catch (err: any) {
     console.error("Revision upload error:", err);
     res.status(500).json({ error: err.message || "Failed to process document" });
@@ -122,7 +224,7 @@ router.post("/ask", requireAuth, async (req: Request, res: Response) => {
       return res.status(400).json({ error: "question and documentText are required" });
     }
 
-    const answer = await callAI(
+    const answer = await callWithFallback(
       `You are a helpful, encouraging tutor helping a student understand their revision material.
        Answer the student's question based on the provided document text.
        - Keep answers clear, concise, and age-appropriate (11-18 year olds)
@@ -154,9 +256,9 @@ router.post("/quiz", requireAuth, async (req: Request, res: Response) => {
       return res.status(400).json({ error: "documentText is required" });
     }
 
-    const avoidList = existingQuestions.slice(-20).map((q: any) => q.question).join("\n");
+    const avoidList = (existingQuestions as any[]).slice(-20).map((q: any) => q.question).join("\n");
 
-    const raw = await callAI(
+    const raw = await callWithFallback(
       `You are an expert teacher creating multiple-choice revision questions.
        Generate exactly ${count} multiple-choice questions based on the provided text.
        
@@ -181,16 +283,14 @@ router.post("/quiz", requireAuth, async (req: Request, res: Response) => {
       1500
     );
 
-    // Parse JSON safely
-    let questions = [];
+    let questions: any[] = [];
     try {
       const jsonMatch = raw.match(/\[[\s\S]*\]/);
       questions = JSON.parse(jsonMatch ? jsonMatch[0] : raw);
     } catch {
-      return res.status(500).json({ error: "Failed to parse quiz questions" });
+      return res.status(500).json({ error: "Failed to parse quiz questions — please try again" });
     }
 
-    // Add unique IDs
     questions = questions.map((q: any, i: number) => ({
       ...q,
       id: `q_${Date.now()}_${i}`,
@@ -200,31 +300,6 @@ router.post("/quiz", requireAuth, async (req: Request, res: Response) => {
   } catch (err: any) {
     console.error("Revision quiz error:", err);
     res.status(500).json({ error: err.message || "Failed to generate quiz" });
-  }
-});
-
-// ─────────────────────────────────────────────────────────────────────────────
-// POST /api/revision/tts
-// Convert any text to speech (for re-reading answers or explanations)
-// Body: { text }
-// Returns: { audioBase64 }
-// ─────────────────────────────────────────────────────────────────────────────
-router.post("/tts", requireAuth, async (req: Request, res: Response) => {
-  try {
-    const { text } = req.body;
-    if (!text) return res.status(400).json({ error: "text is required" });
-
-    const ttsResponse = await openai.audio.speech.create({
-      model: "tts-1",
-      voice: "nova",
-      input: text.slice(0, 1000),
-      speed: 1.0,
-    });
-    const audioBuffer = Buffer.from(await ttsResponse.arrayBuffer());
-    res.json({ audioBase64: audioBuffer.toString("base64") });
-  } catch (err: any) {
-    console.error("TTS error:", err);
-    res.status(500).json({ error: err.message || "TTS failed" });
   }
 });
 
