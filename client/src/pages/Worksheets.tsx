@@ -824,11 +824,20 @@ export default function Worksheets() {
                 </Button>
               </>
             ) : (
-              <Button variant="outline" size="sm"
-                className="bg-amber-100 border-amber-300 text-amber-700 gap-1.5"
-                onClick={() => { setEditMode(false); setEditType("none"); setEditedSections({}); }}>
-                <Check className="w-3.5 h-3.5" />Done Editing
-              </Button>
+              <>
+                <Button variant="outline" size="sm"
+                  className="gap-1.5 text-amber-600 border-amber-300"
+                  onClick={() => { setEditMode(false); setEditType("none"); setEditedSections({}); setAiEditSectionIndex(null); }}>
+                  <X className="w-3.5 h-3.5" />Cancel
+                </Button>
+                {editType === "manual" && (
+                  <Button size="sm"
+                    className="bg-brand hover:bg-brand/90 text-white gap-1.5"
+                    onClick={() => { setEditMode(false); setEditType("none"); setAiEditSectionIndex(null); toast.success("Changes saved!"); }}>
+                    <Check className="w-3.5 h-3.5" />Save Changes
+                  </Button>
+                )}
+              </>
             )}
             <Button variant="outline" size="sm" onClick={handleDownloadPdf} className="text-brand border-brand/30 hover:bg-brand-light">
               <FileDown className="w-3.5 h-3.5 mr-1.5" /> PDF
@@ -908,30 +917,62 @@ export default function Worksheets() {
                   textSize={textSize}
                   overlayColor={overlayBg}
                   editedSections={editedSections}
-                  onSectionClick={(i) => { if (editMode && editType === "ai") { setAiEditSectionIndex(i); setAiEditPrompt(""); } }}
-                  editMode={editMode && editType === "ai"}
+                  onSectionClick={undefined}
+                  editMode={false}
                 />
-                {/* Manual edit section rendering */}
-                {editMode && editType === "manual" && (
+                {/* Inline section edit rendering (Manual + AI) */}
+                {editMode && (
                   <div className="mt-4 space-y-3">
                     {generated.sections.map((section, i) => {
                       if (viewMode === "student" && (section.type === "answers" || section.type === "adaptations" || section.teacherOnly)) return null;
                       const currentContent = getSectionContent(i, section.content);
+                      const isTeacher = (section as any).teacherOnly;
+                      const isAiTarget = aiEditSectionIndex === i;
                       return (
-                        <div key={i} className="border border-amber-300 rounded-lg p-3 bg-amber-50">
+                        <div key={i} className={`rounded-lg border p-3 ${isTeacher ? "bg-amber-50 border-amber-200" : "bg-card border-border/50"}`}>
                           <div className="flex items-center justify-between mb-2">
                             <h3 className="font-semibold text-sm">{section.title}</h3>
-                            <Button size="sm" variant="ghost" className="h-6 px-2 text-xs text-indigo-600"
-                              onClick={() => { setEditType("ai"); setAiEditSectionIndex(i); setAiEditPrompt(""); }}>
-                              <Wand2 className="h-3 w-3 mr-1" />Switch to AI Edit
-                            </Button>
+                            {isTeacher && <span className="text-[10px] bg-amber-200 text-amber-800 px-1.5 py-0.5 rounded">Teacher</span>}
                           </div>
-                          <Textarea
-                            value={currentContent}
-                            onChange={e => setEditedSections(prev => ({ ...prev, [i]: e.target.value }))}
-                            className="min-h-[80px] text-sm border-amber-300"
-                            style={{ fontSize: `${textSize}px`, backgroundColor: overlayBg }}
-                          />
+                          {editType === "manual" ? (
+                            <Textarea
+                              value={currentContent}
+                              onChange={e => setEditedSections(prev => ({ ...prev, [i]: e.target.value }))}
+                              className="min-h-[80px] text-sm"
+                              style={{ fontSize: `${textSize}px` }}
+                            />
+                          ) : editType === "ai" ? (
+                            <>
+                              <div
+                                className="text-sm whitespace-pre-wrap leading-relaxed text-foreground/90 cursor-pointer rounded-md p-2 border border-dashed border-brand/40 hover:bg-brand-light/30 hover:border-brand transition-colors"
+                                title="Click to edit this section with AI"
+                                onClick={() => { setAiEditSectionIndex(isAiTarget ? null : i); setAiEditPrompt(""); }}
+                              >
+                                <span className="block text-[10px] text-brand font-medium mb-1 flex items-center gap-1"><Sparkles className="w-3 h-3" />Click to edit with AI</span>
+                                {currentContent}
+                              </div>
+                              {isAiTarget && (
+                                <div className="mt-2 rounded-lg border border-brand/30 bg-brand-light/30 p-3 space-y-2">
+                                  <p className="text-xs font-medium text-brand flex items-center gap-1.5"><Sparkles className="w-3.5 h-3.5" />Describe what you'd like to change</p>
+                                  <Textarea
+                                    value={aiEditPrompt}
+                                    onChange={e => setAiEditPrompt(e.target.value)}
+                                    placeholder="e.g. Make this simpler, add sentence starters, make questions harder…"
+                                    className="text-sm min-h-[70px] resize-none"
+                                    disabled={aiEditLoading}
+                                  />
+                                  <div className="flex gap-2">
+                                    <Button size="sm" className="bg-brand hover:bg-brand/90 text-white gap-1.5" disabled={aiEditLoading || !aiEditPrompt.trim()} onClick={handleAiEditSection}>
+                                      {aiEditLoading ? <><RefreshCw className="h-3.5 w-3.5 animate-spin" />Editing…</> : <><Sparkles className="h-3.5 w-3.5" />Apply AI Edit</>}
+                                    </Button>
+                                    <Button size="sm" variant="outline" onClick={() => { setAiEditSectionIndex(null); setAiEditPrompt(""); }} disabled={aiEditLoading}>Cancel</Button>
+                                  </div>
+                                </div>
+                              )}
+                            </>
+                          ) : (
+                            <p className="text-sm whitespace-pre-wrap leading-relaxed text-foreground/90">{currentContent}</p>
+                          )}
                         </div>
                       );
                     })}
