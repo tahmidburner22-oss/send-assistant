@@ -24,6 +24,8 @@ export interface AIToolField {
   options?: { value: string; label: string }[];
   required?: boolean;
   span?: "full" | "half";
+  maxLength?: number;
+  hint?: string; // helper text shown below the field
 }
 
 interface AIToolPageProps {
@@ -180,10 +182,17 @@ export default function AIToolPage({
                       <input
                         type="text"
                         value={values[field.id] || ""}
-                        onChange={e => setValue(field.id, e.target.value)}
+                        onChange={e => {
+                          const val = field.maxLength ? e.target.value.slice(0, field.maxLength) : e.target.value;
+                          setValue(field.id, val);
+                        }}
                         placeholder={field.placeholder}
+                        maxLength={field.maxLength}
                         className="w-full h-10 px-3 text-sm border border-input rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-brand/30"
                       />
+                    )}
+                    {field.hint && (
+                      <p className="text-[10px] text-muted-foreground mt-0.5">{field.hint}</p>
                     )}
                   </div>
                 ))}

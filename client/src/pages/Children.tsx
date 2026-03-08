@@ -209,8 +209,9 @@ export default function Children() {
               <TabsContent value="details">
                 <div className="space-y-3">
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-medium">Name</Label>
-                    <Input value={editChild.name} onChange={e => setEditChild({ ...editChild, name: e.target.value })} className="h-10" maxLength={20} />
+                    <Label className="text-xs font-medium">Initials Only (max 4 characters) *</Label>
+                    <Input value={editChild.name} onChange={e => { if (e.target.value.length <= 4) setEditChild({ ...editChild, name: e.target.value }); }} className="h-10" maxLength={4} placeholder="e.g. A.J." />
+                    <p className="text-[10px] text-muted-foreground">Initials only — do not enter full names (GDPR)</p>
                   </div>
                   <div className="space-y-1.5">
                     <Label className="text-xs font-medium">Year Group</Label>

@@ -15,18 +15,17 @@ import pupilsRouter from "./routes/pupils.js";
 import aiRouter from "./routes/ai.js";
 import dataRouter from "./routes/data.js";
 import adminRouter from "./routes/admin.js";
+import gdprRouter from "./routes/gdpr.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = parseInt(process.env.PORT || "3001");
 const isDev = process.env.NODE_ENV !== "production";
 
-// ── Trust Railway's proxy so rate-limiter and IP detection work correctly ─────
-// Railway (and most cloud platforms) sit behind a load balancer that sets
-// X-Forwarded-For. Without this, express-rate-limit throws ERR_ERL_UNEXPECTED_X_FORWARDED_FOR.
+// ── Trust Railway's proxy ─────────────────────────────────────────────────────
 app.set("trust proxy", 1);
 
-// ── Security middleware ───────────────────────────────────────────────────────
+// ── Security headers (Helmet) ─────────────────────────────────────────────────
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
@@ -46,68 +45,156 @@ app.use(helmet({
         "https://accounts.google.com",
       ],
       frameSrc: ["accounts.google.com"],
+      // GDPR: prevent embedding in iframes from other origins
+      frameAncestors: ["'self'"],
     },
   },
   crossOriginEmbedderPolicy: false,
+  // Enforce HTTPS for 1 year (HSTS)
+  hsts: {
+    maxAge: 31536000,
+    includeSubDomains: true,
+    preload: true,
+  },
+  // Prevent MIME sniffing
+  noSniff: true,
+  // Prevent clickjacking
+  frameguard: { action: "sameorigin" },
+  // Disable X-Powered-By
+  hidePoweredBy: true,
+  // Referrer policy — don't leak URL to third parties
+  referrerPolicy: { policy: "strict-origin-when-cross-origin" },
+  // Permissions policy — restrict dangerous browser APIs
+  permittedCrossDomainPolicies: { permittedPolicies: "none" },
 }));
 
+// ── Additional security headers ───────────────────────────────────────────────
+app.use((_req, res, next) => {
+  // Permissions-Policy: disable camera, microphone, geolocation, payment
+  res.setHeader(
+    "Permissions-Policy",
+    "camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()"
+  );
+  // Cache control for API responses — never cache sensitive data
+  if (_req.path.startsWith("/api")) {
+    res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, private");
+    res.setHeader("Pragma", "no-cache");
+  }
+  next();
+});
+
 // ── CORS ──────────────────────────────────────────────────────────────────────
-const allowedOrigins = process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(",") : [];
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(",")
+  : [];
 app.use(cors({
   origin: (origin, cb) => {
-    // Allow all if no restrictions set; otherwise check whitelist
-    if (!origin || allowedOrigins.length === 0 || allowedOrigins.some(o => origin.startsWith(o.trim()))) return cb(null, true);
+    if (!origin || allowedOrigins.length === 0 || allowedOrigins.some(o => origin.startsWith(o.trim()))) {
+      return cb(null, true);
+    }
     cb(new Error("Not allowed by CORS"));
   },
   credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  exposedHeaders: ["RateLimit-Limit", "RateLimit-Remaining"],
 }));
 
 // ── Rate limiting ─────────────────────────────────────────────────────────────
+// Strict limiter for auth endpoints (brute-force protection)
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 20,
-  message: { error: "Too many requests. Please try again later." },
+  max: 10, // tightened from 20 to 10
+  message: { error: "Too many login attempts. Please try again in 15 minutes." },
   standardHeaders: true,
   legacyHeaders: false,
-  validate: { xForwardedForHeader: false }, // Railway sets this header — don't error on it
+  validate: { xForwardedForHeader: false },
+  skipSuccessfulRequests: false, // count all attempts
 });
 
+// AI endpoints — expensive, limit tightly
+const aiLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 30,
+  message: { error: "Too many AI requests. Please slow down." },
+  standardHeaders: true,
+  legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
+});
+
+// General API limiter
 const generalLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 200,
   standardHeaders: true,
   legacyHeaders: false,
-  validate: { xForwardedForHeader: false }, // Railway sets this header — don't error on it
+  validate: { xForwardedForHeader: false },
 });
 
-// ── Body parsing ──────────────────────────────────────────────────────────────
-app.use(express.json({ limit: "10mb" }));
-app.use(express.urlencoded({ extended: true }));
+// ── Body parsing — tight limits to prevent DoS ────────────────────────────────
+app.use(express.json({ limit: "1mb" })); // reduced from 10mb
+app.use(express.urlencoded({ extended: true, limit: "1mb" }));
 app.use(cookieParser());
 app.use(generalLimiter);
+
+// ── Input sanitisation middleware ─────────────────────────────────────────────
+// Strip dangerous HTML/script tags from all string fields in request body
+function sanitiseString(val: string): string {
+  return val
+    .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, "")
+    .replace(/<[^>]+>/g, "")
+    .replace(/javascript:/gi, "")
+    .replace(/on\w+\s*=/gi, "")
+    .trim();
+}
+function sanitiseBody(obj: any): any {
+  if (typeof obj === "string") return sanitiseString(obj);
+  if (Array.isArray(obj)) return obj.map(sanitiseBody);
+  if (obj && typeof obj === "object") {
+    const clean: any = {};
+    for (const [k, v] of Object.entries(obj)) {
+      clean[k] = sanitiseBody(v);
+    }
+    return clean;
+  }
+  return obj;
+}
+app.use((req, _res, next) => {
+  if (req.body && typeof req.body === "object") {
+    req.body = sanitiseBody(req.body);
+  }
+  next();
+});
 
 // ── API Routes ────────────────────────────────────────────────────────────────
 app.use("/api/auth", authLimiter, authRouter);
 app.use("/api/schools", schoolsRouter);
 app.use("/api/pupils", pupilsRouter);
-app.use("/api/ai", aiRouter);
+app.use("/api/ai", aiLimiter, aiRouter);
 app.use("/api/data", dataRouter);
 app.use("/api/admin", adminRouter);
+app.use("/api/gdpr", gdprRouter);
 
 // ── Health check ──────────────────────────────────────────────────────────────
 app.get("/api/health", (_, res) => {
-  res.json({ status: "ok", timestamp: new Date().toISOString(), version: "2.0.0-SEND-FINAL" });
+  res.json({ status: "ok", timestamp: new Date().toISOString(), version: "2.1.0-GDPR" });
 });
 
 // ── Serve static frontend in production ───────────────────────────────────────
-// In production, __dirname = dist/server/ so the built frontend is at dist/server/../
-// i.e. one level up from __dirname (the dist/ folder itself)
 const distPath = path.join(__dirname, "..");
 const indexHtml = path.join(distPath, "index.html");
 if (!isDev && fs.existsSync(indexHtml)) {
   console.log(`📁 Serving static frontend from: ${distPath}`);
-  app.use(express.static(distPath));
-  // SPA fallback — all non-API routes serve index.html
+  app.use(express.static(distPath, {
+    // Security: set cache headers for static assets
+    setHeaders: (res, filePath) => {
+      if (filePath.endsWith(".html")) {
+        res.setHeader("Cache-Control", "no-store");
+      } else {
+        res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+      }
+    },
+  }));
   app.get("*", (req, res) => {
     if (!req.path.startsWith("/api")) {
       res.sendFile(indexHtml);
@@ -117,10 +204,17 @@ if (!isDev && fs.existsSync(indexHtml)) {
   console.warn(`⚠️  Frontend not found at ${distPath} (isDev=${isDev})`);
 }
 
-// ── Error handler ─────────────────────────────────────────────────────────────
-app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error("Unhandled error:", err);
-  res.status(err.status || 500).json({ error: err.message || "Internal server error" });
+// ── Global error handler — never leak stack traces in production ──────────────
+app.use((err: any, req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  const status = err.status || err.statusCode || 500;
+  if (isDev) {
+    console.error("Unhandled error:", err);
+    res.status(status).json({ error: err.message, stack: err.stack });
+  } else {
+    // In production, log internally but return a generic message
+    console.error(`[${new Date().toISOString()}] ${req.method} ${req.path} — ${err.message}`);
+    res.status(status).json({ error: status < 500 ? err.message : "An unexpected error occurred." });
+  }
 });
 
 // ── Start ─────────────────────────────────────────────────────────────────────
