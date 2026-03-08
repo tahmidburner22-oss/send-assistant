@@ -18,6 +18,7 @@ import Worksheets from "./pages/Worksheets";
 import Stories from "./pages/Stories";
 import Templates from "./pages/Templates";
 import PastPapers from "./pages/PastPapers";
+import RevisionHub from "./pages/RevisionHub";
 import Children from "./pages/Children";
 import History from "./pages/History";
 import Analytics from "./pages/Analytics";
@@ -77,6 +78,7 @@ function ProtectedRoutes() {
         <Route path="/analytics" component={Analytics} />
         <Route path="/ideas" component={Ideas} />
         <Route path="/past-papers" component={PastPapers} />
+        <Route path="/revision-hub" component={RevisionHub} />
         <Route path="/settings" component={Settings} />
         <Route path="/visual-timetable" component={VisualTimetable} />
         <Route path="/behaviour-tracking" component={BehaviourTracking} />

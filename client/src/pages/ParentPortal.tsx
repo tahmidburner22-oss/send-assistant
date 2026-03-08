@@ -482,6 +482,7 @@ export default function ParentPortal() {
           { id: "stories", label: "📖 Story Generator", emoji: "📖" },
           { id: "attendance", label: "✅ Attendance", emoji: "✅" },
           { id: "past-papers", label: "📝 Past Papers", emoji: "📝" },
+          { id: "revision-hub", label: "🎧 Revision Hub", emoji: "🎧" },
         ] as { id: string; label: string; emoji: string }[]).map(sec => (
           <div key={sec.id} className="rounded-2xl border border-border/60 overflow-hidden shadow-sm bg-white">
             <button
@@ -1227,6 +1228,18 @@ export default function ParentPortal() {
             })()}
         </div>}
         {sec.id === "past-papers" && <div><PastPapersPanel /></div>}
+        {sec.id === "revision-hub" && (
+          <div className="p-4 text-center space-y-3">
+            <div className="w-12 h-12 rounded-2xl bg-brand/10 flex items-center justify-center mx-auto">
+              <span className="text-2xl">🎧</span>
+            </div>
+            <p className="font-semibold text-foreground text-sm">Revision Hub</p>
+            <p className="text-xs text-muted-foreground">Upload any document to get an AI-narrated podcast, interactive quiz, and AI tutor — all in one place.</p>
+            <a href="/revision-hub" className="inline-flex items-center gap-2 bg-brand text-white text-xs font-semibold px-4 py-2 rounded-xl hover:bg-brand/90 transition-colors">
+              Open Revision Hub →
+            </a>
+          </div>
+        )}
               </div>
             )}
           </div>
