@@ -17,15 +17,28 @@ import { schools as schoolsApi, pupils as pupilsApi } from "@/lib/api";
 import { useLocation } from "wouter";
 
 const ROLE_LABELS: Record<string, string> = {
-  mat_admin: "MAT Admin", school_admin: "School Admin", senco: "SENCO",
-  teacher: "Teacher", ta: "Teaching Assistant",
+  mat_admin: "MAT Admin",
+  school_admin: "School Admin",
+  senco: "SENCO / Inclusion Lead",
+  teacher: "Teacher",
+  ta: "Teaching Assistant",
+  staff: "Support Staff",
 };
 const ROLE_COLOURS: Record<string, string> = {
   mat_admin: "bg-purple-100 text-purple-700",
   school_admin: "bg-blue-100 text-blue-700",
-  senco: "bg-green-100 text-green-700",
+  senco: "bg-teal-100 text-teal-700",
   teacher: "bg-brand/10 text-brand",
   ta: "bg-gray-100 text-gray-700",
+  staff: "bg-slate-100 text-slate-600",
+};
+const ROLE_ACCESS: Record<string, string> = {
+  mat_admin: "Full MAT-wide access",
+  school_admin: "Full school access — users, settings, API keys",
+  senco: "Manager access — pupil profiles, reports, inclusion settings",
+  teacher: "Standard access — create resources, manage own pupils",
+  ta: "Standard access — support pupils, view resources",
+  staff: "Limited access — view assigned resources only",
 };
 
 const AI_PROVIDERS = [
@@ -241,6 +254,7 @@ export default function AdminPanel() {
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-sm truncate">{u.display_name || u.displayName}</p>
                       <p className="text-xs text-muted-foreground truncate">{u.email}</p>
+                      <p className="text-[11px] text-muted-foreground/70 truncate mt-0.5">{ROLE_ACCESS[u.role] || ""}</p>
                     </div>
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${ROLE_COLOURS[u.role] || ""}`}>{ROLE_LABELS[u.role] || u.role}</span>

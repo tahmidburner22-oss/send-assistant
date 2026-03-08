@@ -416,32 +416,42 @@ router.post("/tts", requireAuth, async (req: Request, res: Response) => {
       }
     }
 
-    // 2. Fallback to Free Google TTS (unlimited, no key required)
-    // google-tts-api splits long text into chunks automatically if needed
-    // but for a single stream, we'll get the URL for the first 200 chars or use the multi-chunk helper
+    // 2. Free Google TTS (unlimited, no key required)
+    // Splits long text into ≤200-char chunks automatically, then we combine all MP3 buffers
     const lang = language.split("-")[0] || "en";
-    
-    // For long podcast scripts, we use the getAllAudioUrls helper
-    const results = googleTTS.getAllAudioUrls(text.slice(0, 2400), {
-      lang: lang,
+
+    // Limit to ~3000 chars (~3-4 minutes of speech) to keep response fast
+    const chunks = googleTTS.getAllAudioUrls(text.slice(0, 3000), {
+      lang,
       slow: false,
       host: "https://translate.google.com",
     });
 
-    // Since we want to return a single audio stream, we'll fetch the first chunk
-    // or ideally combine them. For now, let's just return the first chunk to keep it simple
-    // and responsive, or the client can handle multiple chunks.
-    // To keep the current client logic working (single audio source), we'll fetch the first chunk.
-    const firstChunkUrl = results[0].url;
-    const googleRes = await fetch(firstChunkUrl);
-    
-    if (!googleRes.ok) {
-      throw new Error("Google TTS failed");
+    if (!chunks || chunks.length === 0) {
+      throw new Error("Google TTS returned no audio chunks");
     }
 
+    // Fetch all chunks with a proper browser User-Agent (required by Google)
+    const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
+    const audioBuffers: Buffer[] = [];
+    for (const chunk of chunks) {
+      const googleRes = await fetch(chunk.url, { headers: { "User-Agent": UA } });
+      if (!googleRes.ok) {
+        console.warn(`[TTS] Google chunk failed: ${googleRes.status} for "${chunk.shortText.slice(0, 30)}"`);
+        continue;
+      }
+      audioBuffers.push(Buffer.from(await googleRes.arrayBuffer()));
+    }
+
+    if (audioBuffers.length === 0) {
+      throw new Error("All Google TTS chunks failed");
+    }
+
+    const combined = Buffer.concat(audioBuffers);
     res.setHeader("Content-Type", "audio/mpeg");
-    const buffer = Buffer.from(await googleRes.arrayBuffer());
-    res.send(buffer);
+    res.setHeader("Content-Length", combined.byteLength.toString());
+    res.setHeader("Cache-Control", "no-store");
+    res.send(combined);
 
   } catch (err: any) {
     console.error("Revision TTS error:", err);

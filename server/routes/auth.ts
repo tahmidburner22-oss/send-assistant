@@ -12,6 +12,25 @@ import { sendPasswordReset, sendEmailVerification, sendWelcomeEmail } from "../e
 const router = Router();
 
 // ── Register ──────────────────────────────────────────────────────────────────
+// Personal email domains that are NOT allowed for school staff accounts
+const PERSONAL_EMAIL_DOMAINS = new Set([
+  "gmail.com", "googlemail.com", "yahoo.com", "yahoo.co.uk", "hotmail.com",
+  "hotmail.co.uk", "outlook.com", "live.com", "live.co.uk", "icloud.com",
+  "me.com", "mac.com", "aol.com", "protonmail.com", "proton.me",
+  "tutanota.com", "zoho.com", "yandex.com", "mail.com", "gmx.com",
+]);
+
+const VALID_ROLES = ["school_admin", "senco", "teacher", "ta", "staff"] as const;
+type SchoolRole = typeof VALID_ROLES[number];
+
+const ROLE_LABELS: Record<string, string> = {
+  school_admin: "School Administrator",
+  senco: "SENCO / Inclusion Lead",
+  teacher: "Teacher",
+  ta: "Teaching Assistant",
+  staff: "Support Staff",
+};
+
 router.post("/register", async (req: Request, res: Response) => {
   try {
     const { email, password, displayName, schoolId, role = "teacher", inviteToken } = req.body;
@@ -25,6 +44,17 @@ router.post("/register", async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Invalid email address" });
     }
 
+    // School email enforcement — block personal email providers
+    const emailDomain = email.split("@")[1]?.toLowerCase();
+    if (PERSONAL_EMAIL_DOMAINS.has(emailDomain)) {
+      return res.status(400).json({
+        error: "Please use your school or work email address. Personal email addresses (Gmail, Outlook, Yahoo, etc.) are not accepted.",
+      });
+    }
+
+    // Role validation — only allow known school roles (mat_admin is set by system)
+    const safeRole: SchoolRole = (VALID_ROLES as readonly string[]).includes(role) ? role as SchoolRole : "teacher";
+
     // Password strength
     if (password.length < 8) {
       return res.status(400).json({ error: "Password must be at least 8 characters" });
@@ -34,11 +64,10 @@ router.post("/register", async (req: Request, res: Response) => {
     const existing = db.prepare("SELECT id FROM users WHERE email = ?").get(email);
     if (existing) return res.status(409).json({ error: "An account with this email already exists" });
 
-    // Domain restriction check
+    // Domain restriction check (if school has a locked domain)
     if (schoolId) {
       const school = db.prepare("SELECT * FROM schools WHERE id = ?").get(schoolId) as any;
       if (school?.domain) {
-        const emailDomain = email.split("@")[1];
         if (emailDomain !== school.domain) {
           return res.status(403).json({
             error: `Registration is restricted to @${school.domain} email addresses for this school`,
@@ -52,7 +81,7 @@ router.post("/register", async (req: Request, res: Response) => {
     const userId = uuidv4();
 
     db.prepare(`INSERT INTO users (id, school_id, email, display_name, password_hash, role, email_verify_token)
-      VALUES (?, ?, ?, ?, ?, ?, ?)`).run(userId, schoolId || null, email, displayName, hash, role, verifyToken);
+      VALUES (?, ?, ?, ?, ?, ?, ?)`).run(userId, schoolId || null, email, displayName, hash, safeRole, verifyToken);
 
     // Send verification email (non-blocking)
     sendEmailVerification(email, verifyToken).catch(console.error);
@@ -63,9 +92,12 @@ router.post("/register", async (req: Request, res: Response) => {
       if (school) sendWelcomeEmail(email, displayName, school.name).catch(console.error);
     }
 
-    auditLog(userId, schoolId || null, "user.register", "user", userId, { email, role }, req.ip);
+    auditLog(userId, schoolId || null, "user.register", "user", userId, { email, role: safeRole }, req.ip);
 
-    res.status(201).json({ message: "Account created. Please verify your email." });
+    res.status(201).json({
+      message: "Account created. Please check your email to verify your account.",
+      roleLabel: ROLE_LABELS[safeRole] || safeRole,
+    });
   } catch (err: any) {
     console.error("Register error:", err);
     res.status(500).json({ error: "Registration failed" });

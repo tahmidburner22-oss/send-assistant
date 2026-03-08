@@ -82,14 +82,34 @@ export function requireRole(...roles: string[]) {
   };
 }
 
-// Role hierarchy: mat_admin > school_admin > senco > teacher > ta
+// Role hierarchy: mat_admin > school_admin > senco > teacher > ta > staff
 const ROLE_LEVELS: Record<string, number> = {
   mat_admin: 5,
   school_admin: 4,
   senco: 3,
   teacher: 2,
   ta: 1,
+  staff: 0,
 };
+
+export const ROLE_LABELS: Record<string, string> = {
+  mat_admin: "MAT Administrator",
+  school_admin: "School Administrator",
+  senco: "SENCO / Inclusion Lead",
+  teacher: "Teacher",
+  ta: "Teaching Assistant",
+  staff: "Support Staff",
+};
+
+// Manager-level: school_admin and senco can manage users and settings
+export function requireManagerAccess(req: Request, res: Response, next: NextFunction) {
+  if (!req.user) return res.status(401).json({ error: "Authentication required" });
+  const managerRoles = ["mat_admin", "school_admin", "senco"];
+  if (!managerRoles.includes(req.user.role)) {
+    return res.status(403).json({ error: "Manager-level access required (School Admin or SENCO)" });
+  }
+  next();
+}
 
 export function requireMinRole(minRole: string) {
   return (req: Request, res: Response, next: NextFunction) => {

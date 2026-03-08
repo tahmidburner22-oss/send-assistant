@@ -258,9 +258,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium text-foreground truncate">{user?.displayName || "User"}</div>
                     <div className="text-xs text-muted-foreground">
-                      {user?.role === "school_admin" || user?.role === "mat_admin" ? "Administrator" :
-                       user?.role === "senco" ? "SENCO" :
-                       user?.role === "ta" ? "Teaching Assistant" : "Teacher"}
+                      {({
+                        mat_admin: "MAT Administrator",
+                        school_admin: "School Administrator",
+                        senco: "SENCO / Inclusion Lead",
+                        teacher: "Teacher",
+                        ta: "Teaching Assistant",
+                        staff: "Support Staff",
+                      } as Record<string, string>)[user?.role ?? ""] ?? user?.role ?? ""}
                     </div>
                   </div>
                   <button
