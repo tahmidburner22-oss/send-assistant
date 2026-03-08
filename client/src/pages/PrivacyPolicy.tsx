@@ -1,125 +1,276 @@
-import { ArrowLeft } from "lucide-react";
+import { Shield, Mail, Clock, Database, Users, Lock, FileText, ChevronLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 
+const Section = ({ icon, title, children }: { icon: React.ReactNode; title: string; children: React.ReactNode }) => (
+  <section className="space-y-3">
+    <div className="flex items-center gap-2.5 border-b pb-2">
+      <span className="text-brand">{icon}</span>
+      <h2 className="text-base font-semibold text-foreground">{title}</h2>
+    </div>
+    <div className="text-sm text-muted-foreground leading-relaxed space-y-2">{children}</div>
+  </section>
+);
+
+const Row = ({ label, value }: { label: string; value: string }) => (
+  <div className="flex gap-2">
+    <span className="font-medium text-foreground min-w-[140px]">{label}</span>
+    <span>{value}</span>
+  </div>
+);
+
 export default function PrivacyPolicy() {
+  const navigate = useNavigate();
+  const updated = "8 March 2026";
+
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-3xl mx-auto px-4 py-12">
-        <Button variant="ghost" size="sm" onClick={() => window.history.back()} className="mb-6 -ml-2">
-          <ArrowLeft className="w-4 h-4 mr-1" />Back
-        </Button>
-        <div className="prose prose-sm max-w-none dark:prose-invert">
-          <h1>Privacy Policy</h1>
-          <p className="text-muted-foreground text-sm">Last updated: March 2026 · Version 2.0</p>
+      {/* Header */}
+      <div className="bg-brand text-white px-6 py-8">
+        <div className="max-w-3xl mx-auto">
+          <div className="flex items-center gap-3 mb-3">
+            <Shield className="w-7 h-7" />
+            <h1 className="text-2xl font-bold">Privacy Notice</h1>
+          </div>
+          <p className="text-white/80 text-sm">
+            Adaptly is committed to protecting the privacy of pupils, staff, and parents in accordance with the
+            UK General Data Protection Regulation (UK GDPR) and the Data Protection Act 2018.
+          </p>
+          <p className="text-white/60 text-xs mt-2">Last updated: {updated}</p>
+        </div>
+      </div>
 
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 my-4 not-prose"><p className="text-sm font-semibold text-amber-800">Data Controller Notice</p><p className="text-sm text-amber-700 mt-1">The school or institution using this Platform is the <strong>Data Controller</strong> under UK GDPR for all personal data relating to their staff and students. The Platform Licensor acts only as a Data Processor. Schools are responsible for ensuring their use of this Platform complies with UK GDPR, DPA 2018, and all applicable safeguarding legislation.</p></div>
+      <div className="max-w-3xl mx-auto px-6 py-8 space-y-8">
 
-          <p>This Privacy Policy explains how <strong>Adaptly</strong> ("we", "us", "our") collects, uses, and protects personal data when you use our platform. We are committed to full compliance with the <strong>UK General Data Protection Regulation (UK GDPR)</strong>, the <strong>Data Protection Act 2018</strong>, and the <strong>Privacy and Electronic Communications Regulations (PECR)</strong>.</p>
+        {/* 1. Who we are */}
+        <Section icon={<Users className="w-4 h-4" />} title="1. Who We Are (Data Controller)">
+          <p>
+            Adaptly ("<strong>we</strong>", "<strong>us</strong>") operates the platform at <strong>adaptly.co.uk</strong>.
+            We act as the <strong>Data Controller</strong> for personal data processed through this platform.
+          </p>
+          <div className="bg-muted rounded-lg p-4 space-y-1.5">
+            <Row label="Organisation" value="Adaptly" />
+            <Row label="Website" value="https://adaptly.co.uk" />
+            <Row label="Contact email" value="privacy@adaptly.co.uk" />
+            <Row label="ICO registration" value="Pending registration" />
+          </div>
+          <p>
+            Each school that uses Adaptly acts as a separate Data Controller for the pupil and staff data they
+            enter. Schools are responsible for ensuring they have appropriate legal basis and parental consent
+            before adding any pupil information to the platform.
+          </p>
+        </Section>
 
-          <p>We have written this policy in plain English so it is easy to understand. If you have any questions, please contact us at <a href="mailto:privacy@adaptly.co.uk">privacy@adaptly.co.uk</a>.</p>
+        {/* 2. What data we collect */}
+        <Section icon={<Database className="w-4 h-4" />} title="2. What Personal Data We Collect">
+          <p>We collect the minimum data necessary to provide the service ("<strong>data minimisation</strong>" — UK GDPR Article 5(1)(c)).</p>
 
-          <h2>1. Who We Are</h2>
-          <p>Adaptly is a software-as-a-service (SaaS) platform designed for UK schools and Multi-Academy Trusts (MATs) to support Special Educational Needs and Disabilities (SEND) education. The Licensor acts as a <strong>data processor</strong> on behalf of schools (the data controllers) when processing pupil data. <strong>The school (Licensee) is the Data Controller</strong> and bears full responsibility for all personal data entered into the Platform.</p>
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs border-collapse">
+              <thead>
+                <tr className="bg-muted">
+                  <th className="text-left p-2 border border-border font-medium">Data Category</th>
+                  <th className="text-left p-2 border border-border font-medium">What is stored</th>
+                  <th className="text-left p-2 border border-border font-medium">Who it relates to</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  ["Account data", "Email address, hashed password, display name, role", "Teachers / staff"],
+                  ["Pupil identifiers", "Initials only (max 4 characters) — no full names, DOB, or UPN", "Pupils"],
+                  ["Pupil SEND data", "Year group, primary SEND need category", "Pupils"],
+                  ["Assignments", "Worksheet titles, subjects, completion status, teacher comments", "Pupils"],
+                  ["Attendance records", "Date, attendance status (present/absent/late), notes", "Pupils"],
+                  ["Behaviour records", "Date, behaviour type, severity, notes", "Pupils"],
+                  ["AI-generated content", "Worksheets, stories, reports generated using AI tools", "Pupils / staff"],
+                  ["Audit logs", "Action type, timestamp, IP address, user ID", "Staff"],
+                  ["Session data", "JWT token, IP address, user agent, expiry time", "Staff"],
+                  ["Cookie consent", "Consent choices and timestamp", "All users"],
+                ].map(([cat, what, who]) => (
+                  <tr key={cat} className="even:bg-muted/30">
+                    <td className="p-2 border border-border font-medium">{cat}</td>
+                    <td className="p-2 border border-border">{what}</td>
+                    <td className="p-2 border border-border">{who}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
-          <h2>2. What Data We Collect</h2>
-          <h3>Account holders (teachers, SENCOs, administrators)</h3>
-          <ul>
-            <li>Name and email address</li>
-            <li>School name and URN</li>
-            <li>Role within the school</li>
-            <li>Login activity and session data</li>
-            <li>IP address and browser type (for security)</li>
+          <div className="flex items-start gap-2 p-3 rounded-lg bg-green-50 border border-green-200 text-green-800">
+            <Shield className="w-4 h-4 flex-shrink-0 mt-0.5" />
+            <p className="text-xs">
+              <strong>Pupil anonymisation:</strong> We deliberately restrict pupil name fields to <strong>initials only (maximum 4 characters)</strong>.
+              Full names, dates of birth, addresses, and other directly identifying information are never collected or stored.
+            </p>
+          </div>
+        </Section>
+
+        {/* 3. Why we collect it */}
+        <Section icon={<FileText className="w-4 h-4" />} title="3. Why We Collect It (Legal Basis)">
+          <p>Under UK GDPR Article 6, we rely on the following lawful bases:</p>
+          <div className="space-y-2">
+            {[
+              ["Legitimate interests (Art. 6(1)(f))", "Providing the core platform features — worksheets, behaviour tracking, attendance, AI tools — to support SEND education."],
+              ["Contract (Art. 6(1)(b))", "Processing account data to fulfil our agreement with the school or individual user."],
+              ["Legal obligation (Art. 6(1)(c))", "Maintaining audit logs and security records as required by applicable law."],
+            ].map(([basis, reason]) => (
+              <div key={basis} className="flex gap-2">
+                <span className="text-brand font-medium min-w-[220px] text-xs">{basis}</span>
+                <span className="text-xs">{reason}</span>
+              </div>
+            ))}
+          </div>
+          <p>
+            Where data relates to <strong>Special Category data</strong> (e.g. SEND needs — UK GDPR Article 9),
+            we rely on <strong>Article 9(2)(g)</strong> — substantial public interest in the provision of special
+            educational needs support — and require schools to confirm they hold appropriate consent from parents/carers.
+          </p>
+        </Section>
+
+        {/* 4. How long we keep it */}
+        <Section icon={<Clock className="w-4 h-4" />} title="4. How Long We Keep Your Data (Retention Policy)">
+          <p>
+            We apply the <strong>storage limitation principle</strong> (UK GDPR Article 5(1)(e)) — data is kept
+            only as long as necessary for its purpose and then securely deleted.
+          </p>
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs border-collapse">
+              <thead>
+                <tr className="bg-muted">
+                  <th className="text-left p-2 border border-border font-medium">Data Type</th>
+                  <th className="text-left p-2 border border-border font-medium">Retention Period</th>
+                  <th className="text-left p-2 border border-border font-medium">Basis</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  ["Staff account data", "Duration of account + 12 months", "Contract / legitimate interests"],
+                  ["Active sessions (JWT)", "7 days from login", "Security requirement"],
+                  ["Behaviour records", "3 years from date of record", "School records best practice (DfE)"],
+                  ["Attendance records", "3 years from date of record", "School records best practice (DfE)"],
+                  ["Worksheets & AI content", "2 years from creation", "Legitimate interests"],
+                  ["Audit logs", "2 years", "Legal obligation / security"],
+                  ["Password reset tokens", "1 hour from issue", "Security requirement"],
+                  ["Deleted pupil data", "Immediately anonymised on erasure request", "UK GDPR Art. 17"],
+                ].map(([type, period, basis]) => (
+                  <tr key={type} className="even:bg-muted/30">
+                    <td className="p-2 border border-border font-medium">{type}</td>
+                    <td className="p-2 border border-border">{period}</td>
+                    <td className="p-2 border border-border">{basis}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Section>
+
+        {/* 5. Who we share it with */}
+        <Section icon={<Users className="w-4 h-4" />} title="5. Who We Share Data With">
+          <p>We <strong>do not sell, rent, or share</strong> personal data with third parties for marketing purposes. Data is shared only in the following circumstances:</p>
+          <ul className="list-disc list-inside space-y-1 text-sm">
+            <li><strong>AI providers</strong> — anonymised prompt content is sent to AI APIs (OpenAI / Google Gemini) to generate educational content. No pupil names or identifying information is included in AI prompts.</li>
+            <li><strong>Hosting infrastructure</strong> — the platform is hosted on Railway (railway.app), a cloud provider with data centres in the EU/UK. Railway acts as a Data Processor under a Data Processing Agreement.</li>
+            <li><strong>Legal obligation</strong> — we may disclose data if required by law, court order, or to protect the safety of a child.</li>
           </ul>
-          <h3>Pupil data (entered by school staff)</h3>
-          <ul>
-            <li>First name and year group</li>
-            <li>SEND need category (e.g. dyslexia, autism)</li>
-            <li>UPN (optional)</li>
-            <li>Date of birth (optional)</li>
-            <li>Attendance records</li>
-            <li>Behaviour notes</li>
-            <li>Work assignments and submissions</li>
+        </Section>
+
+        {/* 6. Your rights */}
+        <Section icon={<Lock className="w-4 h-4" />} title="6. Your Rights Under UK GDPR">
+          <p>You have the following rights regarding your personal data:</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {[
+              ["Right of access (Art. 15)", "Request a copy of all data we hold about you."],
+              ["Right to rectification (Art. 16)", "Ask us to correct inaccurate data."],
+              ["Right to erasure (Art. 17)", "Ask us to delete your data ('right to be forgotten')."],
+              ["Right to restrict processing (Art. 18)", "Ask us to pause processing your data."],
+              ["Right to data portability (Art. 20)", "Receive your data in a machine-readable format."],
+              ["Right to object (Art. 21)", "Object to processing based on legitimate interests."],
+            ].map(([right, desc]) => (
+              <div key={right} className="bg-muted/40 rounded-lg p-3 space-y-0.5">
+                <p className="font-medium text-xs text-foreground">{right}</p>
+                <p className="text-xs">{desc}</p>
+              </div>
+            ))}
+          </div>
+          <p>
+            To exercise any of these rights, contact us at <strong>privacy@adaptly.co.uk</strong>.
+            We will respond within <strong>30 days</strong> as required by UK GDPR Article 12.
+          </p>
+          <p>
+            If you are not satisfied with our response, you have the right to lodge a complaint with the
+            <strong> Information Commissioner's Office (ICO)</strong> at{" "}
+            <a href="https://ico.org.uk" target="_blank" rel="noopener noreferrer" className="text-brand underline">ico.org.uk</a>{" "}
+            or by calling <strong>0303 123 1113</strong>.
+          </p>
+        </Section>
+
+        {/* 7. Security */}
+        <Section icon={<Lock className="w-4 h-4" />} title="7. How We Protect Your Data">
+          <p>We implement appropriate technical and organisational measures (UK GDPR Article 32) including:</p>
+          <ul className="list-disc list-inside space-y-1 text-sm">
+            <li>All data transmitted over <strong>HTTPS/TLS</strong> with HSTS enforced</li>
+            <li>Passwords stored using <strong>bcrypt</strong> (cost factor 12) — never in plain text</li>
+            <li>JWT authentication tokens with short expiry and server-side session validation</li>
+            <li>Role-based access control — staff can only access data for their own school</li>
+            <li>Full audit logging of all data access and modifications</li>
+            <li>Input sanitisation to prevent XSS and injection attacks</li>
+            <li>Rate limiting on all endpoints to prevent brute-force attacks</li>
+            <li>Pupil data minimised to initials only — no full names stored</li>
           </ul>
-          <p><strong>We never collect pupil surnames, photographs, or contact details.</strong></p>
+        </Section>
 
-          <h2>3. How We Use Your Data</h2>
-          <ul>
-            <li>To provide and improve the Adaptly platform</li>
-            <li>To authenticate users and maintain account security</li>
-            <li>To generate AI-assisted educational content</li>
-            <li>To send transactional emails (password resets, notifications)</li>
-            <li>To comply with our legal obligations</li>
-          </ul>
-          <p><strong>We never use pupil data to train AI models.</strong> All AI generation uses only the prompts you provide, not stored pupil records.</p>
-
-          <h2>4. Legal Basis for Processing</h2>
-          <ul>
-            <li><strong>Contract performance</strong> — processing your account data to deliver the service</li>
-            <li><strong>Legitimate interests</strong> — security monitoring, fraud prevention, service improvement</li>
-            <li><strong>Legal obligation</strong> — safeguarding incident reporting, audit logs</li>
-            <li><strong>Consent</strong> — optional analytics cookies (you can withdraw at any time)</li>
-          </ul>
-
-          <h2>5. Data Residency</h2>
-          <p>All data is stored and processed in the <strong>United Kingdom</strong>. We do not transfer personal data outside the UK/EEA. Our servers are hosted in UK data centres.</p>
-
-          <h2>6. AI and Third-Party Services</h2>
-          <p>Adaptly uses AI language models to generate educational content. When you use AI features:</p>
-          <ul>
-            <li>Your prompts are sent to the AI provider you configure (Groq, Google Gemini, OpenAI, or OpenRouter) using <strong>your own API key</strong></li>
-            <li>We do not share pupil personal data with AI providers</li>
-            <li>AI providers process data under their own privacy policies</li>
-            <li>All AI outputs are filtered for safeguarding concerns before being shown to users</li>
-          </ul>
-
-          <h2>7. Data Retention</h2>
-          <ul>
-            <li>Account data: retained for the duration of your subscription plus 12 months</li>
-            <li>Pupil data: retained until your school deletes it or your account is closed</li>
-            <li>Audit logs: retained for 7 years (legal requirement)</li>
-            <li>Safeguarding incident records: retained for 25 years (statutory requirement)</li>
-          </ul>
-
-          <h2>8. Your Rights</h2>
-          <p>Under UK GDPR, you have the right to:</p>
-          <ul>
-            <li><strong>Access</strong> your personal data (Subject Access Request)</li>
-            <li><strong>Rectify</strong> inaccurate data</li>
-            <li><strong>Erase</strong> your data ("right to be forgotten")</li>
-            <li><strong>Restrict</strong> processing</li>
-            <li><strong>Data portability</strong> — receive your data in a machine-readable format</li>
-            <li><strong>Object</strong> to processing based on legitimate interests</li>
-          </ul>
-          <p>To exercise any of these rights, email <a href="mailto:privacy@adaptly.co.uk">privacy@adaptly.co.uk</a>. We will respond within 30 days.</p>
-
-          <h2>9. Cookies</h2>
+        {/* 8. Cookies */}
+        <Section icon={<Database className="w-4 h-4" />} title="8. Cookies">
           <p>We use the following cookies:</p>
-          <ul>
-            <li><strong>Strictly necessary</strong>: authentication session cookies (cannot be disabled)</li>
-            <li><strong>Analytics</strong>: anonymous usage statistics (optional, requires consent)</li>
-          </ul>
-          <p>You can manage your cookie preferences using the cookie banner when you first visit the site.</p>
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs border-collapse">
+              <thead>
+                <tr className="bg-muted">
+                  <th className="text-left p-2 border border-border font-medium">Cookie</th>
+                  <th className="text-left p-2 border border-border font-medium">Purpose</th>
+                  <th className="text-left p-2 border border-border font-medium">Duration</th>
+                  <th className="text-left p-2 border border-border font-medium">Type</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  ["token", "Authentication session", "7 days", "Strictly necessary"],
+                  ["cookie_consent", "Stores your cookie preferences", "1 year", "Strictly necessary"],
+                ].map(([name, purpose, duration, type]) => (
+                  <tr key={name} className="even:bg-muted/30">
+                    <td className="p-2 border border-border font-mono">{name}</td>
+                    <td className="p-2 border border-border">{purpose}</td>
+                    <td className="p-2 border border-border">{duration}</td>
+                    <td className="p-2 border border-border">{type}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p>We do not use advertising, tracking, or analytics cookies.</p>
+        </Section>
 
-          <h2>10. Security</h2>
-          <p>We implement appropriate technical and organisational measures including:</p>
-          <ul>
-            <li>Encryption in transit (TLS 1.3) and at rest</li>
-            <li>Bcrypt password hashing</li>
-            <li>Multi-factor authentication (optional)</li>
-            <li>Full audit logging</li>
-            <li>Session timeout after inactivity</li>
-            <li>Role-based access control</li>
-          </ul>
+        {/* 9. Contact */}
+        <Section icon={<Mail className="w-4 h-4" />} title="9. Contact Us">
+          <p>For any data protection queries, subject access requests, or to exercise your rights:</p>
+          <div className="bg-muted rounded-lg p-4 space-y-1.5">
+            <Row label="Email" value="privacy@adaptly.co.uk" />
+            <Row label="Website" value="https://adaptly.co.uk" />
+            <Row label="Response time" value="Within 30 days (UK GDPR Art. 12)" />
+          </div>
+          <p className="text-xs text-muted-foreground">
+            This Privacy Notice was last reviewed on <strong>{updated}</strong> and will be updated whenever
+            there are material changes to how we process personal data. We will notify registered users of
+            significant changes by email.
+          </p>
+        </Section>
 
-          <h2>11. Data Breach Notification</h2>
-          <p>In the event of a personal data breach, we will notify affected schools within 72 hours and the ICO where required by law.</p>
-
-          <h2>12. Limitation of Liability</h2>
-          <p>The Licensor accepts no liability for any data breach, safeguarding incident, or regulatory penalty arising from the Licensee's use of the Platform or from data entered by the Licensee or their Users. The Licensee indemnifies the Licensor against all such claims. See the Terms of Service for full details.</p>
-
-          <h2>13. Contact and Complaints</h2>
-          <p>Data Protection contact: <a href="mailto:admin@sendassistant.app">admin@sendassistant.app</a></p>
-          <p>If you are unhappy with how we handle your data, you have the right to complain to the <strong>Information Commissioner's Office (ICO)</strong>: <a href="https://ico.org.uk" target="_blank" rel="noopener noreferrer">ico.org.uk</a> or call 0303 123 1113.</p>
+        {/* Back button */}
+        <div className="pt-4 border-t">
+          <Button variant="outline" size="sm" onClick={() => navigate(-1)} className="gap-1.5">
+            <ChevronLeft className="w-4 h-4" /> Back
+          </Button>
         </div>
       </div>
     </div>
