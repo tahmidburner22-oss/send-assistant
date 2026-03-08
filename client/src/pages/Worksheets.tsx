@@ -130,6 +130,7 @@ export default function Worksheets() {
   const [viewMode, setViewMode] = useState<"teacher" | "student">("teacher");
   const [showOverlayPicker, setShowOverlayPicker] = useState(false);
   const [editMode, setEditMode] = useState(false);
+  const [editType, setEditType] = useState<"ai" | "manual" | "none">("none");
   const [editedSections, setEditedSections] = useState<Record<number, string>>({});
   const [showAssignDialog, setShowAssignDialog] = useState(false);
   // AI Edit state
@@ -814,18 +815,18 @@ export default function Worksheets() {
               <>
                 <Button variant="outline" size="sm"
                   className="gap-1.5 border-brand/40 text-brand hover:bg-brand-light"
-                  onClick={() => setEditMode(true)}>
+                  onClick={() => { setEditMode(true); setEditType("ai"); }}>
                   <Sparkles className="w-3.5 h-3.5" />Edit with AI
                 </Button>
                 <Button variant="outline" size="sm" className="gap-1.5"
-                  onClick={() => setEditMode(true)}>
+                  onClick={() => { setEditMode(true); setEditType("manual"); }}>
                   <PenLine className="w-3.5 h-3.5" />Edit Manually
                 </Button>
               </>
             ) : (
               <Button variant="outline" size="sm"
                 className="bg-amber-100 border-amber-300 text-amber-700 gap-1.5"
-                onClick={() => setEditMode(false)}>
+                onClick={() => { setEditMode(false); setEditType("none"); setEditedSections({}); }}>
                 <Check className="w-3.5 h-3.5" />Done Editing
               </Button>
             )}
@@ -907,11 +908,11 @@ export default function Worksheets() {
                   textSize={textSize}
                   overlayColor={overlayBg}
                   editedSections={editedSections}
-                  onSectionClick={(i) => { if (editMode) { setAiEditSectionIndex(i); setAiEditPrompt(""); } }}
-                  editMode={editMode}
+                  onSectionClick={(i) => { if (editMode && editType === "ai") { setAiEditSectionIndex(i); setAiEditPrompt(""); } }}
+                  editMode={editMode && editType === "ai"}
                 />
-                {/* Legacy section rendering for edit mode textareas */}
-                {editMode && (
+                {/* Manual edit section rendering */}
+                {editMode && editType === "manual" && (
                   <div className="mt-4 space-y-3">
                     {generated.sections.map((section, i) => {
                       if (viewMode === "student" && (section.type === "answers" || section.type === "adaptations" || section.teacherOnly)) return null;
@@ -921,8 +922,8 @@ export default function Worksheets() {
                           <div className="flex items-center justify-between mb-2">
                             <h3 className="font-semibold text-sm">{section.title}</h3>
                             <Button size="sm" variant="ghost" className="h-6 px-2 text-xs text-indigo-600"
-                              onClick={() => { setAiEditSectionIndex(i); setAiEditPrompt(""); }}>
-                              <Wand2 className="h-3 w-3 mr-1" />AI Edit
+                              onClick={() => { setEditType("ai"); setAiEditSectionIndex(i); setAiEditPrompt(""); }}>
+                              <Wand2 className="h-3 w-3 mr-1" />Switch to AI Edit
                             </Button>
                           </div>
                           <Textarea
@@ -962,7 +963,7 @@ export default function Worksheets() {
             </Card>
           </div>
 
-          <Button variant="outline" onClick={() => { setGenerated(null); setEditedSections({}); setEditMode(false); }} className="no-print">
+          <Button variant="outline" onClick={() => { setGenerated(null); setEditedSections({}); setEditMode(false); setEditType("none"); }} className="no-print">
             ← Generate Another Worksheet
           </Button>
         </div>

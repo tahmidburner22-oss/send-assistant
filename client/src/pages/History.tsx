@@ -342,13 +342,25 @@ export default function History() {
                               <span className="text-[10px] bg-amber-200 text-amber-800 px-1.5 py-0.5 rounded">Teacher</span>
                             )}
                           </div>
-                          {editMode ? (
+                          {editType === "manual" ? (
                             <Textarea
                               value={currentContent}
                               onChange={e => setEditedSections(prev => ({ ...prev, [i]: e.target.value }))}
                               className="text-sm font-mono min-h-[100px] resize-y"
                               placeholder="Enter section content…"
                             />
+                          ) : editType === "ai" ? (
+                            <div
+                              className="text-sm whitespace-pre-wrap leading-relaxed text-foreground/90 cursor-pointer rounded-md p-2 border border-dashed border-brand/40 hover:bg-brand-light/30 hover:border-brand transition-colors"
+                              title="Click to edit this section with AI"
+                              onClick={() => {
+                                setAiEditSectionIndex(i);
+                                setAiEditPrompt("");
+                              }}
+                            >
+                              <span className="block text-[10px] text-brand font-medium mb-1 flex items-center gap-1"><Sparkles className="w-3 h-3" />Click to edit with AI</span>
+                              {currentContent}
+                            </div>
                           ) : (
                             <p className="text-sm whitespace-pre-wrap leading-relaxed text-foreground/90">{currentContent}</p>
                           )}
