@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { aiGenerateStory } from "@/lib/ai";
+import { aiGenerateStory, callAI } from "@/lib/ai";
+import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,7 +28,7 @@ function generateComprehensionQuestions(_content: string, genre: string): string
   const defaultQs = ["What is the main theme of this story?", "How does the main character change throughout the story?", "What is the most important moment in the story? Explain why.", "Write a short summary of the story in your own words."];
   return questions[genre] || defaultQs;
 }
-import { BookOpen, Sparkles, Copy, Download, Save, RotateCcw, Plus, X, Users, FileDown, Printer, Palette, ZoomIn, ZoomOut } from "lucide-react";
+import { BookOpen, Sparkles, Copy, Download, Save, RotateCcw, Plus, X, Users, FileDown, Printer, Palette, ZoomIn, ZoomOut, PenLine, Check, Loader2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 export default function Stories() {
@@ -45,6 +46,11 @@ export default function Stories() {
   const [showAssignDialog, setShowAssignDialog] = useState(false);
   const [showOverlayPicker, setShowOverlayPicker] = useState(false);
   const [textSize, setTextSize] = useState(14);
+  type EditMode = "none" | "manual" | "ai";
+  const [editMode, setEditMode] = useState<EditMode>("none");
+  const [manualText, setManualText] = useState("");
+  const [aiPrompt, setAiPrompt] = useState("");
+  const [aiEditLoading, setAiEditLoading] = useState(false);
 
   const addCharacter = () => setCharacters([...characters, ""]);
   const removeCharacter = (i: number) => setCharacters(characters.filter((_, idx) => idx !== i));
@@ -273,6 +279,38 @@ export default function Stories() {
             <Button variant="outline" size="sm" onClick={() => setShowOverlayPicker(!showOverlayPicker)}>
               <Palette className="w-3.5 h-3.5 mr-1.5" /> Overlay
             </Button>
+            {/* Edit with AI / Edit Manually */}
+            {editMode === "none" && (
+              <>
+                <Button variant="outline" size="sm"
+                  className="gap-1.5 border-brand/40 text-brand hover:bg-brand-light"
+                  onClick={() => setEditMode("ai")}>
+                  <Sparkles className="w-3.5 h-3.5" />Edit with AI
+                </Button>
+                <Button variant="outline" size="sm" className="gap-1.5"
+                  onClick={() => { setManualText(result.content); setEditMode("manual"); }}>
+                  <PenLine className="w-3.5 h-3.5" />Edit Manually
+                </Button>
+              </>
+            )}
+            {editMode === "ai" && (
+              <Button variant="outline" size="sm" className="gap-1.5 text-amber-600 border-amber-300"
+                onClick={() => { setEditMode("none"); setAiPrompt(""); }}>
+                <X className="w-3.5 h-3.5" />Cancel AI Edit
+              </Button>
+            )}
+            {editMode === "manual" && (
+              <>
+                <Button variant="outline" size="sm" className="gap-1.5 text-amber-600 border-amber-300"
+                  onClick={() => setEditMode("none")}>
+                  <X className="w-3.5 h-3.5" />Cancel
+                </Button>
+                <Button size="sm" className="bg-brand hover:bg-brand/90 text-white gap-1.5"
+                  onClick={() => { setResult({ ...result, content: manualText }); setEditMode("none"); toast.success("Changes saved!"); }}>
+                  <Check className="w-3.5 h-3.5" />Save Changes
+                </Button>
+              </>
+            )}
             <Button variant="outline" size="sm" onClick={() => { navigator.clipboard.writeText(result.content); toast.success("Copied!"); }}>
               <Copy className="w-3.5 h-3.5 mr-1.5" /> Copy
             </Button>
@@ -308,6 +346,60 @@ export default function Stories() {
               <RotateCcw className="w-3.5 h-3.5 mr-1.5" /> New Story
             </Button>
           </div>
+
+          {/* AI edit panel */}
+          {editMode === "ai" && (
+            <div className="rounded-lg border border-brand/30 bg-brand-light/30 p-3 space-y-2 no-print">
+              <p className="text-xs font-medium text-brand flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5" />
+                Describe what you'd like to change
+              </p>
+              <Textarea
+                value={aiPrompt}
+                onChange={e => setAiPrompt(e.target.value)}
+                placeholder="e.g. Make it simpler, add more dialogue, change the ending…"
+                className="text-sm min-h-[80px] resize-none"
+                disabled={aiEditLoading}
+              />
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  className="bg-brand hover:bg-brand/90 text-white gap-1.5"
+                  disabled={aiEditLoading}
+                  onClick={async () => {
+                    if (!aiPrompt.trim() || !result) return;
+                    setAiEditLoading(true);
+                    try {
+                      const system = `You are an expert SEND teacher editing an educational story. Apply the instruction and return the full updated story as plain text only — no titles, no JSON.`;
+                      const user = `Story title: "${result.title}"\n\nCurrent story:\n${result.content}\n\nInstruction: ${aiPrompt}\n\nReturn the full updated story:`;
+                      const { text } = await callAI(system, user, 3000);
+                      setResult({ ...result, content: text.trim() });
+                      setEditMode("none");
+                      setAiPrompt("");
+                      toast.success("Story updated with AI!");
+                    } catch {
+                      toast.error("AI edit failed. Please try again.");
+                    }
+                    setAiEditLoading(false);
+                  }}
+                >
+                  {aiEditLoading ? <><Loader2 className="w-3.5 h-3.5 animate-spin" />Editing…</> : <><Sparkles className="w-3.5 h-3.5" />Apply AI Edit</>}
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => { setEditMode("none"); setAiPrompt(""); }} disabled={aiEditLoading}>
+                  <X className="w-3.5 h-3.5 mr-1" />Cancel
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Manual edit textarea */}
+          {editMode === "manual" && (
+            <Textarea
+              value={manualText}
+              onChange={e => setManualText(e.target.value)}
+              className="text-sm font-mono min-h-[300px] resize-y no-print"
+            />
+          )}
 
           {/* Color Overlay Picker */}
           {showOverlayPicker && (

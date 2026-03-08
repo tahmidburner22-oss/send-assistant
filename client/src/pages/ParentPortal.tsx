@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { aiGenerateStory } from "@/lib/ai";
+import { aiGenerateStory, callAI } from "@/lib/ai";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,7 +18,8 @@ import {
   CheckCircle, Clock, AlertCircle, ArrowLeft, Sparkles, Plus, X,
   MessageSquare, Image, Paperclip, ZoomIn, ZoomOut,
   CalendarDays, CheckCircle2, XCircle, MinusCircle, Sun, Sunset, TrendingUp,
-  Calendar, MapPin, User2, ChevronLeft, ChevronRight as ChevronRightIcon
+  Calendar, MapPin, User2, ChevronLeft, ChevronRight as ChevronRightIcon,
+  PenLine, Check, Loader2
 } from "lucide-react";
 import { Link } from "wouter";
 
@@ -75,6 +76,11 @@ export default function ParentPortal() {
   const [storyTextSize, setStoryTextSize] = useState(15);
   const [storyOverlay, setStoryOverlay] = useState("none");
   const [showQuestions, setShowQuestions] = useState(false);
+  type StoryEditMode = "none" | "manual" | "ai";
+  const [storyEditMode, setStoryEditMode] = useState<StoryEditMode>("none");
+  const [storyManualText, setStoryManualText] = useState("");
+  const [storyAiPrompt, setStoryAiPrompt] = useState("");
+  const [storyAiEditLoading, setStoryAiEditLoading] = useState(false);
 
   const handleCodeEntry = () => {
     const found = children.find(c => c.code === code.toUpperCase().trim());
@@ -686,6 +692,37 @@ export default function ParentPortal() {
                     </SelectContent>
                   </Select>
 
+                  {storyEditMode === "none" && (
+                    <>
+                      <Button variant="outline" size="sm"
+                        className="gap-1.5 border-brand/40 text-brand hover:bg-brand-light"
+                        onClick={() => setStoryEditMode("ai")}>
+                        <Sparkles className="w-3.5 h-3.5" />Edit with AI
+                      </Button>
+                      <Button variant="outline" size="sm" className="gap-1.5"
+                        onClick={() => { setStoryManualText(storyResult.content); setStoryEditMode("manual"); }}>
+                        <PenLine className="w-3.5 h-3.5" />Edit Manually
+                      </Button>
+                    </>
+                  )}
+                  {storyEditMode === "ai" && (
+                    <Button variant="outline" size="sm" className="gap-1.5 text-amber-600 border-amber-300"
+                      onClick={() => { setStoryEditMode("none"); setStoryAiPrompt(""); }}>
+                      <X className="w-3.5 h-3.5" />Cancel AI Edit
+                    </Button>
+                  )}
+                  {storyEditMode === "manual" && (
+                    <>
+                      <Button variant="outline" size="sm" className="gap-1.5 text-amber-600 border-amber-300"
+                        onClick={() => setStoryEditMode("none")}>
+                        <X className="w-3.5 h-3.5" />Cancel
+                      </Button>
+                      <Button size="sm" className="bg-brand hover:bg-brand/90 text-white gap-1.5"
+                        onClick={() => { setStoryResult({ ...storyResult, content: storyManualText }); setStoryEditMode("none"); toast.success("Changes saved!"); }}>
+                        <Check className="w-3.5 h-3.5" />Save Changes
+                      </Button>
+                    </>
+                  )}
                   <Button variant="outline" size="sm" onClick={() => setShowQuestions(!showQuestions)}>
                     {showQuestions ? "Hide Questions" : "Show Questions"}
                   </Button>
@@ -693,6 +730,60 @@ export default function ParentPortal() {
                     New Story
                   </Button>
                 </div>
+
+                {/* AI edit panel */}
+                {storyEditMode === "ai" && (
+                  <div className="rounded-lg border border-brand/30 bg-brand-light/30 p-3 space-y-2">
+                    <p className="text-xs font-medium text-brand flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5" />
+                      Describe what you'd like to change
+                    </p>
+                    <Textarea
+                      value={storyAiPrompt}
+                      onChange={e => setStoryAiPrompt(e.target.value)}
+                      placeholder="e.g. Make it simpler, add more dialogue, change the ending…"
+                      className="text-sm min-h-[80px] resize-none"
+                      disabled={storyAiEditLoading}
+                    />
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        className="bg-brand hover:bg-brand/90 text-white gap-1.5"
+                        disabled={storyAiEditLoading}
+                        onClick={async () => {
+                          if (!storyAiPrompt.trim() || !storyResult) return;
+                          setStoryAiEditLoading(true);
+                          try {
+                            const system = `You are an expert SEND teacher editing an educational story. Apply the instruction and return the full updated story as plain text only.`;
+                            const user = `Story title: "${storyResult.title}"\n\nCurrent story:\n${storyResult.content}\n\nInstruction: ${storyAiPrompt}\n\nReturn the full updated story:`;
+                            const { text } = await callAI(system, user, 3000);
+                            setStoryResult({ ...storyResult, content: text.trim() });
+                            setStoryEditMode("none");
+                            setStoryAiPrompt("");
+                            toast.success("Story updated with AI!");
+                          } catch {
+                            toast.error("AI edit failed. Please try again.");
+                          }
+                          setStoryAiEditLoading(false);
+                        }}
+                      >
+                        {storyAiEditLoading ? <><Loader2 className="w-3.5 h-3.5 animate-spin" />Editing…</> : <><Sparkles className="w-3.5 h-3.5" />Apply AI Edit</>}
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={() => { setStoryEditMode("none"); setStoryAiPrompt(""); }} disabled={storyAiEditLoading}>
+                        <X className="w-3.5 h-3.5 mr-1" />Cancel
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Manual edit textarea */}
+                {storyEditMode === "manual" && (
+                  <Textarea
+                    value={storyManualText}
+                    onChange={e => setStoryManualText(e.target.value)}
+                    className="text-sm font-mono min-h-[300px] resize-y"
+                  />
+                )}
 
                 {/* Story Content */}
                 <Card className="border-border/50 overflow-hidden" style={{ backgroundColor: storyOverlayBg }}>

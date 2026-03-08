@@ -6,8 +6,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Textarea } from "@/components/ui/textarea";
 import { motion } from "framer-motion";
 import { useApp } from "@/contexts/AppContext";
+import { callAI } from "@/lib/ai";
 import { subjects, sendNeeds } from "@/lib/send-data";
-import { FileText, BookOpen, Star, Eye, Trash2, Clock, Edit3, Save, X, GraduationCap, CheckCircle } from "lucide-react";
+import { FileText, BookOpen, Star, Eye, Trash2, Clock, Edit3, Save, X, GraduationCap, CheckCircle, Sparkles, PenLine, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import type { Worksheet, Story } from "@/contexts/AppContext";
 
@@ -34,6 +35,12 @@ export default function History() {
   const [editedSections, setEditedSections] = useState<Record<number, string>>({});
   const [viewMode, setViewMode] = useState<"teacher" | "student">("teacher");
   const [saving, setSaving] = useState(false);
+  const [editType, setEditType] = useState<"none" | "manual" | "ai">("none");
+  const [aiEditPrompt, setAiEditPrompt] = useState("");
+  const [aiEditLoading, setAiEditLoading] = useState(false);
+  const [storyEditType, setStoryEditType] = useState<"none" | "manual" | "ai">("none");
+  const [storyAiPrompt, setStoryAiPrompt] = useState("");
+  const [storyAiLoading, setStoryAiLoading] = useState(false);
 
   // ── Story viewer/editor state ───────────────────────────────────────────────
   const [selectedStory, setSelectedStory] = useState<Story | null>(null);
@@ -46,6 +53,8 @@ export default function History() {
     setEditMode(false);
     setEditedSections({});
     setViewMode("teacher");
+    setEditType("none");
+    setAiEditPrompt("");
   }
 
   // ── Save worksheet edits ────────────────────────────────────────────────────
@@ -205,26 +214,46 @@ export default function History() {
                     </button>
                   </div>
 
-                  {/* Edit / Done toggle */}
-                  <Button
-                    size="sm"
-                    variant={editMode ? "default" : "outline"}
-                    className={editMode ? "bg-amber-500 hover:bg-amber-600 text-white" : ""}
-                    onClick={() => { setEditMode(!editMode); if (editMode) setEditedSections({}); }}>
-                    {editMode
-                      ? <><X className="h-3.5 w-3.5 mr-1" />Cancel Edit</>
-                      : <><Edit3 className="h-3.5 w-3.5 mr-1" />Edit</>}
-                  </Button>
+                  {/* Edit with AI button */}
+                  {editType === "none" && (
+                    <>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="gap-1.5 border-brand/40 text-brand hover:bg-brand-light"
+                        onClick={() => setEditType("ai")}>
+                        <Sparkles className="h-3.5 w-3.5" />Edit with AI
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="gap-1.5"
+                        onClick={() => { setEditMode(true); setEditType("manual"); }}>
+                        <PenLine className="h-3.5 w-3.5" />Edit Manually
+                      </Button>
+                    </>
+                  )}
 
-                  {/* Save button — only shown in edit mode */}
-                  {editMode && (
-                    <Button
-                      size="sm"
-                      className="bg-brand hover:bg-brand/90 text-white"
-                      disabled={saving}
-                      onClick={saveWorksheetEdits}>
-                      {saving
-                        ? <><CheckCircle className="h-3.5 w-3.5 mr-1 animate-spin" />Saving…</>
+                  {/* AI edit panel trigger */}
+                  {editType === "ai" && (
+                    <Button size="sm" variant="outline" className="gap-1.5 text-amber-600 border-amber-300" onClick={() => { setEditType("none"); setAiEditPrompt(""); }}>
+                      <X className="h-3.5 w-3.5" />Cancel AI Edit
+                    </Button>
+                  )}
+
+                  {/* Manual edit cancel/save */}
+                  {editType === "manual" && (
+                    <>
+                      <Button size="sm" variant="outline" className="gap-1.5 text-amber-600 border-amber-300" onClick={() => { setEditMode(false); setEditType("none"); setEditedSections({}); }}>
+                        <X className="h-3.5 w-3.5" />Cancel
+                      </Button>
+                      <Button
+                        size="sm"
+                        className="bg-brand hover:bg-brand/90 text-white"
+                        disabled={saving}
+                        onClick={saveWorksheetEdits}>
+                        {saving
+                          ? <><CheckCircle className="h-3.5 w-3.5 mr-1 animate-spin" />Saving…</>
                         : <><Save className="h-3.5 w-3.5 mr-1" />Save Changes</>}
                     </Button>
                   )}
@@ -234,6 +263,65 @@ export default function History() {
                     Print
                   </Button>
                 </div>
+
+                {/* AI edit prompt panel */}
+                {editType === "ai" && (
+                  <div className="rounded-lg border border-brand/30 bg-brand-light/30 p-3 space-y-2">
+                    <p className="text-xs font-medium text-brand flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5" />
+                      Describe what you'd like to change across the whole worksheet
+                    </p>
+                    <textarea
+                      value={aiEditPrompt}
+                      onChange={e => setAiEditPrompt(e.target.value)}
+                      placeholder="e.g. Make it simpler for Year 3, add more examples, shorten the introduction…"
+                      className="w-full px-3 py-2 text-sm border border-input rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-brand/30 resize-none min-h-[70px]"
+                      disabled={aiEditLoading}
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium bg-brand text-white hover:bg-brand/90 disabled:opacity-50"
+                        disabled={aiEditLoading}
+                        onClick={async () => {
+                          if (!aiEditPrompt.trim() || !selectedWs) return;
+                          setAiEditLoading(true);
+                          try {
+                            const baseSections = buildSections(selectedWs);
+                            const system = `You are an expert SEND teacher editing a worksheet. Apply the instruction to ALL sections and return a JSON array: [{"title":"...","content":"...","teacherOnly":bool}]. Keep the same section titles and structure.`;
+                            const user = `Worksheet: "${selectedWs.title}"\nSubject: ${(selectedWs as any).subject || 'general'}\nYear Group: ${selectedWs.yearGroup || ''}\nSEND Need: ${selectedWs.sendNeed || ''}\n\nSections:\n${JSON.stringify(baseSections.map(s => ({ title: s.title, content: s.content, teacherOnly: s.teacherOnly })), null, 2)}\n\nInstruction: ${aiEditPrompt}\n\nReturn ONLY the JSON array:`;
+                            const { text } = await callAI(system, user, 4000);
+                            const jsonMatch = text.match(/\[.*\]/s);
+                            if (!jsonMatch) throw new Error('No JSON');
+                            const updatedSections = JSON.parse(jsonMatch[0]);
+                            const mergedSections = baseSections.map((s, i) => ({
+                              ...s,
+                              content: updatedSections[i]?.content ?? s.content,
+                            }));
+                            const content = mergedSections.filter(s => !s.teacherOnly).map(s => `## ${s.title}\n${s.content}`).join('\n\n');
+                            const teacherContent = mergedSections.map(s => `## ${s.title}\n${s.content}`).join('\n\n');
+                            await updateWorksheet(selectedWs.id, { sections: mergedSections, content, teacherContent });
+                            setSelectedWs({ ...selectedWs, sections: mergedSections, content, teacherContent });
+                            setEditType('none');
+                            setAiEditPrompt('');
+                            toast.success('Worksheet updated with AI!');
+                          } catch {
+                            toast.error('AI edit failed. Please try again.');
+                          }
+                          setAiEditLoading(false);
+                        }}
+                      >
+                        {aiEditLoading ? <><Loader2 className="w-3.5 h-3.5 animate-spin" />Editing…</> : <><Sparkles className="w-3.5 h-3.5" />Apply AI Edit</>}
+                      </button>
+                      <button
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium border border-input bg-background hover:bg-muted"
+                        onClick={() => { setEditType('none'); setAiEditPrompt(''); }}
+                        disabled={aiEditLoading}
+                      >
+                        <X className="w-3.5 h-3.5" />Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
 
                 {/* Sections */}
                 {visibleSections.length === 0 ? (
@@ -275,7 +363,7 @@ export default function History() {
       </Dialog>
 
       {/* ── Story viewer / editor dialog ── */}
-      <Dialog open={!!selectedStory} onOpenChange={open => { if (!open) { setSelectedStory(null); setStoryEditMode(false); } }}>
+      <Dialog open={!!selectedStory} onOpenChange={open => { if (!open) { setSelectedStory(null); setStoryEditMode(false); setStoryEditType("none"); setStoryAiPrompt(""); } }}>
         <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="pr-8">{selectedStory?.title}</DialogTitle>
@@ -283,37 +371,103 @@ export default function History() {
           {selectedStory && (
             <div className="space-y-3 mt-1">
               {/* Toolbar */}
-              <div className="flex items-center gap-2">
-                <Button
-                  size="sm"
-                  variant={storyEditMode ? "default" : "outline"}
-                  className={storyEditMode ? "bg-amber-500 hover:bg-amber-600 text-white" : ""}
-                  onClick={() => {
-                    if (!storyEditMode) setEditedStoryContent(selectedStory.content);
-                    setStoryEditMode(!storyEditMode);
-                  }}>
-                  {storyEditMode
-                    ? <><X className="h-3.5 w-3.5 mr-1" />Cancel</>
-                    : <><Edit3 className="h-3.5 w-3.5 mr-1" />Edit</>}
-                </Button>
-                {storyEditMode && (
-                  <Button
-                    size="sm"
-                    className="bg-brand hover:bg-brand/90 text-white"
-                    onClick={() => {
-                      // Stories don't have a server update endpoint yet — update local state only
-                      setSelectedStory({ ...selectedStory, content: editedStoryContent });
-                      setStoryEditMode(false);
-                      toast.success("Story updated locally!");
-                    }}>
-                    <Save className="h-3.5 w-3.5 mr-1" />Save
+              <div className="flex flex-wrap items-center gap-2">
+                {storyEditType === "none" && (
+                  <>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="gap-1.5 border-brand/40 text-brand hover:bg-brand-light"
+                      onClick={() => setStoryEditType("ai")}>
+                      <Sparkles className="h-3.5 w-3.5" />Edit with AI
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="gap-1.5"
+                      onClick={() => { setEditedStoryContent(selectedStory.content); setStoryEditMode(true); setStoryEditType("manual"); }}>
+                      <PenLine className="h-3.5 w-3.5" />Edit Manually
+                    </Button>
+                  </>
+                )}
+                {storyEditType === "ai" && (
+                  <Button size="sm" variant="outline" className="gap-1.5 text-amber-600 border-amber-300"
+                    onClick={() => { setStoryEditType("none"); setStoryAiPrompt(""); }}>
+                    <X className="h-3.5 w-3.5" />Cancel AI Edit
                   </Button>
+                )}
+                {storyEditType === "manual" && (
+                  <>
+                    <Button size="sm" variant="outline" className="gap-1.5 text-amber-600 border-amber-300"
+                      onClick={() => { setStoryEditMode(false); setStoryEditType("none"); }}>
+                      <X className="h-3.5 w-3.5" />Cancel
+                    </Button>
+                    <Button
+                      size="sm"
+                      className="bg-brand hover:bg-brand/90 text-white"
+                      onClick={() => {
+                        setSelectedStory({ ...selectedStory, content: editedStoryContent });
+                        setStoryEditMode(false);
+                        setStoryEditType("none");
+                        toast.success("Story updated!");
+                      }}>
+                      <Save className="h-3.5 w-3.5 mr-1" />Save Changes
+                    </Button>
+                  </>
                 )}
                 <Button size="sm" variant="outline" onClick={() => window.print()}>Print</Button>
               </div>
 
+              {/* AI edit panel for story */}
+              {storyEditType === "ai" && (
+                <div className="rounded-lg border border-brand/30 bg-brand-light/30 p-3 space-y-2">
+                  <p className="text-xs font-medium text-brand flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5" />
+                    Describe what you'd like to change
+                  </p>
+                  <textarea
+                    value={storyAiPrompt}
+                    onChange={e => setStoryAiPrompt(e.target.value)}
+                    placeholder="e.g. Make it simpler, add more dialogue, change the ending…"
+                    className="w-full px-3 py-2 text-sm border border-input rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-brand/30 resize-none min-h-[70px]"
+                    disabled={storyAiLoading}
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium bg-brand text-white hover:bg-brand/90 disabled:opacity-50"
+                      disabled={storyAiLoading}
+                      onClick={async () => {
+                        if (!storyAiPrompt.trim() || !selectedStory) return;
+                        setStoryAiLoading(true);
+                        try {
+                          const system = `You are an expert SEND teacher editing an educational story. Apply the instruction and return the full updated story as plain text only — no titles, no JSON.`;
+                          const user = `Story title: "${selectedStory.title}"\n\nCurrent story:\n${selectedStory.content}\n\nInstruction: ${storyAiPrompt}\n\nReturn the full updated story:`;
+                          const { text } = await callAI(system, user, 3000);
+                          setSelectedStory({ ...selectedStory, content: text.trim() });
+                          setStoryEditType("none");
+                          setStoryAiPrompt("");
+                          toast.success("Story updated with AI!");
+                        } catch {
+                          toast.error("AI edit failed. Please try again.");
+                        }
+                        setStoryAiLoading(false);
+                      }}
+                    >
+                      {storyAiLoading ? <><Loader2 className="w-3.5 h-3.5 animate-spin" />Editing…</> : <><Sparkles className="w-3.5 h-3.5" />Apply AI Edit</>}
+                    </button>
+                    <button
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium border border-input bg-background hover:bg-muted"
+                      onClick={() => { setStoryEditType("none"); setStoryAiPrompt(""); }}
+                      disabled={storyAiLoading}
+                    >
+                      <X className="w-3.5 h-3.5" />Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {/* Content */}
-              {storyEditMode ? (
+              {storyEditType === "manual" ? (
                 <Textarea
                   value={editedStoryContent}
                   onChange={e => setEditedStoryContent(e.target.value)}

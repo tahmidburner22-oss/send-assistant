@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { aiDifferentiateTask } from "@/lib/ai";
+import { aiDifferentiateTask, callAI } from "@/lib/ai";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
-import { Sparkles, Copy, RotateCcw, FileDown, Printer, Palette, ZoomIn, ZoomOut } from "lucide-react";
+import { Sparkles, Copy, RotateCcw, FileDown, Printer, Palette, ZoomIn, ZoomOut, PenLine, X, Check, Loader2 } from "lucide-react";
 import { subjects, yearGroups, sendNeeds, difficulties, colorOverlays } from "@/lib/send-data";
 import { downloadDifferentiatedPdf } from "@/lib/pdf-generator";
 import { useApp } from "@/contexts/AppContext";
@@ -25,6 +25,11 @@ export default function Differentiate() {
   const [loading, setLoading] = useState(false);
   const [showOverlayPicker, setShowOverlayPicker] = useState(false);
   const [textSize, setTextSize] = useState(14);
+  type EditMode = "none" | "manual" | "ai";
+  const [editMode, setEditMode] = useState<EditMode>("none");
+  const [manualText, setManualText] = useState("");
+  const [aiPrompt, setAiPrompt] = useState("");
+  const [aiEditLoading, setAiEditLoading] = useState(false);
 
   
 
@@ -185,6 +190,37 @@ export default function Differentiate() {
             <Button variant="outline" size="sm" onClick={() => setShowOverlayPicker(!showOverlayPicker)}>
               <Palette className="w-3.5 h-3.5 mr-1.5" /> Overlay
             </Button>
+            {editMode === "none" && (
+              <>
+                <Button variant="outline" size="sm"
+                  className="gap-1.5 border-brand/40 text-brand hover:bg-brand-light"
+                  onClick={() => setEditMode("ai")}>
+                  <Sparkles className="w-3.5 h-3.5" />Edit with AI
+                </Button>
+                <Button variant="outline" size="sm" className="gap-1.5"
+                  onClick={() => { setManualText(result); setEditMode("manual"); }}>
+                  <PenLine className="w-3.5 h-3.5" />Edit Manually
+                </Button>
+              </>
+            )}
+            {editMode === "ai" && (
+              <Button variant="outline" size="sm" className="gap-1.5 text-amber-600 border-amber-300"
+                onClick={() => { setEditMode("none"); setAiPrompt(""); }}>
+                <X className="w-3.5 h-3.5" />Cancel AI Edit
+              </Button>
+            )}
+            {editMode === "manual" && (
+              <>
+                <Button variant="outline" size="sm" className="gap-1.5 text-amber-600 border-amber-300"
+                  onClick={() => setEditMode("none")}>
+                  <X className="w-3.5 h-3.5" />Cancel
+                </Button>
+                <Button size="sm" className="bg-brand hover:bg-brand/90 text-white gap-1.5"
+                  onClick={() => { setResult(manualText); setEditMode("none"); toast.success("Changes saved!"); }}>
+                  <Check className="w-3.5 h-3.5" />Save Changes
+                </Button>
+              </>
+            )}
             <Button variant="outline" size="sm" onClick={() => { navigator.clipboard.writeText(result); toast.success("Copied!"); }}>
               <Copy className="w-3.5 h-3.5 mr-1.5" /> Copy
             </Button>
@@ -198,6 +234,60 @@ export default function Differentiate() {
               <RotateCcw className="w-3.5 h-3.5 mr-1.5" /> New Task
             </Button>
           </div>
+
+          {/* AI edit panel */}
+          {editMode === "ai" && (
+            <div className="rounded-lg border border-brand/30 bg-brand-light/30 p-3 space-y-2 no-print">
+              <p className="text-xs font-medium text-brand flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5" />
+                Describe what you'd like to change
+              </p>
+              <Textarea
+                value={aiPrompt}
+                onChange={e => setAiPrompt(e.target.value)}
+                placeholder="e.g. Make it simpler, add more scaffolding, include visual supports…"
+                className="text-sm min-h-[80px] resize-none"
+                disabled={aiEditLoading}
+              />
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  className="bg-brand hover:bg-brand/90 text-white gap-1.5"
+                  disabled={aiEditLoading}
+                  onClick={async () => {
+                    if (!aiPrompt.trim()) return;
+                    setAiEditLoading(true);
+                    try {
+                      const system = `You are an expert SEND teacher editing a differentiated task. Apply the instruction and return the full updated content as plain text only.`;
+                      const user = `Current content:\n${result}\n\nInstruction: ${aiPrompt}\n\nReturn the full updated content:`;
+                      const { text } = await callAI(system, user, 3000);
+                      setResult(text.trim());
+                      setEditMode("none");
+                      setAiPrompt("");
+                      toast.success("Content updated with AI!");
+                    } catch {
+                      toast.error("AI edit failed. Please try again.");
+                    }
+                    setAiEditLoading(false);
+                  }}
+                >
+                  {aiEditLoading ? <><Loader2 className="w-3.5 h-3.5 animate-spin" />Editing…</> : <><Sparkles className="w-3.5 h-3.5" />Apply AI Edit</>}
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => { setEditMode("none"); setAiPrompt(""); }} disabled={aiEditLoading}>
+                  <X className="w-3.5 h-3.5 mr-1" />Cancel
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Manual edit textarea */}
+          {editMode === "manual" && (
+            <Textarea
+              value={manualText}
+              onChange={e => setManualText(e.target.value)}
+              className="text-sm font-mono min-h-[300px] resize-y no-print"
+            />
+          )}
 
           {/* Color Overlay Picker */}
           {showOverlayPicker && (
