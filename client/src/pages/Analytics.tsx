@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import { useApp } from "@/contexts/AppContext";
@@ -9,7 +9,10 @@ import { BarChart3, FileText, BookOpen, Users, Clock, Star, TrendingUp } from "l
 const COLORS = ["#10B981", "#7C3AED", "#3B82F6", "#F59E0B", "#EF4444", "#06B6D4", "#EC4899", "#8B5CF6"];
 
 export default function Analytics() {
-  const { worksheetHistory, storyHistory, children } = useApp();
+  const { worksheetHistory, storyHistory, children, refreshData } = useApp();
+
+  // Re-fetch data from server on mount so analytics are always up to date
+  useEffect(() => { refreshData(); }, []);
 
   const totalWorksheets = worksheetHistory.length;
   const totalStories = storyHistory.length;
