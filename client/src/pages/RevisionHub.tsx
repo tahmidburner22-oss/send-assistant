@@ -38,18 +38,18 @@ const LANGUAGES = [
   { code: "ru", label: "Russian" },
 ];
 
-// Edge TTS voice options (Microsoft Neural voices, free, no key required)
+// OpenAI TTS voices — natural, human-sounding, no key required on this platform
 const EDGE_VOICES = [
-  { id: "en-GB-SoniaNeural",    label: "Sonia (British Female)" },
-  { id: "en-US-JennyNeural",    label: "Jenny (American Female)" },
-  { id: "en-GB-RyanNeural",     label: "Ryan (British Male)" },
-  { id: "en-US-GuyNeural",      label: "Guy (American Male)" },
-  { id: "en-AU-NatashaNeural",  label: "Natasha (Australian Female)" },
-  { id: "en-IN-NeerjaNeural",   label: "Neerja (Indian Female)" },
+  { id: "nova",    label: "Nova (Warm Female)" },
+  { id: "shimmer", label: "Shimmer (Soft Female)" },
+  { id: "alloy",   label: "Alloy (Neutral)" },
+  { id: "echo",    label: "Echo (Male)" },
+  { id: "fable",   label: "Fable (Expressive Male)" },
+  { id: "onyx",    label: "Onyx (Deep Male)" },
 ];
 
 const TTS_ENGINE_OPTIONS = [
-  { id: "edge",    label: "Neural AI Voice (Microsoft Edge)" },
+  { id: "edge",    label: "Neural AI Voice (Human)" },
   { id: "browser", label: "Browser Voice (built-in)" },
 ];
 
@@ -92,7 +92,7 @@ export default function RevisionHub() {
   const [loadingMore, setLoadingMore] = useState(false);
   // TTS state
   const [ttsEngine, setTtsEngine] = useState<"edge" | "browser">("edge"); // "edge" = Microsoft Neural, "browser" = Web Speech API
-  const [edgeVoice, setEdgeVoice] = useState("en-GB-SoniaNeural");
+  const [edgeVoice, setEdgeVoice] = useState("nova"); // OpenAI TTS voice
   const [selectedLanguage, setSelectedLanguage] = useState("en");
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [audioLoading, setAudioLoading] = useState(false);
@@ -555,7 +555,7 @@ export default function RevisionHub() {
           <div>
             <h1 className="text-base font-bold text-foreground">Revision Hub</h1>
             <p className="text-xs text-muted-foreground">
-              {ttsEngine === "browser" ? "Browser voice" : "Neural voice (Edge)"} ·{" "}
+              {ttsEngine === "browser" ? "Browser voice" : "Neural AI voice"} ·{" "}
               {LANGUAGES.find(l => l.code === selectedLanguage)?.label ?? "English"}
             </p>
           </div>
