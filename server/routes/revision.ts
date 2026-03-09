@@ -575,48 +575,84 @@ router.post("/tts", requireAuth, async (req: Request, res: Response) => {
       }
     }
 
-    // 3. Try Google Cloud TTS (uses GEMINI_API_KEY which is a Google API key)
+    // 3. Try Gemini TTS (gemini-2.5-flash-preview-tts — uses GEMINI_API_KEY)
     const geminiKey = process.env.GEMINI_API_KEY || getEffectiveKey("gemini");
     if (geminiKey) {
-      const googleVoiceMap: Record<string, string> = {
-        nova:    "en-GB-Neural2-A",
-        shimmer: "en-GB-Neural2-C",
-        alloy:   "en-US-Neural2-C",
-        echo:    "en-US-Neural2-D",
-        fable:   "en-GB-Neural2-B",
-        onyx:    "en-US-Neural2-J",
+      // Map voice names to Gemini TTS prebuilt voices
+      const geminiVoiceMap: Record<string, string> = {
+        nova:    "Aoede",    // warm female
+        shimmer: "Leda",     // soft female
+        alloy:   "Kore",     // neutral female
+        echo:    "Charon",   // male
+        fable:   "Fenrir",   // storyteller male
+        onyx:    "Orus",     // deep male
       };
-      const googleVoiceName = googleVoiceMap[voice] || "en-GB-Neural2-A";
-      const languageCode = googleVoiceName.split("-").slice(0, 2).join("-");
+      const geminiVoice = geminiVoiceMap[voice] || "Aoede";
       try {
-        console.log(`[TTS] Trying Google Cloud TTS: voice=${googleVoiceName}, chars=${text.length}`);
+        console.log(`[TTS] Trying Gemini TTS: voice=${geminiVoice}, chars=${text.length}`);
         const ttsRes = await fetch(
-          `https://texttospeech.googleapis.com/v1/text:synthesize?key=${geminiKey}`,
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${geminiKey}`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              input: { text: text.slice(0, 5000) },
-              voice: { languageCode, name: googleVoiceName },
-              audioConfig: { audioEncoding: "MP3", speakingRate: 1.0, pitch: 0 },
+              contents: [{ parts: [{ text: text.slice(0, 5000) }] }],
+              generationConfig: {
+                response_modalities: ["AUDIO"],
+                speech_config: {
+                  voice_config: { prebuilt_voice_config: { voice_name: geminiVoice } },
+                },
+              },
             }),
           }
         );
         if (ttsRes.ok) {
           const data = await ttsRes.json() as any;
-          if (data.audioContent) {
-            const buffer = Buffer.from(data.audioContent, "base64");
-            res.setHeader("Content-Type", "audio/mpeg");
-            res.setHeader("Content-Length", buffer.byteLength.toString());
-            console.log(`[TTS] Google Cloud TTS success: ${buffer.byteLength} bytes`);
-            return res.send(buffer);
+          const parts = data?.candidates?.[0]?.content?.parts || [];
+          for (const part of parts) {
+            if (part?.inlineData?.data) {
+              const rawBuffer = Buffer.from(part.inlineData.data, "base64");
+              const mimeType = part.inlineData.mimeType || "audio/mpeg";
+              let finalBuffer = rawBuffer;
+              let finalMime = mimeType;
+              // Gemini TTS returns raw PCM — wrap it in a WAV container so browsers can play it
+              if (mimeType.includes("pcm") || mimeType.includes("l16") || mimeType.includes("raw")) {
+                const sampleRate = 24000; // Gemini TTS default
+                const numChannels = 1;
+                const bitsPerSample = 16;
+                const byteRate = sampleRate * numChannels * (bitsPerSample / 8);
+                const blockAlign = numChannels * (bitsPerSample / 8);
+                const dataSize = rawBuffer.byteLength;
+                const wavHeader = Buffer.alloc(44);
+                wavHeader.write("RIFF", 0);
+                wavHeader.writeUInt32LE(36 + dataSize, 4);
+                wavHeader.write("WAVE", 8);
+                wavHeader.write("fmt ", 12);
+                wavHeader.writeUInt32LE(16, 16);           // PCM chunk size
+                wavHeader.writeUInt16LE(1, 20);            // PCM format
+                wavHeader.writeUInt16LE(numChannels, 22);
+                wavHeader.writeUInt32LE(sampleRate, 24);
+                wavHeader.writeUInt32LE(byteRate, 28);
+                wavHeader.writeUInt16LE(blockAlign, 32);
+                wavHeader.writeUInt16LE(bitsPerSample, 34);
+                wavHeader.write("data", 36);
+                wavHeader.writeUInt32LE(dataSize, 40);
+                finalBuffer = Buffer.concat([wavHeader, rawBuffer]);
+                finalMime = "audio/wav";
+              }
+              res.setHeader("Content-Type", finalMime);
+              res.setHeader("Content-Length", finalBuffer.byteLength.toString());
+              console.log(`[TTS] Gemini TTS success: ${finalBuffer.byteLength} bytes (${finalMime})`);
+              return res.send(finalBuffer);
+            }
           }
+          console.warn("[TTS] Gemini TTS: no audio in response", JSON.stringify(data).slice(0, 200));
         } else {
           const errBody = await ttsRes.text();
-          console.warn(`[TTS] Google Cloud TTS HTTP ${ttsRes.status}:`, errBody.slice(0, 200));
+          console.warn(`[TTS] Gemini TTS HTTP ${ttsRes.status}:`, errBody.slice(0, 200));
         }
       } catch (err: any) {
-        console.warn("[TTS] Google Cloud TTS error:", err?.message || err);
+        console.warn("[TTS] Gemini TTS error:", err?.message || err);
       }
     }
     // No working TTS provider found
