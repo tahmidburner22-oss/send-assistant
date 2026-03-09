@@ -628,27 +628,39 @@ router.post("/diagram", requireAuth, async (req: Request, res: Response) => {
   const schoolId = req.user?.schoolId ?? undefined;
   const yr = yearGroup || "Year 9";
 
-  // ── Attempt 0: Hand-coded pixel-perfect template (always accurate, instant) ────────────
+  // ── Attempt 0: Curated Wikimedia diagram bank (real, professional images) ────
+  // Primary source — real educational diagrams with proper attribution.
   try {
-    const { getTemplate } = await import("../lib/diagramTemplates.js");
-    const template = getTemplate(subject, topic);
-    if (template) {
+    const { findDiagram, searchWikimediaDiagram } = await import("../lib/diagramBank.js");
+    const banked = findDiagram(subject, topic);
+    if (banked) {
+      console.log(`[Diagram] Bank hit: ${banked.key} for "${topic}" (${subject})`);
       return res.json({
-        svg: template.svg,
-        caption: template.caption,
-        provider: "template",
-        type: "svg",
+        imageUrl: banked.url,
+        caption: banked.label,
+        attribution: banked.attribution,
+        provider: "wikimedia-bank",
+        type: "imageUrl",
+      });
+    }
+    // Not in curated bank — try live Wikimedia Commons search
+    const searched = await searchWikimediaDiagram(subject, topic);
+    if (searched) {
+      console.log(`[Diagram] Wikimedia search hit for "${topic}" (${subject})`);
+      return res.json({
+        imageUrl: searched.url,
+        caption: searched.caption,
+        attribution: searched.attribution,
+        provider: "wikimedia-search",
+        type: "imageUrl",
       });
     }
   } catch (e) {
-    console.warn("[Diagram] Template lookup failed:", e);
+    console.warn("[Diagram] Wikimedia bank/search failed:", e);
   }
 
-  // ── Build diagram prompt (shared by all AI providers) ────────────────────────
+  // ── Attempt 1: Gemini 2.0 Flash SVG (fallback when no real image found) ──────
   const { system, user } = buildDiagramPrompt(subject, topic, yr, sendNeed);
-
-  // ── Attempt 1: Gemini 2.0 Flash — primary SVG generator ──────────────────────
-  // Gemini produces clean, professional, well-labelled SVG diagrams reliably.
   const geminiKey = getEffectiveKey("gemini", undefined, schoolId);
   if (geminiKey) {
     try {
@@ -656,7 +668,6 @@ router.post("/diagram", requireAuth, async (req: Request, res: Response) => {
       const svgMatch = svgText.match(/<svg[\s\S]*?<\/svg>/i);
       const captionMatch = svgText.match(/CAPTION:\s*(.+)/i);
       if (svgMatch) {
-        // Sanitise: replace any multi-byte superscript characters (e.g. ² ³) with plain ASCII
         const cleanSvg = svgMatch[0]
           .replace(/\u00b2/g, "&#178;")
           .replace(/\u00b3/g, "&#179;")
@@ -683,7 +694,7 @@ router.post("/diagram", requireAuth, async (req: Request, res: Response) => {
     }
   }
 
-  // ── Attempt 2: GPT-4o SVG (secondary) ────────────────────────────────────────
+  // ── Attempt 2: GPT-4o SVG ─────────────────────────────────────────────────────
   const openaiKey = getEffectiveKey("openai", undefined, schoolId);
   if (openaiKey) {
     try {
@@ -720,7 +731,7 @@ router.post("/diagram", requireAuth, async (req: Request, res: Response) => {
     console.warn("[Diagram] All SVG providers failed:", e);
   }
 
-  // ── Attempt 5: Clean placeholder SVG ──────────────────────────────────────────────────────
+  // ── Final fallback: placeholder ───────────────────────────────────────────────
   const placeholder = `<svg viewBox="0 0 700 500" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg"><rect width="700" height="500" fill="white"/><rect x="20" y="20" width="660" height="460" fill="#f8f9ff" stroke="#6366f1" stroke-width="2" rx="12"/><text x="350" y="220" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" fill="#6366f1" font-weight="bold">${topic}</text><text x="350" y="255" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#555">${subject} · ${yr}</text><text x="350" y="290" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#999">Diagram could not be generated — please try again</text></svg>`;
   return res.json({
     svg: placeholder,

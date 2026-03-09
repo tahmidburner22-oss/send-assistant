@@ -694,7 +694,7 @@ export async function aiGenerateDiagram(params: {
   yearGroup: string;
   diagramType?: string;
   sendNeed?: string;
-}): Promise<{ svg: string; caption: string; imageUrl?: string; provider?: string }> {
+}): Promise<{ svg: string; caption: string; imageUrl?: string; attribution?: string; provider?: string }> {
   // ── Primary: dedicated server endpoint (GPT-4o → fallback chain → Pollinations) ──
   try {
     const storedToken = typeof localStorage !== 'undefined' ? localStorage.getItem('send_token') : null;
@@ -718,6 +718,7 @@ export async function aiGenerateDiagram(params: {
         svg: data.svg || '',
         caption: data.caption || `${params.topic} diagram`,
         imageUrl: data.imageUrl,
+        attribution: data.attribution,
         provider: data.provider,
       };
     }
@@ -775,14 +776,16 @@ export async function aiGenerateWorksheetDiagram(params: {
   yearGroup: string;
   sendNeed?: string;
   diagramType?: string;
-}): Promise<{ title: string; content: string; type: "diagram"; svg: string; caption: string; provider?: string }> {
-  const { svg, caption, provider } = await aiGenerateDiagram(params);
+}): Promise<{ title: string; content: string; type: "diagram"; svg: string; caption: string; imageUrl?: string; attribution?: string; provider?: string }> {
+  const { svg, caption, imageUrl, attribution, provider } = await aiGenerateDiagram(params);
   return {
     title: `Diagram: ${params.topic}`,
     content: caption,
     type: "diagram",
-    svg,
+    svg: svg || '',
     caption,
+    imageUrl,
+    attribution,
     provider,
   };
 }

@@ -14,6 +14,7 @@ export interface WorksheetSection {
   svg?: string;
   caption?: string;
   imageUrl?: string;
+  attribution?: string;
 }
 
 export interface WorksheetData {
@@ -519,6 +520,11 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(({
                   {section.caption && (
                     <p style={{ fontSize: `${fmt.fontSize - 2}px`, color: "#6b7280", marginTop: "6px", fontStyle: "italic", fontFamily: fmt.fontFamily }}>
                       Figure: {section.caption}
+                    </p>
+                  )}
+                  {section.attribution && (
+                    <p style={{ fontSize: `${fmt.fontSize - 3}px`, color: "#9ca3af", marginTop: "2px", fontFamily: fmt.fontFamily }}>
+                      Source: {section.attribution}
                     </p>
                   )}
                 </div>
