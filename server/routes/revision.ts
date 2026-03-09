@@ -28,9 +28,9 @@ setInterval(() => {
 
 // Language code → Microsoft Edge Neural TTS voice
 const EDGE_VOICE_MAP: Record<string, string> = {
-  en:    "en-GB-SoniaNeural",
-  "en-GB": "en-GB-SoniaNeural",
-  "en-US": "en-US-JennyNeural",
+  en:    "en-GB-LibbyNeural",
+  "en-GB": "en-GB-LibbyNeural",
+  "en-US": "en-US-AriaNeural",
   es:    "es-ES-ElviraNeural",
   fr:    "fr-FR-DeniseNeural",
   de:    "de-DE-KatjaNeural",
@@ -76,7 +76,7 @@ async function ttsOneChunk(text: string, voice: string): Promise<Buffer> {
 
 async function edgeTTS(text: string, language: string): Promise<Buffer> {
   const lang = language.split("-")[0].toLowerCase();
-  const voice = EDGE_VOICE_MAP[language] || EDGE_VOICE_MAP[lang] || "en-GB-SoniaNeural";
+  const voice = EDGE_VOICE_MAP[language] || EDGE_VOICE_MAP[lang] || "en-GB-LibbyNeural";
   const chunks = splitIntoChunks(text, 400);
   // Process all chunks in parallel for speed, then concatenate in order
   const buffers = await Promise.all(chunks.map(c => ttsOneChunk(c, voice)));
