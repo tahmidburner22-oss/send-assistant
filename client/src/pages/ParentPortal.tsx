@@ -481,6 +481,7 @@ export default function ParentPortal() {
 
         {/* ─── ACCORDION SECTIONS ─── */}
         {([
+          { id: "send-screener", label: "🔍 SEND Needs Screener", emoji: "🔍" },
           { id: "assignments", label: "📚 Assignments", emoji: "📚" },
           { id: "behaviour", label: "📋 Behaviour", emoji: "📋" },
           { id: "timetable", label: "📅 Timetable", emoji: "📅" },
@@ -1246,6 +1247,28 @@ export default function ParentPortal() {
             <a href="/revision-hub" className="inline-flex items-center gap-2 bg-brand text-white text-xs font-semibold px-4 py-2 rounded-xl hover:bg-brand/90 transition-colors">
               Open Revision Hub →
             </a>
+          </div>
+        )}
+        {sec.id === "send-screener" && (
+          <div className="p-4 space-y-4">
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 flex gap-2">
+              <span className="text-amber-600 text-sm flex-shrink-0">⚠️</span>
+              <p className="text-xs text-amber-800 leading-relaxed">
+                <strong>This is NOT a diagnosis.</strong> This screener identifies potential indicators of SEND needs based on validated clinical tools. Only a qualified professional can diagnose. Results are for informational purposes only.
+              </p>
+            </div>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              This evidence-based screener covers 8 areas of SEND need: Dyslexia, ADHD, Autism (ASC), Dyspraxia, Dyscalculia, Speech &amp; Language, Anxiety, and Moderate Learning Difficulties. It takes approximately 15–20 minutes and produces a personalised report.
+            </p>
+            <a
+              href="/send-screener"
+              className="flex items-center justify-center gap-2 w-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold py-3 px-4 rounded-xl transition-colors shadow-md shadow-indigo-100"
+            >
+              <span>🔍</span> Start SEND Screener
+            </a>
+            <p className="text-[10px] text-center text-muted-foreground">
+              Questions are drawn from: BDA Dyslexia Checklist · WHO ASRS (ADHD) · AQ-10 (Autism) · MABC-2 (Dyspraxia) · Butterworth Dyscalculia Screener · CELF-5 (SLCN) · GAD-7 (Anxiety) · British Ability Scales (MLD)
+            </p>
           </div>
         )}
               </div>
