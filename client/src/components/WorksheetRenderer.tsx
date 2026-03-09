@@ -1,9 +1,10 @@
 /**
  * WorksheetRenderer — Professional, print-ready worksheet display component.
  * Matches PDF output pixel-for-pixel using CSS @media print.
- * Surpasses MagicSchool AI and Teachmate in visual quality.
+ * Applies SEND-specific formatting (font, line-height, spacing) per COBS Handbook.
  */
 import { forwardRef } from "react";
+import { getSendFormatting } from "@/lib/send-data";
 
 export interface WorksheetSection {
   title: string;
@@ -23,6 +24,7 @@ export interface WorksheetData {
     topic?: string;
     yearGroup?: string;
     sendNeed?: string;
+    sendNeedId?: string;
     difficulty?: string;
     examBoard?: string;
     totalMarks?: number;
@@ -70,7 +72,8 @@ function getSectionStyle(type: string) {
   return SECTION_STYLES[type] || SECTION_STYLES["default"];
 }
 
-function formatContent(content: string, textSize: number): React.ReactNode {
+function formatContent(content: string, fmt: ReturnType<typeof getSendFormatting>): React.ReactNode {
+  const { fontSize: textSize, lineHeight, letterSpacing, wordSpacing, paragraphSpacing, fontFamily } = fmt;
   if (!content) return null;
   const lines = content.split("\n");
   const elements: React.ReactNode[] = [];
@@ -85,7 +88,7 @@ function formatContent(content: string, textSize: number): React.ReactNode {
     const body = rows.slice(1);
     elements.push(
       <div key={key} className="ws-table-wrap" style={{ overflowX: "auto", margin: "8px 0" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: `${textSize - 1}px` }}>
+        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: `${textSize - 1}px`, fontFamily, letterSpacing, wordSpacing }}>
           <thead>
             <tr>
               {header.map((h, hi) => (
@@ -116,7 +119,7 @@ function formatContent(content: string, textSize: number): React.ReactNode {
     elements.push(
       <ul key={key} style={{ margin: "6px 0 6px 20px", padding: 0 }}>
         {listItems.map((item, ii) => (
-          <li key={ii} style={{ marginBottom: "4px", fontSize: `${textSize}px`, lineHeight: 1.6 }}>
+          <li key={ii} style={{ marginBottom: paragraphSpacing, fontSize: `${textSize}px`, lineHeight, letterSpacing, wordSpacing, fontFamily }}>
             <span dangerouslySetInnerHTML={{ __html: item.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>") }} />
           </li>
         ))}
@@ -158,7 +161,7 @@ function formatContent(content: string, textSize: number): React.ReactNode {
     const numberedMatch = trimmed.match(/^(\d+[a-z]?[.)]\s+)(.+)$/);
     if (numberedMatch) {
       elements.push(
-        <div key={idx} style={{ display: "flex", gap: "8px", marginBottom: "6px", fontSize: `${textSize}px`, lineHeight: 1.6 }}>
+        <div key={idx} style={{ display: "flex", gap: "8px", marginBottom: paragraphSpacing, fontSize: `${textSize}px`, lineHeight, letterSpacing, wordSpacing, fontFamily }}>
           <span style={{ fontWeight: 600, minWidth: "24px", color: "#374151" }}>{numberedMatch[1]}</span>
           <span dangerouslySetInnerHTML={{ __html: numberedMatch[2].replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>") }} />
         </div>
@@ -169,7 +172,7 @@ function formatContent(content: string, textSize: number): React.ReactNode {
     // Hint line
     if (trimmed.startsWith("Hint:") || trimmed.startsWith("💡")) {
       elements.push(
-        <div key={idx} style={{ background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: "6px", padding: "6px 10px", margin: "6px 0", fontSize: `${textSize - 1}px`, color: "#1d4ed8" }}>
+        <div key={idx} style={{ background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: "6px", padding: "6px 10px", margin: "6px 0", fontSize: `${textSize - 1}px`, color: "#1d4ed8", fontFamily, letterSpacing }}>
           💡 <span dangerouslySetInnerHTML={{ __html: trimmed.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>") }} />
         </div>
       );
@@ -179,7 +182,7 @@ function formatContent(content: string, textSize: number): React.ReactNode {
     // Step line
     if (trimmed.match(/^Step \d+:/)) {
       elements.push(
-        <div key={idx} style={{ fontWeight: 700, color: "#059669", marginTop: "8px", marginBottom: "2px", fontSize: `${textSize}px` }}>
+        <div key={idx} style={{ fontWeight: 700, color: "#059669", marginTop: "8px", marginBottom: "2px", fontSize: `${textSize}px`, fontFamily }}>
           {trimmed}
         </div>
       );
@@ -190,7 +193,7 @@ function formatContent(content: string, textSize: number): React.ReactNode {
     const markMatch = trimmed.match(/^(.+?)(\[\d+ marks?\])(.*)$/i);
     if (markMatch) {
       elements.push(
-        <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "6px", fontSize: `${textSize}px`, lineHeight: 1.6 }}>
+        <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: paragraphSpacing, fontSize: `${textSize}px`, lineHeight, letterSpacing, wordSpacing, fontFamily }}>
           <span dangerouslySetInnerHTML={{ __html: markMatch[1].replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>") }} />
           <span style={{ background: "#374151", color: "white", fontSize: `${textSize - 3}px`, padding: "1px 6px", borderRadius: "4px", whiteSpace: "nowrap", marginLeft: "8px", fontWeight: 700 }}>{markMatch[2]}</span>
         </div>
@@ -209,7 +212,7 @@ function formatContent(content: string, textSize: number): React.ReactNode {
     // Bold heading (standalone **text**)
     if (trimmed.match(/^\*\*.+\*\*$/)) {
       elements.push(
-        <div key={idx} style={{ fontWeight: 700, fontSize: `${textSize + 1}px`, marginTop: "8px", marginBottom: "4px", color: "#111827" }}>
+        <div key={idx} style={{ fontWeight: 700, fontSize: `${textSize + 1}px`, marginTop: "8px", marginBottom: "4px", color: "#111827", fontFamily, letterSpacing }}>
           {trimmed.replace(/\*\*/g, "")}
         </div>
       );
@@ -218,7 +221,7 @@ function formatContent(content: string, textSize: number): React.ReactNode {
 
     // Regular paragraph
     elements.push(
-      <p key={idx} style={{ margin: "0 0 6px 0", fontSize: `${textSize}px`, lineHeight: 1.7, color: "#1f2937" }}>
+      <p key={idx} style={{ margin: `0 0 ${paragraphSpacing} 0`, fontSize: `${textSize}px`, lineHeight, color: "#1f2937", fontFamily, letterSpacing, wordSpacing }}>
         <span dangerouslySetInnerHTML={{ __html: trimmed.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/\*(.+?)\*/g, "<em>$1</em>") }} />
       </p>
     );
@@ -230,7 +233,8 @@ function formatContent(content: string, textSize: number): React.ReactNode {
   return <>{elements}</>;
 }
 
-function VocabSection({ content, textSize }: { content: string; textSize: number }) {
+function VocabSection({ content, fmt }: { content: string; fmt: ReturnType<typeof getSendFormatting> }) {
+  const { fontSize: textSize, fontFamily, lineHeight, letterSpacing } = fmt;
   const lines = content.split("\n").filter(l => l.trim() && !l.trim().toUpperCase().startsWith("TERM"));
   const entries = lines.map(l => {
     const parts = l.split("|");
@@ -241,22 +245,23 @@ function VocabSection({ content, textSize }: { content: string; textSize: number
   }).filter(Boolean) as { term: string; def: string }[];
 
   if (entries.length === 0) {
-    return <div style={{ fontSize: `${textSize}px`, lineHeight: 1.7 }}>{content}</div>;
+    return <div style={{ fontSize: `${textSize}px`, lineHeight, fontFamily, letterSpacing }}>{content}</div>;
   }
 
   return (
     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "8px" }}>
       {entries.map((e, i) => (
-        <div key={i} style={{ background: "white", border: "1px solid #e9d5ff", borderRadius: "8px", padding: "10px 12px", display: "flex", flexDirection: "column", gap: "3px" }}>
-          <div style={{ fontWeight: 700, color: "#7c3aed", fontSize: `${textSize}px` }}>{e.term}</div>
-          <div style={{ color: "#374151", fontSize: `${textSize - 1}px`, lineHeight: 1.5 }}>{e.def}</div>
+        <div key={i} style={{ background: "white", border: "1px solid #e9d5ff", borderRadius: "8px", padding: "10px 12px", display: "flex", flexDirection: "column", gap: "4px" }}>
+          <div style={{ fontWeight: 700, color: "#7c3aed", fontSize: `${textSize}px`, fontFamily, letterSpacing }}>{e.term}</div>
+          <div style={{ color: "#374151", fontSize: `${textSize - 1}px`, lineHeight, fontFamily, letterSpacing }}>{e.def}</div>
         </div>
       ))}
     </div>
   );
 }
 
-function SelfAssessmentSection({ content, textSize }: { content: string; textSize: number }) {
+function SelfAssessmentSection({ content, fmt }: { content: string; fmt: ReturnType<typeof getSendFormatting> }) {
+  const { fontSize: textSize, fontFamily, lineHeight } = fmt;
   const lines = content.split("\n").filter(l => l.trim());
   return (
     <div>
@@ -272,23 +277,24 @@ function SelfAssessmentSection({ content, textSize }: { content: string; textSiz
                 </div>
               ))}
             </div>
-            <span style={{ fontSize: `${textSize}px`, color: "#374151" }}>I can {clean}</span>
+            <span style={{ fontSize: `${textSize}px`, color: "#374151", fontFamily, lineHeight }}>I can {clean}</span>
           </div>
         );
       })}
-      <div style={{ marginTop: "8px", fontSize: `${textSize - 2}px`, color: "#6b7280", fontStyle: "italic" }}>
+      <div style={{ marginTop: "8px", fontSize: `${textSize - 2}px`, color: "#6b7280", fontStyle: "italic", fontFamily }}>
         🔴 Not yet &nbsp;|&nbsp; 🟡 Getting there &nbsp;|&nbsp; 🟢 I've got it!
       </div>
     </div>
   );
 }
 
-function WordBankSection({ content, textSize }: { content: string; textSize: number }) {
+function WordBankSection({ content, fmt }: { content: string; fmt: ReturnType<typeof getSendFormatting> }) {
+  const { fontSize: textSize, fontFamily } = fmt;
   const words = content.split(/[\n,|]/).map(w => w.trim()).filter(Boolean);
   return (
     <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
       {words.map((word, i) => (
-        <span key={i} style={{ background: "#dbeafe", color: "#1e40af", padding: "4px 10px", borderRadius: "20px", fontSize: `${textSize - 1}px`, fontWeight: 500, border: "1px solid #bfdbfe" }}>
+        <span key={i} style={{ background: "#dbeafe", color: "#1e40af", padding: "4px 10px", borderRadius: "20px", fontSize: `${textSize - 1}px`, fontWeight: 500, border: "1px solid #bfdbfe", fontFamily }}>
           {word}
         </span>
       ))}
@@ -296,12 +302,13 @@ function WordBankSection({ content, textSize }: { content: string; textSize: num
   );
 }
 
-function SentenceStartersSection({ content, textSize }: { content: string; textSize: number }) {
+function SentenceStartersSection({ content, fmt }: { content: string; fmt: ReturnType<typeof getSendFormatting> }) {
+  const { fontSize: textSize, fontFamily, lineHeight } = fmt;
   const starters = content.split("\n").filter(l => l.trim()).map(l => l.replace(/^[•\-\*\d.)\s]+/, "").trim());
   return (
     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "6px" }}>
       {starters.map((s, i) => (
-        <div key={i} style={{ background: "#ecfeff", border: "1px dashed #06b6d4", borderRadius: "6px", padding: "6px 10px", fontSize: `${textSize - 1}px`, color: "#0e7490", fontStyle: "italic" }}>
+        <div key={i} style={{ background: "#ecfeff", border: "1px dashed #06b6d4", borderRadius: "6px", padding: "6px 10px", fontSize: `${textSize - 1}px`, color: "#0e7490", fontStyle: "italic", fontFamily, lineHeight }}>
           "{s}..."
         </div>
       ))}
@@ -322,11 +329,23 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(({
 }, ref) => {
   const isTeacherView = viewMode === "teacher";
 
+  // Resolve SEND need ID from metadata (may be stored as sendNeedId or inferred from sendNeed label)
+  const sendNeedId = worksheet.metadata.sendNeedId || worksheet.metadata.sendNeed;
+  const fmt = getSendFormatting(sendNeedId, textSize);
+
   return (
     <div
       ref={ref}
       className="worksheet-print-root"
-      style={{ backgroundColor: overlayColor || "white", fontFamily: "'Segoe UI', Arial, sans-serif" }}
+      style={{
+        backgroundColor: overlayColor || "white",
+        fontFamily: fmt.fontFamily,
+        fontSize: `${fmt.fontSize}px`,
+        lineHeight: fmt.lineHeight,
+        letterSpacing: fmt.letterSpacing,
+        wordSpacing: fmt.wordSpacing,
+        fontWeight: fmt.fontWeight,
+      }}
     >
       {/* ── Professional Header ── */}
       <div className="ws-header" style={{
@@ -345,15 +364,15 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(({
               <span style={{ color: "white", fontWeight: 800, fontSize: "16px" }}>A</span>
             </div>
             <div>
-              <div style={{ fontWeight: 700, fontSize: "13px", color: "#7c3aed" }}>{schoolName || "Adaptly"}</div>
-              <div style={{ fontSize: "11px", color: "#6b7280" }}>SEND-Informed Learning Resource</div>
+              <div style={{ fontWeight: 700, fontSize: "13px", color: "#7c3aed", fontFamily: fmt.fontFamily }}>{schoolName || "Adaptly"}</div>
+              <div style={{ fontSize: "11px", color: "#6b7280", fontFamily: fmt.fontFamily }}>SEND-Informed Learning Resource</div>
             </div>
           </div>
-          <h1 style={{ fontSize: `${textSize + 10}px`, fontWeight: 800, color: "#111827", margin: "0 0 4px 0", lineHeight: 1.2 }}>
+          <h1 style={{ fontSize: `${fmt.fontSize + 10}px`, fontWeight: 800, color: "#111827", margin: "0 0 4px 0", lineHeight: 1.2, fontFamily: fmt.fontFamily, letterSpacing: fmt.letterSpacing }}>
             {worksheet.title}
           </h1>
           {worksheet.subtitle && (
-            <p style={{ fontSize: `${textSize - 1}px`, color: "#6b7280", margin: "0 0 8px 0" }}>{worksheet.subtitle}</p>
+            <p style={{ fontSize: `${fmt.fontSize - 1}px`, color: "#6b7280", margin: "0 0 8px 0", fontFamily: fmt.fontFamily }}>{worksheet.subtitle}</p>
           )}
           {/* Metadata badges */}
           <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
@@ -403,9 +422,9 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(({
             ...(teacherName ? [{ label: "Teacher", value: teacherName }] : []),
           ].map((field, i) => (
             <div key={i} style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "6px" }}>
-              <span style={{ fontSize: "11px", fontWeight: 600, color: "#6b7280", minWidth: "50px" }}>{field.label}:</span>
+              <span style={{ fontSize: "11px", fontWeight: 600, color: "#6b7280", minWidth: "50px", fontFamily: fmt.fontFamily }}>{field.label}:</span>
               <div style={{ flex: 1, borderBottom: "1.5px solid #9ca3af", minWidth: "120px", height: "18px", display: "flex", alignItems: "flex-end" }}>
-                <span style={{ fontSize: "11px", color: "#374151", paddingBottom: "1px" }}>{field.value}</span>
+                <span style={{ fontSize: "11px", color: "#374151", paddingBottom: "1px", fontFamily: fmt.fontFamily }}>{field.value}</span>
               </div>
             </div>
           ))}
@@ -452,7 +471,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(({
             }}>
               <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                 <span style={{ fontSize: "16px" }}>{style.icon}</span>
-                <span style={{ fontWeight: 700, fontSize: `${textSize + 1}px`, color: style.border }}>
+                <span style={{ fontWeight: 700, fontSize: `${fmt.fontSize + 1}px`, color: style.border, fontFamily: fmt.fontFamily }}>
                   {section.title}
                 </span>
               </div>
@@ -489,27 +508,27 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(({
                     dangerouslySetInnerHTML={{ __html: section.svg }}
                   />
                   {section.caption && (
-                    <p style={{ fontSize: `${textSize - 2}px`, color: "#6b7280", marginTop: "6px", fontStyle: "italic" }}>
+                    <p style={{ fontSize: `${fmt.fontSize - 2}px`, color: "#6b7280", marginTop: "6px", fontStyle: "italic", fontFamily: fmt.fontFamily }}>
                       Figure: {section.caption}
                     </p>
                   )}
                 </div>
               ) : section.type === "vocabulary" ? (
-                <VocabSection content={content} textSize={textSize} />
+                <VocabSection content={content} fmt={fmt} />
               ) : section.type === "self-assessment" ? (
-                <SelfAssessmentSection content={content} textSize={textSize} />
+                <SelfAssessmentSection content={content} fmt={fmt} />
               ) : section.type === "word-bank" ? (
-                <WordBankSection content={content} textSize={textSize} />
+                <WordBankSection content={content} fmt={fmt} />
               ) : section.type === "sentence-starters" ? (
-                <SentenceStartersSection content={content} textSize={textSize} />
+                <SentenceStartersSection content={content} fmt={fmt} />
               ) : (
-                <div>{formatContent(content, textSize)}</div>
+                <div>{formatContent(content, fmt)}</div>
               )}
 
               {/* Answer lines for practice sections */}
               {!isTeacherSection && (section.type === "independent" || section.type === "guided") && (
                 <div style={{ marginTop: "12px", borderTop: "1px dashed #e5e7eb", paddingTop: "10px" }}>
-                  <div style={{ fontSize: `${textSize - 2}px`, color: "#9ca3af", marginBottom: "6px" }}>Your answers:</div>
+                  <div style={{ fontSize: `${fmt.fontSize - 2}px`, color: "#9ca3af", marginBottom: "6px", fontFamily: fmt.fontFamily }}>Your answers:</div>
                   {[1, 2, 3].map(n => (
                     <div key={n} style={{ borderBottom: "1px solid #d1d5db", height: "28px", marginBottom: "6px" }} />
                   ))}
@@ -530,6 +549,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(({
         alignItems: "center",
         fontSize: "10px",
         color: "#9ca3af",
+        fontFamily: fmt.fontFamily,
       }}>
         <span>Generated by Adaptly — SEND-Informed Learning Resources</span>
         <span>{worksheet.metadata.subject} | {worksheet.metadata.yearGroup} | {new Date().toLocaleDateString("en-GB")}</span>

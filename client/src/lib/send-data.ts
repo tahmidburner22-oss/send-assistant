@@ -368,6 +368,145 @@ export const sendNeeds: SendNeed[] = [
   },
 ];
 
+// ─── SEND-specific formatting specs ─────────────────────────────────────────
+// Based on COBS Handbook, BDA guidelines, and UK SEND Code of Practice.
+
+export interface SendFormatting {
+  fontFamily: string;
+  fontSize: number;        // minimum px (overrides user textSize if larger)
+  lineHeight: number;      // CSS line-height multiplier
+  letterSpacing: string;   // CSS letter-spacing
+  wordSpacing: string;     // CSS word-spacing
+  fontWeight: number;      // base font weight
+  textAlign: "left" | "justify"; // left-justify for dyslexia
+  paragraphSpacing: string; // extra margin-bottom on paragraphs
+}
+
+const DEFAULT_FORMATTING: SendFormatting = {
+  fontFamily: "'Segoe UI', Arial, sans-serif",
+  fontSize: 14,
+  lineHeight: 1.7,
+  letterSpacing: "normal",
+  wordSpacing: "normal",
+  fontWeight: 400,
+  textAlign: "left",
+  paragraphSpacing: "6px",
+};
+
+// Map from SEND need ID → formatting overrides
+const SEND_FORMATTING_MAP: Record<string, Partial<SendFormatting>> = {
+  // Dyslexia: BDA recommends sans-serif ≥12pt, 1.5 line spacing, left-aligned,
+  // increased letter/word spacing, avoid justified text
+  dyslexia: {
+    fontFamily: "Arial, 'Helvetica Neue', sans-serif",
+    fontSize: 14,
+    lineHeight: 1.8,
+    letterSpacing: "0.05em",
+    wordSpacing: "0.1em",
+    textAlign: "left",
+    paragraphSpacing: "10px",
+  },
+  // Visual Impairment: large print ≥18pt, high contrast, clear spacing
+  vi: {
+    fontFamily: "Arial, 'Helvetica Neue', sans-serif",
+    fontSize: 18,
+    lineHeight: 2.0,
+    letterSpacing: "0.03em",
+    wordSpacing: "0.08em",
+    fontWeight: 500,
+    textAlign: "left",
+    paragraphSpacing: "12px",
+  },
+  // ASC / Asperger: uncluttered, generous spacing, sans-serif
+  asc: {
+    fontFamily: "Arial, 'Helvetica Neue', sans-serif",
+    fontSize: 14,
+    lineHeight: 1.9,
+    letterSpacing: "0.02em",
+    textAlign: "left",
+    paragraphSpacing: "10px",
+  },
+  asperger: {
+    fontFamily: "Arial, 'Helvetica Neue', sans-serif",
+    fontSize: 14,
+    lineHeight: 1.9,
+    letterSpacing: "0.02em",
+    textAlign: "left",
+    paragraphSpacing: "10px",
+  },
+  // ADHD: clear chunked layout, slightly larger line height
+  adhd: {
+    fontFamily: "Arial, 'Helvetica Neue', sans-serif",
+    fontSize: 14,
+    lineHeight: 1.8,
+    textAlign: "left",
+    paragraphSpacing: "8px",
+  },
+  // SLCN: clear, short sentences, larger spacing
+  slcn: {
+    fontFamily: "Arial, 'Helvetica Neue', sans-serif",
+    fontSize: 14,
+    lineHeight: 1.8,
+    letterSpacing: "0.02em",
+    textAlign: "left",
+    paragraphSpacing: "8px",
+  },
+  // Dyspraxia: larger writing spaces, clear layout
+  dyspraxia: {
+    fontFamily: "Arial, 'Helvetica Neue', sans-serif",
+    fontSize: 14,
+    lineHeight: 1.9,
+    textAlign: "left",
+    paragraphSpacing: "10px",
+  },
+  // MLD: reduced cognitive load, clear spacing
+  mld: {
+    fontFamily: "Arial, 'Helvetica Neue', sans-serif",
+    fontSize: 15,
+    lineHeight: 1.9,
+    textAlign: "left",
+    paragraphSpacing: "10px",
+  },
+  // PDA/ODD: calm, uncluttered
+  "pda-odd": {
+    fontFamily: "Arial, 'Helvetica Neue', sans-serif",
+    fontSize: 14,
+    lineHeight: 1.8,
+    textAlign: "left",
+    paragraphSpacing: "8px",
+  },
+  // Anxiety: calm, gentle, clear
+  anxiety: {
+    fontFamily: "'Segoe UI', Arial, sans-serif",
+    fontSize: 14,
+    lineHeight: 1.8,
+    textAlign: "left",
+    paragraphSpacing: "8px",
+  },
+  // Dyscalculia: clear visual layout
+  dyscalculia: {
+    fontFamily: "Arial, 'Helvetica Neue', sans-serif",
+    fontSize: 14,
+    lineHeight: 1.8,
+    textAlign: "left",
+    paragraphSpacing: "8px",
+  },
+};
+
+/**
+ * Returns the SEND-specific formatting for a given SEND need ID.
+ * Falls back to default formatting if no specific overrides are defined.
+ * The userTextSize is respected unless the SEND need requires a larger minimum.
+ */
+export function getSendFormatting(sendNeedId: string | undefined, userTextSize: number = 14): SendFormatting {
+  if (!sendNeedId) return { ...DEFAULT_FORMATTING, fontSize: userTextSize };
+  const overrides = SEND_FORMATTING_MAP[sendNeedId] || {};
+  const base = { ...DEFAULT_FORMATTING, ...overrides };
+  // Enforce minimum font size: use whichever is larger — user's choice or SEND minimum
+  base.fontSize = Math.max(userTextSize, base.fontSize);
+  return base;
+}
+
 export const cobsTips = [
   "The Zones of Regulation framework helps pupils identify their emotional state using four colour-coded zones: Blue (low energy), Green (calm), Yellow (heightened), Red (extreme).",
   "COBS uses a graduated approach: Quality First Teaching → Targeted Interventions → Specialist Support → EHCP Assessment.",

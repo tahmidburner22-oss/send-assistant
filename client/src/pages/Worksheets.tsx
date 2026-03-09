@@ -356,6 +356,7 @@ export default function Worksheets() {
       layout: options.layout,
       textSize,
       title: generated?.title,
+      sendNeedId: generated?.metadata?.sendNeed || sendNeed || undefined,
     });
   };
   // ─── AI Edit Section ────────────────────────────────────────────────────────
@@ -915,7 +916,11 @@ export default function Worksheets() {
                       title: generated.title,
                       subtitle: (generated as any).subtitle,
                       sections: generated.sections as any,
-                      metadata: generated.metadata as any,
+                      metadata: {
+                        ...(generated.metadata as any),
+                        // Pass the SEND need ID explicitly so WorksheetRenderer can apply correct formatting
+                        sendNeedId: generated.metadata?.sendNeed || sendNeed || undefined,
+                      },
                       isAI: isAIWorksheet(generated),
                     }}
                     viewMode={viewMode}
