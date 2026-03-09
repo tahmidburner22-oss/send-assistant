@@ -89,19 +89,22 @@ const upload = multer({
 const PROVIDER_ORDER = ["groq", "gemini", "openai", "openrouter"] as const;
 
 function getEffectiveKey(provider: string): string {
-  try {
-    const row = db.prepare(
-      "SELECT api_key FROM admin_api_keys WHERE provider = ? ORDER BY updated_at DESC LIMIT 1"
-    ).get(provider) as any;
-    if (row?.api_key) return row.api_key;
-  } catch (_) {}
+  // Prefer environment variables (always fresh) over DB rows (may be stale)
   const envMap: Record<string, string> = {
     groq: process.env.GROQ_API_KEY || "",
     gemini: process.env.GEMINI_API_KEY || "",
     openai: process.env.OPENAI_API_KEY || "",
     openrouter: process.env.OPENROUTER_API_KEY || "",
   };
-  return envMap[provider] || "";
+  if (envMap[provider]) return envMap[provider];
+  // Fall back to DB (admin-configured keys via Admin Panel)
+  try {
+    const row = db.prepare(
+      "SELECT api_key FROM admin_api_keys WHERE provider = ? ORDER BY updated_at DESC LIMIT 1"
+    ).get(provider) as any;
+    if (row?.api_key) return row.api_key;
+  } catch (_) {}
+  return "";
 }
 
 function getAdminModel(provider: string): string {
@@ -280,6 +283,9 @@ async function extractText(buffer: Buffer, mimetype: string): Promise<string> {
 router.post("/upload", requireAuth, upload.single("document"), async (req: Request, res: Response) => {
   try {
     if (!req.file) return res.status(400).json({ error: "No file uploaded" });
+    // Diagnostic: log which keys are available
+    console.log(`[Revision] Upload request. Keys: groq=${!!process.env.GROQ_API_KEY}, gemini=${!!process.env.GEMINI_API_KEY}, openai=${!!process.env.OPENAI_API_KEY}`);
+    const t0 = Date.now();
 
     const rawText = await extractText(req.file.buffer, req.file.mimetype);
     if (!rawText || rawText.trim().length < 50) {
@@ -319,6 +325,7 @@ router.post("/upload", requireAuth, upload.single("document"), async (req: Reque
       1200
     );
 
+    console.log(`[Revision] Script generated in ${Date.now()-t0}ms`);
     res.json({ text: rawText, script, audioBase64: "" });
   } catch (err: any) {
     console.error("Revision upload error:", err);
