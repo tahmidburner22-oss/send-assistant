@@ -38,16 +38,16 @@ const LANGUAGES = [
   { code: "ru", label: "Russian" },
 ];
 
-// OpenAI TTS voices — natural, human-sounding, no key required on this platform
+/// Neural AI TTS voices — powered by Groq PlayAI (very natural, human-sounding)
+// Voice IDs map to Groq PlayAI voices on the server side
 const EDGE_VOICES = [
-  { id: "nova",    label: "Nova (Warm Female)" },
-  { id: "shimmer", label: "Shimmer (Soft Female)" },
-  { id: "alloy",   label: "Alloy (Neutral)" },
-  { id: "echo",    label: "Echo (Male)" },
-  { id: "fable",   label: "Fable (Expressive Male)" },
-  { id: "onyx",    label: "Onyx (Deep Male)" },
+  { id: "nova",    label: "Aaliyah (Warm Female)" },
+  { id: "shimmer", label: "Adelaide (Soft Female)" },
+  { id: "alloy",   label: "Atlas (Neutral)" },
+  { id: "echo",    label: "Angelo (Male)" },
+  { id: "fable",   label: "Briggs (Expressive Male)" },
+  { id: "onyx",    label: "Cillian (Deep Male)" },
 ];
-
 const TTS_ENGINE_OPTIONS = [
   { id: "edge",    label: "Neural AI Voice (Human)" },
   { id: "browser", label: "Browser Voice (built-in)" },
