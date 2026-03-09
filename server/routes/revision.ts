@@ -575,8 +575,52 @@ router.post("/tts", requireAuth, async (req: Request, res: Response) => {
       }
     }
 
+    // 3. Try Google Cloud TTS (uses GEMINI_API_KEY which is a Google API key)
+    const geminiKey = process.env.GEMINI_API_KEY || getEffectiveKey("gemini");
+    if (geminiKey) {
+      const googleVoiceMap: Record<string, string> = {
+        nova:    "en-GB-Neural2-A",
+        shimmer: "en-GB-Neural2-C",
+        alloy:   "en-US-Neural2-C",
+        echo:    "en-US-Neural2-D",
+        fable:   "en-GB-Neural2-B",
+        onyx:    "en-US-Neural2-J",
+      };
+      const googleVoiceName = googleVoiceMap[voice] || "en-GB-Neural2-A";
+      const languageCode = googleVoiceName.split("-").slice(0, 2).join("-");
+      try {
+        console.log(`[TTS] Trying Google Cloud TTS: voice=${googleVoiceName}, chars=${text.length}`);
+        const ttsRes = await fetch(
+          `https://texttospeech.googleapis.com/v1/text:synthesize?key=${geminiKey}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              input: { text: text.slice(0, 5000) },
+              voice: { languageCode, name: googleVoiceName },
+              audioConfig: { audioEncoding: "MP3", speakingRate: 1.0, pitch: 0 },
+            }),
+          }
+        );
+        if (ttsRes.ok) {
+          const data = await ttsRes.json() as any;
+          if (data.audioContent) {
+            const buffer = Buffer.from(data.audioContent, "base64");
+            res.setHeader("Content-Type", "audio/mpeg");
+            res.setHeader("Content-Length", buffer.byteLength.toString());
+            console.log(`[TTS] Google Cloud TTS success: ${buffer.byteLength} bytes`);
+            return res.send(buffer);
+          }
+        } else {
+          const errBody = await ttsRes.text();
+          console.warn(`[TTS] Google Cloud TTS HTTP ${ttsRes.status}:`, errBody.slice(0, 200));
+        }
+      } catch (err: any) {
+        console.warn("[TTS] Google Cloud TTS error:", err?.message || err);
+      }
+    }
     // No working TTS provider found
-    throw new Error("TTS unavailable: no working TTS provider. Please ensure a Groq API key is configured.");
+    throw new Error("TTS unavailable: no working TTS provider.");
 
   } catch (err: any) {
     console.error("Revision TTS error:", err);
