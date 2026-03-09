@@ -69,9 +69,9 @@ router.post("/worksheets", requireAuth, (req: Request, res: Response) => {
 
 router.put("/worksheets/:id", requireAuth, (req: Request, res: Response) => {
   const { rating, ratingLabel, overlay, content, teacherContent, sections } = req.body;
-  // Always update rating/overlay; also update content/teacherContent if provided (e.g. after editing)
-  db.prepare("UPDATE worksheets SET rating=?, rating_label=?, overlay=?, content=COALESCE(?, content), teacher_content=COALESCE(?, teacher_content) WHERE id=? AND school_id=?")
-    .run(rating, ratingLabel, overlay, content ?? null, teacherContent ?? null, req.params.id, req.user!.schoolId);
+  // Use COALESCE for all fields so partial updates (e.g. rating-only) don't wipe other fields
+  db.prepare("UPDATE worksheets SET rating=COALESCE(?, rating), rating_label=COALESCE(?, rating_label), overlay=COALESCE(?, overlay), content=COALESCE(?, content), teacher_content=COALESCE(?, teacher_content) WHERE id=? AND school_id=?")
+    .run(rating ?? null, ratingLabel ?? null, overlay ?? null, content ?? null, teacherContent ?? null, req.params.id, req.user!.schoolId);
   // Update sections if provided
   if (Array.isArray(sections)) {
     db.prepare("DELETE FROM worksheet_sections WHERE worksheet_id=?").run(req.params.id);

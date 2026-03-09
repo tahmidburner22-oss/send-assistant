@@ -141,6 +141,7 @@ export default function Worksheets() {
   const [aiEditPrompt, setAiEditPrompt] = useState("");
   const [aiEditLoading, setAiEditLoading] = useState(false);
   const [rating, setRating] = useState(0);
+  const [savedWorksheetId, setSavedWorksheetId] = useState<string | null>(null);
   const [textSize, setTextSize] = useState(14);
   const [voiceTargetSection, setVoiceTargetSection] = useState<number | null>(null);
   const [voiceAnswers, setVoiceAnswers] = useState<Record<number, string>>({});
@@ -204,6 +205,7 @@ export default function Worksheets() {
     setEditedSections({});
     setEditMode(false);
     setRating(0);
+    setSavedWorksheetId(null);
     setVoiceAnswers({});
 
     let generatedWs: AnyWorksheet | null = null;
@@ -253,6 +255,9 @@ export default function Worksheets() {
         sections: sectionsToSave,
         metadata: ws.metadata as any,
         isAI: isAIWorksheet(ws),
+      }).then(saved => {
+        setSavedWorksheetId(saved.id);
+        refreshData(); // Update dashboard counts immediately
       }).catch(() => {}); // Silent auto-save
     }
 
@@ -292,7 +297,7 @@ export default function Worksheets() {
   };
 
   // ─── Save ──────────────────────────────────────────────────────────────────
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!generated) return;
     // Apply any manual edits to sections before saving
     const sectionsWithEdits = generated.sections.map((s, i) => ({
@@ -301,21 +306,28 @@ export default function Worksheets() {
     }));
     const content = sectionsWithEdits.filter(s => !s.teacherOnly).map(s => `## ${s.title}\n${s.content}`).join("\n\n");
     const teacherContent = sectionsWithEdits.map(s => `## ${s.title}\n${s.content}`).join("\n\n");
-    saveWorksheet({
-      title: generated.title,
-      subtitle: (generated as any).subtitle,
-      subject: generated.metadata.subject,
-      topic: generated.metadata.topic,
-      yearGroup: generated.metadata.yearGroup,
-      sendNeed: generated.metadata.sendNeed,
-      difficulty: generated.metadata.difficulty,
-      examBoard: generated.metadata.examBoard,
-      content, teacherContent, rating, overlay: colorOverlay,
-      // Preserve full sections for re-editing
-      sections: sectionsWithEdits,
-      metadata: generated.metadata as any,
-      isAI: isAIWorksheet(generated),
-    });
+    if (savedWorksheetId) {
+      // Already auto-saved — just update the existing record with latest edits + rating
+      await updateWorksheet(savedWorksheetId, { content, teacherContent, rating, overlay: colorOverlay, sections: sectionsWithEdits });
+    } else {
+      const saved = await saveWorksheet({
+        title: generated.title,
+        subtitle: (generated as any).subtitle,
+        subject: generated.metadata.subject,
+        topic: generated.metadata.topic,
+        yearGroup: generated.metadata.yearGroup,
+        sendNeed: generated.metadata.sendNeed,
+        difficulty: generated.metadata.difficulty,
+        examBoard: generated.metadata.examBoard,
+        content, teacherContent, rating, overlay: colorOverlay,
+        // Preserve full sections for re-editing
+        sections: sectionsWithEdits,
+        metadata: generated.metadata as any,
+        isAI: isAIWorksheet(generated),
+      });
+      setSavedWorksheetId(saved.id);
+    }
+    await refreshData(); // Refresh dashboard counts
     toast.success("Worksheet saved to history!");
   };
 
@@ -994,7 +1006,13 @@ export default function Worksheets() {
                   <span className="text-sm text-muted-foreground">Rate this worksheet:</span>
                   <div className="flex gap-1">
                     {[1,2,3,4,5].map(s => (
-                      <button key={s} onClick={() => setRating(s)}>
+                      <button key={s} onClick={() => {
+                        setRating(s);
+                        // Immediately persist rating if worksheet is already saved
+                        if (savedWorksheetId) {
+                          updateWorksheet(savedWorksheetId, { rating: s }).catch(() => {});
+                        }
+                      }}>
                         <Star className={`w-5 h-5 ${s <= rating ? "fill-amber-400 text-amber-400" : "text-gray-300"}`} />
                       </button>
                     ))}
