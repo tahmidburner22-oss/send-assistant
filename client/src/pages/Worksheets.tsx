@@ -125,7 +125,16 @@ export default function Worksheets() {
   const [includeAnswers, setIncludeAnswers] = useState(true);
   const [examStyle, setExamStyle] = useState(false);
   const [additionalInstructions, setAdditionalInstructions] = useState("");
-  const [generateDiagram, setGenerateDiagram] = useState(false);
+  // Auto-enable diagram for subjects where templates exist
+  const DIAGRAM_SUBJECTS = ["biology", "science", "chemistry", "physics", "geography", "maths", "mathematics"];
+  const [generateDiagram, setGenerateDiagram] = useState(() =>
+    DIAGRAM_SUBJECTS.includes(preSelectedSubject.toLowerCase())
+  );
+
+  // Update diagram toggle when subject changes
+  useEffect(() => {
+    setGenerateDiagram(DIAGRAM_SUBJECTS.includes(subject.toLowerCase()));
+  }, [subject]);
   const [useAI, setUseAI] = useState(true);
 
   const [loading, setLoading] = useState(false);
