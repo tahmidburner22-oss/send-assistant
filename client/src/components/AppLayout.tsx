@@ -12,6 +12,7 @@ import {
 
 const mainMenu = [
   { path: "/home", label: "Home", icon: Home },
+  { path: "/send-screener", label: "SEND Needs Screener", icon: ScanSearch, color: "text-indigo-600" },
   { path: "/differentiate", label: "Differentiate", icon: Sparkles },
   { path: "/worksheets", label: "Worksheets", icon: FileText },
   { path: "/stories", label: "Stories", icon: BookOpen },
@@ -25,7 +26,6 @@ const mainMenu = [
 ];
 
 const sendToolsMenu = [
-  { path: "/send-screener", label: "SEND Needs Screener", icon: ScanSearch, color: "text-indigo-600" },
   { path: "/tools/iep-generator", label: "IEP / EHCP Goals", icon: Shield, color: "text-blue-600" },
   { path: "/tools/social-stories", label: "Social Stories", icon: BookOpen, color: "text-purple-600" },
   { path: "/tools/pupil-passport", label: "Pupil Passport", icon: IdCard, color: "text-amber-600" },
@@ -198,7 +198,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                       <div className={`mx-2 px-3 py-2.5 rounded-lg flex items-center gap-3 transition-all text-sm ${
                         isActive ? "bg-brand-light text-brand font-medium" : "text-foreground hover:bg-muted"
                       }`}>
-                        <Icon className="w-[18px] h-[18px]" />
+                        <Icon className={`w-[18px] h-[18px] ${isActive ? "text-brand" : ((item as any).color || "")}`} />
                         {item.label}
                       </div>
                     </Link>
