@@ -50,9 +50,10 @@ router.post("/worksheets", requireAuth, (req: Request, res: Response) => {
     if (!title) return res.status(400).json({ error: "Title required" });
     console.log(`[POST /worksheets] title=${title} subject=${subject} yearGroup=${yearGroup} sections=${Array.isArray(sections) ? sections.length : 'none'}`);
     const id = uuidv4();
+    const n = (v: any) => (v === undefined || v === null ? null : v);
     db.prepare(`INSERT INTO worksheets (id, school_id, created_by, title, subject, topic, year_group, send_need, difficulty, exam_board, content, teacher_content, overlay)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
-      id, req.user!.schoolId, req.user!.id, title, subject, topic, yearGroup, sendNeed, difficulty, examBoard, content, teacherContent, overlay
+      id, n(req.user!.schoolId), n(req.user!.id), n(title), n(subject), n(topic), n(yearGroup), n(sendNeed), n(difficulty), n(examBoard), n(content), n(teacherContent), n(overlay)
     );
     console.log(`[POST /worksheets] worksheet inserted id=${id}`);
     // Save sections if provided
@@ -111,10 +112,11 @@ router.post("/stories", requireAuth, (req: Request, res: Response) => {
   const { title, genre, yearGroup, sendNeed, characters, setting, theme, readingLevel, length, content, comprehensionQuestions } = req.body;
   if (!title) return res.status(400).json({ error: "Title required" });
   const id = uuidv4();
+  const n2 = (v: any) => (v === undefined || v === null ? null : v);
   db.prepare(`INSERT INTO stories (id, school_id, created_by, title, genre, year_group, send_need, characters, setting, theme, reading_level, length, content, comprehension_questions)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
-    id, req.user!.schoolId, req.user!.id, title, genre, yearGroup, sendNeed,
-    JSON.stringify(characters || []), setting, theme, readingLevel, length, content,
+    id, n2(req.user!.schoolId), n2(req.user!.id), n2(title), n2(genre), n2(yearGroup), n2(sendNeed),
+    JSON.stringify(characters || []), n2(setting), n2(theme), n2(readingLevel), n2(length), n2(content),
     JSON.stringify(comprehensionQuestions || [])
   );
   res.status(201).json({ id });
@@ -129,9 +131,10 @@ router.get("/differentiations", requireAuth, (req: Request, res: Response) => {
 router.post("/differentiations", requireAuth, (req: Request, res: Response) => {
   const { taskContent, differentiatedContent, sendNeed, yearGroup, subject } = req.body;
   const id = uuidv4();
+  const n3 = (v: any) => (v === undefined || v === null ? null : v);
   db.prepare(`INSERT INTO differentiations (id, school_id, created_by, task_content, differentiated_content, send_need, year_group, subject)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`).run(
-    id, req.user!.schoolId, req.user!.id, taskContent, differentiatedContent, sendNeed, yearGroup, subject
+    id, n3(req.user!.schoolId), n3(req.user!.id), n3(taskContent), n3(differentiatedContent), n3(sendNeed), n3(yearGroup), n3(subject)
   );
   res.status(201).json({ id });
 });
@@ -150,8 +153,8 @@ router.post("/ideas", requireAuth, (req: Request, res: Response) => {
   const { title, description } = req.body;
   if (!title) return res.status(400).json({ error: "Title required" });
   const id = uuidv4();
-  db.prepare("INSERT INTO ideas (id, school_id, author_id, title, description) VALUES (?, ?, ?, ?, ?)")
-    .run(id, req.user!.schoolId, req.user!.id, title, description);
+  db.prepare("INSERT INTO ideas (id, school_id, author_id, title, description) VALUES (?, ?, ?, ?, ?)") 
+    .run(id, req.user!.schoolId ?? null, req.user!.id ?? null, title, description ?? null);
   res.status(201).json({ id });
 });
 
@@ -164,8 +167,8 @@ router.post("/ideas/:id/vote", requireAuth, (req: Request, res: Response) => {
 // ── Cookie Consent ────────────────────────────────────────────────────────────
 router.post("/cookie-consent", (req: Request, res: Response) => {
   const { analytics, marketing, userId } = req.body;
-  db.prepare("INSERT INTO cookie_consents (id, user_id, ip_address, analytics, marketing) VALUES (?, ?, ?, ?, ?)")
-    .run(uuidv4(), userId || null, req.ip, analytics ? 1 : 0, marketing ? 1 : 0);
+  db.prepare("INSERT INTO cookie_consents (id, user_id, ip_address, analytics, marketing) VALUES (?, ?, ?, ?, ?)") 
+    .run(uuidv4(), userId || null, req.ip ?? null, analytics ? 1 : 0, marketing ? 1 : 0);
   res.json({ message: "Consent recorded" });
 });
 

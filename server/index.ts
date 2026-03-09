@@ -27,6 +27,16 @@ const isDev = process.env.NODE_ENV !== "production";
 // ── Trust Railway's proxy ─────────────────────────────────────────────────────
 app.set("trust proxy", 1);
 
+// ── www → non-www redirect ────────────────────────────────────────────────────
+app.use((req, res, next) => {
+  const host = req.headers.host || "";
+  if (host.startsWith("www.")) {
+    const proto = req.headers["x-forwarded-proto"] || "https";
+    return res.redirect(301, `${proto}://${host.slice(4)}${req.originalUrl}`);
+  }
+  next();
+});
+
 // ── Security headers (Helmet) ─────────────────────────────────────────────────
 app.use(helmet({
   contentSecurityPolicy: {
