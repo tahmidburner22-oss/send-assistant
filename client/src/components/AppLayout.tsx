@@ -7,7 +7,7 @@ import {
   BarChart3, Lightbulb, ExternalLink, Settings, Menu, X, GraduationCap, LogOut,
   Calendar, TrendingUp, ClipboardList, IdCard, CheckSquare, ShieldAlert, Heart,
   HelpCircle, Table2, AlignLeft, Layers, CalendarDays, BookMarked, Ticket,
-  BookType, Mail, Shield, ChevronDown, ChevronRight, ScrollText, Headphones
+  BookType, Mail, Shield, ChevronDown, ChevronRight, ScrollText, Headphones, ScanSearch
 } from "lucide-react";
 
 const mainMenu = [
@@ -25,6 +25,7 @@ const mainMenu = [
 ];
 
 const sendToolsMenu = [
+  { path: "/send-screener", label: "SEND Needs Screener", icon: ScanSearch, color: "text-indigo-600" },
   { path: "/tools/iep-generator", label: "IEP / EHCP Goals", icon: Shield, color: "text-blue-600" },
   { path: "/tools/social-stories", label: "Social Stories", icon: BookOpen, color: "text-purple-600" },
   { path: "/tools/pupil-passport", label: "Pupil Passport", icon: IdCard, color: "text-amber-600" },
