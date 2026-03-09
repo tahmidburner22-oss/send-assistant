@@ -289,40 +289,33 @@ export default function RevisionHub() {
         throw new Error(err.error || "Upload failed");
       }
 
-      // Read SSE stream — server sends progress events then a final "done" event
-      const reader = res.body!.getReader();
-      const decoder = new TextDecoder();
-      let buffer = "";
+      // Server returns { jobId } immediately — poll for result to bypass Railway 30s timeout
+      const { jobId } = await res.json();
+      if (!jobId) throw new Error("No job ID returned");
+
+      toast.info("Extracting text from document...", { id: "revision-progress", duration: 120000 });
+
+      // Poll every 2 seconds until done or error
       let finalData: { text: string; script: string } | null = null;
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-        // Parse complete SSE events (separated by double newline)
-        const parts = buffer.split("\n\n");
-        buffer = parts.pop() ?? "";
-        for (const part of parts) {
-          const line = part.trim();
-          if (!line || line.startsWith(":")) continue; // skip keep-alive comments
-          const dataLine = line.startsWith("data: ") ? line.slice(6) : line;
-          try {
-            const event = JSON.parse(dataLine);
-            if (event.type === "progress") {
-              toast.info(event.message, { id: "revision-progress", duration: 60000 });
-            } else if (event.type === "done") {
-              finalData = event;
-              toast.dismiss("revision-progress");
-            } else if (event.type === "error") {
-              throw new Error(event.error || "Processing failed");
-            }
-          } catch (parseErr: any) {
-            if (parseErr.message && !parseErr.message.includes("JSON")) throw parseErr;
-          }
+      const token = localStorage.getItem("send_token");
+      for (let attempt = 0; attempt < 90; attempt++) {
+        await new Promise(r => setTimeout(r, 2000));
+        const pollRes = await fetch(`/api/revision/job/${jobId}`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+          credentials: "include",
+        });
+        if (!pollRes.ok) throw new Error("Job polling failed");
+        const poll = await pollRes.json();
+        if (poll.status === "pending") {
+          toast.info(poll.progress || "Processing...", { id: "revision-progress", duration: 120000 });
+          continue;
         }
+        if (poll.status === "error") throw new Error(poll.error || "Processing failed");
+        if (poll.status === "done") { finalData = poll; break; }
       }
+      toast.dismiss("revision-progress");
 
-      if (!finalData?.script) throw new Error("No script received from server");
+      if (!finalData?.script) throw new Error("Processing timed out. Please try again.");
       setDocumentText(finalData.text || "");
       setPodcastScript(finalData.script);
       await generateAudio(finalData.script, ttsEngine, edgeVoice, selectedLanguage);
