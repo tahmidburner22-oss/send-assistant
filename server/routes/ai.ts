@@ -571,6 +571,23 @@ router.post("/diagram", requireAuth, async (req: Request, res: Response) => {
   if (!subject || !topic) return res.status(400).json({ error: "subject and topic required" });
 
   const schoolId = req.user?.schoolId ?? undefined;
+
+  // ── Attempt 0: Hand-coded pixel-perfect template (always accurate) ────────────────
+  try {
+    const { getTemplate } = await import("../lib/diagramTemplates.js");
+    const template = getTemplate(subject, topic);
+    if (template) {
+      return res.json({
+        svg: template.svg,
+        caption: template.caption,
+        provider: "template",
+        type: "svg",
+      });
+    }
+  } catch (e) {
+    console.warn("[Diagram] Template lookup failed:", e);
+  }
+
   const { system, user } = buildDiagramPrompt(subject, topic, yearGroup || "Year 9", sendNeed);
 
   // Attempt 1: GPT-4o via OpenAI (best at structured SVG)
