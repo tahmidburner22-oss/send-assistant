@@ -107,7 +107,10 @@ function isAIWorksheet(ws: AnyWorksheet): ws is AIWorksheet {
 // ─── Main Component ──────────────────────────────────────────────────────────
 export default function Worksheets() {
   const [location] = useLocation();
-  const { saveWorksheet, updateWorksheet, worksheetHistory, children, assignWork, colorOverlay, setColorOverlay } = useApp();
+  const { saveWorksheet, updateWorksheet, worksheetHistory, children, assignWork, colorOverlay, setColorOverlay, refreshData } = useApp();
+
+  // Re-fetch data from server on mount so history count is always current
+  useEffect(() => { refreshData(); }, []);
 
   // Parse URL params for subject pre-selection (wouter doesn't include query string in useLocation)
   const preSelectedSubject = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("subject") || "" : "";
