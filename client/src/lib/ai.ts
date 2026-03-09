@@ -725,31 +725,9 @@ export async function aiGenerateDiagram(params: {
     console.warn('[Diagram] Server /api/ai/diagram failed, using legacy fallback:', e);
   }
 
-  // ── Fallback 1: Nano Banana 2 (Pollinations flux) — direct client-side call ────────────
-  try {
-    const topicHintNB = params.diagramType || getDiagramHint(params.subject, params.topic);
-    const sendNote = params.sendNeed
-      ? `Adapted for ${params.sendNeed}: extra-large clear labels, high contrast, simple layout.`
-      : 'Professional UK school textbook quality.';
-    const nbPrompt = encodeURIComponent(
-      `Educational diagram: ${topicHintNB}. ` +
-      `Subject: ${params.subject}. Topic: ${params.topic}. Year group: ${params.yearGroup}. ` +
-      `Style: clean white background, printed textbook diagram, all labels clearly legible in black Arial font, ` +
-      `accurate scientific/mathematical shapes, leader lines from shapes to labels, no watermarks, no decorative borders. ` +
-      `${sendNote}`
-    );
-    const seed = (Date.now() + Math.floor(Math.random() * 9999)) % 99999;
-    const nbUrl = `https://image.pollinations.ai/prompt/${nbPrompt}?width=700&height=500&nologo=true&model=flux&seed=${seed}&enhance=true`;
-    // Return the URL directly — the browser will load the image
-    return {
-      svg: '',
-      caption: `${params.topic} — ${params.subject} diagram`,
-      imageUrl: nbUrl,
-      provider: 'nano-banana-2',
-    };
-  } catch (e) {
-    console.warn('[Diagram] Nano Banana 2 client fallback failed:', e);
-  }
+  // ── Fallback 1: Gemini direct call (when server is unavailable) ─────────────────────────
+  // Note: Pollinations flux is no longer available from server IPs. Gemini SVG is used instead.
+  // (No direct Gemini client-side call here — falls through to callAI which tries all providers)
 
   // ── Fallback 2: Legacy SVG via callAI ──────────────────────────────────────────────────────
   const topicHint = params.diagramType || getDiagramHint(params.subject, params.topic);
@@ -771,6 +749,7 @@ MANDATORY RULES:
 8. Minimum 15px gap between shapes. 50px margin on all sides (elements within x=50..650, y=40..470).
 9. ${sendAdapt}
 10. Scientifically/mathematically accurate. Correct spelling on all labels.
+11. SPECIAL CHARACTERS: NEVER use raw Unicode in SVG text. Use HTML entities: &#178; for \u00b2, &#179; for \u00b3, &#176; for degree, &#955; for lambda, &#960; for pi, &#8594; for right arrow.
 After </svg> write: CAPTION: [one sentence]`;
   const user = `Draw a professional educational SVG diagram.
 Subject: ${params.subject}, Topic: ${params.topic}, Year: ${params.yearGroup}

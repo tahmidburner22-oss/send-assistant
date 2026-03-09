@@ -373,7 +373,7 @@ async function callGemini(system: string, user: string, key: string, maxTokens: 
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         contents: [{ parts: [{ text: system ? `${system}\n\n${user}` : user }] }],
-        generationConfig: { maxOutputTokens: maxTokens, temperature: 0.7 },
+        generationConfig: { maxOutputTokens: maxTokens, temperature: 0.2 },
       }),
     }
   );
@@ -603,6 +603,7 @@ ABSOLUTE RULES — every rule is mandatory:
 13. ${sendAdapt}
 14. SCIENTIFIC ACCURACY: all shapes, labels, proportions, and relationships must be scientifically/mathematically correct for UK school level. Spell all labels correctly.
 15. COMPLETENESS: include all key parts described in the diagram specification. Do not omit important labels.
+16. SPECIAL CHARACTERS: NEVER use raw Unicode characters in SVG text. Use HTML entities only: superscript 2 = &#178;, superscript 3 = &#179;, degree = &#176;, lambda = &#955;, pi = &#960;, alpha = &#945;, beta = &#946;, gamma = &#947;, right arrow = &#8594;, left arrow = &#8592;, up arrow = &#8593;, down arrow = &#8595;, subscript 2 = <tspan baseline-shift="sub" font-size="10">2</tspan>. For CO2 write: CO<tspan baseline-shift="sub" font-size="10">2</tspan>. For H2O write: H<tspan baseline-shift="sub" font-size="10">2</tspan>O.
 
 After the closing </svg> tag, on a new line write: CAPTION: [one concise sentence describing what the diagram shows]`;
 
@@ -649,38 +650,46 @@ router.post("/diagram", requireAuth, async (req: Request, res: Response) => {
     console.warn("[Diagram] Template lookup failed:", e);
   }
 
-  // ── Attempt 1: Nano Banana 2 — Pollinations flux (primary image generator) ────────────
-  // Builds a detailed, textbook-quality prompt for the flux model.
-  try {
-    const sendNote = sendNeed
-      ? `Adapted for ${sendNeed}: extra-large clear labels, high contrast, simple layout.`
-      : "Professional UK school textbook quality.";
-    const diagramHint = getDiagramHintServer(subject, topic);
-    const imagePrompt = encodeURIComponent(
-      `Educational diagram: ${diagramHint}. ` +
-      `Subject: ${subject}. Topic: ${topic}. Year group: ${yr}. ` +
-      `Style: clean white background, printed textbook diagram, all labels clearly legible in black Arial font, ` +
-      `accurate scientific/mathematical shapes, leader lines from shapes to labels, no watermarks, no decorative borders. ` +
-      `${sendNote}`
-    );
-    const seed = (Date.now() + Math.floor(Math.random() * 9999)) % 99999;
-    const nanoBananaUrl = `https://image.pollinations.ai/prompt/${imagePrompt}?width=700&height=500&nologo=true&model=flux&seed=${seed}&enhance=true`;
-    // Verify the image is reachable before returning it
-    const check = await fetch(nanoBananaUrl, { method: "HEAD", signal: AbortSignal.timeout(12000) }).catch(() => null);
-    if (check && check.ok) {
-      return res.json({
-        imageUrl: nanoBananaUrl,
-        caption: `${topic} — ${subject} diagram`,
-        provider: "nano-banana-2",
-        type: "image",
-      });
+  // ── Build diagram prompt (shared by all AI providers) ────────────────────────
+  const { system, user } = buildDiagramPrompt(subject, topic, yr, sendNeed);
+
+  // ── Attempt 1: Gemini 2.0 Flash — primary SVG generator ──────────────────────
+  // Gemini produces clean, professional, well-labelled SVG diagrams reliably.
+  const geminiKey = getEffectiveKey("gemini", undefined, schoolId);
+  if (geminiKey) {
+    try {
+      const svgText = await callGemini(system, user, geminiKey, 5000);
+      const svgMatch = svgText.match(/<svg[\s\S]*?<\/svg>/i);
+      const captionMatch = svgText.match(/CAPTION:\s*(.+)/i);
+      if (svgMatch) {
+        // Sanitise: replace any multi-byte superscript characters (e.g. ² ³) with plain ASCII
+        const cleanSvg = svgMatch[0]
+          .replace(/\u00b2/g, "&#178;")
+          .replace(/\u00b3/g, "&#179;")
+          .replace(/\u00b0/g, "&#176;")
+          .replace(/\u03bb/g, "&#955;")
+          .replace(/\u03c0/g, "&#960;")
+          .replace(/\u03b1/g, "&#945;")
+          .replace(/\u03b2/g, "&#946;")
+          .replace(/\u03b3/g, "&#947;")
+          .replace(/\u2192/g, "&#8594;")
+          .replace(/\u2190/g, "&#8592;")
+          .replace(/\u2194/g, "&#8596;")
+          .replace(/\u2191/g, "&#8593;")
+          .replace(/\u2193/g, "&#8595;");
+        return res.json({
+          svg: cleanSvg,
+          caption: captionMatch ? captionMatch[1].trim() : `${topic} diagram`,
+          provider: "gemini",
+          type: "svg",
+        });
+      }
+    } catch (e) {
+      console.warn("[Diagram] Gemini SVG failed:", e);
     }
-  } catch (e) {
-    console.warn("[Diagram] Nano Banana 2 (Pollinations flux) failed:", e);
   }
 
-  // ── Attempt 2: GPT-4o SVG (high-quality structured fallback) ────────────────────────
-  const { system, user } = buildDiagramPrompt(subject, topic, yr, sendNeed);
+  // ── Attempt 2: GPT-4o SVG (secondary) ────────────────────────────────────────
   const openaiKey = getEffectiveKey("openai", undefined, schoolId);
   if (openaiKey) {
     try {
@@ -700,7 +709,7 @@ router.post("/diagram", requireAuth, async (req: Request, res: Response) => {
     }
   }
 
-  // ── Attempt 3: Auto-fallback through all text providers (SVG generation) ────────────
+  // ── Attempt 3: Auto-fallback through all remaining text providers ─────────────
   try {
     const result = await callWithFallback(system, user, 4000, undefined, schoolId);
     const svgMatch = result.content.match(/<svg[\s\S]*?<\/svg>/i);
@@ -715,26 +724,6 @@ router.post("/diagram", requireAuth, async (req: Request, res: Response) => {
     }
   } catch (e) {
     console.warn("[Diagram] All SVG providers failed:", e);
-  }
-
-  // ── Attempt 4: Pollinations flux-schnell (quick fallback image) ────────────────────
-  try {
-    const imagePrompt2 = encodeURIComponent(
-      `Educational textbook diagram of ${topic} for ${subject}, ${yr}. ` +
-      `Clean white background, clear labels, UK school textbook style, no watermarks.`
-    );
-    const fallbackUrl = `https://image.pollinations.ai/prompt/${imagePrompt2}?width=700&height=500&nologo=true&model=flux-schnell&seed=${Date.now() % 9999}`;
-    const check2 = await fetch(fallbackUrl, { method: "HEAD", signal: AbortSignal.timeout(8000) }).catch(() => null);
-    if (check2 && check2.ok) {
-      return res.json({
-        imageUrl: fallbackUrl,
-        caption: `${topic} — ${subject} illustration`,
-        provider: "pollinations-schnell",
-        type: "image",
-      });
-    }
-  } catch (e) {
-    console.warn("[Diagram] Pollinations schnell fallback failed:", e);
   }
 
   // ── Attempt 5: Clean placeholder SVG ──────────────────────────────────────────────────────
