@@ -510,9 +510,11 @@ router.post("/tts", requireAuth, async (req: Request, res: Response) => {
         if (row?.api_key) openaiKey = row.api_key;
       } catch { /* ignore */ }
     }
-    // NOTE: We do NOT fall back to process.env.OPENAI_API_KEY for TTS.
-    // The env key is used for script generation only, not TTS.
-    // TTS always uses Microsoft Edge Neural TTS (free, fast, human-quality).
+    // If no school/admin key found, use the environment OpenAI key.
+    // This ensures TTS always works with a human-sounding voice.
+    if (!openaiKey && process.env.OPENAI_API_KEY) {
+      openaiKey = process.env.OPENAI_API_KEY;
+    }
 
     if (openaiKey) {
       const validVoices = ["alloy", "echo", "fable", "onyx", "nova", "shimmer"];
