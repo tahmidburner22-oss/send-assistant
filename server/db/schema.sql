@@ -223,6 +223,26 @@ CREATE TABLE IF NOT EXISTS behaviour_records (
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
+-- Behaviour Support Plans (saved from AI tool, visible in Parent Portal)
+CREATE TABLE IF NOT EXISTS behaviour_support_plans (
+  id TEXT PRIMARY KEY,
+  school_id TEXT NOT NULL REFERENCES schools(id),
+  pupil_id TEXT NOT NULL REFERENCES pupils(id),
+  created_by TEXT REFERENCES users(id),
+  title TEXT NOT NULL,
+  content TEXT NOT NULL,           -- full AI-generated plan text
+  summary TEXT,                    -- short summary for parent portal card
+  strategies TEXT,                 -- extracted strategies for parent portal
+  positive_targets TEXT,           -- extracted positive targets
+  status TEXT NOT NULL DEFAULT 'active', -- active | review | archived
+  review_date TEXT,
+  shared_with_parents INTEGER NOT NULL DEFAULT 1,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_bsp_pupil ON behaviour_support_plans(pupil_id);
+CREATE INDEX IF NOT EXISTS idx_bsp_school ON behaviour_support_plans(school_id);
+
 -- Ideas (community board)
 CREATE TABLE IF NOT EXISTS ideas (
   id TEXT PRIMARY KEY,

@@ -250,6 +250,7 @@ export default function ParentPortal() {
   const [code, setCode] = useState("");
   const [child, setChild] = useState<Child | null>(null);
   const [behaviourRecords, setBehaviourRecords] = useState<any[]>([]);
+  const [supportPlans, setSupportPlans] = useState<any[]>([]);
   const [behaviourLoading, setBehaviourLoading] = useState(false);
   const [viewContent, setViewContent] = useState<{ title: string; content: string } | null>(null);
   const [openSection, setOpenSection] = useState<string | null>("assignments");
@@ -283,14 +284,19 @@ export default function ParentPortal() {
     if (found) {
       setChild(found);
       toast.success(`Welcome! Viewing ${found.name}'s portal.`);
-      // Fetch behaviour records for this pupil from the server
+      // Fetch behaviour records and support plans from the server
       setBehaviourLoading(true);
-      fetch(`/api/data/parent/behaviour/${found.id}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-      })
-        .then(r => r.ok ? r.json() : [])
-        .then(data => { setBehaviourRecords(Array.isArray(data) ? data : []); })
-        .catch(() => setBehaviourRecords([]))
+      const token = localStorage.getItem('token');
+      const hdrs = { Authorization: `Bearer ${token}` };
+      Promise.all([
+        fetch(`/api/data/parent/behaviour/${found.id}`, { headers: hdrs }).then(r => r.ok ? r.json() : []),
+        fetch(`/api/data/parent/support-plans/${found.id}`, { headers: hdrs }).then(r => r.ok ? r.json() : []),
+      ])
+        .then(([beh, plans]) => {
+          setBehaviourRecords(Array.isArray(beh) ? beh : []);
+          setSupportPlans(Array.isArray(plans) ? plans : []);
+        })
+        .catch(() => { setBehaviourRecords([]); setSupportPlans([]); })
         .finally(() => setBehaviourLoading(false));
     } else {
       toast.error("Invalid code. Please check and try again.");
@@ -564,13 +570,15 @@ export default function ParentPortal() {
                 <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">
                   <span className="text-lg">📋</span> Behaviour Support Plans
                 </h3>
-                {((child as any).behaviourPlans || []).length === 0 ? (
+                {behaviourLoading ? (
+                  <div className="text-center py-4"><p className="text-sm text-muted-foreground">Loading...</p></div>
+                ) : supportPlans.length === 0 ? (
                   <div className="text-center py-6">
                     <div className="text-3xl mb-2">✅</div>
                     <p className="text-sm font-medium text-foreground">No active behaviour support plans</p>
                     <p className="text-xs text-muted-foreground mt-1">Your child's teacher will share any plans here when created.</p>
                   </div>
-                ) : ((child as any).behaviourPlans || []).map((plan: any, i: number) => (
+                ) : supportPlans.map((plan: any, i: number) => (
                   <div key={i} className="border border-border/50 rounded-lg p-3 mb-2">
                     <div className="flex items-start justify-between">
                       <h4 className="font-semibold text-sm">{plan.title || 'Behaviour Support Plan'}</h4>

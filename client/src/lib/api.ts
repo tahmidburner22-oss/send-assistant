@@ -125,6 +125,14 @@ export const pupils = {
     apiFetch<any>("/pupils/safeguarding/incidents", { method: "POST", body: JSON.stringify(data) }),
   updateIncident: (id: string, data: any) =>
     apiFetch<any>(`/pupils/safeguarding/incidents/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+  listSupportPlans: (id: string) =>
+    apiFetch<any[]>(`/pupils/${id}/support-plans`),
+  saveSupportPlan: (id: string, data: any) =>
+    apiFetch<any>(`/pupils/${id}/support-plans`, { method: "POST", body: JSON.stringify(data) }),
+  updateSupportPlan: (pupilId: string, planId: string, data: any) =>
+    apiFetch<any>(`/pupils/${pupilId}/support-plans/${planId}`, { method: "PUT", body: JSON.stringify(data) }),
+  deleteSupportPlan: (pupilId: string, planId: string) =>
+    apiFetch<any>(`/pupils/${pupilId}/support-plans/${planId}`, { method: "DELETE" }),
 };
 
 // ── Data (worksheets, stories, etc.) ─────────────────────────────────────────

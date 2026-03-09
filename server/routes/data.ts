@@ -246,6 +246,21 @@ router.delete("/behaviour/:id", requireAuth, (req: Request, res: Response) => {
   res.json({ message: "Deleted" });
 });
 
+// ── Parent Portal: support plans for a pupil ───────────────────────────
+router.get("/parent/support-plans/:pupilId", requireAuth, (req: Request, res: Response) => {
+  const schoolId = req.user!.schoolId;
+  const { pupilId } = req.params;
+  const pupil = db.prepare("SELECT * FROM pupils WHERE id=? AND school_id=?").get(pupilId, schoolId);
+  if (!pupil) return res.status(404).json({ error: "Pupil not found" });
+  const plans = db.prepare(
+    `SELECT id, title, summary, strategies, positive_targets as positiveTargets, status, review_date as reviewDate, created_at
+     FROM behaviour_support_plans
+     WHERE pupil_id = ? AND school_id = ? AND shared_with_parents = 1
+     ORDER BY created_at DESC`
+  ).all(pupilId, schoolId);
+  res.json(plans);
+});
+
 // ── Parent Portal: behaviour records for a pupil ───────────────────────────
 router.get("/parent/behaviour/:pupilId", requireAuth, (req: Request, res: Response) => {
   const schoolId = req.user!.schoolId;
