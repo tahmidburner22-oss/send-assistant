@@ -38,6 +38,7 @@ interface AIToolPageProps {
   formatOutput?: (text: string) => string;
   outputTitle?: (values: Record<string, string>) => string;
   savedCategory?: string;
+  onResult?: (text: string, values: Record<string, string>) => void;
 }
 
 function formatAIText(text: string): string {
@@ -55,7 +56,7 @@ function formatAIText(text: string): string {
 type EditMode = "none" | "manual" | "ai";
 
 export default function AIToolPage({
-  title, description, icon, accentColor, fields, buildPrompt, formatOutput, outputTitle,
+  title, description, icon, accentColor, fields, buildPrompt, formatOutput, outputTitle, onResult,
 }: AIToolPageProps) {
   const [values, setValues] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
@@ -85,6 +86,7 @@ export default function AIToolPage({
       const { text, provider: p } = await callAI(system, user, maxTokens || 2500);
       setResult(text);
       setProvider(p);
+      onResult?.(text, values);
       toast.success("Generated successfully!");
     } catch (err) {
       toast.error("Generation failed. Please try again.");

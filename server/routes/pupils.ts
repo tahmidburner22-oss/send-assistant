@@ -226,4 +226,58 @@ router.post("/:id/behaviour", requireAuth, (req: Request, res: Response) => {
   res.status(201).json({ id });
 });
 
+// ── Behaviour Support Plans ──────────────────────────────────────────────────
+router.get("/:id/support-plans", requireAuth, (req: Request, res: Response) => {
+  const pupil = db.prepare("SELECT id FROM pupils WHERE id=? AND school_id=?").get(req.params.id, req.user!.schoolId);
+  if (!pupil) return res.status(404).json({ error: "Pupil not found" });
+  const plans = db.prepare(
+    `SELECT bsp.*, u.display_name as created_by_name
+     FROM behaviour_support_plans bsp
+     LEFT JOIN users u ON bsp.created_by = u.id
+     WHERE bsp.pupil_id = ? AND bsp.school_id = ?
+     ORDER BY bsp.created_at DESC`
+  ).all(req.params.id, req.user!.schoolId);
+  res.json(plans);
+});
+
+router.post("/:id/support-plans", requireAuth, (req: Request, res: Response) => {
+  const { title, content, summary, strategies, positiveTargets, status, reviewDate, sharedWithParents } = req.body;
+  if (!title || !content) return res.status(400).json({ error: "title and content required" });
+  const pupil = db.prepare("SELECT id FROM pupils WHERE id=? AND school_id=?").get(req.params.id, req.user!.schoolId);
+  if (!pupil) return res.status(404).json({ error: "Pupil not found" });
+  const id = uuidv4();
+  db.prepare(
+    `INSERT INTO behaviour_support_plans (id, school_id, pupil_id, created_by, title, content, summary, strategies, positive_targets, status, review_date, shared_with_parents)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+  ).run(
+    id, req.user!.schoolId, req.params.id, req.user!.id,
+    title, content,
+    summary || null, strategies || null, positiveTargets || null,
+    status || "active", reviewDate || null,
+    sharedWithParents !== false ? 1 : 0
+  );
+  auditLog(req.user!.id, req.user!.schoolId ?? null, "support_plan.created", "behaviour_support_plans", id, { title }, req.ip ?? undefined);
+  res.status(201).json({ id });
+});
+
+router.put("/:id/support-plans/:planId", requireAuth, (req: Request, res: Response) => {
+  const plan = db.prepare("SELECT * FROM behaviour_support_plans WHERE id=? AND school_id=?").get(req.params.planId, req.user!.schoolId) as any;
+  if (!plan) return res.status(404).json({ error: "Plan not found" });
+  const { status, sharedWithParents } = req.body;
+  db.prepare("UPDATE behaviour_support_plans SET status=?, shared_with_parents=?, updated_at=datetime('now') WHERE id=?").run(
+    status || plan.status,
+    sharedWithParents !== undefined ? (sharedWithParents ? 1 : 0) : plan.shared_with_parents,
+    req.params.planId
+  );
+  res.json({ message: "Updated" });
+});
+
+router.delete("/:id/support-plans/:planId", requireAuth, (req: Request, res: Response) => {
+  const plan = db.prepare("SELECT * FROM behaviour_support_plans WHERE id=? AND school_id=?").get(req.params.planId, req.user!.schoolId);
+  if (!plan) return res.status(404).json({ error: "Plan not found" });
+  db.prepare("DELETE FROM behaviour_support_plans WHERE id=?").run(req.params.planId);
+  res.json({ message: "Deleted" });
+});
+
 export default router;
+
