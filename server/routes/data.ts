@@ -68,9 +68,18 @@ router.post("/worksheets", requireAuth, (req: Request, res: Response) => {
 });
 
 router.put("/worksheets/:id", requireAuth, (req: Request, res: Response) => {
-  const { rating, ratingLabel, overlay } = req.body;
-  db.prepare("UPDATE worksheets SET rating=?, rating_label=?, overlay=? WHERE id=? AND school_id=?")
-    .run(rating, ratingLabel, overlay, req.params.id, req.user!.schoolId);
+  const { rating, ratingLabel, overlay, content, teacherContent, sections } = req.body;
+  // Always update rating/overlay; also update content/teacherContent if provided (e.g. after editing)
+  db.prepare("UPDATE worksheets SET rating=?, rating_label=?, overlay=?, content=COALESCE(?, content), teacher_content=COALESCE(?, teacher_content) WHERE id=? AND school_id=?")
+    .run(rating, ratingLabel, overlay, content ?? null, teacherContent ?? null, req.params.id, req.user!.schoolId);
+  // Update sections if provided
+  if (Array.isArray(sections)) {
+    db.prepare("DELETE FROM worksheet_sections WHERE worksheet_id=?").run(req.params.id);
+    sections.forEach((s: any, idx: number) => {
+      db.prepare(`INSERT INTO worksheet_sections (id, worksheet_id, section_index, title, type, content, teacher_only, svg, caption, symbols) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+        .run(uuidv4(), req.params.id, idx, s.title || null, s.type || null, s.content || null, s.teacherOnly ? 1 : 0, s.svg || null, s.caption || null, s.symbols ? JSON.stringify(s.symbols) : null);
+    });
+  }
   res.json({ message: "Updated" });
 });
 

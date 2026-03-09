@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -28,7 +28,10 @@ function buildSections(ws: Worksheet): Section[] {
 }
 
 export default function History() {
-  const { worksheetHistory, storyHistory, updateWorksheet, children, assignWork } = useApp();
+  const { worksheetHistory, storyHistory, updateWorksheet, children, assignWork, refreshData } = useApp();
+
+  // Re-fetch data from server on mount so history is always current
+  useEffect(() => { refreshData(); }, []);
 
   // ── Assign to student state ─────────────────────────────────────────────────
   const [assignItem, setAssignItem] = useState<{ title: string; type: "worksheet" | "story"; content: string } | null>(null);

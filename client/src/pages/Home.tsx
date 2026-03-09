@@ -8,7 +8,7 @@ import {
   FlaskConical, Landmark, Globe, Palette, Music, Dumbbell, Monitor,
   Wrench, Heart, Languages, UserCheck, Briefcase, Theater, Star, Lightbulb
 } from "lucide-react";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 
 const iconMap: Record<string, any> = {
   BookOpen, Calculator, FlaskConical, Landmark, Globe, Palette, Music,
@@ -23,7 +23,10 @@ const subjectIcons: Record<string, any> = {
 };
 
 export default function Home() {
-  const { user, worksheetHistory, storyHistory, differentiationHistory, children } = useApp();
+  const { user, worksheetHistory, storyHistory, differentiationHistory, children, refreshData } = useApp();
+
+  // Re-fetch data from server every time the dashboard is visited so stats stay current
+  useEffect(() => { refreshData(); }, []);
   const [tip] = useState(() => cobsTips[Math.floor(Math.random() * cobsTips.length)]);
 
   const totalWorksheets = worksheetHistory.length;
