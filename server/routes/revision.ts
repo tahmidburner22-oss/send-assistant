@@ -83,12 +83,15 @@ const upload = multer({
 });
 
 // ── Multi-provider AI helpers (same pattern as ai.ts) ────────────────────────
+// Provider order: providers with keys are tried first.
+// On Railway, OPENAI_API_KEY is set so openai is tried first.
+// If a Groq or Gemini key is added (free, much faster), they will be tried first.
 const PROVIDER_ORDER = ["groq", "gemini", "openai", "openrouter"] as const;
 
 function getEffectiveKey(provider: string): string {
   try {
     const row = db.prepare(
-      "SELECT api_key FROM admin_api_keys WHERE provider = ?"
+      "SELECT api_key FROM admin_api_keys WHERE provider = ? ORDER BY updated_at DESC LIMIT 1"
     ).get(provider) as any;
     if (row?.api_key) return row.api_key;
   } catch (_) {}
@@ -104,7 +107,7 @@ function getEffectiveKey(provider: string): string {
 function getAdminModel(provider: string): string {
   try {
     const row = db.prepare(
-      "SELECT model FROM admin_api_keys WHERE provider = ?"
+      "SELECT model FROM admin_api_keys WHERE provider = ? ORDER BY updated_at DESC LIMIT 1"
     ).get(provider) as any;
     return row?.model || "";
   } catch (_) { return ""; }
@@ -211,7 +214,7 @@ async function callWithFallback(system: string, user: string, maxTokens: number)
       else if (provider === "gemini") callPromise = callGemini(system, user, key, maxTokens);
       else if (provider === "openai") callPromise = callOpenAI(system, user, key, model, maxTokens);
       else callPromise = callOpenRouter(system, user, key, model, maxTokens);
-      const content = await withTimeout(callPromise, 25000, provider);
+      const content = await withTimeout(callPromise, 15000, provider);
       if (content?.trim()) {
         console.log(`[Revision AI] Success via ${provider}`);
         return content;

@@ -145,7 +145,7 @@ export async function initDb() {
       _db.run(
         `INSERT OR REPLACE INTO admin_api_keys (id, provider, api_key, model, updated_at)
          VALUES (?, ?, ?, ?, datetime('now'))`,
-        [uuidv4(), provider, key, model]
+        [provider, provider, key, model]
       );
     }
   }
