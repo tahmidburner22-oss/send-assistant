@@ -70,8 +70,9 @@ router.post("/worksheets", requireAuth, (req: Request, res: Response) => {
     auditLog(req.user!.id, req.user!.schoolId, "worksheet.created", "worksheet", id, { title, subject, yearGroup }, req.ip);
     res.status(201).json({ id });
   } catch (err: any) {
-    console.error(`[POST /worksheets] ERROR: ${err.message}`, err.stack);
-    res.status(500).json({ error: err.message || "Failed to save worksheet" });
+    const errStr = typeof err === 'string' ? err : (err?.message || JSON.stringify(err) || 'unknown error');
+    console.error(`[POST /worksheets] CAUGHT ERROR type=${typeof err}:`, err);
+    res.status(500).json({ error: errStr, type: typeof err, raw: String(err) });
   }
 });
 
