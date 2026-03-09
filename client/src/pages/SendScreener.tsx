@@ -257,11 +257,11 @@ const SECTIONS: Section[] = [
 ];
 
 const RESPONSE_OPTIONS = [
-  { value: 0, label: "Never", emoji: "😌", description: "This doesn't apply" },
-  { value: 1, label: "Rarely", emoji: "🙂", description: "Occasionally" },
-  { value: 2, label: "Sometimes", emoji: "😐", description: "Fairly regularly" },
-  { value: 3, label: "Often", emoji: "😟", description: "Most of the time" },
-  { value: 4, label: "Always", emoji: "😰", description: "Constantly" },
+  { value: 0, label: "Never", description: "This doesn't apply" },
+  { value: 1, label: "Rarely", description: "Occasionally" },
+  { value: 2, label: "Sometimes", description: "Fairly regularly" },
+  { value: 3, label: "Often", description: "Most of the time" },
+  { value: 4, label: "Always", description: "Constantly" },
 ];
 
 // ─── Scoring ──────────────────────────────────────────────────────────────────
@@ -592,7 +592,6 @@ export default function SendScreener() {
                         : "bg-white border-gray-200 text-gray-700 hover:border-indigo-300 hover:bg-indigo-50 active:bg-indigo-100"
                     }`}
                   >
-                    <span className="text-2xl leading-none flex-shrink-0">{opt.emoji}</span>
                     <div className="flex-1">
                       <p className={`font-semibold text-sm ${isSelected ? "text-white" : "text-gray-900"}`}>
                         {opt.label}
