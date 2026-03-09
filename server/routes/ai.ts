@@ -497,4 +497,147 @@ async function callHuggingFace(system: string, user: string, key: string, maxTok
   throw new Error("HuggingFace: all models failed");
 }
 
+// ── Diagram generation helpers ────────────────────────────────────────────────
+
+function getDiagramHintServer(subject: string, topic: string): string {
+  const s = subject.toLowerCase();
+  const t = topic.toLowerCase();
+  if (s === "maths" || s === "mathematics") {
+    if (t.includes("pythagoras") || t.includes("triangle")) return "right-angled triangle with sides labelled a, b, c (hypotenuse). Show the formula a²+b²=c² in a box. Mark the right angle with a square symbol.";
+    if (t.includes("circle")) return "circle with radius, diameter, circumference, chord, arc, sector, tangent all labelled with arrows.";
+    if (t.includes("graph") || t.includes("linear")) return "coordinate grid with x and y axes, two plotted points joined by a line, gradient triangle labelled rise/run, y-intercept labelled.";
+    if (t.includes("fraction")) return "three rectangles side by side: first divided into 4 parts with 1 shaded (1/4), second divided into 2 parts with 1 shaded (1/2), third divided into 4 parts with 2 shaded (2/4). Labels below each.";
+    if (t.includes("angle")) return "three angle types side by side: acute (45°), right angle (90° with square), obtuse (135°). Each labelled with name and degree.";
+    return "clear mathematical diagram with labelled axes, shapes, or number lines appropriate for this topic.";
+  }
+  if (s === "science" || s === "biology") {
+    if (t.includes("cell") && t.includes("plant")) return "plant cell cross-section: large rectangular cell with thick cell wall, cell membrane inside, large central vacuole, nucleus (oval with nucleolus), several chloroplasts (oval, green), mitochondria. Each part has a straight leader line to a label.";
+    if (t.includes("cell")) return "animal cell: irregular oval shape, cell membrane, nucleus (large oval with nucleolus), cytoplasm, mitochondria, ribosomes. Each part has a straight leader line to a label.";
+    if (t.includes("heart") || t.includes("blood")) return "human heart cross-section: four chambers (right atrium, left atrium, right ventricle, left ventricle), aorta at top, pulmonary artery, vena cava, pulmonary vein. Arrows showing blood flow direction. All parts labelled.";
+    if (t.includes("wave") || t.includes("sound") || t.includes("light")) return "transverse wave: sinusoidal wave with amplitude labelled (vertical arrow from centre to crest), wavelength labelled (horizontal arrow between two crests), crest and trough labelled. Wave equation v=fλ in a box.";
+    if (t.includes("atom") || t.includes("electron")) return "Bohr model atom: nucleus in centre (labelled with protons+neutrons), two electron shells as circles, electrons as dots on shells. Shell 1: 2 electrons. Shell 2: 8 electrons. All parts labelled.";
+    return "accurate, labelled scientific diagram relevant to this topic with all key parts identified by leader lines.";
+  }
+  if (s === "geography") {
+    if (t.includes("river") || t.includes("erosion")) return "river valley cross-section: V-shaped valley, river at bottom, interlocking spurs on sides. Separate inset showing meander with erosion on outer bend and deposition on inner bend. Labels: erosion, deposition, meander, floodplain.";
+    if (t.includes("volcano") || t.includes("tectonic")) return "volcano cross-section: cone shape, magma chamber at base, main vent up centre, secondary vent on side, crater at top, lava flow on surface. Tectonic plates shown below. All parts labelled.";
+    return "clear geographical diagram or cross-section relevant to this topic with all features labelled.";
+  }
+  if (s === "history") return "horizontal timeline with at least 5 key events. Each event has a vertical line down to a date label and a text box above with the event name. Arrow at right end of timeline.";
+  return "clear, well-labelled educational diagram most relevant to this topic for UK school students, with all key parts identified by leader lines.";
+}
+
+function buildDiagramPrompt(subject: string, topic: string, yearGroup: string, sendNeed?: string): { system: string; user: string } {
+  const hint = getDiagramHintServer(subject, topic);
+  const sendAdapt = sendNeed
+    ? `SEND adaptation for ${sendNeed}: font-size 15+ on all labels, stroke-width 2.5+, max 6 labels, high-contrast colours, large clear arrows.`
+    : `Standard: font-size 13 minimum, stroke-width 1.5 minimum.`;
+
+  const system = `You are a specialist educational SVG diagram generator for UK school worksheets.
+Your diagrams are ACCURATE, WELL-STRUCTURED, and PRINT-READY.
+
+ABSOLUTE RULES — violating any rule makes the diagram unusable:
+1. Output ONLY valid SVG. Start exactly with <svg and end exactly with </svg>. Zero other text before or after.
+2. Use: viewBox="0 0 700 500" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg"
+3. FIRST element inside <svg>: <rect width="700" height="500" fill="white"/>
+4. ALL text elements MUST have: font-family="Arial, sans-serif"
+5. Permitted elements ONLY: rect, circle, ellipse, line, path, polygon, polyline, text, tspan, g, defs, marker
+6. NO: foreignObject, script, style, image, use, symbol, filter, clipPath
+7. Shapes: fill="none" stroke="#111" stroke-width="1.5" for outlines. Pale fills: #e8f4fd, #e8fde8, #fff8e1, #fde8e8
+8. Labels: fill="#111" font-size="13" to "16". NEVER overlap text with shapes.
+9. Leader lines: thin lines (stroke="#555" stroke-width="1") from shape edge to label. Label OUTSIDE the shape.
+10. Arrows: define ONE <marker id="arr" ...> in <defs> and reuse with marker-end="url(#arr)"
+11. Title: add a <text> at top centre, font-size="16" font-weight="bold" fill="#333">
+12. ${sendAdapt}
+13. ACCURACY: shapes must be scientifically/mathematically correct. Labels must be spelled correctly.
+14. SPACING: leave 40px margin on all sides. Labels must not touch the SVG border.
+
+After </svg> write on a new line: CAPTION: [one sentence]`;
+
+  const user = `Create an educational SVG diagram for:
+Subject: ${subject}
+Topic: ${topic}
+Year Group: ${yearGroup}
+Diagram to draw: ${hint}
+
+Remember: SVG only (starting with <svg), then CAPTION: on a new line.`;
+
+  return { system, user };
+}
+
+// ── POST /api/ai/diagram — dedicated diagram generation with fallback chain ───
+router.post("/diagram", requireAuth, async (req: Request, res: Response) => {
+  const { subject, topic, yearGroup, sendNeed } = req.body;
+  if (!subject || !topic) return res.status(400).json({ error: "subject and topic required" });
+
+  const schoolId = req.user?.schoolId ?? undefined;
+  const { system, user } = buildDiagramPrompt(subject, topic, yearGroup || "Year 9", sendNeed);
+
+  // Attempt 1: GPT-4o via OpenAI (best at structured SVG)
+  const openaiKey = getEffectiveKey("openai", undefined, schoolId);
+  if (openaiKey) {
+    try {
+      const svgText = await callOpenAI(system, user, openaiKey, "gpt-4o", 4000);
+      const svgMatch = svgText.match(/<svg[\s\S]*?<\/svg>/i);
+      const captionMatch = svgText.match(/CAPTION:\s*(.+)/i);
+      if (svgMatch) {
+        return res.json({
+          svg: svgMatch[0],
+          caption: captionMatch ? captionMatch[1].trim() : `${topic} diagram`,
+          provider: "openai-gpt4o",
+          type: "svg",
+        });
+      }
+    } catch (e) {
+      console.warn("[Diagram] GPT-4o failed:", e);
+    }
+  }
+
+  // Attempt 2: Auto-fallback through all text providers (SVG generation)
+  try {
+    const result = await callWithFallback(system, user, 4000, undefined, schoolId);
+    const svgMatch = result.content.match(/<svg[\s\S]*?<\/svg>/i);
+    const captionMatch = result.content.match(/CAPTION:\s*(.+)/i);
+    if (svgMatch) {
+      return res.json({
+        svg: svgMatch[0],
+        caption: captionMatch ? captionMatch[1].trim() : `${topic} diagram`,
+        provider: result.provider,
+        type: "svg",
+      });
+    }
+  } catch (e) {
+    console.warn("[Diagram] All SVG providers failed:", e);
+  }
+
+  // Attempt 3: Pollinations image (illustrative fallback)
+  try {
+    const imagePrompt = encodeURIComponent(
+      `Educational textbook illustration of ${topic} for ${subject} class, ${yearGroup} level. ` +
+      `Clean white background, clear labels, diagram style, UK school textbook quality, no watermarks.`
+    );
+    const pollinationsUrl = `https://image.pollinations.ai/prompt/${imagePrompt}?width=700&height=500&nologo=true&model=flux-schnell&seed=${Date.now() % 9999}`;
+    const check = await fetch(pollinationsUrl, { method: "HEAD", signal: AbortSignal.timeout(8000) }).catch(() => null);
+    if (check && check.ok) {
+      return res.json({
+        imageUrl: pollinationsUrl,
+        caption: `${topic} — ${subject} illustration`,
+        provider: "pollinations",
+        type: "image",
+      });
+    }
+  } catch (e) {
+    console.warn("[Diagram] Pollinations fallback failed:", e);
+  }
+
+  // Attempt 4: Clean placeholder SVG
+  const placeholder = `<svg viewBox="0 0 700 500" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg"><rect width="700" height="500" fill="white"/><rect x="20" y="20" width="660" height="460" fill="#f8f9ff" stroke="#6366f1" stroke-width="2" rx="12"/><text x="350" y="220" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" fill="#6366f1" font-weight="bold">${topic}</text><text x="350" y="255" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#555">${subject} · ${yearGroup}</text><text x="350" y="290" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#999">Diagram could not be generated — please try again</text></svg>`;
+  return res.json({
+    svg: placeholder,
+    caption: `${topic} diagram`,
+    provider: "placeholder",
+    type: "svg",
+  });
+});
+
 export default router;

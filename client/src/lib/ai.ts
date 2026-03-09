@@ -694,62 +694,52 @@ export async function aiGenerateDiagram(params: {
   yearGroup: string;
   diagramType?: string;
   sendNeed?: string;
-}): Promise<{ svg: string; caption: string; provider?: string }> {
-  const topicHint = params.diagramType || getDiagramHint(params.subject, params.topic);
-  const sendAdapt = params.sendNeed
-    ? `SEND adaptation (${params.sendNeed}): Use font-size 16+ for all labels. Use thick strokes (stroke-width 2.5+). Fewer labels — max 6. Use high-contrast colours. Add clear directional arrows.`
-    : "Standard labelling. Font-size minimum 13. Stroke-width minimum 1.5.";
-
-  const system = `You are an expert educational SVG diagram creator for UK school worksheets.
-You produce CLEAN, ACCURATE, WELL-LABELLED SVG diagrams that print perfectly.
-
-STRICT RULES — follow every one:
-1. Return ONLY valid SVG markup. Start with <svg and end with </svg>. No JSON, no markdown, no explanation text.
-2. viewBox="0 0 600 420" width="100%" height="auto"
-3. First child: <rect width="600" height="420" fill="white"/> (white background)
-4. font-family="Arial, sans-serif" on ALL text elements
-5. Use ONLY these SVG elements: rect, circle, ellipse, line, path, polygon, polyline, text, g, defs, marker
-6. Shapes: use fill="none" stroke="#1a1a1a" for outlines. Use fill="#e8f4fd" or similar pale fills for shapes.
-7. Labels: text fill="#1a1a1a", font-size between 13 and 18
-8. Arrows: use <marker> with markerEnd to draw arrowheads on lines
-9. NO external images, NO foreignObject, NO script, NO style blocks
-10. Keep it PRINTABLE: no gradients, no shadows, max 4 colours
-11. Make it ACCURATE and EDUCATIONAL — correct shapes, correct labels
-12. ${sendAdapt}
-
-After the closing </svg>, on a NEW LINE write: CAPTION: [one sentence description of the diagram]`;
-
-  const user = `Draw this educational diagram for UK school students:
-Subject: ${params.subject}
-Topic: ${params.topic}
-Year Group: ${params.yearGroup}
-
-Diagram specification: ${topicHint}
-
-Remember: SVG only, then CAPTION: on a new line.`;
-
-  const { text, provider } = await callAI(system, user, 3000);
-
-  // Extract SVG and caption
-  const svgMatch = text.match(/<svg[\s\S]*?<\/svg>/i);
-  const captionMatch = text.match(/CAPTION:\s*(.+)/i);
-
-  if (!svgMatch) {
-    // Fallback: generate a simple placeholder SVG
-    const fallbackSvg = `<svg viewBox="0 0 600 420" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg">
-  <rect width="600" height="420" fill="white"/>
-  <rect x="20" y="20" width="560" height="380" fill="none" stroke="#6366f1" stroke-width="2" rx="8"/>
-  <text x="300" y="200" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#6366f1" font-weight="bold">${params.topic}</text>
-  <text x="300" y="230" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#666">${params.subject} — ${params.yearGroup}</text>
-  <text x="300" y="260" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#999">Diagram placeholder — regenerate to get AI diagram</text>
-</svg>`;
-    return { svg: fallbackSvg, caption: `${params.topic} diagram`, provider };
+}): Promise<{ svg: string; caption: string; imageUrl?: string; provider?: string }> {
+  // ── Primary: dedicated server endpoint (GPT-4o → fallback chain → Pollinations) ──
+  try {
+    const storedToken = typeof localStorage !== 'undefined' ? localStorage.getItem('send_token') : null;
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (storedToken) headers['Authorization'] = `Bearer ${storedToken}`;
+    const res = await fetch('/api/ai/diagram', {
+      method: 'POST',
+      headers,
+      credentials: 'include',
+      body: JSON.stringify({
+        subject: params.subject,
+        topic: params.topic,
+        yearGroup: params.yearGroup,
+        sendNeed: params.sendNeed,
+        diagramType: params.diagramType,
+      }),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      return {
+        svg: data.svg || '',
+        caption: data.caption || `${params.topic} diagram`,
+        imageUrl: data.imageUrl,
+        provider: data.provider,
+      };
+    }
+  } catch (e) {
+    console.warn('[Diagram] Server /api/ai/diagram failed, using legacy fallback:', e);
   }
 
-  const svg = svgMatch[0];
-  const caption = captionMatch ? captionMatch[1].trim() : `${params.topic} diagram`;
-
-  return { svg, caption, provider };
+  // ── Legacy fallback: generic callAI with strict SVG prompt ──────────────────
+  const topicHint = params.diagramType || getDiagramHint(params.subject, params.topic);
+  const sendAdapt = params.sendNeed
+    ? `SEND adaptation (${params.sendNeed}): font-size 16+ on all labels, stroke-width 2.5+, max 6 labels, high-contrast colours, large arrows.`
+    : 'Standard: font-size 13 minimum, stroke-width 1.5 minimum.';
+  const system = `You are an expert educational SVG diagram creator. Return ONLY valid SVG starting with <svg and ending with </svg>. viewBox="0 0 700 500" width="100%" height="auto". First child: <rect width="700" height="500" fill="white"/>. font-family="Arial, sans-serif" on ALL text. ${sendAdapt}. After </svg> write: CAPTION: [one sentence]`;
+  const user = `Draw this educational diagram: Subject: ${params.subject}, Topic: ${params.topic}, Year: ${params.yearGroup}, Spec: ${topicHint}`;
+  const { text, provider } = await callAI(system, user, 3000);
+  const svgMatch = text.match(/<svg[\s\S]*?<\/svg>/i);
+  const captionMatch = text.match(/CAPTION:\s*(.+)/i);
+  if (!svgMatch) {
+    const fallbackSvg = `<svg viewBox="0 0 700 500" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg"><rect width="700" height="500" fill="white"/><rect x="20" y="20" width="660" height="460" fill="#f8f9ff" stroke="#6366f1" stroke-width="2" rx="12"/><text x="350" y="240" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#6366f1" font-weight="bold">${params.topic}</text><text x="350" y="270" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#666">${params.subject} — ${params.yearGroup}</text></svg>`;
+    return { svg: fallbackSvg, caption: `${params.topic} diagram`, provider };
+  }
+  return { svg: svgMatch[0], caption: captionMatch ? captionMatch[1].trim() : `${params.topic} diagram`, provider };
 }
 
 /**
