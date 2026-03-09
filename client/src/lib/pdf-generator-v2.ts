@@ -1,9 +1,11 @@
 /**
  * PDF Generator v2 — pixel-perfect HTML-to-PDF using html2canvas + jsPDF.
  * Print system opens a clean window with only the worksheet content.
+ * Applies SEND-specific formatting (font, line-height, spacing) per COBS Handbook.
  */
 import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
+import { getSendFormatting } from "@/lib/send-data";
 
 export async function downloadHtmlAsPdf(
   element: HTMLElement,
@@ -70,9 +72,13 @@ export function printWorksheetElement(
     layout?: "together" | "per-page";
     textSize?: number;
     title?: string;
+    sendNeedId?: string;
   } = {}
 ): void {
-  const { overlayColor = "white", viewMode = "student", layout = "together", textSize = 14, title = "Worksheet" } = options;
+  const { overlayColor = "white", viewMode = "student", layout = "together", textSize = 14, title = "Worksheet", sendNeedId } = options;
+
+  // Resolve SEND-specific formatting
+  const fmt = getSendFormatting(sendNeedId, textSize);
 
   // Extract just the worksheet-print-root inner HTML
   const printRoot = element.querySelector(".worksheet-print-root") as HTMLElement;
@@ -99,8 +105,12 @@ export function printWorksheetElement(
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html, body {
-      font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
-      font-size: ${textSize}px;
+      font-family: ${fmt.fontFamily};
+      font-size: ${fmt.fontSize}px;
+      line-height: ${fmt.lineHeight};
+      letter-spacing: ${fmt.letterSpacing};
+      word-spacing: ${fmt.wordSpacing};
+      font-weight: ${fmt.fontWeight};
       background: ${overlayColor};
       color: #1f2937;
       -webkit-print-color-adjust: exact;
@@ -126,7 +136,11 @@ export function printWorksheetElement(
     /* ── Worksheet root ── */
     .worksheet-print-root {
       background: ${overlayColor};
-      font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+      font-family: ${fmt.fontFamily};
+      font-size: ${fmt.fontSize}px;
+      line-height: ${fmt.lineHeight};
+      letter-spacing: ${fmt.letterSpacing};
+      word-spacing: ${fmt.wordSpacing};
     }
 
     /* ── Header ── */
@@ -155,14 +169,18 @@ export function printWorksheetElement(
       align-items: center;
       gap: 8px;
       font-weight: 700;
-      font-size: ${textSize - 1}px;
+      font-size: ${fmt.fontSize - 1}px;
+      font-family: ${fmt.fontFamily};
     }
     .ws-section-body {
       padding: 12px 14px;
-      font-size: ${textSize}px;
-      line-height: 1.7;
+      font-size: ${fmt.fontSize}px;
+      line-height: ${fmt.lineHeight};
+      letter-spacing: ${fmt.letterSpacing};
+      word-spacing: ${fmt.wordSpacing};
       white-space: pre-wrap;
       word-break: break-word;
+      font-family: ${fmt.fontFamily};
     }
 
     /* ── Tables ── */
@@ -170,7 +188,9 @@ export function printWorksheetElement(
       width: 100%;
       border-collapse: collapse;
       margin: 8px 0;
-      font-size: ${textSize - 1}px;
+      font-size: ${fmt.fontSize - 1}px;
+      font-family: ${fmt.fontFamily};
+      letter-spacing: ${fmt.letterSpacing};
     }
     th {
       background: #7c3aed !important;
@@ -212,9 +232,10 @@ export function printWorksheetElement(
       border: 1px solid #c4b5fd;
       border-radius: 4px;
       padding: 3px 10px;
-      font-size: ${textSize - 2}px;
+      font-size: ${fmt.fontSize - 2}px;
       font-weight: 600;
       color: #5b21b6;
+      font-family: ${fmt.fontFamily};
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
     }
@@ -225,8 +246,11 @@ export function printWorksheetElement(
       display: flex;
       align-items: flex-start;
       gap: 8px;
-      margin-bottom: 6px;
-      font-size: ${textSize}px;
+      margin-bottom: ${fmt.paragraphSpacing};
+      font-size: ${fmt.fontSize}px;
+      font-family: ${fmt.fontFamily};
+      line-height: ${fmt.lineHeight};
+      letter-spacing: ${fmt.letterSpacing};
     }
     .ws-check-box {
       width: 16px;
@@ -245,7 +269,9 @@ export function printWorksheetElement(
       padding: 6px 10px;
       margin: 4px 0;
       border-radius: 0 4px 4px 0;
-      font-size: ${textSize}px;
+      font-size: ${fmt.fontSize}px;
+      font-family: ${fmt.fontFamily};
+      line-height: ${fmt.lineHeight};
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
     }
@@ -296,7 +322,7 @@ export function printWorksheetElement(
 
     /* ── Misc ── */
     h1, h2, h3 { line-height: 1.3; }
-    p { margin-bottom: 6px; }
+    p { margin-bottom: ${fmt.paragraphSpacing}; line-height: ${fmt.lineHeight}; letter-spacing: ${fmt.letterSpacing}; word-spacing: ${fmt.wordSpacing}; font-family: ${fmt.fontFamily}; }
     strong { font-weight: 700; }
     em { font-style: italic; }
     ul, ol { padding-left: 20px; margin: 6px 0; }
