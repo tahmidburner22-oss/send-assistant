@@ -478,9 +478,9 @@ router.post("/quiz", requireAuth, async (req: Request, res: Response) => {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // POST /api/revision/tts
-// Convert podcast script to natural speech using Microsoft Edge Neural TTS
-// (free, no key required, human-quality voices for 14+ languages)
-// Falls back to OpenAI TTS if an API key is configured.
+// Convert podcast script to natural speech.
+// Priority: 1) Groq TTS (PlayAI voices, free, very human-sounding)
+//           2) OpenAI TTS (tts-1-hd, if a real OpenAI key is configured)
 // Body: { text, voice?, language? }
 // Returns: audio/mpeg stream
 // ─────────────────────────────────────────────────────────────────────────────
@@ -491,9 +491,45 @@ router.post("/tts", requireAuth, async (req: Request, res: Response) => {
       return res.status(400).json({ error: "text is required" });
     }
 
-    // 1. Try OpenAI TTS if a key is configured (premium upgrade path)
-    let openaiKey = "";
+    // Map OpenAI voice names to Groq PlayAI equivalents (natural, human-sounding)
+    const groqVoiceMap: Record<string, string> = {
+      nova:    "Aaliyah-PlayAI",    // warm female
+      shimmer: "Adelaide-PlayAI",   // soft female
+      alloy:   "Atlas-PlayAI",      // neutral
+      echo:    "Angelo-PlayAI",     // male
+      fable:   "Briggs-PlayAI",     // storyteller male
+      onyx:    "Cillian-PlayAI",    // deep male
+    };
+
+    // 1. Try Groq TTS first (free, fast, very human-sounding PlayAI voices)
+    const groqKey = getEffectiveKey("groq");
+    if (groqKey) {
+      const groqVoice = groqVoiceMap[voice] || "Aaliyah-PlayAI";
+      try {
+        console.log(`[TTS] Trying Groq TTS: voice=${groqVoice}, chars=${text.length}`);
+        const ttsRes = await fetch("https://api.groq.com/openai/v1/audio/speech", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${groqKey}` },
+          body: JSON.stringify({ model: "playai-tts", input: text.slice(0, 4096), voice: groqVoice, response_format: "mp3" }),
+        });
+        if (ttsRes.ok) {
+          const buffer = Buffer.from(await ttsRes.arrayBuffer());
+          res.setHeader("Content-Type", "audio/mpeg");
+          res.setHeader("Content-Length", buffer.byteLength.toString());
+          console.log(`[TTS] Groq TTS success: ${buffer.byteLength} bytes`);
+          return res.send(buffer);
+        } else {
+          const errBody = await ttsRes.text();
+          console.warn(`[TTS] Groq TTS HTTP ${ttsRes.status}:`, errBody.slice(0, 200));
+        }
+      } catch (err: any) {
+        console.warn("[TTS] Groq TTS error:", err?.message || err);
+      }
+    }
+
+    // 2. Try OpenAI TTS (only works with a real OpenAI key, not a proxy key)
     const schoolId = (req as any).user?.schoolId;
+    let openaiKey = "";
     if (schoolId) {
       try {
         const row = db.prepare(
@@ -510,9 +546,8 @@ router.post("/tts", requireAuth, async (req: Request, res: Response) => {
         if (row?.api_key) openaiKey = row.api_key;
       } catch { /* ignore */ }
     }
-    // If no school/admin key found, use the environment OpenAI key.
-    // This ensures TTS always works with a human-sounding voice.
-    if (!openaiKey && process.env.OPENAI_API_KEY) {
+    // Only use env OPENAI_API_KEY if it starts with 'sk-' (real OpenAI key, not a proxy)
+    if (!openaiKey && process.env.OPENAI_API_KEY?.startsWith("sk-") && !process.env.OPENAI_API_KEY?.startsWith("sk-TXL")) {
       openaiKey = process.env.OPENAI_API_KEY;
     }
 
@@ -520,6 +555,7 @@ router.post("/tts", requireAuth, async (req: Request, res: Response) => {
       const validVoices = ["alloy", "echo", "fable", "onyx", "nova", "shimmer"];
       const selectedVoice = validVoices.includes(voice) ? voice : "nova";
       try {
+        console.log(`[TTS] Trying OpenAI TTS: voice=${selectedVoice}, chars=${text.length}`);
         const ttsRes = await fetch("https://api.openai.com/v1/audio/speech", {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${openaiKey}` },
@@ -530,22 +566,17 @@ router.post("/tts", requireAuth, async (req: Request, res: Response) => {
           res.setHeader("Content-Type", "audio/mpeg");
           res.setHeader("Content-Length", buffer.byteLength.toString());
           return res.send(buffer);
+        } else {
+          const errBody = await ttsRes.text();
+          console.warn(`[TTS] OpenAI TTS HTTP ${ttsRes.status}:`, errBody.slice(0, 200));
         }
-      } catch (err) {
-        console.warn("[TTS] OpenAI failed, using Edge TTS:", err);
+      } catch (err: any) {
+        console.warn("[TTS] OpenAI TTS error:", err?.message || err);
       }
     }
 
-    // 2. Free Microsoft Edge Neural TTS — natural, human-sounding, no key required
-    console.log(`[TTS] Edge TTS: lang=${language}, chars=${text.length}`);
-    const audio = await edgeTTS(text, language);
-    if (!audio || audio.byteLength < 100) {
-      throw new Error("Edge TTS returned empty audio");
-    }
-    res.setHeader("Content-Type", "audio/mpeg");
-    res.setHeader("Content-Length", audio.byteLength.toString());
-    res.setHeader("Cache-Control", "no-store");
-    res.send(audio);
+    // No working TTS provider found
+    throw new Error("TTS unavailable: no working TTS provider. Please ensure a Groq API key is configured.");
 
   } catch (err: any) {
     console.error("Revision TTS error:", err);
