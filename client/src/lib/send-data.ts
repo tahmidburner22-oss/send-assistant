@@ -491,16 +491,91 @@ const SEND_FORMATTING_MAP: Record<string, Partial<SendFormatting>> = {
     textAlign: "left",
     paragraphSpacing: "8px",
   },
+  // Hearing Impairment: clear visual layout, no reliance on audio cues,
+  // generous spacing to support lip-reading context and BSL users
+  hi: {
+    fontFamily: "Arial, 'Helvetica Neue', sans-serif",
+    fontSize: 14,
+    lineHeight: 1.8,
+    letterSpacing: "0.02em",
+    textAlign: "left",
+    paragraphSpacing: "8px",
+  },
+  // Tourette's Syndrome: calm, uncluttered layout, avoid sensory overload
+  tourettes: {
+    fontFamily: "Arial, 'Helvetica Neue', sans-serif",
+    fontSize: 14,
+    lineHeight: 1.8,
+    textAlign: "left",
+    paragraphSpacing: "8px",
+  },
+  // Older Learners (KS3/KS4/KS5): adult-appropriate, clear professional layout
+  "older-learners": {
+    fontFamily: "'Segoe UI', Arial, sans-serif",
+    fontSize: 14,
+    lineHeight: 1.75,
+    textAlign: "left",
+    paragraphSpacing: "8px",
+  },
+};
+
+// Map from display name → ID for cases where metadata stores the name instead of the ID
+// (e.g. AI returns "Dyslexia" rather than "dyslexia")
+const SEND_NAME_TO_ID: Record<string, string> = {
+  "autism spectrum condition (asc)": "asc",
+  "autism spectrum condition": "asc",
+  "asc": "asc",
+  "asperger syndrome": "asperger",
+  "asperger's syndrome": "asperger",
+  "asperger": "asperger",
+  "pda / odd": "pda-odd",
+  "pda/odd": "pda-odd",
+  "pda-odd": "pda-odd",
+  "pda": "pda-odd",
+  "speech, language & communication needs (slcn)": "slcn",
+  "speech, language and communication needs": "slcn",
+  "slcn": "slcn",
+  "dyslexia": "dyslexia",
+  "dyscalculia": "dyscalculia",
+  "dyspraxia (dcd)": "dyspraxia",
+  "dyspraxia": "dyspraxia",
+  "dcd": "dyspraxia",
+  "moderate learning difficulties (mld)": "mld",
+  "moderate learning difficulties": "mld",
+  "mld": "mld",
+  "adhd": "adhd",
+  "attention deficit hyperactivity disorder": "adhd",
+  "anxiety / mental health": "anxiety",
+  "anxiety/mental health": "anxiety",
+  "anxiety": "anxiety",
+  "mental health": "anxiety",
+  "visual impairment": "vi",
+  "vi": "vi",
+  "hearing impairment": "hi",
+  "hi": "hi",
+  "tourette's syndrome": "tourettes",
+  "tourettes syndrome": "tourettes",
+  "tourettes": "tourettes",
+  "older learners (ks3/ks4/ks5)": "older-learners",
+  "older learners": "older-learners",
+  "older-learners": "older-learners",
 };
 
 /**
- * Returns the SEND-specific formatting for a given SEND need ID.
+ * Returns the SEND-specific formatting for a given SEND need ID or display name.
  * Falls back to default formatting if no specific overrides are defined.
  * The userTextSize is respected unless the SEND need requires a larger minimum.
  */
 export function getSendFormatting(sendNeedId: string | undefined, userTextSize: number = 14): SendFormatting {
   if (!sendNeedId) return { ...DEFAULT_FORMATTING, fontSize: userTextSize };
-  const overrides = SEND_FORMATTING_MAP[sendNeedId] || {};
+  // Normalise: try the raw value first, then lowercase lookup via name-to-ID map
+  const normalised = sendNeedId.toLowerCase().trim();
+  const resolvedId = SEND_FORMATTING_MAP[sendNeedId]
+    ? sendNeedId
+    : SEND_FORMATTING_MAP[normalised]
+      ? normalised
+      : SEND_NAME_TO_ID[normalised] || sendNeedId;
+  const overrides = SEND_FORMATTING_MAP[resolvedId] || {};
   const base = { ...DEFAULT_FORMATTING, ...overrides };
   // Enforce minimum font size: use whichever is larger — user's choice or SEND minimum
   base.fontSize = Math.max(userTextSize, base.fontSize);
