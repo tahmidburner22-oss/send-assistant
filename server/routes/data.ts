@@ -45,26 +45,34 @@ router.get("/worksheets", requireAuth, (req: Request, res: Response) => {
 });
 
 router.post("/worksheets", requireAuth, (req: Request, res: Response) => {
-  const { title, subject, topic, yearGroup, sendNeed, difficulty, examBoard, content, teacherContent, overlay, sections } = req.body;
-  if (!title) return res.status(400).json({ error: "Title required" });
-  const id = uuidv4();
-  db.prepare(`INSERT INTO worksheets (id, school_id, created_by, title, subject, topic, year_group, send_need, difficulty, exam_board, content, teacher_content, overlay)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
-    id, req.user!.schoolId, req.user!.id, title, subject, topic, yearGroup, sendNeed, difficulty, examBoard, content, teacherContent, overlay
-  );
-  // Save sections if provided
-  if (Array.isArray(sections)) {
-    sections.forEach((s: any, idx: number) => {
-      db.prepare(`INSERT INTO worksheet_sections (id, worksheet_id, section_index, title, type, content, teacher_only, svg, caption, symbols)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
-        uuidv4(), id, idx, s.title || null, s.type || null, s.content || null,
-        s.teacherOnly ? 1 : 0, s.svg || null, s.caption || null,
-        s.symbols ? JSON.stringify(s.symbols) : null
-      );
-    });
+  try {
+    const { title, subject, topic, yearGroup, sendNeed, difficulty, examBoard, content, teacherContent, overlay, sections } = req.body;
+    if (!title) return res.status(400).json({ error: "Title required" });
+    console.log(`[POST /worksheets] title=${title} subject=${subject} yearGroup=${yearGroup} sections=${Array.isArray(sections) ? sections.length : 'none'}`);
+    const id = uuidv4();
+    db.prepare(`INSERT INTO worksheets (id, school_id, created_by, title, subject, topic, year_group, send_need, difficulty, exam_board, content, teacher_content, overlay)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
+      id, req.user!.schoolId, req.user!.id, title, subject, topic, yearGroup, sendNeed, difficulty, examBoard, content, teacherContent, overlay
+    );
+    console.log(`[POST /worksheets] worksheet inserted id=${id}`);
+    // Save sections if provided
+    if (Array.isArray(sections)) {
+      sections.forEach((s: any, idx: number) => {
+        db.prepare(`INSERT INTO worksheet_sections (id, worksheet_id, section_index, title, type, content, teacher_only, svg, caption, symbols)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
+          uuidv4(), id, idx, s.title || null, s.type || null, s.content || null,
+          s.teacherOnly ? 1 : 0, s.svg || null, s.caption || null,
+          s.symbols ? JSON.stringify(s.symbols) : null
+        );
+      });
+      console.log(`[POST /worksheets] ${sections.length} sections inserted`);
+    }
+    auditLog(req.user!.id, req.user!.schoolId, "worksheet.created", "worksheet", id, { title, subject, yearGroup }, req.ip);
+    res.status(201).json({ id });
+  } catch (err: any) {
+    console.error(`[POST /worksheets] ERROR: ${err.message}`, err.stack);
+    res.status(500).json({ error: err.message || "Failed to save worksheet" });
   }
-  auditLog(req.user!.id, req.user!.schoolId, "worksheet.created", "worksheet", id, { title, subject, yearGroup }, req.ip);
-  res.status(201).json({ id });
 });
 
 router.put("/worksheets/:id", requireAuth, (req: Request, res: Response) => {
