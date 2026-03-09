@@ -3,6 +3,28 @@ import multer from "multer";
 import { requireAuth } from "../middleware/auth.js";
 import db from "../db/index.js";
 import { MsEdgeTTS, OUTPUT_FORMAT } from "msedge-tts";
+import { randomUUID } from "crypto";
+
+// ─── In-memory job queue for background document processing ───────────────────
+// Allows the upload endpoint to return immediately with a jobId,
+// bypassing Railway's 30-second HTTP timeout.
+type JobStatus = "pending" | "done" | "error";
+interface Job {
+  status: JobStatus;
+  progress: string;
+  text?: string;
+  script?: string;
+  error?: string;
+  createdAt: number;
+}
+const jobs = new Map<string, Job>();
+// Clean up jobs older than 10 minutes
+setInterval(() => {
+  const cutoff = Date.now() - 10 * 60 * 1000;
+  for (const [id, job] of jobs.entries()) {
+    if (job.createdAt < cutoff) jobs.delete(id);
+  }
+}, 60_000);
 
 // Language code → Microsoft Edge Neural TTS voice
 const EDGE_VOICE_MAP: Record<string, string> = {
@@ -277,60 +299,47 @@ async function extractText(buffer: Buffer, mimetype: string): Promise<string> {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // POST /api/revision/upload
-// Extract text + generate podcast script via SSE streaming
-// Streams events: {type:"progress",message} | {type:"done",text,script} | {type:"error",error}
-// SSE is used to bypass Railway's 30-second proxy timeout
+// Immediately returns { jobId } and processes the document in the background.
+// Client polls GET /api/revision/job/:id to check status.
+// This bypasses Railway's 30-second HTTP timeout.
 // ─────────────────────────────────────────────────────────────────────────────
-router.post("/upload", requireAuth, upload.single("document"), async (req: Request, res: Response) => {
-  // Set SSE headers immediately — this keeps the connection alive past Railway's 30s timeout
-  res.setHeader("Content-Type", "text/event-stream");
-  res.setHeader("Cache-Control", "no-cache");
-  res.setHeader("Connection", "keep-alive");
-  res.setHeader("X-Accel-Buffering", "no"); // Disable nginx buffering
-  res.flushHeaders();
+router.post("/upload", requireAuth, upload.single("document"), (req: Request, res: Response) => {
+  if (!req.file) return res.status(400).json({ error: "No file uploaded" });
 
-  const send = (data: object) => {
-    res.write(`data: ${JSON.stringify(data)}\n\n`);
-  };
+  const jobId = randomUUID();
+  const language = (req.body?.language || "en").toString().slice(0, 5);
+  const fileBuffer = req.file.buffer;
+  const fileMime = req.file.mimetype;
 
-  try {
-    if (!req.file) {
-      send({ type: "error", error: "No file uploaded" });
-      return res.end();
-    }
+  // Store job immediately so the client can start polling
+  jobs.set(jobId, { status: "pending", progress: "Extracting text from document...", createdAt: Date.now() });
 
-    console.log(`[Revision] Upload request. Keys: groq=${!!process.env.GROQ_API_KEY}, gemini=${!!process.env.GEMINI_API_KEY}, openai=${!!process.env.OPENAI_API_KEY}`);
-    const t0 = Date.now();
+  // Process in background (do NOT await)
+  (async () => {
+    try {
+      console.log(`[Revision] Job ${jobId} started. Keys: groq=${!!process.env.GROQ_API_KEY}, gemini=${!!process.env.GEMINI_API_KEY}, openai=${!!process.env.OPENAI_API_KEY}`);
+      const t0 = Date.now();
 
-    send({ type: "progress", message: "Extracting text from document..." });
+      const rawText = await extractText(fileBuffer, fileMime);
+      if (!rawText || rawText.trim().length < 50) {
+        jobs.set(jobId, { ...jobs.get(jobId)!, status: "error", error: "Could not extract readable text from this file. Please try a different file." });
+        return;
+      }
 
-    const rawText = await extractText(req.file.buffer, req.file.mimetype);
-    if (!rawText || rawText.trim().length < 50) {
-      send({ type: "error", error: "Could not extract readable text from this file. Please try a different file." });
-      return res.end();
-    }
+      jobs.set(jobId, { ...jobs.get(jobId)!, progress: "Writing your revision podcast script..." });
 
-    send({ type: "progress", message: "Writing your revision podcast script..." });
+      const LANG_NAMES: Record<string, string> = {
+        en: "English", es: "Spanish", fr: "French", de: "German", it: "Italian",
+        pt: "Portuguese", ar: "Arabic", zh: "Chinese", ja: "Japanese",
+        hi: "Hindi", ur: "Urdu", pl: "Polish", tr: "Turkish", ru: "Russian",
+      };
+      const langName = LANG_NAMES[language] || "English";
+      const langInstruction = language === "en"
+        ? ""
+        : `\n       - IMPORTANT: Write the ENTIRE podcast script in ${langName}. All explanations, examples, transitions, and the closing line must be in ${langName}.`;
 
-    // Language for the podcast script
-    const language = (req.body?.language || "en").toString().slice(0, 5);
-    const LANG_NAMES: Record<string, string> = {
-      en: "English", es: "Spanish", fr: "French", de: "German", it: "Italian",
-      pt: "Portuguese", ar: "Arabic", zh: "Chinese", ja: "Japanese",
-      hi: "Hindi", ur: "Urdu", pl: "Polish", tr: "Turkish", ru: "Russian",
-    };
-    const langName = LANG_NAMES[language] || "English";
-    const langInstruction = language === "en"
-      ? ""
-      : `\n       - IMPORTANT: Write the ENTIRE podcast script in ${langName}. All explanations, examples, transitions, and the closing line must be in ${langName}.`;
-
-    // Keep-alive ping every 20 seconds to prevent Railway from closing the connection
-    const keepAlive = setInterval(() => {
-      res.write(": keep-alive\n\n");
-    }, 20000);
-
-    const script = await callWithFallback(
-      `You are an expert educational podcast host creating a revision podcast for students aged 11-18.
+      const script = await callWithFallback(
+        `You are an expert educational podcast host creating a revision podcast for students aged 11-18.
        You will receive raw document text which may contain headers, page numbers, and boilerplate — ignore all of that.
        Your job is to transform the CORE EDUCATIONAL CONTENT into a rich, engaging spoken explanation — like a brilliant teacher talking directly to a student.
 
@@ -345,20 +354,34 @@ router.post("/upload", requireAuth, upload.single("document"), async (req: Reque
        - Aim for 600-900 words of spoken script (about 4-6 minutes of audio)
        - Do NOT start with "Welcome" or "In this podcast" — open with the first key concept immediately
        - End with a brief encouragement to take the quiz${langInstruction}`,
-      `Document text to turn into a podcast script:\n\n${rawText.slice(0, 6000)}`,
-      1200
-    );
+        `Document text to turn into a podcast script:\n\n${rawText.slice(0, 6000)}`,
+        1200
+      );
 
-    clearInterval(keepAlive);
-    console.log(`[Revision] Script generated in ${Date.now()-t0}ms`);
+      console.log(`[Revision] Job ${jobId} done in ${Date.now()-t0}ms`);
+      jobs.set(jobId, { ...jobs.get(jobId)!, status: "done", text: rawText, script });
+    } catch (err: any) {
+      console.error(`[Revision] Job ${jobId} error:`, err);
+      jobs.set(jobId, { ...jobs.get(jobId)!, status: "error", error: err.message || "Failed to process document" });
+    }
+  })();
 
-    send({ type: "done", text: rawText, script, audioBase64: "" });
-    res.end();
-  } catch (err: any) {
-    console.error("Revision upload error:", err);
-    send({ type: "error", error: err.message || "Failed to process document" });
-    res.end();
-  }
+  // Return immediately with the job ID
+  res.json({ jobId });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GET /api/revision/job/:id
+// Poll for job status. Returns progress message while pending, result when done.
+// ─────────────────────────────────────────────────────────────────────────────
+router.get("/job/:id", requireAuth, (req: Request, res: Response) => {
+  const job = jobs.get(req.params.id);
+  if (!job) return res.status(404).json({ error: "Job not found" });
+  if (job.status === "pending") return res.json({ status: "pending", progress: job.progress });
+  if (job.status === "error") return res.json({ status: "error", error: job.error });
+  // Done — return result and clean up
+  jobs.delete(req.params.id);
+  return res.json({ status: "done", text: job.text, script: job.script });
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
