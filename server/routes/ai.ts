@@ -4,6 +4,7 @@ import db from "../db/index.js";
 import { requireAuth, requireAdmin, auditLog } from "../middleware/auth.js";
 import { filterContent } from "../lib/contentFilter.js";
 import { getSchoolKey } from "./schoolApiKeys.js";
+import { findDiagram, searchWikimediaDiagram } from "../lib/diagramBank.js";
 
 const router = Router();
 
@@ -631,7 +632,6 @@ router.post("/diagram", requireAuth, async (req: Request, res: Response) => {
   // ── Attempt 0: Curated Wikimedia diagram bank (real, professional images) ────
   // Primary source — real educational diagrams with proper attribution.
   try {
-    const { findDiagram, searchWikimediaDiagram } = await import("../lib/diagramBank.js");
     const banked = findDiagram(subject, topic);
     if (banked) {
       console.log(`[Diagram] Bank hit: ${banked.key} for "${topic}" (${subject})`);
