@@ -13,6 +13,7 @@ export interface WorksheetSection {
   teacherOnly?: boolean;
   svg?: string;
   caption?: string;
+  imageUrl?: string;
 }
 
 export interface WorksheetData {
@@ -501,12 +502,20 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(({
 
             {/* Section content */}
             <div style={{ padding: "12px 14px" }}>
-              {section.type === "diagram" && section.svg ? (
+              {section.type === "diagram" && (section.svg || section.imageUrl) ? (
                 <div style={{ textAlign: "center" }}>
-                  <div
-                    style={{ display: "inline-block", width: "100%", maxWidth: "560px", border: "1px solid #e5e7eb", borderRadius: "8px", overflow: "hidden", background: "white" }}
-                    dangerouslySetInnerHTML={{ __html: section.svg }}
-                  />
+                  {section.svg ? (
+                    <div
+                      style={{ display: "inline-block", width: "100%", maxWidth: "560px", border: "1px solid #e5e7eb", borderRadius: "8px", overflow: "hidden", background: "white" }}
+                      dangerouslySetInnerHTML={{ __html: section.svg }}
+                    />
+                  ) : section.imageUrl ? (
+                    <img
+                      src={section.imageUrl}
+                      alt={section.caption || "Diagram"}
+                      style={{ maxWidth: "560px", width: "100%", borderRadius: "8px", border: "1px solid #e5e7eb" }}
+                    />
+                  ) : null}
                   {section.caption && (
                     <p style={{ fontSize: `${fmt.fontSize - 2}px`, color: "#6b7280", marginTop: "6px", fontStyle: "italic", fontFamily: fmt.fontFamily }}>
                       Figure: {section.caption}

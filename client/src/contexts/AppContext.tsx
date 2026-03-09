@@ -114,6 +114,7 @@ interface AppContextType extends AppState {
   updateSubmission: (childId: string, submissionId: string, updates: Partial<Submission>) => void;
   saveWorksheet: (worksheet: Omit<Worksheet, "id" | "createdAt">) => Promise<Worksheet>;
   updateWorksheet: (id: string, updates: Partial<Worksheet>) => Promise<void>;
+  deleteWorksheet: (id: string) => Promise<void>;
   saveStory: (story: Omit<Story, "id" | "createdAt">) => Promise<Story>;
   saveDifferentiation: (diff: Omit<Differentiation, "id" | "createdAt">) => Promise<Differentiation>;
   saveAttendance: (record: Omit<AttendanceRecord, "id" | "recordedAt">) => Promise<AttendanceRecord>;
@@ -269,6 +270,11 @@ export function AppProvider({ children: childrenProp }: { children: React.ReactN
     setState(s => ({ ...s, worksheetHistory: s.worksheetHistory.map(w => w.id === id ? { ...w, ...updates } : w) }));
   }, []);
 
+  const deleteWorksheet = useCallback(async (id: string) => {
+    await dataApi.worksheets.delete(id);
+    setState(s => ({ ...s, worksheetHistory: s.worksheetHistory.filter(w => w.id !== id) }));
+  }, []);
+
   const saveStory = useCallback(async (story: Omit<Story, "id" | "createdAt">) => {
     const result = await dataApi.stories.create(story);
     const st: Story = { ...story, id: result.id, createdAt: new Date().toISOString() };
@@ -311,7 +317,7 @@ export function AppProvider({ children: childrenProp }: { children: React.ReactN
   const setColorOverlay = useCallback((overlay: string) => { setState(s => ({ ...s, colorOverlay: overlay })); }, []);
 
   return (
-    <AppContext.Provider value={{ ...state, login, loginWithGoogle, logout, registerTeacher, verifyMfa, addChild, removeChild, updateChild, assignWork, updateAssignment, addSubmission, updateSubmission, saveWorksheet, updateWorksheet, saveStory, saveDifferentiation, saveAttendance, updateAttendance, getAttendanceForChild, getAttendanceForDate, addIdea, voteIdea, setColorOverlay, refreshData }}>
+    <AppContext.Provider value={{ ...state, login, loginWithGoogle, logout, registerTeacher, verifyMfa, addChild, removeChild, updateChild, assignWork, updateAssignment, addSubmission, updateSubmission, saveWorksheet, updateWorksheet, deleteWorksheet, saveStory, saveDifferentiation, saveAttendance, updateAttendance, getAttendanceForChild, getAttendanceForDate, addIdea, voteIdea, setColorOverlay, refreshData }}>
       {childrenProp}
     </AppContext.Provider>
   );

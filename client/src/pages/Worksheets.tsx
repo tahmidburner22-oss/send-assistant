@@ -107,7 +107,7 @@ function isAIWorksheet(ws: AnyWorksheet): ws is AIWorksheet {
 // ─── Main Component ──────────────────────────────────────────────────────────
 export default function Worksheets() {
   const [location] = useLocation();
-  const { saveWorksheet, updateWorksheet, worksheetHistory, children, assignWork, colorOverlay, setColorOverlay, refreshData } = useApp();
+  const { saveWorksheet, updateWorksheet, deleteWorksheet, worksheetHistory, children, assignWork, colorOverlay, setColorOverlay, refreshData } = useApp();
 
   // Re-fetch data from server on mount so history count is always current
   useEffect(() => { refreshData(); }, []);
@@ -780,7 +780,7 @@ export default function Worksheets() {
                           </div>
                           <div className="flex items-center gap-1">
                             <button
-                              onClick={e => { e.stopPropagation(); if (confirm(`Delete "${ws.title}"?`)) updateWorksheet(ws.id, { title: "__deleted__" }); }}
+                              onClick={e => { e.stopPropagation(); if (confirm(`Permanently delete "${ws.title}"? This cannot be undone.`)) deleteWorksheet(ws.id); }}
                               className="p-1.5 text-gray-400 hover:text-red-500 rounded"
                             >
                               <Trash2 className="h-3.5 w-3.5" />
