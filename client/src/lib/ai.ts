@@ -725,13 +725,57 @@ export async function aiGenerateDiagram(params: {
     console.warn('[Diagram] Server /api/ai/diagram failed, using legacy fallback:', e);
   }
 
-  // ── Legacy fallback: generic callAI with strict SVG prompt ──────────────────
+  // ── Fallback 1: Nano Banana 2 (Pollinations flux) — direct client-side call ────────────
+  try {
+    const topicHintNB = params.diagramType || getDiagramHint(params.subject, params.topic);
+    const sendNote = params.sendNeed
+      ? `Adapted for ${params.sendNeed}: extra-large clear labels, high contrast, simple layout.`
+      : 'Professional UK school textbook quality.';
+    const nbPrompt = encodeURIComponent(
+      `Educational diagram: ${topicHintNB}. ` +
+      `Subject: ${params.subject}. Topic: ${params.topic}. Year group: ${params.yearGroup}. ` +
+      `Style: clean white background, printed textbook diagram, all labels clearly legible in black Arial font, ` +
+      `accurate scientific/mathematical shapes, leader lines from shapes to labels, no watermarks, no decorative borders. ` +
+      `${sendNote}`
+    );
+    const seed = (Date.now() + Math.floor(Math.random() * 9999)) % 99999;
+    const nbUrl = `https://image.pollinations.ai/prompt/${nbPrompt}?width=700&height=500&nologo=true&model=flux&seed=${seed}&enhance=true`;
+    // Return the URL directly — the browser will load the image
+    return {
+      svg: '',
+      caption: `${params.topic} — ${params.subject} diagram`,
+      imageUrl: nbUrl,
+      provider: 'nano-banana-2',
+    };
+  } catch (e) {
+    console.warn('[Diagram] Nano Banana 2 client fallback failed:', e);
+  }
+
+  // ── Fallback 2: Legacy SVG via callAI ──────────────────────────────────────────────────────
   const topicHint = params.diagramType || getDiagramHint(params.subject, params.topic);
   const sendAdapt = params.sendNeed
-    ? `SEND adaptation (${params.sendNeed}): font-size 16+ on all labels, stroke-width 2.5+, max 6 labels, high-contrast colours, large arrows.`
-    : 'Standard: font-size 13 minimum, stroke-width 1.5 minimum.';
-  const system = `You are an expert educational SVG diagram creator. Return ONLY valid SVG starting with <svg and ending with </svg>. viewBox="0 0 700 500" width="100%" height="auto". First child: <rect width="700" height="500" fill="white"/>. font-family="Arial, sans-serif" on ALL text. ${sendAdapt}. After </svg> write: CAPTION: [one sentence]`;
-  const user = `Draw this educational diagram: Subject: ${params.subject}, Topic: ${params.topic}, Year: ${params.yearGroup}, Spec: ${topicHint}`;
+    ? `SEND adaptation for ${params.sendNeed}: font-size="16" minimum on ALL labels, stroke-width="3" on all outlines, max 6 labels, high-contrast colours, large bold arrows.`
+    : 'Standard quality: font-size="14" minimum on all labels, stroke-width="2" on outlines.';
+  const system = `You are a specialist educational SVG diagram generator for UK school worksheets. Your diagrams must be PROFESSIONAL, ACCURATE, WELL-SPACED, and PRINT-READY.
+
+CANVAS: viewBox="0 0 700 500" — plan all coordinates on this 700×500 canvas before drawing.
+
+MANDATORY RULES:
+1. Output ONLY valid SVG starting with <svg viewBox="0 0 700 500" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg"> and ending with </svg>. No other text.
+2. First child: <rect width="700" height="500" fill="white"/>.
+3. ALL <text> elements must have font-family="Arial, sans-serif" and an explicit fill colour.
+4. Permitted elements: rect, circle, ellipse, line, path, polygon, polyline, text, tspan, g, defs, marker only.
+5. Title: <text x="350" y="30" text-anchor="middle" font-size="17" font-weight="bold" fill="#1e293b" font-family="Arial, sans-serif">.
+6. Shapes: stroke="#1e293b" stroke-width="2". Pale fills: #dbeafe, #dcfce7, #fef9c3, #fce7f3, #ffedd5.
+7. ALL labels OUTSIDE shapes with short straight leader lines (stroke="#64748b" stroke-width="1"). NEVER overlap text with shapes or other text.
+8. Minimum 15px gap between shapes. 50px margin on all sides (elements within x=50..650, y=40..470).
+9. ${sendAdapt}
+10. Scientifically/mathematically accurate. Correct spelling on all labels.
+After </svg> write: CAPTION: [one sentence]`;
+  const user = `Draw a professional educational SVG diagram.
+Subject: ${params.subject}, Topic: ${params.topic}, Year: ${params.yearGroup}
+Spec: ${topicHint}
+Remember: labels OUTSIDE shapes, no overlapping, 50px margins, SVG only then CAPTION:`;
   const { text, provider } = await callAI(system, user, 3000);
   const svgMatch = text.match(/<svg[\s\S]*?<\/svg>/i);
   const captionMatch = text.match(/CAPTION:\s*(.+)/i);
