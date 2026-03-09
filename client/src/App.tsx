@@ -60,6 +60,7 @@ import DPA from "./pages/DPA";
 import Pricing from "./pages/Pricing";
 import HelpCentre from "./pages/HelpCentre";
 import Onboarding from "./pages/Onboarding";
+import SendScreener from "./pages/SendScreener";
 
 import AppLayout from "./components/AppLayout";
 import { useApp } from "./contexts/AppContext";
@@ -108,6 +109,9 @@ function ProtectedRoutes() {
         <Route path="/behaviour-tracking" component={BehaviourTracking} />
         <Route path="/attendance" component={Attendance} />
         <Route path="/admin" component={AdminPanel} />
+
+        {/* SEND Screener */}
+        <Route path="/send-screener" component={SendScreener} />
 
         {/* SEND Tools */}
         <Route path="/tools/iep-generator" component={IEPGenerator} />
