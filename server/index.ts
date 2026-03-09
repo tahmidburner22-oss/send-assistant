@@ -134,8 +134,8 @@ const generalLimiter = rateLimit({
 });
 
 // ── Body parsing — tight limits to prevent DoS ────────────────────────────────
-app.use(express.json({ limit: "1mb" })); // reduced from 10mb
-app.use(express.urlencoded({ extended: true, limit: "1mb" }));
+app.use(express.json({ limit: "5mb" })); // increased to 5mb to handle large AI-generated worksheets with SVG
+app.use(express.urlencoded({ extended: true, limit: "5mb" }));
 app.use(cookieParser());
 app.use(generalLimiter);
 
