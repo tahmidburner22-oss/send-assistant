@@ -993,11 +993,11 @@ export default function Worksheets() {
                   </div>
                 </div>
                 {/* SEND adaptations summary */}
-                {viewMode === "teacher" && ((generated as AIWorksheet).metadata?.adaptations ?? []).length > 0 && (
+                {viewMode === "teacher" && (Array.isArray((generated as AIWorksheet).metadata?.adaptations) ? (generated as AIWorksheet).metadata.adaptations! : typeof (generated as AIWorksheet).metadata?.adaptations === "string" ? [(generated as AIWorksheet).metadata.adaptations as unknown as string] : []).length > 0 && (
                   <div className="mt-4 p-3 bg-purple-50 border border-purple-200 rounded-lg">
                     <h4 className="font-bold text-purple-800 text-sm mb-2">SEND Adaptations Applied</h4>
                     <ul className="text-sm text-purple-700 space-y-1">
-                      {((generated as AIWorksheet).metadata.adaptations || []).map((a, i) => (
+                      {(Array.isArray((generated as AIWorksheet).metadata.adaptations) ? (generated as AIWorksheet).metadata.adaptations! : typeof (generated as AIWorksheet).metadata.adaptations === "string" ? [(generated as AIWorksheet).metadata.adaptations as unknown as string] : []).map((a, i) => (
                         <li key={i} className="flex items-start gap-2"><CheckCircle className="h-4 w-4 text-purple-500 flex-shrink-0 mt-0.5" />{a}</li>
                       ))}
                     </ul>
