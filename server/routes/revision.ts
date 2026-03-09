@@ -277,22 +277,42 @@ async function extractText(buffer: Buffer, mimetype: string): Promise<string> {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // POST /api/revision/upload
-// Extract text + generate podcast script
-// Returns: { text, script }  — audio is handled client-side via Web Speech API
+// Extract text + generate podcast script via SSE streaming
+// Streams events: {type:"progress",message} | {type:"done",text,script} | {type:"error",error}
+// SSE is used to bypass Railway's 30-second proxy timeout
 // ─────────────────────────────────────────────────────────────────────────────
 router.post("/upload", requireAuth, upload.single("document"), async (req: Request, res: Response) => {
+  // Set SSE headers immediately — this keeps the connection alive past Railway's 30s timeout
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache");
+  res.setHeader("Connection", "keep-alive");
+  res.setHeader("X-Accel-Buffering", "no"); // Disable nginx buffering
+  res.flushHeaders();
+
+  const send = (data: object) => {
+    res.write(`data: ${JSON.stringify(data)}\n\n`);
+  };
+
   try {
-    if (!req.file) return res.status(400).json({ error: "No file uploaded" });
-    // Diagnostic: log which keys are available
+    if (!req.file) {
+      send({ type: "error", error: "No file uploaded" });
+      return res.end();
+    }
+
     console.log(`[Revision] Upload request. Keys: groq=${!!process.env.GROQ_API_KEY}, gemini=${!!process.env.GEMINI_API_KEY}, openai=${!!process.env.OPENAI_API_KEY}`);
     const t0 = Date.now();
 
+    send({ type: "progress", message: "Extracting text from document..." });
+
     const rawText = await extractText(req.file.buffer, req.file.mimetype);
     if (!rawText || rawText.trim().length < 50) {
-      return res.status(400).json({ error: "Could not extract readable text from this file. Please try a different file." });
+      send({ type: "error", error: "Could not extract readable text from this file. Please try a different file." });
+      return res.end();
     }
 
-    // Language for the podcast script (passed from client as form field)
+    send({ type: "progress", message: "Writing your revision podcast script..." });
+
+    // Language for the podcast script
     const language = (req.body?.language || "en").toString().slice(0, 5);
     const LANG_NAMES: Record<string, string> = {
       en: "English", es: "Spanish", fr: "French", de: "German", it: "Italian",
@@ -304,7 +324,11 @@ router.post("/upload", requireAuth, upload.single("document"), async (req: Reque
       ? ""
       : `\n       - IMPORTANT: Write the ENTIRE podcast script in ${langName}. All explanations, examples, transitions, and the closing line must be in ${langName}.`;
 
-    // Single-pass: clean + generate script in one AI call to halve latency
+    // Keep-alive ping every 20 seconds to prevent Railway from closing the connection
+    const keepAlive = setInterval(() => {
+      res.write(": keep-alive\n\n");
+    }, 20000);
+
     const script = await callWithFallback(
       `You are an expert educational podcast host creating a revision podcast for students aged 11-18.
        You will receive raw document text which may contain headers, page numbers, and boilerplate — ignore all of that.
@@ -325,11 +349,15 @@ router.post("/upload", requireAuth, upload.single("document"), async (req: Reque
       1200
     );
 
+    clearInterval(keepAlive);
     console.log(`[Revision] Script generated in ${Date.now()-t0}ms`);
-    res.json({ text: rawText, script, audioBase64: "" });
+
+    send({ type: "done", text: rawText, script, audioBase64: "" });
+    res.end();
   } catch (err: any) {
     console.error("Revision upload error:", err);
-    res.status(500).json({ error: err.message || "Failed to process document" });
+    send({ type: "error", error: err.message || "Failed to process document" });
+    res.end();
   }
 });
 

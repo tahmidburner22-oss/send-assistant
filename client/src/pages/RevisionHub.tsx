@@ -269,7 +269,6 @@ export default function RevisionHub() {
     setDocumentText("");
     setPodcastScript("");
     setAudioUrl(null);
-    setUsingBrowserTTS(false);
     window.speechSynthesis?.cancel();
     setIsPlaying(false);
     setQuestions([]);
@@ -289,13 +288,46 @@ export default function RevisionHub() {
         const err = await res.json().catch(() => ({ error: "Upload failed" }));
         throw new Error(err.error || "Upload failed");
       }
-      const data = await res.json();
-      setDocumentText(data.text || "");
-      setPodcastScript(data.script || "");
-      if (data.script) {
-        await generateAudio(data.script, ttsEngine, edgeVoice, selectedLanguage);
+
+      // Read SSE stream — server sends progress events then a final "done" event
+      const reader = res.body!.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let finalData: { text: string; script: string } | null = null;
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        // Parse complete SSE events (separated by double newline)
+        const parts = buffer.split("\n\n");
+        buffer = parts.pop() ?? "";
+        for (const part of parts) {
+          const line = part.trim();
+          if (!line || line.startsWith(":")) continue; // skip keep-alive comments
+          const dataLine = line.startsWith("data: ") ? line.slice(6) : line;
+          try {
+            const event = JSON.parse(dataLine);
+            if (event.type === "progress") {
+              toast.info(event.message, { id: "revision-progress", duration: 60000 });
+            } else if (event.type === "done") {
+              finalData = event;
+              toast.dismiss("revision-progress");
+            } else if (event.type === "error") {
+              throw new Error(event.error || "Processing failed");
+            }
+          } catch (parseErr: any) {
+            if (parseErr.message && !parseErr.message.includes("JSON")) throw parseErr;
+          }
+        }
       }
+
+      if (!finalData?.script) throw new Error("No script received from server");
+      setDocumentText(finalData.text || "");
+      setPodcastScript(finalData.script);
+      await generateAudio(finalData.script, ttsEngine, edgeVoice, selectedLanguage);
     } catch (err: any) {
+      toast.dismiss("revision-progress");
       toast.error(err.message || "Failed to process document");
     } finally {
       setUploading(false);
