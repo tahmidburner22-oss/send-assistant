@@ -518,6 +518,16 @@ Return EXACTLY this JSON structure (raw JSON only, no markdown):
   }
   const result: AIWorksheetResult = { ...json, isAI: true, provider };
 
+  // Normalise metadata.adaptations — AI sometimes returns a string instead of an array
+  if (result.metadata) {
+    const raw = (result.metadata as any).adaptations;
+    if (typeof raw === "string") {
+      (result.metadata as any).adaptations = raw.length > 0 ? [raw] : [];
+    } else if (!Array.isArray(raw)) {
+      (result.metadata as any).adaptations = [];
+    }
+  }
+
   // Optionally generate and inject a diagram section
   if (params.generateDiagram) {
     try {
