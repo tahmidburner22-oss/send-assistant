@@ -572,7 +572,7 @@ export default function Worksheets() {
                 </div>
 
                 <Button onClick={handleGenerate} disabled={loading} className="w-full h-11 bg-brand hover:bg-brand/90 text-white">
-                  {loading ? <><RefreshCw className="w-4 h-4 mr-2 animate-spin" />{useAI ? "Generating with AI..." : "Generating..."}</> : <><Sparkles className="w-4 h-4 mr-2" /> Generate Lesson</>}
+                  {loading ? <><RefreshCw className="w-4 h-4 mr-2 animate-spin" />{useAI ? "Generating with AI..." : "Generating..."}</> : <><Sparkles className="w-4 h-4 mr-2" /> Generate Worksheet</>}
                 </Button>
               </CardContent>
             </Card>
@@ -757,8 +757,8 @@ export default function Worksheets() {
             {worksheetHistory.length === 0 ? (
               <div className="text-center py-12 text-gray-400">
                 <History className="h-10 w-10 mx-auto mb-2 opacity-40" />
-                <p className="text-sm">No saved lessons yet.</p>
-                <p className="text-xs mt-1">Generate and save a lesson to see it here.</p>
+                <p className="text-sm">No saved worksheets yet.</p>
+                <p className="text-xs mt-1">Generate and save a worksheet to see it here.</p>
               </div>
             ) : (
               <div className="space-y-2">
