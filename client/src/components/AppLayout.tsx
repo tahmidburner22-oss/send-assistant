@@ -8,7 +8,7 @@ import {
   Calendar, TrendingUp, ClipboardList, IdCard, CheckSquare, ShieldAlert, Heart,
   HelpCircle, Table2, AlignLeft, Layers, CalendarDays, BookMarked, Ticket,
   BookType, Mail, Shield, ChevronDown, ChevronRight, ScrollText, Headphones, ScanSearch,
-  Zap, NotebookPen
+  Zap, NotebookPen, Pencil
 } from "lucide-react";
 
 const mainMenu = [
@@ -22,6 +22,7 @@ const mainMenu = [
   { path: "/children", label: "Pupils", icon: Users },
   { path: "/revision-hub", label: "Revision Hub", icon: Headphones },
   { path: "/quiz-game", label: "QuizBlast", icon: Zap, color: "text-yellow-500" },
+  { path: "/quiz-builder", label: "Quiz Builder", icon: Pencil, color: "text-orange-500" },
   { path: "/daily-briefing", label: "Daily Briefing", icon: NotebookPen, color: "text-blue-600" },
   { path: "/history", label: "History", icon: Clock },
   { path: "/analytics", label: "Analytics", icon: BarChart3 },
