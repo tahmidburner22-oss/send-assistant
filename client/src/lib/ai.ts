@@ -342,10 +342,11 @@ export async function aiGenerateWorksheet(params: {
 
   // ── Year-group calibration ──────────────────────────────────────────────────
   // Parse the year number from strings like "Year 1", "Year 5", "Year 10", "Year 13"
-  const yearNum = parseInt((params.yearGroup || "").replace(/[^0-9]/g, ""), 10) || 7;
+  const is11Plus = (params.yearGroup || "").toLowerCase().includes("11+") || (params.yearGroup || "").toLowerCase().includes("eleven plus");
+  const yearNum = is11Plus ? 6 : (parseInt((params.yearGroup || "").replace(/[^0-9]/g, ""), 10) || 7);
 
   // Key Stage and phase
-  const phase =
+  const phase = is11Plus ? "11+ Preparation (ages 9–11, KS2 level)" :
     yearNum <= 2  ? "KS1 (ages 5–7)" :
     yearNum <= 6  ? "KS2 (ages 7–11)" :
     yearNum <= 9  ? "KS3 (ages 11–14)" :
@@ -484,6 +485,7 @@ Year group scaling is CRITICAL. The difficulty, language, and cognitive demand m
 - Year 9 (KS3 upper): More demanding. Bridge to GCSE. Introduce GCSE-style questions.
 - Year 10–11 (KS4/GCSE): Full GCSE standard. Exam-board aligned. Command words. Tier-appropriate.
 - Year 12–13 (KS5/A-Level): A-Level standard. Synoptic. Extended responses.
+- 11+ Preparation: KS2 upper level (Year 5–6 standard) but focused on 11+ exam skills. Include Verbal Reasoning (word codes, analogies, sequences), Non-Verbal Reasoning (patterns, shapes), Maths (arithmetic, word problems, fractions, ratios), and English (comprehension, vocabulary, grammar). Questions must be in the style of GL Assessment and CEM 11+ papers. Use multiple-choice or short-answer format where appropriate.
 
 A Year 3 worksheet and a Year 10 worksheet on the same topic MUST look completely different.
 ${sentenceGuide}
