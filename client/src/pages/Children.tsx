@@ -156,10 +156,10 @@ export default function Children() {
         </Button>
       </motion.div>
 
-      {/* Add Child Dialog */}
+      {/* Add Pupil Dialog */}
       <Dialog open={showAdd} onOpenChange={setShowAdd}>
         <DialogContent>
-          <DialogHeader><DialogTitle className="flex items-center gap-2"><UserPlus className="w-5 h-5 text-brand" /> Add New Child</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle className="flex items-center gap-2"><UserPlus className="w-5 h-5 text-brand" /> Add New Pupil</DialogTitle></DialogHeader>
           <div className="space-y-3 mt-2">
             {/* Data Protection Notice */}
             <div className="flex items-start gap-2 p-3 rounded-lg bg-amber-50 border border-amber-200">
@@ -190,7 +190,7 @@ export default function Children() {
                 <SelectContent>{sendNeeds.map(n => <SelectItem key={n.id} value={n.id}>{n.name}</SelectItem>)}</SelectContent>
               </Select>
             </div>
-            <Button onClick={handleAdd} className="w-full h-10 bg-brand hover:bg-brand/90 text-white">Add Child</Button>
+            <Button onClick={handleAdd} className="w-full h-10 bg-brand hover:bg-brand/90 text-white">Add Pupil</Button>
           </div>
         </DialogContent>
       </Dialog>
@@ -445,10 +445,10 @@ export default function Children() {
         <Card className="border-border/50">
           <CardContent className="p-8 text-center">
             <UserPlus className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-            <h3 className="font-semibold text-foreground mb-1">No Children Added</h3>
+            <h3 className="font-semibold text-foreground mb-1">No Pupils Added</h3>
             <p className="text-sm text-muted-foreground mb-4">Add your SEND students to assign worksheets and track progress.</p>
             <Button onClick={() => setShowAdd(true)} className="bg-brand hover:bg-brand/90 text-white">
-              <Plus className="w-4 h-4 mr-1" /> Add First Child
+              <Plus className="w-4 h-4 mr-1" /> Add First Pupil
             </Button>
           </CardContent>
         </Card>

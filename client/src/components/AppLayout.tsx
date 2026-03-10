@@ -18,7 +18,7 @@ const mainMenu = [
   { path: "/stories", label: "Stories", icon: BookOpen },
   { path: "/past-papers", label: "Past Papers", icon: ScrollText },
   { path: "/templates", label: "Templates", icon: LayoutGrid },
-  { path: "/children", label: "Children", icon: Users },
+  { path: "/children", label: "Pupils", icon: Users },
   { path: "/revision-hub", label: "Revision Hub", icon: Headphones },
   { path: "/history", label: "History", icon: Clock },
   { path: "/analytics", label: "Analytics", icon: BarChart3 },

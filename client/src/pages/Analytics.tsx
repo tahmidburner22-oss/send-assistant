@@ -57,7 +57,7 @@ export default function Analytics() {
   const stats = [
     { label: "Worksheets", value: totalWorksheets, icon: FileText, color: "text-brand" },
     { label: "Stories", value: totalStories, icon: BookOpen, color: "text-purple-600" },
-    { label: "Children", value: totalChildren, icon: Users, color: "text-blue-600" },
+    { label: "Pupils", value: totalChildren, icon: Users, color: "text-blue-600" },
     { label: "Time Saved", value: `${timeSaved}m`, icon: Clock, color: "text-amber-600" },
     { label: "Avg Rating", value: avgRating || "—", icon: Star, color: "text-rose-500" },
   ];

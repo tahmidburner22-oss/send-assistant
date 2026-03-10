@@ -29,8 +29,8 @@ const categories = [
     icon: Users,
     title: "Pupil Management",
     articles: [
-      { q: "How do I add a pupil profile?", a: "Go to 'Children' in the navigation and click 'Add Pupil'. Enter the pupil's first name, year group, and SEND need. You can optionally add their UPN and date of birth." },
-      { q: "How do I bulk import pupils?", a: "Go to Children > Bulk Import. Download the CSV template, fill it in with your pupils' details, and upload it. The system will create all profiles at once." },
+      { q: "How do I add a pupil profile?", a: "Go to 'Pupils' in the navigation and click 'Add Pupil'. Enter the pupil's first name, year group, and SEND need. You can optionally add their UPN and date of birth." },
+      { q: "How do I bulk import pupils?", a: "Go to Pupils > Bulk Import. Download the CSV template, fill it in with your pupils' details, and upload it. The system will create all profiles at once." },
       { q: "How do I assign work to a pupil?", a: "Open a pupil's profile and click 'Assign Work'. Select a worksheet or story from your history, or create a new one. The pupil's parent can view assigned work via the Parent Portal." },
       { q: "What is the Parent Portal?", a: "The Parent Portal allows parents to view their child's assigned work and submit completed work. Share the portal link and your child's access code (shown in their profile) with parents." },
     ],

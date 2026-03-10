@@ -556,7 +556,7 @@ export default function History() {
             <div className="space-y-1.5">
               <label className="text-xs font-medium">Select Student</label>
               {children.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No students added yet. Go to the Children page first.</p>
+                <p className="text-sm text-muted-foreground">No students added yet. Go to the Pupils page first.</p>
               ) : (
                 <Select value={assignChildId} onValueChange={setAssignChildId}>
                   <SelectTrigger><SelectValue placeholder="Choose a student..." /></SelectTrigger>

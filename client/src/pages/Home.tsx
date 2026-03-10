@@ -43,7 +43,7 @@ export default function Home() {
   const stats = [
     { label: "Worksheets", value: totalWorksheets, color: "text-brand" },
     { label: "Differentiations", value: totalDifferentiations + totalStories, color: "text-purple-600" },
-    { label: "Children", value: totalChildren, color: "text-blue-600" },
+    { label: "Pupils", value: totalChildren, color: "text-blue-600" },
     { label: "Time Saved", value: `${timeSaved}m`, color: "text-amber-600" },
     { label: "Avg Rating", value: avgRating || "—", color: "text-rose-500" },
   ];
@@ -51,7 +51,7 @@ export default function Home() {
   const quickActions = [
     { label: "Differentiate a Task", icon: Sparkles, href: "/differentiate", color: "bg-purple-50 text-purple-600" },
     { label: "Create Worksheet", icon: FileText, href: "/worksheets", color: "bg-brand-light text-brand" },
-    { label: "Manage Children", icon: Users, href: "/children", color: "bg-blue-50 text-blue-600" },
+    { label: "Manage Pupils", icon: Users, href: "/children", color: "bg-blue-50 text-blue-600" },
     { label: "View History", icon: Clock, href: "/history", color: "bg-amber-50 text-amber-600" },
     { label: "Share Ideas", icon: Share2, href: "/ideas", color: "bg-rose-50 text-rose-600" },
   ];

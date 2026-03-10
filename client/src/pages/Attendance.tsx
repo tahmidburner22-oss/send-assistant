@@ -209,7 +209,7 @@ export default function Attendance() {
           <CalendarDays className="w-8 h-8 text-brand" />
         </div>
         <h2 className="text-xl font-bold mb-2">No Students Yet</h2>
-        <p className="text-muted-foreground text-sm">Add students from the Children page before logging attendance.</p>
+        <p className="text-muted-foreground text-sm">Add students from the Pupils page before logging attendance.</p>
       </div>
     );
   }

@@ -249,7 +249,7 @@ export default function BehaviourTracking() {
             <div className="flex-1">
               <Label className="text-xs font-medium mb-1.5 block">Select Student</Label>
               {children.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No children added yet. Go to the Children page to add students.</p>
+                <p className="text-sm text-muted-foreground">No pupils added yet. Go to the Pupils page to add students.</p>
               ) : (
                 <Select value={selectedChildId} onValueChange={v => { setSelectedChildId(v); loadBehaviourForChild(v); }}>
                   <SelectTrigger className="h-10"><SelectValue placeholder="Choose a student..." /></SelectTrigger>
