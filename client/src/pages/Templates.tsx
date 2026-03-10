@@ -263,12 +263,46 @@ const subjects: SubjectData[] = [
       { title: "Knife Crime and County Lines Awareness", url: "https://www.bbc.co.uk/bitesize/topics/zmpsfg8/articles/zqhyb9q", source: "BBC Bitesize", level: "KS4" },
     ],
   },
+  {
+    label: "11+ Preparation",
+    icon: BookOpen,
+    color: "text-orange-600",
+    bgColor: "bg-orange-50",
+    description: "11+ exam preparation: Verbal Reasoning, Non-Verbal Reasoning, Maths and English",
+    worksheets: [
+      // Verbal Reasoning
+      { title: "Verbal Reasoning: Word Codes", url: "https://www.bond11plus.co.uk/free-papers/verbal-reasoning-sample.pdf", source: "Bond 11+", level: "11+" },
+      { title: "Verbal Reasoning: Analogies", url: "https://www.elevenplusexams.co.uk/forum/11plus/files/vr-analogies-practice.pdf", source: "11+ Exams", level: "11+" },
+      { title: "Verbal Reasoning: Antonyms and Synonyms", url: "https://www.bbc.co.uk/bitesize/topics/zt62mnb", source: "BBC Bitesize", level: "11+" },
+      { title: "Verbal Reasoning: Odd One Out", url: "https://www.elevenplusexams.co.uk/forum/11plus/files/vr-odd-one-out.pdf", source: "11+ Exams", level: "11+" },
+      { title: "Verbal Reasoning: Letter Sequences", url: "https://www.elevenplusexams.co.uk/forum/11plus/files/vr-letter-sequences.pdf", source: "11+ Exams", level: "11+" },
+      // Non-Verbal Reasoning
+      { title: "Non-Verbal Reasoning: Shapes and Patterns", url: "https://www.bond11plus.co.uk/free-papers/non-verbal-reasoning-sample.pdf", source: "Bond 11+", level: "11+" },
+      { title: "Non-Verbal Reasoning: Matrices", url: "https://www.elevenplusexams.co.uk/forum/11plus/files/nvr-matrices.pdf", source: "11+ Exams", level: "11+" },
+      { title: "Non-Verbal Reasoning: Rotations and Reflections", url: "https://www.elevenplusexams.co.uk/forum/11plus/files/nvr-rotations.pdf", source: "11+ Exams", level: "11+" },
+      { title: "Non-Verbal Reasoning: Series Completion", url: "https://www.elevenplusexams.co.uk/forum/11plus/files/nvr-series.pdf", source: "11+ Exams", level: "11+" },
+      // Maths
+      { title: "11+ Maths: Number and Place Value", url: "https://www.mathsgenie.co.uk/resources/1-place-value-ws.pdf", source: "Maths Genie", level: "11+" },
+      { title: "11+ Maths: Fractions, Decimals and Percentages", url: "https://www.mathsgenie.co.uk/resources/3-fractions-decimals-percentages-ws.pdf", source: "Maths Genie", level: "11+" },
+      { title: "11+ Maths: Word Problems", url: "https://corbettmaths.com/2019/09/02/worded-problems/", source: "Corbettmaths", level: "11+" },
+      { title: "11+ Maths: Ratio and Proportion", url: "https://www.mathsgenie.co.uk/resources/4-ratio-ws.pdf", source: "Maths Genie", level: "11+" },
+      { title: "11+ Maths: Algebra Basics", url: "https://corbettmaths.com/2018/04/04/algebra/", source: "Corbettmaths", level: "11+" },
+      { title: "11+ Maths: Shape, Space and Measure", url: "https://www.mathsgenie.co.uk/resources/3-area-ws.pdf", source: "Maths Genie", level: "11+" },
+      // English
+      { title: "11+ English: Comprehension Practice", url: "https://www.bond11plus.co.uk/free-papers/english-sample.pdf", source: "Bond 11+", level: "11+" },
+      { title: "11+ English: Vocabulary and Spelling", url: "https://www.bbc.co.uk/bitesize/topics/zt62mnb", source: "BBC Bitesize", level: "11+" },
+      { title: "11+ English: Grammar and Punctuation", url: "https://www.bbc.co.uk/bitesize/topics/zvwwxnb", source: "BBC Bitesize", level: "11+" },
+      { title: "11+ English: Creative Writing Starters", url: "https://www.bbc.co.uk/bitesize/guides/zxhb4wx/revision/1", source: "BBC Bitesize", level: "11+" },
+    ],
+  },
 ];
 
 const sourceColors: Record<string, string> = {
   "Maths Genie": "bg-green-100 text-green-700",
   "Corbettmaths": "bg-blue-100 text-blue-700",
-  "BBC Bitesize": "bg-orange-100 text-orange-700",
+  "Bond 11+": "bg-orange-100 text-orange-700",
+  "11+ Exams": "bg-amber-100 text-amber-700",
+  "BBC Bitesize": "bg-yellow-100 text-yellow-700",
 };
 
 export default function Templates() {

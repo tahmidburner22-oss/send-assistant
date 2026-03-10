@@ -16,11 +16,13 @@ export const subjects = [
   { id: "pshe", name: "PSHE", icon: "Users", color: "#22C55E" },
   { id: "business", name: "Business Studies", icon: "Briefcase", color: "#64748B" },
   { id: "drama", name: "Drama", icon: "Theater", color: "#E11D48" },
+  { id: "eleven-plus", name: "11+ Preparation", icon: "Star", color: "#F97316" },
 ];
 
 export const yearGroups = [
   "Year 1", "Year 2", "Year 3", "Year 4", "Year 5", "Year 6",
   "Year 7", "Year 8", "Year 9", "Year 10", "Year 11", "Year 12", "Year 13",
+  "11+ Preparation",
 ];
 
 export const examBoards = [

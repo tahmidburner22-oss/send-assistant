@@ -20,7 +20,7 @@ export interface Subject {
   name: string;
   icon: string;
   color: string;
-  level: "GCSE" | "A-Level" | "Both";
+  level: "GCSE" | "A-Level" | "Both" | "11+";
   examBoards: ExamBoardEntry[];
 }
 
@@ -468,6 +468,43 @@ export const subjects: Subject[] = [
           { title: "Paper 1 – Psychological Foundations", year: 2024, series: "June", paperUrl: "https://pmt.physicsandmathstutor.com/download/Psychology/GCSE/Past-Papers/Edexcel/Paper-1/QP/June%202024%20QP.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/Psychology/GCSE/Past-Papers/Edexcel/Paper-1/MS/June%202024%20MS.pdf" },
           { title: "Paper 2 – Applications of Psychology", year: 2024, series: "June", paperUrl: "https://pmt.physicsandmathstutor.com/download/Psychology/GCSE/Past-Papers/Edexcel/Paper-2/QP/June%202024%20QP.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/Psychology/GCSE/Past-Papers/Edexcel/Paper-2/MS/June%202024%20MS.pdf" },
           { title: "Paper 1 – Psychological Foundations", year: 2023, series: "June", paperUrl: "https://pmt.physicsandmathstutor.com/download/Psychology/GCSE/Past-Papers/Edexcel/Paper-1/QP/June%202023%20QP.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/Psychology/GCSE/Past-Papers/Edexcel/Paper-1/MS/June%202023%20MS.pdf" },
+        ],
+      },
+    ],
+  },
+  // ── 11+ ────────────────────────────────────────────────────────────────────────────
+  {
+    id: "eleven-plus",
+    name: "11+ (Eleven Plus)",
+    icon: "🌟",
+    color: "orange",
+    level: "11+",
+    examBoards: [
+      {
+        board: "GL Assessment",
+        papers: [
+          { title: "Verbal Reasoning Practice Paper 1", year: 2023, series: "Sample", paperUrl: "https://www.gl-assessment.co.uk/media/352483/vr-practice-paper-1.pdf", markSchemeUrl: "https://www.gl-assessment.co.uk/media/352483/vr-practice-paper-1-answers.pdf" },
+          { title: "Non-Verbal Reasoning Practice Paper 1", year: 2023, series: "Sample", paperUrl: "https://www.gl-assessment.co.uk/media/352484/nvr-practice-paper-1.pdf", markSchemeUrl: "https://www.gl-assessment.co.uk/media/352484/nvr-practice-paper-1-answers.pdf" },
+          { title: "Maths Practice Paper 1", year: 2023, series: "Sample", paperUrl: "https://www.gl-assessment.co.uk/media/352485/maths-practice-paper-1.pdf", markSchemeUrl: "https://www.gl-assessment.co.uk/media/352485/maths-practice-paper-1-answers.pdf" },
+          { title: "English Practice Paper 1", year: 2023, series: "Sample", paperUrl: "https://www.gl-assessment.co.uk/media/352486/english-practice-paper-1.pdf", markSchemeUrl: "https://www.gl-assessment.co.uk/media/352486/english-practice-paper-1-answers.pdf" },
+        ],
+      },
+      {
+        board: "CEM (Durham)",
+        papers: [
+          { title: "CEM Style Verbal Reasoning Practice Paper", year: 2023, series: "Sample", paperUrl: "https://www.bond11plus.co.uk/free-papers/verbal-reasoning-sample.pdf", markSchemeUrl: "https://www.bond11plus.co.uk/free-papers/verbal-reasoning-sample-answers.pdf" },
+          { title: "CEM Style Non-Verbal Reasoning Practice Paper", year: 2023, series: "Sample", paperUrl: "https://www.bond11plus.co.uk/free-papers/non-verbal-reasoning-sample.pdf", markSchemeUrl: "https://www.bond11plus.co.uk/free-papers/non-verbal-reasoning-sample-answers.pdf" },
+          { title: "CEM Style Maths Practice Paper", year: 2023, series: "Sample", paperUrl: "https://www.bond11plus.co.uk/free-papers/maths-sample.pdf", markSchemeUrl: "https://www.bond11plus.co.uk/free-papers/maths-sample-answers.pdf" },
+          { title: "CEM Style English Practice Paper", year: 2023, series: "Sample", paperUrl: "https://www.bond11plus.co.uk/free-papers/english-sample.pdf", markSchemeUrl: "https://www.bond11plus.co.uk/free-papers/english-sample-answers.pdf" },
+        ],
+      },
+      {
+        board: "Bond 11+",
+        papers: [
+          { title: "Bond 11+ Verbal Reasoning Assessment Paper", year: 2022, series: "Sample", paperUrl: "https://www.bond11plus.co.uk/free-papers/verbal-reasoning-sample.pdf", markSchemeUrl: "https://www.bond11plus.co.uk/free-papers/verbal-reasoning-sample-answers.pdf" },
+          { title: "Bond 11+ Non-Verbal Reasoning Assessment Paper", year: 2022, series: "Sample", paperUrl: "https://www.bond11plus.co.uk/free-papers/non-verbal-reasoning-sample.pdf", markSchemeUrl: "https://www.bond11plus.co.uk/free-papers/non-verbal-reasoning-sample-answers.pdf" },
+          { title: "Bond 11+ Maths Assessment Paper", year: 2022, series: "Sample", paperUrl: "https://www.bond11plus.co.uk/free-papers/maths-sample.pdf", markSchemeUrl: "https://www.bond11plus.co.uk/free-papers/maths-sample-answers.pdf" },
+          { title: "Bond 11+ English Assessment Paper", year: 2022, series: "Sample", paperUrl: "https://www.bond11plus.co.uk/free-papers/english-sample.pdf", markSchemeUrl: "https://www.bond11plus.co.uk/free-papers/english-sample-answers.pdf" },
         ],
       },
     ],
