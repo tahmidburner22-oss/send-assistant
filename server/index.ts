@@ -21,6 +21,7 @@ import schoolApiKeysRouter from "./routes/schoolApiKeys.js";
 import billingRouter from "./routes/billing.js";
 import misRouter from "./routes/mis.js";
 import briefingRouter from "./routes/briefing.js";
+import quizRouter from "./routes/quiz.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -199,6 +200,7 @@ app.use("/api/school-keys", schoolApiKeysRouter);
 app.use("/api/billing", billingRouter);
 app.use("/api/mis", misRouter);
 app.use("/api/briefing", briefingRouter);
+app.use("/api/quiz", quizRouter);
 
 // ── Health check ──────────────────────────────────────────────────────────────
 app.get("/api/health", (_, res) => {

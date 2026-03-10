@@ -64,6 +64,8 @@ import HelpCentre from "./pages/HelpCentre";
 import Onboarding from "./pages/Onboarding";
 import SendScreener from "./pages/SendScreener";
 import QuizGame from "./pages/QuizGame";
+import QuizJoin from "./pages/QuizJoin";
+import QuizBuilder from "./pages/QuizBuilder";
 import DailyBriefing from "./pages/DailyBriefing";
 
 import AppLayout from "./components/AppLayout";
@@ -120,6 +122,8 @@ function ProtectedRoutes() {
 
         {/* Classroom Tools */}
         <Route path="/quiz-game" component={QuizGame} />
+        <Route path="/quiz-builder" component={QuizBuilder} />
+        <Route path="/quiz-builder/:id" component={QuizBuilder} />
         <Route path="/daily-briefing" component={DailyBriefing} />
 
         {/* SEND Tools */}
@@ -165,6 +169,10 @@ function Router() {
       {/* Parent portal (public with access code) */}
       <Route path="/parent-portal" component={ParentPortal} />
       <Route path="/parent-portal/:section" component={ParentPortal} />
+
+      {/* QuizBlast player join (public) */}
+      <Route path="/quiz-join" component={QuizJoin} />
+      <Route path="/quiz-join/:code" component={QuizJoin} />
 
       {/* Legal & Compliance (public) */}
       <Route path="/privacy" component={PrivacyPolicy} />

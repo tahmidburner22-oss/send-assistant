@@ -377,7 +377,23 @@ CREATE TABLE IF NOT EXISTS daily_briefings (
   content TEXT NOT NULL,
   author_id TEXT REFERENCES users(id),
   author_name TEXT,
+  attachments TEXT NOT NULL DEFAULT '[]',  -- JSON array of {name,url,size,type}
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
   updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 CREATE INDEX IF NOT EXISTS idx_briefing_school_date ON daily_briefings(school_id, date);
+
+-- ── Custom Quizzes (QuizBlast) ────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS custom_quizzes (
+  id TEXT PRIMARY KEY,
+  school_id TEXT NOT NULL REFERENCES schools(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  subject TEXT,
+  topic TEXT,
+  questions TEXT NOT NULL DEFAULT '[]', -- JSON array of {id,question,options,correctIndex,timeLimit}
+  question_count INTEGER NOT NULL DEFAULT 0,
+  created_by TEXT REFERENCES users(id),
+  created_by_name TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_custom_quizzes_school ON custom_quizzes(school_id);
