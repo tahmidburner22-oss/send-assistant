@@ -105,7 +105,7 @@ export async function initDb() {
   try {
     _db.run(schemaSafe);
   } catch (e) {
-    console.error("Error running schema.sql:", e);
+    console.error("Error running schema.sql:", e.message || JSON.stringify(e));
     throw e;
   }
   persist();
