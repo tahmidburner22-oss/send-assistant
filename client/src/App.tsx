@@ -9,6 +9,7 @@ import CookieBanner from "./components/CookieBanner";
 import OnboardingTour from "./components/OnboardingTour";
 import SessionTimeout from "./components/SessionTimeout";
 import AIBestPracticesGate from "./components/AIBestPracticesGate";
+import SubscriptionGate from "./components/SubscriptionGate";
 
 // Core pages
 import Home from "./pages/Home";
@@ -91,6 +92,7 @@ function ProtectedRoutes() {
   }
 
   return (
+    <SubscriptionGate>
     <AppLayout>
       <Switch>
         {/* Core */}
@@ -140,6 +142,7 @@ function ProtectedRoutes() {
         <Route component={NotFound} />
       </Switch>
     </AppLayout>
+    </SubscriptionGate>
   );
 }
 

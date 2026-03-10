@@ -189,3 +189,25 @@ export const ai = {
 export const adminData = {
   allWorksheets: () => apiFetch<any[]>("/data/admin/worksheets"),
 };
+
+// ── Billing (Stripe) ──────────────────────────────────────────────────────────
+export const billing = {
+  status: () =>
+    apiFetch<{
+      status: string;
+      plan: string | null;
+      licenceType: string;
+      trialEndsAt: string | null;
+      periodEnd: string | null;
+      cancelAtPeriodEnd: boolean;
+      isAccessible: boolean;
+      stripeConfigured: boolean;
+    }>("/billing/status"),
+  checkout: (plan: string, billingPeriod: "monthly" | "annual") =>
+    apiFetch<{ url: string }>("/billing/checkout", {
+      method: "POST",
+      body: JSON.stringify({ plan, billing: billingPeriod }),
+    }),
+  portal: () =>
+    apiFetch<{ url: string }>("/billing/portal", { method: "POST" }),
+};

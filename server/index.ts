@@ -18,6 +18,7 @@ import adminRouter from "./routes/admin.js";
 import gdprRouter from "./routes/gdpr.js";
 import revisionRouter from "./routes/revision.js";
 import schoolApiKeysRouter from "./routes/schoolApiKeys.js";
+import billingRouter from "./routes/billing.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -144,6 +145,11 @@ const generalLimiter = rateLimit({
 });
 
 // ── Body parsing — tight limits to prevent DoS ────────────────────────────────
+// Stripe webhook needs raw body — capture it before JSON parsing
+app.use("/api/billing/webhook", express.raw({ type: "application/json" }), (req: any, _res: any, next: any) => {
+  req.rawBody = req.body;
+  next();
+});
 app.use(express.json({ limit: "5mb" })); // increased to 5mb to handle large AI-generated worksheets with SVG
 app.use(express.urlencoded({ extended: true, limit: "5mb" }));
 app.use(cookieParser());
@@ -188,10 +194,11 @@ app.use("/api/admin", adminRouter);
 app.use("/api/gdpr", gdprRouter);
 app.use("/api/revision", aiLimiter, revisionRouter);
 app.use("/api/school-keys", schoolApiKeysRouter);
+app.use("/api/billing", billingRouter);
 
 // ── Health check ──────────────────────────────────────────────────────────────
 app.get("/api/health", (_, res) => {
-  res.json({ status: "ok", timestamp: new Date().toISOString(), version: "2.1.0-GDPR" });
+  res.json({ status: "ok", timestamp: new Date().toISOString(), version: "2.2.0-Billing" });
 });
 
 // ── Serve static frontend in production ───────────────────────────────────────

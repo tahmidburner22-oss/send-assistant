@@ -105,6 +105,19 @@ export async function initDb() {
   _db.run(schemaSafe);
   persist();
 
+  // ── Schema migrations (idempotent — ADD COLUMN IF NOT EXISTS) ─────────────
+  const migrations = [
+    "ALTER TABLE schools ADD COLUMN stripe_customer_id TEXT",
+    "ALTER TABLE schools ADD COLUMN subscription_status TEXT DEFAULT 'trialing'",
+    "ALTER TABLE schools ADD COLUMN subscription_plan TEXT",
+    "ALTER TABLE schools ADD COLUMN subscription_period_end TEXT",
+    "ALTER TABLE schools ADD COLUMN subscription_cancel_at_period_end INTEGER NOT NULL DEFAULT 0",
+  ];
+  for (const migration of migrations) {
+    try { _db.run(migration); } catch (_) { /* column already exists — ignore */ }
+  }
+  persist();
+
   // Seed default admin if no users exist
   const stmt = _db.prepare("SELECT COUNT(*) as c FROM users");
   stmt.step();
