@@ -21,7 +21,6 @@ import {
   ExternalLink, Zap, Clock, FileDown, Printer, UserPlus, X
 } from "lucide-react";
 import { useApp } from "@/contexts/AppContext";
-import { printWorksheetElement } from "@/lib/pdf-generator-v2";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface Question {
@@ -949,7 +948,6 @@ export default function SendScreener() {
                 if (!resultsRef.current) return;
                 const printWindow = window.open("", "_blank", "width=900,height=700,scrollbars=yes");
                 if (!printWindow) { alert("Please allow pop-ups for this site to enable PDF saving."); return; }
-                const contentHtml = resultsRef.current.innerHTML;
                 const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
