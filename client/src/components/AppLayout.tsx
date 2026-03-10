@@ -21,6 +21,8 @@ const mainMenu = [
   { path: "/templates", label: "Templates", icon: LayoutGrid },
   { path: "/children", label: "Pupils", icon: Users },
   { path: "/revision-hub", label: "Revision Hub", icon: Headphones },
+  { path: "/quiz-game", label: "QuizBlast", icon: Zap, color: "text-yellow-500" },
+  { path: "/daily-briefing", label: "Daily Briefing", icon: NotebookPen, color: "text-blue-600" },
   { path: "/history", label: "History", icon: Clock },
   { path: "/analytics", label: "Analytics", icon: BarChart3 },
   { path: "/ideas", label: "Ideas", icon: Lightbulb },
@@ -56,8 +58,6 @@ const classroomMenu = [
   { path: "/visual-timetable", label: "Visual Timetable", icon: Calendar },
   { path: "/behaviour-tracking", label: "Behaviour Tracking", icon: TrendingUp },
   { path: "/attendance", label: "Attendance", icon: ClipboardList },
-  { path: "/quiz-game", label: "QuizBlast", icon: Zap, color: "text-yellow-500" },
-  { path: "/daily-briefing", label: "Daily Briefing", icon: NotebookPen, color: "text-blue-600" },
 ];
 
 const accountMenu = [
