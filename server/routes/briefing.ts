@@ -14,23 +14,7 @@ import db from "../db/index.js";
 import { requireAuth, auditLog } from "../middleware/auth.js";
 
 const router = Router();
-
-// ── Ensure table exists (idempotent migration) ────────────────────────────────
-db.exec(`
-  CREATE TABLE IF NOT EXISTS daily_briefings (
-    id TEXT PRIMARY KEY,
-    school_id TEXT NOT NULL REFERENCES schools(id) ON DELETE CASCADE,
-    date TEXT NOT NULL,                  -- YYYY-MM-DD
-    type TEXT NOT NULL DEFAULT 'briefing', -- 'briefing' | 'debrief' | 'note'
-    title TEXT NOT NULL,
-    content TEXT NOT NULL,
-    author_id TEXT REFERENCES users(id),
-    author_name TEXT,
-    created_at TEXT NOT NULL DEFAULT (datetime('now')),
-    updated_at TEXT NOT NULL DEFAULT (datetime('now'))
-  );
-  CREATE INDEX IF NOT EXISTS idx_briefing_school_date ON daily_briefings(school_id, date);
-`);
+// Table is created in schema.sql via initDb() — no top-level exec needed here
 
 // ── GET /api/briefing?date=YYYY-MM-DD ────────────────────────────────────────
 router.get("/", requireAuth, (req: Request, res: Response) => {

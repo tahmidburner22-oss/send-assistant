@@ -367,3 +367,17 @@ CREATE TABLE IF NOT EXISTS breach_log (
 );
 CREATE INDEX IF NOT EXISTS idx_breach_log_school ON breach_log(school_id);
 CREATE INDEX IF NOT EXISTS idx_breach_log_status ON breach_log(status);
+-- ── Daily Briefing & Debrief ──────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS daily_briefings (
+  id TEXT PRIMARY KEY,
+  school_id TEXT NOT NULL REFERENCES schools(id) ON DELETE CASCADE,
+  date TEXT NOT NULL,                   -- YYYY-MM-DD
+  type TEXT NOT NULL DEFAULT 'briefing', -- 'briefing' | 'debrief' | 'note'
+  title TEXT NOT NULL,
+  content TEXT NOT NULL,
+  author_id TEXT REFERENCES users(id),
+  author_name TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_briefing_school_date ON daily_briefings(school_id, date);
