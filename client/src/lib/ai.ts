@@ -450,7 +450,7 @@ Return EXACTLY this JSON structure (raw JSON only, no markdown):
     {
       "title": "Learning Objectives",
       "type": "objective",
-      "content": "By the end of this worksheet, students will be able to:\\n• [age-appropriate objective 1]\\n• [age-appropriate objective 2]\\n• [age-appropriate objective 3]"
+      "content": "By the end of this lesson, students will be able to:\\n• [age-appropriate objective 1]\\n• [age-appropriate objective 2]\\n• [age-appropriate objective 3]"
     },
     {
       "title": "Key Vocabulary",

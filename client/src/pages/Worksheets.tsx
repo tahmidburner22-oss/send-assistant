@@ -224,7 +224,7 @@ export default function Worksheets() {
           generateDiagram,
         });
         generatedWs = { ...result, isAI: true } as AIWorksheet;
-        toast.success(generateDiagram ? "Worksheet with diagram generated!" : "Worksheet generated with AI!");
+        toast.success(generateDiagram ? "Lesson with diagram generated!" : "Lesson generated with AI!");
       } catch (err) {
         console.error("AI generation failed:", err);
         toast.error("AI generation failed — using local generator as fallback.");
@@ -233,7 +233,7 @@ export default function Worksheets() {
     } else {
       await new Promise(r => setTimeout(r, 800));
       generatedWs = generateWorksheet({ subject, topic, yearGroup, sendNeed: sendNeed || undefined, difficulty, examBoard, includeAnswers, additionalInstructions });
-      toast.success("Worksheet generated!");
+      toast.success("Lesson generated!");
     }
 
     if (generatedWs) {
@@ -329,7 +329,7 @@ export default function Worksheets() {
       setSavedWorksheetId(saved.id);
     }
     await refreshData(); // Refresh dashboard counts
-    toast.success("Worksheet saved to history!");
+    toast.success("Lesson saved to history!");
   };
 
   // ─── PDF Download (pixel-perfect HTML-to-PDF) ─────────────────────────────
@@ -572,7 +572,7 @@ export default function Worksheets() {
                 </div>
 
                 <Button onClick={handleGenerate} disabled={loading} className="w-full h-11 bg-brand hover:bg-brand/90 text-white">
-                  {loading ? <><RefreshCw className="w-4 h-4 mr-2 animate-spin" />{useAI ? "Generating with AI..." : "Generating..."}</> : <><Sparkles className="w-4 h-4 mr-2" /> Generate Worksheet</>}
+                  {loading ? <><RefreshCw className="w-4 h-4 mr-2 animate-spin" />{useAI ? "Generating with AI..." : "Generating..."}</> : <><Sparkles className="w-4 h-4 mr-2" /> Generate Lesson</>}
                 </Button>
               </CardContent>
             </Card>
@@ -757,8 +757,8 @@ export default function Worksheets() {
             {worksheetHistory.length === 0 ? (
               <div className="text-center py-12 text-gray-400">
                 <History className="h-10 w-10 mx-auto mb-2 opacity-40" />
-                <p className="text-sm">No saved worksheets yet.</p>
-                <p className="text-xs mt-1">Generate and save a worksheet to see it here.</p>
+                <p className="text-sm">No saved lessons yet.</p>
+                <p className="text-xs mt-1">Generate and save a lesson to see it here.</p>
               </div>
             ) : (
               <div className="space-y-2">
@@ -1004,7 +1004,7 @@ export default function Worksheets() {
                 )}
                 {/* Rating section */}
                 <div className="mt-4 pt-3 border-t border-border/50 flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">Rate this worksheet:</span>
+                  <span className="text-sm text-muted-foreground">Rate this lesson:</span>
                   <div className="flex gap-1">
                     {[1,2,3,4,5].map(s => (
                       <button key={s} onClick={() => {
@@ -1035,7 +1035,7 @@ export default function Worksheets() {
           </div>
 
           <Button variant="outline" onClick={() => { setGenerated(null); setEditedSections({}); setEditMode(false); setEditType("none"); }} className="no-print">
-            ← Generate Another Worksheet
+            ← Generate Another Lesson
           </Button>
         </div>
       )}
@@ -1101,7 +1101,7 @@ export default function Worksheets() {
                 <Button size="sm" variant="outline" onClick={handlePrint}><Printer className="h-4 w-4 mr-1" />Print</Button>
                 <Button size="sm" className="bg-brand hover:bg-brand/90 text-white" onClick={() => {
                   if (children.length > 0) setShowAssignDialog(true);
-                  else toast.info("Add students first from the Children page.");
+                  else toast.info("Add students first from the Pupils page.");
                 }}>
                   <Users className="h-4 w-4 mr-1" />Assign
                 </Button>
