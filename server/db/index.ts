@@ -102,7 +102,12 @@ export async function initDb() {
     .split("\n")
     .filter(l => !l.trim().startsWith("PRAGMA"))
     .join("\n");
-  _db.run(schemaSafe);
+  try {
+    _db.run(schemaSafe);
+  } catch (e) {
+    console.error("Error running schema.sql:", e);
+    throw e;
+  }
   persist();
 
   // ── Schema migrations (idempotent — ADD COLUMN IF NOT EXISTS) ─────────────
