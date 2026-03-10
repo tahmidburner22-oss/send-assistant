@@ -25,7 +25,13 @@ CREATE TABLE IF NOT EXISTS schools (
   dsl_phone TEXT,
   onboarding_complete INTEGER NOT NULL DEFAULT 0,
   trial_ends_at TEXT,
-  licence_type TEXT DEFAULT 'trial', -- trial/starter/professional/enterprise
+  licence_type TEXT DEFAULT 'trial', -- trial/starter/professional/premium/mat/enterprise
+  -- Stripe billing
+  stripe_customer_id TEXT UNIQUE,
+  subscription_status TEXT DEFAULT 'trialing', -- trialing/active/past_due/canceled/unpaid/paused
+  subscription_plan TEXT, -- starter/professional/premium/mat
+  subscription_period_end TEXT, -- ISO datetime when current period ends
+  subscription_cancel_at_period_end INTEGER NOT NULL DEFAULT 0,
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 

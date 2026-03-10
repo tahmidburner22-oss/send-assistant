@@ -5,11 +5,149 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useApp } from "@/contexts/AppContext";
+import { billing as billingApi } from "@/lib/api";
 import {
   CheckCircle, Zap, Brain, Cpu, Globe, Bot, Layers, Key, Plus, Trash2,
   Eye, EyeOff, ChevronDown, ChevronUp, RefreshCw, AlertCircle, Shield,
+  CreditCard, ExternalLink,
 } from "lucide-react";
 import { toast } from "sonner";
+
+// ── Billing Section ───────────────────────────────────────────────────────────
+function BillingSection() {
+  const { user } = useApp();
+  const isAdmin = user?.role === "school_admin" || user?.role === "mat_admin" || user?.role === "admin" || user?.role === "super_admin";
+  const [status, setStatus] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [redirecting, setRedirecting] = useState(false);
+
+  useEffect(() => {
+    billingApi.status()
+      .then(s => setStatus(s))
+      .catch(() => setStatus(null))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const handlePortal = async () => {
+    setRedirecting(true);
+    try {
+      const { url } = await billingApi.portal();
+      window.location.href = url;
+    } catch {
+      window.location.href = "/pricing";
+    } finally {
+      setRedirecting(false);
+    }
+  };
+
+  const handleCheckout = async (plan: string) => {
+    setRedirecting(true);
+    try {
+      const { url } = await billingApi.checkout(plan, "monthly");
+      window.location.href = url;
+    } catch (err: any) {
+      toast.error(err.message || "Failed to start checkout");
+      setRedirecting(false);
+    }
+  };
+
+  if (!isAdmin) return null;
+
+  const planLabel = status?.plan
+    ? status.plan.charAt(0).toUpperCase() + status.plan.slice(1)
+    : status?.licenceType === "trial" ? "Free Trial" : "Free";
+
+  const statusColor = status?.status === "active" || status?.status === "trialing"
+    ? "bg-green-100 text-green-700"
+    : status?.status === "past_due"
+    ? "bg-amber-100 text-amber-700"
+    : "bg-red-100 text-red-700";
+
+  const statusLabel = status?.status === "active" ? "Active"
+    : status?.status === "trialing" ? "Trial"
+    : status?.status === "past_due" ? "Payment overdue"
+    : status?.status === "canceled" ? "Cancelled"
+    : "Inactive";
+
+  return (
+    <Card className="border-border/50">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-base flex items-center gap-2">
+          <CreditCard className="h-4 w-4 text-brand" />
+          Subscription & Billing
+        </CardTitle>
+        <p className="text-xs text-muted-foreground mt-1">Manage your school's Adaptly subscription.</p>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {loading ? (
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <RefreshCw className="w-4 h-4 animate-spin" /> Loading billing status...
+          </div>
+        ) : (
+          <>
+            <div className="flex items-center justify-between rounded-lg bg-muted/40 p-3">
+              <div>
+                <p className="text-sm font-medium">{planLabel} Plan</p>
+                {status?.periodEnd && (
+                  <p className="text-xs text-muted-foreground">
+                    {status?.cancelAtPeriodEnd ? "Cancels" : "Renews"}{" "}
+                    {new Date(status.periodEnd).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}
+                  </p>
+                )}
+                {status?.trialEndsAt && status?.licenceType === "trial" && (
+                  <p className="text-xs text-muted-foreground">
+                    Trial ends {new Date(status.trialEndsAt).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}
+                  </p>
+                )}
+              </div>
+              <Badge className={`text-xs border-0 ${statusColor}`}>{statusLabel}</Badge>
+            </div>
+
+            {status?.stripeConfigured ? (
+              <div className="space-y-2">
+                {(status?.status === "active" || status?.status === "trialing" || status?.status === "past_due") ? (
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={handlePortal}
+                    disabled={redirecting}
+                  >
+                    <ExternalLink className="w-4 h-4 mr-2" />
+                    {redirecting ? "Redirecting..." : "Manage Billing & Invoices"}
+                  </Button>
+                ) : (
+                  <>
+                    <Button
+                      className="w-full bg-brand hover:bg-brand/90 text-white"
+                      onClick={() => handleCheckout("professional")}
+                      disabled={redirecting}
+                    >
+                      <CreditCard className="w-4 h-4 mr-2" />
+                      {redirecting ? "Redirecting..." : "Subscribe — Professional £99/month"}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => handleCheckout("starter")}
+                      disabled={redirecting}
+                    >
+                      {redirecting ? "Redirecting..." : "Subscribe — Starter £49/month"}
+                    </Button>
+                  </>
+                )}
+              </div>
+            ) : (
+              <div className="rounded-lg bg-muted/40 p-3 text-xs text-muted-foreground">
+                <p>To manage your subscription, please contact us:</p>
+                <a href="mailto:billing@adaptly.co.uk" className="text-brand hover:underline font-medium">billing@adaptly.co.uk</a>
+              </div>
+            )}
+          </>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
 
 const PRESET_PROVIDERS = [
   { id: "groq", label: "Groq", description: "Ultra-fast Llama 3.3 70B. Free tier available.", url: "https://console.groq.com/keys", placeholder: "gsk_...", defaultModel: "llama-3.3-70b-versatile", icon: Zap, color: "text-orange-500", bg: "bg-orange-50 dark:bg-orange-950/30", badge: "Free tier", badgeColor: "bg-green-100 text-green-700" },
@@ -218,6 +356,8 @@ export default function Settings() {
           )}
         </CardContent>
       </Card>
+
+      <BillingSection />
 
       <Card className="border-border/50">
         <CardHeader className="pb-3"><CardTitle className="text-base">Account</CardTitle></CardHeader>
