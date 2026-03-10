@@ -63,6 +63,8 @@ import Pricing from "./pages/Pricing";
 import HelpCentre from "./pages/HelpCentre";
 import Onboarding from "./pages/Onboarding";
 import SendScreener from "./pages/SendScreener";
+import QuizGame from "./pages/QuizGame";
+import DailyBriefing from "./pages/DailyBriefing";
 
 import AppLayout from "./components/AppLayout";
 import { useApp } from "./contexts/AppContext";
@@ -115,6 +117,10 @@ function ProtectedRoutes() {
 
         {/* SEND Screener */}
         <Route path="/send-screener" component={SendScreener} />
+
+        {/* Classroom Tools */}
+        <Route path="/quiz-game" component={QuizGame} />
+        <Route path="/daily-briefing" component={DailyBriefing} />
 
         {/* SEND Tools */}
         <Route path="/tools/iep-generator" component={IEPGenerator} />

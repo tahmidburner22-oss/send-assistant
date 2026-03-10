@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,11 +19,19 @@ import {
   Plus, UserPlus, Copy, Trash2, Edit3, FileText, BookOpen,
   CheckCircle, Clock, AlertCircle, MessageSquare, TrendingUp,
   ChevronLeft, Shield, Star, Send, Calendar, X, Zap, BrainCircuit,
-  PlayCircle, PauseCircle, RotateCcw, Settings2
+  PlayCircle, PauseCircle, RotateCcw, Settings2, Upload, RefreshCw, Database
 } from "lucide-react";
+
+function getAuthHeader(): Record<string, string> {
+  const token = localStorage.getItem("send_token");
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
 
 export default function Children() {
   const { children, addChild, removeChild, updateChild, updateAssignment, updateSubmission, assignWork } = useApp();
+  const csvInputRef = useRef<HTMLInputElement>(null);
+  const [csvImporting, setCsvImporting] = useState(false);
+  const [showCsvDialog, setShowCsvDialog] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
   const [selectedChild, setSelectedChild] = useState<Child | null>(null);
   const [editChild, setEditChild] = useState<Child | null>(null);
@@ -53,6 +61,38 @@ export default function Children() {
       });
     },
   });
+
+  const handleCsvImport = async (file: File) => {
+    setCsvImporting(true);
+    try {
+      const text = await file.text();
+      const lines = text.split(/\r?\n/).filter(l => l.trim());
+      if (lines.length < 2) { toast.error("CSV must have a header row and at least one data row"); setCsvImporting(false); return; }
+      const headers = lines[0].split(",").map(h => h.trim().replace(/^"|"$/g, ""));
+      const rows = lines.slice(1).map(line => {
+        const values = line.split(",").map(v => v.trim().replace(/^"|"$/g, ""));
+        const row: Record<string, string> = {};
+        headers.forEach((h, i) => { row[h] = values[i] || ""; });
+        return row;
+      }).filter(r => Object.values(r).some(v => v));
+      const res = await fetch("/api/mis/import-csv", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...getAuthHeader() },
+        body: JSON.stringify({ rows }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        toast.success(`Import complete: ${data.created} added, ${data.updated} updated, ${data.skipped} skipped`);
+        setShowCsvDialog(false);
+        window.location.reload();
+      } else {
+        toast.error(data.error || "Import failed");
+      }
+    } catch (e: any) {
+      toast.error("Failed to parse CSV: " + e.message);
+    }
+    setCsvImporting(false);
+  };
 
   const handleAdd = async () => {
     if (!name || !yearGroup || !sendNeed) {
@@ -151,10 +191,48 @@ export default function Children() {
     <div className="px-4 py-6 max-w-2xl mx-auto space-y-4">
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">Manage your SEND students and their assignments.</p>
-        <Button size="sm" onClick={() => setShowAdd(true)} className="bg-brand hover:bg-brand/90 text-white">
-          <Plus className="w-4 h-4 mr-1" /> Add
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button size="sm" variant="outline" onClick={() => setShowCsvDialog(true)}>
+            <Upload className="w-4 h-4 mr-1" /> Import CSV
+          </Button>
+          <Button size="sm" onClick={() => setShowAdd(true)} className="bg-brand hover:bg-brand/90 text-white">
+            <Plus className="w-4 h-4 mr-1" /> Add
+          </Button>
+        </div>
       </motion.div>
+
+      {/* CSV Import Dialog */}
+      <Dialog open={showCsvDialog} onOpenChange={setShowCsvDialog}>
+        <DialogContent>
+          <DialogHeader><DialogTitle className="flex items-center gap-2"><Database className="w-5 h-5 text-brand" /> Import Pupils from CSV</DialogTitle></DialogHeader>
+          <div className="space-y-4 mt-2">
+            <p className="text-sm text-muted-foreground">Upload a CSV file exported from Bromcom, Arbor, or any MIS. The file should have a header row with columns like <strong>Name</strong>, <strong>Year Group</strong>, <strong>SEN Status</strong>, and optionally <strong>UPN</strong> and <strong>Date of Birth</strong>.</p>
+            <div className="rounded-lg border-2 border-dashed border-border p-6 text-center">
+              <Upload className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+              <p className="text-sm font-medium mb-1">Click to select a CSV file</p>
+              <p className="text-xs text-muted-foreground mb-3">Supports Bromcom, Arbor, and standard CSV exports</p>
+              <input
+                ref={csvInputRef}
+                type="file"
+                accept=".csv,text/csv"
+                className="hidden"
+                onChange={e => { const f = e.target.files?.[0]; if (f) handleCsvImport(f); }}
+              />
+              <Button size="sm" variant="outline" onClick={() => csvInputRef.current?.click()} disabled={csvImporting}>
+                {csvImporting ? <><RefreshCw className="w-3 h-3 mr-1 animate-spin" />Importing...</> : "Choose File"}
+              </Button>
+            </div>
+            <div className="rounded-lg bg-muted/40 p-3 text-xs text-muted-foreground space-y-1">
+              <p className="font-medium">Expected column names (any of these will be recognised):</p>
+              <p>Name, Preferred Name, Legal Name</p>
+              <p>Year Group, Year, year_group</p>
+              <p>SEN Status, SEND Need, SEN Need, send_need</p>
+              <p>UPN, Unique Pupil Number</p>
+              <p>DOB, Date of Birth, DateOfBirth</p>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Add Pupil Dialog */}
       <Dialog open={showAdd} onOpenChange={setShowAdd}>

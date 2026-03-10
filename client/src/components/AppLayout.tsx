@@ -7,7 +7,8 @@ import {
   BarChart3, Lightbulb, ExternalLink, Settings, Menu, X, GraduationCap, LogOut,
   Calendar, TrendingUp, ClipboardList, IdCard, CheckSquare, ShieldAlert, Heart,
   HelpCircle, Table2, AlignLeft, Layers, CalendarDays, BookMarked, Ticket,
-  BookType, Mail, Shield, ChevronDown, ChevronRight, ScrollText, Headphones, ScanSearch
+  BookType, Mail, Shield, ChevronDown, ChevronRight, ScrollText, Headphones, ScanSearch,
+  Zap, NotebookPen
 } from "lucide-react";
 
 const mainMenu = [
@@ -55,6 +56,8 @@ const classroomMenu = [
   { path: "/visual-timetable", label: "Visual Timetable", icon: Calendar },
   { path: "/behaviour-tracking", label: "Behaviour Tracking", icon: TrendingUp },
   { path: "/attendance", label: "Attendance", icon: ClipboardList },
+  { path: "/quiz-game", label: "QuizBlast", icon: Zap, color: "text-yellow-500" },
+  { path: "/daily-briefing", label: "Daily Briefing", icon: NotebookPen, color: "text-blue-600" },
 ];
 
 const accountMenu = [
