@@ -211,7 +211,6 @@ CREATE TABLE IF NOT EXISTS attendance_records (
   pm_status TEXT NOT NULL DEFAULT 'not-recorded',
   pm_reason TEXT,
   notes TEXT,
-  mis_source TEXT,  -- 'bromcom' | 'arbor' | NULL
   recorded_at TEXT NOT NULL DEFAULT (datetime('now')),
   UNIQUE(pupil_id, date)
 );
@@ -226,13 +225,8 @@ CREATE TABLE IF NOT EXISTS pupil_comments (
   category TEXT, -- e.g. 'Academic', 'Social', 'Wellbeing', 'Pastoral'
   content TEXT NOT NULL,
   date TEXT NOT NULL,
-  mis_source TEXT,  -- 'bromcom' | 'arbor' | NULL
-  mis_id TEXT,      -- external MIS record ID for deduplication
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
-CREATE INDEX IF NOT EXISTS idx_comments_mis ON pupil_comments(school_id, mis_source, mis_id);
-CREATE INDEX IF NOT EXISTS idx_comments_pupil ON pupil_comments(pupil_id);
-CREATE INDEX IF NOT EXISTS idx_comments_school ON pupil_comments(school_id);
 
 -- Behaviour records
 CREATE TABLE IF NOT EXISTS behaviour_records (
@@ -245,12 +239,8 @@ CREATE TABLE IF NOT EXISTS behaviour_records (
   description TEXT,
   action_taken TEXT,
   date TEXT NOT NULL,
-  mis_source TEXT,  -- 'bromcom' | 'arbor' | NULL (manually entered)
-  mis_id TEXT,      -- external MIS record ID for deduplication
-  points INTEGER DEFAULT 0, -- reward/demerit points from MIS
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
-CREATE INDEX IF NOT EXISTS idx_behaviour_mis ON behaviour_records(school_id, mis_source, mis_id);
 
 -- Behaviour Support Plans (saved from AI tool, visible in Parent Portal)
 CREATE TABLE IF NOT EXISTS behaviour_support_plans (
@@ -400,23 +390,7 @@ CREATE TABLE IF NOT EXISTS daily_briefings (
   content TEXT NOT NULL,
   author_id TEXT REFERENCES users(id),
   author_name TEXT,
-  attachments TEXT NOT NULL DEFAULT '[]',  -- JSON array of {name,url,size,type}
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
   updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 CREATE INDEX IF NOT EXISTS idx_briefing_school_date ON daily_briefings(school_id, date);
-
--- ── Custom Quizzes (QuizBlast) ────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS custom_quizzes (
-  id TEXT PRIMARY KEY,
-  school_id TEXT NOT NULL REFERENCES schools(id) ON DELETE CASCADE,
-  title TEXT NOT NULL,
-  subject TEXT,
-  topic TEXT,
-  questions TEXT NOT NULL DEFAULT '[]', -- JSON array of {id,question,options,correctIndex,timeLimit}
-  question_count INTEGER NOT NULL DEFAULT 0,
-  created_by TEXT REFERENCES users(id),
-  created_by_name TEXT,
-  created_at TEXT NOT NULL DEFAULT (datetime('now'))
-);
-CREATE INDEX IF NOT EXISTS idx_custom_quizzes_school ON custom_quizzes(school_id);
