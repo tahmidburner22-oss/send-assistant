@@ -426,7 +426,32 @@ router.post("/quiz", requireAuth, async (req: Request, res: Response) => {
 //           2) OpenAI TTS (tts-1-hd, if a real OpenAI key is configured)
 // Body: { text, voice?, language? }
 // Returns: audio/mpeg stream
-// ─────────────────────────────────────────────────────────────────────────────
+// Split text into sentence-aware chunks of at most maxChars characters
+function splitIntoChunks(text: string, maxChars = 2000): string[] {
+  if (text.length <= maxChars) return [text];
+  const chunks: string[] = [];
+  const sentences = text.match(/[^.!?]+[.!?]+[\s]*/g) || [text];
+  let current = "";
+  for (const sentence of sentences) {
+    if ((current + sentence).length > maxChars && current.length > 0) {
+      chunks.push(current.trim());
+      current = sentence;
+    } else {
+      current += sentence;
+    }
+  }
+  if (current.trim()) chunks.push(current.trim());
+  return chunks.length > 0 ? chunks : [text.slice(0, maxChars)];
+}
+
+// POST /api/revision/tts
+// Convert podcast script to natural speech.
+// Priority: 1) Groq TTS (PlayAI voices, free, very human-sounding)
+//           2) OpenAI TTS (tts-1-hd, if a real OpenAI key is configured)
+//           3) Gemini TTS
+// Long scripts are split into <=2000-char chunks processed sequentially, then concatenated.
+// Body: { text, voice?, language? }
+// Returns: audio/mpeg stream
 router.post("/tts", requireAuth, async (req: Request, res: Response) => {
   try {
     const { text, voice = "nova", language = "en" } = req.body;
@@ -434,37 +459,52 @@ router.post("/tts", requireAuth, async (req: Request, res: Response) => {
       return res.status(400).json({ error: "text is required" });
     }
 
-    // Map OpenAI voice names to Groq PlayAI equivalents (natural, human-sounding)
     const groqVoiceMap: Record<string, string> = {
-      nova:    "Aaliyah-PlayAI",    // warm female
-      shimmer: "Adelaide-PlayAI",   // soft female
-      alloy:   "Atlas-PlayAI",      // neutral
-      echo:    "Angelo-PlayAI",     // male
-      fable:   "Briggs-PlayAI",     // storyteller male
-      onyx:    "Cillian-PlayAI",    // deep male
+      nova:    "Aaliyah-PlayAI",
+      shimmer: "Adelaide-PlayAI",
+      alloy:   "Atlas-PlayAI",
+      echo:    "Angelo-PlayAI",
+      fable:   "Briggs-PlayAI",
+      onyx:    "Cillian-PlayAI",
     };
 
-    // 1. Try Groq TTS first (free, fast, very human-sounding PlayAI voices)
+    // Helper: fetch with a hard per-request timeout
+    const fetchWithTimeout = (url: string, options: RequestInit, timeoutMs: number) => {
+      const controller = new AbortController();
+      const id = setTimeout(() => controller.abort(), timeoutMs);
+      return fetch(url, { ...options, signal: controller.signal })
+        .finally(() => clearTimeout(id));
+    };
+
+    // 1. Try Groq TTS — split into <=2000-char chunks to keep each request fast (<25s)
     const groqKey = getEffectiveKey("groq");
     if (groqKey) {
       const groqVoice = groqVoiceMap[voice] || "Aaliyah-PlayAI";
       try {
-        console.log(`[TTS] Trying Groq TTS: voice=${groqVoice}, chars=${text.length}`);
-        const ttsRes = await fetch("https://api.groq.com/openai/v1/audio/speech", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${groqKey}` },
-          body: JSON.stringify({ model: "playai-tts", input: text.slice(0, 4096), voice: groqVoice, response_format: "mp3" }),
-        });
-        if (ttsRes.ok) {
-          const buffer = Buffer.from(await ttsRes.arrayBuffer());
-          res.setHeader("Content-Type", "audio/mpeg");
-          res.setHeader("Content-Length", buffer.byteLength.toString());
-          console.log(`[TTS] Groq TTS success: ${buffer.byteLength} bytes`);
-          return res.send(buffer);
-        } else {
-          const errBody = await ttsRes.text();
-          console.warn(`[TTS] Groq TTS HTTP ${ttsRes.status}:`, errBody.slice(0, 200));
+        const chunks = splitIntoChunks(text, 2000);
+        console.log(`[TTS] Groq TTS: voice=${groqVoice}, chars=${text.length}, chunks=${chunks.length}`);
+        const buffers: Buffer[] = [];
+        for (const chunk of chunks) {
+          const ttsRes = await fetchWithTimeout(
+            "https://api.groq.com/openai/v1/audio/speech",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json", Authorization: `Bearer ${groqKey}` },
+              body: JSON.stringify({ model: "playai-tts", input: chunk, voice: groqVoice, response_format: "mp3" }),
+            },
+            25000
+          );
+          if (!ttsRes.ok) {
+            const errBody = await ttsRes.text();
+            throw new Error(`Groq TTS HTTP ${ttsRes.status}: ${errBody.slice(0, 100)}`);
+          }
+          buffers.push(Buffer.from(await ttsRes.arrayBuffer()));
         }
+        const combined = Buffer.concat(buffers);
+        res.setHeader("Content-Type", "audio/mpeg");
+        res.setHeader("Content-Length", combined.byteLength.toString());
+        console.log(`[TTS] Groq TTS success: ${combined.byteLength} bytes (${chunks.length} chunks)`);
+        return res.send(combined);
       } catch (err: any) {
         console.warn("[TTS] Groq TTS error:", err?.message || err);
       }
@@ -489,7 +529,6 @@ router.post("/tts", requireAuth, async (req: Request, res: Response) => {
         if (row?.api_key) openaiKey = row.api_key;
       } catch { /* ignore */ }
     }
-    // Only use env OPENAI_API_KEY if it starts with 'sk-' (real OpenAI key, not a proxy)
     if (!openaiKey && process.env.OPENAI_API_KEY?.startsWith("sk-") && !process.env.OPENAI_API_KEY?.startsWith("sk-TXL")) {
       openaiKey = process.env.OPENAI_API_KEY;
     }
@@ -498,48 +537,57 @@ router.post("/tts", requireAuth, async (req: Request, res: Response) => {
       const validVoices = ["alloy", "echo", "fable", "onyx", "nova", "shimmer"];
       const selectedVoice = validVoices.includes(voice) ? voice : "nova";
       try {
-        console.log(`[TTS] Trying OpenAI TTS: voice=${selectedVoice}, chars=${text.length}`);
-        const ttsRes = await fetch("https://api.openai.com/v1/audio/speech", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${openaiKey}` },
-          body: JSON.stringify({ model: "tts-1-hd", input: text.slice(0, 4096), voice: selectedVoice, response_format: "mp3" }),
-        });
-        if (ttsRes.ok) {
-          const buffer = Buffer.from(await ttsRes.arrayBuffer());
-          res.setHeader("Content-Type", "audio/mpeg");
-          res.setHeader("Content-Length", buffer.byteLength.toString());
-          return res.send(buffer);
-        } else {
-          const errBody = await ttsRes.text();
-          console.warn(`[TTS] OpenAI TTS HTTP ${ttsRes.status}:`, errBody.slice(0, 200));
+        const chunks = splitIntoChunks(text, 4000);
+        console.log(`[TTS] OpenAI TTS: voice=${selectedVoice}, chars=${text.length}, chunks=${chunks.length}`);
+        const buffers: Buffer[] = [];
+        for (const chunk of chunks) {
+          const ttsRes = await fetchWithTimeout(
+            "https://api.openai.com/v1/audio/speech",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json", Authorization: `Bearer ${openaiKey}` },
+              body: JSON.stringify({ model: "tts-1-hd", input: chunk, voice: selectedVoice, response_format: "mp3" }),
+            },
+            25000
+          );
+          if (!ttsRes.ok) {
+            const errBody = await ttsRes.text();
+            throw new Error(`OpenAI TTS HTTP ${ttsRes.status}: ${errBody.slice(0, 100)}`);
+          }
+          buffers.push(Buffer.from(await ttsRes.arrayBuffer()));
         }
+        const combined = Buffer.concat(buffers);
+        res.setHeader("Content-Type", "audio/mpeg");
+        res.setHeader("Content-Length", combined.byteLength.toString());
+        console.log(`[TTS] OpenAI TTS success: ${combined.byteLength} bytes`);
+        return res.send(combined);
       } catch (err: any) {
         console.warn("[TTS] OpenAI TTS error:", err?.message || err);
       }
     }
 
-    // 3. Try Gemini TTS (gemini-2.5-flash-preview-tts — uses GEMINI_API_KEY)
+    // 3. Try Gemini TTS (gemini-2.5-flash-preview-tts)
     const geminiKey = process.env.GEMINI_API_KEY || getEffectiveKey("gemini");
     if (geminiKey) {
-      // Map voice names to Gemini TTS prebuilt voices
       const geminiVoiceMap: Record<string, string> = {
-        nova:    "Aoede",    // warm female
-        shimmer: "Leda",     // soft female
-        alloy:   "Kore",     // neutral female
-        echo:    "Charon",   // male
-        fable:   "Fenrir",   // storyteller male
-        onyx:    "Orus",     // deep male
+        nova:    "Aoede",
+        shimmer: "Leda",
+        alloy:   "Kore",
+        echo:    "Charon",
+        fable:   "Fenrir",
+        onyx:    "Orus",
       };
       const geminiVoice = geminiVoiceMap[voice] || "Aoede";
       try {
-        console.log(`[TTS] Trying Gemini TTS: voice=${geminiVoice}, chars=${text.length}`);
-        const ttsRes = await fetch(
+        const inputText = text.slice(0, 5000);
+        console.log(`[TTS] Gemini TTS: voice=${geminiVoice}, chars=${inputText.length}`);
+        const ttsRes = await fetchWithTimeout(
           `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${geminiKey}`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              contents: [{ parts: [{ text: text.slice(0, 5000) }] }],
+              contents: [{ parts: [{ text: inputText }] }],
               generationConfig: {
                 response_modalities: ["AUDIO"],
                 speech_config: {
@@ -547,7 +595,8 @@ router.post("/tts", requireAuth, async (req: Request, res: Response) => {
                 },
               },
             }),
-          }
+          },
+          30000
         );
         if (ttsRes.ok) {
           const data = await ttsRes.json() as any;
@@ -558,9 +607,8 @@ router.post("/tts", requireAuth, async (req: Request, res: Response) => {
               const mimeType = part.inlineData.mimeType || "audio/mpeg";
               let finalBuffer = rawBuffer;
               let finalMime = mimeType;
-              // Gemini TTS returns raw PCM — wrap it in a WAV container so browsers can play it
               if (mimeType.includes("pcm") || mimeType.includes("l16") || mimeType.includes("raw")) {
-                const sampleRate = 24000; // Gemini TTS default
+                const sampleRate = 24000;
                 const numChannels = 1;
                 const bitsPerSample = 16;
                 const byteRate = sampleRate * numChannels * (bitsPerSample / 8);
@@ -571,8 +619,8 @@ router.post("/tts", requireAuth, async (req: Request, res: Response) => {
                 wavHeader.writeUInt32LE(36 + dataSize, 4);
                 wavHeader.write("WAVE", 8);
                 wavHeader.write("fmt ", 12);
-                wavHeader.writeUInt32LE(16, 16);           // PCM chunk size
-                wavHeader.writeUInt16LE(1, 20);            // PCM format
+                wavHeader.writeUInt32LE(16, 16);
+                wavHeader.writeUInt16LE(1, 20);
                 wavHeader.writeUInt16LE(numChannels, 22);
                 wavHeader.writeUInt32LE(sampleRate, 24);
                 wavHeader.writeUInt32LE(byteRate, 28);
@@ -598,7 +646,7 @@ router.post("/tts", requireAuth, async (req: Request, res: Response) => {
         console.warn("[TTS] Gemini TTS error:", err?.message || err);
       }
     }
-    // No working TTS provider found
+
     throw new Error("TTS unavailable: no working TTS provider.");
 
   } catch (err: any) {

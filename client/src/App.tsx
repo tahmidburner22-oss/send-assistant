@@ -55,6 +55,7 @@ import Terms from "./pages/Terms";
 import Accessibility from "./pages/Accessibility";
 import AIGovernance from "./pages/AIGovernance";
 import DPA from "./pages/DPA";
+import CookiePolicy from "./pages/CookiePolicy";
 
 // UX
 import Pricing from "./pages/Pricing";
@@ -159,6 +160,7 @@ function Router() {
       {/* Legal & Compliance (public) */}
       <Route path="/privacy" component={PrivacyPolicy} />
       <Route path="/terms" component={Terms} />
+      <Route path="/cookie-policy" component={CookiePolicy} />
       <Route path="/accessibility" component={Accessibility} />
       <Route path="/ai-governance" component={AIGovernance} />
       <Route path="/dpa" component={DPA} />

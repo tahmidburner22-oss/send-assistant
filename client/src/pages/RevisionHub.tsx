@@ -150,12 +150,12 @@ export default function RevisionHub() {
       return;
     }
 
-    // Edge Neural TTS via server — with 60s timeout, auto-falls back to browser voice
+    // Neural TTS via server — 120s timeout to allow chunked processing of long scripts
     setAudioLoading(true);
     const controller = new AbortController();
     const timeoutId = setTimeout(() => {
       controller.abort();
-    }, 60000); // 60 second hard timeout
+    }, 120000); // 120 second timeout (chunked scripts may take longer)
     try {
       const token = localStorage.getItem("send_token");
       const res = await fetch("/api/revision/tts", {
@@ -175,7 +175,7 @@ export default function RevisionHub() {
             setAudioUrl(url);
             toast.success("Neural podcast ready — press Play!");
           } else {
-            throw new Error("Audio blob too small");
+            throw new Error("Audio blob too small — trying browser voice");
           }
         } else {
           const data = await res.json().catch(() => ({}));
@@ -188,11 +188,15 @@ export default function RevisionHub() {
     } catch (err: any) {
       clearTimeout(timeoutId);
       const isTimeout = err?.name === "AbortError";
-      console.error("[TTS] Edge TTS failed:", err);
+      console.error("[TTS] Neural TTS failed:", err);
       if (isTimeout) {
-        toast.info("Neural TTS took too long — switching to browser voice and playing now.");
+        toast.info("Neural voice is taking longer than expected — switching to browser voice.");
       } else {
-        toast.error(`Neural TTS failed: ${err.message}. Switching to browser voice.`);
+        // Only show error toast if it's not a deliberate fallback
+        const msg = err?.message || "";
+        if (!msg.includes("browser voice")) {
+          toast.info("Neural voice unavailable — using browser voice instead.");
+        }
       }
       // Auto-switch to browser TTS and start playing immediately
       setTtsEngine("browser");
@@ -517,7 +521,7 @@ export default function RevisionHub() {
   if (uploading || audioLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center space-y-4">
+        <div className="text-center space-y-4 max-w-xs px-4">
           <div className="w-16 h-16 rounded-2xl bg-brand/10 flex items-center justify-center mx-auto">
             <Loader2 className="w-8 h-8 text-brand animate-spin" />
           </div>
@@ -527,8 +531,13 @@ export default function RevisionHub() {
           <p className="text-sm text-muted-foreground">
             {uploading
               ? "Extracting text and writing your revision podcast script"
-              : "Creating a natural human-like voice podcast for you"}
+              : "Creating your natural-sounding podcast. Long scripts are processed in chunks — this may take up to 60 seconds."}
           </p>
+          {audioLoading && (
+            <p className="text-xs text-muted-foreground/70">
+              If neural voice takes too long, it will automatically switch to browser voice.
+            </p>
+          )}
         </div>
       </div>
     );
