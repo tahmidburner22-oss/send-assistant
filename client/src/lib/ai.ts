@@ -337,6 +337,7 @@ export async function aiGenerateWorksheet(params: {
   examStyle?: boolean;
   generateDiagram?: boolean;
   diagramType?: string;
+  worksheetLength?: string;
 }): Promise<AIWorksheetResult> {
 
   // ── Year-group calibration ──────────────────────────────────────────────────
@@ -416,8 +417,49 @@ Always respond with valid JSON only — no markdown, no code blocks, just raw JS
   const sendNote = params.sendNeed && params.sendNeed !== "none" && params.sendNeed !== "general"
     ? `SEND adaptation required for: ${params.sendNeed}. Include scaffolded hints, sentence starters, simplified language where needed, and accessibility notes.`
     : "";
+
+  // ── Difficulty tier (secondary only) ─────────────────────────────────────
+  const isSecondary = yearNum >= 7;
+  const difficultyTier = params.difficulty || "mixed";
+  const tierNote = isSecondary
+    ? difficultyTier === "foundation" || difficultyTier === "basic"
+      ? `DIFFICULTY TIER: Foundation. All questions MUST come from the GCSE Foundation specification only (grades 1–5). Questions should be accessible, straightforward, and match Foundation-tier exam papers from AQA, Edexcel, OCR, and WJEC${params.examBoard && params.examBoard !== "none" ? ` — prioritise ${params.examBoard}` : ""}. No Higher-only content.`
+      : difficultyTier === "higher" || difficultyTier === "stretch"
+      ? `DIFFICULTY TIER: Higher. All questions MUST come from the GCSE Higher specification (grades 4–9). Include Higher-only content, multi-step problems, and demanding questions matching Higher-tier exam papers from AQA, Edexcel, OCR, and WJEC${params.examBoard && params.examBoard !== "none" ? ` — prioritise ${params.examBoard}` : ""}.`
+      : `DIFFICULTY TIER: Mixed (Foundation + Higher). Include a range of questions: roughly half from Foundation specification (grades 1–5) and half from Higher specification (grades 5–9), matching real GCSE exam paper style from AQA, Edexcel, OCR, and WJEC${params.examBoard && params.examBoard !== "none" ? ` — prioritise ${params.examBoard}` : ""}.`
+    : "";
+
+  // ── Worksheet length calibration ────────────────────────────────────────
+  const lengthMins = parseInt(params.worksheetLength || "30", 10);
+  const lengthNote =
+    lengthMins <= 10
+      ? `WORKSHEET LENGTH: 10 minutes. This is a SHORT, focused practice. Generate ONLY 5–8 questions total across all sections. No extension or challenge section. Keep every question brief. A student working at normal pace must be able to complete the entire worksheet in 10 minutes.`
+      : lengthMins >= 60
+      ? `WORKSHEET LENGTH: 1 hour. This is a FULL LESSON worksheet. Generate a LARGE volume of questions — at least 30–40 questions total spread across all sections. Include a full guided practice section (8–10 questions), a large independent practice section (15–20 questions), a substantial challenge section (4–6 questions), and an extension task. The worksheet must genuinely take a student approximately 60 minutes to complete at normal working pace. Do NOT produce a short worksheet.`
+      : `WORKSHEET LENGTH: 30 minutes. Generate a standard worksheet with 15–20 questions total: guided practice (4–5 questions), independent practice (8–10 questions), and a challenge question. A student working at normal pace should take approximately 30 minutes.`;
+
+  // ── Maths-specific instruction ────────────────────────────────────────────
+  const isMaths = params.subject.toLowerCase().includes("math");
+  const mathsNote = isMaths
+    ? `MATHS RULES (MANDATORY):
+- ALL questions MUST be number-based (e.g. "Calculate 3/4 + 1/2", "Solve 5x + 3 = 18", "Find the area of a rectangle 7cm × 4cm").
+- Do NOT write wordy or text-heavy questions. No long paragraphs. Questions should be short, direct, and numerical.
+- The worked example MUST show a fully worked numerical calculation with clear step-by-step arithmetic.
+- Include 2–3 problem-solving questions where the SEND need (if any) is applied in a real-world context (e.g. money, time, measurement), but keep them concise and number-focused.
+- Numbers must be clean and sensible for the year group (e.g. Year 3: whole numbers under 100; Year 7: integers and simple fractions; Year 10: decimals, surds, algebraic expressions). Do NOT generate awkward or unrealistic numbers.
+- Do NOT include questions that are just definitions, descriptions, or explanations — every question must require a numerical answer or algebraic working.`
+    : "";
+
+  // ── Exam-style instruction ────────────────────────────────────────────────
   const examStyleNote = params.examStyle
-    ? `Use exam-style formatting: numbered subparts (a)(b)(c), command words, mark allocations beside each question [X marks], time suggestions, answer lines.`
+    ? `EXAM-STYLE MODE (MANDATORY): Questions must be taken directly from the style of real UK exam papers (GCSE/A-Level/KS2 SATs as appropriate for the year group). Format EXACTLY like a real exam paper:
+- Number each question Q1, Q2, Q3... with sub-parts (a), (b), (c) where appropriate.
+- Show mark allocations in brackets after each question: [1 mark], [2 marks], [4 marks] etc.
+- Use precise exam command words: "Calculate", "Show that", "Prove", "Evaluate", "Describe", "Explain", "Compare", "Sketch", "State" — appropriate to the subject and year group.
+- Include answer lines or answer boxes (write "Answer: ............" or "Answer = ............" as appropriate).
+- For maths: questions must be purely numerical/algebraic — no wordy paragraphs.
+- Do NOT include a worked example section in exam-style mode — replace it with a brief formula/information box if needed.
+- The overall layout and question style must be indistinguishable from a real ${params.examBoard && params.examBoard !== "none" ? params.examBoard : "GCSE"} exam paper.`
     : "";
 
   const user = `Create a differentiated worksheet for UK schools, STRICTLY calibrated for ${params.yearGroup}.
@@ -427,10 +469,23 @@ Topic: ${params.topic}
 Year Group: ${params.yearGroup} — ${phase}
 ${sendNote}
 ${examBoardNote}
+${tierNote}
+${lengthNote}
+${mathsNote}
 ${examStyleNote}
 Additional instructions: ${params.additionalInstructions || "none"}
 
 ━━━ YEAR GROUP CALIBRATION RULES (MANDATORY) ━━━
+Year group scaling is CRITICAL. The difficulty, language, and cognitive demand must match the year group EXACTLY:
+- Year 1–2 (KS1): Very simple, concrete, visual. Single-step problems only.
+- Year 3–4 (KS2 lower): Simple and clear. Two-step problems. Everyday contexts.
+- Year 5–6 (KS2 upper): Moderate complexity. Multi-step. Introduce subject vocabulary.
+- Year 7–8 (KS3 lower): Accessible secondary level. Build on KS2. Introduce formal methods.
+- Year 9 (KS3 upper): More demanding. Bridge to GCSE. Introduce GCSE-style questions.
+- Year 10–11 (KS4/GCSE): Full GCSE standard. Exam-board aligned. Command words. Tier-appropriate.
+- Year 12–13 (KS5/A-Level): A-Level standard. Synoptic. Extended responses.
+
+A Year 3 worksheet and a Year 10 worksheet on the same topic MUST look completely different.
 ${sentenceGuide}
 ${vocabGuide}
 ${questionGuide}
@@ -460,22 +515,22 @@ Return EXACTLY this JSON structure (raw JSON only, no markdown):
     {
       "title": "Worked Example",
       "type": "example",
-      "content": "[${exampleGuide}]"
+      "content": "[${exampleGuide}${isMaths ? " — MUST be a fully worked numerical/algebraic calculation, step by step. No prose." : ""}]"
     },
     {
-      "title": "Foundation — Guided Practice",
+      "title": "Section A — Guided Practice",
       "type": "guided",
-      "content": "[Questions calibrated for ${params.yearGroup} — ${questionGuide}. Include Hint: lines for scaffolding.]"
+      "content": "[Questions calibrated for ${params.yearGroup} — ${questionGuide}. Include Hint: lines for scaffolding.${isMaths ? " ALL questions must be number/calculation based." : ""}]"
     },
     {
-      "title": "Core Practice",
+      "title": "Section B — Core Practice",
       "type": "independent",
-      "content": "[Questions at expected level for ${params.yearGroup} — ${questionGuide}. No hints.]"
+      "content": "[Questions at expected level for ${params.yearGroup} — ${questionGuide}. No hints.${isMaths ? " ALL questions must be number/calculation based. Include 2–3 problem-solving questions." : ""}]"
     },
     {
-      "title": "Stretch & Challenge",
+      "title": "Section C — Stretch & Challenge",
       "type": "challenge",
-      "content": "[${challengeGuide}]"
+      "content": "[${challengeGuide}${isMaths ? " Must be a multi-step numerical or algebraic problem." : ""}]"
     },
     {
       "title": "Mark Scheme",

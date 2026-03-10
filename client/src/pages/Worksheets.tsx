@@ -121,6 +121,7 @@ export default function Worksheets() {
   const [topic, setTopic] = useState("");
   const [sendNeed, setSendNeed] = useState("");
   const [difficulty, setDifficulty] = useState("mixed");
+  const [worksheetLength, setWorksheetLength] = useState("30");
   const [examBoard, setExamBoard] = useState("none");
   const [includeAnswers, setIncludeAnswers] = useState(true);
   const [examStyle, setExamStyle] = useState(false);
@@ -222,6 +223,7 @@ export default function Worksheets() {
           examStyle,
           additionalInstructions,
           generateDiagram,
+          worksheetLength,
         });
         generatedWs = { ...result, isAI: true } as AIWorksheet;
         toast.success(generateDiagram ? "Lesson with diagram generated!" : "Lesson generated with AI!");
@@ -493,6 +495,24 @@ export default function Worksheets() {
                         </button>
                       ))}
                     </div>
+                  </div>
+                </div>
+
+                {/* ── Worksheet Length ── */}
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-medium">Worksheet Length</Label>
+                  <div className="flex gap-1">
+                    {[
+                      { id: "10", name: "10 mins", desc: "Quick practice — 5–8 focused questions" },
+                      { id: "30", name: "30 mins", desc: "Standard lesson — 15–20 questions" },
+                      { id: "60", name: "1 hour", desc: "Full lesson — 30+ questions across all sections" },
+                    ].map(l => (
+                      <button key={l.id} onClick={() => setWorksheetLength(l.id)}
+                        title={l.desc}
+                        className={`flex-1 py-2 rounded-lg text-xs font-medium transition-all ${worksheetLength === l.id ? "bg-brand text-white" : "bg-muted text-muted-foreground"}`}>
+                        {l.name}
+                      </button>
+                    ))}
                   </div>
                 </div>
 
