@@ -9,7 +9,7 @@ import { billing as billingApi } from "@/lib/api";
 import {
   CheckCircle, Zap, Brain, Cpu, Globe, Bot, Layers, Key, Plus, Trash2,
   Eye, EyeOff, ChevronDown, ChevronUp, RefreshCw, AlertCircle, Shield,
-  CreditCard, ExternalLink,
+  CreditCard, ExternalLink, Database, Upload, Link2, Unlink, Crown,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -163,6 +163,208 @@ interface SavedKey { id: number; provider: string; providerLabel: string; model:
 function getAuthHeader(): Record<string, string> {
   const token = localStorage.getItem("send_token");
   return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+// ── MIS Integration Section ───────────────────────────────────────────────────
+function MisIntegrationSection() {
+  const { user } = useApp();
+  const isAdmin = user?.role === "school_admin" || user?.role === "mat_admin" || user?.role === "admin" || user?.role === "super_admin";
+  const [misStatus, setMisStatus] = useState<{ isPremium: boolean; bromcom: boolean; arbor: boolean } | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState<string | null>(null);
+  const [bromcomKey, setBromcomKey] = useState("");
+  const [bromcomSchoolId, setBromcomSchoolId] = useState("");
+  const [arborKey, setArborKey] = useState("");
+  const [arborSubdomain, setArborSubdomain] = useState("");
+  const [syncing, setSyncing] = useState<string | null>(null);
+  const [showBromcomForm, setShowBromcomForm] = useState(false);
+  const [showArborForm, setShowArborForm] = useState(false);
+
+  useEffect(() => {
+    if (!isAdmin) return;
+    fetch("/api/mis/status", { headers: getAuthHeader() })
+      .then(r => r.json())
+      .then(d => setMisStatus(d))
+      .catch(() => setMisStatus({ isPremium: false, bromcom: false, arbor: false }))
+      .finally(() => setLoading(false));
+  }, [isAdmin]);
+
+  const saveKey = async (provider: "bromcom" | "arbor") => {
+    const apiKey = provider === "bromcom" ? bromcomKey : arborKey;
+    const schoolId = provider === "bromcom" ? bromcomSchoolId : arborSubdomain;
+    if (!apiKey.trim()) { toast.error("API key is required"); return; }
+    setSaving(provider);
+    try {
+      const res = await fetch("/api/mis/save-key", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...getAuthHeader() },
+        body: JSON.stringify({ provider, apiKey, schoolId }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        toast.success(data.message || "Credentials saved");
+        setMisStatus(prev => prev ? { ...prev, [provider]: true } : prev);
+        if (provider === "bromcom") { setBromcomKey(""); setShowBromcomForm(false); }
+        else { setArborKey(""); setShowArborForm(false); }
+      } else {
+        toast.error(data.error || "Failed to save credentials");
+      }
+    } catch { toast.error("Network error"); }
+    setSaving(null);
+  };
+
+  const removeKey = async (provider: "bromcom" | "arbor") => {
+    try {
+      const res = await fetch(`/api/mis/remove-key/${provider}`, { method: "DELETE", headers: getAuthHeader() });
+      if (res.ok) {
+        toast.success(`${provider === "bromcom" ? "Bromcom" : "Arbor"} credentials removed`);
+        setMisStatus(prev => prev ? { ...prev, [provider]: false } : prev);
+      }
+    } catch { toast.error("Failed to remove credentials"); }
+  };
+
+  const syncNow = async (provider: "bromcom" | "arbor") => {
+    setSyncing(provider);
+    try {
+      const res = await fetch(`/api/mis/sync/${provider}`, { method: "POST", headers: getAuthHeader() });
+      const data = await res.json();
+      if (res.ok) {
+        toast.success(`Sync complete: ${data.created} added, ${data.updated} updated, ${data.skipped} skipped`);
+      } else {
+        toast.error(data.error || "Sync failed");
+      }
+    } catch { toast.error("Network error during sync"); }
+    setSyncing(null);
+  };
+
+  if (!isAdmin) return null;
+
+  return (
+    <Card className="border-border/50">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-base flex items-center gap-2">
+          <Database className="h-4 w-4 text-brand" />
+          MIS Integration
+        </CardTitle>
+        <p className="text-xs text-muted-foreground mt-1">
+          Import pupil data from your school's Management Information System. CSV import is available on all plans. Live API sync requires a Premium plan.
+        </p>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {loading ? (
+          <div className="flex items-center gap-2 text-sm text-muted-foreground"><RefreshCw className="w-4 h-4 animate-spin" /> Loading...</div>
+        ) : (
+          <>
+            {/* Bromcom */}
+            <div className={`border rounded-lg ${misStatus?.bromcom ? "border-brand/40 bg-brand/5" : "border-border"}`}>
+              <div className="flex items-center justify-between p-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-md bg-blue-50 flex items-center justify-center"><Database className="h-3.5 w-3.5 text-blue-600" /></div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium">Bromcom</span>
+                      {misStatus?.bromcom && <Badge className="bg-green-100 text-green-700 text-xs border-0"><CheckCircle className="h-3 w-3 mr-1" />Connected</Badge>}
+                      {!misStatus?.isPremium && <Badge className="bg-amber-100 text-amber-700 text-xs border-0"><Crown className="h-3 w-3 mr-1" />Premium</Badge>}
+                    </div>
+                    <p className="text-xs text-muted-foreground">Live pupil sync via Bromcom REST API</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1">
+                  {misStatus?.bromcom && (
+                    <>
+                      <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => syncNow("bromcom")} disabled={syncing === "bromcom"}>
+                        <RefreshCw className={`w-3 h-3 mr-1 ${syncing === "bromcom" ? "animate-spin" : ""}`} />{syncing === "bromcom" ? "Syncing..." : "Sync Now"}
+                      </Button>
+                      <Button size="sm" variant="ghost" className="h-7 w-7 text-red-500" onClick={() => removeKey("bromcom")}><Unlink className="w-3.5 h-3.5" /></Button>
+                    </>
+                  )}
+                  {!misStatus?.bromcom && (
+                    <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => setShowBromcomForm(!showBromcomForm)} disabled={!misStatus?.isPremium}>
+                      <Link2 className="w-3 h-3 mr-1" />Connect
+                    </Button>
+                  )}
+                </div>
+              </div>
+              {showBromcomForm && misStatus?.isPremium && (
+                <div className="px-3 pb-3 space-y-2 border-t pt-3">
+                  <div>
+                    <Label className="text-xs">Bromcom API Key *</Label>
+                    <Input type="password" placeholder="Bearer token from Bromcom Partner Portal" value={bromcomKey} onChange={e => setBromcomKey(e.target.value)} className="mt-1 text-xs font-mono" />
+                  </div>
+                  <div>
+                    <Label className="text-xs">School ID (from Bromcom)</Label>
+                    <Input placeholder="e.g. 12345" value={bromcomSchoolId} onChange={e => setBromcomSchoolId(e.target.value)} className="mt-1 text-xs" />
+                  </div>
+                  <Button size="sm" className="w-full bg-brand hover:bg-brand/90 text-white text-xs" onClick={() => saveKey("bromcom")} disabled={saving === "bromcom"}>
+                    {saving === "bromcom" ? "Saving..." : "Save Bromcom Credentials"}
+                  </Button>
+                </div>
+              )}
+              {!misStatus?.isPremium && (
+                <div className="px-3 pb-3 text-xs text-amber-700 flex items-center gap-1">
+                  <Crown className="w-3 h-3" />Upgrade to Premium to enable live MIS sync.
+                  <a href="/pricing" className="text-brand hover:underline ml-1">View plans →</a>
+                </div>
+              )}
+            </div>
+
+            {/* Arbor */}
+            <div className={`border rounded-lg ${misStatus?.arbor ? "border-brand/40 bg-brand/5" : "border-border"}`}>
+              <div className="flex items-center justify-between p-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-md bg-green-50 flex items-center justify-center"><Database className="h-3.5 w-3.5 text-green-600" /></div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium">Arbor</span>
+                      {misStatus?.arbor && <Badge className="bg-green-100 text-green-700 text-xs border-0"><CheckCircle className="h-3 w-3 mr-1" />Connected</Badge>}
+                      {!misStatus?.isPremium && <Badge className="bg-amber-100 text-amber-700 text-xs border-0"><Crown className="h-3 w-3 mr-1" />Premium</Badge>}
+                    </div>
+                    <p className="text-xs text-muted-foreground">Live pupil sync via Arbor REST API</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1">
+                  {misStatus?.arbor && (
+                    <>
+                      <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => syncNow("arbor")} disabled={syncing === "arbor"}>
+                        <RefreshCw className={`w-3 h-3 mr-1 ${syncing === "arbor" ? "animate-spin" : ""}`} />{syncing === "arbor" ? "Syncing..." : "Sync Now"}
+                      </Button>
+                      <Button size="sm" variant="ghost" className="h-7 w-7 text-red-500" onClick={() => removeKey("arbor")}><Unlink className="w-3.5 h-3.5" /></Button>
+                    </>
+                  )}
+                  {!misStatus?.arbor && (
+                    <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => setShowArborForm(!showArborForm)} disabled={!misStatus?.isPremium}>
+                      <Link2 className="w-3 h-3 mr-1" />Connect
+                    </Button>
+                  )}
+                </div>
+              </div>
+              {showArborForm && misStatus?.isPremium && (
+                <div className="px-3 pb-3 space-y-2 border-t pt-3">
+                  <div>
+                    <Label className="text-xs">Arbor API Key *</Label>
+                    <Input type="password" placeholder="username:password (Base64 encoded) or token" value={arborKey} onChange={e => setArborKey(e.target.value)} className="mt-1 text-xs font-mono" />
+                  </div>
+                  <div>
+                    <Label className="text-xs">School Subdomain</Label>
+                    <Input placeholder="e.g. myschool (from myschool.arbor.sc)" value={arborSubdomain} onChange={e => setArborSubdomain(e.target.value)} className="mt-1 text-xs" />
+                  </div>
+                  <Button size="sm" className="w-full bg-brand hover:bg-brand/90 text-white text-xs" onClick={() => saveKey("arbor")} disabled={saving === "arbor"}>
+                    {saving === "arbor" ? "Saving..." : "Save Arbor Credentials"}
+                  </Button>
+                </div>
+              )}
+              {!misStatus?.isPremium && (
+                <div className="px-3 pb-3 text-xs text-amber-700 flex items-center gap-1">
+                  <Crown className="w-3 h-3" />Upgrade to Premium to enable live MIS sync.
+                  <a href="/pricing" className="text-brand hover:underline ml-1">View plans →</a>
+                </div>
+              )}
+            </div>
+          </>
+        )}
+      </CardContent>
+    </Card>
+  );
 }
 
 export default function Settings() {
@@ -358,6 +560,7 @@ export default function Settings() {
       </Card>
 
       <BillingSection />
+      <MisIntegrationSection />
 
       <Card className="border-border/50">
         <CardHeader className="pb-3"><CardTitle className="text-base">Account</CardTitle></CardHeader>

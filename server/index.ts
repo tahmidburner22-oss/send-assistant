@@ -19,6 +19,8 @@ import gdprRouter from "./routes/gdpr.js";
 import revisionRouter from "./routes/revision.js";
 import schoolApiKeysRouter from "./routes/schoolApiKeys.js";
 import billingRouter from "./routes/billing.js";
+import misRouter from "./routes/mis.js";
+import briefingRouter from "./routes/briefing.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -195,6 +197,8 @@ app.use("/api/gdpr", gdprRouter);
 app.use("/api/revision", aiLimiter, revisionRouter);
 app.use("/api/school-keys", schoolApiKeysRouter);
 app.use("/api/billing", billingRouter);
+app.use("/api/mis", misRouter);
+app.use("/api/briefing", briefingRouter);
 
 // ── Health check ──────────────────────────────────────────────────────────────
 app.get("/api/health", (_, res) => {
