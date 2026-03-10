@@ -2,7 +2,9 @@ import { useState, useEffect, useRef } from "react";
 import {
   Users, Shield, Activity, UserPlus, UserX, UserCheck, Key,
   AlertTriangle, BarChart3, Settings2, Terminal, RefreshCw,
-  Eye, EyeOff, CheckCircle2, Cpu, Zap, Globe
+  Eye, EyeOff, CheckCircle2, Cpu, Zap, Globe,
+  CreditCard, Building2, TrendingUp, FileText, ChevronDown, ChevronRight,
+  PoundSterling, Calendar, ExternalLink
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -72,8 +74,21 @@ export default function AdminPanel() {
 
   const canAccess = user && (
     ["mat_admin", "school_admin", "senco"].includes(user.role) ||
+    user.email === "admin@adaptly.co.uk" ||
     user.email === "admin@sendassistant.app"
   );
+  const isSuperAdmin = user && (
+    user.role === "mat_admin" ||
+    user.email === "admin@adaptly.co.uk" ||
+    user.email === "admin@sendassistant.app"
+  );
+  const [allSchools, setAllSchools] = useState<any[]>([]);
+  const [billingSummary, setBillingSummary] = useState<any>(null);
+  const [invoiceForm, setInvoiceForm] = useState({ school_id: "", amount: "", description: "", due_date: "", notes: "" });
+  const [generatedInvoice, setGeneratedInvoice] = useState<any>(null);
+  const [savingInvoice, setSavingInvoice] = useState(false);
+  const [schoolActivity, setSchoolActivity] = useState<{ [id: string]: any[] }>({});
+  const [loadingActivity, setLoadingActivity] = useState<string | null>(null);
 
   useEffect(() => {
     if (!canAccess) return;
@@ -89,6 +104,17 @@ export default function AdminPanel() {
       setStats(s); setApiKeys(k || {}); setBreaches((b as any)?.breaches || []);
     }).catch(() => toast.error("Failed to load admin data"))
       .finally(() => setLoading(false));
+
+    // Load super admin data if applicable
+    if (isSuperAdmin) {
+      Promise.all([
+        fetch("/api/admin/super/schools", { credentials: "include" }).then(r => r.ok ? r.json() : { schools: [] }).catch(() => ({ schools: [] })),
+        fetch("/api/admin/super/billing-summary", { credentials: "include" }).then(r => r.ok ? r.json() : null).catch(() => null),
+      ]).then(([s, b]) => {
+        setAllSchools((s as any)?.schools || []);
+        setBillingSummary(b);
+      }).catch(() => {});
+    }
   }, [canAccess]);
 
   // Live log polling every 5s
@@ -216,6 +242,11 @@ export default function AdminPanel() {
           <TabsTrigger value="logs" className="text-xs py-1.5 flex-1"><Terminal className="w-3.5 h-3.5 mr-1" />Logs</TabsTrigger>
           <TabsTrigger value="breach" className="text-xs py-1.5 flex-1"><Shield className="w-3.5 h-3.5 mr-1" />Breaches</TabsTrigger>
           <TabsTrigger value="settings" className="text-xs py-1.5 flex-1"><Settings2 className="w-3.5 h-3.5 mr-1" />System</TabsTrigger>
+          {isSuperAdmin && (
+            <TabsTrigger value="super" className="text-xs py-1.5 flex-1 bg-purple-50 text-purple-700 data-[state=active]:bg-purple-600 data-[state=active]:text-white">
+              <Building2 className="w-3.5 h-3.5 mr-1" />Schools
+            </TabsTrigger>
+          )}
         </TabsList>
 
         {/* ── USERS ── */}
@@ -669,6 +700,300 @@ export default function AdminPanel() {
             </CardContent>
           </Card>
         </TabsContent>
+
+        {/* ── SUPER ADMIN: ALL SCHOOLS ── */}
+        {isSuperAdmin && (
+          <TabsContent value="super" className="space-y-4 mt-4">
+
+            {/* Billing Summary Cards */}
+            {billingSummary && (
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {[
+                  { label: "Total Schools", value: billingSummary.summary.total_schools, icon: Building2, color: "text-blue-600" },
+                  { label: "Active Subscriptions", value: billingSummary.summary.active, icon: CheckCircle2, color: "text-green-600" },
+                  { label: "On Trial", value: billingSummary.summary.on_trial, icon: Calendar, color: "text-amber-600" },
+                  { label: "Overdue", value: billingSummary.summary.overdue, icon: AlertTriangle, color: "text-red-600" },
+                  { label: "MRR", value: `£${billingSummary.summary.mrr}`, icon: PoundSterling, color: "text-brand" },
+                  { label: "ARR", value: `£${billingSummary.summary.arr}`, icon: TrendingUp, color: "text-purple-600" },
+                ].map((s, i) => (
+                  <Card key={i} className="border-border/50">
+                    <CardContent className="p-3">
+                      <div className="flex items-center gap-2">
+                        <s.icon className={`w-4 h-4 ${s.color}`} />
+                        <div>
+                          <div className={`text-lg font-bold ${s.color}`}>{s.value}</div>
+                          <div className="text-[11px] text-muted-foreground">{s.label}</div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+
+            {/* Upcoming Renewals */}
+            {billingSummary?.upcoming_renewals?.length > 0 && (
+              <Card className="border-amber-200 bg-amber-50/50">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm flex items-center gap-2 text-amber-800">
+                    <Calendar className="w-4 h-4" /> Upcoming Renewals (next 30 days)
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  {billingSummary.upcoming_renewals.map((s: any) => (
+                    <div key={s.id} className="flex items-center justify-between text-xs bg-white rounded-lg p-2.5 border border-amber-100">
+                      <div>
+                        <p className="font-medium text-foreground">{s.name}</p>
+                        <p className="text-muted-foreground">{s.subscription_plan} plan · {s.days_until_renewal}d remaining</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-semibold text-foreground">£{s.monthly_value}/mo</p>
+                        <p className="text-muted-foreground">{new Date(s.subscription_period_end).toLocaleDateString("en-GB")}</p>
+                      </div>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Overdue Schools */}
+            {billingSummary?.overdue_schools?.length > 0 && (
+              <Card className="border-red-200 bg-red-50/50">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm flex items-center gap-2 text-red-800">
+                    <AlertTriangle className="w-4 h-4" /> Overdue Payments
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  {billingSummary.overdue_schools.map((s: any) => (
+                    <div key={s.id} className="flex items-center justify-between text-xs bg-white rounded-lg p-2.5 border border-red-100">
+                      <div>
+                        <p className="font-medium text-foreground">{s.name}</p>
+                        <p className="text-muted-foreground">{s.domain || "No domain"}</p>
+                      </div>
+                      <Badge className="bg-red-100 text-red-700 border-0 text-xs">{s.subscription_status}</Badge>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Invoice Generator */}
+            <Card className="border-border/50">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-brand" /> Generate Invoice
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {generatedInvoice ? (
+                  <div className="space-y-3">
+                    <div className="rounded-xl border border-green-200 bg-green-50 p-4 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm font-bold text-green-800">{generatedInvoice.invoice_number}</p>
+                        <Badge className="bg-green-100 text-green-700 border-0">Issued</Badge>
+                      </div>
+                      <div className="text-xs space-y-1 text-green-900">
+                        <p><span className="font-medium">School:</span> {generatedInvoice.school_name}</p>
+                        <p><span className="font-medium">Amount:</span> £{generatedInvoice.amount.toFixed(2)}</p>
+                        <p><span className="font-medium">Description:</span> {generatedInvoice.description}</p>
+                        <p><span className="font-medium">Issued:</span> {generatedInvoice.issued_date}</p>
+                        <p><span className="font-medium">Due:</span> {generatedInvoice.due_date}</p>
+                        {generatedInvoice.notes && <p><span className="font-medium">Notes:</span> {generatedInvoice.notes}</p>}
+                      </div>
+                    </div>
+                    <Button variant="outline" className="w-full text-xs" onClick={() => {
+                      // Print invoice
+                      const w = window.open("", "_blank");
+                      if (w) {
+                        w.document.write(`<html><head><title>${generatedInvoice.invoice_number}</title><style>body{font-family:Arial,sans-serif;padding:40px;max-width:600px;margin:0 auto}h1{color:#1a1a1a}table{width:100%;border-collapse:collapse}td,th{padding:8px;border-bottom:1px solid #eee;text-align:left}.total{font-size:1.2em;font-weight:bold}.footer{margin-top:40px;font-size:0.8em;color:#666}</style></head><body><h1>INVOICE</h1><p><strong>Invoice No:</strong> ${generatedInvoice.invoice_number}</p><p><strong>Issued:</strong> ${generatedInvoice.issued_date}</p><p><strong>Due:</strong> ${generatedInvoice.due_date}</p><hr/><p><strong>Bill To:</strong><br/>${generatedInvoice.school_name}</p><hr/><table><tr><th>Description</th><th>Amount</th></tr><tr><td>${generatedInvoice.description}</td><td>£${generatedInvoice.amount.toFixed(2)}</td></tr></table><p class="total">Total Due: £${generatedInvoice.amount.toFixed(2)}</p>${generatedInvoice.notes ? `<p><em>${generatedInvoice.notes}</em></p>` : ""}<div class="footer"><p>Adaptly · admin@adaptly.co.uk · adaptly.co.uk</p></div></body></html>`);
+                        w.document.close();
+                        w.print();
+                      }
+                    }}>
+                      <FileText className="w-3.5 h-3.5 mr-1" /> Print / Save Invoice
+                    </Button>
+                    <Button variant="ghost" className="w-full text-xs" onClick={() => setGeneratedInvoice(null)}>Create Another Invoice</Button>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div>
+                      <Label className="text-xs">School</Label>
+                      <Select value={invoiceForm.school_id} onValueChange={v => setInvoiceForm(f => ({ ...f, school_id: v }))}>
+                        <SelectTrigger className="text-xs mt-1"><SelectValue placeholder="Select school..." /></SelectTrigger>
+                        <SelectContent>
+                          {allSchools.map(s => (
+                            <SelectItem key={s.id} value={s.id} className="text-xs">{s.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <Label className="text-xs">Amount (£)</Label>
+                        <Input className="text-xs mt-1" type="number" placeholder="99.00" value={invoiceForm.amount} onChange={e => setInvoiceForm(f => ({ ...f, amount: e.target.value }))} />
+                      </div>
+                      <div>
+                        <Label className="text-xs">Due Date</Label>
+                        <Input className="text-xs mt-1" type="date" value={invoiceForm.due_date} onChange={e => setInvoiceForm(f => ({ ...f, due_date: e.target.value }))} />
+                      </div>
+                    </div>
+                    <div>
+                      <Label className="text-xs">Description</Label>
+                      <Input className="text-xs mt-1" placeholder="e.g. Adaptly Professional subscription — April 2026" value={invoiceForm.description} onChange={e => setInvoiceForm(f => ({ ...f, description: e.target.value }))} />
+                    </div>
+                    <div>
+                      <Label className="text-xs">Notes (optional)</Label>
+                      <Input className="text-xs mt-1" placeholder="e.g. Payment by BACS to..." value={invoiceForm.notes} onChange={e => setInvoiceForm(f => ({ ...f, notes: e.target.value }))} />
+                    </div>
+                    <Button
+                      className="w-full bg-brand hover:bg-brand/90 text-white text-xs"
+                      disabled={savingInvoice || !invoiceForm.school_id || !invoiceForm.amount || !invoiceForm.description}
+                      onClick={async () => {
+                        setSavingInvoice(true);
+                        try {
+                          const r = await fetch("/api/admin/super/invoice", {
+                            method: "POST",
+                            credentials: "include",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify(invoiceForm),
+                          });
+                          const data = await r.json();
+                          if (data.ok) {
+                            setGeneratedInvoice(data.invoice);
+                            setInvoiceForm({ school_id: "", amount: "", description: "", due_date: "", notes: "" });
+                            toast.success(`Invoice ${data.invoice.invoice_number} created`);
+                          } else {
+                            toast.error(data.error || "Failed to create invoice");
+                          }
+                        } catch { toast.error("Failed to create invoice"); }
+                        setSavingInvoice(false);
+                      }}
+                    >
+                      {savingInvoice ? "Generating..." : "Generate Invoice"}
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* All Schools Table */}
+            <Card className="border-border/50">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <Building2 className="w-4 h-4 text-brand" /> All Schools ({allSchools.length})
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {allSchools.length === 0 ? (
+                  <p className="text-xs text-muted-foreground text-center py-4">No schools found</p>
+                ) : allSchools.map((school: any) => {
+                  const subStatusColor: Record<string, string> = {
+                    active: "bg-green-100 text-green-700",
+                    trialing: "bg-blue-100 text-blue-700",
+                    past_due: "bg-amber-100 text-amber-700",
+                    canceled: "bg-red-100 text-red-700",
+                    unpaid: "bg-red-100 text-red-700",
+                  };
+                  const statusLabel = school.subscription_status || school.licence_type || "unknown";
+                  const isExpanded = schoolActivity[school.id] !== undefined;
+                  return (
+                    <div key={school.id} className="border border-border rounded-xl overflow-hidden">
+                      <div className="p-3 space-y-2">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold text-foreground truncate">{school.name}</p>
+                            <p className="text-xs text-muted-foreground">{school.domain || "No domain"} · URN: {school.urn || "N/A"}</p>
+                          </div>
+                          <Badge className={`text-xs border-0 flex-shrink-0 ${subStatusColor[school.subscription_status] || "bg-gray-100 text-gray-600"}`}>
+                            {statusLabel}
+                          </Badge>
+                        </div>
+                        <div className="grid grid-cols-3 gap-2 text-xs text-muted-foreground">
+                          <span><Users className="w-3 h-3 inline mr-1" />{school.user_count || 0} users</span>
+                          <span><Users className="w-3 h-3 inline mr-1" />{school.pupil_count || 0} pupils</span>
+                          <span>{school.subscription_plan ? `£${{ starter: 49, professional: 99, premium: 149, mat: 299 }[school.subscription_plan] || 0}/mo` : "No plan"}</span>
+                        </div>
+                        {school.subscription_period_end && (
+                          <p className="text-xs text-muted-foreground">
+                            <Calendar className="w-3 h-3 inline mr-1" />
+                            {school.subscription_cancel_at_period_end ? "Cancels" : "Renews"}{" "}
+                            {new Date(school.subscription_period_end).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                          </p>
+                        )}
+                        {school.last_activity && (
+                          <p className="text-xs text-muted-foreground">Last active: {new Date(school.last_activity).toLocaleDateString("en-GB")}</p>
+                        )}
+                        <div className="flex gap-2 pt-1">
+                          <Button
+                            size="sm" variant="outline" className="text-xs h-7 flex-1"
+                            onClick={async () => {
+                              if (isExpanded) {
+                                setSchoolActivity(a => { const n = { ...a }; delete n[school.id]; return n; });
+                                return;
+                              }
+                              setLoadingActivity(school.id);
+                              try {
+                                const r = await fetch(`/api/admin/super/schools/${school.id}/activity`, { credentials: "include" });
+                                const data = await r.json();
+                                setSchoolActivity(a => ({ ...a, [school.id]: data.logs || [] }));
+                              } catch { toast.error("Failed to load activity"); }
+                              setLoadingActivity(null);
+                            }}
+                          >
+                            {loadingActivity === school.id ? <RefreshCw className="w-3 h-3 animate-spin" /> : isExpanded ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+                            {isExpanded ? "Hide Activity" : "View Activity"}
+                          </Button>
+                          <Select
+                            value={school.subscription_status || ""}
+                            onValueChange={async (v) => {
+                              try {
+                                await fetch(`/api/admin/super/schools/${school.id}/subscription`, {
+                                  method: "PATCH",
+                                  credentials: "include",
+                                  headers: { "Content-Type": "application/json" },
+                                  body: JSON.stringify({ subscription_status: v }),
+                                });
+                                setAllSchools(ss => ss.map(s => s.id === school.id ? { ...s, subscription_status: v } : s));
+                                toast.success(`Status updated to ${v}`);
+                              } catch { toast.error("Failed to update status"); }
+                            }}
+                          >
+                            <SelectTrigger className="text-xs h-7 flex-1">
+                              <SelectValue placeholder="Override status" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="active" className="text-xs">Active</SelectItem>
+                              <SelectItem value="trialing" className="text-xs">Trialing</SelectItem>
+                              <SelectItem value="past_due" className="text-xs">Past Due</SelectItem>
+                              <SelectItem value="canceled" className="text-xs">Canceled</SelectItem>
+                              <SelectItem value="unpaid" className="text-xs">Unpaid</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                      {isExpanded && schoolActivity[school.id] && (
+                        <div className="border-t border-border bg-muted/20 p-3 space-y-1">
+                          <p className="text-xs font-medium text-muted-foreground mb-2">Recent Activity</p>
+                          {schoolActivity[school.id].length === 0 ? (
+                            <p className="text-xs text-muted-foreground">No activity recorded</p>
+                          ) : schoolActivity[school.id].slice(0, 20).map((log: any, i: number) => (
+                            <div key={i} className="text-xs flex items-start gap-2">
+                              <span className="text-muted-foreground flex-shrink-0">{new Date(log.created_at).toLocaleDateString("en-GB", { day: "2-digit", month: "short" })}</span>
+                              <span className="text-foreground truncate">{log.action}</span>
+                              {log.display_name && <span className="text-muted-foreground flex-shrink-0">— {log.display_name}</span>}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </CardContent>
+            </Card>
+
+          </TabsContent>
+        )}
 
       </Tabs>
     </div>

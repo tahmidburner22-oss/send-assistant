@@ -42,9 +42,11 @@ export default function SubscriptionGate({ children }: Props) {
   const [redirecting, setRedirecting] = useState(false);
 
   const isAdmin = user?.role === "school_admin" || user?.role === "mat_admin";
+  const isSuperAdmin = user?.role === "mat_admin" || user?.role === "super_admin";
 
   useEffect(() => {
-    if (!user?.schoolId) {
+    // Super admins always have access — skip billing check
+    if (isSuperAdmin || !user?.schoolId) {
       setLoading(false);
       return;
     }
@@ -58,8 +60,9 @@ export default function SubscriptionGate({ children }: Props) {
   const showPastDueBanner =
     billingStatus?.status === "past_due" && billingStatus?.isAccessible;
 
-  // Block access for canceled/unpaid
+  // Block access for canceled/unpaid (never block super admins)
   const isBlocked =
+    !isSuperAdmin &&
     billingStatus !== null &&
     !billingStatus.isAccessible &&
     user?.schoolId != null;

@@ -28,8 +28,20 @@ function requireAdmin(req: Request, res: Response, next: any) {
   const user = (req as any).user;
   if (!user) return res.status(401).json({ error: "Unauthorized" });
   const isAdmin = ["mat_admin", "school_admin", "senco"].includes(user.role) ||
-    user.email === "admin@sendassistant.app";
+    user.email === "admin@adaptly.co.uk" ||
+    user.email === "admin@sendassistant.app"; // legacy fallback
   if (!isAdmin) return res.status(403).json({ error: "Forbidden" });
+  next();
+}
+
+// Middleware: require super admin (mat_admin or Adaptly owner)
+function requireSuperAdmin(req: Request, res: Response, next: any) {
+  const user = (req as any).user;
+  if (!user) return res.status(401).json({ error: "Unauthorized" });
+  const isSuperAdmin = user.role === "mat_admin" ||
+    user.email === "admin@adaptly.co.uk" ||
+    user.email === "admin@sendassistant.app";
+  if (!isSuperAdmin) return res.status(403).json({ error: "Super admin access required" });
   next();
 }
 
@@ -244,6 +256,165 @@ router.patch("/breach-log/:id", requireAuth, requireAdmin, (req: Request, res: R
         updated_at = datetime('now')
        WHERE id = ?`
     ).run(status, ico_notified, ico_reference, subjects_notified, containment_action, resolved_at, req.params.id);
+    res.json({ ok: true });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── Super Admin: All Schools Overview ───────────────────────────────────────
+
+// GET /api/admin/super/schools — all schools with billing & activity data
+router.get("/super/schools", requireAuth, requireSuperAdmin, (req: Request, res: Response) => {
+  try {
+    const schools = db.prepare(`
+      SELECT
+        s.id, s.name, s.urn, s.domain, s.licence_type, s.onboarding_complete,
+        s.stripe_customer_id, s.subscription_status, s.subscription_plan,
+        s.subscription_period_end, s.subscription_cancel_at_period_end,
+        s.created_at,
+        COUNT(DISTINCT u.id) as user_count,
+        COUNT(DISTINCT p.id) as pupil_count,
+        MAX(al.created_at) as last_activity
+      FROM schools s
+      LEFT JOIN users u ON u.school_id = s.id
+      LEFT JOIN pupils p ON p.school_id = s.id AND p.archived = 0
+      LEFT JOIN audit_log al ON al.school_id = s.id
+      GROUP BY s.id
+      ORDER BY s.created_at DESC
+    `).all();
+    res.json({ schools });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/admin/super/schools/:id/activity — recent activity for a school
+router.get("/super/schools/:id/activity", requireAuth, requireSuperAdmin, (req: Request, res: Response) => {
+  try {
+    const logs = db.prepare(`
+      SELECT al.*, u.display_name, u.email
+      FROM audit_log al
+      LEFT JOIN users u ON u.id = al.user_id
+      WHERE al.school_id = ?
+      ORDER BY al.created_at DESC
+      LIMIT 50
+    `).all(req.params.id);
+    res.json({ logs });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/admin/super/billing-summary — upcoming renewals & payment overview
+router.get("/super/billing-summary", requireAuth, requireSuperAdmin, (req: Request, res: Response) => {
+  try {
+    const schools = db.prepare(`
+      SELECT id, name, subscription_status, subscription_plan,
+             subscription_period_end, subscription_cancel_at_period_end,
+             stripe_customer_id, licence_type, domain
+      FROM schools
+      ORDER BY subscription_period_end ASC
+    `).all() as any[];
+
+    const planPrices: Record<string, number> = {
+      starter: 49,
+      professional: 99,
+      premium: 149,
+      mat: 299,
+    };
+
+    const now = new Date();
+    const in30Days = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+
+    const upcomingRenewals = schools
+      .filter(s => s.subscription_period_end && new Date(s.subscription_period_end) <= in30Days && new Date(s.subscription_period_end) > now)
+      .map(s => ({
+        ...s,
+        monthly_value: planPrices[s.subscription_plan] || 0,
+        days_until_renewal: Math.ceil((new Date(s.subscription_period_end).getTime() - now.getTime()) / (1000 * 60 * 60 * 24)),
+      }));
+
+    const activeSchools = schools.filter(s => s.subscription_status === "active");
+    const trialSchools = schools.filter(s => s.licence_type === "trial" || s.subscription_status === "trialing");
+    const overdueSchools = schools.filter(s => s.subscription_status === "past_due" || s.subscription_status === "unpaid");
+    const canceledSchools = schools.filter(s => s.subscription_status === "canceled");
+    const mrr = activeSchools.reduce((sum, s) => sum + (planPrices[s.subscription_plan] || 0), 0);
+
+    res.json({
+      summary: {
+        total_schools: schools.length,
+        active: activeSchools.length,
+        on_trial: trialSchools.length,
+        overdue: overdueSchools.length,
+        canceled: canceledSchools.length,
+        mrr,
+        arr: mrr * 12,
+      },
+      upcoming_renewals: upcomingRenewals,
+      overdue_schools: overdueSchools,
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/admin/super/invoice — generate a manual invoice for a school
+router.post("/super/invoice", requireAuth, requireSuperAdmin, (req: Request, res: Response) => {
+  try {
+    const { school_id, amount, description, due_date, notes } = req.body;
+    if (!school_id || !amount || !description) {
+      return res.status(400).json({ error: "school_id, amount, and description are required" });
+    }
+    const school = db.prepare("SELECT * FROM schools WHERE id = ?").get(school_id) as any;
+    if (!school) return res.status(404).json({ error: "School not found" });
+
+    const invoiceNumber = `INV-${new Date().getFullYear()}-${String(Date.now()).slice(-6)}`;
+    const invoice = {
+      invoice_number: invoiceNumber,
+      school_id,
+      school_name: school.name,
+      school_domain: school.domain || "",
+      amount: parseFloat(amount),
+      description,
+      due_date: due_date || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
+      notes: notes || "",
+      issued_date: new Date().toISOString().split("T")[0],
+      status: "issued",
+    };
+
+    // Log the invoice creation in audit log
+    try {
+      db.prepare(
+        `INSERT INTO audit_log (id, school_id, user_id, action, created_at)
+         VALUES (?, ?, ?, ?, datetime('now'))`
+      ).run(`inv_${Date.now()}`, school_id, (req as any).user.id, `INVOICE_ISSUED: ${invoiceNumber} £${amount}`);
+    } catch (_) {}
+
+    res.json({ ok: true, invoice });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// PATCH /api/admin/super/schools/:id/subscription — manually override subscription status
+router.patch("/super/schools/:id/subscription", requireAuth, requireSuperAdmin, (req: Request, res: Response) => {
+  try {
+    const { subscription_status, subscription_plan, licence_type } = req.body;
+    db.prepare(`
+      UPDATE schools SET
+        subscription_status = COALESCE(?, subscription_status),
+        subscription_plan = COALESCE(?, subscription_plan),
+        licence_type = COALESCE(?, licence_type)
+      WHERE id = ?
+    `).run(subscription_status || null, subscription_plan || null, licence_type || null, req.params.id);
+    try {
+      db.prepare(
+        `INSERT INTO audit_log (id, school_id, user_id, action, created_at)
+         VALUES (?, ?, ?, ?, datetime('now'))`
+      ).run(`sa_${Date.now()}`, req.params.id, (req as any).user.id,
+        `SUPER_ADMIN_SUBSCRIPTION_OVERRIDE: status=${subscription_status} plan=${subscription_plan}`);
+    } catch (_) {}
     res.json({ ok: true });
   } catch (err: any) {
     res.status(500).json({ error: err.message });

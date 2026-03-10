@@ -108,6 +108,8 @@ export async function initDb() {
   // ── Schema migrations (idempotent — ADD COLUMN IF NOT EXISTS) ─────────────
   const migrations = [
     "ALTER TABLE schools ADD COLUMN stripe_customer_id TEXT",
+    // Rename old admin email — safe to run multiple times
+    "UPDATE users SET email = 'admin@adaptly.co.uk' WHERE email = 'admin@sendassistant.app'",
     "ALTER TABLE schools ADD COLUMN subscription_status TEXT DEFAULT 'trialing'",
     "ALTER TABLE schools ADD COLUMN subscription_plan TEXT",
     "ALTER TABLE schools ADD COLUMN subscription_period_end TEXT",
@@ -136,11 +138,11 @@ export async function initDb() {
     );
     _db.run(
       `INSERT INTO users (id, school_id, email, display_name, password_hash, role, email_verified)
-       VALUES (?, ?, 'admin@sendassistant.app', 'System Admin', ?, 'mat_admin', 1)`,
+       VALUES (?, ?, 'admin@adaptly.co.uk', 'System Admin', ?, 'mat_admin', 1)`,
       [adminId, schoolId, hash]
     );
     persist();
-    console.log("✅ Seeded default admin: admin@sendassistant.app / Admin1234!");
+    console.log("✅ Seeded default admin: admin@adaptly.co.uk / Admin1234!");
   }
 
   // Seed admin API keys from environment variables (idempotent — INSERT OR REPLACE)
