@@ -179,6 +179,7 @@ function MisIntegrationSection() {
   const [syncing, setSyncing] = useState<string | null>(null);
   const [showBromcomForm, setShowBromcomForm] = useState(false);
   const [showArborForm, setShowArborForm] = useState(false);
+  const [syncResult, setSyncResult] = useState<any>(null);
 
   useEffect(() => {
     if (!isAdmin) return;
@@ -225,11 +226,15 @@ function MisIntegrationSection() {
 
   const syncNow = async (provider: "bromcom" | "arbor") => {
     setSyncing(provider);
+    setSyncResult(null);
     try {
       const res = await fetch(`/api/mis/sync/${provider}`, { method: "POST", headers: getAuthHeader() });
       const data = await res.json();
       if (res.ok) {
-        toast.success(`Sync complete: ${data.created} added, ${data.updated} updated, ${data.skipped} skipped`);
+        setSyncResult(data);
+        const total = (data.pupils?.created || 0) + (data.behaviour?.created || 0) +
+          (data.attendance?.created || 0) + (data.comments?.created || 0);
+        toast.success(`Sync complete — ${total} records imported`);
       } else {
         toast.error(data.error || "Sync failed");
       }
@@ -360,6 +365,38 @@ function MisIntegrationSection() {
                 </div>
               )}
             </div>
+
+            {/* Sync Result Summary */}
+            {syncResult && (
+              <div className="mt-3 p-3 rounded-lg border border-green-200 bg-green-50 space-y-2">
+                <div className="flex items-center gap-2 text-sm font-medium text-green-800">
+                  <CheckCircle className="w-4 h-4" />
+                  Last Sync Summary — {syncResult.provider === "bromcom" ? "Bromcom" : "Arbor"}
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { label: "Pupils", icon: "👤", created: syncResult.pupils?.created || 0, updated: syncResult.pupils?.updated || 0, skipped: syncResult.pupils?.skipped || 0 },
+                    { label: "Behaviour", icon: "📋", created: syncResult.behaviour?.created || 0, updated: 0, skipped: syncResult.behaviour?.skipped || 0 },
+                    { label: "Attendance", icon: "📅", created: syncResult.attendance?.created || 0, updated: syncResult.attendance?.updated || 0, skipped: syncResult.attendance?.skipped || 0 },
+                    { label: "Comments", icon: "💬", created: syncResult.comments?.created || 0, updated: 0, skipped: syncResult.comments?.skipped || 0 },
+                  ].map(item => (
+                    <div key={item.label} className="bg-white rounded-md p-2 border border-green-100">
+                      <div className="text-xs font-medium text-gray-700">{item.icon} {item.label}</div>
+                      <div className="text-xs text-muted-foreground mt-0.5">
+                        <span className="text-green-700 font-medium">{item.created} new</span>
+                        {item.updated > 0 && <span className="ml-1 text-blue-700">{item.updated} updated</span>}
+                        {item.skipped > 0 && <span className="ml-1 text-gray-500">{item.skipped} skipped</span>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                {syncResult.errors?.length > 0 && (
+                  <div className="text-xs text-amber-700 mt-1">
+                    ⚠️ {syncResult.errors.length} warning(s): {syncResult.errors[0]}
+                  </div>
+                )}
+              </div>
+            )}
           </>
         )}
       </CardContent>

@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import { useApp, type AttendanceRecord, type AttendanceStatus } from "@/contexts/AppContext";
 import {
   CalendarDays, CheckCircle2, XCircle, MinusCircle, ChevronLeft, ChevronRight,
-  Users, TrendingUp, Download, Sun, Sunset, AlertCircle, Save
+  Users, TrendingUp, Download, Sun, Sunset, AlertCircle, Save, Database
 } from "lucide-react";
 
 const ABSENCE_REASONS = [
@@ -468,6 +468,12 @@ export default function Attendance() {
                           </div>
                         )}
                         {rec.notes && <div className="text-xs text-muted-foreground mt-0.5">{rec.notes}</div>}
+                        {rec.misSource && (
+                          <div className="text-[10px] mt-0.5 px-1.5 py-0.5 rounded-full font-medium bg-blue-50 text-blue-700 border border-blue-200 inline-flex items-center gap-0.5 w-fit">
+                            <Database className="w-2.5 h-2.5" />
+                            {rec.misSource === "bromcom" ? "Bromcom" : "Arbor"}
+                          </div>
+                        )}
                       </div>
                       <div className="flex gap-2 flex-shrink-0">
                         <div className="text-center">

@@ -211,9 +211,28 @@ CREATE TABLE IF NOT EXISTS attendance_records (
   pm_status TEXT NOT NULL DEFAULT 'not-recorded',
   pm_reason TEXT,
   notes TEXT,
+  mis_source TEXT,  -- 'bromcom' | 'arbor' | NULL
   recorded_at TEXT NOT NULL DEFAULT (datetime('now')),
   UNIQUE(pupil_id, date)
 );
+
+-- Pupil comments (positive/negative notes, imported from MIS or entered manually)
+CREATE TABLE IF NOT EXISTS pupil_comments (
+  id TEXT PRIMARY KEY,
+  school_id TEXT NOT NULL REFERENCES schools(id),
+  pupil_id TEXT NOT NULL REFERENCES pupils(id),
+  recorded_by TEXT REFERENCES users(id),
+  type TEXT NOT NULL DEFAULT 'positive', -- 'positive' | 'negative' | 'neutral' | 'safeguarding'
+  category TEXT, -- e.g. 'Academic', 'Social', 'Wellbeing', 'Pastoral'
+  content TEXT NOT NULL,
+  date TEXT NOT NULL,
+  mis_source TEXT,  -- 'bromcom' | 'arbor' | NULL
+  mis_id TEXT,      -- external MIS record ID for deduplication
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_comments_mis ON pupil_comments(school_id, mis_source, mis_id) WHERE mis_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_comments_pupil ON pupil_comments(pupil_id);
+CREATE INDEX IF NOT EXISTS idx_comments_school ON pupil_comments(school_id);
 
 -- Behaviour records
 CREATE TABLE IF NOT EXISTS behaviour_records (
@@ -226,8 +245,12 @@ CREATE TABLE IF NOT EXISTS behaviour_records (
   description TEXT,
   action_taken TEXT,
   date TEXT NOT NULL,
+  mis_source TEXT,  -- 'bromcom' | 'arbor' | NULL (manually entered)
+  mis_id TEXT,      -- external MIS record ID for deduplication
+  points INTEGER DEFAULT 0, -- reward/demerit points from MIS
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
+CREATE UNIQUE INDEX IF NOT EXISTS idx_behaviour_mis ON behaviour_records(school_id, mis_source, mis_id) WHERE mis_id IS NOT NULL;
 
 -- Behaviour Support Plans (saved from AI tool, visible in Parent Portal)
 CREATE TABLE IF NOT EXISTS behaviour_support_plans (

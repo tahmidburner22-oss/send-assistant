@@ -29,6 +29,7 @@ import Settings from "./pages/Settings";
 import VisualTimetable from "./pages/VisualTimetable";
 import BehaviourTracking from "./pages/BehaviourTracking";
 import Attendance from "./pages/Attendance";
+import PupilComments from "./pages/PupilComments";
 import AdminPanel from "./pages/AdminPanel";
 
 // New AI Tools
@@ -115,6 +116,7 @@ function ProtectedRoutes() {
         <Route path="/visual-timetable" component={VisualTimetable} />
         <Route path="/behaviour-tracking" component={BehaviourTracking} />
         <Route path="/attendance" component={Attendance} />
+        <Route path="/pupil-comments" component={PupilComments} />
         <Route path="/admin" component={AdminPanel} />
 
         {/* SEND Screener */}

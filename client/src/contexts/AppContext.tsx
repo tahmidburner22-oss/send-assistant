@@ -43,6 +43,7 @@ export interface AttendanceRecord {
   amStatus: AttendanceStatus; amReason?: string;
   pmStatus: AttendanceStatus; pmReason?: string;
   notes?: string; recordedAt: string; recordedBy: string;
+  misSource?: string;
 }
 
 export interface Assignment {
@@ -342,7 +343,7 @@ function mapAssignment(a: any): Assignment {
   return { id: a.id, title: a.title, type: a.type, content: a.content || "", assignedAt: a.assigned_at, status: a.status || "not-started", feedback: a.feedback, mark: a.mark, progress: a.progress, teacherComment: a.teacher_comment };
 }
 function mapAttendanceRecord(r: any): AttendanceRecord {
-  return { id: r.id, childId: r.pupil_id, date: r.date, amStatus: r.am_status, amReason: r.am_reason, pmStatus: r.pm_status, pmReason: r.pm_reason, notes: r.notes, recordedAt: r.recorded_at, recordedBy: r.recorded_by || "" };
+  return { id: r.id, childId: r.pupil_id, date: r.date, amStatus: r.am_status, amReason: r.am_reason, pmStatus: r.pm_status, pmReason: r.pm_reason, notes: r.notes, recordedAt: r.recorded_at, recordedBy: r.recorded_by || "", misSource: r.mis_source || undefined };
 }
 function mapPupil(p: any): Child {
   const assignments = Array.isArray(p.assignments) ? p.assignments.map(mapAssignment) : [];

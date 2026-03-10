@@ -8,7 +8,7 @@ import {
   Calendar, TrendingUp, ClipboardList, IdCard, CheckSquare, ShieldAlert, Heart,
   HelpCircle, Table2, AlignLeft, Layers, CalendarDays, BookMarked, Ticket,
   BookType, Mail, Shield, ChevronDown, ChevronRight, ScrollText, Headphones, ScanSearch,
-  Zap, NotebookPen, Pencil
+  Zap, NotebookPen, Pencil, MessageSquare
 } from "lucide-react";
 
 const mainMenu = [
@@ -59,6 +59,7 @@ const classroomMenu = [
   { path: "/visual-timetable", label: "Visual Timetable", icon: Calendar },
   { path: "/behaviour-tracking", label: "Behaviour Tracking", icon: TrendingUp },
   { path: "/attendance", label: "Attendance", icon: ClipboardList },
+  { path: "/pupil-comments", label: "Pupil Comments", icon: MessageSquare, color: "text-violet-600" },
 ];
 
 const accountMenu = [
