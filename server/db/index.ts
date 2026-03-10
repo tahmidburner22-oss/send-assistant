@@ -114,6 +114,11 @@ export async function initDb() {
     "ALTER TABLE schools ADD COLUMN subscription_plan TEXT",
     "ALTER TABLE schools ADD COLUMN subscription_period_end TEXT",
     "ALTER TABLE schools ADD COLUMN subscription_cancel_at_period_end INTEGER NOT NULL DEFAULT 0",
+    // MIS integration columns
+    "ALTER TABLE behaviour_records ADD COLUMN mis_source TEXT",
+    "ALTER TABLE behaviour_records ADD COLUMN mis_id TEXT",
+    "ALTER TABLE behaviour_records ADD COLUMN points INTEGER DEFAULT 0",
+    "ALTER TABLE attendance_records ADD COLUMN mis_source TEXT",
   ];
   for (const migration of migrations) {
     try { _db.run(migration); } catch (_) { /* column already exists — ignore */ }
