@@ -15,7 +15,7 @@ import { sendNeeds } from "@/lib/send-data";
 import {
   Plus, TrendingUp, TrendingDown, Minus, Calendar, Clock,
   CheckCircle, AlertCircle, Star, Shield, BarChart3, FileText,
-  Printer, ChevronLeft, Smile, Frown, Meh, Zap, Heart
+  Printer, ChevronLeft, Smile, Frown, Meh, Zap, Heart, Database
 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Legend } from "recharts";
 
@@ -37,6 +37,7 @@ interface BehaviourEntry {
   worksheetCompletion?: number; // 0-100
   linkedAssignmentId?: string;
   recordedBy?: string;
+  misSource?: string;
 }
 
 const BEHAVIOUR_CATEGORIES = {
@@ -115,6 +116,7 @@ export default function BehaviourTracking() {
           triggerNotes: r.trigger_notes || undefined,
           strategy: r.action_taken || undefined,
           outcome: r.outcome || undefined,
+          misSource: r.mis_source || undefined,
         }));
         setEntries(prev => {
           // Replace entries for this child, keep others
@@ -344,6 +346,12 @@ export default function BehaviourTracking() {
                                   entry.type === "positive" ? "bg-emerald-100 text-emerald-700" :
                                   entry.type === "concern" ? "bg-red-100 text-red-700" : "bg-amber-100 text-amber-700"
                                 }`}>{entry.type}</span>
+                                {entry.misSource && (
+                                  <span className="text-[10px] px-1.5 py-0.5 rounded-full font-medium bg-blue-50 text-blue-700 border border-blue-200 flex items-center gap-0.5">
+                                    <Database className="w-2.5 h-2.5" />
+                                    {entry.misSource === "bromcom" ? "Bromcom" : "Arbor"}
+                                  </span>
+                                )}
                               </div>
                               <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{entry.description}</p>
                               <div className="flex items-center gap-3 mt-1 text-[10px] text-muted-foreground">
