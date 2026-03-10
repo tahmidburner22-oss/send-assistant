@@ -230,7 +230,7 @@ CREATE TABLE IF NOT EXISTS pupil_comments (
   mis_id TEXT,      -- external MIS record ID for deduplication
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
-CREATE UNIQUE INDEX IF NOT EXISTS idx_comments_mis ON pupil_comments(school_id, mis_source, mis_id) WHERE mis_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_comments_mis ON pupil_comments(school_id, mis_source, mis_id);
 CREATE INDEX IF NOT EXISTS idx_comments_pupil ON pupil_comments(pupil_id);
 CREATE INDEX IF NOT EXISTS idx_comments_school ON pupil_comments(school_id);
 
@@ -250,7 +250,7 @@ CREATE TABLE IF NOT EXISTS behaviour_records (
   points INTEGER DEFAULT 0, -- reward/demerit points from MIS
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
-CREATE UNIQUE INDEX IF NOT EXISTS idx_behaviour_mis ON behaviour_records(school_id, mis_source, mis_id) WHERE mis_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_behaviour_mis ON behaviour_records(school_id, mis_source, mis_id);
 
 -- Behaviour Support Plans (saved from AI tool, visible in Parent Portal)
 CREATE TABLE IF NOT EXISTS behaviour_support_plans (
