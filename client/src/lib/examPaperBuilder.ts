@@ -160,6 +160,8 @@ function buildInfoBox(subject: string, board: string): string {
  * Format a question for SEND-friendly display with proper exam formatting.
  */
 function formatQuestionSEND(q: PastPaperQuestion, index: number, sendNeed?: string): string {
+  // Strip any trailing asterisks or markdown bold markers from question text
+  const cleanText = q.text.replace(/\s*\*+\s*$/, "").trim();
   const markLabel = q.marks === 1 ? "1 mark" : `${q.marks} marks`;
 
   // Context block (stimulus text, table, etc.)
@@ -197,8 +199,8 @@ function formatQuestionSEND(q: PastPaperQuestion, index: number, sendNeed?: stri
   }
 
   const questionText = q.subParts && q.subParts.length > 0
-    ? `**Q${index}.** ${q.text}${contextBlock}${sendHint}${subPartsText}`
-    : `**Q${index}.** ${q.text} **[${markLabel}]**${contextBlock}${sendHint}\n\n${answerLines}`;
+    ? `**Q${index}.** ${cleanText}${contextBlock}${sendHint}${subPartsText}`
+    : `**Q${index}.** ${cleanText} **[${markLabel}]**${contextBlock}${sendHint}\n\n${answerLines}`;
 
   return questionText + `\n\n*[${q.board} ${q.year} — ${q.paper}]*\n\n---`;
 }
