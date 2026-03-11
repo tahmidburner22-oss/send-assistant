@@ -20,6 +20,7 @@ import { downloadHtmlAsPdf, printWorksheetElement } from "@/lib/pdf-generator-v2
 import WorksheetRenderer from "@/components/WorksheetRenderer";
 import { worksheetBank, type BankWorksheet } from "@/lib/worksheet-bank";
 import { aiGenerateWorksheet, aiEditSection } from "@/lib/ai";
+import { buildExamPaperWorksheet, hasPastPaperQuestions, getPastPaperDatabaseInfo } from "@/lib/examPaperBuilder";
 import PrintOptionsDialog, { type PrintOptions } from "@/components/PrintOptionsDialog";
 import {
   FileText, Upload, Library, Sparkles, Download, Printer, Save, Star,
@@ -125,6 +126,14 @@ export default function Worksheets() {
   const [examBoard, setExamBoard] = useState("none");
   const [includeAnswers, setIncludeAnswers] = useState(true);
   const [examStyle, setExamStyle] = useState(false);
+
+  // Auto-toggle exam-style ON for maths, OFF for everything else
+  useEffect(() => {
+    if (subject) {
+      const isMaths = subject.toLowerCase().includes("math");
+      setExamStyle(isMaths);
+    }
+  }, [subject]);
   const [additionalInstructions, setAdditionalInstructions] = useState("");
   // Diagram toggle — always off by default; user can enable it manually for any subject
   const [generateDiagram, setGenerateDiagram] = useState(false);
@@ -212,7 +221,62 @@ export default function Worksheets() {
 
     let generatedWs: AnyWorksheet | null = null;
 
-    if (useAI) {
+    // ── EXAM-STYLE MODE: use real past paper questions from the database ──────
+    if (examStyle) {
+      try {
+        await new Promise(r => setTimeout(r, 400)); // brief loading feel
+        const examPaper = buildExamPaperWorksheet({
+          subject,
+          topic,
+          yearGroup,
+          examBoard: examBoard !== "none" ? examBoard : "AQA",
+          difficulty,
+          sendNeed: sendNeed && sendNeed !== "none-selected" ? sendNeed : undefined,
+          includeAnswers,
+          worksheetLength,
+          additionalInstructions,
+        });
+        // Cast to AIWorksheet shape so the rest of the code handles it uniformly
+        generatedWs = {
+          ...examPaper,
+          isAI: false,
+          metadata: {
+            ...examPaper.metadata,
+            sendNeed: sendNeed && sendNeed !== "none-selected" ? sendNeed : undefined,
+          },
+        } as any;
+        const dbInfo = getPastPaperDatabaseInfo();
+        const hasQuestions = hasPastPaperQuestions(subject, examBoard !== "none" ? examBoard : "AQA");
+        if (hasQuestions) {
+          toast.success(`Exam paper built from ${dbInfo.total} real past paper questions!`);
+        } else {
+          toast.info("No past paper questions found for this subject — try a different exam board or subject.");
+        }
+      } catch (err) {
+        console.error("Exam paper build failed:", err);
+        toast.error("Could not build exam paper — falling back to AI generation.");
+        // Fall through to AI generation
+        try {
+          const result = await aiGenerateWorksheet({
+            subject, topic, yearGroup,
+            sendNeed: sendNeed && sendNeed !== "none-selected" ? sendNeed : undefined,
+            difficulty,
+            examBoard: examBoard !== "none" ? examBoard : undefined,
+            includeAnswers,
+            examStyle: true,
+            additionalInstructions,
+            generateDiagram: false,
+            worksheetLength,
+          });
+          generatedWs = { ...result, isAI: true } as AIWorksheet;
+          toast.success("Exam-style worksheet generated with AI!");
+        } catch (aiErr) {
+          console.error("AI fallback also failed:", aiErr);
+          toast.error("Generation failed. Please try again.");
+        }
+      }
+    } else if (useAI) {
+      // ── STANDARD AI MODE ───────────────────────────────────────────────────
       try {
         const result = await aiGenerateWorksheet({
           subject, topic, yearGroup,
@@ -575,11 +639,23 @@ export default function Worksheets() {
                     <Switch checked={includeAnswers} onCheckedChange={setIncludeAnswers} id="answers-sw" />
                     <Label htmlFor="answers-sw" className="text-xs">Include answers & mark scheme</Label>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Switch checked={examStyle} onCheckedChange={setExamStyle} id="exam-style-sw" />
-                    <Label htmlFor="exam-style-sw" className="text-xs flex items-center gap-1">
-                      <Award className="h-3 w-3" /> Exam-style formatting
-                    </Label>
+                  <div className="flex flex-col gap-1">
+                    <div className="flex items-center gap-2">
+                      <Switch checked={examStyle} onCheckedChange={setExamStyle} id="exam-style-sw" />
+                      <Label htmlFor="exam-style-sw" className="text-xs flex items-center gap-2">
+                        <Award className="h-3 w-3" /> Real past paper questions
+                        {examStyle && (
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-100 text-amber-800 border border-amber-300">
+                            VERBATIM
+                          </span>
+                        )}
+                      </Label>
+                    </div>
+                    {examStyle && (
+                      <p className="text-[10px] text-muted-foreground ml-9">
+                        Questions are taken word-for-word from real {examBoard !== "none" ? examBoard : "AQA"} past papers — only font &amp; spacing adjusted.
+                      </p>
+                    )}
                   </div>
                   {useAI && (
                     <div className="flex items-center gap-2">
@@ -592,7 +668,11 @@ export default function Worksheets() {
                 </div>
 
                 <Button onClick={handleGenerate} disabled={loading} className="w-full h-11 bg-brand hover:bg-brand/90 text-white">
-                  {loading ? <><RefreshCw className="w-4 h-4 mr-2 animate-spin" />{useAI ? "Generating with AI..." : "Generating..."}</> : <><Sparkles className="w-4 h-4 mr-2" /> Generate Worksheet</>}
+                  {loading
+                    ? <><RefreshCw className="w-4 h-4 mr-2 animate-spin" />{examStyle ? "Building past paper..." : useAI ? "Generating with AI..." : "Generating..."}</>
+                    : examStyle
+                      ? <><Award className="w-4 h-4 mr-2" /> Build Past Paper Worksheet</>
+                      : <><Sparkles className="w-4 h-4 mr-2" /> Generate Worksheet</>}
                 </Button>
               </CardContent>
             </Card>

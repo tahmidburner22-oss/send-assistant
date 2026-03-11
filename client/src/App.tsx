@@ -71,6 +71,7 @@ import DailyBriefing from "./pages/DailyBriefing";
 
 import AppLayout from "./components/AppLayout";
 import { useApp } from "./contexts/AppContext";
+import { UserPreferencesProvider } from "./contexts/UserPreferencesContext";
 import { useLocation } from "wouter";
 
 function ProtectedRoutes() {
@@ -196,24 +197,33 @@ function Router() {
   );
 }
 
+function AppWithPreferences() {
+  const { user } = useApp();
+  return (
+    <UserPreferencesProvider userId={user?.id}>
+      <TooltipProvider>
+        <Toaster />
+        <Router />
+        <CookieBanner />
+        <OnboardingTour />
+        <AIBestPracticesGate />
+        <SessionTimeout />
+      </TooltipProvider>
+    </UserPreferencesProvider>
+  );
+}
+
 function App() {
   return (
     <ErrorBoundary>
       <ThemeProvider defaultTheme="light">
         <AppProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Router />
-            {/* Global overlays — rendered outside Router so they persist across navigation */}
-            <CookieBanner />
-            <OnboardingTour />
-            <AIBestPracticesGate />
-            <SessionTimeout />
-          </TooltipProvider>
+          <AppWithPreferences />
         </AppProvider>
       </ThemeProvider>
     </ErrorBoundary>
   );
 }
+
 
 export default App;

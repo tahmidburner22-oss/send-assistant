@@ -490,6 +490,7 @@ export default function ParentPortal() {
           { id: "attendance", label: "✅ Attendance", emoji: "✅" },
           { id: "past-papers", label: "📝 Past Papers", emoji: "📝" },
           { id: "revision-hub", label: "🎧 Revision Hub", emoji: "🎧" },
+          { id: "quizblast", label: "⚡ QuizBlast", emoji: "⚡" },
         ] as { id: string; label: string; emoji: string }[]).map(sec => (
           <div key={sec.id} className="rounded-2xl border border-border/60 overflow-hidden shadow-sm bg-white">
             <button
@@ -1247,6 +1248,24 @@ export default function ParentPortal() {
             <a href="/revision-hub" className="inline-flex items-center gap-2 bg-brand text-white text-xs font-semibold px-4 py-2 rounded-xl hover:bg-brand/90 transition-colors">
               Open Revision Hub →
             </a>
+          </div>
+        )}
+        {sec.id === "quizblast" && (
+          <div className="p-4 text-center space-y-3">
+            <div className="w-12 h-12 rounded-2xl bg-yellow-100 flex items-center justify-center mx-auto">
+              <span className="text-2xl">⚡</span>
+            </div>
+            <p className="font-semibold text-foreground text-sm">QuizBlast</p>
+            <p className="text-xs text-muted-foreground">Live Kahoot-style classroom quiz game. Ask your child for the 6-digit room code to join their quiz session.</p>
+            <div className="flex flex-col gap-2">
+              <a href="/quiz-join" className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs font-semibold px-4 py-2.5 rounded-xl hover:opacity-90 transition-opacity shadow-md">
+                ⚡ Join a Quiz with Room Code
+              </a>
+              <a href="/quiz-game" className="inline-flex items-center justify-center gap-2 border border-indigo-200 text-indigo-700 text-xs font-semibold px-4 py-2 rounded-xl hover:bg-indigo-50 transition-colors">
+                View Quiz Library
+              </a>
+            </div>
+            <p className="text-[10px] text-muted-foreground">Your child's teacher will share the room code when a live quiz is running.</p>
           </div>
         )}
         {sec.id === "send-screener" && (

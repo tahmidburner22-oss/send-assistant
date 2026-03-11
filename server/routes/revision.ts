@@ -459,13 +459,14 @@ router.post("/tts", requireAuth, async (req: Request, res: Response) => {
       return res.status(400).json({ error: "text is required" });
     }
 
+    // Most human-sounding PlayAI voices — selected for naturalness and expressiveness
     const groqVoiceMap: Record<string, string> = {
-      nova:    "Aaliyah-PlayAI",
-      shimmer: "Adelaide-PlayAI",
-      alloy:   "Atlas-PlayAI",
-      echo:    "Angelo-PlayAI",
-      fable:   "Briggs-PlayAI",
-      onyx:    "Cillian-PlayAI",
+      nova:    "Celeste-PlayAI",   // Warm, natural female — best for educational content
+      shimmer: "Aaliyah-PlayAI",   // Soft, clear female
+      alloy:   "Olivia-PlayAI",    // Confident, expressive female
+      echo:    "Mason-PlayAI",     // Natural, clear male
+      fable:   "Fritz-PlayAI",     // Expressive, engaging male
+      onyx:    "Liam-PlayAI",      // Deep, authoritative male
     };
 
     // Helper: fetch with a hard per-request timeout

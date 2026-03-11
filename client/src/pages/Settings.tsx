@@ -7,9 +7,17 @@ import { Label } from "@/components/ui/label";
 import { useApp } from "@/contexts/AppContext";
 import { billing as billingApi } from "@/lib/api";
 import {
+  useUserPreferences,
+  COLOUR_THEMES,
+  WALLPAPERS,
+  ALL_DASHBOARD_CARDS,
+  ALL_SUBJECTS,
+} from "@/contexts/UserPreferencesContext";
+import {
   CheckCircle, Zap, Brain, Cpu, Globe, Bot, Layers, Key, Plus, Trash2,
   Eye, EyeOff, ChevronDown, ChevronUp, RefreshCw, AlertCircle, Shield,
   CreditCard, ExternalLink, Database, Upload, Link2, Unlink, Crown,
+  Palette, Layout, Sidebar, RotateCcw, Monitor,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -404,6 +412,271 @@ function MisIntegrationSection() {
   );
 }
 
+// ── Personalisation Section ──────────────────────────────────────────────────
+function PersonalisationSection() {
+  const {
+    preferences,
+    setTheme,
+    setWallpaper,
+    toggleSidebarItem,
+    isSidebarItemHidden,
+    toggleDashboardCard,
+    toggleDashboardSubject,
+    resetPreferences,
+    currentTheme,
+    currentWallpaper,
+  } = useUserPreferences();
+
+  const [activeTab, setActiveTab] = useState<"theme" | "wallpaper" | "sidebar" | "dashboard">("theme");
+  const [customWallpaperUrl, setCustomWallpaperUrl] = useState("");
+
+  // All sidebar items for the toggle list
+  const allSidebarItems = [
+    { path: "/home",               label: "Home" },
+    { path: "/send-screener",      label: "SEND Needs Screener" },
+    { path: "/differentiate",      label: "Differentiate" },
+    { path: "/worksheets",         label: "Worksheets" },
+    { path: "/stories",            label: "Stories" },
+    { path: "/past-papers",        label: "Past Papers" },
+    { path: "/templates",          label: "Templates" },
+    { path: "/children",           label: "Pupils" },
+    { path: "/revision-hub",       label: "Revision Hub" },
+    { path: "/quiz-game",          label: "QuizBlast" },
+    { path: "/daily-briefing",     label: "Daily Briefing" },
+    { path: "/history",            label: "History" },
+    { path: "/analytics",          label: "Analytics" },
+    { path: "/ideas",              label: "Ideas" },
+    { path: "/tools/iep-generator",        label: "IEP / EHCP Goals" },
+    { path: "/tools/social-stories",       label: "Social Stories" },
+    { path: "/tools/pupil-passport",       label: "Pupil Passport" },
+    { path: "/tools/smart-targets",        label: "SMART Targets" },
+    { path: "/tools/behaviour-plan",       label: "Behaviour Support Plan" },
+    { path: "/tools/wellbeing-support",    label: "Wellbeing Support" },
+    { path: "/tools/lesson-planner",       label: "Lesson Planner" },
+    { path: "/tools/medium-term-planner",  label: "Medium Term Planner" },
+    { path: "/tools/quiz-generator",       label: "Quiz Generator" },
+    { path: "/tools/rubric-generator",     label: "Rubric / Mark Scheme" },
+    { path: "/tools/comprehension-generator", label: "Comprehension" },
+    { path: "/tools/exit-ticket",          label: "Exit Ticket" },
+    { path: "/tools/flash-cards",          label: "Flash Cards" },
+    { path: "/tools/vocabulary-builder",   label: "Vocabulary Builder" },
+    { path: "/tools/report-comments",      label: "Report Comments" },
+    { path: "/tools/parent-newsletter",    label: "Parent Newsletter" },
+    { path: "/tools/text-rewriter",        label: "Text Rewriter" },
+    { path: "/visual-timetable",           label: "Visual Timetable" },
+    { path: "/behaviour-tracking",         label: "Behaviour Tracking" },
+    { path: "/attendance",                 label: "Attendance" },
+    { path: "/pupil-comments",             label: "Pupil Comments" },
+  ];
+
+  const tabs = [
+    { id: "theme" as const,     label: "Colour Theme",  icon: Palette },
+    { id: "wallpaper" as const, label: "Wallpaper",     icon: Monitor },
+    { id: "sidebar" as const,   label: "Sidebar",       icon: Sidebar },
+    { id: "dashboard" as const, label: "Dashboard",     icon: Layout },
+  ];
+
+  return (
+    <Card className="border-border/50">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-base flex items-center gap-2">
+          <Palette className="h-4 w-4 text-brand" />
+          Personalisation
+        </CardTitle>
+        <p className="text-xs text-muted-foreground mt-1">Customise your Adaptly experience — changes are saved automatically per account.</p>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {/* Sub-tabs */}
+        <div className="flex gap-1 bg-muted/50 rounded-xl p-1">
+          {tabs.map(t => {
+            const Icon = t.icon;
+            return (
+              <button
+                key={t.id}
+                onClick={() => setActiveTab(t.id)}
+                className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-medium transition-all ${
+                  activeTab === t.id ? "bg-white shadow-sm text-brand" : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Icon className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">{t.label}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Colour Theme */}
+        {activeTab === "theme" && (
+          <div className="space-y-3">
+            <p className="text-xs text-muted-foreground">Choose a brand colour for your Adaptly interface.</p>
+            <div className="grid grid-cols-5 gap-2">
+              {COLOUR_THEMES.map(theme => (
+                <button
+                  key={theme.id}
+                  onClick={() => { setTheme(theme.id); toast.success(`Theme changed to ${theme.label}`); }}
+                  className={`flex flex-col items-center gap-1.5 p-2 rounded-xl border-2 transition-all ${
+                    preferences.themeId === theme.id ? "border-brand shadow-md" : "border-transparent hover:border-border"
+                  }`}
+                  title={theme.label}
+                >
+                  <div className="w-8 h-8 rounded-full shadow-sm" style={{ backgroundColor: theme.preview }} />
+                  <span className="text-[10px] text-center text-muted-foreground leading-tight">{theme.label}</span>
+                  {preferences.themeId === theme.id && (
+                    <CheckCircle className="w-3 h-3 text-brand" />
+                  )}
+                </button>
+              ))}
+            </div>
+            <div className="flex items-center gap-2 p-3 bg-muted/30 rounded-xl">
+              <div className="w-6 h-6 rounded-full" style={{ backgroundColor: currentTheme.preview }} />
+              <span className="text-xs text-muted-foreground">Current: <strong className="text-foreground">{currentTheme.label}</strong></span>
+            </div>
+          </div>
+        )}
+
+        {/* Wallpaper */}
+        {activeTab === "wallpaper" && (
+          <div className="space-y-3">
+            <p className="text-xs text-muted-foreground">Choose a background for your login screen and dashboard.</p>
+            <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
+              {WALLPAPERS.map(wp => (
+                <button
+                  key={wp.id}
+                  onClick={() => { setWallpaper(wp.id); toast.success(`Wallpaper set to ${wp.label}`); }}
+                  className={`flex flex-col items-center gap-1.5 p-2 rounded-xl border-2 transition-all ${
+                    preferences.wallpaperId === wp.id ? "border-brand shadow-md" : "border-transparent hover:border-border"
+                  }`}
+                  title={wp.label}
+                >
+                  <div
+                    className="w-10 h-7 rounded-lg shadow-sm border border-border/30"
+                    style={{ background: wp.preview }}
+                  />
+                  <span className="text-[10px] text-center text-muted-foreground leading-tight">{wp.label}</span>
+                  {preferences.wallpaperId === wp.id && <CheckCircle className="w-3 h-3 text-brand" />}
+                </button>
+              ))}
+            </div>
+            {/* Custom URL */}
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-foreground">Or use a custom image URL:</p>
+              <div className="flex gap-2">
+                <Input
+                  value={customWallpaperUrl}
+                  onChange={e => setCustomWallpaperUrl(e.target.value)}
+                  placeholder="https://example.com/image.jpg"
+                  className="text-xs h-8"
+                />
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    if (!customWallpaperUrl.trim()) return;
+                    setWallpaper("custom", customWallpaperUrl.trim());
+                    toast.success("Custom wallpaper applied");
+                  }}
+                  className="h-8 text-xs px-3"
+                >
+                  Apply
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Sidebar Customisation */}
+        {activeTab === "sidebar" && (
+          <div className="space-y-3">
+            <p className="text-xs text-muted-foreground">Toggle which items appear in your sidebar. Hidden items are still accessible via direct URL.</p>
+            <div className="space-y-1 max-h-80 overflow-y-auto pr-1">
+              {allSidebarItems.map(item => {
+                const hidden = isSidebarItemHidden(item.path);
+                return (
+                  <div key={item.path} className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-muted/40 transition-colors">
+                    <span className={`text-xs ${hidden ? "text-muted-foreground line-through" : "text-foreground"}`}>{item.label}</span>
+                    <button
+                      onClick={() => toggleSidebarItem(item.path)}
+                      className={`text-xs px-2.5 py-1 rounded-full font-medium transition-colors ${
+                        hidden
+                          ? "bg-red-100 text-red-600 hover:bg-red-200"
+                          : "bg-green-100 text-green-700 hover:bg-green-200"
+                      }`}
+                    >
+                      {hidden ? "Hidden" : "Visible"}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+            <p className="text-[10px] text-muted-foreground">Tip: Home and Settings are always visible.</p>
+          </div>
+        )}
+
+        {/* Dashboard Customisation */}
+        {activeTab === "dashboard" && (
+          <div className="space-y-4">
+            <div>
+              <p className="text-xs font-medium text-foreground mb-2">Quick Access Cards</p>
+              <p className="text-xs text-muted-foreground mb-3">Choose which cards appear on your dashboard home screen.</p>
+              <div className="grid grid-cols-2 gap-2">
+                {ALL_DASHBOARD_CARDS.map(card => {
+                  const visible = preferences.dashboardCards.includes(card.id);
+                  return (
+                    <button
+                      key={card.id}
+                      onClick={() => toggleDashboardCard(card.id)}
+                      className={`flex items-center gap-2 p-2.5 rounded-xl border-2 text-left transition-all ${
+                        visible ? "border-brand/40 bg-brand/5" : "border-border bg-muted/20 opacity-50"
+                      }`}
+                    >
+                      <div className={`w-2 h-2 rounded-full flex-shrink-0 ${visible ? "bg-brand" : "bg-muted-foreground"}`} />
+                      <span className="text-xs font-medium text-foreground truncate">{card.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            <div className="border-t border-border/50 pt-4">
+              <p className="text-xs font-medium text-foreground mb-2">Subjects on Dashboard</p>
+              <p className="text-xs text-muted-foreground mb-3">Choose which subjects appear in your quick-subject filter.</p>
+              <div className="flex flex-wrap gap-2">
+                {ALL_SUBJECTS.map(subject => {
+                  const active = preferences.dashboardSubjects.includes(subject);
+                  return (
+                    <button
+                      key={subject}
+                      onClick={() => toggleDashboardSubject(subject)}
+                      className={`text-xs px-3 py-1.5 rounded-full border font-medium transition-all ${
+                        active
+                          ? "bg-brand text-white border-brand"
+                          : "bg-white text-muted-foreground border-border hover:border-brand/50"
+                      }`}
+                    >
+                      {subject}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Reset button */}
+        <div className="pt-2 border-t border-border/50">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => { resetPreferences(); toast.success("Preferences reset to defaults"); }}
+            className="text-xs gap-2 text-muted-foreground"
+          >
+            <RotateCcw className="w-3 h-3" />
+            Reset to defaults
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function Settings() {
   const { user, logout } = useApp();
   const isAdmin = user?.role === "admin" || user?.role === "super_admin";
@@ -598,6 +871,8 @@ export default function Settings() {
 
       <BillingSection />
       <MisIntegrationSection />
+
+      <PersonalisationSection />
 
       <Card className="border-border/50">
         <CardHeader className="pb-3"><CardTitle className="text-base">Account</CardTitle></CardHeader>
