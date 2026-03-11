@@ -21,14 +21,19 @@ const router = Router();
 // ── Helper: check if school is on premium plan ────────────────────────────────
 const PLATFORM_OWNER_EMAILS = ["admin@adaptly.co.uk", "admin@sendassistant.app"];
 
-function isPremiumSchool(schoolId: string): boolean {
+function isPremiumSchool(schoolId: string, userEmail?: string): boolean {
+  // 1. Direct check for platform owner email
+  if (userEmail && PLATFORM_OWNER_EMAILS.includes(userEmail.toLowerCase())) return true;
+
   if (!schoolId) return false;
-  // Check if any platform owner user belongs to this school
+
+  // 2. Check if any platform owner user belongs to this school
   const ownerUser = db.prepare(
     "SELECT id FROM users WHERE school_id = ? AND email IN ('admin@adaptly.co.uk','admin@sendassistant.app') LIMIT 1"
   ).get(schoolId) as any;
   if (ownerUser) return true;
-  // Check school name and plan
+
+  // 3. Check school name and plan
   const school = db.prepare(
     "SELECT subscription_plan, licence_type, name FROM schools WHERE id = ?"
   ).get(schoolId) as any;
@@ -233,9 +238,10 @@ router.post("/import-csv", requireAuth, requireAdmin, (req: Request, res: Respon
 // ── GET /api/mis/status ───────────────────────────────────────────────────────
 router.get("/status", requireAuth, requireAdmin, (req: Request, res: Response) => {
   const schoolId = req.user!.schoolId;
-  if (!schoolId) return res.json({ bromcom: false, arbor: false, isPremium: false });
-
-  const isPremium = isPremiumSchool(schoolId);
+  const userEmail = req.user!.email;
+  
+  const isPremium = isPremiumSchool(schoolId || "", userEmail);
+  if (!schoolId && !isPremium) return res.json({ bromcom: false, arbor: false, isPremium: false });
   const bromcomRow = db.prepare(
     "SELECT id FROM school_api_keys WHERE school_id=? AND provider=? AND enabled=1"
   ).get(schoolId, "bromcom") as any;
@@ -264,8 +270,11 @@ router.get("/status", requireAuth, requireAdmin, (req: Request, res: Response) =
 // ── POST /api/mis/save-key ────────────────────────────────────────────────────
 router.post("/save-key", requireAuth, requireAdmin, (req: Request, res: Response) => {
   const schoolId = req.user!.schoolId;
-  if (!schoolId) return res.status(400).json({ error: "No school associated with your account" });
-  if (!isPremiumSchool(schoolId)) {
+  const userEmail = req.user!.email;
+  if (!schoolId && !PLATFORM_OWNER_EMAILS.includes(userEmail.toLowerCase())) {
+    return res.status(400).json({ error: "No school associated with your account" });
+  }
+  if (!isPremiumSchool(schoolId || "", userEmail)) {
     return res.status(403).json({ error: "MIS API integration requires a Premium plan" });
   }
 
@@ -310,8 +319,11 @@ router.delete("/remove-key/:provider", requireAuth, requireAdmin, (req: Request,
 // Full sync: pupils + behaviour + attendance + comments
 router.post("/sync/:provider", requireAuth, requireAdmin, async (req: Request, res: Response) => {
   const schoolId = req.user!.schoolId;
-  if (!schoolId) return res.status(400).json({ error: "No school" });
-  if (!isPremiumSchool(schoolId)) {
+  const userEmail = req.user!.email;
+  if (!schoolId && !PLATFORM_OWNER_EMAILS.includes(userEmail.toLowerCase())) {
+    return res.status(400).json({ error: "No school" });
+  }
+  if (!isPremiumSchool(schoolId || "", userEmail)) {
     return res.status(403).json({ error: "MIS API integration requires a Premium plan" });
   }
 
