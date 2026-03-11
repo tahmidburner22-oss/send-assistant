@@ -351,7 +351,7 @@ export default function ParentPortal() {
       toast.success(`Welcome! Viewing ${found.name}'s portal.`);
       // Fetch behaviour records and support plans from the server
       setBehaviourLoading(true);
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('send_token');
       const hdrs = { Authorization: `Bearer ${token}` };
       Promise.all([
         fetch(`/api/data/parent/behaviour/${found.id}`, { headers: hdrs }).then(r => r.ok ? r.json() : []),
