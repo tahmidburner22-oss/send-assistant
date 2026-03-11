@@ -60,6 +60,7 @@ function getEffectiveKey(provider: string): string {
     gemini: process.env.GEMINI_API_KEY || "",
     openai: process.env.OPENAI_API_KEY || "",
     openrouter: process.env.OPENROUTER_API_KEY || "",
+    elevenlabs: process.env.ELEVENLABS_API_KEY || "",
   };
   if (envMap[provider]) return envMap[provider];
   // Fall back to DB (admin-configured keys via Admin Panel)
@@ -446,9 +447,10 @@ function splitIntoChunks(text: string, maxChars = 2000): string[] {
 
 // POST /api/revision/tts
 // Convert podcast script to natural speech.
-// Priority: 1) Groq TTS (PlayAI voices, free, very human-sounding)
-//           2) OpenAI TTS (tts-1-hd, if a real OpenAI key is configured)
-//           3) Gemini TTS
+// Priority: 1) ElevenLabs TTS (primary — most natural, 30s timeout)
+//           2) Groq TTS (PlayAI voices, free fallback)
+//           3) OpenAI TTS (tts-1-hd, if a real OpenAI key is configured)
+//           4) Gemini TTS
 // Long scripts are split into <=2000-char chunks processed sequentially, then concatenated.
 // Body: { text, voice?, language? }
 // Returns: audio/mpeg stream
@@ -459,6 +461,78 @@ router.post("/tts", requireAuth, async (req: Request, res: Response) => {
       return res.status(400).json({ error: "text is required" });
     }
 
+    // Helper: fetch with a hard per-request timeout
+    const fetchWithTimeout = (url: string, options: RequestInit, timeoutMs: number) => {
+      const controller = new AbortController();
+      const id = setTimeout(() => controller.abort(), timeoutMs);
+      return fetch(url, { ...options, signal: controller.signal })
+        .finally(() => clearTimeout(id));
+    };
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // 1. ElevenLabs TTS — Primary provider (most natural voice, 30s timeout)
+    // ─────────────────────────────────────────────────────────────────────────────
+    const elevenLabsKey = process.env.ELEVENLABS_API_KEY || getEffectiveKey("elevenlabs");
+    if (elevenLabsKey) {
+      // Map voice names to ElevenLabs voice IDs
+      // Free tier voices: Rachel (female, calm), Adam (male, deep), Bella (female, warm)
+      const elevenLabsVoiceMap: Record<string, string> = {
+        nova:    "21m00Tcm4TlvDq8ikWAM", // Rachel — warm, natural female (best for education)
+        shimmer: "EXAVITQu4vr4xnSDxMaL", // Bella — soft, clear female
+        alloy:   "pNInz6obpgDQGcFmaJgB", // Adam — confident male
+        echo:    "VR6AewLTigWG4xSOukaG", // Arnold — natural male
+        fable:   "yoZ06aMxZJJ28mfd3POQ", // Sam — expressive male
+        onyx:    "pqHfZKP75CvOlQylNhV4", // Bill — deep, authoritative male
+      };
+      const elevenVoiceId = elevenLabsVoiceMap[voice] || "21m00Tcm4TlvDq8ikWAM"; // Default: Rachel
+      try {
+        // ElevenLabs free tier: max 2500 chars per request
+        const chunks = splitIntoChunks(text, 2500);
+        console.log(`[TTS] ElevenLabs TTS: voice=${elevenVoiceId}, chars=${text.length}, chunks=${chunks.length}`);
+        const buffers: Buffer[] = [];
+        for (const chunk of chunks) {
+          const ttsRes = await fetchWithTimeout(
+            `https://api.elevenlabs.io/v1/text-to-speech/${elevenVoiceId}`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "xi-api-key": elevenLabsKey,
+                "Accept": "audio/mpeg",
+              },
+              body: JSON.stringify({
+                text: chunk,
+                model_id: "eleven_monolingual_v1",
+                voice_settings: {
+                  stability: 0.5,
+                  similarity_boost: 0.75,
+                  style: 0.0,
+                  use_speaker_boost: true,
+                },
+              }),
+            },
+            30000 // 30-second timeout as requested
+          );
+          if (!ttsRes.ok) {
+            const errBody = await ttsRes.text();
+            throw new Error(`ElevenLabs TTS HTTP ${ttsRes.status}: ${errBody.slice(0, 200)}`);
+          }
+          buffers.push(Buffer.from(await ttsRes.arrayBuffer()));
+        }
+        const combined = Buffer.concat(buffers);
+        res.setHeader("Content-Type", "audio/mpeg");
+        res.setHeader("Content-Length", combined.byteLength.toString());
+        console.log(`[TTS] ElevenLabs TTS success: ${combined.byteLength} bytes (${chunks.length} chunks)`);
+        return res.send(combined);
+      } catch (err: any) {
+        console.warn("[TTS] ElevenLabs TTS error:", err?.message || err);
+        // Fall through to Groq
+      }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // 2. Groq TTS — Fallback (PlayAI voices, free)
+    // ─────────────────────────────────────────────────────────────────────────────
     // Most human-sounding PlayAI voices — selected for naturalness and expressiveness
     const groqVoiceMap: Record<string, string> = {
       nova:    "Celeste-PlayAI",   // Warm, natural female — best for educational content
@@ -469,15 +543,6 @@ router.post("/tts", requireAuth, async (req: Request, res: Response) => {
       onyx:    "Liam-PlayAI",      // Deep, authoritative male
     };
 
-    // Helper: fetch with a hard per-request timeout
-    const fetchWithTimeout = (url: string, options: RequestInit, timeoutMs: number) => {
-      const controller = new AbortController();
-      const id = setTimeout(() => controller.abort(), timeoutMs);
-      return fetch(url, { ...options, signal: controller.signal })
-        .finally(() => clearTimeout(id));
-    };
-
-    // 1. Try Groq TTS — split into <=2000-char chunks to keep each request fast (<25s)
     const groqKey = getEffectiveKey("groq");
     if (groqKey) {
       const groqVoice = groqVoiceMap[voice] || "Aaliyah-PlayAI";

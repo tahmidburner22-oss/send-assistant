@@ -1,4 +1,5 @@
 import { allExpandedQuestions } from "./questionBankExpanded";
+import { allExpandedQuestions as allExpandedQuestions2 } from "./pastPaperQuestionsExpanded";
 
 /**
  * Past Paper Question Database
@@ -1474,6 +1475,8 @@ export const allPastPaperQuestions: PastPaperQuestion[] = [
   ...elevenPlusVerbal,
   // Expanded bank — 15+ questions per topic per subject
   ...allExpandedQuestions,
+  // Additional expanded bank with LaTeX-formatted questions
+  ...allExpandedQuestions2,
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────

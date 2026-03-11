@@ -2,9 +2,62 @@
  * WorksheetRenderer — Professional, print-ready worksheet display component.
  * Matches PDF output pixel-for-pixel using CSS @media print.
  * Applies SEND-specific formatting (font, line-height, spacing) per COBS Handbook.
+ * Supports KaTeX math rendering for proper fractions, symbols, and expressions.
  */
 import { forwardRef } from "react";
 import { getSendFormatting } from "@/lib/send-data";
+import katex from "katex";
+import "katex/dist/katex.min.css";
+
+/**
+ * Render a string that may contain LaTeX math expressions (\(...\) or \[...\]).
+ * Falls back to plain text if KaTeX fails.
+ * Also strips any remaining raw ** asterisks.
+ */
+function renderMath(text: string): string {
+  if (!text) return "";
+  // First, strip any raw ** that are not part of a valid bold pattern
+  let result = text;
+  // Render display math \[...\]
+  result = result.replace(/\\\[([\s\S]+?)\\\]/g, (_, expr) => {
+    try {
+      return katex.renderToString(expr.trim(), { displayMode: true, throwOnError: false });
+    } catch {
+      return expr;
+    }
+  });
+  // Render inline math \(...\)
+  result = result.replace(/\\\(([\s\S]+?)\\\)/g, (_, expr) => {
+    try {
+      return katex.renderToString(expr.trim(), { displayMode: false, throwOnError: false });
+    } catch {
+      return expr;
+    }
+  });
+  // Render $...$ inline math (single dollar sign)
+  result = result.replace(/\$([^$\n]+?)\$/g, (_, expr) => {
+    try {
+      return katex.renderToString(expr.trim(), { displayMode: false, throwOnError: false });
+    } catch {
+      return expr;
+    }
+  });
+  // Convert plain text fractions like 3/4 in math context to proper display
+  // (only when surrounded by spaces or at start/end, to avoid URLs)
+  result = result.replace(/(?<=\s|^)(\d+)\/([1-9]\d*)(?=\s|$|[.,;:])/g, (_, num, den) => {
+    try {
+      return katex.renderToString(`\\dfrac{${num}}{${den}}`, { displayMode: false, throwOnError: false });
+    } catch {
+      return `${num}/${den}`;
+    }
+  });
+  // Bold markdown **text** → <strong>text</strong>
+  result = result.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+  // Remove any remaining lone asterisks
+  result = result.replace(/\*\*/g, "");
+  result = result.replace(/(?<!<[^>]*)\*(?![^<]*>)/g, "");
+  return result;
+}
 
 export interface WorksheetSection {
   title: string;
@@ -103,7 +156,7 @@ function formatContent(content: string, fmt: ReturnType<typeof getSendFormatting
               <tr key={ri} style={{ background: ri % 2 === 0 ? "white" : "#f9fafb" }}>
                 {row.map((cell, ci) => (
                   <td key={ci} style={{ padding: "7px 12px", border: "1px solid #e5e7eb", fontSize: `${textSize - 1}px` }}>
-                    <span dangerouslySetInnerHTML={{ __html: cell.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>") }} />
+                    <span dangerouslySetInnerHTML={{ __html: renderMath(cell) }} />
                   </td>
                 ))}
               </tr>
@@ -122,7 +175,7 @@ function formatContent(content: string, fmt: ReturnType<typeof getSendFormatting
       <ul key={key} style={{ margin: "6px 0 6px 20px", padding: 0 }}>
         {listItems.map((item, ii) => (
           <li key={ii} style={{ marginBottom: paragraphSpacing, fontSize: `${textSize}px`, lineHeight, letterSpacing, wordSpacing, fontFamily }}>
-            <span dangerouslySetInnerHTML={{ __html: item.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>") }} />
+            <span dangerouslySetInnerHTML={{ __html: renderMath(item) }} />
           </li>
         ))}
       </ul>
@@ -165,7 +218,7 @@ function formatContent(content: string, fmt: ReturnType<typeof getSendFormatting
       elements.push(
         <div key={idx} style={{ display: "flex", gap: "8px", marginBottom: paragraphSpacing, fontSize: `${textSize}px`, lineHeight, letterSpacing, wordSpacing, fontFamily }}>
           <span style={{ fontWeight: 600, minWidth: "24px", color: "#374151" }}>{numberedMatch[1]}</span>
-          <span dangerouslySetInnerHTML={{ __html: numberedMatch[2].replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>") }} />
+          <span dangerouslySetInnerHTML={{ __html: renderMath(numberedMatch[2]) }} />
         </div>
       );
       return;
@@ -175,7 +228,7 @@ function formatContent(content: string, fmt: ReturnType<typeof getSendFormatting
     if (trimmed.startsWith("Hint:") || trimmed.startsWith("💡")) {
       elements.push(
         <div key={idx} style={{ background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: "6px", padding: "6px 10px", margin: "6px 0", fontSize: `${textSize - 1}px`, color: "#1d4ed8", fontFamily, letterSpacing }}>
-          💡 <span dangerouslySetInnerHTML={{ __html: trimmed.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>") }} />
+          💡 <span dangerouslySetInnerHTML={{ __html: renderMath(trimmed) }} />
         </div>
       );
       return;
@@ -185,7 +238,7 @@ function formatContent(content: string, fmt: ReturnType<typeof getSendFormatting
     if (trimmed.match(/^Step \d+:/)) {
       elements.push(
         <div key={idx} style={{ fontWeight: 700, color: "#059669", marginTop: "8px", marginBottom: "2px", fontSize: `${textSize}px`, fontFamily }}>
-          {trimmed}
+          <span dangerouslySetInnerHTML={{ __html: renderMath(trimmed) }} />
         </div>
       );
       return;
@@ -196,7 +249,7 @@ function formatContent(content: string, fmt: ReturnType<typeof getSendFormatting
     if (markMatch) {
       elements.push(
         <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: paragraphSpacing, fontSize: `${textSize}px`, lineHeight, letterSpacing, wordSpacing, fontFamily }}>
-          <span dangerouslySetInnerHTML={{ __html: markMatch[1].replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>") }} />
+          <span dangerouslySetInnerHTML={{ __html: renderMath(markMatch[1]) }} />
           <span style={{ background: "#374151", color: "white", fontSize: `${textSize - 3}px`, padding: "1px 6px", borderRadius: "4px", whiteSpace: "nowrap", marginLeft: "8px", fontWeight: 700 }}>{markMatch[2]}</span>
         </div>
       );
@@ -211,20 +264,21 @@ function formatContent(content: string, fmt: ReturnType<typeof getSendFormatting
       return;
     }
 
-    // Bold heading (standalone **text**)
-    if (trimmed.match(/^\*\*.+\*\*$/)) {
+    // Bold heading (standalone **text** or ## heading)
+    if (trimmed.match(/^\*\*.+\*\*$/) || trimmed.match(/^#{1,3}\s+/)) {
+      const headingText = trimmed.replace(/^#{1,3}\s+/, "").replace(/\*\*/g, "");
       elements.push(
         <div key={idx} style={{ fontWeight: 700, fontSize: `${textSize + 1}px`, marginTop: "8px", marginBottom: "4px", color: "#111827", fontFamily, letterSpacing }}>
-          {trimmed.replace(/\*\*/g, "")}
+          <span dangerouslySetInnerHTML={{ __html: renderMath(headingText) }} />
         </div>
       );
       return;
     }
 
-    // Regular paragraph
+    // Regular paragraph — use renderMath for proper symbols and strip asterisks
     elements.push(
       <p key={idx} style={{ margin: `0 0 ${paragraphSpacing} 0`, fontSize: `${textSize}px`, lineHeight, color: "#1f2937", fontFamily, letterSpacing, wordSpacing }}>
-        <span dangerouslySetInnerHTML={{ __html: trimmed.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/\*(.+?)\*/g, "<em>$1</em>") }} />
+        <span dangerouslySetInnerHTML={{ __html: renderMath(trimmed) }} />
       </p>
     );
   });
