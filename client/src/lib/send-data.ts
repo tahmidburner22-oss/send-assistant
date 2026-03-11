@@ -39,6 +39,65 @@ export const difficulties = [
   { id: "higher", name: "Higher", description: "Stretch, challenge and extension" },
 ];
 
+/**
+ * Subject-specific tier mode:
+ * - "tiered"      : GCSE Foundation / Higher (Maths, Sciences, MFL)
+ * - "single"      : Single-tier GCSE with Entry/Standard/Extended scaffolding (English)
+ * - "levelled"    : No formal GCSE tier — Access / Standard / Extended (Humanities, Arts, etc.)
+ * - "eleven-plus" : Standard / Advanced (11+ prep)
+ */
+export type TierMode = "tiered" | "single" | "levelled" | "eleven-plus";
+
+export const subjectTierMode: Record<string, TierMode> = {
+  mathematics: "tiered",
+  science: "tiered",
+  mfl: "tiered",
+  english: "single",
+  history: "levelled",
+  geography: "levelled",
+  art: "levelled",
+  music: "levelled",
+  pe: "levelled",
+  computing: "levelled",
+  dt: "levelled",
+  re: "levelled",
+  pshe: "levelled",
+  business: "levelled",
+  drama: "levelled",
+  "eleven-plus": "eleven-plus",
+};
+
+/** Returns the difficulty/tier buttons appropriate for a given subject. */
+export function getDifficultyOptions(subject: string): { id: string; name: string; description: string }[] {
+  const mode: TierMode = subjectTierMode[subject.toLowerCase()] ?? "levelled";
+  switch (mode) {
+    case "tiered":
+      return [
+        { id: "foundation", name: "Foundation", description: "GCSE Foundation tier — grades 1–5" },
+        { id: "mixed",      name: "Mixed",       description: "Questions from both Foundation and Higher tiers" },
+        { id: "higher",    name: "Higher",      description: "GCSE Higher tier — grades 4–9" },
+      ];
+    case "single":
+      return [
+        { id: "foundation", name: "Entry Level", description: "Entry-level scaffolded support" },
+        { id: "mixed",      name: "Standard",   description: "Standard GCSE single-tier questions" },
+        { id: "higher",    name: "Extended",   description: "Extended / stretch questions" },
+      ];
+    case "eleven-plus":
+      return [
+        { id: "foundation", name: "Standard",  description: "Standard 11+ difficulty" },
+        { id: "higher",    name: "Advanced", description: "Advanced / selective school level" },
+      ];
+    case "levelled":
+    default:
+      return [
+        { id: "foundation", name: "Access",   description: "Heavily scaffolded — access-level support" },
+        { id: "mixed",      name: "Standard", description: "Standard curriculum level" },
+        { id: "higher",    name: "Extended", description: "Extended / stretch and challenge" },
+      ];
+  }
+}
+
 export const storyGenres = [
   { id: "adventure", name: "Adventure", emoji: "🗺️" },
   { id: "fantasy", name: "Fantasy", emoji: "🧙" },

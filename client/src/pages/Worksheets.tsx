@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { useApp, type Worksheet } from "@/contexts/AppContext";
-import { subjects, yearGroups, sendNeeds, examBoards, difficulties, colorOverlays } from "@/lib/send-data";
+import { subjects, yearGroups, sendNeeds, examBoards, difficulties, colorOverlays, getDifficultyOptions, subjectTierMode } from "@/lib/send-data";
 import { generateWorksheet, type GeneratedWorksheet } from "@/lib/worksheet-generator";
 import { downloadWorksheetPdf } from "@/lib/pdf-generator";
 import { downloadHtmlAsPdf, printWorksheetElement } from "@/lib/pdf-generator-v2";
@@ -142,10 +142,15 @@ export default function Worksheets() {
   const [examStyle, setExamStyle] = useState(false);
 
   // Auto-toggle exam-style ON for maths, OFF for everything else
+  // Also reset difficulty to a valid option when subject changes
   useEffect(() => {
     if (subject) {
       const isMaths = subject.toLowerCase().includes("math");
       setExamStyle(isMaths);
+      // Reset difficulty to first valid option for this subject
+      const opts = getDifficultyOptions(subject);
+      const validIds = opts.map(o => o.id);
+      setDifficulty(prev => validIds.includes(prev) ? prev : (validIds.includes("mixed") ? "mixed" : validIds[0]));
     }
   }, [subject]);
   const [additionalInstructions, setAdditionalInstructions] = useState("");
@@ -564,10 +569,14 @@ export default function Worksheets() {
                     </Select>
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-medium">Difficulty</Label>
+                    <Label className="text-xs font-medium">
+                      {subjectTierMode[subject?.toLowerCase()] === "tiered" ? "Tier" :
+                       subjectTierMode[subject?.toLowerCase()] === "eleven-plus" ? "Level" : "Difficulty"}
+                    </Label>
                     <div className="flex gap-1">
-                      {difficulties.map(d => (
+                      {getDifficultyOptions(subject || "").map(d => (
                         <button key={d.id} onClick={() => setDifficulty(d.id)}
+                          title={d.description}
                           className={`flex-1 py-2 rounded-lg text-xs font-medium transition-all ${difficulty === d.id ? "bg-brand text-white" : "bg-muted text-muted-foreground"}`}>
                           {d.name}
                         </button>
