@@ -1,13 +1,11 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import {
   Upload, Play, Pause, MessageSquare,
   Mic, MicOff, Send, CheckCircle2,
   XCircle, HelpCircle, BookOpen, Headphones, Brain, Loader2,
-  ArrowRight, Volume2, Globe, Sparkles
+  ArrowRight, Volume2, Globe, Sparkles, RefreshCw, AlertCircle
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -20,6 +18,7 @@ interface QuizQuestion {
 }
 type AnswerState = "unanswered" | "correct" | "wrong";
 type Tab = "podcast" | "quiz";
+type VoiceEngine = "neural" | "browser";
 
 const LANGUAGES = [
   { code: "en", label: "English" },
@@ -38,19 +37,15 @@ const LANGUAGES = [
   { code: "ru", label: "Russian" },
 ];
 
-/// Neural AI TTS voices — powered by Groq PlayAI (very natural, human-sounding)
-// Voice IDs map to Groq PlayAI voices on the server side
-const EDGE_VOICES = [
-  { id: "nova",    label: "Celeste — Warm Female (Most Natural)" },
-  { id: "shimmer", label: "Aaliyah — Soft Female" },
-  { id: "alloy",   label: "Olivia — Confident Female" },
-  { id: "echo",    label: "Mason — Natural Male" },
-  { id: "fable",   label: "Fritz — Expressive Male" },
-  { id: "onyx",    label: "Liam — Deep Male" },
-];
-const TTS_ENGINE_OPTIONS = [
-  { id: "edge",    label: "Neural AI Voice (Human)" },
-  { id: "browser", label: "Browser Voice (built-in)" },
+// Neural AI voices — powered by Gemini TTS (Aoede, Leda, Kore, Charon, Fenrir, Orus)
+// Voice IDs are mapped server-side to Gemini prebuilt voices
+const NEURAL_VOICES = [
+  { id: "nova",    label: "Aoede — Warm Female",        desc: "Natural, engaging — best for most content" },
+  { id: "shimmer", label: "Leda — Soft Female",          desc: "Gentle, clear — great for science topics" },
+  { id: "alloy",   label: "Kore — Confident Female",     desc: "Authoritative, precise — ideal for essays" },
+  { id: "echo",    label: "Charon — Natural Male",       desc: "Warm, conversational — perfect for history" },
+  { id: "fable",   label: "Fenrir — Expressive Male",    desc: "Dynamic, engaging — great for literature" },
+  { id: "onyx",    label: "Orus — Deep Male",            desc: "Rich, authoritative — ideal for science" },
 ];
 
 const YEAR_GROUPS = [
@@ -73,6 +68,7 @@ function getAuthHeaders(extra: Record<string, string> = {}): Record<string, stri
   const token = localStorage.getItem("send_token");
   return token ? { Authorization: `Bearer ${token}`, ...extra } : extra;
 }
+
 async function apiPost(path: string, body: Record<string, any>) {
   const res = await fetch(`/api/revision${path}`, {
     method: "POST",
@@ -106,13 +102,15 @@ export default function RevisionHub() {
   const [score, setScore] = useState({ correct: 0, total: 0 });
   const [loadingQuiz, setLoadingQuiz] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
-  // TTS state
-  const [yearGroup, setYearGroup] = useState("year10"); // default Year 10
-  const [ttsEngine, setTtsEngine] = useState<"edge" | "browser">("edge"); // "edge" = Microsoft Neural, "browser" = Web Speech API
-  const [edgeVoice, setEdgeVoice] = useState("nova"); // OpenAI TTS voice
+
+  // Voice / TTS state
+  const [yearGroup, setYearGroup] = useState("year10");
+  const [voiceEngine, setVoiceEngine] = useState<VoiceEngine>("neural");
+  const [neuralVoice, setNeuralVoice] = useState("nova");
   const [selectedLanguage, setSelectedLanguage] = useState("en");
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [audioLoading, setAudioLoading] = useState(false);
+  const [audioError, setAudioError] = useState<string | null>(null);
   const [browserVoices, setBrowserVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [selectedBrowserVoice, setSelectedBrowserVoice] = useState("");
 
@@ -121,18 +119,17 @@ export default function RevisionHub() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
 
-  // Load browser voices
+  // Load browser voices (for when user explicitly selects browser engine)
   useEffect(() => {
     const load = () => {
       const all = window.speechSynthesis?.getVoices() || [];
       setBrowserVoices(all);
       if (!selectedBrowserVoice && all.length > 0) {
-        // Prefer a high-quality English voice as default
         const pick =
           all.find(v => /natural|enhanced|premium/i.test(v.name) && v.lang.startsWith("en")) ||
           all.find(v => v.lang.startsWith("en")) ||
           all[0];
-        setSelectedBrowserVoice(pick.name);
+        if (pick) setSelectedBrowserVoice(pick.name);
       }
     };
     load();
@@ -147,42 +144,39 @@ export default function RevisionHub() {
     return () => { if (audioUrl) URL.revokeObjectURL(audioUrl); };
   }, [audioUrl]);
 
-  // Generate audio — either Microsoft Edge Neural TTS (server) or browser Web Speech API
-  const generateAudio = async (
+  // ── Neural TTS via server ────────────────────────────────────────────────────
+  const generateNeuralAudio = async (
     script: string,
-    engine: "edge" | "browser" = ttsEngine,
-    voice: string = edgeVoice,
+    voice: string = neuralVoice,
     lang: string = selectedLanguage
   ) => {
     if (!script) return;
+
     // Stop any current playback
     window.speechSynthesis?.cancel();
     if (audioRef.current) { audioRef.current.pause(); audioRef.current.src = ""; }
     setAudioUrl(null);
     setIsPlaying(false);
-
-    if (engine === "browser") {
-      // Browser Web Speech API — no server call needed
-      toast.info("Browser voice ready — press Play to listen.");
-      return;
-    }
-
-    // Neural TTS via server — 120s timeout to allow chunked processing of long scripts
+    setAudioError(null);
     setAudioLoading(true);
+
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => {
-      controller.abort();
-    }, 120000); // 120 second timeout (chunked scripts may take longer)
+    const timeoutId = setTimeout(() => controller.abort(), 150000); // 150s timeout for long scripts
+
     try {
       const token = localStorage.getItem("send_token");
       const res = await fetch("/api/revision/tts", {
         method: "POST",
-        headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         credentials: "include",
         signal: controller.signal,
         body: JSON.stringify({ text: script, voice, language: lang }),
       });
       clearTimeout(timeoutId);
+
       if (res.ok) {
         const contentType = res.headers.get("content-type") ?? "";
         if (contentType.includes("audio")) {
@@ -192,47 +186,42 @@ export default function RevisionHub() {
             setAudioUrl(url);
             toast.success("Neural podcast ready — press Play!");
           } else {
-            throw new Error("Audio blob too small — trying browser voice");
+            throw new Error("Audio response was too small. Please try again.");
           }
         } else {
           const data = await res.json().catch(() => ({}));
-          throw new Error(data.error || "TTS returned non-audio response");
+          throw new Error(data.error || "Server returned a non-audio response.");
         }
       } else {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || `TTS server error ${res.status}`);
+        throw new Error(data.error || `Neural voice server error (${res.status}). Please try again.`);
       }
     } catch (err: any) {
       clearTimeout(timeoutId);
-      const isTimeout = err?.name === "AbortError";
+      const isAbort = err?.name === "AbortError";
+      const msg = isAbort
+        ? "Neural voice timed out — the script may be too long. Try a shorter document."
+        : (err?.message || "Neural voice generation failed. Please try again.");
       console.error("[TTS] Neural TTS failed:", err);
-      if (isTimeout) {
-        toast.info("Neural voice is taking longer than expected — switching to browser voice.");
-      } else {
-        // Only show error toast if it's not a deliberate fallback
-        const msg = err?.message || "";
-        if (!msg.includes("browser voice")) {
-          toast.info("Neural voice unavailable — using browser voice instead.");
-        }
-      }
-      // Auto-switch to browser TTS and start playing immediately
-      setTtsEngine("browser");
-      setTimeout(() => startBrowserSpeech(), 300);
+      setAudioError(msg);
+      toast.error(msg, { duration: 6000 });
+      // DO NOT auto-switch to browser voice — user must choose explicitly
     } finally {
       setAudioLoading(false);
     }
   };
 
+  // ── Browser TTS ──────────────────────────────────────────────────────────────
   const startBrowserSpeech = (rate = speechRate) => {
     if (!podcastScript) return;
     window.speechSynthesis.cancel();
     const utt = new SpeechSynthesisUtterance(podcastScript);
     const voices = window.speechSynthesis.getVoices();
-    const voice = voices.find(v => v.name === selectedBrowserVoice);
-    if (voice) { utt.voice = voice; utt.lang = voice.lang; }
+    const v = voices.find(v => v.name === selectedBrowserVoice);
+    if (v) { utt.voice = v; utt.lang = v.lang; }
     else utt.lang = "en-GB";
     utt.rate = rate;
-    utt.pitch = 1.05;
+    utt.pitch = 1.0;
     utt.volume = 1;
     utt.onend = () => setIsPlaying(false);
     utt.onerror = () => setIsPlaying(false);
@@ -241,14 +230,34 @@ export default function RevisionHub() {
     setIsPlaying(true);
   };
 
+  // ── Unified generate audio (called after upload or re-generate) ──────────────
+  const generateAudio = async (
+    script: string,
+    engine: VoiceEngine = voiceEngine,
+    voice: string = neuralVoice,
+    lang: string = selectedLanguage
+  ) => {
+    if (engine === "neural") {
+      await generateNeuralAudio(script, voice, lang);
+    } else {
+      // Browser engine — no server call, just confirm ready
+      window.speechSynthesis?.cancel();
+      if (audioRef.current) { audioRef.current.pause(); audioRef.current.src = ""; }
+      setAudioUrl(null);
+      setIsPlaying(false);
+      setAudioError(null);
+      toast.info("Browser voice ready — press Play to listen.");
+    }
+  };
+
+  // ── Playback controls ────────────────────────────────────────────────────────
   const togglePlay = () => {
     if (!podcastScript) return;
-    if (ttsEngine === "edge" && audioUrl && audioRef.current) {
+    if (voiceEngine === "neural" && audioUrl && audioRef.current) {
       const audio = audioRef.current;
       if (isPlaying) { audio.pause(); setIsPlaying(false); }
       else { audio.play().catch(e => console.error("Audio play error:", e)); setIsPlaying(true); }
-    } else {
-      // Browser TTS
+    } else if (voiceEngine === "browser") {
       if (isPlaying) { window.speechSynthesis.pause(); setIsPlaying(false); }
       else if (window.speechSynthesis.paused) { window.speechSynthesis.resume(); setIsPlaying(true); }
       else startBrowserSpeech();
@@ -257,7 +266,7 @@ export default function RevisionHub() {
 
   const handleInterrupt = () => {
     if (isPlaying) {
-      if (ttsEngine === "edge" && audioRef.current) audioRef.current.pause();
+      if (voiceEngine === "neural" && audioRef.current) audioRef.current.pause();
       else window.speechSynthesis.pause();
       setIsPlaying(false);
     }
@@ -269,15 +278,20 @@ export default function RevisionHub() {
     setInterrupted(false);
     setQuestion("");
     setAnswer("");
-    if (ttsEngine === "edge" && audioUrl && audioRef.current) { audioRef.current.play(); setIsPlaying(true); }
-    else if (window.speechSynthesis.paused) { window.speechSynthesis.resume(); setIsPlaying(true); }
+    if (voiceEngine === "neural" && audioUrl && audioRef.current) {
+      audioRef.current.play();
+      setIsPlaying(true);
+    } else if (voiceEngine === "browser" && window.speechSynthesis.paused) {
+      window.speechSynthesis.resume();
+      setIsPlaying(true);
+    }
   };
 
   const changeRate = (rate: number) => {
     setSpeechRate(rate);
-    if (audioUrl && audioRef.current) {
+    if (voiceEngine === "neural" && audioRef.current) {
       audioRef.current.playbackRate = rate;
-    } else {
+    } else if (voiceEngine === "browser") {
       const wasPlaying = isPlaying;
       window.speechSynthesis.cancel();
       setIsPlaying(false);
@@ -285,16 +299,19 @@ export default function RevisionHub() {
     }
   };
 
+  // ── Upload handler ───────────────────────────────────────────────────────────
   const handleUpload = async (file: File) => {
     setUploading(true);
     setDocumentText("");
     setPodcastScript("");
     setAudioUrl(null);
+    setAudioError(null);
     window.speechSynthesis?.cancel();
     setIsPlaying(false);
     setQuestions([]);
     setCurrentQIndex(0);
     setScore({ correct: 0, total: 0 });
+
     try {
       const formData = new FormData();
       formData.append("document", file);
@@ -311,13 +328,11 @@ export default function RevisionHub() {
         throw new Error(err.error || "Upload failed");
       }
 
-      // Server returns { jobId } immediately — poll for result to bypass Railway 30s timeout
       const { jobId } = await res.json();
       if (!jobId) throw new Error("No job ID returned");
 
       toast.info("Extracting text from document...", { id: "revision-progress", duration: 120000 });
 
-      // Poll every 2 seconds until done or error
       let finalData: { text: string; script: string } | null = null;
       const token = localStorage.getItem("send_token");
       for (let attempt = 0; attempt < 90; attempt++) {
@@ -340,7 +355,7 @@ export default function RevisionHub() {
       if (!finalData?.script) throw new Error("Processing timed out. Please try again.");
       setDocumentText(finalData.text || "");
       setPodcastScript(finalData.script);
-      await generateAudio(finalData.script, ttsEngine, edgeVoice, selectedLanguage);
+      await generateAudio(finalData.script, voiceEngine, neuralVoice, selectedLanguage);
     } catch (err: any) {
       toast.dismiss("revision-progress");
       toast.error(err.message || "Failed to process document");
@@ -360,6 +375,7 @@ export default function RevisionHub() {
     if (file) handleUpload(file);
   };
 
+  // ── Q&A / Quiz ───────────────────────────────────────────────────────────────
   const askQuestion = async () => {
     if (!question.trim() || !documentText) return;
     setAskingQuestion(true);
@@ -433,7 +449,7 @@ export default function RevisionHub() {
 
   const currentQ = questions[currentQIndex];
 
-  // Empty state
+  // ── Empty state ──────────────────────────────────────────────────────────────
   if (!documentText && !uploading && !audioLoading) {
     return (
       <div className="min-h-screen bg-background flex flex-col">
@@ -444,7 +460,7 @@ export default function RevisionHub() {
             </div>
             <div>
               <h1 className="text-xl font-bold text-foreground">Revision Hub</h1>
-              <p className="text-sm text-muted-foreground">Upload any document - get a podcast, quiz, and AI tutor</p>
+              <p className="text-sm text-muted-foreground">Upload any document — get a podcast, quiz, and AI tutor</p>
             </div>
           </div>
         </div>
@@ -465,6 +481,8 @@ export default function RevisionHub() {
                 </div>
               ))}
             </div>
+
+            {/* Year Group */}
             <div className="space-y-1.5">
               <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
                 <Brain className="w-3.5 h-3.5" /> Year Group
@@ -479,6 +497,8 @@ export default function RevisionHub() {
                 ))}
               </select>
             </div>
+
+            {/* Language + Voice Engine */}
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
@@ -499,32 +519,55 @@ export default function RevisionHub() {
                   <Sparkles className="w-3.5 h-3.5" /> Voice Engine
                 </label>
                 <select
-                  value={ttsEngine}
-                  onChange={e => setTtsEngine(e.target.value as "edge" | "browser")}
+                  value={voiceEngine}
+                  onChange={e => setVoiceEngine(e.target.value as VoiceEngine)}
                   className="w-full text-sm bg-muted border border-border rounded-lg px-3 py-2 text-foreground"
                 >
-                  {TTS_ENGINE_OPTIONS.map(v => (
-                    <option key={v.id} value={v.id}>{v.label}</option>
-                  ))}
+                  <option value="neural">Neural AI Voice (Human)</option>
+                  <option value="browser">Browser Voice (built-in)</option>
                 </select>
               </div>
             </div>
-            {ttsEngine === "edge" && (
+
+            {/* Neural voice picker */}
+            {voiceEngine === "neural" && (
               <div className="space-y-1.5">
                 <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
                   <Volume2 className="w-3.5 h-3.5" /> Neural Voice
                 </label>
                 <select
-                  value={edgeVoice}
-                  onChange={e => setEdgeVoice(e.target.value)}
+                  value={neuralVoice}
+                  onChange={e => setNeuralVoice(e.target.value)}
                   className="w-full text-sm bg-muted border border-border rounded-lg px-3 py-2 text-foreground"
                 >
-                  {EDGE_VOICES.map(v => (
-                    <option key={v.id} value={v.id}>{v.label}</option>
+                  {NEURAL_VOICES.map(v => (
+                    <option key={v.id} value={v.id}>{v.label} — {v.desc}</option>
                   ))}
                 </select>
               </div>
             )}
+
+            {/* Browser voice picker */}
+            {voiceEngine === "browser" && browserVoices.length > 0 && (
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                  <Volume2 className="w-3.5 h-3.5" /> Browser Voice
+                </label>
+                <select
+                  value={selectedBrowserVoice}
+                  onChange={e => setSelectedBrowserVoice(e.target.value)}
+                  className="w-full text-sm bg-muted border border-border rounded-lg px-3 py-2 text-foreground"
+                >
+                  {browserVoices.map(v => (
+                    <option key={v.name} value={v.name}>
+                      {v.name.replace(/Microsoft |Google /, "").replace(/ \(.*\)/, "")} ({v.lang})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {/* Upload area */}
             <div
               className="border-2 border-dashed border-brand/30 rounded-2xl p-8 text-center space-y-4 cursor-pointer hover:border-brand/60 hover:bg-brand/5 transition-all"
               onClick={() => fileInputRef.current?.click()}
@@ -536,20 +579,26 @@ export default function RevisionHub() {
               </div>
               <div>
                 <p className="font-semibold text-foreground">Drop your notes here</p>
-                <p className="text-sm text-muted-foreground mt-1">PDF, Word (.docx), or plain text - up to 10MB</p>
+                <p className="text-sm text-muted-foreground mt-1">PDF, Word (.docx), or plain text — up to 10MB</p>
               </div>
               <Button className="bg-brand hover:bg-brand/90 text-white gap-2">
                 <Upload className="w-4 h-4" /> Choose File
               </Button>
             </div>
-            <input ref={fileInputRef} type="file" accept=".pdf,.txt,.docx,text/plain,application/pdf" className="hidden" onChange={onFileChange} />
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".pdf,.txt,.docx,text/plain,application/pdf"
+              className="hidden"
+              onChange={onFileChange}
+            />
           </div>
         </div>
       </div>
     );
   }
 
-  // Loading state
+  // ── Loading state ────────────────────────────────────────────────────────────
   if (uploading || audioLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -563,19 +612,14 @@ export default function RevisionHub() {
           <p className="text-sm text-muted-foreground">
             {uploading
               ? "Extracting text and writing your revision podcast script"
-              : "Creating your natural-sounding podcast. Long scripts are processed in chunks — this may take up to 60 seconds."}
+              : "Creating your natural-sounding podcast. Long scripts may take up to 90 seconds."}
           </p>
-          {audioLoading && (
-            <p className="text-xs text-muted-foreground/70">
-              If neural voice takes too long, it will automatically switch to browser voice.
-            </p>
-          )}
         </div>
       </div>
     );
   }
 
-  // Main view
+  // ── Main view ────────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {audioUrl && (
@@ -588,6 +632,8 @@ export default function RevisionHub() {
           style={{ display: "none" }}
         />
       )}
+
+      {/* Header */}
       <div className="px-6 py-4 border-b flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-xl bg-brand/10 flex items-center justify-center">
@@ -596,8 +642,10 @@ export default function RevisionHub() {
           <div>
             <h1 className="text-base font-bold text-foreground">Revision Hub</h1>
             <p className="text-xs text-muted-foreground">
-              {ttsEngine === "browser" ? "Browser voice" : "Neural AI voice"} ·{" "}
-              {LANGUAGES.find(l => l.code === selectedLanguage)?.label ?? "English"}
+              {voiceEngine === "neural"
+                ? `Neural AI — ${NEURAL_VOICES.find(v => v.id === neuralVoice)?.label ?? neuralVoice}`
+                : `Browser voice — ${selectedBrowserVoice || "built-in"}`}
+              {" · "}{LANGUAGES.find(l => l.code === selectedLanguage)?.label ?? "English"}
             </p>
           </div>
         </div>
@@ -611,12 +659,15 @@ export default function RevisionHub() {
             setDocumentText("");
             setPodcastScript("");
             setAudioUrl(null);
+            setAudioError(null);
             setIsPlaying(false);
           }}
         >
           <Upload className="w-3.5 h-3.5" /> New document
         </Button>
       </div>
+
+      {/* Tabs */}
       <div className="flex border-b">
         {(["podcast", "quiz"] as Tab[]).map(t => (
           <button
@@ -631,9 +682,13 @@ export default function RevisionHub() {
           </button>
         ))}
       </div>
+
+      {/* Podcast tab */}
       {tab === "podcast" && (
         <div className="flex-1 flex flex-col p-6 gap-4 max-w-2xl mx-auto w-full">
           <div className="bg-gradient-to-br from-brand/10 to-brand/5 rounded-2xl p-6 space-y-5">
+
+            {/* Voice info + waveform */}
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-xl bg-brand flex items-center justify-center flex-shrink-0">
                 <Headphones className="w-6 h-6 text-white" />
@@ -641,9 +696,9 @@ export default function RevisionHub() {
               <div className="flex-1 min-w-0">
                 <p className="font-semibold text-foreground">Your Revision Podcast</p>
                 <p className="text-xs text-muted-foreground">
-                  {ttsEngine === "browser"
-                    ? `Browser voice — ${selectedBrowserVoice || "built-in"}`
-                    : `Neural: ${EDGE_VOICES.find(v => v.id === edgeVoice)?.label ?? edgeVoice}`}
+                  {voiceEngine === "neural"
+                    ? `Neural AI — ${NEURAL_VOICES.find(v => v.id === neuralVoice)?.label ?? neuralVoice}`
+                    : `Browser — ${selectedBrowserVoice || "built-in"}`}
                 </p>
               </div>
               {isPlaying && (
@@ -658,15 +713,40 @@ export default function RevisionHub() {
                 </div>
               )}
             </div>
+
+            {/* Error state */}
+            {audioError && voiceEngine === "neural" && (
+              <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-xl p-4 flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-red-700 dark:text-red-400">Neural voice failed</p>
+                  <p className="text-xs text-red-600 dark:text-red-500 mt-0.5">{audioError}</p>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="flex-shrink-0 gap-1.5 text-xs border-red-300 text-red-600 hover:bg-red-50"
+                  onClick={() => generateNeuralAudio(podcastScript, neuralVoice, selectedLanguage)}
+                  disabled={audioLoading}
+                >
+                  <RefreshCw className="w-3.5 h-3.5" /> Retry
+                </Button>
+              </div>
+            )}
+
+            {/* Play button */}
             <div className="flex items-center justify-center gap-4">
               <Button
                 size="icon"
                 onClick={togglePlay}
-                className="w-16 h-16 rounded-full bg-brand hover:bg-brand/90 text-white shadow-lg"
+                disabled={voiceEngine === "neural" && !audioUrl && !audioError}
+                className="w-16 h-16 rounded-full bg-brand hover:bg-brand/90 text-white shadow-lg disabled:opacity-40"
               >
                 {isPlaying ? <Pause className="w-7 h-7" /> : <Play className="w-7 h-7" />}
               </Button>
             </div>
+
+            {/* Speed controls */}
             <div className="flex items-center justify-center gap-2 flex-wrap">
               <Volume2 className="w-4 h-4 text-muted-foreground" />
               <span className="text-xs text-muted-foreground mr-1">Speed:</span>
@@ -683,6 +763,8 @@ export default function RevisionHub() {
                 </button>
               ))}
             </div>
+
+            {/* Voice / Language controls */}
             <div className="grid grid-cols-2 gap-3 pt-1">
               <div className="space-y-1">
                 <label className="text-xs text-muted-foreground flex items-center gap-1">
@@ -703,33 +785,36 @@ export default function RevisionHub() {
                   <Sparkles className="w-3 h-3" /> Voice Engine
                 </label>
                 <select
-                  value={ttsEngine}
-                  onChange={e => setTtsEngine(e.target.value as "edge" | "browser")}
+                  value={voiceEngine}
+                  onChange={e => setVoiceEngine(e.target.value as VoiceEngine)}
                   className="w-full text-xs bg-muted border border-border rounded-lg px-2 py-1.5 text-foreground"
                 >
-                  {TTS_ENGINE_OPTIONS.map(v => (
-                    <option key={v.id} value={v.id}>{v.label}</option>
-                  ))}
+                  <option value="neural">Neural AI Voice (Human)</option>
+                  <option value="browser">Browser Voice (built-in)</option>
                 </select>
               </div>
             </div>
-            {ttsEngine === "edge" && (
+
+            {/* Neural voice selector */}
+            {voiceEngine === "neural" && (
               <div className="space-y-1">
                 <label className="text-xs text-muted-foreground flex items-center gap-1">
                   <Volume2 className="w-3 h-3" /> Neural Voice
                 </label>
                 <select
-                  value={edgeVoice}
-                  onChange={e => setEdgeVoice(e.target.value)}
+                  value={neuralVoice}
+                  onChange={e => setNeuralVoice(e.target.value)}
                   className="w-full text-xs bg-muted border border-border rounded-lg px-2 py-1.5 text-foreground"
                 >
-                  {EDGE_VOICES.map(v => (
+                  {NEURAL_VOICES.map(v => (
                     <option key={v.id} value={v.id}>{v.label}</option>
                   ))}
                 </select>
               </div>
             )}
-            {ttsEngine === "browser" && browserVoices.length > 1 && (
+
+            {/* Browser voice selector */}
+            {voiceEngine === "browser" && browserVoices.length > 1 && (
               <div className="space-y-1">
                 <label className="text-xs text-muted-foreground flex items-center gap-1">
                   <Volume2 className="w-3 h-3" /> Browser Voice
@@ -754,17 +839,21 @@ export default function RevisionHub() {
                 </select>
               </div>
             )}
+
+            {/* Re-generate button */}
             <Button
               variant="outline"
               size="sm"
               className="w-full gap-2 text-xs"
               disabled={audioLoading}
-              onClick={() => generateAudio(podcastScript, ttsEngine, edgeVoice, selectedLanguage)}
+              onClick={() => generateAudio(podcastScript, voiceEngine, neuralVoice, selectedLanguage)}
             >
               {audioLoading
                 ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Generating audio...</>
-                : <><Sparkles className="w-3.5 h-3.5" /> Re-generate audio</>}
+                : <><RefreshCw className="w-3.5 h-3.5" /> Re-generate audio</>}
             </Button>
+
+            {/* Interrupt button */}
             {!interrupted && (
               <Button
                 variant="outline"
@@ -776,85 +865,71 @@ export default function RevisionHub() {
               </Button>
             )}
           </div>
+
+          {/* Q&A panel */}
           {interrupted && (
             <div className="bg-background border rounded-2xl p-5 space-y-4 shadow-sm">
               <div className="flex items-center justify-between">
                 <p className="font-semibold text-foreground flex items-center gap-2">
-                  <MessageSquare className="w-4 h-4 text-brand" /> Ask a question
+                  <MessageSquare className="w-4 h-4 text-brand" /> Ask a Question
                 </p>
-                <Button variant="ghost" size="sm" onClick={resumePodcast} className="text-muted-foreground text-xs">
-                  Resume podcast
+                <Button variant="ghost" size="sm" className="text-xs gap-1" onClick={resumePodcast}>
+                  <Play className="w-3.5 h-3.5" /> Resume
                 </Button>
               </div>
               <div className="flex gap-2">
-                <Textarea
+                <input
                   value={question}
                   onChange={e => setQuestion(e.target.value)}
-                  placeholder="What would you like to know about this topic?"
-                  className="resize-none text-sm"
-                  rows={2}
-                  onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); askQuestion(); } }}
+                  onKeyDown={e => e.key === "Enter" && askQuestion()}
+                  placeholder="Ask anything about the document..."
+                  className="flex-1 text-sm bg-muted border border-border rounded-lg px-3 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand/30"
                 />
-                <div className="flex flex-col gap-2">
-                  <Button
-                    size="icon"
-                    variant={isListening ? "default" : "outline"}
-                    onClick={toggleVoice}
-                    className={isListening ? "bg-red-500 hover:bg-red-600 text-white" : ""}
-                  >
-                    {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
-                  </Button>
-                  <Button size="icon" onClick={askQuestion} disabled={!question.trim() || askingQuestion} className="bg-brand hover:bg-brand/90 text-white">
-                    {askingQuestion ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                  </Button>
-                </div>
+                <Button
+                  size="icon"
+                  variant="outline"
+                  onClick={toggleVoice}
+                  className={cn("flex-shrink-0", isListening && "bg-red-50 border-red-300 text-red-500")}
+                >
+                  {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                </Button>
+                <Button
+                  size="icon"
+                  className="bg-brand hover:bg-brand/90 text-white flex-shrink-0"
+                  onClick={askQuestion}
+                  disabled={askingQuestion || !question.trim()}
+                >
+                  {askingQuestion ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                </Button>
               </div>
               {answer && (
-                <div className="bg-brand/5 border border-brand/20 rounded-xl p-4">
-                  <p className="text-xs font-medium text-brand mb-1.5">AI Tutor</p>
-                  <p className="text-sm leading-relaxed text-foreground">{answer}</p>
+                <div className="bg-muted/50 rounded-xl p-4 space-y-1">
+                  <p className="text-xs font-medium text-brand flex items-center gap-1">
+                    <BookOpen className="w-3.5 h-3.5" /> Answer
+                  </p>
+                  <p className="text-sm text-foreground leading-relaxed">{answer}</p>
                 </div>
               )}
             </div>
           )}
-          {podcastScript && (
-            <details className="group">
-              <summary className="cursor-pointer text-sm text-muted-foreground hover:text-foreground flex items-center gap-1.5 select-none">
-                <BookOpen className="w-4 h-4" /> View podcast script
-              </summary>
-              <div className="mt-3 bg-muted/30 rounded-xl p-4 text-sm leading-relaxed text-foreground">
-                {podcastScript}
-              </div>
-            </details>
-          )}
         </div>
       )}
+
+      {/* Quiz tab */}
       {tab === "quiz" && (
         <div className="flex-1 flex flex-col p-6 gap-4 max-w-2xl mx-auto w-full">
-          {score.total > 0 && (
-            <div className="flex items-center gap-3 bg-muted/40 rounded-xl px-4 py-2.5">
-              <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0" />
-              <div className="flex-1">
-                <div className="flex justify-between text-xs mb-1">
-                  <span className="font-medium text-foreground">{score.correct}/{score.total} correct</span>
-                  <span className="text-muted-foreground">{Math.round((score.correct / score.total) * 100)}%</span>
-                </div>
-                <Progress value={(score.correct / score.total) * 100} className="h-1.5" />
-              </div>
-            </div>
-          )}
           {loadingQuiz ? (
             <div className="flex-1 flex items-center justify-center">
               <div className="text-center space-y-3">
                 <Loader2 className="w-8 h-8 text-brand animate-spin mx-auto" />
-                <p className="text-sm text-muted-foreground">Generating your quiz...</p>
+                <p className="text-sm text-muted-foreground">Generating quiz questions...</p>
               </div>
             </div>
           ) : currentQ ? (
             <div className="space-y-4">
               <div className="flex items-center gap-2">
-                <span className="text-xs font-medium text-muted-foreground bg-muted px-2.5 py-1 rounded-full">
-                  Q{currentQIndex + 1}
+                <span className="text-xs text-muted-foreground">
+                  Question {currentQIndex + 1} of {questions.length}
                 </span>
                 {score.total > 0 && (
                   <span className="text-xs text-muted-foreground ml-auto">
@@ -901,7 +976,7 @@ export default function RevisionHub() {
                   className="w-full text-muted-foreground gap-2"
                   onClick={() => { setSelectedOption(null); setAnswerState("wrong"); setScore(prev => ({ ...prev, total: prev.total + 1 })); }}
                 >
-                  <HelpCircle className="w-4 h-4" /> I don't know - show me the answer
+                  <HelpCircle className="w-4 h-4" /> I don't know — show me the answer
                 </Button>
               )}
               {answerState !== "unanswered" && (
