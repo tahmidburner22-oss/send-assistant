@@ -142,8 +142,8 @@ export async function initDb() {
     const hash = bcrypt.hashSync("Admin1234!", 12);
 
     _db.run(
-      `INSERT INTO schools (id, name, urn, domain, onboarding_complete, licence_type)
-       VALUES (?, 'Default School', '000000', '', 1, 'professional')`,
+      `INSERT INTO schools (id, name, urn, domain, onboarding_complete, licence_type, subscription_plan, subscription_status)
+       VALUES (?, 'Adaptly', '000000', '', 1, 'premium', 'premium', 'active')`,
       [schoolId]
     );
     _db.run(

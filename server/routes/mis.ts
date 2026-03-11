@@ -19,13 +19,20 @@ import crypto from "crypto";
 const router = Router();
 
 // ── Helper: check if school is on premium plan ────────────────────────────────
+const PLATFORM_OWNER_EMAILS = ["admin@adaptly.co.uk", "admin@sendassistant.app"];
+
 function isPremiumSchool(schoolId: string): boolean {
-  // Platform owner school always has premium
+  if (!schoolId) return false;
+  // Check if any platform owner user belongs to this school
+  const ownerUser = db.prepare(
+    "SELECT id FROM users WHERE school_id = ? AND email IN ('admin@adaptly.co.uk','admin@sendassistant.app') LIMIT 1"
+  ).get(schoolId) as any;
+  if (ownerUser) return true;
+  // Check school name and plan
   const school = db.prepare(
     "SELECT subscription_plan, licence_type, name FROM schools WHERE id = ?"
   ).get(schoolId) as any;
   if (!school) return false;
-  // Check if this is the platform owner school (Adaptly)
   const schoolName = (school.name || "").toLowerCase();
   if (schoolName === "adaptly" || schoolName === "adaptly demo" || schoolName === "system") return true;
   const plan = (school.subscription_plan || school.licence_type || "").toLowerCase();
