@@ -42,6 +42,40 @@ export function renderMath(text: string): string {
       return expr;
     }
   });
+  // Convert plain-text ^ powers to proper superscripts BEFORE fraction handling
+  // Handles: x^2, x^10, cm^2, m^3, 10^-3, (x+1)^2, a^n, etc.
+  // Pattern: base^exponent where exponent can be a number, letter, or parenthesised expression
+  result = result.replace(/([A-Za-z0-9α-ω\)]+)\^(-?[A-Za-z0-9]+)/g, (_, base, exp) => {
+    try {
+      return katex.renderToString(`${base}^{${exp}}`, { displayMode: false, throwOnError: false });
+    } catch {
+      return `${base}<sup>${exp}</sup>`;
+    }
+  });
+  // Handle parenthesised base: (x+1)^2
+  result = result.replace(/\(([^)]+)\)\^(-?[A-Za-z0-9]+)/g, (_, base, exp) => {
+    try {
+      return katex.renderToString(`(${base})^{${exp}}`, { displayMode: false, throwOnError: false });
+    } catch {
+      return `(${base})<sup>${exp}</sup>`;
+    }
+  });
+  // Convert \u00b2 \u00b3 unicode superscripts to proper HTML superscripts
+  result = result.replace(/\u00b2/g, "<sup>2</sup>");
+  result = result.replace(/\u00b3/g, "<sup>3</sup>");
+  // Convert \u221a to proper square root symbol
+  result = result.replace(/\u221a([A-Za-z0-9]+)/g, (_, n) => {
+    try { return katex.renderToString(`\\sqrt{${n}}`, { displayMode: false, throwOnError: false }); }
+    catch { return `\u221a${n}`; }
+  });
+  // Convert common math symbols
+  result = result.replace(/\u00d7/g, "\u00d7"); // multiplication sign - keep as-is
+  result = result.replace(/\u00f7/g, "\u00f7"); // division sign - keep as-is
+  result = result.replace(/\u2260/g, "\u2260"); // not equal
+  result = result.replace(/\u2264/g, "\u2264"); // less than or equal
+  result = result.replace(/\u2265/g, "\u2265"); // greater than or equal
+  result = result.replace(/\u03c0/g, "\u03c0"); // pi symbol
+  result = result.replace(/\u221e/g, "\u221e"); // infinity
   // Convert plain-text fractions to proper KaTeX stacked fractions.
   // Handles:
   //   simple:      3/4   2/5   7/20

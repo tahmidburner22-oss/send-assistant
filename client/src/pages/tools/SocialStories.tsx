@@ -10,6 +10,7 @@ const ages = ["3-5","5-7","7-9","9-11","11-14","14-18"].map(a => ({ value: a, la
 export default function SocialStories() {
   return (
     <AIToolPage
+      assignable={true}
       title="Social Stories Generator"
       description="Create personalised Carol Gray-style social stories for autism and behaviour support"
       icon={<BookHeart className="w-5 h-5 text-white" />}

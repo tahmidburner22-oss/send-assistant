@@ -6,6 +6,7 @@ const years = ["Year 1","Year 2","Year 3","Year 4","Year 5","Year 6","Year 7","Y
 export default function ComprehensionGenerator() {
   return (
     <AIToolPage
+      assignable={true}
       title="Comprehension Generator"
       description="Create differentiated reading comprehension activities from any text"
       icon={<BookMarked className="w-5 h-5 text-white" />}

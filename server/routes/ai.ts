@@ -1,5 +1,6 @@
 import { Router, Request, Response } from "express";
 import { v4 as uuidv4 } from "uuid";
+import multer from "multer";
 import db from "../db/index.js";
 import { requireAuth, requireAdmin, auditLog } from "../middleware/auth.js";
 import { filterContent } from "../lib/contentFilter.js";
@@ -7,6 +8,7 @@ import { getSchoolKey } from "./schoolApiKeys.js";
 import { findDiagram, searchWikimediaDiagram } from "../lib/diagramBank.js";
 
 const router = Router();
+const worksheetUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
 
 // ── Provider priority order — server always tries all of these automatically ──
 const PROVIDER_ORDER = ["groq", "gemini", "openai", "openrouter", "claude", "huggingface"] as const;
@@ -739,6 +741,95 @@ router.post("/diagram", requireAuth, async (req: Request, res: Response) => {
     provider: "placeholder",
     type: "svg",
   });
+});
+
+// ── Worksheet Upload & Adapt ─────────────────────────────────────────────────
+// POST /api/ai/adapt-worksheet
+// Accepts a PDF/image/text file and adapts it for a specific SEND need.
+router.post("/adapt-worksheet", requireAuth, worksheetUpload.single("file"), async (req: Request, res: Response) => {
+  if (!req.file) return res.status(400).json({ error: "No file uploaded" });
+  const { sendNeed, yearGroup } = req.body;
+  if (!sendNeed) return res.status(400).json({ error: "sendNeed is required" });
+
+  try {
+    let rawText = "";
+    const mime = req.file.mimetype;
+    if (mime === "application/pdf") {
+      try {
+        const pdfParse = (await import("pdf-parse/lib/pdf-parse.js" as any)).default
+          || (await import("pdf-parse" as any)).default;
+        const data = await pdfParse(req.file.buffer);
+        rawText = data.text || "";
+      } catch (_) {
+        rawText = req.file.buffer.toString("utf-8");
+      }
+    } else if (mime === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
+      try {
+        const mammoth = (await import("mammoth" as any)).default || (await import("mammoth" as any));
+        const result = await mammoth.extractRawText({ buffer: req.file.buffer });
+        rawText = result.value || "";
+      } catch (_) {
+        rawText = req.file.buffer.toString("utf-8");
+      }
+    } else if (mime.startsWith("image/")) {
+      // For images, use AI vision if available — otherwise describe what we can
+      rawText = "[Image worksheet uploaded — please describe the content to adapt]";
+    } else {
+      rawText = req.file.buffer.toString("utf-8");
+    }
+
+    // Clean extracted text
+    rawText = rawText.replace(/\s{2,}/g, " ").trim().slice(0, 8000);
+    if (!rawText || rawText.length < 20) {
+      return res.status(400).json({ error: "Could not extract readable text from this file. Please try a PDF or Word document." });
+    }
+
+    const schoolId = req.user?.schoolId ?? undefined;
+    const yr = yearGroup || "Year 9";
+
+    const system = `You are an expert SEND teacher and educational content specialist. Your task is to adapt worksheets to make them fully accessible for students with specific SEND needs, following the COBS Handbook guidelines. Always return a professional, high-quality adapted worksheet.`;
+
+    const user = `Adapt the following worksheet for a student with ${sendNeed} in ${yr}.
+
+ADAPTATION REQUIREMENTS:
+- Simplify language while preserving all educational content and learning objectives
+- Break complex sentences into shorter, clearer ones
+- Add visual cues and structure (numbered steps, clear sections)
+- Use concrete examples and relatable contexts
+- Add scaffolding (sentence starters, word banks, worked examples where appropriate)
+- Ensure reading level is appropriate for the SEND need
+- Preserve all questions but make them more accessible
+- Add brief instructions before each section
+- For dyslexia: use clear spacing, avoid dense paragraphs, use bullet points
+- For autism: add clear structure, explicit instructions, avoid ambiguity
+- For ADHD: break into small chunks, add clear headings, use bold for key words
+- For MLD: simplify vocabulary, add visual supports, reduce cognitive load
+
+Return a JSON object with this exact structure:
+{
+  "adaptedContent": "The full adapted worksheet as formatted text with clear sections, headings, and scaffolding",
+  "adaptationsSummary": ["List of specific adaptations made", "e.g. Simplified vocabulary", "Added word bank", "Broke into smaller steps"]
+}
+
+Original worksheet content:
+${rawText}`;
+
+    const { content, provider } = await callWithFallback(system, user, 3000, undefined, schoolId);
+
+    let parsed: any;
+    try {
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      parsed = JSON.parse(jsonMatch ? jsonMatch[0] : content);
+    } catch {
+      // If JSON parse fails, wrap the raw content
+      parsed = { adaptedContent: content, adaptationsSummary: ["Content adapted for " + sendNeed] };
+    }
+
+    res.json({ adapted: parsed, provider });
+  } catch (err: any) {
+    console.error("Worksheet adapt error:", err);
+    res.status(500).json({ error: err.message || "Failed to adapt worksheet" });
+  }
 });
 
 export default router;

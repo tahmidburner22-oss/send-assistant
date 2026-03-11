@@ -83,6 +83,8 @@ export default function AdminPanel() {
     user.email === "admin@sendassistant.app"
   );
   const [allSchools, setAllSchools] = useState<any[]>([]);
+  const [allUsers, setAllUsers] = useState<any[]>([]);
+  const [superAuditLogs, setSuperAuditLogs] = useState<any[]>([]);
   const [billingSummary, setBillingSummary] = useState<any>(null);
   const [invoiceForm, setInvoiceForm] = useState({ school_id: "", amount: "", description: "", due_date: "", notes: "" });
   const [generatedInvoice, setGeneratedInvoice] = useState<any>(null);
@@ -110,9 +112,13 @@ export default function AdminPanel() {
       Promise.all([
         fetch("/api/admin/super/schools", { credentials: "include" }).then(r => r.ok ? r.json() : { schools: [] }).catch(() => ({ schools: [] })),
         fetch("/api/admin/super/billing-summary", { credentials: "include" }).then(r => r.ok ? r.json() : null).catch(() => null),
-      ]).then(([s, b]) => {
+        fetch("/api/admin/super/users", { credentials: "include" }).then(r => r.ok ? r.json() : { users: [] }).catch(() => ({ users: [] })),
+        fetch("/api/admin/super/audit", { credentials: "include" }).then(r => r.ok ? r.json() : { logs: [] }).catch(() => ({ logs: [] })),
+      ]).then(([s, b, u, al]) => {
         setAllSchools((s as any)?.schools || []);
         setBillingSummary(b);
+        setAllUsers((u as any)?.users || []);
+        setSuperAuditLogs((al as any)?.logs || []);
       }).catch(() => {});
     }
   }, [canAccess]);
@@ -397,7 +403,6 @@ export default function AdminPanel() {
             <CardContent>
               <div className="divide-y divide-border/50 max-h-96 overflow-y-auto">
                 {auditLogs.length === 0 ? (
-                {auditLogs.length === 0 ? (
                   <div className="p-6 text-center text-muted-foreground text-sm">No audit events recorded</div>
                 ) : auditLogs.map((log, i) => (
                   <div key={i} className="p-3 flex items-start gap-3 border-b border-border/30 last:border-0">
@@ -419,22 +424,11 @@ export default function AdminPanel() {
                       </p>
                     </div>
                   </div>
-                ))}
-
-
-
-
-
-
-
-
-
-
-
+                 ))}
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
-
         {/* ── ANALYTICS ── */}
         <TabsContent value="analytics" className="space-y-4 mt-4">
           <Card className="border-border/50">
@@ -1012,6 +1006,103 @@ export default function AdminPanel() {
                     </div>
                   );
                 })}
+              </CardContent>
+            </Card>
+
+            {/* All Users Across All Schools */}
+            <Card className="border-border/50">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <Users className="w-4 h-4 text-brand" /> All Users ({allUsers.length})
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {allUsers.length === 0 ? (
+                  <p className="text-xs text-muted-foreground text-center py-4">No users found</p>
+                ) : allUsers.map((u: any) => (
+                  <div key={u.id} className="flex items-center justify-between p-2.5 rounded-xl border border-border/50 bg-white gap-2">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-semibold text-foreground truncate">{u.display_name || u.email}</p>
+                      <p className="text-[10px] text-muted-foreground truncate">{u.email} · {u.school_name || "No school"}</p>
+                    </div>
+                    <div className="flex items-center gap-1.5 flex-shrink-0">
+                      <Badge className={`text-[10px] py-0 px-1.5 ${ROLE_COLOURS[u.role] || "bg-gray-100 text-gray-700"}`}>{ROLE_LABELS[u.role] || u.role}</Badge>
+                      <Badge className={`text-[10px] py-0 px-1.5 ${u.is_active !== 0 ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>{u.is_active !== 0 ? "Active" : "Inactive"}</Badge>
+                      <Select
+                        value={u.role}
+                        onValueChange={async (role) => {
+                          try {
+                            const r = await fetch(`/api/admin/super/users/${u.id}`, {
+                              method: "PATCH", credentials: "include",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ role }),
+                            });
+                            if (r.ok) { setAllUsers(prev => prev.map(x => x.id === u.id ? { ...x, role } : x)); toast.success("Role updated"); }
+                            else toast.error("Failed to update role");
+                          } catch { toast.error("Failed to update role"); }
+                        }}
+                      >
+                        <SelectTrigger className="text-[10px] h-6 w-28"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {Object.entries(ROLE_LABELS).map(([v, l]) => <SelectItem key={v} value={v} className="text-xs">{l}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                      <Button
+                        size="sm" variant="outline"
+                        className={`text-[10px] h-6 px-2 ${u.is_active !== 0 ? "text-red-600 border-red-200 hover:bg-red-50" : "text-green-600 border-green-200 hover:bg-green-50"}`}
+                        onClick={async () => {
+                          const newActive = u.is_active === 0 ? 1 : 0;
+                          try {
+                            const r = await fetch(`/api/admin/super/users/${u.id}`, {
+                              method: "PATCH", credentials: "include",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ is_active: newActive === 1 }),
+                            });
+                            if (r.ok) { setAllUsers(prev => prev.map(x => x.id === u.id ? { ...x, is_active: newActive } : x)); toast.success(newActive ? "User reactivated" : "User deactivated"); }
+                            else toast.error("Failed");
+                          } catch { toast.error("Failed"); }
+                        }}
+                      >{u.is_active !== 0 ? "Deactivate" : "Reactivate"}</Button>
+                      <Button
+                        size="sm" variant="outline"
+                        className="text-[10px] h-6 px-2 text-red-700 border-red-200 hover:bg-red-50"
+                        onClick={async () => {
+                          if (!confirm(`Permanently delete ${u.email}? This cannot be undone.`)) return;
+                          try {
+                            const r = await fetch(`/api/admin/super/users/${u.id}`, { method: "DELETE", credentials: "include" });
+                            if (r.ok) { setAllUsers(prev => prev.filter(x => x.id !== u.id)); toast.success("User deleted"); }
+                            else toast.error("Failed to delete user");
+                          } catch { toast.error("Failed to delete user"); }
+                        }}
+                      >Delete</Button>
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+
+            {/* Full Audit Log */}
+            <Card className="border-border/50">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <Activity className="w-4 h-4 text-brand" /> Full Audit Log ({superAuditLogs.length} events)
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {superAuditLogs.length === 0 ? (
+                  <p className="text-xs text-muted-foreground text-center py-4">No audit events recorded</p>
+                ) : (
+                  <div className="space-y-1 max-h-80 overflow-y-auto">
+                    {superAuditLogs.map((log: any, i: number) => (
+                      <div key={i} className="flex items-start gap-2 text-xs py-1 border-b border-border/30 last:border-0">
+                        <span className="text-muted-foreground flex-shrink-0 w-28">{new Date(log.created_at).toLocaleDateString("en-GB", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}</span>
+                        <span className="text-foreground flex-1 truncate">{log.action}</span>
+                        <span className="text-muted-foreground flex-shrink-0">{log.display_name || log.email || ""}</span>
+                        {log.school_name && <span className="text-muted-foreground flex-shrink-0 text-[10px]">· {log.school_name}</span>}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
 

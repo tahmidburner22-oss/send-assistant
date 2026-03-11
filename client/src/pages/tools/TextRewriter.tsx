@@ -25,6 +25,7 @@ const purposes = [
 export default function TextRewriter() {
   return (
     <AIToolPage
+      assignable={true}
       title="Text Rewriter"
       description="Rewrite any text to a different reading level or for specific learner needs"
       icon={<AlignLeft className="w-5 h-5 text-white" />}

@@ -7,6 +7,7 @@ const years = ["Year 1","Year 2","Year 3","Year 4","Year 5","Year 6","Year 7","Y
 export default function FlashCards() {
   return (
     <AIToolPage
+      assignable={true}
       title="Flash Card Generator"
       description="Create printable flash cards for vocabulary, key facts, and revision"
       icon={<Layers className="w-5 h-5 text-white" />}

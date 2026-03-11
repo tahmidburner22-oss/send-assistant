@@ -11,10 +11,12 @@ import { toast } from "sonner";
 import { motion } from "framer-motion";
 import {
   Sparkles, RefreshCw, Printer, Download, Copy, Save, ChevronLeft,
-  PenLine, X, Check, Loader2,
+  PenLine, X, Check, Loader2, Users,
 } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { callAI } from "@/lib/ai";
 import { downloadHtmlAsPdf, printWorksheetElement } from "@/lib/pdf-generator-v2";
+import { useApp } from "@/contexts/AppContext";
 
 export interface AIToolField {
   id: string;
@@ -38,6 +40,7 @@ interface AIToolPageProps {
   formatOutput?: (text: string) => string;
   outputTitle?: (values: Record<string, string>) => string;
   savedCategory?: string;
+  assignable?: boolean; // whether this tool output can be assigned to a student
   onResult?: (text: string, values: Record<string, string>) => void;
 }
 
@@ -56,19 +59,28 @@ function formatAIText(text: string): string {
 type EditMode = "none" | "manual" | "ai";
 
 export default function AIToolPage({
-  title, description, icon, accentColor, fields, buildPrompt, formatOutput, outputTitle, onResult,
+  title, description, icon, accentColor, fields, buildPrompt, formatOutput, outputTitle, onResult, assignable,
 }: AIToolPageProps) {
+  const { children, assignWork } = useApp();
   const [values, setValues] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [provider, setProvider] = useState<string>("");
   const outputRef = useRef<HTMLDivElement>(null);
-
   // Edit state
   const [editMode, setEditMode] = useState<EditMode>("none");
   const [manualText, setManualText] = useState("");
   const [aiPrompt, setAiPrompt] = useState("");
   const [aiEditLoading, setAiEditLoading] = useState(false);
+  const [showAssignDialog, setShowAssignDialog] = useState(false);
+
+  const handleAssign = (childId: string) => {
+    if (!result) return;
+    const outputTitleStr = outputTitle ? outputTitle(values) : title;
+    assignWork(childId, { title: outputTitleStr, type: title.toLowerCase().replace(/\s+/g, "-"), content: result });
+    setShowAssignDialog(false);
+    toast.success("Assigned to student!");
+  };
 
   const setValue = (id: string, val: string) => setValues(prev => ({ ...prev, [id]: val }));
 
@@ -266,6 +278,36 @@ export default function AIToolPage({
                       <Check className="w-3.5 h-3.5" />Save Changes
                     </Button>
                   </>
+                )}
+                {assignable && children && children.length > 0 && (
+                  <Dialog open={showAssignDialog} onOpenChange={setShowAssignDialog}>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" size="sm" className="gap-1.5 border-blue-300 text-blue-600 hover:bg-blue-50">
+                        <Users className="w-3.5 h-3.5" />Assign to Student
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-sm">
+                      <DialogHeader>
+                        <DialogTitle>Assign to Student</DialogTitle>
+                      </DialogHeader>
+                      <p className="text-sm text-muted-foreground mb-3">Select a student to assign this output to:</p>
+                      <div className="space-y-2 max-h-64 overflow-y-auto">
+                        {children.map(child => (
+                          <button
+                            key={child.id}
+                            className="w-full text-left px-3 py-2 rounded-lg border border-border hover:bg-muted text-sm flex items-center gap-2"
+                            onClick={() => handleAssign(child.id)}
+                          >
+                            <div className="w-7 h-7 rounded-full bg-brand/10 flex items-center justify-center text-xs font-bold text-brand">
+                              {child.name?.charAt(0)?.toUpperCase()}
+                            </div>
+                            <span className="font-medium">{child.name}</span>
+                            {child.yearGroup && <span className="text-muted-foreground text-xs ml-auto">{child.yearGroup}</span>}
+                          </button>
+                        ))}
+                      </div>
+                    </DialogContent>
+                  </Dialog>
                 )}
                 <Button variant="outline" size="sm" onClick={handleCopy}>
                   <Copy className="w-3.5 h-3.5 mr-1" />Copy

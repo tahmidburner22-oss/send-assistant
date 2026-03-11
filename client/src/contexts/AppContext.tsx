@@ -84,6 +84,15 @@ export interface Idea {
   createdAt: string; author: string;
 }
 
+export interface ParentNewsletter {
+  id: string;
+  title: string;
+  content: string;
+  date: string;
+  type: string;
+  createdAt: string;
+}
+
 interface AppState {
   loading: boolean;
   user: User | null;
@@ -94,6 +103,7 @@ interface AppState {
   differentiationHistory: Differentiation[];
   attendanceRecords: AttendanceRecord[];
   ideas: Idea[];
+  parentNewsletters: ParentNewsletter[];
   colorOverlay: string;
   isLoggedIn: boolean;
   mfaRequired: boolean;
@@ -124,6 +134,8 @@ interface AppContextType extends AppState {
   getAttendanceForDate: (date: string) => AttendanceRecord[];
   addIdea: (idea: Omit<Idea, "id" | "createdAt" | "votes">) => Promise<void>;
   voteIdea: (id: string) => Promise<void>;
+  saveParentNewsletter: (newsletter: Omit<ParentNewsletter, "id" | "createdAt">) => void;
+  deleteParentNewsletter: (id: string) => void;
   setColorOverlay: (overlay: string) => void;
   refreshData: () => Promise<void>;
 }
@@ -136,7 +148,9 @@ export function AppProvider({ children: childrenProp }: { children: React.ReactN
   const [state, setState] = useState<AppState>({
     loading: true, user: null, school: null, children: [],
     worksheetHistory: [], storyHistory: [], differentiationHistory: [],
-    attendanceRecords: [], ideas: [], colorOverlay: "none",
+    attendanceRecords: [], ideas: [],
+    parentNewsletters: (() => { try { return JSON.parse(localStorage.getItem("adaptly_newsletters") || "[]"); } catch { return []; } })(),
+    colorOverlay: "none",
     isLoggedIn: false, mfaRequired: false, pendingToken: null,
   });
 
@@ -317,8 +331,26 @@ export function AppProvider({ children: childrenProp }: { children: React.ReactN
 
   const setColorOverlay = useCallback((overlay: string) => { setState(s => ({ ...s, colorOverlay: overlay })); }, []);
 
+  const saveParentNewsletter = useCallback((newsletter: Omit<ParentNewsletter, "id" | "createdAt">) => {
+    const n: ParentNewsletter = { ...newsletter, id: generateId(), createdAt: new Date().toISOString() };
+    setState(s => ({ ...s, parentNewsletters: [n, ...s.parentNewsletters] }));
+    // Persist to localStorage for cross-session access
+    try {
+      const existing = JSON.parse(localStorage.getItem("adaptly_newsletters") || "[]");
+      localStorage.setItem("adaptly_newsletters", JSON.stringify([n, ...existing].slice(0, 50)));
+    } catch {}
+  }, []);
+
+  const deleteParentNewsletter = useCallback((id: string) => {
+    setState(s => ({ ...s, parentNewsletters: s.parentNewsletters.filter(n => n.id !== id) }));
+    try {
+      const existing = JSON.parse(localStorage.getItem("adaptly_newsletters") || "[]");
+      localStorage.setItem("adaptly_newsletters", JSON.stringify(existing.filter((n: any) => n.id !== id)));
+    } catch {}
+  }, []);
+
   return (
-    <AppContext.Provider value={{ ...state, login, loginWithGoogle, logout, registerTeacher, verifyMfa, addChild, removeChild, updateChild, assignWork, updateAssignment, addSubmission, updateSubmission, saveWorksheet, updateWorksheet, deleteWorksheet, saveStory, saveDifferentiation, saveAttendance, updateAttendance, getAttendanceForChild, getAttendanceForDate, addIdea, voteIdea, setColorOverlay, refreshData }}>
+    <AppContext.Provider value={{ ...state, login, loginWithGoogle, logout, registerTeacher, verifyMfa, addChild, removeChild, updateChild, assignWork, updateAssignment, addSubmission, updateSubmission, saveWorksheet, updateWorksheet, deleteWorksheet, saveStory, saveDifferentiation, saveAttendance, updateAttendance, getAttendanceForChild, getAttendanceForDate, addIdea, voteIdea, saveParentNewsletter, deleteParentNewsletter, setColorOverlay, refreshData }}>
       {childrenProp}
     </AppContext.Provider>
   );

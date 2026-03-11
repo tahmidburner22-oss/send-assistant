@@ -455,12 +455,28 @@ export default function Stories() {
 }
 
 function storyToHtml(md: string, textSize: number): string {
-  return md
-    .replace(/^## (.+)$/gm, `<h2 style="font-size:${textSize + 4}px" class="font-bold mt-6 mb-2 text-brand">$1</h2>`)
-    .replace(/^# (.+)$/gm, `<h1 style="font-size:${textSize + 8}px" class="font-bold mb-4">$1</h1>`)
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*(.+?)\*/g, '<em>$1</em>')
-    .replace(/\n\n/g, `</p><p style="font-size:${textSize}px" class="mb-3 leading-relaxed">`)
-    .replace(/^/, `<p style="font-size:${textSize}px" class="mb-3 leading-relaxed">`)
-    + '</p>';
+  if (!md) return '';
+  // Split into paragraphs by double newline
+  const paragraphs = md.split(/\n\n+/);
+  const lineHeight = Math.max(1.7, 1.4 + (textSize - 12) * 0.02);
+  return paragraphs.map(para => {
+    const trimmed = para.trim();
+    if (!trimmed) return '';
+    // Chapter/section headings
+    if (trimmed.startsWith('## ')) {
+      const heading = trimmed.replace(/^## /, '');
+      return `<h2 style="font-size:${textSize + 4}px;margin-top:24px;margin-bottom:8px" class="font-bold text-brand">${heading}</h2>`;
+    }
+    if (trimmed.startsWith('# ')) {
+      const heading = trimmed.replace(/^# /, '');
+      return `<h1 style="font-size:${textSize + 8}px;margin-bottom:12px" class="font-bold">${heading}</h1>`;
+    }
+    // Regular paragraph — apply inline formatting
+    const formatted = trimmed
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.+?)\*/g, '<em>$1</em>')
+      .replace(/"([^"]+)"/g, '\u201c$1\u201d') // Smart quotes for dialogue
+      .replace(/\n/g, '<br/>'); // Single newlines within paragraph
+    return `<p style="font-size:${textSize}px;line-height:${lineHeight};margin-bottom:${Math.round(textSize * 0.9)}px;text-indent:0">${formatted}</p>`;
+  }).filter(Boolean).join('\n');
 }

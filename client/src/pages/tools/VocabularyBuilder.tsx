@@ -7,6 +7,7 @@ const years = ["Year 1","Year 2","Year 3","Year 4","Year 5","Year 6","Year 7","Y
 export default function VocabularyBuilder() {
   return (
     <AIToolPage
+      assignable={true}
       title="Vocabulary Builder"
       description="Generate rich vocabulary lists with definitions, examples, and activities"
       icon={<BookType className="w-5 h-5 text-white" />}

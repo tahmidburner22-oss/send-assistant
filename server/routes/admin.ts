@@ -397,6 +397,97 @@ router.post("/super/invoice", requireAuth, requireSuperAdmin, (req: Request, res
   }
 });
 
+// GET /api/admin/super/users — list ALL users across all schools (super admin only)
+router.get("/super/users", requireAuth, requireSuperAdmin, (req: Request, res: Response) => {
+  try {
+    const users = db.prepare(`
+      SELECT u.id, u.email, u.display_name, u.role, u.is_active, u.email_verified,
+             u.mfa_enabled, u.last_login_at, u.created_at, s.name as school_name, u.school_id
+      FROM users u
+      LEFT JOIN schools s ON s.id = u.school_id
+      ORDER BY u.created_at DESC
+    `).all();
+    res.json({ users });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// PATCH /api/admin/super/users/:id — update any user's role or status (super admin only)
+router.patch("/super/users/:id", requireAuth, requireSuperAdmin, (req: Request, res: Response) => {
+  try {
+    const { role, is_active, email_verified } = req.body;
+    const userId = req.params.id;
+    if (role) {
+      const validRoles = ["mat_admin", "school_admin", "senco", "teacher", "ta"];
+      if (!validRoles.includes(role)) return res.status(400).json({ error: "Invalid role" });
+      db.prepare("UPDATE users SET role = ? WHERE id = ?").run(role, userId);
+    }
+    if (is_active !== undefined) {
+      db.prepare("UPDATE users SET is_active = ? WHERE id = ?").run(is_active ? 1 : 0, userId);
+    }
+    if (email_verified !== undefined) {
+      db.prepare("UPDATE users SET email_verified = ? WHERE id = ?").run(email_verified ? 1 : 0, userId);
+    }
+    try {
+      db.prepare(`INSERT INTO audit_log (id, school_id, user_id, action, created_at) VALUES (?, ?, ?, ?, datetime('now'))`)
+        .run(`sa_u_${Date.now()}`, null, (req as any).user.id, `SUPER_ADMIN_USER_UPDATE: userId=${userId} role=${role} active=${is_active}`);
+    } catch (_) {}
+    res.json({ ok: true });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// DELETE /api/admin/super/users/:id — permanently delete a user (super admin only)
+router.delete("/super/users/:id", requireAuth, requireSuperAdmin, (req: Request, res: Response) => {
+  try {
+    const userId = req.params.id;
+    const adminId = (req as any).user.id;
+    if (userId === adminId) return res.status(400).json({ error: "Cannot delete your own account" });
+    const user = db.prepare("SELECT email FROM users WHERE id = ?").get(userId) as any;
+    if (!user) return res.status(404).json({ error: "User not found" });
+    db.prepare("DELETE FROM users WHERE id = ?").run(userId);
+    try {
+      db.prepare(`INSERT INTO audit_log (id, school_id, user_id, action, created_at) VALUES (?, ?, ?, ?, datetime('now'))`)
+        .run(`sa_del_${Date.now()}`, null, adminId, `SUPER_ADMIN_USER_DELETED: ${user.email}`);
+    } catch (_) {}
+    res.json({ ok: true, message: `User ${user.email} deleted` });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/admin/super/audit — full audit log across all schools (super admin only)
+router.get("/super/audit", requireAuth, requireSuperAdmin, (req: Request, res: Response) => {
+  try {
+    const limit = parseInt(req.query.limit as string) || 200;
+    const logs = db.prepare(`
+      SELECT al.*, u.display_name, u.email, s.name as school_name
+      FROM audit_log al
+      LEFT JOIN users u ON u.id = al.user_id
+      LEFT JOIN schools s ON s.id = al.school_id
+      ORDER BY al.created_at DESC
+      LIMIT ?
+    `).all(limit);
+    res.json({ logs });
+  } catch (err: any) {
+    // Try audit_logs table as fallback
+    try {
+      const logs = db.prepare(`
+        SELECT al.*, u.display_name, u.email
+        FROM audit_logs al
+        LEFT JOIN users u ON u.id = al.user_id
+        ORDER BY al.created_at DESC
+        LIMIT ?
+      `).all(parseInt(req.query.limit as string) || 200);
+      res.json({ logs });
+    } catch (err2: any) {
+      res.status(500).json({ error: err2.message });
+    }
+  }
+});
+
 // PATCH /api/admin/super/schools/:id/subscription — manually override subscription status
 router.patch("/super/schools/:id/subscription", requireAuth, requireSuperAdmin, (req: Request, res: Response) => {
   try {

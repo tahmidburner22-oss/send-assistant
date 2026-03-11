@@ -7,6 +7,7 @@ const areas = ["Reading","Writing","Maths","Communication","Social Skills","Beha
 export default function SmartTargets() {
   return (
     <AIToolPage
+      assignable={true}
       title="SMART Targets Generator"
       description="Generate specific, measurable, achievable SEND targets for any area of need"
       icon={<CheckSquare className="w-5 h-5 text-white" />}
