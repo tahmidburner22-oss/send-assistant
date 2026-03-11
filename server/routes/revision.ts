@@ -549,7 +549,11 @@ router.post("/tts", requireAuth, async (req: Request, res: Response) => {
     //    Voices: Aoede, Leda, Kore (F) | Charon, Fenrir, Orus (M)
     //    Handles up to 4500 chars per chunk, returns PCM wrapped in WAV
     // ───────────────────────────────────────────────────────────────────────────────
-    const geminiKeyPrimary = process.env.GEMINI_API_KEY || getEffectiveKey("gemini");
+    // Check both GEMINI_API_KEY and ELEVENLABS_API_KEY — the working Gemini key may be stored in either
+    // Gemini keys start with "AIzaSy"; ElevenLabs keys start with "sk_"
+    const elevenLabsEnv = process.env.ELEVENLABS_API_KEY || "";
+    const elevenLabsAsGemini = elevenLabsEnv.startsWith("AIzaSy") ? elevenLabsEnv : "";
+    const geminiKeyPrimary = process.env.GEMINI_API_KEY || elevenLabsAsGemini || getEffectiveKey("gemini");
     if (geminiKeyPrimary) {
       const geminiVoiceMapPrimary: Record<string, string> = {
         nova: "Aoede", shimmer: "Leda", alloy: "Kore",
@@ -723,23 +727,36 @@ router.post("/tts", requireAuth, async (req: Request, res: Response) => {
         if (row?.api_key) openaiKey = row.api_key;
       } catch { /* ignore */ }
     }
-    // Only use env OpenAI key if it's a real sk- key (not a proxy)
-    if (!openaiKey && process.env.OPENAI_API_KEY?.startsWith("sk-") && !process.env.OPENAI_API_KEY?.startsWith("sk-TXL")) {
+    // Use env OpenAI key (including OpenRouter sk-or-v1- keys which are OpenAI-compatible)
+    if (!openaiKey && process.env.OPENAI_API_KEY) {
       openaiKey = process.env.OPENAI_API_KEY;
     }
     if (openaiKey) {
       const validVoices = ["alloy", "echo", "fable", "onyx", "nova", "shimmer"];
       const selectedVoice = validVoices.includes(voice) ? voice : "nova";
+      // Use OpenRouter endpoint for OpenRouter keys, standard OpenAI endpoint otherwise
+      const isOpenRouterKey = openaiKey.startsWith("sk-or-");
+      const ttsEndpoint = isOpenRouterKey
+        ? "https://openrouter.ai/api/v1/audio/speech"
+        : "https://api.openai.com/v1/audio/speech";
+      const ttsHeaders: Record<string, string> = {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${openaiKey}`,
+      };
+      if (isOpenRouterKey) {
+        ttsHeaders["HTTP-Referer"] = "https://adaptly.co.uk";
+        ttsHeaders["X-Title"] = "Adaptly";
+      }
       try {
         const chunks = splitIntoChunks(text, 4000);
-        console.log(`[TTS] OpenAI TTS: voice=${selectedVoice}, chars=${text.length}, chunks=${chunks.length}`);
+        console.log(`[TTS] OpenAI TTS (${isOpenRouterKey ? "via OpenRouter" : "direct"}): voice=${selectedVoice}, chars=${text.length}, chunks=${chunks.length}`);
         const buffers: Buffer[] = [];
         for (const chunk of chunks) {
           const ttsRes = await fetchWithTimeout(
-            "https://api.openai.com/v1/audio/speech",
+            ttsEndpoint,
             {
               method: "POST",
-              headers: { "Content-Type": "application/json", Authorization: `Bearer ${openaiKey}` },
+              headers: ttsHeaders,
               body: JSON.stringify({ model: "tts-1-hd", input: chunk, voice: selectedVoice, response_format: "mp3" }),
             },
             25000
