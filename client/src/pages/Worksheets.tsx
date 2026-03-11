@@ -66,13 +66,27 @@ function useVoiceInput(onResult: (text: string) => void) {
 // ─── Format content helper ──────────────────────────────────────────────────
 function formatContent(content: string): string {
   return content
+    // Horizontal rules
+    .replace(/^---$/gm, "<hr class='my-3 border-gray-300'/>")
+    // Blockquotes (SEND hints, context, notes)
+    .replace(/^> (.+)$/gm, "<div class='blockquote-line bg-blue-50 border-l-4 border-blue-400 pl-3 py-1 my-1 text-sm text-blue-800 rounded-r'>$1</div>")
+    // Bold
     .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    // Italic
     .replace(/\*(.+?)\*/g, "<em class='text-muted-foreground'>$1</em>")
-    .replace(/^(Q?\d+[a-z]?[.)] .+)$/gm, "<div class='question-line my-2'><span class='font-medium'>$1</span></div>")
-    .replace(/^\s*(Hint:.+)$/gm, "<div class='hint-line text-blue-700 text-sm italic pl-4 my-1'>&#128161; $1</div>")
+    // Answer lines — render as styled underline
+    .replace(/_{20,}/g, "<span class='answer-line inline-block w-full border-b-2 border-gray-400 my-1.5 min-h-[1.5rem]'>&nbsp;</span>")
+    // Marks badges [X marks]
     .replace(/\[(\d+ marks?)\]/g, "<span class='marks-badge ml-2 text-xs font-bold text-white bg-gray-600 px-1.5 py-0.5 rounded'>[$1]</span>")
+    // Hints
+    .replace(/^\s*(Hint:.+)$/gm, "<div class='hint-line text-blue-700 text-sm italic pl-4 my-1'>&#128161; $1</div>")
+    // Bullet points
     .replace(/^[•\-] (.+)$/gm, "<div class='flex items-start gap-2 my-1'><span class='text-brand mt-1'>&#8226;</span><span>$1</span></div>")
+    // Step lines
     .replace(/^(Step \d+:.+)$/gm, "<div class='step-line font-semibold text-emerald-700 mt-2'>$1</div>")
+    // Source lines (exam paper attribution)
+    .replace(/^\*\[(.+)\]\*$/gm, "<div class='source-line text-xs text-gray-400 italic mt-1'>[$1]</div>")
+    // Newlines
     .replace(/\n/g, "<br/>");
 }
 
@@ -1073,7 +1087,7 @@ export default function Worksheets() {
                                 onClick={() => { setAiEditSectionIndex(isAiTarget ? null : i); setAiEditPrompt(""); }}
                               >
                                 <span className="block text-[10px] text-brand font-medium mb-1 flex items-center gap-1"><Sparkles className="w-3 h-3" />Click to edit with AI</span>
-                                {currentContent}
+                                <div dangerouslySetInnerHTML={{ __html: formatContent(currentContent) }} />
                               </div>
                               {isAiTarget && (
                                 <div className="mt-2 rounded-lg border border-brand/30 bg-brand-light/30 p-3 space-y-2">
@@ -1095,7 +1109,8 @@ export default function Worksheets() {
                               )}
                             </>
                           ) : (
-                            <p className="text-sm whitespace-pre-wrap leading-relaxed text-foreground/90">{currentContent}</p>
+                            <div className="text-sm leading-relaxed text-foreground/90"
+                              dangerouslySetInnerHTML={{ __html: formatContent(currentContent) }} />
                           )}
                         </div>
                       );

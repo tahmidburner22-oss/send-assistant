@@ -230,9 +230,9 @@ function buildMarkScheme(questions: PastPaperQuestion[]): string {
  * Build teacher notes for the exam paper.
  */
 function buildTeacherNotes(questions: PastPaperQuestion[], params: ExamPaperWorksheetParams): string {
-  const boards = [...new Set(questions.map(q => q.board))];
-  const years = [...new Set(questions.map(q => q.year))].sort();
-  const topics = [...new Set(questions.map(q => q.topic))];
+  const boards = Array.from(new Set(questions.map(q => q.board)));
+  const years = Array.from(new Set(questions.map(q => q.year))).sort();
+  const topics = Array.from(new Set(questions.map(q => q.topic)));
   const totalMarks = questions.reduce((sum, q) => sum + q.marks, 0);
 
   return `**Teacher Notes**
@@ -269,12 +269,14 @@ export function buildExamPaperWorksheet(params: ExamPaperWorksheetParams): ExamP
   const questionCount = getQuestionCount(params.worksheetLength);
 
   // Fetch questions from database
+  const topicFilter = params.topic && params.topic.toLowerCase() !== "general" ? params.topic : undefined;
   let questions = getExamQuestions({
     subject: normSubject,
     board,
     tier,
-    topic: params.topic && params.topic.toLowerCase() !== "general" ? params.topic : undefined,
+    topic: topicFilter,
     limit: questionCount,
+    yearMin: 2015,
   });
 
   // Fallback: if not enough questions for the specific board, try any board
@@ -282,8 +284,9 @@ export function buildExamPaperWorksheet(params: ExamPaperWorksheetParams): ExamP
     questions = getExamQuestions({
       subject: normSubject,
       tier,
-      topic: params.topic && params.topic.toLowerCase() !== "general" ? params.topic : undefined,
+      topic: topicFilter,
       limit: questionCount,
+      yearMin: 2015,
     });
   }
 
@@ -292,6 +295,7 @@ export function buildExamPaperWorksheet(params: ExamPaperWorksheetParams): ExamP
     questions = getExamQuestions({
       subject: normSubject,
       limit: questionCount,
+      yearMin: 2015,
     });
   }
 
