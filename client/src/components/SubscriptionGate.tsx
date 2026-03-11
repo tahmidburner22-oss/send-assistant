@@ -42,10 +42,12 @@ export default function SubscriptionGate({ children }: Props) {
   const [redirecting, setRedirecting] = useState(false);
 
   const isAdmin = user?.role === "school_admin" || user?.role === "mat_admin";
-  const isSuperAdmin = user?.role === "mat_admin" || user?.role === "super_admin";
+  // Platform owner / developer account always gets full access — no billing checks ever
+  const isPlatformOwner = user?.email === "admin@adaptly.co.uk" || user?.email === "admin@sendassistant.app";
+  const isSuperAdmin = isPlatformOwner || user?.role === "mat_admin" || user?.role === "super_admin";
 
   useEffect(() => {
-    // Super admins always have access — skip billing check
+    // Super admins and platform owner always have access — skip billing check
     if (isSuperAdmin || !user?.schoolId) {
       setLoading(false);
       return;
