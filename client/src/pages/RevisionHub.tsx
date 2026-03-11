@@ -53,6 +53,22 @@ const TTS_ENGINE_OPTIONS = [
   { id: "browser", label: "Browser Voice (built-in)" },
 ];
 
+const YEAR_GROUPS = [
+  { value: "year1",  label: "Year 1 (age 5–6)" },
+  { value: "year2",  label: "Year 2 (age 6–7)" },
+  { value: "year3",  label: "Year 3 (age 7–8)" },
+  { value: "year4",  label: "Year 4 (age 8–9)" },
+  { value: "year5",  label: "Year 5 (age 9–10)" },
+  { value: "year6",  label: "Year 6 (age 10–11)" },
+  { value: "year7",  label: "Year 7 (age 11–12)" },
+  { value: "year8",  label: "Year 8 (age 12–13)" },
+  { value: "year9",  label: "Year 9 (age 13–14)" },
+  { value: "year10", label: "Year 10 (age 14–15)" },
+  { value: "year11", label: "Year 11 (age 15–16)" },
+  { value: "year12", label: "Year 12 / AS Level (age 16–17)" },
+  { value: "year13", label: "Year 13 / A Level (age 17–18)" },
+];
+
 function getAuthHeaders(extra: Record<string, string> = {}): Record<string, string> {
   const token = localStorage.getItem("send_token");
   return token ? { Authorization: `Bearer ${token}`, ...extra } : extra;
@@ -91,6 +107,7 @@ export default function RevisionHub() {
   const [loadingQuiz, setLoadingQuiz] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   // TTS state
+  const [yearGroup, setYearGroup] = useState("year10"); // default Year 10
   const [ttsEngine, setTtsEngine] = useState<"edge" | "browser">("edge"); // "edge" = Microsoft Neural, "browser" = Web Speech API
   const [edgeVoice, setEdgeVoice] = useState("nova"); // OpenAI TTS voice
   const [selectedLanguage, setSelectedLanguage] = useState("en");
@@ -282,6 +299,7 @@ export default function RevisionHub() {
       const formData = new FormData();
       formData.append("document", file);
       formData.append("language", selectedLanguage);
+      formData.append("yearGroup", yearGroup);
       const res = await fetch("/api/revision/upload", {
         method: "POST",
         headers: getAuthHeaders(),
@@ -446,6 +464,20 @@ export default function RevisionHub() {
                   <p className="text-xs text-muted-foreground leading-tight">{desc}</p>
                 </div>
               ))}
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                <Brain className="w-3.5 h-3.5" /> Year Group
+              </label>
+              <select
+                value={yearGroup}
+                onChange={e => setYearGroup(e.target.value)}
+                className="w-full text-sm bg-muted border border-border rounded-lg px-3 py-2 text-foreground"
+              >
+                {YEAR_GROUPS.map(yg => (
+                  <option key={yg.value} value={yg.value}>{yg.label}</option>
+                ))}
+              </select>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">

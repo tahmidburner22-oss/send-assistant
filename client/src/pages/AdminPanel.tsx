@@ -95,7 +95,7 @@ export default function AdminPanel() {
         Promise.all([
       schoolsApi.listUsers().catch(() => []),
       pupilsApi.listIncidents().catch(() => []),
-      schoolsApi.auditLogs().catch(() => []),
+      schoolsApi.auditLogs("audit-admin").catch(() => []),
       fetch("/api/admin/stats", { credentials: "include" }).then(r => r.ok ? r.json() : null).catch(() => null),
       fetch("/api/admin/ai-keys", { credentials: "include" }).then(r => r.ok ? r.json() : {}).catch(() => ({})),
       fetch("/api/admin/breach-log", { credentials: "include" }).then(r => r.ok ? r.json() : { breaches: [] }).catch(() => ({ breaches: [] })),
@@ -390,24 +390,47 @@ export default function AdminPanel() {
                 <Activity className="w-4 h-4 text-brand" /> Audit Log
               </CardTitle>
               <Button size="sm" variant="outline" className="h-8 text-xs"
-                onClick={async () => { const a = await schoolsApi.auditLogs(); setAuditLogs(a); toast.success("Refreshed"); }}>
+                onClick={async () => { const a = await schoolsApi.auditLogs("audit-admin"); setAuditLogs(a); toast.success("Refreshed"); }}>
                 <RefreshCw className="w-3 h-3 mr-1" /> Refresh
               </Button>
             </CardHeader>
             <CardContent>
               <div className="divide-y divide-border/50 max-h-96 overflow-y-auto">
                 {auditLogs.length === 0 ? (
+                {auditLogs.length === 0 ? (
                   <div className="p-6 text-center text-muted-foreground text-sm">No audit events recorded</div>
                 ) : auditLogs.map((log, i) => (
-                  <div key={i} className="p-3 flex items-start gap-3">
-                    <Activity className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-mono text-muted-foreground">{log.action}</p>
-                      <p className="text-xs text-muted-foreground">{log.user_name || log.userEmail || "System"} · {log.created_at || log.createdAt ? new Date(log.created_at || log.createdAt).toLocaleString("en-GB") : ""}</p>
+                  <div key={i} className="p-3 flex items-start gap-3 border-b border-border/30 last:border-0">
+                    <Activity className="w-4 h-4 text-brand shrink-0 mt-0.5" />
+                    <div className="flex-1 min-w-0 space-y-1">
+                      <p className="text-xs font-semibold text-foreground">{log.action}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {log.display_name || log.email || "System"}
+                        {log.role && ` (${log.role})`}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {log.ip_masked || log.ip_address || "Unknown IP"}
+                        {log.device && ` • ${log.device}`}
+                        {log.browser && ` • ${log.browser}`}
+                        {log.os && ` • ${log.os}`}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {log.created_at ? new Date(log.created_at).toLocaleString("en-GB") : ""}
+                      </p>
                     </div>
                   </div>
                 ))}
-              </div>
+
+
+
+
+
+
+
+
+
+
+
             </CardContent>
           </Card>
         </TabsContent>

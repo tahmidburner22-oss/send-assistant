@@ -252,6 +252,8 @@ router.post("/upload", requireAuth, upload.single("document"), (req: Request, re
 
   const jobId = randomUUID();
   const language = (req.body?.language || "en").toString().slice(0, 5);
+  const yearGroupRaw = (req.body?.yearGroup || "year10").toString();
+  const yearNum = parseInt(yearGroupRaw.replace(/[^0-9]/g, ""), 10) || 10;
   const fileBuffer = req.file.buffer;
   const fileMime = req.file.mimetype;
 
@@ -282,20 +284,31 @@ router.post("/upload", requireAuth, upload.single("document"), (req: Request, re
         ? ""
         : `\n       - IMPORTANT: Write the ENTIRE podcast script in ${langName}. All explanations, examples, transitions, and the closing line must be in ${langName}.`;
 
+      // Age-tailored script guidance based on year group
+      const ageGuide =
+        yearNum <= 2  ? `The student is in Year ${yearNum} (age ${yearNum + 4}–${yearNum + 5}). Use very short sentences (5–8 words). Only the simplest vocabulary. Speak like a kind, encouraging primary teacher. Use lots of repetition and concrete examples. Avoid any abstract concepts. Aim for 200–300 words.` :
+        yearNum <= 4  ? `The student is in Year ${yearNum} (age ${yearNum + 4}–${yearNum + 5}). Use short, clear sentences. Simple everyday vocabulary. Introduce new words with an immediate plain-English definition. Use relatable real-world examples. Aim for 300–450 words.` :
+        yearNum <= 6  ? `The student is in Year ${yearNum} (age ${yearNum + 4}–${yearNum + 5}). Use clear sentences (10–15 words). Introduce subject vocabulary with brief definitions. Use concrete examples and analogies. Aim for 400–550 words.` :
+        yearNum <= 8  ? `The student is in Year ${yearNum} (age ${yearNum + 4}–${yearNum + 5}). Use moderate complexity. Introduce technical vocabulary with definitions. Some abstract concepts are fine if anchored to concrete examples. Aim for 500–700 words.` :
+        yearNum <= 9  ? `The student is in Year ${yearNum} (age ${yearNum + 4}–${yearNum + 5}). Use KS3-level academic language. Technical vocabulary expected. Multi-clause sentences are fine. Aim for 600–800 words.` :
+        yearNum <= 11 ? `The student is in Year ${yearNum} (age ${yearNum + 4}–${yearNum + 5}) studying for their GCSEs. Use GCSE-level academic language. Subject-specific terminology is expected. Use command words (describe, explain, evaluate, analyse) naturally. Aim for 700–900 words.` :
+                        `The student is in Year ${yearNum} (age ${yearNum + 4}–${yearNum + 5}) studying at A-Level. Use A-Level academic register. Sophisticated vocabulary, nuanced arguments, synoptic links. Reference relevant theories and studies. Aim for 800–1000 words.`;
+
       const script = await callWithFallback(
-        `You are an expert educational podcast host creating a revision podcast for students aged 11-18.
+        `You are an expert educational podcast host creating a personalised revision podcast.
        You will receive raw document text which may contain headers, page numbers, and boilerplate — ignore all of that.
-       Your job is to transform the CORE EDUCATIONAL CONTENT into a rich, engaging spoken explanation — like a brilliant teacher talking directly to a student.
+       Your job is to transform the CORE EDUCATIONAL CONTENT into a rich, engaging spoken explanation — like a brilliant teacher talking directly to one specific student.
+
+       STUDENT PROFILE: ${ageGuide}
 
        CRITICAL RULES:
        - Write ONLY natural spoken language — absolutely no bullet points, no markdown, no headers, no asterisks
        - Do NOT just read the notes back. EXPLAIN everything as if the student has never heard it before
        - Break down every concept step by step with clear reasoning
-       - Use real-world analogies and relatable examples to make abstract ideas stick
+       - Use real-world analogies and relatable examples appropriate for the student's age
        - Define any technical terms the moment you use them
        - Connect ideas together naturally
        - Use natural speech patterns and vary your sentence length
-       - Aim for 600-900 words of spoken script (about 4-6 minutes of audio)
        - Do NOT start with "Welcome" or "In this podcast" — open with the first key concept immediately
        - End with a brief encouragement to take the quiz${langInstruction}`,
         `Document text to turn into a podcast script:\n\n${rawText.slice(0, 6000)}`,
