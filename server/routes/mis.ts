@@ -20,10 +20,14 @@ const router = Router();
 
 // ── Helper: check if school is on premium plan ────────────────────────────────
 function isPremiumSchool(schoolId: string): boolean {
+  // Platform owner school always has premium
   const school = db.prepare(
-    "SELECT subscription_plan, licence_type FROM schools WHERE id = ?"
+    "SELECT subscription_plan, licence_type, name FROM schools WHERE id = ?"
   ).get(schoolId) as any;
   if (!school) return false;
+  // Check if this is the platform owner school (Adaptly)
+  const schoolName = (school.name || "").toLowerCase();
+  if (schoolName === "adaptly" || schoolName === "adaptly demo" || schoolName === "system") return true;
   const plan = (school.subscription_plan || school.licence_type || "").toLowerCase();
   return ["premium", "mat", "enterprise"].includes(plan);
 }
