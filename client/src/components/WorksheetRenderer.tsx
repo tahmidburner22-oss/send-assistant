@@ -14,7 +14,7 @@ import "katex/dist/katex.min.css";
  * Falls back to plain text if KaTeX fails.
  * Also strips any remaining raw ** asterisks.
  */
-function renderMath(text: string): string {
+export function renderMath(text: string): string {
   if (!text) return "";
   // First, strip any raw ** that are not part of a valid bold pattern
   let result = text;

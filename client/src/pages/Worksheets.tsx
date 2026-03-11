@@ -17,7 +17,7 @@ import { subjects, yearGroups, sendNeeds, examBoards, difficulties, colorOverlay
 import { generateWorksheet, type GeneratedWorksheet } from "@/lib/worksheet-generator";
 import { downloadWorksheetPdf } from "@/lib/pdf-generator";
 import { downloadHtmlAsPdf, printWorksheetElement } from "@/lib/pdf-generator-v2";
-import WorksheetRenderer from "@/components/WorksheetRenderer";
+import WorksheetRenderer, { renderMath } from "@/components/WorksheetRenderer";
 import { worksheetBank, type BankWorksheet } from "@/lib/worksheet-bank";
 import { aiGenerateWorksheet, aiEditSection } from "@/lib/ai";
 import { buildExamPaperWorksheet, hasPastPaperQuestions, getPastPaperDatabaseInfo } from "@/lib/examPaperBuilder";
@@ -988,7 +988,7 @@ export default function Worksheets() {
                               <Badge variant="outline" className="text-xs py-0">{question.year}</Badge>
                               <Badge className="text-xs py-0 bg-gray-100 text-gray-600">{question.marks} mark{question.marks !== 1 ? 's' : ''}</Badge>
                             </div>
-                            <p className="text-sm text-foreground line-clamp-2">{question.text}</p>
+                            <p className="text-sm text-foreground line-clamp-2" dangerouslySetInnerHTML={{ __html: renderMath(question.text) }} />
                             <p className="text-xs text-muted-foreground mt-1">{question.paper} · Q{question.questionNum}</p>
                           </div>
                           <ChevronDown className={`h-4 w-4 text-gray-400 flex-shrink-0 transition-transform ${examQExpanded === question.id ? 'rotate-180' : ''}`} />
@@ -998,11 +998,11 @@ export default function Worksheets() {
                           <div className="mt-3 pt-3 border-t border-border/50 space-y-2">
                             <div className="bg-blue-50 rounded-lg p-3">
                               <p className="text-xs font-semibold text-blue-700 mb-1">Full Question:</p>
-                              <p className="text-sm text-gray-800">{question.text}</p>
+                              <p className="text-sm text-gray-800" dangerouslySetInnerHTML={{ __html: renderMath(question.text) }} />
                               {question.context && (
                                 <div className="mt-2 p-2 bg-white rounded border border-blue-100">
                                   <p className="text-xs text-gray-500 font-medium mb-1">Context:</p>
-                                  <p className="text-xs text-gray-700">{question.context}</p>
+                                  <p className="text-xs text-gray-700" dangerouslySetInnerHTML={{ __html: renderMath(question.context || "") }} />
                                 </div>
                               )}
                               {question.subParts && question.subParts.length > 0 && (
@@ -1010,7 +1010,7 @@ export default function Worksheets() {
                                   {question.subParts.map(part => (
                                     <div key={part.label} className="flex gap-2 text-xs">
                                       <span className="font-medium text-blue-600">{part.label}</span>
-                                      <span className="text-gray-700">{part.text}</span>
+                                      <span className="text-gray-700" dangerouslySetInnerHTML={{ __html: renderMath(part.text) }} />
                                       <span className="text-gray-400 ml-auto">[{part.marks} mark{part.marks !== 1 ? 's' : ''}]</span>
                                     </div>
                                   ))}
@@ -1020,13 +1020,13 @@ export default function Worksheets() {
                             {question.markScheme && (
                               <div className="bg-green-50 rounded-lg p-3">
                                 <p className="text-xs font-semibold text-green-700 mb-1">Mark Scheme:</p>
-                                <p className="text-xs text-gray-700">{question.markScheme}</p>
+                                <p className="text-xs text-gray-700" dangerouslySetInnerHTML={{ __html: renderMath(question.markScheme || "") }} />
                               </div>
                             )}
                             {question.hint && (
                               <div className="bg-yellow-50 rounded-lg p-3">
                                 <p className="text-xs font-semibold text-yellow-700 mb-1">💡 Hint:</p>
-                                <p className="text-xs text-gray-700">{question.hint}</p>
+                                <p className="text-xs text-gray-700" dangerouslySetInnerHTML={{ __html: renderMath(question.hint || "") }} />
                               </div>
                             )}
                             <div className="flex gap-2 pt-1">
