@@ -200,4 +200,56 @@ router.get("/audit", requireAuth, requireMinRole("school_admin"), (req: Request,
   res.json(logs);
 });
 
+// GET /api/schools/audit-admin — Detailed audit log with device/browser/IP info
+router.get("/audit-admin", requireAuth, requireMinRole("school_admin"), (req: Request, res: Response) => {
+  const schoolId = req.user!.role === "mat_admin"
+    ? (req.query.schoolId as string) || req.user!.schoolId
+    : req.user!.schoolId;
+  const limit = parseInt(req.query.limit as string) || 200;
+  const offset = parseInt(req.query.offset as string) || 0;
+  
+  const logs = db.prepare(`
+    SELECT 
+      al.id, al.action, al.entity_type, al.entity_id, al.details, al.ip_address, al.created_at,
+      u.id as user_id, u.display_name, u.email, u.role,
+      s.user_agent
+    FROM audit_logs al
+    LEFT JOIN users u ON al.user_id = u.id
+    LEFT JOIN sessions s ON al.user_id = s.user_id
+    WHERE al.school_id = ?
+    ORDER BY al.created_at DESC
+    LIMIT ? OFFSET ?
+  `).all(schoolId, limit, offset) as any[];
+  
+  const enriched = logs.map(log => {
+    const ua = log.user_agent || "";
+    let browser = "Unknown", device = "Unknown", os = "Unknown";
+    
+    if (ua.includes("Chrome")) browser = "Chrome";
+    else if (ua.includes("Firefox")) browser = "Firefox";
+    else if (ua.includes("Safari")) browser = "Safari";
+    else if (ua.includes("Edge")) browser = "Edge";
+    
+    if (ua.includes("Windows")) os = "Windows";
+    else if (ua.includes("Mac")) os = "macOS";
+    else if (ua.includes("Linux")) os = "Linux";
+    else if (ua.includes("Android")) os = "Android";
+    else if (ua.includes("iPhone") || ua.includes("iPad")) os = "iOS";
+    
+    if (ua.includes("Mobile") || ua.includes("Android") || ua.includes("iPhone")) device = "Mobile";
+    else if (ua.includes("iPad")) device = "Tablet";
+    else device = "Desktop";
+    
+    return {
+      ...log,
+      browser,
+      device,
+      os,
+      ip_masked: log.ip_address ? log.ip_address.split(".").slice(0, 3).join(".") + ".***" : "Unknown",
+    };
+  });
+  
+  res.json({ logs: enriched, total: logs.length });
+});
+
 export default router;
