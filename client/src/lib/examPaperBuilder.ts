@@ -239,20 +239,8 @@ function formatQuestionSEND(q: PastPaperQuestion, index: number, sendNeed?: stri
     ? `\n\n> ${q.context.split("\n").join("\n> ")}\n`
     : "";
 
-  // SEND-specific hint
-  let sendHint = "";
-  if (sendNeed && sendNeed !== "none" && sendNeed !== "general") {
-    const need = sendNeed.toLowerCase();
-    if (need.includes("dyslexia") || need.includes("reading")) {
-      sendHint = `\n> 💡 *Hint: Read the question carefully. Underline the key words.*`;
-    } else if (need.includes("autism") || need.includes("asd")) {
-      sendHint = `\n> 💡 *Hint: Focus on one part of the question at a time.*`;
-    } else if (need.includes("adhd")) {
-      sendHint = `\n> 💡 *Hint: Break this into steps. Tick each step as you complete it.*`;
-    } else if (need.includes("dyscalculia")) {
-      sendHint = `\n> 💡 *Hint: You may use a number line or multiplication grid.*`;
-    }
-  }
+  // Hints removed — not shown on worksheets
+  const sendHint = "";
 
   // Answer lines
   const lineCount = q.answerLines || Math.max(2, Math.ceil(q.marks * 1.5));

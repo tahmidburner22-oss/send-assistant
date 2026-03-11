@@ -66,21 +66,20 @@ function useVoiceInput(onResult: (text: string) => void) {
 
 // ─── Format content helper ──────────────────────────────────────────────────
 function formatContent(content: string): string {
-  return content
+  // Apply renderMath first to handle KaTeX fractions and LaTeX expressions
+  let processed = renderMath(content);
+  return processed
     // Horizontal rules
     .replace(/^---$/gm, "<hr class='my-3 border-gray-300'/>")
-    // Blockquotes (SEND hints, context, notes)
+    // Blockquotes (SEND context, notes)
     .replace(/^> (.+)$/gm, "<div class='blockquote-line bg-blue-50 border-l-4 border-blue-400 pl-3 py-1 my-1 text-sm text-blue-800 rounded-r'>$1</div>")
-    // Bold
-    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-    // Italic
-    .replace(/\*(.+?)\*/g, "<em class='text-muted-foreground'>$1</em>")
     // Answer lines — render as styled underline
     .replace(/_{20,}/g, "<span class='answer-line inline-block w-full border-b-2 border-gray-400 my-1.5 min-h-[1.5rem]'>&nbsp;</span>")
     // Marks badges [X marks]
-    .replace(/\[(\d+ marks?)\]/g, "<span class='marks-badge ml-2 text-xs font-bold text-white bg-gray-600 px-1.5 py-0.5 rounded'>[$1]</span>")
-    // Hints
-    .replace(/^\s*(Hint:.+)$/gm, "<div class='hint-line text-blue-700 text-sm italic pl-4 my-1'>&#128161; $1</div>")
+    .replace(/(\[\d+ marks?\])/g, "<span class='marks-badge ml-2 text-xs font-bold text-white bg-gray-600 px-1.5 py-0.5 rounded'>$1</span>")
+    // Hints — removed (not shown on worksheets)
+    .replace(/^\s*>?\s*💡.*$/gm, "")
+    .replace(/^\s*>?\s*Hint:.*$/gm, "")
     // Bullet points
     .replace(/^[•\-] (.+)$/gm, "<div class='flex items-start gap-2 my-1'><span class='text-brand mt-1'>&#8226;</span><span>$1</span></div>")
     // Step lines
@@ -1023,12 +1022,7 @@ export default function Worksheets() {
                                 <p className="text-xs text-gray-700" dangerouslySetInnerHTML={{ __html: renderMath(question.markScheme || "") }} />
                               </div>
                             )}
-                            {question.hint && (
-                              <div className="bg-yellow-50 rounded-lg p-3">
-                                <p className="text-xs font-semibold text-yellow-700 mb-1">💡 Hint:</p>
-                                <p className="text-xs text-gray-700" dangerouslySetInnerHTML={{ __html: renderMath(question.hint || "") }} />
-                              </div>
-                            )}
+                            {/* Hints removed from display */}
                             <div className="flex gap-2 pt-1">
                               <Button
                                 size="sm"

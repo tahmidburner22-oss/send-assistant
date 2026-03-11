@@ -42,14 +42,40 @@ export function renderMath(text: string): string {
       return expr;
     }
   });
-  // Convert plain text fractions like 3/4 in math context to proper display
-  // (only when surrounded by spaces or at start/end, to avoid URLs)
-  result = result.replace(/(?<=\s|^)(\d+)\/([1-9]\d*)(?=\s|$|[.,;:])/g, (_, num, den) => {
-    try {
-      return katex.renderToString(`\\dfrac{${num}}{${den}}`, { displayMode: false, throwOnError: false });
-    } catch {
-      return `${num}/${den}`;
-    }
+  // Convert plain-text fractions to proper KaTeX stacked fractions.
+  // Handles:
+  //   simple:      3/4   2/5   7/20
+  //   algebraic:   1/(n)   3/(x+2)   (5x-1)/((x+2)(x-1))   x/(x-1)
+  //   mixed:       1 3/20  (rendered as \dfrac)
+  // Strategy: find patterns of the form  numerator/denominator  where
+  // numerator and denominator are either a plain number/variable or a
+  // parenthesised expression.
+
+  // 1. Parenthesised numerator and/or denominator: (expr)/(expr)
+  result = result.replace(/\(([^()]+(?:\([^()]*\)[^()]*)*)\)\/\(([^()]+(?:\([^()]*\)[^()]*)*)\)/g, (_, num, den) => {
+    try { return katex.renderToString(`\\dfrac{${num}}{${den}}`, { displayMode: false, throwOnError: false }); }
+    catch { return `(${num})/(${den})`; }
+  });
+
+  // 2. Plain numerator / parenthesised denominator: 1/(n+1)
+  result = result.replace(/([A-Za-z0-9]+)\/\(([^()]+(?:\([^()]*\)[^()]*)*)\)/g, (_, num, den) => {
+    try { return katex.renderToString(`\\dfrac{${num}}{${den}}`, { displayMode: false, throwOnError: false }); }
+    catch { return `${num}/(${den})`; }
+  });
+
+  // 3. Parenthesised numerator / plain denominator: (x+1)/x
+  result = result.replace(/\(([^()]+)\)\/([A-Za-z0-9]+)/g, (_, num, den) => {
+    try { return katex.renderToString(`\\dfrac{${num}}{${den}}`, { displayMode: false, throwOnError: false }); }
+    catch { return `(${num})/${den}`; }
+  });
+
+  // 4. Simple numeric or single-variable fractions: 3/4  x/y  2/n
+  //    (only when surrounded by whitespace or punctuation, to avoid URLs)
+  result = result.replace(/(?<=[\s(,;:=+\-*]|^)([A-Za-z0-9]+)\/([A-Za-z0-9]+)(?=[\s),;:=+\-*]|$)/g, (_, num, den) => {
+    // Skip if it looks like a URL fragment or year range
+    if (/^\d{4}$/.test(num) || /^\d{4}$/.test(den)) return `${num}/${den}`;
+    try { return katex.renderToString(`\\dfrac{${num}}{${den}}`, { displayMode: false, throwOnError: false }); }
+    catch { return `${num}/${den}`; }
   });
   // Bold markdown **text** → <strong>text</strong>
   result = result.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
@@ -224,13 +250,8 @@ function formatContent(content: string, fmt: ReturnType<typeof getSendFormatting
       return;
     }
 
-    // Hint line
+    // Hint lines are not shown on worksheets — skip them
     if (trimmed.startsWith("Hint:") || trimmed.startsWith("💡")) {
-      elements.push(
-        <div key={idx} style={{ background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: "6px", padding: "6px 10px", margin: "6px 0", fontSize: `${textSize - 1}px`, color: "#1d4ed8", fontFamily, letterSpacing }}>
-          💡 <span dangerouslySetInnerHTML={{ __html: renderMath(trimmed) }} />
-        </div>
-      );
       return;
     }
 
