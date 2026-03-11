@@ -76,7 +76,7 @@ export default function SuperAdminUsers() {
         setLoading(true);
         const res = await fetch("/api/admin/users", {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${localStorage.getItem("send_token")}`,
           },
         });
         if (!res.ok) throw new Error("Failed to fetch users");
@@ -102,7 +102,7 @@ export default function SuperAdminUsers() {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${localStorage.getItem("send_token")}`,
         },
         body: JSON.stringify({ field, value }),
       });
@@ -123,7 +123,7 @@ export default function SuperAdminUsers() {
       const res = await fetch(`/api/admin/users/${userId}`, {
         method: "DELETE",
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${localStorage.getItem("send_token")}`,
         },
       });
       if (!res.ok) throw new Error("Failed to delete user");
