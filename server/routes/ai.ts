@@ -745,11 +745,23 @@ router.post("/diagram", requireAuth, async (req: Request, res: Response) => {
 
 // ── Worksheet Upload & Adapt ─────────────────────────────────────────────────
 // POST /api/ai/adapt-worksheet
-// Accepts a PDF/image/text file and adapts it for a specific SEND need.
+// Accepts a PDF or Word (.doc/.docx) file and adapts it for a specific SEND need.
+// CRITICAL: All questions, content, symbols, and mathematical notation are preserved VERBATIM.
+// Only formatting, font, spacing, and structural presentation changes are permitted.
 router.post("/adapt-worksheet", requireAuth, worksheetUpload.single("file"), async (req: Request, res: Response) => {
   if (!req.file) return res.status(400).json({ error: "No file uploaded" });
   const { sendNeed, yearGroup } = req.body;
   if (!sendNeed) return res.status(400).json({ error: "sendNeed is required" });
+
+  // Enforce PDF and Word documents only — no images
+  const allowedMimes = [
+    "application/pdf",
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  ];
+  if (!allowedMimes.includes(req.file.mimetype)) {
+    return res.status(400).json({ error: "Only PDF (.pdf) and Word (.doc, .docx) files are supported. Please convert your file and try again." });
+  }
 
   try {
     let rawText = "";
@@ -763,7 +775,8 @@ router.post("/adapt-worksheet", requireAuth, worksheetUpload.single("file"), asy
       } catch (_) {
         rawText = req.file.buffer.toString("utf-8");
       }
-    } else if (mime === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
+    } else {
+      // .doc or .docx — use mammoth
       try {
         const mammoth = (await import("mammoth" as any)).default || (await import("mammoth" as any));
         const result = await mammoth.extractRawText({ buffer: req.file.buffer });
@@ -771,58 +784,77 @@ router.post("/adapt-worksheet", requireAuth, worksheetUpload.single("file"), asy
       } catch (_) {
         rawText = req.file.buffer.toString("utf-8");
       }
-    } else if (mime.startsWith("image/")) {
-      // For images, use AI vision if available — otherwise describe what we can
-      rawText = "[Image worksheet uploaded — please describe the content to adapt]";
-    } else {
-      rawText = req.file.buffer.toString("utf-8");
     }
 
-    // Clean extracted text
-    rawText = rawText.replace(/\s{2,}/g, " ").trim().slice(0, 8000);
+    // Preserve structure but remove excessive blank lines
+    rawText = rawText.replace(/\n{4,}/g, "\n\n\n").trim();
     if (!rawText || rawText.length < 20) {
-      return res.status(400).json({ error: "Could not extract readable text from this file. Please try a PDF or Word document." });
+      return res.status(400).json({ error: "Could not extract readable text from this file. Please check the file is not scanned/image-only and try again." });
     }
+    const truncated = rawText.length > 12000;
+    const textForAI = rawText.slice(0, 12000);
 
     const schoolId = req.user?.schoolId ?? undefined;
     const yr = yearGroup || "Year 9";
 
-    const system = `You are an expert SEND teacher and educational content specialist. Your task is to adapt worksheets to make them fully accessible for students with specific SEND needs, following the COBS Handbook guidelines. Always return a professional, high-quality adapted worksheet.`;
+    const system = `You are an expert SEND teacher and educational content specialist. Your task is to adapt worksheets for students with specific SEND needs.
+
+CRITICAL RULES — YOU MUST FOLLOW THESE WITHOUT EXCEPTION:
+1. EVERY question, task, instruction, and piece of content from the original must appear in the output VERBATIM. Do not paraphrase, simplify, or reword any question or task.
+2. ALL mathematical symbols, operators, and notation must be preserved exactly: ×, ÷, √, ², ³, π, ≤, ≥, ≠, fractions, equations — everything must appear character-for-character.
+3. ALL numbers, values, and data must be identical to the original.
+4. The ONLY things you may change are: font size suggestions, line spacing, visual grouping, adding section headers/dividers, breaking long paragraphs into shorter visual chunks, and adding SEND-specific formatting notes.
+5. Do NOT add hints, worked examples, word banks, or scaffolding unless they were already in the original.
+6. Do NOT remove any content from the original.
+7. Return structured JSON with sections that match the original document structure.`;
 
     const user = `Adapt the following worksheet for a student with ${sendNeed} in ${yr}.
 
-ADAPTATION REQUIREMENTS:
-- Simplify language while preserving all educational content and learning objectives
-- Break complex sentences into shorter, clearer ones
-- Add visual cues and structure (numbered steps, clear sections)
-- Use concrete examples and relatable contexts
-- Add scaffolding (sentence starters, word banks, worked examples where appropriate)
-- Ensure reading level is appropriate for the SEND need
-- Preserve all questions but make them more accessible
-- Add brief instructions before each section
-- For dyslexia: use clear spacing, avoid dense paragraphs, use bullet points
-- For autism: add clear structure, explicit instructions, avoid ambiguity
-- For ADHD: break into small chunks, add clear headings, use bold for key words
-- For MLD: simplify vocabulary, add visual supports, reduce cognitive load
-
-Return a JSON object with this exact structure:
+Return a JSON object with this EXACT structure:
 {
-  "adaptedContent": "The full adapted worksheet as formatted text with clear sections, headings, and scaffolding",
-  "adaptationsSummary": ["List of specific adaptations made", "e.g. Simplified vocabulary", "Added word bank", "Broke into smaller steps"]
+  "title": "The worksheet title (from the original, or inferred)",
+  "subtitle": "Subject and year group",
+  "sections": [
+    {
+      "title": "Section heading (e.g. Section A, Questions, Part 1)",
+      "type": "guided",
+      "content": "The VERBATIM content of this section, with SEND formatting applied (line spacing, grouping, bold key terms) but every question and symbol preserved exactly",
+      "teacherOnly": false
+    }
+  ],
+  "teacherSection": {
+    "title": "Teacher Notes",
+    "type": "teacher-notes",
+    "content": "SEND adaptations applied, recommended support strategies for ${sendNeed}, and mark scheme if present in original",
+    "teacherOnly": true
+  },
+  "adaptationsSummary": ["List of formatting/presentation adaptations made — NOT content changes"]
 }
 
-Original worksheet content:
-${rawText}`;
+SEND formatting guidelines for ${sendNeed}:
+- Dyslexia: 1.5x line spacing, left-aligned text, bold key terms, short sentences, clear section breaks
+- Autism/ASD: Explicit numbered instructions, no ambiguous language, clear visual structure
+- ADHD: Short chunks, clear headings, bold key words, numbered steps, white space between questions
+- MLD/SLD: Larger font recommendation, extra white space, numbered questions clearly separated
+- EAL: Preserve all content verbatim, add language support notes in teacher section only
 
-    const { content, provider } = await callWithFallback(system, user, 3000, undefined, schoolId);
+ORIGINAL WORKSHEET CONTENT (preserve every question, symbol, and value VERBATIM):
+${textForAI}${truncated ? "\n\n[Note: Document was truncated at 12,000 characters due to length]" : ""}`;
+
+    const { content, provider } = await callWithFallback(system, user, 4000, undefined, schoolId);
 
     let parsed: any;
     try {
       const jsonMatch = content.match(/\{[\s\S]*\}/);
       parsed = JSON.parse(jsonMatch ? jsonMatch[0] : content);
     } catch {
-      // If JSON parse fails, wrap the raw content
-      parsed = { adaptedContent: content, adaptationsSummary: ["Content adapted for " + sendNeed] };
+      parsed = {
+        title: "Adapted Worksheet",
+        subtitle: `${yr} — ${sendNeed} adaptation`,
+        sections: [{ title: "Adapted Content", type: "guided", content, teacherOnly: false }],
+        teacherSection: { title: "Teacher Notes", type: "teacher-notes", content: `Adapted for ${sendNeed}`, teacherOnly: true },
+        adaptationsSummary: ["Content adapted for " + sendNeed],
+      };
     }
 
     res.json({ adapted: parsed, provider });
