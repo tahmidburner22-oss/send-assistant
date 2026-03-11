@@ -33,10 +33,56 @@ const SUBJECT_MAP: Record<string, string> = {
   "combined science": "science",
   history: "history",
   geography: "geography",
+  "computer science": "computer-science",
+  "computer-science": "computer-science",
+  computing: "computer-science",
+  cs: "computer-science",
+  "religious studies": "religious-studies",
+  "religious-studies": "religious-studies",
+  rs: "religious-studies",
+  re: "religious-studies",
+  "religious education": "religious-studies",
+  business: "business",
+  "business studies": "business",
+  french: "french",
+  spanish: "spanish",
+  german: "german",
+  mfl: "mfl",
+  "modern foreign languages": "mfl",
+  art: "art",
+  drama: "drama",
+  music: "music",
+  pe: "pe",
+  "physical education": "pe",
+  psychology: "psychology",
+  sociology: "sociology",
+  economics: "economics",
 };
 
 function normaliseSubject(subject: string): string {
   return SUBJECT_MAP[subject.toLowerCase().trim()] || subject.toLowerCase().replace(/\s+/g, "-");
+}
+
+/**
+ * Parse a year group string like "Year 7", "Year 10", "KS3", "GCSE", "KS2" into a number.
+ * Returns undefined if the year group cannot be determined.
+ */
+function parseYearGroupNumber(yearGroup?: string): number | undefined {
+  if (!yearGroup) return undefined;
+  const yg = yearGroup.toLowerCase().trim();
+  // Direct year number: "year 7", "y7", "7"
+  const match = yg.match(/(\d+)/);
+  if (match) {
+    const n = parseInt(match[1], 10);
+    if (n >= 1 && n <= 13) return n;
+  }
+  // Key stage mappings
+  if (yg.includes("ks1") || yg.includes("key stage 1")) return 2;
+  if (yg.includes("ks2") || yg.includes("key stage 2")) return 6;
+  if (yg.includes("ks3") || yg.includes("key stage 3")) return 8;
+  if (yg.includes("gcse") || yg.includes("ks4") || yg.includes("key stage 4")) return 10;
+  if (yg.includes("a-level") || yg.includes("sixth") || yg.includes("ks5")) return 12;
+  return undefined;
 }
 
 // Tier mapping from difficulty setting — maps internal ID to GCSE tier for question filtering
@@ -294,6 +340,9 @@ export function buildExamPaperWorksheet(params: ExamPaperWorksheetParams): ExamP
   const tier = normaliseTier(params.difficulty);
   const questionCount = getQuestionCount(params.worksheetLength);
 
+  // Parse year group number from string like "Year 7", "Year 10", "KS3", "GCSE" etc.
+  const yearGroupNum = parseYearGroupNumber(params.yearGroup);
+
   // Fetch questions from database
   const topicFilter = params.topic && params.topic.toLowerCase() !== "general" ? params.topic : undefined;
   let questions = getExamQuestions({
@@ -303,6 +352,7 @@ export function buildExamPaperWorksheet(params: ExamPaperWorksheetParams): ExamP
     topic: topicFilter,
     limit: questionCount,
     yearMin: 2015,
+    yearGroup: yearGroupNum,
   });
 
   // Fallback: if not enough questions for the specific board, try any board
@@ -313,6 +363,7 @@ export function buildExamPaperWorksheet(params: ExamPaperWorksheetParams): ExamP
       topic: topicFilter,
       limit: questionCount,
       yearMin: 2015,
+      yearGroup: yearGroupNum,
     });
   }
 
@@ -322,6 +373,7 @@ export function buildExamPaperWorksheet(params: ExamPaperWorksheetParams): ExamP
       subject: normSubject,
       limit: questionCount,
       yearMin: 2015,
+      yearGroup: yearGroupNum,
     });
   }
 

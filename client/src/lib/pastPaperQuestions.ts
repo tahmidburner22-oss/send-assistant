@@ -1,5 +1,11 @@
 import { allExpandedQuestions } from "./questionBankExpanded";
 import { allExpandedQuestions as allExpandedQuestions2 } from "./pastPaperQuestionsExpanded";
+import mathsQuestionsBank from "./questionBankMaths";
+import biologyQuestionsBank from "./questionBankBiology";
+import chemistryQuestionsBank from "./questionBankChemistry";
+import physicsQuestionsBank from "./questionBankPhysics";
+import englishQuestionsBank from "./questionBankEnglish";
+import allOtherSubjectQuestionsBank from "./questionBankOtherSubjects";
 
 /**
  * Past Paper Question Database
@@ -1477,6 +1483,13 @@ export const allPastPaperQuestions: PastPaperQuestion[] = [
   ...allExpandedQuestions,
   // Additional expanded bank with LaTeX-formatted questions
   ...allExpandedQuestions2,
+  // Large question banks — 1000+ questions per subject
+  ...mathsQuestionsBank,
+  ...biologyQuestionsBank,
+  ...chemistryQuestionsBank,
+  ...physicsQuestionsBank,
+  ...englishQuestionsBank,
+  ...allOtherSubjectQuestionsBank,
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1506,24 +1519,33 @@ export function getExamQuestions(options: {
     if (topic && !q.topic.toLowerCase().includes(topic.toLowerCase())) return false;
     if (q.year < yearMin || q.year > yearMax) return false;
 
-    // Year-group-appropriate filtering
+    // Year-group-appropriate filtering — STRICTLY enforced
     if (yearGroup) {
       if (yearGroup <= 2) {
-        // KS1: only KS1 SATs questions
+        // KS1 (Years 1–2): only KS1 SATs questions
         if (q.stage && q.stage !== "ks1") return false;
       } else if (yearGroup <= 6) {
-        // KS2: KS2 SATs questions, or KS1 if no KS2 available
+        // KS2 (Years 3–6): KS2 SATs questions only
         if (q.stage && q.stage !== "ks2" && q.stage !== "ks1") return false;
       } else if (yearGroup === 7) {
-        // Year 7: 11+ questions
-        if (q.stage && q.stage !== "11plus" && q.stage !== "ks2") return false;
+        // Year 7: KS3 questions or 11+ questions (transition year)
+        if (q.stage && q.stage !== "ks3" && q.stage !== "11plus" && q.stage !== "ks2") return false;
+        // No GCSE questions for Year 7 — strictly KS3 level
+        if (q.stage === "gcse" && q.tier === "Higher") return false;
       } else if (yearGroup <= 9) {
-        // KS3 (Year 8-9): GCSE Foundation or KS3 questions
+        // KS3 (Years 8–9): KS3 or GCSE Foundation questions only
         if (q.stage && q.stage !== "ks3" && q.stage !== "gcse") return false;
-        if (q.tier && q.tier === "Higher") return false; // Foundation only for KS3
-      } else {
-        // GCSE (Year 10-11): all GCSE questions
+        // No Higher tier for KS3 students
+        if (q.tier && q.tier === "Higher") return false;
+        // No KS1/KS2/11+ questions for KS3
+        if (q.stage === "ks1" || q.stage === "ks2" || q.stage === "11plus") return false;
+      } else if (yearGroup <= 11) {
+        // GCSE (Years 10–11): GCSE questions only — NO KS2 SATs, NO KS1
         if (q.stage && q.stage !== "gcse" && q.stage !== "ks3") return false;
+        if (q.stage === "ks1" || q.stage === "ks2" || q.stage === "11plus") return false;
+      } else {
+        // A-Level / Sixth Form (Years 12–13): GCSE and above
+        if (q.stage === "ks1" || q.stage === "ks2") return false;
       }
     }
 

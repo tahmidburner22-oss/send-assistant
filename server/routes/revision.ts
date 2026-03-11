@@ -502,7 +502,7 @@ router.post("/tts", requireAuth, async (req: Request, res: Response) => {
               },
               body: JSON.stringify({
                 text: chunk,
-                model_id: "eleven_monolingual_v1",
+                model_id: "eleven_turbo_v2_5",
                 voice_settings: {
                   stability: 0.5,
                   similarity_boost: 0.75,
@@ -546,33 +546,40 @@ router.post("/tts", requireAuth, async (req: Request, res: Response) => {
     const groqKey = getEffectiveKey("groq");
     if (groqKey) {
       const groqVoice = groqVoiceMap[voice] || "Aaliyah-PlayAI";
-      try {
-        const chunks = splitIntoChunks(text, 2000);
-        console.log(`[TTS] Groq TTS: voice=${groqVoice}, chars=${text.length}, chunks=${chunks.length}`);
-        const buffers: Buffer[] = [];
-        for (const chunk of chunks) {
-          const ttsRes = await fetchWithTimeout(
-            "https://api.groq.com/openai/v1/audio/speech",
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json", Authorization: `Bearer ${groqKey}` },
-              body: JSON.stringify({ model: "playai-tts", input: chunk, voice: groqVoice, response_format: "mp3" }),
-            },
-            25000
-          );
-          if (!ttsRes.ok) {
-            const errBody = await ttsRes.text();
-            throw new Error(`Groq TTS HTTP ${ttsRes.status}: ${errBody.slice(0, 100)}`);
+      // Try both Groq TTS models — playai-tts is the primary, playai-tts-arabic is the fallback
+      const groqModels = ["playai-tts", "playai-tts-arabic"];
+      let groqSuccess = false;
+      for (const groqModel of groqModels) {
+        if (groqSuccess) break;
+        try {
+          const chunks = splitIntoChunks(text, 2000);
+          console.log(`[TTS] Groq TTS (${groqModel}): voice=${groqVoice}, chars=${text.length}, chunks=${chunks.length}`);
+          const buffers: Buffer[] = [];
+          for (const chunk of chunks) {
+            const ttsRes = await fetchWithTimeout(
+              "https://api.groq.com/openai/v1/audio/speech",
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json", Authorization: `Bearer ${groqKey}` },
+                body: JSON.stringify({ model: groqModel, input: chunk, voice: groqVoice, response_format: "mp3" }),
+              },
+              25000
+            );
+            if (!ttsRes.ok) {
+              const errBody = await ttsRes.text();
+              throw new Error(`Groq TTS HTTP ${ttsRes.status}: ${errBody.slice(0, 100)}`);
+            }
+            buffers.push(Buffer.from(await ttsRes.arrayBuffer()));
           }
-          buffers.push(Buffer.from(await ttsRes.arrayBuffer()));
+          const combined = Buffer.concat(buffers);
+          res.setHeader("Content-Type", "audio/mpeg");
+          res.setHeader("Content-Length", combined.byteLength.toString());
+          console.log(`[TTS] Groq TTS (${groqModel}) success: ${combined.byteLength} bytes (${chunks.length} chunks)`);
+          groqSuccess = true;
+          return res.send(combined);
+        } catch (err: any) {
+          console.warn(`[TTS] Groq TTS (${groqModel}) error:`, err?.message || err);
         }
-        const combined = Buffer.concat(buffers);
-        res.setHeader("Content-Type", "audio/mpeg");
-        res.setHeader("Content-Length", combined.byteLength.toString());
-        console.log(`[TTS] Groq TTS success: ${combined.byteLength} bytes (${chunks.length} chunks)`);
-        return res.send(combined);
-      } catch (err: any) {
-        console.warn("[TTS] Groq TTS error:", err?.message || err);
       }
     }
 
