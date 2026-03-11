@@ -443,13 +443,23 @@ Always respond with valid JSON only — no markdown, no code blocks, just raw JS
   const isMaths = params.subject.toLowerCase().includes("math");
   const mathsNote = isMaths
     ? `MATHS RULES (MANDATORY):
-- ALL questions MUST be number-based (e.g. "Calculate 3/4 + 1/2", "Solve 5x + 3 = 18", "Find the area of a rectangle 7cm × 4cm").
+- ALL questions MUST be number-based (e.g. "Calculate \\(\\dfrac{3}{4} + \\dfrac{1}{2}\\)", "Solve \\(5x + 3 = 18\\)", "Find the area of a rectangle \\(7\\text{ cm} \\times 4\\text{ cm}\\)").
 - Do NOT write wordy or text-heavy questions. No long paragraphs. Questions should be short, direct, and numerical.
 - The worked example MUST show a fully worked numerical calculation with clear step-by-step arithmetic.
 - Include 2–3 problem-solving questions where the SEND need (if any) is applied in a real-world context (e.g. money, time, measurement), but keep them concise and number-focused.
 - Numbers must be clean and sensible for the year group (e.g. Year 3: whole numbers under 100; Year 7: integers and simple fractions; Year 10: decimals, surds, algebraic expressions). Do NOT generate awkward or unrealistic numbers.
-- Do NOT include questions that are just definitions, descriptions, or explanations — every question must require a numerical answer or algebraic working.`
-    : "";
+- Do NOT include questions that are just definitions, descriptions, or explanations — every question must require a numerical answer or algebraic working.
+- MATH NOTATION (MANDATORY): Use LaTeX notation for ALL mathematical expressions:
+  * Fractions: \\(\\dfrac{numerator}{denominator}\\) e.g. \\(\\dfrac{3}{4}\\) NOT 3/4
+  * Powers: \\(x^{2}\\) NOT x^2 or x2
+  * Square roots: \\(\\sqrt{x}\\) NOT sqrt(x)
+  * Multiplication: \\(\\times\\) NOT x or *
+  * Division: \\(\\div\\) NOT /
+  * Minus: \\(-\\) (standard minus sign)
+  * Pi: \\(\\pi\\)
+  * Wrap ALL math expressions in \\(...\\) for inline or \\[...\\] for display
+  * Example: "Work out \\(\\dfrac{3}{4} + \\dfrac{1}{6}\\). Give your answer as a fraction in its simplest form."`
+    : `MATH NOTATION: When any mathematical expression appears, use LaTeX notation wrapped in \\(...\\) for inline math.`;
 
   // ── Exam-style instruction ────────────────────────────────────────────────
   const examStyleNote = params.examStyle
@@ -463,11 +473,28 @@ Always respond with valid JSON only — no markdown, no code blocks, just raw JS
 - The overall layout and question style must be indistinguishable from a real ${params.examBoard && params.examBoard !== "none" ? params.examBoard : "GCSE"} exam paper.`
     : "";
 
+  // ── Topic enforcement note ─────────────────────────────────────────────────
+  const topicEnforcementNote = `
+╔════════════════════════════════════════════════════════════════════════════╗
+║ CRITICAL — TOPIC ENFORCEMENT (MANDATORY, NO EXCEPTIONS)                        ║
+╠════════════════════════════════════════════════════════════════════════════╣
+║ The topic is: "${params.topic}"                                                  ║
+║ EVERY SINGLE QUESTION in this worksheet MUST be about "${params.topic}" ONLY.    ║
+║ Do NOT include questions about any other topic, even if related.                ║
+║ Do NOT mix in questions about other topics as "warm-up" or "extension".         ║
+║ If the topic is "Fractions", ALL questions must be about fractions.             ║
+║ If the topic is "Algebra", ALL questions must be about algebra.                 ║
+║ The worked example MUST demonstrate "${params.topic}" specifically.              ║
+║ The vocabulary section MUST only include terms related to "${params.topic}".     ║
+║ The learning objectives MUST all be about "${params.topic}".                     ║
+╚════════════════════════════════════════════════════════════════════════════╝`;
+
   const user = `Create a differentiated worksheet for UK schools, STRICTLY calibrated for ${params.yearGroup}.
 
 Subject: ${params.subject}
 Topic: ${params.topic}
 Year Group: ${params.yearGroup} — ${phase}
+${topicEnforcementNote}
 ${sendNote}
 ${examBoardNote}
 ${tierNote}

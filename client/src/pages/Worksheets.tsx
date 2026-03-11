@@ -21,6 +21,7 @@ import WorksheetRenderer from "@/components/WorksheetRenderer";
 import { worksheetBank, type BankWorksheet } from "@/lib/worksheet-bank";
 import { aiGenerateWorksheet, aiEditSection } from "@/lib/ai";
 import { buildExamPaperWorksheet, hasPastPaperQuestions, getPastPaperDatabaseInfo } from "@/lib/examPaperBuilder";
+import { allPastPaperQuestions, type PastPaperQuestion } from "@/lib/pastPaperQuestions";
 import PrintOptionsDialog, { type PrintOptions } from "@/components/PrintOptionsDialog";
 import {
   FileText, Upload, Library, Sparkles, Download, Printer, Save, Star,
@@ -190,6 +191,13 @@ export default function Worksheets() {
   const [bankYearFilter, setBankYearFilter] = useState("all");
   const [selectedBankSheet, setSelectedBankSheet] = useState<BankWorksheet | null>(null);
   const [bankViewMode, setBankViewMode] = useState<"teacher" | "student">("student");
+
+  // Exam Question Search state
+  const [examQSearch, setExamQSearch] = useState("");
+  const [examQSubject, setExamQSubject] = useState("all");
+  const [examQBoard, setExamQBoard] = useState("all");
+  const [examQTier, setExamQTier] = useState("all");
+  const [examQExpanded, setExamQExpanded] = useState<string | null>(null);
 
   // History state
   const [historySearch, setHistorySearch] = useState("");
@@ -510,10 +518,11 @@ export default function Worksheets() {
 
       {!generated ? (
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="w-full grid grid-cols-4 h-10">
+          <TabsList className="w-full grid grid-cols-5 h-10">
             <TabsTrigger value="generate" className="text-xs gap-1"><Sparkles className="w-3 h-3" /> Generate</TabsTrigger>
             <TabsTrigger value="upload" className="text-xs gap-1"><Upload className="w-3 h-3" /> Upload</TabsTrigger>
             <TabsTrigger value="bank" className="text-xs gap-1"><Library className="w-3 h-3" /> Bank</TabsTrigger>
+            <TabsTrigger value="exam-questions" className="text-xs gap-1"><Award className="w-3 h-3" /> Exam Q</TabsTrigger>
             <TabsTrigger value="history" className="text-xs gap-1">
               <History className="w-3 h-3" /> History
               {worksheetHistory.length > 0 && (
@@ -861,7 +870,198 @@ export default function Worksheets() {
             </div>
           </TabsContent>
 
-          {/* ─── HISTORY TAB ──────────────────────────────────────────────────────── */}
+          {/* ─── EXAM QUESTIONS TAB ──────────────────────────────────────────────────────────────────────── */}
+          <TabsContent value="exam-questions" className="mt-4 space-y-3">
+            {/* Search & filter bar */}
+            <Card className="border-border/50">
+              <CardContent className="p-3 space-y-3">
+                <div className="flex items-center gap-2 mb-1">
+                  <Award className="w-4 h-4 text-blue-600" />
+                  <span className="text-sm font-semibold text-foreground">Past Paper Question Search</span>
+                  <Badge className="ml-auto bg-blue-100 text-blue-700 text-xs">{allPastPaperQuestions.length} questions</Badge>
+                </div>
+                <p className="text-xs text-muted-foreground">Search by topic to find real, verbatim exam questions from AQA, Edexcel, OCR and WJEC past papers.</p>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    value={examQSearch}
+                    onChange={e => setExamQSearch(e.target.value)}
+                    placeholder="Search by topic (e.g. Fractions, Algebra, Forces...)"
+                    className="pl-9 h-9"
+                  />
+                </div>
+                <div className="flex gap-2 flex-wrap">
+                  <Select value={examQSubject} onValueChange={setExamQSubject}>
+                    <SelectTrigger className="h-8 text-xs flex-1 min-w-[120px]"><SelectValue placeholder="All subjects" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All subjects</SelectItem>
+                      {Array.from(new Set(allPastPaperQuestions.map(q => q.subject))).sort().map(s => (
+                        <SelectItem key={s} value={s}>{s.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Select value={examQBoard} onValueChange={setExamQBoard}>
+                    <SelectTrigger className="h-8 text-xs flex-1 min-w-[100px]"><SelectValue placeholder="All boards" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All boards</SelectItem>
+                      {["AQA", "Edexcel", "OCR", "WJEC", "STA", "KS2 SATs"].map(b => (
+                        <SelectItem key={b} value={b}>{b}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Select value={examQTier} onValueChange={setExamQTier}>
+                    <SelectTrigger className="h-8 text-xs flex-1 min-w-[100px]"><SelectValue placeholder="All tiers" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All tiers</SelectItem>
+                      <SelectItem value="Higher">Higher</SelectItem>
+                      <SelectItem value="Foundation">Foundation</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Results */}
+            {(() => {
+              const q = examQSearch.toLowerCase().trim();
+              const filtered = allPastPaperQuestions.filter(question => {
+                const matchSearch = !q ||
+                  question.topic.toLowerCase().includes(q) ||
+                  question.text.toLowerCase().includes(q) ||
+                  question.subject.toLowerCase().includes(q);
+                const matchSubject = examQSubject === "all" || question.subject === examQSubject;
+                const matchBoard = examQBoard === "all" || question.board === examQBoard;
+                const matchTier = examQTier === "all" || question.tier === examQTier;
+                return matchSearch && matchSubject && matchBoard && matchTier;
+              }).slice(0, 50); // limit to 50 results
+
+              if (!q && examQSubject === "all" && examQBoard === "all" && examQTier === "all") {
+                // Show topic overview when no search
+                const topics = Array.from(new Set(allPastPaperQuestions.map(q => q.topic))).sort();
+                return (
+                  <div className="space-y-2">
+                    <p className="text-xs text-gray-500 px-1">{topics.length} topics available — type a topic name above to search</p>
+                    <div className="flex flex-wrap gap-2">
+                      {topics.map(topic => {
+                        const count = allPastPaperQuestions.filter(q => q.topic === topic).length;
+                        return (
+                          <button
+                            key={topic}
+                            onClick={() => setExamQSearch(topic)}
+                            className="px-3 py-1.5 text-xs rounded-full bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 transition-colors"
+                          >
+                            {topic} <span className="text-blue-400">({count})</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              }
+
+              if (filtered.length === 0) {
+                return (
+                  <div className="text-center py-12 text-gray-400">
+                    <Search className="h-10 w-10 mx-auto mb-2 opacity-40" />
+                    <p className="text-sm">No questions found for "{examQSearch}".</p>
+                    <p className="text-xs mt-1">Try a different topic name or exam board.</p>
+                  </div>
+                );
+              }
+
+              return (
+                <div className="space-y-2">
+                  <p className="text-xs text-gray-500 px-1">{filtered.length} question{filtered.length !== 1 ? 's' : ''} found{q ? ` for "${examQSearch}"` : ''}</p>
+                  {filtered.map(question => (
+                    <Card
+                      key={question.id}
+                      className="border-border/50 hover:shadow-md transition-shadow cursor-pointer"
+                      onClick={() => setExamQExpanded(examQExpanded === question.id ? null : question.id)}
+                    >
+                      <CardContent className="p-3">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex flex-wrap gap-1 mb-1">
+                              <Badge className="text-xs py-0 bg-blue-100 text-blue-700">{question.board}</Badge>
+                              <Badge variant="outline" className="text-xs py-0">{question.topic}</Badge>
+                              {question.tier && <Badge variant="outline" className="text-xs py-0">{question.tier}</Badge>}
+                              <Badge variant="outline" className="text-xs py-0">{question.year}</Badge>
+                              <Badge className="text-xs py-0 bg-gray-100 text-gray-600">{question.marks} mark{question.marks !== 1 ? 's' : ''}</Badge>
+                            </div>
+                            <p className="text-sm text-foreground line-clamp-2">{question.text}</p>
+                            <p className="text-xs text-muted-foreground mt-1">{question.paper} · Q{question.questionNum}</p>
+                          </div>
+                          <ChevronDown className={`h-4 w-4 text-gray-400 flex-shrink-0 transition-transform ${examQExpanded === question.id ? 'rotate-180' : ''}`} />
+                        </div>
+
+                        {examQExpanded === question.id && (
+                          <div className="mt-3 pt-3 border-t border-border/50 space-y-2">
+                            <div className="bg-blue-50 rounded-lg p-3">
+                              <p className="text-xs font-semibold text-blue-700 mb-1">Full Question:</p>
+                              <p className="text-sm text-gray-800">{question.text}</p>
+                              {question.context && (
+                                <div className="mt-2 p-2 bg-white rounded border border-blue-100">
+                                  <p className="text-xs text-gray-500 font-medium mb-1">Context:</p>
+                                  <p className="text-xs text-gray-700">{question.context}</p>
+                                </div>
+                              )}
+                              {question.subParts && question.subParts.length > 0 && (
+                                <div className="mt-2 space-y-1">
+                                  {question.subParts.map(part => (
+                                    <div key={part.label} className="flex gap-2 text-xs">
+                                      <span className="font-medium text-blue-600">{part.label}</span>
+                                      <span className="text-gray-700">{part.text}</span>
+                                      <span className="text-gray-400 ml-auto">[{part.marks} mark{part.marks !== 1 ? 's' : ''}]</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                            {question.markScheme && (
+                              <div className="bg-green-50 rounded-lg p-3">
+                                <p className="text-xs font-semibold text-green-700 mb-1">Mark Scheme:</p>
+                                <p className="text-xs text-gray-700">{question.markScheme}</p>
+                              </div>
+                            )}
+                            {question.hint && (
+                              <div className="bg-yellow-50 rounded-lg p-3">
+                                <p className="text-xs font-semibold text-yellow-700 mb-1">💡 Hint:</p>
+                                <p className="text-xs text-gray-700">{question.hint}</p>
+                              </div>
+                            )}
+                            <div className="flex gap-2 pt-1">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="text-xs h-7"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSubject(question.subject);
+                                  setTopic(question.topic);
+                                  if (question.board && question.board !== 'STA' && question.board !== 'KS2 SATs') setExamBoard(question.board);
+                                  if (question.tier) setDifficulty(question.tier.toLowerCase());
+                                  setExamStyle(true);
+                                  setActiveTab('generate');
+                                  toast.success(`Loaded: ${question.topic} — ${question.board}`);
+                                }}
+                              >
+                                <Sparkles className="h-3 w-3 mr-1" /> Generate worksheet
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  ))}
+                  {filtered.length === 50 && (
+                    <p className="text-xs text-center text-gray-400 py-2">Showing first 50 results — refine your search for more specific results</p>
+                  )}
+                </div>
+              );
+            })()}
+          </TabsContent>
+
+          {/* ─── HISTORY TAB ──────────────────────────────────────────────────────────────────────── */}
           <TabsContent value="history" className="mt-4 space-y-3">
             <Card className="border-border/50">
               <CardContent className="p-3">
