@@ -447,13 +447,21 @@ function splitIntoChunks(text: string, maxChars = 2000): string[] {
 
 // POST /api/revision/tts
 // Convert podcast script to natural speech.
-// Priority: 1) ElevenLabs TTS (primary — most natural, 30s timeout)
-//           2) Groq TTS (PlayAI voices, free fallback)
-//           3) OpenAI TTS (tts-1-hd, if a real OpenAI key is configured)
-//           4) Gemini TTS
-// Long scripts are split into <=2000-char chunks processed sequentially, then concatenated.
+//
+// Provider priority (2026):
+//   1. Gemini TTS (gemini-2.5-flash-preview-tts) — PRIMARY, confirmed working
+//      Voices: Aoede, Leda, Kore (female) | Charon, Fenrir, Orus (male)
+//      Handles up to 4500 chars per chunk, returns PCM wrapped in WAV
+//   2. Groq Orpheus v1 (canopylabs/orpheus-v1-english) — needs terms acceptance
+//      Voices: autumn, diana, hannah (female) | austin, daniel, troy (male)
+//      Limit: 200 chars per request — aggressive chunking required
+//   3. OpenAI TTS (tts-1-hd) — only if a real sk- key is available with quota
+//
+// Note: ElevenLabs free tier is blocked on Railway IPs (proxy detection).
+//       Groq playai-tts / playai-tts-arabic are decommissioned as of Jan 2026.
+//
 // Body: { text, voice?, language? }
-// Returns: audio/mpeg stream
+// Returns: audio/wav stream
 router.post("/tts", requireAuth, async (req: Request, res: Response) => {
   try {
     const { text, voice = "nova", language = "en" } = req.body;
@@ -469,121 +477,202 @@ router.post("/tts", requireAuth, async (req: Request, res: Response) => {
         .finally(() => clearTimeout(id));
     };
 
-    // ─────────────────────────────────────────────────────────────────────────────
-    // 1. ElevenLabs TTS — Primary provider (most natural voice, 30s timeout)
-    // ─────────────────────────────────────────────────────────────────────────────
-    const elevenLabsKey = process.env.ELEVENLABS_API_KEY || getEffectiveKey("elevenlabs");
-    if (elevenLabsKey) {
-      // Map voice names to ElevenLabs voice IDs
-      // Free tier voices: Rachel (female, calm), Adam (male, deep), Bella (female, warm)
-      const elevenLabsVoiceMap: Record<string, string> = {
-        nova:    "21m00Tcm4TlvDq8ikWAM", // Rachel — warm, natural female (best for education)
-        shimmer: "EXAVITQu4vr4xnSDxMaL", // Bella — soft, clear female
-        alloy:   "pNInz6obpgDQGcFmaJgB", // Adam — confident male
-        echo:    "VR6AewLTigWG4xSOukaG", // Arnold — natural male
-        fable:   "yoZ06aMxZJJ28mfd3POQ", // Sam — expressive male
-        onyx:    "pqHfZKP75CvOlQylNhV4", // Bill — deep, authoritative male
+    // Helper: split text into chunks of at most maxChars, breaking at sentence boundaries
+    const splitOrpheus = (input: string, maxChars = 190): string[] => {
+      // Orpheus limit is 200 chars; use 190 to be safe
+      const sentences = input.match(/[^.!?\n]+[.!?\n]*/g) || [input];
+      const result: string[] = [];
+      let current = "";
+      for (const s of sentences) {
+        if ((current + s).length > maxChars) {
+          if (current.trim()) result.push(current.trim());
+          // If a single sentence is too long, split by word
+          if (s.length > maxChars) {
+            const words = s.split(" ");
+            let wChunk = "";
+            for (const w of words) {
+              if ((wChunk + " " + w).trim().length > maxChars) {
+                if (wChunk.trim()) result.push(wChunk.trim());
+                wChunk = w;
+              } else {
+                wChunk = (wChunk + " " + w).trim();
+              }
+            }
+            if (wChunk.trim()) result.push(wChunk.trim());
+            current = "";
+          } else {
+            current = s;
+          }
+        } else {
+          current += s;
+        }
+      }
+      if (current.trim()) result.push(current.trim());
+      return result.filter(c => c.length > 0);
+    };
+
+    // ───────────────────────────────────────────────────────────────────────────────
+    // 1. Gemini TTS — PRIMARY (confirmed working, no IP restrictions)
+    //    Model: gemini-2.5-flash-preview-tts
+    //    Voices: Aoede, Leda, Kore (F) | Charon, Fenrir, Orus (M)
+    //    Handles up to 4500 chars per chunk, returns PCM wrapped in WAV
+    // ───────────────────────────────────────────────────────────────────────────────
+    const geminiKeyPrimary = process.env.GEMINI_API_KEY || getEffectiveKey("gemini");
+    if (geminiKeyPrimary) {
+      const geminiVoiceMapPrimary: Record<string, string> = {
+        nova: "Aoede", shimmer: "Leda", alloy: "Kore",
+        echo: "Charon", fable: "Fenrir", onyx: "Orus",
+        hannah: "Aoede", autumn: "Leda", diana: "Kore",
+        daniel: "Charon", troy: "Fenrir", austin: "Orus",
       };
-      const elevenVoiceId = elevenLabsVoiceMap[voice] || "21m00Tcm4TlvDq8ikWAM"; // Default: Rachel
+      const geminiVoicePrimary = geminiVoiceMapPrimary[voice] || "Aoede";
       try {
-        // ElevenLabs free tier: max 2500 chars per request
-        const chunks = splitIntoChunks(text, 2500);
-        console.log(`[TTS] ElevenLabs TTS: voice=${elevenVoiceId}, chars=${text.length}, chunks=${chunks.length}`);
-        const buffers: Buffer[] = [];
-        for (const chunk of chunks) {
+        const geminiChunksPrimary = splitIntoChunks(text, 4500);
+        console.log(`[TTS] Gemini TTS (primary): voice=${geminiVoicePrimary}, chars=${text.length}, chunks=${geminiChunksPrimary.length}`);
+        const allPcmPartsPrimary: Buffer[] = [];
+        for (const chunk of geminiChunksPrimary) {
           const ttsRes = await fetchWithTimeout(
-            `https://api.elevenlabs.io/v1/text-to-speech/${elevenVoiceId}`,
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${geminiKeyPrimary}`,
             {
               method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                "xi-api-key": elevenLabsKey,
-                "Accept": "audio/mpeg",
-              },
+              headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
-                text: chunk,
-                model_id: "eleven_turbo_v2_5",
-                voice_settings: {
-                  stability: 0.5,
-                  similarity_boost: 0.75,
-                  style: 0.0,
-                  use_speaker_boost: true,
+                contents: [{ parts: [{ text: chunk }] }],
+                generationConfig: {
+                  response_modalities: ["AUDIO"],
+                  speech_config: {
+                    voice_config: { prebuilt_voice_config: { voice_name: geminiVoicePrimary } },
+                  },
                 },
               }),
             },
-            30000 // 30-second timeout as requested
+            60000
           );
           if (!ttsRes.ok) {
             const errBody = await ttsRes.text();
-            throw new Error(`ElevenLabs TTS HTTP ${ttsRes.status}: ${errBody.slice(0, 200)}`);
+            throw new Error(`Gemini TTS HTTP ${ttsRes.status}: ${errBody.slice(0, 200)}`);
           }
-          buffers.push(Buffer.from(await ttsRes.arrayBuffer()));
-        }
-        const combined = Buffer.concat(buffers);
-        res.setHeader("Content-Type", "audio/mpeg");
-        res.setHeader("Content-Length", combined.byteLength.toString());
-        console.log(`[TTS] ElevenLabs TTS success: ${combined.byteLength} bytes (${chunks.length} chunks)`);
-        return res.send(combined);
-      } catch (err: any) {
-        console.warn("[TTS] ElevenLabs TTS error:", err?.message || err);
-        // Fall through to Groq
-      }
-    }
-
-    // ─────────────────────────────────────────────────────────────────────────────
-    // 2. Groq TTS — Fallback (PlayAI voices, free)
-    // ─────────────────────────────────────────────────────────────────────────────
-    // Most human-sounding PlayAI voices — selected for naturalness and expressiveness
-    const groqVoiceMap: Record<string, string> = {
-      nova:    "Celeste-PlayAI",   // Warm, natural female — best for educational content
-      shimmer: "Aaliyah-PlayAI",   // Soft, clear female
-      alloy:   "Olivia-PlayAI",    // Confident, expressive female
-      echo:    "Mason-PlayAI",     // Natural, clear male
-      fable:   "Fritz-PlayAI",     // Expressive, engaging male
-      onyx:    "Liam-PlayAI",      // Deep, authoritative male
-    };
-
-    const groqKey = getEffectiveKey("groq");
-    if (groqKey) {
-      const groqVoice = groqVoiceMap[voice] || "Aaliyah-PlayAI";
-      // Try both Groq TTS models — playai-tts is the primary, playai-tts-arabic is the fallback
-      const groqModels = ["playai-tts", "playai-tts-arabic"];
-      let groqSuccess = false;
-      for (const groqModel of groqModels) {
-        if (groqSuccess) break;
-        try {
-          const chunks = splitIntoChunks(text, 2000);
-          console.log(`[TTS] Groq TTS (${groqModel}): voice=${groqVoice}, chars=${text.length}, chunks=${chunks.length}`);
-          const buffers: Buffer[] = [];
-          for (const chunk of chunks) {
-            const ttsRes = await fetchWithTimeout(
-              "https://api.groq.com/openai/v1/audio/speech",
-              {
-                method: "POST",
-                headers: { "Content-Type": "application/json", Authorization: `Bearer ${groqKey}` },
-                body: JSON.stringify({ model: groqModel, input: chunk, voice: groqVoice, response_format: "mp3" }),
-              },
-              25000
-            );
-            if (!ttsRes.ok) {
-              const errBody = await ttsRes.text();
-              throw new Error(`Groq TTS HTTP ${ttsRes.status}: ${errBody.slice(0, 100)}`);
+          const data = await ttsRes.json() as any;
+          const parts = data?.candidates?.[0]?.content?.parts || [];
+          let gotAudio = false;
+          for (const part of parts) {
+            if (part?.inlineData?.data) {
+              allPcmPartsPrimary.push(Buffer.from(part.inlineData.data, "base64"));
+              gotAudio = true;
+              break;
             }
-            buffers.push(Buffer.from(await ttsRes.arrayBuffer()));
           }
-          const combined = Buffer.concat(buffers);
-          res.setHeader("Content-Type", "audio/mpeg");
-          res.setHeader("Content-Length", combined.byteLength.toString());
-          console.log(`[TTS] Groq TTS (${groqModel}) success: ${combined.byteLength} bytes (${chunks.length} chunks)`);
-          groqSuccess = true;
-          return res.send(combined);
-        } catch (err: any) {
-          console.warn(`[TTS] Groq TTS (${groqModel}) error:`, err?.message || err);
+          if (!gotAudio) throw new Error("Gemini TTS: no audio in response");
         }
+        const combinedPcmPrimary = Buffer.concat(allPcmPartsPrimary);
+        const sampleRatePrimary = 24000;
+        const numChannelsPrimary = 1;
+        const bitsPerSamplePrimary = 16;
+        const byteRatePrimary = sampleRatePrimary * numChannelsPrimary * (bitsPerSamplePrimary / 8);
+        const blockAlignPrimary = numChannelsPrimary * (bitsPerSamplePrimary / 8);
+        const dataSizePrimary = combinedPcmPrimary.byteLength;
+        const wavHeaderPrimary = Buffer.alloc(44);
+        wavHeaderPrimary.write("RIFF", 0);
+        wavHeaderPrimary.writeUInt32LE(36 + dataSizePrimary, 4);
+        wavHeaderPrimary.write("WAVE", 8);
+        wavHeaderPrimary.write("fmt ", 12);
+        wavHeaderPrimary.writeUInt32LE(16, 16);
+        wavHeaderPrimary.writeUInt16LE(1, 20);
+        wavHeaderPrimary.writeUInt16LE(numChannelsPrimary, 22);
+        wavHeaderPrimary.writeUInt32LE(sampleRatePrimary, 24);
+        wavHeaderPrimary.writeUInt32LE(byteRatePrimary, 28);
+        wavHeaderPrimary.writeUInt16LE(blockAlignPrimary, 32);
+        wavHeaderPrimary.writeUInt16LE(bitsPerSamplePrimary, 34);
+        wavHeaderPrimary.write("data", 36);
+        wavHeaderPrimary.writeUInt32LE(dataSizePrimary, 40);
+        const finalWavPrimary = Buffer.concat([wavHeaderPrimary, combinedPcmPrimary]);
+        res.setHeader("Content-Type", "audio/wav");
+        res.setHeader("Content-Length", finalWavPrimary.byteLength.toString());
+        console.log(`[TTS] Gemini TTS success (primary): ${finalWavPrimary.byteLength} bytes`);
+        return res.send(finalWavPrimary);
+      } catch (err: any) {
+        console.warn("[TTS] Gemini TTS (primary) error:", err?.message || err);
+        // Fall through to Groq Orpheus
       }
     }
 
-    // 2. Try OpenAI TTS (only works with a real OpenAI key, not a proxy key)
+    // ───────────────────────────────────────────────────────────────────────────────
+    // 2. Groq Orpheus TTS — SECONDARY (requires terms acceptance at console.groq.com)
+    //    Model: canopylabs/orpheus-v1-english
+    //    Voices: autumn, diana, hannah (F) | austin, daniel, troy (M)
+    //    Max input: 200 chars per request — aggressive chunking required
+    //    Returns: WAV audio
+    // ───────────────────────────────────────────────────────────────────────────────
+    const groqKey = process.env.GROQ_API_KEY || getEffectiveKey("groq");
+    if (groqKey) {
+      // Map legacy voice names to Orpheus voice IDs
+      const orpheusVoiceMap: Record<string, string> = {
+        nova:    "hannah",   // Warm, natural female — best for educational content
+        shimmer: "autumn",   // Soft, expressive female
+        alloy:   "diana",    // Clear, professional female
+        echo:    "daniel",   // Natural, clear male
+        fable:   "troy",     // Expressive, engaging male
+        onyx:    "austin",   // Deep, authoritative male
+        // Direct Orpheus voice names also accepted
+        hannah: "hannah", autumn: "autumn", diana: "diana",
+        daniel: "daniel", troy: "troy", austin: "austin",
+      };
+      const orpheusVoice = orpheusVoiceMap[voice] || "hannah";
+      try {
+        const chunks = splitOrpheus(text, 190);
+        console.log(`[TTS] Groq Orpheus: voice=${orpheusVoice}, chars=${text.length}, chunks=${chunks.length}`);
+        const wavBuffers: Buffer[] = [];
+        let headerSaved: Buffer | null = null;
+        for (const chunk of chunks) {
+          const ttsRes = await fetchWithTimeout(
+            "https://api.groq.com/openai/v1/audio/speech",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json", Authorization: `Bearer ${groqKey}` },
+              body: JSON.stringify({
+                model: "canopylabs/orpheus-v1-english",
+                input: chunk,
+                voice: orpheusVoice,
+                response_format: "wav",
+              }),
+            },
+            30000
+          );
+          if (!ttsRes.ok) {
+            const errBody = await ttsRes.text();
+            throw new Error(`Groq Orpheus HTTP ${ttsRes.status}: ${errBody.slice(0, 200)}`);
+          }
+          const buf = Buffer.from(await ttsRes.arrayBuffer());
+          // WAV files: keep header from first chunk, strip 44-byte header from subsequent chunks
+          if (wavBuffers.length === 0) {
+            headerSaved = buf.slice(0, 44);
+            wavBuffers.push(buf);
+          } else {
+            // Strip WAV header (44 bytes) from subsequent chunks and append PCM data only
+            wavBuffers.push(buf.slice(44));
+          }
+        }
+        // Rebuild a single valid WAV with correct data size in header
+        const pcmData = Buffer.concat(wavBuffers.slice(1).map((b, i) => i === 0 ? wavBuffers[0].slice(44) : b));
+        const allPcm = Buffer.concat([wavBuffers[0].slice(44), ...wavBuffers.slice(1)]);
+        const totalDataSize = wavBuffers[0].length - 44 + wavBuffers.slice(1).reduce((a, b) => a + b.length, 0);
+        const finalWav = Buffer.concat([headerSaved!, allPcm]);
+        // Fix WAV header sizes
+        finalWav.writeUInt32LE(36 + totalDataSize, 4);  // RIFF chunk size
+        finalWav.writeUInt32LE(totalDataSize, 40);       // data chunk size
+        res.setHeader("Content-Type", "audio/wav");
+        res.setHeader("Content-Length", finalWav.byteLength.toString());
+        console.log(`[TTS] Groq Orpheus success: ${finalWav.byteLength} bytes (${chunks.length} chunks)`);
+        return res.send(finalWav);
+      } catch (err: any) {
+        console.warn("[TTS] Groq Orpheus error:", err?.message || err);
+        // Fall through to Gemini
+      }
+    }
+
+    // ───────────────────────────────────────────────────────────────────────────────
+    // 3. OpenAI TTS — TERTIARY fallback (only if a real sk- key with quota is available)
+    // ───────────────────────────────────────────────────────────────────────────────
     const schoolId = (req as any).user?.schoolId;
     let openaiKey = "";
     if (schoolId) {
@@ -602,10 +691,10 @@ router.post("/tts", requireAuth, async (req: Request, res: Response) => {
         if (row?.api_key) openaiKey = row.api_key;
       } catch { /* ignore */ }
     }
+    // Only use env OpenAI key if it's a real sk- key (not a proxy)
     if (!openaiKey && process.env.OPENAI_API_KEY?.startsWith("sk-") && !process.env.OPENAI_API_KEY?.startsWith("sk-TXL")) {
       openaiKey = process.env.OPENAI_API_KEY;
     }
-
     if (openaiKey) {
       const validVoices = ["alloy", "echo", "fable", "onyx", "nova", "shimmer"];
       const selectedVoice = validVoices.includes(voice) ? voice : "nova";
@@ -639,88 +728,7 @@ router.post("/tts", requireAuth, async (req: Request, res: Response) => {
       }
     }
 
-    // 3. Try Gemini TTS (gemini-2.5-flash-preview-tts)
-    const geminiKey = process.env.GEMINI_API_KEY || getEffectiveKey("gemini");
-    if (geminiKey) {
-      const geminiVoiceMap: Record<string, string> = {
-        nova:    "Aoede",
-        shimmer: "Leda",
-        alloy:   "Kore",
-        echo:    "Charon",
-        fable:   "Fenrir",
-        onyx:    "Orus",
-      };
-      const geminiVoice = geminiVoiceMap[voice] || "Aoede";
-      try {
-        const inputText = text.slice(0, 5000);
-        console.log(`[TTS] Gemini TTS: voice=${geminiVoice}, chars=${inputText.length}`);
-        const ttsRes = await fetchWithTimeout(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${geminiKey}`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              contents: [{ parts: [{ text: inputText }] }],
-              generationConfig: {
-                response_modalities: ["AUDIO"],
-                speech_config: {
-                  voice_config: { prebuilt_voice_config: { voice_name: geminiVoice } },
-                },
-              },
-            }),
-          },
-          30000
-        );
-        if (ttsRes.ok) {
-          const data = await ttsRes.json() as any;
-          const parts = data?.candidates?.[0]?.content?.parts || [];
-          for (const part of parts) {
-            if (part?.inlineData?.data) {
-              const rawBuffer = Buffer.from(part.inlineData.data, "base64");
-              const mimeType = part.inlineData.mimeType || "audio/mpeg";
-              let finalBuffer = rawBuffer;
-              let finalMime = mimeType;
-              if (mimeType.includes("pcm") || mimeType.includes("l16") || mimeType.includes("raw")) {
-                const sampleRate = 24000;
-                const numChannels = 1;
-                const bitsPerSample = 16;
-                const byteRate = sampleRate * numChannels * (bitsPerSample / 8);
-                const blockAlign = numChannels * (bitsPerSample / 8);
-                const dataSize = rawBuffer.byteLength;
-                const wavHeader = Buffer.alloc(44);
-                wavHeader.write("RIFF", 0);
-                wavHeader.writeUInt32LE(36 + dataSize, 4);
-                wavHeader.write("WAVE", 8);
-                wavHeader.write("fmt ", 12);
-                wavHeader.writeUInt32LE(16, 16);
-                wavHeader.writeUInt16LE(1, 20);
-                wavHeader.writeUInt16LE(numChannels, 22);
-                wavHeader.writeUInt32LE(sampleRate, 24);
-                wavHeader.writeUInt32LE(byteRate, 28);
-                wavHeader.writeUInt16LE(blockAlign, 32);
-                wavHeader.writeUInt16LE(bitsPerSample, 34);
-                wavHeader.write("data", 36);
-                wavHeader.writeUInt32LE(dataSize, 40);
-                finalBuffer = Buffer.concat([wavHeader, rawBuffer]);
-                finalMime = "audio/wav";
-              }
-              res.setHeader("Content-Type", finalMime);
-              res.setHeader("Content-Length", finalBuffer.byteLength.toString());
-              console.log(`[TTS] Gemini TTS success: ${finalBuffer.byteLength} bytes (${finalMime})`);
-              return res.send(finalBuffer);
-            }
-          }
-          console.warn("[TTS] Gemini TTS: no audio in response", JSON.stringify(data).slice(0, 200));
-        } else {
-          const errBody = await ttsRes.text();
-          console.warn(`[TTS] Gemini TTS HTTP ${ttsRes.status}:`, errBody.slice(0, 200));
-        }
-      } catch (err: any) {
-        console.warn("[TTS] Gemini TTS error:", err?.message || err);
-      }
-    }
-
-    throw new Error("TTS unavailable: no working TTS provider.");
+    throw new Error("TTS unavailable: all providers failed. Check Railway logs for details.");
 
   } catch (err: any) {
     console.error("Revision TTS error:", err);
