@@ -31,6 +31,7 @@ import BehaviourTracking from "./pages/BehaviourTracking";
 import Attendance from "./pages/Attendance";
 import PupilComments from "./pages/PupilComments";
 import AdminPanel from "./pages/AdminPanel";
+import SuperAdminUsers from "./pages/SuperAdminUsers";
 
 // New AI Tools
 import IEPGenerator from "./pages/tools/IEPGenerator";
@@ -119,6 +120,7 @@ function ProtectedRoutes() {
         <Route path="/attendance" component={Attendance} />
         <Route path="/pupil-comments" component={PupilComments} />
         <Route path="/admin" component={AdminPanel} />
+        <Route path="/super-admin/users" component={SuperAdminUsers} />
 
         {/* SEND Screener */}
         <Route path="/send-screener" component={SendScreener} />
