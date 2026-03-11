@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useApp } from "@/contexts/AppContext";
-import { useUserPreferences } from "@/contexts/UserPreferencesContext";
+import { useUserPreferences, COLOUR_THEMES } from "@/contexts/UserPreferencesContext";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Home, Sparkles, FileText, BookOpen, LayoutGrid, Users, Clock,
@@ -143,14 +143,22 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [location] = useLocation();
   const { user, logout } = useApp();
-  const { isSidebarItemHidden } = useUserPreferences();
+  const { isSidebarItemHidden, wallpaperStyle, currentTheme, preferences } = useUserPreferences();
 
   const currentPage = allMenuItems.find(m => location.startsWith(m.path));
 
+  // Apply theme CSS variables to :root on every render so they stay in sync
+  const theme = COLOUR_THEMES.find(t => t.id === preferences.themeId) || COLOUR_THEMES[0];
+  if (typeof document !== "undefined") {
+    document.documentElement.style.setProperty("--brand", theme.primary);
+    document.documentElement.style.setProperty("--brand-accent", theme.accent);
+    document.documentElement.style.setProperty("--color-primary", theme.primary);
+  }
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen" style={wallpaperStyle}>
       {/* Top Header */}
-      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-border/50">
+      <header className="sticky top-0 z-40 backdrop-blur-md border-b border-border/50" style={{ backgroundColor: `${theme.primary}15`, borderColor: `${theme.primary}30` }}>
         <div className="flex items-center justify-between px-4 h-14">
           <button onClick={() => setSidebarOpen(true)} className="p-2 -ml-2 rounded-lg hover:bg-muted transition-colors">
             <Menu className="w-5 h-5 text-foreground" />
@@ -176,12 +184,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               animate={{ x: 0 }}
               exit={{ x: -300 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="fixed left-0 top-0 bottom-0 w-72 bg-white z-50 shadow-xl flex flex-col"
+              className="fixed left-0 top-0 bottom-0 w-72 z-50 shadow-xl flex flex-col"
+              style={{ backgroundColor: "white" }}
             >
               {/* Sidebar Header */}
               <div className="flex items-center justify-between p-4 border-b border-border/50">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-brand flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: theme.primary }}>
                     <GraduationCap className="w-5 h-5 text-white" />
                   </div>
                   <div>
@@ -263,7 +272,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               {/* User Info */}
               <div className="p-4 border-t border-border/50">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-full bg-brand flex items-center justify-center text-white font-semibold text-sm">
+                  <div className="w-9 h-9 rounded-full flex items-center justify-center text-white font-semibold text-sm" style={{ backgroundColor: theme.primary }}>
                     {user?.displayName?.[0] || "U"}
                   </div>
                   <div className="flex-1 min-w-0">

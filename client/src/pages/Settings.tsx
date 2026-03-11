@@ -660,12 +660,20 @@ function PersonalisationSection() {
           </div>
         )}
 
-        {/* Reset button */}
-        <div className="pt-2 border-t border-border/50">
+        {/* Save & Apply + Reset buttons */}
+        <div className="pt-2 border-t border-border/50 flex items-center gap-2">
+          <Button
+            size="sm"
+            onClick={() => { toast.success("Preferences saved! Reloading..."); setTimeout(() => window.location.reload(), 800); }}
+            className="text-xs gap-2 bg-brand hover:bg-brand/90 text-white"
+          >
+            <CheckCircle className="w-3 h-3" />
+            Save &amp; Apply
+          </Button>
           <Button
             variant="outline"
             size="sm"
-            onClick={() => { resetPreferences(); toast.success("Preferences reset to defaults"); }}
+            onClick={() => { resetPreferences(); toast.success("Preferences reset to defaults"); setTimeout(() => window.location.reload(), 800); }}
             className="text-xs gap-2 text-muted-foreground"
           >
             <RotateCcw className="w-3 h-3" />

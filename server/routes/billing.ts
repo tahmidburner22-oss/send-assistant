@@ -70,6 +70,23 @@ async function getOrCreateStripeCustomer(school: any, adminEmail: string): Promi
 // ── GET /api/billing/status — current subscription status ────────────────────
 router.get("/status", requireAuth, (req: Request, res: Response) => {
   const user = req.user!;
+
+  // Platform owner always has full premium access — no billing checks
+  const PLATFORM_OWNER_EMAILS = ["admin@adaptly.co.uk", "admin@sendassistant.app"];
+  if (PLATFORM_OWNER_EMAILS.includes(user.email || "")) {
+    return res.json({
+      status: "active",
+      plan: "premium",
+      licenceType: "premium",
+      trialEndsAt: null,
+      periodEnd: null,
+      cancelAtPeriodEnd: false,
+      isAccessible: true,
+      stripeConfigured: !!stripe,
+      isPlatformOwner: true,
+    });
+  }
+
   if (!user.schoolId) return res.json({ status: "no_school", plan: null });
 
   const school = db.prepare("SELECT * FROM schools WHERE id = ?").get(user.schoolId) as any;
