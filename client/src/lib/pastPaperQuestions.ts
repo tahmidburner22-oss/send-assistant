@@ -1,3 +1,5 @@
+import { allExpandedQuestions } from "./questionBankExpanded";
+
 /**
  * Past Paper Question Database
  * ─────────────────────────────────────────────────────────────────────────────
@@ -34,10 +36,10 @@ export type ExamStage = "ks1" | "ks2" | "11plus" | "ks3" | "gcse";
 
 export interface PastPaperQuestion {
   id: string;
-  board: "AQA" | "Edexcel" | "OCR" | "WJEC" | "STA" | "GL";
+  board: "AQA" | "Edexcel" | "OCR" | "WJEC" | "STA" | "GL" | "KS1 SATs" | "KS2 SATs" | "CCEA" | "Cambridge";
   subject: string;
   year: number;
-  series: "June" | "November" | "Sample" | "Specimen";
+  series: "June" | "November" | "Sample" | "Specimen" | "May" | "January" | "March";
   paper: string;
   tier?: "Higher" | "Foundation";
   questionNum: string;
@@ -1470,6 +1472,8 @@ export const allPastPaperQuestions: PastPaperQuestion[] = [
   ...ks2English,
   ...elevenPlusMaths,
   ...elevenPlusVerbal,
+  // Expanded bank — 15+ questions per topic per subject
+  ...allExpandedQuestions,
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1490,13 +1494,13 @@ export function getExamQuestions(options: {
   limit?: number;
   yearGroup?: number; // school year (1-11) for age-appropriate filtering
 }): PastPaperQuestion[] {
-  const { subject, board, tier, topic, yearMin = 2018, yearMax = 2025, limit = 10, yearGroup } = options;
+  const { subject, board, tier, topic, yearMin = 2018, yearMax = 2025, limit = 25, yearGroup } = options;
 
   let filtered = allPastPaperQuestions.filter(q => {
     if (q.subject !== subject) return false;
     if (board && board !== "none" && board !== "Any" && q.board !== board) return false;
     if (tier && q.tier && q.tier !== tier) return false;
-    if (topic && q.topic.toLowerCase() !== topic.toLowerCase()) return false;
+    if (topic && !q.topic.toLowerCase().includes(topic.toLowerCase())) return false;
     if (q.year < yearMin || q.year > yearMax) return false;
 
     // Year-group-appropriate filtering
