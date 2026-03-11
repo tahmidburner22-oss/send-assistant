@@ -210,6 +210,7 @@ export default function Worksheets() {
   const [showPrintDialog, setShowPrintDialog] = useState(false);
 
   const worksheetRef = useRef<HTMLDivElement>(null);
+  const uploadWorksheetRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // tRPC mutations
@@ -361,14 +362,19 @@ export default function Worksheets() {
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const allowed = ["image/jpeg", "image/png", "image/gif", "image/webp", "application/pdf"];
-    if (!allowed.includes(file.type)) { toast.error("Please upload a JPG, PNG, or PDF file."); return; }
+    const allowed = [
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ];
+    if (!allowed.includes(file.type)) {
+      toast.error("Only PDF (.pdf) and Word (.doc, .docx) files are supported.");
+      return;
+    }
     if (file.size > 10 * 1024 * 1024) { toast.error("File too large. Maximum 10MB."); return; }
     setUploadFile(file);
     setUploadResult(null);
-    const reader = new FileReader();
-    reader.onload = (ev) => setUploadPreview(ev.target?.result as string);
-    reader.readAsDataURL(file);
+    setUploadPreview(null);
   };
 
   const handleUploadAdapt = async () => {
@@ -725,8 +731,8 @@ export default function Worksheets() {
                 <div className="flex items-start gap-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                   <AlertCircle className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
                   <div className="text-sm text-blue-700">
-                    <p className="font-medium">Upload any worksheet (PDF or image)</p>
-                    <p className="text-xs mt-0.5">AI adapts text and structure for the SEND need. All diagrams and images are preserved exactly as-is.</p>
+                    <p className="font-medium">Upload a worksheet (PDF or Word document)</p>
+                    <p className="text-xs mt-0.5">All questions, symbols (× ÷ √ ²), and content are preserved verbatim. Only formatting and presentation are adapted for the SEND need.</p>
                   </div>
                 </div>
 
@@ -741,24 +747,26 @@ export default function Worksheets() {
                     if (file) handleFileSelect({ target: { files: [file] } } as any);
                   }}
                 >
-                  <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/gif,image/webp,application/pdf" className="hidden" onChange={handleFileSelect} />
-                  {uploadPreview ? (
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                    className="hidden"
+                    onChange={handleFileSelect}
+                  />
+                  {uploadFile ? (
                     <div className="space-y-2">
-                      {uploadFile?.type.startsWith("image/") ? (
-                        <img src={uploadPreview} alt="Preview" className="max-h-48 mx-auto rounded-lg shadow-sm" />
-                      ) : (
-                        <div className="flex items-center justify-center gap-2 text-emerald-600">
-                          <FileText className="h-8 w-8" />
-                          <span className="font-medium">{uploadFile?.name}</span>
-                        </div>
-                      )}
+                      <div className="flex items-center justify-center gap-2 text-emerald-600">
+                        <FileText className="h-8 w-8" />
+                        <span className="font-medium">{uploadFile.name}</span>
+                      </div>
                       <p className="text-sm text-gray-500">Click to change file</p>
                     </div>
                   ) : (
                     <>
                       <Upload className="h-12 w-12 text-gray-400 mx-auto mb-3" />
                       <p className="text-gray-600 font-medium">Drop worksheet here or click to browse</p>
-                      <p className="text-gray-400 text-sm mt-1">JPG, PNG, PDF — up to 10MB</p>
+                      <p className="text-gray-400 text-sm mt-1">PDF (.pdf) or Word (.doc, .docx) — up to 10MB</p>
                     </>
                   )}
                 </div>
@@ -782,38 +790,91 @@ export default function Worksheets() {
 
                 <div className="flex items-center gap-2 p-2 bg-green-50 border border-green-200 rounded text-xs text-green-700">
                   <CheckCircle className="h-4 w-4 flex-shrink-0" />
-                  Diagrams and images will be preserved — only text and structure will be adapted
+                  All questions and symbols are preserved verbatim — only formatting is adapted
                 </div>
 
                 <Button onClick={handleUploadAdapt} disabled={uploadLoading || !uploadFile || !uploadSendNeed} className="w-full h-11 bg-brand hover:bg-brand/90 text-white">
                   {uploadLoading ? <><RefreshCw className="h-4 w-4 mr-2 animate-spin" />Adapting with AI...</> : <><Sparkles className="h-4 w-4 mr-2" />Adapt Worksheet for SEND</>}
                 </Button>
 
-                {/* Upload result */}
-                {uploadResult && (
-                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
-                    <div className="flex items-center gap-2">
-                      <CheckCircle className="h-5 w-5 text-green-600" />
-                      <span className="font-medium text-sm">Adaptation complete!</span>
-                      <Badge className="bg-green-100 text-green-700 text-xs">Diagrams preserved</Badge>
-                    </div>
-                    {uploadResult.adapted?.adaptationsSummary?.length > 0 && (
-                      <div className="p-3 bg-purple-50 border border-purple-200 rounded-lg">
-                        <p className="font-medium text-purple-800 text-xs mb-1">Adaptations made:</p>
-                        <ul className="text-xs text-purple-700 space-y-0.5">
-                          {uploadResult.adapted.adaptationsSummary.map((a: string, i: number) => (
-                            <li key={i} className="flex items-start gap-1"><CheckCircle className="h-3 w-3 text-purple-500 flex-shrink-0 mt-0.5" />{a}</li>
-                          ))}
-                        </ul>
+                {/* Upload result — rendered using WorksheetRenderer for professional output */}
+                {uploadResult && (() => {
+                  const adapted = uploadResult.adapted;
+                  // Build a GeneratedWorksheet-compatible object from the adapted result
+                  const sections = adapted?.sections ?? [
+                    { title: "Adapted Worksheet", type: "guided", content: adapted?.adaptedContent || "", teacherOnly: false }
+                  ];
+                  if (adapted?.teacherSection) {
+                    sections.push({ ...adapted.teacherSection, teacherOnly: true });
+                  }
+                  const uploadedWorksheet = {
+                    title: adapted?.title || uploadFile?.name?.replace(/\.[^.]+$/, "") || "Adapted Worksheet",
+                    subtitle: adapted?.subtitle || `${uploadSendNeed} adaptation`,
+                    sections,
+                    metadata: {
+                      subject: "uploaded",
+                      topic: "Uploaded worksheet",
+                      yearGroup: uploadYearGroup || "Year 9",
+                      sendNeed: uploadSendNeed,
+                      difficulty: "Standard",
+                      adaptations: adapted?.adaptationsSummary || [],
+                    },
+                  };
+                  return (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="h-5 w-5 text-green-600" />
+                        <span className="font-medium text-sm">Adaptation complete — content preserved verbatim</span>
                       </div>
-                    )}
-                    <div className="border rounded-lg p-4 bg-white text-sm" dangerouslySetInnerHTML={{ __html: formatContent(uploadResult.adapted?.adaptedContent || "Adaptation complete.") }} />
-                    <div className="flex gap-2">
-                      <Button size="sm" variant="outline" onClick={handlePrint}><Printer className="h-4 w-4 mr-1" />Print</Button>
-                      <Button size="sm" variant="outline"><Download className="h-4 w-4 mr-1" />Download PDF</Button>
-                    </div>
-                  </motion.div>
-                )}
+                      {adapted?.adaptationsSummary?.length > 0 && (
+                        <div className="p-3 bg-purple-50 border border-purple-200 rounded-lg">
+                          <p className="font-medium text-purple-800 text-xs mb-1">Formatting adaptations applied:</p>
+                          <ul className="text-xs text-purple-700 space-y-0.5">
+                            {adapted.adaptationsSummary.map((a: string, i: number) => (
+                              <li key={i} className="flex items-start gap-1"><CheckCircle className="h-3 w-3 text-purple-500 flex-shrink-0 mt-0.5" />{a}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                      {/* Professional worksheet renderer — same as generated worksheets */}
+                      <div className="border rounded-xl overflow-hidden shadow-sm" ref={uploadWorksheetRef}>
+                        <WorksheetRenderer
+                          worksheet={uploadedWorksheet as any}
+                          viewMode="student"
+                          sendNeed={uploadSendNeed}
+                          colorOverlay={colorOverlay}
+                          editedSections={{}}
+                        />
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            if (uploadWorksheetRef.current) printWorksheetElement(uploadWorksheetRef.current);
+                          }}
+                        >
+                          <Printer className="h-4 w-4 mr-1" />Print
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={async () => {
+                            if (uploadWorksheetRef.current) {
+                              toast.info("Generating PDF...");
+                              try {
+                                await downloadHtmlAsPdf(uploadWorksheetRef.current, `${uploadedWorksheet.title}_adapted.pdf`);
+                                toast.success("PDF downloaded!");
+                              } catch { toast.error("PDF generation failed."); }
+                            }
+                          }}
+                        >
+                          <Download className="h-4 w-4 mr-1" />Download PDF
+                        </Button>
+                      </div>
+                    </motion.div>
+                  );
+                })()}
               </CardContent>
             </Card>
           </TabsContent>
