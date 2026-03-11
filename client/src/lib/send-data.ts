@@ -117,13 +117,19 @@ export const storyLengths = [
   { id: "short", name: "Short", words: "~500 words" },
   { id: "medium", name: "Medium", words: "~1000 words" },
   { id: "long", name: "Long", words: "~1800 words" },
+  { id: "extra-long", name: "Extra Long", words: "~3000 words" },
 ];
-
 export const readingLevels = [
-  { id: "age-appropriate", name: "Age appropriate (default)" },
-  { id: "below", name: "Below age level" },
-  { id: "well-below", name: "Well below age level" },
-  { id: "above", name: "Above age level" },
+  { id: "age-appropriate", name: "Reading Age: Matched to Year Group" },
+  { id: "reading-age-6-7", name: "Reading Age: 6–7 years" },
+  { id: "reading-age-7-8", name: "Reading Age: 7–8 years" },
+  { id: "reading-age-8-9", name: "Reading Age: 8–9 years" },
+  { id: "reading-age-9-10", name: "Reading Age: 9–10 years" },
+  { id: "reading-age-10-11", name: "Reading Age: 10–11 years" },
+  { id: "reading-age-11-12", name: "Reading Age: 11–12 years" },
+  { id: "reading-age-12-13", name: "Reading Age: 12–13 years" },
+  { id: "reading-age-13-14", name: "Reading Age: 13–14 years" },
+  { id: "reading-age-14-plus", name: "Reading Age: 14+ years" },
 ];
 
 export const colorOverlays = [

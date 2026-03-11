@@ -1,4 +1,5 @@
 import { useApp } from "@/contexts/AppContext";
+import { useUserPreferences, ALL_DASHBOARD_CARDS } from "@/contexts/UserPreferencesContext";
 import { Link } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { motion } from "framer-motion";
@@ -6,14 +7,10 @@ import { cobsTips, subjects } from "@/lib/send-data";
 import {
   FileText, Sparkles, Users, Clock, Share2, BookOpen, Calculator,
   FlaskConical, Landmark, Globe, Palette, Music, Dumbbell, Monitor,
-  Wrench, Heart, Languages, UserCheck, Briefcase, Theater, Star, Lightbulb
+  Wrench, Heart, Languages, UserCheck, Briefcase, Theater, Lightbulb,
+  GraduationCap, BarChart2, CalendarDays, Brain, ScrollText, Gamepad2, Settings
 } from "lucide-react";
 import { useState, useMemo, useEffect } from "react";
-
-const iconMap: Record<string, any> = {
-  BookOpen, Calculator, FlaskConical, Landmark, Globe, Palette, Music,
-  Dumbbell, Monitor, Wrench, Heart, Languages, Users: UserCheck, Briefcase, Theater,
-};
 
 const subjectIcons: Record<string, any> = {
   english: BookOpen, mathematics: Calculator, science: FlaskConical,
@@ -22,8 +19,25 @@ const subjectIcons: Record<string, any> = {
   mfl: Languages, pshe: UserCheck, business: Briefcase, drama: Theater,
 };
 
+// Map dashboard card IDs to icons and colours
+const cardIconMap: Record<string, { icon: any; color: string; href: string }> = {
+  "worksheets":    { icon: FileText,    color: "bg-brand-light text-brand",         href: "/worksheets" },
+  "differentiate": { icon: Sparkles,    color: "bg-purple-50 text-purple-600",       href: "/differentiate" },
+  "quiz-game":     { icon: Gamepad2,    color: "bg-orange-50 text-orange-600",       href: "/quiz-game" },
+  "revision-hub":  { icon: Brain,       color: "bg-indigo-50 text-indigo-600",       href: "/revision-hub" },
+  "past-papers":   { icon: ScrollText,  color: "bg-teal-50 text-teal-600",           href: "/past-papers" },
+  "stories":       { icon: BookOpen,    color: "bg-emerald-50 text-emerald-600",     href: "/stories" },
+  "children":      { icon: Users,       color: "bg-blue-50 text-blue-600",           href: "/children" },
+  "analytics":     { icon: BarChart2,   color: "bg-rose-50 text-rose-600",           href: "/analytics" },
+  "daily-briefing":{ icon: CalendarDays,color: "bg-amber-50 text-amber-600",         href: "/daily-briefing" },
+  "templates":     { icon: GraduationCap,color:"bg-cyan-50 text-cyan-600",           href: "/templates" },
+  "attendance":    { icon: CalendarDays,color: "bg-green-50 text-green-600",         href: "/attendance" },
+  "behaviour":     { icon: UserCheck,   color: "bg-pink-50 text-pink-600",           href: "/behaviour-tracking" },
+};
+
 export default function Home() {
   const { user, worksheetHistory, storyHistory, differentiationHistory, children, refreshData } = useApp();
+  const { preferences } = useUserPreferences();
 
   // Re-fetch data from server every time the dashboard is visited so stats stay current
   useEffect(() => { refreshData(); }, []);
@@ -48,13 +62,16 @@ export default function Home() {
     { label: "Avg Rating", value: avgRating || "—", color: "text-rose-500" },
   ];
 
-  const quickActions = [
-    { label: "Differentiate a Task", icon: Sparkles, href: "/differentiate", color: "bg-purple-50 text-purple-600" },
-    { label: "Create Worksheet", icon: FileText, href: "/worksheets", color: "bg-brand-light text-brand" },
-    { label: "Manage Pupils", icon: Users, href: "/children", color: "bg-blue-50 text-blue-600" },
-    { label: "View History", icon: Clock, href: "/history", color: "bg-amber-50 text-amber-600" },
-    { label: "Share Ideas", icon: Share2, href: "/ideas", color: "bg-rose-50 text-rose-600" },
-  ];
+  // Filter dashboard cards based on user preferences
+  const visibleCards = ALL_DASHBOARD_CARDS.filter(card =>
+    preferences.dashboardCards.includes(card.id)
+  );
+
+  // Filter subjects based on user preferences
+  const visibleSubjects = subjects.filter(subject =>
+    preferences.dashboardSubjects.length === 0 ||
+    preferences.dashboardSubjects.some(s => s.toLowerCase() === subject.name.toLowerCase() || s.toLowerCase() === subject.id.toLowerCase())
+  );
 
   return (
     <div className="px-4 py-6 max-w-2xl mx-auto space-y-6">
@@ -78,33 +95,49 @@ export default function Home() {
         </div>
       </motion.div>
 
-      {/* Quick Actions */}
+      {/* Quick Access Cards — driven by dashboard preferences */}
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
-        <h3 className="text-base font-semibold text-foreground mb-3">Quick Actions</h3>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          {quickActions.map((action, i) => {
-            const Icon = action.icon;
-            return (
-              <Link key={i} href={action.href}>
-                <Card className="border-border/50 hover:border-brand/30 hover:shadow-sm transition-all cursor-pointer h-full">
-                  <CardContent className="p-4 flex flex-col items-center text-center gap-2">
-                    <div className={`w-10 h-10 rounded-xl ${action.color} flex items-center justify-center`}>
-                      <Icon className="w-5 h-5" />
-                    </div>
-                    <span className="text-xs font-medium text-foreground">{action.label}</span>
-                  </CardContent>
-                </Card>
-              </Link>
-            );
-          })}
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-base font-semibold text-foreground">Quick Access</h3>
+          <Link href="/settings?tab=dashboard">
+            <button className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors">
+              <Settings className="w-3 h-3" /> Customise
+            </button>
+          </Link>
         </div>
+        {visibleCards.length === 0 ? (
+          <Card className="border-dashed border-border/50">
+            <CardContent className="p-6 text-center">
+              <p className="text-sm text-muted-foreground">No cards selected. <Link href="/settings?tab=dashboard"><span className="text-brand underline cursor-pointer">Customise your dashboard</span></Link></p>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {visibleCards.map((card) => {
+              const meta = cardIconMap[card.id] || { icon: FileText, color: "bg-muted text-muted-foreground", href: "/" };
+              const Icon = meta.icon;
+              return (
+                <Link key={card.id} href={meta.href}>
+                  <Card className="border-border/50 hover:border-brand/30 hover:shadow-sm transition-all cursor-pointer h-full">
+                    <CardContent className="p-4 flex flex-col items-center text-center gap-2">
+                      <div className={`w-10 h-10 rounded-xl ${meta.color} flex items-center justify-center`}>
+                        <Icon className="w-5 h-5" />
+                      </div>
+                      <span className="text-xs font-medium text-foreground">{card.label}</span>
+                    </CardContent>
+                  </Card>
+                </Link>
+              );
+            })}
+          </div>
+        )}
       </motion.div>
 
-      {/* Browse by Subject */}
+      {/* Browse by Subject — filtered by preferences */}
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
         <h3 className="text-base font-semibold text-foreground mb-3">Browse by Subject</h3>
         <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
-          {subjects.map((subject) => {
+          {(visibleSubjects.length > 0 ? visibleSubjects : subjects).map((subject) => {
             const Icon = subjectIcons[subject.id] || BookOpen;
             return (
               <Link key={subject.id} href={`/worksheets?subject=${subject.id}`}>

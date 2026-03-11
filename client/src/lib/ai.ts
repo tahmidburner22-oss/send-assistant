@@ -649,16 +649,55 @@ export async function aiGenerateStory(params: {
   readingLevel?: string;
   length?: string;
 }): Promise<{ title: string; content: string; provider?: string }> {
-  const system = `You are a creative writing teacher specialising in SEND-friendly stories for UK primary and secondary schools. Always respond with valid JSON only, no markdown.`;
-  const user = `Write a ${params.length || "medium"} length ${params.genre} story for Year ${params.yearGroup} students.
-${params.sendNeed ? `Adapted for: ${params.sendNeed}` : ""}
-${params.characters?.length ? `Characters: ${params.characters.join(", ")}` : ""}
-${params.setting ? `Setting: ${params.setting}` : ""}
-${params.theme ? `Theme: ${params.theme}` : ""}
-Reading level: ${params.readingLevel || "age-appropriate"}
-Return JSON (no markdown): {"title": "Story Title", "content": "Full story text here..."}`;
+  // Map length to word count targets
+  const wordTargets: Record<string, string> = {
+    "short": "approximately 500 words (4-5 paragraphs)",
+    "medium": "approximately 1000 words (8-10 paragraphs)",
+    "long": "approximately 1800 words (14-16 paragraphs)",
+    "extra-long": "approximately 3000 words (22-26 paragraphs)",
+  };
+  const wordTarget = wordTargets[params.length || "medium"] || wordTargets["medium"];
 
-  const { text, provider } = await callAI(system, user, 2000);
+  // Map reading level to specific instructions
+  const readingLevelMap: Record<string, string> = {
+    "age-appropriate": `matched to Year ${params.yearGroup} reading age`,
+    "reading-age-6-7": "reading age 6-7 years: very simple sentences (max 8 words), basic vocabulary, phonics-friendly words, no complex clauses",
+    "reading-age-7-8": "reading age 7-8 years: simple sentences (max 10 words), common vocabulary, some compound sentences",
+    "reading-age-8-9": "reading age 8-9 years: mostly simple sentences, familiar vocabulary, occasional compound sentences",
+    "reading-age-9-10": "reading age 9-10 years: mix of simple and compound sentences, accessible vocabulary with some challenging words",
+    "reading-age-10-11": "reading age 10-11 years: varied sentence structure, wider vocabulary, some complex sentences",
+    "reading-age-11-12": "reading age 11-12 years: varied and engaging sentences, good vocabulary range, descriptive language",
+    "reading-age-12-13": "reading age 12-13 years: sophisticated sentences, rich vocabulary, literary techniques",
+    "reading-age-13-14": "reading age 13-14 years: complex sentence structures, advanced vocabulary, mature themes handled appropriately",
+    "reading-age-14-plus": "reading age 14+ years: mature, sophisticated writing with complex vocabulary and themes",
+  };
+  const readingInstruction = readingLevelMap[params.readingLevel || "age-appropriate"] || readingLevelMap["age-appropriate"];
+
+  const system = `You are a professional creative writing teacher specialising in SEND-friendly, engaging stories for UK primary and secondary schools. You write stories that are:
+- Structured in clear, well-developed paragraphs (each paragraph 3-5 sentences)
+- Engaging, immersive and age-appropriate
+- Rich in descriptive language and dialogue
+- Following a clear narrative arc: introduction, rising action, climax, resolution
+- Formatted with paragraph breaks (double newline between paragraphs)
+Always respond with valid JSON only, no markdown code blocks.`;
+
+  const user = `Write a ${params.genre} story for Year ${params.yearGroup} students.
+
+STORY REQUIREMENTS:
+- Length: ${wordTarget}
+- Reading level: ${readingInstruction}
+- Format: Proper paragraphs separated by blank lines. Each paragraph should be 3-5 sentences. Include dialogue where appropriate.
+- Structure: Clear beginning (introduce characters/setting), middle (build tension/conflict), end (satisfying resolution)
+${params.sendNeed ? `- SEND adaptation: ${params.sendNeed} — use appropriate scaffolding, clear language, and accessible structure` : ""}
+${params.characters?.length ? `- Characters: ${params.characters.join(", ")}` : ""}
+${params.setting ? `- Setting: ${params.setting}` : ""}
+${params.theme ? `- Theme/moral: ${params.theme}` : ""}
+
+IMPORTANT: Write the FULL story to the target length. Do not truncate. Use paragraph breaks (\n\n) between paragraphs.
+
+Return JSON only (no markdown): {"title": "Story Title", "content": "Full story with paragraph breaks here..."}`;
+
+  const { text, provider } = await callAI(system, user, params.length === "extra-long" ? 5000 : params.length === "long" ? 3500 : 2500);
   const cleaned = text.replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/\s*```$/i, "").trim();
   const result = JSON.parse(cleaned);
   return { ...result, provider };

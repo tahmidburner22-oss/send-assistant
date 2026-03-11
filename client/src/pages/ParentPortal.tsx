@@ -245,6 +245,71 @@ function PastPapersPanel() {
   );
 }
 
+function NewslettersPanel() {
+  const { parentNewsletters } = useApp() as any;
+  const [selectedNewsletter, setSelectedNewsletter] = useState<any | null>(null);
+  const newsletters: any[] = parentNewsletters || [];
+
+  if (newsletters.length === 0) {
+    return (
+      <Card className="border-border/50">
+        <CardContent className="p-8 text-center">
+          <div className="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-3">
+            <span className="text-2xl">📰</span>
+          </div>
+          <h3 className="font-semibold text-foreground mb-1">No Newsletters Yet</h3>
+          <p className="text-sm text-muted-foreground">School newsletters will appear here when published by staff.</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (selectedNewsletter) {
+    return (
+      <div className="space-y-3">
+        <button
+          onClick={() => setSelectedNewsletter(null)}
+          className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <ChevronLeft className="w-4 h-4" /> Back to newsletters
+        </button>
+        <Card className="border-border/50">
+          <CardContent className="p-5">
+            <h3 className="font-bold text-lg text-foreground mb-1">{selectedNewsletter.title}</h3>
+            <p className="text-xs text-muted-foreground mb-4">{selectedNewsletter.date}</p>
+            <div className="prose prose-sm max-w-none text-foreground whitespace-pre-wrap leading-relaxed">
+              {selectedNewsletter.content}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-2">
+      <p className="text-xs text-muted-foreground mb-2">Latest communications from school:</p>
+      {newsletters.map((n: any) => (
+        <Card key={n.id} className="border-border/50 cursor-pointer hover:shadow-md transition-shadow" onClick={() => setSelectedNewsletter(n)}>
+          <CardContent className="p-4">
+            <div className="flex items-start gap-3">
+              <div className="w-9 h-9 bg-pink-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                <span className="text-base">📰</span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-sm text-foreground truncate">{n.title}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{n.date}</p>
+                <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{n.content?.slice(0, 120)}...</p>
+              </div>
+              <ChevronRightIcon className="w-4 h-4 text-muted-foreground flex-shrink-0 mt-1" />
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
 export default function ParentPortal() {
   const { children, addSubmission, updateAssignment, attendanceRecords } = useApp();
   const [code, setCode] = useState("");
@@ -481,6 +546,7 @@ export default function ParentPortal() {
 
         {/* ─── ACCORDION SECTIONS ─── */}
         {([
+          { id: "newsletters", label: "📰 School Newsletters", emoji: "📰" },
           { id: "send-screener", label: "🔍 SEND Needs Screener", emoji: "🔍" },
           { id: "assignments", label: "📚 Assignments", emoji: "📚" },
           { id: "behaviour", label: "📋 Behaviour", emoji: "📋" },
@@ -504,6 +570,9 @@ export default function ParentPortal() {
             </button>
             {openSection === sec.id && (
               <div className="border-t border-border/40 p-4">
+        {sec.id === "newsletters" && <div className="space-y-3">
+          <NewslettersPanel />
+        </div>}
         {sec.id === "assignments" && <div className="space-y-2">
             {child.assignments.length === 0 ? (
               <Card className="border-border/50">

@@ -7,6 +7,7 @@ const years = ["Reception","Year 1","Year 2","Year 3","Year 4","Year 5","Year 6"
 export default function WellbeingSupport() {
   return (
     <AIToolPage
+      assignable={true}
       title="Wellbeing Support Generator"
       description="Generate evidence-based wellbeing strategies, scripts, and support plans"
       icon={<Heart className="w-5 h-5 text-white" />}

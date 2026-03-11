@@ -8,6 +8,7 @@ const quizTypes = [{ value: "multiple-choice", label: "Multiple Choice" }, { val
 export default function QuizGenerator() {
   return (
     <AIToolPage
+      assignable={true}
       title="Quiz Generator"
       description="Create engaging, differentiated quizzes with answer keys for any topic"
       icon={<HelpCircle className="w-5 h-5 text-white" />}

@@ -7,6 +7,7 @@ const years = ["Year 1","Year 2","Year 3","Year 4","Year 5","Year 6","Year 7","Y
 export default function ExitTicket() {
   return (
     <AIToolPage
+      assignable={true}
       title="Exit Ticket Generator"
       description="Create quick end-of-lesson checks to assess understanding in under 5 minutes"
       icon={<Ticket className="w-5 h-5 text-white" />}

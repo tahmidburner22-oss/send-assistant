@@ -375,16 +375,26 @@ export default function Worksheets() {
     if (!uploadFile || !uploadSendNeed) { toast.error("Please upload a file and select a SEND need."); return; }
     setUploadLoading(true);
     try {
-      const reader = new FileReader();
-      const dataUrl = await new Promise<string>((resolve, reject) => {
-        reader.onload = (e) => resolve(e.target?.result as string);
-        reader.onerror = reject;
-        reader.readAsDataURL(uploadFile);
+      const formData = new FormData();
+      formData.append("file", uploadFile);
+      formData.append("sendNeed", uploadSendNeed);
+      if (uploadYearGroup) formData.append("yearGroup", uploadYearGroup);
+      const token = localStorage.getItem("send_token");
+      const res = await fetch("/api/ai/adapt-worksheet", {
+        method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        credentials: "include",
+        body: formData,
       });
-      toast.error("File upload adaptation is not available in this version. Please use the AI Generate tab instead.");
-      return;
-    } catch (err) {
-      toast.error("Failed to adapt worksheet. Please try again.");
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: "Upload failed" }));
+        throw new Error(err.error || "Upload failed");
+      }
+      const data = await res.json();
+      setUploadResult(data);
+      toast.success("Worksheet adapted successfully!");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to adapt worksheet. Please try again.");
     }
     setUploadLoading(false);
   };
@@ -517,11 +527,10 @@ export default function Worksheets() {
 
       {!generated ? (
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="w-full grid grid-cols-5 h-10">
+          <TabsList className="w-full grid grid-cols-4 h-10">
             <TabsTrigger value="generate" className="text-xs gap-1"><Sparkles className="w-3 h-3" /> Generate</TabsTrigger>
             <TabsTrigger value="upload" className="text-xs gap-1"><Upload className="w-3 h-3" /> Upload</TabsTrigger>
-            <TabsTrigger value="bank" className="text-xs gap-1"><Library className="w-3 h-3" /> Bank</TabsTrigger>
-            <TabsTrigger value="exam-questions" className="text-xs gap-1"><Award className="w-3 h-3" /> Exam Q</TabsTrigger>
+            <TabsTrigger value="exam-questions" className="text-xs gap-1"><Award className="w-3 h-3" /> Exam Bank</TabsTrigger>
             <TabsTrigger value="history" className="text-xs gap-1">
               <History className="w-3 h-3" /> History
               {worksheetHistory.length > 0 && (
