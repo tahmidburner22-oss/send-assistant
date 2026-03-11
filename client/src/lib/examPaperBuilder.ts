@@ -39,13 +39,38 @@ function normaliseSubject(subject: string): string {
   return SUBJECT_MAP[subject.toLowerCase().trim()] || subject.toLowerCase().replace(/\s+/g, "-");
 }
 
-// Tier mapping from difficulty setting
+// Tier mapping from difficulty setting — maps internal ID to GCSE tier for question filtering
 function normaliseTier(difficulty?: string): "Higher" | "Foundation" | undefined {
   if (!difficulty) return undefined;
   const d = difficulty.toLowerCase();
   if (d === "higher" || d === "stretch") return "Higher";
   if (d === "foundation" || d === "basic") return "Foundation";
-  return undefined; // mixed — no tier filter
+  return undefined; // mixed/standard/access/extended — no tier filter
+}
+
+// Returns the human-readable tier/difficulty label for the worksheet header
+function getTierLabel(subject: string, difficulty?: string): string {
+  if (!difficulty || difficulty === "mixed") return "";
+  const subj = subject.toLowerCase();
+  // Tiered subjects (Maths, Science, MFL)
+  if (["mathematics", "science", "mfl", "biology", "chemistry", "physics"].some(s => subj.includes(s))) {
+    if (difficulty === "higher") return " — Higher Tier";
+    if (difficulty === "foundation") return " — Foundation Tier";
+  }
+  // English — single tier with scaffolding levels
+  if (subj.includes("english")) {
+    if (difficulty === "higher") return " — Extended";
+    if (difficulty === "foundation") return " — Entry Level";
+  }
+  // 11+
+  if (subj.includes("eleven") || subj.includes("11+")) {
+    if (difficulty === "higher") return " — Advanced";
+    if (difficulty === "foundation") return " — Standard";
+  }
+  // All other subjects (levelled)
+  if (difficulty === "higher") return " — Extended";
+  if (difficulty === "foundation") return " — Access Level";
+  return "";
 }
 
 export interface ExamPaperWorksheetParams {
@@ -105,8 +130,7 @@ function getQuestionCount(worksheetLength?: string): number {
  */
 function buildExamHeader(params: ExamPaperWorksheetParams, board: string): string {
   const boardName = board && board !== "none" && board !== "Any" ? board : "AQA";
-  const tier = normaliseTier(params.difficulty);
-  const tierLabel = tier ? ` — ${tier} Tier` : "";
+  const tierLabel = getTierLabel(params.subject, params.difficulty);
   const sendNote = params.sendNeed && params.sendNeed !== "none" && params.sendNeed !== "general"
     ? `\n\n> **SEND Adaptation:** This paper has been formatted for students with ${params.sendNeed}. Font size, line spacing and layout have been adjusted for accessibility. Questions are verbatim from real exam papers.`
     : "";
@@ -302,7 +326,7 @@ export function buildExamPaperWorksheet(params: ExamPaperWorksheetParams): ExamP
   }
 
   const totalMarks = questions.reduce((sum, q) => sum + q.marks, 0);
-  const tier_label = tier ? ` (${tier} Tier)` : "";
+  const tier_label = getTierLabel(params.subject, params.difficulty);
   const boardLabel = board !== "none" ? board : "AQA";
 
   // Build sections
