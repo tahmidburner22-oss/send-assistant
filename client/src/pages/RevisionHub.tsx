@@ -41,12 +41,12 @@ const LANGUAGES = [
 /// Neural AI TTS voices — powered by Groq PlayAI (very natural, human-sounding)
 // Voice IDs map to Groq PlayAI voices on the server side
 const EDGE_VOICES = [
-  { id: "nova",    label: "Aaliyah (Warm Female)" },
-  { id: "shimmer", label: "Adelaide (Soft Female)" },
-  { id: "alloy",   label: "Atlas (Neutral)" },
-  { id: "echo",    label: "Angelo (Male)" },
-  { id: "fable",   label: "Briggs (Expressive Male)" },
-  { id: "onyx",    label: "Cillian (Deep Male)" },
+  { id: "nova",    label: "Celeste — Warm Female (Most Natural)" },
+  { id: "shimmer", label: "Aaliyah — Soft Female" },
+  { id: "alloy",   label: "Olivia — Confident Female" },
+  { id: "echo",    label: "Mason — Natural Male" },
+  { id: "fable",   label: "Fritz — Expressive Male" },
+  { id: "onyx",    label: "Liam — Deep Male" },
 ];
 const TTS_ENGINE_OPTIONS = [
   { id: "edge",    label: "Neural AI Voice (Human)" },

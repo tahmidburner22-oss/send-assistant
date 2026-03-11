@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useApp } from "@/contexts/AppContext";
+import { useUserPreferences } from "@/contexts/UserPreferencesContext";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Home, Sparkles, FileText, BookOpen, LayoutGrid, Users, Clock,
@@ -22,7 +23,6 @@ const mainMenu = [
   { path: "/children", label: "Pupils", icon: Users },
   { path: "/revision-hub", label: "Revision Hub", icon: Headphones },
   { path: "/quiz-game", label: "QuizBlast", icon: Zap, color: "text-yellow-500" },
-  { path: "/quiz-builder", label: "Quiz Builder", icon: Pencil, color: "text-orange-500" },
   { path: "/daily-briefing", label: "Daily Briefing", icon: NotebookPen, color: "text-blue-600" },
   { path: "/history", label: "History", icon: Clock },
   { path: "/analytics", label: "Analytics", icon: BarChart3 },
@@ -72,13 +72,17 @@ const allMenuItems = [
 ];
 
 function SidebarSection({
-  label, items, location, setSidebarOpen
+  label, items, location, setSidebarOpen, hiddenPaths = []
 }: {
   label: string;
   items: { path: string; label: string; icon: any; color?: string }[];
   location: string;
   setSidebarOpen: (v: boolean) => void;
+  hiddenPaths?: string[];
 }) {
+  // Filter out user-hidden items
+  items = items.filter(i => !hiddenPaths.includes(i.path));
+  if (items.length === 0) return null;
   // Persist collapse state per section; default to open (true) on first visit
   const storageKey = `sidebar-section-${label.replace(/\s+/g, '-').toLowerCase()}`;
   const [open, setOpen] = useState(() => {
@@ -139,6 +143,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [location] = useLocation();
   const { user, logout } = useApp();
+  const { isSidebarItemHidden } = useUserPreferences();
 
   const currentPage = allMenuItems.find(m => location.startsWith(m.path));
 
@@ -195,7 +200,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 <div className="px-3 py-2">
                   <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Main</span>
                 </div>
-                {mainMenu.map(item => {
+                {mainMenu.filter(item => !isSidebarItemHidden(item.path)).map(item => {
                   const Icon = item.icon;
                   const isActive = location.startsWith(item.path);
                   return (
@@ -213,13 +218,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 <div className="mx-3 my-2 border-t border-border/50" />
 
                 {/* Collapsible sections — all open by default, collapse state persisted */}
-                <SidebarSection label="SEND Tools" items={sendToolsMenu} location={location} setSidebarOpen={setSidebarOpen} />
+                <SidebarSection label="SEND Tools" items={sendToolsMenu} location={location} setSidebarOpen={setSidebarOpen} hiddenPaths={sendToolsMenu.filter(i => isSidebarItemHidden(i.path)).map(i => i.path)} />
                 <div className="mx-3 my-1 border-t border-border/30" />
-                <SidebarSection label="Planning & Assessment" items={planningMenu} location={location} setSidebarOpen={setSidebarOpen} />
+                <SidebarSection label="Planning & Assessment" items={planningMenu} location={location} setSidebarOpen={setSidebarOpen} hiddenPaths={planningMenu.filter(i => isSidebarItemHidden(i.path)).map(i => i.path)} />
                 <div className="mx-3 my-1 border-t border-border/30" />
-                <SidebarSection label="Communication" items={communicationMenu} location={location} setSidebarOpen={setSidebarOpen} />
+                <SidebarSection label="Communication" items={communicationMenu} location={location} setSidebarOpen={setSidebarOpen} hiddenPaths={communicationMenu.filter(i => isSidebarItemHidden(i.path)).map(i => i.path)} />
                 <div className="mx-3 my-1 border-t border-border/30" />
-                <SidebarSection label="Classroom Management" items={classroomMenu} location={location} setSidebarOpen={setSidebarOpen} />
+                <SidebarSection label="Classroom Management" items={classroomMenu} location={location} setSidebarOpen={setSidebarOpen} hiddenPaths={classroomMenu.filter(i => isSidebarItemHidden(i.path)).map(i => i.path)} />
 
                 <div className="mx-3 my-2 border-t border-border/50" />
 

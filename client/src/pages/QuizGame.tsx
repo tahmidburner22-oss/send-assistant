@@ -15,6 +15,7 @@ import {
   Zap, BookOpen, CheckCircle, ArrowLeft,
   Plus, Pencil, Copy, ExternalLink, RefreshCw,
 } from "lucide-react";
+import InlineQuizBuilder from "@/components/InlineQuizBuilder";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
@@ -127,11 +128,12 @@ function TimerRing({ seconds, total }: { seconds: number; total: number }) {
 export default function QuizGame() {
   const [, navigate] = useLocation();
 
-  type View = "home" | "subject" | "category" | "custom-list" | "lobby" | "question" | "reveal" | "final";
+  type View = "home" | "subject" | "category" | "custom-list" | "builder" | "lobby" | "question" | "reveal" | "final";
   const [view, setView] = useState<View>("home");
   const [selectedSubject, setSelectedSubject] = useState("");
   const [customQuizzes, setCustomQuizzes] = useState<CustomQuiz[]>([]);
   const [loadingCustom, setLoadingCustom] = useState(false);
+  const [builderEditId, setBuilderEditId] = useState<string | null>(null);
 
   // Room
   const [room, setRoom] = useState<RoomState | null>(null);
@@ -375,7 +377,7 @@ export default function QuizGame() {
           </button>
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-3xl font-black text-white">My Quizzes</h2>
-            <Button onClick={() => navigate("/quiz-builder")} className="bg-green-500 hover:bg-green-600 text-white gap-2">
+            <Button onClick={() => setView("builder")} className="bg-green-500 hover:bg-green-600 text-white gap-2">
               <Plus className="w-4 h-4" /> Create Quiz
             </Button>
           </div>
@@ -386,7 +388,7 @@ export default function QuizGame() {
               <BookOpen className="w-12 h-12 text-purple-300 mx-auto mb-4" />
               <p className="text-white text-xl font-bold mb-2">No custom quizzes yet</p>
               <p className="text-purple-200 mb-6">Create a quiz manually or upload a document to generate one with AI</p>
-              <Button onClick={() => navigate("/quiz-builder")} className="bg-green-500 hover:bg-green-600 text-white gap-2">
+              <Button onClick={() => setView("builder")} className="bg-green-500 hover:bg-green-600 text-white gap-2">
                 <Plus className="w-4 h-4" /> Create Your First Quiz
               </Button>
             </div>
@@ -399,7 +401,7 @@ export default function QuizGame() {
                     <div className="text-purple-200 text-sm">{quiz.subject} · {quiz.question_count} questions · by {quiz.created_by_name}</div>
                   </div>
                   <div className="flex gap-2">
-                    <Button size="sm" onClick={() => navigate(`/quiz-builder?edit=${quiz.id}`)} variant="outline"
+                    <Button size="sm" onClick={() => { setBuilderEditId(quiz.id); setView("builder"); }} variant="outline"
                       className="border-white/30 text-white hover:bg-white/20 gap-1">
                       <Pencil className="w-3.5 h-3.5" /> Edit
                     </Button>
@@ -412,6 +414,29 @@ export default function QuizGame() {
               ))}
             </div>
           )}
+        </div>
+      </div>
+    );
+  }
+
+  // ─── Inline Quiz Builder view ────────────────────────────────────────────────
+  if (view === "builder") {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 p-6">
+        <div className="max-w-4xl mx-auto">
+          <button
+            onClick={() => { setBuilderEditId(null); loadCustomQuizzes(); setView("custom-list"); }}
+            className="flex items-center gap-2 text-purple-200 hover:text-white mb-6 transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5" /> Back to My Quizzes
+          </button>
+          <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
+            <InlineQuizBuilder
+              editId={builderEditId}
+              onSaved={() => { setBuilderEditId(null); loadCustomQuizzes(); setView("custom-list"); }}
+              onCancel={() => { setBuilderEditId(null); setView("custom-list"); }}
+            />
+          </div>
         </div>
       </div>
     );
