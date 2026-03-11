@@ -345,35 +345,58 @@ export function buildExamPaperWorksheet(params: ExamPaperWorksheetParams): ExamP
 
   // Fetch questions from database
   const topicFilter = params.topic && params.topic.toLowerCase() !== "general" ? params.topic : undefined;
+  const minNeeded = Math.min(3, questionCount);
+
+  // Attempt 1: exact board + tier + topic + year group
   let questions = getExamQuestions({
     subject: normSubject,
     board,
     tier,
     topic: topicFilter,
     limit: questionCount,
-    yearMin: 2015,
+    yearMin: 2010,
     yearGroup: yearGroupNum,
   });
 
-  // Fallback: if not enough questions for the specific board, try any board
-  if (questions.length < Math.min(3, questionCount)) {
+  // Attempt 2: any board, keep tier + topic + year group
+  if (questions.length < minNeeded) {
     questions = getExamQuestions({
       subject: normSubject,
       tier,
       topic: topicFilter,
       limit: questionCount,
-      yearMin: 2015,
+      yearMin: 2010,
       yearGroup: yearGroupNum,
     });
   }
 
-  // Fallback: if still no questions, try without topic filter
+  // Attempt 3: any board + any tier, keep topic + year group
+  if (questions.length < minNeeded) {
+    questions = getExamQuestions({
+      subject: normSubject,
+      topic: topicFilter,
+      limit: questionCount,
+      yearMin: 2010,
+      yearGroup: yearGroupNum,
+    });
+  }
+
+  // Attempt 4: any board + any tier + topic, drop year group restriction
+  if (questions.length < minNeeded) {
+    questions = getExamQuestions({
+      subject: normSubject,
+      topic: topicFilter,
+      limit: questionCount,
+      yearMin: 2010,
+    });
+  }
+
+  // Attempt 5: any board + any tier + no topic (broadest fallback)
   if (questions.length === 0) {
     questions = getExamQuestions({
       subject: normSubject,
       limit: questionCount,
-      yearMin: 2015,
-      yearGroup: yearGroupNum,
+      yearMin: 2010,
     });
   }
 

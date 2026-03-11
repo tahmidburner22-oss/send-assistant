@@ -1500,6 +1500,331 @@ export const allPastPaperQuestions: PastPaperQuestion[] = [
  * Get questions filtered by subject, board, tier, topic and year range.
  * Returns a shuffled selection up to `limit`.
  */
+// ─────────────────────────────────────────────────────────────────────────────
+// Topic alias map — maps common user-entered topic names to the canonical
+// topic labels used in the question banks, plus keyword terms to search in
+// question text as a fallback.
+// ─────────────────────────────────────────────────────────────────────────────
+const TOPIC_ALIASES: Record<string, string[]> = {
+  // ── MATHEMATICS ──────────────────────────────────────────────────────────────
+  "fractions": ["Fractions", "Number", "Ratio and Proportion", "Ratio"],
+  "fraction": ["Fractions", "Number", "Ratio and Proportion", "Ratio"],
+  "number": ["Number", "Fractions", "Ratio", "Ratio and Proportion"],
+  "algebra": ["Algebra"],
+  "geometry": ["Geometry", "Measurement"],
+  "shape": ["Geometry", "Measurement"],
+  "measure": ["Geometry", "Measurement"],
+  "measurement": ["Geometry", "Measurement"],
+  "statistics": ["Statistics"],
+  "data": ["Statistics"],
+  "probability": ["Statistics"],
+  "ratio": ["Ratio", "Ratio and Proportion", "Fractions", "Number"],
+  "proportion": ["Ratio", "Ratio and Proportion"],
+  "ratio and proportion": ["Ratio and Proportion", "Ratio", "Fractions"],
+  "trigonometry": ["Trigonometry", "Geometry"],
+  "trig": ["Trigonometry", "Geometry"],
+  "calculus": ["Calculus"],
+  "differentiation": ["Calculus"],
+  "integration": ["Calculus"],
+  "graphs": ["Graphs", "Algebra"],
+  "graph": ["Graphs", "Algebra"],
+  "vectors": ["Vectors", "Geometry"],
+  "vector": ["Vectors", "Geometry"],
+  "sequences": ["Algebra", "Number"],
+  "sequence": ["Algebra", "Number"],
+  "series": ["Algebra", "Number"],
+  "inequalities": ["Algebra"],
+  "inequality": ["Algebra"],
+  "surds": ["Number", "Algebra"],
+  "surd": ["Number", "Algebra"],
+  "indices": ["Number", "Algebra"],
+  "index": ["Number", "Algebra"],
+  "powers": ["Number", "Algebra"],
+  "percentages": ["Number", "Fractions", "Ratio and Proportion"],
+  "percentage": ["Number", "Fractions", "Ratio and Proportion"],
+  "percent": ["Number", "Fractions", "Ratio and Proportion"],
+  "decimals": ["Number", "Fractions"],
+  "decimal": ["Number", "Fractions"],
+  "area": ["Geometry", "Measurement"],
+  "volume": ["Geometry", "Measurement"],
+  "perimeter": ["Geometry", "Measurement"],
+  "pythagoras": ["Geometry", "Trigonometry"],
+  "pythagorean": ["Geometry", "Trigonometry"],
+  "circle": ["Geometry"],
+  "circles": ["Geometry"],
+  "angles": ["Geometry"],
+  "angle": ["Geometry"],
+  "transformation": ["Geometry"],
+  "transformations": ["Geometry"],
+  "translation": ["Geometry"],
+  "rotation": ["Geometry"],
+  "enlargement": ["Geometry"],
+  "simultaneous": ["Algebra"],
+  "simultaneous equations": ["Algebra"],
+  "quadratic": ["Algebra"],
+  "linear": ["Algebra", "Graphs"],
+  "equation": ["Algebra"],
+  "equations": ["Algebra"],
+  "expression": ["Algebra"],
+  "expressions": ["Algebra"],
+  "factorisation": ["Algebra"],
+  "factorize": ["Algebra"],
+  "expand": ["Algebra"],
+  "expanding": ["Algebra"],
+  "brackets": ["Algebra"],
+  "proof": ["Algebra", "Number"],
+  "prime": ["Number"],
+  "primes": ["Number"],
+  "factors": ["Number", "Algebra"],
+  "multiples": ["Number"],
+  "hcf": ["Number"],
+  "lcm": ["Number"],
+  "rounding": ["Number"],
+  "estimation": ["Number"],
+  "standard form": ["Number"],
+  "bounds": ["Number"],
+  "speed": ["Ratio and Proportion", "Number"],
+  "density": ["Ratio and Proportion", "Number"],
+  "direct proportion": ["Ratio and Proportion"],
+  "inverse proportion": ["Ratio and Proportion"],
+  "scatter": ["Statistics"],
+  "scatter graph": ["Statistics"],
+  "histogram": ["Statistics"],
+  "cumulative frequency": ["Statistics"],
+  "box plot": ["Statistics"],
+  "mean": ["Statistics"],
+  "median": ["Statistics"],
+  "mode": ["Statistics"],
+  "range": ["Statistics"],
+  "average": ["Statistics"],
+  "mechanics": ["Mechanics"],
+  // ── BIOLOGY ──────────────────────────────────────────────────────────────────
+  "cell biology": ["Cell Biology"],
+  "cell": ["Cell Biology"],
+  "cells": ["Cell Biology"],
+  "mitosis": ["Cell Biology"],
+  "diffusion": ["Cell Biology", "Organisation"],
+  "osmosis": ["Cell Biology", "Organisation"],
+  "organisation": ["Organisation"],
+  "organ": ["Organisation"],
+  "organs": ["Organisation"],
+  "heart": ["Organisation"],
+  "blood": ["Organisation"],
+  "digestive": ["Organisation"],
+  "infection": ["Infection and Response"],
+  "disease": ["Infection and Response"],
+  "immune": ["Infection and Response"],
+  "vaccination": ["Infection and Response"],
+  "pathogen": ["Infection and Response"],
+  "bacteria": ["Infection and Response"],
+  "virus": ["Infection and Response"],
+  "bioenergetics": ["Bioenergetics"],
+  "photosynthesis": ["Bioenergetics"],
+  "respiration": ["Bioenergetics"],
+  "aerobic": ["Bioenergetics"],
+  "anaerobic": ["Bioenergetics"],
+  "homeostasis": ["Homeostasis", "Homeostasis and Response"],
+  "nervous system": ["Homeostasis", "Homeostasis and Response"],
+  "hormones": ["Homeostasis", "Homeostasis and Response"],
+  "diabetes": ["Homeostasis"],
+  "kidney": ["Homeostasis"],
+  "inheritance": ["Inheritance", "Inheritance, Variation and Evolution"],
+  "genetics": ["Inheritance", "Genetics and Evolution"],
+  "dna": ["Inheritance"],
+  "chromosome": ["Inheritance"],
+  "allele": ["Inheritance"],
+  "evolution": ["Inheritance", "Ecology", "Genetics and Evolution"],
+  "natural selection": ["Inheritance", "Ecology"],
+  "ecology": ["Ecology"],
+  "food chain": ["Ecology"],
+  "food web": ["Ecology"],
+  "ecosystem": ["Ecology", "The Living World"],
+  "biodiversity": ["Ecology"],
+  "population": ["Ecology"],
+  // ── CHEMISTRY ────────────────────────────────────────────────────────────────
+  "atomic structure": ["Atomic Structure"],
+  "atom": ["Atomic Structure"],
+  "atoms": ["Atomic Structure"],
+  "electron": ["Atomic Structure", "Bonding"],
+  "proton": ["Atomic Structure"],
+  "neutron": ["Atomic Structure"],
+  "isotope": ["Atomic Structure"],
+  "bonding": ["Bonding", "Bonding, Structure and Properties"],
+  "ionic": ["Bonding", "Bonding, Structure and Properties"],
+  "covalent": ["Bonding", "Bonding, Structure and Properties"],
+  "metallic": ["Bonding", "Bonding, Structure and Properties"],
+  "structure": ["Bonding, Structure and Properties"],
+  "quantitative chemistry": ["Quantitative Chemistry"],
+  "moles": ["Quantitative Chemistry"],
+  "mole": ["Quantitative Chemistry"],
+  "relative formula mass": ["Quantitative Chemistry"],
+  "yield": ["Quantitative Chemistry"],
+  "chemical changes": ["Chemical Changes"],
+  "reactivity": ["Chemical Changes"],
+  "electrolysis": ["Chemical Changes"],
+  "acid": ["Chemical Changes"],
+  "base": ["Chemical Changes"],
+  "salt": ["Chemical Changes"],
+  "energy changes": ["Energy Changes"],
+  "exothermic": ["Energy Changes"],
+  "endothermic": ["Energy Changes"],
+  "bond energy": ["Energy Changes"],
+  "rates of reaction": ["Rates of Reaction"],
+  "rate": ["Rates of Reaction"],
+  "catalyst": ["Rates of Reaction"],
+  "concentration": ["Rates of Reaction"],
+  "organic chemistry": ["Organic Chemistry"],
+  "alkane": ["Organic Chemistry"],
+  "alkene": ["Organic Chemistry"],
+  "polymer": ["Organic Chemistry"],
+  "crude oil": ["Organic Chemistry"],
+  "periodic table": ["Periodic Table"],
+  "group": ["Periodic Table"],
+  "period": ["Periodic Table"],
+  "metal": ["Periodic Table", "Chemical Changes"],
+  "non-metal": ["Periodic Table"],
+  "atmosphere": ["Atmosphere"],
+  "chemical analysis": ["Chemical Analysis"],
+  "chromatography": ["Chemical Analysis"],
+  "states of matter": ["States of Matter"],
+  // ── PHYSICS ──────────────────────────────────────────────────────────────────
+  "forces": ["Forces", "Motion and Forces"],
+  "force": ["Forces", "Motion and Forces"],
+  "motion": ["Forces", "Motion and Forces"],
+  "newton": ["Forces"],
+  "momentum": ["Forces"],
+  "gravity": ["Forces"],
+  "friction": ["Forces"],
+  "energy": ["Energy"],
+  "kinetic energy": ["Energy"],
+  "potential energy": ["Energy"],
+  "power": ["Energy", "Electricity"],
+  "efficiency": ["Energy"],
+  "waves": ["Waves"],
+  "wave": ["Waves"],
+  "light": ["Waves"],
+  "sound": ["Waves"],
+  "refraction": ["Waves"],
+  "electromagnetic": ["Waves"],
+  "electricity": ["Electricity", "Electricity and Circuits"],
+  "circuit": ["Electricity", "Electricity and Circuits"],
+  "current": ["Electricity"],
+  "voltage": ["Electricity"],
+  "resistance": ["Electricity"],
+  "ohm": ["Electricity"],
+  "magnetism": ["Magnetism", "Magnetism and Electromagnetism"],
+  "magnet": ["Magnetism", "Magnetism and Electromagnetism"],
+  "electromagnetic induction": ["Magnetism and Electromagnetism"],
+  "space": ["Space Physics"],
+  "solar system": ["Space Physics"],
+  "star": ["Space Physics"],
+  "galaxy": ["Space Physics"],
+  "atomic physics": ["Atomic and Nuclear Physics"],
+  "nuclear": ["Atomic and Nuclear Physics"],
+  "radioactive": ["Atomic and Nuclear Physics"],
+  "radiation": ["Atomic and Nuclear Physics"],
+  "half life": ["Atomic and Nuclear Physics"],
+  "particle model": ["Particle Model of Matter"],
+  // ── ENGLISH LANGUAGE ─────────────────────────────────────────────────────────
+  "reading": ["Reading — Language Analysis", "Reading — Comparison", "Reading — Evaluation", "Reading — Inference", "Reading — Retrieval", "Reading — Structure", "Reading — Summary", "Reading: Comparison", "Reading: Evaluation", "Reading: Language Analysis", "Reading: Structure Analysis", "Reading: Summary", "Reading – Analysis", "Reading – Comprehension", "Reading – Comparison", "Reading – Evaluation", "Reading – Language Analysis", "Reading – Structure", "Reading – Summary", "Comprehension"],
+  "language analysis": ["Reading — Language Analysis", "Reading: Language Analysis", "Reading – Language Analysis"],
+  "inference": ["Reading — Inference", "Reading: Identify and Interpret"],
+  "comparison": ["Reading — Comparison", "Reading: Comparison", "Reading – Comparison"],
+  "evaluation": ["Reading — Evaluation", "Reading: Evaluation", "Reading – Evaluation"],
+  "summary": ["Reading — Summary", "Reading: Summary", "Reading – Summary"],
+  "writing": ["Writing: Creative", "Writing: Narrative", "Writing: Transactional", "Writing — Descriptive", "Writing — Narrative", "Writing — Persuasive", "Writing — Essay", "Writing – Creative", "Writing – Informative", "Writing – Narrative"],
+  "creative writing": ["Writing: Creative", "Writing — Descriptive", "Writing — Narrative", "Writing – Creative"],
+  "descriptive writing": ["Writing — Descriptive", "Writing: Creative"],
+  "narrative writing": ["Writing: Narrative", "Writing — Narrative", "Writing – Narrative"],
+  "persuasive writing": ["Writing — Persuasive", "Writing: Transactional"],
+  "transactional writing": ["Writing: Transactional", "Writing — Persuasive"],
+  "grammar": ["Grammar"],
+  "comprehension": ["Comprehension", "Reading – Comprehension"],
+  // ── ENGLISH LITERATURE ───────────────────────────────────────────────────────
+  "shakespeare": ["Literature — Shakespeare", "Macbeth", "Shakespeare"],
+  "macbeth": ["Macbeth", "Literature — Shakespeare", "Shakespeare"],
+  "poetry": ["Literature — Poetry", "Poetry – Power and Conflict"],
+  "power and conflict": ["Literature — Poetry", "Poetry – Power and Conflict"],
+  "prose": ["Literature — Modern Prose/Drama", "Modern Prose or Drama"],
+  "modern prose": ["Literature — Modern Prose/Drama", "Modern Prose or Drama"],
+  "19th century novel": ["Literature — 19th Century Novel", "19th Century Novel"],
+  "victorian novel": ["Literature — 19th Century Novel", "19th Century Novel"],
+  "literature": ["Literature — Shakespeare", "Literature — Poetry", "Literature — Modern Prose/Drama", "Literature — 19th Century Novel", "Macbeth"],
+  // ── HISTORY ──────────────────────────────────────────────────────────────────
+  "world war": ["World War One", "Cold War", "Conflict and Tension 1918–1939"],
+  "world war one": ["World War One", "Conflict and Tension 1918–1939"],
+  "ww1": ["World War One", "Conflict and Tension 1918–1939"],
+  "cold war": ["Cold War"],
+  "medicine": ["Medicine Through Time", "Medicine in Britain", "Britain: Health and the People"],
+  "health": ["Medicine Through Time", "Medicine in Britain", "Britain: Health and the People"],
+  "elizabethan": ["Elizabethan England"],
+  "germany": ["Germany 1890–1945", "Weimar and Nazi Germany"],
+  "nazi": ["Germany 1890–1945", "Weimar and Nazi Germany"],
+  "weimar": ["Weimar and Nazi Germany", "Germany 1890–1945"],
+  "crime": ["Crime and Punishment"],
+  "punishment": ["Crime and Punishment"],
+  "conflict": ["Conflict and Tension 1918–1939", "World War One"],
+  // ── GEOGRAPHY ────────────────────────────────────────────────────────────────
+  "natural hazards": ["Natural Hazards", "Tectonic Hazards", "The Challenge of Natural Hazards"],
+  "tectonic": ["Tectonic Hazards", "Natural Hazards", "The Challenge of Natural Hazards"],
+  "earthquake": ["Tectonic Hazards", "Natural Hazards"],
+  "volcano": ["Tectonic Hazards", "Natural Hazards"],
+  "weather": ["Weather Hazards", "Natural Hazards", "The Challenge of Natural Hazards"],
+  "climate": ["Atmosphere", "Weather Hazards"],
+  "coasts": ["Coasts", "Physical Landscapes in the UK"],
+  "coastal": ["Coasts", "Physical Landscapes in the UK"],
+  "rivers": ["Physical Landscapes in the UK"],
+  "physical landscapes": ["Physical Landscapes in the UK"],
+  "urban": ["Urban Issues", "Urban Issues and Challenges", "Changing Cities"],
+  "urbanisation": ["Urban Issues", "Urban Issues and Challenges", "Changing Cities"],
+  "development": ["Development", "The Changing Economic World"],
+  "economic development": ["The Changing Economic World", "Development"],
+  "living world": ["The Living World"],
+  "rainforest": ["The Living World"],
+  // ── COMPUTER SCIENCE ─────────────────────────────────────────────────────────
+  "algorithms": ["Algorithms"],
+  "algorithm": ["Algorithms"],
+  "programming": ["Programming"],
+  "python": ["Programming"],
+  "pseudocode": ["Algorithms", "Programming"],
+  "binary": ["Binary and Data Representation"],
+  "data representation": ["Binary and Data Representation"],
+  "hexadecimal": ["Binary and Data Representation"],
+  "networks": ["Networks"],
+  "network": ["Networks"],
+  "internet": ["Networks"],
+  "hardware": ["Hardware"],
+  "cpu": ["Hardware"],
+  "memory": ["Hardware"],
+  "cyber security": ["Cyber Security"],
+  "cybersecurity": ["Cyber Security"],
+  "encryption": ["Cyber Security"],
+  // ── RELIGIOUS STUDIES ────────────────────────────────────────────────────────
+  "christianity": ["Christianity — Beliefs"],
+  "beliefs": ["Christianity — Beliefs"],
+  "religion": ["Christianity — Beliefs"],
+  // ── BUSINESS ─────────────────────────────────────────────────────────────────
+  "business": ["Business in the Real World"],
+  "marketing": ["Marketing"],
+  "finance": ["Finance"],
+};
+
+/**
+ * Resolve a user-entered topic string to a list of canonical topic labels
+ * that should be searched. Returns null if the topic should be searched
+ * as a plain substring (default behaviour).
+ */
+function resolveTopicAliases(topic: string): string[] | null {
+  const key = topic.toLowerCase().trim();
+  // Direct alias lookup
+  if (TOPIC_ALIASES[key]) return TOPIC_ALIASES[key];
+  // Partial alias lookup (e.g. "fraction" matches "fractions")
+  for (const [alias, targets] of Object.entries(TOPIC_ALIASES)) {
+    if (key.includes(alias) || alias.includes(key)) return targets;
+  }
+  return null;
+}
+
 export function getExamQuestions(options: {
   subject: string;
   board?: string;
@@ -1510,13 +1835,32 @@ export function getExamQuestions(options: {
   limit?: number;
   yearGroup?: number; // school year (1-11) for age-appropriate filtering
 }): PastPaperQuestion[] {
-  const { subject, board, tier, topic, yearMin = 2018, yearMax = 2025, limit = 25, yearGroup } = options;
+  const { subject, board, tier, topic, yearMin = 2010, yearMax = 2025, limit = 25, yearGroup } = options;
+
+  // Resolve topic aliases for smarter matching
+  const topicAliases = topic ? resolveTopicAliases(topic) : null;
+  const topicLower = topic ? topic.toLowerCase() : null;
+
+  const matchesTopic = (q: PastPaperQuestion): boolean => {
+    if (!topicLower) return true;
+    // 1. Direct topic field match (case-insensitive substring)
+    if (q.topic.toLowerCase().includes(topicLower)) return true;
+    // 2. Alias-based topic match
+    if (topicAliases) {
+      for (const alias of topicAliases) {
+        if (q.topic.toLowerCase().includes(alias.toLowerCase())) return true;
+      }
+    }
+    // 3. Keyword search in question text (fallback)
+    if (q.text && q.text.toLowerCase().includes(topicLower)) return true;
+    return false;
+  };
 
   let filtered = allPastPaperQuestions.filter(q => {
     if (q.subject !== subject) return false;
     if (board && board !== "none" && board !== "Any" && q.board !== board) return false;
     if (tier && q.tier && q.tier !== tier) return false;
-    if (topic && !q.topic.toLowerCase().includes(topic.toLowerCase())) return false;
+    if (!matchesTopic(q)) return false;
     if (q.year < yearMin || q.year > yearMax) return false;
 
     // Year-group-appropriate filtering — STRICTLY enforced
