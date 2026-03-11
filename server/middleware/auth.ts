@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from "uuid";
 import db from "../db/index.js";
 
 export const JWT_SECRET = process.env.JWT_SECRET || "send-assistant-dev-secret-change-in-production";
-export const SESSION_TIMEOUT_MS = 8 * 60 * 60 * 1000; // 8 hours
+export const SESSION_TIMEOUT_MS = 30 * 24 * 60 * 60 * 1000; // 30 days — keeps scheduler working without re-login
 
 export interface AuthUser {
   id: string;

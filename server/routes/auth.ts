@@ -357,7 +357,7 @@ function createSessionToken(user: any, mfaVerified: boolean): string {
       mfaVerified,
     },
     JWT_SECRET,
-    { expiresIn: "8h" }
+    { expiresIn: "30d" }
   );
 }
 
