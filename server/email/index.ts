@@ -84,6 +84,28 @@ export async function sendWelcomeEmail(to: string, displayName: string, schoolNa
   );
 }
 
+export async function sendDirectParentMessage(
+  parentEmail: string,
+  data: { parentName: string; pupilName: string; teacherName: string; schoolName: string; subject: string; message: string }
+) {
+  await send(
+    parentEmail,
+    `Message from ${data.teacherName} — ${data.schoolName}`,
+    `<div style="font-family:sans-serif;max-width:600px;margin:auto">
+      <h2 style="color:#6366f1">Adaptly — Message from School</h2>
+      <p>Dear ${data.parentName},</p>
+      <p>You have received a message from <strong>${data.teacherName}</strong> at <strong>${data.schoolName}</strong> regarding <strong>${data.pupilName}</strong>.</p>
+      <div style="background:#f8fafc;border-left:4px solid #6366f1;padding:16px;border-radius:0 8px 8px 0;margin:16px 0">
+        <p style="font-weight:bold;margin:0 0 8px 0;color:#374151">${data.subject}</p>
+        <p style="margin:0;color:#374151;white-space:pre-wrap">${data.message}</p>
+      </div>
+      <p style="color:#666;font-size:14px">You can view your child's full progress and history in the <a href="${BASE_URL}/parent-portal" style="color:#6366f1">Parent Portal</a>.</p>
+      <hr style="border:none;border-top:1px solid #eee;margin:24px 0">
+      <p style="color:#999;font-size:12px">Adaptly · ${data.schoolName} · This email was sent by a teacher via the Adaptly platform.</p>
+    </div>`
+  );
+}
+
 export async function sendBehaviourAlert(
   parentEmail: string,
   data: { pupilName: string; type: string; category?: string; description?: string; actionTaken?: string; date: string; teacherName: string; schoolName: string }

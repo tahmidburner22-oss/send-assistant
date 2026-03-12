@@ -10,12 +10,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { useApp } from "@/contexts/AppContext";
-import { pupils as pupilsApi } from "@/lib/api";
+import { pupils as pupilsApi, data as dataApi } from "@/lib/api";
 import { sendNeeds } from "@/lib/send-data";
 import {
   Plus, TrendingUp, TrendingDown, Minus, Calendar, Clock,
   CheckCircle, AlertCircle, Star, Shield, BarChart3, FileText,
-  Printer, ChevronLeft, Smile, Frown, Meh, Zap, Heart, Database
+  Printer, ChevronLeft, Smile, Frown, Meh, Zap, Heart, Database, MessageSquare, Send
 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Legend } from "recharts";
 
@@ -84,6 +84,29 @@ export default function BehaviourTracking() {
   const [selectedEntry, setSelectedEntry] = useState<BehaviourEntry | null>(null);
   const [dateFilter, setDateFilter] = useState<string>("");
   const [typeFilter, setTypeFilter] = useState<string>("all");
+
+  // Parent messaging state
+  const [showParentMessage, setShowParentMessage] = useState(false);
+  const [msgSubject, setMsgSubject] = useState("");
+  const [msgBody, setMsgBody] = useState("");
+  const [msgSending, setMsgSending] = useState(false);
+
+  const sendParentMessage = async () => {
+    if (!selectedChildId || !msgSubject.trim() || !msgBody.trim()) {
+      toast.error("Please fill in both subject and message."); return;
+    }
+    setMsgSending(true);
+    try {
+      await dataApi.sendParentMessage(selectedChildId, msgSubject.trim(), msgBody.trim());
+      toast.success("Message sent to parent successfully.");
+      setShowParentMessage(false);
+      setMsgSubject(""); setMsgBody("");
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to send message.");
+    } finally {
+      setMsgSending(false);
+    }
+  };
 
   // New entry form
   const [newType, setNewType] = useState<BehaviourType>("positive");
@@ -225,12 +248,17 @@ export default function BehaviourTracking() {
             </h2>
             <p className="text-sm text-muted-foreground mt-0.5">Track and analyse behaviour patterns linked to worksheet completion and SEND needs.</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <Button variant="outline" size="sm" onClick={handlePrint}><Printer className="w-4 h-4 mr-1" /> Print Report</Button>
             {selectedChildId && (
-              <Button size="sm" onClick={() => setShowAdd(true)} className="bg-brand hover:bg-brand/90 text-white">
-                <Plus className="w-4 h-4 mr-1" /> Log Entry
-              </Button>
+              <>
+                <Button variant="outline" size="sm" onClick={() => setShowParentMessage(true)} className="border-brand/40 text-brand hover:bg-brand/5">
+                  <MessageSquare className="w-4 h-4 mr-1" /> Message Parent
+                </Button>
+                <Button size="sm" onClick={() => setShowAdd(true)} className="bg-brand hover:bg-brand/90 text-white">
+                  <Plus className="w-4 h-4 mr-1" /> Log Entry
+                </Button>
+              </>
             )}
           </div>
         </div>
@@ -555,6 +583,47 @@ export default function BehaviourTracking() {
               <Button variant="outline" onClick={() => setShowAdd(false)}>Cancel</Button>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Parent Message Dialog */}
+      <Dialog open={showParentMessage} onOpenChange={setShowParentMessage}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <MessageSquare className="w-5 h-5 text-brand" /> Message Parent
+            </DialogTitle>
+          </DialogHeader>
+          {selectedChild && (
+            <div className="space-y-3 mt-2">
+              <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
+                <p className="text-xs text-blue-800">
+                  Sending a direct message to the parent/carer of <strong>{selectedChild.name}</strong>.
+                  {!selectedChild.parentEmail && (
+                    <span className="block mt-1 text-amber-700 font-medium">⚠ No parent email on record. Please add one in the Pupils section first.</span>
+                  )}
+                </p>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs font-medium">Subject *</Label>
+                <Input value={msgSubject} onChange={e => setMsgSubject(e.target.value)}
+                  placeholder="e.g. Update on today's session" className="h-10" />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs font-medium">Message *</Label>
+                <Textarea value={msgBody} onChange={e => setMsgBody(e.target.value)}
+                  placeholder="Write your message to the parent/carer here..."
+                  className="min-h-[120px] text-sm" />
+              </div>
+              <div className="flex gap-2">
+                <Button onClick={sendParentMessage} disabled={msgSending || !msgSubject.trim() || !msgBody.trim()}
+                  className="flex-1 bg-brand hover:bg-brand/90 text-white">
+                  {msgSending ? "Sending..." : <><Send className="w-4 h-4 mr-1" /> Send Message</>}
+                </Button>
+                <Button variant="outline" onClick={() => setShowParentMessage(false)}>Cancel</Button>
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
 
