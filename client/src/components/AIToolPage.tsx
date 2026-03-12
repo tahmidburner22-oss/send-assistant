@@ -46,10 +46,14 @@ interface AIToolPageProps {
 
 function formatAIText(text: string): string {
   return text
-    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")  // bold
+    .replace(/\*([^*\n]+?)\*/g, "<em>$1</em>")           // italic
     .replace(/^#{1,3} (.+)$/gm, "<h3 class='font-bold text-base mt-4 mb-1'>$1</h3>")
-    .replace(/^[•\-\*] (.+)$/gm, "<li class='ml-4 list-disc'>$1</li>")
+    .replace(/^[•\-] (.+)$/gm, "<li class='ml-4 list-disc'>$1</li>")
+    .replace(/^\* (.+)$/gm, "<li class='ml-4 list-disc'>$1</li>")
     .replace(/^(\d+)\. (.+)$/gm, "<li class='ml-4 list-decimal'>$2</li>")
+    .replace(/\*\*/g, "")                                 // strip any remaining **
+    .replace(/\*/g, "")                                   // strip any remaining lone *
     .replace(/\n{2,}/g, "</p><p class='mb-2'>")
     .replace(/\n/g, "<br/>")
     .replace(/^/, "<p class='mb-2'>")

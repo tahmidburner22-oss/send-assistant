@@ -661,9 +661,8 @@ function PersonalisationSection() {
                 })}
               </div>
             </div>
-          </div>
-          {/* Feature Toggles */}
-          <div className="border-t border-border/50 pt-4">
+            {/* Feature Toggles */}
+            <div className="border-t border-border/50 pt-4">
             <p className="text-xs font-medium text-foreground mb-2">Feature Toggles</p>
             <p className="text-xs text-muted-foreground mb-3">Enable or disable optional features across the platform.</p>
             <div className="flex items-center justify-between p-3 bg-muted/40 rounded-lg border border-border/50">
@@ -681,6 +680,7 @@ function PersonalisationSection() {
                   preferences.showWorksheetLibrary ? 'translate-x-4' : 'translate-x-0.5'
                 }`} />
               </button>
+            </div>
             </div>
           </div>
         )}
