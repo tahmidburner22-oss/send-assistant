@@ -11,6 +11,7 @@ import { motion } from "framer-motion";
 import { Sparkles, Copy, RotateCcw, FileDown, Printer, Palette, ZoomIn, ZoomOut, PenLine, X, Check, Loader2 } from "lucide-react";
 import { subjects, yearGroups, sendNeeds, difficulties, colorOverlays } from "@/lib/send-data";
 import { downloadDifferentiatedPdf } from "@/lib/pdf-generator";
+import { renderMath } from "@/components/WorksheetRenderer";
 import { useApp } from "@/contexts/AppContext";
 
 export default function Differentiate() {
@@ -343,7 +344,9 @@ function generateDifferentiatedContent(task: string, difficulty: string, sendNee
 }
 
 function markdownToHtml(md: string, textSize: number): string {
-  return md
+  // Apply KaTeX math rendering first, then markdown transformations
+  const withMath = renderMath(md);
+  return withMath
     .replace(/^### (.+)$/gm, `<h3 style="font-size:${textSize + 2}px" class="font-semibold mt-4 mb-2">$1</h3>`)
     .replace(/^## (.+)$/gm, `<h2 style="font-size:${textSize + 4}px" class="font-bold mt-5 mb-2 text-purple-700">$1</h2>`)
     .replace(/^# (.+)$/gm, `<h1 style="font-size:${textSize + 8}px" class="font-bold mb-3">$1</h1>`)
