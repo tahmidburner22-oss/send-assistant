@@ -1,4 +1,5 @@
 import { sendNeeds, examBoards } from "./send-data";
+import { expandedMathTopics } from './mathTopicsExpanded';
 
 interface WorksheetParams {
   subject: string;
@@ -899,8 +900,11 @@ const geographyTopics: Record<string, any> = {
 // ─────────────────────────────────────────────────────────────────────────────
 // TOPIC MAP
 // ─────────────────────────────────────────────────────────────────────────────
+// Merge original + expanded maths topics (expanded takes precedence for updated topics)
+const mergedMathTopics = { ...mathTopics, ...expandedMathTopics };
+
 const allTopics: Record<string, Record<string, any>> = {
-  mathematics: mathTopics,
+  mathematics: mergedMathTopics,
   english: englishTopics,
   science: scienceTopics,
   history: historyTopics,
@@ -923,21 +927,31 @@ function getExamBoardNote(examBoardId?: string): string {
 function findTopicData(subject: string, topic: string): any {
   const subjectTopics = allTopics[subject.toLowerCase()];
   if (!subjectTopics) {
-    // Fall back to math
-    const firstSubject = allTopics["mathematics"];
-    return firstSubject[Object.keys(firstSubject)[0]];
+    const mathSubject = allTopics["mathematics"];
+    return mathSubject[Object.keys(mathSubject)[0]];
   }
-  const topicLower = topic.toLowerCase();
-  // Try exact match first
-  const exactKey = Object.keys(subjectTopics).find(k => k === topicLower);
-  if (exactKey) return subjectTopics[exactKey];
-  // Try partial match
-  const partialKey = Object.keys(subjectTopics).find(k =>
-    topicLower.includes(k) || k.includes(topicLower.split(" ")[0])
+  const topicLower = topic.toLowerCase().trim();
+  // 1. Exact key match
+  if (subjectTopics[topicLower]) return subjectTopics[topicLower];
+  // 2. Title match
+  const titleKey = Object.keys(subjectTopics).find(k =>
+    subjectTopics[k].title?.toLowerCase() === topicLower
   );
+  if (titleKey) return subjectTopics[titleKey];
+  // 3. Keyword match — any word in the topic matches key or title
+  const words = topicLower.split(/[\s\-\/]+/).filter(w => w.length > 3);
+  const partialKey = Object.keys(subjectTopics).find(k => {
+    const kLower = k.toLowerCase();
+    const kTitle = (subjectTopics[k].title || '').toLowerCase();
+    return words.some(w => kLower.includes(w) || kTitle.includes(w) || topicLower.includes(kLower));
+  });
   if (partialKey) return subjectTopics[partialKey];
-  // Return first topic for the subject
-  return subjectTopics[Object.keys(subjectTopics)[0]];
+  // 4. No match — return a general worksheet using the first topic as a template
+  // but with the correct title so it doesn't mislead
+  const fallbackData = { ...subjectTopics[Object.keys(subjectTopics)[0]] };
+  fallbackData.title = `${topic.charAt(0).toUpperCase() + topic.slice(1)} — ${subject.charAt(0).toUpperCase() + subject.slice(1)}`;
+  fallbackData.objective = `Develop understanding of ${topic} through structured exam-style practice.`;
+  return fallbackData;
 }
 
 export function generateWorksheet(params: WorksheetParams): GeneratedWorksheet {
@@ -995,9 +1009,19 @@ export function generateWorksheet(params: WorksheetParams): GeneratedWorksheet {
     content: `**${topicData.example.question}**\n\n${topicData.example.steps.join("\n")}`,
   });
 
+  // Strip hints from question text — hints are teacher-only, not for students
+  function stripHints(text: string): string {
+    return text
+      .replace(/\s*Hint:[^\n]*/gi, '')
+      .replace(/\s*\(Hint:[^)]*\)/gi, '')
+      .replace(/\s*\[Hint:[^\]]*\]/gi, '')
+      .replace(/\s*Remember:[^\n]*/gi, '')
+      .trim();
+  }
+
   // ── Guided Practice ───────────────────────────────────────────────────────
   const guidedContent = topicData.guided.map((g: any, i: number) => {
-    const line = `${g.q}`;
+    const line = stripHints(`${g.q}`);
     if (includeAnswers) {
       return `${line}\n   **Answer: ${g.a}**${g.marks ? `  [${g.marks} mark${g.marks > 1 ? "s" : ""}]` : ""}`;
     }
@@ -1017,7 +1041,7 @@ export function generateWorksheet(params: WorksheetParams): GeneratedWorksheet {
     : topicData.independent.slice(0, Math.ceil(topicData.independent.length * 0.75));
 
   const independentContent = independentQs.map((q: any) => {
-    const line = `${q.q}`;
+    const line = stripHints(`${q.q}`);
     if (includeAnswers) {
       return `${line}\n   **Answer: ${q.a}**${q.marks ? `  [${q.marks} mark${q.marks > 1 ? "s" : ""}]` : ""}`;
     }
