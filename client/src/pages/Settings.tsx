@@ -422,6 +422,7 @@ function PersonalisationSection() {
     isSidebarItemHidden,
     toggleDashboardCard,
     toggleDashboardSubject,
+    setShowWorksheetLibrary,
     resetPreferences,
     currentTheme,
     currentWallpaper,
@@ -656,6 +657,27 @@ function PersonalisationSection() {
                   );
                 })}
               </div>
+            </div>
+          </div>
+          {/* Feature Toggles */}
+          <div className="border-t border-border/50 pt-4">
+            <p className="text-xs font-medium text-foreground mb-2">Feature Toggles</p>
+            <p className="text-xs text-muted-foreground mb-3">Enable or disable optional features across the platform.</p>
+            <div className="flex items-center justify-between p-3 bg-muted/40 rounded-lg border border-border/50">
+              <div>
+                <p className="text-xs font-medium text-foreground">Worksheet Library Tab</p>
+                <p className="text-xs text-muted-foreground">Show the pre-built Library tab in the Worksheets page</p>
+              </div>
+              <button
+                onClick={() => setShowWorksheetLibrary(!preferences.showWorksheetLibrary)}
+                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                  preferences.showWorksheetLibrary ? 'bg-brand' : 'bg-muted-foreground/30'
+                }`}
+              >
+                <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${
+                  preferences.showWorksheetLibrary ? 'translate-x-4' : 'translate-x-0.5'
+                }`} />
+              </button>
             </div>
           </div>
         )}

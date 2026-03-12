@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { useApp, type Worksheet } from "@/contexts/AppContext";
+import { useUserPreferences } from "@/contexts/UserPreferencesContext";
 import { subjects, yearGroups, sendNeeds, examBoards, difficulties, colorOverlays, getDifficultyOptions, subjectTierMode } from "@/lib/send-data";
 import { generateWorksheet, type GeneratedWorksheet } from "@/lib/worksheet-generator";
 import { downloadWorksheetPdf } from "@/lib/pdf-generator";
@@ -123,6 +124,8 @@ function isAIWorksheet(ws: AnyWorksheet): ws is AIWorksheet {
 export default function Worksheets() {
   const [location] = useLocation();
   const { saveWorksheet, updateWorksheet, deleteWorksheet, worksheetHistory, children, assignWork, colorOverlay, setColorOverlay, refreshData } = useApp();
+  const { preferences } = useUserPreferences();
+  const showLibraryTab = preferences.showWorksheetLibrary === true;
 
   // Re-fetch data from server on mount so history count is always current
   useEffect(() => { refreshData(); }, []);
@@ -533,10 +536,12 @@ export default function Worksheets() {
 
       {!generated ? (
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="w-full grid grid-cols-5 h-10">
+          <TabsList className={`w-full grid ${showLibraryTab ? 'grid-cols-5' : 'grid-cols-4'} h-10`}>
             <TabsTrigger value="generate" className="text-xs gap-1"><Sparkles className="w-3 h-3" /> Generate</TabsTrigger>
             <TabsTrigger value="upload" className="text-xs gap-1"><Upload className="w-3 h-3" /> Upload</TabsTrigger>
-            <TabsTrigger value="bank" className="text-xs gap-1"><Library className="w-3 h-3" /> Library</TabsTrigger>
+            {showLibraryTab && (
+              <TabsTrigger value="bank" className="text-xs gap-1"><Library className="w-3 h-3" /> Library</TabsTrigger>
+            )}
             <TabsTrigger value="exam-questions" className="text-xs gap-1"><Award className="w-3 h-3" /> Exam Bank</TabsTrigger>
             <TabsTrigger value="history" className="text-xs gap-1">
               <History className="w-3 h-3" /> History
