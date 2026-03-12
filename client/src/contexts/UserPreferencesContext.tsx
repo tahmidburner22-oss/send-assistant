@@ -89,7 +89,7 @@ export const ALL_DASHBOARD_CARDS = [
   { id: "quiz-game",     label: "QuizBlast",          path: "/quiz-game" },
   { id: "revision-hub",  label: "Revision Hub",       path: "/revision-hub" },
   { id: "past-papers",   label: "Past Papers",        path: "/past-papers" },
-  { id: "stories",       label: "Stories",            path: "/stories" },
+  { id: "reading",       label: "Reading Hub",        path: "/reading" },
   { id: "children",      label: "Pupils",             path: "/children" },
   { id: "analytics",     label: "Analytics",          path: "/analytics" },
   { id: "daily-briefing","label": "Daily Briefing",   path: "/daily-briefing" },

@@ -26,7 +26,7 @@ const cardIconMap: Record<string, { icon: any; color: string; href: string }> = 
   "quiz-game":     { icon: Gamepad2,    color: "bg-orange-50 text-orange-600",       href: "/quiz-game" },
   "revision-hub":  { icon: Brain,       color: "bg-indigo-50 text-indigo-600",       href: "/revision-hub" },
   "past-papers":   { icon: ScrollText,  color: "bg-teal-50 text-teal-600",           href: "/past-papers" },
-  "stories":       { icon: BookOpen,    color: "bg-emerald-50 text-emerald-600",     href: "/stories" },
+  "reading":       { icon: BookOpen,    color: "bg-emerald-50 text-emerald-600",     href: "/reading" },
   "children":      { icon: Users,       color: "bg-blue-50 text-blue-600",           href: "/children" },
   "analytics":     { icon: BarChart2,   color: "bg-rose-50 text-rose-600",           href: "/analytics" },
   "daily-briefing":{ icon: CalendarDays,color: "bg-amber-50 text-amber-600",         href: "/daily-briefing" },
