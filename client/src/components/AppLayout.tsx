@@ -9,7 +9,7 @@ import {
   Calendar, TrendingUp, ClipboardList, IdCard, CheckSquare, ShieldAlert, Heart,
   HelpCircle, Table2, AlignLeft, Layers, CalendarDays, BookMarked, Ticket,
   BookType, Mail, Shield, ChevronDown, ChevronRight, ScrollText, Headphones, ScanSearch,
-  Zap, NotebookPen, Pencil, MessageSquare
+  Zap, NotebookPen, Pencil, MessageSquare, Star
 } from "lucide-react";
 
 const mainMenu = [
@@ -17,7 +17,7 @@ const mainMenu = [
   { path: "/send-screener", label: "SEND Needs Screener", icon: ScanSearch, color: "text-indigo-600" },
   { path: "/differentiate", label: "Differentiate", icon: Sparkles },
   { path: "/worksheets", label: "Worksheets", icon: FileText },
-  { path: "/stories", label: "Stories", icon: BookOpen },
+  { path: "/reading", label: "Reading", icon: BookOpen, color: "text-emerald-600" },
   { path: "/past-papers", label: "Past Papers", icon: ScrollText },
   { path: "/templates", label: "Templates", icon: LayoutGrid },
   { path: "/children", label: "Pupils", icon: Users },
@@ -83,17 +83,12 @@ function SidebarSection({
   // Filter out user-hidden items
   items = items.filter(i => !hiddenPaths.includes(i.path));
   if (items.length === 0) return null;
-  // Persist collapse state per section; default to open (true) on first visit
-  const storageKey = `sidebar-section-${label.replace(/\s+/g, '-').toLowerCase()}`;
-  const [open, setOpen] = useState(() => {
-    const saved = localStorage.getItem(storageKey);
-    return saved === null ? true : saved === 'true';
-  });
+  // Use UserPreferencesContext for collapse state — persists server-side across devices/logins
+  const { isSidebarSectionCollapsed, toggleSidebarSection } = useUserPreferences();
+  const open = !isSidebarSectionCollapsed(label);
 
   const handleToggle = () => {
-    const next = !open;
-    setOpen(next);
-    localStorage.setItem(storageKey, String(next));
+    toggleSidebarSection(label);
   };
 
   const hasActive = items.some(i => location.startsWith(i.path));
