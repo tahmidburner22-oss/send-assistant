@@ -15,7 +15,7 @@ import { sendNeeds } from "@/lib/send-data";
 import {
   Plus, TrendingUp, TrendingDown, Minus, Calendar, Clock,
   CheckCircle, AlertCircle, Star, Shield, BarChart3, FileText,
-  Printer, ChevronLeft, Smile, Frown, Meh, Zap, Heart, Database, MessageSquare, Send
+  Printer, ChevronLeft, Smile, Frown, Meh, Zap, Heart, Database, MessageSquare, Send, Download
 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Legend } from "recharts";
 
@@ -238,6 +238,34 @@ export default function BehaviourTracking() {
 
   const handlePrint = () => window.print();
 
+  const handleExportCSV = () => {
+    if (!selectedChild || childEntries.length === 0) {
+      toast.error("No behaviour records to export. Please select a pupil with records.");
+      return;
+    }
+    const headers = ["Date", "Time", "Type", "Category", "Description", "Trigger", "Trigger Notes", "Strategy", "Outcome"];
+    const rows = childEntries.map(e => [
+      e.date,
+      e.time,
+      e.type,
+      e.category,
+      `"${(e.description || "").replace(/"/g, '""')}"`,
+      e.trigger || "",
+      `"${(e.triggerNotes || "").replace(/"/g, '""')}"`,
+      `"${(e.strategy || "").replace(/"/g, '""')}"`,
+      `"${(e.outcome || "").replace(/"/g, '""')}"`,
+    ]);
+    const csv = [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `behaviour_${selectedChild.name.replace(/\s+/g, "_")}_${new Date().toISOString().split("T")[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success(`Exported ${childEntries.length} records to CSV.`);
+  };
+
   return (
     <div className="px-4 py-6 max-w-3xl mx-auto space-y-5">
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
@@ -250,6 +278,7 @@ export default function BehaviourTracking() {
           </div>
           <div className="flex gap-2 flex-wrap">
             <Button variant="outline" size="sm" onClick={handlePrint}><Printer className="w-4 h-4 mr-1" /> Print Report</Button>
+            <Button variant="outline" size="sm" onClick={handleExportCSV}><Download className="w-4 h-4 mr-1" /> Export CSV</Button>
             {selectedChildId && (
               <>
                 <Button variant="outline" size="sm" onClick={() => setShowParentMessage(true)} className="border-brand/40 text-brand hover:bg-brand/5">
@@ -449,7 +478,10 @@ export default function BehaviourTracking() {
                 <CardContent className="p-4 space-y-4">
                   <div className="flex items-center justify-between">
                     <h4 className="font-semibold text-foreground">Behaviour Summary Report</h4>
-                    <Button variant="outline" size="sm" onClick={handlePrint}><Printer className="w-4 h-4 mr-1" /> Print</Button>
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="sm" onClick={handleExportCSV}><Download className="w-4 h-4 mr-1" /> Export CSV</Button>
+                      <Button variant="outline" size="sm" onClick={handlePrint}><Printer className="w-4 h-4 mr-1" /> Print</Button>
+                    </div>
                   </div>
                   <div className="p-3 rounded-lg bg-muted/50 space-y-2 text-sm">
                     <p><strong>Student:</strong> {selectedChild?.name} ({selectedChild?.yearGroup})</p>
