@@ -670,6 +670,9 @@ export async function aiGenerateStory(params: {
     "reading-age-12-13": "reading age 12-13 years: sophisticated sentences, rich vocabulary, literary techniques",
     "reading-age-13-14": "reading age 13-14 years: complex sentence structures, advanced vocabulary, mature themes handled appropriately",
     "reading-age-14-plus": "reading age 14+ years: mature, sophisticated writing with complex vocabulary and themes",
+    "reading-age-15-16": "reading age 15-16 years: advanced secondary level writing, complex vocabulary, nuanced themes, literary techniques expected at GCSE level",
+    "reading-age-16-17": "reading age 16-17 years: A-Level standard writing, sophisticated vocabulary, complex themes, analytical and literary depth",
+    "reading-age-17-plus": "reading age 17+ years: university-entrance standard writing, highly sophisticated vocabulary, mature complex themes, literary and analytical depth equivalent to A-Level or beyond",
   };
   const readingInstruction = readingLevelMap[params.readingLevel || "age-appropriate"] || readingLevelMap["age-appropriate"];
 
@@ -911,4 +914,38 @@ export async function aiGenerateWorksheetDiagram(params: {
     attribution,
     provider,
   };
+}
+
+// ─── Story Comprehension MCQ Generator ──────────────────────────────────────
+export interface ComprehensionMCQ {
+  question: string;
+  options: [string, string, string, string];
+  correctIndex: number;
+  explanation: string;
+}
+
+export async function aiGenerateComprehensionMCQ(params: {
+  storyTitle: string;
+  storyContent: string;
+  genre: string;
+  yearGroup: string;
+  count?: number;
+}): Promise<ComprehensionMCQ[]> {
+  const count = params.count || 6;
+  const system = `You are a professional English teacher creating comprehension multiple-choice questions for UK school students. Always respond with valid JSON only, no markdown code blocks.`;
+  const user = `Read this story and create ${count} multiple-choice comprehension questions.
+
+STORY TITLE: ${params.storyTitle}
+STORY:
+${params.storyContent.substring(0, 3000)}
+
+Create ${count} questions testing: literal comprehension, inference, vocabulary in context, character/setting analysis, and author's intent.
+Each question must have exactly 4 options (A, B, C, D) with ONE correct answer. Wrong options should be plausible but clearly wrong to a careful reader.
+
+Return JSON array only:
+[{"question": "...", "options": ["A", "B", "C", "D"], "correctIndex": 0, "explanation": "The text states..."}]`;
+  const { text } = await callAI(system, user, 1500);
+  const cleaned = text.replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/\s*```$/i, "").trim();
+  const parsed = JSON.parse(cleaned);
+  return Array.isArray(parsed) ? parsed : parsed.questions || [];
 }
