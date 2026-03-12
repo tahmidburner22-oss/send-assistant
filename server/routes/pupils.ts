@@ -197,6 +197,14 @@ router.put("/:id/assignments/:assignmentId", requireAuth, (req: Request, res: Re
   res.json({ message: "Assignment updated" });
 });
 
+router.delete("/:id/assignments/:assignmentId", requireAuth, (req: Request, res: Response) => {
+  const pupil = db.prepare("SELECT id FROM pupils WHERE id = ? AND school_id = ?").get(req.params.id, req.user!.schoolId);
+  if (!pupil) return res.status(404).json({ error: "Pupil not found" });
+  db.prepare("DELETE FROM assignments WHERE id = ? AND pupil_id = ?").run(req.params.assignmentId, req.params.id);
+  auditLog(req.user!.id, req.user!.schoolId ?? null, "assignment.deleted", "assignment", req.params.assignmentId, {}, req.ip ?? undefined);
+  res.json({ ok: true });
+});
+
 // ── Attendance ────────────────────────────────────────────────────────────────
 router.post("/:id/attendance", requireAuth, (req: Request, res: Response) => {
   const { date, amStatus, amReason, pmStatus, pmReason, notes } = req.body;

@@ -28,7 +28,7 @@ function getAuthHeader(): Record<string, string> {
 }
 
 export default function Children() {
-  const { children, addChild, removeChild, updateChild, updateAssignment, updateSubmission, assignWork } = useApp();
+  const { children, addChild, removeChild, updateChild, updateAssignment, deleteAssignment, updateSubmission, assignWork } = useApp();
   const csvInputRef = useRef<HTMLInputElement>(null);
   const [csvImporting, setCsvImporting] = useState(false);
   const [showCsvDialog, setShowCsvDialog] = useState(false);
@@ -625,10 +625,9 @@ export default function Children() {
                   {selectedChild.assignments.length === 0 ? (
                     <p className="text-sm text-muted-foreground text-center py-6">No assignments yet. Generate a worksheet or story and assign it.</p>
                   ) : selectedChild.assignments.map(a => (
-                    <div key={a.id} className="p-3 rounded-lg border border-border/50 hover:border-brand/30 transition-all cursor-pointer"
-                      onClick={() => openAssignmentDetail(a)}>
-                      <div className="flex items-center gap-3">
-                        {a.type === "worksheet" ? <FileText className="w-4 h-4 text-brand flex-shrink-0" /> : <BookOpen className="w-4 h-4 text-purple-600 flex-shrink-0" />}
+                    <div key={a.id} className="p-3 rounded-lg border border-border/50 hover:border-brand/30 transition-all">
+                      <div className="flex items-center gap-3" onClick={() => openAssignmentDetail(a)} style={{ cursor: 'pointer' }}>
+                        {a.type === "send-screener" ? <span className="text-sm flex-shrink-0">🔍</span> : a.type === "worksheet" ? <FileText className="w-4 h-4 text-brand flex-shrink-0" /> : <BookOpen className="w-4 h-4 text-purple-600 flex-shrink-0" />}
                         <div className="flex-1 min-w-0">
                           <div className="text-sm font-medium truncate">{a.title}</div>
                           <div className="text-xs text-muted-foreground">{new Date(a.assignedAt).toLocaleDateString()}</div>
@@ -636,10 +635,17 @@ export default function Children() {
                         <div className="flex items-center gap-2">
                           <span className="text-xs font-medium text-brand">{a.progress ?? 0}%</span>
                           {statusIcon(a.status)}
+                          <button
+                            onClick={e => { e.stopPropagation(); if (confirm('Delete this assignment?')) deleteAssignment(selectedChild.id, a.id); }}
+                            className="p-1 rounded hover:bg-red-50 text-muted-foreground hover:text-red-600 ml-1"
+                            title="Delete assignment"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
                         </div>
                       </div>
                       {/* Progress bar */}
-                      <div className="mt-2 h-1.5 rounded-full bg-muted overflow-hidden">
+                      <div className="mt-2 h-1.5 rounded-full bg-muted overflow-hidden" onClick={() => openAssignmentDetail(a)} style={{ cursor: 'pointer' }}>
                         <div className="h-full rounded-full bg-brand transition-all" style={{ width: `${a.progress ?? 0}%` }} />
                       </div>
                       {a.teacherComment && (
@@ -648,7 +654,7 @@ export default function Children() {
                           <p className="text-xs text-muted-foreground italic line-clamp-1">{a.teacherComment}</p>
                         </div>
                       )}
-                      <p className="text-[10px] text-brand mt-1.5">Click to update progress →</p>
+                      <p className="text-[10px] text-brand mt-1.5 cursor-pointer" onClick={() => openAssignmentDetail(a)}>Click to update progress →</p>
                     </div>
                   ))}
                 </TabsContent>

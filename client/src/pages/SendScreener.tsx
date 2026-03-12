@@ -472,7 +472,7 @@ export default function SendScreener() {
     const summary = buildResultsSummary();
     await assignWork(assignedChildId, {
       title: `SEND Screener Results (${screenerMode === "quick" ? "Quick" : "Full"}) — ${new Date().toLocaleDateString("en-GB")}`,
-      type: "worksheet",
+      type: "send-screener",
       content: summary,
     });
     setAssignSuccess(true);
