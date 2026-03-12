@@ -1,4 +1,56 @@
 import "dotenv/config";
+// ── Browser API polyfills for pdf-parse v2 (pdfjs-dist needs DOMMatrix/ImageData/Path2D) ──
+// Railway's Node.js environment doesn't provide these browser globals
+if (typeof (globalThis as any).DOMMatrix === "undefined") {
+  (globalThis as any).DOMMatrix = class DOMMatrix {
+    a = 1; b = 0; c = 0; d = 1; e = 0; f = 0;
+    m11 = 1; m12 = 0; m13 = 0; m14 = 0;
+    m21 = 0; m22 = 1; m23 = 0; m24 = 0;
+    m31 = 0; m32 = 0; m33 = 1; m34 = 0;
+    m41 = 0; m42 = 0; m43 = 0; m44 = 1;
+    is2D = true; isIdentity = true;
+    constructor(init?: number[] | string) {
+      if (Array.isArray(init) && init.length >= 6) {
+        [this.a, this.b, this.c, this.d, this.e, this.f] = init as number[];
+        this.m11 = this.a; this.m12 = this.b; this.m21 = this.c;
+        this.m22 = this.d; this.m41 = this.e; this.m42 = this.f;
+        this.isIdentity = (this.a===1 && this.b===0 && this.c===0 && this.d===1 && this.e===0 && this.f===0);
+      }
+    }
+    multiply(_o: any) { return new (globalThis as any).DOMMatrix(); }
+    translate(tx = 0, ty = 0) { return new (globalThis as any).DOMMatrix([this.a,this.b,this.c,this.d,this.e+tx,this.f+ty]); }
+    scale(sx = 1, sy?: number) { return new (globalThis as any).DOMMatrix([this.a*sx,this.b,this.c,this.d*(sy??sx),this.e,this.f]); }
+    inverse() { return new (globalThis as any).DOMMatrix(); }
+    transformPoint(p: {x:number;y:number}) { return {x:p.x*this.a+p.y*this.c+this.e, y:p.x*this.b+p.y*this.d+this.f, z:0, w:1}; }
+    toJSON() { return {a:this.a,b:this.b,c:this.c,d:this.d,e:this.e,f:this.f}; }
+  };
+}
+if (typeof (globalThis as any).ImageData === "undefined") {
+  (globalThis as any).ImageData = class ImageData {
+    data: Uint8ClampedArray; width: number; height: number; colorSpace = "srgb";
+    constructor(dataOrWidth: Uint8ClampedArray | number, width: number, height?: number) {
+      if (typeof dataOrWidth === "number") {
+        this.width = dataOrWidth; this.height = width;
+        this.data = new Uint8ClampedArray(dataOrWidth * width * 4);
+      } else {
+        this.data = dataOrWidth; this.width = width;
+        this.height = height ?? (dataOrWidth.length / (width * 4));
+      }
+    }
+  };
+}
+if (typeof (globalThis as any).Path2D === "undefined") {
+  (globalThis as any).Path2D = class Path2D {
+    constructor(_p?: any) {}
+    addPath(_p: any, _t?: any) {} closePath() {} moveTo(_x: number, _y: number) {}
+    lineTo(_x: number, _y: number) {} bezierCurveTo(_a:number,_b:number,_c:number,_d:number,_e:number,_f:number) {}
+    quadraticCurveTo(_a:number,_b:number,_c:number,_d:number) {}
+    arc(_x:number,_y:number,_r:number,_s:number,_e:number,_ac?:boolean) {}
+    arcTo(_a:number,_b:number,_c:number,_d:number,_r:number) {}
+    ellipse(_x:number,_y:number,_rx:number,_ry:number,_rot:number,_s:number,_e:number,_ac?:boolean) {}
+    rect(_x:number,_y:number,_w:number,_h:number) {}
+  };
+}
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
@@ -121,7 +173,7 @@ app.use(cors({
 // Strict limiter for auth endpoints (brute-force protection)
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 20, // 20 attempts per 15 min — enough for normal use, still blocks brute force
+  max: 50, // 50 attempts per 15 min — generous enough for normal use, still blocks brute force
   message: { error: "Too many login attempts. Please try again in 15 minutes." },
   standardHeaders: true,
   legacyHeaders: false,
@@ -132,7 +184,7 @@ const authLimiter = rateLimit({
 // AI endpoints — expensive, limit tightly
 const aiLimiter = rateLimit({
   windowMs: 60 * 1000,
-  max: 30,
+  max: 60, // increased from 30 to reduce false positives during normal use
   message: { error: "Too many AI requests. Please slow down." },
   standardHeaders: true,
   legacyHeaders: false,

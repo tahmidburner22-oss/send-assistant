@@ -205,11 +205,12 @@ async function extractText(buffer: Buffer, mimetype: string): Promise<string> {
     raw = buffer.toString("utf-8");
   } else if (mimetype === "application/pdf") {
     try {
-      const pdfParse = (await import("pdf-parse/lib/pdf-parse.js" as any)).default
-        || (await import("pdf-parse" as any)).default;
-      const data = await pdfParse(buffer);
-      raw = data.text || "";
-    } catch (_) {
+      const { PDFParse } = await import("pdf-parse");
+      const parser = new PDFParse({ data: buffer, verbosity: 0 });
+      const result = await parser.getText();
+      raw = result?.text ?? "";
+    } catch (pdfErr: any) {
+      console.error("[extractText] pdf-parse error:", pdfErr?.message || pdfErr);
       raw = buffer.toString("utf-8");
     }
   } else {
@@ -434,8 +435,13 @@ router.post("/quiz", requireAuth, async (req: Request, res: Response) => {
 
     let questions: any[] = [];
     try {
-      const jsonMatch = raw.match(/\[[\s\S]*\]/);
-      questions = JSON.parse(jsonMatch ? jsonMatch[0] : raw);
+      // Strip markdown code fences (```json ... ``` or ``` ... ```) if present
+      const stripped = raw
+        .replace(/^```(?:json)?\s*/i, "")
+        .replace(/\s*```\s*$/, "")
+        .trim();
+      const jsonMatch = stripped.match(/\[[\s\S]*\]/);
+      questions = JSON.parse(jsonMatch ? jsonMatch[0] : stripped);
     } catch {
       return res.status(500).json({ error: "Failed to parse quiz questions — please try again" });
     }
@@ -575,9 +581,9 @@ router.post("/tts", requireAuth, async (req: Request, res: Response) => {
               body: JSON.stringify({
                 contents: [{ parts: [{ text: chunk }] }],
                 generationConfig: {
-                  response_modalities: ["AUDIO"],
-                  speech_config: {
-                    voice_config: { prebuilt_voice_config: { voice_name: geminiVoicePrimary } },
+                  responseModalities: ["AUDIO"],
+                  speechConfig: {
+                    voiceConfig: { prebuiltVoiceConfig: { voiceName: geminiVoicePrimary } },
                   },
                 },
               }),

@@ -946,8 +946,24 @@ export default function SendScreener() {
             <button
               onClick={() => {
                 if (!resultsRef.current) return;
-                const printWindow = window.open("", "_blank", "width=900,height=700,scrollbars=yes");
-                if (!printWindow) { alert("Please allow pop-ups for this site to enable PDF saving."); return; }
+                // Use Blob URL + hidden iframe to avoid popup blockers
+                const openPrintWindow = (html: string) => {
+                  const blob = new Blob([html], { type: "text/html" });
+                  const url = URL.createObjectURL(blob);
+                  const iframe = document.createElement("iframe");
+                  iframe.style.display = "none";
+                  document.body.appendChild(iframe);
+                  iframe.src = url;
+                  iframe.onload = () => {
+                    try {
+                      iframe.contentWindow?.print();
+                    } catch (_) {}
+                    setTimeout(() => {
+                      document.body.removeChild(iframe);
+                      URL.revokeObjectURL(url);
+                    }, 2000);
+                  };
+                };
                 const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1038,9 +1054,7 @@ export default function SendScreener() {
   </script>
 </body>
 </html>`;
-                printWindow.document.open();
-                printWindow.document.write(html);
-                printWindow.document.close();
+                openPrintWindow(html);
               }}
               className="flex items-center justify-center gap-2 py-3 rounded-xl bg-gray-800 hover:bg-gray-900 text-white text-sm font-semibold transition-colors"
             >
