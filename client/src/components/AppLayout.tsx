@@ -20,7 +20,7 @@ const mainMenu = [
   { path: "/reading", label: "Reading", icon: BookOpen, color: "text-emerald-600" },
   { path: "/past-papers", label: "Past Papers", icon: ScrollText },
   { path: "/templates", label: "Templates", icon: LayoutGrid },
-  { path: "/children", label: "Pupils", icon: Users },
+  { path: "/pupils", label: "Pupils", icon: Users },
   { path: "/revision-hub", label: "Revision Hub", icon: Headphones },
   { path: "/quiz-game", label: "QuizBlast", icon: Zap, color: "text-yellow-500" },
   { path: "/daily-briefing", label: "Daily Briefing", icon: NotebookPen, color: "text-blue-600" },

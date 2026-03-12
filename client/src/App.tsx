@@ -123,7 +123,8 @@ function ProtectedRoutes() {
           <Route path="/reading" component={Reading} />
           <Route path="/stories">{() => { window.location.replace("/reading"); return null; }}</Route>
           <Route path="/templates" component={Templates} />
-          <Route path="/children" component={Children} />
+          <Route path="/pupils" component={Children} />
+          <Route path="/children">{() => { window.location.replace("/pupils"); return null; }}</Route>
           <Route path="/history" component={History} />
           <Route path="/analytics" component={Analytics} />
           <Route path="/ideas" component={Ideas} />

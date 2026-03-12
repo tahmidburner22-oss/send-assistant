@@ -151,13 +151,10 @@ export default function Worksheets() {
   const [includeAnswers, setIncludeAnswers] = useState(true);
   const [examStyle, setExamStyle] = useState(false);
 
-  // Auto-toggle exam-style ON for maths, OFF for everything else
-  // Also reset difficulty to a valid option when subject changes
+  // Reset difficulty to a valid option when subject changes
+  // Exam-style always defaults OFF — user must opt in
   useEffect(() => {
     if (subject) {
-      const isMaths = subject.toLowerCase().includes("math");
-      setExamStyle(isMaths);
-      // Reset difficulty to first valid option for this subject
       const opts = getDifficultyOptions(subject);
       const validIds = opts.map(o => o.id);
       setDifficulty(prev => validIds.includes(prev) ? prev : (validIds.includes("mixed") ? "mixed" : validIds[0]));
@@ -854,8 +851,8 @@ export default function Worksheets() {
                         <WorksheetRenderer
                           worksheet={uploadedWorksheet as any}
                           viewMode="student"
-                          sendNeed={uploadSendNeed}
-                          colorOverlay={colorOverlay}
+                          textSize={textSize}
+                          overlayColor={overlayBg}
                           editedSections={{}}
                         />
                       </div>
