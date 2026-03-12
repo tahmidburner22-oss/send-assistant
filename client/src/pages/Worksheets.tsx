@@ -67,6 +67,7 @@ function useVoiceInput(onResult: (text: string) => void) {
 
 // ─── Format content helper ──────────────────────────────────────────────────
 function formatContent(content: string): string {
+  if (!content) return "";
   // Apply renderMath first to handle KaTeX fractions and LaTeX expressions
   let processed = renderMath(content);
   return processed
@@ -970,8 +971,8 @@ export default function Worksheets() {
                     <SelectTrigger className="h-8 text-xs flex-1 min-w-[120px]"><SelectValue placeholder="All subjects" /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All subjects</SelectItem>
-                      {Array.from(new Set(allPastPaperQuestions.map(q => q.subject))).sort().map(s => (
-                        <SelectItem key={s} value={s}>{s.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</SelectItem>
+                      {Array.from(new Set(allPastPaperQuestions.map(q => q.subject).filter(Boolean))).sort().map(s => (
+                        <SelectItem key={s} value={s}>{(s || '').replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -1000,10 +1001,11 @@ export default function Worksheets() {
             {(() => {
               const q = examQSearch.toLowerCase().trim();
               const filtered = allPastPaperQuestions.filter(question => {
+                if (!question.text) return false; // skip malformed entries
                 const matchSearch = !q ||
-                  question.topic.toLowerCase().includes(q) ||
-                  question.text.toLowerCase().includes(q) ||
-                  question.subject.toLowerCase().includes(q);
+                  (question.topic || '').toLowerCase().includes(q) ||
+                  (question.text || '').toLowerCase().includes(q) ||
+                  (question.subject || '').toLowerCase().includes(q);
                 const matchSubject = examQSubject === "all" || question.subject === examQSubject;
                 const matchBoard = examQBoard === "all" || question.board === examQBoard;
                 const matchTier = examQTier === "all" || question.tier === examQTier;
@@ -1012,7 +1014,7 @@ export default function Worksheets() {
 
               if (!q && examQSubject === "all" && examQBoard === "all" && examQTier === "all") {
                 // Show topic overview when no search
-                const topics = Array.from(new Set(allPastPaperQuestions.map(q => q.topic))).sort();
+                const topics = Array.from(new Set(allPastPaperQuestions.map(q => q.topic).filter(Boolean))).sort();
                 return (
                   <div className="space-y-2">
                     <p className="text-xs text-gray-500 px-1">{topics.length} topics available — type a topic name above to search</p>
