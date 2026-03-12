@@ -1,5 +1,6 @@
 import { Router, Request, Response } from "express";
 import multer from "multer";
+import { MsEdgeTTS, OUTPUT_FORMAT } from "msedge-tts";
 import { requireAuth } from "../middleware/auth.js";
 import db from "../db/index.js";
 import { randomUUID } from "crypto";
@@ -460,12 +461,26 @@ router.post("/quiz", requireAuth, async (req: Request, res: Response) => {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // POST /api/revision/tts
-// Convert podcast script to natural speech.
-// Priority: 1) Groq TTS (PlayAI voices, free, very human-sounding)
-//           2) OpenAI TTS (tts-1-hd, if a real OpenAI key is configured)
+// Convert podcast script to natural speech using Microsoft Edge Neural TTS.
+//
+// Approach: msedge-tts (Microsoft Edge Read Aloud API)
+//   - Uses Azure Neural voices via the Edge browser WebSocket API
+//   - No API key required, no IP restrictions, no rate limits for normal use
+//   - High-quality neural voices including British English (en-GB)
+//   - Returns MP3 audio directly
+//
+// Voice mapping:
+//   nova/hannah   → en-GB-SoniaNeural  (warm, natural British female)
+//   shimmer/autumn → en-GB-LibbyNeural  (soft, expressive British female)
+//   alloy/diana   → en-GB-MaisieNeural (clear, professional British female)
+//   echo/daniel   → en-GB-RyanNeural   (natural, clear British male)
+//   fable/troy    → en-US-GuyNeural    (expressive, engaging US male)
+//   onyx/austin   → en-US-EricNeural   (deep, authoritative US male)
+//
 // Body: { text, voice?, language? }
 // Returns: audio/mpeg stream
-// Split text into sentence-aware chunks of at most maxChars characters
+
+// Split text into chunks for msedge-tts (handles up to ~3000 chars per request)
 function splitIntoChunks(text: string, maxChars = 2000): string[] {
   if (text.length <= maxChars) return [text];
   const chunks: string[] = [];
@@ -483,23 +498,22 @@ function splitIntoChunks(text: string, maxChars = 2000): string[] {
   return chunks.length > 0 ? chunks : [text.slice(0, maxChars)];
 }
 
-// POST /api/revision/tts
-// Convert podcast script to natural speech.
+// POST /api/revision/tts — Microsoft Edge Neural TTS (msedge-tts)
 //
-// Provider priority (2026):
-//   1. Gemini TTS (gemini-2.5-flash-preview-tts) — PRIMARY, confirmed working
-//      Voices: Aoede, Leda, Kore (female) | Charon, Fenrir, Orus (male)
-//      Handles up to 4500 chars per chunk, returns PCM wrapped in WAV
-//   2. Groq Orpheus v1 (canopylabs/orpheus-v1-english) — needs terms acceptance
-//      Voices: autumn, diana, hannah (female) | austin, daniel, troy (male)
-//      Limit: 200 chars per request — aggressive chunking required
-//   3. OpenAI TTS (tts-1-hd) — only if a real sk- key is available with quota
+// Uses the Microsoft Edge Read Aloud WebSocket API via the msedge-tts package.
+// No API key required. No IP restrictions. High-quality Azure Neural voices.
+// British English voices are prioritised for UK educators.
 //
-// Note: ElevenLabs free tier is blocked on Railway IPs (proxy detection).
-//       Groq playai-tts / playai-tts-arabic are decommissioned as of Jan 2026.
+// Voice mapping:
+//   nova/hannah    -> en-GB-SoniaNeural  (warm, natural British female)
+//   shimmer/autumn -> en-GB-LibbyNeural  (soft, expressive British female)
+//   alloy/diana    -> en-GB-MaisieNeural (clear, professional British female)
+//   echo/daniel    -> en-GB-RyanNeural   (natural, clear British male)
+//   fable/troy     -> en-US-GuyNeural    (expressive, engaging US male)
+//   onyx/austin    -> en-US-EricNeural   (deep, authoritative US male)
 //
 // Body: { text, voice?, language? }
-// Returns: audio/wav stream
+// Returns: audio/mpeg stream
 router.post("/tts", requireAuth, async (req: Request, res: Response) => {
   try {
     const { text, voice = "nova", language = "en" } = req.body;
@@ -507,288 +521,75 @@ router.post("/tts", requireAuth, async (req: Request, res: Response) => {
       return res.status(400).json({ error: "text is required" });
     }
 
-    // Helper: fetch with a hard per-request timeout
-    const fetchWithTimeout = (url: string, options: RequestInit, timeoutMs: number) => {
-      const controller = new AbortController();
-      const id = setTimeout(() => controller.abort(), timeoutMs);
-      return fetch(url, { ...options, signal: controller.signal })
-        .finally(() => clearTimeout(id));
+    // Map voice names to Azure Neural voice IDs
+    const VOICE_MAP: Record<string, string> = {
+      nova:    "en-GB-SoniaNeural",
+      hannah:  "en-GB-SoniaNeural",
+      shimmer: "en-GB-LibbyNeural",
+      autumn:  "en-GB-LibbyNeural",
+      alloy:   "en-GB-MaisieNeural",
+      diana:   "en-GB-MaisieNeural",
+      echo:    "en-GB-RyanNeural",
+      daniel:  "en-GB-RyanNeural",
+      fable:   "en-US-GuyNeural",
+      troy:    "en-US-GuyNeural",
+      onyx:    "en-US-EricNeural",
+      austin:  "en-US-EricNeural",
     };
 
-    // Helper: split text into chunks of at most maxChars, breaking at sentence boundaries
-    const splitOrpheus = (input: string, maxChars = 190): string[] => {
-      // Orpheus limit is 200 chars; use 190 to be safe
-      const sentences = input.match(/[^.!?\n]+[.!?\n]*/g) || [input];
-      const result: string[] = [];
-      let current = "";
-      for (const s of sentences) {
-        if ((current + s).length > maxChars) {
-          if (current.trim()) result.push(current.trim());
-          // If a single sentence is too long, split by word
-          if (s.length > maxChars) {
-            const words = s.split(" ");
-            let wChunk = "";
-            for (const w of words) {
-              if ((wChunk + " " + w).trim().length > maxChars) {
-                if (wChunk.trim()) result.push(wChunk.trim());
-                wChunk = w;
-              } else {
-                wChunk = (wChunk + " " + w).trim();
-              }
-            }
-            if (wChunk.trim()) result.push(wChunk.trim());
-            current = "";
-          } else {
-            current = s;
-          }
-        } else {
-          current += s;
-        }
-      }
-      if (current.trim()) result.push(current.trim());
-      return result.filter(c => c.length > 0);
+    // Non-English language overrides
+    const LANG_VOICE_MAP: Record<string, string> = {
+      cy: "cy-GB-NiaNeural",
+      fr: "fr-FR-DeniseNeural",
+      es: "es-ES-ElviraNeural",
+      de: "de-DE-KatjaNeural",
+      ar: "ar-EG-SalmaNeural",
     };
 
-    // ───────────────────────────────────────────────────────────────────────────────
-    // 1. Gemini TTS — PRIMARY (confirmed working, no IP restrictions)
-    //    Model: gemini-2.5-flash-preview-tts
-    //    Voices: Aoede, Leda, Kore (F) | Charon, Fenrir, Orus (M)
-    //    Handles up to 4500 chars per chunk, returns PCM wrapped in WAV
-    // ───────────────────────────────────────────────────────────────────────────────
-    // Check both GEMINI_API_KEY and ELEVENLABS_API_KEY — the working Gemini key may be stored in either
-    // Gemini keys start with "AIzaSy"; ElevenLabs keys start with "sk_"
-    const elevenLabsEnv = process.env.ELEVENLABS_API_KEY || "";
-    const elevenLabsAsGemini = elevenLabsEnv.startsWith("AIzaSy") ? elevenLabsEnv : "";
-    const geminiKeyPrimary = process.env.GEMINI_API_KEY || elevenLabsAsGemini || getEffectiveKey("gemini");
-    if (geminiKeyPrimary) {
-      const geminiVoiceMapPrimary: Record<string, string> = {
-        nova: "Aoede", shimmer: "Leda", alloy: "Kore",
-        echo: "Charon", fable: "Fenrir", onyx: "Orus",
-        hannah: "Aoede", autumn: "Leda", diana: "Kore",
-        daniel: "Charon", troy: "Fenrir", austin: "Orus",
-      };
-      const geminiVoicePrimary = geminiVoiceMapPrimary[voice] || "Aoede";
-      try {
-        const geminiChunksPrimary = splitIntoChunks(text, 4500);
-        console.log(`[TTS] Gemini TTS (primary): voice=${geminiVoicePrimary}, chars=${text.length}, chunks=${geminiChunksPrimary.length}`);
-        const allPcmPartsPrimary: Buffer[] = [];
-        for (const chunk of geminiChunksPrimary) {
-          const ttsRes = await fetchWithTimeout(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${geminiKeyPrimary}`,
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                contents: [{ parts: [{ text: chunk }] }],
-                generationConfig: {
-                  responseModalities: ["AUDIO"],
-                  speechConfig: {
-                    voiceConfig: { prebuiltVoiceConfig: { voiceName: geminiVoicePrimary } },
-                  },
-                },
-              }),
-            },
-            60000
-          );
-          if (!ttsRes.ok) {
-            const errBody = await ttsRes.text();
-            throw new Error(`Gemini TTS HTTP ${ttsRes.status}: ${errBody.slice(0, 200)}`);
-          }
-          const data = await ttsRes.json() as any;
-          const parts = data?.candidates?.[0]?.content?.parts || [];
-          let gotAudio = false;
-          for (const part of parts) {
-            if (part?.inlineData?.data) {
-              allPcmPartsPrimary.push(Buffer.from(part.inlineData.data, "base64"));
-              gotAudio = true;
-              break;
-            }
-          }
-          if (!gotAudio) throw new Error("Gemini TTS: no audio in response");
-        }
-        const combinedPcmPrimary = Buffer.concat(allPcmPartsPrimary);
-        const sampleRatePrimary = 24000;
-        const numChannelsPrimary = 1;
-        const bitsPerSamplePrimary = 16;
-        const byteRatePrimary = sampleRatePrimary * numChannelsPrimary * (bitsPerSamplePrimary / 8);
-        const blockAlignPrimary = numChannelsPrimary * (bitsPerSamplePrimary / 8);
-        const dataSizePrimary = combinedPcmPrimary.byteLength;
-        const wavHeaderPrimary = Buffer.alloc(44);
-        wavHeaderPrimary.write("RIFF", 0);
-        wavHeaderPrimary.writeUInt32LE(36 + dataSizePrimary, 4);
-        wavHeaderPrimary.write("WAVE", 8);
-        wavHeaderPrimary.write("fmt ", 12);
-        wavHeaderPrimary.writeUInt32LE(16, 16);
-        wavHeaderPrimary.writeUInt16LE(1, 20);
-        wavHeaderPrimary.writeUInt16LE(numChannelsPrimary, 22);
-        wavHeaderPrimary.writeUInt32LE(sampleRatePrimary, 24);
-        wavHeaderPrimary.writeUInt32LE(byteRatePrimary, 28);
-        wavHeaderPrimary.writeUInt16LE(blockAlignPrimary, 32);
-        wavHeaderPrimary.writeUInt16LE(bitsPerSamplePrimary, 34);
-        wavHeaderPrimary.write("data", 36);
-        wavHeaderPrimary.writeUInt32LE(dataSizePrimary, 40);
-        const finalWavPrimary = Buffer.concat([wavHeaderPrimary, combinedPcmPrimary]);
-        res.setHeader("Content-Type", "audio/wav");
-        res.setHeader("Content-Length", finalWavPrimary.byteLength.toString());
-        console.log(`[TTS] Gemini TTS success (primary): ${finalWavPrimary.byteLength} bytes`);
-        return res.send(finalWavPrimary);
-      } catch (err: any) {
-        console.warn("[TTS] Gemini TTS (primary) error:", err?.message || err);
-        // Fall through to Groq Orpheus
+    const azureVoice = (language !== "en" && LANG_VOICE_MAP[language])
+      ? LANG_VOICE_MAP[language]
+      : (VOICE_MAP[voice] || "en-GB-SoniaNeural");
+
+    console.log(`[TTS] msedge-tts: voice=${azureVoice}, chars=${text.length}`);
+
+    const tts = new MsEdgeTTS();
+    await tts.setMetadata(azureVoice, OUTPUT_FORMAT.AUDIO_24KHZ_96KBITRATE_MONO_MP3);
+
+    // Split long texts into sentence-aware chunks
+    const chunks = splitIntoChunks(text, 2000);
+    const mp3Buffers: Buffer[] = [];
+
+    for (const chunk of chunks) {
+      const { audioStream } = tts.toStream(chunk);
+      const chunkBuffers: Buffer[] = [];
+      await new Promise<void>((resolve, reject) => {
+        const timeout = setTimeout(() => reject(new Error("msedge-tts chunk timeout after 30s")), 30000);
+        audioStream.on("data", (d: Buffer) => chunkBuffers.push(d));
+        audioStream.on("close", () => { clearTimeout(timeout); resolve(); });
+        audioStream.on("error", (e: Error) => { clearTimeout(timeout); reject(e); });
+      });
+      if (chunkBuffers.length > 0) {
+        mp3Buffers.push(Buffer.concat(chunkBuffers));
       }
     }
 
-    // ───────────────────────────────────────────────────────────────────────────────
-    // 2. Groq Orpheus TTS — SECONDARY (requires terms acceptance at console.groq.com)
-    //    Model: canopylabs/orpheus-v1-english
-    //    Voices: autumn, diana, hannah (F) | austin, daniel, troy (M)
-    //    Max input: 200 chars per request — aggressive chunking required
-    //    Returns: WAV audio
-    // ───────────────────────────────────────────────────────────────────────────────
-    const groqKey = process.env.GROQ_API_KEY || getEffectiveKey("groq");
-    if (groqKey) {
-      // Map legacy voice names to Orpheus voice IDs
-      const orpheusVoiceMap: Record<string, string> = {
-        nova:    "hannah",   // Warm, natural female — best for educational content
-        shimmer: "autumn",   // Soft, expressive female
-        alloy:   "diana",    // Clear, professional female
-        echo:    "daniel",   // Natural, clear male
-        fable:   "troy",     // Expressive, engaging male
-        onyx:    "austin",   // Deep, authoritative male
-        // Direct Orpheus voice names also accepted
-        hannah: "hannah", autumn: "autumn", diana: "diana",
-        daniel: "daniel", troy: "troy", austin: "austin",
-      };
-      const orpheusVoice = orpheusVoiceMap[voice] || "hannah";
-      try {
-        const chunks = splitOrpheus(text, 190);
-        console.log(`[TTS] Groq Orpheus: voice=${orpheusVoice}, chars=${text.length}, chunks=${chunks.length}`);
-        const wavBuffers: Buffer[] = [];
-        let headerSaved: Buffer | null = null;
-        for (const chunk of chunks) {
-          const ttsRes = await fetchWithTimeout(
-            "https://api.groq.com/openai/v1/audio/speech",
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json", Authorization: `Bearer ${groqKey}` },
-              body: JSON.stringify({
-                model: "canopylabs/orpheus-v1-english",
-                input: chunk,
-                voice: orpheusVoice,
-                response_format: "wav",
-              }),
-            },
-            30000
-          );
-          if (!ttsRes.ok) {
-            const errBody = await ttsRes.text();
-            throw new Error(`Groq Orpheus HTTP ${ttsRes.status}: ${errBody.slice(0, 200)}`);
-          }
-          const buf = Buffer.from(await ttsRes.arrayBuffer());
-          // WAV files: keep header from first chunk, strip 44-byte header from subsequent chunks
-          if (wavBuffers.length === 0) {
-            headerSaved = buf.slice(0, 44);
-            wavBuffers.push(buf);
-          } else {
-            // Strip WAV header (44 bytes) from subsequent chunks and append PCM data only
-            wavBuffers.push(buf.slice(44));
-          }
-        }
-        // Rebuild a single valid WAV with correct data size in header
-        const pcmData = Buffer.concat(wavBuffers.slice(1).map((b, i) => i === 0 ? wavBuffers[0].slice(44) : b));
-        const allPcm = Buffer.concat([wavBuffers[0].slice(44), ...wavBuffers.slice(1)]);
-        const totalDataSize = wavBuffers[0].length - 44 + wavBuffers.slice(1).reduce((a, b) => a + b.length, 0);
-        const finalWav = Buffer.concat([headerSaved!, allPcm]);
-        // Fix WAV header sizes
-        finalWav.writeUInt32LE(36 + totalDataSize, 4);  // RIFF chunk size
-        finalWav.writeUInt32LE(totalDataSize, 40);       // data chunk size
-        res.setHeader("Content-Type", "audio/wav");
-        res.setHeader("Content-Length", finalWav.byteLength.toString());
-        console.log(`[TTS] Groq Orpheus success: ${finalWav.byteLength} bytes (${chunks.length} chunks)`);
-        return res.send(finalWav);
-      } catch (err: any) {
-        console.warn("[TTS] Groq Orpheus error:", err?.message || err);
-        // Fall through to Gemini
-      }
+    tts.close();
+
+    if (mp3Buffers.length === 0) {
+      throw new Error("msedge-tts returned no audio data");
     }
 
-    // ───────────────────────────────────────────────────────────────────────────────
-    // 3. OpenAI TTS — TERTIARY fallback (only if a real sk- key with quota is available)
-    // ───────────────────────────────────────────────────────────────────────────────
-    const schoolId = (req as any).user?.schoolId;
-    let openaiKey = "";
-    if (schoolId) {
-      try {
-        const row = db.prepare(
-          "SELECT api_key FROM school_api_keys WHERE school_id=? AND provider='openai' LIMIT 1"
-        ).get(schoolId) as any;
-        if (row?.api_key) openaiKey = row.api_key;
-      } catch { /* ignore */ }
-    }
-    if (!openaiKey) {
-      try {
-        const row = db.prepare(
-          "SELECT api_key FROM admin_api_keys WHERE provider='openai' LIMIT 1"
-        ).get() as any;
-        if (row?.api_key) openaiKey = row.api_key;
-      } catch { /* ignore */ }
-    }
-    // Use env OpenAI key (including OpenRouter sk-or-v1- keys which are OpenAI-compatible)
-    if (!openaiKey && process.env.OPENAI_API_KEY) {
-      openaiKey = process.env.OPENAI_API_KEY;
-    }
-    if (openaiKey) {
-      const validVoices = ["alloy", "echo", "fable", "onyx", "nova", "shimmer"];
-      const selectedVoice = validVoices.includes(voice) ? voice : "nova";
-      // Use OpenRouter endpoint for OpenRouter keys, standard OpenAI endpoint otherwise
-      const isOpenRouterKey = openaiKey.startsWith("sk-or-");
-      const ttsEndpoint = isOpenRouterKey
-        ? "https://openrouter.ai/api/v1/audio/speech"
-        : "https://api.openai.com/v1/audio/speech";
-      const ttsHeaders: Record<string, string> = {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${openaiKey}`,
-      };
-      if (isOpenRouterKey) {
-        ttsHeaders["HTTP-Referer"] = "https://adaptly.co.uk";
-        ttsHeaders["X-Title"] = "Adaptly";
-      }
-      try {
-        const chunks = splitIntoChunks(text, 4000);
-        console.log(`[TTS] OpenAI TTS (${isOpenRouterKey ? "via OpenRouter" : "direct"}): voice=${selectedVoice}, chars=${text.length}, chunks=${chunks.length}`);
-        const buffers: Buffer[] = [];
-        for (const chunk of chunks) {
-          const ttsRes = await fetchWithTimeout(
-            ttsEndpoint,
-            {
-              method: "POST",
-              headers: ttsHeaders,
-              body: JSON.stringify({ model: "tts-1-hd", input: chunk, voice: selectedVoice, response_format: "mp3" }),
-            },
-            25000
-          );
-          if (!ttsRes.ok) {
-            const errBody = await ttsRes.text();
-            throw new Error(`OpenAI TTS HTTP ${ttsRes.status}: ${errBody.slice(0, 100)}`);
-          }
-          buffers.push(Buffer.from(await ttsRes.arrayBuffer()));
-        }
-        const combined = Buffer.concat(buffers);
-        res.setHeader("Content-Type", "audio/mpeg");
-        res.setHeader("Content-Length", combined.byteLength.toString());
-        console.log(`[TTS] OpenAI TTS success: ${combined.byteLength} bytes`);
-        return res.send(combined);
-      } catch (err: any) {
-        console.warn("[TTS] OpenAI TTS error:", err?.message || err);
-      }
-    }
-
-    throw new Error("TTS unavailable: all providers failed. Check Railway logs for details.");
+    const combined = Buffer.concat(mp3Buffers);
+    console.log(`[TTS] msedge-tts success: ${combined.byteLength} bytes (${chunks.length} chunks)`);
+    res.setHeader("Content-Type", "audio/mpeg");
+    res.setHeader("Content-Length", combined.byteLength.toString());
+    return res.send(combined);
 
   } catch (err: any) {
-    console.error("Revision TTS error:", err);
-    res.status(500).json({ error: err.message || "TTS failed" });
+    console.error("[TTS] msedge-tts error:", err?.message || err);
+    res.status(500).json({ error: err.message || "Neural voice generation failed. Please try again." });
   }
 });
+
 
 export default router;
