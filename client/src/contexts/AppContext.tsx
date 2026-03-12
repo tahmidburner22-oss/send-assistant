@@ -32,6 +32,7 @@ export interface TimetableLesson {
 export interface Child {
   id: string; name: string; yearGroup: string; sendNeed: string;
   code: string; upn?: string; dob?: string; createdAt: string;
+  parentEmail?: string; parentName?: string;
   assignments: Assignment[]; submissions: Submission[];
   timetable?: TimetableLesson[];
 }
@@ -249,7 +250,7 @@ export function AppProvider({ children: childrenProp }: { children: React.ReactN
   }, []);
 
   const updateChild = useCallback(async (id: string, updates: Partial<Child>) => {
-    await pupilsApi.update(id, { name: updates.name, yearGroup: updates.yearGroup, sendNeed: updates.sendNeed, timetable: updates.timetable });
+    await pupilsApi.update(id, { name: updates.name, yearGroup: updates.yearGroup, sendNeed: updates.sendNeed, timetable: updates.timetable, parentEmail: updates.parentEmail, parentName: updates.parentName });
     setState(s => ({ ...s, children: s.children.map(c => c.id === id ? { ...c, ...updates } : c) }));
   }, []);
 
@@ -380,5 +381,5 @@ function mapAttendanceRecord(r: any): AttendanceRecord {
 function mapPupil(p: any): Child {
   const assignments = Array.isArray(p.assignments) ? p.assignments.map(mapAssignment) : [];
   const submissions = Array.isArray(p.submissions) ? p.submissions : [];
-  return { id: p.id, name: p.name, yearGroup: p.year_group || "", sendNeed: p.send_need || "", code: p.code || "", upn: p.upn, dob: p.dob, createdAt: p.created_at, assignments, submissions };
+  return { id: p.id, name: p.name, yearGroup: p.year_group || "", sendNeed: p.send_need || "", code: p.code || "", upn: p.upn, dob: p.dob, createdAt: p.created_at, parentEmail: p.parent_email || undefined, parentName: p.parent_name || undefined, assignments, submissions };
 }

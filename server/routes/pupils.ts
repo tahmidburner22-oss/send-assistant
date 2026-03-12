@@ -81,13 +81,15 @@ router.put("/:id", requireAuth, (req: Request, res: Response) => {
     }
   }
 
-  db.prepare(`UPDATE pupils SET name=?, year_group=?, send_need=?, upn=?, dob=?, updated_at=datetime('now') WHERE id=?`)
+  db.prepare(`UPDATE pupils SET name=?, year_group=?, send_need=?, upn=?, dob=?, parent_email=?, parent_name=?, updated_at=datetime('now') WHERE id=?`)
     .run(
       req.body.name || pupil.name,
       req.body.yearGroup ?? pupil.year_group,
       req.body.sendNeed ?? pupil.send_need,
       req.body.upn ?? pupil.upn,
       req.body.dob ?? pupil.dob,
+      req.body.parentEmail !== undefined ? (req.body.parentEmail || null) : (pupil.parent_email ?? null),
+      req.body.parentName !== undefined ? (req.body.parentName || null) : (pupil.parent_name ?? null),
       pupil.id
     );
 

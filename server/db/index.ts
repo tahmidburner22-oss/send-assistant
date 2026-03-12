@@ -126,6 +126,9 @@ export async function initDb() {
     "ALTER TABLE attendance_records ADD COLUMN mis_source TEXT",
     // User preferences (sidebar collapse state, theme, etc.) — persisted server-side
     "ALTER TABLE users ADD COLUMN preferences TEXT",
+    // Parent contact details on pupils — for behaviour alert emails
+    "ALTER TABLE pupils ADD COLUMN parent_email TEXT",
+    "ALTER TABLE pupils ADD COLUMN parent_name TEXT",
   ];
   for (const migration of migrations) {
     try { _db.run(migration); } catch (_) { /* column already exists — ignore */ }
