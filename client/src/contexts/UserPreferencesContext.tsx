@@ -42,6 +42,7 @@ export interface UserPreferences {
   dashboardCards: string[];         // ordered list of visible dashboard card ids
   dashboardSubjects: string[];      // subjects shown on dashboard
   dashboardPinnedTools: string[];   // tool paths pinned to dashboard
+  showWorksheetLibrary?: boolean;   // show the Library tab in Worksheets (default: false)
 }
 
 // ─── Preset themes ────────────────────────────────────────────────────────────
@@ -124,6 +125,7 @@ interface UserPreferencesContextType {
   toggleDashboardCard: (cardId: string) => void;
   toggleDashboardSubject: (subject: string) => void;
   togglePinnedTool: (path: string) => void;
+  setShowWorksheetLibrary: (show: boolean) => void;
   resetPreferences: () => void;
   currentTheme: ColourTheme;
   currentWallpaper: Wallpaper;
@@ -240,6 +242,13 @@ export function UserPreferencesProvider({
     });
   }, [userId]);
 
+  const setShowWorksheetLibrary = useCallback((show: boolean) => {
+    setPreferences(prev => {
+      const next = { ...prev, showWorksheetLibrary: show };
+      savePrefs(next, userId);
+      return next;
+    });
+  }, [userId]);
   const resetPreferences = useCallback(() => {
     const fresh = { ...DEFAULT_PREFERENCES };
     savePrefs(fresh, userId);
@@ -276,6 +285,7 @@ export function UserPreferencesProvider({
       toggleDashboardCard,
       toggleDashboardSubject,
       togglePinnedTool,
+      setShowWorksheetLibrary,
       resetPreferences,
       currentTheme,
       currentWallpaper,
