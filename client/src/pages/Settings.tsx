@@ -250,6 +250,24 @@ function MisIntegrationSection() {
     setSyncing(null);
   };
 
+  const syncDemo = async () => {
+    setSyncing("demo");
+    setSyncResult(null);
+    try {
+      const res = await fetch("/api/mis/sync-demo", { method: "POST", headers: getAuthHeader() });
+      const data = await res.json();
+      if (res.ok) {
+        setSyncResult(data);
+        const total = (data.pupils?.created || 0) + (data.behaviour?.created || 0) +
+          (data.attendance?.created || 0) + (data.comments?.created || 0);
+        toast.success(`Demo sync complete — ${total} records imported`);
+      } else {
+        toast.error(data.error || "Demo sync failed");
+      }
+    } catch { toast.error("Network error"); }
+    setSyncing(null);
+  };
+
   if (!isAdmin) return null;
 
   return (
@@ -374,12 +392,25 @@ function MisIntegrationSection() {
               )}
             </div>
 
+            {/* Demo Sync Button */}
+            <div className="mt-3 p-3 rounded-lg border border-dashed border-brand/40 bg-brand/5">
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="text-sm font-medium text-gray-800">Demo Sync</div>
+                  <div className="text-xs text-muted-foreground mt-0.5">Load 20 realistic mock pupils with behaviour, attendance &amp; comments — no API keys needed.</div>
+                </div>
+                <Button size="sm" variant="outline" className="shrink-0 h-7 text-xs border-brand/40 text-brand hover:bg-brand/10" onClick={syncDemo} disabled={syncing === "demo"}>
+                  <RefreshCw className={`w-3 h-3 mr-1 ${syncing === "demo" ? "animate-spin" : ""}`} />{syncing === "demo" ? "Loading..." : "Load Demo Data"}
+                </Button>
+              </div>
+            </div>
+
             {/* Sync Result Summary */}
             {syncResult && (
               <div className="mt-3 p-3 rounded-lg border border-green-200 bg-green-50 space-y-2">
                 <div className="flex items-center gap-2 text-sm font-medium text-green-800">
                   <CheckCircle className="w-4 h-4" />
-                  Last Sync Summary — {syncResult.provider === "bromcom" ? "Bromcom" : "Arbor"}
+                  Last Sync Summary — {syncResult.provider === "demo" ? "Demo Data" : syncResult.provider === "bromcom" ? "Bromcom" : "Arbor"}
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   {[
