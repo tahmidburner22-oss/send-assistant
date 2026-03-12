@@ -727,7 +727,8 @@ router.delete("/comments/:id", requireAuth, requireAdmin, (req: Request, res: Re
 // ── POST /api/mis/sync-demo ───────────────────────────────────────────────────
 // Inserts realistic mock MIS data for testing without real API credentials.
 // Creates 20 demo pupils with behaviour, attendance, and comment records.
-router.post("/sync-demo", requireAuth, requireAdmin, (req: Request, res: Response) => {
+router.post("/sync-demo", requireAuth, requireAdmin, async (req: Request, res: Response) => {
+  try {
   const schoolId = req.user!.schoolId;
   if (!schoolId) return res.status(400).json({ error: "No school" });
 
@@ -764,7 +765,7 @@ router.post("/sync-demo", requireAuth, requireAdmin, (req: Request, res: Respons
 
   const findByUpn   = db.prepare("SELECT id FROM pupils WHERE school_id=? AND upn=?");
   const insertPupil = db.prepare(
-    `INSERT INTO pupils (id, school_id, name, year_group, send_need, pupil_code, upn, dob, created_by)
+    `INSERT INTO pupils (id, school_id, name, year_group, send_need, code, upn, dob, created_by)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
   );
   const updatePupil = db.prepare(
@@ -868,6 +869,10 @@ router.post("/sync-demo", requireAuth, requireAdmin, (req: Request, res: Respons
 
   auditLog(req.user!.id, schoolId, "mis.demo_sync", "pupils", schoolId, { results }, req.ip);
   res.json({ success: true, provider: "demo", results });
+  } catch (err: any) {
+    console.error("[sync-demo] Error:", err?.message || err);
+    res.status(500).json({ error: err?.message || "Demo sync failed" });
+  }
 });
 
 export default router;
