@@ -22,6 +22,7 @@ export default function ReportComments() {
   return (
     <AIToolPage
       title="Report Card Comments"
+      assignable={true}
       description="Generate professional, personalised, parent-ready school report comments"
       icon={<FileCheck className="w-5 h-5 text-white" />}
       accentColor="bg-emerald-600"

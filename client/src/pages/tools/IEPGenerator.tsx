@@ -9,6 +9,7 @@ export default function IEPGenerator() {
   return (
     <AIToolPage
       title="IEP / EHCP Goals Generator"
+      assignable={true}
       description="Generate SMART, legally-compliant IEP and EHCP targets tailored to each pupil's needs"
       icon={<Target className="w-5 h-5 text-white" />}
       accentColor="bg-purple-600"

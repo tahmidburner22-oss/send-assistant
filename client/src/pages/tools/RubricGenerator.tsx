@@ -8,6 +8,7 @@ export default function RubricGenerator() {
   return (
     <AIToolPage
       title="Rubric / Mark Scheme Generator"
+      assignable={true}
       description="Create detailed assessment rubrics and mark schemes for any task"
       icon={<Table2 className="w-5 h-5 text-white" />}
       accentColor="bg-violet-600"

@@ -119,6 +119,7 @@ export default function BehaviourPlan() {
     <div>
       <AIToolPage
         title="Behaviour Support Plan"
+        assignable={true}
         description="Generate a structured, positive behaviour support plan for individual pupils"
         icon={<ShieldAlert className="w-5 h-5 text-white" />}
         accentColor="bg-orange-600"
