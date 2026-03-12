@@ -768,9 +768,10 @@ router.post("/adapt-worksheet", requireAuth, worksheetUpload.single("file"), asy
     const mime = req.file.mimetype;
     if (mime === "application/pdf") {
       try {
-        // pdf-parse v2 uses a class-based API: new PDFParse({ data: buffer })
+        // pdf-parse v2 class-based API: must call load() before getText()
         const { PDFParse } = await import("pdf-parse" as any);
         const parser = new PDFParse({ data: req.file.buffer });
+        await parser.load(req.file.buffer);
         const result = await parser.getText();
         rawText = result?.text || "";
       } catch (pdfErr: any) {
@@ -888,6 +889,7 @@ router.post("/book-questions", requireAuth, worksheetUpload.single("criteriaFile
         if (req.file.mimetype === "application/pdf") {
           const { PDFParse } = await import("pdf-parse" as any);
           const parser = new PDFParse({ data: req.file.buffer });
+          await parser.load(req.file.buffer);
           const result = await parser.getText();
           criteriaText = result?.text || "";
         } else if (req.file.mimetype === "text/plain") {

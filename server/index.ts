@@ -121,12 +121,12 @@ app.use(cors({
 // Strict limiter for auth endpoints (brute-force protection)
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10, // tightened from 20 to 10
+  max: 20, // 20 attempts per 15 min — enough for normal use, still blocks brute force
   message: { error: "Too many login attempts. Please try again in 15 minutes." },
   standardHeaders: true,
   legacyHeaders: false,
   validate: { xForwardedForHeader: false },
-  skipSuccessfulRequests: false, // count all attempts
+  skipSuccessfulRequests: true, // only count failed attempts
 });
 
 // AI endpoints — expensive, limit tightly
