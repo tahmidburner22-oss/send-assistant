@@ -62,15 +62,19 @@ export default function DPA() {
           </ul>
 
           <h2>6. Sub-processors</h2>
-          <p>We currently use the following sub-processors:</p>
+          <p>We currently use the following approved sub-processors. Each is bound by a Data Processing Agreement or equivalent contractual safeguard:</p>
           <ul>
-            <li><strong>Hosting provider</strong>: UK-based server infrastructure</li>
-            <li><strong>Email service</strong>: Transactional email delivery (SMTP)</li>
+            <li><strong>Railway</strong> (EU-West) — Platform hosting and deployment</li>
+            <li><strong>TiDB Cloud</strong> (EU region) — Database hosting</li>
+            <li><strong>OpenAI</strong> (USA) — AI content generation; zero data-retention policy applied</li>
+            <li><strong>Google (Gemini)</strong> (USA) — AI content generation; zero data-retention policy applied</li>
+            <li><strong>Groq</strong> (USA) — AI content generation; zero data-retention policy applied</li>
+            <li><strong>Resend</strong> (USA) — Transactional email delivery</li>
           </ul>
-          <p>AI providers (Groq, Google, OpenAI, OpenRouter) are used only with your own API key and do not receive pupil personal data from Adaptly.</p>
+          <p>No AI provider is permitted to use data submitted through Adaptly for training, fine-tuning, or improving their foundational models. We will notify the School of any changes to this sub-processor list.</p>
 
           <h2>7. International Transfers</h2>
-          <p>All personal data is stored and processed in the United Kingdom. We do not transfer personal data outside the UK/EEA.</p>
+          <p>Core pupil data is stored within the EU (Railway and TiDB Cloud, EU regions). Some data is transmitted to US-based AI and email providers as described in Section 6. These transfers are governed by the <strong>UK International Data Transfer Agreement (IDTA)</strong> and/or EU Standard Contractual Clauses (SCCs) as adopted by the UK ICO.</p>
 
           <h2>8. Security Measures</h2>
           <ul>
@@ -83,13 +87,13 @@ export default function DPA() {
           </ul>
 
           <h2>9. Data Breach Notification</h2>
-          <p>We will notify the School within 72 hours of becoming aware of a personal data breach. Notification will include the nature of the breach, categories and approximate number of data subjects affected, and measures taken or proposed.</p>
+          <p>We will notify the School <strong>within 48 hours</strong> of becoming aware of a personal data breach. Notification will include the nature of the breach, categories and approximate number of data subjects affected, and measures taken or proposed.</p>
 
           <h2>10. DPIA Support</h2>
           <p>We have completed a Data Protection Impact Assessment (DPIA) for Adaptly. A copy is available on request from <a href="mailto:privacy@adaptly.co.uk">privacy@adaptly.co.uk</a>.</p>
 
           <h2>11. Termination</h2>
-          <p>Upon termination of the subscription, the School may export all data for 30 days. After this period, all personal data will be permanently deleted from our systems, except audit logs which are retained for 7 years as required by law.</p>
+          <p>Upon termination of the subscription, the School will be notified and may export all data for <strong>30 days</strong>. After this period, all pupil, staff, and school personal data will be permanently and irreversibly deleted from all systems. Audit logs are retained for 2 years as required by our security obligations.</p>
 
           <h2>12. Governing Law</h2>
           <p>This DPA is governed by the laws of England and Wales.</p>
