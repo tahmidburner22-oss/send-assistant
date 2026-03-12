@@ -723,4 +723,151 @@ router.delete("/comments/:id", requireAuth, requireAdmin, (req: Request, res: Re
   res.json({ success: true });
 });
 
+
+// ── POST /api/mis/sync-demo ───────────────────────────────────────────────────
+// Inserts realistic mock MIS data for testing without real API credentials.
+// Creates 20 demo pupils with behaviour, attendance, and comment records.
+router.post("/sync-demo", requireAuth, requireAdmin, (req: Request, res: Response) => {
+  const schoolId = req.user!.schoolId;
+  if (!schoolId) return res.status(400).json({ error: "No school" });
+
+  const results = {
+    pupils: { created: 0, updated: 0, skipped: 0 },
+    behaviour: { created: 0, skipped: 0 },
+    attendance: { created: 0, skipped: 0 },
+    comments: { created: 0, skipped: 0 },
+    errors: [] as string[],
+  };
+
+  const mockPupils = [
+    { name: "Amelia Johnson",    yearGroup: "Year 7",  sendNeed: "Dyslexia",           upn: "DEMO001", dob: "2012-03-14" },
+    { name: "Oliver Smith",      yearGroup: "Year 8",  sendNeed: "ADHD",               upn: "DEMO002", dob: "2011-07-22" },
+    { name: "Isla Williams",     yearGroup: "Year 9",  sendNeed: "Autism",             upn: "DEMO003", dob: "2010-11-05" },
+    { name: "Noah Brown",        yearGroup: "Year 7",  sendNeed: "",                   upn: "DEMO004", dob: "2012-01-30" },
+    { name: "Sophia Jones",      yearGroup: "Year 10", sendNeed: "Dyslexia",           upn: "DEMO005", dob: "2009-09-18" },
+    { name: "Liam Davis",        yearGroup: "Year 8",  sendNeed: "SLCN",               upn: "DEMO006", dob: "2011-04-02" },
+    { name: "Emily Wilson",      yearGroup: "Year 11", sendNeed: "",                   upn: "DEMO007", dob: "2008-06-25" },
+    { name: "James Taylor",      yearGroup: "Year 9",  sendNeed: "MLD",                upn: "DEMO008", dob: "2010-02-14" },
+    { name: "Mia Anderson",      yearGroup: "Year 7",  sendNeed: "Dyspraxia",          upn: "DEMO009", dob: "2012-08-09" },
+    { name: "Benjamin Thomas",   yearGroup: "Year 10", sendNeed: "ADHD",               upn: "DEMO010", dob: "2009-12-03" },
+    { name: "Charlotte Jackson", yearGroup: "Year 8",  sendNeed: "",                   upn: "DEMO011", dob: "2011-05-17" },
+    { name: "Ethan White",       yearGroup: "Year 9",  sendNeed: "Autism",             upn: "DEMO012", dob: "2010-10-28" },
+    { name: "Poppy Harris",      yearGroup: "Year 11", sendNeed: "Dyslexia",           upn: "DEMO013", dob: "2008-03-07" },
+    { name: "Alexander Martin",  yearGroup: "Year 7",  sendNeed: "",                   upn: "DEMO014", dob: "2012-11-19" },
+    { name: "Grace Thompson",    yearGroup: "Year 10", sendNeed: "EHC Plan",           upn: "DEMO015", dob: "2009-07-11" },
+    { name: "Harry Garcia",      yearGroup: "Year 8",  sendNeed: "Dyscalculia",        upn: "DEMO016", dob: "2011-09-23" },
+    { name: "Lily Martinez",     yearGroup: "Year 9",  sendNeed: "",                   upn: "DEMO017", dob: "2010-04-16" },
+    { name: "Oscar Robinson",    yearGroup: "Year 11", sendNeed: "ADHD",               upn: "DEMO018", dob: "2008-01-08" },
+    { name: "Freya Clark",       yearGroup: "Year 7",  sendNeed: "Hearing Impairment", upn: "DEMO019", dob: "2012-06-30" },
+    { name: "Jack Lewis",        yearGroup: "Year 10", sendNeed: "",                   upn: "DEMO020", dob: "2009-02-21" },
+  ];
+
+  const findByUpn   = db.prepare("SELECT id FROM pupils WHERE school_id=? AND upn=?");
+  const insertPupil = db.prepare(
+    `INSERT INTO pupils (id, school_id, name, year_group, send_need, pupil_code, upn, dob, created_by)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+  );
+  const updatePupil = db.prepare(
+    `UPDATE pupils SET year_group=?, send_need=?, updated_at=datetime('now') WHERE school_id=? AND upn=?`
+  );
+
+  const pupilIds: Record<string, string> = {};
+
+  const pupilTx = db.transaction(() => {
+    for (const p of mockPupils) {
+      const existing = findByUpn.get(schoolId, p.upn) as any;
+      if (existing) {
+        updatePupil.run(p.yearGroup, p.sendNeed, schoolId, p.upn);
+        pupilIds[p.upn] = existing.id;
+        results.pupils.updated++;
+      } else {
+        const id   = uuidv4();
+        const code = "P" + Math.random().toString(36).slice(2, 7).toUpperCase();
+        try {
+          insertPupil.run(id, schoolId, p.name, p.yearGroup, p.sendNeed, code, p.upn, p.dob, req.user!.id);
+          pupilIds[p.upn] = id;
+          results.pupils.created++;
+        } catch { results.pupils.skipped++; }
+      }
+    }
+  });
+  pupilTx();
+
+  // ── Mock behaviour records ─────────────────────────────────────────────────
+  const insertBehaviour = db.prepare(
+    `INSERT OR IGNORE INTO behaviour_records (id, school_id, pupil_id, recorded_by, type, category, description, action_taken, date)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+  );
+  const behaviourData = [
+    { upn: "DEMO001", type: "positive", category: "Academic",   description: "Excellent effort on reading comprehension task",                  action: "Verbal praise",                          date: "2026-03-01" },
+    { upn: "DEMO002", type: "concern",  category: "Behaviour",  description: "Difficulty staying on task during independent work",              action: "Seat moved, check-in scheduled",          date: "2026-03-03" },
+    { upn: "DEMO003", type: "positive", category: "Social",     description: "Supported a classmate during group activity",                     action: "Positive note sent home",                date: "2026-03-05" },
+    { upn: "DEMO005", type: "concern",  category: "Academic",   description: "Struggling with written tasks despite strong verbal understanding",action: "SEND support referral made",              date: "2026-03-02" },
+    { upn: "DEMO008", type: "positive", category: "Academic",   description: "Completed all extension work independently",                      action: "Certificate awarded",                    date: "2026-03-04" },
+    { upn: "DEMO010", type: "concern",  category: "Behaviour",  description: "Impulsive outburst during transition time",                       action: "Restorative conversation, parent informed",date: "2026-03-06" },
+    { upn: "DEMO012", type: "positive", category: "Wellbeing",  description: "Used self-regulation strategies independently",                   action: "Shared with SENCO",                      date: "2026-03-07" },
+    { upn: "DEMO015", type: "concern",  category: "Attendance", description: "Third late arrival this week",                                    action: "Parent contact made",                    date: "2026-03-08" },
+  ];
+  const behaviourTx = db.transaction(() => {
+    for (const b of behaviourData) {
+      const pupilId = pupilIds[b.upn];
+      if (!pupilId) { results.behaviour.skipped++; continue; }
+      try {
+        insertBehaviour.run(uuidv4(), schoolId, pupilId, req.user!.id, b.type, b.category, b.description, b.action, b.date);
+        results.behaviour.created++;
+      } catch { results.behaviour.skipped++; }
+    }
+  });
+  behaviourTx();
+
+  // ── Mock attendance records (last 5 school days) ───────────────────────────
+  const insertAttendance = db.prepare(
+    `INSERT OR IGNORE INTO attendance_records (id, school_id, pupil_id, recorded_by, date, am_status, pm_status, notes)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+  );
+  const recentDates = ["2026-03-09", "2026-03-10", "2026-03-11", "2026-03-12", "2026-03-13"];
+  const attendanceTx = db.transaction(() => {
+    for (const [upn, pupilId] of Object.entries(pupilIds)) {
+      for (const date of recentDates) {
+        const absent = ["DEMO015", "DEMO018"].includes(upn) && date >= "2026-03-11";
+        const late   = ["DEMO002", "DEMO010"].includes(upn) && date === "2026-03-12";
+        const am = absent ? "absent-unauthorised" : late ? "late" : "present";
+        const pm = absent ? "absent-unauthorised" : "present";
+        try {
+          insertAttendance.run(uuidv4(), schoolId, pupilId, req.user!.id, date, am, pm, absent ? "Unauthorised absence" : "");
+          results.attendance.created++;
+        } catch { results.attendance.skipped++; }
+      }
+    }
+  });
+  attendanceTx();
+
+  // ── Mock pupil comments ────────────────────────────────────────────────────
+  const insertComment = db.prepare(
+    `INSERT INTO pupil_comments (id, school_id, pupil_id, recorded_by, type, category, content, date)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+  );
+  const commentData = [
+    { upn: "DEMO001", type: "positive", category: "Academic",   content: "Amelia has made excellent progress with her reading this term. Her confidence has grown significantly.", date: "2026-03-10" },
+    { upn: "DEMO002", type: "neutral",  category: "Pastoral",   content: "Oliver's parents contacted school regarding homework difficulties. Meeting scheduled for next week.",    date: "2026-03-08" },
+    { upn: "DEMO005", type: "neutral",  category: "SEND",       content: "Sophia's EHCP annual review is due next month. SENCO to arrange meeting with parents.",                  date: "2026-03-05" },
+    { upn: "DEMO012", type: "positive", category: "Wellbeing",  content: "Ethan has been using his sensory toolkit effectively. Staff report much calmer transitions.",            date: "2026-03-11" },
+    { upn: "DEMO015", type: "neutral",  category: "Attendance", content: "Grace's attendance has dropped to 87% this term. Attendance officer to follow up.",                      date: "2026-03-12" },
+  ];
+  const commentTx = db.transaction(() => {
+    for (const c of commentData) {
+      const pupilId = pupilIds[c.upn];
+      if (!pupilId) { results.comments.skipped++; continue; }
+      try {
+        insertComment.run(uuidv4(), schoolId, pupilId, req.user!.id, c.type, c.category, c.content, c.date);
+        results.comments.created++;
+      } catch { results.comments.skipped++; }
+    }
+  });
+  commentTx();
+
+  auditLog(req.user!.id, schoolId, "mis.demo_sync", "pupils", schoolId, { results }, req.ip);
+  res.json({ success: true, provider: "demo", results });
+});
+
 export default router;
