@@ -8,6 +8,7 @@ const readingLevels = [
   { value: "age-11-12", label: "Age 11-12 (Year 6-7)" },
   { value: "age-13-14", label: "Age 13-14 (Year 8-9)" },
   { value: "age-15-16", label: "Age 15-16 (Year 10-11)" },
+  { value: "age-17-plus", label: "Age 17+ (Sixth Form / Adult)" },
   { value: "simple-send", label: "Simplified — SEND/SEN support" },
   { value: "eal-beginner", label: "EAL Beginner" },
   { value: "eal-intermediate", label: "EAL Intermediate" },
