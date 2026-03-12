@@ -946,23 +946,16 @@ export default function SendScreener() {
             <button
               onClick={() => {
                 if (!resultsRef.current) return;
-                // Use Blob URL + hidden iframe to avoid popup blockers
+                // Open a new window for print-to-PDF (reliable cross-browser approach)
                 const openPrintWindow = (html: string) => {
-                  const blob = new Blob([html], { type: "text/html" });
-                  const url = URL.createObjectURL(blob);
-                  const iframe = document.createElement("iframe");
-                  iframe.style.display = "none";
-                  document.body.appendChild(iframe);
-                  iframe.src = url;
-                  iframe.onload = () => {
-                    try {
-                      iframe.contentWindow?.print();
-                    } catch (_) {}
-                    setTimeout(() => {
-                      document.body.removeChild(iframe);
-                      URL.revokeObjectURL(url);
-                    }, 2000);
-                  };
+                  const printWindow = window.open("", "_blank", "width=900,height=700,scrollbars=yes");
+                  if (!printWindow) {
+                    alert("Please allow pop-ups for this site to save as PDF.");
+                    return;
+                  }
+                  printWindow.document.open();
+                  printWindow.document.write(html);
+                  printWindow.document.close();
                 };
                 const html = `<!DOCTYPE html>
 <html lang="en">
