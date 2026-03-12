@@ -603,7 +603,7 @@ Return EXACTLY this JSON structure (raw JSON only, no markdown):
     "phase": "${phase}",
     "difficulty": "${params.difficulty || "mixed"}",
     "examBoard": "${params.examBoard || "General"}",
-    "totalMarks": [calculate based on year group calibration],
+    "totalMarks": 0,
     "estimatedTime": "${timingGuide.replace("Estimated time: ", "")}",
     "adaptations": ["List each adaptation applied, or 'Standard worksheet' if none"]
   }
