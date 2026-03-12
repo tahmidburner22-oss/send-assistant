@@ -205,6 +205,7 @@ const SECTION_STYLES: Record<string, { border: string; bg: string; badge: string
   "word-bank":     { border: "#0891b2", bg: "#ecfeff", badge: "#0891b2", badgeBg: "#cffafe", icon: "🔤", label: "Word Bank" },
   "sentence-starters": { border: "#0891b2", bg: "#ecfeff", badge: "#0891b2", badgeBg: "#cffafe", icon: "✏️", label: "Sentence Starters" },
   "self-assessment": { border: "#d97706", bg: "#fffbeb", badge: "#d97706", badgeBg: "#fef3c7", icon: "🔍", label: "Self Assessment" },
+  "self-reflection": { border: "#f59e0b", bg: "#fffbeb", badge: "#f59e0b", badgeBg: "#fef3c7", icon: "💭", label: "How Did I Do?" },
   "diagram":       { border: "#6366f1", bg: "#eef2ff", badge: "#6366f1", badgeBg: "#e0e7ff", icon: "📊", label: "Diagram" },
   "answers":       { border: "#16a34a", bg: "#f0fdf4", badge: "#16a34a", badgeBg: "#dcfce7", icon: "✓", label: "Answers" },
   "mark-scheme":   { border: "#ca8a04", bg: "#fefce8", badge: "#ca8a04", badgeBg: "#fef9c3", icon: "📋", label: "Mark Scheme" },
@@ -429,6 +430,53 @@ function SelfAssessmentSection({ content, fmt }: { content: string; fmt: ReturnT
   );
 }
 
+/**
+ * Self-Reflection section — shown at the end of every worksheet.
+ * "I can" statements with traffic-light circles + an open reflection question.
+ */
+function SelfReflectionSection({ content, fmt }: { content: string; fmt: ReturnType<typeof getSendFormatting> }) {
+  const { fontSize: textSize, fontFamily, lineHeight } = fmt;
+  const lines = content.split("\n").filter(l => l.trim());
+  // Separate "I can" statements from the open question (starts with "Q:")
+  const iCanLines = lines.filter(l => !l.trim().startsWith("Q:"));
+  const openQuestion = lines.find(l => l.trim().startsWith("Q:"));
+  const openQ = openQuestion ? openQuestion.replace(/^Q:\s*/i, "").trim() : null;
+  return (
+    <div>
+      {/* Traffic-light self-assessment rows */}
+      {iCanLines.map((line, i) => {
+        const clean = line.replace(/^[•\-\*]\s*/, "").replace(/^I can\s*/i, "").trim();
+        if (!clean) return null;
+        return (
+          <div key={i} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "8px 0", borderBottom: "1px solid #fde68a" }}>
+            <div style={{ display: "flex", gap: "6px", flexShrink: 0 }}>
+              {["🔴", "🟡", "🟢"].map((emoji, ci) => (
+                <div key={ci} style={{ width: "26px", height: "26px", borderRadius: "50%", border: "2px solid #fcd34d", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "13px" }}>
+                  {emoji}
+                </div>
+              ))}
+            </div>
+            <span style={{ fontSize: `${textSize}px`, color: "#374151", fontFamily, lineHeight }}>I can {clean}</span>
+          </div>
+        );
+      })}
+      <div style={{ marginTop: "6px", fontSize: `${textSize - 2}px`, color: "#92400e", fontStyle: "italic", fontFamily }}>
+        🔴 Not yet &nbsp;|&nbsp; 🟡 Getting there &nbsp;|&nbsp; 🟢 I've got it!
+      </div>
+      {/* Open reflection question */}
+      {openQ && (
+        <div style={{ marginTop: "14px", background: "white", border: "1px solid #fcd34d", borderRadius: "8px", padding: "10px 12px" }}>
+          <div style={{ fontSize: `${textSize - 1}px`, fontWeight: 600, color: "#92400e", fontFamily, marginBottom: "6px" }}>
+            💭 {openQ}
+          </div>
+          <div style={{ borderBottom: "1px solid #d1d5db", height: "28px", marginBottom: "6px" }} />
+          <div style={{ borderBottom: "1px solid #d1d5db", height: "28px" }} />
+        </div>
+      )}
+    </div>
+  );
+}
+
 function WordBankSection({ content, fmt }: { content: string; fmt: ReturnType<typeof getSendFormatting> }) {
   const { fontSize: textSize, fontFamily } = fmt;
   const words = content.split(/[\n,|]/).map(w => w.trim()).filter(Boolean);
@@ -581,7 +629,8 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(({
 
         const content = editedSections[i] !== undefined ? editedSections[i] : section.content;
         const style = getSectionStyle(section.type);
-        const isTeacherSection = section.teacherOnly || section.type === "teacher-notes" || section.type === "mark-scheme";
+        // Teacher-only sections: mark-scheme, teacher-notes, answers, and any explicitly flagged teacherOnly
+        const isTeacherSection = section.teacherOnly || section.type === "teacher-notes" || section.type === "mark-scheme" || section.type === "answers";
 
         return (
           <div
@@ -671,6 +720,8 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(({
                 <VocabSection content={content} fmt={fmt} />
               ) : section.type === "self-assessment" ? (
                 <SelfAssessmentSection content={content} fmt={fmt} />
+              ) : section.type === "self-reflection" ? (
+                <SelfReflectionSection content={content} fmt={fmt} />
               ) : section.type === "word-bank" ? (
                 <WordBankSection content={content} fmt={fmt} />
               ) : section.type === "sentence-starters" ? (

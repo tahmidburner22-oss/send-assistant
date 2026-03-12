@@ -469,9 +469,20 @@ Always respond with valid JSON only — no markdown, no code blocks, just raw JS
 - Use precise exam command words: "Calculate", "Show that", "Prove", "Evaluate", "Describe", "Explain", "Compare", "Sketch", "State" — appropriate to the subject and year group.
 - Include answer lines or answer boxes (write "Answer: ............" or "Answer = ............" as appropriate).
 - For maths: questions must be purely numerical/algebraic — no wordy paragraphs.
-- Do NOT include a worked example section in exam-style mode — replace it with a brief formula/information box if needed.
+- Do NOT include a worked example section in exam-style mode. ONLY include a formula box if the topic genuinely requires a formula to answer the questions (e.g. area formulae for a geometry topic, quadratic formula for solving quadratics). If the topic does NOT require a formula (e.g. arithmetic, reading comprehension, grammar), do NOT include any formula box at all.
 - The overall layout and question style must be indistinguishable from a real ${params.examBoard && params.examBoard !== "none" ? params.examBoard : "GCSE"} exam paper.`
     : "";
+
+  // ── Formula rules (topic-specific only) ──────────────────────────────────
+  const formulaNote = `FORMULA RULES (MANDATORY):
+- ONLY include formulas that are DIRECTLY required to answer the questions on this specific topic ("${params.topic}").
+- Do NOT include generic formula sheets or unrelated formulas.
+- If the topic is "Pythagoras' Theorem", include ONLY the Pythagorean formula \\(a^2 + b^2 = c^2\\).
+- If the topic is "Fractions" or "Arithmetic", do NOT include any formula box — no formulas are needed.
+- If the topic is "Quadratic Equations", include ONLY the quadratic formula.
+- If the topic is "Circle Theorems", include ONLY the relevant circle area/circumference formulas.
+- If the topic does NOT involve a formula, omit the formula section entirely.
+- NEVER include a formula box just to fill space — only include it if students genuinely need it to answer the questions.`;
 
   // ── Topic enforcement note ─────────────────────────────────────────────────
   const topicEnforcementNote = `
@@ -501,6 +512,7 @@ ${tierNote}
 ${lengthNote}
 ${mathsNote}
 ${examStyleNote}
+${formulaNote}
 Additional instructions: ${params.additionalInstructions || "none"}
 
 ━━━ YEAR GROUP CALIBRATION RULES (MANDATORY) ━━━
@@ -539,8 +551,13 @@ Return EXACTLY this JSON structure (raw JSON only, no markdown):
     {
       "title": "Key Vocabulary",
       "type": "vocabulary",
-      "content": "TERM | DEFINITION\\n[term calibrated for ${params.yearGroup}] | [definition in language appropriate for ${params.yearGroup}]\\n[repeat for each vocabulary word]"
+      "content": "TERM | DEFINITION\\n[IMPORTANT: Each line must be exactly: term | definition. Use ONLY terms directly related to '${params.topic}'. Use age-appropriate language for ${params.yearGroup}. Do NOT include generic terms unrelated to the topic. Do NOT use bullet points or numbering. Example for 'Fractions': Numerator | The top number in a fraction — shows how many parts are selected\\nDenominator | The bottom number in a fraction — shows how many equal parts in total\\nEquivalent fractions | Fractions that have the same value, e.g. 1/2 = 2/4]"
     },
+    ${isMaths && !params.examStyle ? `{
+      "title": "Key Formulas",
+      "type": "example",
+      "content": "[FORMULA RULES: ONLY include this section if the topic '${params.topic}' genuinely requires a formula. If it does, list ONLY the formulas directly needed for this topic — no others. Format each formula clearly with its name and LaTeX notation. If no formula is needed for this topic, write 'No formula required for this topic.' and keep this section very brief.]"
+    },` : ''}
     {
       "title": "Worked Example",
       "type": "example",
@@ -560,6 +577,11 @@ Return EXACTLY this JSON structure (raw JSON only, no markdown):
       "title": "Section C — Stretch & Challenge",
       "type": "challenge",
       "content": "[${challengeGuide}${isMaths ? " Must be a multi-step numerical or algebraic problem." : ""}]"
+    },
+    {
+      "title": "How Did I Do?",
+      "type": "self-reflection",
+      "content": "[Write 3–4 self-reflection statements for students to rate themselves. Each statement should start with 'I can' and be directly about the topic '${params.topic}'. Calibrate the language for ${params.yearGroup}. Format: one statement per line, starting with 'I can'. Example for 'Fractions' Year 5: I can identify the numerator and denominator in a fraction\\nI can find equivalent fractions\\nI can add two fractions with the same denominator\\nI can compare fractions and say which is larger. Also include one open question at the end on a new line starting with 'Q:' — e.g. 'Q: What did you find most tricky about this topic? Write one sentence.']"
     },
     {
       "title": "Mark Scheme",

@@ -870,8 +870,8 @@ ${textForAI}${truncated ? "\n\n[Note: Document was truncated at 12,000 character
 });
 
 // ── Book Questions — generate comprehension questions for a book ─────────────
-router.post("/book-questions", requireAuth, worksheetUpload.single("criteriaFile"), async (req: Request, res: Response) => {
-  const { bookTitle, author, readingAge, yearGroup, pagesRead, chapterSummary } = req.body;
+router.post("/book-questions", requireAuth, worksheetUpload.single("file"), async (req: Request, res: Response) => {
+  const { bookTitle, author, readingAge, yearGroup, pagesFrom, pagesTo, chapterInfo, questionCount } = req.body;
   if (!bookTitle) return res.status(400).json({ error: "bookTitle is required" });
   const schoolId = req.user?.schoolId ?? undefined;
 
@@ -908,16 +908,17 @@ router.post("/book-questions", requireAuth, worksheetUpload.single("criteriaFile
   }
 
   const ageLabel = readingAge || yearGroup || "age-appropriate";
-  const pagesLabel = pagesRead ? `pages ${pagesRead}` : "the section they have read";
+  const numQuestions = parseInt(questionCount || "8", 10) || 8;
+  const pagesLabel = pagesFrom && pagesTo ? `pages ${pagesFrom}–${pagesTo}` : pagesFrom ? `from page ${pagesFrom}` : "the section they have read";
   const authorLabel = author ? ` by ${author}` : "";
 
   const system = `You are an expert UK primary and secondary school teacher specialising in reading comprehension and literacy assessment. You generate high-quality, age-appropriate comprehension questions that genuinely test a pupil's understanding of a book or text they have read.`;
 
-  const user = `Generate 8 comprehension questions for pupils who have just read ${pagesLabel} of the book "${bookTitle}"${authorLabel}.
+  const user = `Generate ${numQuestions} comprehension questions for pupils who have just read ${pagesLabel} of the book "${bookTitle}"${authorLabel}.
 
 Pupil reading age / level: ${ageLabel}
 ${yearGroup ? `Year group: ${yearGroup}` : ""}
-${chapterSummary ? `\nContext / chapter summary provided by teacher:\n${chapterSummary}` : ""}
+${chapterInfo ? `\nContext / chapter summary provided by teacher:\n${chapterInfo}` : ""}
 ${criteriaText ? `\nAssessment criteria / mark scheme (base questions on this):\n${criteriaText}` : ""}
 
 Requirements:
@@ -926,7 +927,7 @@ Requirements:
 - Match vocabulary and sentence complexity to the reading age: ${ageLabel}
 - For younger readers (age 6-9): short, clear questions with simple vocabulary
 - For older readers (age 10+): include inference, authorial intent, and evaluative questions
-- Number each question Q1-Q8
+- Number each question Q1–Q${numQuestions}
 - After the questions, add a brief TEACHER NOTES section with suggested answers / marking guidance
 
 Format your response as JSON:
@@ -943,7 +944,7 @@ Format your response as JSON:
 }`;
 
   try {
-    const { content, provider } = await callWithFallback(system, user, 2000, undefined, schoolId);
+    const { content, provider } = await callWithFallback(system, user, Math.max(2000, numQuestions * 250), undefined, schoolId);
     let parsed: any;
     try {
       const jsonMatch = content.match(/\{[\s\S]*\}/);

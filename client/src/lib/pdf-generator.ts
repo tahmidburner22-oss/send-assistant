@@ -348,7 +348,14 @@ export function downloadWorksheetPdf(
   pdf.addSpacer(3);
 
   for (const section of worksheet.sections) {
-    if (viewMode === "student" && (section.type === "answers" || section.type === "adaptations")) {
+    // In student view, hide all teacher-only content
+    if (viewMode === "student" && (
+      section.teacherOnly ||
+      section.type === "answers" ||
+      section.type === "mark-scheme" ||
+      section.type === "teacher-notes" ||
+      section.type === "adaptations"
+    )) {
       continue;
     }
     if (section.type === "review") continue;
