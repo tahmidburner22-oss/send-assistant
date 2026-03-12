@@ -768,21 +768,25 @@ router.post("/adapt-worksheet", requireAuth, worksheetUpload.single("file"), asy
     const mime = req.file.mimetype;
     if (mime === "application/pdf") {
       try {
-        const pdfParse = (await import("pdf-parse/lib/pdf-parse.js" as any)).default
-          || (await import("pdf-parse" as any)).default;
-        const data = await pdfParse(req.file.buffer);
-        rawText = data.text || "";
-      } catch (_) {
-        rawText = req.file.buffer.toString("utf-8");
+        // pdf-parse v2 uses a class-based API: new PDFParse({ data: buffer })
+        const { PDFParse } = await import("pdf-parse" as any);
+        const parser = new PDFParse({ data: req.file.buffer });
+        const result = await parser.getText();
+        rawText = result?.text || "";
+      } catch (pdfErr: any) {
+        console.error("[adapt-worksheet] pdf-parse error:", pdfErr?.message || pdfErr);
+        rawText = "";
       }
     } else {
       // .doc or .docx — use mammoth
       try {
-        const mammoth = (await import("mammoth" as any)).default || (await import("mammoth" as any));
-        const result = await mammoth.extractRawText({ buffer: req.file.buffer });
+        const mammoth = await import("mammoth" as any);
+        const mammothLib = mammoth.default || mammoth;
+        const result = await mammothLib.extractRawText({ buffer: req.file.buffer });
         rawText = result.value || "";
-      } catch (_) {
-        rawText = req.file.buffer.toString("utf-8");
+      } catch (docErr: any) {
+        console.error("[adapt-worksheet] mammoth error:", docErr?.message || docErr);
+        rawText = "";
       }
     }
 

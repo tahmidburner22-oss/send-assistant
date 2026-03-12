@@ -68,11 +68,17 @@ function useVoiceInput(onResult: (text: string) => void) {
 // ─── Format content helper ──────────────────────────────────────────────────
 function formatContent(content: string): string {
   if (!content) return "";
-  // Apply renderMath first to handle KaTeX fractions and LaTeX expressions
-  let processed = renderMath(content);
+  // Normalize spaced HTML tags that AI sometimes generates (e.g. "x < sup > 2 < /sup >")
+  let normalized = content
+    .replace(/<\s*sup\s*>/gi, "<sup>")
+    .replace(/<\s*\/\s*sup\s*>/gi, "</sup>")
+    .replace(/<\s*sub\s*>/gi, "<sub>")
+    .replace(/<\s*\/\s*sub\s*>/gi, "</sub>");
+  // Apply renderMath to handle KaTeX fractions, LaTeX expressions, and superscripts
+  let processed = renderMath(normalized);
   return processed
-    // Horizontal rules
-    .replace(/^---$/gm, "<hr class='my-3 border-gray-300'/>")
+    // Horizontal rules — flexible: match --- with optional surrounding whitespace
+    .replace(/^\s*---\s*$/gm, "<hr class='my-3 border-gray-300'/>")
     // Blockquotes (SEND context, notes)
     .replace(/^> (.+)$/gm, "<div class='blockquote-line bg-blue-50 border-l-4 border-blue-400 pl-3 py-1 my-1 text-sm text-blue-800 rounded-r'>$1</div>")
     // Answer lines — render as styled underline

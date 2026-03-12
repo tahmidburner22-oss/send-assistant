@@ -16,8 +16,41 @@ import "katex/dist/katex.min.css";
  */
 export function renderMath(text: string): string {
   if (!text) return "";
-  // First, strip any raw ** that are not part of a valid bold pattern
   let result = text;
+
+  // ── Step 0: Normalize spaced HTML tags that AI sometimes generates ──────────
+  // e.g. "x < sup > 2 < /sup >" → "x<sup>2</sup>"
+  result = result.replace(/<\s*sup\s*>/gi, "<sup>");
+  result = result.replace(/<\s*\/\s*sup\s*>/gi, "</sup>");
+  result = result.replace(/<\s*sub\s*>/gi, "<sub>");
+  result = result.replace(/<\s*\/\s*sub\s*>/gi, "</sub>");
+
+  // ── Step 1: Convert <sup>n</sup> and <sub>n</sub> HTML tags to LaTeX ────────
+  // Do this BEFORE fraction handling so KaTeX can process them correctly
+  result = result.replace(/<sup>([^<]+)<\/sup>/g, (_, exp) => {
+    try { return katex.renderToString(`^{${exp}}`, { displayMode: false, throwOnError: false }); }
+    catch { return `<sup>${exp}</sup>`; }
+  });
+  result = result.replace(/<sub>([^<]+)<\/sub>/g, (_, sub) => {
+    try { return katex.renderToString(`_{${sub}}`, { displayMode: false, throwOnError: false }); }
+    catch { return `<sub>${sub}</sub>`; }
+  });
+
+  // ── Step 2: Convert Unicode superscripts to LaTeX ───────────────────────────
+  // Do this BEFORE fraction handling so fractions like (x²-4x)/(x²-16) work
+  result = result.replace(/([A-Za-z0-9])\u00b2/g, (_, base) => {
+    try { return katex.renderToString(`${base}^{2}`, { displayMode: false, throwOnError: false }); }
+    catch { return `${base}<sup>2</sup>`; }
+  });
+  result = result.replace(/([A-Za-z0-9])\u00b3/g, (_, base) => {
+    try { return katex.renderToString(`${base}^{3}`, { displayMode: false, throwOnError: false }); }
+    catch { return `${base}<sup>3</sup>`; }
+  });
+  // Standalone ² or ³ (not preceded by alphanumeric)
+  result = result.replace(/\u00b2/g, "<sup>2</sup>");
+  result = result.replace(/\u00b3/g, "<sup>3</sup>");
+
+  // ── Step 3: Render explicit LaTeX expressions ────────────────────────────────
   // Render display math \[...\]
   result = result.replace(/\\\[([\s\S]+?)\\\]/g, (_, expr) => {
     try {
@@ -42,9 +75,9 @@ export function renderMath(text: string): string {
       return expr;
     }
   });
-  // Convert plain-text ^ powers to proper superscripts BEFORE fraction handling
-  // Handles: x^2, x^10, cm^2, m^3, 10^-3, (x+1)^2, a^n, etc.
-  // Pattern: base^exponent where exponent can be a number, letter, or parenthesised expression
+
+  // ── Step 4: Convert plain-text ^ powers to proper superscripts ───────────────
+  // Only match plain text (not inside KaTeX HTML spans)
   result = result.replace(/([A-Za-z0-9α-ω\)]+)\^(-?[A-Za-z0-9]+)/g, (_, base, exp) => {
     try {
       return katex.renderToString(`${base}^{${exp}}`, { displayMode: false, throwOnError: false });
@@ -60,9 +93,6 @@ export function renderMath(text: string): string {
       return `(${base})<sup>${exp}</sup>`;
     }
   });
-  // Convert \u00b2 \u00b3 unicode superscripts to proper HTML superscripts
-  result = result.replace(/\u00b2/g, "<sup>2</sup>");
-  result = result.replace(/\u00b3/g, "<sup>3</sup>");
   // Convert \u221a to proper square root symbol
   result = result.replace(/\u221a([A-Za-z0-9]+)/g, (_, n) => {
     try { return katex.renderToString(`\\sqrt{${n}}`, { displayMode: false, throwOnError: false }); }
@@ -76,40 +106,40 @@ export function renderMath(text: string): string {
   result = result.replace(/\u2265/g, "\u2265"); // greater than or equal
   result = result.replace(/\u03c0/g, "\u03c0"); // pi symbol
   result = result.replace(/\u221e/g, "\u221e"); // infinity
-  // Convert plain-text fractions to proper KaTeX stacked fractions.
-  // Handles:
-  //   simple:      3/4   2/5   7/20
-  //   algebraic:   1/(n)   3/(x+2)   (5x-1)/((x+2)(x-1))   x/(x-1)
-  //   mixed:       1 3/20  (rendered as \dfrac)
-  // Strategy: find patterns of the form  numerator/denominator  where
-  // numerator and denominator are either a plain number/variable or a
-  // parenthesised expression.
+  // ── Step 5: Convert plain-text fractions to proper KaTeX stacked fractions ──
+  // IMPORTANT: At this point, superscripts have already been converted to KaTeX HTML.
+  // The fraction regexes only match plain text (no HTML tags inside parens).
+  // This avoids trying to pass KaTeX HTML into KaTeX as LaTeX.
+
+  // Helper: check if a string contains HTML (KaTeX output) — skip fraction rendering if so
+  const hasHTML = (s: string) => /<[a-z]/i.test(s);
 
   // 1. Parenthesised numerator and/or denominator: (expr)/(expr)
-  result = result.replace(/\(([^()]+(?:\([^()]*\)[^()]*)*)\)\/\(([^()]+(?:\([^()]*\)[^()]*)*)\)/g, (_, num, den) => {
+  result = result.replace(/\(([^()]+(?:\([^()]*\)[^()]*)*)\)\/\(([^()]+(?:\([^()]*\)[^()]*)*)\)/g, (full, num, den) => {
+    if (hasHTML(num) || hasHTML(den)) return full; // already has KaTeX HTML — don't re-process
     try { return katex.renderToString(`\\dfrac{${num}}{${den}}`, { displayMode: false, throwOnError: false }); }
-    catch { return `(${num})/(${den})`; }
+    catch { return full; }
   });
-
   // 2. Plain numerator / parenthesised denominator: 1/(n+1)
-  result = result.replace(/([A-Za-z0-9]+)\/\(([^()]+(?:\([^()]*\)[^()]*)*)\)/g, (_, num, den) => {
+  result = result.replace(/([A-Za-z0-9]+)\/\(([^()]+(?:\([^()]*\)[^()]*)*)\)/g, (full, num, den) => {
+    if (hasHTML(num) || hasHTML(den)) return full;
     try { return katex.renderToString(`\\dfrac{${num}}{${den}}`, { displayMode: false, throwOnError: false }); }
-    catch { return `${num}/(${den})`; }
+    catch { return full; }
   });
-
   // 3. Parenthesised numerator / plain denominator: (x+1)/x
-  result = result.replace(/\(([^()]+)\)\/([A-Za-z0-9]+)/g, (_, num, den) => {
+  result = result.replace(/\(([^()]+)\)\/([A-Za-z0-9]+)/g, (full, num, den) => {
+    if (hasHTML(num) || hasHTML(den)) return full;
     try { return katex.renderToString(`\\dfrac{${num}}{${den}}`, { displayMode: false, throwOnError: false }); }
-    catch { return `(${num})/${den}`; }
+    catch { return full; }
   });
-
   // 4. Simple numeric or single-variable fractions: 3/4  x/y  2/n
   //    (only when surrounded by whitespace or punctuation, to avoid URLs)
-  result = result.replace(/(?<=[\s(,;:=+\-*]|^)([A-Za-z0-9]+)\/([A-Za-z0-9]+)(?=[\s),;:=+\-*]|$)/g, (_, num, den) => {
+  result = result.replace(/(?<=[\s(,;:=+\-*]|^)([A-Za-z0-9]+)\/([A-Za-z0-9]+)(?=[\s),;:=+\-*]|$)/g, (full, num, den) => {
     // Skip if it looks like a URL fragment or year range
-    if (/^\d{4}$/.test(num) || /^\d{4}$/.test(den)) return `${num}/${den}`;
+    if (/^\d{4}$/.test(num) || /^\d{4}$/.test(den)) return full;
+    if (hasHTML(num) || hasHTML(den)) return full;
     try { return katex.renderToString(`\\dfrac{${num}}{${den}}`, { displayMode: false, throwOnError: false }); }
-    catch { return `${num}/${den}`; }
+    catch { return full; }
   });
   // Bold markdown **text** → <strong>text</strong>
   result = result.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
