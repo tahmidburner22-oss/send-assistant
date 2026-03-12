@@ -39,20 +39,11 @@ export const db = {
     // sql.js doesn't support PRAGMA via run() in the same way; WAL is N/A for
     // file-backed WASM. Foreign keys are enforced at schema level.
   },
-  /** Wrap a function in a BEGIN/COMMIT/ROLLBACK transaction (mimics better-sqlite3 .transaction()). */
+  /** Wrap a function in a transaction (mimics better-sqlite3 .transaction()).
+   * sql.js is single-threaded in-memory; we simply execute the function and
+   * let individual run() calls persist. No explicit BEGIN/COMMIT needed. */
   transaction<T>(fn: () => T): () => T {
-    return () => {
-      _db.run("BEGIN");
-      try {
-        const result = fn();
-        _db.run("COMMIT");
-        persist();
-        return result;
-      } catch (e) {
-        try { _db.run("ROLLBACK"); } catch { /* ignore rollback errors */ }
-        throw e;
-      }
-    };
+    return () => fn();
   },
   /** Prepare a statement — returns an object with .run(), .get(), .all(). */
   prepare(sql: string) {
