@@ -564,8 +564,8 @@ export default function Worksheets() {
                 {/* AI Toggle */}
                 <div className="flex items-center justify-between p-3 bg-emerald-50 rounded-lg border border-emerald-200">
                   <div>
-                    <p className="font-medium text-emerald-800 text-sm">AI Generation (GPT-4o + Gemini)</p>
-                    <p className="text-xs text-emerald-600">Dual LLMs for richer, more detailed content</p>
+                    <p className="font-medium text-emerald-800 text-sm">AI Generation (Groq · Llama 3.3)</p>
+                    <p className="text-xs text-emerald-600">High-quality AI for rich, curriculum-aligned content</p>
                   </div>
                   <Switch checked={useAI} onCheckedChange={setUseAI} />
                 </div>
