@@ -13,6 +13,7 @@ import { yearGroups, sendNeeds, storyGenres, storyLengths, readingLevels, colorO
 import { generateStoryContent } from "@/lib/worksheet-generator";
 
 import { downloadStoryPdf } from "@/lib/pdf-generator";
+import { ComprehensionQuiz } from "@/components/ComprehensionQuiz";
 
 function generateComprehensionQuestions(_content: string, genre: string): string[] {
   const questions: Record<string, string[]> = {
@@ -430,22 +431,16 @@ export default function Stories() {
             </Card>
           </div>
 
-          {/* Comprehension Questions */}
+          {/* Comprehension Quiz */}
           {result.questions.length > 0 && (
             <div className="story-content" style={{ backgroundColor: overlayBg }}>
-              <Card className="border-border/50" style={{ backgroundColor: overlayBg }}>
-                <CardContent className="p-5" style={{ backgroundColor: overlayBg, fontSize: `${textSize}px` }}>
-                  <h3 className="font-semibold text-purple-700 mb-3" style={{ fontSize: `${textSize + 2}px` }}>Comprehension Questions</h3>
-                  <ol className="space-y-3">
-                    {result.questions.map((q, i) => (
-                      <li key={i} className="text-foreground flex gap-2" style={{ fontSize: `${textSize}px` }}>
-                        <span className="text-brand font-semibold">{i + 1}.</span>
-                        <span>{q}</span>
-                      </li>
-                    ))}
-                  </ol>
-                </CardContent>
-              </Card>
+              <ComprehensionQuiz
+                questions={result.questions}
+                storyTitle={result.title}
+                onComplete={(score, total) => {
+                  toast.success(`Quiz complete! You answered ${score} out of ${total} questions.`);
+                }}
+              />
             </div>
           )}
         </motion.div>
