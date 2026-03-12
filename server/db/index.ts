@@ -129,6 +129,8 @@ export async function initDb() {
     // Parent contact details on pupils — for behaviour alert emails
     "ALTER TABLE pupils ADD COLUMN parent_email TEXT",
     "ALTER TABLE pupils ADD COLUMN parent_name TEXT",
+    // Daily briefing file attachments — added after initial schema
+    "ALTER TABLE daily_briefings ADD COLUMN attachments TEXT NOT NULL DEFAULT '[]'",
   ];
   for (const migration of migrations) {
     try { _db.run(migration); } catch (_) { /* column already exists — ignore */ }
