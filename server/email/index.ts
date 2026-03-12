@@ -1,7 +1,19 @@
 import { Resend } from "resend";
 
 const isDev = process.env.NODE_ENV !== "production";
-const resend = new Resend(process.env.RESEND_API_KEY);
+
+// Lazy-initialise Resend so a missing key does not crash the server on startup.
+// The key is only required in production when an email is actually sent.
+let _resend: Resend | null = null;
+function getResend(): Resend {
+  if (!_resend) {
+    if (!process.env.RESEND_API_KEY) {
+      throw new Error("RESEND_API_KEY is not set. Add it to Railway environment variables.");
+    }
+    _resend = new Resend(process.env.RESEND_API_KEY);
+  }
+  return _resend;
+}
 
 const FROM = process.env.EMAIL_FROM || "Adaptly <noreply@send.adaptly.co.uk>";
 const BASE_URL = process.env.APP_URL || "http://localhost:5173";
@@ -12,7 +24,7 @@ async function send(to: string, subject: string, html: string) {
     return;
   }
   try {
-    const { error } = await resend.emails.send({ from: FROM, to, subject, html });
+    const { error } = await getResend().emails.send({ from: FROM, to, subject, html });
     if (error) console.error("[email] Resend error:", error);
   } catch (err) {
     console.error("[email] Failed to send email:", err);
