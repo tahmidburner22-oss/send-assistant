@@ -540,20 +540,22 @@ export default function Worksheets() {
 
       {!generated ? (
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className={`w-full grid ${showLibraryTab ? 'grid-cols-5' : 'grid-cols-4'} h-10`}>
-            <TabsTrigger value="generate" className="text-xs gap-1"><Sparkles className="w-3 h-3" /> Generate</TabsTrigger>
-            <TabsTrigger value="upload" className="text-xs gap-1"><Upload className="w-3 h-3" /> Upload</TabsTrigger>
+          <div className="overflow-x-auto -mx-1 px-1">
+          <TabsList className={`flex w-max min-w-full h-10`}>
+            <TabsTrigger value="generate" className="text-xs gap-1 flex-1 min-w-[80px]"><Sparkles className="w-3 h-3" /><span className="hidden xs:inline">Generate</span><span className="xs:hidden">Gen</span></TabsTrigger>
+            <TabsTrigger value="upload" className="text-xs gap-1 flex-1 min-w-[72px]"><Upload className="w-3 h-3" /> Upload</TabsTrigger>
             {showLibraryTab && (
-              <TabsTrigger value="bank" className="text-xs gap-1"><Library className="w-3 h-3" /> Library</TabsTrigger>
+              <TabsTrigger value="bank" className="text-xs gap-1 flex-1 min-w-[72px]"><Library className="w-3 h-3" /> Library</TabsTrigger>
             )}
-            <TabsTrigger value="exam-questions" className="text-xs gap-1"><Award className="w-3 h-3" /> Exam Bank</TabsTrigger>
-            <TabsTrigger value="history" className="text-xs gap-1">
+            <TabsTrigger value="exam-questions" className="text-xs gap-1 flex-1 min-w-[80px]"><Award className="w-3 h-3" /><span className="hidden sm:inline">Exam Bank</span><span className="sm:hidden">Exams</span></TabsTrigger>
+            <TabsTrigger value="history" className="text-xs gap-1 flex-1 min-w-[72px]">
               <History className="w-3 h-3" /> History
               {worksheetHistory.length > 0 && (
                 <span className="ml-1 bg-brand text-white text-[10px] rounded-full px-1.5 py-0">{worksheetHistory.length}</span>
               )}
             </TabsTrigger>
           </TabsList>
+          </div>
 
           {/* ─── GENERATE TAB ──────────────────────────────────────────── */}
           <TabsContent value="generate" className="mt-4">
@@ -1285,7 +1287,7 @@ export default function Worksheets() {
             <Card className="border-border/50 no-print">
               <CardContent className="p-3">
                 <p className="text-xs text-muted-foreground mb-2">Colour overlay applies to screen, print, and PDF.</p>
-                <div className="grid grid-cols-4 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {colorOverlays.map(o => (
                     <button key={o.id} onClick={() => { setColorOverlay(o.id); setShowOverlayPicker(false); }}
                       className={`p-2 rounded-lg border-2 transition-all text-center ${colorOverlay === o.id ? "border-brand" : "border-transparent hover:border-border"}`}

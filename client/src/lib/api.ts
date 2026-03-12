@@ -159,6 +159,11 @@ export const data = {
   analytics: () => apiFetch<any>("/data/analytics"),
   cookieConsent: (d: any) => apiFetch<any>("/data/cookie-consent", { method: "POST", body: JSON.stringify(d) }),
   completeOnboarding: () => apiFetch<any>("/data/onboarding-complete", { method: "POST" }),
+  sendParentMessage: (pupilId: string, subject: string, message: string) =>
+    apiFetch<{ ok: boolean; message: string }>("/data/parent-message", {
+      method: "POST",
+      body: JSON.stringify({ pupilId, subject, message }),
+    }),
 };
 
 // ── AI (proxied through backend for content filtering) ────────────────────────────────────

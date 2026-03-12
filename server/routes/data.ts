@@ -2,7 +2,7 @@ import { Router, Request, Response } from "express";
 import { v4 as uuidv4 } from "uuid";
 import db from "../db/index.js";
 import { requireAuth, auditLog } from "../middleware/auth.js";
-import { sendBehaviourAlert } from "../email/index.js";
+import { sendBehaviourAlert, sendDirectParentMessage } from "../email/index.js";
 
 const router = Router();
 
@@ -331,6 +331,33 @@ router.put("/preferences", requireAuth, (req: Request, res: Response) => {
       console.error("[preferences] save error:", e2);
       res.status(500).json({ error: "Failed to save preferences" });
     }
+  }
+});
+
+// ── Teacher-to-Parent Direct Messaging ──────────────────────────────────────
+router.post("/parent-message", requireAuth, async (req: Request, res: Response) => {
+  const { pupilId, subject, message } = req.body;
+  if (!pupilId || !subject || !message) {
+    return res.status(400).json({ error: "pupilId, subject, and message are required" });
+  }
+  try {
+    const pupil = db.prepare("SELECT name, parent_email, parent_name FROM pupils WHERE id=? AND school_id=?").get(pupilId, req.user!.schoolId) as any;
+    if (!pupil) return res.status(404).json({ error: "Pupil not found" });
+    if (!pupil.parent_email) return res.status(400).json({ error: "No parent email on record for this pupil. Please add one in the Pupils section." });
+    const school = db.prepare("SELECT name FROM schools WHERE id=?").get(req.user!.schoolId) as any;
+    await sendDirectParentMessage(pupil.parent_email, {
+      parentName: pupil.parent_name || "Parent/Carer",
+      pupilName: pupil.name,
+      teacherName: req.user!.displayName || "Your child's teacher",
+      schoolName: school?.name || "School",
+      subject,
+      message,
+    });
+    auditLog(req.user!.id, req.user!.schoolId, "parent_message.sent", "pupil", pupilId, { subject }, req.ip);
+    res.json({ ok: true, message: "Message sent to parent successfully" });
+  } catch (err: any) {
+    console.error("[parent-message] error:", err?.message);
+    res.status(500).json({ error: "Failed to send message. Please try again." });
   }
 });
 

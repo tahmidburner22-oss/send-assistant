@@ -407,7 +407,7 @@ export default function Stories() {
             <Card className="border-border/50 no-print">
               <CardContent className="p-3">
                 <p className="text-xs text-muted-foreground mb-2">Colour overlay applies to screen, print, and PDF downloads.</p>
-                <div className="grid grid-cols-4 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {colorOverlays.map(o => (
                     <button key={o.id} onClick={() => { setColorOverlay(o.id); setShowOverlayPicker(false); }}
                       className={`p-2 rounded-lg border-2 transition-all text-center ${colorOverlay === o.id ? "border-brand" : "border-transparent hover:border-border"}`}
