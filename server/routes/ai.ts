@@ -768,12 +768,12 @@ router.post("/adapt-worksheet", requireAuth, worksheetUpload.single("file"), asy
     const mime = req.file.mimetype;
     if (mime === "application/pdf") {
       try {
-        // pdf-parse v2 class-based API: must call load() before getText()
+        // pdf-parse v2: data passed to constructor, load() takes no args, getText() returns { text, pages }
         const { PDFParse } = await import("pdf-parse" as any);
-        const parser = new PDFParse({ data: req.file.buffer });
-        await parser.load(req.file.buffer);
+        const parser = new PDFParse({ data: req.file.buffer, verbosity: 0 });
+        await parser.load();
         const result = await parser.getText();
-        rawText = result?.text || "";
+        rawText = (result?.text ?? "") as string;
       } catch (pdfErr: any) {
         console.error("[adapt-worksheet] pdf-parse error:", pdfErr?.message || pdfErr);
         rawText = "";
@@ -888,10 +888,10 @@ router.post("/book-questions", requireAuth, worksheetUpload.single("criteriaFile
       try {
         if (req.file.mimetype === "application/pdf") {
           const { PDFParse } = await import("pdf-parse" as any);
-          const parser = new PDFParse({ data: req.file.buffer });
-          await parser.load(req.file.buffer);
+          const parser = new PDFParse({ data: req.file.buffer, verbosity: 0 });
+          await parser.load();
           const result = await parser.getText();
-          criteriaText = result?.text || "";
+          criteriaText = (result?.text ?? "") as string;
         } else if (req.file.mimetype === "text/plain") {
           criteriaText = req.file.buffer.toString("utf-8");
         } else {
