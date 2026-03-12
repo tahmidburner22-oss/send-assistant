@@ -124,6 +124,8 @@ export async function initDb() {
     "ALTER TABLE behaviour_records ADD COLUMN mis_id TEXT",
     "ALTER TABLE behaviour_records ADD COLUMN points INTEGER DEFAULT 0",
     "ALTER TABLE attendance_records ADD COLUMN mis_source TEXT",
+    // User preferences (sidebar collapse state, theme, etc.) — persisted server-side
+    "ALTER TABLE users ADD COLUMN preferences TEXT",
   ];
   for (const migration of migrations) {
     try { _db.run(migration); } catch (_) { /* column already exists — ignore */ }

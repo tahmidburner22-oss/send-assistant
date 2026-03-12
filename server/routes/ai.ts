@@ -868,4 +868,140 @@ ${textForAI}${truncated ? "\n\n[Note: Document was truncated at 12,000 character
   }
 });
 
+// ── Book Questions — generate comprehension questions for a book ─────────────
+router.post("/book-questions", requireAuth, worksheetUpload.single("criteriaFile"), async (req: Request, res: Response) => {
+  const { bookTitle, author, readingAge, yearGroup, pagesRead, chapterSummary } = req.body;
+  if (!bookTitle) return res.status(400).json({ error: "bookTitle is required" });
+  const schoolId = req.user?.schoolId ?? undefined;
+
+  // Extract criteria text from uploaded file if provided
+  let criteriaText = "";
+  if (req.file) {
+    const allowedMimes = [
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "text/plain",
+    ];
+    if (allowedMimes.includes(req.file.mimetype)) {
+      try {
+        if (req.file.mimetype === "application/pdf") {
+          const { PDFParse } = await import("pdf-parse" as any);
+          const parser = new PDFParse({ data: req.file.buffer });
+          const result = await parser.getText();
+          criteriaText = result?.text || "";
+        } else if (req.file.mimetype === "text/plain") {
+          criteriaText = req.file.buffer.toString("utf-8");
+        } else {
+          const mammoth = await import("mammoth" as any);
+          const mammothLib = mammoth.default || mammoth;
+          const result = await mammothLib.extractRawText({ buffer: req.file.buffer });
+          criteriaText = result.value || "";
+        }
+        criteriaText = criteriaText.slice(0, 6000).trim();
+      } catch (e: any) {
+        console.warn("[book-questions] criteria file parse error:", e?.message);
+      }
+    }
+  }
+
+  const ageLabel = readingAge || yearGroup || "age-appropriate";
+  const pagesLabel = pagesRead ? `pages ${pagesRead}` : "the section they have read";
+  const authorLabel = author ? ` by ${author}` : "";
+
+  const system = `You are an expert UK primary and secondary school teacher specialising in reading comprehension and literacy assessment. You generate high-quality, age-appropriate comprehension questions that genuinely test a pupil's understanding of a book or text they have read.`;
+
+  const user = `Generate 8 comprehension questions for pupils who have just read ${pagesLabel} of the book "${bookTitle}"${authorLabel}.
+
+Pupil reading age / level: ${ageLabel}
+${yearGroup ? `Year group: ${yearGroup}` : ""}
+${chapterSummary ? `\nContext / chapter summary provided by teacher:\n${chapterSummary}` : ""}
+${criteriaText ? `\nAssessment criteria / mark scheme (base questions on this):\n${criteriaText}` : ""}
+
+Requirements:
+- Questions must be directly answerable from the pages the pupil has read
+- Vary question types: literal recall (2), inference (2), vocabulary/language (2), personal response/evaluation (2)
+- Match vocabulary and sentence complexity to the reading age: ${ageLabel}
+- For younger readers (age 6-9): short, clear questions with simple vocabulary
+- For older readers (age 10+): include inference, authorial intent, and evaluative questions
+- Number each question Q1-Q8
+- After the questions, add a brief TEACHER NOTES section with suggested answers / marking guidance
+
+Format your response as JSON:
+{
+  "questions": [
+    { "number": 1, "type": "literal", "question": "...", "marks": 1 },
+    { "number": 2, "type": "inference", "question": "...", "marks": 2 },
+    { "number": 3, "type": "vocabulary", "question": "...", "marks": 1 },
+    { "number": 4, "type": "evaluation", "question": "...", "marks": 3 }
+  ],
+  "teacherNotes": [
+    { "number": 1, "guidance": "Accept any answer that mentions..." }
+  ]
+}`;
+
+  try {
+    const { content, provider } = await callWithFallback(system, user, 2000, undefined, schoolId);
+    let parsed: any;
+    try {
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      parsed = JSON.parse(jsonMatch ? jsonMatch[0] : content);
+    } catch {
+      const lines = content.split("\n").filter(l => /^Q?\d+[.)]/i.test(l.trim()));
+      parsed = {
+        questions: lines.map((l, i) => ({ number: i + 1, type: "comprehension", question: l.replace(/^Q?\d+[.\)\s]+/i, "").trim(), marks: 1 })),
+        teacherNotes: [],
+      };
+    }
+    res.json({ ...parsed, provider });
+  } catch (err: any) {
+    console.error("[book-questions] error:", err);
+    res.status(500).json({ error: err.message || "Failed to generate questions" });
+  }
+});
+
+// ── Book Review — generate a summary and review of a book ────────────────────
+router.post("/book-review", requireAuth, async (req: Request, res: Response) => {
+  const { bookTitle, author, yearGroup, genre } = req.body;
+  if (!bookTitle) return res.status(400).json({ error: "bookTitle is required" });
+  const schoolId = req.user?.schoolId ?? undefined;
+
+  const authorLabel = author ? ` by ${author}` : "";
+  const audienceLabel = yearGroup ? `for ${yearGroup} pupils` : "for school pupils";
+
+  const system = `You are an expert children's and young adult literature specialist and school librarian. You write engaging, age-appropriate book summaries and reviews that help pupils decide whether to read a book.`;
+
+  const user = `Write a book summary and review of "${bookTitle}"${authorLabel} ${audienceLabel}${genre ? ` (genre: ${genre})` : ""}.
+
+Return a JSON object with this structure:
+{
+  "title": "${bookTitle}",
+  "author": "${author || "Unknown"}",
+  "genre": "the book's genre",
+  "ageRange": "recommended reading age range",
+  "summary": "A 3-4 paragraph spoiler-free summary of what the book is about. Engaging and written for the target age group. Do NOT reveal the ending.",
+  "review": "A 2-3 paragraph honest review covering: writing style, themes, what makes it special, who would enjoy it, and any content warnings if relevant for school use.",
+  "themes": ["theme1", "theme2", "theme3"],
+  "starRating": 4.5,
+  "readingLevel": "e.g. Year 5-7 / Ages 9-12",
+  "curriculumLinks": ["e.g. PSHE - friendship", "English - narrative structure"],
+  "similarBooks": ["Book 1 by Author", "Book 2 by Author"]
+}`;
+
+  try {
+    const { content, provider } = await callWithFallback(system, user, 1500, undefined, schoolId);
+    let parsed: any;
+    try {
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      parsed = JSON.parse(jsonMatch ? jsonMatch[0] : content);
+    } catch {
+      parsed = { title: bookTitle, author: author || "", summary: content, review: "", themes: [], starRating: 0, readingLevel: "", curriculumLinks: [], similarBooks: [] };
+    }
+    res.json({ ...parsed, provider });
+  } catch (err: any) {
+    console.error("[book-review] error:", err);
+    res.status(500).json({ error: err.message || "Failed to generate review" });
+  }
+});
+
 export default router;

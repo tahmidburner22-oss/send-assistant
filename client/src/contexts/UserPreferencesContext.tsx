@@ -43,6 +43,7 @@ export interface UserPreferences {
   dashboardSubjects: string[];      // subjects shown on dashboard
   dashboardPinnedTools: string[];   // tool paths pinned to dashboard
   showWorksheetLibrary?: boolean;   // show the Library tab in Worksheets (default: false)
+  sidebarCollapsed: string[];        // array of sidebar section labels that are collapsed
 }
 
 // ─── Preset themes ────────────────────────────────────────────────────────────
@@ -107,6 +108,7 @@ const DEFAULT_PREFERENCES: UserPreferences = {
   themeId: "default",
   wallpaperId: "none",
   sidebarHidden: [],
+  sidebarCollapsed: [],
   dashboardCards: ALL_DASHBOARD_CARDS.map(c => c.id),
   dashboardSubjects: ["Mathematics", "English", "Science", "History", "Geography"],
   dashboardPinnedTools: [],
@@ -120,6 +122,8 @@ interface UserPreferencesContextType {
   setWallpaper: (wallpaperId: string, customUrl?: string) => void;
   toggleSidebarItem: (path: string) => void;
   isSidebarItemHidden: (path: string) => boolean;
+  toggleSidebarSection: (label: string) => void;
+  isSidebarSectionCollapsed: (label: string) => boolean;
   setDashboardCards: (cards: string[]) => void;
   setDashboardSubjects: (subjects: string[]) => void;
   toggleDashboardCard: (cardId: string) => void;
@@ -156,6 +160,27 @@ function savePrefs(prefs: UserPreferences, userId?: string) {
   } catch { /* localStorage full or unavailable */ }
 }
 
+// Debounced server sync — saves preferences to the server 1.5s after last change
+let _serverSyncTimer: ReturnType<typeof setTimeout> | null = null;
+function syncToServer(prefs: UserPreferences) {
+  if (_serverSyncTimer) clearTimeout(_serverSyncTimer);
+  _serverSyncTimer = setTimeout(async () => {
+    try {
+      const token = typeof localStorage !== 'undefined' ? localStorage.getItem('send_token') : null;
+      if (!token) return; // Not logged in — skip server sync
+      await fetch('/api/data/preferences', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        credentials: 'include',
+        body: JSON.stringify(prefs),
+      });
+    } catch { /* Network unavailable — local storage is the fallback */ }
+  }, 1500);
+}
+
 export function UserPreferencesProvider({
   children,
   userId,
@@ -165,9 +190,28 @@ export function UserPreferencesProvider({
 }) {
   const [preferences, setPreferences] = useState<UserPreferences>(() => loadPrefs(userId));
 
-  // Reload when user changes (login/logout)
+  // Reload when user changes (login/logout) — also fetch from server to get cross-device prefs
   useEffect(() => {
-    setPreferences(loadPrefs(userId));
+    const local = loadPrefs(userId);
+    setPreferences(local);
+    // Fetch server preferences and merge (server wins for sidebarCollapsed, local wins for everything else)
+    const token = typeof localStorage !== 'undefined' ? localStorage.getItem('send_token') : null;
+    if (!token || !userId) return;
+    fetch('/api/data/preferences', {
+      headers: { 'Authorization': `Bearer ${token}` },
+      credentials: 'include',
+    })
+      .then(r => r.ok ? r.json() : null)
+      .then(serverPrefs => {
+        if (!serverPrefs || typeof serverPrefs !== 'object') return;
+        // Merge: server sidebarCollapsed overrides local (this is the cross-device state)
+        const merged: UserPreferences = { ...DEFAULT_PREFERENCES, ...local, ...{
+          sidebarCollapsed: serverPrefs.sidebarCollapsed ?? local.sidebarCollapsed ?? [],
+        }};
+        setPreferences(merged);
+        savePrefs(merged, userId);
+      })
+      .catch(() => { /* server unavailable — use local */ });
   }, [userId]);
 
   // Apply theme CSS variables to :root whenever theme changes
@@ -181,6 +225,7 @@ export function UserPreferencesProvider({
     setPreferences(prev => {
       const next = { ...prev, ...updates };
       savePrefs(next, userId);
+      syncToServer(next);
       return next;
     });
   }, [userId]);
@@ -198,9 +243,26 @@ export function UserPreferencesProvider({
         : [...prev.sidebarHidden, path];
       const next = { ...prev, sidebarHidden: hidden };
       savePrefs(next, userId);
+      syncToServer(next);
       return next;
     });
   }, [userId]);
+
+  const toggleSidebarSection = useCallback((label: string) => {
+    setPreferences(prev => {
+      const collapsed = (prev.sidebarCollapsed || []).includes(label)
+        ? (prev.sidebarCollapsed || []).filter(l => l !== label)
+        : [...(prev.sidebarCollapsed || []), label];
+      const next = { ...prev, sidebarCollapsed: collapsed };
+      savePrefs(next, userId);
+      syncToServer(next);
+      return next;
+    });
+  }, [userId]);
+
+  const isSidebarSectionCollapsed = useCallback((label: string) => {
+    return (preferences.sidebarCollapsed || []).includes(label);
+  }, [preferences.sidebarCollapsed]);
 
   const isSidebarItemHidden = useCallback((path: string) => {
     return preferences.sidebarHidden.includes(path);
@@ -252,6 +314,7 @@ export function UserPreferencesProvider({
   const resetPreferences = useCallback(() => {
     const fresh = { ...DEFAULT_PREFERENCES };
     savePrefs(fresh, userId);
+    syncToServer(fresh);
     setPreferences(fresh);
   }, [userId]);
 
@@ -280,6 +343,8 @@ export function UserPreferencesProvider({
       setWallpaper,
       toggleSidebarItem,
       isSidebarItemHidden,
+      toggleSidebarSection,
+      isSidebarSectionCollapsed,
       setDashboardCards,
       setDashboardSubjects,
       toggleDashboardCard,

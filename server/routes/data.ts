@@ -278,5 +278,41 @@ router.get("/parent/behaviour/:pupilId", requireAuth, (req: Request, res: Respon
   res.json(rows);
 });
 
+// ── User Preferences (sidebar collapse state, theme, etc.) ──────────────────
+router.get("/preferences", requireAuth, (req: Request, res: Response) => {
+  try {
+    const row = db.prepare("SELECT preferences FROM users WHERE id = ?").get(req.user!.id) as any;
+    const prefs = row?.preferences ? JSON.parse(row.preferences) : {};
+    res.json(prefs);
+  } catch {
+    res.json({});
+  }
+});
+
+router.put("/preferences", requireAuth, (req: Request, res: Response) => {
+  const prefs = req.body;
+  if (!prefs || typeof prefs !== "object") return res.status(400).json({ error: "Invalid preferences" });
+  try {
+    db.prepare("UPDATE users SET preferences = ? WHERE id = ?").run(
+      JSON.stringify(prefs),
+      req.user!.id
+    );
+    res.json({ ok: true });
+  } catch (err: any) {
+    // Column may not exist yet — run migration then retry
+    try {
+      db.prepare("ALTER TABLE users ADD COLUMN preferences TEXT").run();
+      db.prepare("UPDATE users SET preferences = ? WHERE id = ?").run(
+        JSON.stringify(prefs),
+        req.user!.id
+      );
+      res.json({ ok: true });
+    } catch (e2: any) {
+      console.error("[preferences] save error:", e2);
+      res.status(500).json({ error: "Failed to save preferences" });
+    }
+  }
+});
+
 export default router;
 

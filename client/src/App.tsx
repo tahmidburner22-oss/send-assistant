@@ -24,6 +24,7 @@ const Differentiate = lazy(() => import("./pages/Differentiate"));
 // Worksheets is the heaviest page (imports ~9.7MB of question banks) — lazy load it
 const Worksheets = lazy(() => import("./pages/Worksheets"));
 const Stories = lazy(() => import("./pages/Stories"));
+const Reading = lazy(() => import("./pages/Reading"));
 const Templates = lazy(() => import("./pages/Templates"));
 const PastPapers = lazy(() => import("./pages/PastPapers"));
 const RevisionHub = lazy(() => import("./pages/RevisionHub"));
@@ -118,7 +119,9 @@ function ProtectedRoutes() {
           <Route path="/home" component={Home} />
           <Route path="/differentiate" component={Differentiate} />
           <Route path="/worksheets" component={Worksheets} />
-          <Route path="/stories" component={Stories} />
+          {/* Reading section — /stories redirects to /reading for backwards compatibility */}
+          <Route path="/reading" component={Reading} />
+          <Route path="/stories">{() => { window.location.replace("/reading"); return null; }}</Route>
           <Route path="/templates" component={Templates} />
           <Route path="/children" component={Children} />
           <Route path="/history" component={History} />
