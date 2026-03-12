@@ -230,7 +230,11 @@ router.post("/import-csv", requireAuth, requireAdmin, (req: Request, res: Respon
     }
   });
 
-  importTx();
+  try {
+    importTx();
+  } catch (e: any) {
+    return res.status(500).json({ error: "Import failed: " + e.message });
+  }
   auditLog(req.user!.id, schoolId, "mis.csv_import", "pupils", "bulk", { created, updated, skipped }, req.ip);
   res.json({ success: true, created, updated, skipped, errors: errors.slice(0, 10) });
 });
