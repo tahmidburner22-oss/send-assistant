@@ -130,6 +130,9 @@ export const readingLevels = [
   { id: "reading-age-12-13", name: "Reading Age: 12–13 years" },
   { id: "reading-age-13-14", name: "Reading Age: 13–14 years" },
   { id: "reading-age-14-plus", name: "Reading Age: 14+ years" },
+  { id: "reading-age-15-16", name: "Reading Age: 15-16 years" },
+  { id: "reading-age-16-17", name: "Reading Age: 16-17 years" },
+  { id: "reading-age-17-plus", name: "Reading Age: 17+ years" }
 ];
 
 export const colorOverlays = [

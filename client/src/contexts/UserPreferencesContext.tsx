@@ -97,9 +97,9 @@ export const ALL_DASHBOARD_CARDS = [
 ];
 
 export const ALL_SUBJECTS = [
-  "Maths", "English Language", "English Literature", "Biology", "Chemistry",
-  "Physics", "Combined Science", "History", "Geography", "French", "Spanish",
-  "German", "Art", "Music", "PE", "PSHE", "Computing", "RE", "Drama",
+  "English", "Mathematics", "Science", "History", "Geography", "Art & Design",
+  "Music", "Physical Education", "Computing", "Design & Technology", "Religious Education",
+  "Modern Foreign Languages", "PSHE", "Business Studies", "Drama", "11+ Preparation",
 ];
 
 const DEFAULT_PREFERENCES: UserPreferences = {
@@ -107,7 +107,7 @@ const DEFAULT_PREFERENCES: UserPreferences = {
   wallpaperId: "none",
   sidebarHidden: [],
   dashboardCards: ALL_DASHBOARD_CARDS.map(c => c.id),
-  dashboardSubjects: ["Maths", "English Language", "Biology", "Chemistry", "Physics", "History", "Geography"],
+  dashboardSubjects: ["Mathematics", "English", "Science", "History", "Geography"],
   dashboardPinnedTools: [],
 };
 
