@@ -1379,8 +1379,7 @@ CROSS-CURRICULAR: Science (genetics, Punnett squares), Statistics (data analysis
         "   First draw: P(Red) = 3/8, P(Blue) = 5/8",
         "   Second draw (given first was Red): P(Red) = 2/7, P(Blue) = 5/7",
         "   Second draw (given first was Blue): P(Red) = 3/7, P(Blue) = 4/7",
-        "Step 2: Find P
-(both Red) by multiplying along the Red-Red branch",
+        "Step 2: Find P(both Red) by multiplying along the Red-Red branch",
         "   P(Red then Red) = 3/8 × 2/7 = 6/56 = 3/28",
         "Answer: 3/28",
         "",
