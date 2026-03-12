@@ -848,16 +848,39 @@ ${textForAI}${truncated ? "\n\n[Note: Document was truncated at 12,000 character
 
     const { content, provider } = await callWithFallback(system, user, 4000, undefined, schoolId);
 
-    let parsed: any;
-    try {
-      // Strip markdown code fences (e.g. ```json ... ```) if present
-      const stripped = content
-        .replace(/^```(?:json)?\s*/i, '')
-        .replace(/\s*```\s*$/, '')
-        .trim();
-      const jsonMatch = stripped.match(/\{[\s\S]*\}/);
-      parsed = JSON.parse(jsonMatch ? jsonMatch[0] : stripped);
+    // Helper: try to parse JSON robustly, handling code fences and control chars
+    const tryParseJSON = (raw: string): any | null => {
+      try {
+        // Strip markdown code fences
+        const s = raw
+          .replace(/^```(?:json)?\s*/i, '')
+          .replace(/\s*```\s*$/, '')
+          .trim();
+        // Extract the outermost JSON object
+        const m = s.match(/\{[\s\S]*\}/);
+        const candidate = m ? m[0] : s;
+        // First try direct parse
+        try { return JSON.parse(candidate); } catch (_) {}
+        // Sanitize: replace unescaped control characters inside JSON strings
+        // This handles literal newlines/tabs inside string values
+        const sanitized = candidate.replace(
+          /"((?:[^"\\]|\\.)*)"/g,
+          (_match: string, inner: string) => {
+            const fixed = inner
+              .replace(/\n/g, '\\n')
+              .replace(/\r/g, '\\r')
+              .replace(/\t/g, '\\t');
+            return `"${fixed}"`;
+          }
+        );
+        return JSON.parse(sanitized);
+      } catch (_) { return null; }
+    };
 
+    let parsed: any;
+    const outerParsed = tryParseJSON(content);
+    if (outerParsed) {
+      parsed = outerParsed;
       // Detect double-nested JSON: if sections[0].content is itself a JSON string
       // containing a full worksheet structure, unwrap it
       if (
@@ -866,21 +889,14 @@ ${textForAI}${truncated ? "\n\n[Note: Document was truncated at 12,000 character
       ) {
         const innerContent = parsed.sections[0].content.trim();
         if (innerContent.startsWith('```') || innerContent.startsWith('{')) {
-          try {
-            const innerStripped = innerContent
-              .replace(/^```(?:json)?\s*/i, '')
-              .replace(/\s*```\s*$/, '')
-              .trim();
-            const innerMatch = innerStripped.match(/\{[\s\S]*\}/);
-            const innerParsed = JSON.parse(innerMatch ? innerMatch[0] : innerStripped);
-            if (innerParsed?.sections && Array.isArray(innerParsed.sections)) {
-              // The real worksheet is nested inside — use it instead
-              parsed = innerParsed;
-            }
-          } catch (_) { /* not valid JSON, leave as-is */ }
+          const innerParsed = tryParseJSON(innerContent);
+          if (innerParsed?.sections && Array.isArray(innerParsed.sections)) {
+            parsed = innerParsed;
+          }
         }
       }
-    } catch {
+    } else {
+      // Fallback: wrap raw content in a single section
       parsed = {
         title: "Adapted Worksheet",
         subtitle: `${yr} — ${sendNeed} adaptation`,
