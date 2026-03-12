@@ -850,8 +850,13 @@ ${textForAI}${truncated ? "\n\n[Note: Document was truncated at 12,000 character
 
     let parsed: any;
     try {
-      const jsonMatch = content.match(/\{[\s\S]*\}/);
-      parsed = JSON.parse(jsonMatch ? jsonMatch[0] : content);
+      // Strip markdown code fences (e.g. ```json ... ```) if present
+      const stripped = content
+        .replace(/^```(?:json)?\s*/i, '')
+        .replace(/\s*```\s*$/, '')
+        .trim();
+      const jsonMatch = stripped.match(/\{[\s\S]*\}/);
+      parsed = JSON.parse(jsonMatch ? jsonMatch[0] : stripped);
     } catch {
       parsed = {
         title: "Adapted Worksheet",
@@ -947,8 +952,13 @@ Format your response as JSON:
     const { content, provider } = await callWithFallback(system, user, Math.max(2000, numQuestions * 250), undefined, schoolId);
     let parsed: any;
     try {
-      const jsonMatch = content.match(/\{[\s\S]*\}/);
-      parsed = JSON.parse(jsonMatch ? jsonMatch[0] : content);
+      // Strip markdown code fences (e.g. ```json ... ```) if present
+      const stripped = content
+        .replace(/^```(?:json)?\s*/i, '')
+        .replace(/\s*```\s*$/, '')
+        .trim();
+      const jsonMatch = stripped.match(/\{[\s\S]*\}/);
+      parsed = JSON.parse(jsonMatch ? jsonMatch[0] : stripped);
     } catch {
       const lines = content.split("\n").filter(l => /^Q?\d+[.)]/i.test(l.trim()));
       parsed = {
@@ -995,8 +1005,13 @@ Return a JSON object with this structure:
     const { content, provider } = await callWithFallback(system, user, 1500, undefined, schoolId);
     let parsed: any;
     try {
-      const jsonMatch = content.match(/\{[\s\S]*\}/);
-      parsed = JSON.parse(jsonMatch ? jsonMatch[0] : content);
+      // Strip markdown code fences (e.g. ```json ... ```) if present
+      const stripped = content
+        .replace(/^```(?:json)?\s*/i, '')
+        .replace(/\s*```\s*$/, '')
+        .trim();
+      const jsonMatch = stripped.match(/\{[\s\S]*\}/);
+      parsed = JSON.parse(jsonMatch ? jsonMatch[0] : stripped);
     } catch {
       parsed = { title: bookTitle, author: author || "", summary: content, review: "", themes: [], starRating: 0, readingLevel: "", curriculumLinks: [], similarBooks: [] };
     }
