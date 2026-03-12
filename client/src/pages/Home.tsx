@@ -135,7 +135,14 @@ export default function Home() {
 
       {/* Browse by Subject — filtered by preferences */}
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-        <h3 className="text-base font-semibold text-foreground mb-3">Browse by Subject</h3>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-base font-semibold text-foreground">Browse by Subject</h3>
+          <Link href="/settings?tab=dashboard">
+            <button className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors">
+              <Settings className="w-3 h-3" /> Customise
+            </button>
+          </Link>
+        </div>
         <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
           {(visibleSubjects.length > 0 ? visibleSubjects : subjects).map((subject) => {
             const Icon = subjectIcons[subject.id] || BookOpen;
