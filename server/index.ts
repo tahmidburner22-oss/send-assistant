@@ -1,4 +1,11 @@
 import "dotenv/config";
+// ── Crypto polyfill for msedge-tts (needs globalThis.crypto.subtle and crypto.getRandomValues) ──
+// Railway may run Node.js < 19 where globalThis.crypto is not available as a global
+import { webcrypto } from "crypto";
+if (typeof (globalThis as any).crypto === "undefined") {
+  (globalThis as any).crypto = webcrypto;
+}
+
 // ── Browser API polyfills for pdf-parse v2 (pdfjs-dist needs DOMMatrix/ImageData/Path2D) ──
 // Railway's Node.js environment doesn't provide these browser globals
 if (typeof (globalThis as any).DOMMatrix === "undefined") {
