@@ -48,7 +48,7 @@ export interface AttendanceRecord {
 }
 
 export interface Assignment {
-  id: string; title: string; type: "worksheet" | "story"; content: string;
+  id: string; title: string; type: "worksheet" | "story" | "differentiation" | string; content: string;
   assignedAt: string; status: "not-started" | "started" | "completed";
   feedback?: string; mark?: string; progress?: number; teacherComment?: string;
 }

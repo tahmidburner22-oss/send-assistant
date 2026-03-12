@@ -31,6 +31,7 @@ export default function ParentNewsletter() {
   return (
     <AIToolPage
       title="Parent Newsletter / Letter"
+      assignable={true}
       description="Generate professional, parent-ready communications, newsletters, and letters"
       icon={<Mail className="w-5 h-5 text-white" />}
       accentColor="bg-pink-600"

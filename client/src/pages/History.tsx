@@ -8,10 +8,11 @@ import { motion } from "framer-motion";
 import { useApp } from "@/contexts/AppContext";
 import { callAI } from "@/lib/ai";
 import { subjects, sendNeeds } from "@/lib/send-data";
-import { FileText, BookOpen, Star, Eye, Trash2, Clock, Edit3, Save, X, GraduationCap, CheckCircle, Sparkles, PenLine, Loader2, UserPlus } from "lucide-react";
+import { FileText, BookOpen, Star, Eye, Trash2, Clock, Edit3, Save, X, GraduationCap, CheckCircle, Sparkles, PenLine, Loader2, UserPlus, Layers } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import type { Worksheet, Story } from "@/contexts/AppContext";
+import type { Worksheet, Story, Differentiation } from "@/contexts/AppContext";
+import WorksheetRenderer, { renderMath } from "@/components/WorksheetRenderer";
 
 type Section = { title: string; type: string; content: string; teacherOnly?: boolean; svg?: string; caption?: string };
 
@@ -27,14 +28,64 @@ function buildSections(ws: Worksheet): Section[] {
   }).filter(s => s.title);
 }
 
+/** Convert a Worksheet record into WorksheetData for WorksheetRenderer */
+function toWorksheetData(ws: Worksheet) {
+  const sections = buildSections(ws);
+  return {
+    title: ws.title,
+    subtitle: (ws as any).subtitle,
+    sections: sections as any,
+    metadata: {
+      subject: ws.subject,
+      topic: ws.topic,
+      yearGroup: ws.yearGroup,
+      sendNeed: ws.sendNeed,
+      sendNeedId: ws.sendNeed,
+      difficulty: ws.difficulty,
+      examBoard: ws.examBoard,
+      ...(ws.metadata || {}),
+    },
+    isAI: ws.isAI,
+  };
+}
+
+/** Render differentiated content as HTML with math support */
+function diffToHtml(text: string): string {
+  const withMath = renderMath(text);
+  return withMath
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/\*([^*\n]+?)\*/g, "<em>$1</em>")
+    .replace(/^#{1,3} (.+)$/gm, "<h3 class='font-bold text-base mt-4 mb-1 text-foreground'>$1</h3>")
+    .replace(/^[•\-] (.+)$/gm, "<li class='ml-4 list-disc text-foreground/90'>$1</li>")
+    .replace(/^\* (.+)$/gm, "<li class='ml-4 list-disc text-foreground/90'>$1</li>")
+    .replace(/^(\d+)\. (.+)$/gm, "<li class='ml-4 list-decimal text-foreground/90'>$2</li>")
+    .replace(/\*\*/g, "")
+    .replace(/\*/g, "")
+    .replace(/\n{2,}/g, "</p><p class='mb-2 text-foreground/90'>")
+    .replace(/\n/g, "<br/>")
+    .replace(/^/, "<p class='mb-2 text-foreground/90'>")
+    .replace(/$/, "</p>");
+}
+
+/** Render story content as formatted HTML */
+function storyToHtml(text: string): string {
+  return text
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/\*([^*\n]+?)\*/g, "<em>$1</em>")
+    .replace(/\n{2,}/g, "</p><p class='mb-3 leading-relaxed text-foreground/90'>")
+    .replace(/\n/g, "<br/>")
+    .replace(/^/, "<p class='mb-3 leading-relaxed text-foreground/90'>")
+    .replace(/$/, "</p>");
+}
+
 export default function History() {
-  const { worksheetHistory, storyHistory, updateWorksheet, children, assignWork, refreshData } = useApp();
+  const { worksheetHistory, storyHistory, differentiationHistory, updateWorksheet, children, assignWork, refreshData } = useApp();
 
   // Re-fetch data from server on mount so history is always current
   useEffect(() => { refreshData(); }, []);
 
   // ── Assign to student state ─────────────────────────────────────────────────
-  const [assignItem, setAssignItem] = useState<{ title: string; type: "worksheet" | "story"; content: string } | null>(null);
+  const [assignItem, setAssignItem] = useState<{ title: string; type: string; content: string } | null>(null);
   const [assignChildId, setAssignChildId] = useState<string>("");
   const [assigning, setAssigning] = useState(false);
 
@@ -42,7 +93,7 @@ export default function History() {
     if (!assignItem || !assignChildId) return;
     setAssigning(true);
     try {
-      await assignWork(assignChildId, { title: assignItem.title, type: assignItem.type, content: assignItem.content });
+      await assignWork(assignChildId, { title: assignItem.title, type: assignItem.type as any, content: assignItem.content });
       toast.success(`Assigned to student successfully!`);
       setAssignItem(null);
       setAssignChildId("");
@@ -71,6 +122,9 @@ export default function History() {
   const [selectedStory, setSelectedStory] = useState<Story | null>(null);
   const [storyEditMode, setStoryEditMode] = useState(false);
   const [editedStoryContent, setEditedStoryContent] = useState("");
+
+  // ── Differentiation viewer state ────────────────────────────────────────────
+  const [selectedDiff, setSelectedDiff] = useState<Differentiation | null>(null);
 
   // ── Open worksheet ──────────────────────────────────────────────────────────
   function openWorksheet(ws: Worksheet) {
@@ -120,12 +174,15 @@ export default function History() {
       </motion.div>
 
       <Tabs defaultValue="worksheets">
-        <TabsList className="w-full grid grid-cols-2 h-10">
+        <TabsList className="w-full grid grid-cols-3 h-10">
           <TabsTrigger value="worksheets" className="text-xs gap-1.5">
             <FileText className="w-3.5 h-3.5" /> Worksheets ({worksheetHistory.length})
           </TabsTrigger>
           <TabsTrigger value="stories" className="text-xs gap-1.5">
             <BookOpen className="w-3.5 h-3.5" /> Stories ({storyHistory.length})
+          </TabsTrigger>
+          <TabsTrigger value="differentiation" className="text-xs gap-1.5">
+            <Layers className="w-3.5 h-3.5" /> Differentiated ({differentiationHistory.length})
           </TabsTrigger>
         </TabsList>
 
@@ -205,6 +262,44 @@ export default function History() {
                       <UserPlus className="w-3.5 h-3.5" />
                     </Button>
                     <Button variant="outline" size="sm" onClick={e => { e.stopPropagation(); openStory(story); }}>
+                      <Eye className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
+        </TabsContent>
+
+        {/* ── Differentiation list ── */}
+        <TabsContent value="differentiation" className="mt-4 space-y-2">
+          {differentiationHistory.length === 0 ? (
+            <Card className="border-border/50">
+              <CardContent className="p-8 text-center">
+                <Clock className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+                <h3 className="font-semibold text-foreground mb-1">No Differentiated Tasks Yet</h3>
+                <p className="text-sm text-muted-foreground">Differentiate a task to see it saved here.</p>
+              </CardContent>
+            </Card>
+          ) : differentiationHistory.map((diff, i) => (
+            <motion.div key={diff.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}>
+              <Card className="border-border/50 hover:shadow-md transition-shadow cursor-pointer" onClick={() => setSelectedDiff(diff)}>
+                <CardContent className="p-4 flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center flex-shrink-0">
+                    <Layers className="w-5 h-5 text-indigo-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-sm font-semibold text-foreground truncate">
+                      {diff.subject ? diff.subject : "Differentiated Task"}{diff.yearGroup ? ` · ${diff.yearGroup}` : ""}
+                    </h4>
+                    <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{diff.taskContent}</p>
+                    <span className="text-[10px] text-muted-foreground">{new Date(diff.createdAt).toLocaleDateString()}</span>
+                  </div>
+                  <div className="flex gap-1.5">
+                    <Button variant="outline" size="sm" title="Assign to student" onClick={e => { e.stopPropagation(); setAssignItem({ title: `Differentiated Task${diff.subject ? ` — ${diff.subject}` : ""} (${new Date(diff.createdAt).toLocaleDateString()})`, type: "differentiation", content: diff.differentiatedContent }); }}>
+                      <UserPlus className="w-3.5 h-3.5" />
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={e => { e.stopPropagation(); setSelectedDiff(diff); }}>
                       <Eye className="w-3.5 h-3.5" />
                     </Button>
                   </div>
@@ -359,50 +454,41 @@ export default function History() {
                   </div>
                 )}
 
-                {/* Sections */}
-                {visibleSections.length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-6">
-                    No content available — please regenerate this worksheet.
-                  </p>
-                ) : (
+                {/* Worksheet content — WorksheetRenderer in view mode, editable sections in manual edit mode */}
+                {editType === "manual" ? (
                   <div className="space-y-3">
-                    {visibleSections.map((section, i) => {
+                    {sections.map((section, i) => {
+                      if (viewMode === "student" && section.teacherOnly) return null;
                       const currentContent = editedSections[i] !== undefined ? editedSections[i] : section.content;
                       const isTeacher = section.teacherOnly;
                       return (
                         <div key={i} className={`rounded-lg border p-3 ${isTeacher ? "bg-amber-50 border-amber-200" : "bg-card border-border/50"}`}>
                           <div className="flex items-center justify-between mb-2">
                             <h3 className="font-semibold text-sm text-foreground">{section.title}</h3>
-                            {isTeacher && (
-                              <span className="text-[10px] bg-amber-200 text-amber-800 px-1.5 py-0.5 rounded">Teacher</span>
-                            )}
+                            {isTeacher && <span className="text-[10px] bg-amber-200 text-amber-800 px-1.5 py-0.5 rounded">Teacher</span>}
                           </div>
-                          {editType === "manual" ? (
-                            <Textarea
-                              value={currentContent}
-                              onChange={e => setEditedSections(prev => ({ ...prev, [i]: e.target.value }))}
-                              className="text-sm font-mono min-h-[100px] resize-y"
-                              placeholder="Enter section content…"
-                            />
-                          ) : editType === "ai" ? (
-                            <div
-                              className="text-sm whitespace-pre-wrap leading-relaxed text-foreground/90 cursor-pointer rounded-md p-2 border border-dashed border-brand/40 hover:bg-brand-light/30 hover:border-brand transition-colors"
-                              title="Click to edit this section with AI"
-                              onClick={() => {
-                                setAiEditSectionIndex(i);
-                                setAiEditPrompt("");
-                              }}
-                            >
-                              <span className="block text-[10px] text-brand font-medium mb-1 flex items-center gap-1"><Sparkles className="w-3 h-3" />Click to edit with AI</span>
-                              {currentContent}
-                            </div>
-                          ) : (
-                            <p className="text-sm whitespace-pre-wrap leading-relaxed text-foreground/90">{currentContent}</p>
-                          )}
+                          <Textarea
+                            value={currentContent}
+                            onChange={e => setEditedSections(prev => ({ ...prev, [i]: e.target.value }))}
+                            className="text-sm font-mono min-h-[100px] resize-y"
+                            placeholder="Enter section content…"
+                          />
                         </div>
                       );
                     })}
                   </div>
+                ) : sections.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-6">No content available — please regenerate this worksheet.</p>
+                ) : (
+                  /* Full WorksheetRenderer — identical to how it looks when generated */
+                  <WorksheetRenderer
+                    worksheet={toWorksheetData(selectedWs)}
+                    viewMode={viewMode}
+                    textSize={15}
+                    overlayColor="transparent"
+                    editedSections={editedSections}
+                    editMode={false}
+                  />
                 )}
               </div>
             );
@@ -514,7 +600,7 @@ export default function History() {
                 </div>
               )}
 
-              {/* Content */}
+              {/* Story content — rendered as formatted HTML matching the Stories page */}
               {storyEditType === "manual" ? (
                 <Textarea
                   value={editedStoryContent}
@@ -522,9 +608,10 @@ export default function History() {
                   className="text-sm font-mono min-h-[300px] resize-y"
                 />
               ) : (
-                <div className="text-sm whitespace-pre-wrap leading-relaxed text-foreground/90 rounded-lg border border-border/50 bg-card p-4">
-                  {selectedStory.content}
-                </div>
+                <div
+                  className="prose prose-sm max-w-none rounded-lg border border-border/50 bg-card p-5 leading-relaxed"
+                  dangerouslySetInnerHTML={{ __html: storyToHtml(selectedStory.content) }}
+                />
               )}
 
               {/* Comprehension questions */}
@@ -538,6 +625,39 @@ export default function History() {
                   </ol>
                 </div>
               )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Differentiation viewer dialog ── */}
+      <Dialog open={!!selectedDiff} onOpenChange={open => { if (!open) setSelectedDiff(null); }}>
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="pr-8">
+              {selectedDiff?.subject ? selectedDiff.subject : "Differentiated Task"}
+              {selectedDiff?.yearGroup ? ` — ${selectedDiff.yearGroup}` : ""}
+            </DialogTitle>
+          </DialogHeader>
+          {selectedDiff && (
+            <div className="space-y-4 mt-1">
+              <div className="rounded-lg border border-border/50 bg-muted/30 p-3">
+                <p className="text-xs font-semibold text-muted-foreground mb-1">Original Task</p>
+                <p className="text-sm text-foreground/80 whitespace-pre-wrap">{selectedDiff.taskContent}</p>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground mb-2">Differentiated Version</p>
+                <div
+                  className="prose prose-sm max-w-none rounded-lg border border-border/50 bg-card p-5 leading-relaxed"
+                  dangerouslySetInnerHTML={{ __html: diffToHtml(selectedDiff.differentiatedContent) }}
+                />
+              </div>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={() => setAssignItem({ title: `Differentiated Task${selectedDiff.subject ? ` — ${selectedDiff.subject}` : ""} (${new Date(selectedDiff.createdAt).toLocaleDateString()})`, type: "differentiation", content: selectedDiff.differentiatedContent })}>
+                  <UserPlus className="w-3.5 h-3.5 mr-1.5" /> Assign to Pupil
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => window.print()}>Print</Button>
+              </div>
             </div>
           )}
         </DialogContent>

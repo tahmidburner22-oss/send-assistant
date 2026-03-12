@@ -9,6 +9,7 @@ export default function MediumTermPlanner() {
   return (
     <AIToolPage
       title="Medium Term Planner"
+      assignable={true}
       description="Generate a full half-term topic plan with weekly breakdowns and SEND adaptations"
       icon={<CalendarDays className="w-5 h-5 text-white" />}
       accentColor="bg-green-700"

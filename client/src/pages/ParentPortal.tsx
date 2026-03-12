@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { useApp, type Child, type AttendanceRecord, type AttendanceStatus, type TimetableLesson } from "@/contexts/AppContext";
+import { renderMath } from "@/components/WorksheetRenderer";
 import { sendNeeds, storyGenres, storyLengths, readingLevels, colorOverlays, yearGroups } from "@/lib/send-data";
 import { generateStoryContent } from "@/lib/worksheet-generator";
 import {
@@ -38,6 +39,24 @@ function generateComprehensionQuestions(_content: string, genre: string): string
   };
   const defaultQs = ["What is the main theme of this story?", "How does the main character change throughout the story?", "What is the most important moment in the story? Explain why.", "Write a short summary of the story in your own words."];
   return questions[genre] || defaultQs;
+}
+
+/** Render any AI-generated content (worksheets, tools, differentiation) as formatted HTML */
+function contentToHtml(text: string): string {
+  const withMath = renderMath(text);
+  return withMath
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/\*([^*\n]+?)\*/g, "<em>$1</em>")
+    .replace(/^#{1,3} (.+)$/gm, "<h3 class='font-bold text-base mt-4 mb-1 text-foreground'>$1</h3>")
+    .replace(/^[•\-] (.+)$/gm, "<li class='ml-4 list-disc text-foreground/90'>$1</li>")
+    .replace(/^\* (.+)$/gm, "<li class='ml-4 list-disc text-foreground/90'>$1</li>")
+    .replace(/^(\d+)\. (.+)$/gm, "<li class='ml-4 list-decimal text-foreground/90'>$2</li>")
+    .replace(/\*\*/g, "")
+    .replace(/\*/g, "")
+    .replace(/\n{2,}/g, "</p><p class='mb-2 text-foreground/90'>")
+    .replace(/\n/g, "<br/>")
+    .replace(/^/, "<p class='mb-2 text-foreground/90'>")
+    .replace(/$/, "</p>");
 }
 
 function storyToHtml(md: string, textSize: number): string {
@@ -1365,11 +1384,14 @@ export default function ParentPortal() {
         ))}
       </div>
 
-      {/* View Content Dialog */}
+      {/* View Content Dialog — renders with full formatting matching how content was generated */}
       <Dialog open={!!viewContent} onOpenChange={() => setViewContent(null)}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader><DialogTitle>{viewContent?.title}</DialogTitle></DialogHeader>
-          <div className="mt-2 text-sm whitespace-pre-wrap leading-relaxed">{viewContent?.content}</div>
+          <div
+            className="mt-2 prose prose-sm max-w-none leading-relaxed"
+            dangerouslySetInnerHTML={{ __html: contentToHtml(viewContent?.content || "") }}
+          />
         </DialogContent>
       </Dialog>
     </div>

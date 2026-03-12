@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { callAI } from "@/lib/ai";
+import { renderMath } from "@/components/WorksheetRenderer";
 import { downloadHtmlAsPdf, printWorksheetElement } from "@/lib/pdf-generator-v2";
 import { useApp } from "@/contexts/AppContext";
 
@@ -45,7 +46,9 @@ interface AIToolPageProps {
 }
 
 function formatAIText(text: string): string {
-  return text
+  // Apply KaTeX math rendering first so symbols/LaTeX render correctly
+  const withMath = renderMath(text);
+  return withMath
     .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")  // bold
     .replace(/\*([^*\n]+?)\*/g, "<em>$1</em>")           // italic
     .replace(/^#{1,3} (.+)$/gm, "<h3 class='font-bold text-base mt-4 mb-1'>$1</h3>")

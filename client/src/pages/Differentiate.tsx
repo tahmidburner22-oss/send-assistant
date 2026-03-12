@@ -8,14 +8,33 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
-import { Sparkles, Copy, RotateCcw, FileDown, Printer, Palette, ZoomIn, ZoomOut, PenLine, X, Check, Loader2 } from "lucide-react";
+import { Sparkles, Copy, RotateCcw, FileDown, Printer, Palette, ZoomIn, ZoomOut, PenLine, X, Check, Loader2, UserPlus } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { subjects, yearGroups, sendNeeds, difficulties, colorOverlays } from "@/lib/send-data";
 import { downloadDifferentiatedPdf } from "@/lib/pdf-generator";
 import { renderMath } from "@/components/WorksheetRenderer";
 import { useApp } from "@/contexts/AppContext";
 
 export default function Differentiate() {
-  const { colorOverlay, setColorOverlay, saveDifferentiation } = useApp();
+  const { colorOverlay, setColorOverlay, saveDifferentiation, children, assignWork } = useApp();
+  const [showAssignDialog, setShowAssignDialog] = useState(false);
+  const [assignChildId, setAssignChildId] = useState("");
+  const [assigning, setAssigning] = useState(false);
+
+  const handleAssign = async () => {
+    if (!assignChildId) return;
+    setAssigning(true);
+    try {
+      const title = `Differentiated Task${subject ? ` — ${subjects.find(s => s.id === subject)?.name || subject}` : ""}${yearGroup ? ` (${yearGroup})` : ""}`;
+      await assignWork(assignChildId, { title, type: "differentiation", content: result });
+      toast.success("Assigned to student!");
+      setShowAssignDialog(false);
+      setAssignChildId("");
+    } catch {
+      toast.error("Failed to assign. Please try again.");
+    }
+    setAssigning(false);
+  };
   const [subject, setSubject] = useState("");
   const [yearGroup, setYearGroup] = useState("");
   const [topic, setTopic] = useState("");
@@ -231,6 +250,9 @@ export default function Differentiate() {
             <Button variant="outline" size="sm" onClick={handlePrint}>
               <Printer className="w-3.5 h-3.5 mr-1.5" /> Print
             </Button>
+            <Button variant="outline" size="sm" onClick={() => setShowAssignDialog(true)} className="gap-1.5 text-indigo-600 border-indigo-300 hover:bg-indigo-50">
+              <UserPlus className="w-3.5 h-3.5" /> Assign to Pupil
+            </Button>
             <Button variant="outline" size="sm" onClick={() => setResult("")}>
               <RotateCcw className="w-3.5 h-3.5 mr-1.5" /> New Task
             </Button>
@@ -308,6 +330,28 @@ export default function Differentiate() {
               </CardContent>
             </Card>
           )}
+
+          {/* Assign to Pupil Dialog */}
+          <Dialog open={showAssignDialog} onOpenChange={open => { if (!open) { setShowAssignDialog(false); setAssignChildId(""); } }}>
+            <DialogContent className="max-w-sm">
+              <DialogHeader><DialogTitle>Assign to Pupil</DialogTitle></DialogHeader>
+              <div className="space-y-4 mt-2">
+                <p className="text-sm text-muted-foreground">Select a student to assign this differentiated task to.</p>
+                <Select value={assignChildId} onValueChange={setAssignChildId}>
+                  <SelectTrigger><SelectValue placeholder="Select student" /></SelectTrigger>
+                  <SelectContent>
+                    {children.map(c => <SelectItem key={c.id} value={c.id}>{c.name} ({c.yearGroup})</SelectItem>)}
+                  </SelectContent>
+                </Select>
+                <div className="flex gap-2">
+                  <Button onClick={handleAssign} disabled={!assignChildId || assigning} className="flex-1 bg-brand hover:bg-brand/90 text-white">
+                    {assigning ? <><Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />Assigning…</> : <><UserPlus className="w-3.5 h-3.5 mr-1.5" />Assign</>}
+                  </Button>
+                  <Button variant="outline" onClick={() => { setShowAssignDialog(false); setAssignChildId(""); }}>Cancel</Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
 
           {/* Content */}
           <div className="diff-content" style={{ backgroundColor: overlayBg }}>

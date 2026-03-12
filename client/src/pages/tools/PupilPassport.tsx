@@ -7,6 +7,7 @@ export default function PupilPassport() {
   return (
     <AIToolPage
       title="Pupil Passport Generator"
+      assignable={true}
       description="Create a one-page pupil passport that tells staff everything they need to know"
       icon={<IdCard className="w-5 h-5 text-white" />}
       accentColor="bg-amber-600"
