@@ -60,6 +60,7 @@ export default function AdminPanel() {
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteName, setInviteName] = useState("");
   const [inviteRole, setInviteRole] = useState("teacher");
   const [inviting, setInviting] = useState(false);
   const [apiKeys, setApiKeys] = useState<Record<string, string>>({});
@@ -151,12 +152,21 @@ export default function AdminPanel() {
 
   const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inviteEmail) return;
+    if (!inviteEmail || !inviteName) return;
     setInviting(true);
     try {
-      await schoolsApi.inviteUser({ email: inviteEmail, role: inviteRole });
-      toast.success(`Invitation sent to ${inviteEmail}`);
+      const result = await schoolsApi.inviteUser({ email: inviteEmail, displayName: inviteName, role: inviteRole });
+      const tempPwd = result?.tempPassword;
+      if (tempPwd) {
+        toast.success(
+          `User created! Share these credentials with ${inviteEmail}: Password: ${tempPwd}`,
+          { duration: 15000 }
+        );
+      } else {
+        toast.success(`Invitation sent to ${inviteEmail}`);
+      }
       setInviteEmail("");
+      setInviteName("");
       const updated = await schoolsApi.listUsers();
       setUsers(updated);
     } catch (err: any) { toast.error(err.message || "Failed to send invitation"); }
@@ -265,6 +275,8 @@ export default function AdminPanel() {
             </CardHeader>
             <CardContent>
               <form onSubmit={handleInvite} className="flex gap-2 flex-wrap">
+                <Input type="text" value={inviteName} onChange={e => setInviteName(e.target.value)}
+                  placeholder="Full name" className="flex-1 min-w-36" required />
                 <Input type="email" value={inviteEmail} onChange={e => setInviteEmail(e.target.value)}
                   placeholder="teacher@school.sch.uk" className="flex-1 min-w-48" required />
                 <Select value={inviteRole} onValueChange={setInviteRole}>

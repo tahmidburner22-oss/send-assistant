@@ -564,9 +564,12 @@ router.post("/tts", requireAuth, async (req: Request, res: Response) => {
       const chunkBuffers: Buffer[] = [];
       await new Promise<void>((resolve, reject) => {
         const timeout = setTimeout(() => reject(new Error("msedge-tts chunk timeout after 30s")), 30000);
+        let resolved = false;
+        const done = () => { if (!resolved) { resolved = true; clearTimeout(timeout); resolve(); } };
         audioStream.on("data", (d: Buffer) => chunkBuffers.push(d));
-        audioStream.on("close", () => { clearTimeout(timeout); resolve(); });
-        audioStream.on("error", (e: Error) => { clearTimeout(timeout); reject(e); });
+        audioStream.on("end", done);
+        audioStream.on("close", done);
+        audioStream.on("error", (e: Error) => { if (!resolved) { resolved = true; clearTimeout(timeout); reject(e); } });
       });
       if (chunkBuffers.length > 0) {
         mp3Buffers.push(Buffer.concat(chunkBuffers));

@@ -394,8 +394,8 @@ function VocabSection({ content, fmt }: { content: string; fmt: ReturnType<typeo
     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "8px" }}>
       {entries.map((e, i) => (
         <div key={i} style={{ background: "white", border: "1px solid #e9d5ff", borderRadius: "8px", padding: "10px 12px", display: "flex", flexDirection: "column", gap: "4px" }}>
-          <div style={{ fontWeight: 700, color: "#7c3aed", fontSize: `${textSize}px`, fontFamily, letterSpacing }}>{e.term}</div>
-          <div style={{ color: "#374151", fontSize: `${textSize - 1}px`, lineHeight, fontFamily, letterSpacing }}>{e.def}</div>
+          <div style={{ fontWeight: 700, color: "#7c3aed", fontSize: `${textSize}px`, fontFamily, letterSpacing }} dangerouslySetInnerHTML={{ __html: renderMath(e.term) }} />
+          <div style={{ color: "#374151", fontSize: `${textSize - 1}px`, lineHeight, fontFamily, letterSpacing }} dangerouslySetInnerHTML={{ __html: renderMath(e.def) }} />
         </div>
       ))}
     </div>
@@ -419,7 +419,7 @@ function SelfAssessmentSection({ content, fmt }: { content: string; fmt: ReturnT
                 </div>
               ))}
             </div>
-            <span style={{ fontSize: `${textSize}px`, color: "#374151", fontFamily, lineHeight }}>I can {clean}</span>
+            <span style={{ fontSize: `${textSize}px`, color: "#374151", fontFamily, lineHeight }} dangerouslySetInnerHTML={{ __html: "I can " + renderMath(clean) }} />
           </div>
         );
       })}
@@ -456,7 +456,7 @@ function SelfReflectionSection({ content, fmt }: { content: string; fmt: ReturnT
                 </div>
               ))}
             </div>
-            <span style={{ fontSize: `${textSize}px`, color: "#374151", fontFamily, lineHeight }}>I can {clean}</span>
+            <span style={{ fontSize: `${textSize}px`, color: "#374151", fontFamily, lineHeight }} dangerouslySetInnerHTML={{ __html: "I can " + renderMath(clean) }} />
           </div>
         );
       })}
@@ -466,9 +466,7 @@ function SelfReflectionSection({ content, fmt }: { content: string; fmt: ReturnT
       {/* Open reflection question */}
       {openQ && (
         <div style={{ marginTop: "14px", background: "white", border: "1px solid #fcd34d", borderRadius: "8px", padding: "10px 12px" }}>
-          <div style={{ fontSize: `${textSize - 1}px`, fontWeight: 600, color: "#92400e", fontFamily, marginBottom: "6px" }}>
-            💭 {openQ}
-          </div>
+          <div style={{ fontSize: `${textSize - 1}px`, fontWeight: 600, color: "#92400e", fontFamily, marginBottom: "6px" }} dangerouslySetInnerHTML={{ __html: "💭 " + renderMath(openQ) }} />
           <div style={{ borderBottom: "1px solid #d1d5db", height: "28px", marginBottom: "6px" }} />
           <div style={{ borderBottom: "1px solid #d1d5db", height: "28px" }} />
         </div>
