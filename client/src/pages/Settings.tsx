@@ -428,7 +428,10 @@ function PersonalisationSection() {
     currentWallpaper,
   } = useUserPreferences();
 
-  const [activeTab, setActiveTab] = useState<"theme" | "wallpaper" | "sidebar" | "dashboard">("theme");
+  const initialTab = (typeof window !== "undefined"
+    ? (new URLSearchParams(window.location.search).get("tab") as "theme" | "wallpaper" | "sidebar" | "dashboard" | null)
+    : null) || "theme";
+  const [activeTab, setActiveTab] = useState<"theme" | "wallpaper" | "sidebar" | "dashboard">(initialTab);
   const [customWallpaperUrl, setCustomWallpaperUrl] = useState("");
 
   // All sidebar items for the toggle list

@@ -156,7 +156,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="min-h-screen" style={wallpaperStyle}>
+    <div className="min-h-screen overflow-x-hidden" style={wallpaperStyle}>
       {/* Top Header */}
       <header className="sticky top-0 z-40 backdrop-blur-md border-b border-border/50" style={{ backgroundColor: `${theme.primary}15`, borderColor: `${theme.primary}30` }}>
         <div className="flex items-center justify-between px-4 h-14">
@@ -302,7 +302,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       </AnimatePresence>
 
       {/* Main Content */}
-      <main className="pb-8">
+      <main className="pb-8 overflow-x-hidden w-full">
         <motion.div
           key={location}
           initial={{ opacity: 0, y: 8 }}
