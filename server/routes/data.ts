@@ -2,6 +2,7 @@ import { Router, Request, Response } from "express";
 import { v4 as uuidv4 } from "uuid";
 import db from "../db/index.js";
 import { requireAuth, auditLog } from "../middleware/auth.js";
+import { sendBehaviourAlert } from "../email/index.js";
 
 const router = Router();
 
@@ -236,6 +237,25 @@ router.post("/behaviour", requireAuth, (req: Request, res: Response) => {
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))`
   ).run(id, req.user!.schoolId, pupilId, req.user!.id, type, category || null, description || null, actionTaken || null, date);
   auditLog(req.user!.id, req.user!.schoolId, "behaviour.created", "behaviour_record", id, { pupilId, type }, req.ip);
+  // Send parent notification email if parent_email is set on the pupil
+  try {
+    const pupil = db.prepare("SELECT name, parent_email, parent_name FROM pupils WHERE id=? AND school_id=?").get(pupilId, req.user!.schoolId) as any;
+    const school = db.prepare("SELECT name FROM schools WHERE id=?").get(req.user!.schoolId) as any;
+    if (pupil?.parent_email) {
+      sendBehaviourAlert(pupil.parent_email, {
+        pupilName: pupil.name,
+        type,
+        category: category || undefined,
+        description: description || undefined,
+        actionTaken: actionTaken || undefined,
+        date,
+        teacherName: req.user!.displayName || "Your child's teacher",
+        schoolName: school?.name || "School",
+      }).catch((err: any) => console.error("[behaviour] parent email error:", err?.message));
+    }
+  } catch (e: any) {
+    console.error("[behaviour] parent email lookup error:", e?.message);
+  }
   res.status(201).json({ id, message: "Behaviour record created" });
 });
 

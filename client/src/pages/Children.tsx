@@ -110,7 +110,7 @@ export default function Children() {
 
   const handleUpdate = () => {
     if (!editChild) return;
-    updateChild(editChild.id, { name: editChild.name, yearGroup: editChild.yearGroup, sendNeed: editChild.sendNeed, timetable: editChild.timetable });
+    updateChild(editChild.id, { name: editChild.name, yearGroup: editChild.yearGroup, sendNeed: editChild.sendNeed, timetable: editChild.timetable, parentEmail: editChild.parentEmail, parentName: editChild.parentName });
     toast.success("Child updated!");
     setEditChild(null);
   };
@@ -304,6 +304,16 @@ export default function Children() {
                       <SelectTrigger className="h-10"><SelectValue /></SelectTrigger>
                       <SelectContent>{sendNeeds.map(n => <SelectItem key={n.id} value={n.id}>{n.name}</SelectItem>)}</SelectContent>
                     </Select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-medium">Parent / Guardian Name</Label>
+                    <Input value={editChild.parentName || ""} onChange={e => setEditChild({ ...editChild, parentName: e.target.value })} className="h-10" placeholder="e.g. Mr. Smith" />
+                    <p className="text-[10px] text-muted-foreground">Optional — used in behaviour alert emails</p>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-medium">Parent / Guardian Email</Label>
+                    <Input type="email" value={editChild.parentEmail || ""} onChange={e => setEditChild({ ...editChild, parentEmail: e.target.value })} className="h-10" placeholder="parent@example.com" />
+                    <p className="text-[10px] text-muted-foreground">If set, parent receives an email when a behaviour incident is logged</p>
                   </div>
                   <Button onClick={handleUpdate} className="w-full h-10 bg-brand hover:bg-brand/90 text-white">Save Changes</Button>
                 </div>

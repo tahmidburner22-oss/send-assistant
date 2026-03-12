@@ -90,3 +90,33 @@ export async function sendWelcomeEmail(to: string, displayName: string, schoolNa
     </div>`
   );
 }
+
+export async function sendBehaviourAlert(
+  parentEmail: string,
+  data: { pupilName: string; type: string; category?: string; description?: string; actionTaken?: string; date: string; teacherName: string; schoolName: string }
+) {
+  const isPositive = data.type === "positive";
+  const colour = isPositive ? "#059669" : "#d97706";
+  const heading = isPositive ? "Positive Behaviour Update" : "Behaviour Update";
+  const intro = isPositive
+    ? `We are pleased to share a positive behaviour update for <strong>${data.pupilName}</strong>.`
+    : `We wanted to keep you informed about a behaviour note recorded for <strong>${data.pupilName}</strong>.`;
+  await send(
+    parentEmail,
+    `${heading} — ${data.pupilName} | ${data.schoolName}`,
+    `<div style="font-family:sans-serif;max-width:600px;margin:auto">
+      <h2 style="color:${colour}">Adaptly — ${heading}</h2>
+      <p>${intro}</p>
+      <table style="border-collapse:collapse;width:100%;margin:16px 0">
+        <tr><td style="padding:8px;font-weight:bold;background:#f9fafb;width:140px">Date</td><td style="padding:8px;background:#f9fafb">${data.date}</td></tr>
+        ${data.category ? `<tr><td style="padding:8px;font-weight:bold">Category</td><td style="padding:8px">${data.category}</td></tr>` : ""}
+        ${data.description ? `<tr><td style="padding:8px;font-weight:bold;background:#f9fafb">Details</td><td style="padding:8px;background:#f9fafb">${data.description}</td></tr>` : ""}
+        ${data.actionTaken ? `<tr><td style="padding:8px;font-weight:bold">Action taken</td><td style="padding:8px">${data.actionTaken}</td></tr>` : ""}
+        <tr><td style="padding:8px;font-weight:bold;background:#f9fafb">Recorded by</td><td style="padding:8px;background:#f9fafb">${data.teacherName}</td></tr>
+      </table>
+      <p style="color:#666;font-size:14px">You can view your child's full progress and behaviour history in the <a href="${BASE_URL}/parent-portal" style="color:${colour}">Parent Portal</a>.</p>
+      <hr style="border:none;border-top:1px solid #eee;margin:24px 0">
+      <p style="color:#999;font-size:12px">Adaptly · ${data.schoolName} · This email was sent because a behaviour record was logged for your child.</p>
+    </div>`
+  );
+}
