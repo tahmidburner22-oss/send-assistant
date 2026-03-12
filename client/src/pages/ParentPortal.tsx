@@ -42,8 +42,20 @@ function generateComprehensionQuestions(_content: string, genre: string): string
 }
 
 /** Render any AI-generated content (worksheets, tools, differentiation) as formatted HTML */
+function decodeHtmlEntities(text: string): string {
+  return text
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&nbsp;/g, ' ');
+}
+
 function contentToHtml(text: string): string {
-  const withMath = renderMath(text);
+  // Decode any HTML entities that may have been double-encoded before processing
+  const decoded = decodeHtmlEntities(text);
+  const withMath = renderMath(decoded);
   return withMath
     .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
     .replace(/\*([^*\n]+?)\*/g, "<em>$1</em>")
@@ -1356,28 +1368,59 @@ export default function ParentPortal() {
             <p className="text-[10px] text-muted-foreground">Your child's teacher will share the room code when a live quiz is running.</p>
           </div>
         )}
-        {sec.id === "send-screener" && (
-          <div className="p-4 space-y-4">
-            <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 flex gap-2">
-              <span className="text-amber-600 text-sm flex-shrink-0">⚠️</span>
-              <p className="text-xs text-amber-800 leading-relaxed">
-                <strong>This is NOT a diagnosis.</strong> This screener identifies potential indicators of SEND needs based on validated clinical tools. Only a qualified professional can diagnose. Results are for informational purposes only.
-              </p>
+        {sec.id === "send-screener" && (() => {
+          const screenerAssignments = child?.assignments?.filter(a => a.type === "send-screener") ?? [];
+          const latestScreener = screenerAssignments.length > 0 ? screenerAssignments[screenerAssignments.length - 1] : null;
+          return (
+            <div className="p-4 space-y-4">
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 flex gap-2">
+                <span className="text-amber-600 text-sm flex-shrink-0">⚠️</span>
+                <p className="text-xs text-amber-800 leading-relaxed">
+                  <strong>This is NOT a diagnosis.</strong> This screener identifies potential indicators of SEND needs based on validated clinical tools. Only a qualified professional can diagnose. Results are for informational purposes only.
+                </p>
+              </div>
+              {latestScreener ? (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 p-3 rounded-xl bg-emerald-50 border border-emerald-200">
+                    <span className="text-emerald-600">✅</span>
+                    <div className="flex-1">
+                      <p className="text-sm font-semibold text-emerald-800">SEND Screener Completed</p>
+                      <p className="text-xs text-emerald-700">{latestScreener.title}</p>
+                      <p className="text-xs text-muted-foreground">Completed: {new Date(latestScreener.assignedAt).toLocaleDateString('en-GB')}</p>
+                    </div>
+                  </div>
+                  {latestScreener.content && (
+                    <div className="rounded-xl border border-border/50 p-3 bg-white">
+                      <p className="text-xs font-semibold text-foreground mb-2">📊 Screener Results Summary</p>
+                      <div className="text-xs text-foreground/80 leading-relaxed whitespace-pre-wrap max-h-60 overflow-y-auto">{latestScreener.content}</div>
+                    </div>
+                  )}
+                  <a
+                    href="/send-screener"
+                    className="flex items-center justify-center gap-2 w-full bg-indigo-100 hover:bg-indigo-200 text-indigo-700 text-sm font-semibold py-2.5 px-4 rounded-xl transition-colors"
+                  >
+                    <span>🔍</span> Retake SEND Screener
+                  </a>
+                </div>
+              ) : (
+                <>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    This evidence-based screener covers 8 areas of SEND need: Dyslexia, ADHD, Autism (ASC), Dyspraxia, Dyscalculia, Speech &amp; Language, Anxiety, and Moderate Learning Difficulties. It takes approximately 15–20 minutes and produces a personalised report.
+                  </p>
+                  <a
+                    href="/send-screener"
+                    className="flex items-center justify-center gap-2 w-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold py-3 px-4 rounded-xl transition-colors shadow-md shadow-indigo-100"
+                  >
+                    <span>🔍</span> Start SEND Screener
+                  </a>
+                  <p className="text-[10px] text-center text-muted-foreground">
+                    Questions are drawn from: BDA Dyslexia Checklist · WHO ASRS (ADHD) · AQ-10 (Autism) · MABC-2 (Dyspraxia) · Butterworth Dyscalculia Screener · CELF-5 (SLCN) · GAD-7 (Anxiety) · British Ability Scales (MLD)
+                  </p>
+                </>
+              )}
             </div>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              This evidence-based screener covers 8 areas of SEND need: Dyslexia, ADHD, Autism (ASC), Dyspraxia, Dyscalculia, Speech &amp; Language, Anxiety, and Moderate Learning Difficulties. It takes approximately 15–20 minutes and produces a personalised report.
-            </p>
-            <a
-              href="/send-screener"
-              className="flex items-center justify-center gap-2 w-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold py-3 px-4 rounded-xl transition-colors shadow-md shadow-indigo-100"
-            >
-              <span>🔍</span> Start SEND Screener
-            </a>
-            <p className="text-[10px] text-center text-muted-foreground">
-              Questions are drawn from: BDA Dyslexia Checklist · WHO ASRS (ADHD) · AQ-10 (Autism) · MABC-2 (Dyspraxia) · Butterworth Dyscalculia Screener · CELF-5 (SLCN) · GAD-7 (Anxiety) · British Ability Scales (MLD)
-            </p>
-          </div>
-        )}
+          );
+        })()}
               </div>
             )}
           </div>

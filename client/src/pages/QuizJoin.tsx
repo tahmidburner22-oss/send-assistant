@@ -64,7 +64,7 @@ export default function QuizJoin() {
   const [streak, setStreak] = useState(0);
   const [timer, setTimer] = useState(0);
   const [hasAnswered, setHasAnswered] = useState(false);
-  const [prevQuestion, setPrevQuestion] = useState(-1);
+  const prevQuestionRef = useRef(-1);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -76,8 +76,8 @@ export default function QuizJoin() {
       const data: RoomState = await res.json();
       setRoom(data);
       // Reset answered flag when question changes
-      if (data.currentQuestion !== prevQuestion) {
-        setPrevQuestion(data.currentQuestion);
+      if (data.currentQuestion !== prevQuestionRef.current) {
+        prevQuestionRef.current = data.currentQuestion;
         setHasAnswered(false);
         setLastAnswerIndex(null);
         setLastAnswerCorrect(null);

@@ -120,6 +120,8 @@ export const pupils = {
     apiFetch<any>(`/pupils/${id}/assignments`, { method: "POST", body: JSON.stringify(data) }),
   updateAssignment: (pupilId: string, assignmentId: string, data: any) =>
     apiFetch<any>(`/pupils/${pupilId}/assignments/${assignmentId}`, { method: "PUT", body: JSON.stringify(data) }),
+  deleteAssignment: (pupilId: string, assignmentId: string) =>
+    apiFetch<any>(`/pupils/${pupilId}/assignments/${assignmentId}`, { method: "DELETE" }),
   listIncidents: () => apiFetch<any[]>("/pupils/safeguarding/incidents"),
   reportIncident: (data: any) =>
     apiFetch<any>("/pupils/safeguarding/incidents", { method: "POST", body: JSON.stringify(data) }),

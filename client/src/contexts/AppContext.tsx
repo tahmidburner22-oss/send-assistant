@@ -122,6 +122,7 @@ interface AppContextType extends AppState {
   updateChild: (id: string, updates: Partial<Child>) => Promise<void>;
   assignWork: (childId: string, assignment: Omit<Assignment, "id" | "assignedAt" | "status">) => Promise<void>;
   updateAssignment: (childId: string, assignmentId: string, updates: Partial<Assignment>) => Promise<void>;
+  deleteAssignment: (childId: string, assignmentId: string) => Promise<void>;
   addSubmission: (childId: string, submission: Omit<Submission, "id" | "submittedAt">) => void;
   updateSubmission: (childId: string, submissionId: string, updates: Partial<Submission>) => void;
   saveWorksheet: (worksheet: Omit<Worksheet, "id" | "createdAt">) => Promise<Worksheet>;
@@ -265,6 +266,11 @@ export function AppProvider({ children: childrenProp }: { children: React.ReactN
     setState(s => ({ ...s, children: s.children.map(c => c.id === childId ? { ...c, assignments: c.assignments.map(a => a.id === assignmentId ? { ...a, ...updates } : a) } : c) }));
   }, []);
 
+  const deleteAssignment = useCallback(async (childId: string, assignmentId: string) => {
+    await pupilsApi.deleteAssignment(childId, assignmentId).catch(() => {});
+    setState(s => ({ ...s, children: s.children.map(c => c.id === childId ? { ...c, assignments: c.assignments.filter(a => a.id !== assignmentId) } : c) }));
+  }, []);
+
   const addSubmission = useCallback((childId: string, submission: Omit<Submission, "id" | "submittedAt">) => {
     const sub: Submission = { ...submission, id: generateId(), submittedAt: new Date().toISOString() };
     setState(s => ({ ...s, children: s.children.map(c => c.id === childId ? { ...c, submissions: [...c.submissions, sub] } : c) }));
@@ -351,7 +357,7 @@ export function AppProvider({ children: childrenProp }: { children: React.ReactN
   }, []);
 
   return (
-    <AppContext.Provider value={{ ...state, login, loginWithGoogle, logout, registerTeacher, verifyMfa, addChild, removeChild, updateChild, assignWork, updateAssignment, addSubmission, updateSubmission, saveWorksheet, updateWorksheet, deleteWorksheet, saveStory, saveDifferentiation, saveAttendance, updateAttendance, getAttendanceForChild, getAttendanceForDate, addIdea, voteIdea, saveParentNewsletter, deleteParentNewsletter, setColorOverlay, refreshData }}>
+    <AppContext.Provider value={{ ...state, login, loginWithGoogle, logout, registerTeacher, verifyMfa, addChild, removeChild, updateChild, assignWork, updateAssignment, deleteAssignment, addSubmission, updateSubmission, saveWorksheet, updateWorksheet, deleteWorksheet, saveStory, saveDifferentiation, saveAttendance, updateAttendance, getAttendanceForChild, getAttendanceForDate, addIdea, voteIdea, saveParentNewsletter, deleteParentNewsletter, setColorOverlay, refreshData }}>
       {childrenProp}
     </AppContext.Provider>
   );
