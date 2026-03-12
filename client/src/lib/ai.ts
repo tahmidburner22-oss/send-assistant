@@ -609,7 +609,9 @@ Return EXACTLY this JSON structure (raw JSON only, no markdown):
   }
 }`;
 
-  const { text, provider } = await callAI(system, user, 4000);
+  // Scale token limit with worksheet length — longer worksheets need more tokens
+  const maxTokensForLength = lengthMins >= 60 ? 8000 : lengthMins <= 10 ? 3000 : 6000;
+  const { text, provider } = await callAI(system, user, maxTokensForLength);
   const cleaned = text
     .replace(/^```json\s*/i, "")
     .replace(/^```\s*/i, "")
@@ -619,8 +621,20 @@ Return EXACTLY this JSON structure (raw JSON only, no markdown):
   try {
     json = JSON.parse(cleaned);
   } catch (parseErr) {
-    console.error("[Adaptly AI] JSON parse failed. Raw response:", text.slice(0, 300));
-    throw new Error(`AI returned invalid JSON. Raw: ${text.slice(0, 100)}`);
+    // LaTeX escape sequences like \( \) \[ \] \{ \} \dfrac \sqrt etc. are invalid JSON escapes.
+    // Fix by doubling backslashes inside JSON string values only.
+    try {
+      // Strategy: replace invalid single-backslash escapes with double backslashes
+      // Only fix sequences that are NOT valid JSON escapes (\" \\ \/ \b \f \n \r \t \uXXXX)
+      const fixedJson = cleaned.replace(
+        /\\(?!["\\\//bfnrtu])/g,
+        "\\\\"
+      );
+      json = JSON.parse(fixedJson);
+    } catch (fixErr) {
+      console.error("[Adaptly AI] JSON parse failed even after LaTeX fix. Raw response:", text.slice(0, 300));
+      throw new Error(`AI returned invalid JSON. Raw: ${text.slice(0, 100)}`);
+    }
   }
   const result: AIWorksheetResult = { ...json, isAI: true, provider };
 
