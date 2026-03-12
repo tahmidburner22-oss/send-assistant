@@ -43,16 +43,21 @@ export type ExamStage = "ks1" | "ks2" | "11plus" | "ks3" | "gcse";
 
 export interface PastPaperQuestion {
   id: string;
-  board: "AQA" | "Edexcel" | "OCR" | "WJEC" | "STA" | "GL" | "KS1 SATs" | "KS2 SATs" | "CCEA" | "Cambridge";
-  subject: string;
-  year: number;
-  series: "June" | "November" | "Sample" | "Specimen" | "May" | "January" | "March";
-  paper: string;
+  board?: "AQA" | "Edexcel" | "OCR" | "WJEC" | "STA" | "GL" | "KS1 SATs" | "KS2 SATs" | "CCEA" | "Cambridge";
+  subject?: string;
+  year?: number;
+  series?: "June" | "November" | "Sample" | "Specimen" | "May" | "January" | "March";
+  paper?: string;
   tier?: "Higher" | "Foundation";
-  questionNum: string;
-  marks: number;
-  topic: string;
-  text: string;
+  questionNum?: string;
+  marks?: number;
+  topic?: string;
+  text?: string;
+  question?: string;  // alias for text used in some question banks
+  topicName?: string; // human-readable topic name used in some question banks
+  source?: string;    // source attribution
+  difficulty?: string; // difficulty label
+  examStyle?: boolean; // whether this is an exam-style question
   context?: string;
   subParts?: PastPaperSubPart[];
   commandWord?: string;
@@ -1844,11 +1849,11 @@ export function getExamQuestions(options: {
   const matchesTopic = (q: PastPaperQuestion): boolean => {
     if (!topicLower) return true;
     // 1. Direct topic field match (case-insensitive substring)
-    if (q.topic.toLowerCase().includes(topicLower)) return true;
+    if ((q.topic || '').toLowerCase().includes(topicLower)) return true;
     // 2. Alias-based topic match
     if (topicAliases) {
       for (const alias of topicAliases) {
-        if (q.topic.toLowerCase().includes(alias.toLowerCase())) return true;
+        if ((q.topic || '').toLowerCase().includes(alias.toLowerCase())) return true;
       }
     }
     // 3. Keyword search in question text (fallback)
@@ -1861,7 +1866,7 @@ export function getExamQuestions(options: {
     if (board && board !== "none" && board !== "Any" && q.board !== board) return false;
     if (tier && q.tier && q.tier !== tier) return false;
     if (!matchesTopic(q)) return false;
-    if (q.year < yearMin || q.year > yearMax) return false;
+    if (q.year !== undefined && (q.year < yearMin || q.year > yearMax)) return false;
 
     // Year-group-appropriate filtering — STRICTLY enforced
     if (yearGroup) {
@@ -1881,12 +1886,9 @@ export function getExamQuestions(options: {
         if (q.stage && q.stage !== "ks3" && q.stage !== "gcse") return false;
         // No Higher tier for KS3 students
         if (q.tier && q.tier === "Higher") return false;
-        // No KS1/KS2/11+ questions for KS3
-        if (q.stage === "ks1" || q.stage === "ks2" || q.stage === "11plus") return false;
       } else if (yearGroup <= 11) {
         // GCSE (Years 10–11): GCSE questions only — NO KS2 SATs, NO KS1
         if (q.stage && q.stage !== "gcse" && q.stage !== "ks3") return false;
-        if (q.stage === "ks1" || q.stage === "ks2" || q.stage === "11plus") return false;
       } else {
         // A-Level / Sixth Form (Years 12–13): GCSE and above
         if (q.stage === "ks1" || q.stage === "ks2") return false;
@@ -1909,10 +1911,9 @@ export function getTopicsForSubject(subject: string, board?: string): string[] {
   const topics = new Set<string>();
   allPastPaperQuestions
     .filter(q => q.subject === subject && (!board || board === "Any" || q.board === board))
-    .forEach(q => topics.add(q.topic));
+     .forEach(q => { if (q.topic) topics.add(q.topic); });
   return Array.from(topics).sort();
 }
-
 /**
  * Get all unique boards available for a given subject.
  */
@@ -1920,7 +1921,7 @@ export function getBoardsForSubject(subject: string): string[] {
   const boards = new Set<string>();
   allPastPaperQuestions
     .filter(q => q.subject === subject)
-    .forEach(q => boards.add(q.board));
+    .forEach(q => { if (q.board) boards.add(q.board); });
   return Array.from(boards).sort();
 }
 
@@ -1934,13 +1935,13 @@ export function formatQuestionForWorksheet(
   showMarkScheme = false,
   showHint = false
 ): string {
-  const markLabel = q.marks === 1 ? "(1 mark)" : `(${q.marks} marks)`;
+   const markLabel = q.marks === 1 ? "(1 mark)" : `(${q.marks ?? 0} marks)`;
   const contextBlock = q.context
     ? `\n\n${q.context.split("\n").join("\n")}\n`
     : "";
-
+  const qText = q.text || q.question || '';
   // No asterisks — plain text formatting
-  let out = `Q${index}. ${q.text} ${markLabel}${contextBlock}\n`;
+  let out = `Q${index}. ${qText} ${markLabel}${contextBlock}\n`;
 
   if (q.subParts && q.subParts.length > 0) {
     q.subParts.forEach(part => {
@@ -1965,7 +1966,9 @@ export function formatQuestionForWorksheet(
   }
 
   const stageLabel = q.stage === "ks1" ? "KS1 SATs" : q.stage === "ks2" ? "KS2 SATs" : q.stage === "11plus" ? "11+" : q.stage === "ks3" ? "KS3" : "GCSE";
-  out += `\nSource: ${q.board} ${stageLabel} ${q.year} — ${q.paper}\n`;
+  if (q.board || q.year || q.paper) {
+    out += `\nSource: ${q.board ?? ''} ${stageLabel} ${q.year ?? ''} — ${q.paper ?? ''}\n`;
+  }
   return out;
 }
 
@@ -1978,9 +1981,9 @@ export function getDatabaseSummary() {
   const byYear: Record<number, number> = {};
 
   allPastPaperQuestions.forEach(q => {
-    byBoard[q.board] = (byBoard[q.board] || 0) + 1;
-    bySubject[q.subject] = (bySubject[q.subject] || 0) + 1;
-    byYear[q.year] = (byYear[q.year] || 0) + 1;
+    if (q.board) byBoard[q.board] = (byBoard[q.board] || 0) + 1;
+    if (q.subject) bySubject[q.subject] = (bySubject[q.subject] || 0) + 1;
+    if (q.year !== undefined) byYear[q.year] = (byYear[q.year] || 0) + 1;
   });
 
   return {

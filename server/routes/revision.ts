@@ -208,11 +208,25 @@ async function extractText(buffer: Buffer, mimetype: string): Promise<string> {
     try {
       const { PDFParse } = await import("pdf-parse");
       const parser = new PDFParse({ data: buffer, verbosity: 0 });
+      await parser.load();
       const result = await parser.getText();
       raw = result?.text ?? "";
     } catch (pdfErr: any) {
       console.error("[extractText] pdf-parse error:", pdfErr?.message || pdfErr);
       raw = buffer.toString("utf-8");
+    }
+  } else if (
+    mimetype === "application/msword" ||
+    mimetype === "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+  ) {
+    try {
+      const mammoth = await import("mammoth");
+      const mammothLib = (mammoth as any).default || mammoth;
+      const result = await mammothLib.extractRawText({ buffer });
+      raw = result.value || "";
+    } catch (docErr: any) {
+      console.error("[extractText] mammoth error:", docErr?.message || docErr);
+      raw = "";
     }
   } else {
     raw = buffer.toString("utf-8");

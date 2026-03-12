@@ -1006,10 +1006,11 @@ export default function Worksheets() {
             {(() => {
               const q = examQSearch.toLowerCase().trim();
               const filtered = allPastPaperQuestions.filter(question => {
-                if (!question.text) return false; // skip malformed entries
+                const qText = question.text || question.question || '';
+                if (!qText) return false; // skip malformed entries
                 const matchSearch = !q ||
                   (question.topic || '').toLowerCase().includes(q) ||
-                  (question.text || '').toLowerCase().includes(q) ||
+                  qText.toLowerCase().includes(q) ||
                   (question.subject || '').toLowerCase().includes(q);
                 const matchSubject = examQSubject === "all" || question.subject === examQSubject;
                 const matchBoard = examQBoard === "all" || question.board === examQBoard;
@@ -1070,7 +1071,7 @@ export default function Worksheets() {
                               <Badge variant="outline" className="text-xs py-0">{question.year}</Badge>
                               <Badge className="text-xs py-0 bg-gray-100 text-gray-600">{question.marks} mark{question.marks !== 1 ? 's' : ''}</Badge>
                             </div>
-                            <p className="text-sm text-foreground line-clamp-2" dangerouslySetInnerHTML={{ __html: renderMath(question.text) }} />
+                            <p className="text-sm text-foreground line-clamp-2" dangerouslySetInnerHTML={{ __html: renderMath(question.text || question.question || '') }} />
                             <p className="text-xs text-muted-foreground mt-1">{question.paper} · Q{question.questionNum}</p>
                           </div>
                           <ChevronDown className={`h-4 w-4 text-gray-400 flex-shrink-0 transition-transform ${examQExpanded === question.id ? 'rotate-180' : ''}`} />
@@ -1080,7 +1081,7 @@ export default function Worksheets() {
                           <div className="mt-3 pt-3 border-t border-border/50 space-y-2">
                             <div className="bg-blue-50 rounded-lg p-3">
                               <p className="text-xs font-semibold text-blue-700 mb-1">Full Question:</p>
-                              <p className="text-sm text-gray-800" dangerouslySetInnerHTML={{ __html: renderMath(question.text) }} />
+                              <p className="text-sm text-gray-800" dangerouslySetInnerHTML={{ __html: renderMath(question.text || question.question || '') }} />
                               {question.context && (
                                 <div className="mt-2 p-2 bg-white rounded border border-blue-100">
                                   <p className="text-xs text-gray-500 font-medium mb-1">Context:</p>
