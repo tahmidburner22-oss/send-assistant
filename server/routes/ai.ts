@@ -857,6 +857,29 @@ ${textForAI}${truncated ? "\n\n[Note: Document was truncated at 12,000 character
         .trim();
       const jsonMatch = stripped.match(/\{[\s\S]*\}/);
       parsed = JSON.parse(jsonMatch ? jsonMatch[0] : stripped);
+
+      // Detect double-nested JSON: if sections[0].content is itself a JSON string
+      // containing a full worksheet structure, unwrap it
+      if (
+        parsed?.sections?.length === 1 &&
+        typeof parsed.sections[0]?.content === 'string'
+      ) {
+        const innerContent = parsed.sections[0].content.trim();
+        if (innerContent.startsWith('```') || innerContent.startsWith('{')) {
+          try {
+            const innerStripped = innerContent
+              .replace(/^```(?:json)?\s*/i, '')
+              .replace(/\s*```\s*$/, '')
+              .trim();
+            const innerMatch = innerStripped.match(/\{[\s\S]*\}/);
+            const innerParsed = JSON.parse(innerMatch ? innerMatch[0] : innerStripped);
+            if (innerParsed?.sections && Array.isArray(innerParsed.sections)) {
+              // The real worksheet is nested inside — use it instead
+              parsed = innerParsed;
+            }
+          } catch (_) { /* not valid JSON, leave as-is */ }
+        }
+      }
     } catch {
       parsed = {
         title: "Adapted Worksheet",
