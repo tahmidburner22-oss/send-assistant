@@ -776,3 +776,176 @@ export function buildHybridExamWorksheet(params: HybridExamWorksheetParams): AIW
     isAI: true,
   };
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SELECTED QUESTIONS WORKSHEET BUILDER (Exam Hub Multi-Select)
+// ─────────────────────────────────────────────────────────────────────────────
+// When a user selects specific questions from the Exam Hub, this function
+// builds a complete worksheet using those exact questions as the exercises.
+// The AI generates intro sections (objectives, vocab, worked example) and the
+// real exam questions are used as the exercise sections.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface SelectedQuestionsWorksheetParams {
+  questions: PastPaperQuestion[];
+  subject: string;
+  yearGroup: string;
+  sendNeed?: string;
+  includeAnswers?: boolean;
+}
+
+/**
+ * Build a worksheet from user-selected exam questions.
+ * Questions are sorted by marks (low → high) for scaffolded difficulty.
+ * Time is estimated as ~1.5 minutes per mark.
+ * Source text warnings are included in teacher notes.
+ */
+export function buildSelectedQuestionsWorksheet(
+  params: SelectedQuestionsWorksheetParams
+): AIWorksheetResult {
+  const { questions, subject, yearGroup, sendNeed, includeAnswers } = params;
+
+  if (questions.length === 0) {
+    return {
+      title: "Exam Practice Worksheet",
+      subtitle: `${yearGroup} | ${subject}`,
+      sections: [{
+        title: "No Questions Selected",
+        type: "questions",
+        content: "> Please go back to the Exam Hub and select at least one question.",
+      }],
+      metadata: {
+        subject,
+        yearGroup,
+        difficulty: "mixed",
+        totalMarks: 0,
+        estimatedTime: "0 minutes",
+        adaptations: [],
+      },
+      isAI: true,
+    };
+  }
+
+  // Sort by marks ascending (low → high) for scaffolded difficulty
+  const sorted = [...questions].sort((a, b) => (a.marks || 0) - (b.marks || 0));
+  const totalMarks = sorted.reduce((sum, q) => sum + (q.marks || 0), 0);
+  // Estimate time: ~1.5 minutes per mark, minimum 5 minutes
+  const estimatedMins = Math.max(5, Math.round(totalMarks * 1.5));
+
+  // Determine boards and topics from selected questions
+  const boards = Array.from(new Set(sorted.map(q => q.board).filter(Boolean)));
+  const topics = Array.from(new Set(sorted.map(q => q.topic).filter(Boolean)));
+  const boardLabel = boards.length === 1 ? boards[0]! : boards.join(", ");
+  const topicLabel = topics.length <= 3 ? topics.join(", ") : `${topics.slice(0, 3).join(", ")} + ${topics.length - 3} more`;
+
+  // Build exam question sections
+  const examSections: AIWorksheetSection[] = [];
+
+  if (sorted.length <= 5) {
+    // Small set — single section
+    examSections.push(buildExamQuestionsSection(sorted, "Exam Practice Questions", sendNeed));
+  } else {
+    // Split into guided (low marks), core (mid marks), challenge (high marks)
+    const third = Math.ceil(sorted.length / 3);
+    const guidedQs = sorted.slice(0, third);
+    const coreQs = sorted.slice(third, third * 2);
+    const challengeQs = sorted.slice(third * 2);
+
+    if (guidedQs.length > 0) {
+      examSections.push(buildExamQuestionsSection(guidedQs, "Section A — Foundation (Exam Questions)", sendNeed));
+    }
+    if (coreQs.length > 0) {
+      examSections.push(buildExamQuestionsSection(coreQs, "Section B — Core Practice (Exam Questions)", sendNeed));
+    }
+    if (challengeQs.length > 0) {
+      examSections.push(buildExamQuestionsSection(challengeQs, "Section C — Stretch & Challenge (Exam Questions)", sendNeed));
+    }
+  }
+
+  // Build mark scheme
+  const markSchemeSection: AIWorksheetSection = {
+    title: "Mark Scheme (Exam Questions)",
+    type: "mark-scheme",
+    teacherOnly: true,
+    content: buildMarkScheme(sorted),
+  };
+
+  // Build source text warning
+  const sourceWarning = buildSourceWarning(sorted);
+
+  // Build teacher notes with source links
+  let teacherContent = `**Teacher Notes**\n\n`;
+  teacherContent += `**Questions sourced from:** ${boardLabel} past papers\n\n`;
+  teacherContent += `**Topics covered:** ${topicLabel}\n\n`;
+  teacherContent += `**Total marks:** ${totalMarks}\n\n`;
+  teacherContent += `**Estimated time:** ${estimatedMins} minutes (~1.5 min per mark)\n\n`;
+  teacherContent += `**Questions selected:** ${sorted.length} questions hand-picked from the Exam Hub\n\n`;
+
+  if (sendNeed && sendNeed !== "none" && sendNeed !== "general" && sendNeed !== "none-selected") {
+    teacherContent += `**SEND considerations:**\n`;
+    teacherContent += `- Paper formatted for: ${sendNeed}\n`;
+    teacherContent += `- Increased line spacing applied\n`;
+    teacherContent += `- Font size increased for readability\n\n`;
+  }
+
+  teacherContent += `**Individual question sources:**\n`;
+  sorted.forEach((q, i) => {
+    const url = getBoardPastPapersUrl(q.board);
+    teacherContent += `- Q${i + 1}: ${q.board} ${q.year} — ${q.paper}, Q${q.questionNum} [${q.marks} mark${q.marks !== 1 ? "s" : ""}] — [Download paper](${url})\n`;
+  });
+
+  teacherContent += sourceWarning;
+
+  const teacherSection: AIWorksheetSection = {
+    title: "Teacher Notes",
+    type: "teacher-notes",
+    teacherOnly: true,
+    content: teacherContent,
+  };
+
+  // Build info box if maths/science
+  const infoBoxContent = buildInfoBox(subject, boardLabel);
+  const infoSection: AIWorksheetSection | null = infoBoxContent ? {
+    title: "Information",
+    type: "example",
+    content: infoBoxContent,
+  } : null;
+
+  // Self-reflection section
+  const reflectionSection: AIWorksheetSection = {
+    title: "How Did I Do?",
+    type: "self-reflection",
+    content: topics.slice(0, 4).map(t =>
+      `I can answer exam questions about ${t}`
+    ).join("\n") + "\nQ: Which question did you find most challenging and why?",
+  };
+
+  // Assemble all sections
+  const allSections: AIWorksheetSection[] = [];
+  if (infoSection) allSections.push(infoSection);
+  allSections.push(...examSections);
+  allSections.push(reflectionSection);
+  if (includeAnswers !== false) allSections.push(markSchemeSection);
+  allSections.push(teacherSection);
+
+  return {
+    title: `Exam Practice Worksheet — ${topicLabel}`,
+    subtitle: `${yearGroup} | ${subject} | ${boardLabel} | ${totalMarks} marks | ${estimatedMins} mins`,
+    sections: allSections,
+    metadata: {
+      subject,
+      topic: topicLabel,
+      yearGroup,
+      difficulty: "mixed",
+      examBoard: boardLabel,
+      totalMarks,
+      estimatedTime: `${estimatedMins} minutes`,
+      adaptations: [
+        "Hand-picked exam questions from past papers",
+        `Questions sorted low → high marks`,
+        `${sorted.length} questions, ${totalMarks} total marks`,
+      ],
+    },
+    isAI: true,
+  };
+}

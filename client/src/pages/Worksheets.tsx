@@ -22,14 +22,14 @@ import WorksheetRenderer, { renderMath } from "@/components/WorksheetRenderer";
 import { worksheetBank, type BankWorksheet } from "@/lib/worksheet-bank";
 import { getSyllabusTopics, type SyllabusTopic } from "@/lib/syllabus-data";
 import { aiGenerateWorksheet, aiEditSection } from "@/lib/ai";
-import { buildExamPaperWorksheet, buildHybridExamWorksheet, hasPastPaperQuestions, getPastPaperDatabaseInfo } from "@/lib/examPaperBuilder";
+import { buildExamPaperWorksheet, buildHybridExamWorksheet, buildSelectedQuestionsWorksheet, hasPastPaperQuestions, getPastPaperDatabaseInfo } from "@/lib/examPaperBuilder";
 import { allPastPaperQuestions, type PastPaperQuestion } from "@/lib/pastPaperQuestions";
 import PrintOptionsDialog, { type PrintOptions } from "@/components/PrintOptionsDialog";
 import {
   FileText, Upload, Library, Sparkles, Download, Printer, Save, Star,
   Eye, GraduationCap, Palette, Edit3, Users, Check, ZoomIn, ZoomOut,
   Mic, MicOff, Image, Search, Clock, Award, ChevronRight, ChevronDown,
-  AlertCircle, CheckCircle, RefreshCw, FileDown, X, Wand2, History, Trash2, Info, PenLine
+  AlertCircle, CheckCircle, RefreshCw, FileDown, X, Wand2, History, Trash2, Info, PenLine, Square, CheckSquare, ListChecks
 } from "lucide-react";
 
 // ─── Voice-to-text hook ─────────────────────────────────────────────────────
@@ -211,6 +211,21 @@ export default function Worksheets() {
   const [examQBoard, setExamQBoard] = useState("all");
   const [examQTier, setExamQTier] = useState("all");
   const [examQExpanded, setExamQExpanded] = useState<string | null>(null);
+  // Multi-select state for Exam Hub
+  const [selectedExamQIds, setSelectedExamQIds] = useState<Set<string>>(new Set());
+  const selectedExamQuestions = useMemo(() => {
+    return allPastPaperQuestions.filter(q => selectedExamQIds.has(q.id));
+  }, [selectedExamQIds]);
+  const selectedTotalMarks = useMemo(() => {
+    return selectedExamQuestions.reduce((sum, q) => sum + (q.marks || 0), 0);
+  }, [selectedExamQuestions]);
+  const toggleExamQ = useCallback((id: string) => {
+    setSelectedExamQIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  }, []);
 
   // History state
   const [historySearch, setHistorySearch] = useState("");
@@ -376,6 +391,70 @@ export default function Worksheets() {
         setSavedWorksheetId(saved.id);
         refreshData(); // Update dashboard counts immediately
       }).catch(() => {}); // Silent auto-save
+    }
+
+    setLoading(false);
+  };
+
+  // ─── Build worksheet from selected exam questions (Exam Hub multi-select) ──
+  const handleBuildFromSelected = async () => {
+    if (selectedExamQuestions.length === 0) {
+      toast.error("Please select at least one question from the Exam Hub.");
+      return;
+    }
+    setLoading(true);
+    setEditedSections({});
+    setEditMode(false);
+    setRating(0);
+    setSavedWorksheetId(null);
+    setVoiceAnswers({});
+
+    try {
+      // Determine subject from selected questions
+      const qSubject = selectedExamQuestions[0]?.subject || subject || "Mathematics";
+      const qYearGroup = yearGroup || "Year 10";
+
+      // Build worksheet directly from selected questions (no AI needed)
+      const ws = buildSelectedQuestionsWorksheet({
+        questions: selectedExamQuestions,
+        subject: qSubject,
+        yearGroup: qYearGroup,
+        sendNeed: sendNeed && sendNeed !== "none-selected" ? sendNeed : undefined,
+        includeAnswers,
+      });
+
+      const generatedWs = { ...ws, isAI: true } as AIWorksheet;
+      setGenerated(generatedWs);
+      setActiveTab("generate");
+
+      // Auto-save
+      const sectionsToSave = generatedWs.sections.map(s => ({ ...s }));
+      const content = sectionsToSave.filter(s => !s.teacherOnly).map(s => `## ${s.title}\n${s.content}`).join("\n\n");
+      const teacherContent = sectionsToSave.map(s => `## ${s.title}\n${s.content}`).join("\n\n");
+      saveWorksheet({
+        title: generatedWs.title,
+        subtitle: (generatedWs as any).subtitle,
+        subject: generatedWs.metadata.subject,
+        topic: generatedWs.metadata.topic,
+        yearGroup: generatedWs.metadata.yearGroup,
+        sendNeed: generatedWs.metadata.sendNeed,
+        difficulty: generatedWs.metadata.difficulty,
+        examBoard: generatedWs.metadata.examBoard,
+        content, teacherContent, rating: 0, overlay: colorOverlay,
+        sections: sectionsToSave,
+        metadata: generatedWs.metadata as any,
+        isAI: true,
+      }).then(saved => {
+        setSavedWorksheetId(saved.id);
+        refreshData();
+      }).catch(() => {});
+
+      toast.success(`Worksheet built with ${selectedExamQuestions.length} exam questions (${selectedTotalMarks} marks)!`);
+      // Clear selection after building
+      setSelectedExamQIds(new Set());
+    } catch (err) {
+      console.error("Build from selected questions failed:", err);
+      toast.error("Failed to build worksheet from selected questions.");
     }
 
     setLoading(false);
@@ -1000,10 +1079,10 @@ export default function Worksheets() {
               <CardContent className="p-3 space-y-3">
                 <div className="flex items-center gap-2 mb-1">
                   <Award className="w-4 h-4 text-blue-600" />
-                  <span className="text-sm font-semibold text-foreground">Past Paper Question Search</span>
+                  <span className="text-sm font-semibold text-foreground">Exam Hub — Select Questions</span>
                   <Badge className="ml-auto bg-blue-100 text-blue-700 text-xs">{allPastPaperQuestions.length} questions</Badge>
                 </div>
-                <p className="text-xs text-muted-foreground">Search by topic to find real, verbatim exam questions from AQA, Edexcel, OCR and WJEC past papers.</p>
+                <p className="text-xs text-muted-foreground">Search and tick questions to build a custom worksheet from real past paper questions. Select multiple questions, then click "Build Worksheet".</p>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <Input
@@ -1044,6 +1123,63 @@ export default function Worksheets() {
               </CardContent>
             </Card>
 
+            {/* Floating selection bar */}
+            {selectedExamQIds.size > 0 && (
+              <Card className="border-blue-300 bg-blue-50 sticky top-0 z-10 shadow-md">
+                <CardContent className="p-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                      <ListChecks className="h-4 w-4 text-blue-600" />
+                      <span className="text-sm font-semibold text-blue-800">
+                        {selectedExamQIds.size} question{selectedExamQIds.size !== 1 ? 's' : ''} selected
+                      </span>
+                      <Badge className="bg-blue-200 text-blue-800 text-xs">{selectedTotalMarks} marks</Badge>
+                      <Badge variant="outline" className="text-xs text-blue-600 border-blue-300">
+                        ~{Math.max(5, Math.round(selectedTotalMarks * 1.5))} mins
+                      </Badge>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="text-xs h-7 border-blue-300 text-blue-600 hover:bg-blue-100"
+                        onClick={() => setSelectedExamQIds(new Set())}
+                      >
+                        <X className="h-3 w-3 mr-1" /> Clear
+                      </Button>
+                      <Button
+                        size="sm"
+                        className="text-xs h-7 bg-blue-600 hover:bg-blue-700 text-white"
+                        onClick={handleBuildFromSelected}
+                        disabled={loading}
+                      >
+                        {loading ? (
+                          <><RefreshCw className="h-3 w-3 mr-1 animate-spin" /> Building...</>
+                        ) : (
+                          <><Sparkles className="h-3 w-3 mr-1" /> Build Worksheet</>
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                  {/* Show selected question summaries */}
+                  <div className="mt-2 flex flex-wrap gap-1">
+                    {selectedExamQuestions.slice(0, 8).map(q => (
+                      <Badge
+                        key={q.id}
+                        className="text-xs py-0 bg-white text-blue-700 border border-blue-200 cursor-pointer hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-colors"
+                        onClick={() => toggleExamQ(q.id)}
+                      >
+                        {q.topic} ({q.marks}m) <X className="h-2.5 w-2.5 ml-1" />
+                      </Badge>
+                    ))}
+                    {selectedExamQuestions.length > 8 && (
+                      <Badge variant="outline" className="text-xs py-0 text-blue-500">+{selectedExamQuestions.length - 8} more</Badge>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             {/* Results */}
             {(() => {
               const q = examQSearch.toLowerCase().trim();
@@ -1072,7 +1208,7 @@ export default function Worksheets() {
                         return (
                           <button
                             key={topic}
-                            onClick={() => setExamQSearch(topic)}
+                            onClick={() => setExamQSearch(topic || '')}
                             className="px-3 py-1.5 text-xs rounded-full bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 transition-colors"
                           >
                             {topic} <span className="text-blue-400">({count})</span>
@@ -1096,15 +1232,45 @@ export default function Worksheets() {
 
               return (
                 <div className="space-y-2">
-                  <p className="text-xs text-gray-500 px-1">{filtered.length} question{filtered.length !== 1 ? 's' : ''} found{q ? ` for "${examQSearch}"` : ''}</p>
-                  {filtered.map(question => (
+                  <div className="flex items-center justify-between px-1">
+                    <p className="text-xs text-gray-500">{filtered.length} question{filtered.length !== 1 ? 's' : ''} found{q ? ` for "${examQSearch}"` : ''}</p>
+                    <button
+                      className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+                      onClick={() => {
+                        const allIds = new Set(selectedExamQIds);
+                        const allSelected = filtered.every(q => allIds.has(q.id));
+                        if (allSelected) {
+                          filtered.forEach(q => allIds.delete(q.id));
+                        } else {
+                          filtered.forEach(q => allIds.add(q.id));
+                        }
+                        setSelectedExamQIds(allIds);
+                      }}
+                    >
+                      {filtered.every(q => selectedExamQIds.has(q.id)) ? 'Deselect all' : 'Select all visible'}
+                    </button>
+                  </div>
+                  {filtered.map(question => {
+                    const isSelected = selectedExamQIds.has(question.id);
+                    return (
                     <Card
                       key={question.id}
-                      className="border-border/50 hover:shadow-md transition-shadow cursor-pointer"
+                      className={`border-border/50 hover:shadow-md transition-shadow cursor-pointer ${isSelected ? 'ring-2 ring-blue-400 bg-blue-50/50' : ''}`}
                       onClick={() => setExamQExpanded(examQExpanded === question.id ? null : question.id)}
                     >
                       <CardContent className="p-3">
-                        <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-start gap-2">
+                          {/* Checkbox */}
+                          <button
+                            className="mt-0.5 flex-shrink-0"
+                            onClick={(e) => { e.stopPropagation(); toggleExamQ(question.id); }}
+                          >
+                            {isSelected ? (
+                              <CheckSquare className="h-5 w-5 text-blue-600" />
+                            ) : (
+                              <Square className="h-5 w-5 text-gray-300 hover:text-blue-400" />
+                            )}
+                          </button>
                           <div className="flex-1 min-w-0">
                             <div className="flex flex-wrap gap-1 mb-1">
                               <Badge className="text-xs py-0 bg-blue-100 text-blue-700">{question.board}</Badge>
@@ -1152,12 +1318,27 @@ export default function Worksheets() {
                             <div className="flex gap-2 pt-1">
                               <Button
                                 size="sm"
+                                variant={isSelected ? "default" : "outline"}
+                                className={`text-xs h-7 ${isSelected ? 'bg-blue-600 text-white hover:bg-blue-700' : ''}`}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  toggleExamQ(question.id);
+                                }}
+                              >
+                                {isSelected ? (
+                                  <><CheckSquare className="h-3 w-3 mr-1" /> Selected</>
+                                ) : (
+                                  <><Square className="h-3 w-3 mr-1" /> Select for worksheet</>
+                                )}
+                              </Button>
+                              <Button
+                                size="sm"
                                 variant="outline"
                                 className="text-xs h-7"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  setSubject(question.subject);
-                                  setTopic(question.topic);
+                                  setSubject(question.subject || '');
+                                  setTopic(question.topic || '');
                                   if (question.board && question.board !== 'STA' && question.board !== 'KS2 SATs') setExamBoard(question.board);
                                   if (question.tier) setDifficulty(question.tier.toLowerCase());
                                   setExamStyle(true);
@@ -1165,14 +1346,15 @@ export default function Worksheets() {
                                   toast.success(`Loaded: ${question.topic} — ${question.board}`);
                                 }}
                               >
-                                <Sparkles className="h-3 w-3 mr-1" /> Generate worksheet
+                                <Sparkles className="h-3 w-3 mr-1" /> Generate full worksheet
                               </Button>
                             </div>
                           </div>
                         )}
                       </CardContent>
                     </Card>
-                  ))}
+                  );
+                  })}
                   {filtered.length === 50 && (
                     <p className="text-xs text-center text-gray-400 py-2">Showing first 50 results — refine your search for more specific results</p>
                   )}
