@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
 import multer from "multer";
 import { MsEdgeTTS, OUTPUT_FORMAT } from "msedge-tts";
+import OpenAI from "openai";
 import { requireAuth } from "../middleware/auth.js";
 import db from "../db/index.js";
 import { randomUUID } from "crypto";
@@ -474,57 +475,17 @@ router.post("/quiz", requireAuth, async (req: Request, res: Response) => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// POST /api/revision/tts
-// Convert podcast script to natural speech using Microsoft Edge Neural TTS.
+// POST /api/revision/tts — Neural TTS
+// Primary: OpenAI TTS (tts-1-hd) — reliable from server environments
+// Fallback: Microsoft Edge Neural TTS (msedge-tts) — high quality but may be blocked on cloud IPs
 //
-// Approach: msedge-tts (Microsoft Edge Read Aloud API)
-//   - Uses Azure Neural voices via the Edge browser WebSocket API
-//   - No API key required, no IP restrictions, no rate limits for normal use
-//   - High-quality neural voices including British English (en-GB)
-//   - Returns MP3 audio directly
-//
-// Voice mapping:
-//   nova/hannah   → en-GB-SoniaNeural  (warm, natural British female)
-//   shimmer/autumn → en-GB-LibbyNeural  (soft, expressive British female)
-//   alloy/diana   → en-GB-MaisieNeural (clear, professional British female)
-//   echo/daniel   → en-GB-RyanNeural   (natural, clear British male)
-//   fable/troy    → en-US-GuyNeural    (expressive, engaging US male)
-//   onyx/austin   → en-US-EricNeural   (deep, authoritative US male)
-//
-// Body: { text, voice?, language? }
-// Returns: audio/mpeg stream
-
-// Split text into chunks for msedge-tts (handles up to ~3000 chars per request)
-function splitIntoChunks(text: string, maxChars = 2000): string[] {
-  if (text.length <= maxChars) return [text];
-  const chunks: string[] = [];
-  const sentences = text.match(/[^.!?]+[.!?]+[\s]*/g) || [text];
-  let current = "";
-  for (const sentence of sentences) {
-    if ((current + sentence).length > maxChars && current.length > 0) {
-      chunks.push(current.trim());
-      current = sentence;
-    } else {
-      current += sentence;
-    }
-  }
-  if (current.trim()) chunks.push(current.trim());
-  return chunks.length > 0 ? chunks : [text.slice(0, maxChars)];
-}
-
-// POST /api/revision/tts — Microsoft Edge Neural TTS (msedge-tts)
-//
-// Uses the Microsoft Edge Read Aloud WebSocket API via the msedge-tts package.
-// No API key required. No IP restrictions. High-quality Azure Neural voices.
-// British English voices are prioritised for UK educators.
-//
-// Voice mapping:
-//   nova/hannah    -> en-GB-SoniaNeural  (warm, natural British female)
-//   shimmer/autumn -> en-GB-LibbyNeural  (soft, expressive British female)
-//   alloy/diana    -> en-GB-MaisieNeural (clear, professional British female)
-//   echo/daniel    -> en-GB-RyanNeural   (natural, clear British male)
-//   fable/troy     -> en-US-GuyNeural    (expressive, engaging US male)
-//   onyx/austin    -> en-US-EricNeural   (deep, authoritative US male)
+// Voice mapping (frontend voice name -> OpenAI voice):
+//   nova / Aoede    -> nova    (warm female)
+//   shimmer / Leda  -> shimmer (soft female)
+//   alloy / Kore    -> alloy   (confident female)
+//   echo / Charon   -> echo    (natural male)
+//   fable / Fenrir  -> fable   (expressive male)
+//   onyx            -> onyx    (deep male)
 //
 // Body: { text, voice?, language? }
 // Returns: audio/mpeg stream
@@ -535,8 +496,24 @@ router.post("/tts", requireAuth, async (req: Request, res: Response) => {
       return res.status(400).json({ error: "text is required" });
     }
 
-    // Map voice names to Azure Neural voice IDs
-    const VOICE_MAP: Record<string, string> = {
+    // Map frontend voice names to OpenAI TTS voice IDs
+    const OPENAI_VOICE_MAP: Record<string, string> = {
+      nova:    "nova",
+      hannah:  "nova",
+      shimmer: "shimmer",
+      autumn:  "shimmer",
+      alloy:   "alloy",
+      diana:   "alloy",
+      echo:    "echo",
+      daniel:  "echo",
+      fable:   "fable",
+      troy:    "fable",
+      onyx:    "onyx",
+      austin:  "onyx",
+    };
+
+    // Map voice names to Azure Neural voice IDs (fallback)
+    const AZURE_VOICE_MAP: Record<string, string> = {
       nova:    "en-GB-SoniaNeural",
       hannah:  "en-GB-SoniaNeural",
       shimmer: "en-GB-LibbyNeural",
@@ -551,7 +528,7 @@ router.post("/tts", requireAuth, async (req: Request, res: Response) => {
       austin:  "en-US-EricNeural",
     };
 
-    // Non-English language overrides
+    // Non-English language overrides for Azure (fallback)
     const LANG_VOICE_MAP: Record<string, string> = {
       cy: "cy-GB-NiaNeural",
       fr: "fr-FR-DeniseNeural",
@@ -560,50 +537,79 @@ router.post("/tts", requireAuth, async (req: Request, res: Response) => {
       ar: "ar-EG-SalmaNeural",
     };
 
+    const openaiVoice = (OPENAI_VOICE_MAP[voice] || "nova") as "alloy" | "echo" | "fable" | "onyx" | "nova" | "shimmer";
     const azureVoice = (language !== "en" && LANG_VOICE_MAP[language])
       ? LANG_VOICE_MAP[language]
-      : (VOICE_MAP[voice] || "en-GB-SoniaNeural");
+      : (AZURE_VOICE_MAP[voice] || "en-GB-SoniaNeural");
 
-    console.log(`[TTS] msedge-tts: voice=${azureVoice}, chars=${text.length}`);
+    // PRIMARY: OpenAI TTS
+    try {
+      console.log(`[TTS] OpenAI TTS: voice=${openaiVoice}, chars=${text.length}`);
+      const openai = new OpenAI();
 
-    const tts = new MsEdgeTTS();
-    await tts.setMetadata(azureVoice, OUTPUT_FORMAT.AUDIO_24KHZ_96KBITRATE_MONO_MP3);
+      // OpenAI TTS has a 4096 character limit per request — split if needed
+      const chunks = splitIntoChunks(text, 4000);
+      const mp3Buffers: Buffer[] = [];
 
-    // Split long texts into sentence-aware chunks
-    const chunks = splitIntoChunks(text, 2000);
-    const mp3Buffers: Buffer[] = [];
-
-    for (const chunk of chunks) {
-      const { audioStream } = tts.toStream(chunk);
-      const chunkBuffers: Buffer[] = [];
-      await new Promise<void>((resolve, reject) => {
-        const timeout = setTimeout(() => reject(new Error("msedge-tts chunk timeout after 30s")), 30000);
-        let resolved = false;
-        const done = () => { if (!resolved) { resolved = true; clearTimeout(timeout); resolve(); } };
-        audioStream.on("data", (d: Buffer) => chunkBuffers.push(d));
-        audioStream.on("end", done);
-        audioStream.on("close", done);
-        audioStream.on("error", (e: Error) => { if (!resolved) { resolved = true; clearTimeout(timeout); reject(e); } });
-      });
-      if (chunkBuffers.length > 0) {
-        mp3Buffers.push(Buffer.concat(chunkBuffers));
+      for (const chunk of chunks) {
+        const response = await openai.audio.speech.create({
+          model: "tts-1-hd",
+          voice: openaiVoice,
+          input: chunk,
+          response_format: "mp3",
+        });
+        const arrayBuffer = await response.arrayBuffer();
+        mp3Buffers.push(Buffer.from(arrayBuffer));
       }
+
+      if (mp3Buffers.length === 0) throw new Error("OpenAI TTS returned no audio data");
+
+      const combined = Buffer.concat(mp3Buffers);
+      console.log(`[TTS] OpenAI TTS success: ${combined.byteLength} bytes (${chunks.length} chunks)`);
+      res.setHeader("Content-Type", "audio/mpeg");
+      res.setHeader("Content-Length", combined.byteLength.toString());
+      return res.send(combined);
+
+    } catch (openaiErr: any) {
+      console.warn(`[TTS] OpenAI TTS failed (${openaiErr?.message}), falling back to msedge-tts...`);
+
+      // FALLBACK: Microsoft Edge Neural TTS
+      const tts = new MsEdgeTTS();
+      await tts.setMetadata(azureVoice, OUTPUT_FORMAT.AUDIO_24KHZ_96KBITRATE_MONO_MP3);
+
+      const chunks = splitIntoChunks(text, 2000);
+      const mp3Buffers: Buffer[] = [];
+
+      for (const chunk of chunks) {
+        const { audioStream } = tts.toStream(chunk);
+        const chunkBuffers: Buffer[] = [];
+        await new Promise<void>((resolve, reject) => {
+          const timeout = setTimeout(() => reject(new Error("msedge-tts chunk timeout after 30s")), 30000);
+          let resolved = false;
+          const done = () => { if (!resolved) { resolved = true; clearTimeout(timeout); resolve(); } };
+          audioStream.on("data", (d: Buffer) => chunkBuffers.push(d));
+          audioStream.on("end", done);
+          audioStream.on("close", done);
+          audioStream.on("error", (e: Error) => { if (!resolved) { resolved = true; clearTimeout(timeout); reject(e); } });
+        });
+        if (chunkBuffers.length > 0) {
+          mp3Buffers.push(Buffer.concat(chunkBuffers));
+        }
+      }
+
+      tts.close();
+
+      if (mp3Buffers.length === 0) throw new Error("Both OpenAI TTS and msedge-tts returned no audio data");
+
+      const combined = Buffer.concat(mp3Buffers);
+      console.log(`[TTS] msedge-tts fallback success: ${combined.byteLength} bytes`);
+      res.setHeader("Content-Type", "audio/mpeg");
+      res.setHeader("Content-Length", combined.byteLength.toString());
+      return res.send(combined);
     }
-
-    tts.close();
-
-    if (mp3Buffers.length === 0) {
-      throw new Error("msedge-tts returned no audio data");
-    }
-
-    const combined = Buffer.concat(mp3Buffers);
-    console.log(`[TTS] msedge-tts success: ${combined.byteLength} bytes (${chunks.length} chunks)`);
-    res.setHeader("Content-Type", "audio/mpeg");
-    res.setHeader("Content-Length", combined.byteLength.toString());
-    return res.send(combined);
 
   } catch (err: any) {
-    console.error("[TTS] msedge-tts error:", err?.message || err);
+    console.error("[TTS] All TTS providers failed:", err?.message || err);
     res.status(500).json({ error: err.message || "Neural voice generation failed. Please try again." });
   }
 });
