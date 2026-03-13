@@ -277,6 +277,7 @@ export default function Worksheets() {
           additionalInstructions,
           generateDiagram: false, // No diagram in exam mode
           worksheetLength,
+          introOnly: true, // Only generate intro sections (objectives, vocab, worked example) — exam questions will be injected from the bank
         });
 
         // Step 2: Replace exercise sections with real exam questions from the bank

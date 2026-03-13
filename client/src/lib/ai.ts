@@ -338,6 +338,7 @@ export async function aiGenerateWorksheet(params: {
   generateDiagram?: boolean;
   diagramType?: string;
   worksheetLength?: string;
+  introOnly?: boolean; // When true, only generate intro sections (objectives, vocab, worked example) — used for hybrid exam mode
 }): Promise<AIWorksheetResult> {
 
   // ── Year-group calibration ──────────────────────────────────────────────────
@@ -562,7 +563,7 @@ Return EXACTLY this JSON structure (raw JSON only, no markdown):
       "title": "Worked Example",
       "type": "example",
       "content": "[${exampleGuide}${isMaths ? " — MUST be a fully worked numerical/algebraic calculation, step by step. No prose." : ""}]"
-    },
+    }${params.introOnly ? '' : `,
     {
       "title": "Section A — Guided Practice",
       "type": "guided",
@@ -594,7 +595,7 @@ Return EXACTLY this JSON structure (raw JSON only, no markdown):
       "type": "teacher-notes",
       "teacherOnly": true,
       "content": "[Lesson structure, common misconceptions for ${params.yearGroup}, intervention prompts, extension ideas]"
-    }
+    }`}
   ],
   "metadata": {
     "subject": "${params.subject}",
@@ -610,7 +611,8 @@ Return EXACTLY this JSON structure (raw JSON only, no markdown):
 }`;
 
   // Scale token limit with worksheet length — longer worksheets need more tokens
-  const maxTokensForLength = lengthMins >= 60 ? 8000 : lengthMins <= 10 ? 3000 : 6000;
+  // In introOnly mode, we only need ~1500 tokens (just objectives, vocab, worked example)
+  const maxTokensForLength = params.introOnly ? 2000 : (lengthMins >= 60 ? 8000 : lengthMins <= 10 ? 3000 : 6000);
   const { text, provider } = await callAI(system, user, maxTokensForLength);
   const cleaned = text
     .replace(/^```json\s*/i, "")
