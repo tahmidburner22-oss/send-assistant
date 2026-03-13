@@ -416,18 +416,13 @@ export async function aiGenerateWorksheet(params: {
     yearNum <= 11 ? "Estimated time: 45–60 mins" :
                    "Estimated time: 60–90 mins";
 
-  const system = `You are an expert UK school teacher creating high-quality differentiated worksheets.
-You are currently writing for ${params.yearGroup} students (${phase}).
-You MUST calibrate EVERY element — vocabulary, sentence length, question depth, mark allocations, and worked examples — precisely for this year group.
-A Year 5 worksheet and a Year 10 worksheet on the same topic must look COMPLETELY DIFFERENT in language and cognitive demand.
-CRITICAL: The ENTIRE worksheet must be about the topic "${params.topic}" ONLY. Every question, example, vocabulary term, and objective must relate specifically to "${params.topic}". The title MUST include "${params.topic}". Do NOT generate content about any other topic.
-Always respond with valid JSON only — no markdown, no code blocks, just raw JSON.`;
+  const system = `You are an experienced UK teacher creating a classroom worksheet for ${params.yearGroup} (${phase}). Topic: "${params.topic}". All content must be exclusively about this topic. Calibrate language and difficulty for the year group. Respond with valid JSON only — no markdown, no code blocks.`;
 
   const examBoardNote = params.examBoard && params.examBoard !== "N/A" && params.examBoard !== "none"
-    ? `Exam Board: ${params.examBoard}. Use that board's exact command words, mark allocation style, and question conventions.`
+    ? `Exam board: ${params.examBoard}.`
     : "";
   const sendNote = params.sendNeed && params.sendNeed !== "none" && params.sendNeed !== "general"
-    ? `SEND adaptation required for: ${params.sendNeed}. Include scaffolded hints, sentence starters, simplified language where needed, and accessibility notes.`
+    ? `SEND support level: ${params.sendNeed}. Use fill-in-the-blank guided questions, chunked steps, vocabulary box, simple language.`
     : "";
 
   // ── Difficulty tier (secondary only) ─────────────────────────────────────
@@ -435,20 +430,20 @@ Always respond with valid JSON only — no markdown, no code blocks, just raw JS
   const difficultyTier = params.difficulty || "mixed";
   const tierNote = isSecondary
     ? difficultyTier === "foundation" || difficultyTier === "basic"
-      ? `DIFFICULTY TIER: Foundation. All questions MUST come from the GCSE Foundation specification only (grades 1–5). Questions should be accessible, straightforward, and match Foundation-tier exam papers from AQA, Edexcel, OCR, and WJEC${params.examBoard && params.examBoard !== "none" ? ` — prioritise ${params.examBoard}` : ""}. No Higher-only content.`
+      ? `Difficulty: Foundation (GCSE grades 1–5).`
       : difficultyTier === "higher" || difficultyTier === "stretch"
-      ? `DIFFICULTY TIER: Higher. All questions MUST come from the GCSE Higher specification (grades 4–9). Include Higher-only content, multi-step problems, and demanding questions matching Higher-tier exam papers from AQA, Edexcel, OCR, and WJEC${params.examBoard && params.examBoard !== "none" ? ` — prioritise ${params.examBoard}` : ""}.`
-      : `DIFFICULTY TIER: Mixed (Foundation + Higher). Include a range of questions: roughly half from Foundation specification (grades 1–5) and half from Higher specification (grades 5–9), matching real GCSE exam paper style from AQA, Edexcel, OCR, and WJEC${params.examBoard && params.examBoard !== "none" ? ` — prioritise ${params.examBoard}` : ""}.`
+      ? `Difficulty: Higher (GCSE grades 4–9).`
+      : `Difficulty: Mixed (Foundation + Higher).`
     : "";
 
   // ── Worksheet length calibration ────────────────────────────────────────
   const lengthMins = parseInt(params.worksheetLength || "30", 10);
   const lengthNote =
     lengthMins <= 10
-      ? `WORKSHEET LENGTH: 10 minutes. This is a SHORT, focused practice. Generate ONLY 5–8 questions total across all sections. No extension or challenge section. Keep every question brief. A student working at normal pace must be able to complete the entire worksheet in 10 minutes.`
+      ? `Length: 10 min. 5–8 questions total. No challenge section.`
       : lengthMins >= 60
-      ? `WORKSHEET LENGTH: 1 hour. This is a FULL LESSON worksheet. Generate a LARGE volume of questions — at least 30–40 questions total spread across all sections. Include a full guided practice section (8–10 questions), a large independent practice section (15–20 questions), a substantial challenge section (4–6 questions), and an extension task. The worksheet must genuinely take a student approximately 60 minutes to complete at normal working pace. Do NOT produce a short worksheet.`
-      : `WORKSHEET LENGTH: 30 minutes. Generate a standard worksheet with 15–20 questions total: guided practice (4–5 questions), independent practice (8–10 questions), and a challenge question. A student working at normal pace should take approximately 30 minutes.`;
+      ? `Length: 60 min. 30–40 questions total. Full guided (8–10 q), independent (15–20 q), challenge (4–6 q), extension.`
+      : `Length: 30 min. 15–20 questions total: guided (4–5 q), independent (8–10 q), one challenge.`;
 
   // ── Subject display (capitalised) ──────────────────────────────────────────
   const subjectDisplay = params.subject
@@ -458,226 +453,77 @@ Always respond with valid JSON only — no markdown, no code blocks, just raw JS
   // ── Maths-specific instruction ────────────────────────────────────────────
   const isMaths = params.subject.toLowerCase().includes("math");
   const mathsNote = isMaths
-    ? `MATHS RULES (MANDATORY):
-- ALL questions MUST be number-based (e.g. "Calculate \\(\\dfrac{3}{4} + \\dfrac{1}{2}\\)", "Solve \\(5x + 3 = 18\\)", "Find the area of a rectangle \\(7\\text{ cm} \\times 4\\text{ cm}\\)").
-- Do NOT write wordy or text-heavy questions. No long paragraphs. Questions should be short, direct, and numerical.
-- The worked example MUST show a fully worked numerical calculation with clear step-by-step arithmetic.
-- Include 2–3 problem-solving questions where the SEND need (if any) is applied in a real-world context (e.g. money, time, measurement), but keep them concise and number-focused.
-- Numbers must be clean and sensible for the year group (e.g. Year 3: whole numbers under 100; Year 7: integers and simple fractions; Year 10: decimals, surds, algebraic expressions). Do NOT generate awkward or unrealistic numbers.
-- Do NOT include questions that are just definitions, descriptions, or explanations — every question must require a numerical answer or algebraic working.
-- MATH NOTATION (MANDATORY): Use LaTeX notation for ALL mathematical expressions:
-  * Fractions: \\(\\dfrac{numerator}{denominator}\\) e.g. \\(\\dfrac{3}{4}\\) NOT 3/4
-  * Powers: \\(x^{2}\\) NOT x^2 or x2
-  * Square roots: \\(\\sqrt{x}\\) NOT sqrt(x)
-  * Multiplication: \\(\\times\\) NOT x or *
-  * Division: \\(\\div\\) NOT /
-  * Minus: \\(-\\) (standard minus sign)
-  * Pi: \\(\\pi\\)
-  * Wrap ALL math expressions in \\(...\\) for inline or \\[...\\] for display
-  * Example: "Work out \\(\\dfrac{3}{4} + \\dfrac{1}{6}\\). Give your answer as a fraction in its simplest form."`
-    : `MATH NOTATION: When any mathematical expression appears, use LaTeX notation wrapped in \\(...\\) for inline math.`;
+    ? `Maths: All questions must be numerical/calculation-based. Use LaTeX for all math (\\(\\dfrac{3}{4}\\), \\(x^{2}\\), \\(\\sqrt{x}\\), \\(\\times\\), \\(\\div\\), \\(\\pi\\)). Wrap inline math in \\(...\\).`
+    : `Use LaTeX \\(...\\) for any math expressions.`;
 
   // ── Word problems note ─────────────────────────────────────────────────────
   const wordProblemsNote = !params.examStyle
-    ? `WORD PROBLEMS (MANDATORY for Section C):
-- Section C MUST contain 3–4 real-life word problems that apply the topic '${params.topic}' to everyday contexts.
-- Use relatable, age-appropriate scenarios for ${params.yearGroup}: money, time, distance, cooking, sport, shopping, etc.
-- Each word problem should require students to extract information, set up a calculation, and interpret the answer.
-- Word problems must increase in complexity: the first should be straightforward, the last should be multi-step.
-- NEVER use abstract or contrived scenarios — keep them realistic and engaging.
-- For SEND students, include a 'What do I need to find?' prompt line before each question.`
+    ? `Section C: 3–4 real-life word problems using everyday contexts (money, time, sport, cooking). Increase in difficulty; last must be multi-step.`
     : "";
 
   // ── SEND scaffolding note ─────────────────────────────────────────────────────
-  const sendScaffoldingNote = params.sendNeed && params.sendNeed !== "none" && params.sendNeed !== "general"
-    ? `SEND SCAFFOLDING RULES (MANDATORY — SEND need: ${params.sendNeed}):
-- Section A (Guided Practice) MUST use fill-in-the-blank format: provide partial working with blanks for students to complete.
-  Example: "Calculate 3/4 + 1/2. Step 1: LCD = ___. Step 2: 3/4 = ___/___. Step 3: Answer = ___"
-- Include a vocabulary box with key terms defined in simple language at the top of the worksheet.
-- Use chunked instructions: break every task into numbered micro-steps.
-- Reduce question density: maximum 8 questions per page.
-- Increase spacing between questions.
-- Use simple, direct language — avoid complex sentence structures.
-- Include visual supports: number lines, fraction bars, or diagrams where relevant.
-- Use repetition with small variations to reinforce understanding.
-- Provide sentence starters for any written response questions.`
-    : "";
+  const sendScaffoldingNote = "";
 
   // ── Exam-style instruction ────────────────────────────────────────────────
   const examStyleNote = params.examStyle
-    ? `EXAM-STYLE MODE (MANDATORY): Questions must be taken directly from the style of real UK exam papers (GCSE/A-Level/KS2 SATs as appropriate for the year group). Format EXACTLY like a real exam paper:
-- Number each question Q1, Q2, Q3... with sub-parts (a), (b), (c) where appropriate.
-- Show mark allocations in brackets after each question: [1 mark], [2 marks], [4 marks] etc.
-- Use precise exam command words: "Calculate", "Show that", "Prove", "Evaluate", "Describe", "Explain", "Compare", "Sketch", "State" — appropriate to the subject and year group.
-- Include answer lines or answer boxes (write "Answer: ............" or "Answer = ............" as appropriate).
-- For maths: questions must be purely numerical/algebraic — no wordy paragraphs.
-- Do NOT include a worked example section in exam-style mode. ONLY include a formula box if the topic genuinely requires a formula to answer the questions (e.g. area formulae for a geometry topic, quadratic formula for solving quadratics). If the topic does NOT require a formula (e.g. arithmetic, reading comprehension, grammar), do NOT include any formula box at all.
-- The overall layout and question style must be indistinguishable from a real ${params.examBoard && params.examBoard !== "none" ? params.examBoard : "GCSE"} exam paper.`
+    ? `Exam-style mode: Format like a real ${params.examBoard && params.examBoard !== "none" ? params.examBoard : "GCSE"} paper. Number questions Q1, Q2... with sub-parts (a)(b)(c). Show mark allocations [1 mark]. Use command words. Include answer lines. No worked example section.`
     : "";
 
   // ── Reminder box note ─────────────────────────────────────────────────────
   const reminderBoxNote = !params.examStyle
-    ? `REMINDER BOX (MANDATORY):
-- Include a 'Reminder Box' section BEFORE the practice sections.
-- The Reminder Box must contain EXACTLY 3 short, numbered steps explaining the core method for '${params.topic}'.
-- Steps must be concise — maximum 15 words each.
-- Use simple, memorable language appropriate for ${params.yearGroup}.
-- This is the student's reference card during the worksheet — make it clear and scannable.
-- Example format for 'Adding Fractions':
-  Step 1: Find the Lowest Common Denominator (LCD)
-  Step 2: Convert both fractions to the same denominator
-  Step 3: Add the numerators — keep the denominator the same`
+    ? `Include a Reminder Box with exactly 3 short numbered steps (max 15 words each) explaining the core method for "${params.topic}".`
     : "";
 
   // ── Formula rules (topic-specific only) ──────────────────────────────────
-  const formulaNote = `FORMULA RULES (MANDATORY):
-- ONLY include formulas that are DIRECTLY required to answer the questions on this specific topic ("${params.topic}").
-- Do NOT include generic formula sheets or unrelated formulas.
-- If the topic is "Pythagoras' Theorem", include ONLY the Pythagorean formula \\(a^2 + b^2 = c^2\\).
-- If the topic is "Fractions" or "Arithmetic", do NOT include any formula box — no formulas are needed.
-- If the topic is "Quadratic Equations", include ONLY the quadratic formula.
-- If the topic is "Circle Theorems", include ONLY the relevant circle area/circumference formulas.
-- If the topic does NOT involve a formula, omit the formula section entirely.
-- NEVER include a formula box just to fill space — only include it if students genuinely need it to answer the questions.`;
+  const formulaNote = `Only include a Key Formulas section if the topic "${params.topic}" genuinely requires a formula. Omit it if no formula is needed.`;
 
   // ── Common mistakes note ────────────────────────────────────────────────────
   const commonMistakesNote = !params.examStyle
-    ? `COMMON MISTAKES SECTION (MANDATORY):
-- Include a 'Common Mistakes' section in the Teacher Notes.
-- List 3–4 specific, common errors students make with '${params.topic}' at ${params.yearGroup} level.
-- For each mistake, provide: (1) the incorrect approach, (2) why it's wrong, (3) the correct approach.
-- Also include 1–2 'misconception questions' in Section B or C — these show an incorrect answer and ask students to explain why it is wrong.
-- Example misconception question: "A student says 1/2 + 1/3 = 2/5. Explain what mistake they made and find the correct answer."`
+    ? `In Teacher Notes, list 3–4 common mistakes students make with "${params.topic}". Include 1 misconception question in Section B showing wrong working for students to correct.`
     : "";
 
   // ── Topic enforcement note ─────────────────────────────────────────────────
-  const topicEnforcementNote = `
-╔════════════════════════════════════════════════════════════════════════════╗
-║ CRITICAL — TOPIC ENFORCEMENT (MANDATORY, NO EXCEPTIONS)                        ║
-╠════════════════════════════════════════════════════════════════════════════╣
-║ The topic is: "${params.topic}"                                                  ║
-║ EVERY SINGLE QUESTION in this worksheet MUST be about "${params.topic}" ONLY.    ║
-║ Do NOT include questions about any other topic, even if related.                ║
-║ Do NOT mix in questions about other topics as "warm-up" or "extension".         ║
-║ If the topic is "Fractions", ALL questions must be about fractions.             ║
-║ If the topic is "Algebra", ALL questions must be about algebra.                 ║
-║ The worked example MUST demonstrate "${params.topic}" specifically.              ║
-║ The vocabulary section MUST only include terms related to "${params.topic}".     ║
-║ The learning objectives MUST all be about "${params.topic}".                     ║
-╚════════════════════════════════════════════════════════════════════════════╝`;
+  const topicEnforcementNote = `Every question, example, and vocabulary term must be about "${params.topic}" only.`;
 
-  const user = `⚠️ MANDATORY TOPIC: This worksheet is EXCLUSIVELY about "${params.topic}" for ${params.yearGroup} ${params.subject}. Do NOT generate content about any other topic. The title, all questions, worked example, vocabulary, and objectives MUST all be specifically about "${params.topic}".
-
-Create a differentiated worksheet for UK schools, STRICTLY calibrated for ${params.yearGroup}.
-
-Subject: ${params.subject}
-Topic: ${params.topic}
-Year Group: ${params.yearGroup} — ${phase}
-${topicEnforcementNote}
-${sendNote}
-${sendScaffoldingNote}
-${examBoardNote}
-${tierNote}
-${lengthNote}
+  const user = `Create a printable worksheet.
+Subject: ${params.subject} | Year: ${params.yearGroup} (${phase}) | Topic: ${params.topic} | Difficulty: ${params.difficulty || "mixed"}
+${examBoardNote} ${sendNote} ${tierNote} ${lengthNote}
 ${mathsNote}
 ${examStyleNote}
-${formulaNote}
-${reminderBoxNote}
-${wordProblemsNote}
-${commonMistakesNote}
-Additional instructions: ${params.additionalInstructions || "none"}
+${formulaNote} ${reminderBoxNote} ${wordProblemsNote} ${commonMistakesNote}
+${topicEnforcementNote}
+${params.additionalInstructions ? "Additional: " + params.additionalInstructions : ""}
 
-━━━ YEAR GROUP CALIBRATION RULES (MANDATORY) ━━━
-Year group scaling is CRITICAL. The difficulty, language, and cognitive demand must match the year group EXACTLY:
-- Year 1–2 (KS1): Very simple, concrete, visual. Single-step problems only.
-- Year 3–4 (KS2 lower): Simple and clear. Two-step problems. Everyday contexts.
-- Year 5–6 (KS2 upper): Moderate complexity. Multi-step. Introduce subject vocabulary.
-- Year 7–8 (KS3 lower): Accessible secondary level. Build on KS2. Introduce formal methods.
-- Year 9 (KS3 upper): More demanding. Bridge to GCSE. Introduce GCSE-style questions.
-- Year 10–11 (KS4/GCSE): Full GCSE standard. Exam-board aligned. Command words. Tier-appropriate.
-- Year 12–13 (KS5/A-Level): A-Level standard. Synoptic. Extended responses.
-- 11+ Preparation: KS2 upper level (Year 5–6 standard) but focused on 11+ exam skills. Include Verbal Reasoning (word codes, analogies, sequences), Non-Verbal Reasoning (patterns, shapes), Maths (arithmetic, word problems, fractions, ratios), and English (comprehension, vocabulary, grammar). Questions must be in the style of GL Assessment and CEM 11+ papers. Use multiple-choice or short-answer format where appropriate.
+Follow this structure:
+1. Title (include "${params.topic}")
+2. Learning Objective (one sentence)
+3. Worked Example (step-by-step)
+4. Reminder Box (3 numbered steps, max 15 words each)
+5. Section A - Basic Practice (4-5 guided questions with hints)
+6. Section B - Standard Problems (5-8 questions + 1 misconception question)
+7. Section C - Word Problems (3-4 real-life questions)
+8. Challenge Question (one reasoning problem)
+9. Reflection (3-4 "I can" statements + open question)
+10. Answer Key + Common Mistakes (teacher only)
+11. Teacher Notes (teacher only)
 
-A Year 3 worksheet and a Year 10 worksheet on the same topic MUST look completely different.
-${sentenceGuide}
-${vocabGuide}
-${questionGuide}
-${exampleGuide}
-${challengeGuide}
-Timing: ${timingGuide}
-
-IMPORTANT: Do NOT use GCSE language for primary students. Do NOT use primary-level language for GCSE students.
-Every question, definition, and sentence must be appropriate for ${params.yearGroup}.
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Return EXACTLY this JSON structure (raw JSON only, no markdown):
+Return EXACTLY this JSON (raw JSON, no markdown):
 {
-  "title": "[MUST include '${params.topic}' in the title — e.g. '${params.topic} — ${params.yearGroup} ${subjectDisplay} Worksheet']",
+  "title": "${params.topic} — ${params.yearGroup} ${subjectDisplay} Worksheet",
   "subtitle": "${params.yearGroup} (${phase}) | ${subjectDisplay} | ${params.examBoard && params.examBoard !== 'none' ? params.examBoard : 'General'} | ${timingGuide}",
   "sections": [
-    {
-      "title": "Learning Objectives",
-      "type": "objective",
-      "content": "By the end of this lesson, students will be able to:\\n• [age-appropriate objective 1]\\n• [age-appropriate objective 2]\\n• [age-appropriate objective 3]"
-    },
-    {
-      "title": "Key Vocabulary",
-      "type": "vocabulary",
-      "content": "TERM | DEFINITION\\n[IMPORTANT: Each line must be exactly: term | definition. Use ONLY terms directly related to '${params.topic}'. Use age-appropriate language for ${params.yearGroup}. Do NOT include generic terms unrelated to the topic. Do NOT use bullet points or numbering.${isMaths ? ' IMPORTANT: Any mathematical expression in a definition MUST use LaTeX notation wrapped in \\\\(...\\\\) — e.g. Equivalent fractions | Fractions that have the same value, e.g. \\\\(\\\\dfrac{1}{2} = \\\\dfrac{2}{4}\\\\)' : ' Example for Fractions: Numerator | The top number in a fraction — shows how many parts are selected\\nDenominator | The bottom number in a fraction — shows how many equal parts in total\\nEquivalent fractions | Fractions that have the same value, e.g. 1/2 = 2/4'}]"
-    },
-    ${isMaths && !params.examStyle ? `{
-      "title": "Key Formulas",
-      "type": "example",
-      "content": "[FORMULA RULES: ONLY include this section if the topic '${params.topic}' genuinely requires a formula. If it does, list ONLY the formulas directly needed for this topic — no others. Format each formula on its own line as: Formula Name: \\\\[formula in LaTeX display math\\\\] e.g. Area of a circle: \\\\[A = \\\\pi r^{2}\\\\] or Quadratic formula: \\\\[x = \\\\dfrac{-b \\\\pm \\\\sqrt{b^{2} - 4ac}}{2a}\\\\]. ALL formulas MUST use LaTeX notation — NEVER write plain text like 'a^2' or 'sqrt(x)'. If no formula is needed for this topic, write exactly: No formula required for this topic.]"
-    },` : ''}
-    {
-      "title": "Worked Example",
-      "type": "example",
-      "content": "[${exampleGuide}${isMaths ? " — MUST be a fully worked numerical/algebraic calculation, step by step. No prose." : ""}]"
-    }${params.introOnly ? '' : `,
-    {
-      "title": "Reminder Box",
-      "type": "reminder-box",
-      "content": "[MANDATORY: Write EXACTLY 3 numbered steps explaining the core method for '${params.topic}'. Each step must be concise (max 15 words). These are the 3 key things students must remember during the worksheet.\nFormat exactly:\nStep 1: [first key step - max 15 words]\nStep 2: [second key step - max 15 words]\nStep 3: [third key step - max 15 words]]"
-    },
-    {
-      "title": "Section A — Guided Practice",
-      "type": "guided",
-      "content": "[Questions calibrated for ${params.yearGroup} — ${questionGuide}. ${params.sendNeed && params.sendNeed !== 'none' && params.sendNeed !== 'none-selected' ? 'MANDATORY SEND FORMAT: Use fill-in-the-blank format with partial working shown. Example: Calculate 3/4 + 1/2. Step 1: LCD = ___. Step 2: 3/4 = ___/___. Step 3: Answer = ___' : 'Include scaffolding hints on a new line starting with Hint: after each question.'}${isMaths ? " ALL questions must be number/calculation based." : ""}]"
-    },
-    {
-      "title": "Section B — Core Practice",
-      "type": "independent",
-      "content": "[Questions at expected level for ${params.yearGroup} — ${questionGuide}. No hints. Include at least 1 misconception question: show a student's incorrect working and ask students to identify and correct the mistake.${isMaths ? " ALL questions must be number/calculation based." : ""}]"
-    },
-    {
-      "title": "Section C — Word Problems",
-      "type": "word-problems",
-      "content": "[MANDATORY: Write 3–4 real-life word problems applying '${params.topic}' to everyday contexts for ${params.yearGroup}. Use relatable scenarios: money, time, sport, cooking, shopping, travel. Each problem: (1) sets a real-world scene, (2) requires applying the topic, (3) asks for interpretation of the answer. Problems increase in difficulty. Last problem must be multi-step.${isMaths ? ' Keep questions number-focused.' : ''}]"
-    },
-    {
-      "title": "Challenge Question",
-      "type": "challenge",
-      "content": "[${challengeGuide}${isMaths ? " One reasoning problem requiring multi-step working. Include a 'Show your working' instruction." : ""}]"
-    },
-    {
-      "title": "How Did I Do?",
-      "type": "self-reflection",
-      "teacherOnly": false,
-      "content": "[Write 3–4 self-reflection statements for students to rate themselves. Each statement should start with 'I can' and be directly about the topic '${params.topic}'. Calibrate the language for ${params.yearGroup}. Format: one statement per line, starting with 'I can'. Example for 'Fractions' Year 5: I can identify the numerator and denominator in a fraction\\nI can find equivalent fractions\\nI can add two fractions with the same denominator\\nI can compare fractions and say which is larger. Also include one open question at the end on a new line starting with 'Q:' — e.g. 'Q: What did you find most tricky about this topic? Write one sentence.']"
-    },
-    {
-      "title": "Mark Scheme & Common Mistakes",
-      "type": "mark-scheme",
-      "teacherOnly": true,
-      "content": "[Full mark scheme with method marks and total marks. THEN add a COMMON MISTAKES section: list 3–4 specific errors students make with '${params.topic}' at ${params.yearGroup} level. For each mistake: (1) the incorrect approach students use, (2) why it is wrong, (3) the correct approach. Also include estimated completion time.]"
-    },
-    {
-      "title": "Teacher Notes",
-      "type": "teacher-notes",
-      "teacherOnly": true,
-      "content": "[Lesson structure with suggested timings for each section. Common misconceptions for ${params.yearGroup}. Intervention prompts for struggling students. Extension ideas for early finishers. Suggested next topic in the curriculum progression (what students should learn after this).]"
-    }`}
+    {"title": "Learning Objectives", "type": "objective", "content": "[3 objectives for ${params.topic}]"},
+    {"title": "Key Vocabulary", "type": "vocabulary", "content": "[term | definition, one per line]"},
+    ${isMaths && !params.examStyle ? `{"title": "Key Formulas", "type": "example", "content": "[formulas for ${params.topic} in LaTeX, or write: No formula required]"},` : ''}
+    {"title": "Worked Example", "type": "example", "content": "[${exampleGuide}]"}${params.introOnly ? '' : `,
+    {"title": "Reminder Box", "type": "reminder-box", "content": "[3 numbered steps for ${params.topic}]"},
+    {"title": "Section A — Guided Practice", "type": "guided", "content": "[${params.sendNeed && params.sendNeed !== 'none' && params.sendNeed !== 'none-selected' ? 'fill-in-the-blank guided questions' : 'questions with hints'}]"},
+    {"title": "Section B — Core Practice", "type": "independent", "content": "[standard questions + 1 misconception question]"},
+    {"title": "Section C — Word Problems", "type": "word-problems", "content": "[3-4 real-life word problems]"},
+    {"title": "Challenge Question", "type": "challenge", "content": "[${challengeGuide}]"},
+    {"title": "How Did I Do?", "type": "self-reflection", "teacherOnly": false, "content": "[3-4 I can statements + Q: open question]"},
+    {"title": "Mark Scheme & Common Mistakes", "type": "mark-scheme", "teacherOnly": true, "content": "[answers + 3-4 common mistakes]"},
+    {"title": "Teacher Notes", "type": "teacher-notes", "teacherOnly": true, "content": "[timings, misconceptions, interventions, next topic]"}`}
   ],
   "metadata": {
     "subject": "${subjectDisplay}",
@@ -688,11 +534,11 @@ Return EXACTLY this JSON structure (raw JSON only, no markdown):
     "examBoard": "${params.examBoard || "General"}",
     "totalMarks": 0,
     "estimatedTime": "${timingGuide.replace("Estimated time: ", "")}",
-    "adaptations": ["List each adaptation applied, or 'Standard worksheet' if none"]
+    "adaptations": ["Standard worksheet"]
   }
 }`;
 
-  // Scale token limit with worksheet length — capped at 4000 to avoid Railway timeout
+  // Scale token limit with worksheet length— capped at 4000 to avoid Railway timeout
   // Groq Llama 3.3 generates ~500 tokens/sec; 4000 tokens ≈ 8s; 5000+ tokens can exceed 30s timeout
   const maxTokensForLength = params.introOnly ? 2000 : (lengthMins >= 60 ? 4000 : lengthMins <= 10 ? 2500 : 3500);
   const { text, provider } = await callAI(system, user, maxTokensForLength);
