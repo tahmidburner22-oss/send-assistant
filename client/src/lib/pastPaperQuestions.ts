@@ -43,10 +43,10 @@ export type ExamStage = "ks1" | "ks2" | "11plus" | "ks3" | "gcse";
 
 export interface PastPaperQuestion {
   id: string;
-  board?: "AQA" | "Edexcel" | "OCR" | "WJEC" | "STA" | "GL" | "KS1 SATs" | "KS2 SATs" | "CCEA" | "Cambridge";
+  board?: "AQA" | "Edexcel" | "OCR" | "WJEC" | "STA" | "GL" | "KS1 SATs" | "KS2 SATs" | "CCEA" | "Cambridge" | "11+" | string;
   subject?: string;
   year?: number;
-  series?: "June" | "November" | "Sample" | "Specimen" | "May" | "January" | "March";
+  series?: "June" | "November" | "Sample" | "Specimen" | "May" | "January" | "March" | "Autumn" | "Spring" | "Summer" | string;
   paper?: string;
   tier?: "Higher" | "Foundation";
   questionNum?: string;
@@ -63,6 +63,7 @@ export interface PastPaperQuestion {
   commandWord?: string;
   answerLines?: number;
   markScheme?: string;   // actual specific answer(s)
+  answer?: string;       // alias for markScheme used in some question banks
   hint?: string;         // genuine step-by-step scaffolding
   stage?: ExamStage;     // ks1 | ks2 | 11plus | ks3 | gcse
   yearGroups?: number[]; // e.g. [10, 11]
@@ -1880,7 +1881,7 @@ export function getExamQuestions(options: {
         // Year 7: KS3 questions or 11+ questions (transition year)
         if (q.stage && q.stage !== "ks3" && q.stage !== "11plus" && q.stage !== "ks2") return false;
         // No GCSE questions for Year 7 — strictly KS3 level
-        if (q.stage === "gcse" && q.tier === "Higher") return false;
+        if ((q.stage as string) === "gcse" && q.tier === "Higher") return false;
       } else if (yearGroup <= 9) {
         // KS3 (Years 8–9): KS3 or GCSE Foundation questions only
         if (q.stage && q.stage !== "ks3" && q.stage !== "gcse") return false;

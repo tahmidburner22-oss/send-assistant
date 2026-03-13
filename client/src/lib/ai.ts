@@ -648,11 +648,16 @@ Return EXACTLY this JSON structure (raw JSON only, no markdown):
     }
   }
 
-  // Optionally inject a verified diagram from the diagram bank
+  // Optionally inject a diagram — uses server-side /api/ai/diagram with full fallback chain
+  // (Wikimedia bank → Wikimedia search → Gemini SVG → GPT-4o SVG)
   if (params.generateDiagram) {
     try {
-      const { getVerifiedDiagramSection } = await import('./diagram-bank');
-      const diagramSection = getVerifiedDiagramSection(params.subject, params.topic);
+      const diagramSection = await aiGenerateWorksheetDiagram({
+        subject: params.subject,
+        topic: params.topic,
+        yearGroup: params.yearGroup || 'Year 9',
+        sendNeed: params.sendNeed,
+      });
       if (diagramSection) {
         // Insert diagram after the worked example section (index 2) or at position 2
         const insertAt = Math.min(2, result.sections.length);
@@ -661,8 +666,7 @@ Return EXACTLY this JSON structure (raw JSON only, no markdown):
           diagramSection,
           ...result.sections.slice(insertAt),
         ];
-      } else {
-        console.info('[Diagram] No verified diagram found for topic:', params.topic);
+        console.info('[Diagram] Injected diagram via server endpoint, provider:', diagramSection.provider);
       }
     } catch (err) {
       console.warn('Diagram injection failed, continuing without diagram:', err);
@@ -875,10 +879,15 @@ export async function aiGenerateDiagram(params: {
     });
     if (res.ok) {
       const data = await res.json();
+      // Route any external imageUrl through the server proxy to avoid CORS/rate-limiting
+      let imageUrl = data.imageUrl;
+      if (imageUrl && (imageUrl.startsWith('http://') || imageUrl.startsWith('https://'))) {
+        imageUrl = `/api/diagram-proxy?url=${encodeURIComponent(imageUrl)}`;
+      }
       return {
         svg: data.svg || '',
         caption: data.caption || `${params.topic} diagram`,
-        imageUrl: data.imageUrl,
+        imageUrl,
         attribution: data.attribution,
         provider: data.provider,
       };

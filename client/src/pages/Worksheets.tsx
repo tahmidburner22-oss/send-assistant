@@ -22,7 +22,7 @@ import WorksheetRenderer, { renderMath } from "@/components/WorksheetRenderer";
 import { worksheetBank, type BankWorksheet } from "@/lib/worksheet-bank";
 import { getSyllabusTopics, type SyllabusTopic } from "@/lib/syllabus-data";
 import { aiGenerateWorksheet, aiEditSection } from "@/lib/ai";
-import { buildExamPaperWorksheet, hasPastPaperQuestions, getPastPaperDatabaseInfo } from "@/lib/examPaperBuilder";
+import { buildExamPaperWorksheet, buildHybridExamWorksheet, hasPastPaperQuestions, getPastPaperDatabaseInfo } from "@/lib/examPaperBuilder";
 import { allPastPaperQuestions, type PastPaperQuestion } from "@/lib/pastPaperQuestions";
 import PrintOptionsDialog, { type PrintOptions } from "@/components/PrintOptionsDialog";
 import {
@@ -262,11 +262,26 @@ export default function Worksheets() {
 
     let generatedWs: AnyWorksheet | null = null;
 
-    // ── EXAM-STYLE MODE: use real past paper questions from the database ──────
+    // ── EXAM-STYLE MODE: Generate AI worksheet then replace exercises with real exam questions ──────
     if (examStyle) {
       try {
-        await new Promise(r => setTimeout(r, 400)); // brief loading feel
-        const examPaper = buildExamPaperWorksheet({
+        // Step 1: Generate the full AI worksheet (learning objectives, vocab, worked example, etc.)
+        toast.info("Generating worksheet structure...");
+        const aiResult = await aiGenerateWorksheet({
+          subject, topic, yearGroup,
+          sendNeed: sendNeed && sendNeed !== "none-selected" ? sendNeed : undefined,
+          difficulty,
+          examBoard: examBoard !== "none" ? examBoard : undefined,
+          includeAnswers,
+          examStyle: false, // Generate normal structure — we'll inject real exam questions
+          additionalInstructions,
+          generateDiagram: false, // No diagram in exam mode
+          worksheetLength,
+        });
+
+        // Step 2: Replace exercise sections with real exam questions from the bank
+        const hybridResult = buildHybridExamWorksheet({
+          aiWorksheet: aiResult,
           subject,
           topic,
           yearGroup,
@@ -275,27 +290,20 @@ export default function Worksheets() {
           sendNeed: sendNeed && sendNeed !== "none-selected" ? sendNeed : undefined,
           includeAnswers,
           worksheetLength,
-          additionalInstructions,
         });
-        // Cast to AIWorksheet shape so the rest of the code handles it uniformly
-        generatedWs = {
-          ...examPaper,
-          isAI: false,
-          metadata: {
-            ...examPaper.metadata,
-            sendNeed: sendNeed && sendNeed !== "none-selected" ? sendNeed : undefined,
-          },
-        } as any;
-        const dbInfo = getPastPaperDatabaseInfo();
+
+        generatedWs = { ...hybridResult, isAI: true } as AIWorksheet;
+
         const hasQuestions = hasPastPaperQuestions(subject, examBoard !== "none" ? examBoard : "AQA");
         if (hasQuestions) {
-          toast.success(`Exam paper built from ${dbInfo.total} real past paper questions!`);
+          const dbInfo = getPastPaperDatabaseInfo();
+          toast.success(`Worksheet generated with real exam questions from ${dbInfo.total} past paper questions!`);
         } else {
-          toast.info("No past paper questions found for this subject — try a different exam board or subject.");
+          toast.info("Worksheet generated — no past paper questions found for this subject, AI questions used.");
         }
       } catch (err) {
-        console.error("Exam paper build failed:", err);
-        toast.error("Could not build exam paper — falling back to AI generation.");
+        console.error("Hybrid exam worksheet build failed:", err);
+        toast.error("Could not build exam worksheet — falling back to AI generation.");
         // Fall through to AI generation
         try {
           const result = await aiGenerateWorksheet({
@@ -1010,7 +1018,7 @@ export default function Worksheets() {
                     <SelectContent>
                       <SelectItem value="all">All subjects</SelectItem>
                       {Array.from(new Set(allPastPaperQuestions.map(q => q.subject).filter(Boolean))).sort().map(s => (
-                        <SelectItem key={s} value={s}>{(s || '').replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</SelectItem>
+                        <SelectItem key={s as string} value={s as string}>{((s as string) || '').replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>

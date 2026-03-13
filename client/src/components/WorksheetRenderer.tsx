@@ -853,10 +853,18 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(({
                       onError={(e) => {
                         const target = e.currentTarget;
                         target.style.display = "none";
-                        const fallback = document.createElement("p");
-                        fallback.textContent = "[Diagram image could not be loaded]";
-                        fallback.style.cssText = "color:#9ca3af;font-style:italic;font-size:13px;";
-                        target.parentNode?.insertBefore(fallback, target.nextSibling);
+                        // If there's an SVG fallback, show it; otherwise show error text
+                        if (section.svg) {
+                          const svgWrapper = document.createElement("div");
+                          svgWrapper.style.cssText = "display:inline-block;width:100%;max-width:560px;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;background:white;";
+                          svgWrapper.innerHTML = section.svg;
+                          target.parentNode?.insertBefore(svgWrapper, target.nextSibling);
+                        } else {
+                          const fallback = document.createElement("p");
+                          fallback.textContent = "[Diagram image could not be loaded]";
+                          fallback.style.cssText = "color:#9ca3af;font-style:italic;font-size:13px;";
+                          target.parentNode?.insertBefore(fallback, target.nextSibling);
+                        }
                       }}
                     />
                   ) : section.svg ? (
