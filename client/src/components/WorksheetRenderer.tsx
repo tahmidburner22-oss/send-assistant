@@ -741,7 +741,14 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(({
                       src={section.imageUrl}
                       alt={section.caption || "Diagram"}
                       style={{ maxWidth: "560px", width: "100%", borderRadius: "8px", border: "1px solid #e5e7eb" }}
-                      crossOrigin="anonymous"
+                      onError={(e) => {
+                        const target = e.currentTarget;
+                        target.style.display = "none";
+                        const fallback = document.createElement("p");
+                        fallback.textContent = "[Diagram image could not be loaded]";
+                        fallback.style.cssText = "color:#9ca3af;font-style:italic;font-size:13px;";
+                        target.parentNode?.insertBefore(fallback, target.nextSibling);
+                      }}
                     />
                   ) : section.svg ? (
                     <div
