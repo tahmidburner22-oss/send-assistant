@@ -22,8 +22,8 @@ import WorksheetRenderer, { renderMath, stripKatexToPlainText } from "@/componen
 import { worksheetBank, type BankWorksheet } from "@/lib/worksheet-bank";
 import { getSyllabusTopics, type SyllabusTopic } from "@/lib/syllabus-data";
 import { aiGenerateWorksheet, aiEditSection } from "@/lib/ai";
-import { buildExamPaperWorksheet, buildHybridExamWorksheet, buildSelectedQuestionsWorksheet, hasPastPaperQuestions, getPastPaperDatabaseInfo } from "@/lib/examPaperBuilder";
-import { allPastPaperQuestions, type PastPaperQuestion } from "@/lib/pastPaperQuestions";
+// examPaperBuilder is dynamically imported inside handlers to avoid loading the large question bank on initial page load
+import type { PastPaperQuestion } from "@/lib/pastPaperQuestions";
 import PrintOptionsDialog, { type PrintOptions } from "@/components/PrintOptionsDialog";
 import {
   FileText, Upload, Library, Sparkles, Download, Printer, Save, Star,
@@ -211,11 +211,15 @@ export default function Worksheets() {
   const [examQBoard, setExamQBoard] = useState("all");
   const [examQTier, setExamQTier] = useState("all");
   const [examQExpanded, setExamQExpanded] = useState<string | null>(null);
+  // Lazy-loaded question bank — only loaded when Exam Bank tab is first opened
+  const [allPastPaperQuestions, setAllPastPaperQuestions] = useState<PastPaperQuestion[]>([]);
+  const [examBankLoading, setExamBankLoading] = useState(false);
+  const [examBankLoaded, setExamBankLoaded] = useState(false);
   // Multi-select state for Exam Hub
   const [selectedExamQIds, setSelectedExamQIds] = useState<Set<string>>(new Set());
   const selectedExamQuestions = useMemo(() => {
     return allPastPaperQuestions.filter(q => selectedExamQIds.has(q.id));
-  }, [selectedExamQIds]);
+  }, [selectedExamQIds, allPastPaperQuestions]);
   const selectedTotalMarks = useMemo(() => {
     return selectedExamQuestions.reduce((sum, q) => sum + (q.marks || 0), 0);
   }, [selectedExamQuestions]);
@@ -296,6 +300,7 @@ export default function Worksheets() {
         });
 
         // Step 2: Replace exercise sections with real exam questions from the bank
+        const { buildHybridExamWorksheet, hasPastPaperQuestions, getPastPaperDatabaseInfo } = await import('@/lib/examPaperBuilder');
         const hybridResult = buildHybridExamWorksheet({
           aiWorksheet: aiResult,
           subject,
@@ -415,6 +420,7 @@ export default function Worksheets() {
       const qYearGroup = yearGroup || "Year 10";
 
       // Build worksheet directly from selected questions (no AI needed)
+      const { buildSelectedQuestionsWorksheet } = await import('@/lib/examPaperBuilder');
       const ws = buildSelectedQuestionsWorksheet({
         questions: selectedExamQuestions,
         subject: qSubject,
@@ -634,7 +640,18 @@ export default function Worksheets() {
       </motion.div>
 
       {!generated ? (
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <Tabs value={activeTab} onValueChange={(tab) => {
+          setActiveTab(tab);
+          // Lazy-load the question bank only when Exam Bank tab is first opened
+          if (tab === 'exam-questions' && !examBankLoaded && !examBankLoading) {
+            setExamBankLoading(true);
+            import('@/lib/pastPaperQuestions').then(mod => {
+              setAllPastPaperQuestions(mod.allPastPaperQuestions);
+              setExamBankLoaded(true);
+              setExamBankLoading(false);
+            }).catch(() => setExamBankLoading(false));
+          }
+        }}>
           <div className="overflow-x-auto -mx-1 px-1">
           <TabsList className={`flex w-max min-w-full h-10`}>
             <TabsTrigger value="generate" className="text-xs gap-1 flex-1 min-w-[80px]"><Sparkles className="w-3 h-3" /><span className="hidden xs:inline">Generate</span><span className="xs:hidden">Gen</span></TabsTrigger>
@@ -1074,7 +1091,15 @@ export default function Worksheets() {
 
           {/* ─── EXAM QUESTIONS TAB ──────────────────────────────────────────────────────────────────────── */}
           <TabsContent value="exam-questions" className="mt-4 space-y-3">
-            {/* Search & filter bar */}
+            {/* Loading state while question bank is being loaded */}
+            {examBankLoading && (
+              <div className="flex flex-col items-center justify-center py-12 gap-3">
+                <RefreshCw className="w-8 h-8 text-blue-500 animate-spin" />
+                <p className="text-sm text-muted-foreground">Loading question bank...</p>
+              </div>
+            )}
+            {!examBankLoading && (
+            <>{/* Search & filter bar */}
             <Card className="border-border/50">
               <CardContent className="p-3 space-y-3">
                 <div className="flex items-center gap-2 mb-1">
@@ -1361,6 +1386,7 @@ export default function Worksheets() {
                 </div>
               );
             })()}
+            </>)}
           </TabsContent>
 
           {/* ─── HISTORY TAB ──────────────────────────────────────────────────────────────────────── */}

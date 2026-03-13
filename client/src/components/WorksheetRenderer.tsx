@@ -36,9 +36,19 @@ export function renderMath(text: string): string {
 
   let result = normalizeMalformedKatexMarkup(decodeHtmlEntities(text));
 
-  // If the content already contains valid pre-rendered KaTeX HTML, return it as-is
-  // This prevents double-processing of content that was already rendered.
-  if (result.includes('class="katex"') || result.includes("class='katex'")) return result;
+  // If the content already contains valid pre-rendered KaTeX HTML, extract the LaTeX
+  // annotation text and replace each KaTeX block with its raw LaTeX so it can be
+  // cleanly re-rendered. This handles the case where the AI returns pre-rendered HTML
+  // (e.g. from a previous renderMath call stored in history) instead of raw LaTeX.
+  if (result.includes('class="katex"') || result.includes("class='katex'")) {
+    // Replace each <span class="katex">...</span> block with the LaTeX annotation inside it
+    result = result.replace(
+      /<span class=["']katex["'][\s\S]*?<annotation[^>]*encoding=["']application\/x-tex["'][^>]*>([\s\S]*?)<\/annotation>[\s\S]*?<\/span>\s*<\/span>\s*<\/span>/g,
+      (_, latex) => `\\(${latex.trim()}\\)`
+    );
+    // If there are still katex spans (the regex above didn't match), return as-is
+    if (result.includes('class="katex"') || result.includes("class='katex'")) return result;
+  }
 
   // ── Step 0a: Convert plain-English math phrases to LaTeX ──────────────────────
   // This handles question bank text like "x squared", "root(12)", "to the power of 3"
