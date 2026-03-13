@@ -648,25 +648,24 @@ Return EXACTLY this JSON structure (raw JSON only, no markdown):
     }
   }
 
-  // Optionally generate and inject a diagram section
+  // Optionally inject a verified diagram from the diagram bank
   if (params.generateDiagram) {
     try {
-      const diagramSection = await aiGenerateWorksheetDiagram({
-        subject: params.subject,
-        topic: params.topic,
-        yearGroup: params.yearGroup,
-        sendNeed: params.sendNeed,
-        diagramType: params.diagramType,
-      });
-      // Insert diagram after the worked example section (index 2) or at position 2
-      const insertAt = Math.min(2, result.sections.length);
-      result.sections = [
-        ...result.sections.slice(0, insertAt),
-        diagramSection,
-        ...result.sections.slice(insertAt),
-      ];
+      const { getVerifiedDiagramSection } = await import('./diagram-bank');
+      const diagramSection = getVerifiedDiagramSection(params.subject, params.topic);
+      if (diagramSection) {
+        // Insert diagram after the worked example section (index 2) or at position 2
+        const insertAt = Math.min(2, result.sections.length);
+        result.sections = [
+          ...result.sections.slice(0, insertAt),
+          diagramSection,
+          ...result.sections.slice(insertAt),
+        ];
+      } else {
+        console.info('[Diagram] No verified diagram found for topic:', params.topic);
+      }
     } catch (err) {
-      console.warn("Diagram generation failed, continuing without diagram:", err);
+      console.warn('Diagram injection failed, continuing without diagram:', err);
     }
   }
 
