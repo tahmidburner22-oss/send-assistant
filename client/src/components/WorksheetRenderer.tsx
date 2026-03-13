@@ -98,6 +98,73 @@ export function renderMath(text: string): string {
     }
   }
 
+  // ── Step 0a-pre: Fix \text{} and \mathrm{} corruption from JSON backslash stripping ─
+  // When AI outputs \text{m/s}, JSON parsing converts \t → tab, leaving (tab)ext{m/s}.
+  // When AI outputs \mathrm{kg}, JSON converts \m → m (not a valid escape), so it stays.
+  // We need to handle ALL these cases before any other processing.
+
+  // 1. Literal \text{...} and \mathrm{...} etc. (if backslash survived)
+  result = result.replace(/\\text\{([^{}]*)\}/g, '$1');
+  result = result.replace(/\\mathrm\{([^{}]*)\}/g, '$1');
+  result = result.replace(/\\mathsf\{([^{}]*)\}/g, '$1');
+  result = result.replace(/\\mathtt\{([^{}]*)\}/g, '$1');
+  result = result.replace(/\\mathcal\{([^{}]*)\}/g, '$1');
+  result = result.replace(/\\mbox\{([^{}]*)\}/g, '$1');
+  result = result.replace(/\\hbox\{([^{}]*)\}/g, '$1');
+  result = result.replace(/\\rm\{([^{}]*)\}/g, '$1');
+  result = result.replace(/\\bf\{([^{}]*)\}/g, '<strong>$1</strong>');
+  result = result.replace(/\\it\{([^{}]*)\}/g, '<em>$1</em>');
+
+  // 2. After JSON parsing \text → \t (tab) + ext: handle tab+ext{...} and tab+extXXX
+  result = result.replace(/\t(ext\{[^{}]*\})/g, (_, m) => m.replace(/^ext\{([^{}]*)\}$/, '$1'));
+  result = result.replace(/\t(ext[A-Za-z0-9/²³⁻⁺°·\-]+)/g, (_, m) => m.replace(/^ext/, ''));
+  // bare ext{...} without preceding tab
+  result = result.replace(/\bext\{([^{}]*)\}/g, '$1');
+  // bare extXXX (no braces) — e.g. extm/s, extN, extkg
+  result = result.replace(/\bext([A-Za-z][A-Za-z0-9/²³⁻⁺°·\-]*)/g, '$1');
+
+  // 3. Similar corruption for \mathrm → athrm, \mathsf → athsf, \mbox → box
+  result = result.replace(/\bathrm\{([^{}]*)\}/g, '$1');
+  result = result.replace(/\bathsf\{([^{}]*)\}/g, '$1');
+  result = result.replace(/\bathtt\{([^{}]*)\}/g, '$1');
+  result = result.replace(/\box\{([^{}]*)\}/g, '$1');
+
+  // ── Step 0a-sci: Science-specific symbol and unit normalisation ──────────────
+  // Chemical formulas: convert digit subscripts in common molecules
+  // Only match known chemical element symbols (1-2 letter) followed by digits within a formula context
+  // e.g. H2O → H₂O, CO2 → CO₂, H2SO4 → H₂SO₄, C6H12O6 → C₆H₁₂O₆
+  // IMPORTANT: Only match when the element symbol is preceded by start-of-formula context
+  // (another element symbol or start of word) to avoid matching "Year 10", "Section B2", etc.
+  const CHEM_ELEMENTS = new Set(['H','He','Li','Be','B','C','N','O','F','Ne','Na','Mg','Al','Si','P','S','Cl','Ar',
+    'K','Ca','Sc','Ti','V','Cr','Mn','Fe','Co','Ni','Cu','Zn','Ga','Ge','As','Se','Br','Kr',
+    'Rb','Sr','Y','Zr','Nb','Mo','Tc','Ru','Rh','Pd','Ag','Cd','In','Sn','Sb','Te','I','Xe',
+    'Cs','Ba','La','Ce','Pr','Nd','Pm','Sm','Eu','Gd','Tb','Dy','Ho','Er','Tm','Yb','Lu',
+    'Hf','Ta','W','Re','Os','Ir','Pt','Au','Hg','Tl','Pb','Bi','Po','At','Rn',
+    'Fr','Ra','Ac','Th','Pa','U','Np','Pu','Am','Cm','Bk','Cf','Es','Fm','Md','No','Lr']);
+  // Match chemical formula patterns: element symbol + digits (+ more elements + digits)
+  // Only convert when the pattern looks like a formula (starts with a known element)
+  result = result.replace(/\b([A-Z][a-z]?)((?:[0-9]+[A-Z][a-z]?)*[0-9]*)(?=[A-Z][a-z]?[0-9]|[0-9]|\b)/g, (full, firstElem, rest) => {
+    if (!CHEM_ELEMENTS.has(firstElem)) return full; // Not a chemical element
+    // Convert all digit runs to subscripts
+    const converted = (firstElem + rest).replace(/([A-Z][a-z]?)([0-9]+)/g, (_, el, num) => {
+      const subscript = num.split('').map((d: string) => '₀₁₂₃₄₅₆₇₈₉'[parseInt(d)]).join('');
+      return `${el}${subscript}`;
+    });
+    return converted;
+  });
+  // Also handle standalone element+number at end of word: CO2, H2O, etc.
+  result = result.replace(/\b([A-Z][a-z]?)([0-9]+)\b/g, (full, elem, num) => {
+    if (!CHEM_ELEMENTS.has(elem)) return full;
+    const subscript = num.split('').map((d: string) => '₀₁₂₃₄₅₆₇₈₉'[parseInt(d)]).join('');
+    return `${elem}${subscript}`;
+  });
+
+  // Scientific notation: 6.02 x 10^23 or 6.02 × 10^23 → proper rendering
+  result = result.replace(/(\d+\.?\d*)\s*[×x]\s*10\^\{?(-?\d+)\}?/g, (_, coeff, exp) => {
+    try { return katex.renderToString(`${coeff} \\times 10^{${exp}}`, { displayMode: false, throwOnError: false }); }
+    catch { return `${coeff} × 10${exp.split('').map((d: string) => '-0123456789'.includes(d) ? ('⁻⁰¹²³⁴⁵⁶⁷⁸⁹'['-0123456789'.indexOf(d)] || d) : d).join('')}`; }
+  });
+
   // ── Step 0a: Convert plain-English math phrases to LaTeX ──────────────────────
   // This handles question bank text like "x squared", "root(12)", "to the power of 3"
 
@@ -264,7 +331,8 @@ export function renderMath(text: string): string {
       return out;
     });
     result = applyToPlainText(result, s => s.replace(/\bimes\b/g, '×'));
-    result = applyToPlainText(result, s => s.replace(/\bext\{([^{}]*)\}/g, '$1'));
+    // Note: \text{}, \mathrm{} and related commands are handled at Step 0a-pre (top of function)
+    // before any KaTeX HTML is produced, so we don't need to repeat them here.
     result = applyToPlainText(result, s => s.replace(/\bqrt\{([^{}]*)\}/g, (_, expr) => {
       try { return katex.renderToString(`\\sqrt{${expr}}`, { displayMode: false, throwOnError: false }); }
       catch { return `√${expr}`; }
@@ -364,6 +432,10 @@ export function renderMath(text: string): string {
   result = result.replace(/\\Leftrightarrow\b/g, '⟺');
   result = result.replace(/\\text\{([^{}]*)\}/g, '$1');
   result = result.replace(/\\mathrm\{([^{}]*)\}/g, '$1');
+  result = result.replace(/\\mathsf\{([^{}]*)\}/g, '$1');
+  result = result.replace(/\\mathtt\{([^{}]*)\}/g, '$1');
+  result = result.replace(/\\mathcal\{([^{}]*)\}/g, '$1');
+  result = result.replace(/\\mbox\{([^{}]*)\}/g, '$1');
   result = result.replace(/\\mathbf\{([^{}]*)\}/g, '<strong>$1</strong>');
   result = result.replace(/\\mathit\{([^{}]*)\}/g, '<em>$1</em>');
   // \left( and \right) → plain parens
