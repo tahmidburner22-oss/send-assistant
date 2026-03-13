@@ -786,7 +786,10 @@ function getSectionStyle(type: string) {
 function formatContent(content: string, fmt: ReturnType<typeof getSendFormatting>): React.ReactNode {
   const { fontSize: textSize, lineHeight, letterSpacing, wordSpacing, paragraphSpacing, fontFamily } = fmt;
   if (!content) return null;
-  const lines = content.split("\n");
+  // Pre-process: split comma-separated numbered items onto separate lines
+  // e.g. "1. Question one, 2. Question two" → "1. Question one\n2. Question two"
+  const preprocessed = content.replace(/(,\s*)(\d+[a-z]?[.)]\s+)/g, '\n$2');
+  const lines = preprocessed.split("\n");
   const elements: React.ReactNode[] = [];
   let inTable = false;
   let tableRows: string[] = [];

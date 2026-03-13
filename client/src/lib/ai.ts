@@ -511,6 +511,8 @@ Follow this structure:
 11. Answer Key (teacher only)
 12. Teacher Notes (teacher only)
 
+CRITICAL FORMATTING RULE: In all section content strings, put EACH question, step, or item on its OWN LINE separated by \n. NEVER put multiple questions on the same line separated by commas. Example: "1. First question\n2. Second question\n3. Third question"
+
 Return EXACTLY this JSON (raw JSON, no markdown):
 {
   "title": "${params.topic} — ${params.yearGroup} ${subjectDisplay} Worksheet",
@@ -521,9 +523,9 @@ Return EXACTLY this JSON (raw JSON, no markdown):
     ${isMaths && !params.examStyle ? `{"title": "Key Formulas", "type": "example", "content": "[formulas for ${params.topic} in LaTeX, or write: No formula required]"},` : ''}
     {"title": "Worked Example", "type": "example", "content": "[${exampleGuide}]"}${params.introOnly ? '' : `,
     {"title": "Reminder Box", "type": "reminder-box", "content": "[3 numbered steps for ${params.topic}]"},
-    {"title": "Section A — Guided Practice", "type": "guided", "content": "[${params.sendNeed && params.sendNeed !== 'none' && params.sendNeed !== 'none-selected' ? 'fill-in-the-blank guided questions' : 'questions with hints'}]"},
-    {"title": "Section B — Core Practice", "type": "independent", "content": "[standard questions + 1 misconception question]"},
-    {"title": "Section C — Word Problems", "type": "word-problems", "content": "[3-4 real-life word problems]"},
+    {"title": "Section A — Guided Practice", "type": "guided", "content": "[${params.sendNeed && params.sendNeed !== 'none' && params.sendNeed !== 'none-selected' ? 'fill-in-the-blank guided questions' : 'questions with hints — each on its own line: 1. Question one\\n2. Question two\\n3. Question three'}]"},
+    {"title": "Section B — Core Practice", "type": "independent", "content": "[standard questions + 1 misconception question — each on its own line: 1. Question one\\n2. Question two]"},
+    {"title": "Section C — Word Problems", "type": "word-problems", "content": "[3-4 real-life word problems — each labelled PROBLEM 1, PROBLEM 2 etc on its own line]"},
     {"title": "Challenge Question", "type": "challenge", "content": "[${challengeGuide}]"},
     {"title": "How Did I Do?", "type": "self-reflection", "teacherOnly": false, "content": "[3-4 I can statements + Q: open question]"},
     {"title": "Common Mistakes to Avoid", "type": "common-mistakes", "teacherOnly": false, "content": "[3-4 common mistakes students make on this topic, with brief explanations]"},
