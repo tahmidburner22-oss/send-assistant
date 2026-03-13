@@ -775,6 +775,21 @@ If the submission is empty or too short to mark, return mark: "N/A", feedback: "
                     const currentTopicEntry = bank[cfg.topicIndex % bank.length];
                     const prevTopicIdx = cfg.topicIndex === 0 ? null : ((cfg.topicIndex - 1) + bank.length) % bank.length;
                     const prevTopicEntry = prevTopicIdx !== null ? bank[prevTopicIdx] : null;
+
+                    // Progress Chain logic
+                    const lastAssignment = selectedChild.assignments.length > 0
+                      ? selectedChild.assignments[selectedChild.assignments.length - 1]
+                      : null;
+                    const lastProgress = lastAssignment?.progress ?? 0;
+                    const MASTERY_THRESHOLD = 70;
+                    const shouldReinforce = !!(lastAssignment && lastProgress < MASTERY_THRESHOLD && lastAssignment.status !== 'not-started');
+                    const recommendedTopicIdx = shouldReinforce
+                      ? Math.max(0, cfg.topicIndex - 1)
+                      : cfg.topicIndex;
+                    const recommendedTopic = bank[recommendedTopicIdx % bank.length];
+                    const chainStart = Math.max(0, cfg.topicIndex - 2);
+                    const chainTopics = bank.slice(chainStart, Math.min(bank.length, chainStart + 6));
+
                     return (
                       <div className="space-y-3">
                         {/* Header */}
@@ -784,6 +799,97 @@ If the submission is empty or too short to mark, return mark: "N/A", feedback: "
                             <p className="text-xs font-semibold text-indigo-800">AI Auto-Assignment Scheduler</p>
                             <p className="text-xs text-indigo-600 mt-0.5">Automatically generates and assigns SEND-adapted worksheets for {selectedChild.name} on a rotating curriculum. Topics vary each time and include recall questions from the previous sheet.</p>
                           </div>
+                        </div>
+
+                        {/* Progress Chain */}
+                        <div className="p-3 rounded-xl border border-border/60 bg-gradient-to-br from-slate-50 to-white space-y-3">
+                          <div className="flex items-center gap-2">
+                            <TrendingUp className="h-4 w-4 text-brand" />
+                            <p className="text-xs font-semibold text-foreground">Learning Progress Chain</p>
+                          </div>
+                          <div className="flex items-center gap-1 overflow-x-auto pb-1">
+                            {chainTopics.map((t, i) => {
+                              const absIdx = chainStart + i;
+                              const isCompleted = absIdx < cfg.topicIndex;
+                              const isCurrent = absIdx === cfg.topicIndex;
+                              const isNext = absIdx === cfg.topicIndex + 1;
+                              return (
+                                <div key={absIdx} className="flex items-center gap-1 flex-shrink-0">
+                                  <div className={`flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg text-center min-w-[72px] max-w-[80px] ${
+                                    isCompleted ? 'bg-green-100 border border-green-300' :
+                                    isCurrent ? 'bg-brand/10 border-2 border-brand' :
+                                    isNext ? 'bg-amber-50 border border-amber-200' :
+                                    'bg-muted/40 border border-border/40'
+                                  }`}>
+                                    <div className={`h-4 w-4 rounded-full flex items-center justify-center ${
+                                      isCompleted ? 'bg-green-500' :
+                                      isCurrent ? 'bg-brand' :
+                                      isNext ? 'bg-amber-400' :
+                                      'bg-muted-foreground/30'
+                                    }`}>
+                                      {isCompleted ? (
+                                        <CheckCircle className="h-3 w-3 text-white" />
+                                      ) : isCurrent ? (
+                                        <span className="text-[8px] text-white font-bold">NOW</span>
+                                      ) : isNext ? (
+                                        <span className="text-[8px] text-white font-bold">NEXT</span>
+                                      ) : (
+                                        <span className="text-[8px] text-white">{absIdx + 1}</span>
+                                      )}
+                                    </div>
+                                    <p className={`text-[9px] leading-tight mt-0.5 ${
+                                      isCompleted ? 'text-green-700' :
+                                      isCurrent ? 'text-brand font-semibold' :
+                                      isNext ? 'text-amber-700' :
+                                      'text-muted-foreground'
+                                    }`}>{t.topic.split(' — ')[0].substring(0, 20)}</p>
+                                  </div>
+                                  {i < chainTopics.length - 1 && (
+                                    <div className={`h-0.5 w-3 flex-shrink-0 ${
+                                      absIdx < cfg.topicIndex ? 'bg-green-400' : 'bg-border'
+                                    }`} />
+                                  )}
+                                </div>
+                              );
+                            })}
+                            {chainStart + chainTopics.length < bank.length && (
+                              <p className="text-[9px] text-muted-foreground ml-1">+{bank.length - (chainStart + chainTopics.length)} more</p>
+                            )}
+                          </div>
+                          {lastAssignment && lastAssignment.status !== 'not-started' ? (
+                            <div className={`flex items-start gap-2 p-2.5 rounded-lg ${
+                              shouldReinforce ? 'bg-amber-50 border border-amber-200' : 'bg-green-50 border border-green-200'
+                            }`}>
+                              {shouldReinforce
+                                ? <AlertCircle className="h-3.5 w-3.5 text-amber-600 mt-0.5 shrink-0" />
+                                : <CheckCircle className="h-3.5 w-3.5 text-green-600 mt-0.5 shrink-0" />
+                              }
+                              <div className="flex-1 min-w-0">
+                                <p className={`text-[10px] font-semibold ${
+                                  shouldReinforce ? 'text-amber-800' : 'text-green-800'
+                                }`}>
+                                  {shouldReinforce
+                                    ? `Reinforce recommended — last score ${lastProgress}% (below ${MASTERY_THRESHOLD}% mastery)`
+                                    : `Ready to advance — last score ${lastProgress}% ✓`
+                                  }
+                                </p>
+                                <p className={`text-[10px] mt-0.5 ${
+                                  shouldReinforce ? 'text-amber-700' : 'text-green-700'
+                                }`}>
+                                  {shouldReinforce
+                                    ? `Recommended next: Repeat "${recommendedTopic.topic}" with extra scaffolding`
+                                    : `Recommended next: "${recommendedTopic.topic}"`
+                                  }
+                                </p>
+                              </div>
+                            </div>
+                          ) : (
+                            <p className="text-[10px] text-muted-foreground text-center py-1">
+                              {selectedChild.assignments.length === 0
+                                ? 'No assignments yet — generate the first worksheet to start the progress chain.'
+                                : 'Assignment not yet started — progress will update once the student begins.'}
+                            </p>
+                          )}
                         </div>
 
                         {/* Subject */}
