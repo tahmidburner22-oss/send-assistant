@@ -577,7 +577,7 @@ ${formulaNote}
 ${reminderBoxNote}
 ${wordProblemsNote}
 ${commonMistakesNote}
-Additional instructions: ${params.additionalInstructions || "none"}`;
+Additional instructions: ${params.additionalInstructions || "none"}
 
 ━━━ YEAR GROUP CALIBRATION RULES (MANDATORY) ━━━
 Year group scaling is CRITICAL. The difficulty, language, and cognitive demand must match the year group EXACTLY:
