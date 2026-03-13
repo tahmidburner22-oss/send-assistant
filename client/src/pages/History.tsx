@@ -207,13 +207,13 @@ export default function History() {
                       <FileText className="w-5 h-5 text-brand" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h4 className="text-sm font-semibold text-foreground truncate">{ws.title}</h4>
+                      <h4 className="text-sm font-semibold text-foreground truncate">{ws.title.split(' | ')[0].split(' | ')[0]}</h4>
                       <p className="text-xs text-muted-foreground mt-0.5">
                         {subjectName} · {ws.yearGroup} · {ws.difficulty}{needName ? ` · ${needName}` : ""}
                       </p>
                       <div className="flex items-center gap-2 mt-1.5">
                         <span className="text-[10px] text-muted-foreground">{new Date(ws.createdAt).toLocaleDateString()}</span>
-                        {ws.rating && (
+                        {ws.rating != null && ws.rating > 0 && (
                           <span className="flex items-center gap-0.5 text-[10px] text-amber-500">
                             <Star className="w-3 h-3 fill-amber-400" /> {ws.rating}
                           </span>
