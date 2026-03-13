@@ -18,7 +18,56 @@ export function renderMath(text: string): string {
   if (!text) return "";
   let result = text;
 
-  // ── Step 0: Normalize spaced HTML tags that AI sometimes generates ──────────
+  // ── Step 0a: Convert plain-English math phrases to LaTeX ──────────────────────
+  // This handles question bank text like "x squared", "root(12)", "to the power of 3"
+
+  // "x squared" → x² (then caught by Step 2)
+  result = result.replace(/\b([A-Za-z0-9]+)\s+squared\b/g, (_, base) => `${base}\u00b2`);
+  result = result.replace(/\b([A-Za-z0-9]+)\s+cubed\b/g, (_, base) => `${base}\u00b3`);
+
+  // "to the power of n" → ^n
+  result = result.replace(/\bto the power of\s+(-?[A-Za-z0-9]+)/gi, (_, exp) => {
+    try { return katex.renderToString(`^{${exp}}`, { displayMode: false, throwOnError: false }); }
+    catch { return `<sup>${exp}</sup>`; }
+  });
+
+  // "root(12)" or "root 12" → \sqrt{12}
+  result = result.replace(/\broot\(([^)]+)\)/gi, (_, n) => {
+    try { return katex.renderToString(`\\sqrt{${n}}`, { displayMode: false, throwOnError: false }); }
+    catch { return `√${n}`; }
+  });
+  result = result.replace(/\broot\s+(\d+)\b/gi, (_, n) => {
+    try { return katex.renderToString(`\\sqrt{${n}}`, { displayMode: false, throwOnError: false }); }
+    catch { return `√${n}`; }
+  });
+
+  // "n root(x)" → nth root of x
+  result = result.replace(/(\d+)\s+root\(([^)]+)\)/gi, (_, n, x) => {
+    try { return katex.renderToString(`\\sqrt[${n}]{${x}}`, { displayMode: false, throwOnError: false }); }
+    catch { return `${n}√${x}`; }
+  });
+
+  // "degrees" → ° symbol
+  result = result.replace(/(\d+(?:\.\d+)?)\s*degrees\b/gi, '$1°');
+
+  // "pi" as a standalone word → π
+  result = result.replace(/\bpi\b/g, 'π');
+
+  // "infinity" → ∞
+  result = result.replace(/\binfinity\b/gi, '∞');
+
+  // "less than or equal to" / "greater than or equal to"
+  result = result.replace(/\bless than or equal to\b/gi, '≤');
+  result = result.replace(/\bgreater than or equal to\b/gi, '≥');
+  result = result.replace(/\bnot equal to\b/gi, '≠');
+
+  // "x times y" → x × y (only when between numbers/variables)
+  result = result.replace(/\b(\d+(?:\.\d+)?)\s+times\s+(\d+(?:\.\d+)?)\b/g, '$1 × $2');
+
+  // "n divided by m" → n ÷ m
+  result = result.replace(/\b(\d+(?:\.\d+)?)\s+divided by\s+(\d+(?:\.\d+)?)\b/g, '$1 ÷ $2');
+
+  // ── Step 0b: Normalize spaced HTML tags that AI sometimes generates ──────────
   // e.g. "x < sup > 2 < /sup >" → "x<sup>2</sup>"
   result = result.replace(/<\s*sup\s*>/gi, "<sup>");
   result = result.replace(/<\s*\/\s*sup\s*>/gi, "</sup>");
@@ -593,11 +642,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(({
                 ★ {worksheet.metadata.totalMarks} marks
               </span>
             )}
-            {worksheet.isAI && (
-              <span style={{ background: "#f0fdf4", color: "#166534", padding: "2px 8px", borderRadius: "12px", fontSize: "11px", fontWeight: 600 }}>
-                ✨ AI Generated
-              </span>
-            )}
+
           </div>
         </div>
         {/* Name/Date/Class fields */}
@@ -689,18 +734,19 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(({
 
             {/* Section content */}
             <div style={{ padding: "12px 14px" }}>
-              {section.type === "diagram" && (section.svg || section.imageUrl) ? (
+              {section.type === "diagram" && (section.imageUrl || section.svg) ? (
                 <div style={{ textAlign: "center" }}>
-                  {section.svg ? (
-                    <div
-                      style={{ display: "inline-block", width: "100%", maxWidth: "560px", border: "1px solid #e5e7eb", borderRadius: "8px", overflow: "hidden", background: "white" }}
-                      dangerouslySetInnerHTML={{ __html: section.svg }}
-                    />
-                  ) : section.imageUrl ? (
+                  {section.imageUrl ? (
                     <img
                       src={section.imageUrl}
                       alt={section.caption || "Diagram"}
                       style={{ maxWidth: "560px", width: "100%", borderRadius: "8px", border: "1px solid #e5e7eb" }}
+                      crossOrigin="anonymous"
+                    />
+                  ) : section.svg ? (
+                    <div
+                      style={{ display: "inline-block", width: "100%", maxWidth: "560px", border: "1px solid #e5e7eb", borderRadius: "8px", overflow: "hidden", background: "white" }}
+                      dangerouslySetInnerHTML={{ __html: section.svg }}
                     />
                   ) : null}
                   {section.caption && (

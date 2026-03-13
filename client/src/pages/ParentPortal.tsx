@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import React, { useState, useRef } from "react";
 import { aiGenerateStory, callAI } from "@/lib/ai";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,7 +20,8 @@ import {
   MessageSquare, Image, Paperclip, ZoomIn, ZoomOut,
   CalendarDays, CheckCircle2, XCircle, MinusCircle, Sun, Sunset, TrendingUp,
   Calendar, MapPin, User2, ChevronLeft, ChevronRight as ChevronRightIcon,
-  PenLine, Check, Loader2, ScrollText, ExternalLink, Filter, ChevronDown, ChevronUp
+  PenLine, Check, Loader2, ScrollText, ExternalLink, Filter, ChevronDown, ChevronUp,
+  Home, LayoutDashboard, Menu, Star, Bell, BookMarked, Headphones, Zap, ScanSearch, Newspaper
 } from "lucide-react";
 import { subjects as pastPaperSubjects, allYears as ppAllYears, allBoards as ppAllBoards } from "@/lib/pastPapers";
 import { Link } from "wouter";
@@ -350,6 +351,8 @@ export default function ParentPortal() {
   const [behaviourLoading, setBehaviourLoading] = useState(false);
   const [viewContent, setViewContent] = useState<{ title: string; content: string } | null>(null);
   const [openSection, setOpenSection] = useState<string | null>("assignments");
+  const [activeSection, setActiveSection] = useState<string>("dashboard");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showSubmit, setShowSubmit] = useState(false);
   const [submitTitle, setSubmitTitle] = useState("");
   const [submitContent, setSubmitContent] = useState("");
@@ -551,56 +554,371 @@ export default function ParentPortal() {
 
   const needName = sendNeeds.find(n => n.id === child.sendNeed)?.name || child.sendNeed;
 
+  // Dashboard stats
+  const childAttendance = attendanceRecords.filter((r: any) => r.childId === child.id);
+  const amPresent = childAttendance.filter((r: any) => r.amStatus === "attended").length;
+  const pmPresent = childAttendance.filter((r: any) => r.pmStatus === "attended").length;
+  const totalDays = childAttendance.length;
+  const amPct = totalDays > 0 ? Math.round((amPresent / totalDays) * 100) : null;
+  const pmPct = totalDays > 0 ? Math.round((pmPresent / totalDays) * 100) : null;
+  const overallPct = totalDays > 0 ? Math.round(((amPresent + pmPresent) / (totalDays * 2)) * 100) : null;
+  const pendingAssignments = child.assignments.filter(a => a.status !== "completed");
+  const completedAssignments = child.assignments.filter(a => a.status === "completed");
+  const recentBehaviour = behaviourRecords.slice(0, 5);
+  const positiveCount = behaviourRecords.filter((r: any) => r.type === "positive").length;
+  const concernCount = behaviourRecords.filter((r: any) => r.type === "concern" || r.type === "incident").length;
+
+  const navItems = [
+    { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, color: "text-emerald-600" },
+    { id: "assignments", label: "Assignments", icon: FileText, color: "text-blue-600" },
+    { id: "attendance", label: "Attendance", icon: CalendarDays, color: "text-green-600" },
+    { id: "behaviour", label: "Behaviour", icon: TrendingUp, color: "text-orange-600" },
+    { id: "timetable", label: "Timetable", icon: Calendar, color: "text-purple-600" },
+    { id: "submissions", label: "Submit Work", icon: Upload, color: "text-teal-600" },
+    { id: "stories", label: "Story Generator", icon: BookOpen, color: "text-pink-600" },
+    { id: "past-papers", label: "Past Papers", icon: ScrollText, color: "text-indigo-600" },
+    { id: "revision-hub", label: "Revision Hub", icon: Headphones, color: "text-violet-600" },
+    { id: "quizblast", label: "QuizBlast", icon: Zap, color: "text-yellow-500" },
+    { id: "newsletters", label: "Newsletters", icon: Newspaper, color: "text-rose-600" },
+    { id: "send-screener", label: "SEND Screener", icon: ScanSearch, color: "text-cyan-600" },
+  ];
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-emerald-50 to-background">
-      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-border/50">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      {/* Top Header */}
+      <header className="sticky top-0 z-40 bg-white border-b border-border/50 shadow-sm">
         <div className="flex items-center justify-between px-4 h-14">
-          <button onClick={() => setChild(null)} className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1">
-            <ArrowLeft className="w-4 h-4" /> Exit
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="p-2 -ml-1 rounded-lg hover:bg-muted transition-colors"
+          >
+            <Menu className="w-5 h-5 text-foreground" />
           </button>
-          <h1 className="text-base font-semibold text-foreground">{child.name}'s Portal</h1>
-          <div className="w-12" />
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-full bg-emerald-600 flex items-center justify-center text-white font-bold text-sm">{child.name[0]}</div>
+            <span className="text-sm font-semibold text-foreground">{child.name}'s Portal</span>
+          </div>
+          <button onClick={() => setChild(null)} className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-muted transition-colors">
+            <ArrowLeft className="w-3.5 h-3.5" /> Exit
+          </button>
         </div>
       </header>
 
-      <div className="px-4 py-6 max-w-2xl mx-auto space-y-4">
-        {/* Child Info */}
-        <Card className="border-border/50">
-          <CardContent className="p-4 flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold text-xl">{child.name[0]}</div>
-            <div>
-              <h3 className="font-semibold text-foreground">{child.name}</h3>
-              <p className="text-xs text-muted-foreground">{child.yearGroup} · {needName}</p>
+      {/* Sidebar Overlay */}
+      {sidebarOpen && (
+        <>
+          <div
+            className="fixed inset-0 bg-black/30 z-50"
+            onClick={() => setSidebarOpen(false)}
+          />
+          <aside className="fixed left-0 top-0 bottom-0 w-72 z-50 shadow-xl flex flex-col bg-white">
+            {/* Sidebar Header */}
+            <div className="flex items-center justify-between p-4 border-b border-border/50 bg-emerald-600">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-lg">
+                  {child.name[0]}
+                </div>
+                <div>
+                  <div className="font-semibold text-white text-sm">{child.name}</div>
+                  <div className="text-xs text-emerald-100">{child.yearGroup} · {needName}</div>
+                </div>
+              </div>
+              <button onClick={() => setSidebarOpen(false)} className="p-1.5 rounded-lg hover:bg-white/20 transition-colors">
+                <X className="w-4 h-4 text-white" />
+              </button>
             </div>
-          </CardContent>
-        </Card>
 
-        {/* ─── ACCORDION SECTIONS ─── */}
-        {([
-          { id: "newsletters", label: "📰 School Newsletters", emoji: "📰" },
-          { id: "send-screener", label: "🔍 SEND Needs Screener", emoji: "🔍" },
-          { id: "assignments", label: "📚 Assignments", emoji: "📚" },
-          { id: "behaviour", label: "📋 Behaviour", emoji: "📋" },
-          { id: "timetable", label: "📅 Timetable", emoji: "📅" },
-          { id: "submissions", label: "📤 Submit Work", emoji: "📤" },
-          { id: "stories", label: "📖 Story Generator", emoji: "📖" },
-          { id: "attendance", label: "✅ Attendance", emoji: "✅" },
-          { id: "past-papers", label: "📝 Past Papers", emoji: "📝" },
-          { id: "revision-hub", label: "🎧 Revision Hub", emoji: "🎧" },
-          { id: "quizblast", label: "⚡ QuizBlast", emoji: "⚡" },
-        ] as { id: string; label: string; emoji: string }[]).map(sec => (
-          <div key={sec.id} className="rounded-2xl border border-border/60 overflow-hidden shadow-sm bg-white">
-            <button
-              onClick={() => setOpenSection(openSection === sec.id ? null : sec.id)}
-              className="w-full flex items-center justify-between px-4 py-3 bg-white hover:bg-muted/40 transition-colors"
-            >
-              <span className="font-semibold text-sm text-foreground">{sec.label}</span>
-              {openSection === sec.id
-                ? <ChevronUp className="w-4 h-4 text-muted-foreground" />
-                : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
-            </button>
-            {openSection === sec.id && (
-              <div className="border-t border-border/40 p-4">
+            {/* Nav Items */}
+            <div className="flex-1 overflow-y-auto py-3">
+              <div className="px-3 pb-1">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Navigation</span>
+              </div>
+              {navItems.map(item => {
+                const Icon = item.icon;
+                const isActive = activeSection === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => { setActiveSection(item.id); setSidebarOpen(false); }}
+                    className={`w-full mx-0 px-4 py-2.5 flex items-center gap-3 transition-all text-sm ${
+                      isActive ? "bg-emerald-50 text-emerald-700 font-medium border-r-2 border-emerald-600" : "text-foreground hover:bg-muted"
+                    }`}
+                  >
+                    <Icon className={`w-4 h-4 ${isActive ? "text-emerald-600" : item.color}`} />
+                    <span>{item.label}</span>
+                    {item.id === "assignments" && pendingAssignments.length > 0 && (
+                      <span className="ml-auto bg-blue-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                        {pendingAssignments.length}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Sidebar Footer */}
+            <div className="p-4 border-t border-border/50">
+              <button
+                onClick={() => setChild(null)}
+                className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              >
+                <ArrowLeft className="w-4 h-4" /> Exit Portal
+              </button>
+            </div>
+          </aside>
+        </>
+      )}
+
+      {/* Main Content */}
+      <main className="flex-1 px-4 py-5 max-w-3xl mx-auto w-full space-y-4">
+        {/* Bottom nav tabs for mobile */}
+        <div className="flex gap-1 overflow-x-auto pb-1 scrollbar-hide">
+          {navItems.slice(0, 6).map(item => {
+            const Icon = item.icon;
+            const isActive = activeSection === item.id;
+            return (
+              <button
+                key={item.id}
+                onClick={() => setActiveSection(item.id)}
+                className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                  isActive ? "bg-emerald-600 text-white shadow-sm" : "bg-white text-muted-foreground border border-border/50 hover:bg-muted"
+                }`}
+              >
+                <Icon className="w-3.5 h-3.5" />
+                {item.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* ─── DASHBOARD ─── */}
+        {activeSection === "dashboard" && (
+          <div className="space-y-4">
+            {/* Welcome card */}
+            <Card className="border-0 shadow-sm bg-gradient-to-r from-emerald-600 to-emerald-700 text-white">
+              <CardContent className="p-5">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-2xl flex-shrink-0">
+                    {child.name[0]}
+                  </div>
+                  <div className="flex-1">
+                    <h2 className="text-lg font-bold">{child.name}</h2>
+                    <p className="text-emerald-100 text-sm">{child.yearGroup}</p>
+                    {needName && needName !== child.sendNeed && (
+                      <span className="inline-block mt-1 bg-white/20 text-white text-xs px-2 py-0.5 rounded-full">{needName}</span>
+                    )}
+                  </div>
+                  <div className="text-right">
+                    <div className="text-2xl font-bold">{overallPct !== null ? `${overallPct}%` : "—"}</div>
+                    <div className="text-emerald-100 text-xs">Attendance</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Stats row */}
+            <div className="grid grid-cols-3 gap-3">
+              <Card className="border-0 shadow-sm">
+                <CardContent className="p-4 text-center">
+                  <div className="text-2xl font-bold text-blue-600">{pendingAssignments.length}</div>
+                  <div className="text-xs text-muted-foreground mt-0.5">Pending</div>
+                  <div className="text-xs text-muted-foreground">Assignments</div>
+                </CardContent>
+              </Card>
+              <Card className="border-0 shadow-sm">
+                <CardContent className="p-4 text-center">
+                  <div className="text-2xl font-bold text-emerald-600">{positiveCount}</div>
+                  <div className="text-xs text-muted-foreground mt-0.5">Positive</div>
+                  <div className="text-xs text-muted-foreground">Behaviour</div>
+                </CardContent>
+              </Card>
+              <Card className="border-0 shadow-sm">
+                <CardContent className="p-4 text-center">
+                  <div className="text-2xl font-bold text-orange-500">{concernCount}</div>
+                  <div className="text-xs text-muted-foreground mt-0.5">Concerns</div>
+                  <div className="text-xs text-muted-foreground">Logged</div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Current Assignments */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="font-semibold text-foreground text-sm">Current Assignments</h3>
+                <button onClick={() => setActiveSection("assignments")} className="text-xs text-emerald-600 hover:underline">View all</button>
+              </div>
+              {pendingAssignments.length === 0 ? (
+                <Card className="border-0 shadow-sm">
+                  <CardContent className="p-5 text-center">
+                    <CheckCircle className="w-8 h-8 text-emerald-500 mx-auto mb-2" />
+                    <p className="text-sm font-medium text-foreground">All caught up!</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">No pending assignments</p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="space-y-2">
+                  {pendingAssignments.slice(0, 3).map(a => (
+                    <Card key={a.id} className="border-0 shadow-sm">
+                      <CardContent className="p-3 flex items-center gap-3">
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                          a.status === "started" ? "bg-amber-100" : "bg-blue-100"
+                        }`}>
+                          {a.status === "started" ? <Clock className="w-4 h-4 text-amber-600" /> : <FileText className="w-4 h-4 text-blue-600" />}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-foreground truncate">{a.title}</p>
+                          <p className="text-xs text-muted-foreground">Set {new Date(a.assignedAt).toLocaleDateString('en-GB')}</p>
+                        </div>
+                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium flex-shrink-0 ${
+                          a.status === "started" ? "bg-amber-100 text-amber-700" : "bg-blue-100 text-blue-700"
+                        }`}>{a.status === "started" ? "In Progress" : "Not Started"}</span>
+                      </CardContent>
+                    </Card>
+                  ))}
+                  {pendingAssignments.length > 3 && (
+                    <button onClick={() => setActiveSection("assignments")} className="w-full text-xs text-center text-emerald-600 hover:underline py-1">
+                      + {pendingAssignments.length - 3} more assignments
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Attendance Summary */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="font-semibold text-foreground text-sm">Attendance</h3>
+                <button onClick={() => setActiveSection("attendance")} className="text-xs text-emerald-600 hover:underline">View details</button>
+              </div>
+              <Card className="border-0 shadow-sm">
+                <CardContent className="p-4">
+                  {totalDays === 0 ? (
+                    <p className="text-sm text-muted-foreground text-center py-2">No attendance records yet</p>
+                  ) : (
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-foreground">Overall Attendance</span>
+                        <span className={`text-sm font-bold ${
+                          overallPct !== null && overallPct >= 95 ? "text-emerald-600" :
+                          overallPct !== null && overallPct >= 90 ? "text-amber-600" : "text-red-600"
+                        }`}>{overallPct}%</span>
+                      </div>
+                      <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
+                        <div
+                          className={`h-full rounded-full ${
+                            overallPct !== null && overallPct >= 95 ? "bg-emerald-500" :
+                            overallPct !== null && overallPct >= 90 ? "bg-amber-500" : "bg-red-500"
+                          }`}
+                          style={{ width: `${overallPct || 0}%` }}
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-3 pt-1">
+                        <div className="text-center p-2 bg-green-50 rounded-lg">
+                          <div className="text-lg font-bold text-green-600">{amPct}%</div>
+                          <div className="text-xs text-muted-foreground">AM Sessions</div>
+                        </div>
+                        <div className="text-center p-2 bg-blue-50 rounded-lg">
+                          <div className="text-lg font-bold text-blue-600">{pmPct}%</div>
+                          <div className="text-xs text-muted-foreground">PM Sessions</div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Recent Behaviour */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="font-semibold text-foreground text-sm">Recent Behaviour</h3>
+                <button onClick={() => setActiveSection("behaviour")} className="text-xs text-emerald-600 hover:underline">View all</button>
+              </div>
+              {behaviourLoading ? (
+                <Card className="border-0 shadow-sm"><CardContent className="p-4 text-center text-sm text-muted-foreground">Loading...</CardContent></Card>
+              ) : recentBehaviour.length === 0 ? (
+                <Card className="border-0 shadow-sm">
+                  <CardContent className="p-4 text-center">
+                    <div className="text-2xl mb-1">🌟</div>
+                    <p className="text-sm font-medium text-foreground">No behaviour events logged</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">Events logged by staff will appear here</p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="space-y-2">
+                  {recentBehaviour.map((event: any, i: number) => (
+                    <Card key={i} className="border-0 shadow-sm">
+                      <CardContent className={`p-3 flex items-start gap-3 ${
+                        event.type === "positive" ? "bg-emerald-50" :
+                        event.type === "concern" ? "bg-amber-50" : "bg-red-50"
+                      }`}>
+                        <span className="text-lg flex-shrink-0">
+                          {event.type === "positive" ? "⭐" : event.type === "concern" ? "⚠️" : "📝"}
+                        </span>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between">
+                            <p className="text-xs font-semibold capitalize">{event.category || event.type}</p>
+                            <p className="text-xs text-muted-foreground">{event.date ? new Date(event.date).toLocaleDateString('en-GB') : ""}</p>
+                          </div>
+                          {event.description && <p className="text-xs text-muted-foreground mt-0.5">{event.description}</p>}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Quick Actions */}
+            <div>
+              <h3 className="font-semibold text-foreground text-sm mb-2">Quick Actions</h3>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { id: "submissions", label: "Submit Work", icon: Upload, color: "bg-teal-50 text-teal-700 border-teal-200" },
+                  { id: "stories", label: "Story Generator", icon: BookOpen, color: "bg-pink-50 text-pink-700 border-pink-200" },
+                  { id: "past-papers", label: "Past Papers", icon: ScrollText, color: "bg-indigo-50 text-indigo-700 border-indigo-200" },
+                  { id: "revision-hub", label: "Revision Hub", icon: Headphones, color: "bg-violet-50 text-violet-700 border-violet-200" },
+                ].map(action => {
+                  const Icon = action.icon;
+                  return (
+                    <button
+                      key={action.id}
+                      onClick={() => setActiveSection(action.id)}
+                      className={`flex items-center gap-2 p-3 rounded-xl border text-sm font-medium transition-all hover:shadow-sm ${action.color}`}
+                    >
+                      <Icon className="w-4 h-4" />
+                      {action.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ─── SECTION CONTENT (non-dashboard) ─── */}
+        {activeSection !== "dashboard" && (() => {
+          const sec = { id: activeSection };
+          return (
+            <div className="space-y-4">
+              {/* Section header */}
+              <div className="flex items-center gap-2">
+                {(() => {
+                  const navItem = navItems.find(n => n.id === activeSection);
+                  const Icon = navItem?.icon || FileText;
+                  return (
+                    <>
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center bg-white shadow-sm`}>
+                        <Icon className={`w-4 h-4 ${navItem?.color || "text-muted-foreground"}`} />
+                      </div>
+                      <h2 className="text-base font-semibold text-foreground">{navItem?.label}</h2>
+                    </>
+                  );
+                })()}
+              </div>
+
+              {/* Section content */}
+              <div>
         {sec.id === "newsletters" && <div className="space-y-3">
           <NewslettersPanel />
         </div>}
@@ -1422,10 +1740,10 @@ export default function ParentPortal() {
           );
         })()}
               </div>
-            )}
-          </div>
-        ))}
-      </div>
+            </div>
+          );
+        })()}
+      </main>
 
       {/* View Content Dialog — renders with full formatting matching how content was generated */}
       <Dialog open={!!viewContent} onOpenChange={() => setViewContent(null)}>

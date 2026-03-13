@@ -316,9 +316,7 @@ export default function History() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 pr-8">
               <span className="flex-1 truncate">{selectedWs?.title}</span>
-              {selectedWs?.isAI && (
-                <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-normal shrink-0">AI</span>
-              )}
+
             </DialogTitle>
           </DialogHeader>
 

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { useLocation } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,7 @@ import { downloadWorksheetPdf } from "@/lib/pdf-generator";
 import { downloadHtmlAsPdf, printWorksheetElement } from "@/lib/pdf-generator-v2";
 import WorksheetRenderer, { renderMath } from "@/components/WorksheetRenderer";
 import { worksheetBank, type BankWorksheet } from "@/lib/worksheet-bank";
+import { getSyllabusTopics, type SyllabusTopic } from "@/lib/syllabus-data";
 import { aiGenerateWorksheet, aiEditSection } from "@/lib/ai";
 import { buildExamPaperWorksheet, hasPastPaperQuestions, getPastPaperDatabaseInfo } from "@/lib/examPaperBuilder";
 import { allPastPaperQuestions, type PastPaperQuestion } from "@/lib/pastPaperQuestions";
@@ -161,6 +162,12 @@ export default function Worksheets() {
     }
   }, [subject]);
   const [additionalInstructions, setAdditionalInstructions] = useState("");
+  // Syllabus-based topic suggestions
+  const [showTopicSuggestions, setShowTopicSuggestions] = useState(false);
+  const syllabusTopics = useMemo(() => {
+    if (!subject || !yearGroup) return [];
+    return getSyllabusTopics(subject, yearGroup);
+  }, [subject, yearGroup]);
   // Diagram toggle — always off by default; user can enable it manually for any subject
   const [generateDiagram, setGenerateDiagram] = useState(false);
   const [useAI, setUseAI] = useState(true);
@@ -324,7 +331,7 @@ export default function Worksheets() {
           worksheetLength,
         });
         generatedWs = { ...result, isAI: true } as AIWorksheet;
-        toast.success(generateDiagram ? "Lesson with diagram generated!" : "Lesson generated with AI!");
+        toast.success(generateDiagram ? "Worksheet with diagram generated!" : "Worksheet generated with AI!");
       } catch (err) {
         console.error("AI generation failed:", err);
         toast.error("AI generation failed — using local generator as fallback.");
@@ -587,9 +594,29 @@ export default function Worksheets() {
                   </div>
                 </div>
 
-                <div className="space-y-1.5">
+                <div className="space-y-1.5 relative">
                   <Label className="text-xs font-medium">Topic *</Label>
-                  <Input value={topic} onChange={e => setTopic(e.target.value)} placeholder="e.g. Fractions, Pythagoras, Creative Writing" className="h-10" />
+                  {syllabusTopics.length > 0 ? (
+                    <div className="space-y-1">
+                      <Select value={topic} onValueChange={(val) => { if (val === "__custom__") { setTopic(""); setShowTopicSuggestions(true); } else { setTopic(val); setShowTopicSuggestions(false); } }}>
+                        <SelectTrigger className="h-10"><SelectValue placeholder="Select a curriculum topic" /></SelectTrigger>
+                        <SelectContent className="max-h-64">
+                          {syllabusTopics.map((st, i) => (
+                            <SelectItem key={i} value={st.topic}>{st.topic}</SelectItem>
+                          ))}
+                          <SelectItem value="__custom__">✏️ Enter custom topic...</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      {showTopicSuggestions && (
+                        <Input value={topic} onChange={e => setTopic(e.target.value)} placeholder="Type your custom topic..." className="h-10" autoFocus />
+                      )}
+                    </div>
+                  ) : (
+                    <Input value={topic} onChange={e => setTopic(e.target.value)} placeholder={subject && yearGroup ? "No syllabus data — type a topic" : "Select subject & year group first"} className="h-10" />
+                  )}
+                  {syllabusTopics.length > 0 && !showTopicSuggestions && (
+                    <p className="text-[10px] text-muted-foreground mt-0.5">📚 {syllabusTopics.length} curriculum topics for {yearGroup} {subjects.find(s => s.id === subject)?.name || subject}</p>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
@@ -719,7 +746,7 @@ export default function Worksheets() {
                     <div className="flex items-center gap-2">
                       <Switch checked={generateDiagram} onCheckedChange={setGenerateDiagram} id="diagram-sw" />
                       <Label htmlFor="diagram-sw" className="text-xs flex items-center gap-1">
-                        <Image className="h-3 w-3" /> Generate diagram (AI-drawn SVG)
+                        <Image className="h-3 w-3" /> Include topic diagram
                       </Label>
                     </div>
                   )}
@@ -1176,7 +1203,7 @@ export default function Worksheets() {
                             </div>
                             <div className="flex items-center gap-3 mt-1 text-xs text-gray-400">
                               <span><Clock className="h-3 w-3 inline mr-0.5" />{new Date(ws.createdAt).toLocaleDateString("en-GB")}</span>
-                              {ws.isAI && <span className="text-emerald-600 font-medium">AI</span>}
+
                               {ws.rating && ws.rating > 0 && <span>{'\u2605'.repeat(ws.rating)}</span>}
                             </div>
                           </div>
@@ -1217,11 +1244,7 @@ export default function Worksheets() {
               <span className="text-xs font-medium px-1.5 min-w-[32px] text-center">{textSize}px</span>
               <button onClick={() => setTextSize(Math.min(24, textSize + 2))} className="p-1.5 rounded-md hover:bg-white/80 text-muted-foreground hover:text-foreground"><ZoomIn className="w-3.5 h-3.5" /></button>
             </div>
-            {isAIWorksheet(generated) && (
-              <Badge className="bg-emerald-100 text-emerald-700 text-xs">
-                <Sparkles className="h-3 w-3 mr-1" />AI Generated
-              </Badge>
-            )}
+
           </div>
 
           {/* Toolbar Row 2 */}
@@ -1535,7 +1558,7 @@ export default function Worksheets() {
             <DialogTitle className="flex items-center gap-2 flex-wrap">
               <History className="h-4 w-4 text-brand" />
               <span className="flex-1 truncate">{selectedHistorySheet?.title}</span>
-              {selectedHistorySheet?.isAI && <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-normal">AI</span>}
+
             </DialogTitle>
           </DialogHeader>
 
