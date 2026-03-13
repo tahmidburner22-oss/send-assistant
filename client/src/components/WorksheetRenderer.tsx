@@ -16,17 +16,29 @@ import "katex/dist/katex.min.css";
  */
 export function renderMath(text: string): string {
   if (!text) return "";
-  // If the content already contains pre-rendered KaTeX HTML, return it as-is
-  // This prevents double-processing of content that was already rendered
-  if (text.includes('class="katex"') || text.includes("class='katex'")) return text;
-  
-  // Also check for HTML-escaped KaTeX (from double-processing)
-  // If we see &lt;span class=&quot;katex&quot;, it means the HTML was already escaped
-  if (text.includes('&lt;span class=&quot;katex&quot;') || text.includes('&lt;span class=\'katex\'')) {
-    // This is already escaped KaTeX HTML - return as-is
-    return text;
-  }
-  let result = text;
+
+  const decodeHtmlEntities = (value: string) => value
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&apos;/g, "'")
+    .replace(/&amp;/g, '&');
+
+  const normalizeMalformedKatexMarkup = (value: string) => value
+    // Mobile / OCR-like corruption such as "< spanclass = ”katex” >"
+    .replace(/<\s*spanclass\s*=\s*["“”']([^"“”']+)["“”']\s*>/gi, '<span class="$1">')
+    .replace(/<\s*\/\s*span\s*class\s*>/gi, '</span>')
+    // Missing whitespace before class attribute
+    .replace(/<\s*spanclass=/gi, '<span class=')
+    // Smart quotes around attribute values
+    .replace(/class\s*=\s*[“”]([^“”]+)[“”]/gi, 'class="$1"');
+
+  let result = normalizeMalformedKatexMarkup(decodeHtmlEntities(text));
+
+  // If the content already contains valid pre-rendered KaTeX HTML, return it as-is
+  // This prevents double-processing of content that was already rendered.
+  if (result.includes('class="katex"') || result.includes("class='katex'")) return result;
 
   // ── Step 0a: Convert plain-English math phrases to LaTeX ──────────────────────
   // This handles question bank text like "x squared", "root(12)", "to the power of 3"
@@ -35,10 +47,13 @@ export function renderMath(text: string): string {
   result = result.replace(/\b([A-Za-z0-9]+)\s+squared\b/g, (_, base) => `${base}\u00b2`);
   result = result.replace(/\b([A-Za-z0-9]+)\s+cubed\b/g, (_, base) => `${base}\u00b3`);
 
-  // "to the power of n" → ^n
-  result = result.replace(/\bto the power of\s+(-?[A-Za-z0-9]+)/gi, (_, exp) => {
-    try { return katex.renderToString(`^{${exp}}`, { displayMode: false, throwOnError: false }); }
-    catch { return `<sup>${exp}</sup>`; }
+  // "a to the power of n" → a^n
+  // Avoid converting bare phrases like "to the power of 2" on their own because
+  // that leaves the base text in place and injects a standalone superscript, which
+  // causes duplicated output such as "10 2 ... 10^2" on rendered worksheets.
+  result = result.replace(/\b([A-Za-z0-9)]+)\s+to the power of\s+(-?[A-Za-z0-9]+)/gi, (_, base, exp) => {
+    try { return katex.renderToString(`${base}^{${exp}}`, { displayMode: false, throwOnError: false }); }
+    catch { return `${base}<sup>${exp}</sup>`; }
   });
 
   // "root(12)" or "root 12" → \sqrt{12}
@@ -350,12 +365,17 @@ export function renderMath(text: string): string {
   //    We split the string into HTML segments and plain-text segments, and only apply
   //    fraction conversion to the plain-text segments.
   {
-    // Split into alternating [plain, html, plain, html, ...] segments
-    const parts = result.split(/(<[^>]+>)/g);
-    result = parts.map((part, i) => {
-      // Even indices are plain text, odd indices are HTML tags
-      if (i % 2 !== 0) return part; // HTML tag — leave alone
-      // Apply fraction conversion to plain text only
+    // Split into alternating [plain, html, plain, html, ...] segments.
+    // Use complete HTML blocks where possible rather than individual tags so that
+    // pre-rendered KaTeX output remains atomic and cannot leak plain-text pieces
+    // such as numerators and denominators back into later replacements.
+    const parts = result.split(/(<span class="katex[\s\S]*?<\/span>|<[^>]+>)/g);
+    result = parts.map((part) => {
+      // Leave full HTML / KaTeX segments untouched.
+      if (/^<span class="katex[\s\S]*<\/span>$/.test(part) || /^<[^>]+>$/.test(part)) {
+        return part;
+      }
+      // Apply fraction conversion to plain text only.
       return part.replace(/([A-Za-z0-9]+)\/([A-Za-z0-9]+)/g, (full, num, den) => {
         // Skip year ranges (e.g. 2023/24)
         if (/^\d{4}$/.test(num) || /^\d{4}$/.test(den)) return full;
