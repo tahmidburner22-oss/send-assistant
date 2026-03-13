@@ -405,24 +405,57 @@ export function renderMath(text: string): string {
     catch { return full; }
   });
   // 4. Simple numeric or single-variable fractions: 3/4  x/y  2/n
-  //    Process ALL plain-text fractions in a single pass using a tokeniser approach.
-  //    This avoids the lookbehind issue where the second fraction in "3/4 + 2/5" fails
-  //    because the first fraction has already been replaced with KaTeX HTML.
-  //    We split the string into HTML segments and plain-text segments, and only apply
-  //    fraction conversion to the plain-text segments.
+  //    Use a nesting-aware tokeniser to split the string into KaTeX HTML blocks
+  //    and plain-text segments. The non-greedy regex approach fails for deeply
+  //    nested KaTeX HTML (20-30 levels) because it stops at the first </span>.
   {
-    // Split into alternating [plain, html, plain, html, ...] segments.
-    // Use complete HTML blocks where possible rather than individual tags so that
-    // pre-rendered KaTeX output remains atomic and cannot leak plain-text pieces
-    // such as numerators and denominators back into later replacements.
-    const parts = result.split(/(<span class="katex[\s\S]*?<\/span>|<[^>]+>)/g);
-    result = parts.map((part) => {
-      // Leave full HTML / KaTeX segments untouched.
-      if (/^<span class="katex[\s\S]*<\/span>$/.test(part) || /^<[^>]+>$/.test(part)) {
-        return part;
+    // Nesting-aware split: walk through the string and identify complete KaTeX blocks
+    // by counting <span and </span> depth. Everything else is plain text.
+    const segments: { text: string; isHtml: boolean }[] = [];
+    let pos = 0;
+    while (pos < result.length) {
+      // Check if we're at the start of a KaTeX span or any HTML tag
+      if (result[pos] === '<') {
+        const isKatex = result.startsWith('<span class="katex"', pos) || result.startsWith("<span class='katex'", pos);
+        if (isKatex) {
+          // Nesting-aware: count <span and </span> to find the matching close
+          let depth = 0;
+          let i = pos;
+          let endIdx = -1;
+          while (i < result.length) {
+            if (result.startsWith('<span', i)) {
+              depth++;
+              const gt = result.indexOf('>', i);
+              i = gt !== -1 ? gt + 1 : i + 5;
+            } else if (result.startsWith('</span>', i)) {
+              depth--;
+              if (depth === 0) { endIdx = i + 7; break; }
+              i += 7;
+            } else { i++; }
+          }
+          if (endIdx !== -1) {
+            segments.push({ text: result.substring(pos, endIdx), isHtml: true });
+            pos = endIdx;
+            continue;
+          }
+        }
+        // Non-KaTeX HTML tag: find the closing >
+        const gt = result.indexOf('>', pos);
+        const tagEnd = gt !== -1 ? gt + 1 : pos + 1;
+        segments.push({ text: result.substring(pos, tagEnd), isHtml: true });
+        pos = tagEnd;
+      } else {
+        // Plain text: collect until next <
+        const next = result.indexOf('<', pos);
+        const end = next !== -1 ? next : result.length;
+        segments.push({ text: result.substring(pos, end), isHtml: false });
+        pos = end;
       }
+    }
+    result = segments.map(({ text, isHtml }) => {
+      if (isHtml) return text; // Leave all HTML / KaTeX segments untouched
       // Apply fraction conversion to plain text only.
-      return part.replace(/([A-Za-z0-9]+)\/([A-Za-z0-9]+)/g, (full, num, den) => {
+      return text.replace(/([A-Za-z0-9]+)\/([A-Za-z0-9]+)/g, (full, num, den) => {
         // Skip year ranges (e.g. 2023/24)
         if (/^\d{4}$/.test(num) || /^\d{4}$/.test(den)) return full;
         // Skip if either part is a long number that looks like a year
