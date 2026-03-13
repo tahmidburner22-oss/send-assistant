@@ -742,12 +742,19 @@ router.post("/adapt-worksheet", requireAuth, worksheetUpload.single("file"), asy
     const mime = req.file.mimetype;
     if (mime === "application/pdf") {
       try {
-        // pdf-parse v2: data passed to constructor, load() takes no args, getText() returns { text, pages }
+        // pdf-parse v2: getText() returns a Promise<{pages: [{text}]}>
         const { PDFParse } = await import("pdf-parse" as any);
         const parser = new PDFParse({ data: req.file.buffer, verbosity: 0 });
         await parser.load();
         const result = await parser.getText();
-        rawText = (result?.text ?? "") as string;
+        // v2 returns { pages: [{ text: string, num: number }] }
+        if (result?.pages && Array.isArray(result.pages)) {
+          rawText = result.pages.map((p: any) => p.text || "").join("\n\n");
+        } else if (typeof result?.text === "string") {
+          rawText = result.text;
+        } else {
+          rawText = "";
+        }
       } catch (pdfErr: any) {
         console.error("[adapt-worksheet] pdf-parse error:", pdfErr?.message || pdfErr);
         rawText = "";
@@ -909,7 +916,14 @@ router.post("/book-questions", requireAuth, worksheetUpload.single("file"), asyn
           const parser = new PDFParse({ data: req.file.buffer, verbosity: 0 });
           await parser.load();
           const result = await parser.getText();
-          criteriaText = (result?.text ?? "") as string;
+          // v2 returns { pages: [{ text: string }] }
+          if (result?.pages && Array.isArray(result.pages)) {
+            criteriaText = result.pages.map((p: any) => p.text || "").join("\n\n");
+          } else if (typeof result?.text === "string") {
+            criteriaText = result.text;
+          } else {
+            criteriaText = "";
+          }
         } else if (req.file.mimetype === "text/plain") {
           criteriaText = req.file.buffer.toString("utf-8");
         } else {

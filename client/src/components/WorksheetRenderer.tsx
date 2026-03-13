@@ -53,6 +53,21 @@ export function renderMath(text: string): string {
   // "degrees" → ° symbol
   result = result.replace(/(\d+(?:\.\d+)?)\s*degrees\b/gi, '$1°');
 
+  // Science-specific notation
+  // Chemical formulas: CO2 → CO₂, H2O → H₂O, etc. (only for common patterns)
+  // "proportional to" → ∝
+  result = result.replace(/\bproportional to\b/gi, '∝');
+  // "therefore" → ∴
+  result = result.replace(/\btherefore\b/gi, '∴');
+  // "because" (in maths context) → ∵ — skip, too ambiguous
+  // "perpendicular" → ⊥
+  result = result.replace(/\bperpendicular\b/gi, '⊥');
+  // "parallel" → ∥
+  result = result.replace(/\bparallel to\b/gi, '∥');
+  // "approximately" → ≈
+  result = result.replace(/\bapproximately equal to\b/gi, '≈');
+  result = result.replace(/\bapprox\.?\b/gi, '≈');
+
   // "pi" as a standalone word → π
   result = result.replace(/\bpi\b/g, 'π');
 
@@ -136,8 +151,35 @@ export function renderMath(text: string): string {
   result = result.replace(/\\sigma\b/g, 'σ');
   result = result.replace(/\\Sigma\b/g, 'Σ');
   result = result.replace(/\\lambda\b/g, 'λ');
+  result = result.replace(/\\Lambda\b/g, 'Λ');
   result = result.replace(/\\mu\b/g, 'μ');
+  result = result.replace(/\\nu\b/g, 'ν');
+  result = result.replace(/\\omega\b/g, 'ω');
+  result = result.replace(/\\Omega\b/g, 'Ω');
+  result = result.replace(/\\epsilon\b/g, 'ε');
+  result = result.replace(/\\varepsilon\b/g, 'ε');
+  result = result.replace(/\\rho\b/g, 'ρ');
+  result = result.replace(/\\tau\b/g, 'τ');
+  result = result.replace(/\\phi\b/g, 'φ');
+  result = result.replace(/\\Phi\b/g, 'Φ');
+  result = result.replace(/\\psi\b/g, 'ψ');
+  result = result.replace(/\\Psi\b/g, 'Ψ');
+  result = result.replace(/\\eta\b/g, 'η');
+  result = result.replace(/\\kappa\b/g, 'κ');
+  result = result.replace(/\\chi\b/g, 'χ');
+  result = result.replace(/\\zeta\b/g, 'ζ');
   result = result.replace(/\\infty\b/g, '∞');
+  result = result.replace(/\\propto\b/g, '∝');
+  result = result.replace(/\\therefore\b/g, '∴');
+  result = result.replace(/\\because\b/g, '∵');
+  result = result.replace(/\\perp\b/g, '⊥');
+  result = result.replace(/\\parallel\b/g, '∥');
+  result = result.replace(/\\sum\b/g, '∑');
+  result = result.replace(/\\prod\b/g, '∏');
+  result = result.replace(/\\partial\b/g, '∂');
+  result = result.replace(/\\nabla\b/g, '∇');
+  result = result.replace(/\\forall\b/g, '∀');
+  result = result.replace(/\\exists\b/g, '∃');
   result = result.replace(/\\leq\b/g, '≤');
   result = result.replace(/\\geq\b/g, '≥');
   result = result.replace(/\\neq\b/g, '≠');
@@ -177,8 +219,10 @@ export function renderMath(text: string): string {
     // Only strip if it's not already been handled and looks like a LaTeX command
     // Keep it if it might be meaningful
     const knownCommands = ['frac','dfrac','sqrt','times','cdot','div','pm','mp','pi','Pi',
-      'theta','alpha','beta','gamma','delta','Delta','sigma','Sigma','lambda','mu',
-      'infty','leq','geq','neq','approx','equiv','in','notin','subset','cup','cap',
+      'theta','alpha','beta','gamma','delta','Delta','sigma','Sigma','lambda','Lambda','mu','nu',
+      'omega','Omega','epsilon','varepsilon','rho','tau','phi','Phi','psi','Psi','eta','kappa','chi','zeta',
+      'infty','propto','therefore','because','perp','parallel','sum','prod','partial','nabla','forall','exists',
+      'leq','geq','neq','approx','equiv','in','notin','subset','cup','cap',
       'angle','circ','degree','ldots','cdots','rightarrow','leftarrow','Rightarrow',
       'Leftrightarrow','text','mathrm','mathbf','mathit','left','right','quad','qquad'];
     if (knownCommands.includes(cmd)) return full; // already handled above, shouldn't reach here
@@ -382,6 +426,7 @@ const SECTION_STYLES: Record<string, { border: string; bg: string; badge: string
   "self-reflection": { border: "#f59e0b", bg: "#fffbeb", badge: "#f59e0b", badgeBg: "#fef3c7", icon: "💭", label: "How Did I Do?" },
   "diagram":       { border: "#6366f1", bg: "#eef2ff", badge: "#6366f1", badgeBg: "#e0e7ff", icon: "📊", label: "Diagram" },
   "answers":       { border: "#16a34a", bg: "#f0fdf4", badge: "#16a34a", badgeBg: "#dcfce7", icon: "✓", label: "Answers" },
+  "questions":     { border: "#2563eb", bg: "#eff6ff", badge: "#2563eb", badgeBg: "#dbeafe", icon: "📝", label: "Exam Questions" },
   "mark-scheme":   { border: "#ca8a04", bg: "#fefce8", badge: "#ca8a04", badgeBg: "#fef9c3", icon: "📋", label: "Mark Scheme" },
   "teacher-notes": { border: "#dc2626", bg: "#fef2f2", badge: "#dc2626", badgeBg: "#fee2e2", icon: "👩‍🏫", label: "Teacher Notes" },
   "send-support":  { border: "#7c3aed", bg: "#faf5ff", badge: "#7c3aed", badgeBg: "#ede9fe", icon: "♿", label: "SEND Support" },
