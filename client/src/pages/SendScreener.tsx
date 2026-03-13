@@ -18,7 +18,8 @@ import {
   ChevronRight, ChevronLeft, RotateCcw, AlertTriangle,
   CheckCircle2, Info, BookOpen, Brain, Eye, Activity,
   Calculator, MessageSquare, Heart, Lightbulb, ArrowRight,
-  ExternalLink, Zap, Clock, FileDown, Printer, UserPlus, X
+  ExternalLink, Zap, Clock, FileDown, Printer, UserPlus, X,
+  Save, PlayCircle
 } from "lucide-react";
 import { useApp } from "@/contexts/AppContext";
 
@@ -383,7 +384,7 @@ type ScreenerMode = "quick" | "full";
 
 // ─── Component ──────────────────────────────────────────────────
 export default function SendScreener() {
-  const { children, assignWork } = useApp();
+  const { children, assignWork, updateAssignment } = useApp();
   const [step, setStep] = useState<"intro" | "mode-select" | "questions" | "results">("intro");
   const [screenerMode, setScreenerMode] = useState<ScreenerMode>("full");
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -394,6 +395,14 @@ export default function SendScreener() {
   const [showAssignDialog, setShowAssignDialog] = useState(false);
   const [assignedChildId, setAssignedChildId] = useState("");
   const [assignSuccess, setAssignSuccess] = useState(false);
+  // Save progress state
+  const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const [saveChildId, setSaveChildId] = useState("");
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [savingProgress, setSavingProgress] = useState(false);
+  // Track the assignment ID used for save-progress (so we can update it, not create duplicates)
+  const [progressAssignmentId, setProgressAssignmentId] = useState<string | null>(null);
+  const [progressAssignmentChildId, setProgressAssignmentChildId] = useState<string | null>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
 
   // Active question set depends on mode
@@ -444,8 +453,75 @@ export default function SendScreener() {
     setScreenerMode("full");
     setAssignSuccess(false);
     setShowAssignDialog(false);
+    setShowSaveDialog(false);
+    setSaveSuccess(false);
+    setProgressAssignmentId(null);
+    setProgressAssignmentChildId(null);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
+
+  // Save in-progress screener answers against a child
+  async function handleSaveProgress() {
+    if (!saveChildId) return;
+    setSavingProgress(true);
+    const progressData = JSON.stringify({
+      mode: screenerMode,
+      answers,
+      currentQuestionIndex,
+      savedAt: new Date().toISOString(),
+    });
+    const progressPct = Math.round((currentQuestionIndex / totalQ) * 100);
+    try {
+      if (progressAssignmentId && progressAssignmentChildId === saveChildId) {
+        // Update existing progress assignment
+        await updateAssignment(saveChildId, progressAssignmentId, {
+          content: progressData,
+          status: "started",
+          progress: progressPct,
+        });
+      } else {
+        // Create a new progress assignment
+        const result = await (await import("@/lib/api")).pupils.createAssignment(saveChildId, {
+          title: `SEND Screener — In Progress (${screenerMode === "quick" ? "Quick" : "Full"}) — ${new Date().toLocaleDateString("en-GB")}`,
+          type: "send-screener-progress",
+          content: progressData,
+        });
+        setProgressAssignmentId(result.id);
+        setProgressAssignmentChildId(saveChildId);
+        // Also update status and progress via updateAssignment
+        await updateAssignment(saveChildId, result.id, { status: "started", progress: progressPct });
+      }
+      setSaveSuccess(true);
+    } catch (e) {
+      console.error("Failed to save screener progress", e);
+    } finally {
+      setSavingProgress(false);
+    }
+  }
+
+  // Resume a saved screener from a child's assignment
+  function handleResumeScreener(childId: string, assignment: any) {
+    try {
+      const data = JSON.parse(assignment.content);
+      setScreenerMode(data.mode || "full");
+      setAnswers(data.answers || {});
+      setCurrentQuestionIndex(data.currentQuestionIndex || 0);
+      setProgressAssignmentId(assignment.id);
+      setProgressAssignmentChildId(childId);
+      setSaveChildId(childId);
+      setStep("questions");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } catch (e) {
+      console.error("Failed to parse screener progress", e);
+    }
+  }
+
+  // Find children with in-progress screener assignments
+  const inProgressScreeners = children.flatMap(child =>
+    child.assignments
+      .filter(a => a.type === "send-screener-progress" && a.status === "started")
+      .map(a => ({ child, assignment: a }))
+  );
 
   // Build a plain-text summary for PDF / assign
   function buildResultsSummary(): string {
@@ -470,11 +546,21 @@ export default function SendScreener() {
   async function handleAssignToChild() {
     if (!assignedChildId) return;
     const summary = buildResultsSummary();
-    await assignWork(assignedChildId, {
-      title: `SEND Screener Results (${screenerMode === "quick" ? "Quick" : "Full"}) — ${new Date().toLocaleDateString("en-GB")}`,
-      type: "send-screener",
-      content: summary,
-    });
+    // If there's an existing in-progress assignment for this child, update it to completed
+    if (progressAssignmentId && progressAssignmentChildId === assignedChildId) {
+      await updateAssignment(assignedChildId, progressAssignmentId, {
+        title: `SEND Screener Results (${screenerMode === "quick" ? "Quick" : "Full"}) — ${new Date().toLocaleDateString("en-GB")}`,
+        content: summary,
+        status: "completed",
+        progress: 100,
+      } as any);
+    } else {
+      await assignWork(assignedChildId, {
+        title: `SEND Screener Results (${screenerMode === "quick" ? "Quick" : "Full"}) — ${new Date().toLocaleDateString("en-GB")}`,
+        type: "send-screener",
+        content: summary,
+      });
+    }
     setAssignSuccess(true);
   }
 
@@ -551,6 +637,38 @@ export default function SendScreener() {
             </div>
           </div>
 
+          {/* Resume in-progress screeners */}
+          {inProgressScreeners.length > 0 && (
+            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4">
+              <p className="text-xs font-semibold text-amber-700 mb-3 flex items-center gap-1.5">
+                <PlayCircle className="w-4 h-4" /> Saved Progress — Resume where you left off
+              </p>
+              <div className="space-y-2">
+                {inProgressScreeners.map(({ child, assignment }) => {
+                  let savedAt = "";
+                  try { savedAt = JSON.parse(assignment.content)?.savedAt ? new Date(JSON.parse(assignment.content).savedAt).toLocaleDateString("en-GB") : ""; } catch {}
+                  return (
+                    <button
+                      key={assignment.id}
+                      onClick={() => handleResumeScreener(child.id, assignment)}
+                      className="w-full flex items-center gap-3 p-3 rounded-xl bg-white border border-amber-200 hover:border-amber-400 hover:bg-amber-50 text-left transition-all"
+                    >
+                      <div className="w-9 h-9 rounded-full bg-amber-100 flex items-center justify-center text-amber-700 font-bold text-sm flex-shrink-0">
+                        {child.name[0]}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-sm text-gray-900">{child.name}</p>
+                        <p className="text-xs text-gray-500">{assignment.progress ?? 0}% complete{savedAt ? ` · saved ${savedAt}` : ""}</p>
+                      </div>
+                      <div className="flex items-center gap-1 text-amber-600 text-xs font-semibold flex-shrink-0">
+                        <PlayCircle className="w-4 h-4" /> Resume
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
           <button
             onClick={() => setStep("mode-select")}
             className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-6 rounded-2xl transition-all flex items-center justify-center gap-2 text-base shadow-lg shadow-indigo-200 active:scale-95"
@@ -558,7 +676,6 @@ export default function SendScreener() {
             Start Screener
             <ArrowRight className="w-5 h-5" />
           </button>
-
           <p className="text-center text-xs text-gray-400">
             Answer based on patterns over the past 6–12 months, not just today.
           </p>
@@ -755,7 +872,7 @@ export default function SendScreener() {
           </motion.div>
         </AnimatePresence>
 
-        {/* Back button */}
+        {/* Back + Save Progress buttons */}
         <div className="flex items-center justify-between mt-6">
           <button
             onClick={handleBack}
@@ -764,10 +881,91 @@ export default function SendScreener() {
             <ChevronLeft className="w-4 h-4" />
             Back
           </button>
-          <p className="text-xs text-gray-400">
-            {currentAnswer !== undefined ? "Tap an answer to continue" : "Tap any option to continue"}
-          </p>
+          {children.length > 0 && (
+            <button
+              onClick={() => { setShowSaveDialog(true); setSaveSuccess(false); }}
+              className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100 text-sm font-medium transition-colors"
+            >
+              <Save className="w-4 h-4" />
+              Save Progress
+            </button>
+          )}
         </div>
+
+        {/* Save Progress Dialog */}
+        <AnimatePresence>
+          {showSaveDialog && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-4"
+              onClick={e => { if (e.target === e.currentTarget) setShowSaveDialog(false); }}
+            >
+              <motion.div
+                initial={{ y: 60, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: 60, opacity: 0 }}
+                className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-bold text-gray-900 text-lg">Save Progress</h3>
+                  <button onClick={() => setShowSaveDialog(false)} className="text-gray-400 hover:text-gray-600">
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+                {saveSuccess ? (
+                  <div className="text-center py-4">
+                    <CheckCircle2 className="w-12 h-12 text-emerald-500 mx-auto mb-3" />
+                    <p className="font-semibold text-gray-900">Progress saved!</p>
+                    <p className="text-sm text-gray-500 mt-1">You can resume this screener from the home screen.</p>
+                    <button
+                      onClick={() => setShowSaveDialog(false)}
+                      className="mt-4 w-full py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-semibold"
+                    >
+                      Continue Screener
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <p className="text-sm text-gray-600 mb-4">Select which pupil this screener is for. Progress will be saved and you can resume later.</p>
+                    <div className="space-y-2 mb-4 max-h-48 overflow-y-auto">
+                      {children.map(child => (
+                        <button
+                          key={child.id}
+                          onClick={() => setSaveChildId(child.id)}
+                          className={`w-full flex items-center gap-3 p-3 rounded-xl border-2 text-left transition-all ${
+                            saveChildId === child.id
+                              ? "border-amber-500 bg-amber-50"
+                              : "border-gray-200 hover:border-amber-300"
+                          }`}
+                        >
+                          <div className="w-9 h-9 rounded-full bg-amber-100 flex items-center justify-center text-amber-700 font-bold text-sm flex-shrink-0">
+                            {child.name[0]}
+                          </div>
+                          <div>
+                            <p className="font-semibold text-sm text-gray-900">{child.name}</p>
+                            <p className="text-xs text-gray-500">Year {child.yearGroup}</p>
+                          </div>
+                          {saveChildId === child.id && (
+                            <CheckCircle2 className="w-5 h-5 text-amber-600 ml-auto" />
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                    <button
+                      onClick={handleSaveProgress}
+                      disabled={!saveChildId || savingProgress}
+                      className="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-white text-sm font-bold transition-colors"
+                    >
+                      {savingProgress ? "Saving..." : "Save Progress"}
+                    </button>
+                  </>
+                )}
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     );
   }
@@ -1215,7 +1413,7 @@ function ResultCard({ r }: { r: {
               {/* Evidence source */}
               <div className="flex items-center gap-1.5 text-xs text-gray-400">
                 <BookOpen className="w-3.5 h-3.5" />
-                Based on: {content?.evidenceSource || r.section.evidenceSource}
+                Based on: {r.section.evidenceSource}
               </div>
 
               {/* Why we think this — personalised */}
