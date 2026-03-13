@@ -615,7 +615,13 @@ export default function Worksheets() {
                     <Input value={topic} onChange={e => setTopic(e.target.value)} placeholder={subject && yearGroup ? "No syllabus data — type a topic" : "Select subject & year group first"} className="h-10" />
                   )}
                   {syllabusTopics.length > 0 && !showTopicSuggestions && (
-                    <p className="text-[10px] text-muted-foreground mt-0.5">📚 {syllabusTopics.length} curriculum topics for {yearGroup} {subjects.find(s => s.id === subject)?.name || subject}</p>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">📚 {syllabusTopics.length} curriculum topics for {yearGroup} {subjects.find(s => s.id === subject)?.name || subject}{(() => {
+                      const yr = parseInt((yearGroup || "").replace(/[^0-9]/g, ""), 10);
+                      if (yr >= 2 && yr <= 6) return ` (Years 1–${yr})`;
+                      if (yr >= 8 && yr <= 11) return ` (Years 7–${yr})`;
+                      if (yr === 13) return ` (Years 12–13)`;
+                      return "";
+                    })()}</p>
                   )}
                 </div>
 
