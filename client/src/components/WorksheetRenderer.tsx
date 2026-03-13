@@ -41,13 +41,55 @@ export function renderMath(text: string): string {
   // cleanly re-rendered. This handles the case where the AI returns pre-rendered HTML
   // (e.g. from a previous renderMath call stored in history) instead of raw LaTeX.
   if (result.includes('class="katex"') || result.includes("class='katex'")) {
-    // Replace each <span class="katex">...</span> block with the LaTeX annotation inside it
-    result = result.replace(
-      /<span class=["']katex["'][\s\S]*?<annotation[^>]*encoding=["']application\/x-tex["'][^>]*>([\s\S]*?)<\/annotation>[\s\S]*?<\/span>\s*<\/span>\s*<\/span>/g,
-      (_, latex) => `\\(${latex.trim()}\\)`
-    );
-    // If there are still katex spans (the regex above didn't match), return as-is
-    if (result.includes('class="katex"') || result.includes("class='katex'")) return result;
+    // Use nesting-aware extraction to handle deeply nested KaTeX HTML
+    // This replaces each <span class="katex">...</span> block with its LaTeX annotation
+    const extractKatexBlocks = (input: string): string => {
+      let out = input;
+      const patterns = ['class="katex"', "class='katex'"];
+      for (const pat of patterns) {
+        let safety = 0;
+        while (out.includes(pat) && safety < 200) {
+          safety++;
+          const marker = '<span ' + pat;
+          const startIdx = out.indexOf(marker);
+          if (startIdx === -1) break;
+          // Walk forward counting <span and </span> to find matching close
+          let depth = 0;
+          let i = startIdx;
+          let endIdx = -1;
+          while (i < out.length) {
+            if (out.startsWith('<span', i)) {
+              depth++;
+              const gt = out.indexOf('>', i);
+              i = gt !== -1 ? gt + 1 : i + 5;
+            } else if (out.startsWith('</span>', i)) {
+              depth--;
+              if (depth === 0) {
+                endIdx = i + 7;
+                break;
+              }
+              i += 7;
+            } else {
+              i++;
+            }
+          }
+          if (endIdx === -1) break;
+          const katexBlock = out.substring(startIdx, endIdx);
+          // Extract annotation text (raw LaTeX) from the MathML inside this block
+          const annotMatch = katexBlock.match(
+            /<annotation[^>]*encoding=["']application\/x-tex["'][^>]*>([\s\S]*?)<\/annotation>/i
+          );
+          const replacement = annotMatch ? `\\(${annotMatch[1].trim()}\\)` : '';
+          out = out.substring(0, startIdx) + replacement + out.substring(endIdx);
+        }
+      }
+      return out;
+    };
+    result = extractKatexBlocks(result);
+    // If there are still katex spans (malformed HTML), strip all HTML tags as fallback
+    if (result.includes('class="katex"') || result.includes("class='katex'")) {
+      result = result.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+    }
   }
 
   // ── Step 0a: Convert plain-English math phrases to LaTeX ──────────────────────
