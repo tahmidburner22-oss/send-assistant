@@ -639,9 +639,35 @@ router.post("/diagram", requireAuth, async (req: Request, res: Response) => {
   const schoolId = req.user?.schoolId ?? undefined;
   const yr = yearGroup || "Year 9";
 
-  // ── Attempt 0: Wikimedia DISABLED — Railway server IP is rate-limited (HTTP 429) ────
-  // Wikimedia Commons blocks cloud server IPs. Skip directly to AI SVG generation.
-  console.log(`[Diagram] Generating SVG for "${topic}" (${subject})`);
+  // ── Attempt 0: Curated diagram bank (verified Wikimedia URLs) ───────────────────
+  const bankedDiagram = findDiagram(subject, topic);
+  if (bankedDiagram) {
+    console.log(`[Diagram] Found in curated bank: ${bankedDiagram.key}`);
+    return res.json({
+      imageUrl: bankedDiagram.url,
+      caption: `${bankedDiagram.label} — ${subject} (${yr})`,
+      attribution: bankedDiagram.attribution,
+      provider: "wikimedia-bank",
+      type: "image",
+    });
+  }
+  // ── Attempt 0b: Live Wikimedia Commons search ─────────────────────────────────
+  try {
+    const wikiResult = await searchWikimediaDiagram(subject, topic);
+    if (wikiResult) {
+      console.log(`[Diagram] Found via Wikimedia live search for "${topic}"`);
+      return res.json({
+        imageUrl: wikiResult.url,
+        caption: wikiResult.caption || `${topic} — ${subject} (${yr})`,
+        attribution: wikiResult.attribution,
+        provider: "wikimedia-live",
+        type: "image",
+      });
+    }
+  } catch (wikiErr) {
+    console.warn(`[Diagram] Wikimedia search failed (rate-limited or unavailable), falling back to AI SVG`);
+  }
+  console.log(`[Diagram] No real image found, generating AI SVG for "${topic}" (${subject})`);
 
   // ── Attempt 1: Gemini 2.0 Flash SVG (fallback when no real image found) ──────
   const { system, user } = buildDiagramPrompt(subject, topic, yr, sendNeed);

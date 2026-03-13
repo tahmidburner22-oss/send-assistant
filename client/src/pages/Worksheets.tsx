@@ -1939,11 +1939,23 @@ export default function Worksheets() {
                         )}
 
                         {/* Section content */}
-                        {section.type === "diagram" && (section as any).svg ? (
+                        {section.type === "diagram" && ((section as any).svg || (section as any).imageUrl) ? (
                           <div className="text-center">
-                            <div className="inline-block w-full max-w-xl border border-gray-200 rounded-lg overflow-hidden bg-white"
-                              dangerouslySetInnerHTML={{ __html: (section as any).svg }} />
+                            {(section as any).imageUrl ? (
+                              <div className="inline-block w-full max-w-xl border border-gray-200 rounded-lg overflow-hidden bg-white p-2">
+                                <img
+                                  src={(section as any).imageUrl}
+                                  alt={(section as any).caption || `${section.title} diagram`}
+                                  className="w-full h-auto object-contain max-h-80"
+                                  loading="lazy"
+                                />
+                              </div>
+                            ) : (
+                              <div className="inline-block w-full max-w-xl border border-gray-200 rounded-lg overflow-hidden bg-white"
+                                dangerouslySetInnerHTML={{ __html: (section as any).svg }} />
+                            )}
                             {(section as any).caption && <p className="text-xs text-muted-foreground mt-1 italic">{(section as any).caption}</p>}
+                            {(section as any).attribution && <p className="text-[10px] text-muted-foreground/50 mt-0.5 italic">{(section as any).attribution}</p>}
                           </div>
                         ) : section.type === "vocabulary" ? (
                           <div className="flex flex-wrap gap-1.5">
