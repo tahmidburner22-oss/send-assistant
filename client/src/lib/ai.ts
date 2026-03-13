@@ -252,7 +252,7 @@ export async function callAI(
     const reqHeaders: Record<string, string> = { "Content-Type": "application/json" };
     if (storedToken) reqHeaders["Authorization"] = `Bearer ${storedToken}`;
     const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
-    const timeoutMs = 45000;
+    const timeoutMs = 120000; // 2 minutes — worksheet generation can take up to 90s for complex topics
     const timeoutId = controller ? window.setTimeout(() => controller.abort(), timeoutMs) : null;
     const res = await fetch("/api/ai/generate", {
       method: "POST",
@@ -420,6 +420,7 @@ export async function aiGenerateWorksheet(params: {
 You are currently writing for ${params.yearGroup} students (${phase}).
 You MUST calibrate EVERY element — vocabulary, sentence length, question depth, mark allocations, and worked examples — precisely for this year group.
 A Year 5 worksheet and a Year 10 worksheet on the same topic must look COMPLETELY DIFFERENT in language and cognitive demand.
+CRITICAL: The ENTIRE worksheet must be about the topic "${params.topic}" ONLY. Every question, example, vocabulary term, and objective must relate specifically to "${params.topic}". The title MUST include "${params.topic}". Do NOT generate content about any other topic.
 Always respond with valid JSON only — no markdown, no code blocks, just raw JSON.`;
 
   const examBoardNote = params.examBoard && params.examBoard !== "N/A" && params.examBoard !== "none"
@@ -448,6 +449,11 @@ Always respond with valid JSON only — no markdown, no code blocks, just raw JS
       : lengthMins >= 60
       ? `WORKSHEET LENGTH: 1 hour. This is a FULL LESSON worksheet. Generate a LARGE volume of questions — at least 30–40 questions total spread across all sections. Include a full guided practice section (8–10 questions), a large independent practice section (15–20 questions), a substantial challenge section (4–6 questions), and an extension task. The worksheet must genuinely take a student approximately 60 minutes to complete at normal working pace. Do NOT produce a short worksheet.`
       : `WORKSHEET LENGTH: 30 minutes. Generate a standard worksheet with 15–20 questions total: guided practice (4–5 questions), independent practice (8–10 questions), and a challenge question. A student working at normal pace should take approximately 30 minutes.`;
+
+  // ── Subject display (capitalised) ──────────────────────────────────────────
+  const subjectDisplay = params.subject
+    ? params.subject.charAt(0).toUpperCase() + params.subject.slice(1)
+    : params.subject;
 
   // ── Maths-specific instruction ────────────────────────────────────────────
   const isMaths = params.subject.toLowerCase().includes("math");
@@ -560,7 +566,9 @@ Always respond with valid JSON only — no markdown, no code blocks, just raw JS
 ║ The learning objectives MUST all be about "${params.topic}".                     ║
 ╚════════════════════════════════════════════════════════════════════════════╝`;
 
-  const user = `Create a differentiated worksheet for UK schools, STRICTLY calibrated for ${params.yearGroup}.
+  const user = `⚠️ MANDATORY TOPIC: This worksheet is EXCLUSIVELY about "${params.topic}" for ${params.yearGroup} ${params.subject}. Do NOT generate content about any other topic. The title, all questions, worked example, vocabulary, and objectives MUST all be specifically about "${params.topic}".
+
+Create a differentiated worksheet for UK schools, STRICTLY calibrated for ${params.yearGroup}.
 
 Subject: ${params.subject}
 Topic: ${params.topic}
@@ -604,8 +612,8 @@ Every question, definition, and sentence must be appropriate for ${params.yearGr
 
 Return EXACTLY this JSON structure (raw JSON only, no markdown):
 {
-  "title": "Descriptive worksheet title including topic and year group",
-  "subtitle": "${params.yearGroup} | ${params.subject} | ${params.examBoard || "General"} | ${timingGuide}",
+  "title": "[MUST include '${params.topic}' in the title — e.g. '${params.topic} — ${params.yearGroup} ${subjectDisplay} Worksheet']",
+  "subtitle": "${params.yearGroup} (${phase}) | ${subjectDisplay} | ${params.examBoard && params.examBoard !== 'none' ? params.examBoard : 'General'} | ${timingGuide}",
   "sections": [
     {
       "title": "Learning Objectives",
@@ -655,6 +663,7 @@ Return EXACTLY this JSON structure (raw JSON only, no markdown):
     {
       "title": "How Did I Do?",
       "type": "self-reflection",
+      "teacherOnly": false,
       "content": "[Write 3–4 self-reflection statements for students to rate themselves. Each statement should start with 'I can' and be directly about the topic '${params.topic}'. Calibrate the language for ${params.yearGroup}. Format: one statement per line, starting with 'I can'. Example for 'Fractions' Year 5: I can identify the numerator and denominator in a fraction\\nI can find equivalent fractions\\nI can add two fractions with the same denominator\\nI can compare fractions and say which is larger. Also include one open question at the end on a new line starting with 'Q:' — e.g. 'Q: What did you find most tricky about this topic? Write one sentence.']"
     },
     {
@@ -671,7 +680,7 @@ Return EXACTLY this JSON structure (raw JSON only, no markdown):
     }`}
   ],
   "metadata": {
-    "subject": "${params.subject}",
+    "subject": "${subjectDisplay}",
     "topic": "${params.topic}",
     "yearGroup": "${params.yearGroup}",
     "phase": "${phase}",

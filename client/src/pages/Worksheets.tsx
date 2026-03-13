@@ -677,6 +677,25 @@ export default function Worksheets() {
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
       </motion.div>
 
+      {loading && !generated && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/90 backdrop-blur-sm">
+          <div className="flex flex-col items-center gap-4 p-8 rounded-2xl bg-white shadow-2xl border border-border/50 max-w-sm w-full mx-4">
+            <div className="relative">
+              <div className="w-16 h-16 rounded-full border-4 border-brand/20 border-t-brand animate-spin" />
+              <Sparkles className="w-6 h-6 text-brand absolute inset-0 m-auto" />
+            </div>
+            <div className="text-center">
+              <h3 className="font-semibold text-foreground text-lg">Generating your worksheet</h3>
+              <p className="text-sm text-muted-foreground mt-1">AI is crafting a high-quality, differentiated worksheet. This may take up to 60 seconds for complex topics.</p>
+            </div>
+            <div className="w-full bg-muted rounded-full h-1.5 overflow-hidden">
+              <div className="h-full bg-brand rounded-full animate-pulse" style={{ width: '60%' }} />
+            </div>
+            <p className="text-xs text-muted-foreground">Please wait — do not close this page</p>
+          </div>
+        </div>
+      )}
+
       {!generated ? (
         <Tabs value={activeTab} onValueChange={(tab) => {
           setActiveTab(tab);
