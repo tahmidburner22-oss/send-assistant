@@ -187,13 +187,14 @@ router.post("/:id/assignments", requireAuth, (req: Request, res: Response) => {
 });
 
 router.put("/:id/assignments/:assignmentId", requireAuth, (req: Request, res: Response) => {
-  const { status, feedback, mark, progress, teacherComment } = req.body;
+  const { status, feedback, mark, progress, teacherComment, content } = req.body;
   db.prepare(`UPDATE assignments SET
     status=COALESCE(?,status), feedback=COALESCE(?,feedback),
     mark=COALESCE(?,mark), progress=COALESCE(?,progress),
-    teacher_comment=COALESCE(?,teacher_comment)
+    teacher_comment=COALESCE(?,teacher_comment),
+    content=COALESCE(?,content)
     WHERE id=? AND pupil_id=?`)
-    .run(status ?? null, feedback ?? null, mark ?? null, progress ?? null, teacherComment ?? null, req.params.assignmentId, req.params.id);
+    .run(status ?? null, feedback ?? null, mark ?? null, progress ?? null, teacherComment ?? null, content ?? null, req.params.assignmentId, req.params.id);
   res.json({ message: "Assignment updated" });
 });
 
