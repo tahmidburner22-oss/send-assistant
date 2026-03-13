@@ -892,24 +892,7 @@ export default function Worksheets() {
                     <Switch checked={includeAnswers} onCheckedChange={setIncludeAnswers} id="answers-sw" />
                     <Label htmlFor="answers-sw" className="text-xs">Include answers & mark scheme</Label>
                   </div>
-                  <div className="flex flex-col gap-1">
-                    <div className="flex items-center gap-2">
-                      <Switch checked={examStyle} onCheckedChange={setExamStyle} id="exam-style-sw" />
-                      <Label htmlFor="exam-style-sw" className="text-xs flex items-center gap-2">
-                        <Award className="h-3 w-3" /> Real past paper questions
-                        {examStyle && (
-                          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-100 text-amber-800 border border-amber-300">
-                            VERBATIM
-                          </span>
-                        )}
-                      </Label>
-                    </div>
-                    {examStyle && (
-                      <p className="text-[10px] text-muted-foreground ml-9">
-                        Questions are taken word-for-word from real {examBoard !== "none" ? examBoard : "AQA"} past papers — only font &amp; spacing adjusted.
-                      </p>
-                    )}
-                  </div>
+                  {/* Exam style toggle hidden — feature removed from UI */}
                   {useAI && (
                     <div className="flex items-center gap-2">
                       <Switch checked={generateDiagram} onCheckedChange={setGenerateDiagram} id="diagram-sw" />
@@ -922,10 +905,8 @@ export default function Worksheets() {
 
                 <Button onClick={handleGenerate} disabled={loading} className="w-full h-11 bg-brand hover:bg-brand/90 text-white">
                   {loading
-                    ? <><RefreshCw className="w-4 h-4 mr-2 animate-spin" />{examStyle ? "Building past paper..." : useAI ? "Generating with AI..." : "Generating..."}</>
-                    : examStyle
-                      ? <><Award className="w-4 h-4 mr-2" /> Build Past Paper Worksheet</>
-                      : <><Sparkles className="w-4 h-4 mr-2" /> Generate Worksheet</>}
+                    ? <><RefreshCw className="w-4 h-4 mr-2 animate-spin" />{useAI ? "Generating with AI..." : "Generating..."}</>
+                    : <><Sparkles className="w-4 h-4 mr-2" /> Generate Worksheet</>}
                 </Button>
               </CardContent>
             </Card>
