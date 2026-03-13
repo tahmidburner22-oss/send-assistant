@@ -474,6 +474,24 @@ router.post("/quiz", requireAuth, async (req: Request, res: Response) => {
   }
 });
 
+// Split text into sentence-aware chunks for TTS (handles character limits per request)
+function splitIntoChunks(text: string, maxChars = 2000): string[] {
+  if (text.length <= maxChars) return [text];
+  const chunks: string[] = [];
+  const sentences = text.match(/[^.!?]+[.!?]+[\s]*/g) || [text];
+  let current = "";
+  for (const sentence of sentences) {
+    if ((current + sentence).length > maxChars && current.length > 0) {
+      chunks.push(current.trim());
+      current = sentence;
+    } else {
+      current += sentence;
+    }
+  }
+  if (current.trim()) chunks.push(current.trim());
+  return chunks.length > 0 ? chunks : [text.slice(0, maxChars)];
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // POST /api/revision/tts — Neural TTS
 // Primary: OpenAI TTS (tts-1-hd) — reliable from server environments
