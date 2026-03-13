@@ -325,10 +325,15 @@ app.use((err: any, req: express.Request, res: express.Response, _next: express.N
 // ── Start ─────────────────────────────────────────────────────────────────────
 import { initDb } from "./db/index.js";
 initDb().then(() => {
-  app.listen(PORT, "0.0.0.0", () => {
+  const server = app.listen(PORT, "0.0.0.0", () => {
     console.log(`🚀 Adaptly API running on http://localhost:${PORT}`);
     console.log(`   Environment: ${process.env.NODE_ENV || "development"}`);
   });
+  // Increase server timeout to 150 seconds to allow AI generation to complete
+  // Railway's default timeout is 30s which kills long AI requests
+  server.timeout = 150000; // 150 seconds
+  server.keepAliveTimeout = 155000; // slightly above timeout
+  server.headersTimeout = 160000; // slightly above keepAliveTimeout
 }).catch(err => {
   console.error("Failed to initialise database:", err);
   process.exit(1);
