@@ -122,6 +122,10 @@ app.use(helmet({
         "https://accounts.google.com",
       ],
       frameSrc: ["accounts.google.com"],
+      // Allow blob: URLs for neural voice audio playback
+      mediaSrc: ["'self'", "blob:"],
+      // Allow blob: URLs for Web Workers (audio processing)
+      workerSrc: ["'self'", "blob:"],
       // GDPR: prevent embedding in iframes from other origins
       frameAncestors: ["'self'"],
     },

@@ -14,6 +14,7 @@ import {
   getDatabaseSummary,
   type PastPaperQuestion,
 } from "./pastPaperQuestions";
+import type { AIWorksheetResult, AIWorksheetSection } from "./ai";
 
 // Subject name → database subject id mapping
 const SUBJECT_MAP: Record<string, string> = {
@@ -152,7 +153,7 @@ export interface ExamPaperWorksheet {
     estimatedTime: string;
     adaptations: string[];
     isExamPaper: true;
-    questionsUsed: Array<{ id: string; board: string; year: number; paper: string }>;
+    questionsUsed: Array<{ id: string; board?: string; year?: number; paper?: string }>;
   };
   isAI: false;
   isExamPaper: true;
@@ -231,8 +232,8 @@ function buildInfoBox(subject: string, board: string): string {
  */
 function formatQuestionSEND(q: PastPaperQuestion, index: number, sendNeed?: string): string {
   // Strip any trailing asterisks or markdown bold markers from question text
-  const cleanText = q.text.replace(/\s*\*+\s*$/, "").trim();
-  const markLabel = q.marks === 1 ? "1 mark" : `${q.marks} marks`;
+  const cleanText = (q.text || q.question || "").replace(/\s*\*+\s*$/, "").trim();
+  const markLabel = (q.marks ?? 0) === 1 ? "1 mark" : `${q.marks ?? 0} marks`;
 
   // Context block (stimulus text, table, etc.)
   const contextBlock = q.context
@@ -243,7 +244,7 @@ function formatQuestionSEND(q: PastPaperQuestion, index: number, sendNeed?: stri
   const sendHint = "";
 
   // Answer lines
-  const lineCount = q.answerLines || Math.max(2, Math.ceil(q.marks * 1.5));
+  const lineCount = q.answerLines || Math.max(2, Math.ceil((q.marks ?? 2) * 1.5));
   const answerLines = Array(lineCount).fill("___________________________________________").join("\n\n");
 
   // Sub-parts
@@ -293,7 +294,7 @@ function buildTeacherNotes(questions: PastPaperQuestion[], params: ExamPaperWork
   const boards = Array.from(new Set(questions.map(q => q.board)));
   const years = Array.from(new Set(questions.map(q => q.year))).sort();
   const topics = Array.from(new Set(questions.map(q => q.topic)));
-  const totalMarks = questions.reduce((sum, q) => sum + q.marks, 0);
+  const totalMarks = questions.reduce((sum, q) => sum + (q.marks ?? 0), 0);
 
   return `**Teacher Notes**
 
@@ -388,7 +389,7 @@ export function buildExamPaperWorksheet(params: ExamPaperWorksheetParams): ExamP
     });
   }
 
-  const totalMarks = questions.reduce((sum, q) => sum + q.marks, 0);
+  const totalMarks = questions.reduce((sum, q) => sum + (q.marks ?? 0), 0);
   const tier_label = getTierLabel(params.subject, params.difficulty);
   const boardLabel = board !== "none" ? board : "AQA";
 
@@ -439,8 +440,8 @@ export function buildExamPaperWorksheet(params: ExamPaperWorksheetParams): ExamP
     const midpoint = Math.ceil(questions.length / 2);
     const sectionA = questions.slice(0, midpoint);
     const sectionB = questions.slice(midpoint);
-    const marksA = sectionA.reduce((s, q) => s + q.marks, 0);
-    const marksB = sectionB.reduce((s, q) => s + q.marks, 0);
+    const marksA = sectionA.reduce((s, q) => s + (q.marks ?? 0), 0);
+    const marksB = sectionB.reduce((s, q) => s + (q.marks ?? 0), 0);
 
     sections.push({
       title: `Section A [${marksA} marks]`,
@@ -517,4 +518,259 @@ export function hasPastPaperQuestions(subject: string, board?: string): boolean 
   const normSubject = normaliseSubject(subject);
   const count = getExamQuestions({ subject: normSubject, board, limit: 1 }).length;
   return count > 0;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// HYBRID EXAM WORKSHEET BUILDER
+// ─────────────────────────────────────────────────────────────────────────────
+// When exam questions are ticked, this function takes an AI-generated worksheet
+// and replaces the exercise sections (guided, independent, challenge) with REAL
+// exam questions from the bank, sorted by marks (low → high).
+// The rest of the worksheet (learning objectives, vocab, worked example, etc.)
+// remains exactly the same as the normal AI worksheet.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Detect if a question requires a source text to be printed.
+ * English questions often reference "Source A", "Source B", "lines 1–4" etc.
+ */
+function questionRequiresSource(q: PastPaperQuestion): boolean {
+  const text = (q.text || "").toLowerCase();
+  return (
+    text.includes("source a") ||
+    text.includes("source b") ||
+    text.includes("source c") ||
+    text.includes("read lines") ||
+    text.includes("read again") ||
+    text.includes("refer to source") ||
+    text.includes("from the text") ||
+    text.includes("from source") ||
+    text.includes("from lines") ||
+    text.includes("in lines") ||
+    text.includes("the passage") ||
+    text.includes("the extract") ||
+    text.includes("the article")
+  );
+}
+
+/**
+ * Get the exam board past papers URL for source text downloads.
+ */
+function getBoardPastPapersUrl(board?: string): string {
+  const b = (board || "AQA").toUpperCase();
+  if (b === "AQA") return "https://www.aqa.org.uk/past-papers";
+  if (b === "EDEXCEL" || b === "PEARSON") return "https://qualifications.pearson.com/en/support/support-topics/exams/past-papers.html";
+  if (b === "OCR") return "https://www.ocr.org.uk/administration/support-and-tools/past-papers/";
+  if (b === "WJEC") return "https://www.wjec.co.uk/resources/";
+  if (b === "CCEA") return "https://ccea.org.uk/learning-resources/past-papers";
+  return "https://www.aqa.org.uk/past-papers";
+}
+
+/**
+ * Build a source text warning for teacher notes when questions require printed sources.
+ */
+function buildSourceWarning(questions: PastPaperQuestion[]): string {
+  const questionsNeedingSource = questions.filter(questionRequiresSource);
+  if (questionsNeedingSource.length === 0) return "";
+
+  const boards = Array.from(new Set(questionsNeedingSource.map(q => q.board).filter(Boolean)));
+  const papers = Array.from(new Set(questionsNeedingSource.map(q => `${q.board} ${q.year} ${q.paper}`).filter(Boolean)));
+
+  let warning = `\n\n---\n\n## ⚠️ PRINT REQUIRED — SOURCE TEXTS\n\n`;
+  warning += `> **ACTION REQUIRED:** ${questionsNeedingSource.length} question${questionsNeedingSource.length > 1 ? "s" : ""} on this worksheet require${questionsNeedingSource.length === 1 ? "s" : ""} a printed source text (passage/extract). Students CANNOT answer these questions without the source text.\n\n`;
+  warning += `**Questions requiring source texts:**\n`;
+  questionsNeedingSource.forEach((q, i) => {
+    const qIdx = questions.indexOf(q) + 1;
+    warning += `- Q${qIdx}: ${(q.text || "").substring(0, 80)}... *(${q.board} ${q.year}, ${q.paper})*\n`;
+  });
+  warning += `\n**Download source texts from:**\n`;
+  boards.forEach(board => {
+    const url = getBoardPastPapersUrl(board);
+    warning += `- **${board}:** [${url}](${url})\n`;
+  });
+  warning += `\n**Papers needed:** ${papers.join("; ")}\n`;
+  warning += `\n> 💡 **Tip:** Download the full question paper PDF from the exam board website. The source texts (passages/extracts) are printed at the beginning of the paper. Print these pages separately for students before the lesson.\n`;
+
+  return warning;
+}
+
+/**
+ * Build a formatted exam questions section from real past paper questions.
+ * Questions are sorted by marks (low → high) to scaffold difficulty.
+ */
+function buildExamQuestionsSection(
+  questions: PastPaperQuestion[],
+  sectionTitle: string,
+  sendNeed?: string
+): AIWorksheetSection {
+  // Sort by marks ascending (low mark questions first)
+  const sorted = [...questions].sort((a, b) => (a.marks || 0) - (b.marks || 0));
+  const totalMarks = sorted.reduce((sum, q) => sum + (q.marks || 0), 0);
+  const content = sorted.map((q, i) => formatQuestionSEND(q, i + 1, sendNeed)).join("\n\n");
+
+  return {
+    title: `${sectionTitle} [${totalMarks} marks]`,
+    type: "questions",
+    content,
+  };
+}
+
+export interface HybridExamWorksheetParams {
+  aiWorksheet: AIWorksheetResult;
+  subject: string;
+  topic?: string;
+  yearGroup: string;
+  examBoard?: string;
+  difficulty?: string;
+  sendNeed?: string;
+  includeAnswers?: boolean;
+  worksheetLength?: string;
+}
+
+/**
+ * Build a hybrid exam worksheet:
+ * - Keeps the AI-generated structure (learning objectives, vocab, worked example, self-reflection)
+ * - Replaces exercise sections (guided, independent, challenge) with real exam questions
+ * - Adds source text warnings in teacher notes when needed
+ * - Questions are sorted low marks → high marks
+ */
+export function buildHybridExamWorksheet(params: HybridExamWorksheetParams): AIWorksheetResult {
+  const { aiWorksheet, subject, topic, yearGroup, examBoard, difficulty, sendNeed, includeAnswers, worksheetLength } = params;
+
+  const normSubject = normaliseSubject(subject);
+  const board = examBoard && examBoard !== "none" ? examBoard : "AQA";
+  const tier = normaliseTier(difficulty);
+  const questionCount = getQuestionCount(worksheetLength);
+  const yearGroupNum = parseYearGroupNumber(yearGroup);
+  const topicFilter = topic && topic.toLowerCase() !== "general" ? topic : undefined;
+
+  // Fetch real exam questions from the bank
+  let questions = getExamQuestions({
+    subject: normSubject,
+    board,
+    tier,
+    topic: topicFilter,
+    limit: questionCount,
+    yearMin: 2010,
+    yearGroup: yearGroupNum,
+  });
+
+  // Fallback attempts if not enough questions
+  if (questions.length < 3) {
+    questions = getExamQuestions({ subject: normSubject, tier, topic: topicFilter, limit: questionCount, yearMin: 2010, yearGroup: yearGroupNum });
+  }
+  if (questions.length < 3) {
+    questions = getExamQuestions({ subject: normSubject, topic: topicFilter, limit: questionCount, yearMin: 2010, yearGroup: yearGroupNum });
+  }
+  if (questions.length < 3) {
+    questions = getExamQuestions({ subject: normSubject, topic: topicFilter, limit: questionCount, yearMin: 2010 });
+  }
+  if (questions.length === 0) {
+    questions = getExamQuestions({ subject: normSubject, limit: questionCount, yearMin: 2010 });
+  }
+
+  // Sort all questions by marks ascending (low → high) for scaffolded difficulty
+  const sortedQuestions = [...questions].sort((a, b) => (a.marks || 0) - (b.marks || 0));
+
+  // Split into sections: guided (low marks), core (mid marks), challenge (high marks)
+  const third = Math.ceil(sortedQuestions.length / 3);
+  const guidedQs = sortedQuestions.slice(0, third);
+  const coreQs = sortedQuestions.slice(third, third * 2);
+  const challengeQs = sortedQuestions.slice(third * 2);
+
+  // Build the exam questions sections
+  const examSections: AIWorksheetSection[] = [];
+
+  if (questions.length === 0) {
+    // No questions found — show informative message
+    examSections.push({
+      title: "Exam Questions",
+      type: "questions",
+      content: `> **Note:** No past paper questions were found in the database for ${subject} (${board}${tier ? ` — ${tier} Tier` : ""}).
+>
+> The database currently contains questions for: Mathematics, English Language, English Literature, Biology, Chemistry, Physics, History, Geography (AQA, Edexcel, OCR, WJEC).
+>
+> In the meantime, please use the AI-generated questions above for practice.`,
+    });
+  } else if (sortedQuestions.length <= 5) {
+    // Small set — single section
+    examSections.push(buildExamQuestionsSection(sortedQuestions, "Exam Practice Questions", sendNeed));
+  } else {
+    // Split into guided, core, challenge
+    if (guidedQs.length > 0) {
+      examSections.push(buildExamQuestionsSection(guidedQs, "Section A — Guided Practice (Exam Questions)", sendNeed));
+    }
+    if (coreQs.length > 0) {
+      examSections.push(buildExamQuestionsSection(coreQs, "Section B — Core Practice (Exam Questions)", sendNeed));
+    }
+    if (challengeQs.length > 0) {
+      examSections.push(buildExamQuestionsSection(challengeQs, "Section C — Stretch & Challenge (Exam Questions)", sendNeed));
+    }
+  }
+
+  // Build mark scheme for exam questions
+  const examMarkScheme: AIWorksheetSection = {
+    title: "Mark Scheme (Exam Questions)",
+    type: "mark-scheme",
+    teacherOnly: true,
+    content: buildMarkScheme(sortedQuestions),
+  };
+
+  // Build source text warning if needed
+  const sourceWarning = buildSourceWarning(sortedQuestions);
+
+  // Rebuild the worksheet sections:
+  // Keep: objective, vocabulary, key formulas, worked example, self-reflection
+  // Replace: guided, independent, challenge sections with real exam questions
+  // Keep: teacher notes (with source warning appended), mark scheme (replaced with exam mark scheme)
+  const EXERCISE_TYPES = new Set(["guided", "independent", "challenge", "questions", "mark-scheme"]);
+  const TEACHER_TYPES = new Set(["teacher-notes", "teacher-only"]);
+
+  const keptSections = aiWorksheet.sections.filter(s => {
+    // Remove exercise sections and old mark scheme (will be replaced)
+    if (EXERCISE_TYPES.has(s.type)) return false;
+    // Keep teacher notes (we'll modify them)
+    return true;
+  });
+
+  // Find and update teacher notes with source warning
+  const updatedSections = keptSections.map(s => {
+    if (TEACHER_TYPES.has(s.type) || s.title.toLowerCase().includes("teacher")) {
+      return {
+        ...s,
+        content: s.content + sourceWarning,
+      };
+    }
+    return s;
+  });
+
+  // Insert exam questions before teacher notes/mark scheme
+  const teacherSections = updatedSections.filter(s => TEACHER_TYPES.has(s.type) || s.title.toLowerCase().includes("teacher") || s.type === "teacher-notes");
+  const nonTeacherSections = updatedSections.filter(s => !TEACHER_TYPES.has(s.type) && !s.title.toLowerCase().includes("teacher") && s.type !== "teacher-notes");
+
+  const totalMarks = sortedQuestions.reduce((sum, q) => sum + (q.marks || 0), 0);
+  const boardLabel = board !== "none" ? board : "AQA";
+
+  return {
+    ...aiWorksheet,
+    title: aiWorksheet.title.replace(/worksheet/i, "Exam Practice Worksheet"),
+    subtitle: `${yearGroup} | ${subject} | ${boardLabel} | ${totalMarks} marks`,
+    sections: [
+      ...nonTeacherSections,
+      ...examSections,
+      examMarkScheme,
+      ...teacherSections,
+    ],
+    metadata: {
+      ...aiWorksheet.metadata,
+      totalMarks,
+      examBoard: boardLabel,
+      adaptations: [
+        ...(aiWorksheet.metadata.adaptations || []),
+        "Real exam questions from past papers",
+        `Questions sorted low → high marks`,
+      ],
+    },
+    isAI: true,
+  };
 }
