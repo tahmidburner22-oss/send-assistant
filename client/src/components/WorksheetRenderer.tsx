@@ -166,9 +166,26 @@ export function renderMath(text: string): string {
   result = result.replace(/<\s*sub\s*>/gi, "<sub>");
   result = result.replace(/<\s*\/\s*sub\s*>/gi, "</sub>");
 
+  // ── Step 0c-pre: Render delimited LaTeX FIRST before bare command processing ──
+  // IMPORTANT: Process \(...\), \[...\], and $...$ BEFORE bare \dfrac, \frac,
+  // \sqrt etc. Otherwise \dfrac inside \(\dfrac{a}{b}\) gets converted to KaTeX
+  // HTML first, leaving orphaned \( and \) delimiters that never match.
+  result = result.replace(/\\\[(\s*[\s\S]+?\s*)\\\]/g, (_, expr) => {
+    try { return katex.renderToString(expr.trim(), { displayMode: true, throwOnError: false }); }
+    catch { return expr; }
+  });
+  result = result.replace(/\\\((\s*[\s\S]+?\s*)\\\)/g, (_, expr) => {
+    try { return katex.renderToString(expr.trim(), { displayMode: false, throwOnError: false }); }
+    catch { return expr; }
+  });
+  result = result.replace(/\$([^$\n]+?)\$/g, (_, expr) => {
+    try { return katex.renderToString(expr.trim(), { displayMode: false, throwOnError: false }); }
+    catch { return expr; }
+  });
+
   // ── Step 0c: Handle bare LaTeX commands (no delimiters) ─────────────────────
   // The AI often generates \frac{1}{2}, \times, \pi, \sqrt{x} without $...$ wrappers.
-  // We process these BEFORE any other step so they don't get mangled.
+  // We process these AFTER delimiter handling to avoid double-processing.
 
   // Fix truncated LaTeX commands caused by JSON backslash stripping:
   // e.g. \rac{1}{2} → \frac{1}{2}, \imes → \times, \ext{...} → text, \qrt → \sqrt
@@ -328,33 +345,10 @@ export function renderMath(text: string): string {
   result = result.replace(/\u00b2/g, "<sup>2</sup>");
   result = result.replace(/\u00b3/g, "<sup>3</sup>");
 
-  // ── Step 3: Render explicit LaTeX expressions ────────────────────────────────
-  // Render display math \[...\]
-  result = result.replace(/\\\[([\s\S]+?)\\\]/g, (_, expr) => {
-    try {
-      return katex.renderToString(expr.trim(), { displayMode: true, throwOnError: false });
-    } catch {
-      return expr;
-    }
-  });
-  // Render inline math \(...\)
-  result = result.replace(/\\\(([\s\S]+?)\\\)/g, (_, expr) => {
-    try {
-      return katex.renderToString(expr.trim(), { displayMode: false, throwOnError: false });
-    } catch {
-      return expr;
-    }
-  });
-  // Render $...$ inline math (single dollar sign)
-  result = result.replace(/\$([^$\n]+?)\$/g, (_, expr) => {
-    try {
-      return katex.renderToString(expr.trim(), { displayMode: false, throwOnError: false });
-    } catch {
-      return expr;
-    }
-  });
+  // ── Step 3: LaTeX delimiter rendering is now handled at Step 0c-pre (before bare commands)
+  // to prevent \dfrac inside \(\dfrac{a}{b}\) from being processed prematurely.
 
-  // ── Step 4: Convert plain-text ^ powers to proper superscripts ───────────────
+  // ── Step 4: Convert plain-text ^ powers to proper superscripts ───────────────────
   // Only match plain text (not inside KaTeX HTML spans)
   result = result.replace(/([A-Za-z0-9α-ω\)]+)\^(-?[A-Za-z0-9]+)/g, (_, base, exp) => {
     try {
