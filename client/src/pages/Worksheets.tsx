@@ -18,7 +18,7 @@ import { subjects, yearGroups, sendNeeds, examBoards, difficulties, colorOverlay
 import { generateWorksheet, type GeneratedWorksheet } from "@/lib/worksheet-generator";
 import { downloadWorksheetPdf } from "@/lib/pdf-generator";
 import { downloadHtmlAsPdf, printWorksheetElement } from "@/lib/pdf-generator-v2";
-import WorksheetRenderer, { renderMath } from "@/components/WorksheetRenderer";
+import WorksheetRenderer, { renderMath, stripKatexToPlainText } from "@/components/WorksheetRenderer";
 import { worksheetBank, type BankWorksheet } from "@/lib/worksheet-bank";
 import { getSyllabusTopics, type SyllabusTopic } from "@/lib/syllabus-data";
 import { aiGenerateWorksheet, aiEditSection } from "@/lib/ai";
@@ -1279,7 +1279,7 @@ export default function Worksheets() {
                               <Badge variant="outline" className="text-xs py-0">{question.year}</Badge>
                               <Badge className="text-xs py-0 bg-gray-100 text-gray-600">{question.marks} mark{question.marks !== 1 ? 's' : ''}</Badge>
                             </div>
-                            <p className="text-sm text-foreground line-clamp-3" dangerouslySetInnerHTML={{ __html: renderMath(question.text || question.question || '') }} />
+                            <p className="text-sm text-foreground line-clamp-3">{stripKatexToPlainText(renderMath(question.text || question.question || ''))}</p>
                             <p className="text-xs text-muted-foreground mt-1">{question.paper} · Q{question.questionNum}</p>
                           </div>
                           <ChevronDown className={`h-4 w-4 text-gray-400 flex-shrink-0 transition-transform ${examQExpanded === question.id ? 'rotate-180' : ''}`} />

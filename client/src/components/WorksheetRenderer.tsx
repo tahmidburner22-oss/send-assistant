@@ -394,6 +394,48 @@ export function renderMath(text: string): string {
   return result;
 }
 
+/**
+ * Strip KaTeX-rendered HTML back to readable plain text.
+ * Used for collapsed preview cards where CSS line-clamp would truncate mid-HTML-tag
+ * and cause raw attribute text (class="katex", etc.) to appear as visible characters.
+ * Converts KaTeX spans → their MathML annotation text, then strips all remaining HTML.
+ */
+export function stripKatexToPlainText(html: string): string {
+  if (!html) return "";
+  // Extract the annotation text from KaTeX MathML (the plain-text math representation)
+  // KaTeX always includes <annotation encoding="application/x-tex">LATEX</annotation>
+  let result = html.replace(/<annotation[^>]*encoding=["']application\/x-tex["'][^>]*>([\s\S]*?)<\/annotation>/gi, (_, tex) => {
+    // Convert common LaTeX back to readable text
+    return tex
+      .replace(/\\dfrac\{([^{}]*)\}\{([^{}]*)\}/g, '$1/$2')
+      .replace(/\\frac\{([^{}]*)\}\{([^{}]*)\}/g, '$1/$2')
+      .replace(/\\sqrt\{([^{}]*)\}/g, '√($1)')
+      .replace(/\\times/g, '×')
+      .replace(/\\div/g, '÷')
+      .replace(/\\pi/g, 'π')
+      .replace(/\\pm/g, '±')
+      .replace(/\\leq/g, '≤')
+      .replace(/\\geq/g, '≥')
+      .replace(/\\neq/g, '≠')
+      .replace(/\\[a-zA-Z]+/g, '')
+      .replace(/[{}]/g, '');
+  });
+  // Remove any remaining KaTeX HTML spans (mathml, etc.) that weren't caught above
+  result = result.replace(/<span[^>]*class=["'][^"']*katex[^"']*["'][^>]*>[\s\S]*?<\/span>/gi, '');
+  // Strip all remaining HTML tags
+  result = result.replace(/<[^>]+>/g, '');
+  // Decode HTML entities
+  result = result
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&nbsp;/g, ' ');
+  // Collapse whitespace
+  return result.replace(/\s+/g, ' ').trim();
+}
+
 export interface WorksheetSection {
   title: string;
   type: string;
