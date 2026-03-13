@@ -1121,14 +1121,52 @@ export function getSyllabusTopics(subject: string, yearGroup: string): SyllabusT
   const subjectData = SYLLABUS_DATA[subject.toLowerCase()];
   if (!subjectData) return [];
 
-  const yg = yearGroup as YearGroupKey;
-  if (subjectData[yg]) return subjectData[yg]!;
-
-  // Fallback: try to find closest year group
   const yearNum = parseInt(yearGroup.replace(/[^0-9]/g, ""), 10);
-  if (isNaN(yearNum)) return [];
 
-  // Try adjacent years
+  // Handle non-numeric year groups (e.g. "11+ Preparation")
+  if (isNaN(yearNum)) {
+    const yg = yearGroup as YearGroupKey;
+    return subjectData[yg] || [];
+  }
+
+  // Define cumulative ranges per key stage:
+  // Primary:   Y1–Y6  → accumulate from Y1 up to selected year
+  // Secondary: Y7–Y11 → accumulate from Y7 up to selected year
+  // Sixth Form: Y12–Y13 → accumulate from Y12 up to selected year
+  let startYear: number;
+  if (yearNum >= 1 && yearNum <= 6) {
+    startYear = 1;
+  } else if (yearNum >= 7 && yearNum <= 11) {
+    startYear = 7;
+  } else if (yearNum >= 12 && yearNum <= 13) {
+    startYear = 12;
+  } else {
+    // Fallback: just return the exact year
+    const yg = yearGroup as YearGroupKey;
+    return subjectData[yg] || [];
+  }
+
+  // Accumulate topics from startYear up to and including yearNum
+  const accumulated: SyllabusTopic[] = [];
+  const seenTopics = new Set<string>();
+
+  for (let y = startYear; y <= yearNum; y++) {
+    const key = `Year ${y}` as YearGroupKey;
+    const topics = subjectData[key];
+    if (topics) {
+      for (const t of topics) {
+        if (!seenTopics.has(t.topic)) {
+          seenTopics.add(t.topic);
+          accumulated.push(t);
+        }
+      }
+    }
+  }
+
+  // If we found topics, return them sorted with current year's topics first
+  if (accumulated.length > 0) return accumulated;
+
+  // Final fallback: try adjacent years
   for (let offset = 1; offset <= 3; offset++) {
     const above = `Year ${yearNum + offset}` as YearGroupKey;
     const below = `Year ${yearNum - offset}` as YearGroupKey;
