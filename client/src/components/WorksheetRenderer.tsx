@@ -78,6 +78,19 @@ export function renderMath(text: string): string {
   // The AI often generates \frac{1}{2}, \times, \pi, \sqrt{x} without $...$ wrappers.
   // We process these BEFORE any other step so they don't get mangled.
 
+  // Fix truncated LaTeX commands caused by JSON backslash stripping:
+  // e.g. \rac{1}{2} → \frac{1}{2}, \imes → \times, \ext{...} → text, \qrt → \sqrt
+  result = result.replace(/\brac\{([^{}]*)\}\{([^{}]*)\}/g, (_, num, den) => {
+    try { return katex.renderToString(`\\dfrac{${num}}{${den}}`, { displayMode: false, throwOnError: false }); }
+    catch { return `${num}/${den}`; }
+  });
+  result = result.replace(/\bimes\b/g, '×');
+  result = result.replace(/\bext\{([^{}]*)\}/g, '$1');
+  result = result.replace(/\bqrt\{([^{}]*)\}/g, (_, expr) => {
+    try { return katex.renderToString(`\\sqrt{${expr}}`, { displayMode: false, throwOnError: false }); }
+    catch { return `√${expr}`; }
+  });
+
   // \frac{num}{den} → KaTeX fraction
   result = result.replace(/\\frac\{([^{}]*)\}\{([^{}]*)\}/g, (_, num, den) => {
     try { return katex.renderToString(`\\dfrac{${num}}{${den}}`, { displayMode: false, throwOnError: false }); }
