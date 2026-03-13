@@ -723,6 +723,8 @@ export function buildHybridExamWorksheet(params: HybridExamWorksheetParams): AIW
   // Keep: objective, vocabulary, key formulas, worked example, self-reflection
   // Replace: guided, independent, challenge sections with real exam questions
   // Keep: teacher notes (with source warning appended), mark scheme (replaced with exam mark scheme)
+  console.log('[HybridExam] AI worksheet sections:', aiWorksheet.sections.map(s => `${s.type}:${s.title}`));
+  console.log('[HybridExam] Questions found:', questions.length, sortedQuestions.map(q => `${q.marks}m:${q.text?.substring(0,30)}`));
   const EXERCISE_TYPES = new Set(["guided", "independent", "challenge", "questions", "mark-scheme"]);
   const TEACHER_TYPES = new Set(["teacher-notes", "teacher-only"]);
 
