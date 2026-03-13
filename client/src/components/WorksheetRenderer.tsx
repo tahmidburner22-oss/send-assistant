@@ -75,11 +75,17 @@ export function renderMath(text: string): string {
           }
           if (endIdx === -1) break;
           const katexBlock = out.substring(startIdx, endIdx);
-          // Extract annotation text (raw LaTeX) from the MathML inside this block
-          const annotMatch = katexBlock.match(
-            /<annotation[^>]*encoding=["']application\/x-tex["'][^>]*>([\s\S]*?)<\/annotation>/i
-          );
-          const replacement = annotMatch ? `\\(${annotMatch[1].trim()}\\)` : '';
+          // Extract annotation text (raw LaTeX) from the MathML inside this block.
+          // Use the LAST annotation tag (greedy search) because KaTeX may nest multiple
+          // annotation tags when rendering compound expressions like \dfrac{a}{b} = \dfrac{c}{d}.
+          // The outermost (last) annotation contains the full LaTeX expression.
+          const annotRegex = /<annotation[^>]*encoding=["']application\/x-tex["'][^>]*>([\s\S]*?)<\/annotation>/gi;
+          let annotMatch: RegExpExecArray | null = null;
+          let lastAnnotMatch: RegExpExecArray | null = null;
+          while ((annotMatch = annotRegex.exec(katexBlock)) !== null) {
+            lastAnnotMatch = annotMatch;
+          }
+          const replacement = lastAnnotMatch ? `\\(${lastAnnotMatch[1].trim()}\\)` : '';
           out = out.substring(0, startIdx) + replacement + out.substring(endIdx);
         }
       }
@@ -538,11 +544,17 @@ export function stripKatexToPlainText(html: string): string {
       if (endIdx === -1) break; // malformed HTML — bail
 
       const katexBlock = result.substring(startIdx, endIdx);
-      // Extract annotation text (raw LaTeX) from the MathML inside this block
-      const annotMatch = katexBlock.match(
-        /<annotation[^>]*encoding=["']application\/x-tex["'][^>]*>([\s\S]*?)<\/annotation>/i
-      );
-      const plainText = annotMatch ? latexToPlain(annotMatch[1]) : '';
+      // Extract annotation text (raw LaTeX) from the MathML inside this block.
+      // Use the LAST annotation tag (greedy search) because KaTeX may nest multiple
+      // annotation tags when rendering compound expressions like \dfrac{a}{b} = \dfrac{c}{d}.
+      // The outermost (last) annotation contains the full LaTeX expression.
+      const annotRegex = /<annotation[^>]*encoding=["']application\/x-tex["'][^>]*>([\s\S]*?)<\/annotation>/gi;
+      let annotMatch: RegExpExecArray | null = null;
+      let lastAnnotMatch: RegExpExecArray | null = null;
+      while ((annotMatch = annotRegex.exec(katexBlock)) !== null) {
+        lastAnnotMatch = annotMatch;
+      }
+      const plainText = lastAnnotMatch ? latexToPlain(lastAnnotMatch[1]) : '';
       result = result.substring(0, startIdx) + plainText + result.substring(endIdx);
     }
   }
