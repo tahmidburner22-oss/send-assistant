@@ -227,10 +227,42 @@ export function renderMath(text: string): string {
 
     // Fix truncated LaTeX commands caused by JSON backslash stripping:
     // e.g. \rac{1}{2} → \frac{1}{2}, \imes → \times, \ext{...} → text, \qrt → \sqrt
-    result = applyToPlainText(result, s => s.replace(/\brac\{([^{}]*)\}\{([^{}]*)\}/g, (_, num, den) => {
-      try { return katex.renderToString(`\\dfrac{${num}}{${den}}`, { displayMode: false, throwOnError: false }); }
-      catch { return `${num}/${den}`; }
-    }));
+    // Uses a brace-depth-aware extractor to handle nested braces (e.g. \rac{-b ± \sqrt{b²-4ac}}{2a})
+    result = applyToPlainText(result, s => {
+      // Extract balanced brace group starting at position i (after the opening '{')
+      const extractBraceGroup = (str: string, start: number): { content: string; end: number } | null => {
+        if (str[start] !== '{') return null;
+        let depth = 0, i = start;
+        while (i < str.length) {
+          if (str[i] === '{') depth++;
+          else if (str[i] === '}') { depth--; if (depth === 0) return { content: str.substring(start + 1, i), end: i + 1 }; }
+          i++;
+        }
+        return null;
+      };
+      let out = '';
+      let i = 0;
+      while (i < s.length) {
+        // Look for bare 'rac{' (not preceded by backslash, since \frac is handled separately)
+        const racIdx = s.indexOf('rac{', i);
+        if (racIdx === -1) { out += s.substring(i); break; }
+        // Ensure it's a bare 'rac' (not '\frac' or 'dfrac')
+        const prevChar = racIdx > 0 ? s[racIdx - 1] : '';
+        if (prevChar === '\\' || prevChar === 'f' || prevChar === 'd') { out += s.substring(i, racIdx + 4); i = racIdx + 4; continue; }
+        // Extract numerator brace group
+        const numGroup = extractBraceGroup(s, racIdx + 3);
+        if (!numGroup) { out += s.substring(i, racIdx + 4); i = racIdx + 4; continue; }
+        // Extract denominator brace group
+        const denGroup = extractBraceGroup(s, numGroup.end);
+        if (!denGroup) { out += s.substring(i, numGroup.end); i = numGroup.end; continue; }
+        // Render as KaTeX fraction
+        out += s.substring(i, racIdx);
+        try { out += katex.renderToString(`\\dfrac{${numGroup.content}}{${denGroup.content}}`, { displayMode: false, throwOnError: false }); }
+        catch { out += `${numGroup.content}/${denGroup.content}`; }
+        i = denGroup.end;
+      }
+      return out;
+    });
     result = applyToPlainText(result, s => s.replace(/\bimes\b/g, '×'));
     result = applyToPlainText(result, s => s.replace(/\bext\{([^{}]*)\}/g, '$1'));
     result = applyToPlainText(result, s => s.replace(/\bqrt\{([^{}]*)\}/g, (_, expr) => {
