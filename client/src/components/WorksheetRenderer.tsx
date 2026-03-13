@@ -16,6 +16,9 @@ import "katex/dist/katex.min.css";
  */
 export function renderMath(text: string): string {
   if (!text) return "";
+  // If the content already contains pre-rendered KaTeX HTML, return it as-is
+  // This prevents double-processing of content that was already rendered
+  if (text.includes('class="katex"') || text.includes("class='katex'")) return text;
   let result = text;
 
   // ── Step 0a: Convert plain-English math phrases to LaTeX ──────────────────────
@@ -907,6 +910,8 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(({
                 <WordBankSection content={content} fmt={fmt} />
               ) : section.type === "sentence-starters" ? (
                 <SentenceStartersSection content={content} fmt={fmt} />
+              ) : content && content.includes('class="katex"') ? (
+                <div style={{ fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, lineHeight: fmt.lineHeight }} dangerouslySetInnerHTML={{ __html: content }} />
               ) : (
                 <div>{formatContent(content, fmt)}</div>
               )}
