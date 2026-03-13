@@ -412,26 +412,72 @@ export function renderMath(text: string): string {
  */
 export function stripKatexToPlainText(html: string): string {
   if (!html) return "";
-  // Extract the annotation text from KaTeX MathML (the plain-text math representation)
-  // KaTeX always includes <annotation encoding="application/x-tex">LATEX</annotation>
-  let result = html.replace(/<annotation[^>]*encoding=["']application\/x-tex["'][^>]*>([\s\S]*?)<\/annotation>/gi, (_, tex) => {
-    // Convert common LaTeX back to readable text
-    return tex
-      .replace(/\\dfrac\{([^{}]*)\}\{([^{}]*)\}/g, '$1/$2')
-      .replace(/\\frac\{([^{}]*)\}\{([^{}]*)\}/g, '$1/$2')
-      .replace(/\\sqrt\{([^{}]*)\}/g, '√($1)')
-      .replace(/\\times/g, '×')
-      .replace(/\\div/g, '÷')
-      .replace(/\\pi/g, 'π')
-      .replace(/\\pm/g, '±')
-      .replace(/\\leq/g, '≤')
-      .replace(/\\geq/g, '≥')
-      .replace(/\\neq/g, '≠')
-      .replace(/\\[a-zA-Z]+/g, '')
-      .replace(/[{}]/g, '');
-  });
-  // Remove any remaining KaTeX HTML spans (mathml, etc.) that weren't caught above
-  result = result.replace(/<span[^>]*class=["'][^"']*katex[^"']*["'][^>]*>[\s\S]*?<\/span>/gi, '');
+
+  // Helper: convert a raw LaTeX string to readable plain text
+  const latexToPlain = (tex: string) => tex
+    .replace(/\\dfrac\{([^{}]*)\}\{([^{}]*)\}/g, '$1/$2')
+    .replace(/\\frac\{([^{}]*)\}\{([^{}]*)\}/g, '$1/$2')
+    .replace(/\\sqrt\{([^{}]*)\}/g, '√($1)')
+    .replace(/\\times/g, '×')
+    .replace(/\\div/g, '÷')
+    .replace(/\\pi/g, 'π')
+    .replace(/\\pm/g, '±')
+    .replace(/\\leq/g, '≤')
+    .replace(/\\geq/g, '≥')
+    .replace(/\\neq/g, '≠')
+    .replace(/\\[a-zA-Z]+/g, '')
+    .replace(/[{}^_]/g, '')
+    .trim();
+
+  // Nesting-aware KaTeX block removal.
+  // KaTeX produces deeply nested <span> trees (20-30 levels for a fraction).
+  // A simple non-greedy regex fails because it stops at the first </span>.
+  // Instead we find each outermost <span class="katex"> and count nesting
+  // to locate the matching closing </span>, then replace the entire block
+  // with the plain-text annotation extracted from the MathML inside it.
+  let result = html;
+  const katexPatterns = ['class="katex"', "class='katex'"];
+  for (const pat of katexPatterns) {
+    let safety = 0;
+    while (result.includes(pat) && safety < 200) {
+      safety++;
+      const marker = '<span ' + pat;
+      const startIdx = result.indexOf(marker);
+      if (startIdx === -1) break;
+
+      // Walk forward counting <span and </span> to find matching close
+      let depth = 0;
+      let i = startIdx;
+      let endIdx = -1;
+      while (i < result.length) {
+        if (result.startsWith('<span', i)) {
+          depth++;
+          // skip past the tag name so we don't re-match
+          const gt = result.indexOf('>', i);
+          i = gt !== -1 ? gt + 1 : i + 5;
+        } else if (result.startsWith('</span>', i)) {
+          depth--;
+          if (depth === 0) {
+            endIdx = i + 7; // '</span>'.length
+            break;
+          }
+          i += 7;
+        } else {
+          i++;
+        }
+      }
+      if (endIdx === -1) break; // malformed HTML — bail
+
+      const katexBlock = result.substring(startIdx, endIdx);
+      // Extract annotation text (raw LaTeX) from the MathML inside this block
+      const annotMatch = katexBlock.match(
+        /<annotation[^>]*encoding=["']application\/x-tex["'][^>]*>([\s\S]*?)<\/annotation>/i
+      );
+      const plainText = annotMatch ? latexToPlain(annotMatch[1]) : '';
+      result = result.substring(0, startIdx) + plainText + result.substring(endIdx);
+    }
+  }
+
   // Strip all remaining HTML tags
   result = result.replace(/<[^>]+>/g, '');
   // Decode HTML entities

@@ -17,6 +17,17 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist"),
     emptyOutDir: true,
+    // Minify aggressively — terser produces smaller output than esbuild for large data files
+    minify: "terser",
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true,
+        passes: 2,
+      },
+    },
+    // Increase chunk size warning limit since question banks are intentionally large
+    chunkSizeWarningLimit: 1500,
     // ── Code splitting — keep large question bank files out of the main bundle ──
     rollupOptions: {
       output: {

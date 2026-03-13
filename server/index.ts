@@ -59,6 +59,7 @@ if (typeof (globalThis as any).Path2D === "undefined") {
   };
 }
 import express from "express";
+import compression from "compression";
 import cors from "cors";
 import helmet from "helmet";
 import cookieParser from "cookie-parser";
@@ -163,6 +164,16 @@ app.use((_req, res, next) => {
   }
   next();
 });
+
+// ── Compression — gzip/brotli for all responses (especially large JS chunks) ─
+app.use(compression({
+  level: 6, // balanced speed vs compression ratio
+  threshold: 1024, // only compress responses > 1KB
+  filter: (req, res) => {
+    if (req.headers['x-no-compression']) return false;
+    return compression.filter(req, res);
+  },
+}));
 
 // ── CORS ──────────────────────────────────────────────────────────────────────
 const allowedOrigins = process.env.ALLOWED_ORIGINS

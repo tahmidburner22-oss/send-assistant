@@ -1222,24 +1222,25 @@ export default function Worksheets() {
               }).slice(0, 50); // limit to 50 results
 
               if (!q && examQSubject === "all" && examQBoard === "all" && examQTier === "all") {
-                // Show topic overview when no search
-                const topics = Array.from(new Set(allPastPaperQuestions.map(q => q.topic).filter(Boolean))).sort();
+                // Show topic overview when no search — pre-compute counts in a single pass
+                const topicCounts: Record<string, number> = {};
+                for (const q of allPastPaperQuestions) {
+                  if (q.topic) topicCounts[q.topic] = (topicCounts[q.topic] || 0) + 1;
+                }
+                const topics = Object.keys(topicCounts).sort();
                 return (
                   <div className="space-y-2">
                     <p className="text-xs text-gray-500 px-1">{topics.length} topics available — type a topic name above to search</p>
                     <div className="flex flex-wrap gap-2">
-                      {topics.map(topic => {
-                        const count = allPastPaperQuestions.filter(q => q.topic === topic).length;
-                        return (
+                      {topics.map(topic => (
                           <button
                             key={topic}
                             onClick={() => setExamQSearch(topic || '')}
                             className="px-3 py-1.5 text-xs rounded-full bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 transition-colors"
                           >
-                            {topic} <span className="text-blue-400">({count})</span>
+                            {topic} <span className="text-blue-400">({topicCounts[topic]})</span>
                           </button>
-                        );
-                      })}
+                        ))}
                     </div>
                   </div>
                 );
