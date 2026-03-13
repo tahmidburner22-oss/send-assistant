@@ -694,7 +694,7 @@ Return EXACTLY this JSON structure (raw JSON only, no markdown):
 
   // Scale token limit with worksheet length — longer worksheets need more tokens
   // In introOnly mode, we only need ~1500 tokens (just objectives, vocab, worked example)
-  const maxTokensForLength = params.introOnly ? 2000 : (lengthMins >= 60 ? 8000 : lengthMins <= 10 ? 3000 : 6000);
+  const maxTokensForLength = params.introOnly ? 2000 : (lengthMins >= 60 ? 6000 : lengthMins <= 10 ? 2500 : 5000);
   const { text, provider } = await callAI(system, user, maxTokensForLength);
   const cleaned = text
     .replace(/^```json\s*/i, "")
