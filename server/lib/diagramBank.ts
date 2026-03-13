@@ -609,7 +609,7 @@ const DIAGRAM_BANK: DiagramEntry[] = [
     keywords: ["flowchart", "algorithm", "flow chart", "decision", "process", "start", "end", "programming", "pseudocode", "computer science"],
   },
 
-  // ── ECONOMICS / BUSINESS ──────────────────────────────────────────────────
+  // ── ECONOMICS / BUSINESS ─────────────────────────────────────────────────────────────
   {
     key: "supply_demand",
     url: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/eb/Supply-demand-right-shift-demand.svg/960px-Supply-demand-right-shift-demand.svg.png",
@@ -617,8 +617,183 @@ const DIAGRAM_BANK: DiagramEntry[] = [
     attribution: "Wikimedia Commons (CC BY-SA 3.0)",
     keywords: ["supply and demand", "demand curve", "supply curve", "equilibrium", "price", "quantity", "market", "economics"],
   },
-];
 
+  // ── MATHEMATICS — Year 11 / GCSE ───────────────────────────────────────────────────
+  {
+    key: "quadratic_graph",
+    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f8/Polynomialdeg2.svg/640px-Polynomialdeg2.svg.png",
+    label: "Quadratic Function Graph (Parabola)",
+    attribution: "Wikimedia Commons (CC BY-SA 3.0)",
+    keywords: ["quadratic", "quadratic equation", "quadratic formula", "parabola", "quadratic graph", "completing the square", "roots", "vertex", "discriminant", "quadratic function"],
+  },
+  {
+    key: "trigonometry_right_triangle",
+    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Trigonometry_triangle.svg/640px-Trigonometry_triangle.svg.png",
+    label: "Trigonometry — Right-Angled Triangle (SOH CAH TOA)",
+    attribution: "Wikimedia Commons (CC BY-SA 3.0)",
+    keywords: ["trigonometry", "soh cah toa", "sine", "cosine", "tangent", "right angle triangle", "trig ratios", "sin cos tan", "adjacent", "opposite", "hypotenuse", "trig"],
+  },
+  {
+    key: "straight_line_graph",
+    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Linear_Function_Graph.svg/640px-Linear_Function_Graph.svg.png",
+    label: "Straight Line Graph (y = mx + c)",
+    attribution: "Wikimedia Commons (CC BY-SA 3.0)",
+    keywords: ["straight line", "linear graph", "y = mx + c", "gradient", "y-intercept", "slope", "linear equation", "coordinate geometry", "linear function"],
+  },
+  {
+    key: "circle_theorems",
+    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Circle_theorem_1.svg/640px-Circle_theorem_1.svg.png",
+    label: "Circle Theorems",
+    attribution: "Wikimedia Commons (CC BY-SA 3.0)",
+    keywords: ["circle theorems", "angle at centre", "angle in semicircle", "cyclic quadrilateral", "tangent", "chord", "arc", "inscribed angle", "circle geometry"],
+  },
+  {
+    key: "vectors_diagram",
+    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Vector_from_A_to_B.svg/640px-Vector_from_A_to_B.svg.png",
+    label: "Vectors — Direction and Magnitude",
+    attribution: "Wikimedia Commons (CC BY-SA 3.0)",
+    keywords: ["vectors", "vector addition", "vector subtraction", "magnitude", "direction", "column vector", "resultant vector", "vector diagram"],
+  },
+  {
+    key: "histogram_stats",
+    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Histogram_of_arrivals_per_minute.svg/640px-Histogram_of_arrivals_per_minute.svg.png",
+    label: "Histogram — Frequency Density",
+    attribution: "Wikimedia Commons (CC BY-SA 3.0)",
+    keywords: ["histogram", "frequency density", "class width", "grouped data", "frequency distribution", "statistics", "data representation"],
+  },
+  {
+    key: "probability_tree",
+    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/Probability_tree_diagram.svg/640px-Probability_tree_diagram.svg.png",
+    label: "Probability Tree Diagram",
+    attribution: "Wikimedia Commons (CC BY-SA 3.0)",
+    keywords: ["probability tree", "tree diagram", "conditional probability", "independent events", "dependent events", "probability", "combined probability"],
+  },
+  {
+    key: "transformation_geometry",
+    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/19/Rotation_illustration2.svg/640px-Rotation_illustration2.svg.png",
+    label: "Geometric Transformations",
+    attribution: "Wikimedia Commons (CC BY-SA 3.0)",
+    keywords: ["transformation", "rotation", "reflection", "translation", "enlargement", "scale factor", "centre of rotation", "congruence", "similarity", "transformations"],
+  },
+
+  // ── MATHEMATICS — Year 6 / KS2 ──────────────────────────────────────────────────────
+  {
+    key: "area_perimeter",
+    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/Perimeter_area.svg/640px-Perimeter_area.svg.png",
+    label: "Area and Perimeter of Shapes",
+    attribution: "Wikimedia Commons (CC BY-SA 3.0)",
+    keywords: ["area", "perimeter", "rectangle area", "square area", "triangle area", "area formula", "perimeter formula", "length width", "compound shapes"],
+  },
+  {
+    key: "coordinates_grid",
+    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Cartesian-coordinate-system.svg/640px-Cartesian-coordinate-system.svg.png",
+    label: "Coordinate Grid (x and y axes)",
+    attribution: "Wikimedia Commons (CC BY-SA 3.0)",
+    keywords: ["coordinates", "coordinate grid", "x axis", "y axis", "cartesian", "plotting points", "ordered pairs", "four quadrants", "grid"],
+  },
+  {
+    key: "fractions_decimals_percentages",
+    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b0/Fraction_circles.svg/640px-Fraction_circles.svg.png",
+    label: "Fractions, Decimals and Percentages",
+    attribution: "Wikimedia Commons (CC BY-SA 3.0)",
+    keywords: ["fractions", "decimals", "percentages", "equivalent fractions", "converting fractions", "fraction decimal percentage", "fdp", "mixed numbers", "improper fractions"],
+  },
+  {
+    key: "bar_chart_ks2",
+    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Simple_bar_chart.svg/640px-Simple_bar_chart.svg.png",
+    label: "Bar Chart",
+    attribution: "Wikimedia Commons (CC BY-SA 3.0)",
+    keywords: ["bar chart", "bar graph", "data handling", "tally chart", "pictogram", "frequency chart"],
+  },
+  {
+    key: "ratio_proportion_ks2",
+    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/Ratio_example.svg/640px-Ratio_example.svg.png",
+    label: "Ratio and Proportion",
+    attribution: "Wikimedia Commons (CC BY-SA 3.0)",
+    keywords: ["ratio", "proportion", "sharing in a ratio", "equivalent ratio", "simplifying ratio", "direct proportion", "unitary method"],
+  },
+
+  // ── SCIENCE — Year 11 / GCSE ─────────────────────────────────────────────────────────
+  {
+    key: "velocity_time_graph",
+    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e9/Velocity_time_graph.svg/640px-Velocity_time_graph.svg.png",
+    label: "Velocity-Time Graph",
+    attribution: "Wikimedia Commons (CC BY-SA 3.0)",
+    keywords: ["velocity time graph", "speed time graph", "acceleration", "deceleration", "distance", "area under graph", "motion graph", "kinematics"],
+  },
+  {
+    key: "nuclear_atom_gcse",
+    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Helium_atom_QM.svg/640px-Helium_atom_QM.svg.png",
+    label: "Nuclear Atom Structure",
+    attribution: "Wikimedia Commons (CC BY-SA 3.0)",
+    keywords: ["nuclear model", "atom structure", "proton", "neutron", "electron", "nucleus", "atomic number", "mass number", "isotopes", "bohr model", "nuclear atom"],
+  },
+  {
+    key: "hormone_endocrine",
+    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Endocrine_English.svg/640px-Endocrine_English.svg.png",
+    label: "Endocrine System — Hormones",
+    attribution: "Wikimedia Commons (CC BY-SA 3.0)",
+    keywords: ["hormones", "endocrine system", "glands", "pituitary", "thyroid", "adrenal", "pancreas", "insulin", "glucagon", "adrenaline", "oestrogen", "testosterone"],
+  },
+  {
+    key: "respiration_diagram",
+    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Cellular_respiration.svg/640px-Cellular_respiration.svg.png",
+    label: "Cellular Respiration",
+    attribution: "Wikimedia Commons (CC BY-SA 3.0)",
+    keywords: ["respiration", "cellular respiration", "aerobic respiration", "anaerobic respiration", "glucose", "atp", "mitochondria", "oxygen", "carbon dioxide", "lactic acid"],
+  },
+  {
+    key: "electromagnetic_induction_coil",
+    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0d/VFPt_Solenoid_correct2.svg/640px-VFPt_Solenoid_correct2.svg.png",
+    label: "Electromagnetic Induction — Solenoid",
+    attribution: "Wikimedia Commons (CC BY-SA 3.0)",
+    keywords: ["electromagnetic induction", "solenoid", "coil", "magnetic flux", "faraday", "lenz", "generator", "transformer", "induced emf", "induced current"],
+  },
+  {
+    key: "alpha_beta_gamma",
+    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e2/Alpha_Decay.svg/640px-Alpha_Decay.svg.png",
+    label: "Nuclear Decay — Alpha, Beta, Gamma",
+    attribution: "Wikimedia Commons (CC BY-SA 3.0)",
+    keywords: ["nuclear decay", "alpha decay", "beta decay", "gamma radiation", "radioactive decay", "half life", "nuclear equation", "radiation types", "ionising radiation"],
+  },
+
+  // ── SCIENCE — Year 6 / KS2 ────────────────────────────────────────────────────────────
+  {
+    key: "classification_living_things",
+    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Biological_classification_L_Pengo_vflip.svg/640px-Biological_classification_L_Pengo_vflip.svg.png",
+    label: "Classification of Living Things",
+    attribution: "Wikimedia Commons (CC BY-SA 3.0)",
+    keywords: ["classification", "living things", "vertebrates", "invertebrates", "mammals", "reptiles", "amphibians", "fish", "birds", "taxonomy", "kingdom", "species"],
+  },
+  {
+    key: "light_shadow_ks2",
+    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Reflection_angles.svg/640px-Reflection_angles.svg.png",
+    label: "Light — Reflection and Shadow (KS2)",
+    attribution: "Wikimedia Commons (CC BY-SA 3.0)",
+    keywords: ["light", "shadow", "reflection", "angle of incidence", "angle of reflection", "normal", "light rays", "transparent", "opaque", "translucent"],
+  },
+  {
+    key: "electricity_ks2",
+    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Series_circuit.svg/640px-Series_circuit.svg.png",
+    label: "Electricity — Simple Circuits (KS2)",
+    attribution: "Wikimedia Commons (CC BY-SA 3.0)",
+    keywords: ["electricity", "circuit", "battery", "bulb", "switch", "conductor", "insulator", "series circuit", "current", "voltage", "components", "ks2 electricity"],
+  },
+  {
+    key: "forces_ks2_gravity",
+    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Simple_gravity_pendulum.svg/640px-Simple_gravity_pendulum.svg.png",
+    label: "Forces — Gravity, Friction, Air Resistance (KS2)",
+    attribution: "Wikimedia Commons (CC BY-SA 3.0)",
+    keywords: ["forces ks2", "gravity ks2", "friction ks2", "air resistance", "push", "pull", "balanced forces", "unbalanced forces", "weight", "mass"],
+  },
+  {
+    key: "food_web_habitat",
+    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/FoodWeb.svg/640px-FoodWeb.svg.png",
+    label: "Food Web — Habitats and Ecosystems",
+    attribution: "Wikimedia Commons (CC BY-SA 3.0)",
+    keywords: ["food web", "habitat", "ecosystem", "producer", "consumer", "predator", "prey", "herbivore", "carnivore", "omnivore", "decomposer"],
+  },
+];
 // ── Lookup function: fuzzy keyword match ─────────────────────────────────────
 export function findDiagram(subject: string, topic: string): DiagramEntry | null {
   const subjectLower = subject.toLowerCase().trim();
