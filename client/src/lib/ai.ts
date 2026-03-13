@@ -561,12 +561,12 @@ Return EXACTLY this JSON structure (raw JSON only, no markdown):
     {
       "title": "Key Vocabulary",
       "type": "vocabulary",
-      "content": "TERM | DEFINITION\\n[IMPORTANT: Each line must be exactly: term | definition. Use ONLY terms directly related to '${params.topic}'. Use age-appropriate language for ${params.yearGroup}. Do NOT include generic terms unrelated to the topic. Do NOT use bullet points or numbering. Example for 'Fractions': Numerator | The top number in a fraction — shows how many parts are selected\\nDenominator | The bottom number in a fraction — shows how many equal parts in total\\nEquivalent fractions | Fractions that have the same value, e.g. 1/2 = 2/4]"
+      "content": "TERM | DEFINITION\\n[IMPORTANT: Each line must be exactly: term | definition. Use ONLY terms directly related to '${params.topic}'. Use age-appropriate language for ${params.yearGroup}. Do NOT include generic terms unrelated to the topic. Do NOT use bullet points or numbering.${isMaths ? ' IMPORTANT: Any mathematical expression in a definition MUST use LaTeX notation wrapped in \\\\(...\\\\) — e.g. Equivalent fractions | Fractions that have the same value, e.g. \\\\(\\\\dfrac{1}{2} = \\\\dfrac{2}{4}\\\\)' : ' Example for Fractions: Numerator | The top number in a fraction — shows how many parts are selected\\nDenominator | The bottom number in a fraction — shows how many equal parts in total\\nEquivalent fractions | Fractions that have the same value, e.g. 1/2 = 2/4'}]"
     },
     ${isMaths && !params.examStyle ? `{
       "title": "Key Formulas",
       "type": "example",
-      "content": "[FORMULA RULES: ONLY include this section if the topic '${params.topic}' genuinely requires a formula. If it does, list ONLY the formulas directly needed for this topic — no others. Format each formula clearly with its name and LaTeX notation. If no formula is needed for this topic, write 'No formula required for this topic.' and keep this section very brief.]"
+      "content": "[FORMULA RULES: ONLY include this section if the topic '${params.topic}' genuinely requires a formula. If it does, list ONLY the formulas directly needed for this topic — no others. Format each formula on its own line as: Formula Name: \\\\[formula in LaTeX display math\\\\] e.g. Area of a circle: \\\\[A = \\\\pi r^{2}\\\\] or Quadratic formula: \\\\[x = \\\\dfrac{-b \\\\pm \\\\sqrt{b^{2} - 4ac}}{2a}\\\\]. ALL formulas MUST use LaTeX notation — NEVER write plain text like 'a^2' or 'sqrt(x)'. If no formula is needed for this topic, write exactly: No formula required for this topic.]"
     },` : ''}
     {
       "title": "Worked Example",
