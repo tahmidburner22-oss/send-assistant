@@ -471,6 +471,32 @@ Always respond with valid JSON only — no markdown, no code blocks, just raw JS
   * Example: "Work out \\(\\dfrac{3}{4} + \\dfrac{1}{6}\\). Give your answer as a fraction in its simplest form."`
     : `MATH NOTATION: When any mathematical expression appears, use LaTeX notation wrapped in \\(...\\) for inline math.`;
 
+  // ── Word problems note ─────────────────────────────────────────────────────
+  const wordProblemsNote = !params.examStyle
+    ? `WORD PROBLEMS (MANDATORY for Section C):
+- Section C MUST contain 3–4 real-life word problems that apply the topic '${params.topic}' to everyday contexts.
+- Use relatable, age-appropriate scenarios for ${params.yearGroup}: money, time, distance, cooking, sport, shopping, etc.
+- Each word problem should require students to extract information, set up a calculation, and interpret the answer.
+- Word problems must increase in complexity: the first should be straightforward, the last should be multi-step.
+- NEVER use abstract or contrived scenarios — keep them realistic and engaging.
+- For SEND students, include a 'What do I need to find?' prompt line before each question.`
+    : "";
+
+  // ── SEND scaffolding note ─────────────────────────────────────────────────────
+  const sendScaffoldingNote = params.sendNeed && params.sendNeed !== "none" && params.sendNeed !== "general"
+    ? `SEND SCAFFOLDING RULES (MANDATORY — SEND need: ${params.sendNeed}):
+- Section A (Guided Practice) MUST use fill-in-the-blank format: provide partial working with blanks for students to complete.
+  Example: "Calculate 3/4 + 1/2. Step 1: LCD = ___. Step 2: 3/4 = ___/___. Step 3: Answer = ___"
+- Include a vocabulary box with key terms defined in simple language at the top of the worksheet.
+- Use chunked instructions: break every task into numbered micro-steps.
+- Reduce question density: maximum 8 questions per page.
+- Increase spacing between questions.
+- Use simple, direct language — avoid complex sentence structures.
+- Include visual supports: number lines, fraction bars, or diagrams where relevant.
+- Use repetition with small variations to reinforce understanding.
+- Provide sentence starters for any written response questions.`
+    : "";
+
   // ── Exam-style instruction ────────────────────────────────────────────────
   const examStyleNote = params.examStyle
     ? `EXAM-STYLE MODE (MANDATORY): Questions must be taken directly from the style of real UK exam papers (GCSE/A-Level/KS2 SATs as appropriate for the year group). Format EXACTLY like a real exam paper:
@@ -483,6 +509,20 @@ Always respond with valid JSON only — no markdown, no code blocks, just raw JS
 - The overall layout and question style must be indistinguishable from a real ${params.examBoard && params.examBoard !== "none" ? params.examBoard : "GCSE"} exam paper.`
     : "";
 
+  // ── Reminder box note ─────────────────────────────────────────────────────
+  const reminderBoxNote = !params.examStyle
+    ? `REMINDER BOX (MANDATORY):
+- Include a 'Reminder Box' section BEFORE the practice sections.
+- The Reminder Box must contain EXACTLY 3 short, numbered steps explaining the core method for '${params.topic}'.
+- Steps must be concise — maximum 15 words each.
+- Use simple, memorable language appropriate for ${params.yearGroup}.
+- This is the student's reference card during the worksheet — make it clear and scannable.
+- Example format for 'Adding Fractions':
+  Step 1: Find the Lowest Common Denominator (LCD)
+  Step 2: Convert both fractions to the same denominator
+  Step 3: Add the numerators — keep the denominator the same`
+    : "";
+
   // ── Formula rules (topic-specific only) ──────────────────────────────────
   const formulaNote = `FORMULA RULES (MANDATORY):
 - ONLY include formulas that are DIRECTLY required to answer the questions on this specific topic ("${params.topic}").
@@ -493,6 +533,16 @@ Always respond with valid JSON only — no markdown, no code blocks, just raw JS
 - If the topic is "Circle Theorems", include ONLY the relevant circle area/circumference formulas.
 - If the topic does NOT involve a formula, omit the formula section entirely.
 - NEVER include a formula box just to fill space — only include it if students genuinely need it to answer the questions.`;
+
+  // ── Common mistakes note ────────────────────────────────────────────────────
+  const commonMistakesNote = !params.examStyle
+    ? `COMMON MISTAKES SECTION (MANDATORY):
+- Include a 'Common Mistakes' section in the Teacher Notes.
+- List 3–4 specific, common errors students make with '${params.topic}' at ${params.yearGroup} level.
+- For each mistake, provide: (1) the incorrect approach, (2) why it's wrong, (3) the correct approach.
+- Also include 1–2 'misconception questions' in Section B or C — these show an incorrect answer and ask students to explain why it is wrong.
+- Example misconception question: "A student says 1/2 + 1/3 = 2/5. Explain what mistake they made and find the correct answer."`
+    : "";
 
   // ── Topic enforcement note ─────────────────────────────────────────────────
   const topicEnforcementNote = `
@@ -517,13 +567,17 @@ Topic: ${params.topic}
 Year Group: ${params.yearGroup} — ${phase}
 ${topicEnforcementNote}
 ${sendNote}
+${sendScaffoldingNote}
 ${examBoardNote}
 ${tierNote}
 ${lengthNote}
 ${mathsNote}
 ${examStyleNote}
 ${formulaNote}
-Additional instructions: ${params.additionalInstructions || "none"}
+${reminderBoxNote}
+${wordProblemsNote}
+${commonMistakesNote}
+Additional instructions: ${params.additionalInstructions || "none"}`;
 
 ━━━ YEAR GROUP CALIBRATION RULES (MANDATORY) ━━━
 Year group scaling is CRITICAL. The difficulty, language, and cognitive demand must match the year group EXACTLY:
@@ -574,19 +628,29 @@ Return EXACTLY this JSON structure (raw JSON only, no markdown):
       "content": "[${exampleGuide}${isMaths ? " — MUST be a fully worked numerical/algebraic calculation, step by step. No prose." : ""}]"
     }${params.introOnly ? '' : `,
     {
+      "title": "Reminder Box",
+      "type": "reminder-box",
+      "content": "[MANDATORY: Write EXACTLY 3 numbered steps explaining the core method for '${params.topic}'. Each step must be concise (max 15 words). These are the 3 key things students must remember during the worksheet.\nFormat exactly:\nStep 1: [first key step - max 15 words]\nStep 2: [second key step - max 15 words]\nStep 3: [third key step - max 15 words]]"
+    },
+    {
       "title": "Section A — Guided Practice",
       "type": "guided",
-      "content": "[Questions calibrated for ${params.yearGroup} — ${questionGuide}. Include Hint: lines for scaffolding.${isMaths ? " ALL questions must be number/calculation based." : ""}]"
+      "content": "[Questions calibrated for ${params.yearGroup} — ${questionGuide}. ${params.sendNeed && params.sendNeed !== 'none' && params.sendNeed !== 'none-selected' ? 'MANDATORY SEND FORMAT: Use fill-in-the-blank format with partial working shown. Example: Calculate 3/4 + 1/2. Step 1: LCD = ___. Step 2: 3/4 = ___/___. Step 3: Answer = ___' : 'Include scaffolding hints on a new line starting with Hint: after each question.'}${isMaths ? " ALL questions must be number/calculation based." : ""}]"
     },
     {
       "title": "Section B — Core Practice",
       "type": "independent",
-      "content": "[Questions at expected level for ${params.yearGroup} — ${questionGuide}. No hints.${isMaths ? " ALL questions must be number/calculation based. Include 2–3 problem-solving questions." : ""}]"
+      "content": "[Questions at expected level for ${params.yearGroup} — ${questionGuide}. No hints. Include at least 1 misconception question: show a student's incorrect working and ask students to identify and correct the mistake.${isMaths ? " ALL questions must be number/calculation based." : ""}]"
     },
     {
-      "title": "Section C — Stretch & Challenge",
+      "title": "Section C — Word Problems",
+      "type": "word-problems",
+      "content": "[MANDATORY: Write 3–4 real-life word problems applying '${params.topic}' to everyday contexts for ${params.yearGroup}. Use relatable scenarios: money, time, sport, cooking, shopping, travel. Each problem: (1) sets a real-world scene, (2) requires applying the topic, (3) asks for interpretation of the answer. Problems increase in difficulty. Last problem must be multi-step.${isMaths ? ' Keep questions number-focused.' : ''}]"
+    },
+    {
+      "title": "Challenge Question",
       "type": "challenge",
-      "content": "[${challengeGuide}${isMaths ? " Must be a multi-step numerical or algebraic problem." : ""}]"
+      "content": "[${challengeGuide}${isMaths ? " One reasoning problem requiring multi-step working. Include a 'Show your working' instruction." : ""}]"
     },
     {
       "title": "How Did I Do?",
@@ -594,16 +658,16 @@ Return EXACTLY this JSON structure (raw JSON only, no markdown):
       "content": "[Write 3–4 self-reflection statements for students to rate themselves. Each statement should start with 'I can' and be directly about the topic '${params.topic}'. Calibrate the language for ${params.yearGroup}. Format: one statement per line, starting with 'I can'. Example for 'Fractions' Year 5: I can identify the numerator and denominator in a fraction\\nI can find equivalent fractions\\nI can add two fractions with the same denominator\\nI can compare fractions and say which is larger. Also include one open question at the end on a new line starting with 'Q:' — e.g. 'Q: What did you find most tricky about this topic? Write one sentence.']"
     },
     {
-      "title": "Mark Scheme",
+      "title": "Mark Scheme & Common Mistakes",
       "type": "mark-scheme",
       "teacherOnly": true,
-      "content": "[Full mark scheme with method marks, common errors, and total marks]"
+      "content": "[Full mark scheme with method marks and total marks. THEN add a COMMON MISTAKES section: list 3–4 specific errors students make with '${params.topic}' at ${params.yearGroup} level. For each mistake: (1) the incorrect approach students use, (2) why it is wrong, (3) the correct approach. Also include estimated completion time.]"
     },
     {
       "title": "Teacher Notes",
       "type": "teacher-notes",
       "teacherOnly": true,
-      "content": "[Lesson structure, common misconceptions for ${params.yearGroup}, intervention prompts, extension ideas]"
+      "content": "[Lesson structure with suggested timings for each section. Common misconceptions for ${params.yearGroup}. Intervention prompts for struggling students. Extension ideas for early finishers. Suggested next topic in the curriculum progression (what students should learn after this).]"
     }`}
   ],
   "metadata": {
