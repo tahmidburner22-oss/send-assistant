@@ -569,11 +569,14 @@ export function getVerifiedDiagramSection(subject: string, topic: string): {
   const diagram = findVerifiedDiagram(subject, topic);
   if (!diagram) return null;
 
+  // Route through server-side proxy to avoid CORS/rate-limiting from Wikimedia
+  const proxyUrl = `/api/diagram-proxy?url=${encodeURIComponent(diagram.imageUrl)}`;
+
   return {
     title: `Diagram: ${topic}`,
     content: diagram.caption,
     type: "diagram",
-    imageUrl: diagram.imageUrl,
+    imageUrl: proxyUrl,
     caption: diagram.caption,
     attribution: diagram.attribution,
   };
