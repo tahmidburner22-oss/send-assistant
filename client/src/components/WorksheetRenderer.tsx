@@ -19,6 +19,13 @@ export function renderMath(text: string): string {
   // If the content already contains pre-rendered KaTeX HTML, return it as-is
   // This prevents double-processing of content that was already rendered
   if (text.includes('class="katex"') || text.includes("class='katex'")) return text;
+  
+  // Also check for HTML-escaped KaTeX (from double-processing)
+  // If we see &lt;span class=&quot;katex&quot;, it means the HTML was already escaped
+  if (text.includes('&lt;span class=&quot;katex&quot;') || text.includes('&lt;span class=\'katex\'')) {
+    // This is already escaped KaTeX HTML - return as-is
+    return text;
+  }
   let result = text;
 
   // ── Step 0a: Convert plain-English math phrases to LaTeX ──────────────────────
@@ -955,7 +962,10 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(({
                 <WordBankSection content={content} fmt={fmt} />
               ) : section.type === "sentence-starters" ? (
                 <SentenceStartersSection content={content} fmt={fmt} />
-              ) : content && content.includes('class="katex"') ? (
+              ) : section.type === "questions" ? (
+                // Questions sections always go through formatContent to properly render math
+                <div>{formatContent(content, fmt)}</div>
+              ) : content && (content.includes('class="katex"') || content.includes('&lt;span class=&quot;katex&quot;')) ? (
                 <div style={{ fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, lineHeight: fmt.lineHeight }} dangerouslySetInnerHTML={{ __html: content }} />
               ) : (
                 <div>{formatContent(content, fmt)}</div>
