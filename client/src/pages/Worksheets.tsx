@@ -138,13 +138,16 @@ export default function Worksheets() {
   // Re-fetch data from server on mount so history count is always current
   useEffect(() => { refreshData(); }, []);
 
-  // Parse URL params for subject pre-selection (wouter doesn't include query string in useLocation)
-  const preSelectedSubject = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("subject") || "" : "";
+  // Parse URL params for pre-filling from Curriculum Progression or external links
+  const _urlParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : new URLSearchParams();
+  const preSelectedSubject = _urlParams.get("subject") || "";
+  const preSelectedTopic = _urlParams.get("topic") || "";
+  const preSelectedDescription = _urlParams.get("description") || "";
 
   const [activeTab, setActiveTab] = useState("generate");
   const [subject, setSubject] = useState(() => preSelectedSubject);
   const [yearGroup, setYearGroup] = useState("");
-  const [topic, setTopic] = useState("");
+  const [topic, setTopic] = useState(() => preSelectedTopic);
   const [sendNeed, setSendNeed] = useState("");
   const [difficulty, setDifficulty] = useState("mixed");
   const [worksheetLength, setWorksheetLength] = useState("30");
@@ -161,7 +164,9 @@ export default function Worksheets() {
       setDifficulty(prev => validIds.includes(prev) ? prev : (validIds.includes("mixed") ? "mixed" : validIds[0]));
     }
   }, [subject]);
-  const [additionalInstructions, setAdditionalInstructions] = useState("");
+  const [additionalInstructions, setAdditionalInstructions] = useState(() => preSelectedDescription);
+  // Pre-fill additional instructions from URL description param (from Curriculum Progression)
+  useEffect(() => { if (preSelectedDescription) setAdditionalInstructions(preSelectedDescription); }, []);
   // Syllabus-based topic suggestions
   const [showTopicSuggestions, setShowTopicSuggestions] = useState(false);
   const syllabusTopics = useMemo(() => {
@@ -263,10 +268,11 @@ export default function Worksheets() {
     }
   });
 
-  // Set subject from URL param on mount
+  // Set subject and topic from URL params on mount (used by Curriculum Progression one-click generate)
   useEffect(() => {
     if (preSelectedSubject) setSubject(preSelectedSubject);
-  }, [preSelectedSubject]);
+    if (preSelectedTopic) setTopic(preSelectedTopic);
+  }, []);
 
   const overlayBg = colorOverlays.find(o => o.id === colorOverlay)?.color || "#ffffff";
 
