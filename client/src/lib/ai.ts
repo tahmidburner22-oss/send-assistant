@@ -722,6 +722,34 @@ Return EXACTLY this JSON structure (raw JSON only, no markdown):
   }
   const result: AIWorksheetResult = { ...json, isAI: true, provider };
 
+  // ── Topic enforcement post-processing ────────────────────────────────────────
+  // If the AI generated the wrong topic title, override it with the correct one.
+  const requestedTopic = params.topic.toLowerCase().trim();
+  const generatedTitle = (result.title || '').toLowerCase().trim();
+  if (!generatedTitle.includes(requestedTopic)) {
+    result.title = `${params.topic} — ${params.yearGroup} ${subjectDisplay} Worksheet`;
+    console.warn(`[Adaptly AI] Topic mismatch: requested "${params.topic}", got title "${result.title}". Title overridden.`);
+  }
+
+  // ── Subject capitalisation in metadata and subtitle ────────────────────────────
+  // Ensure the metadata subject field uses the properly capitalised display name
+  if (result.metadata) {
+    (result.metadata as any).subject = subjectDisplay;
+  }
+  // Fix subtitle capitalisation — replace lowercase subject name with capitalised version
+  if (result.subtitle && params.subject) {
+    const lowerSubject = params.subject.toLowerCase();
+    // Replace all occurrences of the lowercase subject in the subtitle with the capitalised version
+    result.subtitle = result.subtitle.replace(new RegExp(lowerSubject, 'gi'), subjectDisplay);
+  }
+  // Fix SEND badge — if sendNeed is 'none' or 'none-selected', hide it
+  if (result.metadata) {
+    const sn = (result.metadata as any).sendNeed;
+    if (!sn || sn === 'none' || sn === 'none-selected' || sn === 'Standard') {
+      (result.metadata as any).sendNeed = null;
+    }
+  }
+
   // Normalise metadata.adaptations — AI sometimes returns a string instead of an array
   if (result.metadata) {
     const raw = (result.metadata as any).adaptations;

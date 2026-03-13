@@ -1131,7 +1131,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(({
                 {worksheet.metadata.subject ? worksheet.metadata.subject.charAt(0).toUpperCase() + worksheet.metadata.subject.slice(1) : ""}
               </span>
             )}
-            {worksheet.metadata.examBoard && worksheet.metadata.examBoard !== "General" && (
+            {worksheet.metadata.examBoard && worksheet.metadata.examBoard !== "General" && worksheet.metadata.examBoard !== "none" && worksheet.metadata.examBoard !== "No Exam Board" && (
               <span style={{ background: "rgba(255,255,255,0.2)", color: "white", padding: "2px 8px", borderRadius: "12px", fontSize: "11px", fontWeight: 600, fontFamily: fmt.fontFamily }}>
                 {worksheet.metadata.examBoard}
               </span>
