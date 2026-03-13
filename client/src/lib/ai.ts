@@ -507,8 +507,9 @@ Follow this structure:
 7. Section C - Word Problems (3-4 real-life questions)
 8. Challenge Question (one reasoning problem)
 9. Reflection (3-4 "I can" statements + open question)
-10. Answer Key + Common Mistakes (teacher only)
-11. Teacher Notes (teacher only)
+10. Common Mistakes (student-facing)
+11. Answer Key (teacher only)
+12. Teacher Notes (teacher only)
 
 Return EXACTLY this JSON (raw JSON, no markdown):
 {
@@ -525,7 +526,8 @@ Return EXACTLY this JSON (raw JSON, no markdown):
     {"title": "Section C — Word Problems", "type": "word-problems", "content": "[3-4 real-life word problems]"},
     {"title": "Challenge Question", "type": "challenge", "content": "[${challengeGuide}]"},
     {"title": "How Did I Do?", "type": "self-reflection", "teacherOnly": false, "content": "[3-4 I can statements + Q: open question]"},
-    {"title": "Mark Scheme & Common Mistakes", "type": "mark-scheme", "teacherOnly": true, "content": "[answers + 3-4 common mistakes]"},
+    {"title": "Common Mistakes to Avoid", "type": "common-mistakes", "teacherOnly": false, "content": "[3-4 common mistakes students make on this topic, with brief explanations]"},
+    {"title": "Mark Scheme", "type": "mark-scheme", "teacherOnly": true, "content": "[answers only]"},
     {"title": "Teacher Notes", "type": "teacher-notes", "teacherOnly": true, "content": "[timings, misconceptions, interventions, next topic]"}`}
   ],
   "metadata": {
