@@ -631,35 +631,9 @@ router.post("/diagram", requireAuth, async (req: Request, res: Response) => {
   const schoolId = req.user?.schoolId ?? undefined;
   const yr = yearGroup || "Year 9";
 
-  // ── Attempt 0: Curated Wikimedia diagram bank (real, professional images) ────
-  // Primary source — real educational diagrams with proper attribution.
-  try {
-    const banked = findDiagram(subject, topic);
-    if (banked) {
-      console.log(`[Diagram] Bank hit: ${banked.key} for "${topic}" (${subject})`);
-      return res.json({
-        imageUrl: banked.url,
-        caption: banked.label,
-        attribution: banked.attribution,
-        provider: "wikimedia-bank",
-        type: "imageUrl",
-      });
-    }
-    // Not in curated bank — try live Wikimedia Commons search
-    const searched = await searchWikimediaDiagram(subject, topic);
-    if (searched) {
-      console.log(`[Diagram] Wikimedia search hit for "${topic}" (${subject})`);
-      return res.json({
-        imageUrl: searched.url,
-        caption: searched.caption,
-        attribution: searched.attribution,
-        provider: "wikimedia-search",
-        type: "imageUrl",
-      });
-    }
-  } catch (e) {
-    console.warn("[Diagram] Wikimedia bank/search failed:", e);
-  }
+  // ── Attempt 0: Wikimedia DISABLED — Railway server IP is rate-limited (HTTP 429) ────
+  // Wikimedia Commons blocks cloud server IPs. Skip directly to AI SVG generation.
+  console.log(`[Diagram] Generating SVG for "${topic}" (${subject})`);
 
   // ── Attempt 1: Gemini 2.0 Flash SVG (fallback when no real image found) ──────
   const { system, user } = buildDiagramPrompt(subject, topic, yr, sendNeed);
