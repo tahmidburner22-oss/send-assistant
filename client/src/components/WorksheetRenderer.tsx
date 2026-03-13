@@ -192,45 +192,78 @@ export function renderMath(text: string): string {
   // ── Step 0c: Handle bare LaTeX commands (no delimiters) ─────────────────────
   // The AI often generates \frac{1}{2}, \times, \pi, \sqrt{x} without $...$ wrappers.
   // We process these AFTER delimiter handling to avoid double-processing.
+  // IMPORTANT: These handlers must only run on PLAIN TEXT segments, not on KaTeX HTML
+  // that was already produced by Step 0c-pre. We use a nesting-aware tokeniser to
+  // split the string into KaTeX HTML blocks and plain text, then only process plain text.
+  {
+    // Helper: apply a function only to plain-text segments (not KaTeX HTML)
+    const applyToPlainText = (s: string, fn: (plain: string) => string): string => {
+      if (!s.includes('<span class="katex"') && !s.includes("<span class='katex'")) {
+        return fn(s); // No KaTeX HTML — apply directly
+      }
+      const segs: { text: string; isHtml: boolean }[] = [];
+      let p = 0;
+      while (p < s.length) {
+        if (s[p] === '<') {
+          const isK = s.startsWith('<span class="katex"', p) || s.startsWith("<span class='katex'", p);
+          if (isK) {
+            let depth = 0, i = p, end = -1;
+            while (i < s.length) {
+              if (s.startsWith('<span', i)) { depth++; const gt = s.indexOf('>', i); i = gt !== -1 ? gt + 1 : i + 5; }
+              else if (s.startsWith('</span>', i)) { depth--; if (depth === 0) { end = i + 7; break; } i += 7; }
+              else { i++; }
+            }
+            if (end !== -1) { segs.push({ text: s.substring(p, end), isHtml: true }); p = end; continue; }
+          }
+          const gt = s.indexOf('>', p); const tagEnd = gt !== -1 ? gt + 1 : p + 1;
+          segs.push({ text: s.substring(p, tagEnd), isHtml: true }); p = tagEnd;
+        } else {
+          const next = s.indexOf('<', p); const end = next !== -1 ? next : s.length;
+          segs.push({ text: s.substring(p, end), isHtml: false }); p = end;
+        }
+      }
+      return segs.map(({ text, isHtml }) => isHtml ? text : fn(text)).join('');
+    };
 
-  // Fix truncated LaTeX commands caused by JSON backslash stripping:
-  // e.g. \rac{1}{2} → \frac{1}{2}, \imes → \times, \ext{...} → text, \qrt → \sqrt
-  result = result.replace(/\brac\{([^{}]*)\}\{([^{}]*)\}/g, (_, num, den) => {
-    try { return katex.renderToString(`\\dfrac{${num}}{${den}}`, { displayMode: false, throwOnError: false }); }
-    catch { return `${num}/${den}`; }
-  });
-  result = result.replace(/\bimes\b/g, '×');
-  result = result.replace(/\bext\{([^{}]*)\}/g, '$1');
-  result = result.replace(/\bqrt\{([^{}]*)\}/g, (_, expr) => {
-    try { return katex.renderToString(`\\sqrt{${expr}}`, { displayMode: false, throwOnError: false }); }
-    catch { return `√${expr}`; }
-  });
+    // Fix truncated LaTeX commands caused by JSON backslash stripping:
+    // e.g. \rac{1}{2} → \frac{1}{2}, \imes → \times, \ext{...} → text, \qrt → \sqrt
+    result = applyToPlainText(result, s => s.replace(/\brac\{([^{}]*)\}\{([^{}]*)\}/g, (_, num, den) => {
+      try { return katex.renderToString(`\\dfrac{${num}}{${den}}`, { displayMode: false, throwOnError: false }); }
+      catch { return `${num}/${den}`; }
+    }));
+    result = applyToPlainText(result, s => s.replace(/\bimes\b/g, '×'));
+    result = applyToPlainText(result, s => s.replace(/\bext\{([^{}]*)\}/g, '$1'));
+    result = applyToPlainText(result, s => s.replace(/\bqrt\{([^{}]*)\}/g, (_, expr) => {
+      try { return katex.renderToString(`\\sqrt{${expr}}`, { displayMode: false, throwOnError: false }); }
+      catch { return `√${expr}`; }
+    }));
 
-  // \frac{num}{den} → KaTeX fraction
-  result = result.replace(/\\frac\{([^{}]*)\}\{([^{}]*)\}/g, (_, num, den) => {
-    try { return katex.renderToString(`\\dfrac{${num}}{${den}}`, { displayMode: false, throwOnError: false }); }
-    catch { return `${num}/${den}`; }
-  });
-  // \dfrac{num}{den} → KaTeX fraction
-  result = result.replace(/\\dfrac\{([^{}]*)\}\{([^{}]*)\}/g, (_, num, den) => {
-    try { return katex.renderToString(`\\dfrac{${num}}{${den}}`, { displayMode: false, throwOnError: false }); }
-    catch { return `${num}/${den}`; }
-  });
-  // \sqrt{expr} → KaTeX square root
-  result = result.replace(/\\sqrt\{([^{}]*)\}/g, (_, expr) => {
-    try { return katex.renderToString(`\\sqrt{${expr}}`, { displayMode: false, throwOnError: false }); }
-    catch { return `√${expr}`; }
-  });
-  // \sqrt[n]{expr} → KaTeX nth root
-  result = result.replace(/\\sqrt\[([^\]]+)\]\{([^{}]*)\}/g, (_, n, expr) => {
-    try { return katex.renderToString(`\\sqrt[${n}]{${expr}}`, { displayMode: false, throwOnError: false }); }
-    catch { return `${n}√${expr}`; }
-  });
-  // \sqrt followed by a single character or number (no braces)
-  result = result.replace(/\\sqrt\s+([A-Za-z0-9]+)/g, (_, n) => {
-    try { return katex.renderToString(`\\sqrt{${n}}`, { displayMode: false, throwOnError: false }); }
-    catch { return `√${n}`; }
-  });
+    // \frac{num}{den} → KaTeX fraction
+    result = applyToPlainText(result, s => s.replace(/\\frac\{([^{}]*)\}\{([^{}]*)\}/g, (_, num, den) => {
+      try { return katex.renderToString(`\\dfrac{${num}}{${den}}`, { displayMode: false, throwOnError: false }); }
+      catch { return `${num}/${den}`; }
+    }));
+    // \dfrac{num}{den} → KaTeX fraction
+    result = applyToPlainText(result, s => s.replace(/\\dfrac\{([^{}]*)\}\{([^{}]*)\}/g, (_, num, den) => {
+      try { return katex.renderToString(`\\dfrac{${num}}{${den}}`, { displayMode: false, throwOnError: false }); }
+      catch { return `${num}/${den}`; }
+    }));
+    // \sqrt{expr} → KaTeX square root
+    result = applyToPlainText(result, s => s.replace(/\\sqrt\{([^{}]*)\}/g, (_, expr) => {
+      try { return katex.renderToString(`\\sqrt{${expr}}`, { displayMode: false, throwOnError: false }); }
+      catch { return `√${expr}`; }
+    }));
+    // \sqrt[n]{expr} → KaTeX nth root
+    result = applyToPlainText(result, s => s.replace(/\\sqrt\[([^\]]+)\]\{([^{}]*)\}/g, (_, n, expr) => {
+      try { return katex.renderToString(`\\sqrt[${n}]{${expr}}`, { displayMode: false, throwOnError: false }); }
+      catch { return `${n}√${expr}`; }
+    }));
+    // \sqrt followed by a single character or number (no braces)
+    result = applyToPlainText(result, s => s.replace(/\\sqrt\s+([A-Za-z0-9]+)/g, (_, n) => {
+      try { return katex.renderToString(`\\sqrt{${n}}`, { displayMode: false, throwOnError: false }); }
+      catch { return `√${n}`; }
+    }));
+  }
   // Bare LaTeX symbol commands → Unicode/HTML
   result = result.replace(/\\times\b/g, '×');
   result = result.replace(/\\cdot\b/g, '·');
