@@ -14,13 +14,183 @@ import { useApp, type Child, type Assignment, type Submission, type TimetableLes
 import { yearGroups, sendNeeds, subjects } from "@/lib/send-data";
 import { useScheduler } from "@/hooks/useScheduler";
 import { TOPIC_BANK } from "@/lib/topic-bank";
+import { CURRICULUM_PROGRESSIONS, getProgressionsForSubject, getRecommendedStep, type TopicProgression } from "@/lib/curriculum-progression";
 import { frequencyLabel } from "@/lib/scheduler";
 import {
   Plus, UserPlus, Copy, Trash2, Edit3, FileText, BookOpen,
   CheckCircle, Clock, AlertCircle, MessageSquare, TrendingUp,
   ChevronLeft, Shield, Star, Send, Calendar, X, Zap, BrainCircuit,
-  PlayCircle, PauseCircle, RotateCcw, Settings2, Upload, RefreshCw, Database
+  PlayCircle, PauseCircle, RotateCcw, Settings2, Upload, RefreshCw, Database,
+  ChevronRight, Layers, Lock
 } from "lucide-react";
+
+// ─── Curriculum Progression Tab Component ───────────────────────────────────
+function ProgressionTab({ child }: { child: import("@/contexts/AppContext").Child }) {
+  const [selectedSubject, setSelectedSubject] = useState("mathematics");
+  const [selectedProgression, setSelectedProgression] = useState<TopicProgression | null>(null);
+  const [currentStepIndex, setCurrentStepIndex] = useState(0);
+  const progressions = getProgressionsForSubject(selectedSubject);
+
+  const lastAssignment = child.assignments.filter(a => a.status !== 'not-started').slice(-1)[0] || null;
+  const lastProgress = lastAssignment?.progress ?? 0;
+
+  return (
+    <div className="space-y-3">
+      {/* Header */}
+      <div className="flex items-start gap-2 p-3 rounded-xl bg-purple-50 border border-purple-200">
+        <Layers className="h-4 w-4 text-purple-600 mt-0.5 shrink-0" />
+        <div>
+          <p className="text-xs font-semibold text-purple-800">Curriculum Progression Model</p>
+          <p className="text-xs text-purple-600 mt-0.5">Structured skill ladders that build step by step. The system recommends the next worksheet based on {child.name}'s performance.</p>
+        </div>
+      </div>
+
+      {/* Subject selector */}
+      <div className="space-y-1.5">
+        <Label className="text-xs font-medium">Subject</Label>
+        <Select value={selectedSubject} onValueChange={v => { setSelectedSubject(v); setSelectedProgression(null); setCurrentStepIndex(0); }}>
+          <SelectTrigger className="h-9 text-xs"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            {subjects.map(s => <SelectItem key={s.id} value={s.id} className="text-xs">{s.name}</SelectItem>)}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Topic list or skill ladder */}
+      {!selectedProgression ? (
+        <div className="space-y-1.5">
+          <Label className="text-xs font-medium">Choose a Topic Skill Ladder</Label>
+          {progressions.length === 0 ? (
+            <p className="text-xs text-muted-foreground text-center py-4">No skill ladders available for this subject yet.</p>
+          ) : (
+            <div className="space-y-1.5">
+              {progressions.map(p => (
+                <button
+                  key={p.topicId}
+                  onClick={() => { setSelectedProgression(p); setCurrentStepIndex(0); }}
+                  className="w-full flex items-center justify-between p-2.5 rounded-lg border border-border/60 hover:border-purple-300 hover:bg-purple-50/50 transition-all text-left"
+                >
+                  <div>
+                    <p className="text-xs font-medium">{p.topicName}</p>
+                    <p className="text-[10px] text-muted-foreground">{p.steps.length} skill steps</p>
+                  </div>
+                  <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {/* Back + title */}
+          <div className="flex items-center gap-2">
+            <button onClick={() => setSelectedProgression(null)} className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1">
+              <ChevronLeft className="h-3.5 w-3.5" />Back
+            </button>
+            <p className="text-xs font-semibold">{selectedProgression.topicName}</p>
+          </div>
+
+          {/* Step selector */}
+          <div className="space-y-1.5">
+            <Label className="text-xs font-medium">Current Step</Label>
+            <Select value={String(currentStepIndex)} onValueChange={v => setCurrentStepIndex(Number(v))}>
+              <SelectTrigger className="h-9 text-xs"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {selectedProgression.steps.map((s, i) => (
+                  <SelectItem key={s.id} value={String(i)} className="text-xs">Step {i + 1}: {s.title}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Skill ladder visual */}
+          <div className="space-y-1.5">
+            {selectedProgression.steps.map((step, i) => {
+              const isCompleted = i < currentStepIndex;
+              const isCurrent = i === currentStepIndex;
+              const isLocked = i > currentStepIndex;
+              return (
+                <div key={step.id} className={`flex items-start gap-2.5 p-2.5 rounded-lg border transition-all ${
+                  isCompleted ? 'bg-green-50 border-green-200' :
+                  isCurrent ? 'bg-purple-50 border-purple-300 border-2' :
+                  'bg-muted/30 border-border/40'
+                }`}>
+                  <div className={`h-6 w-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                    isCompleted ? 'bg-green-500' : isCurrent ? 'bg-purple-600' : 'bg-muted-foreground/20'
+                  }`}>
+                    {isCompleted ? <CheckCircle className="h-3.5 w-3.5 text-white" /> :
+                     isLocked ? <Lock className="h-3 w-3 text-muted-foreground" /> :
+                     <span className="text-[10px] text-white font-bold">{i + 1}</span>}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className={`text-xs font-medium ${
+                      isCompleted ? 'text-green-800' : isCurrent ? 'text-purple-800' : 'text-muted-foreground'
+                    }`}>
+                      {isCurrent && <span className="text-[9px] bg-purple-600 text-white rounded px-1 mr-1">CURRENT</span>}
+                      {isCompleted && <span className="text-[9px] bg-green-500 text-white rounded px-1 mr-1">DONE</span>}
+                      {step.title}
+                    </p>
+                    {(isCurrent || isCompleted) && <p className="text-[10px] text-muted-foreground mt-0.5">{step.description}</p>}
+                    {isCurrent && step.keyVocabulary.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {step.keyVocabulary.map(v => (
+                          <span key={v} className="text-[9px] bg-purple-100 text-purple-700 rounded px-1.5 py-0.5">{v}</span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Recommendation */}
+          {lastAssignment && lastAssignment.status !== 'not-started' && (() => {
+            const rec = getRecommendedStep(selectedProgression, currentStepIndex, lastProgress);
+            return (
+              <div className={`flex items-start gap-2 p-2.5 rounded-lg ${
+                rec.shouldAdvance ? 'bg-green-50 border border-green-200' : 'bg-amber-50 border border-amber-200'
+              }`}>
+                {rec.shouldAdvance
+                  ? <CheckCircle className="h-3.5 w-3.5 text-green-600 mt-0.5 shrink-0" />
+                  : <AlertCircle className="h-3.5 w-3.5 text-amber-600 mt-0.5 shrink-0" />}
+                <div className="flex-1 min-w-0">
+                  <p className={`text-[10px] font-semibold ${
+                    rec.shouldAdvance ? 'text-green-800' : 'text-amber-800'
+                  }`}>{rec.reason}</p>
+                  <p className={`text-[10px] mt-0.5 ${
+                    rec.shouldAdvance ? 'text-green-700' : 'text-amber-700'
+                  }`}>Recommended: <strong>{rec.step.title}</strong></p>
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* Generate worksheet button */}
+          {currentStepIndex < selectedProgression.steps.length - 1 ? (
+            <Button
+              size="sm"
+              className="w-full h-9 bg-purple-600 hover:bg-purple-700 text-white text-xs"
+              onClick={() => {
+                const step = selectedProgression.steps[currentStepIndex];
+                const url = `/worksheets?subject=${selectedSubject}&topic=${encodeURIComponent(step.title)}&description=${encodeURIComponent(step.description)}&pupil=${child.id}`;
+                window.location.href = url;
+              }}
+            >
+              <PlayCircle className="h-3.5 w-3.5 mr-1.5" />
+              Generate Worksheet — Step {currentStepIndex + 1}: {selectedProgression.steps[currentStepIndex].title}
+            </Button>
+          ) : (
+            <div className="flex items-center gap-2 p-2.5 rounded-lg bg-green-50 border border-green-200">
+              <CheckCircle className="h-3.5 w-3.5 text-green-600 shrink-0" />
+              <p className="text-xs text-green-800 font-medium">All steps completed! 🎉</p>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
 function getAuthHeader(): Record<string, string> {
   const token = localStorage.getItem("send_token");
@@ -693,9 +863,10 @@ If the submission is empty or too short to mark, return mark: "N/A", feedback: "
               </div>
 
               <Tabs defaultValue="assignments">
-                <TabsList className="w-full grid grid-cols-3 h-9">
+                <TabsList className="w-full grid grid-cols-4 h-9">
                   <TabsTrigger value="assignments" className="text-xs">Assignments ({selectedChild.assignments.length})</TabsTrigger>
                   <TabsTrigger value="submissions" className="text-xs">Submissions ({selectedChild.submissions.length})</TabsTrigger>
+                  <TabsTrigger value="progression" className="text-xs"><Layers className="h-3 w-3 mr-1" />Progression</TabsTrigger>
                   <TabsTrigger value="scheduler" className="text-xs"><Zap className="h-3 w-3 mr-1" />Scheduler</TabsTrigger>
                 </TabsList>
 
@@ -764,6 +935,11 @@ If the submission is empty or too short to mark, return mark: "N/A", feedback: "
                       <p className="text-[10px] text-brand mt-1.5">Click to review & give feedback →</p>
                     </div>
                   ))}
+                </TabsContent>
+
+                {/* ── Curriculum Progression Tab ── */}
+                <TabsContent value="progression" className="mt-3 space-y-3">
+                  <ProgressionTab child={selectedChild} />
                 </TabsContent>
 
                 {/* ── AI Auto-Assignment Scheduler Tab ── */}
