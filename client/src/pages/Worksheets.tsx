@@ -241,6 +241,10 @@ export default function Worksheets() {
   const [historyAiLoading, setHistoryAiLoading] = useState(false);
   const [historyViewMode, setHistoryViewMode] = useState<"teacher" | "student">("teacher");
   const [showPrintDialog, setShowPrintDialog] = useState(false);
+  // One-click differentiation
+  const [showDiffDialog, setShowDiffDialog] = useState(false);
+  const [diffLoading, setDiffLoading] = useState<string | null>(null);
+  const [diffVersions, setDiffVersions] = useState<Record<string, AIWorksheet>>({});
 
   const worksheetRef = useRef<HTMLDivElement>(null);
   const uploadWorksheetRef = useRef<HTMLDivElement>(null);
@@ -623,6 +627,40 @@ export default function Worksheets() {
   };
 
   const getSectionContent = (i: number, original: string) => editedSections[i] !== undefined ? editedSections[i] : original;
+
+  // ─── One-click differentiation ────────────────────────────────────────────
+  const handleDifferentiate = async (tier: string) => {
+    if (!generated) return;
+    setDiffLoading(tier);
+    try {
+      const ws = generated as AIWorksheet;
+      const tierMap: Record<string, string> = {
+        foundation: "foundation",
+        higher: "higher",
+        send: ws.metadata?.sendNeed || "dyslexia",
+      };
+      const tierDifficulty = tier === "send" ? (difficulty || "mixed") : tier;
+      const tierSendNeed = tier === "send" ? (sendNeed && sendNeed !== "none-selected" ? sendNeed : "dyslexia") : undefined;
+      const result = await aiGenerateWorksheet({
+        subject: ws.metadata?.subject || subject,
+        topic: ws.metadata?.topic || topic,
+        yearGroup: ws.metadata?.yearGroup || yearGroup,
+        difficulty: tierDifficulty,
+        sendNeed: tierSendNeed,
+        examBoard: ws.metadata?.examBoard !== "General" ? ws.metadata?.examBoard : undefined,
+        includeAnswers,
+        worksheetLength,
+        additionalInstructions: tier === "foundation" ? "Make this accessible for lower-attaining students. Use simpler language, more scaffolding, and fewer questions." :
+          tier === "higher" ? "Make this challenging for higher-attaining students. Include multi-step problems, reasoning questions, and extension tasks." :
+          "Apply full SEND scaffolding: fill-in-the-blank guided questions, vocabulary box, sentence starters, chunked instructions, and visual supports.",
+      });
+      setDiffVersions(prev => ({ ...prev, [tier]: { ...result, isAI: true as const } as AIWorksheet }));
+      toast.success(`${tier === "foundation" ? "Foundation" : tier === "higher" ? "Higher" : "SEND"} version generated!`);
+    } catch (err) {
+      toast.error("Differentiation failed. Please try again.");
+    }
+    setDiffLoading(null);
+  };
 
   // ─── Filtered bank ─────────────────────────────────────────────────────────
   const filteredBank = worksheetBank.filter(w => {
@@ -1509,6 +1547,9 @@ export default function Worksheets() {
             </Button>
             <Button variant="outline" size="sm" onClick={handlePrint}><Printer className="w-3.5 h-3.5 mr-1.5" /> Print</Button>
             <Button variant="outline" size="sm" onClick={handleSave}><Save className="w-3.5 h-3.5 mr-1.5" /> Save</Button>
+            <Button variant="outline" size="sm" onClick={() => { setShowDiffDialog(true); setDiffVersions({}); }} className="gap-1.5 border-indigo-300 text-indigo-700 hover:bg-indigo-50">
+              <Sparkles className="w-3.5 h-3.5" /> Differentiate
+            </Button>
             <Dialog open={showAssignDialog} onOpenChange={setShowAssignDialog}>
               <DialogTrigger asChild>
                 <Button variant="outline" size="sm"><Users className="w-3.5 h-3.5 mr-1.5" /> Assign</Button>
@@ -1937,6 +1978,113 @@ export default function Worksheets() {
         onClose={() => setShowPrintDialog(false)}
         onPrint={handlePrintWithOptions}
       />
+
+      {/* One-click Differentiation Dialog */}
+      <Dialog open={showDiffDialog} onOpenChange={setShowDiffDialog}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-indigo-600" />
+              One-Click Differentiation
+            </DialogTitle>
+            <p className="text-sm text-muted-foreground">Generate Foundation, Higher, and SEND-scaffolded versions of this worksheet in one click.</p>
+          </DialogHeader>
+          <div className="space-y-4 mt-2">
+            {/* Tier cards */}
+            {([
+              { tier: "foundation", label: "Foundation", desc: "Accessible version with simpler language, more scaffolding, and fewer questions. Ideal for lower-attaining students.", colour: "blue", icon: "🟦" },
+              { tier: "higher", label: "Higher", desc: "Challenging version with multi-step problems, reasoning questions, and extension tasks. Ideal for higher-attaining students.", colour: "purple", icon: "🟣" },
+              { tier: "send", label: "SEND Scaffolded", desc: "Full SEND scaffolding: fill-in-the-blank guided questions, vocabulary box, sentence starters, chunked instructions, and visual supports.", colour: "green", icon: "♿" },
+            ] as const).map(({ tier, label, desc, colour, icon }) => (
+              <div key={tier} className={`rounded-xl border p-4 space-y-3 ${
+                colour === "blue" ? "border-blue-200 bg-blue-50" :
+                colour === "purple" ? "border-purple-200 bg-purple-50" :
+                "border-green-200 bg-green-50"
+              }`}>
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">{icon}</span>
+                      <span className={`font-semibold text-sm ${
+                        colour === "blue" ? "text-blue-800" :
+                        colour === "purple" ? "text-purple-800" :
+                        "text-green-800"
+                      }`}>{label}</span>
+                    </div>
+                    <p className={`text-xs mt-1 ${
+                      colour === "blue" ? "text-blue-700" :
+                      colour === "purple" ? "text-purple-700" :
+                      "text-green-700"
+                    }`}>{desc}</p>
+                  </div>
+                  <Button
+                    size="sm"
+                    disabled={diffLoading === tier}
+                    onClick={() => handleDifferentiate(tier)}
+                    className={`shrink-0 ${
+                      colour === "blue" ? "bg-blue-600 hover:bg-blue-700 text-white" :
+                      colour === "purple" ? "bg-purple-600 hover:bg-purple-700 text-white" :
+                      "bg-green-600 hover:bg-green-700 text-white"
+                    }`}
+                  >
+                    {diffLoading === tier ? <><RefreshCw className="h-3 w-3 mr-1.5 animate-spin" /> Generating...</> : <><Sparkles className="h-3 w-3 mr-1.5" /> Generate</>}
+                  </Button>
+                </div>
+                {diffVersions[tier] && (
+                  <div className="mt-2 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="h-4 w-4 text-green-600" />
+                      <span className="text-xs font-semibold text-green-700">{label} version ready!</span>
+                    </div>
+                    <div className="flex gap-2 flex-wrap">
+                      <Button size="sm" variant="outline" className="text-xs h-7" onClick={() => {
+                        setGenerated(diffVersions[tier]);
+                        setShowDiffDialog(false);
+                        toast.success(`Switched to ${label} version`);
+                      }}>
+                        <Eye className="h-3 w-3 mr-1" /> View
+                      </Button>
+                      <Button size="sm" variant="outline" className="text-xs h-7" onClick={async () => {
+                        const ws = diffVersions[tier];
+                        const content = ws.sections.filter((s: any) => !s.teacherOnly).map((s: any) => `## ${s.title}\n${s.content}`).join("\n\n");
+                        assignWork("", { title: `${ws.title} (${label})`, type: "worksheet", content });
+                        setShowDiffDialog(false);
+                        setShowAssignDialog(true);
+                      }}>
+                        <Users className="h-3 w-3 mr-1" /> Assign
+                      </Button>
+                      <Button size="sm" variant="outline" className="text-xs h-7" onClick={() => {
+                        const ws = diffVersions[tier];
+                        const sectionsToSave = ws.sections.map((s: any) => ({ ...s }));
+                        const wsContent = sectionsToSave.filter((s: any) => !s.teacherOnly).map((s: any) => `## ${s.title}\n${s.content}`).join("\n\n");
+                        const wsTeacherContent = sectionsToSave.map((s: any) => `## ${s.title}\n${s.content}`).join("\n\n");
+                        saveWorksheet({
+                          title: `${ws.title} (${label})`,
+                          subtitle: ws.subtitle,
+                          subject: ws.metadata?.subject || subject,
+                          topic: ws.metadata?.topic || topic,
+                          yearGroup: ws.metadata?.yearGroup || yearGroup,
+                          difficulty: ws.metadata?.difficulty || difficulty || "mixed",
+                          examBoard: ws.metadata?.examBoard,
+                          sendNeed: ws.metadata?.sendNeed,
+                          content: wsContent,
+                          teacherContent: wsTeacherContent,
+                          sections: sectionsToSave,
+                          metadata: ws.metadata,
+                          isAI: true,
+                        });
+                        toast.success(`${label} version saved!`);
+                      }}>
+                        <Save className="h-3 w-3 mr-1" /> Save
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

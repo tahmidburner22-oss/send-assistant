@@ -48,6 +48,8 @@ export default function Children() {
   const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null);
   const [feedbackText, setFeedbackText] = useState("");
   const [markText, setMarkText] = useState("");
+  const [autoMarkLoading, setAutoMarkLoading] = useState(false);
+  const [autoMarkResult, setAutoMarkResult] = useState<{ mark: string; feedback: string; misconceptions: string[] } | null>(null);
 
   // AI Auto-Assignment Scheduler
   const scheduler = useScheduler({
@@ -169,6 +171,49 @@ export default function Children() {
     setSelectedSubmission(submission);
     setFeedbackText(submission.feedback ?? "");
     setMarkText(submission.mark ?? "");
+  };
+
+  const handleAutoMark = async () => {
+    if (!selectedSubmission) return;
+    setAutoMarkLoading(true);
+    setAutoMarkResult(null);
+    try {
+      const content = selectedSubmission.content || "";
+      const title = selectedSubmission.title || "worksheet";
+      const childYearGroup = selectedChild?.yearGroup || "Year 7";
+      const systemPrompt = `You are an expert UK school teacher marking student homework. You mark work fairly, identify misconceptions, and provide constructive feedback. Always respond with valid JSON only.`;
+      const userPrompt = `Mark this student's submitted work for the assignment: "${title}" (${childYearGroup}).
+
+Student's submitted work:
+${content}
+
+Return EXACTLY this JSON:
+{
+  "mark": "[e.g. 7/10 or 85% or B+]",
+  "feedback": "[2-3 sentences of constructive, encouraging feedback highlighting what was done well and what to improve]",
+  "misconceptions": ["[specific misconception 1 if any]", "[specific misconception 2 if any]"]
+}
+
+If the submission is empty or too short to mark, return mark: "N/A", feedback: "No work submitted to mark.", misconceptions: []`;
+      const token = localStorage.getItem("send_token");
+      const res = await fetch("/api/ai/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        credentials: "include",
+        body: JSON.stringify({ prompt: userPrompt, systemPrompt, maxTokens: 800 }),
+      });
+      if (!res.ok) throw new Error("AI request failed");
+      const data = await res.json();
+      const text = (data.content || data.text || "").replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/\s*```$/i, "").trim();
+      const parsed = JSON.parse(text);
+      setAutoMarkResult(parsed);
+      setMarkText(parsed.mark || "");
+      setFeedbackText(parsed.feedback || "");
+      toast.success("Auto-marked by AI!");
+    } catch (err) {
+      toast.error("Auto-marking failed. Please mark manually.");
+    }
+    setAutoMarkLoading(false);
   };
 
   const saveSubmissionFeedback = () => {
@@ -497,6 +542,39 @@ export default function Children() {
                   <p className="text-sm text-blue-800">{selectedSubmission.question}</p>
                 </div>
               )}
+
+              {/* Auto-Mark with AI */}
+              <div className="p-3 rounded-lg bg-indigo-50 border border-indigo-200 space-y-2">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-semibold text-indigo-800 flex items-center gap-1.5"><BrainCircuit className="w-3.5 h-3.5" /> Auto-Mark with AI</p>
+                    <p className="text-xs text-indigo-600 mt-0.5">AI will mark the work, suggest a grade, and identify misconceptions.</p>
+                  </div>
+                  <Button size="sm" disabled={autoMarkLoading || !selectedSubmission?.content} onClick={handleAutoMark}
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs shrink-0">
+                    {autoMarkLoading ? <><RefreshCw className="w-3 h-3 mr-1 animate-spin" /> Marking...</> : <><BrainCircuit className="w-3 h-3 mr-1" /> Auto-Mark</>}
+                  </Button>
+                </div>
+                {autoMarkResult && (
+                  <div className="space-y-2 pt-1">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="w-3.5 h-3.5 text-green-600" />
+                      <span className="text-xs font-semibold text-green-700">AI Mark: {autoMarkResult.mark}</span>
+                    </div>
+                    {autoMarkResult.misconceptions && autoMarkResult.misconceptions.filter(Boolean).length > 0 && (
+                      <div className="p-2 bg-amber-50 border border-amber-200 rounded">
+                        <p className="text-xs font-semibold text-amber-800 mb-1">⚠️ Misconceptions identified:</p>
+                        <ul className="space-y-0.5">
+                          {autoMarkResult.misconceptions.filter(Boolean).map((m, i) => (
+                            <li key={i} className="text-xs text-amber-700 flex items-start gap-1"><span className="mt-0.5">•</span>{m}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    <p className="text-xs text-indigo-700">Mark and feedback fields have been pre-filled — edit as needed before sending.</p>
+                  </div>
+                )}
+              </div>
 
               {/* Mark */}
               <div className="space-y-1.5">

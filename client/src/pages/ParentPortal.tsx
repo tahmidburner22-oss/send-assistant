@@ -21,7 +21,7 @@ import {
   CalendarDays, CheckCircle2, XCircle, MinusCircle, Sun, Sunset, TrendingUp,
   Calendar, MapPin, User2, ChevronLeft, ChevronRight as ChevronRightIcon,
   PenLine, Check, Loader2, ScrollText, ExternalLink, Filter, ChevronDown, ChevronUp,
-  Home, LayoutDashboard, Menu, Star, Bell, BookMarked, Headphones, Zap, ScanSearch, Newspaper
+  Home, LayoutDashboard, Menu, Star, Bell, BookMarked, Headphones, Zap, ScanSearch, Newspaper, RefreshCw
 } from "lucide-react";
 import { subjects as pastPaperSubjects, allYears as ppAllYears, allBoards as ppAllBoards } from "@/lib/pastPapers";
 import { Link } from "wouter";
@@ -378,6 +378,10 @@ export default function ParentPortal() {
   const [storyAiPrompt, setStoryAiPrompt] = useState("");
   const [storyAiEditLoading, setStoryAiEditLoading] = useState(false);
 
+  // AI Insights state
+  const [insightsLoading, setInsightsLoading] = useState(false);
+  const [insightsResult, setInsightsResult] = useState<{ strengths: string[]; areasForGrowth: string[]; suggestedPractice: string[]; encouragement: string } | null>(null);
+
   const handleCodeEntry = () => {
     const found = children.find(c => c.code === code.toUpperCase().trim());
     if (found) {
@@ -439,6 +443,50 @@ export default function ParentPortal() {
     setSubmitTitle(""); setSubmitContent(""); setSubmitQuestion("");
     setUploadedFile(null); setShowSubmit(false);
     if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const generateInsights = async () => {
+    if (!child) return;
+    setInsightsLoading(true);
+    setInsightsResult(null);
+    try {
+      const completedCount = child.assignments.filter(a => a.status === "completed").length;
+      const pendingCount = child.assignments.filter(a => a.status !== "completed").length;
+      const submissionsCount = child.submissions.length;
+      const markedSubmissions = child.submissions.filter(s => s.mark || s.feedback);
+      const feedbackSummary = markedSubmissions.slice(-5).map(s => `Assignment: ${s.title}. Mark: ${s.mark || "not marked"}. Feedback: ${s.feedback || "none"}`).join("\n");
+      const systemPrompt = `You are a supportive UK school teacher providing personalised insights to parents about their child's learning progress. Be warm, encouraging, and specific. Always respond with valid JSON only.`;
+      const userPrompt = `Generate personalised learning insights for ${child.name} (${child.yearGroup}${child.sendNeed ? `, ${child.sendNeed}` : ""}).
+
+Progress data:
+- Completed assignments: ${completedCount}
+- Pending assignments: ${pendingCount}
+- Work submitted: ${submissionsCount}
+- Recent feedback from teacher:\n${feedbackSummary || "No feedback yet"}
+
+Return EXACTLY this JSON:
+{
+  "strengths": ["[specific strength 1 based on data]", "[specific strength 2]", "[specific strength 3]"],
+  "areasForGrowth": ["[specific area for improvement 1]", "[specific area for improvement 2]"],
+  "suggestedPractice": ["[specific practice activity 1 parents can do at home]", "[specific practice activity 2]", "[specific practice activity 3]"],
+  "encouragement": "[1-2 sentences of warm, personalised encouragement for the parent and child]"
+}`;
+      const token = localStorage.getItem("send_token");
+      const res = await fetch("/api/ai/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        credentials: "include",
+        body: JSON.stringify({ prompt: userPrompt, systemPrompt, maxTokens: 800 }),
+      });
+      if (!res.ok) throw new Error("AI request failed");
+      const data = await res.json();
+      const text = (data.content || data.text || "").replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/\s*```$/i, "").trim();
+      const parsed = JSON.parse(text);
+      setInsightsResult(parsed);
+    } catch (err) {
+      toast.error("Could not generate insights. Please try again.");
+    }
+    setInsightsLoading(false);
   };
 
   const markStarted = (assignmentId: string) => {
@@ -865,6 +913,83 @@ export default function ParentPortal() {
                       </CardContent>
                     </Card>
                   ))}
+                </div>
+              )}
+            </div>
+
+            {/* AI Learning Insights */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="font-semibold text-foreground text-sm">AI Learning Insights</h3>
+                <Button size="sm" variant="outline" disabled={insightsLoading} onClick={generateInsights}
+                  className="text-xs h-7 gap-1.5 border-indigo-300 text-indigo-700 hover:bg-indigo-50">
+                  {insightsLoading ? <><RefreshCw className="w-3 h-3 animate-spin" /> Generating...</> : <><Zap className="w-3 h-3" /> Generate Insights</>}
+                </Button>
+              </div>
+              {!insightsResult && !insightsLoading && (
+                <Card className="border-0 shadow-sm">
+                  <CardContent className="p-4 text-center">
+                    <Zap className="w-8 h-8 text-indigo-400 mx-auto mb-2" />
+                    <p className="text-sm font-medium text-foreground">Personalised AI Insights</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">Click "Generate Insights" to get AI-powered strengths, areas for growth, and suggested practice activities.</p>
+                  </CardContent>
+                </Card>
+              )}
+              {insightsLoading && (
+                <Card className="border-0 shadow-sm">
+                  <CardContent className="p-4 text-center">
+                    <RefreshCw className="w-8 h-8 text-indigo-400 mx-auto mb-2 animate-spin" />
+                    <p className="text-sm text-muted-foreground">Analysing {child?.name}'s progress...</p>
+                  </CardContent>
+                </Card>
+              )}
+              {insightsResult && (
+                <div className="space-y-3">
+                  {/* Encouragement */}
+                  <Card className="border-0 shadow-sm bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-100">
+                    <CardContent className="p-4">
+                      <p className="text-sm text-indigo-800 leading-relaxed">💬 {insightsResult.encouragement}</p>
+                    </CardContent>
+                  </Card>
+                  {/* Strengths */}
+                  <Card className="border-0 shadow-sm">
+                    <CardContent className="p-4 space-y-2">
+                      <p className="text-xs font-semibold text-emerald-700 flex items-center gap-1.5">✅ Strengths</p>
+                      <ul className="space-y-1">
+                        {insightsResult.strengths.map((s, i) => (
+                          <li key={i} className="text-xs text-foreground/80 flex items-start gap-1.5">
+                            <span className="text-emerald-500 mt-0.5">•</span>{s}
+                          </li>
+                        ))}
+                      </ul>
+                    </CardContent>
+                  </Card>
+                  {/* Areas for Growth */}
+                  <Card className="border-0 shadow-sm">
+                    <CardContent className="p-4 space-y-2">
+                      <p className="text-xs font-semibold text-amber-700 flex items-center gap-1.5">📈 Areas for Growth</p>
+                      <ul className="space-y-1">
+                        {insightsResult.areasForGrowth.map((a, i) => (
+                          <li key={i} className="text-xs text-foreground/80 flex items-start gap-1.5">
+                            <span className="text-amber-500 mt-0.5">•</span>{a}
+                          </li>
+                        ))}
+                      </ul>
+                    </CardContent>
+                  </Card>
+                  {/* Suggested Practice */}
+                  <Card className="border-0 shadow-sm">
+                    <CardContent className="p-4 space-y-2">
+                      <p className="text-xs font-semibold text-blue-700 flex items-center gap-1.5">🏠 Suggested Practice at Home</p>
+                      <ul className="space-y-1">
+                        {insightsResult.suggestedPractice.map((p, i) => (
+                          <li key={i} className="text-xs text-foreground/80 flex items-start gap-1.5">
+                            <span className="text-blue-500 mt-0.5">{i + 1}.</span>{p}
+                          </li>
+                        ))}
+                      </ul>
+                    </CardContent>
+                  </Card>
                 </div>
               )}
             </div>
