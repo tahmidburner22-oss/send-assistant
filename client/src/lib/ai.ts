@@ -692,9 +692,9 @@ Return EXACTLY this JSON structure (raw JSON only, no markdown):
   }
 }`;
 
-  // Scale token limit with worksheet length — longer worksheets need more tokens
-  // In introOnly mode, we only need ~1500 tokens (just objectives, vocab, worked example)
-  const maxTokensForLength = params.introOnly ? 2000 : (lengthMins >= 60 ? 6000 : lengthMins <= 10 ? 2500 : 5000);
+  // Scale token limit with worksheet length — capped at 4000 to avoid Railway timeout
+  // Groq Llama 3.3 generates ~500 tokens/sec; 4000 tokens ≈ 8s; 5000+ tokens can exceed 30s timeout
+  const maxTokensForLength = params.introOnly ? 2000 : (lengthMins >= 60 ? 4000 : lengthMins <= 10 ? 2500 : 3500);
   const { text, provider } = await callAI(system, user, maxTokensForLength);
   const cleaned = text
     .replace(/^```json\s*/i, "")
