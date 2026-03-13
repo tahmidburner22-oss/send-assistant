@@ -74,6 +74,101 @@ export function renderMath(text: string): string {
   result = result.replace(/<\s*sub\s*>/gi, "<sub>");
   result = result.replace(/<\s*\/\s*sub\s*>/gi, "</sub>");
 
+  // ── Step 0c: Handle bare LaTeX commands (no delimiters) ─────────────────────
+  // The AI often generates \frac{1}{2}, \times, \pi, \sqrt{x} without $...$ wrappers.
+  // We process these BEFORE any other step so they don't get mangled.
+
+  // \frac{num}{den} → KaTeX fraction
+  result = result.replace(/\\frac\{([^{}]*)\}\{([^{}]*)\}/g, (_, num, den) => {
+    try { return katex.renderToString(`\\dfrac{${num}}{${den}}`, { displayMode: false, throwOnError: false }); }
+    catch { return `${num}/${den}`; }
+  });
+  // \dfrac{num}{den} → KaTeX fraction
+  result = result.replace(/\\dfrac\{([^{}]*)\}\{([^{}]*)\}/g, (_, num, den) => {
+    try { return katex.renderToString(`\\dfrac{${num}}{${den}}`, { displayMode: false, throwOnError: false }); }
+    catch { return `${num}/${den}`; }
+  });
+  // \sqrt{expr} → KaTeX square root
+  result = result.replace(/\\sqrt\{([^{}]*)\}/g, (_, expr) => {
+    try { return katex.renderToString(`\\sqrt{${expr}}`, { displayMode: false, throwOnError: false }); }
+    catch { return `√${expr}`; }
+  });
+  // \sqrt[n]{expr} → KaTeX nth root
+  result = result.replace(/\\sqrt\[([^\]]+)\]\{([^{}]*)\}/g, (_, n, expr) => {
+    try { return katex.renderToString(`\\sqrt[${n}]{${expr}}`, { displayMode: false, throwOnError: false }); }
+    catch { return `${n}√${expr}`; }
+  });
+  // \sqrt followed by a single character or number (no braces)
+  result = result.replace(/\\sqrt\s+([A-Za-z0-9]+)/g, (_, n) => {
+    try { return katex.renderToString(`\\sqrt{${n}}`, { displayMode: false, throwOnError: false }); }
+    catch { return `√${n}`; }
+  });
+  // Bare LaTeX symbol commands → Unicode/HTML
+  result = result.replace(/\\times\b/g, '×');
+  result = result.replace(/\\cdot\b/g, '·');
+  result = result.replace(/\\div\b/g, '÷');
+  result = result.replace(/\\pm\b/g, '±');
+  result = result.replace(/\\mp\b/g, '∓');
+  result = result.replace(/\\pi\b/g, 'π');
+  result = result.replace(/\\Pi\b/g, 'Π');
+  result = result.replace(/\\theta\b/g, 'θ');
+  result = result.replace(/\\alpha\b/g, 'α');
+  result = result.replace(/\\beta\b/g, 'β');
+  result = result.replace(/\\gamma\b/g, 'γ');
+  result = result.replace(/\\delta\b/g, 'δ');
+  result = result.replace(/\\Delta\b/g, 'Δ');
+  result = result.replace(/\\sigma\b/g, 'σ');
+  result = result.replace(/\\Sigma\b/g, 'Σ');
+  result = result.replace(/\\lambda\b/g, 'λ');
+  result = result.replace(/\\mu\b/g, 'μ');
+  result = result.replace(/\\infty\b/g, '∞');
+  result = result.replace(/\\leq\b/g, '≤');
+  result = result.replace(/\\geq\b/g, '≥');
+  result = result.replace(/\\neq\b/g, '≠');
+  result = result.replace(/\\approx\b/g, '≈');
+  result = result.replace(/\\equiv\b/g, '≡');
+  result = result.replace(/\\in\b/g, '∈');
+  result = result.replace(/\\notin\b/g, '∉');
+  result = result.replace(/\\subset\b/g, '⊂');
+  result = result.replace(/\\cup\b/g, '∪');
+  result = result.replace(/\\cap\b/g, '∩');
+  result = result.replace(/\\angle\b/g, '∠');
+  result = result.replace(/\\circ\b/g, '°');
+  result = result.replace(/\\degree\b/g, '°');
+  result = result.replace(/\\%/g, '%');
+  result = result.replace(/\\ldots\b/g, '…');
+  result = result.replace(/\\cdots\b/g, '⋯');
+  result = result.replace(/\\rightarrow\b/g, '→');
+  result = result.replace(/\\leftarrow\b/g, '←');
+  result = result.replace(/\\Rightarrow\b/g, '⇒');
+  result = result.replace(/\\Leftrightarrow\b/g, '⟺');
+  result = result.replace(/\\text\{([^{}]*)\}/g, '$1');
+  result = result.replace(/\\mathrm\{([^{}]*)\}/g, '$1');
+  result = result.replace(/\\mathbf\{([^{}]*)\}/g, '<strong>$1</strong>');
+  result = result.replace(/\\mathit\{([^{}]*)\}/g, '<em>$1</em>');
+  // \left( and \right) → plain parens
+  result = result.replace(/\\left\(/g, '(');
+  result = result.replace(/\\right\)/g, ')');
+  result = result.replace(/\\left\[/g, '[');
+  result = result.replace(/\\right\]/g, ']');
+  result = result.replace(/\\left\{/g, '{');
+  result = result.replace(/\\right\}/g, '}');
+  // \{ and \} → plain braces
+  result = result.replace(/\\\{/g, '{');
+  result = result.replace(/\\\}/g, '}');
+  // Any remaining unknown \command → strip the backslash
+  result = result.replace(/\\([a-zA-Z]+)/g, (full, cmd) => {
+    // Only strip if it's not already been handled and looks like a LaTeX command
+    // Keep it if it might be meaningful
+    const knownCommands = ['frac','dfrac','sqrt','times','cdot','div','pm','mp','pi','Pi',
+      'theta','alpha','beta','gamma','delta','Delta','sigma','Sigma','lambda','mu',
+      'infty','leq','geq','neq','approx','equiv','in','notin','subset','cup','cap',
+      'angle','circ','degree','ldots','cdots','rightarrow','leftarrow','Rightarrow',
+      'Leftrightarrow','text','mathrm','mathbf','mathit','left','right','quad','qquad'];
+    if (knownCommands.includes(cmd)) return full; // already handled above, shouldn't reach here
+    return cmd; // strip the backslash from unknown commands
+  });
+
   // ── Step 1: Convert <sup>n</sup> and <sub>n</sub> HTML tags to LaTeX ────────
   // Do this BEFORE fraction handling so KaTeX can process them correctly
   result = result.replace(/<sup>([^<]+)<\/sup>/g, (_, exp) => {
@@ -182,14 +277,28 @@ export function renderMath(text: string): string {
     catch { return full; }
   });
   // 4. Simple numeric or single-variable fractions: 3/4  x/y  2/n
-  //    (only when surrounded by whitespace or punctuation, to avoid URLs)
-  result = result.replace(/(?<=[\s(,;:=+\-*]|^)([A-Za-z0-9]+)\/([A-Za-z0-9]+)(?=[\s),;:=+\-*]|$)/g, (full, num, den) => {
-    // Skip if it looks like a URL fragment or year range
-    if (/^\d{4}$/.test(num) || /^\d{4}$/.test(den)) return full;
-    if (hasHTML(num) || hasHTML(den)) return full;
-    try { return katex.renderToString(`\\dfrac{${num}}{${den}}`, { displayMode: false, throwOnError: false }); }
-    catch { return full; }
-  });
+  //    Process ALL plain-text fractions in a single pass using a tokeniser approach.
+  //    This avoids the lookbehind issue where the second fraction in "3/4 + 2/5" fails
+  //    because the first fraction has already been replaced with KaTeX HTML.
+  //    We split the string into HTML segments and plain-text segments, and only apply
+  //    fraction conversion to the plain-text segments.
+  {
+    // Split into alternating [plain, html, plain, html, ...] segments
+    const parts = result.split(/(<[^>]+>)/g);
+    result = parts.map((part, i) => {
+      // Even indices are plain text, odd indices are HTML tags
+      if (i % 2 !== 0) return part; // HTML tag — leave alone
+      // Apply fraction conversion to plain text only
+      return part.replace(/([A-Za-z0-9]+)\/([A-Za-z0-9]+)/g, (full, num, den) => {
+        // Skip year ranges (e.g. 2023/24)
+        if (/^\d{4}$/.test(num) || /^\d{4}$/.test(den)) return full;
+        // Skip if either part is a long number that looks like a year
+        if (/^\d{4,}$/.test(num) || /^\d{4,}$/.test(den)) return full;
+        try { return katex.renderToString(`\\dfrac{${num}}{${den}}`, { displayMode: false, throwOnError: false }); }
+        catch { return full; }
+      });
+    }).join('');
+  }
   // Bold markdown **text** → <strong>text</strong>
   result = result.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
   // Remove any remaining lone asterisks
