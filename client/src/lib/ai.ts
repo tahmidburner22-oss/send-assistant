@@ -251,13 +251,18 @@ export async function callAI(
     const storedToken = typeof localStorage !== 'undefined' ? localStorage.getItem('send_token') : null;
     const reqHeaders: Record<string, string> = { "Content-Type": "application/json" };
     if (storedToken) reqHeaders["Authorization"] = `Bearer ${storedToken}`;
+    const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    const timeoutMs = 45000;
+    const timeoutId = controller ? window.setTimeout(() => controller.abort(), timeoutMs) : null;
     const res = await fetch("/api/ai/generate", {
       method: "POST",
       headers: reqHeaders,
       credentials: "include",
+      signal: controller?.signal,
       // Server expects 'prompt' (not 'userPrompt') per the /api/ai/generate endpoint
       body: JSON.stringify({ prompt: userPrompt, systemPrompt, maxTokens }),
     });
+    if (timeoutId) window.clearTimeout(timeoutId);
     if (res.ok) {
       const data = await res.json();
       // Server returns 'content' field (not 'text') — fix the field name
@@ -271,8 +276,12 @@ export async function callAI(
       const errText = await res.text().catch(() => "");
       console.warn(`[Adaptly AI] Server error ${res.status}:`, errText.slice(0, 200));
     }
-  } catch (serverErr) {
-    console.warn("[Adaptly AI] Server route unavailable, using client keys:", serverErr);
+  } catch (serverErr: any) {
+    if (serverErr?.name === "AbortError") {
+      console.warn("[Adaptly AI] Server generation timed out, using client keys fallback.");
+    } else {
+      console.warn("[Adaptly AI] Server route unavailable, using client keys:", serverErr);
+    }
   }
   // Fallback: locally stored keys (offline / dev)
   const order: AIProvider[] = ["groq", "gemini", "openrouter", "openai", "claude", "huggingface"];
