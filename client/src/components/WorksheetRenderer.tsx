@@ -190,7 +190,7 @@ export function renderMath(text: string): string {
   result = result.replace(/\b([A-Z][a-z]?)((?:[0-9]+[A-Z][a-z]?)*[0-9]*)(?=[A-Z][a-z]?[0-9]|[0-9]|\b)/g, (full, firstElem, rest) => {
     if (!CHEM_ELEMENTS.has(firstElem)) return full; // Not a chemical element
     // Convert all digit runs to subscripts
-    const converted = (firstElem + rest).replace(/([A-Z][a-z]?)([0-9]+)/g, (_, el, num) => {
+    const converted = (firstElem + rest).replace(/([A-Z][a-z]?)([0-9]+)/g, (_: string, el: string, num: string) => {
       const subscript = num.split('').map((d: string) => '₀₁₂₃₄₅₆₇₈₉'[parseInt(d)]).join('');
       return `${el}${subscript}`;
     });
