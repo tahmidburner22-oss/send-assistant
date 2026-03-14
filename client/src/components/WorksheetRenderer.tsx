@@ -70,8 +70,9 @@ export function renderMath(text: string): string {
   // This happens when JSON parsing strips the opening < from <span style=...>
   // leaving just: style="color:#cc0000">text
   result = result.replace(/["']?\s*\bstyle\s*=\s*["'][^"']*["']\s*>/g, '');
-  // Strip orphaned class= attribute fragments, but NOT class="katex" (used by KaTeX)
-  result = result.replace(/\bclass\s*=\s*["'](?!katex["'])[^"']*["']\s*>/g, '');
+  // Strip orphaned class= attribute fragments, but NOT class="katex*" (used by KaTeX)
+  // KaTeX uses class names like: katex, katex-html, katex-display, katex-mathml, etc.
+  result = result.replace(/\bclass\s*=\s*["'](?!katex)[^"']*["']\s*>/g, '');
   // Pattern 2: Complete HTML tags that are NOT KaTeX spans and NOT safe inline tags
   // Safe inline tags we keep: <sup>, <sub>, <strong>, <em>, <b>, <i>, <br>, <br/>
   // We strip: <span>, <div>, <p>, <a>, <font>, and any other block/inline HTML
