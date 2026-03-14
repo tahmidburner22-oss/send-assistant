@@ -6,13 +6,10 @@ import { requireAuth, requireAdmin, auditLog } from "../middleware/auth.js";
 import { filterContent } from "../lib/contentFilter.js";
 import { getSchoolKey } from "./schoolApiKeys.js";
 import { findDiagram, searchWikimediaDiagram } from "../lib/diagramBank.js";
-// Full diagram bank is lazy-loaded to keep startup fast
-let _fullDiagramBank: typeof import("../lib/diagramBankFull.js") | null = null;
-async function getFullDiagramBank() {
-  if (!_fullDiagramBank) {
-    _fullDiagramBank = await import("../lib/diagramBankFull.js");
-  }
-  return _fullDiagramBank;
+import * as _fullDiagramBankModule from "../lib/diagramBankFull.js";
+// Static import (esbuild bundles everything into a single file, dynamic imports don't work)
+function getFullDiagramBank() {
+  return _fullDiagramBankModule;
 }
 
 const router = Router();
@@ -666,7 +663,7 @@ router.post("/diagram", requireAuth, async (req: Request, res: Response) => {
 
   // ── Step 2: Full comprehensive diagram bank (lazy-loaded, all 623 curriculum topics) ──
   try {
-    const fullBank = await getFullDiagramBank();
+    const fullBank = getFullDiagramBank();
     const fullMatch = fullBank.findDiagramFull(subject, topic);
     if (fullMatch) {
       console.log(`[Diagram] Found in full bank: ${fullMatch.key}`);
