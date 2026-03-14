@@ -56,7 +56,7 @@ async function callGroq(systemPrompt: string, userPrompt: string, maxTokens: num
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
     body: JSON.stringify({
-      model: "llama-3.3-70b-versatile",
+      model: "llama-3.1-8b-instant",
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
@@ -252,7 +252,7 @@ export async function callAI(
     const reqHeaders: Record<string, string> = { "Content-Type": "application/json" };
     if (storedToken) reqHeaders["Authorization"] = `Bearer ${storedToken}`;
     const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
-    const timeoutMs = 120000; // 2 minutes — worksheet generation can take up to 90s for complex topics
+    const timeoutMs = 30000; // 30 seconds — llama-3.1-8b-instant is very fast, should complete in <10s
     const timeoutId = controller ? window.setTimeout(() => controller.abort(), timeoutMs) : null;
     const res = await fetch("/api/ai/generate", {
       method: "POST",
@@ -556,9 +556,9 @@ Return EXACTLY this JSON (raw JSON, no markdown):
   }
 }`;
 
-  // Scale token limit with worksheet length— capped at 4000 to avoid Railway timeout
-  // Groq Llama 3.3 generates ~500 tokens/sec; 4000 tokens ≈ 8s; 5000+ tokens can exceed 30s timeout
-  const maxTokensForLength = params.introOnly ? 2000 : (lengthMins >= 60 ? 4000 : lengthMins <= 10 ? 2500 : 3500);
+  // Scale token limit with worksheet length — llama-3.1-8b-instant generates ~1500 tokens/sec
+  // 10min ≈ 1500t (~1s), 30min ≈ 2500t (~2s), 60min ≈ 3500t (~3s)
+  const maxTokensForLength = params.introOnly ? 1500 : (lengthMins >= 60 ? 3500 : lengthMins <= 10 ? 1500 : 2500);
   const { text, provider } = await callAI(system, user, maxTokensForLength);
   const cleaned = text
     .replace(/^```json\s*/i, "")

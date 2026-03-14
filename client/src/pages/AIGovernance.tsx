@@ -40,7 +40,7 @@ export default function AIGovernance() {
           <h2>Which AI Models We Use</h2>
           <p>Adaptly is a <strong>Bring Your Own Key (BYOK)</strong> platform. This means you connect your own AI provider account. We support:</p>
           <ul>
-            <li><strong>Groq</strong> — Llama 3.3 70B (default, free tier available)</li>
+            <li><strong>Groq</strong> — Llama 3.1 8B Instant (default, free tier available)</li>
             <li><strong>Google Gemini</strong> — Gemini 2.0 Flash</li>
             <li><strong>OpenAI</strong> — GPT-4o Mini, GPT-4o</li>
             <li><strong>OpenRouter</strong> — Access to 100+ models</li>

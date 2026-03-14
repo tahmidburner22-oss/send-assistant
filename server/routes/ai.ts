@@ -67,7 +67,7 @@ async function callProvider(
 ): Promise<string> {
   switch (provider) {
     case "groq":
-      return callGroq(system, user, key, model || "llama-3.3-70b-versatile", maxTokens);
+      return callGroq(system, user, key, model || "llama-3.1-8b-instant", maxTokens);
     case "gemini":
       return callGemini(system, user, key, maxTokens);
     case "openai":

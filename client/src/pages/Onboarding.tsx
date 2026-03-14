@@ -22,7 +22,7 @@ const STEPS = [
 ];
 
 const PRESET_PROVIDERS = [
-  { id: "groq", label: "Groq", description: "Ultra-fast Llama 3.3 70B. Free tier available.", url: "https://console.groq.com/keys", placeholder: "gsk_...", defaultModel: "llama-3.3-70b-versatile", badge: "Free tier", badgeColor: "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300" },
+  { id: "groq", label: "Groq", description: "Ultra-fast Llama 3.1 8B Instant. Free tier available.", url: "https://console.groq.com/keys", placeholder: "gsk_...", defaultModel: "llama-3.1-8b-instant", badge: "Free tier", badgeColor: "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300" },
   { id: "gemini", label: "Google Gemini", description: "Gemini 2.0 Flash. Generous free tier.", url: "https://aistudio.google.com/app/apikey", placeholder: "AIza...", defaultModel: "gemini-2.0-flash", badge: "Free tier", badgeColor: "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300" },
   { id: "openai", label: "OpenAI", description: "GPT-4o Mini and GPT-4o. Pay-as-you-go.", url: "https://platform.openai.com/api-keys", placeholder: "sk-...", defaultModel: "gpt-4o-mini", badge: "Paid", badgeColor: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300" },
   { id: "openrouter", label: "OpenRouter", description: "Access 100+ models from one API key.", url: "https://openrouter.ai/keys", placeholder: "sk-or-...", defaultModel: "", badge: "Multi-model", badgeColor: "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300" },
