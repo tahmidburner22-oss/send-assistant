@@ -990,6 +990,73 @@ router.post("/scaffold-worksheet", requireAuth, async (req: Request, res: Respon
   const yr = yearGroup || "Year 9";
   const sn = (sendNeed || "").toLowerCase();
 
+  const buildLocalScaffold = (inputSections: any[], sendNeedLower: string) => {
+    const extractTerms = (content: string): string[] => {
+      const matches = (content || "").match(/\b[A-Za-z][A-Za-z\-]{3,}\b/g) || [];
+      const seen = new Set<string>();
+      const out: string[] = [];
+      for (const raw of matches) {
+        const w = raw.trim();
+        const key = w.toLowerCase();
+        if (seen.has(key)) continue;
+        if (["section","question","teacher","student","worksheet","learning","objectives","worked","example","reminder","challenge","common","mistakes"].includes(key)) continue;
+        seen.add(key);
+        out.push(w);
+        if (out.length >= 8) break;
+      }
+      return out;
+    };
+
+    const addScaffoldToContent = (content: string, index: number): string => {
+      const original = String(content || "").trim();
+      const basePrompt = sendNeedLower.includes("dyslexia")
+        ? "Steps to follow:\n1. Read one line at a time.\n2. Underline the key word.\n3. Use the sentence starter.\n4. Check your answer.\n"
+        : sendNeedLower.includes("adhd")
+        ? "Quick Start:\n1. Read the first question.\n2. Answer one part only.\n3. Tick the box when done.\n4. Take a short pause if needed.\n"
+        : "Steps to follow:\n1. Read the question carefully.\n2. Find the key information.\n3. Use the hint if you need help.\n4. Check your answer at the end.\n";
+
+      const sentenceStarter = sendNeedLower.includes("science")
+        ? "Sentence starter: The answer is ______ because ______."
+        : "Sentence starter: I know this because ______.";
+
+      const hint = sendNeedLower.includes("math") || /\d|=|\+|-|×|÷|\//.test(original)
+        ? "Hint: Work through one step at a time and show each part of your method."
+        : "Hint: Find the key word in the question and use it in your answer.";
+
+      const needsTicks = /(^|\n)\s*\d+[\.)]/m.test(original);
+      const withTicks = needsTicks
+        ? original.replace(/(^|\n)(\s*\d+[\.)]\s*)/g, "$1[ ] $2")
+        : original;
+
+      return `${basePrompt}\n${withTicks}\n\n${sentenceStarter}\n${hint}`.trim();
+    };
+
+    const allText = inputSections.map((s: any) => `${s.title || ""} ${s.content || ""}`).join(" \n ");
+    const terms = extractTerms(allText);
+    const wordBank = terms.length
+      ? terms.map((t) => `${t} | key term from this worksheet`).join("\n")
+      : "answer | what you write\nkeyword | an important word in the question\nmethod | the steps you use\nevidence | information that supports your answer";
+
+    const scaffoldedSections = inputSections.map((section: any, index: number) => ({
+      title: section.title || `Section ${index + 1}`,
+      type: section.type || "guided",
+      teacherOnly: !!section.teacherOnly,
+      content: addScaffoldToContent(section.content || "", index),
+    }));
+
+    return {
+      sections: scaffoldedSections,
+      wordBank,
+      scaffoldingApplied: [
+        "Added a Word Bank with key vocabulary",
+        "Added steps to follow before each section",
+        "Added a sentence starter or answer frame",
+        "Added hints to support independent completion",
+        "Added tick boxes to numbered questions where possible",
+      ],
+    };
+  };
+
   // Build per-condition scaffolding instructions
   const getScaffoldingRules = (sendNeedLower: string): string => {
     if (sendNeedLower.includes("dyslexia")) return `DYSLEXIA SCAFFOLDING RULES:
@@ -1172,7 +1239,16 @@ Return a JSON object with this EXACT structure:
     }
   } catch (err: any) {
     console.error("Scaffold worksheet error:", err);
-    res.status(500).json({ error: err.message || "Failed to scaffold worksheet" });
+    const errMsg = err?.message || "Failed to scaffold worksheet";
+    if (errMsg.includes("All AI providers failed") || errMsg.includes("429") || errMsg.includes("quota")) {
+      return res.json({
+        scaffolded: buildLocalScaffold(sections as any[], sn),
+        provider: "local-fallback",
+        fallback: true,
+        warning: "AI providers were temporarily unavailable, so a built-in SEND scaffold was applied instead.",
+      });
+    }
+    res.status(500).json({ error: errMsg });
   }
 });
 
