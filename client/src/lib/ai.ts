@@ -345,7 +345,7 @@ export async function callAI(
     const reqHeaders: Record<string, string> = { "Content-Type": "application/json" };
     if (storedToken) reqHeaders["Authorization"] = `Bearer ${storedToken}`;
     const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
-    const timeoutMs = 90000; // 90 seconds — allows for Railway cold starts and complex worksheets
+    const timeoutMs = 180000; // 180 seconds — allows for Railway cold starts, complex worksheets, and SEND differentiation prompts
     const timeoutId = controller ? window.setTimeout(() => controller.abort(), timeoutMs) : null;
     const res = await fetch("/api/ai/generate", {
       method: "POST",
