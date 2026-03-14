@@ -153,6 +153,14 @@ export interface SendNeed {
   description: string;
   strategies: string[];
   worksheetAdaptations: string[];
+  // What specifically changes in the generated worksheet when this need is selected
+  worksheetChanges?: {
+    summary: string;           // One-sentence summary shown in dropdown
+    changes: Array<{           // Specific changes with why
+      what: string;            // What changes
+      why: string;             // Why this helps
+    }>;
+  };
 }
 
 export const sendNeeds: SendNeed[] = [
@@ -175,6 +183,16 @@ export const sendNeeds: SendNeed[] = [
       "Visual supports alongside text",
       "Sans-serif font, uncluttered layout, generous spacing",
     ],
+    worksheetChanges: {
+      summary: "Every instruction is literal and unambiguous; sections have a 'What you need to do' box; questions mirror the worked example exactly.",
+      changes: [
+        { what: "'What you need to do' box added before every section", why: "ASC affects the ability to infer unstated expectations — explicit structure removes ambiguity and reduces anxiety" },
+        { what: "Worked example immediately precedes Section A with identical structure", why: "Students with ASC process information more reliably when new tasks closely mirror a known model" },
+        { what: "Consistent terminology throughout — one word per concept, no synonyms", why: "Switching between 'calculate', 'find', 'work out' can be interpreted as different tasks; consistency prevents confusion" },
+        { what: "Neutral, factual contexts only — no social or emotional scenarios", why: "Social scenarios require theory of mind processing which is an area of difficulty in ASC; neutral contexts keep focus on the subject" },
+        { what: "Completion checklist in reflection (tick boxes, not open writing)", why: "Open-ended reflection requires social-emotional inference; structured checklists are more accessible" },
+      ],
+    },
   },
   {
     id: "asperger",
@@ -195,6 +213,15 @@ export const sendNeeds: SendNeed[] = [
       "Step-by-step instructions with numbered points",
       "Interest-based context where possible",
     ],
+    worksheetChanges: {
+      summary: "Direct, unambiguous language with a predictable layout; worked example mirrors Section A questions; step-by-step numbered instructions throughout.",
+      changes: [
+        { what: "All instructions are direct and literal — no figurative language", why: "Asperger Syndrome involves difficulty interpreting non-literal language; direct instructions prevent misunderstanding" },
+        { what: "Identical layout structure across every section", why: "Predictable formatting reduces cognitive load and allows the student to focus on content rather than navigation" },
+        { what: "Step-by-step numbered instructions for every task", why: "Sequential processing is often a strength; numbered steps leverage this while reducing working memory demands" },
+        { what: "Visual diagrams and supports alongside text", why: "Visual processing is often stronger than verbal; diagrams provide an alternative access route to the content" },
+      ],
+    },
   },
   {
     id: "pda-odd",
@@ -215,6 +242,16 @@ export const sendNeeds: SendNeed[] = [
       "Shorter tasks with natural stopping points",
       "Calm, uncluttered design",
     ],
+    worksheetChanges: {
+      summary: "Demands are reframed as choices and invitations; sections are renamed 'Explore', 'Investigate', 'Secret Mission'; collaborative 'we' language used throughout.",
+      changes: [
+        { what: "Section A renamed 'Explore — choose where to start'", why: "PDA is driven by anxiety around perceived demands; removing the sense of obligation reduces the anxiety trigger" },
+        { what: "Challenge renamed 'Secret Mission — if you choose to accept it'", why: "Framing tasks as optional missions gives the student a sense of control, which is the core need in PDA" },
+        { what: "'You must' replaced with 'You might like to...' throughout", why: "Demand language triggers avoidance in PDA; invitational language achieves the same goal without the anxiety response" },
+        { what: "Natural break points built into every section", why: "Allowing the student to pause and re-engage reduces escalation when anxiety builds" },
+        { what: "'Take a break here if you need to' prompt midway", why: "Explicit permission to pause is more effective than implicit expectation of sustained engagement" },
+      ],
+    },
   },
   {
     id: "slcn",
@@ -235,6 +272,16 @@ export const sendNeeds: SendNeed[] = [
       "Short, clear sentences",
       "Word banks for key vocabulary",
     ],
+    worksheetChanges: {
+      summary: "Word Bank added to every section; sentence frames provided for all answers; short simple sentences; visual cues alongside all text questions.",
+      changes: [
+        { what: "Word Bank with plain-English definitions at the start of each section", why: "SLCN affects vocabulary retrieval and comprehension; a visible word bank reduces the cognitive load of recalling terms" },
+        { what: "Sentence frames for every answer (e.g. 'The answer is ___ because ___')", why: "Expressive language difficulties mean students know the answer but cannot formulate the sentence; frames scaffold production" },
+        { what: "Maximum sentence length of 12 words; subject-verb-object structure only", why: "Complex sentence structures are harder to decode for students with language processing difficulties" },
+        { what: "Matching, labelling, and multiple-choice formats used in Section B", why: "These formats reduce language production demands while still assessing subject knowledge" },
+        { what: "Visual cues (arrows, diagrams) alongside every text question", why: "Visual processing is often stronger than verbal in SLCN; images provide an alternative comprehension route" },
+      ],
+    },
   },
   {
     id: "dyslexia",
@@ -255,6 +302,16 @@ export const sendNeeds: SendNeed[] = [
       "Short sentences, bold key vocabulary",
       "Structured step-by-step modelling",
     ],
+    worksheetChanges: {
+      summary: "Questions are max 12 words each; every key term is bolded; sentence starters and answer frames in Section A; step-by-step method box before guided practice.",
+      changes: [
+        { what: "Every question limited to one sentence (max 12 words)", why: "Dyslexia affects decoding fluency; shorter sentences reduce the reading load so the student can focus on the subject content" },
+        { what: "Bold on every key term at first use", why: "Visual emphasis helps students identify the most important words without re-reading, compensating for slower decoding speed" },
+        { what: "Sentence starters and answer frames in Section A", why: "Dyslexia often affects written expression as well as reading; frames reduce the writing barrier so knowledge can be demonstrated" },
+        { what: "Step-by-step method box immediately before Section A", why: "Working memory difficulties in dyslexia mean students benefit from a visible reference rather than relying on recall" },
+        { what: "1.5 line spacing and generous white space throughout", why: "BDA guidelines show that increased spacing reduces visual crowding, which is a significant barrier for many dyslexic readers" },
+      ],
+    },
   },
   {
     id: "dyscalculia",
@@ -275,6 +332,16 @@ export const sendNeeds: SendNeed[] = [
       "Gradual increase in difficulty",
       "Real-world context for problems",
     ],
+    worksheetChanges: {
+      summary: "Section A questions broken into numbered sub-steps with blanks; number line and key facts box included; every arithmetic step shown in worked example with 'why' annotation.",
+      changes: [
+        { what: "Every Section A question split into sub-steps: 'Step 1: ___ Step 2: ___ Step 3: ___'", why: "Dyscalculia affects number sense and the ability to hold multiple steps in working memory; sub-steps externalise the process" },
+        { what: "Number line or place value chart reference included", why: "Dyscalculia involves difficulty with the mental number line; a visible reference compensates for this specific deficit" },
+        { what: "Every arithmetic step shown in worked example with 'why' annotation", why: "Students with dyscalculia often understand the procedure but lose the meaning; annotating why each step is done builds conceptual understanding" },
+        { what: "Key Facts box at top of Section B (multiplication facts, formulas)", why: "Retrieval of number facts is impaired in dyscalculia; a reference box removes this barrier so the student can demonstrate reasoning" },
+        { what: "Real-world contexts for all word problems", why: "Concrete contexts make abstract numbers meaningful, which is a core principle of dyscalculia intervention (concrete-pictorial-abstract approach)" },
+      ],
+    },
   },
   {
     id: "dyspraxia",
@@ -295,6 +362,15 @@ export const sendNeeds: SendNeed[] = [
       "Clear, uncluttered layout",
       "Digital alternatives where possible",
     ],
+    worksheetChanges: {
+      summary: "Writing demands minimised — tick boxes, circle-the-answer, and matching formats used; large answer spaces; Section A uses multiple-choice or matching for at least 3 questions.",
+      changes: [
+        { what: "Multiple-choice, matching, and circle-the-answer formats in Section A", why: "Dyspraxia (DCD) affects fine motor control; reducing handwriting demands allows the student to demonstrate knowledge without the physical barrier" },
+        { what: "Large answer boxes and generous line spacing throughout", why: "Students with DCD need more space to write legibly; cramped answer lines cause additional frustration and fatigue" },
+        { what: "Structured answer frames (tables, fill-in-the-blank) rather than open writing", why: "Organising written responses on a blank page is cognitively demanding for DCD; structured formats remove the planning burden" },
+        { what: "Challenge question uses diagram, circle, or tick format — no extended writing", why: "Sustained writing is tiring for students with DCD; alternative formats allow access to higher-order thinking without the motor barrier" },
+      ],
+    },
   },
   {
     id: "mld",
@@ -315,6 +391,16 @@ export const sendNeeds: SendNeed[] = [
       "Gradual increase in difficulty",
       "Visual supports throughout",
     ],
+    worksheetChanges: {
+      summary: "Concrete-pictorial-abstract approach; model answer for Q1; 'Help Box' with key facts; every Section A question has a hint, sentence starter, or partially completed answer.",
+      changes: [
+        { what: "Question 1 in Section A has a fully completed model answer", why: "MLD affects the ability to generalise from instruction to independent application; a worked model provides a direct template" },
+        { what: "Every Section A question has a hint, sentence starter, or partial answer", why: "Scaffolded release of responsibility (I do, we do, you do) is the evidence-based approach for MLD — full independence comes after guided practice" },
+        { what: "'Help Box' at top of Section B with key facts and vocabulary", why: "Students with MLD have difficulty retaining information from earlier in the lesson; a visible reference reduces the memory burden" },
+        { what: "KS2 reading level language throughout", why: "MLD often co-occurs with literacy difficulties; accessible language ensures the barrier is the subject content, not the reading" },
+        { what: "Concrete-pictorial-abstract progression in Section A", why: "Research (Bruner, 1966; EEF guidance) consistently shows CPA is the most effective approach for students with learning difficulties" },
+      ],
+    },
   },
   {
     id: "adhd",
@@ -335,6 +421,16 @@ export const sendNeeds: SendNeed[] = [
       "Clear start and end points",
       "Engaging, varied question types",
     ],
+    worksheetChanges: {
+      summary: "Checkboxes next to every question; max 3 questions in Section A; varied question types (calculation, fill-in, true/false); 'BRAIN BREAK' prompt midway; challenge is clearly optional.",
+      changes: [
+        { what: "Tick checkbox next to every question for visible progress tracking", why: "ADHD impairs working memory and time perception; visible progress markers provide the dopamine feedback that sustains motivation" },
+        { what: "Maximum 3 questions in Section A, 5 in Section B", why: "ADHD attention span is shorter and more variable; smaller chunks allow the student to complete a section before focus lapses" },
+        { what: "'BRAIN BREAK — stand up and stretch!' prompt midway through Section B", why: "Movement breaks are evidence-based for ADHD — brief physical activity restores attention capacity (Pontifex et al., 2013)" },
+        { what: "Varied question types: calculation, fill-in, matching, true/false", why: "Novelty sustains attention in ADHD; varying the format prevents the habituation that causes disengagement" },
+        { what: "Action word bolded in every instruction (e.g. 'Calculate the area')", why: "ADHD affects selective attention; bolding the key instruction word helps the student identify what to do without reading every word" },
+      ],
+    },
   },
   {
     id: "anxiety",
@@ -355,6 +451,16 @@ export const sendNeeds: SendNeed[] = [
       "Gentle colour palette",
       "Positive encouragement built in",
     ],
+    worksheetChanges: {
+      summary: "Section A renamed 'Warm-Up — no pressure!'; challenge is 'OPTIONAL BONUS'; warm encouraging tone throughout; emoji check-in at start and end; no threatening language.",
+      changes: [
+        { what: "Section A renamed 'Warm-Up — no pressure!'", why: "Anxiety activates the threat response which shuts down the prefrontal cortex needed for learning; reducing perceived threat is the first priority" },
+        { what: "Challenge clearly labelled 'OPTIONAL BONUS — only if you want to!'", why: "Mandatory challenge questions create performance anxiety; making them optional removes the fear of failure" },
+        { what: "Positive statement at the start of each section ('You already know this — let's practise!')", why: "Positive priming reduces anticipatory anxiety and activates approach motivation rather than avoidance motivation" },
+        { what: "'How are you feeling?' emoji check-in at start and end", why: "Emotional regulation check-ins are a core component of the Zones of Regulation framework recommended for anxiety in the SEND Code of Practice" },
+        { what: "'Must', 'should', 'need to' replaced with 'try to', 'have a go at'", why: "Obligation language triggers anxiety responses; invitational language achieves the same goal without the threat" },
+      ],
+    },
   },
   {
     id: "vi",
@@ -375,6 +481,16 @@ export const sendNeeds: SendNeed[] = [
       "Bold headings and clear structure",
       "Audio alternative where possible",
     ],
+    worksheetChanges: {
+      summary: "Large print formatting; high-contrast layout; no diagram-only questions; all visual content described in text; generous spacing between all elements.",
+      changes: [
+        { what: "Minimum 18pt equivalent font size throughout", why: "Visual impairment reduces acuity; larger text ensures the student can read the content without additional strain or assistive technology" },
+        { what: "High-contrast formatting — dark text on light background, bold headings", why: "Low contrast is the most common accessibility barrier for VI students; high contrast is the primary RNIB recommendation" },
+        { what: "All diagram content described in text as well", why: "Students with VI may not be able to interpret diagrams; text descriptions ensure no information is inaccessible" },
+        { what: "No questions that rely solely on visual interpretation", why: "Diagram-only questions create an insurmountable barrier; all assessment must be accessible through text" },
+        { what: "Generous spacing between questions and sections", why: "Visual crowding is a significant barrier for VI; white space helps the student locate and navigate the worksheet independently" },
+      ],
+    },
   },
   {
     id: "hi",
@@ -395,6 +511,16 @@ export const sendNeeds: SendNeed[] = [
       "Structured layout with clear sections",
       "No reliance on audio content",
     ],
+    worksheetChanges: {
+      summary: "All instructions fully written (no verbal reliance); Word Bank included; every question fully self-contained; visual diagrams alongside text; no audio-dependent content.",
+      changes: [
+        { what: "All instructions written in full — no reliance on verbal explanation", why: "Students with hearing impairment may miss verbal instructions entirely; the worksheet must be fully self-contained" },
+        { what: "Word Bank with definitions for all key terms", why: "Students with HI may have gaps in incidental vocabulary learning (which typically happens through listening); explicit definitions compensate for this" },
+        { what: "Every question contains all necessary information within itself", why: "Students cannot ask for clarification as easily; self-contained questions prevent frustration from missing context" },
+        { what: "Visual diagrams and supports alongside every text question", why: "Visual processing is often the primary learning channel for students with HI; visual supports enhance comprehension" },
+        { what: "No audio-dependent content or references to listening tasks", why: "Any content requiring hearing creates an insurmountable barrier; all assessment must be accessible through text and visuals" },
+      ],
+    },
   },
   {
     id: "tourettes",
@@ -415,6 +541,16 @@ export const sendNeeds: SendNeed[] = [
       "Reduced writing demands where appropriate",
       "Multiple response formats",
     ],
+    worksheetChanges: {
+      summary: "Flexible completion format; reduced writing demands; natural break points; multiple response formats (tick, circle, fill-in); calm supportive tone; no timed pressure language.",
+      changes: [
+        { what: "Multiple response formats: tick, circle, fill-in, short answer", why: "Tourette's involves involuntary tics that can disrupt sustained writing; varied formats reduce the impact of tics on task completion" },
+        { what: "Natural break points built into every section", why: "Tic suppression requires cognitive effort; natural pauses allow the student to release suppressed tics without disrupting the task" },
+        { what: "Reduced writing demands — avoid long written responses", why: "Extended writing is particularly affected by motor tics; shorter responses reduce the window for tic interference" },
+        { what: "Calm, supportive, non-judgmental tone throughout", why: "Stress and anxiety worsen tic frequency; a calm, pressure-free tone helps regulate the student's anxiety level" },
+        { what: "No timed pressure language ('quickly', 'in 5 minutes')", why: "Time pressure increases anxiety which directly increases tic frequency; removing urgency language reduces the tic trigger" },
+      ],
+    },
   },
   {
     id: "older-learners",
