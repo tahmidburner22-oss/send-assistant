@@ -151,7 +151,7 @@
   /* Page setup */
   @page {
     size: A4 portrait;
-    margin: 18mm 18mm 20mm 18mm;
+    margin: 8mm 8mm 10mm 8mm;
   }
 
   html, body {
@@ -170,6 +170,22 @@
     background: white !important;
     box-shadow: none !important;
     border: none !important;
+  }
+
+  .worksheet-print-root {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .ws-header,
+  .ws-section,
+  .ws-footer {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
   }
 
   /* Card wrapper: remove shadow/border for print */
