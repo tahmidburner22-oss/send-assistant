@@ -18,7 +18,37 @@ const BUILT_IN_KEYS: Record<string, string> = {
 
 // ─── Robust JSON parser (exported for use across the app) ──────────────────────
 export function parseWithFixes(s: string): any {
-  // Strategy 1: direct parse
+  // Pre-process: escape \f that appears to be LaTeX (\frac, \frown, etc.)
+  // JSON treats \f as form feed (\x0c), but the AI uses \frac as LaTeX.
+  // We replace \f followed by a letter with \\f so JSON.parse produces \f (literal backslash+f).
+  const preProcess = (raw: string): string => {
+    // Only process inside JSON strings: replace \f[a-zA-Z] with \\f[a-zA-Z]
+    // We do a simple string scan to avoid regex edge cases
+    const out: string[] = [];
+    let inStr = false;
+    let i = 0;
+    while (i < raw.length) {
+      const ch = raw[i];
+      if (!inStr) {
+        if (ch === '"') inStr = true;
+        out.push(ch); i++; continue;
+      }
+      if (ch === '\\') {
+        const next = raw[i + 1];
+        if (next === 'f' && raw[i + 2] && /[a-zA-Z]/.test(raw[i + 2])) {
+          // \f followed by a letter — likely LaTeX, escape the backslash
+          out.push('\\\\'); i++; continue;
+        }
+        out.push(ch); i++; continue;
+      }
+      if (ch === '"') { inStr = false; out.push(ch); i++; continue; }
+      out.push(ch); i++;
+    }
+    return out.join('');
+  };
+  // Strategy 1: direct parse (with LaTeX pre-processing)
+  try { return JSON.parse(preProcess(s)); } catch (_) {}
+  // Strategy 1b: direct parse without pre-processing (fallback)
   try { return JSON.parse(s); } catch (_) {}
   // Strategy 2: fix literal control characters AND invalid backslash escapes inside strings
   const fixJsonContent = (raw: string): string => {
@@ -35,7 +65,10 @@ export function parseWithFixes(s: string): any {
       }
       if (ch === '\\') {
         const next = raw[i + 1];
-        if (next !== undefined && '"\\/bfnrtu'.includes(next)) {
+        // Note: we intentionally exclude 'f' (\f = form feed) from valid escapes
+        // because the AI uses \frac, \frown etc. (LaTeX) which must be doubled.
+        // Form feeds never appear in worksheet content, but \frac does.
+        if (next !== undefined && '"\\/bnrtu'.includes(next)) {
           result.push(ch);
         } else {
           result.push('\\\\');
@@ -759,7 +792,29 @@ Return EXACTLY this JSON (raw JSON, no markdown):
 
   // Robust JSON parsing with multiple fallback strategies
   const parseWithFixes = (s: string): any => {
-    // Strategy 1: direct parse
+    // Pre-process: escape \f that appears to be LaTeX (\frac, \frown, etc.)
+    const preProcess = (raw: string): string => {
+      const out: string[] = [];
+      let inStr = false;
+      let i = 0;
+      while (i < raw.length) {
+        const ch = raw[i];
+        if (!inStr) { if (ch === '"') inStr = true; out.push(ch); i++; continue; }
+        if (ch === '\\') {
+          const next = raw[i + 1];
+          if (next === 'f' && raw[i + 2] && /[a-zA-Z]/.test(raw[i + 2])) {
+            out.push('\\\\'); i++; continue;
+          }
+          out.push(ch); i++; continue;
+        }
+        if (ch === '"') { inStr = false; out.push(ch); i++; continue; }
+        out.push(ch); i++;
+      }
+      return out.join('');
+    };
+    // Strategy 1: direct parse (with LaTeX pre-processing)
+    try { return JSON.parse(preProcess(s)); } catch (_) {}
+    // Strategy 1b: direct parse without pre-processing (fallback)
     try { return JSON.parse(s); } catch (_) {}
 
     // Strategy 2: fix literal control characters AND invalid backslash escapes inside strings
@@ -779,7 +834,10 @@ Return EXACTLY this JSON (raw JSON, no markdown):
         // Inside a JSON string
         if (ch === '\\') {
           const next = raw[i + 1];
-          if (next !== undefined && '"\\/bfnrtu'.includes(next)) {
+          // Note: we intentionally exclude 'f' (\f = form feed) from valid escapes
+        // because the AI uses \frac, \frown etc. (LaTeX) which must be doubled.
+        // Form feeds never appear in worksheet content, but \frac does.
+        if (next !== undefined && '"\\/bnrtu'.includes(next)) {
             // Valid JSON escape — keep as-is
             result.push(ch);
           } else {
