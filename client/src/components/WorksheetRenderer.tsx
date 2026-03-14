@@ -36,6 +36,31 @@ export function renderMath(text: string): string {
 
   let result = normalizeMalformedKatexMarkup(decodeHtmlEntities(text));
 
+  // ── Step 0-pre-0: Fix tab/form-feed characters that are corrupted LaTeX commands ─
+  // When JSON.parse converts \f → form feed (\x0c) or \t → tab (\x09) before a
+  // LaTeX command suffix, we restore the backslash. E.g. \x09imes → \times.
+  // This is a safety net in case parseWithFixes didn't catch all cases.
+  // Replace tab (\x09) + letter sequence that forms a LaTeX command
+  result = result.replace(/\x09([a-zA-Z]+)/g, (match, suffix) => {
+    // Check if \t + suffix is a known LaTeX command
+    const candidate = 't' + suffix;
+    const knownCommands = ['times', 'text', 'theta', 'tau', 'tilde', 'top', 'triangle',
+      'tag', 'to', 'tfrac', 'textbf', 'textit', 'texttt', 'textrm', 'textsf'];
+    if (knownCommands.some(cmd => candidate.startsWith(cmd))) {
+      return '\\' + candidate;
+    }
+    return match; // Keep as-is if not a known LaTeX command
+  });
+  // Replace form feed (\x0c) + letter sequence that forms a LaTeX command
+  result = result.replace(/\x0c([a-zA-Z]+)/g, (match, suffix) => {
+    const candidate = 'f' + suffix;
+    const knownCommands = ['frac', 'frown', 'flat', 'forall', 'fbox', 'footnotesize'];
+    if (knownCommands.some(cmd => candidate.startsWith(cmd))) {
+      return '\\' + candidate;
+    }
+    return match;
+  });
+
   // ── Step 0-pre: Strip raw HTML injected by AI (except safe inline tags) ─────
   // The AI sometimes generates content with HTML tags like <span style="color:#cc0000">
   // directly in section content strings. These must be stripped before any other
