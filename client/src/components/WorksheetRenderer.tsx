@@ -1540,7 +1540,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(({
                 <SelfAssessmentSection content={content} fmt={fmt} />
               ) : section.type === "self-reflection" ? (
                 <SelfReflectionSection content={content} fmt={fmt} />
-              ) : section.type === "word-bank" ? (
+              ) : (section.type === "word-bank" || section.type === "wordbank") ? (
                 <WordBankSection content={content} fmt={fmt} />
               ) : section.type === "sentence-starters" ? (
                 <SentenceStartersSection content={content} fmt={fmt} />
@@ -1556,7 +1556,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(({
               )}
 
               {/* Answer lines for practice sections */}
-              {!isTeacherSection && (section.type === "independent" || section.type === "guided") && (
+              {!isTeacherSection && (section.type === "independent" || section.type === "guided") && !/(sentence starter:|steps to follow:|quick start:|what you need to do:|help box|key facts|word bank)/i.test(String(content || "")) && (
                 <div style={{ marginTop: "12px", borderTop: "1px dashed #e5e7eb", paddingTop: "10px" }}>
                   <div style={{ fontSize: `${fmt.fontSize - 2}px`, color: "#9ca3af", marginBottom: "6px", fontFamily: fmt.fontFamily }}>Working space:</div>
                   {[1, 2, 3, 4].map(n => (

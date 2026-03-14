@@ -999,7 +999,7 @@ router.post("/scaffold-worksheet", requireAuth, async (req: Request, res: Respon
         const w = raw.trim();
         const key = w.toLowerCase();
         if (seen.has(key)) continue;
-        if (["section","question","teacher","student","worksheet","learning","objectives","worked","example","reminder","challenge","common","mistakes"].includes(key)) continue;
+        if (["section","question","teacher","student","worksheet","learning","objectives","worked","example","reminder","challenge","common","mistakes","problem"].includes(key)) continue;
         seen.add(key);
         out.push(w);
         if (out.length >= 8) break;
@@ -1007,52 +1007,109 @@ router.post("/scaffold-worksheet", requireAuth, async (req: Request, res: Respon
       return out;
     };
 
-    const addScaffoldToContent = (content: string, index: number): string => {
-      const original = String(content || "").trim();
-      const basePrompt = sendNeedLower.includes("dyslexia")
-        ? "Steps to follow:\n1. Read one line at a time.\n2. Underline the key word.\n3. Use the sentence starter.\n4. Check your answer.\n"
-        : sendNeedLower.includes("adhd")
-        ? "Quick Start:\n1. Read the first question.\n2. Answer one part only.\n3. Tick the box when done.\n4. Take a short pause if needed.\n"
-        : "Steps to follow:\n1. Read the question carefully.\n2. Find the key information.\n3. Use the hint if you need help.\n4. Check your answer at the end.\n";
+    const cleanLine = (line: string) => String(line || "")
+      .replace(/^_+(?=[A-Za-z0-9(])/g, "")
+      .replace(/[ \t]+$/g, "");
 
-      const sentenceStarter = sendNeedLower.includes("science")
-        ? "Sentence starter: The answer is ______ because ______."
-        : "Sentence starter: I know this because ______.";
+    const buildHeader = () => {
+      if (sendNeedLower.includes("adhd")) {
+        return [
+          "Quick Start:",
+          "1. Read one question only.",
+          "2. Highlight the key number or word.",
+          "3. Use the hint before you answer.",
+          "4. Tick the question when you finish.",
+          ""
+        ].join("\n");
+      }
+      if (sendNeedLower.includes("asc") || sendNeedLower.includes("autism") || sendNeedLower.includes("asperger")) {
+        return [
+          "What you need to do:",
+          "1. Read the instruction exactly.",
+          "2. Complete the first part.",
+          "3. Check your answer against the key word.",
+          "4. Move to the next question.",
+          ""
+        ].join("\n");
+      }
+      if (sendNeedLower.includes("mld") || sendNeedLower.includes("moderate learning")) {
+        return [
+          "Help Box:",
+          "- Read the question carefully.",
+          "- Find the important word or number.",
+          "- Answer one step at a time.",
+          ""
+        ].join("\n");
+      }
+      return [
+        "Steps to follow:",
+        "1. Read the question carefully.",
+        "2. Find the key information.",
+        "3. Use the hint if you need help.",
+        "4. Check your answer at the end.",
+        ""
+      ].join("\n");
+    };
 
-      const hint = sendNeedLower.includes("math") || /\d|=|\+|-|×|÷|\//.test(original)
-        ? "Hint: Work through one step at a time and show each part of your method."
-        : "Hint: Find the key word in the question and use it in your answer.";
+    const buildHint = (line: string) => {
+      if (/\d|=|\+|-|×|÷|\//.test(line)) return "Hint: Show one step at a time.";
+      if (/explain|describe|why|how/i.test(line)) return "Hint: Use because in your answer.";
+      if (/compare|difference|similar/i.test(line)) return "Hint: Write one point for each side.";
+      return "Hint: Use the key word from the question in your answer.";
+    };
 
-      const needsTicks = /(^|\n)\s*\d+[\.)]/m.test(original);
-      const withTicks = needsTicks
-        ? original.replace(/(^|\n)(\s*\d+[\.)]\s*)/g, "$1[ ] $2")
-        : original;
+    const buildSentenceStarter = (line: string) => {
+      if (/what type/i.test(line)) return "Sentence starter: This is a ______ angle because ______.";
+      if (/explain|why/i.test(line)) return "Sentence starter: This happens because ______.";
+      if (/describe/i.test(line)) return "Sentence starter: I can describe this as ______.";
+      if (/how/i.test(line)) return "Sentence starter: First, ______. Then, ______.";
+      if (/compare/i.test(line)) return "Sentence starter: One similarity is ______ and one difference is ______.";
+      return "Sentence starter: The answer is ______ because ______.";
+    };
 
-      return `${basePrompt}\n${withTicks}\n\n${sentenceStarter}\n${hint}`.trim();
+    const scaffoldQuestionLine = (line: string) => {
+      const cleaned = cleanLine(line);
+      if (!cleaned.trim()) return "";
+      const questionLike = /\?\s*$/.test(cleaned) || /(^|\s)(q\d+|question\s*\d+|problem\s*\d+|\d+[.)])/i.test(cleaned);
+      if (!questionLike) return cleaned;
+      const prefixed = /^\s*\[ \]/.test(cleaned) ? cleaned : `[ ] ${cleaned}`;
+      return [prefixed, buildHint(cleaned), buildSentenceStarter(cleaned)].join("\n");
+    };
+
+    const addScaffoldToContent = (content: string, index: number) => {
+      const original = String(content || "").replace(/\r/g, "").trim();
+      const lines = original.split("\n");
+      const transformed = lines.map(scaffoldQuestionLine).join("\n").replace(/\n{3,}/g, "\n\n").trim();
+      return `${buildHeader()}${transformed}`.trim();
     };
 
     const allText = inputSections.map((s: any) => `${s.title || ""} ${s.content || ""}`).join(" \n ");
     const terms = extractTerms(allText);
     const wordBank = terms.length
-      ? terms.map((t) => `${t} | key term from this worksheet`).join("\n")
-      : "answer | what you write\nkeyword | an important word in the question\nmethod | the steps you use\nevidence | information that supports your answer";
+      ? terms.map((t) => `${t} | key term used in this worksheet`).join("\n")
+      : "keyword | important word in the question\nmethod | the steps you use\nevidence | information that supports your answer\nanswer | what you write in response";
 
-    const scaffoldedSections = inputSections.map((section: any, index: number) => ({
-      title: section.title || `Section ${index + 1}`,
-      type: section.type || "guided",
-      teacherOnly: !!section.teacherOnly,
-      content: addScaffoldToContent(section.content || "", index),
-    }));
+    const scaffoldedSections = inputSections.map((section: any, index: number) => {
+      const title = section.title || `Section ${index + 1}`;
+      const normalizedType = index === 0 ? "guided" : (section.type || "guided");
+      return {
+        title,
+        type: normalizedType,
+        teacherOnly: !!section.teacherOnly,
+        content: addScaffoldToContent(section.content || "", index),
+      };
+    });
 
     return {
       sections: scaffoldedSections,
       wordBank,
       scaffoldingApplied: [
-        "Added a Word Bank with key vocabulary",
-        "Added steps to follow before each section",
-        "Added a sentence starter or answer frame",
-        "Added hints to support independent completion",
-        "Added tick boxes to numbered questions where possible",
+        "Added a visible Word Bank with key vocabulary",
+        "Added structured steps at the start of each section",
+        "Added hints after question lines",
+        "Added sentence starters for written responses",
+        "Added tick boxes before question prompts",
+        "Removed stray leading underscore placeholders",
       ],
     };
   };
