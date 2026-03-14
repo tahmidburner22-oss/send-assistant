@@ -155,6 +155,7 @@ export default function Worksheets() {
   const [examBoard, setExamBoard] = useState("none");
   const [includeAnswers, setIncludeAnswers] = useState(true);
   const [examStyle, setExamStyle] = useState(false);
+  const [recallTopic, setRecallTopic] = useState("");
 
   // Reset difficulty to a valid option when subject changes
   // Exam-style always defaults OFF — user must opt in
@@ -371,6 +372,7 @@ export default function Worksheets() {
           additionalInstructions,
           generateDiagram,
           worksheetLength,
+          recallTopic: recallTopic.trim() || undefined,
         });
         generatedWs = { ...result, isAI: true } as AIWorksheet;
         toast.success(generateDiagram ? "Worksheet with diagram generated!" : "Worksheet generated with AI!");
@@ -882,6 +884,18 @@ export default function Worksheets() {
                       return "";
                     })()}</p>
                   )}
+                </div>
+
+                {/* ── Recall Topic ── */}
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-medium">Recall Topic (optional)</Label>
+                  <Input
+                    value={recallTopic}
+                    onChange={e => setRecallTopic(e.target.value)}
+                    placeholder="e.g. Fractions, Photosynthesis… — adds 2–3 recap questions at the start"
+                    className="h-10"
+                  />
+                  <p className="text-[10px] text-muted-foreground">🔁 If set, 2–3 recall questions on this previous topic will appear at the top of the worksheet before the main content.</p>
                 </div>
 
                 {sendNeed && sendNeed !== "none-selected" && (
@@ -2122,11 +2136,14 @@ export default function Worksheets() {
                         "text-green-800"
                       }`}>{label}</span>
                     </div>
-                    <p className={`text-xs mt-1 ${
-                      colour === "blue" ? "text-blue-700" :
-                      colour === "purple" ? "text-purple-700" :
-                      "text-green-700"
-                    }`}>{desc}</p>
+                    {/* Only show desc in the header row for non-SEND tiers */}
+                    {tier !== "send" && (
+                      <p className={`text-xs mt-1 ${
+                        colour === "blue" ? "text-blue-700" :
+                        colour === "purple" ? "text-purple-700" :
+                        "text-green-700"
+                      }`}>{desc}</p>
+                    )}
                   </div>
                   {tier === "send" && (
                     <div className="mt-2 space-y-2">
@@ -2143,13 +2160,8 @@ export default function Worksheets() {
                           {sendNeeds.map(n => <SelectItem key={n.id} value={n.id}>{n.name}</SelectItem>)}
                         </SelectContent>
                       </Select>
-                      {(sendNeedForScaffold || sendNeed) && sendNeedForScaffold !== "general" && (
-                        <SENDInfoPanel
-                          sendNeedId={sendNeedForScaffold || sendNeed}
-                          context="worksheet"
-                          className="mt-2"
-                        />
-                      )}
+                      {/* Description shown below the dropdown for SEND card */}
+                      <p className="text-xs text-green-700 mt-1">{desc}</p>
                     </div>
                   )}
                   <Button

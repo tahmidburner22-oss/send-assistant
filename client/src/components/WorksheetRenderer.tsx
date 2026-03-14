@@ -859,30 +859,30 @@ interface WorksheetRendererProps {
   teacherName?: string;
 }
 
-// Section type → colour config
+// Section type → colour config (TES-style: white backgrounds, single purple/blue border accent)
 const SECTION_STYLES: Record<string, { border: string; bg: string; badge: string; badgeBg: string; icon: string; label: string }> = {
-  "objective":     { border: "#0d9488", bg: "#f0fdfa", badge: "#0d9488", badgeBg: "#ccfbf1", icon: "🎯", label: "Learning Objectives" },
-  "success":       { border: "#0d9488", bg: "#f0fdfa", badge: "#0d9488", badgeBg: "#ccfbf1", icon: "✅", label: "Success Criteria" },
-  "vocabulary":    { border: "#7c3aed", bg: "#faf5ff", badge: "#7c3aed", badgeBg: "#ede9fe", icon: "📚", label: "Key Vocabulary" },
-  "starter":       { border: "#ea580c", bg: "#fff7ed", badge: "#ea580c", badgeBg: "#fed7aa", icon: "🔥", label: "Starter Activity" },
-  "example":       { border: "#4f46e5", bg: "#eef2ff", badge: "#4f46e5", badgeBg: "#e0e7ff", icon: "💡", label: "Worked Example" },
-  "guided":        { border: "#2563eb", bg: "#eff6ff", badge: "#2563eb", badgeBg: "#dbeafe", icon: "🌟", label: "Foundation" },
-  "independent":   { border: "#059669", bg: "#f0fdf4", badge: "#059669", badgeBg: "#d1fae5", icon: "📝", label: "Core Practice" },
-  "challenge":     { border: "#9333ea", bg: "#fdf4ff", badge: "#9333ea", badgeBg: "#f3e8ff", icon: "🚀", label: "Stretch & Challenge" },
-  "word-bank":     { border: "#0891b2", bg: "#ecfeff", badge: "#0891b2", badgeBg: "#cffafe", icon: "🔤", label: "Word Bank" },
-  "sentence-starters": { border: "#0891b2", bg: "#ecfeff", badge: "#0891b2", badgeBg: "#cffafe", icon: "✏️", label: "Sentence Starters" },
-  "self-assessment": { border: "#d97706", bg: "#fffbeb", badge: "#d97706", badgeBg: "#fef3c7", icon: "🔍", label: "Self Assessment" },
-  "self-reflection": { border: "#f59e0b", bg: "#fffbeb", badge: "#f59e0b", badgeBg: "#fef3c7", icon: "💭", label: "How Did I Do?" },
-  "diagram":       { border: "#6366f1", bg: "#eef2ff", badge: "#6366f1", badgeBg: "#e0e7ff", icon: "📊", label: "Diagram" },
-  "answers":       { border: "#16a34a", bg: "#f0fdf4", badge: "#16a34a", badgeBg: "#dcfce7", icon: "✓", label: "Answers" },
-  "questions":     { border: "#2563eb", bg: "#eff6ff", badge: "#2563eb", badgeBg: "#dbeafe", icon: "📝", label: "Exam Questions" },
-  "mark-scheme":   { border: "#ca8a04", bg: "#fefce8", badge: "#ca8a04", badgeBg: "#fef9c3", icon: "📋", label: "Mark Scheme" },
-  "teacher-notes": { border: "#dc2626", bg: "#fef2f2", badge: "#dc2626", badgeBg: "#fee2e2", icon: "👩‍🏫", label: "Teacher Notes" },
-  "send-support":  { border: "#7c3aed", bg: "#faf5ff", badge: "#7c3aed", badgeBg: "#ede9fe", icon: "♿", label: "SEND Support" },
-  "reminder-box":  { border: "#d97706", bg: "#fffbeb", badge: "#d97706", badgeBg: "#fef3c7", icon: "⚠️", label: "Reminder Box" },
-  "word-problems": { border: "#0891b2", bg: "#ecfeff", badge: "#0891b2", badgeBg: "#cffafe", icon: "🌍", label: "Word Problems" },
-  "misconceptions":{ border: "#dc2626", bg: "#fef2f2", badge: "#dc2626", badgeBg: "#fee2e2", icon: "❌", label: "Common Misconceptions" },
-  "default":       { border: "#6b7280", bg: "#f9fafb", badge: "#6b7280", badgeBg: "#f3f4f6", icon: "📄", label: "" },
+  "objective":     { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "🎯", label: "Learning Objectives" },
+  "success":       { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "✅", label: "Success Criteria" },
+  "vocabulary":    { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "📚", label: "Key Vocabulary" },
+  "starter":       { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "🔥", label: "Starter Activity" },
+  "example":       { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "💡", label: "Worked Example" },
+  "guided":        { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "🌟", label: "Foundation" },
+  "independent":   { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "📝", label: "Core Practice" },
+  "challenge":     { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "🚀", label: "Stretch & Challenge" },
+  "word-bank":     { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "🔤", label: "Word Bank" },
+  "sentence-starters": { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "✏️", label: "Sentence Starters" },
+  "self-assessment": { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "🔍", label: "Self Assessment" },
+  "self-reflection": { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "💭", label: "How Did I Do?" },
+  "diagram":       { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "📊", label: "Diagram" },
+  "answers":       { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "✓", label: "Answers" },
+  "questions":     { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "📝", label: "Exam Questions" },
+  "mark-scheme":   { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "📋", label: "Mark Scheme" },
+  "teacher-notes": { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "👩‍🏫", label: "Teacher Notes" },
+  "send-support":  { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "♿", label: "SEND Support" },
+  "reminder-box":  { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "⚠️", label: "Reminder Box" },
+  "word-problems": { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "🌍", label: "Word Problems" },
+  "misconceptions":{ border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "❌", label: "Common Misconceptions" },
+  "default":       { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "📄", label: "" },
 };
 
 function getSectionStyle(type: string) {
@@ -1309,99 +1309,70 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(({
     >
       {/* ── Professional Header ── */}
       <div className="ws-header" style={{
-        marginBottom: "14px",
-        borderRadius: "12px",
+        marginBottom: "10px",
+        borderRadius: "4px",
         overflow: "hidden",
-        border: "1px solid #e5e7eb",
-        boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
+        border: "1.5px solid #5b21b6",
       }}>
-        {/* Top colour bar */}
+        {/* Title bar — TES-style: solid purple bar with white text */}
         <div style={{
-          background: "linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%)",
-          padding: "12px 18px",
+          background: "#5b21b6",
+          padding: "8px 12px",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
           gap: "12px",
         }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <div style={{ width: "32px", height: "32px", borderRadius: "8px", background: "rgba(255,255,255,0.2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-              <span style={{ color: "white", fontWeight: 800, fontSize: "16px" }}>A</span>
+          <div>
+            <div style={{ fontWeight: 800, fontSize: `${fmt.fontSize + 4}px`, color: "white", fontFamily: fmt.fontFamily, letterSpacing: fmt.letterSpacing }}>
+              {worksheet.title}
             </div>
-            <div>
-              <div style={{ fontWeight: 700, fontSize: "13px", color: "white", fontFamily: fmt.fontFamily }}>{schoolName || "Adaptly"}</div>
-              <div style={{ fontSize: "10px", color: "rgba(255,255,255,0.75)", fontFamily: fmt.fontFamily }}>SEND-Informed Learning Resource</div>
-            </div>
+            {worksheet.subtitle && (
+              <div style={{ fontSize: `${fmt.fontSize - 2}px`, color: "rgba(255,255,255,0.85)", marginTop: "2px", fontFamily: fmt.fontFamily }}>{worksheet.subtitle}</div>
+            )}
           </div>
-          <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", justifyContent: "flex-end" }}>
-            {worksheet.metadata.yearGroup && (
-              <span style={{ background: "rgba(255,255,255,0.2)", color: "white", padding: "2px 8px", borderRadius: "12px", fontSize: "11px", fontWeight: 600, fontFamily: fmt.fontFamily }}>
-                {worksheet.metadata.yearGroup}
-              </span>
-            )}
-            {worksheet.metadata.subject && (
-              <span style={{ background: "rgba(255,255,255,0.2)", color: "white", padding: "2px 8px", borderRadius: "12px", fontSize: "11px", fontWeight: 600, fontFamily: fmt.fontFamily }}>
-                {worksheet.metadata.subject ? worksheet.metadata.subject.charAt(0).toUpperCase() + worksheet.metadata.subject.slice(1) : ""}
-              </span>
-            )}
-            {worksheet.metadata.examBoard && worksheet.metadata.examBoard !== "General" && worksheet.metadata.examBoard !== "none" && worksheet.metadata.examBoard !== "No Exam Board" && (
-              <span style={{ background: "rgba(255,255,255,0.2)", color: "white", padding: "2px 8px", borderRadius: "12px", fontSize: "11px", fontWeight: 600, fontFamily: fmt.fontFamily }}>
-                {worksheet.metadata.examBoard}
-              </span>
-            )}
+          <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.8)", fontFamily: fmt.fontFamily, textAlign: "right", flexShrink: 0 }}>
+            {schoolName || "Adaptly"}
           </div>
         </div>
-        {/* Main header body */}
+        {/* Name/Date/Class row — white background */}
         <div style={{
           background: overlayColor || "white",
-          padding: "10px 12px",
+          padding: "8px 12px",
           display: "flex",
           justifyContent: "space-between",
-          alignItems: "flex-start",
+          alignItems: "center",
           gap: "16px",
+          borderTop: "1px solid #5b21b6",
         }}>
-          <div style={{ flex: 1 }}>
-            <h1 style={{ fontSize: `${fmt.fontSize + 10}px`, fontWeight: 800, color: "#111827", margin: "0 0 4px 0", lineHeight: 1.2, fontFamily: fmt.fontFamily, letterSpacing: fmt.letterSpacing }}>
-              {worksheet.title}
-            </h1>
-            {worksheet.subtitle && (
-              <p style={{ fontSize: `${fmt.fontSize - 1}px`, color: "#6b7280", margin: "0 0 10px 0", fontFamily: fmt.fontFamily }}>{worksheet.subtitle}</p>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", alignItems: "center" }}>
+            {worksheet.metadata.sendNeed && (
+              <span style={{ background: "#ede9fe", color: "#5b21b6", padding: "1px 7px", borderRadius: "4px", fontSize: "10px", fontWeight: 600, fontFamily: fmt.fontFamily, border: "1px solid #5b21b6" }}>
+                ♿ {worksheet.metadata.sendNeed}
+              </span>
             )}
-            {/* Metadata badges */}
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
-              {worksheet.metadata.sendNeed && (
-                <span style={{ background: "#fce7f3", color: "#9d174d", padding: "2px 8px", borderRadius: "12px", fontSize: "11px", fontWeight: 600, fontFamily: fmt.fontFamily }}>
-                  ♿ {worksheet.metadata.sendNeed}
-                </span>
-              )}
-              {worksheet.metadata.difficulty && worksheet.metadata.difficulty !== "mixed" && (
-                <span style={{ background: worksheet.metadata.difficulty === "foundation" ? "#dbeafe" : "#f3e8ff", color: worksheet.metadata.difficulty === "foundation" ? "#1d4ed8" : "#7c3aed", padding: "2px 8px", borderRadius: "12px", fontSize: "11px", fontWeight: 600, fontFamily: fmt.fontFamily }}>
-                  {worksheet.metadata.difficulty === "foundation" ? "📊 Foundation" : "🚀 Higher"}
-                </span>
-              )}
-              {worksheet.metadata.estimatedTime && (
-                <span style={{ background: "#f0fdf4", color: "#166534", padding: "2px 8px", borderRadius: "12px", fontSize: "11px", fontWeight: 600, fontFamily: fmt.fontFamily }}>
-                  ⏱ {worksheet.metadata.estimatedTime}
-                </span>
-              )}
-              {worksheet.metadata.totalMarks ? (
-                <span style={{ background: "#fff7ed", color: "#9a3412", padding: "2px 8px", borderRadius: "12px", fontSize: "11px", fontWeight: 600, fontFamily: fmt.fontFamily }}>
-                  ★ {worksheet.metadata.totalMarks} marks
-                </span>
-              ) : null}
-            </div>
+            {worksheet.metadata.difficulty && worksheet.metadata.difficulty !== "mixed" && (
+              <span style={{ background: "#ede9fe", color: "#5b21b6", padding: "1px 7px", borderRadius: "4px", fontSize: "10px", fontWeight: 600, fontFamily: fmt.fontFamily, border: "1px solid #5b21b6" }}>
+                {worksheet.metadata.difficulty === "foundation" ? "Foundation" : "Higher"}
+              </span>
+            )}
+            {worksheet.metadata.estimatedTime && (
+              <span style={{ background: "#ede9fe", color: "#5b21b6", padding: "1px 7px", borderRadius: "4px", fontSize: "10px", fontWeight: 600, fontFamily: fmt.fontFamily, border: "1px solid #5b21b6" }}>
+                ⏱ {worksheet.metadata.estimatedTime}
+              </span>
+            )}
           </div>
           {/* Name/Date/Class fields */}
-          <div style={{ flexShrink: 0, minWidth: "190px", background: "#f9fafb", borderRadius: "8px", padding: "10px 12px", border: "1px solid #e5e7eb" }}>
+          <div style={{ display: "flex", gap: "16px", flexShrink: 0 }}>
             {[
               { label: "Name", value: "" },
               { label: "Date", value: new Date().toLocaleDateString("en-GB") },
               { label: "Class", value: "" },
               ...(teacherName ? [{ label: "Teacher", value: teacherName }] : []),
             ].map((field, i) => (
-              <div key={i} style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "6px" }}>
-                <span style={{ fontSize: "11px", fontWeight: 600, color: "#6b7280", minWidth: "50px", fontFamily: fmt.fontFamily }}>{field.label}:</span>
-                <div style={{ flex: 1, borderBottom: "1.5px solid #9ca3af", minWidth: "100px", height: "18px", display: "flex", alignItems: "flex-end" }}>
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                <span style={{ fontSize: "11px", fontWeight: 600, color: "#374151", fontFamily: fmt.fontFamily }}>{field.label}:</span>
+                <div style={{ borderBottom: "1.5px solid #5b21b6", minWidth: "80px", height: "16px", display: "flex", alignItems: "flex-end" }}>
                   <span style={{ fontSize: "11px", color: "#374151", paddingBottom: "1px", fontFamily: fmt.fontFamily }}>{field.value}</span>
                 </div>
               </div>
@@ -1430,10 +1401,9 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(({
             className={`ws-section ws-section-${section.type}${isTeacherSection ? " ws-teacher-section" : ""}`}
             onClick={() => editMode && onSectionClick?.(i)}
             style={{
-              marginBottom: "12px",
-              borderRadius: "6px",
-              border: `1.5px solid ${style.border}55`,
-              borderLeft: `4px solid ${style.border}`,
+              marginBottom: "10px",
+              borderRadius: "4px",
+              border: `1.5px solid ${style.border}`,
               background: "#ffffff",
               overflow: "hidden",
               cursor: editMode ? "pointer" : "default",
@@ -1447,9 +1417,9 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(({
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
-              padding: "7px 12px",
-              borderBottom: `1px solid ${style.border}20`,
-              background: "#ffffff",
+              padding: "6px 10px",
+              borderBottom: `1px solid ${style.border}`,
+              background: `${style.border}12`,
             }}>
               <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                 <span style={{ fontSize: "16px" }}>{style.icon}</span>
@@ -1492,7 +1462,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(({
             </div>
 
             {/* Section content */}
-            <div style={{ padding: "10px 12px" }}>
+            <div style={{ padding: "8px 10px" }}>
               {section.type === "diagram" && (section.imageUrl || section.svg) ? (
                 <div style={{ textAlign: "center" }}>
                   {section.imageUrl ? (
@@ -1580,15 +1550,16 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(({
 
       {/* ── Footer ── */}
       <div className="ws-footer" style={{
-        marginTop: "16px",
-        padding: "8px 12px",
-        background: "linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%)",
-        borderRadius: "8px",
+        marginTop: "10px",
+        padding: "5px 10px",
+        background: "#ffffff",
+        borderRadius: "4px",
+        border: "1.5px solid #5b21b6",
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
         fontSize: "10px",
-        color: "rgba(255,255,255,0.85)",
+        color: "#5b21b6",
         fontFamily: fmt.fontFamily,
       }}>
         <span style={{ fontWeight: 600 }}>Generated by Adaptly</span>

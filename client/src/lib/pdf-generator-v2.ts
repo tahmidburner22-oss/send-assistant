@@ -118,7 +118,7 @@ export function printWorksheetElement(
     }
     @page {
       size: A4 portrait;
-      margin: 15mm 18mm;
+      margin: 6mm 6mm 8mm 6mm;
     }
     @media print {
       html, body { background: ${overlayColor} !important; }
@@ -143,37 +143,42 @@ export function printWorksheetElement(
       word-spacing: ${fmt.wordSpacing};
     }
 
-    /* ── Header ── */
+    /* ── Header ── TES-style: rectangular purple border */
     .ws-header {
-      border-bottom: 3px solid #7c3aed;
-      padding-bottom: 16px;
-      margin-bottom: 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 16px;
+      border: 1.5px solid #5b21b6;
+      border-radius: 4px;
+      margin-bottom: 10px;
+      overflow: hidden;
     }
 
-    /* ── Sections ── */
+    /* ── Sections ── TES-style: white background, single purple border */
     .ws-section {
-      margin-bottom: 14px;
-      border-radius: 8px;
-      border: 1px solid rgba(0,0,0,0.12);
+      margin-bottom: 10px;
+      border-radius: 4px;
+      border: 1.5px solid #5b21b6;
+      background: #ffffff;
       overflow: hidden;
       page-break-inside: avoid;
       break-inside: avoid;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
     }
     .ws-section-header {
-      padding: 8px 14px;
+      padding: 6px 10px;
       display: flex;
       align-items: center;
       gap: 8px;
       font-weight: 700;
       font-size: ${fmt.fontSize - 1}px;
       font-family: ${fmt.fontFamily};
+      background: rgba(91,33,182,0.07) !important;
+      border-bottom: 1px solid #5b21b6;
+      color: #5b21b6;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
     }
     .ws-section-body {
-      padding: 12px 14px;
+      padding: 8px 10px;
       font-size: ${fmt.fontSize}px;
       line-height: ${fmt.lineHeight};
       letter-spacing: ${fmt.letterSpacing};
@@ -181,6 +186,9 @@ export function printWorksheetElement(
       white-space: pre-wrap;
       word-break: break-word;
       font-family: ${fmt.fontFamily};
+      background: #ffffff !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
     }
 
     /* ── Tables ── */
@@ -193,7 +201,7 @@ export function printWorksheetElement(
       letter-spacing: ${fmt.letterSpacing};
     }
     th {
-      background: #7c3aed !important;
+      background: #5b21b6 !important;
       color: white !important;
       padding: 8px 12px;
       text-align: left;
@@ -264,8 +272,8 @@ export function printWorksheetElement(
 
     /* ── Sentence starters ── */
     .ws-starter {
-      background: #f0fdf4 !important;
-      border-left: 3px solid #22c55e;
+      background: #ffffff !important;
+      border-left: 3px solid #5b21b6;
       padding: 6px 10px;
       margin: 4px 0;
       border-radius: 0 4px 4px 0;
@@ -290,15 +298,19 @@ export function printWorksheetElement(
       print-color-adjust: exact;
     }
 
-    /* ── Footer ── */
+    /* ── Footer ── TES-style: white background with purple border */
     .ws-footer {
-      margin-top: 24px;
-      padding-top: 12px;
-      border-top: 2px solid #e5e7eb;
+      margin-top: 10px;
+      padding: 5px 10px;
+      border: 1.5px solid #5b21b6;
+      border-radius: 4px;
       display: flex;
       justify-content: space-between;
       font-size: 10px;
-      color: #9ca3af;
+      color: #5b21b6;
+      background: #ffffff !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
     }
 
     /* ── Symbol cards (Widgit-style) ── */
