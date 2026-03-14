@@ -1520,7 +1520,34 @@ export default function Worksheets() {
                 {worksheetHistory
                   .filter(w => !historySearch || w.title.toLowerCase().includes(historySearch.toLowerCase()) || w.subject.toLowerCase().includes(historySearch.toLowerCase()) || w.topic.toLowerCase().includes(historySearch.toLowerCase()))
                   .map(ws => (
-                    <Card key={ws.id} className="hover:shadow-md transition-shadow cursor-pointer border-border/50" onClick={() => { setSelectedHistorySheet(ws); setHistoryEditedSections({}); setHistoryEditMode(false); setHistoryViewMode("teacher"); }}>
+                    <Card key={ws.id} className="hover:shadow-md transition-shadow cursor-pointer border-border/50" onClick={() => {
+                      setSelectedHistorySheet(ws);
+                      setHistoryEditedSections({});
+                      setHistoryEditMode(false);
+                      setHistoryViewMode("teacher");
+                      setSavedWorksheetId(ws.id);
+                      setEditedSections({});
+                      setEditMode(false);
+                      setEditType("none");
+                      setAiEditSectionIndex(null);
+                      setShowDiffDialog(false);
+                      setDiffVersions({});
+                      setGenerated({
+                        title: ws.title,
+                        subtitle: ws.subtitle,
+                        sections: Array.isArray(ws.sections) ? ws.sections : [],
+                        metadata: {
+                          subject: ws.subject,
+                          topic: ws.topic,
+                          yearGroup: ws.yearGroup,
+                          difficulty: ws.difficulty,
+                          examBoard: ws.examBoard,
+                          sendNeed: ws.sendNeed,
+                          ...(ws.metadata || {}),
+                        },
+                        isAI: true as const,
+                      } as AIWorksheet);
+                    }}>
                       <CardContent className="p-3">
                         <div className="flex items-center justify-between gap-2">
                           <div className="flex-1 min-w-0">
