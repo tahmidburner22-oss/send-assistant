@@ -21,7 +21,7 @@ import { downloadHtmlAsPdf, printWorksheetElement } from "@/lib/pdf-generator-v2
 import WorksheetRenderer, { renderMath, stripKatexToPlainText } from "@/components/WorksheetRenderer";
 import { worksheetBank, type BankWorksheet } from "@/lib/worksheet-bank";
 import { getSyllabusTopics, type SyllabusTopic } from "@/lib/syllabus-data";
-import { aiGenerateWorksheet, aiEditSection } from "@/lib/ai";
+import { aiGenerateWorksheet, aiEditSection, aiScaffoldExistingWorksheet } from "@/lib/ai";
 // examPaperBuilder is dynamically imported inside handlers to avoid loading the large question bank on initial page load
 import type { PastPaperQuestion } from "@/lib/pastPaperQuestions";
 import PrintOptionsDialog, { type PrintOptions } from "@/components/PrintOptionsDialog";
@@ -653,10 +653,61 @@ export default function Worksheets() {
     setDiffLoading(tier);
     try {
       const ws = generated as AIWorksheet;
-      const tierDifficulty = tier === "send" ? (difficulty || "mixed") : tier;
-      const tierSendNeed = tier === "send" ? (sendNeed && sendNeed !== "none-selected" ? sendNeed : "dyslexia") : undefined;
 
-      // Build a strong, tier-specific instruction that fundamentally changes the worksheet structure
+      // ── SEND tier: transform the EXISTING worksheet with real scaffolding ──────
+      // This uses the dedicated scaffold-worksheet endpoint which takes the current
+      // worksheet sections and adds gap fills, sentence starters, word banks, and
+      // hint boxes — preserving every original question verbatim.
+      if (tier === "send") {
+        const effectiveSendNeed =
+          (ws.metadata?.sendNeed && ws.metadata.sendNeed !== "none" && ws.metadata.sendNeed !== "none-selected")
+            ? ws.metadata.sendNeed
+            : (sendNeed && sendNeed !== "none-selected" && sendNeed !== "")
+              ? sendNeed
+              : "general";
+
+        // Get the non-teacher sections to scaffold (exclude answer sections)
+        const sectionsToScaffold = (ws.sections || []).filter(
+          (s: any) => !s.teacherOnly
+        );
+
+        const scaffolded = await aiScaffoldExistingWorksheet({
+          sections: sectionsToScaffold,
+          sendNeed: effectiveSendNeed,
+          subject: ws.metadata?.subject || subject,
+          topic: ws.metadata?.topic || topic,
+          yearGroup: ws.metadata?.yearGroup || yearGroup,
+          title: ws.title,
+        });
+
+        // Merge scaffolded sections back, preserving teacher-only sections
+        const teacherSections = (ws.sections || []).filter((s: any) => s.teacherOnly);
+
+        // If a word bank was generated, prepend it as a section
+        const wordBankSection: { title: string; content: string; type: string; teacherOnly: boolean }[] = scaffolded.wordBank
+          ? [{ title: "Word Bank", content: scaffolded.wordBank, type: "wordbank", teacherOnly: false }]
+          : [];
+
+        const scaffoldedWorksheet: AIWorksheet = {
+          ...ws,
+          sections: [...wordBankSection, ...scaffolded.sections, ...teacherSections],
+          metadata: {
+            ...ws.metadata,
+            sendNeed: effectiveSendNeed,
+            adaptations: scaffolded.scaffoldingApplied || [],
+          },
+          isAI: true as const,
+        };
+
+        setDiffVersions(prev => ({ ...prev, send: scaffoldedWorksheet }));
+        toast.success(`SEND Scaffolded version created with ${effectiveSendNeed} adaptations!`);
+        setDiffLoading(null);
+        return;
+      }
+
+      // ── Foundation / Higher tiers: regenerate from scratch ──────────────────
+      const tierDifficulty = tier;
+
       const tierInstruction = tier === "foundation"
         ? `FOUNDATION TIER — SCAFFOLDED VERSION. You MUST apply ALL of these rules without exception:
 (1) WORD BANK: Add a Word Bank box at the very top with 6-8 key terms and simple one-line definitions.
@@ -667,8 +718,7 @@ export default function Worksheets() {
 (6) LANGUAGE: Short sentences (max 12 words). Bold all key terms. Use active voice only. Use simple whole numbers.
 (7) REMINDER BOX: Write the 3 steps as a simple numbered checklist with tick boxes [ ].
 (8) REFLECTION: Use tick-box 'I can' statements only. Include an emoji confidence scale (😕 🙂 😀).`
-        : tier === "higher"
-        ? `HIGHER TIER — EXTENDED CHALLENGE VERSION. You MUST apply ALL of these rules without exception:
+        : `HIGHER TIER — EXTENDED CHALLENGE VERSION. You MUST apply ALL of these rules without exception:
 (1) SECTION A (Guided Practice): Start at Grade 5/6 difficulty — NO trivial recall questions. Include algebraic manipulation. At least 2 questions require showing full method with justification.
 (2) SECTION B (Core Practice): Include at least 2 multi-step problems combining two or more skills. Include at least 1 'Show that...' or 'Prove that...' or 'Hence...' question. Include at least 1 question with non-integer or algebraic values.
 (3) CHALLENGE: Must be a genuine Grade 8-9 problem — proof, reverse engineering, or multi-concept application. Include a 'Stretch Further' sub-part.
@@ -676,30 +726,20 @@ export default function Worksheets() {
 (5) WORKED EXAMPLE: Show a complex example demonstrating the highest-level application. Include examiner tips and common errors to avoid at Grade 8-9.
 (6) QUESTIONS: Use non-integer coefficients, surds, or complex values. Include command words: Evaluate, Justify, Derive, Hence or otherwise, Prove.
 (7) MARK SCHEME: Include detailed mark scheme with method marks (M), accuracy marks (A), and examiner notes for each question.
-(8) LANGUAGE: Use precise mathematical/scientific language. Expect correct notation throughout.`
-        : `SEND SCAFFOLDED VERSION — DYSLEXIA-FRIENDLY SCAFFOLDING. You MUST apply ALL of these rules without exception:
-(1) WORD BANK: Include a Word Bank box at the very top with 8-10 key terms and simple one-line definitions. Students refer to this throughout.
-(2) SECTION A (Guided Practice): EVERY question MUST have EITHER: (a) a fill-in-the-blank frame e.g. "The answer is ___ because ___", OR (b) a sentence starter e.g. "To find the gradient, I first...", OR (c) a partially completed worked solution to finish. NO open questions in Section A.
-(3) SECTION B (Core Practice): Include a 'Steps to Follow' reminder box at the top. At least 3 questions must have hints in square brackets e.g. [Hint: Start by finding...]. Include at least 1 matching activity, 1 true/false question, and 1 fill-in-the-blank.
-(4) WORKED EXAMPLE: Break into numbered micro-steps (max 6 words per step). Use arrows between steps. Annotate each step with WHY it is done.
-(5) LANGUAGE: Short sentences (max 12 words). Bold every key term on first use. Use active voice. Avoid passive constructions. Avoid idioms.
-(6) LAYOUT: Each question on its own line with generous space below for writing. Use clear section dividers. Avoid dense paragraphs.
-(7) CHALLENGE: Label as 'BONUS CHALLENGE — completely optional!' Make it a simple extension of Section B, not a new concept.
-(8) REFLECTION: Use tick-box 'I can' statements. Include an emoji confidence scale (😕 🙂 😀).`;
+(8) LANGUAGE: Use precise mathematical/scientific language. Expect correct notation throughout.`;
 
       const result = await aiGenerateWorksheet({
         subject: ws.metadata?.subject || subject,
         topic: ws.metadata?.topic || topic,
         yearGroup: ws.metadata?.yearGroup || yearGroup,
         difficulty: tierDifficulty,
-        sendNeed: tierSendNeed,
         examBoard: ws.metadata?.examBoard !== "General" ? ws.metadata?.examBoard : undefined,
         includeAnswers,
         worksheetLength,
         additionalInstructions: tierInstruction,
       });
       setDiffVersions(prev => ({ ...prev, [tier]: { ...result, isAI: true as const } as AIWorksheet }));
-      toast.success(`${tier === "foundation" ? "Foundation" : tier === "higher" ? "Higher" : "SEND Scaffolded"} version generated!`);
+      toast.success(`${tier === "foundation" ? "Foundation" : "Higher"} version generated!`);
     } catch (err) {
       toast.error("Differentiation failed. Please try again.");
     }
