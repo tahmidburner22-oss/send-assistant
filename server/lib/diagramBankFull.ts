@@ -1104,7 +1104,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
     label: "Straight Line Graph (y = mx + c)",
     attribution: WM,
     license: CC_BY_SA_3,
-    keywords: ["straight line", "linear graph", "y = mx + c", "gradient", "y-intercept", "slope", "linear equation", "coordinate geometry", "linear function", "real-life graphs", "algebra and sequences"],
+    keywords: ["straight line", "linear graph", "y = mx + c", "gradient", "y-intercept", "slope", "linear equation", "coordinate geometry", "linear function", "real-life graphs", "algebra and sequences", "expressions and equations", "expressions equations", "solving equations", "forming equations", "one-step equations", "two-step equations", "equations and inequalities", "algebraic expressions", "simplifying expressions", "expanding brackets", "factorising"],
   },
   {
     key: "quadratic_graph",

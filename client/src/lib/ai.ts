@@ -1162,8 +1162,8 @@ export async function aiGenerateDiagram(params: {
   yearGroup: string;
   diagramType?: string;
   sendNeed?: string;
-}): Promise<{ svg: string; caption: string; imageUrl?: string; attribution?: string; provider?: string }> {
-  // ── Primary: dedicated server endpoint (GPT-4o → fallback chain → Pollinations) ──
+}): Promise<{ svg: string; caption: string; imageUrl?: string; attribution?: string; provider?: string } | null> {
+  // ── Primary: dedicated server endpoint with Wikimedia bank + live search ──
   try {
     const storedToken = typeof localStorage !== 'undefined' ? localStorage.getItem('send_token') : null;
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
@@ -1182,6 +1182,11 @@ export async function aiGenerateDiagram(params: {
     });
     if (res.ok) {
       const data = await res.json();
+      // If server explicitly says no diagram is available, return null (do NOT fall back to AI SVG)
+      if (data.type === 'none' || (!data.imageUrl && !data.svg)) {
+        console.info(`[Diagram] No verified diagram available for "${params.topic}" — diagram section omitted`);
+        return null;
+      }
       // Route any external imageUrl through the server proxy to avoid CORS/rate-limiting
       let imageUrl = data.imageUrl;
       if (imageUrl && (imageUrl.startsWith('http://') || imageUrl.startsWith('https://'))) {
@@ -1196,47 +1201,12 @@ export async function aiGenerateDiagram(params: {
       };
     }
   } catch (e) {
-    console.warn('[Diagram] Server /api/ai/diagram failed, using legacy fallback:', e);
+    console.warn('[Diagram] Server /api/ai/diagram failed:', e);
   }
-
-  // ── Fallback 1: Gemini direct call (when server is unavailable) ─────────────────────────
-  // Note: Pollinations flux is no longer available from server IPs. Gemini SVG is used instead.
-  // (No direct Gemini client-side call here — falls through to callAI which tries all providers)
-
-  // ── Fallback 2: Legacy SVG via callAI ──────────────────────────────────────────────────────
-  const topicHint = params.diagramType || getDiagramHint(params.subject, params.topic);
-  const sendAdapt = params.sendNeed
-    ? `SEND adaptation for ${params.sendNeed}: font-size="16" minimum on ALL labels, stroke-width="3" on all outlines, max 6 labels, high-contrast colours, large bold arrows.`
-    : 'Standard quality: font-size="14" minimum on all labels, stroke-width="2" on outlines.';
-  const system = `You are a specialist educational SVG diagram generator for UK school worksheets. Your diagrams must be PROFESSIONAL, ACCURATE, WELL-SPACED, and PRINT-READY.
-
-CANVAS: viewBox="0 0 700 500" — plan all coordinates on this 700×500 canvas before drawing.
-
-MANDATORY RULES:
-1. Output ONLY valid SVG starting with <svg viewBox="0 0 700 500" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg"> and ending with </svg>. No other text.
-2. First child: <rect width="700" height="500" fill="white"/>.
-3. ALL <text> elements must have font-family="Arial, sans-serif" and an explicit fill colour.
-4. Permitted elements: rect, circle, ellipse, line, path, polygon, polyline, text, tspan, g, defs, marker only.
-5. Title: <text x="350" y="30" text-anchor="middle" font-size="17" font-weight="bold" fill="#1e293b" font-family="Arial, sans-serif">.
-6. Shapes: stroke="#1e293b" stroke-width="2". Pale fills: #dbeafe, #dcfce7, #fef9c3, #fce7f3, #ffedd5.
-7. ALL labels OUTSIDE shapes with short straight leader lines (stroke="#64748b" stroke-width="1"). NEVER overlap text with shapes or other text.
-8. Minimum 15px gap between shapes. 50px margin on all sides (elements within x=50..650, y=40..470).
-9. ${sendAdapt}
-10. Scientifically/mathematically accurate. Correct spelling on all labels.
-11. SPECIAL CHARACTERS: NEVER use raw Unicode in SVG text. Use HTML entities: &#178; for \u00b2, &#179; for \u00b3, &#176; for degree, &#955; for lambda, &#960; for pi, &#8594; for right arrow.
-After </svg> write: CAPTION: [one sentence]`;
-  const user = `Draw a professional educational SVG diagram.
-Subject: ${params.subject}, Topic: ${params.topic}, Year: ${params.yearGroup}
-Spec: ${topicHint}
-Remember: labels OUTSIDE shapes, no overlapping, 50px margins, SVG only then CAPTION:`;
-  const { text, provider } = await callAI(system, user, 3000);
-  const svgMatch = text.match(/<svg[\s\S]*?<\/svg>/i);
-  const captionMatch = text.match(/CAPTION:\s*(.+)/i);
-  if (!svgMatch) {
-    const fallbackSvg = `<svg viewBox="0 0 700 500" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg"><rect width="700" height="500" fill="white"/><rect x="20" y="20" width="660" height="460" fill="#f8f9ff" stroke="#6366f1" stroke-width="2" rx="12"/><text x="350" y="240" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#6366f1" font-weight="bold">${params.topic}</text><text x="350" y="270" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#666">${params.subject} — ${params.yearGroup}</text></svg>`;
-    return { svg: fallbackSvg, caption: `${params.topic} diagram`, provider };
-  }
-  return { svg: svgMatch[0], caption: captionMatch ? captionMatch[1].trim() : `${params.topic} diagram`, provider };
+  // No AI SVG fallback — only verified, legally licensed images from Wikimedia Commons are used.
+  // If the server cannot find a diagram, we return null so the diagram section is omitted entirely.
+  console.info(`[Diagram] No verified diagram available for "${params.topic}" (${params.subject}) — diagram section omitted`);
+  return null;
 }
 
 /**
@@ -1249,8 +1219,10 @@ export async function aiGenerateWorksheetDiagram(params: {
   yearGroup: string;
   sendNeed?: string;
   diagramType?: string;
-}): Promise<{ title: string; content: string; type: "diagram"; svg: string; caption: string; imageUrl?: string; attribution?: string; provider?: string }> {
-  const { svg, caption, imageUrl, attribution, provider } = await aiGenerateDiagram(params);
+}): Promise<{ title: string; content: string; type: "diagram"; svg: string; caption: string; imageUrl?: string; attribution?: string; provider?: string } | null> {
+  const result = await aiGenerateDiagram(params);
+  if (!result) return null; // No verified diagram available for this topic
+  const { svg, caption, imageUrl, attribution, provider } = result;
   return {
     title: `Diagram: ${params.topic}`,
     content: caption,
