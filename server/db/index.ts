@@ -173,7 +173,7 @@ export async function initDb() {
   // Each school uses their own encrypted keys (school_api_keys table).
   // Platform-level keys below are only for the Adaptly operator account and are set via Railway env vars.
   const adminKeyProviders = [
-    { provider: "groq",        envKey: "GROQ_API_KEY",        model: "llama-3.1-8b-instant"            },
+    { provider: "groq",        envKey: "GROQ_API_KEY",        model: "llama-3.3-70b-versatile"         },
     { provider: "gemini",      envKey: "GEMINI_API_KEY",      model: "gemini-2.0-flash"                },
     { provider: "openai",      envKey: "OPENAI_API_KEY",      model: "gpt-4o-mini"                     },
     { provider: "openrouter",  envKey: "OPENROUTER_API_KEY",  model: "nvidia/nemotron-nano-9b-v2:free" },
@@ -187,6 +187,12 @@ export async function initDb() {
         `INSERT OR REPLACE INTO admin_api_keys (id, provider, api_key, model, updated_at)
          VALUES (?, ?, ?, ?, datetime('now'))`,
         [provider, provider, key, model]
+      );
+    } else {
+      // Even without a new key, update the model name if the row exists (e.g. model upgrade migration)
+      _db.run(
+        `UPDATE admin_api_keys SET model=?, updated_at=datetime('now') WHERE provider=? AND (model IS NULL OR model='llama-3.1-8b-instant')`,
+        [model, provider]
       );
     }
   }
