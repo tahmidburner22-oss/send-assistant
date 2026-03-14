@@ -245,24 +245,29 @@ export function renderMath(text: string): string {
 
   // Science-specific notation
   // Chemical formulas: CO2 → CO₂, H2O → H₂O, etc. (only for common patterns)
-  // "proportional to" → ∝
-  result = result.replace(/\bproportional to\b/gi, '∝');
-  // "therefore" → ∴
-  result = result.replace(/\btherefore\b/gi, '∴');
+  // "proportional to" → ∝ — REMOVED: too aggressive, turns 'y is proportional to x' into 'y is ∝ x'
+  // which reads poorly in plain English sentences. The AI should use \propto in LaTeX instead.
+  // result = result.replace(/\bproportional to\b/gi, '∝');
+  // "therefore" → ∴ — only replace when used as a logical/mathematical connector
+  // Keep it as-is in plain English sentences (e.g. "Therefore, you should...")
+  // We only replace when followed by a mathematical expression or at start of a proof step
+  // REMOVED: too aggressive, replaces 'therefore' in plain English teacher notes
+  // result = result.replace(/\btherefore\b/gi, '∴');
   // "because" (in maths context) → ∵ — skip, too ambiguous
-  // "perpendicular" → ⊥
-  result = result.replace(/\bperpendicular\b/gi, '⊥');
-  // "parallel" → ∥
+  // "perpendicular" → ⊥ — REMOVED: too aggressive, turns 'perpendicular bisector' into '⊥ bisector'
+  // result = result.replace(/\bperpendicular\b/gi, '⊥');
+  // "parallel to" → ∥ (keep — specific enough phrase)
   result = result.replace(/\bparallel to\b/gi, '∥');
-  // "approximately" → ≈
+  // "approximately equal to" → ≈ (keep — specific enough phrase)
   result = result.replace(/\bapproximately equal to\b/gi, '≈');
-  result = result.replace(/\bapprox\.?\b/gi, '≈');
+  // "approx" → ≈ — REMOVED: too aggressive, replaces 'Approx 10 students' in plain English
+  // result = result.replace(/\bapprox\.?\b/gi, '≈');
 
-  // "pi" as a standalone word → π
+  // "pi" as a standalone word → π (only lowercase to avoid replacing 'Pi' at sentence start)
   result = result.replace(/\bpi\b/g, 'π');
 
-  // "infinity" → ∞
-  result = result.replace(/\binfinity\b/gi, '∞');
+  // "infinity" → ∞ — REMOVED: too aggressive, replaces 'infinity' in plain English
+  // result = result.replace(/\binfinity\b/gi, '∞');
 
   // "less than or equal to" / "greater than or equal to"
   result = result.replace(/\bless than or equal to\b/gi, '≤');
