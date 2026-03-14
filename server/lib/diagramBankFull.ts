@@ -64,7 +64,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "plant_cell",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/Plant_cell_structure_svg_labels.svg/960px-Plant_cell_structure_svg_labels.svg.png",
+    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/Plant_cell_structure-en.svg/960px-Plant_cell_structure-en.svg.png",
     label: "Plant Cell Structure",
     attribution: "LadyofHats, " + WM,
     license: PD,
@@ -80,7 +80,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "prokaryotic_cell",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/32/Prokaryote_cell.svg/960px-Prokaryote_cell.svg.png",
+    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Average_prokaryote_cell-_en.svg/960px-Average_prokaryote_cell-_en.svg.png",
     label: "Prokaryotic Cell Structure",
     attribution: "Mariana Ruiz LadyofHats, " + WM,
     license: PD,
@@ -120,7 +120,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "active_transport",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Active_transport.svg/960px-Active_transport.svg.png",
+    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/da/Cell_membrane_detailed_diagram_en.svg/640px-Cell_membrane_detailed_diagram_en.svg.png",
     label: "Active Transport",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -132,11 +132,11 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ══════════════════════════════════════════════════════════════════════════
   {
     key: "heart",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Heart_diagram-en.svg/960px-Heart_diagram-en.svg.png",
+    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Diagram_of_the_human_heart_%28multilingual%29.svg/640px-Diagram_of_the_human_heart_%28multilingual%29.svg.png",
     label: "Human Heart Diagram",
     attribution: "Wapcaplet, " + WM,
     license: CC_BY_SA_3,
-    keywords: ["heart", "human heart", "cardiac", "heart structure", "circulatory system", "atrium", "ventricle", "aorta", "the human circulatory system", "bioenergetics"],
+    keywords: ["heart", "human heart", "cardiac", "heart structure", "circulatory system", "atrium", "ventricle", "aorta", "the human circulatory system", "cardiovascular"],
   },
   {
     key: "circulatory_system",
@@ -152,7 +152,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
     label: "Human Respiratory System",
     attribution: WM,
     license: CC_BY_SA_3,
-    keywords: ["lungs", "respiratory system", "breathing", "alveoli", "trachea", "bronchi", "gas exchange", "diaphragm", "breathing and gas exchange", "bioenergetics"],
+    keywords: ["lungs", "respiratory system", "breathing", "alveoli", "trachea", "bronchi", "gas exchange", "diaphragm", "breathing and gas exchange"],
   },
   {
     key: "alveoli",
