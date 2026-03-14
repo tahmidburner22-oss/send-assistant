@@ -18,12 +18,16 @@ const BUILT_IN_KEYS: Record<string, string> = {
 
 // ─── Robust JSON parser (exported for use across the app) ──────────────────────
 export function parseWithFixes(s: string): any {
-  // Pre-process: escape \f that appears to be LaTeX (\frac, \frown, etc.)
-  // JSON treats \f as form feed (\x0c), but the AI uses \frac as LaTeX.
-  // We replace \f followed by a letter with \\f so JSON.parse produces \f (literal backslash+f).
+  // Pre-process: escape LaTeX backslash sequences that JSON would misinterpret.
+  // JSON treats \f as form feed (\x0c) and \t as tab (\x09), but the AI uses
+  // \frac, \frown, \times, \text etc. (LaTeX commands) which must be doubled.
   const preProcess = (raw: string): string => {
-    // Only process inside JSON strings: replace \f[a-zA-Z] with \\f[a-zA-Z]
-    // We do a simple string scan to avoid regex edge cases
+    // Scan inside JSON strings and double backslashes before LaTeX-like sequences.
+    // LaTeX escape chars that conflict with JSON: f (\frac), t (\times, \text),
+    // b (\begin, \beta), n (\neq, \nabla), r (\rightarrow), v (\vec, \vee)
+    // We only double when the next char is a LETTER (not a digit or punctuation)
+    // because \n, \t, \b, \r as control chars are never followed by letters in JSON.
+    const latexEscapeChars = new Set(['f', 't', 'b', 'n', 'r', 'v']);
     const out: string[] = [];
     let inStr = false;
     let i = 0;
@@ -35,8 +39,10 @@ export function parseWithFixes(s: string): any {
       }
       if (ch === '\\') {
         const next = raw[i + 1];
-        if (next === 'f' && raw[i + 2] && /[a-zA-Z]/.test(raw[i + 2])) {
-          // \f followed by a letter — likely LaTeX, escape the backslash
+        const afterNext = raw[i + 2];
+        // If this is \X where X is a LaTeX escape char AND the char after X is a letter,
+        // it's a LaTeX command (e.g. \frac, \times) — double the backslash.
+        if (next && latexEscapeChars.has(next) && afterNext && /[a-zA-Z]/.test(afterNext)) {
           out.push('\\\\'); i++; continue;
         }
         out.push(ch); i++; continue;
@@ -65,10 +71,15 @@ export function parseWithFixes(s: string): any {
       }
       if (ch === '\\') {
         const next = raw[i + 1];
-        // Note: we intentionally exclude 'f' (\f = form feed) from valid escapes
-        // because the AI uses \frac, \frown etc. (LaTeX) which must be doubled.
-        // Form feeds never appear in worksheet content, but \frac does.
-        if (next !== undefined && '"\\/bnrtu'.includes(next)) {
+        const afterNext2 = raw[i + 2];
+        // LaTeX escape chars that conflict with JSON valid escapes:
+        // f (\frac), t (\times), b (\begin), n (\neq), r (\rightarrow), v (\vec)
+        // If the char after the escape is a letter, it's a LaTeX command — double the backslash.
+        const latexConflicts = new Set(['f', 't', 'b', 'n', 'r', 'v']);
+        if (next !== undefined && latexConflicts.has(next) && afterNext2 && /[a-zA-Z]/.test(afterNext2)) {
+          // LaTeX command — double the backslash
+          result.push('\\\\');
+        } else if (next !== undefined && '"\\/bnrtu'.includes(next)) {
           result.push(ch);
         } else {
           result.push('\\\\');
