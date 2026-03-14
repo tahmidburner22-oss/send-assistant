@@ -474,7 +474,7 @@ export async function aiGenerateWorksheet(params: {
     yearNum <= 11 ? "Estimated time: 45–60 mins" :
                    "Estimated time: 60–90 mins";
 
-  const system = `You are an experienced UK teacher creating a classroom worksheet for ${params.yearGroup} (${phase}). Topic: "${params.topic}". All content must be exclusively about this topic. Calibrate language and difficulty for the year group. Respond with valid JSON only — no markdown, no code blocks.`;
+  const system = `You are an experienced UK teacher creating a classroom worksheet for ${params.yearGroup} (${phase}). Topic: "${params.topic}". All content must be exclusively about this topic. Calibrate language and difficulty for the year group. Respond with valid JSON only — no markdown, no code blocks. CRITICAL: Never use HTML tags (e.g. <span>, <div>, <p>, style= attributes) inside section content strings. Use plain text and LaTeX notation only (e.g. \\frac{1}{2}, \\sqrt{x}, x^2). Do not use color codes or inline styles.`;
 
   const examBoardNote = params.examBoard && params.examBoard !== "N/A" && params.examBoard !== "none"
     ? `Exam board: ${params.examBoard}.`
@@ -695,7 +695,7 @@ ${mathsNote}
 ${examStyleNote}
 ${formulaNote} ${reminderBoxNote} ${wordProblemsNote} ${commonMistakesNote}
 ${topicEnforcementNote}
-${params.additionalInstructions ? "Additional: " + params.additionalInstructions : ""}
+${params.additionalInstructions ? `\n\n=== CRITICAL OVERRIDE INSTRUCTIONS (HIGHEST PRIORITY \u2014 MUST FOLLOW EXACTLY) ===\n${params.additionalInstructions}\n=== END CRITICAL INSTRUCTIONS ===\n` : ""}
 
 Follow this structure:
 1. Title (include "${params.topic}")
@@ -816,6 +816,26 @@ Return EXACTLY this JSON (raw JSON, no markdown):
     throw new Error(`AI returned invalid JSON. Raw: ${text.slice(0, 100)}`);
   }
   const result: AIWorksheetResult = { ...json, isAI: true, provider };
+
+  // ── Strip HTML from section content strings ─────────────────────────────────
+  // The AI sometimes generates HTML tags (e.g. <span style="color:#cc0000">) in
+  // section content strings. Strip these before rendering to prevent raw attribute
+  // text from appearing in the worksheet output.
+  const stripHtmlFromContent = (s: string): string => {
+    if (!s) return s;
+    // Strip orphaned HTML attribute fragments (e.g. style="color:#cc0000">)
+    let out = s.replace(/\bstyle\s*=\s*["'][^"']*["']\s*>/g, '');
+    out = out.replace(/\bclass\s*=\s*["'](?!katex["'])[^"']*["']\s*>/g, '');
+    // Strip complete HTML tags (except safe inline tags: sup, sub, strong, em, b, i, br)
+    out = out.replace(/<\/?(?:span|div|p|a|font|section|article|header|footer|nav|ul|ol|li|table|tr|td|th|thead|tbody|tfoot|blockquote|pre|code|mark|small|del|ins|u|s|abbr|cite|dfn|kbd|samp|var|time|details|summary|form|input|select|textarea|button|label|fieldset|legend|canvas|script|style|link|meta)[^>]*>/gi, '');
+    return out;
+  };
+  if (result.sections && Array.isArray(result.sections)) {
+    result.sections = result.sections.map((section: any) => ({
+      ...section,
+      content: typeof section.content === 'string' ? stripHtmlFromContent(section.content) : section.content,
+    }));
+  }
 
   // ── Topic enforcement post-processing ────────────────────────────────────────
   // If the AI generated the wrong topic title, override it with the correct one.

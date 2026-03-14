@@ -651,13 +651,40 @@ export default function Worksheets() {
     setDiffLoading(tier);
     try {
       const ws = generated as AIWorksheet;
-      const tierMap: Record<string, string> = {
-        foundation: "foundation",
-        higher: "higher",
-        send: ws.metadata?.sendNeed || "dyslexia",
-      };
       const tierDifficulty = tier === "send" ? (difficulty || "mixed") : tier;
       const tierSendNeed = tier === "send" ? (sendNeed && sendNeed !== "none-selected" ? sendNeed : "dyslexia") : undefined;
+
+      // Build a strong, tier-specific instruction that fundamentally changes the worksheet structure
+      const tierInstruction = tier === "foundation"
+        ? `FOUNDATION TIER — SCAFFOLDED VERSION. You MUST apply ALL of these rules without exception:
+(1) WORD BANK: Add a Word Bank box at the very top with 6-8 key terms and simple one-line definitions.
+(2) SECTION A (Guided Practice): EVERY question MUST have a fill-in-the-blank answer frame OR sentence starter. Example: "The answer is ___ because ___" or "Step 1: ___, Step 2: ___". NO open questions in Section A.
+(3) SECTION B (Core Practice): Include a 'Key Facts' reminder box at the top with 3-4 essential facts. Questions must be single-step only. Include at least 2 partially-worked examples where students complete the final step.
+(4) WORKED EXAMPLE: Break into micro-steps (max 6 words per step). Number every step. Use arrows to show progression. Annotate each step with WHY.
+(5) CHALLENGE: Label as 'OPTIONAL BONUS — only try this if you have finished everything else!' Make it a simple extension, NOT a new concept.
+(6) LANGUAGE: Short sentences (max 12 words). Bold all key terms. Use active voice only. Use simple whole numbers.
+(7) REMINDER BOX: Write the 3 steps as a simple numbered checklist with tick boxes [ ].
+(8) REFLECTION: Use tick-box 'I can' statements only. Include an emoji confidence scale (😕 🙂 😀).`
+        : tier === "higher"
+        ? `HIGHER TIER — EXTENDED CHALLENGE VERSION. You MUST apply ALL of these rules without exception:
+(1) SECTION A (Guided Practice): Start at Grade 5/6 difficulty — NO trivial recall questions. Include algebraic manipulation. At least 2 questions require showing full method with justification.
+(2) SECTION B (Core Practice): Include at least 2 multi-step problems combining two or more skills. Include at least 1 'Show that...' or 'Prove that...' or 'Hence...' question. Include at least 1 question with non-integer or algebraic values.
+(3) CHALLENGE: Must be a genuine Grade 8-9 problem — proof, reverse engineering, or multi-concept application. Include a 'Stretch Further' sub-part.
+(4) EXTENSION SECTION: Add a 'Going Further' section after the challenge with 1-2 A-Level preview questions or real-world applications requiring synoptic thinking.
+(5) WORKED EXAMPLE: Show a complex example demonstrating the highest-level application. Include examiner tips and common errors to avoid at Grade 8-9.
+(6) QUESTIONS: Use non-integer coefficients, surds, or complex values. Include command words: Evaluate, Justify, Derive, Hence or otherwise, Prove.
+(7) MARK SCHEME: Include detailed mark scheme with method marks (M), accuracy marks (A), and examiner notes for each question.
+(8) LANGUAGE: Use precise mathematical/scientific language. Expect correct notation throughout.`
+        : `SEND SCAFFOLDED VERSION — DYSLEXIA-FRIENDLY SCAFFOLDING. You MUST apply ALL of these rules without exception:
+(1) WORD BANK: Include a Word Bank box at the very top with 8-10 key terms and simple one-line definitions. Students refer to this throughout.
+(2) SECTION A (Guided Practice): EVERY question MUST have EITHER: (a) a fill-in-the-blank frame e.g. "The answer is ___ because ___", OR (b) a sentence starter e.g. "To find the gradient, I first...", OR (c) a partially completed worked solution to finish. NO open questions in Section A.
+(3) SECTION B (Core Practice): Include a 'Steps to Follow' reminder box at the top. At least 3 questions must have hints in square brackets e.g. [Hint: Start by finding...]. Include at least 1 matching activity, 1 true/false question, and 1 fill-in-the-blank.
+(4) WORKED EXAMPLE: Break into numbered micro-steps (max 6 words per step). Use arrows between steps. Annotate each step with WHY it is done.
+(5) LANGUAGE: Short sentences (max 12 words). Bold every key term on first use. Use active voice. Avoid passive constructions. Avoid idioms.
+(6) LAYOUT: Each question on its own line with generous space below for writing. Use clear section dividers. Avoid dense paragraphs.
+(7) CHALLENGE: Label as 'BONUS CHALLENGE — completely optional!' Make it a simple extension of Section B, not a new concept.
+(8) REFLECTION: Use tick-box 'I can' statements. Include an emoji confidence scale (😕 🙂 😀).`;
+
       const result = await aiGenerateWorksheet({
         subject: ws.metadata?.subject || subject,
         topic: ws.metadata?.topic || topic,
@@ -667,12 +694,10 @@ export default function Worksheets() {
         examBoard: ws.metadata?.examBoard !== "General" ? ws.metadata?.examBoard : undefined,
         includeAnswers,
         worksheetLength,
-        additionalInstructions: tier === "foundation" ? "Make this accessible for lower-attaining students. Use simpler language, more scaffolding, and fewer questions." :
-          tier === "higher" ? "Make this challenging for higher-attaining students. Include multi-step problems, reasoning questions, and extension tasks." :
-          "Apply full SEND scaffolding: fill-in-the-blank guided questions, vocabulary box, sentence starters, chunked instructions, and visual supports.",
+        additionalInstructions: tierInstruction,
       });
       setDiffVersions(prev => ({ ...prev, [tier]: { ...result, isAI: true as const } as AIWorksheet }));
-      toast.success(`${tier === "foundation" ? "Foundation" : tier === "higher" ? "Higher" : "SEND"} version generated!`);
+      toast.success(`${tier === "foundation" ? "Foundation" : tier === "higher" ? "Higher" : "SEND Scaffolded"} version generated!`);
     } catch (err) {
       toast.error("Differentiation failed. Please try again.");
     }
