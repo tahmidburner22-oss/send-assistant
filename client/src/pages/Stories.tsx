@@ -8,6 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
+import { Info, CheckCircle, Sparkles } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { useApp } from "@/contexts/AppContext";
 import { yearGroups, sendNeeds, storyGenres, storyLengths, readingLevels, colorOverlays } from "@/lib/send-data";
 import { generateStoryContent } from "@/lib/worksheet-generator";
@@ -195,6 +197,47 @@ export default function Stories() {
                   </Select>
                 </div>
               </div>
+
+              {/* SEND Adaptation Info Panel */}
+              {sendNeed && sendNeed !== "none-selected" && (() => {
+                const need = sendNeeds.find(n => n.id === sendNeed);
+                if (!need) return null;
+                return (
+                  <motion.div
+                    initial={{ opacity: 0, y: -8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="rounded-xl border border-purple-200 bg-purple-50 p-3 space-y-3"
+                  >
+                    <div className="flex items-start gap-2">
+                      <Info className="h-4 w-4 text-purple-600 mt-0.5 shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-xs font-semibold text-purple-800">{need.name}</span>
+                          <Badge className="text-[10px] bg-purple-100 text-purple-700 border-purple-200">{need.category}</Badge>
+                        </div>
+                        <p className="text-xs text-purple-700 mt-1 leading-relaxed">{need.description}</p>
+                      </div>
+                    </div>
+                    {need.worksheetChanges && (
+                      <div className="bg-white/70 rounded-lg border border-purple-100 p-2.5 space-y-2">
+                        <p className="text-[11px] font-semibold text-purple-900 uppercase tracking-wide flex items-center gap-1">
+                          <Sparkles className="h-3 w-3 text-purple-600" />
+                          How this story will be adapted
+                        </p>
+                        <p className="text-xs text-purple-800 italic leading-relaxed">{need.worksheetChanges.summary}</p>
+                        <div className="space-y-1.5 mt-1">
+                          {need.worksheetChanges.changes.slice(0, 3).map((c, i) => (
+                            <div key={i} className="flex items-start gap-1.5">
+                              <CheckCircle className="h-3 w-3 text-emerald-500 mt-0.5 shrink-0" />
+                              <span className="text-xs text-purple-800">{c.what}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </motion.div>
+                );
+              })()}
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
