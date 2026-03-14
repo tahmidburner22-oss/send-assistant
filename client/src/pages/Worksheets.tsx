@@ -373,14 +373,17 @@ export default function Worksheets() {
         toast.success(generateDiagram ? "Worksheet with diagram generated!" : "Worksheet generated with AI!");
       } catch (err: any) {
         console.error("AI generation failed:", err);
+        console.error("[DEBUG] Error name:", err?.name, "| message:", err?.message?.slice(0, 300), "| stack:", err?.stack?.slice(0, 200));
         const errMsg = err?.message || String(err);
         if (errMsg.includes("No AI provider keys configured") || errMsg.includes("noKeysConfigured") || errMsg.includes("Settings → AI Providers")) {
           toast.error(
             "⚠️ No AI keys configured. Go to Settings → AI Providers to add your school's API keys. Using local generator for now.",
             { duration: 10000 }
           );
+        } else if (err?.name === "AbortError") {
+          toast.error("AI generation timed out. Please try again.");
         } else {
-          toast.error("AI generation failed — using local generator as fallback.");
+          toast.error(`AI generation failed: ${errMsg.slice(0, 80)}. Using local generator as fallback.`);
         }
         generatedWs = generateWorksheet({ subject, topic, yearGroup, sendNeed: sendNeed || undefined, difficulty, examBoard, includeAnswers, additionalInstructions });
       }
