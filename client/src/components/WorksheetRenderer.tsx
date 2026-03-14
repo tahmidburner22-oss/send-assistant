@@ -44,7 +44,7 @@ export function renderMath(text: string): string {
   // Pattern 1: Orphaned HTML attribute fragments — e.g. style="color:#cc0000">text
   // This happens when JSON parsing strips the opening < from <span style=...>
   // leaving just: style="color:#cc0000">text
-  result = result.replace(/\bstyle\s*=\s*["'][^"']*["']\s*>/g, '');
+  result = result.replace(/["']?\s*\bstyle\s*=\s*["'][^"']*["']\s*>/g, '');
   // Strip orphaned class= attribute fragments, but NOT class="katex" (used by KaTeX)
   result = result.replace(/\bclass\s*=\s*["'](?!katex["'])[^"']*["']\s*>/g, '');
   // Pattern 2: Complete HTML tags that are NOT KaTeX spans and NOT safe inline tags
@@ -1473,8 +1473,6 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(({
               ) : section.type === "questions" ? (
                 // Questions sections always go through formatContent to properly render math
                 <div>{formatContent(content, fmt)}</div>
-              ) : content && (content.includes('class="katex"') || content.includes('&lt;span class=&quot;katex&quot;')) ? (
-                <div style={{ fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, lineHeight: fmt.lineHeight }} dangerouslySetInnerHTML={{ __html: content }} />
               ) : (
                 <div>{formatContent(content, fmt)}</div>
               )}

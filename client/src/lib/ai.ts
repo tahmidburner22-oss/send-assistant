@@ -824,7 +824,7 @@ Return EXACTLY this JSON (raw JSON, no markdown):
   const stripHtmlFromContent = (s: string): string => {
     if (!s) return s;
     // Strip orphaned HTML attribute fragments (e.g. style="color:#cc0000">)
-    let out = s.replace(/\bstyle\s*=\s*["'][^"']*["']\s*>/g, '');
+    let out = s.replace(/["']?\s*\bstyle\s*=\s*["'][^"']*["']\s*>/g, '');
     out = out.replace(/\bclass\s*=\s*["'](?!katex["'])[^"']*["']\s*>/g, '');
     // Strip complete HTML tags (except safe inline tags: sup, sub, strong, em, b, i, br)
     out = out.replace(/<\/?(?:span|div|p|a|font|section|article|header|footer|nav|ul|ol|li|table|tr|td|th|thead|tbody|tfoot|blockquote|pre|code|mark|small|del|ins|u|s|abbr|cite|dfn|kbd|samp|var|time|details|summary|form|input|select|textarea|button|label|fieldset|legend|canvas|script|style|link|meta)[^>]*>/gi, '');
