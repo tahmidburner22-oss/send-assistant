@@ -44,7 +44,7 @@ const ROLE_ACCESS: Record<string, string> = {
 };
 
 const AI_PROVIDERS = [
-  { id: "groq", label: "Groq (Llama 3.3)", icon: Zap, color: "text-orange-500", description: "Ultra-fast, free tier" },
+  { id: "groq", label: "Groq (Llama 3.1 8B)", icon: Zap, color: "text-orange-500", description: "Ultra-fast, free tier" },
   { id: "gemini", label: "Google Gemini", icon: Globe, color: "text-blue-500", description: "Google's flagship model" },
   { id: "openai", label: "OpenAI GPT-4", icon: Cpu, color: "text-green-600", description: "GPT-4.1 mini" },
   { id: "openrouter", label: "OpenRouter", icon: Globe, color: "text-purple-500", description: "Multi-model routing" },
