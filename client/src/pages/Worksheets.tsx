@@ -708,6 +708,8 @@ export default function Worksheets() {
         };
 
         setDiffVersions(prev => ({ ...prev, send: scaffoldedWorksheet }));
+        setGenerated(scaffoldedWorksheet);
+        setShowDiffDialog(false);
         toast.success(`SEND Scaffolded version created with ${effectiveSendNeed} adaptations!`);
         setDiffLoading(null);
         return;
@@ -746,7 +748,10 @@ export default function Worksheets() {
         worksheetLength,
         additionalInstructions: tierInstruction,
       });
-      setDiffVersions(prev => ({ ...prev, [tier]: { ...result, isAI: true as const } as AIWorksheet }));
+      const differentiatedWorksheet = { ...result, isAI: true as const } as AIWorksheet;
+      setDiffVersions(prev => ({ ...prev, [tier]: differentiatedWorksheet }));
+      setGenerated(differentiatedWorksheet);
+      setShowDiffDialog(false);
       toast.success(`${tier === "foundation" ? "Foundation" : "Higher"} version generated!`);
     } catch (err) {
       toast.error("Differentiation failed. Please try again.");
