@@ -1909,7 +1909,7 @@ export default function Worksheets() {
       </Dialog>
 
       {/* ─── History Sheet Modal (full edit) ────────────────────────────────────────────────── */}
-      <Dialog open={!!selectedHistorySheet} onOpenChange={open => { if (!open) { setSelectedHistorySheet(null); setHistoryEditedSections({}); setHistoryEditMode(false); setHistoryAiEditIdx(null); } }}>
+      <Dialog open={!!selectedHistorySheet && !generated} onOpenChange={open => { if (!open) { setSelectedHistorySheet(null); setHistoryEditedSections({}); setHistoryEditMode(false); setHistoryAiEditIdx(null); } }}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 flex-wrap">
