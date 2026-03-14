@@ -1309,7 +1309,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(({
     >
       {/* ── Professional Header ── */}
       <div className="ws-header" style={{
-        marginBottom: "20px",
+        marginBottom: "14px",
         borderRadius: "12px",
         overflow: "hidden",
         border: "1px solid #e5e7eb",
@@ -1354,7 +1354,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(({
         {/* Main header body */}
         <div style={{
           background: overlayColor || "white",
-          padding: "14px 18px",
+          padding: "10px 12px",
           display: "flex",
           justifyContent: "space-between",
           alignItems: "flex-start",
@@ -1430,11 +1430,11 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(({
             className={`ws-section ws-section-${section.type}${isTeacherSection ? " ws-teacher-section" : ""}`}
             onClick={() => editMode && onSectionClick?.(i)}
             style={{
-              marginBottom: "16px",
-              borderRadius: "8px",
-              border: `1px solid ${style.border}30`,
+              marginBottom: "12px",
+              borderRadius: "6px",
+              border: `1.5px solid ${style.border}55`,
               borderLeft: `4px solid ${style.border}`,
-              background: style.bg,
+              background: "#ffffff",
               overflow: "hidden",
               cursor: editMode ? "pointer" : "default",
               outline: editMode && editedSections[i] !== undefined ? `2px solid ${style.border}` : "none",
@@ -1447,9 +1447,9 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(({
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
-              padding: "8px 14px",
+              padding: "7px 12px",
               borderBottom: `1px solid ${style.border}20`,
-              background: `${style.border}10`,
+              background: "#ffffff",
             }}>
               <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                 <span style={{ fontSize: "16px" }}>{style.icon}</span>
@@ -1492,7 +1492,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(({
             </div>
 
             {/* Section content */}
-            <div style={{ padding: "12px 14px" }}>
+            <div style={{ padding: "10px 12px" }}>
               {section.type === "diagram" && (section.imageUrl || section.svg) ? (
                 <div style={{ textAlign: "center" }}>
                   {section.imageUrl ? (
@@ -1580,8 +1580,8 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(({
 
       {/* ── Footer ── */}
       <div className="ws-footer" style={{
-        marginTop: "24px",
-        padding: "10px 16px",
+        marginTop: "16px",
+        padding: "8px 12px",
         background: "linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%)",
         borderRadius: "8px",
         display: "flex",
