@@ -452,6 +452,7 @@ export async function aiGenerateWorksheet(params: {
   diagramType?: string;
   worksheetLength?: string;
   introOnly?: boolean; // When true, only generate intro sections (objectives, vocab, worked example) — used for hybrid exam mode
+  recallTopic?: string; // When set, prepend 2-3 recall questions on this previous topic at the start of the worksheet
 }): Promise<AIWorksheetResult> {
 
   // ── Year-group calibration ──────────────────────────────────────────────────
@@ -734,6 +735,8 @@ export async function aiGenerateWorksheet(params: {
   // ── Topic enforcement note ─────────────────────────────────────────────────
   const topicEnforcementNote = `Every question, example, and vocabulary term must be about "${params.topic}" only.`;
 
+  const recallNote = params.recallTopic ? `RECALL SECTION REQUIRED: The first section of this worksheet must be titled "Recall — ${params.recallTopic}" and contain exactly 2-3 short retrieval questions on the PREVIOUS topic "${params.recallTopic}". These questions should be quick and accessible, designed to activate prior knowledge before the main topic. Do NOT mix recall questions with the main topic questions.` : '';
+
   const user = `Create a printable worksheet.
 Subject: ${params.subject} | Year: ${params.yearGroup} (${phase}) | Topic: ${params.topic} | Difficulty: ${params.difficulty || "mixed"}
 ${examBoardNote} ${sendNote} ${tierNote} ${lengthNote}
@@ -741,6 +744,7 @@ ${mathsNote}
 ${examStyleNote}
 ${formulaNote} ${reminderBoxNote} ${wordProblemsNote} ${commonMistakesNote}
 ${topicEnforcementNote}
+${recallNote}
 ${params.additionalInstructions ? `\n\n=== CRITICAL OVERRIDE INSTRUCTIONS (HIGHEST PRIORITY \u2014 MUST FOLLOW EXACTLY) ===\n${params.additionalInstructions}\n=== END CRITICAL INSTRUCTIONS ===\n` : ""}
 
 Follow this structure:
@@ -764,6 +768,7 @@ Return EXACTLY this JSON (raw JSON, no markdown):
   "title": "${params.topic} — ${params.yearGroup} ${subjectDisplay} Worksheet",
   "subtitle": "${params.yearGroup} (${phase}) | ${subjectDisplay} | ${params.examBoard && params.examBoard !== 'none' ? params.examBoard : 'General'} | ${timingGuide}",
   "sections": [
+    ${params.recallTopic ? `{"title": "Recall — ${params.recallTopic}", "type": "guided", "content": "WRITE exactly 2-3 short recall questions on the previous topic '${params.recallTopic}' here. These should be quick retrieval questions to activate prior knowledge. Each question on its own line: 1. Question one\n2. Question two\n3. Question three"},` : ''}
     {"title": "Learning Objectives", "type": "objective", "content": "[3 objectives for ${params.topic}]"},
     {"title": "Key Vocabulary", "type": "vocabulary", "content": "[term | definition, one per line]"},
     ${isMaths && !params.examStyle ? `{"title": "Key Formulas", "type": "example", "content": "[formulas for ${params.topic} in LaTeX, or write: No formula required]"},` : ''}
