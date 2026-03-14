@@ -15,7 +15,7 @@ import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { HelpCircle, Sparkles, Upload, X, Download, Printer, RotateCcw, FileText, Loader2 } from "lucide-react";
 import { readingLevels } from "@/lib/send-data";
-import { callAI } from "@/lib/ai";
+import { callAI, parseWithFixes } from "@/lib/ai";
 
 interface Question {
   number: number;
@@ -163,7 +163,7 @@ Return JSON:
       let parsed: QuestionResult;
       try {
         const jsonMatch = text.match(/\{[\s\S]*\}/);
-        parsed = JSON.parse(jsonMatch ? jsonMatch[0] : text);
+        parsed = parseWithFixes(jsonMatch ? jsonMatch[0] : text);
       } catch {
         const lines = text.split("\n").filter(l => /^Q?\d+[.)]/i.test(l.trim()));
         parsed = {

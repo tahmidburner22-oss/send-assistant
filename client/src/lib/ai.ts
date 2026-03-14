@@ -16,6 +16,53 @@ const BUILT_IN_KEYS: Record<string, string> = {
   huggingface: "",
 };
 
+// ─── Robust JSON parser (exported for use across the app) ──────────────────────
+export function parseWithFixes(s: string): any {
+  // Strategy 1: direct parse
+  try { return JSON.parse(s); } catch (_) {}
+  // Strategy 2: fix literal control characters AND invalid backslash escapes inside strings
+  const fixJsonContent = (raw: string): string => {
+    const result: string[] = [];
+    let inString = false;
+    let i = 0;
+    while (i < raw.length) {
+      const ch = raw[i];
+      if (!inString) {
+        if (ch === '"') inString = true;
+        result.push(ch);
+        i++;
+        continue;
+      }
+      if (ch === '\\') {
+        const next = raw[i + 1];
+        if (next !== undefined && '"\\/bfnrtu'.includes(next)) {
+          result.push(ch);
+        } else {
+          result.push('\\\\');
+        }
+        i++;
+        continue;
+      }
+      if (ch === '"') { inString = false; result.push(ch); i++; continue; }
+      if (ch === '\n') { result.push('\\n'); i++; continue; }
+      if (ch === '\r') { result.push('\\r'); i++; continue; }
+      if (ch === '\t') { result.push('\\t'); i++; continue; }
+      if (ch.charCodeAt(0) < 0x20) { result.push(`\\u${ch.charCodeAt(0).toString(16).padStart(4, '0')}`); i++; continue; }
+      result.push(ch);
+      i++;
+    }
+    return result.join('');
+  };
+  const fixed = fixJsonContent(s);
+  try { return JSON.parse(fixed); } catch (_) {}
+  // Strategy 3: extract largest JSON object/array with regex
+  const objMatch = fixed.match(/\{[\s\S]*\}/);
+  if (objMatch) { try { return JSON.parse(objMatch[0]); } catch (_) {} }
+  const arrMatch = fixed.match(/\[[\s\S]*\]/);
+  if (arrMatch) { try { return JSON.parse(arrMatch[0]); } catch (_) {} }
+  throw new Error('parseWithFixes: all strategies failed');
+}
+
 // ─── Key storage helpers ─────────────────────────────────────────────────────
 export const AI_KEY_STORAGE = {
   groq: "adaptly_groq_key",
@@ -901,11 +948,10 @@ Return JSON only (no markdown): {"title": "Story Title", "content": "Full story 
 
   const { text, provider } = await callAI(system, user, params.length === "extra-long" ? 5000 : params.length === "long" ? 3500 : 2500);
   const cleaned = text.replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/\s*```$/i, "").trim();
-  const result = JSON.parse(cleaned);
+  const result = parseWithFixes(cleaned);
   return { ...result, provider };
 }
-
-// ─── Task differentiation ────────────────────────────────────────────────────
+// ─── Task differentiationn ────────────────────────────────────────────────────
 
 export async function aiDifferentiateTask(params: {
   taskContent: string;
@@ -1150,6 +1196,6 @@ Return JSON array only:
 [{"question": "...", "options": ["A", "B", "C", "D"], "correctIndex": 0, "explanation": "The text states..."}]`;
   const { text } = await callAI(system, user, 1500);
   const cleaned = text.replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/\s*```$/i, "").trim();
-  const parsed = JSON.parse(cleaned);
+  const parsed = parseWithFixes(cleaned);
   return Array.isArray(parsed) ? parsed : parsed.questions || [];
 }

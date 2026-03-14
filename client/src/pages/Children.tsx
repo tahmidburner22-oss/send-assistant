@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { parseWithFixes } from "@/lib/ai";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -375,7 +376,7 @@ If the submission is empty or too short to mark, return mark: "N/A", feedback: "
       if (!res.ok) throw new Error("AI request failed");
       const data = await res.json();
       const text = (data.content || data.text || "").replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/\s*```$/i, "").trim();
-      const parsed = JSON.parse(text);
+      const parsed = parseWithFixes(text);
       setAutoMarkResult(parsed);
       setMarkText(parsed.mark || "");
       setFeedbackText(parsed.feedback || "");
