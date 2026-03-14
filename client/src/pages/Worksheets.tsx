@@ -395,6 +395,7 @@ export default function Worksheets() {
 
     if (generatedWs) {
       setGenerated(generatedWs);
+      setDiffVersions({}); // Clear old diff versions when a new worksheet is generated
       // Auto-save on generate so dashboard updates immediately
       const ws = generatedWs;
       const sectionsToSave = ws.sections.map(s => ({ ...s }));
@@ -452,6 +453,7 @@ export default function Worksheets() {
 
       const generatedWs = { ...ws, isAI: true } as AIWorksheet;
       setGenerated(generatedWs);
+      setDiffVersions({}); // Clear old diff versions when a new worksheet is generated
       setActiveTab("generate");
 
       // Auto-save
@@ -1611,7 +1613,7 @@ export default function Worksheets() {
             </Button>
             <Button variant="outline" size="sm" onClick={handlePrint}><Printer className="w-3.5 h-3.5 mr-1.5" /> Print</Button>
             <Button variant="outline" size="sm" onClick={handleSave}><Save className="w-3.5 h-3.5 mr-1.5" /> Save</Button>
-            <Button variant="outline" size="sm" onClick={() => { setShowDiffDialog(true); setDiffVersions({}); }} className="gap-1.5 border-indigo-300 text-indigo-700 hover:bg-indigo-50">
+            <Button variant="outline" size="sm" onClick={() => setShowDiffDialog(true)} className="gap-1.5 border-indigo-300 text-indigo-700 hover:bg-indigo-50">
               <Sparkles className="w-3.5 h-3.5" /> Differentiate
             </Button>
             <Dialog open={showAssignDialog} onOpenChange={setShowAssignDialog}>
