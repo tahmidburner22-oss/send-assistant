@@ -910,8 +910,16 @@ Return EXACTLY this JSON (raw JSON, no markdown):
   if (result.sections && Array.isArray(result.sections)) {
     result.sections = result.sections.map((section: any) => ({
       ...section,
+      // Strip rogue ** or __ markdown bold markers from section titles
+      title: typeof section.title === 'string' ? section.title.replace(/^\*{1,2}|\*{1,2}$/g, '').replace(/^_{1,2}|_{1,2}$/g, '').trim() : section.title,
       content: typeof section.content === 'string' ? stripHtmlFromContent(section.content) : section.content,
     }));
+  }
+
+  // ── Strip rogue markdown bold markers from title (** or __) ─────────────────
+  // The AI sometimes wraps titles in **...** — strip these before any other processing
+  if (result.title) {
+    result.title = result.title.replace(/^\*{1,2}|\*{1,2}$/g, '').replace(/^_{1,2}|_{1,2}$/g, '').trim();
   }
 
   // ── Topic enforcement post-processing ────────────────────────────────────────

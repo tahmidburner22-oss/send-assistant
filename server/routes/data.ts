@@ -47,8 +47,10 @@ router.get("/worksheets", requireAuth, (req: Request, res: Response) => {
 
 router.post("/worksheets", requireAuth, (req: Request, res: Response) => {
   try {
-    const { title, subject, topic, yearGroup, sendNeed, difficulty, examBoard, content, teacherContent, overlay, sections } = req.body;
-    if (!title) return res.status(400).json({ error: "Title required" });
+    const { title: rawTitle, subject, topic, yearGroup, sendNeed, difficulty, examBoard, content, teacherContent, overlay, sections } = req.body;
+    if (!rawTitle) return res.status(400).json({ error: "Title required" });
+    // Strip rogue markdown bold markers from title
+    const title = typeof rawTitle === 'string' ? rawTitle.replace(/^\*{1,2}|\*{1,2}$/g, '').replace(/^_{1,2}|_{1,2}$/g, '').trim() : rawTitle;
     console.log(`[POST /worksheets] title=${title} subject=${subject} yearGroup=${yearGroup} sections=${Array.isArray(sections) ? sections.length : 'none'}`);
     const id = uuidv4();
     const n = (v: any) => (v === undefined || v === null ? null : v);
@@ -60,9 +62,11 @@ router.post("/worksheets", requireAuth, (req: Request, res: Response) => {
     // Save sections if provided
     if (Array.isArray(sections)) {
       sections.forEach((s: any, idx: number) => {
+        // Strip rogue markdown bold markers from section titles
+        const sTitle = typeof s.title === 'string' ? s.title.replace(/^\*{1,2}|\*{1,2}$/g, '').replace(/^_{1,2}|_{1,2}$/g, '').trim() : (s.title || null);
         db.prepare(`INSERT INTO worksheet_sections (id, worksheet_id, section_index, title, type, content, teacher_only, svg, caption, symbols)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
-          uuidv4(), id, idx, s.title || null, s.type || null, s.content || null,
+          uuidv4(), id, idx, sTitle, s.type || null, s.content || null,
           s.teacherOnly ? 1 : 0, s.svg || null, s.caption || null,
           s.symbols ? JSON.stringify(s.symbols) : null
         );

@@ -169,16 +169,16 @@ export function AppProvider({ children: childrenProp }: { children: React.ReactN
         dataApi.ideas.list(),
         pupilsApi.list(),
       ]);
-      const mappedPupils = pupilsData.status === "fulfilled" ? pupilsData.value.map(mapPupil) : null;
-      const attendanceRecords = pupilsData.status === "fulfilled"
+      const mappedPupils = pupilsData.status === "fulfilled" && Array.isArray(pupilsData.value) ? pupilsData.value.map(mapPupil) : null;
+      const attendanceRecords = pupilsData.status === "fulfilled" && Array.isArray(pupilsData.value)
         ? pupilsData.value.flatMap((p: any) => Array.isArray(p.attendance) ? p.attendance.map(mapAttendanceRecord) : [])
         : null;
       setState(s => ({
         ...s,
-        worksheetHistory: ws.status === "fulfilled" ? ws.value : s.worksheetHistory,
-        storyHistory: stories.status === "fulfilled" ? stories.value.map(mapStory) : s.storyHistory,
-        differentiationHistory: diffs.status === "fulfilled" ? diffs.value.map(mapDiff) : s.differentiationHistory,
-        ideas: ideasData.status === "fulfilled" ? ideasData.value.map(mapIdea) : s.ideas,
+        worksheetHistory: ws.status === "fulfilled" ? (Array.isArray(ws.value) ? ws.value : s.worksheetHistory) : s.worksheetHistory,
+        storyHistory: stories.status === "fulfilled" ? (Array.isArray(stories.value) ? stories.value.map(mapStory) : s.storyHistory) : s.storyHistory,
+        differentiationHistory: diffs.status === "fulfilled" ? (Array.isArray(diffs.value) ? diffs.value.map(mapDiff) : s.differentiationHistory) : s.differentiationHistory,
+        ideas: ideasData.status === "fulfilled" ? (Array.isArray(ideasData.value) ? ideasData.value.map(mapIdea) : s.ideas) : s.ideas,
         children: mappedPupils ?? s.children,
         attendanceRecords: attendanceRecords ?? s.attendanceRecords,
       }));
