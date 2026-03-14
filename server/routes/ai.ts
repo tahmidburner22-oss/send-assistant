@@ -14,21 +14,24 @@ const worksheetUpload = multer({ storage: multer.memoryStorage(), limits: { file
 const PROVIDER_ORDER = ["groq", "gemini", "openai", "openrouter", "claude", "huggingface"] as const;
 
 // ── Get the best available key: school key → global admin key → env var ──────
+// Security: No API keys are ever hardcoded in source code.
+// Keys are stored encrypted in the database (school_api_keys table, AES-256-GCM).
+// Each school's keys are completely isolated — one school cannot use another's keys.
 function getEffectiveKey(provider: string, userKey?: string, schoolId?: string): string {
   if (userKey && userKey.trim()) return userKey.trim();
-  // 1. School-level key (highest priority)
+  // 1. School-level encrypted key (primary source — each school brings their own)
   if (schoolId) {
     const schoolEntry = getSchoolKey(schoolId, provider);
     if (schoolEntry?.key) return schoolEntry.key;
   }
-  // 2. Global admin key
+  // 2. Global admin key (stored in DB — set via admin panel, never hardcoded)
   try {
     const adminKey = db.prepare(
       "SELECT api_key FROM admin_api_keys WHERE provider = ?"
     ).get(provider) as any;
     if (adminKey?.api_key) return adminKey.api_key;
   } catch (_) {}
-  // 3. Railway env vars
+  // 3. Platform-level env vars (Railway — for the Adaptly platform operator account only)
   const envMap: Record<string, string> = {
     groq: process.env.GROQ_API_KEY || "",
     gemini: process.env.GEMINI_API_KEY || "",
@@ -37,15 +40,7 @@ function getEffectiveKey(provider: string, userKey?: string, schoolId?: string):
     claude: process.env.CLAUDE_API_KEY || "",
     huggingface: process.env.HUGGINGFACE_API_KEY || "",
   };
-  if (envMap[provider]) return envMap[provider];
-  // 4. Hardcoded fallback keys — always available even if DB and env vars are missing
-  const d = (s: string) => Buffer.from(s, "base64").toString("utf8");
-  const fallbackKeys: Record<string, string> = {
-    groq: d("Z3NrX01MbHBIeXQxbVpsWm50bWZ0OWxLV0dkeWIzRllqOWpCV0VPNEpiZEVBUFBiZFZMUE1IVlk="),
-    gemini: d("QUl6YVN5RG9UVThlN29lNHFSY1dRRldac2JqUUlsUkprY09zczRr"),
-    openai: d("c2stcHJvai1NZVFSZ29iTTBVUnNJeERPYVYzYVJPRzlpbmpGOXRNaUNraTRjNWJYZ1E2dkdDN3pjUXNkb0hDdXR3TWI2SEdoemJ3YUVqWng1dFQzQmxia0ZKdmZaM1Q3ZEwzaXNWRXpab01NcWdfSGkzMXl6VnJFcUJmZVpRU2xSLXVKbzU5SVRXN2pHcGU2SzQxUGx0Q3kwYnY4U0FHNmEwc0E="),
-  };
-  return fallbackKeys[provider] || "";
+  return envMap[provider] || "";
 }
 
 function getAdminModel(provider: string, schoolId?: string): string {
@@ -232,6 +227,15 @@ router.post("/generate", requireAuth, async (req: Request, res: Response) => {
     res.json({ content: result.content, provider: result.provider, aiGenerated: true });
   } catch (err: any) {
     console.error("AI proxy error:", err);
+    const errMsg = err?.message || String(err);
+    // Check if all providers failed due to missing keys (not rate limits or network errors)
+    const allNoKey = errMsg.includes("no key configured") && !errMsg.includes("429") && !errMsg.includes("401") && !errMsg.includes("failed:");
+    if (allNoKey || errMsg.includes("All AI providers failed") && errMsg.split("\n").slice(1).every((l: string) => l.includes("no key configured"))) {
+      return res.status(503).json({
+        error: "No AI provider keys configured for your school. Please go to Settings → AI Providers to add your API keys.",
+        noKeysConfigured: true,
+      });
+    }
     res.status(502).json({ error: "AI is temporarily unavailable. Please try again in a moment." });
   }
 });

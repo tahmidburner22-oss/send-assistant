@@ -271,12 +271,23 @@ export async function callAI(
         return { text: content, provider: (data.provider || "groq") as AIProvider };
       }
     }
+    // If server says no keys configured, throw immediately — don't silently fall back
+    if (res.status === 503) {
+      const errData = await res.json().catch(() => ({})) as any;
+      if (errData?.noKeysConfigured) {
+        throw new Error(errData.error || "No AI provider keys configured for your school. Please go to Settings → AI Providers to add your API keys.");
+      }
+    }
     // Fall through to client keys only on auth errors
     if (res.status !== 401 && res.status !== 403) {
       const errText = await res.text().catch(() => "");
       console.warn(`[Adaptly AI] Server error ${res.status}:`, errText.slice(0, 200));
     }
   } catch (serverErr: any) {
+    // Re-throw no-keys-configured errors — these need to reach the UI
+    if (serverErr?.message?.includes("No AI provider keys configured") || serverErr?.message?.includes("Settings → AI Providers")) {
+      throw serverErr;
+    }
     if (serverErr?.name === "AbortError") {
       console.warn("[Adaptly AI] Server generation timed out, using client keys fallback.");
     } else {
