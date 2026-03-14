@@ -422,7 +422,12 @@ router.post("/quiz", requireAuth, async (req: Request, res: Response) => {
       return res.status(400).json({ error: "documentText is required" });
     }
 
-    const avoidList = (existingQuestions as any[]).slice(-20).map((q: any) => q.question).join("\n");
+    const existingQList = (existingQuestions as any[]).slice(-30);
+    const avoidList = existingQList.map((q: any) => q.question).join("\n");
+    // Build a normalised set of existing question stems for server-side dedup
+    const existingNormalised = new Set(
+      existingQList.map((q: any) => (q.question || "").toLowerCase().replace(/[^a-z0-9 ]/g, "").trim())
+    );
 
     const raw = await callWithFallback(
       `You are an expert teacher creating multiple-choice revision questions.
@@ -438,12 +443,14 @@ router.post("/quiz", requireAuth, async (req: Request, res: Response) => {
          }
        ]
        
-       Rules:
+       CRITICAL RULES — you MUST follow ALL of these:
        - "correct" is the 0-based index of the correct option in the options array
        - All 4 options must be plausible (no obviously wrong distractors)
        - Questions should test understanding, not just memorisation
        - Vary difficulty: some straightforward, some requiring deeper thinking
-       - Do NOT repeat these questions: ${avoidList || "none yet"}
+       - ABSOLUTE RULE: Do NOT generate questions that are the same as, similar to, or paraphrase any of these already-asked questions:
+${avoidList ? avoidList.split("\n").map((q: string) => `         * ${q}`).join("\n") : "         (none yet)"}
+       - Each new question MUST cover a DIFFERENT fact, concept, or aspect of the text from all previous questions
        - Explanations must be encouraging and educational — explain WHY each wrong answer is incorrect`,
       `Study text:\n${documentText.slice(0, 8000)}`,
       1500
@@ -461,6 +468,18 @@ router.post("/quiz", requireAuth, async (req: Request, res: Response) => {
     } catch {
       return res.status(500).json({ error: "Failed to parse quiz questions — please try again" });
     }
+
+    // Server-side deduplication: filter out any questions too similar to existing ones
+    questions = questions.filter((q: any) => {
+      const norm = (q.question || "").toLowerCase().replace(/[^a-z0-9 ]/g, "").trim();
+      if (existingNormalised.has(norm)) return false;
+      // Also filter near-duplicates (first 40 chars match)
+      const prefix = norm.slice(0, 40);
+      for (const existing of existingNormalised) {
+        if (existing.slice(0, 40) === prefix) return false;
+      }
+      return true;
+    });
 
     questions = questions.map((q: any, i: number) => ({
       ...q,

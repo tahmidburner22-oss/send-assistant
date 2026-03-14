@@ -19,7 +19,7 @@ const mainMenu = [
   { path: "/worksheets", label: "Worksheets", icon: FileText },
   { path: "/reading", label: "Reading", icon: BookOpen, color: "text-emerald-600" },
   { path: "/past-papers", label: "Past Papers", icon: ScrollText },
-  { path: "/templates", label: "Templates", icon: LayoutGrid },
+  { path: "/templates", label: "Pre-made Worksheets", icon: LayoutGrid },
   { path: "/pupils", label: "Pupils", icon: Users },
   { path: "/revision-hub", label: "Revision Hub", icon: Headphones },
   { path: "/quiz-game", label: "QuizBlast", icon: Zap, color: "text-yellow-500" },

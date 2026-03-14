@@ -679,9 +679,13 @@ router.post("/diagram", requireAuth, async (req: Request, res: Response) => {
     console.warn("[Diagram] Full bank lookup failed:", fullBankErr);
   }
 
-  // ── Step 3: Live Wikimedia Commons search (CC/PD images only) ────────────────
+  // ── Step 3: Live Wikimedia Commons search (CC/PD images only) ────────────────────
+  // Wrapped in a 20-second timeout to avoid Railway's 30s HTTP limit
   try {
-    const wikiResult = await searchWikimediaDiagram(subject, topic);
+    const wikiResult = await Promise.race([
+      searchWikimediaDiagram(subject, topic),
+      new Promise<null>(resolve => setTimeout(() => resolve(null), 20_000)),
+    ]);
     if (wikiResult) {
       console.log(`[Diagram] Found via Wikimedia live search for "${topic}"`);
       return res.json({
@@ -981,8 +985,7 @@ router.post("/scaffold-worksheet", requireAuth, async (req: Request, res: Respon
   if (!sections || !Array.isArray(sections) || sections.length === 0) {
     return res.status(400).json({ error: "sections array is required" });
   }
-  if (!sendNeed) return res.status(400).json({ error: "sendNeed is required" });
-
+  // sendNeed is optional — if not provided, apply general accessibility scaffolding
   const schoolId = req.user?.schoolId ?? undefined;
   const yr = yearGroup || "Year 9";
   const sn = (sendNeed || "").toLowerCase();

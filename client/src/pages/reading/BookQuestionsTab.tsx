@@ -14,7 +14,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { HelpCircle, Sparkles, Upload, X, Download, Printer, RotateCcw, FileText, Loader2 } from "lucide-react";
-import { readingLevels } from "@/lib/send-data";
+import { readingLevels, sendNeeds } from "@/lib/send-data";
+import SENDInfoPanel from "@/components/SENDInfoPanel";
 import { callAI, parseWithFixes } from "@/lib/ai";
 
 interface Question {
@@ -65,6 +66,7 @@ export default function BookQuestionsTab() {
   const [questionCount, setQuestionCount] = useState("8");
   const [criteriaFile, setCriteriaFile] = useState<File | null>(null);
   const [criteriaText, setCriteriaText] = useState("");
+  const [sendNeed, setSendNeed] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<QuestionResult | null>(null);
   const [showTeacherNotes, setShowTeacherNotes] = useState(false);
@@ -313,6 +315,21 @@ Return JSON:
                         <X className="w-4 h-4" />
                       </button>
                     </div>
+                  )}
+                </div>
+
+                {/* SEND Need selector */}
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-medium">SEND Need (optional)</Label>
+                  <Select value={sendNeed} onValueChange={setSendNeed}>
+                    <SelectTrigger className="h-10"><SelectValue placeholder="No specific need" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none-selected">No specific need</SelectItem>
+                      {sendNeeds.map(n => <SelectItem key={n.id} value={n.id}>{n.name}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                  {sendNeed && sendNeed !== "none-selected" && (
+                    <SENDInfoPanel sendNeedId={sendNeed} context="reading" className="mt-2" />
                   )}
                 </div>
 

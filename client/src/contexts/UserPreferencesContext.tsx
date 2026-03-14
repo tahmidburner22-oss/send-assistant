@@ -93,7 +93,7 @@ export const ALL_DASHBOARD_CARDS = [
   { id: "children",      label: "Pupils",             path: "/children" },
   { id: "analytics",     label: "Analytics",          path: "/analytics" },
   { id: "daily-briefing","label": "Daily Briefing",   path: "/daily-briefing" },
-  { id: "templates",     label: "Templates",          path: "/templates" },
+  { id: "templates",     label: "Pre-made Worksheets",  path: "/templates" },
   { id: "attendance",    label: "Attendance",         path: "/attendance" },
   { id: "behaviour",     label: "Behaviour Tracking", path: "/behaviour-tracking" },
 ];

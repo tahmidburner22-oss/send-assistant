@@ -83,6 +83,20 @@ async function apiPost(path: string, body: Record<string, any>) {
   return res.json();
 }
 
+// ── Neural audio fun facts ─────────────────────────────────────────────────
+const NEURAL_FUN_FACTS = [
+  "Neural TTS voices are trained on thousands of hours of real human speech.",
+  "The brain processes spoken words 60,000 times faster than written text.",
+  "Listening to content while reading it boosts retention by up to 40%.",
+  "Revision podcasts activate both auditory and linguistic memory pathways.",
+  "Spaced repetition combined with audio recall improves long-term memory by 200%.",
+  "The neural voice engine generates audio at 24kHz — the same quality as a studio recording.",
+  "Active recall (quizzing yourself) is 3x more effective than re-reading notes.",
+  "Your brain consolidates memories during sleep — listen before bed for best results.",
+  "Interleaved practice (mixing topics) outperforms blocked practice for exam performance.",
+  "The Feynman Technique: if you can explain it simply, you truly understand it.",
+];
+
 export default function RevisionHub() {
   const [tab, setTab] = useState<Tab>("podcast");
   const [uploading, setUploading] = useState(false);
@@ -102,6 +116,16 @@ export default function RevisionHub() {
   const [score, setScore] = useState({ correct: 0, total: 0 });
   const [loadingQuiz, setLoadingQuiz] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [funFactIndex, setFunFactIndex] = useState(0);
+
+  // Rotate fun fact every 4 seconds during loading
+  useEffect(() => {
+    if (!uploading && !audioLoading) return;
+    const interval = setInterval(() => {
+      setFunFactIndex(i => (i + 1) % NEURAL_FUN_FACTS.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [uploading, audioLoading]);
 
   // Voice / TTS state
   const [yearGroup, setYearGroup] = useState("year10");
@@ -598,11 +622,11 @@ export default function RevisionHub() {
     );
   }
 
-  // ── Loading state ────────────────────────────────────────────────────────────
+  // ── Loading state ─────────────────────────────────────────────────
   if (uploading || audioLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center space-y-4 max-w-xs px-4">
+        <div className="text-center space-y-4 max-w-sm px-4">
           <div className="w-16 h-16 rounded-2xl bg-brand/10 flex items-center justify-center mx-auto">
             <Loader2 className="w-8 h-8 text-brand animate-spin" />
           </div>
@@ -614,6 +638,13 @@ export default function RevisionHub() {
               ? "Extracting text and writing your revision podcast script"
               : "Creating your natural-sounding podcast. Long scripts may take up to 90 seconds."}
           </p>
+          {/* Rotating fun fact */}
+          <div className="mt-4 rounded-xl border border-brand/20 bg-brand/5 p-3 text-left">
+            <p className="text-[10px] font-semibold text-brand uppercase tracking-wide mb-1">🧠 Did you know?</p>
+            <p className="text-xs text-muted-foreground leading-relaxed transition-all duration-500">
+              {NEURAL_FUN_FACTS[funFactIndex]}
+            </p>
+          </div>
         </div>
       </div>
     );
@@ -920,9 +951,13 @@ export default function RevisionHub() {
         <div className="flex-1 flex flex-col p-6 gap-4 max-w-2xl mx-auto w-full">
           {loadingQuiz ? (
             <div className="flex-1 flex items-center justify-center">
-              <div className="text-center space-y-3">
+              <div className="text-center space-y-3 max-w-sm">
                 <Loader2 className="w-8 h-8 text-brand animate-spin mx-auto" />
                 <p className="text-sm text-muted-foreground">Generating quiz questions...</p>
+                <div className="rounded-xl border border-brand/20 bg-brand/5 p-3 text-left mt-2">
+                  <p className="text-[10px] font-semibold text-brand uppercase tracking-wide mb-1">🧠 Did you know?</p>
+                  <p className="text-xs text-muted-foreground leading-relaxed">{NEURAL_FUN_FACTS[funFactIndex]}</p>
+                </div>
               </div>
             </div>
           ) : currentQ ? (

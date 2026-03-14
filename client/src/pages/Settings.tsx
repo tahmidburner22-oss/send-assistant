@@ -473,7 +473,7 @@ function PersonalisationSection() {
     { path: "/worksheets",         label: "Worksheets" },
     { path: "/stories",            label: "Stories" },
     { path: "/past-papers",        label: "Past Papers" },
-    { path: "/templates",          label: "Templates" },
+    { path: "/templates",          label: "Pre-made Worksheets" },
     { path: "/children",           label: "Pupils" },
     { path: "/revision-hub",       label: "Revision Hub" },
     { path: "/quiz-game",          label: "QuizBlast" },
