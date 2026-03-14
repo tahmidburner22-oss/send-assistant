@@ -1581,7 +1581,7 @@ export default function Worksheets() {
                       <CardContent className="p-3">
                         <div className="flex items-center justify-between gap-2">
                           <div className="flex-1 min-w-0">
-                            <h3 className="font-semibold text-sm text-foreground truncate">{ws.title}</h3>
+                            <h3 className="font-semibold text-sm text-foreground truncate">{(ws.title || '').replace(/^\*{1,2}|\*{1,2}$/g, '').replace(/^_{1,2}|_{1,2}$/g, '').trim()}</h3>
                             <div className="flex flex-wrap gap-1 mt-1">
                               <span className="text-xs text-muted-foreground">{ws.yearGroup} · {ws.subject} · {ws.topic}</span>
                             </div>

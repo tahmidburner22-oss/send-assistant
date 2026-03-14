@@ -118,6 +118,15 @@ export default function RevisionHub() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [funFactIndex, setFunFactIndex] = useState(0);
 
+  // Voice / TTS state — declared BEFORE the useEffect that references audioLoading
+  const [yearGroup, setYearGroup] = useState("year10");
+  const [voiceEngine, setVoiceEngine] = useState<VoiceEngine>("neural");
+  const [neuralVoice, setNeuralVoice] = useState("nova");
+  const [selectedLanguage, setSelectedLanguage] = useState("en");
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [audioLoading, setAudioLoading] = useState(false);
+  const [audioError, setAudioError] = useState<string | null>(null);
+
   // Rotate fun fact every 4 seconds during loading
   useEffect(() => {
     if (!uploading && !audioLoading) return;
@@ -126,15 +135,6 @@ export default function RevisionHub() {
     }, 4000);
     return () => clearInterval(interval);
   }, [uploading, audioLoading]);
-
-  // Voice / TTS state
-  const [yearGroup, setYearGroup] = useState("year10");
-  const [voiceEngine, setVoiceEngine] = useState<VoiceEngine>("neural");
-  const [neuralVoice, setNeuralVoice] = useState("nova");
-  const [selectedLanguage, setSelectedLanguage] = useState("en");
-  const [audioUrl, setAudioUrl] = useState<string | null>(null);
-  const [audioLoading, setAudioLoading] = useState(false);
-  const [audioError, setAudioError] = useState<string | null>(null);
   const [browserVoices, setBrowserVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [selectedBrowserVoice, setSelectedBrowserVoice] = useState("");
 

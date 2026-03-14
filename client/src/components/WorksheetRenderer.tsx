@@ -382,31 +382,79 @@ export function renderMath(text: string): string {
     result = applyToPlainText(result, s => s.replace(/\bimes\b/g, '×'));
     // Note: \text{}, \mathrm{} and related commands are handled at Step 0a-pre (top of function)
     // before any KaTeX HTML is produced, so we don't need to repeat them here.
-    result = applyToPlainText(result, s => s.replace(/\bqrt\{([^{}]*)\}/g, (_, expr) => {
-      try { return katex.renderToString(`\\sqrt{${expr}}`, { displayMode: false, throwOnError: false }); }
+    result = applyToPlainText(result, s => s.replace(/\qrt\{([^{}]*)\}/g, (_, expr) => {
+      try { return katex.renderToString(`\sqrt{${expr}}`, { displayMode: false, throwOnError: false }); }
       catch { return `√${expr}`; }
     }));
 
-    // \frac{num}{den} → KaTeX fraction
-    result = applyToPlainText(result, s => s.replace(/\\frac\{([^{}]*)\}\{([^{}]*)\}/g, (_, num, den) => {
+    // Brace-depth-aware helper for \frac, \dfrac, \sqrt with nested braces
+    const extractBalancedBrace = (str: string, start: number): { content: string; end: number } | null => {
+      if (str[start] !== '{') return null;
+      let depth = 0, i = start;
+      while (i < str.length) {
+        if (str[i] === '{') depth++;
+        else if (str[i] === '}') { depth--; if (depth === 0) return { content: str.substring(start + 1, i), end: i + 1 }; }
+        i++;
+      }
+      return null;
+    };
+    const renderLatexWithNestedBraces = (s: string, cmd: string, render: (args: string[]) => string, argCount: number): string => {
+      let out = '';
+      let i = 0;
+      while (i < s.length) {
+        const idx = s.indexOf(cmd + '{', i);
+        if (idx === -1) { out += s.substring(i); break; }
+        const args: string[] = [];
+        let pos = idx + cmd.length;
+        let valid = true;
+        for (let a = 0; a < argCount; a++) {
+          const grp = extractBalancedBrace(s, pos);
+          if (!grp) { valid = false; break; }
+          args.push(grp.content);
+          pos = grp.end;
+        }
+        if (!valid) { out += s.substring(i, idx + cmd.length + 1); i = idx + cmd.length + 1; continue; }
+        out += s.substring(i, idx);
+        out += render(args);
+        i = pos;
+      }
+      return out;
+    };
+
+    // \frac{num}{den} → KaTeX fraction (handles nested braces)
+    result = applyToPlainText(result, s => renderLatexWithNestedBraces(s, '\\frac', ([num, den]) => {
       try { return katex.renderToString(`\\dfrac{${num}}{${den}}`, { displayMode: false, throwOnError: false }); }
       catch { return `${num}/${den}`; }
-    }));
-    // \dfrac{num}{den} → KaTeX fraction
-    result = applyToPlainText(result, s => s.replace(/\\dfrac\{([^{}]*)\}\{([^{}]*)\}/g, (_, num, den) => {
+    }, 2));
+    // \dfrac{num}{den} → KaTeX fraction (handles nested braces)
+    result = applyToPlainText(result, s => renderLatexWithNestedBraces(s, '\\dfrac', ([num, den]) => {
       try { return katex.renderToString(`\\dfrac{${num}}{${den}}`, { displayMode: false, throwOnError: false }); }
       catch { return `${num}/${den}`; }
-    }));
-    // \sqrt{expr} → KaTeX square root
-    result = applyToPlainText(result, s => s.replace(/\\sqrt\{([^{}]*)\}/g, (_, expr) => {
+    }, 2));
+    // \sqrt{expr} → KaTeX square root (handles nested braces like \sqrt{5^{2} + 12^{2}})
+    result = applyToPlainText(result, s => renderLatexWithNestedBraces(s, '\\sqrt', ([expr]) => {
       try { return katex.renderToString(`\\sqrt{${expr}}`, { displayMode: false, throwOnError: false }); }
       catch { return `√${expr}`; }
-    }));
-    // \sqrt[n]{expr} → KaTeX nth root
-    result = applyToPlainText(result, s => s.replace(/\\sqrt\[([^\]]+)\]\{([^{}]*)\}/g, (_, n, expr) => {
-      try { return katex.renderToString(`\\sqrt[${n}]{${expr}}`, { displayMode: false, throwOnError: false }); }
-      catch { return `${n}√${expr}`; }
-    }));
+    }, 1));
+    // \sqrt[n]{expr} → KaTeX nth root (brace-depth-aware)
+    result = applyToPlainText(result, s => {
+      let out = '';
+      let i = 0;
+      while (i < s.length) {
+        const idx = s.indexOf('\\sqrt[', i);
+        if (idx === -1) { out += s.substring(i); break; }
+        const closeBracket = s.indexOf(']', idx + 6);
+        if (closeBracket === -1) { out += s.substring(i, idx + 6); i = idx + 6; continue; }
+        const n = s.substring(idx + 6, closeBracket);
+        const grp = extractBalancedBrace(s, closeBracket + 1);
+        if (!grp) { out += s.substring(i, closeBracket + 1); i = closeBracket + 1; continue; }
+        out += s.substring(i, idx);
+        try { out += katex.renderToString(`\\sqrt[${n}]{${grp.content}}`, { displayMode: false, throwOnError: false }); }
+        catch { out += `${n}√${grp.content}`; }
+        i = grp.end;
+      }
+      return out;
+    });
     // \sqrt followed by a single character or number (no braces)
     result = applyToPlainText(result, s => s.replace(/\\sqrt\s+([A-Za-z0-9]+)/g, (_, n) => {
       try { return katex.renderToString(`\\sqrt{${n}}`, { displayMode: false, throwOnError: false }); }
@@ -1406,7 +1454,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(({
               <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                 <span style={{ fontSize: "16px" }}>{style.icon}</span>
                 <span style={{ fontWeight: 700, fontSize: `${fmt.fontSize + 1}px`, color: style.border, fontFamily: fmt.fontFamily }}>
-                  {section.title}
+                  {(section.title || '').replace(/^\*{1,2}|\*{1,2}$/g, '').replace(/^_{1,2}|_{1,2}$/g, '').trim()}
                 </span>
               </div>
               <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
