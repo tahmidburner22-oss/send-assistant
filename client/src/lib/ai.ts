@@ -56,7 +56,7 @@ async function callGroq(systemPrompt: string, userPrompt: string, maxTokens: num
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
     body: JSON.stringify({
-      model: "llama-3.1-8b-instant",
+      model: "llama-3.3-70b-versatile",
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
@@ -556,9 +556,9 @@ Return EXACTLY this JSON (raw JSON, no markdown):
   }
 }`;
 
-  // Scale token limit with worksheet length — llama-3.1-8b-instant generates ~1500 tokens/sec
-  // 10min ≈ 1500t (~1s), 30min ≈ 2500t (~2s), 60min ≈ 3500t (~3s)
-  const maxTokensForLength = params.introOnly ? 1500 : (lengthMins >= 60 ? 3500 : lengthMins <= 10 ? 1500 : 2500);
+  // Scale token limit with worksheet length — llama-3.3-70b-versatile handles large outputs well
+  // 10min ≈ 2000t, 30min ≈ 4000t, 60min ≈ 6000t
+  const maxTokensForLength = params.introOnly ? 2000 : (lengthMins >= 60 ? 6000 : lengthMins <= 10 ? 2000 : 4000);
   const { text, provider } = await callAI(system, user, maxTokensForLength);
   const cleaned = text
     .replace(/^```json\s*/i, "")
@@ -566,23 +566,64 @@ Return EXACTLY this JSON (raw JSON, no markdown):
     .replace(/\s*```$/i, "")
     .trim();
   let json: any;
+
+  // Robust JSON parsing with multiple fallback strategies
+  const parseWithFixes = (s: string): any => {
+    // Strategy 1: direct parse
+    try { return JSON.parse(s); } catch (_) {}
+
+    // Strategy 2: fix literal control characters AND invalid backslash escapes inside strings
+    // Process character by character to correctly handle string context
+    const fixJsonContent = (raw: string): string => {
+      const result: string[] = [];
+      let inString = false;
+      let i = 0;
+      while (i < raw.length) {
+        const ch = raw[i];
+        if (!inString) {
+          if (ch === '"') inString = true;
+          result.push(ch);
+          i++;
+          continue;
+        }
+        // Inside a JSON string
+        if (ch === '\\') {
+          const next = raw[i + 1];
+          if (next !== undefined && '"\\/bfnrtu'.includes(next)) {
+            // Valid JSON escape — keep as-is
+            result.push(ch);
+          } else {
+            // Invalid escape (e.g. LaTeX \( \) \dfrac) — double the backslash
+            result.push('\\\\');
+          }
+          i++;
+          continue;
+        }
+        if (ch === '"') { inString = false; result.push(ch); i++; continue; }
+        if (ch === '\n') { result.push('\\n'); i++; continue; }
+        if (ch === '\r') { result.push('\\r'); i++; continue; }
+        if (ch === '\t') { result.push('\\t'); i++; continue; }
+        if (ch.charCodeAt(0) < 0x20) { result.push(`\\u${ch.charCodeAt(0).toString(16).padStart(4, '0')}`); i++; continue; }
+        result.push(ch);
+        i++;
+      }
+      return result.join('');
+    };
+    const fixed = fixJsonContent(s);
+    try { return JSON.parse(fixed); } catch (_) {}
+
+    // Strategy 3: extract largest JSON object with regex
+    const match = fixed.match(/\{[\s\S]*\}/);
+    if (match) { try { return JSON.parse(match[0]); } catch (_) {} }
+
+    throw new Error('all strategies failed');
+  };
+
   try {
-    json = JSON.parse(cleaned);
+    json = parseWithFixes(cleaned);
   } catch (parseErr) {
-    // LaTeX escape sequences like \( \) \[ \] \{ \} \dfrac \sqrt etc. are invalid JSON escapes.
-    // Fix by doubling backslashes inside JSON string values only.
-    try {
-      // Strategy: replace invalid single-backslash escapes with double backslashes
-      // Only fix sequences that are NOT valid JSON escapes (\" \\ \/ \b \f \n \r \t \uXXXX)
-      const fixedJson = cleaned.replace(
-        /\\(?!["\\\//bfnrtu])/g,
-        "\\\\"
-      );
-      json = JSON.parse(fixedJson);
-    } catch (fixErr) {
-      console.error("[Adaptly AI] JSON parse failed even after LaTeX fix. Raw response:", text.slice(0, 300));
-      throw new Error(`AI returned invalid JSON. Raw: ${text.slice(0, 100)}`);
-    }
+    console.error("[Adaptly AI] JSON parse failed after all fixes. Raw response:", text.slice(0, 300));
+    throw new Error(`AI returned invalid JSON. Raw: ${text.slice(0, 100)}`);
   }
   const result: AIWorksheetResult = { ...json, isAI: true, provider };
 
