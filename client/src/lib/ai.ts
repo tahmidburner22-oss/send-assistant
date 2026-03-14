@@ -1296,3 +1296,58 @@ Return JSON array only:
   const parsed = parseWithFixes(cleaned);
   return Array.isArray(parsed) ? parsed : parsed.questions || [];
 }
+
+// ─── SEND Scaffold Existing Worksheet ────────────────────────────────────────
+/**
+ * Takes the sections of an existing worksheet and transforms them with real
+ * SEND scaffolding (gap fills, sentence starters, word banks, hint boxes)
+ * while preserving all original content verbatim.
+ *
+ * Uses the dedicated /api/ai/scaffold-worksheet server endpoint.
+ */
+export async function aiScaffoldExistingWorksheet(params: {
+  sections: Array<{ title: string; content: string; type?: string; teacherOnly?: boolean }>;
+  sendNeed: string;
+  subject?: string;
+  topic?: string;
+  yearGroup?: string;
+  title?: string;
+}): Promise<{
+  sections: Array<{ title: string; content: string; type?: string; teacherOnly?: boolean }>;
+  wordBank?: string;
+  scaffoldingApplied?: string[];
+  provider?: string;
+}> {
+  const storedToken = typeof localStorage !== 'undefined' ? localStorage.getItem('send_token') : null;
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (storedToken) headers['Authorization'] = `Bearer ${storedToken}`;
+
+  const res = await fetch('/api/ai/scaffold-worksheet', {
+    method: 'POST',
+    headers,
+    credentials: 'include',
+    body: JSON.stringify({
+      sections: params.sections,
+      sendNeed: params.sendNeed,
+      subject: params.subject,
+      topic: params.topic,
+      yearGroup: params.yearGroup,
+      title: params.title,
+    }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: 'Unknown error' }));
+    throw new Error(err.error || `Scaffold request failed: ${res.status}`);
+  }
+
+  const data = await res.json();
+  const scaffolded = data.scaffolded;
+
+  return {
+    sections: scaffolded.sections || params.sections,
+    wordBank: scaffolded.wordBank,
+    scaffoldingApplied: scaffolded.scaffoldingApplied,
+    provider: data.provider,
+  };
+}

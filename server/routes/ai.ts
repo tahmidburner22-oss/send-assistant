@@ -6,6 +6,14 @@ import { requireAuth, requireAdmin, auditLog } from "../middleware/auth.js";
 import { filterContent } from "../lib/contentFilter.js";
 import { getSchoolKey } from "./schoolApiKeys.js";
 import { findDiagram, searchWikimediaDiagram } from "../lib/diagramBank.js";
+// Full diagram bank is lazy-loaded to keep startup fast
+let _fullDiagramBank: typeof import("../lib/diagramBankFull.js") | null = null;
+async function getFullDiagramBank() {
+  if (!_fullDiagramBank) {
+    _fullDiagramBank = await import("../lib/diagramBankFull.js");
+  }
+  return _fullDiagramBank;
+}
 
 const router = Router();
 const worksheetUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
@@ -643,7 +651,7 @@ router.post("/diagram", requireAuth, async (req: Request, res: Response) => {
   const schoolId = req.user?.schoolId ?? undefined;
   const yr = yearGroup || "Year 9";
 
-  // ── Attempt 0: Curated diagram bank (verified Wikimedia URLs) ───────────────────
+  // ── Step 1: Curated fast diagram bank (verified Wikimedia URLs) ─────────────
   const bankedDiagram = findDiagram(subject, topic);
   if (bankedDiagram) {
     console.log(`[Diagram] Found in curated bank: ${bankedDiagram.key}`);
@@ -655,7 +663,26 @@ router.post("/diagram", requireAuth, async (req: Request, res: Response) => {
       type: "image",
     });
   }
-  // ── Attempt 0b: Live Wikimedia Commons search ─────────────────────────────────
+
+  // ── Step 2: Full comprehensive diagram bank (lazy-loaded, all 623 curriculum topics) ──
+  try {
+    const fullBank = await getFullDiagramBank();
+    const fullMatch = fullBank.findDiagramFull(subject, topic);
+    if (fullMatch) {
+      console.log(`[Diagram] Found in full bank: ${fullMatch.key}`);
+      return res.json({
+        imageUrl: fullMatch.url,
+        caption: `${fullMatch.label} — ${subject} (${yr})`,
+        attribution: `${fullMatch.attribution} | Licence: ${fullMatch.license}`,
+        provider: "wikimedia-full-bank",
+        type: "image",
+      });
+    }
+  } catch (fullBankErr) {
+    console.warn("[Diagram] Full bank lookup failed:", fullBankErr);
+  }
+
+  // ── Step 3: Live Wikimedia Commons search (CC/PD images only) ────────────────
   try {
     const wikiResult = await searchWikimediaDiagram(subject, topic);
     if (wikiResult) {
@@ -669,89 +696,19 @@ router.post("/diagram", requireAuth, async (req: Request, res: Response) => {
       });
     }
   } catch (wikiErr) {
-    console.warn(`[Diagram] Wikimedia search failed (rate-limited or unavailable), falling back to AI SVG`);
-  }
-  console.log(`[Diagram] No real image found, generating AI SVG for "${topic}" (${subject})`);
-
-  // ── Attempt 1: Gemini 2.0 Flash SVG (fallback when no real image found) ──────
-  const { system, user } = buildDiagramPrompt(subject, topic, yr, sendNeed);
-  const geminiKey = getEffectiveKey("gemini", undefined, schoolId);
-  if (geminiKey) {
-    try {
-      const svgText = await callGemini(system, user, geminiKey, 5000);
-      const svgMatch = svgText.match(/<svg[\s\S]*?<\/svg>/i);
-      const captionMatch = svgText.match(/CAPTION:\s*(.+)/i);
-      if (svgMatch) {
-        const cleanSvg = svgMatch[0]
-          .replace(/\u00b2/g, "&#178;")
-          .replace(/\u00b3/g, "&#179;")
-          .replace(/\u00b0/g, "&#176;")
-          .replace(/\u03bb/g, "&#955;")
-          .replace(/\u03c0/g, "&#960;")
-          .replace(/\u03b1/g, "&#945;")
-          .replace(/\u03b2/g, "&#946;")
-          .replace(/\u03b3/g, "&#947;")
-          .replace(/\u2192/g, "&#8594;")
-          .replace(/\u2190/g, "&#8592;")
-          .replace(/\u2194/g, "&#8596;")
-          .replace(/\u2191/g, "&#8593;")
-          .replace(/\u2193/g, "&#8595;");
-        return res.json({
-          svg: cleanSvg,
-          caption: captionMatch ? captionMatch[1].trim() : `${topic} diagram`,
-          provider: "gemini",
-          type: "svg",
-        });
-      }
-    } catch (e) {
-      console.warn("[Diagram] Gemini SVG failed:", e);
-    }
+    console.warn(`[Diagram] Wikimedia live search failed for "${topic}":`, wikiErr);
   }
 
-  // ── Attempt 2: GPT-4o SVG ─────────────────────────────────────────────────────
-  const openaiKey = getEffectiveKey("openai", undefined, schoolId);
-  if (openaiKey) {
-    try {
-      const svgText = await callOpenAI(system, user, openaiKey, "gpt-4o", 4000);
-      const svgMatch = svgText.match(/<svg[\s\S]*?<\/svg>/i);
-      const captionMatch = svgText.match(/CAPTION:\s*(.+)/i);
-      if (svgMatch) {
-        return res.json({
-          svg: svgMatch[0],
-          caption: captionMatch ? captionMatch[1].trim() : `${topic} diagram`,
-          provider: "openai-gpt4o",
-          type: "svg",
-        });
-      }
-    } catch (e) {
-      console.warn("[Diagram] GPT-4o SVG failed:", e);
-    }
-  }
-
-  // ── Attempt 3: Auto-fallback through all remaining text providers ─────────────
-  try {
-    const result = await callWithFallback(system, user, 4000, undefined, schoolId);
-    const svgMatch = result.content.match(/<svg[\s\S]*?<\/svg>/i);
-    const captionMatch = result.content.match(/CAPTION:\s*(.+)/i);
-    if (svgMatch) {
-      return res.json({
-        svg: svgMatch[0],
-        caption: captionMatch ? captionMatch[1].trim() : `${topic} diagram`,
-        provider: result.provider,
-        type: "svg",
-      });
-    }
-  } catch (e) {
-    console.warn("[Diagram] All SVG providers failed:", e);
-  }
-
-  // ── Final fallback: placeholder ───────────────────────────────────────────────
-  const placeholder = `<svg viewBox="0 0 700 500" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg"><rect width="700" height="500" fill="white"/><rect x="20" y="20" width="660" height="460" fill="#f8f9ff" stroke="#6366f1" stroke-width="2" rx="12"/><text x="350" y="220" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" fill="#6366f1" font-weight="bold">${topic}</text><text x="350" y="255" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#555">${subject} · ${yr}</text><text x="350" y="290" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#999">Diagram could not be generated — please try again</text></svg>`;
+  // ── No diagram found — return a clear "not available" response ────────────────
+  // AI-generated SVG diagrams have been removed as they may contain inaccuracies.
+  // Only verified, legally licensed images from Wikimedia Commons are used.
+  console.log(`[Diagram] No verified diagram found for "${topic}" (${subject}) — returning not-available`);
   return res.json({
-    svg: placeholder,
-    caption: `${topic} diagram`,
-    provider: "placeholder",
-    type: "svg",
+    imageUrl: null,
+    caption: `No diagram available for ${topic}`,
+    attribution: null,
+    provider: "none",
+    type: "none",
   });
 });
 
@@ -779,41 +736,93 @@ router.post("/adapt-worksheet", requireAuth, worksheetUpload.single("file"), asy
     let rawText = "";
     const mime = req.file.mimetype;
     if (mime === "application/pdf") {
+      // Try pdf-parse v2 first (primary method)
       try {
-        // pdf-parse v2: getText() returns a Promise<{pages: [{text}]}>
         const { PDFParse } = await import("pdf-parse" as any);
         const parser = new PDFParse({ data: req.file.buffer, verbosity: 0 });
         await parser.load();
         const result = await parser.getText();
-        // v2 returns { pages: [{ text: string, num: number }] }
-        if (result?.pages && Array.isArray(result.pages)) {
-          rawText = result.pages.map((p: any) => p.text || "").join("\n\n");
-        } else if (typeof result?.text === "string") {
-          rawText = result.text;
-        } else {
-          rawText = "";
+        // v2 returns { pages: [{ text: string, num: number }], text: string }
+        if (result?.pages && Array.isArray(result.pages) && result.pages.length > 0) {
+          rawText = result.pages.map((p: any) => (p.text || "").trim()).filter(Boolean).join("\n\n");
+        } else if (typeof result?.text === "string" && result.text.trim()) {
+          rawText = result.text.trim();
         }
+        if (rawText) console.log(`[adapt-worksheet] pdf-parse v2 extracted ${rawText.length} chars from ${result?.pages?.length || 0} pages`);
       } catch (pdfErr: any) {
-        console.error("[adapt-worksheet] pdf-parse error:", pdfErr?.message || pdfErr);
-        rawText = "";
+        console.error("[adapt-worksheet] pdf-parse v2 error:", pdfErr?.message || pdfErr);
+      }
+      // Fallback: try pdfjs-dist if pdf-parse failed or returned empty
+      if (!rawText || rawText.length < 20) {
+        try {
+          const pdfjsLib = await import("pdfjs-dist/legacy/build/pdf.js" as any);
+          const lib = pdfjsLib.default || pdfjsLib;
+          const loadingTask = lib.getDocument({ data: new Uint8Array(req.file.buffer) });
+          const pdfDoc = await loadingTask.promise;
+          const pageTexts: string[] = [];
+          for (let i = 1; i <= pdfDoc.numPages; i++) {
+            const page = await pdfDoc.getPage(i);
+            const textContent = await page.getTextContent();
+            const pageText = textContent.items
+              .map((item: any) => item.str || "")
+              .join(" ")
+              .replace(/\s{2,}/g, " ")
+              .trim();
+            if (pageText) pageTexts.push(pageText);
+          }
+          rawText = pageTexts.join("\n\n");
+          if (rawText) console.log(`[adapt-worksheet] pdfjs-dist extracted ${rawText.length} chars from ${pdfDoc.numPages} pages`);
+        } catch (pdfJsErr: any) {
+          console.error("[adapt-worksheet] pdfjs-dist error:", pdfJsErr?.message || pdfJsErr);
+        }
       }
     } else {
       // .doc or .docx — use mammoth
       try {
         const mammoth = await import("mammoth" as any);
         const mammothLib = mammoth.default || mammoth;
-        const result = await mammothLib.extractRawText({ buffer: req.file.buffer });
-        rawText = result.value || "";
+        // Try to get structured HTML first (preserves headings and structure)
+        const htmlResult = await mammothLib.convertToHtml({ buffer: req.file.buffer });
+        if (htmlResult?.value && htmlResult.value.length > 50) {
+          // Convert HTML to plain text preserving structure
+          rawText = htmlResult.value
+            .replace(/<h[1-6][^>]*>/gi, "\n\n## ")
+            .replace(/<\/h[1-6]>/gi, "\n")
+            .replace(/<p[^>]*>/gi, "\n")
+            .replace(/<\/p>/gi, "")
+            .replace(/<br\s*\/?>/gi, "\n")
+            .replace(/<li[^>]*>/gi, "\n• ")
+            .replace(/<\/li>/gi, "")
+            .replace(/<[^>]+>/g, "")
+            .replace(/&amp;/g, "&")
+            .replace(/&lt;/g, "<")
+            .replace(/&gt;/g, ">")
+            .replace(/&nbsp;/g, " ")
+            .replace(/&#[0-9]+;/g, " ")
+            .trim();
+        }
+        // Fallback to raw text if HTML conversion failed
+        if (!rawText || rawText.length < 20) {
+          const rawResult = await mammothLib.extractRawText({ buffer: req.file.buffer });
+          rawText = rawResult.value || "";
+        }
+        if (rawText) console.log(`[adapt-worksheet] mammoth extracted ${rawText.length} chars`);
       } catch (docErr: any) {
         console.error("[adapt-worksheet] mammoth error:", docErr?.message || docErr);
         rawText = "";
       }
     }
 
-    // Preserve structure but remove excessive blank lines
-    rawText = rawText.replace(/\n{4,}/g, "\n\n\n").trim();
+    // Clean up: preserve structure but remove excessive blank lines
+    rawText = rawText
+      .replace(/\r\n/g, "\n")
+      .replace(/\r/g, "\n")
+      .replace(/\t/g, "  ")
+      .replace(/\n{4,}/g, "\n\n\n")
+      .trim();
+
     if (!rawText || rawText.length < 20) {
-      return res.status(400).json({ error: "Could not extract readable text from this file. Please check the file is not scanned/image-only and try again." });
+      return res.status(400).json({ error: "Could not extract readable text from this file. The file may be a scanned image (not selectable text). Please ensure the PDF contains selectable text, or convert to Word format and try again." });
     }
     const truncated = rawText.length > 12000;
     const textForAI = rawText.slice(0, 12000);
@@ -821,63 +830,73 @@ router.post("/adapt-worksheet", requireAuth, worksheetUpload.single("file"), asy
     const schoolId = req.user?.schoolId ?? undefined;
     const yr = yearGroup || "Year 9";
 
-    const system = `You are an expert SEND teacher and educational content specialist. Your task is to adapt worksheets for students with specific SEND needs.
+    // SEND-specific FORMATTING guidelines (presentation only — no content changes)
+    const sendFormattingGuide = (() => {
+      const n = (sendNeed || "").toLowerCase();
+      if (n.includes("dyslexia")) return "Dyslexia formatting: Use short sentences and bullet points where the original uses long paragraphs. Bold all key terms. Add clear section breaks. Recommend 1.5x line spacing. Left-align all text.";
+      if (n.includes("autism") || n.includes("asd") || n.includes("autistic")) return "Autism/ASD formatting: Ensure all instructions are numbered and explicit. Add clear visual section dividers. Remove any ambiguous phrasing from instructions (not questions). Use consistent formatting throughout.";
+      if (n.includes("adhd")) return "ADHD formatting: Add tick boxes (☐) next to each question for progress tracking. Add extra white space between questions. Use bold headings. Keep each question visually separated.";
+      if (n.includes("mld") || n.includes("moderate learning")) return "MLD formatting: Add extra white space between questions. Use larger font recommendation. Number each question clearly. Add clear section headings.";
+      if (n.includes("sld") || n.includes("severe learning")) return "SLD formatting: Add extra white space. Use very clear section headings. Number each question clearly. Recommend large font.";
+      if (n.includes("eal") || n.includes("english as an additional")) return "EAL formatting: Bold all technical/subject-specific vocabulary. Add a glossary note in the teacher section. Keep all original content verbatim.";
+      if (n.includes("visual") || n.includes("vi")) return "Visual impairment formatting: Add text descriptions for any diagrams or images mentioned. Recommend large font. Add extra line spacing.";
+      if (n.includes("hearing") || n.includes("deaf")) return "Hearing impairment formatting: Ensure all content is text-based. Add written instructions for any audio tasks.";
+      return "SEND formatting: Add clear section headings, extra white space between questions, and bold key terms.";
+    })();
+
+    const system = `You are an expert educational content specialist. Your task is to reformat a worksheet for a student with ${sendNeed} while preserving ALL original content 1:1.
 
 CRITICAL RULES — YOU MUST FOLLOW THESE WITHOUT EXCEPTION:
-1. EVERY question, task, instruction, and piece of content from the original must appear in the output VERBATIM. Do not paraphrase, simplify, or reword any question or task.
-2. ALL mathematical symbols, operators, and notation must be preserved exactly: ×, ÷, √, ², ³, π, ≤, ≥, ≠, fractions, equations — everything must appear character-for-character.
-3. ALL numbers, values, and data must be identical to the original.
-4. The ONLY things you may change are: font size suggestions, line spacing, visual grouping, adding section headers/dividers, breaking long paragraphs into shorter visual chunks, and adding SEND-specific formatting notes.
-5. Do NOT add hints, worked examples, word banks, or scaffolding unless they were already in the original.
-6. Do NOT remove any content from the original.
-7. Return structured JSON with sections that match the original document structure.`;
+1. PRESERVE EVERY QUESTION VERBATIM: Every single question, task, instruction, and piece of content from the original must appear in the output word-for-word. Do NOT change, paraphrase, simplify, add to, or remove any question or task.
+2. PRESERVE ALL MATHEMATICAL NOTATION: All symbols (×, ÷, √, ², ³, π, ≤, ≥, ≠), fractions, equations, and numbers must be preserved exactly as in the original.
+3. PRESERVE THE ORIGINAL STRUCTURE: Match the original section structure exactly. If the original has Section A, B, C — keep those. If it has numbered questions 1-10, keep that structure.
+4. FORMATTING ONLY: The ONLY changes permitted are: adjusting visual presentation (line spacing, grouping, bold key terms, section dividers, tick boxes for ADHD). Do NOT add word banks, sentence starters, hints, worked examples, or any new content.
+5. DO NOT ADD OR REMOVE CONTENT: No new questions, no hints, no scaffolding, no word banks. Only formatting changes.
+6. Return valid JSON only — no markdown code fences, no text before or after the JSON object.`;
 
-    const user = `Adapt the following worksheet for a student with ${sendNeed} in ${yr}.
+    const user = `Reformat the following worksheet for a student with ${sendNeed} in ${yr}.
 
-Return a JSON object with this EXACT structure:
+${sendFormattingGuide}
+
+Return a JSON object with this EXACT structure (valid JSON only, no markdown fences):
 {
-  "title": "The worksheet title (from the original, or inferred)",
-  "subtitle": "Subject and year group",
+  "title": "The worksheet title exactly as it appears in the original",
+  "subtitle": "${yr} — Formatted for ${sendNeed}",
   "sections": [
     {
-      "title": "Section heading (e.g. Section A, Questions, Part 1)",
+      "title": "Section heading exactly as in original",
       "type": "guided",
-      "content": "The VERBATIM content of this section, with SEND formatting applied (line spacing, grouping, bold key terms) but every question and symbol preserved exactly",
+      "content": "ALL original questions and content from this section, reproduced VERBATIM. Every question number, every word, every symbol preserved exactly. Only formatting changes applied (bold key terms, tick boxes for ADHD, clear spacing).",
       "teacherOnly": false
     }
   ],
   "teacherSection": {
     "title": "Teacher Notes",
     "type": "teacher-notes",
-    "content": "SEND adaptations applied, recommended support strategies for ${sendNeed}, and mark scheme if present in original",
+    "content": "Formatting adaptations applied for ${sendNeed}. Recommended presentation strategies. Mark scheme if present in original.",
     "teacherOnly": true
   },
-  "adaptationsSummary": ["List of formatting/presentation adaptations made — NOT content changes"]
+  "adaptationsSummary": ["List each formatting change made"]
 }
 
-SEND formatting guidelines for ${sendNeed}:
-- Dyslexia: 1.5x line spacing, left-aligned text, bold key terms, short sentences, clear section breaks
-- Autism/ASD: Explicit numbered instructions, no ambiguous language, clear visual structure
-- ADHD: Short chunks, clear headings, bold key words, numbered steps, white space between questions
-- MLD/SLD: Larger font recommendation, extra white space, numbered questions clearly separated
-- EAL: Preserve all content verbatim, add language support notes in teacher section only
+ORIGINAL WORKSHEET (reproduce every question, symbol, and value VERBATIM — formatting changes only):
+${textForAI}${truncated ? "\n\n[Note: Document was truncated at 12,000 characters due to length.]" : ""}`;
 
-ORIGINAL WORKSHEET CONTENT (preserve every question, symbol, and value VERBATIM):
-${textForAI}${truncated ? "\n\n[Note: Document was truncated at 12,000 characters due to length]" : ""}`;
-
-    const { content, provider } = await callWithFallback(system, user, 4000, undefined, schoolId);
+    const { content, provider } = await callWithFallback(system, user, 6000, undefined, schoolId);
 
     // Helper: try to parse JSON robustly, handling code fences and control chars
     const tryParseJSON = (raw: string): any | null => {
+      if (!raw || !raw.trim()) return null;
       try {
-        // Strip markdown code fences
-        const s = raw
+        // Strip markdown code fences (```json ... ``` or ``` ... ```)
+        let s = raw
           .replace(/^```(?:json)?\s*/i, '')
           .replace(/\s*```\s*$/, '')
           .trim();
-        // Extract the outermost JSON object
+        // Extract the outermost JSON object (handles leading/trailing text)
         const m = s.match(/\{[\s\S]*\}/);
         const candidate = m ? m[0] : s;
+        if (!candidate || !candidate.startsWith('{')) return null;
         // First try direct parse
         try { return JSON.parse(candidate); } catch (_) {}
         // Sanitize: replace unescaped control characters inside JSON strings
@@ -892,13 +911,15 @@ ${textForAI}${truncated ? "\n\n[Note: Document was truncated at 12,000 character
             return `"${fixed}"`;
           }
         );
-        return JSON.parse(sanitized);
+        try { return JSON.parse(sanitized); } catch (_) {}
+        // Last resort: try to extract just the sections array
+        return null;
       } catch (_) { return null; }
     };
 
     let parsed: any;
     const outerParsed = tryParseJSON(content);
-    if (outerParsed) {
+    if (outerParsed && outerParsed.sections && Array.isArray(outerParsed.sections) && outerParsed.sections.length > 0) {
       parsed = outerParsed;
       // Detect double-nested JSON: if sections[0].content is itself a JSON string
       // containing a full worksheet structure, unwrap it
@@ -909,19 +930,41 @@ ${textForAI}${truncated ? "\n\n[Note: Document was truncated at 12,000 character
         const innerContent = parsed.sections[0].content.trim();
         if (innerContent.startsWith('```') || innerContent.startsWith('{')) {
           const innerParsed = tryParseJSON(innerContent);
-          if (innerParsed?.sections && Array.isArray(innerParsed.sections)) {
+          if (innerParsed?.sections && Array.isArray(innerParsed.sections) && innerParsed.sections.length > 0) {
             parsed = innerParsed;
           }
         }
       }
-    } else {
-      // Fallback: wrap raw content in a single section
+      // Ensure no section has empty content
+      parsed.sections = parsed.sections.map((s: any) => ({
+        ...s,
+        content: s.content && s.content.trim() ? s.content : "[Content not available — please try again]",
+      }));
+    } else if (outerParsed && !outerParsed.sections) {
+      // AI returned JSON but without sections structure — wrap it
+      const rawContent = outerParsed.content || outerParsed.adaptedContent || outerParsed.text || JSON.stringify(outerParsed);
       parsed = {
-        title: "Adapted Worksheet",
+        title: outerParsed.title || "Adapted Worksheet",
+        subtitle: outerParsed.subtitle || `${yr} — ${sendNeed} adaptation`,
+        sections: [{ title: "Adapted Content", type: "guided", content: rawContent, teacherOnly: false }],
+        teacherSection: { title: "Teacher Notes", type: "teacher-notes", content: `Formatted for ${sendNeed}`, teacherOnly: true },
+        adaptationsSummary: outerParsed.adaptationsSummary || ["Content formatted for " + sendNeed],
+      };
+    } else {
+      // Fallback: AI returned plain text (not JSON) — wrap it in a section
+      // This ensures the user always sees content, never a blank document
+      const cleanContent = content.trim();
+      parsed = {
+        title: req.file?.originalname?.replace(/\.[^.]+$/, '') || "Adapted Worksheet",
         subtitle: `${yr} — ${sendNeed} adaptation`,
-        sections: [{ title: "Adapted Content", type: "guided", content, teacherOnly: false }],
-        teacherSection: { title: "Teacher Notes", type: "teacher-notes", content: `Adapted for ${sendNeed}`, teacherOnly: true },
-        adaptationsSummary: ["Content adapted for " + sendNeed],
+        sections: [{ 
+          title: "Adapted Worksheet", 
+          type: "guided", 
+          content: cleanContent || "The worksheet content could not be parsed. Please try again.", 
+          teacherOnly: false 
+        }],
+        teacherSection: { title: "Teacher Notes", type: "teacher-notes", content: `Formatted for ${sendNeed}`, teacherOnly: true },
+        adaptationsSummary: ["Content formatted for " + sendNeed],
       };
     }
 
@@ -929,6 +972,207 @@ ${textForAI}${truncated ? "\n\n[Note: Document was truncated at 12,000 character
   } catch (err: any) {
     console.error("Worksheet adapt error:", err);
     res.status(500).json({ error: err.message || "Failed to adapt worksheet" });
+  }
+});
+
+// ── SEND Scaffold Existing Worksheet ────────────────────────────────────────
+// POST /api/ai/scaffold-worksheet
+// Takes existing worksheet sections and transforms them with real SEND scaffolding:
+// gap fills, sentence starters, word banks, hint boxes — while preserving all content.
+router.post("/scaffold-worksheet", requireAuth, async (req: Request, res: Response) => {
+  const { sections, sendNeed, subject, topic, yearGroup, title } = req.body;
+  if (!sections || !Array.isArray(sections) || sections.length === 0) {
+    return res.status(400).json({ error: "sections array is required" });
+  }
+  if (!sendNeed) return res.status(400).json({ error: "sendNeed is required" });
+
+  const schoolId = req.user?.schoolId ?? undefined;
+  const yr = yearGroup || "Year 9";
+  const sn = (sendNeed || "").toLowerCase();
+
+  // Build per-condition scaffolding instructions
+  const getScaffoldingRules = (sendNeedLower: string): string => {
+    if (sendNeedLower.includes("dyslexia")) return `DYSLEXIA SCAFFOLDING RULES:
+- Use 1.5x line spacing suggestions (add blank lines between questions)
+- Bold all key terms and command words
+- Break long sentences into shorter ones (max 15 words)
+- Add a Word Bank box at the top with 6-8 key terms and simple definitions
+- For every question that requires a written answer, add a sentence starter: e.g. "The answer is ___ because ___"
+- Replace any gap-fill answers with clearly marked blanks: ___________
+- Add a 'Steps to follow' box before each section
+- Use numbered bullet points for multi-part instructions`;
+
+    if (sendNeedLower.includes("adhd")) return `ADHD SCAFFOLDING RULES:
+- Break the worksheet into very short chunks (max 3-4 questions per section)
+- Add clear section dividers with bold headings
+- Bold all key words and action verbs
+- Add a 'Quick Start' box at the top: "You need to: 1) ___ 2) ___ 3) ___"
+- For every question, add a hint in brackets: (Hint: start by...)
+- Add tick boxes next to each question so students can track progress: [ ]
+- Replace open-ended questions with structured answer frames where possible
+- Add a 'Take a break here if you need to' prompt midway through
+- Keep answer spaces generous and clearly marked`;
+
+    if (sendNeedLower.includes("asc") || sendNeedLower.includes("autism") || sendNeedLower.includes("asperger")) return `AUTISM/ASC SCAFFOLDING RULES:
+- Replace ALL figurative language and idioms with literal alternatives
+- Add a 'What you need to do:' box at the start of every section listing exact steps
+- For every question, add a worked identical example immediately before it labelled 'EXAMPLE:'
+- Use consistent terminology throughout — never mix synonyms (always 'calculate', never 'find'/'work out')
+- Add a numbered 'Steps to follow' checklist before each section
+- Use neutral, factual contexts — remove any social/emotional scenarios
+- Add a completion checklist at the end: '☐ Section A ☐ Section B ☐ Challenge'
+- Make all instructions explicit — no implied steps`;
+
+    if (sendNeedLower.includes("mld") || sendNeedLower.includes("moderate learning")) return `MLD SCAFFOLDING RULES:
+- Add a 'Help Box' at the top of each section with key facts, formulas, and vocabulary
+- For every question in Section A, add either: (a) a sentence starter, (b) a partially completed answer, or (c) a hint
+- Replace multi-step questions with sub-parts (a) and (b)
+- Add a fully completed model answer for the first question of each section
+- Include a Word Bank with simple definitions
+- Use concrete examples before abstract questions
+- Add picture/emoji-based self-assessment at the end`;
+
+    if (sendNeedLower.includes("slcn") || sendNeedLower.includes("speech") || sendNeedLower.includes("language") || sendNeedLower.includes("communication")) return `SLCN SCAFFOLDING RULES:
+- Add a prominent Word Bank at the start with every key term defined in plain English (max 8 terms)
+- For every question requiring a written answer, provide a sentence frame: e.g. '_____ is important because _____'
+- Add a 'Key Phrases' box with useful language structures
+- Convert at least 3 questions to matching, labelling, or multiple-choice format
+- Use short, simple sentences — avoid complex clauses
+- Bold the key action word in every instruction
+- Add visual cues (arrows, boxes) alongside text`;
+
+    if (sendNeedLower.includes("anxiety") || sendNeedLower.includes("mental health") || sendNeedLower.includes("semh")) return `ANXIETY/SEMH SCAFFOLDING RULES:
+- Add a 'How are you feeling?' emoji check-in at the start: 😕 🙂 😀
+- Rename sections with encouraging labels: 'Warm-Up — no pressure!' and 'Main Practice — you've got this!'
+- Add a positive statement before each section: 'You already know how to do this — let's practise!'
+- Replace all 'must'/'should'/'need to' language with 'try to'/'you might like to'
+- Label the challenge section: 'OPTIONAL BONUS — only if you want to!'
+- Add a 'Tip' box in each section with a helpful reminder
+- Add a 'Take a break here if you need to' prompt midway
+- End with a 'How did you do?' emoji scale`;
+
+    if (sendNeedLower.includes("eal") || sendNeedLower.includes("esl") || sendNeedLower.includes("additional language")) return `EAL SCAFFOLDING RULES:
+- Add a bilingual-friendly Word Bank at the start with every subject-specific term defined in plain English
+- For every question, add a sentence frame in English
+- Add a 'Key Phrases' box with useful academic language
+- Include at least 2 visual/diagram-based questions
+- Use simple, short sentences — avoid idioms and culturally specific references
+- Bold key instruction words
+- Use culturally neutral contexts throughout`;
+
+    if (sendNeedLower.includes("dyspraxia") || sendNeedLower.includes("dcd") || sendNeedLower.includes("coordination")) return `DYSPRAXIA/DCD SCAFFOLDING RULES:
+- Add large, clearly marked answer boxes after every question
+- Convert at least 3 questions to tick-box, circle-the-answer, or matching format
+- Add sentence frames for all written answer questions
+- Use numbered bullet points for all instructions
+- Add generous white space between all questions
+- Minimise handwriting demands — use structured answer frames
+- Keep instructions brief and clear`;
+
+    if (sendNeedLower.includes("dyscalculia")) return `DYSCALCULIA SCAFFOLDING RULES:
+- Add a 'Key Facts' box at the top with all formulas and number facts needed
+- For every calculation question, add a partially completed working-out frame
+- Provide a number line or multiplication grid as a reference tool
+- Break every multi-step calculation into clearly numbered sub-steps
+- Add a 'Check your answer' prompt after each question
+- Use concrete examples (money, measurements) before abstract numbers
+- Provide a worked example with every new question type`;
+
+    // Default general SEND
+    return `GENERAL SEND SCAFFOLDING RULES:
+- Add a Word Bank at the top with 6-8 key terms and simple definitions
+- For every question requiring a written answer, add a sentence starter or answer frame
+- Add a 'Steps to follow' box before each section
+- Add hints in brackets for every question: (Hint: ...)
+- Break multi-step questions into sub-parts (a) and (b)
+- Add tick boxes next to each question: [ ]
+- Add generous white space between questions
+- End with a simple self-assessment: 'I found this: 😕 🙂 😀'`;
+  };
+
+  const scaffoldingRules = getScaffoldingRules(sn);
+
+  // Serialize existing worksheet content
+  const existingContent = (sections as any[]).map((s: any, i: number) => {
+    return `=== SECTION ${i + 1}: ${s.title || 'Section'} ===\n${s.content || ''}`;
+  }).join('\n\n');
+
+  const system = `You are an expert SEND teacher specialising in creating scaffolded worksheets for UK schools.
+Your task is to TRANSFORM an existing worksheet by adding real SEND scaffolding — gap fills, sentence starters, word banks, hint boxes, answer frames — while keeping EVERY original question, task, and piece of content VERBATIM.
+
+CRITICAL RULES:
+1. EVERY original question, instruction, and piece of content MUST appear in the output — do NOT remove or skip anything.
+2. ALL mathematical symbols, operators, and notation must be preserved exactly: ×, ÷, √, ², ³, π, ≤, ≥, ≠, fractions, equations.
+3. ALL numbers, values, and data must be identical to the original.
+4. You MUST add real scaffolding: gap fills (___________), sentence starters, word banks, hint boxes, answer frames, step-by-step guides.
+5. The scaffolding should be WOVEN INTO the existing content — not just added as a separate section.
+6. Return a JSON array of sections matching the original structure, with scaffolding added to each section's content.
+7. Do NOT invent new questions — only add scaffolding to existing ones.`;
+
+  const user = `Transform this worksheet with ${sendNeed} scaffolding for ${yr} pupils.
+
+${scaffoldingRules}
+
+ORIGINAL WORKSHEET CONTENT (preserve every question verbatim, add scaffolding):
+${existingContent.slice(0, 8000)}
+
+Return a JSON object with this EXACT structure:
+{
+  "sections": [
+    {
+      "title": "Original section title",
+      "type": "guided",
+      "content": "The ORIGINAL content with SEND scaffolding woven in — gap fills, sentence starters, word banks, hints. Every original question preserved verbatim.",
+      "teacherOnly": false
+    }
+  ],
+  "wordBank": "Word Bank added at the top (if applicable for this SEND need)",
+  "scaffoldingApplied": ["List of specific scaffolding changes made"]
+}`;
+
+  try {
+    const { content, provider } = await callWithFallback(system, user, 4000, undefined, schoolId);
+
+    const tryParseJSON = (raw: string): any | null => {
+      try {
+        const s = raw
+          .replace(/^```(?:json)?\s*/i, '')
+          .replace(/\s*```\s*$/, '')
+          .trim();
+        const m = s.match(/\{[\s\S]*\}/);
+        const candidate = m ? m[0] : s;
+        try { return JSON.parse(candidate); } catch (_) {}
+        const sanitized = candidate.replace(
+          /"((?:[^"\\]|\\.)*)"/g,
+          (_match: string, inner: string) => {
+            const fixed = inner
+              .replace(/\n/g, '\\n')
+              .replace(/\r/g, '\\r')
+              .replace(/\t/g, '\\t');
+            return `"${fixed}"`;
+          }
+        );
+        return JSON.parse(sanitized);
+      } catch (_) { return null; }
+    };
+
+    const parsed = tryParseJSON(content);
+    if (parsed && parsed.sections && Array.isArray(parsed.sections)) {
+      res.json({ scaffolded: parsed, provider });
+    } else {
+      // Fallback: return original sections with a note
+      res.json({
+        scaffolded: {
+          sections: sections,
+          scaffoldingApplied: ["Scaffolding could not be applied — please try again"],
+        },
+        provider,
+        fallback: true,
+      });
+    }
+  } catch (err: any) {
+    console.error("Scaffold worksheet error:", err);
+    res.status(500).json({ error: err.message || "Failed to scaffold worksheet" });
   }
 });
 
