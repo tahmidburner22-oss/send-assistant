@@ -252,7 +252,7 @@ export async function callAI(
     const reqHeaders: Record<string, string> = { "Content-Type": "application/json" };
     if (storedToken) reqHeaders["Authorization"] = `Bearer ${storedToken}`;
     const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
-    const timeoutMs = 30000; // 30 seconds — llama-3.1-8b-instant is very fast, should complete in <10s
+    const timeoutMs = 90000; // 90 seconds — allows for Railway cold starts and complex worksheets
     const timeoutId = controller ? window.setTimeout(() => controller.abort(), timeoutMs) : null;
     const res = await fetch("/api/ai/generate", {
       method: "POST",
