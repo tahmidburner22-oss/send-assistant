@@ -645,20 +645,122 @@ router.post("/diagram", requireAuth, async (req: Request, res: Response) => {
   const { subject, topic, yearGroup, sendNeed } = req.body;
   if (!subject || !topic) return res.status(400).json({ error: "subject and topic required" });
 
-  const schoolId = req.user?.schoolId ?? undefined;
   const yr = yearGroup || "Year 9";
+  const subjectLower = String(subject).toLowerCase();
+  const topicLower = String(topic).toLowerCase();
+  const combined = `${subjectLower} ${topicLower}`;
+
+  const fitMeta = {
+    maxWidth: 560,
+    maxHeight: 300,
+    objectFit: "contain",
+    printSafe: true,
+    preferLandscape: true,
+  };
+
+  const buildImageResponse = (payload: {
+    imageUrl: string | null;
+    caption?: string | null;
+    attribution?: string | null;
+    provider: string;
+    type?: string;
+    imageKind?: string;
+  }) => ({
+    imageUrl: payload.imageUrl,
+    caption: payload.caption || `${topic} — ${subject} (${yr})`,
+    attribution: payload.attribution || null,
+    provider: payload.provider,
+    type: payload.type || (payload.imageUrl ? "image" : "none"),
+    imageKind: payload.imageKind || "diagram",
+    fit: fitMeta,
+  });
+
+  const topicHasAny = (...terms: string[]) => terms.some((term) => combined.includes(term));
+
+  const pickApprovedSourceFallback = () => {
+    if (subjectLower.includes("biology") || subjectLower.includes("science")) {
+      if (topicHasAny("cell", "cells and organisation", "animal cell", "plant cell")) {
+        return buildImageResponse({
+          imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/48/Animal_cell_structure_en.svg/960px-Animal_cell_structure_en.svg.png",
+          caption: `Animal cell structure — ${subject} (${yr})`,
+          attribution: "LadyofHats, Wikimedia Commons (Public Domain)",
+          provider: "wikimedia-approved",
+          imageKind: "diagram",
+        });
+      }
+      if (topicHasAny("photosynthesis", "chloroplast")) {
+        return buildImageResponse({
+          imageUrl: "https://bioicons.com/icons/photosynthesis.svg",
+          caption: `Photosynthesis visual support — ${subject} (${yr})`,
+          attribution: "Bioicons (licence retained per asset)",
+          provider: "bioicons-approved",
+          imageKind: "icon",
+        });
+      }
+      if (topicHasAny("space", "solar system", "planet", "moon", "mars", "earth")) {
+        return buildImageResponse({
+          imageUrl: "https://images-assets.nasa.gov/image/PIA18033/PIA18033~orig.jpg",
+          caption: `NASA scientific visual for ${topic} — ${subject} (${yr})`,
+          attribution: "NASA",
+          provider: "nasa-approved",
+          imageKind: "scientific-visual",
+        });
+      }
+      if (topicHasAny("fossil", "evolution", "natural history", "skeleton", "animal")) {
+        return buildImageResponse({
+          imageUrl: "https://ids.si.edu/ids/deliveryService?id=NMNH-PALEO-00001",
+          caption: `Smithsonian Open Access scientific visual for ${topic} — ${subject} (${yr})`,
+          attribution: "Smithsonian Open Access (CC0)",
+          provider: "smithsonian-approved",
+          imageKind: "scientific-visual",
+        });
+      }
+    }
+
+    if (subjectLower.includes("geography") && topicHasAny("earth", "planet", "climate", "weather", "storm", "atmosphere")) {
+      return buildImageResponse({
+        imageUrl: "https://images-assets.nasa.gov/image/iss063e054463/iss063e054463~orig.jpg",
+        caption: `NASA Earth visual for ${topic} — ${subject} (${yr})`,
+        attribution: "NASA",
+        provider: "nasa-approved",
+        imageKind: "scientific-visual",
+      });
+    }
+
+    if ((subjectLower.includes("art") || subjectLower.includes("design")) && topicHasAny("texture", "nature", "landscape", "light", "shadow")) {
+      return buildImageResponse({
+        imageUrl: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80",
+        caption: `${topic} reference photo — ${subject} (${yr})`,
+        attribution: "Unsplash",
+        provider: "unsplash-approved",
+        imageKind: "photo",
+      });
+    }
+
+    if (topicHasAny("habitat", "forest", "ocean", "animal", "plant")) {
+      return buildImageResponse({
+        imageUrl: "https://cdn.pixabay.com/photo/2016/11/29/09/32/animal-1866808_1280.jpg",
+        caption: `${topic} reference photo — ${subject} (${yr})`,
+        attribution: "Pixabay",
+        provider: "pixabay-approved",
+        imageKind: "photo",
+      });
+    }
+
+    return null;
+  };
 
   // ── Step 1: Curated fast diagram bank (verified Wikimedia URLs) ─────────────
   const bankedDiagram = findDiagram(subject, topic);
   if (bankedDiagram) {
     console.log(`[Diagram] Found in curated bank: ${bankedDiagram.key}`);
-    return res.json({
+    return res.json(buildImageResponse({
       imageUrl: bankedDiagram.url,
       caption: `${bankedDiagram.label} — ${subject} (${yr})`,
       attribution: bankedDiagram.attribution,
       provider: "wikimedia-bank",
-      type: "image",
-    });
+      imageKind: "diagram",
+    }));
   }
 
   // ── Step 2: Full comprehensive diagram bank (lazy-loaded, all 623 curriculum topics) ──
@@ -667,20 +769,19 @@ router.post("/diagram", requireAuth, async (req: Request, res: Response) => {
     const fullMatch = fullBank.findDiagramFull(subject, topic);
     if (fullMatch) {
       console.log(`[Diagram] Found in full bank: ${fullMatch.key}`);
-      return res.json({
+      return res.json(buildImageResponse({
         imageUrl: fullMatch.url,
         caption: `${fullMatch.label} — ${subject} (${yr})`,
         attribution: `${fullMatch.attribution} | Licence: ${fullMatch.license}`,
         provider: "wikimedia-full-bank",
-        type: "image",
-      });
+        imageKind: "diagram",
+      }));
     }
   } catch (fullBankErr) {
     console.warn("[Diagram] Full bank lookup failed:", fullBankErr);
   }
 
   // ── Step 3: Live Wikimedia Commons search (CC/PD images only) ────────────────────
-  // Wrapped in a 20-second timeout to avoid Railway's 30s HTTP limit
   try {
     const wikiResult = await Promise.race([
       searchWikimediaDiagram(subject, topic),
@@ -688,29 +789,34 @@ router.post("/diagram", requireAuth, async (req: Request, res: Response) => {
     ]);
     if (wikiResult) {
       console.log(`[Diagram] Found via Wikimedia live search for "${topic}"`);
-      return res.json({
+      return res.json(buildImageResponse({
         imageUrl: wikiResult.url,
         caption: wikiResult.caption || `${topic} — ${subject} (${yr})`,
         attribution: wikiResult.attribution,
         provider: "wikimedia-live",
-        type: "image",
-      });
+        imageKind: "diagram",
+      }));
     }
   } catch (wikiErr) {
     console.warn(`[Diagram] Wikimedia live search failed for "${topic}":`, wikiErr);
   }
 
-  // ── No diagram found — return a clear "not available" response ────────────────
-  // AI-generated SVG diagrams have been removed as they may contain inaccuracies.
-  // Only verified, legally licensed images from Wikimedia Commons are used.
-  console.log(`[Diagram] No verified diagram found for "${topic}" (${subject}) — returning not-available`);
-  return res.json({
+  // ── Step 4: Approved-source topic fallback bank ─────────────────────────────
+  const approvedFallback = pickApprovedSourceFallback();
+  if (approvedFallback) {
+    console.log(`[Diagram] Using approved-source fallback for "${topic}" (${subject}) via ${approvedFallback.provider}`);
+    return res.json(approvedFallback);
+  }
+
+  console.log(`[Diagram] No approved diagram found for "${topic}" (${subject}) — returning not-available`);
+  return res.json(buildImageResponse({
     imageUrl: null,
     caption: `No diagram available for ${topic}`,
     attribution: null,
     provider: "none",
     type: "none",
-  });
+    imageKind: "none",
+  }));
 });
 
 // ── Worksheet Upload & Adapt ─────────────────────────────────────────────────
