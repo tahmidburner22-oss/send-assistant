@@ -1944,7 +1944,7 @@ export default function Worksheets() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 flex-wrap">
               <History className="h-4 w-4 text-brand" />
-              <span className="flex-1 truncate">{selectedHistorySheet?.title}</span>
+              <span className="flex-1 truncate">{(selectedHistorySheet?.title || '').replace(/^\*{1,2}|\*{1,2}$/g, '').replace(/^_{1,2}|_{1,2}$/g, '').trim()}</span>
 
             </DialogTitle>
           </DialogHeader>
@@ -2012,7 +2012,7 @@ export default function Worksheets() {
                     return (
                       <div key={i} className={`rounded-lg border p-3 ${isTeacherSection ? "bg-amber-50 border-amber-200" : "bg-card border-border/50"}`}>
                         <div className="flex items-center justify-between mb-2">
-                          <h3 className="font-semibold text-sm text-foreground">{section.title}</h3>
+                          <h3 className="font-semibold text-sm text-foreground">{(section.title || '').replace(/^\*{1,2}|\*{1,2}$/g, '').replace(/^_{1,2}|_{1,2}$/g, '').trim()}</h3>
                           <div className="flex items-center gap-1">
                             {isTeacherSection && <span className="text-[10px] bg-amber-200 text-amber-800 px-1.5 py-0.5 rounded">Teacher</span>}
                             {historyEditMode && (
