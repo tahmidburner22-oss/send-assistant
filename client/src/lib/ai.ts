@@ -23,11 +23,14 @@ export function parseWithFixes(s: string): any {
   // \frac, \frown, \times, \text etc. (LaTeX commands) which must be doubled.
   const preProcess = (raw: string): string => {
     // Scan inside JSON strings and double backslashes before LaTeX-like sequences.
-    // LaTeX escape chars that conflict with JSON: f (\frac), t (\times, \text),
-    // b (\begin, \beta), n (\neq, \nabla), r (\rightarrow), v (\vec, \vee)
-    // We only double when the next char is a LETTER (not a digit or punctuation)
-    // because \n, \t, \b, \r as control chars are never followed by letters in JSON.
-    const latexEscapeChars = new Set(['f', 't', 'b', 'n', 'r', 'v']);
+    // We ONLY handle \f and \t here:
+    //   \f = form feed (\x0c) — NEVER used in worksheet content, but \frac is very common
+    //   \t = tab (\x09) — rarely used in worksheet content, but \times/\text/\theta are common
+    // We do NOT handle \n, \r, \b because those are legitimately used as control chars
+    // in JSON strings (e.g. \nStep 1: is a newline before "Step 1:").
+    // LaTeX commands starting with n/r/b (\neq, \rightarrow, \begin) are handled
+    // by the renderMath function which can detect them from context.
+    const latexEscapeChars = new Set(['f', 't']);
     const out: string[] = [];
     let inStr = false;
     let i = 0;
@@ -73,9 +76,8 @@ export function parseWithFixes(s: string): any {
         const next = raw[i + 1];
         const afterNext2 = raw[i + 2];
         // LaTeX escape chars that conflict with JSON valid escapes:
-        // f (\frac), t (\times), b (\begin), n (\neq), r (\rightarrow), v (\vec)
-        // If the char after the escape is a letter, it's a LaTeX command — double the backslash.
-        const latexConflicts = new Set(['f', 't', 'b', 'n', 'r', 'v']);
+        // Only handle \f (\frac) and \t (\times) — NOT \n, \r, \b which are used as real control chars.
+        const latexConflicts = new Set(['f', 't']);
         if (next !== undefined && latexConflicts.has(next) && afterNext2 && /[a-zA-Z]/.test(afterNext2)) {
           // LaTeX command — double the backslash
           result.push('\\\\');
@@ -803,8 +805,10 @@ Return EXACTLY this JSON (raw JSON, no markdown):
 
   // Robust JSON parsing with multiple fallback strategies
   const parseWithFixes = (s: string): any => {
-    // Pre-process: escape \f that appears to be LaTeX (\frac, \frown, etc.)
+    // Pre-process: escape \f (\frac) and \t (\times, \text, \theta) that appear to be LaTeX.
+    // JSON treats \f as form feed and \t as tab, but the AI uses them as LaTeX commands.
     const preProcess = (raw: string): string => {
+      const latexOnly = new Set(['f', 't']); // Only these two conflict with common LaTeX commands
       const out: string[] = [];
       let inStr = false;
       let i = 0;
@@ -813,7 +817,8 @@ Return EXACTLY this JSON (raw JSON, no markdown):
         if (!inStr) { if (ch === '"') inStr = true; out.push(ch); i++; continue; }
         if (ch === '\\') {
           const next = raw[i + 1];
-          if (next === 'f' && raw[i + 2] && /[a-zA-Z]/.test(raw[i + 2])) {
+          const afterNext = raw[i + 2];
+          if (next && latexOnly.has(next) && afterNext && /[a-zA-Z]/.test(afterNext)) {
             out.push('\\\\'); i++; continue;
           }
           out.push(ch); i++; continue;
@@ -845,10 +850,13 @@ Return EXACTLY this JSON (raw JSON, no markdown):
         // Inside a JSON string
         if (ch === '\\') {
           const next = raw[i + 1];
-          // Note: we intentionally exclude 'f' (\f = form feed) from valid escapes
-        // because the AI uses \frac, \frown etc. (LaTeX) which must be doubled.
-        // Form feeds never appear in worksheet content, but \frac does.
-        if (next !== undefined && '"\\/bnrtu'.includes(next)) {
+          const afterNext3 = raw[i + 2];
+          // \f (\frac) and \t (\times) conflict with JSON escapes but are LaTeX commands.
+          // Double the backslash when followed by a letter (indicating a LaTeX command).
+          const latexConflicts2 = new Set(['f', 't']);
+          if (next !== undefined && latexConflicts2.has(next) && afterNext3 && /[a-zA-Z]/.test(afterNext3)) {
+            result.push('\\\\');
+          } else if (next !== undefined && '"\\/bnrtu'.includes(next)) {
             // Valid JSON escape — keep as-is
             result.push(ch);
           } else {
