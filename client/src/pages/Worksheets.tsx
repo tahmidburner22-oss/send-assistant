@@ -25,6 +25,7 @@ import { aiGenerateWorksheet, aiEditSection, aiScaffoldExistingWorksheet } from 
 // examPaperBuilder is dynamically imported inside handlers to avoid loading the large question bank on initial page load
 import type { PastPaperQuestion } from "@/lib/pastPaperQuestions";
 import PrintOptionsDialog, { type PrintOptions } from "@/components/PrintOptionsDialog";
+import SENDInfoPanel from "@/components/SENDInfoPanel";
 import {
   FileText, Upload, Library, Sparkles, Download, Printer, Save, Star,
   Eye, GraduationCap, Palette, Edit3, Users, Check, ZoomIn, ZoomOut,
@@ -250,6 +251,8 @@ export default function Worksheets() {
   const [showDiffDialog, setShowDiffDialog] = useState(false);
   const [diffLoading, setDiffLoading] = useState<string | null>(null);
   const [diffVersions, setDiffVersions] = useState<Record<string, AIWorksheet>>({});
+  // SEND need override for the scaffold dialog (lets teacher pick a different SEND need)
+  const [sendNeedForScaffold, setSendNeedForScaffold] = useState<string>("");
 
   const worksheetRef = useRef<HTMLDivElement>(null);
   const uploadWorksheetRef = useRef<HTMLDivElement>(null);
@@ -660,11 +663,16 @@ export default function Worksheets() {
       // hint boxes — preserving every original question verbatim.
       if (tier === "send") {
         const effectiveSendNeed =
-          (ws.metadata?.sendNeed && ws.metadata.sendNeed !== "none" && ws.metadata.sendNeed !== "none-selected")
-            ? ws.metadata.sendNeed
-            : (sendNeed && sendNeed !== "none-selected" && sendNeed !== "")
-              ? sendNeed
-              : "general";
+          // 1. Explicit override from the dialog SEND need picker
+          (sendNeedForScaffold && sendNeedForScaffold !== "none" && sendNeedForScaffold !== "none-selected")
+            ? sendNeedForScaffold
+            // 2. SEND need embedded in the worksheet metadata
+            : (ws.metadata?.sendNeed && ws.metadata.sendNeed !== "none" && ws.metadata.sendNeed !== "none-selected")
+              ? ws.metadata.sendNeed
+              // 3. SEND need from the generate form
+              : (sendNeed && sendNeed !== "none-selected" && sendNeed !== "")
+                ? sendNeed
+                : "general";
 
         // Get the non-teacher sections to scaffold (exclude answer sections)
         const sectionsToScaffold = (ws.sections || []).filter(
@@ -870,6 +878,10 @@ export default function Worksheets() {
                     })()}</p>
                   )}
                 </div>
+
+                {sendNeed && sendNeed !== "none-selected" && (
+                  <SENDInfoPanel sendNeedId={sendNeed} context="worksheet" />
+                )}
 
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
@@ -1081,6 +1093,10 @@ export default function Worksheets() {
                     </Select>
                   </div>
                 </div>
+
+                {uploadSendNeed && (
+                  <SENDInfoPanel sendNeedId={uploadSendNeed} context="worksheet" />
+                )}
 
                 <div className="flex items-center gap-2 p-2 bg-green-50 border border-green-200 rounded text-xs text-green-700">
                   <CheckCircle className="h-4 w-4 flex-shrink-0" />
@@ -2115,6 +2131,8 @@ export default function Worksheets() {
               { tier: "send", label: "SEND Scaffolded", desc: "Full SEND scaffolding: fill-in-the-blank guided questions, vocabulary box, sentence starters, chunked instructions, and visual supports.", colour: "green", icon: "♿" },
             ] as const).map(({ tier, label, desc, colour, icon }) => (
               <div key={tier} className={`rounded-xl border p-4 space-y-3 ${
+                // extra top padding for SEND card to accommodate the SEND picker
+                tier === "send" ? "pb-4" : ""} ${
                 colour === "blue" ? "border-blue-200 bg-blue-50" :
                 colour === "purple" ? "border-purple-200 bg-purple-50" :
                 "border-green-200 bg-green-50"
@@ -2135,6 +2153,30 @@ export default function Worksheets() {
                       "text-green-700"
                     }`}>{desc}</p>
                   </div>
+                  {tier === "send" && (
+                    <div className="mt-2 space-y-2">
+                      <Label className="text-xs font-medium text-green-800">SEND Need for scaffolding</Label>
+                      <Select
+                        value={sendNeedForScaffold || sendNeed || ""}
+                        onValueChange={setSendNeedForScaffold}
+                      >
+                        <SelectTrigger className="h-8 text-xs border-green-300 bg-white">
+                          <SelectValue placeholder="Use worksheet SEND need (or select override)" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="general">General accessibility</SelectItem>
+                          {sendNeeds.map(n => <SelectItem key={n.id} value={n.id}>{n.name}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                      {(sendNeedForScaffold || sendNeed) && sendNeedForScaffold !== "general" && (
+                        <SENDInfoPanel
+                          sendNeedId={sendNeedForScaffold || sendNeed}
+                          context="worksheet"
+                          className="mt-2"
+                        />
+                      )}
+                    </div>
+                  )}
                   <Button
                     size="sm"
                     disabled={diffLoading === tier}

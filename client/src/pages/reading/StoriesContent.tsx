@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { useApp } from "@/contexts/AppContext";
 import { yearGroups, sendNeeds, storyGenres, storyLengths, readingLevels, colorOverlays } from "@/lib/send-data";
+import SENDInfoPanel from "@/components/SENDInfoPanel";
 import { generateStoryContent } from "@/lib/worksheet-generator";
 
 import { downloadStoryPdf } from "@/lib/pdf-generator";
@@ -191,6 +192,10 @@ export default function StoriesContent() {
                   </Select>
                 </div>
               </div>
+
+              {sendNeed && sendNeed !== "none-selected" && (
+                <SENDInfoPanel sendNeedId={sendNeed} context="story" />
+              )}
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">

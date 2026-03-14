@@ -1050,18 +1050,41 @@ Return JSON only (no markdown): {"title": "Story Title", "content": "Full story 
 }
 // ─── Task differentiationn ────────────────────────────────────────────────────
 
+// Per-SEND-need differentiation rules derived from COBS Handbook and worksheetChanges data
+const SEND_DIFF_RULES: Record<string, string> = {
+  asc: "Use literal, unambiguous language only. Add a 'What you need to do' box before each section. Use consistent terminology — one word per concept, no synonyms. Avoid social or emotional scenarios. Replace open reflection with tick-box checklists.",
+  asperger: "Use direct, literal language — no figurative language or idioms. Create a predictable, identical layout structure across every section. Add step-by-step numbered instructions for every task. Include visual diagrams alongside text.",
+  "pda-odd": "Reframe demands as choices and invitations. Rename sections as 'Explore', 'Investigate', 'Secret Mission'. Replace 'You must' with 'You might like to...'. Add natural break points and 'Take a break here if you need to' prompts.",
+  slcn: "Add a Word Bank with plain-English definitions at the start of each section. Provide sentence frames for every answer (e.g. 'The answer is ___ because ___'). Limit sentences to 12 words maximum. Use matching, labelling, and multiple-choice formats. Add visual cues alongside every text question.",
+  dyslexia: "Limit every question to one sentence (max 12 words). Bold every key term at first use. Add sentence starters and answer frames. Include a step-by-step method box before practice. Use 1.5 line spacing and generous white space.",
+  dyscalculia: "Break every question into numbered sub-steps with blanks (Step 1: ___ Step 2: ___). Include a number line or key facts box. Show every arithmetic step in the worked example with 'why' annotations. Use real-world contexts for all word problems.",
+  dyspraxia: "Use multiple-choice, matching, and circle-the-answer formats. Provide large answer boxes. Use structured answer frames (tables, fill-in-the-blank) rather than open writing. Avoid extended writing tasks — use tick, circle, or diagram formats for challenge questions.",
+  mld: "Provide a fully completed model answer for Question 1. Add a hint, sentence starter, or partial answer to every question. Include a 'Help Box' with key facts and vocabulary. Use KS2 reading level language. Apply concrete-pictorial-abstract progression.",
+  adhd: "Add a tick checkbox next to every question. Limit to maximum 3 questions per section. Add a 'BRAIN BREAK — stand up and stretch!' prompt midway. Vary question types: calculation, fill-in, matching, true/false. Bold the action word in every instruction.",
+  anxiety: "Rename Section A 'Warm-Up — no pressure!'. Label challenge as 'OPTIONAL BONUS — only if you want to!'. Add a positive statement at the start of each section. Replace 'must', 'should', 'need to' with 'try to', 'have a go at'. Add an emoji check-in at start and end.",
+  vi: "Use minimum 18pt equivalent font size. Apply high-contrast formatting. Describe all diagram content in text as well. Avoid questions that rely solely on visual interpretation. Add generous spacing between questions and sections.",
+  hi: "Write all instructions in full — no reliance on verbal explanation. Add a Word Bank with definitions for all key terms. Make every question fully self-contained with all necessary information. Include visual diagrams alongside every text question. Remove any audio-dependent content.",
+  tourettes: "Use multiple response formats: tick, circle, fill-in, short answer. Add natural break points into every section. Reduce writing demands — avoid long written responses. Use a calm, supportive, non-judgmental tone. Remove all timed pressure language ('quickly', 'in 5 minutes').",
+  "older-learners": "Provide a graphic organiser or table for extended responses. Add a Cornell-style note section at the end of each section. Use age-appropriate academic language and contexts. Include a study tip box at the start of each section. Add clear section breaks with estimated time for each section.",
+};
+
 export async function aiDifferentiateTask(params: {
   taskContent: string;
   sendNeed?: string;
   yearGroup?: string;
   subject?: string;
 }): Promise<{ differentiatedContent: string; provider?: string }> {
-  const system = `You are a SEND specialist teacher who differentiates tasks to make them accessible for all learners.`;
-  const user = `Differentiate this task for a ${params.yearGroup || "secondary"} ${params.subject || ""} student${params.sendNeed ? ` with ${params.sendNeed}` : ""}:
+  const sendRules = params.sendNeed ? SEND_DIFF_RULES[params.sendNeed] : null;
+  const system = `You are a SEND specialist teacher who differentiates tasks to make them accessible for all learners. You follow UK SEND Code of Practice and COBS Handbook guidelines precisely.`;
+  const user = `Differentiate this task for a ${params.yearGroup || "secondary"} ${params.subject || ""} student${params.sendNeed ? ` with ${params.sendNeed}` : ""}.
 
+${sendRules ? `MANDATORY ADAPTATIONS FOR THIS SEND NEED — apply ALL of these:
+${sendRules}
+
+` : ""}TASK TO DIFFERENTIATE:
 ${params.taskContent}
 
-Provide a clearly differentiated version with simplified language, visual cues, and scaffolding. Return as plain text only.`;
+Provide a clearly differentiated version applying all the mandatory adaptations above. Return as plain text only.`;
 
   const { text, provider } = await callAI(system, user, 1500);
   return { differentiatedContent: text, provider };

@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { useApp, type Child, type Assignment, type Submission, type TimetableLesson } from "@/contexts/AppContext";
 import { yearGroups, sendNeeds, subjects } from "@/lib/send-data";
+import SENDInfoPanel from "@/components/SENDInfoPanel";
 import { useScheduler } from "@/hooks/useScheduler";
 import { TOPIC_BANK } from "@/lib/topic-bank";
 import { CURRICULUM_PROGRESSIONS, getProgressionsForSubject, getRecommendedStep, type TopicProgression } from "@/lib/curriculum-progression";
@@ -208,7 +209,14 @@ export default function Children() {
   const [editChild, setEditChild] = useState<Child | null>(null);
   const [name, setName] = useState("");
   const [yearGroup, setYearGroup] = useState("");
-  const [sendNeed, setSendNeed] = useState("");
+  const [sendNeed, setSendNeed] = useState(""); // kept for single-select compat
+  const [selectedSendNeeds, setSelectedSendNeeds] = useState<string[]>([]);
+
+  const toggleSendNeed = (id: string) => {
+    setSelectedSendNeeds(prev =>
+      prev.includes(id) ? prev.filter(n => n !== id) : [...prev, id]
+    );
+  };
 
   // Assignment detail state
   const [selectedAssignment, setSelectedAssignment] = useState<Assignment | null>(null);
@@ -268,22 +276,26 @@ export default function Children() {
   };
 
   const handleAdd = async () => {
-    if (!name || !yearGroup || !sendNeed) {
-      toast.error("Please fill in all fields.");
+    if (!name || !yearGroup || selectedSendNeeds.length === 0) {
+      toast.error("Please fill in all fields and select at least one SEND need.");
       return;
     }
     if (name.length > 4) {
       toast.error("Initials must be 4 characters or fewer (e.g. A.J. or Alex).");
       return;
     }
-    const child = await addChild({ name, yearGroup, sendNeed });
+    const primarySendNeed = selectedSendNeeds[0];
+    const child = await addChild({ name, yearGroup, sendNeed: primarySendNeed, sendNeeds: selectedSendNeeds });
     toast.success(`${name} added! Code: ${child.code}`);
-    setName(""); setYearGroup(""); setSendNeed(""); setShowAdd(false);
+    setName(""); setYearGroup(""); setSendNeed(""); setSelectedSendNeeds([]); setShowAdd(false);
   };
 
   const handleUpdate = () => {
     if (!editChild) return;
-    updateChild(editChild.id, { name: editChild.name, yearGroup: editChild.yearGroup, sendNeed: editChild.sendNeed, timetable: editChild.timetable, parentEmail: editChild.parentEmail, parentName: editChild.parentName });
+    const sendNeedsToSave = editChild.sendNeeds && editChild.sendNeeds.length > 0
+      ? editChild.sendNeeds
+      : editChild.sendNeed ? [editChild.sendNeed] : [];
+    updateChild(editChild.id, { name: editChild.name, yearGroup: editChild.yearGroup, sendNeed: sendNeedsToSave[0] || "", sendNeeds: sendNeedsToSave, timetable: editChild.timetable, parentEmail: editChild.parentEmail, parentName: editChild.parentName });
     toast.success("Child updated!");
     setEditChild(null);
   };
@@ -478,11 +490,32 @@ If the submission is empty or too short to mark, return mark: "N/A", feedback: "
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs font-medium">Primary SEND Need *</Label>
-              <Select value={sendNeed} onValueChange={setSendNeed}>
-                <SelectTrigger className="h-10"><SelectValue placeholder="Select SEND need" /></SelectTrigger>
-                <SelectContent>{sendNeeds.map(n => <SelectItem key={n.id} value={n.id}>{n.name}</SelectItem>)}</SelectContent>
-              </Select>
+              <Label className="text-xs font-medium">SEND Needs * <span className="font-normal text-muted-foreground">(select all that apply)</span></Label>
+              <div className="border rounded-lg p-2 max-h-48 overflow-y-auto space-y-1">
+                {sendNeeds.map(n => (
+                  <button
+                    key={n.id}
+                    type="button"
+                    onClick={() => toggleSendNeed(n.id)}
+                    className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-left text-xs transition-colors ${
+                      selectedSendNeeds.includes(n.id)
+                        ? 'bg-brand/10 text-brand border border-brand/30'
+                        : 'hover:bg-muted/50 border border-transparent'
+                    }`}
+                  >
+                    <span className={`w-4 h-4 rounded border flex-shrink-0 flex items-center justify-center ${
+                      selectedSendNeeds.includes(n.id) ? 'bg-brand border-brand' : 'border-border'
+                    }`}>
+                      {selectedSendNeeds.includes(n.id) && <span className="text-white text-[10px]">✓</span>}
+                    </span>
+                    <span className="flex-1">{n.name}</span>
+                    <span className="text-[10px] text-muted-foreground">{n.category}</span>
+                  </button>
+                ))}
+              </div>
+              {selectedSendNeeds.length > 0 && (
+                <p className="text-[10px] text-brand">{selectedSendNeeds.length} selected: {selectedSendNeeds.map(id => sendNeeds.find(n => n.id === id)?.name).filter(Boolean).join(', ')}</p>
+              )}
             </div>
             <Button onClick={handleAdd} className="w-full h-10 bg-brand hover:bg-brand/90 text-white">Add Pupil</Button>
           </div>
@@ -515,11 +548,47 @@ If the submission is empty or too short to mark, return mark: "N/A", feedback: "
                     </Select>
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-medium">SEND Need</Label>
-                    <Select value={editChild.sendNeed} onValueChange={v => setEditChild({ ...editChild, sendNeed: v })}>
-                      <SelectTrigger className="h-10"><SelectValue /></SelectTrigger>
-                      <SelectContent>{sendNeeds.map(n => <SelectItem key={n.id} value={n.id}>{n.name}</SelectItem>)}</SelectContent>
-                    </Select>
+                    <Label className="text-xs font-medium">SEND Needs <span className="font-normal text-muted-foreground">(select all that apply)</span></Label>
+                    <div className="border rounded-lg p-2 max-h-48 overflow-y-auto space-y-1">
+                      {sendNeeds.map(n => {
+                        const currentNeeds = editChild.sendNeeds && editChild.sendNeeds.length > 0
+                          ? editChild.sendNeeds
+                          : editChild.sendNeed ? [editChild.sendNeed] : [];
+                        const isSelected = currentNeeds.includes(n.id);
+                        return (
+                          <button
+                            key={n.id}
+                            type="button"
+                            onClick={() => {
+                              const current = editChild.sendNeeds && editChild.sendNeeds.length > 0
+                                ? editChild.sendNeeds
+                                : editChild.sendNeed ? [editChild.sendNeed] : [];
+                              const updated = isSelected ? current.filter(x => x !== n.id) : [...current, n.id];
+                              setEditChild({ ...editChild, sendNeeds: updated, sendNeed: updated[0] || "" });
+                            }}
+                            className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-left text-xs transition-colors ${
+                              isSelected ? 'bg-brand/10 text-brand border border-brand/30' : 'hover:bg-muted/50 border border-transparent'
+                            }`}
+                          >
+                            <span className={`w-4 h-4 rounded border flex-shrink-0 flex items-center justify-center ${
+                              isSelected ? 'bg-brand border-brand' : 'border-border'
+                            }`}>
+                              {isSelected && <span className="text-white text-[10px]">✓</span>}
+                            </span>
+                            <span className="flex-1">{n.name}</span>
+                            <span className="text-[10px] text-muted-foreground">{n.category}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {(() => {
+                      const currentNeeds = editChild.sendNeeds && editChild.sendNeeds.length > 0
+                        ? editChild.sendNeeds
+                        : editChild.sendNeed ? [editChild.sendNeed] : [];
+                      return currentNeeds.length > 0 ? (
+                        <p className="text-[10px] text-brand">{currentNeeds.length} selected: {currentNeeds.map(id => sendNeeds.find(n => n.id === id)?.name).filter(Boolean).join(', ')}</p>
+                      ) : null;
+                    })()}
                   </div>
                   <div className="space-y-1.5">
                     <Label className="text-xs font-medium">Parent / Guardian Name</Label>
@@ -792,7 +861,10 @@ If the submission is empty or too short to mark, return mark: "N/A", feedback: "
       ) : !selectedChild ? (
         <div className="space-y-2">
           {children.map((child, i) => {
-            const needName = sendNeeds.find(n => n.id === child.sendNeed)?.name || child.sendNeed;
+            const childNeeds = child.sendNeeds && child.sendNeeds.length > 0
+              ? child.sendNeeds
+              : child.sendNeed ? [child.sendNeed] : [];
+            const needName = childNeeds.map(id => sendNeeds.find(n => n.id === id)?.name || id).join(', ') || 'No SEND need';
             const completedCount = child.assignments.filter(a => a.status === "completed").length;
             const totalCount = child.assignments.length;
             return (
@@ -843,7 +915,7 @@ If the submission is empty or too short to mark, return mark: "N/A", feedback: "
                 <div className="w-12 h-12 rounded-full bg-brand/10 flex items-center justify-center text-brand font-bold text-xl">{selectedChild.name[0]}</div>
                 <div className="flex-1">
                   <h3 className="font-semibold text-foreground">{selectedChild.name}</h3>
-                  <p className="text-xs text-muted-foreground">{selectedChild.yearGroup} · {sendNeeds.find(n => n.id === selectedChild.sendNeed)?.name}</p>
+                  <p className="text-xs text-muted-foreground">{selectedChild.yearGroup} · {(selectedChild.sendNeeds && selectedChild.sendNeeds.length > 0 ? selectedChild.sendNeeds : selectedChild.sendNeed ? [selectedChild.sendNeed] : []).map(id => sendNeeds.find(n => n.id === id)?.name || id).join(', ')}</p>
                   <div className="flex items-center gap-2 mt-1">
                     <span className="text-xs text-muted-foreground">Access Code:</span>
                     <button onClick={() => copyCode(selectedChild.code)}
@@ -1223,8 +1295,16 @@ If the submission is empty or too short to mark, return mark: "N/A", feedback: "
                           )}
                         </div>
 
+                        {/* SEND Info Panel for the child's need */}
+                        {selectedChild.sendNeed && selectedChild.sendNeed !== "none" && (
+                          <SENDInfoPanel
+                            sendNeedId={selectedChild.sendNeed}
+                            context="scheduler"
+                          />
+                        )}
+
                         {cfg.enabled && (
-                          <div className="flex items-center gap-2 p-2.5 rounded-lg bg-indigo-50 border border-indigo-200">
+                          <div className="flex items-center gap-2 p-2.5 rounded-xl bg-indigo-50 border border-indigo-200">
                             <div className="h-2 w-2 rounded-full bg-indigo-500 animate-pulse" />
                             <p className="text-xs text-indigo-700">Auto-scheduler active — new worksheet generated {frequencyLabel(cfg.frequency)} and assigned to {selectedChild.name} automatically.</p>
                           </div>

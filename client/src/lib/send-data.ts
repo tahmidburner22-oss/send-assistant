@@ -571,6 +571,16 @@ export const sendNeeds: SendNeed[] = [
       "Clear section breaks",
       "Study tips integrated",
     ],
+    worksheetChanges: {
+      summary: "Age-appropriate academic language; graphic organiser for extended responses; Cornell-style note section; clear section breaks with study tips integrated.",
+      changes: [
+        { what: "Graphic organiser or table provided for extended responses", why: "Older learners with SEND often struggle to organise complex information; a visual framework reduces the cognitive planning burden" },
+        { what: "Cornell-style note section at the end of each section", why: "Structured note-taking frameworks improve retention and revision — particularly beneficial for students who struggle with lecture-based learning" },
+        { what: "Age-appropriate academic language and contexts throughout", why: "SEND resources are often pitched at younger ages; age-appropriate content maintains dignity and engagement for KS3–KS5 students" },
+        { what: "Study tip box at the start of each section", why: "Older learners benefit from explicit metacognitive strategies; brief study tips build independent learning skills" },
+        { what: "Clear section breaks with estimated time for each section", why: "Time management is a common difficulty for older learners with SEND; visible time guides help with self-regulation and pacing" },
+      ],
+    },
   },
 ];
 

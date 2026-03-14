@@ -30,7 +30,11 @@ export interface TimetableLesson {
 }
 
 export interface Child {
-  id: string; name: string; yearGroup: string; sendNeed: string;
+  id: string; name: string; yearGroup: string;
+  /** Primary SEND need (legacy single-value, kept for backward compat) */
+  sendNeed: string;
+  /** Multiple SEND needs — stored as comma-separated in DB, parsed to array in frontend */
+  sendNeeds: string[];
   code: string; upn?: string; dob?: string; createdAt: string;
   parentEmail?: string; parentName?: string;
   assignments: Assignment[]; submissions: Submission[];
@@ -239,7 +243,11 @@ export function AppProvider({ children: childrenProp }: { children: React.ReactN
   }, []);
 
   const addChild = useCallback(async (child: Omit<Child, "id" | "code" | "createdAt" | "assignments" | "submissions">) => {
-    const result = await pupilsApi.create({ name: child.name, yearGroup: child.yearGroup, sendNeed: child.sendNeed });
+    // Store multiple SEND needs as comma-separated string in the single DB column
+    const sendNeedValue = child.sendNeeds && child.sendNeeds.length > 0
+      ? child.sendNeeds.join(",")
+      : child.sendNeed;
+    const result = await pupilsApi.create({ name: child.name, yearGroup: child.yearGroup, sendNeed: sendNeedValue });
     const newChild: Child = { ...child, id: result.id, code: result.code, createdAt: new Date().toISOString(), assignments: [], submissions: [] };
     setState(s => ({ ...s, children: [...s.children, newChild] }));
     return newChild;
@@ -251,7 +259,11 @@ export function AppProvider({ children: childrenProp }: { children: React.ReactN
   }, []);
 
   const updateChild = useCallback(async (id: string, updates: Partial<Child>) => {
-    await pupilsApi.update(id, { name: updates.name, yearGroup: updates.yearGroup, sendNeed: updates.sendNeed, timetable: updates.timetable, parentEmail: updates.parentEmail, parentName: updates.parentName });
+    // Merge sendNeeds array back to comma-separated string for DB storage
+    const sendNeedValue = updates.sendNeeds && updates.sendNeeds.length > 0
+      ? updates.sendNeeds.join(",")
+      : updates.sendNeed;
+    await pupilsApi.update(id, { name: updates.name, yearGroup: updates.yearGroup, sendNeed: sendNeedValue, timetable: updates.timetable, parentEmail: updates.parentEmail, parentName: updates.parentName });
     setState(s => ({ ...s, children: s.children.map(c => c.id === id ? { ...c, ...updates } : c) }));
   }, []);
 
@@ -387,5 +399,9 @@ function mapAttendanceRecord(r: any): AttendanceRecord {
 function mapPupil(p: any): Child {
   const assignments = Array.isArray(p.assignments) ? p.assignments.map(mapAssignment) : [];
   const submissions = Array.isArray(p.submissions) ? p.submissions : [];
-  return { id: p.id, name: p.name, yearGroup: p.year_group || "", sendNeed: p.send_need || "", code: p.code || "", upn: p.upn, dob: p.dob, createdAt: p.created_at, parentEmail: p.parent_email || undefined, parentName: p.parent_name || undefined, assignments, submissions };
+  // Parse comma-separated sendNeed into sendNeeds array
+  const rawSendNeed = p.send_need || "";
+  const sendNeedsArr = rawSendNeed ? rawSendNeed.split(",").map((s: string) => s.trim()).filter(Boolean) : [];
+  const primarySendNeed = sendNeedsArr[0] || "";
+  return { id: p.id, name: p.name, yearGroup: p.year_group || "", sendNeed: primarySendNeed, sendNeeds: sendNeedsArr, code: p.code || "", upn: p.upn, dob: p.dob, createdAt: p.created_at, parentEmail: p.parent_email || undefined, parentName: p.parent_name || undefined, assignments, submissions };
 }
