@@ -1067,7 +1067,7 @@ function VocabSection({ content, fmt }: { content: string; fmt: ReturnType<typeo
   return (
     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "8px" }}>
       {entries.map((e, i) => (
-        <div key={i} style={{ background: "white", border: "1px solid #e9d5ff", borderRadius: "8px", padding: "10px 12px", display: "flex", flexDirection: "column", gap: "4px" }}>
+        <div key={i} style={{ background: "white", border: "1px solid #5b21b6", borderRadius: "4px", padding: "8px 10px", display: "flex", flexDirection: "column", gap: "4px" }}>
           <div style={{ fontWeight: 700, color: "#7c3aed", fontSize: `${textSize}px`, fontFamily, letterSpacing }} dangerouslySetInnerHTML={{ __html: renderMath(e.term) }} />
           <div style={{ color: "#374151", fontSize: `${textSize - 1}px`, lineHeight, fontFamily, letterSpacing }} dangerouslySetInnerHTML={{ __html: renderMath(e.def) }} />
         </div>
@@ -1139,7 +1139,7 @@ function SelfReflectionSection({ content, fmt }: { content: string; fmt: ReturnT
       </div>
       {/* Open reflection question */}
       {openQ && (
-        <div style={{ marginTop: "14px", background: "white", border: "1px solid #fcd34d", borderRadius: "8px", padding: "10px 12px" }}>
+        <div style={{ marginTop: "14px", background: "white", border: "1.5px solid #5b21b6", borderRadius: "4px", padding: "10px 12px" }}>
           <div style={{ fontSize: `${textSize - 1}px`, fontWeight: 600, color: "#92400e", fontFamily, marginBottom: "6px" }} dangerouslySetInnerHTML={{ __html: "💭 " + renderMath(openQ) }} />
           <div style={{ borderBottom: "1px solid #d1d5db", height: "28px", marginBottom: "6px" }} />
           <div style={{ borderBottom: "1px solid #d1d5db", height: "28px" }} />
@@ -1155,7 +1155,7 @@ function WordBankSection({ content, fmt }: { content: string; fmt: ReturnType<ty
   return (
     <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
       {words.map((word, i) => (
-        <span key={i} style={{ background: "#dbeafe", color: "#1e40af", padding: "4px 10px", borderRadius: "20px", fontSize: `${textSize - 1}px`, fontWeight: 500, border: "1px solid #bfdbfe", fontFamily }}>
+        <span key={i} style={{ background: "white", color: "#5b21b6", padding: "4px 10px", borderRadius: "4px", fontSize: `${textSize - 1}px`, fontWeight: 600, border: "1.5px solid #5b21b6", fontFamily }}>
           {word}
         </span>
       ))}
@@ -1169,7 +1169,7 @@ function SentenceStartersSection({ content, fmt }: { content: string; fmt: Retur
   return (
     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "6px" }}>
       {starters.map((s, i) => (
-        <div key={i} style={{ background: "#ecfeff", border: "1px dashed #06b6d4", borderRadius: "6px", padding: "6px 10px", fontSize: `${textSize - 1}px`, color: "#0e7490", fontStyle: "italic", fontFamily, lineHeight }}>
+        <div key={i} style={{ background: "white", border: "1px solid #5b21b6", borderRadius: "4px", padding: "6px 10px", fontSize: `${textSize - 1}px`, color: "#5b21b6", fontStyle: "italic", fontFamily, lineHeight }}>
           "{s}..."
         </div>
       ))}
@@ -1183,7 +1183,7 @@ function ReminderBoxSection({ content, fmt }: { content: string; fmt: ReturnType
   const steps = lines.filter(l => /^Step\s*\d+/i.test(l.trim()));
   const otherLines = lines.filter(l => !/^Step\s*\d+/i.test(l.trim()));
   return (
-    <div style={{ background: "#fffbeb", border: "2px solid #f59e0b", borderRadius: "10px", padding: "14px 16px" }}>
+    <div style={{ background: "white", border: "1.5px solid #5b21b6", borderRadius: "4px", padding: "10px 12px" }}>
       <div style={{ fontSize: `${textSize - 1}px`, fontWeight: 700, color: "#92400e", marginBottom: "10px", fontFamily, textTransform: "uppercase", letterSpacing: "0.05em" }}>
         ⚠️ Keep this in mind while you work:
       </div>
@@ -1252,10 +1252,9 @@ function WordProblemsSection({ content, fmt }: { content: string; fmt: ReturnTyp
       {problems.map((problem, i) => (
         <div key={i} style={{
           background: "white",
-          border: "1px solid #a5f3fc",
-          borderLeft: "4px solid #0891b2",
-          borderRadius: "8px",
-          padding: "12px 14px",
+          border: "1.5px solid #5b21b6",
+          borderRadius: "4px",
+          padding: "10px 12px",
         }}>
           <div style={{ fontSize: `${textSize - 2}px`, fontWeight: 700, color: "#0e7490", marginBottom: "6px", fontFamily, textTransform: "uppercase", letterSpacing: "0.05em" }}>
             Problem {i + 1}
@@ -1314,56 +1313,39 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(({
         overflow: "hidden",
         border: "1.5px solid #5b21b6",
       }}>
-        {/* Title bar — TES-style: solid purple bar with white text */}
+        {/* Title bar — TES-style: solid purple bar, title same height as Name/Date row */}
         <div style={{
           background: "#5b21b6",
-          padding: "8px 12px",
+          padding: "6px 12px",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
           gap: "12px",
         }}>
-          <div>
-            <div style={{ fontWeight: 800, fontSize: `${fmt.fontSize + 4}px`, color: "white", fontFamily: fmt.fontFamily, letterSpacing: fmt.letterSpacing }}>
+          {/* Left: Adaptly logo/brand mark */}
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
+            <div style={{
+              width: "28px", height: "28px", borderRadius: "6px",
+              background: "rgba(255,255,255,0.2)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontWeight: 900, fontSize: "14px", color: "white", fontFamily: fmt.fontFamily,
+            }}>A</div>
+            <div style={{ fontSize: "10px", color: "rgba(255,255,255,0.75)", fontFamily: fmt.fontFamily, lineHeight: "1.2" }}>
+              <div style={{ fontWeight: 700 }}>{schoolName || "Adaptly"}</div>
+              <div>SEND-Informed Learning Resource</div>
+            </div>
+          </div>
+          {/* Centre: Title */}
+          <div style={{ flex: 1, textAlign: "center" }}>
+            <div style={{ fontWeight: 700, fontSize: `${fmt.fontSize + 1}px`, color: "white", fontFamily: fmt.fontFamily, letterSpacing: fmt.letterSpacing, lineHeight: "1.3" }}>
               {worksheet.title}
             </div>
             {worksheet.subtitle && (
-              <div style={{ fontSize: `${fmt.fontSize - 2}px`, color: "rgba(255,255,255,0.85)", marginTop: "2px", fontFamily: fmt.fontFamily }}>{worksheet.subtitle}</div>
+              <div style={{ fontSize: `${fmt.fontSize - 3}px`, color: "rgba(255,255,255,0.8)", marginTop: "1px", fontFamily: fmt.fontFamily }}>{worksheet.subtitle}</div>
             )}
           </div>
-          <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.8)", fontFamily: fmt.fontFamily, textAlign: "right", flexShrink: 0 }}>
-            {schoolName || "Adaptly"}
-          </div>
-        </div>
-        {/* Name/Date/Class row — white background */}
-        <div style={{
-          background: overlayColor || "white",
-          padding: "8px 12px",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          gap: "16px",
-          borderTop: "1px solid #5b21b6",
-        }}>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", alignItems: "center" }}>
-            {worksheet.metadata.sendNeed && (
-              <span style={{ background: "#ede9fe", color: "#5b21b6", padding: "1px 7px", borderRadius: "4px", fontSize: "10px", fontWeight: 600, fontFamily: fmt.fontFamily, border: "1px solid #5b21b6" }}>
-                ♿ {worksheet.metadata.sendNeed}
-              </span>
-            )}
-            {worksheet.metadata.difficulty && worksheet.metadata.difficulty !== "mixed" && (
-              <span style={{ background: "#ede9fe", color: "#5b21b6", padding: "1px 7px", borderRadius: "4px", fontSize: "10px", fontWeight: 600, fontFamily: fmt.fontFamily, border: "1px solid #5b21b6" }}>
-                {worksheet.metadata.difficulty === "foundation" ? "Foundation" : "Higher"}
-              </span>
-            )}
-            {worksheet.metadata.estimatedTime && (
-              <span style={{ background: "#ede9fe", color: "#5b21b6", padding: "1px 7px", borderRadius: "4px", fontSize: "10px", fontWeight: 600, fontFamily: fmt.fontFamily, border: "1px solid #5b21b6" }}>
-                ⏱ {worksheet.metadata.estimatedTime}
-              </span>
-            )}
-          </div>
-          {/* Name/Date/Class fields */}
-          <div style={{ display: "flex", gap: "16px", flexShrink: 0 }}>
+          {/* Right: Name/Date/Class fields inline */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "3px", flexShrink: 0 }}>
             {[
               { label: "Name", value: "" },
               { label: "Date", value: new Date().toLocaleDateString("en-GB") },
@@ -1371,9 +1353,9 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(({
               ...(teacherName ? [{ label: "Teacher", value: teacherName }] : []),
             ].map((field, i) => (
               <div key={i} style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                <span style={{ fontSize: "11px", fontWeight: 600, color: "#374151", fontFamily: fmt.fontFamily }}>{field.label}:</span>
-                <div style={{ borderBottom: "1.5px solid #5b21b6", minWidth: "80px", height: "16px", display: "flex", alignItems: "flex-end" }}>
-                  <span style={{ fontSize: "11px", color: "#374151", paddingBottom: "1px", fontFamily: fmt.fontFamily }}>{field.value}</span>
+                <span style={{ fontSize: "10px", fontWeight: 600, color: "rgba(255,255,255,0.85)", fontFamily: fmt.fontFamily, minWidth: "32px" }}>{field.label}:</span>
+                <div style={{ borderBottom: "1px solid rgba(255,255,255,0.6)", minWidth: "70px", height: "14px", display: "flex", alignItems: "flex-end" }}>
+                  <span style={{ fontSize: "10px", color: "rgba(255,255,255,0.9)", paddingBottom: "1px", fontFamily: fmt.fontFamily }}>{field.value}</span>
                 </div>
               </div>
             ))}
@@ -1558,12 +1540,24 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(({
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
+        flexWrap: "wrap",
+        gap: "4px",
         fontSize: "10px",
         color: "#5b21b6",
         fontFamily: fmt.fontFamily,
       }}>
         <span style={{ fontWeight: 600 }}>Generated by Adaptly</span>
-        <span>{worksheet.metadata.topic ? `${worksheet.metadata.topic} | ` : ""}{worksheet.metadata.subject ? worksheet.metadata.subject.charAt(0).toUpperCase() + worksheet.metadata.subject.slice(1) : ""} | {worksheet.metadata.yearGroup}</span>
+        {/* Metadata info line — year group, subject, topic, difficulty, SEND, time */}
+        <span style={{ display: "flex", gap: "6px", alignItems: "center", flexWrap: "wrap" }}>
+          {worksheet.metadata.yearGroup && <span>{worksheet.metadata.yearGroup}</span>}
+          {worksheet.metadata.subject && <span>| {worksheet.metadata.subject.charAt(0).toUpperCase() + worksheet.metadata.subject.slice(1)}</span>}
+          {worksheet.metadata.topic && <span>| {worksheet.metadata.topic}</span>}
+          {worksheet.metadata.difficulty && worksheet.metadata.difficulty !== "mixed" && (
+            <span>| {worksheet.metadata.difficulty === "foundation" ? "Foundation" : "Higher"}</span>
+          )}
+          {worksheet.metadata.sendNeed && <span>| ♿ {worksheet.metadata.sendNeed}</span>}
+          {worksheet.metadata.estimatedTime && <span>| ⏱ {worksheet.metadata.estimatedTime}</span>}
+        </span>
         <span>{new Date().toLocaleDateString("en-GB")} | adaptly.co.uk</span>
       </div>
     </div>

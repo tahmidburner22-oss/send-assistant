@@ -15,48 +15,108 @@ export async function downloadHtmlAsPdf(
   // Find the inner worksheet-print-root if it exists
   const printRoot = element.querySelector(".worksheet-print-root") as HTMLElement || element;
 
-  const originalStyle = printRoot.style.cssText;
-  printRoot.style.width = "794px";
-  printRoot.style.maxWidth = "794px";
-  printRoot.style.padding = "32px";
-  printRoot.style.boxSizing = "border-box";
-  printRoot.style.backgroundColor = options.overlayColor || "white";
+  // A4 dimensions at 96dpi: 794px wide
+  const A4_WIDTH_PX = 794;
+  const A4_HEIGHT_PX = 1123; // 297mm at 96dpi
+  const PDF_WIDTH_MM = 210;
+  const PDF_HEIGHT_MM = 297;
+  const MARGIN_MM = 8;
+  const CONTENT_WIDTH_MM = PDF_WIDTH_MM - MARGIN_MM * 2;
+
+  // Temporarily set width to A4 for capture — do NOT change padding/margin
+  const originalWidth = printRoot.style.width;
+  const originalMaxWidth = printRoot.style.maxWidth;
+  printRoot.style.width = `${A4_WIDTH_PX}px`;
+  printRoot.style.maxWidth = `${A4_WIDTH_PX}px`;
 
   try {
+    // Wait a tick so layout reflows
+    await new Promise(r => setTimeout(r, 100));
+
     const canvas = await html2canvas(printRoot, {
       scale: 2,
       useCORS: true,
       allowTaint: true,
       backgroundColor: options.overlayColor || "#ffffff",
       logging: false,
-      windowWidth: 794,
-      scrollY: 0,
+      windowWidth: A4_WIDTH_PX,
+      scrollY: -window.scrollY,
+      onclone: (clonedDoc) => {
+        // Copy all stylesheets from the main document into the cloned document
+        // This ensures KaTeX CSS, Tailwind, and all custom styles are applied
+        Array.from(document.styleSheets).forEach((sheet) => {
+          try {
+            if (sheet.href) {
+              // External stylesheet — add as <link>
+              const link = clonedDoc.createElement("link");
+              link.rel = "stylesheet";
+              link.href = sheet.href;
+              clonedDoc.head.appendChild(link);
+            } else if (sheet.cssRules) {
+              // Inline stylesheet — copy rules as <style>
+              const style = clonedDoc.createElement("style");
+              style.textContent = Array.from(sheet.cssRules).map(r => r.cssText).join("\n");
+              clonedDoc.head.appendChild(style);
+            }
+          } catch (e) {
+            // Cross-origin stylesheets may throw — skip them
+          }
+        });
+        // Ensure cloned element has correct width and no extra padding
+        const clonedRoot = clonedDoc.querySelector(".worksheet-print-root") as HTMLElement;
+        if (clonedRoot) {
+          clonedRoot.style.width = `${A4_WIDTH_PX}px`;
+          clonedRoot.style.maxWidth = `${A4_WIDTH_PX}px`;
+          clonedRoot.style.padding = "0";
+          clonedRoot.style.margin = "0";
+          clonedRoot.style.boxSizing = "border-box";
+        }
+        // Remove the Card wrapper padding that adds extra whitespace
+        const cardContent = clonedDoc.querySelector(".worksheet-content") as HTMLElement;
+        if (cardContent) {
+          cardContent.style.padding = "0";
+          cardContent.style.margin = "0";
+          cardContent.style.boxShadow = "none";
+          cardContent.style.border = "none";
+          cardContent.style.borderRadius = "0";
+        }
+      },
     });
 
-    const imgData = canvas.toDataURL("image/png", 1.0);
     const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
 
-    const pdfWidth = 210;
-    const pdfHeight = 297;
-    const imgWidth = pdfWidth;
-    const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+    // Scale canvas to fit within content area (with margins)
+    const canvasWidthMM = CONTENT_WIDTH_MM;
+    const canvasHeightMM = (canvas.height / canvas.width) * canvasWidthMM;
 
-    let heightLeft = imgHeight;
-    let position = 0;
+    // Split into pages
+    const pageContentHeightPx = (PDF_HEIGHT_MM - MARGIN_MM * 2) / PDF_WIDTH_MM * canvas.width;
+    const totalPages = Math.ceil(canvas.height / pageContentHeightPx);
 
-    pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight, undefined, "FAST");
-    heightLeft -= pdfHeight;
+    for (let page = 0; page < totalPages; page++) {
+      if (page > 0) pdf.addPage();
 
-    while (heightLeft > 0) {
-      position = heightLeft - imgHeight;
-      pdf.addPage();
-      pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight, undefined, "FAST");
-      heightLeft -= pdfHeight;
+      // Crop the canvas to this page's slice
+      const srcY = Math.round(page * pageContentHeightPx);
+      const srcH = Math.min(pageContentHeightPx, canvas.height - srcY);
+
+      const pageCanvas = document.createElement("canvas");
+      pageCanvas.width = canvas.width;
+      pageCanvas.height = Math.round(srcH);
+      const ctx = pageCanvas.getContext("2d");
+      if (ctx) {
+        ctx.drawImage(canvas, 0, srcY, canvas.width, srcH, 0, 0, canvas.width, srcH);
+      }
+
+      const pageImgData = pageCanvas.toDataURL("image/png", 1.0);
+      const pageHeightMM = (srcH / canvas.width) * canvasWidthMM;
+      pdf.addImage(pageImgData, "PNG", MARGIN_MM, MARGIN_MM, canvasWidthMM, pageHeightMM, undefined, "FAST");
     }
 
     pdf.save(filename);
   } finally {
-    printRoot.style.cssText = originalStyle;
+    printRoot.style.width = originalWidth;
+    printRoot.style.maxWidth = originalMaxWidth;
   }
 }
 

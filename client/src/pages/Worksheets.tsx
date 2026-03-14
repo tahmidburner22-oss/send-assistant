@@ -898,10 +898,6 @@ export default function Worksheets() {
                   <p className="text-[10px] text-muted-foreground">🔁 If set, 2–3 recall questions on this previous topic will appear at the top of the worksheet before the main content.</p>
                 </div>
 
-                {sendNeed && sendNeed !== "none-selected" && (
-                  <SENDInfoPanel sendNeedId={sendNeed} context="worksheet" />
-                )}
-
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
                     <Label className="text-xs font-medium">SEND Need</Label>
@@ -929,6 +925,10 @@ export default function Worksheets() {
                     </div>
                   </div>
                 </div>
+
+                {sendNeed && sendNeed !== "none-selected" && (
+                  <SENDInfoPanel sendNeedId={sendNeed} context="worksheet" />
+                )}
 
                 {/* ── Worksheet Length ── */}
                 <div className="space-y-1.5">
@@ -1721,7 +1721,7 @@ export default function Worksheets() {
           {/* Worksheet content — uses new WorksheetRenderer for pixel-perfect print/PDF */}
           <div ref={worksheetRef} className="worksheet-content" style={{ backgroundColor: overlayBg }}>
             <Card className="border-border/50 overflow-hidden" style={{ backgroundColor: overlayBg }}>
-              <CardContent className="p-5 sm:p-8" style={{ backgroundColor: overlayBg }}>
+              <CardContent className="p-2 sm:p-3" style={{ backgroundColor: overlayBg }}>
                 {/* Show WorksheetRenderer only when NOT in edit mode */}
                 {!editMode && (
                   <WorksheetRenderer
@@ -2160,8 +2160,7 @@ export default function Worksheets() {
                           {sendNeeds.map(n => <SelectItem key={n.id} value={n.id}>{n.name}</SelectItem>)}
                         </SelectContent>
                       </Select>
-                      {/* Description shown below the dropdown for SEND card */}
-                      <p className="text-xs text-green-700 mt-1">{desc}</p>
+
                     </div>
                   )}
                   <Button
