@@ -800,13 +800,21 @@ export function findDiagram(subject: string, topic: string): DiagramEntry | null
   const topicLower = topic.toLowerCase().trim();
   const combined = `${subjectLower} ${topicLower}`;
 
+  // Use whole-word matching to prevent false positives (e.g. 'ions' matching 'expressions')
+  function wordMatch(text: string, keyword: string): boolean {
+    // Escape special regex characters in keyword
+    const escaped = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const re = new RegExp(`(?<![a-z])${escaped}(?![a-z])`, 'i');
+    return re.test(text);
+  }
+
   let bestMatch: DiagramEntry | null = null;
   let bestScore = 0;
 
   for (const entry of DIAGRAM_BANK) {
     let score = 0;
     for (const kw of entry.keywords) {
-      if (combined.includes(kw)) {
+      if (wordMatch(combined, kw)) {
         // Longer keyword matches score higher (more specific)
         score += kw.length;
       }
@@ -818,7 +826,8 @@ export function findDiagram(subject: string, topic: string): DiagramEntry | null
   }
 
   // Require a minimum match score to avoid false positives
-  return bestScore >= 4 ? bestMatch : null;
+  // Score must be at least 6 to ensure meaningful matches
+  return bestScore >= 6 ? bestMatch : null;
 }
 
 // ── Wikimedia Commons API search (for topics not in the curated bank) ─────────

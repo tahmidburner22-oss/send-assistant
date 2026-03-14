@@ -2106,13 +2106,20 @@ export function findDiagramFull(subject: string, topic: string): DiagramEntry | 
   const topicLower = topic.toLowerCase().trim();
   const combined = `${subjectLower} ${topicLower}`;
 
+  // Use whole-word matching to prevent false positives (e.g. 'ions' matching 'expressions')
+  function wordMatch(text: string, keyword: string): boolean {
+    const escaped = keyword.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const re = new RegExp(`(?<![a-z])${escaped}(?![a-z])`, 'i');
+    return re.test(text);
+  }
+
   let bestMatch: DiagramEntry | null = null;
   let bestScore = 0;
 
   for (const entry of FULL_DIAGRAM_BANK) {
     let score = 0;
     for (const kw of entry.keywords) {
-      if (combined.includes(kw.toLowerCase())) {
+      if (wordMatch(combined, kw)) {
         // Longer keyword matches score higher (more specific)
         score += kw.length;
       }
@@ -2124,5 +2131,6 @@ export function findDiagramFull(subject: string, topic: string): DiagramEntry | 
   }
 
   // Require a minimum match score to avoid false positives
-  return bestScore >= 4 ? bestMatch : null;
+  // Score must be at least 6 to ensure meaningful matches
+  return bestScore >= 6 ? bestMatch : null;
 }
