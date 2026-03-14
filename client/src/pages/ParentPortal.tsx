@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { aiGenerateStory, callAI } from "@/lib/ai";
+import { aiGenerateStory, callAI, parseWithFixes } from "@/lib/ai";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -481,7 +481,7 @@ Return EXACTLY this JSON:
       if (!res.ok) throw new Error("AI request failed");
       const data = await res.json();
       const text = (data.content || data.text || "").replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/\s*```$/i, "").trim();
-      const parsed = JSON.parse(text);
+      const parsed = parseWithFixes(text);
       setInsightsResult(parsed);
     } catch (err) {
       toast.error("Could not generate insights. Please try again.");

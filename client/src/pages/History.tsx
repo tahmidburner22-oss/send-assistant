@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Textarea } from "@/components/ui/textarea";
 import { motion } from "framer-motion";
 import { useApp } from "@/contexts/AppContext";
-import { callAI } from "@/lib/ai";
+import { callAI, parseWithFixes } from "@/lib/ai";
 import { subjects, sendNeeds } from "@/lib/send-data";
 import { FileText, BookOpen, Star, Eye, Trash2, Clock, Edit3, Save, X, GraduationCap, CheckCircle, Sparkles, PenLine, Loader2, UserPlus, Layers } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -421,7 +421,7 @@ export default function History() {
                             const { text } = await callAI(system, user, 4000);
                             const jsonMatch = text.match(/\[.*\]/s);
                             if (!jsonMatch) throw new Error('No JSON');
-                            const updatedSections = JSON.parse(jsonMatch[0]);
+                            const updatedSections = parseWithFixes(jsonMatch[0]);
                             const mergedSections = baseSections.map((s, i) => ({
                               ...s,
                               content: updatedSections[i]?.content ?? s.content,

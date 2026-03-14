@@ -14,7 +14,7 @@ import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { Star, Sparkles, RotateCcw, Printer, Loader2, BookOpen, Tag, GraduationCap, Link2 } from "lucide-react";
 import { yearGroups } from "@/lib/send-data";
-import { callAI } from "@/lib/ai";
+import { callAI, parseWithFixes } from "@/lib/ai";
 
 interface BookReview {
   title: string;
@@ -93,7 +93,7 @@ Return a JSON object:
       let parsed: BookReview;
       try {
         const jsonMatch = text.match(/\{[\s\S]*\}/);
-        parsed = JSON.parse(jsonMatch ? jsonMatch[0] : text);
+        parsed = parseWithFixes(jsonMatch ? jsonMatch[0] : text);
       } catch {
         parsed = {
           title: bookTitle,
