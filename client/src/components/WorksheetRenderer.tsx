@@ -159,13 +159,12 @@ export function renderMath(text: string): string {
   result = result.replace(/\\bf\{([^{}]*)\}/g, '<strong>$1</strong>');
   result = result.replace(/\\it\{([^{}]*)\}/g, '<em>$1</em>');
 
-  // 2. After JSON parsing \text → \t (tab) + ext: handle tab+ext{...} and tab+extXXX
+  // 2. After JSON parsing \text → \t (tab) + ext: handle tab+ext{...} ONLY (with braces)
+  // IMPORTANT: Only match \text{...} patterns (with braces), NOT plain English words like 'external'
   result = result.replace(/\t(ext\{[^{}]*\})/g, (_, m) => m.replace(/^ext\{([^{}]*)\}$/, '$1'));
-  result = result.replace(/\t(ext[A-Za-z0-9/²³⁻⁺°·\-]+)/g, (_, m) => m.replace(/^ext/, ''));
-  // bare ext{...} without preceding tab
+  // bare ext{...} without preceding tab (LaTeX \text{} that survived with braces)
   result = result.replace(/\bext\{([^{}]*)\}/g, '$1');
-  // bare extXXX (no braces) — e.g. extm/s, extN, extkg
-  result = result.replace(/\bext([A-Za-z][A-Za-z0-9/²³⁻⁺°·\-]*)/g, '$1');
+  // DO NOT strip 'ext' from plain words like 'external', 'extend', 'extra', etc.
 
   // 3. Similar corruption for \mathrm → athrm, \mathsf → athsf, \mbox → box
   result = result.replace(/\bathrm\{([^{}]*)\}/g, '$1');
