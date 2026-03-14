@@ -36,6 +36,25 @@ export function renderMath(text: string): string {
 
   let result = normalizeMalformedKatexMarkup(decodeHtmlEntities(text));
 
+  // ── Step 0-pre: Strip raw HTML injected by AI (except safe inline tags) ─────
+  // The AI sometimes generates content with HTML tags like <span style="color:#cc0000">
+  // directly in section content strings. These must be stripped before any other
+  // processing to prevent raw attribute text from appearing in rendered output.
+  //
+  // Pattern 1: Orphaned HTML attribute fragments — e.g. style="color:#cc0000">text
+  // This happens when JSON parsing strips the opening < from <span style=...>
+  // leaving just: style="color:#cc0000">text
+  result = result.replace(/\bstyle\s*=\s*["'][^"']*["']\s*>/g, '');
+  // Strip orphaned class= attribute fragments, but NOT class="katex" (used by KaTeX)
+  result = result.replace(/\bclass\s*=\s*["'](?!katex["'])[^"']*["']\s*>/g, '');
+  // Pattern 2: Complete HTML tags that are NOT KaTeX spans and NOT safe inline tags
+  // Safe inline tags we keep: <sup>, <sub>, <strong>, <em>, <b>, <i>, <br>, <br/>
+  // We strip: <span>, <div>, <p>, <a>, <font>, and any other block/inline HTML
+  // IMPORTANT: We must NOT strip <span class="katex"> — those are added by KaTeX
+  // and are handled separately. At this point in the function, KaTeX hasn't run yet
+  // so any <span> here is from the AI, not KaTeX.
+  result = result.replace(/<\/?(?:span|div|p|a|font|section|article|header|footer|nav|ul|ol|li|table|tr|td|th|thead|tbody|tfoot|blockquote|pre|code|mark|small|del|ins|u|s|abbr|cite|dfn|kbd|samp|var|time|details|summary|form|input|select|textarea|button|label|fieldset|legend|canvas|script|style|link|meta)[^>]*>/gi, '');
+
   // If the content already contains valid pre-rendered KaTeX HTML, extract the LaTeX
   // annotation text and replace each KaTeX block with its raw LaTeX so it can be
   // cleanly re-rendered. This handles the case where the AI returns pre-rendered HTML
@@ -603,6 +622,15 @@ export function renderMath(text: string): string {
         if (/^\d{4}$/.test(num) || /^\d{4}$/.test(den)) return full;
         // Skip if either part is a long number that looks like a year
         if (/^\d{4,}$/.test(num) || /^\d{4,}$/.test(den)) return full;
+        // Skip if BOTH parts are multi-letter alphabetic words (e.g. Bonus/Extension, and/or, etc.)
+        // Only render as fraction if at least one part is numeric OR a single letter variable
+        const isNumeric = (s: string) => /^\d+$/.test(s);
+        const isSingleVar = (s: string) => /^[A-Za-z]$/.test(s);
+        const isShortVar = (s: string) => /^[A-Za-z]{1,2}$/.test(s); // x, y, xy, etc.
+        if (!isNumeric(num) && !isNumeric(den) && !isSingleVar(num) && !isSingleVar(den) && !isShortVar(num) && !isShortVar(den)) {
+          // Both are multi-letter words — don't render as fraction
+          return full;
+        }
         try { return katex.renderToString(`\\dfrac{${num}}{${den}}`, { displayMode: false, throwOnError: false }); }
         catch { return full; }
       });
