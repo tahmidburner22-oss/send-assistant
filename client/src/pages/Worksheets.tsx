@@ -600,7 +600,6 @@ export default function Worksheets() {
     // Use ref if available, otherwise fall back to DOM query (handles edge cases where ref isn't set)
     const container = worksheetRef.current || (document.querySelector(".worksheet-content") as HTMLElement);
     if (!container) { toast.error("PDF error: worksheet not found in DOM"); return; }
-    toast.info("Generating PDF...");
     // Target the inner worksheet-print-root for a clean capture (no UI chrome)
     const printRoot = (container.querySelector(".worksheet-print-root") as HTMLElement) || container;
     try {
@@ -612,7 +611,7 @@ export default function Worksheets() {
         title: generated.title,
         sendNeedId: generated?.metadata?.sendNeed || sendNeed || undefined,
       });
-      toast.success(`PDF downloaded (${viewMode} view)!`);
+      toast.success(`PDF ready — select 'Save as PDF' in the print dialog.`);
     } catch (err) {
       // Fallback to jsPDF
       const editedWorksheet = {
@@ -1358,11 +1357,10 @@ export default function Worksheets() {
                           variant="outline"
                           onClick={async () => {
                             if (uploadWorksheetRef.current) {
-                              toast.info("Generating PDF...");
                               try {
                                 await downloadHtmlAsPdf(uploadWorksheetRef.current, `${uploadedWorksheet.title}_adapted.pdf`);
-                                toast.success("PDF downloaded!");
-                              } catch { toast.error("PDF generation failed."); }
+                                toast.success("PDF ready — select 'Save as PDF' in the print dialog.");
+                              } catch { toast.error("Could not open print dialog. Please allow pop-ups for this site."); }
                             }
                           }}
                         >
