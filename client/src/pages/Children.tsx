@@ -14,6 +14,7 @@ import { motion } from "framer-motion";
 import { useApp, type Child, type Assignment, type Submission, type TimetableLesson } from "@/contexts/AppContext";
 import { yearGroups, sendNeeds, subjects } from "@/lib/send-data";
 import SENDInfoPanel from "@/components/SENDInfoPanel";
+import { SendScreenerResultsView } from "@/components/SendScreenerResultsView";
 import { useScheduler } from "@/hooks/useScheduler";
 import { TOPIC_BANK } from "@/lib/topic-bank";
 import { CURRICULUM_PROGRESSIONS, getProgressionsForSubject, getRecommendedStep, type TopicProgression } from "@/lib/curriculum-progression";
@@ -672,8 +673,8 @@ If the submission is empty or too short to mark, return mark: "N/A", feedback: "
 
       {/* Assignment Detail Dialog */}
       <Dialog open={!!selectedAssignment} onOpenChange={() => setSelectedAssignment(null)}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle className="flex items-center gap-2"><TrendingUp className="w-5 h-5 text-brand" /> Assignment Progress</DialogTitle></DialogHeader>
+        <DialogContent className={selectedAssignment?.type === 'send-screener' ? 'max-w-2xl max-h-[90vh] overflow-y-auto' : 'max-w-lg'}>
+          <DialogHeader><DialogTitle className="flex items-center gap-2"><TrendingUp className="w-5 h-5 text-brand" /> {selectedAssignment?.type === 'send-screener' ? 'SEND Screener Results' : 'Assignment Progress'}</DialogTitle></DialogHeader>
           {selectedAssignment && (
             <div className="space-y-4 mt-2">
               <div>
@@ -683,58 +684,70 @@ If the submission is empty or too short to mark, return mark: "N/A", feedback: "
                 </p>
               </div>
 
-              {/* Progress Slider */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <Label className="text-sm font-medium">Completion Progress</Label>
-                  <span className="text-sm font-bold text-brand">{progressValue}%</span>
-                </div>
-                <Slider
-                  value={[progressValue]}
-                  onValueChange={([v]) => setProgressValue(v)}
-                  min={0} max={100} step={5}
-                  className="w-full"
+              {/* SEND Screener: show full rich results */}
+              {selectedAssignment.type === 'send-screener' && selectedAssignment.content ? (
+                <SendScreenerResultsView
+                  content={selectedAssignment.content}
+                  title={selectedAssignment.title}
                 />
-                <div className="flex justify-between text-[10px] text-muted-foreground">
-                  <span>Not Started</span>
-                  <span>In Progress</span>
-                  <span>Completed</span>
-                </div>
-                {/* Progress bar visual */}
-                <div className="h-2 rounded-full bg-muted overflow-hidden">
-                  <div
-                    className="h-full rounded-full bg-brand transition-all duration-300"
-                    style={{ width: `${progressValue}%` }}
-                  />
-                </div>
-              </div>
+              ) : (
+                <>
+                  {/* Progress Slider */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm font-medium">Completion Progress</Label>
+                      <span className="text-sm font-bold text-brand">{progressValue}%</span>
+                    </div>
+                    <Slider
+                      value={[progressValue]}
+                      onValueChange={([v]) => setProgressValue(v)}
+                      min={0} max={100} step={5}
+                      className="w-full"
+                    />
+                    <div className="flex justify-between text-[10px] text-muted-foreground">
+                      <span>Not Started</span>
+                      <span>In Progress</span>
+                      <span>Completed</span>
+                    </div>
+                    {/* Progress bar visual */}
+                    <div className="h-2 rounded-full bg-muted overflow-hidden">
+                      <div
+                        className="h-full rounded-full bg-brand transition-all duration-300"
+                        style={{ width: `${progressValue}%` }}
+                      />
+                    </div>
+                  </div>
 
-              {/* Teacher Comment */}
-              <div className="space-y-1.5">
-                <Label className="text-sm font-medium flex items-center gap-1.5">
-                  <MessageSquare className="w-4 h-4 text-brand" /> Teacher Comment
-                </Label>
-                <Textarea
-                  value={teacherComment}
-                  onChange={e => setTeacherComment(e.target.value)}
-                  placeholder="Add a comment for this student's progress..."
-                  className="min-h-[80px] text-sm"
-                />
-              </div>
+                  {/* Teacher Comment */}
+                  <div className="space-y-1.5">
+                    <Label className="text-sm font-medium flex items-center gap-1.5">
+                      <MessageSquare className="w-4 h-4 text-brand" /> Teacher Comment
+                    </Label>
+                    <Textarea
+                      value={teacherComment}
+                      onChange={e => setTeacherComment(e.target.value)}
+                      placeholder="Add a comment for this student's progress..."
+                      className="min-h-[80px] text-sm"
+                    />
+                  </div>
 
-              {/* Assignment Content Preview */}
-              {selectedAssignment.content && (
-                <div className="p-3 rounded-lg bg-muted/50 border border-border/50">
-                  <p className="text-xs font-medium text-muted-foreground mb-1">Assignment Content Preview:</p>
-                  <p className="text-xs text-foreground/80 line-clamp-3 whitespace-pre-wrap">{selectedAssignment.content}</p>
-                </div>
+                  {/* Assignment Content Preview */}
+                  {selectedAssignment.content && (
+                    <div className="p-3 rounded-lg bg-muted/50 border border-border/50">
+                      <p className="text-xs font-medium text-muted-foreground mb-1">Assignment Content Preview:</p>
+                      <p className="text-xs text-foreground/80 line-clamp-3 whitespace-pre-wrap">{selectedAssignment.content}</p>
+                    </div>
+                  )}
+                </>
               )}
 
               <div className="flex gap-2">
-                <Button onClick={saveAssignmentProgress} className="flex-1 bg-brand hover:bg-brand/90 text-white">
-                  <Send className="w-4 h-4 mr-1.5" /> Save Progress
-                </Button>
-                <Button variant="outline" onClick={() => setSelectedAssignment(null)}>Cancel</Button>
+                {selectedAssignment.type !== 'send-screener' && (
+                  <Button onClick={saveAssignmentProgress} className="flex-1 bg-brand hover:bg-brand/90 text-white">
+                    <Send className="w-4 h-4 mr-1.5" /> Save Progress
+                  </Button>
+                )}
+                <Button variant="outline" onClick={() => setSelectedAssignment(null)} className={selectedAssignment.type === 'send-screener' ? 'w-full' : ''}>Close</Button>
               </div>
             </div>
           )}
@@ -1033,6 +1046,17 @@ If the submission is empty or too short to mark, return mark: "N/A", feedback: "
                     const chainStart = Math.max(0, cfg.topicIndex - 2);
                     const chainTopics = bank.slice(chainStart, Math.min(bank.length, chainStart + 6));
 
+                    // Progression-based chain (Skill Ladder connected to Learning Progress Chain)
+                    const progressions = getProgressionsForSubject(cfg.subject);
+                    const hasProgressions = progressions.length > 0;
+                    const currentProgTopicIdx = (cfg.progressionTopicIndex ?? 0) % (progressions.length || 1);
+                    const currentProgStepIdx = cfg.progressionStepIndex ?? 0;
+                    const currentProgression = hasProgressions ? progressions[currentProgTopicIdx] : null;
+                    const currentStep = currentProgression ? currentProgression.steps[currentProgStepIdx % currentProgression.steps.length] : null;
+                    // Show a window of topics around the current one
+                    const progChainStart = Math.max(0, currentProgTopicIdx - 1);
+                    const progChainTopics = hasProgressions ? progressions.slice(progChainStart, Math.min(progressions.length, progChainStart + 4)) : [];
+
                     return (
                       <div className="space-y-3">
                         {/* Header */}
@@ -1044,94 +1068,245 @@ If the submission is empty or too short to mark, return mark: "N/A", feedback: "
                           </div>
                         </div>
 
-                        {/* Progress Chain */}
-                        <div className="p-3 rounded-xl border border-border/60 bg-gradient-to-br from-slate-50 to-white space-y-3">
+                        {/* ── Unified Learning Progress Chain + Skill Ladder ── */}
+                        <div className="p-3 rounded-xl border border-indigo-200 bg-gradient-to-br from-indigo-50/60 to-purple-50/40 space-y-3">
                           <div className="flex items-center gap-2">
-                            <TrendingUp className="h-4 w-4 text-brand" />
-                            <p className="text-xs font-semibold text-foreground">Learning Progress Chain</p>
+                            <TrendingUp className="h-4 w-4 text-indigo-600" />
+                            <p className="text-xs font-semibold text-indigo-900">Learning Progress Chain &amp; Skill Ladder</p>
                           </div>
-                          <div className="flex items-center gap-1 overflow-x-auto pb-1">
-                            {chainTopics.map((t, i) => {
-                              const absIdx = chainStart + i;
-                              const isCompleted = absIdx < cfg.topicIndex;
-                              const isCurrent = absIdx === cfg.topicIndex;
-                              const isNext = absIdx === cfg.topicIndex + 1;
-                              return (
-                                <div key={absIdx} className="flex items-center gap-1 flex-shrink-0">
-                                  <div className={`flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg text-center min-w-[72px] max-w-[80px] ${
-                                    isCompleted ? 'bg-green-100 border border-green-300' :
-                                    isCurrent ? 'bg-brand/10 border-2 border-brand' :
-                                    isNext ? 'bg-amber-50 border border-amber-200' :
-                                    'bg-muted/40 border border-border/40'
-                                  }`}>
-                                    <div className={`h-4 w-4 rounded-full flex items-center justify-center ${
-                                      isCompleted ? 'bg-green-500' :
-                                      isCurrent ? 'bg-brand' :
-                                      isNext ? 'bg-amber-400' :
-                                      'bg-muted-foreground/30'
-                                    }`}>
-                                      {isCompleted ? (
-                                        <CheckCircle className="h-3 w-3 text-white" />
-                                      ) : isCurrent ? (
-                                        <span className="text-[8px] text-white font-bold">NOW</span>
-                                      ) : isNext ? (
-                                        <span className="text-[8px] text-white font-bold">NEXT</span>
-                                      ) : (
-                                        <span className="text-[8px] text-white">{absIdx + 1}</span>
+                          <p className="text-[10px] text-indigo-600">Each topic on the chain has a skill ladder. Auto-generation works through every step before moving to the next topic.</p>
+
+                          {hasProgressions ? (
+                            <div className="space-y-2">
+                              {/* Topic chain scroll */}
+                              <div className="flex items-start gap-1.5 overflow-x-auto pb-1">
+                                {progChainTopics.map((prog, i) => {
+                                  const absTopicIdx = progChainStart + i;
+                                  const isTopicCompleted = absTopicIdx < currentProgTopicIdx;
+                                  const isTopicCurrent = absTopicIdx === currentProgTopicIdx;
+                                  const isTopicNext = absTopicIdx === currentProgTopicIdx + 1;
+                                  return (
+                                    <div key={prog.topicId} className="flex items-start gap-1 flex-shrink-0">
+                                      <div className={`rounded-xl border-2 p-2 min-w-[90px] max-w-[110px] ${
+                                        isTopicCompleted ? 'bg-green-50 border-green-300' :
+                                        isTopicCurrent ? 'bg-white border-indigo-400 shadow-sm' :
+                                        isTopicNext ? 'bg-amber-50 border-amber-200' :
+                                        'bg-muted/30 border-border/40'
+                                      }`}>
+                                        {/* Topic header */}
+                                        <div className="flex items-center gap-1 mb-1.5">
+                                          <div className={`h-4 w-4 rounded-full flex items-center justify-center flex-shrink-0 ${
+                                            isTopicCompleted ? 'bg-green-500' :
+                                            isTopicCurrent ? 'bg-indigo-600' :
+                                            isTopicNext ? 'bg-amber-400' :
+                                            'bg-muted-foreground/30'
+                                          }`}>
+                                            {isTopicCompleted ? (
+                                              <CheckCircle className="h-2.5 w-2.5 text-white" />
+                                            ) : (
+                                              <span className="text-[7px] text-white font-bold">{absTopicIdx + 1}</span>
+                                            )}
+                                          </div>
+                                          <p className={`text-[9px] font-semibold leading-tight ${
+                                            isTopicCompleted ? 'text-green-700' :
+                                            isTopicCurrent ? 'text-indigo-800' :
+                                            isTopicNext ? 'text-amber-700' :
+                                            'text-muted-foreground'
+                                          }`}>{prog.topicName.substring(0, 18)}</p>
+                                        </div>
+                                        {/* Skill ladder steps for this topic */}
+                                        <div className="space-y-0.5">
+                                          {prog.steps.map((step, si) => {
+                                            const isStepDone = isTopicCompleted || (isTopicCurrent && si < currentProgStepIdx);
+                                            const isStepCurrent = isTopicCurrent && si === currentProgStepIdx;
+                                            const isStepLocked = !isTopicCurrent && !isTopicCompleted;
+                                            return (
+                                              <div key={step.id} className={`flex items-center gap-1 px-1 py-0.5 rounded ${
+                                                isStepDone ? 'bg-green-100' :
+                                                isStepCurrent ? 'bg-indigo-100 border border-indigo-300' :
+                                                isStepLocked ? 'opacity-40' :
+                                                'bg-white/60'
+                                              }`}>
+                                                <div className={`h-3 w-3 rounded-full flex items-center justify-center flex-shrink-0 ${
+                                                  isStepDone ? 'bg-green-500' :
+                                                  isStepCurrent ? 'bg-indigo-600' :
+                                                  'bg-muted-foreground/20'
+                                                }`}>
+                                                  {isStepDone ? (
+                                                    <CheckCircle className="h-2 w-2 text-white" />
+                                                  ) : isStepCurrent ? (
+                                                    <span className="text-[6px] text-white font-bold">▶</span>
+                                                  ) : (
+                                                    <span className="text-[6px] text-muted-foreground">{si + 1}</span>
+                                                  )}
+                                                </div>
+                                                <p className={`text-[8px] leading-tight truncate ${
+                                                  isStepDone ? 'text-green-700' :
+                                                  isStepCurrent ? 'text-indigo-800 font-semibold' :
+                                                  'text-muted-foreground'
+                                                }`}>{step.title}</p>
+                                              </div>
+                                            );
+                                          })}
+                                        </div>
+                                      </div>
+                                      {i < progChainTopics.length - 1 && (
+                                        <div className="flex flex-col items-center justify-center h-full pt-4">
+                                          <div className={`h-0.5 w-3 ${
+                                            isTopicCompleted ? 'bg-green-400' : 'bg-border'
+                                          }`} />
+                                        </div>
                                       )}
                                     </div>
-                                    <p className={`text-[9px] leading-tight mt-0.5 ${
-                                      isCompleted ? 'text-green-700' :
-                                      isCurrent ? 'text-brand font-semibold' :
-                                      isNext ? 'text-amber-700' :
-                                      'text-muted-foreground'
-                                    }`}>{t.topic.split(' — ')[0].substring(0, 20)}</p>
+                                  );
+                                })}
+                                {progChainStart + progChainTopics.length < progressions.length && (
+                                  <div className="flex items-center justify-center pt-4 ml-1">
+                                    <p className="text-[9px] text-muted-foreground">+{progressions.length - (progChainStart + progChainTopics.length)} more topics</p>
                                   </div>
-                                  {i < chainTopics.length - 1 && (
-                                    <div className={`h-0.5 w-3 flex-shrink-0 ${
-                                      absIdx < cfg.topicIndex ? 'bg-green-400' : 'bg-border'
-                                    }`} />
-                                  )}
-                                </div>
-                              );
-                            })}
-                            {chainStart + chainTopics.length < bank.length && (
-                              <p className="text-[9px] text-muted-foreground ml-1">+{bank.length - (chainStart + chainTopics.length)} more</p>
-                            )}
-                          </div>
-                          {lastAssignment && lastAssignment.status !== 'not-started' ? (
-                            <div className={`flex items-start gap-2 p-2.5 rounded-lg ${
-                              shouldReinforce ? 'bg-amber-50 border border-amber-200' : 'bg-green-50 border border-green-200'
-                            }`}>
-                              {shouldReinforce
-                                ? <AlertCircle className="h-3.5 w-3.5 text-amber-600 mt-0.5 shrink-0" />
-                                : <CheckCircle className="h-3.5 w-3.5 text-green-600 mt-0.5 shrink-0" />
-                              }
-                              <div className="flex-1 min-w-0">
-                                <p className={`text-[10px] font-semibold ${
-                                  shouldReinforce ? 'text-amber-800' : 'text-green-800'
-                                }`}>
-                                  {shouldReinforce
-                                    ? `Reinforce recommended — last score ${lastProgress}% (below ${MASTERY_THRESHOLD}% mastery)`
-                                    : `Ready to advance — last score ${lastProgress}% ✓`
-                                  }
-                                </p>
-                                <p className={`text-[10px] mt-0.5 ${
-                                  shouldReinforce ? 'text-amber-700' : 'text-green-700'
-                                }`}>
-                                  {shouldReinforce
-                                    ? `Recommended next: Repeat "${recommendedTopic.topic}" with extra scaffolding`
-                                    : `Recommended next: "${recommendedTopic.topic}"`
-                                  }
-                                </p>
+                                )}
                               </div>
+
+                              {/* Current position indicator */}
+                              {currentProgression && currentStep && (
+                                <div className="flex items-start gap-2 p-2.5 rounded-lg bg-indigo-50 border border-indigo-200">
+                                  <Layers className="h-3.5 w-3.5 text-indigo-600 mt-0.5 shrink-0" />
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-[10px] font-semibold text-indigo-800">Current Position</p>
+                                    <p className="text-[10px] text-indigo-700 mt-0.5">
+                                      Topic {currentProgTopicIdx + 1}/{progressions.length}: <strong>{currentProgression.topicName}</strong>
+                                    </p>
+                                    <p className="text-[10px] text-indigo-600">
+                                      Step {currentProgStepIdx + 1}/{currentProgression.steps.length}: <strong>{currentStep.title}</strong>
+                                    </p>
+                                    <p className="text-[10px] text-indigo-500 mt-0.5 italic">{currentStep.description}</p>
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Mastery / progress feedback */}
+                              {lastAssignment && lastAssignment.status !== 'not-started' ? (
+                                <div className={`flex items-start gap-2 p-2.5 rounded-lg ${
+                                  shouldReinforce ? 'bg-amber-50 border border-amber-200' : 'bg-green-50 border border-green-200'
+                                }`}>
+                                  {shouldReinforce
+                                    ? <AlertCircle className="h-3.5 w-3.5 text-amber-600 mt-0.5 shrink-0" />
+                                    : <CheckCircle className="h-3.5 w-3.5 text-green-600 mt-0.5 shrink-0" />
+                                  }
+                                  <div className="flex-1 min-w-0">
+                                    <p className={`text-[10px] font-semibold ${
+                                      shouldReinforce ? 'text-amber-800' : 'text-green-800'
+                                    }`}>
+                                      {shouldReinforce
+                                        ? `Reinforce recommended — last score ${lastProgress}% (below ${MASTERY_THRESHOLD}% mastery)`
+                                        : `Ready to advance — last score ${lastProgress}% ✓`
+                                      }
+                                    </p>
+                                    <p className={`text-[10px] mt-0.5 ${
+                                      shouldReinforce ? 'text-amber-700' : 'text-green-700'
+                                    }`}>
+                                      {shouldReinforce
+                                        ? `Recommended: Repeat current step with extra scaffolding`
+                                        : currentStep ? `Next: Advance to step ${currentProgStepIdx + 2 <= (currentProgression?.steps.length ?? 0) ? currentProgStepIdx + 2 : 1} of ${currentProgression?.topicName}` : 'All steps complete — move to next topic'
+                                      }
+                                    </p>
+                                  </div>
+                                </div>
+                              ) : (
+                                <p className="text-[10px] text-muted-foreground text-center py-1">
+                                  {selectedChild.assignments.length === 0
+                                    ? 'No assignments yet — generate the first worksheet to start the progress chain.'
+                                    : 'Assignment not yet started — progress will update once the student begins.'}
+                                </p>
+                              )}
                             </div>
                           ) : (
-                            <p className="text-[10px] text-muted-foreground text-center py-1">
-                              {selectedChild.assignments.length === 0
-                                ? 'No assignments yet — generate the first worksheet to start the progress chain.'
-                                : 'Assignment not yet started — progress will update once the student begins.'}
-                            </p>
+                            /* Fallback: old topic bank chain if no progressions for this subject */
+                            <div className="space-y-2">
+                              <div className="flex items-center gap-1 overflow-x-auto pb-1">
+                                {chainTopics.map((t, i) => {
+                                  const absIdx = chainStart + i;
+                                  const isCompleted = absIdx < cfg.topicIndex;
+                                  const isCurrent = absIdx === cfg.topicIndex;
+                                  const isNext = absIdx === cfg.topicIndex + 1;
+                                  return (
+                                    <div key={absIdx} className="flex items-center gap-1 flex-shrink-0">
+                                      <div className={`flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg text-center min-w-[72px] max-w-[80px] ${
+                                        isCompleted ? 'bg-green-100 border border-green-300' :
+                                        isCurrent ? 'bg-brand/10 border-2 border-brand' :
+                                        isNext ? 'bg-amber-50 border border-amber-200' :
+                                        'bg-muted/40 border border-border/40'
+                                      }`}>
+                                        <div className={`h-4 w-4 rounded-full flex items-center justify-center ${
+                                          isCompleted ? 'bg-green-500' :
+                                          isCurrent ? 'bg-brand' :
+                                          isNext ? 'bg-amber-400' :
+                                          'bg-muted-foreground/30'
+                                        }`}>
+                                          {isCompleted ? (
+                                            <CheckCircle className="h-3 w-3 text-white" />
+                                          ) : isCurrent ? (
+                                            <span className="text-[8px] text-white font-bold">NOW</span>
+                                          ) : isNext ? (
+                                            <span className="text-[8px] text-white font-bold">NEXT</span>
+                                          ) : (
+                                            <span className="text-[8px] text-white">{absIdx + 1}</span>
+                                          )}
+                                        </div>
+                                        <p className={`text-[9px] leading-tight mt-0.5 ${
+                                          isCompleted ? 'text-green-700' :
+                                          isCurrent ? 'text-brand font-semibold' :
+                                          isNext ? 'text-amber-700' :
+                                          'text-muted-foreground'
+                                        }`}>{t.topic.split(' — ')[0].substring(0, 20)}</p>
+                                      </div>
+                                      {i < chainTopics.length - 1 && (
+                                        <div className={`h-0.5 w-3 flex-shrink-0 ${
+                                          absIdx < cfg.topicIndex ? 'bg-green-400' : 'bg-border'
+                                        }`} />
+                                      )}
+                                    </div>
+                                  );
+                                })}
+                                {chainStart + chainTopics.length < bank.length && (
+                                  <p className="text-[9px] text-muted-foreground ml-1">+{bank.length - (chainStart + chainTopics.length)} more</p>
+                                )}
+                              </div>
+                              {lastAssignment && lastAssignment.status !== 'not-started' ? (
+                                <div className={`flex items-start gap-2 p-2.5 rounded-lg ${
+                                  shouldReinforce ? 'bg-amber-50 border border-amber-200' : 'bg-green-50 border border-green-200'
+                                }`}>
+                                  {shouldReinforce
+                                    ? <AlertCircle className="h-3.5 w-3.5 text-amber-600 mt-0.5 shrink-0" />
+                                    : <CheckCircle className="h-3.5 w-3.5 text-green-600 mt-0.5 shrink-0" />
+                                  }
+                                  <div className="flex-1 min-w-0">
+                                    <p className={`text-[10px] font-semibold ${
+                                      shouldReinforce ? 'text-amber-800' : 'text-green-800'
+                                    }`}>
+                                      {shouldReinforce
+                                        ? `Reinforce recommended — last score ${lastProgress}% (below ${MASTERY_THRESHOLD}% mastery)`
+                                        : `Ready to advance — last score ${lastProgress}% ✓`
+                                      }
+                                    </p>
+                                    <p className={`text-[10px] mt-0.5 ${
+                                      shouldReinforce ? 'text-amber-700' : 'text-green-700'
+                                    }`}>
+                                      {shouldReinforce
+                                        ? `Recommended next: Repeat "${recommendedTopic.topic}" with extra scaffolding`
+                                        : `Recommended next: "${recommendedTopic.topic}"`
+                                      }
+                                    </p>
+                                  </div>
+                                </div>
+                              ) : (
+                                <p className="text-[10px] text-muted-foreground text-center py-1">
+                                  {selectedChild.assignments.length === 0
+                                    ? 'No assignments yet — generate the first worksheet to start the progress chain.'
+                                    : 'Assignment not yet started — progress will update once the student begins.'}
+                                </p>
+                              )}
+                            </div>
                           )}
                         </div>
 
@@ -1149,74 +1324,43 @@ If the submission is empty or too short to mark, return mark: "N/A", feedback: "
                           </Select>
                         </div>
 
-                        {/* Current + next topic preview */}
+                        {/* Current + next step preview */}
                         <div className="p-2.5 rounded-lg bg-muted/40 border border-border/50 space-y-1.5">
-                          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Topic Queue</p>
-                          <div className="flex items-center gap-2">
-                            <span className="text-[10px] bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded font-medium">Next</span>
-                            <span className="text-xs font-medium text-foreground">{currentTopicEntry?.topic}</span>
-                          </div>
-                          {prevTopicEntry && (
-                            <div className="flex items-center gap-2">
-                              <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded font-medium">Recall from</span>
-                              <span className="text-xs text-muted-foreground">{prevTopicEntry.topic}</span>
-                            </div>
-                          )}
-                          <p className="text-[10px] text-muted-foreground">Topics rotate automatically through the full {cfg.subject} curriculum ({bank.length} topics).</p>
-                        </div>
-
-                        {/* Integrated Skill Ladder */}
-                        {(() => {
-                          const progressions = getProgressionsForSubject(cfg.subject);
-                          if (progressions.length === 0) return null;
-                          return (
-                            <div className="p-3 rounded-xl border border-purple-200 bg-purple-50/50 space-y-2">
+                          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Next Generation</p>
+                          {hasProgressions && currentProgression && currentStep ? (
+                            <>
                               <div className="flex items-center gap-2">
-                                <Layers className="h-4 w-4 text-purple-600" />
-                                <p className="text-xs font-semibold text-purple-800">Skill Ladder Steps</p>
+                                <span className="text-[10px] bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded font-medium">Topic</span>
+                                <span className="text-xs font-medium text-foreground">{currentProgression.topicName}</span>
                               </div>
-                              <p className="text-[10px] text-purple-600">Structured progression steps for each topic. The system recommends the next step based on performance.</p>
-                              <div className="space-y-1">
-                                {progressions.map(prog => (
-                                  <details key={prog.topicId} className="group">
-                                    <summary className="flex items-center justify-between p-2 rounded-lg border border-border/60 hover:border-purple-300 hover:bg-purple-50 transition-all cursor-pointer text-left">
-                                      <div className="flex items-center gap-2">
-                                        <div className="h-5 w-5 rounded-full bg-purple-600 flex items-center justify-center">
-                                          <span className="text-[9px] text-white font-bold">{prog.steps.length}</span>
-                                        </div>
-                                        <div>
-                                          <p className="text-xs font-medium">{prog.topicName}</p>
-                                          <p className="text-[10px] text-muted-foreground">{prog.steps.length} skill steps</p>
-                                        </div>
-                                      </div>
-                                      <ChevronRight className="h-3.5 w-3.5 text-muted-foreground group-open:rotate-90 transition-transform" />
-                                    </summary>
-                                    <div className="mt-1.5 ml-3 space-y-1">
-                                      {prog.steps.map((step, i) => (
-                                        <div key={step.id} className="flex items-start gap-2 p-2 rounded-lg border border-border/40 bg-white">
-                                          <div className="h-5 w-5 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                                            <span className="text-[9px] text-purple-700 font-bold">{i + 1}</span>
-                                          </div>
-                                          <div className="flex-1 min-w-0">
-                                            <p className="text-[11px] font-medium">{step.title}</p>
-                                            <p className="text-[10px] text-muted-foreground">{step.description}</p>
-                                            {step.keyVocabulary.length > 0 && (
-                                              <div className="flex flex-wrap gap-1 mt-1">
-                                                {step.keyVocabulary.map(v => (
-                                                  <span key={v} className="text-[9px] bg-purple-100 text-purple-700 rounded px-1.5 py-0.5">{v}</span>
-                                                ))}
-                                              </div>
-                                            )}
-                                          </div>
-                                        </div>
-                                      ))}
-                                    </div>
-                                  </details>
-                                ))}
+                              <div className="flex items-center gap-2">
+                                <span className="text-[10px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded font-medium">Step {currentProgStepIdx + 1}</span>
+                                <span className="text-xs text-foreground">{currentStep.title}</span>
                               </div>
-                            </div>
-                          );
-                        })()}
+                              {cfg.lastWorksheetTitle && (
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded font-medium">Recall from</span>
+                                  <span className="text-xs text-muted-foreground truncate">{cfg.lastWorksheetTitle}</span>
+                                </div>
+                              )}
+                              <p className="text-[10px] text-muted-foreground">{progressions.length} topics × skill ladder steps = full {cfg.subject} progression.</p>
+                            </>
+                          ) : (
+                            <>
+                              <div className="flex items-center gap-2">
+                                <span className="text-[10px] bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded font-medium">Next</span>
+                                <span className="text-xs font-medium text-foreground">{currentTopicEntry?.topic}</span>
+                              </div>
+                              {prevTopicEntry && (
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded font-medium">Recall from</span>
+                                  <span className="text-xs text-muted-foreground">{prevTopicEntry.topic}</span>
+                                </div>
+                              )}
+                              <p className="text-[10px] text-muted-foreground">Topics rotate automatically through the full {cfg.subject} curriculum ({bank.length} topics).</p>
+                            </>
+                          )}
+                        </div>
 
                         {/* Frequency + Difficulty row */}
                         <div className="grid grid-cols-2 gap-3">

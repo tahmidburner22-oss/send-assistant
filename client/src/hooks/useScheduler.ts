@@ -24,6 +24,7 @@ import {
   isDue,
 } from "@/lib/scheduler";
 import { TOPIC_BANK } from "@/lib/topic-bank";
+import { CURRICULUM_PROGRESSIONS, getProgressionsForSubject } from "@/lib/curriculum-progression";
 import type { Child, Assignment } from "@/contexts/AppContext";
 
 interface UseSchedulerOptions {
@@ -71,6 +72,42 @@ export function useScheduler({ children, assignWork, onWorksheetGenerated }: Use
     return bank[prevIdx];
   }, []);
 
+  // ── Progression-based topic/step (Skill Ladder + Learning Progress Chain) ─
+
+  /**
+   * Get the current progression topic and step for the scheduler.
+   * Returns null if no progressions are available for the subject.
+   */
+  const getProgressionStep = useCallback((config: SchedulerConfig) => {
+    const progressions = getProgressionsForSubject(config.subject);
+    if (progressions.length === 0) return null;
+    const topicIdx = (config.progressionTopicIndex ?? 0) % progressions.length;
+    const progression = progressions[topicIdx];
+    const stepIdx = (config.progressionStepIndex ?? 0) % progression.steps.length;
+    const step = progression.steps[stepIdx];
+    return { progression, step, topicIdx, stepIdx };
+  }, []);
+
+  /**
+   * Advance the progression to the next step (or next topic if all steps done).
+   * Returns the updated indices.
+   */
+  const advanceProgressionStep = useCallback((config: SchedulerConfig) => {
+    const progressions = getProgressionsForSubject(config.subject);
+    if (progressions.length === 0) return { progressionTopicIndex: 0, progressionStepIndex: 0 };
+    const topicIdx = (config.progressionTopicIndex ?? 0) % progressions.length;
+    const progression = progressions[topicIdx];
+    const stepIdx = (config.progressionStepIndex ?? 0);
+    const nextStepIdx = stepIdx + 1;
+    if (nextStepIdx >= progression.steps.length) {
+      // All steps done — advance to next topic
+      const nextTopicIdx = (topicIdx + 1) % progressions.length;
+      return { progressionTopicIndex: nextTopicIdx, progressionStepIndex: 0 };
+    } else {
+      return { progressionTopicIndex: topicIdx, progressionStepIndex: nextStepIdx };
+    }
+  }, []);
+
   // ── Generate and assign one worksheet for a child ─────────────────────────
 
   const generateAndAssign = useCallback(async (child: Child, cfg: SchedulerConfig) => {
@@ -78,27 +115,50 @@ export function useScheduler({ children, assignWork, onWorksheetGenerated }: Use
     setGenerating(prev => ({ ...prev, [child.id]: true }));
 
     try {
+      // ── Determine topic and step ──────────────────────────────────────────
+      // Prefer progression-based (Skill Ladder + Learning Progress Chain) if available
+      const progressionData = getProgressionStep(cfg);
       const { topic, nextIdx } = getNextTopic(cfg);
       const prevTopic = getPreviousTopic(cfg);
 
+      // Use progression step title/description if available, otherwise fall back to topic bank
+      const topicTitle = progressionData
+        ? `${progressionData.progression.topicName} — Step ${progressionData.stepIdx + 1}: ${progressionData.step.title}`
+        : topic.topic;
+      const topicDescription = progressionData
+        ? progressionData.step.description
+        : "";
+      const topicVocabulary = progressionData
+        ? progressionData.step.keyVocabulary
+        : topic.keyVocabulary;
+
       // Build recall section instruction
       let recallInstruction = "";
-      if (cfg.includeRecall && prevTopic && cfg.lastWorksheetTitle) {
-        recallInstruction = `
+      if (cfg.includeRecall && cfg.lastWorksheetTitle) {
+        const recallVocab = cfg.lastKeyVocabulary.length > 0 ? cfg.lastKeyVocabulary : (prevTopic?.keyVocabulary || []);
+        const recallTopic = cfg.lastWorksheetTitle;
+        if (recallVocab.length > 0) {
+          recallInstruction = `
 IMPORTANT — Start the worksheet with a "Recall & Review" section (5 short questions, max 1 mark each).
-These questions must test knowledge from the PREVIOUS worksheet topic: "${prevTopic.topic}".
-Use these key vocabulary words in the recall questions: ${prevTopic.keyVocabulary.join(", ")}.
+These questions must test knowledge from the PREVIOUS worksheet: "${recallTopic}".
+Use these key vocabulary words in the recall questions: ${recallVocab.join(", ")}.
 After the recall section, proceed with the main topic below.`;
+        }
       }
+
+      // Build progression context for the AI
+      const progressionContext = progressionData
+        ? `\nThis worksheet covers Step ${progressionData.stepIdx + 1} of ${progressionData.progression.steps.length} in the "${progressionData.progression.topicName}" learning progression.\nStep focus: ${topicDescription}\nKey vocabulary to include: ${topicVocabulary.join(", ")}.`
+        : "";
 
       const result = await aiGenerateWorksheet({
         subject: cfg.subject,
-        topic: topic.topic,
+        topic: topicTitle,
         yearGroup: child.yearGroup,
         sendNeed: child.sendNeed || undefined,
         difficulty: cfg.difficulty,
         includeAnswers: cfg.includeAnswers,
-        additionalInstructions: `${recallInstruction}
+        additionalInstructions: `${recallInstruction}${progressionContext}
 This worksheet is auto-generated by the Adaptly scheduler for ${child.name}.
 SEND need: ${child.sendNeed || "none"}.
 Make the worksheet fully self-contained and printable.`.trim(),
@@ -127,20 +187,32 @@ Make the worksheet fully self-contained and printable.`.trim(),
         progress: 0,
       };
 
+      // Advance progression step (or topic) after successful generation
+      const nextProgression = progressionData ? advanceProgressionStep(cfg) : {};
+
+      // Determine next topic for toast message
+      const nextProgressionData = progressionData ? (() => {
+        const progressions = getProgressionsForSubject(cfg.subject);
+        const { progressionTopicIndex: nti, progressionStepIndex: nsi } = nextProgression as { progressionTopicIndex: number; progressionStepIndex: number };
+        const nProg = progressions[nti % progressions.length];
+        return nProg ? `${nProg.topicName} — Step ${nsi + 1}: ${nProg.steps[nsi]?.title}` : "";
+      })() : TOPIC_BANK[cfg.subject]?.[nextIdx]?.topic || "";
+
       // Update scheduler config
       updateConfig(child.id, {
         topicIndex: nextIdx,
         lastFiredAt: new Date().toISOString(),
         nextFireAt: calcNextFireAt(cfg.frequency),
         lastWorksheetTitle: result.title,
-        lastKeyVocabulary: topic.keyVocabulary,
+        lastKeyVocabulary: topicVocabulary,
+        ...nextProgression,
       });
 
       onWorksheetGenerated?.(child.id, newAssignment);
 
       toast.success(
         `📋 Scheduler: "${result.title}" assigned to ${child.name}`,
-        { description: `Next topic: ${TOPIC_BANK[cfg.subject]?.[nextIdx]?.topic || ""}`, duration: 6000 }
+        { description: `Next: ${nextProgressionData}`, duration: 6000 }
       );
     } catch (err) {
       console.error("[Scheduler] Generation failed for", child.name, err);
@@ -148,7 +220,7 @@ Make the worksheet fully self-contained and printable.`.trim(),
     } finally {
       setGenerating(prev => ({ ...prev, [child.id]: false }));
     }
-  }, [generating, getNextTopic, getPreviousTopic, assignWork, updateConfig, onWorksheetGenerated]);
+  }, [generating, getNextTopic, getPreviousTopic, getProgressionStep, advanceProgressionStep, assignWork, updateConfig, onWorksheetGenerated]);
 
   // ── Polling loop — checks every 60 seconds ────────────────────────────────
 
