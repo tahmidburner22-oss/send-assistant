@@ -1,7 +1,11 @@
 /**
- * PDF Generator v2 — pixel-perfect HTML-to-PDF using html2canvas + jsPDF.
+ * PDF Generator v2 — pixel-perfect HTML-to-PDF using iframe + html2canvas + jsPDF.
  * Print system opens a clean window with only the worksheet content.
  * Applies SEND-specific formatting (font, line-height, spacing) per COBS Handbook.
+ *
+ * PDF approach: renders the worksheet in a hidden same-origin iframe using the same
+ * HTML template as the print window (with KaTeX CSS properly loaded), then captures
+ * it with html2canvas. This avoids CSP font-src issues with data: URI fonts.
  */
 import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
@@ -39,112 +43,439 @@ async function waitForFonts(docLike: Document): Promise<void> {
   }
 }
 
+/**
+ * Build the worksheet HTML string (same template as print window).
+ * This ensures KaTeX CSS is properly loaded and fonts render correctly.
+ */
+function buildWorksheetHtml(
+  contentHtml: string,
+  options: {
+    overlayColor?: string;
+    viewMode?: "teacher" | "student";
+    textSize?: number;
+    title?: string;
+    sendNeedId?: string;
+  }
+): string {
+  const { overlayColor = "#ffffff", viewMode = "student", textSize = 14, title = "Worksheet", sendNeedId } = options;
+  const fmt = getSendFormatting(sendNeedId, textSize);
+
+  const hideTeacher = viewMode === "student"
+    ? `.ws-teacher-section { display: none !important; }`
+    : ``;
+
+  // Get the KaTeX CSS URL from the current page's stylesheets
+  const katexCssUrl = (() => {
+    for (const sheet of Array.from(document.styleSheets)) {
+      try {
+        if (sheet.href && sheet.href.includes("katex")) return sheet.href;
+      } catch { /* cross-origin */ }
+    }
+    return "https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css";
+  })();
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>${title}</title>
+  <link rel="stylesheet" href="${katexCssUrl}">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      font-family: ${fmt.fontFamily};
+      font-size: ${fmt.fontSize}px;
+      line-height: ${fmt.lineHeight};
+      letter-spacing: ${fmt.letterSpacing};
+      word-spacing: ${fmt.wordSpacing};
+      font-weight: ${fmt.fontWeight};
+      background: ${overlayColor};
+      color: #1f2937;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    /* ── Worksheet root ── */
+    .worksheet-print-root {
+      background: ${overlayColor};
+      font-family: ${fmt.fontFamily};
+      font-size: ${fmt.fontSize}px;
+      line-height: ${fmt.lineHeight};
+      letter-spacing: ${fmt.letterSpacing};
+      word-spacing: ${fmt.wordSpacing};
+      width: 100%;
+      max-width: 100%;
+      overflow: visible;
+      padding: 12px;
+    }
+
+    /* ── Header ── */
+    .ws-header {
+      border: 1.5px solid #5b21b6;
+      border-radius: 4px;
+      margin-bottom: 10px;
+      overflow: hidden;
+    }
+
+    /* ── Sections ── */
+    .ws-section {
+      margin-bottom: 10px;
+      border-radius: 4px;
+      border: 1.5px solid #5b21b6;
+      background: ${overlayColor};
+      overflow: visible;
+      page-break-inside: avoid;
+      break-inside: avoid;
+      box-sizing: border-box;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .ws-section-header {
+      padding: 6px 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      font-size: ${fmt.fontSize - 1}px;
+      font-family: ${fmt.fontFamily};
+      background: rgba(91,33,182,0.07) !important;
+      border-bottom: 1px solid #5b21b6;
+      color: #5b21b6;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .ws-section-body {
+      padding: 10px 12px;
+      font-size: ${fmt.fontSize}px;
+      line-height: ${fmt.lineHeight};
+      letter-spacing: ${fmt.letterSpacing};
+      word-spacing: ${fmt.wordSpacing};
+      white-space: pre-wrap;
+      word-break: break-word;
+      overflow-wrap: anywhere;
+      font-family: ${fmt.fontFamily};
+      background: ${overlayColor} !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    /* ── Tables ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 8px 0;
+      font-size: ${fmt.fontSize - 1}px;
+      font-family: ${fmt.fontFamily};
+      letter-spacing: ${fmt.letterSpacing};
+    }
+    th {
+      background: #5b21b6 !important;
+      color: white !important;
+      padding: 8px 12px;
+      text-align: left;
+      font-weight: 600;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    td {
+      padding: 7px 12px;
+      border: 1px solid #e5e7eb;
+      vertical-align: top;
+    }
+    tr:nth-child(even) td {
+      background: #f9fafb !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    /* ── Answer lines ── */
+    .ws-answer-line {
+      border-bottom: 1px solid #9ca3af;
+      min-height: 28px;
+      margin: 6px 0;
+      display: block;
+    }
+
+    /* ── Word bank ── */
+    .ws-word-bank {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin: 8px 0;
+    }
+    .ws-word-chip {
+      background: #ede9fe !important;
+      border: 1px solid #c4b5fd;
+      border-radius: 4px;
+      padding: 3px 10px;
+      font-size: ${fmt.fontSize - 2}px;
+      font-weight: 600;
+      color: #5b21b6;
+      font-family: ${fmt.fontFamily};
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    /* ── Checklist ── */
+    .ws-checklist { list-style: none; padding: 0; margin: 6px 0; }
+    .ws-checklist li {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      margin-bottom: ${fmt.paragraphSpacing};
+      font-size: ${fmt.fontSize}px;
+      font-family: ${fmt.fontFamily};
+      line-height: ${fmt.lineHeight};
+      letter-spacing: ${fmt.letterSpacing};
+    }
+    .ws-check-box {
+      width: 16px;
+      height: 16px;
+      border: 2px solid #7c3aed;
+      border-radius: 3px;
+      flex-shrink: 0;
+      margin-top: 2px;
+      display: inline-block;
+    }
+
+    /* ── Sentence starters ── */
+    .ws-starter {
+      background: ${overlayColor} !important;
+      border-left: 3px solid #5b21b6;
+      padding: 6px 10px;
+      margin: 4px 0;
+      border-radius: 0 4px 4px 0;
+      font-size: ${fmt.fontSize}px;
+      font-family: ${fmt.fontFamily};
+      line-height: ${fmt.lineHeight};
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    /* ── Bloom's badge ── */
+    .ws-blooms-badge {
+      display: inline-block;
+      background: #ddd6fe !important;
+      color: #5b21b6;
+      border-radius: 4px;
+      padding: 1px 7px;
+      font-size: 10px;
+      font-weight: 700;
+      margin-left: 6px;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    /* ── Footer ── */
+    .ws-footer {
+      margin-top: 10px;
+      padding: 5px 10px;
+      border: 1.5px solid #5b21b6;
+      border-radius: 4px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      color: #5b21b6;
+      background: ${overlayColor} !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    /* ── Symbol cards ── */
+    .ws-symbol-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+      gap: 10px;
+      margin: 10px 0;
+    }
+    .ws-symbol-card {
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 8px;
+      text-align: center;
+      background: ${overlayColor} !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .ws-symbol-icon { font-size: 28px; display: block; margin-bottom: 4px; }
+    .ws-symbol-label { font-size: 11px; font-weight: 600; color: #374151; }
+
+    /* ── Vocab cards ── */
+    .ws-vocab-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 8px;
+      margin: 8px 0;
+    }
+    .ws-vocab-card {
+      border: 1px solid #c4b5fd;
+      border-radius: 6px;
+      padding: 8px 10px;
+      background: ${overlayColor} !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .ws-vocab-term {
+      font-weight: 700;
+      color: #5b21b6;
+      font-size: ${fmt.fontSize - 1}px;
+      margin-bottom: 2px;
+    }
+    .ws-vocab-def {
+      font-size: ${fmt.fontSize - 2}px;
+      color: #374151;
+    }
+
+    /* ── Word problem cards ── */
+    .ws-problem-card {
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      background: ${overlayColor} !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .ws-problem-label {
+      font-weight: 700;
+      color: #5b21b6;
+      font-size: ${fmt.fontSize - 1}px;
+      margin-bottom: 4px;
+    }
+
+    /* ── Reminder box ── */
+    .ws-reminder-box {
+      border: 2px solid #7c3aed;
+      border-radius: 6px;
+      padding: 10px 12px;
+      background: ${overlayColor} !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .ws-reminder-label {
+      font-weight: 700;
+      color: #7c3aed;
+      font-size: ${fmt.fontSize - 1}px;
+      margin-bottom: 4px;
+    }
+
+    /* ── RAG circles ── */
+    .ws-rag-circle {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 2px solid currentColor;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+
+    /* ── Misc ── */
+    h1, h2, h3 { line-height: 1.3; }
+    p { margin-bottom: ${fmt.paragraphSpacing}; line-height: ${fmt.lineHeight}; letter-spacing: ${fmt.letterSpacing}; word-spacing: ${fmt.wordSpacing}; font-family: ${fmt.fontFamily}; }
+    strong { font-weight: 700; }
+    em { font-style: italic; }
+    ul, ol { padding-left: 20px; margin: 6px 0; }
+    li { margin-bottom: 4px; }
+    .ws-divider { border: none; border-top: 1px solid #e5e7eb; margin: 12px 0; }
+
+    ${hideTeacher}
+  </style>
+</head>
+<body>
+  ${contentHtml}
+</body>
+</html>`;
+}
+
 export async function downloadHtmlAsPdf(
   element: HTMLElement,
   filename: string,
-  options: { overlayColor?: string } = {}
+  options: {
+    overlayColor?: string;
+    viewMode?: "teacher" | "student";
+    textSize?: number;
+    title?: string;
+    sendNeedId?: string;
+  } = {}
 ): Promise<void> {
-  const printRoot = (element.querySelector(".worksheet-print-root") as HTMLElement) || element;
   const PDF_WIDTH_MM = 210;
   const PDF_HEIGHT_MM = 297;
+  const A4_WIDTH_PX = 794; // ~210mm at 96dpi
 
-  const rect = printRoot.getBoundingClientRect();
-  const sourceWidth = Math.max(1, Math.round(rect.width));
-  const sourceHeight = Math.max(1, Math.round(printRoot.scrollHeight || rect.height));
+  // Extract the worksheet content HTML
+  const printRoot = (element.querySelector(".worksheet-print-root") as HTMLElement) || element;
+  const contentHtml = printRoot.outerHTML;
 
-  const sandbox = document.createElement("div");
-  sandbox.setAttribute("data-pdf-export-sandbox", "true");
-  sandbox.style.position = "fixed";
-  sandbox.style.left = "-20000px";
-  sandbox.style.top = "0";
-  sandbox.style.width = `${sourceWidth}px`;
-  sandbox.style.maxWidth = `${sourceWidth}px`;
-  sandbox.style.background = options.overlayColor || getComputedStyle(printRoot).backgroundColor || "#ffffff";
-  sandbox.style.pointerEvents = "none";
-  sandbox.style.zIndex = "-1";
+  // Build the full HTML document (same as print window)
+  const htmlDoc = buildWorksheetHtml(contentHtml, options);
 
-  const clone = printRoot.cloneNode(true) as HTMLElement;
-  clone.style.width = `${sourceWidth}px`;
-  clone.style.maxWidth = `${sourceWidth}px`;
-  clone.style.minWidth = `${sourceWidth}px`;
-  clone.style.margin = "0";
-  clone.style.boxSizing = "border-box";
-  clone.style.transform = "none";
-  clone.style.background = options.overlayColor || getComputedStyle(printRoot).backgroundColor || "#ffffff";
-
-  sandbox.appendChild(clone);
-  document.body.appendChild(sandbox);
+  // Create a hidden iframe to render the worksheet with proper CSS
+  const iframe = document.createElement("iframe");
+  iframe.style.position = "fixed";
+  iframe.style.left = "-20000px";
+  iframe.style.top = "0";
+  iframe.style.width = `${A4_WIDTH_PX}px`;
+  iframe.style.height = "1200px";
+  iframe.style.border = "none";
+  iframe.style.visibility = "hidden";
+  document.body.appendChild(iframe);
 
   try {
-    await waitForFonts(document);
-    await waitForImages(sandbox);
-    await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
-    await new Promise((resolve) => setTimeout(resolve, 120));
+    // Write the HTML into the iframe
+    const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+    if (!iframeDoc) throw new Error("Cannot access iframe document");
 
-    const canvas = await html2canvas(clone, {
+    iframeDoc.open();
+    iframeDoc.write(htmlDoc);
+    iframeDoc.close();
+
+    // Wait for the iframe to fully load (including KaTeX CSS and fonts)
+    await new Promise<void>((resolve) => {
+      const checkLoaded = () => {
+        if (iframe.contentDocument?.readyState === "complete") {
+          resolve();
+        } else {
+          setTimeout(checkLoaded, 100);
+        }
+      };
+      iframe.addEventListener("load", () => resolve(), { once: true });
+      setTimeout(resolve, 5000); // Max 5s timeout
+      checkLoaded();
+    });
+
+    // Wait for fonts to load in the iframe
+    await waitForFonts(iframeDoc);
+    await waitForImages(iframeDoc);
+
+    // Extra wait for KaTeX fonts to render
+    await new Promise((resolve) => setTimeout(resolve, 800));
+
+    // Get the actual content height
+    const iframeBody = iframeDoc.body;
+    const contentHeight = Math.max(iframeBody.scrollHeight, iframeBody.offsetHeight, 1200);
+
+    // Resize iframe to full content height
+    iframe.style.height = `${contentHeight}px`;
+
+    // Wait for reflow
+    await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
+    await new Promise((resolve) => setTimeout(resolve, 200));
+
+    // Capture with html2canvas
+    const canvas = await html2canvas(iframeBody, {
       scale: 2,
       useCORS: true,
       allowTaint: true,
       backgroundColor: options.overlayColor || "#ffffff",
       logging: false,
-      windowWidth: sourceWidth,
-      width: sourceWidth,
-      height: sourceHeight,
+      windowWidth: A4_WIDTH_PX,
+      width: A4_WIDTH_PX,
+      height: contentHeight,
       scrollX: 0,
       scrollY: 0,
-      onclone: async (clonedDoc) => {
-        Array.from(document.styleSheets).forEach((sheet) => {
-          try {
-            if (sheet.href) {
-              const link = clonedDoc.createElement("link");
-              link.rel = "stylesheet";
-              link.href = sheet.href;
-              clonedDoc.head.appendChild(link);
-            } else if (sheet.cssRules) {
-              const style = clonedDoc.createElement("style");
-              style.textContent = Array.from(sheet.cssRules).map((r) => r.cssText).join("\n");
-              clonedDoc.head.appendChild(style);
-            }
-          } catch {
-            // Ignore inaccessible stylesheets.
-          }
-        });
-
-        clonedDoc.body.style.margin = "0";
-        clonedDoc.body.style.padding = "0";
-        clonedDoc.body.style.background = options.overlayColor || getComputedStyle(printRoot).backgroundColor || "#ffffff";
-        clonedDoc.body.style.width = `${sourceWidth}px`;
-        clonedDoc.body.style.maxWidth = `${sourceWidth}px`;
-
-        const clonedRoot = (clonedDoc.querySelector("[data-pdf-export-sandbox] .worksheet-print-root") as HTMLElement)
-          || (clonedDoc.querySelector(".worksheet-print-root") as HTMLElement);
-        if (clonedRoot) {
-          clonedRoot.style.width = `${sourceWidth}px`;
-          clonedRoot.style.maxWidth = `${sourceWidth}px`;
-          clonedRoot.style.minWidth = `${sourceWidth}px`;
-          clonedRoot.style.margin = "0";
-          clonedRoot.style.boxSizing = "border-box";
-          clonedRoot.style.transform = "none";
-          clonedRoot.style.overflow = "visible";
-          clonedRoot.style.background = options.overlayColor || getComputedStyle(printRoot).backgroundColor || "#ffffff";
-        }
-
-        const cardContent = clonedDoc.querySelector(".worksheet-content") as HTMLElement;
-        if (cardContent) {
-          cardContent.style.padding = "0";
-          cardContent.style.margin = "0";
-          cardContent.style.boxShadow = "none";
-          cardContent.style.border = "none";
-          cardContent.style.borderRadius = "0";
-          cardContent.style.overflow = "visible";
-          cardContent.style.maxWidth = `${sourceWidth}px`;
-        }
-
-        await waitForFonts(clonedDoc);
-        await waitForImages(clonedDoc);
-      },
     });
 
+    // Build the PDF page by page
     const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4", compress: true });
     const pageHeightPx = Math.round((canvas.width * PDF_HEIGHT_MM) / PDF_WIDTH_MM);
     const totalPages = Math.max(1, Math.ceil(canvas.height / pageHeightPx));
@@ -172,7 +503,7 @@ export async function downloadHtmlAsPdf(
 
     pdf.save(filename);
   } finally {
-    sandbox.remove();
+    iframe.remove();
   }
 }
 
@@ -217,11 +548,11 @@ export function printWorksheetElement(
   const katexCssUrl = (() => {
     for (const sheet of Array.from(document.styleSheets)) {
       try {
-        if (sheet.href && sheet.href.includes('katex')) return sheet.href;
+        if (sheet.href && sheet.href.includes("katex")) return sheet.href;
       } catch { /* cross-origin */ }
     }
     // Fallback: use CDN
-    return 'https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css';
+    return "https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css";
   })();
 
   const html = `<!DOCTYPE html>
@@ -464,6 +795,75 @@ export function printWorksheetElement(
     }
     .ws-symbol-icon { font-size: 28px; display: block; margin-bottom: 4px; }
     .ws-symbol-label { font-size: 11px; font-weight: 600; color: #374151; }
+
+    /* ── Vocab cards ── */
+    .ws-vocab-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 8px;
+      margin: 8px 0;
+    }
+    .ws-vocab-card {
+      border: 1px solid #c4b5fd;
+      border-radius: 6px;
+      padding: 8px 10px;
+      background: ${overlayColor} !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .ws-vocab-term {
+      font-weight: 700;
+      color: #5b21b6;
+      font-size: ${fmt.fontSize - 1}px;
+      margin-bottom: 2px;
+    }
+    .ws-vocab-def {
+      font-size: ${fmt.fontSize - 2}px;
+      color: #374151;
+    }
+
+    /* ── Word problem cards ── */
+    .ws-problem-card {
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      background: ${overlayColor} !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .ws-problem-label {
+      font-weight: 700;
+      color: #5b21b6;
+      font-size: ${fmt.fontSize - 1}px;
+      margin-bottom: 4px;
+    }
+
+    /* ── Reminder box ── */
+    .ws-reminder-box {
+      border: 2px solid #7c3aed;
+      border-radius: 6px;
+      padding: 10px 12px;
+      background: ${overlayColor} !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .ws-reminder-label {
+      font-weight: 700;
+      color: #7c3aed;
+      font-size: ${fmt.fontSize - 1}px;
+      margin-bottom: 4px;
+    }
+
+    /* ── RAG circles ── */
+    .ws-rag-circle {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 2px solid currentColor;
+      display: inline-block;
+      flex-shrink: 0;
+    }
 
     /* ── Misc ── */
     h1, h2, h3 { line-height: 1.3; }
