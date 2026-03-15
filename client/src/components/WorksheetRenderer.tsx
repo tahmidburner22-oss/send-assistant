@@ -1022,7 +1022,9 @@ function formatContent(content: string | any, fmt: ReturnType<typeof getSendForm
   };
 
   lines.forEach((line, idx) => {
-    const trimmed = line.trim();
+    let trimmed = line.trim();
+    // Clean up lines that start with a lone period/dot (artifact of numbering removal)
+    trimmed = trimmed.replace(/^\. /, '');
 
     // Table row
     if (trimmed.includes("|") && !trimmed.startsWith("Hint:") && !trimmed.startsWith("Step")) {
