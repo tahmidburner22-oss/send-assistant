@@ -213,11 +213,23 @@ export function printWorksheetElement(
     ? `.ws-section + .ws-section { page-break-before: always; break-before: page; }`
     : "";
 
+  // Get the KaTeX CSS URL from the current page's stylesheets
+  const katexCssUrl = (() => {
+    for (const sheet of Array.from(document.styleSheets)) {
+      try {
+        if (sheet.href && sheet.href.includes('katex')) return sheet.href;
+      } catch { /* cross-origin */ }
+    }
+    // Fallback: use CDN
+    return 'https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css';
+  })();
+
   const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>${title}</title>
+  <link rel="stylesheet" href="${katexCssUrl}">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html, body {
@@ -270,12 +282,12 @@ export function printWorksheetElement(
       overflow: hidden;
     }
 
-    /* ── Sections ── TES-style: white background, single purple border */
+    /* ── Sections ── TES-style: overlay-aware background, single purple border */
     .ws-section {
       margin-bottom: 10px;
       border-radius: 4px;
       border: 1.5px solid #5b21b6;
-      background: #ffffff;
+      background: ${overlayColor};
       overflow: visible;
       page-break-inside: avoid;
       break-inside: avoid;
@@ -307,7 +319,7 @@ export function printWorksheetElement(
       word-break: break-word;
       overflow-wrap: anywhere;
       font-family: ${fmt.fontFamily};
-      background: #ffffff !important;
+      background: ${overlayColor} !important;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
     }
@@ -393,7 +405,7 @@ export function printWorksheetElement(
 
     /* ── Sentence starters ── */
     .ws-starter {
-      background: #ffffff !important;
+      background: ${overlayColor} !important;
       border-left: 3px solid #5b21b6;
       padding: 6px 10px;
       margin: 4px 0;
@@ -419,7 +431,7 @@ export function printWorksheetElement(
       print-color-adjust: exact;
     }
 
-    /* ── Footer ── TES-style: white background with purple border */
+    /* ── Footer ── TES-style: overlay-aware background with purple border */
     .ws-footer {
       margin-top: 10px;
       padding: 5px 10px;
@@ -429,7 +441,7 @@ export function printWorksheetElement(
       justify-content: space-between;
       font-size: 10px;
       color: #5b21b6;
-      background: #ffffff !important;
+      background: ${overlayColor} !important;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
     }
@@ -446,7 +458,7 @@ export function printWorksheetElement(
       border-radius: 8px;
       padding: 8px;
       text-align: center;
-      background: #fafafa !important;
+      background: ${overlayColor} !important;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
     }
@@ -466,10 +478,12 @@ export function printWorksheetElement(
 <body>
   ${contentHtml}
   <script>
+    // Wait for KaTeX CSS to load before printing
     window.addEventListener('load', function() {
+      // Give KaTeX fonts extra time to load
       setTimeout(function() {
         window.print();
-      }, 600);
+      }, 1200);
     });
   </script>
 </body>
