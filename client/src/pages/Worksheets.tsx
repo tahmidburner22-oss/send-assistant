@@ -387,7 +387,8 @@ export default function Worksheets() {
         } else if (err?.name === "AbortError") {
           toast.error("AI generation timed out. Please try again.");
         } else {
-          toast.error(`AI generation failed: ${errMsg.slice(0, 80)}. Using local generator as fallback.`);
+          // Fallback succeeded — use a softer warning rather than a red error
+          toast("Worksheet generated using fallback generator.", { icon: "⚠️" });
         }
         generatedWs = generateWorksheet({ subject, topic, yearGroup, sendNeed: sendNeed || undefined, difficulty, examBoard, includeAnswers, additionalInstructions });
       }
