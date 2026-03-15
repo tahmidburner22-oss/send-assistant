@@ -861,28 +861,28 @@ interface WorksheetRendererProps {
 
 // Section type → colour config (TES-style: white backgrounds, single purple/blue border accent)
 const SECTION_STYLES: Record<string, { border: string; bg: string; badge: string; badgeBg: string; icon: string; label: string }> = {
-  "objective":     { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "🎯", label: "Learning Objectives" },
-  "success":       { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "✅", label: "Success Criteria" },
-  "vocabulary":    { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "📚", label: "Key Vocabulary" },
-  "starter":       { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "🔥", label: "Starter Activity" },
-  "example":       { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "💡", label: "Worked Example" },
-  "guided":        { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "🌟", label: "Foundation" },
-  "independent":   { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "📝", label: "Core Practice" },
-  "challenge":     { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "🚀", label: "Stretch & Challenge" },
-  "word-bank":     { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "🔤", label: "Word Bank" },
-  "sentence-starters": { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "✏️", label: "Sentence Starters" },
-  "self-assessment": { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "🔍", label: "Self Assessment" },
-  "self-reflection": { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "💭", label: "How Did I Do?" },
-  "diagram":       { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "📊", label: "Diagram" },
-  "answers":       { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "✓", label: "Answers" },
-  "questions":     { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "📝", label: "Exam Questions" },
-  "mark-scheme":   { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "📋", label: "Mark Scheme" },
-  "teacher-notes": { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "👩‍🏫", label: "Teacher Notes" },
-  "send-support":  { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "♿", label: "SEND Support" },
-  "reminder-box":  { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "⚠️", label: "Reminder Box" },
-  "word-problems": { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "🌍", label: "Word Problems" },
-  "misconceptions":{ border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "❌", label: "Common Misconceptions" },
-  "default":       { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "📄", label: "" },
+  "objective":     { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "", label: "Learning Objectives" },
+  "success":       { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "", label: "Success Criteria" },
+  "vocabulary":    { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "", label: "Key Vocabulary" },
+  "starter":       { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "", label: "Starter Activity" },
+  "example":       { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "", label: "Worked Example" },
+  "guided":        { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "", label: "Foundation" },
+  "independent":   { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "", label: "Core Practice" },
+  "challenge":     { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "", label: "Stretch & Challenge" },
+  "word-bank":     { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "", label: "Word Bank" },
+  "sentence-starters": { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "", label: "Sentence Starters" },
+  "self-assessment": { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "", label: "Self Assessment" },
+  "self-reflection": { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "", label: "How Did I Do?" },
+  "diagram":       { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "", label: "Diagram" },
+  "answers":       { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "", label: "Answers" },
+  "questions":     { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "", label: "Exam Questions" },
+  "mark-scheme":   { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "", label: "Mark Scheme" },
+  "teacher-notes": { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "", label: "Teacher Notes" },
+  "send-support":  { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "", label: "SEND Support" },
+  "reminder-box":  { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "", label: "Reminder Box" },
+  "word-problems": { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "", label: "Word Problems" },
+  "misconceptions":{ border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "", label: "Common Misconceptions" },
+  "default":       { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "", label: "" },
 };
 
 function getSectionStyle(type: string) {
@@ -990,7 +990,7 @@ function formatContent(content: string, fmt: ReturnType<typeof getSendFormatting
     }
 
     // Hint lines are not shown on worksheets — skip them
-    if (trimmed.startsWith("Hint:") || trimmed.startsWith("💡")) {
+    if (trimmed.startsWith("Hint:")) {
       return;
     }
 
@@ -1087,9 +1087,9 @@ function SelfAssessmentSection({ content, fmt }: { content: string; fmt: ReturnT
         return (
           <div key={i} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "8px 0", borderBottom: i < lines.length - 1 ? "1px solid #e5e7eb" : "none" }}>
             <div style={{ display: "flex", gap: "6px", flexShrink: 0 }}>
-              {["🔴", "🟡", "🟢"].map((emoji, ci) => (
-                <div key={ci} style={{ width: "28px", height: "28px", borderRadius: "50%", border: "2px solid #d1d5db", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px" }}>
-                  {emoji}
+              {["R", "A", "G"].map((label, ci) => (
+                <div key={ci} style={{ width: "28px", height: "28px", borderRadius: "50%", border: "2px solid #d1d5db", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px", fontWeight: 700, color: ci === 0 ? "#dc2626" : ci === 1 ? "#d97706" : "#16a34a" }}>
+                  {label}
                 </div>
               ))}
             </div>
@@ -1098,7 +1098,7 @@ function SelfAssessmentSection({ content, fmt }: { content: string; fmt: ReturnT
         );
       })}
       <div style={{ marginTop: "8px", fontSize: `${textSize - 2}px`, color: "#6b7280", fontStyle: "italic", fontFamily }}>
-        🔴 Not yet &nbsp;|&nbsp; 🟡 Getting there &nbsp;|&nbsp; 🟢 I've got it!
+        R = Not yet &nbsp;|&nbsp; A = Getting there &nbsp;|&nbsp; G = I've got it!
       </div>
     </div>
   );
@@ -1124,9 +1124,9 @@ function SelfReflectionSection({ content, fmt, overlayColor = "white" }: { conte
         return (
           <div key={i} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "8px 0", borderBottom: "1px solid #ddd6fe" }}>
             <div style={{ display: "flex", gap: "6px", flexShrink: 0 }}>
-              {["🔴", "🟡", "🟢"].map((emoji, ci) => (
-                <div key={ci} style={{ width: "26px", height: "26px", borderRadius: "50%", border: "2px solid #ddd6fe", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "13px" }}>
-                  {emoji}
+              {["R", "A", "G"].map((label, ci) => (
+                <div key={ci} style={{ width: "26px", height: "26px", borderRadius: "50%", border: "2px solid #ddd6fe", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px", fontWeight: 700, color: ci === 0 ? "#dc2626" : ci === 1 ? "#d97706" : "#16a34a" }}>
+                  {label}
                 </div>
               ))}
             </div>
@@ -1135,12 +1135,12 @@ function SelfReflectionSection({ content, fmt, overlayColor = "white" }: { conte
         );
       })}
       <div style={{ marginTop: "6px", fontSize: `${textSize - 2}px`, color: "#5b21b6", fontStyle: "italic", fontFamily }}>
-        🔴 Not yet &nbsp;|&nbsp; 🟡 Getting there &nbsp;|&nbsp; 🟢 I've got it!
+        R = Not yet &nbsp;|&nbsp; A = Getting there &nbsp;|&nbsp; G = I've got it!
       </div>
       {/* Open reflection question */}
       {openQ && (
         <div style={{ marginTop: "14px", background: overlayColor, border: "1.5px solid #5b21b6", borderRadius: "4px", padding: "10px 12px" }}>
-          <div style={{ fontSize: `${textSize - 1}px`, fontWeight: 600, color: "#5b21b6", fontFamily, marginBottom: "6px" }} dangerouslySetInnerHTML={{ __html: "💭 " + renderMath(openQ) }} />
+          <div style={{ fontSize: `${textSize - 1}px`, fontWeight: 600, color: "#5b21b6", fontFamily, marginBottom: "6px" }} dangerouslySetInnerHTML={{ __html: renderMath(openQ) }} />
           <div style={{ borderBottom: "1px solid #d1d5db", height: "28px", marginBottom: "6px" }} />
           <div style={{ borderBottom: "1px solid #d1d5db", height: "28px" }} />
         </div>
@@ -1185,7 +1185,7 @@ function ReminderBoxSection({ content, fmt, overlayColor = "white" }: { content:
   return (
     <div style={{ background: overlayColor, border: "1.5px solid #5b21b6", borderRadius: "4px", padding: "10px 12px" }}>
       <div style={{ fontSize: `${textSize - 1}px`, fontWeight: 700, color: "#5b21b6", marginBottom: "10px", fontFamily, textTransform: "uppercase", letterSpacing: "0.05em" }}>
-        ⚠️ Keep this in mind while you work:
+        Keep this in mind while you work:
       </div>
       {steps.length > 0 ? (
         <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
@@ -1404,7 +1404,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(({
               background: `${style.border}12`,
             }}>
               <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                <span style={{ fontSize: "16px" }}>{style.icon}</span>
+                {style.icon && <span style={{ fontSize: "16px" }}>{style.icon}</span>}
                 <span style={{ fontWeight: 700, fontSize: `${fmt.fontSize + 1}px`, color: style.border, fontFamily: fmt.fontFamily }}>
                   {(section.title || '').replace(/^\*{1,2}|\*{1,2}$/g, '').replace(/^_{1,2}|_{1,2}$/g, '').trim()}
                 </span>
@@ -1412,32 +1412,32 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(({
               <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
                 {isTeacherSection && (
                   <span style={{ background: "#ede9fe", color: "#5b21b6", padding: "2px 8px", borderRadius: "10px", fontSize: "10px", fontWeight: 700 }}>
-                    👩‍🏫 TEACHER ONLY
+                    TEACHER ONLY
                   </span>
                 )}
                 {section.type === "guided" && (
                   <span style={{ background: style.badgeBg, color: style.badge, padding: "2px 8px", borderRadius: "10px", fontSize: "10px", fontWeight: 600 }}>
-                    ⭐ Foundation
+                    Foundation
                   </span>
                 )}
                 {section.type === "independent" && (
                   <span style={{ background: style.badgeBg, color: style.badge, padding: "2px 8px", borderRadius: "10px", fontSize: "10px", fontWeight: 600 }}>
-                    📝 Core
+                    Core
                   </span>
                 )}
                 {section.type === "challenge" && (
                   <span style={{ background: style.badgeBg, color: style.badge, padding: "2px 8px", borderRadius: "10px", fontSize: "10px", fontWeight: 600 }}>
-                    🚀 Extension
+                    Extension
                   </span>
                 )}
                 {section.type === "reminder-box" && (
                   <span style={{ background: "#ede9fe", color: "#5b21b6", padding: "2px 8px", borderRadius: "10px", fontSize: "10px", fontWeight: 600 }}>
-                    📌 3 Key Steps
+                    3 Key Steps
                   </span>
                 )}
                 {section.type === "word-problems" && (
                   <span style={{ background: "#ede9fe", color: "#5b21b6", padding: "2px 8px", borderRadius: "10px", fontSize: "10px", fontWeight: 600 }}>
-                    🌍 Real Life
+                    Real Life
                   </span>
                 )}
               </div>
@@ -1555,8 +1555,8 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(({
           {worksheet.metadata.difficulty && worksheet.metadata.difficulty !== "mixed" && (
             <span>| {worksheet.metadata.difficulty === "foundation" ? "Foundation" : "Higher"}</span>
           )}
-          {worksheet.metadata.sendNeed && <span>| ♿ {worksheet.metadata.sendNeed}</span>}
-          {worksheet.metadata.estimatedTime && <span>| ⏱ {worksheet.metadata.estimatedTime}</span>}
+          {worksheet.metadata.sendNeed && <span>| SEND: {worksheet.metadata.sendNeed}</span>}
+          {worksheet.metadata.estimatedTime && <span>| {worksheet.metadata.estimatedTime}</span>}
         </span>
         <span>{new Date().toLocaleDateString("en-GB")} | adaptly.co.uk</span>
       </div>

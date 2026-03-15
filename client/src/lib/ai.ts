@@ -551,17 +551,17 @@ export async function aiGenerateWorksheet(params: {
 (5) WORKED EXAMPLE: Show every single arithmetic step — no skipping. Annotate each step with WHY (e.g. "We add because we are finding the total").
 (6) WORD PROBLEMS: Keep language very simple. Underline the key number words. Provide a 'What do I need to find?' prompt before each problem.
 (7) AVOID: Timed pressure language, complex multi-step problems without scaffolding, abstract notation without concrete meaning.
-(8) REFLECTION: Use simple tick-box statements. Include a 'How I feel about maths today' emoji scale.`;
+(8) REFLECTION: Use simple tick-box statements. Include a 'How I feel about maths today' scale using text options: 'Great / OK / Struggling'.`;
 
     if (sn.includes("adhd")) return `${base}
-(1) CHUNKING: Break every section into micro-tasks of no more than 2–3 questions before a natural break point. Use a ✅ checkbox next to each question so students can tick off progress.
+(1) CHUNKING: Break every section into micro-tasks of no more than 2–3 questions before a natural break point. Use a [ ] checkbox next to each question so students can tick off progress.
 (2) SECTION A — GUIDED PRACTICE: Maximum 3 questions. Each question must have a clear, single instruction. Include a 'STOP — check your work' prompt after question 3.
 (3) SECTION B — CORE PRACTICE: Maximum 5 questions. Vary question types (calculation, fill-in, matching, true/false) to maintain engagement. Include a 'BRAIN BREAK — stand up and stretch!' prompt halfway through.
 (4) INSTRUCTIONS: Use numbered bullet points. Never embed instructions inside paragraphs. Bold the action word in every instruction (e.g. "**Calculate** the area of...").
 (5) WORKED EXAMPLE: Use a colour-coded step-by-step box. Each step on its own line. Max 5 steps.
 (6) LAYOUT: Use clear section dividers (e.g. thick lines or boxes). Avoid cluttered pages. Plenty of white space.
 (7) CHALLENGE: Make it optional and label it clearly as 'BONUS — only if you want to!'
-(8) REFLECTION: Use a quick 1–5 star rating ('How focused were you today?') rather than extended writing.`;
+(8) REFLECTION: Use a quick 1–5 scale ('How focused were you today? 1 / 2 / 3 / 4 / 5') rather than extended writing.`;
 
     if (sn.includes("asc") || sn.includes("autism") || sn.includes("asperger")) return `${base}
 (1) LANGUAGE: Use literal, unambiguous language. NEVER use idioms, metaphors, or figurative language (e.g. do NOT write 'find x' — write 'calculate the value of x'). Be explicit about what is expected.
@@ -581,7 +581,7 @@ export async function aiGenerateWorksheet(params: {
 (5) SCAFFOLDING: Every question in Section A must have either: (a) a sentence starter, (b) a partially completed answer, or (c) a hint. At least 3 questions in Section B should have hints.
 (6) QUESTIONS: Avoid multi-step problems in Section A. Section B may have 2-step problems with clear sub-parts (a) and (b).
 (7) CHALLENGE: Label as optional. Make it a simple extension of Section B, not a new concept.
-(8) REFLECTION: Use picture-based or emoji-based self-assessment.`;
+(8) REFLECTION: Use simple text-based self-assessment with tick-boxes and sentence starters.`;
 
     if (sn.includes("slcn") || sn.includes("speech") || sn.includes("language") || sn.includes("communication")) return `${base}
 (1) VOCABULARY: Include a prominent Word Bank at the start with every key term defined in plain English. Limit to 8 key words maximum.
@@ -599,7 +599,7 @@ export async function aiGenerateWorksheet(params: {
 (3) SECTION B: Label it 'Main Practice — you've got this!' Include a 'Tip' box with a helpful reminder. Avoid language like 'must', 'should', 'you need to'.
 (4) CHALLENGE: Label clearly as 'OPTIONAL BONUS — only if you want to!' Never use language that implies failure if skipped.
 (5) INSTRUCTIONS: Use positive framing ('Try to...' rather than 'You must...'). Break into small numbered steps.
-(6) REFLECTION: Include a 'How are you feeling?' check-in at the start and end using an emoji scale. Use 'I tried...' and 'I found...' sentence starters rather than evaluative statements.
+(6) REFLECTION: Include a 'How are you feeling?' check-in at the start and end using a text scale (e.g. 'Calm / OK / Anxious'). Use 'I tried...' and 'I found...' sentence starters rather than evaluative statements.
 (7) LAYOUT: Use a calm, uncluttered design. Avoid red text or anything that could feel like marking/failure.
 (8) AVOID: Timed pressure, competitive language, overly complex tasks without support.`;
 
@@ -770,6 +770,7 @@ Formatting rules:
 - Keep wording concise and printable.
 - If SEND applies, show the adaptations in the pupil-facing sections, not just teacher notes.
 - For maths, keep notation clean and readable in print/PDF.
+- ABSOLUTELY NO EMOJIS anywhere in the output — not in section content, titles, labels, or any field. Use plain text alternatives only (e.g. use '[ ]' not '✅', use 'Great / OK / Struggling' not emoji scales).
 
 Return EXACTLY this JSON (raw JSON only):
 {
@@ -786,7 +787,7 @@ Return EXACTLY this JSON (raw JSON only):
     {"title": "${sendSectionTitles.sectionB}", "type": "independent", "content": "${hasSend ? 'WRITE scaffolded core practice questions here as a plain string — apply ALL SEND rules above — include Key Facts/Help Box reminder, vary question types, each on its own line: 1. Question one\n2. Question two' : 'WRITE standard questions + 1 misconception question here as a plain string — each on its own line: 1. Question one\n2. Question two'}"},
     {"title": "Section C — Word Problems", "type": "word-problems", "content": "WRITE ${hasSend ? '2-3 short, simple real-life word problems here — apply SEND language rules — each labelled PROBLEM 1, PROBLEM 2 etc on its own line' : '3-4 real-life word problems here as a plain string — each labelled PROBLEM 1, PROBLEM 2 etc on its own line'}"},
     {"title": "${sendSectionTitles.challenge}", "type": "challenge", "content": "[${challengeGuide}${hasSend ? ' — make this optional and clearly labelled as bonus/extension' : ''}]"},
-    {"title": "${hasSend && (params.sendNeed!.toLowerCase().includes('anxiety') || params.sendNeed!.toLowerCase().includes('adhd')) ? 'How Did I Do? ★★★★★' : 'How Did I Do?'}", "type": "self-reflection", "teacherOnly": false, "content": "[${hasSend ? 'SEND-appropriate self-assessment: use tick-boxes, emoji scale, or sentence starters as specified in SEND rules above' : '3-4 I can statements + Q: open question'}]"},
+    {"title": "${hasSend && (params.sendNeed!.toLowerCase().includes('anxiety') || params.sendNeed!.toLowerCase().includes('adhd')) ? 'How Did I Do? ★★★★★' : 'How Did I Do?'}", "type": "self-reflection", "teacherOnly": false, "content": "[${hasSend ? 'SEND-appropriate self-assessment: use tick-boxes, text scale (e.g. Great/OK/Struggling), or sentence starters as specified in SEND rules above' : '3-4 I can statements + Q: open question'}]"},
     {"title": "Common Mistakes to Avoid", "type": "common-mistakes", "teacherOnly": false, "content": "[3-4 common mistakes students make on this topic, with brief explanations]"},
     {"title": "Mark Scheme", "type": "mark-scheme", "teacherOnly": true, "content": "[answers only]"},
     {"title": "Teacher Notes", "type": "teacher-notes", "teacherOnly": true, "content": "[timings, misconceptions, interventions, next topic]"},
@@ -1081,8 +1082,8 @@ const SEND_DIFF_RULES: Record<string, string> = {
   dyscalculia: "Break every question into numbered sub-steps with blanks (Step 1: ___ Step 2: ___). Include a number line or key facts box. Show every arithmetic step in the worked example with 'why' annotations. Use real-world contexts for all word problems.",
   dyspraxia: "Use multiple-choice, matching, and circle-the-answer formats. Provide large answer boxes. Use structured answer frames (tables, fill-in-the-blank) rather than open writing. Avoid extended writing tasks — use tick, circle, or diagram formats for challenge questions.",
   mld: "Provide a fully completed model answer for Question 1. Add a hint, sentence starter, or partial answer to every question. Include a 'Help Box' with key facts and vocabulary. Use KS2 reading level language. Apply concrete-pictorial-abstract progression.",
-  adhd: "Add a tick checkbox next to every question. Limit to maximum 3 questions per section. Add a 'BRAIN BREAK — stand up and stretch!' prompt midway. Vary question types: calculation, fill-in, matching, true/false. Bold the action word in every instruction.",
-  anxiety: "Rename Section A 'Warm-Up — no pressure!'. Label challenge as 'OPTIONAL BONUS — only if you want to!'. Add a positive statement at the start of each section. Replace 'must', 'should', 'need to' with 'try to', 'have a go at'. Add an emoji check-in at start and end.",
+  adhd: "Add a [ ] checkbox next to every question. Limit to maximum 3 questions per section. Add a 'BRAIN BREAK — stand up and stretch!' prompt midway. Vary question types: calculation, fill-in, matching, true/false. Bold the action word in every instruction.",
+  anxiety: "Rename Section A 'Warm-Up — no pressure!'. Label challenge as 'OPTIONAL BONUS — only if you want to!'. Add a positive statement at the start of each section. Replace 'must', 'should', 'need to' with 'try to', 'have a go at'. Add a text-based check-in (e.g. 'Calm / OK / Anxious') at start and end.",
   vi: "Use minimum 18pt equivalent font size. Apply high-contrast formatting. Describe all diagram content in text as well. Avoid questions that rely solely on visual interpretation. Add generous spacing between questions and sections.",
   hi: "Write all instructions in full — no reliance on verbal explanation. Add a Word Bank with definitions for all key terms. Make every question fully self-contained with all necessary information. Include visual diagrams alongside every text question. Remove any audio-dependent content.",
   tourettes: "Use multiple response formats: tick, circle, fill-in, short answer. Add natural break points into every section. Reduce writing demands — avoid long written responses. Use a calm, supportive, non-judgmental tone. Remove all timed pressure language ('quickly', 'in 5 minutes').",

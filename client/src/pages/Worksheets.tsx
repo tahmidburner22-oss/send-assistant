@@ -88,7 +88,6 @@ function formatContent(content: string): string {
     // Marks badges [X marks]
     .replace(/(\[\d+ marks?\])/g, "<span class='marks-badge ml-2 text-xs font-bold text-white bg-gray-600 px-1.5 py-0.5 rounded'>$1</span>")
     // Hints — removed (not shown on worksheets)
-    .replace(/^\s*>?\s*💡.*$/gm, "")
     .replace(/^\s*>?\s*Hint:.*$/gm, "")
     // Bullet points
     .replace(/^[•\-] (.+)$/gm, "<div class='flex items-start gap-2 my-1'><span class='text-brand mt-1'>&#8226;</span><span>$1</span></div>")
@@ -382,7 +381,7 @@ export default function Worksheets() {
         const errMsg = err?.message || String(err);
         if (errMsg.includes("No AI provider keys configured") || errMsg.includes("noKeysConfigured") || errMsg.includes("Settings → AI Providers")) {
           toast.error(
-            "⚠️ No AI keys configured. Go to Settings → AI Providers to add your school's API keys. Using local generator for now.",
+            "No AI keys configured. Go to Settings → AI Providers to add your school's API keys. Using local generator for now.",
             { duration: 10000 }
           );
         } else if (err?.name === "AbortError") {
@@ -849,7 +848,7 @@ export default function Worksheets() {
                           {syllabusTopics.map((st, i) => (
                             <SelectItem key={i} value={st.topic}>{st.topic}</SelectItem>
                           ))}
-                          <SelectItem value="__custom__">✏️ Enter custom topic...</SelectItem>
+                          <SelectItem value="__custom__">Enter custom topic...</SelectItem>
                         </SelectContent>
                       </Select>
                       {showTopicSuggestions && (
@@ -860,7 +859,7 @@ export default function Worksheets() {
                     <Input value={topic} onChange={e => setTopic(e.target.value)} placeholder={subject && yearGroup ? "No syllabus data — type a topic" : "Select subject & year group first"} className="h-10" />
                   )}
                   {syllabusTopics.length > 0 && !showTopicSuggestions && (
-                    <p className="text-[10px] text-muted-foreground mt-0.5">📚 {syllabusTopics.length} curriculum topics for {yearGroup} {subjects.find(s => s.id === subject)?.name || subject}{(() => {
+                    <p className="text-[10px] text-muted-foreground mt-0.5">{syllabusTopics.length} curriculum topics for {yearGroup} {subjects.find(s => s.id === subject)?.name || subject}{(() => {
                       const yr = parseInt((yearGroup || "").replace(/[^0-9]/g, ""), 10);
                       if (yr >= 2 && yr <= 6) return ` (Years 1–${yr})`;
                       if (yr >= 8 && yr <= 11) return ` (Years 7–${yr})`;
@@ -879,7 +878,7 @@ export default function Worksheets() {
                     placeholder="e.g. Fractions, Photosynthesis… — adds 2–3 recap questions at the start"
                     className="h-10"
                   />
-                  <p className="text-[10px] text-muted-foreground">🔁 If set, 2–3 recall questions on this previous topic will appear at the top of the worksheet before the main content.</p>
+                  <p className="text-[10px] text-muted-foreground">If set, 2–3 recall questions on this previous topic will appear at the top of the worksheet before the main content.</p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
