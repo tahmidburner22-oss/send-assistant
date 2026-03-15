@@ -1,4 +1,7 @@
 /**
+ * @copyright 2026 Adaptly Ltd. All rights reserved.
+ * @license Proprietary — unauthorised copying, modification, or distribution is strictly prohibited.
+ *
  * PDF Generator v2 — pixel-perfect HTML-to-PDF using iframe + html2canvas + jsPDF.
  * Print system opens a clean window with only the worksheet content.
  * Applies SEND-specific formatting (font, line-height, spacing) per COBS Handbook.
@@ -161,13 +164,17 @@ function buildWorksheetHtml(
       line-height: ${fmt.lineHeight};
       letter-spacing: ${fmt.letterSpacing};
       word-spacing: ${fmt.wordSpacing};
-      white-space: pre-line;
+      white-space: normal;
       word-break: break-word;
       overflow-wrap: anywhere;
       font-family: ${fmt.fontFamily};
       background: ${overlayColor} !important;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
+    }
+    .ws-section-body p {
+      white-space: normal;
+      margin-bottom: 0.4em;
     }
 
     /* ── Tables ── */
@@ -673,13 +680,17 @@ export function printWorksheetElement(
       line-height: ${fmt.lineHeight};
       letter-spacing: ${fmt.letterSpacing};
       word-spacing: ${fmt.wordSpacing};
-      white-space: pre-line;
+      white-space: normal;
       word-break: break-word;
       overflow-wrap: anywhere;
       font-family: ${fmt.fontFamily};
       background: ${overlayColor} !important;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
+    }
+    .ws-section-body p {
+      white-space: normal;
+      margin-bottom: 0.4em;
     }
 
     /* ── Tables ── */

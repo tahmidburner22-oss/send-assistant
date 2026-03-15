@@ -1,4 +1,7 @@
 /**
+ * @copyright 2026 Adaptly Ltd. All rights reserved.
+ * @license Proprietary — unauthorised copying, modification, or distribution is strictly prohibited.
+ *
  * Multi-provider AI engine for Adaptly.
  * Priority order: Groq → Gemini → OpenRouter → OpenAI → Local fallback
  * API keys stored in localStorage so users can update without redeploying.
@@ -639,12 +642,21 @@ export async function aiGenerateWorksheet(params: {
   const targetPages = params.targetPages || 0; // 0 = auto (no constraint)
   const pageCountNote = targetPages > 0
     ? targetPages === 1
-      ? `PAGE LIMIT: This worksheet MUST fit on exactly 1 printed A4 page. Keep content very concise — fewer questions, shorter worked example, compact vocabulary. Max 8–10 questions total. No word problems section. Compact reflection (1 line).`
+      ? `CRITICAL: This worksheet MUST fit on exactly 1 printed A4 page (210mm × 297mm, standard margins).
+      - Maximum 8-10 questions total
+      - No word problems section
+      - Compact worked example (2-3 steps max)
+      - Minimal vocabulary (3-5 terms)
+      - Single-line reflection
+      - Use smaller font if needed (10-11pt)
+      - Avoid multi-part questions
+      - No extended challenge section
+      - Keep all content extremely concise — every line counts`
       : targetPages === 2
-      ? `PAGE LIMIT: This worksheet should fit on approximately 2 printed A4 pages. Standard amount of content — 15–20 questions, full worked example, vocabulary, and reflection.`
+      ? `PAGE LIMIT: This worksheet MUST fit on approximately 2 printed A4 pages. Standard amount of content — 15–20 questions, full worked example, vocabulary, and reflection. Do NOT exceed 2 pages.`
       : targetPages === 3
-      ? `PAGE LIMIT: This worksheet should fill approximately 3 printed A4 pages. Include extra questions, extended worked examples, more word problems, and a detailed challenge section. 25–35 questions total.`
-      : `PAGE LIMIT: This worksheet should fill approximately ${targetPages} printed A4 pages. Scale the number of questions, examples, and sections proportionally — roughly ${Math.round(targetPages * 12)} questions total, with ${targetPages > 4 ? 'multiple extended' : 'full'} sections, worked examples, and word problems.`
+      ? `PAGE LIMIT: This worksheet MUST fill approximately 3 printed A4 pages. Include extra questions, extended worked examples, more word problems, and a detailed challenge section. 25–35 questions total. Do NOT exceed 3 pages.`
+      : `PAGE LIMIT: This worksheet MUST fill approximately ${targetPages} printed A4 pages. Scale the number of questions, examples, and sections proportionally — roughly ${Math.round(targetPages * 12)} questions total, with ${targetPages > 4 ? 'multiple extended' : 'full'} sections, worked examples, and word problems. Do NOT exceed ${targetPages} pages.`
     : ``; // No constraint
 
   // ── Reading age override ───────────────────────────────────────────────────
@@ -789,6 +801,7 @@ Return EXACTLY this JSON (raw JSON only):
     "examBoard": "${params.examBoard || "General"}",
     "totalMarks": 0,
     "estimatedTime": "${timingGuide.replace("Estimated time: ", "")}",
+    "sendNeed": "${hasSend ? params.sendNeed : ''}",
     "adaptations": ["Standard worksheet"]
   }
 }`;

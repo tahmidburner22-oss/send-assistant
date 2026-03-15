@@ -1,4 +1,7 @@
 /**
+ * @copyright 2026 Adaptly Ltd. All rights reserved.
+ * @license Proprietary — unauthorised copying, modification, or distribution is strictly prohibited.
+ *
  * WorksheetRenderer — Professional, print-ready worksheet display component.
  * Matches PDF output pixel-for-pixel using CSS @media print.
  * Applies SEND-specific formatting (font, line-height, spacing) per COBS Handbook.
