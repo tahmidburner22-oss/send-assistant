@@ -1049,7 +1049,7 @@ function formatContent(content: string, fmt: ReturnType<typeof getSendFormatting
   return <>{elements}</>;
 }
 
-function VocabSection({ content, fmt }: { content: string; fmt: ReturnType<typeof getSendFormatting> }) {
+function VocabSection({ content, fmt, overlayColor = "white" }: { content: string; fmt: ReturnType<typeof getSendFormatting>; overlayColor?: string }) {
   const { fontSize: textSize, fontFamily, lineHeight, letterSpacing } = fmt;
   const lines = content.split("\n").filter(l => l.trim() && !l.trim().toUpperCase().startsWith("TERM"));
   const entries = lines.map(l => {
@@ -1067,7 +1067,7 @@ function VocabSection({ content, fmt }: { content: string; fmt: ReturnType<typeo
   return (
     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "8px" }}>
       {entries.map((e, i) => (
-        <div key={i} style={{ background: "white", border: "1px solid #5b21b6", borderRadius: "4px", padding: "8px 10px", display: "flex", flexDirection: "column", gap: "4px" }}>
+        <div key={i} style={{ background: overlayColor, border: "1px solid #5b21b6", borderRadius: "4px", padding: "8px 10px", display: "flex", flexDirection: "column", gap: "4px" }}>
           <div style={{ fontWeight: 700, color: "#7c3aed", fontSize: `${textSize}px`, fontFamily, letterSpacing }} dangerouslySetInnerHTML={{ __html: renderMath(e.term) }} />
           <div style={{ color: "#374151", fontSize: `${textSize - 1}px`, lineHeight, fontFamily, letterSpacing }} dangerouslySetInnerHTML={{ __html: renderMath(e.def) }} />
         </div>
@@ -1108,7 +1108,7 @@ function SelfAssessmentSection({ content, fmt }: { content: string; fmt: ReturnT
  * Self-Reflection section — shown at the end of every worksheet.
  * "I can" statements with traffic-light circles + an open reflection question.
  */
-function SelfReflectionSection({ content, fmt }: { content: string; fmt: ReturnType<typeof getSendFormatting> }) {
+function SelfReflectionSection({ content, fmt, overlayColor = "white" }: { content: string; fmt: ReturnType<typeof getSendFormatting>; overlayColor?: string }) {
   const { fontSize: textSize, fontFamily, lineHeight } = fmt;
   const lines = content.split("\n").filter(l => l.trim());
   // Separate "I can" statements from the open question (starts with "Q:")
@@ -1139,7 +1139,7 @@ function SelfReflectionSection({ content, fmt }: { content: string; fmt: ReturnT
       </div>
       {/* Open reflection question */}
       {openQ && (
-        <div style={{ marginTop: "14px", background: "white", border: "1.5px solid #5b21b6", borderRadius: "4px", padding: "10px 12px" }}>
+        <div style={{ marginTop: "14px", background: overlayColor, border: "1.5px solid #5b21b6", borderRadius: "4px", padding: "10px 12px" }}>
           <div style={{ fontSize: `${textSize - 1}px`, fontWeight: 600, color: "#5b21b6", fontFamily, marginBottom: "6px" }} dangerouslySetInnerHTML={{ __html: "💭 " + renderMath(openQ) }} />
           <div style={{ borderBottom: "1px solid #d1d5db", height: "28px", marginBottom: "6px" }} />
           <div style={{ borderBottom: "1px solid #d1d5db", height: "28px" }} />
@@ -1149,13 +1149,13 @@ function SelfReflectionSection({ content, fmt }: { content: string; fmt: ReturnT
   );
 }
 
-function WordBankSection({ content, fmt }: { content: string; fmt: ReturnType<typeof getSendFormatting> }) {
+function WordBankSection({ content, fmt, overlayColor = "white" }: { content: string; fmt: ReturnType<typeof getSendFormatting>; overlayColor?: string }) {
   const { fontSize: textSize, fontFamily } = fmt;
   const words = content.split(/[\n,|]/).map(w => w.trim()).filter(Boolean);
   return (
     <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
       {words.map((word, i) => (
-        <span key={i} style={{ background: "white", color: "#5b21b6", padding: "4px 10px", borderRadius: "4px", fontSize: `${textSize - 1}px`, fontWeight: 600, border: "1.5px solid #5b21b6", fontFamily }}>
+        <span key={i} style={{ background: overlayColor, color: "#5b21b6", padding: "4px 10px", borderRadius: "4px", fontSize: `${textSize - 1}px`, fontWeight: 600, border: "1.5px solid #5b21b6", fontFamily }}>
           {word}
         </span>
       ))}
@@ -1163,13 +1163,13 @@ function WordBankSection({ content, fmt }: { content: string; fmt: ReturnType<ty
   );
 }
 
-function SentenceStartersSection({ content, fmt }: { content: string; fmt: ReturnType<typeof getSendFormatting> }) {
+function SentenceStartersSection({ content, fmt, overlayColor = "white" }: { content: string; fmt: ReturnType<typeof getSendFormatting>; overlayColor?: string }) {
   const { fontSize: textSize, fontFamily, lineHeight } = fmt;
   const starters = content.split("\n").filter(l => l.trim()).map(l => l.replace(/^[•\-\*\d.)\s]+/, "").trim());
   return (
     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "6px" }}>
       {starters.map((s, i) => (
-        <div key={i} style={{ background: "white", border: "1px solid #5b21b6", borderRadius: "4px", padding: "6px 10px", fontSize: `${textSize - 1}px`, color: "#5b21b6", fontStyle: "italic", fontFamily, lineHeight }}>
+        <div key={i} style={{ background: overlayColor, border: "1px solid #5b21b6", borderRadius: "4px", padding: "6px 10px", fontSize: `${textSize - 1}px`, color: "#5b21b6", fontStyle: "italic", fontFamily, lineHeight }}>
           "{s}..."
         </div>
       ))}
@@ -1177,13 +1177,13 @@ function SentenceStartersSection({ content, fmt }: { content: string; fmt: Retur
   );
 }
 
-function ReminderBoxSection({ content, fmt }: { content: string; fmt: ReturnType<typeof getSendFormatting> }) {
+function ReminderBoxSection({ content, fmt, overlayColor = "white" }: { content: string; fmt: ReturnType<typeof getSendFormatting>; overlayColor?: string }) {
   const { fontSize: textSize, fontFamily, lineHeight } = fmt;
   const lines = content.split("\n").filter(l => l.trim());
   const steps = lines.filter(l => /^Step\s*\d+/i.test(l.trim()));
   const otherLines = lines.filter(l => !/^Step\s*\d+/i.test(l.trim()));
   return (
-    <div style={{ background: "white", border: "1.5px solid #5b21b6", borderRadius: "4px", padding: "10px 12px" }}>
+    <div style={{ background: overlayColor, border: "1.5px solid #5b21b6", borderRadius: "4px", padding: "10px 12px" }}>
       <div style={{ fontSize: `${textSize - 1}px`, fontWeight: 700, color: "#5b21b6", marginBottom: "10px", fontFamily, textTransform: "uppercase", letterSpacing: "0.05em" }}>
         ⚠️ Keep this in mind while you work:
       </div>
@@ -1226,7 +1226,7 @@ function ReminderBoxSection({ content, fmt }: { content: string; fmt: ReturnType
   );
 }
 
-function WordProblemsSection({ content, fmt }: { content: string; fmt: ReturnType<typeof getSendFormatting> }) {
+function WordProblemsSection({ content, fmt, overlayColor = "white" }: { content: string; fmt: ReturnType<typeof getSendFormatting>; overlayColor?: string }) {
   const { fontSize: textSize, fontFamily, lineHeight } = fmt;
   // Split into individual problems by numbered lines or double newlines
   const lines = content.split("\n");
@@ -1251,7 +1251,7 @@ function WordProblemsSection({ content, fmt }: { content: string; fmt: ReturnTyp
     <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
       {problems.map((problem, i) => (
         <div key={i} style={{
-          background: "white",
+          background: overlayColor,
           border: "1.5px solid #5b21b6",
           borderRadius: "4px",
           padding: "10px 12px",
@@ -1386,7 +1386,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(({
               marginBottom: "10px",
               borderRadius: "4px",
               border: `1.5px solid ${style.border}`,
-              background: "#ffffff",
+              background: overlayColor || "#ffffff",
               overflow: "hidden",
               cursor: editMode ? "pointer" : "default",
               outline: editMode && editedSections[i] !== undefined ? `2px solid ${style.border}` : "none",
@@ -1487,19 +1487,19 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(({
                   )}
                 </div>
               ) : section.type === "vocabulary" ? (
-                <VocabSection content={content} fmt={fmt} />
+                <VocabSection content={content} fmt={fmt} overlayColor={overlayColor} />
               ) : section.type === "self-assessment" ? (
                 <SelfAssessmentSection content={content} fmt={fmt} />
               ) : section.type === "self-reflection" ? (
-                <SelfReflectionSection content={content} fmt={fmt} />
+                <SelfReflectionSection content={content} fmt={fmt} overlayColor={overlayColor} />
               ) : (section.type === "word-bank" || section.type === "wordbank") ? (
-                <WordBankSection content={content} fmt={fmt} />
+                <WordBankSection content={content} fmt={fmt} overlayColor={overlayColor} />
               ) : section.type === "sentence-starters" ? (
-                <SentenceStartersSection content={content} fmt={fmt} />
+                <SentenceStartersSection content={content} fmt={fmt} overlayColor={overlayColor} />
               ) : section.type === "reminder-box" ? (
-                <ReminderBoxSection content={content} fmt={fmt} />
+                <ReminderBoxSection content={content} fmt={fmt} overlayColor={overlayColor} />
               ) : section.type === "word-problems" ? (
-                <WordProblemsSection content={content} fmt={fmt} />
+                <WordProblemsSection content={content} fmt={fmt} overlayColor={overlayColor} />
               ) : section.type === "questions" ? (
                 // Questions sections always go through formatContent to properly render math
                 <div>{formatContent(content, fmt)}</div>
@@ -1534,7 +1534,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(({
       <div className="ws-footer" style={{
         marginTop: "10px",
         padding: "5px 10px",
-        background: "#ffffff",
+        background: overlayColor || "#ffffff",
         borderRadius: "4px",
         border: "1.5px solid #5b21b6",
         display: "flex",
