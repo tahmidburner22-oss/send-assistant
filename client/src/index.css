@@ -151,7 +151,7 @@
   /* Page setup */
   @page {
     size: A4 portrait;
-    margin: 6mm 6mm 8mm 6mm;
+    margin: 5mm 5mm 6mm 5mm;
   }
 
   html, body {
@@ -170,6 +170,7 @@
     background: white !important;
     box-shadow: none !important;
     border: none !important;
+    overflow: visible !important;
   }
 
   .worksheet-print-root {
@@ -186,6 +187,7 @@
     max-width: 100% !important;
     margin-left: 0 !important;
     margin-right: 0 !important;
+    box-sizing: border-box !important;
   }
 
   /* Card wrapper: remove shadow/border for print */
@@ -203,7 +205,8 @@
 
   /* Each worksheet section must NOT split across pages */
   .worksheet-section,
-  .worksheet-content > div > div > div {
+  .worksheet-content > div > div > div,
+  .ws-section {
     break-inside: avoid !important;
     page-break-inside: avoid !important;
     orphans: 3;
@@ -235,8 +238,10 @@
   }
 
   /* Answer lines */
-  .answer-line {
+  .answer-line,
+  .ws-answer-line {
     break-inside: avoid !important;
+    page-break-inside: avoid !important;
   }
 
   /* Force a page break before teacher sections if needed */

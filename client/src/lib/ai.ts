@@ -737,33 +737,41 @@ export async function aiGenerateWorksheet(params: {
 
   const recallNote = params.recallTopic ? `RECALL SECTION REQUIRED: The first section of this worksheet must be titled "Recall — ${params.recallTopic}" and contain exactly 2-3 short retrieval questions on the PREVIOUS topic "${params.recallTopic}". These questions should be quick and accessible, designed to activate prior knowledge before the main topic. Do NOT mix recall questions with the main topic questions.` : '';
 
-  const user = `Create a printable worksheet.
+  const user = `Create one printable worksheet in valid raw JSON only.
 Subject: ${params.subject} | Year: ${params.yearGroup} (${phase}) | Topic: ${params.topic} | Difficulty: ${params.difficulty || "mixed"}
-${examBoardNote} ${sendNote} ${tierNote} ${lengthNote}
+${examBoardNote} ${lengthNote}
 ${mathsNote}
+${sendNote}
+${tierNote}
 ${examStyleNote}
 ${formulaNote} ${reminderBoxNote} ${wordProblemsNote} ${commonMistakesNote}
 ${topicEnforcementNote}
 ${recallNote}
-${params.additionalInstructions ? `\n\n=== CRITICAL OVERRIDE INSTRUCTIONS (HIGHEST PRIORITY \u2014 MUST FOLLOW EXACTLY) ===\n${params.additionalInstructions}\n=== END CRITICAL INSTRUCTIONS ===\n` : ""}
+${params.additionalInstructions ? `\nPriority override:\n${params.additionalInstructions}\n` : ""}
 
-Follow this structure:
-1. Title (include "${params.topic}")
-2. Learning Objective (one sentence)
-3. Worked Example (step-by-step)
-4. Reminder Box (3 numbered steps, max 15 words each)
-5. Section A - Basic Practice (4-5 guided questions with hints)
-6. Section B - Standard Problems (5-8 questions + 1 misconception question)
-7. Section C - Word Problems (3-4 real-life questions)
-8. Challenge Question (one reasoning problem)
-9. Reflection (3-4 "I can" statements + open question)
-10. Common Mistakes (student-facing)
-11. Answer Key (teacher only)
+Structure required:
+1. Learning Objectives
+2. Key Vocabulary
+3. Worked Example
+4. Reminder Box
+5. ${sendSectionTitles.sectionA}
+6. ${sendSectionTitles.sectionB}
+7. Section C - Word Problems
+8. ${sendSectionTitles.challenge}
+9. Reflection
+10. Common Mistakes
+11. Mark Scheme (teacher only)
 12. Teacher Notes (teacher only)
+13. SEND Adaptations & Rationale (teacher only when SEND applies)
 
-CRITICAL FORMATTING RULE: In all section content strings, put EACH question, step, or item on its OWN LINE separated by \n. NEVER put multiple questions on the same line separated by commas. Example: "1. First question\n2. Second question\n3. Third question"
+Formatting rules:
+- Each question, step, bullet, or item must be on its own new line using \n.
+- No HTML, no markdown, no code fences.
+- Keep wording concise and printable.
+- If SEND applies, show the adaptations in the pupil-facing sections, not just teacher notes.
+- For maths, keep notation clean and readable in print/PDF.
 
-Return EXACTLY this JSON (raw JSON, no markdown):
+Return EXACTLY this JSON (raw JSON only):
 {
   "title": "${params.topic} — ${params.yearGroup} ${subjectDisplay} Worksheet",
   "subtitle": "${params.yearGroup} (${phase}) | ${subjectDisplay} | ${params.examBoard && params.examBoard !== 'none' ? params.examBoard : 'General'} | ${timingGuide}",
@@ -797,9 +805,9 @@ Return EXACTLY this JSON (raw JSON, no markdown):
   }
 }`;
 
-  // Scale token limit with worksheet length — keep lean for speed
-  // 10min ≈ 1500t, 30min ≈ 3000t, 60min ≈ 4500t
-  const maxTokensForLength = params.introOnly ? 1500 : (lengthMins >= 60 ? 4500 : lengthMins <= 10 ? 1500 : 3000);
+  // Scale token limit with worksheet length — keep lean for speed while preserving full structure
+  // 10min ≈ 1600t, 30min ≈ 2800t, 60min ≈ 4200t
+  const maxTokensForLength = params.introOnly ? 1600 : (lengthMins >= 60 ? 4200 : lengthMins <= 10 ? 1600 : 2800);
   const { text, provider } = await callAI(system, user, maxTokensForLength);
   const cleaned = text
     .replace(/^```json\s*/i, "")
