@@ -1656,3 +1656,56 @@ Return JSON array of sections with adjusted language:
     provider,
   };
 }
+
+// ─── Story Scenario Swap ──────────────────────────────────────────────────
+/**
+ * Recontextualizes a story to use a new scenario/theme while keeping the same
+ * reading level, structure, and educational value.
+ */
+export async function aiScenarioSwapStory(params: {
+  title: string;
+  content: string;
+  newScenario: string;
+  genre?: string;
+  yearGroup?: string;
+  sendNeed?: string;
+  readingLevel?: string;
+}): Promise<{
+  title: string;
+  content: string;
+  provider?: string;
+}> {
+  const system = `You are a UK SEND specialist teacher and creative writer. Your task is to recontextualize an educational story to use a new real-world scenario/theme while keeping the EXACT same reading level, story structure, educational value, and length. Return valid JSON only with "title" and "content" fields, no markdown code blocks.`;
+
+  const user = `Recontextualize this story to use the theme/scenario: "${params.newScenario}"
+
+Genre: ${params.genre || "general"}
+Year Group: ${params.yearGroup || "secondary"}
+${params.sendNeed ? `SEND Need: ${params.sendNeed} — maintain all SEND adaptations` : ""}
+${params.readingLevel ? `Reading Level: ${params.readingLevel}` : ""}
+
+IMPORTANT RULES:
+- Change the setting, characters, and context to match the new scenario
+- Keep the EXACT same reading level and vocabulary complexity
+- Keep the same story structure (beginning, middle, end)
+- Keep the same length (approximately the same number of paragraphs)
+- Maintain any SEND adaptations (short sentences, simple vocabulary, etc.)
+- Update the title to reflect the new scenario
+
+CURRENT TITLE: ${params.title}
+
+CURRENT STORY:
+${params.content}
+
+Return JSON: {"title": "new title", "content": "full recontextualized story"}`;
+
+  const { text, provider } = await callAI(system, user, 3000);
+  const cleaned = text.replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/\s*```$/i, "").trim();
+  const parsed = parseWithFixes(cleaned);
+
+  return {
+    title: parsed?.title || params.title,
+    content: parsed?.content || params.content,
+    provider,
+  };
+}

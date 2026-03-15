@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { aiGenerateStory, callAI } from "@/lib/ai";
+import { aiGenerateStory, callAI, aiScenarioSwapStory } from "@/lib/ai";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
-import { Info, CheckCircle, Sparkles } from "lucide-react";
+import { Info, CheckCircle, Sparkles, RefreshCw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useApp } from "@/contexts/AppContext";
 import { yearGroups, sendNeeds, storyGenres, storyLengths, readingLevels, colorOverlays } from "@/lib/send-data";
@@ -54,6 +54,10 @@ export default function Stories() {
   const [manualText, setManualText] = useState("");
   const [aiPrompt, setAiPrompt] = useState("");
   const [aiEditLoading, setAiEditLoading] = useState(false);
+  // Scenario swap state
+  const [scenarioSwapLoading, setScenarioSwapLoading] = useState(false);
+  const [showScenarioDialog, setShowScenarioDialog] = useState(false);
+  const [scenarioInput, setScenarioInput] = useState("");
 
   const addCharacter = () => setCharacters([...characters, ""]);
   const removeCharacter = (i: number) => setCharacters(characters.filter((_, idx) => idx !== i));
@@ -111,6 +115,32 @@ export default function Stories() {
       comprehensionQuestions: result.questions,
     });
     toast.success("Story saved to history!");
+  };
+
+  // ─── Scenario Swap ─────────────────────────────────────────────────────
+  const handleScenarioSwap = async () => {
+    if (!result || !scenarioInput.trim()) return;
+    setScenarioSwapLoading(true);
+    try {
+      const swapped = await aiScenarioSwapStory({
+        title: result.title,
+        content: result.content,
+        newScenario: scenarioInput.trim(),
+        genre,
+        yearGroup,
+        sendNeed: sendNeed || undefined,
+        readingLevel,
+      });
+      const questions = generateComprehensionQuestions(swapped.content, genre);
+      setResult({ title: swapped.title, content: swapped.content, questions });
+      setShowScenarioDialog(false);
+      setScenarioInput("");
+      toast.success(`Story recontextualized to "${scenarioInput.trim()}"!`);
+    } catch (err) {
+      console.error("Story scenario swap failed:", err);
+      toast.error("Scenario swap failed. Please try again.");
+    }
+    setScenarioSwapLoading(false);
   };
 
   const handleAssign = (childId: string) => {
@@ -386,10 +416,53 @@ export default function Stories() {
                 </div>
               </DialogContent>
             </Dialog>
+            <Button variant="outline" size="sm" onClick={() => setShowScenarioDialog(true)} className="gap-1.5 border-orange-300 text-orange-700 hover:bg-orange-50" disabled={scenarioSwapLoading}>
+              {scenarioSwapLoading ? <><RefreshCw className="w-3.5 h-3.5 animate-spin" /> Swapping...</> : <><RefreshCw className="w-3.5 h-3.5" /> Scenario Swap</>}
+            </Button>
             <Button variant="outline" size="sm" onClick={() => setResult(null)}>
               <RotateCcw className="w-3.5 h-3.5 mr-1.5" /> New Story
             </Button>
           </div>
+
+          {/* Scenario Swap Dialog */}
+          <Dialog open={showScenarioDialog} onOpenChange={setShowScenarioDialog}>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <RefreshCw className="h-4 w-4 text-orange-600" />
+                  Scenario Swap
+                </DialogTitle>
+                <p className="text-sm text-muted-foreground">Change the setting and context of the story while keeping the same reading level and structure.</p>
+              </DialogHeader>
+              <div className="space-y-4 mt-2">
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">New scenario / theme</Label>
+                  <Input
+                    value={scenarioInput}
+                    onChange={e => setScenarioInput(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter' && scenarioInput.trim()) handleScenarioSwap(); }}
+                    placeholder="e.g. Space adventure, Medieval castle, Under the sea..."
+                    className="text-sm"
+                  />
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {["Space adventure", "Medieval castle", "Under the sea", "Jungle expedition", "Time travel", "Superhero academy"].map(s => (
+                    <button key={s} onClick={() => setScenarioInput(s)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${scenarioInput === s ? "bg-orange-100 border-orange-300 text-orange-800" : "bg-white border-border hover:border-orange-200"}`}>
+                      {s}
+                    </button>
+                  ))}
+                </div>
+                <Button
+                  className="w-full bg-orange-600 hover:bg-orange-700 text-white"
+                  onClick={handleScenarioSwap}
+                  disabled={scenarioSwapLoading || !scenarioInput.trim()}
+                >
+                  {scenarioSwapLoading ? <><RefreshCw className="w-4 h-4 animate-spin mr-2" />Swapping scenario...</> : "Swap Scenario"}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
 
           {/* AI edit panel */}
           {editMode === "ai" && (

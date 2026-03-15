@@ -115,6 +115,17 @@ function buildWorksheetHtml(
       border-radius: 4px;
       margin-bottom: 10px;
       overflow: hidden;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .ws-header > div:first-child {
+      background: #5b21b6 !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .ws-header > div:first-child * {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
     }
 
     /* ── Sections ── */
@@ -150,7 +161,7 @@ function buildWorksheetHtml(
       line-height: ${fmt.lineHeight};
       letter-spacing: ${fmt.letterSpacing};
       word-spacing: ${fmt.wordSpacing};
-      white-space: pre-wrap;
+      white-space: pre-line;
       word-break: break-word;
       overflow-wrap: anywhere;
       font-family: ${fmt.fontFamily};
@@ -616,6 +627,17 @@ export function printWorksheetElement(
       border-radius: 4px;
       margin-bottom: 10px;
       overflow: hidden;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .ws-header > div:first-child {
+      background: #5b21b6 !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .ws-header > div:first-child * {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
     }
 
     /* ── Sections ── TES-style: overlay-aware background, single purple border */
@@ -651,7 +673,7 @@ export function printWorksheetElement(
       line-height: ${fmt.lineHeight};
       letter-spacing: ${fmt.letterSpacing};
       word-spacing: ${fmt.wordSpacing};
-      white-space: pre-wrap;
+      white-space: pre-line;
       word-break: break-word;
       overflow-wrap: anywhere;
       font-family: ${fmt.fontFamily};
