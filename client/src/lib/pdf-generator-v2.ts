@@ -7,71 +7,128 @@ import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
 import { getSendFormatting } from "@/lib/send-data";
 
+async function waitForImages(root: ParentNode): Promise<void> {
+  const images = Array.from(root.querySelectorAll("img"));
+  await Promise.all(
+    images.map(async (img) => {
+      try {
+        if (img.complete && img.naturalWidth > 0) return;
+        if (typeof img.decode === "function") {
+          await img.decode();
+          return;
+        }
+        await new Promise<void>((resolve) => {
+          const done = () => resolve();
+          img.addEventListener("load", done, { once: true });
+          img.addEventListener("error", done, { once: true });
+          setTimeout(done, 3000);
+        });
+      } catch {
+        // Ignore individual image failures so export can still complete.
+      }
+    })
+  );
+}
+
+async function waitForFonts(docLike: Document): Promise<void> {
+  try {
+    const fontSet = (docLike as any).fonts;
+    if (fontSet?.ready) await fontSet.ready;
+  } catch {
+    // Ignore font readiness issues and continue exporting.
+  }
+}
+
 export async function downloadHtmlAsPdf(
   element: HTMLElement,
   filename: string,
   options: { overlayColor?: string } = {}
 ): Promise<void> {
-  // Find the inner worksheet-print-root if it exists
-  const printRoot = element.querySelector(".worksheet-print-root") as HTMLElement || element;
-
-  // A4 dimensions at 96dpi: 794px wide
-  const A4_WIDTH_PX = 794;
-  const A4_HEIGHT_PX = 1123; // 297mm at 96dpi
+  const printRoot = (element.querySelector(".worksheet-print-root") as HTMLElement) || element;
   const PDF_WIDTH_MM = 210;
   const PDF_HEIGHT_MM = 297;
-  const MARGIN_MM = 8;
-  const CONTENT_WIDTH_MM = PDF_WIDTH_MM - MARGIN_MM * 2;
 
-  // Temporarily set width to A4 for capture — do NOT change padding/margin
-  const originalWidth = printRoot.style.width;
-  const originalMaxWidth = printRoot.style.maxWidth;
-  printRoot.style.width = `${A4_WIDTH_PX}px`;
-  printRoot.style.maxWidth = `${A4_WIDTH_PX}px`;
+  const rect = printRoot.getBoundingClientRect();
+  const sourceWidth = Math.max(1, Math.round(rect.width));
+  const sourceHeight = Math.max(1, Math.round(printRoot.scrollHeight || rect.height));
+
+  const sandbox = document.createElement("div");
+  sandbox.setAttribute("data-pdf-export-sandbox", "true");
+  sandbox.style.position = "fixed";
+  sandbox.style.left = "-20000px";
+  sandbox.style.top = "0";
+  sandbox.style.width = `${sourceWidth}px`;
+  sandbox.style.maxWidth = `${sourceWidth}px`;
+  sandbox.style.background = options.overlayColor || getComputedStyle(printRoot).backgroundColor || "#ffffff";
+  sandbox.style.pointerEvents = "none";
+  sandbox.style.zIndex = "-1";
+
+  const clone = printRoot.cloneNode(true) as HTMLElement;
+  clone.style.width = `${sourceWidth}px`;
+  clone.style.maxWidth = `${sourceWidth}px`;
+  clone.style.minWidth = `${sourceWidth}px`;
+  clone.style.margin = "0";
+  clone.style.boxSizing = "border-box";
+  clone.style.transform = "none";
+  clone.style.background = options.overlayColor || getComputedStyle(printRoot).backgroundColor || "#ffffff";
+
+  sandbox.appendChild(clone);
+  document.body.appendChild(sandbox);
 
   try {
-    // Wait a tick so layout reflows
-    await new Promise(r => setTimeout(r, 100));
+    await waitForFonts(document);
+    await waitForImages(sandbox);
+    await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
+    await new Promise((resolve) => setTimeout(resolve, 120));
 
-    const canvas = await html2canvas(printRoot, {
+    const canvas = await html2canvas(clone, {
       scale: 2,
       useCORS: true,
       allowTaint: true,
       backgroundColor: options.overlayColor || "#ffffff",
       logging: false,
-      windowWidth: A4_WIDTH_PX,
-      scrollY: -window.scrollY,
-      onclone: (clonedDoc) => {
-        // Copy all stylesheets from the main document into the cloned document
-        // This ensures KaTeX CSS, Tailwind, and all custom styles are applied
+      windowWidth: sourceWidth,
+      width: sourceWidth,
+      height: sourceHeight,
+      scrollX: 0,
+      scrollY: 0,
+      onclone: async (clonedDoc) => {
         Array.from(document.styleSheets).forEach((sheet) => {
           try {
             if (sheet.href) {
-              // External stylesheet — add as <link>
               const link = clonedDoc.createElement("link");
               link.rel = "stylesheet";
               link.href = sheet.href;
               clonedDoc.head.appendChild(link);
             } else if (sheet.cssRules) {
-              // Inline stylesheet — copy rules as <style>
               const style = clonedDoc.createElement("style");
-              style.textContent = Array.from(sheet.cssRules).map(r => r.cssText).join("\n");
+              style.textContent = Array.from(sheet.cssRules).map((r) => r.cssText).join("\n");
               clonedDoc.head.appendChild(style);
             }
-          } catch (e) {
-            // Cross-origin stylesheets may throw — skip them
+          } catch {
+            // Ignore inaccessible stylesheets.
           }
         });
-        // Ensure cloned element has correct width and no extra padding
-        const clonedRoot = clonedDoc.querySelector(".worksheet-print-root") as HTMLElement;
+
+        clonedDoc.body.style.margin = "0";
+        clonedDoc.body.style.padding = "0";
+        clonedDoc.body.style.background = options.overlayColor || getComputedStyle(printRoot).backgroundColor || "#ffffff";
+        clonedDoc.body.style.width = `${sourceWidth}px`;
+        clonedDoc.body.style.maxWidth = `${sourceWidth}px`;
+
+        const clonedRoot = (clonedDoc.querySelector("[data-pdf-export-sandbox] .worksheet-print-root") as HTMLElement)
+          || (clonedDoc.querySelector(".worksheet-print-root") as HTMLElement);
         if (clonedRoot) {
-          clonedRoot.style.width = `${A4_WIDTH_PX}px`;
-          clonedRoot.style.maxWidth = `${A4_WIDTH_PX}px`;
-          clonedRoot.style.padding = "0";
+          clonedRoot.style.width = `${sourceWidth}px`;
+          clonedRoot.style.maxWidth = `${sourceWidth}px`;
+          clonedRoot.style.minWidth = `${sourceWidth}px`;
           clonedRoot.style.margin = "0";
           clonedRoot.style.boxSizing = "border-box";
+          clonedRoot.style.transform = "none";
+          clonedRoot.style.overflow = "visible";
+          clonedRoot.style.background = options.overlayColor || getComputedStyle(printRoot).backgroundColor || "#ffffff";
         }
-        // Remove the Card wrapper padding that adds extra whitespace
+
         const cardContent = clonedDoc.querySelector(".worksheet-content") as HTMLElement;
         if (cardContent) {
           cardContent.style.padding = "0";
@@ -79,44 +136,43 @@ export async function downloadHtmlAsPdf(
           cardContent.style.boxShadow = "none";
           cardContent.style.border = "none";
           cardContent.style.borderRadius = "0";
+          cardContent.style.overflow = "visible";
+          cardContent.style.maxWidth = `${sourceWidth}px`;
         }
+
+        await waitForFonts(clonedDoc);
+        await waitForImages(clonedDoc);
       },
     });
 
-    const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-
-    // Scale canvas to fit within content area (with margins)
-    const canvasWidthMM = CONTENT_WIDTH_MM;
-    const canvasHeightMM = (canvas.height / canvas.width) * canvasWidthMM;
-
-    // Split into pages
-    const pageContentHeightPx = (PDF_HEIGHT_MM - MARGIN_MM * 2) / PDF_WIDTH_MM * canvas.width;
-    const totalPages = Math.ceil(canvas.height / pageContentHeightPx);
+    const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4", compress: true });
+    const pageHeightPx = Math.round((canvas.width * PDF_HEIGHT_MM) / PDF_WIDTH_MM);
+    const totalPages = Math.max(1, Math.ceil(canvas.height / pageHeightPx));
 
     for (let page = 0; page < totalPages; page++) {
       if (page > 0) pdf.addPage();
 
-      // Crop the canvas to this page's slice
-      const srcY = Math.round(page * pageContentHeightPx);
-      const srcH = Math.min(pageContentHeightPx, canvas.height - srcY);
+      const srcY = page * pageHeightPx;
+      const srcH = Math.min(pageHeightPx, canvas.height - srcY);
 
       const pageCanvas = document.createElement("canvas");
       pageCanvas.width = canvas.width;
-      pageCanvas.height = Math.round(srcH);
+      pageCanvas.height = srcH;
       const ctx = pageCanvas.getContext("2d");
-      if (ctx) {
-        ctx.drawImage(canvas, 0, srcY, canvas.width, srcH, 0, 0, canvas.width, srcH);
-      }
+      if (!ctx) continue;
+
+      ctx.fillStyle = options.overlayColor || "#ffffff";
+      ctx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+      ctx.drawImage(canvas, 0, srcY, canvas.width, srcH, 0, 0, canvas.width, srcH);
 
       const pageImgData = pageCanvas.toDataURL("image/png", 1.0);
-      const pageHeightMM = (srcH / canvas.width) * canvasWidthMM;
-      pdf.addImage(pageImgData, "PNG", MARGIN_MM, MARGIN_MM, canvasWidthMM, pageHeightMM, undefined, "FAST");
+      const pageHeightMm = (srcH / canvas.width) * PDF_WIDTH_MM;
+      pdf.addImage(pageImgData, "PNG", 0, 0, PDF_WIDTH_MM, pageHeightMm, undefined, "FAST");
     }
 
     pdf.save(filename);
   } finally {
-    printRoot.style.width = originalWidth;
-    printRoot.style.maxWidth = originalMaxWidth;
+    sandbox.remove();
   }
 }
 
@@ -178,7 +234,7 @@ export function printWorksheetElement(
     }
     @page {
       size: A4 portrait;
-      margin: 5mm 5mm 6mm 5mm;
+      margin: 0;
     }
     @media print {
       html, body { background: ${overlayColor} !important; }
@@ -188,7 +244,7 @@ export function printWorksheetElement(
       ${perPageCss}
     }
     @media screen {
-      body { padding: 8mm; max-width: 210mm; margin: 0 auto; overflow: visible; }
+      body { max-width: 210mm; margin: 0 auto; overflow: visible; }
       .ws-section { page-break-inside: avoid; break-inside: avoid; }
       ${hideTeacher}
     }
