@@ -609,6 +609,24 @@ export function renderMath(text: string | any): string {
     catch { return `<sub>${sub}</sub>`; }
   });
 
+  // ── Step 1.5: Deduplicate AI double-rendering of superscripts ─────────────
+  // The AI often outputs both Unicode superscript AND raw text fallback:
+  // e.g. "a²a2" (Unicode ² followed by plain "a2"), "b²b2", "c²c2"
+  // Also handles cubed: "a³a3", "b³b3"
+  // Strip the redundant plain-text fallback, keeping only the Unicode superscript.
+  result = result.replace(/([A-Za-z])\u00b2\1(2)\b/g, '$1\u00b2');
+  result = result.replace(/([A-Za-z])\u00b3\1(3)\b/g, '$1\u00b3');
+  // Also handle numeric bases: "5²52" → "5²", "8²82" → "8²"
+  result = result.replace(/(\d)\u00b2\1(2)\b/g, '$1\u00b2');
+  result = result.replace(/(\d)\u00b3\1(3)\b/g, '$1\u00b3');
+  // Generic pattern: any char + superscript n + same char + n digit
+  // e.g. "x²x2" → "x²", handles cases where base is repeated
+  result = result.replace(/([A-Za-z0-9])([\u00b2\u00b3\u00b9\u2074\u2075\u2076\u2077\u2078\u2079])\1(\d)/g, (match, base, sup, digit) => {
+    const supMap: Record<string, string> = { '\u00b9': '1', '\u00b2': '2', '\u00b3': '3', '\u2074': '4', '\u2075': '5', '\u2076': '6', '\u2077': '7', '\u2078': '8', '\u2079': '9' };
+    if (supMap[sup] === digit) return base + sup; // Strip the duplicate
+    return match; // Not a duplicate — keep as-is
+  });
+
   // ── Step 2: Convert Unicode superscripts to LaTeX ───────────────────────────
   // Do this BEFORE fraction handling so fractions like (x²-4x)/(x²-16) work
   result = result.replace(/([A-Za-z0-9])\u00b2/g, (_, base) => {

@@ -1832,12 +1832,51 @@ Return EXACTLY this JSON:
                       <p className="text-xs text-muted-foreground">Completed: {new Date(latestScreener.assignedAt).toLocaleDateString('en-GB')}</p>
                     </div>
                   </div>
-                  {latestScreener.content && (
-                    <div className="rounded-xl border border-border/50 p-3 bg-white">
-                      <p className="text-xs font-semibold text-foreground mb-2">📊 Screener Results Summary</p>
-                      <div className="text-xs text-foreground/80 leading-relaxed whitespace-pre-wrap max-h-60 overflow-y-auto">{latestScreener.content}</div>
-                    </div>
-                  )}
+                  {latestScreener.content && (() => {
+                    // Parse the results summary into structured data
+                    const lines = latestScreener.content.split('\n').filter((l: string) => l.trim());
+                    const resultLines = lines.filter((l: string) => /^.+:\s*(LOW|MODERATE|HIGH)\s*\(\d+%\)/i.test(l));
+                    const levelColors: Record<string, { bg: string; text: string; bar: string; label: string }> = {
+                      low: { bg: 'bg-emerald-50', text: 'text-emerald-700', bar: 'bg-emerald-500', label: 'Low' },
+                      moderate: { bg: 'bg-amber-50', text: 'text-amber-700', bar: 'bg-amber-500', label: 'Moderate' },
+                      high: { bg: 'bg-red-50', text: 'text-red-700', bar: 'bg-red-500', label: 'High' },
+                    };
+                    return (
+                      <div className="rounded-xl border border-border/50 p-3 bg-white space-y-3">
+                        <p className="text-xs font-semibold text-foreground mb-1">📊 Screener Results Summary</p>
+                        {resultLines.length > 0 ? (
+                          <div className="space-y-2">
+                            {resultLines.map((line: string, idx: number) => {
+                              const match = line.match(/^(.+?):\s*(LOW|MODERATE|HIGH)\s*\((\d+)%\)/i);
+                              if (!match) return null;
+                              const [, area, levelStr, pctStr] = match;
+                              const level = levelStr.toLowerCase() as 'low' | 'moderate' | 'high';
+                              const pct = parseInt(pctStr, 10);
+                              const colors = levelColors[level] || levelColors.low;
+                              return (
+                                <div key={idx} className={`rounded-lg p-2.5 ${colors.bg} border border-opacity-30`}>
+                                  <div className="flex items-center justify-between mb-1">
+                                    <span className="text-xs font-semibold text-foreground">{area.trim()}</span>
+                                    <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${colors.bg} ${colors.text} border`}>{colors.label} ({pct}%)</span>
+                                  </div>
+                                  <div className="w-full bg-gray-200 rounded-full h-2">
+                                    <div className={`${colors.bar} h-2 rounded-full transition-all`} style={{ width: `${Math.min(pct, 100)}%` }} />
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <div className="text-xs text-foreground/80 leading-relaxed whitespace-pre-wrap max-h-60 overflow-y-auto">{latestScreener.content}</div>
+                        )}
+                        {/* Show raw text in expandable section */}
+                        <details className="mt-2">
+                          <summary className="text-[10px] text-muted-foreground cursor-pointer hover:text-foreground">View full text report</summary>
+                          <div className="text-[10px] text-foreground/70 leading-relaxed whitespace-pre-wrap mt-1 p-2 bg-gray-50 rounded-lg max-h-40 overflow-y-auto">{latestScreener.content}</div>
+                        </details>
+                      </div>
+                    );
+                  })()}
                   <a
                     href="/send-screener"
                     className="flex items-center justify-center gap-2 w-full bg-indigo-100 hover:bg-indigo-200 text-indigo-700 text-sm font-semibold py-2.5 px-4 rounded-xl transition-colors"

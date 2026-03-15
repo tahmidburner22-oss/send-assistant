@@ -1923,6 +1923,11 @@ export default function Worksheets() {
                 step={1}
                 defaultValue={7}
                 disabled={readingLevelLoading}
+                onChange={e => {
+                  const v = Number((e.target as HTMLInputElement).value);
+                  const ages = [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
+                  setReadingAge(ages[v - 1] ?? 11);
+                }}
                 onMouseUp={e => {
                   const v = Number((e.target as HTMLInputElement).value);
                   const ages = [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
@@ -1939,7 +1944,7 @@ export default function Worksheets() {
             </div>
             {readingLevelLoading
               ? <><RefreshCw className="w-3.5 h-3.5 animate-spin text-brand" /><span className="text-xs text-muted-foreground">Adjusting...</span></>
-              : <span className="text-[10px] text-muted-foreground">Drag to adjust vocabulary level</span>
+              : <span className="text-xs font-semibold text-brand bg-brand/10 px-2 py-0.5 rounded">{readingAge === 0 ? "Age 11 (default)" : readingAge >= 17 ? "Age 17+" : `Age ${readingAge}`}</span>
             }
           </div>
 
