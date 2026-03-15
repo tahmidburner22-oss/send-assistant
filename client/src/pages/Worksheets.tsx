@@ -792,7 +792,7 @@ export default function Worksheets() {
 
   // ─── Render ────────────────────────────────────────────────────────────────
   return (
-    <div className="px-4 py-6 max-w-2xl mx-auto space-y-4">
+    <div className="px-4 py-6 max-w-4xl mx-auto space-y-6">
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
       </motion.div>
 
@@ -847,10 +847,16 @@ export default function Worksheets() {
 
           {/* ─── GENERATE TAB ──────────────────────────────────────────── */}
           <TabsContent value="generate" className="mt-4">
-            <Card className="border-border/50">
-              <CardContent className="p-4 space-y-4">
+            <Card className="border-border/40 shadow-sm">
+              <CardContent className="p-6 space-y-5">
+                {/* Page heading */}
+                <div>
+                  <h2 className="text-lg font-semibold text-foreground flex items-center gap-2"><Sparkles className="h-5 w-5 text-brand" /> Worksheet Generator</h2>
+                  <p className="text-sm text-muted-foreground mt-1">Create differentiated, curriculum-aligned worksheets in seconds.</p>
+                </div>
+
                 {/* AI Toggle */}
-                <div className="flex items-center justify-between p-3 bg-emerald-50 rounded-lg border border-emerald-200">
+                <div className="flex items-center justify-between p-3.5 bg-emerald-50/80 rounded-xl border border-emerald-200/80">
                   <div>
                     <p className="font-medium text-emerald-800 text-sm">AI Generation (Groq · Llama 3.1 8B)</p>
                     <p className="text-xs text-emerald-600">High-quality AI for rich, curriculum-aligned content</p>
@@ -858,6 +864,9 @@ export default function Worksheets() {
                   <Switch checked={useAI} onCheckedChange={setUseAI} />
                 </div>
 
+                {/* Core fields */}
+                <div className="p-4 rounded-xl border border-border/40 bg-slate-50/50 space-y-4">
+                <h3 className="text-sm font-semibold text-foreground flex items-center gap-1.5"><FileText className="h-4 w-4 text-brand/70" /> Core Settings</h3>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
                     <Label className="text-xs font-medium">Subject *</Label>
@@ -906,18 +915,6 @@ export default function Worksheets() {
                   )}
                 </div>
 
-                {/* ── Recall Topic ── */}
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-medium">Recall Topic (optional)</Label>
-                  <Input
-                    value={recallTopic}
-                    onChange={e => setRecallTopic(e.target.value)}
-                    placeholder="e.g. Fractions, Photosynthesis… — adds 2–3 recap questions at the start"
-                    className="h-10"
-                  />
-                  <p className="text-[10px] text-muted-foreground">If set, 2–3 recall questions on this previous topic will appear at the top of the worksheet before the main content.</p>
-                </div>
-
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
                     <Label className="text-xs font-medium">SEND Need</Label>
@@ -946,14 +943,10 @@ export default function Worksheets() {
                   </div>
                 </div>
 
-                {sendNeed && sendNeed !== "none-selected" && (
-                  <SENDInfoPanel sendNeedId={sendNeed} context="worksheet" />
-                )}
-
-                {/* ── Worksheet Length ── */}
+                {/* Worksheet Length inside core settings */}
                 <div className="space-y-1.5">
                   <Label className="text-xs font-medium">Worksheet Length</Label>
-                  <div className="flex gap-1">
+                  <div className="flex gap-1.5">
                     {[
                       { id: "10", name: "10 mins", desc: "Quick practice — 5–8 focused questions" },
                       { id: "30", name: "30 mins", desc: "Standard lesson — 15–20 questions" },
@@ -961,13 +954,38 @@ export default function Worksheets() {
                     ].map(l => (
                       <button key={l.id} onClick={() => setWorksheetLength(l.id)}
                         title={l.desc}
-                        className={`flex-1 py-2 rounded-lg text-xs font-medium transition-all ${worksheetLength === l.id ? "bg-brand text-white" : "bg-muted text-muted-foreground"}`}>
+                        className={`flex-1 py-2.5 rounded-lg text-xs font-medium transition-all ${worksheetLength === l.id ? "bg-brand text-white shadow-sm" : "bg-white text-muted-foreground border border-border/60 hover:border-brand/30"}`}>
                         {l.name}
                       </button>
                     ))}
                   </div>
                 </div>
+                </div>{/* End core settings box */}
 
+                {sendNeed && sendNeed !== "none-selected" && (
+                  <SENDInfoPanel sendNeedId={sendNeed} context="worksheet" />
+                )}
+
+                {/* Advanced Options - collapsible */}
+                <details className="group">
+                  <summary className="flex items-center gap-2 cursor-pointer p-3 rounded-xl border border-border/40 bg-slate-50/50 hover:bg-slate-100/50 transition-colors">
+                    <ChevronRight className="h-4 w-4 text-muted-foreground group-open:rotate-90 transition-transform" />
+                    <span className="text-sm font-medium text-foreground">Advanced Options</span>
+                    <span className="text-xs text-muted-foreground ml-auto">Recall topic, exam board, instructions & more</span>
+                  </summary>
+                  <div className="mt-3 p-4 rounded-xl border border-border/40 bg-slate-50/30 space-y-4">
+
+                {/* Recall Topic - moved to advanced */}
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-medium">Recall Topic (optional)</Label>
+                  <Input
+                    value={recallTopic}
+                    onChange={e => setRecallTopic(e.target.value)}
+                    placeholder="e.g. Fractions, Photosynthesis… — adds 2–3 recap questions at the start"
+                    className="h-10"
+                  />
+                  <p className="text-[10px] text-muted-foreground">If set, 2–3 recall questions on this previous topic will appear at the top of the worksheet before the main content.</p>
+                </div>
 
                 <div className="space-y-1.5">
                   <Label className="text-xs font-medium">Exam Board (GCSE / A-Level)</Label>
@@ -992,7 +1010,6 @@ export default function Worksheets() {
                     <Switch checked={includeAnswers} onCheckedChange={setIncludeAnswers} id="answers-sw" />
                     <Label htmlFor="answers-sw" className="text-xs">Include answers & mark scheme</Label>
                   </div>
-                  {/* Exam style toggle hidden — feature removed from UI */}
                   {useAI && (
                     <div className="flex items-center gap-2">
                       <Switch checked={generateDiagram} onCheckedChange={setGenerateDiagram} id="diagram-sw" />
@@ -1002,8 +1019,10 @@ export default function Worksheets() {
                     </div>
                   )}
                 </div>
+                  </div>{/* End advanced options content */}
+                </details>
 
-                <Button onClick={handleGenerate} disabled={loading} className="w-full h-11 bg-brand hover:bg-brand/90 text-white">
+                <Button onClick={handleGenerate} disabled={loading} className="w-full h-12 bg-brand hover:bg-brand/90 text-white text-base font-semibold shadow-sm">
                   {loading
                     ? <><RefreshCw className="w-4 h-4 mr-2 animate-spin" />{useAI ? "Generating with AI..." : "Generating..."}</>
                     : <><Sparkles className="w-4 h-4 mr-2" /> Generate Worksheet</>}
