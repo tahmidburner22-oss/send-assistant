@@ -231,6 +231,10 @@ export default function Children() {
   const [autoMarkLoading, setAutoMarkLoading] = useState(false);
   const [autoMarkResult, setAutoMarkResult] = useState<{ mark: string; feedback: string; misconceptions: string[] } | null>(null);
   const [progressExpanded, setProgressExpanded] = useState(false);
+  // Topic card modal — stores the topic index clicked so we can show the full ladder
+  const [selectedTopicCard, setSelectedTopicCard] = useState<{ topicIdx: number; subject: string } | null>(null);
+  // SEND need collapsible — one entry per SEND need id, starts closed
+  const [sendNeedExpanded, setSendNeedExpanded] = useState<Record<string, boolean>>({});
 
   // AI Auto-Assignment Scheduler
   const scheduler = useScheduler({
@@ -417,8 +421,142 @@ If the submission is empty or too short to mark, return mark: "N/A", feedback: "
     setSelectedSubmission(null);
   };
 
+  // ── Topic Card Modal helpers ──────────────────────────────────────────────
+  const topicCardModal = (() => {
+    if (!selectedTopicCard || !selectedChild) return null;
+    const progressions = getProgressionsForSubject(selectedTopicCard.subject);
+    const prog = progressions[selectedTopicCard.topicIdx];
+    if (!prog) return null;
+    const cfg = scheduler.getConfig(selectedChild.id);
+    const currentTopicIdx = cfg.progressionTopicIndex ?? 0;
+    const currentStepIdx = cfg.progressionStepIndex ?? 0;
+    const isCurrentTopic = selectedTopicCard.topicIdx === currentTopicIdx;
+    const isCompletedTopic = selectedTopicCard.topicIdx < currentTopicIdx;
+
+    // Match assignments to steps by title pattern
+    const stepScores: Record<string, number | null> = {};
+    prog.steps.forEach((step, si) => {
+      const stepPattern = `Step ${si + 1}`;
+      const topicPattern = prog.topicName.toLowerCase().substring(0, 10);
+      const matched = selectedChild.assignments
+        .filter(a => a.status !== 'not-started' && a.progress != null &&
+          (a.title.toLowerCase().includes(topicPattern) || a.title.includes(stepPattern)))
+        .sort((a, b) => new Date(b.assignedAt).getTime() - new Date(a.assignedAt).getTime());
+      stepScores[step.id] = matched.length > 0 ? (matched[0].progress ?? null) : null;
+    });
+
+    const handleAdvance = () => {
+      const progressions2 = getProgressionsForSubject(selectedTopicCard.subject);
+      const currentProg = progressions2[currentTopicIdx];
+      if (!currentProg) return;
+      const nextStepIdx = currentStepIdx + 1;
+      if (nextStepIdx >= currentProg.steps.length) {
+        const nextTopicIdx = (currentTopicIdx + 1) % progressions2.length;
+        scheduler.updateSettings(selectedChild.id, { progressionTopicIndex: nextTopicIdx, progressionStepIndex: 0 } as any);
+        toast.success(`Advanced to topic: ${progressions2[nextTopicIdx]?.topicName}`);
+      } else {
+        scheduler.updateSettings(selectedChild.id, { progressionStepIndex: nextStepIdx } as any);
+        toast.success(`Advanced to step ${nextStepIdx + 1}: ${currentProg.steps[nextStepIdx]?.title}`);
+      }
+      setSelectedTopicCard(null);
+    };
+
+    return (
+      <Dialog open={!!selectedTopicCard} onOpenChange={() => setSelectedTopicCard(null)}>
+        <DialogContent className="max-w-sm max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-sm">
+              <div className={`h-5 w-5 rounded-full flex items-center justify-center flex-shrink-0 ${
+                isCompletedTopic ? 'bg-green-500' : isCurrentTopic ? 'bg-indigo-600' : 'bg-amber-400'
+              }`}>
+                {isCompletedTopic
+                  ? <CheckCircle className="h-3 w-3 text-white" />
+                  : <span className="text-[8px] text-white font-bold">{selectedTopicCard.topicIdx + 1}</span>
+                }
+              </div>
+              <span>{prog.topicName}</span>
+              {isCompletedTopic && <span className="text-[10px] text-green-600 font-normal ml-1">Completed</span>}
+              {isCurrentTopic && <span className="text-[10px] text-indigo-600 font-normal ml-1">In Progress</span>}
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-2 mt-1">
+            <p className="text-[11px] text-muted-foreground">Full skill ladder — {prog.steps.length} steps</p>
+
+            {prog.steps.map((step, si) => {
+              const isStepDone = isCompletedTopic || (isCurrentTopic && si < currentStepIdx);
+              const isStepCurrent = isCurrentTopic && si === currentStepIdx;
+              const score = stepScores[step.id];
+              return (
+                <div key={step.id} className={`rounded-lg border p-2.5 space-y-1 ${
+                  isStepDone ? 'bg-green-50 border-green-200' :
+                  isStepCurrent ? 'bg-indigo-50 border-indigo-300 shadow-sm' :
+                  'bg-muted/30 border-border/40 opacity-60'
+                }`}>
+                  <div className="flex items-center gap-2">
+                    <div className={`h-5 w-5 rounded-full flex items-center justify-center flex-shrink-0 text-[9px] font-bold ${
+                      isStepDone ? 'bg-green-500 text-white' :
+                      isStepCurrent ? 'bg-indigo-600 text-white' :
+                      'bg-muted-foreground/20 text-muted-foreground'
+                    }`}>
+                      {isStepDone ? <CheckCircle className="h-3 w-3" /> : si + 1}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-xs font-semibold leading-tight ${
+                        isStepDone ? 'text-green-800' : isStepCurrent ? 'text-indigo-800' : 'text-muted-foreground'
+                      }`}>{step.title}</p>
+                    </div>
+                    {score != null && (
+                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0 ${
+                        score >= 70 ? 'bg-green-100 text-green-700' :
+                        score >= 50 ? 'bg-amber-100 text-amber-700' :
+                        'bg-red-100 text-red-700'
+                      }`}>{score}%</span>
+                    )}
+                    {score == null && (isStepDone || isStepCurrent) && (
+                      <span className="text-[10px] text-muted-foreground px-1.5">No score</span>
+                    )}
+                  </div>
+                  <p className="text-[10px] text-muted-foreground ml-7 leading-relaxed">{step.description}</p>
+                  {step.keyVocabulary && step.keyVocabulary.length > 0 && (
+                    <div className="flex flex-wrap gap-1 ml-7">
+                      {step.keyVocabulary.map(v => (
+                        <span key={v} className="text-[9px] bg-white/80 border border-border/50 rounded px-1 py-0.5 text-muted-foreground">{v}</span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Advance button — only shown when viewing the current topic */}
+          {isCurrentTopic && (
+            <div className="mt-3 pt-3 border-t border-border/50 space-y-2">
+              <p className="text-[11px] text-muted-foreground">
+                Currently on step {currentStepIdx + 1} of {prog.steps.length}: <strong>{prog.steps[currentStepIdx]?.title}</strong>
+              </p>
+              <Button
+                size="sm"
+                className="w-full text-xs h-8"
+                onClick={handleAdvance}
+              >
+                <ChevronRight className="h-3.5 w-3.5 mr-1" />
+                {currentStepIdx + 1 < prog.steps.length
+                  ? `Advance to Step ${currentStepIdx + 2}: ${prog.steps[currentStepIdx + 1]?.title}`
+                  : `Complete Topic — Move to ${progressions[selectedTopicCard.topicIdx + 1]?.topicName ?? 'Next Topic'}`
+                }
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    );
+  })();
+
   return (
     <div className="px-4 py-6 max-w-2xl mx-auto space-y-4">
+      {topicCardModal}
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">Manage your SEND students and their assignments.</p>
         <div className="flex items-center gap-2">
@@ -1089,12 +1227,15 @@ If the submission is empty or too short to mark, return mark: "N/A", feedback: "
                                   const isTopicNext = absTopicIdx === currentProgTopicIdx + 1;
                                   return (
                                     <div key={prog.topicId} className="flex items-start gap-1 flex-shrink-0">
-                                      <div className={`rounded-xl border-2 p-2 min-w-[90px] max-w-[110px] ${
+                                      <div
+                                        className={`rounded-xl border-2 p-2 min-w-[90px] max-w-[110px] cursor-pointer hover:shadow-md transition-shadow ${
                                         isTopicCompleted ? 'bg-green-50 border-green-300' :
                                         isTopicCurrent ? 'bg-white border-indigo-400 shadow-sm' :
                                         isTopicNext ? 'bg-amber-50 border-amber-200' :
                                         'bg-muted/30 border-border/40'
-                                      }`}>
+                                      }`}
+                                        onClick={() => setSelectedTopicCard({ topicIdx: absTopicIdx, subject: cfg.subject })}
+                                      >
                                         {/* Topic header */}
                                         <div className="flex items-center gap-1 mb-1.5">
                                           <div className={`h-4 w-4 rounded-full flex items-center justify-center flex-shrink-0 ${
@@ -1151,6 +1292,7 @@ If the submission is empty or too short to mark, return mark: "N/A", feedback: "
                                             );
                                           })}
                                         </div>
+                                        <p className="text-[7px] text-center text-muted-foreground mt-1 opacity-60">tap to expand</p>
                                       </div>
                                       {i < progChainTopics.length - 1 && (
                                         <div className="flex flex-col items-center justify-center h-full pt-4">
@@ -1488,13 +1630,49 @@ If the submission is empty or too short to mark, return mark: "N/A", feedback: "
                           )}
                         </div>
 
-                        {/* SEND Info Panel for the child's need */}
-                        {selectedChild.sendNeed && selectedChild.sendNeed !== "none" && (
-                          <SENDInfoPanel
-                            sendNeedId={selectedChild.sendNeed}
-                            context="scheduler"
-                          />
-                        )}
+                        {/* SEND Info Panels — collapsible, one per SEND need, starts closed */}
+                        {(() => {
+                          const childNeeds = selectedChild.sendNeeds && selectedChild.sendNeeds.length > 0
+                            ? selectedChild.sendNeeds
+                            : selectedChild.sendNeed && selectedChild.sendNeed !== 'none' ? [selectedChild.sendNeed] : [];
+                          if (childNeeds.length === 0) return null;
+                          return (
+                            <div className="space-y-2">
+                              {childNeeds.map(needId => {
+                                const needInfo = sendNeeds.find(n => n.id === needId);
+                                if (!needInfo) return null;
+                                const isOpen = sendNeedExpanded[needId] ?? false;
+                                return (
+                                  <div key={needId} className="rounded-xl border border-purple-200 bg-purple-50 overflow-hidden">
+                                    {/* Collapsible header */}
+                                    <button
+                                      type="button"
+                                      className="w-full flex items-center gap-2 px-3 py-2.5 text-left cursor-pointer select-none"
+                                      onClick={() => setSendNeedExpanded(prev => ({ ...prev, [needId]: !isOpen }))}
+                                    >
+                                      <div className="h-5 w-5 rounded-full bg-purple-100 border border-purple-300 flex items-center justify-center flex-shrink-0">
+                                        <span className="text-[9px] font-bold text-purple-700">{needInfo.name.substring(0, 2).toUpperCase()}</span>
+                                      </div>
+                                      <span className="text-xs font-semibold text-purple-800 flex-1">{needInfo.name}</span>
+                                      <span className="text-[10px] text-purple-500 bg-purple-100 px-1.5 py-0.5 rounded mr-1">{needInfo.category}</span>
+                                      <ChevronDown className={`h-3.5 w-3.5 text-purple-500 transition-transform duration-200 flex-shrink-0 ${isOpen ? 'rotate-180' : ''}`} />
+                                    </button>
+                                    {/* Collapsible body */}
+                                    {isOpen && (
+                                      <div className="px-3 pb-3">
+                                        <SENDInfoPanel
+                                          sendNeedId={needId}
+                                          context="scheduler"
+                                          className="!rounded-none !border-0 !bg-transparent !p-0"
+                                        />
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          );
+                        })()}
 
                         {cfg.enabled && (
                           <div className="flex items-center gap-2 p-2.5 rounded-xl bg-indigo-50 border border-indigo-200">
