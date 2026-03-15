@@ -577,7 +577,8 @@ export default function Worksheets() {
 
   // ─── PDF Download (pixel-perfect HTML-to-PDF) ─────────────────────────────
   const handleDownloadPdf = async () => {
-    if (!generated || !worksheetRef.current) return;
+    if (!generated) { toast.error("PDF error: no worksheet loaded"); return; }
+    if (!worksheetRef.current) { toast.error("PDF error: ref not mounted"); return; }
     toast.info("Generating PDF...");
     // Target the inner worksheet-print-root for a clean capture (no UI chrome)
     const printRoot = (worksheetRef.current.querySelector(".worksheet-print-root") as HTMLElement) || worksheetRef.current;
