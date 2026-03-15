@@ -1251,7 +1251,7 @@ function WordBankSection({ content, fmt, overlayColor = "white" }: { content: st
     <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
       {words.map((word, i) => (
         <span key={i} style={{ background: overlayColor, color: "#5b21b6", padding: "4px 10px", borderRadius: "4px", fontSize: `${textSize - 1}px`, fontWeight: 600, border: "1.5px solid #5b21b6", fontFamily }}>
-          {word}
+          <span dangerouslySetInnerHTML={{ __html: renderMath(word) }} />
         </span>
       ))}
     </div>
