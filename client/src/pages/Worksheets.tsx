@@ -1524,7 +1524,8 @@ export default function Worksheets() {
                   .filter(w => !historySearch || w.title.toLowerCase().includes(historySearch.toLowerCase()) || w.subject.toLowerCase().includes(historySearch.toLowerCase()) || w.topic.toLowerCase().includes(historySearch.toLowerCase()))
                   .map(ws => (
                     <Card key={ws.id} className="hover:shadow-md transition-shadow cursor-pointer border-border/50" onClick={() => {
-                      setSelectedHistorySheet(ws);
+                      setActiveTab("history");
+                      setSelectedHistorySheet(null);
                       setHistoryEditedSections({});
                       setHistoryEditMode(false);
                       setHistoryViewMode("teacher");
