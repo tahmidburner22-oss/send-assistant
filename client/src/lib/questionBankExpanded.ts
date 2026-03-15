@@ -17,7 +17,7 @@ import { PastPaperQuestion } from './pastPaperQuestions';
 export const expandedMathsFractions: PastPaperQuestion[] = [
   {
     id: "exp-maths-frac-001",
-    board: "AQA", subject: "mathematics", year: 2023, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2023, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Foundation", questionNum: "3",
     marks: 3, topic: "Fractions",
     text: "Work out \\(\\dfrac{3}{4}\\) + \\(\\dfrac{1}{6}\\). Give your answer as a fraction in its simplest form.",
@@ -28,7 +28,7 @@ export const expandedMathsFractions: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-frac-002",
-    board: "AQA", subject: "mathematics", year: 2023, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2023, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Foundation", questionNum: "4",
     marks: 3, topic: "Fractions",
     text: "Work out \\(\\dfrac{2}{3}\\) - \\(\\dfrac{1}{5}\\).",
@@ -39,7 +39,7 @@ export const expandedMathsFractions: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-frac-003",
-    board: "AQA", subject: "mathematics", year: 2022, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2022, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Foundation", questionNum: "5",
     marks: 3, topic: "Fractions",
     text: "Work out \\(\\dfrac{3}{4}\\) x \\(\\dfrac{2}{5}\\).",
@@ -50,7 +50,7 @@ export const expandedMathsFractions: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-frac-004",
-    board: "AQA", subject: "mathematics", year: 2022, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2022, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Foundation", questionNum: "6",
     marks: 3, topic: "Fractions",
     text: "Work out \\(\\dfrac{3}{5}\\) divided by \\(\\dfrac{2}{3}\\).",
@@ -61,7 +61,7 @@ export const expandedMathsFractions: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-frac-005",
-    board: "Edexcel", subject: "mathematics", year: 2023, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2023, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Foundation", questionNum: "3",
     marks: 3, topic: "Fractions",
     text: "Write \\(\\dfrac{18}{24}\\) in its simplest form.",
@@ -72,7 +72,7 @@ export const expandedMathsFractions: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-frac-006",
-    board: "Edexcel", subject: "mathematics", year: 2023, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2023, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Foundation", questionNum: "4",
     marks: 4, topic: "Fractions",
     text: "Change 2 \\(\\dfrac{3}{5}\\) to an improper fraction.",
@@ -83,7 +83,7 @@ export const expandedMathsFractions: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-frac-007",
-    board: "Edexcel", subject: "mathematics", year: 2022, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2022, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Foundation", questionNum: "5",
     marks: 3, topic: "Fractions",
     text: "Work out 1 \\(\\dfrac{1}{2}\\) + 2 \\(\\dfrac{3}{4}\\). Give your answer as a mixed number.",
@@ -94,7 +94,7 @@ export const expandedMathsFractions: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-frac-008",
-    board: "OCR", subject: "mathematics", year: 2023, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2023, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Foundation", questionNum: "4",
     marks: 4, topic: "Fractions",
     text: "Work out \\(\\dfrac{2}{3}\\) of 45.",
@@ -105,7 +105,7 @@ export const expandedMathsFractions: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-frac-009",
-    board: "OCR", subject: "mathematics", year: 2022, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2022, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Higher", questionNum: "5",
     marks: 4, topic: "Fractions",
     text: "Show that \\(\\dfrac{1}{2}\\) + \\(\\dfrac{1}{3}\\) + \\(\\dfrac{1}{6}\\) = 1.",
@@ -116,7 +116,7 @@ export const expandedMathsFractions: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-frac-010",
-    board: "AQA", subject: "mathematics", year: 2024, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2024, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Higher", questionNum: "6",
     marks: 5, topic: "Fractions",
     text: "Work out (\\(\\dfrac{2}{3}\\) + \\(\\dfrac{1}{4}\\)) / (\\(\\dfrac{5}{6}\\) - \\(\\dfrac{1}{3}\\)). Give your answer as a fraction in its simplest form.",
@@ -127,7 +127,7 @@ export const expandedMathsFractions: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-frac-011",
-    board: "Edexcel", subject: "mathematics", year: 2024, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2024, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Foundation", questionNum: "3",
     marks: 3, topic: "Fractions",
     text: "Put these fractions in order from smallest to largest: \\(\\dfrac{3}{4}\\), \\(\\dfrac{2}{3}\\), \\(\\dfrac{5}{6}\\).",
@@ -138,7 +138,7 @@ export const expandedMathsFractions: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-frac-012",
-    board: "WJEC", subject: "mathematics", year: 2023, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2023, series: "June",
     paper: "Paper 1", tier: "Foundation", questionNum: "3",
     marks: 3, topic: "Fractions",
     text: "A recipe needs \\(\\dfrac{3}{4}\\) cup of sugar. How much sugar is needed for 1 and a half times the recipe?",
@@ -149,7 +149,7 @@ export const expandedMathsFractions: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-frac-013",
-    board: "AQA", subject: "mathematics", year: 2023, series: "November",
+    board: "Adaptly", subject: "mathematics", year: 2023, series: "November",
     paper: "Paper 1 (Non-Calculator)", tier: "Foundation", questionNum: "4",
     marks: 4, topic: "Fractions",
     text: "Work out \\(\\dfrac{4}{5}\\) - \\(\\dfrac{1}{3}\\). Give your answer as a fraction in its simplest form.",
@@ -160,7 +160,7 @@ export const expandedMathsFractions: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-frac-014",
-    board: "Edexcel", subject: "mathematics", year: 2023, series: "November",
+    board: "Adaptly", subject: "mathematics", year: 2023, series: "November",
     paper: "Paper 1 (Non-Calculator)", tier: "Higher", questionNum: "5",
     marks: 5, topic: "Fractions",
     text: "Simplify fully: (x^2 - 4) / (x^2 + 4x + 4).",
@@ -171,7 +171,7 @@ export const expandedMathsFractions: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-frac-015",
-    board: "OCR", subject: "mathematics", year: 2024, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2024, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Foundation", questionNum: "5",
     marks: 3, topic: "Fractions",
     text: "A class has 30 students. \\(\\dfrac{2}{5}\\) of them walk to school. How many students walk to school?",
@@ -182,7 +182,7 @@ export const expandedMathsFractions: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-frac-016",
-    board: "AQA", subject: "mathematics", year: 2022, series: "November",
+    board: "Adaptly", subject: "mathematics", year: 2022, series: "November",
     paper: "Paper 1 (Non-Calculator)", tier: "Higher", questionNum: "7",
     marks: 5, topic: "Fractions",
     text: "Work out 2 \\(\\dfrac{3}{4}\\) x 1 \\(\\dfrac{1}{3}\\). Give your answer as a mixed number in its simplest form.",
@@ -193,7 +193,7 @@ export const expandedMathsFractions: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-frac-017",
-    board: "Edexcel", subject: "mathematics", year: 2022, series: "November",
+    board: "Adaptly", subject: "mathematics", year: 2022, series: "November",
     paper: "Paper 1 (Non-Calculator)", tier: "Foundation", questionNum: "4",
     marks: 3, topic: "Fractions",
     text: "What fraction of 1 hour is 20 minutes? Give your answer in its simplest form.",
@@ -204,7 +204,7 @@ export const expandedMathsFractions: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-frac-018",
-    board: "OCR", subject: "mathematics", year: 2023, series: "November",
+    board: "Adaptly", subject: "mathematics", year: 2023, series: "November",
     paper: "Paper 1 (Non-Calculator)", tier: "Foundation", questionNum: "4",
     marks: 3, topic: "Fractions",
     text: "Write 0.35 as a fraction in its simplest form.",
@@ -215,7 +215,7 @@ export const expandedMathsFractions: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-frac-019",
-    board: "AQA", subject: "mathematics", year: 2024, series: "November",
+    board: "Adaptly", subject: "mathematics", year: 2024, series: "November",
     paper: "Paper 1 (Non-Calculator)", tier: "Higher", questionNum: "8",
     marks: 4, topic: "Fractions",
     text: "Prove that 1/(n) - 1/(n+1) = 1/(n(n+1)) for all positive integers n.",
@@ -226,7 +226,7 @@ export const expandedMathsFractions: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-frac-020",
-    board: "WJEC", subject: "mathematics", year: 2024, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2024, series: "June",
     paper: "Paper 1", tier: "Higher", questionNum: "6",
     marks: 4, topic: "Fractions",
     text: "Work out 3 \\(\\dfrac{1}{2}\\) / 1 \\(\\dfrac{3}{4}\\). Give your answer as a mixed number.",
@@ -240,7 +240,7 @@ export const expandedMathsFractions: PastPaperQuestion[] = [
 export const expandedMathsAlgebra: PastPaperQuestion[] = [
   {
     id: "exp-maths-alg-001",
-    board: "AQA", subject: "mathematics", year: 2023, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2023, series: "June",
     paper: "Paper 2 (Calculator)", tier: "Foundation", questionNum: "5",
     marks: 3, topic: "Algebra",
     text: "Expand and simplify: 3(2x + 4) - 2(x - 1).",
@@ -251,7 +251,7 @@ export const expandedMathsAlgebra: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-alg-002",
-    board: "AQA", subject: "mathematics", year: 2023, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2023, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Higher", questionNum: "6",
     marks: 4, topic: "Algebra",
     text: "Factorise fully: 6x^2 - 9x.",
@@ -262,7 +262,7 @@ export const expandedMathsAlgebra: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-alg-003",
-    board: "Edexcel", subject: "mathematics", year: 2023, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2023, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Foundation", questionNum: "4",
     marks: 3, topic: "Algebra",
     text: "Solve: 3x + 7 = 22.",
@@ -273,7 +273,7 @@ export const expandedMathsAlgebra: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-alg-004",
-    board: "Edexcel", subject: "mathematics", year: 2023, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2023, series: "June",
     paper: "Paper 2 (Calculator)", tier: "Higher", questionNum: "7",
     marks: 4, topic: "Algebra",
     text: "Factorise: x^2 - 5x + 6.",
@@ -284,7 +284,7 @@ export const expandedMathsAlgebra: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-alg-005",
-    board: "OCR", subject: "mathematics", year: 2023, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2023, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Foundation", questionNum: "5",
     marks: 3, topic: "Algebra",
     text: "Make t the subject of the formula: v = u + at.",
@@ -295,7 +295,7 @@ export const expandedMathsAlgebra: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-alg-006",
-    board: "AQA", subject: "mathematics", year: 2022, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2022, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Higher", questionNum: "8",
     marks: 5, topic: "Algebra",
     text: "Solve: x^2 - 3x - 10 = 0.",
@@ -306,7 +306,7 @@ export const expandedMathsAlgebra: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-alg-007",
-    board: "Edexcel", subject: "mathematics", year: 2022, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2022, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Foundation", questionNum: "3",
     marks: 3, topic: "Algebra",
     text: "Simplify: 4a + 3b - 2a + b.",
@@ -317,7 +317,7 @@ export const expandedMathsAlgebra: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-alg-008",
-    board: "OCR", subject: "mathematics", year: 2022, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2022, series: "June",
     paper: "Paper 2 (Calculator)", tier: "Higher", questionNum: "9",
     marks: 5, topic: "Algebra",
     text: "Solve the inequality: 2x - 3 > 7. Show your answer on a number line.",
@@ -328,7 +328,7 @@ export const expandedMathsAlgebra: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-alg-009",
-    board: "AQA", subject: "mathematics", year: 2024, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2024, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Higher", questionNum: "7",
     marks: 4, topic: "Algebra",
     text: "Expand and simplify: (2x + 3)(x - 4).",
@@ -339,7 +339,7 @@ export const expandedMathsAlgebra: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-alg-010",
-    board: "Edexcel", subject: "mathematics", year: 2024, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2024, series: "June",
     paper: "Paper 2 (Calculator)", tier: "Foundation", questionNum: "5",
     marks: 3, topic: "Algebra",
     text: "Solve: 5(x - 2) = 3x + 4.",
@@ -350,7 +350,7 @@ export const expandedMathsAlgebra: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-alg-011",
-    board: "WJEC", subject: "mathematics", year: 2023, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2023, series: "June",
     paper: "Paper 1", tier: "Foundation", questionNum: "4",
     marks: 3, topic: "Algebra",
     text: "Write an expression for the perimeter of a rectangle with length (3x + 2) and width (x + 5).",
@@ -361,7 +361,7 @@ export const expandedMathsAlgebra: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-alg-012",
-    board: "AQA", subject: "mathematics", year: 2023, series: "November",
+    board: "Adaptly", subject: "mathematics", year: 2023, series: "November",
     paper: "Paper 1 (Non-Calculator)", tier: "Higher", questionNum: "10",
     marks: 5, topic: "Algebra",
     text: "Solve: 2x^2 + 5x - 3 = 0.",
@@ -372,7 +372,7 @@ export const expandedMathsAlgebra: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-alg-013",
-    board: "Edexcel", subject: "mathematics", year: 2023, series: "November",
+    board: "Adaptly", subject: "mathematics", year: 2023, series: "November",
     paper: "Paper 2 (Calculator)", tier: "Foundation", questionNum: "6",
     marks: 3, topic: "Algebra",
     text: "The nth term of a sequence is 4n - 1. Find the 10th term.",
@@ -383,7 +383,7 @@ export const expandedMathsAlgebra: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-alg-014",
-    board: "OCR", subject: "mathematics", year: 2024, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2024, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Higher", questionNum: "8",
     marks: 5, topic: "Algebra",
     text: "Make x the subject of: y = (2x + 3)/(x - 1).",
@@ -394,7 +394,7 @@ export const expandedMathsAlgebra: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-alg-015",
-    board: "WJEC", subject: "mathematics", year: 2024, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2024, series: "June",
     paper: "Paper 2", tier: "Higher", questionNum: "7",
     marks: 4, topic: "Algebra",
     text: "Solve: (x+2)/3 - (x-1)/4 = 2.",
@@ -405,7 +405,7 @@ export const expandedMathsAlgebra: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-alg-016",
-    board: "AQA", subject: "mathematics", year: 2022, series: "November",
+    board: "Adaptly", subject: "mathematics", year: 2022, series: "November",
     paper: "Paper 1 (Non-Calculator)", tier: "Foundation", questionNum: "4",
     marks: 3, topic: "Algebra",
     text: "Find the value of 3a^2 when a = 4.",
@@ -416,7 +416,7 @@ export const expandedMathsAlgebra: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-alg-017",
-    board: "Edexcel", subject: "mathematics", year: 2022, series: "November",
+    board: "Adaptly", subject: "mathematics", year: 2022, series: "November",
     paper: "Paper 1 (Non-Calculator)", tier: "Higher", questionNum: "9",
     marks: 5, topic: "Algebra",
     text: "Factorise completely: 2x^3 - 8x.",
@@ -427,7 +427,7 @@ export const expandedMathsAlgebra: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-alg-018",
-    board: "OCR", subject: "mathematics", year: 2023, series: "November",
+    board: "Adaptly", subject: "mathematics", year: 2023, series: "November",
     paper: "Paper 2 (Calculator)", tier: "Foundation", questionNum: "5",
     marks: 3, topic: "Algebra",
     text: "A number n is multiplied by 3 and then 7 is subtracted. The result is 14. Write and solve an equation to find n.",
@@ -438,7 +438,7 @@ export const expandedMathsAlgebra: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-alg-019",
-    board: "AQA", subject: "mathematics", year: 2024, series: "November",
+    board: "Adaptly", subject: "mathematics", year: 2024, series: "November",
     paper: "Paper 2 (Calculator)", tier: "Higher", questionNum: "11",
     marks: 6, topic: "Algebra",
     text: "Solve the quadratic equation x^2 + 6x + 2 = 0. Give your answers to 2 decimal places.",
@@ -449,7 +449,7 @@ export const expandedMathsAlgebra: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-alg-020",
-    board: "WJEC", subject: "mathematics", year: 2023, series: "November",
+    board: "Adaptly", subject: "mathematics", year: 2023, series: "November",
     paper: "Paper 1", tier: "Foundation", questionNum: "5",
     marks: 3, topic: "Algebra",
     text: "Solve: 2(3x - 1) = 4(x + 2).",
@@ -463,7 +463,7 @@ export const expandedMathsAlgebra: PastPaperQuestion[] = [
 export const expandedMathsNumber: PastPaperQuestion[] = [
   {
     id: "exp-maths-num-001",
-    board: "AQA", subject: "mathematics", year: 2023, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2023, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Higher", questionNum: "1",
     marks: 3, topic: "Number",
     text: "Write 0.000307 in standard form.",
@@ -474,7 +474,7 @@ export const expandedMathsNumber: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-num-002",
-    board: "AQA", subject: "mathematics", year: 2022, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2022, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Higher", questionNum: "2",
     marks: 3, topic: "Number",
     text: "Work out the value of 2^-3.",
@@ -485,7 +485,7 @@ export const expandedMathsNumber: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-num-003",
-    board: "Edexcel", subject: "mathematics", year: 2023, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2023, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Foundation", questionNum: "2",
     marks: 3, topic: "Number",
     text: "Write down all the factors of 24.",
@@ -496,7 +496,7 @@ export const expandedMathsNumber: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-num-004",
-    board: "Edexcel", subject: "mathematics", year: 2023, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2023, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Foundation", questionNum: "3",
     marks: 3, topic: "Number",
     text: "Find the LCM (lowest common multiple) of 6 and 8.",
@@ -507,7 +507,7 @@ export const expandedMathsNumber: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-num-005",
-    board: "OCR", subject: "mathematics", year: 2023, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2023, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Foundation", questionNum: "2",
     marks: 3, topic: "Number",
     text: "Round 47,382 to the nearest thousand.",
@@ -518,7 +518,7 @@ export const expandedMathsNumber: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-num-006",
-    board: "AQA", subject: "mathematics", year: 2024, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2024, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Higher", questionNum: "3",
     marks: 4, topic: "Number",
     text: "Write 360 as a product of its prime factors. Give your answer in index form.",
@@ -529,7 +529,7 @@ export const expandedMathsNumber: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-num-007",
-    board: "Edexcel", subject: "mathematics", year: 2024, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2024, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Foundation", questionNum: "4",
     marks: 3, topic: "Number",
     text: "Work out 15% of 240.",
@@ -540,7 +540,7 @@ export const expandedMathsNumber: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-num-008",
-    board: "OCR", subject: "mathematics", year: 2022, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2022, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Foundation", questionNum: "3",
     marks: 3, topic: "Number",
     text: "Work out: 3.6 x 0.4.",
@@ -551,7 +551,7 @@ export const expandedMathsNumber: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-num-009",
-    board: "AQA", subject: "mathematics", year: 2023, series: "November",
+    board: "Adaptly", subject: "mathematics", year: 2023, series: "November",
     paper: "Paper 1 (Non-Calculator)", tier: "Higher", questionNum: "4",
     marks: 4, topic: "Number",
     text: "Work out: (2.4 x 10^5) x (3 x 10^-2). Give your answer in standard form.",
@@ -562,7 +562,7 @@ export const expandedMathsNumber: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-num-010",
-    board: "Edexcel", subject: "mathematics", year: 2023, series: "November",
+    board: "Adaptly", subject: "mathematics", year: 2023, series: "November",
     paper: "Paper 1 (Non-Calculator)", tier: "Foundation", questionNum: "5",
     marks: 3, topic: "Number",
     text: "A coat costs GBP80. It is reduced by 25% in a sale. Work out the sale price.",
@@ -573,7 +573,7 @@ export const expandedMathsNumber: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-num-011",
-    board: "WJEC", subject: "mathematics", year: 2023, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2023, series: "June",
     paper: "Paper 1", tier: "Foundation", questionNum: "4",
     marks: 3, topic: "Number",
     text: "Write these numbers in order from smallest to largest: 0.35, \\(\\dfrac{3}{8}\\), 0.4, \\(\\dfrac{1}{3}\\).",
@@ -584,7 +584,7 @@ export const expandedMathsNumber: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-num-012",
-    board: "AQA", subject: "mathematics", year: 2024, series: "November",
+    board: "Adaptly", subject: "mathematics", year: 2024, series: "November",
     paper: "Paper 1 (Non-Calculator)", tier: "Higher", questionNum: "5",
     marks: 4, topic: "Number",
     text: "Show that sqrt(75) - sqrt(27) = 2*sqrt(3).",
@@ -595,7 +595,7 @@ export const expandedMathsNumber: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-num-013",
-    board: "OCR", subject: "mathematics", year: 2024, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2024, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Foundation", questionNum: "3",
     marks: 3, topic: "Number",
     text: "Work out: \\(\\dfrac{3}{4}\\) as a decimal.",
@@ -606,7 +606,7 @@ export const expandedMathsNumber: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-num-014",
-    board: "Edexcel", subject: "mathematics", year: 2022, series: "November",
+    board: "Adaptly", subject: "mathematics", year: 2022, series: "November",
     paper: "Paper 1 (Non-Calculator)", tier: "Higher", questionNum: "6",
     marks: 4, topic: "Number",
     text: "Work out: 27^(\\(\\dfrac{2}{3}\\)).",
@@ -617,7 +617,7 @@ export const expandedMathsNumber: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-num-015",
-    board: "WJEC", subject: "mathematics", year: 2024, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2024, series: "June",
     paper: "Paper 1", tier: "Foundation", questionNum: "3",
     marks: 3, topic: "Number",
     text: "A train journey takes 2 hours 45 minutes. Write this as a decimal number of hours.",
@@ -631,7 +631,7 @@ export const expandedMathsNumber: PastPaperQuestion[] = [
 export const expandedMathsGeometry: PastPaperQuestion[] = [
   {
     id: "exp-maths-geom-001",
-    board: "AQA", subject: "mathematics", year: 2023, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2023, series: "June",
     paper: "Paper 2 (Calculator)", tier: "Foundation", questionNum: "7",
     marks: 3, topic: "Geometry",
     text: "Find the area of a triangle with base 8 cm and perpendicular height 5 cm.",
@@ -642,7 +642,7 @@ export const expandedMathsGeometry: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-geom-002",
-    board: "AQA", subject: "mathematics", year: 2023, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2023, series: "June",
     paper: "Paper 2 (Calculator)", tier: "Higher", questionNum: "9",
     marks: 4, topic: "Geometry",
     text: "A circle has radius 7 cm. Calculate the area of the circle. Give your answer in terms of pi.",
@@ -653,7 +653,7 @@ export const expandedMathsGeometry: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-geom-003",
-    board: "Edexcel", subject: "mathematics", year: 2023, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2023, series: "June",
     paper: "Paper 2 (Calculator)", tier: "Foundation", questionNum: "8",
     marks: 4, topic: "Geometry",
     text: "A rectangle has length 12 cm and width 5 cm. Work out the length of the diagonal.",
@@ -664,7 +664,7 @@ export const expandedMathsGeometry: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-geom-004",
-    board: "Edexcel", subject: "mathematics", year: 2022, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2022, series: "June",
     paper: "Paper 2 (Calculator)", tier: "Higher", questionNum: "10",
     marks: 5, topic: "Geometry",
     text: "Calculate the volume of a cylinder with radius 4 cm and height 10 cm. Give your answer to 3 significant figures.",
@@ -675,7 +675,7 @@ export const expandedMathsGeometry: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-geom-005",
-    board: "OCR", subject: "mathematics", year: 2023, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2023, series: "June",
     paper: "Paper 2 (Calculator)", tier: "Foundation", questionNum: "6",
     marks: 3, topic: "Geometry",
     text: "The angles in a triangle are x, 2x and 3x. Find the value of x.",
@@ -686,7 +686,7 @@ export const expandedMathsGeometry: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-geom-006",
-    board: "AQA", subject: "mathematics", year: 2024, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2024, series: "June",
     paper: "Paper 2 (Calculator)", tier: "Higher", questionNum: "11",
     marks: 5, topic: "Geometry",
     text: "Calculate the length of side BC in a right-angled triangle where angle B = 35 degrees and AB = 10 cm (AB is the hypotenuse).",
@@ -697,7 +697,7 @@ export const expandedMathsGeometry: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-geom-007",
-    board: "Edexcel", subject: "mathematics", year: 2024, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2024, series: "June",
     paper: "Paper 2 (Calculator)", tier: "Foundation", questionNum: "7",
     marks: 3, topic: "Geometry",
     text: "Work out the perimeter of a semicircle with diameter 10 cm. Give your answer to 1 decimal place.",
@@ -708,7 +708,7 @@ export const expandedMathsGeometry: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-geom-008",
-    board: "OCR", subject: "mathematics", year: 2022, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2022, series: "June",
     paper: "Paper 2 (Calculator)", tier: "Higher", questionNum: "12",
     marks: 5, topic: "Geometry",
     text: "ABCD is a parallelogram. AB = 8 cm, BC = 5 cm, angle ABC = 60 degrees. Calculate the area of the parallelogram.",
@@ -719,7 +719,7 @@ export const expandedMathsGeometry: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-geom-009",
-    board: "AQA", subject: "mathematics", year: 2023, series: "November",
+    board: "Adaptly", subject: "mathematics", year: 2023, series: "November",
     paper: "Paper 2 (Calculator)", tier: "Foundation", questionNum: "8",
     marks: 4, topic: "Geometry",
     text: "A cuboid has length 5 cm, width 3 cm and height 4 cm. Work out the volume of the cuboid.",
@@ -730,7 +730,7 @@ export const expandedMathsGeometry: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-geom-010",
-    board: "Edexcel", subject: "mathematics", year: 2023, series: "November",
+    board: "Adaptly", subject: "mathematics", year: 2023, series: "November",
     paper: "Paper 2 (Calculator)", tier: "Higher", questionNum: "13",
     marks: 5, topic: "Geometry",
     text: "Two similar shapes have areas in the ratio 9:25. What is the ratio of their corresponding lengths?",
@@ -741,7 +741,7 @@ export const expandedMathsGeometry: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-geom-011",
-    board: "WJEC", subject: "mathematics", year: 2023, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2023, series: "June",
     paper: "Paper 2", tier: "Foundation", questionNum: "6",
     marks: 3, topic: "Geometry",
     text: "An angle is 130 degrees. What is the size of the reflex angle?",
@@ -752,7 +752,7 @@ export const expandedMathsGeometry: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-geom-012",
-    board: "AQA", subject: "mathematics", year: 2024, series: "November",
+    board: "Adaptly", subject: "mathematics", year: 2024, series: "November",
     paper: "Paper 2 (Calculator)", tier: "Higher", questionNum: "14",
     marks: 6, topic: "Geometry",
     text: "A cone has base radius 6 cm and slant height 10 cm. Calculate the total surface area of the cone.",
@@ -763,7 +763,7 @@ export const expandedMathsGeometry: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-geom-013",
-    board: "OCR", subject: "mathematics", year: 2024, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2024, series: "June",
     paper: "Paper 2 (Calculator)", tier: "Foundation", questionNum: "7",
     marks: 3, topic: "Geometry",
     text: "The exterior angle of a regular polygon is 40 degrees. How many sides does the polygon have?",
@@ -774,7 +774,7 @@ export const expandedMathsGeometry: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-geom-014",
-    board: "Edexcel", subject: "mathematics", year: 2022, series: "November",
+    board: "Adaptly", subject: "mathematics", year: 2022, series: "November",
     paper: "Paper 2 (Calculator)", tier: "Higher", questionNum: "15",
     marks: 5, topic: "Geometry",
     text: "A sphere has volume 288pi cm^3. Find the radius of the sphere.",
@@ -785,7 +785,7 @@ export const expandedMathsGeometry: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-geom-015",
-    board: "WJEC", subject: "mathematics", year: 2024, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2024, series: "June",
     paper: "Paper 2", tier: "Higher", questionNum: "9",
     marks: 4, topic: "Geometry",
     text: "In triangle ABC, AB = 7 cm, BC = 9 cm, AC = 11 cm. Use the cosine rule to find angle BAC.",
@@ -799,7 +799,7 @@ export const expandedMathsGeometry: PastPaperQuestion[] = [
 export const expandedMathsStatistics: PastPaperQuestion[] = [
   {
     id: "exp-maths-stat-001",
-    board: "AQA", subject: "mathematics", year: 2023, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2023, series: "June",
     paper: "Paper 2 (Calculator)", tier: "Foundation", questionNum: "10",
     marks: 3, topic: "Statistics",
     text: "The mean of 5 numbers is 8. Four of the numbers are 6, 9, 7 and 10. Find the fifth number.",
@@ -810,7 +810,7 @@ export const expandedMathsStatistics: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-stat-002",
-    board: "Edexcel", subject: "mathematics", year: 2023, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2023, series: "June",
     paper: "Paper 2 (Calculator)", tier: "Foundation", questionNum: "11",
     marks: 4, topic: "Statistics",
     text: "Find the median of: 3, 7, 2, 9, 5, 1, 8.",
@@ -821,7 +821,7 @@ export const expandedMathsStatistics: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-stat-003",
-    board: "OCR", subject: "mathematics", year: 2023, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2023, series: "June",
     paper: "Paper 2 (Calculator)", tier: "Foundation", questionNum: "9",
     marks: 3, topic: "Statistics",
     text: "A bag contains 3 red, 5 blue and 2 green counters. A counter is picked at random. What is the probability it is blue?",
@@ -832,7 +832,7 @@ export const expandedMathsStatistics: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-stat-004",
-    board: "AQA", subject: "mathematics", year: 2022, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2022, series: "June",
     paper: "Paper 2 (Calculator)", tier: "Higher", questionNum: "16",
     marks: 5, topic: "Statistics",
     text: "A frequency table shows: Score 1-10: freq 4, Score 11-20: freq 7, Score 21-30: freq 9. Estimate the mean.",
@@ -843,7 +843,7 @@ export const expandedMathsStatistics: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-stat-005",
-    board: "Edexcel", subject: "mathematics", year: 2022, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2022, series: "June",
     paper: "Paper 2 (Calculator)", tier: "Higher", questionNum: "17",
     marks: 5, topic: "Statistics",
     text: "A and B are independent events. P(A) = 0.4 and P(B) = 0.3. Find P(A and B).",
@@ -854,7 +854,7 @@ export const expandedMathsStatistics: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-stat-006",
-    board: "OCR", subject: "mathematics", year: 2024, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2024, series: "June",
     paper: "Paper 2 (Calculator)", tier: "Foundation", questionNum: "10",
     marks: 4, topic: "Statistics",
     text: "The range of 6 numbers is 12. The smallest number is 5. What is the largest number?",
@@ -865,7 +865,7 @@ export const expandedMathsStatistics: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-stat-007",
-    board: "AQA", subject: "mathematics", year: 2024, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2024, series: "June",
     paper: "Paper 2 (Calculator)", tier: "Higher", questionNum: "18",
     marks: 5, topic: "Statistics",
     text: "A box contains 4 red and 6 blue balls. Two balls are drawn without replacement. Find the probability that both balls are red.",
@@ -876,7 +876,7 @@ export const expandedMathsStatistics: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-stat-008",
-    board: "WJEC", subject: "mathematics", year: 2023, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2023, series: "June",
     paper: "Paper 2", tier: "Foundation", questionNum: "8",
     marks: 3, topic: "Statistics",
     text: "Find the mode of: 4, 7, 2, 7, 9, 3, 7, 5.",
@@ -887,7 +887,7 @@ export const expandedMathsStatistics: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-stat-009",
-    board: "Edexcel", subject: "mathematics", year: 2023, series: "November",
+    board: "Adaptly", subject: "mathematics", year: 2023, series: "November",
     paper: "Paper 2 (Calculator)", tier: "Higher", questionNum: "19",
     marks: 5, topic: "Statistics",
     text: "A scatter graph shows a positive correlation between hours of revision and test score. The line of best fit passes through (2, 40) and (8, 70). Estimate the test score for 5 hours of revision.",
@@ -898,7 +898,7 @@ export const expandedMathsStatistics: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-stat-010",
-    board: "OCR", subject: "mathematics", year: 2023, series: "November",
+    board: "Adaptly", subject: "mathematics", year: 2023, series: "November",
     paper: "Paper 2 (Calculator)", tier: "Foundation", questionNum: "11",
     marks: 3, topic: "Statistics",
     text: "A dice is rolled. What is the probability of getting a number greater than 4?",
@@ -909,7 +909,7 @@ export const expandedMathsStatistics: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-stat-011",
-    board: "AQA", subject: "mathematics", year: 2023, series: "November",
+    board: "Adaptly", subject: "mathematics", year: 2023, series: "November",
     paper: "Paper 2 (Calculator)", tier: "Higher", questionNum: "20",
     marks: 5, topic: "Statistics",
     text: "The table shows the heights of 40 students. Heights 150-160: 8 students, 160-170: 15 students, 170-180: 12 students, 180-190: 5 students. Draw a histogram for this data.",
@@ -920,7 +920,7 @@ export const expandedMathsStatistics: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-stat-012",
-    board: "WJEC", subject: "mathematics", year: 2024, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2024, series: "June",
     paper: "Paper 2", tier: "Higher", questionNum: "10",
     marks: 4, topic: "Statistics",
     text: "The probability that it rains on any day is 0.3. Find the probability that it rains on exactly 2 of the next 3 days.",
@@ -931,7 +931,7 @@ export const expandedMathsStatistics: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-stat-013",
-    board: "Edexcel", subject: "mathematics", year: 2024, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2024, series: "June",
     paper: "Paper 2 (Calculator)", tier: "Foundation", questionNum: "12",
     marks: 3, topic: "Statistics",
     text: "The mean of 4 numbers is 6. A fifth number is added and the new mean is 7. What is the fifth number?",
@@ -942,7 +942,7 @@ export const expandedMathsStatistics: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-stat-014",
-    board: "OCR", subject: "mathematics", year: 2024, series: "November",
+    board: "Adaptly", subject: "mathematics", year: 2024, series: "November",
     paper: "Paper 2 (Calculator)", tier: "Higher", questionNum: "21",
     marks: 5, topic: "Statistics",
     text: "A cumulative frequency graph shows that the lower quartile is 24 and the upper quartile is 36. Find the interquartile range.",
@@ -953,7 +953,7 @@ export const expandedMathsStatistics: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-stat-015",
-    board: "AQA", subject: "mathematics", year: 2022, series: "November",
+    board: "Adaptly", subject: "mathematics", year: 2022, series: "November",
     paper: "Paper 2 (Calculator)", tier: "Foundation", questionNum: "9",
     marks: 3, topic: "Statistics",
     text: "A spinner has 5 equal sections numbered 1 to 5. The spinner is spun twice. Find the probability of getting a total of 6.",
@@ -967,7 +967,7 @@ export const expandedMathsStatistics: PastPaperQuestion[] = [
 export const expandedMathsRatio: PastPaperQuestion[] = [
   {
     id: "exp-maths-rat-001",
-    board: "AQA", subject: "mathematics", year: 2023, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2023, series: "June",
     paper: "Paper 2 (Calculator)", tier: "Foundation", questionNum: "12",
     marks: 3, topic: "Ratio and Proportion",
     text: "Share GBP120 in the ratio 3:5.",
@@ -978,7 +978,7 @@ export const expandedMathsRatio: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-rat-002",
-    board: "Edexcel", subject: "mathematics", year: 2023, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2023, series: "June",
     paper: "Paper 2 (Calculator)", tier: "Foundation", questionNum: "13",
     marks: 3, topic: "Ratio and Proportion",
     text: "A map has a scale of 1:50000. A distance on the map is 4 cm. What is the real distance in km?",
@@ -989,7 +989,7 @@ export const expandedMathsRatio: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-rat-003",
-    board: "OCR", subject: "mathematics", year: 2023, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2023, series: "June",
     paper: "Paper 2 (Calculator)", tier: "Foundation", questionNum: "11",
     marks: 3, topic: "Ratio and Proportion",
     text: "A car travels 150 miles in 3 hours. What is its average speed in mph?",
@@ -1000,7 +1000,7 @@ export const expandedMathsRatio: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-rat-004",
-    board: "AQA", subject: "mathematics", year: 2022, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2022, series: "June",
     paper: "Paper 2 (Calculator)", tier: "Higher", questionNum: "22",
     marks: 4, topic: "Ratio and Proportion",
     text: "y is directly proportional to x^2. When x = 3, y = 36. Find y when x = 5.",
@@ -1011,7 +1011,7 @@ export const expandedMathsRatio: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-rat-005",
-    board: "Edexcel", subject: "mathematics", year: 2022, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2022, series: "June",
     paper: "Paper 2 (Calculator)", tier: "Foundation", questionNum: "14",
     marks: 3, topic: "Ratio and Proportion",
     text: "A recipe for 4 people needs 300g of flour. How much flour is needed for 6 people?",
@@ -1022,7 +1022,7 @@ export const expandedMathsRatio: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-rat-006",
-    board: "OCR", subject: "mathematics", year: 2024, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2024, series: "June",
     paper: "Paper 2 (Calculator)", tier: "Higher", questionNum: "23",
     marks: 4, topic: "Ratio and Proportion",
     text: "y is inversely proportional to x. When x = 4, y = 6. Find y when x = 8.",
@@ -1033,7 +1033,7 @@ export const expandedMathsRatio: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-rat-007",
-    board: "AQA", subject: "mathematics", year: 2024, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2024, series: "June",
     paper: "Paper 2 (Calculator)", tier: "Foundation", questionNum: "13",
     marks: 3, topic: "Ratio and Proportion",
     text: "The ratio of boys to girls in a class is 3:4. There are 21 boys. How many girls are there?",
@@ -1044,7 +1044,7 @@ export const expandedMathsRatio: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-rat-008",
-    board: "WJEC", subject: "mathematics", year: 2023, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2023, series: "June",
     paper: "Paper 2", tier: "Foundation", questionNum: "7",
     marks: 3, topic: "Ratio and Proportion",
     text: "A car uses 8 litres of petrol to travel 100 km. How far can it travel on 20 litres?",
@@ -1055,7 +1055,7 @@ export const expandedMathsRatio: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-rat-009",
-    board: "Edexcel", subject: "mathematics", year: 2023, series: "November",
+    board: "Adaptly", subject: "mathematics", year: 2023, series: "November",
     paper: "Paper 2 (Calculator)", tier: "Higher", questionNum: "24",
     marks: 5, topic: "Ratio and Proportion",
     text: "A price increases from GBP80 to GBP100. Find the percentage increase.",
@@ -1066,7 +1066,7 @@ export const expandedMathsRatio: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-rat-010",
-    board: "OCR", subject: "mathematics", year: 2023, series: "November",
+    board: "Adaptly", subject: "mathematics", year: 2023, series: "November",
     paper: "Paper 2 (Calculator)", tier: "Foundation", questionNum: "12",
     marks: 3, topic: "Ratio and Proportion",
     text: "A train journey of 240 miles takes 2 hours. How long would a journey of 360 miles take at the same speed?",
@@ -1077,7 +1077,7 @@ export const expandedMathsRatio: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-rat-011",
-    board: "AQA", subject: "mathematics", year: 2023, series: "November",
+    board: "Adaptly", subject: "mathematics", year: 2023, series: "November",
     paper: "Paper 2 (Calculator)", tier: "Higher", questionNum: "25",
     marks: 4, topic: "Ratio and Proportion",
     text: "A population of bacteria doubles every 3 hours. There are 500 bacteria initially. How many are there after 12 hours?",
@@ -1088,7 +1088,7 @@ export const expandedMathsRatio: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-rat-012",
-    board: "WJEC", subject: "mathematics", year: 2024, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2024, series: "June",
     paper: "Paper 2", tier: "Foundation", questionNum: "8",
     marks: 3, topic: "Ratio and Proportion",
     text: "Orange juice and lemonade are mixed in the ratio 2:3. How much orange juice is needed to make 500ml of the mixture?",
@@ -1099,7 +1099,7 @@ export const expandedMathsRatio: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-rat-013",
-    board: "Edexcel", subject: "mathematics", year: 2024, series: "November",
+    board: "Adaptly", subject: "mathematics", year: 2024, series: "November",
     paper: "Paper 2 (Calculator)", tier: "Foundation", questionNum: "14",
     marks: 3, topic: "Ratio and Proportion",
     text: "A jacket costs GBP60 after a 20% discount. What was the original price?",
@@ -1110,7 +1110,7 @@ export const expandedMathsRatio: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-rat-014",
-    board: "OCR", subject: "mathematics", year: 2024, series: "November",
+    board: "Adaptly", subject: "mathematics", year: 2024, series: "November",
     paper: "Paper 2 (Calculator)", tier: "Higher", questionNum: "26",
     marks: 4, topic: "Ratio and Proportion",
     text: "A and B share money in the ratio 5:3. B receives GBP120. How much does A receive?",
@@ -1121,7 +1121,7 @@ export const expandedMathsRatio: PastPaperQuestion[] = [
   },
   {
     id: "exp-maths-rat-015",
-    board: "AQA", subject: "mathematics", year: 2022, series: "November",
+    board: "Adaptly", subject: "mathematics", year: 2022, series: "November",
     paper: "Paper 2 (Calculator)", tier: "Foundation", questionNum: "11",
     marks: 3, topic: "Ratio and Proportion",
     text: "A car depreciates in value by 15% each year. It is worth GBP10,000 now. What will it be worth in 2 years?",
@@ -1135,7 +1135,7 @@ export const expandedMathsRatio: PastPaperQuestion[] = [
 export const expandedEnglishLangReading: PastPaperQuestion[] = [
   {
     id: "exp-eng-read-001",
-    board: "AQA", subject: "english-language", year: 2023, series: "June",
+    board: "Adaptly", subject: "english-language", year: 2023, series: "June",
     paper: "Paper 1: Explorations in Creative Reading and Writing", questionNum: "1",
     marks: 4, topic: "Reading: Identify and Interpret",
     text: "Read lines 1-5 of the source text. List four things you learn about the character from these lines.",
@@ -1146,7 +1146,7 @@ export const expandedEnglishLangReading: PastPaperQuestion[] = [
   },
   {
     id: "exp-eng-read-002",
-    board: "AQA", subject: "english-language", year: 2023, series: "June",
+    board: "Adaptly", subject: "english-language", year: 2023, series: "June",
     paper: "Paper 1: Explorations in Creative Reading and Writing", questionNum: "2",
     marks: 8, topic: "Reading: Language Analysis",
     text: "How does the writer use language to describe the setting? You could include the writer's choice of: words and phrases; language features and techniques; sentence forms.",
@@ -1157,7 +1157,7 @@ export const expandedEnglishLangReading: PastPaperQuestion[] = [
   },
   {
     id: "exp-eng-read-003",
-    board: "AQA", subject: "english-language", year: 2023, series: "June",
+    board: "Adaptly", subject: "english-language", year: 2023, series: "June",
     paper: "Paper 1: Explorations in Creative Reading and Writing", questionNum: "3",
     marks: 8, topic: "Reading: Structure Analysis",
     text: "How has the writer structured the text to interest you as a reader? You could write about: what the writer focuses on at the beginning; how and why the writer changes this focus; any other structural features that interest you.",
@@ -1168,7 +1168,7 @@ export const expandedEnglishLangReading: PastPaperQuestion[] = [
   },
   {
     id: "exp-eng-read-004",
-    board: "AQA", subject: "english-language", year: 2023, series: "June",
+    board: "Adaptly", subject: "english-language", year: 2023, series: "June",
     paper: "Paper 1: Explorations in Creative Reading and Writing", questionNum: "4",
     marks: 20, topic: "Reading: Evaluation",
     text: "A student said: 'The writer makes the reader feel completely absorbed in the story.' To what extent do you agree with this view? Write about: the methods the writer uses to create tension; the effects of these methods on the reader.",
@@ -1179,7 +1179,7 @@ export const expandedEnglishLangReading: PastPaperQuestion[] = [
   },
   {
     id: "exp-eng-read-005",
-    board: "AQA", subject: "english-language", year: 2022, series: "June",
+    board: "Adaptly", subject: "english-language", year: 2022, series: "June",
     paper: "Paper 2: Writers' Viewpoints and Perspectives", questionNum: "1",
     marks: 4, topic: "Reading: Identify and Interpret",
     text: "Read the first paragraph of Source A. List four things you learn about the writer's experience from this paragraph.",
@@ -1190,7 +1190,7 @@ export const expandedEnglishLangReading: PastPaperQuestion[] = [
   },
   {
     id: "exp-eng-read-006",
-    board: "AQA", subject: "english-language", year: 2022, series: "June",
+    board: "Adaptly", subject: "english-language", year: 2022, series: "June",
     paper: "Paper 2: Writers' Viewpoints and Perspectives", questionNum: "2",
     marks: 8, topic: "Reading: Summary",
     text: "You need to refer to Source A and Source B for this question. Use details from both sources. Write a summary of the differences between the two writers' experiences.",
@@ -1201,7 +1201,7 @@ export const expandedEnglishLangReading: PastPaperQuestion[] = [
   },
   {
     id: "exp-eng-read-007",
-    board: "AQA", subject: "english-language", year: 2022, series: "June",
+    board: "Adaptly", subject: "english-language", year: 2022, series: "June",
     paper: "Paper 2: Writers' Viewpoints and Perspectives", questionNum: "3",
     marks: 12, topic: "Reading: Language Analysis",
     text: "You now need to refer only to Source B. How does the writer use language to convey their viewpoint?",
@@ -1212,7 +1212,7 @@ export const expandedEnglishLangReading: PastPaperQuestion[] = [
   },
   {
     id: "exp-eng-read-008",
-    board: "AQA", subject: "english-language", year: 2022, series: "June",
+    board: "Adaptly", subject: "english-language", year: 2022, series: "June",
     paper: "Paper 2: Writers' Viewpoints and Perspectives", questionNum: "4",
     marks: 16, topic: "Reading: Comparison",
     text: "For this question, you need to refer to the whole of Source A and Source B. Compare how the two writers convey their different attitudes to [topic]. In your answer, you could: compare their different attitudes; compare the methods they use to convey their attitudes; support your ideas with quotations from both texts.",
@@ -1223,7 +1223,7 @@ export const expandedEnglishLangReading: PastPaperQuestion[] = [
   },
   {
     id: "exp-eng-read-009",
-    board: "Edexcel", subject: "english-language", year: 2023, series: "June",
+    board: "Adaptly", subject: "english-language", year: 2023, series: "June",
     paper: "Paper 1", questionNum: "1",
     marks: 5, topic: "Reading: Identify and Interpret",
     text: "Read lines 1-10. What impressions do you get of the narrator? Give two impressions and support each with a quotation from the text.",
@@ -1234,7 +1234,7 @@ export const expandedEnglishLangReading: PastPaperQuestion[] = [
   },
   {
     id: "exp-eng-read-010",
-    board: "Edexcel", subject: "english-language", year: 2023, series: "June",
+    board: "Adaptly", subject: "english-language", year: 2023, series: "June",
     paper: "Paper 1", questionNum: "2",
     marks: 10, topic: "Reading: Language Analysis",
     text: "How does the writer use language to create a sense of danger in lines 11-25? Support your answer with quotations.",
@@ -1245,7 +1245,7 @@ export const expandedEnglishLangReading: PastPaperQuestion[] = [
   },
   {
     id: "exp-eng-read-011",
-    board: "Edexcel", subject: "english-language", year: 2022, series: "June",
+    board: "Adaptly", subject: "english-language", year: 2022, series: "June",
     paper: "Paper 2", questionNum: "1",
     marks: 5, topic: "Reading: Identify and Interpret",
     text: "Read the whole of Source A. What do you understand about the writer's attitude to [topic]? Give two points and support each with a quotation.",
@@ -1256,7 +1256,7 @@ export const expandedEnglishLangReading: PastPaperQuestion[] = [
   },
   {
     id: "exp-eng-read-012",
-    board: "Edexcel", subject: "english-language", year: 2022, series: "June",
+    board: "Adaptly", subject: "english-language", year: 2022, series: "June",
     paper: "Paper 2", questionNum: "3",
     marks: 10, topic: "Reading: Language Analysis",
     text: "How does the writer of Source B use language to persuade the reader? Support your answer with quotations.",
@@ -1267,7 +1267,7 @@ export const expandedEnglishLangReading: PastPaperQuestion[] = [
   },
   {
     id: "exp-eng-read-013",
-    board: "OCR", subject: "english-language", year: 2023, series: "June",
+    board: "Adaptly", subject: "english-language", year: 2023, series: "June",
     paper: "Paper 1", questionNum: "1",
     marks: 4, topic: "Reading: Identify and Interpret",
     text: "From lines 1-8, identify four ways in which the writer presents the main character.",
@@ -1278,7 +1278,7 @@ export const expandedEnglishLangReading: PastPaperQuestion[] = [
   },
   {
     id: "exp-eng-read-014",
-    board: "OCR", subject: "english-language", year: 2023, series: "June",
+    board: "Adaptly", subject: "english-language", year: 2023, series: "June",
     paper: "Paper 1", questionNum: "2",
     marks: 8, topic: "Reading: Language Analysis",
     text: "How does the writer use language to create atmosphere in lines 9-20?",
@@ -1289,7 +1289,7 @@ export const expandedEnglishLangReading: PastPaperQuestion[] = [
   },
   {
     id: "exp-eng-read-015",
-    board: "OCR", subject: "english-language", year: 2022, series: "June",
+    board: "Adaptly", subject: "english-language", year: 2022, series: "June",
     paper: "Paper 2", questionNum: "2",
     marks: 8, topic: "Reading: Comparison",
     text: "Compare the ways the two writers present their views on [topic]. Refer to both texts in your answer.",
@@ -1303,7 +1303,7 @@ export const expandedEnglishLangReading: PastPaperQuestion[] = [
 export const expandedEnglishLangWriting: PastPaperQuestion[] = [
   {
     id: "exp-eng-write-001",
-    board: "AQA", subject: "english-language", year: 2023, series: "June",
+    board: "Adaptly", subject: "english-language", year: 2023, series: "June",
     paper: "Paper 1: Explorations in Creative Reading and Writing", questionNum: "5a",
     marks: 24, topic: "Writing: Creative",
     text: "Write a description suggested by this picture. [Picture shows a deserted beach at dawn]",
@@ -1314,7 +1314,7 @@ export const expandedEnglishLangWriting: PastPaperQuestion[] = [
   },
   {
     id: "exp-eng-write-002",
-    board: "AQA", subject: "english-language", year: 2023, series: "June",
+    board: "Adaptly", subject: "english-language", year: 2023, series: "June",
     paper: "Paper 1: Explorations in Creative Reading and Writing", questionNum: "5b",
     marks: 24, topic: "Writing: Narrative",
     text: "Write the opening part of a story about a journey that goes wrong.",
@@ -1325,7 +1325,7 @@ export const expandedEnglishLangWriting: PastPaperQuestion[] = [
   },
   {
     id: "exp-eng-write-003",
-    board: "AQA", subject: "english-language", year: 2022, series: "June",
+    board: "Adaptly", subject: "english-language", year: 2022, series: "June",
     paper: "Paper 2: Writers' Viewpoints and Perspectives", questionNum: "5",
     marks: 40, topic: "Writing: Transactional",
     text: "Your school is considering banning mobile phones. Write a letter to your headteacher arguing for or against this decision.",
@@ -1336,7 +1336,7 @@ export const expandedEnglishLangWriting: PastPaperQuestion[] = [
   },
   {
     id: "exp-eng-write-004",
-    board: "Edexcel", subject: "english-language", year: 2023, series: "June",
+    board: "Adaptly", subject: "english-language", year: 2023, series: "June",
     paper: "Paper 1", questionNum: "5",
     marks: 40, topic: "Writing: Creative",
     text: "Write a story that begins with the words: 'The door had been locked for as long as anyone could remember.'",
@@ -1347,7 +1347,7 @@ export const expandedEnglishLangWriting: PastPaperQuestion[] = [
   },
   {
     id: "exp-eng-write-005",
-    board: "Edexcel", subject: "english-language", year: 2022, series: "June",
+    board: "Adaptly", subject: "english-language", year: 2022, series: "June",
     paper: "Paper 2", questionNum: "5",
     marks: 40, topic: "Writing: Transactional",
     text: "Write an article for a newspaper arguing that young people today face more pressure than previous generations.",
@@ -1358,7 +1358,7 @@ export const expandedEnglishLangWriting: PastPaperQuestion[] = [
   },
   {
     id: "exp-eng-write-006",
-    board: "OCR", subject: "english-language", year: 2023, series: "June",
+    board: "Adaptly", subject: "english-language", year: 2023, series: "June",
     paper: "Paper 1", questionNum: "4",
     marks: 40, topic: "Writing: Creative",
     text: "Write a description of a place that holds a special memory for you, real or imagined.",
@@ -1369,7 +1369,7 @@ export const expandedEnglishLangWriting: PastPaperQuestion[] = [
   },
   {
     id: "exp-eng-write-007",
-    board: "OCR", subject: "english-language", year: 2022, series: "June",
+    board: "Adaptly", subject: "english-language", year: 2022, series: "June",
     paper: "Paper 2", questionNum: "4",
     marks: 40, topic: "Writing: Transactional",
     text: "Write a speech to be delivered at a school assembly persuading students to take better care of the environment.",
@@ -1380,7 +1380,7 @@ export const expandedEnglishLangWriting: PastPaperQuestion[] = [
   },
   {
     id: "exp-eng-write-008",
-    board: "AQA", subject: "english-language", year: 2024, series: "June",
+    board: "Adaptly", subject: "english-language", year: 2024, series: "June",
     paper: "Paper 1", questionNum: "5a",
     marks: 24, topic: "Writing: Creative",
     text: "Write a description of a busy city street.",
@@ -1391,7 +1391,7 @@ export const expandedEnglishLangWriting: PastPaperQuestion[] = [
   },
   {
     id: "exp-eng-write-009",
-    board: "Edexcel", subject: "english-language", year: 2024, series: "June",
+    board: "Adaptly", subject: "english-language", year: 2024, series: "June",
     paper: "Paper 2", questionNum: "5",
     marks: 40, topic: "Writing: Transactional",
     text: "Write a report for your school council recommending changes to improve student wellbeing.",
@@ -1402,7 +1402,7 @@ export const expandedEnglishLangWriting: PastPaperQuestion[] = [
   },
   {
     id: "exp-eng-write-010",
-    board: "AQA", subject: "english-language", year: 2024, series: "June",
+    board: "Adaptly", subject: "english-language", year: 2024, series: "June",
     paper: "Paper 2", questionNum: "5",
     marks: 40, topic: "Writing: Transactional",
     text: "Write a magazine article for teenagers arguing that social media does more harm than good.",
@@ -1413,7 +1413,7 @@ export const expandedEnglishLangWriting: PastPaperQuestion[] = [
   },
   {
     id: "exp-eng-write-011",
-    board: "OCR", subject: "english-language", year: 2024, series: "June",
+    board: "Adaptly", subject: "english-language", year: 2024, series: "June",
     paper: "Paper 1", questionNum: "4",
     marks: 40, topic: "Writing: Narrative",
     text: "Write a story about someone who makes an unexpected discovery.",
@@ -1424,7 +1424,7 @@ export const expandedEnglishLangWriting: PastPaperQuestion[] = [
   },
   {
     id: "exp-eng-write-012",
-    board: "WJEC", subject: "english-language", year: 2023, series: "June",
+    board: "Adaptly", subject: "english-language", year: 2023, series: "June",
     paper: "Paper 1", questionNum: "3",
     marks: 20, topic: "Writing: Creative",
     text: "Write a description of a storm.",
@@ -1435,7 +1435,7 @@ export const expandedEnglishLangWriting: PastPaperQuestion[] = [
   },
   {
     id: "exp-eng-write-013",
-    board: "WJEC", subject: "english-language", year: 2022, series: "June",
+    board: "Adaptly", subject: "english-language", year: 2022, series: "June",
     paper: "Paper 2", questionNum: "3",
     marks: 20, topic: "Writing: Transactional",
     text: "Write a letter to a local newspaper arguing that your town needs better facilities for young people.",
@@ -1446,7 +1446,7 @@ export const expandedEnglishLangWriting: PastPaperQuestion[] = [
   },
   {
     id: "exp-eng-write-014",
-    board: "AQA", subject: "english-language", year: 2023, series: "November",
+    board: "Adaptly", subject: "english-language", year: 2023, series: "November",
     paper: "Paper 1", questionNum: "5b",
     marks: 24, topic: "Writing: Narrative",
     text: "Continue the following story: 'The message arrived at midnight. By morning, everything had changed.'",
@@ -1457,7 +1457,7 @@ export const expandedEnglishLangWriting: PastPaperQuestion[] = [
   },
   {
     id: "exp-eng-write-015",
-    board: "Edexcel", subject: "english-language", year: 2023, series: "November",
+    board: "Adaptly", subject: "english-language", year: 2023, series: "November",
     paper: "Paper 2", questionNum: "5",
     marks: 40, topic: "Writing: Transactional",
     text: "Write a speech arguing that homework should be abolished in secondary schools.",
@@ -1471,7 +1471,7 @@ export const expandedEnglishLangWriting: PastPaperQuestion[] = [
 export const expandedBiologyCell: PastPaperQuestion[] = [
   {
     id: "exp-bio-cell-001",
-    board: "AQA", subject: "biology", year: 2023, series: "June",
+    board: "Adaptly", subject: "biology", year: 2023, series: "June",
     paper: "Paper 1", tier: "Higher", questionNum: "1",
     marks: 4, topic: "Cell Biology",
     text: "Describe the differences between a prokaryotic cell and a eukaryotic cell.",
@@ -1482,7 +1482,7 @@ export const expandedBiologyCell: PastPaperQuestion[] = [
   },
   {
     id: "exp-bio-cell-002",
-    board: "AQA", subject: "biology", year: 2023, series: "June",
+    board: "Adaptly", subject: "biology", year: 2023, series: "June",
     paper: "Paper 1", tier: "Foundation", questionNum: "2",
     marks: 3, topic: "Cell Biology",
     text: "Name three structures found in a plant cell but not in an animal cell.",
@@ -1493,7 +1493,7 @@ export const expandedBiologyCell: PastPaperQuestion[] = [
   },
   {
     id: "exp-bio-cell-003",
-    board: "Edexcel", subject: "biology", year: 2023, series: "June",
+    board: "Adaptly", subject: "biology", year: 2023, series: "June",
     paper: "Paper 1", tier: "Foundation", questionNum: "1",
     marks: 4, topic: "Cell Biology",
     text: "Describe the function of the following cell structures: (a) nucleus; (b) mitochondria; (c) ribosomes.",
@@ -1504,7 +1504,7 @@ export const expandedBiologyCell: PastPaperQuestion[] = [
   },
   {
     id: "exp-bio-cell-004",
-    board: "AQA", subject: "biology", year: 2022, series: "June",
+    board: "Adaptly", subject: "biology", year: 2022, series: "June",
     paper: "Paper 1", tier: "Higher", questionNum: "3",
     marks: 5, topic: "Cell Biology",
     text: "Explain how a cell becomes specialised.",
@@ -1515,7 +1515,7 @@ export const expandedBiologyCell: PastPaperQuestion[] = [
   },
   {
     id: "exp-bio-cell-005",
-    board: "OCR", subject: "biology", year: 2023, series: "June",
+    board: "Adaptly", subject: "biology", year: 2023, series: "June",
     paper: "Paper 1", tier: "Foundation", questionNum: "2",
     marks: 3, topic: "Cell Biology",
     text: "What is the function of the cell membrane?",
@@ -1526,7 +1526,7 @@ export const expandedBiologyCell: PastPaperQuestion[] = [
   },
   {
     id: "exp-bio-cell-006",
-    board: "AQA", subject: "biology", year: 2024, series: "June",
+    board: "Adaptly", subject: "biology", year: 2024, series: "June",
     paper: "Paper 1", tier: "Higher", questionNum: "4",
     marks: 6, topic: "Cell Biology",
     text: "Describe the process of mitosis and explain its importance.",
@@ -1537,7 +1537,7 @@ export const expandedBiologyCell: PastPaperQuestion[] = [
   },
   {
     id: "exp-bio-cell-007",
-    board: "Edexcel", subject: "biology", year: 2022, series: "June",
+    board: "Adaptly", subject: "biology", year: 2022, series: "June",
     paper: "Paper 1", tier: "Foundation", questionNum: "3",
     marks: 4, topic: "Cell Biology",
     text: "Explain what is meant by osmosis.",
@@ -1548,7 +1548,7 @@ export const expandedBiologyCell: PastPaperQuestion[] = [
   },
   {
     id: "exp-bio-cell-008",
-    board: "OCR", subject: "biology", year: 2022, series: "June",
+    board: "Adaptly", subject: "biology", year: 2022, series: "June",
     paper: "Paper 1", tier: "Higher", questionNum: "5",
     marks: 5, topic: "Cell Biology",
     text: "A student places a piece of potato in a concentrated salt solution. Describe and explain what happens to the potato cells.",
@@ -1559,7 +1559,7 @@ export const expandedBiologyCell: PastPaperQuestion[] = [
   },
   {
     id: "exp-bio-cell-009",
-    board: "AQA", subject: "biology", year: 2023, series: "November",
+    board: "Adaptly", subject: "biology", year: 2023, series: "November",
     paper: "Paper 1", tier: "Foundation", questionNum: "2",
     marks: 3, topic: "Cell Biology",
     text: "What is the difference between mitosis and meiosis?",
@@ -1570,7 +1570,7 @@ export const expandedBiologyCell: PastPaperQuestion[] = [
   },
   {
     id: "exp-bio-cell-010",
-    board: "Edexcel", subject: "biology", year: 2024, series: "June",
+    board: "Adaptly", subject: "biology", year: 2024, series: "June",
     paper: "Paper 1", tier: "Higher", questionNum: "6",
     marks: 5, topic: "Cell Biology",
     text: "Explain how stem cells could be used to treat type 1 diabetes.",
@@ -1581,7 +1581,7 @@ export const expandedBiologyCell: PastPaperQuestion[] = [
   },
   {
     id: "exp-bio-cell-011",
-    board: "OCR", subject: "biology", year: 2024, series: "June",
+    board: "Adaptly", subject: "biology", year: 2024, series: "June",
     paper: "Paper 1", tier: "Foundation", questionNum: "3",
     marks: 3, topic: "Cell Biology",
     text: "What is meant by diffusion?",
@@ -1592,7 +1592,7 @@ export const expandedBiologyCell: PastPaperQuestion[] = [
   },
   {
     id: "exp-bio-cell-012",
-    board: "AQA", subject: "biology", year: 2022, series: "November",
+    board: "Adaptly", subject: "biology", year: 2022, series: "November",
     paper: "Paper 1", tier: "Higher", questionNum: "7",
     marks: 5, topic: "Cell Biology",
     text: "Explain how the surface area to volume ratio affects the rate of diffusion in cells.",
@@ -1603,7 +1603,7 @@ export const expandedBiologyCell: PastPaperQuestion[] = [
   },
   {
     id: "exp-bio-cell-013",
-    board: "Edexcel", subject: "biology", year: 2023, series: "November",
+    board: "Adaptly", subject: "biology", year: 2023, series: "November",
     paper: "Paper 1", tier: "Foundation", questionNum: "4",
     marks: 3, topic: "Cell Biology",
     text: "Name two types of stem cell and state where each is found.",
@@ -1614,7 +1614,7 @@ export const expandedBiologyCell: PastPaperQuestion[] = [
   },
   {
     id: "exp-bio-cell-014",
-    board: "OCR", subject: "biology", year: 2023, series: "November",
+    board: "Adaptly", subject: "biology", year: 2023, series: "November",
     paper: "Paper 1", tier: "Higher", questionNum: "8",
     marks: 5, topic: "Cell Biology",
     text: "Describe the structure of DNA and explain how it is replicated.",
@@ -1625,7 +1625,7 @@ export const expandedBiologyCell: PastPaperQuestion[] = [
   },
   {
     id: "exp-bio-cell-015",
-    board: "WJEC", subject: "biology", year: 2023, series: "June",
+    board: "Adaptly", subject: "biology", year: 2023, series: "June",
     paper: "Paper 1", tier: "Foundation", questionNum: "3",
     marks: 3, topic: "Cell Biology",
     text: "Give two ways in which a red blood cell is adapted for its function.",
@@ -1639,7 +1639,7 @@ export const expandedBiologyCell: PastPaperQuestion[] = [
 export const expandedBiologyOrganisation: PastPaperQuestion[] = [
   {
     id: "exp-bio-org-001",
-    board: "AQA", subject: "biology", year: 2023, series: "June",
+    board: "Adaptly", subject: "biology", year: 2023, series: "June",
     paper: "Paper 1", tier: "Foundation", questionNum: "5",
     marks: 4, topic: "Organisation",
     text: "Describe the function of the following parts of the digestive system: (a) stomach; (b) small intestine; (c) large intestine.",
@@ -1650,7 +1650,7 @@ export const expandedBiologyOrganisation: PastPaperQuestion[] = [
   },
   {
     id: "exp-bio-org-002",
-    board: "AQA", subject: "biology", year: 2023, series: "June",
+    board: "Adaptly", subject: "biology", year: 2023, series: "June",
     paper: "Paper 1", tier: "Higher", questionNum: "6",
     marks: 5, topic: "Organisation",
     text: "Explain how bile aids digestion.",
@@ -1661,7 +1661,7 @@ export const expandedBiologyOrganisation: PastPaperQuestion[] = [
   },
   {
     id: "exp-bio-org-003",
-    board: "Edexcel", subject: "biology", year: 2023, series: "June",
+    board: "Adaptly", subject: "biology", year: 2023, series: "June",
     paper: "Paper 1", tier: "Foundation", questionNum: "4",
     marks: 3, topic: "Organisation",
     text: "Name the enzyme that digests: (a) starch; (b) proteins; (c) fats.",
@@ -1672,7 +1672,7 @@ export const expandedBiologyOrganisation: PastPaperQuestion[] = [
   },
   {
     id: "exp-bio-org-004",
-    board: "OCR", subject: "biology", year: 2023, series: "June",
+    board: "Adaptly", subject: "biology", year: 2023, series: "June",
     paper: "Paper 1", tier: "Higher", questionNum: "7",
     marks: 5, topic: "Organisation",
     text: "Describe the structure of the heart and explain how it pumps blood around the body.",
@@ -1683,7 +1683,7 @@ export const expandedBiologyOrganisation: PastPaperQuestion[] = [
   },
   {
     id: "exp-bio-org-005",
-    board: "AQA", subject: "biology", year: 2022, series: "June",
+    board: "Adaptly", subject: "biology", year: 2022, series: "June",
     paper: "Paper 1", tier: "Foundation", questionNum: "6",
     marks: 4, topic: "Organisation",
     text: "Explain what coronary heart disease is and describe one way it can be treated.",
@@ -1694,7 +1694,7 @@ export const expandedBiologyOrganisation: PastPaperQuestion[] = [
   },
   {
     id: "exp-bio-org-006",
-    board: "Edexcel", subject: "biology", year: 2022, series: "June",
+    board: "Adaptly", subject: "biology", year: 2022, series: "June",
     paper: "Paper 1", tier: "Higher", questionNum: "8",
     marks: 5, topic: "Organisation",
     text: "Describe the adaptations of the alveoli for efficient gas exchange.",
@@ -1705,7 +1705,7 @@ export const expandedBiologyOrganisation: PastPaperQuestion[] = [
   },
   {
     id: "exp-bio-org-007",
-    board: "OCR", subject: "biology", year: 2022, series: "June",
+    board: "Adaptly", subject: "biology", year: 2022, series: "June",
     paper: "Paper 1", tier: "Foundation", questionNum: "5",
     marks: 3, topic: "Organisation",
     text: "What is the role of the liver in the body? Give two functions.",
@@ -1716,7 +1716,7 @@ export const expandedBiologyOrganisation: PastPaperQuestion[] = [
   },
   {
     id: "exp-bio-org-008",
-    board: "AQA", subject: "biology", year: 2024, series: "June",
+    board: "Adaptly", subject: "biology", year: 2024, series: "June",
     paper: "Paper 1", tier: "Higher", questionNum: "9",
     marks: 6, topic: "Organisation",
     text: "Explain how the kidneys maintain water balance in the body.",
@@ -1727,7 +1727,7 @@ export const expandedBiologyOrganisation: PastPaperQuestion[] = [
   },
   {
     id: "exp-bio-org-009",
-    board: "Edexcel", subject: "biology", year: 2024, series: "June",
+    board: "Adaptly", subject: "biology", year: 2024, series: "June",
     paper: "Paper 1", tier: "Foundation", questionNum: "5",
     marks: 4, topic: "Organisation",
     text: "Describe the path of blood through the heart from the body to the lungs.",
@@ -1738,7 +1738,7 @@ export const expandedBiologyOrganisation: PastPaperQuestion[] = [
   },
   {
     id: "exp-bio-org-010",
-    board: "OCR", subject: "biology", year: 2024, series: "June",
+    board: "Adaptly", subject: "biology", year: 2024, series: "June",
     paper: "Paper 1", tier: "Higher", questionNum: "10",
     marks: 5, topic: "Organisation",
     text: "Explain the difference between arteries, veins and capillaries.",
@@ -1749,7 +1749,7 @@ export const expandedBiologyOrganisation: PastPaperQuestion[] = [
   },
   {
     id: "exp-bio-org-011",
-    board: "AQA", subject: "biology", year: 2023, series: "November",
+    board: "Adaptly", subject: "biology", year: 2023, series: "November",
     paper: "Paper 1", tier: "Foundation", questionNum: "6",
     marks: 3, topic: "Organisation",
     text: "What is a tissue? Give one example.",
@@ -1760,7 +1760,7 @@ export const expandedBiologyOrganisation: PastPaperQuestion[] = [
   },
   {
     id: "exp-bio-org-012",
-    board: "Edexcel", subject: "biology", year: 2023, series: "November",
+    board: "Adaptly", subject: "biology", year: 2023, series: "November",
     paper: "Paper 1", tier: "Higher", questionNum: "11",
     marks: 5, topic: "Organisation",
     text: "Describe how the small intestine is adapted for the absorption of digested food.",
@@ -1771,7 +1771,7 @@ export const expandedBiologyOrganisation: PastPaperQuestion[] = [
   },
   {
     id: "exp-bio-org-013",
-    board: "OCR", subject: "biology", year: 2023, series: "November",
+    board: "Adaptly", subject: "biology", year: 2023, series: "November",
     paper: "Paper 1", tier: "Foundation", questionNum: "6",
     marks: 3, topic: "Organisation",
     text: "What is the function of red blood cells?",
@@ -1782,7 +1782,7 @@ export const expandedBiologyOrganisation: PastPaperQuestion[] = [
   },
   {
     id: "exp-bio-org-014",
-    board: "AQA", subject: "biology", year: 2022, series: "November",
+    board: "Adaptly", subject: "biology", year: 2022, series: "November",
     paper: "Paper 1", tier: "Higher", questionNum: "12",
     marks: 6, topic: "Organisation",
     text: "Explain the role of enzymes in digestion. Include information about how temperature and pH affect enzyme activity.",
@@ -1793,7 +1793,7 @@ export const expandedBiologyOrganisation: PastPaperQuestion[] = [
   },
   {
     id: "exp-bio-org-015",
-    board: "WJEC", subject: "biology", year: 2023, series: "June",
+    board: "Adaptly", subject: "biology", year: 2023, series: "June",
     paper: "Paper 1", tier: "Foundation", questionNum: "5",
     marks: 3, topic: "Organisation",
     text: "Name the four main blood components and state the function of each.",
@@ -1807,7 +1807,7 @@ export const expandedBiologyOrganisation: PastPaperQuestion[] = [
 export const expandedChemistryAtomic: PastPaperQuestion[] = [
   {
     id: "exp-chem-atom-001",
-    board: "AQA", subject: "chemistry", year: 2023, series: "June",
+    board: "Adaptly", subject: "chemistry", year: 2023, series: "June",
     paper: "Paper 1", tier: "Foundation", questionNum: "1",
     marks: 3, topic: "Atomic Structure",
     text: "An atom of sodium has atomic number 11 and mass number 23. State the number of protons, neutrons and electrons.",
@@ -1818,7 +1818,7 @@ export const expandedChemistryAtomic: PastPaperQuestion[] = [
   },
   {
     id: "exp-chem-atom-002",
-    board: "AQA", subject: "chemistry", year: 2023, series: "June",
+    board: "Adaptly", subject: "chemistry", year: 2023, series: "June",
     paper: "Paper 1", tier: "Higher", questionNum: "2",
     marks: 4, topic: "Atomic Structure",
     text: "Explain what is meant by isotopes. Give an example.",
@@ -1829,7 +1829,7 @@ export const expandedChemistryAtomic: PastPaperQuestion[] = [
   },
   {
     id: "exp-chem-atom-003",
-    board: "Edexcel", subject: "chemistry", year: 2023, series: "June",
+    board: "Adaptly", subject: "chemistry", year: 2023, series: "June",
     paper: "Paper 1", tier: "Foundation", questionNum: "1",
     marks: 3, topic: "Atomic Structure",
     text: "Draw the electronic structure of a magnesium atom (atomic number 12).",
@@ -1840,7 +1840,7 @@ export const expandedChemistryAtomic: PastPaperQuestion[] = [
   },
   {
     id: "exp-chem-atom-004",
-    board: "OCR", subject: "chemistry", year: 2023, series: "June",
+    board: "Adaptly", subject: "chemistry", year: 2023, series: "June",
     paper: "Paper 1", tier: "Foundation", questionNum: "2",
     marks: 3, topic: "Atomic Structure",
     text: "What is the relative charge and relative mass of: (a) a proton; (b) a neutron; (c) an electron?",
@@ -1851,7 +1851,7 @@ export const expandedChemistryAtomic: PastPaperQuestion[] = [
   },
   {
     id: "exp-chem-atom-005",
-    board: "AQA", subject: "chemistry", year: 2022, series: "June",
+    board: "Adaptly", subject: "chemistry", year: 2022, series: "June",
     paper: "Paper 1", tier: "Higher", questionNum: "3",
     marks: 5, topic: "Atomic Structure",
     text: "Explain how the atomic model has changed from Dalton's model to the current nuclear model.",
@@ -1862,7 +1862,7 @@ export const expandedChemistryAtomic: PastPaperQuestion[] = [
   },
   {
     id: "exp-chem-atom-006",
-    board: "Edexcel", subject: "chemistry", year: 2022, series: "June",
+    board: "Adaptly", subject: "chemistry", year: 2022, series: "June",
     paper: "Paper 1", tier: "Foundation", questionNum: "2",
     marks: 3, topic: "Atomic Structure",
     text: "An element has atomic number 17 and mass number 35. How many neutrons does it have?",
@@ -1873,7 +1873,7 @@ export const expandedChemistryAtomic: PastPaperQuestion[] = [
   },
   {
     id: "exp-chem-atom-007",
-    board: "OCR", subject: "chemistry", year: 2022, series: "June",
+    board: "Adaptly", subject: "chemistry", year: 2022, series: "June",
     paper: "Paper 1", tier: "Higher", questionNum: "4",
     marks: 4, topic: "Atomic Structure",
     text: "Explain why atoms are electrically neutral.",
@@ -1884,7 +1884,7 @@ export const expandedChemistryAtomic: PastPaperQuestion[] = [
   },
   {
     id: "exp-chem-atom-008",
-    board: "AQA", subject: "chemistry", year: 2024, series: "June",
+    board: "Adaptly", subject: "chemistry", year: 2024, series: "June",
     paper: "Paper 1", tier: "Higher", questionNum: "5",
     marks: 5, topic: "Atomic Structure",
     text: "Describe the Rutherford alpha particle scattering experiment and explain what the results showed.",
@@ -1895,7 +1895,7 @@ export const expandedChemistryAtomic: PastPaperQuestion[] = [
   },
   {
     id: "exp-chem-atom-009",
-    board: "Edexcel", subject: "chemistry", year: 2024, series: "June",
+    board: "Adaptly", subject: "chemistry", year: 2024, series: "June",
     paper: "Paper 1", tier: "Foundation", questionNum: "3",
     marks: 3, topic: "Atomic Structure",
     text: "What is the atomic number of an element?",
@@ -1906,7 +1906,7 @@ export const expandedChemistryAtomic: PastPaperQuestion[] = [
   },
   {
     id: "exp-chem-atom-010",
-    board: "OCR", subject: "chemistry", year: 2024, series: "June",
+    board: "Adaptly", subject: "chemistry", year: 2024, series: "June",
     paper: "Paper 1", tier: "Higher", questionNum: "6",
     marks: 4, topic: "Atomic Structure",
     text: "Chlorine has two isotopes: Cl-35 (75%) and Cl-37 (25%). Calculate the relative atomic mass of chlorine.",
@@ -1917,7 +1917,7 @@ export const expandedChemistryAtomic: PastPaperQuestion[] = [
   },
   {
     id: "exp-chem-atom-011",
-    board: "AQA", subject: "chemistry", year: 2023, series: "November",
+    board: "Adaptly", subject: "chemistry", year: 2023, series: "November",
     paper: "Paper 1", tier: "Foundation", questionNum: "2",
     marks: 3, topic: "Atomic Structure",
     text: "Write the electronic configuration of oxygen (atomic number 8).",
@@ -1928,7 +1928,7 @@ export const expandedChemistryAtomic: PastPaperQuestion[] = [
   },
   {
     id: "exp-chem-atom-012",
-    board: "Edexcel", subject: "chemistry", year: 2023, series: "November",
+    board: "Adaptly", subject: "chemistry", year: 2023, series: "November",
     paper: "Paper 1", tier: "Higher", questionNum: "7",
     marks: 4, topic: "Atomic Structure",
     text: "Explain why elements in the same group of the periodic table have similar chemical properties.",
@@ -1939,7 +1939,7 @@ export const expandedChemistryAtomic: PastPaperQuestion[] = [
   },
   {
     id: "exp-chem-atom-013",
-    board: "OCR", subject: "chemistry", year: 2023, series: "November",
+    board: "Adaptly", subject: "chemistry", year: 2023, series: "November",
     paper: "Paper 1", tier: "Foundation", questionNum: "3",
     marks: 3, topic: "Atomic Structure",
     text: "Where are electrons found in an atom?",
@@ -1950,7 +1950,7 @@ export const expandedChemistryAtomic: PastPaperQuestion[] = [
   },
   {
     id: "exp-chem-atom-014",
-    board: "AQA", subject: "chemistry", year: 2022, series: "November",
+    board: "Adaptly", subject: "chemistry", year: 2022, series: "November",
     paper: "Paper 1", tier: "Higher", questionNum: "8",
     marks: 5, topic: "Atomic Structure",
     text: "A sample of strontium contains two isotopes: Sr-86 (10%) and Sr-88 (90%). Calculate the relative atomic mass of strontium.",
@@ -1961,7 +1961,7 @@ export const expandedChemistryAtomic: PastPaperQuestion[] = [
   },
   {
     id: "exp-chem-atom-015",
-    board: "WJEC", subject: "chemistry", year: 2023, series: "June",
+    board: "Adaptly", subject: "chemistry", year: 2023, series: "June",
     paper: "Paper 1", tier: "Foundation", questionNum: "2",
     marks: 3, topic: "Atomic Structure",
     text: "What is the mass number of an atom?",
@@ -1975,7 +1975,7 @@ export const expandedChemistryAtomic: PastPaperQuestion[] = [
 export const expandedChemistryBonding: PastPaperQuestion[] = [
   {
     id: "exp-chem-bond-001",
-    board: "AQA", subject: "chemistry", year: 2023, series: "June",
+    board: "Adaptly", subject: "chemistry", year: 2023, series: "June",
     paper: "Paper 1", tier: "Foundation", questionNum: "4",
     marks: 4, topic: "Bonding, Structure and Properties",
     text: "Explain why sodium chloride (NaCl) has a high melting point and does not conduct electricity when solid.",
@@ -1986,7 +1986,7 @@ export const expandedChemistryBonding: PastPaperQuestion[] = [
   },
   {
     id: "exp-chem-bond-002",
-    board: "AQA", subject: "chemistry", year: 2023, series: "June",
+    board: "Adaptly", subject: "chemistry", year: 2023, series: "June",
     paper: "Paper 1", tier: "Higher", questionNum: "9",
     marks: 5, topic: "Bonding, Structure and Properties",
     text: "Explain why diamond is very hard and has a high melting point.",
@@ -1997,7 +1997,7 @@ export const expandedChemistryBonding: PastPaperQuestion[] = [
   },
   {
     id: "exp-chem-bond-003",
-    board: "Edexcel", subject: "chemistry", year: 2023, series: "June",
+    board: "Adaptly", subject: "chemistry", year: 2023, series: "June",
     paper: "Paper 1", tier: "Foundation", questionNum: "3",
     marks: 4, topic: "Bonding, Structure and Properties",
     text: "Describe the bonding in a covalent compound such as water (H2O).",
@@ -2008,7 +2008,7 @@ export const expandedChemistryBonding: PastPaperQuestion[] = [
   },
   {
     id: "exp-chem-bond-004",
-    board: "OCR", subject: "chemistry", year: 2023, series: "June",
+    board: "Adaptly", subject: "chemistry", year: 2023, series: "June",
     paper: "Paper 1", tier: "Higher", questionNum: "10",
     marks: 5, topic: "Bonding, Structure and Properties",
     text: "Explain why graphite conducts electricity but diamond does not.",
@@ -2019,7 +2019,7 @@ export const expandedChemistryBonding: PastPaperQuestion[] = [
   },
   {
     id: "exp-chem-bond-005",
-    board: "AQA", subject: "chemistry", year: 2022, series: "June",
+    board: "Adaptly", subject: "chemistry", year: 2022, series: "June",
     paper: "Paper 1", tier: "Foundation", questionNum: "5",
     marks: 3, topic: "Bonding, Structure and Properties",
     text: "What type of bonding is present in metals? Explain why metals conduct electricity.",
@@ -2030,7 +2030,7 @@ export const expandedChemistryBonding: PastPaperQuestion[] = [
   },
   {
     id: "exp-chem-bond-006",
-    board: "Edexcel", subject: "chemistry", year: 2022, series: "June",
+    board: "Adaptly", subject: "chemistry", year: 2022, series: "June",
     paper: "Paper 1", tier: "Higher", questionNum: "11",
     marks: 5, topic: "Bonding, Structure and Properties",
     text: "Explain why simple molecular substances have low melting points.",
@@ -2041,7 +2041,7 @@ export const expandedChemistryBonding: PastPaperQuestion[] = [
   },
   {
     id: "exp-chem-bond-007",
-    board: "OCR", subject: "chemistry", year: 2022, series: "June",
+    board: "Adaptly", subject: "chemistry", year: 2022, series: "June",
     paper: "Paper 1", tier: "Foundation", questionNum: "4",
     marks: 3, topic: "Bonding, Structure and Properties",
     text: "What is an ion? How is a sodium ion (Na+) formed?",
@@ -2052,7 +2052,7 @@ export const expandedChemistryBonding: PastPaperQuestion[] = [
   },
   {
     id: "exp-chem-bond-008",
-    board: "AQA", subject: "chemistry", year: 2024, series: "June",
+    board: "Adaptly", subject: "chemistry", year: 2024, series: "June",
     paper: "Paper 1", tier: "Higher", questionNum: "12",
     marks: 6, topic: "Bonding, Structure and Properties",
     text: "Compare the properties of ionic compounds, simple molecular compounds and giant covalent compounds.",
@@ -2063,7 +2063,7 @@ export const expandedChemistryBonding: PastPaperQuestion[] = [
   },
   {
     id: "exp-chem-bond-009",
-    board: "Edexcel", subject: "chemistry", year: 2024, series: "June",
+    board: "Adaptly", subject: "chemistry", year: 2024, series: "June",
     paper: "Paper 1", tier: "Foundation", questionNum: "4",
     marks: 3, topic: "Bonding, Structure and Properties",
     text: "Draw a dot-and-cross diagram for a molecule of hydrogen chloride (HCl).",
@@ -2074,7 +2074,7 @@ export const expandedChemistryBonding: PastPaperQuestion[] = [
   },
   {
     id: "exp-chem-bond-010",
-    board: "OCR", subject: "chemistry", year: 2024, series: "June",
+    board: "Adaptly", subject: "chemistry", year: 2024, series: "June",
     paper: "Paper 1", tier: "Higher", questionNum: "13",
     marks: 5, topic: "Bonding, Structure and Properties",
     text: "Explain why fullerenes (such as buckminsterfullerene, C60) have different properties to diamond and graphite.",
@@ -2085,7 +2085,7 @@ export const expandedChemistryBonding: PastPaperQuestion[] = [
   },
   {
     id: "exp-chem-bond-011",
-    board: "AQA", subject: "chemistry", year: 2023, series: "November",
+    board: "Adaptly", subject: "chemistry", year: 2023, series: "November",
     paper: "Paper 1", tier: "Foundation", questionNum: "5",
     marks: 3, topic: "Bonding, Structure and Properties",
     text: "What is ionic bonding?",
@@ -2096,7 +2096,7 @@ export const expandedChemistryBonding: PastPaperQuestion[] = [
   },
   {
     id: "exp-chem-bond-012",
-    board: "Edexcel", subject: "chemistry", year: 2023, series: "November",
+    board: "Adaptly", subject: "chemistry", year: 2023, series: "November",
     paper: "Paper 1", tier: "Higher", questionNum: "14",
     marks: 5, topic: "Bonding, Structure and Properties",
     text: "Explain why metals are malleable (can be bent and shaped).",
@@ -2107,7 +2107,7 @@ export const expandedChemistryBonding: PastPaperQuestion[] = [
   },
   {
     id: "exp-chem-bond-013",
-    board: "OCR", subject: "chemistry", year: 2023, series: "November",
+    board: "Adaptly", subject: "chemistry", year: 2023, series: "November",
     paper: "Paper 1", tier: "Foundation", questionNum: "5",
     marks: 3, topic: "Bonding, Structure and Properties",
     text: "Give two properties of ionic compounds.",
@@ -2118,7 +2118,7 @@ export const expandedChemistryBonding: PastPaperQuestion[] = [
   },
   {
     id: "exp-chem-bond-014",
-    board: "AQA", subject: "chemistry", year: 2022, series: "November",
+    board: "Adaptly", subject: "chemistry", year: 2022, series: "November",
     paper: "Paper 1", tier: "Higher", questionNum: "15",
     marks: 5, topic: "Bonding, Structure and Properties",
     text: "Explain why the melting point of silicon dioxide (SiO2) is much higher than that of carbon dioxide (CO2).",
@@ -2129,7 +2129,7 @@ export const expandedChemistryBonding: PastPaperQuestion[] = [
   },
   {
     id: "exp-chem-bond-015",
-    board: "WJEC", subject: "chemistry", year: 2023, series: "June",
+    board: "Adaptly", subject: "chemistry", year: 2023, series: "June",
     paper: "Paper 1", tier: "Foundation", questionNum: "4",
     marks: 3, topic: "Bonding, Structure and Properties",
     text: "What is a covalent bond?",
@@ -2143,7 +2143,7 @@ export const expandedChemistryBonding: PastPaperQuestion[] = [
 export const expandedPhysicsForces: PastPaperQuestion[] = [
   {
     id: "exp-phys-force-001",
-    board: "AQA", subject: "physics", year: 2023, series: "June",
+    board: "Adaptly", subject: "physics", year: 2023, series: "June",
     paper: "Paper 1", tier: "Foundation", questionNum: "1",
     marks: 3, topic: "Forces",
     text: "A car has a mass of 1200 kg and accelerates at 3 m/s^2. Calculate the resultant force acting on the car.",
@@ -2154,7 +2154,7 @@ export const expandedPhysicsForces: PastPaperQuestion[] = [
   },
   {
     id: "exp-phys-force-002",
-    board: "AQA", subject: "physics", year: 2023, series: "June",
+    board: "Adaptly", subject: "physics", year: 2023, series: "June",
     paper: "Paper 1", tier: "Higher", questionNum: "2",
     marks: 4, topic: "Forces",
     text: "A 5 kg object is moving at 10 m/s and decelerates to rest in 2 seconds. Calculate the braking force.",
@@ -2165,7 +2165,7 @@ export const expandedPhysicsForces: PastPaperQuestion[] = [
   },
   {
     id: "exp-phys-force-003",
-    board: "Edexcel", subject: "physics", year: 2023, series: "June",
+    board: "Adaptly", subject: "physics", year: 2023, series: "June",
     paper: "Paper 1", tier: "Foundation", questionNum: "2",
     marks: 3, topic: "Forces",
     text: "Describe the difference between a scalar and a vector quantity. Give one example of each.",
@@ -2176,7 +2176,7 @@ export const expandedPhysicsForces: PastPaperQuestion[] = [
   },
   {
     id: "exp-phys-force-004",
-    board: "OCR", subject: "physics", year: 2023, series: "June",
+    board: "Adaptly", subject: "physics", year: 2023, series: "June",
     paper: "Paper 1", tier: "Foundation", questionNum: "3",
     marks: 3, topic: "Forces",
     text: "A spring has a spring constant of 40 N/m. A force of 8 N is applied. Calculate the extension of the spring.",
@@ -2187,7 +2187,7 @@ export const expandedPhysicsForces: PastPaperQuestion[] = [
   },
   {
     id: "exp-phys-force-005",
-    board: "AQA", subject: "physics", year: 2022, series: "June",
+    board: "Adaptly", subject: "physics", year: 2022, series: "June",
     paper: "Paper 1", tier: "Higher", questionNum: "3",
     marks: 5, topic: "Forces",
     text: "Explain the difference between weight and mass.",
@@ -2198,7 +2198,7 @@ export const expandedPhysicsForces: PastPaperQuestion[] = [
   },
   {
     id: "exp-phys-force-006",
-    board: "Edexcel", subject: "physics", year: 2022, series: "June",
+    board: "Adaptly", subject: "physics", year: 2022, series: "June",
     paper: "Paper 1", tier: "Higher", questionNum: "4",
     marks: 5, topic: "Forces",
     text: "A 70 kg person stands on a scale in a lift that is accelerating upward at 2 m/s^2. What does the scale read? (g = 10 m/s^2)",
@@ -2209,7 +2209,7 @@ export const expandedPhysicsForces: PastPaperQuestion[] = [
   },
   {
     id: "exp-phys-force-007",
-    board: "OCR", subject: "physics", year: 2022, series: "June",
+    board: "Adaptly", subject: "physics", year: 2022, series: "June",
     paper: "Paper 1", tier: "Foundation", questionNum: "4",
     marks: 3, topic: "Forces",
     text: "What is the moment of a force? State the equation for moment.",
@@ -2220,7 +2220,7 @@ export const expandedPhysicsForces: PastPaperQuestion[] = [
   },
   {
     id: "exp-phys-force-008",
-    board: "AQA", subject: "physics", year: 2024, series: "June",
+    board: "Adaptly", subject: "physics", year: 2024, series: "June",
     paper: "Paper 1", tier: "Higher", questionNum: "5",
     marks: 5, topic: "Forces",
     text: "A car travelling at 20 m/s has a thinking distance of 15 m and a braking distance of 38 m. Calculate the total stopping distance and explain two factors that affect braking distance.",
@@ -2231,7 +2231,7 @@ export const expandedPhysicsForces: PastPaperQuestion[] = [
   },
   {
     id: "exp-phys-force-009",
-    board: "Edexcel", subject: "physics", year: 2024, series: "June",
+    board: "Adaptly", subject: "physics", year: 2024, series: "June",
     paper: "Paper 1", tier: "Foundation", questionNum: "5",
     marks: 3, topic: "Forces",
     text: "State Newton's First Law of Motion.",
@@ -2242,7 +2242,7 @@ export const expandedPhysicsForces: PastPaperQuestion[] = [
   },
   {
     id: "exp-phys-force-010",
-    board: "OCR", subject: "physics", year: 2024, series: "June",
+    board: "Adaptly", subject: "physics", year: 2024, series: "June",
     paper: "Paper 1", tier: "Higher", questionNum: "6",
     marks: 5, topic: "Forces",
     text: "A 0.5 kg ball is dropped from a height of 20 m. Calculate its speed just before it hits the ground. (g = 10 m/s^2, ignore air resistance)",
@@ -2253,7 +2253,7 @@ export const expandedPhysicsForces: PastPaperQuestion[] = [
   },
   {
     id: "exp-phys-force-011",
-    board: "AQA", subject: "physics", year: 2023, series: "November",
+    board: "Adaptly", subject: "physics", year: 2023, series: "November",
     paper: "Paper 1", tier: "Foundation", questionNum: "3",
     marks: 3, topic: "Forces",
     text: "A force of 50 N acts on an area of 0.25 m^2. Calculate the pressure.",
@@ -2264,7 +2264,7 @@ export const expandedPhysicsForces: PastPaperQuestion[] = [
   },
   {
     id: "exp-phys-force-012",
-    board: "Edexcel", subject: "physics", year: 2023, series: "November",
+    board: "Adaptly", subject: "physics", year: 2023, series: "November",
     paper: "Paper 1", tier: "Higher", questionNum: "7",
     marks: 5, topic: "Forces",
     text: "Explain why a parachutist reaches terminal velocity.",
@@ -2275,7 +2275,7 @@ export const expandedPhysicsForces: PastPaperQuestion[] = [
   },
   {
     id: "exp-phys-force-013",
-    board: "OCR", subject: "physics", year: 2023, series: "November",
+    board: "Adaptly", subject: "physics", year: 2023, series: "November",
     paper: "Paper 1", tier: "Foundation", questionNum: "5",
     marks: 3, topic: "Forces",
     text: "What is the difference between speed and velocity?",
@@ -2286,7 +2286,7 @@ export const expandedPhysicsForces: PastPaperQuestion[] = [
   },
   {
     id: "exp-phys-force-014",
-    board: "AQA", subject: "physics", year: 2022, series: "November",
+    board: "Adaptly", subject: "physics", year: 2022, series: "November",
     paper: "Paper 1", tier: "Higher", questionNum: "8",
     marks: 5, topic: "Forces",
     text: "A car of mass 800 kg is moving at 30 m/s. Calculate its kinetic energy.",
@@ -2297,7 +2297,7 @@ export const expandedPhysicsForces: PastPaperQuestion[] = [
   },
   {
     id: "exp-phys-force-015",
-    board: "WJEC", subject: "physics", year: 2023, series: "June",
+    board: "Adaptly", subject: "physics", year: 2023, series: "June",
     paper: "Paper 1", tier: "Foundation", questionNum: "4",
     marks: 3, topic: "Forces",
     text: "State Newton's Third Law of Motion and give an example.",
@@ -2311,7 +2311,7 @@ export const expandedPhysicsForces: PastPaperQuestion[] = [
 export const expandedPhysicsEnergy: PastPaperQuestion[] = [
   {
     id: "exp-phys-energy-001",
-    board: "AQA", subject: "physics", year: 2023, series: "June",
+    board: "Adaptly", subject: "physics", year: 2023, series: "June",
     paper: "Paper 1", tier: "Foundation", questionNum: "6",
     marks: 3, topic: "Energy",
     text: "A 2 kg book is lifted 1.5 m. Calculate the gravitational potential energy gained. (g = 10 N/kg)",
@@ -2322,7 +2322,7 @@ export const expandedPhysicsEnergy: PastPaperQuestion[] = [
   },
   {
     id: "exp-phys-energy-002",
-    board: "AQA", subject: "physics", year: 2023, series: "June",
+    board: "Adaptly", subject: "physics", year: 2023, series: "June",
     paper: "Paper 1", tier: "Higher", questionNum: "9",
     marks: 4, topic: "Energy",
     text: "A kettle has a power of 2000 W and is used for 3 minutes. Calculate the energy transferred.",
@@ -2333,7 +2333,7 @@ export const expandedPhysicsEnergy: PastPaperQuestion[] = [
   },
   {
     id: "exp-phys-energy-003",
-    board: "Edexcel", subject: "physics", year: 2023, series: "June",
+    board: "Adaptly", subject: "physics", year: 2023, series: "June",
     paper: "Paper 1", tier: "Foundation", questionNum: "6",
     marks: 3, topic: "Energy",
     text: "State the law of conservation of energy.",
@@ -2344,7 +2344,7 @@ export const expandedPhysicsEnergy: PastPaperQuestion[] = [
   },
   {
     id: "exp-phys-energy-004",
-    board: "OCR", subject: "physics", year: 2023, series: "June",
+    board: "Adaptly", subject: "physics", year: 2023, series: "June",
     paper: "Paper 1", tier: "Higher", questionNum: "10",
     marks: 5, topic: "Energy",
     text: "A light bulb transfers 100 J of electrical energy. 20 J is transferred as light. Calculate the efficiency of the bulb.",
@@ -2355,7 +2355,7 @@ export const expandedPhysicsEnergy: PastPaperQuestion[] = [
   },
   {
     id: "exp-phys-energy-005",
-    board: "AQA", subject: "physics", year: 2022, series: "June",
+    board: "Adaptly", subject: "physics", year: 2022, series: "June",
     paper: "Paper 1", tier: "Foundation", questionNum: "7",
     marks: 3, topic: "Energy",
     text: "Name four forms of energy.",
@@ -2366,7 +2366,7 @@ export const expandedPhysicsEnergy: PastPaperQuestion[] = [
   },
   {
     id: "exp-phys-energy-006",
-    board: "Edexcel", subject: "physics", year: 2022, series: "June",
+    board: "Adaptly", subject: "physics", year: 2022, series: "June",
     paper: "Paper 1", tier: "Higher", questionNum: "11",
     marks: 5, topic: "Energy",
     text: "Explain what is meant by specific heat capacity and describe how you could determine it experimentally.",
@@ -2377,7 +2377,7 @@ export const expandedPhysicsEnergy: PastPaperQuestion[] = [
   },
   {
     id: "exp-phys-energy-007",
-    board: "OCR", subject: "physics", year: 2022, series: "June",
+    board: "Adaptly", subject: "physics", year: 2022, series: "June",
     paper: "Paper 1", tier: "Foundation", questionNum: "7",
     marks: 3, topic: "Energy",
     text: "What is the difference between renewable and non-renewable energy sources? Give one example of each.",
@@ -2388,7 +2388,7 @@ export const expandedPhysicsEnergy: PastPaperQuestion[] = [
   },
   {
     id: "exp-phys-energy-008",
-    board: "AQA", subject: "physics", year: 2024, series: "June",
+    board: "Adaptly", subject: "physics", year: 2024, series: "June",
     paper: "Paper 1", tier: "Higher", questionNum: "12",
     marks: 5, topic: "Energy",
     text: "A spring with spring constant 200 N/m is compressed by 0.05 m. Calculate the elastic potential energy stored.",
@@ -2399,7 +2399,7 @@ export const expandedPhysicsEnergy: PastPaperQuestion[] = [
   },
   {
     id: "exp-phys-energy-009",
-    board: "Edexcel", subject: "physics", year: 2024, series: "June",
+    board: "Adaptly", subject: "physics", year: 2024, series: "June",
     paper: "Paper 1", tier: "Foundation", questionNum: "7",
     marks: 3, topic: "Energy",
     text: "A 60 W light bulb is left on for 2 hours. Calculate the energy used in kWh.",
@@ -2410,7 +2410,7 @@ export const expandedPhysicsEnergy: PastPaperQuestion[] = [
   },
   {
     id: "exp-phys-energy-010",
-    board: "OCR", subject: "physics", year: 2024, series: "June",
+    board: "Adaptly", subject: "physics", year: 2024, series: "June",
     paper: "Paper 1", tier: "Higher", questionNum: "13",
     marks: 5, topic: "Energy",
     text: "Explain why no machine can be 100% efficient.",
@@ -2421,7 +2421,7 @@ export const expandedPhysicsEnergy: PastPaperQuestion[] = [
   },
   {
     id: "exp-phys-energy-011",
-    board: "AQA", subject: "physics", year: 2023, series: "November",
+    board: "Adaptly", subject: "physics", year: 2023, series: "November",
     paper: "Paper 1", tier: "Foundation", questionNum: "6",
     marks: 3, topic: "Energy",
     text: "What is power? State the equation for power.",
@@ -2432,7 +2432,7 @@ export const expandedPhysicsEnergy: PastPaperQuestion[] = [
   },
   {
     id: "exp-phys-energy-012",
-    board: "Edexcel", subject: "physics", year: 2023, series: "November",
+    board: "Adaptly", subject: "physics", year: 2023, series: "November",
     paper: "Paper 1", tier: "Higher", questionNum: "14",
     marks: 5, topic: "Energy",
     text: "A car engine has an efficiency of 25%. The car uses 400,000 J of chemical energy from fuel. How much useful kinetic energy is produced?",
@@ -2443,7 +2443,7 @@ export const expandedPhysicsEnergy: PastPaperQuestion[] = [
   },
   {
     id: "exp-phys-energy-013",
-    board: "OCR", subject: "physics", year: 2023, series: "November",
+    board: "Adaptly", subject: "physics", year: 2023, series: "November",
     paper: "Paper 1", tier: "Foundation", questionNum: "7",
     marks: 3, topic: "Energy",
     text: "Give two advantages and two disadvantages of using wind turbines to generate electricity.",
@@ -2454,7 +2454,7 @@ export const expandedPhysicsEnergy: PastPaperQuestion[] = [
   },
   {
     id: "exp-phys-energy-014",
-    board: "AQA", subject: "physics", year: 2022, series: "November",
+    board: "Adaptly", subject: "physics", year: 2022, series: "November",
     paper: "Paper 1", tier: "Higher", questionNum: "15",
     marks: 5, topic: "Energy",
     text: "Explain how thermal energy is transferred by conduction, convection and radiation.",
@@ -2465,7 +2465,7 @@ export const expandedPhysicsEnergy: PastPaperQuestion[] = [
   },
   {
     id: "exp-phys-energy-015",
-    board: "WJEC", subject: "physics", year: 2023, series: "June",
+    board: "Adaptly", subject: "physics", year: 2023, series: "June",
     paper: "Paper 1", tier: "Foundation", questionNum: "5",
     marks: 3, topic: "Energy",
     text: "A 500 g object falls 10 m. Calculate the loss in gravitational potential energy. (g = 10 N/kg)",
@@ -2479,7 +2479,7 @@ export const expandedPhysicsEnergy: PastPaperQuestion[] = [
 export const expandedPhysicsWaves: PastPaperQuestion[] = [
   {
     id: "exp-phys-wave-001",
-    board: "AQA", subject: "physics", year: 2023, series: "June",
+    board: "Adaptly", subject: "physics", year: 2023, series: "June",
     paper: "Paper 2", tier: "Foundation", questionNum: "1",
     marks: 3, topic: "Waves",
     text: "A wave has a frequency of 50 Hz and a wavelength of 2 m. Calculate its wave speed.",
@@ -2490,7 +2490,7 @@ export const expandedPhysicsWaves: PastPaperQuestion[] = [
   },
   {
     id: "exp-phys-wave-002",
-    board: "AQA", subject: "physics", year: 2023, series: "June",
+    board: "Adaptly", subject: "physics", year: 2023, series: "June",
     paper: "Paper 2", tier: "Higher", questionNum: "2",
     marks: 4, topic: "Waves",
     text: "Explain the difference between transverse and longitudinal waves. Give one example of each.",
@@ -2501,7 +2501,7 @@ export const expandedPhysicsWaves: PastPaperQuestion[] = [
   },
   {
     id: "exp-phys-wave-003",
-    board: "Edexcel", subject: "physics", year: 2023, series: "June",
+    board: "Adaptly", subject: "physics", year: 2023, series: "June",
     paper: "Paper 2", tier: "Foundation", questionNum: "2",
     marks: 3, topic: "Waves",
     text: "What is the relationship between frequency and period of a wave?",
@@ -2512,7 +2512,7 @@ export const expandedPhysicsWaves: PastPaperQuestion[] = [
   },
   {
     id: "exp-phys-wave-004",
-    board: "OCR", subject: "physics", year: 2023, series: "June",
+    board: "Adaptly", subject: "physics", year: 2023, series: "June",
     paper: "Paper 2", tier: "Higher", questionNum: "3",
     marks: 5, topic: "Waves",
     text: "Describe the electromagnetic spectrum and give one use for each of three different types of electromagnetic wave.",
@@ -2523,7 +2523,7 @@ export const expandedPhysicsWaves: PastPaperQuestion[] = [
   },
   {
     id: "exp-phys-wave-005",
-    board: "AQA", subject: "physics", year: 2022, series: "June",
+    board: "Adaptly", subject: "physics", year: 2022, series: "June",
     paper: "Paper 2", tier: "Foundation", questionNum: "3",
     marks: 3, topic: "Waves",
     text: "What is meant by the amplitude of a wave?",
@@ -2534,7 +2534,7 @@ export const expandedPhysicsWaves: PastPaperQuestion[] = [
   },
   {
     id: "exp-phys-wave-006",
-    board: "Edexcel", subject: "physics", year: 2022, series: "June",
+    board: "Adaptly", subject: "physics", year: 2022, series: "June",
     paper: "Paper 2", tier: "Higher", questionNum: "4",
     marks: 5, topic: "Waves",
     text: "Explain how ultrasound is used in medical imaging.",
@@ -2545,7 +2545,7 @@ export const expandedPhysicsWaves: PastPaperQuestion[] = [
   },
   {
     id: "exp-phys-wave-007",
-    board: "OCR", subject: "physics", year: 2022, series: "June",
+    board: "Adaptly", subject: "physics", year: 2022, series: "June",
     paper: "Paper 2", tier: "Foundation", questionNum: "4",
     marks: 3, topic: "Waves",
     text: "State two properties that all electromagnetic waves share.",
@@ -2556,7 +2556,7 @@ export const expandedPhysicsWaves: PastPaperQuestion[] = [
   },
   {
     id: "exp-phys-wave-008",
-    board: "AQA", subject: "physics", year: 2024, series: "June",
+    board: "Adaptly", subject: "physics", year: 2024, series: "June",
     paper: "Paper 2", tier: "Higher", questionNum: "5",
     marks: 5, topic: "Waves",
     text: "Explain what happens when light passes from air into glass (refraction).",
@@ -2567,7 +2567,7 @@ export const expandedPhysicsWaves: PastPaperQuestion[] = [
   },
   {
     id: "exp-phys-wave-009",
-    board: "Edexcel", subject: "physics", year: 2024, series: "June",
+    board: "Adaptly", subject: "physics", year: 2024, series: "June",
     paper: "Paper 2", tier: "Foundation", questionNum: "5",
     marks: 3, topic: "Waves",
     text: "A sound wave has a frequency of 440 Hz and travels at 340 m/s. Calculate its wavelength.",
@@ -2578,7 +2578,7 @@ export const expandedPhysicsWaves: PastPaperQuestion[] = [
   },
   {
     id: "exp-phys-wave-010",
-    board: "OCR", subject: "physics", year: 2024, series: "June",
+    board: "Adaptly", subject: "physics", year: 2024, series: "June",
     paper: "Paper 2", tier: "Higher", questionNum: "6",
     marks: 5, topic: "Waves",
     text: "Explain the dangers of different types of electromagnetic radiation.",
@@ -2589,7 +2589,7 @@ export const expandedPhysicsWaves: PastPaperQuestion[] = [
   },
   {
     id: "exp-phys-wave-011",
-    board: "AQA", subject: "physics", year: 2023, series: "November",
+    board: "Adaptly", subject: "physics", year: 2023, series: "November",
     paper: "Paper 2", tier: "Foundation", questionNum: "4",
     marks: 3, topic: "Waves",
     text: "What is the speed of light in a vacuum?",
@@ -2600,7 +2600,7 @@ export const expandedPhysicsWaves: PastPaperQuestion[] = [
   },
   {
     id: "exp-phys-wave-012",
-    board: "Edexcel", subject: "physics", year: 2023, series: "November",
+    board: "Adaptly", subject: "physics", year: 2023, series: "November",
     paper: "Paper 2", tier: "Higher", questionNum: "7",
     marks: 5, topic: "Waves",
     text: "Describe the evidence for the Big Bang theory.",
@@ -2611,7 +2611,7 @@ export const expandedPhysicsWaves: PastPaperQuestion[] = [
   },
   {
     id: "exp-phys-wave-013",
-    board: "OCR", subject: "physics", year: 2023, series: "November",
+    board: "Adaptly", subject: "physics", year: 2023, series: "November",
     paper: "Paper 2", tier: "Foundation", questionNum: "5",
     marks: 3, topic: "Waves",
     text: "What is the difference between reflection and refraction of waves?",
@@ -2622,7 +2622,7 @@ export const expandedPhysicsWaves: PastPaperQuestion[] = [
   },
   {
     id: "exp-phys-wave-014",
-    board: "AQA", subject: "physics", year: 2022, series: "November",
+    board: "Adaptly", subject: "physics", year: 2022, series: "November",
     paper: "Paper 2", tier: "Higher", questionNum: "8",
     marks: 5, topic: "Waves",
     text: "Explain how seismic waves provide evidence about the internal structure of the Earth.",
@@ -2633,7 +2633,7 @@ export const expandedPhysicsWaves: PastPaperQuestion[] = [
   },
   {
     id: "exp-phys-wave-015",
-    board: "WJEC", subject: "physics", year: 2023, series: "June",
+    board: "Adaptly", subject: "physics", year: 2023, series: "June",
     paper: "Paper 2", tier: "Foundation", questionNum: "5",
     marks: 3, topic: "Waves",
     text: "Name the colours of the visible spectrum in order from longest to shortest wavelength.",
@@ -2647,7 +2647,7 @@ export const expandedPhysicsWaves: PastPaperQuestion[] = [
 export const expandedEnglishLitMacbeth: PastPaperQuestion[] = [
   {
     id: "exp-lit-mac-001",
-    board: "AQA", subject: "english-literature", year: 2023, series: "June",
+    board: "Adaptly", subject: "english-literature", year: 2023, series: "June",
     paper: "Paper 1: Shakespeare and the 19th-century novel", questionNum: "1",
     marks: 30, topic: "Macbeth",
     text: "How does Shakespeare present the theme of ambition in Macbeth? Write about: how Shakespeare presents ambition; how ambition changes during the play.",
@@ -2658,7 +2658,7 @@ export const expandedEnglishLitMacbeth: PastPaperQuestion[] = [
   },
   {
     id: "exp-lit-mac-002",
-    board: "AQA", subject: "english-literature", year: 2023, series: "June",
+    board: "Adaptly", subject: "english-literature", year: 2023, series: "June",
     paper: "Paper 1", questionNum: "1",
     marks: 30, topic: "Macbeth",
     text: "How does Shakespeare present the character of Lady Macbeth in the play?",
@@ -2669,7 +2669,7 @@ export const expandedEnglishLitMacbeth: PastPaperQuestion[] = [
   },
   {
     id: "exp-lit-mac-003",
-    board: "AQA", subject: "english-literature", year: 2022, series: "June",
+    board: "Adaptly", subject: "english-literature", year: 2022, series: "June",
     paper: "Paper 1", questionNum: "1",
     marks: 30, topic: "Macbeth",
     text: "How does Shakespeare present the theme of guilt and conscience in Macbeth?",
@@ -2680,7 +2680,7 @@ export const expandedEnglishLitMacbeth: PastPaperQuestion[] = [
   },
   {
     id: "exp-lit-mac-004",
-    board: "Edexcel", subject: "english-literature", year: 2023, series: "June",
+    board: "Adaptly", subject: "english-literature", year: 2023, series: "June",
     paper: "Paper 1", questionNum: "1",
     marks: 30, topic: "Macbeth",
     text: "How does Shakespeare present the relationship between Macbeth and Lady Macbeth?",
@@ -2691,7 +2691,7 @@ export const expandedEnglishLitMacbeth: PastPaperQuestion[] = [
   },
   {
     id: "exp-lit-mac-005",
-    board: "OCR", subject: "english-literature", year: 2023, series: "June",
+    board: "Adaptly", subject: "english-literature", year: 2023, series: "June",
     paper: "Paper 1", questionNum: "1",
     marks: 30, topic: "Macbeth",
     text: "How does Shakespeare present the supernatural in Macbeth?",
@@ -2702,7 +2702,7 @@ export const expandedEnglishLitMacbeth: PastPaperQuestion[] = [
   },
   {
     id: "exp-lit-mac-006",
-    board: "AQA", subject: "english-literature", year: 2022, series: "November",
+    board: "Adaptly", subject: "english-literature", year: 2022, series: "November",
     paper: "Paper 1", questionNum: "1",
     marks: 30, topic: "Macbeth",
     text: "How does Shakespeare present the theme of power in Macbeth?",
@@ -2713,7 +2713,7 @@ export const expandedEnglishLitMacbeth: PastPaperQuestion[] = [
   },
   {
     id: "exp-lit-mac-007",
-    board: "Edexcel", subject: "english-literature", year: 2022, series: "June",
+    board: "Adaptly", subject: "english-literature", year: 2022, series: "June",
     paper: "Paper 1", questionNum: "1",
     marks: 30, topic: "Macbeth",
     text: "How does Shakespeare present the character of Macbeth as a tragic hero?",
@@ -2724,7 +2724,7 @@ export const expandedEnglishLitMacbeth: PastPaperQuestion[] = [
   },
   {
     id: "exp-lit-mac-008",
-    board: "OCR", subject: "english-literature", year: 2022, series: "June",
+    board: "Adaptly", subject: "english-literature", year: 2022, series: "June",
     paper: "Paper 1", questionNum: "1",
     marks: 30, topic: "Macbeth",
     text: "How does Shakespeare present the theme of appearance versus reality in Macbeth?",
@@ -2735,7 +2735,7 @@ export const expandedEnglishLitMacbeth: PastPaperQuestion[] = [
   },
   {
     id: "exp-lit-mac-009",
-    board: "AQA", subject: "english-literature", year: 2024, series: "June",
+    board: "Adaptly", subject: "english-literature", year: 2024, series: "June",
     paper: "Paper 1", questionNum: "1",
     marks: 30, topic: "Macbeth",
     text: "How does Shakespeare present the witches and their influence on Macbeth?",
@@ -2746,7 +2746,7 @@ export const expandedEnglishLitMacbeth: PastPaperQuestion[] = [
   },
   {
     id: "exp-lit-mac-010",
-    board: "Edexcel", subject: "english-literature", year: 2024, series: "June",
+    board: "Adaptly", subject: "english-literature", year: 2024, series: "June",
     paper: "Paper 1", questionNum: "1",
     marks: 30, topic: "Macbeth",
     text: "How does Shakespeare present the theme of loyalty and betrayal in Macbeth?",
@@ -2757,7 +2757,7 @@ export const expandedEnglishLitMacbeth: PastPaperQuestion[] = [
   },
   {
     id: "exp-lit-mac-011",
-    board: "AQA", subject: "english-literature", year: 2023, series: "November",
+    board: "Adaptly", subject: "english-literature", year: 2023, series: "November",
     paper: "Paper 1", questionNum: "1",
     marks: 30, topic: "Macbeth",
     text: "How does Shakespeare present the character of Banquo in Macbeth?",
@@ -2768,7 +2768,7 @@ export const expandedEnglishLitMacbeth: PastPaperQuestion[] = [
   },
   {
     id: "exp-lit-mac-012",
-    board: "OCR", subject: "english-literature", year: 2024, series: "June",
+    board: "Adaptly", subject: "english-literature", year: 2024, series: "June",
     paper: "Paper 1", questionNum: "1",
     marks: 30, topic: "Macbeth",
     text: "How does Shakespeare present the theme of violence in Macbeth?",
@@ -2779,7 +2779,7 @@ export const expandedEnglishLitMacbeth: PastPaperQuestion[] = [
   },
   {
     id: "exp-lit-mac-013",
-    board: "WJEC", subject: "english-literature", year: 2023, series: "June",
+    board: "Adaptly", subject: "english-literature", year: 2023, series: "June",
     paper: "Paper 1", questionNum: "1",
     marks: 30, topic: "Macbeth",
     text: "How does Shakespeare present the theme of fate and free will in Macbeth?",
@@ -2790,7 +2790,7 @@ export const expandedEnglishLitMacbeth: PastPaperQuestion[] = [
   },
   {
     id: "exp-lit-mac-014",
-    board: "AQA", subject: "english-literature", year: 2022, series: "November",
+    board: "Adaptly", subject: "english-literature", year: 2022, series: "November",
     paper: "Paper 1", questionNum: "1",
     marks: 30, topic: "Macbeth",
     text: "How does Shakespeare present the character of Malcolm in Macbeth?",
@@ -2801,7 +2801,7 @@ export const expandedEnglishLitMacbeth: PastPaperQuestion[] = [
   },
   {
     id: "exp-lit-mac-015",
-    board: "Edexcel", subject: "english-literature", year: 2023, series: "November",
+    board: "Adaptly", subject: "english-literature", year: 2023, series: "November",
     paper: "Paper 1", questionNum: "1",
     marks: 30, topic: "Macbeth",
     text: "How does Shakespeare present the theme of order and disorder in Macbeth?",
@@ -2815,7 +2815,7 @@ export const expandedEnglishLitMacbeth: PastPaperQuestion[] = [
 export const expandedHistoryWW1: PastPaperQuestion[] = [
   {
     id: "exp-hist-ww1-001",
-    board: "AQA", subject: "history", year: 2023, series: "June",
+    board: "Adaptly", subject: "history", year: 2023, series: "June",
     paper: "Paper 1", questionNum: "1",
     marks: 4, topic: "World War One",
     text: "Describe two causes of the First World War.",
@@ -2826,7 +2826,7 @@ export const expandedHistoryWW1: PastPaperQuestion[] = [
   },
   {
     id: "exp-hist-ww1-002",
-    board: "AQA", subject: "history", year: 2023, series: "June",
+    board: "Adaptly", subject: "history", year: 2023, series: "June",
     paper: "Paper 1", questionNum: "2",
     marks: 8, topic: "World War One",
     text: "Explain why the Schlieffen Plan failed. You may use the following in your answer: Belgium, Marne. You must also use information of your own.",
@@ -2837,7 +2837,7 @@ export const expandedHistoryWW1: PastPaperQuestion[] = [
   },
   {
     id: "exp-hist-ww1-003",
-    board: "Edexcel", subject: "history", year: 2023, series: "June",
+    board: "Adaptly", subject: "history", year: 2023, series: "June",
     paper: "Paper 1", questionNum: "1",
     marks: 4, topic: "World War One",
     text: "Give two reasons why trench warfare developed on the Western Front.",
@@ -2848,7 +2848,7 @@ export const expandedHistoryWW1: PastPaperQuestion[] = [
   },
   {
     id: "exp-hist-ww1-004",
-    board: "OCR", subject: "history", year: 2023, series: "June",
+    board: "Adaptly", subject: "history", year: 2023, series: "June",
     paper: "Paper 1", questionNum: "1",
     marks: 4, topic: "World War One",
     text: "Describe the conditions in the trenches during the First World War.",
@@ -2859,7 +2859,7 @@ export const expandedHistoryWW1: PastPaperQuestion[] = [
   },
   {
     id: "exp-hist-ww1-005",
-    board: "AQA", subject: "history", year: 2022, series: "June",
+    board: "Adaptly", subject: "history", year: 2022, series: "June",
     paper: "Paper 1", questionNum: "3",
     marks: 12, topic: "World War One",
     text: "Has the following statement been proven: 'The main reason for the Allied victory in 1918 was the entry of the USA into the war.' Explain your answer.",
@@ -2870,7 +2870,7 @@ export const expandedHistoryWW1: PastPaperQuestion[] = [
   },
   {
     id: "exp-hist-ww1-006",
-    board: "Edexcel", subject: "history", year: 2022, series: "June",
+    board: "Adaptly", subject: "history", year: 2022, series: "June",
     paper: "Paper 1", questionNum: "2",
     marks: 8, topic: "World War One",
     text: "Explain why the Battle of the Somme (1916) is considered significant.",
@@ -2881,7 +2881,7 @@ export const expandedHistoryWW1: PastPaperQuestion[] = [
   },
   {
     id: "exp-hist-ww1-007",
-    board: "OCR", subject: "history", year: 2022, series: "June",
+    board: "Adaptly", subject: "history", year: 2022, series: "June",
     paper: "Paper 1", questionNum: "2",
     marks: 8, topic: "World War One",
     text: "Explain why the USA entered the First World War in 1917.",
@@ -2892,7 +2892,7 @@ export const expandedHistoryWW1: PastPaperQuestion[] = [
   },
   {
     id: "exp-hist-ww1-008",
-    board: "AQA", subject: "history", year: 2024, series: "June",
+    board: "Adaptly", subject: "history", year: 2024, series: "June",
     paper: "Paper 1", questionNum: "2",
     marks: 8, topic: "World War One",
     text: "Explain why the Treaty of Versailles was controversial.",
@@ -2903,7 +2903,7 @@ export const expandedHistoryWW1: PastPaperQuestion[] = [
   },
   {
     id: "exp-hist-ww1-009",
-    board: "Edexcel", subject: "history", year: 2024, series: "June",
+    board: "Adaptly", subject: "history", year: 2024, series: "June",
     paper: "Paper 1", questionNum: "1",
     marks: 4, topic: "World War One",
     text: "Give two ways in which the war changed the role of women in Britain.",
@@ -2914,7 +2914,7 @@ export const expandedHistoryWW1: PastPaperQuestion[] = [
   },
   {
     id: "exp-hist-ww1-010",
-    board: "OCR", subject: "history", year: 2024, series: "June",
+    board: "Adaptly", subject: "history", year: 2024, series: "June",
     paper: "Paper 1", questionNum: "2",
     marks: 8, topic: "World War One",
     text: "Explain why propaganda was important during the First World War.",
@@ -2925,7 +2925,7 @@ export const expandedHistoryWW1: PastPaperQuestion[] = [
   },
   {
     id: "exp-hist-ww1-011",
-    board: "AQA", subject: "history", year: 2023, series: "November",
+    board: "Adaptly", subject: "history", year: 2023, series: "November",
     paper: "Paper 1", questionNum: "1",
     marks: 4, topic: "World War One",
     text: "Describe two features of the Western Front during the First World War.",
@@ -2936,7 +2936,7 @@ export const expandedHistoryWW1: PastPaperQuestion[] = [
   },
   {
     id: "exp-hist-ww1-012",
-    board: "Edexcel", subject: "history", year: 2023, series: "November",
+    board: "Adaptly", subject: "history", year: 2023, series: "November",
     paper: "Paper 1", questionNum: "2",
     marks: 8, topic: "World War One",
     text: "Explain why the Gallipoli campaign (1915) was a failure.",
@@ -2947,7 +2947,7 @@ export const expandedHistoryWW1: PastPaperQuestion[] = [
   },
   {
     id: "exp-hist-ww1-013",
-    board: "OCR", subject: "history", year: 2023, series: "November",
+    board: "Adaptly", subject: "history", year: 2023, series: "November",
     paper: "Paper 1", questionNum: "1",
     marks: 4, topic: "World War One",
     text: "Describe two ways in which technology changed warfare during the First World War.",
@@ -2958,7 +2958,7 @@ export const expandedHistoryWW1: PastPaperQuestion[] = [
   },
   {
     id: "exp-hist-ww1-014",
-    board: "AQA", subject: "history", year: 2022, series: "November",
+    board: "Adaptly", subject: "history", year: 2022, series: "November",
     paper: "Paper 1", questionNum: "3",
     marks: 12, topic: "World War One",
     text: "The most important cause of the First World War was the assassination of Archduke Franz Ferdinand. How far do you agree? Explain your answer.",
@@ -2969,7 +2969,7 @@ export const expandedHistoryWW1: PastPaperQuestion[] = [
   },
   {
     id: "exp-hist-ww1-015",
-    board: "WJEC", subject: "history", year: 2023, series: "June",
+    board: "Adaptly", subject: "history", year: 2023, series: "June",
     paper: "Paper 1", questionNum: "2",
     marks: 8, topic: "World War One",
     text: "Explain the importance of the Home Front during the First World War.",
@@ -2983,7 +2983,7 @@ export const expandedHistoryWW1: PastPaperQuestion[] = [
 export const expandedGeographyNaturalHazards: PastPaperQuestion[] = [
   {
     id: "exp-geog-haz-001",
-    board: "AQA", subject: "geography", year: 2023, series: "June",
+    board: "Adaptly", subject: "geography", year: 2023, series: "June",
     paper: "Paper 1", questionNum: "1",
     marks: 3, topic: "Natural Hazards",
     text: "Describe the global distribution of earthquakes.",
@@ -2994,7 +2994,7 @@ export const expandedGeographyNaturalHazards: PastPaperQuestion[] = [
   },
   {
     id: "exp-geog-haz-002",
-    board: "AQA", subject: "geography", year: 2023, series: "June",
+    board: "Adaptly", subject: "geography", year: 2023, series: "June",
     paper: "Paper 1", questionNum: "2",
     marks: 6, topic: "Natural Hazards",
     text: "Explain why earthquakes cause more deaths in LICs (Low Income Countries) than in HICs (High Income Countries).",
@@ -3005,7 +3005,7 @@ export const expandedGeographyNaturalHazards: PastPaperQuestion[] = [
   },
   {
     id: "exp-geog-haz-003",
-    board: "Edexcel", subject: "geography", year: 2023, series: "June",
+    board: "Adaptly", subject: "geography", year: 2023, series: "June",
     paper: "Paper 1", questionNum: "1",
     marks: 3, topic: "Natural Hazards",
     text: "What is a tectonic plate?",
@@ -3016,7 +3016,7 @@ export const expandedGeographyNaturalHazards: PastPaperQuestion[] = [
   },
   {
     id: "exp-geog-haz-004",
-    board: "OCR", subject: "geography", year: 2023, series: "June",
+    board: "Adaptly", subject: "geography", year: 2023, series: "June",
     paper: "Paper 1", questionNum: "2",
     marks: 6, topic: "Natural Hazards",
     text: "Explain how volcanoes are formed at destructive plate boundaries.",
@@ -3027,7 +3027,7 @@ export const expandedGeographyNaturalHazards: PastPaperQuestion[] = [
   },
   {
     id: "exp-geog-haz-005",
-    board: "AQA", subject: "geography", year: 2022, series: "June",
+    board: "Adaptly", subject: "geography", year: 2022, series: "June",
     paper: "Paper 1", questionNum: "3",
     marks: 9, topic: "Natural Hazards",
     text: "For a named earthquake you have studied, explain the social, economic and environmental impacts.",
@@ -3038,7 +3038,7 @@ export const expandedGeographyNaturalHazards: PastPaperQuestion[] = [
   },
   {
     id: "exp-geog-haz-006",
-    board: "Edexcel", subject: "geography", year: 2022, series: "June",
+    board: "Adaptly", subject: "geography", year: 2022, series: "June",
     paper: "Paper 1", questionNum: "2",
     marks: 6, topic: "Natural Hazards",
     text: "Explain how climate change may affect the frequency and intensity of natural hazards.",
@@ -3049,7 +3049,7 @@ export const expandedGeographyNaturalHazards: PastPaperQuestion[] = [
   },
   {
     id: "exp-geog-haz-007",
-    board: "OCR", subject: "geography", year: 2022, series: "June",
+    board: "Adaptly", subject: "geography", year: 2022, series: "June",
     paper: "Paper 1", questionNum: "1",
     marks: 3, topic: "Natural Hazards",
     text: "What is the difference between the focus and the epicentre of an earthquake?",
@@ -3060,7 +3060,7 @@ export const expandedGeographyNaturalHazards: PastPaperQuestion[] = [
   },
   {
     id: "exp-geog-haz-008",
-    board: "AQA", subject: "geography", year: 2024, series: "June",
+    board: "Adaptly", subject: "geography", year: 2024, series: "June",
     paper: "Paper 1", questionNum: "2",
     marks: 6, topic: "Natural Hazards",
     text: "Explain why some areas are more at risk from tropical storms than others.",
@@ -3071,7 +3071,7 @@ export const expandedGeographyNaturalHazards: PastPaperQuestion[] = [
   },
   {
     id: "exp-geog-haz-009",
-    board: "Edexcel", subject: "geography", year: 2024, series: "June",
+    board: "Adaptly", subject: "geography", year: 2024, series: "June",
     paper: "Paper 1", questionNum: "1",
     marks: 3, topic: "Natural Hazards",
     text: "Describe the structure of a tropical storm.",
@@ -3082,7 +3082,7 @@ export const expandedGeographyNaturalHazards: PastPaperQuestion[] = [
   },
   {
     id: "exp-geog-haz-010",
-    board: "OCR", subject: "geography", year: 2024, series: "June",
+    board: "Adaptly", subject: "geography", year: 2024, series: "June",
     paper: "Paper 1", questionNum: "2",
     marks: 6, topic: "Natural Hazards",
     text: "Explain how the responses to a natural hazard differ between HICs and LICs.",
@@ -3093,7 +3093,7 @@ export const expandedGeographyNaturalHazards: PastPaperQuestion[] = [
   },
   {
     id: "exp-geog-haz-011",
-    board: "AQA", subject: "geography", year: 2023, series: "November",
+    board: "Adaptly", subject: "geography", year: 2023, series: "November",
     paper: "Paper 1", questionNum: "1",
     marks: 3, topic: "Natural Hazards",
     text: "What is the Richter scale used for?",
@@ -3104,7 +3104,7 @@ export const expandedGeographyNaturalHazards: PastPaperQuestion[] = [
   },
   {
     id: "exp-geog-haz-012",
-    board: "Edexcel", subject: "geography", year: 2023, series: "November",
+    board: "Adaptly", subject: "geography", year: 2023, series: "November",
     paper: "Paper 1", questionNum: "2",
     marks: 6, topic: "Natural Hazards",
     text: "Explain the primary and secondary effects of a volcanic eruption.",
@@ -3115,7 +3115,7 @@ export const expandedGeographyNaturalHazards: PastPaperQuestion[] = [
   },
   {
     id: "exp-geog-haz-013",
-    board: "OCR", subject: "geography", year: 2023, series: "November",
+    board: "Adaptly", subject: "geography", year: 2023, series: "November",
     paper: "Paper 1", questionNum: "1",
     marks: 3, topic: "Natural Hazards",
     text: "Give two ways in which people can prepare for earthquakes.",
@@ -3126,7 +3126,7 @@ export const expandedGeographyNaturalHazards: PastPaperQuestion[] = [
   },
   {
     id: "exp-geog-haz-014",
-    board: "AQA", subject: "geography", year: 2022, series: "November",
+    board: "Adaptly", subject: "geography", year: 2022, series: "November",
     paper: "Paper 1", questionNum: "3",
     marks: 9, topic: "Natural Hazards",
     text: "For a named volcanic eruption you have studied, explain the management of the event.",
@@ -3137,7 +3137,7 @@ export const expandedGeographyNaturalHazards: PastPaperQuestion[] = [
   },
   {
     id: "exp-geog-haz-015",
-    board: "WJEC", subject: "geography", year: 2023, series: "June",
+    board: "Adaptly", subject: "geography", year: 2023, series: "June",
     paper: "Paper 1", questionNum: "2",
     marks: 6, topic: "Natural Hazards",
     text: "Explain why people continue to live in areas at risk from natural hazards.",
