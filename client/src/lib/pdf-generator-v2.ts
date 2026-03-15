@@ -432,6 +432,7 @@ export async function downloadHtmlAsPdf(
     // Extra wait for KaTeX fonts
     await new Promise((resolve) => setTimeout(resolve, 300));
 
+
     // Capture with html2canvas using the live DOM
     const canvas = await html2canvas(printRoot, {
       scale: 2,
