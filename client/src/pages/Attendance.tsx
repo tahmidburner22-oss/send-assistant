@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import { useApp, type AttendanceRecord, type AttendanceStatus } from "@/contexts/AppContext";
 import {
   CalendarDays, CheckCircle2, XCircle, MinusCircle, ChevronLeft, ChevronRight,
-  Users, TrendingUp, Download, Sun, Sunset, AlertCircle, Save, Database
+  Users, TrendingUp, Download, Sun, Sunset, AlertCircle, Save, Database, Clock, HelpCircle
 } from "lucide-react";
 
 const ABSENCE_REASONS = [
@@ -58,6 +58,16 @@ function StatusBadge({ status }: { status: AttendanceStatus }) {
       <XCircle className="h-3 w-3" />Absent
     </span>
   );
+  if (status === "late") return (
+    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-xs font-medium">
+      <Clock className="h-3 w-3" />Late
+    </span>
+  );
+  if (status === "other") return (
+    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 text-xs font-medium">
+      <HelpCircle className="h-3 w-3" />Other
+    </span>
+  );
   return (
     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 text-xs font-medium">
       <MinusCircle className="h-3 w-3" />—
@@ -79,11 +89,11 @@ function SessionInput({ label, icon, status, reason, onStatusChange, onReasonCha
       <div className="flex items-center gap-1.5 text-sm font-medium text-gray-700">
         {icon}{label}
       </div>
-      <div className="flex gap-2">
+      <div className="grid grid-cols-2 gap-2">
         <button
           type="button"
           onClick={() => onStatusChange("attended")}
-          className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg border text-sm font-medium transition-all ${
+          className={`flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg border text-sm font-medium transition-all ${
             status === "attended"
               ? "bg-green-500 text-white border-green-500 shadow-sm"
               : "bg-white text-gray-600 border-gray-200 hover:border-green-300 hover:bg-green-50"
@@ -94,7 +104,7 @@ function SessionInput({ label, icon, status, reason, onStatusChange, onReasonCha
         <button
           type="button"
           onClick={() => onStatusChange("absent")}
-          className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg border text-sm font-medium transition-all ${
+          className={`flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg border text-sm font-medium transition-all ${
             status === "absent"
               ? "bg-red-500 text-white border-red-500 shadow-sm"
               : "bg-white text-gray-600 border-gray-200 hover:border-red-300 hover:bg-red-50"
@@ -102,11 +112,33 @@ function SessionInput({ label, icon, status, reason, onStatusChange, onReasonCha
         >
           <XCircle className="h-4 w-4" />Absent
         </button>
+        <button
+          type="button"
+          onClick={() => onStatusChange("late")}
+          className={`flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg border text-sm font-medium transition-all ${
+            status === "late"
+              ? "bg-amber-500 text-white border-amber-500 shadow-sm"
+              : "bg-white text-gray-600 border-gray-200 hover:border-amber-300 hover:bg-amber-50"
+          }`}
+        >
+          <Clock className="h-4 w-4" />Late
+        </button>
+        <button
+          type="button"
+          onClick={() => onStatusChange("other")}
+          className={`flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg border text-sm font-medium transition-all ${
+            status === "other"
+              ? "bg-purple-500 text-white border-purple-500 shadow-sm"
+              : "bg-white text-gray-600 border-gray-200 hover:border-purple-300 hover:bg-purple-50"
+          }`}
+        >
+          <HelpCircle className="h-4 w-4" />Other
+        </button>
       </div>
-      {status === "absent" && (
+      {(status === "absent" || status === "late" || status === "other") && (
         <Select value={reason} onValueChange={onReasonChange}>
           <SelectTrigger className="text-sm">
-            <SelectValue placeholder="Select reason for absence..." />
+            <SelectValue placeholder={status === "late" ? "Select reason for lateness..." : status === "other" ? "Select reason..." : "Select reason for absence..."} />
           </SelectTrigger>
           <SelectContent>
             {ABSENCE_REASONS.map(r => (
@@ -155,9 +187,9 @@ export default function Attendance() {
       childId: editingChild,
       date: selectedDate,
       amStatus: formAm,
-      amReason: formAm === "absent" ? formAmReason : undefined,
+      amReason: (formAm === "absent" || formAm === "late" || formAm === "other") ? formAmReason : undefined,
       pmStatus: formPm,
-      pmReason: formPm === "absent" ? formPmReason : undefined,
+      pmReason: (formPm === "absent" || formPm === "late" || formPm === "other") ? formPmReason : undefined,
       notes: formNotes || undefined,
       recordedBy: user.displayName,
     });

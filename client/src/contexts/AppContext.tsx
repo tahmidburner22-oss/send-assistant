@@ -41,7 +41,7 @@ export interface Child {
   timetable?: TimetableLesson[];
 }
 
-export type AttendanceStatus = "attended" | "absent" | "not-recorded";
+export type AttendanceStatus = "attended" | "absent" | "late" | "other" | "not-recorded";
 
 export interface AttendanceRecord {
   id: string; childId: string; date: string;
