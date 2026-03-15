@@ -21,7 +21,7 @@ import { downloadHtmlAsPdf, printWorksheetElement } from "@/lib/pdf-generator-v2
 import WorksheetRenderer, { renderMath, stripKatexToPlainText } from "@/components/WorksheetRenderer";
 import { worksheetBank, type BankWorksheet } from "@/lib/worksheet-bank";
 import { getSyllabusTopics, type SyllabusTopic } from "@/lib/syllabus-data";
-import { aiGenerateWorksheet, aiEditSection, aiScaffoldExistingWorksheet, aiDifferentiateExistingWorksheet } from "@/lib/ai";
+import { aiGenerateWorksheet, aiEditSection, aiScaffoldExistingWorksheet, aiDifferentiateExistingWorksheet, parseNaturalLanguageInput, aiScenarioSwap, aiAdjustReadingLevel } from "@/lib/ai";
 // examPaperBuilder is dynamically imported inside handlers to avoid loading the large question bank on initial page load
 import type { PastPaperQuestion } from "@/lib/pastPaperQuestions";
 import PrintOptionsDialog, { type PrintOptions } from "@/components/PrintOptionsDialog";
@@ -155,6 +155,18 @@ export default function Worksheets() {
   const [includeAnswers, setIncludeAnswers] = useState(true);
   const [examStyle, setExamStyle] = useState(false);
   const [recallTopic, setRecallTopic] = useState("");
+  // Natural language input
+  const [nlInput, setNlInput] = useState("");
+  // Target page count (0 = auto, 1, 2, 3)
+  const [targetPages, setTargetPages] = useState(0);
+  // Reading age (0 = match year group, 7, 9, 11, 13)
+  const [readingAge, setReadingAge] = useState(0);
+  // Scenario swap state
+  const [scenarioSwapLoading, setScenarioSwapLoading] = useState(false);
+  const [showScenarioDialog, setShowScenarioDialog] = useState(false);
+  const [scenarioInput, setScenarioInput] = useState("");
+  // Reading level adjustment (post-generation)
+  const [readingLevelLoading, setReadingLevelLoading] = useState(false);
 
   // Reset difficulty to a valid option when subject changes
   // Exam-style always defaults OFF — user must opt in
@@ -310,6 +322,8 @@ export default function Worksheets() {
           generateDiagram: false, // No diagram in exam mode
           worksheetLength,
           introOnly: true, // Only generate intro sections (objectives, vocab, worked example) — exam questions will be injected from the bank
+          targetPages: targetPages || undefined,
+          readingAge: readingAge || undefined,
         });
 
         // Step 2: Replace exercise sections with real exam questions from the bank
@@ -350,6 +364,8 @@ export default function Worksheets() {
             additionalInstructions,
             generateDiagram: false,
             worksheetLength,
+            targetPages: targetPages || undefined,
+            readingAge: readingAge || undefined,
           });
           generatedWs = { ...result, isAI: true } as AIWorksheet;
           toast.success("Exam-style worksheet generated with AI!");
@@ -372,6 +388,8 @@ export default function Worksheets() {
           generateDiagram,
           worksheetLength,
           recallTopic: recallTopic.trim() || undefined,
+          targetPages: targetPages || undefined,
+          readingAge: readingAge || undefined,
         });
         generatedWs = { ...result, isAI: true } as AIWorksheet;
         toast.success(generateDiagram ? "Worksheet with diagram generated!" : "Worksheet generated with AI!");
@@ -662,6 +680,87 @@ export default function Worksheets() {
 
   const getSectionContent = (i: number, original: string) => editedSections[i] !== undefined ? editedSections[i] : original;
 
+  // ─── Scenario Swap ──────────────────────────────────────────────────────────────
+  const handleScenarioSwap = async () => {
+    if (!generated || !scenarioInput.trim()) return;
+    setScenarioSwapLoading(true);
+    try {
+      const ws = generated as AIWorksheet;
+      const result = await aiScenarioSwap({
+        sections: ws.sections,
+        newScenario: scenarioInput.trim(),
+        subject: ws.metadata?.subject || subject,
+        yearGroup: ws.metadata?.yearGroup || yearGroup,
+        sendNeed: ws.metadata?.sendNeed || sendNeed || undefined,
+      });
+      const swappedWorksheet: AIWorksheet = {
+        ...ws,
+        sections: result.sections as any,
+        isAI: true as const,
+      };
+      setGenerated(swappedWorksheet);
+      setEditedSections({});
+      setShowScenarioDialog(false);
+      setScenarioInput("");
+      toast.success(`Questions recontextualized to "${scenarioInput.trim()}"!`);
+    } catch (err) {
+      console.error("Scenario swap failed:", err);
+      toast.error("Scenario swap failed. Please try again.");
+    }
+    setScenarioSwapLoading(false);
+  };
+
+  // ─── Reading Level Adjustment (post-generation) ─────────────────────────────────
+  const handleReadingLevelAdjust = async (age: number) => {
+    if (!generated) return;
+    setReadingLevelLoading(true);
+    try {
+      const ws = generated as AIWorksheet;
+      const result = await aiAdjustReadingLevel({
+        sections: ws.sections,
+        targetAge: age,
+        subject: ws.metadata?.subject || subject,
+        yearGroup: ws.metadata?.yearGroup || yearGroup,
+        sendNeed: ws.metadata?.sendNeed || sendNeed || undefined,
+      });
+      const adjustedWorksheet: AIWorksheet = {
+        ...ws,
+        sections: result.sections as any,
+        isAI: true as const,
+      };
+      setGenerated(adjustedWorksheet);
+      setEditedSections({});
+      toast.success(`Reading level adjusted to Age ${age}!`);
+    } catch (err) {
+      console.error("Reading level adjustment failed:", err);
+      toast.error("Reading level adjustment failed. Please try again.");
+    }
+    setReadingLevelLoading(false);
+  };
+
+  // ─── Natural Language Input handler ───────────────────────────────────────────
+  const handleNlInput = () => {
+    if (!nlInput.trim()) return;
+    const parsed = parseNaturalLanguageInput(nlInput);
+    if (parsed.subject) setSubject(parsed.subject);
+    if (parsed.yearGroup) setYearGroup(parsed.yearGroup);
+    if (parsed.topic) setTopic(parsed.topic);
+    if (parsed.difficulty) setDifficulty(parsed.difficulty);
+    if (parsed.sendNeed) setSendNeed(parsed.sendNeed);
+    const filled: string[] = [];
+    if (parsed.subject) filled.push("Subject");
+    if (parsed.yearGroup) filled.push("Year Group");
+    if (parsed.topic) filled.push("Topic");
+    if (parsed.difficulty) filled.push("Difficulty");
+    if (parsed.sendNeed) filled.push("SEND Need");
+    if (filled.length > 0) {
+      toast.success(`Auto-filled: ${filled.join(", ")}`);
+    } else {
+      toast("Could not extract fields. Try: \"Year 10 Maths Fractions for dyslexia\"", { icon: "\u2139\uFE0F" });
+    }
+    setNlInput("");
+  };
+
   // ─── One-click differentiation ────────────────────────────────────────────
   const handleDifferentiate = async (tier: string) => {
     if (!generated) return;
@@ -855,6 +954,24 @@ export default function Worksheets() {
                   <p className="text-sm text-muted-foreground mt-1">Create differentiated, curriculum-aligned worksheets in seconds.</p>
                 </div>
 
+                {/* Natural Language Input */}
+                <div className="p-4 rounded-xl border border-brand/30 bg-brand-light/20 space-y-2">
+                  <Label className="text-sm font-medium text-brand flex items-center gap-1.5"><Wand2 className="h-4 w-4" /> What do you want to create today?</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      value={nlInput}
+                      onChange={e => setNlInput(e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Enter') handleNlInput(); }}
+                      placeholder='e.g. "Year 10 Maths Fractions for dyslexia" or "Y7 Science Forces foundation"'
+                      className="h-10 flex-1 bg-white"
+                    />
+                    <Button onClick={handleNlInput} disabled={!nlInput.trim()} size="sm" className="h-10 px-4 bg-brand hover:bg-brand/90 text-white">
+                      <Sparkles className="w-4 h-4 mr-1" /> Fill
+                    </Button>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground">Type naturally and we'll auto-fill Subject, Year Group, Topic, Difficulty, and SEND need for you.</p>
+                </div>
+
                 {/* AI Toggle */}
                 <div className="flex items-center justify-between p-3.5 bg-emerald-50/80 rounded-xl border border-emerald-200/80">
                   <div>
@@ -959,6 +1076,46 @@ export default function Worksheets() {
                       </button>
                     ))}
                   </div>
+                </div>
+
+                {/* Target Page Count */}
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-medium">Page Count</Label>
+                  <div className="flex gap-1.5">
+                    {[
+                      { id: 0, name: "Auto", desc: "Let AI decide the best length" },
+                      { id: 1, name: "1 Page", desc: "Concise — fits on a single A4 page" },
+                      { id: 2, name: "2 Pages", desc: "Standard — two A4 pages" },
+                      { id: 3, name: "3 Pages", desc: "Extended — three A4 pages with extra content" },
+                    ].map(p => (
+                      <button key={p.id} onClick={() => setTargetPages(p.id)}
+                        title={p.desc}
+                        className={`flex-1 py-2.5 rounded-lg text-xs font-medium transition-all ${targetPages === p.id ? "bg-brand text-white shadow-sm" : "bg-white text-muted-foreground border border-border/60 hover:border-brand/30"}`}>
+                        {p.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Reading Age */}
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-medium">Reading Age</Label>
+                  <div className="flex gap-1.5">
+                    {[
+                      { id: 0, name: "Auto", desc: "Match year group naturally" },
+                      { id: 7, name: "Age 7", desc: "Very simple words, short sentences (5–8 words)" },
+                      { id: 9, name: "Age 9", desc: "Clear, everyday vocabulary (8–12 words)" },
+                      { id: 11, name: "Age 11", desc: "Moderate academic language (10–15 words)" },
+                      { id: 13, name: "Age 13", desc: "Standard GCSE-level language" },
+                    ].map(r => (
+                      <button key={r.id} onClick={() => setReadingAge(r.id)}
+                        title={r.desc}
+                        className={`flex-1 py-2.5 rounded-lg text-xs font-medium transition-all ${readingAge === r.id ? "bg-brand text-white shadow-sm" : "bg-white text-muted-foreground border border-border/60 hover:border-brand/30"}`}>
+                        {r.name}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-[10px] text-muted-foreground">Controls vocabulary complexity and sentence length in the generated worksheet. Academic difficulty stays the same.</p>
                 </div>
                 </div>{/* End core settings box */}
 
@@ -1701,6 +1858,9 @@ export default function Worksheets() {
             <Button variant="outline" size="sm" onClick={() => setShowDiffDialog(true)} className="gap-1.5 border-indigo-300 text-indigo-700 hover:bg-indigo-50">
               <Sparkles className="w-3.5 h-3.5" /> Differentiate
             </Button>
+            <Button variant="outline" size="sm" onClick={() => setShowScenarioDialog(true)} className="gap-1.5 border-orange-300 text-orange-700 hover:bg-orange-50" disabled={scenarioSwapLoading}>
+              {scenarioSwapLoading ? <><RefreshCw className="w-3.5 h-3.5 animate-spin" /> Swapping...</> : <><RefreshCw className="w-3.5 h-3.5" /> Scenario Swap</>}
+            </Button>
             <Dialog open={showAssignDialog} onOpenChange={setShowAssignDialog}>
               <DialogTrigger asChild>
                 <Button variant="outline" size="sm"><Users className="w-3.5 h-3.5 mr-1.5" /> Assign</Button>
@@ -1721,6 +1881,64 @@ export default function Worksheets() {
               </DialogContent>
             </Dialog>
           </div>
+
+          {/* Toolbar Row 3 — Reading Level Adjustment */}
+          <div className="flex flex-wrap items-center gap-2 no-print">
+            <span className="text-xs font-medium text-muted-foreground">Reading Level:</span>
+            <div className="flex gap-1 bg-muted rounded-lg p-0.5">
+              {[7, 9, 11, 13].map(age => (
+                <button key={age} onClick={() => handleReadingLevelAdjust(age)}
+                  disabled={readingLevelLoading}
+                  className="px-3 py-1.5 rounded-md text-xs font-medium transition-all text-muted-foreground hover:bg-white hover:text-foreground hover:shadow-sm">
+                  Age {age}
+                </button>
+              ))}
+            </div>
+            {readingLevelLoading && <RefreshCw className="w-3.5 h-3.5 animate-spin text-brand" />}
+          </div>
+
+          {/* Scenario Swap Dialog */}
+          <Dialog open={showScenarioDialog} onOpenChange={setShowScenarioDialog}>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <RefreshCw className="h-4 w-4 text-orange-600" />
+                  Scenario Swap
+                </DialogTitle>
+                <p className="text-sm text-muted-foreground">Change the real-world context of all questions while keeping the same academic skills and difficulty.</p>
+              </DialogHeader>
+              <div className="space-y-4 mt-2">
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">New scenario / theme</Label>
+                  <Input
+                    value={scenarioInput}
+                    onChange={e => setScenarioInput(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter' && scenarioInput.trim()) handleScenarioSwap(); }}
+                    placeholder='e.g. "football", "space exploration", "cooking", "gaming"'
+                    className="h-10"
+                  />
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {["Football", "Gaming", "Space", "Cooking", "Animals", "Music", "Shopping", "Travel"].map(s => (
+                    <button key={s} onClick={() => setScenarioInput(s)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${scenarioInput === s ? "bg-orange-100 border-orange-300 text-orange-800" : "bg-white border-border hover:border-orange-200"}`}>
+                      {s}
+                    </button>
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    className="flex-1 bg-orange-600 hover:bg-orange-700 text-white"
+                    onClick={handleScenarioSwap}
+                    disabled={scenarioSwapLoading || !scenarioInput.trim()}
+                  >
+                    {scenarioSwapLoading ? <><RefreshCw className="h-4 w-4 mr-2 animate-spin" />Swapping...</> : <><RefreshCw className="h-4 w-4 mr-2" />Swap Scenario</>}
+                  </Button>
+                  <Button variant="outline" onClick={() => setShowScenarioDialog(false)}>Cancel</Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
 
           {/* Overlay picker */}
           {showOverlayPicker && (

@@ -453,6 +453,8 @@ export async function aiGenerateWorksheet(params: {
   worksheetLength?: string;
   introOnly?: boolean; // When true, only generate intro sections (objectives, vocab, worked example) — used for hybrid exam mode
   recallTopic?: string; // When set, prepend 2-3 recall questions on this previous topic at the start of the worksheet
+  targetPages?: number; // Target number of printed A4 pages (1, 2, or 3)
+  readingAge?: number; // Target reading age (7, 9, 11, 13) — controls vocabulary and sentence complexity
 }): Promise<AIWorksheetResult> {
 
   // ── Year-group calibration ──────────────────────────────────────────────────
@@ -633,6 +635,28 @@ export async function aiGenerateWorksheet(params: {
       ? `Length: 60 min. 30–40 questions total. Full guided (8–10 q), independent (15–20 q), challenge (4–6 q), extension.`
       : `Length: 30 min. 15–20 questions total: guided (4–5 q), independent (8–10 q), one challenge.`;
 
+  // ── Target page count ──────────────────────────────────────────────────────
+  const targetPages = params.targetPages || 0; // 0 = auto (no constraint)
+  const pageCountNote = targetPages === 1
+    ? `PAGE LIMIT: This worksheet MUST fit on exactly 1 printed A4 page. Keep content very concise — fewer questions, shorter worked example, compact vocabulary. Max 8–10 questions total. No word problems section. Compact reflection (1 line).`
+    : targetPages === 2
+    ? `PAGE LIMIT: This worksheet should fit on approximately 2 printed A4 pages. Standard amount of content — 15–20 questions, full worked example, vocabulary, and reflection.`
+    : targetPages === 3
+    ? `PAGE LIMIT: This worksheet should fill approximately 3 printed A4 pages. Include extra questions, extended worked examples, more word problems, and a detailed challenge section. 25–35 questions total.`
+    : ``; // No constraint
+
+  // ── Reading age override ───────────────────────────────────────────────────
+  const readingAge = params.readingAge || 0; // 0 = match year group naturally
+  const readingAgeNote = readingAge === 7
+    ? `READING AGE 7: Use very short sentences (5–8 words max). Only simple, common everyday words. One instruction per sentence. No compound or complex sentences. Define ALL subject terms using the simplest possible words. Vocabulary definitions must use words a 7-year-old would know. Avoid any abstract language.`
+    : readingAge === 9
+    ? `READING AGE 9: Use short, clear sentences (8–12 words). Everyday vocabulary throughout. Simple compound sentences allowed. Define every technical term in brackets immediately after first use. Vocabulary definitions should use plain, concrete language a 9-year-old would understand.`
+    : readingAge === 11
+    ? `READING AGE 11: Use moderate sentences (10–15 words). Subject vocabulary with brief, clear definitions. Some complex sentences acceptable. Direct, clear instructions. Vocabulary should be accessible to an average 11-year-old reader.`
+    : readingAge === 13
+    ? `READING AGE 13: Use standard academic language appropriate for a 13-year-old. Technical vocabulary expected with concise definitions. Multi-clause sentences acceptable. GCSE-level command words (describe, explain, evaluate) can be used.`
+    : ``; // No override — use year-group default
+
   // ── Subject display (capitalised) ──────────────────────────────────────────
   const subjectDisplay = params.subject
     ? params.subject.charAt(0).toUpperCase() + params.subject.slice(1)
@@ -691,6 +715,8 @@ export async function aiGenerateWorksheet(params: {
   const user = `Create one printable worksheet in valid raw JSON only.
 Subject: ${params.subject} | Year: ${params.yearGroup} (${phase}) | Topic: ${params.topic} | Difficulty: ${params.difficulty || "mixed"}
 ${examBoardNote} ${lengthNote}
+${pageCountNote}
+${readingAgeNote}
 ${mathsNote}
 ${sendNote}
 ${tierNote}
@@ -1373,5 +1399,241 @@ export async function aiDifferentiateExistingWorksheet(params: {
     tierApplied: differentiated.tierApplied,
     changesNote: differentiated.changesNote,
     provider: data.provider,
+  };
+}
+
+
+// ─── Natural Language Input Parser ──────────────────────────────────────────
+/**
+ * Parses a natural-language prompt like "Year 10 Maths Fractions for dyslexia"
+ * and extracts structured fields to auto-fill the worksheet generator form.
+ * Uses pattern matching — no AI call required, so it's instant.
+ */
+export function parseNaturalLanguageInput(input: string): {
+  subject?: string;
+  yearGroup?: string;
+  topic?: string;
+  difficulty?: string;
+  sendNeed?: string;
+} {
+  const text = input.trim().toLowerCase();
+  const result: {
+    subject?: string;
+    yearGroup?: string;
+    topic?: string;
+    difficulty?: string;
+    sendNeed?: string;
+  } = {};
+
+  // ── Year Group extraction ──
+  const yearMatch = text.match(/year\s*(\d{1,2})/i) || text.match(/y(\d{1,2})\b/i);
+  if (yearMatch) {
+    const num = parseInt(yearMatch[1], 10);
+    if (num >= 1 && num <= 13) result.yearGroup = `Year ${num}`;
+  }
+  // 11+ detection
+  if (/11\s*\+|eleven\s*plus/i.test(text)) {
+    result.yearGroup = "11+ Preparation";
+  }
+
+  // ── Subject extraction ──
+  const subjectMap: Record<string, string[]> = {
+    mathematics: ["math", "maths", "mathematics", "algebra", "geometry", "arithmetic", "calculus"],
+    english: ["english", "literacy", "reading", "writing", "comprehension", "grammar", "poetry", "shakespeare"],
+    science: ["science", "biology", "chemistry", "physics", "atoms", "cells", "forces", "energy"],
+    history: ["history", "ww1", "ww2", "world war", "tudor", "victorian", "medieval", "roman"],
+    geography: ["geography", "rivers", "volcanoes", "earthquakes", "climate", "weather", "maps"],
+    computing: ["computing", "computer science", "coding", "programming", "algorithms", "python"],
+    art: ["art", "drawing", "painting", "sculpture", "design"],
+    music: ["music", "rhythm", "melody", "composition", "instruments"],
+    pe: ["pe", "physical education", "sport", "fitness", "exercise"],
+    dt: ["dt", "design technology", "design and technology", "food tech", "textiles"],
+    re: ["re", "religious education", "religion", "faith", "beliefs"],
+    mfl: ["french", "spanish", "german", "mfl", "languages", "foreign language"],
+    pshe: ["pshe", "citizenship", "wellbeing", "mental health", "relationships"],
+    business: ["business", "economics", "enterprise", "marketing", "finance"],
+    drama: ["drama", "theatre", "acting", "performance"],
+  };
+  for (const [id, keywords] of Object.entries(subjectMap)) {
+    for (const kw of keywords) {
+      if (text.includes(kw)) {
+        result.subject = id;
+        break;
+      }
+    }
+    if (result.subject) break;
+  }
+
+  // ── SEND Need extraction ──
+  const sendMap: Record<string, string[]> = {
+    dyslexia: ["dyslexia", "dyslexic"],
+    dyscalculia: ["dyscalculia", "dyscalculic"],
+    dyspraxia: ["dyspraxia", "dyspraxic"],
+    asc: ["autism", "autistic", "asc"],
+    asperger: ["asperger"],
+    adhd: ["adhd", "attention deficit"],
+    anxiety: ["anxiety", "anxious"],
+    slcn: ["slcn", "speech and language", "communication needs"],
+    mld: ["mld", "moderate learning"],
+    vi: ["visual impairment", "visually impaired", "vi", "blind", "low vision"],
+    hi: ["hearing impairment", "hearing impaired", "hi", "deaf"],
+    tourettes: ["tourette", "tics"],
+    "pda-odd": ["pda", "pathological demand", "odd", "oppositional"],
+    "older-learners": ["older learner", "mature student"],
+  };
+  for (const [id, keywords] of Object.entries(sendMap)) {
+    for (const kw of keywords) {
+      if (text.includes(kw)) {
+        result.sendNeed = id;
+        break;
+      }
+    }
+    if (result.sendNeed) break;
+  }
+
+  // ── Difficulty extraction ──
+  if (/\bfoundation\b/i.test(text) || /\beasy\b/i.test(text) || /\bsimple\b/i.test(text) || /\bbasic\b/i.test(text)) {
+    result.difficulty = "foundation";
+  } else if (/\bhigher\b/i.test(text) || /\bhard\b/i.test(text) || /\bchalleng/i.test(text) || /\badvanced\b/i.test(text) || /\bstretch\b/i.test(text)) {
+    result.difficulty = "higher";
+  }
+
+  // ── Topic extraction (everything that's left after removing matched tokens) ──
+  let remaining = text;
+  // Remove year group
+  remaining = remaining.replace(/year\s*\d{1,2}/gi, "").replace(/y\d{1,2}\b/gi, "").replace(/11\s*\+/g, "").replace(/eleven\s*plus/gi, "");
+  // Remove subject keywords
+  if (result.subject) {
+    const kws = subjectMap[result.subject] || [];
+    for (const kw of kws) {
+      remaining = remaining.replace(new RegExp(`\\b${kw}\\b`, "gi"), "");
+    }
+  }
+  // Remove SEND keywords
+  if (result.sendNeed) {
+    const kws = sendMap[result.sendNeed] || [];
+    for (const kw of kws) {
+      remaining = remaining.replace(new RegExp(`\\b${kw}\\b`, "gi"), "");
+    }
+  }
+  // Remove difficulty keywords
+  remaining = remaining.replace(/\b(foundation|higher|easy|hard|simple|basic|advanced|stretch|challenging|mixed)\b/gi, "");
+  // Remove filler words
+  remaining = remaining.replace(/\b(for|with|about|on|in|the|a|an|create|make|generate|worksheet|lesson|please|can|you|i|want|need|to)\b/gi, "");
+  // Clean up
+  remaining = remaining.replace(/[,\-–—]/g, " ").replace(/\s+/g, " ").trim();
+  if (remaining.length > 1) {
+    // Capitalize first letter of each word
+    result.topic = remaining.replace(/\b\w/g, c => c.toUpperCase());
+  }
+
+  return result;
+}
+
+// ─── Scenario Swap ──────────────────────────────────────────────────────────
+/**
+ * Recontextualizes worksheet questions to a new scenario/theme (e.g., shopping → football)
+ * while keeping the academic skill and difficulty identical.
+ */
+export async function aiScenarioSwap(params: {
+  sections: Array<{ title: string; content: string; type?: string; teacherOnly?: boolean }>;
+  newScenario: string;
+  subject?: string;
+  yearGroup?: string;
+  sendNeed?: string;
+}): Promise<{
+  sections: Array<{ title: string; content: string; type?: string; teacherOnly?: boolean }>;
+  provider?: string;
+}> {
+  const system = `You are a UK SEND specialist teacher. Your task is to recontextualize worksheet questions to use a new real-world scenario/theme while keeping the EXACT same academic skills, difficulty level, mark allocations, and question structure. Only change the context/scenario — not the maths, science, or subject content. Return valid JSON only, no markdown code blocks.`;
+
+  const sectionsToSwap = params.sections.filter(s => !s.teacherOnly && s.type !== "answers" && s.type !== "mark-scheme" && s.type !== "teacher-notes");
+  const teacherSections = params.sections.filter(s => s.teacherOnly || s.type === "answers" || s.type === "mark-scheme" || s.type === "teacher-notes");
+
+  const user = `Recontextualize ALL questions in this worksheet to use the theme/scenario: "${params.newScenario}"
+
+Subject: ${params.subject || "general"}
+Year Group: ${params.yearGroup || "secondary"}
+${params.sendNeed ? `SEND Need: ${params.sendNeed} — maintain all SEND adaptations` : ""}
+
+IMPORTANT RULES:
+- Change ONLY the real-world context (names, places, objects, situations)
+- Keep the EXACT same mathematical/academic operations, difficulty, and mark allocations
+- Keep all scaffolding (sentence starters, word banks, hints) but update their context
+- Keep section titles and structure identical
+- If a section has no contextual content (e.g., vocabulary definitions), keep it unchanged
+
+SECTIONS TO RECONTEXTUALIZE:
+${JSON.stringify(sectionsToSwap, null, 2)}
+
+Return JSON array of sections with updated content:
+[{"title": "...", "content": "...", "type": "...", "teacherOnly": false}]`;
+
+  const { text, provider } = await callAI(system, user, 3000);
+  const cleaned = text.replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/\s*```$/i, "").trim();
+  const parsed = parseWithFixes(cleaned);
+  const swappedSections = Array.isArray(parsed) ? parsed : sectionsToSwap;
+
+  return {
+    sections: [...swappedSections, ...teacherSections],
+    provider,
+  };
+}
+
+// ─── Reading Level Adjustment ───────────────────────────────────────────────
+/**
+ * Rewrites worksheet instructions and vocabulary to match a target reading age
+ * without changing the mathematical/academic difficulty.
+ */
+export async function aiAdjustReadingLevel(params: {
+  sections: Array<{ title: string; content: string; type?: string; teacherOnly?: boolean }>;
+  targetAge: number; // e.g., 7, 9, 11, 13
+  subject?: string;
+  yearGroup?: string;
+  sendNeed?: string;
+}): Promise<{
+  sections: Array<{ title: string; content: string; type?: string; teacherOnly?: boolean }>;
+  provider?: string;
+}> {
+  const ageGuide: Record<number, string> = {
+    7: "Reading age 7: Use very short sentences (5-8 words max). Simple, common words only. One instruction per sentence. No compound or complex sentences. Avoid all technical jargon — use everyday words instead.",
+    9: "Reading age 9: Use short, clear sentences (8-12 words). Everyday vocabulary. Simple compound sentences allowed. Define any technical terms in brackets immediately after.",
+    11: "Reading age 11: Use moderate sentences (10-15 words). Subject vocabulary with brief definitions. Some complex sentences acceptable. Clear, direct instructions.",
+    13: "Reading age 13: Use standard academic language. Technical vocabulary expected. Multi-clause sentences acceptable. GCSE-level command words (describe, explain, evaluate).",
+  };
+
+  const guide = ageGuide[params.targetAge] || ageGuide[11];
+
+  const system = `You are a UK SEND specialist teacher. Rewrite the worksheet text to match a specific reading age level. CRITICAL: Change ONLY the language complexity, vocabulary, and sentence structure. Do NOT change the academic content, questions, numbers, formulas, or difficulty of the tasks themselves. Return valid JSON only, no markdown code blocks.`;
+
+  const sectionsToAdjust = params.sections.filter(s => !s.teacherOnly && s.type !== "answers" && s.type !== "mark-scheme");
+  const preservedSections = params.sections.filter(s => s.teacherOnly || s.type === "answers" || s.type === "mark-scheme");
+
+  const user = `Rewrite ALL instructions and text in this worksheet to match: ${guide}
+
+Subject: ${params.subject || "general"}
+Year Group: ${params.yearGroup || "secondary"}
+${params.sendNeed ? `SEND Need: ${params.sendNeed}` : ""}
+
+RULES:
+- Rewrite ONLY the instructional text, question wording, and vocabulary definitions
+- Do NOT change: numbers, formulas, equations, mark allocations, answer spaces, section titles
+- Keep all scaffolding structures (word banks, sentence starters, checklists) but simplify their language
+- If content is already at or below the target reading level, leave it unchanged
+
+SECTIONS:
+${JSON.stringify(sectionsToAdjust, null, 2)}
+
+Return JSON array of sections with adjusted language:
+[{"title": "...", "content": "...", "type": "...", "teacherOnly": false}]`;
+
+  const { text, provider } = await callAI(system, user, 3000);
+  const cleaned = text.replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/\s*```$/i, "").trim();
+  const parsed = parseWithFixes(cleaned);
+  const adjustedSections = Array.isArray(parsed) ? parsed : sectionsToAdjust;
+
+  return {
+    sections: [...adjustedSections, ...preservedSections],
+    provider,
   };
 }
