@@ -201,6 +201,15 @@ function DashboardLayoutContent({
           </SidebarContent>
 
           <SidebarFooter className="p-3">
+            <div className="text-[10px] text-muted-foreground text-center py-2 border-t mb-2 group-data-[collapsible=icon]:hidden">
+              <p>&copy; 2026 Adaptly Ltd.</p>
+              <p>All rights reserved.</p>
+              <div className="flex gap-2 justify-center mt-1 text-[9px]">
+                <a href="/terms" className="hover:text-foreground">Terms</a>
+                <span>&bull;</span>
+                <a href="/privacy" className="hover:text-foreground">Privacy</a>
+              </div>
+            </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className="flex items-center gap-3 rounded-lg px-1 py-1 hover:bg-accent/50 transition-colors w-full text-left group-data-[collapsible=icon]:justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-ring">

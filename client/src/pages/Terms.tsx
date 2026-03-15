@@ -63,8 +63,21 @@ export default function Terms() {
           <h2>9. Safeguarding</h2>
           <p>The Licensee agrees to use the Platform in accordance with their school's safeguarding policy and all applicable statutory guidance. The Licensor accepts no responsibility for safeguarding incidents arising from the use of the Platform.</p>
 
-          <h2>10. Intellectual Property</h2>
-          <p>The Platform, including all software, design, and underlying technology, is the exclusive intellectual property of the Licensor. The Licensee retains ownership of content they create using the Platform but grants the Licensor a limited licence to process such content for the purpose of providing the service.</p>
+          <h2>10. Intellectual Property Rights</h2>
+          <p>The Platform, including all software, source code, algorithms, AI prompts, design, user interface, database schemas, curriculum data, skill ladder progressions, and all underlying technology, is the exclusive intellectual property of the Licensor and is protected by copyright, database rights, and other intellectual property laws of England and Wales and international treaties.</p>
+          <p><strong>Database Rights:</strong> The Licensor asserts database rights under the Copyright and Rights in Databases Regulations 1997 over all structured data within the Platform, including but not limited to curriculum progression data, topic banks, SEND adaptation rules, skill ladder definitions, and any curated educational datasets. Extraction or re-utilisation of a substantial part of the contents of any such database is strictly prohibited.</p>
+          <p><strong>Prohibited Actions:</strong> The Licensee and Users must not, and must not permit any third party to:</p>
+          <ul>
+            <li>Copy, reproduce, distribute, republish, download, display, post, or transmit any part of the Platform or its content in any form or by any means;</li>
+            <li>Reverse-engineer, decompile, disassemble, or otherwise attempt to discover the source code, algorithms, or AI prompts of the Platform;</li>
+            <li>Scrape, data-mine, or use automated tools to extract content, data, or information from the Platform;</li>
+            <li>Create derivative works based on the Platform or any of its components;</li>
+            <li>Remove, alter, or obscure any copyright, trademark, or other proprietary notices;</li>
+            <li>Use the Platform's AI-generated worksheet structures, formatting systems, or SEND adaptation methodologies to build a competing product or service;</li>
+            <li>Sub-license, sell, resell, transfer, assign, or otherwise commercially exploit or make available to any third party the Platform or any rights therein.</li>
+          </ul>
+          <p><strong>User Upload Licence:</strong> The Licensee retains ownership of original content they upload to or create using the Platform. By uploading or creating content, the Licensee grants the Licensor a non-exclusive, worldwide, royalty-free, perpetual licence to use, store, process, reproduce, and display such content solely for the purposes of operating, improving, and providing the Platform and its services. This licence survives termination of the Licensee's account.</p>
+          <p><strong>AI-Generated Output:</strong> Worksheets and other AI-generated outputs created through the Platform are provided under the licence granted in Section 2. The Licensee may use such outputs for internal educational purposes only. The underlying AI prompts, formatting systems, and generation methodologies remain the exclusive intellectual property of the Licensor.</p>
 
           <h2>11. Termination</h2>
           <p>The Licensor may suspend or terminate access to the Platform at any time, with or without notice, for any breach of these Terms or at the Licensor's sole discretion. Upon termination, the Licensee must cease all use of the Platform.</p>

@@ -24,7 +24,7 @@ import {
   CheckCircle, Clock, AlertCircle, MessageSquare, TrendingUp,
   ChevronLeft, Shield, Star, Send, Calendar, X, Zap, BrainCircuit,
   PlayCircle, PauseCircle, RotateCcw, Settings2, Upload, RefreshCw, Database,
-  ChevronRight, Layers, Lock
+  ChevronRight, ChevronDown, Layers, Lock
 } from "lucide-react";
 
 // ─── Curriculum Progression Tab Component ───────────────────────────────────
@@ -230,6 +230,7 @@ export default function Children() {
   const [markText, setMarkText] = useState("");
   const [autoMarkLoading, setAutoMarkLoading] = useState(false);
   const [autoMarkResult, setAutoMarkResult] = useState<{ mark: string; feedback: string; misconceptions: string[] } | null>(null);
+  const [progressExpanded, setProgressExpanded] = useState(false);
 
   // AI Auto-Assignment Scheduler
   const scheduler = useScheduler({
@@ -1070,13 +1071,14 @@ If the submission is empty or too short to mark, return mark: "N/A", feedback: "
 
                         {/* ── Unified Learning Progress Chain + Skill Ladder ── */}
                         <div className="p-3 rounded-xl border border-indigo-200 bg-gradient-to-br from-indigo-50/60 to-purple-50/40 space-y-3">
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 cursor-pointer select-none" onClick={() => setProgressExpanded(!progressExpanded)}>
                             <TrendingUp className="h-4 w-4 text-indigo-600" />
-                            <p className="text-xs font-semibold text-indigo-900">Learning Progress Chain &amp; Skill Ladder</p>
+                            <p className="text-xs font-semibold text-indigo-900 flex-1">Learning Progress Chain &amp; Skill Ladder</p>
+                            <ChevronDown className={`h-4 w-4 text-indigo-600 transition-transform duration-200 ${progressExpanded ? 'rotate-180' : ''}`} />
                           </div>
                           <p className="text-[10px] text-indigo-600">Each topic on the chain has a skill ladder. Auto-generation works through every step before moving to the next topic.</p>
 
-                          {hasProgressions ? (
+                          {progressExpanded && hasProgressions ? (
                             <div className="space-y-2">
                               {/* Topic chain scroll */}
                               <div className="flex items-start gap-1.5 overflow-x-auto pb-1">
@@ -1220,7 +1222,7 @@ If the submission is empty or too short to mark, return mark: "N/A", feedback: "
                                 </p>
                               )}
                             </div>
-                          ) : (
+                          ) : progressExpanded ? (
                             /* Fallback: old topic bank chain if no progressions for this subject */
                             <div className="space-y-2">
                               <div className="flex items-center gap-1 overflow-x-auto pb-1">
@@ -1307,7 +1309,7 @@ If the submission is empty or too short to mark, return mark: "N/A", feedback: "
                                 </p>
                               )}
                             </div>
-                          )}
+                          ) : null}
                         </div>
 
                         {/* Subject */}
