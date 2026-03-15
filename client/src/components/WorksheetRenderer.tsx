@@ -957,9 +957,17 @@ function formatContent(content: string | any, fmt: ReturnType<typeof getSendForm
   }
   if (!content) return null;
   const { fontSize: textSize, lineHeight, letterSpacing, wordSpacing, paragraphSpacing, fontFamily } = fmt;
-  // Pre-process: split comma-separated numbered items onto separate lines
-  // e.g. "1. Question one, 2. Question two" → "1. Question one\n2. Question two"
-  const preprocessed = content.replace(/(,\s*)(\d+[a-z]?[.)]\s+)/g, '\n$2');
+  // Pre-process: split concatenated numbered items onto separate lines.
+  // The AI often outputs questions as a single line: "1. Q1 . 2. Q2 . 3. Q3"
+  // or with commas: "1. Q1, 2. Q2, 3. Q3"
+  // We split on any separator (comma, period+space, semicolon) before a number+period/paren pattern.
+  let preprocessed = content
+    // Split on ". N." pattern (period-space before numbered item)
+    .replace(/\.\s+(\d+[a-z]?[.)\s]\s*)/g, '.\n$1')
+    // Split on ", N." pattern (comma before numbered item)
+    .replace(/(,\s*)(\d+[a-z]?[.)\s]\s*)/g, '\n$2')
+    // Split on "; N." pattern (semicolon before numbered item)
+    .replace(/(;\s*)(\d+[a-z]?[.)\s]\s*)/g, '\n$2');
   const lines = preprocessed.split("\n");
   const elements: React.ReactNode[] = [];
   let inTable = false;
@@ -1042,14 +1050,13 @@ function formatContent(content: string | any, fmt: ReturnType<typeof getSendForm
     }
     if (listItems.length) flushList(`list-${idx}`);
 
-    // Numbered list
-    const numberedMatch = trimmed.match(/^(\d+[a-z]?[.)]\s+)(.+)$/);
+    // Numbered list — strip the number prefix and render content only (numbering removed per user request)
+    const numberedMatch = trimmed.match(/^(\d+[a-z]?[.)\s]\s*)(.+)$/);
     if (numberedMatch) {
       elements.push(
-        <div key={idx} style={{ display: "flex", gap: "8px", marginBottom: paragraphSpacing, fontSize: `${textSize}px`, lineHeight, letterSpacing, wordSpacing, fontFamily }}>
-          <span style={{ fontWeight: 600, minWidth: "24px", color: "#374151" }}>{numberedMatch[1]}</span>
+        <p key={idx} style={{ margin: `0 0 ${paragraphSpacing} 0`, fontSize: `${textSize}px`, lineHeight, color: "#1f2937", fontFamily, letterSpacing, wordSpacing }}>
           <span dangerouslySetInnerHTML={{ __html: renderMath(numberedMatch[2]) }} />
-        </div>
+        </p>
       );
       return;
     }
@@ -1293,8 +1300,14 @@ function ReminderBoxSection({ content, fmt, overlayColor = "white" }: { content:
 
 function WordProblemsSection({ content, fmt, overlayColor = "white" }: { content: string; fmt: ReturnType<typeof getSendFormatting>; overlayColor?: string }) {
   const { fontSize: textSize, fontFamily, lineHeight } = fmt;
+  // Pre-process: split concatenated numbered problems onto separate lines
+  // e.g. "1. Problem one . 2. Problem two" → separate lines
+  const preprocessed = content
+    .replace(/\.\s+(\d+[a-z]?[.)\s]\s*)/g, '.\n$1')
+    .replace(/(,\s*)(\d+[a-z]?[.)\s]\s*)/g, '\n$2')
+    .replace(/(;\s*)(\d+[a-z]?[.)\s]\s*)/g, '\n$2');
   // Split into individual problems by numbered lines or double newlines
-  const lines = content.split("\n");
+  const lines = preprocessed.split("\n");
   const problems: string[][] = [];
   let current: string[] = [];
   lines.forEach(line => {
