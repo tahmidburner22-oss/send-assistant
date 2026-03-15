@@ -1055,11 +1055,20 @@ ${textForAI}${truncated ? "\n\n[Note: Document was truncated at 12,000 character
           }
         }
       }
-      // Ensure no section has empty content
-      parsed.sections = parsed.sections.map((s: any) => ({
-        ...s,
-        content: s.content && s.content.trim() ? s.content : "[Content not available — please try again]",
-      }));
+      // Ensure no section has empty content and all content is a string
+      parsed.sections = parsed.sections.map((s: any) => {
+        let c = s.content;
+        if (c !== null && c !== undefined && typeof c !== 'string') {
+          if (Array.isArray(c)) c = c.join('\n');
+          else if (typeof c === 'object') { try { c = JSON.stringify(c); } catch { c = String(c); } }
+          else c = String(c);
+        }
+        return {
+          ...s,
+          title: typeof s.title === 'string' ? s.title : String(s.title || ''),
+          content: c && c.trim() ? c : "[Content not available — please try again]",
+        };
+      });
     } else if (outerParsed && !outerParsed.sections) {
       // AI returned JSON but without sections structure — wrap it
       const rawContent = outerParsed.content || outerParsed.adaptedContent || outerParsed.text || JSON.stringify(outerParsed);
@@ -1174,6 +1183,12 @@ Return a JSON object:
     };
     const parsed = tryParse(content);
     if (parsed && parsed.sections && Array.isArray(parsed.sections)) {
+      // Normalize all section content to strings to prevent frontend .replace() crashes
+      parsed.sections = parsed.sections.map((s: any) => ({
+        ...s,
+        title: typeof s.title === 'string' ? s.title : String(s.title || ''),
+        content: typeof s.content === 'string' ? s.content : (s.content === null || s.content === undefined ? '' : (Array.isArray(s.content) ? s.content.join('\n') : String(s.content))),
+      }));
       res.json({ differentiated: parsed, provider });
     } else {
       res.status(500).json({ error: "AI returned invalid structure — please try again" });
