@@ -16,7 +16,8 @@ const router = Router();
 const worksheetUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
 
 // ── Provider priority order — server always tries all of these automatically ──
-const PROVIDER_ORDER = ["groq", "gemini", "openai", "openrouter", "claude", "huggingface"] as const;
+// Gemini Flash is fastest for large JSON outputs; Groq 8b-instant is second fastest
+const PROVIDER_ORDER = ["gemini", "groq", "openai", "openrouter", "claude", "huggingface"] as const;
 
 // ── Get the best available key: school key → global admin key → env var ──────
 // Security: No API keys are ever hardcoded in source code.
@@ -72,7 +73,7 @@ async function callProvider(
 ): Promise<string> {
   switch (provider) {
     case "groq":
-      return callGroq(system, user, key, model || "llama-3.3-70b-versatile", maxTokens);
+      return callGroq(system, user, key, model || "llama-3.1-8b-instant", maxTokens);
     case "gemini":
       return callGemini(system, user, key, maxTokens);
     case "openai":
@@ -377,7 +378,7 @@ async function callGroq(system: string, user: string, key: string, model: string
         { role: "user", content: user },
       ],
       max_tokens: maxTokens,
-      temperature: 0.7,
+      temperature: 0.3,
     }),
   });
   if (!res.ok) throw new Error(`Groq ${res.status}: ${(await res.text()).slice(0, 200)}`);
@@ -393,7 +394,7 @@ async function callGemini(system: string, user: string, key: string, maxTokens: 
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         contents: [{ parts: [{ text: system ? `${system}\n\n${user}` : user }] }],
-        generationConfig: { maxOutputTokens: maxTokens, temperature: 0.2 },
+        generationConfig: { maxOutputTokens: maxTokens, temperature: 0.1 },
       }),
     }
   );
