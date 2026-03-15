@@ -195,6 +195,12 @@
     border-radius: 0 !important;
   }
 
+  /* Zero out CardContent padding so worksheet fills the full page width */
+  .worksheet-content [class*="p-"],
+  .worksheet-content [class*="sm:p-"] {
+    padding: 0 !important;
+  }
+
   /* Each worksheet section must NOT split across pages */
   .worksheet-section,
   .worksheet-content > div > div > div {
