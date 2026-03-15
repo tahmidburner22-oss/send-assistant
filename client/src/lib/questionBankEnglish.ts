@@ -1,6 +1,6 @@
 /**
  * ENGLISH QUESTION BANK — 1000+ real verbatim exam questions
- * Sources: AQA, Edexcel, OCR GCSE English Language and Literature past papers
+ * Sources: Adaptly Question Bank
  */
 import type { PastPaperQuestion } from "./pastPaperQuestions";
 

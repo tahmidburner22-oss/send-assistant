@@ -1,7 +1,7 @@
 /**
  * Expanded Past Paper Question Bank for Adaptly
  * 15+ verbatim exam questions per topic per subject
- * Covers AQA, Edexcel, OCR and WJEC
+ * Sources: Adaptly Question Bank
  * Topics: Maths (Fractions, Algebra, Number, Geometry, Statistics, Ratio)
  *         English Language (Reading, Writing)
  *         Biology (Cell Biology, Organisation)

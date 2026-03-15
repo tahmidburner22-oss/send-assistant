@@ -10,12 +10,12 @@ import allOtherSubjectQuestionsBank from "./questionBankOtherSubjects";
 /**
  * Past Paper Question Database
  * ─────────────────────────────────────────────────────────────────────────────
- * Real, verbatim questions from GCSE past papers (AQA, Edexcel, OCR, WJEC).
+ * Adaptly Question Bank.
  * Questions are reproduced for educational use under fair dealing provisions.
  *
  * Structure per question:
  *  - id:          unique identifier
- *  - board:       AQA | Edexcel | OCR | WJEC
+ *  - board:       Adaptly
  *  - subject:     matches subject id in send-data.ts
  *  - year:        exam year
  *  - series:      June | November | Sample
@@ -43,7 +43,7 @@ export type ExamStage = "ks1" | "ks2" | "11plus" | "ks3" | "gcse";
 
 export interface PastPaperQuestion {
   id: string;
-  board?: "AQA" | "Edexcel" | "OCR" | "WJEC" | "STA" | "GL" | "KS1 SATs" | "KS2 SATs" | "CCEA" | "Cambridge" | "11+" | string;
+  board?: "Adaptly" | "STA" | "GL" | "KS1 SATs" | "KS2 SATs" | "CCEA" | "Cambridge" | "11+" | string;
   subject?: string;
   year?: number;
   series?: "June" | "November" | "Sample" | "Specimen" | "May" | "January" | "March" | "Autumn" | "Spring" | "Summer" | string;
@@ -70,9 +70,9 @@ export interface PastPaperQuestion {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// MATHEMATICS — AQA GCSE
+// MATHEMATICS — Adaptly
 // ─────────────────────────────────────────────────────────────────────────────
-const mathsAQA: PastPaperQuestion[] = [
+const mathsAdaptly1: PastPaperQuestion[] = [
   {
     id: "maths-aqa-2023-p1h-q1",
     board: "Adaptly", subject: "mathematics", year: 2023, series: "June",
@@ -297,9 +297,9 @@ const mathsAQA: PastPaperQuestion[] = [
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
-// MATHEMATICS — Edexcel GCSE
+// MATHEMATICS — Adaptly
 // ─────────────────────────────────────────────────────────────────────────────
-const mathsEdexcel: PastPaperQuestion[] = [
+const mathsAdaptly2: PastPaperQuestion[] = [
   {
     id: "maths-edexcel-2023-p1h-q1",
     board: "Adaptly", subject: "mathematics", year: 2023, series: "June",
@@ -387,9 +387,9 @@ const mathsEdexcel: PastPaperQuestion[] = [
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
-// MATHEMATICS — OCR GCSE
+// MATHEMATICS — Adaptly
 // ─────────────────────────────────────────────────────────────────────────────
-const mathsOCR: PastPaperQuestion[] = [
+const mathsAdaptly3: PastPaperQuestion[] = [
   {
     id: "maths-ocr-2023-p1h-q1",
     board: "Adaptly", subject: "mathematics", year: 2023, series: "June",
@@ -436,9 +436,9 @@ const mathsOCR: PastPaperQuestion[] = [
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
-// ENGLISH LANGUAGE — AQA GCSE
+// ENGLISH LANGUAGE — Adaptly
 // ─────────────────────────────────────────────────────────────────────────────
-const englishLangAQA: PastPaperQuestion[] = [
+const englishLangAdaptly: PastPaperQuestion[] = [
   {
     id: "eng-lang-aqa-2023-p1-q1",
     board: "Adaptly", subject: "english-language", year: 2023, series: "June",
@@ -514,9 +514,9 @@ const englishLangAQA: PastPaperQuestion[] = [
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
-// ENGLISH LITERATURE — AQA GCSE
+// ENGLISH LITERATURE — Adaptly
 // ─────────────────────────────────────────────────────────────────────────────
-const englishLitAQA: PastPaperQuestion[] = [
+const englishLitAdaptly: PastPaperQuestion[] = [
   {
     id: "eng-lit-aqa-2023-p1-q1",
     board: "Adaptly", subject: "english-literature", year: 2023, series: "June",
@@ -552,9 +552,9 @@ const englishLitAQA: PastPaperQuestion[] = [
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
-// BIOLOGY — AQA GCSE
+// BIOLOGY — Adaptly
 // ─────────────────────────────────────────────────────────────────────────────
-const biologyAQA: PastPaperQuestion[] = [
+const biologyAdaptly1: PastPaperQuestion[] = [
   {
     id: "bio-aqa-2023-p1h-q1",
     board: "Adaptly", subject: "biology", year: 2023, series: "June",
@@ -638,9 +638,9 @@ const biologyAQA: PastPaperQuestion[] = [
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
-// CHEMISTRY — AQA GCSE
+// CHEMISTRY — Adaptly
 // ─────────────────────────────────────────────────────────────────────────────
-const chemistryAQA: PastPaperQuestion[] = [
+const chemistryAdaptly1: PastPaperQuestion[] = [
   {
     id: "chem-aqa-2023-p1h-q1",
     board: "Adaptly", subject: "chemistry", year: 2023, series: "June",
@@ -708,9 +708,9 @@ const chemistryAQA: PastPaperQuestion[] = [
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
-// PHYSICS — AQA GCSE
+// PHYSICS — Adaptly
 // ─────────────────────────────────────────────────────────────────────────────
-const physicsAQA: PastPaperQuestion[] = [
+const physicsAdaptly1: PastPaperQuestion[] = [
   {
     id: "phys-aqa-2023-p1h-q1",
     board: "Adaptly", subject: "physics", year: 2023, series: "June",
@@ -789,9 +789,9 @@ const physicsAQA: PastPaperQuestion[] = [
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
-// HISTORY — AQA GCSE
+// HISTORY — Adaptly
 // ─────────────────────────────────────────────────────────────────────────────
-const historyAQA: PastPaperQuestion[] = [
+const historyAdaptly1: PastPaperQuestion[] = [
   {
     id: "hist-aqa-2023-p1-q1",
     board: "Adaptly", subject: "history", year: 2023, series: "June",
@@ -851,9 +851,9 @@ const historyAQA: PastPaperQuestion[] = [
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
-// GEOGRAPHY — AQA GCSE
+// GEOGRAPHY — Adaptly
 // ─────────────────────────────────────────────────────────────────────────────
-const geographyAQA: PastPaperQuestion[] = [
+const geographyAdaptly1: PastPaperQuestion[] = [
   {
     id: "geog-aqa-2023-p1-q1",
     board: "Adaptly", subject: "geography", year: 2023, series: "June",
@@ -913,9 +913,9 @@ const geographyAQA: PastPaperQuestion[] = [
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
-// BIOLOGY — Edexcel GCSE
+// BIOLOGY — Adaptly
 // ─────────────────────────────────────────────────────────────────────────────
-const biologyEdexcel: PastPaperQuestion[] = [
+const biologyAdaptly2: PastPaperQuestion[] = [
   {
     id: "bio-edexcel-2023-p1h-q1",
     board: "Adaptly", subject: "biology", year: 2023, series: "June",
@@ -935,9 +935,9 @@ const biologyEdexcel: PastPaperQuestion[] = [
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
-// CHEMISTRY — Edexcel GCSE
+// CHEMISTRY — Adaptly
 // ─────────────────────────────────────────────────────────────────────────────
-const chemistryEdexcel: PastPaperQuestion[] = [
+const chemistryAdaptly2: PastPaperQuestion[] = [
   {
     id: "chem-edexcel-2023-p1h-q1",
     board: "Adaptly", subject: "chemistry", year: 2023, series: "June",
@@ -957,9 +957,9 @@ const chemistryEdexcel: PastPaperQuestion[] = [
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
-// PHYSICS — Edexcel GCSE
+// PHYSICS — Adaptly
 // ─────────────────────────────────────────────────────────────────────────────
-const physicsEdexcel: PastPaperQuestion[] = [
+const physicsAdaptly2: PastPaperQuestion[] = [
   {
     id: "phys-edexcel-2023-p1h-q1",
     board: "Adaptly", subject: "physics", year: 2023, series: "June",
@@ -979,9 +979,9 @@ const physicsEdexcel: PastPaperQuestion[] = [
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
-// HISTORY — Edexcel GCSE
+// HISTORY — Adaptly
 // ─────────────────────────────────────────────────────────────────────────────
-const historyEdexcel: PastPaperQuestion[] = [
+const historyAdaptly2: PastPaperQuestion[] = [
   {
     id: "hist-edexcel-2023-p1-q1",
     board: "Adaptly", subject: "history", year: 2023, series: "June",
@@ -1001,9 +1001,9 @@ const historyEdexcel: PastPaperQuestion[] = [
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
-// GEOGRAPHY — Edexcel GCSE
+// GEOGRAPHY — Adaptly
 // ─────────────────────────────────────────────────────────────────────────────
-const geographyEdexcel: PastPaperQuestion[] = [
+const geographyAdaptly2: PastPaperQuestion[] = [
   {
     id: "geog-edexcel-2023-p1-q1",
     board: "Adaptly", subject: "geography", year: 2023, series: "June",
@@ -1023,9 +1023,9 @@ const geographyEdexcel: PastPaperQuestion[] = [
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
-// MATHEMATICS — WJEC GCSE
+// MATHEMATICS — Adaptly
 // ─────────────────────────────────────────────────────────────────────────────
-const mathsWJEC: PastPaperQuestion[] = [
+const mathsAdaptly4: PastPaperQuestion[] = [
   {
     id: "maths-wjec-2023-p1h-q1",
     board: "Adaptly", subject: "mathematics", year: 2023, series: "June",
@@ -1045,9 +1045,9 @@ const mathsWJEC: PastPaperQuestion[] = [
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
-// ENGLISH LANGUAGE — Edexcel GCSE
+// ENGLISH LANGUAGE — Adaptly
 // ─────────────────────────────────────────────────────────────────────────────
-const englishLangEdexcel: PastPaperQuestion[] = [
+const englishLangAdaptly2: PastPaperQuestion[] = [
   {
     id: "eng-lang-edexcel-2023-p1-q1",
     board: "Adaptly", subject: "english-language", year: 2023, series: "June",
@@ -1075,9 +1075,9 @@ const englishLangEdexcel: PastPaperQuestion[] = [
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
-// ENGLISH LANGUAGE — OCR GCSE
+// ENGLISH LANGUAGE — Adaptly
 // ─────────────────────────────────────────────────────────────────────────────
-const englishLangOCR: PastPaperQuestion[] = [
+const englishLangAdaptly3: PastPaperQuestion[] = [
   {
     id: "eng-lang-ocr-2023-p1-q1",
     board: "Adaptly", subject: "english-language", year: 2023, series: "June",
@@ -1097,9 +1097,9 @@ const englishLangOCR: PastPaperQuestion[] = [
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
-// COMBINED SCIENCE — AQA GCSE (Trilogy)
+// COMBINED SCIENCE — Adaptly
 // ─────────────────────────────────────────────────────────────────────────────
-const combinedScienceAQA: PastPaperQuestion[] = [
+const combinedScienceAdaptly: PastPaperQuestion[] = [
   {
     id: "sci-aqa-2023-bio1h-q1",
     board: "Adaptly", subject: "science", year: 2023, series: "June",
@@ -1459,25 +1459,25 @@ const elevenPlusVerbal: PastPaperQuestion[] = [
 // MASTER EXPORT — all questions combined
 // ─────────────────────────────────────────────────────────────────────────────
 export const allPastPaperQuestions: PastPaperQuestion[] = [
-  ...mathsAQA,
-  ...mathsEdexcel,
-  ...mathsOCR,
-  ...mathsWJEC,
-  ...englishLangAQA,
-  ...englishLangEdexcel,
-  ...englishLangOCR,
-  ...englishLitAQA,
-  ...biologyAQA,
-  ...biologyEdexcel,
-  ...chemistryAQA,
-  ...chemistryEdexcel,
-  ...physicsAQA,
-  ...physicsEdexcel,
-  ...historyAQA,
-  ...historyEdexcel,
-  ...geographyAQA,
-  ...geographyEdexcel,
-  ...combinedScienceAQA,
+  ...mathsAdaptly1,
+  ...mathsAdaptly2,
+  ...mathsAdaptly3,
+  ...mathsAdaptly4,
+  ...englishLangAdaptly,
+  ...englishLangAdaptly2,
+  ...englishLangAdaptly3,
+  ...englishLitAdaptly,
+  ...biologyAdaptly1,
+  ...biologyAdaptly2,
+  ...chemistryAdaptly1,
+  ...chemistryAdaptly2,
+  ...physicsAdaptly1,
+  ...physicsAdaptly2,
+  ...historyAdaptly1,
+  ...historyAdaptly2,
+  ...geographyAdaptly1,
+  ...geographyAdaptly2,
+  ...combinedScienceAdaptly,
   // Year-group-specific banks
   ...ks1Maths,
   ...ks1English,
