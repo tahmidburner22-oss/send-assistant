@@ -269,6 +269,7 @@ export default function Worksheets() {
 
   const worksheetRef = useRef<HTMLDivElement>(null);
   const uploadWorksheetRef = useRef<HTMLDivElement>(null);
+  const historyContentRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // tRPC mutations
@@ -2296,7 +2297,7 @@ export default function Worksheets() {
                     onClick={() => { setHistoryEditMode(!historyEditMode); if (historyEditMode) setHistoryAiEditIdx(null); }}>
                     <Edit3 className="h-3.5 w-3.5 mr-1" />{historyEditMode ? "Done Editing" : "Edit Manually"}
                   </Button>
-                  <Button size="sm" variant="outline" onClick={() => window.print()}><Printer className="h-3.5 w-3.5 mr-1" />Print</Button>
+                  <Button size="sm" variant="outline" onClick={() => { if (historyContentRef.current) printWorksheetElement(historyContentRef.current, { includeTeacherSections: historyViewMode === "teacher" }); else window.print(); }}><Printer className="h-3.5 w-3.5 mr-1" />Print</Button>
                   <Button size="sm" className="bg-brand hover:bg-brand/90 text-white" onClick={() => {
                     // Save edits back to history
                     const updatedSections = sections.map((s, i) => ({
@@ -2316,7 +2317,7 @@ export default function Worksheets() {
                 {ws.subtitle && <p className="text-xs text-muted-foreground">{ws.subtitle}</p>}
 
                 {/* Sections */}
-                <div className="space-y-3">
+                <div className="space-y-3" ref={historyContentRef}>
                   {visibleSections.map((section, i) => {
                     const currentContent = historyEditedSections[i] !== undefined ? historyEditedSections[i] : section.content;
                     const isTeacherSection = section.teacherOnly;

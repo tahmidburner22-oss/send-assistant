@@ -37,8 +37,8 @@ const LANGUAGES = [
   { code: "ru", label: "Russian" },
 ];
 
-// Neural AI voices — powered by Gemini TTS (Aoede, Leda, Kore, Charon, Fenrir, Orus)
-// Voice IDs are mapped server-side to Gemini prebuilt voices
+// Neural AI voices — powered by OpenAI TTS (tts-1-hd) with Azure Neural TTS fallback
+// Voice IDs are mapped server-side to OpenAI voice names (nova, shimmer, alloy, echo, fable, onyx)
 const NEURAL_VOICES = [
   { id: "nova",    label: "Aoede — Warm Female",        desc: "Natural, engaging — best for most content" },
   { id: "shimmer", label: "Leda — Soft Female",          desc: "Gentle, clear — great for science topics" },

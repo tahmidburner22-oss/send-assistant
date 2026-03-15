@@ -56,7 +56,7 @@ export default function Home() {
 
   const stats = [
     { label: "Worksheets", value: totalWorksheets, color: "text-brand" },
-    { label: "Differentiations", value: totalDifferentiations + totalStories, color: "text-purple-600" },
+    { label: "AI Generations", value: totalDifferentiations + totalStories, color: "text-purple-600" },
     { label: "Pupils", value: totalChildren, color: "text-blue-600" },
     { label: "Time Saved", value: `${timeSaved}m`, color: "text-amber-600" },
     { label: "Avg Rating", value: avgRating || "—", color: "text-rose-500" },

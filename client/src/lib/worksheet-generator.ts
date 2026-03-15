@@ -765,6 +765,500 @@ const scienceTopics: Record<string, any> = {
     challengeAnswer: "As the plant photosynthesises, it uses up all the CO₂ in the sealed container. CO₂ becomes the limiting factor — without it, photosynthesis cannot continue regardless of light or water. The plant will also eventually use up water.",
     extension: "Research: what is the difference between C3 and C4 photosynthesis? Why are C4 plants (like maize) more efficient in hot, dry conditions?"
   },
+  // ── CHEMISTRY TOPICS ─────────────────────────────────────────────────────
+  "atoms": {
+    title: "Atoms, Elements and Compounds",
+    objective: "Describe the structure of an atom. Distinguish between elements, compounds and mixtures. Interpret chemical formulae and equations.",
+    priorKnowledge: "Students should know: matter is made of particles; the periodic table lists all elements; substances can be pure or mixed.",
+    vocabulary: ["Atom", "Element", "Compound", "Mixture", "Proton", "Neutron", "Electron", "Nucleus", "Atomic number", "Mass number", "Chemical formula", "Chemical equation"],
+    teacherNotes: "Use the Bohr model to introduce atomic structure. Emphasise the difference between elements (one type of atom), compounds (chemically bonded atoms of different elements) and mixtures (not chemically bonded). Common misconception: students confuse atomic number and mass number — atomic number = protons, mass number = protons + neutrons.",
+    markScheme: [
+      { q: "1.1", marks: 2, answer: "Protons and neutrons in the nucleus; electrons in shells/orbitals around the nucleus", method: "1 mark nucleus content, 1 mark electrons" },
+      { q: "1.2", marks: 1, answer: "Atomic number = number of protons (= number of electrons in a neutral atom)", method: "" },
+      { q: "2.1", marks: 2, answer: "Compound: two or more different elements chemically bonded together; can only be separated by chemical reactions", method: "1 mark definition, 1 mark separation" },
+    ],
+    example: {
+      question: "Describe the structure of a sodium atom (atomic number 11, mass number 23).",
+      steps: [
+        "ATOMIC STRUCTURE OF SODIUM (Na):",
+        "   Atomic number = 11 → 11 protons in the nucleus",
+        "   In a neutral atom: protons = electrons → 11 electrons",
+        "   Mass number = 23 → neutrons = 23 − 11 = 12 neutrons",
+        "",
+        "ELECTRON CONFIGURATION:",
+        "   Shell 1: 2 electrons",
+        "   Shell 2: 8 electrons",
+        "   Shell 3: 1 electron",
+        "   Written as: 2, 8, 1",
+        "",
+        "SUMMARY: Sodium has 11 protons, 12 neutrons, 11 electrons arranged 2,8,1"
+      ]
+    },
+    guided: [
+      { q: "1.1  An atom of carbon has atomic number 6 and mass number 12.\n         (a) How many protons does it have?\n         (b) How many neutrons does it have?\n         (c) How many electrons does it have?", a: "(a) 6 protons  (b) 6 neutrons (12−6)  (c) 6 electrons", marks: 3 },
+      { q: "1.2  State the difference between an element and a compound.", a: "An element contains only one type of atom. A compound contains two or more different elements chemically bonded together.", marks: 2 },
+      { q: "1.3  Is water (H₂O) an element, compound or mixture? Explain.", a: "Water is a compound — it contains hydrogen and oxygen atoms chemically bonded together.", marks: 2 },
+    ],
+    independent: [
+      { q: "2.1  Explain why isotopes of the same element have the same chemical properties but different physical properties.", a: "Isotopes have the same number of protons and electrons (same atomic number) so they have the same electron configuration and react the same way chemically. However, they have different numbers of neutrons, giving them different mass numbers and therefore different physical properties such as density and melting point.", marks: 4 },
+      { q: "2.2  Describe how you could separate a mixture of salt and sand. Explain each step.", a: "Add water to dissolve the salt (salt is soluble, sand is not). Filter to remove the sand. Evaporate the water from the filtrate to recover the salt. (Award 1 mark per correct step with explanation.)", marks: 3 },
+      { q: "2.3  Magnesium (Mg, atomic number 12) reacts with oxygen to form magnesium oxide. Write the word equation and balanced symbol equation for this reaction.", a: "Word: Magnesium + oxygen → magnesium oxide. Symbol: 2Mg + O₂ → 2MgO", marks: 3 },
+    ],
+    challenge: "Explain why noble gases (Group 0) are unreactive, using your knowledge of electron configuration.",
+    challengeAnswer: "Noble gases have a full outer electron shell (helium: 2; others: 8). A full outer shell is a very stable arrangement. Because they are already stable, noble gases have no tendency to gain, lose or share electrons — so they do not form chemical bonds and are essentially unreactive.",
+    extension: "Research the development of the atomic model from Dalton to Bohr to the modern quantum model. How did each model improve on the previous one?"
+  },
+  "periodic-table": {
+    title: "The Periodic Table",
+    objective: "Describe the organisation of the periodic table. Explain trends in groups and periods. Predict properties of elements from their position.",
+    priorKnowledge: "Students should know: elements are made of one type of atom; atoms have protons, neutrons and electrons; electron configuration determines chemical properties.",
+    vocabulary: ["Period", "Group", "Metal", "Non-metal", "Alkali metal", "Halogen", "Noble gas", "Reactivity", "Electron configuration", "Atomic radius", "Ionisation energy"],
+    teacherNotes: "Emphasise that the periodic table is arranged in order of increasing atomic number. Groups have the same number of outer electrons. Periods indicate the number of electron shells. Key groups to know: Group 1 (alkali metals), Group 7 (halogens), Group 0 (noble gases). Reactivity trends: Group 1 reactivity increases down the group; Group 7 reactivity decreases down the group.",
+    markScheme: [
+      { q: "1.1", marks: 2, answer: "Elements are arranged in order of increasing atomic number; elements with similar properties are in the same vertical column (group)", method: "1 mark each" },
+      { q: "1.2", marks: 2, answer: "Group number = number of electrons in the outer shell; Period number = number of electron shells", method: "1 mark each" },
+    ],
+    example: {
+      question: "Explain why lithium, sodium and potassium are all in Group 1 of the periodic table and show similar chemical properties.",
+      steps: [
+        "ELECTRON CONFIGURATIONS:",
+        "   Lithium (Li):   2, 1  — 1 outer electron",
+        "   Sodium (Na):    2, 8, 1  — 1 outer electron",
+        "   Potassium (K):  2, 8, 8, 1  — 1 outer electron",
+        "",
+        "WHY THEY ARE IN GROUP 1:",
+        "   All have 1 electron in their outer shell → placed in Group 1",
+        "",
+        "WHY THEY HAVE SIMILAR PROPERTIES:",
+        "   Same number of outer electrons → same type of bonding behaviour",
+        "   All readily lose 1 electron to form +1 ions",
+        "   All react vigorously with water to produce hydrogen gas and a metal hydroxide"
+      ]
+    },
+    guided: [
+      { q: "1.1  Sodium has atomic number 11. Write its electron configuration and state which group and period it is in.", a: "Electron configuration: 2, 8, 1. Group 1 (1 outer electron). Period 3 (3 electron shells).", marks: 3 },
+      { q: "1.2  State the trend in reactivity going down Group 1. Explain this trend.", a: "Reactivity increases going down Group 1. As you go down, the outer electron is in a higher energy shell, further from the nucleus. The nuclear attraction is weaker (more shielding), so the electron is lost more easily.", marks: 3 },
+    ],
+    independent: [
+      { q: "2.1  Chlorine (Cl) and bromine (Br) are both in Group 7. Predict which is more reactive and explain why.", a: "Chlorine is more reactive. Going down Group 7, the outer shell is further from the nucleus and there is more electron shielding. Chlorine gains an electron more easily because its outer shell is closer to the nucleus with less shielding, so the nuclear attraction is stronger.", marks: 4 },
+      { q: "2.2  An unknown element X is in Period 3, Group 2. Predict: (a) its electron configuration, (b) whether it is a metal or non-metal, (c) the charge of its ion.", a: "(a) 2, 8, 2  (b) Metal (Group 2 elements are all metals)  (c) 2+ ion (loses 2 outer electrons)", marks: 3 },
+    ],
+    challenge: "Explain why the atomic radius decreases across a period (left to right) but increases down a group.",
+    challengeAnswer: "Across a period: the number of protons increases but electrons are added to the same shell. Greater nuclear charge pulls electrons closer to the nucleus, reducing atomic radius. Down a group: each successive element has an additional electron shell, which is further from the nucleus, so atomic radius increases despite increasing nuclear charge (shielding effect).",
+    extension: "Research Mendeleev's original periodic table. How did he arrange elements, and why did he leave gaps? Which elements were later discovered to fill those gaps?"
+  },
+  "chemical-reactions": {
+    title: "Chemical Reactions and Equations",
+    objective: "Identify types of chemical reactions. Write and balance chemical equations. Describe exothermic and endothermic reactions.",
+    priorKnowledge: "Students should know: atoms are rearranged in chemical reactions; mass is conserved; elements and compounds can react together.",
+    vocabulary: ["Reactant", "Product", "Exothermic", "Endothermic", "Combustion", "Oxidation", "Reduction", "Neutralisation", "Precipitation", "Conservation of mass", "Balanced equation"],
+    teacherNotes: "Emphasise conservation of mass — atoms are neither created nor destroyed. Balancing equations is a key skill. Exothermic reactions release energy (temperature rises); endothermic reactions absorb energy (temperature falls). Common reactions to know: combustion, neutralisation, precipitation, thermal decomposition.",
+    markScheme: [
+      { q: "1.1", marks: 2, answer: "Exothermic: releases energy to surroundings; temperature of surroundings increases. Examples: combustion, neutralisation, oxidation.", method: "1 mark definition, 1 mark example" },
+      { q: "1.2", marks: 2, answer: "Endothermic: absorbs energy from surroundings; temperature of surroundings decreases. Examples: thermal decomposition, dissolving ammonium chloride.", method: "1 mark definition, 1 mark example" },
+    ],
+    example: {
+      question: "Balance the equation for the combustion of methane: CH₄ + O₂ → CO₂ + H₂O",
+      steps: [
+        "STEP 1 — Count atoms on each side (unbalanced):",
+        "   Left:  C=1, H=4, O=2",
+        "   Right: C=1, H=2, O=3",
+        "",
+        "STEP 2 — Balance hydrogen first (H=4 on left, so need 2H₂O):",
+        "   CH₄ + O₂ → CO₂ + 2H₂O",
+        "   Left: C=1, H=4, O=2  |  Right: C=1, H=4, O=4",
+        "",
+        "STEP 3 — Balance oxygen (O=4 on right, so need 2O₂):",
+        "   CH₄ + 2O₂ → CO₂ + 2H₂O",
+        "   Left: C=1, H=4, O=4  |  Right: C=1, H=4, O=4  ✓",
+        "",
+        "BALANCED EQUATION: CH₄ + 2O₂ → CO₂ + 2H₂O"
+      ]
+    },
+    guided: [
+      { q: "1.1  Balance the following equation:\n         Mg + HCl → MgCl₂ + H₂", a: "Mg + 2HCl → MgCl₂ + H₂", marks: 1 },
+      { q: "1.2  State the law of conservation of mass and explain what it means for chemical reactions.", a: "The total mass of reactants equals the total mass of products. In a chemical reaction, atoms are rearranged but not created or destroyed, so the total mass is conserved.", marks: 2 },
+      { q: "1.3  Classify each reaction as exothermic or endothermic:\n         (a) Burning wood  (b) Cooking an egg  (c) Hand warmers", a: "(a) Exothermic  (b) Endothermic  (c) Exothermic", marks: 3 },
+    ],
+    independent: [
+      { q: "2.1  Write the balanced symbol equation for the complete combustion of ethanol (C₂H₅OH).", a: "C₂H₅OH + 3O₂ → 2CO₂ + 3H₂O", marks: 2 },
+      { q: "2.2  Explain why the temperature drops when ammonium chloride dissolves in water.", a: "Dissolving ammonium chloride is an endothermic process — it absorbs energy from the surroundings. This energy is used to break the ionic bonds in the solid. As energy is taken from the water, the temperature of the solution falls.", marks: 3 },
+      { q: "2.3  A student burns 1.0 g of magnesium ribbon in air. She collects the magnesium oxide product and finds it has a mass of 1.67 g. Explain why the mass has increased.", a: "Magnesium reacts with oxygen from the air. The oxygen atoms bond to the magnesium atoms, adding their mass to the product. Total mass is conserved — the extra 0.67 g is the mass of oxygen that combined with the magnesium.", marks: 3 },
+    ],
+    challenge: "Explain, using bond energies, why combustion reactions are exothermic.",
+    challengeAnswer: "In combustion, bonds in the fuel and oxygen are broken (endothermic step, requires energy input) and new bonds are formed in CO₂ and H₂O (exothermic step, releases energy). The energy released forming the new bonds is greater than the energy needed to break the original bonds, so the overall reaction releases energy — it is exothermic.",
+    extension: "Research the difference between complete and incomplete combustion of hydrocarbons. What products are formed in each case and why is incomplete combustion dangerous?"
+  },
+  "acids-bases": {
+    title: "Acids, Bases and Neutralisation",
+    objective: "Describe the pH scale and properties of acids and alkalis. Write ionic equations for neutralisation. Explain titration and salt formation.",
+    priorKnowledge: "Students should know: acids and alkalis are common substances; indicators change colour in acids and alkalis; pH is a measure of acidity.",
+    vocabulary: ["Acid", "Alkali", "Base", "Neutralisation", "pH scale", "Indicator", "Salt", "Hydrogen ion", "Hydroxide ion", "Titration", "Concentration", "Mole"],
+    teacherNotes: "pH scale: 0–6 acid, 7 neutral, 8–14 alkali. Strong acids fully dissociate (HCl, H₂SO₄, HNO₃); weak acids partially dissociate (ethanoic acid). Neutralisation: acid + base → salt + water. The ionic equation for neutralisation is always H⁺ + OH⁻ → H₂O. Titration is used to find the concentration of an unknown acid or alkali.",
+    markScheme: [
+      { q: "1.1", marks: 2, answer: "Acids produce H⁺ ions in solution; pH below 7. Alkalis produce OH⁻ ions in solution; pH above 7.", method: "1 mark each" },
+      { q: "1.2", marks: 1, answer: "Neutralisation: acid + base → salt + water", method: "" },
+    ],
+    example: {
+      question: "Write the balanced equation for the reaction between hydrochloric acid and sodium hydroxide. Name the salt formed.",
+      steps: [
+        "WORD EQUATION:",
+        "   Hydrochloric acid + sodium hydroxide → sodium chloride + water",
+        "",
+        "BALANCED SYMBOL EQUATION:",
+        "   HCl + NaOH → NaCl + H₂O",
+        "",
+        "IONIC EQUATION (for all neutralisation reactions):",
+        "   H⁺(aq) + OH⁻(aq) → H₂O(l)",
+        "",
+        "SALT FORMED: Sodium chloride (NaCl) — common table salt",
+        "",
+        "NAMING SALTS: first part from the metal/base, second part from the acid",
+        "   HCl → chloride salts",
+        "   H₂SO₄ → sulfate salts",
+        "   HNO₃ → nitrate salts"
+      ]
+    },
+    guided: [
+      { q: "1.1  Write the word equation for the reaction between sulfuric acid and potassium hydroxide.", a: "Sulfuric acid + potassium hydroxide → potassium sulfate + water", marks: 2 },
+      { q: "1.2  A solution has a pH of 2. State whether it is acidic, neutral or alkaline, and describe what happens when universal indicator is added.", a: "pH 2 is strongly acidic. Universal indicator turns red.", marks: 2 },
+      { q: "1.3  Write the ionic equation for any neutralisation reaction.", a: "H⁺(aq) + OH⁻(aq) → H₂O(l)", marks: 2 },
+    ],
+    independent: [
+      { q: "2.1  In a titration, 25.0 cm³ of sodium hydroxide solution is neutralised by 20.0 cm³ of 0.1 mol/dm³ hydrochloric acid. Calculate the concentration of the sodium hydroxide solution.", a: "Moles HCl = 0.1 × 20.0/1000 = 0.002 mol. Ratio HCl:NaOH = 1:1, so moles NaOH = 0.002 mol. Concentration NaOH = 0.002 / (25.0/1000) = 0.08 mol/dm³.", marks: 4 },
+      { q: "2.2  Explain the difference between a strong acid and a weak acid. Give one example of each.", a: "A strong acid fully dissociates in water to produce H⁺ ions (e.g. hydrochloric acid, HCl). A weak acid only partially dissociates, so only a small proportion of molecules release H⁺ ions (e.g. ethanoic acid, CH₃COOH). At the same concentration, a strong acid has a lower pH than a weak acid.", marks: 4 },
+    ],
+    challenge: "A student adds excess calcium carbonate to hydrochloric acid. Describe what they observe and write the balanced equation. Explain why excess carbonate is used.",
+    challengeAnswer: "Observations: fizzing/bubbling (CO₂ gas produced); solid dissolves; eventually fizzing stops when acid is used up. Equation: CaCO₃ + 2HCl → CaCl₂ + H₂O + CO₂. Excess carbonate ensures all the acid reacts — the carbonate is the limiting factor, guaranteeing complete neutralisation of the acid.",
+    extension: "Research the industrial manufacture of ammonia by the Haber process. Why is the pH of the ocean changing, and what effect does this have on marine life?"
+  },
+  "electricity": {
+    title: "Electricity and Circuits",
+    objective: "Describe current, voltage and resistance. Apply Ohm's Law. Analyse series and parallel circuits. Describe electrical power and energy.",
+    priorKnowledge: "Students should know: circuits need a complete loop; batteries provide energy; some materials conduct electricity and others do not.",
+    vocabulary: ["Current", "Voltage", "Resistance", "Ohm's Law", "Series circuit", "Parallel circuit", "Ammeter", "Voltmeter", "Power", "Energy", "Coulomb", "Ohm"],
+    teacherNotes: "Key equations: V = IR (Ohm's Law); P = IV; E = Pt. In series circuits: current is the same throughout; voltages add up; resistances add up. In parallel circuits: voltage is the same across each branch; currents add up; total resistance is less than the smallest individual resistance. Common misconception: students think current is 'used up' in a circuit — emphasise charge is conserved.",
+    markScheme: [
+      { q: "1.1", marks: 2, answer: "Current (I) is the rate of flow of charge, measured in amperes (A). Voltage (V) is the energy transferred per unit charge, measured in volts (V).", method: "1 mark each" },
+      { q: "1.2", marks: 2, answer: "V = IR; rearranged: I = V/R and R = V/I. Ohm's Law states that current through a conductor is directly proportional to the voltage across it (at constant temperature).", method: "" },
+    ],
+    example: {
+      question: "A resistor has a resistance of 10 Ω. A voltage of 5 V is applied across it. Calculate the current through the resistor.",
+      steps: [
+        "GIVEN:",
+        "   Resistance R = 10 Ω",
+        "   Voltage V = 5 V",
+        "",
+        "FORMULA: V = IR  →  rearrange to find I:",
+        "   I = V ÷ R",
+        "",
+        "CALCULATION:",
+        "   I = 5 ÷ 10 = 0.5 A",
+        "",
+        "ANSWER: The current through the resistor is 0.5 A (amperes)",
+        "",
+        "UNITS CHECK: V ÷ Ω = A  ✓"
+      ]
+    },
+    guided: [
+      { q: "1.1  A lamp has a resistance of 20 Ω and a current of 0.3 A flows through it. Calculate the voltage across the lamp.", a: "V = IR = 0.3 × 20 = 6 V", marks: 2 },
+      { q: "1.2  State TWO differences between a series circuit and a parallel circuit.", a: "Series: current is the same throughout; if one component breaks, the whole circuit stops. Parallel: voltage is the same across each branch; if one component breaks, others continue to work.", marks: 2 },
+      { q: "1.3  Calculate the power of a device that draws a current of 2 A from a 230 V supply.", a: "P = IV = 2 × 230 = 460 W", marks: 2 },
+    ],
+    independent: [
+      { q: "2.1  Two resistors of 6 Ω and 12 Ω are connected in parallel. Calculate the total resistance of the combination.", a: "1/R_total = 1/6 + 1/12 = 2/12 + 1/12 = 3/12 = 1/4. Therefore R_total = 4 Ω.", marks: 3 },
+      { q: "2.2  A 60 W light bulb is left on for 3 hours. Calculate the energy transferred in joules.", a: "E = Pt = 60 × (3 × 3600) = 60 × 10,800 = 648,000 J (648 kJ)", marks: 3 },
+      { q: "2.3  Explain why adding more lamps in parallel to a circuit increases the total current drawn from the battery.", a: "Each lamp in parallel provides an additional current path. The voltage across each lamp remains the same (equal to the battery voltage). Each lamp draws its own current (I = V/R). The total current is the sum of the individual branch currents, so total current increases as more lamps are added.", marks: 4 },
+    ],
+    challenge: "A student measures the current through a filament lamp at different voltages and finds the I-V graph is not a straight line. Explain why, and what this tells us about the lamp's resistance.",
+    challengeAnswer: "A filament lamp does not obey Ohm's Law — it is a non-ohmic conductor. As current increases, the filament heats up. Higher temperature increases the resistance of the metal filament (more collisions between electrons and vibrating ions). So resistance increases with temperature, causing the I-V graph to curve (gradient decreases at higher voltages).",
+    extension: "Research how a diode works and sketch the I-V characteristic curve for a diode. How is a diode used in rectification?"
+  },
+  "waves": {
+    title: "Waves — Properties and Types",
+    objective: "Describe the properties of transverse and longitudinal waves. Calculate wave speed, frequency and wavelength. Describe reflection, refraction and the electromagnetic spectrum.",
+    priorKnowledge: "Students should know: waves transfer energy; sound and light are types of waves; waves have amplitude and frequency.",
+    vocabulary: ["Wavelength", "Frequency", "Amplitude", "Wave speed", "Transverse", "Longitudinal", "Reflection", "Refraction", "Diffraction", "Electromagnetic spectrum", "Hertz"],
+    teacherNotes: "Key equation: wave speed = frequency × wavelength (v = fλ). Transverse waves: oscillations perpendicular to direction of travel (light, water waves). Longitudinal waves: oscillations parallel to direction of travel (sound). The electromagnetic spectrum in order: radio, microwave, infrared, visible, ultraviolet, X-ray, gamma. All EM waves travel at 3 × 10⁸ m/s in a vacuum.",
+    markScheme: [
+      { q: "1.1", marks: 2, answer: "Transverse: oscillations perpendicular to direction of energy transfer (e.g. light). Longitudinal: oscillations parallel to direction of energy transfer (e.g. sound).", method: "1 mark each" },
+      { q: "1.2", marks: 2, answer: "v = fλ; wave speed (m/s) = frequency (Hz) × wavelength (m)", method: "" },
+    ],
+    example: {
+      question: "A wave has a frequency of 200 Hz and a wavelength of 1.5 m. Calculate its wave speed.",
+      steps: [
+        "GIVEN:",
+        "   Frequency f = 200 Hz",
+        "   Wavelength λ = 1.5 m",
+        "",
+        "FORMULA: v = fλ",
+        "",
+        "CALCULATION:",
+        "   v = 200 × 1.5 = 300 m/s",
+        "",
+        "ANSWER: Wave speed = 300 m/s",
+        "",
+        "UNITS CHECK: Hz × m = (1/s) × m = m/s  ✓"
+      ]
+    },
+    guided: [
+      { q: "1.1  A radio wave has a frequency of 100 MHz (1 × 10⁸ Hz) and travels at 3 × 10⁸ m/s. Calculate its wavelength.", a: "λ = v/f = (3 × 10⁸) / (1 × 10⁸) = 3 m", marks: 2 },
+      { q: "1.2  State the order of the electromagnetic spectrum from longest to shortest wavelength.", a: "Radio → Microwave → Infrared → Visible light → Ultraviolet → X-rays → Gamma rays", marks: 2 },
+      { q: "1.3  Explain what happens to a light ray when it passes from air into glass (refraction).", a: "The light slows down as it enters the denser glass. If it hits the boundary at an angle, it bends towards the normal. The wavelength decreases but the frequency stays the same.", marks: 3 },
+    ],
+    independent: [
+      { q: "2.1  Explain the difference between the amplitude and the frequency of a wave. How does each affect what we hear for a sound wave?", a: "Amplitude is the maximum displacement from the rest position — for sound, greater amplitude means louder sound. Frequency is the number of complete waves per second — for sound, higher frequency means higher pitch.", marks: 4 },
+      { q: "2.2  Describe one use and one hazard of ultraviolet radiation.", a: "Use: detecting forged banknotes (fluorescent ink glows under UV); sterilising water/surfaces; treating skin conditions. Hazard: causes sunburn; can damage DNA in skin cells, increasing risk of skin cancer.", marks: 2 },
+    ],
+    challenge: "Explain why sound cannot travel through a vacuum but light can.",
+    challengeAnswer: "Sound is a longitudinal mechanical wave — it requires a medium (particles) to travel through, as it is caused by the compression and rarefaction of particles. A vacuum has no particles, so sound cannot propagate. Light is an electromagnetic wave — it consists of oscillating electric and magnetic fields that do not require a medium. Electromagnetic waves can therefore travel through a vacuum at 3 × 10⁸ m/s.",
+    extension: "Research how seismic waves (P-waves and S-waves) have been used to determine the internal structure of the Earth."
+  },
+  "energy": {
+    title: "Energy Transfers and Resources",
+    objective: "Describe different energy stores and pathways. Apply the principle of conservation of energy. Compare renewable and non-renewable energy resources.",
+    priorKnowledge: "Students should know: energy cannot be created or destroyed; fuels store energy; electricity is generated in power stations.",
+    vocabulary: ["Kinetic energy", "Potential energy", "Thermal energy", "Chemical energy", "Elastic energy", "Conservation of energy", "Efficiency", "Renewable", "Non-renewable", "Joule", "Watt"],
+    teacherNotes: "Energy is always conserved — it is transferred between stores, not created or destroyed. Key equations: KE = ½mv²; GPE = mgh; efficiency = (useful output / total input) × 100%. Renewable sources: solar, wind, hydroelectric, tidal, geothermal, biomass. Non-renewable: coal, oil, natural gas, nuclear (uranium). Emphasise that 'wasted' energy is not lost — it is dissipated as thermal energy.",
+    markScheme: [
+      { q: "1.1", marks: 2, answer: "Kinetic energy: energy of a moving object. KE = ½mv². Gravitational potential energy: energy stored due to position in a gravitational field. GPE = mgh.", method: "1 mark each with formula" },
+      { q: "1.2", marks: 2, answer: "Efficiency = (useful energy output / total energy input) × 100%. A more efficient device wastes less energy as heat/sound.", method: "" },
+    ],
+    example: {
+      question: "A ball of mass 0.5 kg is dropped from a height of 10 m. Calculate its kinetic energy just before it hits the ground (assume no air resistance).",
+      steps: [
+        "STEP 1 — Calculate the gravitational potential energy at the top:",
+        "   GPE = mgh = 0.5 × 10 × 10 = 50 J",
+        "   (using g = 10 m/s²)",
+        "",
+        "STEP 2 — Apply conservation of energy:",
+        "   All GPE converts to KE (no air resistance)",
+        "   KE = GPE = 50 J",
+        "",
+        "ANSWER: Kinetic energy just before impact = 50 J",
+        "",
+        "BONUS — find the velocity:",
+        "   KE = ½mv²  →  50 = ½ × 0.5 × v²  →  v² = 200  →  v = 14.1 m/s"
+      ]
+    },
+    guided: [
+      { q: "1.1  A car of mass 1,200 kg is travelling at 20 m/s. Calculate its kinetic energy.", a: "KE = ½mv² = ½ × 1200 × 20² = ½ × 1200 × 400 = 240,000 J (240 kJ)", marks: 2 },
+      { q: "1.2  A light bulb is 15% efficient. If 100 J of electrical energy is supplied, calculate the useful light energy output and the wasted energy.", a: "Useful light energy = 15% × 100 = 15 J. Wasted energy (heat) = 85 J.", marks: 2 },
+      { q: "1.3  State TWO advantages and ONE disadvantage of wind power compared to coal.", a: "Advantages: renewable (will not run out); no CO₂ emissions during operation. Disadvantage: intermittent (only generates when wind blows); visual/noise impact; lower power output per unit area.", marks: 3 },
+    ],
+    independent: [
+      { q: "2.1  A hydroelectric dam generates 500 MW of power. Calculate the energy generated in one day.", a: "E = Pt = 500 × 10⁶ × (24 × 3600) = 500 × 10⁶ × 86,400 = 4.32 × 10¹³ J (43.2 TJ)", marks: 3 },
+      { q: "2.2  Explain why burning fossil fuels contributes to climate change.", a: "Fossil fuels contain carbon compounds. When burned, they release CO₂ (and other greenhouse gases). CO₂ in the atmosphere traps infrared radiation emitted by the Earth's surface (the greenhouse effect). This causes the Earth's average temperature to rise — global warming — leading to climate change.", marks: 4 },
+    ],
+    challenge: "A pumped-storage hydroelectric system pumps water uphill when electricity demand is low and releases it downhill to generate electricity when demand is high. Calculate the efficiency of the system if 1,000 MJ of electrical energy is used to pump the water up, but only 750 MJ of electrical energy is generated when it flows back down.",
+    challengeAnswer: "Efficiency = (useful output / total input) × 100% = (750 / 1000) × 100% = 75%. The 25% energy loss is due to friction in pumps and turbines, electrical resistance in generators, and some energy dissipated as heat and sound.",
+    extension: "Research the energy mix of the UK electricity grid. How has it changed over the past 20 years, and what are the targets for renewable energy by 2030?"
+  },
+  "cell-biology": {
+    title: "Cell Biology — Structure and Function",
+    objective: "Compare animal, plant and bacterial cells. Describe cell specialisation and organisation. Explain diffusion, osmosis and active transport.",
+    priorKnowledge: "Students should know: living things are made of cells; cells are the basic unit of life; organisms can be unicellular or multicellular.",
+    vocabulary: ["Cell membrane", "Nucleus", "Cytoplasm", "Mitochondria", "Cell wall", "Chloroplast", "Vacuole", "Ribosome", "Prokaryote", "Eukaryote", "Diffusion", "Osmosis"],
+    teacherNotes: "Use microscopy practical to make cells tangible. Emphasise that the cell wall is NOT the same as the cell membrane. Common misconception: students think plant cells always have chloroplasts — only cells in green parts of the plant do. For transport: diffusion = passive, high to low concentration; osmosis = water movement through semi-permeable membrane; active transport = against concentration gradient, requires energy (ATP).",
+    markScheme: [
+      { q: "1.1", marks: 2, answer: "Prokaryotic cells: no nucleus (DNA is free in cytoplasm), smaller, no membrane-bound organelles. Eukaryotic cells: have a nucleus containing DNA, larger, have membrane-bound organelles.", method: "1 mark each" },
+      { q: "1.2", marks: 2, answer: "Osmosis: movement of water molecules from a region of higher water potential (dilute solution) to a region of lower water potential (concentrated solution) through a partially permeable membrane.", method: "" },
+    ],
+    example: {
+      question: "Describe three differences between a plant cell and an animal cell.",
+      steps: [
+        "PLANT CELL has — ANIMAL CELL does NOT have:",
+        "   1. Cell wall (made of cellulose) — provides structural support and rigidity",
+        "   2. Chloroplasts (in green parts) — contain chlorophyll for photosynthesis",
+        "   3. Large permanent vacuole — filled with cell sap, maintains turgor pressure",
+        "",
+        "BOTH plant and animal cells have:",
+        "   Cell membrane, nucleus, cytoplasm, mitochondria, ribosomes",
+        "",
+        "REMEMBER: Not all plant cells have chloroplasts (e.g. root cells are underground)"
+      ]
+    },
+    guided: [
+      { q: "1.1  Name THREE structures found in both plant and animal cells.", a: "Any three from: cell membrane, nucleus, cytoplasm, mitochondria, ribosomes.", marks: 3 },
+      { q: "1.2  Explain why red blood cells have no nucleus.", a: "Red blood cells are specialised to carry oxygen. Having no nucleus means more space for haemoglobin (the oxygen-carrying protein). The cell is also more flexible and can squeeze through narrow capillaries.", marks: 3 },
+      { q: "1.3  Describe what happens to a plant cell when it is placed in a concentrated salt solution.", a: "Water moves out of the cell by osmosis (from high water potential inside to low water potential outside). The vacuole shrinks, the cytoplasm pulls away from the cell wall — the cell becomes plasmolysed.", marks: 3 },
+    ],
+    independent: [
+      { q: "2.1  Explain the difference between diffusion and active transport.", a: "Diffusion: passive movement of particles from high to low concentration; no energy required; moves down the concentration gradient. Active transport: movement of particles against the concentration gradient (low to high); requires energy (ATP) from respiration; uses carrier proteins in the cell membrane.", marks: 4 },
+      { q: "2.2  A student places potato cylinders in solutions of different concentrations and measures the change in mass. Explain the results: (a) in distilled water the mass increases; (b) in a concentrated salt solution the mass decreases.", a: "(a) In distilled water: water potential outside > water potential inside the potato. Water enters the potato cells by osmosis, causing them to swell (become turgid) — mass increases. (b) In concentrated salt solution: water potential outside < water potential inside. Water leaves the potato cells by osmosis — cells lose water, become flaccid — mass decreases.", marks: 4 },
+    ],
+    challenge: "Explain why cystic fibrosis affects the lungs and digestive system, linking your answer to cell biology.",
+    challengeAnswer: "Cystic fibrosis is caused by a faulty CFTR gene. The CFTR protein normally acts as a chloride ion channel in cell membranes. Without it, chloride ions accumulate inside cells. This lowers the water potential inside cells, so water moves into cells by osmosis rather than out. This causes the mucus produced by cells lining the lungs and digestive system to be thick and sticky rather than thin and watery. Thick mucus blocks airways (causing breathing difficulties) and blocks the pancreatic duct (reducing enzyme release, causing digestive problems).",
+    extension: "Research stem cell therapy. What are the ethical arguments for and against using embryonic stem cells to treat diseases?"
+  },
+  "infection-response": {
+    title: "Infection and Response",
+    objective: "Describe how pathogens cause disease. Explain the body's defence mechanisms. Describe how vaccines and medicines work.",
+    priorKnowledge: "Students should know: microorganisms can cause disease; the immune system protects the body; vaccines prevent disease.",
+    vocabulary: ["Pathogen", "Bacteria", "Virus", "Fungi", "Protist", "Antibody", "Antigen", "Phagocytosis", "Lymphocyte", "Vaccine", "Antibiotic", "Immunity"],
+    teacherNotes: "Key distinction: bacteria are living cells that can be killed by antibiotics; viruses are not living and cannot be treated with antibiotics (antivirals are used instead). The immune response: phagocytes engulf pathogens (non-specific); lymphocytes produce antibodies specific to antigens (specific). Vaccination: introduces antigens (weakened/dead pathogen) to stimulate antibody production without causing disease.",
+    markScheme: [
+      { q: "1.1", marks: 2, answer: "Bacteria: living cells; reproduce by binary fission; can be killed by antibiotics. Viruses: not living; replicate inside host cells; cannot be treated with antibiotics (use antivirals).", method: "1 mark each" },
+      { q: "1.2", marks: 3, answer: "Vaccines contain weakened/dead pathogens or their antigens. These stimulate the immune system to produce antibodies and memory cells. If the real pathogen enters later, memory cells rapidly produce large amounts of antibodies to destroy it before it causes disease.", method: "" },
+    ],
+    example: {
+      question: "Explain how the body responds to a bacterial infection.",
+      steps: [
+        "STEP 1 — DETECTION:",
+        "   Bacteria enter the body and release toxins",
+        "   White blood cells detect foreign antigens on the bacteria",
+        "",
+        "STEP 2 — NON-SPECIFIC RESPONSE (Phagocytosis):",
+        "   Phagocytes engulf and digest the bacteria",
+        "   This is non-specific — works against any pathogen",
+        "",
+        "STEP 3 — SPECIFIC IMMUNE RESPONSE:",
+        "   Lymphocytes recognise specific antigens on the bacteria",
+        "   Lymphocytes produce specific antibodies that bind to the antigens",
+        "   Antibodies neutralise toxins and mark bacteria for destruction",
+        "",
+        "STEP 4 — MEMORY CELLS:",
+        "   Memory lymphocytes remain after infection",
+        "   On re-exposure, they rapidly produce antibodies — faster immune response"
+      ]
+    },
+    guided: [
+      { q: "1.1  Name FOUR types of pathogen.", a: "Bacteria, viruses, fungi, protists", marks: 4 },
+      { q: "1.2  Explain why antibiotics cannot be used to treat viral infections.", a: "Antibiotics work by targeting structures found in bacteria (e.g. cell walls, ribosomes). Viruses do not have these structures — they replicate inside host cells using the host's own machinery. Antibiotics have no target in viruses and therefore cannot kill them.", marks: 3 },
+      { q: "1.3  Describe how a vaccine protects against future infection.", a: "A vaccine introduces antigens (from weakened/dead pathogens) into the body. The immune system responds by producing antibodies and memory cells. If the real pathogen enters later, memory cells quickly produce large amounts of the correct antibodies, destroying the pathogen before it causes disease.", marks: 4 },
+    ],
+    independent: [
+      { q: "2.1  Explain why new vaccines need to be developed each year for influenza (flu).", a: "Influenza viruses mutate rapidly, changing the antigens on their surface. The antibodies and memory cells produced in response to last year's flu strain no longer recognise the new antigens. A new vaccine is needed each year to match the current strain's antigens and stimulate production of the correct antibodies.", marks: 4 },
+      { q: "2.2  Evaluate the use of antibiotics in modern medicine, including the risk of antibiotic resistance.", a: "Antibiotics have saved millions of lives by treating bacterial infections. However, overuse and misuse (e.g. not completing courses, use in farming) has led to natural selection of antibiotic-resistant bacteria (e.g. MRSA). Resistant strains are harder to treat. To reduce resistance: complete antibiotic courses; do not use antibiotics for viral infections; develop new antibiotics.", marks: 6 },
+    ],
+    challenge: "Explain how herd immunity works and why it is important for people who cannot be vaccinated.",
+    challengeAnswer: "Herd immunity occurs when a large proportion of a population is immune to a disease (through vaccination or previous infection). This reduces the likelihood of an infected person encountering a susceptible person, breaking the chain of transmission. Even people who cannot be vaccinated (e.g. newborns, immunocompromised patients) are protected because the pathogen cannot spread easily through the population. The threshold for herd immunity varies by disease — for measles it is approximately 95%.",
+    extension: "Research the development of the COVID-19 mRNA vaccines. How do they differ from traditional vaccines, and what are their advantages?"
+  },
+  "genetics": {
+    title: "Genetics, Inheritance and Evolution",
+    objective: "Describe DNA structure and the genetic code. Explain inheritance using Punnett squares. Describe natural selection and evolution.",
+    priorKnowledge: "Students should know: offspring inherit characteristics from parents; DNA carries genetic information; variation exists within species.",
+    vocabulary: ["DNA", "Gene", "Allele", "Dominant", "Recessive", "Genotype", "Phenotype", "Homozygous", "Heterozygous", "Punnett square", "Natural selection", "Evolution"],
+    teacherNotes: "DNA is a double helix made of nucleotides (sugar, phosphate, base). Each gene codes for a protein. Alleles are different versions of a gene. Dominant alleles are expressed when present; recessive alleles are only expressed when homozygous. Punnett squares show the probability of offspring genotypes. Natural selection: variation → selection pressure → survival of the fittest → reproduction → inherited by offspring.",
+    markScheme: [
+      { q: "1.1", marks: 3, answer: "DNA is a double helix. It is made of nucleotides, each containing a sugar (deoxyribose), a phosphate group, and one of four bases (A, T, C, G). Complementary base pairs: A-T and C-G, held by hydrogen bonds.", method: "" },
+      { q: "1.2", marks: 4, answer: "Punnett square for Tt × Tt: TT (25%), Tt (50%), tt (25%). Phenotype ratio: 3 tall : 1 short (if T = tall is dominant).", method: "" },
+    ],
+    example: {
+      question: "Cystic fibrosis is caused by a recessive allele (f). Two carrier parents (Ff × Ff) have children. Calculate the probability of a child having cystic fibrosis.",
+      steps: [
+        "PUNNETT SQUARE (Ff × Ff):",
+        "         F        f",
+        "   F  |  FF  |  Ff  |",
+        "   f  |  Ff  |  ff  |",
+        "",
+        "GENOTYPE RATIOS:",
+        "   FF : Ff : ff = 1 : 2 : 1",
+        "   (25% FF, 50% Ff, 25% ff)",
+        "",
+        "PHENOTYPE:",
+        "   ff = cystic fibrosis (homozygous recessive)",
+        "   FF and Ff = unaffected (F is dominant)",
+        "",
+        "PROBABILITY of having cystic fibrosis = 25% (1 in 4)",
+        "PROBABILITY of being a carrier = 50% (2 in 4)"
+      ]
+    },
+    guided: [
+      { q: "1.1  Define the terms: (a) genotype  (b) phenotype  (c) heterozygous", a: "(a) Genotype: the genetic makeup of an organism (the alleles it carries, e.g. Tt). (b) Phenotype: the observable characteristics of an organism (e.g. tall). (c) Heterozygous: having two different alleles for a gene (e.g. Tt).", marks: 3 },
+      { q: "1.2  In pea plants, tall (T) is dominant over short (t). Cross a homozygous tall plant (TT) with a short plant (tt). Draw a Punnett square and state the phenotype ratio of the offspring.", a: "All offspring are Tt (heterozygous). All offspring are tall. Phenotype ratio: 4 tall : 0 short (100% tall).", marks: 3 },
+    ],
+    independent: [
+      { q: "2.1  Explain how natural selection leads to evolution over many generations, using antibiotic resistance in bacteria as an example.", a: "In a population of bacteria, random mutations cause variation in antibiotic resistance. When antibiotics are used, bacteria without resistance are killed (selection pressure). Resistant bacteria survive and reproduce, passing on the resistance allele. Over many generations, the proportion of resistant bacteria increases. Eventually, the entire population may be resistant — the species has evolved.", marks: 6 },
+      { q: "2.2  Explain the difference between continuous and discontinuous variation. Give one example of each.", a: "Continuous variation: characteristics that show a range of values with no distinct categories (e.g. height, mass, foot size). Discontinuous variation: characteristics that fall into distinct categories with no intermediate values (e.g. blood group, tongue rolling ability, sex).", marks: 4 },
+    ],
+    challenge: "Explain why identical twins may have different phenotypes despite having identical genotypes.",
+    challengeAnswer: "Identical (monozygotic) twins have the same DNA sequence. However, phenotype is determined by both genotype AND environment. Environmental factors such as diet, exercise, sun exposure, stress, and disease can affect how genes are expressed (epigenetics). For example, one twin may develop a disease if exposed to a trigger while the other is not. Gene expression can also be influenced by methylation of DNA, which can differ between twins over time.",
+    extension: "Research epigenetics. How can environmental factors affect gene expression without changing the DNA sequence? Give two examples."
+  },
+  "homeostasis": {
+    title: "Homeostasis and Response",
+    objective: "Explain the importance of homeostasis. Describe the nervous system and reflex arc. Describe hormonal control including blood glucose regulation.",
+    priorKnowledge: "Students should know: the body needs to maintain stable internal conditions; the brain controls many body functions; hormones are chemical messengers.",
+    vocabulary: ["Homeostasis", "Stimulus", "Receptor", "Effector", "Reflex arc", "Synapse", "Hormone", "Insulin", "Glucagon", "Pancreas", "Negative feedback", "Thermoregulation"],
+    teacherNotes: "Homeostasis maintains optimal conditions for enzyme activity. Key examples: body temperature (37°C), blood glucose, water balance. Nervous system: stimulus → receptor → sensory neurone → relay neurone → motor neurone → effector. Reflex arcs bypass the brain for speed. Hormonal control: slower but longer-lasting. Blood glucose: insulin (lowers glucose, released by pancreas when glucose is high); glucagon (raises glucose, released when glucose is low). Negative feedback is the key mechanism.",
+    markScheme: [
+      { q: "1.1", marks: 2, answer: "Homeostasis: the maintenance of a stable internal environment within narrow limits, despite changes in external conditions. Important because enzymes and cells function optimally only within specific temperature, pH and concentration ranges.", method: "" },
+      { q: "1.2", marks: 4, answer: "Reflex arc: stimulus → receptor → sensory neurone → relay neurone (in spinal cord) → motor neurone → effector (muscle or gland). Bypasses the brain for a faster response.", method: "" },
+    ],
+    example: {
+      question: "Describe how the body responds to a rise in blood glucose concentration after a meal.",
+      steps: [
+        "STEP 1 — DETECTION:",
+        "   Blood glucose rises after eating carbohydrates",
+        "   The pancreas (beta cells) detects the rise in blood glucose",
+        "",
+        "STEP 2 — HORMONE RELEASE:",
+        "   Pancreas releases insulin into the bloodstream",
+        "",
+        "STEP 3 — RESPONSE:",
+        "   Insulin causes liver and muscle cells to absorb glucose from the blood",
+        "   Glucose is converted to glycogen for storage (glycogenesis)",
+        "   Blood glucose level falls back to normal",
+        "",
+        "STEP 4 — NEGATIVE FEEDBACK:",
+        "   When blood glucose returns to normal, insulin release stops",
+        "   This is negative feedback — the response counteracts the change"
+      ]
+    },
+    guided: [
+      { q: "1.1  State THREE conditions that are regulated by homeostasis in the human body.", a: "Any three from: body temperature, blood glucose concentration, water content (osmolarity), blood CO₂ concentration, blood pH.", marks: 3 },
+      { q: "1.2  Describe the role of glucagon in blood glucose regulation.", a: "When blood glucose falls below normal, the pancreas (alpha cells) releases glucagon. Glucagon causes the liver to break down glycogen into glucose (glycogenolysis) and release it into the blood. Blood glucose rises back to normal.", marks: 3 },
+      { q: "1.3  Explain why a reflex action is faster than a voluntary response.", a: "A reflex arc bypasses the brain — the signal travels from receptor to spinal cord and back to the effector without going to the brain. This shorter pathway means the response is faster. Voluntary responses require signals to travel to the brain for processing, which takes longer.", marks: 3 },
+    ],
+    independent: [
+      { q: "2.1  Compare Type 1 and Type 2 diabetes, including their causes and treatments.", a: "Type 1: autoimmune condition where the immune system destroys insulin-producing beta cells in the pancreas. No insulin is produced. Treatment: insulin injections. Type 2: body cells become resistant to insulin, or the pancreas produces insufficient insulin. Associated with obesity and poor diet. Treatment: diet and exercise, medication (e.g. metformin), sometimes insulin.", marks: 6 },
+      { q: "2.2  Explain how the body responds to overheating (hyperthermia).", a: "Thermoreceptors in the skin and hypothalamus detect the rise in temperature. The hypothalamus sends signals to effectors: (1) sweat glands produce sweat — evaporation cools the skin; (2) blood vessels in the skin vasodilate — more blood flows near the surface, increasing heat loss by radiation; (3) hairs lie flat — reduces insulating air layer. Body temperature falls back to 37°C (negative feedback).", marks: 5 },
+    ],
+    challenge: "Explain why people with untreated Type 1 diabetes may have glucose in their urine.",
+    challengeAnswer: "Normally, glucose is filtered from the blood in the kidney but is completely reabsorbed back into the blood by active transport in the kidney tubules. In Type 1 diabetes, blood glucose is very high (no insulin to lower it). The concentration of glucose in the filtrate exceeds the maximum reabsorption capacity of the kidney tubules. The excess glucose cannot all be reabsorbed and passes into the urine — this is called glycosuria.",
+    extension: "Research the role of the hypothalamus as the body's 'thermostat'. How does it communicate with the rest of the body to regulate temperature?"
+  },
+  "ecology": {
+    title: "Ecology — Ecosystems and Biodiversity",
+    objective: "Describe the organisation of ecosystems. Explain feeding relationships and nutrient cycles. Describe factors affecting biodiversity and conservation.",
+    priorKnowledge: "Students should know: organisms depend on each other and their environment; food chains show feeding relationships; humans affect the environment.",
+    vocabulary: ["Ecosystem", "Population", "Community", "Habitat", "Producer", "Consumer", "Decomposer", "Food web", "Biodiversity", "Carbon cycle", "Nitrogen cycle", "Conservation"],
+    teacherNotes: "Hierarchy: organism → population → community → ecosystem → biosphere. Producers make their own food (photosynthesis); primary consumers eat producers; secondary consumers eat primary consumers. Decomposers break down dead material, recycling nutrients. Biodiversity is important for ecosystem stability. Human threats: deforestation, pollution, climate change, overfishing. Conservation: protected areas, captive breeding, seed banks.",
+    markScheme: [
+      { q: "1.1", marks: 2, answer: "A food web shows the feeding relationships between multiple organisms in an ecosystem. It is more realistic than a food chain as most organisms eat more than one type of food.", method: "" },
+      { q: "1.2", marks: 3, answer: "Decomposers (bacteria and fungi) break down dead organisms and waste products. They release nutrients (e.g. nitrates, phosphates) back into the soil, making them available for plants. This is essential for nutrient cycling.", method: "" },
+    ],
+    example: {
+      question: "Describe the carbon cycle and explain how human activities are disrupting it.",
+      steps: [
+        "THE CARBON CYCLE — key processes:",
+        "   1. PHOTOSYNTHESIS: plants absorb CO₂ from atmosphere, fix carbon into glucose",
+        "   2. RESPIRATION: all organisms release CO₂ back to atmosphere",
+        "   3. FEEDING: carbon passes along food chains",
+        "   4. DECOMPOSITION: decomposers break down dead matter, releasing CO₂",
+        "   5. FOSSILISATION: some carbon stored in fossil fuels over millions of years",
+        "",
+        "HUMAN DISRUPTION:",
+        "   Burning fossil fuels: releases stored carbon as CO₂ rapidly",
+        "   Deforestation: removes trees that absorb CO₂; burning releases more CO₂",
+        "   Both increase atmospheric CO₂ → enhanced greenhouse effect → climate change"
+      ]
+    },
+    guided: [
+      { q: "1.1  Define the term 'biodiversity' and explain why it is important.", a: "Biodiversity: the variety of different species in an ecosystem (and the genetic variation within species). Important because: greater biodiversity means more stable ecosystems; more resilience to environmental change; more resources for medicine, food and industry.", marks: 3 },
+      { q: "1.2  Explain what happens to the population of foxes if the rabbit population suddenly decreases.", a: "Rabbits are a food source for foxes. If rabbit numbers decrease, foxes have less food. Fox population decreases due to starvation and reduced reproduction. Eventually, with fewer foxes, rabbit numbers may recover — this is a predator-prey cycle.", marks: 3 },
+    ],
+    independent: [
+      { q: "2.1  Describe the role of nitrogen-fixing bacteria in the nitrogen cycle.", a: "Nitrogen-fixing bacteria (e.g. Rhizobium in root nodules of legumes) convert atmospheric nitrogen gas (N₂) into ammonia (NH₃) or nitrates (NO₃⁻). This 'fixes' nitrogen into a form that plants can absorb and use to make proteins. Without nitrogen fixation, the nitrogen in the atmosphere would be unavailable to most organisms.", marks: 4 },
+      { q: "2.2  Evaluate the effectiveness of creating nature reserves as a conservation strategy.", a: "Advantages: protects habitats from development; allows populations to recover; prevents poaching; maintains biodiversity. Disadvantages: may not be large enough for viable populations; isolated reserves reduce genetic diversity (inbreeding); climate change may make reserves unsuitable; expensive to maintain and enforce. Overall: effective as part of a wider conservation strategy but not sufficient alone.", marks: 6 },
+    ],
+    challenge: "Explain why removing a top predator from an ecosystem can have unexpected consequences for the entire food web (trophic cascade).",
+    challengeAnswer: "Top predators regulate the populations of their prey. If a top predator is removed, its prey population increases unchecked. This increased prey population overgrazes or overhunts its own food source, causing that population to decline. The effects ripple down the food web — a trophic cascade. Example: removal of wolves from Yellowstone caused elk populations to explode, overgrazing vegetation along rivers, causing erosion and loss of habitat for many other species. Reintroducing wolves reversed this cascade.",
+    extension: "Research the concept of 'rewilding'. What are the arguments for and against reintroducing extinct species (e.g. wolves, lynx) to ecosystems in the UK?"
+  },
+
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -946,11 +1440,27 @@ function findTopicData(subject: string, topic: string): any {
     return words.some(w => kLower.includes(w) || kTitle.includes(w) || topicLower.includes(kLower));
   });
   if (partialKey) return subjectTopics[partialKey];
-  // 4. No match — return a general worksheet using the first topic as a template
-  // but with the correct title so it doesn't mislead
-  const fallbackData = { ...subjectTopics[Object.keys(subjectTopics)[0]] };
+  // 4. No match — pick the most subject-appropriate fallback topic.
+  // IMPORTANT: Do NOT always use the first topic (e.g. 'cells' for science) as it will
+  // inject Biology-specific prior knowledge and vocabulary into Chemistry/Physics worksheets.
+  const topicKeys = Object.keys(subjectTopics);
+  const subjectLower = subject.toLowerCase();
+  let bestFallbackKey = topicKeys[topicKeys.length - 1];
+  if (subjectLower === 'science') {
+    const topicL = topicLower;
+    const isChemistry = ['atom', 'element', 'compound', 'acid', 'base', 'react', 'bond', 'periodic', 'mole', 'titrat', 'organic', 'polymer', 'electrolys', 'oxidat', 'reduc', 'rate', 'equilibr', 'enthalpy'].some(kw => topicL.includes(kw));
+    const isPhysics = ['force', 'motion', 'energy', 'wave', 'electric', 'magnet', 'nuclear', 'radioact', 'optic', 'mechanic', 'pressure', 'momentum', 'velocity', 'accelerat', 'gravitati', 'circuit', 'resist', 'current', 'voltage'].some(kw => topicL.includes(kw));
+    const isBiology = ['cell', 'organ', 'gene', 'dna', 'evolut', 'inherit', 'ecolog', 'photosyn', 'respirat', 'homeosta', 'infect', 'immun', 'nervous', 'hormone', 'reproduct', 'biolog'].some(kw => topicL.includes(kw));
+    if (isChemistry && subjectTopics['chemical-reactions']) bestFallbackKey = 'chemical-reactions';
+    else if (isPhysics && subjectTopics['energy']) bestFallbackKey = 'energy';
+    else if (isBiology && subjectTopics['cell-biology']) bestFallbackKey = 'cell-biology';
+    else if (subjectTopics['energy']) bestFallbackKey = 'energy';
+  }
+  const fallbackData = { ...subjectTopics[bestFallbackKey] };
   fallbackData.title = `${topic.charAt(0).toUpperCase() + topic.slice(1)} — ${subject.charAt(0).toUpperCase() + subject.slice(1)}`;
   fallbackData.objective = `Develop understanding of ${topic} through structured exam-style practice.`;
+  fallbackData.vocabulary = [];
+  fallbackData.priorKnowledge = `Students should have prior knowledge of ${subject} relevant to ${topic}.`;
   return fallbackData;
 }
 

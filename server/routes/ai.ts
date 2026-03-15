@@ -230,6 +230,11 @@ router.post("/generate", requireAuth, async (req: Request, res: Response) => {
       });
     }
 
+    // Audit log: track AI tool usage (tool name extracted from systemPrompt if available)
+    try {
+      const toolHint = (systemPrompt || "").slice(0, 80).replace(/\n/g, " ").trim();
+      auditLog(req.user!.id, req.user!.schoolId, "ai.generate", "ai_filter_log", logId, { provider: result.provider, tool: toolHint || "unknown" }, req.ip);
+    } catch (_) {}
     res.json({ content: result.content, provider: result.provider, aiGenerated: true });
   } catch (err: any) {
     console.error("AI proxy error:", err);
