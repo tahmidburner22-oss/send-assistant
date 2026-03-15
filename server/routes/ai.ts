@@ -1145,7 +1145,7 @@ router.post("/differentiate-worksheet", requireAuth, async (req: Request, res: R
     return `=== ${s.title || `Section ${i + 1}`} ===\n${(s.content || "").slice(0, 300)}`;
   }).join("\n\n").slice(0, 3000);
 
-  const system = `You are an expert UK teacher differentiating a worksheet for ${yr} pupils. Transform the existing worksheet to ${tier} tier difficulty. Preserve the topic and structure — only adjust question difficulty. Return valid JSON only.`;
+  const system = `You are an expert UK teacher differentiating a worksheet for ${yr} pupils. Transform the existing worksheet to ${tier} tier difficulty. Preserve the topic and structure — only adjust question difficulty. Return valid JSON only. CRITICAL: The "content" field of every section MUST be a plain text string (NOT an array, NOT an object, NOT nested JSON). Write all questions as numbered plain text lines separated by newlines within the string.`;
 
   const user = `Transform this ${subject || ""} worksheet on "${topic || ""}" to ${tier.toUpperCase()} tier for ${yr}.
 
@@ -1157,11 +1157,12 @@ ${existingContent}
 Return a JSON object:
 {
   "sections": [
-    {"title": "original section title", "type": "guided", "content": "rewritten content at ${tier} difficulty", "teacherOnly": false}
+    {"title": "original section title", "type": "guided", "content": "1. Question one\n2. Question two\n3. Question three", "teacherOnly": false}
   ],
   "tierApplied": "${tier}",
   "changesNote": "brief summary of changes made"
-}`;
+}
+IMPORTANT: The "content" value MUST be a plain text string with questions written as numbered lines. Do NOT use arrays or nested objects for content.`;
 
   try {
     const { content, provider } = await callWithFallback(system, user, 2000, undefined, schoolId);
@@ -1187,7 +1188,34 @@ Return a JSON object:
       parsed.sections = parsed.sections.map((s: any) => ({
         ...s,
         title: typeof s.title === 'string' ? s.title : String(s.title || ''),
-        content: typeof s.content === 'string' ? s.content : (s.content === null || s.content === undefined ? '' : (Array.isArray(s.content) ? s.content.join('\n') : String(s.content))),
+        content: (() => {
+          const c = s.content;
+          if (typeof c === 'string') return c;
+          if (c === null || c === undefined) return '';
+          if (Array.isArray(c)) {
+            // Array of question objects like {q: '...', a: '...'} or {question: '...', answer: '...'}
+            return c.map((item: any) => {
+              if (typeof item === 'string') return item;
+              if (typeof item === 'object' && item !== null) {
+                const q = item.q || item.question || item.text || item.content || '';
+                const a = item.a || item.answer || '';
+                const marks = item.marks ? ` [${item.marks} mark${item.marks > 1 ? 's' : ''}]` : '';
+                if (q && a) return `${q}${marks}\n   Answer: ${a}`;
+                if (q) return `${q}${marks}`;
+                return JSON.stringify(item);
+              }
+              return String(item);
+            }).join('\n\n');
+          }
+          if (typeof c === 'object') {
+            const q = (c as any).q || (c as any).question || (c as any).text || (c as any).content || '';
+            const a = (c as any).a || (c as any).answer || '';
+            if (q && a) return `${q}\n   Answer: ${a}`;
+            if (q) return q;
+            try { return JSON.stringify(c); } catch { return String(c); }
+          }
+          return String(c);
+        })(),
       }));
       res.json({ differentiated: parsed, provider });
     } else {

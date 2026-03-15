@@ -19,9 +19,24 @@ export function renderMath(text: string | any): string {
   if (text === null || text === undefined) return "";
   if (typeof text !== 'string') {
     if (Array.isArray(text)) {
-      text = text.map(item => typeof item === 'string' ? item : JSON.stringify(item)).join('\n');
+      text = (text as any[]).map((item: any) => {
+        if (typeof item === 'string') return item;
+        if (typeof item === 'object' && item !== null) {
+          const q = item.q || item.question || item.text || item.content || '';
+          const a = item.a || item.answer || '';
+          if (q && a) return `${q}\n   Answer: ${a}`;
+          if (q) return q;
+          return JSON.stringify(item);
+        }
+        return String(item);
+      }).join('\n\n');
     } else if (typeof text === 'object') {
-      try { text = JSON.stringify(text); } catch { text = String(text); }
+      const c = text as any;
+      const q = c.q || c.question || c.text || c.content || '';
+      const a = c.a || c.answer || '';
+      if (q && a) text = `${q}\n   Answer: ${a}`;
+      else if (q) text = q;
+      else { try { text = JSON.stringify(c); } catch { text = String(c); } }
     } else {
       text = String(text);
     }
@@ -917,9 +932,25 @@ function formatContent(content: string | any, fmt: ReturnType<typeof getSendForm
   if (content === null || content === undefined) return null;
   if (typeof content !== 'string') {
     if (Array.isArray(content)) {
-      content = content.map(item => typeof item === 'string' ? item : JSON.stringify(item)).join('\n');
+      content = (content as any[]).map((item: any) => {
+        if (typeof item === 'string') return item;
+        if (typeof item === 'object' && item !== null) {
+          const q = item.q || item.question || item.text || item.content || '';
+          const a = item.a || item.answer || '';
+          const marks = item.marks ? ` [${item.marks} mark${item.marks > 1 ? 's' : ''}]` : '';
+          if (q && a) return `${q}${marks}\n   Answer: ${a}`;
+          if (q) return `${q}${marks}`;
+          return JSON.stringify(item);
+        }
+        return String(item);
+      }).join('\n\n');
     } else if (typeof content === 'object') {
-      try { content = JSON.stringify(content); } catch { content = String(content); }
+      const c = content as any;
+      const q = c.q || c.question || c.text || c.content || '';
+      const a = c.a || c.answer || '';
+      if (q && a) content = `${q}\n   Answer: ${a}`;
+      else if (q) content = q;
+      else { try { content = JSON.stringify(c); } catch { content = String(c); } }
     } else {
       content = String(content);
     }
@@ -1410,9 +1441,25 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(({
         let rawContent = editedSections[i] !== undefined ? editedSections[i] : section.content;
         if (rawContent !== null && rawContent !== undefined && typeof rawContent !== 'string') {
           if (Array.isArray(rawContent)) {
-            rawContent = rawContent.map((item: any) => typeof item === 'string' ? item : JSON.stringify(item)).join('\n');
+            rawContent = rawContent.map((item: any) => {
+              if (typeof item === 'string') return item;
+              if (typeof item === 'object' && item !== null) {
+                const q = item.q || item.question || item.text || item.content || '';
+                const a = item.a || item.answer || '';
+                const marks = item.marks ? ` [${item.marks} mark${item.marks > 1 ? 's' : ''}]` : '';
+                if (q && a) return `${q}${marks}\n   Answer: ${a}`;
+                if (q) return `${q}${marks}`;
+                return JSON.stringify(item);
+              }
+              return String(item);
+            }).join('\n\n');
           } else if (typeof rawContent === 'object') {
-            try { rawContent = JSON.stringify(rawContent); } catch { rawContent = String(rawContent); }
+            const c = rawContent as any;
+            const q = c.q || c.question || c.text || c.content || '';
+            const a = c.a || c.answer || '';
+            if (q && a) rawContent = `${q}\n   Answer: ${a}`;
+            else if (q) rawContent = q;
+            else { try { rawContent = JSON.stringify(c); } catch { rawContent = String(c); } }
           } else {
             rawContent = String(rawContent);
           }
