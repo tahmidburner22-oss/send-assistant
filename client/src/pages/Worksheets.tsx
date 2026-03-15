@@ -157,6 +157,7 @@ export default function Worksheets() {
   const [recallTopic, setRecallTopic] = useState("");
   // Natural language input
   const [nlInput, setNlInput] = useState("");
+  const [nlExpanded, setNlExpanded] = useState(false);
   // Target page count (0 = auto, 1, 2, 3)
   const [targetPages, setTargetPages] = useState(0);
   // Reading age (0 = match year group, 7, 9, 11, 13)
@@ -956,19 +957,33 @@ export default function Worksheets() {
                 {/* Natural Language Input */}
                 <div className="p-4 rounded-xl border border-brand/30 bg-brand-light/20 space-y-2">
                   <Label className="text-sm font-medium text-brand flex items-center gap-1.5"><Wand2 className="h-4 w-4" /> What do you want to create today?</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      value={nlInput}
-                      onChange={e => setNlInput(e.target.value)}
-                      onKeyDown={e => { if (e.key === 'Enter') handleNlInput(); }}
-                      placeholder='e.g. "Year 10 Maths Fractions for dyslexia" or "Y7 Science Forces foundation"'
-                      className="h-10 flex-1 bg-white"
-                    />
-                    <Button onClick={handleNlInput} disabled={!nlInput.trim()} size="sm" className="h-10 px-4 bg-brand hover:bg-brand/90 text-white">
+                  <div className="flex gap-2 items-start">
+                    {nlExpanded ? (
+                      <Textarea
+                        value={nlInput}
+                        onChange={e => setNlInput(e.target.value)}
+                        onBlur={() => { if (!nlInput.trim()) setNlExpanded(false); }}
+                        onKeyDown={e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) handleNlInput(); }}
+                        placeholder='e.g. "Year 10 Maths Fractions for dyslexia" or "Y7 Science Forces foundation — include worked examples and a word bank"'
+                        className="flex-1 bg-white min-h-[100px] resize-none text-sm"
+                        autoFocus
+                        rows={4}
+                      />
+                    ) : (
+                      <Input
+                        value={nlInput}
+                        onChange={e => setNlInput(e.target.value)}
+                        onFocus={() => setNlExpanded(true)}
+                        onKeyDown={e => { if (e.key === 'Enter') handleNlInput(); }}
+                        placeholder='e.g. "Year 10 Maths Fractions for dyslexia" or "Y7 Science Forces foundation"'
+                        className="h-10 flex-1 bg-white"
+                      />
+                    )}
+                    <Button onClick={handleNlInput} disabled={!nlInput.trim()} size="sm" className="h-10 px-4 bg-brand hover:bg-brand/90 text-white shrink-0">
                       <Sparkles className="w-4 h-4 mr-1" /> Fill
                     </Button>
                   </div>
-                  <p className="text-[10px] text-muted-foreground">Type naturally and we'll auto-fill Subject, Year Group, Topic, Difficulty, and SEND need for you.</p>
+                  <p className="text-[10px] text-muted-foreground">{nlExpanded ? "Press Ctrl+Enter or click Fill to auto-fill the form. Click away to collapse." : "Click to expand and type naturally — we'll auto-fill Subject, Year Group, Topic, Difficulty, and SEND need for you."}</p>
                 </div>
 
                 {/* AI Toggle */}
