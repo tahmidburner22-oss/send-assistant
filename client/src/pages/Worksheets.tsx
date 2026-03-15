@@ -721,24 +721,8 @@ export default function Worksheets() {
       const tierDifficulty = tier;
 
       const tierInstruction = tier === "foundation"
-        ? `FOUNDATION TIER — SCAFFOLDED VERSION. You MUST apply ALL of these rules without exception:
-(1) WORD BANK: Add a Word Bank box at the very top with 6-8 key terms and simple one-line definitions.
-(2) SECTION A (Guided Practice): EVERY question MUST have a fill-in-the-blank answer frame OR sentence starter. Example: "The answer is ___ because ___" or "Step 1: ___, Step 2: ___". NO open questions in Section A.
-(3) SECTION B (Core Practice): Include a 'Key Facts' reminder box at the top with 3-4 essential facts. Questions must be single-step only. Include at least 2 partially-worked examples where students complete the final step.
-(4) WORKED EXAMPLE: Break into micro-steps (max 6 words per step). Number every step. Use arrows to show progression. Annotate each step with WHY.
-(5) CHALLENGE: Label as 'OPTIONAL BONUS — only try this if you have finished everything else!' Make it a simple extension, NOT a new concept.
-(6) LANGUAGE: Short sentences (max 12 words). Bold all key terms. Use active voice only. Use simple whole numbers.
-(7) REMINDER BOX: Write the 3 steps as a simple numbered checklist with tick boxes [ ].
-(8) REFLECTION: Use tick-box 'I can' statements only. Include an emoji confidence scale (😕 🙂 😀).`
-        : `HIGHER TIER — EXTENDED CHALLENGE VERSION. You MUST apply ALL of these rules without exception:
-(1) SECTION A (Guided Practice): Start at Grade 5/6 difficulty — NO trivial recall questions. Include algebraic manipulation. At least 2 questions require showing full method with justification.
-(2) SECTION B (Core Practice): Include at least 2 multi-step problems combining two or more skills. Include at least 1 'Show that...' or 'Prove that...' or 'Hence...' question. Include at least 1 question with non-integer or algebraic values.
-(3) CHALLENGE: Must be a genuine Grade 8-9 problem — proof, reverse engineering, or multi-concept application. Include a 'Stretch Further' sub-part.
-(4) EXTENSION SECTION: Add a 'Going Further' section after the challenge with 1-2 A-Level preview questions or real-world applications requiring synoptic thinking.
-(5) WORKED EXAMPLE: Show a complex example demonstrating the highest-level application. Include examiner tips and common errors to avoid at Grade 8-9.
-(6) QUESTIONS: Use non-integer coefficients, surds, or complex values. Include command words: Evaluate, Justify, Derive, Hence or otherwise, Prove.
-(7) MARK SCHEME: Include detailed mark scheme with method marks (M), accuracy marks (A), and examiner notes for each question.
-(8) LANGUAGE: Use precise mathematical/scientific language. Expect correct notation throughout.`;
+        ? `FOUNDATION VERSION. Keep the same topic. Make it more accessible. Add: (1) a word bank with 6-8 key terms, (2) scaffolded guided practice with blanks or sentence starters, (3) a short key facts box, (4) one worked example split into numbered micro-steps, (5) short sentences and bold key terms, (6) simple checklist reflection. Keep layout compact and print-friendly.`
+        : `HIGHER VERSION. Keep the same topic. Increase challenge. Add: (1) harder guided practice, (2) multi-step core questions, (3) a genuine stretch challenge, (4) a going-further extension, (5) a strong worked example with justification, (6) precise subject vocabulary and notation. Keep layout compact and print-friendly.`;
 
       const result = await aiGenerateWorksheet({
         subject: ws.metadata?.subject || subject,
@@ -2110,7 +2094,7 @@ export default function Worksheets() {
               <Sparkles className="h-5 w-5 text-indigo-600" />
               One-Click Differentiation
             </DialogTitle>
-            <p className="text-sm text-muted-foreground">Generate Foundation, Higher, and SEND-scaffolded versions of this worksheet in one click.</p>
+            <p className="text-sm text-muted-foreground">Choose one version to generate and apply immediately to the worksheet.</p>
           </DialogHeader>
           <div className="space-y-4 mt-2">
             {/* Tier cards */}
@@ -2173,7 +2157,7 @@ export default function Worksheets() {
                       "bg-green-600 hover:bg-green-700 text-white"
                     }`}
                   >
-                    {diffLoading === tier ? <><RefreshCw className="h-3 w-3 mr-1.5 animate-spin" /> Generating...</> : <><Sparkles className="h-3 w-3 mr-1.5" /> Generate</>}
+                    {diffLoading === tier ? <><RefreshCw className="h-3 w-3 mr-1.5 animate-spin" /> Generating...</> : <><Sparkles className="h-3 w-3 mr-1.5" /> {tier === "send" ? "Apply SEND scaffolding" : tier === "foundation" ? "Apply Foundation version" : "Apply Higher version"}</>}
                   </Button>
                 </div>
                 {diffVersions[tier] && (
