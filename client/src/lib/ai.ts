@@ -1341,8 +1341,12 @@ export async function aiDifferentiateExistingWorksheet(params: {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   if (storedToken) headers['Authorization'] = `Bearer ${storedToken}`;
 
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 45000);
+
   const res = await fetch('/api/ai/differentiate-worksheet', {
     method: 'POST',
+    signal: controller.signal,
     headers,
     credentials: 'include',
     body: JSON.stringify({
@@ -1355,6 +1359,7 @@ export async function aiDifferentiateExistingWorksheet(params: {
     }),
   });
 
+  clearTimeout(timeoutId);
   if (!res.ok) {
     const err = await res.json().catch(() => ({ error: 'Unknown error' }));
     throw new Error(err.error || `Differentiate request failed: ${res.status}`);

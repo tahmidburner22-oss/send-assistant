@@ -61,6 +61,12 @@ export function renderMath(text: string): string {
     return match;
   });
 
+  // ── Step 0-pre-1: Strip Unicode combining characters that corrupt LaTeX blanks ─
+  // The AI sometimes generates answer blanks like \dfrac{_̲̲̲__}{___} where U+0332
+  // (combining low line / combining underline) is inserted by the model. Strip them
+  // before HTML processing so the style= regex can match cleanly.
+  result = result.replace(/\u0332/g, '');
+
   // ── Step 0-pre: Strip raw HTML injected by AI (except safe inline tags) ─────
   // The AI sometimes generates content with HTML tags like <span style="color:#cc0000">
   // directly in section content strings. These must be stripped before any other
@@ -70,6 +76,12 @@ export function renderMath(text: string): string {
   // This happens when JSON parsing strips the opening < from <span style=...>
   // leaving just: style="color:#cc0000">text
   result = result.replace(/["']?\s*\bstyle\s*=\s*["'][^"']*["']\s*>/g, '');
+  // Also collapse duplicate \dfrac{}{} runs that appear after HTML fragment stripping.
+  // e.g. \dfrac{__}{___}\dfrac{__}{___}\dfrac{___}{___} → \dfrac{___}{___}
+  result = result.replace(/(\\dfrac\{[^}]*\}\{[^}]*\}){2,}/g, (match: string) => {
+    const parts = match.match(/\\dfrac\{[^}]*\}\{[^}]*\}/g);
+    return parts ? parts[parts.length - 1] : match;
+  });
   // Strip orphaned class= attribute fragments, but NOT class="katex*" (used by KaTeX)
   // KaTeX uses class names like: katex, katex-html, katex-display, katex-mathml, etc.
   result = result.replace(/\bclass\s*=\s*["'](?!katex)[^"']*["']\s*>/g, '');
