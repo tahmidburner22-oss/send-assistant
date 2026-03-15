@@ -27,6 +27,48 @@ function hexToRgb(hex: string): [number, number, number] {
 }
 
 // Replace Unicode characters that jsPDF default Helvetica cannot render
+// Convert LaTeX notation to readable plain text for the jsPDF fallback
+function convertLatexToText(text: string): string {
+  return text
+    // Remove \( \) and \[ \] delimiters, keep inner content
+    .replace(/\\\[([\s\S]+?)\\\]/g, (_, expr) => expr.trim())
+    .replace(/\\\(([\s\S]+?)\\\)/g, (_, expr) => expr.trim())
+    .replace(/\$([^$\n]+?)\$/g, (_, expr) => expr.trim())
+    // Convert common LaTeX commands to readable text
+    .replace(/\\dfrac\{([^}]+)\}\{([^}]+)\}/g, '($1)/($2)')
+    .replace(/\\frac\{([^}]+)\}\{([^}]+)\}/g, '($1)/($2)')
+    .replace(/\\sqrt\{([^}]+)\}/g, 'sqrt($1)')
+    .replace(/\\sqrt\b/g, 'sqrt')
+    .replace(/\\times\b/g, 'x')
+    .replace(/\\div\b/g, '/')
+    .replace(/\\pm\b/g, '+/-')
+    .replace(/\\leq\b/g, '<=')
+    .replace(/\\geq\b/g, '>=')
+    .replace(/\\neq\b/g, '!=')
+    .replace(/\\approx\b/g, '~=')
+    .replace(/\\pi\b/g, 'pi')
+    .replace(/\\theta\b/g, 'theta')
+    .replace(/\\alpha\b/g, 'alpha')
+    .replace(/\\beta\b/g, 'beta')
+    .replace(/\\gamma\b/g, 'gamma')
+    .replace(/\\delta\b/g, 'delta')
+    .replace(/\\infty\b/g, 'infinity')
+    .replace(/\\text\{([^}]+)\}/g, '$1')
+    .replace(/\\mathrm\{([^}]+)\}/g, '$1')
+    .replace(/\^\{([^}]+)\}/g, '^$1')
+    .replace(/\_\{([^}]+)\}/g, '_$1')
+    .replace(/\\\{/g, '{')
+    .replace(/\\\}/g, '}')
+    .replace(/\\,/g, ' ')
+    .replace(/\\;/g, ' ')
+    .replace(/\\!/g, '')
+    .replace(/\\quad\b/g, '  ')
+    .replace(/\\qquad\b/g, '    ')
+    .replace(/\\\\\b/g, '\n')
+    .replace(/\\[a-zA-Z]+/g, '') // Strip any remaining unknown LaTeX commands
+    .replace(/[{}]/g, ''); // Strip remaining braces
+}
+
 function sanitizeForPdf(text: string): string {
   return text
     .replace(/\u2192|\u279C|\u2794/g, "->")
@@ -184,7 +226,7 @@ class PdfBuilder {
   }
 
   addParagraph(text: string) {
-    const cleanText = sanitizeForPdf(stripHtmlTags(text));
+    const cleanText = sanitizeForPdf(stripHtmlTags(convertLatexToText(text)));
     const lineHeight = this.fontSize * 0.45;
     const paragraphs = cleanText.split("\n");
 
@@ -220,7 +262,7 @@ class PdfBuilder {
   }
 
   addRichText(text: string) {
-    const cleanText = sanitizeForPdf(stripHtmlTags(text));
+    const cleanText = sanitizeForPdf(stripHtmlTags(convertLatexToText(text)));
     const paragraphs = cleanText.split("\n");
     const lineHeight = this.fontSize * 0.45;
 
