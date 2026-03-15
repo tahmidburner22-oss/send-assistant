@@ -127,13 +127,12 @@ export default function AIToolPage({
 
   const handlePdf = async () => {
     if (!outputRef.current) return;
-    toast.info("Generating PDF...");
     try {
       const filename = `${(outputTitle?.(values) || title).replace(/\s+/g, "_")}.pdf`;
       await downloadHtmlAsPdf(outputRef.current, filename);
-      toast.success("PDF downloaded!");
+      toast.success("PDF ready — select 'Save as PDF' in the print dialog.");
     } catch {
-      toast.error("PDF generation failed. Try Print instead.");
+      toast.error("Could not open print dialog. Please allow pop-ups for this site.");
     }
   };
 
