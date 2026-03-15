@@ -21,7 +21,7 @@ import { downloadHtmlAsPdf, printWorksheetElement } from "@/lib/pdf-generator-v2
 import WorksheetRenderer, { renderMath, stripKatexToPlainText } from "@/components/WorksheetRenderer";
 import { worksheetBank, type BankWorksheet } from "@/lib/worksheet-bank";
 import { getSyllabusTopics, type SyllabusTopic } from "@/lib/syllabus-data";
-import { aiGenerateWorksheet, aiEditSection, aiScaffoldExistingWorksheet } from "@/lib/ai";
+import { aiGenerateWorksheet, aiEditSection, aiScaffoldExistingWorksheet, aiDifferentiateExistingWorksheet } from "@/lib/ai";
 // examPaperBuilder is dynamically imported inside handlers to avoid loading the large question bank on initial page load
 import type { PastPaperQuestion } from "@/lib/pastPaperQuestions";
 import PrintOptionsDialog, { type PrintOptions } from "@/components/PrintOptionsDialog";
@@ -696,7 +696,23 @@ export default function Worksheets() {
         });
 
         // Merge scaffolded sections back, preserving teacher-only sections
-        const teacherSections = (ws.sections || []).filter((s: any) => s.teacherOnly);
+        // Fix section title prefix: AI returns "SECTION 1: Title" — strip the prefix
+        const cleanedScaffoldedSections = (scaffolded.sections || []).map((s: any) => ({
+          ...s,
+          title: (s.title || "").replace(/^SECTION\s*\d+:\s*/i, "").trim() || s.title,
+        }));
+
+        // Update the SEND Adaptations & Rationale teacher section with actual scaffolding applied
+        const teacherSections = (ws.sections || []).filter((s: any) => s.teacherOnly).map((s: any) => {
+          if (/SEND Adaptations/i.test(s.title || "")) {
+            const appliedList = (scaffolded.scaffoldingApplied || []).map((a: string) => `• ${a}`).join("\n");
+            return {
+              ...s,
+              content: `THIS WORKSHEET HAS BEEN SCAFFOLDED FOR: ${effectiveSendNeed.toUpperCase()}\n\nADAPTATIONS APPLIED:\n${appliedList}\n\nWHY THIS MATTERS:\nThese adaptations have been applied to remove barriers for students with ${effectiveSendNeed}. Each scaffold directly supports access to the curriculum content while maintaining the same learning objectives as the standard worksheet.\n\nCLASSROOM TIPS:\n• Pre-teach the key vocabulary before distributing the worksheet\n• Allow additional processing time for each question\n• Check in with the student at the start of each section\n• Consider paired working or a reading partner if appropriate`,
+            };
+          }
+          return s;
+        });
 
         // If a word bank was generated, prepend it as a section
         const wordBankSection: { title: string; content: string; type: string; teacherOnly: boolean }[] = scaffolded.wordBank
@@ -705,7 +721,7 @@ export default function Worksheets() {
 
         const scaffoldedWorksheet: AIWorksheet = {
           ...ws,
-          sections: [...wordBankSection, ...scaffolded.sections, ...teacherSections],
+          sections: [...wordBankSection, ...cleanedScaffoldedSections, ...teacherSections],
           metadata: {
             ...ws.metadata,
             sendNeed: effectiveSendNeed,
@@ -722,32 +738,42 @@ export default function Worksheets() {
         return;
       }
 
-      // ── Foundation / Higher tiers: regenerate from scratch ──────────────────
-      const tierDifficulty = tier;
-
-      const tierInstruction = tier === "foundation"
-        ? `FOUNDATION VERSION. Keep the same topic. Make it more accessible. Add: (1) a word bank with 6-8 key terms, (2) scaffolded guided practice with blanks or sentence starters, (3) a short key facts box, (4) one worked example split into numbered micro-steps, (5) short sentences and bold key terms, (6) simple checklist reflection. Keep layout compact and print-friendly.`
-        : `HIGHER VERSION. Keep the same topic. Increase challenge. Add: (1) harder guided practice, (2) multi-step core questions, (3) a genuine stretch challenge, (4) a going-further extension, (5) a strong worked example with justification, (6) precise subject vocabulary and notation. Keep layout compact and print-friendly.`;
-
-      const result = await aiGenerateWorksheet({
+      // ── Foundation / Higher tiers: transform existing worksheet (faster than regenerating) ──
+      const differentiated = await aiDifferentiateExistingWorksheet({
+        sections: (ws.sections || []),
+        tier: tier as 'foundation' | 'higher',
         subject: ws.metadata?.subject || subject,
         topic: ws.metadata?.topic || topic,
         yearGroup: ws.metadata?.yearGroup || yearGroup,
-        difficulty: tierDifficulty,
-        examBoard: ws.metadata?.examBoard !== "General" ? ws.metadata?.examBoard : undefined,
-        includeAnswers,
-        worksheetLength,
-        additionalInstructions: tierInstruction,
+        title: ws.title,
       });
-      const differentiatedWorksheet = { ...result, isAI: true as const } as AIWorksheet;
+
+      // Merge differentiated pupil sections back, preserving teacher-only sections unchanged
+      const cleanedDiffSections = (differentiated.sections || []).map((s: any) => ({
+        ...s,
+        title: (s.title || "").replace(/^SECTION\s*\d+:\s*/i, "").trim() || s.title,
+      }));
+      const teacherOnlySections = (ws.sections || []).filter((s: any) => s.teacherOnly);
+
+      const differentiatedWorksheet: AIWorksheet = {
+        ...ws,
+        sections: [...cleanedDiffSections, ...teacherOnlySections],
+        metadata: {
+          ...ws.metadata,
+          difficulty: tier,
+        },
+        isAI: true as const,
+      };
       setDiffVersions(prev => ({ ...prev, [tier]: differentiatedWorksheet }));
       setGenerated(differentiatedWorksheet);
       setShowDiffDialog(false);
       toast.success(`${tier === "foundation" ? "Foundation" : "Higher"} version generated!`);
     } catch (err) {
+      console.error("Differentiation failed:", err);
       toast.error("Differentiation failed. Please try again.");
+    } finally {
+      setDiffLoading(null);
     }
-    setDiffLoading(null);
   };
 
   // ─── Filtered bank ─────────────────────────────────────────────────────────

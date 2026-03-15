@@ -534,132 +534,83 @@ export async function aiGenerateWorksheet(params: {
     const base = `THIS WORKSHEET IS ADAPTED FOR A STUDENT WITH ${params.sendNeed!.toUpperCase()}. Apply ALL of the following SEND rules throughout every section:`;
 
     if (sn.includes("dyslexia")) return `${base}
-(1) LANGUAGE: Use short sentences (max 12 words). Avoid passive voice. Use active, direct language.
-(2) VOCABULARY: Bold every key term on first use. Provide a Word Bank box at the top of each section with 4–6 key words and simple definitions.
-(3) QUESTIONS: Each question must be ONE sentence only. No embedded clauses. No double-barrelled questions.
-(4) SECTION A — GUIDED PRACTICE: Every question must have a sentence starter or partially completed answer frame. Example: "The answer is ___ because ___". Include a step-by-step method box before Section A.
-(5) SECTION B — CORE PRACTICE: Include a 'Steps to follow' reminder at the top. Questions should be shorter than standard. Include answer frames (e.g. blanks, tables, or sentence starters) for at least 3 questions.
-(6) WORKED EXAMPLE: Break into numbered micro-steps (max 6 words per step). Use arrows or bullet points to show progression.
-(7) LAYOUT: Use generous line spacing. Avoid dense paragraphs. Each question on its own line with plenty of white space below for writing.
-(8) REFLECTION: Use tick-box "I can" statements rather than open writing.`;
+(1) Short sentences max 12 words. Bold every key term. Word Bank at top of each section (4–6 terms + definitions).
+(2) Every question = ONE sentence. Section A: sentence starter or answer frame per question (e.g. "The answer is ___ because ___"). Step-by-step method box before Section A.
+(3) Section B: 'Steps to follow' reminder at top. Answer frames (blanks/tables/starters) for ≥3 questions.
+(4) Generous line spacing. Each question on its own line. Tick-box 'I can' reflection.`;
 
     if (sn.includes("dyscalculia")) return `${base}
-(1) NUMBERS: Use only small, familiar whole numbers in Section A (e.g. 1–20). Gradually increase in Section B. Avoid decimals in Section A.
-(2) VISUAL AIDS: Before every calculation question, include a visual anchor — e.g. a number line reference, a place value chart reminder, or a worked mini-example.
-(3) SECTION A — GUIDED PRACTICE: Every question must be broken into sub-steps with blanks. Example: "Step 1: Write the first number ___. Step 2: Add ___ to it. Step 3: The answer is ___."
-(4) SECTION B: Include a 'Key Facts' box at the top (e.g. multiplication facts, formula reminders). Questions should have partially completed working shown.
-(5) WORKED EXAMPLE: Show every single arithmetic step — no skipping. Annotate each step with WHY (e.g. "We add because we are finding the total").
-(6) WORD PROBLEMS: Keep language very simple. Underline the key number words. Provide a 'What do I need to find?' prompt before each problem.
-(7) AVOID: Timed pressure language, complex multi-step problems without scaffolding, abstract notation without concrete meaning.
-(8) REFLECTION: Use simple tick-box statements. Include a 'How I feel about maths today' scale using text options: 'Great / OK / Struggling'.`;
+(1) Section A: small whole numbers only (1–20). Break every question into sub-steps with blanks: "Step 1: ___ Step 2: ___ Answer: ___".
+(2) Key Facts box at top of Section B (formulas, number facts). Partially completed working shown for each question.
+(3) Worked example: every arithmetic step shown with WHY annotation. Word problems: 'What do I need to find?' prompt before each.
+(4) No timed pressure language. Tick-box reflection with 'Great / OK / Struggling' scale.`;
 
     if (sn.includes("adhd")) return `${base}
-(1) CHUNKING: Break every section into micro-tasks of no more than 2–3 questions before a natural break point. Use a [ ] checkbox next to each question so students can tick off progress.
-(2) SECTION A — GUIDED PRACTICE: Maximum 3 questions. Each question must have a clear, single instruction. Include a 'STOP — check your work' prompt after question 3.
-(3) SECTION B — CORE PRACTICE: Maximum 5 questions. Vary question types (calculation, fill-in, matching, true/false) to maintain engagement. Include a 'BRAIN BREAK — stand up and stretch!' prompt halfway through.
-(4) INSTRUCTIONS: Use numbered bullet points. Never embed instructions inside paragraphs. Bold the action word in every instruction (e.g. "**Calculate** the area of...").
-(5) WORKED EXAMPLE: Use a colour-coded step-by-step box. Each step on its own line. Max 5 steps.
-(6) LAYOUT: Use clear section dividers (e.g. thick lines or boxes). Avoid cluttered pages. Plenty of white space.
-(7) CHALLENGE: Make it optional and label it clearly as 'BONUS — only if you want to!'
-(8) REFLECTION: Use a quick 1–5 scale ('How focused were you today? 1 / 2 / 3 / 4 / 5') rather than extended writing.`;
+(1) [ ] checkbox next to every question. Max 3 questions in Section A, max 5 in Section B. 'STOP — check your work' after Section A.
+(2) Vary question types: calculation, fill-in, matching, true/false. 'BRAIN BREAK — stand up and stretch!' prompt midway through Section B.
+(3) Bold the action word in every instruction. Numbered bullet points only — no embedded instructions. Max 5-step worked example.
+(4) Challenge labelled 'BONUS — only if you want to!'. Reflection: 'How focused were you today? 1 / 2 / 3 / 4 / 5'.`;
 
     if (sn.includes("asc") || sn.includes("autism") || sn.includes("asperger")) return `${base}
-(1) LANGUAGE: Use literal, unambiguous language. NEVER use idioms, metaphors, or figurative language (e.g. do NOT write 'find x' — write 'calculate the value of x'). Be explicit about what is expected.
-(2) STRUCTURE: Every section must begin with a clear 'What you need to do:' box listing exactly what is required. No surprises.
-(3) SECTION A — GUIDED PRACTICE: Provide a fully worked identical example immediately before Section A (not just a similar one). Label it 'EXAMPLE — follow these exact steps'. Then questions should mirror the example structure closely.
-(4) SECTION B: Provide a 'Steps to follow' checklist at the top. Questions should increase in difficulty gradually with no sudden jumps.
-(5) VOCABULARY: Define every technical term. Avoid synonyms — use the same word consistently throughout (e.g. always 'calculate', never mix with 'work out', 'find', 'determine').
-(6) CONTEXT: Avoid social/emotional scenarios. Use neutral, factual contexts (measurements, shapes, data).
-(7) LAYOUT: Highly consistent formatting. Same structure every section. No decorative elements that could distract.
-(8) REFLECTION: Use a structured checklist format ('I did: ☐ Section A ☐ Section B ☐ Challenge') rather than open-ended questions.`;
+(1) Literal, unambiguous language only — no idioms or figurative language (write 'calculate the value of x', not 'find x'). One word per concept — never mix synonyms.
+(2) Every section starts with 'What you need to do:' box listing exact steps. Fully worked identical example before Section A labelled 'EXAMPLE — follow these exact steps'.
+(3) Neutral, factual contexts only — no social/emotional scenarios. Consistent identical layout across every section.
+(4) Reflection: structured checklist 'I did: [checkbox] Section A [checkbox] Section B [checkbox] Challenge'.`;
 
     if (sn.includes("mld") || sn.includes("moderate learning")) return `${base}
-(1) LANGUAGE: Use simple vocabulary (KS2 reading level). Short sentences. Define all subject-specific words.
-(2) SECTION A — GUIDED PRACTICE: Use a concrete-pictorial-abstract (CPA) approach. Start with a concrete real-world scenario, then a diagram/picture, then the abstract question. Provide a fully completed model answer for question 1 as a template.
-(3) SECTION B: Provide a 'Help Box' at the top with key facts, formulas, or vocabulary the student may need. Questions should be shorter and more straightforward than standard.
-(4) WORKED EXAMPLE: Show a complete step-by-step solution with annotations. Include a second partially completed example for the student to finish.
-(5) SCAFFOLDING: Every question in Section A must have either: (a) a sentence starter, (b) a partially completed answer, or (c) a hint. At least 3 questions in Section B should have hints.
-(6) QUESTIONS: Avoid multi-step problems in Section A. Section B may have 2-step problems with clear sub-parts (a) and (b).
-(7) CHALLENGE: Label as optional. Make it a simple extension of Section B, not a new concept.
-(8) REFLECTION: Use simple text-based self-assessment with tick-boxes and sentence starters.`;
+(1) KS2 reading level. Short sentences. Fully completed model answer for Question 1. Concrete-pictorial-abstract progression in Section A.
+(2) Every Section A question: sentence starter, partial answer, or hint. 'Help Box' at top of Section B (key facts, formulas, vocabulary).
+(3) No multi-step problems in Section A. Section B: 2-step problems with sub-parts (a)(b). Worked example: full steps + partially completed second example.
+(4) Challenge labelled optional. Tick-box reflection with sentence starters.`;
 
     if (sn.includes("slcn") || sn.includes("speech") || sn.includes("language") || sn.includes("communication")) return `${base}
-(1) VOCABULARY: Include a prominent Word Bank at the start with every key term defined in plain English. Limit to 8 key words maximum.
-(2) LANGUAGE: Use short, simple sentences. Avoid complex subordinate clauses. Use subject-verb-object structure.
-(3) SECTION A — GUIDED PRACTICE: Provide sentence frames for every question (e.g. 'The answer is ___ because ___'). Include visual cues (arrows, diagrams) alongside text.
-(4) SECTION B: Include a 'Key Words' reminder box. Use matching, labelling, or multiple-choice formats for at least 3 questions to reduce language production demands.
-(5) WORKED EXAMPLE: Use numbered steps with very short annotations. Include a diagram or visual where possible.
-(6) INSTRUCTIONS: Use simple imperative sentences. Bold the key action word. Avoid embedded instructions.
-(7) REFLECTION: Use sentence starters ('I can ___ . I need to practise ___') rather than open questions.
-(8) AVOID: Long reading passages, complex question phrasing, abstract language without visual support.`;
+(1) Word Bank at start (max 8 terms, plain English definitions). Short sentences, subject-verb-object structure only.
+(2) Sentence frame for every question: 'The answer is ___ because ___'. Visual cues alongside every text question.
+(3) 'Key Words' reminder at top of Section B. Matching, labelling, or multiple-choice for ≥3 questions. At least 2 visual/diagram-based questions.
+(4) Numbered steps in worked example. Bold key action words. Reflection: 'I can ___ . I need to practise ___'.`;
 
     if (sn.includes("anxiety") || sn.includes("mental health") || sn.includes("semh")) return `${base}
-(1) TONE: Use warm, encouraging, non-threatening language throughout. Begin each section with a positive statement (e.g. 'You already know how to do this — let's practise!').
-(2) SECTION A — GUIDED PRACTICE: Label it 'Warm-Up — no pressure!' Provide a fully worked example immediately before. Questions should be straightforward confidence-builders.
-(3) SECTION B: Label it 'Main Practice — you've got this!' Include a 'Tip' box with a helpful reminder. Avoid language like 'must', 'should', 'you need to'.
-(4) CHALLENGE: Label clearly as 'OPTIONAL BONUS — only if you want to!' Never use language that implies failure if skipped.
-(5) INSTRUCTIONS: Use positive framing ('Try to...' rather than 'You must...'). Break into small numbered steps.
-(6) REFLECTION: Include a 'How are you feeling?' check-in at the start and end using a text scale (e.g. 'Calm / OK / Anxious'). Use 'I tried...' and 'I found...' sentence starters rather than evaluative statements.
-(7) LAYOUT: Use a calm, uncluttered design. Avoid red text or anything that could feel like marking/failure.
-(8) AVOID: Timed pressure, competitive language, overly complex tasks without support.`;
+(1) Section A labelled 'Warm-Up — no pressure!'. Section B labelled 'Main Practice — you've got this!'. Positive statement at start of each section.
+(2) Replace 'must'/'should'/'need to' with 'try to'/'have a go at'. Challenge labelled 'OPTIONAL BONUS — only if you want to!'.
+(3) 'Tip' box in each section. 'Take a break here if you need to' prompt midway. No timed pressure language.
+(4) Reflection: 'How are you feeling? Calm / OK / Anxious' check-in. 'I tried...' and 'I found...' sentence starters.`;
 
     if (sn.includes("eal") || sn.includes("esl") || sn.includes("english as") || sn.includes("additional language")) return `${base}
-(1) VOCABULARY: Include a bilingual-friendly Word Bank at the start. Define every subject-specific term in plain English. Use simple, everyday synonyms where possible.
-(2) LANGUAGE: Use short, simple sentences. Avoid idioms, colloquialisms, and culturally specific references. Use consistent terminology throughout.
-(3) SECTION A — GUIDED PRACTICE: Provide sentence frames for every question. Include a 'Key Phrases' box with useful mathematical/scientific language (e.g. 'The answer is...', 'This shows that...').
-(4) SECTION B: Include a 'Useful Words' reminder. Use visual supports (diagrams, tables) alongside text questions. Include at least 2 questions with visual/diagram-based answers.
-(5) WORKED EXAMPLE: Annotate every step in plain English. Avoid jargon. Show the full method clearly.
-(6) INSTRUCTIONS: Use simple imperative sentences. Avoid passive voice. Bold key instruction words.
-(7) REFLECTION: Use sentence starters in English. Keep writing demands minimal.
-(8) CONTEXT: Use culturally neutral contexts. Avoid UK-specific cultural references that may be unfamiliar.`;
+(1) Bilingual-friendly Word Bank at start. Every subject term defined in plain English. Short sentences, no idioms or UK-specific cultural references.
+(2) Sentence frame for every question. 'Key Phrases' box with useful academic language ('The answer is...', 'This shows that...').
+(3) At least 2 visual/diagram-based questions. 'Useful Words' reminder in Section B. Bold key instruction words.
+(4) Culturally neutral contexts. Minimal writing demands. Sentence starters for reflection.`;
 
     if (sn.includes("dyspraxia") || sn.includes("dcd") || sn.includes("coordination")) return `${base}
-(1) LAYOUT: Use large, well-spaced writing lines (at least 1.5cm height). Provide ample white space for written answers.
-(2) WRITING DEMANDS: Minimise handwriting requirements. Use tick boxes, circle-the-answer, matching, and fill-in-the-blank formats wherever possible.
-(3) SECTION A — GUIDED PRACTICE: Use multiple-choice or matching formats for at least 3 questions. Provide large answer boxes.
-(4) SECTION B: Mix question types. Avoid questions requiring extensive written explanations. Use tables or structured answer frames.
-(5) INSTRUCTIONS: Use numbered bullet points. Keep instructions brief and clear.
-(6) WORKED EXAMPLE: Keep steps brief. Use bullet points rather than paragraphs.
-(7) CHALLENGE: Optional. Use a format that minimises writing (e.g. circle the correct answer, draw a diagram).
-(8) AVOID: Questions requiring long written responses, complex diagrams to copy, tight answer boxes.`;
+(1) Minimise handwriting. Use tick boxes, circle-the-answer, matching, and fill-in-the-blank formats. Large answer boxes throughout.
+(2) Section A: multiple-choice or matching for ≥3 questions. Section B: tables or structured answer frames — no extended writing.
+(3) Numbered bullet points for all instructions. Brief worked example steps (bullet points, not paragraphs).
+(4) Challenge optional and in a low-writing format (circle correct answer or draw a diagram).`;
 
     if (sn.includes("vi") || sn.includes("visual impair")) return `${base}
-(1) FONT: Use minimum 18pt equivalent text. Bold all headings. Use high-contrast formatting.
-(2) LAYOUT: Generous spacing between all elements. No cluttered layouts. Each question clearly separated.
-(3) DIAGRAMS: Describe any diagram in words as well. Use text-based alternatives where possible.
-(4) QUESTIONS: Avoid questions that rely solely on visual interpretation. Provide text descriptions of any visual content.
-(5) WORKED EXAMPLE: Write out every step in full text. Do not rely on diagrams to convey method.
-(6) SECTION A & B: Use clear, unambiguous formatting. Number questions prominently. Large answer spaces.
-(7) AVOID: Small print, low-contrast text, diagram-only questions, cluttered layouts.`;
+(1) Minimum 18pt equivalent text. Bold all headings. High-contrast formatting. Generous spacing — no cluttered layouts.
+(2) Every diagram described in words as well. No diagram-only questions. Text-based alternatives throughout.
+(3) Every worked example step written in full text — no reliance on diagrams. Questions numbered prominently.
+(4) Large answer spaces. Avoid small print, low-contrast text, or visually complex layouts.`;
 
     if (sn.includes("hi") || sn.includes("hearing impair") || sn.includes("deaf")) return `${base}
-(1) INSTRUCTIONS: All instructions must be written clearly — no reliance on verbal explanation.
-(2) VOCABULARY: Define all key terms in writing. Include a Word Bank.
-(3) VISUAL SUPPORTS: Include diagrams, tables, and visual aids wherever possible.
-(4) WORKED EXAMPLE: Fully written out with clear annotations. No audio-dependent content.
-(5) SECTION A & B: Ensure all questions are fully self-contained in writing. Include all necessary information within the question itself.
-(6) LAYOUT: Clear, structured, easy to navigate independently.
-(7) AVOID: Any content that assumes access to audio or verbal instruction.`;
+(1) All instructions written in full — no reliance on verbal explanation. Word Bank with all key terms defined.
+(2) Diagrams, tables, and visual aids throughout. Every question fully self-contained in writing.
+(3) Fully written worked example with clear annotations. No audio-dependent content.
+(4) Clear, structured layout easy to navigate independently.`;
 
     if (sn.includes("pda") || sn.includes("odd")) return `${base}
-(1) FRAMING: Use collaborative, choice-based language throughout. Replace demands with invitations (e.g. 'You might like to try...' instead of 'Answer the following').
-(2) SECTION A: Label as 'Explore — choose where to start'. Allow any order. Offer 2 options for each question where possible.
-(3) SECTION B: Label as 'Investigate'. Frame as puzzles or challenges rather than tasks.
-(4) CHALLENGE: Frame as 'Secret Mission' or 'Expert Level — if you choose to accept it'.
-(5) INSTRUCTIONS: Keep very brief. Use 'we' language ('Let's look at...'). Avoid 'you must' or 'you need to'.
-(6) LAYOUT: Calm, uncluttered. Include a 'Take a break here if you need to' prompt midway.
-(7) AVOID: Mandatory language, timed pressure, rigid structure without flexibility.`;
+(1) Replace demands with invitations: 'You might like to try...' not 'Answer the following'. Section A: 'Explore — choose where to start'. Section B: 'Investigate'.
+(2) Offer 2 options per question where possible. Challenge: 'Secret Mission — if you choose to accept it'.
+(3) 'We' language throughout ('Let's look at...'). 'Take a break here if you need to' prompt midway.
+(4) No mandatory language, no timed pressure. Calm, uncluttered layout.`;
 
     // Default for any other SEND need
     return `${base}
-(1) LANGUAGE: Use simple, clear language. Short sentences. Define all technical terms.
-(2) SECTION A — GUIDED PRACTICE: Every question must have a sentence starter, hint, or partially completed answer frame.
-(3) SECTION B — CORE PRACTICE: Include a 'Key Facts' reminder box at the top. Mix question types for variety.
-(4) WORKED EXAMPLE: Break into clearly numbered steps. Annotate each step.
-(5) SCAFFOLDING: Provide visual supports (diagrams, tables, word banks) throughout.
-(6) CHUNKING: Break work into small sections with clear headings and natural break points.
-(7) LAYOUT: Generous spacing, clear structure, uncluttered design.
-(8) REFLECTION: Use simple tick-box or sentence-starter format.`;
+(1) Simple language, short sentences, all technical terms defined. Word Bank at start.
+(2) Section A: sentence starter, hint, or partial answer for every question. Section B: 'Key Facts' box at top, varied question types.
+(3) Worked example: clearly numbered steps with annotations. Visual supports throughout.
+(4) Generous spacing, clear headings, tick-box or sentence-starter reflection.`;
   })() : "";
 
   // ── Difficulty tier (secondary only) ─────────────────────────────────────
@@ -667,10 +618,10 @@ export async function aiGenerateWorksheet(params: {
   const difficultyTier = params.difficulty || "mixed";
   const tierNote = isSecondary
     ? difficultyTier === "foundation" || difficultyTier === "basic"
-      ? `Difficulty: Foundation (GCSE grades 1–5). FOUNDATION TIER RULES: (1) Use simple, accessible language with short sentences. (2) Break every question into small, clearly numbered steps. (3) Include hints or sentence starters for each question in Section A (e.g. "Hint: Start by..."). (4) Avoid multi-step problems — each question tests ONE skill only. (5) Use familiar whole-number values; avoid complex fractions or decimals unless the topic requires it. (6) Section B questions should be slightly harder but still single-skill. (7) Challenge question should be a straightforward application, NOT a reasoning/proof question.`
+      ? `FOUNDATION TIER (grades 1–5): Simple language, single-skill questions, hints/sentence starters in Section A, whole-number values, no multi-step problems. Challenge = straightforward application.`
       : difficultyTier === "higher" || difficultyTier === "stretch"
-      ? `Difficulty: Higher (GCSE grades 4–9). HIGHER TIER RULES: (1) Use precise mathematical/scientific language throughout. (2) Include multi-step problems that require combining two or more skills. (3) Section A should start at grade 5 difficulty — no trivial recall questions. (4) Section B must include at least 2 questions requiring reasoning, proof, or "show that" style working. (5) Include questions with algebraic/symbolic manipulation, not just numerical substitution. (6) Challenge question must be a genuine grade 8–9 problem: proof, reverse engineering, or multi-concept application. (7) Use non-integer coefficients and complex values where appropriate.`
-      : `Difficulty: Mixed (Foundation + Higher). MIXED TIER RULES: (1) Section A — Foundation-level questions (grades 1–4): single-skill, scaffolded, accessible. (2) Section B — Higher-level questions (grades 5–7): multi-step, less scaffolding, command words. (3) Challenge — Grade 8–9 reasoning or proof question. (4) Clearly label difficulty within each section where helpful (e.g. "★ Grade 4", "★★ Grade 6").`
+      ? `HIGHER TIER (grades 4–9): Precise subject language, multi-step problems, Section A starts grade 5+, Section B includes reasoning/proof/'show that' questions, grade 8–9 challenge (proof or multi-concept).`
+      : `MIXED TIER: Section A = Foundation grades 1–4 (scaffolded, single-skill). Section B = Higher grades 5–7 (multi-step). Challenge = grade 8–9 reasoning/proof.`
     : "";
 
   // ── Worksheet length calibration ────────────────────────────────────────
@@ -777,21 +728,21 @@ Return EXACTLY this JSON (raw JSON only):
   "title": "${params.topic} — ${params.yearGroup} ${subjectDisplay} Worksheet",
   "subtitle": "${params.yearGroup} (${phase}) | ${subjectDisplay} | ${params.examBoard && params.examBoard !== 'none' ? params.examBoard : 'General'} | ${timingGuide}",
   "sections": [
-    ${params.recallTopic ? `{"title": "Recall — ${params.recallTopic}", "type": "guided", "content": "WRITE exactly 2-3 short recall questions on the previous topic '${params.recallTopic}' here. These should be quick retrieval questions to activate prior knowledge. Each question on its own line: 1. Question one\n2. Question two\n3. Question three"},` : ''}
-    {"title": "Learning Objectives", "type": "objective", "content": "[3 objectives for ${params.topic}]"},
+    ${params.recallTopic ? `{"title": "Recall — ${params.recallTopic}", "type": "guided", "content": "2-3 retrieval questions on '${params.recallTopic}'"},` : ''}
+    {"title": "Learning Objectives", "type": "objective", "content": "[3 objectives]"},
     {"title": "Key Vocabulary", "type": "vocabulary", "content": "[term | definition, one per line]"},
-    ${isMaths && !params.examStyle ? `{"title": "Key Formulas", "type": "example", "content": "[formulas for ${params.topic} in LaTeX, or write: No formula required]"},` : ''}
+    ${isMaths && !params.examStyle ? `{"title": "Key Formulas", "type": "example", "content": "[LaTeX formulas or: No formula required]"},` : ''}
     {"title": "Worked Example", "type": "example", "content": "[${exampleGuide}]"}${params.introOnly ? '' : `,
-    {"title": "Reminder Box", "type": "reminder-box", "content": "[3 numbered steps for ${params.topic}]"},
-    {"title": "${sendSectionTitles.sectionA}", "type": "guided", "content": "${hasSend ? 'WRITE heavily scaffolded guided questions here as a plain string — apply ALL SEND rules above — each question on its own line with hints/frames: 1. Question + [Hint: ...] or [Answer frame: ___ because ___]\n2. Question + scaffold\n3. Question + scaffold' : 'WRITE questions with hints here as a plain string — each on its own line: 1. Question one\n2. Question two\n3. Question three'}"},
-    {"title": "${sendSectionTitles.sectionB}", "type": "independent", "content": "${hasSend ? 'WRITE scaffolded core practice questions here as a plain string — apply ALL SEND rules above — include Key Facts/Help Box reminder, vary question types, each on its own line: 1. Question one\n2. Question two' : 'WRITE standard questions + 1 misconception question here as a plain string — each on its own line: 1. Question one\n2. Question two'}"},
-    {"title": "Section C — Word Problems", "type": "word-problems", "content": "WRITE ${hasSend ? '2-3 short, simple real-life word problems here — apply SEND language rules — each labelled PROBLEM 1, PROBLEM 2 etc on its own line' : '3-4 real-life word problems here as a plain string — each labelled PROBLEM 1, PROBLEM 2 etc on its own line'}"},
-    {"title": "${sendSectionTitles.challenge}", "type": "challenge", "content": "[${challengeGuide}${hasSend ? ' — make this optional and clearly labelled as bonus/extension' : ''}]"},
-    {"title": "${hasSend && (params.sendNeed!.toLowerCase().includes('anxiety') || params.sendNeed!.toLowerCase().includes('adhd')) ? 'How Did I Do? ★★★★★' : 'How Did I Do?'}", "type": "self-reflection", "teacherOnly": false, "content": "[${hasSend ? 'SEND-appropriate self-assessment: use tick-boxes, text scale (e.g. Great/OK/Struggling), or sentence starters as specified in SEND rules above' : '3-4 I can statements + Q: open question'}]"},
-    {"title": "Common Mistakes to Avoid", "type": "common-mistakes", "teacherOnly": false, "content": "[3-4 common mistakes students make on this topic, with brief explanations]"},
+    {"title": "Reminder Box", "type": "reminder-box", "content": "[3 numbered steps]"},
+    {"title": "${sendSectionTitles.sectionA}", "type": "guided", "content": "[${hasSend ? 'scaffolded questions with hints/frames — apply ALL SEND rules' : 'guided questions with hints'}]"},
+    {"title": "${sendSectionTitles.sectionB}", "type": "independent", "content": "[${hasSend ? 'scaffolded core practice — apply ALL SEND rules' : 'standard questions + 1 misconception question'}]"},
+    {"title": "Section C — Word Problems", "type": "word-problems", "content": "[${hasSend ? '2-3 simple word problems — apply SEND language rules' : '3-4 real-life word problems, increasing difficulty'}]"},
+    {"title": "${sendSectionTitles.challenge}", "type": "challenge", "content": "[${challengeGuide}${hasSend ? ' — optional, labelled as bonus' : ''}]"},
+    {"title": "How Did I Do?", "type": "self-reflection", "teacherOnly": false, "content": "[${hasSend ? 'tick-box or text-scale self-assessment per SEND rules' : '3-4 I can statements + open question'}]"},
+    {"title": "Common Mistakes to Avoid", "type": "common-mistakes", "teacherOnly": false, "content": "[3-4 common mistakes]"},
     {"title": "Mark Scheme", "type": "mark-scheme", "teacherOnly": true, "content": "[answers only]"},
     {"title": "Teacher Notes", "type": "teacher-notes", "teacherOnly": true, "content": "[timings, misconceptions, interventions, next topic]"},
-    {"title": "SEND Adaptations & Rationale", "type": "teacher-notes", "teacherOnly": true, "content": "${hasSend ? `THIS WORKSHEET HAS BEEN ADAPTED FOR: ${params.sendNeed!.toUpperCase()}\n\nWHAT ADAPTATIONS WERE MADE:\n[List every specific adaptation applied in this worksheet — e.g. sentence starters added to Section A, Word Bank included, questions chunked into sub-steps, challenge labelled as optional, etc. Be specific about what was changed from a standard worksheet.]\n\nWHY THIS MATTERS — EVIDENCE-BASED RATIONALE:\n[Write 3–4 sentences explaining WHY these adaptations are necessary for a student with ${params.sendNeed}. Include: (1) How ${params.sendNeed} affects learning in a classroom context — what specific barriers does it create? (2) What the research/SEND Code of Practice says about supporting this need. (3) How each adaptation directly removes a specific barrier. (4) What the teacher should watch for during the lesson and how to further support the student.]\n\nCLASSROOM TIPS FOR THIS LESSON:\n[3–4 practical tips for the teacher delivering this specific worksheet to a student with ${params.sendNeed} — e.g. seating position, pre-teaching vocabulary, use of a scribe, allowing extra time, checking in at specific points, etc.]\n\nNEXT STEPS IF STUDENT STRUGGLES:\n[What to do if the student cannot access the worksheet despite adaptations — suggest further scaffolding, alternative formats, or specialist referral as appropriate for ${params.sendNeed}.]` : 'No SEND adaptations applied — standard worksheet.'}"`}
+    {"title": "SEND Adaptations & Rationale", "type": "teacher-notes", "teacherOnly": true, "content": "${hasSend ? `ADAPTED FOR: ${params.sendNeed!.toUpperCase()}\nADAPTATIONS: [list every specific change made]\nRATIONALE: [3-4 sentences: how ${params.sendNeed} affects learning, SEND Code of Practice, how each adaptation removes a barrier]\nCLASSROOM TIPS: [3-4 practical tips for the teacher]\nIF STUDENT STRUGGLES: [next steps / further scaffolding]` : 'No SEND adaptations — standard worksheet.'}"`}
   ],
   "metadata": {
     "subject": "${subjectDisplay}",
@@ -1365,6 +1316,57 @@ export async function aiScaffoldExistingWorksheet(params: {
     sections: scaffolded.sections || params.sections,
     wordBank: scaffolded.wordBank,
     scaffoldingApplied: scaffolded.scaffoldingApplied,
+    provider: data.provider,
+  };
+}
+
+// ─── Differentiate Existing Worksheet (Foundation / Higher) ─────────────────
+// Uses the dedicated /api/ai/differentiate-worksheet endpoint which transforms
+// the existing worksheet to a different difficulty tier — much faster than
+// regenerating from scratch.
+export async function aiDifferentiateExistingWorksheet(params: {
+  sections: Array<{ title: string; content: string; type?: string; teacherOnly?: boolean }>;
+  tier: 'foundation' | 'higher';
+  subject?: string;
+  topic?: string;
+  yearGroup?: string;
+  title?: string;
+}): Promise<{
+  sections: Array<{ title: string; content: string; type?: string; teacherOnly?: boolean }>;
+  tierApplied?: string;
+  changesNote?: string;
+  provider?: string;
+}> {
+  const storedToken = typeof localStorage !== 'undefined' ? localStorage.getItem('send_token') : null;
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (storedToken) headers['Authorization'] = `Bearer ${storedToken}`;
+
+  const res = await fetch('/api/ai/differentiate-worksheet', {
+    method: 'POST',
+    headers,
+    credentials: 'include',
+    body: JSON.stringify({
+      sections: params.sections,
+      tier: params.tier,
+      subject: params.subject,
+      topic: params.topic,
+      yearGroup: params.yearGroup,
+      title: params.title,
+    }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: 'Unknown error' }));
+    throw new Error(err.error || `Differentiate request failed: ${res.status}`);
+  }
+
+  const data = await res.json();
+  const differentiated = data.differentiated;
+
+  return {
+    sections: differentiated.sections || params.sections,
+    tierApplied: differentiated.tierApplied,
+    changesNote: differentiated.changesNote,
     provider: data.provider,
   };
 }
