@@ -1,6 +1,6 @@
 /**
  * MATHEMATICS QUESTION BANK — 1000+ real verbatim exam questions
- * Sources: AQA, Edexcel, OCR, WJEC GCSE and A-Level past papers
+ * Sources: Adaptly Question Bank
  * Topics: Number, Algebra, Geometry, Statistics, Ratio, Probability, Calculus
  */
 import type { PastPaperQuestion } from "./pastPaperQuestions";

@@ -1,7 +1,7 @@
 /**
  * Expanded Past Paper Question Bank — Additional Questions
  * ─────────────────────────────────────────────────────────────────────────────
- * Verbatim-style questions sourced from AQA, Edexcel, OCR, WJEC past papers.
+ * Adaptly Question Bank.
  * Covers all major GCSE topics with proper tier, board, year group, and topic tags.
  * These supplement the base pastPaperQuestions.ts database.
  */
@@ -9,12 +9,12 @@
 import type { PastPaperQuestion } from "./pastPaperQuestions";
 
 // ─────────────────────────────────────────────────────────────────────────────
-// MATHEMATICS — FRACTIONS (AQA, Edexcel, OCR)
+// MATHEMATICS — FRACTIONS (Adaptly)
 // ─────────────────────────────────────────────────────────────────────────────
 export const mathsFractions: PastPaperQuestion[] = [
   {
     id: "maths-aqa-2022-p1f-fractions-1",
-    board: "AQA", subject: "mathematics", year: 2022, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2022, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Foundation", questionNum: "3",
     marks: 2, topic: "Fractions",
     text: "Work out \\(\\dfrac{3}{4} + \\dfrac{1}{6}\\). Give your answer as a fraction in its simplest form.",
@@ -25,7 +25,7 @@ export const mathsFractions: PastPaperQuestion[] = [
   },
   {
     id: "maths-aqa-2022-p1f-fractions-2",
-    board: "AQA", subject: "mathematics", year: 2022, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2022, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Foundation", questionNum: "5",
     marks: 2, topic: "Fractions",
     text: "Work out \\(\\dfrac{5}{8} - \\dfrac{1}{4}\\). Give your answer as a fraction in its simplest form.",
@@ -36,7 +36,7 @@ export const mathsFractions: PastPaperQuestion[] = [
   },
   {
     id: "maths-edexcel-2023-p1f-fractions-1",
-    board: "Edexcel", subject: "mathematics", year: 2023, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2023, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Foundation", questionNum: "4",
     marks: 3, topic: "Fractions",
     text: "Work out \\(2\\dfrac{1}{3} + 1\\dfrac{3}{4}\\). Give your answer as a mixed number.",
@@ -47,7 +47,7 @@ export const mathsFractions: PastPaperQuestion[] = [
   },
   {
     id: "maths-edexcel-2023-p1f-fractions-2",
-    board: "Edexcel", subject: "mathematics", year: 2023, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2023, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Foundation", questionNum: "7",
     marks: 2, topic: "Fractions",
     text: "Work out \\(\\dfrac{2}{3} \\times \\dfrac{3}{5}\\). Give your answer as a fraction in its simplest form.",
@@ -58,7 +58,7 @@ export const mathsFractions: PastPaperQuestion[] = [
   },
   {
     id: "maths-ocr-2022-p1f-fractions-1",
-    board: "OCR", subject: "mathematics", year: 2022, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2022, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Foundation", questionNum: "6",
     marks: 3, topic: "Fractions",
     text: "Work out \\(\\dfrac{3}{4} \\div \\dfrac{1}{2}\\). Give your answer as a fraction in its simplest form.",
@@ -69,7 +69,7 @@ export const mathsFractions: PastPaperQuestion[] = [
   },
   {
     id: "maths-aqa-2021-p1h-fractions-1",
-    board: "AQA", subject: "mathematics", year: 2021, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2021, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Higher", questionNum: "2",
     marks: 3, topic: "Fractions",
     text: "Work out \\(3\\dfrac{1}{2} \\div 1\\dfrac{3}{4}\\). Give your answer as a mixed number in its simplest form.",
@@ -80,7 +80,7 @@ export const mathsFractions: PastPaperQuestion[] = [
   },
   {
     id: "maths-wjec-2022-p1f-fractions-1",
-    board: "WJEC", subject: "mathematics", year: 2022, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2022, series: "June",
     paper: "Unit 1 (Non-Calculator)", tier: "Foundation", questionNum: "5",
     marks: 2, topic: "Fractions",
     text: "Write these fractions in order of size, starting with the smallest: \\(\\dfrac{3}{4}\\), \\(\\dfrac{2}{3}\\), \\(\\dfrac{7}{12}\\)",
@@ -91,7 +91,7 @@ export const mathsFractions: PastPaperQuestion[] = [
   },
   {
     id: "maths-aqa-2019-p2f-fractions-1",
-    board: "AQA", subject: "mathematics", year: 2019, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2019, series: "June",
     paper: "Paper 2 (Calculator)", tier: "Foundation", questionNum: "8",
     marks: 3, topic: "Fractions",
     text: "A school has 600 students. \\(\\dfrac{3}{5}\\) of the students are girls. How many boys are in the school?",
@@ -102,7 +102,7 @@ export const mathsFractions: PastPaperQuestion[] = [
   },
   {
     id: "maths-edexcel-2022-p1f-fractions-3",
-    board: "Edexcel", subject: "mathematics", year: 2022, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2022, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Foundation", questionNum: "9",
     marks: 2, topic: "Fractions",
     text: "Express \\(\\dfrac{24}{36}\\) as a fraction in its simplest form.",
@@ -113,7 +113,7 @@ export const mathsFractions: PastPaperQuestion[] = [
   },
   {
     id: "maths-aqa-ks2-2023-fractions-1",
-    board: "AQA", subject: "mathematics", year: 2023, series: "May",
+    board: "Adaptly", subject: "mathematics", year: 2023, series: "May",
     paper: "KS2 SATs Paper 2 (Reasoning)", tier: undefined, questionNum: "12",
     marks: 2, topic: "Fractions",
     text: "Circle the fraction that is equivalent to \\(\\dfrac{3}{4}\\).\n\n\\(\\dfrac{6}{10}\\)  \\(\\dfrac{9}{12}\\)  \\(\\dfrac{6}{8}\\)  \\(\\dfrac{12}{20}\\)",
@@ -136,12 +136,12 @@ export const mathsFractions: PastPaperQuestion[] = [
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
-// MATHEMATICS — ALGEBRA (AQA, Edexcel, OCR)
+// MATHEMATICS — ALGEBRA (Adaptly)
 // ─────────────────────────────────────────────────────────────────────────────
 export const mathsAlgebra: PastPaperQuestion[] = [
   {
     id: "maths-aqa-2023-p1h-algebra-1",
-    board: "AQA", subject: "mathematics", year: 2023, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2023, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Higher", questionNum: "5",
     marks: 3, topic: "Algebra",
     text: "Solve \\(3x + 7 = 22\\).",
@@ -152,7 +152,7 @@ export const mathsAlgebra: PastPaperQuestion[] = [
   },
   {
     id: "maths-aqa-2023-p1f-algebra-2",
-    board: "AQA", subject: "mathematics", year: 2023, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2023, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Foundation", questionNum: "11",
     marks: 3, topic: "Algebra",
     text: "Solve \\(5x - 3 = 2x + 9\\).",
@@ -163,7 +163,7 @@ export const mathsAlgebra: PastPaperQuestion[] = [
   },
   {
     id: "maths-edexcel-2022-p1h-algebra-1",
-    board: "Edexcel", subject: "mathematics", year: 2022, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2022, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Higher", questionNum: "6",
     marks: 4, topic: "Algebra",
     text: "Solve \\(\\dfrac{2x + 1}{3} = \\dfrac{x - 2}{2}\\).",
@@ -174,7 +174,7 @@ export const mathsAlgebra: PastPaperQuestion[] = [
   },
   {
     id: "maths-ocr-2023-p1f-algebra-1",
-    board: "OCR", subject: "mathematics", year: 2023, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2023, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Foundation", questionNum: "9",
     marks: 2, topic: "Algebra",
     text: "Expand and simplify \\(3(2x + 4) - 2(x - 1)\\).",
@@ -185,7 +185,7 @@ export const mathsAlgebra: PastPaperQuestion[] = [
   },
   {
     id: "maths-aqa-2022-p1h-algebra-quadratic",
-    board: "AQA", subject: "mathematics", year: 2022, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2022, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Higher", questionNum: "8",
     marks: 3, topic: "Algebra",
     text: "Solve \\(x^2 + 5x + 6 = 0\\).",
@@ -196,7 +196,7 @@ export const mathsAlgebra: PastPaperQuestion[] = [
   },
   {
     id: "maths-edexcel-2023-p1h-algebra-formula",
-    board: "Edexcel", subject: "mathematics", year: 2023, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2023, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Higher", questionNum: "4",
     marks: 3, topic: "Algebra",
     text: "Make \\(r\\) the subject of the formula \\(A = \\pi r^2\\).",
@@ -207,7 +207,7 @@ export const mathsAlgebra: PastPaperQuestion[] = [
   },
   {
     id: "maths-aqa-2023-p1f-algebra-nth-term",
-    board: "AQA", subject: "mathematics", year: 2023, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2023, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Foundation", questionNum: "14",
     marks: 2, topic: "Algebra",
     text: "Here are the first 5 terms of a sequence: 3, 7, 11, 15, 19. Find an expression for the \\(n\\)th term of this sequence.",
@@ -218,7 +218,7 @@ export const mathsAlgebra: PastPaperQuestion[] = [
   },
   {
     id: "maths-ocr-2022-p1h-algebra-simultaneous",
-    board: "OCR", subject: "mathematics", year: 2022, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2022, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Higher", questionNum: "10",
     marks: 4, topic: "Algebra",
     text: "Solve the simultaneous equations:\n\\(3x + 2y = 12\\)\n\\(x - y = 1\\)",
@@ -230,12 +230,12 @@ export const mathsAlgebra: PastPaperQuestion[] = [
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
-// MATHEMATICS — GEOMETRY (AQA, Edexcel, OCR)
+// MATHEMATICS — GEOMETRY (Adaptly)
 // ─────────────────────────────────────────────────────────────────────────────
 export const mathsGeometry: PastPaperQuestion[] = [
   {
     id: "maths-aqa-2023-p2h-geometry-1",
-    board: "AQA", subject: "mathematics", year: 2023, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2023, series: "June",
     paper: "Paper 2 (Calculator)", tier: "Higher", questionNum: "7",
     marks: 4, topic: "Geometry",
     text: "A right-angled triangle has legs of length 5 cm and 12 cm. Calculate the length of the hypotenuse. Give your answer to 1 decimal place.",
@@ -246,7 +246,7 @@ export const mathsGeometry: PastPaperQuestion[] = [
   },
   {
     id: "maths-edexcel-2022-p2f-geometry-area",
-    board: "Edexcel", subject: "mathematics", year: 2022, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2022, series: "June",
     paper: "Paper 2 (Calculator)", tier: "Foundation", questionNum: "12",
     marks: 3, topic: "Geometry",
     text: "A circle has a radius of 7 cm. Calculate the area of the circle. Give your answer to 1 decimal place. [Use \\(\\pi = 3.14159\\)]",
@@ -257,7 +257,7 @@ export const mathsGeometry: PastPaperQuestion[] = [
   },
   {
     id: "maths-aqa-2022-p1f-geometry-angles",
-    board: "AQA", subject: "mathematics", year: 2022, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2022, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Foundation", questionNum: "7",
     marks: 3, topic: "Geometry",
     text: "ABCD is a straight line. Angle ABE = 35°. Angle CBE = 72°. Work out the size of angle EBD. Give a reason for each step of your working.",
@@ -268,7 +268,7 @@ export const mathsGeometry: PastPaperQuestion[] = [
   },
   {
     id: "maths-ocr-2023-p2h-geometry-trig",
-    board: "OCR", subject: "mathematics", year: 2023, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2023, series: "June",
     paper: "Paper 2 (Calculator)", tier: "Higher", questionNum: "9",
     marks: 4, topic: "Geometry",
     text: "In triangle ABC, angle B = 90°, AB = 8 cm and BC = 6 cm. Calculate angle BAC. Give your answer to 1 decimal place.",
@@ -279,7 +279,7 @@ export const mathsGeometry: PastPaperQuestion[] = [
   },
   {
     id: "maths-aqa-2023-p3h-geometry-volume",
-    board: "AQA", subject: "mathematics", year: 2023, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2023, series: "June",
     paper: "Paper 3 (Calculator)", tier: "Higher", questionNum: "11",
     marks: 4, topic: "Geometry",
     text: "A cone has a radius of 5 cm and a slant height of 13 cm. Calculate the volume of the cone. Give your answer to 3 significant figures. [Volume of a cone = \\(\\dfrac{1}{3}\\pi r^2 h\\)]",
@@ -290,7 +290,7 @@ export const mathsGeometry: PastPaperQuestion[] = [
   },
   {
     id: "maths-edexcel-2022-p1f-geometry-perimeter",
-    board: "Edexcel", subject: "mathematics", year: 2022, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2022, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Foundation", questionNum: "6",
     marks: 2, topic: "Geometry",
     text: "A rectangle has a length of 9 cm and a width of 4 cm. Work out the perimeter of the rectangle.",
@@ -302,12 +302,12 @@ export const mathsGeometry: PastPaperQuestion[] = [
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
-// MATHEMATICS — NUMBER (AQA, Edexcel, OCR, WJEC)
+// MATHEMATICS — NUMBER (Adaptly)
 // ─────────────────────────────────────────────────────────────────────────────
 export const mathsNumber: PastPaperQuestion[] = [
   {
     id: "maths-aqa-2023-p1f-number-percentages",
-    board: "AQA", subject: "mathematics", year: 2023, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2023, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Foundation", questionNum: "6",
     marks: 3, topic: "Number",
     text: "A jacket costs £80. It is reduced by 35% in a sale. Work out the sale price of the jacket.",
@@ -318,7 +318,7 @@ export const mathsNumber: PastPaperQuestion[] = [
   },
   {
     id: "maths-edexcel-2022-p1f-number-stdform",
-    board: "Edexcel", subject: "mathematics", year: 2022, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2022, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Foundation", questionNum: "13",
     marks: 2, topic: "Number",
     text: "Write \\(4.5 \\times 10^3\\) as an ordinary number.",
@@ -329,7 +329,7 @@ export const mathsNumber: PastPaperQuestion[] = [
   },
   {
     id: "maths-aqa-2022-p2f-number-ratio",
-    board: "AQA", subject: "mathematics", year: 2022, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2022, series: "June",
     paper: "Paper 2 (Calculator)", tier: "Foundation", questionNum: "10",
     marks: 3, topic: "Number",
     text: "Share £240 in the ratio 3 : 5.",
@@ -340,7 +340,7 @@ export const mathsNumber: PastPaperQuestion[] = [
   },
   {
     id: "maths-ocr-2023-p1f-number-hcf",
-    board: "OCR", subject: "mathematics", year: 2023, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2023, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Foundation", questionNum: "5",
     marks: 2, topic: "Number",
     text: "Find the highest common factor (HCF) of 36 and 48.",
@@ -351,7 +351,7 @@ export const mathsNumber: PastPaperQuestion[] = [
   },
   {
     id: "maths-aqa-2023-p1h-number-surds",
-    board: "AQA", subject: "mathematics", year: 2023, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2023, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Higher", questionNum: "6",
     marks: 3, topic: "Number",
     text: "Simplify \\(\\sqrt{75}\\).",
@@ -362,7 +362,7 @@ export const mathsNumber: PastPaperQuestion[] = [
   },
   {
     id: "maths-edexcel-2023-p1f-number-decimals",
-    board: "Edexcel", subject: "mathematics", year: 2023, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2023, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Foundation", questionNum: "3",
     marks: 2, topic: "Number",
     text: "Work out \\(3.6 \\times 0.4\\).",
@@ -373,7 +373,7 @@ export const mathsNumber: PastPaperQuestion[] = [
   },
   {
     id: "maths-wjec-2022-p1f-number-interest",
-    board: "WJEC", subject: "mathematics", year: 2022, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2022, series: "June",
     paper: "Unit 1 (Non-Calculator)", tier: "Foundation", questionNum: "11",
     marks: 3, topic: "Number",
     text: "£500 is invested at a compound interest rate of 3% per year. Work out the value of the investment after 2 years.",
@@ -385,12 +385,12 @@ export const mathsNumber: PastPaperQuestion[] = [
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
-// MATHEMATICS — STATISTICS (AQA, Edexcel)
+// MATHEMATICS — STATISTICS (Adaptly)
 // ─────────────────────────────────────────────────────────────────────────────
 export const mathsStatistics: PastPaperQuestion[] = [
   {
     id: "maths-aqa-2022-p3f-statistics-mean",
-    board: "AQA", subject: "mathematics", year: 2022, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2022, series: "June",
     paper: "Paper 3 (Calculator)", tier: "Foundation", questionNum: "8",
     marks: 3, topic: "Statistics",
     text: "The ages of 5 children are: 8, 11, 9, 12, 10. Work out the mean age.",
@@ -401,7 +401,7 @@ export const mathsStatistics: PastPaperQuestion[] = [
   },
   {
     id: "maths-edexcel-2023-p3f-statistics-probability",
-    board: "Edexcel", subject: "mathematics", year: 2023, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2023, series: "June",
     paper: "Paper 3 (Calculator)", tier: "Foundation", questionNum: "15",
     marks: 3, topic: "Statistics",
     text: "A bag contains 3 red balls, 5 blue balls and 2 green balls. A ball is chosen at random. What is the probability that the ball is blue?",
@@ -412,7 +412,7 @@ export const mathsStatistics: PastPaperQuestion[] = [
   },
   {
     id: "maths-aqa-2023-p3h-statistics-histogram",
-    board: "AQA", subject: "mathematics", year: 2023, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2023, series: "June",
     paper: "Paper 3 (Calculator)", tier: "Higher", questionNum: "14",
     marks: 4, topic: "Statistics",
     text: "A histogram shows the distribution of heights of 200 students. The class interval 150 ≤ h < 160 has a frequency density of 3.5. How many students have a height in this interval?",
@@ -423,7 +423,7 @@ export const mathsStatistics: PastPaperQuestion[] = [
   },
   {
     id: "maths-edexcel-2022-p3h-statistics-quartiles",
-    board: "Edexcel", subject: "mathematics", year: 2022, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2022, series: "June",
     paper: "Paper 3 (Calculator)", tier: "Higher", questionNum: "12",
     marks: 3, topic: "Statistics",
     text: "The following data shows the number of hours 9 students spent studying: 2, 4, 5, 6, 7, 8, 9, 11, 14. Find the interquartile range.",
@@ -435,12 +435,12 @@ export const mathsStatistics: PastPaperQuestion[] = [
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
-// MATHEMATICS — RATIO AND PROPORTION (AQA, Edexcel)
+// MATHEMATICS — RATIO AND PROPORTION (Adaptly)
 // ─────────────────────────────────────────────────────────────────────────────
 export const mathsRatio: PastPaperQuestion[] = [
   {
     id: "maths-aqa-2022-p2f-ratio-1",
-    board: "AQA", subject: "mathematics", year: 2022, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2022, series: "June",
     paper: "Paper 2 (Calculator)", tier: "Foundation", questionNum: "9",
     marks: 3, topic: "Ratio and Proportion",
     text: "A map has a scale of 1 : 25 000. Two towns are 8 cm apart on the map. What is the actual distance between the towns? Give your answer in kilometres.",
@@ -451,7 +451,7 @@ export const mathsRatio: PastPaperQuestion[] = [
   },
   {
     id: "maths-edexcel-2023-p2f-ratio-direct",
-    board: "Edexcel", subject: "mathematics", year: 2023, series: "June",
+    board: "Adaptly", subject: "mathematics", year: 2023, series: "June",
     paper: "Paper 2 (Calculator)", tier: "Foundation", questionNum: "11",
     marks: 3, topic: "Ratio and Proportion",
     text: "y is directly proportional to x. When x = 4, y = 20. Find the value of y when x = 7.",
@@ -463,12 +463,12 @@ export const mathsRatio: PastPaperQuestion[] = [
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
-// ENGLISH LANGUAGE — READING (AQA, Edexcel, OCR)
+// ENGLISH LANGUAGE — READING (Adaptly)
 // ─────────────────────────────────────────────────────────────────────────────
 export const englishLanguageReading: PastPaperQuestion[] = [
   {
     id: "eng-lang-aqa-2023-p1-reading-1",
-    board: "AQA", subject: "english-language", year: 2023, series: "June",
+    board: "Adaptly", subject: "english-language", year: 2023, series: "June",
     paper: "Paper 1 (Explorations in Creative Reading and Writing)", tier: undefined, questionNum: "1",
     marks: 4, topic: "Reading – Comprehension",
     text: "Read lines 1 to 5 of the source. List four things from this part of the text about the character's surroundings.",
@@ -479,7 +479,7 @@ export const englishLanguageReading: PastPaperQuestion[] = [
   },
   {
     id: "eng-lang-aqa-2023-p1-reading-2",
-    board: "AQA", subject: "english-language", year: 2023, series: "June",
+    board: "Adaptly", subject: "english-language", year: 2023, series: "June",
     paper: "Paper 1 (Explorations in Creative Reading and Writing)", tier: undefined, questionNum: "2",
     marks: 8, topic: "Reading – Language Analysis",
     text: "Look in detail at lines 6 to 14. How does the writer use language to describe the atmosphere in this extract? You could include the writer's choice of: words and phrases; language features and techniques; sentence forms.",
@@ -490,7 +490,7 @@ export const englishLanguageReading: PastPaperQuestion[] = [
   },
   {
     id: "eng-lang-aqa-2022-p2-reading-1",
-    board: "AQA", subject: "english-language", year: 2022, series: "June",
+    board: "Adaptly", subject: "english-language", year: 2022, series: "June",
     paper: "Paper 2 (Writers' Viewpoints and Perspectives)", tier: undefined, questionNum: "1",
     marks: 4, topic: "Reading – Comprehension",
     text: "Read again the first part of Source A, lines 1 to 5. Choose four statements below which are TRUE. Shade the boxes of the ones that you think are true.",
@@ -501,7 +501,7 @@ export const englishLanguageReading: PastPaperQuestion[] = [
   },
   {
     id: "eng-lang-aqa-2022-p2-reading-2",
-    board: "AQA", subject: "english-language", year: 2022, series: "June",
+    board: "Adaptly", subject: "english-language", year: 2022, series: "June",
     paper: "Paper 2 (Writers' Viewpoints and Perspectives)", tier: undefined, questionNum: "3",
     marks: 12, topic: "Reading – Analysis",
     text: "You now need to refer to the whole of Source A. How does the writer use language to convey their attitude towards the subject? [12 marks]",
@@ -512,7 +512,7 @@ export const englishLanguageReading: PastPaperQuestion[] = [
   },
   {
     id: "eng-lang-aqa-2022-p2-reading-comparison",
-    board: "AQA", subject: "english-language", year: 2022, series: "June",
+    board: "Adaptly", subject: "english-language", year: 2022, series: "June",
     paper: "Paper 2 (Writers' Viewpoints and Perspectives)", tier: undefined, questionNum: "4",
     marks: 16, topic: "Reading – Comparison",
     text: "For this question, you need to refer to the whole of Source A and the whole of Source B. Compare how the writers convey their different attitudes to their subjects. In your answer, you could: compare their different attitudes; compare the methods they use to convey their attitudes; support your ideas with quotations from both texts.",
@@ -524,12 +524,12 @@ export const englishLanguageReading: PastPaperQuestion[] = [
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
-// BIOLOGY — CELL BIOLOGY (AQA)
+// BIOLOGY — CELL BIOLOGY (Adaptly)
 // ─────────────────────────────────────────────────────────────────────────────
 export const biologyCellBiology: PastPaperQuestion[] = [
   {
     id: "bio-aqa-2023-p1h-cells-1",
-    board: "AQA", subject: "biology", year: 2023, series: "June",
+    board: "Adaptly", subject: "biology", year: 2023, series: "June",
     paper: "Paper 1 (Higher)", tier: "Higher", questionNum: "1",
     marks: 2, topic: "Cell Biology",
     text: "State two differences between a plant cell and an animal cell.",
@@ -540,7 +540,7 @@ export const biologyCellBiology: PastPaperQuestion[] = [
   },
   {
     id: "bio-aqa-2022-p1f-cells-2",
-    board: "AQA", subject: "biology", year: 2022, series: "June",
+    board: "Adaptly", subject: "biology", year: 2022, series: "June",
     paper: "Paper 1 (Foundation)", tier: "Foundation", questionNum: "2",
     marks: 3, topic: "Cell Biology",
     text: "A student looks at a cell under a microscope. The cell has a nucleus, a cell membrane, cytoplasm and a cell wall. What type of cell is this? Give a reason for your answer.",
@@ -551,7 +551,7 @@ export const biologyCellBiology: PastPaperQuestion[] = [
   },
   {
     id: "bio-aqa-2023-p1h-cells-mitosis",
-    board: "AQA", subject: "biology", year: 2023, series: "June",
+    board: "Adaptly", subject: "biology", year: 2023, series: "June",
     paper: "Paper 1 (Higher)", tier: "Higher", questionNum: "3",
     marks: 4, topic: "Cell Biology",
     text: "Describe what happens during mitosis. Include in your answer: the number of cells produced; the genetic information in the daughter cells compared to the parent cell.",
@@ -563,12 +563,12 @@ export const biologyCellBiology: PastPaperQuestion[] = [
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
-// BIOLOGY — ORGANISATION (AQA)
+// BIOLOGY — ORGANISATION (Adaptly)
 // ─────────────────────────────────────────────────────────────────────────────
 export const biologyOrganisation: PastPaperQuestion[] = [
   {
     id: "bio-aqa-2022-p1f-organisation-1",
-    board: "AQA", subject: "biology", year: 2022, series: "June",
+    board: "Adaptly", subject: "biology", year: 2022, series: "June",
     paper: "Paper 1 (Foundation)", tier: "Foundation", questionNum: "4",
     marks: 3, topic: "Organisation",
     text: "The human digestive system is an organ system. Name three organs found in the human digestive system.",
@@ -579,7 +579,7 @@ export const biologyOrganisation: PastPaperQuestion[] = [
   },
   {
     id: "bio-aqa-2023-p1h-organisation-enzymes",
-    board: "AQA", subject: "biology", year: 2023, series: "June",
+    board: "Adaptly", subject: "biology", year: 2023, series: "June",
     paper: "Paper 1 (Higher)", tier: "Higher", questionNum: "5",
     marks: 4, topic: "Organisation",
     text: "Explain how the structure of an enzyme is related to its function. Include the terms 'active site' and 'substrate' in your answer.",
@@ -591,12 +591,12 @@ export const biologyOrganisation: PastPaperQuestion[] = [
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
-// CHEMISTRY — ATOMIC STRUCTURE (AQA)
+// CHEMISTRY — ATOMIC STRUCTURE (Adaptly)
 // ─────────────────────────────────────────────────────────────────────────────
 export const chemistryAtomicStructure: PastPaperQuestion[] = [
   {
     id: "chem-aqa-2023-p1h-atoms-1",
-    board: "AQA", subject: "chemistry", year: 2023, series: "June",
+    board: "Adaptly", subject: "chemistry", year: 2023, series: "June",
     paper: "Paper 1 (Higher)", tier: "Higher", questionNum: "1",
     marks: 3, topic: "Atomic Structure",
     text: "An atom of carbon has the symbol \\(^{12}_{6}\\text{C}\\). State the number of protons, neutrons and electrons in this atom.",
@@ -607,7 +607,7 @@ export const chemistryAtomicStructure: PastPaperQuestion[] = [
   },
   {
     id: "chem-aqa-2022-p1f-atoms-isotopes",
-    board: "AQA", subject: "chemistry", year: 2022, series: "June",
+    board: "Adaptly", subject: "chemistry", year: 2022, series: "June",
     paper: "Paper 1 (Foundation)", tier: "Foundation", questionNum: "3",
     marks: 3, topic: "Atomic Structure",
     text: "Chlorine has two isotopes: \\(^{35}_{17}\\text{Cl}\\) and \\(^{37}_{17}\\text{Cl}\\). Explain what is meant by the term 'isotopes'.",
@@ -619,12 +619,12 @@ export const chemistryAtomicStructure: PastPaperQuestion[] = [
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
-// CHEMISTRY — BONDING (AQA)
+// CHEMISTRY — BONDING (Adaptly)
 // ─────────────────────────────────────────────────────────────────────────────
 export const chemistryBonding: PastPaperQuestion[] = [
   {
     id: "chem-aqa-2023-p1h-bonding-ionic",
-    board: "AQA", subject: "chemistry", year: 2023, series: "June",
+    board: "Adaptly", subject: "chemistry", year: 2023, series: "June",
     paper: "Paper 1 (Higher)", tier: "Higher", questionNum: "4",
     marks: 4, topic: "Bonding",
     text: "Describe ionic bonding. Include in your answer: how ions are formed; how the ions are held together.",
@@ -635,7 +635,7 @@ export const chemistryBonding: PastPaperQuestion[] = [
   },
   {
     id: "chem-aqa-2022-p1f-bonding-covalent",
-    board: "AQA", subject: "chemistry", year: 2022, series: "June",
+    board: "Adaptly", subject: "chemistry", year: 2022, series: "June",
     paper: "Paper 1 (Foundation)", tier: "Foundation", questionNum: "6",
     marks: 3, topic: "Bonding",
     text: "Describe covalent bonding.",
@@ -647,12 +647,12 @@ export const chemistryBonding: PastPaperQuestion[] = [
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
-// PHYSICS — ENERGY (AQA)
+// PHYSICS — ENERGY (Adaptly)
 // ─────────────────────────────────────────────────────────────────────────────
 export const physicsEnergy: PastPaperQuestion[] = [
   {
     id: "phys-aqa-2023-p1h-energy-1",
-    board: "AQA", subject: "physics", year: 2023, series: "June",
+    board: "Adaptly", subject: "physics", year: 2023, series: "June",
     paper: "Paper 1 (Higher)", tier: "Higher", questionNum: "1",
     marks: 3, topic: "Energy",
     text: "A ball of mass 2 kg is held at a height of 5 m above the ground. Calculate the gravitational potential energy stored in the ball. [g = 10 N/kg]",
@@ -663,7 +663,7 @@ export const physicsEnergy: PastPaperQuestion[] = [
   },
   {
     id: "phys-aqa-2022-p1f-energy-efficiency",
-    board: "AQA", subject: "physics", year: 2022, series: "June",
+    board: "Adaptly", subject: "physics", year: 2022, series: "June",
     paper: "Paper 1 (Foundation)", tier: "Foundation", questionNum: "3",
     marks: 3, topic: "Energy",
     text: "A light bulb transfers 100 J of electrical energy. 20 J is transferred as useful light energy. Calculate the efficiency of the light bulb.",
@@ -674,7 +674,7 @@ export const physicsEnergy: PastPaperQuestion[] = [
   },
   {
     id: "phys-aqa-2023-p1h-energy-kinetic",
-    board: "AQA", subject: "physics", year: 2023, series: "June",
+    board: "Adaptly", subject: "physics", year: 2023, series: "June",
     paper: "Paper 1 (Higher)", tier: "Higher", questionNum: "4",
     marks: 4, topic: "Energy",
     text: "A car of mass 1200 kg is travelling at 20 m/s. Calculate the kinetic energy of the car. [\\(E_k = \\dfrac{1}{2}mv^2\\)]",
@@ -686,12 +686,12 @@ export const physicsEnergy: PastPaperQuestion[] = [
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
-// PHYSICS — FORCES (AQA)
+// PHYSICS — FORCES (Adaptly)
 // ─────────────────────────────────────────────────────────────────────────────
 export const physicsForces: PastPaperQuestion[] = [
   {
     id: "phys-aqa-2023-p2h-forces-1",
-    board: "AQA", subject: "physics", year: 2023, series: "June",
+    board: "Adaptly", subject: "physics", year: 2023, series: "June",
     paper: "Paper 2 (Higher)", tier: "Higher", questionNum: "2",
     marks: 3, topic: "Forces",
     text: "A car accelerates from rest to 30 m/s in 10 seconds. Calculate the acceleration of the car.",
@@ -702,7 +702,7 @@ export const physicsForces: PastPaperQuestion[] = [
   },
   {
     id: "phys-aqa-2022-p2f-forces-newton",
-    board: "AQA", subject: "physics", year: 2022, series: "June",
+    board: "Adaptly", subject: "physics", year: 2022, series: "June",
     paper: "Paper 2 (Foundation)", tier: "Foundation", questionNum: "5",
     marks: 3, topic: "Forces",
     text: "A resultant force of 600 N acts on a car of mass 1200 kg. Calculate the acceleration of the car. [F = ma]",
@@ -714,12 +714,12 @@ export const physicsForces: PastPaperQuestion[] = [
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
-// HISTORY — WEIMAR AND NAZI GERMANY (AQA)
+// HISTORY — WEIMAR AND NAZI GERMANY (Adaptly)
 // ─────────────────────────────────────────────────────────────────────────────
 export const historyGermany: PastPaperQuestion[] = [
   {
     id: "hist-aqa-2023-p1-germany-1",
-    board: "AQA", subject: "history", year: 2023, series: "June",
+    board: "Adaptly", subject: "history", year: 2023, series: "June",
     paper: "Paper 1 (Understanding the Modern World)", tier: undefined, questionNum: "1",
     marks: 4, topic: "Weimar and Nazi Germany",
     text: "Describe two problems faced by the Weimar Republic in the years 1919–1923.",
@@ -730,7 +730,7 @@ export const historyGermany: PastPaperQuestion[] = [
   },
   {
     id: "hist-aqa-2022-p1-germany-2",
-    board: "AQA", subject: "history", year: 2022, series: "June",
+    board: "Adaptly", subject: "history", year: 2022, series: "June",
     paper: "Paper 1 (Understanding the Modern World)", tier: undefined, questionNum: "3",
     marks: 8, topic: "Weimar and Nazi Germany",
     text: "Explain why the Nazi Party gained support in the years 1929–1933. You may use the following in your answer: the Great Depression; propaganda. You must also use information of your own.",
@@ -741,7 +741,7 @@ export const historyGermany: PastPaperQuestion[] = [
   },
   {
     id: "hist-aqa-2023-p1-germany-3",
-    board: "AQA", subject: "history", year: 2023, series: "June",
+    board: "Adaptly", subject: "history", year: 2023, series: "June",
     paper: "Paper 1 (Understanding the Modern World)", tier: undefined, questionNum: "4",
     marks: 16, topic: "Weimar and Nazi Germany",
     text: "Has the persecution of Jewish people in Germany in the years 1933–1939 been exaggerated by historians? Explain your answer. You may use the following in your answer: the Nuremberg Laws (1935); Kristallnacht (1938). You must also use information of your own.",
@@ -753,12 +753,12 @@ export const historyGermany: PastPaperQuestion[] = [
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
-// GEOGRAPHY — NATURAL HAZARDS (AQA)
+// GEOGRAPHY — NATURAL HAZARDS (Adaptly)
 // ─────────────────────────────────────────────────────────────────────────────
 export const geographyNaturalHazards: PastPaperQuestion[] = [
   {
     id: "geog-aqa-2023-p1-hazards-1",
-    board: "AQA", subject: "geography", year: 2023, series: "June",
+    board: "Adaptly", subject: "geography", year: 2023, series: "June",
     paper: "Paper 1 (Living with the Physical Environment)", tier: undefined, questionNum: "1",
     marks: 2, topic: "The Challenge of Natural Hazards",
     text: "State the meaning of the term 'natural hazard'.",
@@ -769,7 +769,7 @@ export const geographyNaturalHazards: PastPaperQuestion[] = [
   },
   {
     id: "geog-aqa-2022-p1-hazards-2",
-    board: "AQA", subject: "geography", year: 2022, series: "June",
+    board: "Adaptly", subject: "geography", year: 2022, series: "June",
     paper: "Paper 1 (Living with the Physical Environment)", tier: undefined, questionNum: "2",
     marks: 4, topic: "The Challenge of Natural Hazards",
     text: "Explain two reasons why earthquakes cause more deaths in LICs than in HICs.",
@@ -780,7 +780,7 @@ export const geographyNaturalHazards: PastPaperQuestion[] = [
   },
   {
     id: "geog-aqa-2023-p1-hazards-3",
-    board: "AQA", subject: "geography", year: 2023, series: "June",
+    board: "Adaptly", subject: "geography", year: 2023, series: "June",
     paper: "Paper 1 (Living with the Physical Environment)", tier: undefined, questionNum: "4",
     marks: 6, topic: "The Challenge of Natural Hazards",
     text: "Using a named example, assess the effectiveness of responses to a tectonic hazard.",

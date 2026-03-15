@@ -1,6 +1,6 @@
 /**
  * OTHER SUBJECTS QUESTION BANK — History, Geography, Computer Science, etc.
- * Sources: AQA, Edexcel, OCR GCSE past papers
+ * Sources: Adaptly Question Bank
  */
 import type { PastPaperQuestion } from "./pastPaperQuestions";
 
