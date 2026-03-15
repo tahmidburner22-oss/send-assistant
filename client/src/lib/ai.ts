@@ -758,8 +758,8 @@ Return EXACTLY this JSON (raw JSON only):
 }`;
 
   // Scale token limit with worksheet length — keep lean for speed while preserving full structure
-  // 10min ≈ 1600t, 30min ≈ 2800t, 60min ≈ 4200t
-  const maxTokensForLength = params.introOnly ? 1600 : (lengthMins >= 60 ? 4200 : lengthMins <= 10 ? 1600 : 2800);
+  // 10min ≈ 1800t, 30min ≈ 4000t, 60min ≈ 5500t
+  const maxTokensForLength = params.introOnly ? 1600 : (lengthMins >= 60 ? 5500 : lengthMins <= 10 ? 1800 : 4000);
   const { text, provider } = await callAI(system, user, maxTokensForLength);
   const cleaned = text
     .replace(/^```json\s*/i, "")
