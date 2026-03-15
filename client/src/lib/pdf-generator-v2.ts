@@ -16,42 +16,13 @@
  *   - jsPDF text extraction issues (wrong symbols, missing formatting)
  */
 import { getSendFormatting } from "@/lib/send-data";
+import { KATEX_CSS_INLINE } from "@/lib/katex-css-inline";
 
-// ── KaTeX CSS cache ──────────────────────────────────────────────────────────
-let _katexCssCache: string | null = null;
-
-async function getKatexCssInline(): Promise<string> {
-  if (_katexCssCache) return _katexCssCache;
-
-  // Try to find KaTeX CSS URL from the current page's loaded stylesheets
-  let katexUrl = "https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css";
-  for (const sheet of Array.from(document.styleSheets)) {
-    try {
-      if (sheet.href && sheet.href.includes("katex")) {
-        katexUrl = sheet.href;
-        break;
-      }
-    } catch {
-      // cross-origin sheet — skip
-    }
-  }
-
-  try {
-    const resp = await fetch(katexUrl, { cache: "force-cache" });
-    if (resp.ok) {
-      let css = await resp.text();
-      // Convert relative font URLs to absolute so the popup window can load them
-      const base = katexUrl.replace(/[^/]+$/, "");
-      css = css.replace(/url\((['"]?)(?!https?:\/\/|data:)([^'")]+)\1\)/g, (_m, q, path) => {
-        return `url(${q}${base}${path}${q})`;
-      });
-      _katexCssCache = css;
-      return css;
-    }
-  } catch {
-    // Network error — fall back to empty string (math will still render from inline styles)
-  }
-  return "";
+// ── KaTeX CSS ────────────────────────────────────────────
+// Use the bundled KaTeX CSS (from katex-css-inline.ts) which has absolute CDN
+// font URLs pre-baked in. This avoids any network fetch or race condition.
+function getKatexCssInline(): string {
+  return KATEX_CSS_INLINE;
 }
 
 // ── Build the complete self-contained HTML document ──────────────────────────
@@ -255,6 +226,25 @@ function buildPopupHtml(
       vertical-align: top;
     }
 
+    /* ── KaTeX: CRITICAL — hide MathML span to prevent text doubling ── */
+    /* KaTeX renders two parallel representations:
+       1. .katex-mathml  → MathML for screen readers (must be visually hidden)
+       2. .katex-html    → visual HTML rendering (aria-hidden="true" but visually shown)
+       Without this rule, the MathML text (e.g. "12" for 1/2) renders as visible
+       plain text alongside the visual fraction, causing "1/2 12" doubling. */
+    .katex .katex-mathml {
+      position: absolute !important;
+      clip: rect(1px, 1px, 1px, 1px) !important;
+      padding: 0 !important;
+      border: 0 !important;
+      height: 1px !important;
+      width: 1px !important;
+      overflow: hidden !important;
+    }
+    /* Ensure the visual HTML part is always visible */
+    .katex .katex-html {
+      display: inline !important;
+    }
     /* ── KaTeX math display fixes ── */
     .katex {
       font-size: 1em !important;
@@ -341,7 +331,7 @@ function openPrintPopup(html: string): Window | null {
  * Open a print dialog for the worksheet.
  * Uses the browser's native print renderer — no html2canvas, no jsPDF.
  */
-export async function printWorksheetElement(
+export function printWorksheetElement(
   element: HTMLElement,
   options: {
     overlayColor?: string;
@@ -351,10 +341,10 @@ export async function printWorksheetElement(
     title?: string;
     sendNeedId?: string;
   } = {}
-): Promise<void> {
+): void {
   const viewMode = options.viewMode || "student";
   const contentHtml = serialiseElement(element, viewMode);
-  const katexCss = await getKatexCssInline();
+  const katexCss = getKatexCssInline();
   const html = buildPopupHtml(contentHtml, katexCss, { ...options, isPdf: false });
   openPrintPopup(html);
 }
@@ -366,7 +356,7 @@ export async function printWorksheetElement(
  *
  * The filename parameter is used as the suggested filename in the print dialog title.
  */
-export async function downloadHtmlAsPdf(
+export function downloadHtmlAsPdf(
   element: HTMLElement,
   filename: string,
   options: {
@@ -376,10 +366,10 @@ export async function downloadHtmlAsPdf(
     title?: string;
     sendNeedId?: string;
   } = {}
-): Promise<void> {
+): void {
   const viewMode = options.viewMode || "student";
   const contentHtml = serialiseElement(element, viewMode);
-  const katexCss = await getKatexCssInline();
+  const katexCss = getKatexCssInline();
 
   // Set the title to the filename (without extension) so the browser uses it as the PDF filename
   const pdfTitle = filename.replace(/\.pdf$/i, "").replace(/_/g, " ");
