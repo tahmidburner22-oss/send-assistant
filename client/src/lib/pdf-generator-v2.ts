@@ -400,79 +400,77 @@ export async function downloadHtmlAsPdf(
 ): Promise<void> {
   const PDF_WIDTH_MM = 210;
   const PDF_HEIGHT_MM = 297;
-  const A4_WIDTH_PX = 794; // ~210mm at 96dpi
 
-  // Extract the worksheet content HTML
+  // Use the live DOM directly — KaTeX is already rendered correctly in the browser.
+  // The CSP now allows data: fonts so html2canvas can capture KaTeX math properly.
   const printRoot = (element.querySelector(".worksheet-print-root") as HTMLElement) || element;
-  const contentHtml = printRoot.outerHTML;
 
-  // Build the full HTML document (same as print window)
-  const htmlDoc = buildWorksheetHtml(contentHtml, options);
+  // Hide teacher sections for student view
+  const teacherSections = printRoot.querySelectorAll(".ws-teacher-section");
+  const hiddenSections: HTMLElement[] = [];
+  if (options.viewMode === "student") {
+    teacherSections.forEach((s) => {
+      const el = s as HTMLElement;
+      if (el.style.display !== "none") {
+        el.style.display = "none";
+        hiddenSections.push(el);
+      }
+    });
+  }
 
-  // Create a hidden iframe to render the worksheet with proper CSS
-  const iframe = document.createElement("iframe");
-  iframe.style.position = "fixed";
-  iframe.style.left = "-20000px";
-  iframe.style.top = "0";
-  iframe.style.width = `${A4_WIDTH_PX}px`;
-  iframe.style.height = "1200px";
-  iframe.style.border = "none";
-  iframe.style.visibility = "hidden";
-  document.body.appendChild(iframe);
+  // Temporarily make the element visible at full width for capture
+  const originalPosition = printRoot.style.position;
+  const originalLeft = printRoot.style.left;
+  const originalWidth = printRoot.style.width;
+  const originalMaxWidth = printRoot.style.maxWidth;
 
   try {
-    // Write the HTML into the iframe
-    const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
-    if (!iframeDoc) throw new Error("Cannot access iframe document");
+    // Wait for any pending images
+    await waitForImages(printRoot);
+    await waitForFonts(document);
 
-    iframeDoc.open();
-    iframeDoc.write(htmlDoc);
-    iframeDoc.close();
+    // Extra wait for KaTeX fonts
+    await new Promise((resolve) => setTimeout(resolve, 300));
 
-    // Wait for the iframe to fully load (including KaTeX CSS and fonts)
-    await new Promise<void>((resolve) => {
-      const checkLoaded = () => {
-        if (iframe.contentDocument?.readyState === "complete") {
-          resolve();
-        } else {
-          setTimeout(checkLoaded, 100);
-        }
-      };
-      iframe.addEventListener("load", () => resolve(), { once: true });
-      setTimeout(resolve, 5000); // Max 5s timeout
-      checkLoaded();
-    });
-
-    // Wait for fonts to load in the iframe
-    await waitForFonts(iframeDoc);
-    await waitForImages(iframeDoc);
-
-    // Extra wait for KaTeX fonts to render
-    await new Promise((resolve) => setTimeout(resolve, 800));
-
-    // Get the actual content height
-    const iframeBody = iframeDoc.body;
-    const contentHeight = Math.max(iframeBody.scrollHeight, iframeBody.offsetHeight, 1200);
-
-    // Resize iframe to full content height
-    iframe.style.height = `${contentHeight}px`;
-
-    // Wait for reflow
-    await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
-    await new Promise((resolve) => setTimeout(resolve, 200));
-
-    // Capture with html2canvas
-    const canvas = await html2canvas(iframeBody, {
+    // Capture with html2canvas using the live DOM
+    const canvas = await html2canvas(printRoot, {
       scale: 2,
       useCORS: true,
       allowTaint: true,
       backgroundColor: options.overlayColor || "#ffffff",
       logging: false,
-      windowWidth: A4_WIDTH_PX,
-      width: A4_WIDTH_PX,
-      height: contentHeight,
       scrollX: 0,
-      scrollY: 0,
+      scrollY: -window.scrollY,
+      onclone: (clonedDoc, clonedElement) => {
+        // Inline all CSS rules from the current page into the cloned document
+        const styleEl = clonedDoc.createElement("style");
+        const cssRules: string[] = [];
+        Array.from(document.styleSheets).forEach((sheet) => {
+          try {
+            Array.from(sheet.cssRules || []).forEach((rule) => {
+              cssRules.push(rule.cssText);
+            });
+          } catch {
+            // Cross-origin stylesheets — skip
+          }
+        });
+        styleEl.textContent = cssRules.join("\n");
+        clonedDoc.head.appendChild(styleEl);
+
+        // Apply overlay color to all section backgrounds
+        const bg = options.overlayColor || "#ffffff";
+        clonedElement.style.background = bg;
+        clonedDoc.querySelectorAll(".ws-section, .ws-section-body, .ws-footer").forEach((el) => {
+          (el as HTMLElement).style.background = bg;
+        });
+
+        // Hide teacher sections for student view
+        if (options.viewMode === "student") {
+          clonedDoc.querySelectorAll(".ws-teacher-section").forEach((el) => {
+            (el as HTMLElement).style.display = "none";
+          });
+        }
+      },
     });
 
     // Build the PDF page by page
@@ -503,7 +501,13 @@ export async function downloadHtmlAsPdf(
 
     pdf.save(filename);
   } finally {
-    iframe.remove();
+    // Restore hidden teacher sections
+    hiddenSections.forEach((el) => { el.style.display = ""; });
+    // Restore original styles
+    printRoot.style.position = originalPosition;
+    printRoot.style.left = originalLeft;
+    printRoot.style.width = originalWidth;
+    printRoot.style.maxWidth = originalMaxWidth;
   }
 }
 
