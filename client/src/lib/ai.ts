@@ -797,9 +797,9 @@ Return EXACTLY this JSON (raw JSON, no markdown):
   }
 }`;
 
-  // Scale token limit with worksheet length — llama-3.3-70b-versatile handles large outputs well
-  // 10min ≈ 2000t, 30min ≈ 4000t, 60min ≈ 6000t
-  const maxTokensForLength = params.introOnly ? 2000 : (lengthMins >= 60 ? 6000 : lengthMins <= 10 ? 2000 : 4000);
+  // Scale token limit with worksheet length — keep lean for speed
+  // 10min ≈ 1500t, 30min ≈ 3000t, 60min ≈ 4500t
+  const maxTokensForLength = params.introOnly ? 1500 : (lengthMins >= 60 ? 4500 : lengthMins <= 10 ? 1500 : 3000);
   const { text, provider } = await callAI(system, user, maxTokensForLength);
   const cleaned = text
     .replace(/^```json\s*/i, "")
