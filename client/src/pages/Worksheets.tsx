@@ -579,10 +579,12 @@ export default function Worksheets() {
   // ─── PDF Download (pixel-perfect HTML-to-PDF) ─────────────────────────────
   const handleDownloadPdf = async () => {
     if (!generated) { toast.error("PDF error: no worksheet loaded"); return; }
-    if (!worksheetRef.current) { toast.error("PDF error: ref not mounted"); return; }
+    // Use ref if available, otherwise fall back to DOM query (handles edge cases where ref isn't set)
+    const container = worksheetRef.current || (document.querySelector(".worksheet-content") as HTMLElement);
+    if (!container) { toast.error("PDF error: worksheet not found in DOM"); return; }
     toast.info("Generating PDF...");
     // Target the inner worksheet-print-root for a clean capture (no UI chrome)
-    const printRoot = (worksheetRef.current.querySelector(".worksheet-print-root") as HTMLElement) || worksheetRef.current;
+    const printRoot = (container.querySelector(".worksheet-print-root") as HTMLElement) || container;
     try {
       const filename = `${generated.title.replace(/[^a-zA-Z0-9\s]/g, "").replace(/\s+/g, "_")}_${viewMode}.pdf`;
       await downloadHtmlAsPdf(printRoot, filename, {
@@ -613,8 +615,9 @@ export default function Worksheets() {
   };
 
   const handlePrintWithOptions = (options: PrintOptions) => {
-    if (!worksheetRef.current) return;
-    printWorksheetElement(worksheetRef.current, {
+    const container = worksheetRef.current || (document.querySelector(".worksheet-content") as HTMLElement);
+    if (!container) return;
+    printWorksheetElement(container, {
       overlayColor: overlayBg,
       viewMode: options.view,
       layout: options.layout,
