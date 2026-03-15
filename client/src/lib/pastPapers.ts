@@ -34,7 +34,7 @@ export const subjects: Subject[] = [
     level: "GCSE",
     examBoards: [
       {
-        board: "Adaptly",
+        board: "AQA",
         papers: [
           { title: "Paper 1 Non-Calculator (Higher)", year: 2024, series: "June", tier: "Higher", paperUrl: "https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/AQA/Paper-1H/QP/June%202024%20QP.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/AQA/Paper-1H/MS/June%202024%20MS.pdf" },
           { title: "Paper 2 Calculator (Higher)", year: 2024, series: "June", tier: "Higher", paperUrl: "https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/AQA/Paper-2H/QP/June%202024%20QP.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/AQA/Paper-2H/MS/June%202024%20MS.pdf" },
@@ -53,7 +53,7 @@ export const subjects: Subject[] = [
         ],
       },
       {
-        board: "Adaptly",
+        board: "Edexcel",
         papers: [
           { title: "Paper 1 Non-Calculator (Higher)", year: 2024, series: "June", tier: "Higher", paperUrl: "https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/Edexcel/Paper-1H/QP/June%202024%20QP.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/Edexcel/Paper-1H/MS/June%202024%20MS.pdf" },
           { title: "Paper 2 Calculator (Higher)", year: 2024, series: "June", tier: "Higher", paperUrl: "https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/Edexcel/Paper-2H/QP/June%202024%20QP.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/Edexcel/Paper-2H/MS/June%202024%20MS.pdf" },
@@ -64,7 +64,7 @@ export const subjects: Subject[] = [
         ],
       },
       {
-        board: "Adaptly",
+        board: "OCR",
         papers: [
           { title: "Paper 1 Non-Calculator (Higher)", year: 2024, series: "June", tier: "Higher", paperUrl: "https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/OCR/Paper-1H/QP/June%202024%20QP.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/OCR/Paper-1H/MS/June%202024%20MS.pdf" },
           { title: "Paper 2 Calculator (Higher)", year: 2024, series: "June", tier: "Higher", paperUrl: "https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/OCR/Paper-2H/QP/June%202024%20QP.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/Maths/GCSE/Past-Papers/OCR/Paper-2H/MS/June%202024%20MS.pdf" },
@@ -85,7 +85,7 @@ export const subjects: Subject[] = [
     level: "GCSE",
     examBoards: [
       {
-        board: "Adaptly",
+        board: "AQA",
         papers: [
           { title: "Paper 1 – Explorations in Creative Reading and Writing", year: 2024, series: "June", paperUrl: "https://pmt.physicsandmathstutor.com/download/English-Language/GCSE/Past-Papers/AQA/Paper-1/QP/June%202024%20QP.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/English-Language/GCSE/Past-Papers/AQA/Paper-1/MS/June%202024%20MS.pdf" },
           { title: "Paper 2 – Writers' Viewpoints and Perspectives", year: 2024, series: "June", paperUrl: "https://pmt.physicsandmathstutor.com/download/English-Language/GCSE/Past-Papers/AQA/Paper-2/QP/June%202024%20QP.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/English-Language/GCSE/Past-Papers/AQA/Paper-2/MS/June%202024%20MS.pdf" },
@@ -96,7 +96,7 @@ export const subjects: Subject[] = [
         ],
       },
       {
-        board: "Adaptly",
+        board: "Edexcel",
         papers: [
           { title: "Paper 1 – Fiction and Imaginative Writing", year: 2024, series: "June", paperUrl: "https://pmt.physicsandmathstutor.com/download/English-Language/GCSE/Past-Papers/Edexcel/Paper-1/QP/June%202024%20QP.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/English-Language/GCSE/Past-Papers/Edexcel/Paper-1/MS/June%202024%20MS.pdf" },
           { title: "Paper 2 – Non-Fiction and Transactional Writing", year: 2024, series: "June", paperUrl: "https://pmt.physicsandmathstutor.com/download/English-Language/GCSE/Past-Papers/Edexcel/Paper-2/QP/June%202024%20QP.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/English-Language/GCSE/Past-Papers/Edexcel/Paper-2/MS/June%202024%20MS.pdf" },
@@ -105,7 +105,7 @@ export const subjects: Subject[] = [
         ],
       },
       {
-        board: "Adaptly",
+        board: "OCR",
         papers: [
           { title: "Component 1 – Communicating Information and Ideas", year: 2024, series: "June", paperUrl: "https://pmt.physicsandmathstutor.com/download/English-Language/GCSE/Past-Papers/OCR/Paper-1/QP/June%202024%20QP.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/English-Language/GCSE/Past-Papers/OCR/Paper-1/MS/June%202024%20MS.pdf" },
           { title: "Component 2 – Exploring Effects and Impact", year: 2024, series: "June", paperUrl: "https://pmt.physicsandmathstutor.com/download/English-Language/GCSE/Past-Papers/OCR/Paper-2/QP/June%202024%20QP.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/English-Language/GCSE/Past-Papers/OCR/Paper-2/MS/June%202024%20MS.pdf" },
@@ -124,7 +124,7 @@ export const subjects: Subject[] = [
     level: "GCSE",
     examBoards: [
       {
-        board: "Adaptly",
+        board: "AQA",
         papers: [
           { title: "Paper 1 – Shakespeare and the 19th Century Novel", year: 2024, series: "June", paperUrl: "https://pmt.physicsandmathstutor.com/download/English-Literature/GCSE/Past-Papers/AQA/Paper-1/QP/June%202024%20QP.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/English-Literature/GCSE/Past-Papers/AQA/Paper-1/MS/June%202024%20MS.pdf" },
           { title: "Paper 2 – Modern Texts and Poetry", year: 2024, series: "June", paperUrl: "https://pmt.physicsandmathstutor.com/download/English-Literature/GCSE/Past-Papers/AQA/Paper-2/QP/June%202024%20QP.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/English-Literature/GCSE/Past-Papers/AQA/Paper-2/MS/June%202024%20MS.pdf" },
@@ -134,7 +134,7 @@ export const subjects: Subject[] = [
         ],
       },
       {
-        board: "Adaptly",
+        board: "Edexcel",
         papers: [
           { title: "Paper 1 – Shakespeare and Post-1914 Literature", year: 2024, series: "June", paperUrl: "https://pmt.physicsandmathstutor.com/download/English-Literature/GCSE/Past-Papers/Edexcel/Paper-1/QP/June%202024%20QP.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/English-Literature/GCSE/Past-Papers/Edexcel/Paper-1/MS/June%202024%20MS.pdf" },
           { title: "Paper 2 – 19th-Century Novel and Poetry Since 1789", year: 2024, series: "June", paperUrl: "https://pmt.physicsandmathstutor.com/download/English-Literature/GCSE/Past-Papers/Edexcel/Paper-2/QP/June%202024%20QP.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/English-Literature/GCSE/Past-Papers/Edexcel/Paper-2/MS/June%202024%20MS.pdf" },
@@ -142,7 +142,7 @@ export const subjects: Subject[] = [
         ],
       },
       {
-        board: "Adaptly",
+        board: "OCR",
         papers: [
           { title: "Component 1 – Shakespeare and Poetry Pre-1900", year: 2024, series: "June", paperUrl: "https://pmt.physicsandmathstutor.com/download/English-Literature/GCSE/Past-Papers/OCR/Paper-1/QP/June%202024%20QP.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/English-Literature/GCSE/Past-Papers/OCR/Paper-1/MS/June%202024%20MS.pdf" },
           { title: "Component 2 – Exploring Modern and Literary Heritage Texts", year: 2024, series: "June", paperUrl: "https://pmt.physicsandmathstutor.com/download/English-Literature/GCSE/Past-Papers/OCR/Paper-2/QP/June%202024%20QP.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/English-Literature/GCSE/Past-Papers/OCR/Paper-2/MS/June%202024%20MS.pdf" },
@@ -161,7 +161,7 @@ export const subjects: Subject[] = [
     level: "GCSE",
     examBoards: [
       {
-        board: "Adaptly",
+        board: "AQA",
         papers: [
           { title: "Paper 1 (Higher)", year: 2024, series: "June", tier: "Higher", paperUrl: "https://pmt.physicsandmathstutor.com/download/Biology/GCSE/Past-Papers/AQA/Paper-1H/QP/June%202024%20QP.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/Biology/GCSE/Past-Papers/AQA/Paper-1H/MS/June%202024%20MS.pdf" },
           { title: "Paper 2 (Higher)", year: 2024, series: "June", tier: "Higher", paperUrl: "https://pmt.physicsandmathstutor.com/download/Biology/GCSE/Past-Papers/AQA/Paper-2H/QP/June%202024%20QP.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/Biology/GCSE/Past-Papers/AQA/Paper-2H/MS/June%202024%20MS.pdf" },
@@ -173,7 +173,7 @@ export const subjects: Subject[] = [
         ],
       },
       {
-        board: "Adaptly",
+        board: "Edexcel",
         papers: [
           { title: "Paper 1 (Higher)", year: 2024, series: "June", tier: "Higher", paperUrl: "https://pmt.physicsandmathstutor.com/download/Biology/GCSE/Past-Papers/Edexcel/Paper-1H/QP/June%202024%20QP.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/Biology/GCSE/Past-Papers/Edexcel/Paper-1H/MS/June%202024%20MS.pdf" },
           { title: "Paper 2 (Higher)", year: 2024, series: "June", tier: "Higher", paperUrl: "https://pmt.physicsandmathstutor.com/download/Biology/GCSE/Past-Papers/Edexcel/Paper-2H/QP/June%202024%20QP.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/Biology/GCSE/Past-Papers/Edexcel/Paper-2H/MS/June%202024%20MS.pdf" },
@@ -182,7 +182,7 @@ export const subjects: Subject[] = [
         ],
       },
       {
-        board: "Adaptly",
+        board: "OCR",
         papers: [
           { title: "Paper 1 (Higher)", year: 2024, series: "June", tier: "Higher", paperUrl: "https://pmt.physicsandmathstutor.com/download/Biology/GCSE/Past-Papers/OCR/Paper-1H/QP/June%202024%20QP.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/Biology/GCSE/Past-Papers/OCR/Paper-1H/MS/June%202024%20MS.pdf" },
           { title: "Paper 2 (Higher)", year: 2024, series: "June", tier: "Higher", paperUrl: "https://pmt.physicsandmathstutor.com/download/Biology/GCSE/Past-Papers/OCR/Paper-2H/QP/June%202024%20QP.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/Biology/GCSE/Past-Papers/OCR/Paper-2H/MS/June%202024%20MS.pdf" },
@@ -202,7 +202,7 @@ export const subjects: Subject[] = [
     level: "GCSE",
     examBoards: [
       {
-        board: "Adaptly",
+        board: "AQA",
         papers: [
           { title: "Paper 1 (Higher)", year: 2024, series: "June", tier: "Higher", paperUrl: "https://pmt.physicsandmathstutor.com/download/Chemistry/GCSE/Past-Papers/AQA/Paper-1H/QP/June%202024%20QP.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/Chemistry/GCSE/Past-Papers/AQA/Paper-1H/MS/June%202024%20MS.pdf" },
           { title: "Paper 2 (Higher)", year: 2024, series: "June", tier: "Higher", paperUrl: "https://pmt.physicsandmathstutor.com/download/Chemistry/GCSE/Past-Papers/AQA/Paper-2H/QP/June%202024%20QP.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/Chemistry/GCSE/Past-Papers/AQA/Paper-2H/MS/June%202024%20MS.pdf" },
@@ -213,7 +213,7 @@ export const subjects: Subject[] = [
         ],
       },
       {
-        board: "Adaptly",
+        board: "Edexcel",
         papers: [
           { title: "Paper 1 (Higher)", year: 2024, series: "June", tier: "Higher", paperUrl: "https://pmt.physicsandmathstutor.com/download/Chemistry/GCSE/Past-Papers/Edexcel/Paper-1H/QP/June%202024%20QP.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/Chemistry/GCSE/Past-Papers/Edexcel/Paper-1H/MS/June%202024%20MS.pdf" },
           { title: "Paper 2 (Higher)", year: 2024, series: "June", tier: "Higher", paperUrl: "https://pmt.physicsandmathstutor.com/download/Chemistry/GCSE/Past-Papers/Edexcel/Paper-2H/QP/June%202024%20QP.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/Chemistry/GCSE/Past-Papers/Edexcel/Paper-2H/MS/June%202024%20MS.pdf" },
@@ -222,7 +222,7 @@ export const subjects: Subject[] = [
         ],
       },
       {
-        board: "Adaptly",
+        board: "OCR",
         papers: [
           { title: "Paper 1 (Higher)", year: 2024, series: "June", tier: "Higher", paperUrl: "https://pmt.physicsandmathstutor.com/download/Chemistry/GCSE/Past-Papers/OCR/Paper-1H/QP/June%202024%20QP.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/Chemistry/GCSE/Past-Papers/OCR/Paper-1H/MS/June%202024%20MS.pdf" },
           { title: "Paper 2 (Higher)", year: 2024, series: "June", tier: "Higher", paperUrl: "https://pmt.physicsandmathstutor.com/download/Chemistry/GCSE/Past-Papers/OCR/Paper-2H/QP/June%202024%20QP.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/Chemistry/GCSE/Past-Papers/OCR/Paper-2H/MS/June%202024%20MS.pdf" },
@@ -242,7 +242,7 @@ export const subjects: Subject[] = [
     level: "GCSE",
     examBoards: [
       {
-        board: "Adaptly",
+        board: "AQA",
         papers: [
           { title: "Paper 1 (Higher)", year: 2024, series: "June", tier: "Higher", paperUrl: "https://pmt.physicsandmathstutor.com/download/Physics/GCSE/Past-Papers/AQA/Paper-1H/QP/June%202024%20QP.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/Physics/GCSE/Past-Papers/AQA/Paper-1H/MS/June%202024%20MS.pdf" },
           { title: "Paper 2 (Higher)", year: 2024, series: "June", tier: "Higher", paperUrl: "https://pmt.physicsandmathstutor.com/download/Physics/GCSE/Past-Papers/AQA/Paper-2H/QP/June%202024%20QP.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/Physics/GCSE/Past-Papers/AQA/Paper-2H/MS/June%202024%20MS.pdf" },
@@ -253,7 +253,7 @@ export const subjects: Subject[] = [
         ],
       },
       {
-        board: "Adaptly",
+        board: "Edexcel",
         papers: [
           { title: "Paper 1 (Higher)", year: 2024, series: "June", tier: "Higher", paperUrl: "https://pmt.physicsandmathstutor.com/download/Physics/GCSE/Past-Papers/Edexcel/Paper-1H/QP/June%202024%20QP.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/Physics/GCSE/Past-Papers/Edexcel/Paper-1H/MS/June%202024%20MS.pdf" },
           { title: "Paper 2 (Higher)", year: 2024, series: "June", tier: "Higher", paperUrl: "https://pmt.physicsandmathstutor.com/download/Physics/GCSE/Past-Papers/Edexcel/Paper-2H/QP/June%202024%20QP.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/Physics/GCSE/Past-Papers/Edexcel/Paper-2H/MS/June%202024%20MS.pdf" },
@@ -262,7 +262,7 @@ export const subjects: Subject[] = [
         ],
       },
       {
-        board: "Adaptly",
+        board: "OCR",
         papers: [
           { title: "Paper 1 (Higher)", year: 2024, series: "June", tier: "Higher", paperUrl: "https://pmt.physicsandmathstutor.com/download/Physics/GCSE/Past-Papers/OCR/Paper-1H/QP/June%202024%20QP.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/Physics/GCSE/Past-Papers/OCR/Paper-1H/MS/June%202024%20MS.pdf" },
           { title: "Paper 2 (Higher)", year: 2024, series: "June", tier: "Higher", paperUrl: "https://pmt.physicsandmathstutor.com/download/Physics/GCSE/Past-Papers/OCR/Paper-2H/QP/June%202024%20QP.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/Physics/GCSE/Past-Papers/OCR/Paper-2H/MS/June%202024%20MS.pdf" },
@@ -282,7 +282,7 @@ export const subjects: Subject[] = [
     level: "GCSE",
     examBoards: [
       {
-        board: "Adaptly",
+        board: "AQA",
         papers: [
           // Biology papers (Combined Science Trilogy)
           { title: "Biology Paper 1 (Higher)", year: 2024, series: "June", tier: "Higher", paperUrl: "https://pmt.physicsandmathstutor.com/download/Biology/GCSE/Past-Papers/AQA/Paper-1H/QP/June%202024%20QP.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/Biology/GCSE/Past-Papers/AQA/Paper-1H/MS/June%202024%20MS.pdf" },
@@ -314,7 +314,7 @@ export const subjects: Subject[] = [
         ],
       },
       {
-        board: "Adaptly",
+        board: "Edexcel",
         papers: [
           { title: "Biology Paper 1 (Higher)", year: 2024, series: "June", tier: "Higher", paperUrl: "https://pmt.physicsandmathstutor.com/download/Biology/GCSE/Past-Papers/Edexcel/Paper-1H/QP/June%202024%20QP.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/Biology/GCSE/Past-Papers/Edexcel/Paper-1H/MS/June%202024%20MS.pdf" },
           { title: "Chemistry Paper 1 (Higher)", year: 2024, series: "June", tier: "Higher", paperUrl: "https://pmt.physicsandmathstutor.com/download/Chemistry/GCSE/Past-Papers/Edexcel/Paper-1H/QP/June%202024%20QP.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/Chemistry/GCSE/Past-Papers/Edexcel/Paper-1H/MS/June%202024%20MS.pdf" },
@@ -328,7 +328,7 @@ export const subjects: Subject[] = [
         ],
       },
       {
-        board: "Adaptly",
+        board: "OCR",
         papers: [
           { title: "Biology Paper 1 (Higher)", year: 2024, series: "June", tier: "Higher", paperUrl: "https://pmt.physicsandmathstutor.com/download/Biology/GCSE/Past-Papers/OCR/Paper-1H/QP/June%202024%20QP.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/Biology/GCSE/Past-Papers/OCR/Paper-1H/MS/June%202024%20MS.pdf" },
           { title: "Chemistry Paper 1 (Higher)", year: 2024, series: "June", tier: "Higher", paperUrl: "https://pmt.physicsandmathstutor.com/download/Chemistry/GCSE/Past-Papers/OCR/Paper-1H/QP/June%202024%20QP.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/Chemistry/GCSE/Past-Papers/OCR/Paper-1H/MS/June%202024%20MS.pdf" },
@@ -351,7 +351,7 @@ export const subjects: Subject[] = [
     level: "GCSE",
     examBoards: [
       {
-        board: "Adaptly",
+        board: "AQA",
         papers: [
           { title: "Paper 1 – Understanding the Modern World", year: 2024, series: "June", paperUrl: "https://pmt.physicsandmathstutor.com/download/History/GCSE/Past-Papers/AQA/Paper-1/Section-A/Option-A/QP/June%202024%20QP.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/History/GCSE/Past-Papers/AQA/Paper-1/Section-A/Option-A/MS/June%202024%20MS.pdf" },
           { title: "Paper 2 – Shaping the Nation", year: 2024, series: "June", paperUrl: "https://pmt.physicsandmathstutor.com/download/History/GCSE/Past-Papers/AQA/Paper-2/Section-A/Option-A/QP/June%202024%20QP.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/History/GCSE/Past-Papers/AQA/Paper-2/Section-A/Option-A/MS/June%202024%20MS.pdf" },
@@ -361,7 +361,7 @@ export const subjects: Subject[] = [
         ],
       },
       {
-        board: "Adaptly",
+        board: "Edexcel",
         papers: [
           { title: "Paper 1 – Thematic Study and Historic Environment", year: 2024, series: "June", paperUrl: "https://pmt.physicsandmathstutor.com/download/History/GCSE/Past-Papers/Edexcel/Paper-1/QP/June%202024%20QP.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/History/GCSE/Past-Papers/Edexcel/Paper-1/MS/June%202024%20MS.pdf" },
           { title: "Paper 2 – Period Study and British Depth Study", year: 2024, series: "June", paperUrl: "https://pmt.physicsandmathstutor.com/download/History/GCSE/Past-Papers/Edexcel/Paper-2/QP/June%202024%20QP.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/History/GCSE/Past-Papers/Edexcel/Paper-2/MS/June%202024%20MS.pdf" },
@@ -370,7 +370,7 @@ export const subjects: Subject[] = [
         ],
       },
       {
-        board: "Adaptly",
+        board: "OCR",
         papers: [
           { title: "Paper 1 – Living Under Nazi Rule", year: 2024, series: "June", paperUrl: "https://pmt.physicsandmathstutor.com/download/History/GCSE/Past-Papers/OCR/Paper-1/QP/June%202024%20QP.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/History/GCSE/Past-Papers/OCR/Paper-1/MS/June%202024%20MS.pdf" },
           { title: "Paper 2 – The People's Health", year: 2024, series: "June", paperUrl: "https://pmt.physicsandmathstutor.com/download/History/GCSE/Past-Papers/OCR/Paper-2/QP/June%202024%20QP.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/History/GCSE/Past-Papers/OCR/Paper-2/MS/June%202024%20MS.pdf" },
@@ -389,7 +389,7 @@ export const subjects: Subject[] = [
     level: "GCSE",
     examBoards: [
       {
-        board: "Adaptly",
+        board: "AQA",
         papers: [
           { title: "Paper 1 – Living with the Physical Environment", year: 2024, series: "June", paperUrl: "https://pmt.physicsandmathstutor.com/download/Geography/GCSE/Past-Papers/AQA/Paper-1/QP/June%202024%20QP.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/Geography/GCSE/Past-Papers/AQA/Paper-1/MS/June%202024%20MS.pdf" },
           { title: "Paper 2 – Challenges in the Human Environment", year: 2024, series: "June", paperUrl: "https://pmt.physicsandmathstutor.com/download/Geography/GCSE/Past-Papers/AQA/Paper-2/QP/June%202024%20QP.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/Geography/GCSE/Past-Papers/AQA/Paper-2/MS/June%202024%20MS.pdf" },
@@ -399,7 +399,7 @@ export const subjects: Subject[] = [
         ],
       },
       {
-        board: "Adaptly",
+        board: "Edexcel",
         papers: [
           { title: "Paper 1 – The Physical Environment", year: 2024, series: "June", paperUrl: "https://pmt.physicsandmathstutor.com/download/Geography/GCSE/Past-Papers/Edexcel/Paper-1/QP/June%202024%20QP.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/Geography/GCSE/Past-Papers/Edexcel/Paper-1/MS/June%202024%20MS.pdf" },
           { title: "Paper 2 – The Human Environment", year: 2024, series: "June", paperUrl: "https://pmt.physicsandmathstutor.com/download/Geography/GCSE/Past-Papers/Edexcel/Paper-2/QP/June%202024%20QP.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/Geography/GCSE/Past-Papers/Edexcel/Paper-2/MS/June%202024%20MS.pdf" },
@@ -407,7 +407,7 @@ export const subjects: Subject[] = [
         ],
       },
       {
-        board: "Adaptly",
+        board: "OCR",
         papers: [
           { title: "Paper 1 – Living in a Globalised World", year: 2024, series: "June", paperUrl: "https://pmt.physicsandmathstutor.com/download/Geography/GCSE/Past-Papers/OCR/Paper-1/QP/June%202024%20QP.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/Geography/GCSE/Past-Papers/OCR/Paper-1/MS/June%202024%20MS.pdf" },
           { title: "Paper 2 – Geographical Debate", year: 2024, series: "June", paperUrl: "https://pmt.physicsandmathstutor.com/download/Geography/GCSE/Past-Papers/OCR/Paper-2/QP/June%202024%20QP.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/Geography/GCSE/Past-Papers/OCR/Paper-2/MS/June%202024%20MS.pdf" },
@@ -426,7 +426,7 @@ export const subjects: Subject[] = [
     level: "GCSE",
     examBoards: [
       {
-        board: "Adaptly",
+        board: "AQA",
         papers: [
           { title: "Paper 1 – Computational Thinking and Programming", year: 2024, series: "June", paperUrl: "https://pmt.physicsandmathstutor.com/download/Computer-Science/GCSE/Past-Papers/AQA/New-Spec/Paper-1/June%202024%20QP%20-%20Paper%201A%20AQA%20Computer%20Science%20GCSE.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/Computer-Science/GCSE/Past-Papers/AQA/New-Spec/Paper-1/June%202024%20MS%20-%20Paper%201%20AQA%20Computer%20Science%20GCSE.pdf" },
           { title: "Paper 2 – Computing Concepts", year: 2024, series: "June", paperUrl: "https://pmt.physicsandmathstutor.com/download/Computer-Science/GCSE/Past-Papers/AQA/New-Spec/Paper-2/June%202024%20QP%20-%20Paper%202%20AQA%20Computer%20Science%20GCSE.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/Computer-Science/GCSE/Past-Papers/AQA/New-Spec/Paper-2/June%202024%20MS%20-%20Paper%202%20AQA%20Computer%20Science%20GCSE.pdf" },
@@ -436,7 +436,7 @@ export const subjects: Subject[] = [
         ],
       },
       {
-        board: "Adaptly",
+        board: "Edexcel",
         papers: [
           { title: "Paper 1 – Principles of Computer Science", year: 2024, series: "June", paperUrl: "https://pmt.physicsandmathstutor.com/download/Computer-Science/GCSE/Past-Papers/Edexcel/Paper-1/QP/June%202024%20QP.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/Computer-Science/GCSE/Past-Papers/Edexcel/Paper-1/MS/June%202024%20MS.pdf" },
           { title: "Paper 2 – Application of Computational Thinking", year: 2024, series: "June", paperUrl: "https://pmt.physicsandmathstutor.com/download/Computer-Science/GCSE/Past-Papers/Edexcel/Paper-2/QP/June%202024%20QP.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/Computer-Science/GCSE/Past-Papers/Edexcel/Paper-2/MS/June%202024%20MS.pdf" },
@@ -444,7 +444,7 @@ export const subjects: Subject[] = [
         ],
       },
       {
-        board: "Adaptly",
+        board: "OCR",
         papers: [
           { title: "Paper 1 – Computer Systems", year: 2024, series: "June", paperUrl: "https://pmt.physicsandmathstutor.com/download/Computer-Science/GCSE/Past-Papers/OCR/Paper-1/QP/June%202024%20QP.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/Computer-Science/GCSE/Past-Papers/OCR/Paper-1/MS/June%202024%20MS.pdf" },
           { title: "Paper 2 – Computational Thinking, Algorithms and Programming", year: 2024, series: "June", paperUrl: "https://pmt.physicsandmathstutor.com/download/Computer-Science/GCSE/Past-Papers/OCR/Paper-2/QP/June%202024%20QP.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/Computer-Science/GCSE/Past-Papers/OCR/Paper-2/MS/June%202024%20MS.pdf" },
@@ -463,7 +463,7 @@ export const subjects: Subject[] = [
     level: "GCSE",
     examBoards: [
       {
-        board: "Adaptly",
+        board: "AQA",
         papers: [
           { title: "Paper 1 – How Markets Work", year: 2024, series: "June", paperUrl: "https://pmt.physicsandmathstutor.com/download/Economics/GCSE/Past-Papers/AQA/Paper-1/June%202024%20QP%20-%20Paper%201%20AQA%20Economics%20GCSE.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/Economics/GCSE/Past-Papers/AQA/Paper-1/June%202024%20MS%20-%20Paper%201%20AQA%20Economics%20GCSE.pdf" },
           { title: "Paper 2 – How the Economy Works", year: 2024, series: "June", paperUrl: "https://pmt.physicsandmathstutor.com/download/Economics/GCSE/Past-Papers/AQA/Paper-2/June%202024%20QP%20-%20Paper%202%20AQA%20Economics%20GCSE.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/Economics/GCSE/Past-Papers/AQA/Paper-2/June%202024%20MS%20-%20Paper%202%20AQA%20Economics%20GCSE.pdf" },
@@ -472,7 +472,7 @@ export const subjects: Subject[] = [
         ],
       },
       {
-        board: "Adaptly",
+        board: "Edexcel",
         papers: [
           { title: "Paper 1 – Microeconomics", year: 2024, series: "June", paperUrl: "https://pmt.physicsandmathstutor.com/download/Economics/GCSE/Past-Papers/Edexcel/Paper-1/QP/June%202024%20QP.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/Economics/GCSE/Past-Papers/Edexcel/Paper-1/MS/June%202024%20MS.pdf" },
           { title: "Paper 2 – Macroeconomics", year: 2024, series: "June", paperUrl: "https://pmt.physicsandmathstutor.com/download/Economics/GCSE/Past-Papers/Edexcel/Paper-2/QP/June%202024%20QP.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/Economics/GCSE/Past-Papers/Edexcel/Paper-2/MS/June%202024%20MS.pdf" },
@@ -491,7 +491,7 @@ export const subjects: Subject[] = [
     level: "GCSE",
     examBoards: [
       {
-        board: "Adaptly",
+        board: "AQA",
         papers: [
           { title: "Paper 1 – Cognition and Development", year: 2024, series: "June", paperUrl: "https://pmt.physicsandmathstutor.com/download/Psychology/GCSE/Past-Papers/AQA/Paper-1/June%202024%20QP%20-%20Paper%201%20AQA%20Psychology%20GCSE.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/Psychology/GCSE/Past-Papers/AQA/Paper-1/June%202024%20MS%20-%20Paper%201%20AQA%20Psychology%20GCSE.pdf" },
           { title: "Paper 2 – Social Context and Behaviour", year: 2024, series: "June", paperUrl: "https://pmt.physicsandmathstutor.com/download/Psychology/GCSE/Past-Papers/AQA/Paper-2/June%202024%20QP%20-%20Paper%202%20AQA%20Psychology%20GCSE.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/Psychology/GCSE/Past-Papers/AQA/Paper-2/June%202024%20MS%20-%20Paper%202%20AQA%20Psychology%20GCSE.pdf" },
@@ -501,7 +501,7 @@ export const subjects: Subject[] = [
         ],
       },
       {
-        board: "Adaptly",
+        board: "Edexcel",
         papers: [
           { title: "Paper 1 – Psychological Foundations", year: 2024, series: "June", paperUrl: "https://pmt.physicsandmathstutor.com/download/Psychology/GCSE/Past-Papers/Edexcel/Paper-1/QP/June%202024%20QP.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/Psychology/GCSE/Past-Papers/Edexcel/Paper-1/MS/June%202024%20MS.pdf" },
           { title: "Paper 2 – Applications of Psychology", year: 2024, series: "June", paperUrl: "https://pmt.physicsandmathstutor.com/download/Psychology/GCSE/Past-Papers/Edexcel/Paper-2/QP/June%202024%20QP.pdf", markSchemeUrl: "https://pmt.physicsandmathstutor.com/download/Psychology/GCSE/Past-Papers/Edexcel/Paper-2/MS/June%202024%20MS.pdf" },
