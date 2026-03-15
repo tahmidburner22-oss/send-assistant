@@ -22,6 +22,10 @@ export interface SchedulerConfig {
   lastKeyVocabulary: string[];
   /** Index into the topic bank for this child+subject */
   topicIndex: number;
+  /** Index into the CURRICULUM_PROGRESSIONS list for this subject (for skill ladder integration) */
+  progressionTopicIndex: number;
+  /** Index into the current progression's steps (skill ladder step) */
+  progressionStepIndex: number;
 }
 
 const STORAGE_KEY = "adaptly_schedulers";
@@ -68,6 +72,8 @@ export function defaultScheduler(childId: string): SchedulerConfig {
     lastWorksheetTitle: null,
     lastKeyVocabulary: [],
     topicIndex: 0,
+    progressionTopicIndex: 0,
+    progressionStepIndex: 0,
   };
 }
 

@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { useApp, type Child, type AttendanceRecord, type AttendanceStatus, type TimetableLesson } from "@/contexts/AppContext";
 import { renderMath } from "@/components/WorksheetRenderer";
+import { SendScreenerResultsView } from "@/components/SendScreenerResultsView";
 import { sendNeeds, storyGenres, storyLengths, readingLevels, colorOverlays, yearGroups } from "@/lib/send-data";
 import { generateStoryContent } from "@/lib/worksheet-generator";
 import {
@@ -349,7 +350,7 @@ export default function ParentPortal() {
   const [behaviourRecords, setBehaviourRecords] = useState<any[]>([]);
   const [supportPlans, setSupportPlans] = useState<any[]>([]);
   const [behaviourLoading, setBehaviourLoading] = useState(false);
-  const [viewContent, setViewContent] = useState<{ title: string; content: string } | null>(null);
+  const [viewContent, setViewContent] = useState<{ title: string; content: string; type?: string } | null>(null);
   const [openSection, setOpenSection] = useState<string | null>("assignments");
   const [activeSection, setActiveSection] = useState<string>("dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -1092,7 +1093,7 @@ Return EXACTLY this JSON:
                       )}
 
                       <div className="flex gap-2 mt-2">
-                        <Button variant="outline" size="sm" onClick={() => setViewContent({ title: a.title, content: a.content })}>
+                        <Button variant="outline" size="sm" onClick={() => setViewContent({ title: a.title, content: a.content, type: a.type })}>
                           <Eye className="w-3.5 h-3.5 mr-1" /> View
                         </Button>
                         {a.status === "not-started" && (
@@ -1823,60 +1824,23 @@ Return EXACTLY this JSON:
                 </p>
               </div>
               {latestScreener ? (
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2 p-3 rounded-xl bg-emerald-50 border border-emerald-200">
-                    <span className="text-emerald-600">✅</span>
-                    <div className="flex-1">
-                      <p className="text-sm font-semibold text-emerald-800">SEND Screener Completed</p>
-                      <p className="text-xs text-emerald-700">{latestScreener.title}</p>
-                      <p className="text-xs text-muted-foreground">Completed: {new Date(latestScreener.assignedAt).toLocaleDateString('en-GB')}</p>
-                    </div>
-                  </div>
-                  {latestScreener.content && (() => {
-                    // Parse the results summary into structured data
-                    const lines = latestScreener.content.split('\n').filter((l: string) => l.trim());
-                    const resultLines = lines.filter((l: string) => /^.+:\s*(LOW|MODERATE|HIGH)\s*\(\d+%\)/i.test(l));
-                    const levelColors: Record<string, { bg: string; text: string; bar: string; label: string }> = {
-                      low: { bg: 'bg-emerald-50', text: 'text-emerald-700', bar: 'bg-emerald-500', label: 'Low' },
-                      moderate: { bg: 'bg-amber-50', text: 'text-amber-700', bar: 'bg-amber-500', label: 'Moderate' },
-                      high: { bg: 'bg-red-50', text: 'text-red-700', bar: 'bg-red-500', label: 'High' },
-                    };
-                    return (
-                      <div className="rounded-xl border border-border/50 p-3 bg-white space-y-3">
-                        <p className="text-xs font-semibold text-foreground mb-1">📊 Screener Results Summary</p>
-                        {resultLines.length > 0 ? (
-                          <div className="space-y-2">
-                            {resultLines.map((line: string, idx: number) => {
-                              const match = line.match(/^(.+?):\s*(LOW|MODERATE|HIGH)\s*\((\d+)%\)/i);
-                              if (!match) return null;
-                              const [, area, levelStr, pctStr] = match;
-                              const level = levelStr.toLowerCase() as 'low' | 'moderate' | 'high';
-                              const pct = parseInt(pctStr, 10);
-                              const colors = levelColors[level] || levelColors.low;
-                              return (
-                                <div key={idx} className={`rounded-lg p-2.5 ${colors.bg} border border-opacity-30`}>
-                                  <div className="flex items-center justify-between mb-1">
-                                    <span className="text-xs font-semibold text-foreground">{area.trim()}</span>
-                                    <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${colors.bg} ${colors.text} border`}>{colors.label} ({pct}%)</span>
-                                  </div>
-                                  <div className="w-full bg-gray-200 rounded-full h-2">
-                                    <div className={`${colors.bar} h-2 rounded-full transition-all`} style={{ width: `${Math.min(pct, 100)}%` }} />
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        ) : (
-                          <div className="text-xs text-foreground/80 leading-relaxed whitespace-pre-wrap max-h-60 overflow-y-auto">{latestScreener.content}</div>
-                        )}
-                        {/* Show raw text in expandable section */}
-                        <details className="mt-2">
-                          <summary className="text-[10px] text-muted-foreground cursor-pointer hover:text-foreground">View full text report</summary>
-                          <div className="text-[10px] text-foreground/70 leading-relaxed whitespace-pre-wrap mt-1 p-2 bg-gray-50 rounded-lg max-h-40 overflow-y-auto">{latestScreener.content}</div>
-                        </details>
+                <div className="space-y-4">
+                  {/* Full rich results display */}
+                  {latestScreener.content ? (
+                    <SendScreenerResultsView
+                      content={latestScreener.content}
+                      title={latestScreener.title}
+                    />
+                  ) : (
+                    <div className="flex items-center gap-2 p-3 rounded-xl bg-emerald-50 border border-emerald-200">
+                      <span className="text-emerald-600">✅</span>
+                      <div className="flex-1">
+                        <p className="text-sm font-semibold text-emerald-800">SEND Screener Completed</p>
+                        <p className="text-xs text-emerald-700">{latestScreener.title}</p>
+                        <p className="text-xs text-muted-foreground">Completed: {new Date(latestScreener.assignedAt).toLocaleDateString('en-GB')}</p>
                       </div>
-                    );
-                  })()}
+                    </div>
+                  )}
                   <a
                     href="/send-screener"
                     className="flex items-center justify-center gap-2 w-full bg-indigo-100 hover:bg-indigo-200 text-indigo-700 text-sm font-semibold py-2.5 px-4 rounded-xl transition-colors"
@@ -1911,12 +1875,21 @@ Return EXACTLY this JSON:
 
       {/* View Content Dialog — renders with full formatting matching how content was generated */}
       <Dialog open={!!viewContent} onOpenChange={() => setViewContent(null)}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>{viewContent?.title}</DialogTitle></DialogHeader>
-          <div
-            className="mt-2 prose prose-sm max-w-none leading-relaxed"
-            dangerouslySetInnerHTML={{ __html: contentToHtml(viewContent?.content || "") }}
-          />
+          {viewContent?.type === 'send-screener' ? (
+            <div className="mt-2">
+              <SendScreenerResultsView
+                content={viewContent.content}
+                title={viewContent.title}
+              />
+            </div>
+          ) : (
+            <div
+              className="mt-2 prose prose-sm max-w-none leading-relaxed"
+              dangerouslySetInnerHTML={{ __html: contentToHtml(viewContent?.content || "") }}
+            />
+          )}
         </DialogContent>
       </Dialog>
     </div>
