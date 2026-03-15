@@ -583,7 +583,13 @@ export default function Worksheets() {
     const printRoot = (worksheetRef.current.querySelector(".worksheet-print-root") as HTMLElement) || worksheetRef.current;
     try {
       const filename = `${generated.title.replace(/[^a-zA-Z0-9\s]/g, "").replace(/\s+/g, "_")}_${viewMode}.pdf`;
-      await downloadHtmlAsPdf(printRoot, filename, { overlayColor: overlayBg });
+      await downloadHtmlAsPdf(printRoot, filename, {
+        overlayColor: overlayBg,
+        viewMode,
+        textSize,
+        title: generated.title,
+        sendNeedId: generated?.metadata?.sendNeed || sendNeed || undefined,
+      });
       toast.success(`PDF downloaded (${viewMode} view)!`);
     } catch (err) {
       // Fallback to jsPDF

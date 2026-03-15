@@ -110,7 +110,7 @@ app.use(helmet({
       defaultSrc: ["'self'"],
       scriptSrc: ["'self'", "'unsafe-inline'", "accounts.google.com"],
       styleSrc: ["'self'", "'unsafe-inline'", "fonts.googleapis.com"],
-      fontSrc: ["'self'", "fonts.gstatic.com"],
+      fontSrc: ["'self'", "fonts.gstatic.com", "data:"],
       imgSrc: ["'self'", "data:", "https:"],
       connectSrc: [
         "'self'",
