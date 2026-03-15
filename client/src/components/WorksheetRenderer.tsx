@@ -1483,7 +1483,8 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(({
                 const q = item.q || item.question || item.text || item.content || '';
                 const a = item.a || item.answer || '';
                 const marks = item.marks ? ` [${item.marks} mark${item.marks > 1 ? 's' : ''}]` : '';
-                if (q && a) return `${q}${marks}\n   Answer: ${a}`;
+                // Only embed answers when in teacher view — student view shows blank answer lines
+                if (q && a && isTeacherView) return `${q}${marks}\n   Answer: ${a}`;
                 if (q) return `${q}${marks}`;
                 return JSON.stringify(item);
               }
@@ -1493,7 +1494,8 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(({
             const c = rawContent as any;
             const q = c.q || c.question || c.text || c.content || '';
             const a = c.a || c.answer || '';
-            if (q && a) rawContent = `${q}\n   Answer: ${a}`;
+            // Only embed answers when in teacher view
+            if (q && a && isTeacherView) rawContent = `${q}\n   Answer: ${a}`;
             else if (q) rawContent = q;
             else { try { rawContent = JSON.stringify(c); } catch { rawContent = String(c); } }
           } else {

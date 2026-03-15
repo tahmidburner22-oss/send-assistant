@@ -18,6 +18,7 @@ export default function LessonPlanner() {
     <AIToolPage
       title="Lesson Plan Generator"
       assignable={true}
+      worksheetLink={true}
       description="Generate detailed, SEND-inclusive, curriculum-aligned lesson plans ready to teach"
       icon={<BookOpen className="w-5 h-5 text-white" />}
       accentColor="bg-blue-600"

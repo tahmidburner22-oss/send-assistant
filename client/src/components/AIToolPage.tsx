@@ -11,13 +11,14 @@ import { toast } from "sonner";
 import { motion } from "framer-motion";
 import {
   Sparkles, RefreshCw, Printer, Download, Copy, Save, ChevronLeft,
-  PenLine, X, Check, Loader2, Users,
+  PenLine, X, Check, Loader2, Users, FileText,
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { callAI } from "@/lib/ai";
 import { renderMath } from "@/components/WorksheetRenderer";
 import { downloadHtmlAsPdf, printWorksheetElement } from "@/lib/pdf-generator-v2";
 import { useApp } from "@/contexts/AppContext";
+import { useLocation } from "wouter";
 
 export interface AIToolField {
   id: string;
@@ -43,6 +44,7 @@ interface AIToolPageProps {
   savedCategory?: string;
   assignable?: boolean; // whether this tool output can be assigned to a student
   onResult?: (text: string, values: Record<string, string>) => void;
+  worksheetLink?: boolean; // show "Generate Worksheet" button after generation
 }
 
 function formatAIText(text: string): string {
@@ -66,9 +68,10 @@ function formatAIText(text: string): string {
 type EditMode = "none" | "manual" | "ai";
 
 export default function AIToolPage({
-  title, description, icon, accentColor, fields, buildPrompt, formatOutput, outputTitle, onResult, assignable,
+  title, description, icon, accentColor, fields, buildPrompt, formatOutput, outputTitle, onResult, assignable, worksheetLink,
 }: AIToolPageProps) {
   const { children, assignWork } = useApp();
+  const [, navigate] = useLocation();
   const [values, setValues] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<string | null>(null);
@@ -389,6 +392,20 @@ export default function AIToolPage({
             <Button variant="outline" onClick={handleGenerate} disabled={loading} className="w-full">
               {loading ? <><RefreshCw className="w-4 h-4 mr-2 animate-spin" />Regenerating...</> : <><RefreshCw className="w-4 h-4 mr-2" />Regenerate</>}
             </Button>
+            {worksheetLink && values.subject && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full gap-1.5 border-brand/40 text-brand hover:bg-brand-light"
+                onClick={() => {
+                  const subjectSlug = values.subject?.toLowerCase().replace(/\s+/g, '-') || '';
+                  const topicParam = values.topic ? `&topic=${encodeURIComponent(values.topic)}` : '';
+                  navigate(`/worksheets?subject=${encodeURIComponent(subjectSlug)}${topicParam}`);
+                }}
+              >
+                <FileText className="w-3.5 h-3.5" />Generate Worksheet for This Lesson
+              </Button>
+            )}
           </div>
         )}
       </motion.div>
