@@ -1083,6 +1083,92 @@ ${textForAI}${truncated ? "\n\n[Note: Document was truncated at 12,000 character
   }
 });
 
+// ── Differentiate Existing Worksheet (Foundation / Higher) ─────────────────
+// POST /api/ai/differentiate-worksheet
+// Takes existing worksheet sections and transforms them to a different difficulty tier.
+// Much faster than regenerating from scratch — only adjusts question difficulty.
+router.post("/differentiate-worksheet", requireAuth, async (req: Request, res: Response) => {
+  const { sections, tier, subject, topic, yearGroup, title } = req.body;
+  if (!sections || !Array.isArray(sections) || sections.length === 0) {
+    return res.status(400).json({ error: "sections array is required" });
+  }
+  if (!tier || (tier !== "foundation" && tier !== "higher")) {
+    return res.status(400).json({ error: "tier must be 'foundation' or 'higher'" });
+  }
+  const schoolId = req.user?.schoolId ?? undefined;
+  const yr = yearGroup || "Year 9";
+
+  const tierRules = tier === "foundation"
+    ? `FOUNDATION TIER RULES:
+- Simplify all questions to single-skill, grade 1-5 level
+- Add hints or sentence starters to every Section A question
+- Use whole numbers and simple values only
+- Break multi-step questions into sub-parts (a)(b)
+- Keep language simple and direct
+- Add a Word Bank with 4-6 key terms
+- Challenge = straightforward application, not proof`
+    : `HIGHER TIER RULES:
+- Increase all questions to multi-step, grade 5-9 level
+- Section A starts at grade 5 — no trivial recall
+- Section B must include reasoning/proof/'show that' questions
+- Use precise subject language and notation
+- Include algebraic/symbolic manipulation
+- Challenge = grade 8-9 proof or multi-concept problem`;
+
+  // Only send non-teacher sections to keep prompt short
+  const pupilSections = (sections as any[]).filter((s: any) => !s.teacherOnly);
+  const existingContent = pupilSections.map((s: any, i: number) => {
+    return `=== ${s.title || `Section ${i + 1}`} ===\n${(s.content || "").slice(0, 400)}`;
+  }).join("\n\n").slice(0, 5000);
+
+  const system = `You are an expert UK teacher differentiating a worksheet for ${yr} pupils. Transform the existing worksheet to ${tier} tier difficulty. Preserve the topic and structure — only adjust question difficulty. Return valid JSON only.`;
+
+  const user = `Transform this ${subject || ""} worksheet on "${topic || ""}" to ${tier.toUpperCase()} tier for ${yr}.
+
+${tierRules}
+
+EXISTING WORKSHEET (adjust difficulty of each section):
+${existingContent}
+
+Return a JSON object:
+{
+  "sections": [
+    {"title": "original section title", "type": "guided", "content": "rewritten content at ${tier} difficulty", "teacherOnly": false}
+  ],
+  "tierApplied": "${tier}",
+  "changesNote": "brief summary of changes made"
+}`;
+
+  try {
+    const { content, provider } = await callWithFallback(system, user, 3000, undefined, schoolId);
+    const tryParse = (raw: string): any | null => {
+      try {
+        const s = raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/, "").trim();
+        const m = s.match(/\{[\s\S]*\}/);
+        const candidate = m ? m[0] : s;
+        try { return JSON.parse(candidate); } catch (_) {}
+        const sanitized = candidate.replace(
+          /"((?:[^"\\]|\\.)*)"/g,
+          (_match: string, inner: string) => {
+            const fixed = inner.replace(/\n/g, "\\n").replace(/\r/g, "\\r").replace(/\t/g, "\\t");
+            return `"${fixed}"`;
+          }
+        );
+        return JSON.parse(sanitized);
+      } catch (_) { return null; }
+    };
+    const parsed = tryParse(content);
+    if (parsed && parsed.sections && Array.isArray(parsed.sections)) {
+      res.json({ differentiated: parsed, provider });
+    } else {
+      res.status(500).json({ error: "AI returned invalid structure — please try again" });
+    }
+  } catch (err: any) {
+    console.error("Differentiate worksheet error:", err);
+    res.status(500).json({ error: err?.message || "Failed to differentiate worksheet" });
+  }
+});
+
 // ── SEND Scaffold Existing Worksheet ────────────────────────────────────────
 // POST /api/ai/scaffold-worksheet
 // Takes existing worksheet sections and transforms them with real SEND scaffolding:
