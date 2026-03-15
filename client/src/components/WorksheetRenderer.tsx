@@ -14,7 +14,18 @@ import "katex/dist/katex.min.css";
  * Falls back to plain text if KaTeX fails.
  * Also strips any remaining raw ** asterisks.
  */
-export function renderMath(text: string): string {
+export function renderMath(text: string | any): string {
+  // Robust type guard: normalize any non-string input to a string
+  if (text === null || text === undefined) return "";
+  if (typeof text !== 'string') {
+    if (Array.isArray(text)) {
+      text = text.map(item => typeof item === 'string' ? item : JSON.stringify(item)).join('\n');
+    } else if (typeof text === 'object') {
+      try { text = JSON.stringify(text); } catch { text = String(text); }
+    } else {
+      text = String(text);
+    }
+  }
   if (!text) return "";
 
   const decodeHtmlEntities = (value: string) => value
@@ -901,9 +912,20 @@ function getSectionStyle(type: string) {
   return SECTION_STYLES[type] || SECTION_STYLES["default"];
 }
 
-function formatContent(content: string, fmt: ReturnType<typeof getSendFormatting>): React.ReactNode {
-  const { fontSize: textSize, lineHeight, letterSpacing, wordSpacing, paragraphSpacing, fontFamily } = fmt;
+function formatContent(content: string | any, fmt: ReturnType<typeof getSendFormatting>): React.ReactNode {
+  // Robust type guard: normalize any non-string input
+  if (content === null || content === undefined) return null;
+  if (typeof content !== 'string') {
+    if (Array.isArray(content)) {
+      content = content.map(item => typeof item === 'string' ? item : JSON.stringify(item)).join('\n');
+    } else if (typeof content === 'object') {
+      try { content = JSON.stringify(content); } catch { content = String(content); }
+    } else {
+      content = String(content);
+    }
+  }
   if (!content) return null;
+  const { fontSize: textSize, lineHeight, letterSpacing, wordSpacing, paragraphSpacing, fontFamily } = fmt;
   // Pre-process: split comma-separated numbered items onto separate lines
   // e.g. "1. Question one, 2. Question two" → "1. Question one\n2. Question two"
   const preprocessed = content.replace(/(,\s*)(\d+[a-z]?[.)]\s+)/g, '\n$2');
@@ -1384,7 +1406,18 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(({
           return null;
         }
 
-        const content = editedSections[i] !== undefined ? editedSections[i] : section.content;
+        // Normalize content: ensure it's always a string to prevent .replace() crashes
+        let rawContent = editedSections[i] !== undefined ? editedSections[i] : section.content;
+        if (rawContent !== null && rawContent !== undefined && typeof rawContent !== 'string') {
+          if (Array.isArray(rawContent)) {
+            rawContent = rawContent.map((item: any) => typeof item === 'string' ? item : JSON.stringify(item)).join('\n');
+          } else if (typeof rawContent === 'object') {
+            try { rawContent = JSON.stringify(rawContent); } catch { rawContent = String(rawContent); }
+          } else {
+            rawContent = String(rawContent);
+          }
+        }
+        const content = rawContent as string;
         const style = getSectionStyle(section.type);
         // Teacher-only sections: mark-scheme, teacher-notes, answers, and any explicitly flagged teacherOnly
         const isTeacherSection = section.teacherOnly || section.type === "teacher-notes" || section.type === "mark-scheme" || section.type === "answers";
@@ -1418,7 +1451,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(({
               <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                 {style.icon && <span style={{ fontSize: "16px" }}>{style.icon}</span>}
                 <span style={{ fontWeight: 700, fontSize: `${fmt.fontSize + 1}px`, color: style.border, fontFamily: fmt.fontFamily }}>
-                  {(section.title || '').replace(/^\*{1,2}|\*{1,2}$/g, '').replace(/^_{1,2}|_{1,2}$/g, '').trim()}
+                  {(typeof section.title === 'string' ? section.title : String(section.title || '')).replace(/^\*{1,2}|\*{1,2}$/g, '').replace(/^_{1,2}|_{1,2}$/g, '').trim()}
                 </span>
               </div>
               <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
