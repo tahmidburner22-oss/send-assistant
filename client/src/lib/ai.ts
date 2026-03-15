@@ -453,8 +453,8 @@ export async function aiGenerateWorksheet(params: {
   worksheetLength?: string;
   introOnly?: boolean; // When true, only generate intro sections (objectives, vocab, worked example) — used for hybrid exam mode
   recallTopic?: string; // When set, prepend 2-3 recall questions on this previous topic at the start of the worksheet
-  targetPages?: number; // Target number of printed A4 pages (1, 2, or 3)
-  readingAge?: number; // Target reading age (7, 9, 11, 13) — controls vocabulary and sentence complexity
+  targetPages?: number; // Target number of printed A4 pages (any positive integer, 0 = auto)
+  readingAge?: number; // Target reading age (5–17) — controls vocabulary and sentence complexity
 }): Promise<AIWorksheetResult> {
 
   // ── Year-group calibration ──────────────────────────────────────────────────
@@ -637,25 +637,35 @@ export async function aiGenerateWorksheet(params: {
 
   // ── Target page count ──────────────────────────────────────────────────────
   const targetPages = params.targetPages || 0; // 0 = auto (no constraint)
-  const pageCountNote = targetPages === 1
-    ? `PAGE LIMIT: This worksheet MUST fit on exactly 1 printed A4 page. Keep content very concise — fewer questions, shorter worked example, compact vocabulary. Max 8–10 questions total. No word problems section. Compact reflection (1 line).`
-    : targetPages === 2
-    ? `PAGE LIMIT: This worksheet should fit on approximately 2 printed A4 pages. Standard amount of content — 15–20 questions, full worked example, vocabulary, and reflection.`
-    : targetPages === 3
-    ? `PAGE LIMIT: This worksheet should fill approximately 3 printed A4 pages. Include extra questions, extended worked examples, more word problems, and a detailed challenge section. 25–35 questions total.`
+  const pageCountNote = targetPages > 0
+    ? targetPages === 1
+      ? `PAGE LIMIT: This worksheet MUST fit on exactly 1 printed A4 page. Keep content very concise — fewer questions, shorter worked example, compact vocabulary. Max 8–10 questions total. No word problems section. Compact reflection (1 line).`
+      : targetPages === 2
+      ? `PAGE LIMIT: This worksheet should fit on approximately 2 printed A4 pages. Standard amount of content — 15–20 questions, full worked example, vocabulary, and reflection.`
+      : targetPages === 3
+      ? `PAGE LIMIT: This worksheet should fill approximately 3 printed A4 pages. Include extra questions, extended worked examples, more word problems, and a detailed challenge section. 25–35 questions total.`
+      : `PAGE LIMIT: This worksheet should fill approximately ${targetPages} printed A4 pages. Scale the number of questions, examples, and sections proportionally — roughly ${Math.round(targetPages * 12)} questions total, with ${targetPages > 4 ? 'multiple extended' : 'full'} sections, worked examples, and word problems.`
     : ``; // No constraint
 
   // ── Reading age override ───────────────────────────────────────────────────
   const readingAge = params.readingAge || 0; // 0 = match year group naturally
-  const readingAgeNote = readingAge === 7
-    ? `READING AGE 7: Use very short sentences (5–8 words max). Only simple, common everyday words. One instruction per sentence. No compound or complex sentences. Define ALL subject terms using the simplest possible words. Vocabulary definitions must use words a 7-year-old would know. Avoid any abstract language.`
-    : readingAge === 9
-    ? `READING AGE 9: Use short, clear sentences (8–12 words). Everyday vocabulary throughout. Simple compound sentences allowed. Define every technical term in brackets immediately after first use. Vocabulary definitions should use plain, concrete language a 9-year-old would understand.`
-    : readingAge === 11
-    ? `READING AGE 11: Use moderate sentences (10–15 words). Subject vocabulary with brief, clear definitions. Some complex sentences acceptable. Direct, clear instructions. Vocabulary should be accessible to an average 11-year-old reader.`
-    : readingAge === 13
-    ? `READING AGE 13: Use standard academic language appropriate for a 13-year-old. Technical vocabulary expected with concise definitions. Multi-clause sentences acceptable. GCSE-level command words (describe, explain, evaluate) can be used.`
-    : ``; // No override — use year-group default
+  const getReadingAgeNote = (age: number): string => {
+    if (age <= 0) return ``;
+    if (age <= 5) return `READING AGE 5: Use the very simplest words a young child knows. Maximum 4–5 words per sentence. Only single-syllable or very familiar two-syllable words. One idea per sentence. No technical vocabulary at all — describe everything using the most basic everyday words. Use pictures/emoji cues where possible.`;
+    if (age <= 6) return `READING AGE 6: Very short sentences (4–6 words). Only the most common everyday words. One instruction per sentence. No compound sentences. Explain all subject words using the simplest possible terms.`;
+    if (age <= 7) return `READING AGE 7: Use very short sentences (5–8 words max). Only simple, common everyday words. One instruction per sentence. No compound or complex sentences. Define ALL subject terms using the simplest possible words. Vocabulary definitions must use words a 7-year-old would know. Avoid any abstract language.`;
+    if (age <= 8) return `READING AGE 8: Short sentences (6–9 words). Common vocabulary with simple explanations for any subject terms. Simple compound sentences allowed. Concrete, tangible language — avoid abstract concepts.`;
+    if (age <= 9) return `READING AGE 9: Use short, clear sentences (8–12 words). Everyday vocabulary throughout. Simple compound sentences allowed. Define every technical term in brackets immediately after first use. Vocabulary definitions should use plain, concrete language a 9-year-old would understand.`;
+    if (age <= 10) return `READING AGE 10: Sentences of 8–13 words. Accessible vocabulary with definitions for subject-specific terms. Mix of simple and compound sentences. Clear, direct instructions.`;
+    if (age <= 11) return `READING AGE 11: Use moderate sentences (10–15 words). Subject vocabulary with brief, clear definitions. Some complex sentences acceptable. Direct, clear instructions. Vocabulary should be accessible to an average 11-year-old reader.`;
+    if (age <= 12) return `READING AGE 12: Sentences of 10–16 words. Good vocabulary range including subject-specific terms with brief definitions. Varied sentence structures. Clear academic language.`;
+    if (age <= 13) return `READING AGE 13: Use standard academic language appropriate for a 13-year-old. Technical vocabulary expected with concise definitions. Multi-clause sentences acceptable. GCSE-level command words (describe, explain, evaluate) can be used.`;
+    if (age <= 14) return `READING AGE 14: Confident academic language. Technical vocabulary used naturally. Complex sentence structures. GCSE command words throughout. Analytical language expected.`;
+    if (age <= 15) return `READING AGE 15: Advanced secondary-level language. Rich vocabulary, complex sentence structures, nuanced expression. GCSE/A-Level standard language throughout.`;
+    if (age <= 16) return `READING AGE 16: A-Level standard language. Sophisticated vocabulary, complex analytical language, mature academic expression. High-level command words (analyse, evaluate, synthesise, justify).`;
+    return `READING AGE 17+: University-entrance standard language. Highly sophisticated vocabulary, mature complex academic expression, analytical and evaluative depth. Expect the reader to handle dense, complex text with ease.`;
+  };
+  const readingAgeNote = getReadingAgeNote(readingAge);
 
   // ── Subject display (capitalised) ──────────────────────────────────────────
   const subjectDisplay = params.subject
@@ -1595,14 +1605,23 @@ export async function aiAdjustReadingLevel(params: {
   sections: Array<{ title: string; content: string; type?: string; teacherOnly?: boolean }>;
   provider?: string;
 }> {
-  const ageGuide: Record<number, string> = {
-    7: "Reading age 7: Use very short sentences (5-8 words max). Simple, common words only. One instruction per sentence. No compound or complex sentences. Avoid all technical jargon — use everyday words instead.",
-    9: "Reading age 9: Use short, clear sentences (8-12 words). Everyday vocabulary. Simple compound sentences allowed. Define any technical terms in brackets immediately after.",
-    11: "Reading age 11: Use moderate sentences (10-15 words). Subject vocabulary with brief definitions. Some complex sentences acceptable. Clear, direct instructions.",
-    13: "Reading age 13: Use standard academic language. Technical vocabulary expected. Multi-clause sentences acceptable. GCSE-level command words (describe, explain, evaluate).",
+  const getAgeGuide = (age: number): string => {
+    if (age <= 5) return "Reading age 5: Maximum 4–5 words per sentence. Only single-syllable or very familiar words. No technical vocabulary at all.";
+    if (age <= 6) return "Reading age 6: Very short sentences (4–6 words). Only the most common everyday words. Explain all subject words in the simplest terms.";
+    if (age <= 7) return "Reading age 7: Use very short sentences (5-8 words max). Simple, common words only. One instruction per sentence. No compound or complex sentences. Avoid all technical jargon — use everyday words instead.";
+    if (age <= 8) return "Reading age 8: Short sentences (6–9 words). Common vocabulary with simple explanations for subject terms. Simple compound sentences allowed.";
+    if (age <= 9) return "Reading age 9: Use short, clear sentences (8-12 words). Everyday vocabulary. Simple compound sentences allowed. Define any technical terms in brackets immediately after.";
+    if (age <= 10) return "Reading age 10: Sentences of 8–13 words. Accessible vocabulary with definitions for subject-specific terms. Mix of simple and compound sentences.";
+    if (age <= 11) return "Reading age 11: Use moderate sentences (10-15 words). Subject vocabulary with brief definitions. Some complex sentences acceptable. Clear, direct instructions.";
+    if (age <= 12) return "Reading age 12: Sentences of 10–16 words. Good vocabulary range including subject-specific terms with brief definitions. Varied sentence structures.";
+    if (age <= 13) return "Reading age 13: Use standard academic language. Technical vocabulary expected. Multi-clause sentences acceptable. GCSE-level command words (describe, explain, evaluate).";
+    if (age <= 14) return "Reading age 14: Confident academic language. Technical vocabulary used naturally. Complex sentence structures. GCSE command words throughout.";
+    if (age <= 15) return "Reading age 15: Advanced secondary-level language. Rich vocabulary, complex sentence structures, nuanced expression. GCSE/A-Level standard.";
+    if (age <= 16) return "Reading age 16: A-Level standard language. Sophisticated vocabulary, complex analytical language, mature academic expression.";
+    return "Reading age 17+: University-entrance standard. Highly sophisticated vocabulary, mature complex academic expression, analytical and evaluative depth.";
   };
 
-  const guide = ageGuide[params.targetAge] || ageGuide[11];
+  const guide = getAgeGuide(params.targetAge);
 
   const system = `You are a UK SEND specialist teacher. Rewrite the worksheet text to match a specific reading age level. CRITICAL: Change ONLY the language complexity, vocabulary, and sentence structure. Do NOT change the academic content, questions, numbers, formulas, or difficulty of the tasks themselves. Return valid JSON only, no markdown code blocks.`;
 

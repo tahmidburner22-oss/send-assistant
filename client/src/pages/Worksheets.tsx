@@ -1078,44 +1078,43 @@ export default function Worksheets() {
                   </div>
                 </div>
 
-                {/* Target Page Count */}
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-medium">Page Count</Label>
-                  <div className="flex gap-1.5">
-                    {[
-                      { id: 0, name: "Auto", desc: "Let AI decide the best length" },
-                      { id: 1, name: "1 Page", desc: "Concise — fits on a single A4 page" },
-                      { id: 2, name: "2 Pages", desc: "Standard — two A4 pages" },
-                      { id: 3, name: "3 Pages", desc: "Extended — three A4 pages with extra content" },
-                    ].map(p => (
-                      <button key={p.id} onClick={() => setTargetPages(p.id)}
-                        title={p.desc}
-                        className={`flex-1 py-2.5 rounded-lg text-xs font-medium transition-all ${targetPages === p.id ? "bg-brand text-white shadow-sm" : "bg-white text-muted-foreground border border-border/60 hover:border-brand/30"}`}>
-                        {p.name}
-                      </button>
-                    ))}
+                {/* Reading Age Slider */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs font-medium">Reading Age</Label>
+                    <span className="text-xs font-semibold text-brand">
+                      {readingAge === 0 ? "Auto (match year group)" : readingAge >= 17 ? "Age 17+" : `Age ${readingAge}`}
+                    </span>
                   </div>
-                </div>
-
-                {/* Reading Age */}
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-medium">Reading Age</Label>
-                  <div className="flex gap-1.5">
-                    {[
-                      { id: 0, name: "Auto", desc: "Match year group naturally" },
-                      { id: 7, name: "Age 7", desc: "Very simple words, short sentences (5–8 words)" },
-                      { id: 9, name: "Age 9", desc: "Clear, everyday vocabulary (8–12 words)" },
-                      { id: 11, name: "Age 11", desc: "Moderate academic language (10–15 words)" },
-                      { id: 13, name: "Age 13", desc: "Standard GCSE-level language" },
-                    ].map(r => (
-                      <button key={r.id} onClick={() => setReadingAge(r.id)}
-                        title={r.desc}
-                        className={`flex-1 py-2.5 rounded-lg text-xs font-medium transition-all ${readingAge === r.id ? "bg-brand text-white shadow-sm" : "bg-white text-muted-foreground border border-border/60 hover:border-brand/30"}`}>
-                        {r.name}
-                      </button>
-                    ))}
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] text-muted-foreground w-4">5</span>
+                    <input
+                      type="range"
+                      min={0}
+                      max={13}
+                      step={1}
+                      value={readingAge === 0 ? 0 : readingAge <= 5 ? 1 : readingAge <= 6 ? 2 : readingAge <= 7 ? 3 : readingAge <= 8 ? 4 : readingAge <= 9 ? 5 : readingAge <= 10 ? 6 : readingAge <= 11 ? 7 : readingAge <= 12 ? 8 : readingAge <= 13 ? 9 : readingAge <= 14 ? 10 : readingAge <= 15 ? 11 : readingAge <= 16 ? 12 : 13}
+                      onChange={e => {
+                        const v = Number(e.target.value);
+                        if (v === 0) setReadingAge(0);
+                        else {
+                          const ages = [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
+                          setReadingAge(ages[v - 1] ?? 0);
+                        }
+                      }}
+                      className="flex-1 h-2 accent-brand cursor-pointer"
+                    />
+                    <span className="text-[10px] text-muted-foreground w-5">17+</span>
                   </div>
-                  <p className="text-[10px] text-muted-foreground">Controls vocabulary complexity and sentence length in the generated worksheet. Academic difficulty stays the same.</p>
+                  <div className="flex justify-between text-[9px] text-muted-foreground px-5">
+                    <span>Auto</span>
+                    <span>KS1</span>
+                    <span>KS2</span>
+                    <span>KS3</span>
+                    <span>GCSE</span>
+                    <span>A-Level</span>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground">Controls vocabulary complexity and sentence length. Academic difficulty stays the same.</p>
                 </div>
                 </div>{/* End core settings box */}
 
@@ -1142,6 +1141,36 @@ export default function Worksheets() {
                     className="h-10"
                   />
                   <p className="text-[10px] text-muted-foreground">If set, 2–3 recall questions on this previous topic will appear at the top of the worksheet before the main content.</p>
+                </div>
+
+                {/* Page Count — moved to Advanced Options */}
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-medium">Page Count (optional)</Label>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setTargetPages(0)}
+                      className={`px-3 py-2 rounded-lg text-xs font-medium transition-all border ${
+                        targetPages === 0 ? "bg-brand text-white border-brand" : "bg-white text-foreground border-border hover:border-brand/30"
+                      }`}>
+                      Auto
+                    </button>
+                    <div className="flex items-center gap-1 flex-1">
+                      <input
+                        type="number"
+                        min={1}
+                        max={20}
+                        value={targetPages > 0 ? targetPages : ""}
+                        placeholder="e.g. 1, 2, 4..."
+                        onChange={e => {
+                          const v = parseInt(e.target.value);
+                          setTargetPages(isNaN(v) || v < 1 ? 0 : Math.min(v, 20));
+                        }}
+                        className="flex-1 h-9 px-3 rounded-lg text-xs border border-border focus:outline-none focus:ring-1 focus:ring-brand"
+                      />
+                      <span className="text-xs text-muted-foreground whitespace-nowrap">pages</span>
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground">Set how many A4 pages the worksheet should fill. Leave as Auto to let the AI decide based on worksheet length.</p>
                 </div>
 
                 <div className="space-y-1.5">
@@ -1882,19 +1911,36 @@ export default function Worksheets() {
             </Dialog>
           </div>
 
-          {/* Toolbar Row 3 — Reading Level Adjustment */}
-          <div className="flex flex-wrap items-center gap-2 no-print">
-            <span className="text-xs font-medium text-muted-foreground">Reading Level:</span>
-            <div className="flex gap-1 bg-muted rounded-lg p-0.5">
-              {[7, 9, 11, 13].map(age => (
-                <button key={age} onClick={() => handleReadingLevelAdjust(age)}
-                  disabled={readingLevelLoading}
-                  className="px-3 py-1.5 rounded-md text-xs font-medium transition-all text-muted-foreground hover:bg-white hover:text-foreground hover:shadow-sm">
-                  Age {age}
-                </button>
-              ))}
+          {/* Toolbar Row 3 — Reading Level Adjustment Slider */}
+          <div className="flex flex-wrap items-center gap-3 no-print">
+            <span className="text-xs font-medium text-muted-foreground whitespace-nowrap">Reading Level:</span>
+            <div className="flex items-center gap-2 flex-1 min-w-[220px]">
+              <span className="text-[10px] text-muted-foreground">5</span>
+              <input
+                type="range"
+                min={1}
+                max={13}
+                step={1}
+                defaultValue={7}
+                disabled={readingLevelLoading}
+                onMouseUp={e => {
+                  const v = Number((e.target as HTMLInputElement).value);
+                  const ages = [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
+                  handleReadingLevelAdjust(ages[v - 1] ?? 11);
+                }}
+                onTouchEnd={e => {
+                  const v = Number((e.target as HTMLInputElement).value);
+                  const ages = [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
+                  handleReadingLevelAdjust(ages[v - 1] ?? 11);
+                }}
+                className="flex-1 h-2 accent-brand cursor-pointer disabled:opacity-50"
+              />
+              <span className="text-[10px] text-muted-foreground">17+</span>
             </div>
-            {readingLevelLoading && <RefreshCw className="w-3.5 h-3.5 animate-spin text-brand" />}
+            {readingLevelLoading
+              ? <><RefreshCw className="w-3.5 h-3.5 animate-spin text-brand" /><span className="text-xs text-muted-foreground">Adjusting...</span></>
+              : <span className="text-[10px] text-muted-foreground">Drag to adjust vocabulary level</span>
+            }
           </div>
 
           {/* Scenario Swap Dialog */}
