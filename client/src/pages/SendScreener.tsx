@@ -31,6 +31,8 @@ interface Question {
   reversed?: boolean;
   /** Short label used in personalised reasoning */
   trait: string;
+  /** Real-life example to help the person understand the question */
+  example?: string;
 }
 
 interface Section {
@@ -66,17 +68,17 @@ const SECTIONS: Section[] = [
     moderateThreshold: 35,
     highThreshold: 60,
     questions: [
-      { id: "d1", text: "When reading a page of text, do you confuse visually similar words — for example misreading 'cat' as 'cot', 'was' as 'saw', or 'form' as 'from' — even in familiar material?", trait: "visual word confusion" },
-      { id: "d2", text: "Do you regularly lose your place when reading, skip lines, or re-read the same line without realising it — even when concentrating hard?", trait: "losing place when reading" },
-      { id: "d3", text: "When you encounter an unfamiliar word, do you struggle to sound it out phonetically — for example breaking 'necessary' into 'nec-es-sa-ry' — even after years of reading practice?", trait: "phonological decoding difficulty" },
-      { id: "d4", text: "When writing, do you find it hard to get your thoughts onto paper in a logical order, even when you know exactly what you want to say — as if the connection between thinking and writing is blocked?", trait: "written expression difficulty" },
-      { id: "d5", text: "Do you have persistent difficulty telling left from right without consciously thinking about it — for example when giving directions, following instructions, or reading maps?", trait: "left/right confusion" },
-      { id: "d6", text: "When given a sequence of verbal instructions (e.g. 'go to the office, collect the register, then return to class'), do you need them repeated or written down to avoid forgetting steps?", trait: "working memory for verbal instructions" },
-      { id: "d7", text: "Do you need to re-read paragraphs several times before the meaning becomes clear — not because the vocabulary is hard, but because the meaning doesn't 'stick' on first reading?", trait: "reading comprehension difficulty" },
-      { id: "d8", text: "When reading aloud, do you frequently stumble over words, mispronounce them, or lose your place — even with text you have read before?", trait: "reading fluency difficulty" },
-      { id: "d9", text: "Did you find it significantly harder than peers to memorise sequences such as the alphabet, days of the week, or multiplication tables — even with repeated practice over months?", trait: "rote learning difficulty" },
-      { id: "d10", text: "Do you make spelling errors in words you have written hundreds of times — for example 'becuase', 'freind', or 'definately' — and find the correct spelling doesn't stick even after correction?", trait: "persistent spelling difficulty" },
-      { id: "d11", text: "Do you find it difficult to copy text accurately from a board or book — losing your place between looking up and looking down, or making errors in the process?", trait: "copying accuracy difficulty" },
+      { id: "d1", text: "When reading a page of text, do you confuse visually similar words — for example misreading 'cat' as 'cot', 'was' as 'saw', or 'form' as 'from' — even in familiar material?", trait: "visual word confusion", example: "You're reading a recipe and read 'bake' as 'bike', or read a street sign as 'Bark Road' when it says 'Back Road'." },
+      { id: "d2", text: "Do you regularly lose your place when reading, skip lines, or re-read the same line without realising it — even when concentrating hard?", trait: "losing place when reading", example: "You're reading a textbook and suddenly realise you've read the same paragraph twice, or you skip from line 3 to line 5 without noticing." },
+      { id: "d3", text: "When you encounter an unfamiliar word, do you struggle to sound it out phonetically — for example breaking 'necessary' into 'nec-es-sa-ry' — even after years of reading practice?", trait: "phonological decoding difficulty", example: "You see the word 'phenomenon' in a science lesson and can't break it into sounds to read it aloud, so you skip it or guess." },
+      { id: "d4", text: "When writing, do you find it hard to get your thoughts onto paper in a logical order, even when you know exactly what you want to say — as if the connection between thinking and writing is blocked?", trait: "written expression difficulty", example: "You can explain your ideas perfectly when talking to a friend, but when you sit down to write an essay, the words come out jumbled or you stare at a blank page." },
+      { id: "d5", text: "Do you have persistent difficulty telling left from right without consciously thinking about it — for example when giving directions, following instructions, or reading maps?", trait: "left/right confusion", example: "Someone says 'turn left at the roundabout' and you have to hold up your hands to check which is left before turning." },
+      { id: "d6", text: "When given a sequence of verbal instructions (e.g. 'go to the office, collect the register, then return to class'), do you need them repeated or written down to avoid forgetting steps?", trait: "working memory for verbal instructions", example: "Your teacher says 'open your book to page 42, answer questions 3 to 7, then swap with your partner' — and by the time you open the book, you've forgotten the page number." },
+      { id: "d7", text: "Do you need to re-read paragraphs several times before the meaning becomes clear — not because the vocabulary is hard, but because the meaning doesn't 'stick' on first reading?", trait: "reading comprehension difficulty", example: "You read a paragraph in a history textbook and realise at the end that you have no idea what it just said, even though you understood each individual word." },
+      { id: "d8", text: "When reading aloud, do you frequently stumble over words, mispronounce them, or lose your place — even with text you have read before?", trait: "reading fluency difficulty", example: "When asked to read aloud in class, you stumble over words like 'although' or 'through', even though you've seen them hundreds of times." },
+      { id: "d9", text: "Did you find it significantly harder than peers to memorise sequences such as the alphabet, days of the week, or multiplication tables — even with repeated practice over months?", trait: "rote learning difficulty", example: "Your classmates learned the times tables in Year 3, but you still struggle to recall 7×8 without counting on your fingers." },
+      { id: "d10", text: "Do you make spelling errors in words you have written hundreds of times — for example 'becuase', 'freind', or 'definately' — and find the correct spelling doesn't stick even after correction?", trait: "persistent spelling difficulty", example: "You write 'their' when you mean 'there' in every essay, and even after being corrected dozens of times, you still mix them up." },
+      { id: "d11", text: "Do you find it difficult to copy text accurately from a board or book — losing your place between looking up and looking down, or making errors in the process?", trait: "copying accuracy difficulty", example: "When copying notes from the whiteboard, you keep losing your place and end up with missing words or lines that don't match what the teacher wrote." },
     ],
   },
   {
@@ -92,18 +94,18 @@ const SECTIONS: Section[] = [
     moderateThreshold: 35,
     highThreshold: 60,
     questions: [
-      { id: "a1", text: "How often do you struggle to finish the final details of a project once the interesting or challenging parts are done — leaving tasks 90% complete but never quite finished?", trait: "difficulty completing tasks" },
-      { id: "a2", text: "How often do you find it genuinely difficult to organise multi-step tasks — for example, not knowing where to start, losing track of steps, or completing them in the wrong order?", trait: "organisational difficulty" },
-      { id: "a3", text: "How often do you forget appointments, deadlines, or commitments — even ones you considered important — unless you use reminders or external systems?", trait: "forgetting commitments" },
-      { id: "a4", text: "When faced with a task requiring sustained mental effort, how often do you delay starting it for hours or days — even when you know the delay is causing problems?", trait: "task initiation avoidance" },
-      { id: "a5", text: "How often do you feel physically restless when required to sit still for extended periods — tapping, fidgeting, shifting position, or feeling an urge to get up and move?", trait: "physical restlessness" },
-      { id: "a6", text: "How often do you feel internally driven or 'switched on' even when you want to slow down — as if your brain or body won't let you fully rest or switch off?", trait: "hyperactivity" },
-      { id: "a7", text: "How often do you make careless errors in routine or repetitive work — not because you lack the skill, but because your attention drifts before you've checked your work?", trait: "careless errors under low engagement" },
-      { id: "a8", text: "How often do you find your mind wandering during tasks that require sustained concentration — for example reading, listening to a lecture, or completing paperwork?", trait: "sustained attention difficulty" },
-      { id: "a9", text: "How often do you find yourself not fully absorbing what someone is saying during a conversation — even when you intend to listen and the topic is relevant to you?", trait: "listening attention difficulty" },
-      { id: "a10", text: "How often do you misplace everyday items — keys, phone, glasses, documents — and spend significant time searching for them?", trait: "losing objects" },
-      { id: "a11", text: "How often does background noise, movement, or activity in your environment pull your attention away from what you are trying to focus on — even when you are trying hard to concentrate?", trait: "distractibility" },
-      { id: "a12", text: "How often do you act on impulse — speaking before thinking, interrupting others, or making decisions without fully considering the consequences?", trait: "impulsivity" },
+      { id: "a1", text: "How often do you struggle to finish the final details of a project once the interesting or challenging parts are done — leaving tasks 90% complete but never quite finished?", trait: "difficulty completing tasks", example: "You start a school project with loads of energy, but once the fun creative part is done, you never get around to writing the conclusion or tidying up the formatting." },
+      { id: "a2", text: "How often do you find it genuinely difficult to organise multi-step tasks — for example, not knowing where to start, losing track of steps, or completing them in the wrong order?", trait: "organisational difficulty", example: "You have a homework assignment with 5 parts and you can't decide which to do first, so you end up doing bits of each and finishing none." },
+      { id: "a3", text: "How often do you forget appointments, deadlines, or commitments — even ones you considered important — unless you use reminders or external systems?", trait: "forgetting commitments", example: "You completely forget about a dentist appointment even though you made it yourself last week, or you miss a homework deadline you knew about." },
+      { id: "a4", text: "When faced with a task requiring sustained mental effort, how often do you delay starting it for hours or days — even when you know the delay is causing problems?", trait: "task initiation avoidance", example: "You know you need to start revising for an exam next week, but you keep putting it off and doing other things instead, even though it stresses you out." },
+      { id: "a5", text: "How often do you feel physically restless when required to sit still for extended periods — tapping, fidgeting, shifting position, or feeling an urge to get up and move?", trait: "physical restlessness", example: "During a long lesson, you constantly tap your pen, bounce your leg, or feel like you need to get up and walk around the room." },
+      { id: "a6", text: "How often do you feel internally driven or 'switched on' even when you want to slow down — as if your brain or body won't let you fully rest or switch off?", trait: "hyperactivity", example: "At bedtime, your mind races through ideas, plans, and random thoughts, and you can't seem to switch off even though you're exhausted." },
+      { id: "a7", text: "How often do you make careless errors in routine or repetitive work — not because you lack the skill, but because your attention drifts before you've checked your work?", trait: "careless errors under low engagement", example: "You know how to do the maths, but you write 6 instead of 9 or skip a question entirely because your mind wandered while working through the sheet." },
+      { id: "a8", text: "How often do you find your mind wandering during tasks that require sustained concentration — for example reading, listening to a lecture, or completing paperwork?", trait: "sustained attention difficulty", example: "You're in a lesson and suddenly realise you've been thinking about something completely unrelated for the last 10 minutes and missed everything the teacher said." },
+      { id: "a9", text: "How often do you find yourself not fully absorbing what someone is saying during a conversation — even when you intend to listen and the topic is relevant to you?", trait: "listening attention difficulty", example: "A friend is telling you about their weekend and you nod along, but afterwards you can't remember any of the details they shared." },
+      { id: "a10", text: "How often do you misplace everyday items — keys, phone, glasses, documents — and spend significant time searching for them?", trait: "losing objects", example: "You put your phone down somewhere in the house and spend 20 minutes searching every room, only to find it in the fridge or under a cushion." },
+      { id: "a11", text: "How often does background noise, movement, or activity in your environment pull your attention away from what you are trying to focus on — even when you are trying hard to concentrate?", trait: "distractibility", example: "You're trying to do homework but someone walking past, a car outside, or a notification sound completely breaks your concentration every time." },
+      { id: "a12", text: "How often do you act on impulse — speaking before thinking, interrupting others, or making decisions without fully considering the consequences?", trait: "impulsivity", example: "You blurt out an answer in class before the teacher finishes the question, or you buy something online without thinking about whether you can afford it." },
     ],
   },
   {
@@ -119,17 +121,17 @@ const SECTIONS: Section[] = [
     moderateThreshold: 30,
     highThreshold: 55,
     questions: [
-      { id: "s1", text: "I often notice small sounds that other people do not seem to notice — such as the hum of fluorescent lights, distant traffic, or a clock ticking — and find them distracting or distressing.", trait: "heightened auditory sensitivity" },
-      { id: "s2", text: "When reading a story or watching a film, I find it difficult to work out what a character is feeling or what they intend to do next — I need it to be stated explicitly rather than implied.", trait: "difficulty inferring others' mental states" },
-      { id: "s3", text: "I have one or more areas of very deep, specific interest that I pursue with much greater intensity than most people — and I find it hard to understand why others don't share the same level of interest.", trait: "intense focused interests" },
-      { id: "s4", text: "I find it difficult to interpret facial expressions, tone of voice, or body language in real time — for example, I often can't tell if someone is annoyed, joking, or upset unless they say so directly.", trait: "difficulty reading facial expressions" },
-      { id: "s5", text: "I find social interactions genuinely exhausting — even enjoyable ones — and need significant time alone afterwards to recover and feel like myself again.", trait: "social exhaustion" },
-      { id: "s6", text: "I strongly rely on routines and feel significant distress, anxiety, or anger when plans change unexpectedly — even small, seemingly minor changes can be very upsetting.", trait: "need for routine and predictability" },
-      { id: "s7", text: "I tend to interpret language literally and find sarcasm, irony, idioms, or jokes confusing — for example, 'break a leg' or 'it's raining cats and dogs' can be momentarily baffling.", trait: "literal language processing" },
-      { id: "s8", text: "I find unwritten social rules genuinely difficult to understand — for example, how long to maintain eye contact, when it's acceptable to interrupt, or how to know when a conversation is over.", trait: "difficulty with implicit social rules" },
-      { id: "s9", text: "Certain textures, lights, sounds, smells, or tastes cause me significant discomfort or distress — in ways that seem disproportionate to how others react to the same stimulus.", trait: "sensory sensitivity" },
-      { id: "s10", text: "I find it much easier and more comfortable to talk about factual topics, systems, or areas of interest than to discuss feelings, emotions, or abstract social concepts.", trait: "preference for factual over emotional conversation" },
-      { id: "s11", text: "I often replay social interactions afterwards, analysing what was said and worrying that I said or did something wrong — even when there is no evidence that anything went badly.", trait: "post-interaction social rumination" },
+      { id: "s1", text: "I often notice small sounds that other people do not seem to notice — such as the hum of fluorescent lights, distant traffic, or a clock ticking — and find them distracting or distressing.", trait: "heightened auditory sensitivity", example: "In a quiet classroom, you can hear the buzzing of the lights or the ticking of a clock, and it bothers you so much you can't concentrate, while nobody else seems to notice." },
+      { id: "s2", text: "When reading a story or watching a film, I find it difficult to work out what a character is feeling or what they intend to do next — I need it to be stated explicitly rather than implied.", trait: "difficulty inferring others' mental states", example: "You're watching a film and everyone else seems to know the character is lying, but you didn't pick up on it until someone explained the facial expression." },
+      { id: "s3", text: "I have one or more areas of very deep, specific interest that I pursue with much greater intensity than most people — and I find it hard to understand why others don't share the same level of interest.", trait: "intense focused interests", example: "You know absolutely everything about trains, dinosaurs, or a specific video game — and you could talk about it for hours, but your friends lose interest after a few minutes." },
+      { id: "s4", text: "I find it difficult to interpret facial expressions, tone of voice, or body language in real time — for example, I often can't tell if someone is annoyed, joking, or upset unless they say so directly.", trait: "difficulty reading facial expressions", example: "A teacher says 'That's fine' in a sharp tone, and you take it at face value, not realising they were actually annoyed with you." },
+      { id: "s5", text: "I find social interactions genuinely exhausting — even enjoyable ones — and need significant time alone afterwards to recover and feel like myself again.", trait: "social exhaustion", example: "After a birthday party or a busy day at school, you feel completely drained and need to be alone in your room for hours to recover." },
+      { id: "s6", text: "I strongly rely on routines and feel significant distress, anxiety, or anger when plans change unexpectedly — even small, seemingly minor changes can be very upsetting.", trait: "need for routine and predictability", example: "You always eat lunch at the same table, and when someone else sits there, it genuinely upsets you for the rest of the day." },
+      { id: "s7", text: "I tend to interpret language literally and find sarcasm, irony, idioms, or jokes confusing — for example, 'break a leg' or 'it's raining cats and dogs' can be momentarily baffling.", trait: "literal language processing", example: "Someone says 'I'm dying of laughter' and for a split second you feel concerned, or a teacher says 'pull your socks up' and you look down at your feet." },
+      { id: "s8", text: "I find unwritten social rules genuinely difficult to understand — for example, how long to maintain eye contact, when it's acceptable to interrupt, or how to know when a conversation is over.", trait: "difficulty with implicit social rules", example: "You keep talking to someone and don't realise they've been trying to leave the conversation for the last five minutes, or you're unsure whether to wave, shake hands, or hug when greeting someone." },
+      { id: "s9", text: "Certain textures, lights, sounds, smells, or tastes cause me significant discomfort or distress — in ways that seem disproportionate to how others react to the same stimulus.", trait: "sensory sensitivity", example: "You can't wear certain fabrics because they feel unbearable on your skin, or the smell of the school canteen makes you feel physically sick." },
+      { id: "s10", text: "I find it much easier and more comfortable to talk about factual topics, systems, or areas of interest than to discuss feelings, emotions, or abstract social concepts.", trait: "preference for factual over emotional conversation", example: "You can happily explain how an engine works or discuss football stats, but when someone asks 'How are you feeling?', you struggle to find the words." },
+      { id: "s11", text: "I often replay social interactions afterwards, analysing what was said and worrying that I said or did something wrong — even when there is no evidence that anything went badly.", trait: "post-interaction social rumination", example: "After chatting with a group at lunch, you spend the whole evening replaying the conversation in your head, worrying you said something weird." },
     ],
   },
   {
@@ -145,16 +147,16 @@ const SECTIONS: Section[] = [
     moderateThreshold: 35,
     highThreshold: 60,
     questions: [
-      { id: "dp1", text: "Do you bump into furniture, trip over objects, or knock things over significantly more often than others seem to — even in familiar environments you know well?", trait: "clumsiness and collision" },
-      { id: "dp2", text: "Is your handwriting consistently untidy, inconsistent in letter size or spacing, or difficult for others to read — even when you are making a deliberate effort to write neatly?", trait: "handwriting difficulty" },
-      { id: "dp3", text: "Do you find it takes significantly longer than others to learn new physical skills — such as riding a bike, swimming, or a new sport — even with repeated practice and instruction?", trait: "motor learning difficulty" },
-      { id: "dp4", text: "Do you struggle with tasks requiring precise hand-eye coordination — such as catching or throwing a ball, using scissors accurately, threading a needle, or pouring liquid without spilling?", trait: "hand-eye coordination difficulty" },
-      { id: "dp5", text: "Do you find it hard to judge distances, spaces, or proportions accurately — for example misjudging how much space you need when walking through a gap, parking, or fitting items into a bag?", trait: "spatial judgement difficulty" },
-      { id: "dp6", text: "Do you find it difficult to carry out multi-step tasks in the correct order without losing track — for example following a recipe, assembling furniture, or getting ready in the morning?", trait: "sequencing difficulty" },
-      { id: "dp7", text: "Do you find it hard to organise your thoughts into a clear, logical sequence when speaking or writing — jumping between ideas, losing the thread, or struggling to structure what you want to say?", trait: "cognitive sequencing difficulty" },
-      { id: "dp8", text: "Do you find fine motor tasks — such as tying shoelaces, fastening small buttons, using cutlery, or writing for extended periods — noticeably more difficult or tiring than they seem to be for others?", trait: "fine motor difficulty" },
-      { id: "dp9", text: "Do you have difficulty with personal organisation — for example regularly forgetting equipment, struggling to keep a tidy workspace, or finding it hard to manage your belongings and time?", trait: "organisational and planning difficulty" },
-      { id: "dp10", text: "Do you find physical education, team sports, or activities requiring coordination (e.g. dance, gymnastics) significantly more challenging than academic subjects — and have you tended to avoid them?", trait: "gross motor and sport avoidance" },
+      { id: "dp1", text: "Do you bump into furniture, trip over objects, or knock things over significantly more often than others seem to — even in familiar environments you know well?", trait: "clumsiness and collision", example: "You walk into the same door frame at home multiple times a week, or you knock your drink over at the dinner table so often your family expects it." },
+      { id: "dp2", text: "Is your handwriting consistently untidy, inconsistent in letter size or spacing, or difficult for others to read — even when you are making a deliberate effort to write neatly?", trait: "handwriting difficulty", example: "Your teacher often can't read your answers in tests, and even when you try your hardest, the letters are different sizes and the lines are wonky." },
+      { id: "dp3", text: "Do you find it takes significantly longer than others to learn new physical skills — such as riding a bike, swimming, or a new sport — even with repeated practice and instruction?", trait: "motor learning difficulty", example: "Your friends learned to ride a bike in a weekend, but it took you months of practice, and you still feel wobbly." },
+      { id: "dp4", text: "Do you struggle with tasks requiring precise hand-eye coordination — such as catching or throwing a ball, using scissors accurately, threading a needle, or pouring liquid without spilling?", trait: "hand-eye coordination difficulty", example: "In PE, you regularly miss catches that others find easy, or when pouring a drink you often spill it over the side of the glass." },
+      { id: "dp5", text: "Do you find it hard to judge distances, spaces, or proportions accurately — for example misjudging how much space you need when walking through a gap, parking, or fitting items into a bag?", trait: "spatial judgement difficulty", example: "You try to walk between two desks and clip your hip on one, or you misjudge how far away a step is and stumble." },
+      { id: "dp6", text: "Do you find it difficult to carry out multi-step tasks in the correct order without losing track — for example following a recipe, assembling furniture, or getting ready in the morning?", trait: "sequencing difficulty", example: "When getting ready for school, you put your shoes on before your socks, or you forget to brush your teeth even though you do it every day." },
+      { id: "dp7", text: "Do you find it hard to organise your thoughts into a clear, logical sequence when speaking or writing — jumping between ideas, losing the thread, or struggling to structure what you want to say?", trait: "cognitive sequencing difficulty", example: "When telling a friend about your weekend, you jump from Saturday evening to Sunday morning to Friday night, and they get confused." },
+      { id: "dp8", text: "Do you find fine motor tasks — such as tying shoelaces, fastening small buttons, using cutlery, or writing for extended periods — noticeably more difficult or tiring than they seem to be for others?", trait: "fine motor difficulty", example: "You avoid shirts with small buttons because they take ages to fasten, or your hand aches badly after writing for just 10 minutes." },
+      { id: "dp9", text: "Do you have difficulty with personal organisation — for example regularly forgetting equipment, struggling to keep a tidy workspace, or finding it hard to manage your belongings and time?", trait: "organisational and planning difficulty", example: "You regularly turn up to school without your PE kit, your bag is always a mess, and you can never find the right book when you need it." },
+      { id: "dp10", text: "Do you find physical education, team sports, or activities requiring coordination (e.g. dance, gymnastics) significantly more challenging than academic subjects — and have you tended to avoid them?", trait: "gross motor and sport avoidance", example: "You dread PE lessons and always try to sit out, because team sports feel embarrassing when you can't keep up with everyone else." },
     ],
   },
   {
@@ -170,15 +172,15 @@ const SECTIONS: Section[] = [
     moderateThreshold: 35,
     highThreshold: 60,
     questions: [
-      { id: "dc1", text: "Do you find it very difficult to recall basic number facts automatically — for example that 7 × 8 = 56 or 9 + 6 = 15 — even after extensive practice, so that you still need to count or calculate each time?", trait: "number fact retrieval difficulty" },
-      { id: "dc2", text: "Do you struggle to understand what a number actually represents in terms of quantity — for example, finding it hard to grasp that 347 is made up of 3 hundreds, 4 tens, and 7 units, or that 0.5 is the same as a half?", trait: "place value understanding difficulty" },
-      { id: "dc3", text: "Do you find it genuinely hard to estimate quantities without counting — for example, whether a crowd of 50 would fill a room, whether a price is reasonable, or roughly how long a journey will take?", trait: "quantity estimation difficulty" },
-      { id: "dc4", text: "Do you struggle with everyday money tasks — such as calculating change, estimating a total bill, splitting costs between people, or checking whether you've been charged correctly?", trait: "applied number difficulty" },
-      { id: "dc5", text: "Do you find it difficult to read an analogue clock quickly and accurately — needing to count the positions of the hands rather than reading the time at a glance?", trait: "analogue time difficulty" },
-      { id: "dc6", text: "Do you experience significant anxiety, panic, or a sense of mental 'shutdown' when faced with maths tasks — even straightforward ones like splitting a bill or calculating a percentage?", trait: "maths anxiety" },
-      { id: "dc7", text: "Do you find it difficult to hold a sequence of numbers in mind — for example, struggling to remember a phone number, PIN, or set of measurements long enough to use them?", trait: "number sequence memory difficulty" },
-      { id: "dc8", text: "Do you confuse similar-looking mathematical symbols or operations — for example mixing up + and ×, < and >, or ÷ and − — especially under time pressure?", trait: "symbol confusion" },
-      { id: "dc9", text: "Do you find it hard to understand the concept of fractions, decimals, or percentages — for example struggling to grasp that 1/4, 0.25, and 25% all represent the same amount?", trait: "fraction and proportion difficulty" },
+      { id: "dc1", text: "Do you find it very difficult to recall basic number facts automatically — for example that 7 × 8 = 56 or 9 + 6 = 15 — even after extensive practice, so that you still need to count or calculate each time?", trait: "number fact retrieval difficulty", example: "In a maths test, you still have to count on your fingers to work out 6+7, while everyone else seems to just know the answer instantly." },
+      { id: "dc2", text: "Do you struggle to understand what a number actually represents in terms of quantity — for example, finding it hard to grasp that 347 is made up of 3 hundreds, 4 tens, and 7 units, or that 0.5 is the same as a half?", trait: "place value understanding difficulty", example: "When the teacher asks you to round 347 to the nearest hundred, you're not sure whether the answer is 300 or 400 because you can't picture what those numbers mean." },
+      { id: "dc3", text: "Do you find it genuinely hard to estimate quantities without counting — for example, whether a crowd of 50 would fill a room, whether a price is reasonable, or roughly how long a journey will take?", trait: "quantity estimation difficulty", example: "Someone asks 'How many sweets are in the jar?' and you have absolutely no idea whether it's 20 or 200 — you can't even make a rough guess." },
+      { id: "dc4", text: "Do you struggle with everyday money tasks — such as calculating change, estimating a total bill, splitting costs between people, or checking whether you've been charged correctly?", trait: "applied number difficulty", example: "You pay with a £10 note for something costing £6.50 and can't quickly work out that you should get £3.50 back." },
+      { id: "dc5", text: "Do you find it difficult to read an analogue clock quickly and accurately — needing to count the positions of the hands rather than reading the time at a glance?", trait: "analogue time difficulty", example: "When someone points at a clock on the wall and asks the time, you need to count around from 12 to work out where the minute hand is pointing." },
+      { id: "dc6", text: "Do you experience significant anxiety, panic, or a sense of mental 'shutdown' when faced with maths tasks — even straightforward ones like splitting a bill or calculating a percentage?", trait: "maths anxiety", example: "When the teacher says 'pop quiz on times tables', your mind goes completely blank and you feel panicky, even though you revised them last night." },
+      { id: "dc7", text: "Do you find it difficult to hold a sequence of numbers in mind — for example, struggling to remember a phone number, PIN, or set of measurements long enough to use them?", trait: "number sequence memory difficulty", example: "Someone tells you a phone number and by the time you pick up your phone to type it in, you've already forgotten the first few digits." },
+      { id: "dc8", text: "Do you confuse similar-looking mathematical symbols or operations — for example mixing up + and ×, < and >, or ÷ and − — especially under time pressure?", trait: "symbol confusion", example: "In a timed test, you accidentally multiply instead of add because the symbols look similar to you when you're rushing." },
+      { id: "dc9", text: "Do you find it hard to understand the concept of fractions, decimals, or percentages — for example struggling to grasp that 1/4, 0.25, and 25% all represent the same amount?", trait: "fraction and proportion difficulty", example: "A shop says '25% off' and you can't work out how much you'd actually save, or you don't understand that half a pizza is the same as 0.5 of a pizza." },
     ],
   },
   {
@@ -194,16 +196,16 @@ const SECTIONS: Section[] = [
     moderateThreshold: 35,
     highThreshold: 60,
     questions: [
-      { id: "sl1", text: "Do you regularly experience word-finding difficulties when speaking — where the word you want is 'on the tip of your tongue' but won't come, causing you to pause, use a substitute word, or describe the word instead?", trait: "word-finding difficulty" },
-      { id: "sl2", text: "Do you struggle to follow multi-step verbal instructions without asking for them to be repeated or written down — for example, a sequence of three or more directions given verbally?", trait: "verbal instruction processing difficulty" },
-      { id: "sl3", text: "Do you find it significantly harder to follow conversations or instructions when there is background noise — such as in a classroom, canteen, or busy room — compared to a quiet environment?", trait: "auditory processing in noise" },
-      { id: "sl4", text: "Do you sometimes misunderstand what people say and respond in a way that seems off-topic or unexpected to them — suggesting you processed the words differently from what was intended?", trait: "language comprehension difficulty" },
-      { id: "sl5", text: "Do you find it difficult to structure your sentences clearly when speaking — for example, trailing off mid-sentence, losing your train of thought, or struggling to express a complex idea verbally?", trait: "expressive language difficulty" },
-      { id: "sl6", text: "Have others commented that your speech is difficult to understand — for example that you mumble, rush your words, mispronounce sounds, or are unclear in certain situations?", trait: "speech intelligibility difficulty" },
-      { id: "sl7", text: "Do you find non-literal language confusing — for example idioms ('bite the bullet'), metaphors ('she has a heart of gold'), or sarcasm — needing a moment to work out what was actually meant?", trait: "non-literal language difficulty" },
-      { id: "sl8", text: "Do you find conversational turn-taking difficult — either frequently talking over others, interrupting without realising, or struggling to know when it is your turn to speak?", trait: "conversational turn-taking difficulty" },
-      { id: "sl9", text: "Do you find it hard to understand or use vocabulary at the level expected for your age — for example frequently encountering words you don't know, or struggling to use precise vocabulary when writing or speaking?", trait: "vocabulary knowledge difficulty" },
-      { id: "sl10", text: "Do you find it difficult to retell a story, event, or explanation in a clear, logical sequence — often jumping between parts, leaving out key information, or confusing the listener?", trait: "narrative and sequencing difficulty" },
+      { id: "sl1", text: "Do you regularly experience word-finding difficulties when speaking — where the word you want is 'on the tip of your tongue' but won't come, causing you to pause, use a substitute word, or describe the word instead?", trait: "word-finding difficulty", example: "You want to say 'microscope' but the word won't come, so you say 'that thing you look through to see tiny stuff' instead." },
+      { id: "sl2", text: "Do you struggle to follow multi-step verbal instructions without asking for them to be repeated or written down — for example, a sequence of three or more directions given verbally?", trait: "verbal instruction processing difficulty", example: "Your teacher says 'Put your books away, get out your planner, and write down tonight's homework' — and you only remember the first instruction." },
+      { id: "sl3", text: "Do you find it significantly harder to follow conversations or instructions when there is background noise — such as in a classroom, canteen, or busy room — compared to a quiet environment?", trait: "auditory processing in noise", example: "In the noisy school canteen, you can't follow what your friend is saying even though they're sitting right next to you." },
+      { id: "sl4", text: "Do you sometimes misunderstand what people say and respond in a way that seems off-topic or unexpected to them — suggesting you processed the words differently from what was intended?", trait: "language comprehension difficulty", example: "Someone asks 'Can you pass the time?' meaning 'What time is it?', and you start talking about how to make time go faster." },
+      { id: "sl5", text: "Do you find it difficult to structure your sentences clearly when speaking — for example, trailing off mid-sentence, losing your train of thought, or struggling to express a complex idea verbally?", trait: "expressive language difficulty", example: "You start explaining something to a friend and halfway through the sentence you forget what you were going to say and trail off." },
+      { id: "sl6", text: "Have others commented that your speech is difficult to understand — for example that you mumble, rush your words, mispronounce sounds, or are unclear in certain situations?", trait: "speech intelligibility difficulty", example: "People often ask you to repeat yourself, or your friends say 'What?' because you speak too fast or mumble without realising." },
+      { id: "sl7", text: "Do you find non-literal language confusing — for example idioms ('bite the bullet'), metaphors ('she has a heart of gold'), or sarcasm — needing a moment to work out what was actually meant?", trait: "non-literal language difficulty", example: "Your teacher says 'Let's hit the books' and you momentarily picture actually hitting a book before realising they mean 'let's start studying'." },
+      { id: "sl8", text: "Do you find conversational turn-taking difficult — either frequently talking over others, interrupting without realising, or struggling to know when it is your turn to speak?", trait: "conversational turn-taking difficulty", example: "In a group discussion, you either talk over people without meaning to, or you sit in silence because you can never find the right moment to speak." },
+      { id: "sl9", text: "Do you find it hard to understand or use vocabulary at the level expected for your age — for example frequently encountering words you don't know, or struggling to use precise vocabulary when writing or speaking?", trait: "vocabulary knowledge difficulty", example: "In science, you hear words like 'photosynthesis' or 'evaporation' and they don't stick, even after the teacher has explained them several times." },
+      { id: "sl10", text: "Do you find it difficult to retell a story, event, or explanation in a clear, logical sequence — often jumping between parts, leaving out key information, or confusing the listener?", trait: "narrative and sequencing difficulty", example: "You try to tell your mum about a film you watched, but you keep jumping between scenes and she says 'Wait, I'm confused — what happened first?'" },
     ],
   },
   {
@@ -219,16 +221,16 @@ const SECTIONS: Section[] = [
     moderateThreshold: 35,
     highThreshold: 60,
     questions: [
-      { id: "an1", text: "Over the past two weeks, how often have you felt persistently nervous, anxious, or on edge — not just in response to a specific event, but as a general background feeling?", trait: "persistent anxiety" },
-      { id: "an2", text: "Over the past two weeks, how often have you found yourself unable to stop or control worrying — even when you know the worry is excessive or unlikely to be helpful?", trait: "uncontrollable worry" },
-      { id: "an3", text: "Over the past two weeks, how often have you felt unable to relax or 'switch off' — even in situations that should feel safe, calm, or enjoyable?", trait: "inability to relax" },
-      { id: "an4", text: "Over the past two weeks, how often have you felt so restless or keyed up that it is hard to sit still — feeling a physical tension or agitation that is difficult to settle?", trait: "anxious restlessness" },
-      { id: "an5", text: "Over the past two weeks, how often have you become easily irritable or short-tempered — reacting more strongly than the situation warrants, and finding it hard to manage your emotional responses?", trait: "anxiety-driven irritability" },
-      { id: "an6", text: "Over the past two weeks, how often have you felt a sense of dread or fear that something awful is about to happen — even when there is no clear or immediate threat?", trait: "anticipatory fear" },
-      { id: "an7", text: "Do you regularly avoid situations, places, or activities because of anxiety — for example, social situations, school, crowded places, or anything that might trigger worry or discomfort?", trait: "anxiety avoidance" },
-      { id: "an8", text: "Do you experience physical symptoms of anxiety in everyday situations — such as a racing heart, difficulty breathing, sweating, stomach aches, headaches, or a feeling of unreality?", trait: "somatic anxiety symptoms" },
-      { id: "an9", text: "Do you find yourself spending significant time worrying about things that might go wrong in the future — replaying scenarios, planning for worst cases, or struggling to stop 'what if' thinking?", trait: "future-focused worry" },
-      { id: "an10", text: "Has anxiety, worry, or fear significantly affected your ability to attend school or work, maintain friendships, or take part in activities you would otherwise enjoy?", trait: "anxiety impact on functioning" },
+      { id: "an1", text: "Over the past two weeks, how often have you felt persistently nervous, anxious, or on edge — not just in response to a specific event, but as a general background feeling?", trait: "persistent anxiety", example: "You wake up in the morning already feeling worried, even though nothing specific has happened — it's just a constant uneasy feeling in your stomach." },
+      { id: "an2", text: "Over the past two weeks, how often have you found yourself unable to stop or control worrying — even when you know the worry is excessive or unlikely to be helpful?", trait: "uncontrollable worry", example: "You keep worrying about a test next week even though you've revised, and you can't stop the thoughts even when you try to distract yourself." },
+      { id: "an3", text: "Over the past two weeks, how often have you felt unable to relax or 'switch off' — even in situations that should feel safe, calm, or enjoyable?", trait: "inability to relax", example: "You're watching your favourite TV show at home but you still feel tense and can't enjoy it because your mind keeps racing." },
+      { id: "an4", text: "Over the past two weeks, how often have you felt so restless or keyed up that it is hard to sit still — feeling a physical tension or agitation that is difficult to settle?", trait: "anxious restlessness", example: "You're sitting in class and your body feels tight and jittery — you can't stop shifting in your seat and your muscles feel tense." },
+      { id: "an5", text: "Over the past two weeks, how often have you become easily irritable or short-tempered — reacting more strongly than the situation warrants, and finding it hard to manage your emotional responses?", trait: "anxiety-driven irritability", example: "Your sibling asks you a simple question and you snap at them, then feel bad about it afterwards because it wasn't a big deal." },
+      { id: "an6", text: "Over the past two weeks, how often have you felt a sense of dread or fear that something awful is about to happen — even when there is no clear or immediate threat?", trait: "anticipatory fear", example: "You're having a normal day but suddenly get a strong feeling that something terrible is about to happen, even though everything is fine." },
+      { id: "an7", text: "Do you regularly avoid situations, places, or activities because of anxiety — for example, social situations, school, crowded places, or anything that might trigger worry or discomfort?", trait: "anxiety avoidance", example: "You skip a friend's party because the thought of being in a room full of people makes you feel sick, even though you wanted to go." },
+      { id: "an8", text: "Do you experience physical symptoms of anxiety in everyday situations — such as a racing heart, difficulty breathing, sweating, stomach aches, headaches, or a feeling of unreality?", trait: "somatic anxiety symptoms", example: "Before school, you get stomach aches or feel like you can't breathe properly, even though nothing specific is worrying you." },
+      { id: "an9", text: "Do you find yourself spending significant time worrying about things that might go wrong in the future — replaying scenarios, planning for worst cases, or struggling to stop 'what if' thinking?", trait: "future-focused worry", example: "You lie in bed thinking 'What if I fail the exam? What if my friends don't like me? What if something bad happens?' and you can't stop." },
+      { id: "an10", text: "Has anxiety, worry, or fear significantly affected your ability to attend school or work, maintain friendships, or take part in activities you would otherwise enjoy?", trait: "anxiety impact on functioning", example: "You've missed several days of school this term because the anxiety was so bad you couldn't get out of bed, or you've stopped going to clubs you used to love." },
     ],
   },
   {
@@ -244,16 +246,16 @@ const SECTIONS: Section[] = [
     moderateThreshold: 35,
     highThreshold: 60,
     questions: [
-      { id: "ml1", text: "Does it take significantly longer than peers to learn and consolidate new concepts or skills — requiring many more repetitions, examples, and explanations before the learning is secure?", trait: "slow acquisition of new learning" },
-      { id: "ml2", text: "Is it hard to retain new information over time — for example, appearing to understand something in a lesson but having little or no recall of it the following week, even after practice?", trait: "retention difficulty" },
-      { id: "ml3", text: "Is it difficult to apply knowledge learned in one context to a different situation — for example, understanding a maths concept in maths but not recognising how to use it in science or everyday life?", trait: "transfer of learning difficulty" },
-      { id: "ml4", text: "Are abstract concepts — such as fractions, metaphors, cause and effect, or the passage of time — particularly difficult to understand, even with concrete examples and repeated explanation?", trait: "abstract reasoning difficulty" },
-      { id: "ml5", text: "Is it hard to work independently on tasks without step-by-step adult support — for example, not knowing how to start, getting stuck quickly, or needing frequent reassurance and prompting?", trait: "independence in learning difficulty" },
-      { id: "ml6", text: "Is it difficult to keep up with the pace of lessons, discussions, or group activities — often still processing earlier information when the class has moved on?", trait: "processing speed difficulty" },
-      { id: "ml7", text: "Is reading and writing at a noticeably lower level than expected for the person's age — for example, reading age being 2 or more years behind chronological age?", trait: "below age-expected literacy" },
-      { id: "ml8", text: "Is it hard to plan and organise work without significant adult support — for example, struggling to know where to start, how to structure a response, or how to break a task into steps?", trait: "planning and organisation difficulty" },
-      { id: "ml9", text: "Does the person have difficulty understanding and using subject-specific vocabulary across the curriculum — for example, struggling with terms like 'hypothesis', 'chronological', or 'denominator'?", trait: "curriculum vocabulary difficulty" },
-      { id: "ml10", text: "Is there a noticeable gap between what the person seems to understand verbally in conversation and what they are able to produce independently in written work or assessments?", trait: "verbal-written performance gap" },
+      { id: "ml1", text: "Does it take significantly longer than peers to learn and consolidate new concepts or skills — requiring many more repetitions, examples, and explanations before the learning is secure?", trait: "slow acquisition of new learning", example: "The rest of the class grasps a new topic after one lesson, but you need the teacher to explain it three or four more times before it starts to make sense." },
+      { id: "ml2", text: "Is it hard to retain new information over time — for example, appearing to understand something in a lesson but having little or no recall of it the following week, even after practice?", trait: "retention difficulty", example: "You understood how to do long division on Monday, but by the following Monday it's as if you've never seen it before." },
+      { id: "ml3", text: "Is it difficult to apply knowledge learned in one context to a different situation — for example, understanding a maths concept in maths but not recognising how to use it in science or everyday life?", trait: "transfer of learning difficulty", example: "You can calculate percentages in maths class, but when a shop says '30% off', you don't connect it to the same skill." },
+      { id: "ml4", text: "Are abstract concepts — such as fractions, metaphors, cause and effect, or the passage of time — particularly difficult to understand, even with concrete examples and repeated explanation?", trait: "abstract reasoning difficulty", example: "You struggle to understand why characters in a story behave the way they do, or you find it hard to grasp ideas like 'democracy' or 'fairness' without very concrete examples." },
+      { id: "ml5", text: "Is it hard to work independently on tasks without step-by-step adult support — for example, not knowing how to start, getting stuck quickly, or needing frequent reassurance and prompting?", trait: "independence in learning difficulty", example: "When the teacher says 'work on this independently', you sit staring at the page not knowing where to begin, and you need someone to guide you through each step." },
+      { id: "ml6", text: "Is it difficult to keep up with the pace of lessons, discussions, or group activities — often still processing earlier information when the class has moved on?", trait: "processing speed difficulty", example: "The teacher has moved on to the next topic, but you're still trying to understand the previous point and feel left behind." },
+      { id: "ml7", text: "Is reading and writing at a noticeably lower level than expected for the person's age — for example, reading age being 2 or more years behind chronological age?", trait: "below age-expected literacy", example: "You're in Year 9 but find it easier to read books aimed at Year 6 or 7, and your written work looks much simpler than your classmates'." },
+      { id: "ml8", text: "Is it hard to plan and organise work without significant adult support — for example, struggling to know where to start, how to structure a response, or how to break a task into steps?", trait: "planning and organisation difficulty", example: "When given an essay to write, you don't know how to plan it or what order to put things in, and you need someone to create a step-by-step plan for you." },
+      { id: "ml9", text: "Does the person have difficulty understanding and using subject-specific vocabulary across the curriculum — for example, struggling with terms like 'hypothesis', 'chronological', or 'denominator'?", trait: "curriculum vocabulary difficulty", example: "Words like 'evaluate', 'analyse', or 'justify' in exam questions confuse you because you're not sure what they're actually asking you to do." },
+      { id: "ml10", text: "Is there a noticeable gap between what the person seems to understand verbally in conversation and what they are able to produce independently in written work or assessments?", trait: "verbal-written performance gap", example: "You can explain your ideas really well when talking to the teacher, but when you write them down in a test, the answer is much shorter and less detailed." },
     ],
   },
 ];
@@ -266,10 +268,18 @@ const RESPONSE_OPTIONS = [
   { value: 4, label: "Always", description: "Constantly" },
 ];
 
+const CANT_SAY_VALUE = -1;
+
 // ─── Scoring ──────────────────────────────────────────────────────────────────
 function getPercentage(answers: Record<string, number>, section: Section): number {
-  const maxScore = section.questions.length * 4;
-  const score = section.questions.reduce((sum, q) => sum + (answers[q.id] ?? 0), 0);
+  // Exclude "Can't Say" answers from scoring
+  const answeredQuestions = section.questions.filter(q => {
+    const val = answers[q.id];
+    return val !== undefined && val !== CANT_SAY_VALUE;
+  });
+  const maxScore = answeredQuestions.length * 4;
+  if (maxScore === 0) return 0;
+  const score = answeredQuestions.reduce((sum, q) => sum + (answers[q.id] ?? 0), 0);
   return Math.round((score / maxScore) * 100);
 }
 
@@ -828,6 +838,12 @@ export default function SendScreener() {
               <p className="text-base font-semibold text-gray-900 leading-relaxed">
                 {question.text}
               </p>
+              {question.example && (
+                <div className="mt-3 p-3 bg-indigo-50 border border-indigo-100 rounded-xl">
+                  <p className="text-xs font-medium text-indigo-700 mb-0.5">Real-life example:</p>
+                  <p className="text-xs text-indigo-600 leading-relaxed">{question.example}</p>
+                </div>
+              )}
               <p className="text-xs text-gray-400 mt-2 italic">
                 Based on your experience over the past 6–12 months
               </p>
@@ -868,6 +884,34 @@ export default function SendScreener() {
                   </motion.button>
                 );
               })}
+              {/* Can't Say option for self-report questions */}
+              <motion.button
+                onClick={() => handleAnswer(question.id, CANT_SAY_VALUE)}
+                whileTap={{ scale: 0.97 }}
+                className={`w-full flex items-center gap-4 p-4 rounded-2xl border-2 text-left transition-all duration-150 ${
+                  currentAnswer === CANT_SAY_VALUE
+                    ? "bg-gray-600 border-transparent text-white shadow-lg"
+                    : "bg-white border-dashed border-gray-300 text-gray-500 hover:border-gray-400 hover:bg-gray-50 active:bg-gray-100"
+                }`}
+              >
+                <div className="flex-1">
+                  <p className={`font-semibold text-sm ${currentAnswer === CANT_SAY_VALUE ? "text-white" : "text-gray-600"}`}>
+                    Can't Say
+                  </p>
+                  <p className={`text-xs mt-0.5 ${currentAnswer === CANT_SAY_VALUE ? "text-white/80" : "text-gray-400"}`}>
+                    I'm not sure or this doesn't apply to me
+                  </p>
+                </div>
+                {currentAnswer === CANT_SAY_VALUE && (
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className="w-6 h-6 rounded-full bg-white/30 flex items-center justify-center flex-shrink-0"
+                  >
+                    <CheckCircle2 className="w-4 h-4 text-white" />
+                  </motion.div>
+                )}
+              </motion.button>
             </div>
           </motion.div>
         </AnimatePresence>
