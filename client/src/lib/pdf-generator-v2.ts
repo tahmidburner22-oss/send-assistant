@@ -178,7 +178,7 @@ export function printWorksheetElement(
     }
     @page {
       size: A4 portrait;
-      margin: 6mm 6mm 8mm 6mm;
+      margin: 5mm 5mm 6mm 5mm;
     }
     @media print {
       html, body { background: ${overlayColor} !important; }
@@ -188,7 +188,7 @@ export function printWorksheetElement(
       ${perPageCss}
     }
     @media screen {
-      body { padding: 20mm; max-width: 794px; margin: 0 auto; }
+      body { padding: 8mm; max-width: 210mm; margin: 0 auto; overflow: visible; }
       .ws-section { page-break-inside: avoid; break-inside: avoid; }
       ${hideTeacher}
     }
@@ -201,6 +201,9 @@ export function printWorksheetElement(
       line-height: ${fmt.lineHeight};
       letter-spacing: ${fmt.letterSpacing};
       word-spacing: ${fmt.wordSpacing};
+      width: 100%;
+      max-width: 100%;
+      overflow: visible;
     }
 
     /* ── Header ── TES-style: rectangular purple border */
@@ -217,9 +220,10 @@ export function printWorksheetElement(
       border-radius: 4px;
       border: 1.5px solid #5b21b6;
       background: #ffffff;
-      overflow: hidden;
+      overflow: visible;
       page-break-inside: avoid;
       break-inside: avoid;
+      box-sizing: border-box;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
     }
@@ -238,13 +242,14 @@ export function printWorksheetElement(
       print-color-adjust: exact;
     }
     .ws-section-body {
-      padding: 8px 10px;
+      padding: 10px 12px;
       font-size: ${fmt.fontSize}px;
       line-height: ${fmt.lineHeight};
       letter-spacing: ${fmt.letterSpacing};
       word-spacing: ${fmt.wordSpacing};
       white-space: pre-wrap;
       word-break: break-word;
+      overflow-wrap: anywhere;
       font-family: ${fmt.fontFamily};
       background: #ffffff !important;
       -webkit-print-color-adjust: exact;
