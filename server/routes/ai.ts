@@ -368,8 +368,11 @@ router.get("/stats", requireAuth, requireAdmin, (req: Request, res: Response) =>
 
 // ── Provider implementations ──────────────────────────────────────────────────
 async function callGroq(system: string, user: string, key: string, model: string, maxTokens: number): Promise<string> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 30000);
   const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
     method: "POST",
+    signal: controller.signal,
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
     body: JSON.stringify({
       model,
@@ -381,16 +384,20 @@ async function callGroq(system: string, user: string, key: string, model: string
       temperature: 0.3,
     }),
   });
+  clearTimeout(timeout);
   if (!res.ok) throw new Error(`Groq ${res.status}: ${(await res.text()).slice(0, 200)}`);
   const data = await res.json() as any;
   return data.choices[0].message.content;
 }
 
 async function callGemini(system: string, user: string, key: string, maxTokens: number): Promise<string> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 30000);
   const res = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`,
     {
       method: "POST",
+      signal: controller.signal,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         contents: [{ parts: [{ text: system ? `${system}\n\n${user}` : user }] }],
@@ -398,14 +405,18 @@ async function callGemini(system: string, user: string, key: string, maxTokens: 
       }),
     }
   );
+  clearTimeout(timeout);
   if (!res.ok) throw new Error(`Gemini ${res.status}: ${(await res.text()).slice(0, 200)}`);
   const data = await res.json() as any;
   return data.candidates[0].content.parts[0].text;
 }
 
 async function callOpenAI(system: string, user: string, key: string, model: string, maxTokens: number): Promise<string> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 45000);
   const res = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
+    signal: controller.signal,
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
     body: JSON.stringify({
       model,
@@ -416,6 +427,7 @@ async function callOpenAI(system: string, user: string, key: string, model: stri
       max_tokens: maxTokens,
     }),
   });
+  clearTimeout(timeout);
   if (!res.ok) throw new Error(`OpenAI ${res.status}: ${(await res.text()).slice(0, 200)}`);
   const data = await res.json() as any;
   return data.choices[0].message.content;
@@ -1115,11 +1127,14 @@ router.post("/differentiate-worksheet", requireAuth, async (req: Request, res: R
 - Include algebraic/symbolic manipulation
 - Challenge = grade 8-9 proof or multi-concept problem`;
 
-  // Only send non-teacher sections to keep prompt short
-  const pupilSections = (sections as any[]).filter((s: any) => !s.teacherOnly);
+  // Only send non-teacher sections to keep prompt short — strip word banks and worked examples
+  // to reduce token count; we only need the question sections to adjust difficulty
+  const pupilSections = (sections as any[]).filter(
+    (s: any) => !s.teacherOnly && !/word.?bank|worked.?example|reminder.?box|key.?vocab|key.?formula|learning.?obj/i.test(s.title || "")
+  );
   const existingContent = pupilSections.map((s: any, i: number) => {
-    return `=== ${s.title || `Section ${i + 1}`} ===\n${(s.content || "").slice(0, 400)}`;
-  }).join("\n\n").slice(0, 5000);
+    return `=== ${s.title || `Section ${i + 1}`} ===\n${(s.content || "").slice(0, 300)}`;
+  }).join("\n\n").slice(0, 3000);
 
   const system = `You are an expert UK teacher differentiating a worksheet for ${yr} pupils. Transform the existing worksheet to ${tier} tier difficulty. Preserve the topic and structure — only adjust question difficulty. Return valid JSON only.`;
 
@@ -1140,7 +1155,7 @@ Return a JSON object:
 }`;
 
   try {
-    const { content, provider } = await callWithFallback(system, user, 3000, undefined, schoolId);
+    const { content, provider } = await callWithFallback(system, user, 2000, undefined, schoolId);
     const tryParse = (raw: string): any | null => {
       try {
         const s = raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/, "").trim();
