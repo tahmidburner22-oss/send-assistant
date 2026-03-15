@@ -997,7 +997,7 @@ function formatContent(content: string, fmt: ReturnType<typeof getSendFormatting
     // Step line
     if (trimmed.match(/^Step \d+:/)) {
       elements.push(
-        <div key={idx} style={{ fontWeight: 700, color: "#059669", marginTop: "8px", marginBottom: "2px", fontSize: `${textSize}px`, fontFamily }}>
+        <div key={idx} style={{ fontWeight: 700, color: "#5b21b6", marginTop: "8px", marginBottom: "2px", fontSize: `${textSize}px`, fontFamily }}>
           <span dangerouslySetInnerHTML={{ __html: renderMath(trimmed) }} />
         </div>
       );
@@ -1122,10 +1122,10 @@ function SelfReflectionSection({ content, fmt }: { content: string; fmt: ReturnT
         const clean = line.replace(/^[•\-\*]\s*/, "").replace(/^I can\s*/i, "").trim();
         if (!clean) return null;
         return (
-          <div key={i} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "8px 0", borderBottom: "1px solid #fde68a" }}>
+          <div key={i} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "8px 0", borderBottom: "1px solid #ddd6fe" }}>
             <div style={{ display: "flex", gap: "6px", flexShrink: 0 }}>
               {["🔴", "🟡", "🟢"].map((emoji, ci) => (
-                <div key={ci} style={{ width: "26px", height: "26px", borderRadius: "50%", border: "2px solid #fcd34d", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "13px" }}>
+                <div key={ci} style={{ width: "26px", height: "26px", borderRadius: "50%", border: "2px solid #ddd6fe", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "13px" }}>
                   {emoji}
                 </div>
               ))}
@@ -1134,13 +1134,13 @@ function SelfReflectionSection({ content, fmt }: { content: string; fmt: ReturnT
           </div>
         );
       })}
-      <div style={{ marginTop: "6px", fontSize: `${textSize - 2}px`, color: "#92400e", fontStyle: "italic", fontFamily }}>
+      <div style={{ marginTop: "6px", fontSize: `${textSize - 2}px`, color: "#5b21b6", fontStyle: "italic", fontFamily }}>
         🔴 Not yet &nbsp;|&nbsp; 🟡 Getting there &nbsp;|&nbsp; 🟢 I've got it!
       </div>
       {/* Open reflection question */}
       {openQ && (
         <div style={{ marginTop: "14px", background: "white", border: "1.5px solid #5b21b6", borderRadius: "4px", padding: "10px 12px" }}>
-          <div style={{ fontSize: `${textSize - 1}px`, fontWeight: 600, color: "#92400e", fontFamily, marginBottom: "6px" }} dangerouslySetInnerHTML={{ __html: "💭 " + renderMath(openQ) }} />
+          <div style={{ fontSize: `${textSize - 1}px`, fontWeight: 600, color: "#5b21b6", fontFamily, marginBottom: "6px" }} dangerouslySetInnerHTML={{ __html: "💭 " + renderMath(openQ) }} />
           <div style={{ borderBottom: "1px solid #d1d5db", height: "28px", marginBottom: "6px" }} />
           <div style={{ borderBottom: "1px solid #d1d5db", height: "28px" }} />
         </div>
@@ -1184,7 +1184,7 @@ function ReminderBoxSection({ content, fmt }: { content: string; fmt: ReturnType
   const otherLines = lines.filter(l => !/^Step\s*\d+/i.test(l.trim()));
   return (
     <div style={{ background: "white", border: "1.5px solid #5b21b6", borderRadius: "4px", padding: "10px 12px" }}>
-      <div style={{ fontSize: `${textSize - 1}px`, fontWeight: 700, color: "#92400e", marginBottom: "10px", fontFamily, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+      <div style={{ fontSize: `${textSize - 1}px`, fontWeight: 700, color: "#5b21b6", marginBottom: "10px", fontFamily, textTransform: "uppercase", letterSpacing: "0.05em" }}>
         ⚠️ Keep this in mind while you work:
       </div>
       {steps.length > 0 ? (
@@ -1196,9 +1196,9 @@ function ReminderBoxSection({ content, fmt }: { content: string; fmt: ReturnType
             return (
               <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: "10px" }}>
                 <div style={{
-                  background: "#f59e0b",
-                  color: "white",
-                  borderRadius: "6px",
+                  background: "#ede9fe",
+                  color: "#5b21b6",
+                  borderRadius: "4px",
                   padding: "3px 10px",
                   fontSize: `${textSize - 2}px`,
                   fontWeight: 700,
@@ -1256,14 +1256,14 @@ function WordProblemsSection({ content, fmt }: { content: string; fmt: ReturnTyp
           borderRadius: "4px",
           padding: "10px 12px",
         }}>
-          <div style={{ fontSize: `${textSize - 2}px`, fontWeight: 700, color: "#0e7490", marginBottom: "6px", fontFamily, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+          <div style={{ fontSize: `${textSize - 2}px`, fontWeight: 700, color: "#5b21b6", marginBottom: "6px", fontFamily, textTransform: "uppercase", letterSpacing: "0.05em" }}>
             Problem {i + 1}
           </div>
           {problem.map((line, li) => (
             <div key={li} style={{ fontSize: `${textSize}px`, color: "#1f2937", fontFamily, lineHeight, marginBottom: "4px" }}
               dangerouslySetInnerHTML={{ __html: renderMath(line.replace(/^\d+[.)\s]+/, "")) }} />
           ))}
-          <div style={{ marginTop: "10px", borderTop: "1px dashed #a5f3fc", paddingTop: "8px" }}>
+          <div style={{ marginTop: "10px", borderTop: "1px dashed #ddd6fe", paddingTop: "8px" }}>
             <div style={{ fontSize: `${textSize - 2}px`, color: "#9ca3af", marginBottom: "4px", fontFamily }}>Working space &amp; answer:</div>
             {[1, 2].map(n => (
               <div key={n} style={{ borderBottom: "1px solid #d1d5db", height: "26px", marginBottom: "6px" }} />
@@ -1411,7 +1411,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(({
               </div>
               <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
                 {isTeacherSection && (
-                  <span style={{ background: "#fef3c7", color: "#92400e", padding: "2px 8px", borderRadius: "10px", fontSize: "10px", fontWeight: 700 }}>
+                  <span style={{ background: "#ede9fe", color: "#5b21b6", padding: "2px 8px", borderRadius: "10px", fontSize: "10px", fontWeight: 700 }}>
                     👩‍🏫 TEACHER ONLY
                   </span>
                 )}
@@ -1431,12 +1431,12 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(({
                   </span>
                 )}
                 {section.type === "reminder-box" && (
-                  <span style={{ background: "#fef3c7", color: "#92400e", padding: "2px 8px", borderRadius: "10px", fontSize: "10px", fontWeight: 600 }}>
+                  <span style={{ background: "#ede9fe", color: "#5b21b6", padding: "2px 8px", borderRadius: "10px", fontSize: "10px", fontWeight: 600 }}>
                     📌 3 Key Steps
                   </span>
                 )}
                 {section.type === "word-problems" && (
-                  <span style={{ background: "#cffafe", color: "#0e7490", padding: "2px 8px", borderRadius: "10px", fontSize: "10px", fontWeight: 600 }}>
+                  <span style={{ background: "#ede9fe", color: "#5b21b6", padding: "2px 8px", borderRadius: "10px", fontSize: "10px", fontWeight: 600 }}>
                     🌍 Real Life
                   </span>
                 )}
