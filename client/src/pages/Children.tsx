@@ -936,10 +936,9 @@ If the submission is empty or too short to mark, return mark: "N/A", feedback: "
               </div>
 
               <Tabs defaultValue="assignments">
-                <TabsList className="w-full grid grid-cols-4 h-9">
+                <TabsList className="w-full grid grid-cols-3 h-9">
                   <TabsTrigger value="assignments" className="text-xs">Assignments ({selectedChild.assignments.length})</TabsTrigger>
                   <TabsTrigger value="submissions" className="text-xs">Submissions ({selectedChild.submissions.length})</TabsTrigger>
-                  <TabsTrigger value="progression" className="text-xs"><Layers className="h-3 w-3 mr-1" />Progression</TabsTrigger>
                   <TabsTrigger value="scheduler" className="text-xs"><Zap className="h-3 w-3 mr-1" />Scheduler</TabsTrigger>
                 </TabsList>
 
@@ -1010,12 +1009,7 @@ If the submission is empty or too short to mark, return mark: "N/A", feedback: "
                   ))}
                 </TabsContent>
 
-                {/* ── Curriculum Progression Tab ── */}
-                <TabsContent value="progression" className="mt-3 space-y-3">
-                  <ProgressionTab child={selectedChild} />
-                </TabsContent>
-
-                {/* ── AI Auto-Assignment Scheduler Tab ── */}
+                {/* ── AI Auto-Assignment Scheduler Tab (with integrated Skill Ladder) ── */}
                 <TabsContent value="scheduler" className="mt-3 space-y-3">
                   {(() => {
                     const cfg = scheduler.getConfig(selectedChild.id);
@@ -1170,6 +1164,59 @@ If the submission is empty or too short to mark, return mark: "N/A", feedback: "
                           )}
                           <p className="text-[10px] text-muted-foreground">Topics rotate automatically through the full {cfg.subject} curriculum ({bank.length} topics).</p>
                         </div>
+
+                        {/* Integrated Skill Ladder */}
+                        {(() => {
+                          const progressions = getProgressionsForSubject(cfg.subject);
+                          if (progressions.length === 0) return null;
+                          return (
+                            <div className="p-3 rounded-xl border border-purple-200 bg-purple-50/50 space-y-2">
+                              <div className="flex items-center gap-2">
+                                <Layers className="h-4 w-4 text-purple-600" />
+                                <p className="text-xs font-semibold text-purple-800">Skill Ladder Steps</p>
+                              </div>
+                              <p className="text-[10px] text-purple-600">Structured progression steps for each topic. The system recommends the next step based on performance.</p>
+                              <div className="space-y-1">
+                                {progressions.map(prog => (
+                                  <details key={prog.topicId} className="group">
+                                    <summary className="flex items-center justify-between p-2 rounded-lg border border-border/60 hover:border-purple-300 hover:bg-purple-50 transition-all cursor-pointer text-left">
+                                      <div className="flex items-center gap-2">
+                                        <div className="h-5 w-5 rounded-full bg-purple-600 flex items-center justify-center">
+                                          <span className="text-[9px] text-white font-bold">{prog.steps.length}</span>
+                                        </div>
+                                        <div>
+                                          <p className="text-xs font-medium">{prog.topicName}</p>
+                                          <p className="text-[10px] text-muted-foreground">{prog.steps.length} skill steps</p>
+                                        </div>
+                                      </div>
+                                      <ChevronRight className="h-3.5 w-3.5 text-muted-foreground group-open:rotate-90 transition-transform" />
+                                    </summary>
+                                    <div className="mt-1.5 ml-3 space-y-1">
+                                      {prog.steps.map((step, i) => (
+                                        <div key={step.id} className="flex items-start gap-2 p-2 rounded-lg border border-border/40 bg-white">
+                                          <div className="h-5 w-5 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                            <span className="text-[9px] text-purple-700 font-bold">{i + 1}</span>
+                                          </div>
+                                          <div className="flex-1 min-w-0">
+                                            <p className="text-[11px] font-medium">{step.title}</p>
+                                            <p className="text-[10px] text-muted-foreground">{step.description}</p>
+                                            {step.keyVocabulary.length > 0 && (
+                                              <div className="flex flex-wrap gap-1 mt-1">
+                                                {step.keyVocabulary.map(v => (
+                                                  <span key={v} className="text-[9px] bg-purple-100 text-purple-700 rounded px-1.5 py-0.5">{v}</span>
+                                                ))}
+                                              </div>
+                                            )}
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </details>
+                                ))}
+                              </div>
+                            </div>
+                          );
+                        })()}
 
                         {/* Frequency + Difficulty row */}
                         <div className="grid grid-cols-2 gap-3">
