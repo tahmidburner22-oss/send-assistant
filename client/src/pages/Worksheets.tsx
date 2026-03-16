@@ -572,9 +572,13 @@ export default function Worksheets() {
     setDiagnosticResult(null);
     setDiagnosticFailed(false);
     try {
+      const storedToken = typeof localStorage !== "undefined" ? localStorage.getItem("send_token") : null;
+      const diagnosticHeaders: Record<string, string> = { "Content-Type": "application/json" };
+      if (storedToken) diagnosticHeaders["Authorization"] = `Bearer `;
       const response = await fetch("/api/ai/diagnostic-starter", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: diagnosticHeaders,
+        credentials: "include",
         body: JSON.stringify({ subject, yearGroup, topic, sendNeed: sendNeed && sendNeed !== "none-selected" ? sendNeed : undefined }),
       });
       if (!response.ok) throw new Error("Diagnostic generation failed");
@@ -933,26 +937,112 @@ export default function Worksheets() {
   };
 
   // ─── Natural Language Input handler ───────────────────────────────────────────
-  const handleNlInput = () => {
+  const handleNlInput = async () => {
     if (!nlInput.trim()) return;
-    const parsed = parseNaturalLanguageInput(nlInput);
+    const rawPrompt = nlInput.trim();
+    const parsed = parseNaturalLanguageInput(rawPrompt);
+    const nextSubject = parsed.subject || subject;
+    const nextYearGroup = parsed.yearGroup || yearGroup;
+    const nextTopic = parsed.topic || topic;
+    const nextDifficulty = parsed.difficulty || difficulty;
+    const nextSendNeed = parsed.sendNeed || sendNeed;
+    const nextInstructions = additionalInstructions.trim() || rawPrompt;
+
     if (parsed.subject) setSubject(parsed.subject);
     if (parsed.yearGroup) setYearGroup(parsed.yearGroup);
     if (parsed.topic) setTopic(parsed.topic);
     if (parsed.difficulty) setDifficulty(parsed.difficulty);
     if (parsed.sendNeed) setSendNeed(parsed.sendNeed);
-    const filled: string[] = [];
-    if (parsed.subject) filled.push("Subject");
-    if (parsed.yearGroup) filled.push("Year Group");
-    if (parsed.topic) filled.push("Topic");
-    if (parsed.difficulty) filled.push("Difficulty");
-    if (parsed.sendNeed) filled.push("SEND Need");
-    if (filled.length > 0) {
-      toast.success(`Auto-filled: ${filled.join(", ")}`);
-    } else {
-      toast("Could not extract fields. Try: \"Year 10 Maths Fractions for dyslexia\"", { icon: "\u2139\uFE0F" });
+    if (!additionalInstructions.trim()) setAdditionalInstructions(rawPrompt);
+
+    if (!nextSubject || !nextYearGroup || !nextTopic) {
+      const missing: string[] = [];
+      if (!nextSubject) missing.push("Subject");
+      if (!nextYearGroup) missing.push("Year Group");
+      if (!nextTopic) missing.push("Topic");
+      toast.error(`Please include ${missing.join(", ")} in your request.`);
+      return;
     }
+
     setNlInput("");
+    setNlExpanded(false);
+    setSubject(nextSubject);
+    setYearGroup(nextYearGroup);
+    setTopic(nextTopic);
+    setDifficulty(nextDifficulty);
+    setSendNeed(nextSendNeed);
+    setLoading(true);
+    setEditedSections({});
+    setEditMode(false);
+    setRating(0);
+    setSavedWorksheetId(null);
+    setVoiceAnswers({});
+
+    let generatedWs: AnyWorksheet | null = null;
+    try {
+      if (useAI) {
+        const result = await aiGenerateWorksheet({
+          subject: nextSubject,
+          topic: nextTopic,
+          yearGroup: nextYearGroup,
+          sendNeed: nextSendNeed && nextSendNeed !== "none-selected" ? nextSendNeed : undefined,
+          difficulty: nextDifficulty,
+          examBoard: examBoard !== "none" ? examBoard : undefined,
+          includeAnswers,
+          examStyle,
+          additionalInstructions: nextInstructions,
+          generateDiagram,
+          worksheetLength,
+          targetPages: targetPages || undefined,
+          readingAge: readingAge || undefined,
+        });
+        generatedWs = { ...result, isAI: true } as AIWorksheet;
+        toast.success(generateDiagram ? "Worksheet with diagram generated!" : "Worksheet generated!");
+      } else {
+        generatedWs = generateWorksheet({
+          subject: nextSubject,
+          topic: nextTopic,
+          yearGroup: nextYearGroup,
+          sendNeed: nextSendNeed || undefined,
+          difficulty: nextDifficulty,
+          examBoard,
+          includeAnswers,
+          additionalInstructions: nextInstructions,
+        });
+        toast.success("Worksheet generated!");
+      }
+    } catch (err: any) {
+      console.error("Natural-language worksheet generation failed:", err);
+      toast.error("Could not generate from that request. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+
+    if (generatedWs) {
+      setGenerated(generatedWs);
+      setDiffVersions({});
+      const ws = generatedWs;
+      const sectionsToSave = ws.sections.map(s => ({ ...s }));
+      const content = sectionsToSave.filter(s => !s.teacherOnly).map(s => `## ${s.title}\n${s.content}`).join("\n\n");
+      const teacherContent = sectionsToSave.map(s => `## ${s.title}\n${s.content}`).join("\n\n");
+      saveWorksheet({
+        title: ws.title,
+        subtitle: (ws as any).subtitle,
+        subject: ws.metadata.subject,
+        topic: ws.metadata.topic,
+        yearGroup: ws.metadata.yearGroup,
+        sendNeed: ws.metadata.sendNeed,
+        difficulty: ws.metadata.difficulty,
+        examBoard: ws.metadata.examBoard,
+        content, teacherContent, rating: 0, overlay: colorOverlay,
+        sections: sectionsToSave,
+        metadata: ws.metadata as any,
+        isAI: isAIWorksheet(ws),
+      }).then(saved => {
+        setSavedWorksheetId(saved.id);
+        refreshData();
+      }).catch(() => {});
+    }
   };
 
   // ─── One-click differentiation ────────────────────────────────────────────
@@ -1135,7 +1225,6 @@ export default function Worksheets() {
                 <span className="ml-1 bg-brand text-white text-[10px] rounded-full px-1.5 py-0">{worksheetHistory.length}</span>
               )}
             </TabsTrigger>
-            <TabsTrigger value="starter" className="text-xs gap-1 flex-1 min-w-[72px]"><MessageSquare className="w-3 h-3" /> Starter</TabsTrigger>
           </TabsList>
           </div>
 
@@ -1175,10 +1264,10 @@ export default function Worksheets() {
                       />
                     )}
                     <Button onClick={handleNlInput} disabled={!nlInput.trim()} size="sm" className="h-10 px-4 bg-brand hover:bg-brand/90 text-white shrink-0">
-                      <Sparkles className="w-4 h-4 mr-1" /> Fill
+                      <Sparkles className="w-4 h-4 mr-1" /> Generate
                     </Button>
                   </div>
-                  <p className="text-[10px] text-muted-foreground">{nlExpanded ? "Press Ctrl+Enter or click Fill to auto-fill the form. Click away to collapse." : "Click to expand and type naturally — we'll auto-fill Subject, Year Group, Topic, Difficulty, and SEND need for you."}</p>
+                  <p className="text-[10px] text-muted-foreground">{nlExpanded ? "Press Ctrl+Enter or click Generate to create a worksheet from what you typed. Click away to collapse." : "Type naturally and click Generate — Adaptly will use the details you gave to create the worksheet."}</p>
                 </div>
 
                 {/* AI Toggle */}
@@ -2053,80 +2142,6 @@ export default function Worksheets() {
           </TabsContent>
 
           {/* ─── STARTER TAB ──────────────────────────────────────────── */}
-          <TabsContent value="starter" className="mt-4">
-            <div className="space-y-4">
-              {/* Input card */}
-              <Card className="border-border/40 shadow-sm">
-                <CardContent className="p-4 flex flex-col gap-3">
-                  <div className="flex items-center gap-2">
-                    <MessageSquare className="w-4 h-4 text-brand" />
-                    <span className="font-semibold text-sm">Starter</span>
-                    {diagSheetResult && (
-                      <button
-                        onClick={() => { setDiagSheetResult(null); setDiagChatMessages([]); setDiagChatInput(""); }}
-                        className="ml-auto flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
-                      >
-                        <RotateCcw className="w-3 h-3" /> New
-                      </button>
-                    )}
-                  </div>
-                  {!diagSheetResult && (
-                    <div className="flex gap-2 items-end">
-                      <textarea
-                        className="flex-1 min-h-[72px] max-h-[160px] resize-y rounded-lg border border-border bg-background px-3 py-2.5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand/40 transition"
-                        placeholder="Generate questions to test a pupil's knowledge before starting the topic"
-                        value={diagChatInput}
-                        onChange={e => setDiagChatInput(e.target.value)}
-                        onKeyDown={e => {
-                          if (e.key === "Enter" && !e.shiftKey && !diagChatLoading) {
-                            e.preventDefault();
-                            handleDiagChatSend();
-                          }
-                        }}
-                        disabled={diagChatLoading}
-                      />
-                      <button
-                        onClick={handleDiagChatSend}
-                        disabled={diagChatLoading || !diagChatInput.trim()}
-                        className="h-10 w-10 flex items-center justify-center rounded-lg bg-brand text-white disabled:opacity-50 hover:bg-brand/90 transition-colors flex-shrink-0"
-                      >
-                        {diagChatLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                      </button>
-                    </div>
-                  )}
-                  {diagChatLoading && (
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <RefreshCw className="w-3.5 h-3.5 animate-spin" /> Generating starter questions...
-                    </div>
-                  )}
-                  {diagSheetResult && (
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <CheckCircle className="w-3.5 h-3.5 text-green-500" />
-                      Generated {diagSheetResult.questions.length} starter questions for <strong>{diagSheetResult.topic}</strong>
-                      <button
-                        onClick={() => window.print()}
-                        className="ml-auto flex items-center gap-1 text-xs bg-brand text-white px-2.5 py-1 rounded-md hover:bg-brand/90 transition-colors"
-                      >
-                        <Printer className="w-3 h-3" /> Print
-                      </button>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Worksheet-style output */}
-              {diagSheetResult && (
-                <div className="border border-border rounded-lg overflow-hidden bg-white p-6 shadow-sm">
-                  <DiagnosticStarterSheet
-                    topic={diagSheetResult.topic}
-                    questions={diagSheetResult.questions}
-                    schoolName={user?.schoolName}
-                    teacherName={user?.name}
-                  />
-                </div>
-              )}
-            </div>
-          </TabsContent>
         </Tabs>
       ) : (
         /* ─── GENERATED WORKSHEET VIEW ──────────────────────────────── */
