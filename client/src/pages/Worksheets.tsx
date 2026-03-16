@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { useLocation } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -128,6 +128,36 @@ type AnyWorksheet = GeneratedWorksheet | AIWorksheet;
 
 function isAIWorksheet(ws: AnyWorksheet): ws is AIWorksheet {
   return (ws as AIWorksheet).isAI === true;
+}
+
+// ─── Loading helpers ──────────────────────────────────────────────────────────
+function LoadingStageMessage({ stages }: { stages: string[] }) {
+  const [idx, setIdx] = React.useState(0);
+  React.useEffect(() => {
+    const interval = setInterval(() => setIdx(i => Math.min(i + 1, stages.length - 1)), 6000);
+    return () => clearInterval(interval);
+  }, [stages.length]);
+  return (
+    <p className="text-sm text-muted-foreground mt-1 min-h-[40px] transition-all duration-500">
+      {stages[idx]}
+    </p>
+  );
+}
+function AnimatedProgressBar() {
+  const [width, setWidth] = React.useState(4);
+  React.useEffect(() => {
+    // Ease the bar from 4% to 90% over ~30s, never reaching 100% (done when component unmounts)
+    const steps = [10, 25, 45, 60, 72, 82, 88, 90];
+    const delays = [1000, 3000, 6000, 10000, 15000, 20000, 26000, 32000];
+    const timers = delays.map((d, i) => setTimeout(() => setWidth(steps[i]), d));
+    return () => timers.forEach(clearTimeout);
+  }, []);
+  return (
+    <div
+      className="h-full bg-brand rounded-full transition-all duration-1000 ease-out"
+      style={{ width: `${width}%` }}
+    />
+  );
 }
 
 // ─── Main Component ──────────────────────────────────────────────────────────
@@ -1187,24 +1217,36 @@ export default function Worksheets() {
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
       </motion.div>
 
-      {loading && !generated && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/90 backdrop-blur-sm">
-          <div className="flex flex-col items-center gap-4 p-8 rounded-2xl bg-white shadow-2xl border border-border/50 max-w-sm w-full mx-4">
-            <div className="relative">
-              <div className="w-16 h-16 rounded-full border-4 border-brand/20 border-t-brand animate-spin" />
-              <Sparkles className="w-6 h-6 text-brand absolute inset-0 m-auto" />
+      {loading && !generated && (() => {
+        // Cycling status messages so the user knows it's working
+        const STAGES = [
+          "Building your worksheet structure…",
+          "Writing questions and worked example…",
+          "Adding differentiation and vocabulary…",
+          "Checking maths notation and formatting…",
+          "Finalising your worksheet…",
+        ];
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/90 backdrop-blur-sm">
+            <div className="flex flex-col items-center gap-4 p-8 rounded-2xl bg-white shadow-2xl border border-border/50 max-w-sm w-full mx-4">
+              <div className="relative">
+                <div className="w-16 h-16 rounded-full border-4 border-brand/20 border-t-brand animate-spin" />
+                <Sparkles className="w-6 h-6 text-brand absolute inset-0 m-auto" />
+              </div>
+              <div className="text-center">
+                <h3 className="font-semibold text-foreground text-lg">Generating your worksheet</h3>
+                <LoadingStageMessage stages={STAGES} />
+              </div>
+              <div className="w-full bg-muted rounded-full h-1.5 overflow-hidden">
+                <div className="h-full bg-brand rounded-full animate-[progress_20s_ease-in-out_forwards]" style={{ width: '0%', animation: 'none' }}>
+                  <AnimatedProgressBar />
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground">Please wait — do not close this page</p>
             </div>
-            <div className="text-center">
-              <h3 className="font-semibold text-foreground text-lg">Generating your worksheet</h3>
-              <p className="text-sm text-muted-foreground mt-1">AI is crafting a high-quality, differentiated worksheet. This may take up to 60 seconds for complex topics.</p>
-            </div>
-            <div className="w-full bg-muted rounded-full h-1.5 overflow-hidden">
-              <div className="h-full bg-brand rounded-full animate-pulse" style={{ width: '60%' }} />
-            </div>
-            <p className="text-xs text-muted-foreground">Please wait — do not close this page</p>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {!generated ? (
         <Tabs value={activeTab} onValueChange={(tab) => {
@@ -2283,7 +2325,17 @@ export default function Worksheets() {
             </div>
             {readingLevelLoading
               ? <><RefreshCw className="w-3.5 h-3.5 animate-spin text-brand" /><span className="text-xs text-muted-foreground">Adjusting...</span></>
-              : <span className="text-xs font-semibold text-brand bg-brand/10 px-2 py-0.5 rounded">{readingAge === 0 ? "Age 11 (default)" : readingAge >= 17 ? "Age 17+" : `Age ${readingAge}`}</span>
+              : <span className="text-xs font-semibold text-brand bg-brand/10 px-2 py-0.5 rounded">{readingAge === 0 ? (() => {
+                  const yrToAge: Record<string, number> = {
+                    "Year 1": 5, "Year 2": 6, "Year 3": 7, "Year 4": 8,
+                    "Year 5": 9, "Year 6": 10, "Year 7": 11, "Year 8": 12,
+                    "Year 9": 13, "Year 10": 14, "Year 11": 15, "Year 12": 17,
+                    "Year 13": 17, "KS1": 6, "KS2": 9, "KS3": 12,
+                    "GCSE": 15, "A-Level": 17, "11+ Preparation": 10,
+                  };
+                  const defaultAge = yrToAge[yearGroup] ?? 11;
+                  return `Age ${defaultAge} (default)`;
+                })() : readingAge >= 17 ? "Age 17+" : `Age ${readingAge}`}</span>
             }
           </div>
 

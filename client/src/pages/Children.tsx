@@ -813,8 +813,13 @@ If the submission is empty or too short to mark, return mark: "N/A", feedback: "
 
       {/* Assignment Detail Dialog */}
       <Dialog open={!!selectedAssignment} onOpenChange={() => setSelectedAssignment(null)}>
-        <DialogContent className={selectedAssignment?.type === 'send-screener' ? 'max-w-2xl max-h-[90vh] overflow-y-auto' : selectedAssignment?.sections?.length ? 'max-w-2xl max-h-[90vh] overflow-y-auto' : 'max-w-lg'}>
-          <DialogHeader><DialogTitle className="flex items-center gap-2"><TrendingUp className="w-5 h-5 text-brand" /> {selectedAssignment?.type === 'send-screener' ? 'SEND Screener Results' : 'Assignment Progress'}</DialogTitle></DialogHeader>
+        <DialogContent className={selectedAssignment?.type === 'send-screener' ? 'max-w-2xl max-h-[90vh] overflow-y-auto' : selectedAssignment?.sections?.length ? 'max-w-4xl max-h-[90vh] overflow-y-auto' : 'max-w-lg'}>
+          {selectedAssignment?.type !== 'send-screener' && !selectedAssignment?.sections?.length && (
+            <DialogHeader><DialogTitle className="flex items-center gap-2"><TrendingUp className="w-5 h-5 text-brand" /> Assignment Progress</DialogTitle></DialogHeader>
+          )}
+          {selectedAssignment?.type === 'send-screener' && (
+            <DialogHeader><DialogTitle className="flex items-center gap-2"><TrendingUp className="w-5 h-5 text-brand" /> SEND Screener Results</DialogTitle></DialogHeader>
+          )}
           {selectedAssignment && (
             <div className="space-y-4 mt-2">
               <div>
@@ -871,24 +876,47 @@ If the submission is empty or too short to mark, return mark: "N/A", feedback: "
                     />
                   </div>
 
-                  {/* Assignment Content — use WorksheetRenderer if sections available, else plain preview */}
+                  {/* Assignment Content — full 1:1 WorksheetRenderer matching the generated worksheet */}
                   {selectedAssignment.sections && selectedAssignment.sections.length > 0 ? (
-                    <div className="border border-border/50 rounded-lg overflow-hidden max-h-[40vh] overflow-y-auto">
+                    <div className="border border-border/50 rounded-lg overflow-hidden">
                       <WorksheetRenderer
                         worksheet={{
                           title: selectedAssignment.title,
-                          sections: selectedAssignment.sections as any,
-                          metadata: (selectedAssignment as any).metadata || {},
+                          subtitle: (selectedAssignment as any).subtitle,
+                          sections: (() => {
+                            const raw = selectedAssignment.sections;
+                            const arr = typeof raw === "string" ? (() => { try { return JSON.parse(raw); } catch { return []; } })() : raw;
+                            return (arr as any[]).filter((s: any) => !s.teacherOnly);
+                          })(),
+                          metadata: {
+                            ...((selectedAssignment as any).metadata || {}),
+                            sendNeedId: (selectedAssignment as any).metadata?.sendNeed || undefined,
+                          },
+                          isAI: true,
                         }}
                         viewMode="student"
+                        textSize={14}
                         editMode={false}
                         overlayColor="#ffffff"
+                        editedSections={{}}
                       />
                     </div>
                   ) : selectedAssignment.content ? (
-                    <div className="p-3 rounded-lg bg-muted/50 border border-border/50">
-                      <p className="text-xs font-medium text-muted-foreground mb-1">Assignment Content Preview:</p>
-                      <p className="text-xs text-foreground/80 line-clamp-3 whitespace-pre-wrap">{selectedAssignment.content}</p>
+                    <div className="border border-border/50 rounded-lg overflow-hidden">
+                      <WorksheetRenderer
+                        worksheet={{
+                          title: selectedAssignment.title,
+                          subtitle: (selectedAssignment as any).subtitle,
+                          sections: [{ title: 'Content', type: 'guided', content: selectedAssignment.content, teacherOnly: false }],
+                          metadata: (selectedAssignment as any).metadata || {},
+                          isAI: true,
+                        }}
+                        viewMode="student"
+                        textSize={14}
+                        editMode={false}
+                        overlayColor="#ffffff"
+                        editedSections={{}}
+                      />
                     </div>
                   ) : null}
                 </>
