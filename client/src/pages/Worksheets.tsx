@@ -321,16 +321,32 @@ export default function Worksheets() {
   // ─── Page-count enforcement for student view ────────────────────────────────
   // When the user selects a page limit (targetPages > 0) and viewMode is "student",
   // progressively remove sections in priority order until the content fits.
-  // Removal order: Key Vocabulary → Self-Reflection → extension/challenge → independent/core
-  // Estimation: ~2000 characters of content ≈ 1 A4 page at standard font size.
+  //
+  // PRIORITY (highest = keep, lowest = remove first):
+  //   KEEP:   header, learning-objectives, section-A (guided), section-B (independent),
+  //           worked-example, section-C (word-problems), common-mistakes, extension/challenge
+  //   REMOVE: self-reflection, self-assessment, reminder-box, vocabulary, prior-knowledge,
+  //           teacher-notes, mark-scheme, adaptations
+  //
+  // Estimation: ~2200 characters of content ≈ 1 A4 page at standard font size.
   const CHARS_PER_PAGE = 2200;
   const REMOVABLE_SECTION_PRIORITY: string[] = [
-    "vocabulary",       // Key Vocabulary — least essential for practice
-    "self-reflection",  // Self-Reflection / How Did I Do?
-    "self-assessment",  // Self Assessment
-    "extension",        // Section C — Stretch & Challenge
-    "challenge",        // Stretch & Challenge (alias)
-    "independent",      // Section B — Core Practice
+    // Remove first (least important for student learning)
+    "self-reflection",    // How Did I Do? reflection box
+    "self-assessment",    // Self Assessment (alias)
+    "adaptations",        // SEND Adaptations — teacher copy only
+    "teacher-notes",      // Teacher Notes
+    "mark-scheme",        // Mark Scheme
+    "answers",            // Answer section
+    "prior-knowledge",    // Prior Knowledge recall
+    "reminder-box",       // Reminder Box / Key Steps
+    "vocabulary",         // Key Vocabulary
+    // Remove last (important student-facing content)
+    "challenge",          // Extension / Challenge (optional bonus)
+    "word-problems",      // Section C — Word Problems
+    "independent",        // Section B — Core Practice
+    // guided (Section A), example (Worked Example), objective (Learning Objectives)
+    // are NEVER removed — they are the core of the worksheet
   ];
 
   const displaySections = useMemo(() => {

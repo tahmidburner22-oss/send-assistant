@@ -915,27 +915,76 @@ Return EXACTLY this JSON (raw JSON only):
   }
   const result: AIWorksheetResult = { ...json, isAI: true, provider };
 
+  // ── Normalise all section content to strings ─────────────────────────────────
+  // The AI sometimes returns content as an array of objects, plain objects, or
+  // other non-string types. Convert everything to a readable plain-text string.
+  const normaliseContent = (c: any): string => {
+    if (c === null || c === undefined) return '';
+    if (typeof c === 'string') return c;
+    if (Array.isArray(c)) {
+      return c.map((item: any) => {
+        if (typeof item === 'string') return item;
+        if (typeof item === 'object' && item !== null) {
+          const q = item.q || item.question || item.text || item.content || item.step || '';
+          const a = item.a || item.answer || item.solution || '';
+          const marks = item.marks ? ` [${item.marks} mark${item.marks > 1 ? 's' : ''}]` : '';
+          const hint = item.hint || item.scaffold || '';
+          if (item.term || item.word) {
+            const term = item.term || item.word || '';
+            const def = item.definition || item.meaning || '';
+            return def ? `${term} | ${def}` : term;
+          }
+          if (item.objective) return item.objective;
+          let out = q ? `${q}${marks}` : '';
+          if (hint) out += `\n   Hint: ${hint}`;
+          if (a) out += `\n   Answer: ${a}`;
+          if (!out) {
+            const vals = Object.values(item).filter(v => typeof v === 'string' && (v as string).length > 0);
+            out = (vals as string[]).join(' | ');
+          }
+          return out || JSON.stringify(item);
+        }
+        return String(item);
+      }).join('\n');
+    }
+    if (typeof c === 'object') {
+      const q = c.q || c.question || c.text || c.content || c.objective || c.step || '';
+      const a = c.a || c.answer || c.solution || '';
+      if (q && a) return `${q}\n   Answer: ${a}`;
+      if (q) return q;
+      if (c.term || c.word) {
+        const term = c.term || c.word || '';
+        const def = c.definition || c.meaning || '';
+        return def ? `${term} | ${def}` : term;
+      }
+      const vals = Object.values(c).filter(v => typeof v === 'string' && (v as string).length > 0);
+      if (vals.length > 0) return (vals as string[]).join('\n');
+      return '';
+    }
+    return String(c);
+  };
+
   // ── Strip HTML from section content strings ─────────────────────────────────
-  // The AI sometimes generates HTML tags (e.g. <span style="color:#cc0000">) in
-  // section content strings. Strip these before rendering to prevent raw attribute
-  // text from appearing in the worksheet output.
   const stripHtmlFromContent = (s: string): string => {
     if (!s) return s;
-    // Strip orphaned HTML attribute fragments (e.g. style="color:#cc0000">)
     let out = s.replace(/["']?\s*\bstyle\s*=\s*["'][^"']*["']\s*>/g, '');
     out = out.replace(/\bclass\s*=\s*["'](?!katex["'])[^"']*["']\s*>/g, '');
-    // Strip complete HTML tags (except safe inline tags: sup, sub, strong, em, b, i, br)
     out = out.replace(/<\/?(?:span|div|p|a|font|section|article|header|footer|nav|ul|ol|li|table|tr|td|th|thead|tbody|tfoot|blockquote|pre|code|mark|small|del|ins|u|s|abbr|cite|dfn|kbd|samp|var|time|details|summary|form|input|select|textarea|button|label|fieldset|legend|canvas|script|style|link|meta)[^>]*>/gi, '');
     return out;
   };
+
   if (result.sections && Array.isArray(result.sections)) {
-    result.sections = result.sections.map((section: any) => ({
-      ...section,
-      // Strip rogue ** or __ markdown bold markers from section titles
-      title: typeof section.title === 'string' ? section.title.replace(/^\*{1,2}|\*{1,2}$/g, '').replace(/^_{1,2}|_{1,2}$/g, '').trim() : section.title,
-      content: typeof section.content === 'string' ? stripHtmlFromContent(section.content) : section.content,
-    }));
+    result.sections = result.sections.map((section: any) => {
+      const rawContent = normaliseContent(section.content);
+      const cleanContent = stripHtmlFromContent(rawContent);
+      return {
+        ...section,
+        title: typeof section.title === 'string' ? section.title.replace(/^\*{1,2}|\*{1,2}$/g, '').replace(/^_{1,2}|_{1,2}$/g, '').trim() : section.title,
+        content: cleanContent,
+      };
+    });
   }
+
 
   // ── Strip rogue markdown bold markers from title (** or __) ─────────────────
   // The AI sometimes wraps titles in **...** — strip these before any other processing

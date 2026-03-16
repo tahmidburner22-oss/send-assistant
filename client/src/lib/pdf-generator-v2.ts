@@ -385,6 +385,8 @@ export async function downloadHtmlAsPdf(
   const printableW_MM = A4_W_MM - MARGIN_MM * 2;
   const printableH_MM = A4_H_MM - MARGIN_MM * 2;
   const RENDER_PX = 794;
+  // JPEG quality: 0.82 gives sharp text at ~80% smaller file size than PNG
+  const JPEG_QUALITY = 0.82;
 
   // Clone the element and strip teacher sections if needed
   const clone = element.cloneNode(true) as HTMLElement;
@@ -446,9 +448,9 @@ export async function downloadHtmlAsPdf(
       };
     });
 
-    // Capture at 2× scale
+    // Capture at 1.5× scale — sharp enough for print, far smaller file than 2×
     const canvas = await html2canvas(clone, {
-      scale: 2,
+      scale: 1.5,
       useCORS: true,
       allowTaint: true,
       backgroundColor: overlayColor,
@@ -506,13 +508,14 @@ export async function downloadHtmlAsPdf(
       pageCanvas.width = canvasW;
       pageCanvas.height = sliceH_Px;
       const ctx = pageCanvas.getContext("2d")!;
-      ctx.fillStyle = overlayColor;
+      // White background is essential for JPEG (no transparency support)
+      ctx.fillStyle = overlayColor !== "transparent" ? overlayColor : "#ffffff";
       ctx.fillRect(0, 0, canvasW, sliceH_Px);
       ctx.drawImage(canvas, 0, -curY);
 
       pdf.addImage(
-        pageCanvas.toDataURL("image/png"),
-        "PNG",
+        pageCanvas.toDataURL("image/jpeg", JPEG_QUALITY),
+        "JPEG",
         MARGIN_MM,
         MARGIN_MM,
         printableW_MM,
