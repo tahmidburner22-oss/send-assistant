@@ -18,7 +18,9 @@ const worksheetUpload = multer({ storage: multer.memoryStorage(), limits: { file
 // ── Provider priority order — server always tries all of these automatically ──
 // Gemini Flash is fastest for large JSON outputs; Groq 8b-instant is second fastest
 // Additional providers: mistral, deepseek, cohere, perplexity
-const PROVIDER_ORDER = ["gemini", "groq", "openai", "openrouter", "claude", "mistral", "deepseek", "cohere", "perplexity", "huggingface"] as const;
+// Provider priority: fastest/best first, cohere as absolute last resort (expensive, slow)
+// perplexity removed — no key configured
+const PROVIDER_ORDER = ["gemini", "groq", "openai", "openrouter", "claude", "mistral", "deepseek", "huggingface", "cohere"] as const;
 
 // ── Per-provider cooldown tracker ─────────────────────────────────────────────
 // When a provider hits a rate limit (429), it is put in cooldown for COOLDOWN_MS.
@@ -1931,13 +1933,46 @@ Return a JSON object with this structure:
 // Generates 5 quick "check for understanding" questions for a topic
 // ────────────────────────────────────────────────────────────────────────────────
 router.post("/diagnostic-starter", requireAuth, async (req, res) => {
-  const { subject, yearGroup, topic, sendNeed } = req.body;
-  if (!subject || !yearGroup || !topic) {
-    return res.status(400).json({ error: "subject, yearGroup, and topic are required" });
+  const { subject, yearGroup, topic, sendNeed, freeText } = req.body;
+
+  // Support both structured params and free-text open chat mode
+  const isFreeTxt = !!freeText;
+  if (!isFreeTxt && (!subject || !yearGroup || !topic)) {
+    return res.status(400).json({ error: "subject, yearGroup, and topic are required (or use freeText)" });
   }
 
+  // Derive a display topic label for the response
+  const topicLabel = isFreeTxt ? freeText.slice(0, 80) : `${topic} (${yearGroup} ${subject})`;
+
   const sendContext = sendNeed ? `The student may have ${sendNeed} needs. Keep questions clear and accessible.` : "";
-  const prompt = `You are an expert teacher. Generate exactly 5 short diagnostic starter questions to check prior understanding of "${topic}" for ${yearGroup} ${subject} students.
+
+  const prompt = isFreeTxt
+    ? `You are an expert teacher. The teacher has asked: "${freeText}"
+
+Generate exactly 5 short diagnostic starter questions to check prior understanding before starting this topic.
+
+Requirements:
+- Each question should take 1-2 minutes to answer
+- Questions should test prerequisite knowledge needed for this topic
+- Questions should be clear and unambiguous
+- Mix of recall and simple application
+- No multi-part questions
+- Infer the topic and year group from the teacher's request
+
+Also infer a short topic name from the request.
+
+Respond with a JSON object in this exact format:
+{
+  "topic": "Short topic name here",
+  "questions": [
+    "Question 1 text here?",
+    "Question 2 text here?",
+    "Question 3 text here?",
+    "Question 4 text here?",
+    "Question 5 text here?"
+  ]
+}`
+    : `You are an expert teacher. Generate exactly 5 short diagnostic starter questions to check prior understanding of "${topic}" for ${yearGroup} ${subject} students.
 
 Requirements:
 - Each question should take 1-2 minutes to answer
@@ -1949,6 +1984,7 @@ ${sendContext}
 
 Respond with a JSON object in this exact format:
 {
+  "topic": "${topic}",
   "questions": [
     "Question 1 text here?",
     "Question 2 text here?",
@@ -2012,7 +2048,8 @@ Respond with a JSON object in this exact format:
       const jsonMatch = stripped.match(/\{[\s\S]*\}/);
       const parsed = JSON.parse(jsonMatch ? jsonMatch[0] : stripped);
       if (Array.isArray(parsed.questions) && parsed.questions.length > 0) {
-        return res.json({ questions: parsed.questions.slice(0, 5), provider });
+        const resolvedTopic = parsed.topic || topicLabel;
+        return res.json({ questions: parsed.questions.slice(0, 5), topic: resolvedTopic, provider });
       }
     } catch (err: any) {
       console.error(`[diagnostic-starter] ${provider} error:`, err.message);
