@@ -1236,7 +1236,10 @@ function SelfAssessmentSection({ content, fmt }: { content: string; fmt: ReturnT
                 </div>
               ))}
             </div>
-            <span style={{ fontSize: `${textSize}px`, color: "#374151", fontFamily, lineHeight }} dangerouslySetInnerHTML={{ __html: "I can " + renderMath(clean) }} />
+            <div style={{ flex: 1, display: "flex", alignItems: "baseline", gap: "4px", flexWrap: "wrap" }}>
+              <span style={{ fontSize: `${textSize}px`, color: "#374151", fontFamily, lineHeight, whiteSpace: "nowrap" }}>I can</span>
+              <span style={{ flex: 1, borderBottom: "1.5px solid #9ca3af", minWidth: "120px", height: "22px", display: "inline-block" }} />
+            </div>
           </div>
         );
       })}
@@ -1273,7 +1276,10 @@ function SelfReflectionSection({ content, fmt, overlayColor = "white" }: { conte
                 </div>
               ))}
             </div>
-            <span style={{ fontSize: `${textSize}px`, color: "#374151", fontFamily, lineHeight }} dangerouslySetInnerHTML={{ __html: "I can " + renderMath(clean) }} />
+            <div style={{ flex: 1, display: "flex", alignItems: "baseline", gap: "4px", flexWrap: "wrap" }}>
+              <span style={{ fontSize: `${textSize}px`, color: "#374151", fontFamily, lineHeight, whiteSpace: "nowrap" }}>I can</span>
+              <span style={{ flex: 1, borderBottom: "1.5px solid #9ca3af", minWidth: "120px", height: "22px", display: "inline-block" }} />
+            </div>
           </div>
         );
       })}
