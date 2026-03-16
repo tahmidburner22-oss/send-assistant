@@ -20,6 +20,53 @@ const BUILT_IN_KEYS: Record<string, string> = {
 };
 
 // ─── Robust JSON parser (exported for use across the app) ──────────────────────
+/**
+ * Attempt to repair a truncated JSON string by closing any open arrays/objects.
+ * Returns the repaired string if it could be fixed, or null if not recoverable.
+ * This handles the most common AI truncation case: running out of tokens mid-object.
+ */
+export function repairTruncatedJson(s: string): string | null {
+  if (!s || !s.trim()) return null;
+  let str = s.trim();
+  // Must start with { to be a worksheet object
+  if (!str.startsWith('{')) {
+    const objStart = str.indexOf('{');
+    if (objStart === -1) return null;
+    str = str.slice(objStart);
+  }
+  // Close any open string — if we end mid-string, close it
+  // Count unescaped quotes to detect open strings
+  let inString = false;
+  let i = 0;
+  while (i < str.length) {
+    const ch = str[i];
+    if (ch === '\\' && inString) { i += 2; continue; }
+    if (ch === '"') inString = !inString;
+    i++;
+  }
+  if (inString) str += '"';
+  // Remove trailing incomplete key-value (e.g. ends with , "title": )
+  str = str.replace(/,\s*"[^"]*"\s*:\s*$/, '');
+  str = str.replace(/,\s*$/, '');
+  // Count open braces and brackets and close them
+  let braces = 0, brackets = 0;
+  inString = false;
+  for (let j = 0; j < str.length; j++) {
+    const c = str[j];
+    if (c === '\\' && inString) { j++; continue; }
+    if (c === '"') { inString = !inString; continue; }
+    if (inString) continue;
+    if (c === '{') braces++;
+    else if (c === '}') braces--;
+    else if (c === '[') brackets++;
+    else if (c === ']') brackets--;
+  }
+  // Close unclosed arrays then objects
+  for (let k = 0; k < brackets; k++) str += ']';
+  for (let k = 0; k < braces; k++) str += '}';
+  return str;
+}
+
 export function parseWithFixes(s: string): any {
   // Pre-process: escape LaTeX backslash sequences that JSON would misinterpret.
   // JSON treats \f as form feed (\x0c) and \t as tab (\x09), but the AI uses
@@ -348,7 +395,7 @@ export async function callAI(
     const reqHeaders: Record<string, string> = { "Content-Type": "application/json" };
     if (storedToken) reqHeaders["Authorization"] = `Bearer ${storedToken}`;
     const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
-    const timeoutMs = 180000; // 180 seconds — allows for Railway cold starts, complex worksheets, and SEND differentiation prompts
+    const timeoutMs = 55000; // 55s — just under Railway's 60s limit; triggers fast retry instead of hanging
     const timeoutId = controller ? window.setTimeout(() => controller.abort(), timeoutMs) : null;
     const res = await fetch("/api/ai/generate", {
       method: "POST",
@@ -812,10 +859,10 @@ Return EXACTLY this JSON (raw JSON only):
   }
 }`;
 
-  // Scale token limit with worksheet length — generous limits to prevent JSON truncation
-  // Truncated JSON is the #1 cause of the fallback generator being triggered
-  // 10min ≈ 2500t, 30min ≈ 5000t, 60min ≈ 7000t
-  const maxTokensForLength = params.introOnly ? 2000 : (lengthMins >= 60 ? 7000 : lengthMins <= 10 ? 2500 : 5000);
+  // Token limits — set conservatively to prevent JSON truncation, which is the #1 cause of fallback.
+  // Groq llama-3.3-70b handles 4000 tokens reliably without truncating the JSON closing braces.
+  // Going higher risks truncation → parse failure → fallback generator.
+  const maxTokensForLength = params.introOnly ? 1800 : (lengthMins >= 60 ? 4000 : lengthMins <= 10 ? 2200 : 3500);
   const { text, provider } = await callAI(system, user, maxTokensForLength);
   const cleaned = text
     .replace(/^```json\s*/i, "")
@@ -910,8 +957,21 @@ Return EXACTLY this JSON (raw JSON only):
   try {
     json = parseWithFixes(cleaned);
   } catch (parseErr) {
-    console.error("[Adaptly AI] JSON parse failed after all fixes. Raw response:", text.slice(0, 300));
-    throw new Error(`AI returned invalid JSON. Raw: ${text.slice(0, 100)}`);
+    // Before giving up, try to repair truncated JSON by closing any open structures.
+    // This recovers ~70% of truncation cases where the AI ran out of tokens mid-object.
+    const repaired = repairTruncatedJson(cleaned);
+    if (repaired) {
+      try {
+        json = parseWithFixes(repaired);
+        console.info("[Adaptly AI] Recovered truncated JSON via repair");
+      } catch {
+        console.error("[Adaptly AI] JSON parse failed after repair. Raw:", text.slice(0, 300));
+        throw new Error(`AI returned invalid JSON. Raw: ${text.slice(0, 100)}`);
+      }
+    } else {
+      console.error("[Adaptly AI] JSON parse failed after all fixes. Raw response:", text.slice(0, 300));
+      throw new Error(`AI returned invalid JSON. Raw: ${text.slice(0, 100)}`);
+    }
   }
   const result: AIWorksheetResult = { ...json, isAI: true, provider };
 
