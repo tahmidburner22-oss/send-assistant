@@ -782,13 +782,13 @@ export function renderMath(text: string | any): string {
         if (/^\d{4}$/.test(num) || /^\d{4}$/.test(den)) return full;
         // Skip if either part is a long number that looks like a year
         if (/^\d{4,}$/.test(num) || /^\d{4,}$/.test(den)) return full;
-        // Skip if BOTH parts are multi-letter alphabetic words (e.g. Bonus/Extension, and/or, etc.)
-        // Only render as fraction if at least one part is numeric OR a single letter variable
+        // Only render as a fraction when the pair clearly looks mathematical.
+        // This avoids converting ordinary slash-separated words such as Great/OK.
         const isNumeric = (s: string) => /^\d+$/.test(s);
         const isSingleVar = (s: string) => /^[A-Za-z]$/.test(s);
         const isShortVar = (s: string) => /^[A-Za-z]{1,2}$/.test(s); // x, y, xy, etc.
-        if (!isNumeric(num) && !isNumeric(den) && !isSingleVar(num) && !isSingleVar(den) && !isShortVar(num) && !isShortVar(den)) {
-          // Both are multi-letter words — don't render as fraction
+        const looksMathy = isNumeric(num) || isNumeric(den) || isSingleVar(num) || isSingleVar(den) || (isShortVar(num) && isShortVar(den));
+        if (!looksMathy) {
           return full;
         }
         try { return katex.renderToString(`\\dfrac{${num}}{${den}}`, { displayMode: false, throwOnError: false }); }
