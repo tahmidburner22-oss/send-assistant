@@ -284,6 +284,56 @@ const mathTopics: Record<string, any> = {
     extension: "Investigate inverse proportion: if 4 workers take 6 days to complete a job, how long would 8 workers take? What about 3 workers?"
   },
 
+  "histograms-cumulative-frequency": {
+    title: "Histograms and Cumulative Frequency",
+    objective: "Draw and interpret histograms and cumulative frequency graphs using complete grouped data and frequency density.",
+    priorKnowledge: "Students should be able to: read grouped frequency tables; calculate class width; divide frequency by class width; plot coordinates on axes.",
+    vocabulary: ["Histogram", "Cumulative frequency", "Frequency density", "Class interval", "Grouped data"],
+    teacherNotes: "Use the same grouped table throughout the worksheet so the questions, diagrams and answers stay consistent. Remind students that histogram bar height is frequency density, not frequency. For cumulative frequency, students should use upper class boundaries and a running total.",
+    markScheme: [
+      { q: "1.1", marks: 2, answer: "Frequency density values: 0-10 -> 0.8, 10-20 -> 1.2, 20-30 -> 1.6, 30-50 -> 0.9, 50-60 -> 0.5", method: "Divide each frequency by its class width" },
+      { q: "1.2", marks: 2, answer: "Cumulative frequencies: 8, 20, 36, 54, 59", method: "Keep a running total across the grouped table" },
+      { q: "2.1", marks: 3, answer: "Estimated number below 35 minutes is about 45", method: "Read from the cumulative frequency graph at 35 minutes" },
+      { q: "2.2", marks: 2, answer: "Modal class is 20-30 minutes", method: "Highest frequency density gives the modal class" },
+      { q: "2.3", marks: 3, answer: "Median is approximately 27 minutes", method: "Find the 30th value on the cumulative frequency graph and read across" },
+      { q: "Challenge", marks: 4, answer: "About 9 students", method: "Use graph estimates between 40 and 50 minutes and subtract cumulative totals" }
+    ],
+    example: {
+      question: "A teacher records the time, in minutes, that 59 students spend on homework in one evening.",
+      steps: [
+        "Use this grouped table for every question in the worksheet:",
+        "0-10: 8 students",
+        "10-20: 12 students",
+        "20-30: 16 students",
+        "30-50: 18 students",
+        "50-60: 5 students",
+        "",
+        "Step 1: Work out each class width.",
+        "Widths are 10, 10, 10, 20 and 10.",
+        "Step 2: Calculate frequency density = frequency ÷ class width.",
+        "So the densities are 0.8, 1.2, 1.6, 0.9 and 0.5.",
+        "Step 3: For cumulative frequency, add the frequencies as a running total.",
+        "The cumulative frequencies are 8, 20, 36, 54 and 59.",
+        "Step 4: Plot the histogram using frequency density, then plot the cumulative frequency graph using upper class boundaries 10, 20, 30, 50 and 60."
+      ]
+    },
+    guided: [
+      { q: "1.1  For the grouped table below, calculate the missing frequency densities.\n         0-10: 8\n         10-20: 12\n         20-30: 16\n         30-50: 18\n         50-60: 5", a: "0.8, 1.2, 1.6, 0.9, 0.5", marks: 2 },
+      { q: "1.2  Using the same data, complete the cumulative frequency column for the class intervals 0-10, 10-20, 20-30, 30-50 and 50-60.", a: "8, 20, 36, 54, 59", marks: 2 },
+      { q: "1.3  Which class interval would have the tallest bar in the histogram, and why?", a: "20-30, because it has the highest frequency density of 1.6", marks: 2 }
+    ],
+    independent: [
+      { q: "2.1  Draw a histogram for the homework-time data using these class intervals and frequencies: 0-10: 8, 10-20: 12, 20-30: 16, 30-50: 18, 50-60: 5. Label the axes clearly.", a: "Histogram with correct unequal-width bars and heights 0.8, 1.2, 1.6, 0.9 and 0.5", marks: 3 },
+      { q: "2.2  Draw a cumulative frequency graph for the same data. Plot the points (10,8), (20,20), (30,36), (50,54) and (60,59), then join them with a smooth curve.", a: "Correct cumulative frequency graph through the listed points", marks: 3 },
+      { q: "2.3  Use your cumulative frequency graph to estimate how many students spent less than 35 minutes on homework.", a: "About 45 students", marks: 3 },
+      { q: "2.4  Estimate the median homework time from your cumulative frequency graph.", a: "About 27 minutes", marks: 3 },
+      { q: "2.5  Explain why the 30-50 class interval does not have the tallest histogram bar even though it has the highest frequency.", a: "Its class width is larger, so its frequency density is only 0.9; histogram height depends on frequency density, not raw frequency", marks: 3 }
+    ],
+    challenge: "Between 40 and 50 minutes, approximately how many students spent that long on homework? Use the cumulative frequency graph to explain your estimate.",
+    challengeAnswer: "Read the cumulative frequency at 40 minutes as about 50 and at 50 minutes as 54, so approximately 4 students are between 40 and 50 minutes. Accept close estimates from a correctly drawn graph.",
+    extension: "Create a second grouped table of your own with unequal class widths, then write one histogram question and one cumulative frequency question for a partner to answer."
+  },
+
   "area": {
     title: "Area and Perimeter",
     objective: "Calculate the area and perimeter of rectangles, triangles, parallelograms, trapezoids and composite shapes.",
@@ -1425,6 +1475,23 @@ function findTopicData(subject: string, topic: string): any {
     return mathSubject[Object.keys(mathSubject)[0]];
   }
   const topicLower = topic.toLowerCase().trim();
+
+  if (subject.toLowerCase() === "mathematics") {
+    const statisticsAliases: Record<string, string> = {
+      "histograms and cumulative frequency": "histograms-cumulative-frequency",
+      "histogram and cumulative frequency": "histograms-cumulative-frequency",
+      "histograms": "histograms-cumulative-frequency",
+      "histogram": "histograms-cumulative-frequency",
+      "cumulative frequency": "histograms-cumulative-frequency",
+      "cumulative frequency graphs": "histograms-cumulative-frequency",
+      "cumulative frequency graph": "histograms-cumulative-frequency",
+      "grouped data": "histograms-cumulative-frequency",
+      "grouped frequency": "histograms-cumulative-frequency",
+      "frequency density": "histograms-cumulative-frequency"
+    };
+    const aliasedKey = statisticsAliases[topicLower];
+    if (aliasedKey && subjectTopics[aliasedKey]) return subjectTopics[aliasedKey];
+  }
   // 1. Exact key match
   if (subjectTopics[topicLower]) return subjectTopics[topicLower];
   // 2. Title match
