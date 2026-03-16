@@ -1585,7 +1585,15 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
             rawContent = String(rawContent);
           }
         }
-        const content = rawContent as string;
+        // In student view, strip any "Answer: ..." lines that the AI embedded in the content string.
+        // These appear as plain text lines starting with "Answer:" in student-facing sections.
+        let content = rawContent as string;
+        if (!isTeacherView && typeof content === 'string') {
+          content = content
+            .split('\n')
+            .filter(line => !/^\s*Answer\s*:/i.test(line.trim()))
+            .join('\n');
+        }
         const style = getSectionStyle(section.type);
         // Teacher-only sections: mark-scheme, teacher-notes, answers, and any explicitly flagged teacherOnly
         const isTeacherSection = section.teacherOnly || section.type === "teacher-notes" || section.type === "mark-scheme" || section.type === "answers";
