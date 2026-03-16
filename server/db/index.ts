@@ -137,6 +137,10 @@ export async function initDb() {
     "ALTER TABLE pupils ADD COLUMN parent_name TEXT",
     // Daily briefing file attachments — added after initial schema
     "ALTER TABLE daily_briefings ADD COLUMN attachments TEXT NOT NULL DEFAULT '[]'",
+    // Structured worksheet sections + metadata for assignments (for 1:1 WorksheetRenderer display)
+    "ALTER TABLE assignments ADD COLUMN sections TEXT",
+    "ALTER TABLE assignments ADD COLUMN metadata TEXT",
+    "ALTER TABLE assignments ADD COLUMN subtitle TEXT",
   ];
   for (const migration of migrations) {
     try { _db.run(migration); } catch (_) { /* column already exists — ignore */ }

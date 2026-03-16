@@ -177,11 +177,13 @@ router.put("/safeguarding/incidents/:id", requireAuth, requireMinRole("senco"), 
 router.post("/:id/assignments", requireAuth, (req: Request, res: Response) => {
   const pupil = db.prepare("SELECT id FROM pupils WHERE id = ? AND school_id = ?").get(req.params.id, req.user!.schoolId);
   if (!pupil) return res.status(404).json({ error: "Pupil not found" });
-  const { title, type, content } = req.body;
+  const { title, type, content, sections, metadata, subtitle } = req.body;
   if (!title || !type) return res.status(400).json({ error: "title and type required" });
   const id = uuidv4();
-  db.prepare(`INSERT INTO assignments (id, pupil_id, assigned_by, title, type, content, status)
-    VALUES (?, ?, ?, ?, ?, ?, 'not-started')`).run(id, req.params.id, req.user!.id, title, type, content || null);
+  const sectionsJson = sections ? JSON.stringify(sections) : null;
+  const metadataJson = metadata ? JSON.stringify(metadata) : null;
+  db.prepare(`INSERT INTO assignments (id, pupil_id, assigned_by, title, type, content, sections, metadata, subtitle, status)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'not-started')`).run(id, req.params.id, req.user!.id, title, type, content || null, sectionsJson, metadataJson, subtitle || null);
   auditLog(req.user!.id, req.user!.schoolId ?? null, "assignment.created", "assignment", id, { title, type }, req.ip ?? undefined);
   res.status(201).json({ id });
 });
