@@ -1539,7 +1539,7 @@ export default function Worksheets() {
                   <p className="text-[10px] text-muted-foreground">Set how many A4 pages the worksheet should fill. Leave as Auto to let the AI decide based on worksheet length.</p>
                 </div>
 
-                <div className="space-y-1.5">
+                <div className="hidden">
                   <Label className="text-xs font-medium">Exam Board (GCSE / A-Level)</Label>
                   <div className="flex flex-wrap gap-1.5">
                     {examBoards.map(eb => (
