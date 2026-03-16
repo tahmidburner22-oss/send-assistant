@@ -350,10 +350,20 @@ export function printWorksheetElement(
 }
 
 /**
- * Download the worksheet as a PDF directly — no print dialog.
- * Uses html2canvas to capture the rendered DOM (with KaTeX already rendered)
- * then embeds the canvas as an image in a jsPDF document and triggers a
- * direct browser download. This preserves all symbols, colours, and formatting.
+ * Download the worksheet as a PDF — auto-download, no print dialog.
+ *
+ * Approach: render the serialised worksheet HTML (with all inline styles intact)
+ * into a hidden same-origin iframe at exactly A4 width (794px @ 96dpi).
+ * html2canvas then captures that iframe's document — which has a fresh layout,
+ * correct background colours, borders, and KaTeX math — and jsPDF stitches
+ * the canvas slices into a multi-page A4 PDF that downloads automatically.
+ *
+ * Why iframe instead of appending a clone to the page body?
+ *   - The iframe gets its own layout context, so scroll position / overflow on
+ *     the main page cannot clip or distort the capture.
+ *   - We write a complete HTML document (including KaTeX CSS and all inline styles
+ *     from the serialised DOM) so every purple card, border, and background
+ *     colour is present — identical to what the user sees on screen.
  */
 export async function downloadHtmlAsPdf(
   element: HTMLElement,
@@ -367,85 +377,153 @@ export async function downloadHtmlAsPdf(
   } = {}
 ): Promise<void> {
   const viewMode = options.viewMode || "student";
+  const overlayColor = options.overlayColor || "#ffffff";
 
-  // Clone the element so we can modify it without affecting the live DOM
-  const clone = element.cloneNode(true) as HTMLElement;
+  // ── 1. Serialise the live DOM (all inline styles already present) ──────────
+  const contentHtml = serialiseElement(element, viewMode);
+  const katexCss = getKatexCssInline();
 
-  // For student view: remove teacher-only sections
-  if (viewMode === "student") {
-    clone.querySelectorAll(".ws-teacher-section").forEach((el) => el.parentNode?.removeChild(el));
-  }
+  // ── 2. Build a full HTML document to write into the iframe ─────────────────
+  // A4 at 96 dpi = 794px wide. We set the body to exactly this width so
+  // html2canvas captures at the correct scale.
+  const iframeDoc = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    ${katexCss}
+  </style>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 16px;
+      width: 794px;
+      background: ${overlayColor};
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    /* Hide MathML layer to prevent text doubling */
+    .katex .katex-mathml {
+      position: absolute !important;
+      clip: rect(1px,1px,1px,1px) !important;
+      width: 1px !important; height: 1px !important;
+      overflow: hidden !important;
+    }
+    .katex .katex-html { display: inline !important; }
+    .katex { font-size: 1em !important; }
+    /* Force all backgrounds / borders to render */
+    * {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+  </style>
+</head>
+<body>${contentHtml}</body>
+</html>`;
 
-  // Temporarily append the clone off-screen for accurate rendering
-  clone.style.position = "fixed";
-  clone.style.top = "-9999px";
-  clone.style.left = "0";
-  clone.style.width = "794px"; // A4 at 96dpi
-  clone.style.background = options.overlayColor || "#ffffff";
-  clone.style.zIndex = "-9999";
-  document.body.appendChild(clone);
+  // ── 3. Create a hidden iframe and write the document into it ───────────────
+  const iframe = document.createElement("iframe");
+  iframe.style.cssText = [
+    "position:fixed",
+    "left:-9999px",
+    "top:0",
+    "width:794px",
+    "height:1px",      // height expands to content via scrollHeight
+    "border:none",
+    "visibility:hidden",
+    "z-index:-1",
+  ].join(";");
+  document.body.appendChild(iframe);
 
   try {
+    const iframeWin = iframe.contentWindow!;
+    iframeWin.document.open();
+    iframeWin.document.write(iframeDoc);
+    iframeWin.document.close();
+
+    // Wait for fonts + images inside iframe to load
+    await new Promise<void>((resolve) => {
+      const check = () => {
+        if (iframeWin.document.readyState === "complete") {
+          // Extra tick for font rendering
+          setTimeout(resolve, 300);
+        } else {
+          iframeWin.addEventListener("load", () => setTimeout(resolve, 300), { once: true });
+        }
+      };
+      check();
+    });
+
+    // Expand iframe to full content height so html2canvas captures everything
+    const scrollH = iframeWin.document.body.scrollHeight;
+    iframe.style.height = `${scrollH + 40}px`;
+
+    // Small extra wait after resize
+    await new Promise<void>((r) => setTimeout(r, 100));
+
     const html2canvas = (await import("html2canvas")).default;
     const { jsPDF } = await import("jspdf");
 
-    // Render the full element to canvas at 2× scale for crisp output
-    const canvas = await html2canvas(clone, {
+    // Capture the iframe's body at 2× scale for crisp retina-quality output
+    const canvas = await html2canvas(iframeWin.document.body, {
       scale: 2,
       useCORS: true,
       allowTaint: true,
-      backgroundColor: options.overlayColor || "#ffffff",
+      backgroundColor: overlayColor,
       logging: false,
       windowWidth: 794,
+      width: 794,
+      scrollX: 0,
+      scrollY: 0,
     });
 
-    const imgData = canvas.toDataURL("image/png");
-    const imgWidth = canvas.width;
-    const imgHeight = canvas.height;
+    // ── 4. Slice canvas into A4 pages and build PDF ──────────────────────────
+    // A4: 210 × 297 mm. At 96 dpi, 1 mm ≈ 3.7795 px.
+    // We use 10 mm margins → printable width = 190 mm.
+    const A4_W_MM = 210;
+    const A4_H_MM = 297;
+    const MARGIN_MM = 10;
+    const printableW_MM = A4_W_MM - MARGIN_MM * 2;
+    const printableH_MM = A4_H_MM - MARGIN_MM * 2;
 
-    // A4 dimensions in mm
-    const A4_W = 210;
-    const A4_H = 297;
-    const MARGIN = 10; // mm
-    const printableW = A4_W - MARGIN * 2;
-    const printableH = A4_H - MARGIN * 2;
+    const canvasW = canvas.width;   // px at 2× scale
+    const canvasH = canvas.height;
 
-    // Scale factor: how many mm per canvas pixel
-    const mmPerPx = printableW / imgWidth;
-    const totalHeightMm = imgHeight * mmPerPx;
+    // mm per canvas pixel
+    const mmPerPx = printableW_MM / canvasW;
+    const printableH_Px = printableH_MM / mmPerPx;
 
     const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
 
-    let yOffset = 0; // canvas pixels consumed
+    let yPx = 0;
     let pageNum = 0;
 
-    while (yOffset < imgHeight) {
+    while (yPx < canvasH) {
       if (pageNum > 0) pdf.addPage();
 
-      // How many canvas pixels fit on this page?
-      const pageHeightPx = printableH / mmPerPx;
-      const sliceHeight = Math.min(pageHeightPx, imgHeight - yOffset);
+      const sliceH_Px = Math.min(printableH_Px, canvasH - yPx);
 
-      // Create a temporary canvas for this page slice
+      // Draw this page slice onto a temporary canvas
       const pageCanvas = document.createElement("canvas");
-      pageCanvas.width = imgWidth;
-      pageCanvas.height = Math.ceil(sliceHeight);
-      const ctx = pageCanvas.getContext("2d");
-      if (ctx) {
-        ctx.drawImage(canvas, 0, -yOffset);
-      }
+      pageCanvas.width = canvasW;
+      pageCanvas.height = Math.ceil(sliceH_Px);
+      const ctx = pageCanvas.getContext("2d")!;
+      ctx.fillStyle = overlayColor;
+      ctx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+      ctx.drawImage(canvas, 0, -yPx);
 
-      const pageImgData = pageCanvas.toDataURL("image/png");
-      const sliceHeightMm = sliceHeight * mmPerPx;
+      const pageImg = pageCanvas.toDataURL("image/png");
+      const sliceH_MM = sliceH_Px * mmPerPx;
 
-      pdf.addImage(pageImgData, "PNG", MARGIN, MARGIN, printableW, sliceHeightMm);
+      pdf.addImage(pageImg, "PNG", MARGIN_MM, MARGIN_MM, printableW_MM, sliceH_MM);
 
-      yOffset += sliceHeight;
+      yPx += sliceH_Px;
       pageNum++;
     }
 
     pdf.save(filename.endsWith(".pdf") ? filename : `${filename}.pdf`);
   } finally {
-    document.body.removeChild(clone);
+    document.body.removeChild(iframe);
   }
 }
