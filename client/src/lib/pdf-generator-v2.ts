@@ -387,68 +387,100 @@ export async function downloadHtmlAsPdf(
   const RENDER_PX = 794;
   const JPEG_QUALITY = 0.88;
 
-  // Clone the element and strip teacher sections if needed
-  const clone = element.cloneNode(true) as HTMLElement;
-  if (viewMode === "student") {
-    clone.querySelectorAll(".ws-teacher-section").forEach((el) => el.remove());
-  }
+  // Serialise the live DOM into a complete self-contained HTML document.
+  // This ensures KaTeX CSS, all inline styles, and backgrounds are present
+  // in the iframe — identical to what the user sees on screen.
+  const contentHtml = serialiseElement(element, viewMode);
+  const katexCss = getKatexCssInline();
 
-  // Force fixed width and natural flow — no absolute/fixed positioning.
-  // We inject into a full-screen overlay so getBoundingClientRect() works
-  // correctly on all browsers including mobile Chrome.
-  clone.style.cssText = [
-    `width:${RENDER_PX}px`,
-    `min-width:${RENDER_PX}px`,
-    `max-width:${RENDER_PX}px`,
-    `background:${overlayColor}`,
-    "box-sizing:border-box",
-    "padding:4px",
-    "margin:0",
-    "position:static",
-  ].join(";");
+  // Build a minimal HTML doc (no print script — we just need layout, not printing)
+  const fmt = getSendFormatting(options.sendNeedId, options.textSize ?? 14);
+  const iframeHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <style>${katexCss}</style>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0;
+      background: ${overlayColor};
+      font-family: ${fmt.fontFamily};
+      font-size: ${fmt.fontSize}px;
+      line-height: ${fmt.lineHeight};
+      width: ${RENDER_PX}px;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .worksheet-print-root {
+      background: ${overlayColor};
+      width: ${RENDER_PX}px;
+      max-width: ${RENDER_PX}px;
+    }
+    .ws-teacher-section { display: none !important; }
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .katex .katex-mathml {
+      position: absolute !important; clip: rect(1px,1px,1px,1px) !important;
+      padding: 0 !important; border: 0 !important;
+      height: 1px !important; width: 1px !important; overflow: hidden !important;
+    }
+  </style>
+</head>
+<body>${contentHtml}</body>
+</html>`;
 
-  // Full-screen overlay: covers the viewport so the element is "on screen"
-  // and getBoundingClientRect returns real pixel values on mobile too.
-  const overlay = document.createElement("div");
-  overlay.style.cssText = [
+  // Create a hidden iframe off-screen (NOT opacity:0 — html2canvas respects opacity)
+  const iframe = document.createElement("iframe");
+  iframe.style.cssText = [
     "position:fixed",
     "top:0",
-    "left:0",
-    "width:100vw",
-    "height:100vh",
-    "overflow:auto",
-    "z-index:99999",
-    `background:${overlayColor}`,
-    "opacity:0",           // invisible but rendered
-    "pointer-events:none",
+    "left:-9999px",
+    `width:${RENDER_PX}px`,
+    "height:1px",
+    "border:none",
+    "visibility:hidden",
   ].join(";");
-
-  overlay.appendChild(clone);
-  document.body.appendChild(overlay);
-
-  // Two rAFs + timeout to guarantee full layout pass
-  await new Promise<void>((r) =>
-    requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(r, 250)))
-  );
+  document.body.appendChild(iframe);
 
   try {
+    // Write the document into the iframe and wait for it to fully load
+    await new Promise<void>((resolve, reject) => {
+      const timer = setTimeout(() => reject(new Error("iframe load timeout")), 15000);
+      iframe.onload = () => { clearTimeout(timer); resolve(); };
+      iframe.srcdoc = iframeHtml;
+    });
+
+    // Give fonts and images extra time to render
+    await new Promise<void>((r) =>
+      requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(r, 400)))
+    );
+
+    const iframeDoc = iframe.contentDocument!;
+    const iframeBody = iframeDoc.body;
+
+    // Expand iframe to full content height so nothing is clipped
+    const fullH = iframeBody.scrollHeight;
+    iframe.style.height = `${fullH}px`;
+    iframe.style.visibility = "visible";
+
+    // Another frame to let the browser re-layout at the new height
+    await new Promise<void>((r) => requestAnimationFrame(() => setTimeout(r, 100)));
+
     const html2canvas = (await import("html2canvas")).default;
     const { jsPDF } = await import("jspdf");
 
-    // Measure section blocks now that they are on-screen
-    const cloneRect = clone.getBoundingClientRect();
+    // Measure section blocks inside the iframe
+    const rootEl = iframeDoc.querySelector(".worksheet-print-root") as HTMLElement || iframeBody;
+    const rootRect = rootEl.getBoundingClientRect();
     const blocks: Array<{ top: number; bottom: number }> = Array.from(
-      clone.querySelectorAll<HTMLElement>(".ws-header, .ws-section")
+      rootEl.querySelectorAll<HTMLElement>(".ws-header, .ws-section")
     ).map((el) => {
       const r = el.getBoundingClientRect();
-      return {
-        top: r.top - cloneRect.top,
-        bottom: r.bottom - cloneRect.top,
-      };
+      return { top: r.top - rootRect.top, bottom: r.bottom - rootRect.top };
     });
 
-    // Capture at 2× scale
-    const canvas = await html2canvas(clone, {
+    // Capture the iframe body at 1.5× scale
+    const canvas = await html2canvas(iframeBody, {
       scale: 1.5,
       useCORS: true,
       allowTaint: true,
@@ -473,7 +505,7 @@ export async function downloadHtmlAsPdf(
     const pageH_Px = printableH_MM / mmPerPx;
 
     // Section-aware page break — never slice through a block
-    function findBreak(curY: number): number {
+    const findBreak = (curY: number): number => {
       const ideal = curY + pageH_Px;
       if (ideal >= canvasH) return canvasH;
       let breakAt = ideal;
@@ -484,7 +516,7 @@ export async function downloadHtmlAsPdf(
           if (blk.top >= canvasH) continue;
           if (breakAt > blk.top && breakAt < blk.bottom) {
             const blockH = blk.bottom - blk.top;
-            if (blockH >= pageH_Px * 0.98) continue; // full-page block, must cut
+            if (blockH >= pageH_Px * 0.98) continue;
             const candidate = blk.top - 4 * DPR;
             if (candidate > curY) { breakAt = candidate; changed = true; }
           }
@@ -492,7 +524,7 @@ export async function downloadHtmlAsPdf(
       }
       if (breakAt <= curY) breakAt = curY + pageH_Px;
       return Math.min(breakAt, canvasH);
-    }
+    };
 
     const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4", compress: true });
     let curY = 0;
@@ -526,6 +558,6 @@ export async function downloadHtmlAsPdf(
 
     pdf.save(filename.endsWith(".pdf") ? filename : `${filename}.pdf`);
   } finally {
-    document.body.removeChild(overlay);
+    document.body.removeChild(iframe);
   }
 }
