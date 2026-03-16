@@ -782,12 +782,17 @@ export function renderMath(text: string | any): string {
         if (/^\d{4}$/.test(num) || /^\d{4}$/.test(den)) return full;
         // Skip if either part is a long number that looks like a year
         if (/^\d{4,}$/.test(num) || /^\d{4,}$/.test(den)) return full;
-        // Only render as a fraction when the pair clearly looks mathematical.
-        // This avoids converting ordinary slash-separated words such as Great/OK.
+        // Only render as a fraction when the pair is unambiguously mathematical.
+        // This avoids converting prose such as Great/OK or minutes/hour and keeps
+        // answer-style inline text like 19/7 readable unless it is a deliberate
+        // symbolic fraction pattern.
         const isNumeric = (s: string) => /^\d+$/.test(s);
         const isSingleVar = (s: string) => /^[A-Za-z]$/.test(s);
-        const isShortVar = (s: string) => /^[A-Za-z]{1,2}$/.test(s); // x, y, xy, etc.
-        const looksMathy = isNumeric(num) || isNumeric(den) || isSingleVar(num) || isSingleVar(den) || (isShortVar(num) && isShortVar(den));
+        const isSimpleAlgebra = (s: string) => /^[0-9]*[A-Za-z]$/.test(s); // x, y, 2x, 3n
+        const bothNumeric = isNumeric(num) && isNumeric(den);
+        const bothSimpleAlgebra = isSimpleAlgebra(num) && isSimpleAlgebra(den);
+        const oneSideSingleVarAndOtherNumeric = (isSingleVar(num) && isNumeric(den)) || (isNumeric(num) && isSingleVar(den));
+        const looksMathy = bothNumeric || bothSimpleAlgebra || oneSideSingleVarAndOtherNumeric;
         if (!looksMathy) {
           return full;
         }
