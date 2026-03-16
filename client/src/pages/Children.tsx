@@ -1,5 +1,5 @@
-import { useState, useRef, lazy, Suspense } from "react";
-const WorksheetRenderer = lazy(() => import("@/components/WorksheetRenderer"));
+import { useState, useRef } from "react";
+import WorksheetRenderer from "@/components/WorksheetRenderer";
 import { parseWithFixes } from "@/lib/ai";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -874,18 +874,16 @@ If the submission is empty or too short to mark, return mark: "N/A", feedback: "
                   {/* Assignment Content — use WorksheetRenderer if sections available, else plain preview */}
                   {selectedAssignment.sections && selectedAssignment.sections.length > 0 ? (
                     <div className="border border-border/50 rounded-lg overflow-hidden max-h-[40vh] overflow-y-auto">
-                      <Suspense fallback={<div className="p-4 text-sm text-muted-foreground">Loading worksheet...</div>}>
-                        <WorksheetRenderer
-                          worksheet={{
-                            title: selectedAssignment.title,
-                            sections: selectedAssignment.sections as any,
-                            metadata: (selectedAssignment as any).metadata || {},
-                          }}
-                          viewMode="student"
-                          editMode={false}
-                          overlayColor="#ffffff"
-                        />
-                      </Suspense>
+                      <WorksheetRenderer
+                        worksheet={{
+                          title: selectedAssignment.title,
+                          sections: selectedAssignment.sections as any,
+                          metadata: (selectedAssignment as any).metadata || {},
+                        }}
+                        viewMode="student"
+                        editMode={false}
+                        overlayColor="#ffffff"
+                      />
                     </div>
                   ) : selectedAssignment.content ? (
                     <div className="p-3 rounded-lg bg-muted/50 border border-border/50">
