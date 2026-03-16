@@ -30,7 +30,7 @@ import {
   FileText, Upload, Library, Sparkles, Download, Printer, Save, Star,
   Eye, GraduationCap, Palette, Edit3, Users, Check, ZoomIn, ZoomOut,
   Mic, MicOff, Image, Search, Clock, Award, ChevronRight, ChevronDown,
-  AlertCircle, CheckCircle, RefreshCw, FileDown, X, Wand2, History, Trash2, Info, PenLine, Square, CheckSquare, ListChecks
+  AlertCircle, CheckCircle, RefreshCw, FileDown, X, Wand2, History, Trash2, Info, PenLine, Square, CheckSquare, ListChecks, ClipboardCheck
 } from "lucide-react";
 
 // ─── Voice-to-text hook ─────────────────────────────────────────────────────
@@ -168,6 +168,11 @@ export default function Worksheets() {
   const [scenarioInput, setScenarioInput] = useState("");
   // Reading level adjustment (post-generation)
   const [readingLevelLoading, setReadingLevelLoading] = useState(false);
+  // Diagnostic Starter state
+  const [diagnosticLoading, setDiagnosticLoading] = useState(false);
+  const [diagnosticResult, setDiagnosticResult] = useState<{ questions: string[]; topic: string } | null>(null);
+  const [showDiagnosticDialog, setShowDiagnosticDialog] = useState(false);
+  const [diagnosticFailed, setDiagnosticFailed] = useState(false); // true = student failed, suggest easier version
 
   // Reset difficulty to a valid option when subject changes
   // Exam-style always defaults OFF — user must opt in
@@ -203,6 +208,14 @@ export default function Worksheets() {
   const [aiEditSectionIndex, setAiEditSectionIndex] = useState<number | null>(null);
   const [aiEditPrompt, setAiEditPrompt] = useState("");
   const [aiEditLoading, setAiEditLoading] = useState(false);
+  // Answer box size/remove state (per section index; 0 = removed)
+  const [answerBoxSizes, setAnswerBoxSizes] = useState<Record<number, number>>({});
+  const handleAnswerBoxSizeChange = (sectionIndex: number, lines: number) => {
+    setAnswerBoxSizes(prev => ({ ...prev, [sectionIndex]: lines }));
+  };
+  const handleAnswerBoxRemove = (sectionIndex: number) => {
+    setAnswerBoxSizes(prev => ({ ...prev, [sectionIndex]: 0 }));
+  };
   const [rating, setRating] = useState(0);
   const [savedWorksheetId, setSavedWorksheetId] = useState<string | null>(null);
   const [textSize, setTextSize] = useState(14);
@@ -496,6 +509,33 @@ export default function Worksheets() {
     setLoading(false);
   };
 
+  // ─── Generate Diagnostic Starter ────────────────────────────────────────────
+  const handleGenerateDiagnostic = async () => {
+    if (!subject || !yearGroup || !topic) {
+      toast.error("Please fill in Subject, Year Group, and Topic first.");
+      return;
+    }
+    setDiagnosticLoading(true);
+    setDiagnosticResult(null);
+    setDiagnosticFailed(false);
+    try {
+      const response = await fetch("/api/ai/diagnostic-starter", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subject, yearGroup, topic, sendNeed: sendNeed && sendNeed !== "none-selected" ? sendNeed : undefined }),
+      });
+      if (!response.ok) throw new Error("Diagnostic generation failed");
+      const data = await response.json();
+      setDiagnosticResult({ questions: data.questions, topic });
+      setShowDiagnosticDialog(true);
+    } catch (err) {
+      console.error("Diagnostic starter error:", err);
+      toast.error("Could not generate diagnostic starter. Please try again.");
+    } finally {
+      setDiagnosticLoading(false);
+    }
+  };
+
   // ─── Build worksheet from selected exam questions (Exam Hub multi-select) ──
   const handleBuildFromSelected = async () => {
     if (selectedExamQuestions.length === 0) {
@@ -718,11 +758,21 @@ export default function Worksheets() {
     setAiEditLoading(false);
   };
 
-  // ─── Assign ────────────────────────────────────────────────────────────────
+  // ─── Assign ──────────────────────────────────────────────────────────────────────
   const handleAssign = (childId: string) => {
     if (!generated) return;
-    const content = generated.sections.filter(s => !s.teacherOnly).map(s => `## ${s.title}\n${s.content}`).join("\n\n");
-    assignWork(childId, { title: generated.title, type: "worksheet", content });
+    // Filter out teacher-only sections for student view
+    const studentSections = generated.sections.filter(s => !s.teacherOnly);
+    const content = studentSections.map(s => `## ${s.title}\n${s.content}`).join("\n\n");
+    assignWork(childId, {
+      title: generated.title,
+      subtitle: (generated as any).subtitle,
+      type: "worksheet",
+      content,
+      // Pass full sections so Parent Portal can render with WorksheetRenderer
+      sections: studentSections,
+      metadata: (generated as any).metadata,
+    });
     setShowAssignDialog(false);
     toast.success("Worksheet assigned!");
   };
@@ -1071,9 +1121,18 @@ export default function Worksheets() {
                       <Select value={topic} onValueChange={(val) => { if (val === "__custom__") { setTopic(""); setShowTopicSuggestions(true); } else { setTopic(val); setShowTopicSuggestions(false); } }}>
                         <SelectTrigger className="h-10"><SelectValue placeholder="Select a curriculum topic" /></SelectTrigger>
                         <SelectContent className="max-h-64">
-                          {syllabusTopics.map((st, i) => (
-                            <SelectItem key={i} value={st.topic}>{st.topic}</SelectItem>
-                          ))}
+                          {syllabusTopics.map((st, i) => {
+                            // Show year-group label for topics from prior years (not the currently selected year)
+                            const isFromPriorYear = st.yearGroup && yearGroup && st.yearGroup !== yearGroup;
+                            return (
+                              <SelectItem key={i} value={st.topic}>
+                                <span>{st.topic}</span>
+                                {isFromPriorYear && (
+                                  <span className="ml-2 text-[10px] text-muted-foreground font-medium opacity-70">({st.yearGroup})</span>
+                                )}
+                              </SelectItem>
+                            );
+                          })}
                           <SelectItem value="__custom__">Enter custom topic...</SelectItem>
                         </SelectContent>
                       </Select>
@@ -1275,6 +1334,18 @@ export default function Worksheets() {
                   {loading
                     ? <><RefreshCw className="w-4 h-4 mr-2 animate-spin" />{useAI ? "Generating with AI..." : "Generating..."}</>
                     : <><Sparkles className="w-4 h-4 mr-2" /> Generate Worksheet</>}
+                </Button>
+
+                {/* Diagnostic Starter button */}
+                <Button
+                  variant="outline"
+                  onClick={handleGenerateDiagnostic}
+                  disabled={diagnosticLoading || loading || !subject || !yearGroup || !topic}
+                  className="w-full h-10 border-brand/40 text-brand hover:bg-brand-light/30 gap-2"
+                >
+                  {diagnosticLoading
+                    ? <><RefreshCw className="w-3.5 h-3.5 animate-spin" />Generating Diagnostic...</>
+                    : <><ClipboardCheck className="w-3.5 h-3.5" />Generate Diagnostic Starter</>}
                 </Button>
               </CardContent>
             </Card>
@@ -1929,7 +2000,7 @@ export default function Worksheets() {
               <>
                 <Button variant="outline" size="sm"
                   className="gap-1.5 text-amber-600 border-amber-300"
-                  onClick={() => { setEditMode(false); setEditType("none"); setEditedSections({}); setAiEditSectionIndex(null); }}>
+                  onClick={() => { setEditMode(false); setEditType("none"); setEditedSections({}); setAiEditSectionIndex(null); setAnswerBoxSizes({}); }}>
                   <X className="w-3.5 h-3.5" />Cancel
                 </Button>
                 {editType === "manual" && (
@@ -2114,6 +2185,7 @@ export default function Worksheets() {
                     editedSections={editedSections}
                     onSectionClick={undefined}
                     editMode={false}
+                    answerBoxSizes={answerBoxSizes}
                   />
                 )}
                 {/* Inline section edit rendering (Manual + AI) */}
@@ -2170,6 +2242,32 @@ export default function Worksheets() {
                             <div className="text-sm leading-relaxed text-foreground/90"
                               dangerouslySetInnerHTML={{ __html: formatContent(currentContent) }} />
                           )}
+                          {/* Answer box controls — shown for practice/challenge sections in edit mode */}
+                          {!isTeacher && (section.type === "guided" || section.type === "independent" || section.type === "challenge") && (() => {
+                            const DEFAULT_LINES: Record<string, number> = { guided: 4, independent: 4, challenge: 6 };
+                            const currentLines = answerBoxSizes[i] !== undefined ? answerBoxSizes[i] : (DEFAULT_LINES[section.type] ?? 4);
+                            return (
+                              <div className="mt-3 pt-3 border-t border-dashed border-gray-200">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span className="text-[11px] font-semibold text-purple-700">Answer box:</span>
+                                  {currentLines === 0 ? (
+                                    <>
+                                      <span className="text-[11px] text-gray-400 italic">Removed</span>
+                                      <Button size="sm" variant="outline" className="h-6 text-[11px] px-2 border-purple-300 text-purple-700" onClick={() => handleAnswerBoxSizeChange(i, DEFAULT_LINES[section.type] ?? 4)}>+ Restore</Button>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Button size="sm" variant="outline" className="h-6 w-6 p-0 text-sm font-bold" onClick={() => handleAnswerBoxSizeChange(i, Math.max(1, currentLines - 1))} title="Fewer lines">−</Button>
+                                      <span className="text-[12px] text-gray-700 min-w-[56px] text-center">{currentLines} line{currentLines !== 1 ? "s" : ""}</span>
+                                      <Button size="sm" variant="outline" className="h-6 w-6 p-0 text-sm font-bold" onClick={() => handleAnswerBoxSizeChange(i, Math.min(20, currentLines + 1))} title="More lines">+</Button>
+                                      <div className="w-px h-4 bg-gray-200 mx-1" />
+                                      <Button size="sm" variant="outline" className="h-6 text-[11px] px-2 border-red-300 text-red-600 hover:bg-red-50" onClick={() => handleAnswerBoxRemove(i)} title="Remove answer box">✕ Remove</Button>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })()}
                         </div>
                       );
                     })}
@@ -2564,8 +2662,9 @@ export default function Worksheets() {
                       </Button>
                       <Button size="sm" variant="outline" className="text-xs h-7" onClick={async () => {
                         const ws = diffVersions[tier];
-                        const content = ws.sections.filter((s: any) => !s.teacherOnly).map((s: any) => `## ${s.title}\n${s.content}`).join("\n\n");
-                        assignWork("", { title: `${ws.title} (${label})`, type: "worksheet", content });
+                        const studentSections = ws.sections.filter((s: any) => !s.teacherOnly);
+                        const content = studentSections.map((s: any) => `## ${s.title}\n${s.content}`).join("\n\n");
+                        assignWork("", { title: `${ws.title} (${label})`, type: "worksheet", content, sections: studentSections, metadata: ws.metadata } as any);
                         setShowDiffDialog(false);
                         setShowAssignDialog(true);
                       }}>
@@ -2600,6 +2699,71 @@ export default function Worksheets() {
                 )}
               </div>
             ))}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* ─── Diagnostic Starter Dialog ─────────────────────────────────────────── */}
+      <Dialog open={showDiagnosticDialog} onOpenChange={setShowDiagnosticDialog}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ClipboardCheck className="w-5 h-5 text-brand" />
+              Diagnostic Starter: {diagnosticResult?.topic}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Use these 5 quick questions to check prior understanding before the lesson. If a student struggles with 3 or more, consider using the Foundation/SEND tier worksheet.
+            </p>
+            {diagnosticResult?.questions && (
+              <ol className="space-y-3">
+                {diagnosticResult.questions.map((q, i) => (
+                  <li key={i} className="flex gap-3 p-3 rounded-lg border border-border/50 bg-card">
+                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-brand text-white text-xs font-bold flex items-center justify-center">{i + 1}</span>
+                    <span className="text-sm text-foreground">{q}</span>
+                  </li>
+                ))}
+              </ol>
+            )}
+            {/* Suggest easier version if student failed */}
+            <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
+              <div className="flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-amber-800">Student struggling with these questions?</p>
+                  <p className="text-xs text-amber-700">Generate an easier Foundation/SEND version of the main worksheet to better support their needs.</p>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="border-amber-400 text-amber-700 hover:bg-amber-100"
+                    onClick={() => {
+                      setShowDiagnosticDialog(false);
+                      // Set difficulty to foundation and add SEND support
+                      setDifficulty("foundation");
+                      if (!sendNeed || sendNeed === "none-selected") setSendNeed("general");
+                      toast.info("Difficulty set to Foundation. Click Generate Worksheet to create the easier version.");
+                    }}
+                  >
+                    <Sparkles className="w-3.5 h-3.5 mr-1" /> Set Up Easier Version
+                  </Button>
+                </div>
+              </div>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setShowDiagnosticDialog(false)}>Close</Button>
+              <Button
+                className="bg-brand hover:bg-brand/90 text-white gap-1.5"
+                onClick={() => {
+                  // Print the diagnostic questions
+                  const printContent = `<html><head><title>Diagnostic Starter: ${diagnosticResult?.topic}</title><style>body{font-family:Arial,sans-serif;padding:20px;max-width:600px;margin:0 auto;}h1{color:#5b21b6;font-size:18px;margin-bottom:8px;}p{color:#6b7280;font-size:13px;margin-bottom:16px;}ol{padding-left:20px;}li{margin-bottom:12px;font-size:14px;line-height:1.5;padding:8px;border:1px solid #e5e7eb;border-radius:4px;list-style-type:decimal;}</style></head><body><h1>Diagnostic Starter: ${diagnosticResult?.topic}</h1><p>Name: _________________________ Class: _____________ Date: _____________</p><ol>${diagnosticResult?.questions.map(q => `<li>${q}</li>`).join("")}</ol></body></html>`;
+                  const w = window.open("", "_blank");
+                  if (w) { w.document.write(printContent); w.document.close(); w.print(); }
+                }}
+              >
+                <Printer className="w-3.5 h-3.5" /> Print Diagnostic
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>

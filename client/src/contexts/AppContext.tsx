@@ -55,6 +55,10 @@ export interface Assignment {
   id: string; title: string; type: "worksheet" | "story" | "differentiation" | string; content: string;
   assignedAt: string; status: "not-started" | "started" | "completed";
   feedback?: string; mark?: string; progress?: number; teacherComment?: string;
+  // Full sections array for proper WorksheetRenderer display in Parent Portal
+  sections?: Array<{ title: string; type: string; content: string; teacherOnly?: boolean; svg?: string; caption?: string }>;
+  metadata?: { subject?: string; topic?: string; yearGroup?: string; difficulty?: string; examBoard?: string; };
+  subtitle?: string;
 }
 
 export interface Submission {

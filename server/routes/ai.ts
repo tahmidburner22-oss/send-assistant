@@ -17,7 +17,8 @@ const worksheetUpload = multer({ storage: multer.memoryStorage(), limits: { file
 
 // ── Provider priority order — server always tries all of these automatically ──
 // Gemini Flash is fastest for large JSON outputs; Groq 8b-instant is second fastest
-const PROVIDER_ORDER = ["gemini", "groq", "openai", "openrouter", "claude", "huggingface"] as const;
+// Additional providers: mistral, deepseek, cohere, perplexity
+const PROVIDER_ORDER = ["gemini", "groq", "openai", "openrouter", "claude", "mistral", "deepseek", "cohere", "perplexity", "huggingface"] as const;
 
 // ── Get the best available key: school key → global admin key → env var ──────
 // Security: No API keys are ever hardcoded in source code.
@@ -45,6 +46,10 @@ function getEffectiveKey(provider: string, userKey?: string, schoolId?: string):
     openrouter: process.env.OPENROUTER_API_KEY || "",
     claude: process.env.CLAUDE_API_KEY || "",
     huggingface: process.env.HUGGINGFACE_API_KEY || "",
+    mistral: process.env.MISTRAL_API_KEY || "",
+    deepseek: process.env.DEEPSEEK_API_KEY || "",
+    cohere: process.env.COHERE_API_KEY || "",
+    perplexity: process.env.PERPLEXITY_API_KEY || "",
   };
   return envMap[provider] || "";
 }
@@ -84,6 +89,14 @@ async function callProvider(
       return callClaude(system, user, key, maxTokens);
     case "huggingface":
       return callHuggingFace(system, user, key, maxTokens);
+    case "mistral":
+      return callMistral(system, user, key, model || "mistral-medium-latest", maxTokens);
+    case "deepseek":
+      return callDeepSeek(system, user, key, model || "deepseek-chat", maxTokens);
+    case "cohere":
+      return callCohere(system, user, key, model || "command-r-plus", maxTokens);
+    case "perplexity":
+      return callPerplexity(system, user, key, model || "llama-3.1-sonar-large-128k-online", maxTokens);
     default:
       throw new Error(`Unknown provider: ${provider}`);
   }
@@ -132,6 +145,20 @@ async function callWithFallback(
       errors.push(`${provider}: empty response`);
     } catch (err: any) {
       const msg = err?.message || String(err);
+      // Rate limit (429) or quota exceeded — skip to next provider immediately
+      const isRateLimit = msg.includes("429") || msg.toLowerCase().includes("rate limit") || msg.toLowerCase().includes("quota") || msg.toLowerCase().includes("too many requests");
+      if (isRateLimit) {
+        console.warn(`[AI] ${provider} rate-limited — trying next provider`);
+        errors.push(`${provider}: rate limited (429) — skipped`);
+        continue;
+      }
+      // Auth error (401/403) — skip silently
+      const isAuthError = msg.includes("401") || msg.includes("403") || msg.toLowerCase().includes("unauthorized") || msg.toLowerCase().includes("invalid api key");
+      if (isAuthError) {
+        console.warn(`[AI] ${provider} auth error — trying next provider`);
+        errors.push(`${provider}: auth error — skipped`);
+        continue;
+      }
       console.warn(`[AI] ${provider} failed: ${msg.slice(0, 120)}`);
       errors.push(`${provider}: ${msg.slice(0, 80)}`);
     }
@@ -390,6 +417,7 @@ async function callGroq(system: string, user: string, key: string, model: string
     }),
   });
   clearTimeout(timeout);
+  if (res.status === 429) throw new Error(`Groq 429: rate limited`);
   if (!res.ok) throw new Error(`Groq ${res.status}: ${(await res.text()).slice(0, 200)}`);
   const data = await res.json() as any;
   return data.choices[0].message.content;
@@ -411,6 +439,7 @@ async function callGemini(system: string, user: string, key: string, maxTokens: 
     }
   );
   clearTimeout(timeout);
+  if (res.status === 429) throw new Error(`Gemini 429: rate limited`);
   if (!res.ok) throw new Error(`Gemini ${res.status}: ${(await res.text()).slice(0, 200)}`);
   const data = await res.json() as any;
   return data.candidates[0].content.parts[0].text;
@@ -433,6 +462,7 @@ async function callOpenAI(system: string, user: string, key: string, model: stri
     }),
   });
   clearTimeout(timeout);
+  if (res.status === 429) throw new Error(`OpenAI 429: rate limited`);
   if (!res.ok) throw new Error(`OpenAI ${res.status}: ${(await res.text()).slice(0, 200)}`);
   const data = await res.json() as any;
   return data.choices[0].message.content;
@@ -492,6 +522,8 @@ async function callClaude(system: string, user: string, key: string, maxTokens: 
       messages: [{ role: "user", content: user }],
     }),
   });
+  if (res.status === 429) throw new Error(`Claude 429: rate limited`);
+  if (res.status === 529) throw new Error(`Claude 529: overloaded`);
   if (!res.ok) throw new Error(`Claude ${res.status}: ${(await res.text()).slice(0, 200)}`);
   const data = await res.json() as any;
   return data.content[0].text;
@@ -533,6 +565,106 @@ async function callHuggingFace(system: string, user: string, key: string, maxTok
     }
   }
   throw new Error("HuggingFace: all models failed");
+}
+
+// ── Mistral AI ───────────────────────────────────────────────────────────────
+async function callMistral(system: string, user: string, key: string, model: string, maxTokens: number): Promise<string> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 45000);
+  const res = await fetch("https://api.mistral.ai/v1/chat/completions", {
+    method: "POST",
+    signal: controller.signal,
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
+    body: JSON.stringify({
+      model,
+      messages: [
+        { role: "system", content: system || "You are a helpful SEND education assistant." },
+        { role: "user", content: user },
+      ],
+      max_tokens: maxTokens,
+      temperature: 0.3,
+    }),
+  });
+  clearTimeout(timeout);
+  if (res.status === 429) throw new Error(`Mistral 429: rate limited`);
+  if (!res.ok) throw new Error(`Mistral ${res.status}: ${(await res.text()).slice(0, 200)}`);
+  const data = await res.json() as any;
+  return data.choices[0].message.content;
+}
+
+// ── DeepSeek ─────────────────────────────────────────────────────────────────
+async function callDeepSeek(system: string, user: string, key: string, model: string, maxTokens: number): Promise<string> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 60000); // DeepSeek can be slower
+  const res = await fetch("https://api.deepseek.com/v1/chat/completions", {
+    method: "POST",
+    signal: controller.signal,
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
+    body: JSON.stringify({
+      model,
+      messages: [
+        { role: "system", content: system || "You are a helpful SEND education assistant." },
+        { role: "user", content: user },
+      ],
+      max_tokens: maxTokens,
+      temperature: 0.3,
+    }),
+  });
+  clearTimeout(timeout);
+  if (res.status === 429) throw new Error(`DeepSeek 429: rate limited`);
+  if (!res.ok) throw new Error(`DeepSeek ${res.status}: ${(await res.text()).slice(0, 200)}`);
+  const data = await res.json() as any;
+  return data.choices[0].message.content;
+}
+
+// ── Cohere ───────────────────────────────────────────────────────────────────
+async function callCohere(system: string, user: string, key: string, model: string, maxTokens: number): Promise<string> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 45000);
+  const res = await fetch("https://api.cohere.com/v2/chat", {
+    method: "POST",
+    signal: controller.signal,
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
+    body: JSON.stringify({
+      model,
+      messages: [
+        { role: "system", content: system || "You are a helpful SEND education assistant." },
+        { role: "user", content: user },
+      ],
+      max_tokens: maxTokens,
+    }),
+  });
+  clearTimeout(timeout);
+  if (res.status === 429) throw new Error(`Cohere 429: rate limited`);
+  if (!res.ok) throw new Error(`Cohere ${res.status}: ${(await res.text()).slice(0, 200)}`);
+  const data = await res.json() as any;
+  // Cohere v2 response format
+  return data?.message?.content?.[0]?.text || data?.text || "";
+}
+
+// ── Perplexity ───────────────────────────────────────────────────────────────
+async function callPerplexity(system: string, user: string, key: string, model: string, maxTokens: number): Promise<string> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 45000);
+  const res = await fetch("https://api.perplexity.ai/chat/completions", {
+    method: "POST",
+    signal: controller.signal,
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
+    body: JSON.stringify({
+      model,
+      messages: [
+        { role: "system", content: system || "You are a helpful SEND education assistant." },
+        { role: "user", content: user },
+      ],
+      max_tokens: maxTokens,
+      temperature: 0.3,
+    }),
+  });
+  clearTimeout(timeout);
+  if (res.status === 429) throw new Error(`Perplexity 429: rate limited`);
+  if (!res.ok) throw new Error(`Perplexity ${res.status}: ${(await res.text()).slice(0, 200)}`);
+  const data = await res.json() as any;
+  return data.choices[0].message.content;
 }
 
 // ── Diagram generation helpers ────────────────────────────────────────────────
@@ -1718,6 +1850,101 @@ Return a JSON object with this structure:
     console.error("[book-review] error:", err);
     res.status(500).json({ error: err.message || "Failed to generate review" });
   }
+});
+
+// ────────────────────────────────────────────────────────────────────────────────
+// POST /api/ai/diagnostic-starter
+// Generates 5 quick "check for understanding" questions for a topic
+// ────────────────────────────────────────────────────────────────────────────────
+router.post("/diagnostic-starter", requireAuth, async (req, res) => {
+  const { subject, yearGroup, topic, sendNeed } = req.body;
+  if (!subject || !yearGroup || !topic) {
+    return res.status(400).json({ error: "subject, yearGroup, and topic are required" });
+  }
+
+  const sendContext = sendNeed ? `The student may have ${sendNeed} needs. Keep questions clear and accessible.` : "";
+  const prompt = `You are an expert teacher. Generate exactly 5 short diagnostic starter questions to check prior understanding of "${topic}" for ${yearGroup} ${subject} students.
+
+Requirements:
+- Each question should take 1-2 minutes to answer
+- Questions should test prerequisite knowledge needed for this topic
+- Questions should be clear and unambiguous
+- Mix of recall and simple application
+- No multi-part questions
+${sendContext}
+
+Respond with a JSON object in this exact format:
+{
+  "questions": [
+    "Question 1 text here?",
+    "Question 2 text here?",
+    "Question 3 text here?",
+    "Question 4 text here?",
+    "Question 5 text here?"
+  ]
+}`;
+
+  const user = (req as any).user;
+  const schoolId = user?.schoolId;
+
+  for (const provider of PROVIDER_ORDER) {
+    const key = getEffectiveKey(provider, undefined, schoolId);
+    if (!key) continue;
+    try {
+      let content = "";
+      if (provider === "gemini") {
+        const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature: 0.7, maxOutputTokens: 600 } }),
+        });
+        const data = await resp.json() as any;
+        content = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+      } else if (provider === "openai") {
+        const resp = await fetch("https://api.openai.com/v1/chat/completions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
+          body: JSON.stringify({ model: getAdminModel("openai", schoolId) || "gpt-4o-mini", messages: [{ role: "user", content: prompt }], max_tokens: 600, temperature: 0.7 }),
+        });
+        const data = await resp.json() as any;
+        content = data?.choices?.[0]?.message?.content || "";
+      } else if (provider === "groq") {
+        const resp = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
+          body: JSON.stringify({ model: getAdminModel("groq", schoolId) || "llama3-8b-8192", messages: [{ role: "user", content: prompt }], max_tokens: 600, temperature: 0.7 }),
+        });
+        const data = await resp.json() as any;
+        content = data?.choices?.[0]?.message?.content || "";
+      } else if (provider === "claude") {
+        const resp = await fetch("https://api.anthropic.com/v1/messages", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01" },
+          body: JSON.stringify({ model: getAdminModel("claude", schoolId) || "claude-3-haiku-20240307", max_tokens: 600, messages: [{ role: "user", content: prompt }] }),
+        });
+        const data = await resp.json() as any;
+        content = data?.content?.[0]?.text || "";
+      } else if (provider === "openrouter") {
+        const resp = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
+          body: JSON.stringify({ model: getAdminModel("openrouter", schoolId) || "mistralai/mistral-7b-instruct", messages: [{ role: "user", content: prompt }], max_tokens: 600 }),
+        });
+        const data = await resp.json() as any;
+        content = data?.choices?.[0]?.message?.content || "";
+      }
+      if (!content) continue;
+      const stripped = content.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/, "").trim();
+      const jsonMatch = stripped.match(/\{[\s\S]*\}/);
+      const parsed = JSON.parse(jsonMatch ? jsonMatch[0] : stripped);
+      if (Array.isArray(parsed.questions) && parsed.questions.length > 0) {
+        return res.json({ questions: parsed.questions.slice(0, 5), provider });
+      }
+    } catch (err: any) {
+      console.error(`[diagnostic-starter] ${provider} error:`, err.message);
+    }
+  }
+  res.status(500).json({ error: "All AI providers failed to generate diagnostic questions" });
 });
 
 export default router;
