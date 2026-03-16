@@ -119,29 +119,50 @@ async function callProvider(
   model: string,
   maxTokens: number
 ): Promise<string> {
-  switch (provider) {
-    case "groq":
-      return callGroq(system, user, key, model || "llama-3.1-8b-instant", maxTokens);
-    case "gemini":
-      return callGemini(system, user, key, maxTokens);
-    case "openai":
-      return callOpenAI(system, user, key, model || "gpt-4o-mini", maxTokens);
-    case "openrouter":
-      return callOpenRouter(system, user, key, model, maxTokens);
-    case "claude":
-      return callClaude(system, user, key, maxTokens);
-    case "huggingface":
-      return callHuggingFace(system, user, key, maxTokens);
-    case "mistral":
-      return callMistral(system, user, key, model || "mistral-medium-latest", maxTokens);
-    case "deepseek":
-      return callDeepSeek(system, user, key, model || "deepseek-chat", maxTokens);
-    case "cohere":
-      return callCohere(system, user, key, model || "command-r-plus", maxTokens);
-    case "perplexity":
-      return callPerplexity(system, user, key, model || "llama-3.1-sonar-large-128k-online", maxTokens);
-    default:
-      throw new Error(`Unknown provider: ${provider}`);
+  // Per-provider timeout: fast providers get 25s, slower ones get 40s.
+  // This ensures one slow provider never blocks the fallback chain.
+  const timeoutMs = (provider === "groq" || provider === "gemini") ? 25000 : 40000;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    let result: string;
+    switch (provider) {
+      case "groq":
+        result = await callGroq(system, user, key, model || "llama-3.3-70b-versatile", maxTokens);
+        break;
+      case "gemini":
+        result = await callGemini(system, user, key, maxTokens);
+        break;
+      case "openai":
+        result = await callOpenAI(system, user, key, model || "gpt-4o-mini", maxTokens);
+        break;
+      case "openrouter":
+        result = await callOpenRouter(system, user, key, model, maxTokens);
+        break;
+      case "claude":
+        result = await callClaude(system, user, key, maxTokens);
+        break;
+      case "huggingface":
+        result = await callHuggingFace(system, user, key, maxTokens);
+        break;
+      case "mistral":
+        result = await callMistral(system, user, key, model || "mistral-medium-latest", maxTokens);
+        break;
+      case "deepseek":
+        result = await callDeepSeek(system, user, key, model || "deepseek-chat", maxTokens);
+        break;
+      case "cohere":
+        result = await callCohere(system, user, key, model || "command-r-plus", maxTokens);
+        break;
+      case "perplexity":
+        result = await callPerplexity(system, user, key, model || "llama-3.1-sonar-large-128k-online", maxTokens);
+        break;
+      default:
+        throw new Error(`Unknown provider: ${provider}`);
+    }
+    return result;
+  } finally {
+    clearTimeout(timer);
   }
 }
 
