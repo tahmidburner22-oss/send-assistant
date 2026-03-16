@@ -379,61 +379,52 @@ export async function downloadHtmlAsPdf(
   const viewMode = options.viewMode || "student";
   const overlayColor = options.overlayColor || "#ffffff";
 
-  // ── 1. Serialise the live DOM (all inline styles already present) ──────────
+  // ── Layout constants ───────────────────────────────────────────────────────
+  // 3 mm margins so header bar goes nearly edge-to-edge on the page.
+  const A4_W_MM = 210;
+  const A4_H_MM = 297;
+  const MARGIN_MM = 3;
+  const printableW_MM = A4_W_MM - MARGIN_MM * 2;  // 204 mm
+  const printableH_MM = A4_H_MM - MARGIN_MM * 2;  // 291 mm
+
+  // Render at exactly A4 width (794px @ 96 dpi) with minimal body padding
+  const RENDER_PX = 794;
+  const BODY_PAD = 4; // px — tiny gap so borders aren't clipped
+
+  // ── 1. Serialise live DOM (100% inline styles — no external CSS needed) ────
   const contentHtml = serialiseElement(element, viewMode);
   const katexCss = getKatexCssInline();
 
-  // ── 2. Build a full HTML document to write into the iframe ─────────────────
-  // A4 at 96 dpi = 794px wide. We set the body to exactly this width so
-  // html2canvas captures at the correct scale.
   const iframeDoc = `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
-  <style>
-    ${katexCss}
-  </style>
+  <style>${katexCss}</style>
   <style>
     *, *::before, *::after { box-sizing: border-box; }
     html, body {
       margin: 0;
-      padding: 16px;
-      width: 794px;
+      padding: ${BODY_PAD}px;
+      width: ${RENDER_PX}px;
       background: ${overlayColor};
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
     }
-    /* Hide MathML layer to prevent text doubling */
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
     .katex .katex-mathml {
-      position: absolute !important;
-      clip: rect(1px,1px,1px,1px) !important;
-      width: 1px !important; height: 1px !important;
-      overflow: hidden !important;
+      position: absolute !important; clip: rect(1px,1px,1px,1px) !important;
+      width: 1px !important; height: 1px !important; overflow: hidden !important;
     }
     .katex .katex-html { display: inline !important; }
     .katex { font-size: 1em !important; }
-    /* Force all backgrounds / borders to render */
-    * {
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
-    }
   </style>
 </head>
 <body>${contentHtml}</body>
 </html>`;
 
-  // ── 3. Create a hidden iframe and write the document into it ───────────────
+  // ── 2. Hidden iframe for isolated rendering ────────────────────────────────
   const iframe = document.createElement("iframe");
-  iframe.style.cssText = [
-    "position:fixed",
-    "left:-9999px",
-    "top:0",
-    "width:794px",
-    "height:1px",      // height expands to content via scrollHeight
-    "border:none",
-    "visibility:hidden",
-    "z-index:-1",
-  ].join(";");
+  iframe.style.cssText = `position:fixed;left:-9999px;top:0;width:${RENDER_PX}px;height:1px;border:none;visibility:hidden;z-index:-1`;
   document.body.appendChild(iframe);
 
   try {
@@ -442,83 +433,148 @@ export async function downloadHtmlAsPdf(
     iframeWin.document.write(iframeDoc);
     iframeWin.document.close();
 
-    // Wait for fonts + images inside iframe to load
+    // Wait for full render including fonts
     await new Promise<void>((resolve) => {
-      const check = () => {
-        if (iframeWin.document.readyState === "complete") {
-          // Extra tick for font rendering
-          setTimeout(resolve, 300);
-        } else {
-          iframeWin.addEventListener("load", () => setTimeout(resolve, 300), { once: true });
-        }
-      };
-      check();
+      if (iframeWin.document.readyState === "complete") {
+        setTimeout(resolve, 400);
+      } else {
+        iframeWin.addEventListener("load", () => setTimeout(resolve, 400), { once: true });
+      }
     });
 
-    // Expand iframe to full content height so html2canvas captures everything
-    const scrollH = iframeWin.document.body.scrollHeight;
-    iframe.style.height = `${scrollH + 40}px`;
+    // Stretch iframe to full content height before measuring element positions
+    const fullH = iframeWin.document.body.scrollHeight;
+    iframe.style.height = `${fullH + 60}px`;
+    await new Promise<void>((r) => setTimeout(r, 80));
 
-    // Small extra wait after resize
-    await new Promise<void>((r) => setTimeout(r, 100));
+    // ── 3. Record every section's top/bottom (in body-relative px) ────────────
+    // We collect .ws-header and every .ws-section so we know exactly where
+    // each block starts and ends in the rendered document.
+    const bodyRect = iframeWin.document.body.getBoundingClientRect();
+    const blocks: Array<{ top: number; bottom: number }> = Array.from(
+      iframeWin.document.querySelectorAll<HTMLElement>(".ws-header, .ws-section")
+    ).map((el) => {
+      const r = el.getBoundingClientRect();
+      return {
+        top: r.top - bodyRect.top,
+        bottom: r.bottom - bodyRect.top,
+      };
+    });
 
+    // ── 4. Capture full canvas at 2× ──────────────────────────────────────────
     const html2canvas = (await import("html2canvas")).default;
     const { jsPDF } = await import("jspdf");
 
-    // Capture the iframe's body at 2× scale for crisp retina-quality output
     const canvas = await html2canvas(iframeWin.document.body, {
       scale: 2,
       useCORS: true,
       allowTaint: true,
       backgroundColor: overlayColor,
       logging: false,
-      windowWidth: 794,
-      width: 794,
+      windowWidth: RENDER_PX,
+      width: RENDER_PX,
       scrollX: 0,
       scrollY: 0,
     });
 
-    // ── 4. Slice canvas into A4 pages and build PDF ──────────────────────────
-    // A4: 210 × 297 mm. At 96 dpi, 1 mm ≈ 3.7795 px.
-    // We use 10 mm margins → printable width = 190 mm.
-    const A4_W_MM = 210;
-    const A4_H_MM = 297;
-    const MARGIN_MM = 10;
-    const printableW_MM = A4_W_MM - MARGIN_MM * 2;
-    const printableH_MM = A4_H_MM - MARGIN_MM * 2;
-
-    const canvasW = canvas.width;   // px at 2× scale
+    const canvasW = canvas.width;
     const canvasH = canvas.height;
+    const DPR = canvasW / RENDER_PX; // = 2 at scale:2
 
-    // mm per canvas pixel
+    // Scale block positions to canvas-pixel space
+    const scaledBlocks = blocks.map((b) => ({
+      top: b.top * DPR,
+      bottom: b.bottom * DPR,
+    }));
+
+    // mm per canvas-pixel
     const mmPerPx = printableW_MM / canvasW;
-    const printableH_Px = printableH_MM / mmPerPx;
+    // How many canvas-pixels fit in one page's printable height
+    const pageH_Px = printableH_MM / mmPerPx;
 
+    // ── 5. Section-aware page break algorithm ─────────────────────────────────
+    //
+    // For each page, we start at `curY` and want to end at `curY + pageH_Px`.
+    // Before committing that cut point we check every block:
+    //   • If the cut lands INSIDE a block, we move the cut to just BEFORE
+    //     that block's top — so the block starts fresh on the next page.
+    //   • If the block is taller than a full page we have no choice but to
+    //     cut through it (we never skip forward more than one full page).
+    //
+    // Multiple sections that fit together within one page are naturally
+    // packed together because we only break when a cut would slice a block.
+
+    function findBreak(curY: number): number {
+      const ideal = curY + pageH_Px;
+      if (ideal >= canvasH) return canvasH; // last page — take everything
+
+      let breakAt = ideal;
+
+      // Check all blocks to see if `breakAt` slices through any of them
+      for (const blk of scaledBlocks) {
+        if (blk.top >= canvasH) continue; // off canvas
+
+        // The cut lands inside this block
+        if (breakAt > blk.top && breakAt < blk.bottom) {
+          const blockH = blk.bottom - blk.top;
+
+          if (blockH >= pageH_Px * 0.98) {
+            // Block is (nearly) a full page tall — we must cut through it.
+            // Keep breakAt as-is (the ideal cut) for this block.
+            continue;
+          }
+
+          // Pull the break up to just before this block starts.
+          // Add a small 6px gap so the section border isn't clipped.
+          const candidate = blk.top - 6 * DPR;
+
+          // Only pull back if we'd still make forward progress
+          if (candidate > curY) {
+            breakAt = candidate;
+          }
+          // After pulling back, re-check all blocks at the new breakAt
+          // by restarting the loop (simple iteration is safe — blocks are few)
+          // We do this by breaking out and re-entering — use a flag:
+        }
+      }
+
+      // Safety: never return a break ≤ curY (would cause infinite loop)
+      if (breakAt <= curY) breakAt = curY + pageH_Px;
+      return Math.min(breakAt, canvasH);
+    }
+
+    // ── 6. Build the PDF ───────────────────────────────────────────────────────
     const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
 
-    let yPx = 0;
+    let curY = 0;
     let pageNum = 0;
 
-    while (yPx < canvasH) {
+    while (curY < canvasH) {
       if (pageNum > 0) pdf.addPage();
 
-      const sliceH_Px = Math.min(printableH_Px, canvasH - yPx);
+      const endY = findBreak(curY);
+      const sliceH_Px = endY - curY;
 
-      // Draw this page slice onto a temporary canvas
+      // Render this page slice to a temporary canvas
       const pageCanvas = document.createElement("canvas");
       pageCanvas.width = canvasW;
       pageCanvas.height = Math.ceil(sliceH_Px);
       const ctx = pageCanvas.getContext("2d")!;
       ctx.fillStyle = overlayColor;
       ctx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
-      ctx.drawImage(canvas, 0, -yPx);
+      ctx.drawImage(canvas, 0, -curY);
 
-      const pageImg = pageCanvas.toDataURL("image/png");
       const sliceH_MM = sliceH_Px * mmPerPx;
+      pdf.addImage(
+        pageCanvas.toDataURL("image/png"),
+        "PNG",
+        MARGIN_MM,
+        MARGIN_MM,
+        printableW_MM,
+        sliceH_MM
+      );
 
-      pdf.addImage(pageImg, "PNG", MARGIN_MM, MARGIN_MM, printableW_MM, sliceH_MM);
-
-      yPx += sliceH_Px;
+      curY = endY;
       pageNum++;
     }
 
