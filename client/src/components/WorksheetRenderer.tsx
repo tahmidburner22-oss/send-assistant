@@ -984,6 +984,23 @@ function getSectionStyle(type: string) {
   return SECTION_STYLES[type] || SECTION_STYLES["default"];
 }
 
+function stripLatexFromPlainText(text: string): string {
+  if (!text) return text;
+  let out = text
+    .replace(/\\\(([^)]*)\\\)/g, '$1')
+    .replace(/\\\[([^\]]*)\\\]/g, '$1');
+  out = out.replace(/\\d?frac\{([^}]*)\}\{([^}]*)\}/g, '$1 / $2');
+  out = out.replace(/\\text\{([^}]*)\}/g, '$1');
+  out = out.replace(/\\(times|div|cdot|pm|leq|geq|neq|approx|sqrt|pi)\b/g, (_, cmd) => {
+    const s: Record<string,string> = { times:'×', div:'÷', cdot:'·', pm:'±', leq:'≤', geq:'≥', neq:'≠', approx:'≈', sqrt:'√', pi:'π' };
+    return s[cmd] || cmd;
+  });
+  out = out.replace(/\\[a-zA-Z]+\{([^}]*)\}/g, '$1');
+  out = out.replace(/\\[a-zA-Z]+/g, '');
+  out = out.replace(/[{}]/g, '');
+  return out.trim();
+}
+
 function formatContent(content: string | any, fmt: ReturnType<typeof getSendFormatting>): React.ReactNode {
   // Robust type guard: normalize any non-string input
   if (content === null || content === undefined) return null;
@@ -1236,10 +1253,7 @@ function SelfAssessmentSection({ content, fmt }: { content: string; fmt: ReturnT
                 </div>
               ))}
             </div>
-            <div style={{ flex: 1, display: "flex", alignItems: "baseline", gap: "4px", flexWrap: "wrap" }}>
-              <span style={{ fontSize: `${textSize}px`, color: "#374151", fontFamily, lineHeight, whiteSpace: "nowrap" }}>I can</span>
-              <span style={{ flex: 1, borderBottom: "1.5px solid #9ca3af", minWidth: "120px", height: "22px", display: "inline-block" }} />
-            </div>
+            <span style={{ fontSize: `${textSize}px`, color: "#374151", fontFamily, lineHeight }} dangerouslySetInnerHTML={{ __html: "I can " + stripLatexFromPlainText(clean) }} />
           </div>
         );
       })}
@@ -1276,10 +1290,7 @@ function SelfReflectionSection({ content, fmt, overlayColor = "white" }: { conte
                 </div>
               ))}
             </div>
-            <div style={{ flex: 1, display: "flex", alignItems: "baseline", gap: "4px", flexWrap: "wrap" }}>
-              <span style={{ fontSize: `${textSize}px`, color: "#374151", fontFamily, lineHeight, whiteSpace: "nowrap" }}>I can</span>
-              <span style={{ flex: 1, borderBottom: "1.5px solid #9ca3af", minWidth: "120px", height: "22px", display: "inline-block" }} />
-            </div>
+            <span style={{ fontSize: `${textSize}px`, color: "#374151", fontFamily, lineHeight }} dangerouslySetInnerHTML={{ __html: "I can " + stripLatexFromPlainText(clean) }} />
           </div>
         );
       })}

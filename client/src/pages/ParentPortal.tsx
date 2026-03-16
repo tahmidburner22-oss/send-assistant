@@ -53,14 +53,16 @@ function WorksheetRendererView({
   title: string;
   subtitle?: string;
   sections: Array<{ title: string; type: string; content: string; teacherOnly?: boolean; svg?: string; caption?: string }>;
-  metadata?: { subject?: string; topic?: string; yearGroup?: string; difficulty?: string; examBoard?: string; };
+  metadata?: { subject?: string; topic?: string; yearGroup?: string; difficulty?: string; examBoard?: string; sendNeed?: string; };
 }) {
-  // Build a minimal worksheet object compatible with WorksheetRenderer
   const worksheetData = {
     title,
     subtitle,
     sections,
-    metadata: metadata || {},
+    metadata: {
+      ...(metadata || {}),
+      sendNeedId: metadata?.sendNeed || undefined,
+    },
     isAI: true,
   };
   return (
@@ -69,7 +71,7 @@ function WorksheetRendererView({
         worksheet={worksheetData as any}
         viewMode="student"
         textSize={14}
-        overlayColor="none"
+        overlayColor="#ffffff"
         editMode={false}
         editedSections={{}}
       />
@@ -1859,7 +1861,6 @@ Return EXACTLY this JSON:
           const latestCompleted = completedScreeners.length > 0 ? completedScreeners[completedScreeners.length - 1] : null;
           const latestInProgress = inProgressScreeners.length > 0 ? inProgressScreeners[inProgressScreeners.length - 1] : null;
 
-          // Parse the in-progress data to check teacher permission
           let inProgressData: any = null;
           if (latestInProgress?.content) {
             try { inProgressData = JSON.parse(latestInProgress.content); } catch {}
@@ -1867,10 +1868,15 @@ Return EXACTLY this JSON:
           const canResumeAtHome = inProgressData?.allowHomeResume === true;
           const progressPct = latestInProgress?.progress ?? 0;
 
-          // Build resume URL with saved state encoded
+          // 100% progress = fully done — show the report, no teacher permission needed
+          const inProgressIsFullyDone = progressPct >= 100 && !!latestInProgress?.content;
+
           const resumeUrl = canResumeAtHome && inProgressData
             ? `/send-screener?resume=${encodeURIComponent(JSON.stringify({ mode: inProgressData.mode, answers: inProgressData.answers, currentQuestionIndex: inProgressData.currentQuestionIndex }))}`
             : null;
+
+          // Show the best available completed record
+          const bestCompleted = latestCompleted ?? (inProgressIsFullyDone ? latestInProgress : null);
 
           return (
             <div className="p-4 space-y-4">
@@ -1881,8 +1887,8 @@ Return EXACTLY this JSON:
                 </p>
               </div>
 
-              {/* In-progress screener — show resume if teacher has allowed it */}
-              {latestInProgress && (
+              {/* In-progress screener — only show resume UI if NOT fully done */}
+              {latestInProgress && !inProgressIsFullyDone && (
                 <div className="border border-amber-200 rounded-xl overflow-hidden">
                   <div className="bg-amber-50 px-4 py-3 flex items-center gap-2">
                     <span className="text-amber-600">⏳</span>
@@ -1891,7 +1897,6 @@ Return EXACTLY this JSON:
                       <p className="text-xs text-amber-600 mt-0.5">{progressPct}% complete · Saved {new Date(latestInProgress.assignedAt).toLocaleDateString("en-GB")}</p>
                     </div>
                   </div>
-                  {/* Progress bar */}
                   <div className="h-1.5 bg-amber-100">
                     <div className="h-full bg-amber-500 transition-all" style={{ width: `${progressPct}%` }} />
                   </div>
@@ -1912,21 +1917,21 @@ Return EXACTLY this JSON:
                 </div>
               )}
 
-              {/* Completed screener results */}
-              {latestCompleted ? (
+              {/* Show full report for completed screeners OR 100% in-progress */}
+              {bestCompleted ? (
                 <div className="space-y-4">
-                  {latestCompleted.content ? (
+                  {bestCompleted.content ? (
                     <SendScreenerResultsView
-                      content={latestCompleted.content}
-                      title={latestCompleted.title}
+                      content={bestCompleted.content}
+                      title={bestCompleted.title}
                     />
                   ) : (
                     <div className="flex items-center gap-2 p-3 rounded-xl bg-emerald-50 border border-emerald-200">
                       <span className="text-emerald-600">✅</span>
                       <div className="flex-1">
                         <p className="text-sm font-semibold text-emerald-800">SEND Screener Completed</p>
-                        <p className="text-xs text-emerald-700">{latestCompleted.title}</p>
-                        <p className="text-xs text-muted-foreground">Completed: {new Date(latestCompleted.assignedAt).toLocaleDateString("en-GB")}</p>
+                        <p className="text-xs text-emerald-700">{bestCompleted.title}</p>
+                        <p className="text-xs text-muted-foreground">Completed: {new Date(bestCompleted.assignedAt).toLocaleDateString("en-GB")}</p>
                       </div>
                     </div>
                   )}
@@ -1964,7 +1969,7 @@ Return EXACTLY this JSON:
 
       {/* View Content Dialog — renders with full formatting matching how content was generated */}
       <Dialog open={!!viewContent} onOpenChange={() => setViewContent(null)}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-base font-bold">{viewContent?.title}</DialogTitle>
             {viewContent?.subtitle && <p className="text-sm text-muted-foreground mt-0.5">{viewContent.subtitle}</p>}
@@ -1977,7 +1982,7 @@ Return EXACTLY this JSON:
               />
             </div>
           ) : viewContent?.sections && viewContent.sections.length > 0 ? (
-            // Render with full WorksheetRenderer for proper formatting
+            // Has structured sections — full 1:1 WorksheetRenderer
             <div className="mt-2">
               <WorksheetRendererView
                 title={viewContent.title}
@@ -1986,13 +1991,17 @@ Return EXACTLY this JSON:
                 metadata={viewContent.metadata}
               />
             </div>
-          ) : (
-            // Fallback for older assignments without sections
-            <div
-              className="mt-2 prose prose-sm max-w-none leading-relaxed"
-              dangerouslySetInnerHTML={{ __html: contentToHtml(viewContent?.content || "") }}
-            />
-          )}
+          ) : viewContent?.content ? (
+            // Older assignment without sections — wrap content in a single section so WorksheetRenderer still renders it
+            <div className="mt-2">
+              <WorksheetRendererView
+                title={viewContent.title}
+                subtitle={viewContent.subtitle}
+                sections={[{ title: "Content", type: "guided", content: viewContent.content, teacherOnly: false }]}
+                metadata={viewContent.metadata}
+              />
+            </div>
+          ) : null}
         </DialogContent>
       </Dialog>
     </div>
