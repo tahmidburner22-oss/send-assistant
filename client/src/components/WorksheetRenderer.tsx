@@ -337,7 +337,7 @@ export function renderMath(text: string | any): string {
     try { return katex.renderToString(expr.trim(), { displayMode: true, throwOnError: false }); }
     catch { return expr; }
   });
-  result = result.replace(/\\\((\s*[\s\S]+?\s*)\\\)/g, (_, expr) => {
+  result = result.replace(/\\\((\s*.+?\s*)\\\)/g, (_, expr) => {
     try { return katex.renderToString(expr.trim(), { displayMode: false, throwOnError: false }); }
     catch { return expr; }
   });
@@ -684,6 +684,29 @@ export function renderMath(text: string | any): string {
 
   // Helper: check if a string contains HTML (KaTeX output) — skip fraction rendering if so
   const hasHTML = (s: string) => /<[a-z]/i.test(s);
+
+  // 0. Spaced fractions: "5 / 7", "13 / 7", "x / 2" — AI often generates fractions with spaces around the slash.
+  //    Must run BEFORE the no-space patterns to avoid double-processing.
+  //    Pattern A: (expr) / (expr) with spaces around slash
+  result = result.replace(/\(([^()]+)\)\s+\/\s+\(([^()]+)\)/g, (full, num, den) => {
+    if (hasHTML(num) || hasHTML(den)) return full;
+    try { return katex.renderToString(`\\dfrac{${num}}{${den}}`, { displayMode: false, throwOnError: false }); }
+    catch { return full; }
+  });
+  //    Pattern B: token / token with spaces (e.g. "5 / 7", "x / 2", "-21 / 7")
+  result = result.replace(/(-?[A-Za-z0-9]+)\s+\/\s+([A-Za-z0-9]+)/g, (full, num, den) => {
+    if (hasHTML(num) || hasHTML(den)) return full;
+    // Skip year ranges (e.g. 2023 / 24)
+    if (/^\d{4}$/.test(num) || /^\d{4}$/.test(den)) return full;
+    if (/^\d{4,}$/.test(num) || /^\d{4,}$/.test(den)) return full;
+    // Skip if both are multi-letter words (e.g. "Teacher / Student", "and / or")
+    const isNum2 = (s: string) => /^-?\d+$/.test(s);
+    const isVar1 = (s: string) => /^[A-Za-z]$/.test(s);
+    const isVar2 = (s: string) => /^[A-Za-z]{1,2}$/.test(s);
+    if (!isNum2(num) && !isNum2(den) && !isVar1(num) && !isVar1(den) && !isVar2(num) && !isVar2(den)) return full;
+    try { return katex.renderToString(`\\dfrac{${num}}{${den}}`, { displayMode: false, throwOnError: false }); }
+    catch { return full; }
+  });
 
   // 1. Parenthesised numerator and/or denominator: (expr)/(expr)
   result = result.replace(/\(([^()]+(?:\([^()]*\)[^()]*)*)\)\/\(([^()]+(?:\([^()]*\)[^()]*)*)\)/g, (full, num, den) => {
