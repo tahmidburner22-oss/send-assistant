@@ -934,28 +934,25 @@ export default function Worksheets() {
     if (!nlInput.trim()) return;
     const rawPrompt = nlInput.trim();
     const parsed = parseNaturalLanguageInput(rawPrompt);
-    const nextSubject = parsed.subject || subject;
-    const nextYearGroup = parsed.yearGroup || yearGroup;
-    const nextTopic = parsed.topic || topic;
+
+    // Use parsed values, fall back to whatever is already selected in the form,
+    // then fall back to sensible defaults so we ALWAYS generate — never block.
+    const nextSubject   = parsed.subject   || subject   || "mathematics";
+    const nextYearGroup = parsed.yearGroup || yearGroup || "Year 10";
+    const nextTopic     = parsed.topic     || topic     || rawPrompt;
     const nextDifficulty = parsed.difficulty || difficulty;
-    const nextSendNeed = parsed.sendNeed || sendNeed;
-    const nextInstructions = additionalInstructions.trim() || rawPrompt;
+    const nextSendNeed   = parsed.sendNeed   || sendNeed;
 
-    if (parsed.subject) setSubject(parsed.subject);
-    if (parsed.yearGroup) setYearGroup(parsed.yearGroup);
-    if (parsed.topic) setTopic(parsed.topic);
+    // Always pass the raw prompt as additional instructions so the AI has
+    // the full context even when the regex parser couldn't extract everything.
+    const nextInstructions = rawPrompt;
+
+    if (parsed.subject)    setSubject(parsed.subject);
+    if (parsed.yearGroup)  setYearGroup(parsed.yearGroup);
+    if (parsed.topic)      setTopic(parsed.topic);
     if (parsed.difficulty) setDifficulty(parsed.difficulty);
-    if (parsed.sendNeed) setSendNeed(parsed.sendNeed);
-    if (!additionalInstructions.trim()) setAdditionalInstructions(rawPrompt);
-
-    if (!nextSubject || !nextYearGroup || !nextTopic) {
-      const missing: string[] = [];
-      if (!nextSubject) missing.push("Subject");
-      if (!nextYearGroup) missing.push("Year Group");
-      if (!nextTopic) missing.push("Topic");
-      toast.error(`Please include ${missing.join(", ")} in your request.`);
-      return;
-    }
+    if (parsed.sendNeed)   setSendNeed(parsed.sendNeed);
+    setAdditionalInstructions(rawPrompt);
 
     setNlInput("");
     setNlExpanded(false);
