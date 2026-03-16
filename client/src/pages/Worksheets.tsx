@@ -1284,7 +1284,18 @@ export default function Worksheets() {
                   </div>
                   <div className="space-y-1.5">
                     <Label className="text-xs font-medium">Year Group *</Label>
-                    <Select value={yearGroup} onValueChange={setYearGroup}>
+                    <Select value={yearGroup} onValueChange={v => {
+                      setYearGroup(v);
+                      // Auto-set reading age to match the year group
+                      const yrToAge: Record<string, number> = {
+                        "Year 1": 5, "Year 2": 6, "Year 3": 7, "Year 4": 8,
+                        "Year 5": 9, "Year 6": 10, "Year 7": 11, "Year 8": 12,
+                        "Year 9": 13, "Year 10": 14, "Year 11": 15, "Year 12": 17,
+                        "Year 13": 17, "KS1": 6, "KS2": 9, "KS3": 12,
+                        "GCSE": 15, "A-Level": 17, "11+ Preparation": 10,
+                      };
+                      if (yrToAge[v] !== undefined) setReadingAge(yrToAge[v]);
+                    }}>
                       <SelectTrigger className="h-10"><SelectValue placeholder="Select year" /></SelectTrigger>
                       <SelectContent>{yearGroups.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent>
                     </Select>

@@ -13,7 +13,7 @@ import type { PastPaperQuestion } from "./pastPaperQuestions";
 // ─────────────────────────────────────────────────────────────────────────────
 export const mathsFractions: PastPaperQuestion[] = [
   {
-    id: "maths-aqa-2022-p1f-fractions-1",
+    id: "maths-adaptly-2022-p1f-fractions-1",
     board: "Adaptly", subject: "mathematics", year: 2022, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Foundation", questionNum: "3",
     marks: 2, topic: "Fractions",
@@ -24,7 +24,7 @@ export const mathsFractions: PastPaperQuestion[] = [
     stage: "gcse", yearGroups: [9, 10, 11],
   },
   {
-    id: "maths-aqa-2022-p1f-fractions-2",
+    id: "maths-adaptly-2022-p1f-fractions-2",
     board: "Adaptly", subject: "mathematics", year: 2022, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Foundation", questionNum: "5",
     marks: 2, topic: "Fractions",
@@ -35,7 +35,7 @@ export const mathsFractions: PastPaperQuestion[] = [
     stage: "gcse", yearGroups: [9, 10, 11],
   },
   {
-    id: "maths-edexcel-2023-p1f-fractions-1",
+    id: "maths-adaptly-2023-p1f-fractions-1",
     board: "Adaptly", subject: "mathematics", year: 2023, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Foundation", questionNum: "4",
     marks: 3, topic: "Fractions",
@@ -46,7 +46,7 @@ export const mathsFractions: PastPaperQuestion[] = [
     stage: "gcse", yearGroups: [9, 10, 11],
   },
   {
-    id: "maths-edexcel-2023-p1f-fractions-2",
+    id: "maths-adaptly-2023-p1f-fractions-2",
     board: "Adaptly", subject: "mathematics", year: 2023, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Foundation", questionNum: "7",
     marks: 2, topic: "Fractions",
@@ -57,7 +57,7 @@ export const mathsFractions: PastPaperQuestion[] = [
     stage: "gcse", yearGroups: [9, 10, 11],
   },
   {
-    id: "maths-ocr-2022-p1f-fractions-1",
+    id: "maths-adaptly-2022-p1f-fractions-1",
     board: "Adaptly", subject: "mathematics", year: 2022, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Foundation", questionNum: "6",
     marks: 3, topic: "Fractions",
@@ -68,7 +68,7 @@ export const mathsFractions: PastPaperQuestion[] = [
     stage: "gcse", yearGroups: [9, 10, 11],
   },
   {
-    id: "maths-aqa-2021-p1h-fractions-1",
+    id: "maths-adaptly-2021-p1h-fractions-1",
     board: "Adaptly", subject: "mathematics", year: 2021, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Higher", questionNum: "2",
     marks: 3, topic: "Fractions",
@@ -79,7 +79,7 @@ export const mathsFractions: PastPaperQuestion[] = [
     stage: "gcse", yearGroups: [10, 11],
   },
   {
-    id: "maths-wjec-2022-p1f-fractions-1",
+    id: "maths-adaptly-2022-p1f-fractions-1",
     board: "Adaptly", subject: "mathematics", year: 2022, series: "June",
     paper: "Unit 1 (Non-Calculator)", tier: "Foundation", questionNum: "5",
     marks: 2, topic: "Fractions",
@@ -90,7 +90,7 @@ export const mathsFractions: PastPaperQuestion[] = [
     stage: "gcse", yearGroups: [9, 10, 11],
   },
   {
-    id: "maths-aqa-2019-p2f-fractions-1",
+    id: "maths-adaptly-2019-p2f-fractions-1",
     board: "Adaptly", subject: "mathematics", year: 2019, series: "June",
     paper: "Paper 2 (Calculator)", tier: "Foundation", questionNum: "8",
     marks: 3, topic: "Fractions",
@@ -101,7 +101,7 @@ export const mathsFractions: PastPaperQuestion[] = [
     stage: "gcse", yearGroups: [9, 10, 11],
   },
   {
-    id: "maths-edexcel-2022-p1f-fractions-3",
+    id: "maths-adaptly-2022-p1f-fractions-3",
     board: "Adaptly", subject: "mathematics", year: 2022, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Foundation", questionNum: "9",
     marks: 2, topic: "Fractions",
@@ -112,7 +112,7 @@ export const mathsFractions: PastPaperQuestion[] = [
     stage: "gcse", yearGroups: [9, 10, 11],
   },
   {
-    id: "maths-aqa-ks2-2023-fractions-1",
+    id: "maths-adaptly-ks2-2023-fractions-1",
     board: "Adaptly", subject: "mathematics", year: 2023, series: "May",
     paper: "KS2 SATs Paper 2 (Reasoning)", tier: undefined, questionNum: "12",
     marks: 2, topic: "Fractions",
@@ -123,7 +123,7 @@ export const mathsFractions: PastPaperQuestion[] = [
     stage: "ks2", yearGroups: [5, 6],
   },
   {
-    id: "maths-aqa-ks2-2022-fractions-1",
+    id: "maths-adaptly-ks2-2022-fractions-1",
     board: "KS2 SATs", subject: "mathematics", year: 2022, series: "May",
     paper: "KS2 SATs Paper 2 (Reasoning)", tier: undefined, questionNum: "8",
     marks: 1, topic: "Fractions",
@@ -140,7 +140,7 @@ export const mathsFractions: PastPaperQuestion[] = [
 // ─────────────────────────────────────────────────────────────────────────────
 export const mathsAlgebra: PastPaperQuestion[] = [
   {
-    id: "maths-aqa-2023-p1h-algebra-1",
+    id: "maths-adaptly-2023-p1h-algebra-1",
     board: "Adaptly", subject: "mathematics", year: 2023, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Higher", questionNum: "5",
     marks: 3, topic: "Algebra",
@@ -151,7 +151,7 @@ export const mathsAlgebra: PastPaperQuestion[] = [
     stage: "gcse", yearGroups: [9, 10, 11],
   },
   {
-    id: "maths-aqa-2023-p1f-algebra-2",
+    id: "maths-adaptly-2023-p1f-algebra-2",
     board: "Adaptly", subject: "mathematics", year: 2023, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Foundation", questionNum: "11",
     marks: 3, topic: "Algebra",
@@ -162,7 +162,7 @@ export const mathsAlgebra: PastPaperQuestion[] = [
     stage: "gcse", yearGroups: [9, 10, 11],
   },
   {
-    id: "maths-edexcel-2022-p1h-algebra-1",
+    id: "maths-adaptly-2022-p1h-algebra-1",
     board: "Adaptly", subject: "mathematics", year: 2022, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Higher", questionNum: "6",
     marks: 4, topic: "Algebra",
@@ -173,7 +173,7 @@ export const mathsAlgebra: PastPaperQuestion[] = [
     stage: "gcse", yearGroups: [10, 11],
   },
   {
-    id: "maths-ocr-2023-p1f-algebra-1",
+    id: "maths-adaptly-2023-p1f-algebra-1",
     board: "Adaptly", subject: "mathematics", year: 2023, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Foundation", questionNum: "9",
     marks: 2, topic: "Algebra",
@@ -184,7 +184,7 @@ export const mathsAlgebra: PastPaperQuestion[] = [
     stage: "gcse", yearGroups: [9, 10, 11],
   },
   {
-    id: "maths-aqa-2022-p1h-algebra-quadratic",
+    id: "maths-adaptly-2022-p1h-algebra-quadratic",
     board: "Adaptly", subject: "mathematics", year: 2022, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Higher", questionNum: "8",
     marks: 3, topic: "Algebra",
@@ -195,7 +195,7 @@ export const mathsAlgebra: PastPaperQuestion[] = [
     stage: "gcse", yearGroups: [10, 11],
   },
   {
-    id: "maths-edexcel-2023-p1h-algebra-formula",
+    id: "maths-adaptly-2023-p1h-algebra-formula",
     board: "Adaptly", subject: "mathematics", year: 2023, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Higher", questionNum: "4",
     marks: 3, topic: "Algebra",
@@ -206,7 +206,7 @@ export const mathsAlgebra: PastPaperQuestion[] = [
     stage: "gcse", yearGroups: [10, 11],
   },
   {
-    id: "maths-aqa-2023-p1f-algebra-nth-term",
+    id: "maths-adaptly-2023-p1f-algebra-nth-term",
     board: "Adaptly", subject: "mathematics", year: 2023, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Foundation", questionNum: "14",
     marks: 2, topic: "Algebra",
@@ -217,7 +217,7 @@ export const mathsAlgebra: PastPaperQuestion[] = [
     stage: "gcse", yearGroups: [9, 10, 11],
   },
   {
-    id: "maths-ocr-2022-p1h-algebra-simultaneous",
+    id: "maths-adaptly-2022-p1h-algebra-simultaneous",
     board: "Adaptly", subject: "mathematics", year: 2022, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Higher", questionNum: "10",
     marks: 4, topic: "Algebra",
@@ -234,7 +234,7 @@ export const mathsAlgebra: PastPaperQuestion[] = [
 // ─────────────────────────────────────────────────────────────────────────────
 export const mathsGeometry: PastPaperQuestion[] = [
   {
-    id: "maths-aqa-2023-p2h-geometry-1",
+    id: "maths-adaptly-2023-p2h-geometry-1",
     board: "Adaptly", subject: "mathematics", year: 2023, series: "June",
     paper: "Paper 2 (Calculator)", tier: "Higher", questionNum: "7",
     marks: 4, topic: "Geometry",
@@ -245,7 +245,7 @@ export const mathsGeometry: PastPaperQuestion[] = [
     stage: "gcse", yearGroups: [9, 10, 11],
   },
   {
-    id: "maths-edexcel-2022-p2f-geometry-area",
+    id: "maths-adaptly-2022-p2f-geometry-area",
     board: "Adaptly", subject: "mathematics", year: 2022, series: "June",
     paper: "Paper 2 (Calculator)", tier: "Foundation", questionNum: "12",
     marks: 3, topic: "Geometry",
@@ -256,7 +256,7 @@ export const mathsGeometry: PastPaperQuestion[] = [
     stage: "gcse", yearGroups: [9, 10, 11],
   },
   {
-    id: "maths-aqa-2022-p1f-geometry-angles",
+    id: "maths-adaptly-2022-p1f-geometry-angles",
     board: "Adaptly", subject: "mathematics", year: 2022, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Foundation", questionNum: "7",
     marks: 3, topic: "Geometry",
@@ -267,7 +267,7 @@ export const mathsGeometry: PastPaperQuestion[] = [
     stage: "gcse", yearGroups: [9, 10, 11],
   },
   {
-    id: "maths-ocr-2023-p2h-geometry-trig",
+    id: "maths-adaptly-2023-p2h-geometry-trig",
     board: "Adaptly", subject: "mathematics", year: 2023, series: "June",
     paper: "Paper 2 (Calculator)", tier: "Higher", questionNum: "9",
     marks: 4, topic: "Geometry",
@@ -278,7 +278,7 @@ export const mathsGeometry: PastPaperQuestion[] = [
     stage: "gcse", yearGroups: [10, 11],
   },
   {
-    id: "maths-aqa-2023-p3h-geometry-volume",
+    id: "maths-adaptly-2023-p3h-geometry-volume",
     board: "Adaptly", subject: "mathematics", year: 2023, series: "June",
     paper: "Paper 3 (Calculator)", tier: "Higher", questionNum: "11",
     marks: 4, topic: "Geometry",
@@ -289,7 +289,7 @@ export const mathsGeometry: PastPaperQuestion[] = [
     stage: "gcse", yearGroups: [10, 11],
   },
   {
-    id: "maths-edexcel-2022-p1f-geometry-perimeter",
+    id: "maths-adaptly-2022-p1f-geometry-perimeter",
     board: "Adaptly", subject: "mathematics", year: 2022, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Foundation", questionNum: "6",
     marks: 2, topic: "Geometry",
@@ -306,7 +306,7 @@ export const mathsGeometry: PastPaperQuestion[] = [
 // ─────────────────────────────────────────────────────────────────────────────
 export const mathsNumber: PastPaperQuestion[] = [
   {
-    id: "maths-aqa-2023-p1f-number-percentages",
+    id: "maths-adaptly-2023-p1f-number-percentages",
     board: "Adaptly", subject: "mathematics", year: 2023, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Foundation", questionNum: "6",
     marks: 3, topic: "Number",
@@ -317,7 +317,7 @@ export const mathsNumber: PastPaperQuestion[] = [
     stage: "gcse", yearGroups: [9, 10, 11],
   },
   {
-    id: "maths-edexcel-2022-p1f-number-stdform",
+    id: "maths-adaptly-2022-p1f-number-stdform",
     board: "Adaptly", subject: "mathematics", year: 2022, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Foundation", questionNum: "13",
     marks: 2, topic: "Number",
@@ -328,7 +328,7 @@ export const mathsNumber: PastPaperQuestion[] = [
     stage: "gcse", yearGroups: [9, 10, 11],
   },
   {
-    id: "maths-aqa-2022-p2f-number-ratio",
+    id: "maths-adaptly-2022-p2f-number-ratio",
     board: "Adaptly", subject: "mathematics", year: 2022, series: "June",
     paper: "Paper 2 (Calculator)", tier: "Foundation", questionNum: "10",
     marks: 3, topic: "Number",
@@ -339,7 +339,7 @@ export const mathsNumber: PastPaperQuestion[] = [
     stage: "gcse", yearGroups: [9, 10, 11],
   },
   {
-    id: "maths-ocr-2023-p1f-number-hcf",
+    id: "maths-adaptly-2023-p1f-number-hcf",
     board: "Adaptly", subject: "mathematics", year: 2023, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Foundation", questionNum: "5",
     marks: 2, topic: "Number",
@@ -350,7 +350,7 @@ export const mathsNumber: PastPaperQuestion[] = [
     stage: "gcse", yearGroups: [9, 10, 11],
   },
   {
-    id: "maths-aqa-2023-p1h-number-surds",
+    id: "maths-adaptly-2023-p1h-number-surds",
     board: "Adaptly", subject: "mathematics", year: 2023, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Higher", questionNum: "6",
     marks: 3, topic: "Number",
@@ -361,7 +361,7 @@ export const mathsNumber: PastPaperQuestion[] = [
     stage: "gcse", yearGroups: [10, 11],
   },
   {
-    id: "maths-edexcel-2023-p1f-number-decimals",
+    id: "maths-adaptly-2023-p1f-number-decimals",
     board: "Adaptly", subject: "mathematics", year: 2023, series: "June",
     paper: "Paper 1 (Non-Calculator)", tier: "Foundation", questionNum: "3",
     marks: 2, topic: "Number",
@@ -372,7 +372,7 @@ export const mathsNumber: PastPaperQuestion[] = [
     stage: "gcse", yearGroups: [7, 8, 9, 10, 11],
   },
   {
-    id: "maths-wjec-2022-p1f-number-interest",
+    id: "maths-adaptly-2022-p1f-number-interest",
     board: "Adaptly", subject: "mathematics", year: 2022, series: "June",
     paper: "Unit 1 (Non-Calculator)", tier: "Foundation", questionNum: "11",
     marks: 3, topic: "Number",
@@ -389,7 +389,7 @@ export const mathsNumber: PastPaperQuestion[] = [
 // ─────────────────────────────────────────────────────────────────────────────
 export const mathsStatistics: PastPaperQuestion[] = [
   {
-    id: "maths-aqa-2022-p3f-statistics-mean",
+    id: "maths-adaptly-2022-p3f-statistics-mean",
     board: "Adaptly", subject: "mathematics", year: 2022, series: "June",
     paper: "Paper 3 (Calculator)", tier: "Foundation", questionNum: "8",
     marks: 3, topic: "Statistics",
@@ -400,7 +400,7 @@ export const mathsStatistics: PastPaperQuestion[] = [
     stage: "gcse", yearGroups: [7, 8, 9, 10, 11],
   },
   {
-    id: "maths-edexcel-2023-p3f-statistics-probability",
+    id: "maths-adaptly-2023-p3f-statistics-probability",
     board: "Adaptly", subject: "mathematics", year: 2023, series: "June",
     paper: "Paper 3 (Calculator)", tier: "Foundation", questionNum: "15",
     marks: 3, topic: "Statistics",
@@ -411,7 +411,7 @@ export const mathsStatistics: PastPaperQuestion[] = [
     stage: "gcse", yearGroups: [7, 8, 9, 10, 11],
   },
   {
-    id: "maths-aqa-2023-p3h-statistics-histogram",
+    id: "maths-adaptly-2023-p3h-statistics-histogram",
     board: "Adaptly", subject: "mathematics", year: 2023, series: "June",
     paper: "Paper 3 (Calculator)", tier: "Higher", questionNum: "14",
     marks: 4, topic: "Statistics",
@@ -422,7 +422,7 @@ export const mathsStatistics: PastPaperQuestion[] = [
     stage: "gcse", yearGroups: [10, 11],
   },
   {
-    id: "maths-edexcel-2022-p3h-statistics-quartiles",
+    id: "maths-adaptly-2022-p3h-statistics-quartiles",
     board: "Adaptly", subject: "mathematics", year: 2022, series: "June",
     paper: "Paper 3 (Calculator)", tier: "Higher", questionNum: "12",
     marks: 3, topic: "Statistics",
@@ -439,7 +439,7 @@ export const mathsStatistics: PastPaperQuestion[] = [
 // ─────────────────────────────────────────────────────────────────────────────
 export const mathsRatio: PastPaperQuestion[] = [
   {
-    id: "maths-aqa-2022-p2f-ratio-1",
+    id: "maths-adaptly-2022-p2f-ratio-1",
     board: "Adaptly", subject: "mathematics", year: 2022, series: "June",
     paper: "Paper 2 (Calculator)", tier: "Foundation", questionNum: "9",
     marks: 3, topic: "Ratio and Proportion",
@@ -450,7 +450,7 @@ export const mathsRatio: PastPaperQuestion[] = [
     stage: "gcse", yearGroups: [9, 10, 11],
   },
   {
-    id: "maths-edexcel-2023-p2f-ratio-direct",
+    id: "maths-adaptly-2023-p2f-ratio-direct",
     board: "Adaptly", subject: "mathematics", year: 2023, series: "June",
     paper: "Paper 2 (Calculator)", tier: "Foundation", questionNum: "11",
     marks: 3, topic: "Ratio and Proportion",
@@ -467,7 +467,7 @@ export const mathsRatio: PastPaperQuestion[] = [
 // ─────────────────────────────────────────────────────────────────────────────
 export const englishLanguageReading: PastPaperQuestion[] = [
   {
-    id: "eng-lang-aqa-2023-p1-reading-1",
+    id: "eng-lang-adaptly-2023-p1-reading-1",
     board: "Adaptly", subject: "english-language", year: 2023, series: "June",
     paper: "Paper 1 (Explorations in Creative Reading and Writing)", tier: undefined, questionNum: "1",
     marks: 4, topic: "Reading – Comprehension",
@@ -478,7 +478,7 @@ export const englishLanguageReading: PastPaperQuestion[] = [
     stage: "gcse", yearGroups: [10, 11],
   },
   {
-    id: "eng-lang-aqa-2023-p1-reading-2",
+    id: "eng-lang-adaptly-2023-p1-reading-2",
     board: "Adaptly", subject: "english-language", year: 2023, series: "June",
     paper: "Paper 1 (Explorations in Creative Reading and Writing)", tier: undefined, questionNum: "2",
     marks: 8, topic: "Reading – Language Analysis",
@@ -489,7 +489,7 @@ export const englishLanguageReading: PastPaperQuestion[] = [
     stage: "gcse", yearGroups: [10, 11],
   },
   {
-    id: "eng-lang-aqa-2022-p2-reading-1",
+    id: "eng-lang-adaptly-2022-p2-reading-1",
     board: "Adaptly", subject: "english-language", year: 2022, series: "June",
     paper: "Paper 2 (Writers' Viewpoints and Perspectives)", tier: undefined, questionNum: "1",
     marks: 4, topic: "Reading – Comprehension",
@@ -500,7 +500,7 @@ export const englishLanguageReading: PastPaperQuestion[] = [
     stage: "gcse", yearGroups: [10, 11],
   },
   {
-    id: "eng-lang-aqa-2022-p2-reading-2",
+    id: "eng-lang-adaptly-2022-p2-reading-2",
     board: "Adaptly", subject: "english-language", year: 2022, series: "June",
     paper: "Paper 2 (Writers' Viewpoints and Perspectives)", tier: undefined, questionNum: "3",
     marks: 12, topic: "Reading – Analysis",
@@ -511,7 +511,7 @@ export const englishLanguageReading: PastPaperQuestion[] = [
     stage: "gcse", yearGroups: [10, 11],
   },
   {
-    id: "eng-lang-aqa-2022-p2-reading-comparison",
+    id: "eng-lang-adaptly-2022-p2-reading-comparison",
     board: "Adaptly", subject: "english-language", year: 2022, series: "June",
     paper: "Paper 2 (Writers' Viewpoints and Perspectives)", tier: undefined, questionNum: "4",
     marks: 16, topic: "Reading – Comparison",
@@ -528,7 +528,7 @@ export const englishLanguageReading: PastPaperQuestion[] = [
 // ─────────────────────────────────────────────────────────────────────────────
 export const biologyCellBiology: PastPaperQuestion[] = [
   {
-    id: "bio-aqa-2023-p1h-cells-1",
+    id: "bio-adaptly-2023-p1h-cells-1",
     board: "Adaptly", subject: "biology", year: 2023, series: "June",
     paper: "Paper 1 (Higher)", tier: "Higher", questionNum: "1",
     marks: 2, topic: "Cell Biology",
@@ -539,7 +539,7 @@ export const biologyCellBiology: PastPaperQuestion[] = [
     stage: "gcse", yearGroups: [10, 11],
   },
   {
-    id: "bio-aqa-2022-p1f-cells-2",
+    id: "bio-adaptly-2022-p1f-cells-2",
     board: "Adaptly", subject: "biology", year: 2022, series: "June",
     paper: "Paper 1 (Foundation)", tier: "Foundation", questionNum: "2",
     marks: 3, topic: "Cell Biology",
@@ -550,7 +550,7 @@ export const biologyCellBiology: PastPaperQuestion[] = [
     stage: "gcse", yearGroups: [10, 11],
   },
   {
-    id: "bio-aqa-2023-p1h-cells-mitosis",
+    id: "bio-adaptly-2023-p1h-cells-mitosis",
     board: "Adaptly", subject: "biology", year: 2023, series: "June",
     paper: "Paper 1 (Higher)", tier: "Higher", questionNum: "3",
     marks: 4, topic: "Cell Biology",
@@ -567,7 +567,7 @@ export const biologyCellBiology: PastPaperQuestion[] = [
 // ─────────────────────────────────────────────────────────────────────────────
 export const biologyOrganisation: PastPaperQuestion[] = [
   {
-    id: "bio-aqa-2022-p1f-organisation-1",
+    id: "bio-adaptly-2022-p1f-organisation-1",
     board: "Adaptly", subject: "biology", year: 2022, series: "June",
     paper: "Paper 1 (Foundation)", tier: "Foundation", questionNum: "4",
     marks: 3, topic: "Organisation",
@@ -578,7 +578,7 @@ export const biologyOrganisation: PastPaperQuestion[] = [
     stage: "gcse", yearGroups: [10, 11],
   },
   {
-    id: "bio-aqa-2023-p1h-organisation-enzymes",
+    id: "bio-adaptly-2023-p1h-organisation-enzymes",
     board: "Adaptly", subject: "biology", year: 2023, series: "June",
     paper: "Paper 1 (Higher)", tier: "Higher", questionNum: "5",
     marks: 4, topic: "Organisation",
@@ -595,7 +595,7 @@ export const biologyOrganisation: PastPaperQuestion[] = [
 // ─────────────────────────────────────────────────────────────────────────────
 export const chemistryAtomicStructure: PastPaperQuestion[] = [
   {
-    id: "chem-aqa-2023-p1h-atoms-1",
+    id: "chem-adaptly-2023-p1h-atoms-1",
     board: "Adaptly", subject: "chemistry", year: 2023, series: "June",
     paper: "Paper 1 (Higher)", tier: "Higher", questionNum: "1",
     marks: 3, topic: "Atomic Structure",
@@ -606,7 +606,7 @@ export const chemistryAtomicStructure: PastPaperQuestion[] = [
     stage: "gcse", yearGroups: [10, 11],
   },
   {
-    id: "chem-aqa-2022-p1f-atoms-isotopes",
+    id: "chem-adaptly-2022-p1f-atoms-isotopes",
     board: "Adaptly", subject: "chemistry", year: 2022, series: "June",
     paper: "Paper 1 (Foundation)", tier: "Foundation", questionNum: "3",
     marks: 3, topic: "Atomic Structure",
@@ -623,7 +623,7 @@ export const chemistryAtomicStructure: PastPaperQuestion[] = [
 // ─────────────────────────────────────────────────────────────────────────────
 export const chemistryBonding: PastPaperQuestion[] = [
   {
-    id: "chem-aqa-2023-p1h-bonding-ionic",
+    id: "chem-adaptly-2023-p1h-bonding-ionic",
     board: "Adaptly", subject: "chemistry", year: 2023, series: "June",
     paper: "Paper 1 (Higher)", tier: "Higher", questionNum: "4",
     marks: 4, topic: "Bonding",
@@ -634,7 +634,7 @@ export const chemistryBonding: PastPaperQuestion[] = [
     stage: "gcse", yearGroups: [10, 11],
   },
   {
-    id: "chem-aqa-2022-p1f-bonding-covalent",
+    id: "chem-adaptly-2022-p1f-bonding-covalent",
     board: "Adaptly", subject: "chemistry", year: 2022, series: "June",
     paper: "Paper 1 (Foundation)", tier: "Foundation", questionNum: "6",
     marks: 3, topic: "Bonding",
@@ -651,7 +651,7 @@ export const chemistryBonding: PastPaperQuestion[] = [
 // ─────────────────────────────────────────────────────────────────────────────
 export const physicsEnergy: PastPaperQuestion[] = [
   {
-    id: "phys-aqa-2023-p1h-energy-1",
+    id: "phys-adaptly-2023-p1h-energy-1",
     board: "Adaptly", subject: "physics", year: 2023, series: "June",
     paper: "Paper 1 (Higher)", tier: "Higher", questionNum: "1",
     marks: 3, topic: "Energy",
@@ -662,7 +662,7 @@ export const physicsEnergy: PastPaperQuestion[] = [
     stage: "gcse", yearGroups: [10, 11],
   },
   {
-    id: "phys-aqa-2022-p1f-energy-efficiency",
+    id: "phys-adaptly-2022-p1f-energy-efficiency",
     board: "Adaptly", subject: "physics", year: 2022, series: "June",
     paper: "Paper 1 (Foundation)", tier: "Foundation", questionNum: "3",
     marks: 3, topic: "Energy",
@@ -673,7 +673,7 @@ export const physicsEnergy: PastPaperQuestion[] = [
     stage: "gcse", yearGroups: [10, 11],
   },
   {
-    id: "phys-aqa-2023-p1h-energy-kinetic",
+    id: "phys-adaptly-2023-p1h-energy-kinetic",
     board: "Adaptly", subject: "physics", year: 2023, series: "June",
     paper: "Paper 1 (Higher)", tier: "Higher", questionNum: "4",
     marks: 4, topic: "Energy",
@@ -690,7 +690,7 @@ export const physicsEnergy: PastPaperQuestion[] = [
 // ─────────────────────────────────────────────────────────────────────────────
 export const physicsForces: PastPaperQuestion[] = [
   {
-    id: "phys-aqa-2023-p2h-forces-1",
+    id: "phys-adaptly-2023-p2h-forces-1",
     board: "Adaptly", subject: "physics", year: 2023, series: "June",
     paper: "Paper 2 (Higher)", tier: "Higher", questionNum: "2",
     marks: 3, topic: "Forces",
@@ -701,7 +701,7 @@ export const physicsForces: PastPaperQuestion[] = [
     stage: "gcse", yearGroups: [10, 11],
   },
   {
-    id: "phys-aqa-2022-p2f-forces-newton",
+    id: "phys-adaptly-2022-p2f-forces-newton",
     board: "Adaptly", subject: "physics", year: 2022, series: "June",
     paper: "Paper 2 (Foundation)", tier: "Foundation", questionNum: "5",
     marks: 3, topic: "Forces",
@@ -718,7 +718,7 @@ export const physicsForces: PastPaperQuestion[] = [
 // ─────────────────────────────────────────────────────────────────────────────
 export const historyGermany: PastPaperQuestion[] = [
   {
-    id: "hist-aqa-2023-p1-germany-1",
+    id: "hist-adaptly-2023-p1-germany-1",
     board: "Adaptly", subject: "history", year: 2023, series: "June",
     paper: "Paper 1 (Understanding the Modern World)", tier: undefined, questionNum: "1",
     marks: 4, topic: "Weimar and Nazi Germany",
@@ -729,7 +729,7 @@ export const historyGermany: PastPaperQuestion[] = [
     stage: "gcse", yearGroups: [10, 11],
   },
   {
-    id: "hist-aqa-2022-p1-germany-2",
+    id: "hist-adaptly-2022-p1-germany-2",
     board: "Adaptly", subject: "history", year: 2022, series: "June",
     paper: "Paper 1 (Understanding the Modern World)", tier: undefined, questionNum: "3",
     marks: 8, topic: "Weimar and Nazi Germany",
@@ -740,7 +740,7 @@ export const historyGermany: PastPaperQuestion[] = [
     stage: "gcse", yearGroups: [10, 11],
   },
   {
-    id: "hist-aqa-2023-p1-germany-3",
+    id: "hist-adaptly-2023-p1-germany-3",
     board: "Adaptly", subject: "history", year: 2023, series: "June",
     paper: "Paper 1 (Understanding the Modern World)", tier: undefined, questionNum: "4",
     marks: 16, topic: "Weimar and Nazi Germany",
@@ -757,7 +757,7 @@ export const historyGermany: PastPaperQuestion[] = [
 // ─────────────────────────────────────────────────────────────────────────────
 export const geographyNaturalHazards: PastPaperQuestion[] = [
   {
-    id: "geog-aqa-2023-p1-hazards-1",
+    id: "geog-adaptly-2023-p1-hazards-1",
     board: "Adaptly", subject: "geography", year: 2023, series: "June",
     paper: "Paper 1 (Living with the Physical Environment)", tier: undefined, questionNum: "1",
     marks: 2, topic: "The Challenge of Natural Hazards",
@@ -768,7 +768,7 @@ export const geographyNaturalHazards: PastPaperQuestion[] = [
     stage: "gcse", yearGroups: [10, 11],
   },
   {
-    id: "geog-aqa-2022-p1-hazards-2",
+    id: "geog-adaptly-2022-p1-hazards-2",
     board: "Adaptly", subject: "geography", year: 2022, series: "June",
     paper: "Paper 1 (Living with the Physical Environment)", tier: undefined, questionNum: "2",
     marks: 4, topic: "The Challenge of Natural Hazards",
@@ -779,7 +779,7 @@ export const geographyNaturalHazards: PastPaperQuestion[] = [
     stage: "gcse", yearGroups: [10, 11],
   },
   {
-    id: "geog-aqa-2023-p1-hazards-3",
+    id: "geog-adaptly-2023-p1-hazards-3",
     board: "Adaptly", subject: "geography", year: 2023, series: "June",
     paper: "Paper 1 (Living with the Physical Environment)", tier: undefined, questionNum: "4",
     marks: 6, topic: "The Challenge of Natural Hazards",

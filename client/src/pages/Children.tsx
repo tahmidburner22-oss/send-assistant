@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import WorksheetRenderer from "@/components/WorksheetRenderer";
 import { parseWithFixes } from "@/lib/ai";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -812,7 +813,7 @@ If the submission is empty or too short to mark, return mark: "N/A", feedback: "
 
       {/* Assignment Detail Dialog */}
       <Dialog open={!!selectedAssignment} onOpenChange={() => setSelectedAssignment(null)}>
-        <DialogContent className={selectedAssignment?.type === 'send-screener' ? 'max-w-2xl max-h-[90vh] overflow-y-auto' : 'max-w-lg'}>
+        <DialogContent className={selectedAssignment?.type === 'send-screener' ? 'max-w-2xl max-h-[90vh] overflow-y-auto' : selectedAssignment?.sections?.length ? 'max-w-2xl max-h-[90vh] overflow-y-auto' : 'max-w-lg'}>
           <DialogHeader><DialogTitle className="flex items-center gap-2"><TrendingUp className="w-5 h-5 text-brand" /> {selectedAssignment?.type === 'send-screener' ? 'SEND Screener Results' : 'Assignment Progress'}</DialogTitle></DialogHeader>
           {selectedAssignment && (
             <div className="space-y-4 mt-2">
@@ -870,13 +871,26 @@ If the submission is empty or too short to mark, return mark: "N/A", feedback: "
                     />
                   </div>
 
-                  {/* Assignment Content Preview */}
-                  {selectedAssignment.content && (
+                  {/* Assignment Content — use WorksheetRenderer if sections available, else plain preview */}
+                  {selectedAssignment.sections && selectedAssignment.sections.length > 0 ? (
+                    <div className="border border-border/50 rounded-lg overflow-hidden max-h-[40vh] overflow-y-auto">
+                      <WorksheetRenderer
+                        worksheet={{
+                          title: selectedAssignment.title,
+                          sections: selectedAssignment.sections as any,
+                          metadata: (selectedAssignment as any).metadata || {},
+                        }}
+                        viewMode="student"
+                        editMode={false}
+                        overlayColor="#ffffff"
+                      />
+                    </div>
+                  ) : selectedAssignment.content ? (
                     <div className="p-3 rounded-lg bg-muted/50 border border-border/50">
                       <p className="text-xs font-medium text-muted-foreground mb-1">Assignment Content Preview:</p>
                       <p className="text-xs text-foreground/80 line-clamp-3 whitespace-pre-wrap">{selectedAssignment.content}</p>
                     </div>
-                  )}
+                  ) : null}
                 </>
               )}
 

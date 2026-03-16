@@ -164,16 +164,33 @@ SEND need: ${child.sendNeed || "none"}.
 Make the worksheet fully self-contained and printable.`.trim(),
       });
 
-      // Build full content string from sections
+      // Build full content string from sections (kept for legacy text display)
       const content = result.sections
         .map(s => `=== ${s.title} ===\n${s.content}`)
         .join("\n\n");
 
-      // Assign via AppContext
+      // Assign via AppContext — pass full sections so WorksheetRenderer can
+      // display the worksheet with proper purple cards and layout, matching
+      // the main worksheet generator output exactly.
       assignWork(child.id, {
         title: result.title,
         type: "worksheet",
         content,
+        sections: result.sections.map(s => ({
+          title: s.title,
+          type: s.type || "content",
+          content: s.content,
+          teacherOnly: s.teacherOnly || false,
+          svg: (s as any).svg,
+          caption: (s as any).caption,
+        })),
+        metadata: {
+          subject: cfg.subject,
+          topic: topicTitle,
+          yearGroup: child.yearGroup,
+          sendNeed: child.sendNeed || undefined,
+          difficulty: cfg.difficulty,
+        },
       });
 
       // Build the assignment object for the callback
@@ -182,6 +199,12 @@ Make the worksheet fully self-contained and printable.`.trim(),
         title: result.title,
         type: "worksheet",
         content,
+        sections: result.sections.map(s => ({
+          title: s.title,
+          type: s.type || "content",
+          content: s.content,
+          teacherOnly: s.teacherOnly || false,
+        })),
         assignedAt: new Date().toISOString(),
         status: "not-started",
         progress: 0,

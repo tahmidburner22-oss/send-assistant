@@ -410,6 +410,7 @@ export default function SendScreener() {
   const [saveChildId, setSaveChildId] = useState("");
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [savingProgress, setSavingProgress] = useState(false);
+  const [allowHomeResume, setAllowHomeResume] = useState(false);
   // Track the assignment ID used for save-progress (so we can update it, not create duplicates)
   const [progressAssignmentId, setProgressAssignmentId] = useState<string | null>(null);
   const [progressAssignmentChildId, setProgressAssignmentChildId] = useState<string | null>(null);
@@ -424,6 +425,23 @@ export default function SendScreener() {
   const progress = (currentQuestionIndex / totalQ) * 100;
 
   // Auto-advance after answering
+  // Restore in-progress state from ?resume= URL param (set by parent portal)
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const raw = params.get("resume");
+      if (raw) {
+        const saved = JSON.parse(decodeURIComponent(raw));
+        if (saved.answers) setAnswers(saved.answers);
+        if (saved.currentQuestionIndex) setCurrentQuestionIndex(saved.currentQuestionIndex);
+        if (saved.mode) setScreenerMode(saved.mode);
+        setStep("questions");
+        // Clean URL so refresh doesn't re-trigger
+        window.history.replaceState({}, "", window.location.pathname);
+      }
+    } catch {}
+  }, []);
+
   useEffect(() => {
     if (justAnswered && currentAnswer !== undefined) {
       const timer = setTimeout(() => {
@@ -479,6 +497,7 @@ export default function SendScreener() {
       answers,
       currentQuestionIndex,
       savedAt: new Date().toISOString(),
+      allowHomeResume,
     });
     const progressPct = Math.round((currentQuestionIndex / totalQ) * 100);
     try {
@@ -1003,6 +1022,19 @@ export default function SendScreener() {
                       className="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-white text-sm font-bold transition-colors"
                     >
                       {savingProgress ? "Saving..." : "Save Progress"}
+                    </button>
+                    {/* Teacher permission toggle */}
+                    <button
+                      onClick={() => setAllowHomeResume(v => !v)}
+                      className={`mt-3 w-full flex items-center justify-between px-4 py-3 rounded-xl border-2 transition-all ${allowHomeResume ? "border-indigo-400 bg-indigo-50" : "border-gray-200 bg-gray-50"}`}
+                    >
+                      <div className="text-left">
+                        <p className={`text-sm font-semibold ${allowHomeResume ? "text-indigo-800" : "text-gray-700"}`}>Allow parent to resume at home</p>
+                        <p className="text-xs text-gray-500 mt-0.5">Parent will see a Resume button in their portal</p>
+                      </div>
+                      <div className={`w-10 h-6 rounded-full flex items-center transition-all ${allowHomeResume ? "bg-indigo-500" : "bg-gray-300"}`}>
+                        <div className={`w-4 h-4 rounded-full bg-white shadow mx-1 transition-transform ${allowHomeResume ? "translate-x-4" : ""}`} />
+                      </div>
                     </button>
                   </>
                 )}
