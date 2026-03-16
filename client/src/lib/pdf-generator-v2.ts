@@ -379,58 +379,69 @@ export async function downloadHtmlAsPdf(
   const viewMode = options.viewMode || "student";
   const overlayColor = options.overlayColor || "#ffffff";
 
-  // A4 at 96 dpi = 794 px wide. Near-zero margins so the header goes edge-to-edge.
   const A4_W_MM = 210;
   const A4_H_MM = 297;
   const MARGIN_MM = 3;
-  const printableW_MM = A4_W_MM - MARGIN_MM * 2;  // 204 mm
-  const printableH_MM = A4_H_MM - MARGIN_MM * 2;  // 291 mm
+  const printableW_MM = A4_W_MM - MARGIN_MM * 2;
+  const printableH_MM = A4_H_MM - MARGIN_MM * 2;
   const RENDER_PX = 794;
 
-  // ── 1. Clone into the SAME document (no iframe — avoids html2canvas CORS failure) ──
+  // ── 1. Clone into a wrapper div appended to body ──────────────────────────
+  // We use a wrapper with overflow:hidden + position:absolute so the clone
+  // is technically in the document layout (html2canvas can read it) but
+  // visually off-screen. position:fixed at -9999px can fail on mobile Chrome.
+  const wrapper = document.createElement("div");
+  wrapper.style.cssText = [
+    "position:absolute",
+    "top:0",
+    "left:-9999px",
+    `width:${RENDER_PX}px`,
+    "overflow:hidden",
+    "pointer-events:none",
+    "z-index:-1",
+  ].join(";");
+
   const clone = element.cloneNode(true) as HTMLElement;
 
   if (viewMode === "student") {
     clone.querySelectorAll(".ws-teacher-section").forEach((el) => el.remove());
   }
 
+  // Reset any inline positioning from the live element so clone lays out naturally
   clone.style.cssText = [
-    "position:fixed",
-    "left:-9999px",
-    "top:0",
     `width:${RENDER_PX}px`,
     `min-width:${RENDER_PX}px`,
     `max-width:${RENDER_PX}px`,
     `background:${overlayColor}`,
     "box-sizing:border-box",
     "padding:4px",
-    "z-index:-9999",
-    "visibility:visible",
-    "opacity:1",
+    "margin:0",
+    "position:relative",
   ].join(";");
 
-  document.body.appendChild(clone);
+  wrapper.appendChild(clone);
+  document.body.appendChild(wrapper);
 
-  // Let the browser lay out the clone fully
-  await new Promise<void>((r) => setTimeout(r, 300));
+  // Let the browser fully lay out the clone
+  await new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(r, 200))));
 
   try {
     const html2canvas = (await import("html2canvas")).default;
     const { jsPDF } = await import("jspdf");
 
-    // ── 2. Measure section blocks before capture ──────────────────────────────
-    const cloneRect = clone.getBoundingClientRect();
+    // ── 2. Measure section blocks ─────────────────────────────────────────────
+    const wrapperRect = wrapper.getBoundingClientRect();
     const blocks: Array<{ top: number; bottom: number }> = Array.from(
       clone.querySelectorAll<HTMLElement>(".ws-header, .ws-section")
     ).map((el) => {
       const r = el.getBoundingClientRect();
       return {
-        top: r.top - cloneRect.top,
-        bottom: r.bottom - cloneRect.top,
+        top: r.top - wrapperRect.top,
+        bottom: r.bottom - wrapperRect.top,
       };
     });
 
-    // ── 3. Capture at 2× ─────────────────────────────────────────────────────
+    // ── 3. Capture at 2× scale ────────────────────────────────────────────────
     const canvas = await html2canvas(clone, {
       scale: 2,
       useCORS: true,
@@ -439,13 +450,15 @@ export async function downloadHtmlAsPdf(
       logging: false,
       windowWidth: RENDER_PX,
       width: RENDER_PX,
-      scrollX: 0,
-      scrollY: 0,
+      scrollX: -window.scrollX,
+      scrollY: -window.scrollY,
+      x: 0,
+      y: 0,
     });
 
     const canvasW = canvas.width;
     const canvasH = canvas.height;
-    const DPR = canvasW / RENDER_PX; // 2
+    const DPR = canvasW / RENDER_PX;
 
     const scaledBlocks = blocks.map((b) => ({
       top: b.top * DPR,
@@ -455,9 +468,7 @@ export async function downloadHtmlAsPdf(
     const mmPerPx = printableW_MM / canvasW;
     const pageH_Px = printableH_MM / mmPerPx;
 
-    // ── 4. Section-aware page break ───────────────────────────────────────────
-    // Packs multiple sections per page naturally. Only breaks early when a cut
-    // would slice through a block. Re-runs until no more collisions exist.
+    // ── 4. Section-aware page breaks ──────────────────────────────────────────
     function findBreak(curY: number): number {
       const ideal = curY + pageH_Px;
       if (ideal >= canvasH) return canvasH;
@@ -470,7 +481,7 @@ export async function downloadHtmlAsPdf(
           if (blk.top >= canvasH) continue;
           if (breakAt > blk.top && breakAt < blk.bottom) {
             const blockH = blk.bottom - blk.top;
-            if (blockH >= pageH_Px * 0.98) continue; // must cut — full-page block
+            if (blockH >= pageH_Px * 0.98) continue;
             const candidate = blk.top - 4 * DPR;
             if (candidate > curY) {
               breakAt = candidate;
@@ -516,6 +527,6 @@ export async function downloadHtmlAsPdf(
 
     pdf.save(filename.endsWith(".pdf") ? filename : `${filename}.pdf`);
   } finally {
-    document.body.removeChild(clone);
+    document.body.removeChild(wrapper);
   }
 }
