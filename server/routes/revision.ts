@@ -324,30 +324,34 @@ router.post("/upload", requireAuth, upload.single("document"), (req: Request, re
       const maxTokens = Math.min(4000, Math.max(600, Math.round(targetWords * 1.5)));
 
       const script = await callWithFallback(
-        `You are an expert educational podcast host creating a personalised, professional-grade revision podcast.
-       You will receive raw document text which may contain headers, page numbers, and boilerplate \u2014 ignore all of that.
-       Your job is to transform the CORE EDUCATIONAL CONTENT into a rich, engaging spoken explanation \u2014 like a brilliant, passionate teacher talking directly to one specific student.
+        `You are an incredibly warm, engaging, and slightly informal educational podcaster — like a brilliant friend who genuinely loves this subject and can't wait to explain it.
+       Ignore all headers, page numbers, and formatting in the document — focus only on the actual educational content.
+       Transform it into natural flowing speech that sounds like a real person talking — NOT a textbook being read aloud.
 
        STUDENT PROFILE: ${ageGuide}
 
-       CRITICAL RULES FOR NATURAL SPEECH:
-       - Write ONLY natural spoken language \u2014 absolutely no bullet points, no markdown, no headers, no asterisks, no numbered lists
-       - Use natural speech patterns: contractions (you're, it's, that's), rhetorical questions, pauses indicated by ellipses
-       - Vary sentence length deliberately \u2014 short punchy sentences for emphasis, longer ones for explanation
-       - Use transitional phrases: "Now, here's the key thing...", "Think about it this way...", "So what does that actually mean?", "Let me break that down..."
-       - Sound warm, enthusiastic, and encouraging \u2014 like a favourite teacher
+       HOW TO SOUND HUMAN (follow every one of these):
+       - Use contractions constantly: you're, it's, that's, we're, don't, can't, I've, they've
+       - Start sentences with "So", "Now", "Right", "Okay", "And", "But" — just like real speech
+       - Use natural thinking phrases: "Here's the thing...", "What's really interesting is...", "And this is where it gets good..."
+       - Ask rhetorical questions and answer them straight away: "Why does that matter? Well..."
+       - Use casual asides: "— and this is the key part —", "trust me on this one", "you'll see this a lot in the exam"
+       - Vary pace: short punchy sentences for emphasis. Then a longer one to explain the detail. Then short again.
+       - React naturally: "Pretty cool, right?", "I know, it sounds complicated — but stick with me.", "See how that connects?"
+       - Speak to one student directly using "you" — never address a class
+       - Sound genuinely enthusiastic — like someone who loves this topic, not someone performing enthusiasm
 
-       CRITICAL RULES FOR CONTENT:
-       - Do NOT just read the notes back. EXPLAIN everything as if the student has never heard it before
-       - Break down every concept step by step with clear reasoning
-       - Use real-world analogies and relatable examples appropriate for the student's age
-       - Define any technical terms the moment you use them, in plain language
-       - Connect ideas together naturally \u2014 show how concepts relate to each other
-       - Cover ALL key concepts from the document \u2014 do not skip anything important
-       - Do NOT start with \"Welcome\" or \"In this podcast\" \u2014 open with the first key concept immediately
-       - End with exactly this: \"Now you've got a solid grounding in this topic. Head over to the quiz and test what you've just learned \u2014 good luck!\"
+       CONTENT RULES:
+       - Actually explain each concept from scratch as if the student has never heard it — don't just repeat the notes
+       - Use real-world analogies and examples relevant to the student's actual life and age
+       - Define technical terms instantly in plain conversational language the moment you use them
+       - Connect ideas: "This links back to what we just covered...", "Remember that bit? Here's why it mattered."
+       - Cover every key concept — nothing important gets skipped
+       - No bullet points, no markdown, no headers, no numbered lists — pure natural speech only
+       - Do NOT open with "Welcome" or "In this podcast" — dive straight into the first concept
+       - End with exactly: "Right, you've got a really solid understanding of this now. Jump over to the quiz and put it to the test — good luck!"
        ${langInstruction}`,
-        `Document text to transform into a podcast script:\n\n${rawText.slice(0, 8000)}`,
+        `Document text to turn into a natural podcast script:\n\n${rawText.slice(0, 8000)}`,
         maxTokens
       );
 
@@ -579,78 +583,82 @@ router.post("/tts", requireAuth, async (req: Request, res: Response) => {
       ? LANG_VOICE_MAP[language]
       : (AZURE_VOICE_MAP[voice] || "en-GB-SoniaNeural");
 
-    // PRIMARY: OpenAI TTS
-    // Uses tts-1 (standard, 2-3× faster than tts-1-hd) to prevent Railway's 30s idle timeout.
-    // Streams each chunk back immediately as it arrives to keep the connection alive.
+    // PRIMARY: OpenAI TTS — sequential chunks with retry to avoid rate limit failures
     try {
       console.log(`[TTS] OpenAI TTS: voice=${openaiVoice}, chars=${text.length}`);
       const openai = new OpenAI();
+      // Smaller chunks = more reliable, fewer chunk errors
+      const chunks = splitIntoChunks(text, 1500);
+      console.log(`[TTS] Processing ${chunks.length} chunk(s) sequentially`);
 
-      // OpenAI TTS has a 4096 character limit per request — split if needed
-      const chunks = splitIntoChunks(text, 4000);
       const mp3Buffers: Buffer[] = [];
-
-      // Set a per-chunk timeout to detect stalled requests early
-      for (const chunk of chunks) {
-        const chunkController = new AbortController();
-        const chunkTimeout = setTimeout(() => chunkController.abort(), 25000); // 25s per chunk
-        try {
-          const response = await openai.audio.speech.create({
-            model: "tts-1", // Standard model: 2-3× faster than tts-1-hd, prevents Railway idle timeout
-            voice: openaiVoice,
-            input: chunk,
-            response_format: "mp3",
-          }, { signal: chunkController.signal });
-          clearTimeout(chunkTimeout);
-          const arrayBuffer = await response.arrayBuffer();
-          mp3Buffers.push(Buffer.from(arrayBuffer));
-        } catch (chunkErr: any) {
-          clearTimeout(chunkTimeout);
-          throw chunkErr;
+      for (let i = 0; i < chunks.length; i++) {
+        let lastErr: any;
+        // Up to 2 retries per chunk
+        for (let attempt = 0; attempt < 2; attempt++) {
+          const ctrl = new AbortController();
+          const timer = setTimeout(() => ctrl.abort(), 30000);
+          try {
+            const response = await openai.audio.speech.create({
+              model: "tts-1-hd",  // higher quality, more natural sound
+              voice: openaiVoice,
+              input: chunks[i],
+              response_format: "mp3",
+              speed: 0.95,       // very slightly slower = more natural delivery
+            }, { signal: ctrl.signal });
+            clearTimeout(timer);
+            const buf = Buffer.from(await response.arrayBuffer());
+            console.log(`[TTS] Chunk ${i + 1}/${chunks.length} ready (${buf.byteLength}b)`);
+            mp3Buffers.push(buf);
+            lastErr = null;
+            break;
+          } catch (e) {
+            clearTimeout(timer);
+            lastErr = e;
+            console.warn(`[TTS] Chunk ${i + 1} attempt ${attempt + 1} failed:`, (e as any)?.message);
+            if (attempt === 0) await new Promise(r => setTimeout(r, 500)); // brief pause before retry
+          }
         }
+        if (lastErr) throw lastErr;
       }
 
-      if (mp3Buffers.length === 0) throw new Error("OpenAI TTS returned no audio data");
-
       const combined = Buffer.concat(mp3Buffers);
-      console.log(`[TTS] OpenAI TTS success: ${combined.byteLength} bytes (${chunks.length} chunks)`);
+      console.log(`[TTS] Done: ${combined.byteLength} bytes, ${chunks.length} chunks`);
       res.setHeader("Content-Type", "audio/mpeg");
       res.setHeader("Content-Length", combined.byteLength.toString());
       return res.send(combined);
 
     } catch (openaiErr: any) {
-      console.warn(`[TTS] OpenAI TTS failed (${openaiErr?.message}), falling back to msedge-tts...`);
+      console.warn(`[TTS] OpenAI failed (${openaiErr?.message}), trying msedge-tts...`);
 
-      // FALLBACK: Microsoft Edge Neural TTS
+      // FALLBACK: msedge-tts — also parallelised
       const tts = new MsEdgeTTS();
       await tts.setMetadata(azureVoice, OUTPUT_FORMAT.AUDIO_24KHZ_96KBITRATE_MONO_MP3);
-
       const chunks = splitIntoChunks(text, 2000);
-      const mp3Buffers: Buffer[] = [];
 
-      for (const chunk of chunks) {
-        const { audioStream } = tts.toStream(chunk);
-        const chunkBuffers: Buffer[] = [];
-        await new Promise<void>((resolve, reject) => {
-          const timeout = setTimeout(() => reject(new Error("msedge-tts chunk timeout after 30s")), 30000);
-          let resolved = false;
-          const done = () => { if (!resolved) { resolved = true; clearTimeout(timeout); resolve(); } };
-          audioStream.on("data", (d: Buffer) => chunkBuffers.push(d));
-          audioStream.on("end", done);
-          audioStream.on("close", done);
-          audioStream.on("error", (e: Error) => { if (!resolved) { resolved = true; clearTimeout(timeout); reject(e); } });
-        });
-        if (chunkBuffers.length > 0) {
-          mp3Buffers.push(Buffer.concat(chunkBuffers));
-        }
-      }
+      const results = await Promise.all(
+        chunks.map(async (chunk) => {
+          const { audioStream } = tts.toStream(chunk);
+          const bufs: Buffer[] = [];
+          await new Promise<void>((resolve, reject) => {
+            const t = setTimeout(() => reject(new Error("msedge chunk timeout")), 30000);
+            let done = false;
+            const finish = () => { if (!done) { done = true; clearTimeout(t); resolve(); } };
+            audioStream.on("data", (d: Buffer) => bufs.push(d));
+            audioStream.on("end", finish);
+            audioStream.on("close", finish);
+            audioStream.on("error", (e: Error) => { if (!done) { done = true; clearTimeout(t); reject(e); } });
+          });
+          return bufs.length > 0 ? Buffer.concat(bufs) : null;
+        })
+      );
 
       tts.close();
+      const valid = results.filter((b): b is Buffer => b !== null);
+      if (valid.length === 0) throw new Error("Both TTS providers returned no audio");
 
-      if (mp3Buffers.length === 0) throw new Error("Both OpenAI TTS and msedge-tts returned no audio data");
-
-      const combined = Buffer.concat(mp3Buffers);
-      console.log(`[TTS] msedge-tts fallback success: ${combined.byteLength} bytes`);
+      const combined = Buffer.concat(valid);
+      console.log(`[TTS] msedge fallback success: ${combined.byteLength} bytes`);
       res.setHeader("Content-Type", "audio/mpeg");
       res.setHeader("Content-Length", combined.byteLength.toString());
       return res.send(combined);

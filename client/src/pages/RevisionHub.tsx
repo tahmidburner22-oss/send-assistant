@@ -83,19 +83,46 @@ async function apiPost(path: string, body: Record<string, any>) {
   return res.json();
 }
 
-// ── Neural audio fun facts ─────────────────────────────────────────────────
+// ── Loading fun facts — wacky, random, always different, child-friendly ─────
 const NEURAL_FUN_FACTS = [
-  "Neural TTS voices are trained on thousands of hours of real human speech.",
-  "The brain processes spoken words 60,000 times faster than written text.",
-  "Listening to content while reading it boosts retention by up to 40%.",
-  "Revision podcasts activate both auditory and linguistic memory pathways.",
-  "Spaced repetition combined with audio recall improves long-term memory by 200%.",
-  "The neural voice engine generates audio at 24kHz — the same quality as a studio recording.",
-  "Active recall (quizzing yourself) is 3x more effective than re-reading notes.",
-  "Your brain consolidates memories during sleep — listen before bed for best results.",
-  "Interleaved practice (mixing topics) outperforms blocked practice for exam performance.",
-  "The Feynman Technique: if you can explain it simply, you truly understand it.",
+  "🐙 Octopuses have three hearts, blue blood, and can open jars — basically underwater superheroes.",
+  "🍕 The word 'pizza' appeared in a document over 1,000 years ago. Ancient Romans were onto something.",
+  "🦷 Snails have up to 25,000 teeth — and they're on their tongue. Sleep well.",
+  "🌍 If you dug a hole straight through the Earth from the UK, you'd come out near New Zealand.",
+  "🐘 Elephants are the only animals that can't jump. They also hold grudges. Choose your enemies wisely.",
+  "🍯 Honey never goes off. Archaeologists found 3,000-year-old honey in Egyptian tombs. Still edible.",
+  "🦈 Sharks are older than trees. They've been here for 450 million years. Trees showed up 350 million years ago.",
+  "🧠 Your brain generates enough electricity to power a small lightbulb. You are literally bright.",
+  "🌙 The Moon is moving away from Earth at about 3.8cm per year. Rude.",
+  "🐝 A single bee will make only 1/12th of a teaspoon of honey in its entire lifetime. Respect the bees.",
+  "🦩 Flamingos are white. They turn pink from the shrimp they eat. You are what you eat.",
+  "🎵 The dot over a lowercase 'i' has a name: it's called a tittle. Tell your friends.",
+  "🦴 Your nose and ears never stop growing your entire life. Science is terrifying.",
+  "🐧 Penguins propose to their mates with pebbles. More romantic than most humans, honestly.",
+  "🌊 The Pacific Ocean is wider than the Moon. Let that sink in.",
+  "🍌 Bananas are technically berries. Strawberries are not. The world is a lie.",
+  "🐴 Horses can sleep standing up but need to lie down to dream. Relatable.",
+  "🔥 Hot water can freeze faster than cold water under certain conditions. This is called the Mpemba effect and scientists still argue about why.",
+  "🌵 A cactus spine is actually a modified leaf. The green bit is the stem. Plants are deceptive.",
+  "🦋 Butterflies taste with their feet. They land on something and immediately know if it's food. Wish we had that skill.",
+  "📚 The average person walks past 36 murderers in their lifetime. That stat is probably made up. But also maybe not.",
+  "🐠 Clownfish can change sex. If the female in a group dies, the dominant male becomes female. Nemo would have become Nemo's mum.",
+  "🌟 There are more stars in the universe than grains of sand on all Earth's beaches. Show-off.",
+  "🦥 Sloths move so slowly that algae grows on their fur. They're basically tiny walking ecosystems.",
+  "🧊 A day on Venus is longer than a year on Venus. And it spins backwards. Venus does not follow rules.",
+  "🐍 Some snakes can fly. They flatten their bodies and glide between trees. Just in case you needed more reasons to be nervous.",
+  "🎮 The creator of the GIF has confirmed it's pronounced 'JIF'. The internet has collectively refused to accept this.",
+  "🦁 A lion's roar can be heard 8 kilometres away. Your teacher's roar, however, can feel even louder.",
+  "🍎 Apple seeds contain cyanide. You'd need to eat around 200 ground-up seeds to feel ill. Still, maybe don't.",
+  "🐬 Dolphins have names for each other. Unique whistles that other dolphins use to call them. Basically they have phone contacts.",
 ];
+
+function pickRandomFact(excludeIndex: number): number {
+  let idx: number;
+  do { idx = Math.floor(Math.random() * NEURAL_FUN_FACTS.length); }
+  while (idx === excludeIndex && NEURAL_FUN_FACTS.length > 1);
+  return idx;
+}
 
 export default function RevisionHub() {
   const [tab, setTab] = useState<Tab>("podcast");
@@ -116,7 +143,7 @@ export default function RevisionHub() {
   const [score, setScore] = useState({ correct: 0, total: 0 });
   const [loadingQuiz, setLoadingQuiz] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [funFactIndex, setFunFactIndex] = useState(0);
+  const [funFactIndex, setFunFactIndex] = useState(() => Math.floor(Math.random() * NEURAL_FUN_FACTS.length));
 
   // Voice / TTS state — declared BEFORE the useEffect that references audioLoading
   const [yearGroup, setYearGroup] = useState("year10");
@@ -127,12 +154,12 @@ export default function RevisionHub() {
   const [audioLoading, setAudioLoading] = useState(false);
   const [audioError, setAudioError] = useState<string | null>(null);
 
-  // Rotate fun fact every 4 seconds during loading
+  // Rotate to a new random fact every 3.5s during loading — never repeats consecutively
   useEffect(() => {
     if (!uploading && !audioLoading) return;
     const interval = setInterval(() => {
-      setFunFactIndex(i => (i + 1) % NEURAL_FUN_FACTS.length);
-    }, 4000);
+      setFunFactIndex(prev => pickRandomFact(prev));
+    }, 3500);
     return () => clearInterval(interval);
   }, [uploading, audioLoading]);
   const [browserVoices, setBrowserVoices] = useState<SpeechSynthesisVoice[]>([]);
