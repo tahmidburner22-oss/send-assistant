@@ -25,7 +25,7 @@ import {
   CheckCircle, Clock, AlertCircle, MessageSquare, TrendingUp,
   ChevronLeft, Shield, Star, Send, Calendar, X, Zap, BrainCircuit,
   PlayCircle, PauseCircle, RotateCcw, Settings2, Upload, RefreshCw, Database,
-  ChevronRight, ChevronDown, Layers, Lock
+  ChevronRight, ChevronDown, Layers, Lock, Eye
 } from "lucide-react";
 
 // ─── Curriculum Progression Tab Component ───────────────────────────────────
@@ -224,6 +224,8 @@ export default function Children() {
   const [selectedAssignment, setSelectedAssignment] = useState<Assignment | null>(null);
   const [progressValue, setProgressValue] = useState(0);
   const [teacherComment, setTeacherComment] = useState("");
+  // Assignment view-only modal (eye icon)
+  const [viewAssignment, setViewAssignment] = useState<Assignment | null>(null);
 
   // Submission feedback state
   const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null);
@@ -876,49 +878,17 @@ If the submission is empty or too short to mark, return mark: "N/A", feedback: "
                     />
                   </div>
 
-                  {/* Assignment Content — full 1:1 WorksheetRenderer matching the generated worksheet */}
-                  {selectedAssignment.sections && selectedAssignment.sections.length > 0 ? (
-                    <div className="border border-border/50 rounded-lg overflow-hidden">
-                      <WorksheetRenderer
-                        worksheet={{
-                          title: selectedAssignment.title,
-                          subtitle: (selectedAssignment as any).subtitle,
-                          sections: (() => {
-                            const raw = selectedAssignment.sections;
-                            const arr = typeof raw === "string" ? (() => { try { return JSON.parse(raw); } catch { return []; } })() : raw;
-                            return (arr as any[]).filter((s: any) => !s.teacherOnly);
-                          })(),
-                          metadata: {
-                            ...((selectedAssignment as any).metadata || {}),
-                            sendNeedId: (selectedAssignment as any).metadata?.sendNeed || undefined,
-                          },
-                          isAI: true,
-                        }}
-                        viewMode="student"
-                        textSize={14}
-                        editMode={false}
-                        overlayColor="#ffffff"
-                        editedSections={{}}
-                      />
-                    </div>
-                  ) : selectedAssignment.content ? (
-                    <div className="border border-border/50 rounded-lg overflow-hidden">
-                      <WorksheetRenderer
-                        worksheet={{
-                          title: selectedAssignment.title,
-                          subtitle: (selectedAssignment as any).subtitle,
-                          sections: [{ title: 'Content', type: 'guided', content: selectedAssignment.content, teacherOnly: false }],
-                          metadata: (selectedAssignment as any).metadata || {},
-                          isAI: true,
-                        }}
-                        viewMode="student"
-                        textSize={14}
-                        editMode={false}
-                        overlayColor="#ffffff"
-                        editedSections={{}}
-                      />
-                    </div>
-                  ) : null}
+                  {/* Eye button to open full worksheet view */}
+                  {(selectedAssignment.sections?.length || selectedAssignment.content) && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full gap-2 border-brand/30 text-brand hover:bg-brand-light"
+                      onClick={() => { setViewAssignment(selectedAssignment); setSelectedAssignment(null); }}
+                    >
+                      <Eye className="w-4 h-4" /> View Worksheet
+                    </Button>
+                  )}
                 </>
               )}
 
@@ -930,6 +900,46 @@ If the submission is empty or too short to mark, return mark: "N/A", feedback: "
                 )}
                 <Button variant="outline" onClick={() => setSelectedAssignment(null)} className={selectedAssignment.type === 'send-screener' ? 'w-full' : ''}>Close</Button>
               </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* View-only Worksheet Modal (eye icon) */}
+      <Dialog open={!!viewAssignment} onOpenChange={open => { if (!open) setViewAssignment(null); }}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 pr-8">
+              <Eye className="w-5 h-5 text-brand" />
+              {viewAssignment?.title}
+            </DialogTitle>
+          </DialogHeader>
+          {viewAssignment && (
+            <div className="mt-2">
+              <WorksheetRenderer
+                worksheet={{
+                  title: viewAssignment.title,
+                  subtitle: (viewAssignment as any).subtitle,
+                  sections: (() => {
+                    const raw = viewAssignment.sections;
+                    if (raw && (Array.isArray(raw) ? raw.length > 0 : true)) {
+                      const arr = typeof raw === "string" ? (() => { try { return JSON.parse(raw); } catch { return []; } })() : raw;
+                      return (arr as any[]).filter((s: any) => !s.teacherOnly);
+                    }
+                    return [{ title: 'Content', type: 'guided', content: viewAssignment.content || '', teacherOnly: false }];
+                  })(),
+                  metadata: {
+                    ...((viewAssignment as any).metadata || {}),
+                    sendNeedId: (viewAssignment as any).metadata?.sendNeed || undefined,
+                  },
+                  isAI: true,
+                }}
+                viewMode="student"
+                textSize={14}
+                editMode={false}
+                overlayColor="#ffffff"
+                editedSections={{}}
+              />
             </div>
           )}
         </DialogContent>
@@ -1150,9 +1160,18 @@ If the submission is empty or too short to mark, return mark: "N/A", feedback: "
                         <div className="flex items-center gap-2">
                           <span className="text-xs font-medium text-brand">{a.progress ?? 0}%</span>
                           {statusIcon(a.status)}
+                          {(a.type === 'worksheet' || a.type === 'story') && (a.sections?.length || a.content) && (
+                            <button
+                              onClick={e => { e.stopPropagation(); setViewAssignment(a); }}
+                              className="p-1 rounded hover:bg-brand/10 text-muted-foreground hover:text-brand"
+                              title="View worksheet"
+                            >
+                              <Eye className="w-3.5 h-3.5" />
+                            </button>
+                          )}
                           <button
                             onClick={e => { e.stopPropagation(); if (confirm('Delete this assignment?')) deleteAssignment(selectedChild.id, a.id); }}
-                            className="p-1 rounded hover:bg-red-50 text-muted-foreground hover:text-red-600 ml-1"
+                            className="p-1 rounded hover:bg-red-50 text-muted-foreground hover:text-red-600"
                             title="Delete assignment"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
