@@ -35,6 +35,16 @@ import {
   MessageSquare, Send, RotateCcw
 } from "lucide-react";
 
+// ─── Debounce hook ──────────────────────────────────────────────────────────
+function useDebounce<T>(value: T, delay: number): T {
+  const [debounced, setDebounced] = React.useState(value);
+  React.useEffect(() => {
+    const t = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(t);
+  }, [value, delay]);
+  return debounced;
+}
+
 // ─── Voice-to-text hook ─────────────────────────────────────────────────────
 function useVoiceInput(onResult: (text: string) => void) {
   const [listening, setListening] = useState(false);
@@ -283,15 +293,50 @@ export default function Worksheets() {
   const [examQBoard, setExamQBoard] = useState("all");
   const [examQTier, setExamQTier] = useState("all");
   const [examQExpanded, setExamQExpanded] = useState<string | null>(null);
+  const [examQPage, setExamQPage] = useState(1);
+  const EXAM_PAGE_SIZE = 20;
   // Lazy-loaded question bank — only loaded when Exam Bank tab is first opened
   const [allPastPaperQuestions, setAllPastPaperQuestions] = useState<PastPaperQuestion[]>([]);
   const [examBankLoading, setExamBankLoading] = useState(false);
   const [examBankLoaded, setExamBankLoaded] = useState(false);
+  // Debounced search to avoid filtering on every keystroke
+  const debouncedExamQSearch = useDebounce(examQSearch, 250);
   // Multi-select state for Exam Hub
   const [selectedExamQIds, setSelectedExamQIds] = useState<Set<string>>(new Set());
   const selectedExamQuestions = useMemo(() => {
     return allPastPaperQuestions.filter(q => selectedExamQIds.has(q.id));
   }, [selectedExamQIds, allPastPaperQuestions]);
+
+  // Pre-compute subject list and topic counts once when question bank loads
+  const examBankSubjects = useMemo(() => {
+    return Array.from(new Set(allPastPaperQuestions.map(q => q.subject).filter(Boolean))).sort() as string[];
+  }, [allPastPaperQuestions]);
+
+  const examBankTopicCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const q of allPastPaperQuestions) {
+      if (q.topic) counts[q.topic] = (counts[q.topic] || 0) + 1;
+    }
+    return counts;
+  }, [allPastPaperQuestions]);
+
+  // Filtered results — only recompute when debounced search or filters change
+  const examQFiltered = useMemo(() => {
+    const q = debouncedExamQSearch.toLowerCase().trim();
+    if (!q && examQSubject === "all" && examQBoard === "all" && examQTier === "all") return null; // null = show topic overview
+    return allPastPaperQuestions.filter(question => {
+      const qText = question.text || question.question || '';
+      if (!qText) return false;
+      const matchSearch = !q ||
+        (question.topic || '').toLowerCase().includes(q) ||
+        qText.toLowerCase().includes(q) ||
+        (question.subject || '').toLowerCase().includes(q);
+      const matchSubject = examQSubject === "all" || question.subject === examQSubject;
+      const matchBoard = examQBoard === "all" || question.board === examQBoard;
+      const matchTier = examQTier === "all" || question.tier === examQTier;
+      return matchSearch && matchSubject && matchBoard && matchTier;
+    });
+  }, [debouncedExamQSearch, examQSubject, examQBoard, examQTier, allPastPaperQuestions]);
   const selectedTotalMarks = useMemo(() => {
     return selectedExamQuestions.reduce((sum, q) => sum + (q.marks || 0), 0);
   }, [selectedExamQuestions]);
@@ -1258,6 +1303,8 @@ export default function Worksheets() {
               setExamBankLoading(false);
             }).catch(() => setExamBankLoading(false));
           }
+          // Reset pagination when switching to exam tab
+          if (tab === 'exam-questions') setExamQPage(1);
         }}>
           <div className="overflow-x-auto -mx-1 px-1">
           <TabsList className={`flex w-max min-w-full h-10`}>
@@ -1836,31 +1883,31 @@ export default function Worksheets() {
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <Input
                     value={examQSearch}
-                    onChange={e => setExamQSearch(e.target.value)}
+                    onChange={e => { setExamQSearch(e.target.value); setExamQPage(1); }}
                     placeholder="Search by topic (e.g. Fractions, Algebra, Forces...)"
                     className="pl-9 h-9"
                   />
                 </div>
                 <div className="flex gap-2 flex-wrap">
-                  <Select value={examQSubject} onValueChange={setExamQSubject}>
+                  <Select value={examQSubject} onValueChange={v => { setExamQSubject(v); setExamQPage(1); }}>
                     <SelectTrigger className="h-8 text-xs flex-1 min-w-[120px]"><SelectValue placeholder="All subjects" /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All subjects</SelectItem>
-                      {Array.from(new Set(allPastPaperQuestions.map(q => q.subject).filter(Boolean))).sort().map(s => (
-                        <SelectItem key={s as string} value={s as string}>{((s as string) || '').replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</SelectItem>
+                      {examBankSubjects.map(s => (
+                        <SelectItem key={s} value={s}>{s.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
-                  <Select value={examQBoard} onValueChange={setExamQBoard}>
+                  <Select value={examQBoard} onValueChange={v => { setExamQBoard(v); setExamQPage(1); }}>
                     <SelectTrigger className="h-8 text-xs flex-1 min-w-[100px]"><SelectValue placeholder="All boards" /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All boards</SelectItem>
-                      {["AQA", "Edexcel", "OCR", "WJEC", "STA", "KS2 SATs"].map(b => (
+                      {["AQA", "Edexcel", "OCR", "WJEC", "STA", "KS2 SATs", "Adaptly"].map(b => (
                         <SelectItem key={b} value={b}>{b}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
-                  <Select value={examQTier} onValueChange={setExamQTier}>
+                  <Select value={examQTier} onValueChange={v => { setExamQTier(v); setExamQPage(1); }}>
                     <SelectTrigger className="h-8 text-xs flex-1 min-w-[100px]"><SelectValue placeholder="All tiers" /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All tiers</SelectItem>
@@ -1931,46 +1978,31 @@ export default function Worksheets() {
 
             {/* Results */}
             {(() => {
-              const q = examQSearch.toLowerCase().trim();
-              const filtered = allPastPaperQuestions.filter(question => {
-                const qText = question.text || question.question || '';
-                if (!qText) return false; // skip malformed entries
-                const matchSearch = !q ||
-                  (question.topic || '').toLowerCase().includes(q) ||
-                  qText.toLowerCase().includes(q) ||
-                  (question.subject || '').toLowerCase().includes(q);
-                const matchSubject = examQSubject === "all" || question.subject === examQSubject;
-                const matchBoard = examQBoard === "all" || question.board === examQBoard;
-                const matchTier = examQTier === "all" || question.tier === examQTier;
-                return matchSearch && matchSubject && matchBoard && matchTier;
-              }).slice(0, 50); // limit to 50 results
-
-              if (!q && examQSubject === "all" && examQBoard === "all" && examQTier === "all") {
-                // Show topic overview when no search — pre-compute counts in a single pass
-                const topicCounts: Record<string, number> = {};
-                for (const q of allPastPaperQuestions) {
-                  if (q.topic) topicCounts[q.topic] = (topicCounts[q.topic] || 0) + 1;
-                }
-                const topics = Object.keys(topicCounts).sort();
+              // Topic overview (no filters active)
+              if (examQFiltered === null) {
+                const topics = Object.keys(examBankTopicCounts).sort();
                 return (
                   <div className="space-y-2">
-                    <p className="text-xs text-gray-500 px-1">{topics.length} topics available — type a topic name above to search</p>
+                    <p className="text-xs text-gray-500 px-1">{topics.length} topics available — type a topic name or select a subject above to search</p>
                     <div className="flex flex-wrap gap-2">
-                      {topics.map(topic => (
-                          <button
-                            key={topic}
-                            onClick={() => setExamQSearch(topic || '')}
-                            className="px-3 py-1.5 text-xs rounded-full bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 transition-colors"
-                          >
-                            {topic} <span className="text-blue-400">({topicCounts[topic]})</span>
-                          </button>
-                        ))}
+                      {topics.slice(0, 60).map(topic => (
+                        <button
+                          key={topic}
+                          onClick={() => { setExamQSearch(topic || ''); setExamQPage(1); }}
+                          className="px-3 py-1.5 text-xs rounded-full bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 transition-colors"
+                        >
+                          {topic} <span className="text-blue-400">({examBankTopicCounts[topic]})</span>
+                        </button>
+                      ))}
+                      {topics.length > 60 && (
+                        <span className="px-3 py-1.5 text-xs text-gray-400">+{topics.length - 60} more topics — use the search box</span>
+                      )}
                     </div>
                   </div>
                 );
               }
 
-              if (filtered.length === 0) {
+              if (examQFiltered.length === 0) {
                 return (
                   <div className="text-center py-12 text-gray-400">
                     <Search className="h-10 w-10 mx-auto mb-2 opacity-40" />
@@ -1980,27 +2012,32 @@ export default function Worksheets() {
                 );
               }
 
+              const pageStart = 0;
+              const pageEnd = examQPage * EXAM_PAGE_SIZE;
+              const displayedQuestions = examQFiltered.slice(pageStart, pageEnd);
+              const hasMore = pageEnd < examQFiltered.length;
+
               return (
                 <div className="space-y-2">
                   <div className="flex items-center justify-between px-1">
-                    <p className="text-xs text-gray-500">{filtered.length} question{filtered.length !== 1 ? 's' : ''} found{q ? ` for "${examQSearch}"` : ''}</p>
+                    <p className="text-xs text-gray-500">{examQFiltered.length} question{examQFiltered.length !== 1 ? 's' : ''} found — showing {displayedQuestions.length}</p>
                     <button
                       className="text-xs text-blue-600 hover:text-blue-800 font-medium"
                       onClick={() => {
                         const allIds = new Set(selectedExamQIds);
-                        const allSelected = filtered.every(q => allIds.has(q.id));
+                        const allSelected = displayedQuestions.every(q => allIds.has(q.id));
                         if (allSelected) {
-                          filtered.forEach(q => allIds.delete(q.id));
+                          displayedQuestions.forEach(q => allIds.delete(q.id));
                         } else {
-                          filtered.forEach(q => allIds.add(q.id));
+                          displayedQuestions.forEach(q => allIds.add(q.id));
                         }
                         setSelectedExamQIds(allIds);
                       }}
                     >
-                      {filtered.every(q => selectedExamQIds.has(q.id)) ? 'Deselect all' : 'Select all visible'}
+                      {displayedQuestions.every(q => selectedExamQIds.has(q.id)) ? 'Deselect visible' : 'Select visible'}
                     </button>
                   </div>
-                  {filtered.map(question => {
+                  {displayedQuestions.map(question => {
                     const isSelected = selectedExamQIds.has(question.id);
                     return (
                     <Card
@@ -2105,8 +2142,13 @@ export default function Worksheets() {
                     </Card>
                   );
                   })}
-                  {filtered.length === 50 && (
-                    <p className="text-xs text-center text-gray-400 py-2">Showing first 50 results — refine your search for more specific results</p>
+                  {hasMore && (
+                    <button
+                      className="w-full py-2.5 text-xs text-blue-600 hover:text-blue-800 font-medium border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors"
+                      onClick={() => setExamQPage(p => p + 1)}
+                    >
+                      Load more ({examQFiltered.length - pageEnd} remaining)
+                    </button>
                   )}
                 </div>
               );
