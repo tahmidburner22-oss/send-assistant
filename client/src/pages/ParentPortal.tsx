@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { useApp, type Child, type AttendanceRecord, type AttendanceStatus, type TimetableLesson } from "@/contexts/AppContext";
-import { renderMath } from "@/components/WorksheetRenderer";
+import WorksheetRenderer, { renderMath } from "@/components/WorksheetRenderer";
 import { SendScreenerResultsView } from "@/components/SendScreenerResultsView";
 import { sendNeeds, storyGenres, storyLengths, readingLevels, colorOverlays, yearGroups } from "@/lib/send-data";
 import { generateStoryContent } from "@/lib/worksheet-generator";
@@ -41,6 +41,40 @@ function generateComprehensionQuestions(_content: string, genre: string): string
   };
   const defaultQs = ["What is the main theme of this story?", "How does the main character change throughout the story?", "What is the most important moment in the story? Explain why.", "Write a short summary of the story in your own words."];
   return questions[genre] || defaultQs;
+}
+
+/** Lightweight wrapper to render a worksheet using WorksheetRenderer in the Parent Portal */
+function WorksheetRendererView({
+  title,
+  subtitle,
+  sections,
+  metadata,
+}: {
+  title: string;
+  subtitle?: string;
+  sections: Array<{ title: string; type: string; content: string; teacherOnly?: boolean; svg?: string; caption?: string }>;
+  metadata?: { subject?: string; topic?: string; yearGroup?: string; difficulty?: string; examBoard?: string; };
+}) {
+  // Build a minimal worksheet object compatible with WorksheetRenderer
+  const worksheetData = {
+    title,
+    subtitle,
+    sections,
+    metadata: metadata || {},
+    isAI: true,
+  };
+  return (
+    <div className="worksheet-parent-portal-view overflow-auto">
+      <WorksheetRenderer
+        worksheet={worksheetData as any}
+        viewMode="student"
+        textSize={14}
+        overlayColor="none"
+        editMode={false}
+        editedSections={{}}
+      />
+    </div>
+  );
 }
 
 /** Render any AI-generated content (worksheets, tools, differentiation) as formatted HTML */
@@ -350,7 +384,14 @@ export default function ParentPortal() {
   const [behaviourRecords, setBehaviourRecords] = useState<any[]>([]);
   const [supportPlans, setSupportPlans] = useState<any[]>([]);
   const [behaviourLoading, setBehaviourLoading] = useState(false);
-  const [viewContent, setViewContent] = useState<{ title: string; content: string; type?: string } | null>(null);
+  const [viewContent, setViewContent] = useState<{
+    title: string;
+    subtitle?: string;
+    content: string;
+    type?: string;
+    sections?: Array<{ title: string; type: string; content: string; teacherOnly?: boolean; svg?: string; caption?: string }>;
+    metadata?: { subject?: string; topic?: string; yearGroup?: string; difficulty?: string; examBoard?: string; };
+  } | null>(null);
   const [openSection, setOpenSection] = useState<string | null>("assignments");
   const [activeSection, setActiveSection] = useState<string>("dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -1093,7 +1134,7 @@ Return EXACTLY this JSON:
                       )}
 
                       <div className="flex gap-2 mt-2">
-                        <Button variant="outline" size="sm" onClick={() => setViewContent({ title: a.title, content: a.content, type: a.type })}>
+                        <Button variant="outline" size="sm" onClick={() => setViewContent({ title: a.title, subtitle: (a as any).subtitle, content: a.content, type: a.type, sections: (a as any).sections, metadata: (a as any).metadata })}>
                           <Eye className="w-3.5 h-3.5 mr-1" /> View
                         </Button>
                         {a.status === "not-started" && (
@@ -1875,8 +1916,11 @@ Return EXACTLY this JSON:
 
       {/* View Content Dialog — renders with full formatting matching how content was generated */}
       <Dialog open={!!viewContent} onOpenChange={() => setViewContent(null)}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>{viewContent?.title}</DialogTitle></DialogHeader>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold">{viewContent?.title}</DialogTitle>
+            {viewContent?.subtitle && <p className="text-sm text-muted-foreground mt-0.5">{viewContent.subtitle}</p>}
+          </DialogHeader>
           {viewContent?.type === 'send-screener' ? (
             <div className="mt-2">
               <SendScreenerResultsView
@@ -1884,7 +1928,18 @@ Return EXACTLY this JSON:
                 title={viewContent.title}
               />
             </div>
+          ) : viewContent?.sections && viewContent.sections.length > 0 ? (
+            // Render with full WorksheetRenderer for proper formatting
+            <div className="mt-2">
+              <WorksheetRendererView
+                title={viewContent.title}
+                subtitle={viewContent.subtitle}
+                sections={viewContent.sections}
+                metadata={viewContent.metadata}
+              />
+            </div>
           ) : (
+            // Fallback for older assignments without sections
             <div
               className="mt-2 prose prose-sm max-w-none leading-relaxed"
               dangerouslySetInnerHTML={{ __html: contentToHtml(viewContent?.content || "") }}

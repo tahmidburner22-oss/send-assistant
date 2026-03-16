@@ -13,6 +13,7 @@
 export interface SyllabusTopic {
   topic: string;
   keyVocabulary: string[];
+  yearGroup?: string; // originating year group label, e.g. "Year 7"
 }
 
 export type YearGroupKey =
@@ -1147,6 +1148,7 @@ export function getSyllabusTopics(subject: string, yearGroup: string): SyllabusT
   }
 
   // Accumulate topics from startYear up to and including yearNum
+  // Attach the originating year group label to each topic for display in the dropdown
   const accumulated: SyllabusTopic[] = [];
   const seenTopics = new Set<string>();
 
@@ -1157,7 +1159,7 @@ export function getSyllabusTopics(subject: string, yearGroup: string): SyllabusT
       for (const t of topics) {
         if (!seenTopics.has(t.topic)) {
           seenTopics.add(t.topic);
-          accumulated.push(t);
+          accumulated.push({ ...t, yearGroup: key });
         }
       }
     }

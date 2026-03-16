@@ -542,7 +542,7 @@ export default function SendScreener() {
     });
     return [
       `SEND Screener Results — ${screenerMode === "quick" ? "Quick" : "Full"} Screener`,
-      `Date: ${new Date().toLocaleDateString("en-GB")}`,
+      `Date: ${new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}`,
       "",
       "IMPORTANT: This is NOT a diagnosis. These are screening indicators only.",
       "Only a qualified professional can provide a formal diagnosis.",

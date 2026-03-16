@@ -7,7 +7,7 @@
  * Applies SEND-specific formatting (font, line-height, spacing) per COBS Handbook.
  * Supports KaTeX math rendering for proper fractions, symbols, and expressions.
  */
-import { forwardRef } from "react";
+import React, { forwardRef, useState, useCallback } from "react";
 import { getSendFormatting } from "@/lib/send-data";
 import katex from "katex";
 import "katex/dist/katex.min.css";
@@ -939,6 +939,10 @@ interface WorksheetRendererProps {
   editMode?: boolean;
   schoolName?: string;
   teacherName?: string;
+  // Answer box controls (edit mode)
+  answerBoxSizes?: Record<number, number>; // section index → number of lines (0 = removed)
+  onAnswerBoxSizeChange?: (sectionIndex: number, lines: number) => void;
+  onAnswerBoxRemove?: (sectionIndex: number) => void;
 }
 
 // Section type → colour config (TES-style: white backgrounds, single purple/blue border accent)
@@ -964,6 +968,10 @@ const SECTION_STYLES: Record<string, { border: string; bg: string; badge: string
   "reminder-box":  { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "", label: "Reminder Box" },
   "word-problems": { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "", label: "Word Problems" },
   "misconceptions":{ border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "", label: "Common Misconceptions" },
+  "reading":        { border: "#475569", bg: "#f8fafc", badge: "#475569", badgeBg: "#f1f5f9", icon: "", label: "Reading Passage" },
+  "passage":        { border: "#475569", bg: "#f8fafc", badge: "#475569", badgeBg: "#f1f5f9", icon: "", label: "Reading Passage" },
+  "source-text":    { border: "#475569", bg: "#f8fafc", badge: "#475569", badgeBg: "#f1f5f9", icon: "", label: "Source Text" },
+  "comprehension":  { border: "#475569", bg: "#f8fafc", badge: "#475569", badgeBg: "#f1f5f9", icon: "", label: "Comprehension" },
   "default":       { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "", label: "" },
 };
 
@@ -1122,13 +1130,25 @@ function formatContent(content: string | any, fmt: ReturnType<typeof getSendForm
       return;
     }
 
-    // Mark allocation
-    const markMatch = trimmed.match(/^(.+?)(\[\d+ marks?\])(.*)$/i);
+    // Mark allocation — render question with mark badge AND a mark-weighted answer box
+    const markMatch = trimmed.match(/^(.+?)(\[(\d+) marks?\])(.*)$/i);
     if (markMatch) {
+      const markCount = parseInt(markMatch[3], 10);
+      // Determine answer box height based on mark count
+      // 1 mark → 1 line, 2-3 marks → 3 lines, 4+ marks → 6 lines
+      const answerLines = markCount <= 1 ? 1 : markCount <= 3 ? 3 : 6;
       elements.push(
-        <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: paragraphSpacing, fontSize: `${textSize}px`, lineHeight, letterSpacing, wordSpacing, fontFamily }}>
-          <span dangerouslySetInnerHTML={{ __html: renderMath(markMatch[1]) }} />
-          <span style={{ background: "#374151", color: "white", fontSize: `${textSize - 3}px`, padding: "1px 6px", borderRadius: "4px", whiteSpace: "nowrap", marginLeft: "8px", fontWeight: 700 }}>{markMatch[2]}</span>
+        <div key={idx} style={{ marginBottom: paragraphSpacing }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", fontSize: `${textSize}px`, lineHeight, letterSpacing, wordSpacing, fontFamily, marginBottom: "6px" }}>
+            <span dangerouslySetInnerHTML={{ __html: renderMath(markMatch[1]) }} />
+            <span style={{ background: "#374151", color: "white", fontSize: `${textSize - 3}px`, padding: "1px 6px", borderRadius: "4px", whiteSpace: "nowrap", marginLeft: "8px", fontWeight: 700, flexShrink: 0 }}>{markMatch[2]}</span>
+          </div>
+          {/* Mark-weighted answer box */}
+          <div style={{ border: "1px solid #d1d5db", borderRadius: "4px", padding: "4px 8px", background: "#fafafa" }}>
+            {Array.from({ length: answerLines }).map((_, li) => (
+              <div key={li} style={{ borderBottom: li < answerLines - 1 ? "1px solid #e5e7eb" : "none", height: "28px" }} />
+            ))}
+          </div>
         </div>
       );
       return;
@@ -1399,7 +1419,8 @@ function WordProblemsSection({ content, fmt, overlayColor = "white" }: { content
   );
 }
 
-const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(({
+const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(function WorksheetRendererInner(
+  {
   worksheet,
   viewMode,
   textSize,
@@ -1409,12 +1430,29 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(({
   editMode = false,
   schoolName,
   teacherName,
-}, ref) => {
+  answerBoxSizes = {},
+  onAnswerBoxSizeChange,
+  onAnswerBoxRemove,
+  }: WorksheetRendererProps, ref: React.Ref<HTMLDivElement>) {
   const isTeacherView = viewMode === "teacher";
 
   // Resolve SEND need ID from metadata (may be stored as sendNeedId or inferred from sendNeed label)
   const sendNeedId = worksheet.metadata.sendNeedId || worksheet.metadata.sendNeed;
   const fmt = getSendFormatting(sendNeedId, textSize);
+
+  // Default answer box line counts per section type
+  const DEFAULT_ANSWER_LINES: Record<string, number> = {
+    guided: 4,
+    independent: 4,
+    challenge: 6,
+  };
+
+  // Helper: get effective line count for a section's answer box
+  const getAnswerLines = (sectionIndex: number, sectionType: string): number => {
+    if (sectionIndex in answerBoxSizes) return answerBoxSizes[sectionIndex];
+    return DEFAULT_ANSWER_LINES[sectionType] ?? 4;
+  };
+
 
   return (
     <div
@@ -1656,28 +1694,79 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(({
               ) : section.type === "questions" ? (
                 // Questions sections always go through formatContent to properly render math
                 <div>{formatContent(content, fmt)}</div>
+              ) : (section.type === "reading" || section.type === "passage" || section.type === "source-text" || section.type === "comprehension" || /reading.?passage|source.?text|comprehension.?text/i.test(section.title || "")) ? (
+                // Bordered reading passage — slate border with padding per handover spec
+                <div style={{
+                  border: "2px solid #cbd5e1",
+                  borderRadius: "6px",
+                  padding: "16px",
+                  background: "#f8fafc",
+                  lineHeight: "1.8",
+                  fontSize: `${fmt.fontSize}px`,
+                  fontFamily: fmt.fontFamily,
+                  letterSpacing: fmt.letterSpacing,
+                  wordSpacing: fmt.wordSpacing,
+                  color: "#1e293b",
+                }}>
+                  {formatContent(content, fmt)}
+                </div>
               ) : (
                 <div>{formatContent(content, fmt)}</div>
               )}
 
-              {/* Answer lines for practice sections */}
-              {!isTeacherSection && (section.type === "independent" || section.type === "guided") && !/(sentence starter:|steps to follow:|quick start:|what you need to do:|help box|key facts|word bank)/i.test(String(content || "")) && (
-                <div style={{ marginTop: "12px", borderTop: "1px dashed #e5e7eb", paddingTop: "10px" }}>
-                  <div style={{ fontSize: `${fmt.fontSize - 2}px`, color: "#9ca3af", marginBottom: "6px", fontFamily: fmt.fontFamily }}>Working space:</div>
-                  {[1, 2, 3, 4].map(n => (
-                    <div key={n} style={{ borderBottom: "1px solid #d1d5db", height: "28px", marginBottom: "6px" }} />
-                  ))}
-                </div>
-              )}
-              {/* Answer lines for challenge section */}
-              {!isTeacherSection && section.type === "challenge" && (
-                <div style={{ marginTop: "12px", borderTop: "1px dashed #e5e7eb", paddingTop: "10px" }}>
-                  <div style={{ fontSize: `${fmt.fontSize - 2}px`, color: "#9ca3af", marginBottom: "6px", fontFamily: fmt.fontFamily }}>Show your working:</div>
-                  {[1, 2, 3, 4, 5, 6].map(n => (
-                    <div key={n} style={{ borderBottom: "1px solid #d1d5db", height: "28px", marginBottom: "6px" }} />
-                  ))}
-                </div>
-              )}
+              {/* Answer boxes for practice sections — size-controlled, removable in edit mode */}
+              {!isTeacherSection && (section.type === "independent" || section.type === "guided" || section.type === "challenge") && !/(sentence starter:|steps to follow:|quick start:|what you need to do:|help box|key facts|word bank)/i.test(String(content || "")) && (() => {
+                const lineCount = getAnswerLines(i, section.type);
+                // lineCount === 0 means the user removed the answer box
+                if (lineCount === 0) {
+                  // In edit mode, show a placeholder so the user can restore it
+                  if (editMode) {
+                    return (
+                      <div style={{ marginTop: "10px", borderTop: "1px dashed #e5e7eb", paddingTop: "8px", display: "flex", alignItems: "center", gap: "8px" }}>
+                        <span style={{ fontSize: `${fmt.fontSize - 2}px`, color: "#9ca3af", fontFamily: fmt.fontFamily, fontStyle: "italic" }}>Answer box removed</span>
+                        <button
+                          className="no-print"
+                          onClick={(e) => { e.stopPropagation(); onAnswerBoxSizeChange?.(i, DEFAULT_ANSWER_LINES[section.type] ?? 4); }}
+                          style={{ fontSize: "11px", padding: "2px 8px", borderRadius: "4px", border: "1px solid #5b21b6", background: "#ede9fe", color: "#5b21b6", cursor: "pointer", fontWeight: 600 }}
+                        >+ Restore</button>
+                      </div>
+                    );
+                  }
+                  return null;
+                }
+                const label = section.type === "challenge" ? "Show your working:" : "Working space:";
+                return (
+                  <div style={{ marginTop: "12px", borderTop: "1px dashed #e5e7eb", paddingTop: "10px" }}>
+                    {/* Edit mode controls */}
+                    {editMode && (
+                      <div className="no-print" style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "8px", flexWrap: "wrap" }}>
+                        <span style={{ fontSize: "11px", fontWeight: 600, color: "#5b21b6", fontFamily: fmt.fontFamily }}>Answer box:</span>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); onAnswerBoxSizeChange?.(i, Math.max(1, lineCount - 1)); }}
+                          style={{ width: "24px", height: "24px", borderRadius: "4px", border: "1px solid #d1d5db", background: "#f9fafb", cursor: "pointer", fontWeight: 700, fontSize: "14px", display: "flex", alignItems: "center", justifyContent: "center", color: "#374151" }}
+                          title="Fewer lines"
+                        >−</button>
+                        <span style={{ fontSize: "12px", color: "#374151", minWidth: "60px", textAlign: "center", fontFamily: fmt.fontFamily }}>{lineCount} line{lineCount !== 1 ? "s" : ""}</span>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); onAnswerBoxSizeChange?.(i, Math.min(20, lineCount + 1)); }}
+                          style={{ width: "24px", height: "24px", borderRadius: "4px", border: "1px solid #d1d5db", background: "#f9fafb", cursor: "pointer", fontWeight: 700, fontSize: "14px", display: "flex", alignItems: "center", justifyContent: "center", color: "#374151" }}
+                          title="More lines"
+                        >+</button>
+                        <div style={{ width: "1px", height: "16px", background: "#e5e7eb", margin: "0 2px" }} />
+                        <button
+                          onClick={(e) => { e.stopPropagation(); onAnswerBoxRemove?.(i); }}
+                          style={{ padding: "2px 8px", borderRadius: "4px", border: "1px solid #fca5a5", background: "#fef2f2", cursor: "pointer", fontSize: "11px", fontWeight: 600, color: "#dc2626" }}
+                          title="Remove answer box"
+                        >✕ Remove</button>
+                      </div>
+                    )}
+                    <div style={{ fontSize: `${fmt.fontSize - 2}px`, color: "#9ca3af", marginBottom: "6px", fontFamily: fmt.fontFamily }}>{label}</div>
+                    {Array.from({ length: lineCount }).map((_, n) => (
+                      <div key={n} style={{ borderBottom: "1px solid #d1d5db", height: "28px", marginBottom: "6px" }} />
+                    ))}
+                  </div>
+                );
+              })()}
             </div>
           </div>
         );
