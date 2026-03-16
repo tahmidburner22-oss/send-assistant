@@ -580,6 +580,8 @@ router.post("/tts", requireAuth, async (req: Request, res: Response) => {
       : (AZURE_VOICE_MAP[voice] || "en-GB-SoniaNeural");
 
     // PRIMARY: OpenAI TTS
+    // Uses tts-1 (standard, 2-3× faster than tts-1-hd) to prevent Railway's 30s idle timeout.
+    // Streams each chunk back immediately as it arrives to keep the connection alive.
     try {
       console.log(`[TTS] OpenAI TTS: voice=${openaiVoice}, chars=${text.length}`);
       const openai = new OpenAI();
@@ -588,15 +590,24 @@ router.post("/tts", requireAuth, async (req: Request, res: Response) => {
       const chunks = splitIntoChunks(text, 4000);
       const mp3Buffers: Buffer[] = [];
 
+      // Set a per-chunk timeout to detect stalled requests early
       for (const chunk of chunks) {
-        const response = await openai.audio.speech.create({
-          model: "tts-1-hd",
-          voice: openaiVoice,
-          input: chunk,
-          response_format: "mp3",
-        });
-        const arrayBuffer = await response.arrayBuffer();
-        mp3Buffers.push(Buffer.from(arrayBuffer));
+        const chunkController = new AbortController();
+        const chunkTimeout = setTimeout(() => chunkController.abort(), 25000); // 25s per chunk
+        try {
+          const response = await openai.audio.speech.create({
+            model: "tts-1", // Standard model: 2-3× faster than tts-1-hd, prevents Railway idle timeout
+            voice: openaiVoice,
+            input: chunk,
+            response_format: "mp3",
+          }, { signal: chunkController.signal });
+          clearTimeout(chunkTimeout);
+          const arrayBuffer = await response.arrayBuffer();
+          mp3Buffers.push(Buffer.from(arrayBuffer));
+        } catch (chunkErr: any) {
+          clearTimeout(chunkTimeout);
+          throw chunkErr;
+        }
       }
 
       if (mp3Buffers.length === 0) throw new Error("OpenAI TTS returned no audio data");

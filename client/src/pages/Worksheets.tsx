@@ -293,6 +293,54 @@ export default function Worksheets() {
 
   const overlayBg = colorOverlays.find(o => o.id === colorOverlay)?.color || "#ffffff";
 
+  // ─── Page-count enforcement for student view ────────────────────────────────
+  // When the user selects a page limit (targetPages > 0) and viewMode is "student",
+  // progressively remove sections in priority order until the content fits.
+  // Removal order: Key Vocabulary → Self-Reflection → extension/challenge → independent/core
+  // Estimation: ~2000 characters of content ≈ 1 A4 page at standard font size.
+  const CHARS_PER_PAGE = 2200;
+  const REMOVABLE_SECTION_PRIORITY: string[] = [
+    "vocabulary",       // Key Vocabulary — least essential for practice
+    "self-reflection",  // Self-Reflection / How Did I Do?
+    "self-assessment",  // Self Assessment
+    "extension",        // Section C — Stretch & Challenge
+    "challenge",        // Stretch & Challenge (alias)
+    "independent",      // Section B — Core Practice
+  ];
+
+  const displaySections = useMemo(() => {
+    if (!generated) return [];
+    // Start with all sections, applying teacher/student visibility rules
+    let sections = generated.sections.filter((s) => {
+      if (viewMode === "student") {
+        // Always hide teacher-only, answers, mark-scheme, teacher-notes in student view
+        if (s.teacherOnly || s.type === "answers" || s.type === "mark-scheme" || s.type === "teacher-notes" || s.type === "adaptations") return false;
+      }
+      return true;
+    });
+
+    // If no page limit or not in student view, return as-is
+    if (targetPages <= 0 || viewMode !== "student") return sections;
+
+    // Estimate total content size
+    const estimateChars = (secs: typeof sections) =>
+      secs.reduce((sum, s) => {
+        const c = s.content;
+        const len = typeof c === "string" ? c.length : Array.isArray(c) ? JSON.stringify(c).length : 0;
+        return sum + len + 200; // +200 for section header overhead
+      }, 400); // +400 for worksheet header
+
+    const maxChars = targetPages * CHARS_PER_PAGE;
+
+    // Progressively remove sections until we fit within the page limit
+    for (const typeToRemove of REMOVABLE_SECTION_PRIORITY) {
+      if (estimateChars(sections) <= maxChars) break;
+      sections = sections.filter((s) => s.type !== typeToRemove);
+    }
+
+    return sections;
+  }, [generated, viewMode, targetPages, editedSections]);
+
   // ─── Generate worksheet ────────────────────────────────────────────────────
   const handleGenerate = async () => {
     if (!subject || !yearGroup || !topic) {
@@ -613,7 +661,7 @@ export default function Worksheets() {
         title: generated.title,
         sendNeedId: generated?.metadata?.sendNeed || sendNeed || undefined,
       });
-      toast.success(`PDF ready — select 'Save as PDF' in the print dialog.`);
+      toast.success(`PDF downloaded!`);
     } catch (err) {
       // Fallback to jsPDF
       const editedWorksheet = {
@@ -1375,8 +1423,8 @@ export default function Worksheets() {
                             if (uploadWorksheetRef.current) {
                               try {
                                 await downloadHtmlAsPdf(uploadWorksheetRef.current, `${uploadedWorksheet.title}_adapted.pdf`);
-                                toast.success("PDF ready — select 'Save as PDF' in the print dialog.");
-                              } catch { toast.error("Could not open print dialog. Please allow pop-ups for this site."); }
+                                toast.success("PDF downloaded!");
+                              } catch { toast.error("Could not generate PDF. Please try again."); }
                             }
                           }}
                         >
@@ -2051,7 +2099,8 @@ export default function Worksheets() {
                     worksheet={{
                       title: generated.title,
                       subtitle: (generated as any).subtitle,
-                      sections: generated.sections as any,
+                      // Use displaySections which enforces page-count limits for student view
+                      sections: displaySections as any,
                       metadata: {
                         ...(generated.metadata as any),
                         // Pass the SEND need ID explicitly so WorksheetRenderer can apply correct formatting

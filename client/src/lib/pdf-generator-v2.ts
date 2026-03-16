@@ -350,13 +350,12 @@ export function printWorksheetElement(
 }
 
 /**
- * Download the worksheet as a PDF.
- * Opens a popup window with the worksheet and triggers the browser's print-to-PDF dialog.
- * This uses the same rendering path as print, ensuring identical output.
- *
- * The filename parameter is used as the suggested filename in the print dialog title.
+ * Download the worksheet as a PDF directly — no print dialog.
+ * Uses html2canvas to capture the rendered DOM (with KaTeX already rendered)
+ * then embeds the canvas as an image in a jsPDF document and triggers a
+ * direct browser download. This preserves all symbols, colours, and formatting.
  */
-export function downloadHtmlAsPdf(
+export async function downloadHtmlAsPdf(
   element: HTMLElement,
   filename: string,
   options: {
@@ -366,19 +365,87 @@ export function downloadHtmlAsPdf(
     title?: string;
     sendNeedId?: string;
   } = {}
-): void {
+): Promise<void> {
   const viewMode = options.viewMode || "student";
-  const contentHtml = serialiseElement(element, viewMode);
-  const katexCss = getKatexCssInline();
 
-  // Set the title to the filename (without extension) so the browser uses it as the PDF filename
-  const pdfTitle = filename.replace(/\.pdf$/i, "").replace(/_/g, " ");
+  // Clone the element so we can modify it without affecting the live DOM
+  const clone = element.cloneNode(true) as HTMLElement;
 
-  const html = buildPopupHtml(contentHtml, katexCss, {
-    ...options,
-    title: pdfTitle,
-    isPdf: true,
-  });
+  // For student view: remove teacher-only sections
+  if (viewMode === "student") {
+    clone.querySelectorAll(".ws-teacher-section").forEach((el) => el.parentNode?.removeChild(el));
+  }
 
-  openPrintPopup(html);
+  // Temporarily append the clone off-screen for accurate rendering
+  clone.style.position = "fixed";
+  clone.style.top = "-9999px";
+  clone.style.left = "0";
+  clone.style.width = "794px"; // A4 at 96dpi
+  clone.style.background = options.overlayColor || "#ffffff";
+  clone.style.zIndex = "-9999";
+  document.body.appendChild(clone);
+
+  try {
+    const html2canvas = (await import("html2canvas")).default;
+    const { jsPDF } = await import("jspdf");
+
+    // Render the full element to canvas at 2× scale for crisp output
+    const canvas = await html2canvas(clone, {
+      scale: 2,
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: options.overlayColor || "#ffffff",
+      logging: false,
+      windowWidth: 794,
+    });
+
+    const imgData = canvas.toDataURL("image/png");
+    const imgWidth = canvas.width;
+    const imgHeight = canvas.height;
+
+    // A4 dimensions in mm
+    const A4_W = 210;
+    const A4_H = 297;
+    const MARGIN = 10; // mm
+    const printableW = A4_W - MARGIN * 2;
+    const printableH = A4_H - MARGIN * 2;
+
+    // Scale factor: how many mm per canvas pixel
+    const mmPerPx = printableW / imgWidth;
+    const totalHeightMm = imgHeight * mmPerPx;
+
+    const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+
+    let yOffset = 0; // canvas pixels consumed
+    let pageNum = 0;
+
+    while (yOffset < imgHeight) {
+      if (pageNum > 0) pdf.addPage();
+
+      // How many canvas pixels fit on this page?
+      const pageHeightPx = printableH / mmPerPx;
+      const sliceHeight = Math.min(pageHeightPx, imgHeight - yOffset);
+
+      // Create a temporary canvas for this page slice
+      const pageCanvas = document.createElement("canvas");
+      pageCanvas.width = imgWidth;
+      pageCanvas.height = Math.ceil(sliceHeight);
+      const ctx = pageCanvas.getContext("2d");
+      if (ctx) {
+        ctx.drawImage(canvas, 0, -yOffset);
+      }
+
+      const pageImgData = pageCanvas.toDataURL("image/png");
+      const sliceHeightMm = sliceHeight * mmPerPx;
+
+      pdf.addImage(pageImgData, "PNG", MARGIN, MARGIN, printableW, sliceHeightMm);
+
+      yOffset += sliceHeight;
+      pageNum++;
+    }
+
+    pdf.save(filename.endsWith(".pdf") ? filename : `${filename}.pdf`);
+  } finally {
+    document.body.removeChild(clone);
+  }
 }
