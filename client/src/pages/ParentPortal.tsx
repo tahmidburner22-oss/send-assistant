@@ -1854,8 +1854,24 @@ Return EXACTLY this JSON:
           </div>
         )}
         {sec.id === "send-screener" && (() => {
-          const screenerAssignments = child?.assignments?.filter(a => a.type === "send-screener") ?? [];
-          const latestScreener = screenerAssignments.length > 0 ? screenerAssignments[screenerAssignments.length - 1] : null;
+          const completedScreeners = child?.assignments?.filter(a => a.type === "send-screener") ?? [];
+          const inProgressScreeners = child?.assignments?.filter(a => a.type === "send-screener-progress") ?? [];
+          const latestCompleted = completedScreeners.length > 0 ? completedScreeners[completedScreeners.length - 1] : null;
+          const latestInProgress = inProgressScreeners.length > 0 ? inProgressScreeners[inProgressScreeners.length - 1] : null;
+
+          // Parse the in-progress data to check teacher permission
+          let inProgressData: any = null;
+          if (latestInProgress?.content) {
+            try { inProgressData = JSON.parse(latestInProgress.content); } catch {}
+          }
+          const canResumeAtHome = inProgressData?.allowHomeResume === true;
+          const progressPct = latestInProgress?.progress ?? 0;
+
+          // Build resume URL with saved state encoded
+          const resumeUrl = canResumeAtHome && inProgressData
+            ? `/send-screener?resume=${encodeURIComponent(JSON.stringify({ mode: inProgressData.mode, answers: inProgressData.answers, currentQuestionIndex: inProgressData.currentQuestionIndex }))}`
+            : null;
+
           return (
             <div className="p-4 space-y-4">
               <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 flex gap-2">
@@ -1864,21 +1880,53 @@ Return EXACTLY this JSON:
                   <strong>This is NOT a diagnosis.</strong> This screener identifies potential indicators of SEND needs based on validated clinical tools. Only a qualified professional can diagnose. Results are for informational purposes only.
                 </p>
               </div>
-              {latestScreener ? (
+
+              {/* In-progress screener — show resume if teacher has allowed it */}
+              {latestInProgress && (
+                <div className="border border-amber-200 rounded-xl overflow-hidden">
+                  <div className="bg-amber-50 px-4 py-3 flex items-center gap-2">
+                    <span className="text-amber-600">⏳</span>
+                    <div className="flex-1">
+                      <p className="text-sm font-semibold text-amber-800">Screener In Progress</p>
+                      <p className="text-xs text-amber-600 mt-0.5">{progressPct}% complete · Saved {new Date(latestInProgress.assignedAt).toLocaleDateString("en-GB")}</p>
+                    </div>
+                  </div>
+                  {/* Progress bar */}
+                  <div className="h-1.5 bg-amber-100">
+                    <div className="h-full bg-amber-500 transition-all" style={{ width: `${progressPct}%` }} />
+                  </div>
+                  <div className="px-4 py-3">
+                    {canResumeAtHome ? (
+                      <a
+                        href={resumeUrl!}
+                        className="flex items-center justify-center gap-2 w-full bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold py-2.5 px-4 rounded-xl transition-colors"
+                      >
+                        ▶ Resume Screener — pick up where you left off
+                      </a>
+                    ) : (
+                      <p className="text-xs text-center text-muted-foreground py-1">
+                        🔒 Your teacher hasn't enabled home resumption yet. Ask them to allow it.
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Completed screener results */}
+              {latestCompleted ? (
                 <div className="space-y-4">
-                  {/* Full rich results display */}
-                  {latestScreener.content ? (
+                  {latestCompleted.content ? (
                     <SendScreenerResultsView
-                      content={latestScreener.content}
-                      title={latestScreener.title}
+                      content={latestCompleted.content}
+                      title={latestCompleted.title}
                     />
                   ) : (
                     <div className="flex items-center gap-2 p-3 rounded-xl bg-emerald-50 border border-emerald-200">
                       <span className="text-emerald-600">✅</span>
                       <div className="flex-1">
                         <p className="text-sm font-semibold text-emerald-800">SEND Screener Completed</p>
-                        <p className="text-xs text-emerald-700">{latestScreener.title}</p>
-                        <p className="text-xs text-muted-foreground">Completed: {new Date(latestScreener.assignedAt).toLocaleDateString('en-GB')}</p>
+                        <p className="text-xs text-emerald-700">{latestCompleted.title}</p>
+                        <p className="text-xs text-muted-foreground">Completed: {new Date(latestCompleted.assignedAt).toLocaleDateString("en-GB")}</p>
                       </div>
                     </div>
                   )}
@@ -1889,7 +1937,7 @@ Return EXACTLY this JSON:
                     <span>🔍</span> Retake SEND Screener
                   </a>
                 </div>
-              ) : (
+              ) : !latestInProgress ? (
                 <>
                   <p className="text-xs text-muted-foreground leading-relaxed">
                     This evidence-based screener covers 8 areas of SEND need: Dyslexia, ADHD, Autism (ASC), Dyspraxia, Dyscalculia, Speech &amp; Language, Anxiety, and Moderate Learning Difficulties. It takes approximately 15–20 minutes and produces a personalised report.
@@ -1904,7 +1952,7 @@ Return EXACTLY this JSON:
                     Questions are drawn from: BDA Dyslexia Checklist · WHO ASRS (ADHD) · AQ-10 (Autism) · MABC-2 (Dyspraxia) · Butterworth Dyscalculia Screener · CELF-5 (SLCN) · GAD-7 (Anxiety) · British Ability Scales (MLD)
                   </p>
                 </>
-              )}
+              ) : null}
             </div>
           );
         })()}

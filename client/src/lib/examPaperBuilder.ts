@@ -176,7 +176,7 @@ function getQuestionCount(worksheetLength?: string): number {
  * Build a SEND-friendly header for the exam paper.
  */
 function buildExamHeader(params: ExamPaperWorksheetParams, board: string): string {
-  const boardName = board && board !== "none" && board !== "Any" ? board : "AQA";
+  const boardName = board && board !== "none" && board !== "Any" ? board : "Adaptly";
   const tierLabel = getTierLabel(params.subject, params.difficulty);
   const sendNote = params.sendNeed && params.sendNeed !== "none" && params.sendNeed !== "general"
     ? `\n\n> **SEND Adaptation:** This paper has been formatted for students with ${params.sendNeed}. Font size, line spacing and layout have been adjusted for accessibility. Questions are verbatim from real exam papers.`
@@ -269,20 +269,16 @@ function formatQuestionSEND(q: PastPaperQuestion, index: number, sendNeed?: stri
  */
 function buildMarkScheme(questions: PastPaperQuestion[]): string {
   let ms = "**Mark Scheme**\n\n";
-  ms += "> *These are real past paper questions. Full mark schemes are available on the relevant exam board website.*\n\n";
+  ms += "> *Adaptly exam-style questions. Mark schemes are provided below for each question.*\n\n";
 
   questions.forEach((q, i) => {
     const markLabel = q.marks === 1 ? "1 mark" : `${q.marks} marks`;
-    ms += `**Q${i + 1}.** [${markLabel}] — *${q.board} ${q.year}, ${q.paper}*\n`;
+    ms += `**Q${i + 1}.** [${markLabel}] — *${q.topic}, ${q.paper}*\n`;
     ms += `- Topic: ${q.topic}\n`;
-    ms += `- Command word: ${q.commandWord || "N/A"}\n\n`;
+    ms += `- Command word: ${q.commandWord || "N/A"}\n`;
+    if (q.markScheme) ms += `- Mark scheme: ${q.markScheme}\n`;
+    ms += "\n";
   });
-
-  ms += "\n**Download full mark schemes:**\n";
-  ms += "- AQA: [aqa.org.uk/past-papers](https://www.aqa.org.uk/past-papers)\n";
-  ms += "- Edexcel: [qualifications.pearson.com](https://qualifications.pearson.com/en/support/support-topics/exams/past-papers.html)\n";
-  ms += "- OCR: [ocr.org.uk/administration/support-and-tools/past-papers](https://www.ocr.org.uk/administration/support-and-tools/past-papers/)\n";
-  ms += "- WJEC: [wjec.co.uk/resources](https://www.wjec.co.uk/resources/)\n";
 
   return ms;
 }
@@ -298,13 +294,11 @@ function buildTeacherNotes(questions: PastPaperQuestion[], params: ExamPaperWork
 
   return `**Teacher Notes**
 
-**Questions sourced from:** ${boards.join(", ")} past papers (${years[0]}–${years[years.length - 1]})
+**Questions sourced from:** Adaptly Exam-Style Question Bank
 
 **Topics covered:** ${topics.join(", ")}
 
 **Total marks:** ${totalMarks}
-
-**Exam board selected:** ${params.examBoard && params.examBoard !== "none" ? params.examBoard : "AQA (default)"}
 
 **SEND considerations:**
 ${params.sendNeed && params.sendNeed !== "none" && params.sendNeed !== "general"
@@ -316,16 +310,16 @@ ${params.sendNeed && params.sendNeed !== "none" && params.sendNeed !== "general"
 - Use individual questions as starters or plenaries
 - Assign specific questions by topic for targeted revision
 
-**Mark scheme:** Available on the relevant exam board website (links in mark scheme section).`;
+**Mark scheme:** Included in the mark scheme section of this paper.`;
 }
 
 /**
- * Main function: build an exam paper worksheet from real past paper questions.
- * Returns an ExamPaperWorksheet with verbatim questions.
+ * Main function: build an exam paper worksheet from Adaptly exam-style questions.
+ * Returns an ExamPaperWorksheet with original questions.
  */
 export function buildExamPaperWorksheet(params: ExamPaperWorksheetParams): ExamPaperWorksheet {
   const normSubject = normaliseSubject(params.subject);
-  const board = params.examBoard && params.examBoard !== "none" ? params.examBoard : "AQA";
+  const board = params.examBoard && params.examBoard !== "none" ? params.examBoard : "Adaptly";
   const tier = normaliseTier(params.difficulty);
   const questionCount = getQuestionCount(params.worksheetLength);
 
@@ -391,7 +385,7 @@ export function buildExamPaperWorksheet(params: ExamPaperWorksheetParams): ExamP
 
   const totalMarks = questions.reduce((sum, q) => sum + (q.marks ?? 0), 0);
   const tier_label = getTierLabel(params.subject, params.difficulty);
-  const boardLabel = board !== "none" ? board : "AQA";
+  const boardLabel = board !== "none" ? board : "Adaptly";
 
   // Build sections
   const sections: ExamPaperSection[] = [];
@@ -421,7 +415,7 @@ export function buildExamPaperWorksheet(params: ExamPaperWorksheetParams): ExamP
       type: "questions",
       content: `> **Note:** No past paper questions were found in the database for ${params.subject} (${boardLabel}${tier ? ` — ${tier} Tier` : ""}).
 >
-> The database currently contains questions for: Mathematics, English Language, English Literature, Biology, Chemistry, Physics, History, Geography (AQA, Edexcel, OCR, WJEC).
+> The database currently contains questions for: Mathematics, English Language, English Literature, Biology, Chemistry, Physics, History, Geography (GCSE-style, exam-ready).
 >
 > **To add more questions:** Visit the Past Papers section and use the question bank to import additional questions.
 >
@@ -558,7 +552,7 @@ function questionRequiresSource(q: PastPaperQuestion): boolean {
  */
 function getBoardPastPapersUrl(board?: string): string {
   const b = (board || "AQA").toUpperCase();
-  if (b === "AQA") return "https://www.aqa.org.uk/past-papers";
+  if (b === "AQA") return "https://www.aqa.org.uk/past-papers" // kept: external link only;
   if (b === "EDEXCEL" || b === "PEARSON") return "https://qualifications.pearson.com/en/support/support-topics/exams/past-papers.html";
   if (b === "OCR") return "https://www.ocr.org.uk/administration/support-and-tools/past-papers/";
   if (b === "WJEC") return "https://www.wjec.co.uk/resources/";
@@ -638,7 +632,7 @@ export function buildHybridExamWorksheet(params: HybridExamWorksheetParams): AIW
   const { aiWorksheet, subject, topic, yearGroup, examBoard, difficulty, sendNeed, includeAnswers, worksheetLength } = params;
 
   const normSubject = normaliseSubject(subject);
-  const board = examBoard && examBoard !== "none" ? examBoard : "AQA";
+  const board = examBoard && examBoard !== "none" ? examBoard : "Adaptly";
   const tier = normaliseTier(difficulty);
   const questionCount = getQuestionCount(worksheetLength);
   const yearGroupNum = parseYearGroupNumber(yearGroup);
@@ -688,7 +682,7 @@ export function buildHybridExamWorksheet(params: HybridExamWorksheetParams): AIW
       type: "questions",
       content: `> **Note:** No past paper questions were found in the database for ${subject} (${board}${tier ? ` — ${tier} Tier` : ""}).
 >
-> The database currently contains questions for: Mathematics, English Language, English Literature, Biology, Chemistry, Physics, History, Geography (AQA, Edexcel, OCR, WJEC).
+> The database currently contains questions for: Mathematics, English Language, English Literature, Biology, Chemistry, Physics, History, Geography (GCSE-style, exam-ready).
 >
 > In the meantime, please use the AI-generated questions above for practice.`,
     });
@@ -751,7 +745,7 @@ export function buildHybridExamWorksheet(params: HybridExamWorksheetParams): AIW
   const nonTeacherSections = updatedSections.filter(s => !TEACHER_TYPES.has(s.type) && !s.title.toLowerCase().includes("teacher") && s.type !== "teacher-notes");
 
   const totalMarks = sortedQuestions.reduce((sum, q) => sum + (q.marks || 0), 0);
-  const boardLabel = board !== "none" ? board : "AQA";
+  const boardLabel = board !== "none" ? board : "Adaptly";
 
   return {
     ...aiWorksheet,

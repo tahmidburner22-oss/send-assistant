@@ -576,12 +576,12 @@ const englishTopics: Record<string, any> = {
     objective: "Use a range of descriptive and narrative techniques to create vivid, engaging writing. Structure writing effectively for impact.",
     priorKnowledge: "Students should know: basic punctuation; sentence types (simple, compound, complex); some literary devices (simile, metaphor).",
     vocabulary: ["Simile", "Metaphor", "Personification", "Sensory language", "Pathetic fallacy", "Imagery", "Foreshadowing", "Narrative voice", "Tone", "Pace", "Tension"],
-    teacherNotes: "Provide a 'techniques toolkit' card for SEND students. Encourage planning before writing — even a brief spider diagram helps structure. Discuss how professional authors use short sentences for tension and longer sentences for description. Peer assessment against the mark scheme builds metacognitive awareness. For GCSE, remind students that AQA marks for: communication and organisation (24 marks) and technical accuracy (16 marks).",
+    teacherNotes: "Provide a 'techniques toolkit' card for SEND students. Encourage planning before writing — even a brief spider diagram helps structure. Discuss how professional authors use short sentences for tension and longer sentences for description. Peer assessment against the mark scheme builds metacognitive awareness. For GCSE, remind students that GCSE marks for: communication and organisation (24 marks) and technical accuracy (16 marks).",
     markScheme: [
       { q: "1.1", marks: 2, answer: "A simile comparing the sea to something else, with a reason for the comparison", method: "1 mark for simile, 1 mark for explanation" },
       { q: "1.2", marks: 2, answer: "Personification of the moon with a verb showing human action", method: "1 mark for personification, 1 mark for effect" },
-      { q: "2.1", marks: 8, answer: "Extended writing marked on: range of techniques (3), sensory detail (2), vocabulary (2), structure (1)", method: "See AQA-style mark bands" },
-      { q: "Challenge", marks: 16, answer: "Extended writing: 8 marks communication/organisation, 8 marks technical accuracy", method: "AQA-style mark bands" },
+      { q: "2.1", marks: 8, answer: "Extended writing marked on: range of techniques (3), sensory detail (2), vocabulary (2), structure (1)", method: "See GCSE-style mark bands" },
+      { q: "Challenge", marks: 16, answer: "Extended writing: 8 marks communication/organisation, 8 marks technical accuracy", method: "GCSE mark bands" },
     ],
     example: {
       question: "Write a descriptive paragraph about a storm using at least three techniques.",
@@ -619,7 +619,7 @@ const englishTopics: Record<string, any> = {
       { q: "2.3  Write a narrative paragraph from the perspective of someone who has just received unexpected good news. Show — don't tell — their emotions.", a: "Extended writing response. Look for: physical reactions, internal thoughts, varied sentence lengths, specific details.", marks: 6 },
     ],
     challenge: "Write a 200-word description of a setting that shifts from peaceful to threatening. Use a range of techniques including extended metaphor, pathetic fallacy, and varied sentence lengths for effect.",
-    challengeAnswer: "Extended creative writing response. Mark on: AQA-style bands — communication/organisation (8 marks) and technical accuracy (8 marks). Look for: clear structural shift, sustained extended metaphor, range of techniques, accurate punctuation.",
+    challengeAnswer: "Extended creative writing response. Mark on: GCSE bands — communication/organisation (8 marks) and technical accuracy (8 marks). Look for: clear structural shift, sustained extended metaphor, range of techniques, accurate punctuation.",
     extension: "Read the opening paragraph of a novel of your choice. Identify three techniques the author uses and explain how each creates an effect on the reader."
   },
 
@@ -1324,7 +1324,7 @@ const historyTopics: Record<string, any> = {
     markScheme: [
       { q: "1.1", marks: 2, answer: "Any two from: Treaty of Versailles, Great Depression, rise of Hitler/Nazism, failure of appeasement, invasion of Poland", method: "1 mark each" },
       { q: "2.1", marks: 4, answer: "Description of the Holocaust with specific details: 6 million Jews killed, concentration camps, Nuremberg Laws, Kristallnacht", method: "1 mark per relevant point, up to 4" },
-      { q: "Challenge", marks: 8, answer: "Balanced argument with evidence for and against, reaching a justified conclusion", method: "AQA-style mark bands" },
+      { q: "Challenge", marks: 8, answer: "Balanced argument with evidence for and against, reaching a justified conclusion", method: "GCSE mark bands" },
     ],
     example: {
       question: "Explain why Hitler was able to rise to power in Germany.",
