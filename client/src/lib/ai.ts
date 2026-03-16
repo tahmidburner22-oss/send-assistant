@@ -806,9 +806,10 @@ Return EXACTLY this JSON (raw JSON only):
   }
 }`;
 
-  // Scale token limit with worksheet length — keep lean for speed while preserving full structure
-  // 10min ≈ 1800t, 30min ≈ 4000t, 60min ≈ 5500t
-  const maxTokensForLength = params.introOnly ? 1600 : (lengthMins >= 60 ? 5500 : lengthMins <= 10 ? 1800 : 4000);
+  // Scale token limit with worksheet length — generous limits to prevent JSON truncation
+  // Truncated JSON is the #1 cause of the fallback generator being triggered
+  // 10min ≈ 2500t, 30min ≈ 5000t, 60min ≈ 7000t
+  const maxTokensForLength = params.introOnly ? 2000 : (lengthMins >= 60 ? 7000 : lengthMins <= 10 ? 2500 : 5000);
   const { text, provider } = await callAI(system, user, maxTokensForLength);
   const cleaned = text
     .replace(/^```json\s*/i, "")

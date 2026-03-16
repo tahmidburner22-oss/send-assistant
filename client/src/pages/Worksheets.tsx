@@ -26,11 +26,13 @@ import { aiGenerateWorksheet, aiEditSection, aiScaffoldExistingWorksheet, aiDiff
 import type { PastPaperQuestion } from "@/lib/pastPaperQuestions";
 import PrintOptionsDialog, { type PrintOptions } from "@/components/PrintOptionsDialog";
 import SENDInfoPanel from "@/components/SENDInfoPanel";
+import DiagnosticStarterSheet from "@/components/DiagnosticStarterSheet";
 import {
   FileText, Upload, Library, Sparkles, Download, Printer, Save, Star,
   Eye, GraduationCap, Palette, Edit3, Users, Check, ZoomIn, ZoomOut,
   Mic, MicOff, Image, Search, Clock, Award, ChevronRight, ChevronDown,
-  AlertCircle, CheckCircle, RefreshCw, FileDown, X, Wand2, History, Trash2, Info, PenLine, Square, CheckSquare, ListChecks, ClipboardCheck
+  AlertCircle, CheckCircle, RefreshCw, FileDown, X, Wand2, History, Trash2, Info, PenLine, Square, CheckSquare, ListChecks, ClipboardCheck,
+  MessageSquare, Send, RotateCcw
 } from "lucide-react";
 
 // ─── Voice-to-text hook ─────────────────────────────────────────────────────
@@ -174,6 +176,14 @@ export default function Worksheets() {
   const [showDiagnosticDialog, setShowDiagnosticDialog] = useState(false);
   const [diagnosticFailed, setDiagnosticFailed] = useState(false); // true = student failed, suggest easier version
 
+  // Diagnostic Starter Chat (open chat tab)
+  type DiagChatMessage = { role: "user" | "assistant"; content: string };
+  const [diagChatMessages, setDiagChatMessages] = useState<DiagChatMessage[]>([]);
+  const [diagChatInput, setDiagChatInput] = useState("");
+  const [diagChatLoading, setDiagChatLoading] = useState(false);
+  const diagChatEndRef = useRef<HTMLDivElement>(null);
+  const [diagSheetResult, setDiagSheetResult] = useState<{ topic: string; questions: string[] } | null>(null);
+
   // Reset difficulty to a valid option when subject changes
   // Exam-style always defaults OFF — user must opt in
   useEffect(() => {
@@ -283,6 +293,7 @@ export default function Worksheets() {
   const worksheetRef = useRef<HTMLDivElement>(null);
   const uploadWorksheetRef = useRef<HTMLDivElement>(null);
   const historyContentRef = useRef<HTMLDivElement>(null);
+  const historyPrintRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // tRPC mutations
@@ -460,18 +471,60 @@ export default function Worksheets() {
         console.error("AI generation failed:", err);
         console.error("[DEBUG] Error name:", err?.name, "| message:", err?.message?.slice(0, 300), "| stack:", err?.stack?.slice(0, 200));
         const errMsg = err?.message || String(err);
-        if (errMsg.includes("No AI provider keys configured") || errMsg.includes("noKeysConfigured") || errMsg.includes("Settings → AI Providers")) {
+        if (errMsg.includes("No AI provider keys configured") || errMsg.includes("noKeysConfigured") || errMsg.includes("Settings \u2192 AI Providers")) {
           toast.error(
-            "No AI keys configured. Go to Settings → AI Providers to add your school's API keys. Using local generator for now.",
+            "No AI keys configured. Go to Settings \u2192 AI Providers to add your school's API keys. Using local generator for now.",
             { duration: 10000 }
           );
+          generatedWs = generateWorksheet({ subject, topic, yearGroup, sendNeed: sendNeed || undefined, difficulty, examBoard, includeAnswers, additionalInstructions });
         } else if (err?.name === "AbortError") {
-          toast.error("AI generation timed out. Please try again.");
+          // Timeout — retry once with a shorter prompt before giving up
+          toast("AI taking longer than expected, retrying...", { icon: "\u23f3" });
+          try {
+            const retryResult = await aiGenerateWorksheet({
+              subject, topic, yearGroup,
+              sendNeed: sendNeed && sendNeed !== "none-selected" ? sendNeed : undefined,
+              difficulty,
+              examBoard: examBoard !== "none" ? examBoard : undefined,
+              includeAnswers,
+              examStyle,
+              additionalInstructions,
+              generateDiagram: false, // skip diagram on retry to reduce tokens
+              worksheetLength: "short", // shorter on retry
+              targetPages: targetPages || undefined,
+              readingAge: readingAge || undefined,
+            });
+            generatedWs = { ...retryResult, isAI: true } as AIWorksheet;
+            toast.success("Worksheet generated (retry succeeded)!");
+          } catch (retryErr) {
+            console.error("Retry also failed:", retryErr);
+            toast.error("AI generation timed out. Please try again.");
+            generatedWs = generateWorksheet({ subject, topic, yearGroup, sendNeed: sendNeed || undefined, difficulty, examBoard, includeAnswers, additionalInstructions });
+          }
         } else {
-          // Fallback succeeded — use a softer warning rather than a red error
-          toast("Worksheet generated using fallback generator.", { icon: "⚠️" });
+          // Parse error or other failure — retry once before local fallback
+          try {
+            const retryResult = await aiGenerateWorksheet({
+              subject, topic, yearGroup,
+              sendNeed: sendNeed && sendNeed !== "none-selected" ? sendNeed : undefined,
+              difficulty,
+              examBoard: examBoard !== "none" ? examBoard : undefined,
+              includeAnswers,
+              examStyle,
+              additionalInstructions,
+              generateDiagram: false,
+              worksheetLength,
+              targetPages: targetPages || undefined,
+              readingAge: readingAge || undefined,
+            });
+            generatedWs = { ...retryResult, isAI: true } as AIWorksheet;
+            toast.success("Worksheet generated!");
+          } catch (retryErr) {
+            console.error("Retry also failed:", retryErr);
+            toast("Worksheet generated using fallback generator.", { icon: "\u26a0\ufe0f" });
+            generatedWs = generateWorksheet({ subject, topic, yearGroup, sendNeed: sendNeed || undefined, difficulty, examBoard, includeAnswers, additionalInstructions });
+          }
         }
-        generatedWs = generateWorksheet({ subject, topic, yearGroup, sendNeed: sendNeed || undefined, difficulty, examBoard, includeAnswers, additionalInstructions });
       }
     } else {
       await new Promise(r => setTimeout(r, 800));
@@ -535,6 +588,48 @@ export default function Worksheets() {
       setDiagnosticLoading(false);
     }
   };
+
+  // ─── Diagnostic Starter Chat — send message and render as worksheet-style sheet ──
+  const handleDiagChatSend = async () => {
+    const userText = diagChatInput.trim();
+    if (!userText || diagChatLoading) return;
+    setDiagChatInput("");
+    setDiagChatMessages(prev => [...prev, { role: "user", content: userText }]);
+    setDiagChatLoading(true);
+    setDiagSheetResult(null);
+    try {
+      const storedToken = typeof localStorage !== 'undefined' ? localStorage.getItem('send_token') : null;
+      const diagHeaders: Record<string, string> = { "Content-Type": "application/json" };
+      if (storedToken) diagHeaders["Authorization"] = `Bearer ${storedToken}`;
+      const res = await fetch("/api/ai/diagnostic-starter", {
+        method: "POST",
+        headers: diagHeaders,
+        credentials: "include",
+        body: JSON.stringify({ freeText: userText }),
+      });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({})) as any;
+        throw new Error(errData?.error || `Diagnostic generation failed (${res.status})`);
+      }
+      const data = await res.json();
+      const qs: string[] = Array.isArray(data.questions)
+        ? data.questions.map((q: any) => (typeof q === "string" ? q : q.q || q.question || JSON.stringify(q)))
+        : [];
+      const topicLabel: string = data.topic || userText;
+      setDiagSheetResult({ topic: topicLabel, questions: qs });
+      setDiagChatMessages(prev => [...prev, { role: "assistant", content: `Generated ${qs.length} starter questions for "${topicLabel}"` }]);
+    } catch (err) {
+      console.error("Diagnostic starter error:", err);
+      setDiagChatMessages(prev => [...prev, { role: "assistant", content: "Sorry, I couldn't generate questions. Please try again." }]);
+    } finally {
+      setDiagChatLoading(false);
+    }
+  };
+
+  // Auto-scroll diagnostic chat to bottom
+  useEffect(() => {
+    diagChatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [diagChatMessages, diagChatLoading]);
 
   // ─── Build worksheet from selected exam questions (Exam Hub multi-select) ──
   const handleBuildFromSelected = async () => {
@@ -1040,6 +1135,7 @@ export default function Worksheets() {
                 <span className="ml-1 bg-brand text-white text-[10px] rounded-full px-1.5 py-0">{worksheetHistory.length}</span>
               )}
             </TabsTrigger>
+            <TabsTrigger value="starter" className="text-xs gap-1 flex-1 min-w-[72px]"><MessageSquare className="w-3 h-3" /> Starter</TabsTrigger>
           </TabsList>
           </div>
 
@@ -1955,6 +2051,82 @@ export default function Worksheets() {
               </div>
             )}
           </TabsContent>
+
+          {/* ─── STARTER TAB ──────────────────────────────────────────── */}
+          <TabsContent value="starter" className="mt-4">
+            <div className="space-y-4">
+              {/* Input card */}
+              <Card className="border-border/40 shadow-sm">
+                <CardContent className="p-4 flex flex-col gap-3">
+                  <div className="flex items-center gap-2">
+                    <MessageSquare className="w-4 h-4 text-brand" />
+                    <span className="font-semibold text-sm">Starter</span>
+                    {diagSheetResult && (
+                      <button
+                        onClick={() => { setDiagSheetResult(null); setDiagChatMessages([]); setDiagChatInput(""); }}
+                        className="ml-auto flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        <RotateCcw className="w-3 h-3" /> New
+                      </button>
+                    )}
+                  </div>
+                  {!diagSheetResult && (
+                    <div className="flex gap-2 items-end">
+                      <textarea
+                        className="flex-1 min-h-[72px] max-h-[160px] resize-y rounded-lg border border-border bg-background px-3 py-2.5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand/40 transition"
+                        placeholder="Generate questions to test a pupil's knowledge before starting the topic"
+                        value={diagChatInput}
+                        onChange={e => setDiagChatInput(e.target.value)}
+                        onKeyDown={e => {
+                          if (e.key === "Enter" && !e.shiftKey && !diagChatLoading) {
+                            e.preventDefault();
+                            handleDiagChatSend();
+                          }
+                        }}
+                        disabled={diagChatLoading}
+                      />
+                      <button
+                        onClick={handleDiagChatSend}
+                        disabled={diagChatLoading || !diagChatInput.trim()}
+                        className="h-10 w-10 flex items-center justify-center rounded-lg bg-brand text-white disabled:opacity-50 hover:bg-brand/90 transition-colors flex-shrink-0"
+                      >
+                        {diagChatLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  )}
+                  {diagChatLoading && (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" /> Generating starter questions...
+                    </div>
+                  )}
+                  {diagSheetResult && (
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <CheckCircle className="w-3.5 h-3.5 text-green-500" />
+                      Generated {diagSheetResult.questions.length} starter questions for <strong>{diagSheetResult.topic}</strong>
+                      <button
+                        onClick={() => window.print()}
+                        className="ml-auto flex items-center gap-1 text-xs bg-brand text-white px-2.5 py-1 rounded-md hover:bg-brand/90 transition-colors"
+                      >
+                        <Printer className="w-3 h-3" /> Print
+                      </button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Worksheet-style output */}
+              {diagSheetResult && (
+                <div className="border border-border rounded-lg overflow-hidden bg-white p-6 shadow-sm">
+                  <DiagnosticStarterSheet
+                    topic={diagSheetResult.topic}
+                    questions={diagSheetResult.questions}
+                    schoolName={user?.schoolName}
+                    teacherName={user?.name}
+                  />
+                </div>
+              )}
+            </div>
+          </TabsContent>
         </Tabs>
       ) : (
         /* ─── GENERATED WORKSHEET VIEW ──────────────────────────────── */
@@ -2444,7 +2616,14 @@ export default function Worksheets() {
                     onClick={() => { setHistoryEditMode(!historyEditMode); if (historyEditMode) setHistoryAiEditIdx(null); }}>
                     <Edit3 className="h-3.5 w-3.5 mr-1" />{historyEditMode ? "Done Editing" : "Edit Manually"}
                   </Button>
-                  <Button size="sm" variant="outline" onClick={() => { if (historyContentRef.current) printWorksheetElement(historyContentRef.current, { includeTeacherSections: historyViewMode === "teacher" }); else window.print(); }}><Printer className="h-3.5 w-3.5 mr-1" />Print</Button>
+                  <Button size="sm" variant="outline" onClick={() => {
+                    const printTarget = historyPrintRef.current || historyContentRef.current;
+                    if (printTarget) {
+                      printWorksheetElement(printTarget, { viewMode: historyViewMode === "teacher" ? "teacher" : "student" });
+                    } else {
+                      window.print();
+                    }
+                  }}><Printer className="h-3.5 w-3.5 mr-1" />Print</Button>
                   <Button size="sm" className="bg-brand hover:bg-brand/90 text-white" onClick={() => {
                     // Save edits back to history
                     const updatedSections = sections.map((s, i) => ({
@@ -2462,6 +2641,23 @@ export default function Worksheets() {
 
                 {/* Subtitle */}
                 {ws.subtitle && <p className="text-xs text-muted-foreground">{ws.subtitle}</p>}
+
+                {/* Hidden WorksheetRenderer used for print/PDF — captures proper styled output */}
+                <div ref={historyPrintRef} style={{ position: 'absolute', left: '-9999px', top: 0, width: '794px', pointerEvents: 'none', zIndex: -1 }}>
+                  <WorksheetRenderer
+                    worksheetData={{
+                      title: ws.title || '',
+                      subtitle: ws.subtitle || '',
+                      sections: sections.map((s, i) => ({
+                        ...s,
+                        content: historyEditedSections[i] !== undefined ? historyEditedSections[i] : s.content,
+                      })),
+                      metadata: { subject: ws.subject || '', yearGroup: ws.yearGroup || '', topic: ws.topic || '' },
+                    }}
+                    viewMode={historyViewMode === "teacher" ? "teacher" : "student"}
+                    editMode={false}
+                  />
+                </div>
 
                 {/* Sections */}
                 <div className="space-y-3" ref={historyContentRef}>
