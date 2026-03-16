@@ -133,9 +133,9 @@ export default function AIToolPage({
     try {
       const filename = `${(outputTitle?.(values) || title).replace(/\s+/g, "_")}.pdf`;
       await downloadHtmlAsPdf(outputRef.current, filename);
-      toast.success("PDF ready — select 'Save as PDF' in the print dialog.");
+      toast.success("PDF downloaded!");
     } catch {
-      toast.error("Could not open print dialog. Please allow pop-ups for this site.");
+      toast.error("Could not generate PDF. Please try again.");
     }
   };
 
