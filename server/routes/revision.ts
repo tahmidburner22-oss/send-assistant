@@ -33,7 +33,7 @@ const router = Router();
 // ── Multer — memory storage, max 10MB for documents ──────────────────────────
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 10 * 1024 * 1024 },
+  limits: { fileSize: 25 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
     const allowed = [
       "application/pdf",
@@ -207,10 +207,8 @@ async function extractText(buffer: Buffer, mimetype: string): Promise<string> {
     raw = buffer.toString("utf-8");
   } else if (mimetype === "application/pdf") {
     try {
-      const { PDFParse } = await import("pdf-parse");
-      const parser = new PDFParse({ data: buffer, verbosity: 0 });
-      await parser.load();
-      const result = await parser.getText();
+      const pdfParse = (await import("pdf-parse")).default;
+      const result = await pdfParse(buffer);
       raw = result?.text ?? "";
     } catch (pdfErr: any) {
       console.error("[extractText] pdf-parse error:", pdfErr?.message || pdfErr);
