@@ -1013,7 +1013,9 @@ export default function Worksheets() {
       }
     } catch (err: any) {
       console.error("Natural-language worksheet generation failed:", err);
-      toast.error("Could not generate from that request. Please try again.");
+      // Keep the parsed parameters in the main form and fall back cleanly to the
+      // standard generator instead of leaving the user with an error-only outcome.
+      toast.error("AI generation hit an issue. Your request has been applied to the form below — click Generate Worksheet to continue.");
     } finally {
       setLoading(false);
     }
