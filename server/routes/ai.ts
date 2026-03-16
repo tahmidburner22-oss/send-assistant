@@ -20,6 +20,47 @@ const worksheetUpload = multer({ storage: multer.memoryStorage(), limits: { file
 // Additional providers: mistral, deepseek, cohere, perplexity
 const PROVIDER_ORDER = ["gemini", "groq", "openai", "openrouter", "claude", "mistral", "deepseek", "cohere", "perplexity", "huggingface"] as const;
 
+// ── Per-provider cooldown tracker ─────────────────────────────────────────────
+// When a provider hits a rate limit (429), it is put in cooldown for COOLDOWN_MS.
+// During cooldown it is skipped entirely so other providers can serve requests.
+// This prevents cascading failures where every provider gets exhausted at once.
+const COOLDOWN_MS = 60_000; // 60 seconds per provider
+const providerCooldowns = new Map<string, number>(); // provider → timestamp when cooldown expires
+
+function isOnCooldown(provider: string): boolean {
+  const expiresAt = providerCooldowns.get(provider);
+  if (!expiresAt) return false;
+  if (Date.now() < expiresAt) return true;
+  providerCooldowns.delete(provider); // cooldown expired
+  return false;
+}
+
+function setCooldown(provider: string): void {
+  const expiresAt = Date.now() + COOLDOWN_MS;
+  providerCooldowns.set(provider, expiresAt);
+  console.warn(`[AI] ${provider} put on cooldown for ${COOLDOWN_MS / 1000}s (until ${new Date(expiresAt).toISOString()})`);
+}
+
+// Returns a list of providers that are NOT currently on cooldown
+function getAvailableProviders(order: string[]): string[] {
+  const available = order.filter(p => !isOnCooldown(p));
+  if (available.length === 0) {
+    // All providers are on cooldown — clear the shortest cooldown and retry with that one
+    // (better to retry a cooled-down provider than to fail completely)
+    console.warn("[AI] All providers on cooldown — clearing shortest cooldown to allow retry");
+    let earliest = Infinity;
+    let earliestProvider = "";
+    for (const [p, exp] of providerCooldowns.entries()) {
+      if (exp < earliest) { earliest = exp; earliestProvider = p; }
+    }
+    if (earliestProvider) {
+      providerCooldowns.delete(earliestProvider);
+      return [earliestProvider];
+    }
+  }
+  return available;
+}
+
 // ── Get the best available key: school key → global admin key → env var ──────
 // Security: No API keys are ever hardcoded in source code.
 // Keys are stored encrypted in the database (school_api_keys table, AES-256-GCM).
@@ -129,7 +170,14 @@ async function callWithFallback(
 
   const errors: string[] = [];
 
-  for (const provider of order) {
+  // Filter out providers currently on cooldown before attempting
+  const availableOrder = getAvailableProviders(order);
+  if (availableOrder.length < order.length) {
+    const cooledDown = order.filter(p => !availableOrder.includes(p));
+    console.log(`[AI] Skipping ${cooledDown.join(", ")} (on cooldown) — using: ${availableOrder.join(", ")}`);
+  }
+
+  for (const provider of availableOrder) {
     const key = getEffectiveKey(provider, undefined, schoolId);
     if (!key) {
       errors.push(`${provider}: no key configured`);
@@ -145,14 +193,14 @@ async function callWithFallback(
       errors.push(`${provider}: empty response`);
     } catch (err: any) {
       const msg = err?.message || String(err);
-      // Rate limit (429) or quota exceeded — skip to next provider immediately
+      // Rate limit (429) or quota exceeded — put provider on cooldown and skip
       const isRateLimit = msg.includes("429") || msg.toLowerCase().includes("rate limit") || msg.toLowerCase().includes("quota") || msg.toLowerCase().includes("too many requests");
       if (isRateLimit) {
-        console.warn(`[AI] ${provider} rate-limited — trying next provider`);
-        errors.push(`${provider}: rate limited (429) — skipped`);
+        setCooldown(provider); // marks provider as unavailable for COOLDOWN_MS
+        errors.push(`${provider}: rate limited (429) — on cooldown for 60s`);
         continue;
       }
-      // Auth error (401/403) — skip silently
+      // Auth error (401/403) — skip silently (do NOT put on cooldown — may be a bad key, not a rate limit)
       const isAuthError = msg.includes("401") || msg.includes("403") || msg.toLowerCase().includes("unauthorized") || msg.toLowerCase().includes("invalid api key");
       if (isAuthError) {
         console.warn(`[AI] ${provider} auth error — trying next provider`);
@@ -341,6 +389,32 @@ router.get("/providers", requireAuth, (_req: Request, res: Response) => {
     .filter(p => getEffectiveKey(p))
     .map(p => ({ provider: p, source: "server" }));
   res.json({ providers: available });
+});
+
+// ── Provider cooldown status (admin) ────────────────────────────────────────
+router.get("/provider-status", requireAuth, (_req: Request, res: Response) => {
+  const now = Date.now();
+  const statuses = (PROVIDER_ORDER as readonly string[]).map(p => {
+    const hasKey = !!getEffectiveKey(p);
+    const cooldownExpires = providerCooldowns.get(p);
+    const onCooldown = cooldownExpires ? now < cooldownExpires : false;
+    const cooldownRemainingMs = onCooldown && cooldownExpires ? cooldownExpires - now : 0;
+    return {
+      provider: p,
+      hasKey,
+      available: hasKey && !onCooldown,
+      onCooldown,
+      cooldownRemainingSeconds: Math.ceil(cooldownRemainingMs / 1000),
+    };
+  });
+  res.json({ providers: statuses, cooldownMs: COOLDOWN_MS });
+});
+
+router.post("/clear-cooldowns", requireAuth, requireAdmin, (_req: Request, res: Response) => {
+  const cleared = [...providerCooldowns.keys()];
+  providerCooldowns.clear();
+  console.log(`[AI] Admin cleared all provider cooldowns: ${cleared.join(", ") || "none"}`);
+  res.json({ success: true, cleared });
 });
 
 // ── Admin: manage server-side API keys ────────────────────────────────────────
