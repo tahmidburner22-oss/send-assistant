@@ -424,6 +424,27 @@ export async function downloadHtmlAsPdf(
       padding: 0 !important; border: 0 !important;
       height: 1px !important; width: 1px !important; overflow: hidden !important;
     }
+    /* ── Fraction bar fixes ─────────────────────────────────────────────────
+       KaTeX renders fractions using .frac-line which is a thin <span> with
+       border-top. html2canvas can misplace it if the surrounding text hasn't
+       fully measured. These rules lock it in place. */
+    .katex .frac-line {
+      display: block !important;
+      border-bottom-width: 0 !important;
+      border-top-style: solid !important;
+      border-top-width: 0.04em !important;
+      width: 100% !important;
+      position: relative !important;
+    }
+    .katex .mfrac .frac-line {
+      min-height: 0.04em !important;
+    }
+    .katex .vlist-t { border-collapse: separate !important; }
+    .katex .vlist-t2 { margin-right: -2px !important; }
+    /* Ensure fraction numerator/denominator align correctly */
+    .katex .mfrac > span > span { text-align: center !important; }
+    .katex { font-size: 1em !important; line-height: 1.2 !important; }
+    .katex .katex-html { white-space: nowrap !important; }
   </style>
 </head>
 <body>${contentHtml}</body>
@@ -457,6 +478,23 @@ export async function downloadHtmlAsPdf(
 
     const iframeDoc = iframe.contentDocument!;
     const iframeBody = iframeDoc.body;
+
+    // ── Wait for KaTeX fonts to fully load inside the iframe ─────────────
+    // KaTeX fraction bars rely on CSS-positioned elements that only render
+    // correctly once the KaTeX fonts are loaded. Without this wait,
+    // html2canvas captures before fonts load and fraction lines appear
+    // in the wrong position.
+    try {
+      if (iframeDoc.fonts && iframeDoc.fonts.ready) {
+        await Promise.race([
+          iframeDoc.fonts.ready,
+          new Promise<void>((r) => setTimeout(r, 3000)), // 3s max wait
+        ]);
+      }
+    } catch (_) {}
+
+    // Extra frame after font load to let the browser re-paint fraction elements
+    await new Promise<void>((r) => requestAnimationFrame(() => setTimeout(r, 200)));
 
     // Expand iframe to full content height so nothing is clipped
     const fullH = iframeBody.scrollHeight;

@@ -169,18 +169,25 @@ Make the worksheet fully self-contained and printable.`.trim(),
         .map(s => `=== ${s.title} ===\n${s.content}`)
         .join("\n\n");
 
-      // Assign via AppContext — pass full sections so WorksheetRenderer can
-      // display the worksheet with proper purple cards and layout, matching
-      // the main worksheet generator output exactly.
+      // Assign via AppContext — student view only: strip teacher-only sections,
+      // mark schemes and answers so pupils never see them.
+      const studentSections = result.sections.filter(s =>
+        !s.teacherOnly &&
+        s.type !== "mark-scheme" &&
+        s.type !== "answers" &&
+        s.type !== "teacher-notes" &&
+        s.type !== "adaptations"
+      );
+
       assignWork(child.id, {
         title: result.title,
         type: "worksheet",
         content,
-        sections: result.sections.map(s => ({
+        sections: studentSections.map(s => ({
           title: s.title,
           type: s.type || "content",
           content: s.content,
-          teacherOnly: s.teacherOnly || false,
+          teacherOnly: false,
           svg: (s as any).svg,
           caption: (s as any).caption,
         })),
@@ -193,17 +200,17 @@ Make the worksheet fully self-contained and printable.`.trim(),
         },
       });
 
-      // Build the assignment object for the callback
+      // Build the assignment object for the callback — student view only
       const newAssignment: Assignment = {
         id: `sched_${Date.now()}_${child.id}`,
         title: result.title,
         type: "worksheet",
         content,
-        sections: result.sections.map(s => ({
+        sections: studentSections.map(s => ({
           title: s.title,
           type: s.type || "content",
           content: s.content,
-          teacherOnly: s.teacherOnly || false,
+          teacherOnly: false,
         })),
         assignedAt: new Date().toISOString(),
         status: "not-started",
