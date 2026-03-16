@@ -730,7 +730,10 @@ export async function aiGenerateWorksheet(params: {
     : "";
 
   // ── Topic enforcement note ─────────────────────────────────────────────────
-  const topicEnforcementNote = `Every question, example, and vocabulary term must be about "${params.topic}" only.`;
+  const topicEnforcementNote = `Every question, example, vocabulary term, and any diagram must be about "${params.topic}" only.`;
+  const dataCompletenessNote = `Every question must be fully usable as written. Do not use placeholders, ellipses, missing values, unfinished lists, or references to unseen data. If a statistics question uses a table, survey, graph, grouped frequency table, histogram, cumulative frequency graph, box plot, or chart, include the complete numeric data needed to answer it directly in the worksheet text.`;
+  const diagramRelevanceNote = `Only include or request a diagram if it is essential to teaching "${params.topic}". The diagram must match the exact worksheet topic and the questions that refer to it. If no exact topic-matching diagram is needed, omit the diagram entirely.`;
+  const vocabularyCapNote = `Key Vocabulary must contain at most 5 items.`;
 
   const recallNote = params.recallTopic ? `RECALL SECTION REQUIRED: The first section of this worksheet must be titled "Recall — ${params.recallTopic}" and contain exactly 2-3 short retrieval questions on the PREVIOUS topic "${params.recallTopic}". These questions should be quick and accessible, designed to activate prior knowledge before the main topic. Do NOT mix recall questions with the main topic questions.` : '';
 
@@ -745,12 +748,15 @@ ${tierNote}
 ${examStyleNote}
 ${formulaNote} ${reminderBoxNote} ${wordProblemsNote} ${commonMistakesNote}
 ${topicEnforcementNote}
+${dataCompletenessNote}
+${diagramRelevanceNote}
+${vocabularyCapNote}
 ${recallNote}
 ${params.additionalInstructions ? `\nPriority override:\n${params.additionalInstructions}\n` : ""}
 
 Structure required:
 1. Learning Objectives
-2. Key Vocabulary
+2. Key Vocabulary (maximum 5 items)
 3. Worked Example
 4. Reminder Box
 5. ${sendSectionTitles.sectionA}

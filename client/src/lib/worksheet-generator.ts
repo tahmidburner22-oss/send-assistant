@@ -1509,7 +1509,7 @@ export function generateWorksheet(params: WorksheetParams): GeneratedWorksheet {
   sections.push({
     title: "Key Vocabulary",
     type: "vocabulary",
-    content: topicData.vocabulary.join(" | "),
+    content: topicData.vocabulary.slice(0, 5).join(" | "),
   });
 
   // ── Modelled Example ──────────────────────────────────────────────────────
