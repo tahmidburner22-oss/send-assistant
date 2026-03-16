@@ -386,28 +386,15 @@ export async function downloadHtmlAsPdf(
   const printableH_MM = A4_H_MM - MARGIN_MM * 2;
   const RENDER_PX = 794;
 
-  // ── 1. Clone into a wrapper div appended to body ──────────────────────────
-  // We use a wrapper with overflow:hidden + position:absolute so the clone
-  // is technically in the document layout (html2canvas can read it) but
-  // visually off-screen. position:fixed at -9999px can fail on mobile Chrome.
-  const wrapper = document.createElement("div");
-  wrapper.style.cssText = [
-    "position:absolute",
-    "top:0",
-    "left:-9999px",
-    `width:${RENDER_PX}px`,
-    "overflow:hidden",
-    "pointer-events:none",
-    "z-index:-1",
-  ].join(";");
-
+  // Clone the element and strip teacher sections if needed
   const clone = element.cloneNode(true) as HTMLElement;
-
   if (viewMode === "student") {
     clone.querySelectorAll(".ws-teacher-section").forEach((el) => el.remove());
   }
 
-  // Reset any inline positioning from the live element so clone lays out naturally
+  // Force fixed width and natural flow — no absolute/fixed positioning.
+  // We inject into a full-screen overlay so getBoundingClientRect() works
+  // correctly on all browsers including mobile Chrome.
   clone.style.cssText = [
     `width:${RENDER_PX}px`,
     `min-width:${RENDER_PX}px`,
@@ -416,32 +403,50 @@ export async function downloadHtmlAsPdf(
     "box-sizing:border-box",
     "padding:4px",
     "margin:0",
-    "position:relative",
+    "position:static",
   ].join(";");
 
-  wrapper.appendChild(clone);
-  document.body.appendChild(wrapper);
+  // Full-screen overlay: covers the viewport so the element is "on screen"
+  // and getBoundingClientRect returns real pixel values on mobile too.
+  const overlay = document.createElement("div");
+  overlay.style.cssText = [
+    "position:fixed",
+    "top:0",
+    "left:0",
+    "width:100vw",
+    "height:100vh",
+    "overflow:auto",
+    "z-index:99999",
+    `background:${overlayColor}`,
+    "opacity:0",           // invisible but rendered
+    "pointer-events:none",
+  ].join(";");
 
-  // Let the browser fully lay out the clone
-  await new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(r, 200))));
+  overlay.appendChild(clone);
+  document.body.appendChild(overlay);
+
+  // Two rAFs + timeout to guarantee full layout pass
+  await new Promise<void>((r) =>
+    requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(r, 250)))
+  );
 
   try {
     const html2canvas = (await import("html2canvas")).default;
     const { jsPDF } = await import("jspdf");
 
-    // ── 2. Measure section blocks ─────────────────────────────────────────────
-    const wrapperRect = wrapper.getBoundingClientRect();
+    // Measure section blocks now that they are on-screen
+    const cloneRect = clone.getBoundingClientRect();
     const blocks: Array<{ top: number; bottom: number }> = Array.from(
       clone.querySelectorAll<HTMLElement>(".ws-header, .ws-section")
     ).map((el) => {
       const r = el.getBoundingClientRect();
       return {
-        top: r.top - wrapperRect.top,
-        bottom: r.bottom - wrapperRect.top,
+        top: r.top - cloneRect.top,
+        bottom: r.bottom - cloneRect.top,
       };
     });
 
-    // ── 3. Capture at 2× scale ────────────────────────────────────────────────
+    // Capture at 2× scale
     const canvas = await html2canvas(clone, {
       scale: 2,
       useCORS: true,
@@ -450,10 +455,8 @@ export async function downloadHtmlAsPdf(
       logging: false,
       windowWidth: RENDER_PX,
       width: RENDER_PX,
-      scrollX: -window.scrollX,
-      scrollY: -window.scrollY,
-      x: 0,
-      y: 0,
+      scrollX: 0,
+      scrollY: 0,
     });
 
     const canvasW = canvas.width;
@@ -468,11 +471,10 @@ export async function downloadHtmlAsPdf(
     const mmPerPx = printableW_MM / canvasW;
     const pageH_Px = printableH_MM / mmPerPx;
 
-    // ── 4. Section-aware page breaks ──────────────────────────────────────────
+    // Section-aware page break — never slice through a block
     function findBreak(curY: number): number {
       const ideal = curY + pageH_Px;
       if (ideal >= canvasH) return canvasH;
-
       let breakAt = ideal;
       let changed = true;
       while (changed) {
@@ -481,12 +483,9 @@ export async function downloadHtmlAsPdf(
           if (blk.top >= canvasH) continue;
           if (breakAt > blk.top && breakAt < blk.bottom) {
             const blockH = blk.bottom - blk.top;
-            if (blockH >= pageH_Px * 0.98) continue;
+            if (blockH >= pageH_Px * 0.98) continue; // full-page block, must cut
             const candidate = blk.top - 4 * DPR;
-            if (candidate > curY) {
-              breakAt = candidate;
-              changed = true;
-            }
+            if (candidate > curY) { breakAt = candidate; changed = true; }
           }
         }
       }
@@ -494,7 +493,6 @@ export async function downloadHtmlAsPdf(
       return Math.min(breakAt, canvasH);
     }
 
-    // ── 5. Build PDF ──────────────────────────────────────────────────────────
     const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
     let curY = 0;
     let pageNum = 0;
@@ -527,6 +525,6 @@ export async function downloadHtmlAsPdf(
 
     pdf.save(filename.endsWith(".pdf") ? filename : `${filename}.pdf`);
   } finally {
-    document.body.removeChild(wrapper);
+    document.body.removeChild(overlay);
   }
 }
