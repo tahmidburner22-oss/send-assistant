@@ -1997,65 +1997,39 @@ Respond with a JSON object in this exact format:
   const user = (req as any).user;
   const schoolId = user?.schoolId;
 
-  for (const provider of PROVIDER_ORDER) {
-    const key = getEffectiveKey(provider, undefined, schoolId);
-    if (!key) continue;
-    try {
-      let content = "";
-      if (provider === "gemini") {
-        const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature: 0.7, maxOutputTokens: 600 } }),
-        });
-        const data = await resp.json() as any;
-        content = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
-      } else if (provider === "openai") {
-        const resp = await fetch("https://api.openai.com/v1/chat/completions", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
-          body: JSON.stringify({ model: getAdminModel("openai", schoolId) || "gpt-4o-mini", messages: [{ role: "user", content: prompt }], max_tokens: 600, temperature: 0.7 }),
-        });
-        const data = await resp.json() as any;
-        content = data?.choices?.[0]?.message?.content || "";
-      } else if (provider === "groq") {
-        const resp = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
-          body: JSON.stringify({ model: getAdminModel("groq", schoolId) || "llama3-8b-8192", messages: [{ role: "user", content: prompt }], max_tokens: 600, temperature: 0.7 }),
-        });
-        const data = await resp.json() as any;
-        content = data?.choices?.[0]?.message?.content || "";
-      } else if (provider === "claude") {
-        const resp = await fetch("https://api.anthropic.com/v1/messages", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01" },
-          body: JSON.stringify({ model: getAdminModel("claude", schoolId) || "claude-3-haiku-20240307", max_tokens: 600, messages: [{ role: "user", content: prompt }] }),
-        });
-        const data = await resp.json() as any;
-        content = data?.content?.[0]?.text || "";
-      } else if (provider === "openrouter") {
-        const resp = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
-          body: JSON.stringify({ model: getAdminModel("openrouter", schoolId) || "mistralai/mistral-7b-instruct", messages: [{ role: "user", content: prompt }], max_tokens: 600 }),
-        });
-        const data = await resp.json() as any;
-        content = data?.choices?.[0]?.message?.content || "";
-      }
-      if (!content) continue;
-      const stripped = content.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/, "").trim();
-      const jsonMatch = stripped.match(/\{[\s\S]*\}/);
-      const parsed = JSON.parse(jsonMatch ? jsonMatch[0] : stripped);
-      if (Array.isArray(parsed.questions) && parsed.questions.length > 0) {
-        const resolvedTopic = parsed.topic || topicLabel;
-        return res.json({ questions: parsed.questions.slice(0, 5), topic: resolvedTopic, provider });
-      }
-    } catch (err: any) {
-      console.error(`[diagnostic-starter] ${provider} error:`, err.message);
+  try {
+    const result = await callWithFallback(
+      "You are an expert teacher. Respond only with valid JSON — no markdown, no explanation.",
+      prompt,
+      700,
+      undefined,
+      schoolId || undefined
+    );
+
+    const stripped = result.content
+      .replace(/^```(?:json)?\s*/i, "")
+      .replace(/\s*```\s*$/, "")
+      .trim();
+    const jsonMatch = stripped.match(/\{[\s\S]*\}/);
+    const parsed = JSON.parse(jsonMatch ? jsonMatch[0] : stripped);
+
+    if (!Array.isArray(parsed.questions) || parsed.questions.length === 0) {
+      throw new Error("No questions returned from AI");
     }
+
+    const questions = parsed.questions
+      .slice(0, 5)
+      .map((q: any) => (typeof q === "string" ? q : q.q || q.question || String(q)));
+
+    return res.json({
+      questions,
+      topic: parsed.topic || topicLabel,
+      provider: result.provider,
+    });
+  } catch (err: any) {
+    console.error("[diagnostic-starter] failed:", err.message);
+    res.status(500).json({ error: "Could not generate diagnostic questions. Please ensure an AI provider is configured in Settings." });
   }
-  res.status(500).json({ error: "All AI providers failed to generate diagnostic questions" });
 });
 
 export default router;

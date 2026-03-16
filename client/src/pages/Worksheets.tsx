@@ -295,6 +295,7 @@ export default function Worksheets() {
   const historyContentRef = useRef<HTMLDivElement>(null);
   const historyPrintRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const diagnosticRef = useRef<HTMLDivElement>(null);
 
   // tRPC mutations
   
@@ -574,7 +575,7 @@ export default function Worksheets() {
     try {
       const storedToken = typeof localStorage !== "undefined" ? localStorage.getItem("send_token") : null;
       const diagnosticHeaders: Record<string, string> = { "Content-Type": "application/json" };
-      if (storedToken) diagnosticHeaders["Authorization"] = `Bearer `;
+      if (storedToken) diagnosticHeaders["Authorization"] = `Bearer ${storedToken}`;
       const response = await fetch("/api/ai/diagnostic-starter", {
         method: "POST",
         headers: diagnosticHeaders,
@@ -802,16 +803,8 @@ export default function Worksheets() {
       });
       toast.success(`PDF downloaded!`);
     } catch (err) {
-      // Fallback to jsPDF
-      const editedWorksheet = {
-        ...generated,
-        sections: generated.sections.map((s, i) => ({
-          ...s,
-          content: editedSections[i] !== undefined ? editedSections[i] : s.content,
-        })),
-      } as GeneratedWorksheet;
-      downloadWorksheetPdf(editedWorksheet, { viewMode, overlayId: colorOverlay, fontSize: Math.round(textSize * 0.85) });
-      toast.success(`PDF downloaded!`);
+      console.error("PDF download error:", err);
+      toast.error("Could not generate PDF. Please try again.");
     }
   };
 
@@ -2918,65 +2911,53 @@ export default function Worksheets() {
 
       {/* ─── Diagnostic Starter Dialog ─────────────────────────────────────────── */}
       <Dialog open={showDiagnosticDialog} onOpenChange={setShowDiagnosticDialog}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <ClipboardCheck className="w-5 h-5 text-brand" />
-              Diagnostic Starter: {diagnosticResult?.topic}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Use these 5 quick questions to check prior understanding before the lesson. If a student struggles with 3 or more, consider using the Foundation/SEND tier worksheet.
-            </p>
-            {diagnosticResult?.questions && (
-              <ol className="space-y-3">
-                {diagnosticResult.questions.map((q, i) => (
-                  <li key={i} className="flex gap-3 p-3 rounded-lg border border-border/50 bg-card">
-                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-brand text-white text-xs font-bold flex items-center justify-center">{i + 1}</span>
-                    <span className="text-sm text-foreground">{q}</span>
-                  </li>
-                ))}
-              </ol>
-            )}
-            {/* Suggest easier version if student failed */}
-            <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
-              <div className="flex items-start gap-2">
-                <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
-                <div className="space-y-2">
-                  <p className="text-sm font-medium text-amber-800">Student struggling with these questions?</p>
-                  <p className="text-xs text-amber-700">Generate an easier Foundation/SEND version of the main worksheet to better support their needs.</p>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="border-amber-400 text-amber-700 hover:bg-amber-100"
-                    onClick={() => {
-                      setShowDiagnosticDialog(false);
-                      // Set difficulty to foundation and add SEND support
-                      setDifficulty("foundation");
-                      if (!sendNeed || sendNeed === "none-selected") setSendNeed("general");
-                      toast.info("Difficulty set to Foundation. Click Generate Worksheet to create the easier version.");
-                    }}
-                  >
-                    <Sparkles className="w-3.5 h-3.5 mr-1" /> Set Up Easier Version
-                  </Button>
-                </div>
-              </div>
+        <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col gap-0 p-0 overflow-hidden">
+          {/* Slim toolbar */}
+          <div className="flex items-center justify-between px-4 py-2.5 border-b border-border/50 shrink-0">
+            <div className="flex items-center gap-2">
+              <ClipboardCheck className="w-4 h-4 text-brand" />
+              <span className="font-semibold text-sm">Diagnostic Starter</span>
             </div>
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setShowDiagnosticDialog(false)}>Close</Button>
+            <div className="flex items-center gap-1.5">
               <Button
-                className="bg-brand hover:bg-brand/90 text-white gap-1.5"
-                onClick={() => {
-                  // Print the diagnostic questions
-                  const printContent = `<html><head><title>Diagnostic Starter: ${diagnosticResult?.topic}</title><style>body{font-family:Arial,sans-serif;padding:20px;max-width:600px;margin:0 auto;}h1{color:#5b21b6;font-size:18px;margin-bottom:8px;}p{color:#6b7280;font-size:13px;margin-bottom:16px;}ol{padding-left:20px;}li{margin-bottom:12px;font-size:14px;line-height:1.5;padding:8px;border:1px solid #e5e7eb;border-radius:4px;list-style-type:decimal;}</style></head><body><h1>Diagnostic Starter: ${diagnosticResult?.topic}</h1><p>Name: _________________________ Class: _____________ Date: _____________</p><ol>${diagnosticResult?.questions.map(q => `<li>${q}</li>`).join("")}</ol></body></html>`;
-                  const w = window.open("", "_blank");
-                  if (w) { w.document.write(printContent); w.document.close(); w.print(); }
+                size="sm"
+                className="bg-brand hover:bg-brand/90 text-white gap-1.5 h-7 text-xs"
+                onClick={async () => {
+                  if (!diagnosticRef.current || !diagnosticResult) return;
+                  try {
+                    const { downloadHtmlAsPdf } = await import("@/lib/pdf-generator-v2");
+                    const safeName = diagnosticResult.topic.replace(/[^a-zA-Z0-9\s]/g, "").replace(/\s+/g, "_");
+                    await downloadHtmlAsPdf(diagnosticRef.current, `Diagnostic_Starter_${safeName}.pdf`, {
+                      overlayColor: "#ffffff",
+                      viewMode: "student",
+                      textSize,
+                    });
+                    toast.success("PDF downloaded!");
+                  } catch {
+                    toast.error("Could not generate PDF. Please try again.");
+                  }
                 }}
               >
-                <Printer className="w-3.5 h-3.5" /> Print Diagnostic
+                <Download className="w-3 h-3" /> Download PDF
+              </Button>
+              <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => setShowDiagnosticDialog(false)}>
+                <X className="w-4 h-4" />
               </Button>
             </div>
+          </div>
+
+          {/* Full-width sheet — no padding so purple header goes edge to edge */}
+          <div className="overflow-y-auto flex-1 bg-gray-100">
+            {diagnosticResult?.questions && (
+              <DiagnosticStarterSheet
+                ref={diagnosticRef}
+                topic={diagnosticResult.topic}
+                questions={diagnosticResult.questions}
+                sendNeedId={sendNeed && sendNeed !== "none-selected" ? sendNeed : undefined}
+                textSize={textSize}
+                overlayColor="#ffffff"
+              />
+            )}
           </div>
         </DialogContent>
       </Dialog>
