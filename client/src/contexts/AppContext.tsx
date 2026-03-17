@@ -57,7 +57,7 @@ export interface Assignment {
   feedback?: string; mark?: string; progress?: number; teacherComment?: string;
   // Full sections array for proper WorksheetRenderer display in Parent Portal
   sections?: Array<{ title: string; type: string; content: string; teacherOnly?: boolean; svg?: string; caption?: string }>;
-  metadata?: { subject?: string; topic?: string; yearGroup?: string; difficulty?: string; examBoard?: string; sendNeed?: string; };
+  metadata?: { subject?: string; topic?: string; yearGroup?: string; difficulty?: string; examBoard?: string; };
   subtitle?: string;
 }
 
@@ -120,7 +120,7 @@ interface AppState {
 }
 
 interface AppContextType extends AppState {
-  login: (email: string, password: string) => Promise<{ mfaRequired?: boolean; error?: string }>;
+  login: (email: string, password: string) => Promise<{ mfaRequired?: boolean; emailNotVerified?: boolean; error?: string }>;
   loginWithGoogle: (googleData: { googleId: string; email: string; displayName: string }) => Promise<void>;
   logout: () => Promise<void>;
   registerTeacher: (email: string, password: string, displayName: string, schoolId?: string) => Promise<{ error?: string }>;
@@ -209,6 +209,9 @@ export function AppProvider({ children: childrenProp }: { children: React.ReactN
         setState(s => ({ ...s, mfaRequired: true, pendingToken: result.token }));
         return { mfaRequired: true };
       }
+      if (result.emailNotVerified) {
+        return { emailNotVerified: true };
+      }
       setToken(result.token);
       const { user, school } = await authApi.me();
       setState(s => ({ ...s, user, school, isLoggedIn: true, mfaRequired: false, pendingToken: null }));
@@ -272,14 +275,7 @@ export function AppProvider({ children: childrenProp }: { children: React.ReactN
   }, []);
 
   const assignWork = useCallback(async (childId: string, assignment: Omit<Assignment, "id" | "assignedAt" | "status">) => {
-    const result = await pupilsApi.createAssignment(childId, {
-      title: assignment.title,
-      type: assignment.type,
-      content: assignment.content,
-      sections: assignment.sections,
-      metadata: assignment.metadata,
-      subtitle: assignment.subtitle,
-    });
+    const result = await pupilsApi.createAssignment(childId, { title: assignment.title, type: assignment.type, content: assignment.content });
     const a: Assignment = { ...assignment, id: result.id, assignedAt: new Date().toISOString(), status: "not-started" };
     setState(s => ({ ...s, children: s.children.map(c => c.id === childId ? { ...c, assignments: [...c.assignments, a] } : c) }));
   }, []);
@@ -402,15 +398,7 @@ function mapIdea(i: any): Idea {
   return { id: i.id, title: i.title, description: i.description, votes: i.votes, createdAt: i.created_at, author: i.author_name || "Unknown" };
 }
 function mapAssignment(a: any): Assignment {
-  let sections: Assignment['sections'] | undefined;
-  if (a.sections) {
-    try { sections = typeof a.sections === 'string' ? JSON.parse(a.sections) : a.sections; } catch { sections = undefined; }
-  }
-  let metadata: Assignment['metadata'] | undefined;
-  if (a.metadata) {
-    try { metadata = typeof a.metadata === 'string' ? JSON.parse(a.metadata) : a.metadata; } catch { metadata = undefined; }
-  }
-  return { id: a.id, title: a.title, subtitle: a.subtitle || undefined, type: a.type, content: a.content || "", assignedAt: a.assigned_at, status: a.status || "not-started", feedback: a.feedback, mark: a.mark, progress: a.progress, teacherComment: a.teacher_comment, sections, metadata };
+  return { id: a.id, title: a.title, type: a.type, content: a.content || "", assignedAt: a.assigned_at, status: a.status || "not-started", feedback: a.feedback, mark: a.mark, progress: a.progress, teacherComment: a.teacher_comment };
 }
 function mapAttendanceRecord(r: any): AttendanceRecord {
   return { id: r.id, childId: r.pupil_id, date: r.date, amStatus: r.am_status, amReason: r.am_reason, pmStatus: r.pm_status, pmReason: r.pm_reason, notes: r.notes, recordedAt: r.recorded_at, recordedBy: r.recorded_by || "", misSource: r.mis_source || undefined };
