@@ -48,6 +48,7 @@ export interface UserPreferences {
   iconBorderStyle: "none" | "subtle" | "bold";   // ring around quick-access icons
   iconShape: "rounded" | "circle" | "square";    // shape of icon containers
   cardStyle: "default" | "flat" | "elevated";    // card shadow/border style
+  cardBorderStyle: "none" | "subtle" | "bold";   // visible border around dashboard cards
   layoutDensity: "comfortable" | "compact";      // spacing between sections
   // ── Dashboard section visibility ────────────────────────────────────────────
   showContinueSection: boolean;    // "Continue where you left off"
@@ -126,6 +127,7 @@ const DEFAULT_PREFERENCES: UserPreferences = {
   iconBorderStyle: "none",
   iconShape: "rounded",
   cardStyle: "default",
+  cardBorderStyle: "none",
   layoutDensity: "comfortable",
   // Section visibility defaults (all on)
   showContinueSection: true,
@@ -151,7 +153,7 @@ interface UserPreferencesContextType {
   togglePinnedTool: (path: string) => void;
   setShowWorksheetLibrary: (show: boolean) => void;
   setDashboardAppearance: (updates: Partial<Pick<UserPreferences,
-    "iconBorderStyle" | "iconShape" | "cardStyle" | "layoutDensity" |
+    "iconBorderStyle" | "iconShape" | "cardStyle" | "cardBorderStyle" | "layoutDensity" |
     "showContinueSection" | "showRecentActivity" | "showSubjectBrowser" | "showCobsTip"
   >>) => void;
   resetPreferences: () => void;
