@@ -4,7 +4,7 @@
  *
  * @copyright 2026 Adaptly Ltd. All rights reserved.
  */
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -194,16 +194,45 @@ function Field({
   );
 }
 
+// ── localStorage persistence key ─────────────────────────────────────────────
+const RA_STORAGE_KEY = "adaptly_risk_assessment_v1";
+const RA_STEP_KEY = "adaptly_risk_assessment_step_v1";
+
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function RiskAssessment() {
   const { school } = useApp();
-  const [step, setStep] = useState(1);
-  const [data, setData] = useState<RiskAssessmentData>({
-    ...DEFAULT_DATA,
-    schoolName: school?.name || "",
+
+  // Initialise from localStorage if available, otherwise use defaults
+  const [step, setStep] = useState<number>(() => {
+    try {
+      const saved = localStorage.getItem(RA_STEP_KEY);
+      if (saved) return Math.max(1, Math.min(9, parseInt(saved, 10)));
+    } catch (_) {}
+    return 1;
   });
+
+  const [data, setData] = useState<RiskAssessmentData>(() => {
+    try {
+      const saved = localStorage.getItem(RA_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved) as RiskAssessmentData;
+        return { ...DEFAULT_DATA, ...parsed };
+      }
+    } catch (_) {}
+    return { ...DEFAULT_DATA, schoolName: school?.name || "" };
+  });
+
   const [showPreview, setShowPreview] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
+
+  // Persist data and step to localStorage whenever they change
+  useEffect(() => {
+    try { localStorage.setItem(RA_STORAGE_KEY, JSON.stringify(data)); } catch (_) {}
+  }, [data]);
+
+  useEffect(() => {
+    try { localStorage.setItem(RA_STEP_KEY, String(step)); } catch (_) {}
+  }, [step]);
 
   const update = (field: keyof RiskAssessmentData, value: string) => {
     setData(prev => ({ ...prev, [field]: value }));
@@ -283,10 +312,10 @@ export default function RiskAssessment() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Field label="Venue Name" required hint="Name of the destination">
-                <Input value={data.venueName} onChange={e => update("venueName", e.target.value)} placeholder="e.g. Lantern House (COBS campus)" />
+                <Input value={data.venueName} onChange={e => update("venueName", e.target.value)} placeholder="e.g. The Learning Centre (Alternative Campus)" />
               </Field>
               <Field label="Venue Address" hint="Full address of the venue">
-                <Input value={data.venueAddress} onChange={e => update("venueAddress", e.target.value)} placeholder="e.g. 14 Court Road, Sparkhill, Birmingham, B11 4LX" />
+                <Input value={data.venueAddress} onChange={e => update("venueAddress", e.target.value)} placeholder="e.g. 1 High Street, Town, City, AB1 2CD" />
               </Field>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -347,22 +376,22 @@ export default function RiskAssessment() {
             </Field>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Field label="Trip Lead Name" required>
-                <Input value={data.tripLead} onChange={e => update("tripLead", e.target.value)} placeholder="e.g. Mohammed Hussain" />
+                <Input value={data.tripLead} onChange={e => update("tripLead", e.target.value)} placeholder="e.g. J. Smith" />
               </Field>
               <Field label="Trip Lead Phone Number" required>
-                <Input value={data.tripLeadPhone} onChange={e => update("tripLeadPhone", e.target.value)} placeholder="e.g. 07367433467" />
+                <Input value={data.tripLeadPhone} onChange={e => update("tripLeadPhone", e.target.value)} placeholder="e.g. 07700 900000" />
               </Field>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Field label="Minibus Driver" hint="Name of the staff member driving">
-                <Input value={data.minibusDriver} onChange={e => update("minibusDriver", e.target.value)} placeholder="e.g. Farzana Zaffar" />
+                <Input value={data.minibusDriver} onChange={e => update("minibusDriver", e.target.value)} placeholder="e.g. A. Jones" />
               </Field>
               <Field label="First Aider" hint="Name of the qualified first aider on the trip">
-                <Input value={data.firstAider} onChange={e => update("firstAider", e.target.value)} placeholder="e.g. Farzana Zaffar" />
+                <Input value={data.firstAider} onChange={e => update("firstAider", e.target.value)} placeholder="e.g. B. Taylor" />
               </Field>
             </div>
             <Field label="Additional Staff Members" hint="List any other staff attending (one per line)">
-              <Textarea value={data.additionalStaff} onChange={e => update("additionalStaff", e.target.value)} rows={3} placeholder="e.g. Sarah Jones&#10;David Smith" />
+              <Textarea value={data.additionalStaff} onChange={e => update("additionalStaff", e.target.value)} rows={3} placeholder="e.g. C. Brown&#10;D. Wilson" />
             </Field>
             <Field label="Staff Training & Responsibilities" hint="What training do staff have? What are their responsibilities?">
               <Textarea value={data.staffTraining} onChange={e => update("staffTraining", e.target.value)} rows={4} />
@@ -377,7 +406,7 @@ export default function RiskAssessment() {
               <Textarea value={data.equipmentList} onChange={e => update("equipmentList", e.target.value)} rows={6} placeholder="e.g. Medical folder (if required)&#10;First aid kit&#10;Pupil list&#10;Emergency contact numbers&#10;Charged mobile phones" />
             </Field>
             <Field label="Equipment Manager" hint="Who is responsible for keeping the equipment safe?">
-              <Input value={data.equipmentManager} onChange={e => update("equipmentManager", e.target.value)} placeholder="e.g. Mohammed Hussain will keep the equipment safe." />
+              <Input value={data.equipmentManager} onChange={e => update("equipmentManager", e.target.value)} placeholder="e.g. Trip lead will keep the equipment safe." />
             </Field>
             <Field label="Additional Equipment Notes & Control Measures" hint="Any additional notes about equipment safety, searching pupils, etc.">
               <Textarea value={data.additionalEquipment} onChange={e => update("additionalEquipment", e.target.value)} rows={5} />
@@ -431,7 +460,7 @@ export default function RiskAssessment() {
           <div className="space-y-5">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Field label="Nearest Hospital Name & Address" required>
-                <Textarea value={data.nearestHospital} onChange={e => update("nearestHospital", e.target.value)} rows={3} placeholder="e.g. Birmingham City Hospital, Dudley Road, Birmingham B18 7QH" />
+                <Textarea value={data.nearestHospital} onChange={e => update("nearestHospital", e.target.value)} rows={3} placeholder="e.g. City General Hospital, Hospital Road, City, AB3 4EF" />
               </Field>
               <Field label="Distance to Hospital" hint="Approximate distance">
                 <Input value={data.hospitalDistance} onChange={e => update("hospitalDistance", e.target.value)} placeholder="e.g. 1.4 miles" />
@@ -442,10 +471,10 @@ export default function RiskAssessment() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Field label="Campus Mobile Number" required hint="Mobile number for the campus/trip lead">
-                <Input value={data.campusMobile} onChange={e => update("campusMobile", e.target.value)} placeholder="e.g. 07497 360188" />
+                <Input value={data.campusMobile} onChange={e => update("campusMobile", e.target.value)} placeholder="e.g. 07700 900123" />
               </Field>
               <Field label="Campus Landline Number" hint="Main school/campus phone number">
-                <Input value={data.campusPhone} onChange={e => update("campusPhone", e.target.value)} placeholder="e.g. 0121 464 3510" />
+                <Input value={data.campusPhone} onChange={e => update("campusPhone", e.target.value)} placeholder="e.g. 0121 000 0000" />
               </Field>
             </div>
             <Field label="a) Accident / Incident Procedure" hint="Step-by-step procedure for accidents (one step per line)">
@@ -458,7 +487,7 @@ export default function RiskAssessment() {
               <Textarea value={data.breakdownProcedure} onChange={e => update("breakdownProcedure", e.target.value)} rows={5} />
             </Field>
             <Field label="Garage / Recovery Contact" hint="Name and phone number of the garage or recovery service">
-              <Input value={data.garageContact} onChange={e => update("garageContact", e.target.value)} placeholder="e.g. Montigue Street Garage — 0121 303 3311" />
+              <Input value={data.garageContact} onChange={e => update("garageContact", e.target.value)} placeholder="e.g. Local Garage Name — 01234 567890" />
             </Field>
           </div>
         );
