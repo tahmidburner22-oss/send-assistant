@@ -46,6 +46,10 @@ export function renderMath(text: string | any): string {
   }
   if (!text) return "";
 
+  // Convert literal \n escape sequences (from JSON serialisation) to real newlines
+  // This fixes the "random backslash at end of sentences" rendering bug
+  text = text.replace(/\\n/g, '\n').replace(/\\t/g, '\t');
+
   const decodeHtmlEntities = (value: string) => value
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
@@ -1030,6 +1034,11 @@ function formatContent(content: string | any, fmt: ReturnType<typeof getSendForm
     }
   }
   if (!content) return null;
+
+  // Convert literal \n escape sequences (from JSON serialisation) to real newlines
+  // This fixes the "random backslash at end of sentences" rendering bug
+  content = content.replace(/\\n/g, '\n').replace(/\\t/g, '\t');
+
   const { fontSize: textSize, lineHeight, letterSpacing, wordSpacing, paragraphSpacing, fontFamily } = fmt;
   // Pre-process: split concatenated numbered items onto separate lines.
   // The AI often outputs questions as a single line: "1. Q1 . 2. Q2 . 3. Q3"
@@ -1838,3 +1847,4 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
 
 WorksheetRenderer.displayName = "WorksheetRenderer";
 export default WorksheetRenderer;
+
