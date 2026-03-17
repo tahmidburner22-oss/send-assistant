@@ -137,6 +137,7 @@ Format everything with clear markdown headers and be extremely specific and prac
         maxTokens: 4000,
       })}
       outputTitle={(v) => `Lesson Plan: ${v.subject} — ${v.topic} (${v.yearGroup})`}
+      isLessonPlan={true}
     />
   );
 }
