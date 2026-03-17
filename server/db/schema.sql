@@ -50,6 +50,8 @@ CREATE TABLE IF NOT EXISTS users (
   mfa_secret TEXT,
   google_id TEXT UNIQUE,
   last_login_at TEXT,
+  failed_login_attempts INTEGER NOT NULL DEFAULT 0,
+  locked_until TEXT,
   onboarding_done INTEGER NOT NULL DEFAULT 0,
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
   deactivated_at TEXT,
@@ -279,8 +281,11 @@ CREATE TABLE IF NOT EXISTS assignments (
   pupil_id TEXT NOT NULL REFERENCES pupils(id),
   assigned_by TEXT REFERENCES users(id),
   title TEXT NOT NULL,
-  type TEXT NOT NULL, -- worksheet/story
-  content TEXT,
+  subtitle TEXT,                          -- worksheet subtitle line
+  type TEXT NOT NULL, -- worksheet/story/send-screener/send-screener-progress
+  content TEXT,                           -- plain-text fallback
+  sections TEXT,                          -- JSON array of WorksheetSection objects
+  metadata TEXT,                          -- JSON object: subject, topic, yearGroup, sendNeed, difficulty
   status TEXT NOT NULL DEFAULT 'not-started',
   feedback TEXT,
   mark TEXT,
@@ -288,6 +293,7 @@ CREATE TABLE IF NOT EXISTS assignments (
   teacher_comment TEXT,
   assigned_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
+CREATE INDEX IF NOT EXISTS idx_assignments_pupil ON assignments(pupil_id);
 
 -- Cookie consent
 CREATE TABLE IF NOT EXISTS cookie_consents (
@@ -340,6 +346,8 @@ CREATE INDEX IF NOT EXISTS idx_audit_school ON audit_logs(school_id);
 CREATE INDEX IF NOT EXISTS idx_sessions_token ON sessions(token);
 CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id);
 CREATE INDEX IF NOT EXISTS idx_attendance_pupil_date ON attendance_records(pupil_id, date);
+CREATE INDEX IF NOT EXISTS idx_password_resets_token ON password_resets(token);
+CREATE INDEX IF NOT EXISTS idx_password_resets_user ON password_resets(user_id);
 
 -- Per-school AI API keys (set by school admin, used by all users in that school)
 -- Keys are stored encrypted using AES-256-GCM with a server-side secret
@@ -410,3 +418,14 @@ CREATE TABLE IF NOT EXISTS custom_quizzes (
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 CREATE INDEX IF NOT EXISTS idx_custom_quizzes_school ON custom_quizzes(school_id);
+
+-- ── Migration: add failed login tracking columns if upgrading from older schema ──
+-- These are safe to run on existing databases
+ALTER TABLE users ADD COLUMN IF NOT EXISTS failed_login_attempts INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS locked_until TEXT;
+
+-- ── Additional performance indexes ──────────────────────────────────────────────
+CREATE INDEX IF NOT EXISTS idx_sessions_expires ON sessions(expires_at);
+CREATE INDEX IF NOT EXISTS idx_password_resets_token ON password_resets(token);
+CREATE INDEX IF NOT EXISTS idx_password_resets_user ON password_resets(user_id);
+CREATE INDEX IF NOT EXISTS idx_users_locked ON users(locked_until) WHERE locked_until IS NOT NULL;
