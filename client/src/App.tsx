@@ -76,6 +76,7 @@ const Onboarding = lazy(() => import("./pages/Onboarding"));
 const SendScreener = lazy(() => import("./pages/SendScreener"));
 const QuizGame = lazy(() => import("./pages/QuizGame"));
 const QuizJoin = lazy(() => import("./pages/QuizJoin"));
+const SharedWorksheet = lazy(() => import("./pages/SharedWorksheet"));
 const QuizBuilder = lazy(() => import("./pages/QuizBuilder"));
 const DailyBriefing = lazy(() => import("./pages/DailyBriefing"));
 
@@ -198,6 +199,9 @@ function Router() {
         {/* QuizBlast player join (public) */}
         <Route path="/quiz-join" component={QuizJoin} />
         <Route path="/quiz-join/:code" component={QuizJoin} />
+
+        {/* Public shared worksheet view (no auth required) */}
+        <Route path="/shared/:token" component={SharedWorksheet} />
 
         {/* Legal & Compliance (public) */}
         <Route path="/privacy" component={PrivacyPolicy} />

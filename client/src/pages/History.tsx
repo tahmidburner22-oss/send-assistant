@@ -8,7 +8,7 @@ import { motion } from "framer-motion";
 import { useApp } from "@/contexts/AppContext";
 import { callAI, parseWithFixes } from "@/lib/ai";
 import { subjects, sendNeeds } from "@/lib/send-data";
-import { FileText, BookOpen, Star, Eye, Trash2, Clock, Edit3, Save, X, GraduationCap, CheckCircle, Sparkles, PenLine, Loader2, UserPlus, Layers } from "lucide-react";
+import { FileText, BookOpen, Star, Eye, Trash2, Clock, Edit3, Save, X, GraduationCap, CheckCircle, Sparkles, PenLine, Loader2, UserPlus, Layers, Copy, Share2, Link, Check } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import type { Worksheet, Story, Differentiation } from "@/contexts/AppContext";
@@ -79,7 +79,7 @@ function storyToHtml(text: string): string {
 }
 
 export default function History() {
-  const { worksheetHistory, storyHistory, differentiationHistory, updateWorksheet, children, assignWork, refreshData } = useApp();
+  const { worksheetHistory, storyHistory, differentiationHistory, updateWorksheet, saveWorksheet, children, assignWork, refreshData } = useApp();
 
   // Re-fetch data from server on mount so history is always current
   useEffect(() => { refreshData(); }, []);
@@ -88,6 +88,65 @@ export default function History() {
   const [assignItem, setAssignItem] = useState<{ title: string; type: string; content: string } | null>(null);
   const [assignChildId, setAssignChildId] = useState<string>("");
   const [assigning, setAssigning] = useState(false);
+
+  // ── Share worksheet state ───────────────────────────────────────────────────
+  const [shareToken, setShareToken] = useState<string | null>(null);
+  const [sharingId, setSharingId] = useState<string | null>(null);
+  const [shareCopied, setShareCopied] = useState(false);
+
+  const handleShare = useCallback(async (wsId: string) => {
+    setSharingId(wsId);
+    try {
+      const token = localStorage.getItem("send_token");
+      const res = await fetch(`/api/data/worksheets/${wsId}/share`, {
+        method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        credentials: "include",
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setShareToken(data.token);
+      } else {
+        toast.error("Could not create share link");
+      }
+    } catch { toast.error("Network error"); }
+    setSharingId(null);
+  }, []);
+
+  const copyShareLink = useCallback(() => {
+    if (!shareToken) return;
+    const url = `${window.location.origin}/shared/${shareToken}`;
+    navigator.clipboard.writeText(url).then(() => {
+      setShareCopied(true);
+      setTimeout(() => setShareCopied(false), 2000);
+      toast.success("Share link copied!");
+    });
+  }, [shareToken]);
+
+  // ── Duplicate worksheet ─────────────────────────────────────────────────────
+  const handleDuplicate = useCallback(async (ws: Worksheet) => {
+    try {
+      await saveWorksheet({
+        title: `${ws.title} (Copy)`,
+        subtitle: (ws as any).subtitle,
+        subject: ws.subject,
+        topic: ws.topic,
+        yearGroup: ws.yearGroup,
+        sendNeed: ws.sendNeed,
+        difficulty: ws.difficulty,
+        examBoard: ws.examBoard,
+        content: ws.content,
+        teacherContent: ws.teacherContent,
+        rating: 0,
+        overlay: ws.overlay,
+        sections: ws.sections,
+        metadata: ws.metadata as any,
+        isAI: ws.isAI,
+      });
+      toast.success("Worksheet duplicated!");
+      refreshData();
+    } catch { toast.error("Could not duplicate worksheet"); }
+  }, [saveWorksheet, refreshData]);
 
   const handleAssign = useCallback(async () => {
     if (!assignItem || !assignChildId) return;
@@ -223,6 +282,12 @@ export default function History() {
                     <div className="flex gap-1.5">
                       <Button variant="outline" size="sm" title="Assign to student" onClick={e => { e.stopPropagation(); setAssignItem({ title: ws.title, type: "worksheet", content: ws.content || "" }); }}>
                         <UserPlus className="w-3.5 h-3.5" />
+                      </Button>
+                      <Button variant="outline" size="sm" title="Duplicate" onClick={e => { e.stopPropagation(); handleDuplicate(ws); }}>
+                        <Copy className="w-3.5 h-3.5" />
+                      </Button>
+                      <Button variant="outline" size="sm" title="Share link" onClick={e => { e.stopPropagation(); handleShare(ws.id); }}>
+                        <Share2 className="w-3.5 h-3.5" />
                       </Button>
                       <Button variant="outline" size="sm" onClick={e => { e.stopPropagation(); openWorksheet(ws); }}>
                         <Eye className="w-3.5 h-3.5" />
@@ -658,6 +723,27 @@ export default function History() {
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Share Link dialog ── */}
+      <Dialog open={!!shareToken} onOpenChange={open => { if (!open) { setShareToken(null); setShareCopied(false); } }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><Share2 className="w-4 h-4 text-brand" /> Share Worksheet</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-1">
+            <p className="text-sm text-muted-foreground">Anyone with this link can view the student-facing worksheet (teacher notes are hidden).</p>
+            <div className="flex gap-2">
+              <div className="flex-1 px-3 py-2 bg-muted rounded-lg text-xs font-mono text-muted-foreground truncate">
+                {shareToken ? `${window.location.origin}/shared/${shareToken}` : "Generating…"}
+              </div>
+              <Button size="sm" onClick={copyShareLink} className="bg-brand hover:bg-brand/90 text-white shrink-0">
+                {shareCopied ? <><Check className="w-3.5 h-3.5 mr-1" />Copied!</> : <><Link className="w-3.5 h-3.5 mr-1" />Copy</>}
+              </Button>
+            </div>
+            <p className="text-[10px] text-muted-foreground">Link does not expire. You can revoke it from the History page.</p>
+          </div>
         </DialogContent>
       </Dialog>
 

@@ -365,5 +365,225 @@ router.post("/parent-message", requireAuth, async (req: Request, res: Response) 
   }
 });
 
+// ── Admin Usage Analytics (weekly breakdown) ──────────────────────────────────
+router.get("/admin-analytics", requireAuth, (req: Request, res: Response) => {
+  const schoolId = req.user!.schoolId;
+  if (!schoolId) return res.status(400).json({ error: "No school" });
+
+  // Weekly usage for last 8 weeks
+  const weekly: Record<string, { worksheets: number; stories: number; diffs: number; users: Set<string> }> = {};
+  const getWeekKey = (dateStr: string) => {
+    const d = new Date(dateStr);
+    const monday = new Date(d);
+    monday.setDate(d.getDate() - ((d.getDay() + 6) % 7));
+    return monday.toISOString().substring(0, 10);
+  };
+
+  const ws = db.prepare("SELECT created_by, created_at FROM worksheets WHERE school_id = ? AND created_at > datetime('now', '-56 days')").all(schoolId) as any[];
+  const st = db.prepare("SELECT created_by, created_at FROM stories WHERE school_id = ? AND created_at > datetime('now', '-56 days')").all(schoolId) as any[];
+  const df = db.prepare("SELECT created_by, created_at FROM differentiations WHERE school_id = ? AND created_at > datetime('now', '-56 days')").all(schoolId) as any[];
+
+  [...ws.map(r => ({ ...r, type: "worksheet" })), ...st.map(r => ({ ...r, type: "story" })), ...df.map(r => ({ ...r, type: "diff" }))].forEach(r => {
+    const wk = getWeekKey(r.created_at);
+    if (!weekly[wk]) weekly[wk] = { worksheets: 0, stories: 0, diffs: 0, users: new Set() };
+    if (r.type === "worksheet") weekly[wk].worksheets++;
+    else if (r.type === "story") weekly[wk].stories++;
+    else weekly[wk].diffs++;
+    if (r.created_by) weekly[wk].users.add(r.created_by);
+  });
+
+  const weeklyArray = Object.entries(weekly)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([week, data]) => ({ week, worksheets: data.worksheets, stories: data.stories, diffs: data.diffs, activeUsers: data.users.size }));
+
+  // Tool usage breakdown
+  const toolUsage = [
+    { tool: "Worksheets", count: (db.prepare("SELECT COUNT(*) as c FROM worksheets WHERE school_id=?").get(schoolId) as any).c },
+    { tool: "Stories", count: (db.prepare("SELECT COUNT(*) as c FROM stories WHERE school_id=?").get(schoolId) as any).c },
+    { tool: "Differentiations", count: (db.prepare("SELECT COUNT(*) as c FROM differentiations WHERE school_id=?").get(schoolId) as any).c },
+    { tool: "Assignments", count: (db.prepare("SELECT COUNT(*) as c FROM assignments WHERE pupil_id IN (SELECT id FROM pupils WHERE school_id=?)").get(schoolId) as any).c },
+  ];
+
+  // Most active staff
+  const activeStaff = db.prepare(`
+    SELECT u.display_name, u.role,
+      (SELECT COUNT(*) FROM worksheets WHERE created_by = u.id) as worksheets,
+      (SELECT COUNT(*) FROM stories WHERE created_by = u.id) as stories,
+      u.last_login_at
+    FROM users u WHERE u.school_id = ? AND u.is_active = 1
+    ORDER BY worksheets + stories DESC LIMIT 10
+  `).all(schoolId);
+
+  res.json({ weekly: weeklyArray, toolUsage, activeStaff });
+});
+
+// ── Audit Trail (school admin view) ──────────────────────────────────────────
+router.get("/audit-trail", requireAuth, (req: Request, res: Response) => {
+  const schoolId = req.user!.schoolId;
+  const role = req.user!.role;
+  if (!["school_admin", "mat_admin", "senco"].includes(role)) {
+    return res.status(403).json({ error: "Admin access required" });
+  }
+  const logs = db.prepare(`
+    SELECT al.*, u.display_name as user_name, u.email as user_email
+    FROM audit_logs al
+    LEFT JOIN users u ON al.user_id = u.id
+    WHERE al.school_id = ? ORDER BY al.created_at DESC LIMIT 200
+  `).all(schoolId);
+  res.json({ logs });
+});
+
+// ── Parent messaging (parent → teacher) ──────────────────────────────────────
+router.post("/parent-reply", async (req: Request, res: Response) => {
+  // Public endpoint — authenticated by pupil access code
+  const { accessCode, message, parentName } = req.body;
+  if (!accessCode || !message?.trim()) {
+    return res.status(400).json({ error: "Access code and message are required" });
+  }
+  const pupil = db.prepare("SELECT * FROM pupils WHERE code = ? AND is_active = 1").get(accessCode) as any;
+  if (!pupil) return res.status(404).json({ error: "Invalid access code" });
+
+  const id = (await import("uuid")).v4();
+  // Store as a pupil comment of type 'parent_message'
+  db.prepare(`INSERT INTO pupil_comments (id, school_id, pupil_id, recorded_by, type, category, content, date)
+    VALUES (?, ?, ?, NULL, 'parent_message', 'Parent Message', ?, date('now'))`)
+    .run(id, pupil.school_id, pupil.id, `From ${parentName || "Parent"}: ${message.trim()}`);
+
+  res.json({ success: true, message: "Message sent to school" });
+});
+
+router.get("/parent-messages/:pupilId", requireAuth, (req: Request, res: Response) => {
+  const messages = db.prepare(`
+    SELECT * FROM pupil_comments
+    WHERE pupil_id = ? AND type = 'parent_message' ORDER BY created_at DESC LIMIT 50
+  `).all(req.params.pupilId);
+  res.json({ messages });
+});
+
 export default router;
 
+
+// ── Worksheet Share Links ─────────────────────────────────────────────────────
+// POST /api/data/worksheets/:id/share — create a public share link
+router.post("/worksheets/:id/share", requireAuth, (req: Request, res: Response) => {
+  const wsId = req.params.id;
+  const ws = db.prepare("SELECT * FROM worksheets WHERE id=? AND created_by=?").get(wsId, req.user!.id) as any;
+  if (!ws) return res.status(404).json({ error: "Worksheet not found" });
+
+  // Return existing token if already shared
+  const existing = db.prepare("SELECT share_token FROM worksheet_share_links WHERE worksheet_id=?").get(wsId) as any;
+  if (existing?.share_token) return res.json({ token: existing.share_token });
+
+  const token = require("crypto").randomBytes(16).toString("hex");
+  db.prepare(
+    "INSERT INTO worksheet_share_links (id, worksheet_id, share_token, created_by, school_id) VALUES (?,?,?,?,?)"
+  ).run(uuidv4(), wsId, token, req.user!.id, req.user!.schoolId);
+  res.json({ token });
+});
+
+// DELETE /api/data/worksheets/:id/share — revoke share link
+router.delete("/worksheets/:id/share", requireAuth, (req: Request, res: Response) => {
+  db.prepare("DELETE FROM worksheet_share_links WHERE worksheet_id=? AND created_by=?").run(req.params.id, req.user!.id);
+  res.json({ success: true });
+});
+
+// GET /api/data/shared/:token — public endpoint, no auth required
+router.get("/shared/:token", (req: Request, res: Response) => {
+  const link = db.prepare(
+    "SELECT wsl.worksheet_id, wsl.view_count FROM worksheet_share_links wsl WHERE wsl.share_token=?"
+  ).get(req.params.token) as any;
+  if (!link) return res.status(404).json({ error: "Link not found or expired" });
+
+  const ws = db.prepare("SELECT * FROM worksheets WHERE id=?").get(link.worksheet_id) as any;
+  if (!ws) return res.status(404).json({ error: "Worksheet not found" });
+
+  // Fetch sections
+  const sections = db.prepare(
+    "SELECT * FROM worksheet_sections WHERE worksheet_id=? ORDER BY section_index ASC"
+  ).all(link.worksheet_id) as any[];
+
+  // Increment view count
+  db.prepare("UPDATE worksheet_share_links SET view_count=view_count+1 WHERE share_token=?").run(req.params.token);
+
+  res.json({
+    title: ws.title,
+    subject: ws.subject,
+    topic: ws.topic,
+    yearGroup: ws.year_group,
+    difficulty: ws.difficulty,
+    sections: sections.map((s: any) => ({
+      title: s.title,
+      type: s.type,
+      content: s.content,
+      teacherOnly: s.teacher_only === 1,
+      svg: s.svg,
+      caption: s.caption,
+    })).filter((s: any) => !s.teacherOnly), // public view: hide teacher sections
+    metadata: {
+      subject: ws.subject,
+      topic: ws.topic,
+      yearGroup: ws.year_group,
+      difficulty: ws.difficulty,
+      examBoard: ws.exam_board,
+    },
+  });
+});
+
+// ── Spaced Repetition ─────────────────────────────────────────────────────────
+// GET /api/data/spaced-repetition — get topics due for review today
+router.get("/spaced-repetition", requireAuth, (req: Request, res: Response) => {
+  const userId = req.user!.id;
+  const today = new Date().toISOString().slice(0, 10);
+  const due = db.prepare(
+    "SELECT * FROM spaced_repetition WHERE user_id=? AND next_review<=? ORDER BY next_review ASC LIMIT 20"
+  ).all(userId, today) as any[];
+  const all = db.prepare(
+    "SELECT * FROM spaced_repetition WHERE user_id=? ORDER BY next_review ASC"
+  ).all(userId) as any[];
+  res.json({ due, all, totalTracked: all.length });
+});
+
+// POST /api/data/spaced-repetition — record a review result (SM-2 algorithm)
+router.post("/spaced-repetition", requireAuth, (req: Request, res: Response) => {
+  const { subject, topic, score } = req.body; // score: 0-5
+  if (!subject || !topic || score === undefined) return res.status(400).json({ error: "subject, topic, score required" });
+
+  const userId = req.user!.id;
+  const existing = db.prepare(
+    "SELECT * FROM spaced_repetition WHERE user_id=? AND subject=? AND topic=?"
+  ).get(userId, subject, topic) as any;
+
+  // SM-2 algorithm
+  let intervalDays = 1;
+  let easeFactor = 2.5;
+  let reviews = 1;
+
+  if (existing) {
+    easeFactor = existing.ease_factor;
+    reviews = existing.reviews + 1;
+    if (score >= 3) {
+      if (existing.reviews === 0) intervalDays = 1;
+      else if (existing.reviews === 1) intervalDays = 6;
+      else intervalDays = Math.round(existing.interval_days * easeFactor);
+      easeFactor = Math.max(1.3, easeFactor + 0.1 - (5 - score) * (0.08 + (5 - score) * 0.02));
+    } else {
+      intervalDays = 1; // failed — reset
+    }
+  }
+
+  const nextReview = new Date();
+  nextReview.setDate(nextReview.getDate() + intervalDays);
+  const nextReviewStr = nextReview.toISOString().slice(0, 10);
+
+  if (existing) {
+    db.prepare(
+      "UPDATE spaced_repetition SET interval_days=?, ease_factor=?, reviews=?, last_score=?, next_review=?, updated_at=datetime('now') WHERE user_id=? AND subject=? AND topic=?"
+    ).run(intervalDays, easeFactor, reviews, score, nextReviewStr, userId, subject, topic);
+  } else {
+    db.prepare(
+      "INSERT INTO spaced_repetition (id, user_id, subject, topic, interval_days, ease_factor, reviews, last_score, next_review) VALUES (?,?,?,?,?,?,?,?,?)"
+    ).run(uuidv4(), userId, subject, topic, intervalDays, easeFactor, reviews, score, nextReviewStr);
+  }
+
+  res.json({ intervalDays, nextReview: nextReviewStr, easeFactor });
+});

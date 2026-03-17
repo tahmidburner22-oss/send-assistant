@@ -3,13 +3,14 @@ import { Link, useLocation } from "wouter";
 import { useApp } from "@/contexts/AppContext";
 import { useUserPreferences, COLOUR_THEMES } from "@/contexts/UserPreferencesContext";
 import { motion, AnimatePresence } from "framer-motion";
+import CommandPalette from "./CommandPalette";
 import {
   Home, Sparkles, FileText, BookOpen, LayoutGrid, Users, Clock,
   BarChart3, Lightbulb, ExternalLink, Settings, Menu, X, GraduationCap, LogOut,
   Calendar, TrendingUp, ClipboardList, IdCard, CheckSquare, ShieldAlert, Heart,
   HelpCircle, Table2, AlignLeft, Layers, CalendarDays, BookMarked, Ticket,
   BookType, Mail, Shield, ChevronDown, ChevronRight, ScrollText, Headphones, ScanSearch,
-  Zap, NotebookPen, Pencil, MessageSquare, Star
+  Zap, NotebookPen, Pencil, MessageSquare, Star, Search, Bell,
 } from "lucide-react";
 
 const mainMenu = [
@@ -137,9 +138,18 @@ function SidebarSection({
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
   const [location] = useLocation();
-  const { user, logout } = useApp();
+  const { user, logout, children: pupils } = useApp();
   const { isSidebarItemHidden, wallpaperStyle, currentTheme, preferences } = useUserPreferences();
+
+  // Compute notifications: completed assignments needing teacher review
+  const notifications = pupils.flatMap(p =>
+    p.assignments
+      .filter(a => a.status === "completed" && !a.mark && !a.teacherComment)
+      .map(a => ({ pupilName: p.name, assignmentTitle: a.title, pupilId: p.id }))
+  ).slice(0, 10);
+  const unreadCount = notifications.length;
 
   const currentPage = allMenuItems.find(m => location.startsWith(m.path));
 
@@ -153,6 +163,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen overflow-x-hidden" style={wallpaperStyle}>
+      {/* Global Command Palette — Ctrl+K / ⌘K */}
+      <CommandPalette />
+
       {/* Top Header */}
       <header className="sticky top-0 z-40 backdrop-blur-md border-b border-border/50" style={{ backgroundColor: `${theme.primary}15`, borderColor: `${theme.primary}30` }}>
         <div className="flex items-center justify-between px-4 h-14">
@@ -160,7 +173,55 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <Menu className="w-5 h-5 text-foreground" />
           </button>
           <h1 className="text-base font-semibold text-foreground">{currentPage?.label || "Adaptly"}</h1>
-          <div className="w-9" />
+          <div className="flex items-center gap-1">
+            {/* Notification Bell */}
+            <div className="relative">
+              <button
+                onClick={() => setNotifOpen(o => !o)}
+                className="p-2 rounded-lg hover:bg-muted transition-colors relative"
+                title="Notifications"
+              >
+                <Bell className="w-4 h-4 text-muted-foreground" />
+                {unreadCount > 0 && (
+                  <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-brand text-white text-[9px] font-bold flex items-center justify-center">
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </span>
+                )}
+              </button>
+              {notifOpen && (
+                <div className="absolute right-0 top-10 w-72 bg-card border border-border/60 rounded-xl shadow-lg z-50 overflow-hidden">
+                  <div className="px-3 py-2 border-b border-border/40 flex items-center justify-between">
+                    <span className="text-xs font-semibold text-foreground">Notifications</span>
+                    <button onClick={() => setNotifOpen(false)} className="text-muted-foreground hover:text-foreground">
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                  {notifications.length === 0 ? (
+                    <div className="px-3 py-4 text-xs text-muted-foreground text-center">No new notifications</div>
+                  ) : (
+                    <div className="max-h-64 overflow-y-auto divide-y divide-border/30">
+                      {notifications.map((n, i) => (
+                        <Link key={i} href="/pupils" onClick={() => setNotifOpen(false)}>
+                          <div className="px-3 py-2.5 hover:bg-muted/40 cursor-pointer">
+                            <p className="text-xs font-medium text-foreground">{n.pupilName} completed work</p>
+                            <p className="text-[10px] text-muted-foreground truncate mt-0.5">{n.assignmentTitle}</p>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+            {/* Search */}
+            <button
+              onClick={() => window.dispatchEvent(new KeyboardEvent("keydown", { key: "k", ctrlKey: true, bubbles: true }))}
+              className="p-2 -mr-2 rounded-lg hover:bg-muted transition-colors"
+              title="Search (Ctrl+K)"
+            >
+              <Search className="w-4 h-4 text-muted-foreground" />
+            </button>
+          </div>
         </div>
       </header>
 
