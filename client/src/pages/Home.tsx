@@ -9,7 +9,7 @@ import {
   FlaskConical, Landmark, Globe, Palette, Music, Dumbbell, Monitor,
   Wrench, Heart, Languages, UserCheck, Briefcase, Theater, Lightbulb,
   GraduationCap, BarChart2, CalendarDays, Brain, ScrollText, Gamepad2, Settings,
-  ArrowRight, PlayCircle,
+  ArrowRight, PlayCircle, ClipboardList, Stethoscope,
 } from "lucide-react";
 import { useState, useMemo, useEffect } from "react";
 
@@ -34,6 +34,66 @@ const cardIconMap: Record<string, { icon: any; color: string; href: string }> = 
   "attendance":    { icon: CalendarDays, color: "bg-green-50 text-green-600",         href: "/attendance" },
   "behaviour":     { icon: UserCheck,    color: "bg-pink-50 text-pink-600",           href: "/behaviour-tracking" },
 };
+
+// ── Read in-progress items from localStorage (risk assessment, SEND screener) ──
+function getLocalInProgressItems(): Array<{
+  title: string; subtitle: string; createdAt: string;
+  href: string; icon: any; color: string; badge: string;
+}> {
+  const items: Array<{
+    title: string; subtitle: string; createdAt: string;
+    href: string; icon: any; color: string; badge: string;
+  }> = [];
+
+  try {
+    // Risk Assessment
+    const raSavedAt = localStorage.getItem("adaptly_risk_assessment_v1_savedAt");
+    const raRaw = localStorage.getItem("adaptly_risk_assessment_v1");
+    const raStep = localStorage.getItem("adaptly_risk_assessment_step_v1");
+    if (raSavedAt && raRaw && raStep) {
+      const raData = JSON.parse(raRaw);
+      const stepNum = parseInt(raStep, 10);
+      // Only show if not on the final step (step 9 = signatures = essentially complete)
+      if (stepNum < 9) {
+        const venue = raData.venueName || "unknown venue";
+        const stepLabel = ["", "Trip Overview", "Type of Group", "Staffing", "Equipment",
+          "Venue & Environment", "Travel", "Emergency Procedures", "Children's Info", "Signatures"][stepNum] || `Step ${stepNum}`;
+        items.push({
+          title: `Risk Assessment — ${venue}`,
+          subtitle: `Last on: ${stepLabel} (step ${stepNum} of 9)`,
+          createdAt: raSavedAt,
+          href: "/tools/risk-assessment",
+          icon: ClipboardList,
+          color: "text-red-600 bg-red-50",
+          badge: "Risk Assessment",
+        });
+      }
+    }
+  } catch (_) {}
+
+  try {
+    // SEND Screener — check for any saved screener progress
+    // The screener saves progress per-assignment via the server, but may also
+    // store a draft in localStorage under a known key
+    const screenerRaw = localStorage.getItem("adaptly_send_screener_draft");
+    if (screenerRaw) {
+      const screenerData = JSON.parse(screenerRaw);
+      if (screenerData?.savedAt) {
+        items.push({
+          title: "SEND Screener",
+          subtitle: screenerData.pupilName ? `For: ${screenerData.pupilName}` : "Draft in progress",
+          createdAt: screenerData.savedAt,
+          href: "/send-screener",
+          icon: Stethoscope,
+          color: "text-blue-600 bg-blue-50",
+          badge: "SEND Screener",
+        });
+      }
+    }
+  } catch (_) {}
+
+  return items;
+}
 
 export default function Home() {
   const { user, worksheetHistory, storyHistory, differentiationHistory, children, refreshData } = useApp();
@@ -61,43 +121,68 @@ export default function Home() {
     { label: "Avg Rating", value: avgRating || "—",color: "text-rose-500" },
   ];
 
-  // ── "Continue where you left off" ─────────────────────────────────────────
-  const inProgressWorksheets = worksheetHistory
-    .filter(w => !w.rating)
-    .slice(0, 2)
-    .map(w => ({
-      title: w.title,
-      subtitle: w.subject ? `${w.subject}${w.yearGroup ? " · " + w.yearGroup : ""}` : "Worksheet",
-      createdAt: w.createdAt,
-      href: "/worksheets",
-      icon: FileText,
-      color: "text-brand bg-brand-light",
-      badge: "Worksheet",
-    }));
+  // ── Single "Continue where you left off" item ──────────────────────────────
+  // Gather all candidates from server history + localStorage tools, pick the newest one
+  const continueItem = useMemo(() => {
+    const candidates: Array<{
+      title: string; subtitle: string; createdAt: string;
+      href: string; icon: any; color: string; badge: string;
+    }> = [];
 
-  const inProgressStories = storyHistory.slice(0, 1).map(s => ({
-    title: s.title,
-    subtitle: `${s.genre || "Story"}${s.yearGroup ? " · " + s.yearGroup : ""}`,
-    createdAt: s.createdAt,
-    href: "/reading",
-    icon: BookOpen,
-    color: "text-emerald-600 bg-emerald-50",
-    badge: "Story",
-  }));
+    // Most recent unrated worksheet
+    const latestWs = worksheetHistory.find(w => !w.rating);
+    if (latestWs) {
+      candidates.push({
+        title: latestWs.title,
+        subtitle: latestWs.subject
+          ? `${latestWs.subject}${latestWs.yearGroup ? " · " + latestWs.yearGroup : ""}`
+          : "Worksheet",
+        createdAt: latestWs.createdAt,
+        href: "/worksheets",
+        icon: FileText,
+        color: "text-brand bg-brand-light",
+        badge: "Worksheet",
+      });
+    }
 
-  const inProgressDiffs = differentiationHistory.slice(0, 1).map(d => ({
-    title: d.subject ? `${d.subject} differentiation` : "Differentiated task",
-    subtitle: d.yearGroup || "Differentiation",
-    createdAt: d.createdAt,
-    href: "/differentiate",
-    icon: Sparkles,
-    color: "text-purple-600 bg-purple-50",
-    badge: "Differentiation",
-  }));
+    // Most recent story
+    if (storyHistory.length > 0) {
+      const s = storyHistory[0];
+      candidates.push({
+        title: s.title,
+        subtitle: `${s.genre || "Story"}${s.yearGroup ? " · " + s.yearGroup : ""}`,
+        createdAt: s.createdAt,
+        href: "/reading",
+        icon: BookOpen,
+        color: "text-emerald-600 bg-emerald-50",
+        badge: "Story",
+      });
+    }
 
-  const continueItems = [...inProgressWorksheets, ...inProgressStories, ...inProgressDiffs]
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-    .slice(0, 3);
+    // Most recent differentiation
+    if (differentiationHistory.length > 0) {
+      const d = differentiationHistory[0];
+      candidates.push({
+        title: d.subject ? `${d.subject} differentiation` : "Differentiated task",
+        subtitle: d.yearGroup || "Differentiation",
+        createdAt: d.createdAt,
+        href: "/differentiate",
+        icon: Sparkles,
+        color: "text-purple-600 bg-purple-50",
+        badge: "Differentiation",
+      });
+    }
+
+    // localStorage-based tools (risk assessment, SEND screener)
+    candidates.push(...getLocalInProgressItems());
+
+    if (candidates.length === 0) return null;
+
+    // Return the single most recent
+    return candidates.sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    )[0];
+  }, [worksheetHistory, storyHistory, differentiationHistory]);
 
   // ── Recent Activity ────────────────────────────────────────────────────────
   const recentItems = [
@@ -142,30 +227,26 @@ export default function Home() {
   );
 
   // ── Derived appearance helpers ─────────────────────────────────────────────
-  const iconShape = preferences.iconShape ?? "rounded";
-  const iconBorder = preferences.iconBorderStyle ?? "none";
-  const cardStyle = preferences.cardStyle ?? "default";
-  const density = preferences.layoutDensity ?? "comfortable";
+  const iconShape   = preferences.iconShape        ?? "rounded";
+  const iconBorder  = preferences.iconBorderStyle  ?? "none";
+  const cardStyle   = preferences.cardStyle        ?? "default";
+  const density     = preferences.layoutDensity    ?? "comfortable";
 
-  // Icon container shape class
   const iconShapeClass =
-    iconShape === "circle"  ? "rounded-full" :
-    iconShape === "square"  ? "rounded-none" :
-    "rounded-xl"; // default: rounded
+    iconShape === "circle" ? "rounded-full" :
+    iconShape === "square" ? "rounded-none" :
+    "rounded-xl";
 
-  // Icon border/ring class
   const iconBorderClass =
     iconBorder === "subtle" ? "ring-1 ring-border/60" :
     iconBorder === "bold"   ? "ring-2 ring-brand/40" :
-    ""; // none
+    "";
 
-  // Card extra class
   const cardClass =
     cardStyle === "flat"     ? "shadow-none border-border/30" :
     cardStyle === "elevated" ? "shadow-md border-border/20" :
-    "border-border/50"; // default
+    "border-border/50";
 
-  // Gap between sections
   const sectionGap = density === "compact" ? "space-y-4" : "space-y-6";
 
   const timeAgo = (dateStr: string) => {
@@ -199,39 +280,34 @@ export default function Home() {
         </div>
       </motion.div>
 
-      {/* Continue where you left off */}
-      {(preferences.showContinueSection ?? true) && continueItems.length > 0 && (
+      {/* Continue where you left off — single most-recent task */}
+      {(preferences.showContinueSection ?? true) && continueItem && (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }}>
           <div className="flex items-center gap-2 mb-3">
             <PlayCircle className="w-4 h-4 text-brand" />
             <h3 className="text-base font-semibold text-foreground">Continue where you left off</h3>
           </div>
-          <div className="space-y-2">
-            {continueItems.map((item, i) => {
-              const Icon = item.icon;
-              return (
-                <Link key={i} href={item.href}>
-                  <Card className={`border-brand/20 bg-brand-light/20 hover:border-brand/40 hover:shadow-sm transition-all cursor-pointer ${cardStyle === "flat" ? "shadow-none" : cardStyle === "elevated" ? "shadow-md" : ""}`}>
-                    <CardContent className="p-3 flex items-center gap-3">
-                      <div className={`w-8 h-8 flex items-center justify-center flex-shrink-0 ${item.color} ${iconShapeClass} ${iconBorderClass}`}>
-                        <Icon className="w-4 h-4" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs font-medium text-foreground truncate">{item.title}</p>
-                        {item.subtitle && <p className="text-[10px] text-muted-foreground">{item.subtitle}</p>}
-                      </div>
-                      <div className="flex items-center gap-2 flex-shrink-0">
-                        <span className="text-[10px] text-muted-foreground">{timeAgo(item.createdAt)}</span>
-                        <span className="text-[10px] font-medium text-brand bg-brand-light px-1.5 py-0.5 rounded-full">
-                          {item.badge}
-                        </span>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
-              );
-            })}
-          </div>
+          <Link href={continueItem.href}>
+            <Card className={`border-brand/20 bg-brand-light/20 hover:border-brand/40 hover:shadow-sm transition-all cursor-pointer ${cardStyle === "flat" ? "shadow-none" : cardStyle === "elevated" ? "shadow-md" : ""}`}>
+              <CardContent className="p-3 flex items-center gap-3">
+                <div className={`w-8 h-8 flex items-center justify-center flex-shrink-0 ${continueItem.color} ${iconShapeClass} ${iconBorderClass}`}>
+                  <continueItem.icon className="w-4 h-4" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-medium text-foreground truncate">{continueItem.title}</p>
+                  {continueItem.subtitle && (
+                    <p className="text-[10px] text-muted-foreground">{continueItem.subtitle}</p>
+                  )}
+                </div>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <span className="text-[10px] text-muted-foreground">{timeAgo(continueItem.createdAt)}</span>
+                  <span className="text-[10px] font-medium text-brand bg-brand-light px-1.5 py-0.5 rounded-full">
+                    {continueItem.badge}
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
         </motion.div>
       )}
 
