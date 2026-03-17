@@ -28,7 +28,7 @@ const worksheetUpload = multer({ storage: multer.memoryStorage(), limits: { file
 // Cerebras second (14,400 RPD, 30 RPM, 60K TPM — same RPD as Groq, ultra-fast inference),
 // Gemini third (1,500 RPD but 1M TPM — great for burst handling),
 // then the rest as fallbacks.
-const PROVIDER_ORDER = ["groq", "cerebras", "gemini", "openrouter", "openai", "claude", "mistral", "deepseek", "huggingface", "cohere"] as const;
+	const PROVIDER_ORDER = ["groq", "cerebras", "gemini", "openrouter", "openai", "claude", "mistral", "deepseek", "huggingface", "cohere", "perplexity"] as const;
 
 // ── Per-provider cooldown tracker ─────────────────────────────────────────────
 // When a provider hits a rate limit (429), it is put in cooldown for COOLDOWN_MS.
@@ -403,8 +403,8 @@ router.post("/ensemble", requireAuth, async (req: Request, res: Response) => {
     return res.status(400).json({ error: "Content flagged for safeguarding review." });
   }
 
-  // Run up to 3 providers in parallel (all using server env var keys)
-  const toRun = PROVIDER_ORDER.filter(p => getEffectiveKey(p)).slice(0, 3);
+	  // Run all configured providers in parallel (all using server env var keys)
+	  const toRun = PROVIDER_ORDER.filter(p => getEffectiveKey(p));
 
   if (toRun.length === 0) {
     return res.status(400).json({ error: "No AI providers configured." });
