@@ -58,6 +58,7 @@ const ComprehensionGenerator = lazy(() => import("./pages/tools/ComprehensionGen
 const ExitTicket = lazy(() => import("./pages/tools/ExitTicket"));
 const VocabularyBuilder = lazy(() => import("./pages/tools/VocabularyBuilder"));
 const WellbeingSupport = lazy(() => import("./pages/tools/WellbeingSupport"));
+const RiskAssessment = lazy(() => import("./pages/tools/RiskAssessment"));
 const ParentNewsletter = lazy(() => import("./pages/tools/ParentNewsletter"));
 
 // Legal & Compliance
@@ -164,6 +165,7 @@ function ProtectedRoutes() {
           <Route path="/tools/exit-ticket" component={ExitTicket} />
           <Route path="/tools/flash-cards" component={FlashCards} />
           <Route path="/tools/vocabulary-builder" component={VocabularyBuilder} />
+          <Route path="/tools/risk-assessment" component={RiskAssessment} />
 
           {/* Communication */}
           <Route path="/tools/report-comments" component={ReportComments} />

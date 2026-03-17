@@ -47,6 +47,7 @@ const planningMenu = [
   { path: "/tools/exit-ticket", label: "Exit Ticket", icon: Ticket, color: "text-fuchsia-600" },
   { path: "/tools/flash-cards", label: "Flash Cards", icon: Layers, color: "text-yellow-600" },
   { path: "/tools/vocabulary-builder", label: "Vocabulary Builder", icon: BookType, color: "text-lime-700" },
+  { path: "/tools/risk-assessment", label: "Risk Assessment", icon: ClipboardList, color: "text-red-600" },
 ];
 
 const communicationMenu = [

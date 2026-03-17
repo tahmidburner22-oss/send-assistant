@@ -21,13 +21,13 @@ import { KATEX_CSS_INLINE } from "@/lib/katex-css-inline";
 // ── KaTeX CSS ────────────────────────────────────────────
 // Use the bundled KaTeX CSS (from katex-css-inline.ts) which has absolute CDN
 // font URLs pre-baked in. This avoids any network fetch or race condition.
-function getKatexCssInline(): string {
+export function getKatexCssInline(): string {
   return KATEX_CSS_INLINE;
 }
 
 // ── Build the complete self-contained HTML document ──────────────────────────
 
-function buildPopupHtml(
+export function buildPopupHtml(
   contentHtml: string,
   katexCss: string,
   options: {
@@ -291,7 +291,7 @@ function escapeHtml(str: string): string {
 
 // ── Serialise the live DOM element with all inline styles preserved ───────────
 
-function serialiseElement(element: HTMLElement, viewMode: "teacher" | "student"): string {
+export function serialiseElement(element: HTMLElement, viewMode: "teacher" | "student"): string {
   // Clone the element so we can modify it without affecting the live DOM
   const clone = element.cloneNode(true) as HTMLElement;
 
