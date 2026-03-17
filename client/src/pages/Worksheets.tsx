@@ -29,10 +29,10 @@ import SENDInfoPanel from "@/components/SENDInfoPanel";
 import DiagnosticStarterSheet from "@/components/DiagnosticStarterSheet";
 import {
   FileText, Upload, Library, Sparkles, Download, Printer, Save, Star,
-  Eye, GraduationCap, Palette, Edit3, Users, Check, ZoomIn, ZoomOut,
+  Eye, EyeOff, GraduationCap, Palette, Edit3, Users, Check, ZoomIn, ZoomOut,
   Mic, MicOff, Image, Search, Clock, Award, ChevronRight, ChevronDown,
   AlertCircle, CheckCircle, RefreshCw, FileDown, X, Wand2, History, Trash2, Info, PenLine, Square, CheckSquare, ListChecks, ClipboardCheck,
-  MessageSquare, Send, RotateCcw
+  MessageSquare, Send, RotateCcw, Layers,
 } from "lucide-react";
 
 // ─── Debounce hook ──────────────────────────────────────────────────────────
@@ -254,6 +254,8 @@ export default function Worksheets() {
   const [viewMode, setViewMode] = useState<"teacher" | "student">("teacher");
   const [showOverlayPicker, setShowOverlayPicker] = useState(false);
   const [editMode, setEditMode] = useState(false);
+  const [hiddenSections, setHiddenSections] = useState<Set<number>>(new Set());
+  const [showSectionPicker, setShowSectionPicker] = useState(false);
   const [editType, setEditType] = useState<"ai" | "manual" | "none">("none");
   const [editedSections, setEditedSections] = useState<Record<number, string>>({});
   const [showAssignDialog, setShowAssignDialog] = useState(false);
@@ -634,6 +636,7 @@ export default function Worksheets() {
 
     if (generatedWs) {
       setGenerated(generatedWs);
+      setHiddenSections(new Set()); // Reset hidden sections for new worksheet
       setDiffVersions({}); // Clear old diff versions when a new worksheet is generated
       // Auto-save on generate so dashboard updates immediately
       const ws = generatedWs;
@@ -858,8 +861,10 @@ export default function Worksheets() {
       ...s,
       content: editedSections[i] !== undefined ? editedSections[i] : s.content,
     }));
-    const content = sectionsWithEdits.filter(s => !s.teacherOnly).map(s => `## ${s.title}\n${s.content}`).join("\n\n");
-    const teacherContent = sectionsWithEdits.map(s => `## ${s.title}\n${s.content}`).join("\n\n");
+    // Exclude hidden sections from saved content (but keep full sections array for re-editing)
+    const visibleSections = sectionsWithEdits.filter((_, i) => !hiddenSections.has(i));
+    const content = visibleSections.filter(s => !s.teacherOnly).map(s => `## ${s.title}\n${s.content}`).join("\n\n");
+    const teacherContent = visibleSections.map(s => `## ${s.title}\n${s.content}`).join("\n\n");
     if (savedWorksheetId) {
       // Already auto-saved — just update the existing record with latest edits + rating
       await updateWorksheet(savedWorksheetId, { content, teacherContent, rating, overlay: colorOverlay, sections: sectionsWithEdits });
@@ -1293,8 +1298,6 @@ export default function Worksheets() {
     }
 
     if (generatedWs) {
-      // Show the generated worksheet immediately
-      setGenerated(generatedWs);
       const ws = generatedWs;
       const sectionsToSave = ws.sections.map(s => ({ ...s }));
       const content = sectionsToSave.filter(s => !s.teacherOnly).map(s => `## ${s.title}\n${s.content}`).join("\n\n");
@@ -2470,6 +2473,19 @@ export default function Worksheets() {
             <Button variant="outline" size="sm" onClick={() => setShowOverlayPicker(!showOverlayPicker)}>
               <Palette className="w-3.5 h-3.5 mr-1.5" /> Overlay
             </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowSectionPicker(p => !p)}
+              className={showSectionPicker ? "border-brand text-brand bg-brand-light" : ""}
+            >
+              <Layers className="w-3.5 h-3.5 mr-1.5" /> Sections
+              {hiddenSections.size > 0 && (
+                <span className="ml-1 text-[10px] bg-brand text-white rounded-full w-4 h-4 flex items-center justify-center flex-shrink-0">
+                  {hiddenSections.size}
+                </span>
+              )}
+            </Button>
             {!editMode ? (
               <>
                 <Button variant="outline" size="sm"
@@ -2639,6 +2655,71 @@ export default function Worksheets() {
             </Card>
           )}
 
+          {/* Section visibility picker */}
+          {showSectionPicker && generated && (
+            <Card className="border-brand/30 bg-brand-light/10 no-print">
+              <CardContent className="p-3">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                    <Layers className="w-3.5 h-3.5 text-brand" /> Choose which sections to include
+                  </p>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setHiddenSections(new Set())}
+                      className="text-[10px] text-brand hover:underline"
+                    >Show all</button>
+                    <button
+                      onClick={() => {
+                        const nonTeacher = generated.sections
+                          .map((_, i) => i)
+                          .filter(i => !(generated.sections[i] as any).teacherOnly);
+                        setHiddenSections(new Set(nonTeacher.slice(0, -1)));
+                      }}
+                      className="text-[10px] text-muted-foreground hover:underline"
+                    >Reset</button>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                  {generated.sections.map((section, i) => {
+                    const isHidden = hiddenSections.has(i);
+                    const isTeacher = (section as any).teacherOnly;
+                    return (
+                      <button
+                        key={i}
+                        onClick={() => {
+                          setHiddenSections(prev => {
+                            const next = new Set(prev);
+                            if (next.has(i)) next.delete(i); else next.add(i);
+                            return next;
+                          });
+                        }}
+                        className={`flex items-center gap-2 px-2.5 py-2 rounded-lg border text-left transition-all ${
+                          isHidden
+                            ? "border-border/40 bg-muted/30 opacity-50"
+                            : "border-brand/30 bg-white"
+                        }`}
+                      >
+                        <div className={`w-4 h-4 rounded flex items-center justify-center flex-shrink-0 ${isHidden ? "border border-border" : "bg-brand"}`}>
+                          {!isHidden && <Check className="w-3 h-3 text-white" />}
+                        </div>
+                        <span className="text-xs text-foreground truncate flex-1">{section.title}</span>
+                        {isTeacher && (
+                          <span className="text-[9px] bg-amber-100 text-amber-700 px-1 rounded flex-shrink-0">T</span>
+                        )}
+                        {isHidden && <EyeOff className="w-3 h-3 text-muted-foreground flex-shrink-0" />}
+                      </button>
+                    );
+                  })}
+                </div>
+                {hiddenSections.size > 0 && (
+                  <p className="text-[10px] text-muted-foreground mt-2">
+                    {hiddenSections.size} section{hiddenSections.size !== 1 ? "s" : ""} hidden — excluded from PDF and print.
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
           {editMode && (
             <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-800 no-print">
               <strong>Edit Mode:</strong> Click on any section to edit. Changes carry through to PDF, HTML, and print.
@@ -2666,11 +2747,10 @@ export default function Worksheets() {
                     worksheet={{
                       title: generated.title,
                       subtitle: (generated as any).subtitle,
-                      // Use displaySections which enforces page-count limits for student view
-                      sections: displaySections as any,
+                      // Filter out hidden sections before passing to renderer
+                      sections: (displaySections as any).filter((_: any, i: number) => !hiddenSections.has(i)),
                       metadata: {
                         ...(generated.metadata as any),
-                        // Pass the SEND need ID explicitly so WorksheetRenderer can apply correct formatting
                         sendNeedId: generated.metadata?.sendNeed || sendNeed || undefined,
                       },
                       isAI: isAIWorksheet(generated),
@@ -2688,6 +2768,7 @@ export default function Worksheets() {
                 {editMode && (
                   <div className="mt-4 space-y-3">
                     {generated.sections.map((section, i) => {
+                      if (hiddenSections.has(i)) return null;
                       if (viewMode === "student" && (section.type === "answers" || section.type === "adaptations" || section.teacherOnly)) return null;
                       const currentContent = getSectionContent(i, section.content);
                       const isTeacher = (section as any).teacherOnly;

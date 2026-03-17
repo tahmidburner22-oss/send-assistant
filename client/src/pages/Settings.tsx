@@ -175,7 +175,7 @@ function getAuthHeader(): Record<string, string> {
 
 // ── MIS Integration Section ───────────────────────────────────────────────────
 function MisIntegrationSection() {
-  const { user } = useApp();
+  const { user, refreshData } = useApp();
   const isAdmin = user?.role === "school_admin" || user?.role === "mat_admin" || user?.role === "admin" || user?.role === "super_admin";
   const [misStatus, setMisStatus] = useState<{ isPremium: boolean; bromcom: boolean; arbor: boolean } | null>(null);
   const [loading, setLoading] = useState(true);
@@ -236,13 +236,18 @@ function MisIntegrationSection() {
     setSyncing(provider);
     setSyncResult(null);
     try {
-      const res = await fetch(`/api/mis/sync/${provider}`, { method: "POST", headers: getAuthHeader() });
+      const res = await fetch(`/api/mis/sync/${provider}`, {
+        method: "POST",
+        headers: getAuthHeader(),
+        credentials: "include",
+      });
       const data = await res.json();
       if (res.ok) {
         setSyncResult(data);
         const total = (data.pupils?.created || 0) + (data.behaviour?.created || 0) +
           (data.attendance?.created || 0) + (data.comments?.created || 0);
         toast.success(`Sync complete — ${total} records imported`);
+        await refreshData();
       } else {
         toast.error(data.error || "Sync failed");
       }
@@ -254,13 +259,19 @@ function MisIntegrationSection() {
     setSyncing("demo");
     setSyncResult(null);
     try {
-      const res = await fetch("/api/mis/sync-demo", { method: "POST", headers: getAuthHeader() });
+      const res = await fetch("/api/mis/sync-demo", {
+        method: "POST",
+        headers: getAuthHeader(),
+        credentials: "include",
+      });
       const data = await res.json();
       if (res.ok) {
         setSyncResult(data);
         const total = (data.pupils?.created || 0) + (data.behaviour?.created || 0) +
           (data.attendance?.created || 0) + (data.comments?.created || 0);
         toast.success(`Demo sync complete — ${total} records imported`);
+        // Refresh app data so pupils appear immediately without a page reload
+        await refreshData();
       } else {
         toast.error(data.error || "Demo sync failed");
       }
@@ -454,7 +465,7 @@ function PersonalisationSection() {
     toggleDashboardCard,
     toggleDashboardSubject,
     setShowWorksheetLibrary,
-    setDashboardAppearance,
+    setCardBorderColor,
     resetPreferences,
     currentTheme,
     currentWallpaper,
@@ -543,29 +554,89 @@ function PersonalisationSection() {
 
         {/* Colour Theme */}
         {activeTab === "theme" && (
-          <div className="space-y-3">
-            <p className="text-xs text-muted-foreground">Choose a brand colour for your Adaptly interface.</p>
-            <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
-              {COLOUR_THEMES.map(theme => (
-                <button
-                  key={theme.id}
-                  onClick={() => { setTheme(theme.id); toast.success(`Theme changed to ${theme.label}`); }}
-                  className={`flex flex-col items-center gap-1.5 p-2 rounded-xl border-2 transition-all ${
-                    preferences.themeId === theme.id ? "border-brand shadow-md" : "border-transparent hover:border-border"
-                  }`}
-                  title={theme.label}
-                >
-                  <div className="w-8 h-8 rounded-full shadow-sm" style={{ backgroundColor: theme.preview }} />
-                  <span className="text-[10px] text-center text-muted-foreground leading-tight">{theme.label}</span>
-                  {preferences.themeId === theme.id && (
-                    <CheckCircle className="w-3 h-3 text-brand" />
-                  )}
-                </button>
-              ))}
+          <div className="space-y-4">
+            <div className="space-y-3">
+              <p className="text-xs text-muted-foreground">Choose a brand colour for your Adaptly interface.</p>
+              <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                {COLOUR_THEMES.map(theme => (
+                  <button
+                    key={theme.id}
+                    onClick={() => { setTheme(theme.id); toast.success(`Theme changed to ${theme.label}`); }}
+                    className={`flex flex-col items-center gap-1.5 p-2 rounded-xl border-2 transition-all ${
+                      preferences.themeId === theme.id ? "border-brand shadow-md" : "border-transparent hover:border-border"
+                    }`}
+                    title={theme.label}
+                  >
+                    <div className="w-8 h-8 rounded-full shadow-sm" style={{ backgroundColor: theme.preview }} />
+                    <span className="text-[10px] text-center text-muted-foreground leading-tight">{theme.label}</span>
+                    {preferences.themeId === theme.id && (
+                      <CheckCircle className="w-3 h-3 text-brand" />
+                    )}
+                  </button>
+                ))}
+              </div>
+              <div className="flex items-center gap-2 p-3 bg-muted/30 rounded-xl">
+                <div className="w-6 h-6 rounded-full" style={{ backgroundColor: currentTheme.preview }} />
+                <span className="text-xs text-muted-foreground">Current: <strong className="text-foreground">{currentTheme.label}</strong></span>
+              </div>
             </div>
-            <div className="flex items-center gap-2 p-3 bg-muted/30 rounded-xl">
-              <div className="w-6 h-6 rounded-full" style={{ backgroundColor: currentTheme.preview }} />
-              <span className="text-xs text-muted-foreground">Current: <strong className="text-foreground">{currentTheme.label}</strong></span>
+
+            {/* Card Border Colour */}
+            <div className="space-y-2 pt-2 border-t border-border/50">
+              <div>
+                <p className="text-xs font-medium text-foreground">Card Border Colour</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Add a coloured border to all cards across the app.</p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {[
+                  { label: "None", value: "none", preview: "transparent", border: "border-border" },
+                  { label: "Brand", value: currentTheme.primary, preview: currentTheme.primary, border: "" },
+                  { label: "Emerald", value: "#10b981", preview: "#10b981", border: "" },
+                  { label: "Violet", value: "#7c3aed", preview: "#7c3aed", border: "" },
+                  { label: "Blue", value: "#3b82f6", preview: "#3b82f6", border: "" },
+                  { label: "Amber", value: "#f59e0b", preview: "#f59e0b", border: "" },
+                  { label: "Rose", value: "#f43f5e", preview: "#f43f5e", border: "" },
+                  { label: "Teal", value: "#14b8a6", preview: "#14b8a6", border: "" },
+                  { label: "Slate", value: "#64748b", preview: "#64748b", border: "" },
+                ].map(opt => {
+                  const isActive = (preferences.cardBorderColor || "none") === opt.value;
+                  return (
+                    <button
+                      key={opt.value}
+                      onClick={() => {
+                        setCardBorderColor(opt.value);
+                        toast.success(opt.value === "none" ? "Card borders reset" : `Card borders set to ${opt.label}`);
+                      }}
+                      className={`flex flex-col items-center gap-1 p-2 rounded-xl border-2 transition-all ${
+                        isActive ? "border-brand shadow-md" : "border-transparent hover:border-border"
+                      }`}
+                      title={opt.label}
+                    >
+                      <div
+                        className={`w-7 h-7 rounded-lg border-2 ${opt.value === "none" ? "border-dashed border-border bg-background" : ""}`}
+                        style={opt.value !== "none" ? { backgroundColor: opt.preview, borderColor: opt.preview } : {}}
+                      />
+                      <span className="text-[9px] text-muted-foreground">{opt.label}</span>
+                      {isActive && <CheckCircle className="w-3 h-3 text-brand" />}
+                    </button>
+                  );
+                })}
+                {/* Custom colour picker */}
+                <div className="flex flex-col items-center gap-1 p-2">
+                  <label className="cursor-pointer">
+                    <div className="w-7 h-7 rounded-lg border-2 border-dashed border-brand/50 flex items-center justify-center bg-brand-light/30 hover:bg-brand-light/60 transition-colors">
+                      <span className="text-[8px] font-bold text-brand">+</span>
+                    </div>
+                    <input
+                      type="color"
+                      className="sr-only"
+                      value={preferences.cardBorderColor && preferences.cardBorderColor !== "none" ? preferences.cardBorderColor : "#10b981"}
+                      onChange={e => setCardBorderColor(e.target.value)}
+                    />
+                  </label>
+                  <span className="text-[9px] text-muted-foreground">Custom</span>
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -693,120 +764,6 @@ function PersonalisationSection() {
                 })}
               </div>
             </div>
-            {/* ── Appearance ────────────────────────────────────────────────────── */}
-            <div className="border-t border-border/50 pt-4 space-y-4">
-              <p className="text-xs font-medium text-foreground">Icon &amp; Card Appearance</p>
-
-              {/* Icon border style */}
-              <div>
-                <p className="text-xs text-muted-foreground mb-2">Icon border style</p>
-                <div className="flex gap-2">
-                  {(["none", "subtle", "bold"] as const).map(opt => (
-                    <button
-                      key={opt}
-                      onClick={() => setDashboardAppearance({ iconBorderStyle: opt })}
-                      className={`flex-1 py-2 rounded-lg border-2 text-xs font-medium capitalize transition-all ${
-                        preferences.iconBorderStyle === opt
-                          ? "border-brand bg-brand/5 text-brand"
-                          : "border-border text-muted-foreground hover:border-brand/40"
-                      }`}
-                    >
-                      {opt}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Icon shape */}
-              <div>
-                <p className="text-xs text-muted-foreground mb-2">Icon shape</p>
-                <div className="flex gap-2">
-                  {(["rounded", "circle", "square"] as const).map(opt => (
-                    <button
-                      key={opt}
-                      onClick={() => setDashboardAppearance({ iconShape: opt })}
-                      className={`flex-1 py-2 rounded-lg border-2 text-xs font-medium capitalize transition-all ${
-                        preferences.iconShape === opt
-                          ? "border-brand bg-brand/5 text-brand"
-                          : "border-border text-muted-foreground hover:border-brand/40"
-                      }`}
-                    >
-                      {opt === "rounded" ? "Rounded" : opt === "circle" ? "Circle" : "Square"}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Card style */}
-              <div>
-                <p className="text-xs text-muted-foreground mb-2">Card style</p>
-                <div className="flex gap-2">
-                  {(["default", "flat", "elevated"] as const).map(opt => (
-                    <button
-                      key={opt}
-                      onClick={() => setDashboardAppearance({ cardStyle: opt })}
-                      className={`flex-1 py-2 rounded-lg border-2 text-xs font-medium capitalize transition-all ${
-                        preferences.cardStyle === opt
-                          ? "border-brand bg-brand/5 text-brand"
-                          : "border-border text-muted-foreground hover:border-brand/40"
-                      }`}
-                    >
-                      {opt}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Layout density */}
-              <div>
-                <p className="text-xs text-muted-foreground mb-2">Layout density</p>
-                <div className="flex gap-2">
-                  {(["comfortable", "compact"] as const).map(opt => (
-                    <button
-                      key={opt}
-                      onClick={() => setDashboardAppearance({ layoutDensity: opt })}
-                      className={`flex-1 py-2 rounded-lg border-2 text-xs font-medium capitalize transition-all ${
-                        preferences.layoutDensity === opt
-                          ? "border-brand bg-brand/5 text-brand"
-                          : "border-border text-muted-foreground hover:border-brand/40"
-                      }`}
-                    >
-                      {opt}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* ── Section visibility ──────────────────────────────────────────── */}
-            <div className="border-t border-border/50 pt-4 space-y-2">
-              <p className="text-xs font-medium text-foreground mb-1">Home Page Sections</p>
-              <p className="text-xs text-muted-foreground mb-3">Show or hide sections on your dashboard home screen.</p>
-              {([
-                { key: "showContinueSection" as const, label: "Continue where you left off", desc: "In-progress worksheets, stories and differentiations" },
-                { key: "showRecentActivity" as const,  label: "Recent Activity",              desc: "Last 3 items created across all tools" },
-                { key: "showSubjectBrowser" as const,  label: "Browse by Subject",            desc: "Subject shortcut grid" },
-                { key: "showCobsTip" as const,         label: "COBS Handbook Tip",            desc: "Daily tip from the COBS handbook" },
-              ]).map(({ key, label, desc }) => (
-                <div key={key} className="flex items-center justify-between p-3 bg-muted/40 rounded-lg border border-border/50">
-                  <div>
-                    <p className="text-xs font-medium text-foreground">{label}</p>
-                    <p className="text-xs text-muted-foreground">{desc}</p>
-                  </div>
-                  <button
-                    onClick={() => setDashboardAppearance({ [key]: !preferences[key] })}
-                    className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
-                      preferences[key] ? 'bg-brand' : 'bg-muted-foreground/30'
-                    }`}
-                  >
-                    <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${
-                      preferences[key] ? 'translate-x-4' : 'translate-x-0.5'
-                    }`} />
-                  </button>
-                </div>
-              ))}
-            </div>
-
             {/* Feature Toggles */}
             <div className="border-t border-border/50 pt-4">
             <p className="text-xs font-medium text-foreground mb-2">Feature Toggles</p>
@@ -858,7 +815,7 @@ function PersonalisationSection() {
 
 export default function Settings() {
   const { user, logout } = useApp();
-  const isAdmin = user?.role === "admin" || user?.role === "super_admin";
+  const isAdmin = user?.role === "school_admin" || user?.role === "mat_admin" || user?.role === "admin" || user?.role === "super_admin";
   const [savedKeys, setSavedKeys] = useState<SavedKey[]>([]);
   const [loadingKeys, setLoadingKeys] = useState(false);
   const [expandedProvider, setExpandedProvider] = useState<string | null>(null);
@@ -866,6 +823,14 @@ export default function Settings() {
   const [savingProvider, setSavingProvider] = useState<string | null>(null);
   const [showCustomForm, setShowCustomForm] = useState(false);
   const [customProvider, setCustomProvider] = useState({ label: "", apiKey: "", model: "", baseUrl: "" });
+
+  // Sessions
+  const [sessions, setSessions] = useState<any[]>([]);
+  const [loadingSessions, setLoadingSessions] = useState(false);
+  const [revokingSession, setRevokingSession] = useState<string | null>(null);
+
+  // Referral
+  const [referral, setReferral] = useState<{ code: string; uses: number; url: string } | null>(null);
 
   const fetchKeys = async () => {
     setLoadingKeys(true);
@@ -876,7 +841,58 @@ export default function Settings() {
     setLoadingKeys(false);
   };
 
-  useEffect(() => { if (isAdmin) fetchKeys(); }, [isAdmin]);
+  const fetchSessions = async () => {
+    setLoadingSessions(true);
+    try {
+      const res = await fetch("/api/auth/sessions", { headers: { ...getAuthHeader() } });
+      if (res.ok) { const data = await res.json(); setSessions(data); }
+    } catch (_) {}
+    setLoadingSessions(false);
+  };
+
+  const fetchReferral = async () => {
+    try {
+      const res = await fetch("/api/extras/referral", { headers: { ...getAuthHeader() } });
+      if (res.ok) setReferral(await res.json());
+    } catch (_) {}
+  };
+
+  useEffect(() => {
+    if (isAdmin) fetchKeys();
+    fetchSessions();
+    fetchReferral();
+  }, [isAdmin]);
+
+  const revokeSession = async (id: string) => {
+    setRevokingSession(id);
+    try {
+      await fetch(`/api/auth/sessions/${id}`, { method: "DELETE", headers: { ...getAuthHeader() } });
+      setSessions(prev => prev.filter(s => s.id !== id));
+      toast.success("Session revoked");
+    } catch (_) { toast.error("Failed to revoke session"); }
+    setRevokingSession(null);
+  };
+
+  const revokeAllOtherSessions = async () => {
+    try {
+      await fetch("/api/auth/sessions", { method: "DELETE", headers: { ...getAuthHeader() } });
+      await fetchSessions();
+      toast.success("All other sessions signed out");
+    } catch (_) { toast.error("Failed to revoke sessions"); }
+  };
+
+  const handleGdprExport = async () => {
+    try {
+      const res = await fetch("/api/gdpr/school/export", { headers: { ...getAuthHeader() } });
+      if (!res.ok) { toast.error("Export failed — admin access required"); return; }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a"); a.href = url; a.download = "school-data-export.json";
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast.success("School data exported");
+    } catch (_) { toast.error("Export failed"); }
+  };
 
   const getEditVal = (id: string) => editValues[id] || { apiKey: "", model: "", baseUrl: "", showKey: false };
 
@@ -894,7 +910,7 @@ export default function Settings() {
       if (vals.baseUrl) body.baseUrl = vals.baseUrl;
       const res = await fetch(url, { method, headers: { "Content-Type": "application/json", ...getAuthHeader() }, body: JSON.stringify(body) });
       if (res.ok) {
-        toast.success(`${providerLabel} key saved`);
+        toast.success(`${providerLabel} key saved — available to all staff immediately`);
         setEditValues(prev => ({ ...prev, [providerId]: { ...getEditVal(providerId), apiKey: "" } }));
         await fetchKeys();
         setExpandedProvider(null);
@@ -927,6 +943,17 @@ export default function Settings() {
         <h2 className="text-xl font-bold text-foreground">Settings</h2>
         <p className="text-sm text-muted-foreground mt-1">Your account and AI configuration</p>
       </div>
+
+      {/* No AI keys warning for non-admins */}
+      {!isAdmin && savedKeys.length === 0 && (
+        <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-800 flex items-start gap-2">
+          <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0 text-amber-600" />
+          <div>
+            <p className="font-semibold">AI providers not configured</p>
+            <p className="mt-0.5">Ask your school admin to add API keys in Settings → AI Providers. Until then, AI generation may fall back to local templates.</p>
+          </div>
+        </div>
+      )}
 
       <Card className="border-border/50">
         <CardHeader className="pb-3">

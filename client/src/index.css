@@ -260,3 +260,10 @@
 .overlay-lavender { background-color: #F3E5F5 !important; }
 .overlay-peach { background-color: #FFF3E0 !important; }
 .overlay-pale-pink { background-color: #FCE4EC !important; }
+
+/* Card border override — set via --card-border-override CSS variable */
+/* When a user picks a custom card border colour in Settings, this applies it globally */
+:root:has([data-card-border]) [data-slot="card"],
+.card-border-override [data-slot="card"] {
+  border-color: var(--card-border-override) !important;
+}

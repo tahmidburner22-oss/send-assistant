@@ -43,18 +43,8 @@ export interface UserPreferences {
   dashboardSubjects: string[];      // subjects shown on dashboard
   dashboardPinnedTools: string[];   // tool paths pinned to dashboard
   showWorksheetLibrary?: boolean;   // show the Library tab in Worksheets (default: false)
-  sidebarCollapsed: string[];        // array of sidebar section labels that are collapsed
-  // ── Dashboard appearance ────────────────────────────────────────────────────
-  iconBorderStyle: "none" | "subtle" | "bold";   // ring around quick-access icons
-  iconShape: "rounded" | "circle" | "square";    // shape of icon containers
-  cardStyle: "default" | "flat" | "elevated";    // card shadow/border style
-  cardBorderStyle: "none" | "subtle" | "bold";   // visible border around dashboard cards
-  layoutDensity: "comfortable" | "compact";      // spacing between sections
-  // ── Dashboard section visibility ────────────────────────────────────────────
-  showContinueSection: boolean;    // "Continue where you left off"
-  showRecentActivity: boolean;     // "Recent Activity"
-  showSubjectBrowser: boolean;     // "Browse by Subject"
-  showCobsTip: boolean;            // "COBS Handbook Tip"
+  sidebarCollapsed: string[];       // array of sidebar section labels that are collapsed
+  cardBorderColor?: string;         // hex colour for card borders e.g. "#10b981", or "none"
 }
 
 // ─── Preset themes ────────────────────────────────────────────────────────────
@@ -123,17 +113,7 @@ const DEFAULT_PREFERENCES: UserPreferences = {
   dashboardCards: ALL_DASHBOARD_CARDS.map(c => c.id),
   dashboardSubjects: ["Mathematics", "English", "Science", "History", "Geography"],
   dashboardPinnedTools: [],
-  // Dashboard appearance defaults
-  iconBorderStyle: "none",
-  iconShape: "rounded",
-  cardStyle: "default",
-  cardBorderStyle: "none",
-  layoutDensity: "comfortable",
-  // Section visibility defaults (all on)
-  showContinueSection: true,
-  showRecentActivity: true,
-  showSubjectBrowser: true,
-  showCobsTip: true,
+  cardBorderColor: "none",
 };
 
 // ─── Context ──────────────────────────────────────────────────────────────────
@@ -152,10 +132,7 @@ interface UserPreferencesContextType {
   toggleDashboardSubject: (subject: string) => void;
   togglePinnedTool: (path: string) => void;
   setShowWorksheetLibrary: (show: boolean) => void;
-  setDashboardAppearance: (updates: Partial<Pick<UserPreferences,
-    "iconBorderStyle" | "iconShape" | "cardStyle" | "cardBorderStyle" | "layoutDensity" |
-    "showContinueSection" | "showRecentActivity" | "showSubjectBrowser" | "showCobsTip"
-  >>) => void;
+  setCardBorderColor: (color: string) => void;
   resetPreferences: () => void;
   currentTheme: ColourTheme;
   currentWallpaper: Wallpaper;
@@ -240,12 +217,18 @@ export function UserPreferencesProvider({
       .catch(() => { /* server unavailable — use local */ });
   }, [userId]);
 
-  // Apply theme CSS variables to :root whenever theme changes
+  // Apply theme CSS variables to :root whenever theme or card border changes
   useEffect(() => {
     const theme = COLOUR_THEMES.find(t => t.id === preferences.themeId) || COLOUR_THEMES[0];
     document.documentElement.style.setProperty("--brand", theme.primary);
     document.documentElement.style.setProperty("--brand-accent", theme.accent);
-  }, [preferences.themeId]);
+    // Card border colour override. When "none", remove the property so CSS falls back to Tailwind border.
+    if (preferences.cardBorderColor && preferences.cardBorderColor !== "none") {
+      document.documentElement.style.setProperty("--card-border-override", preferences.cardBorderColor);
+    } else {
+      document.documentElement.style.removeProperty("--card-border-override");
+    }
+  }, [preferences.themeId, preferences.cardBorderColor]);
 
   const update = useCallback((updates: Partial<UserPreferences>) => {
     setPreferences(prev => {
@@ -338,17 +321,9 @@ export function UserPreferencesProvider({
     });
   }, [userId]);
 
-  const setDashboardAppearance = useCallback((updates: Partial<Pick<UserPreferences,
-    "iconBorderStyle" | "iconShape" | "cardStyle" | "layoutDensity" |
-    "showContinueSection" | "showRecentActivity" | "showSubjectBrowser" | "showCobsTip"
-  >>) => {
-    setPreferences(prev => {
-      const next = { ...prev, ...updates };
-      savePrefs(next, userId);
-      syncToServer(next);
-      return next;
-    });
-  }, [userId]);
+  const setCardBorderColor = useCallback((color: string) => {
+    update({ cardBorderColor: color });
+  }, [update]);
 
   const resetPreferences = useCallback(() => {
     const fresh = { ...DEFAULT_PREFERENCES };
@@ -390,7 +365,7 @@ export function UserPreferencesProvider({
       toggleDashboardSubject,
       togglePinnedTool,
       setShowWorksheetLibrary,
-      setDashboardAppearance,
+      setCardBorderColor,
       resetPreferences,
       currentTheme,
       currentWallpaper,
