@@ -67,6 +67,8 @@ export default function Onboarding() {
   const handleSubmit = async () => {
     if (adminData.password !== adminData.confirmPassword) { toast.error("Passwords do not match"); return; }
     if (adminData.password.length < 8) { toast.error("Password must be at least 8 characters"); return; }
+    if (!/[0-9]/.test(adminData.password)) { toast.error("Password must contain at least one number"); return; }
+    if (!/[^a-zA-Z0-9]/.test(adminData.password)) { toast.error("Password must contain at least one special character (e.g. ! @ # $)"); return; }
     setLoading(true);
     try {
       const result = await schoolsApi.onboard({ school: schoolData, dsl: dslData, admin: { displayName: adminData.displayName, email: adminData.email, password: adminData.password } }) as any;
@@ -229,11 +231,33 @@ export default function Onboarding() {
               )}
               {step === 5 && (
                 <motion.div key="step5" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="text-center space-y-4 py-4">
-                  <div className="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30 mx-auto flex items-center justify-center"><Check className="w-8 h-8 text-green-600" /></div>
-                  <h2 className="text-xl font-semibold">School registered!</h2>
-                  <p className="text-sm text-muted-foreground">Your school has been set up. Check your email to verify your account, then sign in to start using Adaptly.</p>
-                  {apiKeys.length === 0 && <p className="text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 rounded p-2">No AI keys added yet. Sign in and go to <strong>Settings → AI Providers</strong> to add them before using AI features.</p>}
-                  <Button className="w-full bg-brand hover:bg-brand/90 text-white" onClick={() => setLocation("/")}>Go to Sign In</Button>
+                  <div className="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30 mx-auto flex items-center justify-center">
+                    <Check className="w-8 h-8 text-green-600" />
+                  </div>
+                  <h2 className="text-xl font-semibold">School registered! 🎉</h2>
+                  <p className="text-sm text-muted-foreground">Your school has been set up on Adaptly. Here's what to do next:</p>
+                  <div className="text-left space-y-2 bg-brand/5 border border-brand/20 rounded-xl p-4">
+                    <div className="flex items-start gap-2.5">
+                      <div className="w-5 h-5 rounded-full bg-brand text-white flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">1</div>
+                      <p className="text-sm text-foreground"><strong>Check your email</strong> — click the verification link we just sent you</p>
+                    </div>
+                    <div className="flex items-start gap-2.5">
+                      <div className="w-5 h-5 rounded-full bg-brand text-white flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">2</div>
+                      <p className="text-sm text-foreground"><strong>Sign in</strong> — a quick 2-minute tour will show you every feature</p>
+                    </div>
+                    <div className="flex items-start gap-2.5">
+                      <div className="w-5 h-5 rounded-full bg-brand text-white flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">3</div>
+                      <p className="text-sm text-foreground"><strong>Generate your first worksheet</strong> — takes under 30 seconds</p>
+                    </div>
+                  </div>
+                  {apiKeys.length === 0 && (
+                    <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-3">
+                      ⚠️ <strong>No AI keys added.</strong> After signing in go to <strong>Settings → AI Providers</strong> to add a free Groq or Gemini key before using AI features.
+                    </p>
+                  )}
+                  <Button className="w-full bg-brand hover:bg-brand/90 text-white h-11" onClick={() => setLocation("/")}>
+                    Go to Sign In →
+                  </Button>
                 </motion.div>
               )}
             </AnimatePresence>
