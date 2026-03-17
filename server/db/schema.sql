@@ -419,13 +419,7 @@ CREATE TABLE IF NOT EXISTS custom_quizzes (
 );
 CREATE INDEX IF NOT EXISTS idx_custom_quizzes_school ON custom_quizzes(school_id);
 
--- ── Migration: add failed login tracking columns if upgrading from older schema ──
--- These are safe to run on existing databases
-ALTER TABLE users ADD COLUMN IF NOT EXISTS failed_login_attempts INTEGER NOT NULL DEFAULT 0;
-ALTER TABLE users ADD COLUMN IF NOT EXISTS locked_until TEXT;
-
 -- ── Additional performance indexes ──────────────────────────────────────────────
 CREATE INDEX IF NOT EXISTS idx_sessions_expires ON sessions(expires_at);
-CREATE INDEX IF NOT EXISTS idx_password_resets_token ON password_resets(token);
-CREATE INDEX IF NOT EXISTS idx_password_resets_user ON password_resets(user_id);
 CREATE INDEX IF NOT EXISTS idx_users_locked ON users(locked_until) WHERE locked_until IS NOT NULL;
+
