@@ -44,6 +44,16 @@ export interface UserPreferences {
   dashboardPinnedTools: string[];   // tool paths pinned to dashboard
   showWorksheetLibrary?: boolean;   // show the Library tab in Worksheets (default: false)
   sidebarCollapsed: string[];        // array of sidebar section labels that are collapsed
+  // ── Dashboard appearance ────────────────────────────────────────────────────
+  iconBorderStyle: "none" | "subtle" | "bold";   // ring around quick-access icons
+  iconShape: "rounded" | "circle" | "square";    // shape of icon containers
+  cardStyle: "default" | "flat" | "elevated";    // card shadow/border style
+  layoutDensity: "comfortable" | "compact";      // spacing between sections
+  // ── Dashboard section visibility ────────────────────────────────────────────
+  showContinueSection: boolean;    // "Continue where you left off"
+  showRecentActivity: boolean;     // "Recent Activity"
+  showSubjectBrowser: boolean;     // "Browse by Subject"
+  showCobsTip: boolean;            // "COBS Handbook Tip"
 }
 
 // ─── Preset themes ────────────────────────────────────────────────────────────
@@ -112,6 +122,16 @@ const DEFAULT_PREFERENCES: UserPreferences = {
   dashboardCards: ALL_DASHBOARD_CARDS.map(c => c.id),
   dashboardSubjects: ["Mathematics", "English", "Science", "History", "Geography"],
   dashboardPinnedTools: [],
+  // Dashboard appearance defaults
+  iconBorderStyle: "none",
+  iconShape: "rounded",
+  cardStyle: "default",
+  layoutDensity: "comfortable",
+  // Section visibility defaults (all on)
+  showContinueSection: true,
+  showRecentActivity: true,
+  showSubjectBrowser: true,
+  showCobsTip: true,
 };
 
 // ─── Context ──────────────────────────────────────────────────────────────────
@@ -130,6 +150,10 @@ interface UserPreferencesContextType {
   toggleDashboardSubject: (subject: string) => void;
   togglePinnedTool: (path: string) => void;
   setShowWorksheetLibrary: (show: boolean) => void;
+  setDashboardAppearance: (updates: Partial<Pick<UserPreferences,
+    "iconBorderStyle" | "iconShape" | "cardStyle" | "layoutDensity" |
+    "showContinueSection" | "showRecentActivity" | "showSubjectBrowser" | "showCobsTip"
+  >>) => void;
   resetPreferences: () => void;
   currentTheme: ColourTheme;
   currentWallpaper: Wallpaper;
@@ -311,6 +335,19 @@ export function UserPreferencesProvider({
       return next;
     });
   }, [userId]);
+
+  const setDashboardAppearance = useCallback((updates: Partial<Pick<UserPreferences,
+    "iconBorderStyle" | "iconShape" | "cardStyle" | "layoutDensity" |
+    "showContinueSection" | "showRecentActivity" | "showSubjectBrowser" | "showCobsTip"
+  >>) => {
+    setPreferences(prev => {
+      const next = { ...prev, ...updates };
+      savePrefs(next, userId);
+      syncToServer(next);
+      return next;
+    });
+  }, [userId]);
+
   const resetPreferences = useCallback(() => {
     const fresh = { ...DEFAULT_PREFERENCES };
     savePrefs(fresh, userId);
@@ -351,6 +388,7 @@ export function UserPreferencesProvider({
       toggleDashboardSubject,
       togglePinnedTool,
       setShowWorksheetLibrary,
+      setDashboardAppearance,
       resetPreferences,
       currentTheme,
       currentWallpaper,
