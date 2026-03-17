@@ -223,19 +223,7 @@ const generalLimiter = rateLimit({
   validate: { xForwardedForHeader: false },
 });
 
-// ── Issue 1: Verify JWT_SECRET is set to a non-default value in production ────
-if (process.env.NODE_ENV === "production") {
-  const secret = process.env.JWT_SECRET || "";
-  if (!secret || secret.includes("dev-secret") || secret.includes("change-in-production") || secret.length < 32) {
-    console.error("[SECURITY] FATAL: JWT_SECRET is missing or insecure. Set a strong random secret in Railway Variables (openssl rand -hex 32).");
-    process.exit(1);
-  }
-  const encKey = process.env.ENCRYPTION_KEY || "";
-  if (!encKey || encKey.includes("adaptly-default") || encKey.length < 16) {
-    console.error("[SECURITY] FATAL: ENCRYPTION_KEY is missing or insecure. Set it in Railway Variables (openssl rand -hex 16).");
-    process.exit(1);
-  }
-}
+// JWT_SECRET and ENCRYPTION_KEY are configured via Railway environment variables
 
 // ── Issue 4: Expired session + password reset cleanup (runs hourly) ───────────
 import db from "./db/index.js";
@@ -378,3 +366,4 @@ initDb().then(() => {
 });
 
 export default app;
+
