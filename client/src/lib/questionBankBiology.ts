@@ -1,14 +1,10 @@
 /**
  * BIOLOGY QUESTION BANK — Original exam-style questions
  * Source: Adaptly Question Bank (100% original content)
- * Topics: All KS3, GCSE and A-Level Biology topics
  */
 import type { PastPaperQuestion } from "./pastPaperQuestions";
 
 const biologyQuestions: PastPaperQuestion[] = [
-
-export default biologyQuestions;
-
   { id:"bio-g0001", board:"Adaptly", subject:"biology", year:2019, series:"June", paper:"Paper 1", tier:"Foundation", marks:1, topic:"Cells and Organisation", stage:"ks3", yearGroups:[7,8,9], text:"State the function of the cell membrane.", commandWord:"State", answerLines:1, markScheme:"Controls movement of substances in and out of the cell" },
   { id:"bio-g0002", board:"Adaptly", subject:"biology", year:2020, series:"November", paper:"Paper 1", tier:"Foundation", marks:2, topic:"Reproduction", stage:"ks3", yearGroups:[7,8,9], text:"Describe the process of fertilisation in humans.", commandWord:"Describe", answerLines:2, markScheme:"Fusion of male and female gametes; formation of a zygote" },
   { id:"bio-g0003", board:"Adaptly", subject:"biology", year:2021, series:"June", paper:"Paper 2", tier:"Foundation", marks:2, topic:"Ecosystems and Food Webs", stage:"ks3", yearGroups:[7,8,9], text:"Explain why plants are producers in a food chain.", commandWord:"Explain", answerLines:2, markScheme:"Plants produce glucose by photosynthesis; this provides energy for other organisms" },
@@ -768,3 +764,5 @@ export default biologyQuestions;
   { id:"bio-g0973", board:"Adaptly", subject:"biology", year:2021, series:"June", paper:"Paper 2", tier:"Foundation", marks:1, topic:"Plant Biology", stage:"ks3", yearGroups:[7,8,9], text:"Name the process by which plants make their food.", commandWord:"Name", answerLines:1, markScheme:"Photosynthesis" },
   { id:"bio-g0974", board:"Adaptly", subject:"biology", year:2021, series:"June", paper:"Paper 1", tier:"Higher", marks:5, topic:"Respiration", stage:"gcse", yearGroups:[10,11], text:"Explain how oxygen consumption changes during vigorous exercise.", commandWord:"Explain", answerLines:5, markScheme:"Increased muscle activity uses more oxygen; respiration rate increases; cardiovascular" },
 ];
+
+export default biologyQuestions;
