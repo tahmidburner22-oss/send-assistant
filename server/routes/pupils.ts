@@ -6,6 +6,17 @@ import { sendDSLIncidentAlert } from "../email/index.js";
 
 const router = Router();
 
+// Parse JSON fields in assignment rows returned from SQLite
+function parseAssignment(a: any): any {
+  if (!a) return a;
+  return {
+    ...a,
+    sections: a.sections ? (() => { try { return JSON.parse(a.sections); } catch { return undefined; } })() : undefined,
+    metadata: a.metadata ? (() => { try { return JSON.parse(a.metadata); } catch { return undefined; } })() : undefined,
+  };
+}
+
+
 // ── List Pupils (with assignments, attendance, behaviour) ────────────────────
 router.get("/", requireAuth, (req: Request, res: Response) => {
   const pupils = db.prepare(
@@ -13,7 +24,7 @@ router.get("/", requireAuth, (req: Request, res: Response) => {
   ).all(req.user!.schoolId) as any[];
 
   const enriched = pupils.map(p => {
-    const assignments = db.prepare("SELECT * FROM assignments WHERE pupil_id = ? ORDER BY assigned_at DESC").all(p.id);
+    const assignments = (db.prepare("SELECT * FROM assignments WHERE pupil_id = ? ORDER BY assigned_at DESC").all(p.id) as any[]).map(parseAssignment);
     const attendance = db.prepare("SELECT * FROM attendance_records WHERE pupil_id = ? ORDER BY date DESC").all(p.id);
     const behaviour = db.prepare("SELECT * FROM behaviour_records WHERE pupil_id = ? ORDER BY date DESC LIMIT 100").all(p.id);
     return { ...p, assignments, attendance, behaviour };
@@ -34,7 +45,7 @@ router.get("/:id", requireAuth, (req: Request, res: Response) => {
      WHERE pa.pupil_id = ? ORDER BY pa.changed_at DESC LIMIT 50`
   ).all(pupil.id);
 
-  const assignments = db.prepare("SELECT * FROM assignments WHERE pupil_id = ? ORDER BY assigned_at DESC").all(pupil.id);
+  const assignments = (db.prepare("SELECT * FROM assignments WHERE pupil_id = ? ORDER BY assigned_at DESC").all(pupil.id) as any[]).map(parseAssignment);
   const attendance = db.prepare("SELECT * FROM attendance_records WHERE pupil_id = ? ORDER BY date DESC LIMIT 30").all(pupil.id);
   const behaviour = db.prepare("SELECT * FROM behaviour_records WHERE pupil_id = ? ORDER BY date DESC LIMIT 30").all(pupil.id);
 
@@ -177,13 +188,18 @@ router.put("/safeguarding/incidents/:id", requireAuth, requireMinRole("senco"), 
 router.post("/:id/assignments", requireAuth, (req: Request, res: Response) => {
   const pupil = db.prepare("SELECT id FROM pupils WHERE id = ? AND school_id = ?").get(req.params.id, req.user!.schoolId);
   if (!pupil) return res.status(404).json({ error: "Pupil not found" });
-  const { title, type, content, sections, metadata, subtitle } = req.body;
+  const { title, type, content, sections, subtitle, metadata } = req.body;
   if (!title || !type) return res.status(400).json({ error: "title and type required" });
   const id = uuidv4();
-  const sectionsJson = sections ? JSON.stringify(sections) : null;
-  const metadataJson = metadata ? JSON.stringify(metadata) : null;
-  db.prepare(`INSERT INTO assignments (id, pupil_id, assigned_by, title, type, content, sections, metadata, subtitle, status)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'not-started')`).run(id, req.params.id, req.user!.id, title, type, content || null, sectionsJson, metadataJson, subtitle || null);
+  db.prepare(`INSERT INTO assignments (id, pupil_id, assigned_by, title, subtitle, type, content, sections, metadata, status)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'not-started')`).run(
+    id, req.params.id, req.user!.id, title,
+    subtitle || null,
+    type,
+    content || null,
+    sections ? JSON.stringify(sections) : null,
+    metadata ? JSON.stringify(metadata) : null,
+  );
   auditLog(req.user!.id, req.user!.schoolId ?? null, "assignment.created", "assignment", id, { title, type }, req.ip ?? undefined);
   res.status(201).json({ id });
 });
