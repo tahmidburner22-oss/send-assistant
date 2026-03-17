@@ -1046,11 +1046,14 @@ function formatContent(content: string | any, fmt: ReturnType<typeof getSendForm
   // We split on any separator (comma, period+space, semicolon) before a number+period/paren pattern.
   let preprocessed = content
     // Split on ". N." pattern (period-space before numbered item)
-    .replace(/\.\s+(\d+[a-z]?[.)\s]\s*)/g, '.\n$1')
+    // Use a negative lookbehind to avoid splitting on decimal numbers like "3.14"
+    .replace(/(?<![0-9])\.\s+(\d+[a-z]?[.)\s]\s*)/g, '.\n$1')
     // Split on ", N." pattern (comma before numbered item)
     .replace(/(,\s*)(\d+[a-z]?[.)\s]\s*)/g, '\n$2')
     // Split on "; N." pattern (semicolon before numbered item)
-    .replace(/(;\s*)(\d+[a-z]?[.)\s]\s*)/g, '\n$2');
+    .replace(/(;\s*)(\d+[a-z]?[.)\s]\s*)/g, '\n$2')
+    // Remove any line that is ONLY a period (artifact of the split above)
+    .replace(/^\s*\.\s*$/gm, '');
   const lines = preprocessed.split("\n");
   const elements: React.ReactNode[] = [];
   let inTable = false;
@@ -1107,7 +1110,8 @@ function formatContent(content: string | any, fmt: ReturnType<typeof getSendForm
   lines.forEach((line, idx) => {
     let trimmed = line.trim();
     // Clean up lines that start with a lone period/dot (artifact of numbering removal)
-    trimmed = trimmed.replace(/^\. /, '');
+    // Handles: ". Text", ".Text", ". " (standalone), and multiple leading periods
+    trimmed = trimmed.replace(/^\.+\s*/, '').trim();
 
     // Table row
     if (trimmed.includes("|") && !trimmed.startsWith("Hint:") && !trimmed.startsWith("Step")) {
