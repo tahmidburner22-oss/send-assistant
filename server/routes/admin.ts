@@ -513,3 +513,80 @@ router.patch("/super/schools/:id/subscription", requireAuth, requireSuperAdmin, 
 });
 
 export default router;
+
+// ── GET /api/admin/senco-report — cross-class SEND overview for SENCOs ────────
+// Returns all pupils with SEND needs grouped by need type, with assignment stats
+router.get("/senco-report", requireAuth, (req: Request, res: Response) => {
+  const user = (req as any).user;
+  const schoolId = user?.schoolId;
+  if (!schoolId) return res.status(400).json({ error: "No school associated" });
+
+  try {
+    // All SEND pupils across the school
+    const pupils = db.prepare(
+      "SELECT id, name, year_group, send_need FROM pupils WHERE school_id=? AND is_active=1 AND send_need IS NOT NULL AND send_need != '' ORDER BY send_need, year_group, name"
+    ).all(schoolId) as any[];
+
+    // For each pupil, get basic assignment stats
+    const enriched = pupils.map(p => {
+      const stats = db.prepare(
+        "SELECT COUNT(*) as total, SUM(CASE WHEN status='completed' THEN 1 ELSE 0 END) as completed, AVG(COALESCE(progress,0)) as avgProgress FROM assignments WHERE pupil_id=?"
+      ).get(p.id) as any;
+      return {
+        id: p.id,
+        name: p.name,
+        yearGroup: p.year_group,
+        sendNeed: p.send_need,
+        totalAssignments: stats?.total || 0,
+        completedAssignments: stats?.completed || 0,
+        avgProgress: Math.round(stats?.avgProgress || 0),
+      };
+    });
+
+    // Group by SEND need
+    const grouped: Record<string, any[]> = {};
+    for (const p of enriched) {
+      const key = p.sendNeed || "Unknown";
+      if (!grouped[key]) grouped[key] = [];
+      grouped[key].push(p);
+    }
+
+    // Summary stats
+    const totalSendPupils = pupils.length;
+    const needCounts = Object.entries(grouped).map(([need, list]) => ({ need, count: list.length }))
+      .sort((a, b) => b.count - a.count);
+
+    res.json({ totalSendPupils, needCounts, grouped });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── GET /api/admin/school-usage-trend — weekly usage for admin analytics ──────
+router.get("/school-usage-trend", requireAuth, (req: Request, res: Response) => {
+  const user = (req as any).user;
+  const schoolId = user?.schoolId;
+  if (!schoolId) return res.status(400).json({ error: "No school" });
+
+  try {
+    const weeks: any[] = [];
+    for (let w = 7; w >= 0; w--) {
+      const weekStart = new Date();
+      weekStart.setDate(weekStart.getDate() - w * 7);
+      weekStart.setHours(0, 0, 0, 0);
+      const weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekStart.getDate() + 7);
+      const s = weekStart.toISOString();
+      const e = weekEnd.toISOString();
+      const label = weekStart.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+      const worksheets = (db.prepare("SELECT COUNT(*) as c FROM worksheets WHERE school_id=? AND created_at>=? AND created_at<?").get(schoolId, s, e) as any)?.c || 0;
+      const stories = (db.prepare("SELECT COUNT(*) as c FROM stories WHERE school_id=? AND created_at>=? AND created_at<?").get(schoolId, s, e) as any)?.c || 0;
+      const diffs = (db.prepare("SELECT COUNT(*) as c FROM differentiations WHERE school_id=? AND created_at>=? AND created_at<?").get(schoolId, s, e) as any)?.c || 0;
+      const activeUsers = (db.prepare("SELECT COUNT(DISTINCT user_id) as c FROM audit_log WHERE school_id=? AND created_at>=? AND created_at<?").get(schoolId, s, e) as any)?.c || 0;
+      weeks.push({ week: label, worksheets, stories, differentiations: diffs, activeUsers });
+    }
+    res.json(weeks);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});

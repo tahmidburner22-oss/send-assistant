@@ -213,6 +213,43 @@ export default function Children() {
   const [yearGroup, setYearGroup] = useState("");
   const [sendNeed, setSendNeed] = useState(""); // kept for single-select compat
   const [selectedSendNeeds, setSelectedSendNeeds] = useState<string[]>([]);
+  const [showSencoReport, setShowSencoReport] = useState(false);
+  const [sencoReport, setSencoReport] = useState<any>(null);
+  const [sencoReportLoading, setSencoReportLoading] = useState(false);
+
+  // Load SENCO report when panel opens
+  const loadSencoReport = async () => {
+    if (sencoReport) return; // cached
+    setSencoReportLoading(true);
+    try {
+      const token = localStorage.getItem("send_token");
+      const res = await fetch("/api/admin/senco-report", {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        credentials: "include",
+      });
+      if (res.ok) setSencoReport(await res.json());
+    } catch (_) {}
+    setSencoReportLoading(false);
+  };
+
+  const handleGdprExportPupil = async (pupilId: string, pupilName: string) => {
+    try {
+      const token = localStorage.getItem("send_token");
+      const res = await fetch(`/api/gdpr/pupils/${pupilId}/export`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        credentials: "include",
+      });
+      if (!res.ok) { import("sonner").then(m => m.toast.error("Export failed — admin access required")); return; }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `pupil-data-${pupilId.slice(0, 8)}.json`;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      import("sonner").then(m => m.toast.success(`Data exported for pupil`));
+    } catch (_) { import("sonner").then(m => m.toast.error("Export failed")); }
+  };
 
   const toggleSendNeed = (id: string) => {
     setSelectedSendNeeds(prev =>
@@ -563,6 +600,9 @@ If the submission is empty or too short to mark, return mark: "N/A", feedback: "
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">Manage your SEND students and their assignments.</p>
         <div className="flex items-center gap-2">
+          <Button size="sm" variant="outline" onClick={() => setShowSencoReport(s => !s)} className={showSencoReport ? "border-brand text-brand" : ""}>
+            <Users className="w-4 h-4 mr-1" /> SENCO Report
+          </Button>
           <Button size="sm" variant="outline" onClick={() => setShowCsvDialog(true)}>
             <Upload className="w-4 h-4 mr-1" /> Import CSV
           </Button>
@@ -571,6 +611,68 @@ If the submission is empty or too short to mark, return mark: "N/A", feedback: "
           </Button>
         </div>
       </motion.div>
+
+      {/* SENCO Cross-Class Report */}
+      {showSencoReport && (
+        <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
+          {!sencoReport && !sencoReportLoading && (
+            <div className="text-center py-4">
+              <button
+                onClick={loadSencoReport}
+                className="px-4 py-2 bg-brand text-white text-sm rounded-lg hover:bg-brand/90 transition-colors"
+              >
+                Load SENCO Report
+              </button>
+            </div>
+          )}
+          {sencoReportLoading && (
+            <div className="text-center py-4 text-sm text-muted-foreground">Loading report…</div>
+          )}
+          {sencoReport && (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-semibold text-foreground">
+                  School-wide SEND Overview — {sencoReport.totalSendPupils} pupils
+                </p>
+                <button onClick={() => setSencoReport(null)} className="text-xs text-muted-foreground hover:text-foreground">Refresh</button>
+              </div>
+              {/* Need summary */}
+              <div className="flex flex-wrap gap-2">
+                {sencoReport.needCounts.map((n: any) => (
+                  <span key={n.need} className="text-xs px-2 py-1 rounded-full bg-brand-light text-brand font-medium">
+                    {n.need} ({n.count})
+                  </span>
+                ))}
+              </div>
+              {/* Grouped pupil list */}
+              {Object.entries(sencoReport.grouped as Record<string, any[]>).map(([need, pupils]) => (
+                <div key={need} className="rounded-xl border border-border/50 overflow-hidden">
+                  <div className="px-3 py-2 bg-muted/40 flex items-center justify-between">
+                    <span className="text-xs font-semibold text-foreground">{need}</span>
+                    <span className="text-xs text-muted-foreground">{(pupils as any[]).length} pupil{(pupils as any[]).length !== 1 ? "s" : ""}</span>
+                  </div>
+                  <div className="divide-y divide-border/30">
+                    {(pupils as any[]).map((p: any) => (
+                      <div key={p.id} className="px-3 py-2 flex items-center justify-between gap-2">
+                        <div className="flex-1 min-w-0">
+                          <span className="text-xs font-medium text-foreground">{p.name}</span>
+                          <span className="text-[10px] text-muted-foreground ml-2">{p.yearGroup}</span>
+                        </div>
+                        <div className="flex items-center gap-3 flex-shrink-0">
+                          <span className="text-[10px] text-muted-foreground">{p.completedAssignments}/{p.totalAssignments} done</span>
+                          <div className="w-12 h-1.5 bg-muted rounded-full overflow-hidden">
+                            <div className="h-full bg-brand rounded-full" style={{ width: `${p.avgProgress}%` }} />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </motion.div>
+      )}
 
       {/* CSV Import Dialog */}
       <Dialog open={showCsvDialog} onOpenChange={setShowCsvDialog}>
@@ -1158,6 +1260,13 @@ If the submission is empty or too short to mark, return mark: "N/A", feedback: "
                   className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-purple-600 text-white text-xs font-medium hover:bg-purple-700 transition-colors"
                 >
                   <Sparkles className="w-3.5 h-3.5" /> Differentiate
+                </button>
+                <button
+                  onClick={() => handleGdprExportPupil(selectedChild.id, selectedChild.name)}
+                  title="Export all data held for this pupil (UK GDPR Article 20)"
+                  className="flex items-center justify-center gap-1 px-2.5 py-2 rounded-lg border border-border/60 bg-background text-xs text-muted-foreground hover:text-foreground hover:border-border transition-colors"
+                >
+                  <Shield className="w-3.5 h-3.5" /> GDPR
                 </button>
               </div>
 

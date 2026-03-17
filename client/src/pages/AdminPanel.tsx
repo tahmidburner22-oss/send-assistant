@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import {
   Users, Shield, Activity, UserPlus, UserX, UserCheck, Key,
   AlertTriangle, BarChart3, Settings2, Terminal, RefreshCw,
-  Eye, EyeOff, CheckCircle2, Cpu, Zap, Globe,
+  Eye, EyeOff, CheckCircle2, Cpu, Zap, Globe, TrendingUp,
   CreditCard, Building2, TrendingUp, FileText, ChevronDown, ChevronRight,
   PoundSterling, Calendar, ExternalLink
 } from "lucide-react";
@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { useApp } from "@/contexts/AppContext";
 import { schools as schoolsApi, pupils as pupilsApi } from "@/lib/api";
 import { useLocation } from "wouter";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 
 const ROLE_LABELS: Record<string, string> = {
   mat_admin: "MAT Admin",
@@ -58,6 +59,7 @@ export default function AdminPanel() {
   const [incidents, setIncidents] = useState<any[]>([]);
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
   const [stats, setStats] = useState<any>(null);
+  const [usageTrend, setUsageTrend] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteName, setInviteName] = useState("");
@@ -102,9 +104,11 @@ export default function AdminPanel() {
       fetch("/api/admin/stats", { credentials: "include" }).then(r => r.ok ? r.json() : null).catch(() => null),
       fetch("/api/admin/ai-keys", { credentials: "include" }).then(r => r.ok ? r.json() : {}).catch(() => ({})),
       fetch("/api/admin/breach-log", { credentials: "include" }).then(r => r.ok ? r.json() : { breaches: [] }).catch(() => ({ breaches: [] })),
-    ]).then(([u, i, a, s, k, b]) => {
+      fetch("/api/admin/school-usage-trend", { credentials: "include" }).then(r => r.ok ? r.json() : []).catch(() => []),
+    ]).then(([u, i, a, s, k, b, trend]) => {
       setUsers(u || []); setIncidents(i || []); setAuditLogs(a || []);
       setStats(s); setApiKeys(k || {}); setBreaches((b as any)?.breaches || []);
+      setUsageTrend(Array.isArray(trend) ? trend : []);
     }).catch(() => toast.error("Failed to load admin data"))
       .finally(() => setLoading(false));
 
@@ -470,6 +474,27 @@ export default function AdminPanel() {
                 </div>
               ) : (
                 <p className="text-sm text-muted-foreground text-center py-4">Loading analytics...</p>
+              )}
+
+              {/* Weekly usage trend chart */}
+              {usageTrend.length > 0 && (
+                <div>
+                  <p className="text-xs font-semibold text-foreground mb-2 flex items-center gap-1">
+                    <TrendingUp className="w-3.5 h-3.5 text-brand" /> School Activity — Last 8 Weeks
+                  </p>
+                  <ResponsiveContainer width="100%" height={160}>
+                    <LineChart data={usageTrend}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                      <XAxis dataKey="week" tick={{ fontSize: 9 }} interval={1} />
+                      <YAxis tick={{ fontSize: 9 }} allowDecimals={false} />
+                      <Tooltip />
+                      <Legend iconSize={7} wrapperStyle={{ fontSize: 9 }} />
+                      <Line type="monotone" dataKey="worksheets" stroke="#10B981" strokeWidth={2} dot={{ r: 2 }} name="Worksheets" />
+                      <Line type="monotone" dataKey="stories" stroke="#7C3AED" strokeWidth={2} dot={{ r: 2 }} name="Stories" />
+                      <Line type="monotone" dataKey="activeUsers" stroke="#F59E0B" strokeWidth={2} dot={{ r: 2 }} name="Active Users" />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
               )}
             </CardContent>
           </Card>
