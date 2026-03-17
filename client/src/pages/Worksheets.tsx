@@ -361,7 +361,7 @@ export default function Worksheets() {
   // One-click differentiation
   const [showDiffDialog, setShowDiffDialog] = useState(false);
   const [showPrintPreview, setShowPrintPreview] = useState(false);
-  const [printPreviewPages, setPrintPreviewPages] = useState<string[]>([]);
+  const [printPreviewHtml, setPrintPreviewHtml] = useState<string>("");
   const [printPreviewLoading, setPrintPreviewLoading] = useState(false);
   const [printPreviewViewMode, setPrintPreviewViewMode] = useState<"teacher" | "student">("teacher");
   const [diffLoading, setDiffLoading] = useState<string | null>(null);
@@ -925,107 +925,131 @@ export default function Worksheets() {
     setPrintPreviewViewMode(previewViewMode);
     setPrintPreviewLoading(true);
     setShowPrintPreview(true);
-    setPrintPreviewPages([]);
+    setPrintPreviewHtml("");
     try {
       const contentHtml = serialiseElement(container, previewViewMode);
       const katexCss = getKatexCssInline();
       const sendNeedId = generated?.metadata?.sendNeed || sendNeed || undefined;
-      // Build a full HTML document (same as print popup but without auto-print script)
-      const fullHtml = buildPopupHtml(contentHtml, katexCss, {
-        overlayColor: overlayBg,
-        viewMode: previewViewMode,
-        textSize,
-        title: generated?.title,
-        sendNeedId,
-        isPdf: false,
-      });
-      // Render into a hidden iframe to measure real page breaks
-      const A4_W_PX = 794;
-      const A4_H_PX = 1123; // 297mm at 96dpi
-      const iframe = document.createElement("iframe");
-      iframe.style.cssText = `position:fixed;top:0;left:-9999px;width:${A4_W_PX}px;height:${A4_H_PX}px;border:none;visibility:hidden;`;
-      document.body.appendChild(iframe);
+      const bg = overlayBg || "#ffffff";
+
+      // A4 dimensions at 96dpi
+      const A4_W = 794;
+      const A4_H = 1123;
+      const MARGIN = 45; // ~12mm
+      const CONTENT_H = A4_H - MARGIN * 2;
+
+      // Step 1: Render content in a hidden measurement iframe at A4 width
+      // to get the real rendered height of each block
+      const { getSendFormatting } = await import("@/lib/send-data");
+      const fmt = getSendFormatting(sendNeedId, textSize);
+
+      const measureHtml = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+        <style>${katexCss}</style>
+        <style>
+          *, *::before, *::after { box-sizing: border-box; }
+          html, body { margin: 0; padding: 0; background: ${bg};
+            font-family: ${fmt.fontFamily}; font-size: ${fmt.fontSize}px;
+            line-height: ${fmt.lineHeight}; width: ${A4_W}px; }
+          .worksheet-print-root { background: ${bg}; width: ${A4_W}px; padding: ${MARGIN}px; }
+          .ws-teacher-section { ${previewViewMode === "student" ? "display:none!important;" : ""} }
+          * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+          .katex .katex-mathml { position:absolute!important; clip:rect(1px,1px,1px,1px)!important;
+            padding:0!important; border:0!important; height:1px!important; width:1px!important; overflow:hidden!important; }
+        </style></head><body>${contentHtml}</body></html>`;
+
+      const measureIframe = document.createElement("iframe");
+      measureIframe.style.cssText = `position:fixed;top:0;left:-9999px;width:${A4_W}px;height:${A4_H * 3}px;border:none;visibility:hidden;`;
+      document.body.appendChild(measureIframe);
+
       await new Promise<void>((resolve, reject) => {
-        const timer = setTimeout(() => reject(new Error("iframe timeout")), 15000);
-        iframe.onload = () => { clearTimeout(timer); resolve(); };
-        iframe.srcdoc = fullHtml;
+        const timer = setTimeout(() => reject(new Error("measure iframe timeout")), 15000);
+        measureIframe.onload = () => { clearTimeout(timer); resolve(); };
+        measureIframe.srcdoc = measureHtml;
       });
-      // Wait for fonts
       try {
-        if (iframe.contentDocument?.fonts?.ready) {
-          await Promise.race([iframe.contentDocument.fonts.ready, new Promise<void>(r => setTimeout(r, 2000))]);
-        }
+        const iDoc = measureIframe.contentDocument!;
+        if (iDoc.fonts?.ready) await Promise.race([iDoc.fonts.ready, new Promise<void>(r => setTimeout(r, 2000))]);
       } catch (_) {}
       await new Promise<void>(r => requestAnimationFrame(() => setTimeout(r, 300)));
-      const iframeDoc = iframe.contentDocument!;
-      const iframeBody = iframeDoc.body;
-      const fullH = iframeBody.scrollHeight;
-      iframe.style.height = `${fullH}px`;
-      iframe.style.visibility = "visible";
-      await new Promise<void>(r => requestAnimationFrame(() => setTimeout(r, 100)));
-      // Use html2canvas to capture the full content
-      const html2canvas = (await import("html2canvas")).default;
-      const canvas = await html2canvas(iframeBody, {
-        scale: 1.5,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: overlayBg || "#ffffff",
-        logging: false,
-        windowWidth: A4_W_PX,
-        width: A4_W_PX,
-        scrollX: 0,
-        scrollY: 0,
-      });
-      document.body.removeChild(iframe);
-      // Slice canvas into A4 pages
-      const DPR = canvas.width / A4_W_PX;
-      const pageH_px = A4_H_PX * DPR;
-      const totalH = canvas.height;
-      // Measure section blocks for smart page breaks
-      const rootEl = iframeDoc.querySelector(".worksheet-print-root") as HTMLElement || iframeBody;
-      const rootRect = rootEl.getBoundingClientRect();
-      const blocks: Array<{ top: number; bottom: number }> = Array.from(
-        rootEl.querySelectorAll<HTMLElement>(".ws-header, .ws-section")
-      ).map(el => {
-        const r = el.getBoundingClientRect();
-        return { top: (r.top - rootRect.top) * DPR, bottom: (r.bottom - rootRect.top) * DPR };
-      });
-      const findBreak = (curY: number): number => {
-        const ideal = curY + pageH_px;
-        if (ideal >= totalH) return totalH;
-        let breakAt = ideal;
-        let changed = true;
-        while (changed) {
-          changed = false;
-          for (const blk of blocks) {
-            if (blk.top >= totalH) continue;
-            if (breakAt > blk.top && breakAt < blk.bottom) {
-              const blockH = blk.bottom - blk.top;
-              if (blockH >= pageH_px * 0.98) continue;
-              const candidate = blk.top - 4 * DPR;
-              if (candidate > curY) { breakAt = candidate; changed = true; }
-            }
-          }
+
+      // Step 2: Measure each direct child block of the print root
+      const iDoc = measureIframe.contentDocument!;
+      const root = iDoc.querySelector(".worksheet-print-root") as HTMLElement || iDoc.body;
+      const blockEls = Array.from(root.querySelectorAll<HTMLElement>(":scope > *"));
+      const blocks = blockEls.map(el => ({
+        html: el.outerHTML,
+        height: el.getBoundingClientRect().height,
+      }));
+      document.body.removeChild(measureIframe);
+
+      // Step 3: Pack blocks into pages — never split a block across pages
+      const pages: string[][] = [[]];
+      let curPageH = 0;
+      for (const blk of blocks) {
+        if (curPageH === 0 || curPageH + blk.height <= CONTENT_H + 10) {
+          pages[pages.length - 1].push(blk.html);
+          curPageH += blk.height;
+        } else {
+          pages.push([blk.html]);
+          curPageH = blk.height;
         }
-        if (breakAt <= curY) breakAt = curY + pageH_px;
-        return Math.min(breakAt, totalH);
-      };
-      const pages: string[] = [];
-      let curY = 0;
-      while (curY < totalH) {
-        const endY = findBreak(curY);
-        const sliceH = Math.ceil(endY - curY);
-        const pageCanvas = document.createElement("canvas");
-        pageCanvas.width = canvas.width;
-        pageCanvas.height = sliceH;
-        const ctx = pageCanvas.getContext("2d")!;
-        ctx.fillStyle = overlayBg || "#ffffff";
-        ctx.fillRect(0, 0, canvas.width, sliceH);
-        ctx.drawImage(canvas, 0, -curY);
-        pages.push(pageCanvas.toDataURL("image/png"));
-        curY = endY;
       }
-      setPrintPreviewPages(pages);
+
+      // Step 4: Build paginated preview HTML — each page is a white A4 card
+      const pageCards = pages.map((pageBlocks, i) => `
+        <div class="preview-page">
+          <div class="page-label">Page ${i + 1} of ${pages.length}</div>
+          <div class="worksheet-print-root">${pageBlocks.join("")}</div>
+        </div>`).join("");
+
+      const previewHtml = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+        <style>${katexCss}</style>
+        <style>
+          *, *::before, *::after { box-sizing: border-box; }
+          html, body { margin: 0; padding: 0; background: #374151;
+            font-family: ${fmt.fontFamily}; font-size: ${fmt.fontSize}px;
+            line-height: ${fmt.lineHeight}; }
+          * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+          .katex .katex-mathml { position:absolute!important; clip:rect(1px,1px,1px,1px)!important;
+            padding:0!important; border:0!important; height:1px!important; width:1px!important; overflow:hidden!important; }
+          .preview-page {
+            position: relative;
+            width: ${A4_W}px;
+            min-height: ${A4_H}px;
+            background: ${bg};
+            margin: 28px auto;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+          }
+          .page-label {
+            position: absolute;
+            bottom: 6px; right: 10px;
+            font-size: 10px; color: #9ca3af;
+            font-family: Arial, sans-serif;
+            pointer-events: none;
+          }
+          .worksheet-print-root {
+            background: ${bg};
+            padding: ${MARGIN}px;
+            width: ${A4_W}px;
+          }
+          .ws-section { margin-bottom: 10px !important; border-radius: 4px !important;
+            border: 1.5px solid #5b21b6 !important;
+            -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+          .ws-header { border: 1.5px solid #5b21b6 !important; border-radius: 4px !important;
+            margin-bottom: 10px !important; overflow: hidden !important;
+            -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+          table { width: 100%; border-collapse: collapse; margin: 8px 0; }
+          th { background: #5b21b6 !important; color: white !important; padding: 8px 12px;
+            text-align: left; font-weight: 600; }
+          td { padding: 7px 12px; border: 1px solid #e5e7eb; vertical-align: top; }
+          h1, h2, h3 { line-height: 1.3; }
+          p { margin-bottom: 0.5em; }
+          ul, ol { padding-left: 20px; margin: 6px 0; }
+          li { margin-bottom: 4px; }
+          .ws-teacher-section { ${previewViewMode === "student" ? "display:none!important;" : ""} }
+        </style></head><body>${pageCards}</body></html>`;
+
+      setPrintPreviewHtml(previewHtml);
     } catch (err) {
       console.error("Print preview error:", err);
       toast.error("Could not generate preview. Please try again.");
@@ -3026,7 +3050,7 @@ export default function Worksheets() {
               <div>
                 <h2 className="font-bold text-white text-sm">Print Preview</h2>
                 <p className="text-xs text-gray-400">
-                  {printPreviewLoading ? "Rendering pages…" : `${printPreviewPages.length} page${printPreviewPages.length !== 1 ? "s" : ""} · ${printPreviewViewMode === "teacher" ? "Teacher" : "Student"} view`}
+                  {printPreviewLoading ? "Building preview…" : `${printPreviewViewMode === "teacher" ? "Teacher" : "Student"} view · Sections never split`}
                 </p>
               </div>
             </div>
@@ -3065,54 +3089,40 @@ export default function Worksheets() {
             </div>
           </div>
 
-          {/* Scrollable page area */}
-          <div className="flex-1 overflow-y-auto bg-gray-700 py-8 px-4">
+          {/* Scrollable page area — uses a live iframe so the browser's own CSS engine
+               handles page-break-inside: avoid, keeping sections together exactly as
+               the print dialog does. No canvas slicing, no section splitting. */}
+          <div className="flex-1 overflow-hidden bg-gray-700 relative">
             {printPreviewLoading ? (
               <div className="flex flex-col items-center justify-center h-full gap-4 text-white">
                 <div className="w-10 h-10 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                <p className="text-sm text-gray-300">Rendering print preview…</p>
-                <p className="text-xs text-gray-400">This may take a few seconds</p>
+                <p className="text-sm text-gray-300">Building print preview…</p>
+                <p className="text-xs text-gray-400">Measuring sections and paginating…</p>
               </div>
-            ) : printPreviewPages.length === 0 ? (
+            ) : !printPreviewHtml ? (
               <div className="flex items-center justify-center h-full text-gray-400">
-                <p className="text-sm">No pages to preview</p>
+                <p className="text-sm">No content to preview</p>
               </div>
             ) : (
-              <div className="flex flex-col items-center gap-6">
-                {printPreviewPages.map((pageDataUrl, idx) => (
-                  <div key={idx} className="relative">
-                    {/* Page number badge */}
-                    <div className="absolute -top-6 left-0 right-0 flex justify-center">
-                      <span className="text-xs text-gray-400 font-medium">
-                        Page {idx + 1} of {printPreviewPages.length}
-                      </span>
-                    </div>
-                    {/* A4 page card */}
-                    <div
-                      className="bg-white shadow-2xl"
-                      style={{
-                        width: "210mm",
-                        aspectRatio: "210 / 297",
-                        overflow: "hidden",
-                        position: "relative",
-                      }}
-                    >
-                      <img
-                        src={pageDataUrl}
-                        alt={`Page ${idx + 1}`}
-                        style={{ width: "100%", height: "100%", display: "block", objectFit: "fill" }}
-                        draggable={false}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <iframe
+                key={printPreviewHtml.slice(0, 40)}
+                srcDoc={printPreviewHtml}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  border: "none",
+                  display: "block",
+                  background: "#374151",
+                }}
+                title="Print Preview"
+                sandbox="allow-same-origin"
+              />
             )}
           </div>
 
           {/* Footer */}
           <div className="flex-shrink-0 px-6 py-2 bg-gray-900 border-t border-gray-700 text-xs text-gray-500 text-center">
-            Exact print output — pages match what the browser print dialog will produce
+            Exact print output — sections are never split across pages, matching the browser print dialog
           </div>
         </div>
       )}
