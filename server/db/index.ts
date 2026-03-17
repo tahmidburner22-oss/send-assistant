@@ -141,6 +141,9 @@ export async function initDb() {
     "ALTER TABLE assignments ADD COLUMN sections TEXT",
     "ALTER TABLE assignments ADD COLUMN metadata TEXT",
     "ALTER TABLE assignments ADD COLUMN subtitle TEXT",
+    // Login lockout columns — added for brute-force protection
+    "ALTER TABLE users ADD COLUMN failed_login_attempts INTEGER NOT NULL DEFAULT 0",
+    "ALTER TABLE users ADD COLUMN locked_until TEXT",
   ];
   for (const migration of migrations) {
     try { _db.run(migration); } catch (_) { /* column already exists — ignore */ }
@@ -206,3 +209,4 @@ export async function initDb() {
 }
 
 export default db;
+
