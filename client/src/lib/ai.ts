@@ -1685,14 +1685,50 @@ export function parseNaturalLanguageInput(input: string): {
   }
 
   // ── Topic extraction (everything that's left after removing matched tokens) ──
-  let remaining = text;
-  // Remove year group
-  remaining = remaining.replace(/year\s*\d{1,2}/gi, "").replace(/y\d{1,2}\b/gi, "").replace(/11\s*\+/g, "").replace(/eleven\s*plus/gi, "");
-  // Remove subject keywords
+  // First, save any specific topic keyword that was matched as the subject trigger.
+  // e.g. "multiplication" triggers subject=mathematics but is also the topic.
+  // We must NOT strip it from the remaining text in that case.
+  const specificTopicKeywords = new Set([
+    "multiplication", "division", "addition", "subtraction", "fractions", "fraction",
+    "decimals", "decimal", "percentages", "percentage", "ratio", "ratios",
+    "proportion", "proportions", "probability", "statistics", "trigonometry", "trig",
+    "pythagoras", "surds", "surd", "indices", "index", "vectors", "vector",
+    "matrices", "matrix", "quadratic", "quadratics", "simultaneous", "inequalities",
+    "inequality", "sequences", "sequence", "differentiation", "integration",
+    "calculus", "functions", "function", "algebra", "geometry", "arithmetic",
+    "number", "numeracy", "integers", "integer", "prime", "primes", "factors",
+    "multiples", "bodmas", "area", "perimeter", "volume", "circle", "circles",
+    "angles", "angle", "shape", "shapes", "coordinates", "coordinate", "graphs",
+    "graph", "equations", "equation", "formulae", "formula", "loci", "bearing",
+    "bearings", "photosynthesis", "respiration", "osmosis", "evolution", "genetics",
+    "electricity", "magnetism", "forces", "energy", "waves", "acids", "alkalis",
+    "titration", "electrolysis", "bonding", "periodic table", "cells", "cell",
+    "atoms", "atom", "compounds", "mixtures", "reactions", "reaction",
+  ]);
+  // Detect if the subject was triggered by a specific topic keyword
+  let subjectTriggerKeyword = "";
   if (result.subject) {
     const kws = subjectMap[result.subject] || [];
     for (const kw of kws) {
-      remaining = remaining.replace(new RegExp(`\\b${kw}\\b`, "gi"), "");
+      if (text.includes(kw) && specificTopicKeywords.has(kw)) {
+        subjectTriggerKeyword = kw;
+        break;
+      }
+    }
+  }
+
+  let remaining = text;
+  // Remove year group
+  remaining = remaining.replace(/year\s*\d{1,2}/gi, "").replace(/y\d{1,2}\b/gi, "").replace(/11\s*\+/g, "").replace(/eleven\s*plus/gi, "");
+  // Remove subject keywords — but NOT the one that is also a specific topic
+  if (result.subject) {
+    const kws = subjectMap[result.subject] || [];
+    for (const kw of kws) {
+      // Skip stripping if this keyword is the specific topic trigger
+      if (kw === subjectTriggerKeyword) continue;
+      // Also skip generic subject names when a specific topic keyword was found
+      if (subjectTriggerKeyword && ["math", "maths", "mathematics"].includes(kw)) continue;
+      remaining = remaining.replace(new RegExp(`\\b${kw.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&')}\\b`, "gi"), "");
     }
   }
   // Remove SEND keywords
