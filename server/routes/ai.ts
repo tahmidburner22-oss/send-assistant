@@ -15,18 +15,26 @@ function getFullDiagramBank() {
 const router = Router();
 const worksheetUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 25 * 1024 * 1024 } });
 
-// ── Provider priority order — server always tries all of these automatically ──
-// Gemini Flash is fastest for large JSON outputs; Groq 8b-instant is second fastest
-// Additional providers: mistral, deepseek, cohere, perplexity
-// Provider priority: fastest/best first, cohere as absolute last resort (expensive, slow)
-// perplexity removed — no key configured
-const PROVIDER_ORDER = ["gemini", "groq", "openai", "openrouter", "claude", "mistral", "deepseek", "huggingface", "cohere"] as const;
+// ── Provider priority order — optimised for highest rate limits and fastest inference ──
+//
+// Free-tier rate limits (requests/day) as of March 2026:
+//   groq   llama-3.1-8b-instant  → 14,400 RPD, 30 RPM, 6K TPM  ← HIGHEST RPD
+//   gemini gemini-2.0-flash       →  1,500 RPD, 15 RPM, 1M TPM  ← HIGHEST TPM, very fast
+//   openrouter free models        →  1,000 RPD, 20 RPM           ← good fallback
+//   mistral free tier             →  unlimited RPD, 2 RPM        ← slow but unlimited
+//   deepseek                      →  no rate limit stated        ← unreliable uptime
+//
+// Strategy: Groq first (highest RPD, fastest for structured JSON with 8b-instant),
+// Cerebras second (14,400 RPD, 30 RPM, 60K TPM — same RPD as Groq, ultra-fast inference),
+// Gemini third (1,500 RPD but 1M TPM — great for burst handling),
+// then the rest as fallbacks.
+const PROVIDER_ORDER = ["groq", "cerebras", "gemini", "openrouter", "openai", "claude", "mistral", "deepseek", "huggingface", "cohere"] as const;
 
 // ── Per-provider cooldown tracker ─────────────────────────────────────────────
 // When a provider hits a rate limit (429), it is put in cooldown for COOLDOWN_MS.
 // During cooldown it is skipped entirely so other providers can serve requests.
 // This prevents cascading failures where every provider gets exhausted at once.
-const COOLDOWN_MS = 20_000; // 20 seconds per provider — shorter cooldown means faster recovery
+const COOLDOWN_MS = 15_000; // 15 seconds per provider — shorter cooldown = faster recovery after rate limits
 const providerCooldowns = new Map<string, number>(); // provider → timestamp when cooldown expires
 
 function isOnCooldown(provider: string): boolean {
@@ -84,6 +92,7 @@ function getEffectiveKey(provider: string, userKey?: string, schoolId?: string):
   // 3. Platform-level env vars (Railway — for the Adaptly platform operator account only)
   const envMap: Record<string, string> = {
     groq: process.env.GROQ_API_KEY || "",
+    cerebras: process.env.CEREBRAS_API_KEY || "",
     gemini: process.env.GEMINI_API_KEY || "",
     openai: process.env.OPENAI_API_KEY || "",
     openrouter: process.env.OPENROUTER_API_KEY || "",
@@ -119,16 +128,27 @@ async function callProvider(
   model: string,
   maxTokens: number
 ): Promise<string> {
-  // Per-provider timeout: fast providers get 25s, slower ones get 40s.
-  // This ensures one slow provider never blocks the fallback chain.
-  const timeoutMs = (provider === "groq" || provider === "gemini") ? 25000 : 40000;
+  // Per-provider timeout: fast providers (Groq 8b-instant, Gemini Flash) get 30s,
+  // medium providers get 45s, slow providers (DeepSeek, HuggingFace) get 60s.
+  const timeoutMs = (provider === "groq" || provider === "gemini") ? 30000
+    : (provider === "openrouter" || provider === "mistral" || provider === "openai") ? 45000
+    : 60000;
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
     let result: string;
     switch (provider) {
       case "groq":
-        result = await callGroq(system, user, key, model || "llama-3.3-70b-versatile", maxTokens);
+        // llama-3.1-8b-instant: 14,400 RPD (highest of any free provider), 3-4x faster than 70b.
+        // Quality is equivalent for structured JSON worksheet generation.
+        // School can override with a specific model via their API key settings.
+        result = await callGroq(system, user, key, model || "llama-3.1-8b-instant", maxTokens);
+        break;
+      case "cerebras":
+        // Cerebras: 14,400 RPD, 30 RPM, 60K TPM on free tier.
+        // Uses custom wafer-scale silicon — fastest inference available (up to 2000 tokens/sec).
+        // llama3.1-8b is the recommended free model for structured JSON.
+        result = await callCerebras(system, user, key, model || "llama3.1-8b", maxTokens);
         break;
       case "gemini":
         result = await callGemini(system, user, key, maxTokens);
@@ -146,7 +166,9 @@ async function callProvider(
         result = await callHuggingFace(system, user, key, maxTokens);
         break;
       case "mistral":
-        result = await callMistral(system, user, key, model || "mistral-medium-latest", maxTokens);
+        // mistral-small-latest: fastest Mistral model, free tier has unlimited RPD but only 2 RPM.
+        // Used as fallback when Groq and Gemini are both rate-limited.
+        result = await callMistral(system, user, key, model || "mistral-small-latest", maxTokens);
         break;
       case "deepseek":
         result = await callDeepSeek(system, user, key, model || "deepseek-chat", maxTokens);
@@ -520,7 +542,7 @@ router.get("/stats", requireAuth, requireAdmin, (req: Request, res: Response) =>
 // ── Provider implementations ──────────────────────────────────────────────────
 async function callGroq(system: string, user: string, key: string, model: string, maxTokens: number): Promise<string> {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 30000);
+  const timeout = setTimeout(() => controller.abort(), 35000);
   const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
     method: "POST",
     signal: controller.signal,
@@ -542,9 +564,37 @@ async function callGroq(system: string, user: string, key: string, model: string
   return data.choices[0].message.content;
 }
 
-async function callGemini(system: string, user: string, key: string, maxTokens: number): Promise<string> {
+// ── Cerebras ─────────────────────────────────────────────────────────────────
+// Cerebras uses wafer-scale silicon for ultra-fast inference.
+// Free tier: 14,400 RPD, 30 RPM, 60K TPM — same RPD as Groq but often faster.
+// OpenAI-compatible API, so the same request format works.
+async function callCerebras(system: string, user: string, key: string, model: string, maxTokens: number): Promise<string> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 30000);
+  const res = await fetch("https://api.cerebras.ai/v1/chat/completions", {
+    method: "POST",
+    signal: controller.signal,
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
+    body: JSON.stringify({
+      model,
+      messages: [
+        { role: "system", content: system || "You are a helpful SEND education assistant." },
+        { role: "user", content: user },
+      ],
+      max_completion_tokens: maxTokens,
+      temperature: 0.1,
+    }),
+  });
+  clearTimeout(timeout);
+  if (res.status === 429) throw new Error(`Cerebras 429: rate limited`);
+  if (!res.ok) throw new Error(`Cerebras ${res.status}: ${(await res.text()).slice(0, 200)}`);
+  const data = await res.json() as any;
+  return data.choices[0].message.content;
+}
+
+async function callGemini(system: string, user: string, key: string, maxTokens: number): Promise<string> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 35000);
   const res = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`,
     {
@@ -588,12 +638,16 @@ async function callOpenAI(system: string, user: string, key: string, model: stri
 }
 
 async function callOpenRouter(system: string, user: string, key: string, model: string, maxTokens: number): Promise<string> {
+  // Best free models on OpenRouter as of March 2026 — ordered by quality and reliability.
+  // All have 1,000 RPD / 20 RPM on the free tier.
   const fallbackModels = [
     model,
-    "nvidia/nemotron-nano-9b-v2:free",
-    "liquid/lfm-2.5-1.2b-instruct:free",
-    "arcee-ai/trinity-mini:free",
-    "mistralai/mistral-small-3.1-24b-instruct:free",
+    "meta-llama/llama-4-scout:free",          // Meta Llama 4 Scout — best free model
+    "google/gemini-2.0-flash-exp:free",        // Gemini 2.0 Flash experimental — very fast
+    "mistralai/mistral-small-3.1-24b-instruct:free", // Mistral Small 3.1 — strong instruction following
+    "nvidia/llama-3.1-nemotron-70b-instruct:free",   // NVIDIA Nemotron 70B — high quality
+    "meta-llama/llama-3.3-70b-instruct:free",  // Llama 3.3 70B — reliable fallback
+    "qwen/qwen3-30b-a3b:free",                 // Qwen3 30B — good for structured JSON
   ].filter(Boolean);
 
   for (const m of fallbackModels) {
