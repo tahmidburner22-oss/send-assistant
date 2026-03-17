@@ -454,6 +454,7 @@ function PersonalisationSection() {
     toggleDashboardCard,
     toggleDashboardSubject,
     setShowWorksheetLibrary,
+    setDashboardAppearance,
     resetPreferences,
     currentTheme,
     currentWallpaper,
@@ -692,6 +693,120 @@ function PersonalisationSection() {
                 })}
               </div>
             </div>
+            {/* ── Appearance ────────────────────────────────────────────────────── */}
+            <div className="border-t border-border/50 pt-4 space-y-4">
+              <p className="text-xs font-medium text-foreground">Icon &amp; Card Appearance</p>
+
+              {/* Icon border style */}
+              <div>
+                <p className="text-xs text-muted-foreground mb-2">Icon border style</p>
+                <div className="flex gap-2">
+                  {(["none", "subtle", "bold"] as const).map(opt => (
+                    <button
+                      key={opt}
+                      onClick={() => setDashboardAppearance({ iconBorderStyle: opt })}
+                      className={`flex-1 py-2 rounded-lg border-2 text-xs font-medium capitalize transition-all ${
+                        preferences.iconBorderStyle === opt
+                          ? "border-brand bg-brand/5 text-brand"
+                          : "border-border text-muted-foreground hover:border-brand/40"
+                      }`}
+                    >
+                      {opt}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Icon shape */}
+              <div>
+                <p className="text-xs text-muted-foreground mb-2">Icon shape</p>
+                <div className="flex gap-2">
+                  {(["rounded", "circle", "square"] as const).map(opt => (
+                    <button
+                      key={opt}
+                      onClick={() => setDashboardAppearance({ iconShape: opt })}
+                      className={`flex-1 py-2 rounded-lg border-2 text-xs font-medium capitalize transition-all ${
+                        preferences.iconShape === opt
+                          ? "border-brand bg-brand/5 text-brand"
+                          : "border-border text-muted-foreground hover:border-brand/40"
+                      }`}
+                    >
+                      {opt === "rounded" ? "Rounded" : opt === "circle" ? "Circle" : "Square"}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Card style */}
+              <div>
+                <p className="text-xs text-muted-foreground mb-2">Card style</p>
+                <div className="flex gap-2">
+                  {(["default", "flat", "elevated"] as const).map(opt => (
+                    <button
+                      key={opt}
+                      onClick={() => setDashboardAppearance({ cardStyle: opt })}
+                      className={`flex-1 py-2 rounded-lg border-2 text-xs font-medium capitalize transition-all ${
+                        preferences.cardStyle === opt
+                          ? "border-brand bg-brand/5 text-brand"
+                          : "border-border text-muted-foreground hover:border-brand/40"
+                      }`}
+                    >
+                      {opt}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Layout density */}
+              <div>
+                <p className="text-xs text-muted-foreground mb-2">Layout density</p>
+                <div className="flex gap-2">
+                  {(["comfortable", "compact"] as const).map(opt => (
+                    <button
+                      key={opt}
+                      onClick={() => setDashboardAppearance({ layoutDensity: opt })}
+                      className={`flex-1 py-2 rounded-lg border-2 text-xs font-medium capitalize transition-all ${
+                        preferences.layoutDensity === opt
+                          ? "border-brand bg-brand/5 text-brand"
+                          : "border-border text-muted-foreground hover:border-brand/40"
+                      }`}
+                    >
+                      {opt}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* ── Section visibility ──────────────────────────────────────────── */}
+            <div className="border-t border-border/50 pt-4 space-y-2">
+              <p className="text-xs font-medium text-foreground mb-1">Home Page Sections</p>
+              <p className="text-xs text-muted-foreground mb-3">Show or hide sections on your dashboard home screen.</p>
+              {([
+                { key: "showContinueSection" as const, label: "Continue where you left off", desc: "In-progress worksheets, stories and differentiations" },
+                { key: "showRecentActivity" as const,  label: "Recent Activity",              desc: "Last 3 items created across all tools" },
+                { key: "showSubjectBrowser" as const,  label: "Browse by Subject",            desc: "Subject shortcut grid" },
+                { key: "showCobsTip" as const,         label: "COBS Handbook Tip",            desc: "Daily tip from the COBS handbook" },
+              ]).map(({ key, label, desc }) => (
+                <div key={key} className="flex items-center justify-between p-3 bg-muted/40 rounded-lg border border-border/50">
+                  <div>
+                    <p className="text-xs font-medium text-foreground">{label}</p>
+                    <p className="text-xs text-muted-foreground">{desc}</p>
+                  </div>
+                  <button
+                    onClick={() => setDashboardAppearance({ [key]: !preferences[key] })}
+                    className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                      preferences[key] ? 'bg-brand' : 'bg-muted-foreground/30'
+                    }`}
+                  >
+                    <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${
+                      preferences[key] ? 'translate-x-4' : 'translate-x-0.5'
+                    }`} />
+                  </button>
+                </div>
+              ))}
+            </div>
+
             {/* Feature Toggles */}
             <div className="border-t border-border/50 pt-4">
             <p className="text-xs font-medium text-foreground mb-2">Feature Toggles</p>
