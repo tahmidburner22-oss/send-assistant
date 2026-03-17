@@ -76,6 +76,8 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [resetToken, setResetToken] = useState("");
   const [emailWarning, setEmailWarning] = useState("");
+  const [emailNotVerified, setEmailNotVerified] = useState(false);
+  const [resendingVerification, setResendingVerification] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -109,11 +111,34 @@ export default function Login() {
     e.preventDefault();
     if (!email || !password) return toast.error("Please enter your email and password");
     setLoading(true);
+    setEmailNotVerified(false);
     const result = await login(email, password);
     setLoading(false);
-    if (result.error) toast.error(result.error);
-    else if (result.mfaRequired) setView("mfa");
-    else setLocation("/home");
+    if (result?.emailNotVerified) {
+      setEmailNotVerified(true);
+    } else if (result.error) {
+      toast.error(result.error);
+    } else if (result.mfaRequired) {
+      setView("mfa");
+    } else {
+      setLocation("/home");
+    }
+  };
+
+  const handleResendVerification = async () => {
+    if (!email) return toast.error("Please enter your email address first");
+    setResendingVerification(true);
+    try {
+      await fetch("/api/auth/resend-verification", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      toast.success("Verification email resent — please check your inbox");
+    } catch {
+      toast.error("Failed to resend — please try again");
+    }
+    setResendingVerification(false);
   };
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -242,6 +267,20 @@ export default function Login() {
                     </div>
                   </div>
                   <Button type="submit" className="w-full h-11 bg-brand hover:bg-brand/90 text-white font-medium" disabled={loading} aria-busy={loading}>{loading ? "Signing in..." : "Sign In"}</Button>
+                  {emailNotVerified && (
+                    <div className="rounded-lg bg-amber-50 border border-amber-200 p-3.5 text-sm text-amber-800 space-y-2">
+                      <p className="font-medium">📧 Please verify your email first</p>
+                      <p className="text-xs text-amber-700">Check your inbox for a verification link. If you can't find it, click below to resend it.</p>
+                      <button
+                        type="button"
+                        onClick={handleResendVerification}
+                        disabled={resendingVerification}
+                        className="text-xs font-semibold text-amber-900 underline hover:no-underline disabled:opacity-50"
+                      >
+                        {resendingVerification ? "Sending..." : "Resend verification email"}
+                      </button>
+                    </div>
+                  )}
                   <div className="relative"><div className="absolute inset-0 flex items-center"><span className="w-full border-t border-border" /></div><div className="relative flex justify-center text-xs uppercase"><span className="bg-card px-2 text-muted-foreground">or</span></div></div>
                   <Button type="button" variant="outline" className="w-full h-11" onClick={handleGoogleLogin}><Chrome className="w-4 h-4 mr-2" aria-hidden="true" />Continue with Google</Button>
                   <div className="text-center">
