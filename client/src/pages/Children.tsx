@@ -25,7 +25,7 @@ import {
   CheckCircle, Clock, AlertCircle, MessageSquare, TrendingUp,
   ChevronLeft, Shield, Star, Send, Calendar, X, Zap, BrainCircuit,
   PlayCircle, PauseCircle, RotateCcw, Settings2, Upload, RefreshCw, Database,
-  ChevronRight, ChevronDown, Layers, Lock, Eye
+  ChevronRight, ChevronDown, Layers, Lock, Eye, Sparkles
 } from "lucide-react";
 
 // ─── Curriculum Progression Tab Component ───────────────────────────────────
@@ -1137,6 +1137,28 @@ If the submission is empty or too short to mark, return mark: "N/A", feedback: "
                     <div className="text-[10px] text-muted-foreground">Overall</div>
                   </div>
                 )}
+              </div>
+
+              {/* Quick Generate for this pupil */}
+              <div className="flex gap-2 mb-4">
+                <button
+                  onClick={() => {
+                    const sendParam = (selectedChild.sendNeeds?.[0] || selectedChild.sendNeed) ? `&sendNeed=${encodeURIComponent(selectedChild.sendNeeds?.[0] || selectedChild.sendNeed || "")}` : "";
+                    window.location.href = `/worksheets?yearGroup=${encodeURIComponent(selectedChild.yearGroup || "Year 9")}${sendParam}&pupil=${selectedChild.id}`;
+                  }}
+                  className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-brand text-white text-xs font-medium hover:bg-brand/90 transition-colors"
+                >
+                  <FileText className="w-3.5 h-3.5" /> Generate Worksheet
+                </button>
+                <button
+                  onClick={() => {
+                    const sendParam = (selectedChild.sendNeeds?.[0] || selectedChild.sendNeed) ? `&sendNeed=${encodeURIComponent(selectedChild.sendNeeds?.[0] || selectedChild.sendNeed || "")}` : "";
+                    window.location.href = `/differentiate?yearGroup=${encodeURIComponent(selectedChild.yearGroup || "Year 9")}${sendParam}`;
+                  }}
+                  className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-purple-600 text-white text-xs font-medium hover:bg-purple-700 transition-colors"
+                >
+                  <Sparkles className="w-3.5 h-3.5" /> Differentiate
+                </button>
               </div>
 
               <Tabs defaultValue="assignments">

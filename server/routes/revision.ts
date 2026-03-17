@@ -495,13 +495,42 @@ ${avoidList ? avoidList.split("\n").map((q: string) => `         * ${q}`).join("
   }
 });
 
-// Split text into sentence-aware chunks for TTS (handles character limits per request)
-function splitIntoChunks(text: string, maxChars = 2000): string[] {
-  if (text.length <= maxChars) return [text];
+// Split text into sentence-aware chunks for TTS
+// Uses 900-char chunks to avoid OpenAI TTS chunking errors on long inputs
+function splitIntoChunks(text: string, maxChars = 900): string[] {
+  // Normalise whitespace and remove any zero-width / invisible chars that confuse TTS
+  const clean = text
+    .replace(/[\u200B-\u200D\uFEFF]/g, "")  // zero-width chars
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (clean.length <= maxChars) return [clean];
+
   const chunks: string[] = [];
-  const sentences = text.match(/[^.!?]+[.!?]+[\s]*/g) || [text];
+  // Split on sentence boundaries: . ! ? followed by space or end
+  // Also split on newlines which often appear in podcast scripts
+  const sentences = clean.match(/[^.!?\n]+[.!?\n]+\s*/g) || [clean];
   let current = "";
+
   for (const sentence of sentences) {
+    // If a single sentence is longer than maxChars, split it on commas/clauses
+    if (sentence.length > maxChars) {
+      if (current.trim()) { chunks.push(current.trim()); current = ""; }
+      // Split long sentence on comma or semicolon boundaries
+      const parts = sentence.match(/[^,;]+[,;]?\s*/g) || [sentence];
+      let partCurrent = "";
+      for (const part of parts) {
+        if ((partCurrent + part).length > maxChars && partCurrent.length > 0) {
+          chunks.push(partCurrent.trim());
+          partCurrent = part;
+        } else {
+          partCurrent += part;
+        }
+      }
+      if (partCurrent.trim()) current = partCurrent;
+      continue;
+    }
+
     if ((current + sentence).length > maxChars && current.length > 0) {
       chunks.push(current.trim());
       current = sentence;
@@ -510,7 +539,8 @@ function splitIntoChunks(text: string, maxChars = 2000): string[] {
     }
   }
   if (current.trim()) chunks.push(current.trim());
-  return chunks.length > 0 ? chunks : [text.slice(0, maxChars)];
+  // Filter empty chunks that could cause TTS API errors
+  return chunks.filter(c => c.length > 0) || [clean.slice(0, maxChars)];
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -586,14 +616,14 @@ router.post("/tts", requireAuth, async (req: Request, res: Response) => {
       console.log(`[TTS] OpenAI TTS: voice=${openaiVoice}, chars=${text.length}`);
       const openai = new OpenAI();
       // Smaller chunks = more reliable, fewer chunk errors
-      const chunks = splitIntoChunks(text, 1500);
+      const chunks = splitIntoChunks(text, 900);
       console.log(`[TTS] Processing ${chunks.length} chunk(s) sequentially`);
 
       const mp3Buffers: Buffer[] = [];
       for (let i = 0; i < chunks.length; i++) {
         let lastErr: any;
-        // Up to 2 retries per chunk
-        for (let attempt = 0; attempt < 2; attempt++) {
+        // Up to 3 retries per chunk with exponential backoff
+        for (let attempt = 0; attempt < 3; attempt++) {
           const ctrl = new AbortController();
           const timer = setTimeout(() => ctrl.abort(), 30000);
           try {
@@ -614,7 +644,7 @@ router.post("/tts", requireAuth, async (req: Request, res: Response) => {
             clearTimeout(timer);
             lastErr = e;
             console.warn(`[TTS] Chunk ${i + 1} attempt ${attempt + 1} failed:`, (e as any)?.message);
-            if (attempt === 0) await new Promise(r => setTimeout(r, 500)); // brief pause before retry
+            if (attempt < 2) await new Promise(r => setTimeout(r, (attempt + 1) * 800)); // backoff
           }
         }
         if (lastErr) throw lastErr;

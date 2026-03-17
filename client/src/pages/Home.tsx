@@ -8,7 +8,8 @@ import {
   FileText, Sparkles, Users, Clock, Share2, BookOpen, Calculator,
   FlaskConical, Landmark, Globe, Palette, Music, Dumbbell, Monitor,
   Wrench, Heart, Languages, UserCheck, Briefcase, Theater, Lightbulb,
-  GraduationCap, BarChart2, CalendarDays, Brain, ScrollText, Gamepad2, Settings
+  GraduationCap, BarChart2, CalendarDays, Brain, ScrollText, Gamepad2, Settings,
+  ArrowRight,
 } from "lucide-react";
 import { useState, useMemo, useEffect } from "react";
 
@@ -161,6 +162,80 @@ export default function Home() {
           })}
         </div>
       </motion.div>
+
+      {/* Recent Activity Feed */}
+      {(worksheetHistory.length > 0 || storyHistory.length > 0 || differentiationHistory.length > 0) && (
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.22 }}>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-base font-semibold text-foreground">Recent Activity</h3>
+            <Link href="/history">
+              <button className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors">
+                View all <ArrowRight className="w-3 h-3" />
+              </button>
+            </Link>
+          </div>
+          <div className="space-y-2">
+            {[
+              ...worksheetHistory.slice(0, 2).map(w => ({
+                type: "worksheet" as const,
+                title: w.title,
+                subtitle: w.subject ? `${w.subject}${w.yearGroup ? " · " + w.yearGroup : ""}` : "",
+                createdAt: w.createdAt,
+                href: "/worksheets",
+                icon: FileText,
+                color: "text-brand bg-brand-light",
+              })),
+              ...storyHistory.slice(0, 1).map(s => ({
+                type: "story" as const,
+                title: s.title,
+                subtitle: `${s.genre || "Story"}${s.yearGroup ? " · " + s.yearGroup : ""}`,
+                createdAt: s.createdAt,
+                href: "/reading",
+                icon: BookOpen,
+                color: "text-emerald-600 bg-emerald-50",
+              })),
+              ...differentiationHistory.slice(0, 1).map(d => ({
+                type: "diff" as const,
+                title: d.subject ? `${d.subject} differentiation` : "Differentiated task",
+                subtitle: d.yearGroup || "",
+                createdAt: d.createdAt,
+                href: "/differentiate",
+                icon: Sparkles,
+                color: "text-purple-600 bg-purple-50",
+              })),
+            ]
+              .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+              .slice(0, 3)
+              .map((item, i) => {
+                const Icon = item.icon;
+                const timeAgo = (() => {
+                  const diff = Date.now() - new Date(item.createdAt).getTime();
+                  const mins = Math.floor(diff / 60000);
+                  if (mins < 60) return `${mins}m ago`;
+                  const hrs = Math.floor(mins / 60);
+                  if (hrs < 24) return `${hrs}h ago`;
+                  return `${Math.floor(hrs / 24)}d ago`;
+                })();
+                return (
+                  <Link key={i} href={item.href}>
+                    <Card className="border-border/40 hover:border-brand/30 hover:shadow-sm transition-all cursor-pointer">
+                      <CardContent className="p-3 flex items-center gap-3">
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${item.color}`}>
+                          <Icon className="w-4 h-4" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-medium text-foreground truncate">{item.title}</p>
+                          {item.subtitle && <p className="text-[10px] text-muted-foreground">{item.subtitle}</p>}
+                        </div>
+                        <span className="text-[10px] text-muted-foreground flex-shrink-0">{timeAgo}</span>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                );
+              })}
+          </div>
+        </motion.div>
+      )}
 
       {/* COBS Handbook Tip */}
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>

@@ -26,7 +26,7 @@ const PROVIDER_ORDER = ["gemini", "groq", "openai", "openrouter", "claude", "mis
 // When a provider hits a rate limit (429), it is put in cooldown for COOLDOWN_MS.
 // During cooldown it is skipped entirely so other providers can serve requests.
 // This prevents cascading failures where every provider gets exhausted at once.
-const COOLDOWN_MS = 60_000; // 60 seconds per provider
+const COOLDOWN_MS = 20_000; // 20 seconds per provider — shorter cooldown means faster recovery
 const providerCooldowns = new Map<string, number>(); // provider → timestamp when cooldown expires
 
 function isOnCooldown(provider: string): boolean {
@@ -180,6 +180,7 @@ async function callWithFallback(
     const schoolProviders = (db.prepare(
       "SELECT provider FROM school_api_keys WHERE school_id=? AND enabled=1 ORDER BY updated_at DESC"
     ).all(schoolId) as any[]).map((r: any) => r.provider);
+    // Also include global env-var providers so they act as fallback even for school users
     const remaining = (PROVIDER_ORDER as readonly string[]).filter(p => !schoolProviders.includes(p));
     const fullOrder = [...schoolProviders, ...remaining];
     order = preferredProvider
@@ -200,7 +201,10 @@ async function callWithFallback(
     console.log(`[AI] Skipping ${cooledDown.join(", ")} (on cooldown) — using: ${availableOrder.join(", ")}`);
   }
 
-  for (const provider of availableOrder) {
+  // Try available providers first
+  const ordersToTry = availableOrder.length > 0 ? availableOrder : order;
+
+  for (const provider of ordersToTry) {
     const key = getEffectiveKey(provider, undefined, schoolId);
     if (!key) {
       errors.push(`${provider}: no key configured`);
@@ -232,6 +236,24 @@ async function callWithFallback(
       }
       console.warn(`[AI] ${provider} failed: ${msg.slice(0, 120)}`);
       errors.push(`${provider}: ${msg.slice(0, 80)}`);
+    }
+  }
+
+  // Last resort: if all available providers failed but there are cooled-down ones, try them too
+  const cooledDownProviders = order.filter(p => !ordersToTry.includes(p));
+  for (const provider of cooledDownProviders) {
+    const key = getEffectiveKey(provider, undefined, schoolId);
+    if (!key) continue;
+    try {
+      providerCooldowns.delete(provider); // force clear cooldown for this last-ditch attempt
+      const model = getAdminModel(provider, schoolId);
+      const content = await callProvider(provider, system, user, key, model, maxTokens);
+      if (content && content.trim()) {
+        console.log(`[AI] Last-resort success via ${provider} (was on cooldown)`);
+        return { content, provider };
+      }
+    } catch (e: any) {
+      errors.push(`${provider} (last-resort): ${(e?.message || "").slice(0, 80)}`);
     }
   }
 

@@ -9,8 +9,8 @@ const router = Router();
 // ── Worksheets ────────────────────────────────────────────────────────────────
 router.get("/worksheets", requireAuth, (req: Request, res: Response) => {
   const rows = db.prepare(
-    "SELECT * FROM worksheets WHERE school_id = ? ORDER BY created_at DESC"
-  ).all(req.user!.schoolId) as any[];
+    "SELECT * FROM worksheets WHERE created_by = ? ORDER BY created_at DESC"
+  ).all(req.user!.id) as any[];
   // Map snake_case DB columns to camelCase expected by the client, and attach sections
   const mapped = rows.map((r: any) => {
     const sections = db.prepare(
@@ -85,8 +85,8 @@ router.post("/worksheets", requireAuth, (req: Request, res: Response) => {
 router.put("/worksheets/:id", requireAuth, (req: Request, res: Response) => {
   const { rating, ratingLabel, overlay, content, teacherContent, sections } = req.body;
   // Use COALESCE for all fields so partial updates (e.g. rating-only) don't wipe other fields
-  db.prepare("UPDATE worksheets SET rating=COALESCE(?, rating), rating_label=COALESCE(?, rating_label), overlay=COALESCE(?, overlay), content=COALESCE(?, content), teacher_content=COALESCE(?, teacher_content) WHERE id=? AND school_id=?")
-    .run(rating ?? null, ratingLabel ?? null, overlay ?? null, content ?? null, teacherContent ?? null, req.params.id, req.user!.schoolId);
+  db.prepare("UPDATE worksheets SET rating=COALESCE(?, rating), rating_label=COALESCE(?, rating_label), overlay=COALESCE(?, overlay), content=COALESCE(?, content), teacher_content=COALESCE(?, teacher_content) WHERE id=? AND created_by=?")
+    .run(rating ?? null, ratingLabel ?? null, overlay ?? null, content ?? null, teacherContent ?? null, req.params.id, req.user!.id);
   // Update sections if provided
   if (Array.isArray(sections)) {
     db.prepare("DELETE FROM worksheet_sections WHERE worksheet_id=?").run(req.params.id);
@@ -99,13 +99,13 @@ router.put("/worksheets/:id", requireAuth, (req: Request, res: Response) => {
 });
 
 router.delete("/worksheets/:id", requireAuth, (req: Request, res: Response) => {
-  db.prepare("DELETE FROM worksheets WHERE id=? AND school_id=?").run(req.params.id, req.user!.schoolId);
+  db.prepare("DELETE FROM worksheets WHERE id=? AND created_by=?").run(req.params.id, req.user!.id);
   res.json({ message: "Deleted" });
 });
 
 // ── Stories ───────────────────────────────────────────────────────────────────
 router.get("/stories", requireAuth, (req: Request, res: Response) => {
-  const rows = db.prepare("SELECT * FROM stories WHERE school_id = ? ORDER BY created_at DESC").all(req.user!.schoolId);
+  const rows = db.prepare("SELECT * FROM stories WHERE created_by = ? ORDER BY created_at DESC").all(req.user!.id);
   res.json(rows.map((r: any) => ({
     ...r,
     characters: JSON.parse(r.characters || "[]"),
@@ -129,7 +129,7 @@ router.post("/stories", requireAuth, (req: Request, res: Response) => {
 
 // ── Differentiations ──────────────────────────────────────────────────────────
 router.get("/differentiations", requireAuth, (req: Request, res: Response) => {
-  const rows = db.prepare("SELECT * FROM differentiations WHERE school_id = ? ORDER BY created_at DESC").all(req.user!.schoolId);
+  const rows = db.prepare("SELECT * FROM differentiations WHERE created_by = ? ORDER BY created_at DESC").all(req.user!.id);
   res.json(rows);
 });
 
