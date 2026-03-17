@@ -1,14 +1,10 @@
 /**
  * PHYSICS QUESTION BANK — Original exam-style questions
  * Source: Adaptly Question Bank (100% original content)
- * Topics: All KS3, GCSE and A-Level Physics topics
  */
 import type { PastPaperQuestion } from "./pastPaperQuestions";
 
 const physicsQuestions: PastPaperQuestion[] = [
-
-export default physicsQuestions;
-
   { id:"phys-g0001", board:"Adaptly", subject:"physics", year:2019, series:"June", paper:"Paper 1", tier:"Foundation", marks:2, topic:"Forces and Motion", stage:"ks3", yearGroups:[7,8,9], text:"State the unit of force in the International System of Units (SI).", commandWord:"State", answerLines:1, markScheme:"Force is measured in newtons (N)." },
   { id:"phys-g0002", board:"Adaptly", subject:"physics", year:2020, series:"November", paper:"Paper 1", tier:"Foundation", marks:3, topic:"Energy Stores and Transfers", stage:"ks3", yearGroups:[7,8,9], text:"Describe how energy is transferred when a kettle boils water.", commandWord:"Describe", answerLines:2, markScheme:"Electrical energy is transferred into thermal energy; the kettle's heating element heats water by conduction and convection." },
   { id:"phys-g0003", board:"Adaptly", subject:"physics", year:2021, series:"June", paper:"Paper 2", tier:"Foundation", marks:1, topic:"Waves and Sound", stage:"ks3", yearGroups:[7,8,9], text:"Name the part of a longitudinal wave where particles are closest together.", commandWord:"Name", answerLines:1, markScheme:"Compression." },
@@ -358,7 +354,7 @@ export default physicsQuestions;
   { id:"phys-g0468", board:"Adaptly", subject:"physics", year:2020, series:"November", paper:"Paper 2", tier:"Higher", marks:5, topic:"Waves", stage:"gcse", yearGroups:[10,11], text:"Explain how sound waves differ from light waves.", commandWord:"Explain", answerLines:5, markScheme:"Sound waves are longitudinal; light waves are transverse; sound requires a medium; light can travel in vacuum; sound has lower speed than light." },
   { id:"phys-g0469", board:"Adaptly", subject:"physics", year:2021, series:"June", paper:"Paper 1", tier:"Foundation", marks:1, topic:"Magnetism and Electromagnetism", stage:"ks3", yearGroups:[7,8,9], text:"State the name of the region around a magnet where magnetic forces act.", commandWord:"State", answerLines:1, markScheme:"Magnetic field." },
   { id:"phys-g0470", board:"Adaptly", subject:"physics", year:2022, series:"November", paper:"Paper 2", tier:"Higher", marks:6, topic:"Particle Model of Matter", stage:"gcse", yearGroups:[10,11], text:"Calculate the pressure exerted by a gas if a force of 40 N is applied over an area of 0.5 m².", commandWord:"Calculate", answerLines:3, markScheme:"Pressure = force / area; pressure = 40 N / 0.5 m² = 80 Pa." },
-  { id:"phys-g0471", board:"Adaptly", subject:"physics", year:2023, series:"June", paper:"Paper 1", tier:"Foundation", marks:2, topic:"Space and the Solar System", stage:"ks3", yearGroups:[7, },
+  { id:"phys-g0471", board:"Adaptly", subject:"physics", year:2023, series:"June", paper:"Paper 1", tier:"Foundation", marks:2, topic:"Space and the Solar System", stage:"ks3", yearGroups:[7] },
   { id:"phys-g0501", board:"Adaptly", subject:"physics", year:2019, series:"June", paper:"Paper 1", tier:"Foundation", marks:2, topic:"Forces and Motion", stage:"ks3", yearGroups:[7,8,9], text:"State the unit of force in the SI system.", commandWord:"State", answerLines:1, markScheme:"The unit of force is the newton (N)." },
   { id:"phys-g0502", board:"Adaptly", subject:"physics", year:2020, series:"November", paper:"Paper 2", tier:"Higher", marks:4, topic:"Energy", stage:"gcse", yearGroups:[9,10,11], text:"Explain how energy is conserved in a pendulum system.", commandWord:"Explain", answerLines:3, markScheme:"Energy is transferred between kinetic and gravitational potential energy; when the pendulum swings down, gravitational potential energy converts to kinetic energy; when it swings up, kinetic energy converts back to gravitational potential energy; energy loss due to air resistance and friction is negligible in ideal case." },
   { id:"phys-g0503", board:"Adaptly", subject:"physics", year:2021, series:"June", paper:"Paper 1", tier:"Foundation", marks:1, topic:"Waves and Sound", stage:"ks3", yearGroups:[7,8,9], text:"Name the part of a wave that is the highest point.", commandWord:"Name", answerLines:1, markScheme:"Crest." },
@@ -710,3 +706,5 @@ export default physicsQuestions;
   { id:"phys-g0970", board:"Adaptly", subject:"physics", year:2022, series:"November", paper:"Paper 2", tier:"Foundation", marks:1, topic:"Fields and Their Consequences", stage:"alevel", yearGroups:[12,13], text:"Name the vector quantity that describes gravitational influence.", commandWord:"Name", answerLines:1, markScheme:"Gravitational field strength (g)." },
   { id:"phys-g0971", board:"Adaptly", subject:"physics", year:2023, series:"June", paper:"Paper 1", tier:"Higher", marks:2, topic:"" },
 ];
+
+export default physicsQuestions;
