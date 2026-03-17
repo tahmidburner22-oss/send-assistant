@@ -11,6 +11,50 @@ import { sendPasswordReset, sendEmailVerification, sendWelcomeEmail } from "../e
 
 const router = Router();
 
+// ── Issue 1: Refuse to start with default JWT secret in production ────────────
+if (process.env.NODE_ENV === "production" && process.env.JWT_SECRET === undefined) {
+  console.error("[SECURITY] FATAL: JWT_SECRET environment variable is not set. Set it in Railway Variables.");
+  process.exit(1);
+}
+
+// ── Issue 2: Per-account failed login tracking (brute force protection) ───────
+// IP-based rate limiting catches distributed attacks; this catches single-target attacks.
+// In-memory only — resets on restart, which is acceptable (better than nothing).
+const failedLoginAttempts = new Map<string, number>();   // email → count
+const lockoutUntil        = new Map<string, number>();   // email → timestamp
+
+function isLockedOut(email: string): boolean {
+  const until = lockoutUntil.get(email);
+  if (!until) return false;
+  if (Date.now() < until) return true;
+  lockoutUntil.delete(email);
+  failedLoginAttempts.delete(email);
+  return false;
+}
+
+function recordFailedLogin(email: string): number {
+  const attempts = (failedLoginAttempts.get(email) || 0) + 1;
+  failedLoginAttempts.set(email, attempts);
+  if (attempts >= 10) {
+    lockoutUntil.set(email, Date.now() + 15 * 60 * 1000); // 15-minute lockout
+    failedLoginAttempts.delete(email);
+  }
+  return attempts;
+}
+
+function clearFailedLogins(email: string): void {
+  failedLoginAttempts.delete(email);
+  lockoutUntil.delete(email);
+}
+
+// ── Issue 7: Password strength validator ─────────────────────────────────────
+function validatePasswordStrength(password: string): string | null {
+  if (password.length < 8) return "Password must be at least 8 characters";
+  if (!/[0-9]/.test(password)) return "Password must contain at least one number";
+  if (!/[^a-zA-Z0-9]/.test(password)) return "Password must contain at least one special character";
+  return null; // valid
+}
+
 // ── Register ──────────────────────────────────────────────────────────────────
 // Personal email domains that are NOT allowed for school staff accounts
 const PERSONAL_EMAIL_DOMAINS = new Set([
@@ -55,10 +99,9 @@ router.post("/register", async (req: Request, res: Response) => {
     // Role validation — only allow known school roles (mat_admin is set by system)
     const safeRole: SchoolRole = (VALID_ROLES as readonly string[]).includes(role) ? role as SchoolRole : "teacher";
 
-    // Password strength
-    if (password.length < 8) {
-      return res.status(400).json({ error: "Password must be at least 8 characters" });
-    }
+    // Password strength — enforce complexity
+    const pwError = validatePasswordStrength(password);
+    if (pwError) return res.status(400).json({ error: pwError });
 
     // Check email not already used
     const existing = db.prepare("SELECT id FROM users WHERE email = ?").get(email);
@@ -118,21 +161,69 @@ router.get("/verify-email", (req: Request, res: Response) => {
   res.json({ message: "Email verified successfully. You can now log in." });
 });
 
+// ── Resend Verification Email ─────────────────────────────────────────────────
+router.post("/resend-verification", async (req: Request, res: Response) => {
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ error: "Email required" });
+
+  // Always return success to prevent email enumeration
+  const user = db.prepare("SELECT * FROM users WHERE email = ? AND is_active = 1 AND email_verified = 0").get(email) as any;
+  if (user) {
+    const verifyToken = uuidv4();
+    db.prepare("UPDATE users SET email_verify_token = ? WHERE id = ?").run(verifyToken, user.id);
+    sendEmailVerification(email, verifyToken).catch(console.error);
+    auditLog(user.id, user.school_id, "user.verification_resent", "user", user.id, {}, req.ip);
+  }
+
+  res.json({ message: "If an unverified account exists with this email, a new verification link has been sent." });
+});
+
 // ── Login ─────────────────────────────────────────────────────────────────────
 router.post("/login", async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
     if (!email || !password) return res.status(400).json({ error: "Email and password are required" });
 
+    // Issue 2: Check per-account lockout before hitting the DB
+    if (isLockedOut(email)) {
+      return res.status(429).json({
+        error: "Account temporarily locked due to too many failed attempts. Please try again in 15 minutes or use Forgot Password.",
+      });
+    }
+
     const user = db.prepare("SELECT * FROM users WHERE email = ? AND is_active = 1").get(email) as any;
-    if (!user) return res.status(401).json({ error: "Invalid email or password" });
+    // Use same error message whether user exists or not (prevents email enumeration)
+    if (!user) {
+      recordFailedLogin(email);
+      return res.status(401).json({ error: "Invalid email or password" });
+    }
 
     if (!user.password_hash) {
       return res.status(401).json({ error: "This account uses Google Sign-In. Please use the Google button." });
     }
 
     const valid = await bcrypt.compare(password, user.password_hash);
-    if (!valid) return res.status(401).json({ error: "Invalid email or password" });
+    if (!valid) {
+      const attempts = recordFailedLogin(email);
+      auditLog(user.id, user.school_id, "user.login_failed", "user", user.id, { attempts }, req.ip);
+      if (attempts >= 10) {
+        return res.status(429).json({
+          error: "Account temporarily locked due to too many failed attempts. Please try again in 15 minutes or use Forgot Password.",
+        });
+      }
+      return res.status(401).json({ error: "Invalid email or password" });
+    }
+
+    // Issue 6: Enforce email verification
+    if (!user.email_verified) {
+      return res.status(403).json({
+        error: "Please verify your email address before logging in. Check your inbox for a verification link.",
+        emailNotVerified: true,
+      });
+    }
+
+    // Successful login — clear any failed attempt tracking
+    clearFailedLogins(email);
 
     // Update last login
     db.prepare("UPDATE users SET last_login_at = datetime('now') WHERE id = ?").run(user.id);
@@ -284,7 +375,8 @@ router.post("/forgot-password", async (req: Request, res: Response) => {
 router.post("/reset-password", async (req: Request, res: Response) => {
   const { token, password } = req.body;
   if (!token || !password) return res.status(400).json({ error: "Token and new password required" });
-  if (password.length < 8) return res.status(400).json({ error: "Password must be at least 8 characters" });
+  const pwError = validatePasswordStrength(password);
+  if (pwError) return res.status(400).json({ error: pwError });
 
   const reset = db.prepare(
     "SELECT * FROM password_resets WHERE token = ? AND used = 0 AND expires_at > datetime('now')"
