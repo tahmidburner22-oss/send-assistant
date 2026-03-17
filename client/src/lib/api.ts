@@ -41,6 +41,12 @@ async function apiFetch<T>(
   }
 
   const data = await res.json().catch(() => ({}));
+
+  // 403 with emailNotVerified is a structured response, not an error to throw
+  if (res.status === 403 && (data as any).emailNotVerified) {
+    return data as T;
+  }
+
   if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
   return data as T;
 }
@@ -48,7 +54,7 @@ async function apiFetch<T>(
 // ── Auth ──────────────────────────────────────────────────────────────────────
 export const auth = {
   login: (email: string, password: string) =>
-    apiFetch<{ token: string; user: any; mfaRequired: boolean }>("/auth/login", {
+    apiFetch<{ token: string; user: any; mfaRequired: boolean; emailNotVerified?: boolean }>("/auth/login", {
       method: "POST",
       body: JSON.stringify({ email, password }),
     }),
