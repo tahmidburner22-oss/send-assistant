@@ -227,7 +227,10 @@ export default function RiskAssessment() {
 
   // Persist data and step to localStorage whenever they change
   useEffect(() => {
-    try { localStorage.setItem(RA_STORAGE_KEY, JSON.stringify(data)); } catch (_) {}
+    try {
+      localStorage.setItem(RA_STORAGE_KEY, JSON.stringify(data));
+      localStorage.setItem(RA_STORAGE_KEY + "_savedAt", new Date().toISOString());
+    } catch (_) {}
   }, [data]);
 
   useEffect(() => {
