@@ -360,6 +360,7 @@ export default function Worksheets() {
   const [showPrintDialog, setShowPrintDialog] = useState(false);
   // One-click differentiation
   const [showDiffDialog, setShowDiffDialog] = useState(false);
+  const [showPrintPreview, setShowPrintPreview] = useState(false);
   const [diffLoading, setDiffLoading] = useState<string | null>(null);
   const [diffVersions, setDiffVersions] = useState<Record<string, AIWorksheet>>({});
   // SEND need override for the scaffold dialog (lets teacher pick a different SEND need)
@@ -2264,7 +2265,12 @@ export default function Worksheets() {
               <span className="text-xs font-medium px-1.5 min-w-[32px] text-center">{textSize}px</span>
               <button onClick={() => setTextSize(Math.min(24, textSize + 2))} className="p-1.5 rounded-md hover:bg-white/80 text-muted-foreground hover:text-foreground"><ZoomIn className="w-3.5 h-3.5" /></button>
             </div>
-
+            <button
+              onClick={() => setShowPrintPreview(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted hover:bg-white/80 text-xs font-medium text-muted-foreground hover:text-foreground border border-border/50 transition-all"
+            >
+              <Eye className="w-3.5 h-3.5" /> Print Preview
+            </button>
           </div>
 
           {/* Toolbar Row 2 */}
@@ -2886,6 +2892,67 @@ export default function Worksheets() {
           })()}
         </DialogContent>
       </Dialog>
+
+      {/* Print Preview Modal */}
+      {showPrintPreview && (
+        <div
+          className="fixed inset-0 z-50 bg-black/70 flex items-start justify-center overflow-y-auto py-8 px-4"
+          onClick={(e) => { if (e.target === e.currentTarget) setShowPrintPreview(false); }}
+        >
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl overflow-hidden">
+            {/* Modal header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b bg-gray-50">
+              <div className="flex items-center gap-2">
+                <Printer className="w-5 h-5 text-gray-600" />
+                <h2 className="font-bold text-gray-800 text-lg">Print Preview</h2>
+                <span className="text-xs text-gray-400 font-normal ml-1">How the worksheet will look when printed</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button size="sm" variant="outline" onClick={handlePrint} className="gap-1.5">
+                  <Printer className="w-3.5 h-3.5" /> Print
+                </Button>
+                <Button size="sm" variant="outline" onClick={handleDownloadPdf} className="gap-1.5 text-brand border-brand/30">
+                  <FileDown className="w-3.5 h-3.5" /> PDF
+                </Button>
+                <button onClick={() => setShowPrintPreview(false)} className="ml-2 p-1.5 rounded-lg hover:bg-gray-200 text-gray-500 hover:text-gray-700 transition-colors">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+            {/* A4 page simulation */}
+            <div className="bg-gray-200 p-6 overflow-y-auto max-h-[80vh]">
+              <div
+                className="bg-white mx-auto shadow-lg"
+                style={{
+                  width: "210mm",
+                  minHeight: "297mm",
+                  padding: "20mm",
+                  fontFamily: "Arial, sans-serif",
+                  fontSize: `${textSize}px`,
+                  boxSizing: "border-box",
+                  position: "relative",
+                }}
+              >
+                {/* Page border indicator */}
+                <div className="absolute inset-0 border-2 border-dashed border-gray-200 pointer-events-none rounded" />
+                {/* Worksheet content cloned into preview */}
+                {worksheetRef.current && (
+                  <div
+                    dangerouslySetInnerHTML={{
+                      __html: worksheetRef.current.innerHTML,
+                    }}
+                    className="print-preview-content"
+                  />
+                )}
+              </div>
+            </div>
+            {/* Footer note */}
+            <div className="px-6 py-3 bg-gray-50 border-t text-xs text-gray-400 text-center">
+              This preview shows how the worksheet will appear on A4 paper. Margins and fonts may vary slightly between browsers.
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Print Options Dialog */}
       <PrintOptionsDialog
