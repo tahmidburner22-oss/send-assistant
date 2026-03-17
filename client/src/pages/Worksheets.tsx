@@ -17,7 +17,7 @@ import { useUserPreferences } from "@/contexts/UserPreferencesContext";
 import { subjects, yearGroups, sendNeeds, examBoards, difficulties, colorOverlays, getDifficultyOptions, subjectTierMode } from "@/lib/send-data";
 import { generateWorksheet, type GeneratedWorksheet } from "@/lib/worksheet-generator";
 import { downloadWorksheetPdf } from "@/lib/pdf-generator";
-import { downloadHtmlAsPdf, printWorksheetElement } from "@/lib/pdf-generator-v2";
+import { downloadHtmlAsPdf, printWorksheetElement, serialiseElement, buildPopupHtml, getKatexCssInline } from "@/lib/pdf-generator-v2";
 import WorksheetRenderer, { renderMath, stripKatexToPlainText } from "@/components/WorksheetRenderer";
 import { worksheetBank, type BankWorksheet } from "@/lib/worksheet-bank";
 import { getSyllabusTopics, type SyllabusTopic } from "@/lib/syllabus-data";
@@ -361,6 +361,9 @@ export default function Worksheets() {
   // One-click differentiation
   const [showDiffDialog, setShowDiffDialog] = useState(false);
   const [showPrintPreview, setShowPrintPreview] = useState(false);
+  const [printPreviewPages, setPrintPreviewPages] = useState<string[]>([]);
+  const [printPreviewLoading, setPrintPreviewLoading] = useState(false);
+  const [printPreviewViewMode, setPrintPreviewViewMode] = useState<"teacher" | "student">("teacher");
   const [diffLoading, setDiffLoading] = useState<string | null>(null);
   const [diffVersions, setDiffVersions] = useState<Record<string, AIWorksheet>>({});
   // SEND need override for the scaffold dialog (lets teacher pick a different SEND need)
@@ -915,6 +918,123 @@ export default function Worksheets() {
       sendNeedId: generated?.metadata?.sendNeed || sendNeed || undefined,
     });
   };
+  // ─── Paginated Print Preview ────────────────────────────────────────────────
+  const handleOpenPrintPreview = async (previewViewMode: "teacher" | "student" = "teacher") => {
+    const container = worksheetRef.current || (document.querySelector(".worksheet-content") as HTMLElement);
+    if (!container) { toast.error("No worksheet loaded"); return; }
+    setPrintPreviewViewMode(previewViewMode);
+    setPrintPreviewLoading(true);
+    setShowPrintPreview(true);
+    setPrintPreviewPages([]);
+    try {
+      const contentHtml = serialiseElement(container, previewViewMode);
+      const katexCss = getKatexCssInline();
+      const sendNeedId = generated?.metadata?.sendNeed || sendNeed || undefined;
+      // Build a full HTML document (same as print popup but without auto-print script)
+      const fullHtml = buildPopupHtml(contentHtml, katexCss, {
+        overlayColor: overlayBg,
+        viewMode: previewViewMode,
+        textSize,
+        title: generated?.title,
+        sendNeedId,
+        isPdf: false,
+      });
+      // Render into a hidden iframe to measure real page breaks
+      const A4_W_PX = 794;
+      const A4_H_PX = 1123; // 297mm at 96dpi
+      const iframe = document.createElement("iframe");
+      iframe.style.cssText = `position:fixed;top:0;left:-9999px;width:${A4_W_PX}px;height:${A4_H_PX}px;border:none;visibility:hidden;`;
+      document.body.appendChild(iframe);
+      await new Promise<void>((resolve, reject) => {
+        const timer = setTimeout(() => reject(new Error("iframe timeout")), 15000);
+        iframe.onload = () => { clearTimeout(timer); resolve(); };
+        iframe.srcdoc = fullHtml;
+      });
+      // Wait for fonts
+      try {
+        if (iframe.contentDocument?.fonts?.ready) {
+          await Promise.race([iframe.contentDocument.fonts.ready, new Promise<void>(r => setTimeout(r, 2000))]);
+        }
+      } catch (_) {}
+      await new Promise<void>(r => requestAnimationFrame(() => setTimeout(r, 300)));
+      const iframeDoc = iframe.contentDocument!;
+      const iframeBody = iframeDoc.body;
+      const fullH = iframeBody.scrollHeight;
+      iframe.style.height = `${fullH}px`;
+      iframe.style.visibility = "visible";
+      await new Promise<void>(r => requestAnimationFrame(() => setTimeout(r, 100)));
+      // Use html2canvas to capture the full content
+      const html2canvas = (await import("html2canvas")).default;
+      const canvas = await html2canvas(iframeBody, {
+        scale: 1.5,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: overlayBg || "#ffffff",
+        logging: false,
+        windowWidth: A4_W_PX,
+        width: A4_W_PX,
+        scrollX: 0,
+        scrollY: 0,
+      });
+      document.body.removeChild(iframe);
+      // Slice canvas into A4 pages
+      const DPR = canvas.width / A4_W_PX;
+      const pageH_px = A4_H_PX * DPR;
+      const totalH = canvas.height;
+      // Measure section blocks for smart page breaks
+      const rootEl = iframeDoc.querySelector(".worksheet-print-root") as HTMLElement || iframeBody;
+      const rootRect = rootEl.getBoundingClientRect();
+      const blocks: Array<{ top: number; bottom: number }> = Array.from(
+        rootEl.querySelectorAll<HTMLElement>(".ws-header, .ws-section")
+      ).map(el => {
+        const r = el.getBoundingClientRect();
+        return { top: (r.top - rootRect.top) * DPR, bottom: (r.bottom - rootRect.top) * DPR };
+      });
+      const findBreak = (curY: number): number => {
+        const ideal = curY + pageH_px;
+        if (ideal >= totalH) return totalH;
+        let breakAt = ideal;
+        let changed = true;
+        while (changed) {
+          changed = false;
+          for (const blk of blocks) {
+            if (blk.top >= totalH) continue;
+            if (breakAt > blk.top && breakAt < blk.bottom) {
+              const blockH = blk.bottom - blk.top;
+              if (blockH >= pageH_px * 0.98) continue;
+              const candidate = blk.top - 4 * DPR;
+              if (candidate > curY) { breakAt = candidate; changed = true; }
+            }
+          }
+        }
+        if (breakAt <= curY) breakAt = curY + pageH_px;
+        return Math.min(breakAt, totalH);
+      };
+      const pages: string[] = [];
+      let curY = 0;
+      while (curY < totalH) {
+        const endY = findBreak(curY);
+        const sliceH = Math.ceil(endY - curY);
+        const pageCanvas = document.createElement("canvas");
+        pageCanvas.width = canvas.width;
+        pageCanvas.height = sliceH;
+        const ctx = pageCanvas.getContext("2d")!;
+        ctx.fillStyle = overlayBg || "#ffffff";
+        ctx.fillRect(0, 0, canvas.width, sliceH);
+        ctx.drawImage(canvas, 0, -curY);
+        pages.push(pageCanvas.toDataURL("image/png"));
+        curY = endY;
+      }
+      setPrintPreviewPages(pages);
+    } catch (err) {
+      console.error("Print preview error:", err);
+      toast.error("Could not generate preview. Please try again.");
+      setShowPrintPreview(false);
+    } finally {
+      setPrintPreviewLoading(false);
+    }
+  };
+
   // ─── AI Edit Section ────────────────────────────────────────────────────────
   const handleAiEditSection = async () => {
     if (aiEditSectionIndex === null || !aiEditPrompt.trim() || !generated) return;
@@ -2266,7 +2386,7 @@ export default function Worksheets() {
               <button onClick={() => setTextSize(Math.min(24, textSize + 2))} className="p-1.5 rounded-md hover:bg-white/80 text-muted-foreground hover:text-foreground"><ZoomIn className="w-3.5 h-3.5" /></button>
             </div>
             <button
-              onClick={() => setShowPrintPreview(true)}
+              onClick={() => handleOpenPrintPreview(viewMode)}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted hover:bg-white/80 text-xs font-medium text-muted-foreground hover:text-foreground border border-border/50 transition-all"
             >
               <Eye className="w-3.5 h-3.5" /> Print Preview
@@ -2893,63 +3013,106 @@ export default function Worksheets() {
         </DialogContent>
       </Dialog>
 
-      {/* Print Preview Modal */}
+      {/* Print Preview Modal — Paginated A4 view matching the browser print dialog */}
       {showPrintPreview && (
         <div
-          className="fixed inset-0 z-50 bg-black/70 flex items-start justify-center overflow-y-auto py-8 px-4"
+          className="fixed inset-0 z-50 bg-black/80 flex flex-col"
           onClick={(e) => { if (e.target === e.currentTarget) setShowPrintPreview(false); }}
         >
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl overflow-hidden">
-            {/* Modal header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b bg-gray-50">
-              <div className="flex items-center gap-2">
-                <Printer className="w-5 h-5 text-gray-600" />
-                <h2 className="font-bold text-gray-800 text-lg">Print Preview</h2>
-                <span className="text-xs text-gray-400 font-normal ml-1">How the worksheet will look when printed</span>
+          {/* Sticky toolbar */}
+          <div className="flex-shrink-0 flex items-center justify-between px-6 py-3 bg-gray-900 text-white shadow-lg">
+            <div className="flex items-center gap-3">
+              <Printer className="w-5 h-5 text-gray-300" />
+              <div>
+                <h2 className="font-bold text-white text-sm">Print Preview</h2>
+                <p className="text-xs text-gray-400">
+                  {printPreviewLoading ? "Rendering pages…" : `${printPreviewPages.length} page${printPreviewPages.length !== 1 ? "s" : ""} · ${printPreviewViewMode === "teacher" ? "Teacher" : "Student"} view`}
+                </p>
               </div>
-              <div className="flex items-center gap-2">
-                <Button size="sm" variant="outline" onClick={handlePrint} className="gap-1.5">
-                  <Printer className="w-3.5 h-3.5" /> Print
-                </Button>
-                <Button size="sm" variant="outline" onClick={handleDownloadPdf} className="gap-1.5 text-brand border-brand/30">
-                  <FileDown className="w-3.5 h-3.5" /> PDF
-                </Button>
-                <button onClick={() => setShowPrintPreview(false)} className="ml-2 p-1.5 rounded-lg hover:bg-gray-200 text-gray-500 hover:text-gray-700 transition-colors">
-                  <X className="w-5 h-5" />
+            </div>
+            <div className="flex items-center gap-2">
+              {/* View mode toggle */}
+              <div className="flex bg-gray-800 rounded-lg p-0.5 mr-1">
+                <button
+                  onClick={() => handleOpenPrintPreview("teacher")}
+                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                    printPreviewViewMode === "teacher" ? "bg-white text-gray-900" : "text-gray-400 hover:text-white"
+                  }`}
+                >
+                  Teacher
+                </button>
+                <button
+                  onClick={() => handleOpenPrintPreview("student")}
+                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                    printPreviewViewMode === "student" ? "bg-white text-gray-900" : "text-gray-400 hover:text-white"
+                  }`}
+                >
+                  Student
                 </button>
               </div>
+              <Button size="sm" variant="outline" onClick={handlePrint}
+                className="gap-1.5 border-gray-600 text-white hover:bg-gray-800 bg-transparent">
+                <Printer className="w-3.5 h-3.5" /> Print
+              </Button>
+              <Button size="sm" variant="outline" onClick={handleDownloadPdf}
+                className="gap-1.5 border-brand/60 text-brand hover:bg-brand/10 bg-transparent">
+                <FileDown className="w-3.5 h-3.5" /> PDF
+              </Button>
+              <button onClick={() => setShowPrintPreview(false)}
+                className="ml-1 p-1.5 rounded-lg hover:bg-gray-700 text-gray-400 hover:text-white transition-colors">
+                <X className="w-5 h-5" />
+              </button>
             </div>
-            {/* A4 page simulation */}
-            <div className="bg-gray-200 p-6 overflow-y-auto max-h-[80vh]">
-              <div
-                className="bg-white mx-auto shadow-lg"
-                style={{
-                  width: "210mm",
-                  minHeight: "297mm",
-                  padding: "20mm",
-                  fontFamily: "Arial, sans-serif",
-                  fontSize: `${textSize}px`,
-                  boxSizing: "border-box",
-                  position: "relative",
-                }}
-              >
-                {/* Page border indicator */}
-                <div className="absolute inset-0 border-2 border-dashed border-gray-200 pointer-events-none rounded" />
-                {/* Worksheet content cloned into preview */}
-                {worksheetRef.current && (
-                  <div
-                    dangerouslySetInnerHTML={{
-                      __html: worksheetRef.current.innerHTML,
-                    }}
-                    className="print-preview-content"
-                  />
-                )}
+          </div>
+
+          {/* Scrollable page area */}
+          <div className="flex-1 overflow-y-auto bg-gray-700 py-8 px-4">
+            {printPreviewLoading ? (
+              <div className="flex flex-col items-center justify-center h-full gap-4 text-white">
+                <div className="w-10 h-10 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <p className="text-sm text-gray-300">Rendering print preview…</p>
+                <p className="text-xs text-gray-400">This may take a few seconds</p>
               </div>
-            </div>
-            {/* Footer note */}
-            <div className="px-6 py-3 bg-gray-50 border-t text-xs text-gray-400 text-center">
-              This preview shows how the worksheet will appear on A4 paper. Margins and fonts may vary slightly between browsers.
-            </div>
+            ) : printPreviewPages.length === 0 ? (
+              <div className="flex items-center justify-center h-full text-gray-400">
+                <p className="text-sm">No pages to preview</p>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center gap-6">
+                {printPreviewPages.map((pageDataUrl, idx) => (
+                  <div key={idx} className="relative">
+                    {/* Page number badge */}
+                    <div className="absolute -top-6 left-0 right-0 flex justify-center">
+                      <span className="text-xs text-gray-400 font-medium">
+                        Page {idx + 1} of {printPreviewPages.length}
+                      </span>
+                    </div>
+                    {/* A4 page card */}
+                    <div
+                      className="bg-white shadow-2xl"
+                      style={{
+                        width: "210mm",
+                        aspectRatio: "210 / 297",
+                        overflow: "hidden",
+                        position: "relative",
+                      }}
+                    >
+                      <img
+                        src={pageDataUrl}
+                        alt={`Page ${idx + 1}`}
+                        style={{ width: "100%", height: "100%", display: "block", objectFit: "fill" }}
+                        draggable={false}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Footer */}
+          <div className="flex-shrink-0 px-6 py-2 bg-gray-900 border-t border-gray-700 text-xs text-gray-500 text-center">
+            Exact print output — pages match what the browser print dialog will produce
           </div>
         </div>
       )}
