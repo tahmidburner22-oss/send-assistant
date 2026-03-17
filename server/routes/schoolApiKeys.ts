@@ -112,6 +112,30 @@ router.post("/", requireAuth, requireAdmin, (req: Request, res: Response) => {
   res.json({ success: true, message: `${providerLabel || provider} key saved successfully` });
 });
 
+// ── PUT /api/school-keys/:id — update a provider key by row ID ───────────────
+router.put("/:id", requireAuth, requireAdmin, (req: Request, res: Response) => {
+  const schoolId = req.user!.schoolId;
+  if (!schoolId) return res.status(400).json({ error: "No school associated with your account" });
+
+  const { apiKey, model, baseUrl, providerLabel } = req.body;
+  const row = db.prepare("SELECT * FROM school_api_keys WHERE id=? AND school_id=?").get(req.params.id, schoolId) as any;
+  if (!row) return res.status(404).json({ error: "Key not found" });
+
+  if (apiKey && apiKey.trim()) {
+    const { encrypted, iv } = encryptKey(apiKey.trim());
+    db.prepare(
+      "UPDATE school_api_keys SET api_key_encrypted=?, api_key_iv=?, model=?, base_url=?, provider_label=?, added_by=?, updated_at=datetime('now') WHERE id=? AND school_id=?"
+    ).run(encrypted, iv, model || row.model || null, baseUrl || row.base_url || null, providerLabel || row.provider_label, req.user!.id, req.params.id, schoolId);
+  } else {
+    db.prepare(
+      "UPDATE school_api_keys SET model=?, base_url=?, provider_label=?, updated_at=datetime('now') WHERE id=? AND school_id=?"
+    ).run(model || row.model || null, baseUrl || row.base_url || null, providerLabel || row.provider_label, req.params.id, schoolId);
+  }
+
+  auditLog(req.user!.id, schoolId, "school.api_key_updated", "school_api_keys", row.provider, { provider: row.provider }, req.ip);
+  res.json({ success: true, message: "Key updated successfully" });
+});
+
 // ── DELETE /api/school-keys/:provider — remove a provider key ────────────────
 router.delete("/:provider", requireAuth, requireAdmin, (req: Request, res: Response) => {
   const schoolId = req.user!.schoolId;

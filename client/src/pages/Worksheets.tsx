@@ -185,12 +185,14 @@ export default function Worksheets() {
   const preSelectedSubject = _urlParams.get("subject") || "";
   const preSelectedTopic = _urlParams.get("topic") || "";
   const preSelectedDescription = _urlParams.get("description") || "";
+  const preSelectedYearGroup = _urlParams.get("yearGroup") || "";
+  const preSelectedSendNeed = _urlParams.get("sendNeed") || "";
 
   const [activeTab, setActiveTab] = useState("generate");
   const [subject, setSubject] = useState(() => preSelectedSubject);
-  const [yearGroup, setYearGroup] = useState("");
+  const [yearGroup, setYearGroup] = useState(() => preSelectedYearGroup);
   const [topic, setTopic] = useState(() => preSelectedTopic);
-  const [sendNeed, setSendNeed] = useState("");
+  const [sendNeed, setSendNeed] = useState(() => preSelectedSendNeed);
   const [difficulty, setDifficulty] = useState("mixed");
   const [worksheetLength, setWorksheetLength] = useState("30");
   const [examBoard, setExamBoard] = useState("none");
@@ -247,6 +249,7 @@ export default function Worksheets() {
   const [useAI, setUseAI] = useState(true);
 
   const [loading, setLoading] = useState(false);
+  const [generationStatus, setGenerationStatus] = useState(""); // live status during generation
   const [generated, setGenerated] = useState<AnyWorksheet | null>(null);
   const [viewMode, setViewMode] = useState<"teacher" | "student">("teacher");
   const [showOverlayPicker, setShowOverlayPicker] = useState(false);
@@ -468,11 +471,25 @@ export default function Worksheets() {
       return;
     }
     setLoading(true);
+    setGenerationStatus("Connecting to AI...");
     setEditedSections({});
     setEditMode(false);
     setRating(0);
     setSavedWorksheetId(null);
     setVoiceAnswers({});
+
+    // Cycle status messages so the user knows it's working
+    const statusMessages = [
+      "Building worksheet structure...",
+      "Writing questions and content...",
+      "Adding scaffolding and examples...",
+      "Finishing up...",
+    ];
+    let statusIdx = 0;
+    const statusInterval = setInterval(() => {
+      statusIdx = (statusIdx + 1) % statusMessages.length;
+      setGenerationStatus(statusMessages[statusIdx]);
+    }, 4000);
 
     let generatedWs: AnyWorksheet | null = null;
 
@@ -567,57 +584,44 @@ export default function Worksheets() {
         console.error("AI generation failed:", err);
         console.error("[DEBUG] Error name:", err?.name, "| message:", err?.message?.slice(0, 300), "| stack:", err?.stack?.slice(0, 200));
         const errMsg = err?.message || String(err);
-        if (errMsg.includes("No AI provider keys configured") || errMsg.includes("noKeysConfigured") || errMsg.includes("Settings \u2192 AI Providers")) {
+        if (errMsg.includes("No AI provider keys configured") || errMsg.includes("noKeysConfigured") || errMsg.includes("Settings → AI Providers")) {
           toast.error(
-            "No AI keys configured. Go to Settings \u2192 AI Providers to add your school's API keys. Using local generator for now.",
+            "No AI keys configured. Go to Settings → AI Providers to add your school's API keys. Using local generator for now.",
             { duration: 10000 }
           );
           generatedWs = generateWorksheet({ subject, topic, yearGroup, sendNeed: sendNeed || undefined, difficulty, examBoard, includeAnswers, additionalInstructions });
-        } else if (err?.name === "AbortError") {
-          // Timeout — retry once with a shorter prompt before giving up
-          toast("AI taking longer than expected, retrying...", { icon: "\u23f3" });
-          try {
-            const retryResult = await aiGenerateWorksheet({
-              subject, topic, yearGroup,
-              sendNeed: sendNeed && sendNeed !== "none-selected" ? sendNeed : undefined,
-              difficulty,
-              examBoard: examBoard !== "none" ? examBoard : undefined,
-              includeAnswers,
-              examStyle,
-              additionalInstructions,
-              generateDiagram: false, // skip diagram on retry to reduce tokens
-              worksheetLength: "short", // shorter on retry
-              targetPages: targetPages || undefined,
-              readingAge: readingAge || undefined,
-            });
-            generatedWs = { ...retryResult, isAI: true } as AIWorksheet;
-            toast.success("Worksheet generated (retry succeeded)!");
-          } catch (retryErr) {
-            console.error("Retry also failed:", retryErr);
-            toast.error("AI generation timed out. Please try again.");
-            generatedWs = generateWorksheet({ subject, topic, yearGroup, sendNeed: sendNeed || undefined, difficulty, examBoard, includeAnswers, additionalInstructions });
-          }
         } else {
-          // Parse error or other failure — retry once before local fallback
-          try {
-            const retryResult = await aiGenerateWorksheet({
-              subject, topic, yearGroup,
-              sendNeed: sendNeed && sendNeed !== "none-selected" ? sendNeed : undefined,
-              difficulty,
-              examBoard: examBoard !== "none" ? examBoard : undefined,
-              includeAnswers,
-              examStyle,
-              additionalInstructions,
-              generateDiagram: false,
-              worksheetLength,
-              targetPages: targetPages || undefined,
-              readingAge: readingAge || undefined,
-            });
-            generatedWs = { ...retryResult, isAI: true } as AIWorksheet;
-            toast.success("Worksheet generated!");
-          } catch (retryErr) {
-            console.error("Retry also failed:", retryErr);
-            toast("Worksheet generated using fallback generator.", { icon: "\u26a0\ufe0f" });
+          // Any other failure (rate limit, timeout, parse error) — retry up to 2 more times
+          // with a brief pause so rate-limited providers have time to recover
+          let retrySuccess = false;
+          for (let attempt = 1; attempt <= 2; attempt++) {
+            toast(`AI is busy, retrying (attempt ${attempt + 1}/3)…`, { icon: "⏳" });
+            await new Promise(r => setTimeout(r, attempt * 1500)); // wait 1.5s then 3s
+            try {
+              const retryResult = await aiGenerateWorksheet({
+                subject, topic, yearGroup,
+                sendNeed: sendNeed && sendNeed !== "none-selected" ? sendNeed : undefined,
+                difficulty,
+                examBoard: examBoard !== "none" ? examBoard : undefined,
+                includeAnswers,
+                examStyle,
+                additionalInstructions,
+                generateDiagram: false, // skip diagram on retry to reduce tokens
+                worksheetLength,
+                targetPages: targetPages || undefined,
+                readingAge: readingAge || undefined,
+              });
+              generatedWs = { ...retryResult, isAI: true } as AIWorksheet;
+              toast.success(`Worksheet generated (attempt ${attempt + 1} succeeded)!`);
+              retrySuccess = true;
+              break;
+            } catch (retryErr: any) {
+              console.error(`Retry ${attempt} failed:`, retryErr?.message);
+            }
+          }
+          if (!retrySuccess) {
+            // All 3 attempts failed — only now fall back to local generator
+            toast("AI unavailable after 3 attempts. Using local generator as backup.", { icon: "⚠️" });
             generatedWs = generateWorksheet({ subject, topic, yearGroup, sendNeed: sendNeed || undefined, difficulty, examBoard, includeAnswers, additionalInstructions });
           }
         }
@@ -655,6 +659,8 @@ export default function Worksheets() {
       }).catch(() => {}); // Silent auto-save
     }
 
+    clearInterval(statusInterval);
+    setGenerationStatus("");
     setLoading(false);
   };
 
@@ -1164,43 +1170,53 @@ export default function Worksheets() {
   };
 
   // ─── Natural Language Input handler ───────────────────────────────────────────
+  // The NL bar is a shortcut: type freely and generate immediately.
+  // Everything NOT mentioned in the prompt gets a clean standard default —
+  // it does NOT inherit whatever the dropdowns happen to be showing right now.
+  // "Year 11 fractions" → standard difficulty, no SEND, reading age auto, no exam style.
   const handleNlInput = async () => {
     if (!nlInput.trim()) return;
     const rawPrompt = nlInput.trim();
     const parsed = parseNaturalLanguageInput(rawPrompt);
 
-    // Use parsed values, fall back to whatever is already selected in the form,
-    // then fall back to sensible defaults so we ALWAYS generate — never block.
-    const nextSubject   = parsed.subject   || subject   || "mathematics";
-    const nextYearGroup = parsed.yearGroup || yearGroup || "Year 10";
-    const nextTopic     = parsed.topic     || topic     || rawPrompt;
-    const nextDifficulty = parsed.difficulty || difficulty;
-    const nextSendNeed   = parsed.sendNeed   || sendNeed;
+    // Only use what was actually mentioned — clean defaults for everything else.
+    const nextSubject    = parsed.subject   || "mathematics";
+    const nextYearGroup  = parsed.yearGroup || "Year 10";
+    // If parser couldn't find a topic, use the entire raw prompt as the topic
+    // so the AI always gets useful context.
+    const nextTopic      = parsed.topic     || rawPrompt;
+    // Only set difficulty if explicitly mentioned — otherwise leave as "mixed" (standard)
+    const nextDifficulty = parsed.difficulty || "mixed";
+    // Only apply SEND if explicitly mentioned — otherwise no SEND adaptation
+    const nextSendNeed   = parsed.sendNeed  || "none-selected";
 
-    // Always pass the raw prompt as additional instructions so the AI has
-    // the full context even when the regex parser couldn't extract everything.
-    const nextInstructions = rawPrompt;
-
-    if (parsed.subject)    setSubject(parsed.subject);
-    if (parsed.yearGroup)  setYearGroup(parsed.yearGroup);
-    if (parsed.topic)      setTopic(parsed.topic);
-    if (parsed.difficulty) setDifficulty(parsed.difficulty);
-    if (parsed.sendNeed)   setSendNeed(parsed.sendNeed);
-    setAdditionalInstructions(rawPrompt);
-
-    setNlInput("");
-    setNlExpanded(false);
+    // Update the visible dropdowns so they reflect what was generated
     setSubject(nextSubject);
     setYearGroup(nextYearGroup);
     setTopic(nextTopic);
     setDifficulty(nextDifficulty);
     setSendNeed(nextSendNeed);
+    // Clear any leftover options that weren't mentioned
+    setExamStyle(false);
+    setReadingAge(0);
+    setAdditionalInstructions("");
+
+    setNlInput("");
+    setNlExpanded(false);
     setLoading(true);
+    setGenerationStatus("Parsing your request...");
     setEditedSections({});
     setEditMode(false);
     setRating(0);
     setSavedWorksheetId(null);
     setVoiceAnswers({});
+
+    const nlStatusMessages = ["Building worksheet...", "Writing questions...", "Adding content...", "Almost done..."];
+    let nlStatusIdx = 0;
+    const nlStatusInterval = setInterval(() => {
+      nlStatusIdx = (nlStatusIdx + 1) % nlStatusMessages.length;
+      setGenerationStatus(nlStatusMessages[nlStatusIdx]);
+    }, 3500);
 
     let generatedWs: AnyWorksheet | null = null;
     try {
@@ -1209,44 +1225,74 @@ export default function Worksheets() {
           subject: nextSubject,
           topic: nextTopic,
           yearGroup: nextYearGroup,
-          sendNeed: nextSendNeed && nextSendNeed !== "none-selected" ? nextSendNeed : undefined,
+          // Only pass sendNeed if one was explicitly detected
+          sendNeed: parsed.sendNeed || undefined,
           difficulty: nextDifficulty,
-          examBoard: examBoard !== "none" ? examBoard : undefined,
+          // Don't inherit examBoard from dropdown — use standard unless mentioned
+          examBoard: undefined,
           includeAnswers,
-          examStyle,
-          additionalInstructions: nextInstructions,
-          generateDiagram,
-          worksheetLength,
-          targetPages: targetPages || undefined,
-          readingAge: readingAge || undefined,
+          // Don't inherit examStyle from dropdown toggle
+          examStyle: false,
+          // Pass the raw prompt so AI gets the full context
+          additionalInstructions: rawPrompt,
+          generateDiagram: false,
+          worksheetLength: "30",
+          targetPages: undefined,
+          readingAge: undefined,
         });
         generatedWs = { ...result, isAI: true } as AIWorksheet;
-        toast.success(generateDiagram ? "Worksheet with diagram generated!" : "Worksheet generated!");
+        toast.success("Worksheet generated!");
       } else {
         generatedWs = generateWorksheet({
           subject: nextSubject,
           topic: nextTopic,
           yearGroup: nextYearGroup,
-          sendNeed: nextSendNeed || undefined,
+          sendNeed: parsed.sendNeed || undefined,
           difficulty: nextDifficulty,
-          examBoard,
+          examBoard: "none",
           includeAnswers,
-          additionalInstructions: nextInstructions,
+          additionalInstructions: rawPrompt,
         });
         toast.success("Worksheet generated!");
       }
     } catch (err: any) {
       console.error("Natural-language worksheet generation failed:", err);
-      // Keep the parsed parameters in the main form and fall back cleanly to the
-      // standard generator instead of leaving the user with an error-only outcome.
-      toast.error("AI generation hit an issue. Your request has been applied to the form below — click Generate Worksheet to continue.");
+      const errMsg = err?.message || String(err);
+      // Don't silently bail — retry up to 2 more times before showing error
+      if (!errMsg.includes("No AI provider keys configured")) {
+        let retrySuccess = false;
+        for (let attempt = 1; attempt <= 2; attempt++) {
+          toast(`AI is busy, retrying (${attempt + 1}/3)…`, { icon: "⏳" });
+          await new Promise(r => setTimeout(r, attempt * 1500));
+          try {
+            const retryResult = await aiGenerateWorksheet({
+              subject: nextSubject, topic: nextTopic, yearGroup: nextYearGroup,
+              sendNeed: parsed.sendNeed || undefined,
+              difficulty: nextDifficulty,
+              examBoard: undefined, examStyle: false,
+              includeAnswers,
+              additionalInstructions: rawPrompt,
+              generateDiagram: false, worksheetLength: "30",
+            });
+            generatedWs = { ...retryResult, isAI: true } as AIWorksheet;
+            toast.success("Worksheet generated!");
+            retrySuccess = true;
+            break;
+          } catch (_) {}
+        }
+        if (!retrySuccess) {
+          toast.error("AI generation failed after 3 attempts. Check Settings → AI Providers.");
+        }
+      } else {
+        toast.error("No AI keys configured. Go to Settings → AI Providers.");
+      }
     } finally {
+      clearInterval(nlStatusInterval);
+      setGenerationStatus("");
       setLoading(false);
     }
 
     if (generatedWs) {
-      setGenerated(generatedWs);
-      setDiffVersions({});
       const ws = generatedWs;
       const sectionsToSave = ws.sections.map(s => ({ ...s }));
       const content = sectionsToSave.filter(s => !s.teacherOnly).map(s => `## ${s.title}\n${s.content}`).join("\n\n");
@@ -1488,7 +1534,7 @@ export default function Worksheets() {
                         onChange={e => setNlInput(e.target.value)}
                         onBlur={() => { if (!nlInput.trim()) setNlExpanded(false); }}
                         onKeyDown={e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) handleNlInput(); }}
-                        placeholder='e.g. "Year 10 Maths Fractions for dyslexia" or "Y7 Science Forces foundation — include worked examples and a word bank"'
+                        placeholder='e.g. "Year 11 Fractions" or "Y7 Science Forces foundation" or "Year 10 Maths Fractions for dyslexia"'
                         className="flex-1 bg-white min-h-[100px] resize-none text-sm"
                         autoFocus
                         rows={4}
@@ -1499,7 +1545,7 @@ export default function Worksheets() {
                         onChange={e => setNlInput(e.target.value)}
                         onFocus={() => setNlExpanded(true)}
                         onKeyDown={e => { if (e.key === 'Enter') handleNlInput(); }}
-                        placeholder='e.g. "Year 10 Maths Fractions for dyslexia" or "Y7 Science Forces foundation"'
+                        placeholder='e.g. "Year 11 Fractions" or "Y7 Science Forces"'
                         className="h-10 flex-1 bg-white"
                       />
                     )}
@@ -1507,7 +1553,7 @@ export default function Worksheets() {
                       <Sparkles className="w-4 h-4 mr-1" /> Generate
                     </Button>
                   </div>
-                  <p className="text-[10px] text-muted-foreground">{nlExpanded ? "Press Ctrl+Enter or click Generate to create a worksheet from what you typed. Click away to collapse." : "Type naturally and click Generate — Adaptly will use the details you gave to create the worksheet."}</p>
+                  <p className="text-[10px] text-muted-foreground">{nlExpanded ? "Press Ctrl+Enter or click Generate. Only mention SEND / difficulty if you want them — everything else uses standard defaults for the year group." : "Just type year group + topic and hit Generate. No need to fill in the dropdowns."}</p>
                 </div>
 
                 {/* AI Toggle */}
@@ -1768,7 +1814,7 @@ export default function Worksheets() {
 
                 <Button onClick={handleGenerate} disabled={loading} className="w-full h-12 bg-brand hover:bg-brand/90 text-white text-base font-semibold shadow-sm">
                   {loading
-                    ? <><RefreshCw className="w-4 h-4 mr-2 animate-spin" />{useAI ? "Generating with AI..." : "Generating..."}</>
+                    ? <><RefreshCw className="w-4 h-4 mr-2 animate-spin" />{generationStatus || (useAI ? "Generating with AI..." : "Generating...")}</>
                     : <><Sparkles className="w-4 h-4 mr-2" /> Generate Worksheet</>}
                 </Button>
 

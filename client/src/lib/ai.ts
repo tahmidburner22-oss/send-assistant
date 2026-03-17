@@ -1713,6 +1713,43 @@ export function parseNaturalLanguageInput(input: string): {
     result.topic = remaining.replace(/\b\w/g, c => c.toUpperCase());
   }
 
+  // ── Fill in all missing defaults so the worksheet always generates ─────────
+  // If we have a topic but no subject, try to infer it from topic keywords
+  if (result.topic && !result.subject) {
+    const topicLower = result.topic.toLowerCase();
+    const mathKeywords = ["fraction","decimal","percentage","algebra","equation","graph","geometry","trigonometry","calculus","statistic","probability","ratio","proportion","vector","matrix","sequence","polynomial","differentiation","integration","pythagoras","angle","area","perimeter","volume","circle","triangle","quadratic","linear","simultaneous","inequality","surd","index","prime","factor","multiple","arithmetic","multiplication","division","addition","subtraction","number","shape","coordinate","symmetry","transformation","bearing","loci"];
+    const scienceKeywords = ["cell","dna","evolution","photosynthesis","respiration","atom","molecule","element","compound","reaction","force","energy","wave","electricity","magnetism","circuit","periodic","osmosis","enzyme","organ","system","genetics","ecology","climate","particle","nuclear","acid","alkali","bonding","titration","electrolysis"];
+    const historyKeywords = ["war","revolution","empire","tudor","victorian","roman","medieval","cold war","slavery","holocaust","civil","industrial","world war","henry","elizabeth","parliament","democracy","monarch"];
+    const geographyKeywords = ["river","volcano","earthquake","climate","weather","tectonic","biome","rainforest","urbanisation","globalisation","migration","coast","glacier","population","development","map","landform","erosion","flood"];
+    if (mathKeywords.some(k => topicLower.includes(k))) result.subject = "mathematics";
+    else if (scienceKeywords.some(k => topicLower.includes(k))) result.subject = "science";
+    else if (historyKeywords.some(k => topicLower.includes(k))) result.subject = "history";
+    else if (geographyKeywords.some(k => topicLower.includes(k))) result.subject = "geography";
+    else result.subject = "english"; // sensible fallback
+  }
+
+  // If we have a subject but no topic, use a sensible default topic for the subject
+  if (result.subject && !result.topic) {
+    const defaultTopics: Record<string, string> = {
+      mathematics: "Number", english: "Reading Comprehension", science: "Cells",
+      history: "World War II", geography: "Rivers", computing: "Algorithms",
+      art: "Drawing", music: "Theory", pe: "Health", dt: "Design Process",
+      re: "World Religions", mfl: "Vocabulary", pshe: "Wellbeing",
+      business: "Supply and Demand", drama: "Script Writing",
+    };
+    result.topic = defaultTopics[result.subject] || "Introduction";
+  }
+
+  // Ensure we always have a year group — default to Year 9 (GCSE transition year)
+  if (!result.yearGroup) result.yearGroup = "Year 9";
+
+  // Ensure we always have a difficulty — default to mixed
+  if (!result.difficulty) result.difficulty = "mixed";
+
+  // If still no subject and no topic at all, return something workable
+  if (!result.subject) result.subject = "mathematics";
+  if (!result.topic) result.topic = "Number";
+
   return result;
 }
 

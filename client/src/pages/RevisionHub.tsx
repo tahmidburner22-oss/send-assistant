@@ -94,34 +94,90 @@ const NEURAL_FUN_FACTS = [
   "🦈 Sharks are older than trees. They've been here for 450 million years. Trees showed up 350 million years ago.",
   "🧠 Your brain generates enough electricity to power a small lightbulb. You are literally bright.",
   "🌙 The Moon is moving away from Earth at about 3.8cm per year. Rude.",
-  "🐝 A single bee will make only 1/12th of a teaspoon of honey in its entire lifetime. Respect the bees.",
+  "🐝 A single bee makes only 1/12th of a teaspoon of honey in its entire lifetime. Respect the bees.",
   "🦩 Flamingos are white. They turn pink from the shrimp they eat. You are what you eat.",
-  "🎵 The dot over a lowercase 'i' has a name: it's called a tittle. Tell your friends.",
+  "🎵 The dot over a lowercase 'i' has a name — it's called a tittle. Tell your friends.",
   "🦴 Your nose and ears never stop growing your entire life. Science is terrifying.",
   "🐧 Penguins propose to their mates with pebbles. More romantic than most humans, honestly.",
   "🌊 The Pacific Ocean is wider than the Moon. Let that sink in.",
   "🍌 Bananas are technically berries. Strawberries are not. The world is a lie.",
   "🐴 Horses can sleep standing up but need to lie down to dream. Relatable.",
-  "🔥 Hot water can freeze faster than cold water under certain conditions. This is called the Mpemba effect and scientists still argue about why.",
+  "🔥 Hot water can freeze faster than cold water — it's called the Mpemba effect and scientists still argue about why.",
   "🌵 A cactus spine is actually a modified leaf. The green bit is the stem. Plants are deceptive.",
-  "🦋 Butterflies taste with their feet. They land on something and immediately know if it's food. Wish we had that skill.",
-  "📚 The average person walks past 36 murderers in their lifetime. That stat is probably made up. But also maybe not.",
-  "🐠 Clownfish can change sex. If the female in a group dies, the dominant male becomes female. Nemo would have become Nemo's mum.",
+  "🦋 Butterflies taste with their feet. They land on something and instantly know if it's food.",
+  "🐠 Clownfish can change sex. If the female dies, the dominant male becomes female. Nemo would have become Nemo's mum.",
   "🌟 There are more stars in the universe than grains of sand on all Earth's beaches. Show-off.",
-  "🦥 Sloths move so slowly that algae grows on their fur. They're basically tiny walking ecosystems.",
+  "🦥 Sloths move so slowly that algae grows on their fur. They're tiny walking ecosystems.",
   "🧊 A day on Venus is longer than a year on Venus. And it spins backwards. Venus does not follow rules.",
-  "🐍 Some snakes can fly. They flatten their bodies and glide between trees. Just in case you needed more reasons to be nervous.",
-  "🎮 The creator of the GIF has confirmed it's pronounced 'JIF'. The internet has collectively refused to accept this.",
-  "🦁 A lion's roar can be heard 8 kilometres away. Your teacher's roar, however, can feel even louder.",
+  "🐍 Some snakes can fly — they flatten their bodies and glide between trees. Just in case you needed more reasons to be nervous.",
+  "🎮 The creator of the GIF confirmed it's pronounced 'JIF'. The internet has collectively refused to accept this.",
+  "🦁 A lion's roar can be heard 8 kilometres away. Your teacher's voice, however, can feel even further.",
   "🍎 Apple seeds contain cyanide. You'd need to eat around 200 ground-up seeds to feel ill. Still, maybe don't.",
-  "🐬 Dolphins have names for each other. Unique whistles that other dolphins use to call them. Basically they have phone contacts.",
+  "🐬 Dolphins have names for each other — unique whistles other dolphins use to call them. Basically phone contacts.",
+  "🦜 Parrots don't just mimic — African Grey parrots can reason at the level of a 5-year-old child.",
+  "🧲 If the Earth's magnetic field disappeared, we wouldn't die instantly — but within a few years solar wind would strip the atmosphere.",
+  "🐊 Crocodiles haven't changed much in 200 million years. If it ain't broke, don't fix it.",
+  "🌈 A rainbow is actually a full circle — you only see a semicircle because the ground gets in the way.",
+  "🦓 Every zebra's stripe pattern is unique, like a fingerprint. Wildlife photographers use this to identify individuals.",
+  "🍫 White chocolate isn't technically chocolate — it contains no cocoa solids, just cocoa butter, milk, and sugar.",
+  "🧬 You share about 50% of your DNA with a banana. Next time someone calls you bananas, take it as a compliment.",
+  "🐋 Blue whales have a heartbeat slow enough to hear from 3 metres away. Each heartbeat pumps 220 litres of blood.",
+  "🎸 The electric guitar was invented in 1932. Rock and roll was technically inevitable.",
+  "🌍 Oxford University is older than the Aztec Empire. Teaching started there around 1096 AD.",
+  "🕷 Spiders can't fly — but they can travel thousands of miles by floating on silk threads. Goodbye.",
+  "🐣 A group of flamingos is called a flamboyance. A group of crows is called a murder. Nature has opinions.",
+  "🌿 Grass screams (chemically) when you cut it. That smell of fresh-cut grass is a distress signal.",
+  "🧪 The human body contains enough carbon to make about 9,000 pencils. You're basically a walking art supply.",
+  "🪐 Saturn's rings are only about 10 metres thick on average, despite being hundreds of thousands of kilometres wide.",
+  "🐟 Goldfish have a memory of at least 3 months. The '3-second memory' thing is completely made up.",
+  "🧊 A single cloud can weigh over 500,000 kg. They just happen to be spread over a huge area, so they float.",
+  "🦔 Hedgehogs are lactose intolerant. Please stop leaving milk out for them.",
+  "🌺 The smell of freshly printed books comes from a chemical called lignin — it breaks down into vanillin as paper ages.",
+  "🐢 Some turtles can breathe through their backsides. Technically it's called cloacal bursae. You're welcome.",
+  "🎲 The word 'checkmate' in chess comes from the Persian 'Shah Mat' — meaning 'the king is dead'.",
+  "🦦 Sea otters hold hands while sleeping so they don't drift apart. This is called a raft. You can smile.",
+  "🌙 There are more possible iterations of a game of chess than there are atoms in the observable universe.",
+  "🐸 A group of frogs is called an army. A group of toads is called a knot. Amphibians know how to organise.",
+  "🍊 Orange the colour was named after orange the fruit. Before that, English speakers called it 'geoluhread' (yellow-red).",
+  "🦆 Ducks have regional accents. London ducks are louder and more harsh-sounding than rural ducks. City life.",
+  "🔭 The Voyager 1 spacecraft, launched in 1977, is now over 24 billion km from Earth — the furthest human-made object ever.",
+  "🧲 Cleopatra lived closer in time to the Moon landing than to the construction of the Great Pyramid.",
+  "🍦 The first ice lolly was invented accidentally in 1905 by an 11-year-old who left a fruit drink outside overnight.",
+  "🌊 More people have been to space than have been to the deepest part of the ocean, the Mariana Trench.",
+  "🐼 Giant pandas have a pseudo-thumb — a modified wrist bone that acts like a thumb. Evolution improvises.",
+  "🎭 Shakespeare invented over 1,700 words we still use today, including 'bedroom', 'lonely', and 'swagger'.",
+  "🦩 Wombat poo is cube-shaped. Scientists recently figured out why — it's the intestinal walls. Nature is weird.",
+  "🧊 When hot water freezes faster than cold water it is called the Mpemba effect. Physicists still argue about exactly why it happens.",
+  "🌻 Sunflowers are actually thousands of tiny flowers packed together. What looks like one flower is up to 2,000 individual florets.",
+  "🎲 The dots on opposite sides of a dice always add up to seven. This holds for every standard die ever made.",
+  "🦭 Sea lions can clap in rhythm to a beat. They are among the very few non-human animals that genuinely process tempo, not just mimic.",
+  "🧲 If you cut a magnet in half you get two smaller magnets, each with its own north and south pole. You cannot isolate one magnetic pole.",
+  "🌡️ The surface of the Sun is about 5,500°C. Its outer corona is over 1,000,000°C. Scientists are still not entirely sure why.",
+  "🐊 Crocodiles cannot stick out their tongues. A membrane holds it permanently flat. Possibly why they look so grumpy.",
+  "🍋 Lemons float in water. Limes sink. They are closely related but that tiny density difference has confused people for centuries.",
+  "🔢 0.999... recurring forever is mathematically exactly equal to 1. This is not an approximation. It is provably, rigorously true.",
+  "🦀 Crabs can regrow lost limbs. They wait for their next moult and a new claw simply grows back. Inconvenient for their enemies.",
+  "🌊 The Atlantic Ocean is widening by about 2.5 cm every year as the tectonic plates beneath it slowly drift apart.",
+  "🦋 A butterfly's eye can contain up to six types of photoreceptor. Humans have three. Butterflies can see colours we literally cannot imagine.",
+  "🧪 Gallium melts at 29.76°C — just above room temperature. You can melt it in your hand. It is also non-toxic, unlike mercury.",
+  "🐬 Dolphins sleep with one eye open. Only half their brain sleeps at a time so they keep swimming and stay alert for predators.",
+  "🏔️ Mount Everest is not the furthest point from the Earth's centre. That is Mount Chimborazo in Ecuador, because the Earth bulges at the equator.",
+  "🦠 There are roughly 38 trillion bacterial cells in your body and about 30 trillion human cells. You are technically a collaboration.",
+  "🎸 Jimi Hendrix, Eric Clapton, and Keith Richards all used the same guitar shop on Denmark Street, London in the 1960s.",
+  "📡 Wi-Fi signals travel at the speed of light. The slow part of your internet connection is almost never the Wi-Fi itself.",
+  "🐙 When an octopus swims, the heart that pumps blood to its body actually stops beating. That is why octopuses prefer crawling to swimming.",
 ];
 
+// Keep a shuffled queue so facts never repeat until the full list is exhausted
+let _factQueue: number[] = [];
 function pickRandomFact(excludeIndex: number): number {
-  let idx: number;
-  do { idx = Math.floor(Math.random() * NEURAL_FUN_FACTS.length); }
-  while (idx === excludeIndex && NEURAL_FUN_FACTS.length > 1);
-  return idx;
+  if (_factQueue.length === 0) {
+    // Refill and shuffle
+    _factQueue = Array.from({ length: NEURAL_FUN_FACTS.length }, (_, i) => i)
+      .filter(i => i !== excludeIndex)
+      .sort(() => Math.random() - 0.5);
+  }
+  return _factQueue.pop()!;
 }
 
 export default function RevisionHub() {
@@ -154,12 +210,12 @@ export default function RevisionHub() {
   const [audioLoading, setAudioLoading] = useState(false);
   const [audioError, setAudioError] = useState<string | null>(null);
 
-  // Rotate to a new random fact every 3.5s during loading — never repeats consecutively
+  // Rotate to a new random fact every 7s during loading — never repeats until full list exhausted
   useEffect(() => {
     if (!uploading && !audioLoading) return;
     const interval = setInterval(() => {
       setFunFactIndex(prev => pickRandomFact(prev));
-    }, 3500);
+    }, 18000);
     return () => clearInterval(interval);
   }, [uploading, audioLoading]);
   const [browserVoices, setBrowserVoices] = useState<SpeechSynthesisVoice[]>([]);
