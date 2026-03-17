@@ -421,5 +421,4 @@ CREATE INDEX IF NOT EXISTS idx_custom_quizzes_school ON custom_quizzes(school_id
 
 -- ── Additional performance indexes ──────────────────────────────────────────────
 CREATE INDEX IF NOT EXISTS idx_sessions_expires ON sessions(expires_at);
-CREATE INDEX IF NOT EXISTS idx_users_locked ON users(locked_until) WHERE locked_until IS NOT NULL;
 
