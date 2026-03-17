@@ -196,8 +196,8 @@ app.use(cors({
 // Strict limiter for auth endpoints (brute-force protection)
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 50, // 50 attempts per 15 min — generous enough for normal use, still blocks brute force
-  message: { error: "Too many login attempts. Please try again in 15 minutes." },
+  max: 10, // 10 failed attempts per IP per 15 min — combined with per-account lockout in auth.ts
+  message: { error: "Too many login attempts from this IP. Please try again in 15 minutes." },
   standardHeaders: true,
   legacyHeaders: false,
   validate: { xForwardedForHeader: false },
@@ -222,6 +222,34 @@ const generalLimiter = rateLimit({
   legacyHeaders: false,
   validate: { xForwardedForHeader: false },
 });
+
+// ── Issue 1: Verify JWT_SECRET is set to a non-default value in production ────
+if (process.env.NODE_ENV === "production") {
+  const secret = process.env.JWT_SECRET || "";
+  if (!secret || secret.includes("dev-secret") || secret.includes("change-in-production") || secret.length < 32) {
+    console.error("[SECURITY] FATAL: JWT_SECRET is missing or insecure. Set a strong random secret in Railway Variables (openssl rand -hex 32).");
+    process.exit(1);
+  }
+  const encKey = process.env.ENCRYPTION_KEY || "";
+  if (!encKey || encKey.includes("adaptly-default") || encKey.length < 16) {
+    console.error("[SECURITY] FATAL: ENCRYPTION_KEY is missing or insecure. Set it in Railway Variables (openssl rand -hex 16).");
+    process.exit(1);
+  }
+}
+
+// ── Issue 4: Expired session + password reset cleanup (runs hourly) ───────────
+import db from "./db/index.js";
+setInterval(() => {
+  try {
+    const deletedSessions = db.prepare("DELETE FROM sessions WHERE expires_at < datetime('now')").run();
+    const deletedResets   = db.prepare("DELETE FROM password_resets WHERE expires_at < datetime('now') OR used = 1").run();
+    if (deletedSessions.changes > 0 || deletedResets.changes > 0) {
+      console.log(`[Cleanup] Removed ${deletedSessions.changes} expired sessions, ${deletedResets.changes} used/expired password resets`);
+    }
+  } catch (e) {
+    console.error("[Cleanup] Session cleanup error:", e);
+  }
+}, 60 * 60 * 1000); // every hour
 
 // ── Body parsing — tight limits to prevent DoS ────────────────────────────────
 // Stripe webhook needs raw body — capture it before JSON parsing
@@ -264,6 +292,16 @@ app.use((req, _res, next) => {
 });
 
 // ── API Routes ────────────────────────────────────────────────────────────────
+// Issue 9: Dedicated rate limit for forgot-password (3 per hour per IP)
+const forgotPasswordLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 3,
+  message: { error: "Too many password reset requests. Please try again in 1 hour." },
+  standardHeaders: true,
+  legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
+});
+app.use("/api/auth/forgot-password", forgotPasswordLimiter);
 app.use("/api/auth", authLimiter, authRouter);
 app.use("/api/schools", schoolsRouter);
 app.use("/api/pupils", pupilsRouter);
