@@ -411,32 +411,56 @@ export default function Worksheets() {
     };
   }, [ttsAudioUrl]);
 
-  // Listen for text selection on the worksheet to show the floating TTS tooltip
+  // Listen for text selection on the worksheet to show the floating TTS tooltip.
+  // Using mouseup (not selectionchange) because selectionchange fires many times
+  // mid-drag and also fires with a collapsed selection immediately after mouseup,
+  // causing the tooltip to flash and vanish. mouseup fires exactly once when the
+  // user finishes selecting.
   useEffect(() => {
-    const handleSelectionChange = () => {
-      const selection = window.getSelection();
-      if (!selection || selection.isCollapsed || !selection.toString().trim()) {
-        setSelectionTooltip(null);
-        return;
-      }
-      const selectedText = selection.toString().trim();
-      if (selectedText.length < 3) { setSelectionTooltip(null); return; }
-      // Only show tooltip if selection is within the worksheet content
-      const range = selection.getRangeAt(0);
-      const worksheetEl = worksheetRef.current;
-      if (!worksheetEl) return;
-      const container = range.commonAncestorContainer;
-      if (!worksheetEl.contains(container)) { setSelectionTooltip(null); return; }
-      // Position tooltip above the selection
-      const rect = range.getBoundingClientRect();
-      setSelectionTooltip({
-        x: rect.left + rect.width / 2,
-        y: rect.top + window.scrollY - 48,
-        text: selectedText,
-      });
+    const handleMouseUp = (e: MouseEvent) => {
+      // Small delay so the browser has finalised the selection
+      setTimeout(() => {
+        const selection = window.getSelection();
+        if (!selection || selection.isCollapsed || !selection.toString().trim()) {
+          setSelectionTooltip(null);
+          return;
+        }
+        const selectedText = selection.toString().trim();
+        if (selectedText.length < 3) { setSelectionTooltip(null); return; }
+        // Only show tooltip if selection is within the worksheet content
+        const range = selection.getRangeAt(0);
+        const worksheetEl = worksheetRef.current;
+        if (!worksheetEl) return;
+        const container = range.commonAncestorContainer;
+        if (!worksheetEl.contains(container)) { setSelectionTooltip(null); return; }
+        // Position tooltip above the selection
+        const rect = range.getBoundingClientRect();
+        setSelectionTooltip({
+          x: rect.left + rect.width / 2,
+          y: rect.top + window.scrollY - 52,
+          text: selectedText,
+        });
+      }, 80);
     };
-    document.addEventListener("selectionchange", handleSelectionChange);
-    return () => document.removeEventListener("selectionchange", handleSelectionChange);
+
+    // Hide tooltip when clicking outside the worksheet or the tooltip itself
+    const handleDocMouseDown = (e: MouseEvent) => {
+      const worksheetEl = worksheetRef.current;
+      const target = e.target as Node;
+      // If click is outside the worksheet and not on the tooltip button, hide it
+      if (worksheetEl && !worksheetEl.contains(target)) {
+        // Check if click is on the floating tooltip button (has class no-print fixed)
+        const isTooltipClick = (target as Element)?.closest?.(".selection-tts-tooltip");
+        if (!isTooltipClick) setSelectionTooltip(null);
+      }
+    };
+
+    document.addEventListener("mouseup", handleMouseUp);
+    document.addEventListener("mousedown", handleDocMouseDown);
+    return () => {
+      document.removeEventListener("mouseup", handleMouseUp);
+      document.removeEventListener("mousedown", handleDocMouseDown);
+    };
   }, []);
 
   // Stop TTS playback
@@ -476,10 +500,11 @@ export default function Worksheets() {
     if (!fullText.trim()) return;
     setTtsLoading(true);
     try {
-      const token = localStorage.getItem("token") || sessionStorage.getItem("token") || "";
+      const token = localStorage.getItem("send_token") || "";
       const res = await fetch("/api/revision/tts", {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        credentials: "include",
         body: JSON.stringify({ text: fullText.slice(0, 8000), voice: "nova", language: "en" }),
       });
       if (!res.ok) { const d = await res.json(); throw new Error(d.error || "TTS failed"); }
@@ -507,10 +532,11 @@ export default function Worksheets() {
     if (selectionAudioRef.current) { selectionAudioRef.current.pause(); selectionAudioRef.current.src = ""; selectionAudioRef.current = null; }
     setSelectionTtsLoading(true);
     try {
-      const token = localStorage.getItem("token") || sessionStorage.getItem("token") || "";
+      const token = localStorage.getItem("send_token") || "";
       const res = await fetch("/api/revision/tts", {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        credentials: "include",
         body: JSON.stringify({ text: text.slice(0, 4000), voice: "nova", language: "en" }),
       });
       if (!res.ok) { const d = await res.json(); throw new Error(d.error || "TTS failed"); }
@@ -2712,7 +2738,25 @@ export default function Worksheets() {
                 min={1}
                 max={13}
                 step={1}
-                defaultValue={7}
+                value={(() => {
+                  // Convert readingAge (5–17) back to slider position (1–13)
+                  if (readingAge <= 0) {
+                    // Auto — map to slider position based on yearGroup default
+                    const yrToAge: Record<string, number> = {
+                      "Year 1": 5, "Year 2": 6, "Year 3": 7, "Year 4": 8,
+                      "Year 5": 9, "Year 6": 10, "Year 7": 11, "Year 8": 12,
+                      "Year 9": 13, "Year 10": 14, "Year 11": 15, "Year 12": 17,
+                      "Year 13": 17, "KS1": 6, "KS2": 9, "KS3": 12,
+                      "GCSE": 15, "A-Level": 17, "11+ Preparation": 10,
+                    };
+                    const defaultAge = yrToAge[yearGroup] ?? 11;
+                    const ages = [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
+                    return ages.indexOf(defaultAge) + 1 || 7;
+                  }
+                  const ages = [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
+                  const idx = ages.indexOf(readingAge);
+                  return idx >= 0 ? idx + 1 : 7;
+                })()}
                 disabled={readingLevelLoading}
                 onChange={e => {
                   const v = Number((e.target as HTMLInputElement).value);
@@ -2885,7 +2929,7 @@ export default function Worksheets() {
           {/* Floating Read Selection tooltip — appears when text is highlighted in the worksheet */}
           {selectionTooltip && (
             <div
-              className="fixed z-50 no-print"
+              className="fixed z-50 no-print selection-tts-tooltip"
               style={{ left: selectionTooltip.x, top: selectionTooltip.y, transform: "translateX(-50%)" }}
             >
               <button
