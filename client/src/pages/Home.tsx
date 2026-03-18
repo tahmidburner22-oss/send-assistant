@@ -354,11 +354,11 @@ export default function Home() {
         </div>
         <div className="grid grid-cols-1 gap-2.5">
           {[
-            { path: "/send-hub",           label: "SEND Hub",            icon: Brain,         bg: "bg-indigo-600", light: "bg-indigo-50",  text: "text-indigo-700",  desc: "IEP, Social Stories, Pupil Passport, Screener + more", count: "8 tools" },
-            { path: "/revision-section",   label: "Revision Hub",        icon: GraduationCap, bg: "bg-teal-600",   light: "bg-teal-50",    text: "text-teal-700",    desc: "Past Papers, Flash Cards, Audio Revision, QuizBlast", count: "8 tools" },
-            { path: "/planning-hub",       label: "Planning Hub",        icon: Pencil,        bg: "bg-green-600",  light: "bg-green-50",   text: "text-green-700",   desc: "Lesson Planner, Differentiate, Comprehension + more", count: "9 tools" },
-            { path: "/communications-hub", label: "Communications Hub",  icon: MessageSquare, bg: "bg-rose-600",   light: "bg-rose-50",    text: "text-rose-700",    desc: "Report Comments, Newsletters, Parent Portal + more",   count: "7 tools" },
-            { path: "/classroom-hub",      label: "Classroom Hub",       icon: Monitor,       bg: "bg-blue-600",   light: "bg-blue-50",    text: "text-blue-700",    desc: "Behaviour Tracking, Attendance, Daily Briefing + more",count: "8 tools" },
+            { path: "/send-hub",           label: "SEND Hub",            icon: Brain,         bg: "bg-indigo-600", light: "bg-indigo-50",  text: "text-indigo-700",  desc: "Screener, Worksheets, Differentiate, IEP, Social Stories + more", count: "10 tools" },
+            { path: "/revision-section",   label: "Revision Hub",        icon: GraduationCap, bg: "bg-teal-600",   light: "bg-teal-50",    text: "text-teal-700",    desc: "Worksheets, Audio Revision, Past Papers, Flash Cards + more", count: "8 tools" },
+            { path: "/planning-hub",       label: "Planning Hub",        icon: Pencil,        bg: "bg-green-600",  light: "bg-green-50",   text: "text-green-700",   desc: "Lesson Planner, Medium Term Planner, Rubric, Exit Ticket + more", count: "9 tools" },
+            { path: "/communications-hub", label: "Communications Hub",  icon: MessageSquare, bg: "bg-rose-600",   light: "bg-rose-50",    text: "text-rose-700",    desc: "Parent Portal, Report Comments, Newsletters, Tracking + more",   count: "7 tools" },
+            { path: "/classroom-hub",      label: "Classroom Hub",       icon: Monitor,       bg: "bg-blue-600",   light: "bg-blue-50",    text: "text-blue-700",    desc: "Reading, Pupil Profiles, Daily Briefing, Attendance + more", count: "9 tools" },
           ].map((hub) => {
             const Icon = hub.icon;
             return (

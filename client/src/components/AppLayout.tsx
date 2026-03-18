@@ -18,7 +18,7 @@ const hubs = [
     color: "text-indigo-600",
     bg: "bg-indigo-50",
     description: "IEP, social stories, pupil passport & more",
-    toolPrefixes: ["/tools/iep","/tools/social","/tools/pupil-passport","/tools/smart-targets","/tools/behaviour-plan","/tools/wellbeing","/send-screener","/visual-timetable"],
+    toolPrefixes: ["/tools/iep","/tools/social","/tools/pupil-passport","/tools/smart-targets","/tools/behaviour-plan","/tools/wellbeing","/send-screener","/visual-timetable","/worksheets","/differentiate"],
   },
   {
     path: "/revision-section",
@@ -36,7 +36,7 @@ const hubs = [
     color: "text-green-600",
     bg: "bg-green-50",
     description: "Lesson plans, differentiation & resources",
-    toolPrefixes: ["/tools/lesson-planner","/tools/medium-term","/differentiate","/tools/rubric","/tools/exit-ticket","/reading","/templates","/tools/risk-assessment"],
+    toolPrefixes: ["/tools/lesson-planner","/tools/medium-term","/tools/rubric","/tools/exit-ticket","/templates","/tools/risk-assessment","/tools/vocabulary","/tools/comprehension","/tools/quiz-gen"],
   },
   {
     path: "/communications-hub",
@@ -54,7 +54,7 @@ const hubs = [
     color: "text-blue-600",
     bg: "bg-blue-50",
     description: "Pupils, QuizBlast, analytics & daily briefing",
-    toolPrefixes: ["/daily-briefing","/analytics","/pupils","/ideas","/history"],
+    toolPrefixes: ["/daily-briefing","/analytics","/pupils","/ideas","/history","/reading","/quiz-game"],
   },
 ];
 

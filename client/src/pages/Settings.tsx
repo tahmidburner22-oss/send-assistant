@@ -466,6 +466,11 @@ function PersonalisationSection() {
     toggleDashboardSubject,
     setShowWorksheetLibrary,
     setCardBorderColor,
+    setIconShape,
+    setIconBorderStyle,
+    setCardStyle,
+    setLayoutDensity,
+    setHomeSection,
     resetPreferences,
     currentTheme,
     currentWallpaper,
@@ -478,42 +483,51 @@ function PersonalisationSection() {
   const [customWallpaperUrl, setCustomWallpaperUrl] = useState("");
 
   // All sidebar items for the toggle list
+  // Items grouped by hub — these control what appears in the sidebar Quick Access section
   const allSidebarItems = [
-    { path: "/home",               label: "Home" },
-    { path: "/send-screener",      label: "SEND Needs Screener" },
-    { path: "/differentiate",      label: "Differentiate" },
-    { path: "/worksheets",         label: "Worksheets" },
-    { path: "/stories",            label: "Stories" },
-    { path: "/past-papers",        label: "Past Papers" },
-    { path: "/templates",          label: "Pre-made Worksheets" },
-    { path: "/children",           label: "Pupils" },
-    { path: "/revision-hub",       label: "Revision Hub" },
-    { path: "/quiz-game",          label: "QuizBlast" },
-    { path: "/daily-briefing",     label: "Daily Briefing" },
-    { path: "/history",            label: "History" },
-    { path: "/analytics",          label: "Analytics" },
-    { path: "/ideas",              label: "Ideas" },
-    { path: "/tools/iep-generator",        label: "IEP / EHCP Goals" },
-    { path: "/tools/social-stories",       label: "Social Stories" },
-    { path: "/tools/pupil-passport",       label: "Pupil Passport" },
-    { path: "/tools/smart-targets",        label: "SMART Targets" },
-    { path: "/tools/behaviour-plan",       label: "Behaviour Support Plan" },
-    { path: "/tools/wellbeing-support",    label: "Wellbeing Support" },
-    { path: "/tools/lesson-planner",       label: "Lesson Planner" },
-    { path: "/tools/medium-term-planner",  label: "Medium Term Planner" },
-    { path: "/tools/quiz-generator",       label: "Quiz Generator" },
-    { path: "/tools/rubric-generator",     label: "Rubric / Mark Scheme" },
-    { path: "/tools/comprehension-generator", label: "Comprehension" },
-    { path: "/tools/exit-ticket",          label: "Exit Ticket" },
-    { path: "/tools/flash-cards",          label: "Flash Cards" },
-    { path: "/tools/vocabulary-builder",   label: "Vocabulary Builder" },
-    { path: "/tools/report-comments",      label: "Report Comments" },
-    { path: "/tools/parent-newsletter",    label: "Parent Newsletter" },
-    { path: "/tools/text-rewriter",        label: "Text Rewriter" },
-    { path: "/visual-timetable",           label: "Visual Timetable" },
-    { path: "/behaviour-tracking",         label: "Behaviour Tracking" },
-    { path: "/attendance",                 label: "Attendance" },
-    { path: "/pupil-comments",             label: "Pupil Comments" },
+    // Core navigation (always shown, not togglable but listed for completeness)
+    { path: "/home",               label: "Home",                    group: "Core" },
+    // Quick Access items users can show/hide
+    { path: "/history",            label: "History",                 group: "Quick Access" },
+    { path: "/analytics",          label: "Analytics",               group: "Quick Access" },
+    { path: "/daily-briefing",     label: "Daily Briefing",          group: "Quick Access" },
+    { path: "/quiz-game",          label: "QuizBlast",               group: "Quick Access" },
+    { path: "/ideas",              label: "Ideas",                   group: "Quick Access" },
+    { path: "/pupils",             label: "Pupil Profiles",          group: "Quick Access" },
+    // SEND Hub tools
+    { path: "/send-screener",             label: "SEND Screener",          group: "SEND Hub" },
+    { path: "/differentiate",             label: "Differentiate",          group: "SEND Hub" },
+    { path: "/worksheets",                label: "Worksheets (SEND)",      group: "SEND Hub" },
+    { path: "/tools/iep-generator",       label: "IEP / EHCP Goals",       group: "SEND Hub" },
+    { path: "/tools/social-stories",      label: "Social Stories",         group: "SEND Hub" },
+    { path: "/tools/pupil-passport",      label: "Pupil Passport",         group: "SEND Hub" },
+    { path: "/tools/smart-targets",       label: "SMART Targets",          group: "SEND Hub" },
+    { path: "/tools/behaviour-plan",      label: "Behaviour Support Plan", group: "SEND Hub" },
+    { path: "/tools/wellbeing-support",   label: "Wellbeing Support",      group: "SEND Hub" },
+    { path: "/visual-timetable",          label: "Visual Timetable",       group: "SEND Hub" },
+    // Revision Hub tools
+    { path: "/revision-hub",                  label: "Audio Revision Hub",       group: "Revision Hub" },
+    { path: "/past-papers",                   label: "Past Papers",              group: "Revision Hub" },
+    { path: "/tools/flash-cards",             label: "Flash Cards",              group: "Revision Hub" },
+    { path: "/tools/quiz-generator",          label: "Quiz Generator",           group: "Revision Hub" },
+    { path: "/tools/vocabulary-builder",      label: "Vocabulary Builder",       group: "Revision Hub" },
+    { path: "/tools/comprehension-generator", label: "Comprehension Generator",  group: "Revision Hub" },
+    // Planning Hub tools
+    { path: "/tools/lesson-planner",       label: "Lesson Planner",         group: "Planning Hub" },
+    { path: "/tools/medium-term-planner",  label: "Medium Term Planner",    group: "Planning Hub" },
+    { path: "/tools/rubric-generator",     label: "Rubric / Mark Scheme",   group: "Planning Hub" },
+    { path: "/tools/exit-ticket",          label: "Exit Ticket",            group: "Planning Hub" },
+    { path: "/tools/risk-assessment",      label: "Risk Assessment",        group: "Planning Hub" },
+    { path: "/reading",                    label: "Reading & Stories",      group: "Planning Hub" },
+    { path: "/templates",                  label: "Pre-made Worksheets",    group: "Planning Hub" },
+    // Communications Hub tools
+    { path: "/parent-portal",              label: "Parent Portal",          group: "Communications Hub" },
+    { path: "/tools/report-comments",      label: "Report Comments",        group: "Communications Hub" },
+    { path: "/tools/parent-newsletter",    label: "Parent Newsletter",      group: "Communications Hub" },
+    { path: "/tools/text-rewriter",        label: "Text Rewriter",          group: "Communications Hub" },
+    { path: "/pupil-comments",             label: "Pupil Comments",         group: "Communications Hub" },
+    { path: "/behaviour-tracking",         label: "Behaviour Tracking",     group: "Communications Hub" },
+    { path: "/attendance",                 label: "Attendance Tracker",     group: "Communications Hub" },
   ];
 
   const tabs = [
@@ -693,26 +707,63 @@ function PersonalisationSection() {
         {/* Sidebar Customisation */}
         {activeTab === "sidebar" && (
           <div className="space-y-3">
-            <p className="text-xs text-muted-foreground">Toggle which items appear in your sidebar. Hidden items are still accessible via direct URL.</p>
-            <div className="space-y-1 max-h-80 overflow-y-auto pr-1">
-              {allSidebarItems.map(item => {
-                const hidden = isSidebarItemHidden(item.path);
-                return (
-                  <div key={item.path} className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-muted/40 transition-colors">
-                    <span className={`text-xs ${hidden ? "text-muted-foreground line-through" : "text-foreground"}`}>{item.label}</span>
-                    <button
-                      onClick={() => toggleSidebarItem(item.path)}
-                      className={`text-xs px-2.5 py-1 rounded-full font-medium transition-colors ${
-                        hidden
-                          ? "bg-red-100 text-red-600 hover:bg-red-200"
-                          : "bg-green-100 text-green-700 hover:bg-green-200"
-                      }`}
-                    >
-                      {hidden ? "Hidden" : "Visible"}
-                    </button>
+            <p className="text-xs text-muted-foreground">
+              Toggle which items are visible inside each hub. The 5 hub sections are always shown in the sidebar.
+              Hidden tools are still accessible via direct URL or search.
+            </p>
+            <div className="space-y-4 max-h-[480px] overflow-y-auto pr-1">
+              {(() => {
+                // Group items by their group label
+                const groups = allSidebarItems.reduce<Record<string, typeof allSidebarItems>>((acc, item) => {
+                  const g = item.group || "Other";
+                  if (!acc[g]) acc[g] = [];
+                  acc[g].push(item);
+                  return acc;
+                }, {});
+                const groupColors: Record<string, string> = {
+                  "Core": "text-gray-600",
+                  "Quick Access": "text-slate-600",
+                  "SEND Hub": "text-indigo-600",
+                  "Revision Hub": "text-teal-600",
+                  "Planning Hub": "text-green-600",
+                  "Communications Hub": "text-rose-600",
+                  "Classroom Hub": "text-blue-600",
+                };
+                return Object.entries(groups).map(([groupName, items]) => (
+                  <div key={groupName}>
+                    <p className={`text-[10px] font-bold uppercase tracking-widest mb-1.5 ${groupColors[groupName] || "text-muted-foreground"}`}>
+                      {groupName}
+                    </p>
+                    <div className="space-y-0.5">
+                      {items.map(item => {
+                        const hidden = isSidebarItemHidden(item.path);
+                        const isCore = groupName === "Core";
+                        return (
+                          <div key={item.path} className="flex items-center justify-between py-1.5 px-3 rounded-lg hover:bg-muted/40 transition-colors">
+                            <span className={`text-xs ${hidden ? "text-muted-foreground line-through" : "text-foreground"}`}>
+                              {item.label}
+                            </span>
+                            {isCore ? (
+                              <span className="text-[10px] text-muted-foreground font-medium px-2 py-0.5 bg-muted rounded-full">Always on</span>
+                            ) : (
+                              <button
+                                onClick={() => toggleSidebarItem(item.path)}
+                                className={`text-xs px-2.5 py-1 rounded-full font-medium transition-colors ${
+                                  hidden
+                                    ? "bg-red-100 text-red-600 hover:bg-red-200"
+                                    : "bg-green-100 text-green-700 hover:bg-green-200"
+                                }`}
+                              >
+                                {hidden ? "Hidden" : "Visible"}
+                              </button>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
-                );
-              })}
+                ));
+              })()}
             </div>
             <p className="text-[10px] text-muted-foreground">Tip: Home and Settings are always visible.</p>
           </div>
@@ -764,6 +815,124 @@ function PersonalisationSection() {
                 })}
               </div>
             </div>
+            {/* Icon & Card Appearance */}
+            <div className="border-t border-border/50 pt-4">
+              <p className="text-xs font-medium text-foreground mb-1">Icon &amp; Card Appearance</p>
+              <p className="text-xs text-muted-foreground mb-3">Customise how cards and icons look across the dashboard.</p>
+              <div className="space-y-4">
+                {/* Icon border style */}
+                <div>
+                  <p className="text-[11px] font-medium text-muted-foreground mb-2">Icon border style</p>
+                  <div className="flex gap-2">
+                    {(["none", "subtle", "bold"] as const).map(opt => (
+                      <button
+                        key={opt}
+                        onClick={() => setIconBorderStyle(opt)}
+                        className={`flex-1 py-2 rounded-xl border-2 text-xs font-medium capitalize transition-all ${
+                          (preferences.iconBorderStyle ?? "none") === opt
+                            ? "border-brand text-brand bg-brand/5"
+                            : "border-border text-muted-foreground hover:border-brand/40"
+                        }`}
+                      >
+                        {opt.charAt(0).toUpperCase() + opt.slice(1)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                {/* Icon shape */}
+                <div>
+                  <p className="text-[11px] font-medium text-muted-foreground mb-2">Icon shape</p>
+                  <div className="flex gap-2">
+                    {(["rounded", "circle", "square"] as const).map(opt => (
+                      <button
+                        key={opt}
+                        onClick={() => setIconShape(opt)}
+                        className={`flex-1 py-2 rounded-xl border-2 text-xs font-medium capitalize transition-all ${
+                          (preferences.iconShape ?? "rounded") === opt
+                            ? "border-brand text-brand bg-brand/5"
+                            : "border-border text-muted-foreground hover:border-brand/40"
+                        }`}
+                      >
+                        {opt.charAt(0).toUpperCase() + opt.slice(1)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                {/* Card style */}
+                <div>
+                  <p className="text-[11px] font-medium text-muted-foreground mb-2">Card style</p>
+                  <div className="flex gap-2">
+                    {(["default", "flat", "elevated"] as const).map(opt => (
+                      <button
+                        key={opt}
+                        onClick={() => setCardStyle(opt)}
+                        className={`flex-1 py-2 rounded-xl border-2 text-xs font-medium capitalize transition-all ${
+                          (preferences.cardStyle ?? "default") === opt
+                            ? "border-brand text-brand bg-brand/5"
+                            : "border-border text-muted-foreground hover:border-brand/40"
+                        }`}
+                      >
+                        {opt.charAt(0).toUpperCase() + opt.slice(1)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                {/* Layout density */}
+                <div>
+                  <p className="text-[11px] font-medium text-muted-foreground mb-2">Layout density</p>
+                  <div className="flex gap-2">
+                    {(["comfortable", "compact"] as const).map(opt => (
+                      <button
+                        key={opt}
+                        onClick={() => setLayoutDensity(opt)}
+                        className={`flex-1 py-2 rounded-xl border-2 text-xs font-medium capitalize transition-all ${
+                          (preferences.layoutDensity ?? "comfortable") === opt
+                            ? "border-brand text-brand bg-brand/5"
+                            : "border-border text-muted-foreground hover:border-brand/40"
+                        }`}
+                      >
+                        {opt.charAt(0).toUpperCase() + opt.slice(1)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Home Page Sections */}
+            <div className="border-t border-border/50 pt-4">
+              <p className="text-xs font-medium text-foreground mb-1">Home Page Sections</p>
+              <p className="text-xs text-muted-foreground mb-3">Show or hide sections on your dashboard home screen.</p>
+              <div className="space-y-2">
+                {([
+                  { key: "showContinueSection", label: "Continue where you left off", desc: "In-progress worksheets, stories and differentiations" },
+                  { key: "showRecentActivity", label: "Recent Activity", desc: "Last 3 items created across all tools" },
+                  { key: "showSubjectBrowser", label: "Browse by Subject", desc: "Subject shortcut grid" },
+                  { key: "showCobsTip", label: "COBS Handbook Tip", desc: "Daily tip from the COBS handbook" },
+                ] as const).map(({ key, label, desc }) => {
+                  const val = (preferences as any)[key] !== false;
+                  return (
+                    <div key={key} className="flex items-center justify-between p-3 bg-muted/40 rounded-xl border border-border/50">
+                      <div>
+                        <p className="text-xs font-medium text-foreground">{label}</p>
+                        <p className="text-[10px] text-muted-foreground">{desc}</p>
+                      </div>
+                      <button
+                        onClick={() => setHomeSection(key, !val)}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors flex-shrink-0 ${
+                          val ? 'bg-brand' : 'bg-muted-foreground/30'
+                        }`}
+                      >
+                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+                          val ? 'translate-x-6' : 'translate-x-1'
+                        }`} />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
             {/* Feature Toggles */}
             <div className="border-t border-border/50 pt-4">
             <p className="text-xs font-medium text-foreground mb-2">Feature Toggles</p>
