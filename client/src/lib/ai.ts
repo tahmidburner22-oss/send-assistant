@@ -1872,7 +1872,7 @@ export async function aiAdjustReadingLevel(params: {
 
   const guide = getAgeGuide(params.targetAge);
 
-  const system = `You are a UK SEND specialist teacher. Rewrite the worksheet text to match a specific reading age level. CRITICAL: Change ONLY the language complexity, vocabulary, and sentence structure. Do NOT change the academic content, questions, numbers, formulas, or difficulty of the tasks themselves. Return valid JSON only, no markdown code blocks.`;
+  const system = `You are a UK SEND specialist teacher. Rewrite the worksheet text to match a specific reading age level. CRITICAL: Change ONLY the language complexity, vocabulary, and sentence structure. Do NOT change the academic content, questions, numbers, formulas, or difficulty of the tasks themselves. Return a valid JSON ARRAY only — no wrapper object, no markdown code blocks, no extra keys. Output MUST start with [ and end with ].`;
 
   const sectionsToAdjust = params.sections.filter(s => !s.teacherOnly && s.type !== "answers" && s.type !== "mark-scheme");
   const preservedSections = params.sections.filter(s => s.teacherOnly || s.type === "answers" || s.type === "mark-scheme");
@@ -1892,13 +1892,36 @@ RULES:
 SECTIONS:
 ${JSON.stringify(sectionsToAdjust, null, 2)}
 
-Return JSON array of sections with adjusted language:
+Return a JSON array (NOT an object) of sections with adjusted language — start with [ and end with ]:
 [{"title": "...", "content": "...", "type": "...", "teacherOnly": false}]`;
 
   const { text, provider } = await callAI(system, user, 3000);
   const cleaned = text.replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/\s*```$/i, "").trim();
-  const parsed = parseWithFixes(cleaned);
-  const adjustedSections = Array.isArray(parsed) ? parsed : sectionsToAdjust;
+
+  let parsed: any;
+  try {
+    parsed = parseWithFixes(cleaned);
+  } catch (e) {
+    throw new Error("Reading level adjustment failed — AI returned unparseable response. Please try again.");
+  }
+
+  // Handle both a raw array AND a wrapped object like {"sections": [...]}
+  let adjustedSections: typeof sectionsToAdjust;
+  if (Array.isArray(parsed)) {
+    adjustedSections = parsed;
+  } else if (parsed && Array.isArray(parsed.sections)) {
+    adjustedSections = parsed.sections;
+  } else if (parsed && Array.isArray(parsed.adjustedSections)) {
+    adjustedSections = parsed.adjustedSections;
+  } else {
+    // Could not extract sections array — throw so the caller shows an error toast
+    throw new Error("Reading level adjustment failed — unexpected AI response format. Please try again.");
+  }
+
+  // Validate we got real section objects back
+  if (adjustedSections.length === 0) {
+    throw new Error("Reading level adjustment returned empty sections. Please try again.");
+  }
 
   return {
     sections: [...adjustedSections, ...preservedSections],
