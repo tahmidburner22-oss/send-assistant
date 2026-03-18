@@ -85,6 +85,7 @@ const allKnownPaths: { path: string; label: string }[] = [
   { path: "/tools/quiz-generator", label: "Quiz Generator" },
   { path: "/tools/vocabulary-builder", label: "Vocabulary Builder" },
   { path: "/quiz-game", label: "QuizBlast" },
+  { path: "/quiz-builder", label: "Quiz Builder" },
   { path: "/tools/comprehension-generator", label: "Comprehension Generator" },
   { path: "/tools/lesson-planner", label: "Lesson Planner" },
   { path: "/tools/medium-term-planner", label: "Medium Term Planner" },
