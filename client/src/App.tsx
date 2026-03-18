@@ -16,12 +16,17 @@ import { useApp } from "./contexts/AppContext";
 import { UserPreferencesProvider } from "./contexts/UserPreferencesContext";
 import { useLocation } from "wouter";
 
-// ── Lazy-loaded pages — each page loads only when the user navigates to it ────
+// Hub section pages
+const SENDHub = lazy(() => import("./pages/hubs/SENDHub"));
+const RevisionHubSection = lazy(() => import("./pages/hubs/RevisionHubSection"));
+const PlanningHub = lazy(() => import("./pages/hubs/PlanningHub"));
+const CommunicationsHub = lazy(() => import("./pages/hubs/CommunicationsHub"));
+const ClassroomHub = lazy(() => import("./pages/hubs/ClassroomHub"));
+
 // Core pages
 const Home = lazy(() => import("./pages/Home"));
 const Login = lazy(() => import("./pages/Login"));
 const Differentiate = lazy(() => import("./pages/Differentiate"));
-// Worksheets is the heaviest page (imports ~9.7MB of question banks) — lazy load it
 const Worksheets = lazy(() => import("./pages/Worksheets"));
 const Stories = lazy(() => import("./pages/Stories"));
 const Reading = lazy(() => import("./pages/Reading"));
@@ -41,7 +46,7 @@ const PupilComments = lazy(() => import("./pages/PupilComments"));
 const AdminPanel = lazy(() => import("./pages/AdminPanel"));
 const SuperAdminUsers = lazy(() => import("./pages/SuperAdminUsers"));
 
-// New AI Tools
+// AI Tools
 const IEPGenerator = lazy(() => import("./pages/tools/IEPGenerator"));
 const SocialStories = lazy(() => import("./pages/tools/SocialStories"));
 const LessonPlanner = lazy(() => import("./pages/tools/LessonPlanner"));
@@ -69,7 +74,7 @@ const AIGovernance = lazy(() => import("./pages/AIGovernance"));
 const DPA = lazy(() => import("./pages/DPA"));
 const CookiePolicy = lazy(() => import("./pages/CookiePolicy"));
 
-// UX
+// UX / misc
 const Pricing = lazy(() => import("./pages/Pricing"));
 const HelpCentre = lazy(() => import("./pages/HelpCentre"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
@@ -80,7 +85,6 @@ const SharedWorksheet = lazy(() => import("./pages/SharedWorksheet"));
 const QuizBuilder = lazy(() => import("./pages/QuizBuilder"));
 const DailyBriefing = lazy(() => import("./pages/DailyBriefing"));
 
-// ── Page loading fallback ─────────────────────────────────────────────────────
 function PageLoader() {
   return (
     <div className="min-h-[60vh] flex items-center justify-center">
@@ -93,7 +97,6 @@ function ProtectedRoutes() {
   const { isLoggedIn, loading } = useApp();
   const [, navigate] = useLocation();
 
-  // While the session is being restored from the token, show a loading screen
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -105,78 +108,82 @@ function ProtectedRoutes() {
     );
   }
 
-  // Not logged in (or session timed out) — redirect to login
   if (!isLoggedIn) {
-    // Use replace so the back button doesn't loop
     window.location.replace("/login");
     return null;
   }
 
   return (
     <SubscriptionGate>
-    <AppLayout>
-      <Suspense fallback={<PageLoader />}>
-        <Switch>
-          {/* Core */}
-          <Route path="/home" component={Home} />
-          <Route path="/differentiate" component={Differentiate} />
-          <Route path="/worksheets" component={Worksheets} />
-          {/* Reading section — /stories redirects to /reading for backwards compatibility */}
-          <Route path="/reading" component={Reading} />
-          <Route path="/stories">{() => { window.location.replace("/reading"); return null; }}</Route>
-          <Route path="/templates" component={Templates} />
-          <Route path="/pupils" component={Children} />
-          <Route path="/children">{() => { window.location.replace("/pupils"); return null; }}</Route>
-          <Route path="/history" component={History} />
-          <Route path="/analytics" component={Analytics} />
-          <Route path="/ideas" component={Ideas} />
-          <Route path="/past-papers" component={PastPapers} />
-          <Route path="/revision-hub" component={RevisionHub} />
-          <Route path="/settings" component={Settings} />
-          <Route path="/visual-timetable" component={VisualTimetable} />
-          <Route path="/behaviour-tracking" component={BehaviourTracking} />
-          <Route path="/attendance" component={Attendance} />
-          <Route path="/pupil-comments" component={PupilComments} />
-          <Route path="/admin" component={AdminPanel} />
-          <Route path="/super-admin/users" component={SuperAdminUsers} />
+      <AppLayout>
+        <Suspense fallback={<PageLoader />}>
+          <Switch>
+            {/* Hub section landing pages */}
+            <Route path="/send-hub" component={SENDHub} />
+            <Route path="/revision-section" component={RevisionHubSection} />
+            <Route path="/planning-hub" component={PlanningHub} />
+            <Route path="/communications-hub" component={CommunicationsHub} />
+            <Route path="/classroom-hub" component={ClassroomHub} />
 
-          {/* SEND Screener */}
-          <Route path="/send-screener" component={SendScreener} />
+            {/* Core */}
+            <Route path="/home" component={Home} />
+            <Route path="/differentiate" component={Differentiate} />
+            <Route path="/worksheets" component={Worksheets} />
+            <Route path="/reading" component={Reading} />
+            <Route path="/stories">{() => { window.location.replace("/reading"); return null; }}</Route>
+            <Route path="/templates" component={Templates} />
+            <Route path="/pupils" component={Children} />
+            <Route path="/children">{() => { window.location.replace("/pupils"); return null; }}</Route>
+            <Route path="/history" component={History} />
+            <Route path="/analytics" component={Analytics} />
+            <Route path="/ideas" component={Ideas} />
+            <Route path="/past-papers" component={PastPapers} />
+            <Route path="/revision-hub" component={RevisionHub} />
+            <Route path="/settings" component={Settings} />
+            <Route path="/visual-timetable" component={VisualTimetable} />
+            <Route path="/behaviour-tracking" component={BehaviourTracking} />
+            <Route path="/attendance" component={Attendance} />
+            <Route path="/pupil-comments" component={PupilComments} />
+            <Route path="/admin" component={AdminPanel} />
+            <Route path="/super-admin/users" component={SuperAdminUsers} />
 
-          {/* Classroom Tools */}
-          <Route path="/quiz-game" component={QuizGame} />
-          <Route path="/quiz-builder" component={QuizBuilder} />
-          <Route path="/quiz-builder/:id" component={QuizBuilder} />
-          <Route path="/daily-briefing" component={DailyBriefing} />
+            {/* SEND Screener */}
+            <Route path="/send-screener" component={SendScreener} />
 
-          {/* SEND Tools */}
-          <Route path="/tools/iep-generator" component={IEPGenerator} />
-          <Route path="/tools/social-stories" component={SocialStories} />
-          <Route path="/tools/pupil-passport" component={PupilPassport} />
-          <Route path="/tools/smart-targets" component={SmartTargets} />
-          <Route path="/tools/behaviour-plan" component={BehaviourPlan} />
-          <Route path="/tools/wellbeing-support" component={WellbeingSupport} />
+            {/* Classroom live tools */}
+            <Route path="/quiz-game" component={QuizGame} />
+            <Route path="/quiz-builder" component={QuizBuilder} />
+            <Route path="/quiz-builder/:id" component={QuizBuilder} />
+            <Route path="/daily-briefing" component={DailyBriefing} />
 
-          {/* Planning & Assessment */}
-          <Route path="/tools/lesson-planner" component={LessonPlanner} />
-          <Route path="/tools/medium-term-planner" component={MediumTermPlanner} />
-          <Route path="/tools/quiz-generator" component={QuizGenerator} />
-          <Route path="/tools/rubric-generator" component={RubricGenerator} />
-          <Route path="/tools/comprehension-generator" component={ComprehensionGenerator} />
-          <Route path="/tools/exit-ticket" component={ExitTicket} />
-          <Route path="/tools/flash-cards" component={FlashCards} />
-          <Route path="/tools/vocabulary-builder" component={VocabularyBuilder} />
-          <Route path="/tools/risk-assessment" component={RiskAssessment} />
+            {/* SEND Tools */}
+            <Route path="/tools/iep-generator" component={IEPGenerator} />
+            <Route path="/tools/social-stories" component={SocialStories} />
+            <Route path="/tools/pupil-passport" component={PupilPassport} />
+            <Route path="/tools/smart-targets" component={SmartTargets} />
+            <Route path="/tools/behaviour-plan" component={BehaviourPlan} />
+            <Route path="/tools/wellbeing-support" component={WellbeingSupport} />
 
-          {/* Communication */}
-          <Route path="/tools/report-comments" component={ReportComments} />
-          <Route path="/tools/parent-newsletter" component={ParentNewsletter} />
-          <Route path="/tools/text-rewriter" component={TextRewriter} />
+            {/* Planning & Assessment */}
+            <Route path="/tools/lesson-planner" component={LessonPlanner} />
+            <Route path="/tools/medium-term-planner" component={MediumTermPlanner} />
+            <Route path="/tools/quiz-generator" component={QuizGenerator} />
+            <Route path="/tools/rubric-generator" component={RubricGenerator} />
+            <Route path="/tools/comprehension-generator" component={ComprehensionGenerator} />
+            <Route path="/tools/exit-ticket" component={ExitTicket} />
+            <Route path="/tools/flash-cards" component={FlashCards} />
+            <Route path="/tools/vocabulary-builder" component={VocabularyBuilder} />
+            <Route path="/tools/risk-assessment" component={RiskAssessment} />
 
-          <Route component={NotFound} />
-        </Switch>
-      </Suspense>
-    </AppLayout>
+            {/* Communication */}
+            <Route path="/tools/report-comments" component={ReportComments} />
+            <Route path="/tools/parent-newsletter" component={ParentNewsletter} />
+            <Route path="/tools/text-rewriter" component={TextRewriter} />
+
+            <Route component={NotFound} />
+          </Switch>
+        </Suspense>
+      </AppLayout>
     </SubscriptionGate>
   );
 }
@@ -185,37 +192,22 @@ function Router() {
   return (
     <Suspense fallback={<PageLoader />}>
       <Switch>
-        {/* Auth */}
         <Route path="/" component={Login} />
         <Route path="/login" component={Login} />
-
-        {/* School onboarding wizard (public) */}
         <Route path="/onboarding" component={Onboarding} />
-
-        {/* Parent portal (public with access code) */}
         <Route path="/parent-portal" component={ParentPortal} />
         <Route path="/parent-portal/:section" component={ParentPortal} />
-
-        {/* QuizBlast player join (public) */}
         <Route path="/quiz-join" component={QuizJoin} />
         <Route path="/quiz-join/:code" component={QuizJoin} />
-
-        {/* Public shared worksheet view (no auth required) */}
         <Route path="/shared/:token" component={SharedWorksheet} />
-
-        {/* Legal & Compliance (public) */}
         <Route path="/privacy" component={PrivacyPolicy} />
         <Route path="/terms" component={Terms} />
         <Route path="/cookie-policy" component={CookiePolicy} />
         <Route path="/accessibility" component={Accessibility} />
         <Route path="/ai-governance" component={AIGovernance} />
         <Route path="/dpa" component={DPA} />
-
-        {/* UX pages (public) */}
         <Route path="/pricing" component={Pricing} />
         <Route path="/help" component={HelpCentre} />
-
-        {/* Protected app routes */}
         <Route>
           <ProtectedRoutes />
         </Route>
@@ -251,6 +243,5 @@ function App() {
     </ErrorBoundary>
   );
 }
-
 
 export default App;

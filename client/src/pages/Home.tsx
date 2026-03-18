@@ -9,7 +9,7 @@ import {
   FlaskConical, Landmark, Globe, Palette, Music, Dumbbell, Monitor,
   Wrench, Heart, Languages, UserCheck, Briefcase, Theater, Lightbulb,
   GraduationCap, BarChart2, CalendarDays, Brain, ScrollText, Gamepad2, Settings,
-  ArrowRight, PlayCircle, ClipboardList, Stethoscope,
+  ArrowRight, PlayCircle, ClipboardList, Stethoscope, Pencil, MessageSquare, ChevronRight,
 } from "lucide-react";
 import { useState, useMemo, useEffect } from "react";
 
@@ -322,7 +322,7 @@ export default function Home() {
               </button>
             </Link>
           </div>
-          <div className="space-y-2">
+          <div className="space-y-3">
             {recentItems.map((item, i) => {
               const Icon = item.icon;
               return (
@@ -345,6 +345,44 @@ export default function Home() {
           </div>
         </motion.div>
       )}
+
+      {/* Explore Sections */}
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.13 }}>
+        <div className="mb-3">
+          <h3 className="text-base font-semibold text-foreground">Explore Sections</h3>
+          <p className="text-xs text-muted-foreground mt-0.5">All Adaptly tools organised by purpose</p>
+        </div>
+        <div className="grid grid-cols-1 gap-2.5">
+          {[
+            { path: "/send-hub",           label: "SEND Hub",            icon: Brain,         bg: "bg-indigo-600", light: "bg-indigo-50",  text: "text-indigo-700",  desc: "IEP, Social Stories, Pupil Passport, Screener + more", count: "8 tools" },
+            { path: "/revision-section",   label: "Revision Hub",        icon: GraduationCap, bg: "bg-teal-600",   light: "bg-teal-50",    text: "text-teal-700",    desc: "Past Papers, Flash Cards, Audio Revision, QuizBlast", count: "8 tools" },
+            { path: "/planning-hub",       label: "Planning Hub",        icon: Pencil,        bg: "bg-green-600",  light: "bg-green-50",   text: "text-green-700",   desc: "Lesson Planner, Differentiate, Comprehension + more", count: "9 tools" },
+            { path: "/communications-hub", label: "Communications Hub",  icon: MessageSquare, bg: "bg-rose-600",   light: "bg-rose-50",    text: "text-rose-700",    desc: "Report Comments, Newsletters, Parent Portal + more",   count: "7 tools" },
+            { path: "/classroom-hub",      label: "Classroom Hub",       icon: Monitor,       bg: "bg-blue-600",   light: "bg-blue-50",    text: "text-blue-700",    desc: "Behaviour Tracking, Attendance, Daily Briefing + more",count: "8 tools" },
+          ].map((hub) => {
+            const Icon = hub.icon;
+            return (
+              <Link key={hub.path} href={hub.path}>
+                <Card className={`hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer ${cardClass} group`}>
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className={`w-10 h-10 ${hub.bg} rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm`}>
+                      <Icon className="w-5 h-5 text-white" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-semibold text-foreground">{hub.label}</span>
+                        <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${hub.light} ${hub.text}`}>{hub.count}</span>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground truncate mt-0.5">{hub.desc}</p>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-muted-foreground/40 group-hover:text-muted-foreground transition-colors flex-shrink-0" />
+                  </CardContent>
+                </Card>
+              </Link>
+            );
+          })}
+        </div>
+      </motion.div>
 
       {/* Quick Access Cards */}
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
