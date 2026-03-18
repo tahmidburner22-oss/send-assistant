@@ -1044,8 +1044,12 @@ function formatContent(content: string | any, fmt: ReturnType<typeof getSendForm
   // Pre-process: split concatenated numbered items onto separate lines.
   // The AI often outputs questions as a single line: "1. Q1 . 2. Q2 . 3. Q3"
   // or with commas: "1. Q1, 2. Q2, 3. Q3"
-  // We split on any separator (comma, period+space, semicolon) before a number+period/paren pattern.
+  // Also handles AI separator pattern: "? . Next sentence" or ". Next sentence"
+  // Strip leading period artifact from content
+  content = content.replace(/^[.\s]+(?=[A-Z])/, '');
   let preprocessed = content
+    // Split on "? . " pattern (question mark then period separator)
+    .replace(/\?\s+\.\s+/g, '?\n')
     // Split on ". N." pattern (period-space before numbered item)
     .replace(/\.\s+(\d+[a-z]?[.)\s]\s*)/g, '.\n$1')
     // Split on ", N." pattern (comma before numbered item)
@@ -1107,8 +1111,9 @@ function formatContent(content: string | any, fmt: ReturnType<typeof getSendForm
 
   lines.forEach((line, idx) => {
     let trimmed = line.trim();
-    // Clean up lines that start with a lone period/dot (artifact of numbering removal)
-    trimmed = trimmed.replace(/^\. /, '');
+    // Clean up lines that start with a lone period/dot (artifact of AI separator pattern)
+    // Handles both ". " and "." at the start of a line
+    trimmed = trimmed.replace(/^\.\.?\s*/, '');
 
     // Table row
     if (trimmed.includes("|") && !trimmed.startsWith("Hint:") && !trimmed.startsWith("Step")) {
@@ -1398,23 +1403,33 @@ function ReminderBoxSection({ content, fmt, overlayColor = "white" }: { content:
 
 function WordProblemsSection({ content, fmt, overlayColor = "white" }: { content: string; fmt: ReturnType<typeof getSendFormatting>; overlayColor?: string }) {
   const { fontSize: textSize, fontFamily, lineHeight } = fmt;
-  // Pre-process: split concatenated numbered problems onto separate lines
-  // e.g. "1. Problem one . 2. Problem two" → separate lines
-  const preprocessed = content
-    .replace(/\.\s+(\d+[a-z]?[.)\s]\s*)/g, '.\n$1')
-    .replace(/(,\s*)(\d+[a-z]?[.)\s]\s*)/g, '\n$2')
-    .replace(/(;\s*)(\d+[a-z]?[.)\s]\s*)/g, '\n$2');
+  // Pre-process: split concatenated numbered problems onto separate lines.
+  // The AI sometimes outputs problems separated by " . " (space-period-space)
+  // without numbering, e.g. ". Problem one . Problem two . Problem three"
+  // Step 1: Normalise \n escape sequences
+  let normalised = content.replace(/\\n/g, '\n').replace(/\\t/g, '\t');
+  // Step 2: Strip leading ". " artifact (AI sometimes starts content with a period)
+  normalised = normalised.replace(/^[.\s]+/, '');
+  // Step 3: Split on " . " (space-period-space) which the AI uses as a problem separator
+  // but only when NOT inside a decimal number (e.g. £0.50) — require space on both sides
+  // Also handle numbered: ". N." pattern
+  const preprocessed = normalised
+    .replace(/\?\s+\.\s+/g, '?\n')   // "? . " → newline (end of question sentence)
+    .replace(/\.\s+(\d+[a-z]?[.)\s]\s*)/g, '.\n$1')  // ". N." → split before number
+    .replace(/(,\s*)(\d+[a-z]?[.)\s]\s*)/g, '\n$2')   // ", N." → split
+    .replace(/(;\s*)(\d+[a-z]?[.)\s]\s*)/g, '\n$2');  // "; N." → split
   // Split into individual problems by numbered lines or double newlines
   const lines = preprocessed.split("\n");
   const problems: string[][] = [];
   let current: string[] = [];
   lines.forEach(line => {
-    const isNewProblem = /^\d+[.)\s]/.test(line.trim()) && line.trim().length > 3;
+    const trimmed = line.trim().replace(/^[.\s]+/, ''); // strip leading ". " from each line
+    const isNewProblem = /^\d+[.)\s]/.test(trimmed) && trimmed.length > 3;
     if (isNewProblem && current.length > 0) {
       problems.push(current);
-      current = [line];
-    } else if (line.trim()) {
-      current.push(line);
+      current = [trimmed];
+    } else if (trimmed) {
+      current.push(trimmed);
     }
   });
   if (current.length > 0) problems.push(current);

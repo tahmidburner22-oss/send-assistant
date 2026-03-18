@@ -837,7 +837,7 @@ Return EXACTLY this JSON (raw JSON only):
     {"title": "Reminder Box", "type": "reminder-box", "content": "[3 numbered steps]"},
     {"title": "${sendSectionTitles.sectionA}", "type": "guided", "content": "[${hasSend ? 'scaffolded questions with hints/frames — apply ALL SEND rules' : 'guided questions with hints'}]"},
     {"title": "${sendSectionTitles.sectionB}", "type": "independent", "content": "[${hasSend ? 'scaffolded core practice — apply ALL SEND rules' : 'standard questions + 1 misconception question'}]"},
-    {"title": "Section C — Word Problems", "type": "word-problems", "content": "[${hasSend ? '2-3 simple word problems — apply SEND language rules' : '3-4 real-life word problems, increasing difficulty'}]"},
+    {"title": "Section C — Word Problems", "type": "word-problems", "content": "[${hasSend ? '2-3 simple word problems — apply SEND language rules' : '3-4 real-life word problems, increasing difficulty'}. IMPORTANT: each problem MUST be on its own line starting with its number, e.g. 1. Problem text\n2. Problem text\n3. Problem text — do NOT separate problems with '. ' or any other inline separator]"},
     {"title": "${sendSectionTitles.challenge}", "type": "challenge", "content": "[${challengeGuide}${hasSend ? ' — optional, labelled as bonus' : ''}]"},
     {"title": "How Did I Do?", "type": "self-reflection", "teacherOnly": false, "content": "[${hasSend ? 'tick-box or text-scale self-assessment per SEND rules' : '3-4 I can statements + open question'}]"},
     {"title": "Common Mistakes to Avoid", "type": "common-mistakes", "teacherOnly": false, "content": "[3-4 common mistakes]"},
