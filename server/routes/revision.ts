@@ -545,16 +545,18 @@ function splitIntoChunks(text: string, maxChars = 900): string[] {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // POST /api/revision/tts — Neural TTS
-// Primary: OpenAI TTS (tts-1-hd) — reliable from server environments
-// Fallback: Microsoft Edge Neural TTS (msedge-tts) — high quality but may be blocked on cloud IPs
+// PRIMARY:   Microsoft Edge Neural TTS (msedge-tts) — free, unlimited, high quality
+//            Uses Azure Cognitive Speech voices (Sonia, Ryan, Libby, etc.)
+// FALLBACK:  OpenAI TTS (tts-1-hd) — paid but high quality
+//            Forces real OpenAI endpoint (not proxy) for audio support
 //
-// Voice mapping (frontend voice name -> OpenAI voice):
-//   nova / Aoede    -> nova    (warm female)
-//   shimmer / Leda  -> shimmer (soft female)
-//   alloy / Kore    -> alloy   (confident female)
-//   echo / Charon   -> echo    (natural male)
-//   fable / Fenrir  -> fable   (expressive male)
-//   onyx            -> onyx    (deep male)
+// Voice mapping (frontend voice name -> Azure Neural voice):
+//   nova / hannah   -> en-GB-SoniaNeural  (warm British female)
+//   shimmer / autumn-> en-GB-LibbyNeural  (soft British female)
+//   alloy / diana   -> en-GB-MaisieNeural (confident British female)
+//   echo / daniel   -> en-GB-RyanNeural   (natural British male)
+//   fable / troy    -> en-US-GuyNeural    (expressive US male)
+//   onyx / austin   -> en-US-EricNeural   (deep US male)
 //
 // Body: { text, voice?, language? }
 // Returns: audio/mpeg stream
@@ -565,23 +567,7 @@ router.post("/tts", requireAuth, async (req: Request, res: Response) => {
       return res.status(400).json({ error: "text is required" });
     }
 
-    // Map frontend voice names to OpenAI TTS voice IDs
-    const OPENAI_VOICE_MAP: Record<string, string> = {
-      nova:    "nova",
-      hannah:  "nova",
-      shimmer: "shimmer",
-      autumn:  "shimmer",
-      alloy:   "alloy",
-      diana:   "alloy",
-      echo:    "echo",
-      daniel:  "echo",
-      fable:   "fable",
-      troy:    "fable",
-      onyx:    "onyx",
-      austin:  "onyx",
-    };
-
-    // Map voice names to Azure Neural voice IDs (fallback)
+    // Map voice names to Azure Neural voice IDs (PRIMARY)
     const AZURE_VOICE_MAP: Record<string, string> = {
       nova:    "en-GB-SoniaNeural",
       hannah:  "en-GB-SoniaNeural",
@@ -597,79 +583,58 @@ router.post("/tts", requireAuth, async (req: Request, res: Response) => {
       austin:  "en-US-EricNeural",
     };
 
-    // Non-English language overrides for Azure (fallback)
+    // Map frontend voice names to OpenAI TTS voice IDs (FALLBACK)
+    const OPENAI_VOICE_MAP: Record<string, string> = {
+      nova:    "nova",
+      hannah:  "nova",
+      shimmer: "shimmer",
+      autumn:  "shimmer",
+      alloy:   "alloy",
+      diana:   "alloy",
+      echo:    "echo",
+      daniel:  "echo",
+      fable:   "fable",
+      troy:    "fable",
+      onyx:    "onyx",
+      austin:  "onyx",
+    };
+
+    // Non-English language overrides for Azure
     const LANG_VOICE_MAP: Record<string, string> = {
       cy: "cy-GB-NiaNeural",
       fr: "fr-FR-DeniseNeural",
       es: "es-ES-ElviraNeural",
       de: "de-DE-KatjaNeural",
       ar: "ar-EG-SalmaNeural",
+      zh: "zh-CN-XiaoxiaoNeural",
+      ja: "ja-JP-NanamiNeural",
+      hi: "hi-IN-SwaraNeural",
+      ur: "ur-PK-UzmaNeural",
+      pl: "pl-PL-ZofiaNeural",
+      tr: "tr-TR-EmelNeural",
     };
 
-    const openaiVoice = (OPENAI_VOICE_MAP[voice] || "nova") as "alloy" | "echo" | "fable" | "onyx" | "nova" | "shimmer";
     const azureVoice = (language !== "en" && LANG_VOICE_MAP[language])
       ? LANG_VOICE_MAP[language]
       : (AZURE_VOICE_MAP[voice] || "en-GB-SoniaNeural");
+    const openaiVoice = (OPENAI_VOICE_MAP[voice] || "nova") as "alloy" | "echo" | "fable" | "onyx" | "nova" | "shimmer";
 
-    // PRIMARY: OpenAI TTS — sequential chunks with retry to avoid rate limit failures
+    // PRIMARY: Microsoft Edge Neural TTS (msedge-tts) — free, no rate limits
+    // Uses Azure Cognitive Speech voices via the Edge browser TTS endpoint
     try {
-      console.log(`[TTS] OpenAI TTS: voice=${openaiVoice}, chars=${text.length}`);
-      const openai = new OpenAI();
-      // Smaller chunks = more reliable, fewer chunk errors
-      const chunks = splitIntoChunks(text, 900);
-      console.log(`[TTS] Processing ${chunks.length} chunk(s) sequentially`);
-
-      const mp3Buffers: Buffer[] = [];
-      for (let i = 0; i < chunks.length; i++) {
-        let lastErr: any;
-        // Up to 3 retries per chunk with exponential backoff
-        for (let attempt = 0; attempt < 3; attempt++) {
-          const ctrl = new AbortController();
-          const timer = setTimeout(() => ctrl.abort(), 30000);
-          try {
-            const response = await openai.audio.speech.create({
-              model: "tts-1-hd",  // higher quality, more natural sound
-              voice: openaiVoice,
-              input: chunks[i],
-              response_format: "mp3",
-              speed: 0.95,       // very slightly slower = more natural delivery
-            }, { signal: ctrl.signal });
-            clearTimeout(timer);
-            const buf = Buffer.from(await response.arrayBuffer());
-            console.log(`[TTS] Chunk ${i + 1}/${chunks.length} ready (${buf.byteLength}b)`);
-            mp3Buffers.push(buf);
-            lastErr = null;
-            break;
-          } catch (e) {
-            clearTimeout(timer);
-            lastErr = e;
-            console.warn(`[TTS] Chunk ${i + 1} attempt ${attempt + 1} failed:`, (e as any)?.message);
-            if (attempt < 2) await new Promise(r => setTimeout(r, (attempt + 1) * 800)); // backoff
-          }
-        }
-        if (lastErr) throw lastErr;
-      }
-
-      const combined = Buffer.concat(mp3Buffers);
-      console.log(`[TTS] Done: ${combined.byteLength} bytes, ${chunks.length} chunks`);
-      res.setHeader("Content-Type", "audio/mpeg");
-      res.setHeader("Content-Length", combined.byteLength.toString());
-      return res.send(combined);
-
-    } catch (openaiErr: any) {
-      console.warn(`[TTS] OpenAI failed (${openaiErr?.message}), trying msedge-tts...`);
-
-      // FALLBACK: msedge-tts — also parallelised
+      console.log(`[TTS] msedge-tts PRIMARY: voice=${azureVoice}, chars=${text.length}`);
       const tts = new MsEdgeTTS();
       await tts.setMetadata(azureVoice, OUTPUT_FORMAT.AUDIO_24KHZ_96KBITRATE_MONO_MP3);
-      const chunks = splitIntoChunks(text, 2000);
+      // msedge-tts handles larger chunks well — use 3000 chars for fewer requests
+      const chunks = splitIntoChunks(text, 3000);
+      console.log(`[TTS] Processing ${chunks.length} chunk(s) with msedge-tts`);
 
       const results = await Promise.all(
-        chunks.map(async (chunk) => {
+        chunks.map(async (chunk, idx) => {
           const { audioStream } = tts.toStream(chunk);
           const bufs: Buffer[] = [];
           await new Promise<void>((resolve, reject) => {
-            const t = setTimeout(() => reject(new Error("msedge chunk timeout")), 30000);
+            const t = setTimeout(() => reject(new Error(`msedge chunk ${idx + 1} timeout`)), 20000);
             let done = false;
             const finish = () => { if (!done) { done = true; clearTimeout(t); resolve(); } };
             audioStream.on("data", (d: Buffer) => bufs.push(d));
@@ -683,10 +648,58 @@ router.post("/tts", requireAuth, async (req: Request, res: Response) => {
 
       tts.close();
       const valid = results.filter((b): b is Buffer => b !== null);
-      if (valid.length === 0) throw new Error("Both TTS providers returned no audio");
+      if (valid.length === 0) throw new Error("msedge-tts returned no audio");
 
       const combined = Buffer.concat(valid);
-      console.log(`[TTS] msedge fallback success: ${combined.byteLength} bytes`);
+      console.log(`[TTS] msedge-tts success: ${combined.byteLength} bytes`);
+      res.setHeader("Content-Type", "audio/mpeg");
+      res.setHeader("Content-Length", combined.byteLength.toString());
+      return res.send(combined);
+
+    } catch (msedgeErr: any) {
+      console.warn(`[TTS] msedge-tts failed (${msedgeErr?.message}), trying OpenAI TTS...`);
+
+      // FALLBACK: OpenAI TTS — force real OpenAI endpoint (not proxy) for audio support
+      const openaiKey = process.env.OPENAI_API_KEY || "";
+      if (!openaiKey) throw new Error("No OpenAI API key available for TTS fallback");
+
+      const openai = new OpenAI({
+        apiKey: openaiKey,
+        baseURL: "https://api.openai.com/v1",  // always use real OpenAI for TTS (proxy may not support audio)
+      });
+      const chunks = splitIntoChunks(text, 900);
+      console.log(`[TTS] OpenAI fallback: ${chunks.length} chunk(s), voice=${openaiVoice}`);
+
+      const mp3Buffers: Buffer[] = [];
+      for (let i = 0; i < chunks.length; i++) {
+        let lastErr: any;
+        for (let attempt = 0; attempt < 3; attempt++) {
+          const ctrl = new AbortController();
+          const timer = setTimeout(() => ctrl.abort(), 30000);
+          try {
+            const response = await openai.audio.speech.create({
+              model: "tts-1-hd",
+              voice: openaiVoice,
+              input: chunks[i],
+              response_format: "mp3",
+              speed: 0.95,
+            }, { signal: ctrl.signal });
+            clearTimeout(timer);
+            const buf = Buffer.from(await response.arrayBuffer());
+            mp3Buffers.push(buf);
+            lastErr = null;
+            break;
+          } catch (e) {
+            clearTimeout(timer);
+            lastErr = e;
+            if (attempt < 2) await new Promise(r => setTimeout(r, (attempt + 1) * 800));
+          }
+        }
+        if (lastErr) throw lastErr;
+      }
+
+      const combined = Buffer.concat(mp3Buffers);
+      console.log(`[TTS] OpenAI fallback success: ${combined.byteLength} bytes`);
       res.setHeader("Content-Type", "audio/mpeg");
       res.setHeader("Content-Length", combined.byteLength.toString());
       return res.send(combined);

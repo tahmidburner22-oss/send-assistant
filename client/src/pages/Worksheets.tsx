@@ -32,7 +32,7 @@ import {
   Eye, EyeOff, GraduationCap, Palette, Edit3, Users, Check, ZoomIn, ZoomOut,
   Mic, MicOff, Image, Search, Clock, Award, ChevronRight, ChevronDown,
   AlertCircle, CheckCircle, RefreshCw, FileDown, X, Wand2, History, Trash2, Info, PenLine, Square, CheckSquare, ListChecks, ClipboardCheck,
-  MessageSquare, Send, RotateCcw, Layers,
+  MessageSquare, Send, RotateCcw, Layers, Volume2, VolumeX, Loader2,
 } from "lucide-react";
 
 // ─── Debounce hook ──────────────────────────────────────────────────────────
@@ -393,6 +393,140 @@ export default function Worksheets() {
       setVoiceAnswers(prev => ({ ...prev, [voiceTargetSection]: text }));
     }
   });
+
+  // ── Worksheet Text-to-Speech (Read Aloud) ────────────────────────────────
+  const [ttsLoading, setTtsLoading] = useState(false);
+  const [ttsPlaying, setTtsPlaying] = useState(false);
+  const [ttsAudioUrl, setTtsAudioUrl] = useState<string | null>(null);
+  const ttsAudioRef = useRef<HTMLAudioElement | null>(null);
+  // Floating selection TTS tooltip
+  const [selectionTooltip, setSelectionTooltip] = useState<{ x: number; y: number; text: string } | null>(null);
+  const [selectionTtsLoading, setSelectionTtsLoading] = useState(false);
+  const selectionAudioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Clean up TTS audio URLs on unmount
+  useEffect(() => {
+    return () => {
+      if (ttsAudioUrl) URL.revokeObjectURL(ttsAudioUrl);
+    };
+  }, [ttsAudioUrl]);
+
+  // Listen for text selection on the worksheet to show the floating TTS tooltip
+  useEffect(() => {
+    const handleSelectionChange = () => {
+      const selection = window.getSelection();
+      if (!selection || selection.isCollapsed || !selection.toString().trim()) {
+        setSelectionTooltip(null);
+        return;
+      }
+      const selectedText = selection.toString().trim();
+      if (selectedText.length < 3) { setSelectionTooltip(null); return; }
+      // Only show tooltip if selection is within the worksheet content
+      const range = selection.getRangeAt(0);
+      const worksheetEl = worksheetRef.current;
+      if (!worksheetEl) return;
+      const container = range.commonAncestorContainer;
+      if (!worksheetEl.contains(container)) { setSelectionTooltip(null); return; }
+      // Position tooltip above the selection
+      const rect = range.getBoundingClientRect();
+      setSelectionTooltip({
+        x: rect.left + rect.width / 2,
+        y: rect.top + window.scrollY - 48,
+        text: selectedText,
+      });
+    };
+    document.addEventListener("selectionchange", handleSelectionChange);
+    return () => document.removeEventListener("selectionchange", handleSelectionChange);
+  }, []);
+
+  // Stop TTS playback
+  const stopTts = useCallback(() => {
+    if (ttsAudioRef.current) {
+      ttsAudioRef.current.pause();
+      ttsAudioRef.current.src = "";
+      ttsAudioRef.current = null;
+    }
+    setTtsPlaying(false);
+    setTtsLoading(false);
+  }, []);
+
+  // Read the full worksheet aloud using neural TTS
+  const handleReadAloud = useCallback(async () => {
+    if (ttsPlaying || ttsLoading) { stopTts(); return; }
+    if (!generated) return;
+    // Build plain text from all visible sections
+    const parts: string[] = [];
+    if (generated.title) parts.push(generated.title);
+    const visibleSections = generated.sections.filter((_, i) => !hiddenSections.has(i));
+    for (const section of visibleSections) {
+      if ((section as any).teacherOnly && viewMode === "student") continue;
+      if (section.type === "answers" && viewMode === "student") continue;
+      if (section.title) parts.push(section.title + ".");
+      const content = section.content || "";
+      // Strip HTML tags and KaTeX markup for clean TTS text
+      const plainText = content
+        .replace(/<[^>]+>/g, " ")
+        .replace(/\\[a-zA-Z]+\{[^}]*\}/g, "")
+        .replace(/\$[^$]*\$/g, "")
+        .replace(/\s+/g, " ")
+        .trim();
+      if (plainText) parts.push(plainText);
+    }
+    const fullText = parts.join(" ");
+    if (!fullText.trim()) return;
+    setTtsLoading(true);
+    try {
+      const token = localStorage.getItem("token") || sessionStorage.getItem("token") || "";
+      const res = await fetch("/api/revision/tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ text: fullText.slice(0, 8000), voice: "nova", language: "en" }),
+      });
+      if (!res.ok) { const d = await res.json(); throw new Error(d.error || "TTS failed"); }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      if (ttsAudioUrl) URL.revokeObjectURL(ttsAudioUrl);
+      setTtsAudioUrl(url);
+      const audio = new Audio(url);
+      ttsAudioRef.current = audio;
+      audio.onended = () => { setTtsPlaying(false); setTtsLoading(false); };
+      audio.onerror = () => { setTtsPlaying(false); setTtsLoading(false); toast.error("Audio playback failed."); };
+      await audio.play();
+      setTtsPlaying(true);
+    } catch (e: any) {
+      toast.error(e.message || "Read aloud failed. Please try again.");
+    } finally {
+      setTtsLoading(false);
+    }
+  }, [generated, hiddenSections, viewMode, ttsPlaying, ttsLoading, ttsAudioUrl, stopTts]);
+
+  // Read highlighted/selected text aloud
+  const handleReadSelection = useCallback(async (text: string) => {
+    if (selectionTtsLoading) return;
+    // Stop any existing selection audio
+    if (selectionAudioRef.current) { selectionAudioRef.current.pause(); selectionAudioRef.current.src = ""; selectionAudioRef.current = null; }
+    setSelectionTtsLoading(true);
+    try {
+      const token = localStorage.getItem("token") || sessionStorage.getItem("token") || "";
+      const res = await fetch("/api/revision/tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ text: text.slice(0, 4000), voice: "nova", language: "en" }),
+      });
+      if (!res.ok) { const d = await res.json(); throw new Error(d.error || "TTS failed"); }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const audio = new Audio(url);
+      selectionAudioRef.current = audio;
+      audio.onended = () => { URL.revokeObjectURL(url); setSelectionTtsLoading(false); };
+      audio.onerror = () => { URL.revokeObjectURL(url); setSelectionTtsLoading(false); };
+      await audio.play();
+    } catch (e: any) {
+      toast.error(e.message || "Could not read selection.");
+    } finally {
+      setSelectionTtsLoading(false);
+    }
+  }, [selectionTtsLoading]);
 
   // Set subject and topic from URL params on mount (used by Curriculum Progression one-click generate)
   useEffect(() => {
@@ -2520,6 +2654,27 @@ export default function Worksheets() {
             </Button>
             <Button variant="outline" size="sm" onClick={handlePrint}><Printer className="w-3.5 h-3.5 mr-1.5" /> Print</Button>
             <Button variant="outline" size="sm" onClick={handleSave}><Save className="w-3.5 h-3.5 mr-1.5" /> Save</Button>
+            {/* Read Aloud — neural TTS reads the full worksheet */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleReadAloud}
+              disabled={ttsLoading}
+              className={`gap-1.5 ${
+                ttsPlaying
+                  ? "border-green-400 text-green-700 bg-green-50 hover:bg-green-100"
+                  : "border-purple-300 text-purple-700 hover:bg-purple-50"
+              }`}
+              title={ttsPlaying ? "Stop reading" : "Read worksheet aloud"}
+            >
+              {ttsLoading ? (
+                <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Loading...</>
+              ) : ttsPlaying ? (
+                <><VolumeX className="w-3.5 h-3.5" /> Stop</>  
+              ) : (
+                <><Volume2 className="w-3.5 h-3.5" /> Read Aloud</>
+              )}
+            </Button>
             <Button variant="outline" size="sm" onClick={() => setShowDiffDialog(true)} className="gap-1.5 border-indigo-300 text-indigo-700 hover:bg-indigo-50">
               <Sparkles className="w-3.5 h-3.5" /> Differentiate
             </Button>
@@ -2727,6 +2882,26 @@ export default function Worksheets() {
             </div>
           )}
 
+          {/* Floating Read Selection tooltip — appears when text is highlighted in the worksheet */}
+          {selectionTooltip && (
+            <div
+              className="fixed z-50 no-print"
+              style={{ left: selectionTooltip.x, top: selectionTooltip.y, transform: "translateX(-50%)" }}
+            >
+              <button
+                onMouseDown={(e) => { e.preventDefault(); handleReadSelection(selectionTooltip.text); }}
+                disabled={selectionTtsLoading}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-purple-700 text-white text-xs font-medium shadow-lg hover:bg-purple-800 transition-all disabled:opacity-60"
+                title="Read selected text aloud"
+              >
+                {selectionTtsLoading ? (
+                  <><Loader2 className="w-3 h-3 animate-spin" /> Reading...</>
+                ) : (
+                  <><Volume2 className="w-3 h-3" /> Read aloud</>
+                )}
+              </button>
+            </div>
+          )}
           {/* Voice-to-text notice */}
           {voiceListening && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-center gap-2 no-print">
