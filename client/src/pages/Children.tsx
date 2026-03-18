@@ -25,7 +25,7 @@ import {
   CheckCircle, Clock, AlertCircle, MessageSquare, TrendingUp,
   ChevronLeft, Shield, Star, Send, Calendar, X, Zap, BrainCircuit,
   PlayCircle, PauseCircle, RotateCcw, Settings2, Upload, RefreshCw, Database,
-  ChevronRight, ChevronDown, Layers, Lock, Eye, Sparkles
+  Users, ChevronRight, ChevronDown, Layers, Lock, Eye, Sparkles
 } from "lucide-react";
 
 // ─── Curriculum Progression Tab Component ───────────────────────────────────
