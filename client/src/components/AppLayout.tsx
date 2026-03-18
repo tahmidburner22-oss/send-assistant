@@ -59,8 +59,9 @@ const hubs = [
 ];
 
 const accountMenu = [
-  { path: "/parent-portal", label: "Parent Portal", icon: ExternalLink },
-  { path: "/settings", label: "Settings", icon: Settings },
+  { path: "/pupils",        label: "Pupil Profiles", icon: Users },
+  { path: "/parent-portal", label: "Parent Portal",  icon: ExternalLink },
+  { path: "/settings",      label: "Settings",       icon: Settings },
 ];
 
 const allKnownPaths: { path: string; label: string }[] = [
@@ -114,16 +115,47 @@ const allKnownPaths: { path: string; label: string }[] = [
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
+  const [dismissedNotifs, setDismissedNotifs] = useState<Set<string>>(() => {
+    try {
+      const stored = localStorage.getItem("adaptly_dismissed_notifs");
+      return stored ? new Set(JSON.parse(stored)) : new Set<string>();
+    } catch { return new Set<string>(); }
+  });
   const [location] = useLocation();
   const { user, logout, children: pupils } = useApp();
   const { preferences, wallpaperStyle } = useUserPreferences();
 
-  const notifications = pupils.flatMap(p =>
+  const allNotifications = pupils.flatMap(p =>
     p.assignments
       .filter(a => a.status === "completed" && !a.mark && !a.teacherComment)
-      .map(a => ({ pupilName: p.name, assignmentTitle: a.title, pupilId: p.id }))
+      .map(a => ({
+        key: `${p.id}__${a.id}`,
+        pupilName: p.name,
+        assignmentTitle: a.title,
+        pupilId: p.id,
+      }))
   ).slice(0, 10);
+
+  const notifications = allNotifications.filter(n => !dismissedNotifs.has(n.key));
   const unreadCount = notifications.length;
+
+  const dismissNotif = (key: string) => {
+    setDismissedNotifs(prev => {
+      const next = new Set(prev);
+      next.add(key);
+      try { localStorage.setItem("adaptly_dismissed_notifs", JSON.stringify([...next])); } catch {}
+      return next;
+    });
+  };
+
+  const markAllRead = () => {
+    setDismissedNotifs(prev => {
+      const next = new Set(prev);
+      allNotifications.forEach(n => next.add(n.key));
+      try { localStorage.setItem("adaptly_dismissed_notifs", JSON.stringify([...next])); } catch {}
+      return next;
+    });
+  };
 
   const theme = COLOUR_THEMES.find(t => t.id === preferences.themeId) || COLOUR_THEMES[0];
   if (typeof document !== "undefined") {
@@ -174,20 +206,43 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                     className="absolute right-0 top-10 w-72 bg-card border border-border/60 rounded-xl shadow-lg z-50 overflow-hidden"
                   >
                     <div className="px-3 py-2 border-b border-border/40 flex items-center justify-between">
-                      <span className="text-xs font-semibold text-foreground">Notifications</span>
-                      <button onClick={() => setNotifOpen(false)}><X className="w-3.5 h-3.5 text-muted-foreground" /></button>
+                      <span className="text-xs font-semibold text-foreground">
+                        Notifications {unreadCount > 0 && <span className="ml-1 text-[10px] font-bold text-brand">({unreadCount})</span>}
+                      </span>
+                      <div className="flex items-center gap-2">
+                        {unreadCount > 0 && (
+                          <button
+                            onClick={markAllRead}
+                            className="text-[10px] text-brand hover:text-brand/70 font-medium transition-colors"
+                          >
+                            Mark all read
+                          </button>
+                        )}
+                        <button onClick={() => setNotifOpen(false)}><X className="w-3.5 h-3.5 text-muted-foreground" /></button>
+                      </div>
                     </div>
                     {notifications.length === 0 ? (
-                      <div className="px-3 py-4 text-xs text-muted-foreground text-center">No new notifications</div>
+                      <div className="px-3 py-4 text-xs text-muted-foreground text-center">
+                        {allNotifications.length > 0 ? "All caught up — no unread notifications" : "No new notifications"}
+                      </div>
                     ) : (
                       <div className="max-h-64 overflow-y-auto divide-y divide-border/30">
-                        {notifications.map((n, i) => (
-                          <Link key={i} href="/pupils" onClick={() => setNotifOpen(false)}>
-                            <div className="px-3 py-2.5 hover:bg-muted/40 cursor-pointer">
-                              <p className="text-xs font-medium text-foreground">{n.pupilName} completed work</p>
-                              <p className="text-[10px] text-muted-foreground truncate mt-0.5">{n.assignmentTitle}</p>
-                            </div>
-                          </Link>
+                        {notifications.map((n) => (
+                          <div key={n.key} className="flex items-start gap-1 pr-1 hover:bg-muted/40 transition-colors">
+                            <Link href="/pupils" onClick={() => { dismissNotif(n.key); setNotifOpen(false); }} className="flex-1">
+                              <div className="px-3 py-2.5 cursor-pointer">
+                                <p className="text-xs font-medium text-foreground">{n.pupilName} completed work</p>
+                                <p className="text-[10px] text-muted-foreground truncate mt-0.5">{n.assignmentTitle}</p>
+                              </div>
+                            </Link>
+                            <button
+                              onClick={() => dismissNotif(n.key)}
+                              title="Mark as read"
+                              className="p-1.5 mt-1.5 rounded-md text-muted-foreground/50 hover:text-muted-foreground hover:bg-muted transition-colors flex-shrink-0"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </div>
                         ))}
                       </div>
                     )}
