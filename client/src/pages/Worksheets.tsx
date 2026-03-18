@@ -1298,6 +1298,7 @@ export default function Worksheets() {
     }
 
     if (generatedWs) {
+      setGenerated(generatedWs);
       const ws = generatedWs;
       const sectionsToSave = ws.sections.map(s => ({ ...s }));
       const content = sectionsToSave.filter(s => !s.teacherOnly).map(s => `## ${s.title}\n${s.content}`).join("\n\n");
