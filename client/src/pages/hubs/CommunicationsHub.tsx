@@ -1,7 +1,6 @@
 import { Link } from "wouter";
 import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
-import TopicVisual from "@/components/TopicVisual";
 import {
   ExternalLink, FileText, Mail, AlignLeft, MessageSquare,
   TrendingUp, ClipboardList, ArrowRight, MessageCircle,
@@ -18,8 +17,6 @@ const tools = [
     description: "Share pupil progress, assignments and resources directly with parents via a secure, school-branded portal.",
     badge: "Portal",
     badgeColor: "bg-blue-100 text-blue-700",
-    topic: "Healthy Relationships",
-    subject: "pshe",
   },
   {
     path: "/tools/report-comments",
@@ -30,8 +27,6 @@ const tools = [
     description: "Generate personalised, positive end-of-term report comments for every pupil in seconds — no repetition.",
     badge: "Most Used",
     badgeColor: "bg-rose-100 text-rose-700",
-    topic: "Vocabulary in Context",
-    subject: "english",
   },
   {
     path: "/tools/parent-newsletter",
@@ -40,8 +35,6 @@ const tools = [
     color: "bg-pink-50 text-pink-600",
     border: "border-pink-100",
     description: "Draft professional, engaging parent newsletters covering class news, upcoming events and key information.",
-    topic: "Non-Fiction — Report Writing",
-    subject: "english",
   },
   {
     path: "/tools/text-rewriter",
@@ -50,8 +43,6 @@ const tools = [
     color: "bg-cyan-50 text-cyan-600",
     border: "border-cyan-100",
     description: "Simplify complex educational language for parents, or make pupil-facing text more accessible for SEND needs.",
-    topic: "Figurative Language",
-    subject: "english",
   },
   {
     path: "/pupil-comments",
@@ -60,8 +51,6 @@ const tools = [
     color: "bg-violet-50 text-violet-600",
     border: "border-violet-100",
     description: "Log and track verbal and written feedback given to pupils — supports report writing and annual reviews.",
-    topic: "Spoken Language — Debate and Discussion",
-    subject: "english",
   },
   {
     path: "/behaviour-tracking",
@@ -69,9 +58,7 @@ const tools = [
     icon: TrendingUp,
     color: "bg-orange-50 text-orange-600",
     border: "border-orange-100",
-    description: "Record behaviour incidents and patterns to inform parent conversations, SEND support plans and EHCP evidence.",
-    topic: "Mental Health and Wellbeing",
-    subject: "pshe",
+    description: "Record behaviour incidents and patterns to inform parent conversations, SEND plans and EHCP evidence.",
   },
   {
     path: "/attendance",
@@ -82,8 +69,6 @@ const tools = [
     description: "Monitor attendance patterns and generate reports for parents, governors or the local authority.",
     badge: "Compliance",
     badgeColor: "bg-green-100 text-green-700",
-    topic: "Democracy and Citizenship",
-    subject: "pshe",
   },
 ];
 
@@ -135,20 +120,17 @@ export default function CommunicationsHub() {
           <h2 className="text-sm font-semibold text-foreground uppercase tracking-wide">All Tools</h2>
           <span className="text-xs text-muted-foreground">{tools.length} tools</span>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {tools.map((tool) => {
             const Icon = tool.icon;
             return (
-              <motion.div key={tool.path} variants={item} className="group">
+              <motion.div key={tool.path} variants={item}>
                 <Link href={tool.path}>
-                  <Card className={`hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer border ${tool.border} overflow-hidden`}>
-                    <div className="relative">
-                      <TopicVisual subject={tool.subject} topic={tool.topic} size="full" editable />
-                    </div>
-                    <CardContent className="p-3">
-                      <div className="flex items-start gap-2">
-                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${tool.color}`}>
-                          <Icon className="w-4 h-4" />
+                  <Card className={`hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer border ${tool.border} group`}>
+                    <CardContent className="p-4">
+                      <div className="flex items-start gap-3">
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${tool.color}`}>
+                          <Icon className="w-5 h-5" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-0.5">

@@ -45,6 +45,16 @@ export interface UserPreferences {
   showWorksheetLibrary?: boolean;   // show the Library tab in Worksheets (default: false)
   sidebarCollapsed: string[];       // array of sidebar section labels that are collapsed
   cardBorderColor?: string;         // hex colour for card borders e.g. "#10b981", or "none"
+  // Icon & Card Appearance
+  iconShape?: "rounded" | "circle" | "square";
+  iconBorderStyle?: "none" | "subtle" | "bold";
+  cardStyle?: "default" | "flat" | "elevated";
+  layoutDensity?: "comfortable" | "compact";
+  // Home Page Section Toggles
+  showContinueSection?: boolean;
+  showRecentActivity?: boolean;
+  showSubjectBrowser?: boolean;
+  showCobsTip?: boolean;
 }
 
 // ─── Preset themes ────────────────────────────────────────────────────────────
@@ -133,6 +143,11 @@ interface UserPreferencesContextType {
   togglePinnedTool: (path: string) => void;
   setShowWorksheetLibrary: (show: boolean) => void;
   setCardBorderColor: (color: string) => void;
+  setIconShape: (shape: "rounded" | "circle" | "square") => void;
+  setIconBorderStyle: (style: "none" | "subtle" | "bold") => void;
+  setCardStyle: (style: "default" | "flat" | "elevated") => void;
+  setLayoutDensity: (density: "comfortable" | "compact") => void;
+  setHomeSection: (key: "showContinueSection" | "showRecentActivity" | "showSubjectBrowser" | "showCobsTip", val: boolean) => void;
   resetPreferences: () => void;
   currentTheme: ColourTheme;
   currentWallpaper: Wallpaper;
@@ -325,6 +340,26 @@ export function UserPreferencesProvider({
     update({ cardBorderColor: color });
   }, [update]);
 
+  const setIconShape = useCallback((shape: "rounded" | "circle" | "square") => {
+    update({ iconShape: shape });
+  }, [update]);
+
+  const setIconBorderStyle = useCallback((style: "none" | "subtle" | "bold") => {
+    update({ iconBorderStyle: style });
+  }, [update]);
+
+  const setCardStyle = useCallback((style: "default" | "flat" | "elevated") => {
+    update({ cardStyle: style });
+  }, [update]);
+
+  const setLayoutDensity = useCallback((density: "comfortable" | "compact") => {
+    update({ layoutDensity: density });
+  }, [update]);
+
+  const setHomeSection = useCallback((key: "showContinueSection" | "showRecentActivity" | "showSubjectBrowser" | "showCobsTip", val: boolean) => {
+    update({ [key]: val });
+  }, [update]);
+
   const resetPreferences = useCallback(() => {
     const fresh = { ...DEFAULT_PREFERENCES };
     savePrefs(fresh, userId);
@@ -366,6 +401,11 @@ export function UserPreferencesProvider({
       togglePinnedTool,
       setShowWorksheetLibrary,
       setCardBorderColor,
+      setIconShape,
+      setIconBorderStyle,
+      setCardStyle,
+      setLayoutDensity,
+      setHomeSection,
       resetPreferences,
       currentTheme,
       currentWallpaper,

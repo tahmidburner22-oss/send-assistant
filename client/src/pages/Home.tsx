@@ -322,14 +322,14 @@ export default function Home() {
               </button>
             </Link>
           </div>
-          <div className="space-y-3">
+          <div className="flex flex-col gap-3">
             {recentItems.map((item, i) => {
               const Icon = item.icon;
               return (
                 <Link key={i} href={item.href}>
                   <Card className={`hover:border-brand/30 hover:shadow-sm transition-all cursor-pointer ${cardClass}`}>
-                    <CardContent className="p-3 flex items-center gap-3">
-                      <div className={`w-8 h-8 flex items-center justify-center flex-shrink-0 ${item.color} ${iconShapeClass} ${iconBorderClass}`}>
+                    <CardContent className="p-4 flex items-center gap-3">
+                      <div className={`w-9 h-9 flex items-center justify-center flex-shrink-0 ${item.color} ${iconShapeClass} ${iconBorderClass}`}>
                         <Icon className="w-4 h-4" />
                       </div>
                       <div className="flex-1 min-w-0">

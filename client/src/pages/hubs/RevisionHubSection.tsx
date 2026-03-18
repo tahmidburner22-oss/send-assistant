@@ -1,7 +1,6 @@
 import { Link } from "wouter";
 import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
-import TopicVisual from "@/components/TopicVisual";
 import {
   FileText, Headphones, Layers, ScrollText, HelpCircle,
   BookType, Zap, BookMarked, ArrowRight, GraduationCap,
@@ -18,8 +17,6 @@ const tools = [
     description: "Generate curriculum-aligned revision worksheets with differentiated tasks for all ability levels.",
     badge: "Start Here",
     badgeColor: "bg-blue-100 text-blue-700",
-    topic: "Fractions",
-    subject: "mathematics",
   },
   {
     path: "/revision-hub",
@@ -30,8 +27,6 @@ const tools = [
     description: "Listen to AI-generated audio revision summaries — great for auditory learners and SEND pupils.",
     badge: "New",
     badgeColor: "bg-indigo-100 text-indigo-700",
-    topic: "Genetics and Inheritance",
-    subject: "science",
   },
   {
     path: "/past-papers",
@@ -42,8 +37,6 @@ const tools = [
     description: "Access GCSE and A-Level past papers across AQA, OCR and Edexcel with mark scheme guidance.",
     badge: "Popular",
     badgeColor: "bg-teal-100 text-teal-700",
-    topic: "Quadratic Equations",
-    subject: "mathematics",
   },
   {
     path: "/tools/flash-cards",
@@ -52,8 +45,6 @@ const tools = [
     color: "bg-yellow-50 text-yellow-600",
     border: "border-yellow-100",
     description: "Generate printable or digital flash card sets for any topic, subject and year group instantly.",
-    topic: "The Solar System",
-    subject: "science",
   },
   {
     path: "/tools/quiz-generator",
@@ -62,8 +53,6 @@ const tools = [
     color: "bg-violet-50 text-violet-600",
     border: "border-violet-100",
     description: "Build custom multiple-choice and short-answer quizzes aligned to any topic or specification.",
-    topic: "Rates of Reaction",
-    subject: "chemistry",
   },
   {
     path: "/tools/vocabulary-builder",
@@ -72,8 +61,6 @@ const tools = [
     color: "bg-lime-50 text-lime-700",
     border: "border-lime-100",
     description: "Generate subject-specific vocabulary lists with definitions and contextual example sentences.",
-    topic: "Vocabulary in Context",
-    subject: "english",
   },
   {
     path: "/quiz-game",
@@ -84,8 +71,6 @@ const tools = [
     description: "Run live, competitive classroom quiz games — ideal for revision lessons and end-of-topic tests.",
     badge: "Live",
     badgeColor: "bg-orange-100 text-orange-700",
-    topic: "Electricity and Circuits",
-    subject: "science",
   },
   {
     path: "/tools/comprehension-generator",
@@ -94,8 +79,6 @@ const tools = [
     color: "bg-sky-50 text-sky-600",
     border: "border-sky-100",
     description: "Auto-generate reading comprehension passages and questions at any reading level or subject.",
-    topic: "Reading Comprehension — Inference",
-    subject: "english",
   },
 ];
 
@@ -147,20 +130,17 @@ export default function RevisionHubSection() {
           <h2 className="text-sm font-semibold text-foreground uppercase tracking-wide">All Tools</h2>
           <span className="text-xs text-muted-foreground">{tools.length} tools</span>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {tools.map((tool) => {
             const Icon = tool.icon;
             return (
-              <motion.div key={tool.path} variants={item} className="group">
+              <motion.div key={tool.path} variants={item}>
                 <Link href={tool.path}>
-                  <Card className={`hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer border ${tool.border} overflow-hidden`}>
-                    <div className="relative">
-                      <TopicVisual subject={tool.subject} topic={tool.topic} size="full" editable />
-                    </div>
-                    <CardContent className="p-3">
-                      <div className="flex items-start gap-2">
-                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${tool.color}`}>
-                          <Icon className="w-4 h-4" />
+                  <Card className={`hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer border ${tool.border} group`}>
+                    <CardContent className="p-4">
+                      <div className="flex items-start gap-3">
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${tool.color}`}>
+                          <Icon className="w-5 h-5" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-0.5">

@@ -1,7 +1,6 @@
 import { Link } from "wouter";
 import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
-import TopicVisual from "@/components/TopicVisual";
 import {
   CalendarDays, Calendar, BookMarked, Table2, Ticket,
   Sparkles, BookOpen, LayoutGrid, ClipboardList, ArrowRight,
@@ -18,8 +17,6 @@ const tools = [
     description: "Generate full, Ofsted-ready lesson plans with learning objectives, activities, and AFL strategies.",
     badge: "Most Used",
     badgeColor: "bg-green-100 text-green-700",
-    topic: "Algorithms and Flowcharts",
-    subject: "computing",
   },
   {
     path: "/tools/medium-term-planner",
@@ -28,8 +25,6 @@ const tools = [
     color: "bg-emerald-50 text-emerald-700",
     border: "border-emerald-100",
     description: "Build 6–8 week schemes of work with sequenced lessons, key vocabulary and assessment points.",
-    topic: "Linear Graphs",
-    subject: "mathematics",
   },
   {
     path: "/differentiate",
@@ -37,11 +32,9 @@ const tools = [
     icon: Sparkles,
     color: "bg-purple-50 text-purple-600",
     border: "border-purple-100",
-    description: "Instantly adapt any task for different ability groups — from foundation to extension in seconds.",
+    description: "Instantly adapt any task or text for different ability groups — foundation to extension in one click.",
     badge: "AI",
     badgeColor: "bg-purple-100 text-purple-700",
-    topic: "Persuasive Writing",
-    subject: "english",
   },
   {
     path: "/tools/comprehension-generator",
@@ -50,8 +43,6 @@ const tools = [
     color: "bg-sky-50 text-sky-600",
     border: "border-sky-100",
     description: "Create bespoke reading comprehension tasks on any topic, tied to curriculum objectives.",
-    topic: "Reading Comprehension — Inference",
-    subject: "english",
   },
   {
     path: "/tools/rubric-generator",
@@ -60,8 +51,6 @@ const tools = [
     color: "bg-violet-50 text-violet-600",
     border: "border-violet-100",
     description: "Generate clear assessment rubrics and mark schemes aligned to GCSE or A-Level criteria.",
-    topic: "Statistics — Mean, Median, Mode",
-    subject: "mathematics",
   },
   {
     path: "/tools/exit-ticket",
@@ -70,8 +59,6 @@ const tools = [
     color: "bg-fuchsia-50 text-fuchsia-600",
     border: "border-fuchsia-100",
     description: "Create end-of-lesson exit tickets to assess understanding and inform next lesson planning.",
-    topic: "Probability",
-    subject: "mathematics",
   },
   {
     path: "/reading",
@@ -80,8 +67,6 @@ const tools = [
     color: "bg-emerald-50 text-emerald-600",
     border: "border-emerald-100",
     description: "Generate SEND-friendly stories and guided reading resources for any topic or reading age.",
-    topic: "Narrative Writing — Story Structure",
-    subject: "english",
   },
   {
     path: "/templates",
@@ -90,8 +75,6 @@ const tools = [
     color: "bg-cyan-50 text-cyan-600",
     border: "border-cyan-100",
     description: "Browse a library of ready-made worksheets across all subjects, ready to download and print.",
-    topic: "Ratio and Proportion",
-    subject: "mathematics",
   },
   {
     path: "/tools/risk-assessment",
@@ -102,15 +85,13 @@ const tools = [
     description: "Complete off-site trip and activity risk assessments with step-by-step guidance.",
     badge: "Compliance",
     badgeColor: "bg-red-100 text-red-700",
-    topic: "Tectonic Plates and Earthquakes",
-    subject: "geography",
   },
 ];
 
 const stats = [
   { label: "Planning Tools", value: "9", icon: Pencil, color: "text-green-600" },
   { label: "Time Saved / Plan", value: "~30 min", icon: Clock, color: "text-amber-600" },
-  { label: "Curriculum", value: "KS1–5", icon: Lightbulb, color: "text-purple-600" },
+  { label: "Curriculum Aligned", value: "KS1–5", icon: Lightbulb, color: "text-purple-600" },
 ];
 
 const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.05 } } };
@@ -155,20 +136,17 @@ export default function PlanningHub() {
           <h2 className="text-sm font-semibold text-foreground uppercase tracking-wide">All Tools</h2>
           <span className="text-xs text-muted-foreground">{tools.length} tools</span>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {tools.map((tool) => {
             const Icon = tool.icon;
             return (
-              <motion.div key={tool.path} variants={item} className="group">
+              <motion.div key={tool.path} variants={item}>
                 <Link href={tool.path}>
-                  <Card className={`hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer border ${tool.border} overflow-hidden`}>
-                    <div className="relative">
-                      <TopicVisual subject={tool.subject} topic={tool.topic} size="full" editable />
-                    </div>
-                    <CardContent className="p-3">
-                      <div className="flex items-start gap-2">
-                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${tool.color}`}>
-                          <Icon className="w-4 h-4" />
+                  <Card className={`hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer border ${tool.border} group`}>
+                    <CardContent className="p-4">
+                      <div className="flex items-start gap-3">
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${tool.color}`}>
+                          <Icon className="w-5 h-5" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-0.5">
@@ -197,8 +175,7 @@ export default function PlanningHub() {
             <div>
               <p className="text-xs font-semibold text-green-800 mb-1">Planning Tip</p>
               <p className="text-xs text-green-700/80 leading-relaxed">
-                Start with the Medium Term Planner to map your sequence of learning, then use the Lesson Planner for
-                individual lessons. Use Differentiate to adapt materials for SEND and high-attaining pupils from the same base resource.
+                Start with the Medium Term Planner to map your sequence of learning, then use the Lesson Planner for individual lessons. Use Differentiate to adapt materials for SEND and high-attaining pupils from the same base resource.
               </p>
             </div>
           </CardContent>
