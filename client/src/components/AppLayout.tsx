@@ -7,7 +7,7 @@ import CommandPalette from "./CommandPalette";
 import {
   Home, Brain, GraduationCap, Pencil, MessageCircle, Monitor,
   LogOut, Menu, X, Shield, Settings, ExternalLink,
-  Search, Bell, ChevronRight,
+  Search, Bell, ChevronRight, Users,
 } from "lucide-react";
 
 const hubs = [
