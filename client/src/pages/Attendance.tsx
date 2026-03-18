@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { useApp, type AttendanceRecord, type AttendanceStatus } from "@/contexts/AppContext";
+import { sendNeeds } from "@/lib/send-data";
 import {
   CalendarDays, CheckCircle2, XCircle, MinusCircle, ChevronLeft, ChevronRight,
   Users, TrendingUp, Download, Sun, Sunset, AlertCircle, Save, Database, Clock, HelpCircle
@@ -360,7 +361,7 @@ export default function Attendance() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="font-medium text-sm text-foreground truncate">{child.name}</div>
-                    <div className="text-xs text-muted-foreground">{child.yearGroup} · {child.sendNeed || "No SEND need"}</div>
+                    <div className="text-xs text-muted-foreground">{child.yearGroup} · {(child.sendNeeds && child.sendNeeds.length > 0 ? child.sendNeeds : child.sendNeed ? [child.sendNeed] : []).map((id: string) => sendNeeds.find(n => n.id === id)?.name || id).join(', ') || 'No SEND need'}</div>
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
                     <div className="text-center">
