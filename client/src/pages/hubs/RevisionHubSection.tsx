@@ -1,22 +1,25 @@
 import { Link } from "wouter";
 import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
+import TopicVisual from "@/components/TopicVisual";
 import {
-  ScrollText, Headphones, Layers, FileText, HelpCircle,
+  FileText, Headphones, Layers, ScrollText, HelpCircle,
   BookType, Zap, BookMarked, ArrowRight, GraduationCap,
   TrendingUp, Clock, ChevronRight,
 } from "lucide-react";
 
 const tools = [
   {
-    path: "/past-papers",
-    label: "Past Papers",
-    icon: ScrollText,
-    color: "bg-teal-50 text-teal-600",
-    border: "border-teal-100",
-    description: "Access GCSE and A-Level past papers across major exam boards with mark scheme guidance.",
-    badge: "Popular",
-    badgeColor: "bg-teal-100 text-teal-700",
+    path: "/worksheets",
+    label: "Worksheets",
+    icon: FileText,
+    color: "bg-brand-light text-brand",
+    border: "border-border/60",
+    description: "Generate curriculum-aligned revision worksheets with differentiated tasks for all ability levels.",
+    badge: "Start Here",
+    badgeColor: "bg-blue-100 text-blue-700",
+    topic: "Fractions",
+    subject: "mathematics",
   },
   {
     path: "/revision-hub",
@@ -27,6 +30,20 @@ const tools = [
     description: "Listen to AI-generated audio revision summaries — great for auditory learners and SEND pupils.",
     badge: "New",
     badgeColor: "bg-indigo-100 text-indigo-700",
+    topic: "Genetics and Inheritance",
+    subject: "science",
+  },
+  {
+    path: "/past-papers",
+    label: "Past Papers",
+    icon: ScrollText,
+    color: "bg-teal-50 text-teal-600",
+    border: "border-teal-100",
+    description: "Access GCSE and A-Level past papers across AQA, OCR and Edexcel with mark scheme guidance.",
+    badge: "Popular",
+    badgeColor: "bg-teal-100 text-teal-700",
+    topic: "Quadratic Equations",
+    subject: "mathematics",
   },
   {
     path: "/tools/flash-cards",
@@ -35,14 +52,8 @@ const tools = [
     color: "bg-yellow-50 text-yellow-600",
     border: "border-yellow-100",
     description: "Generate printable or digital flash card sets for any topic, subject and year group instantly.",
-  },
-  {
-    path: "/worksheets",
-    label: "Worksheets",
-    icon: FileText,
-    color: "bg-brand-light text-brand",
-    border: "border-border/60",
-    description: "Create curriculum-aligned revision worksheets with differentiated tasks for all ability levels.",
+    topic: "The Solar System",
+    subject: "science",
   },
   {
     path: "/tools/quiz-generator",
@@ -51,6 +62,8 @@ const tools = [
     color: "bg-violet-50 text-violet-600",
     border: "border-violet-100",
     description: "Build custom multiple-choice and short-answer quizzes aligned to any topic or specification.",
+    topic: "Rates of Reaction",
+    subject: "chemistry",
   },
   {
     path: "/tools/vocabulary-builder",
@@ -59,6 +72,8 @@ const tools = [
     color: "bg-lime-50 text-lime-700",
     border: "border-lime-100",
     description: "Generate subject-specific vocabulary lists with definitions and contextual example sentences.",
+    topic: "Vocabulary in Context",
+    subject: "english",
   },
   {
     path: "/quiz-game",
@@ -69,36 +84,33 @@ const tools = [
     description: "Run live, competitive classroom quiz games — ideal for revision lessons and end-of-topic tests.",
     badge: "Live",
     badgeColor: "bg-orange-100 text-orange-700",
+    topic: "Electricity and Circuits",
+    subject: "science",
   },
   {
     path: "/tools/comprehension-generator",
-    label: "Comprehension",
+    label: "Comprehension Generator",
     icon: BookMarked,
     color: "bg-sky-50 text-sky-600",
     border: "border-sky-100",
     description: "Auto-generate reading comprehension passages and questions at any reading level or subject.",
+    topic: "Reading Comprehension — Inference",
+    subject: "english",
   },
 ];
 
 const stats = [
   { label: "Revision Tools", value: "8", icon: GraduationCap, color: "text-teal-600" },
-  { label: "Exam Boards", value: "AQA, OCR, Edexcel", icon: ScrollText, color: "text-indigo-600" },
-  { label: "Avg Time Saved", value: "25 min", icon: Clock, color: "text-amber-600" },
+  { label: "Exam Boards", value: "AQA · OCR · Edexcel", icon: ScrollText, color: "text-indigo-600" },
+  { label: "Avg Time Saved", value: "~25 min", icon: Clock, color: "text-amber-600" },
 ];
 
-const container = {
-  hidden: { opacity: 0 },
-  show: { opacity: 1, transition: { staggerChildren: 0.06 } },
-};
-const item = {
-  hidden: { opacity: 0, y: 16 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.3 } },
-};
+const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.05 } } };
+const item = { hidden: { opacity: 0, y: 14 }, show: { opacity: 1, y: 0, transition: { duration: 0.28 } } };
 
 export default function RevisionHubSection() {
   return (
     <div className="px-4 py-6 max-w-3xl mx-auto space-y-7">
-      {/* Header */}
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
         <div className="flex items-center gap-2 text-xs text-muted-foreground mb-3">
           <Link href="/home"><span className="hover:text-foreground cursor-pointer">Home</span></Link>
@@ -116,11 +128,7 @@ export default function RevisionHubSection() {
         </div>
       </motion.div>
 
-      {/* Stats */}
-      <motion.div
-        className="grid grid-cols-3 gap-3"
-        initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}
-      >
+      <motion.div className="grid grid-cols-3 gap-3" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
         {stats.map((s, i) => (
           <Card key={i} className="border-border/50">
             <CardContent className="p-3 flex items-center gap-2.5">
@@ -134,31 +142,31 @@ export default function RevisionHubSection() {
         ))}
       </motion.div>
 
-      {/* Tools Grid */}
       <motion.div variants={container} initial="hidden" animate="show">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-sm font-semibold text-foreground uppercase tracking-wide">All Tools</h2>
           <span className="text-xs text-muted-foreground">{tools.length} tools</span>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {tools.map((tool) => {
             const Icon = tool.icon;
             return (
-              <motion.div key={tool.path} variants={item}>
+              <motion.div key={tool.path} variants={item} className="group">
                 <Link href={tool.path}>
-                  <Card className={`hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer border ${tool.border} group`}>
-                    <CardContent className="p-4">
-                      <div className="flex items-start gap-3">
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${tool.color}`}>
-                          <Icon className="w-5 h-5" />
+                  <Card className={`hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer border ${tool.border} overflow-hidden`}>
+                    <div className="relative">
+                      <TopicVisual subject={tool.subject} topic={tool.topic} size="full" editable />
+                    </div>
+                    <CardContent className="p-3">
+                      <div className="flex items-start gap-2">
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${tool.color}`}>
+                          <Icon className="w-4 h-4" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-0.5">
                             <span className="text-sm font-semibold text-foreground">{tool.label}</span>
                             {tool.badge && (
-                              <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${tool.badgeColor}`}>
-                                {tool.badge}
-                              </span>
+                              <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${tool.badgeColor}`}>{tool.badge}</span>
                             )}
                           </div>
                           <p className="text-xs text-muted-foreground leading-relaxed">{tool.description}</p>
@@ -174,7 +182,6 @@ export default function RevisionHubSection() {
         </div>
       </motion.div>
 
-      {/* Tip */}
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}>
         <Card className="border-teal-100 bg-teal-50/40">
           <CardContent className="p-4 flex items-start gap-3">
@@ -182,7 +189,7 @@ export default function RevisionHubSection() {
             <div>
               <p className="text-xs font-semibold text-teal-800 mb-1">Revision Best Practice</p>
               <p className="text-xs text-teal-700/80 leading-relaxed">
-                Research shows spaced retrieval practice improves long-term retention by up to 50%. Use Flash Cards and QuizBlast regularly in the weeks leading up to exams, rather than in one intensive session.
+                Research shows spaced retrieval practice improves long-term retention by up to 50%. Use Flash Cards and QuizBlast regularly in the weeks leading up to exams rather than cramming.
               </p>
             </div>
           </CardContent>
