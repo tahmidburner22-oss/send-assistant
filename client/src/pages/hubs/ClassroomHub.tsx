@@ -1,11 +1,10 @@
 import { Link } from "wouter";
 import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
-import TopicVisual from "@/components/TopicVisual";
 import {
   BookOpen, Users, Calendar, TrendingUp, ClipboardList,
   MessageSquare, Zap, NotebookPen, BarChart3,
-  ArrowRight, Monitor, ChevronRight, Star, Clock, ExternalLink,
+  ArrowRight, Monitor, ChevronRight, Star, Clock,
 } from "lucide-react";
 
 const tools = [
@@ -18,8 +17,6 @@ const tools = [
     description: "Generate SEND-friendly stories, reading comprehension and guided reading resources for any topic or reading age.",
     badge: "Popular",
     badgeColor: "bg-emerald-100 text-emerald-700",
-    topic: "Narrative Writing — Story Structure",
-    subject: "english",
   },
   {
     path: "/pupils",
@@ -30,8 +27,6 @@ const tools = [
     description: "Manage your class register, assign work, track completion, add SEND notes and view assignment history per pupil.",
     badge: "Core",
     badgeColor: "bg-blue-100 text-blue-700",
-    topic: "Healthy Relationships",
-    subject: "pshe",
   },
   {
     path: "/daily-briefing",
@@ -42,8 +37,6 @@ const tools = [
     description: "Start each day with an AI-generated briefing covering key pupil notes, flagged concerns, and to-do items.",
     badge: "Daily",
     badgeColor: "bg-sky-100 text-sky-700",
-    topic: "Algorithms and Flowcharts",
-    subject: "computing",
   },
   {
     path: "/visual-timetable",
@@ -52,8 +45,6 @@ const tools = [
     color: "bg-amber-50 text-amber-600",
     border: "border-amber-100",
     description: "Build clear visual timetables for SEND pupils who benefit from structured, predictable daily routines.",
-    topic: "Online Safety and Cyberbullying",
-    subject: "pshe",
   },
   {
     path: "/behaviour-tracking",
@@ -62,8 +53,6 @@ const tools = [
     color: "bg-orange-50 text-orange-600",
     border: "border-orange-100",
     description: "Log behaviour incidents with charts and summaries — great for EHCP evidence and parent meeting preparation.",
-    topic: "Healthy Relationships",
-    subject: "pshe",
   },
   {
     path: "/attendance",
@@ -74,8 +63,6 @@ const tools = [
     description: "Track pupil attendance patterns and identify persistent absence early for safeguarding purposes.",
     badge: "Safeguarding",
     badgeColor: "bg-lime-100 text-lime-800",
-    topic: "Democracy and Citizenship",
-    subject: "pshe",
   },
   {
     path: "/pupil-comments",
@@ -84,8 +71,6 @@ const tools = [
     color: "bg-violet-50 text-violet-600",
     border: "border-violet-100",
     description: "Record timestamped observations about pupils to support report writing and annual reviews.",
-    topic: "Careers and Aspirations",
-    subject: "pshe",
   },
   {
     path: "/quiz-game",
@@ -96,8 +81,6 @@ const tools = [
     description: "Host live, Kahoot-style quiz games directly in the classroom to boost engagement and check learning.",
     badge: "Live",
     badgeColor: "bg-yellow-100 text-yellow-700",
-    topic: "Electricity and Circuits",
-    subject: "science",
   },
   {
     path: "/analytics",
@@ -106,8 +89,6 @@ const tools = [
     color: "bg-rose-50 text-rose-600",
     border: "border-rose-100",
     description: "Review usage stats, worksheet ratings, pupil progress data and time-saved insights across your whole school.",
-    topic: "Statistics — Mean, Median, Mode",
-    subject: "mathematics",
   },
 ];
 
@@ -159,20 +140,17 @@ export default function ClassroomHub() {
           <h2 className="text-sm font-semibold text-foreground uppercase tracking-wide">All Tools</h2>
           <span className="text-xs text-muted-foreground">{tools.length} tools</span>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {tools.map((tool) => {
             const Icon = tool.icon;
             return (
-              <motion.div key={tool.path} variants={item} className="group">
+              <motion.div key={tool.path} variants={item}>
                 <Link href={tool.path}>
-                  <Card className={`hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer border ${tool.border} overflow-hidden`}>
-                    <div className="relative">
-                      <TopicVisual subject={tool.subject} topic={tool.topic} size="full" editable />
-                    </div>
-                    <CardContent className="p-3">
-                      <div className="flex items-start gap-2">
-                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${tool.color}`}>
-                          <Icon className="w-4 h-4" />
+                  <Card className={`hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer border ${tool.border} group`}>
+                    <CardContent className="p-4">
+                      <div className="flex items-start gap-3">
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${tool.color}`}>
+                          <Icon className="w-5 h-5" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-0.5">

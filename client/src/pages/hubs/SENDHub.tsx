@@ -1,7 +1,6 @@
 import { Link } from "wouter";
 import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
-import TopicVisual from "@/components/TopicVisual";
 import {
   Shield, BookOpen, IdCard, CheckSquare, ShieldAlert, Heart,
   ScanSearch, Calendar, ArrowRight, Brain, Users, Star,
@@ -18,8 +17,6 @@ const tools = [
     description: "Identify pupils who may need a SEND referral using research-backed screening questions across 8 need areas.",
     badge: "Start Here",
     badgeColor: "bg-indigo-100 text-indigo-700",
-    topic: "Mental Health and Wellbeing",
-    subject: "pshe",
   },
   {
     path: "/worksheets",
@@ -30,8 +27,6 @@ const tools = [
     description: "Generate fully differentiated, dyslexia-friendly worksheets with overlays, scaffolding and SEND adjustments built in.",
     badge: "Most Used",
     badgeColor: "bg-blue-100 text-blue-700",
-    topic: "Nouns, Verbs and Adjectives",
-    subject: "english",
   },
   {
     path: "/differentiate",
@@ -42,8 +37,6 @@ const tools = [
     description: "Instantly adapt any task or text for different ability levels — foundation, core and extension in one click.",
     badge: "AI",
     badgeColor: "bg-purple-100 text-purple-700",
-    topic: "Descriptive Writing",
-    subject: "english",
   },
   {
     path: "/tools/iep-generator",
@@ -52,8 +45,6 @@ const tools = [
     color: "bg-blue-50 text-blue-600",
     border: "border-blue-100",
     description: "Generate legally-compliant SMART IEP and EHCP goals tailored to each pupil's needs and provision.",
-    topic: "Equality and Diversity",
-    subject: "pshe",
   },
   {
     path: "/tools/social-stories",
@@ -62,8 +53,6 @@ const tools = [
     color: "bg-purple-50 text-purple-600",
     border: "border-purple-100",
     description: "Create personalised social stories to support autistic pupils with transitions and new situations.",
-    topic: "Narrative Writing — Story Structure",
-    subject: "english",
   },
   {
     path: "/tools/pupil-passport",
@@ -74,8 +63,6 @@ const tools = [
     description: "Build 'All About Me' pupil passports that give every teacher instant context on a pupil's needs.",
     badge: "New",
     badgeColor: "bg-amber-100 text-amber-700",
-    topic: "Healthy Relationships",
-    subject: "pshe",
   },
   {
     path: "/tools/smart-targets",
@@ -84,8 +71,6 @@ const tools = [
     color: "bg-teal-50 text-teal-600",
     border: "border-teal-100",
     description: "Set specific, measurable, achievable, relevant and time-bound targets for pupils on the SEND register.",
-    topic: "Careers and Aspirations",
-    subject: "pshe",
   },
   {
     path: "/tools/behaviour-plan",
@@ -94,8 +79,6 @@ const tools = [
     color: "bg-orange-50 text-orange-600",
     border: "border-orange-100",
     description: "Draft positive behaviour support plans with antecedents, triggers, and de-escalation strategies.",
-    topic: "Healthy Relationships",
-    subject: "pshe",
   },
   {
     path: "/tools/wellbeing-support",
@@ -104,8 +87,6 @@ const tools = [
     color: "bg-red-50 text-red-500",
     border: "border-red-100",
     description: "Generate wellbeing check-ins, anxiety support plans, and emotional regulation strategies.",
-    topic: "Mental Health and Wellbeing",
-    subject: "pshe",
   },
   {
     path: "/visual-timetable",
@@ -114,8 +95,6 @@ const tools = [
     color: "bg-sky-50 text-sky-600",
     border: "border-sky-100",
     description: "Build visual daily timetables to support pupils with autism, ADHD or anxiety around transitions.",
-    topic: "Online Safety and Cyberbullying",
-    subject: "pshe",
   },
 ];
 
@@ -167,34 +146,23 @@ export default function SENDHub() {
           <h2 className="text-sm font-semibold text-foreground uppercase tracking-wide">All Tools</h2>
           <span className="text-xs text-muted-foreground">{tools.length} tools</span>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {tools.map((tool) => {
             const Icon = tool.icon;
             return (
-              <motion.div key={tool.path} variants={item} className="group">
+              <motion.div key={tool.path} variants={item}>
                 <Link href={tool.path}>
-                  <Card className={`hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer border ${tool.border} overflow-hidden`}>
-                    {/* Topic visual header with editable image cycling */}
-                    <div className="relative">
-                      <TopicVisual
-                        subject={tool.subject}
-                        topic={tool.topic}
-                        size="full"
-                        editable
-                      />
-                    </div>
-                    <CardContent className="p-3">
-                      <div className="flex items-start gap-2">
-                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${tool.color}`}>
-                          <Icon className="w-4 h-4" />
+                  <Card className={`hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer border ${tool.border} group`}>
+                    <CardContent className="p-4">
+                      <div className="flex items-start gap-3">
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${tool.color}`}>
+                          <Icon className="w-5 h-5" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-0.5">
                             <span className="text-sm font-semibold text-foreground">{tool.label}</span>
                             {tool.badge && (
-                              <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${tool.badgeColor}`}>
-                                {tool.badge}
-                              </span>
+                              <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${tool.badgeColor}`}>{tool.badge}</span>
                             )}
                           </div>
                           <p className="text-xs text-muted-foreground leading-relaxed">{tool.description}</p>
