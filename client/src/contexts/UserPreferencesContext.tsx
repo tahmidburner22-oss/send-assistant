@@ -55,6 +55,11 @@ export interface UserPreferences {
   showRecentActivity?: boolean;
   showSubjectBrowser?: boolean;
   showCobsTip?: boolean;
+  // School branding
+  schoolLogoUrl?: string;
+  schoolName?: string;
+  // Feature toggles
+  show11Plus?: boolean;
 }
 
 // ─── Preset themes ────────────────────────────────────────────────────────────
@@ -148,6 +153,7 @@ interface UserPreferencesContextType {
   setCardStyle: (style: "default" | "flat" | "elevated") => void;
   setLayoutDensity: (density: "comfortable" | "compact") => void;
   setHomeSection: (key: "showContinueSection" | "showRecentActivity" | "showSubjectBrowser" | "showCobsTip", val: boolean) => void;
+  updatePreference: (key: keyof UserPreferences, val: any) => void;
   resetPreferences: () => void;
   currentTheme: ColourTheme;
   currentWallpaper: Wallpaper;
@@ -360,6 +366,10 @@ export function UserPreferencesProvider({
     update({ [key]: val });
   }, [update]);
 
+  const updatePreference = useCallback((key: keyof UserPreferences, val: any) => {
+    update({ [key]: val });
+  }, [update]);
+
   const resetPreferences = useCallback(() => {
     const fresh = { ...DEFAULT_PREFERENCES };
     savePrefs(fresh, userId);
@@ -406,6 +416,7 @@ export function UserPreferencesProvider({
       setCardStyle,
       setLayoutDensity,
       setHomeSection,
+      updatePreference,
       resetPreferences,
       currentTheme,
       currentWallpaper,

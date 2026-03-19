@@ -19,6 +19,7 @@ import {
 
 const hubItems = [
   { path: "/send-hub",           label: "SEND Hub",           icon: Brain,         group: "Hubs" },
+  { path: "/ehcp-hub",           label: "EHCP Hub",           icon: ClipboardList, group: "Hubs" },
   { path: "/revision-section",   label: "Revision Hub",       icon: GraduationCap, group: "Hubs" },
   { path: "/planning-hub",       label: "Planning Hub",       icon: Pencil,        group: "Hubs" },
   { path: "/communications-hub", label: "Communications Hub", icon: MessageCircle, group: "Hubs" },

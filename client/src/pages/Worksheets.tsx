@@ -176,6 +176,10 @@ export default function Worksheets() {
   const { saveWorksheet, updateWorksheet, deleteWorksheet, worksheetHistory, children, assignWork, colorOverlay, setColorOverlay, refreshData } = useApp();
   const { preferences } = useUserPreferences();
   const showLibraryTab = preferences.showWorksheetLibrary === true;
+  // Filter out 11+ unless user has enabled it in Settings → Features
+  const filteredSubjects = (preferences.show11Plus ?? false)
+    ? subjects
+    : subjects.filter(s => s.id !== "eleven-plus");
 
   // Re-fetch data from server on mount so history count is always current
   useEffect(() => { refreshData(); }, []);
@@ -199,6 +203,59 @@ export default function Worksheets() {
   const [includeAnswers, setIncludeAnswers] = useState(true);
   const [examStyle, setExamStyle] = useState(false);
   const [recallTopic, setRecallTopic] = useState("");
+
+  // ── Class Presets ─────────────────────────────────────────────────────────
+  interface ClassPreset {
+    id: string;
+    name: string;
+    subject: string;
+    yearGroup: string;
+    sendNeed: string;
+    difficulty: string;
+    examBoard: string;
+    worksheetLength: string;
+    readingAge: number;
+    createdAt: string;
+  }
+  const [presets, setPresets] = useState<ClassPreset[]>(() => {
+    try { return JSON.parse(localStorage.getItem("adaptly_worksheet_presets") || "[]"); } catch { return []; }
+  });
+  const [showSavePreset, setShowSavePreset] = useState(false);
+  const [presetName, setPresetName] = useState("");
+
+  const savePreset = () => {
+    if (!presetName.trim()) { toast.error("Give your preset a name"); return; }
+    const newPreset: ClassPreset = {
+      id: Date.now().toString(),
+      name: presetName.trim(),
+      subject, yearGroup, sendNeed, difficulty, examBoard, worksheetLength, readingAge,
+      createdAt: new Date().toISOString(),
+    };
+    const updated = [...presets, newPreset];
+    setPresets(updated);
+    try { localStorage.setItem("adaptly_worksheet_presets", JSON.stringify(updated)); } catch {}
+    setPresetName("");
+    setShowSavePreset(false);
+    toast.success(`Preset "${newPreset.name}" saved!`);
+  };
+
+  const loadPreset = (p: ClassPreset) => {
+    setSubject(p.subject);
+    setYearGroup(p.yearGroup);
+    setSendNeed(p.sendNeed);
+    setDifficulty(p.difficulty);
+    setExamBoard(p.examBoard);
+    setWorksheetLength(p.worksheetLength);
+    setReadingAge(p.readingAge);
+    toast.success(`Loaded "${p.name}"`);
+  };
+
+  const deletePreset = (id: string) => {
+    const updated = presets.filter(p => p.id !== id);
+    setPresets(updated);
+    try { localStorage.setItem("adaptly_worksheet_presets", JSON.stringify(updated)); } catch {}
+    toast.success("Preset deleted");
+  };
   // Natural language input
   const [nlInput, setNlInput] = useState("");
   const [nlExpanded, setNlExpanded] = useState(false);
@@ -1760,7 +1817,7 @@ Rules:
                         onChange={e => setNlInput(e.target.value)}
                         onBlur={() => { if (!nlInput.trim()) setNlExpanded(false); }}
                         onKeyDown={e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) handleNlInput(); }}
-                        placeholder='e.g. "Year 11 Fractions" or "Y7 Science Forces foundation" or "Year 10 Maths Fractions for dyslexia"'
+                        placeholder='e.g. "Year 7 fractions for dyslexia, foundation level, AQA" or "Primary Year 4 rainforests, 30 mins, ADHD support"'
                         className="flex-1 bg-white min-h-[100px] resize-none text-sm"
                         autoFocus
                         rows={4}
@@ -1779,7 +1836,11 @@ Rules:
                       <Sparkles className="w-4 h-4 mr-1" /> Generate
                     </Button>
                   </div>
-                  <p className="text-[10px] text-muted-foreground">{nlExpanded ? "Press Ctrl+Enter or click Generate. Only mention SEND / difficulty if you want them — everything else uses standard defaults for the year group." : "Just type year group + topic and hit Generate. No need to fill in the dropdowns."}</p>
+                  <p className="text-[10px] text-muted-foreground">
+                    {nlExpanded
+                      ? "💡 The more detail you give, the better the worksheet. Include: topic, year group, SEND need, difficulty level, time, exam board. Press Ctrl+Enter or click Generate."
+                      : "💡 The more information you provide the better — include topic, year group, SEND need, difficulty and time for best results."}
+                  </p>
                 </div>
 
                 {/* AI Toggle */}
@@ -1822,7 +1883,7 @@ Rules:
                     <Label className="text-xs font-medium">Subject *</Label>
                     <Select value={subject} onValueChange={setSubject}>
                       <SelectTrigger className="h-10"><SelectValue placeholder="Select subject" /></SelectTrigger>
-                      <SelectContent>{subjects.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent>
+                      <SelectContent>{filteredSubjects.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent>
                     </Select>
                   </div>
                   <div className="space-y-1.5">
@@ -2057,21 +2118,98 @@ Rules:
                       </Label>
                     </div>
                   )}
-                  <div className="flex items-center gap-2">
-                    <Switch checked={isRevisionMat} onCheckedChange={setIsRevisionMat} id="revmat-sw" />
-                    <Label htmlFor="revmat-sw" className="text-xs flex items-center gap-2">
-                      <span>Revision Mat format</span>
-                      <span className="text-[9px] font-bold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full">NEW</span>
-                    </Label>
-                  </div>
-                  {isRevisionMat && (
-                    <p className="w-full text-[10px] text-muted-foreground leading-relaxed pl-0.5">
-                      Generates a 3-tier landscape revision mat (Foundation · Core · Extension) in the style of AQA activity mats — compact grid layout, fill-in gaps, matching, short answers and extended tasks all on one sheet.
-                    </p>
-                  )}
                 </div>
                   </div>{/* End advanced options content */}
                 </details>
+
+                {/* ── Class Presets ────────────────────────────────────────── */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                      <span>📌</span> Class Presets
+                    </Label>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 text-xs gap-1.5 border-brand/30 text-brand hover:bg-brand-light"
+                      onClick={() => { setPresetName(""); setShowSavePreset(true); }}
+                    >
+                      + Save current as preset
+                    </Button>
+                  </div>
+
+                  {/* Save preset dialog */}
+                  {showSavePreset && (
+                    <div className="p-3 rounded-xl border border-brand/30 bg-brand-light/20 space-y-2">
+                      <p className="text-xs text-muted-foreground">Name this preset (e.g. "Year 7 Set 3 — Maths")</p>
+                      <div className="flex gap-2">
+                        <Input
+                          value={presetName}
+                          onChange={e => setPresetName(e.target.value)}
+                          onKeyDown={e => { if (e.key === "Enter") savePreset(); if (e.key === "Escape") setShowSavePreset(false); }}
+                          placeholder="e.g. Year 9 Foundation Maths"
+                          className="h-8 text-sm flex-1"
+                          autoFocus
+                        />
+                        <Button size="sm" onClick={savePreset} className="h-8 bg-brand hover:bg-brand/90 text-white text-xs">Save</Button>
+                        <Button size="sm" variant="ghost" onClick={() => setShowSavePreset(false)} className="h-8 text-xs">Cancel</Button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Preset chips */}
+                  {presets.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {presets.map(p => (
+                        <div key={p.id} className="flex items-center gap-1 bg-muted rounded-lg border border-border/50 pl-2.5 pr-1 py-1">
+                          <button
+                            onClick={() => loadPreset(p)}
+                            className="text-xs font-medium text-foreground hover:text-brand transition-colors"
+                          >
+                            {p.name}
+                          </button>
+                          <button
+                            onClick={() => deletePreset(p.id)}
+                            className="w-4 h-4 rounded text-muted-foreground hover:text-red-500 hover:bg-red-50 flex items-center justify-center transition-colors text-[10px]"
+                            title="Delete preset"
+                          >✕</button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {presets.length === 0 && !showSavePreset && (
+                    <p className="text-[10px] text-muted-foreground">Save your current settings as a preset for quick re-use with the same class.</p>
+                  )}
+                </div>
+
+                {/* Revision Mat Toggle — prominent, outside advanced options */}
+                <div
+                  onClick={() => setIsRevisionMat(!isRevisionMat)}
+                  className={`flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all select-none ${
+                    isRevisionMat
+                      ? "border-amber-400 bg-amber-50"
+                      : "border-border/50 bg-muted/20 hover:border-border hover:bg-muted/40"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${isRevisionMat ? "bg-amber-500" : "bg-muted"}`}>
+                      <span className="text-lg">{isRevisionMat ? "📐" : "📋"}</span>
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-semibold text-foreground">Revision Mat</p>
+                        <span className="text-[9px] font-bold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full">Different layout</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {isRevisionMat
+                          ? "Landscape · 3-tier grid · Foundation / Core / Extension on one sheet"
+                          : "Switch to a landscape revision mat with activities circling a central topic"}
+                      </p>
+                    </div>
+                  </div>
+                  <Switch checked={isRevisionMat} onCheckedChange={setIsRevisionMat} id="revmat-sw" onClick={e => e.stopPropagation()} />
+                </div>
 
                 <Button onClick={handleGenerate} disabled={loading} className="w-full h-12 bg-brand hover:bg-brand/90 text-white text-base font-semibold shadow-sm">
                   {loading
@@ -2218,6 +2356,8 @@ Rules:
                           textSize={textSize}
                           overlayColor={overlayBg}
                           editedSections={{}}
+                          schoolLogoUrl={preferences.schoolLogoUrl}
+                          schoolName={preferences.schoolName}
                         />
                       </div>
                       <div className="flex gap-2">
@@ -2265,7 +2405,7 @@ Rules:
                     <SelectTrigger className="h-8 text-xs flex-1"><SelectValue placeholder="All subjects" /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All subjects</SelectItem>
-                      {subjects.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+                      {filteredSubjects.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
                     </SelectContent>
                   </Select>
                   <Select value={bankYearFilter} onValueChange={setBankYearFilter}>
@@ -3116,7 +3256,6 @@ Rules:
                     worksheet={{
                       title: generated.title,
                       subtitle: (generated as any).subtitle,
-                      // Filter out hidden sections before passing to renderer
                       sections: (displaySections as any).filter((_: any, i: number) => !hiddenSections.has(i)),
                       metadata: {
                         ...(generated.metadata as any),
@@ -3131,6 +3270,9 @@ Rules:
                     onSectionClick={undefined}
                     editMode={false}
                     answerBoxSizes={answerBoxSizes}
+                    schoolLogoUrl={preferences.schoolLogoUrl}
+                    schoolName={preferences.schoolName}
+                    isRevisionMat={isRevisionMat}
                   />
                 )}
                 {/* Inline section edit rendering (Manual + AI) */}
@@ -3430,6 +3572,8 @@ Rules:
                     }}
                     viewMode={historyViewMode === "teacher" ? "teacher" : "student"}
                     editMode={false}
+                    schoolLogoUrl={preferences.schoolLogoUrl}
+                    schoolName={preferences.schoolName}
                   />
                 </div>
 

@@ -8,6 +8,8 @@ import { ShieldAlert, Save, CheckCircle2, Users } from "lucide-react";
 import { useApp } from "@/contexts/AppContext";
 import { pupils as pupilsApi } from "@/lib/api";
 import { toast } from "sonner";
+import { useUserPreferences } from "@/contexts/UserPreferencesContext";
+import { formatToolOutput } from "@/lib/format-tool-output";
 
 // ── Save-to-Portal widget ─────────────────────────────────────────────────────
 function SaveToPupilPortal({
@@ -112,6 +114,7 @@ function SaveToPupilPortal({
 
 // ── Main component ────────────────────────────────────────────────────────────
 export default function BehaviourPlan() {
+  const { preferences } = useUserPreferences();
   const [latestResult, setLatestResult] = useState<string | null>(null);
   const [latestValues, setLatestValues] = useState<Record<string, string>>({});
 
@@ -227,6 +230,7 @@ Use positive, strengths-based language throughout. Be specific and practical.`,
         outputTitle={(v) =>
           `Behaviour Support Plan — ${v.studentName} (${v.yearGroup})`
         }
+        formatOutput={(text) => formatToolOutput(text, { logoUrl: preferences.schoolLogoUrl, schoolName: preferences.schoolName, accentColor: "#ea580c", emoji: "⚡", title: "Behaviour Support Plan" })}
       />
       <div className="max-w-2xl mx-auto px-4 pb-8">
         <SaveToPupilPortal result={latestResult} values={latestValues} />

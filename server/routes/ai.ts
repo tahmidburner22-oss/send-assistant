@@ -1324,11 +1324,27 @@ CRITICAL RULES — YOU MUST FOLLOW THESE WITHOUT EXCEPTION:
 3. PRESERVE THE ORIGINAL STRUCTURE: Match the original section structure exactly. If the original has Section A, B, C — keep those. If it has numbered questions 1-10, keep that structure.
 4. FORMATTING ONLY: The ONLY changes permitted are: adjusting visual presentation (line spacing, grouping, bold key terms, section dividers, tick boxes for ADHD). Do NOT add word banks, sentence starters, hints, worked examples, or any new content.
 5. DO NOT ADD OR REMOVE CONTENT: No new questions, no hints, no scaffolding, no word banks. Only formatting changes.
-6. Return valid JSON only — no markdown code fences, no text before or after the JSON object.`;
+6. DO NOT INVENT CONTENT: If the original has "Question 4: Calculate 15 × 8", keep it as "Question 4: Calculate 15 × 8". Never change the numbers, operations, or context.
+7. Return valid JSON only — no markdown code fences, no text before or after the JSON object.`;
 
     const user = `Reformat the following worksheet for a student with ${sendNeed} in ${yr}.
 
 ${sendFormattingGuide}
+
+IMPORTANT — SECTION TYPES: Map each section to the closest matching type from this list:
+- "objective" → Learning objectives / goals / aims
+- "vocabulary" → Key words / vocabulary / glossary
+- "starter" → Starter activity / warm up / recall
+- "example" → Worked example / model answer / how to do it
+- "guided" → Section A / guided practice / scaffolded questions / with support
+- "independent" → Section B / main practice / core questions / independent work
+- "challenge" → Extension / challenge / harder questions / stretch
+- "word-problems" → Word problems / real-life problems / applied questions
+- "reminder-box" → Key steps / remember / formula / tip box
+- "questions" → Any other numbered question section
+- "teacher-notes" → Mark scheme / answers / teacher notes (set teacherOnly: true)
+
+If the original has no clear sections, split the content logically: objectives first, then questions as "guided", harder ones as "independent", any extension as "challenge".
 
 Return a JSON object with this EXACT structure (valid JSON only, no markdown fences):
 {
@@ -1336,7 +1352,7 @@ Return a JSON object with this EXACT structure (valid JSON only, no markdown fen
   "subtitle": "${yr} — Formatted for ${sendNeed}",
   "sections": [
     {
-      "title": "Section heading exactly as in original",
+      "title": "Section heading exactly as in original (or inferred from content)",
       "type": "guided",
       "content": "ALL original questions and content from this section, reproduced VERBATIM. Every question number, every word, every symbol preserved exactly. Only formatting changes applied (bold key terms, tick boxes for ADHD, clear spacing).",
       "teacherOnly": false

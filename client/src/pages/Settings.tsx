@@ -471,15 +471,17 @@ function PersonalisationSection() {
     setCardStyle,
     setLayoutDensity,
     setHomeSection,
+    updatePreference,
     resetPreferences,
     currentTheme,
     currentWallpaper,
   } = useUserPreferences();
 
   const initialTab = (typeof window !== "undefined"
-    ? (new URLSearchParams(window.location.search).get("tab") as "theme" | "wallpaper" | "sidebar" | "dashboard" | null)
+    ? (new URLSearchParams(window.location.search).get("tab") as "theme" | "wallpaper" | "sidebar" | "dashboard" | "branding" | "features" | null)
     : null) || "theme";
-  const [activeTab, setActiveTab] = useState<"theme" | "wallpaper" | "sidebar" | "dashboard">(initialTab);
+  const [activeTab, setActiveTab] = useState<"theme" | "wallpaper" | "sidebar" | "dashboard" | "branding" | "features">(initialTab);
+  const [logoPreview, setLogoPreview] = useState<string>(preferences.schoolLogoUrl || "");
   const [customWallpaperUrl, setCustomWallpaperUrl] = useState("");
 
   // All sidebar items for the toggle list
@@ -531,10 +533,12 @@ function PersonalisationSection() {
   ];
 
   const tabs = [
-    { id: "theme" as const,     label: "Colour Theme",  icon: Palette },
-    { id: "wallpaper" as const, label: "Wallpaper",     icon: Monitor },
-    { id: "sidebar" as const,   label: "Sidebar",       icon: Sidebar },
-    { id: "dashboard" as const, label: "Dashboard",     icon: Layout },
+    { id: "theme" as const,     label: "Theme",      icon: Palette },
+    { id: "wallpaper" as const, label: "Wallpaper",  icon: Monitor },
+    { id: "sidebar" as const,   label: "Sidebar",    icon: Sidebar },
+    { id: "dashboard" as const, label: "Dashboard",  icon: Layout },
+    { id: "branding" as const,  label: "Branding",   icon: Upload },
+    { id: "features" as const,  label: "Features",   icon: Zap },
   ];
 
   return (
@@ -547,23 +551,25 @@ function PersonalisationSection() {
         <p className="text-xs text-muted-foreground mt-1">Customise your Adaptly experience — changes are saved automatically per account.</p>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Sub-tabs */}
-        <div className="flex gap-1 bg-muted/50 rounded-xl p-1">
-          {tabs.map(t => {
-            const Icon = t.icon;
-            return (
-              <button
-                key={t.id}
-                onClick={() => setActiveTab(t.id)}
-                className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-medium transition-all ${
-                  activeTab === t.id ? "bg-white shadow-sm text-brand" : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                <Icon className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">{t.label}</span>
-              </button>
-            );
-          })}
+        {/* Sub-tabs — horizontally scrollable on mobile */}
+        <div className="overflow-x-auto -mx-1 px-1 pb-1">
+          <div className="flex gap-1 bg-muted/50 rounded-xl p-1 min-w-max sm:min-w-0">
+            {tabs.map(t => {
+              const Icon = t.icon;
+              return (
+                <button
+                  key={t.id}
+                  onClick={() => setActiveTab(t.id)}
+                  className={`flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
+                    activeTab === t.id ? "bg-white shadow-sm text-brand" : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <Icon className="w-3.5 h-3.5 flex-shrink-0" />
+                  <span>{t.label}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {/* Colour Theme */}
@@ -797,7 +803,7 @@ function PersonalisationSection() {
               <p className="text-xs font-medium text-foreground mb-2">Subjects on Dashboard</p>
               <p className="text-xs text-muted-foreground mb-3">Choose which subjects appear in your quick-subject filter.</p>
               <div className="flex flex-wrap gap-2">
-                {ALL_SUBJECTS.map(subject => {
+                {ALL_SUBJECTS.filter(s => s !== "11+ Preparation" || (preferences.show11Plus ?? false)).map(subject => {
                   const active = preferences.dashboardSubjects.includes(subject);
                   return (
                     <button
@@ -932,11 +938,76 @@ function PersonalisationSection() {
                 })}
               </div>
             </div>
+          </div>
+        )}
 
-            {/* Feature Toggles */}
-            <div className="border-t border-border/50 pt-4">
-            <p className="text-xs font-medium text-foreground mb-2">Feature Toggles</p>
-            <p className="text-xs text-muted-foreground mb-3">Enable or disable optional features across the platform.</p>
+        {/* Branding Tab */}
+        {activeTab === "branding" && (
+          <div className="space-y-4">
+            <p className="text-xs text-muted-foreground">Upload your school logo to apply it to all generated worksheets, passports and reports.</p>
+
+            {/* Logo upload */}
+            <div className="space-y-3">
+              <p className="text-xs font-medium text-foreground">School Logo</p>
+              {logoPreview && (
+                <div className="flex items-center gap-3 p-3 bg-muted/40 rounded-xl border border-border/50">
+                  <img src={logoPreview} alt="School logo" className="h-12 w-auto object-contain rounded" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium text-foreground">Logo uploaded</p>
+                    <p className="text-[10px] text-muted-foreground">Will appear on all generated documents</p>
+                  </div>
+                  <button
+                    onClick={() => { setLogoPreview(""); updatePreference("schoolLogoUrl", ""); toast.success("Logo removed"); }}
+                    className="text-xs text-red-500 hover:text-red-600 font-medium"
+                  >Remove</button>
+                </div>
+              )}
+              <label className="flex flex-col items-center gap-2 p-6 border-2 border-dashed border-border rounded-xl cursor-pointer hover:border-brand hover:bg-brand-light/30 transition-colors">
+                <Upload className="w-6 h-6 text-muted-foreground" />
+                <span className="text-xs font-medium text-foreground">Click to upload logo</span>
+                <span className="text-[10px] text-muted-foreground">PNG, JPG, SVG — max 2MB. Recommended: 200×200px</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={e => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    if (file.size > 2 * 1024 * 1024) { toast.error("File too large — max 2MB"); return; }
+                    const reader = new FileReader();
+                    reader.onload = ev => {
+                      const dataUrl = ev.target?.result as string;
+                      setLogoPreview(dataUrl);
+                      updatePreference("schoolLogoUrl", dataUrl);
+                      toast.success("Logo saved — will appear on all generated documents");
+                    };
+                    reader.readAsDataURL(file);
+                  }}
+                />
+              </label>
+            </div>
+
+            {/* School name */}
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-foreground">School Name (for documents)</p>
+              <input
+                type="text"
+                placeholder="e.g. Oakfield Primary School"
+                defaultValue={preferences.schoolName || ""}
+                onBlur={e => { updatePreference("schoolName", e.target.value); toast.success("School name saved"); }}
+                className="w-full text-sm px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-brand/50"
+              />
+              <p className="text-[10px] text-muted-foreground">Appears in headers of generated worksheets and documents</p>
+            </div>
+          </div>
+        )}
+
+        {/* Features Tab */}
+        {activeTab === "features" && (
+          <div className="space-y-3">
+            <p className="text-xs text-muted-foreground">Enable or disable optional features and content areas across the platform.</p>
+
+            {/* Worksheet Library */}
             <div className="flex items-center justify-between p-3 bg-muted/40 rounded-lg border border-border/50">
               <div>
                 <p className="text-xs font-medium text-foreground">Worksheet Library Tab</p>
@@ -944,15 +1015,24 @@ function PersonalisationSection() {
               </div>
               <button
                 onClick={() => setShowWorksheetLibrary(!preferences.showWorksheetLibrary)}
-                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
-                  preferences.showWorksheetLibrary ? 'bg-brand' : 'bg-muted-foreground/30'
-                }`}
+                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${preferences.showWorksheetLibrary ? 'bg-brand' : 'bg-muted-foreground/30'}`}
               >
-                <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${
-                  preferences.showWorksheetLibrary ? 'translate-x-4' : 'translate-x-0.5'
-                }`} />
+                <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${preferences.showWorksheetLibrary ? 'translate-x-4' : 'translate-x-0.5'}`} />
               </button>
             </div>
+
+            {/* 11+ toggle */}
+            <div className="flex items-center justify-between p-3 bg-muted/40 rounded-lg border border-border/50">
+              <div>
+                <p className="text-xs font-medium text-foreground">11+ Preparation</p>
+                <p className="text-xs text-muted-foreground">Show 11+ as a subject option in worksheets, revision and resources (hidden by default)</p>
+              </div>
+              <button
+                onClick={() => { updatePreference("show11Plus", !(preferences.show11Plus ?? false)); toast.success((preferences.show11Plus ?? false) ? "11+ hidden" : "11+ enabled"); }}
+                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${(preferences.show11Plus ?? false) ? 'bg-brand' : 'bg-muted-foreground/30'}`}
+              >
+                <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${(preferences.show11Plus ?? false) ? 'translate-x-4' : 'translate-x-0.5'}`} />
+              </button>
             </div>
           </div>
         )}

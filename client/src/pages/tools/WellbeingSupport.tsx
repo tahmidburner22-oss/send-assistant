@@ -1,10 +1,13 @@
 import AIToolPage from "@/components/AIToolPage";
+import { useUserPreferences } from "@/contexts/UserPreferencesContext";
+import { formatToolOutput } from "@/lib/format-tool-output";
 import { Heart } from "lucide-react";
 
 const concerns = ["Anxiety","Low mood / depression","Bereavement","Friendship difficulties","Bullying","School refusal","Self-harm (risk)","Trauma","Family breakdown","Transition anxiety","Low self-esteem","Anger management","Social isolation","Eating concerns","Sleep difficulties","Academic pressure"].map(c => ({ value: c, label: c }));
 const years = ["Reception","Year 1","Year 2","Year 3","Year 4","Year 5","Year 6","Year 7","Year 8","Year 9","Year 10","Year 11","Year 12","Year 13"].map(y => ({ value: y, label: y }));
 
 export default function WellbeingSupport() {
+  const { preferences } = useUserPreferences();
   return (
     <AIToolPage
       assignable={true}
@@ -63,6 +66,7 @@ ${v.outputType === "referral" ? "Write a professional referral summary suitable 
         maxTokens: 2500,
       })}
       outputTitle={(v) => `Wellbeing Support — ${v.concern} (${v.yearGroup})`}
+      formatOutput={(text) => formatToolOutput(text, { logoUrl: preferences.schoolLogoUrl, schoolName: preferences.schoolName, accentColor: "#ef4444", emoji: "❤️", title: "Wellbeing Support" })}
     />
   );
 }

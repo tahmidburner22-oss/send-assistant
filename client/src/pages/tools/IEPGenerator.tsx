@@ -27,6 +27,7 @@ import { toast } from "sonner";
 import { callAI, parseWithFixes } from "@/lib/ai";
 import { exportToDocx } from "@/lib/docx-export";
 import { downloadHtmlAsPdf, printWorksheetElement } from "@/lib/pdf-generator-v2";
+import { useUserPreferences } from "@/contexts/UserPreferencesContext";
 import {
   Brain, Upload, FileText, CheckCircle, AlertCircle, ChevronRight,
   ChevronLeft, Sparkles, RefreshCw, Download, Printer, Copy,
@@ -235,6 +236,7 @@ function QABadge({ score }: { score: number }) {
 // ── Main Component ────────────────────────────────────────────────────────────
 
 export default function EHCPPlanGenerator() {
+  const { preferences } = useUserPreferences();
   const [stage, setStage] = useState<Stage>("info");
   const [completed, setCompleted] = useState<Set<Stage>>(new Set());
   const outputRef = useRef<HTMLDivElement>(null);
@@ -1003,9 +1005,22 @@ Scoring: golden thread linkage (40pts), SMART outcomes (30pts), specific provisi
                         </div>
                       )}
                     </div>
-                    <div className="flex-shrink-0 bg-white rounded-xl px-3 py-2.5 text-center hidden sm:block">
-                      <div className="text-indigo-700 font-black text-xl tracking-tight leading-none">adaptly</div>
-                      <div className="text-indigo-400 text-[9px] font-bold tracking-widest uppercase mt-1">SEND AI</div>
+                    <div className="flex-shrink-0 hidden sm:block">
+                      {preferences.schoolLogoUrl ? (
+                        <img
+                          src={preferences.schoolLogoUrl}
+                          alt="School logo"
+                          className="h-14 w-auto object-contain rounded-xl bg-white p-1.5"
+                        />
+                      ) : (
+                        <div className="bg-white rounded-xl px-3 py-2.5 text-center">
+                          <div className="text-indigo-700 font-black text-xl tracking-tight leading-none">adaptly</div>
+                          <div className="text-indigo-400 text-[9px] font-bold tracking-widest uppercase mt-1">SEND AI</div>
+                        </div>
+                      )}
+                      {preferences.schoolName && (
+                        <div className="text-[10px] text-indigo-300 text-center mt-1 max-w-[80px] leading-tight">{preferences.schoolName}</div>
+                      )}
                     </div>
                   </div>
 

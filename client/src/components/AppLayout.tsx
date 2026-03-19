@@ -9,6 +9,7 @@ import {
   Home, Brain, GraduationCap, Pencil, MessageCircle, Monitor,
   LogOut, Menu, X, Shield, Settings, ExternalLink,
   Search, Bell, ChevronRight, Users, FileCheck, Mail, MessageSquare,
+  ClipboardList,
 } from "lucide-react";
 
 const ehcpHub = {
@@ -19,6 +20,16 @@ const ehcpHub = {
   bg: "bg-indigo-100",
   description: "AI-assisted EHCP drafting — SENCO & SLT",
   toolPrefixes: ["/tools/iep-generator"],
+};
+
+const ehcpSidebarItem = {
+  path: "/ehcp-hub",
+  label: "EHCP Hub",
+  icon: ClipboardList,
+  color: "text-violet-700",
+  bg: "bg-violet-100",
+  description: "ISP, SSPP, ECHNAR guidance & EHCP drafting",
+  toolPrefixes: ["/ehcp-hub", "/tools/iep-generator"],
 };
 
 const hubs = [
@@ -78,6 +89,7 @@ const accountMenu = [
 const allKnownPaths: { path: string; label: string }[] = [
   { path: "/home", label: "Home" },
   { path: "/send-hub", label: "SEND Hub" },
+  { path: "/ehcp-hub", label: "EHCP Hub" },
   { path: "/revision-section", label: "Revision Hub" },
   { path: "/planning-hub", label: "Planning Hub" },
   { path: "/communications-hub", label: "Communications Hub" },
@@ -264,7 +276,16 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             </div>
             <button
               onClick={() => window.dispatchEvent(new KeyboardEvent("keydown", { key: "k", ctrlKey: true, bubbles: true }))}
-              className="p-2 -mr-2 rounded-lg hover:bg-muted transition-colors"
+              className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted/60 border border-border/50 text-muted-foreground hover:bg-muted hover:text-foreground hover:border-border transition-all text-xs min-w-[160px]"
+              title="Search (Ctrl+K)"
+            >
+              <Search className="w-3.5 h-3.5 flex-shrink-0" />
+              <span className="flex-1 text-left">Search tools &amp; pages…</span>
+              <kbd className="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-background border border-border/50 text-[9px] font-mono text-muted-foreground/70">⌘K</kbd>
+            </button>
+            <button
+              onClick={() => window.dispatchEvent(new KeyboardEvent("keydown", { key: "k", ctrlKey: true, bubbles: true }))}
+              className="sm:hidden p-2 -mr-2 rounded-lg hover:bg-muted transition-colors"
               title="Search (Ctrl+K)"
             >
               <Search className="w-4 h-4 text-muted-foreground" />
@@ -319,6 +340,34 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 </div>
 
                 <div className="px-2 mb-1">
+                  {/* EHCP Hub — standalone sidebar tab */}
+                  {(() => {
+                    const hub = ehcpSidebarItem;
+                    const Icon = hub.icon;
+                    const active = hub.toolPrefixes.some(p => location.startsWith(p));
+                    return (
+                      <Link href={hub.path} onClick={() => setSidebarOpen(false)}>
+                        <div className={`px-3 py-3 rounded-xl flex items-center gap-3 transition-all cursor-pointer group mb-1 ${
+                          active
+                            ? "bg-brand-light border border-brand/20"
+                            : "hover:bg-muted/60 border border-transparent"
+                        }`}>
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-all ${
+                            active ? "bg-brand text-white shadow-sm" : `${hub.bg} ${hub.color}`
+                          }`}>
+                            <Icon className="w-4 h-4" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className={`text-sm font-semibold leading-tight ${active ? "text-brand" : "text-foreground"}`}>
+                              {hub.label}
+                            </div>
+                            <div className="text-[10px] text-muted-foreground truncate mt-0.5">{hub.description}</div>
+                          </div>
+                          <ChevronRight className={`w-3.5 h-3.5 flex-shrink-0 transition-transform ${active ? "text-brand rotate-90" : "text-muted-foreground/40 group-hover:text-muted-foreground"}`} />
+                        </div>
+                      </Link>
+                    );
+                  })()}
                   {(() => {
                     const hub = ehcpHub;
                     const Icon = hub.icon;

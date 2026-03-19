@@ -13,11 +13,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { useApp } from "@/contexts/AppContext";
+import { exportToDocx } from "@/lib/docx-export";
+import { downloadHtmlAsPdf } from "@/lib/pdf-generator-v2";
 import {
   ClipboardList, ChevronRight, ChevronLeft, Plus, Trash2,
   Printer, FileDown, Check, AlertTriangle, Users, Wrench,
   MapPin, Car, Phone, User, Building2, Calendar, Clock,
-  Shield, X, Info
+  Shield, X, Info, FileText
 } from "lucide-react";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -293,14 +295,110 @@ export default function RiskAssessment() {
     popup.onload = () => { popup.focus(); popup.print(); };
   };
 
+  const handleDownloadPdf = async () => {
+    if (!printRef.current) { toast.error("Document not ready — please wait a moment."); return; }
+    toast.loading("Generating PDF…", { id: "ra-pdf" });
+    try {
+      await downloadHtmlAsPdf(printRef.current, `Risk_Assessment_${data.schoolName || "Adaptly"}_${data.date || ""}`.replace(/[^a-zA-Z0-9_-]/g, "_"), {
+        title: `Risk Assessment — ${data.schoolName}`,
+        overlayColor: "#ffffff",
+        viewMode: "teacher",
+      });
+      toast.success("PDF downloaded!", { id: "ra-pdf" });
+    } catch (e) {
+      toast.error("PDF generation failed. Try Print → Save as PDF instead.", { id: "ra-pdf" });
+    }
+  };
+
+  const handleDownloadDocx = async () => {
+    toast.loading("Generating Word document…", { id: "ra-docx" });
+    try {
+      const lines: string[] = [];
+      const add = (label: string, value: string) => { if (value?.trim()) lines.push(`${label}:\n${value}\n`); };
+
+      lines.push(`RISK ASSESSMENT FOR EDUCATIONAL VISITS — COBS FORMAT\n${"=".repeat(60)}\n`);
+      lines.push(`School: ${data.schoolName}`);
+      lines.push(`Group: ${data.group}`);
+      lines.push(`Venue: ${data.venueName}${data.venueAddress ? `, ${data.venueAddress}` : ""}`);
+      lines.push(`Date: ${formatDate(data.date)}`);
+      lines.push(`Activity: ${data.activity}`);
+      lines.push(`Students: ${data.studentCount}   Run Time: ${data.runTime}\n`);
+
+      lines.push(`\nSECTION 1 — TYPE OF GROUP\n${"-".repeat(40)}`);
+      add("Group Description", data.groupDescription);
+      add("Student Initials", data.studentInitials);
+      add("Pre-Visit Briefing", data.briefingDetails);
+      add("Consent & Parental Communication", data.consentDetails);
+
+      lines.push(`\nSECTION 2 — STAFFING\n${"-".repeat(40)}`);
+      add("Staff:Pupil Ratio", data.staffRatio);
+      add("Trip Lead", `${data.tripLead}${data.tripLeadPhone ? ` — Tel: ${data.tripLeadPhone}` : ""}`);
+      add("Minibus Driver", data.minibusDriver);
+      add("First Aider", data.firstAider);
+      add("Additional Staff", data.additionalStaff);
+      add("Staff Training & Responsibilities", data.staffTraining);
+
+      lines.push(`\nSECTION 3 — EQUIPMENT\n${"-".repeat(40)}`);
+      add("Equipment List", data.equipmentList);
+      add("Equipment Manager", data.equipmentManager);
+      add("Additional Equipment Notes", data.additionalEquipment);
+
+      lines.push(`\nSECTION 4 — VENUE & ENVIRONMENT\n${"-".repeat(40)}`);
+      add("Hazards", data.venueHazards);
+      add("Control Measures", data.venueMeasures);
+      add("Dysregulation / Behaviour Plan", data.dysregulationPlan);
+
+      lines.push(`\nSECTION 5 — TRAVEL\n${"-".repeat(40)}`);
+      add("Transport", data.transportType);
+      add("Departure Time", data.departureTime);
+      add("Return Time", data.returnTime);
+      add("Route Plan & Vehicle Checks", data.routePlan);
+      add("Seatbelt & Supervision", data.seatbeltCheck);
+      add("Drop-off / Pick-up Arrangements", data.dropPoint);
+
+      lines.push(`\nSECTION 6 — EMERGENCY PROCEDURES\n${"-".repeat(40)}`);
+      add("Nearest Hospital", `${data.nearestHospital}${data.hospitalDistance ? ` (${data.hospitalDistance}, ${data.hospitalTime})` : ""}`);
+      add("Campus Mobile", data.campusMobile);
+      add("Campus Phone", data.campusPhone);
+      add("a) Accident / Incident Procedure", data.accidentProcedure);
+      add("b) Lost Child Procedure", data.lostChildProcedure);
+      add("c) Broken Down Vehicle Procedure", data.breakdownProcedure);
+      add("Garage / Recovery Contact", data.garageContact);
+
+      lines.push(`\nSIGNATURES\n${"-".repeat(40)}`);
+      if (data.visitLeader) lines.push(`Visit Leader: ${data.visitLeader}   Date: ${data.visitLeaderDate ? formatDate(data.visitLeaderDate) : ""}`);
+      if (data.evc) lines.push(`EVC: ${data.evc}   Date: ${data.evcDate ? formatDate(data.evcDate) : ""}`);
+      if (data.hoc) lines.push(`HOC: ${data.hoc}   Date: ${data.hocDate ? formatDate(data.hocDate) : ""}`);
+
+      if (data.children.length > 0) {
+        lines.push(`\nCHILDREN'S INFORMATION\n${"-".repeat(40)}`);
+        data.children.forEach(c => {
+          lines.push(`${c.initials}: Medical: ${c.medicalInfo || "None"} | Conditions: ${c.diagnosedConditions || "None"} | Other: ${c.otherInfo || "None"}`);
+        });
+      }
+
+      await exportToDocx({
+        title: `Risk Assessment — ${data.schoolName}`,
+        subtitle: `Educational Visit to ${data.venueName} | ${formatDate(data.date)}`,
+        content: lines.join("\n"),
+      });
+      toast.success("Word document downloaded!", { id: "ra-docx" });
+    } catch (e) {
+      toast.error("Word export failed. Please try again.", { id: "ra-docx" });
+    }
+  };
+
   const canProceed = (): boolean => {
     if (step === 1) return !!(data.schoolName && data.venueName && data.date && data.activity);
     return true;
   };
 
-  // ── Render steps ────────────────────────────────────────────────────────────
+  const formatDate = (d: string) => {
+    if (!d) return "";
+    try { return new Date(d).toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric" }); } catch { return d; }
+  };
 
-  const renderStep = () => {
+  const handlePrint = () => {
     switch (step) {
       case 1:
         return (
@@ -603,12 +701,18 @@ export default function RiskAssessment() {
             </div>
             <div className="border-t pt-4">
               <p className="text-sm text-gray-600 mb-4">Your risk assessment is ready. You can preview and print it below.</p>
-              <div className="flex gap-3">
+              <div className="flex gap-3 flex-wrap">
                 <Button onClick={() => setShowPreview(true)} className="gap-2 bg-blue-600 hover:bg-blue-700 text-white">
                   <ClipboardList className="w-4 h-4" /> Preview Risk Assessment
                 </Button>
                 <Button onClick={handlePrint} variant="outline" className="gap-2">
                   <Printer className="w-4 h-4" /> Print
+                </Button>
+                <Button onClick={handleDownloadPdf} variant="outline" className="gap-2 text-brand border-brand/30 hover:bg-brand-light">
+                  <FileDown className="w-4 h-4" /> Download PDF
+                </Button>
+                <Button onClick={handleDownloadDocx} variant="outline" className="gap-2 text-indigo-600 border-indigo-200 hover:bg-indigo-50">
+                  <FileText className="w-4 h-4" /> Download Word
                 </Button>
               </div>
             </div>
@@ -624,11 +728,6 @@ export default function RiskAssessment() {
 
   const formatLines = (text: string) =>
     text.split("\n").filter(l => l.trim()).map((l, i) => `<div key="${i}">• ${l.trim()}</div>`).join("");
-
-  const formatDate = (d: string) => {
-    if (!d) return "";
-    try { return new Date(d).toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric" }); } catch { return d; }
-  };
 
   const studentInitialsList = data.studentInitials
     .split(",")
@@ -913,12 +1012,18 @@ export default function RiskAssessment() {
             </div>
           </div>
           {step === 9 && (
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               <Button onClick={() => setShowPreview(true)} size="sm" className="gap-1.5 bg-blue-600 hover:bg-blue-700 text-white">
                 <ClipboardList className="w-3.5 h-3.5" /> Preview
               </Button>
               <Button onClick={handlePrint} size="sm" variant="outline" className="gap-1.5">
                 <Printer className="w-3.5 h-3.5" /> Print
+              </Button>
+              <Button onClick={handleDownloadPdf} size="sm" variant="outline" className="gap-1.5 text-brand border-brand/30 hover:bg-brand-light">
+                <FileDown className="w-3.5 h-3.5" /> PDF
+              </Button>
+              <Button onClick={handleDownloadDocx} size="sm" variant="outline" className="gap-1.5 text-indigo-600 border-indigo-200 hover:bg-indigo-50">
+                <FileText className="w-3.5 h-3.5" /> Word
               </Button>
             </div>
           )}
@@ -1002,9 +1107,17 @@ export default function RiskAssessment() {
               Next <ChevronRight className="w-4 h-4" />
             </Button>
           ) : (
-            <Button onClick={handlePrint} className="gap-2 bg-green-600 hover:bg-green-700 text-white">
-              <Printer className="w-4 h-4" /> Print Risk Assessment
-            </Button>
+            <div className="flex gap-2">
+              <Button onClick={handlePrint} className="gap-2 bg-green-600 hover:bg-green-700 text-white">
+                <Printer className="w-4 h-4" /> Print
+              </Button>
+              <Button onClick={handleDownloadPdf} variant="outline" className="gap-2 text-brand border-brand/30 hover:bg-brand-light">
+                <FileDown className="w-4 h-4" /> PDF
+              </Button>
+              <Button onClick={handleDownloadDocx} variant="outline" className="gap-2 text-indigo-600 border-indigo-200 hover:bg-indigo-50">
+                <FileText className="w-4 h-4" /> Word
+              </Button>
+            </div>
           )}
         </div>
       </div>
@@ -1026,6 +1139,12 @@ export default function RiskAssessment() {
               <div className="flex items-center gap-2">
                 <Button size="sm" variant="outline" onClick={handlePrint} className="gap-1.5">
                   <Printer className="w-3.5 h-3.5" /> Print
+                </Button>
+                <Button size="sm" variant="outline" onClick={handleDownloadPdf} className="gap-1.5 text-brand border-brand/30 hover:bg-brand-light">
+                  <FileDown className="w-3.5 h-3.5" /> PDF
+                </Button>
+                <Button size="sm" variant="outline" onClick={handleDownloadDocx} className="gap-1.5 text-indigo-600 border-indigo-200 hover:bg-indigo-50">
+                  <FileText className="w-3.5 h-3.5" /> Word
                 </Button>
                 <button onClick={() => setShowPreview(false)} className="ml-2 p-1.5 rounded-lg hover:bg-gray-200 text-gray-500 hover:text-gray-700 transition-colors">
                   <X className="w-5 h-5" />

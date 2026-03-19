@@ -9,6 +9,7 @@ import {
   ChevronDown, ChevronUp, ExternalLink, Search, Calculator, Languages,
   Microscope, History, MapPin, Cpu
 } from "lucide-react";
+import { useUserPreferences } from "@/contexts/UserPreferencesContext";
 
 interface Worksheet {
   title: string;
@@ -286,8 +287,11 @@ const sourceColors: Record<string, string> = {
 export default function Templates() {
   const [openSubject, setOpenSubject] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const { preferences } = useUserPreferences();
 
-  const filteredSubjects = subjects.map(s => ({
+  const filteredSubjects = subjects
+    .filter(s => s.label !== "11+ Preparation" || (preferences.show11Plus ?? false))
+    .map(s => ({
     ...s,
     worksheets: s.worksheets.filter(w =>
       w.title.toLowerCase().includes(search.toLowerCase()) ||
