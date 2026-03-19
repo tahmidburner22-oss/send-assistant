@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import {
   CommandDialog,
@@ -84,6 +84,7 @@ const allGroups = [
 
 export default function CommandPalette() {
   const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
   const [, setLocation] = useLocation();
 
   useEffect(() => {

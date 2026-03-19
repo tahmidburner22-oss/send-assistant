@@ -39,7 +39,7 @@ export interface PastPaperSubPart {
   commandWord?: string;
 }
 
-export type ExamStage = "ks1" | "ks2" | "11plus" | "ks3" | "gcse";
+export type ExamStage = "ks1" | "ks2" | "11plus" | "ks3" | "gcse" | "alevel";
 
 export interface PastPaperQuestion {
   id: string;
