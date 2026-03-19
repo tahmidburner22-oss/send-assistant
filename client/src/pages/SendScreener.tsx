@@ -397,10 +397,13 @@ export default function SendScreener() {
   const { children, assignWork, updateAssignment } = useApp();
   const [step, setStep] = useState<"intro" | "mode-select" | "questions" | "results">("intro");
   const [screenerMode, setScreenerMode] = useState<ScreenerMode>("full");
+  const [simplifiedLanguage, setSimplifiedLanguage] = useState(false);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [direction, setDirection] = useState<1 | -1>(1);
   const [justAnswered, setJustAnswered] = useState(false);
+  // Text size / reading age adjustment for accessibility
+  const [questionTextSize, setQuestionTextSize] = useState<"sm" | "base" | "lg" | "xl">("base");
   // Assign-to-child dialog state
   const [showAssignDialog, setShowAssignDialog] = useState(false);
   const [assignedChildId, setAssignedChildId] = useState("");
@@ -622,6 +625,22 @@ export default function SendScreener() {
             </div>
           </div>
 
+          {/* Key adult recommendation */}
+          <div className="bg-blue-50 border-2 border-blue-300 rounded-2xl p-5">
+            <div className="flex gap-3">
+              <Info className="w-6 h-6 text-blue-600 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="font-bold text-blue-900 mb-1">⭐ Recommended: Complete with a Key Adult</p>
+                <p className="text-sm text-blue-800 leading-relaxed">
+                  For best results, we <strong>strongly recommend</strong> that younger pupils or those with
+                  communication difficulties complete this screener alongside a <strong>trusted key adult</strong> —
+                  such as their SENCO, form tutor, or teaching assistant. The key adult can help read questions aloud,
+                  clarify meaning, and ensure responses accurately reflect the pupil's experiences across all settings.
+                </p>
+              </div>
+            </div>
+          </div>
+
           {/* Evidence sources */}
           <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
             <h2 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
@@ -706,7 +725,9 @@ export default function SendScreener() {
             <ArrowRight className="w-5 h-5" />
           </button>
           <p className="text-center text-xs text-gray-400">
-            Answer based on patterns over the past 6–12 months, not just today.
+            Answer based on <strong>consistent, long-standing patterns</strong> — not just recent days or a difficult week.
+            Think across the whole school year or longer. For younger pupils or those with communication needs,
+            a <strong>key adult</strong> who knows the pupil well should complete this alongside them.
           </p>
         </motion.div>
       </div>
@@ -781,6 +802,30 @@ export default function SendScreener() {
           >
             ← Back
           </button>
+
+          {/* Reading age / text size accessibility control */}
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 space-y-2">
+            <p className="text-xs font-semibold text-blue-800 flex items-center gap-1.5">
+              <Info className="w-3.5 h-3.5" /> Accessibility — Question Text Size
+            </p>
+            <p className="text-xs text-blue-700">Increase the text size if the pupil has a lower reading age or finds smaller text harder to read.</p>
+            <div className="flex gap-2">
+              {(["sm", "base", "lg", "xl"] as const).map(size => (
+                <button
+                  key={size}
+                  onClick={() => setQuestionTextSize(size)}
+                  className={`flex-1 py-2 rounded-lg border-2 font-medium transition-all ${
+                    questionTextSize === size
+                      ? "border-blue-500 bg-blue-100 text-blue-800"
+                      : "border-transparent bg-white text-gray-500 hover:border-blue-200"
+                  }`}
+                  style={{ fontSize: size === "sm" ? 11 : size === "base" ? 13 : size === "lg" ? 15 : 18 }}
+                >
+                  {size === "sm" ? "Small" : size === "base" ? "Normal" : size === "lg" ? "Large" : "X-Large"}
+                </button>
+              ))}
+            </div>
+          </div>
         </motion.div>
       </div>
     );
@@ -854,17 +899,24 @@ export default function SendScreener() {
             transition={{ duration: 0.22, ease: "easeOut" }}
           >
             <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm mb-5">
-              <p className="text-base font-semibold text-gray-900 leading-relaxed">
+              <p className={`font-semibold text-gray-900 leading-relaxed ${
+                questionTextSize === "sm" ? "text-sm" :
+                questionTextSize === "lg" ? "text-lg" :
+                questionTextSize === "xl" ? "text-xl" :
+                "text-base"
+              }`}>
                 {question.text}
               </p>
               {question.example && (
                 <div className="mt-3 p-3 bg-indigo-50 border border-indigo-100 rounded-xl">
                   <p className="text-xs font-medium text-indigo-700 mb-0.5">Real-life example:</p>
-                  <p className="text-xs text-indigo-600 leading-relaxed">{question.example}</p>
+                  <p className={`text-indigo-600 leading-relaxed ${
+                    questionTextSize === "xl" ? "text-sm" : "text-xs"
+                  }`}>{question.example}</p>
                 </div>
               )}
               <p className="text-xs text-gray-400 mt-2 italic">
-                Based on your experience over the past 6–12 months
+                Consider the whole school year or longer — consistent patterns, not just a difficult week
               </p>
             </div>
 

@@ -14,7 +14,7 @@ import {
   ScrollText, Brain, GraduationCap, Pencil, MessageCircle, Monitor,
   Shield, IdCard, CheckSquare, ShieldAlert, Heart, CalendarDays, Calendar,
   Table2, BookMarked, Ticket, Layers, BookType, ClipboardList,
-  Mail, AlignLeft, TrendingUp, MessageSquare, ExternalLink,
+  Mail, AlignLeft, TrendingUp, MessageSquare, ExternalLink, FileCheck,
 } from "lucide-react";
 
 const hubItems = [
@@ -43,8 +43,8 @@ const coreItems = [
 ];
 
 const sendItems = [
+  { path: "/tools/iep-generator",       label: "EHCP Plan Generator",   icon: FileCheck,   group: "SEND Tools" },
   { path: "/send-screener",             label: "SEND Needs Screener",    icon: ScanSearch,  group: "SEND Tools" },
-  { path: "/tools/iep-generator",       label: "IEP / EHCP Goals",       icon: Shield,      group: "SEND Tools" },
   { path: "/tools/social-stories",      label: "Social Stories",         icon: BookOpen,    group: "SEND Tools" },
   { path: "/tools/pupil-passport",      label: "Pupil Passport",         icon: IdCard,      group: "SEND Tools" },
   { path: "/tools/smart-targets",       label: "SMART Targets",          icon: CheckSquare, group: "SEND Tools" },
@@ -84,7 +84,6 @@ const allGroups = [
 
 export default function CommandPalette() {
   const [open, setOpen] = useState(false);
-  const [query, setQuery] = useState("");
   const [, setLocation] = useLocation();
 
   useEffect(() => {
@@ -104,12 +103,6 @@ export default function CommandPalette() {
     setQuery("");
   };
 
-  // When searching, flatten all items and filter
-  const flatItems = allGroups.flatMap(g => g.items);
-  const filtered = query.trim()
-    ? flatItems.filter(i => i.label.toLowerCase().includes(query.toLowerCase()))
-    : null;
-
   return (
     <CommandDialog open={open} onOpenChange={setOpen}>
       <CommandInput
@@ -119,12 +112,12 @@ export default function CommandPalette() {
       />
       <CommandList>
         <CommandEmpty>No results found.</CommandEmpty>
-        {filtered ? (
-          <CommandGroup heading="Results">
-            {filtered.map((item) => {
+        {allGroups.map(group => (
+          <CommandGroup key={group.label} heading={group.label}>
+            {group.items.map((item) => {
               const Icon = item.icon;
               return (
-                <CommandItem key={item.path} onSelect={() => handleSelect(item.path)}>
+                <CommandItem key={item.path} value={item.label} keywords={[item.group, item.path]} onSelect={() => handleSelect(item.path)}>
                   <Icon className="mr-2 h-4 w-4 text-muted-foreground" />
                   <span>{item.label}</span>
                   <span className="ml-auto text-[10px] text-muted-foreground">{item.group}</span>
@@ -132,21 +125,7 @@ export default function CommandPalette() {
               );
             })}
           </CommandGroup>
-        ) : (
-          allGroups.map(group => (
-            <CommandGroup key={group.label} heading={group.label}>
-              {group.items.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <CommandItem key={item.path} onSelect={() => handleSelect(item.path)}>
-                    <Icon className="mr-2 h-4 w-4 text-muted-foreground" />
-                    {item.label}
-                  </CommandItem>
-                );
-              })}
-            </CommandGroup>
-          ))
-        )}
+        ))}
       </CommandList>
     </CommandDialog>
   );

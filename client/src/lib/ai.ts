@@ -573,6 +573,39 @@ export async function aiGenerateWorksheet(params: {
     yearNum <= 11 ? "Estimated time: 45–60 mins" :
                    "Estimated time: 60–90 mins";
 
+  // ── Primary (KS1/KS2) layout enhancement ──────────────────────────────────
+  const isPrimary = yearNum <= 6;
+  const primaryLayoutNote = isPrimary ? `
+PRIMARY SCHOOL LAYOUT RULES (${phase}) — MANDATORY — READ THIS FIRST:
+This is a KS1/KS2 worksheet. It must feel like a fun activity sheet, NOT a secondary school handout.
+
+CORE PRINCIPLE: LESS READING, MORE DOING. Max 8 words per instruction. No paragraphs anywhere.
+
+ACTIVITY MIX — use ALL of these types spread across the sheet:
+  - Circle the correct answer  - Match with a line (draw a line between two columns)
+  - Fill in the blank  ___    - Tick the box  [ ]    - Number order / sort activity
+  - True or false?            - Complete the table   - Draw and label
+  - Cut and sort (describe as columns to sort)        - Colour the correct one
+  - "Can you remember?" quick-fire mini quiz          - Word search or word scramble (describe as a word bank activity)
+
+SECTIONS — use these child-friendly section names, not academic ones:
+  KS1: "Can You Remember?", "Have a Go!", "Let's Try Together", "Your Challenge", "How Did I Do?"
+  KS2: "Warm Up", "Let's Practise", "Dig Deeper", "Challenge Corner", "My Learning Check"
+
+LAYOUT RULES:
+1. Every activity box = bold title + ONE instruction sentence + activity content
+2. Worked example: show it as a comic-strip style step sequence: Step 1 → Step 2 → Step 3 → Answer!
+3. Vocabulary: NOT a definition list — make it a word-picture matching activity or word bank with blank definitions to fill in
+4. Numbers/maths: use pictures (describe in words), number lines, tens frames, arrays where appropriate
+5. Reflection: ONLY this: "I found this: [ ] Easy  [ ] OK  [ ] Tricky" — nothing else
+6. Section A: start with the easiest possible version; every question scaffolded with a starter or partial answer
+7. Challenge: label it "⭐ Super Challenge — can you do this?!" — make it feel exciting, not scary
+8. NO long numbered lists of the same question type — vary after every 3 questions
+
+SPACING: Big answer boxes, lots of white space. This should print as a welcoming, open document.
+TONE: Positive, encouraging, child-voice. "You've got this!", "Great work!", "Did you spot the pattern?"
+` : "";
+
   const system = `You are an experienced UK teacher creating a classroom worksheet for ${params.yearGroup} (${phase}). Topic: "${params.topic}". All content must be exclusively about this topic. Calibrate language and difficulty for the year group. Respond with valid JSON only — no markdown, no code blocks. CRITICAL: Never use HTML tags (e.g. <span>, <div>, <p>, style= attributes) inside section content strings. Use plain text and LaTeX notation only (e.g. \\frac{1}{2}, \\sqrt{x}, x^2). Do not use color codes or inline styles.`;
 
   const examBoardNote = params.examBoard && params.examBoard !== "N/A" && params.examBoard !== "none"
@@ -789,6 +822,7 @@ Subject: ${params.subject} | Year: ${params.yearGroup} (${phase}) | Topic: ${par
 ${examBoardNote} ${lengthNote}
 ${pageCountNote}
 ${readingAgeNote}
+${primaryLayoutNote}
 ${mathsNote}
 ${sendNote}
 ${tierNote}
