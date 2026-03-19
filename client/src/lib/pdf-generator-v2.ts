@@ -445,6 +445,26 @@ export async function downloadHtmlAsPdf(
     .katex .mfrac > span > span { text-align: center !important; }
     .katex { font-size: 1em !important; line-height: 1.2 !important; }
     .katex .katex-html { white-space: nowrap !important; }
+    /* Tailwind utilities for story/tool HTML exports */
+    .bg-gradient-to-br{background-image:linear-gradient(to bottom right,var(--tw-gradient-from,#6366f1),var(--tw-gradient-to,#8b5cf6))}
+    .from-amber-600{--tw-gradient-from:#d97706}.from-violet-700{--tw-gradient-from:#6d28d9}.from-slate-800{--tw-gradient-from:#1e293b}
+    .from-cyan-700{--tw-gradient-from:#0e7490}.from-yellow-500{--tw-gradient-from:#eab308}.from-gray-900{--tw-gradient-from:#111827}
+    .from-green-600{--tw-gradient-from:#16a34a}.via-orange-500{--tw-gradient-via:#f97316}.via-purple-600{--tw-gradient-via:#9333ea}
+    .via-blue-600{--tw-gradient-via:#2563eb}.via-amber-700{--tw-gradient-via:#b45309}.via-orange-400{--tw-gradient-via:#fb923c}
+    .via-purple-900{--tw-gradient-via:#581c87}.via-emerald-500{--tw-gradient-via:#10b981}.via-gray-700{--tw-gradient-via:#374151}
+    .to-red-600{--tw-gradient-to:#dc2626}.to-indigo-700{--tw-gradient-to:#4338ca}.to-zinc-800{--tw-gradient-to:#27272a}
+    .to-yellow-800{--tw-gradient-to:#92400e}.to-pink-500{--tw-gradient-to:#ec4899}.to-slate-900{--tw-gradient-to:#0f172a}
+    .to-teal-600{--tw-gradient-to:#0d9488}
+    .rounded-2xl{border-radius:1rem}.rounded-xl{border-radius:.75rem}.rounded-lg{border-radius:.5rem}.rounded-full{border-radius:9999px}
+    .overflow-hidden{overflow:hidden}.relative{position:relative}.absolute{position:absolute}.inset-0{top:0;right:0;bottom:0;left:0}
+    .flex{display:flex}.flex-col{flex-direction:column}.items-center{align-items:center}.justify-center{justify-content:center}
+    .text-center{text-align:center}.text-white{color:white}.font-black{font-weight:900}.font-bold{font-weight:700}
+    .text-2xl{font-size:1.5rem}.text-3xl{font-size:1.875rem}.gap-3{gap:.75rem}.gap-2{gap:.5rem}
+    .px-8{padding-left:2rem;padding-right:2rem}.py-10{padding-top:2.5rem;padding-bottom:2.5rem}
+    .mb-1{margin-bottom:.25rem}.mt-1{margin-top:.25rem}.shadow-2xl{box-shadow:0 25px 50px -12px rgba(0,0,0,.25)}
+    .select-none{user-select:none}.leading-tight{line-height:1.25}.max-w-lg{max-width:32rem}
+    .opacity-20{opacity:.2}.rotate-12{transform:rotate(12deg)}.bottom-0{bottom:0}.left-0{left:0}.right-0{right:0}
+    .text-xs{font-size:.75rem}.text-lg{font-size:1.125rem}.capitalize{text-transform:capitalize}
   </style>
 </head>
 <body>${contentHtml}</body>

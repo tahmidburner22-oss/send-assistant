@@ -147,3 +147,28 @@ export async function sendBehaviourAlert(
     </div>`
   );
 }
+
+export async function sendFeedbackEmail(data: {
+  name: string;
+  email: string;
+  type: string;
+  message: string;
+}) {
+  const FEEDBACK_TO = process.env.FEEDBACK_EMAIL || "hello@adaptly.co.uk";
+  await send(
+    FEEDBACK_TO,
+    `Adaptly Feedback: ${data.type.charAt(0).toUpperCase() + data.type.slice(1)}${data.name ? ` from ${data.name}` : ""}`,
+    `<div style="font-family:sans-serif;max-width:600px;margin:auto">
+      <h2 style="color:#6366f1">Adaptly — User Feedback</h2>
+      <table style="border-collapse:collapse;width:100%;margin:16px 0">
+        <tr><td style="padding:8px;font-weight:bold;background:#f9fafb;width:100px">Type</td><td style="padding:8px;background:#f9fafb">${data.type}</td></tr>
+        <tr><td style="padding:8px;font-weight:bold">Name</td><td style="padding:8px">${data.name || "Anonymous"}</td></tr>
+        <tr><td style="padding:8px;font-weight:bold;background:#f9fafb">Email</td><td style="padding:8px;background:#f9fafb">${data.email || "Not provided"}</td></tr>
+      </table>
+      <div style="background:#f8fafc;border-left:4px solid #6366f1;padding:16px;border-radius:0 8px 8px 0;margin:16px 0">
+        <p style="margin:0;color:#374151;white-space:pre-wrap">${data.message}</p>
+      </div>
+      <p style="color:#999;font-size:12px">Adaptly · User feedback submitted via the app</p>
+    </div>`
+  );
+}

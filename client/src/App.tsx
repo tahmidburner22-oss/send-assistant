@@ -18,6 +18,7 @@ import { useLocation } from "wouter";
 
 // Hub section pages
 const SENDHub = lazy(() => import("./pages/hubs/SENDHub"));
+const EHCPHub = lazy(() => import("./pages/hubs/EHCPHub"));
 const RevisionHubSection = lazy(() => import("./pages/hubs/RevisionHubSection"));
 const PlanningHub = lazy(() => import("./pages/hubs/PlanningHub"));
 const CommunicationsHub = lazy(() => import("./pages/hubs/CommunicationsHub"));
@@ -84,6 +85,7 @@ const QuizJoin = lazy(() => import("./pages/QuizJoin"));
 const SharedWorksheet = lazy(() => import("./pages/SharedWorksheet"));
 const QuizBuilder = lazy(() => import("./pages/QuizBuilder"));
 const DailyBriefing = lazy(() => import("./pages/DailyBriefing"));
+const LandingPage = lazy(() => import("./pages/LandingPage"));
 
 function PageLoader() {
   return (
@@ -120,6 +122,7 @@ function ProtectedRoutes() {
           <Switch>
             {/* Hub section landing pages */}
             <Route path="/send-hub" component={SENDHub} />
+            <Route path="/ehcp-hub" component={EHCPHub} />
             <Route path="/revision-section" component={RevisionHubSection} />
             <Route path="/planning-hub" component={PlanningHub} />
             <Route path="/communications-hub" component={CommunicationsHub} />
@@ -192,7 +195,8 @@ function Router() {
   return (
     <Suspense fallback={<PageLoader />}>
       <Switch>
-        <Route path="/" component={Login} />
+        <Route path="/" component={LandingPage} />
+        <Route path="/welcome" component={LandingPage} />
         <Route path="/login" component={Login} />
         <Route path="/onboarding" component={Onboarding} />
         <Route path="/parent-portal" component={ParentPortal} />

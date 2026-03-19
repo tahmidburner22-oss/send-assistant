@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { aiGenerateStory, callAI, aiScenarioSwapStory } from "@/lib/ai";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
@@ -13,8 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { useApp } from "@/contexts/AppContext";
 import { yearGroups, sendNeeds, storyGenres, storyLengths, readingLevels, colorOverlays } from "@/lib/send-data";
 import { generateStoryContent } from "@/lib/worksheet-generator";
-
-import { downloadStoryPdf } from "@/lib/pdf-generator";
+import { downloadHtmlAsPdf } from "@/lib/pdf-generator-v2";
 import { ComprehensionQuiz } from "@/components/ComprehensionQuiz";
 
 function generateComprehensionQuestions(_content: string, genre: string): string[] {
@@ -36,6 +35,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 
 export default function Stories() {
   const { saveStory, children, assignWork, colorOverlay, setColorOverlay } = useApp();
+  const storyContainerRef = useRef<HTMLDivElement>(null);
   const [genre, setGenre] = useState("");
   const [yearGroup, setYearGroup] = useState("");
   const [sendNeed, setSendNeed] = useState("");
@@ -150,14 +150,24 @@ export default function Stories() {
     toast.success("Story assigned!");
   };
 
-  const handleDownloadPdf = () => {
+  const handleDownloadPdf = async () => {
     if (!result) return;
-    const pdfFontSize = Math.round(textSize * 0.85);
-    downloadStoryPdf(result.title, result.content, result.questions, {
-      overlayId: colorOverlay,
-      fontSize: pdfFontSize,
-    });
-    toast.success("Story PDF downloaded!");
+    const container = storyContainerRef.current;
+    if (!container) {
+      toast.error("Story not ready for export.");
+      return;
+    }
+    toast.loading("Generating PDF…", { id: "story-pdf" });
+    try {
+      await downloadHtmlAsPdf(
+        container,
+        `${result.title.replace(/[^a-zA-Z0-9\s]/g, "").replace(/\s+/g, "_")}.pdf`,
+        { overlayColor: overlayBg, viewMode: "student", title: result.title }
+      );
+      toast.success("Story PDF downloaded!", { id: "story-pdf" });
+    } catch {
+      toast.error("PDF generation failed. Try Print → Save as PDF.", { id: "story-pdf" });
+    }
   };
 
   const handlePrint = () => {
@@ -537,12 +547,23 @@ export default function Stories() {
             </Card>
           )}
 
+          {/* Story output — ref captures entire story including book cover for PDF/print */}
+          <div ref={storyContainerRef}>
+
+          {/* Book Cover */}
+          <div className="story-content">
+            <BookCover title={result.title} genre={genre} yearGroup={yearGroup} />
+          </div>
+
           {/* Story Content */}
           <div className="story-content" style={{ backgroundColor: overlayBg }}>
-            <Card className="border-border/50 overflow-hidden" style={{ backgroundColor: overlayBg }}>
-              <CardContent className="p-5 sm:p-8" style={{ backgroundColor: overlayBg, fontSize: `${textSize}px` }}>
-                <div className="prose prose-sm max-w-none" style={{ fontSize: `${textSize}px` }}
-                  dangerouslySetInnerHTML={{ __html: storyToHtml(result.content, textSize) }} />
+            <Card className="border-border/50 overflow-hidden shadow-md" style={{ backgroundColor: overlayBg }}>
+              <CardContent className="px-6 sm:px-12 py-8 sm:py-10" style={{ backgroundColor: overlayBg }}>
+                <div
+                  className="prose prose-sm max-w-none"
+                  style={{ fontSize: `${textSize}px` }}
+                  dangerouslySetInnerHTML={{ __html: storyToHtml(result.content, textSize) }}
+                />
               </CardContent>
             </Card>
           </div>
@@ -559,35 +580,126 @@ export default function Stories() {
               />
             </div>
           )}
+
+          </div> {/* end storyContainerRef */}
         </motion.div>
       )}
     </div>
   );
 }
 
+// ── Book Cover ────────────────────────────────────────────────────
+const GENRE_COVERS: Record<string, { gradient: string; emoji: string; pattern: string }> = {
+  adventure:  { gradient: "from-amber-600 via-orange-500 to-red-600",    emoji: "⚔️",  pattern: "🗺️🏔️🌟" },
+  fantasy:    { gradient: "from-violet-700 via-purple-600 to-indigo-700", emoji: "🧙",  pattern: "✨🌙⭐" },
+  mystery:    { gradient: "from-slate-800 via-gray-700 to-zinc-800",      emoji: "🔍",  pattern: "🕯️🔎💫" },
+  "sci-fi":   { gradient: "from-cyan-700 via-blue-600 to-indigo-700",     emoji: "🚀",  pattern: "🌌⭐🛸" },
+  historical: { gradient: "from-stone-700 via-amber-700 to-yellow-800",   emoji: "📜",  pattern: "🏛️⚓🗝️" },
+  comedy:     { gradient: "from-yellow-500 via-orange-400 to-pink-500",   emoji: "😄",  pattern: "🎭🎪🎨" },
+  spooky:     { gradient: "from-gray-900 via-purple-900 to-slate-900",    emoji: "👻",  pattern: "🕷️🌑💀" },
+  sports:     { gradient: "from-green-600 via-emerald-500 to-teal-600",   emoji: "🏆",  pattern: "⚽🏅🎯" },
+};
+
+function BookCover({ title, genre, yearGroup }: { title: string; genre: string; yearGroup: string }) {
+  const cover = GENRE_COVERS[genre] || { gradient: "from-indigo-700 via-violet-600 to-purple-700", emoji: "📖", pattern: "✨🌟💫" };
+  return (
+    <div className={`relative w-full rounded-2xl overflow-hidden bg-gradient-to-br ${cover.gradient} shadow-2xl`}
+      style={{ minHeight: "220px" }}>
+      {/* Decorative pattern overlay */}
+      <div className="absolute inset-0 opacity-10"
+        style={{ backgroundImage: "repeating-linear-gradient(45deg, rgba(255,255,255,0.15) 0, rgba(255,255,255,0.15) 1px, transparent 0, transparent 50%)", backgroundSize: "20px 20px" }} />
+      {/* Floating emoji decorations */}
+      <div className="absolute top-4 right-6 text-4xl opacity-20 select-none">{cover.pattern.split("").join(" ")}</div>
+      <div className="absolute bottom-4 left-6 text-2xl opacity-15 select-none rotate-12">{cover.emoji}</div>
+      {/* Main content */}
+      <div className="relative flex flex-col items-center justify-center text-center px-8 py-10 gap-3 min-h-[220px]">
+        <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-3xl shadow-lg mb-1">
+          {cover.emoji}
+        </div>
+        <h1 className="text-2xl sm:text-3xl font-black text-white leading-tight drop-shadow-md max-w-lg">
+          {title}
+        </h1>
+        <div className="flex items-center gap-3 mt-1">
+          {genre && (
+            <span className="px-3 py-1 rounded-full bg-white/20 backdrop-blur-sm text-white text-xs font-semibold capitalize">
+              {genre.replace("-", " ")}
+            </span>
+          )}
+          {yearGroup && (
+            <span className="px-3 py-1 rounded-full bg-white/20 backdrop-blur-sm text-white text-xs font-semibold">
+              {yearGroup}
+            </span>
+          )}
+          <span className="px-3 py-1 rounded-full bg-white/20 backdrop-blur-sm text-white text-xs font-semibold">
+            Adaptly Story
+          </span>
+        </div>
+      </div>
+      {/* Bottom spine stripe */}
+      <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-white/20" />
+    </div>
+  );
+}
+
+// ── Story → HTML ──────────────────────────────────────────────────
 function storyToHtml(md: string, textSize: number): string {
   if (!md) return '';
-  // Split into paragraphs by double newline
+  const lineHeight = Math.max(1.8, 1.5 + (textSize - 12) * 0.02);
+  const paraSpacing = Math.round(textSize * 1.1);
   const paragraphs = md.split(/\n\n+/);
-  const lineHeight = Math.max(1.7, 1.4 + (textSize - 12) * 0.02);
+  let isFirstPara = true;
+
   return paragraphs.map(para => {
     const trimmed = para.trim();
     if (!trimmed) return '';
+
     // Chapter/section headings
     if (trimmed.startsWith('## ')) {
+      isFirstPara = true; // reset drop cap for new chapter
       const heading = trimmed.replace(/^## /, '');
-      return `<h2 style="font-size:${textSize + 4}px;margin-top:24px;margin-bottom:8px" class="font-bold text-brand">${heading}</h2>`;
+      return `<div style="display:flex;align-items:center;gap:12px;margin:28px 0 12px;">
+        <div style="flex:1;height:1px;background:linear-gradient(to right,rgba(99,102,241,0.3),transparent);"></div>
+        <h2 style="font-size:${textSize + 4}px;margin:0;font-weight:800;color:#4f46e5;letter-spacing:-0.3px;white-space:nowrap;">${heading}</h2>
+        <div style="flex:1;height:1px;background:linear-gradient(to left,rgba(99,102,241,0.3),transparent);"></div>
+      </div>`;
     }
     if (trimmed.startsWith('# ')) {
       const heading = trimmed.replace(/^# /, '');
-      return `<h1 style="font-size:${textSize + 8}px;margin-bottom:12px" class="font-bold">${heading}</h1>`;
+      return `<h1 style="font-size:${textSize + 10}px;margin:0 0 20px;font-weight:900;letter-spacing:-0.5px;text-align:center;color:#1f2937;">${heading}</h1>`;
     }
-    // Regular paragraph — apply inline formatting
+
+    // "How to Use" teacher note section
+    if (/^how to use/i.test(trimmed)) {
+      return `<div style="margin-top:24px;padding:14px 16px;background:linear-gradient(135deg,#f0fdf4,#ecfdf5);border:1px solid #bbf7d0;border-radius:10px;">
+        <p style="font-size:11px;font-weight:700;color:#15803d;margin:0 0 6px;text-transform:uppercase;letter-spacing:0.5px;">📋 For Staff &amp; Parents</p>
+        <p style="font-size:${textSize - 1}px;color:#166534;margin:0;line-height:1.7;">${trimmed.replace(/^how to use this story[:\s]*/i, "")}</p>
+      </div>`;
+    }
+
     const formatted = trimmed
       .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.+?)\*/g, '<em>$1</em>')
-      .replace(/"([^"]+)"/g, '\u201c$1\u201d') // Smart quotes for dialogue
-      .replace(/\n/g, '<br/>'); // Single newlines within paragraph
-    return `<p style="font-size:${textSize}px;line-height:${lineHeight};margin-bottom:${Math.round(textSize * 0.9)}px;text-indent:0">${formatted}</p>`;
+      .replace(/"([^"]+)"/g, '\u201c$1\u201d')
+      .replace(/\n/g, '<br/>');
+
+    // Dialogue — indent with subtle styling
+    if (formatted.startsWith('\u201c')) {
+      return `<p style="font-size:${textSize}px;line-height:${lineHeight};margin-bottom:${paraSpacing}px;padding-left:14px;border-left:3px solid rgba(99,102,241,0.25);color:#374151;font-style:italic;">${formatted}</p>`;
+    }
+
+    // First paragraph gets a drop cap
+    if (isFirstPara && /^[A-Z]/.test(formatted)) {
+      isFirstPara = false;
+      const firstLetter = formatted.charAt(0);
+      const rest = formatted.slice(1);
+      return `<p style="font-size:${textSize}px;line-height:${lineHeight};margin-bottom:${paraSpacing}px;color:#1f2937;">
+        <span style="float:left;font-size:${textSize * 3.2}px;font-weight:900;line-height:0.75;padding-right:6px;padding-top:4px;color:#4f46e5;font-family:Georgia,serif;">${firstLetter}</span>
+        ${rest}
+        <span style="display:block;clear:both;"></span>
+      </p>`;
+    }
+
+    isFirstPara = false;
+    return `<p style="font-size:${textSize}px;line-height:${lineHeight};margin-bottom:${paraSpacing}px;color:#1f2937;">${formatted}</p>`;
   }).filter(Boolean).join('\n');
 }

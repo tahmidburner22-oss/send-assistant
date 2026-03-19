@@ -16,9 +16,12 @@ import SENDInfoPanel from "@/components/SENDInfoPanel";
 import { downloadDifferentiatedPdf } from "@/lib/pdf-generator";
 import { renderMath } from "@/components/WorksheetRenderer";
 import { useApp } from "@/contexts/AppContext";
+import { useUserPreferences } from "@/contexts/UserPreferencesContext";
 
 export default function Differentiate() {
   const { colorOverlay, setColorOverlay, saveDifferentiation, children, assignWork } = useApp();
+  const { preferences } = useUserPreferences();
+  const filteredSubjects = subjects.filter(s => s.id !== "eleven-plus" || (preferences.show11Plus ?? false));
   const [showAssignDialog, setShowAssignDialog] = useState(false);
   const [assignChildId, setAssignChildId] = useState("");
   const [assigning, setAssigning] = useState(false);
@@ -139,7 +142,7 @@ export default function Differentiate() {
                   <Label className="text-xs font-medium">Subject *</Label>
                   <Select value={subject} onValueChange={setSubject}>
                     <SelectTrigger className="h-10"><SelectValue placeholder="Select subject" /></SelectTrigger>
-                    <SelectContent>{subjects.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent>
+                    <SelectContent>{filteredSubjects.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-1.5">

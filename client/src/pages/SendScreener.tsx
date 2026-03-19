@@ -392,6 +392,22 @@ const QUICK_TOTAL = QUICK_QUESTIONS.length; // 8 sections × 3 = 24
 
 type ScreenerMode = "quick" | "full";
 
+/** Simplifies a long question into shorter, plainer language for pupils completing alone */
+function simplifyText(text: string): string {
+  // Strip subordinate clauses and shorten sentences
+  return text
+    .replace(/— for example[^—]*—/g, "")
+    .replace(/ — even when [^.?]*/g, "")
+    .replace(/ — even [^.?]*/g, "")
+    .replace(/ \(e\.g\.[^)]*\)/g, "")
+    .replace(/ for example,[^,.]*/g, "")
+    .replace(/\([^)]*\)/g, "")
+    .replace(/  +/g, " ")
+    .trim()
+    .replace(/,\s*$/, "?")
+    .replace(/([^?!.])$/, "$1?");
+}
+
 // ─── Component ──────────────────────────────────────────────────
 export default function SendScreener() {
   const { children, assignWork, updateAssignment } = useApp();
@@ -883,10 +899,42 @@ export default function SendScreener() {
           </div>
         </div>
 
-        {/* Section badge */}
-        <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold mb-4 ${section.bgColor} ${section.color} border ${section.borderColor}`}>
-          {section.icon}
-          {section.title} — Q{questionNumberInSection} of {questionsPerSection}
+        {/* Reading Age / Accessibility Controls */}
+        <div className="flex items-center justify-between mb-3 gap-3">
+          <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold ${section.bgColor} ${section.color} border ${section.borderColor}`}>
+            {section.icon}
+            {section.title} — Q{questionNumberInSection} of {questionsPerSection}
+          </div>
+          <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-3 py-2 shadow-sm">
+            <span className="text-[10px] text-gray-500 font-medium whitespace-nowrap">Text size</span>
+            <input
+              type="range"
+              min={0}
+              max={3}
+              step={1}
+              value={["sm","base","lg","xl"].indexOf(questionTextSize)}
+              onChange={e => setQuestionTextSize((["sm","base","lg","xl"] as const)[Number(e.target.value)])}
+              className="w-16 accent-indigo-600"
+            />
+            <span className="text-[10px] font-bold text-indigo-600 w-5 text-center">
+              {questionTextSize === "sm" ? "S" : questionTextSize === "base" ? "M" : questionTextSize === "lg" ? "L" : "XL"}
+            </span>
+          </div>
+        </div>
+
+        {/* Simplified language toggle */}
+        <div className="mb-4">
+          <button
+            onClick={() => setSimplifiedLanguage(v => !v)}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all ${
+              simplifiedLanguage
+                ? "bg-indigo-600 text-white border-indigo-600 shadow-sm"
+                : "bg-white text-gray-600 border-gray-200 hover:border-indigo-300 hover:bg-indigo-50"
+            }`}
+          >
+            <span>{simplifiedLanguage ? "✓" : "💬"}</span>
+            {simplifiedLanguage ? "Simple language ON" : "Simplify language"}
+          </button>
         </div>
 
         {/* Question card */}
@@ -905,7 +953,7 @@ export default function SendScreener() {
                 questionTextSize === "xl" ? "text-xl" :
                 "text-base"
               }`}>
-                {question.text}
+                {simplifiedLanguage ? simplifyText(question.text) : question.text}
               </p>
               {question.example && (
                 <div className="mt-3 p-3 bg-indigo-50 border border-indigo-100 rounded-xl">

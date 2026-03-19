@@ -697,17 +697,19 @@ export function renderMath(text: string | any): string {
     try { return katex.renderToString(`\\dfrac{${num}}{${den}}`, { displayMode: false, throwOnError: false }); }
     catch { return full; }
   });
-  //    Pattern B: token / token with spaces (e.g. "5 / 7", "x / 2", "-21 / 7")
+  //    Pattern B: token / token with spaces — ONLY when at least one side is a plain integer
+  //    This prevents prose like "and / or", "yes / no", "Teacher / Student" from becoming fractions
   result = result.replace(/(-?[A-Za-z0-9]+)\s+\/\s+([A-Za-z0-9]+)/g, (full, num, den) => {
     if (hasHTML(num) || hasHTML(den)) return full;
     // Skip year ranges (e.g. 2023 / 24)
     if (/^\d{4}$/.test(num) || /^\d{4}$/.test(den)) return full;
     if (/^\d{4,}$/.test(num) || /^\d{4,}$/.test(den)) return full;
-    // Skip if both are multi-letter words (e.g. "Teacher / Student", "and / or")
-    const isNum2 = (s: string) => /^-?\d+$/.test(s);
-    const isVar1 = (s: string) => /^[A-Za-z]$/.test(s);
-    const isVar2 = (s: string) => /^[A-Za-z]{1,2}$/.test(s);
-    if (!isNum2(num) && !isNum2(den) && !isVar1(num) && !isVar1(den) && !isVar2(num) && !isVar2(den)) return full;
+    // Require at least one side to be purely numeric — otherwise it's prose
+    const isNumeric = (s: string) => /^-?\d+$/.test(s);
+    const isSingleVar = (s: string) => /^[A-Za-z]$/.test(s);
+    if (!isNumeric(num) && !isNumeric(den)) return full;
+    // Also allow single-letter variable / number: x / 2, n / 3
+    if (!isNumeric(num) && !isSingleVar(num)) return full;
     try { return katex.renderToString(`\\dfrac{${num}}{${den}}`, { displayMode: false, throwOnError: false }); }
     catch { return full; }
   });
@@ -786,10 +788,17 @@ export function renderMath(text: string | any): string {
         if (/^\d{4}$/.test(num) || /^\d{4}$/.test(den)) return full;
         // Skip if either part is a long number that looks like a year
         if (/^\d{4,}$/.test(num) || /^\d{4,}$/.test(den)) return full;
+        // Skip common prose patterns that use slashes — NOT maths
+        const proseBlocklist = new Set([
+          "and","or","the","a","an","to","of","in","is","it","its","he","she","they","we","his","her","our",
+          "their","with","for","on","at","by","as","be","was","are","has","had","have","but","not","no","yes",
+          "eg","ie","etc","vs","re","mr","mrs","ms","dr","st","rd","nd","th","am","pm","uk","us","eu",
+          "w","o","s","n","e","g","i","j","k","m","p","q","r","u","v","w","z",
+        ]);
+        const numL = num.toLowerCase();
+        const denL = den.toLowerCase();
+        if (proseBlocklist.has(numL) || proseBlocklist.has(denL)) return full;
         // Only render as a fraction when the pair is unambiguously mathematical.
-        // This avoids converting prose such as Great/OK or minutes/hour and keeps
-        // answer-style inline text like 19/7 readable unless it is a deliberate
-        // symbolic fraction pattern.
         const isNumeric = (s: string) => /^\d+$/.test(s);
         const isSingleVar = (s: string) => /^[A-Za-z]$/.test(s);
         const isSimpleAlgebra = (s: string) => /^[0-9]*[A-Za-z]$/.test(s); // x, y, 2x, 3n
@@ -947,12 +956,13 @@ interface WorksheetRendererProps {
   onSectionClick?: (index: number) => void;
   editMode?: boolean;
   schoolName?: string;
+  schoolLogoUrl?: string;
   teacherName?: string;
-  hiddenSections?: Set<number>; // indices of sections to exclude from render, PDF, and print
-  // Answer box controls (edit mode)
-  answerBoxSizes?: Record<number, number>; // section index → number of lines (0 = removed)
+  hiddenSections?: Set<number>;
+  answerBoxSizes?: Record<number, number>;
   onAnswerBoxSizeChange?: (sectionIndex: number, lines: number) => void;
   onAnswerBoxRemove?: (sectionIndex: number) => void;
+  isRevisionMat?: boolean;
 }
 
 // Section type → colour config (TES-style: white backgrounds, single purple/blue border accent)
@@ -1476,16 +1486,34 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
   onSectionClick,
   editMode = false,
   schoolName,
+  schoolLogoUrl,
   teacherName,
   answerBoxSizes = {},
   onAnswerBoxSizeChange,
   onAnswerBoxRemove,
+  isRevisionMat = false,
   }: WorksheetRendererProps, ref: React.Ref<HTMLDivElement>) {
   const isTeacherView = viewMode === "teacher";
 
   // Resolve SEND need ID from metadata (may be stored as sendNeedId or inferred from sendNeed label)
   const sendNeedId = worksheet.metadata.sendNeedId || worksheet.metadata.sendNeed;
   const fmt = getSendFormatting(sendNeedId, textSize);
+
+  // Detect primary (KS1/KS2: Reception – Year 6)
+  const yg = (worksheet.metadata.yearGroup || "").toLowerCase();
+  const isPrimary = /reception|year [1-6]\b|yr [1-6]\b|ks1|ks2|key stage 1|key stage 2/.test(yg);
+
+  // Primary colour palette — each section gets a different cheerful colour
+  const PRIMARY_SECTION_COLOURS = [
+    { border: "#f97316", bg: "#fff7ed", badge: "#f97316", badgeBg: "#ffedd5" }, // orange
+    { border: "#06b6d4", bg: "#ecfeff", badge: "#06b6d4", badgeBg: "#cffafe" }, // cyan
+    { border: "#a855f7", bg: "#faf5ff", badge: "#a855f7", badgeBg: "#f3e8ff" }, // purple
+    { border: "#22c55e", bg: "#f0fdf4", badge: "#22c55e", badgeBg: "#dcfce7" }, // green
+    { border: "#ec4899", bg: "#fdf2f8", badge: "#ec4899", badgeBg: "#fce7f3" }, // pink
+    { border: "#f59e0b", bg: "#fffbeb", badge: "#f59e0b", badgeBg: "#fef3c7" }, // amber
+    { border: "#3b82f6", bg: "#eff6ff", badge: "#3b82f6", badgeBg: "#dbeafe" }, // blue
+    { border: "#10b981", bg: "#ecfdf5", badge: "#10b981", badgeBg: "#d1fae5" }, // emerald
+  ];
 
   // Default answer box line counts per section type
   const DEFAULT_ANSWER_LINES: Record<string, number> = {
@@ -1517,28 +1545,39 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
     >
       {/* ── Professional Header ── */}
       <div className="ws-header" style={{
-        marginBottom: "10px",
-        borderRadius: "4px",
+        marginBottom: isPrimary ? "16px" : "10px",
+        borderRadius: isPrimary ? "12px" : "4px",
         overflow: "hidden",
-        border: "1.5px solid #5b21b6",
+        border: isPrimary ? "2.5px solid #f97316" : "1.5px solid #5b21b6",
+        boxShadow: isPrimary ? "0 4px 12px rgba(249,115,22,0.2)" : "none",
       }}>
-        {/* Title bar — TES-style: solid purple bar, title same height as Name/Date row */}
+        {/* Title bar */}
         <div style={{
-          background: "#5b21b6",
-          padding: "6px 12px",
+          background: isPrimary
+            ? "linear-gradient(135deg, #f97316 0%, #ec4899 35%, #8b5cf6 70%, #06b6d4 100%)"
+            : "#5b21b6",
+          padding: isPrimary ? "12px 16px" : "6px 12px",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
           gap: "12px",
         }}>
-          {/* Left: Adaptly logo/brand mark */}
+          {/* Left: School logo or Adaptly brand mark */}
           <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
-            <div style={{
-              width: "28px", height: "28px", borderRadius: "6px",
-              background: "rgba(255,255,255,0.2)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontWeight: 900, fontSize: "14px", color: "white", fontFamily: fmt.fontFamily,
-            }}>A</div>
+            {schoolLogoUrl ? (
+              <img
+                src={schoolLogoUrl}
+                alt="School logo"
+                style={{ height: "32px", width: "auto", maxWidth: "60px", objectFit: "contain", borderRadius: "4px", background: "rgba(255,255,255,0.9)", padding: "2px" }}
+              />
+            ) : (
+              <div style={{
+                width: "28px", height: "28px", borderRadius: "6px",
+                background: "rgba(255,255,255,0.2)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontWeight: 900, fontSize: "14px", color: "white", fontFamily: fmt.fontFamily,
+              }}>A</div>
+            )}
             <div style={{ fontSize: "10px", color: "rgba(255,255,255,0.75)", fontFamily: fmt.fontFamily, lineHeight: "1.2" }}>
               <div style={{ fontWeight: 700 }}>{schoolName || "Adaptly"}</div>
               <div>SEND-Informed Learning Resource</div>
@@ -1546,11 +1585,19 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
           </div>
           {/* Centre: Title */}
           <div style={{ flex: 1, textAlign: "center" }}>
-            <div style={{ fontWeight: 700, fontSize: `${fmt.fontSize + 1}px`, color: "white", fontFamily: fmt.fontFamily, letterSpacing: fmt.letterSpacing, lineHeight: "1.3" }}>
-              {worksheet.title}
+            <div style={{
+              fontWeight: isPrimary ? 900 : 700,
+              fontSize: isPrimary ? `${fmt.fontSize + 5}px` : `${fmt.fontSize + 1}px`,
+              color: "white",
+              fontFamily: fmt.fontFamily,
+              letterSpacing: isPrimary ? "-0.3px" : fmt.letterSpacing,
+              lineHeight: "1.3",
+              textShadow: isPrimary ? "0 1px 4px rgba(0,0,0,0.2)" : "none",
+            }}>
+              {isPrimary ? "✨ " : ""}{worksheet.title}{isPrimary ? " ✨" : ""}
             </div>
             {worksheet.subtitle && (
-              <div style={{ fontSize: `${fmt.fontSize - 3}px`, color: "rgba(255,255,255,0.8)", marginTop: "1px", fontFamily: fmt.fontFamily }}>{worksheet.subtitle}</div>
+              <div style={{ fontSize: `${fmt.fontSize - 3}px`, color: "rgba(255,255,255,0.85)", marginTop: "2px", fontFamily: fmt.fontFamily }}>{worksheet.subtitle}</div>
             )}
           </div>
           {/* Right: Name/Date/Class fields inline */}
@@ -1572,8 +1619,117 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
         </div>
       </div>
 
-      {/* ── Sections ── */}
-      {worksheet.sections.map((section, i) => {
+      {/* Primary encouragement banner */}
+      {isPrimary && (
+        <div style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: "12px",
+          padding: "8px 16px",
+          marginBottom: "14px",
+          borderRadius: "10px",
+          background: "linear-gradient(90deg, #fef3c7, #fce7f3, #ede9fe, #d1fae5)",
+          border: "1.5px solid #f59e0b",
+          fontSize: `${fmt.fontSize - 1}px`,
+          fontWeight: 700,
+          color: "#92400e",
+          fontFamily: fmt.fontFamily,
+        }}>
+          <span>🌟</span>
+          <span>Do your best — every try counts!</span>
+          <span>✏️</span>
+          <span>Read carefully before you start.</span>
+          <span>💪</span>
+        </div>
+      )}
+
+      {/* ── Revision Mat — Landscape 3-column grid ── */}
+      {isRevisionMat && (
+        <div style={{ width: "100%" }}>
+          <style>{`
+            @media print {
+              .revision-mat-root {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+              }
+              @page { size: A4 landscape; margin: 8mm; }
+            }
+          `}</style>
+          <div
+            className="revision-mat-root"
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr 1fr",
+              gap: "8px",
+              width: "100%",
+            }}
+          >
+            {worksheet.sections
+              .filter(s => !s.teacherOnly && s.type !== "answers" && s.type !== "teacher-notes" && s.type !== "mark-scheme")
+              .map((section, i) => {
+                const matColours = [
+                  { border: "#3b82f6", bg: "#eff6ff", header: "#3b82f6" }, // foundation — blue
+                  { border: "#8b5cf6", bg: "#f5f3ff", header: "#8b5cf6" }, // core — purple
+                  { border: "#f59e0b", bg: "#fffbeb", header: "#f59e0b" }, // extension — amber
+                ];
+                const col = matColours[i % 3];
+                const rawContent = editedSections?.[i] !== undefined ? editedSections[i] : section.content;
+                const displayContent = typeof rawContent === "string" ? rawContent : String(rawContent || "");
+                return (
+                  <div
+                    key={i}
+                    style={{
+                      border: `2px solid ${col.border}`,
+                      borderRadius: "8px",
+                      overflow: "hidden",
+                      breakInside: "avoid",
+                      pageBreakInside: "avoid",
+                      backgroundColor: col.bg,
+                    }}
+                  >
+                    <div style={{
+                      background: col.header,
+                      padding: "6px 10px",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "6px",
+                    }}>
+                      <span style={{ fontSize: "14px" }}>
+                        {i % 3 === 0 ? "🟦" : i % 3 === 1 ? "🟣" : "🟡"}
+                      </span>
+                      <span style={{
+                        fontWeight: 700,
+                        fontSize: `${fmt.fontSize}px`,
+                        color: "white",
+                        fontFamily: fmt.fontFamily,
+                      }}>
+                        {typeof section.title === "string" ? section.title.replace(/^\*+|\*+$/g, "").trim() : String(section.title || "")}
+                      </span>
+                      <span style={{
+                        marginLeft: "auto",
+                        fontSize: "10px",
+                        color: "rgba(255,255,255,0.8)",
+                        fontWeight: 600,
+                        background: "rgba(255,255,255,0.2)",
+                        padding: "1px 6px",
+                        borderRadius: "8px",
+                      }}>
+                        {i % 3 === 0 ? "Foundation" : i % 3 === 1 ? "Core" : "Extension"}
+                      </span>
+                    </div>
+                    <div style={{ padding: "8px 10px", fontSize: `${fmt.fontSize - 1}px`, fontFamily: fmt.fontFamily }}>
+                      {formatContent(displayContent, fmt)}
+                    </div>
+                  </div>
+                );
+              })}
+          </div>
+        </div>
+      )}
+
+      {/* ── Sections (normal portrait layout — hidden when revision mat active) ── */}
+      {!isRevisionMat && worksheet.sections.map((section, i) => {
         // Hide teacher sections in student view
         // self-reflection, objective, and vocabulary are ALWAYS shown to students
         const isAlwaysStudentVisible = section.type === "self-reflection" || section.type === "objective" || section.type === "vocabulary";
@@ -1619,7 +1775,9 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
             .filter(line => !/^\s*Answer\s*:/i.test(line.trim()))
             .join('\n');
         }
-        const style = getSectionStyle(section.type);
+        const style = isPrimary
+          ? { ...(PRIMARY_SECTION_COLOURS[i % PRIMARY_SECTION_COLOURS.length]), icon: ["🌟","🎯","💡","✏️","🔍","🎨","📖","🌈"][i % 8], label: section.title as string || "", badgeText: "" }
+          : getSectionStyle(section.type);
         // Teacher-only sections: mark-scheme, teacher-notes, answers, and any explicitly flagged teacherOnly
         const isTeacherSection = section.teacherOnly || section.type === "teacher-notes" || section.type === "mark-scheme" || section.type === "answers";
 
@@ -1629,15 +1787,16 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
             className={`ws-section ws-section-${section.type}${isTeacherSection ? " ws-teacher-section" : ""}`}
             onClick={() => editMode && onSectionClick?.(i)}
             style={{
-              marginBottom: "10px",
-              borderRadius: "4px",
-              border: `1.5px solid ${style.border}`,
-              background: overlayColor || "#ffffff",
+              marginBottom: isPrimary ? "16px" : "10px",
+              borderRadius: isPrimary ? "12px" : "4px",
+              border: isPrimary ? `2.5px solid ${style.border}` : `1.5px solid ${style.border}`,
+              background: isPrimary ? (style as any).bg || "#ffffff" : overlayColor || "#ffffff",
               overflow: "hidden",
               cursor: editMode ? "pointer" : "default",
               outline: editMode && editedSections[i] !== undefined ? `2px solid ${style.border}` : "none",
               pageBreakInside: "avoid",
               breakInside: "avoid",
+              boxShadow: isPrimary ? `0 2px 8px ${style.border}22` : "none",
             }}
           >
             {/* Section header */}
@@ -1645,13 +1804,19 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
-              padding: "6px 10px",
+              padding: isPrimary ? "10px 14px" : "6px 10px",
               borderBottom: `1px solid ${style.border}`,
-              background: `${style.border}12`,
+              background: isPrimary ? style.border : `${style.border}12`,
             }}>
               <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                {style.icon && <span style={{ fontSize: "16px" }}>{style.icon}</span>}
-                <span style={{ fontWeight: 700, fontSize: `${fmt.fontSize + 1}px`, color: style.border, fontFamily: fmt.fontFamily }}>
+                {style.icon && <span style={{ fontSize: isPrimary ? "22px" : "16px" }}>{style.icon}</span>}
+                <span style={{
+                  fontWeight: 800,
+                  fontSize: isPrimary ? `${fmt.fontSize + 3}px` : `${fmt.fontSize + 1}px`,
+                  color: isPrimary ? "#ffffff" : style.border,
+                  fontFamily: fmt.fontFamily,
+                  letterSpacing: isPrimary ? "0.3px" : "normal",
+                }}>
                   {(typeof section.title === 'string' ? section.title : String(section.title || '')).replace(/^\*{1,2}|\*{1,2}$/g, '').replace(/^_{1,2}|_{1,2}$/g, '').trim()}
                 </span>
               </div>
@@ -1690,7 +1855,12 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
             </div>
 
             {/* Section content */}
-            <div style={{ padding: "8px 10px" }}>
+            <div style={{
+              padding: isPrimary ? "14px 16px" : "8px 10px",
+              background: isPrimary ? ((style as any).bg || "#ffffff") : "transparent",
+              fontSize: isPrimary ? `${fmt.fontSize + 1}px` : undefined,
+              lineHeight: isPrimary ? "1.9" : undefined,
+            }}>
               {section.type === "diagram" && (section.imageUrl || section.svg) ? (
                 <div style={{ textAlign: "center" }}>
                   {section.imageUrl ? (
@@ -1828,6 +1998,13 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
       })}
 
       {/* ── Footer ── */}
+      {isRevisionMat ? (
+        <div style={{ marginTop: "6px", padding: "4px 8px", display: "flex", justifyContent: "space-between", fontSize: "9px", color: "#9ca3af", fontFamily: fmt.fontFamily }}>
+          <span>Generated by Adaptly · adaptly.co.uk</span>
+          <span>{worksheet.metadata.yearGroup} {worksheet.metadata.subject && `| ${worksheet.metadata.subject}`} {worksheet.metadata.topic && `| ${worksheet.metadata.topic}`}</span>
+          <span>{new Date().toLocaleDateString("en-GB")}</span>
+        </div>
+      ) : (
       <div className="ws-footer" style={{
         marginTop: "10px",
         padding: "5px 10px",
@@ -1857,6 +2034,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
         </span>
         <span>{new Date().toLocaleDateString("en-GB")} | adaptly.co.uk</span>
       </div>
+      )}
     </div>
   );
 });

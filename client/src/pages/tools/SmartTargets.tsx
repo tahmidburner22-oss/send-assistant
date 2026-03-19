@@ -1,10 +1,13 @@
 import AIToolPage from "@/components/AIToolPage";
+import { useUserPreferences } from "@/contexts/UserPreferencesContext";
+import { formatToolOutput } from "@/lib/format-tool-output";
 import { CheckSquare } from "lucide-react";
 
 const sendNeeds = ["Autism Spectrum Condition","ADHD","Dyslexia","Dyscalculia","Dyspraxia","Speech & Language Needs","Social, Emotional & Mental Health","Hearing Impairment","Visual Impairment","Physical Disability","Moderate Learning Difficulties","Severe Learning Difficulties","EAL"].map(n => ({ value: n, label: n }));
 const areas = ["Reading","Writing","Maths","Communication","Social Skills","Behaviour & Self-Regulation","Independence","Fine Motor Skills","Gross Motor Skills","Attention & Focus","Emotional Regulation","Organisational Skills"].map(a => ({ value: a, label: a }));
 
 export default function SmartTargets() {
+  const { preferences } = useUserPreferences();
   return (
     <AIToolPage
       assignable={true}
@@ -46,6 +49,7 @@ Make targets ambitious yet achievable. Use pupil-friendly language where possibl
         maxTokens: 2500,
       })}
       outputTitle={(v) => `SMART Targets — ${v.studentName} (${v.area})`}
+      formatOutput={(text) => formatToolOutput(text, { logoUrl: preferences.schoolLogoUrl, schoolName: preferences.schoolName, accentColor: "#0d9488", emoji: "🎯", title: "SMART Targets" })}
     />
   );
 }

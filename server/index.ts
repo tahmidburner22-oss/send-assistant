@@ -84,6 +84,7 @@ import briefingRouter from "./routes/briefing.js";
 import quizRouter from "./routes/quiz.js";
 import superadminRouter from "./routes/superadmin.js";
 import diagramProxyRouter from "./routes/diagram-proxy.js";
+import feedbackRouter from "./routes/feedback.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -305,6 +306,7 @@ app.use("/api/briefing", briefingRouter);
 app.use("/api/quiz", quizRouter);
 app.use("/api/admin", superadminRouter);
 app.use("/api/diagram-proxy", diagramProxyRouter);
+app.use("/api/feedback", feedbackRouter);
 
 // ── Health check ──────────────────────────────────────────────────────────────
 app.get("/api/health", (_, res) => {

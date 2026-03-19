@@ -219,11 +219,12 @@ export default function Home() {
   );
 
   const visibleSubjects = subjects.filter(subject =>
-    preferences.dashboardSubjects.length === 0 ||
+    (subject.id !== "eleven-plus" || (preferences.show11Plus ?? false)) &&
+    (preferences.dashboardSubjects.length === 0 ||
     preferences.dashboardSubjects.some(s =>
       s.toLowerCase() === subject.name.toLowerCase() ||
       s.toLowerCase() === subject.id.toLowerCase()
-    )
+    ))
   );
 
   // ── Derived appearance helpers ─────────────────────────────────────────────

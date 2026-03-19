@@ -606,7 +606,9 @@ SPACING: Big answer boxes, lots of white space. This should print as a welcoming
 TONE: Positive, encouraging, child-voice. "You've got this!", "Great work!", "Did you spot the pattern?"
 ` : "";
 
-  const system = `You are an experienced UK teacher creating a classroom worksheet for ${params.yearGroup} (${phase}). Topic: "${params.topic}". All content must be exclusively about this topic. Calibrate language and difficulty for the year group. Respond with valid JSON only — no markdown, no code blocks. CRITICAL: Never use HTML tags (e.g. <span>, <div>, <p>, style= attributes) inside section content strings. Use plain text and LaTeX notation only (e.g. \\frac{1}{2}, \\sqrt{x}, x^2). Do not use color codes or inline styles.`;
+  const system = isPrimary
+    ? `You are an expert UK primary school teacher creating an engaging, colourful activity worksheet for ${params.yearGroup} (${phase}). Topic: "${params.topic}". This is a PRIMARY SCHOOL worksheet — it must be fun, visual, and activity-based, NOT like a secondary school handout. Use encouraging language, lots of variety, and minimal dense text. Respond with valid JSON only — no markdown, no code blocks, no HTML tags inside content strings. Use plain text only.`
+    : `You are an experienced UK teacher creating a classroom worksheet for ${params.yearGroup} (${phase}). Topic: "${params.topic}". All content must be exclusively about this topic. Calibrate language and difficulty for the year group. Respond with valid JSON only — no markdown, no code blocks. CRITICAL: Never use HTML tags (e.g. <span>, <div>, <p>, style= attributes) inside section content strings. Use plain text and LaTeX notation only (e.g. \\frac{1}{2}, \\sqrt{x}, x^2). Do not use color codes or inline styles.`;
 
   const examBoardNote = params.examBoard && params.examBoard !== "N/A" && params.examBoard !== "none"
     ? `Exam board: ${params.examBoard}.`
@@ -836,15 +838,15 @@ ${recallNote}
 ${params.additionalInstructions ? `\nPriority override:\n${params.additionalInstructions}\n` : ""}
 
 Structure required:
-1. Learning Objectives
-2. Key Vocabulary (maximum 5 items)
-3. Worked Example
-4. Reminder Box
-5. ${sendSectionTitles.sectionA}
-6. ${sendSectionTitles.sectionB}
-7. Section C - Word Problems
-8. ${sendSectionTitles.challenge}
-9. Reflection
+1. ${isPrimary ? "What Are We Learning?" : "Learning Objectives"}
+2. ${isPrimary ? "Key Words" : "Key Vocabulary (maximum 5 items)"}
+3. ${isPrimary ? "Let's Try Together (worked example)" : "Worked Example"}
+4. ${isPrimary ? "Key Steps" : "Reminder Box"}
+5. ${isPrimary ? (yearNum <= 2 ? "Have a Go!" : "Warm Up") : sendSectionTitles.sectionA}
+6. ${isPrimary ? (yearNum <= 2 ? "Let's Practise" : "Let's Practise More") : sendSectionTitles.sectionB}
+7. ${isPrimary ? "Think About It (real-life questions)" : "Section C - Word Problems"}
+8. ${isPrimary ? "Super Challenge!" : sendSectionTitles.challenge}
+9. ${isPrimary ? "How Did I Do?" : "Reflection"}
 10. Common Mistakes
 11. Mark Scheme (teacher only)
 12. Teacher Notes (teacher only)
@@ -856,7 +858,7 @@ Formatting rules:
 - Keep wording concise and printable.
 - If SEND applies, show the adaptations in the pupil-facing sections, not just teacher notes.
 - For maths, keep notation clean and readable in print/PDF.
-- ABSOLUTELY NO EMOJIS anywhere in the output — not in section content, titles, labels, or any field. Use plain text alternatives only (e.g. use '[ ]' not '✅', use 'Great / OK / Struggling' not emoji scales).
+${isPrimary ? "- Use lots of variety: circle the answer, tick the box, fill the blank, match with a line, draw and label, true/false. Vary every 2-3 questions. Short instructions only — max 8 words each." : "- ABSOLUTELY NO EMOJIS anywhere in the output — not in section content, titles, labels, or any field. Use plain text alternatives only (e.g. use '[ ]' not '✅', use 'Great / OK / Struggling' not emoji scales)."}
 
 Return EXACTLY this JSON (raw JSON only):
 {
