@@ -246,6 +246,7 @@ export default function Worksheets() {
   }, [subject, yearGroup]);
   // Diagram toggle — always off by default; user can enable it manually for any subject
   const [generateDiagram, setGenerateDiagram] = useState(false);
+  const [isRevisionMat, setIsRevisionMat] = useState(false);
   const [useAI, setUseAI] = useState(true);
 
   const [loading, setLoading] = useState(false);
@@ -329,7 +330,7 @@ export default function Worksheets() {
   const examQFiltered = useMemo(() => {
     const q = debouncedExamQSearch.toLowerCase().trim();
     if (!q && examQSubject === "all" && examQBoard === "all" && examQTier === "all") return null; // null = show topic overview
-    return allPastPaperQuestions.filter(question => {
+    const results = allPastPaperQuestions.filter(question => {
       const qText = question.text || question.question || '';
       if (!qText) return false;
       const matchSearch = !q ||
@@ -341,6 +342,35 @@ export default function Worksheets() {
       const matchTier = examQTier === "all" || question.tier === examQTier;
       return matchSearch && matchSubject && matchBoard && matchTier;
     });
+    // If the strict filter returns nothing but a board/tier was selected,
+    // fall back to dropping the tier constraint (then board) so the user always sees something
+    if (results.length === 0 && (examQBoard !== "all" || examQTier !== "all")) {
+      const relaxTier = allPastPaperQuestions.filter(question => {
+        const qText = question.text || question.question || '';
+        if (!qText) return false;
+        const matchSearch = !q ||
+          (question.topic || '').toLowerCase().includes(q) ||
+          qText.toLowerCase().includes(q) ||
+          (question.subject || '').toLowerCase().includes(q);
+        const matchSubject = examQSubject === "all" || question.subject === examQSubject;
+        const matchBoard = examQBoard === "all" || question.board === examQBoard;
+        return matchSearch && matchSubject && matchBoard;
+      });
+      if (relaxTier.length > 0) return relaxTier;
+      // Also relax board
+      const relaxBoth = allPastPaperQuestions.filter(question => {
+        const qText = question.text || question.question || '';
+        if (!qText) return false;
+        const matchSearch = !q ||
+          (question.topic || '').toLowerCase().includes(q) ||
+          qText.toLowerCase().includes(q) ||
+          (question.subject || '').toLowerCase().includes(q);
+        const matchSubject = examQSubject === "all" || question.subject === examQSubject;
+        return matchSearch && matchSubject;
+      });
+      return relaxBoth;
+    }
+    return results;
   }, [debouncedExamQSearch, examQSubject, examQBoard, examQTier, allPastPaperQuestions]);
   const selectedTotalMarks = useMemo(() => {
     return selectedExamQuestions.reduce((sum, q) => sum + (q.marks || 0), 0);
@@ -627,6 +657,24 @@ export default function Worksheets() {
   }, [generated, viewMode, targetPages, editedSections]);
 
   // ─── Generate worksheet ────────────────────────────────────────────────────
+
+  // Revision Mat instruction injected when toggle is on
+  const REVISION_MAT_INSTRUCTIONS = `REVISION MAT FORMAT — MANDATORY LAYOUT RULES:
+This worksheet MUST be formatted as a 3-tier revision activity mat, modelled on AQA GCSE revision mats.
+Layout: landscape orientation, compact grid of short activity boxes labelled a, b, c… across the page.
+Structure — three tiers across the sheet:
+  FOUNDATION tier (left column, ~35% width): sentence completion gaps, label diagrams, match columns, circle the correct answer, fill-in tables. Short recall only.
+  CORE tier (centre column, ~35% width): short structured questions (2–4 marks), equation application, describe/explain tasks with sentence starters provided.
+  EXTENSION tier (right column, ~30% width): extended writing, evaluation questions, multi-step calculations, "true or false — correct the false ones", higher-order tasks.
+Rules:
+- Every box must be labelled with a letter (a, b, c…) and a title in bold.
+- Use blank lines (___) for fill-in-the-gap tasks.
+- Include a data table if relevant to the topic.
+- Include at least one force/graph/diagram description box.
+- End with an Answer section (teacher copy) covering all boxes.
+- NO introductory paragraph — go straight into the activity boxes.
+- Maximum 2 sentences of context per box — keep it dense and printable.`;
+
   const handleGenerate = async () => {
     if (!subject || !yearGroup || !topic) {
       toast.error("Please fill in Subject, Year Group, and Topic.");
@@ -667,7 +715,7 @@ export default function Worksheets() {
           examBoard: examBoard !== "none" ? examBoard : undefined,
           includeAnswers,
           examStyle: false, // Generate normal structure — we'll inject real exam questions
-          additionalInstructions,
+          additionalInstructions: isRevisionMat ? [additionalInstructions, REVISION_MAT_INSTRUCTIONS].filter(Boolean).join("\n\n") : additionalInstructions,
           generateDiagram: false, // No diagram in exam mode
           worksheetLength,
           introOnly: true, // Only generate intro sections (objectives, vocab, worked example) — exam questions will be injected from the bank
@@ -710,7 +758,7 @@ export default function Worksheets() {
             examBoard: examBoard !== "none" ? examBoard : undefined,
             includeAnswers,
             examStyle: true,
-            additionalInstructions,
+            additionalInstructions: isRevisionMat ? [additionalInstructions, REVISION_MAT_INSTRUCTIONS].filter(Boolean).join("\n\n") : additionalInstructions,
             generateDiagram: false,
             worksheetLength,
             targetPages: targetPages || undefined,
@@ -733,7 +781,7 @@ export default function Worksheets() {
           examBoard: examBoard !== "none" ? examBoard : undefined,
           includeAnswers,
           examStyle,
-          additionalInstructions,
+          additionalInstructions: isRevisionMat ? [additionalInstructions, REVISION_MAT_INSTRUCTIONS].filter(Boolean).join("\n\n") : additionalInstructions,
           generateDiagram,
           worksheetLength,
           recallTopic: recallTopic.trim() || undefined,
@@ -753,12 +801,14 @@ export default function Worksheets() {
           );
           generatedWs = generateWorksheet({ subject, topic, yearGroup, sendNeed: sendNeed || undefined, difficulty, examBoard, includeAnswers, additionalInstructions });
         } else {
-          // Any other failure (rate limit, timeout, parse error) — retry up to 2 more times
-          // with a brief pause so rate-limited providers have time to recover
+          // Retry across all available providers — server tries Groq→Cerebras→Gemini→OpenRouter→OpenAI→Claude→Mistral→DeepSeek
+          const providerNames = ["Groq", "Gemini", "OpenRouter", "OpenAI", "Claude", "Mistral"];
           let retrySuccess = false;
-          for (let attempt = 1; attempt <= 2; attempt++) {
-            toast(`AI is busy, retrying (attempt ${attempt + 1}/3)…`, { icon: "⏳" });
-            await new Promise(r => setTimeout(r, attempt * 1500)); // wait 1.5s then 3s
+          for (let attempt = 1; attempt <= 5; attempt++) {
+            const providerLabel = providerNames[attempt - 1] ?? `Provider ${attempt}`;
+            setGenerationStatus(`Trying ${providerLabel}…`);
+            toast(`Trying ${providerLabel}…`, { icon: "🔄", id: "ai-retry" });
+            await new Promise(r => setTimeout(r, Math.min(attempt * 1200, 3500)));
             try {
               const retryResult = await aiGenerateWorksheet({
                 subject, topic, yearGroup,
@@ -767,23 +817,22 @@ export default function Worksheets() {
                 examBoard: examBoard !== "none" ? examBoard : undefined,
                 includeAnswers,
                 examStyle,
-                additionalInstructions,
-                generateDiagram: false, // skip diagram on retry to reduce tokens
+                additionalInstructions: isRevisionMat ? [additionalInstructions, REVISION_MAT_INSTRUCTIONS].filter(Boolean).join("\n\n") : additionalInstructions,
+                generateDiagram: false,
                 worksheetLength,
                 targetPages: targetPages || undefined,
                 readingAge: readingAge || undefined,
               });
               generatedWs = { ...retryResult, isAI: true } as AIWorksheet;
-              toast.success(`Worksheet generated (attempt ${attempt + 1} succeeded)!`);
+              toast.success(`Worksheet generated via ${providerLabel}!`, { id: "ai-retry" });
               retrySuccess = true;
               break;
             } catch (retryErr: any) {
-              console.error(`Retry ${attempt} failed:`, retryErr?.message);
+              console.error(`Retry ${attempt} (${providerLabel}) failed:`, retryErr?.message);
             }
           }
           if (!retrySuccess) {
-            // All 3 attempts failed — only now fall back to local generator
-            toast("AI unavailable after 3 attempts. Using local generator as backup.", { icon: "⚠️" });
+            toast("All AI providers tried — using local generator as backup.", { icon: "⚠️", id: "ai-retry" });
             generatedWs = generateWorksheet({ subject, topic, yearGroup, sendNeed: sendNeed || undefined, difficulty, examBoard, includeAnswers, additionalInstructions });
           }
         }
@@ -1423,12 +1472,13 @@ export default function Worksheets() {
     } catch (err: any) {
       console.error("Natural-language worksheet generation failed:", err);
       const errMsg = err?.message || String(err);
-      // Don't silently bail — retry up to 2 more times before showing error
       if (!errMsg.includes("No AI provider keys configured")) {
+        const providerNames = ["Groq", "Gemini", "OpenRouter", "OpenAI", "Claude", "Mistral"];
         let retrySuccess = false;
-        for (let attempt = 1; attempt <= 2; attempt++) {
-          toast(`AI is busy, retrying (${attempt + 1}/3)…`, { icon: "⏳" });
-          await new Promise(r => setTimeout(r, attempt * 1500));
+        for (let attempt = 1; attempt <= 5; attempt++) {
+          const providerLabel = providerNames[attempt - 1] ?? `Provider ${attempt}`;
+          toast(`Trying ${providerLabel}…`, { icon: "🔄", id: "nl-retry" });
+          await new Promise(r => setTimeout(r, Math.min(attempt * 1200, 3500)));
           try {
             const retryResult = await aiGenerateWorksheet({
               subject: nextSubject, topic: nextTopic, yearGroup: nextYearGroup,
@@ -1440,13 +1490,13 @@ export default function Worksheets() {
               generateDiagram: false, worksheetLength: "30",
             });
             generatedWs = { ...retryResult, isAI: true } as AIWorksheet;
-            toast.success("Worksheet generated!");
+            toast.success(`Worksheet generated via ${providerLabel}!`, { id: "nl-retry" });
             retrySuccess = true;
             break;
           } catch (_) {}
         }
         if (!retrySuccess) {
-          toast.error("AI generation failed after 3 attempts. Check Settings → AI Providers.");
+          toast.error("All AI providers tried — check Settings → AI Providers.", { id: "nl-retry" });
         }
       } else {
         toast.error("No AI keys configured. Go to Settings → AI Providers.");
@@ -1618,12 +1668,11 @@ export default function Worksheets() {
       </motion.div>
 
       {loading && !generated && (() => {
-        // Cycling status messages so the user knows it's working
         const STAGES = [
-          "Building your worksheet structure…",
+          "Connecting to AI (Groq)…",
+          "Building worksheet structure…",
           "Writing questions and worked example…",
           "Adding differentiation and vocabulary…",
-          "Checking maths notation and formatting…",
           "Finalising your worksheet…",
         ];
         return (
@@ -1635,12 +1684,23 @@ export default function Worksheets() {
               </div>
               <div className="text-center">
                 <h3 className="font-semibold text-foreground text-lg">Generating your worksheet</h3>
-                <LoadingStageMessage stages={STAGES} />
+                {generationStatus && generationStatus.startsWith("Trying") ? (
+                  <p className="text-sm text-muted-foreground mt-1 min-h-[40px]">{generationStatus}</p>
+                ) : (
+                  <LoadingStageMessage stages={STAGES} />
+                )}
               </div>
               <div className="w-full bg-muted rounded-full h-1.5 overflow-hidden">
-                <div className="h-full bg-brand rounded-full animate-[progress_20s_ease-in-out_forwards]" style={{ width: '0%', animation: 'none' }}>
-                  <AnimatedProgressBar />
-                </div>
+                <AnimatedProgressBar />
+              </div>
+              <div className="flex items-center gap-1.5 flex-wrap justify-center">
+                {["Groq","Gemini","OpenRouter","OpenAI","Claude","Mistral"].map(p => (
+                  <span key={p} className={`text-[9px] font-medium px-1.5 py-0.5 rounded-full border ${
+                    generationStatus?.includes(p)
+                      ? "bg-brand text-white border-brand"
+                      : "bg-muted text-muted-foreground border-border/40"
+                  }`}>{p}</span>
+                ))}
               </div>
               <p className="text-xs text-muted-foreground">Please wait — do not close this page</p>
             </div>
@@ -1734,6 +1794,29 @@ export default function Worksheets() {
                 {/* Core fields */}
                 <div className="p-4 rounded-xl border border-border/40 bg-slate-50/50 space-y-4">
                 <h3 className="text-sm font-semibold text-foreground flex items-center gap-1.5"><FileText className="h-4 w-4 text-brand/70" /> Core Settings</h3>
+
+                {/* How to use guide */}
+                <div className="p-3 rounded-lg bg-blue-50 border border-blue-100 space-y-2">
+                  <p className="text-xs font-semibold text-blue-800 flex items-center gap-1.5">
+                    <Info className="w-3.5 h-3.5 flex-shrink-0" /> How to use this generator
+                  </p>
+                  <div className="space-y-1.5 text-xs text-blue-700 leading-relaxed">
+                    <p>
+                      <strong>Quick way:</strong> Use the AI bar above — type e.g. <em>"Year 9 Forces AQA foundation"</em> and hit Generate. 
+                      The dropdowns will be ignored.
+                    </p>
+                    <p>
+                      <strong>Full control:</strong> Fill in Subject, Year Group and Topic below. Every field adds specificity — 
+                      the more detail you give, the better the output.
+                    </p>
+                    <p className="flex items-start gap-1">
+                      <span className="text-blue-500 mt-0.5 flex-shrink-0">★</span>
+                      <span><strong>SEND Need field:</strong> Setting this tailors vocabulary, scaffolding, layout and instructions 
+                      specifically for that need — dyslexia gets larger spacing and colour overlays, ASC gets literal language and 
+                      structured steps, ADHD gets tick boxes and chunked tasks.</span>
+                    </p>
+                  </div>
+                </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
                     <Label className="text-xs font-medium">Subject *</Label>
@@ -1973,6 +2056,18 @@ export default function Worksheets() {
                         <Image className="h-3 w-3" /> Include topic diagram
                       </Label>
                     </div>
+                  )}
+                  <div className="flex items-center gap-2">
+                    <Switch checked={isRevisionMat} onCheckedChange={setIsRevisionMat} id="revmat-sw" />
+                    <Label htmlFor="revmat-sw" className="text-xs flex items-center gap-2">
+                      <span>Revision Mat format</span>
+                      <span className="text-[9px] font-bold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full">NEW</span>
+                    </Label>
+                  </div>
+                  {isRevisionMat && (
+                    <p className="w-full text-[10px] text-muted-foreground leading-relaxed pl-0.5">
+                      Generates a 3-tier landscape revision mat (Foundation · Core · Extension) in the style of AQA activity mats — compact grid layout, fill-in gaps, matching, short answers and extended tasks all on one sheet.
+                    </p>
                   )}
                 </div>
                   </div>{/* End advanced options content */}
@@ -2360,11 +2455,47 @@ export default function Worksheets() {
               }
 
               if (examQFiltered.length === 0) {
+                // Find closest matches ignoring the board/tier filter to help user
+                const subjectOnlyMatches = allPastPaperQuestions.filter(q => {
+                  const qText = q.text || q.question || '';
+                  const matchSubject = examQSubject === "all" || q.subject === examQSubject;
+                  const matchSearch = !debouncedExamQSearch.trim() ||
+                    (q.topic || '').toLowerCase().includes(debouncedExamQSearch.toLowerCase()) ||
+                    qText.toLowerCase().includes(debouncedExamQSearch.toLowerCase());
+                  return matchSubject && matchSearch;
+                }).slice(0, 6);
                 return (
-                  <div className="text-center py-12 text-gray-400">
-                    <Search className="h-10 w-10 mx-auto mb-2 opacity-40" />
-                    <p className="text-sm">No questions found for "{examQSearch}".</p>
-                    <p className="text-xs mt-1">Try a different topic name or exam board.</p>
+                  <div className="text-center py-8 text-gray-400 space-y-3">
+                    <Search className="h-10 w-10 mx-auto opacity-40" />
+                    <p className="text-sm font-medium text-gray-500">No questions match that exact combination.</p>
+                    <p className="text-xs text-gray-400">Try selecting "All boards" or "All tiers" — our question bank is primarily AQA.</p>
+                    {subjectOnlyMatches.length > 0 && (
+                      <div className="text-left mt-4">
+                        <p className="text-xs font-semibold text-gray-500 mb-2 px-1">Similar questions from other boards/tiers:</p>
+                        <div className="space-y-1.5">
+                          {subjectOnlyMatches.map(q => (
+                            <button
+                              key={q.id}
+                              onClick={() => { setExamQBoard("all"); setExamQTier("all"); }}
+                              className="w-full text-left px-3 py-2 rounded-lg bg-blue-50 border border-blue-100 hover:bg-blue-100 transition-colors"
+                            >
+                              <div className="flex gap-1 mb-0.5 flex-wrap">
+                                <span className="text-[10px] font-bold bg-blue-200 text-blue-800 px-1.5 py-0.5 rounded">{q.board}</span>
+                                <span className="text-[10px] text-gray-500">{q.topic}</span>
+                                {q.tier && <span className="text-[10px] text-gray-400">{q.tier}</span>}
+                              </div>
+                              <p className="text-xs text-gray-700 line-clamp-1">{q.text || q.question}</p>
+                            </button>
+                          ))}
+                        </div>
+                        <button
+                          onClick={() => { setExamQBoard("all"); setExamQTier("all"); }}
+                          className="mt-2 text-xs text-blue-600 hover:text-blue-800 font-medium"
+                        >
+                          → Show all boards & tiers
+                        </button>
+                      </div>
+                    )}
                   </div>
                 );
               }
@@ -2376,6 +2507,16 @@ export default function Worksheets() {
 
               return (
                 <div className="space-y-2">
+                  {/* Notice when tier/board filter was relaxed to show results */}
+                  {(examQBoard !== "all" || examQTier !== "all") && examQFiltered.some(q =>
+                    (examQTier !== "all" && q.tier !== examQTier) ||
+                    (examQBoard !== "all" && q.board !== examQBoard)
+                  ) && (
+                    <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-50 border border-amber-200 text-xs text-amber-800">
+                      <AlertCircle className="w-3.5 h-3.5 flex-shrink-0 text-amber-600" />
+                      <span>No exact match for your board/tier selection — showing closest available questions. <button onClick={() => { setExamQBoard("all"); setExamQTier("all"); }} className="font-semibold underline">Clear filters</button></span>
+                    </div>
+                  )}
                   <div className="flex items-center justify-between px-1">
                     <p className="text-xs text-gray-500">{examQFiltered.length} question{examQFiltered.length !== 1 ? 's' : ''} found — showing {displayedQuestions.length}</p>
                     <button
@@ -2417,10 +2558,18 @@ export default function Worksheets() {
                           </button>
                           <div className="flex-1 min-w-0">
                             <div className="flex flex-wrap gap-1 mb-1">
-                              <Badge className="text-xs py-0 bg-blue-100 text-blue-700">{question.board}</Badge>
+                              <Badge className={`text-xs py-0 font-bold ${
+                                question.board === "AQA" ? "bg-blue-600 text-white" :
+                                question.board === "Edexcel" ? "bg-purple-600 text-white" :
+                                question.board === "OCR" ? "bg-green-600 text-white" :
+                                question.board === "WJEC" ? "bg-orange-600 text-white" :
+                                question.board === "Adaptly" ? "bg-brand text-white" :
+                                "bg-gray-500 text-white"
+                              }`}>{question.board}</Badge>
                               <Badge variant="outline" className="text-xs py-0">{question.topic}</Badge>
                               {question.tier && <Badge variant="outline" className="text-xs py-0">{question.tier}</Badge>}
                               <Badge variant="outline" className="text-xs py-0">{question.year}</Badge>
+                              {question.series && <Badge variant="outline" className="text-xs py-0 text-gray-400">{question.series}</Badge>}
                               <Badge className="text-xs py-0 bg-gray-100 text-gray-600">{question.marks} mark{question.marks !== 1 ? 's' : ''}</Badge>
                             </div>
                             <p className="text-sm text-foreground line-clamp-3">{stripKatexToPlainText(renderMath(question.text || question.question || ''))}</p>

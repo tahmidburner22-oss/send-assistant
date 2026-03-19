@@ -4,11 +4,22 @@ import { useApp } from "@/contexts/AppContext";
 import { useUserPreferences, COLOUR_THEMES } from "@/contexts/UserPreferencesContext";
 import { motion, AnimatePresence } from "framer-motion";
 import CommandPalette from "./CommandPalette";
+import FeedbackWidget from "./FeedbackWidget";
 import {
   Home, Brain, GraduationCap, Pencil, MessageCircle, Monitor,
   LogOut, Menu, X, Shield, Settings, ExternalLink,
-  Search, Bell, ChevronRight, Users,
+  Search, Bell, ChevronRight, Users, FileCheck, Mail, MessageSquare,
 } from "lucide-react";
+
+const ehcpHub = {
+  path: "/tools/iep-generator",
+  label: "EHCP Plan Generator",
+  icon: FileCheck,
+  color: "text-indigo-700",
+  bg: "bg-indigo-100",
+  description: "AI-assisted EHCP drafting — SENCO & SLT",
+  toolPrefixes: ["/tools/iep-generator"],
+};
 
 const hubs = [
   {
@@ -174,6 +185,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen overflow-x-hidden" style={wallpaperStyle}>
       <CommandPalette />
+      <FeedbackWidget />
 
       <header
         className="sticky top-0 z-40 backdrop-blur-md border-b"
@@ -303,6 +315,40 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 </Link>
 
                 <div className="px-3 pb-2 pt-1">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">SENCO & SLT</span>
+                </div>
+
+                <div className="px-2 mb-1">
+                  {(() => {
+                    const hub = ehcpHub;
+                    const Icon = hub.icon;
+                    const active = location.startsWith(hub.path);
+                    return (
+                      <Link href={hub.path} onClick={() => setSidebarOpen(false)}>
+                        <div className={`px-3 py-3 rounded-xl flex items-center gap-3 transition-all cursor-pointer group ${
+                          active
+                            ? "bg-brand-light border border-brand/20"
+                            : "hover:bg-muted/60 border border-transparent"
+                        }`}>
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-all ${
+                            active ? "bg-brand text-white shadow-sm" : `${hub.bg} ${hub.color}`
+                          }`}>
+                            <Icon className="w-4 h-4" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className={`text-sm font-semibold leading-tight ${active ? "text-brand" : "text-foreground"}`}>
+                              {hub.label}
+                            </div>
+                            <div className="text-[10px] text-muted-foreground truncate mt-0.5">{hub.description}</div>
+                          </div>
+                          <ChevronRight className={`w-3.5 h-3.5 flex-shrink-0 transition-transform ${active ? "text-brand rotate-90" : "text-muted-foreground/40 group-hover:text-muted-foreground"}`} />
+                        </div>
+                      </Link>
+                    );
+                  })()}
+                </div>
+
+                <div className="px-3 pb-2 pt-1">
                   <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Hubs</span>
                 </div>
 
@@ -368,7 +414,25 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               </div>
 
               {/* User Footer */}
-              <div className="p-4 border-t border-border/50 bg-muted/20">
+              <div className="p-4 border-t border-border/50 bg-muted/20 space-y-3">
+                <div className="flex items-center gap-2">
+                  <a
+                    href="mailto:support@adaptly.co.uk"
+                    className="flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-[10px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors border border-border/40"
+                    title="Email support"
+                  >
+                    <Mail className="w-3 h-3" />
+                    Get Help
+                  </a>
+                  <button
+                    onClick={() => window.dispatchEvent(new CustomEvent("adaptly:feedback"))}
+                    className="flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-[10px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors border border-border/40"
+                    title="Give feedback"
+                  >
+                    <MessageSquare className="w-3 h-3" />
+                    Feedback
+                  </button>
+                </div>
                 <div className="flex items-center gap-3">
                   <div
                     className="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0"

@@ -4,10 +4,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import {
   Shield, BookOpen, IdCard, CheckSquare, ShieldAlert, Heart,
   ScanSearch, Calendar, ArrowRight, Brain, Users, Star,
-  ChevronRight, FileText, Sparkles,
+  ChevronRight, FileText, Sparkles, FileCheck, Info,
 } from "lucide-react";
 
-const tools = [
+const creationTools = [
   {
     path: "/send-screener",
     label: "SEND Needs Screener",
@@ -38,13 +38,18 @@ const tools = [
     badge: "AI",
     badgeColor: "bg-purple-100 text-purple-700",
   },
+];
+
+const supportTools = [
   {
     path: "/tools/iep-generator",
-    label: "IEP / EHCP Goals",
-    icon: Shield,
-    color: "bg-blue-50 text-blue-600",
-    border: "border-blue-100",
-    description: "Generate legally-compliant SMART IEP and EHCP goals tailored to each pupil's needs and provision.",
+    label: "EHCP Plan Generator",
+    icon: FileCheck,
+    color: "bg-indigo-50 text-indigo-700",
+    border: "border-indigo-100",
+    description: "5-stage AI-assisted EHCP drafting with golden thread QA, golden thread validation, and Word export. SENCO access.",
+    badge: "SENCO",
+    badgeColor: "bg-indigo-100 text-indigo-700",
   },
   {
     path: "/tools/social-stories",
@@ -107,6 +112,35 @@ const stats = [
 const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.05 } } };
 const item = { hidden: { opacity: 0, y: 14 }, show: { opacity: 1, y: 0, transition: { duration: 0.28 } } };
 
+function ToolCard({ tool }: { tool: typeof creationTools[0] }) {
+  const Icon = tool.icon;
+  return (
+    <motion.div variants={item}>
+      <Link href={tool.path}>
+        <Card className={`hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer border ${tool.border} group`}>
+          <CardContent className="p-4">
+            <div className="flex items-start gap-3">
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${tool.color}`}>
+                <Icon className="w-5 h-5" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-0.5">
+                  <span className="text-sm font-semibold text-foreground">{tool.label}</span>
+                  {(tool as any).badge && (
+                    <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${(tool as any).badgeColor}`}>{(tool as any).badge}</span>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground leading-relaxed">{tool.description}</p>
+              </div>
+              <ArrowRight className="w-4 h-4 text-muted-foreground/40 group-hover:text-muted-foreground group-hover:translate-x-0.5 transition-all flex-shrink-0 mt-1" />
+            </div>
+          </CardContent>
+        </Card>
+      </Link>
+    </motion.div>
+  );
+}
+
 export default function SENDHub() {
   return (
     <div className="px-4 py-6 max-w-3xl mx-auto space-y-7">
@@ -141,40 +175,33 @@ export default function SENDHub() {
         ))}
       </motion.div>
 
+      {/* ── Section 1: Creation ── */}
       <motion.div variants={container} initial="hidden" animate="show">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-sm font-semibold text-foreground uppercase tracking-wide">All Tools</h2>
-          <span className="text-xs text-muted-foreground">{tools.length} tools</span>
+        <div className="flex items-center gap-2 mb-3">
+          <div className="w-6 h-6 rounded-lg bg-purple-600 flex items-center justify-center">
+            <Sparkles className="w-3.5 h-3.5 text-white" />
+          </div>
+          <h2 className="text-sm font-bold text-foreground uppercase tracking-wide">Creation</h2>
+          <span className="text-xs text-muted-foreground ml-auto">{creationTools.length} tools</span>
         </div>
+        <p className="text-xs text-muted-foreground mb-3 -mt-1">Generate SEND-adapted resources, screen pupils, and differentiate content.</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {tools.map((tool) => {
-            const Icon = tool.icon;
-            return (
-              <motion.div key={tool.path} variants={item}>
-                <Link href={tool.path}>
-                  <Card className={`hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer border ${tool.border} group`}>
-                    <CardContent className="p-4">
-                      <div className="flex items-start gap-3">
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${tool.color}`}>
-                          <Icon className="w-5 h-5" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-0.5">
-                            <span className="text-sm font-semibold text-foreground">{tool.label}</span>
-                            {tool.badge && (
-                              <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${tool.badgeColor}`}>{tool.badge}</span>
-                            )}
-                          </div>
-                          <p className="text-xs text-muted-foreground leading-relaxed">{tool.description}</p>
-                        </div>
-                        <ArrowRight className="w-4 h-4 text-muted-foreground/40 group-hover:text-muted-foreground group-hover:translate-x-0.5 transition-all flex-shrink-0 mt-1" />
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
-              </motion.div>
-            );
-          })}
+          {creationTools.map(tool => <ToolCard key={tool.path} tool={tool} />)}
+        </div>
+      </motion.div>
+
+      {/* ── Section 2: Support ── */}
+      <motion.div variants={container} initial="hidden" animate="show">
+        <div className="flex items-center gap-2 mb-3 mt-2">
+          <div className="w-6 h-6 rounded-lg bg-indigo-600 flex items-center justify-center">
+            <Shield className="w-3.5 h-3.5 text-white" />
+          </div>
+          <h2 className="text-sm font-bold text-foreground uppercase tracking-wide">Support</h2>
+          <span className="text-xs text-muted-foreground ml-auto">{supportTools.length} tools</span>
+        </div>
+        <p className="text-xs text-muted-foreground mb-3 -mt-1">Plans, passports, targets and support documents for SEND pupils.</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {supportTools.map(tool => <ToolCard key={tool.path} tool={tool} />)}
         </div>
       </motion.div>
 
