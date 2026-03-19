@@ -7,7 +7,18 @@ import {
   ChevronRight, FileText, Sparkles, FileCheck, Info,
 } from "lucide-react";
 
-const creationTools = [
+interface Tool {
+  path: string;
+  label: string;
+  icon: any;
+  color: string;
+  border: string;
+  description: string;
+  badge?: string;
+  badgeColor?: string;
+}
+
+const creationTools: Tool[] = [
   {
     path: "/send-screener",
     label: "SEND Needs Screener",
@@ -40,7 +51,7 @@ const creationTools = [
   },
 ];
 
-const supportTools = [
+const supportTools: Tool[] = [
   {
     path: "/tools/iep-generator",
     label: "EHCP Plan Generator",
@@ -112,7 +123,7 @@ const stats = [
 const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.05 } } };
 const item = { hidden: { opacity: 0, y: 14 }, show: { opacity: 1, y: 0, transition: { duration: 0.28 } } };
 
-function ToolCard({ tool }: { tool: typeof creationTools[0] }) {
+function ToolCard({ tool }: { tool: Tool }) {
   const Icon = tool.icon;
   return (
     <motion.div variants={item}>
