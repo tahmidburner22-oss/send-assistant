@@ -20,9 +20,10 @@ const worksheetUpload = multer({ storage: multer.memoryStorage(), limits: { file
 // Strategy: Rotate across 3 Groq keys (groq_1/groq_2/groq_3) to triple the
 // effective rate limit. Each key gets llama-3.3-70b-versatile (131K TPM).
 // Total effective capacity: 3 × 131K TPM = 393K TPM — enough for 100 worksheets/5min.
-// Gemini is the final fallback if all 3 Groq keys are rate-limited simultaneously.
+// Gemini 2.5 Flash is the primary fallback (free tier: 500 RPD, 10 RPM).
+// Gemini 2.5 Flash Lite is a secondary fallback (separate quota from 2.5 Flash).
 // Mistral kept as last resort (unlimited RPD, just slow at 2 RPM).
-const PROVIDER_ORDER = ["groq_1", "groq_2", "groq_3", "gemini", "mistral"] as const;
+const PROVIDER_ORDER = ["groq_1", "groq_2", "groq_3", "gemini", "gemini_lite", "mistral"] as const;
 
 // ── Round-robin counter for Groq keys ────────────────────────────────────────
 // Distributes requests evenly across the 3 Groq keys to maximise throughput.
@@ -43,7 +44,7 @@ function getNextGroqKey(): string {
 // When a provider hits a rate limit (429), it is put in cooldown for COOLDOWN_MS.
 // During cooldown it is skipped entirely so other providers can serve requests.
 // This prevents cascading failures where every provider gets exhausted at once.
-const COOLDOWN_MS = 60_000; // 60 seconds per provider — prevents hammering a just-rate-limited key
+const COOLDOWN_MS = 30_000; // 30 seconds per provider — shorter cooldown since we now have 6 providers + quick retry
 const providerCooldowns = new Map<string, number>(); // provider → timestamp when cooldown expires
 
 function isOnCooldown(provider: string): boolean {
@@ -103,6 +104,20 @@ function getEffectiveKey(provider: string, userKey?: string, schoolId?: string):
     ).get(provider) as any;
     if (adminKey?.api_key) return adminKey.api_key;
   } catch (_) {}
+  // gemini_lite uses the same API key as gemini (different model, separate quota)
+  if (provider === "gemini_lite") {
+    if (schoolId) {
+      const schoolEntry = getSchoolKey(schoolId, "gemini");
+      if (schoolEntry?.key) return schoolEntry.key;
+    }
+    try {
+      const adminKey = db.prepare(
+        "SELECT api_key FROM admin_api_keys WHERE provider = ?"
+      ).get("gemini") as any;
+      if (adminKey?.api_key) return adminKey.api_key;
+    } catch (_) {}
+    return process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || "";
+  }
   // 3. Platform-level env vars (Railway — for the Adaptly platform operator account only)
   const envMap: Record<string, string> = {
     groq: process.env.GROQ_API_KEY || "",
@@ -113,6 +128,8 @@ function getEffectiveKey(provider: string, userKey?: string, schoolId?: string):
 }
 
 function getAdminModel(provider: string, schoolId?: string): string {
+  // gemini_lite always uses gemini-2.5-flash-lite regardless of DB config
+  if (provider === "gemini_lite") return "gemini-2.5-flash-lite";
   if (schoolId) {
     const schoolEntry = getSchoolKey(schoolId, provider);
     if (schoolEntry?.model) return schoolEntry.model;
@@ -138,15 +155,20 @@ async function callProvider(
   maxTokens: number
 ): Promise<string> {
   // Per-provider timeouts — chosen so the full fallback chain fits inside Railway's 60s limit.
-  // Groq/Gemini: 18s each (fast providers; slow = rate-limited, no point waiting longer)
-  // Mistral: 28s
-  // Others (DeepSeek, Cohere, Perplexity, HuggingFace): 35s
+  // With 6 providers (3 Groq + gemini + gemini_lite + mistral), we need tight timeouts:
+  // Groq: 12s each (fast inference; if it's slow it's rate-limited)
+  // Gemini: 15s (fast provider)
+  // Mistral: 18s (slower but reliable)
+  // Others: 20s
+  // Worst case: 3×12 + 15 + 15 + 18 = 84s but cooldowns skip most providers
   const timeoutMs =
-    provider === "groq" || provider === "groq_1" || provider === "groq_2" || provider === "groq_3" || provider === "gemini"
-      ? 18_000
+    provider === "groq" || provider === "groq_1" || provider === "groq_2" || provider === "groq_3"
+      ? 12_000
+      : provider === "gemini" || provider === "gemini_lite"
+      ? 15_000
       : provider === "mistral"
-      ? 28_000
-      : 35_000;
+      ? 18_000
+      : 20_000;
 
   const controller = new AbortController();
   const timer = setTimeout(() => {
@@ -168,7 +190,12 @@ async function callProvider(
         break;
       case "gemini":
         // FIX: signal passed so the 18s timeout actually fires.
-        result = await callGemini(system, user, key, maxTokens, controller.signal);
+        // FIX: Now uses gemini-2.5-flash (gemini-2.0-flash has quota=0 on free tier)
+        result = await callGemini(system, user, key, maxTokens, controller.signal, "gemini-2.5-flash");
+        break;
+      case "gemini_lite":
+        // Gemini 2.5 Flash Lite — separate quota from 2.5 Flash, used as additional fallback
+        result = await callGemini(system, user, key, maxTokens, controller.signal, "gemini-2.5-flash-lite");
         break;
       case "openai":
         result = await callOpenAI(system, user, key, model || "gpt-4o-mini", maxTokens, controller.signal);
@@ -282,11 +309,28 @@ async function callWithFallback(
       errors.push(`${provider}: empty response`);
     } catch (err: any) {
       const msg = err?.message || String(err);
-      // Rate limit (429) or quota exceeded — put provider on cooldown and skip
+      // Rate limit (429) or quota exceeded
       const isRateLimit = msg.includes("429") || msg.toLowerCase().includes("rate limit") || msg.toLowerCase().includes("quota") || msg.toLowerCase().includes("too many requests");
       if (isRateLimit) {
+        // For Groq providers, do a quick 2s retry before giving up — Groq rate limits
+        // often clear within seconds (per-minute window resets). This avoids unnecessarily
+        // falling through to slower providers when a brief pause would suffice.
+        const isGroq = provider.startsWith("groq");
+        if (isGroq) {
+          try {
+            console.log(`[AI] ${provider} rate limited — quick 2s retry...`);
+            await new Promise(r => setTimeout(r, 2000));
+            const retryContent = await callProvider(provider, system, user, key, model, maxTokens);
+            if (retryContent && retryContent.trim()) {
+              console.log(`[AI] Quick retry success via ${provider}`);
+              return { content: retryContent, provider };
+            }
+          } catch (retryErr: any) {
+            console.warn(`[AI] ${provider} quick retry also failed`);
+          }
+        }
         setCooldown(provider); // marks provider as unavailable for COOLDOWN_MS
-        errors.push(`${provider}: rate limited (429) — on cooldown for 60s`);
+        errors.push(`${provider}: rate limited (429) — on cooldown for ${COOLDOWN_MS / 1000}s`);
         continue;
       }
       // Auth error (401/403) — skip silently (do NOT put on cooldown — may be a bad key, not a rate limit)
@@ -636,7 +680,7 @@ async function callCerebras(system: string, user: string, key: string, model: st
 // concatenating system+user into a single contents message. Using systemInstruction
 // produces significantly better structured JSON output (the system prompt is processed
 // separately by the model, not mixed into the conversation context).
-async function callGemini(system: string, user: string, key: string, maxTokens: number, signal?: AbortSignal): Promise<string> {
+async function callGemini(system: string, user: string, key: string, maxTokens: number, signal?: AbortSignal, model: string = "gemini-2.5-flash"): Promise<string> {
   const body: any = {
     contents: [{ role: "user", parts: [{ text: user }] }],
     generationConfig: { maxOutputTokens: maxTokens, temperature: 0.1 },
@@ -645,7 +689,7 @@ async function callGemini(system: string, user: string, key: string, maxTokens: 
     body.systemInstruction = { parts: [{ text: system }] };
   }
   const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
     {
       method: "POST",
       signal,
@@ -653,11 +697,11 @@ async function callGemini(system: string, user: string, key: string, maxTokens: 
       body: JSON.stringify(body),
     }
   );
-  if (res.status === 429) throw new Error(`Gemini 429: rate limited`);
-  if (!res.ok) throw new Error(`Gemini ${res.status}: ${(await res.text()).slice(0, 200)}`);
+  if (res.status === 429) throw new Error(`Gemini ${model} 429: rate limited`);
+  if (!res.ok) throw new Error(`Gemini ${model} ${res.status}: ${(await res.text()).slice(0, 200)}`);
   const data = await res.json() as any;
   const content = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!content) throw new Error("Gemini returned empty content");
+  if (!content) throw new Error(`Gemini ${model} returned empty content`);
   return content;
 }
 
@@ -687,7 +731,7 @@ async function callOpenRouter(system: string, user: string, key: string, model: 
   const fallbackModels = [
     model,
     "meta-llama/llama-4-scout:free",          // Meta Llama 4 Scout — best free model
-    "google/gemini-2.0-flash-exp:free",        // Gemini 2.0 Flash experimental — very fast
+    "google/gemini-2.5-flash-exp:free",        // Gemini 2.5 Flash experimental — very fast
     "mistralai/mistral-small-3.1-24b-instruct:free", // Mistral Small 3.1 — strong instruction following
     "nvidia/llama-3.1-nemotron-70b-instruct:free",   // NVIDIA Nemotron 70B — high quality
     "meta-llama/llama-3.3-70b-instruct:free",  // Llama 3.3 70B — reliable fallback
