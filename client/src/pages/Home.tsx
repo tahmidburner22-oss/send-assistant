@@ -1,6 +1,6 @@
 import { useApp } from "@/contexts/AppContext";
 import { useUserPreferences, ALL_DASHBOARD_CARDS } from "@/contexts/UserPreferencesContext";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import { cobsTips, subjects } from "@/lib/send-data";
@@ -10,8 +10,10 @@ import {
   Wrench, Heart, Languages, UserCheck, Briefcase, Theater, Lightbulb,
   GraduationCap, BarChart2, CalendarDays, Brain, ScrollText, Gamepad2, Settings,
   ArrowRight, PlayCircle, ClipboardList, Stethoscope, Pencil, MessageSquare, ChevronRight,
+  Send, Loader2, Wand2, X,
 } from "lucide-react";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
+import { callAI } from "@/lib/ai";
 
 const subjectIcons: Record<string, any> = {
   english: BookOpen, mathematics: Calculator, science: FlaskConical,
@@ -218,6 +220,117 @@ export default function Home() {
     preferences.dashboardCards.includes(card.id)
   );
 
+  // ── Natural Language Dispatcher ───────────────────────────────────────────
+  const [, setLocation] = useLocation();
+  const [nlQuery, setNlQuery]           = useState("");
+  const [nlLoading, setNlLoading]       = useState(false);
+  const [nlDialog, setNlDialog]         = useState<{
+    show: boolean;
+    title: string;
+    message: string;
+    fields: Array<{ label: string; key: string; placeholder: string; value: string }>;
+    href: string;
+    params: Record<string, string>;
+  } | null>(null);
+  const nlRef = useRef<HTMLTextAreaElement>(null);
+
+  // Full tool catalogue — what the AI can route to
+  const TOOL_CATALOGUE = `
+AVAILABLE TOOLS (name → route → what it does → required fields):
+worksheets → /worksheets → Generate SEND-adapted worksheets → subject, topic, yearGroup
+differentiate → /differentiate → Differentiate existing tasks for SEND → task text, difficulty level, sendNeed
+lesson-planner → /tools/lesson-planner → Full lesson plan with timing → subject, topic, yearGroup, duration
+medium-term-planner → /tools/medium-term-planner → Scheme of work over weeks → subject, topic, yearGroup, weeks
+quiz-generator → /tools/quiz-generator → Generate a quiz with questions → subject, topic, yearGroup
+rubric-generator → /tools/rubric-generator → Assessment rubric or mark scheme → task description, yearGroup
+comprehension-generator → /tools/comprehension-generator → Comprehension passage + questions → subject, topic, yearGroup
+exit-ticket → /tools/exit-ticket → Quick end-of-lesson check → subject, learningObjective, yearGroup
+flash-cards → /tools/flash-cards → Revision flash cards → subject, topic, yearGroup
+vocabulary-builder → /tools/vocabulary-builder → Vocabulary lists and mats → subject, topic, yearGroup
+social-stories → /tools/social-stories → Social stories for SEND pupils → pupilName, situation, sendNeed
+pupil-passport → /tools/pupil-passport → One-page pupil profile → pupilName, yearGroup, sendNeed
+smart-targets → /tools/smart-targets → SMART targets for SEND pupils → pupilName, sendNeed, area
+behaviour-plan → /tools/behaviour-plan → Positive behaviour support plan → pupilName, sendNeed, concern
+iep-generator → /tools/iep-generator → Full EHCP/IEP document → pupilName, yearGroup, sendNeed
+wellbeing-support → /tools/wellbeing-support → Wellbeing intervention plan → pupilName, yearGroup, concern
+report-comments → /tools/report-comments → School report comments → studentName, subject, yearGroup, pronoun
+parent-newsletter → /tools/parent-newsletter → Parent letters and newsletters → schoolName, type, content
+text-rewriter → /tools/text-rewriter → Simplify or adapt any text → (text provided by user)
+reading → /reading → Personalised story generator → genre, yearGroup, sendNeed
+send-screener → /send-screener → SEND needs screening questionnaire → pupilName, yearGroup
+risk-assessment → /tools/risk-assessment → Trip risk assessment → venueName
+revision-hub → /revision-hub → Podcast + quiz revision tool → subject, topic
+`;
+
+  const handleNLSubmit = async () => {
+    const q = nlQuery.trim();
+    if (!q) return;
+    setNlLoading(true);
+    try {
+      const { text } = await callAI(
+        `You are an educational assistant routing teacher requests to the correct tool.
+Given a teacher's natural language request, determine:
+1. Which tool best matches their request
+2. What information can be extracted from their request
+3. What required information is MISSING
+
+${TOOL_CATALOGUE}
+
+Respond with ONLY valid JSON in this exact format:
+{
+  "tool": "tool-name-from-catalogue",
+  "route": "/route/from/catalogue",
+  "confidence": "high|medium|low",
+  "extracted": { "field": "value from their request" },
+  "missing": [{ "key": "fieldKey", "label": "Human label", "placeholder": "e.g. example" }],
+  "summary": "One sentence: what you understood them to want"
+}
+
+Rules:
+- Only include fields in "extracted" if clearly stated in the request
+- Put in "missing" any REQUIRED fields not mentioned
+- For text-rewriter: if they pasted text, put it in extracted.text and missing = []
+- confidence "high" = route is clear, confidence "low" = ambiguous
+- If completely unclear, use tool "worksheets" as safe default`,
+        `Teacher's request: "${q}"`
+      );
+
+      let parsed: any;
+      try {
+        const clean = text.replace(/```json|```/g, "").trim();
+        parsed = JSON.parse(clean.match(/\{[\s\S]*\}/)?.[0] || clean);
+      } catch {
+        // AI response wasn't valid JSON — go straight to worksheets
+        setLocation("/worksheets");
+        return;
+      }
+
+      const { route, missing = [], extracted = {}, summary } = parsed;
+
+      if (!missing || missing.length === 0) {
+        // All info present — build query string and navigate
+        const params = new URLSearchParams(extracted).toString();
+        setLocation(params ? `${route}?${params}` : route);
+        setNlQuery("");
+      } else {
+        // Missing required fields — show the "Almost there" dialog
+        setNlDialog({
+          show: true,
+          title: "Almost there — just a few more details",
+          message: summary || `I can help with that! I just need a couple more details to get started.`,
+          fields: missing.map((f: any) => ({ ...f, value: extracted[f.key] || "" })),
+          href: route,
+          params: extracted,
+        });
+      }
+    } catch {
+      // Network/AI error — go to worksheets as safe fallback
+      setLocation("/worksheets");
+    } finally {
+      setNlLoading(false);
+    }
+  };
+
   const visibleSubjects = subjects.filter(subject =>
     (subject.id !== "eleven-plus" || (preferences.show11Plus ?? false)) &&
     (preferences.dashboardSubjects.length === 0 ||
@@ -280,6 +393,102 @@ export default function Home() {
           ))}
         </div>
       </motion.div>
+
+      {/* ── Natural Language Input ── */}
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.07 }}>
+        <div className="relative">
+          <div className="flex items-center gap-2 p-3 rounded-2xl border border-brand/25 bg-gradient-to-r from-indigo-50/60 to-purple-50/60 shadow-sm focus-within:border-brand/50 focus-within:shadow-md transition-all">
+            <Wand2 className="w-4 h-4 text-brand flex-shrink-0 mt-0.5" />
+            <textarea
+              ref={nlRef}
+              value={nlQuery}
+              onChange={e => { setNlQuery(e.target.value); e.target.style.height = "auto"; e.target.style.height = Math.min(e.target.scrollHeight, 120) + "px"; }}
+              onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleNLSubmit(); } }}
+              placeholder="What would you like to create? e.g. a Year 9 maths worksheet on fractions for a student with dyslexia..."
+              rows={1}
+              className="flex-1 resize-none bg-transparent border-0 outline-none text-sm text-foreground placeholder:text-muted-foreground/60 leading-relaxed"
+              style={{ minHeight: "22px", maxHeight: "120px" }}
+              disabled={nlLoading}
+            />
+            <button
+              onClick={handleNLSubmit}
+              disabled={nlLoading || !nlQuery.trim()}
+              className="flex-shrink-0 w-8 h-8 rounded-xl bg-brand hover:bg-brand/90 disabled:opacity-40 disabled:cursor-not-allowed text-white flex items-center justify-center transition-colors"
+            >
+              {nlLoading
+                ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                : <Send className="w-3.5 h-3.5" />}
+            </button>
+          </div>
+          <p className="text-[10px] text-muted-foreground/50 mt-1.5 ml-1">
+            Be as specific as possible — include year group, subject, topic, and any SEND needs
+          </p>
+        </div>
+      </motion.div>
+
+      {/* "Almost there" dialog */}
+      {nlDialog?.show && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" onClick={() => setNlDialog(null)}>
+          <div className="bg-background rounded-2xl shadow-2xl border border-border/50 w-full max-w-md p-6 space-y-4" onClick={e => e.stopPropagation()}>
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-brand/10 flex items-center justify-center flex-shrink-0">
+                  <Wand2 className="w-5 h-5 text-brand" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-foreground text-base">{nlDialog.title}</h3>
+                  <p className="text-sm text-muted-foreground mt-0.5">{nlDialog.message}</p>
+                </div>
+              </div>
+              <button onClick={() => setNlDialog(null)} className="text-muted-foreground hover:text-foreground mt-0.5 flex-shrink-0">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="space-y-3">
+              {nlDialog.fields.map((field, i) => (
+                <div key={field.key}>
+                  <label className="text-xs font-medium text-foreground">{field.label}</label>
+                  <input
+                    autoFocus={i === 0}
+                    type="text"
+                    defaultValue={field.value}
+                    placeholder={field.placeholder}
+                    onChange={e => {
+                      setNlDialog(prev => prev ? {
+                        ...prev,
+                        fields: prev.fields.map((f, fi) => fi === i ? { ...f, value: e.target.value } : f)
+                      } : null);
+                    }}
+                    className="mt-1 w-full h-9 px-3 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-brand/30"
+                  />
+                </div>
+              ))}
+            </div>
+            <div className="flex gap-2 pt-1">
+              <button
+                onClick={() => setNlDialog(null)}
+                className="flex-1 h-9 rounded-xl border border-border text-sm text-muted-foreground hover:bg-muted transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  if (!nlDialog) return;
+                  const allParams = { ...nlDialog.params };
+                  nlDialog.fields.forEach(f => { if (f.value.trim()) allParams[f.key] = f.value.trim(); });
+                  const qs = new URLSearchParams(allParams).toString();
+                  setNlDialog(null);
+                  setNlQuery("");
+                  setLocation(qs ? `${nlDialog.href}?${qs}` : nlDialog.href);
+                }}
+                className="flex-1 h-9 rounded-xl bg-brand hover:bg-brand/90 text-white text-sm font-medium transition-colors flex items-center justify-center gap-2"
+              >
+                <Wand2 className="w-3.5 h-3.5" /> Take me there
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Continue where you left off — single most-recent task */}
       {(preferences.showContinueSection ?? true) && continueItem && (

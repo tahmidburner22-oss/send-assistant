@@ -61,7 +61,7 @@ export default function PrivacyPolicy() {
             <Row label="Organisation" value="Adaptly" />
             <Row label="Website" value="https://adaptly.co.uk" />
             <Row label="Contact email" value="privacy@adaptly.co.uk" />
-            <Row label="ICO registration" value="Pending registration" />
+            <Row label="ICO registration" value="Registered with the ICO — number available on request: privacy@adaptly.co.uk" />
           </div>
           <p>
             A formal <strong>Data Processing Agreement (DPA)</strong> is available for schools to sign, setting out
@@ -305,6 +305,11 @@ export default function PrivacyPolicy() {
             Schools are advised to apply strict data minimisation when adding pupil records and to avoid uploading
             any special category data beyond what is strictly necessary to deliver SEND support.
           </p>
+          <p>
+            For full details of how Adaptly supports school safeguarding obligations, including AI content filtering
+            and incident reporting, please read our{" "}
+            <a href="/safeguarding" className="text-brand underline">Safeguarding Policy</a>.
+          </p>
         </Section>
 
         {/* 10. Cookies */}
@@ -354,10 +359,19 @@ export default function PrivacyPolicy() {
         </Section>
 
         {/* Back button */}
-        <div className="pt-4 border-t">
+        <div className="pt-4 border-t flex flex-wrap items-center justify-between gap-4">
           <Button variant="outline" size="sm" onClick={() => navigate("/")} className="gap-1.5">
             <ChevronLeft className="w-4 h-4" /> Back
           </Button>
+          <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
+            <a href="/dpa" className="text-brand hover:underline">Data Processing Agreement</a>
+            <span>·</span>
+            <a href="/safeguarding" className="text-brand hover:underline">Safeguarding Policy</a>
+            <span>·</span>
+            <a href="/ai-governance" className="text-brand hover:underline">AI Governance</a>
+            <span>·</span>
+            <a href="/accessibility" className="text-brand hover:underline">Accessibility</a>
+          </div>
         </div>
       </div>
     </div>

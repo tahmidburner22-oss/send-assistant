@@ -94,6 +94,41 @@ export default function History() {
   const [sharingId, setSharingId] = useState<string | null>(null);
   const [shareCopied, setShareCopied] = useState(false);
 
+  // ── SEND filter + bulk delete ───────────────────────────────────────────────
+  const [filterSendNeed, setFilterSendNeed] = useState<string>("all");
+  const [bulkMode, setBulkMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+
+  const toggleSelectId = (id: string) => setSelectedIds(prev => {
+    const next = new Set(prev);
+    next.has(id) ? next.delete(id) : next.add(id);
+    return next;
+  });
+
+  const handleBulkDelete = async () => {
+    if (!confirm(`Delete ${selectedIds.size} worksheet(s)? This cannot be undone.`)) return;
+    setBulkDeleting(true);
+    try {
+      const token = localStorage.getItem("send_token");
+      await Promise.all([...selectedIds].map(id =>
+        fetch(`/api/data/worksheets/${id}`, {
+          method: "DELETE",
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+          credentials: "include",
+        })
+      ));
+      toast.success(`Deleted ${selectedIds.size} worksheet(s)`);
+      setSelectedIds(new Set());
+      setBulkMode(false);
+      refreshData();
+    } catch {
+      toast.error("Failed to delete some worksheets");
+    } finally {
+      setBulkDeleting(false);
+    }
+  };
+
   const handleShare = useCallback(async (wsId: string) => {
     setSharingId(wsId);
     try {
@@ -247,6 +282,34 @@ export default function History() {
 
         {/* ── Worksheets list ── */}
         <TabsContent value="worksheets" className="mt-4 space-y-2">
+          {worksheetHistory.length > 0 && (
+            <div className="flex flex-wrap gap-2 items-center pb-1">
+              <Select value={filterSendNeed} onValueChange={v => { setFilterSendNeed(v); setSelectedIds(new Set()); }}>
+                <SelectTrigger className="h-8 text-xs w-52">
+                  <SelectValue placeholder="All SEND needs" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All SEND needs</SelectItem>
+                  {sendNeeds.map(n => <SelectItem key={n.id} value={n.id} className="text-xs">{n.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              {filterSendNeed !== "all" && (
+                <button onClick={() => setFilterSendNeed("all")} className="text-xs text-muted-foreground hover:text-foreground">
+                  Clear filter
+                </button>
+              )}
+              <div className="ml-auto flex items-center gap-2">
+                {bulkMode && selectedIds.size > 0 && (
+                  <Button size="sm" variant="destructive" className="h-7 text-xs gap-1" onClick={handleBulkDelete} disabled={bulkDeleting}>
+                    <Trash2 className="w-3 h-3" />{bulkDeleting ? "Deleting..." : `Delete ${selectedIds.size}`}
+                  </Button>
+                )}
+                <Button size="sm" variant={bulkMode ? "default" : "outline"} className="h-7 text-xs" onClick={() => { setBulkMode(b => !b); setSelectedIds(new Set()); }}>
+                  {bulkMode ? "Cancel" : "Bulk Select"}
+                </Button>
+              </div>
+            </div>
+          )}
           {worksheetHistory.length === 0 ? (
             <Card className="border-border/50">
               <CardContent className="p-8 text-center">
@@ -255,12 +318,14 @@ export default function History() {
                 <p className="text-sm text-muted-foreground">Generate your first worksheet to see it here.</p>
               </CardContent>
             </Card>
-          ) : worksheetHistory.map((ws, i) => {
+          ) : worksheetHistory.filter(ws => filterSendNeed === "all" || ws.sendNeed === filterSendNeed).map((ws, i) => {
+            const isSelected = selectedIds.has(ws.id);
             const subjectName = subjects.find(s => s.id === ws.subject)?.name || ws.subject;
             const needName = ws.sendNeed ? sendNeeds.find(n => n.id === ws.sendNeed)?.name : null;
             return (
               <motion.div key={ws.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}>
-                <Card className="border-border/50 hover:shadow-md transition-shadow cursor-pointer" onClick={() => openWorksheet(ws)}>
+                <Card className={`border-border/50 hover:shadow-md transition-shadow ${bulkMode ? "" : "cursor-pointer"} ${isSelected ? "ring-2 ring-brand border-brand" : ""}`}
+                onClick={() => bulkMode ? toggleSelectId(ws.id) : openWorksheet(ws)}>
                   <CardContent className="p-4 flex items-start gap-3">
                     <div className="w-10 h-10 rounded-xl bg-brand-light flex items-center justify-center flex-shrink-0">
                       <FileText className="w-5 h-5 text-brand" />

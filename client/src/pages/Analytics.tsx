@@ -1,4 +1,4 @@
-import { useMemo, useEffect } from "react";
+import { useMemo, useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import { useApp } from "@/contexts/AppContext";
@@ -9,13 +9,16 @@ import {
 } from "recharts";
 import {
   BarChart3, FileText, BookOpen, Users, Clock, Star, TrendingUp,
-  TrendingDown, Minus, Sparkles, Award,
+  TrendingDown, Minus, Sparkles, Award, Shield,
 } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 
 const COLORS = ["#10B981","#7C3AED","#3B82F6","#F59E0B","#EF4444","#06B6D4","#EC4899","#8B5CF6"];
 
 export default function Analytics() {
-  const { worksheetHistory, storyHistory, differentiationHistory, children, refreshData } = useApp();
+  const { worksheetHistory, storyHistory, differentiationHistory, children, refreshData, user } = useApp();
+  const isAdmin = user?.role === "school_admin" || user?.role === "mat_admin" || user?.role === "senco";
+  const [schoolWide, setSchoolWide] = useState(false);
   useEffect(() => { refreshData(); }, []);
 
   const totalWorksheets = worksheetHistory.length;

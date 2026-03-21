@@ -135,12 +135,19 @@
 
 /* Print styles for worksheets */
 @media print {
+  /* Ensure colours and backgrounds print correctly */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
   /* Hide everything except the worksheet */
   body > *:not(#root) { display: none !important; }
   .no-print { display: none !important; }
   .print-only { display: block !important; }
 
-  /* Hide all app chrome: sidebar, nav, header, toolbar, buttons */
+  /* Hide all app chrome */
   nav, header, aside, footer,
   [data-sidebar], [role="navigation"],
   .app-sidebar, .app-header, .app-nav,
@@ -148,10 +155,10 @@
     display: none !important;
   }
 
-  /* Page setup */
+  /* Page setup — A4 with comfortable margins */
   @page {
     size: A4 portrait;
-    margin: 5mm 5mm 6mm 5mm;
+    margin: 8mm 8mm 8mm 8mm;
   }
 
   html, body {
@@ -190,11 +197,9 @@
     box-sizing: border-box !important;
   }
 
-  /* Card wrapper: remove shadow/border for print */
-  .worksheet-content > * {
+  /* Card wrapper: only remove outer shadow — preserve section box styling for print */
+  .worksheet-content > div {
     box-shadow: none !important;
-    border: none !important;
-    border-radius: 0 !important;
   }
 
   /* Zero out CardContent padding so worksheet fills the full page width */
@@ -203,10 +208,16 @@
     padding: 0 !important;
   }
 
+  /* Header stays glued to first section — student info always visible at top */
+  .ws-header {
+    break-after: avoid !important;
+    page-break-after: avoid !important;
+  }
+
   /* Each worksheet section must NOT split across pages */
+  .ws-section,
   .worksheet-section,
-  .worksheet-content > div > div > div,
-  .ws-section {
+  .worksheet-content > div > div > div {
     break-inside: avoid !important;
     page-break-inside: avoid !important;
     orphans: 3;
@@ -225,26 +236,16 @@
     page-break-inside: avoid !important;
   }
 
-  /* Vocabulary pills */
-  .vocab-table {
-    break-inside: avoid !important;
-    page-break-inside: avoid !important;
-  }
-
-  /* Diagram sections */
-  .diagram-section {
-    break-inside: avoid !important;
-    page-break-inside: avoid !important;
-  }
-
-  /* Answer lines */
+  .vocab-table,
+  .diagram-section,
   .answer-line,
   .ws-answer-line {
     break-inside: avoid !important;
     page-break-inside: avoid !important;
   }
 
-  /* Force a page break before teacher sections if needed */
+  /* Teacher-only sections always start on a new page — student pages stay clean */
+  .ws-teacher-section,
   .teacher-section {
     break-before: page !important;
     page-break-before: always !important;
@@ -267,3 +268,5 @@
 .card-border-override [data-slot="card"] {
   border-color: var(--card-border-override) !important;
 }
+
+/* deploy trigger */

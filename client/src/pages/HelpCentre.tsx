@@ -12,7 +12,7 @@ const categories = [
       { q: "How do I register my school?", a: "Go to the login page and click 'Register your school'. You'll be guided through our onboarding wizard where you'll enter your school name, URN, and DSL contact details. Once complete, you can invite your team." },
       { q: "How do I invite teachers and TAs?", a: "As a school admin or SENCO, go to Settings > Users > Invite User. Enter their email address and select their role. They'll receive an email invitation to create their account." },
       { q: "What is the onboarding tour?", a: "When you first log in, you'll see a guided tour highlighting the key features of Adaptly. You can restart the tour at any time from Settings > Help > Restart Tour." },
-      { q: "How do I set up my API key for AI features?", a: "Go to Settings > AI Settings. You can enter your API key for Groq (free tier available), Google Gemini, OpenAI, or OpenRouter. Your key is stored securely in your browser and never sent to our servers." },
+      { q: "How do I set up my API key for AI features?", a: "Go to Settings > AI Settings. You can enter your API key for Groq (free tier available), Google Gemini, OpenAI, or OpenRouter. Your key is encrypted and stored securely on your school's account — it is never shared with other schools or used outside your session." },
     ],
   },
   {

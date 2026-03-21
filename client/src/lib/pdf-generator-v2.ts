@@ -38,6 +38,7 @@ export function buildPopupHtml(
     title?: string;
     sendNeedId?: string;
     isPdf?: boolean;
+    landscape?: boolean;
   }
 ): string {
   const {
@@ -48,6 +49,7 @@ export function buildPopupHtml(
     title = "Worksheet",
     sendNeedId,
     isPdf = false,
+    landscape = false,
   } = options;
 
   const fmt = getSendFormatting(sendNeedId, textSize);
@@ -115,30 +117,30 @@ export function buildPopupHtml(
 
     /* ── Page setup ── */
     @page {
-      size: A4 portrait;
-      margin: 12mm 12mm 12mm 12mm;
+      size: A4 \${landscape ? "landscape" : "portrait"};
+      margin: \${landscape ? "6mm" : "12mm 12mm 12mm 12mm"};
     }
 
     /* ── Screen preview ── */
     @media screen {
       body {
-        max-width: 210mm;
+        max-width: \${landscape ? "297mm" : "210mm"};
         margin: 0 auto;
         padding: 12mm;
         background: #f3f4f6;
       }
       .worksheet-print-root {
-        background: ${overlayColor};
+        background: \${overlayColor};
         box-shadow: 0 2px 8px rgba(0,0,0,0.12);
         padding: 12mm;
-        min-height: 270mm;
+        min-height: \${landscape ? "190mm" : "270mm"};
       }
     }
 
     /* ── Print ── */
     @media print {
       html, body {
-        background: ${overlayColor} !important;
+        background: \${overlayColor} !important;
         padding: 0;
         margin: 0;
       }
@@ -147,45 +149,44 @@ export function buildPopupHtml(
         box-shadow: none;
       }
       .no-print { display: none !important; }
-      ${hideTeacher}
-      ${perPageCss}
+      \${hideTeacher}
+      \${perPageCss}
     }
 
     /* ── Worksheet root ── */
     .worksheet-print-root {
-      background: ${overlayColor};
-      font-family: ${fmt.fontFamily};
-      font-size: ${fmt.fontSize}px;
-      line-height: ${fmt.lineHeight};
-      letter-spacing: ${fmt.letterSpacing};
-      word-spacing: ${fmt.wordSpacing};
+      background: \${overlayColor};
+      font-family: \${fmt.fontFamily};
+      font-size: \${fmt.fontSize}px;
+      line-height: \${fmt.lineHeight};
+      letter-spacing: \${fmt.letterSpacing};
+      word-spacing: \${fmt.wordSpacing};
       width: 100%;
       max-width: 100%;
       overflow: visible;
     }
 
-    /* ── Header: ensure purple background prints ── */
+    /* ── Header: ensure gradient background prints ── */
     .ws-header {
-      border: 1.5px solid #5b21b6 !important;
-      border-radius: 4px !important;
-      margin-bottom: 10px !important;
+      border-radius: 8px !important;
+      margin-bottom: 12px !important;
       overflow: hidden !important;
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
+      box-shadow: 0 2px 12px rgba(79,70,229,0.15) !important;
     }
 
-    /* Force the purple title bar background to print */
+    /* Force gradient title bar background to print */
     .ws-header > div:first-child,
     .ws-header > div:first-child * {
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
     }
 
-    /* ── Sections: ensure borders and backgrounds print ── */
+    /* ── Sections: allow their own border colours to print (no override!) ── */
     .ws-section {
       margin-bottom: 10px !important;
-      border-radius: 4px !important;
-      border: 1.5px solid #5b21b6 !important;
+      border-radius: 8px !important;
       overflow: visible !important;
       page-break-inside: avoid !important;
       break-inside: avoid !important;
@@ -340,6 +341,7 @@ export function printWorksheetElement(
     textSize?: number;
     title?: string;
     sendNeedId?: string;
+    landscape?: boolean;
   } = {}
 ): void {
   const viewMode = options.viewMode || "student";
@@ -374,17 +376,21 @@ export async function downloadHtmlAsPdf(
     textSize?: number;
     title?: string;
     sendNeedId?: string;
+    landscape?: boolean;
   } = {}
 ): Promise<void> {
   const viewMode = options.viewMode || "student";
   const overlayColor = options.overlayColor || "#ffffff";
+  const landscape = options.landscape ?? false;
 
-  const A4_W_MM = 210;
-  const A4_H_MM = 297;
+  // A4 portrait: 210×297mm; A4 landscape: 297×210mm
+  const A4_W_MM = landscape ? 297 : 210;
+  const A4_H_MM = landscape ? 210 : 297;
   const MARGIN_MM = 3;
   const printableW_MM = A4_W_MM - MARGIN_MM * 2;
   const printableH_MM = A4_H_MM - MARGIN_MM * 2;
-  const RENDER_PX = 794;
+  // Landscape renders at A4-landscape width (1123px @ 96dpi ≈ 297mm)
+  const RENDER_PX = landscape ? 1123 : 794;
   const JPEG_QUALITY = 0.88;
 
   // Serialise the live DOM into a complete self-contained HTML document.
@@ -584,7 +590,7 @@ export async function downloadHtmlAsPdf(
       return Math.min(breakAt, canvasH);
     };
 
-    const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4", compress: true });
+    const pdf = new jsPDF({ orientation: landscape ? "landscape" : "portrait", unit: "mm", format: "a4", compress: true });
     let curY = 0;
     let pageNum = 0;
 

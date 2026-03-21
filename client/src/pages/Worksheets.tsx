@@ -27,6 +27,7 @@ import type { PastPaperQuestion } from "@/lib/pastPaperQuestions";
 import PrintOptionsDialog, { type PrintOptions } from "@/components/PrintOptionsDialog";
 import SENDInfoPanel from "@/components/SENDInfoPanel";
 import DiagnosticStarterSheet from "@/components/DiagnosticStarterSheet";
+import { FunFactsCarousel } from "@/components/FunFactsCarousel";
 import {
   FileText, Upload, Library, Sparkles, Download, Printer, Save, Star,
   Eye, EyeOff, GraduationCap, Palette, Edit3, Users, Check, ZoomIn, ZoomOut,
@@ -173,7 +174,8 @@ function AnimatedProgressBar() {
 // ─── Main Component ──────────────────────────────────────────────────────────
 export default function Worksheets() {
   const [location] = useLocation();
-  const { saveWorksheet, updateWorksheet, deleteWorksheet, worksheetHistory, children, assignWork, colorOverlay, setColorOverlay, refreshData } = useApp();
+  const { saveWorksheet, updateWorksheet, deleteWorksheet, worksheetHistory, children, assignWork, colorOverlay, setColorOverlay, refreshData, user } = useApp();
+  const isPlatformAdmin = user?.email === "admin@adaptly.co.uk" || user?.email === "admin@sendassistant.app";
   const { preferences } = useUserPreferences();
   const showLibraryTab = preferences.showWorksheetLibrary === true;
   // Filter out 11+ unless user has enabled it in Settings → Features
@@ -450,6 +452,8 @@ export default function Worksheets() {
   const [historyAiLoading, setHistoryAiLoading] = useState(false);
   const [historyViewMode, setHistoryViewMode] = useState<"teacher" | "student">("teacher");
   const [showPrintDialog, setShowPrintDialog] = useState(false);
+  // "How to use" guide — collapsed by default
+  const [howToOpen, setHowToOpen] = useState(false);
   // One-click differentiation
   const [showDiffDialog, setShowDiffDialog] = useState(false);
   const [showPrintPreview, setShowPrintPreview] = useState(false);
@@ -716,21 +720,50 @@ export default function Worksheets() {
   // ─── Generate worksheet ────────────────────────────────────────────────────
 
   // Revision Mat instruction injected when toggle is on
-  const REVISION_MAT_INSTRUCTIONS = `REVISION MAT FORMAT — MANDATORY LAYOUT RULES:
-This worksheet MUST be formatted as a 3-tier revision activity mat, modelled on AQA GCSE revision mats.
-Layout: landscape orientation, compact grid of short activity boxes labelled a, b, c… across the page.
-Structure — three tiers across the sheet:
-  FOUNDATION tier (left column, ~35% width): sentence completion gaps, label diagrams, match columns, circle the correct answer, fill-in tables. Short recall only.
-  CORE tier (centre column, ~35% width): short structured questions (2–4 marks), equation application, describe/explain tasks with sentence starters provided.
-  EXTENSION tier (right column, ~30% width): extended writing, evaluation questions, multi-step calculations, "true or false — correct the false ones", higher-order tasks.
-Rules:
-- Every box must be labelled with a letter (a, b, c…) and a title in bold.
-- Use blank lines (___) for fill-in-the-gap tasks.
-- Include a data table if relevant to the topic.
-- Include at least one force/graph/diagram description box.
-- End with an Answer section (teacher copy) covering all boxes.
-- NO introductory paragraph — go straight into the activity boxes.
-- Maximum 2 sentences of context per box — keep it dense and printable.`;
+  const REVISION_MAT_INSTRUCTIONS = `REVISION MAT FORMAT — MATCH EXACTLY:
+
+You are creating a revision activity mat identical in structure to published AQA GCSE revision mats.
+
+LAYOUT:
+- Single landscape A4 page ONLY — everything must fit on one page, no overflow
+- NO title bar, NO colour-coded tier headers
+- Grid of compact question boxes, each labelled with a lowercase letter (a, b, c, d...)
+- The first box (a) = Learning Objectives — list 3-5 brief LOs, nothing else
+- Each remaining box (b, c, d...) = EXACTLY ONE question or task — never more
+- Aim for 13-16 boxes total to fill the page
+- Each box has a tiny letter label in the top-left corner
+
+CRITICAL — EACH BOX CONTAINS EXACTLY ONE QUESTION:
+- ONE question per box — never two questions in the same box
+- Question text: maximum 2 lines (30 words max)
+- Then answer lines (___) or options for MCQ — nothing else
+- If a question is complex, make it simpler so it fits in 2 lines
+
+QUESTION FORMAT per box:
+- Short answer (1-2 marks): question + 2 answer lines (_____)
+- Medium answer (3-4 marks): question + 4 answer lines
+- Explain/describe: question + 5 answer lines
+- Calculation: question + "Show working:" + "Answer: _____"
+- MCQ: question + 4 options a. b. c. d. (student circles — no answer lines)
+- Fill-in-the-blank: sentence with ___ gaps inline, no separate answer lines
+- Match-up: two columns (term | definition) — format as "Term 1 | Definition 1\\nTerm 2 | Definition 2"
+- True/False: statement + "True / False" (student circles)
+
+QUESTION VARIETY — spread these types across the mat:
+Circle the correct answer, Fill in the blank, Complete the sentence,
+Calculate (show working), Define the term, Explain why, Name two examples,
+Match up, True or False, State the equation for, Short describe/explain
+
+JSON FORMAT — CRITICAL:
+- "title": the single letter only — "a", "b", "c" (NOT a section name, NOT "Box a")
+- "type": "revision-mat-box" for ALL student boxes
+- "content": ONLY the question text + answer lines. NO teaching content. NO introductions.
+  Format answer lines as: "\\n_____________________" repeated as needed.
+  Format MCQ options on separate lines: "a. option1\\nb. option2\\nc. option3\\nd. option4"
+
+TEACHER SECTION: Include one section with teacherOnly:true containing all answers.`;
+
+
 
   const handleGenerate = async () => {
     if (!subject || !yearGroup || !topic) {
@@ -859,13 +892,15 @@ Rules:
           generatedWs = generateWorksheet({ subject, topic, yearGroup, sendNeed: sendNeed || undefined, difficulty, examBoard, includeAnswers, additionalInstructions });
         } else {
           // Retry across all available providers — server tries Groq→Cerebras→Gemini→OpenRouter→OpenAI→Claude→Mistral→DeepSeek
-          const providerNames = ["Groq", "Gemini", "OpenRouter", "OpenAI", "Claude", "Mistral"];
+          const providerNames = ["Groq", "Gemini", "OpenRouter", "OpenAI", "Claude", "Mistral", "DeepSeek", "Fallback"];
           let retrySuccess = false;
-          for (let attempt = 1; attempt <= 5; attempt++) {
+          for (let attempt = 1; attempt <= 8; attempt++) {
             const providerLabel = providerNames[attempt - 1] ?? `Provider ${attempt}`;
-            setGenerationStatus(`Trying ${providerLabel}…`);
-            toast(`Trying ${providerLabel}…`, { icon: "🔄", id: "ai-retry" });
-            await new Promise(r => setTimeout(r, Math.min(attempt * 1200, 3500)));
+            if (isPlatformAdmin) {
+              setGenerationStatus(`Trying ${providerLabel}…`);
+              toast(`Trying ${providerLabel}…`, { icon: "🔄", id: "ai-retry" });
+            }
+            await new Promise(r => setTimeout(r, 300));
             try {
               const retryResult = await aiGenerateWorksheet({
                 subject, topic, yearGroup,
@@ -881,7 +916,7 @@ Rules:
                 readingAge: readingAge || undefined,
               });
               generatedWs = { ...retryResult, isAI: true } as AIWorksheet;
-              toast.success(`Worksheet generated via ${providerLabel}!`, { id: "ai-retry" });
+              if (isPlatformAdmin) toast.success(`Worksheet generated via ${providerLabel}!`, { id: "ai-retry" });
               retrySuccess = true;
               break;
             } catch (retryErr: any) {
@@ -889,8 +924,7 @@ Rules:
             }
           }
           if (!retrySuccess) {
-            toast("All AI providers tried — using local generator as backup.", { icon: "⚠️", id: "ai-retry" });
-            generatedWs = generateWorksheet({ subject, topic, yearGroup, sendNeed: sendNeed || undefined, difficulty, examBoard, includeAnswers, additionalInstructions });
+            toast.error("All AI providers are temporarily busy. Please wait a few seconds and try again.", { duration: 8000, id: "ai-retry" });
           }
         }
       }
@@ -902,8 +936,15 @@ Rules:
 
     if (generatedWs) {
       setGenerated(generatedWs);
-      setHiddenSections(new Set()); // Reset hidden sections for new worksheet
-      setDiffVersions({}); // Clear old diff versions when a new worksheet is generated
+      setHiddenSections(new Set());
+      setDiffVersions({});
+      // Show quality warnings if detected
+      const qIssues = (generatedWs.metadata as any)?.qualityIssues;
+      if (qIssues && qIssues.length > 0) {
+        setTimeout(() => {
+          toast.warning(`Quality check: ${qIssues[0]}${qIssues.length > 1 ? ` (+${qIssues.length - 1} more)` : ""}. Consider regenerating if content looks wrong.`, { duration: 6000 });
+        }, 1000);
+      }
       // Auto-save on generate so dashboard updates immediately
       const ws = generatedWs;
       const sectionsToSave = ws.sections.map(s => ({ ...s }));
@@ -1193,6 +1234,7 @@ Rules:
       textSize,
       title: generated?.title,
       sendNeedId: generated?.metadata?.sendNeed || sendNeed || undefined,
+      landscape: isRevisionMat,
     });
   };
   // ─── Paginated Print Preview ────────────────────────────────────────────────
@@ -1532,10 +1574,10 @@ Rules:
       if (!errMsg.includes("No AI provider keys configured")) {
         const providerNames = ["Groq", "Gemini", "OpenRouter", "OpenAI", "Claude", "Mistral"];
         let retrySuccess = false;
-        for (let attempt = 1; attempt <= 5; attempt++) {
+        for (let attempt = 1; attempt <= 8; attempt++) {
           const providerLabel = providerNames[attempt - 1] ?? `Provider ${attempt}`;
-          toast(`Trying ${providerLabel}…`, { icon: "🔄", id: "nl-retry" });
-          await new Promise(r => setTimeout(r, Math.min(attempt * 1200, 3500)));
+          if (isPlatformAdmin) toast(`Trying ${providerLabel}…`, { icon: "🔄", id: "nl-retry" });
+          await new Promise(r => setTimeout(r, Math.min(attempt * 400, 1200)));
           try {
             const retryResult = await aiGenerateWorksheet({
               subject: nextSubject, topic: nextTopic, yearGroup: nextYearGroup,
@@ -1547,12 +1589,12 @@ Rules:
               generateDiagram: false, worksheetLength: "30",
             });
             generatedWs = { ...retryResult, isAI: true } as AIWorksheet;
-            toast.success(`Worksheet generated via ${providerLabel}!`, { id: "nl-retry" });
+            if (isPlatformAdmin) toast.success(`Worksheet generated via ${providerLabel}!`, { id: "nl-retry" });
             retrySuccess = true;
             break;
           } catch (_) {}
         }
-        if (!retrySuccess) {
+        if (!retrySuccess && isPlatformAdmin) {
           toast.error("All AI providers tried — check Settings → AI Providers.", { id: "nl-retry" });
         }
       } else {
@@ -1741,24 +1783,32 @@ Rules:
               </div>
               <div className="text-center">
                 <h3 className="font-semibold text-foreground text-lg">Generating your worksheet</h3>
-                {generationStatus && generationStatus.startsWith("Trying") ? (
-                  <p className="text-sm text-muted-foreground mt-1 min-h-[40px]">{generationStatus}</p>
+                {isPlatformAdmin ? (
+                  generationStatus && generationStatus.startsWith("Trying") ? (
+                    <p className="text-sm text-muted-foreground mt-1 min-h-[40px]">{generationStatus}</p>
+                  ) : (
+                    <LoadingStageMessage stages={STAGES} />
+                  )
                 ) : (
-                  <LoadingStageMessage stages={STAGES} />
+                  <p className="text-sm text-muted-foreground mt-1">Crafting your personalised resource…</p>
                 )}
               </div>
               <div className="w-full bg-muted rounded-full h-1.5 overflow-hidden">
                 <AnimatedProgressBar />
               </div>
-              <div className="flex items-center gap-1.5 flex-wrap justify-center">
-                {["Groq","Gemini","OpenRouter","OpenAI","Claude","Mistral"].map(p => (
-                  <span key={p} className={`text-[9px] font-medium px-1.5 py-0.5 rounded-full border ${
-                    generationStatus?.includes(p)
-                      ? "bg-brand text-white border-brand"
-                      : "bg-muted text-muted-foreground border-border/40"
-                  }`}>{p}</span>
-                ))}
-              </div>
+              {isPlatformAdmin ? (
+                <div className="flex items-center gap-1.5 flex-wrap justify-center">
+                  {["Groq","Gemini","OpenRouter","OpenAI","Claude","Mistral"].map(p => (
+                    <span key={p} className={`text-[9px] font-medium px-1.5 py-0.5 rounded-full border ${
+                      generationStatus?.includes(p)
+                        ? "bg-brand text-white border-brand"
+                        : "bg-muted text-muted-foreground border-border/40"
+                    }`}>{p}</span>
+                  ))}
+                </div>
+              ) : (
+                <FunFactsCarousel className="mt-1" />
+              )}
               <p className="text-xs text-muted-foreground">Please wait — do not close this page</p>
             </div>
           </div>
@@ -1856,27 +1906,38 @@ Rules:
                 <div className="p-4 rounded-xl border border-border/40 bg-slate-50/50 space-y-4">
                 <h3 className="text-sm font-semibold text-foreground flex items-center gap-1.5"><FileText className="h-4 w-4 text-brand/70" /> Core Settings</h3>
 
-                {/* How to use guide */}
-                <div className="p-3 rounded-lg bg-blue-50 border border-blue-100 space-y-2">
-                  <p className="text-xs font-semibold text-blue-800 flex items-center gap-1.5">
-                    <Info className="w-3.5 h-3.5 flex-shrink-0" /> How to use this generator
-                  </p>
-                  <div className="space-y-1.5 text-xs text-blue-700 leading-relaxed">
-                    <p>
-                      <strong>Quick way:</strong> Use the AI bar above — type e.g. <em>"Year 9 Forces AQA foundation"</em> and hit Generate. 
-                      The dropdowns will be ignored.
-                    </p>
-                    <p>
-                      <strong>Full control:</strong> Fill in Subject, Year Group and Topic below. Every field adds specificity — 
-                      the more detail you give, the better the output.
-                    </p>
-                    <p className="flex items-start gap-1">
-                      <span className="text-blue-500 mt-0.5 flex-shrink-0">★</span>
-                      <span><strong>SEND Need field:</strong> Setting this tailors vocabulary, scaffolding, layout and instructions 
-                      specifically for that need — dyslexia gets larger spacing and colour overlays, ASC gets literal language and 
-                      structured steps, ADHD gets tick boxes and chunked tasks.</span>
-                    </p>
-                  </div>
+                {/* How to use guide — collapsible */}
+                <div className="rounded-lg bg-blue-50 border border-blue-100 overflow-hidden">
+                  <button
+                    type="button"
+                    onClick={() => setHowToOpen(v => !v)}
+                    className="w-full flex items-center justify-between gap-1.5 px-3 py-2.5 text-left hover:bg-blue-100/60 transition-colors"
+                  >
+                    <span className="text-xs font-semibold text-blue-800 flex items-center gap-1.5">
+                      <Info className="w-3.5 h-3.5 flex-shrink-0" /> How to use this generator
+                    </span>
+                    <ChevronDown
+                      className={`w-3.5 h-3.5 text-blue-500 flex-shrink-0 transition-transform duration-200 ${howToOpen ? "rotate-180" : ""}`}
+                    />
+                  </button>
+                  {howToOpen && (
+                    <div className="px-3 pb-3 space-y-1.5 text-xs text-blue-700 leading-relaxed border-t border-blue-100">
+                      <p className="pt-2">
+                        <strong>Quick way:</strong> Use the AI bar above — type e.g. <em>"Year 9 Forces AQA foundation"</em> and hit Generate.
+                        The dropdowns will be ignored.
+                      </p>
+                      <p>
+                        <strong>Full control:</strong> Fill in Subject, Year Group and Topic below. Every field adds specificity —
+                        the more detail you give, the better the output.
+                      </p>
+                      <p className="flex items-start gap-1">
+                        <span className="text-blue-500 mt-0.5 flex-shrink-0">★</span>
+                        <span><strong>SEND Need field:</strong> Setting this tailors vocabulary, scaffolding, layout and instructions
+                        specifically for that need — dyslexia gets larger spacing and colour overlays, ASC gets literal language and
+                        structured steps, ADHD gets tick boxes and chunked tasks.</span>
+                      </p>
+                    </div>
+                  )}
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
@@ -2102,7 +2163,9 @@ Rules:
                 <div className="space-y-1.5">
                   <Label className="text-xs font-medium">Additional Instructions (optional)</Label>
                   <Textarea value={additionalInstructions} onChange={e => setAdditionalInstructions(e.target.value)}
-                    placeholder="Any specific requirements..." className="min-h-[60px] text-sm" />
+                    placeholder={`Examples:\n• "Include 2 worked examples showing full method steps"\n• "Focus on calculating gradient, avoid y-intercept"\n• "Add a formulae box at the top, use Edexcel command words"\n• "Make questions progressively harder, last 2 must be exam-style"\n• "Include a data table students fill in"`}
+                    className="min-h-[80px] text-sm" />
+                  <p className="text-[10px] text-muted-foreground">Specific instructions override defaults. The more detail you give, the better the output.</p>
                 </div>
 
                 <div className="flex flex-wrap gap-4 items-center py-1">
@@ -2321,14 +2384,15 @@ Rules:
                   }
                   const uploadedWorksheet = {
                     title: adapted?.title || uploadFile?.name?.replace(/\.[^.]+$/, "") || "Adapted Worksheet",
-                    subtitle: adapted?.subtitle || `${uploadSendNeed} adaptation`,
+                    subtitle: adapted?.subtitle || `${uploadYearGroup || "Year 9"} — Adapted for ${sendNeeds.find(n => n.id === uploadSendNeed)?.name || uploadSendNeed}`,
                     sections,
                     metadata: {
                       subject: "uploaded",
-                      topic: "Uploaded worksheet",
+                      topic: adapted?.title || "Uploaded worksheet",
                       yearGroup: uploadYearGroup || "Year 9",
                       sendNeed: uploadSendNeed,
-                      difficulty: "Standard",
+                      sendNeedId: uploadSendNeed,
+                      difficulty: "mixed",
                       adaptations: adapted?.adaptationsSummary || [],
                     },
                   };
@@ -2354,13 +2418,13 @@ Rules:
                           worksheet={uploadedWorksheet as any}
                           viewMode="student"
                           textSize={textSize}
-                          overlayColor={overlayBg}
+                          overlayColor={overlayBg || colorOverlays.find(o => o.id === "cream")?.color}
                           editedSections={{}}
                           schoolLogoUrl={preferences.schoolLogoUrl}
                           schoolName={preferences.schoolName}
                         />
                       </div>
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 flex-wrap">
                         <Button
                           size="sm"
                           variant="outline"
@@ -2383,6 +2447,34 @@ Rules:
                           }}
                         >
                           <Download className="h-4 w-4 mr-1" />Download PDF
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="gap-1 border-brand/30 text-brand hover:bg-brand/5"
+                          onClick={async () => {
+                            try {
+                              await saveWorksheet({
+                                title: uploadedWorksheet.title,
+                                subtitle: uploadedWorksheet.subtitle,
+                                subject: "uploaded",
+                                topic: "Uploaded & adapted worksheet",
+                                yearGroup: uploadYearGroup || "",
+                                sendNeed: uploadSendNeed,
+                                difficulty: "mixed",
+                                content: sections.filter((s: any) => !s.teacherOnly).map((s: any) => `## ${s.title}
+${s.content}`).join("\n\n"),
+                                teacherContent: sections.map((s: any) => `## ${s.title}
+${s.content}`).join("\n\n"),
+                                sections: sections as any,
+                                isAI: true,
+                              });
+                              await refreshData();
+                              toast.success("Saved to history!");
+                            } catch { toast.error("Could not save. Please try again."); }
+                          }}
+                        >
+                          <Save className="h-4 w-4 mr-1" />Save to History
                         </Button>
                       </div>
                     </motion.div>
@@ -3791,7 +3883,7 @@ Rules:
             {([
               { tier: "foundation", label: "Foundation", desc: "Accessible version with simpler language, more scaffolding, and fewer questions. Ideal for lower-attaining students.", colour: "blue", icon: "🟦" },
               { tier: "higher", label: "Higher", desc: "Challenging version with multi-step problems, reasoning questions, and extension tasks. Ideal for higher-attaining students.", colour: "purple", icon: "🟣" },
-              { tier: "send", label: "SEND Scaffolded", desc: "Full SEND scaffolding: fill-in-the-blank guided questions, vocabulary box, sentence starters, chunked instructions, and visual supports.", colour: "green", icon: "♿" },
+              { tier: "send", label: "SEND Scaffolded", desc: "Full SEND scaffolding: fill-in-the-blank guided questions, vocabulary box, sentence starters, chunked instructions, and visual supports.", colour: "green", icon: "🟢" },
             ] as const).map(({ tier, label, desc, colour, icon }) => (
               <div key={tier} className={`rounded-xl border p-4 space-y-3 ${
                 // extra top padding for SEND card to accommodate the SEND picker

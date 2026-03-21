@@ -96,9 +96,9 @@ router.get("/", async (req: Request, res: Response) => {
 
     if (!response.ok) {
       console.warn(`[diagram-proxy] Upstream ${response.status} for ${decodedUrl}`);
-      return res.status(response.status).json({ 
-        error: `Upstream returned ${response.status}` 
-      });
+      return res.status(response.status)
+        .set("X-Diagram-Error", `upstream-${response.status}`)
+        .json({ error: `Upstream returned ${response.status}` });
     }
 
     const contentType = response.headers.get("content-type") || "image/png";

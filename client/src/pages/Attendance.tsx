@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { callAI } from "@/lib/ai";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +13,8 @@ import { useApp, type AttendanceRecord, type AttendanceStatus } from "@/contexts
 import { sendNeeds } from "@/lib/send-data";
 import {
   CalendarDays, CheckCircle2, XCircle, MinusCircle, ChevronLeft, ChevronRight,
-  Users, TrendingUp, Download, Sun, Sunset, AlertCircle, Save, Database, Clock, HelpCircle
+  Users, TrendingUp, Download, Sun, Sunset, AlertCircle, Save, Database, Clock, HelpCircle,
+  Mail, Loader2
 } from "lucide-react";
 
 const ABSENCE_REASONS = [
@@ -159,6 +161,54 @@ export default function Attendance() {
   const [editingChild, setEditingChild] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<"day" | "week">("day");
   const [selectedChildHistory, setSelectedChildHistory] = useState<string | null>(null);
+
+  // ── Attendance letter generator ────────────────────────────────────────────
+  const [letterChild, setLetterChild] = useState<string | null>(null);
+  const [letterType, setLetterType] = useState<"concern" | "pa">("concern");
+  const [letterText, setLetterText] = useState<string | null>(null);
+  const [letterLoading, setLetterLoading] = useState(false);
+
+  const generateLetter = async () => {
+    if (!letterChild) return;
+    const child = children.find(c => c.id === letterChild);
+    if (!child) return;
+    const recs = attendanceRecords.filter(r => r.childId === letterChild);
+    const total = recs.length;
+    const amPresent = recs.filter(r => r.amStatus === "attended").length;
+    const pct = total > 0 ? Math.round((amPresent / total) * 100) : 0;
+    const absences = recs.filter(r => r.amStatus === "absent" || r.amStatus === "unauthorised").length;
+    const reasons = [...new Set(recs.filter(r => r.amReason).map(r => r.amReason))].slice(0, 4).join("; ");
+    setLetterLoading(true);
+    setLetterText(null);
+    try {
+      const { text } = await callAI(
+        `You are an experienced UK school attendance officer. Write professional, empathetic, legally-appropriate parent letters in UK English. Always warm but clear. Never threatening on first contact.`,
+        `Write a ${letterType === "pa" ? "persistent absence (below 90%)" : "early attendance concern"} letter for:
+
+Pupil: ${child.name}, ${child.yearGroup || "unknown year"}
+Attendance: ${pct}% (${absences} absence sessions from ${total} recorded days)
+${reasons ? `Absence reasons recorded: ${reasons}` : ""}
+
+Requirements:
+- Start with "Dear Parent/Carer,"
+- School name placeholder: [School Name]
+- Date: ${new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}
+- State current attendance figure and the expected 96% threshold
+- ${letterType === "pa" ? "Mention persistent absence threshold (below 90%), impact on learning, and possible referral to Education Welfare Officer if pattern continues" : "Supportive tone — early concern, offer of meeting, no legal threats"}
+- Offer a meeting or phone call
+- Sign off: Yours sincerely, [Teacher/Attendance Officer], [School Name]
+- 200–280 words
+
+Write the complete letter ready to print.`,
+        700
+      );
+      setLetterText(text);
+    } catch {
+      toast.error("Failed to generate letter. Please try again.");
+    } finally {
+      setLetterLoading(false);
+    }
+  };
 
   // Form state for editing
   const [formAm, setFormAm] = useState<AttendanceStatus>("not-recorded");
@@ -388,6 +438,15 @@ export default function Attendance() {
                     >
                       History
                     </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-8 px-2 text-xs text-amber-700 hover:bg-amber-50"
+                      onClick={e => { e.stopPropagation(); setLetterChild(child.id); setLetterType("concern"); setLetterText(null); }}
+                      title="Generate attendance letter"
+                    >
+                      <Mail className="h-3.5 w-3.5 mr-1" /> Letter
+                    </Button>
                   </div>
                 </div>
               );
@@ -442,6 +501,51 @@ export default function Attendance() {
                 </Button>
                 <Button variant="outline" onClick={() => setEditingChild(null)}>Cancel</Button>
               </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Attendance Letter Generator Dialog ── */}
+      <Dialog open={!!letterChild} onOpenChange={open => { if (!open) { setLetterChild(null); setLetterText(null); } }}>
+        <DialogContent className="max-w-xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Mail className="h-4 w-4 text-amber-600" />
+              Generate Attendance Letter — {children.find(c => c.id === letterChild)?.name}
+            </DialogTitle>
+          </DialogHeader>
+          {letterChild && (
+            <div className="space-y-4 mt-2">
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={() => setLetterType("concern")}
+                  className={`p-3 rounded-xl border-2 text-left transition-colors ${letterType === "concern" ? "border-amber-400 bg-amber-50" : "border-border hover:border-amber-200"}`}>
+                  <p className="text-sm font-semibold">Early Concern</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Supportive first contact, no legal action</p>
+                </button>
+                <button
+                  onClick={() => setLetterType("pa")}
+                  className={`p-3 rounded-xl border-2 text-left transition-colors ${letterType === "pa" ? "border-red-400 bg-red-50" : "border-border hover:border-red-200"}`}>
+                  <p className="text-sm font-semibold">Persistent Absence</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Below 90% — references EWO</p>
+                </button>
+              </div>
+              <Button onClick={generateLetter} disabled={letterLoading} className="w-full gap-2 bg-amber-500 hover:bg-amber-600 text-white">
+                {letterLoading ? <><Loader2 className="w-4 h-4 animate-spin" /> Generating...</> : <><Mail className="w-4 h-4" /> Generate Letter</>}
+              </Button>
+              {letterText && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs font-medium text-muted-foreground">Edit before printing if needed</p>
+                    <div className="flex gap-3">
+                      <button onClick={() => { navigator.clipboard.writeText(letterText); toast.success("Copied!"); }} className="text-xs text-brand hover:underline">Copy</button>
+                      <button onClick={() => { const w = window.open("","_blank"); if(w){ w.document.write(`<!DOCTYPE html><html><head><title>Attendance Letter</title><style>body{font-family:Arial,sans-serif;max-width:700px;margin:40px auto;font-size:14px;line-height:1.8;color:#111}p{margin:0 0 14px}@media print{body{margin:20mm}}</style></head><body>${letterText.replace(/\n/g,"<br>")}<script>window.onload=()=>setTimeout(()=>window.print(),400);<\/script></body></html>`); w.document.close(); }}} className="text-xs text-brand hover:underline">Print</button>
+                    </div>
+                  </div>
+                  <Textarea value={letterText} onChange={e => setLetterText(e.target.value)} className="min-h-[260px] text-sm font-mono" />
+                </div>
+              )}
             </div>
           )}
         </DialogContent>

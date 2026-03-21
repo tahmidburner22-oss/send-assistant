@@ -77,14 +77,17 @@ export default function Login() {
   const [resetToken, setResetToken] = useState("");
   const [emailWarning, setEmailWarning] = useState("");
   const [emailNotVerified, setEmailNotVerified] = useState(false);
+  const [dpaAccepted, setDpaAccepted] = useState(false);
   const [resendingVerification, setResendingVerification] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const token = params.get("token");
     const mode = params.get("mode");
-    if (token && mode === "reset") { setResetToken(token); setView("reset"); }
-    if (token && !mode) {
+    const isResetPath = window.location.pathname === "/reset-password";
+    const isVerifyPath = window.location.pathname === "/verify-email";
+    if (token && (mode === "reset" || isResetPath)) { setResetToken(token); setView("reset"); }
+    if (token && (!mode && !isResetPath) || (token && isVerifyPath)) {
       authApi.verifyEmail(token)
         .then(() => toast.success("Email verified! You can now log in."))
         .catch(() => toast.error("Invalid or expired verification link."));
@@ -403,8 +406,25 @@ export default function Login() {
                     )}
                   </div>
 
-                  <p className="text-xs text-muted-foreground">By creating an account you agree to our <a href="/terms" className="text-brand hover:underline">Terms of Service</a> and <a href="/privacy" className="text-brand hover:underline">Privacy Policy</a>.</p>
-                  <Button type="submit" className="w-full h-11 bg-brand hover:bg-brand/90 text-white font-medium" disabled={loading || !!emailWarning}>
+                  <div className="space-y-2">
+                    <label className="flex items-start gap-2.5 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={dpaAccepted}
+                        onChange={e => setDpaAccepted(e.target.checked)}
+                        className="mt-0.5 w-4 h-4 rounded border-gray-300 text-brand focus:ring-brand"
+                        required
+                      />
+                      <span className="text-xs text-muted-foreground leading-relaxed">
+                        I agree to Adaptly's{" "}
+                        <a href="/terms" className="text-brand hover:underline">Terms of Service</a>,{" "}
+                        <a href="/privacy" className="text-brand hover:underline">Privacy Policy</a>, and{" "}
+                        <a href="/dpa" className="text-brand hover:underline">Data Processing Agreement</a>.
+                        I confirm I am an educational professional aged 18 or over, and that pupil-facing features will be used under qualified supervision.
+                      </span>
+                    </label>
+                  </div>
+                  <Button type="submit" className="w-full h-11 bg-brand hover:bg-brand/90 text-white font-medium" disabled={loading || !!emailWarning || !dpaAccepted}>
                     {loading ? "Creating account..." : `Create ${selectedRoleInfo.label} Account`}
                   </Button>
                 </motion.form>
@@ -448,6 +468,8 @@ export default function Login() {
         <p className="text-xs text-center text-muted-foreground mt-6">
           <a href="/privacy" className="hover:underline">Privacy Policy</a>{" · "}
           <a href="/terms" className="hover:underline">Terms of Service</a>{" · "}
+          <a href="/dpa" className="hover:underline">Data Processing</a>{" · "}
+          <a href="/safeguarding" className="hover:underline">Safeguarding</a>{" · "}
           <a href="/accessibility" className="hover:underline">Accessibility</a>
         </p>
       </motion.div>

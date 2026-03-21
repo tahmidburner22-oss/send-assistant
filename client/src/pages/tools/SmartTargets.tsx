@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import AIToolPage from "@/components/AIToolPage";
 import { useUserPreferences } from "@/contexts/UserPreferencesContext";
 import { formatToolOutput } from "@/lib/format-tool-output";
@@ -6,8 +7,39 @@ import { CheckSquare } from "lucide-react";
 const sendNeeds = ["Autism Spectrum Condition","ADHD","Dyslexia","Dyscalculia","Dyspraxia","Speech & Language Needs","Social, Emotional & Mental Health","Hearing Impairment","Visual Impairment","Physical Disability","Moderate Learning Difficulties","Severe Learning Difficulties","EAL"].map(n => ({ value: n, label: n }));
 const areas = ["Reading","Writing","Maths","Communication","Social Skills","Behaviour & Self-Regulation","Independence","Fine Motor Skills","Gross Motor Skills","Attention & Focus","Emotional Regulation","Organisational Skills"].map(a => ({ value: a, label: a }));
 
+// Map screener section IDs to the sendNeeds options
+const SCREENER_ID_TO_SEND_NEED: Record<string, string> = {
+  adhd: "ADHD",
+  dyslexia: "Dyslexia",
+  autism: "Autism Spectrum Condition",
+  dyscalculia: "Dyscalculia",
+  dyspraxia: "Dyspraxia",
+  slcn: "Speech & Language Needs",
+  semh: "Social, Emotional & Mental Health",
+  mld: "Moderate Learning Difficulties",
+};
+
 export default function SmartTargets() {
   const { preferences } = useUserPreferences();
+  const [initialValues, setInitialValues] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    // Check for pre-population data from SEND Screener
+    const raw = sessionStorage.getItem("screener_smart_targets_prefill");
+    if (raw) {
+      try {
+        const data = JSON.parse(raw) as { baseline: string; sendNeed: string; notes: string };
+        sessionStorage.removeItem("screener_smart_targets_prefill");
+        setInitialValues({
+          currentLevel: data.baseline,
+          sendNeed: SCREENER_ID_TO_SEND_NEED[data.sendNeed] || "",
+        });
+      } catch {
+        // ignore malformed data
+      }
+    }
+  }, []);
+
   return (
     <AIToolPage
       assignable={true}
@@ -15,6 +47,7 @@ export default function SmartTargets() {
       description="Generate specific, measurable, achievable SEND targets for any area of need"
       icon={<CheckSquare className="w-5 h-5 text-white" />}
       accentColor="bg-teal-600"
+      initialValues={initialValues}
       fields={[
         { id: "studentName", label: "Student Initials", type: "text", placeholder: "e.g. L.C.", required: true, span: "half", maxLength: 4, hint: "Initials only (max 4 chars) — do not enter full names (GDPR)" },
         { id: "yearGroup", label: "Year Group", type: "text", placeholder: "e.g. Year 3", required: true, span: "half" },

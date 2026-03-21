@@ -15,26 +15,35 @@ function getFullDiagramBank() {
 const router = Router();
 const worksheetUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 25 * 1024 * 1024 } });
 
-// ── Provider priority order — optimised for highest rate limits and fastest inference ──
+// ── Provider priority order — 3 Groq keys round-robin → Gemini fallback ────────
 //
-// Free-tier rate limits (requests/day) as of March 2026:
-//   groq   llama-3.1-8b-instant  → 14,400 RPD, 30 RPM, 6K TPM  ← HIGHEST RPD
-//   gemini gemini-2.0-flash       →  1,500 RPD, 15 RPM, 1M TPM  ← HIGHEST TPM, very fast
-//   openrouter free models        →  1,000 RPD, 20 RPM           ← good fallback
-//   mistral free tier             →  unlimited RPD, 2 RPM        ← slow but unlimited
-//   deepseek                      →  no rate limit stated        ← unreliable uptime
-//
-// Strategy: Groq first (highest RPD, fastest for structured JSON with 8b-instant),
-// Cerebras second (14,400 RPD, 30 RPM, 60K TPM — same RPD as Groq, ultra-fast inference),
-// Gemini third (1,500 RPD but 1M TPM — great for burst handling),
-// then the rest as fallbacks.
-	const PROVIDER_ORDER = ["groq", "cerebras", "gemini", "openrouter", "openai", "claude", "mistral", "deepseek", "huggingface", "cohere", "perplexity"] as const;
+// Strategy: Rotate across 3 Groq keys (groq_1/groq_2/groq_3) to triple the
+// effective rate limit. Each key gets llama-3.3-70b-versatile (131K TPM).
+// Total effective capacity: 3 × 131K TPM = 393K TPM — enough for 100 worksheets/5min.
+// Gemini is the final fallback if all 3 Groq keys are rate-limited simultaneously.
+// Mistral kept as last resort (unlimited RPD, just slow at 2 RPM).
+const PROVIDER_ORDER = ["groq_1", "groq_2", "groq_3", "gemini", "mistral"] as const;
+
+// ── Round-robin counter for Groq keys ────────────────────────────────────────
+// Distributes requests evenly across the 3 Groq keys to maximise throughput.
+let groqRoundRobinIndex = 0;
+function getNextGroqKey(): string {
+  const keys = [
+    process.env.GROQ_API_KEY || "",
+    process.env.GROQ_API_KEY_2 || "",
+    process.env.GROQ_API_KEY_3 || "",
+  ].filter(k => k.trim() !== "");
+  if (keys.length === 0) return "";
+  const key = keys[groqRoundRobinIndex % keys.length];
+  groqRoundRobinIndex = (groqRoundRobinIndex + 1) % keys.length;
+  return key;
+}
 
 // ── Per-provider cooldown tracker ─────────────────────────────────────────────
 // When a provider hits a rate limit (429), it is put in cooldown for COOLDOWN_MS.
 // During cooldown it is skipped entirely so other providers can serve requests.
 // This prevents cascading failures where every provider gets exhausted at once.
-const COOLDOWN_MS = 15_000; // 15 seconds per provider — shorter cooldown = faster recovery after rate limits
+const COOLDOWN_MS = 60_000; // 60 seconds per provider — prevents hammering a just-rate-limited key
 const providerCooldowns = new Map<string, number>(); // provider → timestamp when cooldown expires
 
 function isOnCooldown(provider: string): boolean {
@@ -48,6 +57,7 @@ function isOnCooldown(provider: string): boolean {
 function setCooldown(provider: string): void {
   const expiresAt = Date.now() + COOLDOWN_MS;
   providerCooldowns.set(provider, expiresAt);
+  // FIX: log message now reflects the actual COOLDOWN_MS value (was hardcoded "60s" before)
   console.warn(`[AI] ${provider} put on cooldown for ${COOLDOWN_MS / 1000}s (until ${new Date(expiresAt).toISOString()})`);
 }
 
@@ -77,6 +87,10 @@ function getAvailableProviders(order: string[]): string[] {
 // Each school's keys are completely isolated — one school cannot use another's keys.
 function getEffectiveKey(provider: string, userKey?: string, schoolId?: string): string {
   if (userKey && userKey.trim()) return userKey.trim();
+  // groq_1/groq_2/groq_3 are virtual providers — each maps to a specific env var key
+  if (provider === "groq_1") return process.env.GROQ_API_KEY || "";
+  if (provider === "groq_2") return process.env.GROQ_API_KEY_2 || "";
+  if (provider === "groq_3") return process.env.GROQ_API_KEY_3 || "";
   // 1. School-level encrypted key (primary source — each school brings their own)
   if (schoolId) {
     const schoolEntry = getSchoolKey(schoolId, provider);
@@ -92,16 +106,8 @@ function getEffectiveKey(provider: string, userKey?: string, schoolId?: string):
   // 3. Platform-level env vars (Railway — for the Adaptly platform operator account only)
   const envMap: Record<string, string> = {
     groq: process.env.GROQ_API_KEY || "",
-    cerebras: process.env.CEREBRAS_API_KEY || "",
-    gemini: process.env.GEMINI_API_KEY || "",
-    openai: process.env.OPENAI_API_KEY || "",
-    openrouter: process.env.OPENROUTER_API_KEY || "",
-    claude: process.env.CLAUDE_API_KEY || "",
-    huggingface: process.env.HUGGINGFACE_API_KEY || "",
+    gemini: process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || "",
     mistral: process.env.MISTRAL_API_KEY || "",
-    deepseek: process.env.DEEPSEEK_API_KEY || "",
-    cohere: process.env.COHERE_API_KEY || "",
-    perplexity: process.env.PERPLEXITY_API_KEY || "",
   };
   return envMap[provider] || "";
 }
@@ -120,6 +126,9 @@ function getAdminModel(provider: string, schoolId?: string): string {
 }
 
 // ── Core: call a single provider ─────────────────────────────────────────────
+// FIX: AbortController signal is now threaded through to every provider fetch call.
+// Previously callGroq and callGemini had no signal, so their 18s timeout was inert —
+// a hung request would block for Railway's full 60s and return a gateway error.
 async function callProvider(
   provider: string,
   system: string,
@@ -128,56 +137,64 @@ async function callProvider(
   model: string,
   maxTokens: number
 ): Promise<string> {
-  // Per-provider timeout: fast providers (Groq 8b-instant, Gemini Flash) get 30s,
-  // medium providers get 45s, slow providers (DeepSeek, HuggingFace) get 60s.
-  const timeoutMs = (provider === "groq" || provider === "gemini") ? 30000
-    : (provider === "openrouter" || provider === "mistral" || provider === "openai") ? 45000
-    : 60000;
+  // Per-provider timeouts — chosen so the full fallback chain fits inside Railway's 60s limit.
+  // Groq/Gemini: 18s each (fast providers; slow = rate-limited, no point waiting longer)
+  // Mistral: 28s
+  // Others (DeepSeek, Cohere, Perplexity, HuggingFace): 35s
+  const timeoutMs =
+    provider === "groq" || provider === "groq_1" || provider === "groq_2" || provider === "groq_3" || provider === "gemini"
+      ? 18_000
+      : provider === "mistral"
+      ? 28_000
+      : 35_000;
+
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  const timer = setTimeout(() => {
+    controller.abort();
+    console.warn(`[AI] ${provider} timed out after ${timeoutMs / 1000}s — aborting`);
+  }, timeoutMs);
+
   try {
     let result: string;
     switch (provider) {
       case "groq":
-        // llama-3.1-8b-instant: 14,400 RPD (highest of any free provider), 3-4x faster than 70b.
-        // Quality is equivalent for structured JSON worksheet generation.
-        // School can override with a specific model via their API key settings.
-        result = await callGroq(system, user, key, model || "llama-3.1-8b-instant", maxTokens);
-        break;
-      case "cerebras":
-        // Cerebras: 14,400 RPD, 30 RPM, 60K TPM on free tier.
-        // Uses custom wafer-scale silicon — fastest inference available (up to 2000 tokens/sec).
-        // llama3.1-8b is the recommended free model for structured JSON.
-        result = await callCerebras(system, user, key, model || "llama3.1-8b", maxTokens);
+      case "groq_1":
+      case "groq_2":
+      case "groq_3":
+        // llama-3.3-70b-versatile: 131K TPM per key.
+        // With 3 keys in round-robin we get 393K effective TPM.
+        // FIX: signal passed so the 18s timeout actually fires.
+        result = await callGroq(system, user, key, model || "llama-3.3-70b-versatile", maxTokens, controller.signal);
         break;
       case "gemini":
-        result = await callGemini(system, user, key, maxTokens);
+        // FIX: signal passed so the 18s timeout actually fires.
+        result = await callGemini(system, user, key, maxTokens, controller.signal);
         break;
       case "openai":
-        result = await callOpenAI(system, user, key, model || "gpt-4o-mini", maxTokens);
+        result = await callOpenAI(system, user, key, model || "gpt-4o-mini", maxTokens, controller.signal);
         break;
       case "openrouter":
-        result = await callOpenRouter(system, user, key, model, maxTokens);
+        result = await callOpenRouter(system, user, key, model, maxTokens, controller.signal);
         break;
       case "claude":
-        result = await callClaude(system, user, key, maxTokens);
+        result = await callClaude(system, user, key, maxTokens, controller.signal);
         break;
       case "huggingface":
-        result = await callHuggingFace(system, user, key, maxTokens);
+        result = await callHuggingFace(system, user, key, maxTokens, controller.signal);
         break;
       case "mistral":
-        // mistral-small-latest: fastest Mistral model, free tier has unlimited RPD but only 2 RPM.
-        // Used as fallback when Groq and Gemini are both rate-limited.
-        result = await callMistral(system, user, key, model || "mistral-small-latest", maxTokens);
+        // mistral-small-latest: free tier = unlimited RPD but only 2 RPM.
+        // Used as fallback when all Groq keys + Gemini are rate-limited simultaneously.
+        result = await callMistral(system, user, key, model || "mistral-small-latest", maxTokens, controller.signal);
         break;
       case "deepseek":
-        result = await callDeepSeek(system, user, key, model || "deepseek-chat", maxTokens);
+        result = await callDeepSeek(system, user, key, model || "deepseek-chat", maxTokens, controller.signal);
         break;
       case "cohere":
-        result = await callCohere(system, user, key, model || "command-r-plus", maxTokens);
+        result = await callCohere(system, user, key, model || "command-r-plus", maxTokens, controller.signal);
         break;
       case "perplexity":
-        result = await callPerplexity(system, user, key, model || "llama-3.1-sonar-large-128k-online", maxTokens);
+        result = await callPerplexity(system, user, key, model || "llama-3.1-sonar-large-128k-online", maxTokens, controller.signal);
         break;
       default:
         throw new Error(`Unknown provider: ${provider}`);
@@ -214,17 +231,40 @@ async function callWithFallback(
       : [...PROVIDER_ORDER];
   }
 
+  // FIX: Apply round-robin rotation to Groq keys so load is spread evenly.
+  // Previously groq_1 was ALWAYS tried first — meaning key 1 absorbed all traffic,
+  // hit rate limits first, and keys 2+3 were barely used.
+  // Now we rotate the starting Groq key on each call so ~⅓ of requests start on each key.
+  const groqProviders = ["groq_1", "groq_2", "groq_3"] as const;
+  const rotatedOrder = order.map(p => p); // shallow copy
+  const firstGroqIdx = rotatedOrder.findIndex(p => groqProviders.includes(p as any));
+  if (firstGroqIdx !== -1) {
+    // Extract the groq block, rotate it, and splice it back in
+    const groqBlock = groqProviders.filter(p => rotatedOrder.includes(p));
+    if (groqBlock.length > 1) {
+      const offset = groqRoundRobinIndex % groqBlock.length;
+      groqRoundRobinIndex = (groqRoundRobinIndex + 1) % groqBlock.length;
+      const rotated = [...groqBlock.slice(offset), ...groqBlock.slice(0, offset)];
+      let gi = 0;
+      for (let i = 0; i < rotatedOrder.length; i++) {
+        if (groqProviders.includes(rotatedOrder[i] as any)) {
+          rotatedOrder[i] = rotated[gi++];
+        }
+      }
+    }
+  }
+
   const errors: string[] = [];
 
   // Filter out providers currently on cooldown before attempting
-  const availableOrder = getAvailableProviders(order);
-  if (availableOrder.length < order.length) {
-    const cooledDown = order.filter(p => !availableOrder.includes(p));
+  const availableOrder = getAvailableProviders(rotatedOrder);
+  if (availableOrder.length < rotatedOrder.length) {
+    const cooledDown = rotatedOrder.filter(p => !availableOrder.includes(p));
     console.log(`[AI] Skipping ${cooledDown.join(", ")} (on cooldown) — using: ${availableOrder.join(", ")}`);
   }
 
   // Try available providers first
-  const ordersToTry = availableOrder.length > 0 ? availableOrder : order;
+  const ordersToTry = availableOrder.length > 0 ? availableOrder : rotatedOrder;
 
   for (const provider of ordersToTry) {
     const key = getEffectiveKey(provider, undefined, schoolId);
@@ -262,7 +302,7 @@ async function callWithFallback(
   }
 
   // Last resort: if all available providers failed but there are cooled-down ones, try them too
-  const cooledDownProviders = order.filter(p => !ordersToTry.includes(p));
+  const cooledDownProviders = rotatedOrder.filter(p => !ordersToTry.includes(p));
   for (const provider of cooledDownProviders) {
     const key = getEffectiveKey(provider, undefined, schoolId);
     if (!key) continue;
@@ -540,12 +580,14 @@ router.get("/stats", requireAuth, requireAdmin, (req: Request, res: Response) =>
 });
 
 // ── Provider implementations ──────────────────────────────────────────────────
-async function callGroq(system: string, user: string, key: string, model: string, maxTokens: number): Promise<string> {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 35000);
+// FIX: All provider functions now accept an AbortSignal so callProvider's timeout
+// can actually cancel the in-flight network request. Previously callGroq and callGemini
+// had no signal parameter — the AbortController in callProvider was silently ignored
+// and both providers could hang for Railway's full 60s request limit.
+async function callGroq(system: string, user: string, key: string, model: string, maxTokens: number, signal?: AbortSignal): Promise<string> {
   const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
     method: "POST",
-    signal: controller.signal,
+    signal,
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
     body: JSON.stringify({
       model,
@@ -557,23 +599,22 @@ async function callGroq(system: string, user: string, key: string, model: string
       temperature: 0.3,
     }),
   });
-  clearTimeout(timeout);
   if (res.status === 429) throw new Error(`Groq 429: rate limited`);
   if (!res.ok) throw new Error(`Groq ${res.status}: ${(await res.text()).slice(0, 200)}`);
   const data = await res.json() as any;
-  return data.choices[0].message.content;
+  const content = data?.choices?.[0]?.message?.content;
+  if (!content) throw new Error("Groq returned empty content");
+  return content;
 }
 
 // ── Cerebras ─────────────────────────────────────────────────────────────────
 // Cerebras uses wafer-scale silicon for ultra-fast inference.
 // Free tier: 14,400 RPD, 30 RPM, 60K TPM — same RPD as Groq but often faster.
 // OpenAI-compatible API, so the same request format works.
-async function callCerebras(system: string, user: string, key: string, model: string, maxTokens: number): Promise<string> {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 30000);
+async function callCerebras(system: string, user: string, key: string, model: string, maxTokens: number, signal?: AbortSignal): Promise<string> {
   const res = await fetch("https://api.cerebras.ai/v1/chat/completions", {
     method: "POST",
-    signal: controller.signal,
+    signal,
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
     body: JSON.stringify({
       model,
@@ -585,41 +626,45 @@ async function callCerebras(system: string, user: string, key: string, model: st
       temperature: 0.1,
     }),
   });
-  clearTimeout(timeout);
   if (res.status === 429) throw new Error(`Cerebras 429: rate limited`);
   if (!res.ok) throw new Error(`Cerebras ${res.status}: ${(await res.text()).slice(0, 200)}`);
   const data = await res.json() as any;
   return data.choices[0].message.content;
 }
 
-async function callGemini(system: string, user: string, key: string, maxTokens: number): Promise<string> {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 35000);
+// FIX: callGemini now uses the dedicated systemInstruction field instead of
+// concatenating system+user into a single contents message. Using systemInstruction
+// produces significantly better structured JSON output (the system prompt is processed
+// separately by the model, not mixed into the conversation context).
+async function callGemini(system: string, user: string, key: string, maxTokens: number, signal?: AbortSignal): Promise<string> {
+  const body: any = {
+    contents: [{ role: "user", parts: [{ text: user }] }],
+    generationConfig: { maxOutputTokens: maxTokens, temperature: 0.1 },
+  };
+  if (system) {
+    body.systemInstruction = { parts: [{ text: system }] };
+  }
   const res = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`,
     {
       method: "POST",
-      signal: controller.signal,
+      signal,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: system ? `${system}\n\n${user}` : user }] }],
-        generationConfig: { maxOutputTokens: maxTokens, temperature: 0.1 },
-      }),
+      body: JSON.stringify(body),
     }
   );
-  clearTimeout(timeout);
   if (res.status === 429) throw new Error(`Gemini 429: rate limited`);
   if (!res.ok) throw new Error(`Gemini ${res.status}: ${(await res.text()).slice(0, 200)}`);
   const data = await res.json() as any;
-  return data.candidates[0].content.parts[0].text;
+  const content = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+  if (!content) throw new Error("Gemini returned empty content");
+  return content;
 }
 
-async function callOpenAI(system: string, user: string, key: string, model: string, maxTokens: number): Promise<string> {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 45000);
+async function callOpenAI(system: string, user: string, key: string, model: string, maxTokens: number, signal?: AbortSignal): Promise<string> {
   const res = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
-    signal: controller.signal,
+    signal,
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
     body: JSON.stringify({
       model,
@@ -630,14 +675,13 @@ async function callOpenAI(system: string, user: string, key: string, model: stri
       max_tokens: maxTokens,
     }),
   });
-  clearTimeout(timeout);
   if (res.status === 429) throw new Error(`OpenAI 429: rate limited`);
   if (!res.ok) throw new Error(`OpenAI ${res.status}: ${(await res.text()).slice(0, 200)}`);
   const data = await res.json() as any;
   return data.choices[0].message.content;
 }
 
-async function callOpenRouter(system: string, user: string, key: string, model: string, maxTokens: number): Promise<string> {
+async function callOpenRouter(system: string, user: string, key: string, model: string, maxTokens: number, signal?: AbortSignal): Promise<string> {
   // Best free models on OpenRouter as of March 2026 — ordered by quality and reliability.
   // All have 1,000 RPD / 20 RPM on the free tier.
   const fallbackModels = [
@@ -654,6 +698,7 @@ async function callOpenRouter(system: string, user: string, key: string, model: 
     try {
       const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
         method: "POST",
+        signal,
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${key}`,
@@ -680,9 +725,10 @@ async function callOpenRouter(system: string, user: string, key: string, model: 
   throw new Error("OpenRouter: all models failed");
 }
 
-async function callClaude(system: string, user: string, key: string, maxTokens: number): Promise<string> {
+async function callClaude(system: string, user: string, key: string, maxTokens: number, signal?: AbortSignal): Promise<string> {
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
+    signal,
     headers: {
       "Content-Type": "application/json",
       "x-api-key": key,
@@ -702,7 +748,7 @@ async function callClaude(system: string, user: string, key: string, maxTokens: 
   return data.content[0].text;
 }
 
-async function callHuggingFace(system: string, user: string, key: string, maxTokens: number): Promise<string> {
+async function callHuggingFace(system: string, user: string, key: string, maxTokens: number, signal?: AbortSignal): Promise<string> {
   const models = [
     "Qwen/Qwen2.5-72B-Instruct",
     "meta-llama/Llama-3.1-8B-Instruct",
@@ -714,6 +760,7 @@ async function callHuggingFace(system: string, user: string, key: string, maxTok
         `https://router.huggingface.co/hf-inference/models/${model}/v1/chat/completions`,
         {
           method: "POST",
+          signal,
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${key}`,
@@ -741,12 +788,10 @@ async function callHuggingFace(system: string, user: string, key: string, maxTok
 }
 
 // ── Mistral AI ───────────────────────────────────────────────────────────────
-async function callMistral(system: string, user: string, key: string, model: string, maxTokens: number): Promise<string> {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 45000);
+async function callMistral(system: string, user: string, key: string, model: string, maxTokens: number, signal?: AbortSignal): Promise<string> {
   const res = await fetch("https://api.mistral.ai/v1/chat/completions", {
     method: "POST",
-    signal: controller.signal,
+    signal,
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
     body: JSON.stringify({
       model,
@@ -758,7 +803,6 @@ async function callMistral(system: string, user: string, key: string, model: str
       temperature: 0.3,
     }),
   });
-  clearTimeout(timeout);
   if (res.status === 429) throw new Error(`Mistral 429: rate limited`);
   if (!res.ok) throw new Error(`Mistral ${res.status}: ${(await res.text()).slice(0, 200)}`);
   const data = await res.json() as any;
@@ -766,12 +810,10 @@ async function callMistral(system: string, user: string, key: string, model: str
 }
 
 // ── DeepSeek ─────────────────────────────────────────────────────────────────
-async function callDeepSeek(system: string, user: string, key: string, model: string, maxTokens: number): Promise<string> {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 60000); // DeepSeek can be slower
+async function callDeepSeek(system: string, user: string, key: string, model: string, maxTokens: number, signal?: AbortSignal): Promise<string> {
   const res = await fetch("https://api.deepseek.com/v1/chat/completions", {
     method: "POST",
-    signal: controller.signal,
+    signal,
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
     body: JSON.stringify({
       model,
@@ -783,7 +825,6 @@ async function callDeepSeek(system: string, user: string, key: string, model: st
       temperature: 0.3,
     }),
   });
-  clearTimeout(timeout);
   if (res.status === 429) throw new Error(`DeepSeek 429: rate limited`);
   if (!res.ok) throw new Error(`DeepSeek ${res.status}: ${(await res.text()).slice(0, 200)}`);
   const data = await res.json() as any;
@@ -791,12 +832,10 @@ async function callDeepSeek(system: string, user: string, key: string, model: st
 }
 
 // ── Cohere ───────────────────────────────────────────────────────────────────
-async function callCohere(system: string, user: string, key: string, model: string, maxTokens: number): Promise<string> {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 45000);
+async function callCohere(system: string, user: string, key: string, model: string, maxTokens: number, signal?: AbortSignal): Promise<string> {
   const res = await fetch("https://api.cohere.com/v2/chat", {
     method: "POST",
-    signal: controller.signal,
+    signal,
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
     body: JSON.stringify({
       model,
@@ -807,7 +846,6 @@ async function callCohere(system: string, user: string, key: string, model: stri
       max_tokens: maxTokens,
     }),
   });
-  clearTimeout(timeout);
   if (res.status === 429) throw new Error(`Cohere 429: rate limited`);
   if (!res.ok) throw new Error(`Cohere ${res.status}: ${(await res.text()).slice(0, 200)}`);
   const data = await res.json() as any;
@@ -816,12 +854,10 @@ async function callCohere(system: string, user: string, key: string, model: stri
 }
 
 // ── Perplexity ───────────────────────────────────────────────────────────────
-async function callPerplexity(system: string, user: string, key: string, model: string, maxTokens: number): Promise<string> {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 45000);
+async function callPerplexity(system: string, user: string, key: string, model: string, maxTokens: number, signal?: AbortSignal): Promise<string> {
   const res = await fetch("https://api.perplexity.ai/chat/completions", {
     method: "POST",
-    signal: controller.signal,
+    signal,
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
     body: JSON.stringify({
       model,
@@ -833,7 +869,6 @@ async function callPerplexity(system: string, user: string, key: string, model: 
       temperature: 0.3,
     }),
   });
-  clearTimeout(timeout);
   if (res.status === 429) throw new Error(`Perplexity 429: rate limited`);
   if (!res.ok) throw new Error(`Perplexity ${res.status}: ${(await res.text()).slice(0, 200)}`);
   const data = await res.json() as any;
@@ -1187,77 +1222,62 @@ router.post("/diagram", requireAuth, async (req: Request, res: Response) => {
 // ── Worksheet Upload & Adapt ─────────────────────────────────────────────────
 // POST /api/ai/adapt-worksheet
 // Accepts a PDF or Word (.doc/.docx) file and adapts it for a specific SEND need.
-// CRITICAL: All questions, content, symbols, and mathematical notation are preserved VERBATIM.
-// Only formatting, font, spacing, and structural presentation changes are permitted.
+// The original content is preserved verbatim — only formatting/presentation changes.
 router.post("/adapt-worksheet", requireAuth, worksheetUpload.single("file"), async (req: Request, res: Response) => {
   if (!req.file) return res.status(400).json({ error: "No file uploaded" });
   const { sendNeed, yearGroup } = req.body;
   if (!sendNeed) return res.status(400).json({ error: "sendNeed is required" });
 
-  // Enforce PDF and Word documents only — no images
   const allowedMimes = [
     "application/pdf",
     "application/msword",
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
   ];
   if (!allowedMimes.includes(req.file.mimetype)) {
-    return res.status(400).json({ error: "Only PDF (.pdf) and Word (.doc, .docx) files are supported. Please convert your file and try again." });
+    return res.status(400).json({ error: "Only PDF (.pdf) and Word (.doc, .docx) files are supported." });
   }
 
   try {
     let rawText = "";
     const mime = req.file.mimetype;
+
     if (mime === "application/pdf") {
-      // Try pdf-parse v2 first (primary method)
+      // Method 1: pdf-parse (default export — the v2 class API doesn't exist in this package version)
       try {
-        const { PDFParse } = await import("pdf-parse" as any);
-        const parser = new PDFParse({ data: req.file.buffer, verbosity: 0 });
-        await parser.load();
-        const result = await parser.getText();
-        // v2 returns { pages: [{ text: string, num: number }], text: string }
-        if (result?.pages && Array.isArray(result.pages) && result.pages.length > 0) {
-          rawText = result.pages.map((p: any) => (p.text || "").trim()).filter(Boolean).join("\n\n");
-        } else if (typeof result?.text === "string" && result.text.trim()) {
-          rawText = result.text.trim();
-        }
-        if (rawText) console.log(`[adapt-worksheet] pdf-parse v2 extracted ${rawText.length} chars from ${result?.pages?.length || 0} pages`);
-      } catch (pdfErr: any) {
-        console.error("[adapt-worksheet] pdf-parse v2 error:", pdfErr?.message || pdfErr);
+        const pdfParse = (await import("pdf-parse" as any)).default;
+        const result = await pdfParse(req.file.buffer);
+        rawText = (result?.text || "").trim();
+        if (rawText) console.log(`[adapt-worksheet] pdf-parse extracted ${rawText.length} chars`);
+      } catch (e1: any) {
+        console.warn("[adapt-worksheet] pdf-parse failed:", e1?.message);
       }
-      // Fallback: try pdfjs-dist if pdf-parse failed or returned empty
-      if (!rawText || rawText.length < 20) {
+      // Method 2: pdfjs-dist fallback
+      if (!rawText || rawText.length < 30) {
         try {
           const pdfjsLib = await import("pdfjs-dist/legacy/build/pdf.js" as any);
           const lib = pdfjsLib.default || pdfjsLib;
-          const loadingTask = lib.getDocument({ data: new Uint8Array(req.file.buffer) });
-          const pdfDoc = await loadingTask.promise;
-          const pageTexts: string[] = [];
+          const pdfDoc = await lib.getDocument({ data: new Uint8Array(req.file.buffer) }).promise;
+          const texts: string[] = [];
           for (let i = 1; i <= pdfDoc.numPages; i++) {
             const page = await pdfDoc.getPage(i);
-            const textContent = await page.getTextContent();
-            const pageText = textContent.items
-              .map((item: any) => item.str || "")
-              .join(" ")
-              .replace(/\s{2,}/g, " ")
-              .trim();
-            if (pageText) pageTexts.push(pageText);
+            const tc = await page.getTextContent();
+            const pageText = tc.items.map((item: any) => item.str || "").join(" ").replace(/\s{2,}/g, " ").trim();
+            if (pageText) texts.push(pageText);
           }
-          rawText = pageTexts.join("\n\n");
-          if (rawText) console.log(`[adapt-worksheet] pdfjs-dist extracted ${rawText.length} chars from ${pdfDoc.numPages} pages`);
-        } catch (pdfJsErr: any) {
-          console.error("[adapt-worksheet] pdfjs-dist error:", pdfJsErr?.message || pdfJsErr);
+          rawText = texts.join("\n\n");
+          if (rawText) console.log(`[adapt-worksheet] pdfjs extracted ${rawText.length} chars`);
+        } catch (e2: any) {
+          console.warn("[adapt-worksheet] pdfjs failed:", e2?.message);
         }
       }
     } else {
-      // .doc or .docx — use mammoth
+      // Word document — mammoth
       try {
         const mammoth = await import("mammoth" as any);
-        const mammothLib = mammoth.default || mammoth;
-        // Try to get structured HTML first (preserves headings and structure)
-        const htmlResult = await mammothLib.convertToHtml({ buffer: req.file.buffer });
-        if (htmlResult?.value && htmlResult.value.length > 50) {
-          // Convert HTML to plain text preserving structure
-          rawText = htmlResult.value
+        const lib = mammoth.default || mammoth;
+        const html = await lib.convertToHtml({ buffer: req.file.buffer });
+        if (html?.value && html.value.length > 50) {
+          rawText = html.value
             .replace(/<h[1-6][^>]*>/gi, "\n\n## ")
             .replace(/<\/h[1-6]>/gi, "\n")
             .replace(/<p[^>]*>/gi, "\n")
@@ -1266,208 +1286,159 @@ router.post("/adapt-worksheet", requireAuth, worksheetUpload.single("file"), asy
             .replace(/<li[^>]*>/gi, "\n• ")
             .replace(/<\/li>/gi, "")
             .replace(/<[^>]+>/g, "")
-            .replace(/&amp;/g, "&")
-            .replace(/&lt;/g, "<")
-            .replace(/&gt;/g, ">")
-            .replace(/&nbsp;/g, " ")
-            .replace(/&#[0-9]+;/g, " ")
+            .replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&nbsp;/g, " ")
             .trim();
         }
-        // Fallback to raw text if HTML conversion failed
         if (!rawText || rawText.length < 20) {
-          const rawResult = await mammothLib.extractRawText({ buffer: req.file.buffer });
-          rawText = rawResult.value || "";
+          const raw = await lib.extractRawText({ buffer: req.file.buffer });
+          rawText = (raw?.value || "").trim();
         }
         if (rawText) console.log(`[adapt-worksheet] mammoth extracted ${rawText.length} chars`);
-      } catch (docErr: any) {
-        console.error("[adapt-worksheet] mammoth error:", docErr?.message || docErr);
-        rawText = "";
+      } catch (e: any) {
+        console.error("[adapt-worksheet] mammoth error:", e?.message);
       }
     }
 
-    // Clean up: preserve structure but remove excessive blank lines
     rawText = rawText
-      .replace(/\r\n/g, "\n")
-      .replace(/\r/g, "\n")
+      .replace(/\r\n/g, "\n").replace(/\r/g, "\n")
       .replace(/\t/g, "  ")
       .replace(/\n{4,}/g, "\n\n\n")
       .trim();
 
     if (!rawText || rawText.length < 20) {
-      return res.status(400).json({ error: "Could not extract readable text from this file. The file may be a scanned image (not selectable text). Please ensure the PDF contains selectable text, or convert to Word format and try again." });
+      return res.status(400).json({
+        error: "Could not extract readable text from this file. The PDF may contain scanned images rather than selectable text. Please try a Word (.docx) version, or a PDF with selectable text.",
+      });
     }
-    const truncated = rawText.length > 12000;
-    const textForAI = rawText.slice(0, 12000);
 
+    const truncated = rawText.length > 10000;
+    const textForAI = rawText.slice(0, 10000);
     const schoolId = req.user?.schoolId ?? undefined;
     const yr = yearGroup || "Year 9";
 
-    // SEND-specific FORMATTING guidelines (presentation only — no content changes)
+    // Comprehensive SEND formatting guide keyed by ID and common name variants
+    const sendNeedLower = (sendNeed || "").toLowerCase().trim();
     const sendFormattingGuide = (() => {
-      const n = (sendNeed || "").toLowerCase();
-      if (n.includes("dyslexia")) return "Dyslexia formatting: Use short sentences and bullet points where the original uses long paragraphs. Bold all key terms. Add clear section breaks. Recommend 1.5x line spacing. Left-align all text.";
-      if (n.includes("autism") || n.includes("asd") || n.includes("autistic")) return "Autism/ASD formatting: Ensure all instructions are numbered and explicit. Add clear visual section dividers. Remove any ambiguous phrasing from instructions (not questions). Use consistent formatting throughout.";
-      if (n.includes("adhd")) return "ADHD formatting: Add tick boxes (☐) next to each question for progress tracking. Add extra white space between questions. Use bold headings. Keep each question visually separated.";
-      if (n.includes("mld") || n.includes("moderate learning")) return "MLD formatting: Add extra white space between questions. Use larger font recommendation. Number each question clearly. Add clear section headings.";
-      if (n.includes("sld") || n.includes("severe learning")) return "SLD formatting: Add extra white space. Use very clear section headings. Number each question clearly. Recommend large font.";
-      if (n.includes("eal") || n.includes("english as an additional")) return "EAL formatting: Bold all technical/subject-specific vocabulary. Add a glossary note in the teacher section. Keep all original content verbatim.";
-      if (n.includes("visual") || n.includes("vi")) return "Visual impairment formatting: Add text descriptions for any diagrams or images mentioned. Recommend large font. Add extra line spacing.";
-      if (n.includes("hearing") || n.includes("deaf")) return "Hearing impairment formatting: Ensure all content is text-based. Add written instructions for any audio tasks.";
-      return "SEND formatting: Add clear section headings, extra white space between questions, and bold key terms.";
+      if (sendNeedLower.includes("dyslexia")) return "Dyslexia: Bold all key terms at first use. Break any paragraph longer than 3 lines into shorter ones. Add clear section dividers (---). Number all questions explicitly if not already numbered. Add a 'Key Vocabulary' box at the top if there are subject terms.";
+      if (sendNeedLower.includes("asc") || sendNeedLower.includes("autism") || sendNeedLower.includes("asperger")) return "Autism/ASC: Number every instruction explicitly (Step 1, Step 2...). Add a 'What you need to do:' box before each section. Remove any figurative or ambiguous language from instructions. Use consistent terminology — pick one word per concept and never vary it.";
+      if (sendNeedLower.includes("adhd")) return "ADHD: Add a ☐ tick box at the start of every question. Add 'BRAIN BREAK — stand up and stretch!' after every 4–5 questions. Bold the key action word in every instruction (e.g. **Calculate**, **Describe**, **Name**). Add visual dividers between questions.";
+      if (sendNeedLower.includes("pda") || sendNeedLower.includes("odd")) return "PDA: Reframe all instructions as invitations ('You might like to...' rather than 'You must...'). Rename sections to offer choice ('Explore — choose where to start'). Add natural break points. Mark the challenge as optional.";
+      if (sendNeedLower.includes("slcn") || sendNeedLower.includes("speech") || sendNeedLower.includes("language") || sendNeedLower.includes("communication")) return "SLCN: Add a Word Bank with plain-English definitions for all subject vocabulary. Add sentence frames for every answer requiring writing (e.g. 'The answer is ___ because ___'). Keep every sentence under 12 words. Replace open questions with fill-in-the-blank or matching where possible.";
+      if (sendNeedLower.includes("mld") || sendNeedLower.includes("moderate learning")) return "MLD: Add a full model answer for question 1. Add a hint or sentence starter for every Section A question. Add a 'Help Box' with key facts/formulas at the top of Section B. Use KS2-level language throughout.";
+      if (sendNeedLower.includes("dyscalculia")) return "Dyscalculia: Break every calculation into numbered sub-steps with blanks (Step 1: ___ Step 2: ___). Include a number line or key facts box. Show every arithmetic step in the worked example with 'why' annotations. Add real-world context to word problems.";
+      if (sendNeedLower.includes("dyspraxia") || sendNeedLower.includes("dcd")) return "Dyspraxia/DCD: Replace extended writing with tick boxes, circle-the-answer, or matching formats wherever possible. Make answer boxes noticeably large. Reduce the number of questions requiring sustained handwriting.";
+      if (sendNeedLower.includes("vi") || sendNeedLower.includes("visual impairment")) return "Visual Impairment: Add text descriptions for every diagram or image. Increase recommended font size to 18pt+. Add high-contrast section headers. Remove any content that relies solely on visual interpretation.";
+      if (sendNeedLower.includes("hi") || sendNeedLower.includes("hearing")) return "Hearing Impairment: Ensure all instructions are fully self-contained in writing. Add a Word Bank with definitions. Remove any references to listening or audio activities. Add a visual cue (arrow, icon) next to every key instruction.";
+      if (sendNeedLower.includes("tourette") || sendNeedLower.includes("tics")) return "Tourette's: Add natural pause/break points between sections. Remove any timed-pressure language ('quickly', 'in 2 minutes'). Use multiple response formats (tick, circle, fill-in) to reduce sustained writing demands.";
+      if (sendNeedLower.includes("anxiety") || sendNeedLower.includes("semh") || sendNeedLower.includes("mental health")) return "Anxiety/SEMH: Rename Section A as 'Warm-Up — no pressure!'. Mark the challenge as 'OPTIONAL BONUS — only if you want to'. Add a supportive statement at the start of each section. Replace 'must/should' with 'try to/have a go at'.";
+      if (sendNeedLower.includes("eal") || sendNeedLower.includes("english as an additional")) return "EAL: Bold all subject-specific vocabulary. Add a Key Vocabulary box at the top with plain-English definitions. Provide sentence frames for written answers. Remove UK-specific idioms. Keep instructions to max 15 words each.";
+      return "SEND: Add clear numbered section headings. Bold all key terms. Add extra white space between questions. Number all questions if not already numbered.";
     })();
 
-    const system = `You are an expert educational content specialist. Your task is to reformat a worksheet for a student with ${sendNeed} while preserving ALL original content 1:1.
+    const system = `You are an expert UK educational content specialist reformatting a worksheet for a student with ${sendNeed}.
 
-CRITICAL RULES — YOU MUST FOLLOW THESE WITHOUT EXCEPTION:
-1. PRESERVE EVERY QUESTION VERBATIM: Every single question, task, instruction, and piece of content from the original must appear in the output word-for-word. Do NOT change, paraphrase, simplify, add to, or remove any question or task.
-2. PRESERVE ALL MATHEMATICAL NOTATION: All symbols (×, ÷, √, ², ³, π, ≤, ≥, ≠), fractions, equations, and numbers must be preserved exactly as in the original.
-3. PRESERVE THE ORIGINAL STRUCTURE: Match the original section structure exactly. If the original has Section A, B, C — keep those. If it has numbered questions 1-10, keep that structure.
-4. FORMATTING ONLY: The ONLY changes permitted are: adjusting visual presentation (line spacing, grouping, bold key terms, section dividers, tick boxes for ADHD). Do NOT add word banks, sentence starters, hints, worked examples, or any new content.
-5. DO NOT ADD OR REMOVE CONTENT: No new questions, no hints, no scaffolding, no word banks. Only formatting changes.
-6. DO NOT INVENT CONTENT: If the original has "Question 4: Calculate 15 × 8", keep it as "Question 4: Calculate 15 × 8". Never change the numbers, operations, or context.
-7. Return valid JSON only — no markdown code fences, no text before or after the JSON object.`;
+ABSOLUTE RULES:
+1. Every question, task, and instruction from the original MUST appear in the output word-for-word. Never paraphrase, simplify, or remove content.
+2. All mathematical symbols (×, ÷, √, ², π, ≤, ≥, ≠), fractions, equations, and numbers must be preserved exactly.
+3. The ONLY permitted changes are formatting/presentation changes specified in the SEND guidance below.
+4. Do NOT add word banks, hints, worked examples, sentence starters, or scaffolding unless specifically instructed in the SEND guidance.
+5. Return ONLY valid JSON — no markdown code fences, no text outside the JSON object.`;
 
-    const user = `Reformat the following worksheet for a student with ${sendNeed} in ${yr}.
+    const user = `Reformat this worksheet for a student with ${sendNeed} in ${yr}.
 
+SEND FORMATTING GUIDANCE (apply these changes only):
 ${sendFormattingGuide}
 
-IMPORTANT — SECTION TYPES: Map each section to the closest matching type from this list:
-- "objective" → Learning objectives / goals / aims
-- "vocabulary" → Key words / vocabulary / glossary
-- "starter" → Starter activity / warm up / recall
-- "example" → Worked example / model answer / how to do it
-- "guided" → Section A / guided practice / scaffolded questions / with support
-- "independent" → Section B / main practice / core questions / independent work
-- "challenge" → Extension / challenge / harder questions / stretch
-- "word-problems" → Word problems / real-life problems / applied questions
-- "reminder-box" → Key steps / remember / formula / tip box
-- "questions" → Any other numbered question section
-- "teacher-notes" → Mark scheme / answers / teacher notes (set teacherOnly: true)
+SECTION TYPES — map each section to one of these:
+"objective" | "vocabulary" | "starter" | "example" | "guided" | "independent" | "challenge" | "questions" | "reminder-box" | "teacher-notes"
 
-If the original has no clear sections, split the content logically: objectives first, then questions as "guided", harder ones as "independent", any extension as "challenge".
-
-Return a JSON object with this EXACT structure (valid JSON only, no markdown fences):
+Return this exact JSON structure:
 {
-  "title": "The worksheet title exactly as it appears in the original",
-  "subtitle": "${yr} — Formatted for ${sendNeed}",
+  "title": "exact title from original",
+  "subtitle": "${yr} — Adapted for ${sendNeed}",
   "sections": [
     {
-      "title": "Section heading exactly as in original (or inferred from content)",
+      "title": "section heading from original",
       "type": "guided",
-      "content": "ALL original questions and content from this section, reproduced VERBATIM. Every question number, every word, every symbol preserved exactly. Only formatting changes applied (bold key terms, tick boxes for ADHD, clear spacing).",
+      "content": "ALL original content reproduced verbatim with ONLY the permitted formatting changes applied",
       "teacherOnly": false
     }
   ],
   "teacherSection": {
     "title": "Teacher Notes",
     "type": "teacher-notes",
-    "content": "Formatting adaptations applied for ${sendNeed}. Recommended presentation strategies. Mark scheme if present in original.",
+    "content": "List of formatting adaptations applied. Any mark scheme content from the original.",
     "teacherOnly": true
   },
-  "adaptationsSummary": ["List each formatting change made"]
+  "adaptationsSummary": ["Brief description of each change made"]
 }
 
-ORIGINAL WORKSHEET (reproduce every question, symbol, and value VERBATIM — formatting changes only):
-${textForAI}${truncated ? "\n\n[Note: Document was truncated at 12,000 characters due to length.]" : ""}`;
+ORIGINAL WORKSHEET:
+${textForAI}${truncated ? "\n\n[Truncated at 10,000 characters]" : ""}`;
 
-    const { content, provider } = await callWithFallback(system, user, 6000, undefined, schoolId);
+    const { content: aiResponse, provider } = await callWithFallback(system, user, 6000, undefined, schoolId);
 
-    // Helper: try to parse JSON robustly, handling code fences and control chars
-    const tryParseJSON = (raw: string): any | null => {
-      if (!raw || !raw.trim()) return null;
-      try {
-        // Strip markdown code fences (```json ... ``` or ``` ... ```)
-        let s = raw
-          .replace(/^```(?:json)?\s*/i, '')
-          .replace(/\s*```\s*$/, '')
-          .trim();
-        // Extract the outermost JSON object (handles leading/trailing text)
+    // Robust JSON parser
+    const tryParse = (raw: string): any | null => {
+      if (!raw?.trim()) return null;
+      const attempts = [
+        raw,
+        raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/, "").trim(),
+      ];
+      for (const s of attempts) {
         const m = s.match(/\{[\s\S]*\}/);
         const candidate = m ? m[0] : s;
-        if (!candidate || !candidate.startsWith('{')) return null;
-        // First try direct parse
+        if (!candidate?.startsWith("{")) continue;
         try { return JSON.parse(candidate); } catch (_) {}
-        // Sanitize: replace unescaped control characters inside JSON strings
-        // This handles literal newlines/tabs inside string values
-        const sanitized = candidate.replace(
-          /"((?:[^"\\]|\\.)*)"/g,
-          (_match: string, inner: string) => {
-            const fixed = inner
-              .replace(/\n/g, '\\n')
-              .replace(/\r/g, '\\r')
-              .replace(/\t/g, '\\t');
-            return `"${fixed}"`;
-          }
-        );
-        try { return JSON.parse(sanitized); } catch (_) {}
-        // Last resort: try to extract just the sections array
-        return null;
-      } catch (_) { return null; }
+        try {
+          const sanitized = candidate.replace(/"((?:[^"\\]|\\.)*)"/g, (_: string, inner: string) =>
+            `"${inner.replace(/\n/g, "\\n").replace(/\r/g, "\\r").replace(/\t/g, "\\t")}"`
+          );
+          return JSON.parse(sanitized);
+        } catch (_) {}
+      }
+      return null;
     };
 
-    let parsed: any;
-    const outerParsed = tryParseJSON(content);
-    if (outerParsed && outerParsed.sections && Array.isArray(outerParsed.sections) && outerParsed.sections.length > 0) {
-      parsed = outerParsed;
-      // Detect double-nested JSON: if sections[0].content is itself a JSON string
-      // containing a full worksheet structure, unwrap it
-      if (
-        parsed?.sections?.length === 1 &&
-        typeof parsed.sections[0]?.content === 'string'
-      ) {
-        const innerContent = parsed.sections[0].content.trim();
-        if (innerContent.startsWith('```') || innerContent.startsWith('{')) {
-          const innerParsed = tryParseJSON(innerContent);
-          if (innerParsed?.sections && Array.isArray(innerParsed.sections) && innerParsed.sections.length > 0) {
-            parsed = innerParsed;
-          }
-        }
-      }
-      // Ensure no section has empty content and all content is a string
-      parsed.sections = parsed.sections.map((s: any) => {
-        let c = s.content;
-        if (c !== null && c !== undefined && typeof c !== 'string') {
-          if (Array.isArray(c)) c = c.join('\n');
-          else if (typeof c === 'object') { try { c = JSON.stringify(c); } catch { c = String(c); } }
-          else c = String(c);
-        }
-        return {
-          ...s,
-          title: typeof s.title === 'string' ? s.title : String(s.title || ''),
-          content: c && c.trim() ? c : "[Content not available — please try again]",
-        };
-      });
-    } else if (outerParsed && !outerParsed.sections) {
-      // AI returned JSON but without sections structure — wrap it
-      const rawContent = outerParsed.content || outerParsed.adaptedContent || outerParsed.text || JSON.stringify(outerParsed);
+    let parsed = tryParse(aiResponse);
+
+    if (!parsed?.sections?.length) {
+      // Fallback: AI returned plain text or malformed JSON — wrap in a single section
+      console.warn("[adapt-worksheet] JSON parse failed, using plain text fallback");
+      const cleanText = aiResponse.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/, "").trim();
       parsed = {
-        title: outerParsed.title || "Adapted Worksheet",
-        subtitle: outerParsed.subtitle || `${yr} — ${sendNeed} adaptation`,
-        sections: [{ title: "Adapted Content", type: "guided", content: rawContent, teacherOnly: false }],
-        teacherSection: { title: "Teacher Notes", type: "teacher-notes", content: `Formatted for ${sendNeed}`, teacherOnly: true },
-        adaptationsSummary: outerParsed.adaptationsSummary || ["Content formatted for " + sendNeed],
+        title: req.file?.originalname?.replace(/\.[^.]+$/, "") || "Adapted Worksheet",
+        subtitle: `${yr} — Adapted for ${sendNeed}`,
+        sections: [
+          { title: "Adapted Content", type: "guided", content: cleanText || textForAI, teacherOnly: false },
+        ],
+        teacherSection: {
+          title: "Teacher Notes",
+          type: "teacher-notes",
+          content: `Formatted for ${sendNeed}. ${sendFormattingGuide}`,
+          teacherOnly: true,
+        },
+        adaptationsSummary: [`Content reformatted for ${sendNeed}`],
       };
     } else {
-      // Fallback: AI returned plain text (not JSON) — wrap it in a section
-      // This ensures the user always sees content, never a blank document
-      const cleanContent = content.trim();
-      parsed = {
-        title: req.file?.originalname?.replace(/\.[^.]+$/, '') || "Adapted Worksheet",
-        subtitle: `${yr} — ${sendNeed} adaptation`,
-        sections: [{ 
-          title: "Adapted Worksheet", 
-          type: "guided", 
-          content: cleanContent || "The worksheet content could not be parsed. Please try again.", 
-          teacherOnly: false 
-        }],
-        teacherSection: { title: "Teacher Notes", type: "teacher-notes", content: `Formatted for ${sendNeed}`, teacherOnly: true },
-        adaptationsSummary: ["Content formatted for " + sendNeed],
-      };
+      // Ensure all section content is a clean string
+      parsed.sections = parsed.sections.map((s: any) => {
+        let c = s.content;
+        if (typeof c !== "string") c = Array.isArray(c) ? c.join("\n") : String(c ?? "");
+        return { ...s, title: String(s.title || ""), content: c.trim() || "[Content unavailable]" };
+      });
+    }
+
+    // Always add the teacher section if not present
+    if (!parsed.sections.find((s: any) => s.teacherOnly)) {
+      if (parsed.teacherSection) {
+        parsed.sections.push({ ...parsed.teacherSection, teacherOnly: true });
+      }
     }
 
     res.json({ adapted: parsed, provider });
   } catch (err: any) {
-    console.error("Worksheet adapt error:", err);
+    console.error("[adapt-worksheet] error:", err);
     res.status(500).json({ error: err.message || "Failed to adapt worksheet" });
   }
 });

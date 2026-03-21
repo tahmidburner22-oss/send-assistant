@@ -1,16 +1,20 @@
+import { useState } from "react";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   ChevronRight, ClipboardList, AlertTriangle, CheckCircle2,
   BookOpen, Info, FileText, Lightbulb, Shield, ArrowRight,
-  XCircle, FileCheck,
+  XCircle, FileCheck, ChevronDown, ChevronUp,
 } from "lucide-react";
+import EHCPPlanGenerator from "@/pages/tools/IEPGenerator";
 
 const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.06 } } };
 const itemAnim = { hidden: { opacity: 0, y: 14 }, show: { opacity: 1, y: 0, transition: { duration: 0.28 } } };
 
 export default function EHCPHub() {
+  const [showGenerator, setShowGenerator] = useState(false);
+
   return (
     <div className="px-4 py-6 max-w-3xl mx-auto space-y-6">
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
@@ -205,18 +209,29 @@ export default function EHCPHub() {
       </motion.div>
 
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45 }}>
-        <Link href="/tools/iep-generator">
-          <Card className="border-indigo-200 bg-indigo-50 hover:bg-indigo-100 transition-colors cursor-pointer group">
-            <CardContent className="p-4 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center flex-shrink-0"><FileCheck className="w-5 h-5 text-white" /></div>
-              <div className="flex-1">
-                <p className="text-sm font-bold text-indigo-900">Open the EHCP Plan Generator</p>
-                <p className="text-xs text-indigo-700/80 mt-0.5">5-stage AI-assisted EHCP drafting with golden thread QA, compliance scoring and Word export</p>
-              </div>
-              <ArrowRight className="w-4 h-4 text-indigo-600 group-hover:translate-x-0.5 transition-transform" />
-            </CardContent>
-          </Card>
-        </Link>
+        {/* EHCP Plan Generator — embedded directly in the hub */}
+        <div className="rounded-2xl border border-indigo-200 overflow-hidden">
+          <button
+            onClick={() => setShowGenerator(v => !v)}
+            className="w-full flex items-center gap-3 p-4 bg-indigo-50 hover:bg-indigo-100 transition-colors text-left"
+          >
+            <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center flex-shrink-0">
+              <FileCheck className="w-5 h-5 text-white" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-bold text-indigo-900">EHCP Plan Generator</p>
+              <p className="text-xs text-indigo-700/80 mt-0.5">5-stage AI-assisted EHCP drafting — golden thread QA, compliance scoring &amp; Word export</p>
+            </div>
+            {showGenerator
+              ? <ChevronUp className="w-4 h-4 text-indigo-600 flex-shrink-0" />
+              : <ChevronDown className="w-4 h-4 text-indigo-600 flex-shrink-0" />}
+          </button>
+          {showGenerator && (
+            <div className="border-t border-indigo-200">
+              <EHCPPlanGenerator />
+            </div>
+          )}
+        </div>
       </motion.div>
 
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}>

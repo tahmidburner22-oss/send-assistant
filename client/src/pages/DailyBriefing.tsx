@@ -6,6 +6,7 @@
  * - File attachments (PDF, Word, images) per entry
  */
 import { useState, useEffect, useCallback, useRef } from "react";
+import { callAI } from "@/lib/ai";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,7 +21,7 @@ import { useApp } from "@/contexts/AppContext";
 import {
   ChevronLeft, ChevronRight, Plus, Edit3, Trash2,
   Sun, Moon, FileText, RefreshCw, Clock, User,
-  Calendar, Paperclip, Download, X, Upload,
+  Calendar, Paperclip, Download, X, Upload, Sparkles, Loader2,
 } from "lucide-react";
 
 function getAuthHeader(): Record<string, string> {
@@ -269,6 +270,38 @@ export default function DailyBriefing() {
   const [formType, setFormType] = useState<"briefing" | "debrief" | "note">("briefing");
   const [formFiles, setFormFiles] = useState<File[]>([]);
   const [saving, setSaving] = useState(false);
+  const [aiGenerating, setAiGenerating] = useState(false);
+
+  const handleAIBriefing = async () => {
+    setAiGenerating(true);
+    try {
+      const dateLabel = formatDisplayDate(selectedDate);
+      const existingContext = entries.map(e => `[${e.type.toUpperCase()}] ${e.title}: ${e.content}`).join("\n");
+      const { text } = await callAI(
+        `You are an expert school SENCO and classroom teacher creating a daily briefing summary.
+Write a concise, professional morning briefing note for ${dateLabel}.
+Format with clear sections: Key Reminders, Pupil Focus Points, and Today's Priorities.
+Keep each section to 2-3 bullet points. Use plain English. Be practical and actionable.`,
+        existingContext
+          ? `Context from existing notes:
+${existingContext}
+
+Generate a structured morning briefing summary for ${dateLabel}.`
+          : `Generate a structured morning briefing template for ${dateLabel} — include placeholders for: key reminders, any pupils who may need extra support today, and today's main priorities.`,
+        500
+      );
+      // Pre-fill the create form with AI output
+      setFormType("briefing");
+      setFormTitle(`AI Morning Briefing — ${dateLabel}`);
+      setFormContent(text);
+      setShowForm(true);
+      setEditEntry(null);
+    } catch {
+      toast.error("AI generation failed. Please try again.");
+    } finally {
+      setAiGenerating(false);
+    }
+  };
   const [deleting, setDeleting] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -368,9 +401,21 @@ export default function DailyBriefing() {
         <div className="flex items-center gap-3">
           <p className="text-sm text-muted-foreground hidden md:block">{formatDisplayDate(selectedDate)}</p>
           {canWrite && (
-            <Button size="sm" className="bg-brand hover:bg-brand/90 text-white gap-1" onClick={() => openCreate("briefing")}>
-              <Plus className="w-4 h-4" /> Add Entry
-            </Button>
+            <>
+              <Button
+                size="sm"
+                variant="outline"
+                className="gap-1 border-brand/30 text-brand hover:bg-brand/5"
+                onClick={handleAIBriefing}
+                disabled={aiGenerating}
+              >
+                {aiGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                AI Generate
+              </Button>
+              <Button size="sm" className="bg-brand hover:bg-brand/90 text-white gap-1" onClick={() => openCreate("briefing")}>
+                <Plus className="w-4 h-4" /> Add Entry
+              </Button>
+            </>
           )}
         </div>
       </div>

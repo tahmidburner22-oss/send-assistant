@@ -11,27 +11,64 @@ const ages = ["3-5","5-7","7-9","9-11","11-14","14-18"].map(a => ({ value: a, la
 function formatSocialStory(text: string, logoUrl?: string, schoolName?: string): string {
   const logoHtml = logoUrl
     ? `<img src="${logoUrl}" alt="School logo" style="height:40px;width:auto;object-fit:contain;border-radius:4px;" />`
-    : `<div style="width:36px;height:36px;border-radius:8px;background:linear-gradient(135deg,#f43f5e,#ec4899);display:flex;align-items:center;justify-content:center;font-size:18px;">📖</div>`;
+    : `<div style="width:36px;height:36px;border-radius:8px;background:linear-gradient(135deg,#4f46e5,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:18px;">📖</div>`;
 
-  const paragraphs = text.split(/\n\n+/).filter(p => p.trim());
-  const bodyHtml = paragraphs.map(p => {
-    const t = p.trim();
-    if (t.startsWith("##")) return `<h3 style="font-size:15px;font-weight:700;color:#be185d;margin:16px 0 6px;">${t.replace(/^##\s*/, "")}</h3>`;
-    if (t.startsWith("#")) return `<h2 style="font-size:18px;font-weight:800;color:#be185d;margin:20px 0 8px;">${t.replace(/^#\s*/, "")}</h2>`;
-    if (t.startsWith("How to Use")) return `<div style="margin-top:20px;padding:14px;background:#fdf2f8;border-left:4px solid #f43f5e;border-radius:0 8px 8px 0;"><p style="font-size:11px;font-weight:700;color:#be185d;margin:0 0 6px;text-transform:uppercase;letter-spacing:0.5px;">For Staff & Parents</p><p style="font-size:13px;color:#374151;margin:0;line-height:1.6;">${t.replace(/^How to Use.*?\n/i, "")}</p></div>`;
-    return `<p style="font-size:14px;color:#1f2937;line-height:1.8;margin:0 0 12px;">${t}</p>`;
+  // Split story body from "How to Use" staff guidance
+  const howToUseIdx = text.search(/\n?How to Use/i);
+  const storyText   = howToUseIdx >= 0 ? text.slice(0, howToUseIdx).trim() : text.trim();
+  const staffText   = howToUseIdx >= 0 ? text.slice(howToUseIdx).trim() : "";
+
+  const renderParagraphs = (t: string) => t.split(/\n\n+/).filter(p => p.trim()).map(p => {
+    const s = p.trim();
+    if (s.startsWith("##")) return `<h3 style="font-size:15px;font-weight:700;color:#4f46e5;margin:16px 0 6px;">${s.replace(/^##\s*/, "")}</h3>`;
+    if (s.startsWith("#"))  return `<h2 style="font-size:18px;font-weight:800;color:#4f46e5;margin:20px 0 8px;">${s.replace(/^#\s*/, "")}</h2>`;
+    return `<p style="font-size:14px;color:#1f2937;line-height:1.8;margin:0 0 12px;">${s}</p>`;
   }).join("");
 
-  return `<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:640px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(244,63,94,0.12);">
-    <div style="background:linear-gradient(135deg,#f43f5e,#ec4899);padding:18px 22px;display:flex;align-items:center;gap:12px;">
+  const printBtns = `
+  <div class="no-print" style="display:flex;gap:10px;padding:12px 22px;background:#f5f3ff;border-top:1px solid #ddd6fe;flex-wrap:wrap;">
+    <button onclick="window.print()" style="display:flex;align-items:center;gap:6px;padding:8px 16px;background:#4f46e5;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">
+      Print Story (student copy)
+    </button>
+    <button onclick="(function(){
+      var s=document.getElementById('social-staff-guidance');
+      var b=document.getElementById('social-story-body');
+      if(!s||!b)return;
+      b.style.display='none';
+      s.classList.remove('no-print');
+      window.print();
+      b.style.display='';
+      s.classList.add('no-print');
+    })()" style="display:flex;align-items:center;gap:6px;padding:8px 16px;background:#fff;color:#4f46e5;border:2px solid #4f46e5;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">
+      Print Staff Guidance only
+    </button>
+  </div>`;
+
+  const staffSection = staffText ? `
+  <div id="social-staff-guidance" class="no-print" style="margin-top:4px;border:2px solid #6366f1;border-radius:12px;overflow:hidden;">
+    <div style="background:linear-gradient(135deg,#4f46e5,#3730a3);padding:10px 18px;">
+      <div style="font-size:13px;font-weight:800;color:#fff;">Staff &amp; Parent Guidance</div>
+      <div style="font-size:11px;color:rgba(255,255,255,0.75);">How to use this story — do not give to student</div>
+    </div>
+    <div style="padding:14px 18px;background:#f5f3ff;font-size:13px;color:#374151;line-height:1.7;">
+      ${renderParagraphs(staffText.replace(/^How to Use[^\n]*\n?/i, ""))}
+    </div>
+  </div>` : "";
+
+  return `<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:640px;margin:0 auto;">
+  ${printBtns}
+  <div id="social-story-body" style="background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(79,70,229,0.12);border:2px solid #c7d2fe;">
+    <div style="background:linear-gradient(135deg,#4f46e5,#7c3aed);padding:18px 22px;display:flex;align-items:center;gap:12px;">
       ${logoHtml}
       <div>
         <div style="font-size:16px;font-weight:800;color:white;">Social Story</div>
         <div style="font-size:11px;color:rgba(255,255,255,0.75);">${schoolName || "Adaptly"} · Carol Gray methodology</div>
       </div>
     </div>
-    <div style="padding:20px 24px;">${bodyHtml}</div>
-    <div style="padding:10px 22px;background:#fff0f5;border-top:1px solid #fce7f3;font-size:10px;color:#9ca3af;">Generated by Adaptly · This story is confidential and person-centred · adaptly.co.uk</div>
+    <div style="padding:20px 24px;">${renderParagraphs(storyText)}</div>
+    <div style="padding:10px 22px;background:#f5f3ff;border-top:1px solid #ddd6fe;font-size:10px;color:#9ca3af;">Generated by Adaptly · This story is confidential and person-centred · adaptly.co.uk</div>
+  </div>
+  ${staffSection}
   </div>`;
 }
 
@@ -43,7 +80,7 @@ export default function SocialStories() {
       title="Social Stories Generator"
       description="Create personalised Carol Gray-style social stories for autism and behaviour support"
       icon={<BookHeart className="w-5 h-5 text-white" />}
-      accentColor="bg-rose-500"
+      accentColor="bg-violet-600"
       fields={[
         { id: "studentName", label: "Student Initials", type: "text", placeholder: "e.g. A.J.", required: true, span: "half", maxLength: 4, hint: "Initials only (max 4 chars) — do not enter full names (GDPR)" },
         { id: "ageRange", label: "Age Range", type: "select", options: ages, required: true, span: "half" },

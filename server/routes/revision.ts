@@ -1,7 +1,7 @@
 import { Router, Request, Response } from "express";
 import multer from "multer";
 import { MsEdgeTTS, OUTPUT_FORMAT } from "msedge-tts";
-import OpenAI from "openai";
+
 import { requireAuth } from "../middleware/auth.js";
 import db from "../db/index.js";
 import { randomUUID } from "crypto";
@@ -583,20 +583,20 @@ router.post("/tts", requireAuth, async (req: Request, res: Response) => {
       austin:  "en-US-EricNeural",
     };
 
-    // Map frontend voice names to OpenAI TTS voice IDs (FALLBACK)
-    const OPENAI_VOICE_MAP: Record<string, string> = {
-      nova:    "nova",
-      hannah:  "nova",
-      shimmer: "shimmer",
-      autumn:  "shimmer",
-      alloy:   "alloy",
-      diana:   "alloy",
-      echo:    "echo",
-      daniel:  "echo",
-      fable:   "fable",
-      troy:    "fable",
-      onyx:    "onyx",
-      austin:  "onyx",
+    // Map voice names to Google Cloud TTS voice IDs (FALLBACK)
+    const GOOGLE_VOICE_MAP: Record<string, string> = {
+      nova:    "en-GB-Neural2-A",
+      hannah:  "en-GB-Neural2-A",
+      shimmer: "en-GB-Neural2-C",
+      autumn:  "en-GB-Neural2-C",
+      alloy:   "en-GB-Neural2-F",
+      diana:   "en-GB-Neural2-F",
+      echo:    "en-GB-Neural2-B",
+      daniel:  "en-GB-Neural2-B",
+      fable:   "en-US-Neural2-D",
+      troy:    "en-US-Neural2-D",
+      onyx:    "en-US-Neural2-J",
+      austin:  "en-US-Neural2-J",
     };
 
     // Non-English language overrides for Azure
@@ -617,7 +617,8 @@ router.post("/tts", requireAuth, async (req: Request, res: Response) => {
     const azureVoice = (language !== "en" && LANG_VOICE_MAP[language])
       ? LANG_VOICE_MAP[language]
       : (AZURE_VOICE_MAP[voice] || "en-GB-SoniaNeural");
-    const openaiVoice = (OPENAI_VOICE_MAP[voice] || "nova") as "alloy" | "echo" | "fable" | "onyx" | "nova" | "shimmer";
+    const googleVoiceName = GOOGLE_VOICE_MAP[voice] || "en-GB-Neural2-A";
+    const googleLanguageCode = googleVoiceName.split("-").slice(0, 2).join("-");  // e.g. "en-GB"
 
     // PRIMARY: Microsoft Edge Neural TTS (msedge-tts) — free, no rate limits
     // Uses Azure Cognitive Speech voices via the Edge browser TTS endpoint
@@ -657,49 +658,48 @@ router.post("/tts", requireAuth, async (req: Request, res: Response) => {
       return res.send(combined);
 
     } catch (msedgeErr: any) {
-      console.warn(`[TTS] msedge-tts failed (${msedgeErr?.message}), trying OpenAI TTS...`);
+      console.warn(`[TTS] msedge-tts failed (${msedgeErr?.message}), trying Google Cloud TTS...`);
 
-      // FALLBACK: OpenAI TTS — force real OpenAI endpoint (not proxy) for audio support
-      const openaiKey = process.env.OPENAI_API_KEY || "";
-      if (!openaiKey) throw new Error("No OpenAI API key available for TTS fallback");
+      // FALLBACK: Google Cloud TTS — free tier (1M chars/month), uses GOOGLE_API_KEY
+      const googleKey = process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY || "";
+      if (!googleKey) throw new Error("No Google API key available for TTS fallback");
 
-      const openai = new OpenAI({
-        apiKey: openaiKey,
-        baseURL: "https://api.openai.com/v1",  // always use real OpenAI for TTS (proxy may not support audio)
-      });
-      const chunks = splitIntoChunks(text, 900);
-      console.log(`[TTS] OpenAI fallback: ${chunks.length} chunk(s), voice=${openaiVoice}`);
+      const chunks = splitIntoChunks(text, 4500); // Google TTS supports up to 5000 chars
+      console.log(`[TTS] Google Cloud TTS fallback: ${chunks.length} chunk(s), voice=${googleVoiceName}`);
 
       const mp3Buffers: Buffer[] = [];
-      for (let i = 0; i < chunks.length; i++) {
-        let lastErr: any;
-        for (let attempt = 0; attempt < 3; attempt++) {
-          const ctrl = new AbortController();
-          const timer = setTimeout(() => ctrl.abort(), 30000);
-          try {
-            const response = await openai.audio.speech.create({
-              model: "tts-1-hd",
-              voice: openaiVoice,
-              input: chunks[i],
-              response_format: "mp3",
-              speed: 0.95,
-            }, { signal: ctrl.signal });
-            clearTimeout(timer);
-            const buf = Buffer.from(await response.arrayBuffer());
-            mp3Buffers.push(buf);
-            lastErr = null;
-            break;
-          } catch (e) {
-            clearTimeout(timer);
-            lastErr = e;
-            if (attempt < 2) await new Promise(r => setTimeout(r, (attempt + 1) * 800));
+      for (const chunk of chunks) {
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), 25000);
+        try {
+          const resp = await fetch(
+            `https://texttospeech.googleapis.com/v1/text:synthesize?key=${googleKey}`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                input: { text: chunk },
+                voice: { languageCode: googleLanguageCode, name: googleVoiceName },
+                audioConfig: { audioEncoding: "MP3", speakingRate: 0.95, pitch: 0 },
+              }),
+              signal: ctrl.signal,
+            }
+          );
+          clearTimeout(timer);
+          if (!resp.ok) {
+            const errText = await resp.text();
+            throw new Error(`Google TTS error ${resp.status}: ${errText.slice(0, 200)}`);
           }
+          const data = await resp.json() as { audioContent: string };
+          mp3Buffers.push(Buffer.from(data.audioContent, "base64"));
+        } catch (e) {
+          clearTimeout(timer);
+          throw e;
         }
-        if (lastErr) throw lastErr;
       }
 
       const combined = Buffer.concat(mp3Buffers);
-      console.log(`[TTS] OpenAI fallback success: ${combined.byteLength} bytes`);
+      console.log(`[TTS] Google Cloud TTS fallback success: ${combined.byteLength} bytes`);
       res.setHeader("Content-Type", "audio/mpeg");
       res.setHeader("Content-Length", combined.byteLength.toString());
       return res.send(combined);

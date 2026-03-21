@@ -395,94 +395,18 @@ type ScreenerMode = "quick" | "full";
 
 /** Simplifies a long question into shorter, plainer language for pupils completing alone */
 function simplifyText(text: string): string {
-  // Step 1: Remove parenthetical examples and em-dash clauses
-  let t = text
+  // Strip subordinate clauses and shorten sentences
+  return text
     .replace(/— for example[^—]*—/g, "")
     .replace(/ — even when [^.?]*/g, "")
     .replace(/ — even [^.?]*/g, "")
-    .replace(/ — [^?!.—]*/g, "")
-    .replace(/\(e\.g\.[^)]*\)/g, "")
-    .replace(/ for example,[^,.?]*/g, "")
+    .replace(/ \(e\.g\.[^)]*\)/g, "")
+    .replace(/ for example,[^,.]*/g, "")
     .replace(/\([^)]*\)/g, "")
     .replace(/  +/g, " ")
-    .trim();
-
-  // Step 2: Replace complex vocabulary with plain-English equivalents (reading age 10-12)
-  const vocab: [RegExp, string][] = [
-    [/difficulty (processing|interpreting)/gi, "trouble understanding"],
-    [/processing (speed|information|language|input)/gi, "taking in information"],
-    [/sequential (tasks|instructions|steps)/gi, "step-by-step tasks"],
-    [/frequently/gi, "often"],
-    [/instructions that involve multiple steps/gi, "instructions with lots of steps"],
-    [/multiple[-\s]step/gi, "multi-step"],
-    [/working memory/gi, "remembering things while doing something else"],
-    [/executive function/gi, "planning and organising"],
-    [/concentrat(?:e|ing|ion)/gi, "focus"],
-    [/persistent(?:ly)?/gi, "keeps happening"],
-    [/predictable/gi, "the same each time"],
-    [/unpredictable/gi, "not the same each time"],
-    [/sensory (sensitivities|sensitivity|overload)/gi, "being bothered by sounds, lights or touch"],
-    [/hyper-?sensitive/gi, "very sensitive"],
-    [/fine motor/gi, "hand and finger"],
-    [/gross motor/gi, "whole-body movement"],
-    [/coordination/gi, "controlling their body"],
-    [/spatial awareness/gi, "knowing where things are around them"],
-    [/verbal (communication|expression|output)/gi, "speaking"],
-    [/non-?verbal/gi, "without using words"],
-    [/comprehension/gi, "understanding"],
-    [/vocabulary/gi, "words they know"],
-    [/pronunci?ation/gi, "saying words correctly"],
-    [/fluency/gi, "reading or speaking smoothly"],
-    [/phonological awareness/gi, "understanding how sounds work in words"],
-    [/decoding/gi, "sounding out words"],
-    [/manipulating sounds/gi, "changing sounds in words"],
-    [/rhyme/gi, "words that sound the same at the end"],
-    [/infer(?:ring|ence)?/gi, "working out what is meant"],
-    [/literal meaning/gi, "exactly what is said"],
-    [/misinterpret/gi, "get the wrong idea about"],
-    [/sarcasm/gi, "when people say the opposite of what they mean"],
-    [/imaginary play/gi, "pretend play"],
-    [/social cues/gi, "signals that tell us how others feel"],
-    [/social interaction/gi, "talking and playing with others"],
-    [/reciprocal conversation/gi, "having a back-and-forth chat"],
-    [/peer(s)?/gi, "classmates"],
-    [/frustrat(?:ion|ed|ing)/gi, "getting upset or angry"],
-    [/impulsiv(?:e|ity)/gi, "doing things without thinking first"],
-    [/hyperactiv(?:e|ity)/gi, "very active and restless"],
-    [/attention span/gi, "how long they can concentrate"],
-    [/sustained attention/gi, "staying focused for a long time"],
-    [/self-regulation/gi, "controlling how they behave"],
-    [/self-esteem/gi, "how they feel about themselves"],
-    [/anxiety/gi, "worry"],
-    [/transitions?/gi, "changes in activity or place"],
-    [/routine/gi, "regular pattern of doing things"],
-    [/structured environment/gi, "organised classroom"],
-    [/present(?:ing)? (with|as)/gi, "shows signs of"],
-    [/identif(?:y|ied|ying)/gi, "spot"],
-    [/demonstrat(?:e|es|ing)/gi, "shows"],
-    [/indicat(?:e|es|ing)/gi, "suggests"],
-    [/significant(ly)?/gi, "noticeably"],
-    [/consistent(ly)?/gi, "always"],
-    [/noticeable/gi, "easy to see"],
-    [/compared to/gi, "unlike"],
-    [/appropriate/gi, "right for their age"],
-    [/typical(ly)?/gi, "usually"],
-    [/expected/gi, "usual for their age"],
-  ];
-
-  for (const [pattern, replacement] of vocab) {
-    t = t.replace(pattern, replacement);
-  }
-
-  // Step 3: Break long sentences at "and" / "but" / "or" if over ~80 chars
-  t = t.replace(/([^.?!]{60,}),? (and|but|or) ([a-z])/g, (_, a, conj, c) =>
-    `${a.trim()}? ${conj.charAt(0).toUpperCase() + conj.slice(1)} ${c}`
-  );
-
-  // Step 4: Ensure ends with question mark
-  t = t.replace(/  +/g, " ").trim();
-  if (t && !/[?!.]$/.test(t)) t += "?";
-  return t;
+    .trim()
+    .replace(/,\s*$/, "?")
+    .replace(/([^?!.])$/, "$1?");
 }
 
 // ─── Component ──────────────────────────────────────────────────

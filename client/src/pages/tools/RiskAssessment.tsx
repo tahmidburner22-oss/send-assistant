@@ -13,6 +13,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { useApp } from "@/contexts/AppContext";
+import { useUserPreferences } from "@/contexts/UserPreferencesContext";
 import { exportToDocx } from "@/lib/docx-export";
 import { downloadHtmlAsPdf } from "@/lib/pdf-generator-v2";
 import {
@@ -203,6 +204,7 @@ const RA_STEP_KEY = "adaptly_risk_assessment_step_v1";
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function RiskAssessment() {
   const { school } = useApp();
+  const { preferences } = useUserPreferences();
 
   // Initialise from localStorage if available, otherwise use defaults
   const [step, setStep] = useState<number>(() => {
@@ -381,6 +383,7 @@ export default function RiskAssessment() {
         title: `Risk Assessment — ${data.schoolName}`,
         subtitle: `Educational Visit to ${data.venueName} | ${formatDate(data.date)}`,
         content: lines.join("\n"),
+        schoolName: preferences.schoolName || data.schoolName,
       });
       toast.success("Word document downloaded!", { id: "ra-docx" });
     } catch (e) {
@@ -398,7 +401,7 @@ export default function RiskAssessment() {
     try { return new Date(d).toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric" }); } catch { return d; }
   };
 
-  const handlePrint = () => {
+  const renderStep = () => {
     switch (step) {
       case 1:
         return (
@@ -744,9 +747,22 @@ export default function RiskAssessment() {
             <div style={{ fontWeight: "bold", fontSize: "14pt" }}>RISK ASSESSMENT FOR EDUCATIONAL VISITS</div>
             <div style={{ fontSize: "9pt", opacity: 0.85, marginTop: "2px" }}>COBS — {data.schoolName}</div>
           </div>
-          <div style={{ fontSize: "9pt", textAlign: "right", opacity: 0.85 }}>
-            <div>Adaptly</div>
-            <div>adaptly.co.uk</div>
+          <div style={{ textAlign: "right" }}>
+            {preferences.schoolLogoUrl ? (
+              <img
+                src={preferences.schoolLogoUrl}
+                alt="School logo"
+                style={{ height: "40px", width: "auto", objectFit: "contain", background: "rgba(255,255,255,0.9)", borderRadius: "4px", padding: "2px" }}
+              />
+            ) : (
+              <div style={{ fontSize: "9pt", opacity: 0.85 }}>
+                <div>Adaptly</div>
+                <div>adaptly.co.uk</div>
+              </div>
+            )}
+            {preferences.schoolName && preferences.schoolName !== data.schoolName && (
+              <div style={{ fontSize: "8pt", color: "rgba(255,255,255,0.7)", marginTop: "2px" }}>{preferences.schoolName}</div>
+            )}
           </div>
         </div>
       </div>

@@ -1,3 +1,5 @@
+import { useUserPreferences } from "@/contexts/UserPreferencesContext";
+import { formatToolOutput } from "@/lib/format-tool-output";
 import AIToolPage from "@/components/AIToolPage";
 import { HelpCircle } from "lucide-react";
 
@@ -6,6 +8,7 @@ const years = ["Year 1","Year 2","Year 3","Year 4","Year 5","Year 6","Year 7","Y
 const quizTypes = [{ value: "multiple-choice", label: "Multiple Choice" }, { value: "true-false", label: "True / False" }, { value: "short-answer", label: "Short Answer" }, { value: "mixed", label: "Mixed Format" }, { value: "fill-in-blanks", label: "Fill in the Blanks" }];
 
 export default function QuizGenerator() {
+  const { preferences } = useUserPreferences();
   return (
     <AIToolPage
       assignable={true}
@@ -49,6 +52,7 @@ Make questions that test genuine understanding, not just memorisation. Include a
         maxTokens: 3000,
       })}
       outputTitle={(v) => `${v.subject} Quiz — ${v.topic} (${v.yearGroup})`}
+      formatOutput={(text) => formatToolOutput(text, { logoUrl: preferences.schoolLogoUrl, schoolName: preferences.schoolName, accentColor: "#4f46e5", emoji: "❓", title: "Quiz" })}
     />
   );
 }

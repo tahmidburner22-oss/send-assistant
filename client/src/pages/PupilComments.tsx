@@ -12,9 +12,10 @@ import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { useApp } from "@/contexts/AppContext";
 import { pupils as pupilsApi } from "@/lib/api";
+import { callAI } from "@/lib/ai";
 import {
   MessageSquare, Plus, Trash2, Search, Filter, ThumbsUp, ThumbsDown,
-  Minus, ShieldAlert, Database, User, Calendar
+  Minus, ShieldAlert, Database, User, Calendar, Sparkles, Loader2, X
 } from "lucide-react";
 
 interface Comment {
@@ -68,6 +69,51 @@ export default function PupilComments() {
   const [newContent, setNewContent] = useState("");
   const [newDate, setNewDate] = useState(new Date().toISOString().slice(0, 10));
   const [saving, setSaving] = useState(false);
+
+  // AI report generation
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiOutput, setAiOutput] = useState<string | null>(null);
+  const [aiPupilName, setAiPupilName] = useState<string>("");
+
+  const handleGenerateAI = async () => {
+    const targetComments = filterPupil !== "all"
+      ? comments.filter(c => c.pupil_id === filterPupil)
+      : comments.slice(0, 20);
+    if (targetComments.length === 0) {
+      toast.error("No comments to analyse. Add some observations first.");
+      return;
+    }
+    const pupilName = filterPupil !== "all"
+      ? (pupils.find(p => p.id === filterPupil)?.name || "the pupil")
+      : "pupils";
+    setAiPupilName(pupilName);
+    setAiLoading(true);
+    setAiOutput(null);
+    try {
+      const commentList = targetComments.slice(0, 15)
+        .map(c => `[${c.date} · ${c.type.toUpperCase()}] ${c.category}: ${c.content}`)
+        .join("\n");
+      const { text } = await callAI(
+        `You are an expert SENCO writing professional school report comments and SEND observation analysis.
+Produce two clearly labelled sections:
+
+1. REPORT COMMENT (2–3 sentences, third-person, UK school report style, strengths-first, person-centred language)
+2. SEND PATTERNS (bullet points identifying recurring themes, triggers, or areas of concern from the observations)
+
+Be evidence-based, professional, and constructive. Never use a pupil's full name.`,
+        `Pupil: ${pupilName}
+
+Observations:
+${commentList}`,
+        600
+      );
+      setAiOutput(text);
+    } catch {
+      toast.error("AI generation failed. Please try again.");
+    } finally {
+      setAiLoading(false);
+    }
+  };
 
   const loadData = async () => {
     setLoading(true);
@@ -167,9 +213,21 @@ export default function PupilComments() {
             Pastoral notes, positive praise, concerns, and MIS-imported records
           </p>
         </div>
-        <Button onClick={() => setShowAdd(true)} size="sm" className="gap-2">
-          <Plus className="w-4 h-4" /> Add Comment
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            onClick={handleGenerateAI}
+            size="sm"
+            variant="outline"
+            className="gap-2 border-violet-300 text-violet-700 hover:bg-violet-50"
+            disabled={aiLoading || comments.length === 0}
+          >
+            {aiLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+            {filterPupil !== "all" ? "AI Report Comment" : "AI Analysis"}
+          </Button>
+          <Button onClick={() => setShowAdd(true)} size="sm" className="gap-2">
+            <Plus className="w-4 h-4" /> Add Comment
+          </Button>
+        </div>
       </div>
 
       {/* Summary Cards */}
@@ -192,6 +250,29 @@ export default function PupilComments() {
           );
         })}
       </div>
+
+      {/* AI Output Panel */}
+      {aiOutput && (
+        <div className="rounded-xl border border-violet-200 bg-violet-50 p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-semibold text-violet-800 flex items-center gap-2">
+              <Sparkles className="w-4 h-4" /> AI Analysis — {aiPupilName}
+            </p>
+            <button onClick={() => setAiOutput(null)} className="text-violet-400 hover:text-violet-700">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+          <div className="text-sm text-violet-900 whitespace-pre-wrap leading-relaxed bg-white rounded-lg p-3 border border-violet-100">
+            {aiOutput}
+          </div>
+          <button
+            onClick={() => { navigator.clipboard.writeText(aiOutput); toast.success("Copied to clipboard"); }}
+            className="text-xs text-violet-600 hover:underline"
+          >
+            Copy to clipboard
+          </button>
+        </div>
+      )}
 
       {/* Filters */}
       <div className="flex gap-2 flex-wrap">

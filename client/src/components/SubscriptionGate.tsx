@@ -150,7 +150,7 @@ export default function SubscriptionGate({ children }: Props) {
                       disabled={redirecting}
                     >
                       <CreditCard className="w-4 h-4 mr-2" />
-                      {redirecting ? "Redirecting..." : "Subscribe — Professional £99/month"}
+                      {redirecting ? "Redirecting..." : "Subscribe — Professional £79/month"}
                     </Button>
                     <Button
                       variant="outline"

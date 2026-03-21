@@ -16,19 +16,29 @@ import { generateStoryContent } from "@/lib/worksheet-generator";
 import { downloadStoryPdf } from "@/lib/pdf-generator";
 import { ComprehensionQuiz } from "@/components/ComprehensionQuiz";
 
-function generateComprehensionQuestions(_content: string, genre: string): string[] {
-  const questions: Record<string, string[]> = {
-    adventure: ["What challenge did the main character face?", "How did the character show bravery?", "What would you have done differently?", "Describe the setting in your own words."],
-    fantasy: ["What magical elements appeared in the story?", "How did the character use their special abilities?", "What is the moral of the story?", "Describe the fantasy world in detail."],
-    mystery: ["What clues helped solve the mystery?", "Who do you think was responsible and why?", "What red herrings appeared in the story?", "How did the detective use logical thinking?"],
-    "sci-fi": ["What futuristic technology appeared in the story?", "How was the world different from our own?", "What scientific concepts were explored?", "What problems did the characters face in space/the future?"],
-    historical: ["What historical period is the story set in?", "How was life different for people in that time?", "What historical facts are included in the story?", "What can we learn from this period of history?"],
-    comedy: ["What made the story funny?", "Describe the funniest moment and explain why it was humorous.", "How did the misunderstanding begin?", "How was the problem eventually resolved?"],
-    spooky: ["What created the feeling of suspense in the story?", "How did the author build tension?", "What was the scariest moment and why?", "Was the ending satisfying? Explain your answer."],
-    sports: ["What obstacles did the character overcome?", "What does this story teach us about teamwork?", "How did the character prepare for the big event?", "What qualities made the character a good sportsperson?"],
-  };
-  const defaultQs = ["What is the main theme of this story?", "How does the main character change throughout the story?", "What is the most important moment in the story? Explain why.", "Write a short summary of the story in your own words."];
-  return questions[genre] || defaultQs;
+async function generateComprehensionQuestionsAI(content: string, yearGroup: string, sendNeed: string): Promise<string[]> {
+  try {
+    const system = `You are an experienced UK English teacher. Generate exactly 4 comprehension questions about the specific story provided.
+Questions MUST reference actual characters, events, settings, and details from THIS story — not generic questions.
+Include a mix of: literal (who/what/when), inferential (why/how), evaluative (what do you think), and creative (what would you do).
+${sendNeed ? `Adapt language for ${sendNeed} — keep questions clear and accessible.` : ""}
+Return ONLY a JSON array of 4 strings, no markdown, no preamble.`;
+    const user = `Year group: ${yearGroup || "KS2"}.
+Story:
+${content.slice(0, 2500)}
+Return only: ["Question 1?", "Question 2?", "Question 3?", "Question 4?"]`;
+    const { text } = await callAI(system, user, 400);
+    const clean = text.replace(/```json|```/g, "").trim();
+    const parsed = JSON.parse(clean.match(/\[[\s\S]*\]/)?.[0] || clean);
+    if (Array.isArray(parsed) && parsed.length >= 3) return parsed.slice(0, 4);
+  } catch (_) {}
+  // Honest fallback — open questions that at least require reading the story
+  return [
+    "What happened at the beginning, middle, and end of this story? Summarise in your own words.",
+    "Which character did you find most interesting and why? Use evidence from the story.",
+    "What was the most important moment in the story? Explain why you chose it.",
+    "What lesson or message do you think this story is trying to share?",
+  ];
 }
 import { BookOpen, Sparkles, Copy, Download, Save, RotateCcw, Plus, X, Users, FileDown, Printer, Palette, ZoomIn, ZoomOut, PenLine, Check, Loader2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -81,7 +91,7 @@ export default function StoriesContent() {
         readingLevel,
         length,
       });
-      const questions = generateComprehensionQuestions(aiResult.content, genre);
+      const questions = await generateComprehensionQuestionsAI(aiResult.content, yearGroup, sendNeed);
       setResult({ title: aiResult.title, content: aiResult.content, questions });
       toast.success("Story generated with AI!");
     } catch (_err) {
@@ -92,7 +102,7 @@ export default function StoriesContent() {
         characters: charNames, setting: setting || undefined,
         theme: theme || undefined, readingLevel, length,
       });
-      const questions = generateComprehensionQuestions(story.content, genre);
+      const questions = await generateComprehensionQuestionsAI(story.content, yearGroup, sendNeed);
       setResult({ ...story, questions });
       toast.success("Story generated!");
     }

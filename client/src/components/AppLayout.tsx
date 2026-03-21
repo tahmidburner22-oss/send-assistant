@@ -275,7 +275,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               </AnimatePresence>
             </div>
             <button
-              onClick={() => window.dispatchEvent(new KeyboardEvent("keydown", { key: "k", ctrlKey: true, bubbles: true }))}
+              onClick={() => window.dispatchEvent(new CustomEvent("adaptly:open-search"))}
               className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted/60 border border-border/50 text-muted-foreground hover:bg-muted hover:text-foreground hover:border-border transition-all text-xs min-w-[160px]"
               title="Search (Ctrl+K)"
             >
@@ -284,7 +284,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               <kbd className="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-background border border-border/50 text-[9px] font-mono text-muted-foreground/70">⌘K</kbd>
             </button>
             <button
-              onClick={() => window.dispatchEvent(new KeyboardEvent("keydown", { key: "k", ctrlKey: true, bubbles: true }))}
+              onClick={() => window.dispatchEvent(new CustomEvent("adaptly:open-search"))}
               className="sm:hidden p-2 -mr-2 rounded-lg hover:bg-muted transition-colors"
               title="Search (Ctrl+K)"
             >
@@ -310,8 +310,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               {/* Header */}
               <div className="flex items-center justify-between p-4 border-b border-border/50">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-md" style={{ backgroundColor: theme.primary }}>
-                    <Brain className="w-5 h-5 text-white" />
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-md overflow-hidden bg-white">
+                    <img src="/logo.png" alt="Adaptly Logo" className="w-full h-full object-cover" />
                   </div>
                   <div>
                     <div className="font-bold text-foreground text-sm tracking-tight">Adaptly</div>

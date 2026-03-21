@@ -1,3 +1,5 @@
+import { useUserPreferences } from "@/contexts/UserPreferencesContext";
+import { formatToolOutput } from "@/lib/format-tool-output";
 import AIToolPage from "@/components/AIToolPage";
 import { FileCheck } from "lucide-react";
 
@@ -19,6 +21,7 @@ const tones = [
 ];
 
 export default function ReportComments() {
+  const { preferences } = useUserPreferences();
   return (
     <AIToolPage
       title="Report Card Comments"
@@ -39,7 +42,11 @@ export default function ReportComments() {
         { id: "wordCount", label: "Word Count", type: "select", options: [{ value: "50", label: "~50 words (brief)" }, { value: "75", label: "~75 words" }, { value: "100", label: "~100 words (standard)" }, { value: "150", label: "~150 words (detailed)" }, { value: "200", label: "~200 words (comprehensive)" }], span: "half" },
         { id: "numVariants", label: "Number of Variants", type: "select", options: [{ value: "1", label: "1 version" }, { value: "2", label: "2 versions" }, { value: "3", label: "3 versions" }], span: "half" },
       ]}
-      buildPrompt={(v) => ({
+      buildPrompt={(v) => {
+        const subjectPronoun = v.pronoun?.split("/")[0] || "they";
+        const objectPronoun  = v.pronoun?.split("/")[1] || "them";
+        const possessivePronoun = subjectPronoun === "she" ? "her" : subjectPronoun === "he" ? "his" : "their";
+        return {
         system: `You are a highly experienced UK school teacher and report writer with 20+ years of experience writing professional school report comments. You are known for writing comments that are:
 
 - **Specific and evidence-based**: Every claim references actual skills, topics, or behaviours — never vague generalisations
@@ -49,10 +56,12 @@ export default function ReportComments() {
 - **Legally compliant**: GDPR-aware, no full names, no sensitive information
 - **Grammatically impeccable**: Perfect spelling, grammar, and punctuation throughout
 
-You never use tired clichés like "works hard", "is a pleasure to teach", "could try harder", or "has potential" without specific evidence. Every sentence earns its place.`,
+PRONOUN RULE — CRITICAL: This student uses ${subjectPronoun}/${objectPronoun} pronouns. Every single sentence in every comment MUST use "${subjectPronoun}" (subject), "${objectPronoun}" (object), and "${possessivePronoun}" (possessive) exclusively. Never use he, she, they, him, her, them, his, hers, or their unless it matches the specified pronoun. Before outputting, mentally re-read every sentence and replace any incorrect pronoun.
+
+You never use tired clichés like "works hard", "is a pleasure to teach", "could try harder", or "has potential" without specific evidence.`,
         user: `Write ${v.numVariants || 1} professional school report comment(s) for:
 
-**Student:** ${v.studentName} (${v.pronoun.split("/")[0]} / ${v.pronoun.split("/")[1] || v.pronoun.split("/")[0]})
+**Student:** ${v.studentName} (pronouns: ${subjectPronoun}/${objectPronoun})
 **Subject:** ${v.subject}
 **Year Group:** ${v.yearGroup}
 **Attainment Level:** ${v.attainment}
@@ -66,21 +75,23 @@ ${v.strengths}
 ${v.targets ? `**Areas for Development / Targets:**\n${v.targets}` : ""}
 
 **Requirements for each comment:**
-1. Open with the student's initials (${v.studentName}) and a specific, genuine strength — not a generic opener
+1. Open with the student's initials (${v.studentName}) and a specific, genuine strength
 2. Reference specific topics, skills, or work from the information provided
-3. Use ${v.pronoun.split("/")[0]} / ${v.pronoun.split("/")[1] || v.pronoun.split("/")[0]} pronouns consistently
-4. Include a concrete, actionable next step or target (not vague advice)
+3. Use ONLY ${subjectPronoun}/${objectPronoun}/${possessivePronoun} pronouns — not he/she/they/them/his/her/their unless they match
+4. Include a concrete, actionable next step (not vague advice)
 5. Close with a forward-looking, motivating statement
 6. Maintain a ${v.tone || "balanced"} tone throughout
-7. Aim for exactly ~${v.wordCount || 100} words — count carefully
+7. Aim for exactly ~${v.wordCount || 100} words
 8. Every sentence must add value — cut anything generic or filler
 
-${v.numVariants && parseInt(v.numVariants) > 1 ? `Provide ${v.numVariants} distinct variants, each with a different opening, different phrasing, and slightly different emphasis. Label them:\n**Option 1:**\n**Option 2:**\n${parseInt(v.numVariants) >= 3 ? "**Option 3:**" : ""}` : ""}
+${v.numVariants && parseInt(v.numVariants) > 1 ? `Provide ${v.numVariants} distinct variants, each with a different opening, phrasing, and emphasis. Label them:\n**Option 1:**\n**Option 2:**\n${parseInt(v.numVariants) >= 3 ? "**Option 3:**" : ""}` : ""}
 
 Write only the comment text — no preamble, no explanation, no notes.`,
         maxTokens: 2000,
-      })}
+        };
+      }}
       outputTitle={(v) => `Report Comments — ${v.studentName} (${v.subject}, ${v.yearGroup})`}
+      formatOutput={(text) => formatToolOutput(text, { logoUrl: preferences.schoolLogoUrl, schoolName: preferences.schoolName, accentColor: "#059669", emoji: "📋", title: "Report Comments" })}
     />
   );
 }
