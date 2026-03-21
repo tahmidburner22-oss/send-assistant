@@ -181,7 +181,7 @@ export async function initDb() {
   // Platform-level keys below are only for the Adaptly operator account and are set via Railway env vars.
   const adminKeyProviders = [
     { provider: "groq",    envKey: "GROQ_API_KEY",   model: "llama-3.3-70b-versatile" },
-    { provider: "gemini",  envKey: "GEMINI_API_KEY",  model: "gemini-2.0-flash"         },
+    { provider: "gemini",  envKey: "GEMINI_API_KEY",  model: "gemini-2.5-flash"         },
     { provider: "mistral", envKey: "MISTRAL_API_KEY", model: "mistral-small-latest"     },
   ];
   for (const { provider, envKey, model } of adminKeyProviders) {
