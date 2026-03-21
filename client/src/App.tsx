@@ -73,6 +73,7 @@ const Terms = lazy(() => import("./pages/Terms"));
 const Accessibility = lazy(() => import("./pages/Accessibility"));
 const AIGovernance = lazy(() => import("./pages/AIGovernance"));
 const DPA = lazy(() => import("./pages/DPA"));
+const Safeguarding = lazy(() => import("./pages/Safeguarding"));
 const CookiePolicy = lazy(() => import("./pages/CookiePolicy"));
 
 // UX / misc
@@ -198,6 +199,8 @@ function Router() {
         <Route path="/" component={LandingPage} />
         <Route path="/welcome" component={LandingPage} />
         <Route path="/login" component={Login} />
+        <Route path="/reset-password" component={Login} />
+        <Route path="/verify-email" component={Login} />
         <Route path="/onboarding" component={Onboarding} />
         <Route path="/parent-portal" component={ParentPortal} />
         <Route path="/parent-portal/:section" component={ParentPortal} />
@@ -210,6 +213,7 @@ function Router() {
         <Route path="/accessibility" component={Accessibility} />
         <Route path="/ai-governance" component={AIGovernance} />
         <Route path="/dpa" component={DPA} />
+        <Route path="/safeguarding" component={Safeguarding} />
         <Route path="/pricing" component={Pricing} />
         <Route path="/help" component={HelpCentre} />
         <Route>

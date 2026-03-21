@@ -1,3 +1,5 @@
+import { useUserPreferences } from "@/contexts/UserPreferencesContext";
+import { formatToolOutput } from "@/lib/format-tool-output";
 import AIToolPage from "@/components/AIToolPage";
 import { CalendarDays } from "lucide-react";
 
@@ -6,6 +8,7 @@ const years = ["Reception","Year 1","Year 2","Year 3","Year 4","Year 5","Year 6"
 const terms = [{ value: "Autumn 1", label: "Autumn 1" }, { value: "Autumn 2", label: "Autumn 2" }, { value: "Spring 1", label: "Spring 1" }, { value: "Spring 2", label: "Spring 2" }, { value: "Summer 1", label: "Summer 1" }, { value: "Summer 2", label: "Summer 2" }];
 
 export default function MediumTermPlanner() {
+  const { preferences } = useUserPreferences();
   return (
     <AIToolPage
       title="Medium Term Planner"
@@ -24,47 +27,67 @@ export default function MediumTermPlanner() {
         { id: "sendNeeds", label: "SEND Needs in Class", type: "text", placeholder: "e.g. 2 dyslexia, 1 autism, 3 EAL", span: "half" },
         { id: "priorLearning", label: "Prior Learning / Starting Point", type: "textarea", placeholder: "What do pupils already know about this topic?", span: "full" },
       ]}
-      buildPrompt={(v) => ({
-        system: `You are an outstanding UK teacher with expertise in curriculum planning and SEND-inclusive pedagogy. You create detailed, practical medium-term plans that are fully aligned to the UK National Curriculum and include SEND adaptations throughout.`,
-        user: `Create a medium-term plan for:
+      buildPrompt={(v) => {
+        const weeks = parseInt(v.weeks || "6");
+        const lessonsPerWeek = parseInt(v.lessonsPerWeek || "3");
+        const totalLessons = weeks * lessonsPerWeek;
+        // Build explicit numbered lesson list so AI cannot under-generate
+        const lessonLines: string[] = [];
+        for (let i = 0; i < totalLessons; i++) {
+          const week = Math.floor(i / lessonsPerWeek) + 1;
+          const lessonInWeek = (i % lessonsPerWeek) + 1;
+          lessonLines.push(`Lesson ${i + 1} (Week ${week}, Lesson ${lessonInWeek} of ${lessonsPerWeek})`);
+        }
+        return {
+          system: `You are an outstanding UK teacher with expertise in curriculum planning and SEND-inclusive pedagogy. You create detailed, practical medium-term plans fully aligned to the UK National Curriculum. You are meticulous about lesson counts — if asked for ${totalLessons} lessons you produce EXACTLY ${totalLessons} lesson entries.`,
+          user: `Create a medium-term plan for:
 
 Subject: ${v.subject}
 Year Group: ${v.yearGroup}
 Topic: ${v.topic}
 Term: ${v.term || ""}
-Duration: ${v.weeks || 6} weeks, ${v.lessonsPerWeek || 3} lessons per week
+Duration: ${weeks} weeks x ${lessonsPerWeek} lessons per week = EXACTLY ${totalLessons} lessons total
 SEND Needs: ${v.sendNeeds || "Mixed ability class"}
 Prior Learning: ${v.priorLearning || "Standard prior knowledge"}
 
-Structure the plan as follows:
+CRITICAL: You MUST produce entries for ALL ${totalLessons} lessons listed below. Do not skip, merge, or summarise any lessons.
+
+Lessons to plan:
+${lessonLines.join("\n")}
+
+Structure output as follows:
 
 **Unit Overview**
-- Learning objectives for the unit
-- Key vocabulary
+- Unit title and rationale
+- Overall learning objectives for the unit
+- Key vocabulary (6-10 terms with definitions)
 - Cross-curricular links
 - Assessment opportunities
 
-**Week-by-Week Breakdown**
-For each week provide:
-- Week number and focus
-- Learning objectives (tiered: Must/Should/Could)
-- Key activities (starter, main, plenary)
+**Lesson-by-Lesson Plan**
+For EACH of the ${totalLessons} lessons, provide a SEPARATE entry:
+
+**[Lesson N (Week W, Lesson L): Lesson Title]**
+- Learning objective: one specific, measurable objective
+- Starter (5-10 min): specific task with instructions
+- Main activity: step-by-step with differentiation (Support/Core/Extension)
+- Plenary (5 min): consolidation or exit task
 - Resources needed
-- SEND adaptations
-- Assessment for learning
+- SEND adaptation for this specific lesson
 
 **End of Unit Assessment**
-- How learning will be assessed
-- Success criteria
+- Assessment task with clear instructions
+- Success criteria (Must/Should/Could)
 
 **SEND Provision Summary**
-- Specific adaptations for the needs mentioned
-- Recommended resources and interventions
+- Specific adaptations for mentioned needs across the unit
 
-Make it practical and ready to use. Be specific about activities, not just topics.`,
-        maxTokens: 4000,
-      })}
-      outputTitle={(v) => `Medium Term Plan — ${v.subject}: ${v.topic} (${v.yearGroup})`}
+Be specific about activities — name actual tasks, not just "discuss the topic".`,
+          maxTokens: 6000,
+        };
+      }}
+      outputTitle={(v) => `Medium Term Plan — ${v.subject} (${v.yearGroup})`}
+      formatOutput={(text) => formatToolOutput(text, { logoUrl: preferences.schoolLogoUrl, schoolName: preferences.schoolName, accentColor: "#15803d", emoji: "📅", title: "Medium Term Planner" })}
     />
   );
 }

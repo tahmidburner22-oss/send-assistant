@@ -63,18 +63,15 @@ const DiagnosticStarterSheet = forwardRef<HTMLDivElement, DiagnosticStarterSheet
                 style={{
                   width: "28px",
                   height: "28px",
-                  borderRadius: "6px",
-                  background: "rgba(255,255,255,0.2)",
+                  borderRadius: "50%",
+                  background: "transparent",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  fontWeight: 900,
-                  fontSize: "14px",
-                  color: "white",
-                  fontFamily: fmt.fontFamily,
+                  overflow: "hidden",
                 }}
               >
-                A
+                <img src="/logo.png" alt="Adaptly Logo" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} />
               </div>
               <div
                 style={{

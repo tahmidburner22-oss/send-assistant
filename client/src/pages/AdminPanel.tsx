@@ -3,7 +3,7 @@ import {
   Users, Shield, Activity, UserPlus, UserX, UserCheck, Key,
   AlertTriangle, BarChart3, Settings2, Terminal, RefreshCw,
   Eye, EyeOff, CheckCircle2, Cpu, Zap, Globe, TrendingUp,
-  CreditCard, Building2, TrendingUp, FileText, ChevronDown, ChevronRight,
+  CreditCard, Building2, FileText, ChevronDown, ChevronRight,
   PoundSterling, Calendar, ExternalLink
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -74,6 +74,7 @@ export default function AdminPanel() {
   const [showBreachForm, setShowBreachForm] = useState(false);
   const [breachForm, setBreachForm] = useState({ title: "", description: "", data_types: [] as string[], affected_count: "", severity: "medium" });
   const [savingBreach, setSavingBreach] = useState(false);
+  const [tempCredentials, setTempCredentials] = useState<{ email: string; password: string } | null>(null);
 
   const canAccess = user && (
     ["mat_admin", "school_admin", "senco"].includes(user.role) ||
@@ -162,10 +163,7 @@ export default function AdminPanel() {
       const result = await schoolsApi.inviteUser({ email: inviteEmail, displayName: inviteName, role: inviteRole });
       const tempPwd = result?.tempPassword;
       if (tempPwd) {
-        toast.success(
-          `User created! Share these credentials with ${inviteEmail}: Password: ${tempPwd}`,
-          { duration: 15000 }
-        );
+        setTempCredentials({ email: inviteEmail, password: tempPwd });
       } else {
         toast.success(`Invitation sent to ${inviteEmail}`);
       }
@@ -228,6 +226,35 @@ export default function AdminPanel() {
 
   return (
     <div className="px-4 py-6 max-w-4xl mx-auto space-y-6">
+      {/* Temp credentials dialog */}
+      {tempCredentials && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-bold text-lg text-foreground">✅ User Created</h3>
+              <button onClick={() => setTempCredentials(null)} className="text-muted-foreground hover:text-foreground text-2xl leading-none">×</button>
+            </div>
+            <p className="text-sm text-muted-foreground">Share these login credentials securely. This dialog will not appear again once closed.</p>
+            <div className="space-y-3">
+              <div className="bg-muted rounded-lg p-3">
+                <p className="text-xs text-muted-foreground mb-1 font-medium">Email</p>
+                <p className="text-sm font-mono text-foreground">{tempCredentials.email}</p>
+              </div>
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+                <p className="text-xs text-amber-700 mb-1 font-medium">Temporary Password — ask them to change this on first login</p>
+                <p className="text-sm font-mono text-amber-900 font-bold tracking-wide">{tempCredentials.password}</p>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => { navigator.clipboard.writeText(`Email: ${tempCredentials.email}\nPassword: ${tempCredentials.password}`); toast.success("Copied to clipboard"); }}
+                className="flex-1 bg-brand text-white rounded-lg py-2 text-sm font-medium hover:bg-brand/90 transition-colors"
+              >📋 Copy Credentials</button>
+              <button onClick={() => setTempCredentials(null)} className="flex-1 border border-border rounded-lg py-2 text-sm text-muted-foreground hover:bg-muted transition-colors">Done</button>
+            </div>
+          </div>
+        </div>
+      )}
       <div>
         <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
           <Shield className="w-5 h-5 text-brand" /> Admin Panel

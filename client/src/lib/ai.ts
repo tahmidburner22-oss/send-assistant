@@ -608,10 +608,49 @@ TONE: Positive, encouraging, child-voice. "You've got this!", "Great work!", "Di
 
   const system = isPrimary
     ? `You are an expert UK primary school teacher creating an engaging, colourful activity worksheet for ${params.yearGroup} (${phase}). Topic: "${params.topic}". This is a PRIMARY SCHOOL worksheet — it must be fun, visual, and activity-based, NOT like a secondary school handout. Use encouraging language, lots of variety, and minimal dense text. Respond with valid JSON only — no markdown, no code blocks, no HTML tags inside content strings. Use plain text only.`
-    : `You are an experienced UK teacher creating a classroom worksheet for ${params.yearGroup} (${phase}). Topic: "${params.topic}". All content must be exclusively about this topic. Calibrate language and difficulty for the year group. Respond with valid JSON only — no markdown, no code blocks. CRITICAL: Never use HTML tags (e.g. <span>, <div>, <p>, style= attributes) inside section content strings. Use plain text and LaTeX notation only (e.g. \\frac{1}{2}, \\sqrt{x}, x^2). Do not use color codes or inline styles.`;
+    : `You are an expert UK teacher and curriculum specialist creating a high-quality, print-ready classroom worksheet for ${params.yearGroup} (${phase}). Topic: "${params.topic}".
+
+QUALITY STANDARDS — your output must beat TES, Twinkl, and MathsGenie in quality:
+1. Every question must be fully usable — no placeholders, no "..." — complete, specific, answerable
+2. Questions must escalate in difficulty across the worksheet (Section A ≤ grade ${Math.max(3, (parseInt(params.yearGroup?.replace(/\D/g, "") || "9")) - 4)}, Section B = grade ${Math.max(5, (parseInt(params.yearGroup?.replace(/\D/g, "") || "9")) - 2)}, Challenge = top grade)
+3. Use REAL numbers, REAL contexts — never "a number", always "24", "3.7", "Birmingham", "2025"
+4. ${isMaths ? "MATHS: Every expression MUST use LaTeX \\\\(...\\\\). NEVER write fractions, equations or symbols in plain text. \\\\(\\\\dfrac{3}{4}\\\\) NOT 3/4. \\\\(x^{2}\\\\) NOT x². \\\\(\\\\sqrt{16}\\\\) NOT √16. \\\\(\\\\times\\\\) NOT ×. All numeric answers must show working method." : "Use precise subject vocabulary throughout. Answers must require genuine understanding, not just recall."}
+5. Section variety is MANDATORY: each section (guided, independent, challenge, word-problems) must look DIFFERENT — mix question formats across each section
+
+STRICT JSON OUTPUT: Respond with valid JSON only — no markdown, no code blocks. NEVER use HTML tags inside content strings. Use plain text and LaTeX notation only.`;
 
   const examBoardNote = params.examBoard && params.examBoard !== "N/A" && params.examBoard !== "none"
-    ? `Exam board: ${params.examBoard}.`
+    ? (() => {
+        const board = params.examBoard!.toUpperCase();
+        const sub = params.subject.toLowerCase();
+        const boardSpecific: Record<string, Record<string, string>> = {
+          AQA: {
+            maths: "AQA GCSE Maths: Use AQA command words (calculate, work out, show that, prove, estimate, write down). AQA mark allocations [1 mark], [2 marks], [3 marks]. Follow AQA mark scheme style — method marks and accuracy marks.",
+            science: "AQA GCSE Science: Use AQA required practicals as contexts. AQA command words: describe, explain, evaluate, compare, calculate, give a reason, suggest. Include 6-mark extended writing format for questions worth 6 marks.",
+            english: "AQA GCSE English: Use AQA assessment objectives (AO1: identify and interpret, AO2: explain, comment on language, AO3: compare, AO4: evaluate). AQA command words: explain, analyse, compare.",
+            history: "AQA GCSE History: Use AQA question types — describe (4 marks), explain why (12 marks), 'how far do you agree' essay (16 marks). Use AQA source/interpretation analysis format.",
+            geography: "AQA GCSE Geography: Use AQA command words — describe, explain, evaluate, assess, justify. Include 6-mark 'assess' and 'evaluate' questions. Reference AQA case study format.",
+            default: `AQA specification: Use AQA command words, mark allocations, and assessment objectives. Follow AQA ${params.subject} mark scheme style.`,
+          },
+          EDEXCEL: {
+            maths: "Edexcel GCSE Maths (Pearson): Use Edexcel-style question stems. 'Evaluate' means give a reasoned judgement. 'Hence' means use your previous answer. Mark allocations [1], [2], [3], [4]. Follow Pearson mark scheme method marks.",
+            science: "Edexcel GCSE Science: Use Edexcel required practicals. 6-mark extended writing questions. Edexcel command words: state, describe, explain, evaluate, calculate, determine.",
+            history: "Edexcel GCSE History: Use Edexcel question types — describe (4 marks), explain significance (8 marks), essay/extended writing (16 marks). Source and interpretation analysis.",
+            default: `Edexcel (Pearson) specification: Use Edexcel command words, mark allocations, and assessment style. Follow Pearson ${params.subject} mark scheme conventions.`,
+          },
+          OCR: {
+            maths: "OCR GCSE Maths: OCR question style with OCR command words. 'Find' means calculate. 'Write down' means no working needed. Mark allocations [B marks: accuracy, M marks: method, A marks: answer].",
+            science: "OCR GCSE Science: OCR Gateway or Twenty First Century specification. OCR required practicals. 6-mark extended answer questions. OCR command words: state, describe, explain, evaluate, calculate.",
+            default: `OCR specification: Use OCR command words, mark scheme conventions, and assessment objectives for ${params.subject}.`,
+          },
+          WJEC: {
+            default: `WJEC specification: Use WJEC command words and assessment objectives. Welsh curriculum alignment where relevant. WJEC ${params.subject} mark scheme conventions.`,
+          },
+        };
+        const boardMap = boardSpecific[board] || boardSpecific.EDEXCEL;
+        const subjectKey = Object.keys(boardMap).find(k => k !== "default" && sub.includes(k)) || "default";
+        return `Exam board: ${params.examBoard}. ${boardMap[subjectKey]}`;
+      })()
     : "";
   // ── Per-condition SEND scaffolding ─────────────────────────────────────────
   const hasSend = params.sendNeed && params.sendNeed !== "none" && params.sendNeed !== "none-selected" && params.sendNeed !== "general";
@@ -627,7 +666,7 @@ TONE: Positive, encouraging, child-voice. "You've got this!", "Great work!", "Di
 (4) Generous line spacing. Each question on its own line. Tick-box 'I can' reflection.`;
 
     if (sn.includes("dyscalculia")) return `${base}
-(1) Section A: small whole numbers only (1–20). Break every question into sub-steps with blanks: "Step 1: ___ Step 2: ___ Answer: ___".
+(1) ${isMaths ? "Section A: small whole numbers only (1–20). Break every question into sub-steps with blanks: 'Step 1: ___ Step 2: ___ Answer: ___'." : "Use very simple numerical data if numbers appear. Break every task into sub-steps with blanks."}
 (2) Key Facts box at top of Section B (formulas, number facts). Partially completed working shown for each question.
 (3) Worked example: every arithmetic step shown with WHY annotation. Word problems: 'What do I need to find?' prompt before each.
 (4) No timed pressure language. Tick-box reflection with 'Great / OK / Struggling' scale.`;
@@ -691,6 +730,18 @@ TONE: Positive, encouraging, child-voice. "You've got this!", "Great work!", "Di
 (2) Offer 2 options per question where possible. Challenge: 'Secret Mission — if you choose to accept it'.
 (3) 'We' language throughout ('Let's look at...'). 'Take a break here if you need to' prompt midway.
 (4) No mandatory language, no timed pressure. Calm, uncluttered layout.`;
+
+    if (sn.includes("tourette")) return `${base}
+(1) Use multiple response formats — tick the answer, circle the correct word, fill in the blank, match with a line. Avoid requiring extended handwriting in any single section.
+(2) Add natural break points between questions: a short horizontal rule and the text 'Take a breath here if you need to.' after every 3 questions.
+(3) Calm, supportive, non-judgmental tone throughout. Remove all timed pressure language ('quickly', 'in 5 minutes', 'hurry'). No loud or urgent language.
+(4) Section A: maximum 4 questions with varied formats. Section B: short-answer format only. Challenge: circle or tick format.`;
+
+    if (sn.includes("older") || sn.includes("adult") || sn.includes("ks4") || sn.includes("ks5")) return `${base}
+(1) Use adult-appropriate, professional register throughout. Contexts must be real-world, relevant to age 14+: workplace, finance, media, current affairs, health, technology.
+(2) No childish language, no primary-school tone. 'Section A — Skills Practice', 'Section B — Application', 'Challenge — Extension Task'. Academic command words (analyse, evaluate, justify, assess).
+(3) Include a 'Study Tips' box at the start of Section A with 1-2 exam technique reminders. Worked example in academic style — similar to mark scheme exemplar answers.
+(4) Reflection: 'What went well?', 'What do I need to revise further?' — not traffic light circles.`;
 
     // Default for any other SEND need
     return `${base}
@@ -775,6 +826,35 @@ TONE: Positive, encouraging, child-voice. "You've got this!", "Great work!", "Di
     ? `Science: Use LaTeX \\(...\\) for equations e.g. \\(F = ma\\), \\(E = mc^{2}\\), \\(v = u + at\\). CRITICAL RULES: (1) NEVER use \\text{} or \\mathrm{} — write units as plain text outside math e.g. "\\(F = ma\\) where F is in N". (2) Write chemical formulas with subscript numbers: H₂O, CO₂, H₂SO₄, NaCl. (3) For scientific notation write "6.02 × 10²³" or \\(6.02 \\times 10^{23}\\). (4) Units: write as plain text — m/s, m/s², N, kg, J, W, Pa, mol, dm³, cm³, °C, K.`
     : `Use LaTeX \\(...\\) for any math expressions. Write units as plain text (e.g. "25 m/s" not "\\text{m/s}").`;
 
+  // ── SVG Diagram injection note ──────────────────────────────────────────────
+  // Subjects where inline diagrams add genuine value
+  const diagramSubjects = ["science", "biology", "chemistry", "physics", "geography", "maths", "mathematics", "design", "engineering", "history"];
+  const subjectLower = params.subject.toLowerCase();
+  const isDiagramSubject = diagramSubjects.some(s => subjectLower.includes(s));
+  const isVI = hasSend && !!(params.sendNeed?.toLowerCase().includes("vi") || params.sendNeed?.toLowerCase().includes("visual impair"));
+
+  const svgDiagramNote = (isDiagramSubject && !isVI && !params.examStyle)
+    ? `SVG DIAGRAM INSTRUCTION — IMPORTANT:
+For the Worked Example section and/or one key question in Section A, if a labelled diagram would genuinely help students understand "${params.topic}", embed a diagram specification using this EXACT format at the END of that section's "content" string (after the question text):
+
+[[DIAGRAM:{"type":"labeled","title":"${params.topic} Diagram","labels":[{"text":"Label 1","x":25,"y":35},{"text":"Label 2","x":75,"y":60},{"text":"Label 3","x":45,"y":80}]}]]
+
+DIAGRAM TYPES — choose the most appropriate:
+- "labeled" → anatomy, geography features, physics apparatus, biology structures (circle or ellipse shape with radiating labels)
+- "flow" → sequences, processes, steps (e.g. rock cycle, carbon cycle, algorithm)  
+- "cycle" → cycles (e.g. water cycle, nitrogen cycle, mitosis stages)
+- "number-line" → number lines with start/end/marked values (maths only)
+- "bar" → bar chart with bars:[{label,value}] and xLabel/yLabel
+- "axes" → blank coordinate axes for students to plot (maths/physics)
+
+CRITICAL RULES for diagrams:
+1. Labels must be SHORT (2-4 words max) and match what's actually in "${params.topic}"
+2. x and y values are percentages (0–100) of diagram space — spread labels around the shape edge
+3. Only include a diagram if it directly illustrates the question being asked
+4. DO NOT include a diagram in every section — maximum 2 diagrams per worksheet
+5. If no diagram is genuinely useful, omit entirely — no placeholder diagrams`
+    : ``;
+
   // ── Word problems note ─────────────────────────────────────────────────────
   const wordProblemsNote = !params.examStyle
     ? `Section C: 3–4 real-life word problems using everyday contexts (money, time, sport, cooking). Increase in difficulty; last must be multi-step.`
@@ -834,6 +914,7 @@ ${topicEnforcementNote}
 ${dataCompletenessNote}
 ${diagramRelevanceNote}
 ${vocabularyCapNote}
+${svgDiagramNote}
 ${recallNote}
 ${params.additionalInstructions ? `\nPriority override:\n${params.additionalInstructions}\n` : ""}
 
@@ -1157,10 +1238,58 @@ Return EXACTLY this JSON (raw JSON only):
     }
   }
 
+  // ── Post-generation quality gate ─────────────────────────────────────────
+  // Run lightweight deterministic checks to catch obvious failures.
+  // Does NOT make an extra AI call — pure string analysis.
+  const qualityIssues: string[] = [];
+  const studentSections = result.sections.filter(s => !s.teacherOnly);
+
+  // 1. Check minimum section count
+  if (studentSections.length < 3) {
+    qualityIssues.push(`Only ${studentSections.length} student sections generated`);
+  }
+
+  // 2. Check title makes sense for topic
+  if (result.title && params.topic) {
+    const titleLower = result.title.toLowerCase();
+    const topicWords = params.topic.toLowerCase().split(/\s+/).filter(w => w.length > 4);
+    const topicPresent = topicWords.some(w => titleLower.includes(w));
+    if (!topicPresent && topicWords.length > 0) {
+      qualityIssues.push(`Title "${result.title}" may not match topic "${params.topic}"`);
+    }
+  }
+
+  // 3. Check sections have real content (not placeholders)
+  const placeholderPattern = /\[.*?\]|\.\.\.|placeholder|lorem ipsum|to be (written|completed|added)/i;
+  studentSections.forEach((s, i) => {
+    const content = typeof s.content === 'string' ? s.content : JSON.stringify(s.content);
+    if (content.length < 20) {
+      qualityIssues.push(`Section ${i+1} ("${s.title}") has very short content`);
+    }
+    if (placeholderPattern.test(content)) {
+      qualityIssues.push(`Section ${i+1} ("${s.title}") appears to contain placeholder text`);
+    }
+  });
+
+  // 4. Maths check — verify LaTeX is present if maths subject
+  if (isMaths) {
+    const allContent = studentSections.map(s => String(s.content || "")).join(" ");
+    const hasLatex = allContent.includes("\\(") || allContent.includes("\\[");
+    if (!hasLatex && allContent.length > 200) {
+      qualityIssues.push("Maths worksheet appears to have no LaTeX notation");
+      // Auto-fix: add metadata flag so UI can warn teacher
+      (result.metadata as any).qualityWarning = "Math expressions may not be properly formatted";
+    }
+  }
+
+  // Log quality issues (visible in dev console, doesn't block rendering)
+  if (qualityIssues.length > 0) {
+    console.warn('[Quality Gate] Issues detected:', qualityIssues);
+    (result.metadata as any).qualityIssues = qualityIssues;
+  }
+
   return result;
 }
-
-// ─── Story generation ────────────────────────────────────────────────────────
 
 export async function aiGenerateStory(params: {
   genre: string;
@@ -2017,3 +2146,42 @@ Return JSON: {"title": "new title", "content": "full recontextualized story"}`;
     provider,
   };
 }
+
+// ─── SVG Diagram Renderer — client-side, zero extra API cost ─────────────────
+// The AI embeds structured diagram JSON in section content using this format:
+// [[DIAGRAM:{"type":"labeled","title":"...","labels":[{"text":"...","x":50,"y":40}],...}]]
+// This function extracts and renders them as clean SVG without any extra AI call.
+
+export interface DiagramSpec {
+  type: "labeled" | "flow" | "cycle" | "bar" | "number-line" | "axes";
+  title?: string;
+  // For labeled diagrams (anatomy, geography, physics)
+  shape?: "circle" | "rectangle" | "triangle" | "custom";
+  labels?: Array<{ text: string; x: number; y: number; anchor?: "start" | "end" | "middle" }>;
+  // For flow/cycle diagrams
+  steps?: string[];
+  // For number lines
+  start?: number; end?: number; marked?: number[];
+  // For bar charts / axes
+  bars?: Array<{ label: string; value: number }>;
+  xLabel?: string; yLabel?: string;
+}
+
+/**
+ * Detects [[DIAGRAM:{...}]] markers in section content and returns the JSON spec.
+ * Returns null if no diagram marker is found.
+ */
+export function extractDiagramSpec(content: string): DiagramSpec | null {
+  const match = content.match(/\[\[DIAGRAM:(\{[\s\S]*?\})\]\]/);
+  if (!match) return null;
+  try { return JSON.parse(match[1]); } catch { return null; }
+}
+
+/**
+ * Strips the [[DIAGRAM:{...}]] marker from content so only the text question remains.
+ */
+export function stripDiagramMarker(content: string): string {
+  return content.replace(/\[\[DIAGRAM:\{[\s\S]*?\}\]\]/g, "").trim();
+}
+
+// Last verified: safe-updates-v2 applied, groq_1/2/3 rotation preserved

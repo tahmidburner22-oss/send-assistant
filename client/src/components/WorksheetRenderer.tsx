@@ -9,6 +9,8 @@
  */
 import React, { forwardRef, useState, useCallback } from "react";
 import { getSendFormatting } from "@/lib/send-data";
+import { extractDiagramSpec, stripDiagramMarker } from "@/lib/ai";
+import SVGDiagram from "@/components/SVGDiagram";
 import katex from "katex";
 import "katex/dist/katex.min.css";
 
@@ -966,37 +968,52 @@ interface WorksheetRendererProps {
 }
 
 // Section type → colour config (TES-style: white backgrounds, single purple/blue border accent)
-const SECTION_STYLES: Record<string, { border: string; bg: string; badge: string; badgeBg: string; icon: string; label: string }> = {
-  "objective":     { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "", label: "Learning Objectives" },
-  "success":       { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "", label: "Success Criteria" },
-  "vocabulary":    { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "", label: "Key Vocabulary" },
-  "starter":       { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "", label: "Starter Activity" },
-  "example":       { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "", label: "Worked Example" },
-  "guided":        { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "", label: "Foundation" },
-  "independent":   { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "", label: "Core Practice" },
-  "challenge":     { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "", label: "Stretch & Challenge" },
-  "word-bank":     { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "", label: "Word Bank" },
-  "sentence-starters": { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "", label: "Sentence Starters" },
-  "self-assessment": { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "", label: "Self Assessment" },
-  "self-reflection": { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "", label: "How Did I Do?" },
-  "diagram":       { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "", label: "Diagram" },
-  "answers":       { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "", label: "Answers" },
-  "questions":     { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "", label: "Exam Questions" },
-  "mark-scheme":   { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "", label: "Mark Scheme" },
-  "teacher-notes": { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "", label: "Teacher Notes" },
-  "send-support":  { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "", label: "SEND Support" },
-  "reminder-box":  { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "", label: "Reminder Box" },
-  "word-problems": { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "", label: "Word Problems" },
-  "misconceptions":{ border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "", label: "Common Misconceptions" },
-  "reading":        { border: "#475569", bg: "#f8fafc", badge: "#475569", badgeBg: "#f1f5f9", icon: "", label: "Reading Passage" },
-  "passage":        { border: "#475569", bg: "#f8fafc", badge: "#475569", badgeBg: "#f1f5f9", icon: "", label: "Reading Passage" },
-  "source-text":    { border: "#475569", bg: "#f8fafc", badge: "#475569", badgeBg: "#f1f5f9", icon: "", label: "Source Text" },
-  "comprehension":  { border: "#475569", bg: "#f8fafc", badge: "#475569", badgeBg: "#f1f5f9", icon: "", label: "Comprehension" },
-  "default":       { border: "#5b21b6", bg: "#ffffff", badge: "#5b21b6", badgeBg: "#ede9fe", icon: "", label: "" },
+const SECTION_STYLES: Record<string, { border: string; bg: string; badge: string; badgeBg: string; icon: string; label: string; headerBg: string; headerText: string }> = {
+  "objective":     { border: "#4f46e5", bg: "#f5f3ff", badge: "#4f46e5", badgeBg: "#ede9fe", icon: "🎯", label: "Learning Objectives",    headerBg: "linear-gradient(135deg,#4f46e5,#3730a3)", headerText: "#fff" },
+  "success":       { border: "#4f46e5", bg: "#f5f3ff", badge: "#4f46e5", badgeBg: "#ede9fe", icon: "✅", label: "Success Criteria",       headerBg: "linear-gradient(135deg,#4f46e5,#3730a3)", headerText: "#fff" },
+  "vocabulary":    { border: "#7c3aed", bg: "#faf5ff", badge: "#7c3aed", badgeBg: "#f3e8ff", icon: "📚", label: "Key Vocabulary",         headerBg: "linear-gradient(135deg,#7c3aed,#6d28d9)", headerText: "#fff" },
+  "starter":       { border: "#2563eb", bg: "#eff6ff", badge: "#2563eb", badgeBg: "#dbeafe", icon: "⚡", label: "Starter Activity",       headerBg: "linear-gradient(135deg,#2563eb,#1d4ed8)", headerText: "#fff" },
+  "example":       { border: "#0284c7", bg: "#f0f9ff", badge: "#0284c7", badgeBg: "#e0f2fe", icon: "💡", label: "Worked Example",         headerBg: "linear-gradient(135deg,#0284c7,#0369a1)", headerText: "#fff" },
+  "reminder-box":  { border: "#6366f1", bg: "#f5f3ff", badge: "#4f46e5", badgeBg: "#ede9fe", icon: "📌", label: "Key Steps",              headerBg: "linear-gradient(135deg,#6366f1,#4f46e5)", headerText: "#fff" },
+  "guided":        { border: "#0891b2", bg: "#ecfeff", badge: "#0891b2", badgeBg: "#cffafe", icon: "⭐", label: "Foundation",             headerBg: "linear-gradient(135deg,#0891b2,#0e7490)", headerText: "#fff" },
+  "independent":   { border: "#3b82f6", bg: "#eff6ff", badge: "#2563eb", badgeBg: "#dbeafe", icon: "★",  label: "Core Practice",          headerBg: "linear-gradient(135deg,#3b82f6,#2563eb)", headerText: "#fff" },
+  "challenge":     { border: "#7c3aed", bg: "#faf5ff", badge: "#6d28d9", badgeBg: "#ede9fe", icon: "★★", label: "Stretch & Challenge",    headerBg: "linear-gradient(135deg,#7c3aed,#4f46e5)", headerText: "#fff" },
+  "word-problems": { border: "#0284c7", bg: "#f0f9ff", badge: "#0369a1", badgeBg: "#e0f2fe", icon: "📝", label: "Real-Life Problems",     headerBg: "linear-gradient(135deg,#0284c7,#0369a1)", headerText: "#fff" },
+  "common-mistakes":{ border:"#7c3aed", bg: "#faf5ff", badge: "#6d28d9", badgeBg:"#ede9fe",  icon:"📋",  label: "Common Mistakes",        headerBg: "linear-gradient(135deg,#7c3aed,#6d28d9)", headerText: "#fff" },
+  "word-bank":     { border: "#8b5cf6", bg: "#f5f3ff", badge: "#7c3aed", badgeBg: "#ede9fe", icon: "📝", label: "Word Bank",              headerBg: "linear-gradient(135deg,#8b5cf6,#7c3aed)", headerText: "#fff" },
+  "sentence-starters": { border: "#6366f1", bg: "#f5f3ff", badge: "#4f46e5", badgeBg: "#ede9fe", icon: "💬", label: "Sentence Starters", headerBg: "linear-gradient(135deg,#6366f1,#4f46e5)", headerText: "#fff" },
+  "self-assessment": { border: "#2563eb", bg: "#eff6ff", badge: "#1d4ed8", badgeBg: "#dbeafe", icon: "📊", label: "Self Assessment",     headerBg: "linear-gradient(135deg,#2563eb,#1d4ed8)", headerText: "#fff" },
+  "self-reflection": { border: "#2563eb", bg: "#eff6ff", badge: "#1d4ed8", badgeBg: "#dbeafe", icon: "📊", label: "How Did I Do?",       headerBg: "linear-gradient(135deg,#2563eb,#1d4ed8)", headerText: "#fff" },
+  "diagram":       { border: "#475569", bg: "#f8fafc", badge: "#475569", badgeBg: "#f1f5f9", icon: "📐", label: "Diagram",               headerBg: "linear-gradient(135deg,#475569,#334155)", headerText: "#fff" },
+  "answers":       { border: "#0891b2", bg: "#ecfeff", badge: "#0e7490", badgeBg: "#cffafe", icon: "✔",  label: "Answers",               headerBg: "linear-gradient(135deg,#0891b2,#0e7490)", headerText: "#fff" },
+  "questions":     { border: "#4f46e5", bg: "#f5f3ff", badge: "#4f46e5", badgeBg: "#ede9fe", icon: "❓", label: "Exam Questions",        headerBg: "linear-gradient(135deg,#4f46e5,#3730a3)", headerText: "#fff" },
+  "mark-scheme":   { border: "#0891b2", bg: "#ecfeff", badge: "#0e7490", badgeBg: "#cffafe", icon: "✔",  label: "Mark Scheme",           headerBg: "linear-gradient(135deg,#0891b2,#0e7490)", headerText: "#fff" },
+  "teacher-notes": { border: "#334155", bg: "#f8fafc", badge: "#475569", badgeBg: "#f1f5f9", icon: "📋", label: "Teacher Notes",         headerBg: "linear-gradient(135deg,#475569,#334155)", headerText: "#fff" },
+  "send-support":  { border: "#4f46e5", bg: "#f5f3ff", badge: "#4f46e5", badgeBg: "#ede9fe", icon: "★",  label: "SEND Support",          headerBg: "linear-gradient(135deg,#4f46e5,#3730a3)", headerText: "#fff" },
+  "reading":       { border: "#475569", bg: "#f8fafc", badge: "#475569", badgeBg: "#f1f5f9", icon: "📖", label: "Reading Passage",       headerBg: "linear-gradient(135deg,#475569,#334155)", headerText: "#fff" },
+  "passage":       { border: "#475569", bg: "#f8fafc", badge: "#475569", badgeBg: "#f1f5f9", icon: "📖", label: "Reading Passage",       headerBg: "linear-gradient(135deg,#475569,#334155)", headerText: "#fff" },
+  "source-text":   { border: "#475569", bg: "#f8fafc", badge: "#475569", badgeBg: "#f1f5f9", icon: "📜", label: "Source Text",           headerBg: "linear-gradient(135deg,#475569,#334155)", headerText: "#fff" },
+  "comprehension": { border: "#0284c7", bg: "#f0f9ff", badge: "#0369a1", badgeBg: "#e0f2fe", icon: "🔍", label: "Comprehension",         headerBg: "linear-gradient(135deg,#0284c7,#0369a1)", headerText: "#fff" },
+  "misconceptions":{ border: "#4f46e5", bg: "#f5f3ff", badge: "#4f46e5", badgeBg: "#ede9fe", icon: "📌", label: "Watch Out!",            headerBg: "linear-gradient(135deg,#4f46e5,#3730a3)", headerText: "#fff" },
+  "revision-mat-box":{ border:"#4f46e5",bg:"#f5f3ff", badge:"#4f46e5", badgeBg:"#ede9fe",   icon:"📋",  label: "",                       headerBg: "linear-gradient(135deg,#4f46e5,#3730a3)", headerText: "#fff" },
+  "default":       { border: "#4f46e5", bg: "#f5f3ff", badge: "#4f46e5", badgeBg: "#ede9fe", icon: "",   label: "",                      headerBg: "linear-gradient(135deg,#4f46e5,#3730a3)", headerText: "#fff" },
 };
 
-function getSectionStyle(type: string) {
-  return SECTION_STYLES[type] || SECTION_STYLES["default"];
+function getSectionStyle(type: string, yearNum?: number) {
+  const base = SECTION_STYLES[type] || SECTION_STYLES["default"];
+  // Year 7+ (secondary): remap teal/cyan sections to blue — keep indigo+blue palette only
+  if (yearNum && yearNum >= 7) {
+    if (base.border === "#0891b2" || base.border === "#0284c7") {
+      return { ...base, border: "#2563eb", bg: "#eff6ff", badge: "#2563eb", badgeBg: "#dbeafe",
+        headerBg: "linear-gradient(135deg,#3b82f6,#2563eb)", headerText: "#fff" };
+    }
+    if (base.border === "#475569") {
+      // Slate (diagrams, teacher notes) → dark indigo
+      return { ...base, border: "#4338ca", bg: "#f5f3ff", badge: "#4338ca", badgeBg: "#ede9fe",
+        headerBg: "linear-gradient(135deg,#4338ca,#3730a3)", headerText: "#fff" };
+    }
+  }
+  return base;
 }
 
 function stripLatexFromPlainText(text: string): string {
@@ -1151,9 +1168,132 @@ function formatContent(content: string | any, fmt: ReturnType<typeof getSendForm
     }
     if (listItems.length) flushList(`list-${idx}`);
 
-    // Numbered list — strip the number prefix and render content only (numbering removed per user request)
+    // BRAIN BREAK — ADHD/chunked: render as a distinct card
+    if (/brain break/i.test(trimmed) || /stand up.*stretch/i.test(trimmed)) {
+      if (listItems.length) flushList(`list-${idx}`);
+      elements.push(
+        <div key={idx} style={{
+          background: "linear-gradient(135deg,#ede9fe,#dbeafe)",
+          border: "2px solid #6366f1",
+          borderRadius: "10px",
+          padding: "10px 14px",
+          margin: "12px 0",
+          display: "flex",
+          alignItems: "center",
+          gap: "10px",
+          fontSize: `${textSize}px`,
+          fontFamily,
+          fontWeight: 700,
+          color: "#3730a3",
+        }}>
+          <span style={{ fontSize: "20px" }}>🧘</span>
+          <span>{trimmed.replace(/^\[?\s*\]?\s*/,"")}</span>
+        </div>
+      );
+      return;
+    }
+
+    // STOP — CHECK / STOP — CHECK YOUR WORK (ADHD milestone)
+    if (/^STOP\s*[—–-]/i.test(trimmed) || /^check your work/i.test(trimmed)) {
+      if (listItems.length) flushList(`list-${idx}`);
+      elements.push(
+        <div key={idx} style={{
+          background: "#eff6ff",
+          border: "2px solid #3b82f6",
+          borderRadius: "8px",
+          padding: "8px 14px",
+          margin: "10px 0",
+          display: "flex",
+          alignItems: "center",
+          gap: "8px",
+          fontSize: `${textSize - 1}px`,
+          fontFamily,
+          fontWeight: 700,
+          color: "#1e3a8a",
+        }}>
+          <span style={{ fontSize: "16px" }}>⏸️</span>
+          <span>{trimmed}</span>
+        </div>
+      );
+      return;
+    }
+
+    // TIP / NOTE box
+    if (/^(TIP|Note|NOTE|HINT|Top Tip|Quick Tip):/i.test(trimmed)) {
+      if (listItems.length) flushList(`list-${idx}`);
+      const [label, ...rest] = trimmed.split(":");
+      elements.push(
+        <div key={idx} style={{
+          background: "#eff6ff",
+          border: "1.5px solid #93c5fd",
+          borderLeft: "4px solid #3b82f6",
+          borderRadius: "6px",
+          padding: "8px 12px",
+          margin: "8px 0",
+          fontSize: `${textSize - 1}px`,
+          fontFamily,
+          color: "#1e40af",
+        }}>
+          <span style={{ fontWeight: 700 }}>{label}: </span>
+          <span dangerouslySetInnerHTML={{ __html: renderMath(rest.join(":").trim()) }} />
+        </div>
+      );
+      return;
+    }
+
+    // OPTIONAL / BONUS section marker
+    if (/^(OPTIONAL|BONUS|OPTIONAL BONUS)/i.test(trimmed) && trimmed.length < 40) {
+      if (listItems.length) flushList(`list-${idx}`);
+      elements.push(
+        <div key={idx} style={{
+          border: "1.5px dashed #9ca3af",
+          borderRadius: "6px",
+          padding: "4px 10px",
+          margin: "8px 0",
+          fontSize: `${textSize - 2}px`,
+          fontFamily,
+          color: "#6b7280",
+          fontStyle: "italic",
+          textAlign: "center",
+        }}>
+          ✦ {trimmed} ✦
+        </div>
+      );
+      return;
+    }
+
+    // Numbered list with [ ] checkbox — ADHD/Dyspraxia
+    const checkboxMatch = trimmed.match(/^(\[[\s_xX✓]?\]|\☐|\☑)\s+(.+)$/);
+    if (checkboxMatch || (fmt.showCheckboxes && trimmed.match(/^(\d+[.)\s]\s*)(.+)$/))) {
+      if (listItems.length) flushList(`list-${idx}`);
+      const questionText = checkboxMatch
+        ? checkboxMatch[2]
+        : trimmed.replace(/^(\d+[.)\s]\s*)/, "");
+      elements.push(
+        <div key={idx} style={{
+          display: "flex",
+          alignItems: "flex-start",
+          gap: "10px",
+          marginBottom: paragraphSpacing,
+          fontSize: `${textSize}px`,
+          fontFamily,
+          lineHeight,
+          letterSpacing,
+          wordSpacing,
+        }}>
+          {/* Checkbox SVG */}
+          <svg width="20" height="20" viewBox="0 0 20 20" style={{ flexShrink: 0, marginTop: "2px" }} xmlns="http://www.w3.org/2000/svg">
+            <rect x="1" y="1" width="18" height="18" rx="3" fill="white" stroke="#6b7280" strokeWidth="1.5" />
+          </svg>
+          <span dangerouslySetInnerHTML={{ __html: renderMath(questionText) }} />
+        </div>
+      );
+      return;
+    }
+
+    // Numbered list (standard, no checkbox)
     const numberedMatch = trimmed.match(/^(\d+[a-z]?[.)\s]\s*)(.+)$/);
-    if (numberedMatch) {
+    if (numberedMatch && !fmt.showCheckboxes) {
       elements.push(
         <p key={idx} style={{ margin: `0 0 ${paragraphSpacing} 0`, fontSize: `${textSize}px`, lineHeight, color: "#1f2937", fontFamily, letterSpacing, wordSpacing }}>
           <span dangerouslySetInnerHTML={{ __html: renderMath(numberedMatch[2]) }} />
@@ -1170,7 +1310,7 @@ function formatContent(content: string | any, fmt: ReturnType<typeof getSendForm
     // Step line
     if (trimmed.match(/^Step \d+:/)) {
       elements.push(
-        <div key={idx} style={{ fontWeight: 700, color: "#5b21b6", marginTop: "8px", marginBottom: "2px", fontSize: `${textSize}px`, fontFamily }}>
+        <div key={idx} style={{ fontWeight: 700, color: "#4f46e5", marginTop: "8px", marginBottom: "2px", fontSize: `${textSize}px`, fontFamily }}>
           <span dangerouslySetInnerHTML={{ __html: renderMath(trimmed) }} />
         </div>
       );
@@ -1252,7 +1392,7 @@ function VocabSection({ content, fmt, overlayColor = "white" }: { content: strin
   return (
     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "8px" }}>
       {entries.map((e, i) => (
-        <div key={i} style={{ background: overlayColor, border: "1px solid #5b21b6", borderRadius: "4px", padding: "8px 10px", display: "flex", flexDirection: "column", gap: "4px" }}>
+        <div key={i} style={{ background: overlayColor, border: "1px solid #4f46e5", borderRadius: "4px", padding: "8px 10px", display: "flex", flexDirection: "column", gap: "4px" }}>
           <div style={{ fontWeight: 700, color: "#7c3aed", fontSize: `${textSize}px`, fontFamily, letterSpacing }} dangerouslySetInnerHTML={{ __html: renderMath(e.term) }} />
           <div style={{ color: "#374151", fontSize: `${textSize - 1}px`, lineHeight, fontFamily, letterSpacing }} dangerouslySetInnerHTML={{ __html: renderMath(e.def) }} />
         </div>
@@ -1319,13 +1459,13 @@ function SelfReflectionSection({ content, fmt, overlayColor = "white" }: { conte
           </div>
         );
       })}
-      <div style={{ marginTop: "6px", fontSize: `${textSize - 2}px`, color: "#5b21b6", fontStyle: "italic", fontFamily }}>
+      <div style={{ marginTop: "6px", fontSize: `${textSize - 2}px`, color: "#4f46e5", fontStyle: "italic", fontFamily }}>
         R = Not yet &nbsp;|&nbsp; A = Getting there &nbsp;|&nbsp; G = I've got it!
       </div>
       {/* Open reflection question */}
       {openQ && (
-        <div style={{ marginTop: "14px", background: overlayColor, border: "1.5px solid #5b21b6", borderRadius: "4px", padding: "10px 12px" }}>
-          <div style={{ fontSize: `${textSize - 1}px`, fontWeight: 600, color: "#5b21b6", fontFamily, marginBottom: "6px" }} dangerouslySetInnerHTML={{ __html: renderMath(openQ) }} />
+        <div style={{ marginTop: "14px", background: overlayColor, border: "1.5px solid #4f46e5", borderRadius: "4px", padding: "10px 12px" }}>
+          <div style={{ fontSize: `${textSize - 1}px`, fontWeight: 600, color: "#4f46e5", fontFamily, marginBottom: "6px" }} dangerouslySetInnerHTML={{ __html: renderMath(openQ) }} />
           <div style={{ borderBottom: "1px solid #d1d5db", height: "28px", marginBottom: "6px" }} />
           <div style={{ borderBottom: "1px solid #d1d5db", height: "28px" }} />
         </div>
@@ -1340,7 +1480,7 @@ function WordBankSection({ content, fmt, overlayColor = "white" }: { content: st
   return (
     <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
       {words.map((word, i) => (
-        <span key={i} style={{ background: overlayColor, color: "#5b21b6", padding: "4px 10px", borderRadius: "4px", fontSize: `${textSize - 1}px`, fontWeight: 600, border: "1.5px solid #5b21b6", fontFamily }}>
+        <span key={i} style={{ background: overlayColor, color: "#4f46e5", padding: "4px 10px", borderRadius: "4px", fontSize: `${textSize - 1}px`, fontWeight: 600, border: "1.5px solid #4f46e5", fontFamily }}>
           <span dangerouslySetInnerHTML={{ __html: renderMath(word) }} />
         </span>
       ))}
@@ -1354,7 +1494,7 @@ function SentenceStartersSection({ content, fmt, overlayColor = "white" }: { con
   return (
     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "6px" }}>
       {starters.map((s, i) => (
-        <div key={i} style={{ background: overlayColor, border: "1px solid #5b21b6", borderRadius: "4px", padding: "6px 10px", fontSize: `${textSize - 1}px`, color: "#5b21b6", fontStyle: "italic", fontFamily, lineHeight }}>
+        <div key={i} style={{ background: overlayColor, border: "1px solid #4f46e5", borderRadius: "4px", padding: "6px 10px", fontSize: `${textSize - 1}px`, color: "#4f46e5", fontStyle: "italic", fontFamily, lineHeight }}>
           "{s}..."
         </div>
       ))}
@@ -1368,8 +1508,8 @@ function ReminderBoxSection({ content, fmt, overlayColor = "white" }: { content:
   const steps = lines.filter(l => /^Step\s*\d+/i.test(l.trim()));
   const otherLines = lines.filter(l => !/^Step\s*\d+/i.test(l.trim()));
   return (
-    <div style={{ background: overlayColor, border: "1.5px solid #5b21b6", borderRadius: "4px", padding: "10px 12px" }}>
-      <div style={{ fontSize: `${textSize - 1}px`, fontWeight: 700, color: "#5b21b6", marginBottom: "10px", fontFamily, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+    <div style={{ background: overlayColor, border: "1.5px solid #4f46e5", borderRadius: "4px", padding: "10px 12px" }}>
+      <div style={{ fontSize: `${textSize - 1}px`, fontWeight: 700, color: "#4f46e5", marginBottom: "10px", fontFamily, textTransform: "uppercase", letterSpacing: "0.05em" }}>
         Keep this in mind while you work:
       </div>
       {steps.length > 0 ? (
@@ -1382,7 +1522,7 @@ function ReminderBoxSection({ content, fmt, overlayColor = "white" }: { content:
               <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: "10px" }}>
                 <div style={{
                   background: "#ede9fe",
-                  color: "#5b21b6",
+                  color: "#4f46e5",
                   borderRadius: "4px",
                   padding: "3px 10px",
                   fontSize: `${textSize - 2}px`,
@@ -1453,11 +1593,11 @@ function WordProblemsSection({ content, fmt, overlayColor = "white" }: { content
       {problems.map((problem, i) => (
         <div key={i} style={{
           background: overlayColor,
-          border: "1.5px solid #5b21b6",
+          border: "1.5px solid #4f46e5",
           borderRadius: "4px",
           padding: "10px 12px",
         }}>
-          <div style={{ fontSize: `${textSize - 2}px`, fontWeight: 700, color: "#5b21b6", marginBottom: "6px", fontFamily, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+          <div style={{ fontSize: `${textSize - 2}px`, fontWeight: 700, color: "#4f46e5", marginBottom: "6px", fontFamily, textTransform: "uppercase", letterSpacing: "0.05em" }}>
             Problem {i + 1}
           </div>
           {problem.map((line, li) => (
@@ -1472,6 +1612,213 @@ function WordProblemsSection({ content, fmt, overlayColor = "white" }: { content
           </div>
         </div>
       ))}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PRIMARY SCHOOL SECTION RENDERER
+// Completely separate layout for KS1/KS2 — bright colours, big rounded boxes,
+// exercise-book writing lines, friendly labels, child-appropriate spacing.
+// ─────────────────────────────────────────────────────────────────────────────
+
+const PRIMARY_BRIGHT_PALETTE = [
+  { bg: "#fff0f6", border: "#f472b6", header: "linear-gradient(135deg,#f472b6,#ec4899)", text: "#831843", label: "pink"    },
+  { bg: "#eff6ff", border: "#60a5fa", header: "linear-gradient(135deg,#60a5fa,#3b82f6)", text: "#1e3a8a", label: "blue"    },
+  { bg: "#f0fdf4", border: "#4ade80", header: "linear-gradient(135deg,#4ade80,#22c55e)", text: "#14532d", label: "green"   },
+  { bg: "#fff7ed", border: "#fb923c", header: "linear-gradient(135deg,#fb923c,#ea580c)", text: "#431407", label: "orange"  },
+  { bg: "#faf5ff", border: "#c084fc", header: "linear-gradient(135deg,#c084fc,#a855f7)", text: "#4a1d96", label: "purple"  },
+  { bg: "#ecfeff", border: "#22d3ee", header: "linear-gradient(135deg,#22d3ee,#06b6d4)", text: "#164e63", label: "cyan"    },
+  { bg: "#fefce8", border: "#facc15", header: "linear-gradient(135deg,#facc15,#eab308)", text: "#713f12", label: "yellow"  },
+  { bg: "#f0fdfa", border: "#2dd4bf", header: "linear-gradient(135deg,#2dd4bf,#14b8a6)", text: "#134e4a", label: "teal"    },
+];
+
+// Friendly badge text for section types in primary
+function getPrimaryBadge(type: string): string {
+  const map: Record<string, string> = {
+    objective: "What We're Learning",
+    success: "I Can...",
+    vocabulary: "Key Words",
+    starter: "Let's Warm Up!",
+    example: "Look at This",
+    "reminder-box": "Remember!",
+    guided: "Try Together",
+    independent: "Your Turn!",
+    challenge: "Challenge Time!",
+    "word-bank": "Word Bank",
+    "sentence-starters": "How to Start",
+    "self-assessment": "How Did I Do?",
+    "self-reflection": "My Thinking",
+    answers: "Answers",
+    "mark-scheme": "Mark Scheme",
+    "teacher-notes": "Teacher Notes",
+    "word-problems": "Story Problems",
+    comprehension: "Reading",
+    reading: "Reading",
+    passage: "Reading",
+  };
+  return map[type] || "";
+}
+
+function PrimarySection({
+  section,
+  sectionIndex,
+  content,
+  paletteIndex,
+  fmt,
+  overlayColor,
+  editMode,
+  isEdited,
+  answerLines,
+  onSectionClick,
+  onAnswerBoxSizeChange,
+  onAnswerBoxRemove,
+  isTeacherSection,
+}: {
+  section: any;
+  sectionIndex: number;
+  content: string;
+  paletteIndex: number;
+  fmt: ReturnType<typeof getSendFormatting>;
+  overlayColor?: string;
+  editMode?: boolean;
+  isEdited?: boolean;
+  answerLines: number;
+  onSectionClick?: (i: number) => void;
+  onAnswerBoxSizeChange?: (i: number, n: number) => void;
+  onAnswerBoxRemove?: (i: number) => void;
+  isTeacherSection: boolean;
+}) {
+  const palette = PRIMARY_BRIGHT_PALETTE[paletteIndex % PRIMARY_BRIGHT_PALETTE.length];
+  const titleText = (typeof section.title === "string" ? section.title : String(section.title || ""))
+    .replace(/^\*{1,2}|\*{1,2}$/g, "").replace(/^_{1,2}|_{1,2}$/g, "").trim();
+  const badgeText = getPrimaryBadge(section.type);
+  const needsWritingLines = !isTeacherSection &&
+    (section.type === "independent" || section.type === "guided" || section.type === "challenge") &&
+    !/sentence starter:|steps to follow:|quick start:|what you need to do:|help box|key facts|word bank/i.test(content || "");
+
+  return (
+    <div
+      onClick={() => editMode && onSectionClick?.(sectionIndex)}
+      style={{
+        marginBottom: "14px",
+        borderRadius: "18px",
+        border: `3px solid ${palette.border}`,
+        background: palette.bg,
+        overflow: "hidden",
+        cursor: editMode ? "pointer" : "default",
+        outline: editMode && isEdited ? `3px solid ${palette.border}` : "none",
+        pageBreakInside: "avoid",
+        breakInside: "avoid",
+        boxShadow: `0 4px 16px ${palette.border}33, 0 1px 4px rgba(0,0,0,0.06)`,
+      }}
+    >
+      {/* ── Colourful Header Bar ── */}
+      <div style={{
+        background: palette.header,
+        padding: "10px 16px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: "10px",
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          {/* Big numbered bubble */}
+          <div style={{
+            background: "rgba(255,255,255,0.3)",
+            border: "2.5px solid rgba(255,255,255,0.6)",
+            borderRadius: "50%",
+            width: "32px", height: "32px",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: "14px", fontWeight: 900,
+            color: "#fff",
+            flexShrink: 0,
+            fontFamily: fmt.fontFamily,
+          }}>
+            {sectionIndex + 1}
+          </div>
+          <div>
+            <div style={{
+              fontWeight: 900,
+              fontSize: `${fmt.fontSize + 4}px`,
+              color: "#fff",
+              fontFamily: fmt.fontFamily,
+              lineHeight: "1.2",
+              textShadow: "0 1px 4px rgba(0,0,0,0.2)",
+            }}>
+              {titleText}
+            </div>
+            {badgeText && (
+              <div style={{
+                fontSize: `${fmt.fontSize - 2}px`,
+                color: "rgba(255,255,255,0.85)",
+                fontFamily: fmt.fontFamily,
+                fontWeight: 600,
+                marginTop: "1px",
+              }}>
+                {badgeText}
+              </div>
+            )}
+          </div>
+        </div>
+        <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+          {isTeacherSection && (
+            <span style={{ background: "rgba(255,255,255,0.25)", color: "#fff", padding: "3px 10px", borderRadius: "12px", fontSize: "10px", fontWeight: 700 }}>
+              TEACHER ONLY
+            </span>
+          )}
+          {section.type === "guided"      && <span style={{ background: "rgba(255,255,255,0.25)", color: "#fff", padding: "3px 10px", borderRadius: "12px", fontSize: "10px", fontWeight: 700 }}>Together</span>}
+          {section.type === "independent" && <span style={{ background: "rgba(255,255,255,0.25)", color: "#fff", padding: "3px 10px", borderRadius: "12px", fontSize: "10px", fontWeight: 700 }}>On Your Own</span>}
+          {section.type === "challenge"   && <span style={{ background: "rgba(255,255,255,0.25)", color: "#fff", padding: "3px 10px", borderRadius: "12px", fontSize: "10px", fontWeight: 700 }}>Extra Challenge</span>}
+        </div>
+      </div>
+
+      {/* ── Content Area ── */}
+      <div style={{
+        padding: "16px 18px",
+        fontSize: `${fmt.fontSize + 2}px`,
+        lineHeight: "2.0",
+        fontFamily: fmt.fontFamily,
+        color: palette.text,
+        background: palette.bg,
+      }}>
+        {formatContent(content, fmt)}
+
+        {/* Exercise-book style writing lines */}
+        {needsWritingLines && answerLines > 0 && (
+          <div style={{ marginTop: "14px" }}>
+            {/* Edit controls */}
+            {editMode && (
+              <div className="no-print" style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "10px", flexWrap: "wrap" }}>
+                <span style={{ fontSize: "11px", fontWeight: 600, color: palette.border, fontFamily: fmt.fontFamily }}>Writing lines:</span>
+                <button onClick={(e) => { e.stopPropagation(); onAnswerBoxSizeChange?.(sectionIndex, Math.max(1, answerLines - 1)); }}
+                  style={{ width: "24px", height: "24px", borderRadius: "4px", border: `1px solid ${palette.border}`, background: "#fff", cursor: "pointer", fontWeight: 700, fontSize: "14px", display: "flex", alignItems: "center", justifyContent: "center", color: palette.text }}>−</button>
+                <span style={{ fontSize: "12px", color: palette.text, minWidth: "60px", textAlign: "center", fontFamily: fmt.fontFamily }}>{answerLines} line{answerLines !== 1 ? "s" : ""}</span>
+                <button onClick={(e) => { e.stopPropagation(); onAnswerBoxSizeChange?.(sectionIndex, Math.min(20, answerLines + 1)); }}
+                  style={{ width: "24px", height: "24px", borderRadius: "4px", border: `1px solid ${palette.border}`, background: "#fff", cursor: "pointer", fontWeight: 700, fontSize: "14px", display: "flex", alignItems: "center", justifyContent: "center", color: palette.text }}>+</button>
+                <div style={{ width: "1px", height: "16px", background: "#e5e7eb" }} />
+                <button onClick={(e) => { e.stopPropagation(); onAnswerBoxRemove?.(sectionIndex); }}
+                  style={{ padding: "2px 8px", borderRadius: "4px", border: "1px solid #fca5a5", background: "#fef2f2", cursor: "pointer", fontSize: "11px", fontWeight: 600, color: "#dc2626" }}>✕ Remove</button>
+              </div>
+            )}
+            {/* Exercise-book lined writing area */}
+            <div style={{
+              background: "repeating-linear-gradient(to bottom, transparent, transparent 31px, #bfdbfe 31px, #bfdbfe 32px)",
+              borderRadius: "10px",
+              border: `2px solid ${palette.border}66`,
+              padding: "8px 12px 0 12px",
+              minHeight: `${answerLines * 32 + 8}px`,
+            }}>
+              {Array.from({ length: answerLines }).map((_, n) => (
+                <div key={n} style={{ height: "32px" }} />
+              ))}
+            </div>
+            <div style={{ fontSize: `${fmt.fontSize - 3}px`, color: `${palette.border}bb`, marginTop: "4px", fontFamily: fmt.fontFamily, fontStyle: "italic", textAlign: "right" }}>
+              {section.type === "challenge" ? "Show your working above" : "Write your answer above"}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -1502,32 +1849,60 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
   // Detect primary (KS1/KS2: Reception – Year 6)
   const yg = (worksheet.metadata.yearGroup || "").toLowerCase();
   const isPrimary = /reception|year [1-6]\b|yr [1-6]\b|ks1|ks2|key stage 1|key stage 2/.test(yg);
+  const yrNumMatch = yg.match(/(\d+)/);
+  const yrNum = yrNumMatch ? parseInt(yrNumMatch[1]) : (isPrimary ? 5 : 8);
 
   // Primary colour palette — each section gets a different cheerful colour
   const PRIMARY_SECTION_COLOURS = [
-    { border: "#f97316", bg: "#fff7ed", badge: "#f97316", badgeBg: "#ffedd5" }, // orange
-    { border: "#06b6d4", bg: "#ecfeff", badge: "#06b6d4", badgeBg: "#cffafe" }, // cyan
-    { border: "#a855f7", bg: "#faf5ff", badge: "#a855f7", badgeBg: "#f3e8ff" }, // purple
-    { border: "#22c55e", bg: "#f0fdf4", badge: "#22c55e", badgeBg: "#dcfce7" }, // green
-    { border: "#ec4899", bg: "#fdf2f8", badge: "#ec4899", badgeBg: "#fce7f3" }, // pink
-    { border: "#f59e0b", bg: "#fffbeb", badge: "#f59e0b", badgeBg: "#fef3c7" }, // amber
-    { border: "#3b82f6", bg: "#eff6ff", badge: "#3b82f6", badgeBg: "#dbeafe" }, // blue
-    { border: "#10b981", bg: "#ecfdf5", badge: "#10b981", badgeBg: "#d1fae5" }, // emerald
+    { border: "#4f46e5", bg: "#f5f3ff", badge: "#4f46e5", badgeBg: "#ede9fe" }, // indigo
+    { border: "#2563eb", bg: "#eff6ff", badge: "#2563eb", badgeBg: "#dbeafe" }, // blue
+    { border: "#7c3aed", bg: "#faf5ff", badge: "#7c3aed", badgeBg: "#f3e8ff" }, // violet
+    { border: "#0284c7", bg: "#f0f9ff", badge: "#0284c7", badgeBg: "#e0f2fe" }, // sky
+    { border: "#6366f1", bg: "#f5f3ff", badge: "#6366f1", badgeBg: "#ede9fe" }, // indigo-light
+    { border: "#3b82f6", bg: "#eff6ff", badge: "#3b82f6", badgeBg: "#dbeafe" }, // blue-mid
+    { border: "#8b5cf6", bg: "#f5f3ff", badge: "#8b5cf6", badgeBg: "#ede9fe" }, // purple
+    { border: "#0891b2", bg: "#ecfeff", badge: "#0891b2", badgeBg: "#cffafe" }, // cyan
   ];
 
-  // Default answer box line counts per section type
+  // Default answer box line counts per section type — used as fallback
   const DEFAULT_ANSWER_LINES: Record<string, number> = {
-    guided: 4,
+    guided: 3,
     independent: 4,
-    challenge: 6,
+    challenge: 5,
   };
 
-  // Helper: get effective line count for a section's answer box
-  const getAnswerLines = (sectionIndex: number, sectionType: string): number => {
+  // Content-aware line count: inspect the section content to determine
+  // how many writing lines are appropriate, so boxes match the writing demand.
+  const getSmartAnswerLines = (sectionIndex: number, sectionType: string, content: string): number => {
+    // User has manually overridden — respect that
     if (sectionIndex in answerBoxSizes) return answerBoxSizes[sectionIndex];
+    // Count numbered questions — each needs its own answer space
+    const numQuestions = (content.match(/^\s*\d+[.)]/gm) || []).length;
+    const lower = content.toLowerCase();
+    const isExtended = /explain|describe|discuss|analyse|evaluate|justify|compare|contrast|account for|how does|why does|what impact|to what extent/i.test(content);
+    const isShort = /^(name|state|give|list|identify|define|what is|what are|circle|tick|label)/im.test(content);
+    const isCalc = /calculat|show your working|work out|find the value|solve/i.test(lower);
+    // Multi-question: 2 lines per question
+    if (numQuestions >= 3) return Math.min(numQuestions * 2, 10);
+    if (numQuestions === 2) return 5;
+    // Single question - size by type
+    if (isExtended) return sectionType === "challenge" ? 8 : 6;
+    if (isCalc) return 4;
+    if (isShort) return 2;
     return DEFAULT_ANSWER_LINES[sectionType] ?? 4;
   };
 
+  // Helper: get effective line count for a section's answer box
+  const getAnswerLines = (sectionIndex: number, sectionType: string, content?: string): number => {
+    if (sectionIndex in answerBoxSizes) return answerBoxSizes[sectionIndex];
+    if (content) return getSmartAnswerLines(sectionIndex, sectionType, content);
+    return DEFAULT_ANSWER_LINES[sectionType] ?? 4;
+  };
+
+
+  // Overlay logic: only apply if a real colour is chosen (not white/transparent)
+  const hasOverlay = overlayColor && overlayColor !== "white" && overlayColor !== "#ffffff"
+    && overlayColor !== "transparent";
 
   return (
     <div
@@ -1541,22 +1916,38 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
         letterSpacing: fmt.letterSpacing,
         wordSpacing: fmt.wordSpacing,
         fontWeight: fmt.fontWeight,
+        position: "relative",
       }}
     >
+      {/* Colour overlay — sits above all section backgrounds, covers all text boxes */}
+      {hasOverlay && (
+        <div
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            inset: 0,
+            backgroundColor: overlayColor,
+            pointerEvents: "none",
+            zIndex: 10,
+            mixBlendMode: "multiply",
+            borderRadius: "inherit",
+          }}
+        />
+      )}
       {/* ── Professional Header ── */}
       <div className="ws-header" style={{
-        marginBottom: isPrimary ? "16px" : "10px",
-        borderRadius: isPrimary ? "12px" : "4px",
+        marginBottom: isPrimary ? "16px" : "12px",
+        borderRadius: isPrimary ? "12px" : "8px",
         overflow: "hidden",
-        border: isPrimary ? "2.5px solid #f97316" : "1.5px solid #5b21b6",
-        boxShadow: isPrimary ? "0 4px 12px rgba(249,115,22,0.2)" : "none",
+        border: isPrimary ? "2.5px solid #4f46e5" : "none",
+        boxShadow: isPrimary ? "0 4px 12px rgba(79,70,229,0.2)" : "0 2px 12px rgba(79,70,229,0.18)",
       }}>
         {/* Title bar */}
         <div style={{
           background: isPrimary
-            ? "linear-gradient(135deg, #f97316 0%, #ec4899 35%, #8b5cf6 70%, #06b6d4 100%)"
-            : "#5b21b6",
-          padding: isPrimary ? "12px 16px" : "6px 12px",
+            ? "linear-gradient(135deg, #4f46e5 0%, #6366f1 40%, #7c3aed 70%, #8b5cf6 100%)"
+            : "linear-gradient(135deg, #4f46e5 0%, #6366f1 40%, #8b5cf6 70%, #a78bfa 100%)",
+          padding: isPrimary ? "12px 16px" : "10px 16px",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
@@ -1568,55 +1959,86 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
               <img
                 src={schoolLogoUrl}
                 alt="School logo"
-                style={{ height: "32px", width: "auto", maxWidth: "60px", objectFit: "contain", borderRadius: "4px", background: "rgba(255,255,255,0.9)", padding: "2px" }}
+                style={{ height: "36px", width: "auto", maxWidth: "64px", objectFit: "contain", borderRadius: "6px", background: "rgba(255,255,255,0.95)", padding: "3px" }}
               />
             ) : (
               <div style={{
-                width: "28px", height: "28px", borderRadius: "6px",
-                background: "rgba(255,255,255,0.2)",
+                width: "32px", height: "32px", borderRadius: "50%",
+                background: "rgba(255,255,255,0.15)",
                 display: "flex", alignItems: "center", justifyContent: "center",
-                fontWeight: 900, fontSize: "14px", color: "white", fontFamily: fmt.fontFamily,
-              }}>A</div>
+                overflow: "hidden",
+                border: "1.5px solid rgba(255,255,255,0.3)",
+              }}>
+                <img src="/logo.png" alt="Adaptly Logo" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} />
+              </div>
             )}
-            <div style={{ fontSize: "10px", color: "rgba(255,255,255,0.75)", fontFamily: fmt.fontFamily, lineHeight: "1.2" }}>
-              <div style={{ fontWeight: 700 }}>{schoolName || "Adaptly"}</div>
-              <div>SEND-Informed Learning Resource</div>
+            <div style={{ fontSize: "10px", color: "rgba(255,255,255,0.85)", fontFamily: fmt.fontFamily, lineHeight: "1.3" }}>
+              <div style={{ fontWeight: 800 }}>{schoolName || "Adaptly"}</div>
+              <div style={{ opacity: 0.75 }}>{isPrimary ? "Learning Resource" : "SEND-Informed Worksheet"}</div>
             </div>
           </div>
           {/* Centre: Title */}
           <div style={{ flex: 1, textAlign: "center" }}>
             <div style={{
-              fontWeight: isPrimary ? 900 : 700,
-              fontSize: isPrimary ? `${fmt.fontSize + 5}px` : `${fmt.fontSize + 1}px`,
+              fontWeight: isPrimary ? 900 : 800,
+              fontSize: isPrimary ? `${fmt.fontSize + 5}px` : `${fmt.fontSize + 3}px`,
               color: "white",
               fontFamily: fmt.fontFamily,
-              letterSpacing: isPrimary ? "-0.3px" : fmt.letterSpacing,
-              lineHeight: "1.3",
-              textShadow: isPrimary ? "0 1px 4px rgba(0,0,0,0.2)" : "none",
+              letterSpacing: isPrimary ? "-0.3px" : "-0.2px",
+              lineHeight: "1.25",
+              textShadow: "0 1px 6px rgba(0,0,0,0.18)",
             }}>
-              {isPrimary ? "✨ " : ""}{worksheet.title}{isPrimary ? " ✨" : ""}
+              {isPrimary ? "" : ""}{worksheet.title}{isPrimary ? "" : ""}
             </div>
             {worksheet.subtitle && (
-              <div style={{ fontSize: `${fmt.fontSize - 3}px`, color: "rgba(255,255,255,0.85)", marginTop: "2px", fontFamily: fmt.fontFamily }}>{worksheet.subtitle}</div>
+              <div style={{ fontSize: `${fmt.fontSize - 2}px`, color: "rgba(255,255,255,0.8)", marginTop: "3px", fontFamily: fmt.fontFamily, letterSpacing: "0.2px" }}>{worksheet.subtitle}</div>
+            )}
+            {/* SEND adaptation badge — shown when SEND need is active */}
+            {sendNeedId && sendNeedId !== "none" && sendNeedId !== "none-selected" && sendNeedId !== "general" && (
+              <div style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "5px",
+                marginTop: "5px",
+                background: "rgba(255,255,255,0.2)",
+                backdropFilter: "blur(4px)",
+                border: "1px solid rgba(255,255,255,0.3)",
+                borderRadius: "20px",
+                padding: "2px 12px",
+                fontSize: `${fmt.fontSize - 3}px`,
+                color: "rgba(255,255,255,0.95)",
+                fontFamily: fmt.fontFamily,
+                fontWeight: 600,
+                letterSpacing: "0.3px",
+              }}>
+                <span>Adapted for {sendNeedId.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase())}</span>
+              </div>
             )}
           </div>
           {/* Right: Name/Date/Class fields inline */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "3px", flexShrink: 0 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "4px", flexShrink: 0 }}>
             {[
               { label: "Name", value: "" },
               { label: "Date", value: new Date().toLocaleDateString("en-GB") },
               { label: "Class", value: "" },
               ...(teacherName ? [{ label: "Teacher", value: teacherName }] : []),
             ].map((field, i) => (
-              <div key={i} style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                <span style={{ fontSize: "10px", fontWeight: 600, color: "rgba(255,255,255,0.85)", fontFamily: fmt.fontFamily, minWidth: "32px" }}>{field.label}:</span>
-                <div style={{ borderBottom: "1px solid rgba(255,255,255,0.6)", minWidth: "70px", height: "14px", display: "flex", alignItems: "flex-end" }}>
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                <span style={{ fontSize: "10px", fontWeight: 700, color: "rgba(255,255,255,0.85)", fontFamily: fmt.fontFamily, minWidth: "36px" }}>{field.label}:</span>
+                <div style={{ borderBottom: "1.5px solid rgba(255,255,255,0.5)", minWidth: "72px", height: "15px", display: "flex", alignItems: "flex-end" }}>
                   <span style={{ fontSize: "10px", color: "rgba(255,255,255,0.9)", paddingBottom: "1px", fontFamily: fmt.fontFamily }}>{field.value}</span>
                 </div>
               </div>
             ))}
           </div>
         </div>
+        {/* Secondary: thin accent strip showing subject colour */}
+        {!isPrimary && (
+          <div style={{
+            background: "linear-gradient(90deg, #3730a3 0%, #4f46e5 30%, #7c3aed 65%, #8b5cf6 100%)",
+            height: "3px",
+          }} />
+        )}
       </div>
 
       {/* Primary encouragement banner */}
@@ -1625,22 +2047,22 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          gap: "12px",
+          gap: "16px",
           padding: "8px 16px",
           marginBottom: "14px",
           borderRadius: "10px",
-          background: "linear-gradient(90deg, #fef3c7, #fce7f3, #ede9fe, #d1fae5)",
-          border: "1.5px solid #f59e0b",
+          background: "linear-gradient(90deg, #ede9fe, #dbeafe, #e0f2fe)",
+          border: "1.5px solid #7c3aed",
           fontSize: `${fmt.fontSize - 1}px`,
           fontWeight: 700,
-          color: "#92400e",
+          color: "#3730a3",
           fontFamily: fmt.fontFamily,
         }}>
-          <span>🌟</span>
           <span>Do your best — every try counts!</span>
-          <span>✏️</span>
+          <span style={{ color: "#7c3aed", fontWeight: 400 }}>|</span>
           <span>Read carefully before you start.</span>
-          <span>💪</span>
+          <span style={{ color: "#7c3aed", fontWeight: 400 }}>|</span>
+          <span>Ask for help if you need it.</span>
         </div>
       )}
 
@@ -1649,82 +2071,243 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
         <div style={{ width: "100%" }}>
           <style>{`
             @media print {
-              .revision-mat-root {
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
-              }
-              @page { size: A4 landscape; margin: 8mm; }
+              @page { size: A4 landscape; margin: 6mm; }
+              body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+              .rm-page { width: 277mm !important; }
             }
           `}</style>
-          <div
-            className="revision-mat-root"
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr 1fr",
-              gap: "8px",
-              width: "100%",
-            }}
-          >
-            {worksheet.sections
-              .filter(s => !s.teacherOnly && s.type !== "answers" && s.type !== "teacher-notes" && s.type !== "mark-scheme")
-              .map((section, i) => {
-                const matColours = [
-                  { border: "#3b82f6", bg: "#eff6ff", header: "#3b82f6" }, // foundation — blue
-                  { border: "#8b5cf6", bg: "#f5f3ff", header: "#8b5cf6" }, // core — purple
-                  { border: "#f59e0b", bg: "#fffbeb", header: "#f59e0b" }, // extension — amber
-                ];
-                const col = matColours[i % 3];
-                const rawContent = editedSections?.[i] !== undefined ? editedSections[i] : section.content;
-                const displayContent = typeof rawContent === "string" ? rawContent : String(rawContent || "");
-                return (
-                  <div
-                    key={i}
-                    style={{
-                      border: `2px solid ${col.border}`,
-                      borderRadius: "8px",
-                      overflow: "hidden",
-                      breakInside: "avoid",
-                      pageBreakInside: "avoid",
-                      backgroundColor: col.bg,
-                    }}
-                  >
-                    <div style={{
-                      background: col.header,
-                      padding: "6px 10px",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "6px",
-                    }}>
-                      <span style={{ fontSize: "14px" }}>
-                        {i % 3 === 0 ? "🟦" : i % 3 === 1 ? "🟣" : "🟡"}
-                      </span>
-                      <span style={{
-                        fontWeight: 700,
-                        fontSize: `${fmt.fontSize}px`,
-                        color: "white",
-                        fontFamily: fmt.fontFamily,
-                      }}>
-                        {typeof section.title === "string" ? section.title.replace(/^\*+|\*+$/g, "").trim() : String(section.title || "")}
-                      </span>
-                      <span style={{
-                        marginLeft: "auto",
-                        fontSize: "10px",
-                        color: "rgba(255,255,255,0.8)",
-                        fontWeight: 600,
-                        background: "rgba(255,255,255,0.2)",
-                        padding: "1px 6px",
-                        borderRadius: "8px",
-                      }}>
-                        {i % 3 === 0 ? "Foundation" : i % 3 === 1 ? "Core" : "Extension"}
-                      </span>
-                    </div>
-                    <div style={{ padding: "8px 10px", fontSize: `${fmt.fontSize - 1}px`, fontFamily: fmt.fontFamily }}>
-                      {formatContent(displayContent, fmt)}
-                    </div>
-                  </div>
-                );
-              })}
+          {/* Topic reference line — tiny, like real mats */}
+          <div style={{
+            fontSize: "8px",
+            color: "#666",
+            marginBottom: "4px",
+            fontFamily: "Arial, sans-serif",
+            fontStyle: "italic",
+          }}>
+            {worksheet.metadata.subject && `${worksheet.metadata.subject.charAt(0).toUpperCase() + worksheet.metadata.subject.slice(1)}`}
+            {worksheet.metadata.yearGroup && ` · ${worksheet.metadata.yearGroup}`}
+            {worksheet.metadata.topic && ` · ${worksheet.metadata.topic}`}
+            {" — Revision Activity Mat"}
           </div>
+          {/* Jigsaw Revision Mat — equal-height grid fills the full page */}
+          {(() => {
+            const rmSections = worksheet.sections
+              .filter(s => !s.teacherOnly && s.type !== "answers" && s.type !== "teacher-notes"
+                        && s.type !== "mark-scheme" && s.type !== "adaptations");
+            if (rmSections.length === 0) return null;
+            const colCount = rmSections.length <= 9 ? 3 : 4;
+            const rowCount = Math.ceil(rmSections.length / colCount);
+            const subj = (worksheet.metadata?.subject || "").toLowerCase();
+            const isMaths   = subj.includes("math");
+            const isScience = subj.includes("science") || subj.includes("biology") || subj.includes("chemistry") || subj.includes("physics");
+            const isMFL     = subj.includes("french") || subj.includes("spanish") || subj.includes("german") || subj.includes("mfl");
+            return (
+              <div
+                className="rm-page"
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: `repeat(${colCount}, 1fr)`,
+                  gridTemplateRows: `repeat(${rowCount}, 1fr)`,
+                  gap: "3px",
+                  width: "100%",
+                  height: "calc(100vh - 56px)",
+                  minHeight: "500px",
+                  pageBreakAfter: "avoid",
+                  breakAfter: "avoid",
+                }}
+              >
+                {rmSections.map((section, i) => {
+                  const origIdx = worksheet.sections.indexOf(section);
+                  const rawContent = (editedSections && editedSections[origIdx] !== undefined)
+                    ? editedSections[origIdx] : section.content;
+                  const displayContent = typeof rawContent === "string" ? rawContent : String(rawContent || "");
+                  const rawTitle = typeof section.title === "string"
+                    ? section.title.replace(/^\*+|\*+$/g, "").trim() : "";
+                  const isLetter = /^[a-z]$/i.test(rawTitle);
+                  const letterLabel = isLetter ? rawTitle.toLowerCase() : String.fromCharCode(97 + i);
+                  const titleLower = rawTitle.toLowerCase();
+                  const isLOBox = i === 0 || /learning.obj|^lo$/i.test(titleLower);
+                  const lines = displayContent.split("\n");
+                  const matchUpLines = lines.filter(l => /\w+\s*\|\s*\w+/.test(l) && !/[=<>]/.test(l));
+                  const isMatchUp = matchUpLines.length >= 2;
+                  const isMCQ = /^\s*[a-d]\.\s/m.test(displayContent);
+                  const hasBlankLines = displayContent.includes("___");
+                  const contentLower = displayContent.toLowerCase();
+                  const isCalc = contentLower.includes("calculat") || contentLower.includes("show working") || contentLower.includes("work out");
+                  const isLong = contentLower.includes("explain") || contentLower.includes("describe") || contentLower.includes("discuss");
+                  const isMed  = contentLower.includes("state") || contentLower.includes("define") || contentLower.includes("name");
+                  const markerCount = lines.filter(l => /^_{3,}$/.test(l.trim())).length;
+                  const numLines = markerCount > 0 ? markerCount : isCalc ? 4 : isLong ? 6 : isMed ? 2 : 3;
+                  // Two-colour header: indigo for even boxes, blue for odd
+                  const headerBg = isLOBox
+                    ? "linear-gradient(135deg,#4f46e5,#3730a3)"
+                    : i % 2 === 0
+                      ? "linear-gradient(135deg,#4f46e5,#3730a3)"
+                      : "linear-gradient(135deg,#2563eb,#1d4ed8)";
+                  const boxBorder = isLOBox ? "#4f46e5" : i % 2 === 0 ? "#c7d2fe" : "#bfdbfe";
+                  const isBoxEditing = editMode && onSectionEdit;
+                  return (
+                    <div
+                      key={i}
+                      style={{
+                        border: `1.5px solid ${boxBorder}`,
+                        backgroundColor: "#ffffff",
+                        overflow: "hidden",
+                        borderRadius: "3px",
+                        fontFamily: "Arial, sans-serif",
+                        fontSize: "8.5px",
+                        lineHeight: "1.4",
+                        position: "relative",
+                        display: "flex",
+                        flexDirection: "column",
+                      }}
+                    >
+                      {isBoxEditing && (
+                        <button
+                          onClick={() => {
+                            const newText = window.prompt("Edit box content:", displayContent);
+                            if (newText !== null) onSectionEdit!(origIdx, newText);
+                          }}
+                          style={{
+                            position: "absolute", top: "18px", right: "3px", zIndex: 10,
+                            background: "#4f46e5", color: "#fff", border: "none",
+                            borderRadius: "3px", fontSize: "7px", padding: "1px 4px",
+                            cursor: "pointer", opacity: 0.85,
+                          }}
+                        >✏️</button>
+                      )}
+                      {/* Header */}
+                      <div style={{
+                        background: headerBg, padding: "3px 6px",
+                        display: "flex", alignItems: "center", gap: "4px", flexShrink: 0,
+                      }}>
+                        <span style={{
+                          background: "rgba(255,255,255,0.25)", color: "#fff",
+                          width: "12px", height: "12px", borderRadius: "50%",
+                          display: "inline-flex", alignItems: "center", justifyContent: "center",
+                          fontSize: "6.5px", fontWeight: 800, flexShrink: 0,
+                        }}>{letterLabel}</span>
+                        <span style={{
+                          fontWeight: 700, fontSize: "7.5px", color: "#fff",
+                          textTransform: "uppercase", letterSpacing: "0.3px",
+                          overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                        }}>
+                          {isLOBox ? "Learning Objectives" : rawTitle || `Section ${i + 1}`}
+                        </span>
+                      </div>
+                      {/* Content — flex-grows to fill remaining height */}
+                      <div style={{ padding: "5px 6px", flex: 1, overflow: "hidden", display: "flex", flexDirection: "column" }}>
+                        {isLOBox ? (
+                          <div>
+                            {lines.filter(l => l.trim()).map((line, li) => (
+                              <div key={li} style={{ marginBottom: "3px", paddingLeft: "6px", color: "#1e293b", display: "flex", gap: "4px", alignItems: "flex-start" }}>
+                                <span style={{ color: "#4f46e5", fontWeight: 700, flexShrink: 0 }}>•</span>
+                                <span>{line.replace(/^[-•*]\s*/, "").replace(/^\d+\.\s*/, "")}</span>
+                              </div>
+                            ))}
+                          </div>
+                        ) : isMatchUp ? (
+                          <div style={{ flex: 1 }}>
+                            <div style={{ marginBottom: "3px", color: "#555", fontStyle: "italic", fontSize: "7.5px" }}>
+                              {isMFL ? "Match each word to its translation." : isScience ? "Match each term to its definition." : "Draw lines to match each item."}
+                            </div>
+                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2px 6px" }}>
+                              {matchUpLines.map((line, li) => {
+                                const [left, right] = line.split("|").map(s => s.trim());
+                                return (
+                                  <React.Fragment key={li}>
+                                    <div style={{ border: "1px solid #c7d2fe", padding: "2px 4px", borderRadius: "2px", fontSize: "8px", background: "#f5f3ff" }}>{left}</div>
+                                    <div style={{ border: "1px solid #bfdbfe", padding: "2px 4px", borderRadius: "2px", fontSize: "8px", background: "#eff6ff" }}>{right}</div>
+                                  </React.Fragment>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        ) : (
+                          <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
+                            <div style={{ color: "#1e293b", marginBottom: "3px" }}>
+                              {lines.map((line, li) => {
+                                const t = line.trim();
+                                if (!t) return null;
+                                if (/^_{3,}$/.test(t)) return null;
+                                if (/^[a-d]\.\s/.test(t)) {
+                                  return (
+                                    <div key={li} style={{ display: "flex", alignItems: "center", gap: "4px", paddingLeft: "4px", marginBottom: "2px" }}>
+                                      <svg width="10" height="10" viewBox="0 0 10 10" style={{ flexShrink: 0 }}>
+                                        <circle cx="5" cy="5" r="4" fill="none" stroke="#6b7280" strokeWidth="1" />
+                                      </svg>
+                                      <span style={{ fontSize: "8px" }}>{t.replace(/^[a-d]\.\s/, "")}</span>
+                                    </div>
+                                  );
+                                }
+                                if (/^show working/i.test(t)) {
+                                  return <div key={li} style={{ fontStyle: "italic", fontSize: "7.5px", color: "#666", marginTop: "2px" }}>{t}</div>;
+                                }
+                                if (/^(true|false)\s*\/?\s*(true|false)?$/i.test(t) || t === "True / False") {
+                                  return (
+                                    <div key={li} style={{ display: "flex", gap: "8px", marginTop: "2px" }}>
+                                      {["True", "False"].map(opt => (
+                                        <div key={opt} style={{ display: "flex", alignItems: "center", gap: "3px" }}>
+                                          <svg width="10" height="10" viewBox="0 0 10 10">
+                                            <circle cx="5" cy="5" r="4" fill="none" stroke="#6b7280" strokeWidth="1" />
+                                          </svg>
+                                          <span style={{ fontSize: "8px" }}>{opt}</span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  );
+                                }
+                                if (/^answer:/i.test(t)) {
+                                  return (
+                                    <div key={li} style={{ display: "flex", alignItems: "center", gap: "4px", marginTop: "2px" }}>
+                                      <span style={{ fontWeight: 600, fontSize: "7.5px", whiteSpace: "nowrap" }}>Answer:</span>
+                                      <div style={{ flex: 1, borderBottom: "1px solid #aaa" }} />
+                                    </div>
+                                  );
+                                }
+                                if (t.includes("___")) {
+                                  return (
+                                    <div key={li} style={{ marginBottom: "2px" }}>
+                                      {t.split(/(_+)/).map((part, pi) =>
+                                        /^_+$/.test(part)
+                                          ? <span key={pi} style={{ display: "inline-block", borderBottom: "1px solid #333", minWidth: "36px", marginLeft: "1px", marginRight: "1px" }}>&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                                          : <span key={pi}>{part}</span>
+                                      )}
+                                    </div>
+                                  );
+                                }
+                                return <div key={li} style={{ marginBottom: "1px" }}>{t}</div>;
+                              })}
+                            </div>
+                            {/* Answer space — fills remaining box height */}
+                            {!isMCQ && !hasBlankLines && (
+                              <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
+                                {isCalc ? (
+                                  <div style={{
+                                    border: "1px dashed #c7d2fe", borderRadius: "2px",
+                                    flex: 1, minHeight: "24px", background: "#fafafa",
+                                    display: "flex", alignItems: "flex-end", padding: "2px 4px",
+                                  }}>
+                                    <span style={{ fontSize: "7px", color: "#aaa", fontStyle: "italic" }}>
+                                      {isMaths ? "Show working:" : "Answer:"}
+                                    </span>
+                                  </div>
+                                ) : (
+                                  Array.from({ length: numLines }).map((_, li) => (
+                                    <div key={li} style={{ borderBottom: "1px solid #cbd5e1", marginBottom: "3px", height: "12px" }} />
+                                  ))
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })()}
         </div>
       )}
 
@@ -1741,7 +2324,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
         let rawContent = editedSections[i] !== undefined ? editedSections[i] : section.content;
         if (rawContent !== null && rawContent !== undefined && typeof rawContent !== 'string') {
           if (Array.isArray(rawContent)) {
-            rawContent = rawContent.map((item: any) => {
+            rawContent = (rawContent as any[]).map((item: any) => {
               if (typeof item === 'string') return item;
               if (typeof item === 'object' && item !== null) {
                 const q = item.q || item.question || item.text || item.content || '';
@@ -1767,19 +2350,54 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
           }
         }
         // In student view, strip any "Answer: ..." lines that the AI embedded in the content string.
-        // These appear as plain text lines starting with "Answer:" in student-facing sections.
+        // Also strip mark scheme lines and "[X marks]" labels that reveal answers.
         let content = rawContent as string;
         if (!isTeacherView && typeof content === 'string') {
           content = content
             .split('\n')
-            .filter(line => !/^\s*Answer\s*:/i.test(line.trim()))
+            .filter(line => {
+              const t = line.trim();
+              if (/^\s*Answer\s*:/i.test(t)) return false;
+              if (/^\s*Mark scheme\s*:/i.test(t)) return false;
+              if (/^\s*\*?\s*Answer\s*:/i.test(t)) return false;
+              // Strip lines that are ONLY an answer value after "Answer:" (e.g. "   (7 5)")
+              // following a question — handled by the Answer: filter above
+              return true;
+            })
+            // Strip inline "[X marks]" badges that reveal total mark allocations hinting at answers
+            // but keep them if teacher view
+            .map(line => line.replace(/\s*\[\d+\s*marks?\]/gi, ''))
             .join('\n');
         }
         const style = isPrimary
-          ? { ...(PRIMARY_SECTION_COLOURS[i % PRIMARY_SECTION_COLOURS.length]), icon: ["🌟","🎯","💡","✏️","🔍","🎨","📖","🌈"][i % 8], label: section.title as string || "", badgeText: "" }
-          : getSectionStyle(section.type);
+          ? { ...(PRIMARY_SECTION_COLOURS[i % PRIMARY_SECTION_COLOURS.length]), icon: ["A","B","C","D","E","F","G","H"][i % 8], label: section.title as string || "", badgeText: "" }
+          : getSectionStyle(section.type, yrNum);
         // Teacher-only sections: mark-scheme, teacher-notes, answers, and any explicitly flagged teacherOnly
         const isTeacherSection = section.teacherOnly || section.type === "teacher-notes" || section.type === "mark-scheme" || section.type === "answers";
+
+        // ── PRIMARY: delegate entirely to child-friendly renderer ──
+        if (isPrimary) {
+          const primaryAnswerLines = getAnswerLines(i, section.type, content);
+          return (
+            <React.Fragment key={i}>
+            <PrimarySection
+              section={section}
+              sectionIndex={i}
+              content={content}
+              paletteIndex={i}
+              fmt={fmt}
+              overlayColor={overlayColor}
+              editMode={editMode}
+              isEdited={editedSections[i] !== undefined}
+              answerLines={primaryAnswerLines}
+              onSectionClick={onSectionClick}
+              onAnswerBoxSizeChange={onAnswerBoxSizeChange}
+              onAnswerBoxRemove={onAnswerBoxRemove}
+              isTeacherSection={isTeacherSection}
+            />
+            </React.Fragment>
+          );
+        }
 
         return (
           <div
@@ -1788,160 +2406,232 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
             onClick={() => editMode && onSectionClick?.(i)}
             style={{
               marginBottom: isPrimary ? "16px" : "10px",
-              borderRadius: isPrimary ? "12px" : "4px",
-              border: isPrimary ? `2.5px solid ${style.border}` : `1.5px solid ${style.border}`,
-              background: isPrimary ? (style as any).bg || "#ffffff" : overlayColor || "#ffffff",
+              borderRadius: isPrimary ? "12px" : `${fmt.borderRadius}px`,
+              border: isPrimary
+                ? `2.5px solid ${style.border}`
+                : fmt.theme === "high-contrast"
+                  ? `2px solid #111827`
+                  : `1.5px solid ${style.border}22`,
+              background: isPrimary ? (style as any).bg || "#ffffff" : (fmt.sectionBgColor || "#ffffff"),
               overflow: "hidden",
               cursor: editMode ? "pointer" : "default",
               outline: editMode && editedSections[i] !== undefined ? `2px solid ${style.border}` : "none",
               pageBreakInside: "avoid",
               breakInside: "avoid",
-              boxShadow: isPrimary ? `0 2px 8px ${style.border}22` : "none",
+              boxShadow: isPrimary
+                ? `0 2px 8px ${style.border}22`
+                : fmt.theme === "high-contrast"
+                  ? "none"
+                  : `0 1px 4px rgba(0,0,0,0.06), 0 0 0 1px ${style.border}18`,
             }}
           >
-            {/* Section header */}
+            {/* Section header — respects SEND theme */}
             <div style={{
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
-              padding: isPrimary ? "10px 14px" : "6px 10px",
-              borderBottom: `1px solid ${style.border}`,
-              background: isPrimary ? style.border : `${style.border}12`,
+              padding: isPrimary ? "10px 14px" : `7px ${fmt.sectionPadding.split(" ")[1] || "12px"}`,
+              background: isPrimary
+                ? style.border
+                : fmt.theme === "high-contrast"
+                  ? "#111827"   // high contrast: solid black
+                  : fmt.theme === "calm"
+                    ? `linear-gradient(135deg, ${fmt.accentColor}cc, ${fmt.accentColor}99)`  // calm: softer gradient
+                    : fmt.theme === "dyslexia"
+                      ? fmt.accentColor   // dyslexia: solid warm colour, no gradient
+                      : fmt.theme === "minimal" || fmt.theme === "adult"
+                        ? fmt.accentColor   // minimal/adult: solid, no gradient
+                        : (style as any).headerBg || `linear-gradient(135deg,${style.border},${style.border})`,
             }}>
               <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                {style.icon && <span style={{ fontSize: isPrimary ? "22px" : "16px" }}>{style.icon}</span>}
+                {/* Primary: section number circle; SEND themes: numbered circle; others: text icon */}
+                {isPrimary ? (
+                  <span style={{
+                    background: "rgba(255,255,255,0.25)",
+                    color: "#fff",
+                    width: "26px", height: "26px",
+                    borderRadius: "50%",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontSize: "12px", fontWeight: 800,
+                    flexShrink: 0,
+                    border: "1.5px solid rgba(255,255,255,0.4)",
+                  }}>{i + 1}</span>
+                ) : (
+                  <>
+                    {/* Hide emojis for high-contrast and minimal themes */}
+                    {style.icon && fmt.theme !== "high-contrast" && fmt.theme !== "minimal" && fmt.theme !== "adult" && (
+                      <span style={{ fontSize: "15px" }}>{style.icon}</span>
+                    )}
+                    {/* Section number for ASC/MLD/HI */}
+                    {fmt.showSectionNumbers && (
+                      <span style={{
+                        background: "rgba(255,255,255,0.25)",
+                        color: "#fff",
+                        width: "22px", height: "22px",
+                        borderRadius: "50%",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        fontSize: "11px", fontWeight: 800,
+                        flexShrink: 0,
+                      }}>{i + 1}</span>
+                    )}
+                  </>
+                )}
                 <span style={{
                   fontWeight: 800,
-                  fontSize: isPrimary ? `${fmt.fontSize + 3}px` : `${fmt.fontSize + 1}px`,
-                  color: isPrimary ? "#ffffff" : style.border,
+                  fontSize: isPrimary ? `${fmt.fontSize + 3}px` : `${fmt.fontSize + fmt.headerTextSize}px`,
+                  color: "#ffffff",
                   fontFamily: fmt.fontFamily,
-                  letterSpacing: isPrimary ? "0.3px" : "normal",
+                  letterSpacing: isPrimary ? "0.3px" : "0.1px",
+                  textShadow: fmt.theme === "high-contrast" ? "none" : "0 1px 3px rgba(0,0,0,0.15)",
                 }}>
                   {(typeof section.title === 'string' ? section.title : String(section.title || '')).replace(/^\*{1,2}|\*{1,2}$/g, '').replace(/^_{1,2}|_{1,2}$/g, '').trim()}
                 </span>
               </div>
               <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
                 {isTeacherSection && (
-                  <span style={{ background: "#ede9fe", color: "#5b21b6", padding: "2px 8px", borderRadius: "10px", fontSize: "10px", fontWeight: 700 }}>
+                  <span style={{ background: "rgba(255,255,255,0.25)", color: "#fff", padding: "2px 8px", borderRadius: "10px", fontSize: "10px", fontWeight: 700, backdropFilter: "blur(4px)" }}>
                     TEACHER ONLY
                   </span>
                 )}
-                {section.type === "guided" && (
-                  <span style={{ background: style.badgeBg, color: style.badge, padding: "2px 8px", borderRadius: "10px", fontSize: "10px", fontWeight: 600 }}>
-                    Foundation
-                  </span>
+                {section.type === "guided" && !fmt.showSectionNumbers && (
+                  <span style={{ background: "rgba(255,255,255,0.25)", color: "#fff", padding: "2px 8px", borderRadius: "10px", fontSize: "10px", fontWeight: 700 }}>Foundation</span>
                 )}
-                {section.type === "independent" && (
-                  <span style={{ background: style.badgeBg, color: style.badge, padding: "2px 8px", borderRadius: "10px", fontSize: "10px", fontWeight: 600 }}>
-                    Core
-                  </span>
+                {section.type === "independent" && !fmt.showSectionNumbers && (
+                  <span style={{ background: "rgba(255,255,255,0.25)", color: "#fff", padding: "2px 8px", borderRadius: "10px", fontSize: "10px", fontWeight: 700 }}>Core</span>
                 )}
-                {section.type === "challenge" && (
-                  <span style={{ background: style.badgeBg, color: style.badge, padding: "2px 8px", borderRadius: "10px", fontSize: "10px", fontWeight: 600 }}>
-                    Extension
-                  </span>
+                {section.type === "challenge" && !fmt.showSectionNumbers && (
+                  <span style={{ background: "rgba(255,255,255,0.25)", color: "#fff", padding: "2px 8px", borderRadius: "10px", fontSize: "10px", fontWeight: 700 }}>Extension</span>
                 )}
                 {section.type === "reminder-box" && (
-                  <span style={{ background: "#ede9fe", color: "#5b21b6", padding: "2px 8px", borderRadius: "10px", fontSize: "10px", fontWeight: 600 }}>
-                    3 Key Steps
-                  </span>
+                  <span style={{ background: "rgba(255,255,255,0.25)", color: "#fff", padding: "2px 8px", borderRadius: "10px", fontSize: "10px", fontWeight: 700 }}>Key Steps</span>
                 )}
                 {section.type === "word-problems" && (
-                  <span style={{ background: "#ede9fe", color: "#5b21b6", padding: "2px 8px", borderRadius: "10px", fontSize: "10px", fontWeight: 600 }}>
-                    Real Life
-                  </span>
+                  <span style={{ background: "rgba(255,255,255,0.25)", color: "#fff", padding: "2px 8px", borderRadius: "10px", fontSize: "10px", fontWeight: 700 }}>Real Life</span>
                 )}
               </div>
             </div>
 
             {/* Section content */}
             <div style={{
-              padding: isPrimary ? "14px 16px" : "8px 10px",
-              background: isPrimary ? ((style as any).bg || "#ffffff") : "transparent",
+              padding: isPrimary ? "14px 16px" : fmt.sectionPadding,
+              background: isPrimary ? ((style as any).bg || "#ffffff") : (fmt.sectionBgColor || "#ffffff"),
               fontSize: isPrimary ? `${fmt.fontSize + 1}px` : undefined,
               lineHeight: isPrimary ? "1.9" : undefined,
             }}>
-              {section.type === "diagram" && (section.imageUrl || section.svg) ? (
-                <div style={{ textAlign: "center" }}>
-                  {section.imageUrl ? (
-                    <img
-                      src={section.imageUrl}
-                      alt={section.caption || "Diagram"}
-                      style={{ maxWidth: "560px", width: "100%", borderRadius: "8px", border: "1px solid #e5e7eb" }}
-                      onError={(e) => {
-                        const target = e.currentTarget;
-                        target.style.display = "none";
-                        // If there's an SVG fallback, show it; otherwise show error text
-                        if (section.svg) {
-                          const svgWrapper = document.createElement("div");
-                          svgWrapper.style.cssText = "display:inline-block;width:100%;max-width:560px;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;background:white;";
-                          svgWrapper.innerHTML = section.svg;
-                          target.parentNode?.insertBefore(svgWrapper, target.nextSibling);
-                        } else {
-                          const fallback = document.createElement("p");
-                          fallback.textContent = "[Diagram image could not be loaded]";
-                          fallback.style.cssText = "color:#9ca3af;font-style:italic;font-size:13px;";
-                          target.parentNode?.insertBefore(fallback, target.nextSibling);
-                        }
-                      }}
-                    />
-                  ) : section.svg ? (
-                    <div
-                      style={{ display: "inline-block", width: "100%", maxWidth: "560px", border: "1px solid #e5e7eb", borderRadius: "8px", overflow: "hidden", background: "white" }}
-                      dangerouslySetInnerHTML={{ __html: section.svg }}
-                    />
-                  ) : null}
-                  {section.caption && (
-                    <p style={{ fontSize: `${fmt.fontSize - 2}px`, color: "#6b7280", marginTop: "6px", fontStyle: "italic", fontFamily: fmt.fontFamily }}>
-                      Figure: {section.caption}
-                    </p>
-                  )}
-                  {section.attribution && (
-                    <p style={{ fontSize: `${fmt.fontSize - 3}px`, color: "#9ca3af", marginTop: "2px", fontFamily: fmt.fontFamily }}>
-                      Source: {section.attribution}
-                    </p>
-                  )}
-                </div>
-              ) : section.type === "vocabulary" ? (
-                <VocabSection content={content} fmt={fmt} overlayColor={overlayColor} />
-              ) : section.type === "self-assessment" ? (
-                <SelfAssessmentSection content={content} fmt={fmt} />
-              ) : section.type === "self-reflection" ? (
-                <SelfReflectionSection content={content} fmt={fmt} overlayColor={overlayColor} />
-              ) : (section.type === "word-bank" || section.type === "wordbank") ? (
-                <WordBankSection content={content} fmt={fmt} overlayColor={overlayColor} />
-              ) : section.type === "sentence-starters" ? (
-                <SentenceStartersSection content={content} fmt={fmt} overlayColor={overlayColor} />
-              ) : section.type === "reminder-box" ? (
-                <ReminderBoxSection content={content} fmt={fmt} overlayColor={overlayColor} />
-              ) : section.type === "word-problems" ? (
-                <WordProblemsSection content={content} fmt={fmt} overlayColor={overlayColor} />
-              ) : section.type === "questions" ? (
-                // Questions sections always go through formatContent to properly render math
-                <div>{formatContent(content, fmt)}</div>
-              ) : (section.type === "reading" || section.type === "passage" || section.type === "source-text" || section.type === "comprehension" || /reading.?passage|source.?text|comprehension.?text/i.test(section.title || "")) ? (
-                // Bordered reading passage — slate border with padding per handover spec
-                <div style={{
-                  border: "2px solid #cbd5e1",
-                  borderRadius: "6px",
-                  padding: "16px",
-                  background: "#f8fafc",
-                  lineHeight: "1.8",
-                  fontSize: `${fmt.fontSize}px`,
-                  fontFamily: fmt.fontFamily,
-                  letterSpacing: fmt.letterSpacing,
-                  wordSpacing: fmt.wordSpacing,
-                  color: "#1e293b",
-                }}>
-                  {formatContent(content, fmt)}
-                </div>
-              ) : (
-                <div>{formatContent(content, fmt)}</div>
+              {/* Detect and render inline SVG diagram if content has [[DIAGRAM:{...}]] marker */}
+              {(() => {
+                const diagramSpec = extractDiagramSpec(content);
+                const textContent = diagramSpec ? stripDiagramMarker(content) : null;
+                if (diagramSpec && fmt.theme !== "high-contrast") {
+                  return (
+                    <div>
+                      {textContent && (
+                        <div style={{ marginBottom: "10px" }}>
+                          {section.type === "vocabulary" ? (
+                            <VocabSection content={textContent} fmt={fmt} overlayColor={overlayColor} />
+                          ) : (
+                            formatContent(textContent, fmt)
+                          )}
+                        </div>
+                      )}
+                      <div style={{ margin: "0 auto", maxWidth: "460px" }}>
+                        <SVGDiagram
+                          spec={diagramSpec}
+                          width={440}
+                          height={200}
+                          fontFamily={fmt.fontFamily}
+                          fontSize={fmt.fontSize - 1}
+                          accentColor={fmt.accentColor}
+                        />
+                        <p style={{ fontSize: `${fmt.fontSize - 2}px`, color: "#6b7280", textAlign: "center", marginTop: "4px", fontFamily: fmt.fontFamily, fontStyle: "italic" }}>
+                          Diagram — refer to this when answering the questions above
+                        </p>
+                      </div>
+                    </div>
+                  );
+                }
+                return null;
+              })()}
+              {/* Standard content rendering (no diagram marker) */}
+              {!extractDiagramSpec(content) && (
+                section.type === "diagram" && (section.imageUrl || section.svg) ? (
+                  <div style={{ textAlign: "center" }}>
+                    {section.imageUrl ? (
+                      <img
+                        src={section.imageUrl}
+                        alt={section.caption || "Diagram"}
+                        style={{ maxWidth: "560px", width: "100%", borderRadius: "8px", border: "1px solid #e5e7eb" }}
+                        onError={(e) => {
+                          const target = e.currentTarget;
+                          target.style.display = "none";
+                          if (section.svg) {
+                            const svgWrapper = document.createElement("div");
+                            svgWrapper.style.cssText = "display:inline-block;width:100%;max-width:560px;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;background:white;";
+                            svgWrapper.innerHTML = section.svg;
+                            target.parentNode?.insertBefore(svgWrapper, target.nextSibling);
+                          } else {
+                            const fallback = document.createElement("div");
+                            fallback.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;gap:8px;padding:24px;border:1px dashed #d1d5db;border-radius:8px;background:#f9fafb;max-width:560px;"><span style="font-size:22px">🖼️</span><span style="color:#6b7280;font-style:italic;font-size:13px;">Diagram unavailable — the image could not be loaded.<br><span style=\"font-size:11px;color:#9ca3af\">Tip: ensure you have an internet connection and try regenerating.</span></span></div>';
+                            target.parentNode?.insertBefore(fallback, target.nextSibling);
+                          }
+                        }}
+                      />
+                    ) : section.svg ? (
+                      <div
+                        style={{ display: "inline-block", width: "100%", maxWidth: "560px", border: "1px solid #e5e7eb", borderRadius: "8px", overflow: "hidden", background: "white" }}
+                        dangerouslySetInnerHTML={{ __html: section.svg }}
+                      />
+                    ) : null}
+                    {section.caption && (
+                      <p style={{ fontSize: `${fmt.fontSize - 2}px`, color: "#6b7280", marginTop: "6px", fontStyle: "italic", fontFamily: fmt.fontFamily }}>
+                        Figure: {section.caption}
+                      </p>
+                    )}
+                    {section.attribution && (
+                      <p style={{ fontSize: `${fmt.fontSize - 3}px`, color: "#9ca3af", marginTop: "2px", fontFamily: fmt.fontFamily }}>
+                        Source: {section.attribution}
+                      </p>
+                    )}
+                  </div>
+                ) : section.type === "vocabulary" ? (
+                  <VocabSection content={content} fmt={fmt} overlayColor={overlayColor} />
+                ) : section.type === "self-assessment" ? (
+                  <SelfAssessmentSection content={content} fmt={fmt} />
+                ) : section.type === "self-reflection" ? (
+                  <SelfReflectionSection content={content} fmt={fmt} overlayColor={overlayColor} />
+                ) : (section.type === "word-bank" || section.type === "wordbank") ? (
+                  <WordBankSection content={content} fmt={fmt} overlayColor={overlayColor} />
+                ) : section.type === "sentence-starters" ? (
+                  <SentenceStartersSection content={content} fmt={fmt} overlayColor={overlayColor} />
+                ) : section.type === "reminder-box" ? (
+                  <ReminderBoxSection content={content} fmt={fmt} overlayColor={overlayColor} />
+                ) : section.type === "word-problems" ? (
+                  <WordProblemsSection content={content} fmt={fmt} overlayColor={overlayColor} />
+                ) : section.type === "questions" ? (
+                  <div>{formatContent(content, fmt)}</div>
+                ) : (section.type === "reading" || section.type === "passage" || section.type === "source-text" || section.type === "comprehension" || /reading.?passage|source.?text|comprehension.?text/i.test(section.title || "")) ? (
+                  <div style={{
+                    border: "2px solid #cbd5e1",
+                    borderRadius: "6px",
+                    padding: "16px",
+                    background: "#f8fafc",
+                    lineHeight: "1.8",
+                    fontSize: `${fmt.fontSize}px`,
+                    fontFamily: fmt.fontFamily,
+                    letterSpacing: fmt.letterSpacing,
+                    wordSpacing: fmt.wordSpacing,
+                    color: "#1e293b",
+                  }}>
+                    {formatContent(content, fmt)}
+                  </div>
+                ) : (
+                  <div>{formatContent(content, fmt)}</div>
+                )
               )}
 
               {/* Answer boxes for practice sections — size-controlled, removable in edit mode */}
               {!isTeacherSection && (section.type === "independent" || section.type === "guided" || section.type === "challenge") && !/(sentence starter:|steps to follow:|quick start:|what you need to do:|help box|key facts|word bank)/i.test(String(content || "")) && (() => {
-                const lineCount = getAnswerLines(i, section.type);
+                const lineCount = getAnswerLines(i, section.type, String(content || ""));
                 // lineCount === 0 means the user removed the answer box
                 if (lineCount === 0) {
                   // In edit mode, show a placeholder so the user can restore it
@@ -1952,7 +2642,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                         <button
                           className="no-print"
                           onClick={(e) => { e.stopPropagation(); onAnswerBoxSizeChange?.(i, DEFAULT_ANSWER_LINES[section.type] ?? 4); }}
-                          style={{ fontSize: "11px", padding: "2px 8px", borderRadius: "4px", border: "1px solid #5b21b6", background: "#ede9fe", color: "#5b21b6", cursor: "pointer", fontWeight: 600 }}
+                          style={{ fontSize: "11px", padding: "2px 8px", borderRadius: "4px", border: "1px solid #4f46e5", background: "#ede9fe", color: "#4f46e5", cursor: "pointer", fontWeight: 600 }}
                         >+ Restore</button>
                       </div>
                     );
@@ -1965,7 +2655,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                     {/* Edit mode controls */}
                     {editMode && (
                       <div className="no-print" style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "8px", flexWrap: "wrap" }}>
-                        <span style={{ fontSize: "11px", fontWeight: 600, color: "#5b21b6", fontFamily: fmt.fontFamily }}>Answer box:</span>
+                        <span style={{ fontSize: "11px", fontWeight: 600, color: "#4f46e5", fontFamily: fmt.fontFamily }}>Answer box:</span>
                         <button
                           onClick={(e) => { e.stopPropagation(); onAnswerBoxSizeChange?.(i, Math.max(1, lineCount - 1)); }}
                           style={{ width: "24px", height: "24px", borderRadius: "4px", border: "1px solid #d1d5db", background: "#f9fafb", cursor: "pointer", fontWeight: 700, fontSize: "14px", display: "flex", alignItems: "center", justifyContent: "center", color: "#374151" }}
@@ -2010,14 +2700,14 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
         padding: "5px 10px",
         background: overlayColor || "#ffffff",
         borderRadius: "4px",
-        border: "1.5px solid #5b21b6",
+        border: "1.5px solid #4f46e5",
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
         flexWrap: "wrap",
         gap: "4px",
         fontSize: "10px",
-        color: "#5b21b6",
+        color: "#4f46e5",
         fontFamily: fmt.fontFamily,
       }}>
         <span style={{ fontWeight: 600 }}>Generated by Adaptly</span>

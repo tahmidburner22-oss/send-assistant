@@ -10,12 +10,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { useApp } from "@/contexts/AppContext";
+import { useLocation } from "wouter";
 import { pupils as pupilsApi, data as dataApi } from "@/lib/api";
 import { sendNeeds } from "@/lib/send-data";
 import {
   Plus, TrendingUp, TrendingDown, Minus, Calendar, Clock,
   CheckCircle, AlertCircle, Star, Shield, BarChart3, FileText,
-  Printer, ChevronLeft, Smile, Frown, Meh, Zap, Heart, Database, MessageSquare, Send, Download
+  Printer, ChevronLeft, Smile, Frown, Meh, Zap, Heart, Database, MessageSquare, Send, Download, FileCheck
 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Legend } from "recharts";
 
@@ -77,6 +78,7 @@ function getBehaviourColor(type: BehaviourType) {
 
 export default function BehaviourTracking() {
   const { children } = useApp();
+  const [, setLocation] = useLocation();
   const [entries, setEntries] = useState<BehaviourEntry[]>([]);
   const [selectedChildId, setSelectedChildId] = useState<string>("");
   const [loadingEntries, setLoadingEntries] = useState(false);
@@ -279,6 +281,36 @@ export default function BehaviourTracking() {
           <div className="flex gap-2 flex-wrap">
             <Button variant="outline" size="sm" onClick={handlePrint}><Printer className="w-4 h-4 mr-1" /> Print Report</Button>
             <Button variant="outline" size="sm" onClick={handleExportCSV}><Download className="w-4 h-4 mr-1" /> Export CSV</Button>
+            {selectedChildId && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="gap-1.5 border-violet-300 text-violet-700 hover:bg-violet-50"
+                onClick={() => {
+                  const child = children.find(c => c.id === selectedChildId);
+                  if (!child) return;
+                  const concerns = entries.filter(e => e.type === "concern").slice(0, 10);
+                  const positives = entries.filter(e => e.type === "positive").slice(0, 5);
+                  sessionStorage.setItem("ehcp_behaviour_evidence", JSON.stringify({
+                    pupilName: child.name,
+                    yearGroup: child.yearGroup,
+                    sendNeed: child.sendNeed,
+                    totalEntries: entries.length,
+                    concernCount: entries.filter(e => e.type === "concern").length,
+                    positiveCount: entries.filter(e => e.type === "positive").length,
+                    positiveRate: Math.round((entries.filter(e => e.type === "positive").length / Math.max(entries.length, 1)) * 100),
+                    topTrigger: entries.filter(e => e.trigger).reduce((acc: Record<string, number>, e) => { acc[e.trigger!] = (acc[e.trigger!] || 0) + 1; return acc; }, {}),
+                    recentConcerns: concerns.map(e => `${e.date}: [${e.category}] ${e.description}`).join("\n"),
+                    recentPositives: positives.map(e => `${e.date}: [${e.category}] ${e.description}`).join("\n"),
+                    dateRange: entries.length > 0 ? `${entries[entries.length-1]?.date} to ${entries[0]?.date}` : "No records",
+                  }));
+                  toast.success("Behaviour data prepared — opening EHCP generator");
+                  setTimeout(() => setLocation("/tools/iep-generator"), 400);
+                }}
+              >
+                <FileCheck className="w-4 h-4 mr-1" /> Use as EHCP Evidence
+              </Button>
+            )}
             {selectedChildId && (
               <>
                 <Button variant="outline" size="sm" onClick={() => setShowParentMessage(true)} className="border-brand/40 text-brand hover:bg-brand/5">

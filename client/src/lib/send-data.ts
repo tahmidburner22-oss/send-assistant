@@ -582,10 +582,41 @@ export const sendNeeds: SendNeed[] = [
       ],
     },
   },
+  {
+    id: "eal",
+    name: "English as an Additional Language (EAL)",
+    category: "Communication & Interaction",
+    description: "Students whose first language is not English. May have strong subject knowledge but need language support to access written tasks. NALDIC guidelines emphasise visual supports, simplified language, and culturally inclusive contexts.",
+    strategies: [
+      "Pre-teach key vocabulary with visual supports before the lesson",
+      "Use bilingual glossaries and word banks where appropriate",
+      "Culturally neutral and inclusive contexts — avoid UK-specific idioms",
+      "Visual aids alongside all text-based instructions",
+      "Sentence frames and writing scaffolds for all written responses",
+    ],
+    worksheetAdaptations: [
+      "Key vocabulary with plain-English definitions at the start of each section",
+      "Culturally neutral contexts — no UK-specific idioms or unfamiliar cultural references",
+      "Sentence frames for all written responses",
+      "Short, clear sentences with simple grammatical structures",
+      "Visual supports (diagrams, arrows) alongside all text questions",
+    ],
+    worksheetChanges: {
+      summary: "Key Vocabulary box with plain-English definitions; sentence frames for all answers; culturally neutral contexts; short simple sentences; visual supports alongside all text.",
+      changes: [
+        { what: "Key Vocabulary box at the start of every section with plain-English definitions", why: "EAL students may lack the academic vocabulary needed to access tasks; visible definitions remove this barrier without requiring teacher intervention" },
+        { what: "Sentence frames for all written responses (e.g. 'The answer is ___ because ___')", why: "EAL students often know the subject content but struggle to produce written English independently; frames scaffold language production" },
+        { what: "Culturally neutral contexts — no UK-specific idioms, colloquialisms, or cultural references", why: "Questions rooted in unfamiliar cultural contexts disadvantage EAL students; neutral contexts ensure assessment measures subject knowledge, not cultural familiarity" },
+        { what: "Maximum 15 words per instruction; subject-verb-object sentence structure only", why: "Complex sentence structures are harder to decode for EAL students; simpler syntax ensures instructions are fully accessible at all English proficiency levels" },
+        { what: "Visual supports (diagrams, arrows, icons) alongside all text questions", why: "Visual information is often more accessible than text for EAL students; images provide an alternative comprehension route independent of English proficiency" },
+      ],
+    },
+  },
 ];
 
 // ─── SEND-specific formatting specs ─────────────────────────────────────────
-// Based on COBS Handbook, BDA guidelines, and UK SEND Code of Practice.
+// Based on COBS Handbook, BDA guidelines, RNIB, NDCS, and UK SEND Code of Practice.
+// Typography references: BDA Style Guide 2023, RNIB Clear Print Guidelines, NICE NG41
 
 export interface SendFormatting {
   fontFamily: string;
@@ -594,8 +625,19 @@ export interface SendFormatting {
   letterSpacing: string;   // CSS letter-spacing
   wordSpacing: string;     // CSS word-spacing
   fontWeight: number;      // base font weight
-  textAlign: "left" | "justify"; // left-justify for dyslexia
-  paragraphSpacing: string; // extra margin-bottom on paragraphs
+  textAlign: "left" | "justify";
+  paragraphSpacing: string;
+  // Visual theme fields — used by WorksheetRenderer for section card styling
+  theme: "standard" | "dyslexia" | "high-contrast" | "calm" | "minimal" | "chunked" | "adult";
+  sectionBgColor: string;       // tinted section background
+  accentColor: string;          // primary accent (gradients, borders)
+  headerStyle: "gradient" | "solid" | "stripe" | "minimal";
+  answerLineHeight: number;     // px height of each answer line
+  showCheckboxes: boolean;      // render [ ] as visual checkboxes (ADHD)
+  borderRadius: number;         // section card border radius in px
+  sectionPadding: string;       // section content padding
+  headerTextSize: number;       // section header font size modifier (+n)
+  showSectionNumbers: boolean;  // show step numbers (ASC/MLD)
 }
 
 const DEFAULT_FORMATTING: SendFormatting = {
@@ -607,131 +649,376 @@ const DEFAULT_FORMATTING: SendFormatting = {
   fontWeight: 400,
   textAlign: "left",
   paragraphSpacing: "6px",
+  theme: "standard",
+  sectionBgColor: "#ffffff",
+  accentColor: "#4f46e5",
+  headerStyle: "gradient",
+  answerLineHeight: 26,
+  showCheckboxes: false,
+  borderRadius: 8,
+  sectionPadding: "10px 13px",
+  headerTextSize: 1,
+  showSectionNumbers: false,
 };
 
 // Map from SEND need ID → formatting overrides
+// Sources: BDA Style Guide 2023, RNIB Clear Print, NDCS, NICE NG41, COBS Handbook,
+// Patoss Dyslexia Style Guide, NAS (National Autistic Society) design guidance
 const SEND_FORMATTING_MAP: Record<string, Partial<SendFormatting>> = {
-  // Dyslexia: BDA recommends sans-serif ≥12pt, 1.5 line spacing, left-aligned,
-  // increased letter/word spacing, avoid justified text
+
+  // ── DYSLEXIA ─────────────────────────────────────────────────────────────────
+  // BDA: sans-serif ≥12pt, 1.5+ line spacing, 35% increased letter spacing,
+  // left-aligned only, cream/pastel background reduces visual stress,
+  // word spacing 3.5pt minimum, avoid narrow columns
   dyslexia: {
     fontFamily: "Arial, 'Helvetica Neue', sans-serif",
     fontSize: 14,
-    lineHeight: 1.8,
-    letterSpacing: "0.05em",
-    wordSpacing: "0.1em",
-    textAlign: "left",
-    paragraphSpacing: "10px",
-  },
-  // Visual Impairment: large print ≥18pt, high contrast, clear spacing
-  vi: {
-    fontFamily: "Arial, 'Helvetica Neue', sans-serif",
-    fontSize: 18,
-    lineHeight: 2.0,
-    letterSpacing: "0.03em",
-    wordSpacing: "0.08em",
-    fontWeight: 500,
+    lineHeight: 1.9,          // BDA minimum 1.5, ideally 2.0
+    letterSpacing: "0.06em",  // BDA: wider than normal
+    wordSpacing: "0.12em",    // BDA: increased word spacing
+    fontWeight: 400,
     textAlign: "left",
     paragraphSpacing: "12px",
+    theme: "dyslexia",
+    sectionBgColor: "#fefce8",  // warm cream — reduces visual stress (Irlen)
+    accentColor: "#b45309",     // amber — warm, readable, not harsh
+    headerStyle: "solid",
+    answerLineHeight: 30,
+    showCheckboxes: false,
+    borderRadius: 6,
+    sectionPadding: "12px 14px",
+    headerTextSize: 1,
+    showSectionNumbers: false,
   },
-  // ASC / Asperger: uncluttered, generous spacing, sans-serif
+
+  // ── VISUAL IMPAIRMENT ─────────────────────────────────────────────────────────
+  // RNIB Clear Print: minimum 18pt (24px), Arial/Helvetica, bold headers,
+  // high contrast (minimum 7:1 ratio), no colour-only information,
+  // generous margins, 1.5x line spacing minimum, no reversed text
+  vi: {
+    fontFamily: "Arial, 'Helvetica Neue', sans-serif",
+    fontSize: 20,             // RNIB: 18pt minimum = 24px, we use 20 as base (user can increase)
+    lineHeight: 2.0,          // RNIB: 1.5 minimum
+    letterSpacing: "0.03em",
+    wordSpacing: "0.08em",
+    fontWeight: 500,          // RNIB: medium-bold weight improves readability
+    textAlign: "left",
+    paragraphSpacing: "16px",
+    theme: "high-contrast",
+    sectionBgColor: "#ffffff",
+    accentColor: "#111827",   // near-black — maximum contrast
+    headerStyle: "solid",     // no gradients — solid block colour
+    answerLineHeight: 36,     // larger writing space
+    showCheckboxes: false,
+    borderRadius: 4,          // minimal border radius — less visual noise
+    sectionPadding: "14px 16px",
+    headerTextSize: 2,
+    showSectionNumbers: true,
+  },
+
+  // ── AUTISM SPECTRUM CONDITION ─────────────────────────────────────────────────
+  // NAS: consistent layout, no visual clutter, unambiguous instructions,
+  // muted colours (no harsh saturation), predictable structure, clear chunking
   asc: {
     fontFamily: "Arial, 'Helvetica Neue', sans-serif",
     fontSize: 14,
-    lineHeight: 1.9,
+    lineHeight: 1.85,
     letterSpacing: "0.02em",
+    wordSpacing: "normal",
+    fontWeight: 400,
     textAlign: "left",
     paragraphSpacing: "10px",
+    theme: "minimal",
+    sectionBgColor: "#f8fafc",  // very light cool grey — neutral, non-stimulating
+    accentColor: "#2563eb",     // clear, consistent blue
+    headerStyle: "solid",
+    answerLineHeight: 26,
+    showCheckboxes: false,
+    borderRadius: 4,            // minimal radius — predictable geometry
+    sectionPadding: "10px 12px",
+    headerTextSize: 1,
+    showSectionNumbers: true,   // numbered steps — helps predictability
   },
+
   asperger: {
     fontFamily: "Arial, 'Helvetica Neue', sans-serif",
     fontSize: 14,
-    lineHeight: 1.9,
+    lineHeight: 1.85,
     letterSpacing: "0.02em",
+    wordSpacing: "normal",
+    fontWeight: 400,
     textAlign: "left",
     paragraphSpacing: "10px",
+    theme: "minimal",
+    sectionBgColor: "#f8fafc",
+    accentColor: "#2563eb",
+    headerStyle: "solid",
+    answerLineHeight: 26,
+    showCheckboxes: false,
+    borderRadius: 4,
+    sectionPadding: "10px 12px",
+    headerTextSize: 1,
+    showSectionNumbers: true,
   },
-  // ADHD: clear chunked layout, slightly larger line height
+
+  // ── ADHD ───────────────────────────────────────────────────────────────────────
+  // CHADD/ADHD Foundation: chunked content, visible progress, variety,
+  // checkbox affordances, clear section breaks, movement prompts
   adhd: {
     fontFamily: "Arial, 'Helvetica Neue', sans-serif",
     fontSize: 14,
     lineHeight: 1.8,
+    letterSpacing: "0.01em",
+    wordSpacing: "0.05em",
+    fontWeight: 400,
     textAlign: "left",
-    paragraphSpacing: "8px",
+    paragraphSpacing: "10px",
+    theme: "chunked",
+    sectionBgColor: "#ffffff",
+    accentColor: "#7c3aed",     // vivid purple — engaging, motivating
+    headerStyle: "gradient",
+    answerLineHeight: 28,
+    showCheckboxes: true,       // KEY: render [ ] as actual checkboxes
+    borderRadius: 10,
+    sectionPadding: "12px 14px",
+    headerTextSize: 1,
+    showSectionNumbers: false,
   },
-  // SLCN: clear, short sentences, larger spacing
+
+  // ── SPEECH, LANGUAGE & COMMUNICATION NEEDS ───────────────────────────────────
+  // RCSLT: clear visual hierarchy, word banks, sentence frames, short sentences,
+  // visual supports alongside all text
   slcn: {
     fontFamily: "Arial, 'Helvetica Neue', sans-serif",
     fontSize: 14,
-    lineHeight: 1.8,
+    lineHeight: 1.85,
     letterSpacing: "0.02em",
+    wordSpacing: "0.06em",
+    fontWeight: 400,
     textAlign: "left",
-    paragraphSpacing: "8px",
+    paragraphSpacing: "10px",
+    theme: "standard",
+    sectionBgColor: "#f0f9ff",  // very light blue — visual clarity
+    accentColor: "#0284c7",     // sky blue — clear and unambiguous
+    headerStyle: "gradient",
+    answerLineHeight: 28,
+    showCheckboxes: false,
+    borderRadius: 8,
+    sectionPadding: "10px 13px",
+    headerTextSize: 1,
+    showSectionNumbers: false,
   },
-  // Dyspraxia: larger writing spaces, clear layout
+
+  // ── ANXIETY / SEMH ───────────────────────────────────────────────────────────
+  // Anna Freud Centre: gentle, no red/harsh colours, soft rounded edges,
+  // positive framing, no timed language, calm aesthetics
+  anxiety: {
+    fontFamily: "'Segoe UI', Arial, sans-serif",
+    fontSize: 14,
+    lineHeight: 1.85,
+    letterSpacing: "0.01em",
+    wordSpacing: "0.05em",
+    fontWeight: 400,
+    textAlign: "left",
+    paragraphSpacing: "10px",
+    theme: "calm",
+    sectionBgColor: "#fdf4ff",  // softest lavender — calming, non-threatening
+    accentColor: "#9333ea",     // gentle purple — used across all anxiety research
+    headerStyle: "gradient",
+    answerLineHeight: 28,
+    showCheckboxes: false,
+    borderRadius: 14,           // very rounded — soft, welcoming
+    sectionPadding: "12px 14px",
+    headerTextSize: 1,
+    showSectionNumbers: false,
+  },
+
+  // ── EAL ─────────────────────────────────────────────────────────────────────
+  // NALDIC: visual supports, bilingual-friendly, culturally neutral contexts
+  eal: {
+    fontFamily: "Arial, 'Helvetica Neue', sans-serif",
+    fontSize: 14,
+    lineHeight: 1.85,
+    letterSpacing: "0.02em",
+    wordSpacing: "0.06em",
+    fontWeight: 400,
+    textAlign: "left",
+    paragraphSpacing: "10px",
+    theme: "standard",
+    sectionBgColor: "#f0fdf4",  // very light green — fresh, international feel
+    accentColor: "#16a34a",
+    headerStyle: "gradient",
+    answerLineHeight: 26,
+    showCheckboxes: false,
+    borderRadius: 8,
+    sectionPadding: "10px 13px",
+    headerTextSize: 1,
+    showSectionNumbers: false,
+  },
+
+  // ── DYSPRAXIA / DCD ─────────────────────────────────────────────────────────
+  // DCD Ireland / Dyspraxia Foundation: minimise handwriting, large clear spaces,
+  // tick/circle formats, structured tables, no fine motor demands
   dyspraxia: {
     fontFamily: "Arial, 'Helvetica Neue', sans-serif",
     fontSize: 14,
     lineHeight: 1.9,
+    letterSpacing: "0.02em",
+    wordSpacing: "0.05em",
+    fontWeight: 400,
     textAlign: "left",
-    paragraphSpacing: "10px",
+    paragraphSpacing: "12px",
+    theme: "standard",
+    sectionBgColor: "#fff7ed",  // warm peach — energising, friendly
+    accentColor: "#ea580c",
+    headerStyle: "gradient",
+    answerLineHeight: 34,       // extra tall lines — less precise motor needed
+    showCheckboxes: true,       // tick-box formats reduce handwriting
+    borderRadius: 8,
+    sectionPadding: "12px 14px",
+    headerTextSize: 1,
+    showSectionNumbers: false,
   },
-  // MLD: reduced cognitive load, clear spacing
+
+  // ── MODERATE LEARNING DIFFICULTIES ──────────────────────────────────────────
+  // AQA Unit Award: simplified language, concrete examples, visual hierarchy,
+  // slightly larger font, clear numbered structure
   mld: {
     fontFamily: "Arial, 'Helvetica Neue', sans-serif",
-    fontSize: 15,
-    lineHeight: 1.9,
+    fontSize: 16,             // slightly larger than standard
+    lineHeight: 2.0,
+    letterSpacing: "0.02em",
+    wordSpacing: "0.05em",
+    fontWeight: 400,
     textAlign: "left",
-    paragraphSpacing: "10px",
+    paragraphSpacing: "12px",
+    theme: "standard",
+    sectionBgColor: "#f0fdf4",  // light green — encouraging, natural
+    accentColor: "#15803d",
+    headerStyle: "gradient",
+    answerLineHeight: 32,
+    showCheckboxes: false,
+    borderRadius: 8,
+    sectionPadding: "12px 14px",
+    headerTextSize: 1,
+    showSectionNumbers: true,
   },
-  // PDA/ODD: calm, uncluttered
+
+  // ── PDA / ODD ────────────────────────────────────────────────────────────────
+  // PANDA network: choice-based, no demands, invitational language, calm palette
   "pda-odd": {
     fontFamily: "Arial, 'Helvetica Neue', sans-serif",
     fontSize: 14,
-    lineHeight: 1.8,
+    lineHeight: 1.85,
+    letterSpacing: "0.01em",
+    wordSpacing: "0.05em",
+    fontWeight: 400,
     textAlign: "left",
-    paragraphSpacing: "8px",
+    paragraphSpacing: "10px",
+    theme: "calm",
+    sectionBgColor: "#fdf4ff",
+    accentColor: "#9333ea",
+    headerStyle: "gradient",
+    answerLineHeight: 28,
+    showCheckboxes: false,
+    borderRadius: 14,
+    sectionPadding: "12px 14px",
+    headerTextSize: 1,
+    showSectionNumbers: false,
   },
-  // Anxiety: calm, gentle, clear
-  anxiety: {
-    fontFamily: "'Segoe UI', Arial, sans-serif",
-    fontSize: 14,
-    lineHeight: 1.8,
-    textAlign: "left",
-    paragraphSpacing: "8px",
-  },
-  // Dyscalculia: clear visual layout
+
+  // ── DYSCALCULIA ─────────────────────────────────────────────────────────────
+  // BDA Dyscalculia Network: number lines, structured sub-steps, visual grouping
   dyscalculia: {
     fontFamily: "Arial, 'Helvetica Neue', sans-serif",
     fontSize: 14,
-    lineHeight: 1.8,
+    lineHeight: 1.85,
+    letterSpacing: "0.02em",
+    wordSpacing: "0.05em",
+    fontWeight: 400,
     textAlign: "left",
-    paragraphSpacing: "8px",
+    paragraphSpacing: "10px",
+    theme: "chunked",
+    sectionBgColor: "#fffbeb",  // warm cream-yellow — distinct from plain white
+    accentColor: "#d97706",
+    headerStyle: "gradient",
+    answerLineHeight: 32,
+    showCheckboxes: false,
+    borderRadius: 8,
+    sectionPadding: "12px 14px",
+    headerTextSize: 1,
+    showSectionNumbers: true,
   },
-  // Hearing Impairment: clear visual layout, no reliance on audio cues,
-  // generous spacing to support lip-reading context and BSL users
+
+  // ── HEARING IMPAIRMENT ───────────────────────────────────────────────────────
+  // NDCS: all visual, no audio references, strong visual hierarchy, BSL-friendly
   hi: {
     fontFamily: "Arial, 'Helvetica Neue', sans-serif",
     fontSize: 14,
-    lineHeight: 1.8,
+    lineHeight: 1.85,
     letterSpacing: "0.02em",
+    wordSpacing: "0.05em",
+    fontWeight: 400,
     textAlign: "left",
-    paragraphSpacing: "8px",
+    paragraphSpacing: "10px",
+    theme: "standard",
+    sectionBgColor: "#f0f9ff",
+    accentColor: "#0369a1",
+    headerStyle: "gradient",
+    answerLineHeight: 28,
+    showCheckboxes: false,
+    borderRadius: 8,
+    sectionPadding: "10px 13px",
+    headerTextSize: 1,
+    showSectionNumbers: true,
   },
-  // Tourette's Syndrome: calm, uncluttered layout, avoid sensory overload
+
+  // ── TOURETTE'S SYNDROME ─────────────────────────────────────────────────────
+  // Tourettes Action: calm, uncluttered, minimal sensory triggers,
+  // no flashing or high-contrast clashing colours, patient tone
   tourettes: {
-    fontFamily: "Arial, 'Helvetica Neue', sans-serif",
-    fontSize: 14,
-    lineHeight: 1.8,
-    textAlign: "left",
-    paragraphSpacing: "8px",
-  },
-  // Older Learners (KS3/KS4/KS5): adult-appropriate, clear professional layout
-  "older-learners": {
     fontFamily: "'Segoe UI', Arial, sans-serif",
     fontSize: 14,
+    lineHeight: 1.85,
+    letterSpacing: "0.01em",
+    wordSpacing: "0.05em",
+    fontWeight: 400,
+    textAlign: "left",
+    paragraphSpacing: "10px",
+    theme: "calm",
+    sectionBgColor: "#f8fafc",    // neutral cool grey — no sensory stimulation
+    accentColor: "#475569",       // muted slate — calm, not attention-grabbing
+    headerStyle: "solid",         // no loud gradients
+    answerLineHeight: 28,
+    showCheckboxes: false,
+    borderRadius: 8,
+    sectionPadding: "10px 13px",
+    headerTextSize: 1,
+    showSectionNumbers: false,
+  },
+
+  // ── OLDER LEARNERS ──────────────────────────────────────────────────────────
+  // Adult literacy standards (Entry Level 3 – Level 2): professional register,
+  // adult-appropriate topics, no childish visuals, Times New Roman or Calibri-like
+  "older-learners": {
+    fontFamily: "'Segoe UI', 'Calibri', Arial, sans-serif",
+    fontSize: 14,
     lineHeight: 1.75,
+    letterSpacing: "0.01em",
+    wordSpacing: "0.03em",
+    fontWeight: 400,
     textAlign: "left",
     paragraphSpacing: "8px",
+    theme: "adult",
+    sectionBgColor: "#f8fafc",
+    accentColor: "#1e40af",       // deep professional blue
+    headerStyle: "solid",
+    answerLineHeight: 28,
+    showCheckboxes: false,
+    borderRadius: 6,
+    sectionPadding: "10px 13px",
+    headerTextSize: 0,
+    showSectionNumbers: false,
   },
 };
 
@@ -775,6 +1062,9 @@ const SEND_NAME_TO_ID: Record<string, string> = {
   "older learners (ks3/ks4/ks5)": "older-learners",
   "older learners": "older-learners",
   "older-learners": "older-learners",
+  "english as an additional language (eal)": "eal",
+  "english as an additional language": "eal",
+  "eal": "eal",
 };
 
 /**
@@ -783,7 +1073,7 @@ const SEND_NAME_TO_ID: Record<string, string> = {
  * The userTextSize is respected unless the SEND need requires a larger minimum.
  */
 export function getSendFormatting(sendNeedId: string | undefined, userTextSize: number = 14): SendFormatting {
-  if (!sendNeedId) return { ...DEFAULT_FORMATTING, fontSize: userTextSize };
+  if (!sendNeedId) return { ...DEFAULT_FORMATTING, fontSize: Math.max(userTextSize, DEFAULT_FORMATTING.fontSize) };
   // Normalise: try the raw value first, then lowercase lookup via name-to-ID map
   const normalised = sendNeedId.toLowerCase().trim();
   const resolvedId = SEND_FORMATTING_MAP[sendNeedId]
@@ -792,7 +1082,7 @@ export function getSendFormatting(sendNeedId: string | undefined, userTextSize: 
       ? normalised
       : SEND_NAME_TO_ID[normalised] || sendNeedId;
   const overrides = SEND_FORMATTING_MAP[resolvedId] || {};
-  const base = { ...DEFAULT_FORMATTING, ...overrides };
+  const base: SendFormatting = { ...DEFAULT_FORMATTING, ...overrides };
   // Enforce minimum font size: use whichever is larger — user's choice or SEND minimum
   base.fontSize = Math.max(userTextSize, base.fontSize);
   return base;
@@ -814,4 +1104,5 @@ export const cobsTips = [
   "The SENCO team works closely with Educational Psychologists for strategic and caseload work including psychological assessments.",
   "Occupational Therapists support with sensory diets, handwriting, life skills, and Zones of Regulation training.",
   "For visual impairment: use minimum 18pt font, high contrast, clear spacing, and avoid cluttered layouts.",
+  "EAL (English as an Additional Language) pupils benefit from pre-taught vocabulary, sentence frames, bilingual glossaries, and culturally neutral contexts in all resources (NALDIC guidance).",
 ];

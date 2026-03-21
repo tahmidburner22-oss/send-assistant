@@ -46,6 +46,9 @@ function isPremiumSchool(schoolId: string, userEmail?: string): boolean {
 
 // ── Helper: decrypt a stored MIS API key ─────────────────────────────────────
 const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || "adaptly-default-key-32-chars-pad";
+if (process.env.NODE_ENV === "production" && !process.env.ENCRYPTION_KEY) {
+  console.error("[SECURITY] WARNING: ENCRYPTION_KEY is not set. MIS API keys will use a weak default. Set ENCRYPTION_KEY in Railway environment variables.");
+}
 const KEY_BUF = Buffer.from(ENCRYPTION_KEY.padEnd(32).slice(0, 32));
 
 function decryptKey(encryptedB64: string, ivB64: string): string {

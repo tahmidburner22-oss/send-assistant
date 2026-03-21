@@ -143,7 +143,7 @@ export default function PupilPassport() {
         { id: "goals", label: "Current Targets / Goals", type: "textarea", placeholder: "Current IEP/EHCP targets or focus areas", span: "full" },
       ]}
       buildPrompt={(v) => ({
-        system: `You are an expert SENCO creating a professional, person-centred Pupil Passport. Pupil Passports are one-page documents that give all staff a quick, clear picture of a student — their strengths, needs, and how to support them. They are written in a positive, strengths-based way and are practical for teachers to use.`,
+        system: `You are an expert SENCO creating a professional, person-centred Pupil Passport. You have a strict rule: NEVER place the same information in two different sections. Section 4 (What Helps Me Learn) contains ONLY classroom strategies — specific teacher actions. Section 7 (Please Remember) contains ONLY the top 3-5 most critical facts that a supply teacher needs in the first 5 minutes. These two sections must have completely different content. If you find yourself writing the same point in both, delete it from the less appropriate section.`,
         user: `Create a Pupil Passport for:
 
 Name: ${v.studentName}
@@ -161,16 +161,29 @@ ${v.strategies ? `What Helps:\n${v.strategies}` : ""}
 ${v.communication ? `Communication:\n${v.communication}` : ""}
 ${v.goals ? `Current Targets:\n${v.goals}` : ""}
 
-Format as a professional Pupil Passport with these exact section headings (use **bold** markdown):
-1. **About Me** — brief, positive introduction in first person ("I am...")
-2. **My Strengths** — what I'm good at and love
-3. **What I Find Challenging** — honest but positive framing
-4. **What Helps Me Learn** — practical strategies for teachers
-5. **How to Communicate with Me** — communication preferences
-6. **My Current Goals** — targets I'm working towards
-7. **Please Remember** — 3-5 key bullet points for all staff
+Format as a professional Pupil Passport with these exact section headings (use **bold** markdown).
+CRITICAL — the two most commonly confused sections are 4 and 7. Read these definitions carefully:
 
-Write in a warm, positive, person-centred style. Keep it concise.`,
+1. **About Me** — brief, positive introduction in first person ("I am..."). 1-2 sentences.
+
+2. **My Strengths** — specific things this student is good at and loves. Use the strengths provided. 3-5 bullet points.
+
+3. **What I Find Challenging** — honest but positively framed barriers. 3-5 bullet points.
+
+4. **What Helps Me Learn** — ONLY practical, actionable classroom strategies for teachers to use DURING lessons.
+   Examples of what belongs here: "Provide written instructions alongside verbal ones", "Allow extra processing time", "Seat near the front away from distractions", "Use visual timetables".
+   DO NOT put headline reminders here. DO NOT put general facts about the student here. ONLY specific teaching strategies.
+
+5. **How to Communicate with Me** — communication preferences and tips. How to give instructions, how this student prefers to respond, any AAC or communication tools.
+
+6. **My Current Goals** — 2-3 current SMART targets or goals this student is working towards.
+
+7. **Please Remember** — ONLY 3-5 SHORT, memorable bullet points that ALL staff (including supply teachers who don't know this student) must know immediately.
+   Examples of what belongs here: "Alex uses a visual schedule — always show it before transitions", "Do not ask Alex to read aloud in class", "Alex may need to leave the room if overwhelmed — this is agreed".
+   DO NOT put detailed strategies here — those go in section 4. DO NOT repeat content from "What Helps Me Learn".
+   Each point should be something a staff member could act on in the first 5 minutes of meeting this student.
+
+Write in a warm, positive, person-centred style. Keep the entire passport to one page.`,
         maxTokens: 2000,
       })}
       formatOutput={(text) => formatPassport(text, preferences.schoolLogoUrl, preferences.schoolName)}

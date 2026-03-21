@@ -57,8 +57,10 @@ export default function Terms() {
           <h2>7. Acceptable Use</h2>
           <p>The Licensee and Users must not use the Platform to generate, store, or distribute illegal, harmful, or offensive content; process special category personal data of children without appropriate legal basis; circumvent any security measures; attempt to reverse-engineer or copy the Platform; or use the Platform in any way that violates applicable law or professional standards.</p>
 
-          <h2>8. Eligibility</h2>
-          <p>The Platform is intended for use by qualified teachers, teaching assistants, SENCOs, and school administrators. Users must be 18 or over. The Platform is not intended for direct use by pupils.</p>
+          <h2>8. Eligibility and Intended Use</h2>
+          <p><strong>Professional Use Only:</strong> Adaptly is intended exclusively for use by qualified educational professionals — including teachers, teaching assistants, SENCOs, school administrators, and other school staff. Users must be 18 or over. The Platform is not intended for direct use by pupils.</p>
+          <p><strong>Pupil-Facing Features:</strong> Any features of the Platform that produce content intended for pupils (including worksheets, social stories, pupil passports, reading materials, and the parent portal) are provided for use under the direct supervision of a qualified teacher or SENCO. The school remains responsible for reviewing all AI-generated content before sharing it with pupils or parents.</p>
+          <p><strong>DPA Incorporation:</strong> By creating an account, the Licensee agrees to be bound by Adaptly's <a href="/dpa">Data Processing Agreement</a>, which is incorporated into these Terms by reference. A countersigned copy is available on request from legal@adaptly.co.uk.</p>
 
           <h2>9. Safeguarding</h2>
           <p>The Licensee agrees to use the Platform in accordance with their school's safeguarding policy and all applicable statutory guidance. The Licensor accepts no responsibility for safeguarding incidents arising from the use of the Platform.</p>

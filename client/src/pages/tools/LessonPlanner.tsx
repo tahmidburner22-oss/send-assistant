@@ -1,3 +1,5 @@
+import { useUserPreferences } from "@/contexts/UserPreferencesContext";
+import { formatToolOutput } from "@/lib/format-tool-output";
 import AIToolPage from "@/components/AIToolPage";
 import { BookOpen } from "lucide-react";
 
@@ -14,6 +16,7 @@ const phases = [
 ];
 
 export default function LessonPlanner() {
+  const { preferences } = useUserPreferences();
   return (
     <AIToolPage
       title="Lesson Plan Generator"
@@ -137,6 +140,7 @@ Format everything with clear markdown headers and be extremely specific and prac
         maxTokens: 4000,
       })}
       outputTitle={(v) => `Lesson Plan: ${v.subject} — ${v.topic} (${v.yearGroup})`}
+      formatOutput={(text) => formatToolOutput(text, { logoUrl: preferences.schoolLogoUrl, schoolName: preferences.schoolName, accentColor: "#2563eb", emoji: "📋", title: "Lesson Plan" })}
       isLessonPlan={true}
     />
   );

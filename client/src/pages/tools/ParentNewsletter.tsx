@@ -1,3 +1,5 @@
+import { useUserPreferences } from "@/contexts/UserPreferencesContext";
+import { formatToolOutput } from "@/lib/format-tool-output";
 import AIToolPage from "@/components/AIToolPage";
 import { Mail } from "lucide-react";
 import { useApp } from "@/contexts/AppContext";
@@ -26,7 +28,8 @@ const commTypes = [
 ];
 
 export default function ParentNewsletter() {
-  const { saveParentNewsletter } = useApp() as any;
+  const { saveParentNewsletter } = useApp();
+  const { preferences } = useUserPreferences();
 
   return (
     <AIToolPage
@@ -44,7 +47,6 @@ export default function ParentNewsletter() {
         { id: "teacherName", label: "Teacher / SENCO Name", type: "text", placeholder: "e.g. Mrs Johnson", span: "half" },
         { id: "date", label: "Date", type: "text", placeholder: "e.g. March 2026", span: "half" },
         { id: "actionRequired", label: "Action Required from Parents?", type: "text", placeholder: "e.g. Return reply slip by Friday, Attend meeting on 15th March", span: "full" },
-        { id: "uploadToPortal", label: "Upload to Parent Portal after generating?", type: "select", options: [{ value: "yes", label: "Yes — upload automatically" }, { value: "no", label: "No — just generate" }], span: "full" },
       ]}
       buildPrompt={(v) => ({
         system: `You are a highly experienced UK school communications specialist and teacher with 20+ years of experience writing exemplary parent communications. You are known for writing communications that are:
@@ -99,12 +101,11 @@ Write the complete communication, ready to print and send.`,
         maxTokens: 2000,
       })}
       outputTitle={(v) => `${commTypes.find(t => t.value === v.type)?.label || "Newsletter"} — ${v.schoolName}${v.date ? ` (${v.date})` : ""}`}
+      formatOutput={(text) => formatToolOutput(text, { logoUrl: preferences.schoolLogoUrl, schoolName: preferences.schoolName, accentColor: "#db2777", emoji: "📰", title: "Parent Newsletter" })}
       onResult={(text, values) => {
-        if (values.uploadToPortal === "yes" && saveParentNewsletter) {
-          const title = `${commTypes.find(t => t.value === values.type)?.label || "Newsletter"} — ${values.schoolName}${values.date ? ` (${values.date})` : ""}`;
-          saveParentNewsletter({ title, content: text, date: values.date || new Date().toLocaleDateString("en-GB"), type: values.type || "newsletter" });
-          toast.success("Newsletter uploaded to Parent Portal!");
-        }
+        const title = `${commTypes.find(t => t.value === values.type)?.label || "Newsletter"} — ${values.schoolName}${values.date ? ` (${values.date})` : ""}`;
+        saveParentNewsletter({ title, content: text, date: values.date || new Date().toLocaleDateString("en-GB"), type: values.type || "newsletter" });
+        toast.success("Saved to Parent Portal history.");
       }}
     />
   );

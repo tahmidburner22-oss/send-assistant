@@ -25,7 +25,7 @@ import {
   CheckCircle, Clock, AlertCircle, MessageSquare, TrendingUp,
   ChevronLeft, Shield, Star, Send, Calendar, X, Zap, BrainCircuit,
   PlayCircle, PauseCircle, RotateCcw, Settings2, Upload, RefreshCw, Database,
-  Users, ChevronRight, ChevronDown, Layers, Lock, Eye, Sparkles
+  Users, ChevronRight, ChevronDown, Layers, Lock, Eye, Sparkles, Search
 } from "lucide-react";
 
 // ─── Curriculum Progression Tab Component ───────────────────────────────────
@@ -207,6 +207,7 @@ export default function Children() {
   const [csvImporting, setCsvImporting] = useState(false);
   const [showCsvDialog, setShowCsvDialog] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
+  const [pupilSearch, setPupilSearch] = useState("");
   const [selectedChild, setSelectedChild] = useState<Child | null>(null);
   const [editChild, setEditChild] = useState<Child | null>(null);
   const [name, setName] = useState("");
@@ -1166,7 +1167,36 @@ If the submission is empty or too short to mark, return mark: "N/A", feedback: "
         </Card>
       ) : !selectedChild ? (
         <div className="space-y-2">
-          {children.map((child, i) => {
+          {children.length > 2 && (
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <input
+                type="text"
+                value={pupilSearch}
+                onChange={e => setPupilSearch(e.target.value)}
+                placeholder="Search pupils by name, SEND need, or notes..."
+                className="w-full pl-9 pr-4 h-9 text-sm rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-brand/30"
+              />
+              {pupilSearch && (
+                <button onClick={() => setPupilSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+          )}
+          {(() => {
+            const q = pupilSearch.toLowerCase().trim();
+            const filtered = q
+              ? children.filter(c => {
+                  const needs = (c.sendNeeds || [c.sendNeed]).filter(Boolean).map(id => sendNeeds.find(n => n.id === id)?.name || id || "").join(" ").toLowerCase();
+                  const notes = (c.notes || "").toLowerCase();
+                  return c.name.toLowerCase().includes(q) || needs.includes(q) || notes.includes(q) || (c.yearGroup || "").toLowerCase().includes(q);
+                })
+              : children;
+            if (q && filtered.length === 0) return (
+              <p className="text-sm text-muted-foreground text-center py-6">No pupils match "{pupilSearch}"</p>
+            );
+            return filtered.map((child, i) => {
             const childNeeds = child.sendNeeds && child.sendNeeds.length > 0
               ? child.sendNeeds
               : child.sendNeed ? [child.sendNeed] : [];
@@ -1206,7 +1236,8 @@ If the submission is empty or too short to mark, return mark: "N/A", feedback: "
                 </Card>
               </motion.div>
             );
-          })}
+            });
+          })()}
         </div>
       ) : (
         <div className="space-y-4">

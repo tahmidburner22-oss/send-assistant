@@ -40,7 +40,7 @@ const plans = [
       "Email support",
     ],
     cta: "Get Started",
-    ctaHref: "/onboarding",
+    ctaHref: "/settings?tab=billing",
     highlight: false,
   },
   {
@@ -62,7 +62,7 @@ const plans = [
       "KCSIE 2025 alignment documentation",
     ],
     cta: "Get Started",
-    ctaHref: "/onboarding",
+    ctaHref: "/settings?tab=billing",
     highlight: true,
   },
   {

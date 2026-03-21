@@ -205,6 +205,16 @@ ${v.triggers ? `Known Triggers:\n${v.triggers}` : ""}
 ${v.strengths ? `Strengths & Motivators:\n${v.strengths}` : ""}
 ${v.background ? `Background:\n${v.background}` : ""}
 
+IMPORTANT — The review period is "${v.reviewPeriod || "6 weeks"}". This MUST shape the entire plan:
+${(v.reviewPeriod || "6 weeks") === "4 weeks" ? `- 4-week plan: This is a SHORT, FOCUSED plan. Set 1-2 very specific, immediately measurable targets only. Weekly check-ins are essential. Keep strategies to 2-3 maximum — manageable in one month. Include specific week-by-week milestones (Week 1: baseline, Week 2: introduce strategy, Week 3: monitor, Week 4: review). The plan should be concise and laser-focused.` : ""}
+${(v.reviewPeriod || "6 weeks") === "6 weeks" ? `- 6-week plan: Set 2-3 focused targets. Fortnightly check-in points. Include a mid-point review note at week 3. Strategies should be established within the first 2 weeks, then consistently applied.` : ""}
+${(v.reviewPeriod || "6 weeks") === "1 term" ? `- Termly plan (approximately 12 weeks): Set 3-4 targets with clear progression over the term. Include half-term review checkpoint. Strategies can be more comprehensive. Include a staged implementation timeline showing which strategies are introduced when during the term. Allow for generalisation of skills in the final phase.` : ""}
+
+Section 10 (Monitoring & Review) MUST include:
+- The specific review date (${(v.reviewPeriod || "6 weeks") === "1 term" ? "end of term" : `${v.reviewPeriod || "6 weeks"} from today`})
+- ${(v.reviewPeriod || "6 weeks") === "4 weeks" ? "Weekly" : (v.reviewPeriod || "6 weeks") === "6 weeks" ? "Fortnightly" : "Half-termly"} monitoring checkpoints with specific measurable indicators
+- A clear success threshold — what improvement would indicate the plan is working?
+
 Structure the plan with these sections:
 1. **Student Profile** — brief strengths-based summary
 2. **Behaviour Description** — clear, objective description (avoid judgmental language)
@@ -215,11 +225,11 @@ Structure the plan with these sections:
 7. **Response Strategies** — how staff should respond when behaviour occurs (de-escalation steps)
 8. **Reward & Reinforcement System** — personalised to student's motivators
 9. **Crisis Response** — if behaviour escalates, clear step-by-step protocol
-10. **Monitoring & Review** — how progress will be tracked, review date
+10. **Monitoring & Review** — review date, ${(v.reviewPeriod || "6 weeks") === "4 weeks" ? "weekly" : (v.reviewPeriod || "6 weeks") === "6 weeks" ? "fortnightly" : "half-termly"} check-in schedule, success indicators
 11. **Roles & Responsibilities** — who does what
 12. **Communication with Family** — how parents/carers will be kept informed
 
-Use positive, strengths-based language throughout. Be specific and practical.`,
+Use positive, strengths-based language throughout. Be specific and practical. Calibrate the depth and number of strategies to the ${v.reviewPeriod || "6 weeks"} review period — shorter plans need fewer, sharper targets.`,
             maxTokens: 3500,
           };
         }}

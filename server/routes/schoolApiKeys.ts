@@ -15,6 +15,9 @@ const router = Router();
 
 // ── Encryption helpers ────────────────────────────────────────────────────────
 const ENC_SECRET = process.env.KEY_ENCRYPTION_SECRET || "adaptly-school-key-enc-secret-32b";
+if (process.env.NODE_ENV === "production" && !process.env.KEY_ENCRYPTION_SECRET) {
+  console.error("[SECURITY] WARNING: KEY_ENCRYPTION_SECRET is not set. School API keys will use a weak default key. Set KEY_ENCRYPTION_SECRET in Railway environment variables.");
+}
 const ENC_KEY = crypto.scryptSync(ENC_SECRET, "adaptly-salt", 32);
 
 function encryptKey(plaintext: string): { encrypted: string; iv: string } {
