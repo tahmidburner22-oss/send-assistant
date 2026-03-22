@@ -71,7 +71,7 @@ function getAvailableProviders(order: string[]): string[] {
     console.warn("[AI] All providers on cooldown — clearing shortest cooldown to allow retry");
     let earliest = Infinity;
     let earliestProvider = "";
-    for (const [p, exp] of providerCooldowns.entries()) {
+    for (const [p, exp] of Array.from(providerCooldowns.entries())) {
       if (exp < earliest) { earliest = exp; earliestProvider = p; }
     }
     if (earliestProvider) {
@@ -299,8 +299,8 @@ async function callWithFallback(
       errors.push(`${provider}: no key configured`);
       continue;
     }
+    const model = getAdminModel(provider, schoolId);
     try {
-      const model = getAdminModel(provider, schoolId);
       const content = await callProvider(provider, system, user, key, model, maxTokens);
       if (content && content.trim()) {
         console.log(`[AI] Success via ${provider}`);
@@ -504,8 +504,8 @@ router.post("/ensemble", requireAuth, async (req: Request, res: Response) => {
   );
 
   const successes = results
-    .filter((r): r is PromiseFulfilledResult<{ provider: string; text: string }> => r.status === "fulfilled")
-    .map(r => r.value);
+    .filter((r) => r.status === "fulfilled")
+    .map(r => (r as PromiseFulfilledResult<{ provider: string; text: string }>).value);
 
   if (successes.length === 0) {
     // Fall back to single provider auto-fallback
@@ -562,7 +562,7 @@ router.get("/provider-status", requireAuth, (_req: Request, res: Response) => {
 });
 
 router.post("/clear-cooldowns", requireAuth, requireAdmin, (_req: Request, res: Response) => {
-  const cleared = [...providerCooldowns.keys()];
+  const cleared = Array.from(providerCooldowns.keys());
   providerCooldowns.clear();
   console.log(`[AI] Admin cleared all provider cooldowns: ${cleared.join(", ") || "none"}`);
   res.json({ success: true, cleared });

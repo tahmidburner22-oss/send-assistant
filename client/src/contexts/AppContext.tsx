@@ -200,6 +200,25 @@ export function AppProvider({ children: childrenProp }: { children: React.ReactN
       .catch(() => { clearToken(); setState(s => ({ ...s, loading: false })); });
   }, []);
 
+  // Session keep-alive: refresh session every 20 minutes to prevent expiry
+  useEffect(() => {
+    const keepAlive = async () => {
+      const token = getToken();
+      if (!token) return;
+      try {
+        await fetch('/api/auth/refresh', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          credentials: 'include',
+        });
+      } catch { /* ignore network errors */ }
+    };
+    // Run once after 5 minutes, then every 20 minutes
+    const firstTimer = setTimeout(keepAlive, 5 * 60 * 1000);
+    const interval = setInterval(keepAlive, 20 * 60 * 1000);
+    return () => { clearTimeout(firstTimer); clearInterval(interval); };
+  }, []);
+
   const refreshData = useCallback(async () => { await loadUserData(); }, [loadUserData]);
 
   const login = useCallback(async (email: string, password: string) => {
