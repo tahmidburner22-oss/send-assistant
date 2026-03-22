@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState } from "react";
+import { useNotificationWS } from "@/hooks/useNotificationWS";
 import React from "react";
 import { Link, useLocation } from "wouter";
 import { useApp } from "@/contexts/AppContext";
@@ -143,38 +144,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, logout, children: pupils } = useApp();
   const { preferences, wallpaperStyle } = useUserPreferences();
 
-  // ── Real-time WebSocket notifications ────────────────────────────────────────
-  interface RealNotif {
-    id: string;
-    type: string;
-    title: string;
-    body: string;
-    link?: string;
-    read: boolean;
-    created_at: string;
-  }
-  const [wsNotifs, setWsNotifs] = useState<RealNotif[]>([]);
-  const wsRef = useRef<WebSocket | null>(null);
-
-  useEffect(() => {
-    if (!user?.token) return;
-    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-    const wsUrl = `${protocol}//${window.location.host}/api/ws?token=${encodeURIComponent(user.token)}`;
-    const ws = new WebSocket(wsUrl);
-    wsRef.current = ws;
-    ws.onmessage = (evt) => {
-      try {
-        const msg = JSON.parse(evt.data);
-        if (msg.type === "init" && Array.isArray(msg.notifications)) {
-          setWsNotifs(msg.notifications);
-        } else if (msg.type === "notification") {
-          setWsNotifs(prev => [msg.notification, ...prev].slice(0, 50));
-        }
-      } catch {}
-    };
-    ws.onerror = () => {};
-    return () => { ws.close(); };
-  }, [user?.token]);
+  // ── Real-time WebSocket notifications (via useNotificationWS hook) ───────────
+  const {
+    notifications: wsNotifs,
+    dismiss: dismissWsNotif,
+    markAllRead: markWsAllRead,
+    isConnected: wsConnected,
+  } = useNotificationWS({ token: user?.token });
 
   // Also include local assignment-completion notifications for backwards compat
   const assignmentNotifs = pupils.flatMap(p =>
@@ -182,7 +158,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       .filter(a => a.status === "completed" && !a.mark && !a.teacherComment)
       .map(a => ({
         id: `${p.id}__${a.id}`,
-        type: "assignment",
+        type: "assignment" as const,
         title: `${p.name} completed work`,
         body: a.title,
         link: "/pupils",
@@ -191,7 +167,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       }))
   ).slice(0, 5);
 
-  const allNotifications: RealNotif[] = [
+  const allNotifications = [
     ...wsNotifs,
     ...assignmentNotifs.filter(a => !wsNotifs.some(w => w.id === a.id)),
   ];
@@ -199,24 +175,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const unreadCount = notifications.length;
 
   const dismissNotif = (id: string) => {
-    setWsNotifs(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
-    // Also persist to server
-    if (wsRef.current?.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify({ type: "mark_read", notificationId: id }));
-    } else {
-      fetch(`/api/messages/notifications/${id}/read`, { method: "PATCH",
-        headers: { Authorization: `Bearer ${user?.token}` } }).catch(() => {});
-    }
+    // Assignment-local notifs are dismissed in-memory; WS notifs via the hook
+    dismissWsNotif(id);
   };
 
   const markAllRead = () => {
-    setWsNotifs(prev => prev.map(n => ({ ...n, read: true })));
-    if (wsRef.current?.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify({ type: "mark_all_read" }));
-    } else {
-      fetch("/api/messages/notifications/read-all", { method: "PATCH",
-        headers: { Authorization: `Bearer ${user?.token}` } }).catch(() => {});
-    }
+    markWsAllRead();
   };
 
   const theme = COLOUR_THEMES.find(t => t.id === preferences.themeId) || COLOUR_THEMES[0];
@@ -251,8 +215,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </h1>
           <div className="flex items-center gap-1">
             <div className="relative">
-              <button onClick={() => setNotifOpen(o => !o)} className="p-2 rounded-lg hover:bg-muted transition-colors relative">
+              <button onClick={() => setNotifOpen(o => !o)} className="p-2 rounded-lg hover:bg-muted transition-colors relative" title={wsConnected ? "Notifications (live)" : "Notifications (reconnecting…)"}>
                 <Bell className="w-4 h-4 text-muted-foreground" />
+                {/* WS live indicator dot */}
+                <span className={`absolute bottom-1.5 right-1.5 w-1.5 h-1.5 rounded-full border border-background ${wsConnected ? "bg-green-500" : "bg-amber-400"}`} title={wsConnected ? "Live" : "Reconnecting"} />
                 {unreadCount > 0 && (
                   <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-brand text-white text-[9px] font-bold flex items-center justify-center">
                     {unreadCount > 9 ? "9+" : unreadCount}
@@ -269,9 +235,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                     className="absolute right-0 top-10 w-72 bg-card border border-border/60 rounded-xl shadow-lg z-50 overflow-hidden"
                   >
                     <div className="px-3 py-2 border-b border-border/40 flex items-center justify-between">
-                      <span className="text-xs font-semibold text-foreground">
-                        Notifications {unreadCount > 0 && <span className="ml-1 text-[10px] font-bold text-brand">({unreadCount})</span>}
-                      </span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs font-semibold text-foreground">
+                          Notifications {unreadCount > 0 && <span className="ml-1 text-[10px] font-bold text-brand">({unreadCount})</span>}
+                        </span>
+                        <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-medium ${wsConnected ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"}`}>
+                          {wsConnected ? "● Live" : "● Reconnecting"}
+                        </span>
+                      </div>
                       <div className="flex items-center gap-2">
                         {unreadCount > 0 && (
                           <button

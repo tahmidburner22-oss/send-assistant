@@ -45,16 +45,20 @@ function isPremiumSchool(schoolId: string, userEmail?: string): boolean {
 }
 
 // ── Helper: decrypt a stored MIS API key ─────────────────────────────────────
-// ── Encryption key — must be set via env var in production ──────────────────
+// ── Encryption key — MUST be set via ENCRYPTION_KEY env var in production ────
 const _ENCRYPTION_KEY_RAW = process.env.ENCRYPTION_KEY;
 if (!_ENCRYPTION_KEY_RAW) {
   if (process.env.NODE_ENV === "production") {
-    console.error("[SECURITY] FATAL: ENCRYPTION_KEY env var is not set. MIS API keys will use an ephemeral random key and will be unreadable after restart. Set ENCRYPTION_KEY in Railway environment variables.");
+    throw new Error(
+      "[FATAL] ENCRYPTION_KEY environment variable is not set. " +
+      "MIS API keys cannot be stored or decrypted securely. " +
+      "Add ENCRYPTION_KEY (a 32+ character random string) to your Railway environment variables before starting the server."
+    );
   } else {
     console.warn("[SECURITY] DEV: ENCRYPTION_KEY not set — using ephemeral key. Set ENCRYPTION_KEY in .env for persistent MIS keys.");
   }
 }
-// Use provided key, or generate a one-time ephemeral key (safe: no weak constant fallback)
+// Use provided key, or generate a one-time ephemeral key for dev (no weak constant fallback)
 const ENCRYPTION_KEY = _ENCRYPTION_KEY_RAW || crypto.randomBytes(32).toString("hex");
 const KEY_BUF = Buffer.from(ENCRYPTION_KEY.padEnd(32).slice(0, 32));
 

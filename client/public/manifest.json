@@ -1,0 +1,50 @@
+{
+  "name": "Adaptly — AI SEND Tools for UK Teachers",
+  "short_name": "Adaptly",
+  "description": "AI-powered SEND worksheet generator, parent portal, behaviour tracker and revision tools for UK teachers.",
+  "start_url": "/home",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#7C3AED",
+  "orientation": "any",
+  "scope": "/",
+  "lang": "en-GB",
+  "categories": ["education", "productivity"],
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Generate Worksheet",
+      "short_name": "Worksheet",
+      "description": "Create a new AI worksheet",
+      "url": "/worksheets",
+      "icons": [{ "src": "/logo.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Pupil Profiles",
+      "short_name": "Pupils",
+      "description": "View and manage your pupils",
+      "url": "/pupils",
+      "icons": [{ "src": "/logo.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "QuizBlast",
+      "short_name": "Quiz",
+      "description": "Launch a live quiz game",
+      "url": "/quiz-game",
+      "icons": [{ "src": "/logo.png", "sizes": "96x96" }]
+    }
+  ]
+}

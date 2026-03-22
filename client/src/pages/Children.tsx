@@ -1,5 +1,33 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import WorksheetRenderer from "@/components/WorksheetRenderer";
+import { parseWithFixes } from "@/lib/ai";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Slider } from "@/components/ui/slider";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
+import { motion } from "framer-motion";
+import { useApp, type Child, type Assignment, type Submission, type TimetableLesson } from "@/contexts/AppContext";
+import { yearGroups, sendNeeds, subjects } from "@/lib/send-data";
+import SENDInfoPanel from "@/components/SENDInfoPanel";
+import { SendScreenerResultsView } from "@/components/SendScreenerResultsView";
+import { useScheduler } from "@/hooks/useScheduler";
+import { TOPIC_BANK } from "@/lib/topic-bank";
+import { CURRICULUM_PROGRESSIONS, getProgressionsForSubject, getRecommendedStep, type TopicProgression } from "@/lib/curriculum-progression";
+import { frequencyLabel } from "@/lib/scheduler";
+import {
+  Plus, UserPlus, Copy, Trash2, Edit3, FileText, BookOpen,
+  CheckCircle, Clock, AlertCircle, MessageSquare, TrendingUp,
+  ChevronLeft, Shield, Star, Send, Calendar, X, Zap, BrainCircuit,
+  PlayCircle, PauseCircle, RotateCcw, Settings2, Upload, RefreshCw, Database,
+  Users, ChevronRight, ChevronDown, Layers, Lock, Eye, Sparkles, Search
+} from "lucide-react";
+
 
 // ─── Teacher-side Messages Panel ─────────────────────────────────────────────
 function TeacherMessagesPanel({ childId, childName }: { childId: string; childName: string }) {
@@ -84,33 +112,6 @@ function TeacherMessagesPanel({ childId, childName }: { childId: string; childNa
     </div>
   );
 }
-import { parseWithFixes } from "@/lib/ai";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Slider } from "@/components/ui/slider";
-import { Textarea } from "@/components/ui/textarea";
-import { toast } from "sonner";
-import { motion } from "framer-motion";
-import { useApp, type Child, type Assignment, type Submission, type TimetableLesson } from "@/contexts/AppContext";
-import { yearGroups, sendNeeds, subjects } from "@/lib/send-data";
-import SENDInfoPanel from "@/components/SENDInfoPanel";
-import { SendScreenerResultsView } from "@/components/SendScreenerResultsView";
-import { useScheduler } from "@/hooks/useScheduler";
-import { TOPIC_BANK } from "@/lib/topic-bank";
-import { CURRICULUM_PROGRESSIONS, getProgressionsForSubject, getRecommendedStep, type TopicProgression } from "@/lib/curriculum-progression";
-import { frequencyLabel } from "@/lib/scheduler";
-import {
-  Plus, UserPlus, Copy, Trash2, Edit3, FileText, BookOpen,
-  CheckCircle, Clock, AlertCircle, MessageSquare, TrendingUp,
-  ChevronLeft, Shield, Star, Send, Calendar, X, Zap, BrainCircuit,
-  PlayCircle, PauseCircle, RotateCcw, Settings2, Upload, RefreshCw, Database,
-  Users, ChevronRight, ChevronDown, Layers, Lock, Eye, Sparkles, Search
-} from "lucide-react";
 
 // ─── Curriculum Progression Tab Component ───────────────────────────────────
 function ProgressionTab({ child }: { child: import("@/contexts/AppContext").Child }) {

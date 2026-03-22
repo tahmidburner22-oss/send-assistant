@@ -1325,6 +1325,48 @@ export default function Settings() {
       </Card>
 
       <BillingSection />
+
+      {/* ── Upgrade Banner — shown to non-admin or free/trial users ─────────── */}
+      {(() => {
+        const isFreeOrTrial = !user?.plan || user?.plan === "free" || user?.plan === "trial";
+        if (!isFreeOrTrial) return null;
+        return (
+          <div className="rounded-xl border border-brand/30 bg-gradient-to-br from-brand/5 to-brand/10 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex items-start gap-3">
+              <div className="w-9 h-9 rounded-xl bg-brand/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <Crown className="w-4.5 h-4.5 text-brand" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-foreground">
+                  {user?.plan === "trial" ? "Your free trial is active" : "You're on the Free plan"}
+                </p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Unlock unlimited AI generations, parent portal messaging, real-time notifications and MIS integrations.
+                </p>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {[
+                    { label: "Unlimited AI generations", ok: false },
+                    { label: "Parent portal messaging", ok: false },
+                    { label: "MIS sync (Bromcom / Arbor)", ok: false },
+                    { label: "Multi-role team access", ok: false },
+                  ].map(f => (
+                    <span key={f.label} className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-muted/60 text-muted-foreground border border-border/50">
+                      <span className="text-red-400">✕</span> {f.label}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <a
+              href="/pricing"
+              className="flex-shrink-0 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-brand hover:bg-brand/90 text-white text-sm font-semibold transition-colors shadow-sm"
+            >
+              <Crown className="w-3.5 h-3.5" />
+              Upgrade Plan
+            </a>
+          </div>
+        );
+      })()}
       <MisIntegrationSection />
 
       <PersonalisationSection />
