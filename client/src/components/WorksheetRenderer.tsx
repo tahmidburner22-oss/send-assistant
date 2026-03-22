@@ -2233,16 +2233,19 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
 
             // ── Jigsaw grid layout: 5 columns, irregular row spans ──
             const COLS = 5;
+            // Row height unit — all rows are this tall; multi-row boxes are proportionally taller
+            const ROW_HEIGHT = "55px";
             // Determine col span and row span for jigsaw effect
+            // Box size scales with marks: more marks = more rows/cols = bigger box
             const getSpans = (section: any): [number, number] => {
               const sz = (section as any).size || "small";
               const marks = (section as any).marks || 0;
               const isMatchUp = (section.content || "").split("\n").filter((l: string) => /\w+\s*\|\s*\w+/.test(l) && !/[=<>]/.test(l)).length >= 2;
-              // Only 6-marker gets 2×2 — all others use rowSpan:1 to prevent grey space
-              if (marks >= 6 || sz === "large") return [2, 2]; // 6-marker challenge: 2 cols × 2 rows
-              if (marks >= 4) return [2, 1];                   // 4-marker: 2 cols × 1 row
-              if (isMatchUp) return [2, 1];                    // match-up: 2 cols wide, 1 row
-              return [1, 1];                                    // all others: 1 col × 1 row, no grey space
+              if (marks >= 6 || sz === "large") return [2, 3]; // 6-marker: 2 cols × 3 rows (largest)
+              if (marks >= 4) return [2, 2];                   // 4-marker: 2 cols × 2 rows
+              if (isMatchUp) return [2, 2];                    // match-up: 2 cols × 2 rows
+              if (marks >= 2) return [1, 2];                   // 2-marker: 1 col × 2 rows (medium)
+              return [1, 1];                                    // 1-marker: 1 col × 1 row (smallest)
             };
 
             type PlacedBox = { section: any; label: string; colSpan: number; rowSpan: number; colStart: number; rowStart: number };
@@ -2322,7 +2325,8 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                 style={{
                   display: "grid",
                   gridTemplateColumns: `repeat(${COLS}, 1fr)`,
-                  gridTemplateRows: `repeat(${totalRows}, auto)`,
+                  gridTemplateRows: `repeat(${totalRows}, ${ROW_HEIGHT})`,
+                  gridAutoRows: ROW_HEIGHT,
                   gap: "2px",
                   width: "100%",
                   backgroundColor: "#555",
