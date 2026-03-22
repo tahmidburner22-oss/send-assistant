@@ -722,74 +722,73 @@ export default function Worksheets() {
   // Revision Mat instruction injected when toggle is on
   const REVISION_MAT_INSTRUCTIONS = `REVISION MAT FORMAT — MATCH EXACTLY:
 
-You are creating a GCSE-style revision activity mat. Follow these instructions EXACTLY.
+You are creating a GCSE-style revision mat. Follow these instructions EXACTLY.
 
 PAGE SETUP:
-- A4 landscape orientation, single page only — everything must fit on ONE page
-- Dense jigsaw/mosaic layout — NO grey/empty space anywhere. Every gap must be filled with a question box or working-out box
-- NO main heading/title box — go straight into question boxes
-- NO box headings — do NOT put "Foundation", "Core", "Extension", "Recall", "Apply" or any category label as a box title
+- A4 landscape, single page only
+- Jigsaw / mosaic layout — 6-column grid, boxes of varying sizes
+- No empty space — every cell must be filled
 
-⚠️ CRITICAL RULE — ONE QUESTION PER BOX:
-Each box contains EXACTLY ONE question. This means:
-- WRONG: { "content": "1. What is ATP?\n2. What is respiration?\n3. Name two products..." }  ← MULTIPLE questions in one box — FORBIDDEN
-- CORRECT: { "content": "What is ATP?" }  ← ONE question only
-- CORRECT: { "content": "Name one product of aerobic respiration." }  ← ONE question only
-If you find yourself writing a numbered list inside a box, STOP — split each numbered item into its own separate box.
+════════════════════════════════════════════
+SECTION 1 — COMBINED TITLE / LO / VOCAB BOX
+════════════════════════════════════════════
+Generate EXACTLY ONE section with type "revision-mat-title" containing ALL of:
+  • The topic title (bold heading)
+  • Learning Objective: one clear sentence starting "Students will be able to..."
+  • Key Vocabulary: 6–8 key terms, one per line, format: "Term — brief definition"
+Example content:
+"Photosynthesis
+LO: Students will be able to explain how plants convert light energy into glucose.
+Key Vocabulary:
+Chlorophyll — the green pigment that absorbs light
+Glucose — the sugar produced by photosynthesis
+Carbon dioxide — a reactant absorbed from the air
+Oxygen — a product released through stomata
+Chloroplast — the organelle where photosynthesis occurs
+Light intensity — how bright the light source is"
 
-LAYOUT (CRITICAL — jigsaw/mosaic style):
-- The page is a 5-column mosaic grid of question boxes
-- Each box contains exactly ONE question (see rule above)
-- NO title box, NO learning objectives box — start directly with question boxes
-- All boxes are question boxes labelled a, b, c, d... in sequence
-- Aim for 20-25 question boxes total — fill the entire page
-- Box sizes MUST match content: use "size": "small" for short questions (1-2 lines), "size": "medium" for questions needing 3-4 lines, "size": "large" for the 4-marker and 6-marker only
-- Mix sizes to create an irregular jigsaw appearance: mostly small boxes, a few medium, only 2 large
-- If there is any remaining space after all questions, add "Working Out" boxes (type: "revision-mat-box", title: "Working Out", content: "") to fill the page completely
+════════════════════════════════════════════
+SECTION 2 — EXACTLY 12 QUESTION BOXES
+════════════════════════════════════════════
+⚠️ CRITICAL: Generate EXACTLY 12 question boxes (type: "revision-mat-box")
+ONE question per box — never more
 
-MARK ALLOCATION — CRITICAL:
-- The VAST MAJORITY of questions must be 1-2 mark questions (short recall, MCQ, fill-in-the-blank, true/false, match-up)
-- Include EXACTLY ONE 4-mark question (label it "[4 marks]" in the question text)
-- Include EXACTLY ONE 6-mark challenge question (label it "[6 marks]" in the question text) — this is the hardest question
-- NO other questions should be more than 2 marks
-- Do NOT group multiple questions together — each mark allocation applies to ONE question in ONE box
+REQUIRED MARK MIX (must include all of these):
+- 1-mark questions: 3–4 questions  (recall, MCQ, fill-in-blank, true/false)
+- 2-mark questions: 3–4 questions  (short answer, name-two, MCQ)
+- 3-mark questions: 2 questions    (describe, explain, list three points)
+- 4-mark questions: 1–2 questions  (extended describe/explain)
+- 6-mark question:  1 question     (evaluate / extended response / "Challenge:")
 
-CONTENT REQUIREMENTS — include ALL of these question types, each as its OWN separate box:
-- Multiple choice (circle the correct answer): 4-5 questions [1 mark each] — each MCQ is its own box
-- Fill-in-the-blank: 4-5 questions [1 mark each] — each fill-in-the-blank is its own box
-- Short-answer recall: 5-6 questions [1-2 marks each] — each question is its own box
-- True/False: 3-4 questions [1 mark each] — each true/false is its own box
-- Match-up: 1 question [1 mark per correct match] — the full match-up table is one box
-- Calculations (if topic is maths/science): 2-3 questions [1-2 marks each] — each calculation is its own box
-- ONE 4-mark question (Describe/Explain with 4 answer lines) — its own box
-- ONE 6-mark challenge question (Evaluate/Analyse/Extended response with 6 answer lines) — its own box
-- Working Out boxes to fill any remaining space
+QUESTION TYPES — include a variety:
+• Multiple choice [1 mark]: question + "a. opt\nb. opt\nc. opt\nd. opt"
+• Fill-in-the-blank [1 mark]: "The ___ is the site of photosynthesis."
+• True/False [1 mark]: statement + new line "True / False"
+• Short recall [1–2 marks]: one direct question, no options
+• Describe/Explain [2–3 marks]: "Describe..." or "Explain why..."
+• Extended response [4 marks]: "Describe in detail..." with "[4 marks]" in text
+• Challenge [6 marks]: "Challenge: Evaluate..." with "[6 marks]" in text
 
 QUESTION FORMAT per box:
-- Short answer (1-2 marks): question text only — NO answer lines in content (renderer adds them)
-- MCQ: question text + options: "a. option1\nb. option2\nc. option3\nd. option4"
-- Fill-in-the-blank: sentence with ___ gaps inline (e.g. "The symbol for carbon is ___")
-- Match-up: two columns — format as "Term 1 | Definition 1\nTerm 2 | Definition 2\nTerm 3 | Definition 3"
-- True/False: statement + "True / False" on a new line
-- 4-mark: question text with "[4 marks]" label
-- 6-mark: question text with "[6 marks]" label + "Challenge:" prefix
+- All question text goes in "content" — do NOT include answer lines (renderer draws them)
+- MCQ: include all 4 options as shown above
+- Match-up: "Term 1 | Definition 1\nTerm 2 | Definition 2" (count as 1–2 marks)
+- For 4-mark and 6-mark: include the mark label in the question text e.g. "[4 marks]"
+- "title": always "" (empty) — no category headings on boxes
+- "marks": set to the ACTUAL mark value (1, 2, 3, 4, or 6) — REQUIRED for correct box sizing
 
 STYLE:
-- GCSE / AQA exam-style wording — clear, precise, age-appropriate
-- No answers in student boxes
-- Boxes must be TIGHT — only as tall as the content needs, no extra blank space
-- Box titles should be BLANK (empty string "") for most boxes — do NOT add category headings
-- Only exception: "Working Out" boxes can have title "Working Out"
+- GCSE / AQA exam-style wording — clear, precise
+- No answers in any student box
+- Keep question text concise — longer questions allowed only for 4-mark and 6-mark boxes
 
-JSON FORMAT — CRITICAL:
-- "title": empty string "" for ALL question boxes (no headings!); "Working Out" for working-out boxes only
-- "type": "revision-mat-box" for ALL boxes (no title box, no LO box)
-- "size": "small" for 1-2 mark questions, "medium" for 3-4 line questions, "large" for the 4-marker and 6-marker only
-- "content": ONLY the question text for ONE question. Do NOT include answer lines — the renderer adds them automatically based on mark count.
-  Exception: for MCQ, include the options. For match-up, include the term|definition pairs. For fill-in-the-blank, include the ___ inline.
-- "marks": the number of marks for the question (1, 2, 4, or 6)
+JSON FORMAT:
+• type: "revision-mat-title"  → the ONE combined title/LO/vocab section
+• type: "revision-mat-box"   → each of the 12 question boxes
+• "marks": integer (1, 2, 3, 4, or 6) — required on every question box
+• "title": "" for all question boxes (empty string)
 
-TEACHER SECTION: Include one section with teacherOnly:true containing mark-scheme answers for all boxes.`;
+TEACHER SECTION: Include one teacherOnly:true section with mark-scheme answers for all 12 questions.`;
 
 
 
@@ -1291,10 +1290,10 @@ TEACHER SECTION: Include one section with teacherOnly:true containing mark-schem
       const sendNeedId = generated?.metadata?.sendNeed || sendNeed || undefined;
       const bg = overlayBg || "#ffffff";
 
-      // A4 dimensions at 96dpi
-      const A4_W = 794;
-      const A4_H = 1123;
-      const MARGIN = 45; // ~12mm
+      // A4 dimensions at 96dpi — landscape for revision mats
+      const A4_W = isRevisionMat ? 1123 : 794;
+      const A4_H = isRevisionMat ? 794 : 1123;
+      const MARGIN = isRevisionMat ? 23 : 45; // ~6mm landscape, ~12mm portrait
       const CONTENT_H = A4_H - MARGIN * 2;
 
       // Step 1: Render content in a hidden measurement iframe at A4 width
@@ -1317,7 +1316,7 @@ TEACHER SECTION: Include one section with teacherOnly:true containing mark-schem
         </style></head><body>${contentHtml}</body></html>`;
 
       const measureIframe = document.createElement("iframe");
-      measureIframe.style.cssText = `position:fixed;top:0;left:-9999px;width:${A4_W}px;height:${A4_H * 3}px;border:none;visibility:hidden;`;
+      measureIframe.style.cssText = `position:fixed;top:0;left:-9999px;width:${A4_W}px;height:${isRevisionMat ? A4_H : A4_H * 3}px;border:none;visibility:hidden;`;
       document.body.appendChild(measureIframe);
 
       await new Promise<void>((resolve, reject) => {
@@ -1371,6 +1370,7 @@ TEACHER SECTION: Include one section with teacherOnly:true containing mark-schem
           * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
           .katex .katex-mathml { position:absolute!important; clip:rect(1px,1px,1px,1px)!important;
             padding:0!important; border:0!important; height:1px!important; width:1px!important; overflow:hidden!important; }
+          @page { size: ${isRevisionMat ? "A4 landscape" : "A4 portrait"}; margin: ${isRevisionMat ? "6mm" : "12mm"}; }
           .preview-page {
             position: relative;
             width: ${A4_W}px;
@@ -3667,8 +3667,9 @@ ${s.content}`).join("\n\n"),
                   </Button>
                   <Button size="sm" variant="outline" onClick={() => {
                     const printTarget = historyPrintRef.current || historyContentRef.current;
+                    const isHistoryRM = sections.some((s: any) => s.type === "revision-mat-box" || s.type === "revision-mat-title" || s.type === "revision-mat-lo");
                     if (printTarget) {
-                      printWorksheetElement(printTarget, { viewMode: historyViewMode === "teacher" ? "teacher" : "student" });
+                      printWorksheetElement(printTarget, { viewMode: historyViewMode === "teacher" ? "teacher" : "student", landscape: isHistoryRM });
                     } else {
                       window.print();
                     }
@@ -3692,27 +3693,33 @@ ${s.content}`).join("\n\n"),
                 {ws.subtitle && <p className="text-xs text-muted-foreground">{ws.subtitle}</p>}
 
                 {/* Hidden WorksheetRenderer used for print/PDF — captures proper styled output */}
-                <div ref={historyPrintRef} style={{ position: 'absolute', left: '-9999px', top: 0, width: '794px', pointerEvents: 'none', zIndex: -1 }}>
-                  <WorksheetRenderer
-                    worksheet={{
-                      title: ws.title || '',
-                      subtitle: ws.subtitle || '',
-                      sections: sections.map((s, i) => ({
-                        ...s,
-                        content: historyEditedSections[i] !== undefined ? historyEditedSections[i] : s.content,
-                        type: s.type || 'text'
-                      })),
-                      metadata: { subject: ws.subject || '', yearGroup: ws.yearGroup || '', topic: ws.topic || '' },
-                    }}
-                    viewMode={historyViewMode === "teacher" ? "teacher" : "student"}
-                    textSize={textSize}
-                    editMode={false}
-                    overlayColor=""
-                    editedSections={historyEditedSections}
-                    schoolLogoUrl={preferences.schoolLogoUrl}
-                    schoolName={preferences.schoolName}
-                  />
-                </div>
+                {(() => {
+                  const historyIsRM = sections.some((s: any) => s.type === "revision-mat-box" || s.type === "revision-mat-title" || s.type === "revision-mat-lo");
+                  return (
+                    <div ref={historyPrintRef} style={{ position: 'absolute', left: '-9999px', top: 0, width: historyIsRM ? '1123px' : '794px', pointerEvents: 'none', zIndex: -1 }}>
+                      <WorksheetRenderer
+                        worksheet={{
+                          title: ws.title || '',
+                          subtitle: ws.subtitle || '',
+                          sections: sections.map((s: any, i: number) => ({
+                            ...s,
+                            content: historyEditedSections[i] !== undefined ? historyEditedSections[i] : s.content,
+                            type: s.type || 'text'
+                          })),
+                          metadata: { subject: ws.subject || '', yearGroup: ws.yearGroup || '', topic: ws.topic || '' },
+                        }}
+                        viewMode={historyViewMode === "teacher" ? "teacher" : "student"}
+                        textSize={textSize}
+                        editMode={false}
+                        overlayColor=""
+                        editedSections={historyEditedSections}
+                        schoolLogoUrl={preferences.schoolLogoUrl}
+                        schoolName={preferences.schoolName}
+                        isRevisionMat={historyIsRM}
+                      />
+                    </div>
+                  );
+                })()}
 
                 {/* Sections */}
                 <div className="space-y-3" ref={historyContentRef}>
