@@ -722,42 +722,58 @@ export default function Worksheets() {
   // Revision Mat instruction injected when toggle is on
   const REVISION_MAT_INSTRUCTIONS = `REVISION MAT FORMAT — MATCH EXACTLY:
 
-You are creating a revision activity mat identical in structure to published AQA GCSE revision mats.
+You are creating a GCSE revision mat worksheet. Follow these instructions EXACTLY.
 
-LAYOUT:
-- Single landscape A4 page ONLY — everything must fit on one page, no overflow
-- NO title bar, NO colour-coded tier headers
-- Grid of compact question boxes, each labelled with a lowercase letter (a, b, c, d...)
-- The first box (a) = Learning Objectives — list 3-5 brief LOs, nothing else
-- Each remaining box (b, c, d...) = EXACTLY ONE question or task — never more
-- Aim for 13-16 boxes total to fill the page
-- Each box has a tiny letter label in the top-left corner
+PAGE SETUP:
+- A4 landscape orientation, single page only
+- No overflow — everything fits on one page
 
-CRITICAL — EACH BOX CONTAINS EXACTLY ONE QUESTION:
-- ONE question per box — never two questions in the same box
-- Question text: maximum 2 lines (30 words max)
-- Then answer lines (___) or options for MCQ — nothing else
-- If a question is complex, make it simpler so it fits in 2 lines
+LAYOUT (CRITICAL — follow exactly):
+- The worksheet is made of multiple boxes that INTERLOCK LIKE A JIGSAW/MOSAIC across the entire page
+- Boxes must be DIFFERENT SIZES (rectangular only, no perfect grid)
+- The layout must feel IRREGULAR but still clean and structured
+- NO empty space — boxes must fully fill the page edge-to-edge
+- Include ONE title box (medium size) showing the topic name
+- Include ONE small Learning Objectives box (LO) with 3-4 brief objectives
+- All other boxes contain exactly ONE question each
+
+BOX SIZING — use these types to vary the layout:
+- "large" → extended answer questions (3–6 answer lines) — use for Explain/Describe questions
+- "medium" → short-answer questions (2–3 answer lines)
+- "small" → quick recall (MCQ, definitions, fill-in-blank, True/False)
+- The LO box must be "small"
+- The title box must be "medium"
+- Aim for 14-18 boxes total to fill the page
+
+CONTENT REQUIREMENTS — include ALL of these:
+- Multiple choice questions (circle the correct answer)
+- Fill-in-the-blank questions
+- Short-answer questions
+- At least 2 extended response questions (Explain/Describe)
+- Matching or recall-style questions
+- Calculations (if topic is relevant)
+- True/False questions
 
 QUESTION FORMAT per box:
 - Short answer (1-2 marks): question + 2 answer lines (_____)
 - Medium answer (3-4 marks): question + 4 answer lines
-- Explain/describe: question + 5 answer lines
+- Explain/describe (large box): question + 5-6 answer lines
 - Calculation: question + "Show working:" + "Answer: _____"
 - MCQ: question + 4 options a. b. c. d. (student circles — no answer lines)
-- Fill-in-the-blank: sentence with ___ gaps inline, no separate answer lines
-- Match-up: two columns (term | definition) — format as "Term 1 | Definition 1\\nTerm 2 | Definition 2"
-- True/False: statement + "True / False" (student circles)
+- Fill-in-the-blank: sentence with ___ gaps inline
+- Match-up: two columns — format as "Term 1 | Definition 1\\nTerm 2 | Definition 2"
+- True/False: statement + "True / False"
 
-QUESTION VARIETY — spread these types across the mat:
-Circle the correct answer, Fill in the blank, Complete the sentence,
-Calculate (show working), Define the term, Explain why, Name two examples,
-Match up, True or False, State the equation for, Short describe/explain
+STYLE:
+- GCSE / AQA exam style wording
+- Clear, concise questions
+- No answers included in student boxes
 
 JSON FORMAT — CRITICAL:
-- "title": the single letter only — "a", "b", "c" (NOT a section name, NOT "Box a")
-- "type": "revision-mat-box" for ALL student boxes
-- "content": ONLY the question text + answer lines. NO teaching content. NO introductions.
+- "title": the topic name for the title box; single letter ("a", "b", "c"...) for question boxes; "LO" for learning objectives box
+- "type": "revision-mat-title" for the title box, "revision-mat-lo" for LO box, "revision-mat-box" for ALL question boxes
+- "size": "large", "medium", or "small" — REQUIRED for every box
+- "content": ONLY the question text + answer lines. NO teaching content.
   Format answer lines as: "\\n_____________________" repeated as needed.
   Format MCQ options on separate lines: "a. option1\\nb. option2\\nc. option3\\nd. option4"
 

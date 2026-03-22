@@ -518,9 +518,25 @@ export default function History() {
                   }
 
                   {/* Print */}
-                  <Button size="sm" variant="outline" onClick={() => window.print()}>
-                    Print
-                  </Button>
+                  {(() => {
+                    const isRM = sections.some(s => s.type === "revision-mat-box" || s.type === "revision-mat-lo" || s.type === "revision-mat-title");
+                    return (
+                      <Button size="sm" variant="outline" onClick={() => {
+                        if (isRM) {
+                          const style = document.createElement("style");
+                          style.id = "rm-landscape-print";
+                          style.textContent = "@page { size: A4 landscape; margin: 5mm; }";
+                          document.head.appendChild(style);
+                          window.print();
+                          setTimeout(() => { const el = document.getElementById("rm-landscape-print"); if (el) el.remove(); }, 1000);
+                        } else {
+                          window.print();
+                        }
+                      }}>
+                        Print{isRM ? " (Landscape)" : ""}
+                      </Button>
+                    );
+                  })()}
                 </div>
 
                 {/* AI edit prompt panel */}
@@ -616,6 +632,7 @@ export default function History() {
                     overlayColor="transparent"
                     editedSections={editedSections}
                     editMode={false}
+                    isRevisionMat={sections.some(s => s.type === "revision-mat-box" || s.type === "revision-mat-lo" || s.type === "revision-mat-title")}
                   />
                 )}
               </div>

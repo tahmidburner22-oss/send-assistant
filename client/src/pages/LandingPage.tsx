@@ -683,8 +683,8 @@ export default function LandingPage() {
           delay={1.0}
         />
         <HeroFloatingCard
-          label="specialist tools in one platform"
-          value="24"
+          label="UK SEND Code of Practice"
+          value="100% Aligned"
           icon={<Zap className="w-5 h-5" />}
           className="hidden lg:flex bottom-1/4 left-16 xl:left-28"
           delay={1.2}
