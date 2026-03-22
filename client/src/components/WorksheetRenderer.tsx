@@ -2499,6 +2499,12 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                   const bgColour  = BOX_COLOURS[bi % BOX_COLOURS.length];
                   const isBig     = marks >= 6;
                   const isMedBig  = marks >= 4;
+                  // Dynamically shrink font for longer content to prevent cut-off
+                  const contentLength = displayContent.length;
+                  const lineCount = lines.length;
+                  const qFontSize = (contentLength > 200 || lineCount > 8) ? "5.5px"
+                                  : (contentLength > 120 || lineCount > 5) ? "6px"
+                                  : "7px";
 
                   const borderStyle = isBig    ? "2px solid #c0392b"
                                     : isMedBig ? "1.5px solid #d97706"
@@ -2591,7 +2597,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                       ) : (
                         <div style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
                           {/* Question text */}
-                          <div style={{ paddingRight: "20px", marginBottom: "2px", flexShrink: 0 }}>
+                          <div style={{ paddingRight: "20px", marginBottom: "2px", flexShrink: 1, overflow: "hidden", fontSize: qFontSize, wordBreak: "break-word", overflowWrap: "break-word" }}>
                             {lines.map((line: string, li: number) => {
                               const t = line.trim()
                                 .replace(/\*\*(.+?)\*\*/g, "$1")
@@ -2609,7 +2615,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                                     <svg width="7" height="7" viewBox="0 0 9 9" style={{ flexShrink: 0 }}>
                                       <circle cx="4.5" cy="4.5" r="3.5" fill="none" stroke="#9ca3af" strokeWidth="0.9" />
                                     </svg>
-                                    <span style={{ fontSize: "7px" }}
+                                    <span style={{ fontSize: qFontSize }}
                                       dangerouslySetInnerHTML={{ __html: renderMath(t.replace(/^[a-d]\.\s/, "")) }} />
                                   </div>
                                 );
@@ -2632,7 +2638,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                               // Fill-in-the-blank
                               if (t.includes("___")) {
                                 return (
-                                  <div key={li} style={{ marginBottom: "1px", fontSize: "7px", lineHeight: "1.4" }}>
+                                  <div key={li} style={{ marginBottom: "1px", fontSize: qFontSize, lineHeight: "1.4" }}>
                                     {t.split(/(_+)/).map((part: string, pi: number) =>
                                       /^_+$/.test(part)
                                         ? <span key={pi} style={{
@@ -2647,7 +2653,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                               }
                               // Standard line
                               return (
-                                <div key={li} style={{ marginBottom: "1px", fontSize: "7px", lineHeight: "1.35" }}
+                                <div key={li} style={{ marginBottom: "1px", fontSize: qFontSize, lineHeight: "1.35" }}
                                   dangerouslySetInnerHTML={{ __html: renderMath(t) }} />
                               );
                             })}
@@ -2697,8 +2703,9 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                     }}
                   >
                     <div style={{
-                      fontSize: "6px", fontWeight: 700, color: "#9ca3af",
-                      marginBottom: "3px", textTransform: "uppercase", letterSpacing: "0.06em",
+                      fontSize: "7px", fontWeight: 700, color: "#6b7280",
+                      marginBottom: "4px", textTransform: "uppercase", letterSpacing: "0.08em",
+                      textAlign: "center",
                     }}>
                       Extra Working Space
                     </div>

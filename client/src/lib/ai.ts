@@ -516,7 +516,84 @@ export async function aiGenerateWorksheet(params: {
   recallTopic?: string; // When set, prepend 2-3 recall questions on this previous topic at the start of the worksheet
   targetPages?: number; // Target number of printed A4 pages (any positive integer, 0 = auto)
   readingAge?: number; // Target reading age (5–17) — controls vocabulary and sentence complexity
+  isRevisionMat?: boolean; // When true, generate a revision mat instead of a standard worksheet
 }): Promise<AIWorksheetResult> {
+  // ── REVISION MAT: completely separate prompt path ─────────────────────────
+  if (params.isRevisionMat) {
+    const rmSystem = `You are an expert UK teacher creating a GCSE revision mat. You respond with valid raw JSON only — no markdown, no code blocks, no HTML. Every rule below is mandatory.`;
+
+    const rmUser = `Create a revision mat for: Subject: ${params.subject} | Year: ${params.yearGroup} | Topic: ${params.topic}
+
+Return EXACTLY this JSON structure (raw JSON only, no markdown fences):
+{
+  "title": "${params.topic} — ${params.yearGroup} ${params.subject} Worksheet",
+  "sections": [
+    {
+      "type": "revision-mat-title",
+      "title": "",
+      "content": "[TOPIC NAME]\nLO: Students will be able to [one clear learning objective].\nKey Vocabulary:\n[Term 1] — [brief definition]\n[Term 2] — [brief definition]\n[Term 3] — [brief definition]\n[Term 4] — [brief definition]\n[Term 5] — [brief definition]"
+    },
+    { "type": "revision-mat-box", "title": "", "marks": 1, "content": "[COMPLETE 1-mark question — define/state/name/true-false/fill-blank/MCQ]" },
+    { "type": "revision-mat-box", "title": "", "marks": 1, "content": "[COMPLETE 1-mark question — different type from above]" },
+    { "type": "revision-mat-box", "title": "", "marks": 1, "content": "[COMPLETE 1-mark MCQ: stem\na. option\nb. option\nc. option\nd. option]" },
+    { "type": "revision-mat-box", "title": "", "marks": 1, "content": "[COMPLETE 1-mark true/false: statement\nTrue / False]" },
+    { "type": "revision-mat-box", "title": "", "marks": 2, "content": "[COMPLETE 2-mark question — name two / give two examples / explain briefly]" },
+    { "type": "revision-mat-box", "title": "", "marks": 2, "content": "[COMPLETE 2-mark match-up:\nTerm 1 | Definition 1\nTerm 2 | Definition 2\nTerm 3 | Definition 3\nTerm 4 | Definition 4]" },
+    { "type": "revision-mat-box", "title": "", "marks": 2, "content": "[COMPLETE 2-mark question — describe/explain briefly]" },
+    { "type": "revision-mat-box", "title": "", "marks": 3, "content": "[COMPLETE 3-mark question — describe with three points or explain with reason]" },
+    { "type": "revision-mat-box", "title": "", "marks": 3, "content": "[COMPLETE 3-mark question — compare, give three examples, or explain a process]" },
+    { "type": "revision-mat-box", "title": "", "marks": 4, "content": "[COMPLETE 4-mark question — extended describe/explain, include [4 marks] at end]" },
+    { "type": "revision-mat-box", "title": "", "marks": 4, "content": "[COMPLETE 4-mark question — analyse or apply to a scenario, include [4 marks] at end]" },
+    { "type": "revision-mat-box", "title": "", "marks": 6, "content": "Challenge: [COMPLETE 6-mark extended response question — evaluate, assess, or discuss. Include [6 marks] at end.]" },
+    { "type": "mark-scheme", "title": "Mark Scheme", "teacherOnly": true, "content": "[mark scheme for all 12 questions]" }
+  ],
+  "metadata": {
+    "subject": "${params.subject}",
+    "topic": "${params.topic}",
+    "yearGroup": "${params.yearGroup}"
+  }
+}
+
+MANDATORY RULES — violating any rule is wrong:
+1. The revision-mat-title section content MUST start with the topic name on line 1, then "LO: " on line 2, then "Key Vocabulary:" on line 3, then 5 vocab terms (one per line, format: Term — definition). NO asterisks, NO markdown.
+2. Generate EXACTLY 12 revision-mat-box sections with marks: 1,1,1,1,2,2,2,3,3,4,4,6.
+3. Every question must be COMPLETE and make sense on its own. Never truncate. Never use placeholders.
+4. MCQ questions: question stem + all 4 options (a. b. c. d.) in the SAME content field, total max 5 lines.
+5. True/False questions: statement on line 1 (max 15 words), then "True / False" on line 2.
+6. NO asterisks (*) anywhere. NO markdown. NO section headings. title field is always "" for question boxes.
+7. Every question must be specifically about "${params.topic}" — no generic or off-topic questions.
+8. NO answers in question boxes — only questions that students answer.
+9. QUESTION LENGTH LIMITS (boxes are small — keep questions concise):
+   - 1-mark boxes: max 20 words for the question stem. MCQ: stem max 15 words + 4 short options (max 5 words each).
+   - 2-mark boxes: max 25 words. Match-up: max 4 pairs, each term/definition max 6 words.
+   - 3-mark boxes: max 30 words.
+   - 4-mark boxes: max 35 words (these boxes are wider and taller).
+   - 6-mark box: max 40 words (this box is the largest).
+10. Every vocab definition in the title section must be max 8 words.`;
+
+    const { text: rmText, provider: rmProvider } = await callAI(rmSystem, rmUser, 3500);
+    const rmCleaned = rmText.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/i, '').trim();
+    let rmJson: any;
+    try {
+      rmJson = JSON.parse(rmCleaned);
+    } catch (_) {
+      const repaired = repairTruncatedJson(rmCleaned);
+      if (repaired) {
+        try { rmJson = JSON.parse(repaired); } catch { throw new Error('Revision mat JSON parse failed'); }
+      } else {
+        throw new Error('Revision mat JSON parse failed');
+      }
+    }
+    // Strip asterisks from all content
+    if (rmJson.sections && Array.isArray(rmJson.sections)) {
+      rmJson.sections = rmJson.sections.map((s: any) => ({
+        ...s,
+        title: typeof s.title === 'string' ? s.title.replace(/\*/g, '').trim() : s.title,
+        content: typeof s.content === 'string' ? s.content.replace(/\*\*(.+?)\*\*/g, '$1').replace(/\*/g, '').trim() : s.content,
+      }));
+    }
+    return { ...rmJson, isAI: true, provider: rmProvider };
+  }
   // ── Subject flags (declared early so they can be used in template literals below) ──
   const isMaths = params.subject.toLowerCase().includes("math");
 
