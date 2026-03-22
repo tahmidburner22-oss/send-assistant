@@ -726,7 +726,9 @@ You are creating a GCSE-style revision activity mat. Follow these instructions E
 
 PAGE SETUP:
 - A4 landscape orientation, single page only — everything must fit on ONE page
-- Dense layout — NO grey/empty space anywhere. Every gap must be filled with a question box or working-out box
+- Dense jigsaw/mosaic layout — NO grey/empty space anywhere. Every gap must be filled with a question box or working-out box
+- NO main heading/title box — go straight into question boxes
+- NO box headings — do NOT put "Foundation", "Core", "Extension", "Recall", "Apply" or any category label as a box title
 
 ⚠️ CRITICAL RULE — ONE QUESTION PER BOX:
 Each box contains EXACTLY ONE question. This means:
@@ -735,14 +737,14 @@ Each box contains EXACTLY ONE question. This means:
 - CORRECT: { "content": "Name one product of aerobic respiration." }  ← ONE question only
 If you find yourself writing a numbered list inside a box, STOP — split each numbered item into its own separate box.
 
-LAYOUT (CRITICAL — match Twinkl/CGP revision mat style):
-- The page is a 4-column grid of rectangular question boxes
+LAYOUT (CRITICAL — jigsaw/mosaic style):
+- The page is a 5-column mosaic grid of question boxes
 - Each box contains exactly ONE question (see rule above)
-- Include ONE title box in the first position (column 1, row 1) showing the topic name
-- Include ONE Learning Objectives box (LO) with 3-4 brief bullet-point objectives
-- All other boxes are question boxes labelled a, b, c, d... in sequence
-- Aim for 14-18 question boxes total (plus title + LO) — fill the page completely
+- NO title box, NO learning objectives box — start directly with question boxes
+- All boxes are question boxes labelled a, b, c, d... in sequence
+- Aim for 20-25 question boxes total — fill the entire page
 - Box sizes MUST match content: use "size": "small" for short questions (1-2 lines), "size": "medium" for questions needing 3-4 lines, "size": "large" for the 4-marker and 6-marker only
+- Mix sizes to create an irregular jigsaw appearance: mostly small boxes, a few medium, only 2 large
 - If there is any remaining space after all questions, add "Working Out" boxes (type: "revision-mat-box", title: "Working Out", content: "") to fill the page completely
 
 MARK ALLOCATION — CRITICAL:
@@ -753,14 +755,15 @@ MARK ALLOCATION — CRITICAL:
 - Do NOT group multiple questions together — each mark allocation applies to ONE question in ONE box
 
 CONTENT REQUIREMENTS — include ALL of these question types, each as its OWN separate box:
-- Multiple choice (circle the correct answer): 3-4 questions [1 mark each] — each MCQ is its own box
-- Fill-in-the-blank: 3-4 questions [1 mark each] — each fill-in-the-blank is its own box
-- Short-answer recall: 4-5 questions [1-2 marks each] — each question is its own box
-- True/False: 2-3 questions [1 mark each] — each true/false is its own box
+- Multiple choice (circle the correct answer): 4-5 questions [1 mark each] — each MCQ is its own box
+- Fill-in-the-blank: 4-5 questions [1 mark each] — each fill-in-the-blank is its own box
+- Short-answer recall: 5-6 questions [1-2 marks each] — each question is its own box
+- True/False: 3-4 questions [1 mark each] — each true/false is its own box
 - Match-up: 1 question [1 mark per correct match] — the full match-up table is one box
-- Calculations (if topic is maths/science): 1-2 questions [1-2 marks each] — each calculation is its own box
+- Calculations (if topic is maths/science): 2-3 questions [1-2 marks each] — each calculation is its own box
 - ONE 4-mark question (Describe/Explain with 4 answer lines) — its own box
 - ONE 6-mark challenge question (Evaluate/Analyse/Extended response with 6 answer lines) — its own box
+- Working Out boxes to fill any remaining space
 
 QUESTION FORMAT per box:
 - Short answer (1-2 marks): question text only — NO answer lines in content (renderer adds them)
@@ -775,10 +778,12 @@ STYLE:
 - GCSE / AQA exam-style wording — clear, precise, age-appropriate
 - No answers in student boxes
 - Boxes must be TIGHT — only as tall as the content needs, no extra blank space
+- Box titles should be BLANK (empty string "") for most boxes — do NOT add category headings
+- Only exception: "Working Out" boxes can have title "Working Out"
 
 JSON FORMAT — CRITICAL:
-- "title": the topic name for the title box; single lowercase letter ("a", "b", "c"...) for question boxes; "LO" for learning objectives box; "Working Out" for working-out boxes
-- "type": "revision-mat-title" for the title box, "revision-mat-lo" for LO box, "revision-mat-box" for ALL question boxes
+- "title": empty string "" for ALL question boxes (no headings!); "Working Out" for working-out boxes only
+- "type": "revision-mat-box" for ALL boxes (no title box, no LO box)
 - "size": "small" for 1-2 mark questions, "medium" for 3-4 line questions, "large" for the 4-marker and 6-marker only
 - "content": ONLY the question text for ONE question. Do NOT include answer lines — the renderer adds them automatically based on mark count.
   Exception: for MCQ, include the options. For match-up, include the term|definition pairs. For fill-in-the-blank, include the ___ inline.

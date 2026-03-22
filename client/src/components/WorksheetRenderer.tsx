@@ -2176,36 +2176,33 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
         </div>
       )}
 
-      {/* ── Revision Mat — Reference-Style 4-Column Grid Layout ── */}
+      {/* ── Revision Mat — Jigsaw/Mosaic Layout ── */}
       {isRevisionMat && (
         <div style={{ width: "100%" }}>
           <style>{`
             @media print {
-              @page { size: A4 landscape; margin: 8mm; }
+              @page { size: A4 landscape; margin: 6mm; }
               body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-              .rm-grid { page-break-inside: avoid; }
+              .rm-jigsaw { page-break-inside: avoid; }
             }
           `}</style>
           {(() => {
-            // ── Reference-style revision mat: 4-column grid, white boxes, letter labels ──
+            // ── Jigsaw revision mat: 5-column mosaic, no headings, no title box ──
             const rmSections = worksheet.sections
               .filter(s => !s.teacherOnly && s.type !== "answers" && s.type !== "teacher-notes"
-                        && s.type !== "mark-scheme" && s.type !== "adaptations");
+                        && s.type !== "mark-scheme" && s.type !== "adaptations"
+                        && s.type !== "revision-mat-title" && s.type !== "revision-mat-lo");
             if (rmSections.length === 0) return null;
 
             // ── Post-process: split multi-question boxes into individual boxes ──
-            // This ensures one question per box regardless of AI output
             const splitRmSections: any[] = [];
             for (const sec of rmSections) {
               const content = (sec.content || "").trim();
-              // Skip splitting for special types (title, LO, vocabulary, table, match-up)
-              const skipTypes = ["revision-mat-title", "revision-mat-lo", "vocabulary", "table", "match-up", "diagram"];
+              const skipTypes = ["vocabulary", "table", "match-up", "diagram"];
               if (skipTypes.includes(sec.type)) {
                 splitRmSections.push(sec);
                 continue;
               }
-              // Detect multi-question content: lines starting with a. b. c. OR 1. 2. 3.
-              // Split on letter-prefixed lines: /^[a-z]\./m or /^\d+\./m
               const lines = content.split("\n");
               const questionStarts: number[] = [];
               for (let li = 0; li < lines.length; li++) {
@@ -2214,17 +2211,14 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                   questionStarts.push(li);
                 }
               }
-              // Only split if there are 2+ distinct question starts
               if (questionStarts.length < 2) {
                 splitRmSections.push(sec);
                 continue;
               }
-              // Split into individual question boxes
               for (let qi = 0; qi < questionStarts.length; qi++) {
                 const startLine = questionStarts[qi];
                 const endLine = qi + 1 < questionStarts.length ? questionStarts[qi + 1] : lines.length;
                 const qContent = lines.slice(startLine, endLine).join("\n").trim();
-                // Determine marks from content: look for [X marks] or (X marks)
                 const marksMatch = qContent.match(/\[(\d+)\s*marks?\]|\((\d+)\s*marks?\)/i);
                 const marks = marksMatch ? parseInt(marksMatch[1] || marksMatch[2]) : 1;
                 splitRmSections.push({
@@ -2235,56 +2229,42 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                 });
               }
             }
-            // Replace rmSections with split version
             const processedSections = splitRmSections;
 
-            const subj = (worksheet.metadata?.subject || "").toLowerCase();
-            const isMaths = subj.includes("math");
-
-            // Letter labels a, b, c... (skip title and LO boxes)
-            let letterIdx = 0;
-            const getLabel = (section: any): string => {
-              if (section.type === "revision-mat-title") return "";
-              if (section.type === "revision-mat-lo") return "LO";
-              // If AI provided a single-letter title like "a", "b", use it
-              const t = (section.title || "").trim();
-              if (/^[a-z]$/.test(t)) return t;
-              // Otherwise auto-assign
-              const letters = "abcdefghijklmnopqrstuvwxyz";
-              return letters[letterIdx++] || String(letterIdx);
-            };
-
-            // Determine row span: large=2, medium=1, small=1 (all boxes are 1 column wide)
-            const getRowSpan = (section: any): number => {
+            // ── Jigsaw grid layout: 5 columns, irregular row spans ──
+            const COLS = 5;
+            // Determine col span and row span for jigsaw effect
+            const getSpans = (section: any): [number, number] => {
               const sz = (section as any).size || "small";
               const marks = (section as any).marks || 0;
-              if (sz === "large" || marks >= 4) return 2;
-              if (section.type === "revision-mat-title") return 1;
-              if (section.type === "revision-mat-lo") return 1;
-              // medium size = 1 row (but taller minHeight)
-              if (sz === "medium") return 1;
-              return 1;
+              const isMatchUp = (section.content || "").split("\n").filter((l: string) => /\w+\s*\|\s*\w+/.test(l) && !/[=<>]/.test(l)).length >= 2;
+              if (marks >= 6 || sz === "large") return [2, 2]; // 6-marker: 2 cols × 2 rows
+              if (marks >= 4) return [2, 1];                   // 4-marker: 2 cols × 1 row
+              if (isMatchUp) return [2, 1];                    // match-up: 2 cols wide
+              if (sz === "medium") return [1, 2];              // medium: 1 col × 2 rows
+              return [1, 1];                                    // small: 1 col × 1 row
             };
 
-            // Build a 4-column CSS grid layout
-            // Each box occupies 1 column; large boxes span 2 rows
-            const COLS = 4;
-            type PlacedBox = { section: any; label: string; rowSpan: number; colStart: number; rowStart: number };
+            type PlacedBox = { section: any; label: string; colSpan: number; rowSpan: number; colStart: number; rowStart: number };
             const grid: (number | null)[][] = [];
             const placed: PlacedBox[] = [];
+            let letterIdx = 0;
+            const letters = "abcdefghijklmnopqrstuvwxyz";
 
             const ensureRows = (n: number) => {
               while (grid.length < n) grid.push(Array(COLS).fill(null));
             };
 
-            const findCell = (rowSpan: number): [number, number] => {
+            const findCell = (colSpan: number, rowSpan: number): [number, number] => {
               for (let r = 0; r < 100; r++) {
                 ensureRows(r + rowSpan);
-                for (let c = 0; c < COLS; c++) {
+                for (let c = 0; c <= COLS - colSpan; c++) {
                   let fits = true;
-                  for (let dr = 0; dr < rowSpan; dr++) {
+                  outer: for (let dr = 0; dr < rowSpan; dr++) {
                     ensureRows(r + dr + 1);
-                    if (grid[r + dr][c] !== null) { fits = false; break; }
+                    for (let dc = 0; dc < colSpan; dc++) {
+                      if (grid[r + dr][c + dc] !== null) { fits = false; break outer; }
+                    }
                   }
                   if (fits) return [r, c];
                 }
@@ -2294,107 +2274,107 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
 
             for (let si = 0; si < processedSections.length; si++) {
               const section = processedSections[si];
-              const label = getLabel(section);
-              const rowSpan = getRowSpan(section);
-              const [r, c] = findCell(rowSpan);
+              const [colSpan, rowSpan] = getSpans(section);
+              const [r, c] = findCell(colSpan, rowSpan);
               for (let dr = 0; dr < rowSpan; dr++) {
                 ensureRows(r + dr + 1);
-                grid[r + dr][c] = si;
+                for (let dc = 0; dc < colSpan; dc++) {
+                  grid[r + dr][c + dc] = si;
+                }
               }
-              placed.push({ section, label, rowSpan, colStart: c + 1, rowStart: r + 1 });
+              const label = letters[letterIdx++] || String(letterIdx);
+              placed.push({ section, label, colSpan, rowSpan, colStart: c + 1, rowStart: r + 1 });
             }
 
             const totalRows = grid.length;
 
+            // Colour palette for jigsaw boxes — alternating pastel colours
+            const BOX_COLOURS = [
+              "#e8f4fd", "#fef9e7", "#eafaf1", "#fdf2f8", "#f0f4ff",
+              "#fff8e1", "#e8f5e9", "#fce4ec", "#e3f2fd", "#f3e5f5",
+            ];
+
             return (
               <div
-                className="rm-grid"
+                className="rm-jigsaw"
                 style={{
                   display: "grid",
                   gridTemplateColumns: `repeat(${COLS}, 1fr)`,
                   gridTemplateRows: `repeat(${totalRows}, auto)`,
-                  gap: "0",
+                  gap: "2px",
                   width: "100%",
-                  border: "1px solid #999",
+                  backgroundColor: "#555",
                   fontFamily: "Arial, Helvetica, sans-serif",
                   fontSize: "8.5px",
                   lineHeight: "1.4",
-                  backgroundColor: "#999",
+                  padding: "2px",
+                  boxSizing: "border-box",
                 }}
               >
                 {placed.map((box, bi) => {
-                  const { section, label, rowSpan, colStart, rowStart } = box;
+                  const { section, label, colSpan, rowSpan, colStart, rowStart } = box;
                   const origIdx = worksheet.sections.indexOf(section);
                   const rawContent = (editedSections && editedSections[origIdx] !== undefined)
                     ? editedSections[origIdx] : section.content;
                   const displayContent = typeof rawContent === "string" ? rawContent : String(rawContent || "");
-                  const rawTitle = typeof section.title === "string"
-                    ? section.title.replace(/^\*+|\*+$/g, "").trim() : "";
-
-                  const isTitleBox = section.type === "revision-mat-title";
-                  const isLOBox = section.type === "revision-mat-lo";
 
                   const lines = displayContent.split("\n");
                   const isMCQ = /^\s*[a-d]\.\s/m.test(displayContent);
                   const hasInlineBlank = displayContent.includes("___");
                   const isCalc = /calculat|show working|work out/i.test(displayContent);
-                  const isLong = /explain|describe|discuss|evaluate/i.test(displayContent);
-                  const isMatchUp = lines.filter(l => /\w+\s*\|\s*\w+/.test(l) && !/[=<>]/.test(l)).length >= 2;
+                  const isMatchUp = lines.filter((l: string) => /\w+\s*\|\s*\w+/.test(l) && !/[=<>]/.test(l)).length >= 2;
+                  const isWorkingOutBox = (section.title || "").toLowerCase().includes("working out") && !displayContent.trim();
 
-                  // Number of answer lines — driven by marks field, then content heuristics
                   const sectionMarks = (section as any).marks || 0;
-                  const markerCount = lines.filter(l => /^_{3,}$/.test(l.trim())).length;
+                  const markerCount = lines.filter((l: string) => /^_{3,}$/.test(l.trim())).length;
                   const numLines = markerCount > 0 ? markerCount
                     : sectionMarks >= 6 ? 6
                     : sectionMarks >= 4 ? 4
                     : sectionMarks >= 2 ? 2
                     : isCalc ? 3
-                    : isLong ? 5
-                    : 2; // default: 2 lines for 1-mark questions
+                    : 2;
 
                   const isBoxEditing = editMode && onSectionEdit;
-                  const sizeAttr = (section as any).size || "small";
-                  const isWorkingOutBox = (section.title || "").toLowerCase().includes("working out") && !displayContent.trim();
+                  const bgColour = isWorkingOutBox ? "#f9f9f9" : BOX_COLOURS[bi % BOX_COLOURS.length];
+                  const isBig = sectionMarks >= 6;
 
                   return (
                     <div
                       key={bi}
                       style={{
-                        gridColumn: `${colStart}`,
+                        gridColumn: `${colStart} / span ${colSpan}`,
                         gridRow: `${rowStart} / span ${rowSpan}`,
-                        backgroundColor: isTitleBox ? "#1e3a5f" : "#ffffff",
-                        border: "1px solid #999",
-                        padding: isTitleBox ? "8px" : "5px 7px",
+                        backgroundColor: bgColour,
+                        border: isBig ? "2px solid #c0392b" : "1px solid #ccc",
+                        padding: "5px 7px",
                         position: "relative",
                         overflow: "hidden",
                         display: "flex",
                         flexDirection: "column",
-                        minHeight: sizeAttr === "large" ? "80px" : sizeAttr === "medium" ? "55px" : "auto",
+                        borderRadius: "2px",
                       }}
                     >
                       {/* Letter label badge — top right corner */}
-                      {label && (
-                        <div style={{
-                          position: "absolute",
-                          top: "3px",
-                          right: "4px",
-                          width: "13px",
-                          height: "13px",
-                          borderRadius: "50%",
-                          border: isTitleBox ? "1px solid rgba(255,255,255,0.5)" : "1px solid #333",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          fontSize: "7px",
-                          fontWeight: 700,
-                          color: isTitleBox ? "#fff" : "#333",
-                          backgroundColor: isTitleBox ? "rgba(255,255,255,0.15)" : "transparent",
-                          flexShrink: 0,
-                          zIndex: 2,
-                        }}>
-                          {label}
-                        </div>
-                      )}
+                      <div style={{
+                        position: "absolute",
+                        top: "3px",
+                        right: "4px",
+                        width: "13px",
+                        height: "13px",
+                        borderRadius: "50%",
+                        border: "1px solid #666",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: "7px",
+                        fontWeight: 700,
+                        color: "#333",
+                        backgroundColor: "rgba(255,255,255,0.7)",
+                        flexShrink: 0,
+                        zIndex: 2,
+                      }}>
+                        {label}
+                      </div>
 
                       {/* Edit button */}
                       {isBoxEditing && (
@@ -2412,63 +2392,41 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                         >✏️</button>
                       )}
 
-                      {/* Title box */}
-                      {isTitleBox ? (
-                        <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
-                          <div style={{ fontSize: "7px", color: "rgba(255,255,255,0.7)", textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: "3px" }}>
-                            {worksheet.metadata.subject} {worksheet.metadata.yearGroup && `· ${worksheet.metadata.yearGroup}`}
+                      {/* Working Out box */}
+                      {isWorkingOutBox ? (
+                        <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+                          <div style={{ fontSize: "7.5px", fontWeight: 700, color: "#888", marginBottom: "4px", paddingRight: "16px" }}>
+                            Working Out
                           </div>
-                          <div style={{ fontSize: "11px", fontWeight: 900, color: "#fff", lineHeight: 1.2 }}>
-                            {worksheet.metadata.topic || rawTitle}
-                          </div>
-                          <div style={{ fontSize: "7px", color: "rgba(255,255,255,0.6)", marginTop: "3px", fontStyle: "italic" }}>
-                            Revision Activity Mat
-                          </div>
-                        </div>
-                      ) : isLOBox ? (
-                        /* Learning Objectives box */
-                        <div>
-                          <div style={{ fontWeight: 700, fontSize: "8px", marginBottom: "3px", paddingRight: "16px" }}>
-                            Learning Objectives
-                          </div>
-                          {lines.filter(l => l.trim()).map((line, li) => (
-                            <div key={li} style={{ display: "flex", gap: "3px", marginBottom: "2px", paddingLeft: "2px" }}>
-                              <span style={{ flexShrink: 0, color: "#555" }}>•</span>
-                              <span dangerouslySetInnerHTML={{ __html: renderMath(line.replace(/^[-•*]\s*/, "").replace(/^\d+\.\s*/, "").replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")) }} />
-                            </div>
-                          ))}
+                          <div style={{ flex: 1, minHeight: "30px", border: "1px dashed #ccc", borderRadius: "2px" }} />
                         </div>
                       ) : isMatchUp ? (
                         /* Match-up box */
-                        <div style={{ flex: 1 }}>
-                          <div style={{ fontWeight: 600, marginBottom: "3px", paddingRight: "16px", fontSize: "8px" }}>
-                            {rawTitle || "Match the following:"}
+                        <div>
+                          <div style={{ fontSize: "7.5px", color: "#555", fontStyle: "italic", marginBottom: "3px", paddingRight: "16px" }}>
+                            Draw lines to match:
                           </div>
-                          <div style={{ fontSize: "7.5px", color: "#555", fontStyle: "italic", marginBottom: "3px" }}>
-                            Draw lines to match each item.
-                          </div>
-                          {lines.filter(l => /\w+\s*\|\s*\w+/.test(l) && !/[=<>]/.test(l)).map((line, li) => {
+                          {lines.filter((l: string) => /\w+\s*\|\s*\w+/.test(l) && !/[=<>]/.test(l)).map((line: string, li: number) => {
                             const [left, right] = line.split("|").map((s: string) => s.trim());
                             return (
                               <div key={li} style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2px 8px", marginBottom: "2px" }}>
-                                <div style={{ border: "1px solid #ccc", padding: "1px 3px", fontSize: "7.5px", background: "#f9f9f9" }}>{left}</div>
-                                <div style={{ border: "1px solid #ccc", padding: "1px 3px", fontSize: "7.5px", background: "#f9f9f9" }}>{right}</div>
+                                <div style={{ border: "1px solid #ccc", padding: "1px 3px", fontSize: "7.5px", background: "#fff" }}>{left}</div>
+                                <div style={{ border: "1px solid #ccc", padding: "1px 3px", fontSize: "7.5px", background: "#fff" }}>{right}</div>
                               </div>
                             );
                           })}
                         </div>
                       ) : (
-                        /* Standard question box */
+                        /* Standard question box — no heading, just question + answer lines */
                         <div style={{ display: "flex", flexDirection: "column" }}>
                           {/* Question text */}
                           <div style={{ paddingRight: "16px", marginBottom: "3px" }}>
-                            {lines.map((line, li) => {
+                            {lines.map((line: string, li: number) => {
                               const t = line.trim()
                                 .replace(/\*\*(.+?)\*\*/g, "$1")
                                 .replace(/\*\*/g, "");
                               if (!t) return null;
                               if (/^_{3,}$/.test(t)) return null;
-                              // MCQ option
                               if (/^[a-d]\.\s/.test(t)) {
                                 return (
                                   <div key={li} style={{ display: "flex", alignItems: "center", gap: "3px", marginBottom: "1px", paddingLeft: "4px" }}>
@@ -2479,11 +2437,10 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                                   </div>
                                 );
                               }
-                              // True/False
                               if (/^true\s*\/\s*false$/i.test(t)) {
                                 return (
                                   <div key={li} style={{ display: "flex", gap: "10px", marginTop: "2px" }}>
-                                    {["True", "False"].map(opt => (
+                                    {["True", "False"].map((opt: string) => (
                                       <div key={opt} style={{ display: "flex", alignItems: "center", gap: "3px" }}>
                                         <svg width="9" height="9" viewBox="0 0 9 9">
                                           <circle cx="4.5" cy="4.5" r="3.5" fill="none" stroke="#666" strokeWidth="0.8" />
@@ -2494,11 +2451,10 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                                   </div>
                                 );
                               }
-                              // Inline blank
                               if (t.includes("___")) {
                                 return (
                                   <div key={li} style={{ marginBottom: "2px" }}>
-                                    {t.split(/(_+)/).map((part, pi) =>
+                                    {t.split(/(_+)/).map((part: string, pi: number) =>
                                       /^_+$/.test(part)
                                         ? <span key={pi} style={{ display: "inline-block", borderBottom: "1px solid #333", minWidth: "32px", marginLeft: "1px", marginRight: "1px" }}>&nbsp;&nbsp;&nbsp;&nbsp;</span>
                                         : <span key={pi} dangerouslySetInnerHTML={{ __html: renderMath(part) }} />
@@ -2512,30 +2468,26 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                             })}
                           </div>
 
-                          {/* Answer space — sits directly below question, no grey gap */}
-                          {!isMCQ && !hasInlineBlank && !isWorkingOutBox && (
+                          {/* Answer space — sits directly below question */}
+                          {!isMCQ && !hasInlineBlank && (
                             <div style={{ marginTop: "3px" }}>
                               {isCalc ? (
                                 <>
-                                  <div style={{ fontSize: "7.5px", color: "#555", fontStyle: "italic", marginBottom: "2px" }}>Show working:</div>
+                                  <div style={{ fontSize: "7px", color: "#888", fontStyle: "italic", marginBottom: "2px" }}>Show working:</div>
                                   {Array.from({ length: numLines - 1 }).map((_, li) => (
-                                    <div key={li} style={{ borderBottom: "1px solid #bbb", marginBottom: "5px", height: "10px" }} />
+                                    <div key={li} style={{ borderBottom: "1px solid #ccc", marginBottom: "5px", height: "10px" }} />
                                   ))}
                                   <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                                    <span style={{ fontSize: "7.5px", fontWeight: 600 }}>Answer:</span>
-                                    <div style={{ flex: 1, borderBottom: "1px solid #333" }} />
+                                    <span style={{ fontSize: "7px", fontWeight: 600 }}>Ans:</span>
+                                    <div style={{ flex: 1, borderBottom: "1px solid #999" }} />
                                   </div>
                                 </>
                               ) : (
                                 Array.from({ length: numLines }).map((_, li) => (
-                                  <div key={li} style={{ borderBottom: "1px solid #bbb", marginBottom: "5px", height: "10px" }} />
+                                  <div key={li} style={{ borderBottom: "1px solid #ccc", marginBottom: "5px", height: "10px" }} />
                                 ))
                               )}
                             </div>
-                          )}
-                          {/* Working Out box — large blank area with dotted border */}
-                          {isWorkingOutBox && (
-                            <div style={{ flex: 1, minHeight: "40px", border: "1px dashed #ccc", borderRadius: "2px", marginTop: "4px" }} />
                           )}
                         </div>
                       )}
