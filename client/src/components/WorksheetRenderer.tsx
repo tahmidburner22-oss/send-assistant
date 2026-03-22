@@ -2193,6 +2193,51 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                         && s.type !== "mark-scheme" && s.type !== "adaptations");
             if (rmSections.length === 0) return null;
 
+            // ── Post-process: split multi-question boxes into individual boxes ──
+            // This ensures one question per box regardless of AI output
+            const splitRmSections: any[] = [];
+            for (const sec of rmSections) {
+              const content = (sec.content || "").trim();
+              // Skip splitting for special types (title, LO, vocabulary, table, match-up)
+              const skipTypes = ["revision-mat-title", "revision-mat-lo", "vocabulary", "table", "match-up", "diagram"];
+              if (skipTypes.includes(sec.type)) {
+                splitRmSections.push(sec);
+                continue;
+              }
+              // Detect multi-question content: lines starting with a. b. c. OR 1. 2. 3.
+              // Split on letter-prefixed lines: /^[a-z]\./m or /^\d+\./m
+              const lines = content.split("\n");
+              const questionStarts: number[] = [];
+              for (let li = 0; li < lines.length; li++) {
+                const line = lines[li].trim();
+                if (/^[a-z]\s*[.)]/i.test(line) || /^\d+\s*[.)]/i.test(line)) {
+                  questionStarts.push(li);
+                }
+              }
+              // Only split if there are 2+ distinct question starts
+              if (questionStarts.length < 2) {
+                splitRmSections.push(sec);
+                continue;
+              }
+              // Split into individual question boxes
+              for (let qi = 0; qi < questionStarts.length; qi++) {
+                const startLine = questionStarts[qi];
+                const endLine = qi + 1 < questionStarts.length ? questionStarts[qi + 1] : lines.length;
+                const qContent = lines.slice(startLine, endLine).join("\n").trim();
+                // Determine marks from content: look for [X marks] or (X marks)
+                const marksMatch = qContent.match(/\[(\d+)\s*marks?\]|\((\d+)\s*marks?\)/i);
+                const marks = marksMatch ? parseInt(marksMatch[1] || marksMatch[2]) : 1;
+                splitRmSections.push({
+                  ...sec,
+                  content: qContent,
+                  marks,
+                  size: marks >= 4 ? "large" : marks >= 3 ? "medium" : "small",
+                });
+              }
+            }
+            // Replace rmSections with split version
+            const processedSections = splitRmSections;
+
             const subj = (worksheet.metadata?.subject || "").toLowerCase();
             const isMaths = subj.includes("math");
 
@@ -2247,8 +2292,8 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
               return [0, 0];
             };
 
-            for (let si = 0; si < rmSections.length; si++) {
-              const section = rmSections[si];
+            for (let si = 0; si < processedSections.length; si++) {
+              const section = processedSections[si];
               const label = getLabel(section);
               const rowSpan = getRowSpan(section);
               const [r, c] = findCell(rowSpan);
