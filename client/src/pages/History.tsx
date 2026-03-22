@@ -322,16 +322,20 @@ export default function History() {
             const isSelected = selectedIds.has(ws.id);
             const subjectName = subjects.find(s => s.id === ws.subject)?.name || ws.subject;
             const needName = ws.sendNeed ? sendNeeds.find(n => n.id === ws.sendNeed)?.name : null;
+            const wsIsRM = (ws.sections || []).some((s: any) => s.type === "revision-mat-box" || s.type === "revision-mat-lo" || s.type === "revision-mat-title");
             return (
               <motion.div key={ws.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}>
                 <Card className={`border-border/50 hover:shadow-md transition-shadow ${bulkMode ? "" : "cursor-pointer"} ${isSelected ? "ring-2 ring-brand border-brand" : ""}`}
                 onClick={() => bulkMode ? toggleSelectId(ws.id) : openWorksheet(ws)}>
                   <CardContent className="p-4 flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-brand-light flex items-center justify-center flex-shrink-0">
-                      <FileText className="w-5 h-5 text-brand" />
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${wsIsRM ? "bg-amber-100" : "bg-brand-light"}`}>
+                      {wsIsRM ? <span className="text-lg">📐</span> : <FileText className="w-5 h-5 text-brand" />}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h4 className="text-sm font-semibold text-foreground truncate">{ws.title.split(' | ')[0].split(' | ')[0]}</h4>
+                      <div className="flex items-center gap-2">
+                        <h4 className="text-sm font-semibold text-foreground truncate">{ws.title.split(' | ')[0].split(' | ')[0]}</h4>
+                        {wsIsRM && <span className="text-[10px] font-semibold bg-amber-100 text-amber-700 border border-amber-300 rounded px-1.5 py-0.5 flex-shrink-0">Revision Mat</span>}
+                      </div>
                       <p className="text-xs text-muted-foreground mt-0.5">
                         {subjectName} · {ws.yearGroup} · {ws.difficulty}{needName ? ` · ${needName}` : ""}
                       </p>
