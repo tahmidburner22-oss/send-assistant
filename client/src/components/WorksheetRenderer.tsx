@@ -2286,7 +2286,29 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
               placed.push({ section, label, colSpan, rowSpan, colStart: c + 1, rowStart: r + 1 });
             }
 
-            const totalRows = grid.length;
+            // ── Fill remaining empty cells with a flexible Extra Working Space box ──
+            // Find the bounding rectangle of all empty cells in the grid
+            let emptyColStart = COLS; // leftmost empty col (0-indexed)
+            let emptyColEnd = 0;     // rightmost empty col (0-indexed, inclusive)
+            let emptyRowStart = -1;  // first row with any empty cell
+            let emptyRowEnd = -1;    // last row with any empty cell
+            for (let r = 0; r < grid.length; r++) {
+              for (let c = 0; c < COLS; c++) {
+                if (grid[r][c] === null) {
+                  if (emptyRowStart === -1) emptyRowStart = r;
+                  emptyRowEnd = r;
+                  if (c < emptyColStart) emptyColStart = c;
+                  if (c > emptyColEnd) emptyColEnd = c;
+                }
+              }
+            }
+            const hasEmptySpace = emptyRowStart !== -1;
+            const wsColSpan = hasEmptySpace ? (emptyColEnd - emptyColStart + 1) : COLS;
+            const wsRowSpan = hasEmptySpace ? (emptyRowEnd - emptyRowStart + 1) : 1;
+            const wsColStart = hasEmptySpace ? emptyColStart + 1 : 1; // 1-indexed
+            const wsRowStart = hasEmptySpace ? emptyRowStart + 1 : (grid.length + 1); // 1-indexed
+
+            const totalRows = Math.max(grid.length, wsRowStart + wsRowSpan - 1);
 
             // Colour palette for jigsaw boxes — alternating pastel colours
             const BOX_COLOURS = [
@@ -2495,6 +2517,31 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                     </div>
                   );
                 })}
+
+                {/* ── Extra Working Space — fills all remaining empty grid cells ── */}
+                <div
+                  style={{
+                    gridColumn: `${wsColStart} / span ${wsColSpan}`,
+                    gridRow: `${wsRowStart} / span ${wsRowSpan}`,
+                    backgroundColor: "#fafafa",
+                    border: "1px dashed #bbb",
+                    padding: "5px 7px",
+                    position: "relative",
+                    display: "flex",
+                    flexDirection: "column",
+                    borderRadius: "2px",
+                    minHeight: "40px",
+                  }}
+                >
+                  <div style={{ fontSize: "7.5px", fontWeight: 700, color: "#999", marginBottom: "4px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                    Extra Working Space
+                  </div>
+                  <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-around" }}>
+                    {Array.from({ length: Math.max(3, wsRowSpan * wsColSpan * 2) }).map((_, li) => (
+                      <div key={li} style={{ borderBottom: "1px solid #e0e0e0", height: "12px" }} />
+                    ))}
+                  </div>
+                </div>
               </div>
             );
           })()}
