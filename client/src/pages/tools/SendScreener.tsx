@@ -23,6 +23,7 @@ import {
   Save, PlayCircle
 } from "lucide-react";
 import { useApp } from "@/contexts/AppContext";
+import { aiRewriteTextToReadingAge } from "@/lib/ai";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface Question {
@@ -517,7 +518,10 @@ export default function SendScreener() {
   const [, setLocation] = useLocation();
   const [step, setStep] = useState<"intro" | "mode-select" | "questions" | "results">("intro");
   const [screenerMode, setScreenerMode] = useState<ScreenerMode>("full");
-  const [readingAge, setReadingAge] = useState(0); // 0 = default (no simplification), 7-17 = target reading age
+  const [readingAge, setReadingAge] = useState(0); // 0 = default (no simplification), 5-17 = target reading age
+  const [rewrittenQuestions, setRewrittenQuestions] = useState<Record<string, string>>({}); // cache: "questionId:age" -> rewritten text
+  const [rewriteLoading, setRewriteLoading] = useState(false);
+  const readingAgeDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [direction, setDirection] = useState<1 | -1>(1);
@@ -580,6 +584,35 @@ export default function SendScreener() {
       return () => clearTimeout(timer);
     }
   }, [justAnswered, currentAnswer, currentQuestionIndex, totalQ]);
+
+  // ─── Reading Age AI Rewrite ──────────────────────────────────────────────────
+  // When reading age or current question changes, debounce then call AI to rewrite
+  useEffect(() => {
+    if (readingAge === 0 || !currentItem) return;
+    const cacheKey = `${currentItem.question.id}:${readingAge}`;
+    if (rewrittenQuestions[cacheKey]) return; // already cached
+    // Debounce: wait 600ms after slider stops moving
+    if (readingAgeDebounceRef.current) clearTimeout(readingAgeDebounceRef.current);
+    readingAgeDebounceRef.current = setTimeout(async () => {
+      setRewriteLoading(true);
+      try {
+        const rewritten = await aiRewriteTextToReadingAge({
+          text: currentItem.question.text,
+          targetAge: readingAge,
+          context: `SEND screener question about ${currentItem.section.title}`,
+        });
+        setRewrittenQuestions(prev => ({ ...prev, [cacheKey]: rewritten }));
+      } catch (err) {
+        console.error("Reading age rewrite failed:", err);
+        // Fall back to original text on error
+        setRewrittenQuestions(prev => ({ ...prev, [cacheKey]: currentItem.question.text }));
+      }
+      setRewriteLoading(false);
+    }, 600);
+    return () => {
+      if (readingAgeDebounceRef.current) clearTimeout(readingAgeDebounceRef.current);
+    };
+  }, [readingAge, currentQuestionIndex]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function handleAnswer(qId: string, value: number) {
     setAnswers(prev => ({ ...prev, [qId]: value }));
@@ -1026,33 +1059,44 @@ export default function SendScreener() {
           </div>
         </div>
 
-        {/* Reading age slider */}
+        {/* Reading age slider — AI-powered, matches worksheet reading age system */}
         <div className="mb-4 bg-indigo-50 border border-indigo-200 rounded-xl p-3 space-y-2">
           <div className="flex items-center justify-between">
             <p className="text-xs font-semibold text-indigo-800">📚 Reading Age</p>
             <span className="text-xs font-bold text-indigo-700">
-              {readingAge === 0 ? "Default" : `Age ${readingAge}`}
+              {readingAge === 0 ? "Auto (default)" : readingAge >= 17 ? "Age 17+" : `Age ${readingAge}`}
+              {rewriteLoading && <span className="ml-1 text-indigo-400 animate-pulse">✦</span>}
             </span>
           </div>
-          <input
-            type="range"
-            min={0}
-            max={17}
-            step={1}
-            value={readingAge}
-            onChange={e => setReadingAge(Number(e.target.value))}
-            className="w-full accent-indigo-600"
-          />
-          <div className="flex justify-between text-[10px] text-indigo-500">
-            <span>Default</span>
-            <span>Age 7</span>
-            <span>Age 10</span>
-            <span>Age 13</span>
-            <span>Age 17</span>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] text-indigo-400 w-4">5</span>
+            <input
+              type="range"
+              min={0}
+              max={13}
+              step={1}
+              value={readingAge === 0 ? 0 : readingAge <= 5 ? 1 : readingAge <= 6 ? 2 : readingAge <= 7 ? 3 : readingAge <= 8 ? 4 : readingAge <= 9 ? 5 : readingAge <= 10 ? 6 : readingAge <= 11 ? 7 : readingAge <= 12 ? 8 : readingAge <= 13 ? 9 : readingAge <= 14 ? 10 : readingAge <= 15 ? 11 : readingAge <= 16 ? 12 : 13}
+              onChange={e => {
+                const v = Number(e.target.value);
+                if (v === 0) setReadingAge(0);
+                else {
+                  const ages = [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
+                  setReadingAge(ages[v - 1] ?? 0);
+                }
+              }}
+              className="flex-1 h-2 accent-indigo-600 cursor-pointer"
+            />
+            <span className="text-[10px] text-indigo-400 w-5">17+</span>
           </div>
-          {readingAge > 0 && (
-            <p className="text-[10px] text-indigo-600">Questions simplified to reading age {readingAge}.</p>
-          )}
+          <div className="flex justify-between text-[9px] text-indigo-400 px-5">
+            <span>Auto</span>
+            <span>KS1</span>
+            <span>KS2</span>
+            <span>KS3</span>
+            <span>GCSE</span>
+            <span>A-Level</span>
+          </div>
+          <p className="text-[10px] text-indigo-500">Rewrites question wording to match the selected reading age using AI. Meaning is preserved.</p>
         </div>
 
         {/* Question card */}
@@ -1071,7 +1115,10 @@ export default function SendScreener() {
                 questionTextSize === "xl" ? "text-xl" :
                 "text-base"
               }`}>
-                {readingAge > 0 ? simplifyText(question.text, question.id) : question.text}
+                {readingAge > 0
+                  ? (rewrittenQuestions[`${question.id}:${readingAge}`] ||
+                     (rewriteLoading ? question.text : question.text))
+                  : question.text}
               </p>
               {question.example && (
                 <div className="mt-3 p-3 bg-indigo-50 border border-indigo-100 rounded-xl">

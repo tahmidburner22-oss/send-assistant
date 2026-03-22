@@ -2211,13 +2211,13 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
 
             // Determine row span: large=2, medium=1, small=1 (all boxes are 1 column wide)
             const getRowSpan = (section: any): number => {
-              if ((section as any).size === "large") return 2;
+              const sz = (section as any).size || "small";
+              const marks = (section as any).marks || 0;
+              if (sz === "large" || marks >= 4) return 2;
               if (section.type === "revision-mat-title") return 1;
               if (section.type === "revision-mat-lo") return 1;
-              const c = (section.content || "").toLowerCase();
-              if (c.includes("explain") || c.includes("describe") || c.includes("discuss") || c.includes("evaluate")) return 2;
-              const lineCount = (section.content || "").split("\n").filter((l: string) => l.trim()).length;
-              if (lineCount >= 6) return 2;
+              // medium size = 1 row (but taller minHeight)
+              if (sz === "medium") return 1;
               return 1;
             };
 
@@ -2296,11 +2296,20 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                   const isLong = /explain|describe|discuss|evaluate/i.test(displayContent);
                   const isMatchUp = lines.filter(l => /\w+\s*\|\s*\w+/.test(l) && !/[=<>]/.test(l)).length >= 2;
 
-                  // Number of answer lines to show
+                  // Number of answer lines — driven by marks field, then content heuristics
+                  const sectionMarks = (section as any).marks || 0;
                   const markerCount = lines.filter(l => /^_{3,}$/.test(l.trim())).length;
-                  const numLines = markerCount > 0 ? markerCount : isCalc ? 4 : isLong ? 6 : 3;
+                  const numLines = markerCount > 0 ? markerCount
+                    : sectionMarks >= 6 ? 6
+                    : sectionMarks >= 4 ? 4
+                    : sectionMarks >= 2 ? 2
+                    : isCalc ? 3
+                    : isLong ? 5
+                    : 2; // default: 2 lines for 1-mark questions
 
                   const isBoxEditing = editMode && onSectionEdit;
+                  const sizeAttr = (section as any).size || "small";
+                  const isWorkingOutBox = (section.title || "").toLowerCase().includes("working out") && !displayContent.trim();
 
                   return (
                     <div
@@ -2315,7 +2324,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                         overflow: "hidden",
                         display: "flex",
                         flexDirection: "column",
-                        minHeight: rowSpan === 2 ? "80px" : "40px",
+                        minHeight: sizeAttr === "large" ? "80px" : sizeAttr === "medium" ? "55px" : "auto",
                       }}
                     >
                       {/* Letter label badge — top right corner */}
@@ -2405,7 +2414,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                         </div>
                       ) : (
                         /* Standard question box */
-                        <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+                        <div style={{ display: "flex", flexDirection: "column" }}>
                           {/* Question text */}
                           <div style={{ paddingRight: "16px", marginBottom: "3px" }}>
                             {lines.map((line, li) => {
@@ -2458,14 +2467,14 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                             })}
                           </div>
 
-                          {/* Answer space */}
-                          {!isMCQ && !hasInlineBlank && (
-                            <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
+                          {/* Answer space — sits directly below question, no grey gap */}
+                          {!isMCQ && !hasInlineBlank && !isWorkingOutBox && (
+                            <div style={{ marginTop: "3px" }}>
                               {isCalc ? (
                                 <>
                                   <div style={{ fontSize: "7.5px", color: "#555", fontStyle: "italic", marginBottom: "2px" }}>Show working:</div>
-                                  {Array.from({ length: 3 }).map((_, li) => (
-                                    <div key={li} style={{ borderBottom: "1px solid #bbb", marginBottom: "4px", height: "11px" }} />
+                                  {Array.from({ length: numLines - 1 }).map((_, li) => (
+                                    <div key={li} style={{ borderBottom: "1px solid #bbb", marginBottom: "5px", height: "10px" }} />
                                   ))}
                                   <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
                                     <span style={{ fontSize: "7.5px", fontWeight: 600 }}>Answer:</span>
@@ -2474,10 +2483,14 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                                 </>
                               ) : (
                                 Array.from({ length: numLines }).map((_, li) => (
-                                  <div key={li} style={{ borderBottom: "1px solid #bbb", marginBottom: "4px", height: "11px" }} />
+                                  <div key={li} style={{ borderBottom: "1px solid #bbb", marginBottom: "5px", height: "10px" }} />
                                 ))
                               )}
                             </div>
+                          )}
+                          {/* Working Out box — large blank area with dotted border */}
+                          {isWorkingOutBox && (
+                            <div style={{ flex: 1, minHeight: "40px", border: "1px dashed #ccc", borderRadius: "2px", marginTop: "4px" }} />
                           )}
                         </div>
                       )}
