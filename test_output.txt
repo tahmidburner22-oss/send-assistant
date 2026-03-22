@@ -1,0 +1,27 @@
+
+> adaptly@1.0.0 test /home/ubuntu/send-assistant
+> vitest run
+
+
+ RUN  v2.1.9 /home/ubuntu/send-assistant
+
+stdout | server/tests/billing.test.ts > Billing Webhook Routes
+✅ Database ready at /home/ubuntu/send-assistant/data/send-assistant.db
+
+stdout | server/tests/auth.test.ts > Auth Routes
+✅ Database ready at /home/ubuntu/send-assistant/data/send-assistant.db
+
+ ✓ server/tests/billing.test.ts (2 tests) 131ms
+stdout | server/tests/auth.test.ts > Auth Routes > should register a new user
+📧 [DEV EMAIL] To: test-95cdd4df-da31-45e6-b1bd-5adaffdf5b39@example.com | Subject: Verify your Adaptly email
+
+ ✓ server/tests/auth.test.ts (4 tests) 1338ms
+   ✓ Auth Routes > should register a new user 443ms
+   ✓ Auth Routes > should login successfully 456ms
+   ✓ Auth Routes > should fail login with wrong password 371ms
+
+ Test Files  2 passed (2)
+      Tests  6 passed (6)
+   Start at  13:24:26
+   Duration  2.06s (transform 186ms, setup 0ms, collect 922ms, tests 1.47s, environment 1ms, prepare 155ms)
+

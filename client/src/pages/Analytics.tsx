@@ -9,7 +9,7 @@ import {
 } from "recharts";
 import {
   BarChart3, FileText, BookOpen, Users, Clock, Star, TrendingUp,
-  TrendingDown, Minus, Sparkles, Award, Shield,
+  TrendingDown, Minus, Sparkles, Award, Shield, Gamepad2, Target, GraduationCap,
 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 
@@ -101,6 +101,64 @@ export default function Analytics() {
   }, [worksheetHistory, storyHistory, differentiationHistory]);
 
   const hasData = totalWorksheets > 0 || totalStories > 0 || totalDiffs > 0;
+
+  // ── Outcome-focused: quiz results from API ──────────────────────────────────
+  const [quizResults, setQuizResults] = useState<any[]>([]);
+  useEffect(() => {
+    if (!user?.token) return;
+    fetch("/api/quiz/results", { headers: { Authorization: `Bearer ${user.token}` } })
+      .then(r => r.ok ? r.json() : [])
+      .then(d => setQuizResults(Array.isArray(d) ? d : []))
+      .catch(() => {});
+  }, [user?.token]);
+
+  const quizByPupil = useMemo(() => {
+    const m: Record<string, { name: string; scores: number[]; avg: number }> = {};
+    quizResults.forEach(r => {
+      if (!m[r.pupil_name]) m[r.pupil_name] = { name: r.pupil_name, scores: [], avg: 0 };
+      const pct = r.total_questions > 0 ? Math.round((r.score / r.total_questions) * 100) : 0;
+      m[r.pupil_name].scores.push(pct);
+    });
+    return Object.values(m).map(p => ({
+      ...p,
+      avg: p.scores.length ? Math.round(p.scores.reduce((a, b) => a + b, 0) / p.scores.length) : 0,
+    })).sort((a, b) => b.avg - a.avg).slice(0, 10);
+  }, [quizResults]);
+
+  const quizTrend = useMemo(() => {
+    const now = new Date();
+    return Array.from({ length: 6 }, (_, w) => {
+      const weekStart = new Date(now);
+      weekStart.setDate(now.getDate() - (5 - w) * 7);
+      weekStart.setHours(0, 0, 0, 0);
+      const weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekStart.getDate() + 7);
+      const label = weekStart.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+      const inRange = (d: string) => { const t = new Date(d); return t >= weekStart && t < weekEnd; };
+      const week = quizResults.filter(r => inRange(r.played_at));
+      const avg = week.length
+        ? Math.round(week.reduce((s, r) => s + (r.total_questions > 0 ? (r.score / r.total_questions) * 100 : 0), 0) / week.length)
+        : 0;
+      return { week: label, avgScore: avg, games: week.length };
+    });
+  }, [quizResults]);
+
+  // Pupil assignment completion rates
+  const pupilProgress = useMemo(() => {
+    return children.map(p => {
+      const total = p.assignments?.length || 0;
+      const done = p.assignments?.filter((a: any) => a.status === "completed").length || 0;
+      const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+      return { name: p.name.split(" ")[0], total, done, pct };
+    }).filter(p => p.total > 0).sort((a, b) => b.pct - a.pct).slice(0, 8);
+  }, [children]);
+
+  // Worksheet ratings distribution
+  const ratingDist = useMemo(() => {
+    const dist = [0, 0, 0, 0, 0];
+    worksheetHistory.forEach(w => { if (w.rating && w.rating >= 1 && w.rating <= 5) dist[w.rating - 1]++; });
+    return [1, 2, 3, 4, 5].map((r, i) => ({ rating: `${r}★`, count: dist[i] }));
+  }, [worksheetHistory]);
 
   const stats = [
     { label: "Worksheets", value: totalWorksheets, icon: FileText, color: "text-brand", bg: "bg-brand-light" },
@@ -238,6 +296,97 @@ export default function Analytics() {
                     </Pie>
                     <Tooltip />
                   </PieChart>
+                </ResponsiveContainer>
+              </CardContent></Card>
+            </motion.div>
+          )}
+
+          {/* ── Outcome-focused sections ── */}
+          {pupilProgress.length > 0 && (
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18 }}>
+              <Card className="border-border/50"><CardContent className="p-4">
+                <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-1.5">
+                  <Target className="w-4 h-4 text-teal-600" /> Pupil Assignment Completion
+                </h3>
+                <div className="space-y-2">
+                  {pupilProgress.map(p => (
+                    <div key={p.name} className="flex items-center gap-2">
+                      <span className="text-xs text-foreground w-16 truncate">{p.name}</span>
+                      <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                        <div
+                          className={`h-full rounded-full transition-all ${p.pct >= 80 ? "bg-green-500" : p.pct >= 50 ? "bg-amber-500" : "bg-red-400"}`}
+                          style={{ width: `${p.pct}%` }}
+                        />
+                      </div>
+                      <span className="text-xs font-semibold text-muted-foreground w-10 text-right">{p.done}/{p.total}</span>
+                      <span className="text-xs font-bold w-8 text-right" style={{ color: p.pct >= 80 ? "#10B981" : p.pct >= 50 ? "#F59E0B" : "#EF4444" }}>{p.pct}%</span>
+                    </div>
+                  ))}
+                </div>
+              </CardContent></Card>
+            </motion.div>
+          )}
+
+          {quizResults.length > 0 && (
+            <>
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+                <Card className="border-border/50"><CardContent className="p-4">
+                  <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-1.5">
+                    <Gamepad2 className="w-4 h-4 text-purple-600" /> QuizBlast — Average Score Trend
+                  </h3>
+                  <ResponsiveContainer width="100%" height={160}>
+                    <LineChart data={quizTrend}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                      <XAxis dataKey="week" tick={{ fontSize: 9 }} />
+                      <YAxis tick={{ fontSize: 10 }} domain={[0, 100]} unit="%" />
+                      <Tooltip formatter={(v: any) => [`${v}%`, "Avg Score"]} />
+                      <Line type="monotone" dataKey="avgScore" stroke="#7C3AED" strokeWidth={2} dot={{ r: 3 }} name="Avg Score" />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </CardContent></Card>
+              </motion.div>
+
+              {quizByPupil.length > 0 && (
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.22 }}>
+                  <Card className="border-border/50"><CardContent className="p-4">
+                    <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-1.5">
+                      <GraduationCap className="w-4 h-4 text-indigo-600" /> QuizBlast — Pupil Performance
+                    </h3>
+                    <div className="space-y-2">
+                      {quizByPupil.map(p => (
+                        <div key={p.name} className="flex items-center gap-2">
+                          <span className="text-xs text-foreground w-20 truncate">{p.name}</span>
+                          <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                            <div
+                              className={`h-full rounded-full ${p.avg >= 80 ? "bg-green-500" : p.avg >= 60 ? "bg-amber-500" : "bg-red-400"}`}
+                              style={{ width: `${p.avg}%` }}
+                            />
+                          </div>
+                          <span className="text-xs font-bold w-10 text-right" style={{ color: p.avg >= 80 ? "#10B981" : p.avg >= 60 ? "#F59E0B" : "#EF4444" }}>{p.avg}%</span>
+                          <span className="text-[10px] text-muted-foreground w-12 text-right">{p.scores.length} game{p.scores.length !== 1 ? "s" : ""}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent></Card>
+                </motion.div>
+              )}
+            </>
+          )}
+
+          {ratingDist.some(r => r.count > 0) && (
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.24 }}>
+              <Card className="border-border/50"><CardContent className="p-4">
+                <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-1.5">
+                  <Star className="w-4 h-4 text-amber-500" /> Worksheet Quality Ratings
+                </h3>
+                <ResponsiveContainer width="100%" height={140}>
+                  <BarChart data={ratingDist}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                    <XAxis dataKey="rating" tick={{ fontSize: 11 }} />
+                    <YAxis tick={{ fontSize: 10 }} allowDecimals={false} />
+                    <Tooltip />
+                    <Bar dataKey="count" fill="#F59E0B" radius={[4,4,0,0]} name="Worksheets" />
+                  </BarChart>
                 </ResponsiveContainer>
               </CardContent></Card>
             </motion.div>

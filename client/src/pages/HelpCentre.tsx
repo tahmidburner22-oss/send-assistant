@@ -20,6 +20,8 @@ const categories = [
     title: "AI Tools",
     articles: [
       { q: "How do I generate a worksheet?", a: "Click 'Worksheets' in the navigation. Select the subject, topic, year group, and SEND need. Click 'Generate' and the AI will create a differentiated worksheet. You can regenerate or edit the output." },
+      { q: "What is a Revision Mat and how do I create one?", a: "A Revision Mat is a landscape grid worksheet with a central LO and Key Vocabulary box surrounded by 12 question boxes at different difficulty levels. To create one, go to Worksheets, select your subject and topic, then toggle on 'Revision Mat' before clicking Generate. The mat is automatically saved to your History with a 'Revision Mat' badge." },
+      { q: "How does QuizBlast work?", a: "QuizBlast is a live classroom quiz game. Go to QuizBlast in the navigation, select a worksheet or create custom questions, then start a room. Share the room code with pupils — they join on any device at adaptly.co.uk/quiz/join. Results are automatically saved to Analytics so you can track pupil performance over time." },
       { q: "How do I create a story?", a: "Click 'Stories' in the navigation. Enter the genre, characters, setting, and reading level. The AI will generate a story with optional comprehension questions." },
       { q: "What is the Differentiation tool?", a: "The Differentiation tool takes any existing task or text and adapts it for specific SEND needs. Paste your original task, select the SEND need, and click 'Differentiate'." },
       { q: "Is AI-generated content labelled?", a: "Yes. All AI-generated content is clearly marked with an 'AI-generated' badge. This helps you identify content that should be reviewed before use with pupils." },
@@ -33,6 +35,7 @@ const categories = [
       { q: "How do I bulk import pupils?", a: "Go to Pupils > Bulk Import. Download the CSV template, fill it in with your pupils' details, and upload it. The system will create all profiles at once." },
       { q: "How do I assign work to a pupil?", a: "Open a pupil's profile and click 'Assign Work'. Select a worksheet or story from your history, or create a new one. The pupil's parent can view assigned work via the Parent Portal." },
       { q: "What is the Parent Portal?", a: "The Parent Portal allows parents to view their child's assigned work and submit completed work. Share the portal link and your child's access code (shown in their profile) with parents." },
+      { q: "How does two-way messaging in the Parent Portal work?", a: "Teachers and SENCOs can send messages directly to parents through the Parent Portal. Parents can reply and the conversation is tracked in the pupil's profile. Go to a pupil's profile and click 'Messages' to start a conversation. You'll receive a real-time notification when a parent replies." },
     ],
   },
   {

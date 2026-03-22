@@ -361,6 +361,63 @@ router.post("/rooms/:code/next", requireAuth, (req: Request, res: Response) => {
   res.json(sanitiseRoom(room));
 });
 
+// POST /api/quiz/rooms/:code/save-results — host saves final results to pupil profiles
+router.post("/rooms/:code/save-results", requireAuth, (req: Request, res: Response) => {
+  const room = rooms[req.params.code];
+  if (!room) return res.status(404).json({ error: "Room not found" });
+  if (room.hostId !== req.user!.id) return res.status(403).json({ error: "Only the host can save results" });
+
+  const { playerMappings } = req.body as { playerMappings?: Array<{ playerName: string; pupilId?: string }> };
+  const mappingMap: Record<string, string> = {};
+  if (playerMappings) {
+    for (const m of playerMappings) {
+      if (m.pupilId) mappingMap[m.playerName] = m.pupilId;
+    }
+  }
+
+  const saved: string[] = [];
+  for (const [playerName, player] of Object.entries(room.players)) {
+    const correctCount = player.answers.filter(Boolean).length;
+    const totalQuestions = room.questions.length;
+    const percentage = totalQuestions > 0 ? Math.round((correctCount / totalQuestions) * 100) : 0;
+    const badge = percentage >= 90 ? "gold" : percentage >= 70 ? "silver" : "bronze";
+    const pupilId = mappingMap[playerName] || null;
+    const id = uuidv4();
+    try {
+      db.prepare(`
+        INSERT INTO quiz_results (id, school_id, pupil_id, pupil_name, quiz_id, quiz_title, subject, topic,
+          score, max_score, percentage, correct_count, total_questions, badge, played_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+      `).run(
+        id, room.schoolId, pupilId, playerName,
+        null, room.quizTitle, null, null,
+        player.score, 1000 * totalQuestions, percentage, correctCount, totalQuestions, badge
+      );
+      saved.push(playerName);
+    } catch (e) {
+      console.error("Failed to save quiz result:", e);
+    }
+  }
+
+  res.json({ saved, total: Object.keys(room.players).length });
+});
+
+// GET /api/quiz/results — get quiz results for school (analytics)
+router.get("/results", requireAuth, (req: Request, res: Response) => {
+  const { pupilId, limit = 50 } = req.query;
+  let results: any[];
+  if (pupilId) {
+    results = db.prepare(
+      "SELECT * FROM quiz_results WHERE pupil_id = ? ORDER BY played_at DESC LIMIT ?"
+    ).all(pupilId as string, Number(limit)) as any[];
+  } else {
+    results = db.prepare(
+      "SELECT * FROM quiz_results WHERE school_id = ? ORDER BY played_at DESC LIMIT ?"
+    ).all(req.user!.schoolId, Number(limit)) as any[];
+  }
+  res.json(results);
+});
+
 // DELETE /api/quiz/rooms/:code — host closes room
 router.delete("/rooms/:code", requireAuth, (req: Request, res: Response) => {
   const room = rooms[req.params.code];

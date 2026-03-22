@@ -94,8 +94,10 @@ export default function History() {
   const [sharingId, setSharingId] = useState<string | null>(null);
   const [shareCopied, setShareCopied] = useState(false);
 
-  // ── SEND filter + bulk delete ───────────────────────────────────────────────
+  // ── SEND filter + bulk delete + content type + subject ───────────────────────
   const [filterSendNeed, setFilterSendNeed] = useState<string>("all");
+  const [filterContentType, setFilterContentType] = useState<string>("all");
+  const [filterSubject, setFilterSubject] = useState<string>("all");
   const [bulkMode, setBulkMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkDeleting, setBulkDeleting] = useState(false);
@@ -284,8 +286,27 @@ export default function History() {
         <TabsContent value="worksheets" className="mt-4 space-y-2">
           {worksheetHistory.length > 0 && (
             <div className="flex flex-wrap gap-2 items-center pb-1">
+              <Select value={filterContentType} onValueChange={v => { setFilterContentType(v); setSelectedIds(new Set()); }}>
+                <SelectTrigger className="h-8 text-xs w-40">
+                  <SelectValue placeholder="All types" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All types</SelectItem>
+                  <SelectItem value="worksheet">Worksheets only</SelectItem>
+                  <SelectItem value="revision-mat">Revision Mats only</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={filterSubject} onValueChange={v => { setFilterSubject(v); setSelectedIds(new Set()); }}>
+                <SelectTrigger className="h-8 text-xs w-40">
+                  <SelectValue placeholder="All subjects" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All subjects</SelectItem>
+                  {subjects.map(s => <SelectItem key={s.id} value={s.id} className="text-xs">{s.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
               <Select value={filterSendNeed} onValueChange={v => { setFilterSendNeed(v); setSelectedIds(new Set()); }}>
-                <SelectTrigger className="h-8 text-xs w-52">
+                <SelectTrigger className="h-8 text-xs w-44">
                   <SelectValue placeholder="All SEND needs" />
                 </SelectTrigger>
                 <SelectContent>
@@ -293,9 +314,9 @@ export default function History() {
                   {sendNeeds.map(n => <SelectItem key={n.id} value={n.id} className="text-xs">{n.name}</SelectItem>)}
                 </SelectContent>
               </Select>
-              {filterSendNeed !== "all" && (
-                <button onClick={() => setFilterSendNeed("all")} className="text-xs text-muted-foreground hover:text-foreground">
-                  Clear filter
+              {(filterSendNeed !== "all" || filterSubject !== "all" || filterContentType !== "all") && (
+                <button onClick={() => { setFilterSendNeed("all"); setFilterSubject("all"); setFilterContentType("all"); }} className="text-xs text-muted-foreground hover:text-foreground">
+                  Clear filters
                 </button>
               )}
               <div className="ml-auto flex items-center gap-2">
@@ -318,7 +339,14 @@ export default function History() {
                 <p className="text-sm text-muted-foreground">Generate your first worksheet to see it here.</p>
               </CardContent>
             </Card>
-          ) : worksheetHistory.filter(ws => filterSendNeed === "all" || ws.sendNeed === filterSendNeed).map((ws, i) => {
+          ) : worksheetHistory.filter(ws => {
+            const wsIsRM2 = (ws.sections || []).some((s: any) => s.type === "revision-mat-box" || s.type === "revision-mat-lo" || s.type === "revision-mat-title");
+            if (filterSendNeed !== "all" && ws.sendNeed !== filterSendNeed) return false;
+            if (filterSubject !== "all" && ws.subject !== filterSubject) return false;
+            if (filterContentType === "revision-mat" && !wsIsRM2) return false;
+            if (filterContentType === "worksheet" && wsIsRM2) return false;
+            return true;
+          }).map((ws, i) => {
             const isSelected = selectedIds.has(ws.id);
             const subjectName = subjects.find(s => s.id === ws.subject)?.name || ws.subject;
             const needName = ws.sendNeed ? sendNeeds.find(n => n.id === ws.sendNeed)?.name : null;

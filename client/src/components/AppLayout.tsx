@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import React from "react";
 import { Link, useLocation } from "wouter";
 import { useApp } from "@/contexts/AppContext";
 import { useUserPreferences, COLOUR_THEMES } from "@/contexts/UserPreferencesContext";
@@ -142,58 +143,80 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, logout, children: pupils } = useApp();
   const { preferences, wallpaperStyle } = useUserPreferences();
 
-  // Key dismissals to the logged-in user so they don't persist across account switches
-  const notifStorageKey = user?.id ? `adaptly_dismissed_notifs_${user.id}` : "adaptly_dismissed_notifs";
+  // ── Real-time WebSocket notifications ────────────────────────────────────────
+  interface RealNotif {
+    id: string;
+    type: string;
+    title: string;
+    body: string;
+    link?: string;
+    read: boolean;
+    created_at: string;
+  }
+  const [wsNotifs, setWsNotifs] = useState<RealNotif[]>([]);
+  const wsRef = useRef<WebSocket | null>(null);
 
-  const [dismissedNotifs, setDismissedNotifs] = useState<Set<string>>(() => {
-    try {
-      const stored = localStorage.getItem(notifStorageKey);
-      return stored ? new Set(JSON.parse(stored)) : new Set<string>();
-    } catch { return new Set<string>(); }
-  });
-
-  // Re-read dismissed notifs whenever the user changes (fresh login)
-  const prevUserIdRef = React.useRef<string | undefined>(user?.id);
-  React.useEffect(() => {
-    if (user?.id && user.id !== prevUserIdRef.current) {
-      prevUserIdRef.current = user.id;
+  useEffect(() => {
+    if (!user?.token) return;
+    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    const wsUrl = `${protocol}//${window.location.host}/api/ws?token=${encodeURIComponent(user.token)}`;
+    const ws = new WebSocket(wsUrl);
+    wsRef.current = ws;
+    ws.onmessage = (evt) => {
       try {
-        const stored = localStorage.getItem(`adaptly_dismissed_notifs_${user.id}`);
-        setDismissedNotifs(stored ? new Set(JSON.parse(stored)) : new Set<string>());
-      } catch { setDismissedNotifs(new Set()); }
-    }
-  }, [user?.id]);
+        const msg = JSON.parse(evt.data);
+        if (msg.type === "init" && Array.isArray(msg.notifications)) {
+          setWsNotifs(msg.notifications);
+        } else if (msg.type === "notification") {
+          setWsNotifs(prev => [msg.notification, ...prev].slice(0, 50));
+        }
+      } catch {}
+    };
+    ws.onerror = () => {};
+    return () => { ws.close(); };
+  }, [user?.token]);
 
-  const allNotifications = pupils.flatMap(p =>
+  // Also include local assignment-completion notifications for backwards compat
+  const assignmentNotifs = pupils.flatMap(p =>
     p.assignments
       .filter(a => a.status === "completed" && !a.mark && !a.teacherComment)
       .map(a => ({
-        key: `${p.id}__${a.id}`,
-        pupilName: p.name,
-        assignmentTitle: a.title,
-        pupilId: p.id,
+        id: `${p.id}__${a.id}`,
+        type: "assignment",
+        title: `${p.name} completed work`,
+        body: a.title,
+        link: "/pupils",
+        read: false,
+        created_at: a.completedAt || new Date().toISOString(),
       }))
-  ).slice(0, 10);
+  ).slice(0, 5);
 
-  const notifications = allNotifications.filter(n => !dismissedNotifs.has(n.key));
+  const allNotifications: RealNotif[] = [
+    ...wsNotifs,
+    ...assignmentNotifs.filter(a => !wsNotifs.some(w => w.id === a.id)),
+  ];
+  const notifications = allNotifications.filter(n => !n.read);
   const unreadCount = notifications.length;
 
-  const dismissNotif = (key: string) => {
-    setDismissedNotifs(prev => {
-      const next = new Set(prev);
-      next.add(key);
-      try { localStorage.setItem(notifStorageKey, JSON.stringify([...next])); } catch {}
-      return next;
-    });
+  const dismissNotif = (id: string) => {
+    setWsNotifs(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+    // Also persist to server
+    if (wsRef.current?.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify({ type: "mark_read", notificationId: id }));
+    } else {
+      fetch(`/api/messages/notifications/${id}/read`, { method: "PATCH",
+        headers: { Authorization: `Bearer ${user?.token}` } }).catch(() => {});
+    }
   };
 
   const markAllRead = () => {
-    setDismissedNotifs(prev => {
-      const next = new Set(prev);
-      allNotifications.forEach(n => next.add(n.key));
-      try { localStorage.setItem(notifStorageKey, JSON.stringify([...next])); } catch {}
-      return next;
-    });
+    setWsNotifs(prev => prev.map(n => ({ ...n, read: true })));
+    if (wsRef.current?.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify({ type: "mark_all_read" }));
+    } else {
+      fetch("/api/messages/notifications/read-all", { method: "PATCH",
+        headers: { Authorization: `Bearer ${user?.token}` } }).catch(() => {});
+    }
   };
 
   const theme = COLOUR_THEMES.find(t => t.id === preferences.themeId) || COLOUR_THEMES[0];
@@ -268,15 +291,15 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                     ) : (
                       <div className="max-h-64 overflow-y-auto divide-y divide-border/30">
                         {notifications.map((n) => (
-                          <div key={n.key} className="flex items-start gap-1 pr-1 hover:bg-muted/40 transition-colors">
-                            <Link href="/pupils" onClick={() => { dismissNotif(n.key); setNotifOpen(false); }} className="flex-1">
+                          <div key={n.id} className="flex items-start gap-1 pr-1 hover:bg-muted/40 transition-colors">
+                            <Link href={n.link || "/pupils"} onClick={() => { dismissNotif(n.id); setNotifOpen(false); }} className="flex-1">
                               <div className="px-3 py-2.5 cursor-pointer">
-                                <p className="text-xs font-medium text-foreground">{n.pupilName} completed work</p>
-                                <p className="text-[10px] text-muted-foreground truncate mt-0.5">{n.assignmentTitle}</p>
+                                <p className="text-xs font-medium text-foreground">{n.title}</p>
+                                <p className="text-[10px] text-muted-foreground truncate mt-0.5">{n.body}</p>
                               </div>
                             </Link>
                             <button
-                              onClick={() => dismissNotif(n.key)}
+                              onClick={() => dismissNotif(n.id)}
                               title="Mark as read"
                               className="p-1.5 mt-1.5 rounded-md text-muted-foreground/50 hover:text-muted-foreground hover:bg-muted transition-colors flex-shrink-0"
                             >

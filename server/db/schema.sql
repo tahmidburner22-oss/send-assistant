@@ -422,3 +422,77 @@ CREATE INDEX IF NOT EXISTS idx_custom_quizzes_school ON custom_quizzes(school_id
 -- ── Additional performance indexes ──────────────────────────────────────────────
 CREATE INDEX IF NOT EXISTS idx_sessions_expires ON sessions(expires_at);
 
+
+-- ── Notifications (real-time push via WebSocket) ─────────────────────────────
+CREATE TABLE IF NOT EXISTS notifications (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  type TEXT NOT NULL DEFAULT 'system', -- message/assignment/worksheet_shared/quiz_result/safeguarding/system
+  title TEXT NOT NULL,
+  body TEXT NOT NULL,
+  link TEXT,
+  metadata TEXT, -- JSON
+  read INTEGER NOT NULL DEFAULT 0,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id, read);
+
+-- ── Parent Messages (two-way teacher-parent communication) ───────────────────
+CREATE TABLE IF NOT EXISTS parent_messages (
+  id TEXT PRIMARY KEY,
+  pupil_id TEXT NOT NULL REFERENCES pupils(id) ON DELETE CASCADE,
+  sender_type TEXT NOT NULL, -- 'teacher' | 'parent'
+  sender_name TEXT NOT NULL,
+  body TEXT NOT NULL,
+  read INTEGER NOT NULL DEFAULT 0,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_parent_messages_pupil ON parent_messages(pupil_id);
+
+-- ── Quiz Results (persisted per pupil) ───────────────────────────────────────
+CREATE TABLE IF NOT EXISTS quiz_results (
+  id TEXT PRIMARY KEY,
+  school_id TEXT NOT NULL REFERENCES schools(id) ON DELETE CASCADE,
+  pupil_id TEXT REFERENCES pupils(id) ON DELETE SET NULL,
+  pupil_name TEXT NOT NULL,
+  quiz_id TEXT,
+  quiz_title TEXT,
+  subject TEXT,
+  topic TEXT,
+  score INTEGER NOT NULL DEFAULT 0,
+  max_score INTEGER NOT NULL DEFAULT 0,
+  percentage REAL NOT NULL DEFAULT 0,
+  correct_count INTEGER NOT NULL DEFAULT 0,
+  total_questions INTEGER NOT NULL DEFAULT 0,
+  time_taken_seconds INTEGER,
+  badge TEXT,
+  played_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_quiz_results_pupil ON quiz_results(pupil_id);
+CREATE INDEX IF NOT EXISTS idx_quiz_results_school ON quiz_results(school_id);
+
+-- ── Worksheet Folders (history organisation) ─────────────────────────────────
+CREATE TABLE IF NOT EXISTS worksheet_folders (
+  id TEXT PRIMARY KEY,
+  school_id TEXT NOT NULL REFERENCES schools(id) ON DELETE CASCADE,
+  created_by TEXT REFERENCES users(id),
+  name TEXT NOT NULL,
+  colour TEXT DEFAULT '#6366f1',
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_folders_school ON worksheet_folders(school_id);
+
+-- ── Worksheet-Folder assignments ─────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS worksheet_folder_items (
+  folder_id TEXT NOT NULL REFERENCES worksheet_folders(id) ON DELETE CASCADE,
+  worksheet_id TEXT NOT NULL REFERENCES worksheets(id) ON DELETE CASCADE,
+  added_at TEXT NOT NULL DEFAULT (datetime('now')),
+  PRIMARY KEY (folder_id, worksheet_id)
+);
+
+-- ── Platform-wide stats counter (for landing page) ───────────────────────────
+CREATE TABLE IF NOT EXISTS platform_stats (
+  key TEXT PRIMARY KEY,
+  value INTEGER NOT NULL DEFAULT 0,
+  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);

@@ -1,5 +1,89 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import WorksheetRenderer from "@/components/WorksheetRenderer";
+
+// ─── Teacher-side Messages Panel ─────────────────────────────────────────────
+function TeacherMessagesPanel({ childId, childName }: { childId: string; childName: string }) {
+  const [messages, setMessages] = useState<Array<{ id: string; sender: string; body: string; createdAt: string }>>([]);
+  const [newMsg, setNewMsg] = useState("");
+  const [sending, setSending] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  const fetchMessages = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/parent-messages/${childId}`, { credentials: "include" });
+      if (res.ok) { const d = await res.json(); setMessages(d.messages || []); }
+    } catch {}
+    setLoading(false);
+  }, [childId]);
+
+  useEffect(() => { fetchMessages(); }, [fetchMessages]);
+  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
+
+  const sendMessage = async () => {
+    if (!newMsg.trim()) return;
+    setSending(true);
+    try {
+      const res = await fetch(`/api/parent-messages/${childId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ body: newMsg.trim(), sender: "teacher" }),
+      });
+      if (res.ok) { setNewMsg(""); await fetchMessages(); }
+    } catch {}
+    setSending(false);
+  };
+
+  return (
+    <div className="flex flex-col h-[420px] rounded-xl border border-border/50 bg-white overflow-hidden">
+      <div className="p-3 border-b border-border/50 bg-emerald-50">
+        <p className="text-sm font-semibold text-emerald-800">Parent Messages — {childName}</p>
+        <p className="text-xs text-emerald-600 mt-0.5">Messages between you and {childName}'s parent/carer.</p>
+      </div>
+      <div className="flex-1 overflow-y-auto p-3 space-y-2">
+        {loading ? (
+          <div className="flex items-center justify-center h-full"><span className="text-xs text-muted-foreground">Loading...</span></div>
+        ) : messages.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-full text-center">
+            <MessageSquare className="w-8 h-8 text-muted-foreground mb-2" />
+            <p className="text-sm font-medium">No messages yet</p>
+            <p className="text-xs text-muted-foreground mt-1">Send a message to {childName}'s parent to start a conversation.</p>
+          </div>
+        ) : messages.map(m => (
+          <div key={m.id} className={`flex ${m.sender === "teacher" ? "justify-end" : "justify-start"}`}>
+            <div className={`max-w-[80%] rounded-2xl px-3 py-2 text-sm ${
+              m.sender === "teacher" ? "bg-emerald-600 text-white rounded-br-sm" : "bg-gray-100 text-foreground rounded-bl-sm"
+            }`}>
+              <p>{m.body}</p>
+              <p className={`text-[10px] mt-1 ${m.sender === "teacher" ? "text-emerald-200" : "text-muted-foreground"}`}>
+                {m.sender === "teacher" ? "You" : "Parent"} · {new Date(m.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+              </p>
+            </div>
+          </div>
+        ))}
+        <div ref={bottomRef} />
+      </div>
+      <div className="p-3 border-t border-border/50 flex gap-2">
+        <input
+          value={newMsg}
+          onChange={e => setNewMsg(e.target.value)}
+          onKeyDown={e => e.key === "Enter" && !e.shiftKey && sendMessage()}
+          placeholder="Type a message to the parent..."
+          className="flex-1 h-9 text-sm px-3 rounded-md border border-input bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+          disabled={sending}
+        />
+        <button
+          onClick={sendMessage}
+          disabled={sending || !newMsg.trim()}
+          className="h-9 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-xs font-medium disabled:opacity-50 transition-colors"
+        >
+          {sending ? "..." : "Send"}
+        </button>
+      </div>
+    </div>
+  );
+}
 import { parseWithFixes } from "@/lib/ai";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -1302,10 +1386,11 @@ If the submission is empty or too short to mark, return mark: "N/A", feedback: "
               </div>
 
               <Tabs defaultValue="assignments">
-                <TabsList className="w-full grid grid-cols-3 h-9">
+                <TabsList className="w-full grid grid-cols-4 h-9">
                   <TabsTrigger value="assignments" className="text-xs">Assignments ({selectedChild.assignments.length})</TabsTrigger>
                   <TabsTrigger value="submissions" className="text-xs">Submissions ({selectedChild.submissions.length})</TabsTrigger>
                   <TabsTrigger value="scheduler" className="text-xs"><Zap className="h-3 w-3 mr-1" />Scheduler</TabsTrigger>
+                  <TabsTrigger value="messages" className="text-xs"><MessageSquare className="h-3 w-3 mr-1" />Messages</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="assignments" className="mt-3 space-y-2">
@@ -1906,6 +1991,10 @@ If the submission is empty or too short to mark, return mark: "N/A", feedback: "
                       </div>
                     );
                   })()}
+                </TabsContent>
+
+                <TabsContent value="messages" className="mt-3">
+                  <TeacherMessagesPanel childId={selectedChild.id} childName={selectedChild.name} />
                 </TabsContent>
               </Tabs>
             </CardContent>

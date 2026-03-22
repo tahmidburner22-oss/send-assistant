@@ -144,6 +144,74 @@ export async function initDb() {
     // Login lockout columns — added for brute-force protection
     "ALTER TABLE users ADD COLUMN failed_login_attempts INTEGER NOT NULL DEFAULT 0",
     "ALTER TABLE users ADD COLUMN locked_until TEXT",
+    // Parent access code for parent portal
+    "ALTER TABLE pupils ADD COLUMN parent_access_code TEXT",
+    // Worksheet folder support
+    `CREATE TABLE IF NOT EXISTS worksheet_folders (
+      id TEXT PRIMARY KEY,
+      school_id TEXT NOT NULL REFERENCES schools(id) ON DELETE CASCADE,
+      created_by TEXT REFERENCES users(id),
+      name TEXT NOT NULL,
+      colour TEXT DEFAULT '#6366f1',
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    )`,
+    `CREATE TABLE IF NOT EXISTS worksheet_folder_items (
+      folder_id TEXT NOT NULL REFERENCES worksheet_folders(id) ON DELETE CASCADE,
+      worksheet_id TEXT NOT NULL REFERENCES worksheets(id) ON DELETE CASCADE,
+      added_at TEXT NOT NULL DEFAULT (datetime('now')),
+      PRIMARY KEY (folder_id, worksheet_id)
+    )`,
+    // Notifications table
+    `CREATE TABLE IF NOT EXISTS notifications (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      type TEXT NOT NULL DEFAULT 'system',
+      title TEXT NOT NULL,
+      body TEXT NOT NULL,
+      link TEXT,
+      metadata TEXT,
+      read INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    )`,
+    `CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id, read)`,
+    // Parent messages table
+    `CREATE TABLE IF NOT EXISTS parent_messages (
+      id TEXT PRIMARY KEY,
+      pupil_id TEXT NOT NULL REFERENCES pupils(id) ON DELETE CASCADE,
+      sender_type TEXT NOT NULL,
+      sender_name TEXT NOT NULL,
+      body TEXT NOT NULL,
+      read INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    )`,
+    `CREATE INDEX IF NOT EXISTS idx_parent_messages_pupil ON parent_messages(pupil_id)`,
+    // Quiz results table
+    `CREATE TABLE IF NOT EXISTS quiz_results (
+      id TEXT PRIMARY KEY,
+      school_id TEXT NOT NULL REFERENCES schools(id) ON DELETE CASCADE,
+      pupil_id TEXT REFERENCES pupils(id) ON DELETE SET NULL,
+      pupil_name TEXT NOT NULL,
+      quiz_id TEXT,
+      quiz_title TEXT,
+      subject TEXT,
+      topic TEXT,
+      score INTEGER NOT NULL DEFAULT 0,
+      max_score INTEGER NOT NULL DEFAULT 0,
+      percentage REAL NOT NULL DEFAULT 0,
+      correct_count INTEGER NOT NULL DEFAULT 0,
+      total_questions INTEGER NOT NULL DEFAULT 0,
+      time_taken_seconds INTEGER,
+      badge TEXT,
+      played_at TEXT NOT NULL DEFAULT (datetime('now'))
+    )`,
+    `CREATE INDEX IF NOT EXISTS idx_quiz_results_pupil ON quiz_results(pupil_id)`,
+    `CREATE INDEX IF NOT EXISTS idx_quiz_results_school ON quiz_results(school_id)`,
+    // Platform stats for landing page
+    `CREATE TABLE IF NOT EXISTS platform_stats (
+      key TEXT PRIMARY KEY,
+      value INTEGER NOT NULL DEFAULT 0,
+      updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+    )`,
   ];
   for (const migration of migrations) {
     try { _db.run(migration); } catch (_) { /* column already exists — ignore */ }
