@@ -53,11 +53,9 @@ export function initWebSocketServer(httpServer: Server): WebSocketServer {
     }
     connections.get(userId)!.add(ws);
 
-    // Send any unread notifications on connect
+    // Send unread notifications on connect — "init" type for client compatibility
     const unread = getUnreadNotifications(userId);
-    if (unread.length > 0) {
-      ws.send(JSON.stringify({ type: "notifications", data: unread }));
-    }
+    ws.send(JSON.stringify({ type: "init", notifications: unread }));
 
     ws.on("message", (data) => {
       try {
@@ -122,7 +120,7 @@ export function pushNotification(userId: string, notification: Omit<Notification
   // Push to connected clients
   const userConnections = connections.get(userId);
   if (userConnections && userConnections.size > 0) {
-    const payload = JSON.stringify({ type: "notification", data: full });
+    const payload = JSON.stringify({ type: "notification", notification: full });
     for (const ws of userConnections) {
       if (ws.readyState === WebSocket.OPEN) {
         ws.send(payload);
