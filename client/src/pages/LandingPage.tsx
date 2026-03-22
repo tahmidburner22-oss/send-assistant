@@ -708,7 +708,7 @@ export default function LandingPage() {
               { value: 1600000, label: "pupils in England with SEND needs", icon: <Users className="w-7 h-7" />, suffix: "+" },
               { value: 6, label: "hours a SENCO spends drafting one EHCP", icon: <Clock className="w-7 h-7" />, suffix: "hrs" },
               { value: 87, label: "of teachers report inadequate SEND training", icon: <BookOpen className="w-7 h-7" />, suffix: "%" },
-              { value: 24, label: "specialist tools built for UK SEND", icon: <Layers className="w-7 h-7" />, suffix: "" },
+              { value: 95, label: "of users report reduced SEND workload", icon: <Layers className="w-7 h-7" />, suffix: "%" },
             ].map((stat, i) => (
               <Reveal key={stat.label} delay={i * 0.1} direction="scale">
                 <div className="text-center p-6 rounded-2xl bg-white/[0.04] border border-white/10 hover:bg-white/[0.07] transition-colors">
@@ -1360,7 +1360,7 @@ export default function LandingPage() {
               { value: "£2.4B", label: "UK EdTech market size (2025)", icon: <TrendingUp className="w-6 h-6" /> },
               { value: "24,000+", label: "state schools in England (TAM)", icon: <Building2 className="w-6 h-6" /> },
               { value: "12%", label: "market CAGR through 2030", icon: <BarChart3 className="w-6 h-6" /> },
-              { value: "24", label: "specialist tools in one platform", icon: <Layers className="w-6 h-6" /> },
+              { value: "95%", label: "of users report reduced workload", icon: <Layers className="w-6 h-6" /> },
             ].map((m, i) => <InvestorMetric key={m.label} {...m} delay={i * 0.1} />)}
           </div>
 
