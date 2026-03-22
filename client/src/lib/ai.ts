@@ -1862,6 +1862,55 @@ export function parseNaturalLanguageInput(input: string): {
   }
 
   // ── Topic extraction (everything that's left after removing matched tokens) ──
+  // Strategy: first check for known compound topic phrases before stripping anything,
+  // then fall back to the remainder approach.
+  const COMPOUND_TOPICS: Array<[RegExp, string, string]> = [
+    // [pattern, canonical topic name, subject override if needed]
+    [/quadratic\s+equation/i,         "Quadratic Equations",          "mathematics"],
+    [/quadratic\s+formula/i,          "Quadratic Formula",            "mathematics"],
+    [/simultaneous\s+equation/i,      "Simultaneous Equations",       "mathematics"],
+    [/linear\s+equation/i,            "Linear Equations",             "mathematics"],
+    [/linear\s+graph/i,               "Linear Graphs",                "mathematics"],
+    [/straight.line\s+graph/i,        "Straight-Line Graphs",         "mathematics"],
+    [/nth\s+term/i,                   "nth Term of a Sequence",       "mathematics"],
+    [/arithmetic\s+sequence/i,        "Arithmetic Sequences",         "mathematics"],
+    [/geometric\s+sequence/i,         "Geometric Sequences",          "mathematics"],
+    [/completing\s+the\s+square/i,    "Completing the Square",        "mathematics"],
+    [/circle\s+theorem/i,             "Circle Theorems",              "mathematics"],
+    [/speed.*distance.*time/i,        "Speed, Distance and Time",     "mathematics"],
+    [/percentage\s+change/i,          "Percentage Change",            "mathematics"],
+    [/reverse\s+percentage/i,         "Reverse Percentages",          "mathematics"],
+    [/standard\s+form/i,              "Standard Form",                "mathematics"],
+    [/direct\s+proportion/i,          "Direct Proportion",            "mathematics"],
+    [/inverse\s+proportion/i,         "Inverse Proportion",           "mathematics"],
+    [/trigonometric\s+ratio/i,        "Trigonometric Ratios",         "mathematics"],
+    [/sine\s+rule/i,                  "Sine Rule",                    "mathematics"],
+    [/cosine\s+rule/i,                "Cosine Rule",                  "mathematics"],
+    [/equation\s+of\s+a\s+circle/i,  "Equation of a Circle",         "mathematics"],
+    [/periodic\s+table/i,             "Periodic Table",               "science"],
+    [/atomic\s+structure/i,           "Atomic Structure",             "science"],
+    [/covalent\s+bond/i,              "Covalent Bonding",             "science"],
+    [/ionic\s+bond/i,                 "Ionic Bonding",                "science"],
+    [/natural\s+selection/i,          "Natural Selection",            "science"],
+    [/industrial\s+revolution/i,      "Industrial Revolution",        "history"],
+    [/world\s+war\s+[12one two]/i,   text.includes("ww1") || text.includes("world war 1") || text.includes("world war one") || text.includes("first world war") ? "World War One" : "World War Two", "history"],
+    [/civil\s+rights/i,               "Civil Rights Movement",        "history"],
+    [/plate\s+tectonic/i,             "Plate Tectonics",              "geography"],
+    [/coastal\s+erosion/i,            "Coastal Erosion",              "geography"],
+    [/urban\s+land\s+use/i,           "Urban Land Use",               "geography"],
+  ];
+
+  // Check compound topics first — they win over the generic remainder extraction
+  let compoundTopicFound = false;
+  for (const [pattern, topicName, subj] of COMPOUND_TOPICS) {
+    if (pattern.test(text)) {
+      result.topic = topicName;
+      if (!result.subject) result.subject = subj;
+      compoundTopicFound = true;
+      break;
+    }
+  }
+
   // First, save any specific topic keyword that was matched as the subject trigger.
   // e.g. "multiplication" triggers subject=mathematics but is also the topic.
   // We must NOT strip it from the remaining text in that case.
@@ -1870,10 +1919,10 @@ export function parseNaturalLanguageInput(input: string): {
     "decimals", "decimal", "percentages", "percentage", "ratio", "ratios",
     "proportion", "proportions", "probability", "statistics", "trigonometry", "trig",
     "pythagoras", "surds", "surd", "indices", "index", "vectors", "vector",
-    "matrices", "matrix", "quadratic", "quadratics", "simultaneous", "inequalities",
+    "matrices", "matrix", "quadratics", "quadratic", "simultaneous", "inequalities",
     "inequality", "sequences", "sequence", "differentiation", "integration",
     "calculus", "functions", "function", "algebra", "geometry", "arithmetic",
-    "number", "numeracy", "integers", "integer", "prime", "primes", "factors",
+    "numeracy", "integers", "integer", "prime", "primes", "factors",
     "multiples", "bodmas", "area", "perimeter", "volume", "circle", "circles",
     "angles", "angle", "shape", "shapes", "coordinates", "coordinate", "graphs",
     "graph", "equations", "equation", "formulae", "formula", "loci", "bearing",
@@ -1882,48 +1931,70 @@ export function parseNaturalLanguageInput(input: string): {
     "titration", "electrolysis", "bonding", "periodic table", "cells", "cell",
     "atoms", "atom", "compounds", "mixtures", "reactions", "reaction",
   ]);
-  // Detect if the subject was triggered by a specific topic keyword
-  let subjectTriggerKeyword = "";
-  if (result.subject) {
-    const kws = subjectMap[result.subject] || [];
-    for (const kw of kws) {
-      if (text.includes(kw) && specificTopicKeywords.has(kw)) {
-        subjectTriggerKeyword = kw;
-        break;
+
+  if (!compoundTopicFound) {
+    // Detect if the subject was triggered by a specific topic keyword
+    let subjectTriggerKeyword = "";
+    if (result.subject) {
+      const kws = subjectMap[result.subject] || [];
+      for (const kw of kws) {
+        if (text.includes(kw) && specificTopicKeywords.has(kw)) {
+          subjectTriggerKeyword = kw;
+          break;
+        }
       }
     }
-  }
 
-  let remaining = text;
-  // Remove year group
-  remaining = remaining.replace(/year\s*\d{1,2}/gi, "").replace(/y\d{1,2}\b/gi, "").replace(/11\s*\+/g, "").replace(/eleven\s*plus/gi, "");
-  // Remove subject keywords — but NOT the one that is also a specific topic
-  if (result.subject) {
-    const kws = subjectMap[result.subject] || [];
-    for (const kw of kws) {
-      // Skip stripping if this keyword is the specific topic trigger
-      if (kw === subjectTriggerKeyword) continue;
-      // Also skip generic subject names when a specific topic keyword was found
-      if (subjectTriggerKeyword && ["math", "maths", "mathematics"].includes(kw)) continue;
-      remaining = remaining.replace(new RegExp(`\\b${kw.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&')}\\b`, "gi"), "");
+    let remaining = text;
+    // Remove year group
+    remaining = remaining.replace(/year\s*\d{1,2}/gi, "").replace(/y\d{1,2}\b/gi, "").replace(/11\s*\+/g, "").replace(/eleven\s*plus/gi, "");
+    // Remove subject keywords — but NOT the one that is also a specific topic
+    if (result.subject) {
+      const kws = subjectMap[result.subject] || [];
+      for (const kw of kws) {
+        if (kw === subjectTriggerKeyword) continue;
+        if (subjectTriggerKeyword && ["math", "maths", "mathematics"].includes(kw)) continue;
+        remaining = remaining.replace(new RegExp(`\\b${kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, "gi"), "");
+      }
     }
-  }
-  // Remove SEND keywords
-  if (result.sendNeed) {
-    const kws = sendMap[result.sendNeed] || [];
-    for (const kw of kws) {
-      remaining = remaining.replace(new RegExp(`\\b${kw}\\b`, "gi"), "");
+    // Remove SEND keywords
+    if (result.sendNeed) {
+      const kws = sendMap[result.sendNeed] || [];
+      for (const kw of kws) {
+        remaining = remaining.replace(new RegExp(`\\b${kw}\\b`, "gi"), "");
+      }
     }
-  }
-  // Remove difficulty keywords
-  remaining = remaining.replace(/\b(foundation|higher|easy|hard|simple|basic|advanced|stretch|challenging|mixed)\b/gi, "");
-  // Remove filler words
-  remaining = remaining.replace(/\b(for|with|about|on|in|the|a|an|create|make|generate|worksheet|lesson|please|can|you|i|want|need|to)\b/gi, "");
-  // Clean up
-  remaining = remaining.replace(/[,\-–—]/g, " ").replace(/\s+/g, " ").trim();
-  if (remaining.length > 1) {
-    // Capitalize first letter of each word
-    result.topic = remaining.replace(/\b\w/g, c => c.toUpperCase());
+    // Remove difficulty keywords
+    remaining = remaining.replace(/\b(foundation|higher|easy|hard|simple|basic|advanced|stretch|challenging|mixed)\b/gi, "");
+    // Remove filler words
+    remaining = remaining.replace(/\b(for|with|about|on|in|the|a|an|create|make|generate|worksheet|lesson|please|can|you|i|want|need|to)\b/gi, "");
+    // Clean up
+    remaining = remaining.replace(/[,\-–—]/g, " ").replace(/\s+/g, " ").trim();
+
+    if (remaining.length > 1) {
+      // Use the subject trigger keyword as the topic if remaining is very short
+      // (e.g. "quadratics" stays as "Quadratic Equations" not "Quadratics")
+      const topicWord = remaining.toLowerCase();
+      const TOPIC_EXPANSIONS: Record<string, string> = {
+        quadratic: "Quadratic Equations", quadratics: "Quadratic Equations",
+        simultaneous: "Simultaneous Equations", inequality: "Inequalities",
+        inequalities: "Inequalities", surds: "Surds and Indices",
+        surd: "Surds", indices: "Indices and Powers",
+        trig: "Trigonometry", pythagoras: "Pythagoras' Theorem",
+        vectors: "Vectors", matrices: "Matrices",
+        differentiation: "Differentiation", integration: "Integration",
+        sequences: "Sequences and Series", bodmas: "Order of Operations (BODMAS)",
+        loci: "Loci and Constructions", formulae: "Using Formulae",
+        coordinates: "Coordinates and Graphs", probability: "Probability",
+        statistics: "Statistics and Data", fractions: "Fractions",
+        decimals: "Decimals and Percentages", percentages: "Percentages",
+        photosynthesis: "Photosynthesis", respiration: "Respiration",
+        electrolysis: "Electrolysis", bonding: "Chemical Bonding",
+        titration: "Acid-Base Titrations",
+      };
+      result.topic = TOPIC_EXPANSIONS[topicWord]
+        ?? remaining.replace(/\b\w/g, c => c.toUpperCase());
+    }
   }
 
   // ── Fill in all missing defaults so the worksheet always generates ─────────

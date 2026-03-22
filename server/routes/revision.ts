@@ -658,13 +658,20 @@ router.post("/tts", requireAuth, async (req: Request, res: Response) => {
       return res.send(combined);
 
     } catch (msedgeErr: any) {
-      console.warn(`[TTS] msedge-tts failed (${msedgeErr?.message}), trying Google Cloud TTS...`);
+      console.warn(`[TTS] msedge-tts failed (${msedgeErr?.message}), trying Google Cloud TTS fallback...`);
 
-      // FALLBACK: Google Cloud TTS — free tier (1M chars/month), uses GOOGLE_API_KEY
+      // FALLBACK: Google Cloud TTS
+      // Uses the same GOOGLE_API_KEY / GEMINI_API_KEY already configured for AI features.
+      // IMPORTANT: The Cloud Text-to-Speech API must be separately enabled in your GCP project.
+      // To enable it: console.cloud.google.com → APIs & Services → Enable APIs →
+      //   search "Cloud Text-to-Speech API" → Enable
+      // The key itself is the same one used for Gemini — no new key needed.
       const googleKey = process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY || "";
-      if (!googleKey) throw new Error("No Google API key available for TTS fallback");
+      if (!googleKey) {
+        throw new Error("Neural voice unavailable — no Google API key configured. Please set GOOGLE_API_KEY or GEMINI_API_KEY in your environment.");
+      }
 
-      const chunks = splitIntoChunks(text, 4500); // Google TTS supports up to 5000 chars
+      const chunks = splitIntoChunks(text, 4500);
       console.log(`[TTS] Google Cloud TTS fallback: ${chunks.length} chunk(s), voice=${googleVoiceName}`);
 
       const mp3Buffers: Buffer[] = [];
@@ -687,8 +694,17 @@ router.post("/tts", requireAuth, async (req: Request, res: Response) => {
           );
           clearTimeout(timer);
           if (!resp.ok) {
-            const errText = await resp.text();
-            throw new Error(`Google TTS error ${resp.status}: ${errText.slice(0, 200)}`);
+            const errBody = await resp.text();
+            // 403 almost always means the Cloud Text-to-Speech API isn't enabled in GCP.
+            if (resp.status === 403) {
+              throw new Error(
+                "Google Cloud Text-to-Speech API is not enabled. " +
+                "Go to console.cloud.google.com → APIs & Services → Enable APIs, " +
+                "search for 'Cloud Text-to-Speech API' and click Enable. " +
+                "The same API key is used — no new credentials needed."
+              );
+            }
+            throw new Error(`Google TTS error ${resp.status}: ${errBody.slice(0, 200)}`);
           }
           const data = await resp.json() as { audioContent: string };
           mp3Buffers.push(Buffer.from(data.audioContent, "base64"));
@@ -699,7 +715,7 @@ router.post("/tts", requireAuth, async (req: Request, res: Response) => {
       }
 
       const combined = Buffer.concat(mp3Buffers);
-      console.log(`[TTS] Google Cloud TTS fallback success: ${combined.byteLength} bytes`);
+      console.log(`[TTS] Google Cloud TTS success: ${combined.byteLength} bytes`);
       res.setHeader("Content-Type", "audio/mpeg");
       res.setHeader("Content-Length", combined.byteLength.toString());
       return res.send(combined);

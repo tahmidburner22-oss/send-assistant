@@ -219,7 +219,15 @@ export default function AIToolPage({
   const isPlatformAdmin = user?.email === "admin@adaptly.co.uk" || user?.email === "admin@sendassistant.app";
   const { preferences } = useUserPreferences();
   const [, navigate] = useLocation();
-  const [values, setValues] = useState<Record<string, string>>(initialValues || {});
+
+  // Merge URL search params with initialValues prop — URL params take precedence
+  // This is how the dashboard NL parser pre-populates fields when it navigates here
+  const urlParams = typeof window !== "undefined"
+    ? Object.fromEntries(new URLSearchParams(window.location.search).entries())
+    : {};
+  const mergedInitial = { ...(initialValues || {}), ...urlParams };
+
+  const [values, setValues] = useState<Record<string, string>>(mergedInitial);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [provider, setProvider] = useState<string>("");

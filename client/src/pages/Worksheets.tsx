@@ -1222,6 +1222,7 @@ TEACHER SECTION: Include one section with teacherOnly:true containing all answer
         textSize,
         title: generated.title,
         sendNeedId: generated?.metadata?.sendNeed || sendNeed || undefined,
+        landscape: isRevisionMat,
       });
       toast.success(`PDF downloaded!`);
     } catch (err) {
@@ -2386,13 +2387,14 @@ TEACHER SECTION: Include one section with teacherOnly:true containing all answer
                 {/* Upload result — rendered using WorksheetRenderer for professional output */}
                 {uploadResult && (() => {
                   const adapted = uploadResult.adapted;
-                  // Build a GeneratedWorksheet-compatible object from the adapted result
-                  const sections = adapted?.sections ?? [
+                  // Build a GeneratedWorksheet-compatible object from the adapted result.
+                  // Use a non-mutating spread so re-renders don't duplicate the teacherSection.
+                  const baseSections: any[] = adapted?.sections ?? [
                     { title: "Adapted Worksheet", type: "guided", content: adapted?.adaptedContent || "", teacherOnly: false }
                   ];
-                  if (adapted?.teacherSection) {
-                    sections.push({ ...adapted.teacherSection, teacherOnly: true });
-                  }
+                  const sections = adapted?.teacherSection && !baseSections.some((s: any) => s.teacherOnly)
+                    ? [...baseSections, { ...adapted.teacherSection, teacherOnly: true }]
+                    : baseSections;
                   const uploadedWorksheet = {
                     title: adapted?.title || uploadFile?.name?.replace(/\.[^.]+$/, "") || "Adapted Worksheet",
                     subtitle: adapted?.subtitle || `${uploadYearGroup || "Year 9"} — Adapted for ${sendNeeds.find(n => n.id === uploadSendNeed)?.name || uploadSendNeed}`,
