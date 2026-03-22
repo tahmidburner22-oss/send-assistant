@@ -725,8 +725,8 @@ export default function Worksheets() {
 You are creating a GCSE-style revision activity mat. Follow these instructions EXACTLY.
 
 PAGE SETUP:
-- A4 landscape orientation, single page
-- Dense layout — fill the page with question boxes
+- A4 landscape orientation, single page only — everything must fit on ONE page
+- Dense layout — NO grey/empty space anywhere. Every gap must be filled with a question box or working-out box
 
 LAYOUT (CRITICAL — match Twinkl/CGP revision mat style):
 - The page is a 4-column grid of rectangular question boxes
@@ -734,40 +734,47 @@ LAYOUT (CRITICAL — match Twinkl/CGP revision mat style):
 - Include ONE title box in the first position (column 1, row 1) showing the topic name
 - Include ONE Learning Objectives box (LO) with 3-4 brief bullet-point objectives
 - All other boxes are question boxes labelled a, b, c, d... in sequence
-- Aim for 12-16 question boxes total (plus title + LO)
-- Some questions can span 2 rows (tall boxes) for extended answers — mark these with "size": "large"
-- Most boxes are single-row — mark these with "size": "small"
+- Aim for 14-18 question boxes total (plus title + LO) — fill the page completely
+- Box sizes MUST match content: use "size": "small" for short questions (1-2 lines), "size": "medium" for questions needing 3-4 lines, "size": "large" for the 4-marker and 6-marker only
+- If there is any remaining space after all questions, add "Working Out" boxes (type: "revision-mat-box", title: "Working Out", content: "") to fill the page completely
+
+MARK ALLOCATION — CRITICAL:
+- The VAST MAJORITY of questions must be 1-2 mark questions (short recall, MCQ, fill-in-the-blank, true/false, match-up)
+- Include EXACTLY ONE 4-mark question (label it "[4 marks]" in the question text)
+- Include EXACTLY ONE 6-mark challenge question (label it "[6 marks]" in the question text) — this is the hardest question
+- NO other questions should be more than 2 marks
 
 CONTENT REQUIREMENTS — include ALL of these question types:
-- Multiple choice (circle the correct answer): 2-3 questions
-- Fill-in-the-blank: 2-3 questions
-- Short-answer recall: 3-4 questions
-- Extended response (Explain/Describe): 2-3 questions (use "size": "large")
-- Match-up: 1-2 questions
-- Calculations (if topic is maths/science): 1-2 questions
-- True/False: 1-2 questions
-- Complete the table / complete the sentence: 1-2 questions
+- Multiple choice (circle the correct answer): 3-4 questions [1 mark each]
+- Fill-in-the-blank: 3-4 questions [1 mark each]
+- Short-answer recall: 4-5 questions [1-2 marks each]
+- True/False: 2-3 questions [1 mark each]
+- Match-up: 1-2 questions [1 mark per correct match]
+- Calculations (if topic is maths/science): 1-2 questions [1-2 marks each]
+- ONE 4-mark question (Describe/Explain with 4 answer lines)
+- ONE 6-mark challenge question (Evaluate/Analyse/Extended response with 6 answer lines)
 
 QUESTION FORMAT per box:
-- Short answer (1-2 marks): question text + 2 answer lines
-- Extended answer (3-5 marks): question text + 5-6 answer lines — use "size": "large"
-- Calculation: question text + "Show working:" label + answer lines
-- MCQ: question text + options on separate lines: "a. option1\nb. option2\nc. option3\nd. option4"
+- Short answer (1-2 marks): question text only — NO answer lines in content (renderer adds them)
+- MCQ: question text + options: "a. option1\nb. option2\nc. option3\nd. option4"
 - Fill-in-the-blank: sentence with ___ gaps inline (e.g. "The symbol for carbon is ___")
 - Match-up: two columns — format as "Term 1 | Definition 1\nTerm 2 | Definition 2\nTerm 3 | Definition 3"
 - True/False: statement + "True / False" on a new line
+- 4-mark: question text with "[4 marks]" label
+- 6-mark: question text with "[6 marks]" label + "Challenge:" prefix
 
 STYLE:
 - GCSE / AQA exam-style wording — clear, precise, age-appropriate
 - No answers in student boxes
-- Use clues sparingly (e.g. "Clue: think about...")
+- Boxes must be TIGHT — only as tall as the content needs, no extra blank space
 
 JSON FORMAT — CRITICAL:
-- "title": the topic name for the title box; single lowercase letter ("a", "b", "c"...) for question boxes; "LO" for learning objectives box
+- "title": the topic name for the title box; single lowercase letter ("a", "b", "c"...) for question boxes; "LO" for learning objectives box; "Working Out" for working-out boxes
 - "type": "revision-mat-title" for the title box, "revision-mat-lo" for LO box, "revision-mat-box" for ALL question boxes
-- "size": "large" for extended-answer boxes (2 rows tall), "small" for all other boxes
-- "content": ONLY the question text. Do NOT include answer lines — the renderer adds them automatically.
+- "size": "small" for 1-2 mark questions, "medium" for 3-4 line questions, "large" for the 4-marker and 6-marker only
+- "content": ONLY the question text. Do NOT include answer lines — the renderer adds them automatically based on mark count.
   Exception: for MCQ, include the options. For match-up, include the term|definition pairs. For fill-in-the-blank, include the ___ inline.
+- "marks": the number of marks for the question (1, 2, 4, or 6)
 
 TEACHER SECTION: Include one section with teacherOnly:true containing mark-scheme answers for all boxes.`;
 

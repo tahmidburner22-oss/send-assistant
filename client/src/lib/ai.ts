@@ -2268,3 +2268,45 @@ export function stripDiagramMarker(content: string): string {
 }
 
 // Last verified: safe-updates-v2 applied, groq_1/2/3 rotation preserved
+
+/**
+ * Rewrites a single piece of text (e.g., a screener question) to match a target reading age.
+ * Preserves meaning and intent — only changes vocabulary and sentence structure.
+ */
+export async function aiRewriteTextToReadingAge(params: {
+  text: string;
+  targetAge: number;
+  context?: string; // e.g. "SEND screener question about dyslexia"
+}): Promise<string> {
+  const getAgeGuide = (age: number): string => {
+    if (age <= 5) return "Reading age 5: Maximum 4–5 words per sentence. Only single-syllable or very familiar words. No technical vocabulary at all.";
+    if (age <= 6) return "Reading age 6: Very short sentences (4–6 words). Only the most common everyday words. Explain all subject words in the simplest terms.";
+    if (age <= 7) return "Reading age 7: Use very short sentences (5-8 words max). Simple, common words only. One instruction per sentence. No compound or complex sentences. Avoid all technical jargon — use everyday words instead.";
+    if (age <= 8) return "Reading age 8: Short sentences (6–9 words). Common vocabulary with simple explanations for subject terms. Simple compound sentences allowed.";
+    if (age <= 9) return "Reading age 9: Use short, clear sentences (8-12 words). Everyday vocabulary. Simple compound sentences allowed. Define any technical terms in brackets immediately after.";
+    if (age <= 10) return "Reading age 10: Sentences of 8–13 words. Accessible vocabulary with definitions for subject-specific terms. Mix of simple and compound sentences.";
+    if (age <= 11) return "Reading age 11: Use moderate sentences (10-15 words). Subject vocabulary with brief definitions. Some complex sentences acceptable. Clear, direct instructions.";
+    if (age <= 12) return "Reading age 12: Sentences of 10–16 words. Good vocabulary range including subject-specific terms with brief definitions. Varied sentence structures.";
+    if (age <= 13) return "Reading age 13: Use standard academic language. Technical vocabulary expected. Multi-clause sentences acceptable.";
+    if (age <= 14) return "Reading age 14: Confident academic language. Technical vocabulary used naturally. Complex sentence structures.";
+    if (age <= 15) return "Reading age 15: Advanced secondary-level language. Rich vocabulary, complex sentence structures, nuanced expression.";
+    if (age <= 16) return "Reading age 16: A-Level standard language. Sophisticated vocabulary, complex analytical language, mature academic expression.";
+    return "Reading age 17+: University-entrance standard. Highly sophisticated vocabulary, mature complex academic expression.";
+  };
+
+  const guide = getAgeGuide(params.targetAge);
+
+  const system = `You are a UK SEND specialist. Rewrite the given text to match a specific reading age. CRITICAL RULES:
+- Change ONLY vocabulary complexity and sentence structure
+- Preserve the EXACT meaning, intent, and all specific details
+- Do NOT add or remove information
+- Return ONLY the rewritten text — no explanations, no quotes, no extra formatting`;
+
+  const user = `Rewrite this text to match: ${guide}
+
+${params.context ? `Context: ${params.context}\n\n` : ""}Text to rewrite:
+${params.text}`;
+
+  const { text } = await callAI(system, user, 300);
+  return text.trim().replace(/^["']|["']$/g, ""); // strip any surrounding quotes
+}
