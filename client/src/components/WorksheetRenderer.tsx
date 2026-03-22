@@ -1060,22 +1060,48 @@ function formatContent(content: string | any, fmt: ReturnType<typeof getSendForm
   // Strip [[DIAGRAM:{...}]] markers — handled by the outer section renderer.
   // If they reach formatContent they must be stripped silently so raw JSON never renders.
   content = content.replace(/\[\[DIAGRAM:\{[\s\S]*?\}\]\]/g, "").trim();
-  // Pre-process: split concatenated numbered items onto separate lines.
-  // The AI often outputs questions as a single line: "1. Q1 . 2. Q2 . 3. Q3"
-  // or with commas: "1. Q1, 2. Q2, 3. Q3"
-  // Also handles AI separator pattern: "? . Next sentence" or ". Next sentence"
-  // Strip leading period artifact from content
+  // ── Systemic content pre-processor ─────────────────────────────────────────────
+  // Handles all known AI output patterns that cause broken rendering:
+  //   1. Concatenated numbered items on a single line ("1. Q1 . 2. Q2 . 3. Q3")
+  //   2. Orphaned number-only lines ("1.\n+ 2 =") — join number with next line
+  //   3. Leading period artifacts
+  //   4. Blank lines between number and content ("1.\n\n+ 2 =")
   content = content.replace(/^[.\s]+(?=[A-Z])/, '');
   let preprocessed = content
-    // Split on "? . " pattern (question mark then period separator)
     .replace(/\?\s+\.\s+/g, '?\n')
-    // Split on ". N." pattern (period-space before numbered item)
     .replace(/\.\s+(\d+[a-z]?[.)\s]\s*)/g, '.\n$1')
-    // Split on ", N." pattern (comma before numbered item)
     .replace(/(,\s*)(\d+[a-z]?[.)\s]\s*)/g, '\n$2')
-    // Split on "; N." pattern (semicolon before numbered item)
     .replace(/(;\s*)(\d+[a-z]?[.)\s]\s*)/g, '\n$2');
-  const lines = preprocessed.split("\n");
+
+  // Pass 2: join orphaned number-only lines with the next non-empty line.
+  // Covers patterns like: "1.\n+ 2 ="  or  "2.\n\nWhat is..." or "3)\nFill in"
+  {
+    const rawLines = preprocessed.split('\n');
+    const joined: string[] = [];
+    for (let li = 0; li < rawLines.length; li++) {
+      const cur = rawLines[li].trim();
+      // An orphaned number line: just a number+punctuation with nothing after it
+      if (/^\d+[a-z]?[.):]\s*$/.test(cur)) {
+        // Find the next non-empty line to join with
+        let next = '';
+        let skip = 0;
+        for (let ni = li + 1; ni < rawLines.length; ni++) {
+          if (rawLines[ni].trim()) { next = rawLines[ni].trim(); skip = ni - li; break; }
+        }
+        if (next) {
+          joined.push(cur + ' ' + next);
+          li += skip; // skip the consumed lines
+        } else {
+          joined.push(cur);
+        }
+      } else {
+        joined.push(rawLines[li]);
+      }
+    }
+    preprocessed = joined.join('\n');
+  }
+
+  const lines = preprocessed.split('\n');
   const elements: React.ReactNode[] = [];
   let inTable = false;
   let tableRows: string[] = [];
@@ -1086,17 +1112,31 @@ function formatContent(content: string | any, fmt: ReturnType<typeof getSendForm
     // filter(Boolean) strips the empty strings left by leading/trailing pipes
     const rows = tableRows.map(r => r.split("|").map(c => c.trim()).filter(Boolean));
     if (rows.length === 0) return;
-    // Detect whether the first row is a genuine header row.
-    // A header row contains recognisable column-title words (letters/words only, no numbers/math).
-    // Data rows contain numbers, equations, math expressions, or short answer content.
-    const isHeaderRow = (row: string[]) => {
-      if (row.length === 0) return false;
-      return row.every(cell => {
-        const c = cell.trim();
-        // Pure header words: only letters, spaces, and common punctuation — no digits or math operators
-        return /^[A-Za-z][A-Za-z\s\-/()&]+$/.test(c) && c.length > 1;
-      });
+
+    // ── Systemic header detection ──────────────────────────────────────────────
+    // A genuine column header cell must satisfy ALL of:
+    //   1. Contains only letters, spaces, hyphens, slashes, parens, ampersands
+    //      (no digits, math operators, colons, equals signs, underscores)
+    //   2. Is short: ≤ 25 characters and ≤ 4 words
+    //   3. Starts with a capital letter OR is a known column-label word
+    // This prevents data cells like "finding the total", "the same as: =",
+    // "2+2", "photosynthesis", blank cells, or long definitions from being
+    // misidentified as headers — regardless of subject, year group, or table type.
+    const isGenuineHeaderCell = (c: string): boolean => {
+      const t = c.trim();
+      if (!t) return false;
+      // Must be letters-only (no digits, operators, colons, equals, underscores)
+      if (!/^[A-Za-z][A-Za-z\s\-/()&]*$/.test(t)) return false;
+      // Must be short
+      if (t.length > 25) return false;
+      if (t.split(/\s+/).length > 4) return false;
+      // Must start with capital OR be a known label word
+      return /^[A-Z]/.test(t) ||
+        /^(word|term|key|column|definition|answer|question|name|type|example|value|symbol|formula|unit|equation|meaning|category|description|property|feature|stage|step|event|date|cause|effect|factor|element|compound|reactant|product|force|mass|speed|time|distance|energy|power|charge|voltage|current|resistance|temperature|pressure|volume|concentration|ph|gene|allele|organ|tissue|cell|species|habitat|adaptation|biome|era|period|dynasty|country|region|city|person|role|impact|consequence|advantage|disadvantage|strength|weakness|opportunity|threat)$/i.test(t);
     };
+    const isHeaderRow = (row: string[]): boolean =>
+      row.length > 0 && row.every(cell => isGenuineHeaderCell(cell));
+
     const firstRowIsHeader = isHeaderRow(rows[0]);
     const header = firstRowIsHeader ? rows[0] : [];
     const body = (firstRowIsHeader ? rows.slice(1) : rows).filter(r => r.length > 0);
@@ -1301,12 +1341,19 @@ function formatContent(content: string | any, fmt: ReturnType<typeof getSendForm
     }
 
     // Numbered list (standard, no checkbox)
-    const numberedMatch = trimmed.match(/^(\d+[a-z]?[.)\s]\s*)(.+)$/);
+    // Systemic fix: always show the question number AND use a larger bottom margin
+    // so questions never run together regardless of subject, year group, or content type.
+    const numberedMatch = trimmed.match(/^(\d+[a-z]?[.):]\s*)(.+)$/);
     if (numberedMatch && !fmt.showCheckboxes) {
+      const qNum = numberedMatch[1].trim();
+      const qText = numberedMatch[2];
+      // Use a minimum of 10px bottom margin regardless of theme paragraphSpacing
+      const qMargin = `0 0 max(${paragraphSpacing}, 10px) 0`;
       elements.push(
-        <p key={idx} style={{ margin: `0 0 ${paragraphSpacing} 0`, fontSize: `${textSize}px`, lineHeight, color: "#1f2937", fontFamily, letterSpacing, wordSpacing }}>
-          <span dangerouslySetInnerHTML={{ __html: renderMath(numberedMatch[2]) }} />
-        </p>
+        <div key={idx} style={{ display: "flex", gap: "6px", alignItems: "flex-start", margin: qMargin }}>
+          <span style={{ fontWeight: 700, fontSize: `${textSize}px`, color: "#374151", fontFamily, flexShrink: 0, minWidth: "20px" }}>{qNum}</span>
+          <span style={{ fontSize: `${textSize}px`, lineHeight, color: "#1f2937", fontFamily, letterSpacing, wordSpacing }} dangerouslySetInnerHTML={{ __html: renderMath(qText) }} />
+        </div>
       );
       return;
     }
@@ -1370,8 +1417,9 @@ function formatContent(content: string | any, fmt: ReturnType<typeof getSendForm
     }
 
     // Regular paragraph — use renderMath for proper symbols and strip asterisks
+    // Systemic: enforce minimum 8px bottom margin so content never runs together
     elements.push(
-      <p key={idx} style={{ margin: `0 0 ${paragraphSpacing} 0`, fontSize: `${textSize}px`, lineHeight, color: "#1f2937", fontFamily, letterSpacing, wordSpacing }}>
+      <p key={idx} style={{ margin: `0 0 max(${paragraphSpacing}, 8px) 0`, fontSize: `${textSize}px`, lineHeight, color: "#1f2937", fontFamily, letterSpacing, wordSpacing }}>
         <span dangerouslySetInnerHTML={{ __html: renderMath(trimmed) }} />
       </p>
     );
@@ -1727,6 +1775,34 @@ function PrimarySection({
   const titleText = (typeof section.title === "string" ? section.title : String(section.title || ""))
     .replace(/^\*{1,2}|\*{1,2}$/g, "").replace(/^_{1,2}|_{1,2}$/g, "").trim();
   const badgeText = getPrimaryBadge(section.type);
+  // ── Systemic badge deduplication ─────────────────────────────────────────────
+  // Don't show the badge subtitle when it would duplicate or closely echo the section
+  // title. Covers: exact match, synonym match, and cases where the title already
+  // contains the badge text (or vice-versa). This applies to ALL primary section types.
+  const normTitle = titleText.toLowerCase().replace(/[^a-z0-9]/g, "");
+  const normBadge = badgeText.toLowerCase().replace(/[^a-z0-9]/g, "");
+  // Synonym pairs: if title matches any synonym of the badge, suppress the badge
+  const BADGE_SYNONYMS: Record<string, string[]> = {
+    vocabulary: ["keyvocabulary", "keywords", "keywords", "vocabulary", "glossary", "wordlist", "keyterms"],
+    objective:  ["learningobjectives", "objective", "objectives", "whatwerelearning", "todaywearelearning", "wearelearing", "aim", "aims"],
+    success:    ["successcriteria", "ican", "icando", "successcriteria", "learninggoals"],
+    starter:    ["starteractivity", "warmup", "letswarmup", "bellwork", "starter"],
+    example:    ["workedexample", "lookatthis", "example", "examples", "modelanswer"],
+    guided:     ["trytogether", "guidedpractice", "guided", "foundation", "letstrytogether"],
+    independent:["yourturn", "independent", "corepractice", "practice", "practise", "onyourown"],
+    challenge:  ["challengetime", "challenge", "stretchandchallenge", "extension", "extrachallenge", "bonus"],
+    "word-bank":["wordbank", "word-bank", "words"],
+    "sentence-starters": ["sentencestarters", "howtostart", "sentenceframes"],
+    "self-assessment": ["howdidido", "selfassessment", "selfassess", "reflection"],
+    "word-problems": ["storyproblems", "wordproblems", "reallifeproblems", "reallife"],
+    comprehension: ["reading", "readingpassage", "comprehension"],
+  };
+  const synonyms = BADGE_SYNONYMS[section.type] || [];
+  const showBadge = !!(badgeText &&
+    normTitle !== normBadge &&                        // exact match
+    !normBadge.includes(normTitle) &&                 // badge contains title
+    !normTitle.includes(normBadge) &&                 // title contains badge
+    !synonyms.includes(normTitle));                   // title is a known synonym
   const needsWritingLines = !isTeacherSection &&
     (section.type === "independent" || section.type === "guided" || section.type === "challenge") &&
     !/sentence starter:|steps to follow:|quick start:|what you need to do:|help box|key facts|word bank/i.test(content || "");
@@ -1782,7 +1858,7 @@ function PrimarySection({
             }}>
               {titleText}
             </div>
-            {badgeText && (
+            {showBadge && (
               <div style={{
                 fontSize: `${fmt.fontSize - 2}px`,
                 color: "rgba(255,255,255,0.85)",
