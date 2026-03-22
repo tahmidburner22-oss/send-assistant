@@ -393,9 +393,111 @@ const QUICK_TOTAL = QUICK_QUESTIONS.length; // 8 sections × 3 = 24
 
 type ScreenerMode = "quick" | "full";
 
-/** Simplifies a long question into shorter, plainer language for pupils completing alone */
-function simplifyText(text: string): string {
-  // Strip subordinate clauses and shorten sentences
+/**
+ * Plain-English rewrites of every screener question.
+ * Each version is written at approximately Year 5 reading age:
+ * short sentences, common words, no subordinate clauses or em-dash asides.
+ * The old approach (regex stripping) just removed examples without
+ * touching the actual sentence complexity — these are genuine rewrites.
+ */
+const SIMPLIFIED_QUESTIONS: Record<string, string> = {
+  // ── Dyslexia ──────────────────────────────────────────────────────────────
+  d1:  "Do you sometimes read a word wrong, even though you have seen it before?",
+  d2:  "Do you often lose your place when reading, or read the same line twice by accident?",
+  d3:  "Is it hard to sound out a new word you have never seen before?",
+  d4:  "Is it hard to write down your ideas in order, even when you know what you want to say?",
+  d5:  "Do you find it hard to tell left from right without thinking about it carefully?",
+  d6:  "Do you need instructions repeated or written down so you do not forget them?",
+  d7:  "Do you need to read the same paragraph more than once before you understand it?",
+  d8:  "Do you stumble over words or lose your place when reading out loud?",
+  d9:  "Was it much harder for you than for other people to learn things like the alphabet or times tables?",
+  d10: "Do you keep spelling the same words wrong, even words you have written many times before?",
+  d11: "Do you find it hard to copy from a board or book without losing your place or making mistakes?",
+  // ── ADHD ──────────────────────────────────────────────────────────────────
+  a1:  "Do you often leave tasks almost finished but never quite done?",
+  a2:  "Is it hard to plan a task that has lots of steps?",
+  a3:  "Do you forget appointments or deadlines, even important ones?",
+  a4:  "Do you put off starting hard tasks for a long time, even when you know you should start?",
+  a5:  "Do you feel fidgety or restless when you have to sit still for a long time?",
+  a6:  "Does your brain feel like it is always switched on, even when you want to relax?",
+  a7:  "Do you make careless mistakes in work because your mind drifts before you check it?",
+  a8:  "Does your mind wander during tasks that need you to concentrate?",
+  a9:  "Do you sometimes miss what someone is saying, even though you are trying to listen?",
+  a10: "Do you often lose everyday things like your phone, keys, or bag?",
+  a11: "Does background noise or movement easily pull your attention away from what you are doing?",
+  a12: "Do you act or speak without thinking first, and then wish you had waited?",
+  // ── ASC ───────────────────────────────────────────────────────────────────
+  s1:  "Do you notice small sounds that other people do not seem to hear, and find them distracting?",
+  s2:  "Is it hard to work out how a character in a book or film is feeling unless it is spelled out?",
+  s3:  "Do you have one or two topics you are very deeply interested in, much more than most people?",
+  s4:  "Is it hard to tell if someone is annoyed, joking, or upset just from their face or voice?",
+  s5:  "Do you feel very tired after spending time with other people, even if you enjoyed it?",
+  s6:  "Do you find it very upsetting when plans change without warning?",
+  s7:  "Do people sometimes say you have taken something the wrong way, or that you missed a joke?",
+  s8:  "Are the unwritten rules of social situations confusing to you?",
+  s9:  "Do certain textures, lights, sounds, smells, or tastes bother you much more than they seem to bother other people?",
+  s10: "Is it much easier to talk about facts or hobbies than to talk about feelings?",
+  s11: "After talking with people, do you replay the conversation and worry that you said something wrong?",
+  // ── Dyspraxia ─────────────────────────────────────────────────────────────
+  dp1: "Do you bump into things or knock things over much more than other people do?",
+  dp2: "Is your handwriting hard to read, even when you are trying your best?",
+  dp3: "Does it take you much longer than others to learn physical skills like riding a bike?",
+  dp4: "Is it hard to catch a ball, use scissors neatly, or pour a drink without spilling?",
+  dp5: "Do you often misjudge distances, like how much space you need to walk through a gap?",
+  dp6: "Do you get confused doing tasks in the right order, like following a recipe?",
+  dp7: "Is it hard to tell a story or explain something in the right order?",
+  dp8: "Do fine motor tasks like tying laces or doing up buttons take you much longer than others?",
+  dp9: "Do you regularly forget equipment, or find it hard to keep your things organised?",
+  dp10:"Is sport or PE much harder for you than other subjects, and do you try to avoid it?",
+  // ── Dyscalculia ───────────────────────────────────────────────────────────
+  dc1: "Is it hard to remember basic number facts like times tables, even after lots of practice?",
+  dc2: "Is it hard to understand what a number means, like knowing what 347 looks like as an amount?",
+  dc3: "Is it hard to make a rough guess about an amount without counting?",
+  dc4: "Do you find it hard to work out change, split a bill, or check if a price is correct?",
+  dc5: "Do you need to count around a clock to read the time, rather than knowing it straight away?",
+  dc6: "Do maths tasks make you feel very anxious or cause your mind to go blank?",
+  dc7: "Is it hard to hold a string of numbers in your head, like a phone number or PIN?",
+  dc8: "Do you mix up maths symbols like + and ×, or < and >?",
+  dc9: "Is it hard to understand fractions, decimals, or percentages?",
+  // ── SLCN ──────────────────────────────────────────────────────────────────
+  sl1: "Do you often know what word you want to say, but it will not come out?",
+  sl2: "Do you struggle to follow three or more instructions given one after another?",
+  sl3: "Is it much harder to understand people when there is background noise?",
+  sl4: "Do you sometimes reply in a way that surprises people, because you understood them differently?",
+  sl5: "Do you often lose track of what you are saying halfway through a sentence?",
+  sl6: "Have people said they find it hard to understand you when you speak?",
+  sl7: "Do you find phrases like 'break a leg' or 'hit the books' confusing at first?",
+  sl8: "Is it hard to know when it is your turn to speak, so you either talk over people or stay silent?",
+  sl9: "Do you often come across words you do not know, or find it hard to find the right word when writing?",
+  sl10:"Is it hard to retell a story or explain an event in the right order?",
+  // ── Anxiety ───────────────────────────────────────────────────────────────
+  an1: "In the past two weeks, have you felt nervous or anxious most of the time?",
+  an2: "In the past two weeks, have you been unable to stop worrying, even when you tried?",
+  an3: "In the past two weeks, have you found it hard to relax, even in safe or calm situations?",
+  an4: "In the past two weeks, have you felt so tense or restless that it was hard to sit still?",
+  an5: "In the past two weeks, have you snapped at people more than usual?",
+  an6: "In the past two weeks, have you felt like something awful was about to happen, even with no reason?",
+  an7: "Do you avoid places or situations because of anxiety?",
+  an8: "Do you get physical symptoms like a racing heart, stomach aches, or headaches because of worry?",
+  an9: "Do you spend a lot of time thinking about things that might go wrong in the future?",
+  an10:"Has worry or anxiety stopped you going to school, seeing friends, or doing things you enjoy?",
+  // ── MLD ───────────────────────────────────────────────────────────────────
+  ml1: "Does it take much longer than other people to learn something new?",
+  ml2: "Do you understand something in a lesson but then find you have forgotten it the next week?",
+  ml3: "Is it hard to use something you learned in one lesson when it comes up in a different subject?",
+  ml4: "Are abstract ideas like fractions, metaphors, or cause and effect hard to grasp?",
+  ml5: "Do you need an adult to guide you through each step of a task, rather than working on your own?",
+  ml6: "Do you often feel left behind because the class moves on before you have understood the last point?",
+  ml7: "Is your reading or writing noticeably behind what is expected for your age?",
+  ml8: "Is it hard to plan a piece of writing or a task without a lot of adult help?",
+  ml9: "Do subject words like 'evaluate', 'hypothesis', or 'denominator' confuse you in lessons or exams?",
+  ml10:"Can you explain your ideas well when talking, but then find it hard to write the same thing down?",
+};
+
+/** Returns a plain-English rewrite of the question, or falls back to the original */
+function simplifyText(text: string, id?: string): string {
+  if (id && SIMPLIFIED_QUESTIONS[id]) return SIMPLIFIED_QUESTIONS[id];
+  // Fallback: strip the longest subordinate clause patterns if no mapped version
   return text
     .replace(/— for example[^—]*—/g, "")
     .replace(/ — even when [^.?]*/g, "")
@@ -955,7 +1057,7 @@ export default function SendScreener() {
                 questionTextSize === "xl" ? "text-xl" :
                 "text-base"
               }`}>
-                {simplifiedLanguage ? simplifyText(question.text) : question.text}
+                {simplifiedLanguage ? simplifyText(question.text, question.id) : question.text}
               </p>
               {question.example && (
                 <div className="mt-3 p-3 bg-indigo-50 border border-indigo-100 rounded-xl">

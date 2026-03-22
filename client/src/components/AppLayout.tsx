@@ -138,15 +138,31 @@ const allKnownPaths: { path: string; label: string }[] = [
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
-  const [dismissedNotifs, setDismissedNotifs] = useState<Set<string>>(() => {
-    try {
-      const stored = localStorage.getItem("adaptly_dismissed_notifs");
-      return stored ? new Set(JSON.parse(stored)) : new Set<string>();
-    } catch { return new Set<string>(); }
-  });
   const [location] = useLocation();
   const { user, logout, children: pupils } = useApp();
   const { preferences, wallpaperStyle } = useUserPreferences();
+
+  // Key dismissals to the logged-in user so they don't persist across account switches
+  const notifStorageKey = user?.id ? `adaptly_dismissed_notifs_${user.id}` : "adaptly_dismissed_notifs";
+
+  const [dismissedNotifs, setDismissedNotifs] = useState<Set<string>>(() => {
+    try {
+      const stored = localStorage.getItem(notifStorageKey);
+      return stored ? new Set(JSON.parse(stored)) : new Set<string>();
+    } catch { return new Set<string>(); }
+  });
+
+  // Re-read dismissed notifs whenever the user changes (fresh login)
+  const prevUserIdRef = React.useRef<string | undefined>(user?.id);
+  React.useEffect(() => {
+    if (user?.id && user.id !== prevUserIdRef.current) {
+      prevUserIdRef.current = user.id;
+      try {
+        const stored = localStorage.getItem(`adaptly_dismissed_notifs_${user.id}`);
+        setDismissedNotifs(stored ? new Set(JSON.parse(stored)) : new Set<string>());
+      } catch { setDismissedNotifs(new Set()); }
+    }
+  }, [user?.id]);
 
   const allNotifications = pupils.flatMap(p =>
     p.assignments
@@ -166,7 +182,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     setDismissedNotifs(prev => {
       const next = new Set(prev);
       next.add(key);
-      try { localStorage.setItem("adaptly_dismissed_notifs", JSON.stringify([...next])); } catch {}
+      try { localStorage.setItem(notifStorageKey, JSON.stringify([...next])); } catch {}
       return next;
     });
   };
@@ -175,7 +191,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     setDismissedNotifs(prev => {
       const next = new Set(prev);
       allNotifications.forEach(n => next.add(n.key));
-      try { localStorage.setItem("adaptly_dismissed_notifs", JSON.stringify([...next])); } catch {}
+      try { localStorage.setItem(notifStorageKey, JSON.stringify([...next])); } catch {}
       return next;
     });
   };

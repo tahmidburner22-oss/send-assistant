@@ -1,6 +1,7 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { callAI } from "@/lib/ai";
-import { Layers, RotateCcw, ChevronLeft, ChevronRight, Shuffle, Printer, Check, X } from "lucide-react";
+import { downloadHtmlAsPdf } from "@/lib/pdf-generator-v2";
+import { Layers, RotateCcw, ChevronLeft, ChevronRight, Shuffle, Printer, Check, X, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -9,7 +10,7 @@ import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 
 const subjects = ["English","Maths","Science","History","Geography","RE","PSHE","Art","Music","Computing","MFL","Design Technology","Drama"].map(s => ({ value: s, label: s }));
-const years = ["Year 1","Year 2","Year 3","Year 4","Year 5","Year 6","Year 7","Year 8","Year 9","Year 10","Year 11"].map(y => ({ value: y, label: y }));
+const years = ["Reception","Year 1","Year 2","Year 3","Year 4","Year 5","Year 6","Year 7","Year 8","Year 9","Year 10","Year 11","Year 12","Year 13"].map(y => ({ value: y, label: y }));
 
 interface Card { front: string; back: string; hint?: string; }
 
@@ -43,12 +44,14 @@ function shuffle<T>(arr: T[]): T[] {
 
 /** Interactive flip-card study mode */
 function StudyMode({ cards, onReset }: { cards: Card[]; onReset: () => void }) {
-  const [deck, setDeck]       = useState(cards);
-  const [idx, setIdx]         = useState(0);
-  const [flipped, setFlipped] = useState(false);
-  const [known, setKnown]     = useState<Set<number>>(new Set());
-  const [unsure, setUnsure]   = useState<Set<number>>(new Set());
-  const [showHint, setShowHint] = useState(false);
+  const [deck, setDeck]           = useState(cards);
+  const [idx, setIdx]             = useState(0);
+  const [flipped, setFlipped]     = useState(false);
+  const [known, setKnown]         = useState<Set<number>>(new Set());
+  const [unsure, setUnsure]       = useState<Set<number>>(new Set());
+  const [showHint, setShowHint]   = useState(false);
+  const [pdfLoading, setPdfLoading] = useState(false);
+  const printRef = useRef<HTMLDivElement>(null);
 
   const card = deck[idx];
   const progress = `${idx + 1} / ${deck.length}`;
@@ -68,6 +71,18 @@ function StudyMode({ cards, onReset }: { cards: Card[]; onReset: () => void }) {
   };
 
   const reshuffleDeck = () => { setDeck(shuffle(deck)); setIdx(0); setFlipped(false); setShowHint(false); };
+
+  const handleDownloadPdf = async () => {
+    if (!printRef.current) return;
+    setPdfLoading(true);
+    try {
+      await downloadHtmlAsPdf(printRef.current, `Flash_Cards.pdf`);
+      toast.success("PDF downloaded!");
+    } catch {
+      toast.error("Could not generate PDF. Please try again.");
+    }
+    setPdfLoading(false);
+  };
 
   const knownPct  = Math.round((known.size  / deck.length) * 100);
   const unsurePct = Math.round((unsure.size / deck.length) * 100);
@@ -154,12 +169,15 @@ function StudyMode({ cards, onReset }: { cards: Card[]; onReset: () => void }) {
             Next <ChevronRight className="w-4 h-4" />
           </Button>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap justify-end">
           <Button variant="outline" size="sm" onClick={reshuffleDeck} className="gap-1 text-gray-600">
             <Shuffle className="w-3.5 h-3.5" /> Shuffle
           </Button>
           <Button variant="outline" size="sm" onClick={() => window.print()} className="gap-1 text-gray-600 no-print">
             <Printer className="w-3.5 h-3.5" /> Print
+          </Button>
+          <Button variant="outline" size="sm" onClick={handleDownloadPdf} disabled={pdfLoading} className="gap-1 text-brand border-brand/30 hover:bg-brand/5 no-print">
+            <Download className="w-3.5 h-3.5" /> {pdfLoading ? "Saving…" : "PDF"}
           </Button>
           <Button variant="outline" size="sm" onClick={onReset} className="gap-1 text-gray-600">
             <RotateCcw className="w-3.5 h-3.5" /> New cards
@@ -183,15 +201,15 @@ function StudyMode({ cards, onReset }: { cards: Card[]; onReset: () => void }) {
         </div>
       )}
 
-      {/* Printable card grid (hidden on screen, shown on print) */}
-      <div className="hidden print:block mt-4">
+      {/* Printable + PDF card grid */}
+      <div ref={printRef} className="hidden print:block mt-4" style={{ fontFamily: "Arial, sans-serif" }}>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "12px" }}>
           {deck.map((c, i) => (
-            <div key={i} style={{ border: "1px solid #ddd", borderRadius: "8px", padding: "12px", pageBreakInside: "avoid" }}>
-              <div style={{ fontSize: "11px", fontWeight: 700, color: "#6366f1", textTransform: "uppercase", marginBottom: "4px" }}>Card {i + 1}</div>
-              <div style={{ fontWeight: 700, marginBottom: "6px" }}>{c.front}</div>
-              <div style={{ fontSize: "13px", color: "#374151", borderTop: "1px dashed #e5e7eb", paddingTop: "6px" }}>{c.back}</div>
-              {c.hint && <div style={{ fontSize: "11px", color: "#7c3aed", marginTop: "4px", fontStyle: "italic" }}>💡 {c.hint}</div>}
+            <div key={i} style={{ border: "2px solid #4f46e5", borderRadius: "8px", padding: "14px", pageBreakInside: "avoid", background: "#fff" }}>
+              <div style={{ fontSize: "10px", fontWeight: 700, color: "#4f46e5", textTransform: "uppercase", marginBottom: "6px", letterSpacing: "0.5px" }}>Card {i + 1}</div>
+              <div style={{ fontWeight: 700, fontSize: "14px", color: "#111827", marginBottom: "8px" }}>{c.front}</div>
+              <div style={{ fontSize: "13px", color: "#374151", borderTop: "1px dashed #c7d2fe", paddingTop: "8px", lineHeight: "1.5" }}>{c.back}</div>
+              {c.hint && <div style={{ fontSize: "11px", color: "#7c3aed", marginTop: "6px", fontStyle: "italic" }}>💡 {c.hint}</div>}
             </div>
           ))}
         </div>

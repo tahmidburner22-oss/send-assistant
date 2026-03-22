@@ -973,47 +973,36 @@ const SECTION_STYLES: Record<string, { border: string; bg: string; badge: string
   "success":       { border: "#4f46e5", bg: "#f5f3ff", badge: "#4f46e5", badgeBg: "#ede9fe", icon: "✅", label: "Success Criteria",       headerBg: "linear-gradient(135deg,#4f46e5,#3730a3)", headerText: "#fff" },
   "vocabulary":    { border: "#7c3aed", bg: "#faf5ff", badge: "#7c3aed", badgeBg: "#f3e8ff", icon: "📚", label: "Key Vocabulary",         headerBg: "linear-gradient(135deg,#7c3aed,#6d28d9)", headerText: "#fff" },
   "starter":       { border: "#2563eb", bg: "#eff6ff", badge: "#2563eb", badgeBg: "#dbeafe", icon: "⚡", label: "Starter Activity",       headerBg: "linear-gradient(135deg,#2563eb,#1d4ed8)", headerText: "#fff" },
-  "example":       { border: "#0284c7", bg: "#f0f9ff", badge: "#0284c7", badgeBg: "#e0f2fe", icon: "💡", label: "Worked Example",         headerBg: "linear-gradient(135deg,#0284c7,#0369a1)", headerText: "#fff" },
+  "example":       { border: "#3b82f6", bg: "#eff6ff", badge: "#2563eb", badgeBg: "#dbeafe", icon: "💡", label: "Worked Example",         headerBg: "linear-gradient(135deg,#3b82f6,#2563eb)", headerText: "#fff" },
   "reminder-box":  { border: "#6366f1", bg: "#f5f3ff", badge: "#4f46e5", badgeBg: "#ede9fe", icon: "📌", label: "Key Steps",              headerBg: "linear-gradient(135deg,#6366f1,#4f46e5)", headerText: "#fff" },
-  "guided":        { border: "#0891b2", bg: "#ecfeff", badge: "#0891b2", badgeBg: "#cffafe", icon: "⭐", label: "Foundation",             headerBg: "linear-gradient(135deg,#0891b2,#0e7490)", headerText: "#fff" },
+  "guided":        { border: "#2563eb", bg: "#eff6ff", badge: "#2563eb", badgeBg: "#dbeafe", icon: "⭐", label: "Foundation",             headerBg: "linear-gradient(135deg,#3b82f6,#2563eb)", headerText: "#fff" },
   "independent":   { border: "#3b82f6", bg: "#eff6ff", badge: "#2563eb", badgeBg: "#dbeafe", icon: "★",  label: "Core Practice",          headerBg: "linear-gradient(135deg,#3b82f6,#2563eb)", headerText: "#fff" },
   "challenge":     { border: "#7c3aed", bg: "#faf5ff", badge: "#6d28d9", badgeBg: "#ede9fe", icon: "★★", label: "Stretch & Challenge",    headerBg: "linear-gradient(135deg,#7c3aed,#4f46e5)", headerText: "#fff" },
-  "word-problems": { border: "#0284c7", bg: "#f0f9ff", badge: "#0369a1", badgeBg: "#e0f2fe", icon: "📝", label: "Real-Life Problems",     headerBg: "linear-gradient(135deg,#0284c7,#0369a1)", headerText: "#fff" },
+  "word-problems": { border: "#4f46e5", bg: "#f5f3ff", badge: "#4f46e5", badgeBg: "#ede9fe", icon: "📝", label: "Real-Life Problems",     headerBg: "linear-gradient(135deg,#4f46e5,#3730a3)", headerText: "#fff" },
   "common-mistakes":{ border:"#7c3aed", bg: "#faf5ff", badge: "#6d28d9", badgeBg:"#ede9fe",  icon:"📋",  label: "Common Mistakes",        headerBg: "linear-gradient(135deg,#7c3aed,#6d28d9)", headerText: "#fff" },
   "word-bank":     { border: "#8b5cf6", bg: "#f5f3ff", badge: "#7c3aed", badgeBg: "#ede9fe", icon: "📝", label: "Word Bank",              headerBg: "linear-gradient(135deg,#8b5cf6,#7c3aed)", headerText: "#fff" },
   "sentence-starters": { border: "#6366f1", bg: "#f5f3ff", badge: "#4f46e5", badgeBg: "#ede9fe", icon: "💬", label: "Sentence Starters", headerBg: "linear-gradient(135deg,#6366f1,#4f46e5)", headerText: "#fff" },
   "self-assessment": { border: "#2563eb", bg: "#eff6ff", badge: "#1d4ed8", badgeBg: "#dbeafe", icon: "📊", label: "Self Assessment",     headerBg: "linear-gradient(135deg,#2563eb,#1d4ed8)", headerText: "#fff" },
   "self-reflection": { border: "#2563eb", bg: "#eff6ff", badge: "#1d4ed8", badgeBg: "#dbeafe", icon: "📊", label: "How Did I Do?",       headerBg: "linear-gradient(135deg,#2563eb,#1d4ed8)", headerText: "#fff" },
-  "diagram":       { border: "#475569", bg: "#f8fafc", badge: "#475569", badgeBg: "#f1f5f9", icon: "📐", label: "Diagram",               headerBg: "linear-gradient(135deg,#475569,#334155)", headerText: "#fff" },
-  "answers":       { border: "#0891b2", bg: "#ecfeff", badge: "#0e7490", badgeBg: "#cffafe", icon: "✔",  label: "Answers",               headerBg: "linear-gradient(135deg,#0891b2,#0e7490)", headerText: "#fff" },
+  "diagram":       { border: "#4338ca", bg: "#f5f3ff", badge: "#4338ca", badgeBg: "#ede9fe", icon: "📐", label: "Diagram",               headerBg: "linear-gradient(135deg,#4338ca,#3730a3)", headerText: "#fff" },
+  "answers":       { border: "#4f46e5", bg: "#f5f3ff", badge: "#4f46e5", badgeBg: "#ede9fe", icon: "✔",  label: "Answers",               headerBg: "linear-gradient(135deg,#4f46e5,#3730a3)", headerText: "#fff" },
   "questions":     { border: "#4f46e5", bg: "#f5f3ff", badge: "#4f46e5", badgeBg: "#ede9fe", icon: "❓", label: "Exam Questions",        headerBg: "linear-gradient(135deg,#4f46e5,#3730a3)", headerText: "#fff" },
-  "mark-scheme":   { border: "#0891b2", bg: "#ecfeff", badge: "#0e7490", badgeBg: "#cffafe", icon: "✔",  label: "Mark Scheme",           headerBg: "linear-gradient(135deg,#0891b2,#0e7490)", headerText: "#fff" },
-  "teacher-notes": { border: "#334155", bg: "#f8fafc", badge: "#475569", badgeBg: "#f1f5f9", icon: "📋", label: "Teacher Notes",         headerBg: "linear-gradient(135deg,#475569,#334155)", headerText: "#fff" },
+  "mark-scheme":   { border: "#6366f1", bg: "#f5f3ff", badge: "#6366f1", badgeBg: "#ede9fe", icon: "✔",  label: "Mark Scheme",           headerBg: "linear-gradient(135deg,#6366f1,#4f46e5)", headerText: "#fff" },
+  "teacher-notes": { border: "#4338ca", bg: "#f5f3ff", badge: "#4338ca", badgeBg: "#ede9fe", icon: "📋", label: "Teacher Notes",         headerBg: "linear-gradient(135deg,#4338ca,#3730a3)", headerText: "#fff" },
   "send-support":  { border: "#4f46e5", bg: "#f5f3ff", badge: "#4f46e5", badgeBg: "#ede9fe", icon: "★",  label: "SEND Support",          headerBg: "linear-gradient(135deg,#4f46e5,#3730a3)", headerText: "#fff" },
-  "reading":       { border: "#475569", bg: "#f8fafc", badge: "#475569", badgeBg: "#f1f5f9", icon: "📖", label: "Reading Passage",       headerBg: "linear-gradient(135deg,#475569,#334155)", headerText: "#fff" },
-  "passage":       { border: "#475569", bg: "#f8fafc", badge: "#475569", badgeBg: "#f1f5f9", icon: "📖", label: "Reading Passage",       headerBg: "linear-gradient(135deg,#475569,#334155)", headerText: "#fff" },
-  "source-text":   { border: "#475569", bg: "#f8fafc", badge: "#475569", badgeBg: "#f1f5f9", icon: "📜", label: "Source Text",           headerBg: "linear-gradient(135deg,#475569,#334155)", headerText: "#fff" },
-  "comprehension": { border: "#0284c7", bg: "#f0f9ff", badge: "#0369a1", badgeBg: "#e0f2fe", icon: "🔍", label: "Comprehension",         headerBg: "linear-gradient(135deg,#0284c7,#0369a1)", headerText: "#fff" },
+  "reading":       { border: "#4338ca", bg: "#f5f3ff", badge: "#4338ca", badgeBg: "#ede9fe", icon: "📖", label: "Reading Passage",       headerBg: "linear-gradient(135deg,#4338ca,#3730a3)", headerText: "#fff" },
+  "passage":       { border: "#4338ca", bg: "#f5f3ff", badge: "#4338ca", badgeBg: "#ede9fe", icon: "📖", label: "Reading Passage",       headerBg: "linear-gradient(135deg,#4338ca,#3730a3)", headerText: "#fff" },
+  "source-text":   { border: "#4338ca", bg: "#f5f3ff", badge: "#4338ca", badgeBg: "#ede9fe", icon: "📜", label: "Source Text",           headerBg: "linear-gradient(135deg,#4338ca,#3730a3)", headerText: "#fff" },
+  "comprehension": { border: "#3b82f6", bg: "#eff6ff", badge: "#2563eb", badgeBg: "#dbeafe", icon: "🔍", label: "Comprehension",         headerBg: "linear-gradient(135deg,#3b82f6,#2563eb)", headerText: "#fff" },
   "misconceptions":{ border: "#4f46e5", bg: "#f5f3ff", badge: "#4f46e5", badgeBg: "#ede9fe", icon: "📌", label: "Watch Out!",            headerBg: "linear-gradient(135deg,#4f46e5,#3730a3)", headerText: "#fff" },
   "revision-mat-box":{ border:"#4f46e5",bg:"#f5f3ff", badge:"#4f46e5", badgeBg:"#ede9fe",   icon:"📋",  label: "",                       headerBg: "linear-gradient(135deg,#4f46e5,#3730a3)", headerText: "#fff" },
   "default":       { border: "#4f46e5", bg: "#f5f3ff", badge: "#4f46e5", badgeBg: "#ede9fe", icon: "",   label: "",                      headerBg: "linear-gradient(135deg,#4f46e5,#3730a3)", headerText: "#fff" },
 };
 
-function getSectionStyle(type: string, yearNum?: number) {
-  const base = SECTION_STYLES[type] || SECTION_STYLES["default"];
-  // Year 7+ (secondary): remap teal/cyan sections to blue — keep indigo+blue palette only
-  if (yearNum && yearNum >= 7) {
-    if (base.border === "#0891b2" || base.border === "#0284c7") {
-      return { ...base, border: "#2563eb", bg: "#eff6ff", badge: "#2563eb", badgeBg: "#dbeafe",
-        headerBg: "linear-gradient(135deg,#3b82f6,#2563eb)", headerText: "#fff" };
-    }
-    if (base.border === "#475569") {
-      // Slate (diagrams, teacher notes) → dark indigo
-      return { ...base, border: "#4338ca", bg: "#f5f3ff", badge: "#4338ca", badgeBg: "#ede9fe",
-        headerBg: "linear-gradient(135deg,#4338ca,#3730a3)", headerText: "#fff" };
-    }
-  }
-  return base;
+function getSectionStyle(type: string, _yearNum?: number) {
+  // All section types are now locked to the indigo/blue/violet palette —
+  // teal, sky, and slate have been removed from SECTION_STYLES entirely.
+  return SECTION_STYLES[type] || SECTION_STYLES["default"];
 }
 
 function stripLatexFromPlainText(text: string): string {
@@ -1068,6 +1057,9 @@ function formatContent(content: string | any, fmt: ReturnType<typeof getSendForm
   content = content.replace(/\\n/g, '\n').replace(/\\t/g, '\t');
 
   const { fontSize: textSize, lineHeight, letterSpacing, wordSpacing, paragraphSpacing, fontFamily } = fmt;
+  // Strip [[DIAGRAM:{...}]] markers — handled by the outer section renderer.
+  // If they reach formatContent they must be stripped silently so raw JSON never renders.
+  content = content.replace(/\[\[DIAGRAM:\{[\s\S]*?\}\]\]/g, "").trim();
   // Pre-process: split concatenated numbered items onto separate lines.
   // The AI often outputs questions as a single line: "1. Q1 . 2. Q2 . 3. Q3"
   // or with commas: "1. Q1, 2. Q2, 3. Q3"
@@ -1091,22 +1083,27 @@ function formatContent(content: string | any, fmt: ReturnType<typeof getSendForm
 
   const flushTable = (key: string) => {
     if (tableRows.length === 0) return;
+    // filter(Boolean) strips the empty strings left by leading/trailing pipes
     const rows = tableRows.map(r => r.split("|").map(c => c.trim()).filter(Boolean));
-    const header = rows[0];
-    const body = rows.slice(1);
+    // If rows[0] looks like pure data (e.g. first cell is a number or plain word without
+    // a corresponding header hint), leave it as-is — it becomes the <th> row.
+    // If every cell in rows[0] is a recognisable column-header word, use it as header.
+    const header = rows[0] || [];
+    const body = rows.slice(1).filter(r => r.length > 0);
+    if (header.length === 0) return;
     elements.push(
       <div key={key} className="ws-table-wrap" style={{ overflowX: "auto", margin: "8px 0" }}>
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: `${textSize - 1}px`, fontFamily, letterSpacing, wordSpacing }}>
           <thead>
             <tr>
               {header.map((h, hi) => (
-                <th key={hi} style={{ padding: "8px 12px", background: "#7c3aed", color: "white", textAlign: "left", fontWeight: 600, border: "1px solid #ddd" }}>{h}</th>
+                <th key={hi} style={{ padding: "8px 12px", background: "#4f46e5", color: "white", textAlign: "left", fontWeight: 700, border: "1px solid #c7d2fe" }}>{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {body.map((row, ri) => (
-              <tr key={ri} style={{ background: ri % 2 === 0 ? "white" : "#f9fafb" }}>
+              <tr key={ri} style={{ background: ri % 2 === 0 ? "white" : "#f5f3ff" }}>
                 {row.map((cell, ci) => (
                   <td key={ci} style={{ padding: "7px 12px", border: "1px solid #e5e7eb", fontSize: `${textSize - 1}px` }}>
                     <span dangerouslySetInnerHTML={{ __html: renderMath(cell) }} />
@@ -1376,12 +1373,22 @@ function formatContent(content: string | any, fmt: ReturnType<typeof getSendForm
 
 function VocabSection({ content, fmt, overlayColor = "white" }: { content: string; fmt: ReturnType<typeof getSendFormatting>; overlayColor?: string }) {
   const { fontSize: textSize, fontFamily, lineHeight, letterSpacing } = fmt;
-  const lines = content.split("\n").filter(l => l.trim() && !l.trim().toUpperCase().startsWith("TERM"));
+  // Filter out pure header/separator rows: lines whose trimmed content (after stripping outer pipes)
+  // consists only of "Term", "Word", "Keyword", dashes, or similar header patterns.
+  const lines = content.split("\n").filter(l => {
+    const t = l.trim().replace(/^\|/, "").replace(/\|$/, "").trim();
+    if (!t) return false;
+    if (/^[-\s|]+$/.test(t)) return false; // separator row --- | ---
+    if (/^(term|word|keyword|key\s*word|vocabulary)(\s*\|\s*.+)?$/i.test(t)) return false;
+    return true;
+  });
   const entries = lines.map(l => {
-    const parts = l.split("|");
+    // Normalise: strip leading/trailing pipes before splitting (markdown table format)
+    const normalised = l.trim().replace(/^\|/, "").replace(/\|$/, "");
+    const parts = normalised.split("|");
     if (parts.length >= 2) return { term: parts[0].trim(), def: parts.slice(1).join("|").trim() };
-    const colonIdx = l.indexOf(":");
-    if (colonIdx > 0) return { term: l.slice(0, colonIdx).trim(), def: l.slice(colonIdx + 1).trim() };
+    const colonIdx = normalised.indexOf(":");
+    if (colonIdx > 0) return { term: normalised.slice(0, colonIdx).trim(), def: normalised.slice(colonIdx + 1).trim() };
     return null;
   }).filter(Boolean) as { term: string; def: string }[];
 
@@ -1440,6 +1447,21 @@ function SelfReflectionSection({ content, fmt, overlayColor = "white" }: { conte
   const iCanLines = lines.filter(l => !l.trim().startsWith("Q:"));
   const openQuestion = lines.find(l => l.trim().startsWith("Q:"));
   const openQ = openQuestion ? openQuestion.replace(/^Q:\s*/i, "").trim() : null;
+
+  /** Decide whether this line needs "I can " prepended.
+   *  Skip if it already starts with "I can", is a question, or reads as a
+   *  complete sentence (starts with capital and ends with punctuation). */
+  const needsICanPrefix = (line: string): boolean => {
+    const t = line.trim();
+    if (!t) return false;
+    if (/^I can\b/i.test(t)) return false;       // already has "I can"
+    if (/[?!]$/.test(t)) return false;            // question or exclamation
+    if (/^How\b|^What\b|^Why\b|^When\b/i.test(t)) return false; // question words
+    // If it starts with a capital letter AND has a verb that makes it a full sentence, skip
+    if (/^[A-Z][^a-z]*$/.test(t)) return false;  // ALL CAPS label
+    if (/^[A-Z].*\s+(is|are|was|were|has|have)\s/i.test(t)) return false;
+    return true; // short fragment — safe to prepend "I can "
+  };
   return (
     <div>
       {/* Traffic-light self-assessment rows */}
@@ -1455,7 +1477,7 @@ function SelfReflectionSection({ content, fmt, overlayColor = "white" }: { conte
                 </div>
               ))}
             </div>
-            <span style={{ fontSize: `${textSize}px`, color: "#374151", fontFamily, lineHeight }} dangerouslySetInnerHTML={{ __html: "I can " + stripLatexFromPlainText(clean) }} />
+            <span style={{ fontSize: `${textSize}px`, color: "#374151", fontFamily, lineHeight }} dangerouslySetInnerHTML={{ __html: (needsICanPrefix(clean) ? "I can " : "") + stripLatexFromPlainText(clean) }} />
           </div>
         );
       })}
@@ -1857,11 +1879,11 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
     { border: "#4f46e5", bg: "#f5f3ff", badge: "#4f46e5", badgeBg: "#ede9fe" }, // indigo
     { border: "#2563eb", bg: "#eff6ff", badge: "#2563eb", badgeBg: "#dbeafe" }, // blue
     { border: "#7c3aed", bg: "#faf5ff", badge: "#7c3aed", badgeBg: "#f3e8ff" }, // violet
-    { border: "#0284c7", bg: "#f0f9ff", badge: "#0284c7", badgeBg: "#e0f2fe" }, // sky
     { border: "#6366f1", bg: "#f5f3ff", badge: "#6366f1", badgeBg: "#ede9fe" }, // indigo-light
     { border: "#3b82f6", bg: "#eff6ff", badge: "#3b82f6", badgeBg: "#dbeafe" }, // blue-mid
     { border: "#8b5cf6", bg: "#f5f3ff", badge: "#8b5cf6", badgeBg: "#ede9fe" }, // purple
-    { border: "#0891b2", bg: "#ecfeff", badge: "#0891b2", badgeBg: "#cffafe" }, // cyan
+    { border: "#4338ca", bg: "#f5f3ff", badge: "#4338ca", badgeBg: "#ede9fe" }, // indigo-dark
+    { border: "#6d28d9", bg: "#faf5ff", badge: "#6d28d9", badgeBg: "#ede9fe" }, // violet-dark
   ];
 
   // Default answer box line counts per section type — used as fallback
@@ -2176,17 +2198,11 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                           }}
                         >✏️</button>
                       )}
-                      {/* Header */}
+                      {/* Header — no letter label per user request */}
                       <div style={{
-                        background: headerBg, padding: "3px 6px",
+                        background: headerBg, padding: "3px 8px",
                         display: "flex", alignItems: "center", gap: "4px", flexShrink: 0,
                       }}>
-                        <span style={{
-                          background: "rgba(255,255,255,0.25)", color: "#fff",
-                          width: "12px", height: "12px", borderRadius: "50%",
-                          display: "inline-flex", alignItems: "center", justifyContent: "center",
-                          fontSize: "6.5px", fontWeight: 800, flexShrink: 0,
-                        }}>{letterLabel}</span>
                         <span style={{
                           fontWeight: 700, fontSize: "7.5px", color: "#fff",
                           textTransform: "uppercase", letterSpacing: "0.3px",
@@ -2202,7 +2218,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                             {lines.filter(l => l.trim()).map((line, li) => (
                               <div key={li} style={{ marginBottom: "3px", paddingLeft: "6px", color: "#1e293b", display: "flex", gap: "4px", alignItems: "flex-start" }}>
                                 <span style={{ color: "#4f46e5", fontWeight: 700, flexShrink: 0 }}>•</span>
-                                <span>{line.replace(/^[-•*]\s*/, "").replace(/^\d+\.\s*/, "")}</span>
+                                <span dangerouslySetInnerHTML={{ __html: renderMath(line.replace(/^[-•*]\s*/, "").replace(/^\d+\.\s*/, "").replace(/\*\*(.+?)\*\*/g, "$1").replace(/\*\*/g, "")) }} />
                               </div>
                             ))}
                           </div>
@@ -2227,7 +2243,9 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                           <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
                             <div style={{ color: "#1e293b", marginBottom: "3px" }}>
                               {lines.map((line, li) => {
-                                const t = line.trim();
+                                const t = line.trim()
+                                  .replace(/\*\*(.+?)\*\*/g, "$1")  // strip bold markers
+                                  .replace(/\*\*/g, "");             // strip any remaining **
                                 if (!t) return null;
                                 if (/^_{3,}$/.test(t)) return null;
                                 if (/^[a-d]\.\s/.test(t)) {
@@ -2236,7 +2254,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                                       <svg width="10" height="10" viewBox="0 0 10 10" style={{ flexShrink: 0 }}>
                                         <circle cx="5" cy="5" r="4" fill="none" stroke="#6b7280" strokeWidth="1" />
                                       </svg>
-                                      <span style={{ fontSize: "8px" }}>{t.replace(/^[a-d]\.\s/, "")}</span>
+                                      <span style={{ fontSize: "8px" }} dangerouslySetInnerHTML={{ __html: renderMath(t.replace(/^[a-d]\.\s/, "")) }} />
                                     </div>
                                   );
                                 }
@@ -2271,12 +2289,12 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                                       {t.split(/(_+)/).map((part, pi) =>
                                         /^_+$/.test(part)
                                           ? <span key={pi} style={{ display: "inline-block", borderBottom: "1px solid #333", minWidth: "36px", marginLeft: "1px", marginRight: "1px" }}>&nbsp;&nbsp;&nbsp;&nbsp;</span>
-                                          : <span key={pi}>{part}</span>
+                                          : <span key={pi} dangerouslySetInnerHTML={{ __html: renderMath(part) }} />
                                       )}
                                     </div>
                                   );
                                 }
-                                return <div key={li} style={{ marginBottom: "1px" }}>{t}</div>;
+                                return <div key={li} style={{ marginBottom: "1px" }} dangerouslySetInnerHTML={{ __html: renderMath(t) }} />;
                               })}
                             </div>
                             {/* Answer space — fills remaining box height */}
