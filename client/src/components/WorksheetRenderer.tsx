@@ -2181,44 +2181,73 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
         <div style={{ width: "100%" }}>
           <style>{`
             @media print {
-              @page { size: A4 landscape; margin: 6mm; }
+              @page { size: A4 landscape; margin: 5mm; }
               body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
               .rm-jigsaw { page-break-inside: avoid; }
             }
           `}</style>
           {(() => {
-            // ─────────────────────────────────────────────────────────────────
-            // REVISION MAT — strict 12-box jigsaw, A4 landscape, 6-column grid
-            // ─────────────────────────────────────────────────────────────────
+            // ═══════════════════════════════════════════════════════════════════
+            // REVISION MAT — centre-title jigsaw, A4 landscape, 6-column grid
+            // Title/LO/Vocab box is FIXED at the centre; questions surround it.
+            // ═══════════════════════════════════════════════════════════════════
             const COLS = 6;
 
-            // ── Pastel colour palette for question boxes ──
+            // Pastel colour palette cycling across question boxes
             const BOX_COLOURS = [
-              "#e8f4fd", "#fef9e7", "#eafaf1", "#fdf2f8", "#f0f4ff",
-              "#fff8e1", "#e8f5e9", "#fce4ec", "#e3f2fd", "#f3e5f5",
-              "#fff3e0", "#e8eaf6",
+              "#e8f4fd","#fef9e7","#eafaf1","#fdf2f8","#f0f4ff",
+              "#fff8e1","#e8f5e9","#fce4ec","#e3f2fd","#f3e5f5",
+              "#fff3e0","#e8eaf6","#fce7f3","#ecfdf5","#fffbeb","#f0fdf4",
             ];
 
-            // ── Collect title / LO / vocab data ──
-            const titleSec  = worksheet.sections.find((s: any) => s.type === "revision-mat-title");
-            const loSec     = worksheet.sections.find((s: any) => s.type === "revision-mat-lo" || s.type === "objective");
-            const vocabSec  = worksheet.sections.find((s: any) => s.type === "vocabulary" || s.type === "revision-mat-vocab");
+            // ── Parse the combined title/LO/vocab section ──────────────────
+            // The AI writes one "revision-mat-title" section whose content is:
+            //   Line 1:  the topic title
+            //   A line:  "LO: Students will be able to..."
+            //   A line:  "Key Vocabulary:"
+            //   Rest:    one vocab term per line
+            const titleSec = worksheet.sections.find((s: any) =>
+              s.type === "revision-mat-title"
+            );
+            // Fallbacks: separate LO / vocab sections from older worksheets
+            const loSec    = worksheet.sections.find((s: any) =>
+              s.type === "revision-mat-lo" || s.type === "objective"
+            );
+            const vocabSec = worksheet.sections.find((s: any) =>
+              s.type === "vocabulary" || s.type === "revision-mat-vocab"
+            );
 
-            const topicTitle        = (titleSec?.content || worksheet.title || worksheet.metadata?.topic || "").trim();
-            const learningObjective = (loSec?.content  || "").trim();
-            const vocabContent      = (vocabSec?.content || "").trim();
+            let topicTitle        = (worksheet.title || worksheet.metadata?.topic || "").trim();
+            let learningObjective = (loSec?.content || "").trim();
+            let vocabContent      = (vocabSec?.content || "").trim();
 
-            // ── Collect question sections (max 12), excluding meta sections ──
+            if (titleSec) {
+              const raw   = (titleSec.content || "").trim();
+              const tlines = raw.split("\n");
+              // First non-empty line = topic title
+              const firstLine = tlines.find((l: string) => l.trim()) || "";
+              topicTitle = firstLine.replace(/^\*+|\*+$/g, "").trim();
+              // Line starting "LO:" = learning objective
+              const loLine = tlines.find((l: string) => /^LO:|^Learning Objective:/i.test(l.trim()));
+              if (loLine) learningObjective = loLine.replace(/^LO:|^Learning Objective:/i, "").trim();
+              // Lines after "Key Vocabulary:" heading = vocab
+              const kvIdx = tlines.findIndex((l: string) => /^Key Vocab/i.test(l.trim()));
+              if (kvIdx >= 0) {
+                vocabContent = tlines.slice(kvIdx + 1).filter(Boolean).join("\n");
+              }
+            }
+
+            // ── Collect question sections (max 16), strip meta/self-reflection ──
             const rawQSections = worksheet.sections.filter((s: any) =>
               !s.teacherOnly &&
               s.type !== "answers" && s.type !== "teacher-notes" &&
               s.type !== "mark-scheme" && s.type !== "adaptations" &&
               s.type !== "revision-mat-title" && s.type !== "revision-mat-lo" &&
-              s.type !== "objective" &&
+              s.type !== "objective" && s.type !== "self-reflection" &&
               s.type !== "vocabulary" && s.type !== "revision-mat-vocab"
             );
 
-            // ── Split any multi-question boxes into individual questions ──
+            // ── Split multi-question boxes into individual questions ──────
             const splitSections: any[] = [];
             for (const sec of rawQSections) {
               const content = (sec.content || "").trim();
@@ -2246,22 +2275,19 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
               }
             }
 
-            // Cap at exactly 12 question boxes
-            const questionSections = splitSections.slice(0, 12);
+            const questionSections = splitSections.slice(0, 16);
             if (questionSections.length === 0 && !topicTitle) return null;
 
-            // ── Span sizes for 6-column grid — larger marks = more cells ──
-            // colSpan × rowSpan scales with mark value for clear visual hierarchy
-            const getSpans = (marks: number, isTitle = false): [number, number] => {
-              if (isTitle)    return [2, 2]; // Title/LO/Vocab: compact combined box
-              if (marks >= 6) return [3, 3]; // 6-mark challenge: wide & tall
-              if (marks >= 4) return [2, 3]; // 4-mark extended: medium-wide, tall
-              if (marks >= 3) return [2, 2]; // 3-mark describe: medium
-              if (marks >= 2) return [1, 2]; // 2-mark: standard height
+            // ── Span sizes: col × row ─────────────────────────────────────
+            const getSpans = (marks: number): [number, number] => {
+              if (marks >= 6) return [2, 3]; // 6-mark: wide & tall
+              if (marks >= 4) return [2, 2]; // 4-mark: medium-wide
+              if (marks >= 3) return [2, 2]; // 3-mark: medium
+              if (marks >= 2) return [1, 2]; // 2-mark: taller
               return [1, 1];                  // 1-mark: compact
             };
 
-            // ── Auto-placement engine ──
+            // ── Grid engine ───────────────────────────────────────────────
             type GridCell = number | "title" | null;
             const grid: GridCell[][] = [];
 
@@ -2278,15 +2304,35 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
               while (grid.length < n) grid.push(Array(COLS).fill(null));
             };
 
+            // ── PRE-RESERVE the centre title cells ───────────────────────
+            // Fixed at: 0-indexed row 1–2, col 2–3  →  CSS cols 3-4, rows 2-3
+            const TITLE_ROW  = 1;  // 0-indexed
+            const TITLE_COL  = 2;  // 0-indexed
+            const TITLE_CSPAN = 2;
+            const TITLE_RSPAN = 2;
+            ensureRows(TITLE_ROW + TITLE_RSPAN);
+            for (let dr = 0; dr < TITLE_RSPAN; dr++) {
+              for (let dc = 0; dc < TITLE_CSPAN; dc++) {
+                grid[TITLE_ROW + dr][TITLE_COL + dc] = "title";
+              }
+            }
+            placed.push({
+              isTitle: true, label: "★",
+              colSpan: TITLE_CSPAN, rowSpan: TITLE_RSPAN,
+              colStart: TITLE_COL + 1,  // 1-indexed CSS
+              rowStart: TITLE_ROW + 1,
+            });
+
+            // ── Auto-place question boxes in remaining cells ───────────────
             const findCell = (colSpan: number, rowSpan: number): [number, number] => {
               for (let r = 0; r < 100; r++) {
                 ensureRows(r + rowSpan);
                 for (let c = 0; c <= COLS - colSpan; c++) {
                   let fits = true;
-                  outer2: for (let dr = 0; dr < rowSpan; dr++) {
+                  outerRM: for (let dr = 0; dr < rowSpan; dr++) {
                     ensureRows(r + dr + 1);
                     for (let dc = 0; dc < colSpan; dc++) {
-                      if (grid[r + dr][c + dc] !== null) { fits = false; break outer2; }
+                      if (grid[r + dr][c + dc] !== null) { fits = false; break outerRM; }
                     }
                   }
                   if (fits) return [r, c];
@@ -2295,53 +2341,40 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
               return [0, 0];
             };
 
-            const placeBox = (id: GridCell, colSpan: number, rowSpan: number): [number, number] => {
-              const [r, c] = findCell(colSpan, rowSpan);
-              for (let dr = 0; dr < rowSpan; dr++) {
-                ensureRows(r + dr + 1);
-                for (let dc = 0; dc < colSpan; dc++) grid[r + dr][c + dc] = id;
-              }
-              return [r, c];
-            };
-
-            // Always place the title/LO/vocab box first (top-left priority)
-            const [titleR, titleC] = placeBox("title", 2, 2);
-            placed.push({ isTitle: true, label: "★", colSpan: 2, rowSpan: 2, colStart: titleC + 1, rowStart: titleR + 1 });
-
-            // Place each question box
             for (let si = 0; si < questionSections.length; si++) {
               const sec = questionSections[si];
               const marks = (sec as any).marks || 1;
               const [colSpan, rowSpan] = getSpans(marks);
-              const [r, c] = placeBox(si, colSpan, rowSpan);
+              const [r, c] = findCell(colSpan, rowSpan);
+              for (let dr = 0; dr < rowSpan; dr++) {
+                ensureRows(r + dr + 1);
+                for (let dc = 0; dc < colSpan; dc++) grid[r + dr][c + dc] = si;
+              }
               const label = LETTERS[letterIdx++] || String(si + 1);
               placed.push({ section: sec, label, colSpan, rowSpan, colStart: c + 1, rowStart: r + 1, marks });
             }
 
             const totalRows = grid.length;
 
-            // ── Find all remaining empty cells for working space ──
-            let emptyColStart = COLS, emptyColEnd = 0;
-            let emptyRowStart = -1,  emptyRowEnd  = -1;
-            for (let r = 0; r < grid.length; r++) {
-              for (let c = 0; c < COLS; c++) {
-                if (grid[r][c] === null) {
-                  if (emptyRowStart === -1) emptyRowStart = r;
-                  emptyRowEnd = r;
-                  if (c < emptyColStart) emptyColStart = c;
-                  if (c > emptyColEnd)   emptyColEnd   = c;
-                }
-              }
-            }
-            const hasEmpty  = emptyRowStart !== -1;
-            const wsColSpan = hasEmpty ? emptyColEnd - emptyColStart + 1 : COLS;
-            const wsRowSpan = hasEmpty ? emptyRowEnd - emptyRowStart + 1 : 1;
-            const wsColStart = hasEmpty ? emptyColStart + 1 : 1;
-            const wsRowStart = hasEmpty ? emptyRowStart + 1 : totalRows + 1;
+            // ── Remaining empty cells → single working-space box ──────────
+            const emptyCells: [number, number][] = [];
+            for (let r = 0; r < grid.length; r++)
+              for (let c = 0; c < COLS; c++)
+                if (grid[r][c] === null) emptyCells.push([r, c]);
 
-            // ── Exact answer-line count per spec ──
-            // 1 mark → 2 lines, 2 marks → 3 lines, 3 marks → 4 lines,
-            // 4 marks → 5 lines, 6 marks → 6 lines
+            // Find bounding rect of all empty cells
+            let wsR0 = Infinity, wsR1 = -1, wsC0 = Infinity, wsC1 = -1;
+            for (const [r, c] of emptyCells) {
+              if (r < wsR0) wsR0 = r; if (r > wsR1) wsR1 = r;
+              if (c < wsC0) wsC0 = c; if (c > wsC1) wsC1 = c;
+            }
+            const hasEmpty  = emptyCells.length > 0;
+            const wsColSpan = hasEmpty ? wsC1 - wsC0 + 1 : 1;
+            const wsRowSpan = hasEmpty ? wsR1 - wsR0 + 1 : 1;
+            const wsColStart = hasEmpty ? wsC0 + 1 : 1;
+            const wsRowStart = hasEmpty ? wsR0 + 1 : totalRows + 1;
+
+            // ── Answer lines per mark spec ────────────────────────────────
             const getNumLines = (marks: number): number => {
               if (marks >= 6) return 6;
               if (marks >= 4) return 5;
@@ -2356,12 +2389,11 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                 style={{
                   display: "grid",
                   gridTemplateColumns: `repeat(${COLS}, 1fr)`,
-                  // Each row is an equal share of the fixed A4-landscape height
                   gridTemplateRows: `repeat(${totalRows}, 1fr)`,
-                  height: "192mm",
+                  height: "190mm",
                   gap: "2px",
                   width: "100%",
-                  backgroundColor: "#444",
+                  backgroundColor: "#3d3d3d",
                   fontFamily: "Arial, Helvetica, sans-serif",
                   fontSize: "8px",
                   lineHeight: "1.35",
@@ -2369,34 +2401,41 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                   boxSizing: "border-box",
                 }}
               >
-                {/* ═══ TITLE / LO / KEY VOCABULARY BOX ═══ */}
+                {/* ════════════════════════════════════════════════════════
+                    CENTRE TITLE BOX — topic, LO, key vocabulary
+                    Fixed at CSS cols 3-4, rows 2-3 (centre of the page)
+                    ════════════════════════════════════════════════════════ */}
                 <div
                   style={{
-                    gridColumn: `${titleC + 1} / span 2`,
-                    gridRow: `${titleR + 1} / span 2`,
-                    background: "linear-gradient(150deg, #1e3a8a 0%, #1d4ed8 60%, #3b82f6 100%)",
-                    border: "2px solid #1e3a8a",
-                    padding: "5px 7px",
+                    gridColumn: `${TITLE_COL + 1} / span ${TITLE_CSPAN}`,
+                    gridRow:    `${TITLE_ROW + 1} / span ${TITLE_RSPAN}`,
+                    background: "linear-gradient(145deg, #1e3a8a 0%, #1d4ed8 55%, #3b82f6 100%)",
+                    border: "2.5px solid #1e3a8a",
+                    padding: "6px 8px",
                     position: "relative",
                     overflow: "hidden",
                     display: "flex",
                     flexDirection: "column",
                     borderRadius: "3px",
                     color: "#fff",
+                    boxShadow: "0 0 0 3px rgba(59,130,246,0.25)",
                   }}
                 >
-                  {/* Decorative corner accent */}
+                  {/* Subtle decorative arc */}
                   <div style={{
-                    position: "absolute", top: 0, right: 0,
-                    width: "28px", height: "28px",
-                    background: "rgba(255,255,255,0.08)",
-                    borderBottomLeftRadius: "28px",
+                    position: "absolute", bottom: "-10px", right: "-10px",
+                    width: "50px", height: "50px",
+                    background: "rgba(255,255,255,0.06)",
+                    borderRadius: "50%",
+                    pointerEvents: "none",
                   }} />
                   {/* Topic title */}
                   <div style={{
-                    fontSize: "9.5px", fontWeight: 800,
-                    letterSpacing: "0.01em", marginBottom: "2px",
-                    lineHeight: "1.2", paddingRight: "20px",
+                    fontSize: "10px", fontWeight: 800,
+                    letterSpacing: "0.01em", marginBottom: "3px",
+                    lineHeight: "1.2", textTransform: "uppercase",
+                    borderBottom: "1px solid rgba(255,255,255,0.3)",
+                    paddingBottom: "3px",
                   }}>
                     {topicTitle}
                   </div>
@@ -2404,9 +2443,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                   {learningObjective && (
                     <div style={{
                       fontSize: "6.5px", fontStyle: "italic",
-                      opacity: 0.88, marginBottom: "3px",
-                      borderBottom: "1px solid rgba(255,255,255,0.25)",
-                      paddingBottom: "2px",
+                      opacity: 0.9, marginBottom: "4px",
                     }}>
                       <span style={{ fontWeight: 700, fontStyle: "normal" }}>LO: </span>
                       {learningObjective}
@@ -2416,23 +2453,25 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                   <div style={{ fontSize: "6.5px", flex: 1, overflow: "hidden" }}>
                     <div style={{
                       fontWeight: 700, marginBottom: "2px",
-                      textTransform: "uppercase", letterSpacing: "0.06em",
-                      fontSize: "5.5px", opacity: 0.75,
+                      textTransform: "uppercase", letterSpacing: "0.07em",
+                      fontSize: "5.5px", opacity: 0.7,
                     }}>
                       Key Vocabulary
                     </div>
                     {vocabContent
-                      ? vocabContent.split("\n").filter(Boolean).map((line: string, i: number) => (
-                          <div key={i} style={{ marginBottom: "1.5px", opacity: 0.95 }}>
-                            • {line.replace(/^[-•*]\s*/, "").replace(/\*\*(.+?)\*\*/g, "$1")}
+                      ? vocabContent.split("\n").filter(Boolean).map((line: string, vi: number) => (
+                          <div key={vi} style={{ marginBottom: "1.5px", opacity: 0.95, lineHeight: "1.3" }}>
+                            {"• "}{line.replace(/^[-•*]\s*/, "").replace(/\*\*(.+?)\*\*/g, "$1")}
                           </div>
                         ))
-                      : <div style={{ opacity: 0.7, fontStyle: "italic" }}>Key terms will appear here</div>
+                      : <div style={{ opacity: 0.6, fontStyle: "italic" }}>Key terms listed here</div>
                     }
                   </div>
                 </div>
 
-                {/* ═══ QUESTION BOXES ═══ */}
+                {/* ════════════════════════════════════════════════════════
+                    QUESTION BOXES — surrounding the centre title
+                    ════════════════════════════════════════════════════════ */}
                 {placed.filter(b => !b.isTitle).map((box, bi) => {
                   const { section, label, colSpan, rowSpan, colStart, rowStart, marks = 1 } = box;
                   const origIdx = worksheet.sections.indexOf(section);
@@ -2441,18 +2480,19 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                   const displayContent = typeof rawContent === "string" ? rawContent : String(rawContent || "");
 
                   const lines = displayContent.split("\n");
-                  const isMCQ         = /^\s*[a-d]\.\s/m.test(displayContent);
+                  const isMCQ          = /^\s*[a-d]\.\s/m.test(displayContent);
                   const hasInlineBlank = displayContent.includes("___");
-                  const isCalc        = /calculat|show working|work out/i.test(displayContent);
-                  const isMatchUp     = lines.filter((l: string) => /\w+\s*\|\s*\w+/.test(l) && !/[=<>]/.test(l)).length >= 2;
-                  const isWorkingOut  = (section.title || "").toLowerCase().includes("working out") && !displayContent.trim();
+                  const isCalc         = /calculat|show working|work out/i.test(displayContent);
+                  const isMatchUp      = lines.filter((l: string) =>
+                    /\w+\s*\|\s*\w+/.test(l) && !/[=<>]/.test(l)).length >= 2;
+                  const isWorkingOut   = (section.title || "").toLowerCase().includes("working out")
+                    && !displayContent.trim();
 
                   const numLines  = getNumLines(marks);
                   const bgColour  = BOX_COLOURS[bi % BOX_COLOURS.length];
                   const isBig     = marks >= 6;
                   const isMedBig  = marks >= 4;
 
-                  // Border accent colours per mark tier
                   const borderStyle = isBig    ? "2px solid #c0392b"
                                     : isMedBig ? "1.5px solid #d97706"
                                     : marks >= 3 ? "1.5px solid #6366f1"
@@ -2466,7 +2506,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                         gridRow:    `${rowStart} / span ${rowSpan}`,
                         backgroundColor: bgColour,
                         border: borderStyle,
-                        padding: "3px 5px",
+                        padding: "3px 5px 3px 5px",
                         position: "relative",
                         overflow: "hidden",
                         display: "flex",
@@ -2474,29 +2514,30 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                         borderRadius: "2px",
                       }}
                     >
-                      {/* Marks pill — top right */}
+                      {/* Marks badge — top right corner */}
                       <div style={{
                         position: "absolute", top: "2px", right: "2px",
-                        fontSize: "6px", fontWeight: 700,
-                        color: isBig ? "#c0392b" : isMedBig ? "#d97706" : marks >= 3 ? "#6366f1" : "#6b7280",
-                        background: "rgba(255,255,255,0.9)",
-                        borderRadius: "3px", padding: "0 3px",
+                        fontSize: "5.5px", fontWeight: 700,
+                        color: isBig ? "#c0392b" : isMedBig ? "#d97706" : marks >= 3 ? "#6366f1" : "#9ca3af",
+                        background: "rgba(255,255,255,0.92)",
+                        borderRadius: "3px", padding: "0px 3px",
                         border: "1px solid currentColor",
-                        lineHeight: "1.5", zIndex: 2,
+                        lineHeight: "1.6", zIndex: 2, whiteSpace: "nowrap",
                       }}>
-                        [{marks} mark{marks !== 1 ? "s" : ""}]
+                        {marks}m
                       </div>
 
-                      {/* Question label */}
+                      {/* Question letter */}
                       <div style={{
-                        fontSize: "7px", fontWeight: 800,
-                        color: "#374151", marginBottom: "1.5px",
-                        paddingRight: "38px", lineHeight: "1.2",
+                        fontSize: "6.5px", fontWeight: 800,
+                        color: "#1f2937", marginBottom: "1px",
+                        paddingRight: "22px", lineHeight: "1.2",
+                        flexShrink: 0,
                       }}>
                         {label}.
                       </div>
 
-                      {/* Edit button (teacher/edit mode only) */}
+                      {/* Edit button */}
                       {editMode && onSectionEdit && (
                         <button
                           onClick={() => {
@@ -2512,9 +2553,8 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                         >✏️</button>
                       )}
 
-                      {/* ── Box content ── */}
+                      {/* Box content */}
                       {isWorkingOut ? (
-                        /* Working Out box */
                         <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
                           <div style={{ fontSize: "7px", fontWeight: 700, color: "#9ca3af", marginBottom: "2px" }}>
                             Working Out
@@ -2522,15 +2562,19 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                           <div style={{ flex: 1, border: "1px dashed #d1d5db", borderRadius: "2px" }} />
                         </div>
                       ) : isMatchUp ? (
-                        /* Match-up box */
-                        <div>
-                          <div style={{ fontSize: "6.5px", color: "#6b7280", fontStyle: "italic", marginBottom: "2px" }}>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontSize: "6px", color: "#6b7280", fontStyle: "italic", marginBottom: "2px" }}>
                             Draw lines to match:
                           </div>
-                          {lines.filter((l: string) => /\w+\s*\|\s*\w+/.test(l) && !/[=<>]/.test(l)).map((line: string, li: number) => {
+                          {lines.filter((l: string) =>
+                            /\w+\s*\|\s*\w+/.test(l) && !/[=<>]/.test(l)
+                          ).map((line: string, li: number) => {
                             const [left, right] = line.split("|").map((s: string) => s.trim());
                             return (
-                              <div key={li} style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1px 6px", marginBottom: "2px" }}>
+                              <div key={li} style={{
+                                display: "grid", gridTemplateColumns: "1fr 1fr",
+                                gap: "1px 5px", marginBottom: "2px",
+                              }}>
                                 <div style={{ border: "1px solid #d1d5db", padding: "1px 3px", fontSize: "7px", background: "#fff", borderRadius: "1px" }}>{left}</div>
                                 <div style={{ border: "1px solid #d1d5db", padding: "1px 3px", fontSize: "7px", background: "#fff", borderRadius: "1px" }}>{right}</div>
                               </div>
@@ -2538,24 +2582,27 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                           })}
                         </div>
                       ) : (
-                        /* Standard question + answer lines */
-                        <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
+                        <div style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
                           {/* Question text */}
-                          <div style={{ paddingRight: "36px", marginBottom: "2px", flex: "0 0 auto" }}>
+                          <div style={{ paddingRight: "20px", marginBottom: "2px", flexShrink: 0 }}>
                             {lines.map((line: string, li: number) => {
                               const t = line.trim()
                                 .replace(/\*\*(.+?)\*\*/g, "$1")
                                 .replace(/\*\*/g, "");
                               if (!t) return null;
                               if (/^_{3,}$/.test(t)) return null;
-                              // MCQ option
+                              // MCQ option circles
                               if (/^[a-d]\.\s/.test(t)) {
                                 return (
-                                  <div key={li} style={{ display: "flex", alignItems: "center", gap: "2px", marginBottom: "1px", paddingLeft: "3px" }}>
-                                    <svg width="8" height="8" viewBox="0 0 9 9" style={{ flexShrink: 0 }}>
-                                      <circle cx="4.5" cy="4.5" r="3.5" fill="none" stroke="#9ca3af" strokeWidth="0.8" />
+                                  <div key={li} style={{
+                                    display: "flex", alignItems: "center", gap: "2px",
+                                    marginBottom: "1px", paddingLeft: "2px",
+                                  }}>
+                                    <svg width="7" height="7" viewBox="0 0 9 9" style={{ flexShrink: 0 }}>
+                                      <circle cx="4.5" cy="4.5" r="3.5" fill="none" stroke="#9ca3af" strokeWidth="0.9" />
                                     </svg>
-                                    <span style={{ fontSize: "7.5px" }} dangerouslySetInnerHTML={{ __html: renderMath(t.replace(/^[a-d]\.\s/, "")) }} />
+                                    <span style={{ fontSize: "7px" }}
+                                      dangerouslySetInnerHTML={{ __html: renderMath(t.replace(/^[a-d]\.\s/, "")) }} />
                                   </div>
                                 );
                               }
@@ -2565,10 +2612,10 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                                   <div key={li} style={{ display: "flex", gap: "8px", marginTop: "1px" }}>
                                     {["True", "False"].map((opt: string) => (
                                       <div key={opt} style={{ display: "flex", alignItems: "center", gap: "2px" }}>
-                                        <svg width="8" height="8" viewBox="0 0 9 9">
-                                          <circle cx="4.5" cy="4.5" r="3.5" fill="none" stroke="#9ca3af" strokeWidth="0.8" />
+                                        <svg width="7" height="7" viewBox="0 0 9 9">
+                                          <circle cx="4.5" cy="4.5" r="3.5" fill="none" stroke="#9ca3af" strokeWidth="0.9" />
                                         </svg>
-                                        <span style={{ fontSize: "7.5px" }}>{opt}</span>
+                                        <span style={{ fontSize: "7px" }}>{opt}</span>
                                       </div>
                                     ))}
                                   </div>
@@ -2577,45 +2624,44 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                               // Fill-in-the-blank
                               if (t.includes("___")) {
                                 return (
-                                  <div key={li} style={{ marginBottom: "1px", fontSize: "7.5px", lineHeight: "1.4" }}>
+                                  <div key={li} style={{ marginBottom: "1px", fontSize: "7px", lineHeight: "1.4" }}>
                                     {t.split(/(_+)/).map((part: string, pi: number) =>
                                       /^_+$/.test(part)
                                         ? <span key={pi} style={{
                                             display: "inline-block",
                                             borderBottom: "1px solid #374151",
-                                            minWidth: "30px",
-                                            marginLeft: "1px", marginRight: "1px",
+                                            minWidth: "28px", marginLeft: "1px", marginRight: "1px",
                                           }}>&nbsp;&nbsp;&nbsp;&nbsp;</span>
                                         : <span key={pi} dangerouslySetInnerHTML={{ __html: renderMath(part) }} />
                                     )}
                                   </div>
                                 );
                               }
-                              // Standard text line
+                              // Standard line
                               return (
-                                <div key={li} style={{ marginBottom: "1px", fontSize: "7.5px", lineHeight: "1.4" }}
+                                <div key={li} style={{ marginBottom: "1px", fontSize: "7px", lineHeight: "1.35" }}
                                   dangerouslySetInnerHTML={{ __html: renderMath(t) }} />
                               );
                             })}
                           </div>
 
-                          {/* Answer lines — exact count per mark value, pushed to bottom */}
+                          {/* Answer lines — always pushed to bottom of box */}
                           {!isMCQ && !hasInlineBlank && (
                             <div style={{ marginTop: "auto", paddingTop: "1px" }}>
                               {isCalc ? (
                                 <>
-                                  <div style={{ fontSize: "6px", color: "#9ca3af", fontStyle: "italic", marginBottom: "1.5px" }}>Show working:</div>
+                                  <div style={{ fontSize: "5.5px", color: "#9ca3af", fontStyle: "italic", marginBottom: "1px" }}>Show working:</div>
                                   {Array.from({ length: numLines - 1 }).map((_, li) => (
-                                    <div key={li} style={{ borderBottom: "1px solid #e5e7eb", marginBottom: "4px", height: "9px" }} />
+                                    <div key={li} style={{ borderBottom: "1px solid #e5e7eb", marginBottom: "3.5px", height: "8px" }} />
                                   ))}
-                                  <div style={{ display: "flex", alignItems: "center", gap: "3px" }}>
-                                    <span style={{ fontSize: "6px", fontWeight: 700, color: "#6b7280" }}>Ans:</span>
+                                  <div style={{ display: "flex", alignItems: "center", gap: "3px", marginTop: "1px" }}>
+                                    <span style={{ fontSize: "5.5px", fontWeight: 700, color: "#6b7280", whiteSpace: "nowrap" }}>Ans:</span>
                                     <div style={{ flex: 1, borderBottom: "1.5px solid #9ca3af" }} />
                                   </div>
                                 </>
                               ) : (
                                 Array.from({ length: numLines }).map((_, li) => (
-                                  <div key={li} style={{ borderBottom: "1px solid #e5e7eb", marginBottom: "4px", height: "9px" }} />
+                                  <div key={li} style={{ borderBottom: "1px solid #e5e7eb", marginBottom: "3.5px", height: "8px" }} />
                                 ))
                               )}
                             </div>
@@ -2626,7 +2672,9 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                   );
                 })}
 
-                {/* ═══ EXTRA WORKING SPACE — fills remaining empty cells exactly ═══ */}
+                {/* ════════════════════════════════════════════════════════
+                    EXTRA WORKING SPACE — fills any leftover cells exactly
+                    ════════════════════════════════════════════════════════ */}
                 {hasEmpty && (
                   <div
                     style={{
@@ -2641,15 +2689,14 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                     }}
                   >
                     <div style={{
-                      fontSize: "6.5px", fontWeight: 700, color: "#9ca3af",
-                      marginBottom: "3px", textTransform: "uppercase",
-                      letterSpacing: "0.06em",
+                      fontSize: "6px", fontWeight: 700, color: "#9ca3af",
+                      marginBottom: "3px", textTransform: "uppercase", letterSpacing: "0.06em",
                     }}>
                       Extra Working Space
                     </div>
                     <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-evenly" }}>
                       {Array.from({ length: Math.max(4, wsRowSpan * wsColSpan * 2) }).map((_, li) => (
-                        <div key={li} style={{ borderBottom: "1px solid #e5e7eb", height: "10px" }} />
+                        <div key={li} style={{ borderBottom: "1px solid #e5e7eb", height: "9px" }} />
                       ))}
                     </div>
                   </div>

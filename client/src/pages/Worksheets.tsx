@@ -720,75 +720,119 @@ export default function Worksheets() {
   // ─── Generate worksheet ────────────────────────────────────────────────────
 
   // Revision Mat instruction injected when toggle is on
-  const REVISION_MAT_INSTRUCTIONS = `REVISION MAT FORMAT — MATCH EXACTLY:
+  const REVISION_MAT_INSTRUCTIONS = `REVISION MAT FORMAT — READ EVERY RULE CAREFULLY:
 
-You are creating a GCSE-style revision mat. Follow these instructions EXACTLY.
+You are creating a GCSE revision mat. Every single rule below is mandatory.
 
-PAGE SETUP:
-- A4 landscape, single page only
-- Jigsaw / mosaic layout — 6-column grid, boxes of varying sizes
-- No empty space — every cell must be filled
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 1 — ONE COMBINED TITLE/LO/VOCAB BOX
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Generate exactly ONE section with:
+  "type": "revision-mat-title"
 
-════════════════════════════════════════════
-SECTION 1 — COMBINED TITLE / LO / VOCAB BOX
-════════════════════════════════════════════
-Generate EXACTLY ONE section with type "revision-mat-title" containing ALL of:
-  • The topic title (bold heading)
-  • Learning Objective: one clear sentence starting "Students will be able to..."
-  • Key Vocabulary: 6–8 key terms, one per line, format: "Term — brief definition"
-Example content:
-"Photosynthesis
-LO: Students will be able to explain how plants convert light energy into glucose.
+Its "content" field must be formatted EXACTLY like this:
+[Topic Name]
+LO: Students will be able to [one clear learning objective sentence].
 Key Vocabulary:
-Chlorophyll — the green pigment that absorbs light
-Glucose — the sugar produced by photosynthesis
-Carbon dioxide — a reactant absorbed from the air
-Oxygen — a product released through stomata
-Chloroplast — the organelle where photosynthesis occurs
-Light intensity — how bright the light source is"
+[Term 1] — [brief definition]
+[Term 2] — [brief definition]
+[Term 3] — [brief definition]
+[Term 4] — [brief definition]
+[Term 5] — [brief definition]
+[Term 6] — [brief definition]
 
-════════════════════════════════════════════
-SECTION 2 — EXACTLY 12 QUESTION BOXES
-════════════════════════════════════════════
-⚠️ CRITICAL: Generate EXACTLY 12 question boxes (type: "revision-mat-box")
-ONE question per box — never more
+Rules:
+- First line = topic title only (no prefix like "Title:" — just the topic name)
+- LO line must start exactly "LO: "
+- Key Vocabulary section must start exactly "Key Vocabulary:"
+- 5–8 vocabulary terms, one per line, format: Term — definition
+- No bullet points, no numbering, no markdown
 
-REQUIRED MARK MIX (must include all of these):
-- 1-mark questions: 3–4 questions  (recall, MCQ, fill-in-blank, true/false)
-- 2-mark questions: 3–4 questions  (short answer, name-two, MCQ)
-- 3-mark questions: 2 questions    (describe, explain, list three points)
-- 4-mark questions: 1–2 questions  (extended describe/explain)
-- 6-mark question:  1 question     (evaluate / extended response / "Challenge:")
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 2 — EXACTLY 12 TO 14 QUESTION BOXES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Each box: "type": "revision-mat-box", "title": "", "marks": <integer>
 
-QUESTION TYPES — include a variety:
-• Multiple choice [1 mark]: question + "a. opt\nb. opt\nc. opt\nd. opt"
-• Fill-in-the-blank [1 mark]: "The ___ is the site of photosynthesis."
-• True/False [1 mark]: statement + new line "True / False"
-• Short recall [1–2 marks]: one direct question, no options
-• Describe/Explain [2–3 marks]: "Describe..." or "Explain why..."
-• Extended response [4 marks]: "Describe in detail..." with "[4 marks]" in text
-• Challenge [6 marks]: "Challenge: Evaluate..." with "[6 marks]" in text
+⛔ ABSOLUTE RULES — VIOLATING ANY OF THESE IS WRONG:
 
-QUESTION FORMAT per box:
-- All question text goes in "content" — do NOT include answer lines (renderer draws them)
-- MCQ: include all 4 options as shown above
-- Match-up: "Term 1 | Definition 1\nTerm 2 | Definition 2" (count as 1–2 marks)
-- For 4-mark and 6-mark: include the mark label in the question text e.g. "[4 marks]"
-- "title": always "" (empty) — no category headings on boxes
-- "marks": set to the ACTUAL mark value (1, 2, 3, 4, or 6) — REQUIRED for correct box sizing
+1. QUESTIONS ONLY — never put answers, mark schemes, worked examples, or
+   model answers in a question box. Every box must be a question a student
+   answers, NOT a box containing the answer.
 
-STYLE:
-- GCSE / AQA exam-style wording — clear, precise
-- No answers in any student box
-- Keep question text concise — longer questions allowed only for 4-mark and 6-mark boxes
+2. ONE QUESTION PER BOX — never put multiple questions in one box.
+   Wrong: "1. Define energy
+2. Define power
+3. What is efficiency?"
+   Right (three separate boxes): "Define energy." / "Define power." / "What is efficiency?"
 
-JSON FORMAT:
-• type: "revision-mat-title"  → the ONE combined title/LO/vocab section
-• type: "revision-mat-box"   → each of the 12 question boxes
-• "marks": integer (1, 2, 3, 4, or 6) — required on every question box
-• "title": "" for all question boxes (empty string)
+3. NO SECTION HEADINGS — do NOT write "Section A", "Section B", "Core Practice",
+   "Recall", "Foundation", "Extension" or any heading as a box title or content.
+   "title" must always be "" (empty string) for every question box.
 
-TEACHER SECTION: Include one teacherOnly:true section with mark-scheme answers for all 12 questions.`;
+4. NO SUB-STEPS — do NOT break one question into numbered steps like:
+   "1. Define the problem
+2. Identify values
+3. Choose formula"
+   Each step must be a standalone GCSE exam question in its own right.
+
+5. NO ANSWERS IN BOXES — never include text like:
+   "Energy: the ability to do work" or "Power = Work done / time"
+   as if it were a question. Those are answers. Write the question instead:
+   "Define energy." or "Write the equation for power."
+
+REQUIRED MARK MIX (total 12–14 boxes):
+- 1-mark questions: 4–5 boxes  → short recall, define, state, circle, fill-blank, true/false
+- 2-mark questions: 3–4 boxes  → name two, give two examples, explain briefly
+- 3-mark questions: 2 boxes    → describe, explain with reason
+- 4-mark questions: 1–2 boxes  → extended describe/explain, show working
+- 6-mark question:  1 box      → evaluate, assess, extended response (Challenge)
+
+REQUIRED QUESTION TYPES — include all of these:
+• Multiple choice [1 mark]: question stem + exactly 4 options as:
+    a. option one
+    b. option two
+    c. option three
+    d. option four
+  (Must look like an exam MCQ — a clear question with four plausible choices)
+
+• Fill-in-the-blank [1 mark]: one sentence with ___ for missing word(s)
+  Example: "The unit of energy is ___."
+  Example: "___ is the ability to do work."
+
+• True / False [1 mark]: one statement followed by a new line with exactly:
+  True / False
+
+• Short recall [1–2 marks]:
+  Examples: "State two uses of energy in the human body."
+            "Give the unit of power." 
+            "Name the equation used to calculate efficiency."
+
+• Describe/Explain [2–3 marks]:
+  Examples: "Explain why a light bulb is not 100% efficient. [2 marks]"
+            "Describe what happens to kinetic energy as a car slows down. [3 marks]"
+
+• Extended response [4 marks]: exam-style question with "[4 marks]" in the text
+  Example: "Describe how energy is transferred when a ball is thrown upwards. [4 marks]"
+
+• Match-up [1–2 marks]: exactly this format (no headers, just pairs):
+  Term 1 | Definition 1
+  Term 2 | Definition 2
+  Term 3 | Definition 3
+
+• Challenge [6 marks]: label with "Challenge:" prefix and "[6 marks]" in text
+  Example: "Challenge: Evaluate the advantages and disadvantages of renewable energy sources. [6 marks]"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+JSON FIELD RULES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Every question box MUST have:
+- "type": "revision-mat-box"
+- "title": ""  ← ALWAYS empty — no exceptions
+- "marks": the mark value as an integer (1, 2, 3, 4, or 6)
+- "content": the question text only — NO answer lines, NO model answers
+
+No self-reflection box. No working-out box. No extra sections.
+One teacher section (teacherOnly: true) with mark scheme for all questions.`;
 
 
 
