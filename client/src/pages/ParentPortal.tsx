@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import { aiGenerateStory, callAI, parseWithFixes } from "@/lib/ai";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -41,6 +41,102 @@ function generateComprehensionQuestions(_content: string, genre: string): string
   };
   const defaultQs = ["What is the main theme of this story?", "How does the main character change throughout the story?", "What is the most important moment in the story? Explain why.", "Write a short summary of the story in your own words."];
   return questions[genre] || defaultQs;
+}
+
+/** Two-way messaging panel between parent and teacher */
+function ParentMessagesPanel({ childId, childName, token }: { childId: string; childName: string; token: string }) {
+  const [messages, setMessages] = useState<Array<{ id: string; sender: string; body: string; createdAt: string }>>([]);
+  const [newMsg, setNewMsg] = useState("");
+  const [sending, setSending] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  const fetchMessages = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/parent-messages/${childId}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        credentials: "include",
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setMessages(data.messages || []);
+      }
+    } catch {}
+    setLoading(false);
+  }, [childId, token]);
+
+  useEffect(() => { fetchMessages(); }, [fetchMessages]);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  const sendMessage = async () => {
+    if (!newMsg.trim()) return;
+    setSending(true);
+    try {
+      const res = await fetch(`/api/parent-messages/${childId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        credentials: "include",
+        body: JSON.stringify({ body: newMsg.trim(), sender: "parent" }),
+      });
+      if (res.ok) {
+        setNewMsg("");
+        await fetchMessages();
+      }
+    } catch {}
+    setSending(false);
+  };
+
+  return (
+    <div className="flex flex-col h-[480px] rounded-xl border border-border/50 bg-white overflow-hidden">
+      <div className="p-3 border-b border-border/50 bg-blue-50">
+        <p className="text-sm font-semibold text-blue-800">Messages — {childName}</p>
+        <p className="text-xs text-blue-600 mt-0.5">Send a message to {childName}'s teacher. They'll reply here.</p>
+      </div>
+      <div className="flex-1 overflow-y-auto p-3 space-y-2">
+        {loading ? (
+          <div className="flex items-center justify-center h-full">
+            <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+          </div>
+        ) : messages.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-full text-center">
+            <MessageSquare className="w-10 h-10 text-muted-foreground mb-2" />
+            <p className="text-sm font-medium text-foreground">No messages yet</p>
+            <p className="text-xs text-muted-foreground mt-1">Send a message to start a conversation with the teacher.</p>
+          </div>
+        ) : messages.map(m => (
+          <div key={m.id} className={`flex ${m.sender === "parent" ? "justify-end" : "justify-start"}`}>
+            <div className={`max-w-[80%] rounded-2xl px-3 py-2 text-sm ${
+              m.sender === "parent"
+                ? "bg-blue-600 text-white rounded-br-sm"
+                : "bg-gray-100 text-foreground rounded-bl-sm"
+            }`}>
+              <p>{m.body}</p>
+              <p className={`text-[10px] mt-1 ${m.sender === "parent" ? "text-blue-200" : "text-muted-foreground"}`}>
+                {m.sender === "parent" ? "You" : "Teacher"} · {new Date(m.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+              </p>
+            </div>
+          </div>
+        ))}
+        <div ref={bottomRef} />
+      </div>
+      <div className="p-3 border-t border-border/50 flex gap-2">
+        <Input
+          value={newMsg}
+          onChange={e => setNewMsg(e.target.value)}
+          onKeyDown={e => e.key === "Enter" && !e.shiftKey && sendMessage()}
+          placeholder="Type a message..."
+          className="flex-1 h-9 text-sm"
+          disabled={sending}
+        />
+        <Button size="sm" onClick={sendMessage} disabled={sending || !newMsg.trim()} className="h-9 bg-blue-600 hover:bg-blue-700 text-white">
+          {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <MessageSquare className="w-4 h-4" />}
+        </Button>
+      </div>
+    </div>
+  );
 }
 
 /** Lightweight wrapper to render a worksheet using WorksheetRenderer in the Parent Portal */
@@ -673,6 +769,7 @@ Return EXACTLY this JSON:
     { id: "quizblast", label: "QuizBlast", icon: Zap, color: "text-yellow-500" },
     { id: "newsletters", label: "Newsletters", icon: Newspaper, color: "text-rose-600" },
     { id: "send-screener", label: "SEND Screener", icon: ScanSearch, color: "text-cyan-600" },
+    { id: "messages", label: "Messages", icon: MessageSquare, color: "text-blue-600" },
   ];
 
   return (
@@ -1855,6 +1952,7 @@ Return EXACTLY this JSON:
             <p className="text-[10px] text-muted-foreground">Your child's teacher will share the room code when a live quiz is running.</p>
           </div>
         )}
+        {sec.id === "messages" && <ParentMessagesPanel childId={child.id} childName={child.name} token={localStorage.getItem('send_token') || ''} />}
         {sec.id === "send-screener" && (() => {
           const completedScreeners = child?.assignments?.filter(a => a.type === "send-screener") ?? [];
           const inProgressScreeners = child?.assignments?.filter(a => a.type === "send-screener-progress") ?? [];

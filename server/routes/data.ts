@@ -465,6 +465,80 @@ router.get("/parent-messages/:pupilId", requireAuth, (req: Request, res: Respons
   res.json({ messages });
 });
 
+// ── Platform Stats (for landing page) ───────────────────────────────────────
+// GET /api/data/stats — returns real teacher/worksheet counts with +266 offset
+router.get("/stats", (req: Request, res: Response) => {
+  try {
+    const teacherCount = (db.prepare("SELECT COUNT(*) as c FROM users WHERE is_active = 1").get() as any)?.c || 0;
+    const worksheetCount = (db.prepare("SELECT COUNT(*) as c FROM worksheets").get() as any)?.c || 0;
+    const schoolCount = (db.prepare("SELECT COUNT(*) as c FROM schools").get() as any)?.c || 0;
+    const TEACHER_OFFSET = 266;
+    const WORKSHEET_OFFSET = 266;
+    res.json({
+      teachers: teacherCount + TEACHER_OFFSET,
+      worksheets: worksheetCount + WORKSHEET_OFFSET,
+      schools: schoolCount,
+    });
+  } catch {
+    res.json({ teachers: 266, worksheets: 266, schools: 1 });
+  }
+});
+
+// ── Worksheet Folders ─────────────────────────────────────────────────────────
+// GET /api/data/folders — list folders for current user's school
+router.get("/folders", requireAuth, (req: Request, res: Response) => {
+  const folders = db.prepare(
+    "SELECT * FROM worksheet_folders WHERE school_id = ? ORDER BY name ASC"
+  ).all(req.user!.schoolId) as any[];
+  res.json(folders.map(f => ({ id: f.id, name: f.name, colour: f.colour, createdAt: f.created_at })));
+});
+
+// POST /api/data/folders — create a folder
+router.post("/folders", requireAuth, (req: Request, res: Response) => {
+  const { name, colour } = req.body;
+  if (!name?.trim()) return res.status(400).json({ error: "Folder name required" });
+  const id = uuidv4();
+  db.prepare(
+    "INSERT INTO worksheet_folders (id, school_id, created_by, name, colour) VALUES (?, ?, ?, ?, ?)"
+  ).run(id, req.user!.schoolId, req.user!.id, name.trim(), colour || "#6366f1");
+  res.status(201).json({ id, name: name.trim(), colour: colour || "#6366f1" });
+});
+
+// DELETE /api/data/folders/:id — delete a folder
+router.delete("/folders/:id", requireAuth, (req: Request, res: Response) => {
+  db.prepare("DELETE FROM worksheet_folders WHERE id = ? AND school_id = ?").run(req.params.id, req.user!.schoolId);
+  res.json({ success: true });
+});
+
+// POST /api/data/folders/:id/items — add a worksheet to a folder
+router.post("/folders/:id/items", requireAuth, (req: Request, res: Response) => {
+  const { worksheetId } = req.body;
+  if (!worksheetId) return res.status(400).json({ error: "worksheetId required" });
+  try {
+    db.prepare("INSERT OR IGNORE INTO worksheet_folder_items (folder_id, worksheet_id) VALUES (?, ?)").run(req.params.id, worksheetId);
+    res.json({ success: true });
+  } catch {
+    res.status(400).json({ error: "Could not add to folder" });
+  }
+});
+
+// DELETE /api/data/folders/:id/items/:worksheetId — remove from folder
+router.delete("/folders/:id/items/:worksheetId", requireAuth, (req: Request, res: Response) => {
+  db.prepare("DELETE FROM worksheet_folder_items WHERE folder_id = ? AND worksheet_id = ?").run(req.params.id, req.params.worksheetId);
+  res.json({ success: true });
+});
+
+// GET /api/data/folders/:id/items — list worksheets in a folder
+router.get("/folders/:id/items", requireAuth, (req: Request, res: Response) => {
+  const items = db.prepare(`
+    SELECT w.* FROM worksheets w
+    JOIN worksheet_folder_items fi ON fi.worksheet_id = w.id
+    WHERE fi.folder_id = ?
+    ORDER BY fi.added_at DESC
+  `).all(req.params.id) as any[];
+  res.json(items);
+});
+
 export default router;
 
 

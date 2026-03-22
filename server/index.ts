@@ -85,6 +85,7 @@ import quizRouter from "./routes/quiz.js";
 import superadminRouter from "./routes/superadmin.js";
 import diagramProxyRouter from "./routes/diagram-proxy.js";
 import feedbackRouter from "./routes/feedback.js";
+import parentMessagesRouter from "./routes/parentMessages.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -307,6 +308,7 @@ app.use("/api/quiz", quizRouter);
 app.use("/api/admin", superadminRouter);
 app.use("/api/diagram-proxy", diagramProxyRouter);
 app.use("/api/feedback", feedbackRouter);
+app.use("/api/messages", parentMessagesRouter);
 
 // ── Health check ──────────────────────────────────────────────────────────────
 app.get("/api/health", (_, res) => {
@@ -352,16 +354,21 @@ app.use((err: any, req: express.Request, res: express.Response, _next: express.N
 
 // ── Start ─────────────────────────────────────────────────────────────────────
 import { initDb } from "./db/index.js";
+import { initWebSocketServer } from "./lib/notifications.js";
+import http from "http";
+
 initDb().then(() => {
-  const server = app.listen(PORT, "0.0.0.0", () => {
+  const httpServer = http.createServer(app);
+  initWebSocketServer(httpServer);
+  httpServer.listen(PORT, "0.0.0.0", () => {
     console.log(`🚀 Adaptly API running on http://localhost:${PORT}`);
     console.log(`   Environment: ${process.env.NODE_ENV || "development"}`);
   });
   // Increase server timeout to 150 seconds to allow AI generation to complete
   // Railway's default timeout is 30s which kills long AI requests
-  server.timeout = 150000; // 150 seconds
-  server.keepAliveTimeout = 155000; // slightly above timeout
-  server.headersTimeout = 160000; // slightly above keepAliveTimeout
+  httpServer.timeout = 150000; // 150 seconds
+  (httpServer as any).keepAliveTimeout = 155000; // slightly above timeout
+  (httpServer as any).headersTimeout = 160000; // slightly above keepAliveTimeout
 }).catch(err => {
   console.error("Failed to initialise database:", err);
   process.exit(1);

@@ -235,19 +235,19 @@ export default function Onboarding() {
                     <Check className="w-8 h-8 text-green-600" />
                   </div>
                   <h2 className="text-xl font-semibold">School registered! 🎉</h2>
-                  <p className="text-sm text-muted-foreground">Your school has been set up on Adaptly. Here's what to do next:</p>
+                  <p className="text-sm text-muted-foreground">Your school is live on Adaptly. Sign in now and generate your first worksheet in under 30 seconds.</p>
                   <div className="text-left space-y-2 bg-brand/5 border border-brand/20 rounded-xl p-4">
                     <div className="flex items-start gap-2.5">
                       <div className="w-5 h-5 rounded-full bg-brand text-white flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">1</div>
-                      <p className="text-sm text-foreground"><strong>Check your email</strong> — click the verification link we just sent you</p>
+                      <p className="text-sm text-foreground"><strong>Sign in</strong> with the admin account you just created</p>
                     </div>
                     <div className="flex items-start gap-2.5">
                       <div className="w-5 h-5 rounded-full bg-brand text-white flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">2</div>
-                      <p className="text-sm text-foreground"><strong>Sign in</strong> — a quick 2-minute tour will show you every feature</p>
+                      <p className="text-sm text-foreground"><strong>Generate your first worksheet</strong> — pick a subject, year group and topic, then click Generate</p>
                     </div>
                     <div className="flex items-start gap-2.5">
                       <div className="w-5 h-5 rounded-full bg-brand text-white flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">3</div>
-                      <p className="text-sm text-foreground"><strong>Generate your first worksheet</strong> — takes under 30 seconds</p>
+                      <p className="text-sm text-foreground"><strong>Invite your team</strong> — go to Settings → Staff to add teachers and SENCOs</p>
                     </div>
                   </div>
                   {apiKeys.length === 0 && (
@@ -255,9 +255,14 @@ export default function Onboarding() {
                       ⚠️ <strong>No AI keys added.</strong> After signing in go to <strong>Settings → AI Providers</strong> to add a free Groq or Gemini key before using AI features.
                     </p>
                   )}
-                  <Button className="w-full bg-brand hover:bg-brand/90 text-white h-11" onClick={() => setLocation("/")}>
-                    Go to Sign In →
-                  </Button>
+                  <div className="flex flex-col gap-2">
+                    <Button className="w-full bg-brand hover:bg-brand/90 text-white h-11 font-semibold" onClick={() => setLocation("/login")}>
+                      Sign In &amp; Generate First Worksheet →
+                    </Button>
+                    <Button variant="outline" className="w-full h-9 text-sm" onClick={() => setLocation("/")}>
+                      Back to Home
+                    </Button>
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>

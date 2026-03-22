@@ -438,6 +438,14 @@ function HeroFloatingCard({ label, value, icon, className = "", delay = 0 }: {
 export default function LandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [platformStats, setPlatformStats] = useState({ teachers: 266, worksheets: 266, schools: 1 });
+
+  useEffect(() => {
+    fetch("/api/data/stats")
+      .then(r => r.json())
+      .then(d => { if (d.teachers) setPlatformStats(d); })
+      .catch(() => {});
+  }, []);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: containerRef });
@@ -646,25 +654,60 @@ export default function LandingPage() {
                 See All Features
               </motion.button>
             </a>
+            <a href="mailto:hello@adaptly.co.uk?subject=Book%20a%20Demo">
+              <motion.button
+                className="px-8 py-4 text-base font-semibold text-indigo-300 rounded-2xl border border-indigo-500/40 bg-indigo-500/10 hover:bg-indigo-500/20 transition-colors w-full sm:w-auto"
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+              >
+                Book a Demo
+              </motion.button>
+            </a>
           </motion.div>
 
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.5 }}
-            className="flex flex-wrap items-center justify-center gap-3 text-xs text-white/35"
+            className="flex flex-wrap items-center justify-center gap-3 text-xs text-white/35 mb-8"
           >
             {[
               "✓ GDPR Compliant",
               "✓ UK SEND Code of Practice",
-              "✓ Children & Families Act 2014",
-              "✓ Equality Act 2010",
+              "✓ Ofsted Ready",
+              "✓ DfE Aligned",
               "✓ No card required",
             ].map(badge => (
               <span key={badge} className="px-3 py-1.5 rounded-full border border-white/10 bg-white/[0.03]">
                 {badge}
               </span>
             ))}
+          </motion.div>
+          {/* Real platform stats */}
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.65 }}
+            className="flex flex-wrap items-center justify-center gap-6 md:gap-10"
+          >
+            <div className="text-center">
+              <p className="text-2xl font-black text-white tabular-nums">
+                <AnimatedNumber target={platformStats.teachers} suffix="+" />
+              </p>
+              <p className="text-[11px] text-white/35 mt-0.5">Teachers using Adaptly</p>
+            </div>
+            <div className="w-px h-8 bg-white/10 hidden md:block" />
+            <div className="text-center">
+              <p className="text-2xl font-black text-white tabular-nums">
+                <AnimatedNumber target={platformStats.worksheets} suffix="+" />
+              </p>
+              <p className="text-[11px] text-white/35 mt-0.5">Worksheets generated</p>
+            </div>
+            <div className="w-px h-8 bg-white/10 hidden md:block" />
+            <div className="text-center">
+              <p className="text-2xl font-black text-white">24</p>
+              <p className="text-[11px] text-white/35 mt-0.5">Specialist tools</p>
+            </div>
           </motion.div>
         </motion.div>
 

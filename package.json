@@ -58,6 +58,7 @@
     "@types/multer": "^2.0.0",
     "@types/pdf-parse": "^1.1.5",
     "@types/sql.js": "^1.4.9",
+    "@types/ws": "^8.18.1",
     "axios": "^1.12.0",
     "bcryptjs": "^3.0.3",
     "better-sqlite3": "^12.6.2",
@@ -117,6 +118,7 @@
     "uuid": "^13.0.0",
     "vaul": "^1.1.2",
     "wouter": "^3.3.5",
+    "ws": "^8.20.0",
     "zod": "^4.1.12"
   },
   "devDependencies": {
@@ -137,6 +139,7 @@
     "@types/react": "^19.2.1",
     "@types/react-dom": "^19.2.1",
     "@types/speakeasy": "^2.0.10",
+    "@types/supertest": "^7.2.0",
     "@types/uuid": "^11.0.0",
     "@vitejs/plugin-react": "^5.0.4",
     "add": "^2.0.6",
@@ -147,6 +150,7 @@
     "pnpm": "^10.15.1",
     "postcss": "^8.4.47",
     "prettier": "^3.6.2",
+    "supertest": "^7.2.2",
     "tailwindcss": "^4.1.14",
     "terser": "^5.46.0",
     "tsx": "^4.19.1",

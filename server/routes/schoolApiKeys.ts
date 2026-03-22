@@ -14,10 +14,16 @@ import { requireAuth, requireAdmin, auditLog } from "../middleware/auth.js";
 const router = Router();
 
 // ── Encryption helpers ────────────────────────────────────────────────────────
-const ENC_SECRET = process.env.KEY_ENCRYPTION_SECRET || "adaptly-school-key-enc-secret-32b";
-if (process.env.NODE_ENV === "production" && !process.env.KEY_ENCRYPTION_SECRET) {
-  console.error("[SECURITY] WARNING: KEY_ENCRYPTION_SECRET is not set. School API keys will use a weak default key. Set KEY_ENCRYPTION_SECRET in Railway environment variables.");
+// KEY_ENCRYPTION_SECRET must be set via env var — no weak constant fallback
+const _KEY_ENC_SECRET_RAW = process.env.KEY_ENCRYPTION_SECRET;
+if (!_KEY_ENC_SECRET_RAW) {
+  if (process.env.NODE_ENV === "production") {
+    console.error("[SECURITY] FATAL: KEY_ENCRYPTION_SECRET env var is not set. School API keys will use an ephemeral random secret and will be unreadable after restart. Set KEY_ENCRYPTION_SECRET in Railway environment variables.");
+  } else {
+    console.warn("[SECURITY] DEV: KEY_ENCRYPTION_SECRET not set — using ephemeral secret. Set KEY_ENCRYPTION_SECRET in .env for persistent school API keys.");
+  }
 }
+const ENC_SECRET = _KEY_ENC_SECRET_RAW || crypto.randomBytes(32).toString("hex");
 const ENC_KEY = crypto.scryptSync(ENC_SECRET, "adaptly-salt", 32);
 
 function encryptKey(plaintext: string): { encrypted: string; iv: string } {
