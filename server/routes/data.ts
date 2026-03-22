@@ -62,11 +62,16 @@ router.post("/worksheets", requireAuth, (req: Request, res: Response) => {
     // Save sections if provided
     if (Array.isArray(sections)) {
       sections.forEach((s: any, idx: number) => {
-        // Strip rogue markdown bold markers from section titles
+        // Strip rogue markdown bold markers from section titles and content
         const sTitle = typeof s.title === 'string' ? s.title.replace(/^\*{1,2}|\*{1,2}$/g, '').replace(/^_{1,2}|_{1,2}$/g, '').trim() : (s.title || null);
+        // Strip standalone asterisks (rogue bold markers) from content lines
+        const rawContent = s.content || null;
+        const sContent = typeof rawContent === 'string'
+          ? rawContent.split('\n').map((line: string) => line.replace(/^\*{1,2}\s*|\s*\*{1,2}$/g, '').replace(/\*\*(.+?)\*\*/g, '$1')).join('\n')
+          : rawContent;
         db.prepare(`INSERT INTO worksheet_sections (id, worksheet_id, section_index, title, type, content, teacher_only, svg, caption, symbols)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
-          uuidv4(), id, idx, sTitle, s.type || null, s.content || null,
+          uuidv4(), id, idx, sTitle, s.type || null, sContent,
           s.teacherOnly ? 1 : 0, s.svg || null, s.caption || null,
           s.symbols ? JSON.stringify(s.symbols) : null
         );

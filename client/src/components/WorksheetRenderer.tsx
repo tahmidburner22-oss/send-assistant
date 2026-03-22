@@ -2254,10 +2254,19 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
               const skipTypes = ["table", "match-up", "diagram"];
               if (skipTypes.includes(sec.type)) { splitSections.push(sec); continue; }
               const lines = content.split("\n");
+              // Detect if this box is an MCQ (has a. b. c. d. options) — never split MCQ boxes
+              const isMCQBox = /^\s*[a-d]\.\s/m.test(content);
+              if (isMCQBox) {
+                const mm = content.match(/\[(\d+)\s*marks?\]|\((\d+)\s*marks?\)/i);
+                const marks = mm ? parseInt(mm[1] || mm[2]) : (sec.marks || 1);
+                splitSections.push({ ...sec, marks });
+                continue;
+              }
               const qStarts: number[] = [];
               for (let li = 0; li < lines.length; li++) {
                 const line = lines[li].trim();
-                if (/^[a-z]\s*[.)]/i.test(line) || /^\d+\s*[.)]/i.test(line)) qStarts.push(li);
+                // Only split on numbered questions (1. 2. 3.) — NOT on letter options (a. b. c. d.)
+                if (/^\d+\s*[.)]/i.test(line)) qStarts.push(li);
               }
               if (qStarts.length < 2) {
                 const mm = content.match(/\[(\d+)\s*marks?\]|\((\d+)\s*marks?\)/i);
@@ -2375,12 +2384,10 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
             const wsRowStart = hasEmpty ? wsR0 + 1 : totalRows + 1;
 
             // ── Answer lines per mark spec ────────────────────────────────
+            // 4+ marks → 6 lines; everything else → 3 lines
             const getNumLines = (marks: number): number => {
-              if (marks >= 6) return 6;
-              if (marks >= 4) return 5;
-              if (marks >= 3) return 4;
-              if (marks >= 2) return 3;
-              return 2;
+              if (marks >= 4) return 6;
+              return 3;
             };
 
             return (
@@ -2588,7 +2595,8 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                             {lines.map((line: string, li: number) => {
                               const t = line.trim()
                                 .replace(/\*\*(.+?)\*\*/g, "$1")
-                                .replace(/\*\*/g, "");
+                                .replace(/\*\*/g, "")
+                                .replace(/^\*+|\*+$/g, "");
                               if (!t) return null;
                               if (/^_{3,}$/.test(t)) return null;
                               // MCQ option circles

@@ -722,7 +722,7 @@ export default function Worksheets() {
   // Revision Mat instruction injected when toggle is on
   const REVISION_MAT_INSTRUCTIONS = `REVISION MAT FORMAT — READ EVERY RULE CAREFULLY:
 
-You are creating a GCSE revision mat. Every single rule below is mandatory.
+You are creating a GCSE revision mat for the topic specified. Every single rule below is mandatory.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 SECTION 1 — ONE COMBINED TITLE/LO/VOCAB BOX
@@ -730,7 +730,7 @@ SECTION 1 — ONE COMBINED TITLE/LO/VOCAB BOX
 Generate exactly ONE section with:
   "type": "revision-mat-title"
 
-Its "content" field must be formatted EXACTLY like this:
+Its "content" field must be formatted EXACTLY like this (no asterisks, no markdown):
 [Topic Name]
 LO: Students will be able to [one clear learning objective sentence].
 Key Vocabulary:
@@ -746,10 +746,10 @@ Rules:
 - LO line must start exactly "LO: "
 - Key Vocabulary section must start exactly "Key Vocabulary:"
 - 5–8 vocabulary terms, one per line, format: Term — definition
-- No bullet points, no numbering, no markdown
+- No bullet points, no numbering, no markdown, NO asterisks anywhere
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-SECTION 2 — EXACTLY 12 TO 14 QUESTION BOXES
+SECTION 2 — EXACTLY 12 QUESTION BOXES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Each box: "type": "revision-mat-box", "title": "", "marks": <integer>
 
@@ -760,67 +760,68 @@ Each box: "type": "revision-mat-box", "title": "", "marks": <integer>
    answers, NOT a box containing the answer.
 
 2. ONE QUESTION PER BOX — never put multiple questions in one box.
-   Wrong: "1. Define energy
-2. Define power
-3. What is efficiency?"
-   Right (three separate boxes): "Define energy." / "Define power." / "What is efficiency?"
+   WRONG: "1. Define fertilisation\n2. What is a gamete?\n3. Name the male gamete."
+   RIGHT: Three separate boxes, each with ONE question.
 
-3. NO SECTION HEADINGS — do NOT write "Section A", "Section B", "Core Practice",
+3. COMPLETE QUESTIONS — every question must be fully written out and make sense
+   on its own. Never truncate or cut off a question. The full question text,
+   including all MCQ options, must fit in the "content" field.
+
+4. MCQ MUST STAY TOGETHER — if a question has multiple choice options (a. b. c. d.),
+   the question stem AND all four options must be in the SAME box content.
+   WRONG: Putting the question in one box and options in another.
+   RIGHT: "Which of the following is a gamete?\na. Zygote\nb. Sperm cell\nc. Ovary\nd. Uterus"
+
+5. NO SECTION HEADINGS — do NOT write "Section A", "Section B", "Core Practice",
    "Recall", "Foundation", "Extension" or any heading as a box title or content.
    "title" must always be "" (empty string) for every question box.
 
-4. NO SUB-STEPS — do NOT break one question into numbered steps like:
-   "1. Define the problem
-2. Identify values
-3. Choose formula"
-   Each step must be a standalone GCSE exam question in its own right.
+6. NO ANSWERS IN BOXES — never include text like:
+   "Fertilisation: the fusion of gametes" as if it were a question.
+   Those are answers. Write the question instead: "Define fertilisation."
 
-5. NO ANSWERS IN BOXES — never include text like:
-   "Energy: the ability to do work" or "Power = Work done / time"
-   as if it were a question. Those are answers. Write the question instead:
-   "Define energy." or "Write the equation for power."
+7. NO ASTERISKS — do not use * or ** anywhere in any content field.
 
-REQUIRED MARK MIX (total 12–14 boxes):
-- 1-mark questions: 4–5 boxes  → short recall, define, state, circle, fill-blank, true/false
-- 2-mark questions: 3–4 boxes  → name two, give two examples, explain briefly
-- 3-mark questions: 2 boxes    → describe, explain with reason
-- 4-mark questions: 1–2 boxes  → extended describe/explain, show working
-- 6-mark question:  1 box      → evaluate, assess, extended response (Challenge)
+REQUIRED MARK MIX (exactly 12 boxes total):
+- 1-mark questions: 4 boxes  → short recall, define, state, fill-blank, true/false, MCQ
+- 2-mark questions: 3 boxes  → name two, give two examples, explain briefly
+- 3-mark questions: 2 boxes  → describe, explain with reason
+- 4-mark questions: 2 boxes  → extended describe/explain, show working
+- 6-mark question:  1 box    → evaluate, assess, extended response (Challenge)
 
-REQUIRED QUESTION TYPES — include all of these:
-• Multiple choice [1 mark]: question stem + exactly 4 options as:
-    a. option one
-    b. option two
-    c. option three
-    d. option four
-  (Must look like an exam MCQ — a clear question with four plausible choices)
+REQUIRED QUESTION TYPES — include ALL of these across the 12 boxes:
+
+• Multiple choice [1 mark]: question stem + exactly 4 options on separate lines:
+  "Which of the following is [X]?\na. [option]\nb. [option]\nc. [option]\nd. [option]"
+  ALL four options must be in the SAME content field as the question stem.
 
 • Fill-in-the-blank [1 mark]: one sentence with ___ for missing word(s)
-  Example: "The unit of energy is ___."
-  Example: "___ is the ability to do work."
+  Example: "The male gamete in flowering plants is found in ___."
 
-• True / False [1 mark]: one statement followed by a new line with exactly:
+• True / False [1 mark]: one clear statement followed by a new line with exactly:
   True / False
+  Example: "Fertilisation occurs in the ovary.\nTrue / False"
 
 • Short recall [1–2 marks]:
-  Examples: "State two uses of energy in the human body."
-            "Give the unit of power." 
-            "Name the equation used to calculate efficiency."
+  Examples: "State two differences between sexual and asexual reproduction."
+            "Name the female gamete in animals."
+            "Give the term for a fertilised egg cell."
 
 • Describe/Explain [2–3 marks]:
-  Examples: "Explain why a light bulb is not 100% efficient. [2 marks]"
-            "Describe what happens to kinetic energy as a car slows down. [3 marks]"
+  Examples: "Explain why fertilisation cannot occur without pollination. [2 marks]"
+            "Describe the process of fertilisation in flowering plants. [3 marks]"
 
-• Extended response [4 marks]: exam-style question with "[4 marks]" in the text
-  Example: "Describe how energy is transferred when a ball is thrown upwards. [4 marks]"
+• Extended response [4 marks]: full exam-style question with "[4 marks]" in the text
+  Example: "Describe how pollen is transferred from one flower to another and explain what happens after it reaches the stigma. [4 marks]"
 
-• Match-up [1–2 marks]: exactly this format (no headers, just pairs):
+• Match-up [2 marks]: exactly this format (no headers, no extra text, just pairs):
   Term 1 | Definition 1
   Term 2 | Definition 2
   Term 3 | Definition 3
+  Term 4 | Definition 4
 
-• Challenge [6 marks]: label with "Challenge:" prefix and "[6 marks]" in text
-  Example: "Challenge: Evaluate the advantages and disadvantages of renewable energy sources. [6 marks]"
+• Challenge [6 marks]: starts with "Challenge:" and ends with "[6 marks]"
+  Example: "Challenge: A student claims that asexual reproduction is always better than sexual reproduction. Evaluate this claim, referring to advantages and disadvantages of both types of reproduction. [6 marks]"
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 JSON FIELD RULES
@@ -829,10 +830,12 @@ Every question box MUST have:
 - "type": "revision-mat-box"
 - "title": ""  ← ALWAYS empty — no exceptions
 - "marks": the mark value as an integer (1, 2, 3, 4, or 6)
-- "content": the question text only — NO answer lines, NO model answers
+- "content": the COMPLETE question text — no truncation, no answers, no asterisks
 
 No self-reflection box. No working-out box. No extra sections.
-One teacher section (teacherOnly: true) with mark scheme for all questions.`;
+One teacher section (teacherOnly: true) with mark scheme for all questions.
+
+REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. Do not generate placeholder text or incomplete questions.`;
 
 
 
