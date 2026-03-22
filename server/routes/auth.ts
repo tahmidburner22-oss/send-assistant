@@ -403,7 +403,16 @@ router.post("/logout", requireAuth, (req: Request, res: Response) => {
   res.json({ message: "Logged out" });
 });
 
-// ── Current User (/session and /me are aliases) ─────────────────────────────
+// ── Session Refresh — extend session expiry when user is active ────────────────
+router.post("/refresh", requireAuth, (req: Request, res: Response) => {
+  const token = req.headers.authorization?.slice(7) || req.cookies?.token;
+  if (!token) return res.status(401).json({ error: "No token" });
+  const newExpiry = new Date(Date.now() + SESSION_TIMEOUT_MS).toISOString();
+  db.prepare("UPDATE sessions SET expires_at = ? WHERE token = ?").run(newExpiry, token);
+  res.json({ ok: true, expiresAt: newExpiry });
+});
+
+// ── Current User (/session and /me are aliases) ──────────────────────────────
 const getCurrentUser = (req: Request, res: Response) => {
   const user = db.prepare("SELECT * FROM users WHERE id = ?").get(req.user!.id) as any;
   const school = user.school_id

@@ -881,9 +881,14 @@ TEACHER SECTION: Include one section with teacherOnly:true containing all answer
         generatedWs = { ...result, isAI: true } as AIWorksheet;
         toast.success(generateDiagram ? "Worksheet with diagram generated!" : "Worksheet generated with AI!");
       } catch (err: any) {
-        console.error("AI generation failed:", err);
-        console.error("[DEBUG] Error name:", err?.name, "| message:", err?.message?.slice(0, 300), "| stack:", err?.stack?.slice(0, 200));
+        console.error("AI generation failed:", err?.message);
         const errMsg = err?.message || String(err);
+        // Handle session expiry — show clear message and redirect to login
+        if (errMsg.startsWith('AUTH_REQUIRED') || errMsg.includes('Session expired') || errMsg.includes('Authentication required')) {
+          toast.error("Your session has expired. Redirecting to login...", { duration: 4000 });
+          setTimeout(() => { window.location.href = '/login'; }, 2000);
+          return;
+        }
         if (errMsg.includes("No AI provider keys configured") || errMsg.includes("noKeysConfigured") || errMsg.includes("Settings → AI Providers")) {
           toast.error(
             "No AI keys configured. Go to Settings → AI Providers to add your school's API keys. Using local generator for now.",
@@ -920,11 +925,17 @@ TEACHER SECTION: Include one section with teacherOnly:true containing all answer
               retrySuccess = true;
               break;
             } catch (retryErr: any) {
+              // Stop retrying if it's an auth error
+              if (retryErr?.message?.startsWith('AUTH_REQUIRED')) {
+                toast.error("Your session has expired. Redirecting to login...", { duration: 4000 });
+                setTimeout(() => { window.location.href = '/login'; }, 2000);
+                return;
+              }
               console.error(`Retry ${attempt} (${providerLabel}) failed:`, retryErr?.message);
             }
           }
           if (!retrySuccess) {
-            toast.error("All AI providers are temporarily busy. Please wait a few seconds and try again.", { duration: 8000, id: "ai-retry" });
+            toast.error("AI generation failed. Please refresh the page and try again.", { duration: 8000, id: "ai-retry" });
           }
         }
       }
@@ -2418,7 +2429,7 @@ TEACHER SECTION: Include one section with teacherOnly:true containing all answer
                           worksheet={uploadedWorksheet as any}
                           viewMode="student"
                           textSize={textSize}
-                          overlayColor={overlayBg || colorOverlays.find(o => o.id === "cream")?.color}
+                          overlayColor={overlayBg || colorOverlays.find(o => o.id === "cream")?.color || ""}
                           editedSections={{}}
                           schoolLogoUrl={preferences.schoolLogoUrl}
                           schoolName={preferences.schoolName}
@@ -3653,17 +3664,21 @@ ${s.content}`).join("\n\n"),
                 {/* Hidden WorksheetRenderer used for print/PDF — captures proper styled output */}
                 <div ref={historyPrintRef} style={{ position: 'absolute', left: '-9999px', top: 0, width: '794px', pointerEvents: 'none', zIndex: -1 }}>
                   <WorksheetRenderer
-                    worksheetData={{
+                    worksheet={{
                       title: ws.title || '',
                       subtitle: ws.subtitle || '',
                       sections: sections.map((s, i) => ({
                         ...s,
                         content: historyEditedSections[i] !== undefined ? historyEditedSections[i] : s.content,
+                        type: s.type || 'text'
                       })),
                       metadata: { subject: ws.subject || '', yearGroup: ws.yearGroup || '', topic: ws.topic || '' },
                     }}
                     viewMode={historyViewMode === "teacher" ? "teacher" : "student"}
+                    textSize={textSize}
                     editMode={false}
+                    overlayColor=""
+                    editedSections={historyEditedSections}
                     schoolLogoUrl={preferences.schoolLogoUrl}
                     schoolName={preferences.schoolName}
                   />

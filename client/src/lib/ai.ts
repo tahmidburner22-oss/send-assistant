@@ -414,6 +414,17 @@ export async function callAI(
         return { text: content, provider: (data.provider || "groq") as AIProvider };
       }
     }
+    // Handle 401/403 — session expired or not authenticated
+    // This MUST throw immediately — do NOT silently fall through to empty client keys
+    if (res.status === 401 || res.status === 403) {
+      const errData = await res.json().catch(() => ({})) as any;
+      // Clear the stale token so the user gets redirected to login
+      if (typeof localStorage !== 'undefined') localStorage.removeItem('send_token');
+      const msg = errData?.error || (res.status === 401 ? 'Session expired. Please log in again.' : 'Access denied.');
+      // Redirect to login after a short delay so any toast can show
+      setTimeout(() => { window.location.href = '/login'; }, 2000);
+      throw new Error(`AUTH_REQUIRED: ${msg}`);
+    }
     // If server says no keys configured, throw immediately — don't silently fall back
     if (res.status === 503) {
       const errData = await res.json().catch(() => ({})) as any;
@@ -421,14 +432,14 @@ export async function callAI(
         throw new Error(errData.error || "No AI provider keys configured for your school. Please go to Settings → AI Providers to add your API keys.");
       }
     }
-    // Fall through to client keys only on auth errors
-    if (res.status !== 401 && res.status !== 403) {
-      const errText = await res.text().catch(() => "");
-      console.warn(`[Adaptly AI] Server error ${res.status}:`, errText.slice(0, 200));
-    }
+    // For other server errors, log and fall through to client keys
+    const errText = await res.text().catch(() => "");
+    console.warn(`[Adaptly AI] Server error ${res.status}:`, errText.slice(0, 200));
   } catch (serverErr: any) {
-    // Re-throw no-keys-configured errors — these need to reach the UI
-    if (serverErr?.message?.includes("No AI provider keys configured") || serverErr?.message?.includes("Settings → AI Providers")) {
+    // Re-throw auth errors and no-keys-configured errors — these need to reach the UI
+    if (serverErr?.message?.startsWith('AUTH_REQUIRED') ||
+        serverErr?.message?.includes("No AI provider keys configured") ||
+        serverErr?.message?.includes("Settings → AI Providers")) {
       throw serverErr;
     }
     if (serverErr?.name === "AbortError") {
@@ -506,6 +517,8 @@ export async function aiGenerateWorksheet(params: {
   targetPages?: number; // Target number of printed A4 pages (any positive integer, 0 = auto)
   readingAge?: number; // Target reading age (5–17) — controls vocabulary and sentence complexity
 }): Promise<AIWorksheetResult> {
+  // ── Subject flags (declared early so they can be used in template literals below) ──
+  const isMaths = params.subject.toLowerCase().includes("math");
 
   // ── Year-group calibration ──────────────────────────────────────────────────
   // Parse the year number from strings like "Year 1", "Year 5", "Year 10", "Year 13"
@@ -817,8 +830,7 @@ STRICT JSON OUTPUT: Respond with valid JSON only — no markdown, no code blocks
     ? params.subject.charAt(0).toUpperCase() + params.subject.slice(1)
     : params.subject;
 
-  // ── Maths-specific instruction ────────────────────────────────────────────
-  const isMaths = params.subject.toLowerCase().includes("math");
+  // ── Maths-specific instruction ────────────────────────────────────────
   const isScienceOrMaths = isMaths || params.subject.toLowerCase().includes('science') || params.subject.toLowerCase().includes('physics') || params.subject.toLowerCase().includes('chemistry') || params.subject.toLowerCase().includes('biology');
   const mathsNote = isMaths
     ? `Maths: All questions must be numerical/calculation-based. Use LaTeX for all math expressions: wrap in \\(...\\) e.g. \\(\\dfrac{3}{4}\\), \\(x^{2}\\), \\(\\sqrt{x}\\), \\(\\times\\), \\(\\div\\), \\(\\pi\\). CRITICAL RULES: (1) NEVER use \\text{} or \\mathrm{} — write units as plain text OUTSIDE the math delimiters e.g. "\\(F = ma\\) where F is in N, m in kg, a in m/s²". (2) NEVER write \\textm/s or \\text{m/s} — just write "m/s" as plain text. (3) For chemical formulas use subscript numbers: H₂O, CO₂, H₂SO₄. (4) For scientific notation write e.g. "3 × 10⁻³" or \\(3 \\times 10^{-3}\\).`
