@@ -2044,8 +2044,8 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
           }}
         />
       )}
-      {/* ── Professional Header ── */}
-      <div className="ws-header" style={{
+      {/* ── Professional Header — hidden for revision mats ── */}
+      {!isRevisionMat && <div className="ws-header" style={{
         marginBottom: isPrimary ? "16px" : "12px",
         borderRadius: isPrimary ? "12px" : "8px",
         overflow: "hidden",
@@ -2149,10 +2149,10 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
             height: "3px",
           }} />
         )}
-      </div>
+      </div>}
 
-      {/* Primary encouragement banner */}
-      {isPrimary && (
+      {/* Primary encouragement banner — hidden for revision mats */}
+      {isPrimary && !isRevisionMat && (
         <div style={{
           display: "flex",
           alignItems: "center",
@@ -2238,11 +2238,11 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
               const sz = (section as any).size || "small";
               const marks = (section as any).marks || 0;
               const isMatchUp = (section.content || "").split("\n").filter((l: string) => /\w+\s*\|\s*\w+/.test(l) && !/[=<>]/.test(l)).length >= 2;
-              if (marks >= 6 || sz === "large") return [2, 2]; // 6-marker: 2 cols × 2 rows
+              // Only 6-marker gets 2×2 — all others use rowSpan:1 to prevent grey space
+              if (marks >= 6 || sz === "large") return [2, 2]; // 6-marker challenge: 2 cols × 2 rows
               if (marks >= 4) return [2, 1];                   // 4-marker: 2 cols × 1 row
-              if (isMatchUp) return [2, 1];                    // match-up: 2 cols wide
-              if (sz === "medium") return [1, 2];              // medium: 1 col × 2 rows
-              return [1, 1];                                    // small: 1 col × 1 row
+              if (isMatchUp) return [2, 1];                    // match-up: 2 cols wide, 1 row
+              return [1, 1];                                    // all others: 1 col × 1 row, no grey space
             };
 
             type PlacedBox = { section: any; label: string; colSpan: number; rowSpan: number; colStart: number; rowStart: number };
@@ -2327,10 +2327,11 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
 
                   const sectionMarks = (section as any).marks || 0;
                   const markerCount = lines.filter((l: string) => /^_{3,}$/.test(l.trim())).length;
+                  // Answer lines: 1 mark→2 lines, 2 marks→3 lines, 4 marks→4 lines, 6 marks→8 lines
                   const numLines = markerCount > 0 ? markerCount
-                    : sectionMarks >= 6 ? 6
+                    : sectionMarks >= 6 ? 8
                     : sectionMarks >= 4 ? 4
-                    : sectionMarks >= 2 ? 2
+                    : sectionMarks >= 2 ? 3
                     : isCalc ? 3
                     : 2;
 
