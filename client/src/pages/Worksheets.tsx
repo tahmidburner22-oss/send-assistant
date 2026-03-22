@@ -728,9 +728,16 @@ PAGE SETUP:
 - A4 landscape orientation, single page only — everything must fit on ONE page
 - Dense layout — NO grey/empty space anywhere. Every gap must be filled with a question box or working-out box
 
+⚠️ CRITICAL RULE — ONE QUESTION PER BOX:
+Each box contains EXACTLY ONE question. This means:
+- WRONG: { "content": "1. What is ATP?\n2. What is respiration?\n3. Name two products..." }  ← MULTIPLE questions in one box — FORBIDDEN
+- CORRECT: { "content": "What is ATP?" }  ← ONE question only
+- CORRECT: { "content": "Name one product of aerobic respiration." }  ← ONE question only
+If you find yourself writing a numbered list inside a box, STOP — split each numbered item into its own separate box.
+
 LAYOUT (CRITICAL — match Twinkl/CGP revision mat style):
 - The page is a 4-column grid of rectangular question boxes
-- Each box contains exactly ONE question
+- Each box contains exactly ONE question (see rule above)
 - Include ONE title box in the first position (column 1, row 1) showing the topic name
 - Include ONE Learning Objectives box (LO) with 3-4 brief bullet-point objectives
 - All other boxes are question boxes labelled a, b, c, d... in sequence
@@ -743,16 +750,17 @@ MARK ALLOCATION — CRITICAL:
 - Include EXACTLY ONE 4-mark question (label it "[4 marks]" in the question text)
 - Include EXACTLY ONE 6-mark challenge question (label it "[6 marks]" in the question text) — this is the hardest question
 - NO other questions should be more than 2 marks
+- Do NOT group multiple questions together — each mark allocation applies to ONE question in ONE box
 
-CONTENT REQUIREMENTS — include ALL of these question types:
-- Multiple choice (circle the correct answer): 3-4 questions [1 mark each]
-- Fill-in-the-blank: 3-4 questions [1 mark each]
-- Short-answer recall: 4-5 questions [1-2 marks each]
-- True/False: 2-3 questions [1 mark each]
-- Match-up: 1-2 questions [1 mark per correct match]
-- Calculations (if topic is maths/science): 1-2 questions [1-2 marks each]
-- ONE 4-mark question (Describe/Explain with 4 answer lines)
-- ONE 6-mark challenge question (Evaluate/Analyse/Extended response with 6 answer lines)
+CONTENT REQUIREMENTS — include ALL of these question types, each as its OWN separate box:
+- Multiple choice (circle the correct answer): 3-4 questions [1 mark each] — each MCQ is its own box
+- Fill-in-the-blank: 3-4 questions [1 mark each] — each fill-in-the-blank is its own box
+- Short-answer recall: 4-5 questions [1-2 marks each] — each question is its own box
+- True/False: 2-3 questions [1 mark each] — each true/false is its own box
+- Match-up: 1 question [1 mark per correct match] — the full match-up table is one box
+- Calculations (if topic is maths/science): 1-2 questions [1-2 marks each] — each calculation is its own box
+- ONE 4-mark question (Describe/Explain with 4 answer lines) — its own box
+- ONE 6-mark challenge question (Evaluate/Analyse/Extended response with 6 answer lines) — its own box
 
 QUESTION FORMAT per box:
 - Short answer (1-2 marks): question text only — NO answer lines in content (renderer adds them)
@@ -772,7 +780,7 @@ JSON FORMAT — CRITICAL:
 - "title": the topic name for the title box; single lowercase letter ("a", "b", "c"...) for question boxes; "LO" for learning objectives box; "Working Out" for working-out boxes
 - "type": "revision-mat-title" for the title box, "revision-mat-lo" for LO box, "revision-mat-box" for ALL question boxes
 - "size": "small" for 1-2 mark questions, "medium" for 3-4 line questions, "large" for the 4-marker and 6-marker only
-- "content": ONLY the question text. Do NOT include answer lines — the renderer adds them automatically based on mark count.
+- "content": ONLY the question text for ONE question. Do NOT include answer lines — the renderer adds them automatically based on mark count.
   Exception: for MCQ, include the options. For match-up, include the term|definition pairs. For fill-in-the-blank, include the ___ inline.
 - "marks": the number of marks for the question (1, 2, 4, or 6)
 
