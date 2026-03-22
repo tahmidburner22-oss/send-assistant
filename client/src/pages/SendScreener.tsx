@@ -23,6 +23,7 @@ import {
   Save, PlayCircle
 } from "lucide-react";
 import { useApp } from "@/contexts/AppContext";
+import { aiRewriteTextToReadingAge } from "@/lib/ai";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface Question {
@@ -491,7 +492,10 @@ export default function SendScreener() {
   const [, setLocation] = useLocation();
   const [step, setStep] = useState<"intro" | "mode-select" | "questions" | "results">("intro");
   const [screenerMode, setScreenerMode] = useState<ScreenerMode>("full");
-  const [simplifiedLanguage, setSimplifiedLanguage] = useState(false);
+  const [readingAge, setReadingAge] = useState(0); // 0 = default (no rewrite), 5-17 = target age
+  const [rewriteCache, setRewriteCache] = useState<Record<string, string>>({}); // key: `${questionId}_${age}`
+  const [isRewriting, setIsRewriting] = useState(false);
+  const rewriteDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [direction, setDirection] = useState<1 | -1>(1);
@@ -554,6 +558,25 @@ export default function SendScreener() {
       return () => clearTimeout(timer);
     }
   }, [justAnswered, currentAnswer, currentQuestionIndex, totalQ]);
+
+  // Reading age rewrite effect — debounced, cached per question+age
+  useEffect(() => {
+    if (readingAge === 0 || step !== "questions") return;
+    const item = activeQuestions[currentQuestionIndex];
+    if (!item) return;
+    const q = item.question;
+    const cacheKey = `${q.id}_${readingAge}`;
+    if (rewriteCache[cacheKey]) return; // already cached
+    if (rewriteDebounceRef.current) clearTimeout(rewriteDebounceRef.current);
+    rewriteDebounceRef.current = setTimeout(async () => {
+      setIsRewriting(true);
+      try {
+        const rewritten = await aiRewriteTextToReadingAge({ text: q.text, targetAge: readingAge });
+        setRewriteCache(prev => ({ ...prev, [cacheKey]: rewritten }));
+      } catch {}
+      setIsRewriting(false);
+    }, 600);
+  }, [readingAge, currentQuestionIndex, step]);
 
   function handleAnswer(qId: string, value: number) {
     setAnswers(prev => ({ ...prev, [qId]: value }));
@@ -1000,19 +1023,39 @@ export default function SendScreener() {
           </div>
         </div>
 
-        {/* Simplified language toggle */}
-        <div className="mb-4">
-          <button
-            onClick={() => setSimplifiedLanguage(v => !v)}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all ${
-              simplifiedLanguage
-                ? "bg-indigo-600 text-white border-indigo-600 shadow-sm"
-                : "bg-white text-gray-600 border-gray-200 hover:border-indigo-300 hover:bg-indigo-50"
-            }`}
-          >
-            <span>{simplifiedLanguage ? "✓" : "💬"}</span>
-            {simplifiedLanguage ? "Simple language ON" : "Simplify language"}
-          </button>
+        {/* Reading Age Slider */}
+        <div className="mb-4 bg-white border border-gray-200 rounded-xl px-4 py-3 shadow-sm">
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-xs font-semibold text-gray-700">Reading Age</span>
+            <span className="text-xs font-bold text-indigo-600">
+              {readingAge === 0 ? "Default" : `Age ${readingAge}`}
+              {isRewriting && <span className="ml-1 text-gray-400 animate-pulse">rewriting...</span>}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] text-gray-400">5</span>
+            <input
+              type="range"
+              min={0}
+              max={12}
+              step={1}
+              value={readingAge === 0 ? 0 : readingAge - 5}
+              onChange={e => {
+                const v = Number(e.target.value);
+                setReadingAge(v === 0 ? 0 : v + 5);
+              }}
+              className="flex-1 accent-indigo-600"
+            />
+            <span className="text-[10px] text-gray-400">17+</span>
+          </div>
+          {readingAge > 0 && (
+            <button
+              onClick={() => setReadingAge(0)}
+              className="mt-1.5 text-[10px] text-indigo-500 hover:text-indigo-700 underline"
+            >
+              Reset to default
+            </button>
+          )}
         </div>
 
         {/* Question card */}
@@ -1031,7 +1074,9 @@ export default function SendScreener() {
                 questionTextSize === "xl" ? "text-xl" :
                 "text-base"
               }`}>
-                {simplifiedLanguage ? simplifyText(question.text) : question.text}
+                {readingAge > 0 && rewriteCache[`${question.id}_${readingAge}`]
+                  ? rewriteCache[`${question.id}_${readingAge}`]
+                  : question.text}
               </p>
               {question.example && (
                 <div className="mt-3 p-3 bg-indigo-50 border border-indigo-100 rounded-xl">
