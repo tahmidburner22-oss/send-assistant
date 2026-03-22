@@ -517,7 +517,7 @@ export default function SendScreener() {
   const [, setLocation] = useLocation();
   const [step, setStep] = useState<"intro" | "mode-select" | "questions" | "results">("intro");
   const [screenerMode, setScreenerMode] = useState<ScreenerMode>("full");
-  const [simplifiedLanguage, setSimplifiedLanguage] = useState(false);
+  const [readingAge, setReadingAge] = useState(0); // 0 = default (no simplification), 7-17 = target reading age
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [direction, setDirection] = useState<1 | -1>(1);
@@ -1026,19 +1026,33 @@ export default function SendScreener() {
           </div>
         </div>
 
-        {/* Simplified language toggle */}
-        <div className="mb-4">
-          <button
-            onClick={() => setSimplifiedLanguage(v => !v)}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all ${
-              simplifiedLanguage
-                ? "bg-indigo-600 text-white border-indigo-600 shadow-sm"
-                : "bg-white text-gray-600 border-gray-200 hover:border-indigo-300 hover:bg-indigo-50"
-            }`}
-          >
-            <span>{simplifiedLanguage ? "✓" : "💬"}</span>
-            {simplifiedLanguage ? "Simple language ON" : "Simplify language"}
-          </button>
+        {/* Reading age slider */}
+        <div className="mb-4 bg-indigo-50 border border-indigo-200 rounded-xl p-3 space-y-2">
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-semibold text-indigo-800">📚 Reading Age</p>
+            <span className="text-xs font-bold text-indigo-700">
+              {readingAge === 0 ? "Default" : `Age ${readingAge}`}
+            </span>
+          </div>
+          <input
+            type="range"
+            min={0}
+            max={17}
+            step={1}
+            value={readingAge}
+            onChange={e => setReadingAge(Number(e.target.value))}
+            className="w-full accent-indigo-600"
+          />
+          <div className="flex justify-between text-[10px] text-indigo-500">
+            <span>Default</span>
+            <span>Age 7</span>
+            <span>Age 10</span>
+            <span>Age 13</span>
+            <span>Age 17</span>
+          </div>
+          {readingAge > 0 && (
+            <p className="text-[10px] text-indigo-600">Questions simplified to reading age {readingAge}.</p>
+          )}
         </div>
 
         {/* Question card */}
@@ -1057,7 +1071,7 @@ export default function SendScreener() {
                 questionTextSize === "xl" ? "text-xl" :
                 "text-base"
               }`}>
-                {simplifiedLanguage ? simplifyText(question.text, question.id) : question.text}
+                {readingAge > 0 ? simplifyText(question.text, question.id) : question.text}
               </p>
               {question.example && (
                 <div className="mt-3 p-3 bg-indigo-50 border border-indigo-100 rounded-xl">

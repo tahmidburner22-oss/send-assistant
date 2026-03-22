@@ -201,16 +201,30 @@ function StudyMode({ cards, onReset }: { cards: Card[]; onReset: () => void }) {
         </div>
       )}
 
-      {/* Printable + PDF card grid */}
+      {/* Printable + PDF card grid — each card split into QUESTION card + ANSWER card */}
       <div ref={printRef} className="hidden print:block mt-4" style={{ fontFamily: "Arial, sans-serif" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "12px" }}>
+        <p style={{ fontSize: "10px", color: "#6b7280", marginBottom: "10px", fontStyle: "italic" }}>Print and cut out each card. Fold or pair each question card with its matching answer card.</p>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "10px" }}>
           {deck.map((c, i) => (
-            <div key={i} style={{ border: "2px solid #4f46e5", borderRadius: "8px", padding: "14px", pageBreakInside: "avoid", background: "#fff" }}>
-              <div style={{ fontSize: "10px", fontWeight: 700, color: "#4f46e5", textTransform: "uppercase", marginBottom: "6px", letterSpacing: "0.5px" }}>Card {i + 1}</div>
-              <div style={{ fontWeight: 700, fontSize: "14px", color: "#111827", marginBottom: "8px" }}>{c.front}</div>
-              <div style={{ fontSize: "13px", color: "#374151", borderTop: "1px dashed #c7d2fe", paddingTop: "8px", lineHeight: "1.5" }}>{c.back}</div>
-              {c.hint && <div style={{ fontSize: "11px", color: "#7c3aed", marginTop: "6px", fontStyle: "italic" }}>💡 {c.hint}</div>}
-            </div>
+            <>
+              {/* Question card */}
+              <div key={`q-${i}`} style={{ border: "2px solid #4f46e5", borderRadius: "8px", padding: "14px", pageBreakInside: "avoid", background: "#f5f3ff", minHeight: "100px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+                <div style={{ fontSize: "9px", fontWeight: 700, color: "#4f46e5", textTransform: "uppercase", marginBottom: "6px", letterSpacing: "0.5px", display: "flex", justifyContent: "space-between" }}>
+                  <span>Card {i + 1} — Question</span>
+                  <span style={{ color: "#a5b4fc" }}>FRONT</span>
+                </div>
+                <div style={{ fontWeight: 700, fontSize: "14px", color: "#111827", flex: 1, display: "flex", alignItems: "center" }}>{c.front}</div>
+                {c.hint && <div style={{ fontSize: "10px", color: "#7c3aed", marginTop: "6px", fontStyle: "italic" }}>💡 {c.hint}</div>}
+              </div>
+              {/* Answer card */}
+              <div key={`a-${i}`} style={{ border: "2px solid #059669", borderRadius: "8px", padding: "14px", pageBreakInside: "avoid", background: "#ecfdf5", minHeight: "100px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+                <div style={{ fontSize: "9px", fontWeight: 700, color: "#059669", textTransform: "uppercase", marginBottom: "6px", letterSpacing: "0.5px", display: "flex", justifyContent: "space-between" }}>
+                  <span>Card {i + 1} — Answer</span>
+                  <span style={{ color: "#6ee7b7" }}>BACK</span>
+                </div>
+                <div style={{ fontSize: "13px", color: "#374151", flex: 1, lineHeight: "1.5" }}>{c.back}</div>
+              </div>
+            </>
           ))}
         </div>
       </div>
