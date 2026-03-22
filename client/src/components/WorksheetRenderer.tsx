@@ -2212,7 +2212,14 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                 }
               }
               if (questionStarts.length < 2) {
-                splitRmSections.push(sec);
+                // Still parse marks from content so single-question sections get correct spans
+                const marksMatch = content.match(/\[(\d+)\s*marks?\]|\((\d+)\s*marks?\)/i);
+                const marks = marksMatch ? parseInt(marksMatch[1] || marksMatch[2]) : (sec.marks || 1);
+                splitRmSections.push({
+                  ...sec,
+                  marks,
+                  size: marks >= 4 ? "large" : marks >= 3 ? "medium" : "small",
+                });
                 continue;
               }
               for (let qi = 0; qi < questionStarts.length; qi++) {
