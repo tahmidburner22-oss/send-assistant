@@ -3026,6 +3026,9 @@ ${s.content}`).join("\n\n"),
                       setAiEditSectionIndex(null);
                       setShowDiffDialog(false);
                       setDiffVersions({});
+                      // Detect if this is a revision mat and set state accordingly
+                      const wsIsRevisionMat = Array.isArray(ws.sections) && ws.sections.some((s: any) => s.type === 'revision-mat-box' || s.type === 'revision-mat-title' || s.type === 'revision-mat-lo');
+                      setIsRevisionMat(wsIsRevisionMat);
                       setGenerated({
                         title: ws.title,
                         subtitle: ws.subtitle,
@@ -3051,8 +3054,10 @@ ${s.content}`).join("\n\n"),
                             </div>
                             <div className="flex items-center gap-3 mt-1 text-xs text-gray-400">
                               <span><Clock className="h-3 w-3 inline mr-0.5" />{new Date(ws.createdAt).toLocaleDateString("en-GB")}</span>
-
-                              {ws.rating && ws.rating > 0 && <span>{'\u2605'.repeat(ws.rating)}</span>}
+                              {Array.isArray(ws.sections) && ws.sections.some((s: any) => s.type === 'revision-mat-box' || s.type === 'revision-mat-title' || s.type === 'revision-mat-lo') && (
+                                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium bg-indigo-100 text-indigo-700">📐 Revision Mat</span>
+                              )}
+                              {ws.rating && ws.rating > 0 && <span>{'★'.repeat(ws.rating)}</span>}
                             </div>
                           </div>
                           <div className="flex items-center gap-1">
