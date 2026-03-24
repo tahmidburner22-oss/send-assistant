@@ -1459,17 +1459,26 @@ function TrueFalseSection({
   isTeacher?: boolean;
 }) {
   const raw = stripLayoutTag(content);
-  const lines = raw.split("\n").filter(l => l.match(/^\d+\.\s/));
+  // Match lines that are numbered AND contain TRUE or FALSE
+  // Handles: "1. Statement. TRUE" / "1. Statement TRUE" / "1. Statement → TRUE"
+  const allLines = raw.split("\n").map(l => l.trim()).filter(Boolean);
+  const lines = allLines.filter(l =>
+    /^\d+[.)\s]/.test(l) && /\b(TRUE|FALSE)\b/i.test(l)
+  );
+  // If no TRUE/FALSE lines found, try any numbered lines (format may vary)
+  const displayLines = lines.length >= 2 ? lines :
+    allLines.filter(l => /^\d+[.)\s].{8,}/.test(l));
   const accentColor = fmt.accentColor || "#2A6F6F";
   const RED = "#8B0000";
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: fmt.lineHeight > 1.7 ? "14px" : "10px" }}>
-      {lines.map((line, i) => {
-        const answerMatch = line.match(/→\s*(TRUE|FALSE)\s*$/i);
+      {displayLines.map((line, i) => {
+        // Extract TRUE/FALSE answer — handles "→ TRUE", ". TRUE", " TRUE" at end
+        const answerMatch = line.match(/[.→\s]+(TRUE|FALSE)[.\s]*$/i);
         const stmtText = line
-          .replace(/^\d+\.\s*/, "")
-          .replace(/\s*→\s*(TRUE|FALSE)\s*$/i, "")
+          .replace(/^\d+[.)\s]+/, "")
+          .replace(/[.→\s]+(TRUE|FALSE)[.\s]*$/i, "")
           .trim();
         const answer = answerMatch?.[1]?.toUpperCase();
 
@@ -1627,18 +1636,19 @@ function GapFillInlineSection({
   const raw = stripLayoutTag(content);
   const accentColor = fmt.accentColor || "#2A6F6F";
 
-  // Split off word bank line(s)
+  // Split off word bank — supports "WORD BANK:", "Word Bank:", inline after last blank
   const lines = raw.split("\n");
-  const wbIdx = lines.findIndex(l => /^WORD BANK:/i.test(l.trim()));
+  const wbIdx = lines.findIndex(l => /^WORD BANK:/i.test(l.trim()) || /^word bank:/i.test(l.trim()));
   const paraLines = wbIdx >= 0 ? lines.slice(0, wbIdx) : lines;
   const wbLine    = wbIdx >= 0 ? lines[wbIdx] : null;
   const wbWords   = wbLine
-    ? wbLine.replace(/^WORD BANK:\s*/i, "").split(/[|,]/).map(w => w.trim()).filter(Boolean)
+    ? wbLine.replace(/^WORD BANK:\s*/i, "").split(/[|,]/).map((w: string) => w.trim()).filter(Boolean)
     : [];
 
-  const paraText = paraLines.join(" ");
+  // Join paragraph — preserve intentional line breaks
+  const paraText = paraLines.join(" ").trim();
 
-  // Render the paragraph — replace ___ with styled blanks
+  // Render the paragraph — replace ___ sequences with styled blanks
   const parts = paraText.split(/_{3,}/g);
 
   return (
@@ -3696,70 +3706,91 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                     return <MatchingSection content={content} fmt={fmt} />;
                   }
                   // ── Auto-detection from AI content patterns ──────────────
-                  // The AI generates sections without LAYOUT: tags.
-                  // These heuristics detect content shape and route accordingly,
-                  // giving structured rendering to ALL worksheets including AI ones.
+                  // Broadly detects actual AI output patterns. Intentionally
+                  // permissive — better to render with a sub-renderer than fall through.
                   if (!layoutTag) {
                     const c = content;
+                    const rawLines = c.split("\n");
+                    const lines = rawLines.map((l: string) => l.trim()).filter(Boolean);
                     const titleLower = (section.title || "").toLowerCase();
 
-                    // True/False: contains "TRUE" and "FALSE" in pill/button patterns
+                    // TRUE/FALSE: numbered lines ending in TRUE or FALSE
+                    const tfLines = lines.filter((l: string) =>
+                      /\b(TRUE|FALSE)\b/.test(l) && /^\d+[.)\s]/.test(l)
+                    );
                     const hasTrueFalse =
-                      (c.includes("TRUE") && c.includes("FALSE") &&
-                       /\d+\.\s.+/.test(c) &&
-                       (c.includes("Circle") || c.includes("True or False") ||
-                        titleLower.includes("true") || titleLower.includes("recall")));
+                      tfLines.length >= 2 ||
+                      (/true or false|circle.*true|FORMAT 1 TRUE/i.test(c) && c.includes("TRUE") && c.includes("FALSE"));
 
-                    // MCQ: has A  ... B  ... C  ... D pattern
-                    const hasMCQ =
-                      /^[A-D]\s{1,3}\S/m.test(c) &&
-                      (c.match(/^[A-D]\s/mg) || []).length >= 3;
+                    // MCQ: 3+ lines starting with A/B/C/D
+                    const mcqLines = lines.filter((l: string) => /^[A-D][.)\s]{1,3}\S/.test(l));
+                    const hasMCQ = mcqLines.length >= 3 && !hasTrueFalse;
 
-                    // Gap fill: has ___ blanks AND word bank
+                    // GAP FILL: 2+ blanks (___). Word bank NOT required.
+                    const blankCount = (c.match(/_{3,}/g) || []).length;
                     const hasGapFill =
-                      /_{3,}/.test(c) &&
-                      (/word bank/i.test(c) || /WORD BANK/i.test(c));
+                      blankCount >= 2 && !hasTrueFalse && !hasMCQ &&
+                      (section.type === "guided" || /fill|blank|complete.*sentence|word bank/i.test(c));
 
-                    // Table: markdown table with pipes
-                    const hasTable =
-                      c.split("\n").filter(l => l.includes("|") && !l.startsWith("http")).length >= 3;
+                    // TABLE: 3+ pipe-separated lines
+                    const pipeLines = lines.filter((l: string) =>
+                      l.includes("|") && l.split("|").length >= 3 && !l.startsWith("http")
+                    );
+                    const hasTable = pipeLines.length >= 3 && section.type !== "vocabulary" && !hasTrueFalse && !hasMCQ;
 
-                    // Ordering: ☐ or numbered list asking to "number" or "order"
+                    // ORDERING: ☐ checkboxes or ordering instruction
+                    const checkboxLines = lines.filter((l: string) => l.startsWith("☐") || /^[□\[\]]\s/.test(l));
                     const hasOrdering =
-                      (c.includes("☐") || /number the/i.test(c) || /put.*order/i.test(c)) &&
-                      c.split("\n").filter(l => l.trim().startsWith("☐") || l.match(/^\d+\.\s/)).length >= 3;
+                      checkboxLines.length >= 3 ||
+                      (/number the|put.*in.*order|correct order|sequence these/i.test(c) && lines.length >= 5);
 
-                    // Matching: ←→ arrows or "match" + left/right column pattern
+                    // MATCHING: ←→ or explicit match instruction
                     const hasMatching =
                       c.includes("←→") ||
-                      (/match|draw a line/i.test(c) && /\d+\.\s.+/.test(c));
+                      (/match each|draw a line between|connect each/i.test(c) && /\d+[.)]/m.test(c));
 
-                    // Draw box: draw/sketch instruction
+                    // DRAW BOX: challenge section with draw/sketch/circuit instruction
                     const hasDrawBox =
-                      /draw|sketch|design|plot|circuit|diagram/i.test(titleLower) ||
-                      (/draw|sketch|design/i.test(c) && c.length < 400);
+                      section.type === "challenge" &&
+                      /^(draw|sketch|design a circuit|plot|create a diagram)/i.test(c.trim());
 
-                    if (hasTrueFalse) {
-                      return <TrueFalseSection content={c} fmt={fmt} overlayColor={overlayColor} isTeacher={isTeacherView} />;
+                    // MULTI-FORMAT: section contains multiple format markers — split and render each block
+                    const blockSplit = c.split(/\n\n+/).filter((b: string) => b.trim().length > 10);
+                    if (blockSplit.length >= 2) {
+                      const blockHasTF = blockSplit.some((b: string) => {
+                        const bLines = b.split("\n");
+                        return bLines.filter((l: string) => /\b(TRUE|FALSE)\b/.test(l) && /^\d+[.)\s]/.test(l.trim())).length >= 2;
+                      });
+                      const blockHasMCQ = blockSplit.some((b: string) => {
+                        return b.split("\n").filter((l: string) => /^[A-D][.)\s]{1,3}\S/.test(l.trim())).length >= 3;
+                      });
+                      const blockHasGap = blockSplit.some((b: string) => (b.match(/_{3,}/g) || []).length >= 2);
+
+                      if (blockHasTF || blockHasMCQ || (blockHasGap && blockSplit.length >= 2)) {
+                        return (
+                          <div style={{ display: "flex", flexDirection: "column" as const, gap: "20px" }}>
+                            {blockSplit.map((block: string, bi: number) => {
+                              const bLines = block.split("\n").map((l: string) => l.trim()).filter(Boolean);
+                              const bTF = bLines.filter((l: string) => /\b(TRUE|FALSE)\b/.test(l) && /^\d+[.)\s]/.test(l)).length >= 2;
+                              const bMCQ = bLines.filter((l: string) => /^[A-D][.)\s]{1,3}\S/.test(l)).length >= 3;
+                              const bGap = (block.match(/_{3,}/g) || []).length >= 2;
+                              if (bTF) return <TrueFalseSection key={bi} content={block} fmt={fmt} overlayColor={overlayColor} isTeacher={isTeacherView} />;
+                              if (bMCQ) return <MCQSection key={bi} content={block} fmt={fmt} overlayColor={overlayColor} isTeacher={isTeacherView} />;
+                              if (bGap) return <GapFillInlineSection key={bi} content={block} fmt={fmt} overlayColor={overlayColor} />;
+                              return <div key={bi}>{formatContent(block, fmt)}</div>;
+                            })}
+                          </div>
+                        );
+                      }
                     }
-                    if (hasMCQ && !hasTrueFalse) {
-                      return <MCQSection content={c} fmt={fmt} overlayColor={overlayColor} isTeacher={isTeacherView} />;
-                    }
-                    if (hasGapFill) {
-                      return <GapFillInlineSection content={c} fmt={fmt} overlayColor={overlayColor} />;
-                    }
-                    if (hasTable && section.type !== "vocabulary") {
-                      return <TableCompleteSection content={c} fmt={fmt} isTeacher={isTeacherView} />;
-                    }
-                    if (hasOrdering) {
-                      return <OrderingSection content={c} fmt={fmt} />;
-                    }
-                    if (hasMatching) {
-                      return <MatchingSection content={c} fmt={fmt} />;
-                    }
-                    if (hasDrawBox && section.type === "challenge") {
-                      return <DrawBoxSection content={c} fmt={fmt} />;
-                    }
+
+                    if (hasTrueFalse) return <TrueFalseSection content={content} fmt={fmt} overlayColor={overlayColor} isTeacher={isTeacherView} />;
+                    if (hasMCQ)      return <MCQSection content={content} fmt={fmt} overlayColor={overlayColor} isTeacher={isTeacherView} />;
+                    if (hasGapFill)  return <GapFillInlineSection content={content} fmt={fmt} overlayColor={overlayColor} />;
+                    if (hasTable)    return <TableCompleteSection content={content} fmt={fmt} isTeacher={isTeacherView} />;
+                    if (hasOrdering) return <OrderingSection content={content} fmt={fmt} />;
+                    if (hasMatching) return <MatchingSection content={content} fmt={fmt} />;
+                    if (hasDrawBox)  return <DrawBoxSection content={content} fmt={fmt} />;
                   }
                   // No layout tag matched — fall through to existing type-based handlers below
                   return undefined;
