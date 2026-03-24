@@ -1500,8 +1500,8 @@ function MCQOption({ letter, text, fontSize, fontFamily }: { letter: string; tex
   );
 }
 
-/** Ruled answer lines */
-function AnswerLines({ count, fontSize }: { count: number; fontSize: number }) {
+/** Ruled answer lines (with fontSize-aware height) */
+function AnswerLinesV2({ count, fontSize }: { count: number; fontSize: number }) {
   return (
     <div style={{ marginTop: "8px" }}>
       {Array.from({ length: count }).map((_, i) => (
@@ -1731,11 +1731,11 @@ function ShortAnswerQuestion({ q, fontSize, fontFamily }: { q: QuestionItem; fon
                 <span style={{ fontSize: `${fontSize}px`, fontFamily, color: MID }}
                   dangerouslySetInnerHTML={{ __html: renderMath(part.text) }} />
               </div>
-              <AnswerLines count={part.lines || 2} fontSize={fontSize} />
+              <AnswerLinesV2 count={part.lines || 2} fontSize={fontSize} />
             </div>
           ))
         ) : (
-          <AnswerLines count={q.answerLines || 3} fontSize={fontSize} />
+          <AnswerLinesV2 count={q.answerLines || 3} fontSize={fontSize} />
         )}
       </div>
     </div>
@@ -1773,7 +1773,7 @@ function ExtendedAnswerQuestion({ q, fontSize, fontFamily }: { q: QuestionItem; 
           <div style={{ fontSize: `${fontSize}px`, fontFamily, color: MID, marginBottom: "8px" }}
             dangerouslySetInnerHTML={{ __html: renderMath(questionText) }} />
         )}
-        <AnswerLines count={q.answerLines || 5} fontSize={fontSize} />
+        <AnswerLinesV2 count={q.answerLines || 5} fontSize={fontSize} />
       </div>
     </div>
   );
@@ -1815,7 +1815,7 @@ function LabelDiagramQuestion({ q, fontSize, fontFamily }: { q: QuestionItem; fo
               <div style={{ fontSize: `${fontSize}px`, fontFamily, color: MID, marginBottom: "8px" }}
                 dangerouslySetInnerHTML={{ __html: renderMath(cleanContent) }} />
             )}
-            <AnswerLines count={q.marks || 5} fontSize={fontSize} />
+            <AnswerLinesV2 count={q.marks || 5} fontSize={fontSize} />
           </>
         )}
       </div>
@@ -1867,7 +1867,7 @@ function SelfReflectionSection({ section, fontSize, fontFamily }: { section: Wor
       {prompts.map((prompt, i) => (
         <div key={i} style={{ marginBottom: "14px" }}>
           <p style={{ fontSize: `${fontSize}px`, fontFamily, color: MID, fontStyle: "italic", margin: "0 0 4px 0" }}>{prompt}</p>
-          <AnswerLines count={2} fontSize={fontSize} />
+          <AnswerLinesV2 count={2} fontSize={fontSize} />
         </div>
       ))}
       {/* Exit ticket */}
@@ -1875,7 +1875,7 @@ function SelfReflectionSection({ section, fontSize, fontFamily }: { section: Wor
         <p style={{ fontSize: `${fontSize}px`, fontFamily, color: MID, fontWeight: 700, margin: "0 0 4px 0" }}>
           Exit Ticket: Write ONE thing you learned today in one sentence:
         </p>
-        <AnswerLines count={2} fontSize={fontSize} />
+        <AnswerLinesV2 count={2} fontSize={fontSize} />
       </div>
     </div>
   );

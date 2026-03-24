@@ -2094,3 +2094,168 @@ export async function generateStoryWorksheet(params: WorksheetParams): Promise<G
 
 // Default export
 export default generateWorksheet;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STORY CONTENT GENERATOR (local fallback for Stories page)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export function generateStoryContent(params: {
+  genre: string;
+  yearGroup: string;
+  sendNeed?: string;
+  characters: string[];
+  setting?: string;
+  theme?: string;
+  readingLevel: string;
+  length: string;
+}): { title: string; content: string } {
+  const { genre, characters, setting, theme, length } = params;
+  const charNames = characters.length > 0 ? characters : ["Alex", "Sam"];
+  const storyTitle = getStoryTitle(genre, charNames);
+  const storyContent = buildStory(genre, charNames, setting, theme, length);
+  return { title: storyTitle, content: storyContent };
+}
+
+function getStoryTitle(genre: string, characters: string[]): string {
+  const titles: Record<string, string[]> = {
+    adventure: [`${characters[0]}'s Great Adventure`, `The Quest of ${characters[0]}`],
+    fantasy: [`${characters[0]} and the Enchanted Kingdom`, `The Magic of ${characters[0]}`],
+    mystery: [`The Mystery of the Missing Key`, `${characters[0]}: Detective for a Day`],
+    "sci-fi": [`${characters[0]} and the Space Station`, `Journey to Planet Zara`],
+    historical: [`${characters[0]} in Ancient Times`, `The Time Traveller's Secret`],
+    comedy: [`The Funniest Day Ever`, `${characters[0]}'s Hilarious Mix-Up`],
+    animal: [`${characters[0]} and the Talking Animals`, `The Secret Animal Club`],
+    "fairy-tale": [`${characters[0]} and the Three Wishes`, `The Enchanted Forest`],
+    realistic: [`${characters[0]}'s New Beginning`, `The Big Move`],
+    superhero: [`${characters[0]}: The Unlikely Hero`, `Super ${characters[0]}`],
+    spooky: [`The Haunted School`, `${characters[0]} and the Ghost of Room 13`],
+    sports: [`${characters[0]}'s Big Match`, `The Championship Dream`],
+  };
+  const options = titles[genre] || [`${characters[0]}'s Story`];
+  return options[Math.floor(Math.random() * options.length)];
+}
+
+function buildStory(genre: string, characters: string[], setting?: string, theme?: string, length?: string): string {
+  const loc = setting || getDefaultSetting(genre);
+  const th = theme || "friendship";
+  const charStr = characters.join(" and ");
+  const wordTarget = length === "short" ? 500 : length === "long" ? 1800 : 1000;
+
+  let story = `# ${getStoryTitle(genre, characters)}\n\n`;
+  story += `## Chapter 1: The Beginning\n\n`;
+  story += `${charStr} had always known that ${loc} held secrets. But nothing could have prepared them for what was about to happen on this particular ${getDayDescription(genre)}.\n\n`;
+  story += `${characters[0]} stood at the ${getStartLocation(loc)}, heart pounding with a mixture of excitement and nervousness. "${getOpeningDialogue(genre)}" ${characters[0]} whispered, clutching ${getItem(genre)} tightly.\n\n`;
+
+  if (characters.length > 1) {
+    story += `${characters[1]} appeared beside them, eyes wide with ${getEmotion(genre)}. "Are you sure about this?" ${characters[1]} asked, glancing around ${getGlanceDescription(loc)}.\n\n`;
+    story += `"We have to," ${characters[0]} replied firmly. "It's about ${th}."\n\n`;
+  }
+
+  story += `## Chapter 2: The Discovery\n\n`;
+  story += getMiddleContent(genre, characters, loc, th);
+
+  if (wordTarget > 500) {
+    story += `\n\n## Chapter 3: The Challenge\n\n`;
+    story += getChallengeContent(genre, characters, loc, th);
+  }
+
+  if (wordTarget > 1000) {
+    story += `\n\n## Chapter 4: The Turning Point\n\n`;
+    story += getTurningPoint(characters, loc, th);
+  }
+
+  story += `\n\n## ${wordTarget > 1000 ? "Chapter 5" : wordTarget > 500 ? "Chapter 4" : "Chapter 3"}: The Resolution\n\n`;
+  story += getEnding(genre, characters, loc, th);
+
+  return story;
+}
+
+function getDefaultSetting(genre: string): string {
+  const settings: Record<string, string> = {
+    adventure: "the ancient forest beyond the village",
+    fantasy: "the enchanted kingdom of Luminos",
+    mystery: "the old Victorian school",
+    "sci-fi": "the orbiting space station Artemis",
+    historical: "the bustling streets of medieval London",
+    comedy: "the chaotic school canteen",
+    animal: "the peaceful meadow by the river",
+    "fairy-tale": "the magical forest of Evergreen",
+    realistic: "the new neighbourhood",
+    superhero: "the busy city centre",
+    spooky: "the abandoned mansion on the hill",
+    sports: "the local football pitch",
+  };
+  return settings[genre] || "the school";
+}
+
+function getDayDescription(genre: string): string {
+  const days: Record<string, string> = {
+    adventure: "misty morning", fantasy: "moonlit evening", mystery: "foggy afternoon",
+    "sci-fi": "zero-gravity morning", historical: "cold winter's day", comedy: "absolutely bonkers Tuesday",
+    animal: "sunny spring morning", "fairy-tale": "enchanted twilight", realistic: "ordinary Monday",
+    superhero: "seemingly normal Wednesday", spooky: "dark and stormy night", sports: "match day Saturday",
+  };
+  return days[genre] || "Tuesday morning";
+}
+
+function getStartLocation(setting: string): string {
+  return `entrance to ${setting}`;
+}
+
+function getOpeningDialogue(genre: string): string {
+  const dialogues: Record<string, string> = {
+    adventure: "This is it. There's no turning back now.",
+    fantasy: "I can feel the magic already...",
+    mystery: "Something doesn't add up here.",
+    "sci-fi": "Systems are online. Let's do this.",
+    historical: "If only they could see us now.",
+    comedy: "What could possibly go wrong?",
+    animal: "Did that squirrel just wave at me?",
+    "fairy-tale": "Once upon a time starts right here.",
+    realistic: "New place, new start.",
+    superhero: "The city needs us.",
+    spooky: "Did you hear that?",
+    sports: "This is our moment.",
+  };
+  return dialogues[genre] || "Here we go.";
+}
+
+function getItem(genre: string): string {
+  const items: Record<string, string> = {
+    adventure: "an old compass", fantasy: "a glowing crystal", mystery: "a magnifying glass",
+    "sci-fi": "a holographic map", historical: "a worn leather journal", comedy: "a rubber chicken",
+    animal: "a bag of treats", "fairy-tale": "a golden key", realistic: "a well-worn notebook",
+    superhero: "a mysterious device", spooky: "a flickering torch", sports: "their lucky boots",
+  };
+  return items[genre] || "a small bag";
+}
+
+function getEmotion(genre: string): string {
+  const emotions: Record<string, string> = {
+    adventure: "anticipation", fantasy: "wonder", mystery: "suspicion",
+    "sci-fi": "determination", historical: "curiosity", comedy: "barely contained laughter",
+    animal: "delight", "fairy-tale": "awe", realistic: "uncertainty",
+    superhero: "resolve", spooky: "fear", sports: "nervous energy",
+  };
+  return emotions[genre] || "excitement";
+}
+
+function getGlanceDescription(setting: string): string {
+  return `at the shadows of ${setting}`;
+}
+
+function getMiddleContent(genre: string, characters: string[], setting: string, theme: string): string {
+  return `As they ventured deeper into ${setting}, ${characters[0]} noticed something extraordinary. The path ahead split into two directions, each one seeming to call out with its own promise and danger.\n\n"Look at this!" ${characters[0]} exclaimed, pointing at ${genre === "mystery" ? "a set of unusual footprints" : genre === "fantasy" ? "a shimmering portal" : genre === "sci-fi" ? "an alien signal on the scanner" : "something remarkable"} that had appeared seemingly from nowhere.\n\nThe discovery changed everything. What had started as ${genre === "comedy" ? "a ridiculous misunderstanding" : "a simple journey"} was now becoming something far more significant. ${characters[0]} felt a surge of determination — this was about more than just ${theme}. This was about proving that even the most unexpected person could make a real difference.\n\n${characters.length > 1 ? `${characters[1]} studied the discovery carefully. "I think I understand," ${characters[1]} said slowly. "This means we need to work together. Neither of us can do this alone."\n\nIt was in that moment that the true meaning of ${theme} became clear to both of them.` : `Standing alone, ${characters[0]} realised that true ${theme} sometimes meant facing challenges head-on, even when nobody else was watching.`}`;
+}
+
+function getChallengeContent(genre: string, characters: string[], setting: string, theme: string): string {
+  return `The challenge was greater than either of them had imagined. ${genre === "spooky" ? "Strange sounds echoed through the corridors" : genre === "adventure" ? "The terrain became treacherous and unpredictable" : genre === "sports" ? "The opposing team was stronger than expected" : "Obstacles appeared at every turn"}, testing their resolve at every step.\n\n${characters[0]} stumbled, nearly giving up. "I can't do this," they muttered, frustration building like a storm.\n\nBut then — a moment of clarity. Everything they had learned, every challenge they had faced, had been preparing them for exactly this. ${characters[0]} took a deep breath and tried again.\n\n${characters.length > 1 ? `"You can do it," ${characters[1]} said quietly. "I believe in you."\n\nThose words were all ${characters[0]} needed.` : `Sometimes, believing in yourself is the hardest thing of all. But ${characters[0]} found that belief, buried deep inside, waiting to be discovered.`}`;
+}
+
+function getTurningPoint(characters: string[], setting: string, theme: string): string {
+  return `Everything changed in an instant. What had seemed impossible suddenly became clear — the answer had been there all along, hidden in plain sight.\n\n${characters[0]} looked around at ${setting} with new eyes. The fear that had gripped them began to loosen its hold. In its place grew something stronger: purpose.\n\n"I know what we have to do," ${characters[0]} said, voice steady for the first time. They explained the plan — bold, risky, but exactly right.\n\n${characters.length > 1 ? `${characters[1]} listened carefully, then nodded. "It's brilliant," they said. "Completely mad — but brilliant."\n\nTogether, they prepared for the final challenge.` : `It would not be easy. Nothing worth doing ever was. But ${characters[0]} was ready.`}`;
+}
+
+function getEnding(genre: string, characters: string[], setting: string, theme: string): string {
+  return `When it was all over, ${characters[0]} stood quietly in ${setting}, taking in everything that had happened. The world looked different now — not because it had changed, but because they had.\n\n${genre === "mystery" ? "The mystery had been solved, the truth finally revealed." : genre === "adventure" ? "The adventure had been everything they had hoped for — and more." : genre === "sports" ? "Win or lose, they had given everything. That was what mattered." : genre === "spooky" ? "The ghost was gone, the secret buried once more." : "The journey had come to an end, but the memories would last forever."}\n\n${characters.length > 1 ? `${characters[1]} smiled. "We did it," they said simply.\n\n"We did," ${characters[0]} agreed. "Together."\n\nAnd that, more than anything else, was what ${theme} truly meant.` : `${characters[0]} smiled to themselves. They had done it. Not because it was easy, but because they had refused to give up.\n\nAnd that made all the difference.`}\n\n*The End*`;
+}
