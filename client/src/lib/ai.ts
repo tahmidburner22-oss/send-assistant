@@ -1060,20 +1060,26 @@ Return EXACTLY this JSON (raw JSON only):
   "subtitle": "${params.yearGroup} (${phase}) | ${subjectDisplay} | ${params.examBoard && params.examBoard !== 'none' ? params.examBoard : 'General'} | ${timingGuide}",
   "sections": [
     ${params.recallTopic ? `{"title": "Recall — ${params.recallTopic}", "type": "guided", "content": "2-3 retrieval questions on '${params.recallTopic}'"},` : ''}
-    {"title": "Learning Objectives", "type": "objective", "content": "[3 objectives]"},
-    {"title": "Key Vocabulary", "type": "vocabulary", "content": "[term | definition, one per line]"},
+    {"title": "Learning Objectives", "type": "objective", "content": "[3 bullet-point learning objectives for ${params.topic}]"},
+    {"title": "Key Vocabulary", "type": "vocabulary", "content": "[5-6 terms, one per line: term | definition]"},
+    {"title": "Common Mistakes to Avoid", "type": "common-mistakes", "teacherOnly": false, "content": "[3-4 common mistakes. Format each as: MISTAKE TITLE\n→ explanation of the mistake and how to avoid it]"},
     ${isMaths && !params.examStyle ? `{"title": "Key Formulas", "type": "example", "content": "[LaTeX formulas or: No formula required]"},` : ''}
     {"title": "Worked Example", "type": "example", "content": "[${exampleGuide}]"}${params.introOnly ? '' : `,
     {"title": "Reminder Box", "type": "reminder-box", "content": "[3 numbered key steps or rules for this topic]"},
-    {"title": "${sendSectionTitles.sectionA}", "type": "guided", "content": "[Follow the ⚠️ CRITICAL FORMAT RULES above exactly. Three blocks for this topic: TRUE/FALSE (4 statements ending TRUE or FALSE), then MCQ (4 A B C D options), then GAP FILL (paragraph with _____ blanks + WORD BANK: line).${hasSend ? ' Apply SEND rules to wording and spacing.' : ''}]"},
-    {"title": "${sendSectionTitles.sectionB}", "type": "independent", "content": "[Follow the ⚠️ CRITICAL FORMAT RULES above exactly. Three blocks: SHORT ANSWER question [X marks], then TABLE with | separators and '...........' blank cells, then SHORT ANSWER question [X marks].${hasSend ? ' Apply SEND rules to wording.' : ''}]"},
-    {"title": "Section C — Word Problems", "type": "word-problems", "content": "[${hasSend ? '2-3 simple word problems — apply SEND language rules' : '3-4 real-life word problems, increasing difficulty'}. IMPORTANT: each problem MUST be on its own line starting with its number, e.g. 1. Problem text\n2. Problem text\n3. Problem text — do NOT separate problems with '. ' or any other inline separator]"},
+    {"title": "Q1 — True or False", "type": "q-true-false", "content": "Circle TRUE or FALSE for each statement. [4 marks]\n1. [statement about ${params.topic}] TRUE\n2. [statement about ${params.topic}] FALSE\n3. [statement about ${params.topic}] TRUE\n4. [statement about ${params.topic}] FALSE"},
+    {"title": "Q2 — Multiple Choice", "type": "q-mcq", "content": "[Question about ${params.topic}] [1 mark]\nA  [option]\nB  [option]\nC  [correct option] ✓\nD  [option]"},
+    {"title": "Q3 — Gap Fill", "type": "q-gap-fill", "content": "Complete the paragraph using words from the word bank. [4 marks]\n[40-60 word paragraph about ${params.topic} with exactly 5 blanks shown as _____]\nWORD BANK: word1 | word2 | word3 | word4 | word5"},
+    {"title": "Q4 — Short Answer", "type": "q-short-answer", "content": "[Question about ${params.topic}] [3 marks]", "marks": 3},
+    {"title": "Q5 — Short Answer", "type": "q-short-answer", "content": "[Slightly harder question about ${params.topic}] [4 marks]", "marks": 4},
+    {"title": "Q6 — Short Answer", "type": "q-short-answer", "content": "[Application question about ${params.topic}] [3 marks]", "marks": 3},
+    {"title": "Q7 — Extended Answer", "type": "q-extended", "content": "[Explain/evaluate/analyse question about ${params.topic}] [5 marks]", "marks": 5},
+    {"title": "Q8 — Application", "type": "q-extended", "content": "[Real-world application or calculation question about ${params.topic}] [4 marks]", "marks": 4},
+    {"title": "Q9 — Evaluation", "type": "q-extended", "content": "[Critical thinking or evaluation question about ${params.topic}] [3 marks]", "marks": 3},
     {"title": "${sendSectionTitles.challenge}", "type": "challenge", "content": "[${challengeGuide}${hasSend ? ' — optional, labelled as bonus' : ''}]"},
     {"title": "How Did I Do?", "type": "self-reflection", "teacherOnly": false, "content": "[${hasSend ? 'tick-box or text-scale self-assessment per SEND rules' : '3-4 I can statements + open question'}]"},
-    {"title": "Common Mistakes to Avoid", "type": "common-mistakes", "teacherOnly": false, "content": "[3-4 common mistakes]"},
     {"title": "Mark Scheme", "type": "mark-scheme", "teacherOnly": true, "content": "[answers only]"},
     {"title": "Teacher Notes", "type": "teacher-notes", "teacherOnly": true, "content": "[timings, misconceptions, interventions, next topic]"},
-    {"title": "SEND Adaptations & Rationale", "type": "teacher-notes", "teacherOnly": true, "content": "${hasSend ? `ADAPTED FOR: ${params.sendNeed!.toUpperCase()}\nADAPTATIONS: [list every specific change made]\nRATIONALE: [3-4 sentences: how ${params.sendNeed} affects learning, SEND Code of Practice, how each adaptation removes a barrier]\nCLASSROOM TIPS: [3-4 practical tips for the teacher]\nIF STUDENT STRUGGLES: [next steps / further scaffolding]` : 'No SEND adaptations — standard worksheet.'}"`}
+    {"title": "SEND Adaptations & Rationale", "type": "teacher-notes", "teacherOnly": true, "content": "${hasSend ? `ADAPTED FOR: ${params.sendNeed!.toUpperCase()}\nADAPTATIONS: [list every specific change made]\nRATIONALE: [3-4 sentences: how ${params.sendNeed} affects learning, SEND Code of Practice, how each adaptation removes a barrier]\nCLASSROOM TIPS: [3-4 practical tips for the teacher]\nIF STUDENT STRUGGLES: [next steps / further scaffolding]` : 'No SEND adaptations — standard worksheet.'}"}`}
   ],
   "metadata": {
     "subject": "${subjectDisplay}",
