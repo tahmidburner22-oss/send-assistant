@@ -701,17 +701,22 @@ TONE: Positive, encouraging, child-voice. "You've got this!", "Great work!", "Di
     : `You are an expert UK teacher creating a structured, varied classroom worksheet.
 
 ⚠️ CRITICAL FORMAT RULES — THESE OVERRIDE EVERYTHING ELSE:
-Your Section A content MUST contain exactly 3 question blocks separated by blank lines:
-  BLOCK 1 — TRUE/FALSE: Write exactly 4 numbered statements (1. 2. 3. 4.), each ending with TRUE or FALSE on the same line. Example: "1. Water boils at 100°C. TRUE"
-  BLOCK 2 — MCQ: One question stem, then exactly 4 options on separate lines starting with A  B  C  D (letter then 2 spaces then text). Mark correct with ✓ only in mark scheme.
-  BLOCK 3 — GAP FILL: One paragraph of 40-60 words with exactly 5-7 blanks shown as _____. On the very next line write: WORD BANK: word1 | word2 | word3 | word4 | word5 | word6 | word7
+SECTION 1 — RECALL (Q1–Q3):
+  Q1 — TRUE/FALSE: Write exactly 4 numbered statements (1. 2. 3. 4.), each ending with TRUE or FALSE on the same line. Example: "1. Water boils at 100°C. TRUE"
+  Q2 — MCQ: One question stem, then exactly 4 options on separate lines starting with A  B  C  D (letter then 2 spaces then text). Mark correct with ✓ only in mark scheme.
+  Q3 — GAP FILL: One paragraph of 40-60 words with exactly 5 blanks shown as _____. On the very next line write: WORD BANK: word1 | word2 | word3 | word4 | word5
 
-Your Section B content MUST contain exactly 3 question blocks separated by blank lines:
-  BLOCK 1 — SHORT ANSWER: One question [X marks]. Leave no answer — students write it.
-  BLOCK 2 — TABLE: A markdown table using | separators. At least 3 columns, 4 data rows. Blank cells use "..........." for students to fill in.
-  BLOCK 3 — SHORT ANSWER: Another question [X marks].
+SECTION 2 — UNDERSTANDING (Q4–Q6):
+  Q4 — LABEL DIAGRAM: A diagram labelling question. Include a [[DIAGRAM:...]] spec at the end of the content.
+  Q5 — SOURCE/EXTRACT QUESTION: A question with sub-parts (a)(b)(c). Each sub-part on its own line.
+  Q6 — TABLE COMPLETION: A markdown table using | separators. At least 3 columns, 4 data rows. Blank cells use "..........." for students to fill in.
 
-DO NOT deviate from these formats. DO NOT add explanatory text before each block.
+SECTION 3 — APPLICATION & ANALYSIS (Q7–Q9):
+  Q7 — EXTENDED ANSWER: Explain/evaluate/analyse question. 6 marks. Answer lines provided.
+  Q8 — APPLICATION: Real-world application question. 4 marks. Answer lines provided.
+  Q9 — EVALUATIVE QUOTE: Start with an italic quote in quotes, then ask students to agree/disagree with evidence. 8 marks.
+
+DO NOT include a Reminder Box. DO NOT deviate from these formats. DO NOT add explanatory text before each block.
 
 Topic: "${params.topic}" | Year: ${params.yearGroup} (${phase})
 
@@ -1002,10 +1007,8 @@ STRICT ACCURACY RULES for diagrams (all must be satisfied before including):
     ? `Exam-style mode: Format like a real ${params.examBoard && params.examBoard !== "none" ? params.examBoard : "GCSE"} paper. Number questions Q1, Q2... with sub-parts (a)(b)(c). Show mark allocations [1 mark]. Use command words. Include answer lines. No worked example section.`
     : "";
 
-  // ── Reminder box note ─────────────────────────────────────────────────────
-  const reminderBoxNote = !params.examStyle
-    ? `Include a Reminder Box with exactly 3 short numbered steps (max 15 words each) explaining the core method for "${params.topic}".`
-    : "";
+  // ── Reminder box note — DISABLED (not in reference PDFs) ─────────────────
+  const reminderBoxNote = "";
 
   // ── Formula rules (topic-specific only) ──────────────────────────────────
   const formulaNote = `Only include a Key Formulas section if the topic "${params.topic}" genuinely requires a formula. Omit it if no formula is needed.`;
@@ -1045,17 +1048,16 @@ ${params.additionalInstructions ? `\nPriority override:\n${params.additionalInst
 Structure required:
 1. ${isPrimary ? "What Are We Learning?" : "Learning Objectives"}
 2. ${isPrimary ? "Key Words" : "Key Vocabulary (maximum 5 items)"}
-3. ${isPrimary ? "Let's Try Together (worked example)" : "Worked Example"}
-4. ${isPrimary ? "Key Steps" : "Reminder Box"}
-5. ${isPrimary ? (yearNum <= 2 ? "Have a Go!" : "Warm Up") : sendSectionTitles.sectionA}
-6. ${isPrimary ? (yearNum <= 2 ? "Let's Practise" : "Let's Practise More") : sendSectionTitles.sectionB}
-7. ${isPrimary ? "Think About It (real-life questions)" : "Section C - Word Problems"}
-8. ${isPrimary ? "Super Challenge!" : sendSectionTitles.challenge}
-9. ${isPrimary ? "How Did I Do?" : "Reflection"}
-10. Common Mistakes
-11. Mark Scheme (teacher only)
-12. Teacher Notes (teacher only)
-13. SEND Adaptations & Rationale (teacher only when SEND applies)
+3. ${isPrimary ? "Common Mistakes" : "Common Mistakes to Avoid"}
+4. ${isPrimary ? "Let's Try Together (worked example)" : "Worked Example"}
+5. ${isPrimary ? (yearNum <= 2 ? "Have a Go!" : "Warm Up") : "SECTION 1 — RECALL (Q1 True/False, Q2 MCQ, Q3 Gap Fill)"}
+6. ${isPrimary ? (yearNum <= 2 ? "Let's Practise" : "Let's Practise More") : "SECTION 2 — UNDERSTANDING (Q4 Label/Diagram, Q5 Source/Extract, Q6 Table Completion)"}
+7. ${isPrimary ? "Think About It (real-life questions)" : "SECTION 3 — APPLICATION & ANALYSIS (Q7 Extended, Q8 Diagram+Answer, Q9 Evaluative)"}
+8. ${isPrimary ? "Super Challenge!" : "Challenge Question"}
+9. ${isPrimary ? "How Did I Do?" : "Self Reflection"}
+10. Mark Scheme (teacher only)
+11. Teacher Notes (teacher only)
+12. SEND Adaptations & Rationale (teacher only when SEND applies)
 
 Formatting rules:
 - Each question, step, bullet, or item must be on its own new line using \n.
@@ -1076,16 +1078,15 @@ Return EXACTLY this JSON (raw JSON only):
     {"title": "Common Mistakes to Avoid", "type": "common-mistakes", "teacherOnly": false, "content": "[3-4 common mistakes. Format each as:\nMISTAKE TITLE\n→ explanation of the mistake and how to avoid it]"},
     ${isMaths && !params.examStyle ? `{"title": "Key Formulas", "type": "example", "content": "[LaTeX formulas or: No formula required]"},` : ''}
     {"title": "Worked Example", "type": "example", "content": "[${exampleGuide}]"}${params.introOnly ? '' : `,
-    {"title": "Reminder Box", "type": "reminder-box", "content": "[3 numbered key steps or rules for this topic]"},
     {"title": "Q1 — True or False", "type": "q-true-false", "content": "Circle TRUE or FALSE for each statement. [4 marks]\n1. [statement about ${params.topic}] TRUE\n2. [statement about ${params.topic}] FALSE\n3. [statement about ${params.topic}] TRUE\n4. [statement about ${params.topic}] FALSE"},
     {"title": "Q2 — Multiple Choice", "type": "q-mcq", "content": "[Question about ${params.topic}] [1 mark]\nA  [option]\nB  [option]\nC  [correct option] ✓\nD  [option]"},
-    {"title": "Q3 — Gap Fill", "type": "q-gap-fill", "content": "Complete the paragraph using words from the word bank. [4 marks]\n[40-60 word paragraph about ${params.topic} with exactly 5 blanks shown as _____]\nWORD BANK: word1 | word2 | word3 | word4 | word5"},
-    {"title": "Q4 — Short Answer", "type": "q-short-answer", "content": "[Question about ${params.topic}] [3 marks]", "marks": 3},
-    {"title": "Q5 — Short Answer", "type": "q-short-answer", "content": "[Slightly harder question about ${params.topic}] [4 marks]", "marks": 4},
-    {"title": "Q6 — Short Answer", "type": "q-short-answer", "content": "[Application question about ${params.topic}] [3 marks]", "marks": 3},
-    {"title": "Q7 — Extended Answer", "type": "q-extended", "content": "[Explain/evaluate/analyse question about ${params.topic}] [5 marks]", "marks": 5},
-    {"title": "Q8 — Application", "type": "q-extended", "content": "[Real-world application or calculation question about ${params.topic}] [4 marks]", "marks": 4},
-    {"title": "Q9 — Evaluation", "type": "q-extended", "content": "[Critical thinking or evaluation question about ${params.topic}] [3 marks]", "marks": 3},
+    {"title": "Q3 — Gap Fill", "type": "q-gap-fill", "content": "Complete the paragraph using words from the word bank. [${isMaths ? '4' : '6'} marks]\n[40-60 word paragraph about ${params.topic} with exactly 5 blanks shown as _____]\nWORD BANK: word1 | word2 | word3 | word4 | word5"},
+    {"title": "Q4 — Label the Diagram", "type": "q-label-diagram", "content": "Label the diagram. Write the correct term next to each number. [5 marks]\n[[DIAGRAM:{\"type\":\"labeled\",\"title\":\"${params.topic} Diagram\",\"labels\":[{\"text\":\"Label 1\",\"x\":25,\"y\":35},{\"text\":\"Label 2\",\"x\":75,\"y\":60},{\"text\":\"Label 3\",\"x\":45,\"y\":80}]}]]", "marks": 5},
+    {"title": "Q5 — Source Question", "type": "q-short-answer", "content": "[Question with sub-parts (a)(b)(c) about ${params.topic}] [6 marks]\n(a) [sub-question a] [2 marks]\n(b) [sub-question b] [2 marks]\n(c) [sub-question c] [2 marks]", "marks": 6},
+    {"title": "Q6 — Complete the Table", "type": "q-data-table", "content": "Complete the table. Fill in the missing values. [5 marks]\n| Column 1 | Column 2 | Column 3 | Column 4 |\n|---|---|---|---|\n| [value] | ........... | [value] | [value] |\n| [value] | [value] | ........... | [value] |\n| [value] | [value] | [value] | ........... |\n| ........... | [value] | [value] | [value] |", "marks": 5},
+    {"title": "Q7 — Extended Answer", "type": "q-extended", "content": "[Explain/evaluate/analyse question about ${params.topic}] [6 marks]", "marks": 6},
+    {"title": "Q8 — Application", "type": "q-short-answer", "content": "[Real-world application or calculation question about ${params.topic}] [4 marks]", "marks": 4},
+    {"title": "Q9 — Evaluation", "type": "q-extended", "content": "\"[A relevant quote or statement about ${params.topic}]\"\n[Critical thinking or evaluation question asking students to agree/disagree with evidence] [8 marks]", "marks": 8},
     {"title": "${sendSectionTitles.challenge}", "type": "challenge", "content": "[${challengeGuide}${hasSend ? ' — optional, labelled as bonus' : ''}]"},
     {"title": "Self Reflection", "type": "self-reflection", "teacherOnly": false, "content": "SUBTITLE: Review your understanding before moving on.\nCONFIDENCE_TABLE:\n[specific topic/skill 1 from ${params.topic}]\n[specific topic/skill 2 from ${params.topic}]\n[specific topic/skill 3 from ${params.topic}]\n[specific topic/skill 4 from ${params.topic}]\n[specific topic/skill 5 from ${params.topic}]\nWRITTEN_PROMPTS:\nOne concept I feel confident about is ...\nOne area I still need to practise is ...\nA question I still want to ask my teacher is ...\nEXIT_TICKET: Write ONE thing you learned today in one sentence:"},
     {"title": "Teacher Copy — Answer Key", "type": "mark-scheme", "teacherOnly": true, "content": "MARKING GUIDANCE: Accept reasonable alternatives. Award marks for clear reasoning and correct application.\nSECTION 1 — KNOWLEDGE CHECK\nQ1 [mark scheme: list each statement with T or F answer]\nQ2 [correct answer letter and brief explanation]\nQ3 [correct words for gap fill, in order]\nSECTION 2 — UNDERSTANDING\nQ4 [mark scheme with mark allocation per point]\nQ5 [mark scheme with mark allocation per point]\nQ6 [mark scheme with mark allocation per point]\nSECTION 3 — APPLICATION & ANALYSIS\nQ7 [mark scheme with mark allocation per point]\nQ8 [mark scheme with mark allocation per point]\nQ9 [mark scheme with mark allocation per point]\nCHALLENGE\nQCh [full mark scheme]"},

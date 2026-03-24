@@ -294,3 +294,169 @@ export function applyAdaptation(
     }),
   };
 }
+
+// ─── applySEND: 3-tier local differentiation engine ──────────────────────────
+/**
+ * Applies one of three differentiation tiers to a worksheet without any AI call.
+ *
+ * Tier: "foundation"
+ *  - Simplifies command words
+ *  - Adds scaffolds, sentence starters, step prompts
+ *  - Reduces sub-part density (extra spacing)
+ *  - Keeps layouts, marks, structure unchanged
+ *
+ * Tier: "higher"
+ *  - Upgrades command words to higher-order thinking
+ *  - Adds extension prompts and challenge questions
+ *  - Removes basic scaffolds (expects independence)
+ *  - Keeps layouts, marks, structure unchanged
+ *
+ * Tier: "send" (mixed_ability)
+ *  - Simplifies wording
+ *  - Adds chunked instructions, word banks, visual cues
+ *  - Adds sentence starters and step-by-step prompts
+ *  - Increases spacing between sub-parts
+ *  - Keeps layouts, marks, structure unchanged
+ */
+export function applySEND(
+  worksheet: any,
+  tier: "mixed_ability" | "foundation" | "higher" | "send" = "mixed_ability"
+): any {
+  if (!worksheet || !worksheet.sections) return worksheet;
+
+  // ── Foundation / SEND / mixed_ability: simplify command words ────────────
+  const SIMPLIFY_MAP: Array<[RegExp, string]> = [
+    [/\banalyse\b/gi, "describe and explain"],
+    [/\bevaluate\b/gi, "explain the good and bad points of"],
+    [/\bassess\b/gi, "explain how well"],
+    [/\bjustify\b/gi, "give reasons for"],
+    [/\bsynthesize\b/gi, "bring together ideas about"],
+    [/\bto what extent\b/gi, "how much do you agree that"],
+    [/\baccounting for\b/gi, "explaining why"],
+    [/\bwith reference to\b/gi, "using information about"],
+    [/\bdemonstrate\b/gi, "show"],
+    [/\bformulate\b/gi, "write"],
+    [/\bascertain\b/gi, "find out"],
+    [/\belaborate\b/gi, "explain in more detail"],
+  ];
+
+  // ── Higher: upgrade command words to higher-order thinking ───────────────
+  const UPGRADE_MAP: Array<[RegExp, string]> = [
+    [/\bdescribe\b/gi, "analyse"],
+    [/\bstate\b/gi, "explain"],
+    [/\bname\b/gi, "identify and justify"],
+    [/\bgive one reason\b/gi, "evaluate the reasons"],
+    [/\blist\b/gi, "compare and contrast"],
+    [/\bexplain\b/gi, "critically evaluate"],
+    [/\bshow that\b/gi, "prove that"],
+    [/\bcalculate\b/gi, "derive and calculate"],
+  ];
+
+  // ── Foundation scaffolds by section type ─────────────────────────────────
+  const FOUNDATION_SCAFFOLDS: Record<string, string> = {
+    "q-extended":     "\n\nSentence starter: \"I think this is because...\"\nSentence starter: \"An example of this is...\"\nSentence starter: \"This means that...\"",
+    "q-short-answer": "\n\nHint: Look back at the Key Vocabulary section if you are unsure.",
+    "q-graph":        "\n\nRemember: Label both axes. Use a ruler. Plot each point carefully.",
+    "q-data-table":   "\n\nHint: Read each row carefully before writing your answer.",
+    "q-circuit":      "\n\nHint: Use the circuit symbols from the Key Vocabulary section.",
+  };
+
+  // ── SEND / mixed_ability scaffolds ───────────────────────────────────────
+  const SEND_SCAFFOLDS: Record<string, string> = {
+    "q-extended":     "\n\nWord bank: because | therefore | however | this means | as a result\nSentence starter: \"I think this is because...\"\nStep 1: What do you already know?\nStep 2: Use the key vocabulary.\nStep 3: Write your answer in full sentences.",
+    "q-short-answer": "\n\nHint: The answer is in the Key Vocabulary section. Look for the bold word.",
+    "q-graph":        "\n\nStep 1: Write the axis labels.\nStep 2: Choose your scale.\nStep 3: Plot each point.\nStep 4: Draw a line of best fit.",
+    "q-circuit":      "\n\nHint: Use the symbol key. Draw each component one at a time.",
+    "challenge":      "\n\nBreak it down: What do you know? → What do you need? → Show your working.",
+  };
+
+  // ── Higher extension prompts ──────────────────────────────────────────────
+  const HIGHER_EXTENSIONS: Record<string, string> = {
+    "q-extended":     "\n\nExtension: Can you link this to a real-world application? What are the limitations of your argument?",
+    "q-short-answer": "\n\nExtension: Explain the underlying principle. What would change if conditions were different?",
+    "q-graph":        "\n\nExtension: Describe the trend mathematically. What does the gradient represent physically?",
+    "q-data-table":   "\n\nExtension: Identify any anomalous results. Suggest a source of error and how to reduce it.",
+    "q-circuit":      "\n\nExtension: How would the circuit behaviour change if you added a resistor in series vs. parallel?",
+    "challenge":      "\n\nExtension: Generalise your answer. Does this hold for all cases? Prove it.",
+  };
+
+  const isFoundation = tier === "foundation";
+  const isHigher = tier === "higher";
+  const isSend = tier === "send" || tier === "mixed_ability";
+
+  const adaptedSections = worksheet.sections.map((section: any) => {
+    if (!section || section.teacherOnly) return section;
+
+    let content = typeof section.content === "string" ? section.content : String(section.content || "");
+
+    if (isFoundation) {
+      // ── Foundation: simplify + scaffold ──────────────────────────────────
+      for (const [pattern, replacement] of SIMPLIFY_MAP) {
+        content = content.replace(pattern, replacement);
+      }
+      const scaffold = FOUNDATION_SCAFFOLDS[section.type];
+      if (scaffold && !content.includes("Hint:") && !content.includes("Sentence starter:")) {
+        content = content + scaffold;
+      }
+      // Add step prompts for calculations
+      if (/calculat|show your working|work out|find the value|solve/i.test(content) && !content.includes("Step 1:")) {
+        content = content + "\n\nStep 1: Write down what you know.\nStep 2: Choose the formula.\nStep 3: Substitute the values.\nStep 4: Write your answer with units.";
+      }
+      // Extra spacing between sub-parts
+      content = content.replace(/\n(\([a-e]\))/g, "\n\n$1");
+
+    } else if (isHigher) {
+      // ── Higher: upgrade command words + add extension prompts ────────────
+      for (const [pattern, replacement] of UPGRADE_MAP) {
+        content = content.replace(pattern, replacement);
+      }
+      const ext = HIGHER_EXTENSIONS[section.type];
+      if (ext && !content.includes("Extension:")) {
+        content = content + ext;
+      }
+      // Remove basic scaffolds if present (higher students work independently)
+      content = content
+        .replace(/\n\nHint:.*$/gm, "")
+        .replace(/\n\nRemember:.*$/gm, "");
+
+    } else if (isSend) {
+      // ── SEND / mixed_ability: simplify + chunk + word bank + step prompts ─
+      for (const [pattern, replacement] of SIMPLIFY_MAP) {
+        content = content.replace(pattern, replacement);
+      }
+      const scaffold = SEND_SCAFFOLDS[section.type];
+      if (scaffold && !content.includes("Word bank:") && !content.includes("Step 1:")) {
+        content = content + scaffold;
+      }
+      // Extra spacing between sub-parts
+      content = content.replace(/\n(\([a-e]\))/g, "\n\n$1");
+      // Add step prompts for calculations
+      if (/calculat|show your working|work out|find the value|solve/i.test(content) && !content.includes("Step 1:")) {
+        content = content + "\n\nStep 1: Write down what you know.\nStep 2: Choose the method.\nStep 3: Show your working.\nStep 4: Write your answer with units.";
+      }
+    }
+
+    return {
+      ...section,
+      content,
+    };
+  });
+
+  const tierLabel = isFoundation ? "foundation" : isHigher ? "higher" : "send";
+  const adaptationsList = isFoundation
+    ? ["Command words simplified", "Scaffold hints and sentence starters added", "Step-by-step calculation prompts added", "Sub-part spacing increased", "Layouts and marks preserved"]
+    : isHigher
+    ? ["Command words upgraded to higher-order thinking", "Extension prompts added to each question", "Basic scaffolds removed (independence expected)", "Layouts and marks preserved"]
+    : ["Command words simplified", "Word banks and chunked instructions added", "Sentence starters and step prompts added", "Sub-part spacing increased", "Layouts and marks preserved"];
+
+  return {
+    ...worksheet,
+    sections: adaptedSections,
+    metadata: {
+      ...worksheet.metadata,
+      difficulty: tierLabel,
+      sendNeed: isSend ? "mixed_ability" : undefined,
+      adaptations: adaptationsList,
+    },
+  };
+}
