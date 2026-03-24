@@ -698,7 +698,22 @@ TONE: Positive, encouraging, child-voice. "You've got this!", "Great work!", "Di
 
   const system = isPrimary
     ? `You are an expert UK primary school teacher creating an engaging, colourful activity worksheet for ${params.yearGroup} (${phase}). Topic: "${params.topic}". This is a PRIMARY SCHOOL worksheet — it must be fun, visual, and activity-based, NOT like a secondary school handout. Use encouraging language, lots of variety, and minimal dense text. Respond with valid JSON only — no markdown, no code blocks, no HTML tags inside content strings. Use plain text only.`
-    : `You are an expert UK teacher and curriculum specialist creating a high-quality, print-ready classroom worksheet for ${params.yearGroup} (${phase}). Topic: "${params.topic}".
+    : `You are an expert UK teacher creating a structured, varied classroom worksheet.
+
+⚠️ CRITICAL FORMAT RULES — THESE OVERRIDE EVERYTHING ELSE:
+Your Section A content MUST contain exactly 3 question blocks separated by blank lines:
+  BLOCK 1 — TRUE/FALSE: Write exactly 4 numbered statements (1. 2. 3. 4.), each ending with TRUE or FALSE on the same line. Example: "1. Water boils at 100°C. TRUE"
+  BLOCK 2 — MCQ: One question stem, then exactly 4 options on separate lines starting with A  B  C  D (letter then 2 spaces then text). Mark correct with ✓ only in mark scheme.
+  BLOCK 3 — GAP FILL: One paragraph of 40-60 words with exactly 5-7 blanks shown as _____. On the very next line write: WORD BANK: word1 | word2 | word3 | word4 | word5 | word6 | word7
+
+Your Section B content MUST contain exactly 3 question blocks separated by blank lines:
+  BLOCK 1 — SHORT ANSWER: One question [X marks]. Leave no answer — students write it.
+  BLOCK 2 — TABLE: A markdown table using | separators. At least 3 columns, 4 data rows. Blank cells use "..........." for students to fill in.
+  BLOCK 3 — SHORT ANSWER: Another question [X marks].
+
+DO NOT deviate from these formats. DO NOT add explanatory text before each block.
+
+Topic: "${params.topic}" | Year: ${params.yearGroup} (${phase})
 
 QUALITY STANDARDS — your output must beat TES, Twinkl, and MathsGenie in quality:
 1. Every question must be fully usable — no placeholders, no "..." — complete, specific, answerable
@@ -1050,8 +1065,8 @@ Return EXACTLY this JSON (raw JSON only):
     ${isMaths && !params.examStyle ? `{"title": "Key Formulas", "type": "example", "content": "[LaTeX formulas or: No formula required]"},` : ''}
     {"title": "Worked Example", "type": "example", "content": "[${exampleGuide}]"}${params.introOnly ? '' : `,
     {"title": "Reminder Box", "type": "reminder-box", "content": "[3 numbered key steps or rules for this topic]"},
-    {"title": "${sendSectionTitles.sectionA}", "type": "guided", "content": "[SECTION 1 RECALL — use these 3 formats in this order, each on a new block:\nFORMAT 1 TRUE-FALSE: write 4 statements numbered 1-4, each ending with TRUE or FALSE.\nFORMAT 2 MCQ: one question stem then A  option, B  option, C  option, D  option on separate lines.\nFORMAT 3 GAP FILL: one paragraph 40-60 words with ___ blanks (5-7 blanks), then 'WORD BANK: word1 | word2 | word3 | word4 | word5 | word6 | word7' on next line.${hasSend ? ' Apply ALL SEND rules.' : ''}]"},
-    {"title": "${sendSectionTitles.sectionB}", "type": "independent", "content": "[SECTION 2 UNDERSTANDING — use these 3 formats in this order:\nFORMAT 1 SHORT ANSWER: one focused question needing 3-4 sentence explanation with mark allocation [X marks].\nFORMAT 2 TABLE: markdown table with | separators, 3-4 columns, 4-5 data rows. Blank cells use '...........' for students to complete.\nFORMAT 3 ORDERING or SHORT ANSWER: ordering task with ☐ prefix on 5-6 items and 'Number 1-N to show correct order', OR another short answer.\n${hasSend ? 'Apply ALL SEND rules.' : ''}]"},
+    {"title": "${sendSectionTitles.sectionA}", "type": "guided", "content": "[Follow the ⚠️ CRITICAL FORMAT RULES above exactly. Three blocks for this topic: TRUE/FALSE (4 statements ending TRUE or FALSE), then MCQ (4 A B C D options), then GAP FILL (paragraph with _____ blanks + WORD BANK: line).${hasSend ? ' Apply SEND rules to wording and spacing.' : ''}]"},
+    {"title": "${sendSectionTitles.sectionB}", "type": "independent", "content": "[Follow the ⚠️ CRITICAL FORMAT RULES above exactly. Three blocks: SHORT ANSWER question [X marks], then TABLE with | separators and '...........' blank cells, then SHORT ANSWER question [X marks].${hasSend ? ' Apply SEND rules to wording.' : ''}]"},
     {"title": "Section C — Word Problems", "type": "word-problems", "content": "[${hasSend ? '2-3 simple word problems — apply SEND language rules' : '3-4 real-life word problems, increasing difficulty'}. IMPORTANT: each problem MUST be on its own line starting with its number, e.g. 1. Problem text\n2. Problem text\n3. Problem text — do NOT separate problems with '. ' or any other inline separator]"},
     {"title": "${sendSectionTitles.challenge}", "type": "challenge", "content": "[${challengeGuide}${hasSend ? ' — optional, labelled as bonus' : ''}]"},
     {"title": "How Did I Do?", "type": "self-reflection", "teacherOnly": false, "content": "[${hasSend ? 'tick-box or text-scale self-assessment per SEND rules' : '3-4 I can statements + open question'}]"},
