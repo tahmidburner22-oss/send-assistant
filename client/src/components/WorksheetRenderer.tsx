@@ -55,7 +55,7 @@ export function renderMath(text: string | any): string {
           return JSON.stringify(item);
         }
         return String(item);
-      }).join("\n\n");
+      }).join("\\n\n\n");
     } else if (typeof text === "object") {
       const c = text as any;
       const q = c.q || c.question || c.text || c.content || "";
@@ -189,15 +189,34 @@ function stripLatexFromPlainText(text: string): string {
 // INTERFACES
 // ─────────────────────────────────────────────────────────────────────────────
 
+// Question item within a section (new PDF-matching structure)
+export interface QuestionItem {
+  qNum: number | string;
+  type: string;           // true-false | mcq | gap-fill | label-diagram | table-complete | short-answer | multi-part | extended-answer | diagram-subq
+  text: string;           // instruction text shown above question
+  marks: number;
+  content: string | string[];  // string for most types, string[] for true-false statements
+  answer?: string;        // correct answer for MCQ
+  answerLines?: number;   // number of ruled lines for short/extended answer
+  parts?: { label: string; text: string; lines: number }[];  // for multi-part questions
+  diagramSpec?: string;   // [[DIAGRAM:...]] spec
+}
+
 export interface WorksheetSection {
   title: string;
   type: string;
-  content: string;
+  content: string | string[];
   teacherOnly?: boolean;
   svg?: string;
   caption?: string;
   imageUrl?: string;
   attribution?: string;
+  // New: nested questions for recall/understanding/application sections
+  questions?: QuestionItem[];
+  // New: self-reflection prompts
+  prompts?: string[];
+  // New: marks for challenge
+  marks?: number;
 }
 
 export interface WorksheetData {
@@ -321,7 +340,7 @@ function TrueFalseRenderer({ content, fontSize, fontFamily, isTeacher }: {
 }) {
   // Parse statements from content
   // Format: "1. Statement text\n2. Statement text..."
-  const lines = content.split("\n").filter(l => l.trim() && !l.startsWith("LAYOUT:"));
+  const lines = content.split("\\n\n").filter(l => l.trim() && !l.startsWith("LAYOUT:"));
   // Strip the question-level instruction line (starts with bold or "Decide...")
   const stmtLines = lines.filter(l => /^\d+[.)]\s/.test(l.trim()) || /^[•\-]\s/.test(l.trim()));
 
@@ -403,7 +422,7 @@ function TrueFalseRow({ index, text, fontSize, fontFamily, answer, isTeacher }: 
 function MCQRenderer({ content, fontSize, fontFamily, isTeacher }: {
   content: string; fontSize: number; fontFamily: string; isTeacher: boolean;
 }) {
-  const lines = content.split("\n").filter(l => l.trim() && !l.startsWith("LAYOUT:"));
+  const lines = content.split("\\n\n").filter(l => l.trim() && !l.startsWith("LAYOUT:"));
   // Separate question stem from options (a. b. c. d.)
   const optionLines = lines.filter(l => /^[a-dA-D][.)]\s/.test(l.trim()));
   const questionLines = lines.filter(l => !/^[a-dA-D][.)]\s/.test(l.trim()));
@@ -462,7 +481,7 @@ function MCQRenderer({ content, fontSize, fontFamily, isTeacher }: {
 function GapFillRenderer({ content, fontSize, fontFamily }: {
   content: string; fontSize: number; fontFamily: string;
 }) {
-  const lines = content.split("\n").filter(l => l.trim() && !l.startsWith("LAYOUT:"));
+  const lines = content.split("\\n\n").filter(l => l.trim() && !l.startsWith("LAYOUT:"));
   // Detect word bank line
   const wbIdx = lines.findIndex(l => /^word bank:/i.test(l.trim()) || /^word bank\s*$/i.test(l.trim()));
   const wbLine = wbIdx >= 0 ? lines[wbIdx + 1] || lines[wbIdx] : null;
@@ -514,7 +533,7 @@ function GapFillRenderer({ content, fontSize, fontFamily }: {
 function LabelDiagramRenderer({ content, fontSize, fontFamily, accentColor }: {
   content: string; fontSize: number; fontFamily: string; accentColor: string;
 }) {
-  const lines = content.split("\n").filter(l => l.trim() && !l.startsWith("LAYOUT:"));
+  const lines = content.split("\\n\n").filter(l => l.trim() && !l.startsWith("LAYOUT:"));
   // Extract label items (numbered list)
   const labelLines = lines.filter(l => /^\d+[.)]\s/.test(l.trim()));
   const questionLines = lines.filter(l => !/^\d+[.)]\s/.test(l.trim()));
@@ -576,7 +595,7 @@ function LabelDiagramRenderer({ content, fontSize, fontFamily, accentColor }: {
 function DiagramSubQRenderer({ content, fontSize, fontFamily, accentColor, isTeacher }: {
   content: string; fontSize: number; fontFamily: string; accentColor: string; isTeacher: boolean;
 }) {
-  const lines = content.split("\n").filter(l => l.trim() && !l.startsWith("LAYOUT:"));
+  const lines = content.split("\\n\n").filter(l => l.trim() && !l.startsWith("LAYOUT:"));
   const subQLines = lines.filter(l => /^\([a-e]\)|\b[a-e]\)\s/.test(l.trim()) || /^[a-e]\.\s/.test(l.trim()));
   const questionLines = lines.filter(l => !subQLines.includes(l));
 
@@ -637,7 +656,7 @@ function DiagramSubQRenderer({ content, fontSize, fontFamily, accentColor, isTea
 function TableCompleteRenderer({ content, fontSize, fontFamily, isTeacher }: {
   content: string; fontSize: number; fontFamily: string; isTeacher: boolean;
 }) {
-  const lines = content.split("\n").filter(l => l.trim() && !l.startsWith("LAYOUT:"));
+  const lines = content.split("\\n\n").filter(l => l.trim() && !l.startsWith("LAYOUT:"));
   // Find table rows (contain |)
   const tableLines = lines.filter(l => l.includes("|") && !l.match(/^[\|\s\-]+$/));
   const questionLines = lines.filter(l => !l.includes("|"));
@@ -654,8 +673,8 @@ function TableCompleteRenderer({ content, fontSize, fontFamily, isTeacher }: {
     );
   }
 
-  const rows = tableLines.map(l => l.trim().replace(/^\|/, "").replace(/\|$/, "").split("|").map(c => c.trim()));
-  const firstRowIsHeader = rows[0]?.every(c => /^[A-Z]/.test(c) && c.length < 30 && c.split(" ").length <= 4);
+  const rows = tableLines.map(l => l.trim().replace(/^\|/, "").replace(/\|$/, "").split("\\n|").map(c => c.trim()));
+  const firstRowIsHeader = rows[0]?.every(c => /^[A-Z]/.test(c) && c.length < 30 && c.split("\\n ").length <= 4);
   const header = firstRowIsHeader ? rows[0] : [];
   const body = firstRowIsHeader ? rows.slice(1) : rows;
 
@@ -708,7 +727,7 @@ function TableCompleteRenderer({ content, fontSize, fontFamily, isTeacher }: {
 function DrawBoxRenderer({ content, fontSize, fontFamily }: {
   content: string; fontSize: number; fontFamily: string;
 }) {
-  const lines = content.split("\n").filter(l => l.trim() && !l.startsWith("LAYOUT:"));
+  const lines = content.split("\\n\n").filter(l => l.trim() && !l.startsWith("LAYOUT:"));
   const requirementLines = lines.filter(l => /^[•\-\*]\s/.test(l.trim()));
   const instructionLines = lines.filter(l => !/^[•\-\*]\s/.test(l.trim()));
 
@@ -761,7 +780,7 @@ function DrawBoxRenderer({ content, fontSize, fontFamily }: {
 function ShortAnswerRenderer({ content, fontSize, fontFamily, isTeacher }: {
   content: string; fontSize: number; fontFamily: string; isTeacher: boolean;
 }) {
-  const lines = content.split("\n").filter(l => l.trim() && !l.startsWith("LAYOUT:"));
+  const lines = content.split("\\n\n").filter(l => l.trim() && !l.startsWith("LAYOUT:"));
   const qLines = lines.filter(l => /^\d+[.)]\s/.test(l.trim()));
   const introLines = lines.filter(l => !/^\d+[.)]\s/.test(l.trim()) && !/^___/.test(l.trim()));
 
@@ -834,7 +853,7 @@ function ShortAnswerRenderer({ content, fontSize, fontFamily, isTeacher }: {
 function ExtendedAnswerRenderer({ content, fontSize, fontFamily, isTeacher }: {
   content: string; fontSize: number; fontFamily: string; isTeacher: boolean;
 }) {
-  const lines = content.split("\n").filter(l => l.trim() && !l.startsWith("LAYOUT:"));
+  const lines = content.split("\\n\n").filter(l => l.trim() && !l.startsWith("LAYOUT:"));
   const markMatch = content.match(/\[(\d+)\s*marks?\]/i);
   const marks = markMatch ? parseInt(markMatch[1]) : 6;
   const numLines = marks >= 8 ? 10 : marks >= 6 ? 8 : 6;
@@ -856,7 +875,7 @@ function ExtendedAnswerRenderer({ content, fontSize, fontFamily, isTeacher }: {
 function MatchingRenderer({ content, fontSize, fontFamily }: {
   content: string; fontSize: number; fontFamily: string;
 }) {
-  const lines = content.split("\n").filter(l => l.trim() && !l.startsWith("LAYOUT:"));
+  const lines = content.split("\\n\n").filter(l => l.trim() && !l.startsWith("LAYOUT:"));
   const termsStart = lines.findIndex(l => /^terms:/i.test(l.trim()) || /^\*\*terms/i.test(l.trim()));
   const defsStart = lines.findIndex(l => /^definitions:/i.test(l.trim()) || /^\*\*definitions/i.test(l.trim()));
   const introLines = lines.slice(0, Math.max(0, termsStart >= 0 ? termsStart : defsStart >= 0 ? defsStart : 1));
@@ -948,7 +967,7 @@ function MatchingRenderer({ content, fontSize, fontFamily }: {
 function OrderingRenderer({ content, fontSize, fontFamily }: {
   content: string; fontSize: number; fontFamily: string;
 }) {
-  const lines = content.split("\n").filter(l => l.trim() && !l.startsWith("LAYOUT:"));
+  const lines = content.split("\\n\n").filter(l => l.trim() && !l.startsWith("LAYOUT:"));
   const stepLines = lines.filter(l => /^___\s/.test(l.trim()) || /^_+\s/.test(l.trim()));
   const introLines = lines.filter(l => !/^___\s/.test(l.trim()) && !/^_+\s/.test(l.trim()));
 
@@ -1222,7 +1241,7 @@ function SelfReflectionTable({ fontSize, fontFamily }: { fontSize: number; fontF
 function ChallengeBlock({ content, fontSize, fontFamily, isTeacher }: {
   content: string; fontSize: number; fontFamily: string; isTeacher: boolean;
 }) {
-  const lines = content.split("\n").filter(l => l.trim() && !l.startsWith("LAYOUT:"));
+  const lines = content.split("\\n\n").filter(l => l.trim() && !l.startsWith("LAYOUT:"));
   return (
     <div style={{
       border: `2px solid #7c3aed`,
@@ -1258,104 +1277,61 @@ function ChallengeBlock({ content, fontSize, fontFamily, isTeacher }: {
 // VOCABULARY SECTION (matches ws_primitives.py vocab_section)
 // ─────────────────────────────────────────────────────────────────────────────
 
-function VocabularySection({ content, fontSize, fontFamily }: {
-  content: string; fontSize: number; fontFamily: string;
-}) {
-  const lines = content.split("\n").filter(l => l.trim());
-  const items = lines.map(l => {
-    const colonIdx = l.indexOf(":");
-    if (colonIdx > 0) {
-      return { term: l.slice(0, colonIdx).trim(), def: l.slice(colonIdx + 1).trim() };
+function VocabularySection({ content, fontSize, fontFamily }: { content: string; fontSize: number; fontFamily: string }) {
+  // Parse "Term: definition" or "Term | definition" format
+  const lines = content.split("\\n\n").filter(l => l.trim());
+  const items = lines.map(line => {
+    const colonIdx = line.indexOf(":");
+    const pipeIdx = line.indexOf("|");
+    const sepIdx = colonIdx !== -1 && (pipeIdx === -1 || colonIdx < pipeIdx) ? colonIdx : pipeIdx;
+    if (sepIdx !== -1) {
+      return { term: line.substring(0, sepIdx).trim(), def: line.substring(sepIdx + 1).trim() };
     }
-    const dashIdx = l.indexOf(" — ");
-    if (dashIdx > 0) {
-      return { term: l.slice(0, dashIdx).trim(), def: l.slice(dashIdx + 3).trim() };
-    }
-    const dashIdx2 = l.indexOf(" - ");
-    if (dashIdx2 > 0) {
-      return { term: l.slice(0, dashIdx2).trim(), def: l.slice(dashIdx2 + 3).trim() };
-    }
-    return { term: l.trim(), def: "" };
-  });
-
+    return { term: line.trim(), def: "" };
+  }).filter(item => item.term);
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: "8px" }}>
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px 24px" }}>
       {items.map((item, i) => (
-        <div key={i} style={{
-          border: `1px solid ${RULE}`, borderRadius: "4px",
-          overflow: "hidden",
-        }}>
-          <div style={{
-            background: NAVY, color: WHITE,
-            padding: "5px 10px",
-            fontWeight: 700, fontSize: `${fontSize - 1}px`, fontFamily,
-          }}>
-            {item.term}
-          </div>
-          <div style={{
-            padding: "6px 10px", background: WHITE,
-            fontSize: `${fontSize - 1}px`, fontFamily, color: MID, lineHeight: "1.4",
-          }}>
-            {item.def || <span style={{ color: LIGHT, fontStyle: "italic" }}>definition</span>}
-          </div>
+        <div key={i} style={{ padding: "6px 0", borderBottom: `1px solid ${RULE}` }}>
+          <span style={{ fontWeight: 700, color: MID, fontSize: `${fontSize}px`, fontFamily }}>{item.term}:</span>
+          {" "}
+          <span style={{ color: MID, fontSize: `${fontSize}px`, fontFamily }}
+            dangerouslySetInnerHTML={{ __html: renderMath(item.def) }} />
         </div>
       ))}
     </div>
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// COMMON MISTAKES SECTION (matches ws_primitives.py mistakes_section)
-// ─────────────────────────────────────────────────────────────────────────────
-
-function MistakesSection({ content, fontSize, fontFamily }: {
-  content: string; fontSize: number; fontFamily: string;
-}) {
-  const lines = content.split("\n").filter(l => l.trim());
-  const items: { head: string; body: string }[] = [];
-  let cur: { head: string; body: string } | null = null;
-
+function MistakesSection({ content, fontSize, fontFamily }: { content: string; fontSize: number; fontFamily: string }) {
+  // Parse "Mistake title\n→ correction" format
+  const lines = content.split("\\n\n");
+  const mistakes: { title: string; correction: string }[] = [];
+  let current: { title: string; correction: string } | null = null;
   for (const line of lines) {
-    if (line.startsWith("✗") || line.startsWith("×") || /^MISTAKE:/i.test(line)) {
-      if (cur) items.push(cur);
-      cur = { head: line.replace(/^[✗×]\s*\*?\*?/, "").replace(/\*?\*?$/, "").replace(/^MISTAKE:\s*/i, "").trim(), body: "" };
-    } else if (line.startsWith("→") || line.startsWith("✓") || /^FIX:/i.test(line)) {
-      if (cur) cur.body = line.replace(/^[→✓]\s*/, "").replace(/^FIX:\s*/i, "").trim();
-    } else if (cur && !cur.body) {
-      cur.body = line.trim();
-    } else if (!cur) {
-      items.push({ head: line.trim(), body: "" });
+    const trimmed = line.trim();
+    if (!trimmed) { if (current) { mistakes.push(current); current = null; } continue; }
+    if (trimmed.startsWith("→") || trimmed.startsWith("->") || trimmed.startsWith("•")) {
+      if (current) current.correction = trimmed.replace(/^[→\->•]\s*/, "");
+    } else {
+      if (current) mistakes.push(current);
+      current = { title: trimmed, correction: "" };
     }
   }
-  if (cur) items.push(cur);
-
-  if (items.length === 0) {
-    return (
-      <div>
-        {lines.map((line, i) => (
-          <div key={i} style={{ fontSize: `${fontSize}px`, fontFamily, color: MID, lineHeight: "1.6", marginBottom: "6px" }}
-            dangerouslySetInnerHTML={{ __html: renderMath(line) }} />
-        ))}
-      </div>
-    );
+  if (current) mistakes.push(current);
+  if (mistakes.length === 0) {
+    return <div style={{ fontSize: `${fontSize}px`, fontFamily, color: MID }}
+      dangerouslySetInnerHTML={{ __html: renderMath(content) }} />;
   }
-
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-      {items.map((item, i) => (
-        <div key={i} style={{
-          border: `1px solid #fee2e2`, borderRadius: "4px", overflow: "hidden",
-        }}>
-          <div style={{ background: "#fee2e2", padding: "5px 10px", display: "flex", alignItems: "center", gap: "6px" }}>
-            <span style={{ color: "#c0392b", fontWeight: 700, fontSize: `${fontSize}px` }}>✗</span>
-            <span style={{ fontWeight: 700, fontSize: `${fontSize - 1}px`, fontFamily, color: "#7b0000" }}
-              dangerouslySetInnerHTML={{ __html: renderMath(item.head) }} />
-          </div>
-          {item.body && (
-            <div style={{ padding: "6px 10px", background: "#fff5f5", display: "flex", alignItems: "flex-start", gap: "6px" }}>
-              <span style={{ color: TEAL, fontWeight: 700, fontSize: `${fontSize}px` }}>→</span>
-              <span style={{ fontSize: `${fontSize - 1}px`, fontFamily, color: MID }}
-                dangerouslySetInnerHTML={{ __html: renderMath(item.body) }} />
+    <div>
+      {mistakes.map((m, i) => (
+        <div key={i} style={{ marginBottom: i < mistakes.length - 1 ? "12px" : "0" }}>
+          <div style={{ fontWeight: 700, fontSize: `${fontSize}px`, fontFamily, color: MID }}>{m.title}</div>
+          {m.correction && (
+            <div style={{ fontSize: `${fontSize}px`, fontFamily, color: MID, marginTop: "2px" }}>
+              <span style={{ color: TEAL, fontWeight: 600 }}>→</span>{" "}
+              <span dangerouslySetInnerHTML={{ __html: renderMath(m.correction) }} />
             </div>
           )}
         </div>
@@ -1364,57 +1340,46 @@ function MistakesSection({ content, fontSize, fontFamily }: {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// WORKED EXAMPLE SECTION (matches ws_primitives.py worked_example_section)
-// ─────────────────────────────────────────────────────────────────────────────
-
-function WorkedExampleSection({ content, fontSize, fontFamily }: {
-  content: string; fontSize: number; fontFamily: string;
-}) {
-  const lines = content.split("\n").filter(l => l.trim());
-  const qLine = lines.find(l => /^question:/i.test(l.trim()) || /^\*\*question/i.test(l.trim()));
-  const stepLines = lines.filter(l => /^step\s*\d+|^\d+\.\s/i.test(l.trim()) || /^→/.test(l.trim()));
-  const otherLines = lines.filter(l => l !== qLine && !stepLines.includes(l));
-
+function WorkedExampleSection({ content, fontSize, fontFamily }: { content: string; fontSize: number; fontFamily: string }) {
+  // Parse "Question: ... Step 1: ... Step 2: ... Answer: ..." format
+  const lines = content.split("\\n\n").filter(l => l.trim());
+  const rows: { label: string; text: string }[] = [];
+  for (const line of lines) {
+    const colonIdx = line.indexOf(":");
+    if (colonIdx !== -1) {
+      const label = line.substring(0, colonIdx).trim();
+      const text = line.substring(colonIdx + 1).trim();
+      if (label && text) rows.push({ label, text });
+    } else if (line.trim()) {
+      rows.push({ label: "", text: line.trim() });
+    }
+  }
+  if (rows.length === 0) {
+    return <div style={{ fontSize: `${fontSize}px`, fontFamily, color: MID }}
+      dangerouslySetInnerHTML={{ __html: renderMath(content) }} />;
+  }
   return (
-    <div>
-      {qLine && (
-        <div style={{
-          padding: "8px 12px", background: SOFT, border: `1px solid ${RULE}`,
-          borderRadius: "4px", marginBottom: "10px",
-          fontSize: `${fontSize}px`, fontFamily, color: MID, fontWeight: 600,
-        }}
-          dangerouslySetInnerHTML={{ __html: renderMath(qLine.replace(/^\*\*question:\*\*\s*/i, "").replace(/^question:\s*/i, "")) }} />
-      )}
-      {stepLines.map((line, i) => (
-        <div key={i} style={{ display: "flex", gap: "8px", marginBottom: "6px", alignItems: "flex-start" }}>
-          <div style={{
-            background: TEAL, color: WHITE, borderRadius: "4px",
-            padding: "2px 8px", fontSize: `${fontSize - 2}px`, fontWeight: 700, fontFamily,
-            flexShrink: 0, marginTop: "2px",
-          }}>
-            {i + 1}
-          </div>
-          <div style={{ flex: 1, fontSize: `${fontSize}px`, fontFamily, color: MID, lineHeight: "1.5" }}
-            dangerouslySetInnerHTML={{ __html: renderMath(line.replace(/^step\s*\d+[:.]\s*/i, "").replace(/^→\s*/, "").replace(/^\d+\.\s*/, "")) }} />
-        </div>
-      ))}
-      {otherLines.map((line, i) => (
-        <div key={i} style={{ fontSize: `${fontSize}px`, fontFamily, color: MID, lineHeight: "1.6", marginBottom: "6px" }}
-          dangerouslySetInnerHTML={{ __html: renderMath(line) }} />
-      ))}
-    </div>
+    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: `${fontSize}px`, fontFamily }}>
+      <tbody>
+        {rows.map((row, i) => (
+          <tr key={i}>
+            <td style={{
+              fontWeight: 700, color: NAVY, padding: "6px 16px 6px 0",
+              verticalAlign: "top", whiteSpace: "nowrap", width: "100px",
+            }}>{row.label}</td>
+            <td style={{ color: MID, padding: "6px 0", verticalAlign: "top" }}
+              dangerouslySetInnerHTML={{ __html: renderMath(row.text) }} />
+          </tr>
+        ))}
+      </tbody>
+    </table>
   );
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// GENERIC CONTENT RENDERER (fallback for non-layout sections)
-// ─────────────────────────────────────────────────────────────────────────────
 
 function GenericContent({ content, fontSize, fontFamily, isTeacher }: {
   content: string; fontSize: number; fontFamily: string; isTeacher: boolean;
 }) {
-  const lines = content.split("\n");
+  const lines = content.split("\\n\n");
   const nodes: React.ReactNode[] = [];
   let i = 0;
 
@@ -1480,6 +1445,517 @@ function GenericContent({ content, fontSize, fontFamily, isTeacher }: {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// PDF-MATCHING QUESTION RENDERERS
+// These match the exact visual grammar of the PDF worksheets
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Navy square question number badge */
+function QBadge({ num, fontSize }: { num: number | string; fontSize: number }) {
+  return (
+    <div style={{
+      display: "inline-flex", alignItems: "center", justifyContent: "center",
+      width: `${fontSize + 14}px`, height: `${fontSize + 14}px`,
+      background: NAVY, color: WHITE,
+      borderRadius: "4px", fontWeight: 700,
+      fontSize: `${fontSize - 1}px`, flexShrink: 0,
+      marginRight: "10px",
+    }}>
+      {num}
+    </div>
+  );
+}
+
+/** TRUE pill (teal) and FALSE pill (red) */
+function TFPills({ fontSize }: { fontSize: number }) {
+  return (
+    <div style={{ display: "flex", gap: "8px", flexShrink: 0 }}>
+      <div style={{
+        background: TEAL, color: WHITE, fontWeight: 700,
+        fontSize: `${fontSize - 2}px`, letterSpacing: "0.05em",
+        padding: "4px 14px", borderRadius: "14px", minWidth: "68px", textAlign: "center",
+      }}>TRUE</div>
+      <div style={{
+        background: "#B91C1C", color: WHITE, fontWeight: 700,
+        fontSize: `${fontSize - 2}px`, letterSpacing: "0.05em",
+        padding: "4px 14px", borderRadius: "14px", minWidth: "68px", textAlign: "center",
+      }}>FALSE</div>
+    </div>
+  );
+}
+
+/** MCQ option bubble: (A) text */
+function MCQOption({ letter, text, fontSize, fontFamily }: { letter: string; text: string; fontSize: number; fontFamily: string }) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: "8px", padding: "4px 0" }}>
+      <div style={{
+        width: `${fontSize + 8}px`, height: `${fontSize + 8}px`,
+        border: `1.5px solid ${NAVY}`, borderRadius: "50%",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        fontWeight: 700, fontSize: `${fontSize - 2}px`, color: NAVY,
+        flexShrink: 0,
+      }}>{letter}</div>
+      <span style={{ fontSize: `${fontSize}px`, fontFamily, color: MID }}
+        dangerouslySetInnerHTML={{ __html: renderMath(text) }} />
+    </div>
+  );
+}
+
+/** Ruled answer lines */
+function AnswerLines({ count, fontSize }: { count: number; fontSize: number }) {
+  return (
+    <div style={{ marginTop: "8px" }}>
+      {Array.from({ length: count }).map((_, i) => (
+        <div key={i} style={{
+          borderBottom: `1px solid ${RULE}`,
+          height: `${fontSize + 12}px`,
+          marginBottom: "4px",
+        }} />
+      ))}
+    </div>
+  );
+}
+
+/** Section divider header (SECTION 1 — RECALL — Questions 1–3) */
+function SectionDivider({ title, qRange, fontSize, fontFamily }: { title: string; qRange?: string; fontSize: number; fontFamily: string }) {
+  return (
+    <div style={{
+      borderTop: `2px solid ${NAVY}`,
+      borderBottom: `1px solid ${RULE}`,
+      padding: "8px 0 6px 0",
+      marginBottom: "20px",
+      marginTop: "8px",
+    }}>
+      <span style={{
+        fontWeight: 700, fontSize: `${fontSize - 1}px`, fontFamily,
+        color: TEAL, textTransform: "uppercase", letterSpacing: "0.08em",
+      }}>
+        {title}{qRange ? ` — ${qRange}` : ""}
+      </span>
+    </div>
+  );
+}
+
+/** Render a TRUE/FALSE question */
+function TrueFalseQuestion({ q, fontSize, fontFamily }: { q: QuestionItem; fontSize: number; fontFamily: string }) {
+  const statements: string[] = Array.isArray(q.content) ? q.content as string[] : (q.content as string).split("\\n").filter(Boolean);
+  return (
+    <div style={{ marginBottom: "24px", pageBreakInside: "avoid", breakInside: "avoid" }}>
+      <div style={{ display: "flex", alignItems: "flex-start", marginBottom: "12px" }}>
+        <QBadge num={q.qNum} fontSize={fontSize} />
+        <div>
+          <span style={{ fontSize: `${fontSize}px`, fontFamily, color: MID }}
+            dangerouslySetInnerHTML={{ __html: renderMath(q.text) }} />
+          {" "}<span style={{ fontSize: `${fontSize - 2}px`, fontStyle: "italic", color: LIGHT }}>[{q.marks} mark{q.marks !== 1 ? "s" : ""}]</span>
+        </div>
+      </div>
+      <div style={{ paddingLeft: "38px" }}>
+        {statements.map((stmt, i) => (
+          <div key={i} style={{
+            display: "flex", alignItems: "center", justifyContent: "space-between",
+            padding: "10px 0", borderBottom: i < statements.length - 1 ? `1px solid ${RULE}` : "none",
+            gap: "16px",
+          }}>
+            <span style={{ fontSize: `${fontSize}px`, fontFamily, color: MID, flex: 1 }}
+              dangerouslySetInnerHTML={{ __html: renderMath(stmt) }} />
+            <TFPills fontSize={fontSize} />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** Render an MCQ question */
+function MCQQuestion({ q, fontSize, fontFamily }: { q: QuestionItem; fontSize: number; fontFamily: string }) {
+  const rawContent = typeof q.content === "string" ? q.content : (q.content as string[]).join("\\n");
+  const lines = rawContent.split("\\n").filter(Boolean);
+  // First line is the question, rest are options
+  const questionLine = lines[0] || q.text;
+  const optionLines = lines.slice(1);
+  // Parse options: "A) text" or "A. text"
+  const options: { letter: string; text: string }[] = optionLines.map(line => {
+    const m = line.match(/^([A-D])[).]\s*(.+)$/);
+    return m ? { letter: m[1], text: m[2] } : { letter: "", text: line };
+  }).filter(o => o.letter);
+  if (options.length === 0) {
+    // Try splitting by newlines with just the content
+    ["A", "B", "C", "D"].forEach((letter, i) => {
+      if (optionLines[i]) options.push({ letter, text: optionLines[i].replace(/^[A-D][).]\s*/, "") });
+    });
+  }
+  return (
+    <div style={{ marginBottom: "24px", pageBreakInside: "avoid", breakInside: "avoid" }}>
+      <div style={{ display: "flex", alignItems: "flex-start", marginBottom: "12px" }}>
+        <QBadge num={q.qNum} fontSize={fontSize} />
+        <div>
+          <span style={{ fontSize: `${fontSize}px`, fontFamily, color: MID }}
+            dangerouslySetInnerHTML={{ __html: renderMath(questionLine) }} />
+          {" "}<span style={{ fontSize: `${fontSize - 2}px`, fontStyle: "italic", color: LIGHT }}>[{q.marks} mark{q.marks !== 1 ? "s" : ""}]</span>
+        </div>
+      </div>
+      <div style={{ paddingLeft: "38px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4px 24px" }}>
+        {options.map((opt, i) => (
+          <MCQOption key={i} letter={opt.letter} text={opt.text} fontSize={fontSize} fontFamily={fontFamily} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** Render a gap-fill question */
+function GapFillQuestion({ q, fontSize, fontFamily }: { q: QuestionItem; fontSize: number; fontFamily: string }) {
+  const rawContent = typeof q.content === "string" ? q.content : (q.content as string[]).join("\\n");
+  const wordBankMatch = rawContent.match(/WORD BANK:\s*(.+)$/im);
+  const wordBank = wordBankMatch ? wordBankMatch[1].split("\\n,").map(w => w.trim()).filter(Boolean) : [];
+  const paragraph = rawContent.replace(/WORD BANK:.+$/im, "").trim();
+  // Replace ______ with styled blanks
+  const parts = paragraph.split(/______/);
+  return (
+    <div style={{ marginBottom: "24px", pageBreakInside: "avoid", breakInside: "avoid" }}>
+      <div style={{ display: "flex", alignItems: "flex-start", marginBottom: "12px" }}>
+        <QBadge num={q.qNum} fontSize={fontSize} />
+        <div>
+          <span style={{ fontSize: `${fontSize}px`, fontFamily, color: MID }}
+            dangerouslySetInnerHTML={{ __html: renderMath(q.text) }} />
+          {" "}<span style={{ fontSize: `${fontSize - 2}px`, fontStyle: "italic", color: LIGHT }}>[{q.marks} mark{q.marks !== 1 ? "s" : ""}]</span>
+        </div>
+      </div>
+      <div style={{ paddingLeft: "38px" }}>
+        <p style={{ fontSize: `${fontSize}px`, fontFamily, color: MID, lineHeight: "2.2", margin: "0 0 12px 0" }}>
+          {parts.map((part, i) => (
+            <React.Fragment key={i}>
+              <span dangerouslySetInnerHTML={{ __html: renderMath(part) }} />
+              {i < parts.length - 1 && (
+                <span style={{
+                  display: "inline-block", minWidth: "80px",
+                  borderBottom: `1px solid ${MID}`,
+                  margin: "0 4px", verticalAlign: "bottom",
+                }}>&nbsp;</span>
+              )}
+            </React.Fragment>
+          ))}
+        </p>
+        {wordBank.length > 0 && (
+          <div style={{
+            border: `1px dashed #AAAAAA`, borderRadius: "4px",
+            padding: "8px 12px", display: "flex", flexWrap: "wrap", gap: "16px",
+          }}>
+            {wordBank.map((word, i) => (
+              <span key={i} style={{ fontSize: `${fontSize}px`, fontFamily, color: MID }}>{word}</span>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/** Render a table-complete question */
+function TableCompleteQuestion({ q, fontSize, fontFamily }: { q: QuestionItem; fontSize: number; fontFamily: string }) {
+  const rawContent = typeof q.content === "string" ? q.content : (q.content as string[]).join("\\n");
+  const lines = rawContent.split("\\n").filter(Boolean);
+  if (lines.length === 0) return null;
+  const headers = lines[0].split("\\n|").map(h => h.trim());
+  const rows = lines.slice(1).map(line => line.split("\\n|").map(cell => cell.trim()));
+  return (
+    <div style={{ marginBottom: "24px", pageBreakInside: "avoid", breakInside: "avoid" }}>
+      <div style={{ display: "flex", alignItems: "flex-start", marginBottom: "12px" }}>
+        <QBadge num={q.qNum} fontSize={fontSize} />
+        <div>
+          <span style={{ fontSize: `${fontSize}px`, fontFamily, color: MID }}
+            dangerouslySetInnerHTML={{ __html: renderMath(q.text) }} />
+          {" "}<span style={{ fontSize: `${fontSize - 2}px`, fontStyle: "italic", color: LIGHT }}>[{q.marks} mark{q.marks !== 1 ? "s" : ""}]</span>
+        </div>
+      </div>
+      <div style={{ paddingLeft: "38px", overflowX: "auto" }}>
+        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: `${fontSize}px`, fontFamily }}>
+          <thead>
+            <tr>
+              {headers.map((h, i) => (
+                <th key={i} style={{
+                  background: NAVY, color: WHITE, fontWeight: 700,
+                  padding: "8px 12px", border: `1px solid ${RULE}`,
+                  textAlign: "center", fontSize: `${fontSize - 1}px`,
+                }}
+                  dangerouslySetInnerHTML={{ __html: renderMath(h) }} />
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row, ri) => (
+              <tr key={ri}>
+                {row.map((cell, ci) => {
+                  const isBlank = cell === "........." || cell === "..." || cell === "";
+                  return (
+                    <td key={ci} style={{
+                      padding: "10px 12px", border: `1px solid ${RULE}`,
+                      textAlign: "center", color: isBlank ? LIGHT : MID,
+                      fontStyle: isBlank ? "italic" : "normal",
+                    }}
+                      dangerouslySetInnerHTML={{ __html: isBlank ? "........." : renderMath(cell) }} />
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+/** Render a short-answer or multi-part question */
+function ShortAnswerQuestion({ q, fontSize, fontFamily }: { q: QuestionItem; fontSize: number; fontFamily: string }) {
+  const rawContent = typeof q.content === "string" ? q.content : (q.content as string[]).join("\\n");
+  const hasParts = q.parts && q.parts.length > 0;
+  return (
+    <div style={{ marginBottom: "24px", pageBreakInside: "avoid", breakInside: "avoid" }}>
+      <div style={{ display: "flex", alignItems: "flex-start", marginBottom: "10px" }}>
+        <QBadge num={q.qNum} fontSize={fontSize} />
+        <div>
+          <span style={{ fontSize: `${fontSize}px`, fontFamily, color: MID }}
+            dangerouslySetInnerHTML={{ __html: renderMath(q.text) }} />
+          {" "}<span style={{ fontSize: `${fontSize - 2}px`, fontStyle: "italic", color: LIGHT }}>[{q.marks} mark{q.marks !== 1 ? "s" : ""}]</span>
+        </div>
+      </div>
+      <div style={{ paddingLeft: "38px" }}>
+        {rawContent && rawContent !== q.text && (
+          <div style={{ fontSize: `${fontSize}px`, fontFamily, color: MID, marginBottom: "8px" }}
+            dangerouslySetInnerHTML={{ __html: renderMath(rawContent) }} />
+        )}
+        {hasParts ? (
+          q.parts!.map((part, i) => (
+            <div key={i} style={{ marginBottom: "12px" }}>
+              <div style={{ display: "flex", gap: "8px", alignItems: "flex-start", marginBottom: "4px" }}>
+                <span style={{ fontWeight: 600, fontSize: `${fontSize}px`, fontFamily, color: NAVY, flexShrink: 0 }}>{part.label}</span>
+                <span style={{ fontSize: `${fontSize}px`, fontFamily, color: MID }}
+                  dangerouslySetInnerHTML={{ __html: renderMath(part.text) }} />
+              </div>
+              <AnswerLines count={part.lines || 2} fontSize={fontSize} />
+            </div>
+          ))
+        ) : (
+          <AnswerLines count={q.answerLines || 3} fontSize={fontSize} />
+        )}
+      </div>
+    </div>
+  );
+}
+
+/** Render an extended-answer question */
+function ExtendedAnswerQuestion({ q, fontSize, fontFamily }: { q: QuestionItem; fontSize: number; fontFamily: string }) {
+  const rawContent = typeof q.content === "string" ? q.content : (q.content as string[]).join("\\n");
+  // Check for a quote (starts and ends with " or contains a quoted string)
+  const quoteMatch = rawContent.match(/^[""](.+?)[""](.*)$/s);
+  const quote = quoteMatch ? quoteMatch[1].trim() : null;
+  const questionText = quoteMatch ? quoteMatch[2].trim() : rawContent;
+  return (
+    <div style={{ marginBottom: "24px", pageBreakInside: "avoid", breakInside: "avoid" }}>
+      <div style={{ display: "flex", alignItems: "flex-start", marginBottom: "10px" }}>
+        <QBadge num={q.qNum} fontSize={fontSize} />
+        <div>
+          <span style={{ fontSize: `${fontSize}px`, fontFamily, color: MID }}
+            dangerouslySetInnerHTML={{ __html: renderMath(q.text) }} />
+          {" "}<span style={{ fontSize: `${fontSize - 2}px`, fontStyle: "italic", color: LIGHT }}>[{q.marks} mark{q.marks !== 1 ? "s" : ""}]</span>
+        </div>
+      </div>
+      <div style={{ paddingLeft: "38px" }}>
+        {quote && (
+          <div style={{
+            borderLeft: `3px solid ${TEAL}`, paddingLeft: "12px",
+            marginBottom: "10px", fontStyle: "italic",
+            fontSize: `${fontSize}px`, fontFamily, color: MID,
+          }}>
+            &ldquo;{quote}&rdquo;
+          </div>
+        )}
+        {questionText && questionText !== q.text && (
+          <div style={{ fontSize: `${fontSize}px`, fontFamily, color: MID, marginBottom: "8px" }}
+            dangerouslySetInnerHTML={{ __html: renderMath(questionText) }} />
+        )}
+        <AnswerLines count={q.answerLines || 5} fontSize={fontSize} />
+      </div>
+    </div>
+  );
+}
+
+/** Render a label-diagram question */
+function LabelDiagramQuestion({ q, fontSize, fontFamily }: { q: QuestionItem; fontSize: number; fontFamily: string }) {
+  const rawContent = typeof q.content === "string" ? q.content : (q.content as string[]).join("\\n");
+  const diagramSpec = extractDiagramSpec(rawContent);
+  const cleanContent = stripDiagramMarker(rawContent);
+  return (
+    <div style={{ marginBottom: "24px", pageBreakInside: "avoid", breakInside: "avoid" }}>
+      <div style={{ display: "flex", alignItems: "flex-start", marginBottom: "10px" }}>
+        <QBadge num={q.qNum} fontSize={fontSize} />
+        <div>
+          <span style={{ fontSize: `${fontSize}px`, fontFamily, color: MID }}
+            dangerouslySetInnerHTML={{ __html: renderMath(q.text) }} />
+          {" "}<span style={{ fontSize: `${fontSize - 2}px`, fontStyle: "italic", color: LIGHT }}>[{q.marks} mark{q.marks !== 1 ? "s" : ""}]</span>
+        </div>
+      </div>
+      <div style={{ paddingLeft: "38px" }}>
+        {diagramSpec ? (
+          <div style={{ display: "flex", gap: "24px", alignItems: "flex-start" }}>
+            <div style={{ flex: "0 0 auto", border: `1px solid ${RULE}`, borderRadius: "4px", overflow: "hidden", background: SOFT, padding: "8px" }}>
+              <SVGDiagram spec={diagramSpec} width={280} height={200} />
+            </div>
+            <div style={{ flex: 1 }}>
+              {Array.from({ length: q.marks || 5 }).map((_, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
+                  <span style={{ fontWeight: 600, color: NAVY, fontSize: `${fontSize}px`, fontFamily, minWidth: "20px" }}>{i + 1}.</span>
+                  <div style={{ flex: 1, borderBottom: `1px solid ${RULE}`, height: `${fontSize + 10}px` }} />
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <>
+            {cleanContent && (
+              <div style={{ fontSize: `${fontSize}px`, fontFamily, color: MID, marginBottom: "8px" }}
+                dangerouslySetInnerHTML={{ __html: renderMath(cleanContent) }} />
+            )}
+            <AnswerLines count={q.marks || 5} fontSize={fontSize} />
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/** Render a self-reflection section */
+function SelfReflectionSection({ section, fontSize, fontFamily }: { section: WorksheetSection; fontSize: number; fontFamily: string }) {
+  const topics: string[] = Array.isArray(section.content) ? section.content as string[] : (section.content as string).split("\\n").filter(Boolean);
+  const prompts: string[] = section.prompts || ["One thing I found easy was...", "One thing I found difficult was...", "To improve I will..."];
+  return (
+    <div style={{ marginBottom: "24px", pageBreakInside: "avoid", breakInside: "avoid" }}>
+      <SectionDivider title="SELF REFLECTION" fontSize={fontSize} fontFamily={fontFamily} />
+      <p style={{ fontSize: `${fontSize - 1}px`, fontFamily, color: LIGHT, fontStyle: "italic", marginBottom: "12px" }}>
+        Review your understanding before moving on.
+      </p>
+      {/* Part A: Confidence table */}
+      <p style={{ fontSize: `${fontSize}px`, fontFamily, color: MID, fontWeight: 600, marginBottom: "8px" }}>
+        A &nbsp; How confident do you feel? Tick the column that best describes you.
+      </p>
+      <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: "20px", fontSize: `${fontSize - 1}px`, fontFamily }}>
+        <thead>
+          <tr>
+            {["Topic", "Not Yet", "Getting There", "Confident"].map((h, i) => (
+              <th key={i} style={{
+                background: NAVY, color: WHITE, fontWeight: 700,
+                padding: "8px 10px", border: `1px solid ${RULE}`,
+                textAlign: i === 0 ? "left" : "center",
+              }}>{h}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {topics.map((topic, i) => (
+            <tr key={i}>
+              <td style={{ padding: "8px 10px", border: `1px solid ${RULE}`, color: MID }}>{topic}</td>
+              {["", "", ""].map((_, j) => (
+                <td key={j} style={{ padding: "8px 10px", border: `1px solid ${RULE}`, textAlign: "center" }}>&nbsp;</td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {/* Part B: Written reflection */}
+      <p style={{ fontSize: `${fontSize}px`, fontFamily, color: MID, fontWeight: 600, marginBottom: "8px" }}>
+        B &nbsp; Written reflection — complete each prompt below.
+      </p>
+      {prompts.map((prompt, i) => (
+        <div key={i} style={{ marginBottom: "14px" }}>
+          <p style={{ fontSize: `${fontSize}px`, fontFamily, color: MID, fontStyle: "italic", margin: "0 0 4px 0" }}>{prompt}</p>
+          <AnswerLines count={2} fontSize={fontSize} />
+        </div>
+      ))}
+      {/* Exit ticket */}
+      <div style={{ marginTop: "12px" }}>
+        <p style={{ fontSize: `${fontSize}px`, fontFamily, color: MID, fontWeight: 700, margin: "0 0 4px 0" }}>
+          Exit Ticket: Write ONE thing you learned today in one sentence:
+        </p>
+        <AnswerLines count={2} fontSize={fontSize} />
+      </div>
+    </div>
+  );
+}
+
+/** Render a challenge question */
+function ChallengeQuestionSection({ section, fontSize, fontFamily }: { section: WorksheetSection; fontSize: number; fontFamily: string }) {
+  const rawContent = typeof section.content === "string" ? section.content : (section.content as string[]).join("\\n");
+  const marks = section.marks || 8;
+  return (
+    <div style={{ marginBottom: "24px", pageBreakInside: "avoid", breakInside: "avoid" }}>
+      <div style={{
+        borderTop: `2px solid ${NAVY}`, borderBottom: `1px solid ${RULE}`,
+        padding: "8px 0 6px 0", marginBottom: "16px",
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+      }}>
+        <span style={{
+          fontWeight: 700, fontSize: `${fontSize - 1}px`, fontFamily,
+          color: TEAL, textTransform: "uppercase", letterSpacing: "0.08em",
+        }}>CHALLENGE QUESTION</span>
+        <span style={{ fontSize: `${fontSize - 2}px`, fontStyle: "italic", color: LIGHT }}>[{marks} marks]</span>
+      </div>
+      <div style={{ fontSize: `${fontSize}px`, fontFamily, color: MID, marginBottom: "16px" }}
+        dangerouslySetInnerHTML={{ __html: renderMath(rawContent) }} />
+      {/* Dot grid for working */}
+      <div style={{
+        border: `1px solid ${RULE}`, borderRadius: "4px",
+        height: "160px", background: SOFT,
+        backgroundImage: `radial-gradient(circle, ${RULE} 1px, transparent 1px)`,
+        backgroundSize: "16px 16px",
+      }} />
+    </div>
+  );
+}
+
+/** Render a full question section (recall/understanding/application) */
+function QuestionSectionRenderer({
+  section, fontSize, fontFamily, sectionIndex, editMode, onSectionClick, isEditing, hiddenSections,
+}: {
+  section: WorksheetSection; fontSize: number; fontFamily: string; sectionIndex: number;
+  editMode?: boolean; onSectionClick?: (i: number) => void; isEditing?: boolean; hiddenSections?: Set<number>;
+}) {
+  if (hiddenSections?.has(sectionIndex)) return null;
+  const questions = section.questions || [];
+  // Determine range string
+  const qNums = questions.map(q => q.qNum);
+  const rangeStr = qNums.length > 0 ? `Questions ${qNums[0]}–${qNums[qNums.length - 1]}` : "";
+  return (
+    <div
+      onClick={() => editMode && onSectionClick?.(sectionIndex)}
+      style={{ cursor: editMode ? "pointer" : "default", outline: isEditing ? `2px solid ${TEAL}` : "none", borderRadius: "4px" }}
+    >
+      <SectionDivider title={section.title} qRange={rangeStr} fontSize={fontSize} fontFamily={fontFamily} />
+      {questions.map((q, qi) => {
+        const key = `${sectionIndex}-${qi}`;
+        switch (q.type) {
+          case "true-false":
+            return <TrueFalseQuestion key={key} q={q} fontSize={fontSize} fontFamily={fontFamily} />;
+          case "mcq":
+            return <MCQQuestion key={key} q={q} fontSize={fontSize} fontFamily={fontFamily} />;
+          case "gap-fill":
+            return <GapFillQuestion key={key} q={q} fontSize={fontSize} fontFamily={fontFamily} />;
+          case "table-complete":
+            return <TableCompleteQuestion key={key} q={q} fontSize={fontSize} fontFamily={fontFamily} />;
+          case "label-diagram":
+          case "diagram-subq":
+            return <LabelDiagramQuestion key={key} q={q} fontSize={fontSize} fontFamily={fontFamily} />;
+          case "extended-answer":
+            return <ExtendedAnswerQuestion key={key} q={q} fontSize={fontSize} fontFamily={fontFamily} />;
+          case "short-answer":
+          case "multi-part":
+          default:
+            return <ShortAnswerQuestion key={key} q={q} fontSize={fontSize} fontFamily={fontFamily} />;
+        }
+      })}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // SECTION RENDERER
 // Wraps each section in the PDF-matching card style.
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1510,8 +1986,47 @@ function renderSection({
   if (hiddenSections?.has(sectionIndex)) return null;
   if (!isTeacher && section.teacherOnly) return null;
 
-  const content = editedContent !== undefined ? editedContent : section.content;
+  const rawSectionContent = editedContent !== undefined ? editedContent : (typeof section.content === "string" ? section.content : (Array.isArray(section.content) ? (section.content as string[]).join("\\n\n") : ""));
+  const content = rawSectionContent;
   const type = section.type;
+
+  // ── NEW PDF-MATCHING SECTION TYPES ──────────────────────────────────────
+  if (type === "recall-section" || type === "understanding-section" || type === "application-section") {
+    return (
+      <QuestionSectionRenderer
+        key={sectionIndex}
+        section={section}
+        fontSize={fontSize}
+        fontFamily={fontFamily}
+        sectionIndex={sectionIndex}
+        editMode={editMode}
+        onSectionClick={onSectionClick}
+        isEditing={isEditing}
+        hiddenSections={hiddenSections}
+      />
+    );
+  }
+  if (type === "self-reflection") {
+    return (
+      <div key={sectionIndex}
+        onClick={() => editMode && onSectionClick?.(sectionIndex)}
+        style={{ cursor: editMode ? "pointer" : "default", outline: isEditing ? `2px solid ${TEAL}` : "none", borderRadius: "4px" }}
+      >
+        <SelfReflectionSection section={section} fontSize={fontSize} fontFamily={fontFamily} />
+      </div>
+    );
+  }
+  if (type === "challenge") {
+    return (
+      <div key={sectionIndex}
+        onClick={() => editMode && onSectionClick?.(sectionIndex)}
+        style={{ cursor: editMode ? "pointer" : "default", outline: isEditing ? `2px solid ${TEAL}` : "none", borderRadius: "4px" }}
+      >
+        <ChallengeQuestionSection section={section} fontSize={fontSize} fontFamily={fontFamily} />
+      </div>
+    );
+  }
+
   const style = getSectionStyle(type);
 
   // Primary school uses rotating colour palette
@@ -1658,57 +2173,46 @@ function renderSection({
     );
   }
 
-  // ── MISCONCEPTIONS / COMMON MISTAKES ────────────────────────────────────
-  if (type === "misconceptions") {
+  // ── MISCONCEPTIONS / COMMON MISTAKES ──────────────────────────────────
+  if (type === "misconceptions" || type === "common-mistakes") {
     return (
-      <div key={sectionIndex} style={{
-        border: `1px solid ${borderColor}`, borderRadius: "6px",
-        overflow: "hidden", marginBottom: "16px",
-        pageBreakInside: "avoid", breakInside: "avoid",
-      }}
+      <div key={sectionIndex}
         onClick={() => editMode && onSectionClick?.(sectionIndex)}
+        style={{ marginBottom: "20px", pageBreakInside: "avoid", breakInside: "avoid", cursor: editMode ? "pointer" : "default", outline: isEditing ? `2px solid ${TEAL}` : "none" }}
       >
-        <SectionHeader
-          title={section.title || style.label}
-          headerBg={headerBg}
-          headerText={WHITE}
-          icon={style.icon}
-          fontSize={fontSize}
-          fontFamily={fontFamily}
-        />
-        <div style={{ padding: "14px 16px", background: bgColor }}>
-          <MistakesSection content={content} fontSize={fontSize} fontFamily={fontFamily} />
+        <div style={{
+          borderTop: `2px solid ${NAVY}`, borderBottom: `1px solid ${RULE}`,
+          padding: "6px 0 4px 0", marginBottom: "12px",
+        }}>
+          <span style={{ fontWeight: 700, fontSize: `${fontSize - 1}px`, fontFamily, color: TEAL, textTransform: "uppercase", letterSpacing: "0.08em" }}>
+            COMMON MISTAKES TO AVOID
+          </span>
         </div>
+        <MistakesSection content={content} fontSize={fontSize} fontFamily={fontFamily} />
       </div>
     );
   }
-
-  // ── WORKED EXAMPLE ───────────────────────────────────────────────────────
+    // ── WORKED EXAMPLE ───────────────────────────────────────────────────────
   if (type === "example") {
+    // Extract "WORKED EXAMPLE — Topic Name" from title
+    const exampleTitle = section.title || "WORKED EXAMPLE";
     return (
-      <div key={sectionIndex} style={{
-        border: `1px solid ${borderColor}`, borderRadius: "6px",
-        overflow: "hidden", marginBottom: "16px",
-        pageBreakInside: "avoid", breakInside: "avoid",
-      }}
+      <div key={sectionIndex} style={{ marginBottom: "20px", pageBreakInside: "avoid", breakInside: "avoid", cursor: editMode ? "pointer" : "default", outline: isEditing ? `2px solid ${TEAL}` : "none" }}
         onClick={() => editMode && onSectionClick?.(sectionIndex)}
       >
-        <SectionHeader
-          title={section.title || style.label}
-          headerBg={headerBg}
-          headerText={WHITE}
-          icon={style.icon}
-          fontSize={fontSize}
-          fontFamily={fontFamily}
-        />
-        <div style={{ padding: "14px 16px", background: bgColor }}>
-          <WorkedExampleSection content={content} fontSize={fontSize} fontFamily={fontFamily} />
+        <div style={{
+          borderTop: `2px solid ${NAVY}`, borderBottom: `1px solid ${RULE}`,
+          padding: "6px 0 4px 0", marginBottom: "12px",
+        }}>
+          <span style={{ fontWeight: 700, fontSize: `${fontSize - 1}px`, fontFamily, color: TEAL, textTransform: "uppercase", letterSpacing: "0.08em" }}>
+            {exampleTitle.toUpperCase()}
+          </span>
         </div>
+        <WorkedExampleSection content={content} fontSize={fontSize} fontFamily={fontFamily} />
       </div>
     );
   }
-
-  // ── TEACHER-ONLY SECTIONS (answers, mark-scheme, teacher-notes, extension) ──
+    // ── TEACHER-ONLY SECTIONS (answers, mark-scheme, teacher-notes, extension) ──
   if (section.teacherOnly || ["answers", "mark-scheme", "teacher-notes", "extension"].includes(type)) {
     if (!isTeacher) return null;
     return (
@@ -1777,88 +2281,63 @@ function PageHeader({ title, subtitle, schoolName, schoolLogoUrl, teacherName, i
   title: string; subtitle?: string; schoolName?: string; schoolLogoUrl?: string;
   teacherName?: string; isTeacher: boolean; fontSize: number; fontFamily: string;
 }) {
+  // Parse subtitle: "Year 7 (KS3) | Mathematics | General | Estimated time: 45 min"
+  const parts = (subtitle || "").split("\\n|").map(p => p.trim());
+  const yearKs = parts[0] || "";
+  const subject = parts[1] || "";
+  const examBoard = parts[2] || "";
+  // Build the small caps line: "MATHEMATICS · YEAR 7 · KS3"
+  const subjectUpper = subject.toUpperCase();
+  const yearMatch = yearKs.match(/Year\s+(\d+|[A-Z]+)/i);
+  const ksMatch = yearKs.match(/\((KS\d|Primary|Secondary|Sixth Form)\)/i);
+  const smallCapsLine = [subjectUpper, yearMatch ? yearMatch[0].toUpperCase() : yearKs.toUpperCase(), ksMatch ? ksMatch[1].toUpperCase() : ""].filter(Boolean).join("\\n · ");
   return (
     <div style={{ marginBottom: "20px" }}>
-      {/* Main navy header bar */}
+      {/* Navy header box */}
       <div style={{
-        background: isTeacher ? RED : NAVY,
-        color: WHITE,
-        borderRadius: "6px 6px 0 0",
-        padding: "14px 20px",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        gap: "16px",
+        background: NAVY, color: WHITE,
+        padding: "14px 20px 16px 20px",
+        borderRadius: "4px",
+        display: "flex", alignItems: "flex-start", justifyContent: "space-between",
+        marginBottom: "16px",
       }}>
-        {/* Left: logo + school name */}
-        <div style={{ display: "flex", alignItems: "center", gap: "12px", minWidth: 0 }}>
-          {schoolLogoUrl && (
-            <img src={schoolLogoUrl} alt="School logo" style={{ height: "40px", width: "40px", objectFit: "contain", borderRadius: "4px", background: WHITE, padding: "2px" }} />
-          )}
-          <div>
-            {schoolName && (
-              <div style={{ fontSize: `${fontSize - 2}px`, fontFamily, opacity: 0.85, fontWeight: 500 }}>
-                {schoolName}
-              </div>
-            )}
-            {isTeacher && (
-              <div style={{ fontSize: `${fontSize - 2}px`, fontFamily, opacity: 0.85, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" }}>
-                🔒 Teacher Copy
-              </div>
-            )}
+        <div>
+          <div style={{
+            fontSize: `${fontSize - 3}px`, fontFamily, letterSpacing: "0.12em",
+            textTransform: "uppercase", opacity: 0.85, marginBottom: "4px",
+          }}>
+            {smallCapsLine || subtitle}
+          </div>
+          <div style={{ fontSize: `${fontSize + 14}px`, fontFamily, fontWeight: 700, lineHeight: "1.1" }}>
+            {title.replace(/\s*—.*$/, "").replace(/\s*Worksheet.*$/i, "").trim()}
           </div>
         </div>
-        {/* Centre: title */}
-        <div style={{ flex: 1, textAlign: "center" }}>
-          <div style={{ fontWeight: 700, fontSize: `${fontSize + 6}px`, fontFamily, letterSpacing: "0.01em", lineHeight: "1.2" }}>
-            {title}
-          </div>
-          {subtitle && (
-            <div style={{ fontSize: `${fontSize - 1}px`, fontFamily, opacity: 0.85, marginTop: "4px" }}>
-              {subtitle}
-            </div>
-          )}
-        </div>
-        {/* Right: Adaptly branding */}
-        <div style={{ fontSize: `${fontSize - 3}px`, fontFamily, opacity: 0.7, textAlign: "right", whiteSpace: "nowrap" }}>
-          <div style={{ fontWeight: 700 }}>Adaptly</div>
-          <div>AI Worksheets</div>
-        </div>
+        {schoolLogoUrl && (
+          <img src={schoolLogoUrl} alt="School logo" style={{ height: "44px", width: "44px", objectFit: "contain", borderRadius: "4px", background: WHITE, padding: "3px", marginLeft: "12px" }} />
+        )}
       </div>
-
-      {/* Name / Date / Class row (matches ws_primitives.py name_date_class_row) */}
+      {/* Name / Date / Class row */}
       <div style={{
-        background: SOFT,
-        border: `1px solid ${RULE}`,
-        borderTop: "none",
-        borderRadius: "0 0 6px 6px",
-        padding: "8px 20px",
-        display: "flex",
-        alignItems: "center",
-        gap: "24px",
-        flexWrap: "wrap",
+        display: "flex", gap: "32px", alignItems: "center",
+        padding: "6px 4px 10px 4px",
+        borderBottom: `1px solid ${RULE}`,
+        marginBottom: "14px",
       }}>
-        {[
-          { label: "Name", width: "160px" },
-          { label: "Date", width: "100px" },
-          { label: "Class", width: "100px" },
-          { label: "Teacher", width: "120px" },
-        ].map(({ label, width }) => (
-          <div key={label} style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-            <span style={{ fontSize: `${fontSize - 1}px`, fontWeight: 700, color: NAVY, fontFamily, whiteSpace: "nowrap" }}>
-              {label}:
-            </span>
-            <div style={{ borderBottom: `1.5px solid ${NAVY}`, width, height: "22px" }} />
+        {["NAME", "DATE", "CLASS"].map(label => (
+          <div key={label} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <span style={{ fontSize: `${fontSize - 2}px`, fontFamily, fontWeight: 700, letterSpacing: "0.08em", color: LIGHT }}>{label}</span>
+            <div style={{ width: "120px", borderBottom: `1px solid ${MID}` }} />
           </div>
         ))}
+        {teacherName && isTeacher && (
+          <div style={{ marginLeft: "auto", fontSize: `${fontSize - 2}px`, fontFamily, color: LIGHT }}>
+            Teacher: {teacherName}
+          </div>
+        )}
       </div>
     </div>
   );
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// SEND OVERLAY (coloured overlay for accessibility)
-// ─────────────────────────────────────────────────────────────────────────────
 
 function SendOverlay({ color }: { color: string }) {
   if (!color || color === "none" || color === "transparent") return null;

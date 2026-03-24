@@ -21,6 +21,7 @@ import { downloadHtmlAsPdf, printWorksheetElement, serialiseElement, buildPopupH
 import WorksheetRenderer, { renderMath, stripKatexToPlainText } from "@/components/WorksheetRenderer";
 import { worksheetBank, type BankWorksheet } from "@/lib/worksheet-bank";
 import { getSyllabusTopics, type SyllabusTopic } from "@/lib/syllabus-data";
+import { getSubtopics } from "@/lib/subtopics-data";
 import { aiGenerateWorksheet, aiEditSection, aiScaffoldExistingWorksheet, aiDifferentiateExistingWorksheet, parseNaturalLanguageInput, aiScenarioSwap, aiAdjustReadingLevel } from "@/lib/ai";
 // examPaperBuilder is dynamically imported inside handlers to avoid loading the large question bank on initial page load
 import type { PastPaperQuestion } from "@/lib/pastPaperQuestions";
@@ -198,6 +199,7 @@ export default function Worksheets() {
   const [subject, setSubject] = useState(() => preSelectedSubject);
   const [yearGroup, setYearGroup] = useState(() => preSelectedYearGroup);
   const [topic, setTopic] = useState(() => preSelectedTopic);
+  const [subtopic, setSubtopic] = useState("");
   const [sendNeed, setSendNeed] = useState(() => preSelectedSendNeed);
   const [difficulty, setDifficulty] = useState("mixed");
   const [worksheetLength, setWorksheetLength] = useState("30");
@@ -284,6 +286,9 @@ export default function Worksheets() {
   const [diagChatLoading, setDiagChatLoading] = useState(false);
   const diagChatEndRef = useRef<HTMLDivElement>(null);
   const [diagSheetResult, setDiagSheetResult] = useState<{ topic: string; questions: string[] } | null>(null);
+
+  // Reset subtopic when topic changes
+  useEffect(() => { setSubtopic(""); }, [topic]);
 
   // Reset difficulty to a valid option when subject changes
   // Exam-style always defaults OFF — user must opt in
@@ -873,7 +878,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
         // Step 1: Generate the full AI worksheet (learning objectives, vocab, worked example, etc.)
         toast.info("Generating worksheet structure...");
         const aiResult = await aiGenerateWorksheet({
-          subject, topic, yearGroup,
+          subject, topic, subtopic: subtopic || undefined, yearGroup,
           sendNeed: sendNeed && sendNeed !== "none-selected" ? sendNeed : undefined,
           difficulty,
           examBoard: examBoard !== "none" ? examBoard : undefined,
@@ -917,7 +922,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
         // Fall through to AI generation
         try {
           const result = await aiGenerateWorksheet({
-            subject, topic, yearGroup,
+            subject, topic, subtopic: subtopic || undefined, yearGroup,
             sendNeed: sendNeed && sendNeed !== "none-selected" ? sendNeed : undefined,
             difficulty,
             examBoard: examBoard !== "none" ? examBoard : undefined,
@@ -941,7 +946,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
       // ── STANDARD AI MODE ───────────────────────────────────────────────────
       try {
         const result = await aiGenerateWorksheet({
-          subject, topic, yearGroup,
+          subject, topic, subtopic: subtopic || undefined, yearGroup,
           sendNeed: sendNeed && sendNeed !== "none-selected" ? sendNeed : undefined,
           difficulty,
           examBoard: examBoard !== "none" ? examBoard : undefined,
@@ -985,7 +990,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
             await new Promise(r => setTimeout(r, 300));
             try {
               const retryResult = await aiGenerateWorksheet({
-                subject, topic, yearGroup,
+                subject, topic, subtopic: subtopic || undefined, yearGroup,
                 sendNeed: sendNeed && sendNeed !== "none-selected" ? sendNeed : undefined,
                 difficulty,
                 examBoard: examBoard !== "none" ? examBoard : undefined,
@@ -2098,6 +2103,25 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                   )}
                 </div>
 
+                {/* Subtopic dropdown — appears after topic is selected */}
+                {topic && (() => {
+                  const subtopics = getSubtopics(topic);
+                  if (subtopics.length === 0) return null;
+                  return (
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-medium">Subtopic <span className="text-muted-foreground font-normal">(optional — narrows the worksheet focus)</span></Label>
+                      <Select value={subtopic || "__all__"} onValueChange={(val) => setSubtopic(val === "__all__" ? "" : val)}>
+                        <SelectTrigger className="h-10"><SelectValue placeholder="Select a subtopic (optional)" /></SelectTrigger>
+                        <SelectContent className="max-h-64">
+                          <SelectItem value="__all__">Whole topic (no subtopic)</SelectItem>
+                          {subtopics.map((st, i) => (
+                            <SelectItem key={i} value={st}>{st}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  );
+                })()}
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
                     <Label className="text-xs font-medium">SEND Need</Label>
