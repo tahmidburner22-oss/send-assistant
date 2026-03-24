@@ -3502,20 +3502,27 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
 
         // ── Section group dividers: inject "SECTION N — NAME — Questions X–Y" before first question in each group ──
         const QUESTION_GROUP_MAP: Record<string, { label: string; qStart: number; qEnd: number }> = {
-          "q-true-false":  { label: "SECTION 1 — RECALL",                  qStart: 1, qEnd: 3 },
-          "q-mcq":         { label: "SECTION 1 — RECALL",                  qStart: 1, qEnd: 3 },
-          "q-gap-fill":    { label: "SECTION 1 — RECALL",                  qStart: 1, qEnd: 3 },
+          "q-true-false":  { label: "SECTION 1 — KNOWLEDGE CHECK",         qStart: 1, qEnd: 3 },
+          "q-mcq":         { label: "SECTION 1 — KNOWLEDGE CHECK",         qStart: 1, qEnd: 3 },
+          "q-gap-fill":    { label: "SECTION 1 — KNOWLEDGE CHECK",         qStart: 1, qEnd: 3 },
           "q-short-answer":{ label: "SECTION 2 — UNDERSTANDING",           qStart: 4, qEnd: 6 },
           "q-extended":    { label: "SECTION 3 — APPLICATION & ANALYSIS",  qStart: 7, qEnd: 9 },
+          "q-circuit":     { label: "SECTION 3 — APPLICATION & ANALYSIS",  qStart: 7, qEnd: 9 },
+          "q-draw":        { label: "SECTION 3 — APPLICATION & ANALYSIS",  qStart: 7, qEnd: 9 },
+          "q-graph":       { label: "SECTION 3 — APPLICATION & ANALYSIS",  qStart: 7, qEnd: 9 },
+          "q-data-table":  { label: "SECTION 2 — UNDERSTANDING",           qStart: 4, qEnd: 6 },
+          "q-label-diagram":{ label: "SECTION 2 — UNDERSTANDING",          qStart: 4, qEnd: 6 },
+          "q-ordering":    { label: "SECTION 1 — KNOWLEDGE CHECK",         qStart: 1, qEnd: 3 },
+          "q-matching":    { label: "SECTION 1 — KNOWLEDGE CHECK",         qStart: 1, qEnd: 3 },
         };
         const groupInfo = QUESTION_GROUP_MAP[section.type];
         // Show the group divider only before the FIRST question of that group type in the worksheet
         const isFirstOfGroup = groupInfo && !worksheet.sections.slice(0, i).some((s: any) => s.type === section.type);
         // Also check if it's the first of the broader group (e.g. first q-short-answer before any q-short-answer)
         const groupTypes: Record<string, string[]> = {
-          "SECTION 1 — RECALL":                 ["q-true-false", "q-mcq", "q-gap-fill"],
-          "SECTION 2 — UNDERSTANDING":          ["q-short-answer"],
-          "SECTION 3 — APPLICATION & ANALYSIS": ["q-extended"],
+          "SECTION 1 — KNOWLEDGE CHECK":       ["q-true-false", "q-mcq", "q-gap-fill", "q-ordering", "q-matching"],
+          "SECTION 2 — UNDERSTANDING":          ["q-short-answer", "q-data-table", "q-label-diagram"],
+          "SECTION 3 — APPLICATION & ANALYSIS": ["q-extended", "q-circuit", "q-draw", "q-graph"],
         };
         const myGroupLabel = groupInfo?.label;
         const myGroupTypes = myGroupLabel ? (groupTypes[myGroupLabel] || []) : [];
@@ -3543,16 +3550,25 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
           passage: "READING PASSAGE",
           example: "WORKED EXAMPLE",
           "common-mistakes": "COMMON MISTAKES TO AVOID",
-          // New individual question types
+          "prior-knowledge": "PRIOR KNOWLEDGE CHECK",
+          // Individual question types (no teal divider, just navy badge)
           "q-true-false": "",
           "q-mcq": "",
           "q-gap-fill": "",
           "q-short-answer": "",
           "q-extended": "",
+          "q-circuit": "",
+          "q-draw": "",
+          "q-graph": "",
+          "q-data-table": "",
+          "q-label-diagram": "",
+          "q-ordering": "",
+          "q-matching": "",
         };
 
-        // New individual question types — use navy badge + question text inline (no teal divider)
-        const isIndividualQuestion = ["q-true-false", "q-mcq", "q-gap-fill", "q-short-answer", "q-extended"].includes(section.type);
+        // Individual question types — use navy badge + question text inline (no teal divider)
+        const isIndividualQuestion = ["q-true-false", "q-mcq", "q-gap-fill", "q-short-answer", "q-extended",
+          "q-circuit", "q-draw", "q-graph", "q-data-table", "q-label-diagram", "q-ordering", "q-matching"].includes(section.type);
 
         // Section group label — for individual questions, derive from section title (e.g. "Q1 — True or False")
         const groupLabel = isIndividualQuestion
@@ -3807,6 +3823,87 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                               </div>
                             )}
                           </div>
+                        ))}
+                      </div>
+                    );
+                  }
+
+                  // ── New question type renderers ──
+                  if (section.type === "q-circuit") {
+                    // Circuit diagram box with sub-questions
+                    const autoSvg = (worksheet.metadata as any)?.autoGeneratedDiagrams?.["auto-circuit"];
+                    return (
+                      <div>
+                        <div style={{ fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, lineHeight: String(fmt.lineHeight), color: "#1e293b", marginBottom: "12px" }}
+                          dangerouslySetInnerHTML={{ __html: renderMath(content.replace(/\[\d+\s*marks?\]/i, "").trim()) }} />
+                        <div style={{ border: "2px solid #1a2744", borderRadius: "6px", minHeight: "180px", display: "flex", alignItems: "center", justifyContent: "center", background: "#fafafa", marginBottom: "12px", padding: "12px" }}>
+                          {autoSvg ? (
+                            <div dangerouslySetInnerHTML={{ __html: autoSvg }} />
+                          ) : (
+                            <span style={{ color: "#9ca3af", fontSize: "13px", fontStyle: "italic" }}>Circuit diagram space</span>
+                          )}
+                        </div>
+                        <div style={{ fontSize: "11px", color: "#6b7280", fontStyle: "italic", marginBottom: "8px" }}>[{(section.marks as number) || 4} marks]</div>
+                        {Array.from({ length: (section.marks as number) || 4 }).map((_: unknown, li: number) => (
+                          <div key={li} style={{ borderBottom: "1px solid #d1d5db", height: "32px", width: "100%", marginBottom: "4px" }} />
+                        ))}
+                      </div>
+                    );
+                  }
+                  if (section.type === "q-draw") {
+                    // Draw box template
+                    return (
+                      <div>
+                        <div style={{ fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, lineHeight: String(fmt.lineHeight), color: "#1e293b", marginBottom: "12px" }}
+                          dangerouslySetInnerHTML={{ __html: renderMath(content.replace(/\[\d+\s*marks?\]/i, "").trim()) }} />
+                        <div style={{ border: "2px solid #1a2744", borderRadius: "6px", minHeight: "200px", background: "#fafafa", marginBottom: "8px", position: "relative" as const }}>
+                          <span style={{ position: "absolute" as const, bottom: "8px", right: "12px", color: "#d1d5db", fontSize: "11px" }}>Draw here</span>
+                        </div>
+                        <div style={{ fontSize: "11px", color: "#6b7280", fontStyle: "italic" }}>[{(section.marks as number) || 3} marks]</div>
+                      </div>
+                    );
+                  }
+                  if (section.type === "q-graph") {
+                    // Graph box template with grid lines
+                    const gridSize = 20;
+                    const cols = 14; const rows = 10;
+                    return (
+                      <div>
+                        <div style={{ fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, lineHeight: String(fmt.lineHeight), color: "#1e293b", marginBottom: "12px" }}
+                          dangerouslySetInnerHTML={{ __html: renderMath(content.replace(/\[\d+\s*marks?\]/i, "").trim()) }} />
+                        <svg width={cols * gridSize} height={rows * gridSize} style={{ border: "2px solid #1a2744", display: "block", marginBottom: "8px" }}>
+                          {Array.from({ length: cols + 1 }).map((_: unknown, ci: number) => (
+                            <line key={`v${ci}`} x1={ci * gridSize} y1={0} x2={ci * gridSize} y2={rows * gridSize} stroke="#e5e7eb" strokeWidth="1" />
+                          ))}
+                          {Array.from({ length: rows + 1 }).map((_: unknown, ri: number) => (
+                            <line key={`h${ri}`} x1={0} y1={ri * gridSize} x2={cols * gridSize} y2={ri * gridSize} stroke="#e5e7eb" strokeWidth="1" />
+                          ))}
+                        </svg>
+                        <div style={{ fontSize: "11px", color: "#6b7280", fontStyle: "italic" }}>[{(section.marks as number) || 4} marks]</div>
+                      </div>
+                    );
+                  }
+                  if (section.type === "q-data-table") {
+                    return <TableCompleteSection content={content} fmt={fmt} isTeacher={isTeacherView} />;
+                  }
+                  if (section.type === "q-label-diagram") {
+                    return <LabelDiagramSection content={content} fmt={fmt} />;
+                  }
+                  if (section.type === "q-ordering") {
+                    return <OrderingSection content={content} fmt={fmt} />;
+                  }
+                  if (section.type === "q-matching") {
+                    return <MatchingSection content={content} fmt={fmt} />;
+                  }
+                  if (section.type === "prior-knowledge") {
+                    // Prior knowledge check — appears after LO, before vocab
+                    const pkLines = content.split("\n").filter(Boolean);
+                    return (
+                      <div style={{ background: "#f0f9ff", border: "1px solid #bae6fd", borderRadius: "6px", padding: "14px 16px" }}>
+                        <div style={{ fontSize: "11px", fontWeight: 700, color: "#0369a1", letterSpacing: "0.05em", marginBottom: "10px", fontFamily: fmt.fontFamily }}>PRIOR KNOWLEDGE CHECK</div>
+                        {pkLines.map((line: string, li: number) => (
+                          <div key={li} style={{ fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, lineHeight: String(fmt.lineHeight), color: "#1e293b", marginBottom: "8px" }}
+                            dangerouslySetInnerHTML={{ __html: renderMath(line.replace(/^\d+[.)\s]+/, "").trim()) }} />
                         ))}
                       </div>
                     );
