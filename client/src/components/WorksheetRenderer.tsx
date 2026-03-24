@@ -967,38 +967,39 @@ interface WorksheetRendererProps {
   isRevisionMat?: boolean;
 }
 
-// Section type → colour config (TES-style: white backgrounds, single purple/blue border accent)
+// Section type → visual config (Chalkie-style: clean white, dark navy accent, no gradients, no emojis)
+// Matches the reference PDF exactly: flat dark navy header bar, white text, no colour fills on body.
 const SECTION_STYLES: Record<string, { border: string; bg: string; badge: string; badgeBg: string; icon: string; label: string; headerBg: string; headerText: string }> = {
-  "objective":     { border: "#4f46e5", bg: "#f5f3ff", badge: "#4f46e5", badgeBg: "#ede9fe", icon: "🎯", label: "Learning Objectives",    headerBg: "linear-gradient(135deg,#4f46e5,#3730a3)", headerText: "#fff" },
-  "success":       { border: "#4f46e5", bg: "#f5f3ff", badge: "#4f46e5", badgeBg: "#ede9fe", icon: "✅", label: "Success Criteria",       headerBg: "linear-gradient(135deg,#4f46e5,#3730a3)", headerText: "#fff" },
-  "vocabulary":    { border: "#7c3aed", bg: "#faf5ff", badge: "#7c3aed", badgeBg: "#f3e8ff", icon: "📚", label: "Key Vocabulary",         headerBg: "linear-gradient(135deg,#7c3aed,#6d28d9)", headerText: "#fff" },
-  "starter":       { border: "#2563eb", bg: "#eff6ff", badge: "#2563eb", badgeBg: "#dbeafe", icon: "⚡", label: "Starter Activity",       headerBg: "linear-gradient(135deg,#2563eb,#1d4ed8)", headerText: "#fff" },
-  "example":       { border: "#3b82f6", bg: "#eff6ff", badge: "#2563eb", badgeBg: "#dbeafe", icon: "💡", label: "Worked Example",         headerBg: "linear-gradient(135deg,#3b82f6,#2563eb)", headerText: "#fff" },
-  "reminder-box":  { border: "#6366f1", bg: "#f5f3ff", badge: "#4f46e5", badgeBg: "#ede9fe", icon: "📌", label: "Key Steps",              headerBg: "linear-gradient(135deg,#6366f1,#4f46e5)", headerText: "#fff" },
-  "guided":        { border: "#2563eb", bg: "#eff6ff", badge: "#2563eb", badgeBg: "#dbeafe", icon: "⭐", label: "Foundation",             headerBg: "linear-gradient(135deg,#3b82f6,#2563eb)", headerText: "#fff" },
-  "independent":   { border: "#3b82f6", bg: "#eff6ff", badge: "#2563eb", badgeBg: "#dbeafe", icon: "★",  label: "Core Practice",          headerBg: "linear-gradient(135deg,#3b82f6,#2563eb)", headerText: "#fff" },
-  "challenge":     { border: "#7c3aed", bg: "#faf5ff", badge: "#6d28d9", badgeBg: "#ede9fe", icon: "★★", label: "Stretch & Challenge",    headerBg: "linear-gradient(135deg,#7c3aed,#4f46e5)", headerText: "#fff" },
-  "word-problems": { border: "#4f46e5", bg: "#f5f3ff", badge: "#4f46e5", badgeBg: "#ede9fe", icon: "📝", label: "Real-Life Problems",     headerBg: "linear-gradient(135deg,#4f46e5,#3730a3)", headerText: "#fff" },
-  "common-mistakes":{ border:"#7c3aed", bg: "#faf5ff", badge: "#6d28d9", badgeBg:"#ede9fe",  icon:"📋",  label: "Common Mistakes",        headerBg: "linear-gradient(135deg,#7c3aed,#6d28d9)", headerText: "#fff" },
-  "word-bank":     { border: "#8b5cf6", bg: "#f5f3ff", badge: "#7c3aed", badgeBg: "#ede9fe", icon: "📝", label: "Word Bank",              headerBg: "linear-gradient(135deg,#8b5cf6,#7c3aed)", headerText: "#fff" },
-  "sentence-starters": { border: "#6366f1", bg: "#f5f3ff", badge: "#4f46e5", badgeBg: "#ede9fe", icon: "💬", label: "Sentence Starters", headerBg: "linear-gradient(135deg,#6366f1,#4f46e5)", headerText: "#fff" },
-  "self-assessment": { border: "#2563eb", bg: "#eff6ff", badge: "#1d4ed8", badgeBg: "#dbeafe", icon: "📊", label: "Self Assessment",     headerBg: "linear-gradient(135deg,#2563eb,#1d4ed8)", headerText: "#fff" },
-  "self-reflection": { border: "#2563eb", bg: "#eff6ff", badge: "#1d4ed8", badgeBg: "#dbeafe", icon: "📊", label: "How Did I Do?",       headerBg: "linear-gradient(135deg,#2563eb,#1d4ed8)", headerText: "#fff" },
-  "diagram":       { border: "#4338ca", bg: "#f5f3ff", badge: "#4338ca", badgeBg: "#ede9fe", icon: "📐", label: "Diagram",               headerBg: "linear-gradient(135deg,#4338ca,#3730a3)", headerText: "#fff" },
-  "answers":       { border: "#4f46e5", bg: "#f5f3ff", badge: "#4f46e5", badgeBg: "#ede9fe", icon: "✔",  label: "Answers",               headerBg: "linear-gradient(135deg,#4f46e5,#3730a3)", headerText: "#fff" },
-  "questions":     { border: "#4f46e5", bg: "#f5f3ff", badge: "#4f46e5", badgeBg: "#ede9fe", icon: "❓", label: "Exam Questions",        headerBg: "linear-gradient(135deg,#4f46e5,#3730a3)", headerText: "#fff" },
-  "mark-scheme":   { border: "#6366f1", bg: "#f5f3ff", badge: "#6366f1", badgeBg: "#ede9fe", icon: "✔",  label: "Mark Scheme",           headerBg: "linear-gradient(135deg,#6366f1,#4f46e5)", headerText: "#fff" },
-  "teacher-notes": { border: "#4338ca", bg: "#f5f3ff", badge: "#4338ca", badgeBg: "#ede9fe", icon: "📋", label: "Teacher Notes",         headerBg: "linear-gradient(135deg,#4338ca,#3730a3)", headerText: "#fff" },
-  "send-support":  { border: "#4f46e5", bg: "#f5f3ff", badge: "#4f46e5", badgeBg: "#ede9fe", icon: "★",  label: "SEND Support",          headerBg: "linear-gradient(135deg,#4f46e5,#3730a3)", headerText: "#fff" },
-  "reading":       { border: "#4338ca", bg: "#f5f3ff", badge: "#4338ca", badgeBg: "#ede9fe", icon: "📖", label: "Reading Passage",       headerBg: "linear-gradient(135deg,#4338ca,#3730a3)", headerText: "#fff" },
-  "passage":       { border: "#4338ca", bg: "#f5f3ff", badge: "#4338ca", badgeBg: "#ede9fe", icon: "📖", label: "Reading Passage",       headerBg: "linear-gradient(135deg,#4338ca,#3730a3)", headerText: "#fff" },
-  "source-text":   { border: "#4338ca", bg: "#f5f3ff", badge: "#4338ca", badgeBg: "#ede9fe", icon: "📜", label: "Source Text",           headerBg: "linear-gradient(135deg,#4338ca,#3730a3)", headerText: "#fff" },
-  "comprehension": { border: "#3b82f6", bg: "#eff6ff", badge: "#2563eb", badgeBg: "#dbeafe", icon: "🔍", label: "Comprehension",         headerBg: "linear-gradient(135deg,#3b82f6,#2563eb)", headerText: "#fff" },
-  "misconceptions":{ border: "#4f46e5", bg: "#f5f3ff", badge: "#4f46e5", badgeBg: "#ede9fe", icon: "📌", label: "Watch Out!",            headerBg: "linear-gradient(135deg,#4f46e5,#3730a3)", headerText: "#fff" },
-  "revision-mat-box":{ border:"#4f46e5",bg:"#f5f3ff", badge:"#4f46e5", badgeBg:"#ede9fe",   icon:"📋",  label: "",                       headerBg: "linear-gradient(135deg,#4f46e5,#3730a3)", headerText: "#fff" },
-  "default":       { border: "#4f46e5", bg: "#f5f3ff", badge: "#4f46e5", badgeBg: "#ede9fe", icon: "",   label: "",                      headerBg: "linear-gradient(135deg,#4f46e5,#3730a3)", headerText: "#fff" },
+  "objective":     { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Learning Objective",      headerBg: "#1a2744", headerText: "#ffffff" },
+  "success":       { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Success Criteria",        headerBg: "#1a2744", headerText: "#ffffff" },
+  "vocabulary":    { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Key Vocabulary",          headerBg: "#1a2744", headerText: "#ffffff" },
+  "starter":       { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Prior Knowledge Check",   headerBg: "#1a2744", headerText: "#ffffff" },
+  "example":       { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Worked Example",          headerBg: "#1a2744", headerText: "#ffffff" },
+  "reminder-box":  { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Key Steps",               headerBg: "#1a2744", headerText: "#ffffff" },
+  "guided":        { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Foundation",              headerBg: "#1a2744", headerText: "#ffffff" },
+  "independent":   { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Core Practice",           headerBg: "#1a2744", headerText: "#ffffff" },
+  "challenge":     { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Stretch & Challenge",     headerBg: "#1a2744", headerText: "#ffffff" },
+  "word-problems": { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Real-Life Problems",      headerBg: "#1a2744", headerText: "#ffffff" },
+  "common-mistakes":{ border:"#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg:"#1a2744",  icon:"",  label: "Common Mistakes to Avoid",headerBg: "#1a2744", headerText: "#ffffff" },
+  "word-bank":     { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Word Bank",               headerBg: "#1a2744", headerText: "#ffffff" },
+  "wordbank":      { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Word Bank",               headerBg: "#1a2744", headerText: "#ffffff" },
+  "sentence-starters": { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Sentence Starters",  headerBg: "#1a2744", headerText: "#ffffff" },
+  "self-assessment": { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Self Assessment",       headerBg: "#1a2744", headerText: "#ffffff" },
+  "self-reflection": { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "How Did I Do?",         headerBg: "#1a2744", headerText: "#ffffff" },
+  "diagram":       { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Diagram",                 headerBg: "#1a2744", headerText: "#ffffff" },
+  "answers":       { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Answers",                 headerBg: "#1a2744", headerText: "#ffffff" },
+  "questions":     { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Exam Questions",          headerBg: "#1a2744", headerText: "#ffffff" },
+  "mark-scheme":   { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Mark Scheme",             headerBg: "#1a2744", headerText: "#ffffff" },
+  "teacher-notes": { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Teacher Notes",           headerBg: "#1a2744", headerText: "#ffffff" },
+  "send-support":  { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "SEND Support",            headerBg: "#1a2744", headerText: "#ffffff" },
+  "reading":       { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Reading Passage",         headerBg: "#1a2744", headerText: "#ffffff" },
+  "passage":       { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Reading Passage",         headerBg: "#1a2744", headerText: "#ffffff" },
+  "source-text":   { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Source Text",             headerBg: "#1a2744", headerText: "#ffffff" },
+  "comprehension": { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Comprehension",           headerBg: "#1a2744", headerText: "#ffffff" },
+  "misconceptions":{ border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Common Mistakes to Avoid",headerBg: "#1a2744", headerText: "#ffffff" },
+  "revision-mat-box":{ border:"#1a2744",bg:"#ffffff",  badge:"#1a2744",  badgeBg:"#1a2744",  icon:"",  label: "",                        headerBg: "#1a2744", headerText: "#ffffff" },
+  "default":       { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "",                        headerBg: "#1a2744", headerText: "#ffffff" },
 };
-
 function getSectionStyle(type: string, _yearNum?: number) {
   // All section types are now locked to the indigo/blue/violet palette —
   // teal, sky, and slate have been removed from SECTION_STYLES entirely.
@@ -1148,14 +1149,14 @@ function formatContent(content: string | any, fmt: ReturnType<typeof getSendForm
             <thead>
               <tr>
                 {header.map((h, hi) => (
-                  <th key={hi} style={{ padding: "8px 12px", background: "#4f46e5", color: "white", textAlign: "left", fontWeight: 700, border: "1px solid #c7d2fe" }}>{h}</th>
+                  <th key={hi} style={{ padding: "8px 12px", background: "#1a2744", color: "white", textAlign: "left", fontWeight: 700, border: "1px solid #d1d5db" }}>{h}</th>
                 ))}
               </tr>
             </thead>
           )}
           <tbody>
             {body.map((row, ri) => (
-              <tr key={ri} style={{ background: ri % 2 === 0 ? "white" : "#f5f3ff" }}>
+              <tr key={ri} style={{ background: ri % 2 === 0 ? "white" : "#f8f9fa" }}>
                 {row.map((cell, ci) => (
                   <td key={ci} style={{ padding: "7px 12px", border: "1px solid #e5e7eb", fontSize: `${textSize - 1}px` }}>
                     <span dangerouslySetInnerHTML={{ __html: renderMath(cell) }} />
@@ -2169,16 +2170,64 @@ function SelfAssessmentSection({ content, fmt }: { content: string; fmt: ReturnT
  */
 function SelfReflectionSection({ content, fmt, overlayColor = "white" }: { content: string; fmt: ReturnType<typeof getSendFormatting>; overlayColor?: string }) {
   const { fontSize: textSize, fontFamily, lineHeight } = fmt;
-  const lines = content.split("\n").filter(l => l.trim());
-  // Separate "I can" / topic statements from written reflection prompts (starts with "Q:" or ">") 
-  const topicLines = lines.filter(l => !l.trim().startsWith("Q:") && !l.trim().startsWith(">"));
-  const reflectionPrompts = lines.filter(l => l.trim().startsWith("Q:") || l.trim().startsWith(">")).map(l => l.replace(/^[Q:>]\s*/i, "").trim());
 
-  // Normalise topic lines: strip bullet/number prefixes and "I can" prefix
-  const topics = topicLines.map(l => l.replace(/^[•\-\*\d.)]\s*/, "").replace(/^I can\s*/i, "").trim()).filter(Boolean);
+  // ── Parse structured markers from AI output ──────────────────────────────
+  // The AI generates content with these optional markers:
+  //   SUBTITLE: <text>          — subtitle shown above the table
+  //   CONFIDENCE_TABLE:         — starts the list of topic rows
+  //   WRITTEN_PROMPTS:          — starts the written reflection prompts
+  //   EXIT_TICKET: <text>       — custom exit ticket text
+  // If no markers are present, fall back to the legacy line-based parser.
+
+  let subtitle = "";
+  let topics: string[] = [];
+  let reflectionPrompts: string[] = [];
+  let exitTicketText = "Write ONE thing you learned today in one sentence:";
+
+  const hasMarkers = /CONFIDENCE_TABLE:|WRITTEN_PROMPTS:|SUBTITLE:|EXIT_TICKET:/i.test(content);
+
+  if (hasMarkers) {
+    // Split into labelled blocks
+    const subtitleMatch = content.match(/SUBTITLE:\s*([^\n]+)/i);
+    if (subtitleMatch) subtitle = subtitleMatch[1].trim();
+
+    const ctMatch = content.match(/CONFIDENCE_TABLE:\s*([\s\S]*?)(?=WRITTEN_PROMPTS:|EXIT_TICKET:|$)/i);
+    if (ctMatch) {
+      topics = ctMatch[1].split("\n")
+        .map(l => l.replace(/^[•\-\*\d.)\s]+/, "").trim())
+        .filter(Boolean);
+    }
+
+    const wpMatch = content.match(/WRITTEN_PROMPTS:\s*([\s\S]*?)(?=EXIT_TICKET:|$)/i);
+    if (wpMatch) {
+      reflectionPrompts = wpMatch[1].split("\n")
+        .map(l => l.replace(/^[•\-\*\d.)\s]+/, "").trim())
+        .filter(Boolean);
+    }
+
+    const etMatch = content.match(/EXIT_TICKET:\s*([^\n]+)/i);
+    if (etMatch) exitTicketText = etMatch[1].trim();
+  } else {
+    // Legacy parser: lines without Q: or > prefix are topic rows
+    const lines = content.split("\n").filter(l => l.trim());
+    const topicLines = lines.filter(l => !l.trim().startsWith("Q:") && !l.trim().startsWith(">"));
+    reflectionPrompts = lines.filter(l => l.trim().startsWith("Q:") || l.trim().startsWith(">")).map(l => l.replace(/^[Q:>]\s*/i, "").trim());
+    topics = topicLines.map(l => l.replace(/^[•\-\*\d.)]\s*/, "").replace(/^I can\s*/i, "").trim()).filter(Boolean);
+  }
+
+  // Ensure we always have at least 3 topic rows (pad with generic ones if needed)
+  while (topics.length < 3) {
+    topics.push("I can apply what I have learned today");
+  }
 
   return (
     <div style={{ fontFamily }}>
+      {/* Subtitle */}
+      {subtitle && (
+        <div style={{ fontSize: `${textSize}px`, color: "#4b5563", fontFamily, marginBottom: "10px", fontStyle: "italic" }}>
+          {subtitle}
+        </div>
+      )}
       {/* Part A: Confidence table */}
       <div style={{ marginBottom: "14px" }}>
         <div style={{ fontSize: `${textSize - 1}px`, fontWeight: 600, color: "#374151", fontFamily, marginBottom: "8px", fontStyle: "italic" }}>
@@ -2222,7 +2271,7 @@ function SelfReflectionSection({ content, fmt, overlayColor = "white" }: { conte
       {/* Exit ticket */}
       <div style={{ marginTop: "16px", borderTop: "1.5px solid #d1d5db", paddingTop: "10px" }}>
         <div style={{ fontSize: `${textSize}px`, fontWeight: 700, color: "#1a2744", fontFamily, textDecoration: "underline", marginBottom: "6px" }}>
-          Exit Ticket: Write ONE thing you learned today in one sentence:
+          Exit Ticket: {exitTicketText}
         </div>
         {[0, 1].map(li => (
           <div key={li} style={{ borderBottom: "1px solid #ccc", height: "28px", marginBottom: "4px" }} />
@@ -2234,14 +2283,31 @@ function SelfReflectionSection({ content, fmt, overlayColor = "white" }: { conte
 
 function WordBankSection({ content, fmt, overlayColor = "white" }: { content: string; fmt: ReturnType<typeof getSendFormatting>; overlayColor?: string }) {
   const { fontSize: textSize, fontFamily } = fmt;
-  const words = content.split(/[\n,|]/).map(w => w.trim()).filter(Boolean);
+  // Strip any WORD BANK header line and split into words
+  const rawWords = content.replace(/^WORD\s*BANK[:\s]*/im, "").split(/[\n,|]/).map(w => w.trim()).filter(Boolean);
+  // Arrange into rows of 4
+  const rows: string[][] = [];
+  for (let i = 0; i < rawWords.length; i += 4) rows.push(rawWords.slice(i, i + 4));
   return (
-    <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
-      {words.map((word, i) => (
-        <span key={i} style={{ background: overlayColor, color: "#4f46e5", padding: "4px 10px", borderRadius: "4px", fontSize: `${textSize - 1}px`, fontWeight: 600, border: "1.5px solid #4f46e5", fontFamily }}>
-          <span dangerouslySetInnerHTML={{ __html: renderMath(word) }} />
-        </span>
-      ))}
+    <div>
+      <div style={{ fontSize: `${textSize - 3}px`, fontWeight: 700, color: "#888888", fontFamily, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: "3px" }}>Word Bank</div>
+      <table style={{ width: "100%", borderCollapse: "collapse", border: "0.5px solid #cccccc" }}>
+        <tbody>
+          {rows.map((row, ri) => (
+            <tr key={ri}>
+              {row.map((word, ci) => (
+                <td key={ci} style={{ border: "0.4px solid #cccccc", padding: "5px 8px", textAlign: "center", fontSize: `${textSize}px`, fontWeight: 700, color: "#1a1a1a", fontFamily, background: overlayColor }}>
+                  <span dangerouslySetInnerHTML={{ __html: renderMath(word) }} />
+                </td>
+              ))}
+              {/* Pad row to 4 cells */}
+              {Array.from({ length: 4 - row.length }).map((_, pi) => (
+                <td key={`pad-${pi}`} style={{ border: "0.4px solid #cccccc", padding: "5px 8px", background: overlayColor }} />
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
@@ -2252,7 +2318,7 @@ function SentenceStartersSection({ content, fmt, overlayColor = "white" }: { con
   return (
     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "6px" }}>
       {starters.map((s, i) => (
-        <div key={i} style={{ background: overlayColor, border: "1px solid #4f46e5", borderRadius: "4px", padding: "6px 10px", fontSize: `${textSize - 1}px`, color: "#4f46e5", fontStyle: "italic", fontFamily, lineHeight }}>
+        <div key={i} style={{ background: overlayColor, border: "1px solid #1B2A4A", borderRadius: "2px", padding: "6px 10px", fontSize: `${textSize - 1}px`, color: "#1B2A4A", fontStyle: "italic", fontFamily, lineHeight }}>
           "{s}..."
         </div>
       ))}
@@ -2266,8 +2332,8 @@ function ReminderBoxSection({ content, fmt, overlayColor = "white" }: { content:
   const steps = lines.filter(l => /^Step\s*\d+/i.test(l.trim()));
   const otherLines = lines.filter(l => !/^Step\s*\d+/i.test(l.trim()));
   return (
-    <div style={{ background: overlayColor, border: "1.5px solid #4f46e5", borderRadius: "4px", padding: "10px 12px" }}>
-      <div style={{ fontSize: `${textSize - 1}px`, fontWeight: 700, color: "#4f46e5", marginBottom: "10px", fontFamily, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+    <div style={{ background: overlayColor, border: "1.5px solid #1B2A4A", borderRadius: "2px", padding: "10px 12px" }}>
+      <div style={{ fontSize: `${textSize - 1}px`, fontWeight: 700, color: "#1B2A4A", marginBottom: "10px", fontFamily, textTransform: "uppercase", letterSpacing: "0.05em" }}>
         Keep this in mind while you work:
       </div>
       {steps.length > 0 ? (
@@ -2587,16 +2653,14 @@ function PrimarySection({
                   style={{ padding: "2px 8px", borderRadius: "4px", border: "1px solid #fca5a5", background: "#fef2f2", cursor: "pointer", fontSize: "11px", fontWeight: 600, color: "#dc2626" }}>✕ Remove</button>
               </div>
             )}
-            {/* Exercise-book lined writing area */}
-            <div style={{
-              background: "repeating-linear-gradient(to bottom, transparent, transparent 31px, #bfdbfe 31px, #bfdbfe 32px)",
-              borderRadius: "10px",
-              border: `2px solid ${palette.border}66`,
-              padding: "8px 12px 0 12px",
-              minHeight: `${answerLines * 32 + 8}px`,
-            }}>
+            {/* Plain ruled answer lines — matching reference PDF */}
+            <div style={{ marginTop: "4px" }}>
               {Array.from({ length: answerLines }).map((_, n) => (
-                <div key={n} style={{ height: "32px" }} />
+                <div key={n} style={{
+                  borderBottom: "1px solid #9ca3af",
+                  height: "28px",
+                  marginBottom: "4px",
+                }} />
               ))}
             </div>
             <div style={{ fontSize: `${fmt.fontSize - 3}px`, color: `${palette.border}bb`, marginTop: "4px", fontFamily: fmt.fontFamily, fontStyle: "italic", textAlign: "right" }}>
@@ -2723,47 +2787,37 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
       {/* ── Professional Header — hidden for revision mats ── */}
       {!isRevisionMat && (
         isPrimary ? (
-          /* ── PRIMARY HEADER: bright colourful style ── */
-          <div className="ws-header" style={{
-            marginBottom: "16px",
-            borderRadius: "12px",
-            overflow: "hidden",
-            border: "2.5px solid #4f46e5",
-            boxShadow: "0 4px 12px rgba(79,70,229,0.2)",
-          }}>
-            <div style={{
-              background: "linear-gradient(135deg, #4f46e5 0%, #6366f1 40%, #7c3aed 70%, #8b5cf6 100%)",
-              padding: "12px 16px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              gap: "12px",
-            }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
-                {schoolLogoUrl ? (
-                  <img src={schoolLogoUrl} alt="School logo" style={{ height: "36px", width: "auto", maxWidth: "64px", objectFit: "contain", borderRadius: "6px", background: "rgba(255,255,255,0.95)", padding: "3px" }} />
-                ) : (
-                  <div style={{ width: "32px", height: "32px", borderRadius: "50%", background: "rgba(255,255,255,0.15)", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", border: "1.5px solid rgba(255,255,255,0.3)" }}>
-                    <img src="/logo.png" alt="Adaptly Logo" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} />
-                  </div>
+          /* ── PRIMARY HEADER: clean dark navy style — matches reference PDF ── */
+          <div className="ws-header" style={{ marginBottom: "18px", fontFamily: fmt.fontFamily }}>
+            {/* Top info bar */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                {schoolLogoUrl && (
+                  <img src={schoolLogoUrl} alt="School logo" style={{ height: "28px", width: "auto", maxWidth: "56px", objectFit: "contain" }} />
                 )}
-                <div style={{ fontSize: "10px", color: "rgba(255,255,255,0.85)", fontFamily: fmt.fontFamily, lineHeight: "1.3" }}>
-                  <div style={{ fontWeight: 800 }}>{schoolName || "Adaptly"}</div>
-                  <div style={{ opacity: 0.75 }}>Learning Resource</div>
+                <span style={{ fontSize: "11px", fontWeight: 700, color: "#1a2744", fontFamily: fmt.fontFamily, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                  {schoolName || "Adaptly"}
+                </span>
+              </div>
+              <span style={{ fontSize: "10px", color: "#6b7280", fontFamily: fmt.fontFamily, textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 600 }}>
+                {[worksheet.metadata?.subject, worksheet.metadata?.yearGroup].filter(Boolean).join(" · ")}
+              </span>
+            </div>
+            {/* Main header block: grey bg, navy left border */}
+            <div style={{ background: "#e8ecf0", borderLeft: "5px solid #1a2744", padding: "14px 18px 12px 18px", marginBottom: "10px" }}>
+              <div style={{ fontSize: `${fmt.fontSize + 8}px`, fontWeight: 700, color: "#1a2744", fontFamily: fmt.fontFamily, lineHeight: "1.2", marginBottom: "4px" }}>{worksheet.title}</div>
+              {worksheet.subtitle && (
+                <div style={{ fontSize: `${fmt.fontSize}px`, color: "#4b5563", fontFamily: fmt.fontFamily, marginTop: "2px" }}>{worksheet.subtitle}</div>
+              )}
+            </div>
+            {/* Name / Date / Class bar */}
+            <div style={{ display: "flex", gap: "32px", alignItems: "center", borderBottom: "1.5px solid #d1d5db", paddingBottom: "8px", marginBottom: "6px" }}>
+              {[{ label: "Name", value: "" }, { label: "Date", value: "" }, { label: "Class", value: "" }].map((field, fi) => (
+                <div key={fi} style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                  <span style={{ fontSize: "11px", fontWeight: 700, color: "#1a2744", fontFamily: fmt.fontFamily }}>{field.label}:</span>
+                  <div style={{ borderBottom: "1.5px solid #9ca3af", minWidth: "100px", height: "18px" }} />
                 </div>
-              </div>
-              <div style={{ flex: 1, textAlign: "center" }}>
-                <div style={{ fontWeight: 900, fontSize: `${fmt.fontSize + 5}px`, color: "white", fontFamily: fmt.fontFamily, letterSpacing: "-0.3px", lineHeight: "1.25", textShadow: "0 1px 6px rgba(0,0,0,0.18)" }}>{worksheet.title}</div>
-                {worksheet.subtitle && <div style={{ fontSize: `${fmt.fontSize - 2}px`, color: "rgba(255,255,255,0.8)", marginTop: "3px", fontFamily: fmt.fontFamily }}>{worksheet.subtitle}</div>}
-              </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: "4px", flexShrink: 0 }}>
-                {[{ label: "Name", value: "" }, { label: "Date", value: new Date().toLocaleDateString("en-GB") }, { label: "Class", value: "" }].map((field, fi) => (
-                  <div key={fi} style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                    <span style={{ fontSize: "10px", fontWeight: 700, color: "rgba(255,255,255,0.85)", fontFamily: fmt.fontFamily, minWidth: "36px" }}>{field.label}:</span>
-                    <div style={{ borderBottom: "1.5px solid rgba(255,255,255,0.5)", minWidth: "72px", height: "15px" }}><span style={{ fontSize: "10px", color: "rgba(255,255,255,0.9)", fontFamily: fmt.fontFamily }}>{field.value}</span></div>
-                  </div>
-                ))}
-              </div>
+              ))}
             </div>
           </div>
         ) : (
@@ -2788,26 +2842,29 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                 {[worksheet.metadata.subject, worksheet.metadata.yearGroup, worksheet.metadata.examBoard && worksheet.metadata.examBoard !== "General" && worksheet.metadata.examBoard !== "none" ? worksheet.metadata.examBoard.toUpperCase() : null].filter(Boolean).join(" · ")}
               </span>
             </div>
-            {/* Main header block: grey bg, navy left border */}
+            {/* Main header block: full dark navy filled rectangle — matches reference PDF exactly */}
             <div style={{
-              background: "#e8ecf0",
-              borderLeft: "5px solid #1a2744",
-              padding: "14px 18px 12px 18px",
+              background: "#1B2A4A",
+              padding: "10px 14px 12px 14px",
               marginBottom: "10px",
             }}>
+              {/* Subject/year line above title */}
+              <div style={{ fontSize: "9px", color: "#99BBBB", fontFamily: fmt.fontFamily, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: "4px", fontWeight: 400 }}>
+                {[worksheet.metadata.subject, worksheet.metadata.yearGroup, worksheet.metadata.examBoard && worksheet.metadata.examBoard !== "General" && worksheet.metadata.examBoard !== "none" ? worksheet.metadata.examBoard.toUpperCase() : null].filter(Boolean).join(" · ")}
+              </div>
               <div style={{
-                fontSize: `${fmt.fontSize + 12}px`,
+                fontSize: `${fmt.fontSize + 10}px`,
                 fontWeight: 700,
-                color: "#1a2744",
+                color: "#ffffff",
                 fontFamily: fmt.fontFamily,
-                lineHeight: "1.2",
-                marginBottom: "4px",
+                lineHeight: "1.25",
+                marginBottom: "2px",
               }}>{worksheet.title}</div>
               {worksheet.subtitle && (
-                <div style={{ fontSize: `${fmt.fontSize}px`, color: "#4b5563", fontFamily: fmt.fontFamily, marginTop: "2px" }}>{worksheet.subtitle}</div>
+                <div style={{ fontSize: `${fmt.fontSize}px`, color: "rgba(255,255,255,0.75)", fontFamily: fmt.fontFamily, marginTop: "2px" }}>{worksheet.subtitle}</div>
               )}
               {sendNeedId && sendNeedId !== "none" && sendNeedId !== "none-selected" && sendNeedId !== "general" && (
-                <div style={{ marginTop: "6px", display: "inline-block", background: "#1a2744", color: "#fff", fontSize: "10px", fontWeight: 700, padding: "2px 10px", borderRadius: "3px", fontFamily: fmt.fontFamily, letterSpacing: "0.05em" }}>
+                <div style={{ marginTop: "6px", display: "inline-block", background: "rgba(255,255,255,0.15)", color: "#fff", fontSize: "10px", fontWeight: 700, padding: "2px 10px", borderRadius: "2px", fontFamily: fmt.fontFamily, letterSpacing: "0.05em" }}>
                   Adapted for {sendNeedId.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase())}
                 </div>
               )}
@@ -3502,9 +3559,9 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
 
         // ── Section group dividers: inject "SECTION N — NAME — Questions X–Y" before first question in each group ──
         const QUESTION_GROUP_MAP: Record<string, { label: string; qStart: number; qEnd: number }> = {
-          "q-true-false":  { label: "SECTION 1 — KNOWLEDGE CHECK",         qStart: 1, qEnd: 3 },
-          "q-mcq":         { label: "SECTION 1 — KNOWLEDGE CHECK",         qStart: 1, qEnd: 3 },
-          "q-gap-fill":    { label: "SECTION 1 — KNOWLEDGE CHECK",         qStart: 1, qEnd: 3 },
+          "q-true-false":  { label: "SECTION 1 — RECALL",                  qStart: 1, qEnd: 3 },
+          "q-mcq":         { label: "SECTION 1 — RECALL",                  qStart: 1, qEnd: 3 },
+          "q-gap-fill":    { label: "SECTION 1 — RECALL",                  qStart: 1, qEnd: 3 },
           "q-short-answer":{ label: "SECTION 2 — UNDERSTANDING",           qStart: 4, qEnd: 6 },
           "q-extended":    { label: "SECTION 3 — APPLICATION & ANALYSIS",  qStart: 7, qEnd: 9 },
           "q-circuit":     { label: "SECTION 3 — APPLICATION & ANALYSIS",  qStart: 7, qEnd: 9 },
@@ -3512,15 +3569,15 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
           "q-graph":       { label: "SECTION 3 — APPLICATION & ANALYSIS",  qStart: 7, qEnd: 9 },
           "q-data-table":  { label: "SECTION 2 — UNDERSTANDING",           qStart: 4, qEnd: 6 },
           "q-label-diagram":{ label: "SECTION 2 — UNDERSTANDING",          qStart: 4, qEnd: 6 },
-          "q-ordering":    { label: "SECTION 1 — KNOWLEDGE CHECK",         qStart: 1, qEnd: 3 },
-          "q-matching":    { label: "SECTION 1 — KNOWLEDGE CHECK",         qStart: 1, qEnd: 3 },
+          "q-ordering":    { label: "SECTION 1 — RECALL",                  qStart: 1, qEnd: 3 },
+          "q-matching":    { label: "SECTION 1 — RECALL",                  qStart: 1, qEnd: 3 },
         };
         const groupInfo = QUESTION_GROUP_MAP[section.type];
         // Show the group divider only before the FIRST question of that group type in the worksheet
         const isFirstOfGroup = groupInfo && !worksheet.sections.slice(0, i).some((s: any) => s.type === section.type);
         // Also check if it's the first of the broader group (e.g. first q-short-answer before any q-short-answer)
         const groupTypes: Record<string, string[]> = {
-          "SECTION 1 — KNOWLEDGE CHECK":       ["q-true-false", "q-mcq", "q-gap-fill", "q-ordering", "q-matching"],
+          "SECTION 1 — RECALL":                ["q-true-false", "q-mcq", "q-gap-fill", "q-ordering", "q-matching"],
           "SECTION 2 — UNDERSTANDING":          ["q-short-answer", "q-data-table", "q-label-diagram"],
           "SECTION 3 — APPLICATION & ANALYSIS": ["q-extended", "q-circuit", "q-draw", "q-graph"],
         };
@@ -3626,16 +3683,17 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
           >
             {/* ── Section header: individual question OR section divider ── */}
             {isIndividualQuestion ? (
-              /* Individual question: navy badge + question title inline, no teal divider */
-              <div style={{ display: "flex", alignItems: "flex-start", gap: "12px", marginBottom: "10px" }}>
+              /* Individual question: dark navy square badge + question text — matches reference PDF */
+              <div style={{ display: "flex", alignItems: "flex-start", gap: "10px", marginBottom: "10px" }}>
                 <div style={{
-                  width: "28px", height: "28px", minWidth: "28px",
-                  background: "#1a2744",
+                  width: "22px", height: "22px", minWidth: "22px",
+                  background: "#1B2A4A",
                   color: "#ffffff",
                   display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: "13px", fontWeight: 700,
-                  borderRadius: "3px",
+                  fontSize: "11px", fontWeight: 700,
+                  borderRadius: "0",
                   fontFamily: fmt.fontFamily,
+                  flexShrink: 0,
                   marginTop: "1px",
                 }}>{questionNumber}</div>
                 <div style={{ flex: 1 }}>
@@ -3650,27 +3708,25 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                 </div>
               </div>
             ) : (
-              /* Section divider: teal label with horizontal rules above and below */
-              <div style={{ marginBottom: "14px" }}>
-                <div style={{ borderTop: isTeacherHeader ? "2px solid #8b1a1a" : "2px solid #1a2744", marginBottom: "5px" }} />
+              /* Section header: thick navy rule + teal label + thin grey rule — matches reference PDF */
+              <div style={{ marginBottom: "12px" }}>
+                <div style={{ borderTop: isTeacherHeader ? "1.5px solid #8b1a1a" : "1.5px solid #1B2A4A", marginBottom: "4px" }} />
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                    <span style={{
-                      fontSize: "10px",
-                      fontWeight: 700,
-                      color: isTeacherHeader ? "#ffffff" : "#2a7f8f",
-                      fontFamily: fmt.fontFamily,
-                      textTransform: "uppercase",
-                      letterSpacing: "0.08em",
-                    }}>
-                      {isTeacherHeader ? "TEACHER COPY — ANSWER KEY" : groupLabel}
-                    </span>
-                    {isTeacherSection && !isTeacherHeader && (
-                      <span style={{ background: "#8b1a1a", color: "#fff", padding: "1px 7px", borderRadius: "3px", fontSize: "9px", fontWeight: 700, fontFamily: fmt.fontFamily, letterSpacing: "0.05em" }}>TEACHER ONLY</span>
-                    )}
-                  </div>
+                  <span style={{
+                    fontSize: "8.5px",
+                    fontWeight: 700,
+                    color: isTeacherHeader ? "#8b1a1a" : "#2A6F6F",
+                    fontFamily: fmt.fontFamily,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.12em",
+                  }}>
+                    {isTeacherHeader ? "TEACHER COPY — ANSWER KEY" : groupLabel}
+                  </span>
+                  {isTeacherSection && !isTeacherHeader && (
+                    <span style={{ background: "#8b1a1a", color: "#fff", padding: "1px 7px", borderRadius: "2px", fontSize: "9px", fontWeight: 700, fontFamily: fmt.fontFamily, letterSpacing: "0.05em" }}>TEACHER ONLY</span>
+                  )}
                 </div>
-                <div style={{ borderTop: isTeacherHeader ? "2px solid #8b1a1a" : "1px solid #d1d5db", marginTop: "5px" }} />
+                <div style={{ borderTop: isTeacherHeader ? "0.4px solid #8b1a1a" : "0.4px solid #cccccc", marginTop: "4px" }} />
               </div>
             )}
 

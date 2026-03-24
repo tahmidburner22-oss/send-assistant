@@ -24,6 +24,7 @@ import { getSyllabusTopics, type SyllabusTopic } from "@/lib/syllabus-data";
 import { getSubtopics } from "@/lib/subtopics-data";
 import { aiGenerateWorksheet, aiEditSection, aiScaffoldExistingWorksheet, aiDifferentiateExistingWorksheet, parseNaturalLanguageInput, aiScenarioSwap, aiAdjustReadingLevel } from "@/lib/ai";
 import { runWorksheetPipeline } from "@/lib/engines/pipeline";
+import { applySEND } from "@/lib/engines/adaptationEngine";
 // examPaperBuilder is dynamically imported inside handlers to avoid loading the large question bank on initial page load
 import type { PastPaperQuestion } from "@/lib/pastPaperQuestions";
 import PrintOptionsDialog, { type PrintOptions } from "@/components/PrintOptionsDialog";
@@ -1766,117 +1767,50 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
     }
   };
 
-  // ─── One-click differentiation ────────────────────────────────────────────
-  const handleDifferentiate = async (tier: string) => {
+  // ─── One-click differentiation (local adaptation engine — no AI call) ──────────────────
+  //
+  // All 3 tiers are handled by applySEND() in adaptationEngine.ts:
+  //
+  //  • foundation — simplify command words, add scaffolds/sentence starters/step prompts,
+  //                  increase sub-part spacing. Keeps layouts, marks, structure.
+  //
+  //  • higher     — upgrade command words to higher-order thinking, add extension prompts,
+  //                  remove basic scaffolds. Keeps layouts, marks, structure.
+  //
+  //  • send       — simplify wording, add word banks/chunked instructions/sentence starters/
+  //                  step-by-step prompts, increase spacing. Keeps layouts, marks, structure.
+  //
+  const handleDifferentiate = (tier: string) => {
     if (!generated) return;
     setDiffLoading(tier);
     try {
       const ws = generated as AIWorksheet;
 
-      // ── SEND tier: transform the EXISTING worksheet with real scaffolding ──────
-      // This uses the dedicated scaffold-worksheet endpoint which takes the current
-      // worksheet sections and adds gap fills, sentence starters, word banks, and
-      // hint boxes — preserving every original question verbatim.
-      if (tier === "send") {
-        const effectiveSendNeed =
-          // 1. Explicit override from the dialog SEND need picker
-          (sendNeedForScaffold && sendNeedForScaffold !== "none" && sendNeedForScaffold !== "none-selected")
-            ? sendNeedForScaffold
-            // 2. SEND need embedded in the worksheet metadata
-            : (ws.metadata?.sendNeed && ws.metadata.sendNeed !== "none" && ws.metadata.sendNeed !== "none-selected")
-              ? ws.metadata.sendNeed
-              // 3. SEND need from the generate form
-              : (sendNeed && sendNeed !== "none-selected" && sendNeed !== "")
-                ? sendNeed
-                : "general";
+      // Map dialog tier strings to applySEND tier strings
+      const sendTier = (tier === "send" || tier === "mixed_ability")
+        ? "send"
+        : tier === "foundation"
+        ? "foundation"
+        : "higher";
 
-        // Get the non-teacher sections to scaffold (exclude answer sections)
-        const sectionsToScaffold = (ws.sections || []).filter(
-          (s: any) => !s.teacherOnly
-        );
+      // Apply local adaptation — instant, no network call
+      const adapted = applySEND(ws, sendTier as any);
 
-        const scaffolded = await aiScaffoldExistingWorksheet({
-          sections: sectionsToScaffold,
-          sendNeed: effectiveSendNeed,
-          subject: ws.metadata?.subject || subject,
-          topic: ws.metadata?.topic || topic,
-          yearGroup: ws.metadata?.yearGroup || yearGroup,
-          title: ws.title,
-        });
-
-        // Merge scaffolded sections back, preserving teacher-only sections
-        // Fix section title prefix: AI returns "SECTION 1: Title" — strip the prefix
-        const cleanedScaffoldedSections = (scaffolded.sections || []).map((s: any) => ({
-          ...s,
-          title: (s.title || "").replace(/^SECTION\s*\d+:\s*/i, "").trim() || s.title,
-        }));
-
-        // Update the SEND Adaptations & Rationale teacher section with actual scaffolding applied
-        const teacherSections = (ws.sections || []).filter((s: any) => s.teacherOnly).map((s: any) => {
-          if (/SEND Adaptations/i.test(s.title || "")) {
-            const appliedList = (scaffolded.scaffoldingApplied || []).map((a: string) => `• ${a}`).join("\n");
-            return {
-              ...s,
-              content: `THIS WORKSHEET HAS BEEN SCAFFOLDED FOR: ${effectiveSendNeed.toUpperCase()}\n\nADAPTATIONS APPLIED:\n${appliedList}\n\nWHY THIS MATTERS:\nThese adaptations have been applied to remove barriers for students with ${effectiveSendNeed}. Each scaffold directly supports access to the curriculum content while maintaining the same learning objectives as the standard worksheet.\n\nCLASSROOM TIPS:\n• Pre-teach the key vocabulary before distributing the worksheet\n• Allow additional processing time for each question\n• Check in with the student at the start of each section\n• Consider paired working or a reading partner if appropriate`,
-            };
-          }
-          return s;
-        });
-
-        // If a word bank was generated, prepend it as a section
-        const wordBankSection: { title: string; content: string; type: string; teacherOnly: boolean }[] = scaffolded.wordBank
-          ? [{ title: "Word Bank", content: scaffolded.wordBank, type: "wordbank", teacherOnly: false }]
-          : [];
-
-        const scaffoldedWorksheet: AIWorksheet = {
-          ...ws,
-          sections: [...wordBankSection, ...cleanedScaffoldedSections, ...teacherSections],
-          metadata: {
-            ...ws.metadata,
-            sendNeed: effectiveSendNeed,
-            adaptations: scaffolded.scaffoldingApplied || [],
-          },
-          isAI: true as const,
-        };
-
-        setDiffVersions(prev => ({ ...prev, send: scaffoldedWorksheet }));
-        setGenerated(scaffoldedWorksheet);
-        setShowDiffDialog(false);
-        toast.success(`SEND Scaffolded version created with ${effectiveSendNeed} adaptations!`);
-        setDiffLoading(null);
-        return;
-      }
-
-      // ── Foundation / Higher tiers: transform existing worksheet (faster than regenerating) ──
-      const differentiated = await aiDifferentiateExistingWorksheet({
-        sections: (ws.sections || []),
-        tier: tier as 'foundation' | 'higher',
-        subject: ws.metadata?.subject || subject,
-        topic: ws.metadata?.topic || topic,
-        yearGroup: ws.metadata?.yearGroup || yearGroup,
-        title: ws.title,
-      });
-
-      // Merge differentiated pupil sections back, preserving teacher-only sections unchanged
-      const cleanedDiffSections = (differentiated.sections || []).map((s: any) => ({
-        ...s,
-        title: (s.title || "").replace(/^SECTION\s*\d+:\s*/i, "").trim() || s.title,
-      }));
-      const teacherOnlySections = (ws.sections || []).filter((s: any) => s.teacherOnly);
-
-      const differentiatedWorksheet: AIWorksheet = {
-        ...ws,
-        sections: [...cleanedDiffSections, ...teacherOnlySections],
-        metadata: {
-          ...ws.metadata,
-          difficulty: tier,
-        },
+      const adaptedWorksheet: AIWorksheet = {
+        ...adapted,
         isAI: true as const,
       };
-      setDiffVersions(prev => ({ ...prev, [tier]: differentiatedWorksheet }));
-      setGenerated(differentiatedWorksheet);
+
+      setDiffVersions(prev => ({ ...prev, [tier]: adaptedWorksheet }));
+      setGenerated(adaptedWorksheet);
       setShowDiffDialog(false);
-      toast.success(`${tier === "foundation" ? "Foundation" : "Higher"} version generated!`);
+
+      const msgs: Record<string, string> = {
+        foundation: "Foundation version applied — command words simplified, scaffolds added, step prompts included.",
+        higher:     "Higher version applied — command words upgraded, extension prompts added.",
+        send:       "SEND version applied — word banks, sentence starters, and step-by-step prompts added.",
+      };
+      toast.success(msgs[tier] || `${tier} version applied!`);
     } catch (err) {
       console.error("Differentiation failed:", err);
       toast.error("Differentiation failed. Please try again.");
@@ -3240,6 +3174,20 @@ ${s.content}`).join("\n\n"),
               ) : (
                 <><Volume2 className="w-3.5 h-3.5" /> Read Aloud</>
               )}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                if (!generated) return;
+                const adapted = applySEND(generated, "mixed_ability");
+                setGenerated(adapted);
+                toast.success("Mixed-ability version applied — scaffolds added, wording simplified, layouts preserved.");
+              }}
+              className="gap-1.5 border-teal-400 text-teal-700 hover:bg-teal-50 font-semibold"
+              title="1-click: reduce density, add scaffolds, simplify wording — keeps layouts and marks"
+            >
+              <Sparkles className="w-3.5 h-3.5" /> 1-Click Differentiate
             </Button>
             <Button variant="outline" size="sm" onClick={() => setShowDiffDialog(true)} className="gap-1.5 border-indigo-300 text-indigo-700 hover:bg-indigo-50">
               <Sparkles className="w-3.5 h-3.5" /> Differentiate
