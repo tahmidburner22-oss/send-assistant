@@ -880,10 +880,14 @@ STRICT JSON OUTPUT: Respond with valid JSON only — no markdown, no code blocks
   const lengthMins = parseInt(params.worksheetLength || "30", 10);
   const lengthNote =
     lengthMins <= 10
-      ? `Length: 10 min. 5–8 questions total. No challenge section.`
+      ? `Length: 10 min. Include ONLY: Learning Objective, Key Vocabulary, Q1 (True/False, 3 statements), Q2 (MCQ). No challenge, no self-reflection.`
+      : lengthMins <= 20
+      ? `Length: 20 min. Include: Learning Objective, Key Vocabulary, Common Mistakes, Worked Example, Q1 (True/False), Q2 (MCQ), Q3 (Gap Fill), Q4 (Short Answer, 3 marks), Q5 (Short Answer, 3 marks). No Q6-Q9. No challenge. Include Self Reflection.`
       : lengthMins >= 60
-      ? `Length: 60 min. 30–40 questions total. Full guided (8–10 q), independent (15–20 q), challenge (4–6 q), extension.`
-      : `Length: 30 min. 15–20 questions total: guided (4–5 q), independent (8–10 q), one challenge.`;
+      ? `Length: 60 min. Full worksheet: Q1-Q9 plus 2 extra questions Q10 (extended, 5 marks) and Q11 (evaluation, 4 marks). Challenge question (8 marks). Full self-reflection.`
+      : lengthMins >= 45
+      ? `Length: 45 min. Full worksheet: Q1-Q9 plus one extra question Q10 (extended answer, 5 marks). Challenge question. Full self-reflection.`
+      : `Length: 30 min (BASE). Full worksheet: Q1-Q3 (Knowledge Check section), Q4-Q6 (Understanding section), Q7-Q9 (Application & Analysis section). Challenge question. Self Reflection.`;
 
   // ── Target page count ──────────────────────────────────────────────────────
   const targetPages = params.targetPages || 0; // 0 = auto (no constraint)
@@ -946,26 +950,33 @@ STRICT JSON OUTPUT: Respond with valid JSON only — no markdown, no code blocks
   const isDiagramSubject = diagramSubjects.some(s => subjectLower.includes(s));
   const isVI = hasSend && !!(params.sendNeed?.toLowerCase().includes("vi") || params.sendNeed?.toLowerCase().includes("visual impair"));
 
+  // Diagrams auto-generate for relevant subjects — no toggle needed
   const svgDiagramNote = (isDiagramSubject && !isVI && !params.examStyle)
-    ? `SVG DIAGRAM INSTRUCTION — IMPORTANT:
-For the Worked Example section and/or one key question in Section A, if a labelled diagram would genuinely help students understand "${params.topic}", embed a diagram specification using this EXACT format at the END of that section's "content" string (after the question text):
+    ? `SVG DIAGRAM INSTRUCTION — AUTO-GENERATE:
+For the Worked Example section and/or one key question, if a labelled diagram would genuinely help students understand "${params.topic}", embed a diagram specification using this EXACT format at the END of that section's "content" string:
 
 [[DIAGRAM:{"type":"labeled","title":"${params.topic} Diagram","labels":[{"text":"Label 1","x":25,"y":35},{"text":"Label 2","x":75,"y":60},{"text":"Label 3","x":45,"y":80}]}]]
 
 DIAGRAM TYPES — choose the most appropriate:
-- "labeled" → anatomy, geography features, physics apparatus, biology structures (circle or ellipse shape with radiating labels)
-- "flow" → sequences, processes, steps (e.g. rock cycle, carbon cycle, algorithm)  
+- "labeled" → anatomy, geography features, physics apparatus, biology structures
+- "flow" → sequences, processes, steps (e.g. rock cycle, carbon cycle, algorithm)
 - "cycle" → cycles (e.g. water cycle, nitrogen cycle, mitosis stages)
 - "number-line" → number lines with start/end/marked values (maths only)
 - "bar" → bar chart with bars:[{label,value}] and xLabel/yLabel
 - "axes" → blank coordinate axes for students to plot (maths/physics)
+- "circuit" → circuit diagrams for electricity topics (physics)
 
-CRITICAL RULES for diagrams:
-1. Labels must be SHORT (2-4 words max) and match what's actually in "${params.topic}"
-2. x and y values are percentages (0–100) of diagram space — spread labels around the shape edge
+STRICT ACCURACY RULES for diagrams (all must be satisfied before including):
+1. Labels must be SHORT (2-4 words max) and FACTUALLY CORRECT for "${params.topic}"
+2. x and y values are percentages (0–100) — spread labels around the shape edge, no overlaps
 3. Only include a diagram if it directly illustrates the question being asked
 4. DO NOT include a diagram in every section — maximum 2 diagrams per worksheet
-5. If no diagram is genuinely useful, omit entirely — no placeholder diagrams`
+5. All symbols must come from the approved symbol library (no invented symbols)
+6. All connectors must connect to valid anchor points on symbols
+7. All labels must be attached to a valid object — no floating labels
+8. Diagram must fit within its allotted box (no cut-off at edges)
+9. No component overlap — ensure adequate spacing between elements
+10. If any rule cannot be satisfied, omit the diagram entirely — no placeholder diagrams`
     : ``;
 
   // ── Word problems note ─────────────────────────────────────────────────────
@@ -1010,7 +1021,7 @@ CRITICAL RULES for diagrams:
   const diagramRelevanceNote = `Only include or request a diagram if it is essential to teaching "${params.topic}". The diagram must match the exact worksheet topic and the questions that refer to it. If no exact topic-matching diagram is needed, omit the diagram entirely.`;
   const vocabularyCapNote = `Key Vocabulary must contain at most 5 items.`;
 
-  const recallNote = params.recallTopic ? `RECALL SECTION REQUIRED: The first section of this worksheet must be titled "Recall — ${params.recallTopic}" and contain exactly 2-3 short retrieval questions on the PREVIOUS topic "${params.recallTopic}". These questions should be quick and accessible, designed to activate prior knowledge before the main topic. Do NOT mix recall questions with the main topic questions.` : '';
+  const recallNote = params.recallTopic ? `PRIOR KNOWLEDGE CHECK REQUIRED: After the Learning Objective and BEFORE Key Vocabulary, include a section titled "Prior Knowledge Check — ${params.recallTopic}" (type: "prior-knowledge") with exactly 3 short retrieval questions on the PREVIOUS topic "${params.recallTopic}". These must be quick, accessible questions (True/False, short answer, or fill-in-blank) to activate prior knowledge. Do NOT mix these with the main topic questions. This section appears SECOND in the worksheet, right after the Learning Objective.` : '';
 
   const user = `Create one printable worksheet in valid raw JSON only.
 Subject: ${params.subject} | Year: ${params.yearGroup} (${phase}) | Topic: ${params.topic} | Difficulty: ${params.difficulty || "mixed"}
@@ -1059,10 +1070,10 @@ Return EXACTLY this JSON (raw JSON only):
   "title": "${params.topic} — ${params.yearGroup} ${subjectDisplay} Worksheet",
   "subtitle": "${params.yearGroup} (${phase}) | ${subjectDisplay} | ${params.examBoard && params.examBoard !== 'none' ? params.examBoard : 'General'} | ${timingGuide}",
   "sections": [
-    ${params.recallTopic ? `{"title": "Recall — ${params.recallTopic}", "type": "guided", "content": "2-3 retrieval questions on '${params.recallTopic}'"},` : ''}
-    {"title": "Learning Objectives", "type": "objective", "content": "[3 bullet-point learning objectives for ${params.topic}]"},
-    {"title": "Key Vocabulary", "type": "vocabulary", "content": "[5-6 terms, one per line: term | definition]"},
-    {"title": "Common Mistakes to Avoid", "type": "common-mistakes", "teacherOnly": false, "content": "[3-4 common mistakes. Format each as: MISTAKE TITLE\n→ explanation of the mistake and how to avoid it]"},
+    {"title": "Learning Objectives", "type": "objective", "content": "[One clear learning objective sentence for ${params.topic}]"},
+    ${params.recallTopic ? `{"title": "Prior Knowledge Check \u2014 ${params.recallTopic}", "type": "prior-knowledge", "content": "Test your memory from last lesson!\n1. [True/False statement about ${params.recallTopic}] TRUE / FALSE\n2. [Short question about ${params.recallTopic}]\n3. [Fill-in-blank about ${params.recallTopic}]"},` : ''}
+    {"title": "Key Vocabulary", "type": "vocabulary", "content": "[6-8 terms, one per line: term | definition]"},
+    {"title": "Common Mistakes to Avoid", "type": "common-mistakes", "teacherOnly": false, "content": "[3-4 common mistakes. Format each as:\nMISTAKE TITLE\n→ explanation of the mistake and how to avoid it]"},
     ${isMaths && !params.examStyle ? `{"title": "Key Formulas", "type": "example", "content": "[LaTeX formulas or: No formula required]"},` : ''}
     {"title": "Worked Example", "type": "example", "content": "[${exampleGuide}]"}${params.introOnly ? '' : `,
     {"title": "Reminder Box", "type": "reminder-box", "content": "[3 numbered key steps or rules for this topic]"},
@@ -1076,8 +1087,8 @@ Return EXACTLY this JSON (raw JSON only):
     {"title": "Q8 — Application", "type": "q-extended", "content": "[Real-world application or calculation question about ${params.topic}] [4 marks]", "marks": 4},
     {"title": "Q9 — Evaluation", "type": "q-extended", "content": "[Critical thinking or evaluation question about ${params.topic}] [3 marks]", "marks": 3},
     {"title": "${sendSectionTitles.challenge}", "type": "challenge", "content": "[${challengeGuide}${hasSend ? ' — optional, labelled as bonus' : ''}]"},
-    {"title": "How Did I Do?", "type": "self-reflection", "teacherOnly": false, "content": "[${hasSend ? 'tick-box or text-scale self-assessment per SEND rules' : '3-4 I can statements + open question'}]"},
-    {"title": "Mark Scheme", "type": "mark-scheme", "teacherOnly": true, "content": "[answers only]"},
+    {"title": "Self Reflection", "type": "self-reflection", "teacherOnly": false, "content": "SUBTITLE: Review your understanding before moving on.\nCONFIDENCE_TABLE:\n[specific topic/skill 1 from ${params.topic}]\n[specific topic/skill 2 from ${params.topic}]\n[specific topic/skill 3 from ${params.topic}]\n[specific topic/skill 4 from ${params.topic}]\n[specific topic/skill 5 from ${params.topic}]\nWRITTEN_PROMPTS:\nOne concept I feel confident about is ...\nOne area I still need to practise is ...\nA question I still want to ask my teacher is ...\nEXIT_TICKET: Write ONE thing you learned today in one sentence:"},
+    {"title": "Teacher Copy — Answer Key", "type": "mark-scheme", "teacherOnly": true, "content": "MARKING GUIDANCE: Accept reasonable alternatives. Award marks for clear reasoning and correct application.\nSECTION 1 — KNOWLEDGE CHECK\nQ1 [mark scheme: list each statement with T or F answer]\nQ2 [correct answer letter and brief explanation]\nQ3 [correct words for gap fill, in order]\nSECTION 2 — UNDERSTANDING\nQ4 [mark scheme with mark allocation per point]\nQ5 [mark scheme with mark allocation per point]\nQ6 [mark scheme with mark allocation per point]\nSECTION 3 — APPLICATION & ANALYSIS\nQ7 [mark scheme with mark allocation per point]\nQ8 [mark scheme with mark allocation per point]\nQ9 [mark scheme with mark allocation per point]\nCHALLENGE\nQCh [full mark scheme]"},
     {"title": "Teacher Notes", "type": "teacher-notes", "teacherOnly": true, "content": "[timings, misconceptions, interventions, next topic]"},
     {"title": "SEND Adaptations & Rationale", "type": "teacher-notes", "teacherOnly": true, "content": "${hasSend ? `ADAPTED FOR: ${params.sendNeed!.toUpperCase()}\nADAPTATIONS: [list every specific change made]\nRATIONALE: [3-4 sentences: how ${params.sendNeed} affects learning, SEND Code of Practice, how each adaptation removes a barrier]\nCLASSROOM TIPS: [3-4 practical tips for the teacher]\nIF STUDENT STRUGGLES: [next steps / further scaffolding]` : 'No SEND adaptations — standard worksheet.'}"}`}
   ],
