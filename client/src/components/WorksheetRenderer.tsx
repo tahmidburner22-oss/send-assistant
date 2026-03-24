@@ -1532,7 +1532,7 @@ function TrueFalseSection({
 }
 
 // ── 2. VOCABULARY ──────────────────────────────────────────────────────────────
-function VocabularySection({
+function VocabSection({
   content, fmt, overlayColor = "white",
 }: {
   content: string; fmt: ReturnType<typeof getSendFormatting>; overlayColor?: string;
