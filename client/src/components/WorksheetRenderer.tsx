@@ -2124,11 +2124,11 @@ function VocabSection({ content, fmt, overlayColor = "white" }: { content: strin
   }
 
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "8px" }}>
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4px 24px" }}>
       {entries.map((e, i) => (
-        <div key={i} style={{ background: overlayColor, border: "1px solid #4f46e5", borderRadius: "4px", padding: "8px 10px", display: "flex", flexDirection: "column", gap: "4px" }}>
-          <div style={{ fontWeight: 700, color: "#7c3aed", fontSize: `${textSize}px`, fontFamily, letterSpacing }} dangerouslySetInnerHTML={{ __html: renderMath(e.term) }} />
-          <div style={{ color: "#374151", fontSize: `${textSize - 1}px`, lineHeight, fontFamily, letterSpacing }} dangerouslySetInnerHTML={{ __html: renderMath(e.def) }} />
+        <div key={i} style={{ display: "flex", gap: "4px", padding: "5px 0", borderBottom: "1px solid #e5e7eb" }}>
+          <span style={{ fontWeight: 700, color: "#1a2744", fontSize: `${textSize}px`, fontFamily, letterSpacing, flexShrink: 0, minWidth: "90px" }} dangerouslySetInnerHTML={{ __html: renderMath(e.term) + ":" }} />
+          <span style={{ color: "#374151", fontSize: `${textSize}px`, lineHeight, fontFamily, letterSpacing }} dangerouslySetInnerHTML={{ __html: renderMath(e.def) }} />
         </div>
       ))}
     </div>
@@ -2170,55 +2170,64 @@ function SelfAssessmentSection({ content, fmt }: { content: string; fmt: ReturnT
 function SelfReflectionSection({ content, fmt, overlayColor = "white" }: { content: string; fmt: ReturnType<typeof getSendFormatting>; overlayColor?: string }) {
   const { fontSize: textSize, fontFamily, lineHeight } = fmt;
   const lines = content.split("\n").filter(l => l.trim());
-  // Separate "I can" statements from the open question (starts with "Q:")
-  const iCanLines = lines.filter(l => !l.trim().startsWith("Q:"));
-  const openQuestion = lines.find(l => l.trim().startsWith("Q:"));
-  const openQ = openQuestion ? openQuestion.replace(/^Q:\s*/i, "").trim() : null;
+  // Separate "I can" / topic statements from written reflection prompts (starts with "Q:" or ">") 
+  const topicLines = lines.filter(l => !l.trim().startsWith("Q:") && !l.trim().startsWith(">"));
+  const reflectionPrompts = lines.filter(l => l.trim().startsWith("Q:") || l.trim().startsWith(">")).map(l => l.replace(/^[Q:>]\s*/i, "").trim());
 
-  /** Decide whether this line needs "I can " prepended.
-   *  Skip if it already starts with "I can", is a question, or reads as a
-   *  complete sentence (starts with capital and ends with punctuation). */
-  const needsICanPrefix = (line: string): boolean => {
-    const t = line.trim();
-    if (!t) return false;
-    if (/^I can\b/i.test(t)) return false;       // already has "I can"
-    if (/[?!]$/.test(t)) return false;            // question or exclamation
-    if (/^How\b|^What\b|^Why\b|^When\b/i.test(t)) return false; // question words
-    // If it starts with a capital letter AND has a verb that makes it a full sentence, skip
-    if (/^[A-Z][^a-z]*$/.test(t)) return false;  // ALL CAPS label
-    if (/^[A-Z].*\s+(is|are|was|were|has|have)\s/i.test(t)) return false;
-    return true; // short fragment — safe to prepend "I can "
-  };
+  // Normalise topic lines: strip bullet/number prefixes and "I can" prefix
+  const topics = topicLines.map(l => l.replace(/^[•\-\*\d.)]\s*/, "").replace(/^I can\s*/i, "").trim()).filter(Boolean);
+
   return (
-    <div>
-      {/* Traffic-light self-assessment rows */}
-      {iCanLines.map((line, i) => {
-        const clean = line.replace(/^[•\-\*]\s*/, "").replace(/^I can\s*/i, "").trim();
-        if (!clean) return null;
-        return (
-          <div key={i} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "8px 0", borderBottom: "1px solid #ddd6fe" }}>
-            <div style={{ display: "flex", gap: "6px", flexShrink: 0 }}>
-              {["R", "A", "G"].map((label, ci) => (
-                <div key={ci} style={{ width: "26px", height: "26px", borderRadius: "50%", border: "2px solid #ddd6fe", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px", fontWeight: 700, color: ci === 0 ? "#dc2626" : ci === 1 ? "#d97706" : "#16a34a" }}>
-                  {label}
-                </div>
+    <div style={{ fontFamily }}>
+      {/* Part A: Confidence table */}
+      <div style={{ marginBottom: "14px" }}>
+        <div style={{ fontSize: `${textSize - 1}px`, fontWeight: 600, color: "#374151", fontFamily, marginBottom: "8px", fontStyle: "italic" }}>
+          A &nbsp; How confident do you feel? Tick the column that best describes you.
+        </div>
+        {/* Table header */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 80px 100px 80px", borderBottom: "2px solid #1a2744" }}>
+          <div style={{ fontSize: `${textSize - 2}px`, fontWeight: 700, color: "#1a2744", fontFamily, padding: "4px 0", textTransform: "uppercase", letterSpacing: "0.05em" }}>Topic</div>
+          {["Not Yet", "Getting There", "Confident"].map((col, ci) => (
+            <div key={ci} style={{ fontSize: `${textSize - 2}px`, fontWeight: 700, color: "#1a2744", fontFamily, padding: "4px 4px", textAlign: "center", textTransform: "uppercase", letterSpacing: "0.04em" }}>{col}</div>
+          ))}
+        </div>
+        {/* Table rows */}
+        {topics.map((topic, ti) => (
+          <div key={ti} style={{ display: "grid", gridTemplateColumns: "1fr 80px 100px 80px", borderBottom: "1px solid #e5e7eb" }}>
+            <div style={{ fontSize: `${textSize}px`, color: "#374151", fontFamily, lineHeight, padding: "7px 0" }}>{topic}</div>
+            {[0, 1, 2].map(ci => (
+              <div key={ci} style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "7px 4px" }}>
+                <div style={{ width: "18px", height: "18px", border: "1.5px solid #9ca3af", borderRadius: "2px" }} />
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+      {/* Part B: Written reflection prompts */}
+      {reflectionPrompts.length > 0 && (
+        <div>
+          <div style={{ fontSize: `${textSize - 1}px`, fontWeight: 600, color: "#374151", fontFamily, marginBottom: "10px", fontStyle: "italic" }}>
+            B &nbsp; Written reflection — complete each prompt below.
+          </div>
+          {reflectionPrompts.map((prompt, pi) => (
+            <div key={pi} style={{ marginBottom: "14px" }}>
+              <div style={{ fontSize: `${textSize}px`, color: "#374151", fontFamily, fontStyle: "italic", marginBottom: "4px" }}>{prompt}</div>
+              {[0, 1].map(li => (
+                <div key={li} style={{ borderBottom: "1px solid #ccc", height: "28px", marginBottom: "4px" }} />
               ))}
             </div>
-            <span style={{ fontSize: `${textSize}px`, color: "#374151", fontFamily, lineHeight }} dangerouslySetInnerHTML={{ __html: (needsICanPrefix(clean) ? "I can " : "") + stripLatexFromPlainText(clean) }} />
-          </div>
-        );
-      })}
-      <div style={{ marginTop: "6px", fontSize: `${textSize - 2}px`, color: "#4f46e5", fontStyle: "italic", fontFamily }}>
-        R = Not yet &nbsp;|&nbsp; A = Getting there &nbsp;|&nbsp; G = I've got it!
-      </div>
-      {/* Open reflection question */}
-      {openQ && (
-        <div style={{ marginTop: "14px", background: overlayColor, border: "1.5px solid #4f46e5", borderRadius: "4px", padding: "10px 12px" }}>
-          <div style={{ fontSize: `${textSize - 1}px`, fontWeight: 600, color: "#4f46e5", fontFamily, marginBottom: "6px" }} dangerouslySetInnerHTML={{ __html: renderMath(openQ) }} />
-          <div style={{ borderBottom: "1px solid #d1d5db", height: "28px", marginBottom: "6px" }} />
-          <div style={{ borderBottom: "1px solid #d1d5db", height: "28px" }} />
+          ))}
         </div>
       )}
+      {/* Exit ticket */}
+      <div style={{ marginTop: "16px", borderTop: "1.5px solid #d1d5db", paddingTop: "10px" }}>
+        <div style={{ fontSize: `${textSize}px`, fontWeight: 700, color: "#1a2744", fontFamily, textDecoration: "underline", marginBottom: "6px" }}>
+          Exit Ticket: Write ONE thing you learned today in one sentence:
+        </div>
+        {[0, 1].map(li => (
+          <div key={li} style={{ borderBottom: "1px solid #ccc", height: "28px", marginBottom: "4px" }} />
+        ))}
+      </div>
     </div>
   );
 }
@@ -2712,111 +2721,119 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
         />
       )}
       {/* ── Professional Header — hidden for revision mats ── */}
-      {!isRevisionMat && <div className="ws-header" style={{
-        marginBottom: isPrimary ? "16px" : "12px",
-        borderRadius: isPrimary ? "12px" : "8px",
-        overflow: "hidden",
-        border: isPrimary ? "2.5px solid #4f46e5" : "none",
-        boxShadow: isPrimary ? "0 4px 12px rgba(79,70,229,0.2)" : "0 2px 12px rgba(79,70,229,0.18)",
-      }}>
-        {/* Title bar */}
-        <div style={{
-          background: isPrimary
-            ? "linear-gradient(135deg, #4f46e5 0%, #6366f1 40%, #7c3aed 70%, #8b5cf6 100%)"
-            : "linear-gradient(135deg, #4f46e5 0%, #6366f1 40%, #8b5cf6 70%, #a78bfa 100%)",
-          padding: isPrimary ? "12px 16px" : "10px 16px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: "12px",
-        }}>
-          {/* Left: School logo or Adaptly brand mark */}
-          <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
-            {schoolLogoUrl ? (
-              <img
-                src={schoolLogoUrl}
-                alt="School logo"
-                style={{ height: "36px", width: "auto", maxWidth: "64px", objectFit: "contain", borderRadius: "6px", background: "rgba(255,255,255,0.95)", padding: "3px" }}
-              />
-            ) : (
-              <div style={{
-                width: "32px", height: "32px", borderRadius: "50%",
-                background: "rgba(255,255,255,0.15)",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                overflow: "hidden",
-                border: "1.5px solid rgba(255,255,255,0.3)",
-              }}>
-                <img src="/logo.png" alt="Adaptly Logo" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} />
-              </div>
-            )}
-            <div style={{ fontSize: "10px", color: "rgba(255,255,255,0.85)", fontFamily: fmt.fontFamily, lineHeight: "1.3" }}>
-              <div style={{ fontWeight: 800 }}>{schoolName || "Adaptly"}</div>
-              <div style={{ opacity: 0.75 }}>{isPrimary ? "Learning Resource" : "SEND-Informed Worksheet"}</div>
-            </div>
-          </div>
-          {/* Centre: Title */}
-          <div style={{ flex: 1, textAlign: "center" }}>
+      {!isRevisionMat && (
+        isPrimary ? (
+          /* ── PRIMARY HEADER: bright colourful style ── */
+          <div className="ws-header" style={{
+            marginBottom: "16px",
+            borderRadius: "12px",
+            overflow: "hidden",
+            border: "2.5px solid #4f46e5",
+            boxShadow: "0 4px 12px rgba(79,70,229,0.2)",
+          }}>
             <div style={{
-              fontWeight: isPrimary ? 900 : 800,
-              fontSize: isPrimary ? `${fmt.fontSize + 5}px` : `${fmt.fontSize + 3}px`,
-              color: "white",
-              fontFamily: fmt.fontFamily,
-              letterSpacing: isPrimary ? "-0.3px" : "-0.2px",
-              lineHeight: "1.25",
-              textShadow: "0 1px 6px rgba(0,0,0,0.18)",
+              background: "linear-gradient(135deg, #4f46e5 0%, #6366f1 40%, #7c3aed 70%, #8b5cf6 100%)",
+              padding: "12px 16px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: "12px",
             }}>
-              {isPrimary ? "" : ""}{worksheet.title}{isPrimary ? "" : ""}
-            </div>
-            {worksheet.subtitle && (
-              <div style={{ fontSize: `${fmt.fontSize - 2}px`, color: "rgba(255,255,255,0.8)", marginTop: "3px", fontFamily: fmt.fontFamily, letterSpacing: "0.2px" }}>{worksheet.subtitle}</div>
-            )}
-            {/* SEND adaptation badge — shown when SEND need is active */}
-            {sendNeedId && sendNeedId !== "none" && sendNeedId !== "none-selected" && sendNeedId !== "general" && (
-              <div style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "5px",
-                marginTop: "5px",
-                background: "rgba(255,255,255,0.2)",
-                backdropFilter: "blur(4px)",
-                border: "1px solid rgba(255,255,255,0.3)",
-                borderRadius: "20px",
-                padding: "2px 12px",
-                fontSize: `${fmt.fontSize - 3}px`,
-                color: "rgba(255,255,255,0.95)",
-                fontFamily: fmt.fontFamily,
-                fontWeight: 600,
-                letterSpacing: "0.3px",
-              }}>
-                <span>Adapted for {sendNeedId.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase())}</span>
-              </div>
-            )}
-          </div>
-          {/* Right: Name/Date/Class fields inline */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "4px", flexShrink: 0 }}>
-            {[
-              { label: "Name", value: "" },
-              { label: "Date", value: new Date().toLocaleDateString("en-GB") },
-              { label: "Class", value: "" },
-              ...(teacherName ? [{ label: "Teacher", value: teacherName }] : []),
-            ].map((field, i) => (
-              <div key={i} style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                <span style={{ fontSize: "10px", fontWeight: 700, color: "rgba(255,255,255,0.85)", fontFamily: fmt.fontFamily, minWidth: "36px" }}>{field.label}:</span>
-                <div style={{ borderBottom: "1.5px solid rgba(255,255,255,0.5)", minWidth: "72px", height: "15px", display: "flex", alignItems: "flex-end" }}>
-                  <span style={{ fontSize: "10px", color: "rgba(255,255,255,0.9)", paddingBottom: "1px", fontFamily: fmt.fontFamily }}>{field.value}</span>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
+                {schoolLogoUrl ? (
+                  <img src={schoolLogoUrl} alt="School logo" style={{ height: "36px", width: "auto", maxWidth: "64px", objectFit: "contain", borderRadius: "6px", background: "rgba(255,255,255,0.95)", padding: "3px" }} />
+                ) : (
+                  <div style={{ width: "32px", height: "32px", borderRadius: "50%", background: "rgba(255,255,255,0.15)", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", border: "1.5px solid rgba(255,255,255,0.3)" }}>
+                    <img src="/logo.png" alt="Adaptly Logo" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} />
+                  </div>
+                )}
+                <div style={{ fontSize: "10px", color: "rgba(255,255,255,0.85)", fontFamily: fmt.fontFamily, lineHeight: "1.3" }}>
+                  <div style={{ fontWeight: 800 }}>{schoolName || "Adaptly"}</div>
+                  <div style={{ opacity: 0.75 }}>Learning Resource</div>
                 </div>
               </div>
-            ))}
+              <div style={{ flex: 1, textAlign: "center" }}>
+                <div style={{ fontWeight: 900, fontSize: `${fmt.fontSize + 5}px`, color: "white", fontFamily: fmt.fontFamily, letterSpacing: "-0.3px", lineHeight: "1.25", textShadow: "0 1px 6px rgba(0,0,0,0.18)" }}>{worksheet.title}</div>
+                {worksheet.subtitle && <div style={{ fontSize: `${fmt.fontSize - 2}px`, color: "rgba(255,255,255,0.8)", marginTop: "3px", fontFamily: fmt.fontFamily }}>{worksheet.subtitle}</div>}
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: "4px", flexShrink: 0 }}>
+                {[{ label: "Name", value: "" }, { label: "Date", value: new Date().toLocaleDateString("en-GB") }, { label: "Class", value: "" }].map((field, fi) => (
+                  <div key={fi} style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                    <span style={{ fontSize: "10px", fontWeight: 700, color: "rgba(255,255,255,0.85)", fontFamily: fmt.fontFamily, minWidth: "36px" }}>{field.label}:</span>
+                    <div style={{ borderBottom: "1.5px solid rgba(255,255,255,0.5)", minWidth: "72px", height: "15px" }}><span style={{ fontSize: "10px", color: "rgba(255,255,255,0.9)", fontFamily: fmt.fontFamily }}>{field.value}</span></div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
-        </div>
-        {/* Secondary: thin accent strip showing subject colour */}
-        {!isPrimary && (
-          <div style={{
-            background: "linear-gradient(90deg, #3730a3 0%, #4f46e5 30%, #7c3aed 65%, #8b5cf6 100%)",
-            height: "3px",
-          }} />
-        )}
-      </div>}
+        ) : (
+          /* ── SECONDARY HEADER: clean Chalkie-style navy/grey ── */
+          <div className="ws-header" style={{ marginBottom: "18px", fontFamily: fmt.fontFamily }}>
+            {/* Top info bar: school name + subject/year/board */}
+            <div style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: "8px",
+            }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                {schoolLogoUrl && (
+                  <img src={schoolLogoUrl} alt="School logo" style={{ height: "28px", width: "auto", maxWidth: "56px", objectFit: "contain" }} />
+                )}
+                <span style={{ fontSize: "11px", fontWeight: 700, color: "#1a2744", fontFamily: fmt.fontFamily, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                  {schoolName || "Adaptly"}
+                </span>
+              </div>
+              <span style={{ fontSize: "10px", color: "#6b7280", fontFamily: fmt.fontFamily, textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 600 }}>
+                {[worksheet.metadata.subject, worksheet.metadata.yearGroup, worksheet.metadata.examBoard && worksheet.metadata.examBoard !== "General" && worksheet.metadata.examBoard !== "none" ? worksheet.metadata.examBoard.toUpperCase() : null].filter(Boolean).join(" · ")}
+              </span>
+            </div>
+            {/* Main header block: grey bg, navy left border */}
+            <div style={{
+              background: "#e8ecf0",
+              borderLeft: "5px solid #1a2744",
+              padding: "14px 18px 12px 18px",
+              marginBottom: "10px",
+            }}>
+              <div style={{
+                fontSize: `${fmt.fontSize + 12}px`,
+                fontWeight: 700,
+                color: "#1a2744",
+                fontFamily: fmt.fontFamily,
+                lineHeight: "1.2",
+                marginBottom: "4px",
+              }}>{worksheet.title}</div>
+              {worksheet.subtitle && (
+                <div style={{ fontSize: `${fmt.fontSize}px`, color: "#4b5563", fontFamily: fmt.fontFamily, marginTop: "2px" }}>{worksheet.subtitle}</div>
+              )}
+              {sendNeedId && sendNeedId !== "none" && sendNeedId !== "none-selected" && sendNeedId !== "general" && (
+                <div style={{ marginTop: "6px", display: "inline-block", background: "#1a2744", color: "#fff", fontSize: "10px", fontWeight: 700, padding: "2px 10px", borderRadius: "3px", fontFamily: fmt.fontFamily, letterSpacing: "0.05em" }}>
+                  Adapted for {sendNeedId.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase())}
+                </div>
+              )}
+            </div>
+            {/* Name / Date / Class bar */}
+            <div style={{
+              display: "flex",
+              gap: "32px",
+              alignItems: "center",
+              borderBottom: "1.5px solid #d1d5db",
+              paddingBottom: "8px",
+              marginBottom: "6px",
+            }}>
+              {[{ label: "NAME", width: 180 }, { label: "DATE", width: 120 }, { label: "CLASS", width: 120 }, ...(teacherName ? [{ label: "TEACHER", width: 140 }] : [])].map((field, fi) => (
+                <div key={fi} style={{ display: "flex", alignItems: "baseline", gap: "6px" }}>
+                  <span style={{ fontSize: "10px", fontWeight: 700, color: "#374151", fontFamily: fmt.fontFamily, letterSpacing: "0.08em", textTransform: "uppercase", flexShrink: 0 }}>{field.label}</span>
+                  <div style={{ borderBottom: "1.5px solid #374151", width: `${field.width}px`, height: "18px", display: "flex", alignItems: "flex-end" }}>
+                    {field.label === "DATE" && <span style={{ fontSize: "10px", color: "#6b7280", fontFamily: fmt.fontFamily, paddingBottom: "1px" }}>{new Date().toLocaleDateString("en-GB")}</span>}
+                    {field.label === "TEACHER" && teacherName && <span style={{ fontSize: "10px", color: "#374151", fontFamily: fmt.fontFamily, paddingBottom: "1px" }}>{teacherName}</span>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )
+      )}
 
       {/* Primary encouragement banner — hidden for revision mats */}
       {isPrimary && !isRevisionMat && (
@@ -3477,124 +3494,106 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
           );
         }
 
+        // ── SECONDARY: Chalkie-style clean layout ──
+        // (style variable kept for potential future use; isSectionDivider inlined below)
+        void style; // suppress unused-variable warning — style used by primary branch above
+        const isTeacherHeader = isTeacherSection && (section.type === "mark-scheme" || section.type === "answers");
+        const sectionTitle = (typeof section.title === 'string' ? section.title : String(section.title || '')).replace(/^\*{1,2}|\*{1,2}$/g, '').replace(/^_{1,2}|_{1,2}$/g, '').trim();
+
+        // Map section types to teal section group labels
+        const SECTION_GROUP_LABELS: Record<string, string> = {
+          objective: "LEARNING OBJECTIVE",
+          vocabulary: "KEY VOCABULARY",
+          starter: "SECTION 1 — RECALL",
+          guided: "SECTION 2 — UNDERSTANDING",
+          independent: "SECTION 3 — APPLICATION & ANALYSIS",
+          challenge: "CHALLENGE QUESTION",
+          "self-reflection": "SELF REFLECTION",
+          "self-assessment": "SELF REFLECTION",
+          "mark-scheme": "ANSWER KEY",
+          answers: "ANSWER KEY",
+          "teacher-notes": "TEACHER NOTES",
+          "reminder-box": "WORKED EXAMPLE",
+          "word-bank": "WORD BANK",
+          "sentence-starters": "SENTENCE STARTERS",
+          "word-problems": "PRACTICE PROBLEMS",
+          comprehension: "READING COMPREHENSION",
+          reading: "READING PASSAGE",
+          passage: "READING PASSAGE",
+        };
+        const groupLabel = SECTION_GROUP_LABELS[section.type] || sectionTitle.toUpperCase();
+
+        // Determine question number badge — only for question-type sections
+        const questionTypes = new Set(["starter", "guided", "independent", "challenge", "word-problems", "comprehension"]);
+        const showQuestionBadge = questionTypes.has(section.type);
+        // Count question sections before this one to get the question number
+        const questionSectionsBefore = sections.slice(0, i).filter(s => questionTypes.has(s.type)).length;
+        const questionNumber = questionSectionsBefore + 1;
+
         return (
           <div
             key={i}
             className={`ws-section ws-section-${section.type}${isTeacherSection ? " ws-teacher-section" : ""}`}
             onClick={() => editMode && onSectionClick?.(i)}
             style={{
-              marginBottom: isPrimary ? "16px" : "10px",
-              borderRadius: isPrimary ? "12px" : `${fmt.borderRadius}px`,
-              border: isPrimary
-                ? `2.5px solid ${style.border}`
-                : fmt.theme === "high-contrast"
-                  ? `2px solid #111827`
-                  : `1.5px solid ${style.border}22`,
-              background: isPrimary ? (style as any).bg || "#ffffff" : (fmt.sectionBgColor || "#ffffff"),
-              overflow: "hidden",
+              marginBottom: "20px",
+              background: isTeacherHeader ? "#8b1a1a" : fmt.theme === "high-contrast" ? "#ffffff" : "#ffffff",
+              border: fmt.theme === "high-contrast" ? "2px solid #111827" : "none",
+              borderRadius: "0",
+              overflow: "visible",
               cursor: editMode ? "pointer" : "default",
-              outline: editMode && editedSections[i] !== undefined ? `2px solid ${style.border}` : "none",
+              outline: editMode && editedSections[i] !== undefined ? "2px solid #2a7f8f" : "none",
               pageBreakInside: "avoid",
               breakInside: "avoid",
-              boxShadow: isPrimary
-                ? `0 2px 8px ${style.border}22`
-                : fmt.theme === "high-contrast"
-                  ? "none"
-                  : `0 1px 4px rgba(0,0,0,0.06), 0 0 0 1px ${style.border}18`,
             }}
           >
-            {/* Section header — respects SEND theme */}
-            <div style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              padding: isPrimary ? "10px 14px" : `7px ${fmt.sectionPadding.split(" ")[1] || "12px"}`,
-              background: isPrimary
-                ? style.border
-                : fmt.theme === "high-contrast"
-                  ? "#111827"   // high contrast: solid black
-                  : fmt.theme === "calm"
-                    ? `linear-gradient(135deg, ${fmt.accentColor}cc, ${fmt.accentColor}99)`  // calm: softer gradient
-                    : fmt.theme === "dyslexia"
-                      ? fmt.accentColor   // dyslexia: solid warm colour, no gradient
-                      : fmt.theme === "minimal" || fmt.theme === "adult"
-                        ? fmt.accentColor   // minimal/adult: solid, no gradient
-                        : (style as any).headerBg || `linear-gradient(135deg,${style.border},${style.border})`,
-            }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                {/* Primary: section number circle; SEND themes: numbered circle; others: text icon */}
-                {isPrimary ? (
+            {/* ── Chalkie-style section divider header ── */}
+            <div style={{ marginBottom: "10px" }}>
+              {/* Horizontal rule above */}
+              <div style={{ borderTop: isTeacherHeader ? "2px solid #8b1a1a" : "1.5px solid #d1d5db", marginBottom: "6px" }} />
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                  {/* Question number badge (navy square) — only for question sections */}
+                  {showQuestionBadge && (
+                    <div style={{
+                      width: "26px", height: "26px",
+                      background: isTeacherHeader ? "#fff" : "#1a2744",
+                      color: isTeacherHeader ? "#8b1a1a" : "#ffffff",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      fontSize: "13px", fontWeight: 700,
+                      borderRadius: "3px",
+                      flexShrink: 0,
+                      fontFamily: fmt.fontFamily,
+                    }}>{questionNumber}</div>
+                  )}
+                  {/* Section group label in teal */}
                   <span style={{
-                    background: "rgba(255,255,255,0.25)",
-                    color: "#fff",
-                    width: "26px", height: "26px",
-                    borderRadius: "50%",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    fontSize: "12px", fontWeight: 800,
-                    flexShrink: 0,
-                    border: "1.5px solid rgba(255,255,255,0.4)",
-                  }}>{i + 1}</span>
-                ) : (
-                  <>
-                    {/* Hide emojis for high-contrast and minimal themes */}
-                    {style.icon && fmt.theme !== "high-contrast" && fmt.theme !== "minimal" && fmt.theme !== "adult" && (
-                      <span style={{ fontSize: "15px" }}>{style.icon}</span>
-                    )}
-                    {/* Section number for ASC/MLD/HI */}
-                    {fmt.showSectionNumbers && (
-                      <span style={{
-                        background: "rgba(255,255,255,0.25)",
-                        color: "#fff",
-                        width: "22px", height: "22px",
-                        borderRadius: "50%",
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                        fontSize: "11px", fontWeight: 800,
-                        flexShrink: 0,
-                      }}>{i + 1}</span>
-                    )}
-                  </>
-                )}
-                <span style={{
-                  fontWeight: 800,
-                  fontSize: isPrimary ? `${fmt.fontSize + 3}px` : `${fmt.fontSize + fmt.headerTextSize}px`,
-                  color: "#ffffff",
-                  fontFamily: fmt.fontFamily,
-                  letterSpacing: isPrimary ? "0.3px" : "0.1px",
-                  textShadow: fmt.theme === "high-contrast" ? "none" : "0 1px 3px rgba(0,0,0,0.15)",
-                }}>
-                  {(typeof section.title === 'string' ? section.title : String(section.title || '')).replace(/^\*{1,2}|\*{1,2}$/g, '').replace(/^_{1,2}|_{1,2}$/g, '').trim()}
-                </span>
-              </div>
-              <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
-                {isTeacherSection && (
-                  <span style={{ background: "rgba(255,255,255,0.25)", color: "#fff", padding: "2px 8px", borderRadius: "10px", fontSize: "10px", fontWeight: 700, backdropFilter: "blur(4px)" }}>
-                    TEACHER ONLY
+                    fontSize: "10px",
+                    fontWeight: 700,
+                    color: isTeacherHeader ? "#ffffff" : "#2a7f8f",
+                    fontFamily: fmt.fontFamily,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.08em",
+                  }}>
+                    {isTeacherHeader ? "TEACHER COPY — ANSWER KEY" : groupLabel}
                   </span>
-                )}
-                {section.type === "guided" && !fmt.showSectionNumbers && (
-                  <span style={{ background: "rgba(255,255,255,0.25)", color: "#fff", padding: "2px 8px", borderRadius: "10px", fontSize: "10px", fontWeight: 700 }}>Foundation</span>
-                )}
-                {section.type === "independent" && !fmt.showSectionNumbers && (
-                  <span style={{ background: "rgba(255,255,255,0.25)", color: "#fff", padding: "2px 8px", borderRadius: "10px", fontSize: "10px", fontWeight: 700 }}>Core</span>
-                )}
-                {section.type === "challenge" && !fmt.showSectionNumbers && (
-                  <span style={{ background: "rgba(255,255,255,0.25)", color: "#fff", padding: "2px 8px", borderRadius: "10px", fontSize: "10px", fontWeight: 700 }}>Extension</span>
-                )}
-                {section.type === "reminder-box" && (
-                  <span style={{ background: "rgba(255,255,255,0.25)", color: "#fff", padding: "2px 8px", borderRadius: "10px", fontSize: "10px", fontWeight: 700 }}>Key Steps</span>
-                )}
-                {section.type === "word-problems" && (
-                  <span style={{ background: "rgba(255,255,255,0.25)", color: "#fff", padding: "2px 8px", borderRadius: "10px", fontSize: "10px", fontWeight: 700 }}>Real Life</span>
+                  {isTeacherSection && !isTeacherHeader && (
+                    <span style={{ background: "#8b1a1a", color: "#fff", padding: "1px 7px", borderRadius: "3px", fontSize: "9px", fontWeight: 700, fontFamily: fmt.fontFamily, letterSpacing: "0.05em" }}>TEACHER ONLY</span>
+                  )}
+                </div>
+                {/* Section title (the actual question title) on the right if different from label */}
+                {sectionTitle && sectionTitle.toUpperCase() !== groupLabel && (
+                  <span style={{ fontSize: `${fmt.fontSize - 1}px`, color: "#6b7280", fontFamily: fmt.fontFamily, fontStyle: "italic" }}>{sectionTitle}</span>
                 )}
               </div>
+              {/* Horizontal rule below */}
+              <div style={{ borderTop: isTeacherHeader ? "2px solid #8b1a1a" : "1.5px solid #d1d5db", marginTop: "6px" }} />
             </div>
 
             {/* Section content */}
             <div style={{
-              padding: isPrimary ? "14px 16px" : fmt.sectionPadding,
-              background: isPrimary ? ((style as any).bg || "#ffffff") : (fmt.sectionBgColor || "#ffffff"),
-              fontSize: isPrimary ? `${fmt.fontSize + 1}px` : undefined,
-              lineHeight: isPrimary ? "1.9" : undefined,
+              padding: "0",
+              background: isTeacherHeader ? "#8b1a1a" : (fmt.sectionBgColor || "#ffffff"),
             }}>
               {/* Detect and render inline SVG diagram if content has [[DIAGRAM:{...}]] marker */}
               {(() => {
@@ -3895,36 +3894,55 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
           <span>{worksheet.metadata.yearGroup} {worksheet.metadata.subject && `| ${worksheet.metadata.subject}`} {worksheet.metadata.topic && `| ${worksheet.metadata.topic}`}</span>
           <span>{new Date().toLocaleDateString("en-GB")}</span>
         </div>
+      ) : isPrimary ? (
+        <div className="ws-footer" style={{
+          marginTop: "10px",
+          padding: "5px 10px",
+          background: overlayColor || "#ffffff",
+          borderRadius: "4px",
+          border: "1.5px solid #4f46e5",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          flexWrap: "wrap",
+          gap: "4px",
+          fontSize: "10px",
+          color: "#4f46e5",
+          fontFamily: fmt.fontFamily,
+        }}>
+          <span style={{ fontWeight: 600 }}>Generated by Adaptly</span>
+          <span style={{ display: "flex", gap: "6px", alignItems: "center", flexWrap: "wrap" }}>
+            {worksheet.metadata.yearGroup && <span>{worksheet.metadata.yearGroup}</span>}
+            {worksheet.metadata.subject && <span>| {worksheet.metadata.subject.charAt(0).toUpperCase() + worksheet.metadata.subject.slice(1)}</span>}
+            {worksheet.metadata.topic && <span>| {worksheet.metadata.topic}</span>}
+          </span>
+          <span>{new Date().toLocaleDateString("en-GB")} | adaptly.co.uk</span>
+        </div>
       ) : (
-      <div className="ws-footer" style={{
-        marginTop: "10px",
-        padding: "5px 10px",
-        background: overlayColor || "#ffffff",
-        borderRadius: "4px",
-        border: "1.5px solid #4f46e5",
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        flexWrap: "wrap",
-        gap: "4px",
-        fontSize: "10px",
-        color: "#4f46e5",
-        fontFamily: fmt.fontFamily,
-      }}>
-        <span style={{ fontWeight: 600 }}>Generated by Adaptly</span>
-        {/* Metadata info line — year group, subject, topic, difficulty, SEND, time */}
-        <span style={{ display: "flex", gap: "6px", alignItems: "center", flexWrap: "wrap" }}>
-          {worksheet.metadata.yearGroup && <span>{worksheet.metadata.yearGroup}</span>}
-          {worksheet.metadata.subject && <span>| {worksheet.metadata.subject.charAt(0).toUpperCase() + worksheet.metadata.subject.slice(1)}</span>}
-          {worksheet.metadata.topic && <span>| {worksheet.metadata.topic}</span>}
-          {worksheet.metadata.difficulty && worksheet.metadata.difficulty !== "mixed" && (
-            <span>| {worksheet.metadata.difficulty === "foundation" ? "Foundation" : "Higher"}</span>
-          )}
-          {worksheet.metadata.sendNeed && <span>| SEND: {worksheet.metadata.sendNeed}</span>}
-          {worksheet.metadata.estimatedTime && <span>| {worksheet.metadata.estimatedTime}</span>}
-        </span>
-        <span>{new Date().toLocaleDateString("en-GB")} | adaptly.co.uk</span>
-      </div>
+        /* ── SECONDARY: clean minimal Chalkie-style footer ── */
+        <div className="ws-footer" style={{
+          marginTop: "24px",
+          borderTop: "1.5px solid #d1d5db",
+          paddingTop: "8px",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          fontSize: "9px",
+          color: "#9ca3af",
+          fontFamily: fmt.fontFamily,
+        }}>
+          <span>Generated by Adaptly · adaptly.co.uk</span>
+          <span style={{ display: "flex", gap: "4px" }}>
+            {worksheet.metadata.yearGroup && <span>{worksheet.metadata.yearGroup}</span>}
+            {worksheet.metadata.subject && <span>· {worksheet.metadata.subject.charAt(0).toUpperCase() + worksheet.metadata.subject.slice(1)}</span>}
+            {worksheet.metadata.topic && <span>· {worksheet.metadata.topic}</span>}
+            {worksheet.metadata.difficulty && worksheet.metadata.difficulty !== "mixed" && (
+              <span>· {worksheet.metadata.difficulty === "foundation" ? "Foundation" : "Higher"}</span>
+            )}
+            {worksheet.metadata.sendNeed && <span>· SEND: {worksheet.metadata.sendNeed}</span>}
+          </span>
+          <span>{new Date().toLocaleDateString("en-GB")}</span>
+        </div>
       )}
     </div>
   );
