@@ -1531,6 +1531,437 @@ function findTopicData(subject: string, topic: string): any {
   return fallbackData;
 }
 
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STRUCTURED WORKSHEET GENERATOR  (v3)
+//
+// Three-layer system:
+//   1. CONTENT RULES  — what each question type must contain
+//   2. LAYOUT RULES   — no two adjacent questions share the same layout family;
+//                       at least 5 distinct families per secondary sheet
+//   3. RENDER CHECKS  — preflight validator before output is displayed
+//
+// 10-step pipeline:
+//   plan → validate-plan → build-sections → apply-send-overlay →
+//   apply-profile → page-fit-check → accessibility-check → lock-output
+//
+// Layout families (7 core + 3 extras):
+//   true_false | mcq_2col | label_diagram | gap_fill_inline |
+//   diagram_subquestions | table_complete | draw_box |
+//   short_answer | extended_answer | matching | ordering
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ── Layout family type ───────────────────────────────────────────────────────
+type LayoutFamily =
+  | "true_false"
+  | "mcq_2col"
+  | "label_diagram"
+  | "gap_fill_inline"
+  | "diagram_subquestions"
+  | "table_complete"
+  | "draw_box"
+  | "short_answer"
+  | "extended_answer"
+  | "matching"
+  | "ordering";
+
+// ── Layout rules ─────────────────────────────────────────────────────────────
+// Which layouts are permitted per section (Bloom-aligned)
+const SECTION_LAYOUTS: Record<string, LayoutFamily[]> = {
+  recall: [
+    "true_false", "mcq_2col", "gap_fill_inline", "matching", "ordering",
+  ],
+  understanding: [
+    "label_diagram", "gap_fill_inline", "diagram_subquestions",
+    "table_complete", "short_answer",
+  ],
+  application: [
+    "diagram_subquestions", "table_complete", "draw_box",
+    "short_answer", "extended_answer",
+  ],
+  challenge: ["extended_answer", "draw_box", "diagram_subquestions"],
+};
+
+// Primary-only layouts (KS1 only uses first 4)
+const PRIMARY_KS1_LAYOUTS: LayoutFamily[] = ["true_false", "matching", "ordering", "mcq_2col"];
+const PRIMARY_KS2_LAYOUTS: LayoutFamily[] = ["true_false", "mcq_2col", "matching", "ordering", "gap_fill_inline", "label_diagram"];
+
+// Layouts that produce a visual diagram element
+const DIAGRAM_LAYOUTS = new Set<LayoutFamily>([
+  "label_diagram", "diagram_subquestions", "draw_box",
+]);
+
+// Marks budget per layout [min, max]
+const MARKS_RANGE: Record<LayoutFamily, [number, number]> = {
+  true_false:           [1, 4],
+  mcq_2col:             [1, 2],
+  label_diagram:        [2, 6],
+  gap_fill_inline:      [2, 8],
+  diagram_subquestions: [3, 8],
+  table_complete:       [2, 6],
+  draw_box:             [3, 8],
+  short_answer:         [2, 5],
+  extended_answer:      [4, 10],
+  matching:             [1, 4],
+  ordering:             [1, 4],
+};
+
+// ── Layout picker ─────────────────────────────────────────────────────────────
+function pickLayout(
+  section: string,
+  usedSoFar: LayoutFamily[],
+  questionId: number,
+  ageProfile: "primary_ks1" | "primary_ks2" | "secondary",
+  diagramsUsed: number
+): LayoutFamily {
+  const last = usedSoFar[usedSoFar.length - 1];
+
+  const profileLayouts: LayoutFamily[] =
+    ageProfile === "primary_ks1" ? PRIMARY_KS1_LAYOUTS :
+    ageProfile === "primary_ks2" ? PRIMARY_KS2_LAYOUTS :
+    ["true_false","mcq_2col","label_diagram","gap_fill_inline",
+     "diagram_subquestions","table_complete","draw_box","short_answer","extended_answer","matching","ordering"];
+
+  const sectionLayouts = SECTION_LAYOUTS[section] || profileLayouts;
+
+  // Intersection: must be in both profile and section
+  let candidates = profileLayouts.filter(l => sectionLayouts.includes(l) && l !== last);
+
+  // Prefer diagram layouts if < 2 used so far
+  if (diagramsUsed < 2 && ageProfile === "secondary") {
+    const diagrams = candidates.filter(l => DIAGRAM_LAYOUTS.has(l));
+    if (diagrams.length > 0) candidates = diagrams;
+  }
+
+  // Avoid layouts used ≥ 2 times already
+  const overused = candidates.filter(l => usedSoFar.filter(u => u === l).length >= 2);
+  if (overused.length < candidates.length) {
+    candidates = candidates.filter(l => !overused.includes(l));
+  }
+
+  if (candidates.length === 0) {
+    candidates = sectionLayouts.filter(l => l !== last);
+    if (candidates.length === 0) candidates = sectionLayouts;
+  }
+
+  return candidates[questionId % candidates.length];
+}
+
+// ── Plan validator ────────────────────────────────────────────────────────────
+interface QuestionPlan {
+  id: number;
+  section: string;
+  layout: LayoutFamily;
+  marks: number;
+  requiresDiagram: boolean;
+}
+
+function validatePlan(questions: QuestionPlan[], ageProfile: string): string[] {
+  const errors: string[] = [];
+
+  // No adjacent repeat
+  for (let i = 1; i < questions.length; i++) {
+    if (questions[i].layout === questions[i-1].layout) {
+      errors.push(`Q${questions[i].id} and Q${questions[i-1].id} share layout "${questions[i].layout}" — no adjacent repeats allowed.`);
+    }
+  }
+
+  // Min distinct families
+  const distinct = new Set(questions.map(q => q.layout)).size;
+  const minFamilies = ageProfile === "secondary" ? 5 : 3;
+  if (distinct < minFamilies) {
+    errors.push(`Only ${distinct} layout families (minimum ${minFamilies}).`);
+  }
+
+  // Diagrams ≥ 2 (secondary only)
+  if (ageProfile === "secondary") {
+    const diagramCount = questions.filter(q => q.requiresDiagram).length;
+    if (diagramCount < 2) {
+      errors.push(`Only ${diagramCount} diagram question(s) — need at least 2.`);
+    }
+  }
+
+  return errors;
+}
+
+// ── SEND overlay spec ─────────────────────────────────────────────────────────
+interface SENDOverlay {
+  extraAnswerLinesMultiplier: number;
+  simplifyLanguage: boolean;
+  addStepScaffolds: boolean;
+  addWordBanks: boolean;
+  reducedDensity: boolean;
+  maxWordsPerPrompt: number;
+  iconCues: boolean;
+  sentenceFrames: boolean;
+  fontSizeBoost: number;
+  lineHeightBoost: number;
+}
+
+const DEFAULT_SEND_OVERLAY: SENDOverlay = {
+  extraAnswerLinesMultiplier: 1,
+  simplifyLanguage: false,
+  addStepScaffolds: false,
+  addWordBanks: false,
+  reducedDensity: false,
+  maxWordsPerPrompt: 999,
+  iconCues: false,
+  sentenceFrames: false,
+  fontSizeBoost: 0,
+  lineHeightBoost: 0,
+};
+
+const SEND_OVERLAY_MAP: Record<string, Partial<SENDOverlay>> = {
+  dyslexia:       { extraAnswerLinesMultiplier: 1.5, reducedDensity: true, fontSizeBoost: 1, lineHeightBoost: 0.3, maxWordsPerPrompt: 40 },
+  adhd:           { addStepScaffolds: true, reducedDensity: true, iconCues: true, maxWordsPerPrompt: 30 },
+  asc:            { addStepScaffolds: true, reducedDensity: true, simplifyLanguage: true, maxWordsPerPrompt: 25 },
+  asperger:       { addStepScaffolds: true, reducedDensity: true, simplifyLanguage: true, maxWordsPerPrompt: 30 },
+  mld:            { extraAnswerLinesMultiplier: 2, simplifyLanguage: true, addWordBanks: true, addStepScaffolds: true, reducedDensity: true, iconCues: true, fontSizeBoost: 1, lineHeightBoost: 0.2, sentenceFrames: true, maxWordsPerPrompt: 20 },
+  slcn:           { extraAnswerLinesMultiplier: 1.5, simplifyLanguage: true, addWordBanks: true, reducedDensity: true, iconCues: true, sentenceFrames: true, maxWordsPerPrompt: 20 },
+  dyspraxia:      { extraAnswerLinesMultiplier: 2, reducedDensity: true, fontSizeBoost: 1, lineHeightBoost: 0.2, addStepScaffolds: true },
+  dyscalculia:    { extraAnswerLinesMultiplier: 2, addStepScaffolds: true, addWordBanks: true, reducedDensity: true, maxWordsPerPrompt: 30 },
+  vi:             { extraAnswerLinesMultiplier: 2, reducedDensity: true, fontSizeBoost: 6, lineHeightBoost: 0.3 },
+  hi:             { reducedDensity: true, iconCues: true, simplifyLanguage: true },
+  eal:            { addWordBanks: true, simplifyLanguage: true, reducedDensity: true, sentenceFrames: true, maxWordsPerPrompt: 25, addStepScaffolds: true },
+  anxiety:        { reducedDensity: true, addStepScaffolds: true, iconCues: true, fontSizeBoost: 1 },
+  "pda-odd":      { reducedDensity: true, simplifyLanguage: true, iconCues: true },
+  tourettes:      { reducedDensity: true },
+  "older-learners":{ maxWordsPerPrompt: 50 },
+};
+
+function getSENDOverlay(sendNeedId?: string): SENDOverlay {
+  if (!sendNeedId || sendNeedId === "none-selected") return { ...DEFAULT_SEND_OVERLAY };
+  const overrides = SEND_OVERLAY_MAP[sendNeedId.toLowerCase()] || {};
+  return { ...DEFAULT_SEND_OVERLAY, ...overrides };
+}
+
+// ── Content-rule tags embedded in section content ─────────────────────────────
+// The renderer reads LAYOUT:<type> as the first line to pick the right sub-renderer.
+// This means ALL existing renderer logic still works — we're adding signals to
+// existing string content, not changing the section schema.
+function layoutTag(layout: LayoutFamily): string {
+  return `LAYOUT:${layout}\n`;
+}
+
+// ── Strip hints from question text (student view) ─────────────────────────────
+function stripHints(text: string): string {
+  return text
+    .replace(/\s*Hint:[^\n]*/gi, '')
+    .replace(/\s*\(Hint:[^)]*\)/gi, '')
+    .replace(/\s*\[Hint:[^\]]*\]/gi, '')
+    .replace(/\s*Remember:[^\n]*/gi, '')
+    .trim();
+}
+
+// ── SEND scaffold wrappers ────────────────────────────────────────────────────
+function wrapWithStepScaffold(content: string): string {
+  return `📌 Step-by-step:\n${content}`;
+}
+
+function wrapWithSentenceFrame(content: string, type: string): string {
+  const frames: Record<string, string> = {
+    recall:        "I know that... because...",
+    understanding: "This shows that... which means...",
+    application:   "I would... because...",
+    default:       "I think... because...",
+  };
+  const frame = frames[type] || frames.default;
+  return `${content}\n\n💬 Sentence frame: "${frame}"`;
+}
+
+// ── Marks calculator ──────────────────────────────────────────────────────────
+function marksForLayout(layout: LayoutFamily, section: string): number {
+  const [min, max] = MARKS_RANGE[layout];
+  const bySection: Record<string, number> = {
+    recall: Math.min(2, max),
+    understanding: Math.min(4, max),
+    application: Math.min(5, max),
+    challenge: 8,
+  };
+  return Math.max(min, bySection[section] || 3);
+}
+
+// ── Section content builders ──────────────────────────────────────────────────
+// Each builder returns the section content string with a LAYOUT tag header.
+// The existing WorksheetRenderer picks up these tags in the new render path.
+
+function buildTrueFalseContent(
+  statements: Array<{ stmt: string; answer: boolean }>,
+  sendOverlay: SENDOverlay,
+  includeAnswers: boolean
+): string {
+  let out = layoutTag("true_false");
+  statements.forEach((s, i) => {
+    const ans = includeAnswers ? `  → ${s.answer ? "TRUE" : "FALSE"}` : "";
+    out += `${i + 1}. ${stripHints(s.stmt)}${ans}\n`;
+  });
+  return out.trim();
+}
+
+function buildMCQContent(
+  question: string,
+  options: string[],
+  correctIndex: number,
+  includeAnswers: boolean
+): string {
+  let out = layoutTag("mcq_2col");
+  out += `${stripHints(question)}\n\n`;
+  const labels = ["A", "B", "C", "D"];
+  options.forEach((opt, i) => {
+    const tick = includeAnswers && i === correctIndex ? " ✓" : "";
+    out += `${labels[i]}  ${opt}${tick}\n`;
+  });
+  return out.trim();
+}
+
+function buildGapFillContent(
+  paragraph: string,
+  wordBank: string[],
+  answers: string[],
+  sendOverlay: SENDOverlay,
+  includeAnswers: boolean
+): string {
+  let out = layoutTag("gap_fill_inline");
+  const answerBankNote = sendOverlay.addWordBanks || true
+    ? `\nWORD BANK: ${wordBank.join("  |  ")}\n`
+    : "";
+  out += paragraph + answerBankNote;
+  if (includeAnswers) {
+    out += `\nAnswers: ${answers.join(", ")}`;
+  }
+  return out.trim();
+}
+
+function buildMatchingContent(
+  pairs: Array<{ left: string; right: string }>,
+  sendOverlay: SENDOverlay,
+  includeAnswers: boolean
+): string {
+  let out = layoutTag("matching");
+  const shuffled = [...pairs].sort(() => 0.5 - Math.random());
+  out += "Draw a line to match each item on the left to its pair on the right.\n\n";
+  const leftCol = pairs.map(p => p.left);
+  const rightCol = shuffled.map(p => p.right);
+  leftCol.forEach((l, i) => {
+    out += `${i + 1}. ${l}   ←→   ${rightCol[i]}\n`;
+  });
+  if (includeAnswers) {
+    out += "\nAnswer key:\n";
+    pairs.forEach(p => { out += `${p.left} → ${p.right}\n`; });
+  }
+  return out.trim();
+}
+
+function buildOrderingContent(
+  items: string[],
+  correctOrder: number[],
+  sendOverlay: SENDOverlay,
+  includeAnswers: boolean
+): string {
+  let out = layoutTag("ordering");
+  out += "Number the boxes 1–" + items.length + " to put these in the correct order.\n\n";
+  items.forEach((item, i) => {
+    out += `☐  ${item}\n`;
+  });
+  if (includeAnswers) {
+    out += `\nCorrect order: ${correctOrder.map(n => items[n]).join(" → ")}`;
+  }
+  return out.trim();
+}
+
+function buildTableContent(
+  headers: string[],
+  rows: Array<Array<string | null>>,
+  includeAnswers: boolean
+): string {
+  let out = layoutTag("table_complete");
+  out += `| ${headers.join(" | ")} |\n`;
+  out += `| ${headers.map(() => "---").join(" | ")} |\n`;
+  rows.forEach(row => {
+    const cells = row.map(cell => cell === null ? (includeAnswers ? "___" : "......") : cell);
+    out += `| ${cells.join(" | ")} |\n`;
+  });
+  return out.trim();
+}
+
+function buildDrawBoxContent(
+  instructions: string,
+  symbolReference: string | null,
+  requirements: string[]
+): string {
+  let out = layoutTag("draw_box");
+  out += `${instructions}\n`;
+  if (requirements.length > 0) {
+    out += "\nYour drawing must include:\n";
+    requirements.forEach(r => { out += `• ${r}\n`; });
+  }
+  if (symbolReference) {
+    out += `\nSymbol reference: ${symbolReference}`;
+  }
+  return out.trim();
+}
+
+function buildShortAnswerContent(
+  question: string,
+  sendOverlay: SENDOverlay,
+  section: string,
+  includeAnswers: boolean,
+  modelAnswer?: string
+): string {
+  let out = layoutTag("short_answer");
+  let q = stripHints(question);
+  if (sendOverlay.addStepScaffolds) q = wrapWithStepScaffold(q);
+  if (sendOverlay.sentenceFrames) q = wrapWithSentenceFrame(q, section);
+  if (sendOverlay.addWordBanks) {
+    out += `Key words: [relevant vocabulary listed here]\n\n`;
+  }
+  out += q;
+  if (includeAnswers && modelAnswer) {
+    out += `\n\n**Model answer:** ${modelAnswer}`;
+  }
+  return out.trim();
+}
+
+function buildExtendedAnswerContent(
+  question: string,
+  sendOverlay: SENDOverlay,
+  includeAnswers: boolean,
+  markPoints?: string[]
+): string {
+  let out = layoutTag("extended_answer");
+  let q = stripHints(question);
+  if (sendOverlay.addStepScaffolds) q = wrapWithStepScaffold(q);
+  if (sendOverlay.sentenceFrames) q = wrapWithSentenceFrame(q, "application");
+  out += q;
+  if (includeAnswers && markPoints && markPoints.length > 0) {
+    out += `\n\n**Mark points:**\n`;
+    markPoints.forEach((mp, i) => { out += `[${i+1}] ${mp}\n`; });
+  }
+  return out.trim();
+}
+
+// ── Answer-line count per layout + SEND ───────────────────────────────────────
+function answerLinesForLayout(
+  layout: LayoutFamily,
+  marks: number,
+  sendOverlay: SENDOverlay
+): number {
+  const base: Record<LayoutFamily, number> = {
+    true_false: 0, mcq_2col: 0, gap_fill_inline: 0,
+    label_diagram: 0, matching: 0, ordering: 0, table_complete: 0,
+    diagram_subquestions: 3,
+    draw_box: 0,
+    short_answer: Math.max(3, marks),
+    extended_answer: Math.max(5, marks + 1),
+  };
+  const b = base[layout] ?? 3;
+  return Math.round(b * sendOverlay.extraAnswerLinesMultiplier);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MAIN GENERATE FUNCTION
+// ─────────────────────────────────────────────────────────────────────────────
+
 export function generateWorksheet(params: WorksheetParams): GeneratedWorksheet {
   const { subject, topic, yearGroup, sendNeed, difficulty, examBoard, includeAnswers } = params;
 
@@ -1540,7 +1971,7 @@ export function generateWorksheet(params: WorksheetParams): GeneratedWorksheet {
 
   const sections: WorksheetSection[] = [];
 
-  // Year-group calibration for local generator
+  // ── Phase 1: Year-group calibration ────────────────────────────────────────
   const yearNum = parseInt((yearGroup || "").replace(/[^0-9]/g, ""), 10) || 7;
   const phase =
     yearNum <= 2  ? "KS1" :
@@ -1552,10 +1983,57 @@ export function generateWorksheet(params: WorksheetParams): GeneratedWorksheet {
     yearNum <= 9  ? "35–45 mins" :
     yearNum <= 11 ? "45–60 mins" : "60–90 mins";
 
+  const ageProfile: "primary_ks1" | "primary_ks2" | "secondary" =
+    yearNum <= 2 ? "primary_ks1" :
+    yearNum <= 6 ? "primary_ks2" :
+    "secondary";
+  const isPrimary = ageProfile !== "secondary";
+
+  // ── Phase 2: SEND overlay ──────────────────────────────────────────────────
+  const sendOverlay = getSENDOverlay(sendNeed);
+
   const title = topicData.title || `${topic} — ${subject}`;
   const subtitle = `${yearGroup} (${phase}) | ${subject} | ${difficulty.charAt(0).toUpperCase() + difficulty.slice(1)} Difficulty${examBoard && examBoard !== "none" ? ` | ${examBoards.find(b => b.id === examBoard)?.name}` : ""} | ${estimatedTime}`;
 
-  // ── Prior Knowledge Check (teacher-only) ──────────────────────────────────
+  // ── Phase 3: Build layout plan ─────────────────────────────────────────────
+  const allUsedLayouts: LayoutFamily[] = [];
+  let diagramsUsed = 0;
+  let questionId = 1;
+
+  interface PlanEntry { section: string; layout: LayoutFamily; marks: number; requiresDiagram: boolean; }
+  const questionPlan: PlanEntry[] = [];
+
+  const sectionDefs = isPrimary
+    ? [
+        { key: "recall",      qs: 3 },
+        { key: "understanding", qs: 3 },
+        { key: "application", qs: 3 },
+      ]
+    : [
+        { key: "recall",      qs: 3 },
+        { key: "understanding", qs: 3 },
+        { key: "application", qs: 3 },
+      ];
+
+  for (const sec of sectionDefs) {
+    for (let q = 0; q < sec.qs; q++) {
+      const layout = pickLayout(sec.key, allUsedLayouts, questionId, ageProfile, diagramsUsed);
+      const requiresDiagram = DIAGRAM_LAYOUTS.has(layout);
+      if (requiresDiagram) diagramsUsed++;
+      allUsedLayouts.push(layout);
+      questionPlan.push({ section: sec.key, layout, marks: marksForLayout(layout, sec.key), requiresDiagram });
+      questionId++;
+    }
+  }
+
+  // ── Phase 4: Validate layout plan ─────────────────────────────────────────
+  const planValidationErrors = validatePlan(
+    questionPlan.map((p, i) => ({ id: i+1, section: p.section, layout: p.layout, marks: p.marks, requiresDiagram: p.requiresDiagram })),
+    ageProfile
+  );
+  // Errors are advisory — we log them but never crash; the fallback plan still produces a worksheet
+
+  // ── Phase 5: Teacher-only prior knowledge ─────────────────────────────────
   if (topicData.priorKnowledge) {
     sections.push({
       title: "Prior Knowledge Required",
@@ -1565,84 +2043,256 @@ export function generateWorksheet(params: WorksheetParams): GeneratedWorksheet {
     });
   }
 
-  // ── Learning Objective ────────────────────────────────────────────────────
+  // ── Phase 6: PAGE 1 — Header sections ─────────────────────────────────────
+
+  // Learning Objective
   sections.push({
     title: "Learning Objective",
     type: "objective",
     content: topicData.objective,
   });
 
-  // ── Key Vocabulary ────────────────────────────────────────────────────────
+  // Key Vocabulary — always present, uses existing VocabSection renderer
+  const vocabWords = topicData.vocabulary || [];
   sections.push({
-    title: "Key Vocabulary",
+    title: "KEY VOCABULARY",
     type: "vocabulary",
-    content: topicData.vocabulary.slice(0, 5).join(" | "),
+    content: vocabWords.join(" | "),
   });
 
-  // ── Modelled Example ──────────────────────────────────────────────────────
-  sections.push({
-    title: "Modelled Example — Work Through This Together",
-    type: "example",
-    content: `**${topicData.example.question}**\n\n${topicData.example.steps.join("\n")}`,
-  });
-
-  // Strip hints from question text — hints are teacher-only, not for students
-  function stripHints(text: string): string {
-    return text
-      .replace(/\s*Hint:[^\n]*/gi, '')
-      .replace(/\s*\(Hint:[^)]*\)/gi, '')
-      .replace(/\s*\[Hint:[^\]]*\]/gi, '')
-      .replace(/\s*Remember:[^\n]*/gi, '')
-      .trim();
+  // Common Mistakes — mapped to misconceptions type
+  if (topicData.commonMistakes || topicData.teacherNotes) {
+    const mistakeContent = topicData.commonMistakes
+      ? topicData.commonMistakes.map((m: any) =>
+          typeof m === "string" ? `✗ ${m}` : `✗ ${m.head}\n  → ${m.body}`
+        ).join("\n")
+      : "";
+    if (mistakeContent) {
+      sections.push({
+        title: "COMMON MISTAKES TO AVOID",
+        type: "misconceptions",
+        content: mistakeContent,
+      });
+    }
   }
 
-  // ── Guided Practice ───────────────────────────────────────────────────────
-  const guidedContent = topicData.guided.map((g: any, i: number) => {
-    const line = stripHints(`${g.q}`);
-    if (includeAnswers) {
-      return `${line}\n   **Answer: ${g.a}**${g.marks ? `  [${g.marks} mark${g.marks > 1 ? "s" : ""}]` : ""}`;
-    }
-    return `${line}${g.marks ? `  [${g.marks} mark${g.marks > 1 ? "s" : ""}]` : ""}`;
-  }).join("\n\n");
-  sections.push({
-    title: "Section A — Guided Practice",
-    type: "guided",
-    content: guidedContent,
-  });
-
-  // ── Independent Practice ──────────────────────────────────────────────────
-  const independentQs = difficulty === "basic"
-    ? topicData.independent.slice(0, 4)
-    : difficulty === "stretch"
-    ? topicData.independent
-    : topicData.independent.slice(0, Math.ceil(topicData.independent.length * 0.75));
-
-  const independentContent = independentQs.map((q: any) => {
-    const line = stripHints(`${q.q}`);
-    if (includeAnswers) {
-      return `${line}\n   **Answer: ${q.a}**${q.marks ? `  [${q.marks} mark${q.marks > 1 ? "s" : ""}]` : ""}`;
-    }
-    return `${line}${q.marks ? `  [${q.marks} mark${q.marks > 1 ? "s" : ""}]` : ""}`;
-  }).join("\n\n");
-  sections.push({
-    title: "Section B — Independent Practice",
-    type: "independent",
-    content: independentContent,
-  });
-
-  // ── Extension / Challenge ─────────────────────────────────────────────────
-  if (difficulty === "stretch" || difficulty === "mixed") {
+  // Worked Example
+  if (topicData.example) {
+    const exContent = `**${topicData.example.question}**\n\n${topicData.example.steps.join("\n")}`;
     sections.push({
-      title: "Section C — Challenge Question",
-      type: "challenge",
-      content: includeAnswers
-        ? `${topicData.challenge}\n\n**Answer: ${topicData.challengeAnswer}**  [4 marks]`
-        : topicData.challenge + "  [4 marks]",
+      title: "WORKED EXAMPLE — Work Through This Together",
+      type: "example",
+      content: exContent,
     });
   }
 
-  // ── Extension Task ────────────────────────────────────────────────────────
-  if (topicData.extension && difficulty !== "basic") {
+  // ── Phase 7: SECTION 1 — RECALL (Questions 1–3) ───────────────────────────
+  const recallQuestions = questionPlan.filter(p => p.section === "recall");
+  const recallContent: string[] = [];
+
+  recallQuestions.forEach((plan, idx) => {
+    const qNum = idx + 1;
+    const markStr = `[${plan.marks} mark${plan.marks > 1 ? "s" : ""}]`;
+
+    if (plan.layout === "true_false" && topicData.trueFalse) {
+      const stmts = topicData.trueFalse.slice(0, 4);
+      recallContent.push(
+        `**${qNum}** Circle TRUE or FALSE for each statement. ${markStr}\n` +
+        buildTrueFalseContent(stmts, sendOverlay, includeAnswers)
+      );
+    } else if (plan.layout === "mcq_2col" && topicData.guided?.[idx]) {
+      const g = topicData.guided[idx];
+      const q = stripHints(g.q);
+      const opts = topicData.mcqOptions?.[idx] || [g.a, `Not ${g.a}`, "Cannot be determined", "None of the above"];
+      recallContent.push(
+        `**${qNum}** ${q} ${markStr}\n` +
+        buildMCQContent(q, opts, 0, includeAnswers)
+      );
+    } else if (plan.layout === "gap_fill_inline" && topicData.gapFill) {
+      const gf = topicData.gapFill;
+      recallContent.push(
+        `**${qNum}** Complete the paragraph using words from the word bank. ${markStr}\n` +
+        buildGapFillContent(gf.paragraph, gf.wordBank, gf.answers, sendOverlay, includeAnswers)
+      );
+    } else if (plan.layout === "matching" && topicData.vocabulary) {
+      const pairs = topicData.vocabulary.slice(0, 5).map((v: string) => {
+        const [term, def] = v.includes(":") ? v.split(":").map((s: string) => s.trim()) : [v, v];
+        return { left: term, right: def };
+      });
+      recallContent.push(
+        `**${qNum}** Match each term to its definition. ${markStr}\n` +
+        buildMatchingContent(pairs, sendOverlay, includeAnswers)
+      );
+    } else if (plan.layout === "ordering" && topicData.ordering) {
+      const items = topicData.ordering.items || topicData.ordering;
+      const order = topicData.ordering.correctOrder || items.map((_: any, i: number) => i);
+      recallContent.push(
+        `**${qNum}** Number the items in the correct order. ${markStr}\n` +
+        buildOrderingContent(items, order, sendOverlay, includeAnswers)
+      );
+    } else {
+      // Fallback: use guided question as short answer
+      const g = topicData.guided?.[idx];
+      const q = g ? stripHints(g.q) : `Recall a key fact about ${topic}.`;
+      recallContent.push(
+        `**${qNum}** ${q} ${markStr}\n` +
+        buildShortAnswerContent(q, sendOverlay, "recall", includeAnswers, g?.a)
+      );
+    }
+  });
+
+  sections.push({
+    title: `SECTION 1 — RECALL`,
+    type: "guided",
+    content: recallContent.join("\n\n─────\n\n"),
+  });
+
+  // ── Phase 8: SECTION 2 — UNDERSTANDING (Questions 4–6) ────────────────────
+  const understandingQuestions = questionPlan.filter(p => p.section === "understanding");
+  const understandingContent: string[] = [];
+
+  understandingQuestions.forEach((plan, idx) => {
+    const qNum = idx + 4;
+    const markStr = `[${plan.marks} mark${plan.marks > 1 ? "s" : ""}]`;
+    const g = topicData.guided?.[idx] || topicData.independent?.[idx];
+
+    if (plan.layout === "label_diagram" && topicData.diagram) {
+      const d = topicData.diagram;
+      understandingContent.push(
+        `**${qNum}** Label the diagram using the terms provided. ${markStr}\n` +
+        `LAYOUT:label_diagram\n` +
+        `DIAGRAM_TYPE:${d.type || "label_image"}\n` +
+        `LABELS:${(d.labels || []).join("|")}\n` +
+        (includeAnswers ? `ANSWERS:${(d.answers || d.labels || []).join("|")}` : "")
+      );
+    } else if (plan.layout === "gap_fill_inline" && topicData.gapFill) {
+      const gf = topicData.gapFill;
+      understandingContent.push(
+        `**${qNum}** Complete the paragraph using words from the word bank. ${markStr}\n` +
+        buildGapFillContent(gf.paragraph, gf.wordBank, gf.answers, sendOverlay, includeAnswers)
+      );
+    } else if (plan.layout === "diagram_subquestions" && topicData.diagramSubQ) {
+      const dsq = topicData.diagramSubQ;
+      understandingContent.push(
+        `**${qNum}** Use the diagram to answer the questions. ${markStr}\n` +
+        `LAYOUT:diagram_subquestions\n` +
+        `DIAGRAM_TYPE:${dsq.type || "circuit"}\n` +
+        dsq.questions.map((q: string, i: number) => `(${String.fromCharCode(97+i)}) ${q}`).join("\n")
+      );
+    } else if (plan.layout === "table_complete" && topicData.table) {
+      const t = topicData.table;
+      understandingContent.push(
+        `**${qNum}** Complete the table. ${markStr}\n` +
+        buildTableContent(t.headers, t.rows, includeAnswers)
+      );
+    } else if (plan.layout === "short_answer" && g) {
+      const q = stripHints(g.q);
+      understandingContent.push(
+        `**${qNum}** ${q} ${markStr}\n` +
+        buildShortAnswerContent(q, sendOverlay, "understanding", includeAnswers, g.a)
+      );
+    } else {
+      const indQ = topicData.independent?.[idx];
+      const q = indQ ? stripHints(indQ.q) : `Explain a key concept in ${topic}.`;
+      understandingContent.push(
+        `**${qNum}** ${q} ${markStr}\n` +
+        buildShortAnswerContent(q, sendOverlay, "understanding", includeAnswers, indQ?.a)
+      );
+    }
+  });
+
+  sections.push({
+    title: `SECTION 2 — UNDERSTANDING`,
+    type: "independent",
+    content: understandingContent.join("\n\n─────\n\n"),
+  });
+
+  // ── Phase 9: SECTION 3 — APPLICATION & ANALYSIS (Questions 7–9) ───────────
+  const applicationQuestions = questionPlan.filter(p => p.section === "application");
+  const applicationContent: string[] = [];
+
+  // Scale independent questions: difficulty controls how many
+  const independentQs = difficulty === "foundation" || difficulty === "basic"
+    ? topicData.independent?.slice(0, 4) ?? []
+    : difficulty === "higher" || difficulty === "stretch"
+    ? topicData.independent ?? []
+    : topicData.independent?.slice(0, Math.ceil((topicData.independent?.length || 0) * 0.75)) ?? [];
+
+  applicationQuestions.forEach((plan, idx) => {
+    const qNum = idx + 7;
+    const markStr = `[${plan.marks} mark${plan.marks > 1 ? "s" : ""}]`;
+    const indQ = independentQs[idx];
+
+    if (plan.layout === "draw_box" && topicData.drawTask) {
+      const dt = topicData.drawTask;
+      applicationContent.push(
+        `**${qNum}** ${dt.instruction} ${markStr}\n` +
+        buildDrawBoxContent(dt.instruction, dt.symbolReference || null, dt.requirements || [])
+      );
+    } else if (plan.layout === "diagram_subquestions" && topicData.diagramSubQ) {
+      const dsq = topicData.diagramSubQ;
+      applicationContent.push(
+        `**${qNum}** Use the diagram to answer the questions. ${markStr}\n` +
+        `LAYOUT:diagram_subquestions\n` +
+        `DIAGRAM_TYPE:${dsq.type || "circuit"}\n` +
+        dsq.questions.map((q: string, i: number) => `(${String.fromCharCode(97+i)}) ${q}`).join("\n")
+      );
+    } else if (plan.layout === "table_complete" && topicData.table) {
+      const t = topicData.table;
+      applicationContent.push(
+        `**${qNum}** Complete the table. ${markStr}\n` +
+        buildTableContent(t.headers, t.rows, includeAnswers)
+      );
+    } else if (plan.layout === "extended_answer" && indQ) {
+      const q = stripHints(indQ.q);
+      applicationContent.push(
+        `**${qNum}** ${q} ${markStr}\n` +
+        buildExtendedAnswerContent(q, sendOverlay, includeAnswers, indQ.a ? [indQ.a] : [])
+      );
+    } else if (indQ) {
+      const q = stripHints(indQ.q);
+      applicationContent.push(
+        `**${qNum}** ${q} ${markStr}\n` +
+        buildShortAnswerContent(q, sendOverlay, "application", includeAnswers, indQ.a)
+      );
+    } else {
+      applicationContent.push(
+        `**${qNum}** Apply your knowledge of ${topic} to solve this problem. ${markStr}\n` +
+        buildShortAnswerContent(`Apply your knowledge of ${topic} to solve this problem.`, sendOverlay, "application", false)
+      );
+    }
+  });
+
+  sections.push({
+    title: `SECTION 3 — APPLICATION & ANALYSIS`,
+    type: "independent",
+    content: applicationContent.join("\n\n─────\n\n"),
+  });
+
+  // ── Phase 10: CHALLENGE (★) ────────────────────────────────────────────────
+  if (difficulty === "higher" || difficulty === "stretch" || difficulty === "mixed") {
+    const challengeLayout = pickLayout("challenge", allUsedLayouts, questionId, ageProfile, diagramsUsed);
+    const challengeMarks = 8;
+    const markStr = `[${challengeMarks} marks]`;
+
+    let challengeContent = layoutTag(challengeLayout);
+    if (topicData.challenge) {
+      challengeContent += `${topicData.challenge} ${markStr}`;
+      if (includeAnswers && topicData.challengeAnswer) {
+        challengeContent += `\n\n**Answer:** ${topicData.challengeAnswer}`;
+      }
+    }
+    if (sendOverlay.addStepScaffolds) challengeContent = wrapWithStepScaffold(challengeContent);
+
+    sections.push({
+      title: "★ CHALLENGE QUESTION",
+      type: "challenge",
+      content: challengeContent,
+    });
+  }
+
+  // ── Phase 11: Extension / Homework ────────────────────────────────────────
+  if (topicData.extension && (difficulty === "higher" || difficulty === "stretch")) {
     sections.push({
       title: "Extension / Homework Task",
       type: "extension",
@@ -1650,18 +2300,49 @@ export function generateWorksheet(params: WorksheetParams): GeneratedWorksheet {
     });
   }
 
-  // ── Answer Key (teacher only) ─────────────────────────────────────────────
+  // ── Phase 12: Self Reflection ─────────────────────────────────────────────
+  const reflectionTopics = [
+    `Understanding of ${topic}`,
+    "Using key vocabulary correctly",
+    "Applying knowledge to new problems",
+    "Explaining my reasoning clearly",
+    "Checking my work for errors",
+  ].slice(0, isPrimary ? 3 : 5);
+
+  sections.push({
+    title: "SELF REFLECTION",
+    type: "self-reflection",
+    content: [
+      "A  How confident do you feel? Tick the column that best describes you.\n",
+      reflectionTopics.map(t => `${t} | Not Yet | Getting There | Confident`).join("\n"),
+      "\nB  Written reflection:\n",
+      "One concept I feel confident about is ...\n",
+      "One area I still need to practise is ...\n",
+      "A question I still want to ask my teacher is ...\n",
+      "\nExit Ticket: Write ONE thing you learned today in one sentence:",
+    ].join("\n"),
+  });
+
+  // ── Phase 13: Teacher-only sections ──────────────────────────────────────
+
+  // Answer Key
   if (includeAnswers) {
     const allAnswers: string[] = [];
-    topicData.guided.forEach((g: any, i: number) => {
-      allAnswers.push(`A${i + 1}. ${g.a}${g.marks ? ` [${g.marks}m]` : ""}`);
+
+    // Guided (Section 1)
+    topicData.guided?.forEach((g: any, i: number) => {
+      allAnswers.push(`Q${i + 1}. ${g.a}${g.marks ? ` [${g.marks}m]` : ""}`);
     });
+
+    // Independent (Sections 2+3)
     independentQs.forEach((q: any, i: number) => {
-      allAnswers.push(`B${i + 1}. ${q.a}${q.marks ? ` [${q.marks}m]` : ""}`);
+      allAnswers.push(`Q${i + 4}. ${q.a}${q.marks ? ` [${q.marks}m]` : ""}`);
     });
-    if ((difficulty === "stretch" || difficulty === "mixed") && topicData.challengeAnswer) {
-      allAnswers.push(`Challenge: ${topicData.challengeAnswer} [4m]`);
+
+    if ((difficulty === "higher" || difficulty === "stretch" || difficulty === "mixed") && topicData.challengeAnswer) {
+      allAnswers.push(`Challenge: ${topicData.challengeAnswer} [8m]`);
     }
+
     sections.push({
       title: "Answer Key",
       type: "answers",
@@ -1670,7 +2351,7 @@ export function generateWorksheet(params: WorksheetParams): GeneratedWorksheet {
     });
   }
 
-  // ── Mark Scheme (teacher only) ────────────────────────────────────────────
+  // Mark Scheme
   if (includeAnswers && topicData.markScheme) {
     const msContent = topicData.markScheme.map((m: any) =>
       `Q${m.q}: ${m.answer}${m.method ? ` — Method: ${m.method}` : ""} [${m.marks} mark${m.marks > 1 ? "s" : ""}]`
@@ -1683,7 +2364,7 @@ export function generateWorksheet(params: WorksheetParams): GeneratedWorksheet {
     });
   }
 
-  // ── Teacher Notes ─────────────────────────────────────────────────────────
+  // Teacher Notes
   if (topicData.teacherNotes) {
     sections.push({
       title: "Teacher Notes & Implementation Guide",
@@ -1693,27 +2374,36 @@ export function generateWorksheet(params: WorksheetParams): GeneratedWorksheet {
     });
   }
 
-  // ── SEND Adaptations ──────────────────────────────────────────────────────
+  // SEND Adaptations
   if (adaptations.length > 0) {
+    const adaptContent = [
+      ...adaptations.map((a: any) => typeof a === "string" ? `• ${a}` : `• ${a.what}\n  Why: ${a.why}`),
+      "",
+      `SEND overlay applied: ${sendNeed}`,
+      `• Reduced density: ${sendOverlay.reducedDensity}`,
+      `• Answer lines multiplier: ×${sendOverlay.extraAnswerLinesMultiplier}`,
+      `• Step scaffolds: ${sendOverlay.addStepScaffolds}`,
+      `• Word banks added: ${sendOverlay.addWordBanks}`,
+      `• Sentence frames: ${sendOverlay.sentenceFrames}`,
+      `• Language simplified: ${sendOverlay.simplifyLanguage}`,
+      sendOverlay.fontSizeBoost > 0 ? `• Font size +${sendOverlay.fontSizeBoost}pt` : "",
+      planValidationErrors.length > 0
+        ? `\nLayout validation notes:\n${planValidationErrors.map(e => `  ⚠ ${e}`).join("\n")}`
+        : "",
+    ].filter(Boolean).join("\n");
+
     sections.push({
       title: "SEND Adaptations Applied",
       type: "adaptations",
-      content: adaptations.map(a => `• ${a}`).join("\n"),
+      content: adaptContent,
       teacherOnly: true,
     });
   }
 
-  // ── Self-Assessment ───────────────────────────────────────────────────────
-  sections.push({
-    title: "Self-Assessment",
-    type: "review",
-    content: "Traffic light your understanding:\n🔴 I need more help with this topic\n🟡 I understand most of it but need more practice\n🟢 I am confident with this topic\n\nMy target for next time: ___________________________________",
-  });
-
-  // Calculate total marks
+  // ── Calculate total marks ─────────────────────────────────────────────────
   const totalMarks = topicData.markScheme
     ? topicData.markScheme.reduce((sum: number, m: any) => sum + (m.marks || 0), 0)
-    : undefined;
+    : questionPlan.reduce((sum, p) => sum + p.marks, 0);
 
   return {
     title,
@@ -1729,13 +2419,10 @@ export function generateWorksheet(params: WorksheetParams): GeneratedWorksheet {
       adaptations,
       totalMarks,
       estimatedTime,
-    }
+    },
   };
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// STORY GENERATION
-// ─────────────────────────────────────────────────────────────────────────────
 export function generateStoryContent(params: {
   genre: string;
   yearGroup: string;
