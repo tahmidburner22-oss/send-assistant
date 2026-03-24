@@ -3527,7 +3527,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
         const questionTypes = new Set(["starter", "guided", "independent", "challenge", "word-problems", "comprehension"]);
         const showQuestionBadge = questionTypes.has(section.type);
         // Count question sections before this one to get the question number
-        const questionSectionsBefore = sections.slice(0, i).filter(s => questionTypes.has(s.type)).length;
+        const questionSectionsBefore = worksheet.sections.slice(0, i).filter((s: any) => questionTypes.has(s.type)).length;
         const questionNumber = questionSectionsBefore + 1;
 
         return (
