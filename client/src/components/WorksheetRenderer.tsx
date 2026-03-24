@@ -2767,7 +2767,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
             </div>
           </div>
         ) : (
-          /* ── SECONDARY HEADER: clean Chalkie-style navy/grey ── */
+          /* ── SECONDARY HEADER: clean professional navy/grey ── */
           <div className="ws-header" style={{ marginBottom: "18px", fontFamily: fmt.fontFamily }}>
             {/* Top info bar: school name + subject/year/board */}
             <div style={{
@@ -3494,18 +3494,39 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
           );
         }
 
-        // ── SECONDARY: Chalkie-style clean layout ──
+        // ── SECONDARY: clean professional layout ──
         // (style variable kept for potential future use; isSectionDivider inlined below)
         void style; // suppress unused-variable warning — style used by primary branch above
         const isTeacherHeader = isTeacherSection && (section.type === "mark-scheme" || section.type === "answers");
         const sectionTitle = (typeof section.title === 'string' ? section.title : String(section.title || '')).replace(/^\*{1,2}|\*{1,2}$/g, '').replace(/^_{1,2}|_{1,2}$/g, '').trim();
+
+        // ── Section group dividers: inject "SECTION N — NAME — Questions X–Y" before first question in each group ──
+        const QUESTION_GROUP_MAP: Record<string, { label: string; qStart: number; qEnd: number }> = {
+          "q-true-false":  { label: "SECTION 1 — RECALL",                  qStart: 1, qEnd: 3 },
+          "q-mcq":         { label: "SECTION 1 — RECALL",                  qStart: 1, qEnd: 3 },
+          "q-gap-fill":    { label: "SECTION 1 — RECALL",                  qStart: 1, qEnd: 3 },
+          "q-short-answer":{ label: "SECTION 2 — UNDERSTANDING",           qStart: 4, qEnd: 6 },
+          "q-extended":    { label: "SECTION 3 — APPLICATION & ANALYSIS",  qStart: 7, qEnd: 9 },
+        };
+        const groupInfo = QUESTION_GROUP_MAP[section.type];
+        // Show the group divider only before the FIRST question of that group type in the worksheet
+        const isFirstOfGroup = groupInfo && !worksheet.sections.slice(0, i).some((s: any) => s.type === section.type);
+        // Also check if it's the first of the broader group (e.g. first q-short-answer before any q-short-answer)
+        const groupTypes: Record<string, string[]> = {
+          "SECTION 1 — RECALL":                 ["q-true-false", "q-mcq", "q-gap-fill"],
+          "SECTION 2 — UNDERSTANDING":          ["q-short-answer"],
+          "SECTION 3 — APPLICATION & ANALYSIS": ["q-extended"],
+        };
+        const myGroupLabel = groupInfo?.label;
+        const myGroupTypes = myGroupLabel ? (groupTypes[myGroupLabel] || []) : [];
+        const isFirstOfGroupSection = myGroupLabel && !worksheet.sections.slice(0, i).some((s: any) => myGroupTypes.includes(s.type));
 
         // Map section types to teal section group labels
         const SECTION_GROUP_LABELS: Record<string, string> = {
           objective: "LEARNING OBJECTIVE",
           vocabulary: "KEY VOCABULARY",
           starter: "SECTION 1 — RECALL",
-          guided: "SECTION 2 — UNDERSTANDING",
+          guided: "SECTION 1 — RECALL",
           independent: "SECTION 3 — APPLICATION & ANALYSIS",
           challenge: "CHALLENGE QUESTION",
           "self-reflection": "SELF REFLECTION",
@@ -3513,26 +3534,66 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
           "mark-scheme": "ANSWER KEY",
           answers: "ANSWER KEY",
           "teacher-notes": "TEACHER NOTES",
-          "reminder-box": "WORKED EXAMPLE",
+          "reminder-box": "REMINDER",
           "word-bank": "WORD BANK",
           "sentence-starters": "SENTENCE STARTERS",
           "word-problems": "PRACTICE PROBLEMS",
           comprehension: "READING COMPREHENSION",
           reading: "READING PASSAGE",
           passage: "READING PASSAGE",
+          example: "WORKED EXAMPLE",
+          "common-mistakes": "COMMON MISTAKES TO AVOID",
+          // New individual question types
+          "q-true-false": "",
+          "q-mcq": "",
+          "q-gap-fill": "",
+          "q-short-answer": "",
+          "q-extended": "",
         };
-        const groupLabel = SECTION_GROUP_LABELS[section.type] || sectionTitle.toUpperCase();
 
-        // Determine question number badge — only for question-type sections
-        const questionTypes = new Set(["starter", "guided", "independent", "challenge", "word-problems", "comprehension"]);
-        const showQuestionBadge = questionTypes.has(section.type);
-        // Count question sections before this one to get the question number
-        const questionSectionsBefore = worksheet.sections.slice(0, i).filter((s: any) => questionTypes.has(s.type)).length;
-        const questionNumber = questionSectionsBefore + 1;
+        // New individual question types — use navy badge + question text inline (no teal divider)
+        const isIndividualQuestion = ["q-true-false", "q-mcq", "q-gap-fill", "q-short-answer", "q-extended"].includes(section.type);
+
+        // Section group label — for individual questions, derive from section title (e.g. "Q1 — True or False")
+        const groupLabel = isIndividualQuestion
+          ? sectionTitle
+          : (SECTION_GROUP_LABELS[section.type] !== undefined ? SECTION_GROUP_LABELS[section.type] : sectionTitle.toUpperCase());
+
+        // Determine question number badge — for new individual question types AND legacy question sections
+        const legacyQuestionTypes = new Set(["starter", "guided", "independent", "challenge", "word-problems", "comprehension"]);
+        const newQuestionTypes = new Set(["q-true-false", "q-mcq", "q-gap-fill", "q-short-answer", "q-extended"]);
+        const allQuestionTypes = new Set([...legacyQuestionTypes, ...newQuestionTypes]);
+        const showQuestionBadge = allQuestionTypes.has(section.type);
+        // For new individual question types, extract number from title (e.g. "Q1 — True or False" → 1)
+        const titleQNum = isIndividualQuestion ? parseInt((sectionTitle.match(/^Q(\d+)/i) || [])[1] || "0") : 0;
+        // For legacy types, count question sections before this one
+        const questionSectionsBefore = worksheet.sections.slice(0, i).filter((s: any) => allQuestionTypes.has(s.type)).length;
+        const questionNumber = titleQNum > 0 ? titleQNum : questionSectionsBefore + 1;
 
         return (
+          <React.Fragment key={i}>
+          {/* ── Section group divider: shown before the first question of each group ── */}
+          {isFirstOfGroupSection && groupInfo && (
+            <div style={{
+              marginBottom: "16px",
+              marginTop: i > 0 ? "24px" : "0",
+              pageBreakBefore: "auto",
+            }}>
+              <div style={{ borderTop: "2px solid #1a2744", marginBottom: "5px" }} />
+              <div style={{
+                fontSize: "10px",
+                fontWeight: 700,
+                color: "#2a7f8f",
+                fontFamily: fmt.fontFamily,
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+              }}>
+                {groupInfo.label} — Questions {groupInfo.qStart}–{groupInfo.qEnd}
+              </div>
+              <div style={{ borderTop: "1px solid #d1d5db", marginTop: "5px" }} />
+            </div>
+          )}
           <div
-            key={i}
             className={`ws-section ws-section-${section.type}${isTeacherSection ? " ws-teacher-section" : ""}`}
             onClick={() => editMode && onSectionClick?.(i)}
             style={{
@@ -3547,48 +3608,55 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
               breakInside: "avoid",
             }}
           >
-            {/* ── Chalkie-style section divider header ── */}
-            <div style={{ marginBottom: "10px" }}>
-              {/* Horizontal rule above */}
-              <div style={{ borderTop: isTeacherHeader ? "2px solid #8b1a1a" : "1.5px solid #d1d5db", marginBottom: "6px" }} />
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                  {/* Question number badge (navy square) — only for question sections */}
-                  {showQuestionBadge && (
-                    <div style={{
-                      width: "26px", height: "26px",
-                      background: isTeacherHeader ? "#fff" : "#1a2744",
-                      color: isTeacherHeader ? "#8b1a1a" : "#ffffff",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      fontSize: "13px", fontWeight: 700,
-                      borderRadius: "3px",
-                      flexShrink: 0,
-                      fontFamily: fmt.fontFamily,
-                    }}>{questionNumber}</div>
-                  )}
-                  {/* Section group label in teal */}
-                  <span style={{
-                    fontSize: "10px",
-                    fontWeight: 700,
-                    color: isTeacherHeader ? "#ffffff" : "#2a7f8f",
-                    fontFamily: fmt.fontFamily,
-                    textTransform: "uppercase",
-                    letterSpacing: "0.08em",
-                  }}>
-                    {isTeacherHeader ? "TEACHER COPY — ANSWER KEY" : groupLabel}
-                  </span>
-                  {isTeacherSection && !isTeacherHeader && (
-                    <span style={{ background: "#8b1a1a", color: "#fff", padding: "1px 7px", borderRadius: "3px", fontSize: "9px", fontWeight: 700, fontFamily: fmt.fontFamily, letterSpacing: "0.05em" }}>TEACHER ONLY</span>
-                  )}
+            {/* ── Section header: individual question OR section divider ── */}
+            {isIndividualQuestion ? (
+              /* Individual question: navy badge + question title inline, no teal divider */
+              <div style={{ display: "flex", alignItems: "flex-start", gap: "12px", marginBottom: "10px" }}>
+                <div style={{
+                  width: "28px", height: "28px", minWidth: "28px",
+                  background: "#1a2744",
+                  color: "#ffffff",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: "13px", fontWeight: 700,
+                  borderRadius: "3px",
+                  fontFamily: fmt.fontFamily,
+                  marginTop: "1px",
+                }}>{questionNumber}</div>
+                <div style={{ flex: 1 }}>
+                  {/* Question type label in small teal above the question text */}
+                  <div style={{ fontSize: "9px", fontWeight: 700, color: "#2a7f8f", fontFamily: fmt.fontFamily, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "3px" }}>
+                    {section.type === "q-true-false" ? "TRUE / FALSE" :
+                     section.type === "q-mcq" ? "MULTIPLE CHOICE" :
+                     section.type === "q-gap-fill" ? "GAP FILL" :
+                     section.type === "q-short-answer" ? "SHORT ANSWER" :
+                     section.type === "q-extended" ? "EXTENDED ANSWER" : ""}
+                  </div>
                 </div>
-                {/* Section title (the actual question title) on the right if different from label */}
-                {sectionTitle && sectionTitle.toUpperCase() !== groupLabel && (
-                  <span style={{ fontSize: `${fmt.fontSize - 1}px`, color: "#6b7280", fontFamily: fmt.fontFamily, fontStyle: "italic" }}>{sectionTitle}</span>
-                )}
               </div>
-              {/* Horizontal rule below */}
-              <div style={{ borderTop: isTeacherHeader ? "2px solid #8b1a1a" : "1.5px solid #d1d5db", marginTop: "6px" }} />
-            </div>
+            ) : (
+              /* Section divider: teal label with horizontal rules above and below */
+              <div style={{ marginBottom: "14px" }}>
+                <div style={{ borderTop: isTeacherHeader ? "2px solid #8b1a1a" : "2px solid #1a2744", marginBottom: "5px" }} />
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                    <span style={{
+                      fontSize: "10px",
+                      fontWeight: 700,
+                      color: isTeacherHeader ? "#ffffff" : "#2a7f8f",
+                      fontFamily: fmt.fontFamily,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.08em",
+                    }}>
+                      {isTeacherHeader ? "TEACHER COPY — ANSWER KEY" : groupLabel}
+                    </span>
+                    {isTeacherSection && !isTeacherHeader && (
+                      <span style={{ background: "#8b1a1a", color: "#fff", padding: "1px 7px", borderRadius: "3px", fontSize: "9px", fontWeight: 700, fontFamily: fmt.fontFamily, letterSpacing: "0.05em" }}>TEACHER ONLY</span>
+                    )}
+                  </div>
+                </div>
+                <div style={{ borderTop: isTeacherHeader ? "2px solid #8b1a1a" : "1px solid #d1d5db", marginTop: "5px" }} />
+              </div>
+            )}
 
             {/* Section content */}
             <div style={{
@@ -3671,6 +3739,79 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                     )}
                   </div>
                 ) : (() => {
+                  // ── New individual question type dispatch ──
+                  // These types come from the new AI prompt schema and each
+                  // represent a single question with its own number badge.
+                  if (section.type === "q-true-false") {
+                    return <TrueFalseSection content={content} fmt={fmt} overlayColor={overlayColor} isTeacher={isTeacherView} />;
+                  }
+                  if (section.type === "q-mcq") {
+                    return <MCQSection content={content} fmt={fmt} overlayColor={overlayColor} isTeacher={isTeacherView} />;
+                  }
+                  if (section.type === "q-gap-fill") {
+                    return <GapFillInlineSection content={content} fmt={fmt} overlayColor={overlayColor} />;
+                  }
+                  if (section.type === "q-short-answer" || section.type === "q-extended") {
+                    // Extract marks from content e.g. "[3 marks]" or "[4 marks]"
+                    const marksMatch = content.match(/\[(\d+)\s*marks?\]/i);
+                    const marks = marksMatch ? parseInt(marksMatch[1]) : (section.marks as number || 4);
+                    const lineCount = Math.max(marks, 3);
+                    const questionText = content.replace(/\[\d+\s*marks?\]/i, "").trim();
+                    return (
+                      <div>
+                        <div style={{
+                          fontSize: `${fmt.fontSize}px`,
+                          fontFamily: fmt.fontFamily,
+                          lineHeight: String(fmt.lineHeight),
+                          color: "#1e293b",
+                          marginBottom: "12px",
+                          dangerouslySetInnerHTML: { __html: renderMath(questionText) },
+                        }} />
+                        <div style={{ fontSize: "11px", color: "#6b7280", fontStyle: "italic", marginBottom: "8px", fontFamily: fmt.fontFamily }}>
+                          [{marks} mark{marks !== 1 ? "s" : ""}]
+                        </div>
+                        {Array.from({ length: lineCount }).map((_: unknown, li: number) => (
+                          <div key={li} style={{
+                            borderBottom: "1px solid #d1d5db",
+                            height: "32px",
+                            width: "100%",
+                            marginBottom: "4px",
+                          }} />
+                        ))}
+                      </div>
+                    );
+                  }
+                  if (section.type === "common-mistakes") {
+                    const lines = content.split("\n").filter(Boolean);
+                    const mistakes: { title: string; explanation: string }[] = [];
+                    let current: { title: string; explanation: string } | null = null;
+                    for (const line of lines) {
+                      const trimmed = line.trim();
+                      if (trimmed.startsWith("→") || trimmed.startsWith("->")) {
+                        if (current) current.explanation = trimmed.replace(/^(→|->)+\s*/, "");
+                      } else if (trimmed.length > 0) {
+                        if (current) mistakes.push(current);
+                        current = { title: trimmed.replace(/^\*+|\*+$/g, "").trim(), explanation: "" };
+                      }
+                    }
+                    if (current) mistakes.push(current);
+                    return (
+                      <div style={{ display: "flex", flexDirection: "column" as const, gap: "12px" }}>
+                        {mistakes.map((m, mi) => (
+                          <div key={mi}>
+                            <div style={{ fontWeight: 700, fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, color: "#1a2744", marginBottom: "3px" }}>{m.title}</div>
+                            {m.explanation && (
+                              <div style={{ fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, color: "#374151", paddingLeft: "16px" }}>
+                                <span style={{ color: "#2a7f8f", fontWeight: 700, marginRight: "6px" }}>→</span>
+                                <span dangerouslySetInnerHTML={{ __html: renderMath(m.explanation) }} />
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  }
+
                   // ── Layout-family dispatch (new structured layout system) ──
                   // If the content starts with LAYOUT:<type>, route to the
                   // matching sub-renderer. Falls through to existing handlers
@@ -3884,6 +4025,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
               })()}
             </div>
           </div>
+          </React.Fragment>
         );
       })}
 
@@ -3919,7 +4061,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
           <span>{new Date().toLocaleDateString("en-GB")} | adaptly.co.uk</span>
         </div>
       ) : (
-        /* ── SECONDARY: clean minimal Chalkie-style footer ── */
+        /* ── SECONDARY: clean minimal footer ── */
         <div className="ws-footer" style={{
           marginTop: "24px",
           borderTop: "1.5px solid #d1d5db",
