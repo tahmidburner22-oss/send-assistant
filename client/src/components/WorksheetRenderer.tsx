@@ -1431,7 +1431,112 @@ function formatContent(content: string | any, fmt: ReturnType<typeof getSendForm
   return <>{elements}</>;
 }
 
-function VocabSection({ content, fmt, overlayColor = "white" }: { content: string; fmt: ReturnType<typeof getSendFormatting>; overlayColor?: string }) {
+// ─────────────────────────────────────────────────────────────────────────────
+// LAYOUT SUB-RENDERERS
+// Each handles one LayoutFamily. Invoked when content starts with LAYOUT:<type>
+// All are SEND-aware via the fmt object and overlayColor tint.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Strips the LAYOUT:<type>\n prefix from content before passing to sub-renderer */
+function stripLayoutTag(content: string): string {
+  return content.replace(/^LAYOUT:\w+\n?/, "").trim();
+}
+
+/** Reads the LAYOUT:<type> tag from the first line of content */
+function readLayoutTag(content: string): string | null {
+  const m = content.match(/^LAYOUT:(\w+)/);
+  return m ? m[1] : null;
+}
+
+// ── 1. TRUE/FALSE ─────────────────────────────────────────────────────────────
+function TrueFalseSection({
+  content, fmt, overlayColor = "white", isTeacher = false,
+}: {
+  content: string; fmt: ReturnType<typeof getSendFormatting>; overlayColor?: string; isTeacher?: boolean;
+}) {
+  const raw = stripLayoutTag(content);
+  // Parse lines: "1. Statement text  → TRUE" or just "1. Statement text"
+  const lines = raw.split("\n").filter(l => l.match(/^\d+\.\s/));
+  const accentColor = fmt.accentColor || "#2A6F6F";
+  const RED = "#8B0000";
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: fmt.lineHeight > 1.7 ? "14px" : "10px" }}>
+      {lines.map((line, i) => {
+        const answerMatch = line.match(/→\s*(TRUE|FALSE)\s*$/i);
+        const stmtText = line.replace(/^\d+\.\s*/, "").replace(/\s*→\s*(TRUE|FALSE)\s*$/i, "").trim();
+        const answer = answerMatch?.[1]?.toUpperCase();
+
+        return (
+          <div key={i} style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: "12px",
+            padding: "8px 10px",
+            borderRadius: "6px",
+            background: i % 2 === 0 ? overlayColor : `${overlayColor}cc`,
+            border: `1px solid ${accentColor}22`,
+          }}>
+            {/* Statement */}
+            <span style={{
+              flex: 1,
+              fontSize: `${fmt.fontSize}px`,
+              fontFamily: fmt.fontFamily,
+              lineHeight: String(fmt.lineHeight),
+              letterSpacing: fmt.letterSpacing,
+              color: "#1e293b",
+            }}>
+              {renderMath(stmtText)}
+            </span>
+            {/* Pills */}
+            <div style={{ display: "flex", gap: "8px", flexShrink: 0 }}>
+              {/* TRUE pill */}
+              <div style={{
+                padding: "5px 18px",
+                borderRadius: "999px",
+                border: `1.5px solid ${accentColor}`,
+                background: isTeacher && answer === "TRUE" ? accentColor : "white",
+                color: isTeacher && answer === "TRUE" ? "white" : accentColor,
+                fontSize: `${fmt.fontSize - 2}px`,
+                fontFamily: fmt.fontFamily,
+                fontWeight: 700,
+                cursor: "default",
+                minWidth: "60px",
+                textAlign: "center" as const,
+              }}>
+                TRUE
+              </div>
+              {/* FALSE pill */}
+              <div style={{
+                padding: "5px 18px",
+                borderRadius: "999px",
+                border: `1.5px solid ${RED}`,
+                background: isTeacher && answer === "FALSE" ? RED : "white",
+                color: isTeacher && answer === "FALSE" ? "white" : RED,
+                fontSize: `${fmt.fontSize - 2}px`,
+                fontFamily: fmt.fontFamily,
+                fontWeight: 700,
+                cursor: "default",
+                minWidth: "60px",
+                textAlign: "center" as const,
+              }}>
+                FALSE
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ── 2. VOCABULARY ──────────────────────────────────────────────────────────────
+function VocabularySection({
+  content, fmt, overlayColor = "white",
+}: {
+  content: string; fmt: ReturnType<typeof getSendFormatting>; overlayColor?: string;
+}) {
   const { fontSize: textSize, fontFamily, lineHeight, letterSpacing } = fmt;
   // Filter out pure header/separator rows: lines whose trimmed content (after stripping outer pipes)
   // consists only of "Term", "Word", "Keyword", dashes, or similar header patterns.
