@@ -517,13 +517,12 @@ export async function aiGenerateWorksheet(params: {
   targetPages?: number; // Target number of printed A4 pages (any positive integer, 0 = auto)
   readingAge?: number; // Target reading age (5–17) — controls vocabulary and sentence complexity
   isRevisionMat?: boolean; // When true, generate a revision mat instead of a standard worksheet
-  subtopic?: string; // Specific subtopic within the topic
 }): Promise<AIWorksheetResult> {
   // ── REVISION MAT: completely separate prompt path ─────────────────────────
   if (params.isRevisionMat) {
     const rmSystem = `You are an expert UK teacher creating a GCSE revision mat. You respond with valid raw JSON only — no markdown, no code blocks, no HTML. Every rule below is mandatory.`;
 
-    const rmUser = `Create a revision mat for: Subject: ${params.subject} | Year: ${params.yearGroup} | Topic: ${params.topic}${params.subtopic ? ` — Subtopic: ${params.subtopic}` : ''}
+    const rmUser = `Create a revision mat for: Subject: ${params.subject} | Year: ${params.yearGroup} | Topic: ${params.topic}
 
 Return EXACTLY this JSON structure (raw JSON only, no markdown fences):
 {
@@ -706,7 +705,16 @@ QUALITY STANDARDS — your output must beat TES, Twinkl, and MathsGenie in quali
 2. Questions must escalate in difficulty across the worksheet (Section A ≤ grade ${Math.max(3, (parseInt(params.yearGroup?.replace(/\D/g, "") || "9")) - 4)}, Section B = grade ${Math.max(5, (parseInt(params.yearGroup?.replace(/\D/g, "") || "9")) - 2)}, Challenge = top grade)
 3. Use REAL numbers, REAL contexts — never "a number", always "24", "3.7", "Birmingham", "2025"
 4. ${isMaths ? "MATHS: Every expression MUST use LaTeX \\\\(...\\\\). NEVER write fractions, equations or symbols in plain text. \\\\(\\\\dfrac{3}{4}\\\\) NOT 3/4. \\\\(x^{2}\\\\) NOT x². \\\\(\\\\sqrt{16}\\\\) NOT √16. \\\\(\\\\times\\\\) NOT ×. All numeric answers must show working method." : "Use precise subject vocabulary throughout. Answers must require genuine understanding, not just recall."}
-5. Section variety is MANDATORY: each section (guided, independent, challenge, word-problems) must look DIFFERENT — mix question formats across each section
+5. LAYOUT VARIATION IS MANDATORY — every section must use DIFFERENT question formats. Rotate through these types, never using the same format twice in a row:
+   - TRUE/FALSE: "1. [statement]" per line, with "TRUE FALSE" on same line. Use for recall sections.
+   - MCQ: "A  [option]\nB  [option]\nC  [option]\nD  [option]" — 2-column layout. One correct answer.
+   - GAP FILL: flowing paragraph with ___ blanks + "WORD BANK: word1 | word2 | word3" line below.
+   - ORDERING: items listed with ☐ box prefix, instruction to "Number 1–N in correct order".
+   - MATCHING: "1. [term] ←→ [definition]" pairs.
+   - TABLE: markdown table with | separators. Some cells contain "..........." (blanks to fill).
+   - SHORT ANSWER: clear question + answer lines. Use for understanding/application sections.
+   - EXTENDED ANSWER: structured essay/explain prompt. Use for challenge only.
+   RULE: Section A (guided) must use at least 2 different formats. Section B (independent) must use at least 2 different formats. No adjacent questions may use the same format.
 
 STRICT JSON OUTPUT: Respond with valid JSON only — no markdown, no code blocks. NEVER use HTML tags inside content strings. Use plain text and LaTeX notation only.`;
 
@@ -982,7 +990,7 @@ CRITICAL RULES for diagrams:
     : "";
 
   // ── Topic enforcement note ─────────────────────────────────────────────────
-  const topicEnforcementNote = `Every question, example, vocabulary term, and any diagram must be about "${params.subtopic || params.topic}" only.${params.subtopic ? ` The specific subtopic is "${params.subtopic}" — all questions must focus on this subtopic, not the broader topic.` : ''}`;
+  const topicEnforcementNote = `Every question, example, vocabulary term, and any diagram must be about "${params.topic}" only.`;
   const dataCompletenessNote = `Every question must be fully usable as written. Do not use placeholders, ellipses, missing values, unfinished lists, or references to unseen data. If a statistics question uses a table, survey, graph, grouped frequency table, histogram, cumulative frequency graph, box plot, or chart, include the complete numeric data needed to answer it directly in the worksheet text.`;
   const diagramRelevanceNote = `Only include or request a diagram if it is essential to teaching "${params.topic}". The diagram must match the exact worksheet topic and the questions that refer to it. If no exact topic-matching diagram is needed, omit the diagram entirely.`;
   const vocabularyCapNote = `Key Vocabulary must contain at most 5 items.`;
@@ -990,7 +998,7 @@ CRITICAL RULES for diagrams:
   const recallNote = params.recallTopic ? `RECALL SECTION REQUIRED: The first section of this worksheet must be titled "Recall — ${params.recallTopic}" and contain exactly 2-3 short retrieval questions on the PREVIOUS topic "${params.recallTopic}". These questions should be quick and accessible, designed to activate prior knowledge before the main topic. Do NOT mix recall questions with the main topic questions.` : '';
 
   const user = `Create one printable worksheet in valid raw JSON only.
-Subject: ${params.subject} | Year: ${params.yearGroup} (${phase}) | Topic: ${params.topic}${params.subtopic ? ` — Subtopic: ${params.subtopic}` : ''} | Difficulty: ${params.difficulty || "mixed"}
+Subject: ${params.subject} | Year: ${params.yearGroup} (${phase}) | Topic: ${params.topic} | Difficulty: ${params.difficulty || "mixed"}
 ${examBoardNote} ${lengthNote}
 ${pageCountNote}
 ${readingAgeNote}
@@ -1008,80 +1016,49 @@ ${svgDiagramNote}
 ${recallNote}
 ${params.additionalInstructions ? `\nPriority override:\n${params.additionalInstructions}\n` : ""}
 
-WORKSHEET STRUCTURE — You MUST follow this EXACT structure. This produces a professional print-ready worksheet.
+Structure required:
+1. ${isPrimary ? "What Are We Learning?" : "Learning Objectives"}
+2. ${isPrimary ? "Key Words" : "Key Vocabulary (maximum 5 items)"}
+3. ${isPrimary ? "Let's Try Together (worked example)" : "Worked Example"}
+4. ${isPrimary ? "Key Steps" : "Reminder Box"}
+5. ${isPrimary ? (yearNum <= 2 ? "Have a Go!" : "Warm Up") : sendSectionTitles.sectionA}
+6. ${isPrimary ? (yearNum <= 2 ? "Let's Practise" : "Let's Practise More") : sendSectionTitles.sectionB}
+7. ${isPrimary ? "Think About It (real-life questions)" : "Section C - Word Problems"}
+8. ${isPrimary ? "Super Challenge!" : sendSectionTitles.challenge}
+9. ${isPrimary ? "How Did I Do?" : "Reflection"}
+10. Common Mistakes
+11. Mark Scheme (teacher only)
+12. Teacher Notes (teacher only)
+13. SEND Adaptations & Rationale (teacher only when SEND applies)
 
-The worksheet has these sections in this order:
-1. Learning Objective (type: "objective") — one clear sentence
-2. Key Vocabulary (type: "vocabulary") — exactly 6–8 terms, format each as "Term: definition" on its own line
-3. Common Mistakes to Avoid (type: "common-mistakes") — 3–4 mistakes, each on its own line as "Mistake title\n→ Correction explanation"
-4. Worked Example (type: "example") — step-by-step, format as "Question: [question]\nStep 1: [step]\nStep 2: [step]\nStep 3: [step]\nAnswer: [answer]"
-5. SECTION 1 — RECALL (type: "recall-section") — Questions 1–3, one question per "questions" array item:
-   - Q1: TRUE/FALSE question (type: "true-false") — 3–4 statements, each on its own line
-   - Q2: Multiple choice (type: "mcq") — question + 4 options as "A) option\nB) option\nC) option\nD) option"
-   - Q3: Gap fill (type: "gap-fill") — paragraph with blanks shown as "______", then "WORD BANK: word1, word2, word3, word4, word5, word6"
-6. SECTION 2 — UNDERSTANDING (type: "understanding-section") — Questions 4–6:
-   - Q4: Label diagram OR table complete (type: "label-diagram" or "table-complete")
-   - Q5: Diagram subquestions OR structured questions (type: "diagram-subq" or "short-answer")
-   - Q6: Table complete OR structured questions (type: "table-complete" or "short-answer")
-7. SECTION 3 — APPLICATION & ANALYSIS (type: "application-section") — Questions 7–9:
-   - Q7: Short answer (type: "short-answer") — 3 answer lines
-   - Q8: Multi-part question (type: "multi-part") — parts (a) and (b)
-   - Q9: Extended answer with quote/stimulus (type: "extended-answer") — 5 answer lines
-8. Challenge Question (type: "challenge") — harder question, [8 marks]
-9. Self Reflection (type: "self-reflection") — confidence table topics + written reflection prompts
-10. Mark Scheme (type: "mark-scheme", teacherOnly: true) — answers for all questions
-11. Teacher Notes (type: "teacher-notes", teacherOnly: true)
-${hasSend ? `12. SEND Adaptations (type: "teacher-notes", teacherOnly: true)` : ''}
-
-QUESTION FORMAT RULES:
-- Every question MUST have: "qNum" (1–9 or "C" for challenge), "type", "text" (the question instruction), "marks" (number), and "content" (the actual question content)
-- TRUE/FALSE: content = array of statement strings
-- MCQ: content = "question text\nA) option\nB) option\nC) option\nD) option", answer = "B" 
-- GAP FILL: content = "paragraph with ______ blanks\nWORD BANK: word1, word2, word3, word4, word5"
-- TABLE COMPLETE: content = "Col1|Col2|Col3\nrow1val1|row1val2|row1val3\n..." (pipe-separated, use "........." for blanks)
-- SHORT ANSWER: content = question text, answerLines = 3
-- EXTENDED ANSWER: content = optional quote in quotes then question text, answerLines = 5
-- MULTI PART: content = question text, parts = [{label:"(a)", text:"part question", lines:2}, {label:"(b)", text:"part question", lines:2}]
-- LABEL DIAGRAM: content = question text, diagramSpec = [[DIAGRAM:...]] if applicable
-- SELF REFLECTION: content = array of topic strings for confidence table, prompts = array of 3 reflection prompt strings
-
-FORMATTING RULES:
-- No HTML, no markdown, no code fences in content strings
-- Use \\n for line breaks within content strings
-- No emojis anywhere
-- Marks must be realistic: Q1=4, Q2=1, Q3=6, Q4=5, Q5=4, Q6=5, Q7=3, Q8=4, Q9=5, Challenge=8
-- For maths: use LaTeX \\(...\\) for all expressions
-- Keep all content specific, complete, and answerable — no placeholders
+Formatting rules:
+- Each question, step, bullet, or item must be on its own new line using \n.
+- No HTML, no markdown, no code fences.
+- Keep wording concise and printable.
+- If SEND applies, show the adaptations in the pupil-facing sections, not just teacher notes.
+- For maths, keep notation clean and readable in print/PDF.
+${isPrimary ? "- Use lots of variety: circle the answer, tick the box, fill the blank, match with a line, draw and label, true/false. Vary every 2-3 questions. Short instructions only — max 8 words each." : "- ABSOLUTELY NO EMOJIS anywhere in the output — not in section content, titles, labels, or any field. Use plain text alternatives only (e.g. use '[ ]' not '✅', use 'Great / OK / Struggling' not emoji scales)."}
 
 Return EXACTLY this JSON (raw JSON only):
 {
-  "title": "${params.subtopic ? `${params.subtopic} — ` : ''}${params.topic} — ${params.yearGroup} ${subjectDisplay} Worksheet",
+  "title": "${params.topic} — ${params.yearGroup} ${subjectDisplay} Worksheet",
   "subtitle": "${params.yearGroup} (${phase}) | ${subjectDisplay} | ${params.examBoard && params.examBoard !== 'none' ? params.examBoard : 'General'} | ${timingGuide}",
   "sections": [
-    {"title": "Learning Objective", "type": "objective", "content": "[one clear learning objective sentence]"},
-    {"title": "Key Vocabulary", "type": "vocabulary", "content": "[Term: definition\\nTerm: definition\\n... 6-8 terms]"},
-    {"title": "Common Mistakes to Avoid", "type": "common-mistakes", "content": "[Mistake title\\n→ correction\\n\\nMistake title\\n→ correction\\n...]"},
-    {"title": "Worked Example", "type": "example", "content": "[Question: ...\\nStep 1: ...\\nStep 2: ...\\nStep 3: ...\\nAnswer: ...]"},
-    {"title": "SECTION 1 — RECALL", "type": "recall-section", "questions": [
-      {"qNum": 1, "type": "true-false", "text": "Circle TRUE or FALSE for each statement.", "marks": 4, "content": ["statement 1", "statement 2", "statement 3", "statement 4"]},
-      {"qNum": 2, "type": "mcq", "text": "Which of the following is correct?", "marks": 1, "content": "question text\\nA) option\\nB) option\\nC) option\\nD) option", "answer": "B"},
-      {"qNum": 3, "type": "gap-fill", "text": "Complete the paragraph using words from the word bank below.", "marks": 6, "content": "paragraph with ______ blanks\\nWORD BANK: word1, word2, word3, word4, word5, word6"}
-    ]},
-    {"title": "SECTION 2 — UNDERSTANDING", "type": "understanding-section", "questions": [
-      {"qNum": 4, "type": "label-diagram", "text": "Label the diagram. Write the correct term next to each number.", "marks": 5, "content": "diagram description or [[DIAGRAM:...]]"},
-      {"qNum": 5, "type": "short-answer", "text": "Use the information to answer the questions below.", "marks": 4, "content": "question text", "parts": [{"label": "(a)", "text": "part a question", "lines": 2}, {"label": "(b)", "text": "part b question", "lines": 2}]},
-      {"qNum": 6, "type": "table-complete", "text": "Complete the table. Fill in the missing values.", "marks": 5, "content": "Col1|Col2|Col3|Col4\\nval|val|val|val\\nval|.........|val|val\\nval|val|.........|val"}
-    ]},
-    {"title": "SECTION 3 — APPLICATION & ANALYSIS", "type": "application-section", "questions": [
-      {"qNum": 7, "type": "short-answer", "text": "Show your working clearly.", "marks": 3, "content": "question text", "answerLines": 3},
-      {"qNum": 8, "type": "multi-part", "text": "Answer both parts.", "marks": 4, "content": "context or diagram description", "parts": [{"label": "(a)", "text": "part a question", "lines": 2}, {"label": "(b)", "text": "part b question", "lines": 2}]},
-      {"qNum": 9, "type": "extended-answer", "text": "Evaluate the statement below. Use evidence to support your answer.", "marks": 5, "content": "\\\"optional quote or stimulus\\\"\\n\\nquestion text", "answerLines": 5}
-    ]},
-    {"title": "Challenge Question", "type": "challenge", "content": "[challenging multi-step question]", "marks": 8},
-    {"title": "Self Reflection", "type": "self-reflection", "content": ["topic 1", "topic 2", "topic 3", "topic 4", "topic 5"], "prompts": ["One thing I found easy was...", "One thing I found difficult was...", "To improve I will..."]},
-    {"title": "Mark Scheme", "type": "mark-scheme", "teacherOnly": true, "content": "[Q1: answers\\nQ2: answer\\nQ3: answers\\nQ4: answers\\nQ5: answers\\nQ6: table answers\\nQ7: answer\\nQ8: answers\\nQ9: mark scheme\\nChallenge: mark scheme]"},
-    {"title": "Teacher Notes", "type": "teacher-notes", "teacherOnly": true, "content": "[timings, misconceptions, interventions, next topic]"}${hasSend ? `,
-    {"title": "SEND Adaptations & Rationale", "type": "teacher-notes", "teacherOnly": true, "content": "ADAPTED FOR: ${params.sendNeed!.toUpperCase()}\\nADAPTATIONS: [list every specific change made]\\nRATIONALE: [3-4 sentences]\\nCLASSROOM TIPS: [3-4 practical tips]\\nIF STUDENT STRUGGLES: [next steps]"}` : ''}
+    ${params.recallTopic ? `{"title": "Recall — ${params.recallTopic}", "type": "guided", "content": "2-3 retrieval questions on '${params.recallTopic}'"},` : ''}
+    {"title": "Learning Objectives", "type": "objective", "content": "[3 objectives]"},
+    {"title": "Key Vocabulary", "type": "vocabulary", "content": "[term | definition, one per line]"},
+    ${isMaths && !params.examStyle ? `{"title": "Key Formulas", "type": "example", "content": "[LaTeX formulas or: No formula required]"},` : ''}
+    {"title": "Worked Example", "type": "example", "content": "[${exampleGuide}]"}${params.introOnly ? '' : `,
+    {"title": "Reminder Box", "type": "reminder-box", "content": "[3 numbered key steps or rules for this topic]"},
+    {"title": "${sendSectionTitles.sectionA}", "type": "guided", "content": "[SECTION 1 RECALL — use these 3 formats in this order, each on a new block:\nFORMAT 1 TRUE-FALSE: write 4 statements numbered 1-4, each ending with TRUE or FALSE.\nFORMAT 2 MCQ: one question stem then A  option, B  option, C  option, D  option on separate lines.\nFORMAT 3 GAP FILL: one paragraph 40-60 words with ___ blanks (5-7 blanks), then 'WORD BANK: word1 | word2 | word3 | word4 | word5 | word6 | word7' on next line.${hasSend ? ' Apply ALL SEND rules.' : ''}]"},
+    {"title": "${sendSectionTitles.sectionB}", "type": "independent", "content": "[SECTION 2 UNDERSTANDING — use these 3 formats in this order:\nFORMAT 1 SHORT ANSWER: one focused question needing 3-4 sentence explanation with mark allocation [X marks].\nFORMAT 2 TABLE: markdown table with | separators, 3-4 columns, 4-5 data rows. Blank cells use '...........' for students to complete.\nFORMAT 3 ORDERING or SHORT ANSWER: ordering task with ☐ prefix on 5-6 items and 'Number 1-N to show correct order', OR another short answer.\n${hasSend ? 'Apply ALL SEND rules.' : ''}]"},
+    {"title": "Section C — Word Problems", "type": "word-problems", "content": "[${hasSend ? '2-3 simple word problems — apply SEND language rules' : '3-4 real-life word problems, increasing difficulty'}. IMPORTANT: each problem MUST be on its own line starting with its number, e.g. 1. Problem text\n2. Problem text\n3. Problem text — do NOT separate problems with '. ' or any other inline separator]"},
+    {"title": "${sendSectionTitles.challenge}", "type": "challenge", "content": "[${challengeGuide}${hasSend ? ' — optional, labelled as bonus' : ''}]"},
+    {"title": "How Did I Do?", "type": "self-reflection", "teacherOnly": false, "content": "[${hasSend ? 'tick-box or text-scale self-assessment per SEND rules' : '3-4 I can statements + open question'}]"},
+    {"title": "Common Mistakes to Avoid", "type": "common-mistakes", "teacherOnly": false, "content": "[3-4 common mistakes]"},
+    {"title": "Mark Scheme", "type": "mark-scheme", "teacherOnly": true, "content": "[answers only]"},
+    {"title": "Teacher Notes", "type": "teacher-notes", "teacherOnly": true, "content": "[timings, misconceptions, interventions, next topic]"},
+    {"title": "SEND Adaptations & Rationale", "type": "teacher-notes", "teacherOnly": true, "content": "${hasSend ? `ADAPTED FOR: ${params.sendNeed!.toUpperCase()}\nADAPTATIONS: [list every specific change made]\nRATIONALE: [3-4 sentences: how ${params.sendNeed} affects learning, SEND Code of Practice, how each adaptation removes a barrier]\nCLASSROOM TIPS: [3-4 practical tips for the teacher]\nIF STUDENT STRUGGLES: [next steps / further scaffolding]` : 'No SEND adaptations — standard worksheet.'}"`}
   ],
   "metadata": {
     "subject": "${subjectDisplay}",
