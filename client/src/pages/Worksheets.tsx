@@ -2820,7 +2820,6 @@ ${s.content}`).join("\n\n"),
                       );
                     })()}
                   </div>
-                  </div>
                 )}
 
               </CardContent>
