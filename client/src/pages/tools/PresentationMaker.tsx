@@ -16,7 +16,8 @@ import {
   Monitor, Sparkles, RefreshCw, ChevronLeft,
   ChevronRight, Loader2, Palette, FileDown, Eye,
   BookOpen, Target, Lightbulb, HelpCircle, CheckSquare, Brain,
-  ArrowRight, List, Copy, Check, Plus,
+  ArrowRight, List, Copy, Check, Plus, Users, AlertCircle,
+  Pencil, Zap, Edit3, Calculator,
 } from "lucide-react";
 import { callAI } from "@/lib/ai";
 import { useApp } from "@/contexts/AppContext";
@@ -130,8 +131,17 @@ const THEMES = {
     light: "#F0FDFA",
     gradient: "linear-gradient(135deg, #134E4A 0%, #0D9488 100%)",
   },
+  rainbow: {
+    name: "Rainbow (Primary)",
+    primary: "#7C3AED",
+    secondary: "#EC4899",
+    accent: "#F59E0B",
+    bg: "#FFFBF0",
+    text: "#1e293b",
+    light: "#FDF4FF",
+    gradient: "linear-gradient(135deg, #7C3AED 0%, #EC4899 50%, #F59E0B 100%)",
+  },
 };
-
 type ThemeKey = keyof typeof THEMES;
 
 // ─── Slide type icons ────────────────────────────────────────────────────
@@ -152,10 +162,17 @@ const SLIDE_ICONS: Record<string, React.ElementType> = {
   "misconception-bust": Lightbulb,
   "exam-technique": Target,
   "real-world-link": BookOpen,
-  "think-pair-share": HelpCircle,
+  "think-pair-share": Users,
   "mini-quiz": CheckSquare,
   "diagram-label": Monitor,
   "pause-and-solve": Brain,
+  "spot-the-mistake": AlertCircle,
+  "draw-it": Pencil,
+  "sort-it": List,
+  "match-it": Zap,
+  "fill-the-gap": Edit3,
+  "story-time": BookOpen,
+  "number-talk": Calculator,
 };
 
 // ─── Slide type labels ────────────────────────────────────────────────────
@@ -180,6 +197,13 @@ const SLIDE_LABELS: Record<string, string> = {
   "mini-quiz": "Mini Quiz",
   "diagram-label": "Diagram & Labels",
   "pause-and-solve": "Pause & Solve",
+  "spot-the-mistake": "Spot the Mistake",
+  "draw-it": "Draw It!",
+  "sort-it": "Sort It!",
+  "match-it": "Match It!",
+  "fill-the-gap": "Fill the Gap",
+  "story-time": "Story Time",
+  "number-talk": "Number Talk",
 };
 
 // ─── Subject options ──────────────────────────────────────────────────────────
@@ -215,8 +239,41 @@ const LESSON_TYPES = [
 // Follows Bloom's taxonomy progression and Rosenshine's Principles.
 
 /** Maps slide count to a structured teaching flow plan */
-function buildSlidePlan(slideCount: number, lessonType: string): string[] {
-  // Core flow always present (7 slots)
+function buildSlidePlan(slideCount: number, lessonType: string, yearGroup?: string): string[] {
+  const isPrimary = /year [1-6]|ks1|ks2|reception/i.test(yearGroup || "");
+
+  if (isPrimary) {
+    // Primary school slide plan — activity-based, colourful, child-friendly
+    const primaryCore = [
+      "title",
+      "learning-objectives",
+      "hook",
+      "key-terms",
+      "story-time",
+      "worked-example",
+      "exit-ticket",
+    ];
+    const primaryFillers: Record<string, string[]> = {
+      introduction:   ["hook", "story-time", "draw-it", "fill-the-gap", "think-pair-share", "sort-it", "summary"],
+      deepdive:       ["hook", "story-time", "worked-example", "spot-the-mistake", "draw-it", "fill-the-gap", "think-pair-share", "summary"],
+      revision:       ["retrieval-warm-up", "fill-the-gap", "spot-the-mistake", "match-it", "sort-it", "mini-quiz", "summary"],
+      "exam-prep":    ["worked-example", "fill-the-gap", "spot-the-mistake", "mini-quiz", "think-pair-share", "summary"],
+      practical:      ["hook", "story-time", "worked-example", "draw-it", "activity", "think-pair-share", "summary"],
+      discussion:     ["hook", "story-time", "think-pair-share", "sort-it", "discussion", "summary"],
+      assessment:     ["hook", "fill-the-gap", "spot-the-mistake", "match-it", "mini-quiz", "summary"],
+    };
+    const fillers = primaryFillers[lessonType] || primaryFillers["introduction"];
+    if (slideCount <= 7) return primaryCore.slice(0, slideCount);
+    const plan = [...primaryCore];
+    let fi = 0;
+    while (plan.length < slideCount) {
+      plan.splice(plan.length - 1, 0, fillers[fi % fillers.length]);
+      fi++;
+    }
+    return plan.slice(0, slideCount);
+  }
+
+  // Secondary school slide plan
   const core = [
     "title",
     "learning-objectives",
@@ -230,7 +287,7 @@ function buildSlidePlan(slideCount: number, lessonType: string): string[] {
   // Filler types chosen based on lesson type and slide count
   const fillerPool: Record<string, string[]> = {
     introduction:   ["hook", "content", "diagram-label", "check-understanding", "discussion", "summary", "pause-and-solve"],
-    deepdive:       ["hook", "content", "worked-example", "misconception-bust", "what-changed", "diagram-label", "check-understanding", "pause-and-solve", "summary"],
+    deepdive:       ["hook", "content", "worked-example", "misconception-bust", "diagram-label", "check-understanding", "pause-and-solve", "summary"],
     revision:       ["retrieval-warm-up", "mini-quiz", "misconception-bust", "exam-technique", "check-understanding", "pause-and-solve", "summary"],
     "exam-prep":    ["exam-technique", "worked-example", "mini-quiz", "misconception-bust", "check-understanding", "pause-and-solve", "summary"],
     practical:      ["hook", "diagram-label", "worked-example", "activity", "check-understanding", "discussion", "summary"],
@@ -246,8 +303,7 @@ function buildSlidePlan(slideCount: number, lessonType: string): string[] {
   let fi = 0;
   while (plan.length < slideCount) {
     const filler = fillers[fi % fillers.length];
-    // Insert fillers at sensible positions (after core content, before exit)
-    const insertAt = plan.length - 1; // before exit-ticket
+    const insertAt = plan.length - 1;
     plan.splice(insertAt, 0, filler);
     fi++;
   }
@@ -304,7 +360,7 @@ function buildSlidePrompt(params: {
   const isExamYear = /year 1[0-3]|gcse|a.?level|sixth/i.test(yearGroup);
 
   // Build the structured slide plan
-  const slidePlan = buildSlidePlan(slideCount, lessonType);
+  const slidePlan = buildSlidePlan(slideCount, lessonType, yearGroup);
 
   // Bloom's taxonomy mapping for teaching progression
   const bloomsMap: Record<string, string> = {
@@ -377,7 +433,19 @@ CRITICAL: Return ONLY valid JSON. No markdown, no explanation, no code blocks.`;
 "exam-technique" → title, examTip (specific exam strategy), markSchemeHint (what examiners look for), bullets (2-3 command word tips), speakerNotes
 "extension" → title, question (challenge task), bullets (scaffolding steps for extension), body (hint or context), speakerNotes
 "summary" → title, bullets (3-5 key takeaways — the most important things to remember), body (link to next lesson), speakerNotes
-"exit-ticket" → title, question (assessment question), options (optional MCQ options), answer (correct answer or model answer), speakerNotes`;
+"exit-ticket" → title, question (assessment question), options (optional MCQ options), answer (correct answer or model answer), speakerNotes
+
+${isPrimary ? `
+PRIMARY SLIDE TYPE SPECIFICATIONS (use these for primary school):
+"story-time" → title, body (short story/scenario in 2-3 simple sentences introducing the topic), image_prompt (colourful, child-friendly scene), speakerNotes (how to read it aloud)
+"draw-it" → title, question (simple drawing instruction e.g. "Draw 3 apples in the box"), body (what to draw — be very specific), speakerNotes
+"sort-it" → title, question (sorting instruction), bullets (items to sort — 4-6 items), body (category labels e.g. "Living / Not Living"), speakerNotes
+"match-it" → title, question (matching instruction), bullets (left column items), body (right column items — same count, shuffled), speakerNotes
+"fill-the-gap" → title, question (fill-in-the-blank sentence or short passage with ___ gaps), bullets (word bank — 4-6 words), speakerNotes
+"spot-the-mistake" → title, question (show a worked example with a deliberate mistake), answer (what the mistake is and why), speakerNotes
+"number-talk" → title, question (a number or calculation to think about), bullets (3 different ways to think about it), body (discussion prompt), speakerNotes
+"think-pair-share" → title, question (simple discussion question), bullets (Think: 1 min / Pair: 1 min / Share: hands up!), body (sentence starter e.g. "I think... because..."), speakerNotes
+` : ""}`;
 
   const user = `Create a complete, high-quality lesson presentation.
 
@@ -406,7 +474,14 @@ QUALITY STANDARDS:
 - Worked examples must use real numbers relevant to ${topic}
 - Speaker notes must be practical teaching guidance (not just "teach this slide")
 - ${isSTEM ? "STEM: Use correct units, formulae, and scientific notation" : "Humanities: Use precise subject vocabulary and text references"}
-- ${isPrimary ? "PRIMARY: Use simple language, visual descriptions, encouraging tone" : "SECONDARY: Use GCSE/A-level appropriate vocabulary"}
+- ${isPrimary ? `PRIMARY SCHOOL RULES (MANDATORY):
+  1. Language: max 6 words per bullet. Short sentences. No jargon.
+  2. Tone: warm, encouraging, fun. "Well done!", "Can you spot it?", "Have a go!"
+  3. Activities: EVERY activity slide must have a clear, single task instruction.
+  4. Visuals: describe colourful, child-friendly images in image_prompt fields.
+  5. Numbers: use concrete examples (apples, toys, animals) not abstract symbols.
+  6. Variety: mix drawing, matching, circling, sorting, filling in blanks.
+  7. No dense text — max 3 words per bullet. Bigger is better.` : "SECONDARY: Use GCSE/A-level appropriate vocabulary"}
 - ${isExamYear ? "EXAM YEAR: Include mark scheme language, command words, band descriptors" : ""}
 - Misconception slides must name the SPECIFIC misconception for this topic
 - Exit ticket must be answerable in 2 minutes and directly assess the lesson objective
@@ -928,6 +1003,204 @@ function FullSlideView({
           </div>
         );
 
+      // ── Primary: Story Time ──────────────────────────────────────────────
+      case "story-time":
+        return (
+          <div className="flex flex-col h-full" style={{ background: "linear-gradient(135deg,#FFF0FB,#FFF8E1)" }}>
+            <div className="px-8 pt-6 pb-2">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-xl" style={{ background: "#EC4899" }}>📖</div>
+                <h2 className="text-[1.5rem] font-black" style={{ color: "#7C3AED" }}>{slide.title}</h2>
+              </div>
+            </div>
+            <div className="flex-1 px-8 pb-6 flex flex-col justify-center gap-4">
+              {slide.body && (
+                <div className="rounded-3xl p-5 text-[1.1rem] font-semibold leading-relaxed" style={{ background: "rgba(236,72,153,0.1)", border: "3px solid #EC4899", color: "#4a044e" }}>
+                  {slide.body}
+                </div>
+              )}
+              {slide.image_prompt && (
+                <div className="rounded-2xl overflow-hidden h-28 bg-cover bg-center opacity-80" style={{ backgroundImage: `url(https://source.unsplash.com/featured/600x200/?${encodeURIComponent(slide.image_prompt)})`, border: "3px solid #F59E0B" }} />
+              )}
+            </div>
+          </div>
+        );
+
+      // ── Primary: Draw It ──────────────────────────────────────────────────
+      case "draw-it":
+        return (
+          <div className="flex flex-col h-full" style={{ background: "linear-gradient(135deg,#F0FDF4,#ECFEFF)" }}>
+            <div className="px-8 pt-6 pb-2">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-xl" style={{ background: "#22c55e" }}>✏️</div>
+                <h2 className="text-[1.5rem] font-black" style={{ color: "#15803d" }}>{slide.title}</h2>
+              </div>
+            </div>
+            <div className="flex-1 px-8 pb-6 flex gap-4 items-center">
+              <div className="flex-1">
+                {slide.question && (
+                  <div className="text-[1.1rem] font-bold mb-4 rounded-2xl p-4" style={{ background: "rgba(34,197,94,0.15)", border: "3px solid #22c55e", color: "#14532d" }}>
+                    {slide.question}
+                  </div>
+                )}
+                {slide.body && <div className="text-sm font-medium" style={{ color: "#166534" }}>{slide.body}</div>}
+              </div>
+              <div className="flex-1 rounded-3xl flex items-center justify-center" style={{ border: "3px dashed #22c55e", background: "white", minHeight: "120px" }}>
+                <div className="text-center" style={{ color: "#86efac" }}>
+                  <div className="text-4xl mb-1">🖊️</div>
+                  <div className="text-xs font-semibold">Draw here</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+
+      // ── Primary: Sort It ──────────────────────────────────────────────────
+      case "sort-it":
+        return (
+          <div className="flex flex-col h-full" style={{ background: "linear-gradient(135deg,#FFF7ED,#FFFBEB)" }}>
+            <div className="px-8 pt-6 pb-2">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-xl" style={{ background: "#f97316" }}>🗂️</div>
+                <h2 className="text-[1.5rem] font-black" style={{ color: "#c2410c" }}>{slide.title}</h2>
+              </div>
+            </div>
+            <div className="flex-1 px-8 pb-6 flex flex-col justify-center gap-3">
+              {slide.question && <div className="text-base font-bold" style={{ color: "#7c2d12" }}>{slide.question}</div>}
+              <div className="flex gap-3 flex-wrap">
+                {slide.bullets?.map((item, i) => (
+                  <div key={i} className="px-4 py-2 rounded-2xl text-sm font-bold" style={{ background: ["#fef9c3","#dcfce7","#dbeafe","#fce7f3","#f3e8ff","#ffedd5"][i%6], border: `2px solid ${["#ca8a04","#16a34a","#2563eb","#db2777","#7c3aed","#ea580c"][i%6]}`, color: ["#713f12","#14532d","#1e3a8a","#831843","#4c1d95","#431407"][i%6] }}>
+                    {item}
+                  </div>
+                ))}
+              </div>
+              {slide.body && (
+                <div className="flex gap-3 mt-2">
+                  {slide.body.split("/").map((cat, i) => (
+                    <div key={i} className="flex-1 rounded-2xl p-3 text-center font-bold text-sm" style={{ background: i===0?"#dcfce7":"#dbeafe", border: `2px dashed ${i===0?"#16a34a":"#2563eb"}`, color: i===0?"#14532d":"#1e3a8a", minHeight: "50px" }}>
+                      {cat.trim()}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        );
+
+      // ── Primary: Match It ──────────────────────────────────────────────────
+      case "match-it":
+        return (
+          <div className="flex flex-col h-full" style={{ background: "linear-gradient(135deg,#EFF6FF,#F5F3FF)" }}>
+            <div className="px-8 pt-6 pb-2">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-xl" style={{ background: "#7C3AED" }}>⚡</div>
+                <h2 className="text-[1.5rem] font-black" style={{ color: "#4c1d95" }}>{slide.title}</h2>
+              </div>
+            </div>
+            <div className="flex-1 px-8 pb-6 flex gap-4 items-center">
+              <div className="flex-1 flex flex-col gap-2">
+                {slide.bullets?.map((item, i) => (
+                  <div key={i} className="rounded-xl px-4 py-2 text-sm font-bold" style={{ background: "#ede9fe", border: "2px solid #7C3AED", color: "#4c1d95" }}>{item}</div>
+                ))}
+              </div>
+              <div className="flex flex-col gap-2 text-2xl text-gray-300">
+                {slide.bullets?.map((_, i) => <div key={i}>→</div>)}
+              </div>
+              <div className="flex-1 flex flex-col gap-2">
+                {slide.body?.split("|").map((item, i) => (
+                  <div key={i} className="rounded-xl px-4 py-2 text-sm font-bold" style={{ background: "#fce7f3", border: "2px solid #EC4899", color: "#831843" }}>{item.trim()}</div>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+
+      // ── Primary: Fill the Gap ──────────────────────────────────────────────
+      case "fill-the-gap":
+        return (
+          <div className="flex flex-col h-full" style={{ background: "linear-gradient(135deg,#ECFEFF,#F0FDF4)" }}>
+            <div className="px-8 pt-6 pb-2">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-xl" style={{ background: "#0891b2" }}>✍️</div>
+                <h2 className="text-[1.5rem] font-black" style={{ color: "#164e63" }}>{slide.title}</h2>
+              </div>
+            </div>
+            <div className="flex-1 px-8 pb-6 flex flex-col justify-center gap-4">
+              {slide.question && (
+                <div className="text-[1.1rem] font-bold rounded-2xl p-5 leading-loose" style={{ background: "rgba(8,145,178,0.1)", border: "3px solid #0891b2", color: "#164e63" }}>
+                  {slide.question.split("___").map((part, i, arr) => (
+                    <span key={i}>{part}{i < arr.length-1 && <span className="inline-block border-b-4 border-cyan-500 w-20 mx-1 align-bottom" />}</span>
+                  ))}
+                </div>
+              )}
+              {slide.bullets && slide.bullets.length > 0 && (
+                <div>
+                  <div className="text-xs font-bold uppercase tracking-wide mb-2" style={{ color: "#0891b2" }}>Word Bank</div>
+                  <div className="flex gap-2 flex-wrap">
+                    {slide.bullets.map((word, i) => (
+                      <div key={i} className="px-4 py-1.5 rounded-full text-sm font-bold" style={{ background: "#cffafe", border: "2px solid #0891b2", color: "#164e63" }}>{word}</div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+
+      // ── Primary: Spot the Mistake ──────────────────────────────────────────
+      case "spot-the-mistake":
+        return (
+          <div className="flex flex-col h-full" style={{ background: "linear-gradient(135deg,#FFF1F2,#FFF7ED)" }}>
+            <div className="px-8 pt-6 pb-2">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-xl" style={{ background: "#dc2626" }}>🔍</div>
+                <h2 className="text-[1.5rem] font-black" style={{ color: "#991b1b" }}>{slide.title}</h2>
+              </div>
+            </div>
+            <div className="flex-1 px-8 pb-6 flex flex-col justify-center gap-4">
+              {slide.question && (
+                <div className="text-[1.1rem] font-bold rounded-2xl p-5" style={{ background: "#fee2e2", border: "3px solid #dc2626", color: "#7f1d1d" }}>
+                  <div className="text-xs font-bold uppercase tracking-wide mb-2" style={{ color: "#dc2626" }}>Can you spot the mistake? 🕵️</div>
+                  {slide.question}
+                </div>
+              )}
+              {slide.answer && (
+                <div className="text-sm font-semibold rounded-xl p-3" style={{ background: "#dcfce7", border: "2px solid #16a34a", color: "#14532d" }}>
+                  <span className="font-bold">✓ The mistake was: </span>{slide.answer}
+                </div>
+              )}
+            </div>
+          </div>
+        );
+
+      // ── Primary: Number Talk ──────────────────────────────────────────────
+      case "number-talk":
+        return (
+          <div className="flex flex-col h-full" style={{ background: "linear-gradient(135deg,#FEFCE8,#FFF0FB)" }}>
+            <div className="px-8 pt-6 pb-2">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-xl" style={{ background: "#eab308" }}>🔢</div>
+                <h2 className="text-[1.5rem] font-black" style={{ color: "#713f12" }}>{slide.title}</h2>
+              </div>
+            </div>
+            <div className="flex-1 px-8 pb-6 flex gap-5 items-center">
+              {slide.question && (
+                <div className="w-32 h-32 rounded-3xl flex items-center justify-center text-[2.5rem] font-black flex-shrink-0" style={{ background: "#fef9c3", border: "4px solid #eab308", color: "#713f12" }}>
+                  {slide.question}
+                </div>
+              )}
+              <div className="flex-1 flex flex-col gap-2">
+                {slide.bullets?.map((way, i) => (
+                  <div key={i} className="rounded-xl px-4 py-2 text-sm font-semibold" style={{ background: ["#fef9c3","#dcfce7","#dbeafe"][i%3], border: `2px solid ${["#ca8a04","#16a34a","#2563eb"][i%3]}`, color: ["#713f12","#14532d","#1e3a8a"][i%3] }}>
+                    {way}
+                  </div>
+                ))}
+                {slide.body && <div className="text-xs font-semibold italic mt-1" style={{ color: "#92400e" }}>{slide.body}</div>}
+              </div>
+            </div>
+          </div>
+        );
+
       // ── Default: content / activity / extension ────────────────────────────
       default:
         return (
@@ -1334,6 +1607,16 @@ export default function PresentationMaker() {
   const [additionalNotes, setAdditionalNotes] = useState("");
   const [selectedTheme, setSelectedTheme] = useState<ThemeKey>("navy");
 
+  // Auto-select Rainbow theme for primary school year groups
+  const handleYearGroupChange = (value: string) => {
+    setYearGroup(value);
+    if (/year [1-6]|ks1|ks2|reception/i.test(value)) {
+      setSelectedTheme("rainbow");
+    } else if (selectedTheme === "rainbow") {
+      setSelectedTheme("navy");
+    }
+  };
+
   // Generation state
   const [loading, setLoading] = useState(false);
   const [presentation, setPresentation] = useState<PresentationData | null>(null);
@@ -1500,7 +1783,7 @@ export default function PresentationMaker() {
                 {/* Year Group */}
                 <div className="space-y-1">
                   <Label className="text-xs font-semibold text-gray-700">Year Group *</Label>
-                  <Select value={yearGroup} onValueChange={setYearGroup}>
+                  <Select value={yearGroup} onValueChange={handleYearGroupChange}>
                     <SelectTrigger className="h-8 text-xs">
                       <SelectValue placeholder="Select year group..." />
                     </SelectTrigger>
