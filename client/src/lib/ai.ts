@@ -1091,7 +1091,6 @@ STRICT JSON OUTPUT: Respond with valid JSON only — no markdown, no code blocks
   // ── SVG Diagram injection note ──────────────────────────────────────────────
   // Subjects where inline diagrams add genuine value
   const diagramSubjects = ["science", "biology", "chemistry", "physics", "geography", "maths", "mathematics", "design", "engineering", "history"];
-  const subjectLower = params.subject.toLowerCase();
   const isDiagramSubject = diagramSubjects.some(s => subjectLower.includes(s));
   const isVI = hasSend && !!(params.sendNeed?.toLowerCase().includes("vi") || params.sendNeed?.toLowerCase().includes("visual impair"));
 
