@@ -1460,29 +1460,42 @@ function TrueFalseSection({
   isTeacher?: boolean;
 }) {
   const raw = stripLayoutTag(content);
-  // Match lines that are numbered AND contain TRUE or FALSE
-  // Handles: "1. Statement. TRUE" / "1. Statement TRUE" / "1. Statement → TRUE"
   const allLines = raw.split("\n").map(l => l.trim()).filter(Boolean);
-  const lines = allLines.filter(l =>
-    /^\d+[.)\s]/.test(l) && /\b(TRUE|FALSE)\b/i.test(l)
-  );
-  // If no TRUE/FALSE lines found, try any numbered lines (format may vary)
-  const displayLines = lines.length >= 2 ? lines :
-    allLines.filter(l => /^\d+[.)\s].{8,}/.test(l));
+
+  // Build statement list — handles BOTH formats:
+  // Format A (same line): "1. Statement TRUE" or "1. Statement → TRUE"
+  // Format B (next line): "1. Statement" followed by "TRUE" or "FALSE" on next line
+  const statements: { text: string; answer: string | undefined }[] = [];
+  for (let i = 0; i < allLines.length; i++) {
+    const line = allLines[i];
+    if (!/^\d+[.)\s]/.test(line)) continue;
+    // Check if TRUE/FALSE is on this line
+    const inlineMatch = line.match(/[.→\s]+(TRUE|FALSE)[.\s]*$/i);
+    if (inlineMatch) {
+      const stmtText = line.replace(/^\d+[.)\s]+/, "").replace(/[.→\s]+(TRUE|FALSE)[.\s]*$/i, "").trim();
+      statements.push({ text: stmtText, answer: inlineMatch[1].toUpperCase() });
+    } else {
+      // Check if next line is TRUE or FALSE
+      const nextLine = allLines[i + 1]?.trim();
+      const isNextTF = nextLine && /^(TRUE|FALSE)$/i.test(nextLine);
+      const stmtText = line.replace(/^\d+[.)\s]+/, "").trim();
+      if (stmtText.length > 4) {
+        statements.push({ text: stmtText, answer: isNextTF ? nextLine.toUpperCase() : undefined });
+        if (isNextTF) i++; // skip the TRUE/FALSE line
+      }
+    }
+  }
+  // Fallback: if nothing parsed, show all numbered lines without TRUE/FALSE
+  const displayLines = statements.length > 0 ? statements :
+    allLines.filter(l => /^\d+[.)\s].{8,}/.test(l)).map(l => ({ text: l.replace(/^\d+[.)\s]+/, "").trim(), answer: undefined }));
   const accentColor = fmt.accentColor || "#2A6F6F";
   const RED = "#8B0000";
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: fmt.lineHeight > 1.7 ? "14px" : "10px" }}>
-      {displayLines.map((line, i) => {
-        // Extract TRUE/FALSE answer — handles "→ TRUE", ". TRUE", " TRUE" at end
-        const answerMatch = line.match(/[.→\s]+(TRUE|FALSE)[.\s]*$/i);
-        const stmtText = line
-          .replace(/^\d+[.)\s]+/, "")
-          .replace(/[.→\s]+(TRUE|FALSE)[.\s]*$/i, "")
-          .trim();
-        const answer = answerMatch?.[1]?.toUpperCase();
-
+      {displayLines.map((item, i) => {
+        const stmtText = typeof item === "string" ? item.replace(/^\d+[.)\s]+/, "").trim() : item.text;
+        const answer = typeof item === "string" ? undefined : item.answer;
         return (
           <div key={i} style={{
             display: "flex",
@@ -1501,8 +1514,7 @@ function TrueFalseSection({
               lineHeight: String(fmt.lineHeight),
               letterSpacing: fmt.letterSpacing,
               color: "#1e293b",
-              dangerouslySetInnerHTML: { __html: renderMath(stmtText) },
-            }} />
+            }} dangerouslySetInnerHTML={{ __html: renderMath(stmtText) }} />
             <div style={{ display: "flex", gap: "8px", flexShrink: 0 }}>
               <div style={{
                 padding: "5px 18px",
@@ -1552,7 +1564,8 @@ function MCQSection({
   const raw = stripLayoutTag(content);
   const lines = raw.split("\n").filter(Boolean);
   // Question is everything before the first A/B/C/D line
-  const optStartIdx = lines.findIndex(l => /^[A-D]\s{1,2}/.test(l));
+  // Handle both "A  text" and "A. text" and "A) text" formats
+  const optStartIdx = lines.findIndex(l => /^[A-D][.\s)]{1,2}\s*\S/.test(l));
   const questionLines = optStartIdx > 0 ? lines.slice(0, optStartIdx) : [];
   const optionLines  = optStartIdx >= 0 ? lines.slice(optStartIdx) : lines;
 
@@ -1560,10 +1573,11 @@ function MCQSection({
   const GREEN = "#166534";
 
   const options = optionLines
-    .filter(l => /^[A-D]\s{1,2}/.test(l))
+    .filter(l => /^[A-D][.\s)]{1,2}\s*\S/.test(l))
     .map(l => {
       const label  = l[0];
-      const text   = l.slice(2).replace(/\s*✓\s*$/, "").trim();
+      // Strip "A. " or "A  " or "A) " prefix
+      const text   = l.slice(1).replace(/^[.\s)]+/, "").replace(/\s*✓\s*$/, "").trim();
       const correct = isTeacher && l.includes("✓");
       return { label, text, correct };
     });
@@ -1698,8 +1712,8 @@ function GapFillInlineSection({
             <span key={i} style={{
               fontSize: `${fmt.fontSize}px`,
               fontFamily: fmt.fontFamily,
-              fontWeight: 600,
-              color: accentColor,
+              fontWeight: 700,
+              color: "#1e293b",
               marginRight: "16px",
             }}>{w}</span>
           ))}
@@ -1711,69 +1725,96 @@ function GapFillInlineSection({
 
 // ── 4. LABEL DIAGRAM ────────────────────────────────────────────────────────
 function LabelDiagramSection({
-  content, fmt,
+  content, fmt, isTeacher = false,
 }: {
   content: string;
   fmt: ReturnType<typeof getSendFormatting>;
+  isTeacher?: boolean;
 }) {
   const raw = stripLayoutTag(content);
-  const lines = raw.split("\n").filter(Boolean);
-
-  // Parse LABELS: and ANSWERS: lines
-  const labelsLine  = lines.find(l => /^LABELS:/i.test(l));
-  const answersLine = lines.find(l => /^ANSWERS:/i.test(l));
-  const labels  = labelsLine  ? labelsLine.replace(/^LABELS:/i,  "").split("|").map(s => s.trim()) : [];
-  const answers = answersLine ? answersLine.replace(/^ANSWERS:/i, "").split("|").map(s => s.trim()) : [];
   const accentColor = fmt.accentColor || "#1B2A4A";
 
+  // Extract diagram spec from [[DIAGRAM:{...}]] marker
+  const diagramSpec = extractDiagramSpec(raw);
+  const textWithoutDiagram = stripDiagramMarker(raw);
+
+  // Parse LABELS: and ANSWERS: lines from the text
+  const lines = textWithoutDiagram.split("\n").filter(Boolean);
+  const labelsLine  = lines.find(l => /^LABELS:/i.test(l));
+  const answersLine = lines.find(l => /^ANSWERS:/i.test(l));
+  const rawLabels = labelsLine
+    ? labelsLine.replace(/^LABELS:/i, "").split("|").map(s => s.trim())
+    : (diagramSpec?.labels?.map(l => l.text) || []);
+  const answers = answersLine
+    ? answersLine.replace(/^ANSWERS:/i, "").split("|").map(s => s.trim())
+    : [];
+
+  // Question instruction text (lines before LABELS:)
+  const instrLines = lines.filter(l => !/^LABELS:/i.test(l) && !/^ANSWERS:/i.test(l));
+
   return (
-    <div style={{ display: "flex", gap: "16px", alignItems: "flex-start" }}>
-      {/* Diagram placeholder */}
-      <div style={{
-        flex: "0 0 45%",
-        minHeight: "160px",
-        border: `1.5px solid ${accentColor}33`,
-        borderRadius: "6px",
-        background: "#f8fafc",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        color: "#9ca3af",
-        fontSize: `${Math.max(fmt.fontSize - 2, 10)}px`,
-        fontFamily: fmt.fontFamily,
-        fontStyle: "italic",
-        padding: "12px",
-        textAlign: "center" as const,
-      }}>
-        [Diagram — see printed worksheet]
-      </div>
-      {/* Label fill-in boxes */}
-      <div style={{ flex: 1, display: "flex", flexDirection: "column" as const, gap: "8px" }}>
-        {labels.map((label, i) => (
-          <div key={i} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+    <div>
+      {instrLines.length > 0 && (
+        <div style={{ fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, lineHeight: String(fmt.lineHeight), color: "#1e293b", marginBottom: "12px" }}
+          dangerouslySetInnerHTML={{ __html: renderMath(instrLines.join(" ")) }} />
+      )}
+      <div style={{ display: "flex", gap: "20px", alignItems: "flex-start" }}>
+        {/* Diagram panel — actual SVG or plain box */}
+        <div style={{ flex: "0 0 48%" }}>
+          {diagramSpec ? (
+            <SVGDiagram
+              spec={diagramSpec}
+              width={280}
+              height={220}
+              fontFamily={fmt.fontFamily}
+              fontSize={fmt.fontSize - 1}
+              accentColor={accentColor}
+              showCallouts={true}
+            />
+          ) : (
             <div style={{
-              width: "22px", height: "22px",
-              borderRadius: "50%",
-              background: "#CC0000",
-              color: "white",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: "11px", fontWeight: 700, fontFamily: fmt.fontFamily,
-              flexShrink: 0,
-            }}>{i + 1}</div>
-            <div style={{
-              flex: 1,
-              borderBottom: `1.5px solid #d1d5db`,
-              minHeight: "24px",
-              fontSize: `${fmt.fontSize}px`,
+              minHeight: "180px",
+              border: `2px solid ${accentColor}`,
+              borderRadius: "4px",
+              background: "#fafafa",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "#9ca3af",
+              fontSize: `${Math.max(fmt.fontSize - 2, 10)}px`,
               fontFamily: fmt.fontFamily,
-              color: answers[i] ? "#166534" : "#9ca3af",
-              paddingBottom: "2px",
-              fontStyle: answers[i] ? "normal" : "italic",
-            }}>
-              {answers[i] || label || ""}
+              fontStyle: "italic",
+            }}>Diagram</div>
+          )}
+        </div>
+        {/* Numbered answer lines on the right */}
+        <div style={{ flex: 1, display: "flex", flexDirection: "column" as const, gap: "10px", paddingTop: "8px" }}>
+          {rawLabels.map((label, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              {/* Numbered callout dot matching diagram */}
+              <div style={{
+                width: "20px", height: "20px",
+                borderRadius: "50%",
+                background: accentColor,
+                color: "white",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: "10px", fontWeight: 700, fontFamily: fmt.fontFamily,
+                flexShrink: 0,
+              }}>{i + 1}</div>
+              <div style={{
+                flex: 1,
+                borderBottom: `1.5px solid #d1d5db`,
+                minHeight: "24px",
+                fontSize: `${fmt.fontSize}px`,
+                fontFamily: fmt.fontFamily,
+                color: isTeacher && answers[i] ? "#166534" : "transparent",
+                paddingBottom: "2px",
+              }}>
+                {isTeacher ? (answers[i] || label || "") : ""}
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -1788,32 +1829,45 @@ function DiagramSubQSection({
   overlayColor?: string;
 }) {
   const raw = stripLayoutTag(content);
-  const lines = raw.split("\n").filter(Boolean);
-  // Sub-questions: lines starting with (a), (b), (c) ...
-  const subQLines = lines.filter(l => /^\([a-e]\)/.test(l.trim()));
   const accentColor = fmt.accentColor || "#1B2A4A";
   const answerLineH = fmt.answerLineHeight || 26;
 
+  // Extract diagram spec from [[DIAGRAM:{...}]] marker
+  const diagramSpec = extractDiagramSpec(raw);
+  const textWithoutDiagram = stripDiagramMarker(raw);
+  const lines = textWithoutDiagram.split("\n").filter(Boolean);
+  // Sub-questions: lines starting with (a), (b), (c) ...
+  const subQLines = lines.filter(l => /^\([a-e]\)/.test(l.trim()));
+
   return (
     <div style={{ display: "flex", gap: "12px", alignItems: "flex-start" }}>
-      {/* Diagram panel */}
-      <div style={{
-        flex: "0 0 48%",
-        minHeight: "180px",
-        border: `1.5px solid ${accentColor}33`,
-        borderRadius: "6px",
-        background: "#f8fafc",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        color: "#9ca3af",
-        fontSize: `${Math.max(fmt.fontSize - 2, 10)}px`,
-        fontFamily: fmt.fontFamily,
-        fontStyle: "italic",
-        padding: "12px",
-        textAlign: "center" as const,
-      }}>
-        [Diagram — see printed worksheet]
+      {/* Diagram panel — actual SVG or plain box */}
+      <div style={{ flex: "0 0 48%" }}>
+        {diagramSpec ? (
+          <SVGDiagram
+            spec={diagramSpec}
+            width={280}
+            height={220}
+            fontFamily={fmt.fontFamily}
+            fontSize={fmt.fontSize - 1}
+            accentColor={accentColor}
+            showCallouts={false}
+          />
+        ) : (
+          <div style={{
+            minHeight: "180px",
+            border: `2px solid ${accentColor}`,
+            borderRadius: "4px",
+            background: "#fafafa",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "#9ca3af",
+            fontSize: `${Math.max(fmt.fontSize - 2, 10)}px`,
+            fontFamily: fmt.fontFamily,
+            fontStyle: "italic",
+          }}>Diagram</div>
+        )}
       </div>
       {/* Sub-questions panel */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column" as const, gap: "14px" }}>
@@ -3558,32 +3612,49 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
         const sectionTitle = (typeof section.title === 'string' ? section.title : String(section.title || '')).replace(/^\*{1,2}|\*{1,2}$/g, '').replace(/^_{1,2}|_{1,2}$/g, '').trim();
 
         // ── Section group dividers: inject "SECTION N — NAME — Questions X–Y" before first question in each group ──
-        const QUESTION_GROUP_MAP: Record<string, { label: string; qStart: number; qEnd: number }> = {
-          "q-true-false":  { label: "SECTION 1 — RECALL",                  qStart: 1, qEnd: 3 },
-          "q-mcq":         { label: "SECTION 1 — RECALL",                  qStart: 1, qEnd: 3 },
-          "q-gap-fill":    { label: "SECTION 1 — RECALL",                  qStart: 1, qEnd: 3 },
-          "q-short-answer":{ label: "SECTION 2 — UNDERSTANDING",           qStart: 4, qEnd: 6 },
-          "q-extended":    { label: "SECTION 3 — APPLICATION & ANALYSIS",  qStart: 7, qEnd: 9 },
-          "q-circuit":     { label: "SECTION 3 — APPLICATION & ANALYSIS",  qStart: 7, qEnd: 9 },
-          "q-draw":        { label: "SECTION 3 — APPLICATION & ANALYSIS",  qStart: 7, qEnd: 9 },
-          "q-graph":       { label: "SECTION 3 — APPLICATION & ANALYSIS",  qStart: 7, qEnd: 9 },
-          "q-data-table":  { label: "SECTION 2 — UNDERSTANDING",           qStart: 4, qEnd: 6 },
-          "q-label-diagram":{ label: "SECTION 2 — UNDERSTANDING",          qStart: 4, qEnd: 6 },
-          "q-ordering":    { label: "SECTION 1 — RECALL",                  qStart: 1, qEnd: 3 },
-          "q-matching":    { label: "SECTION 1 — RECALL",                  qStart: 1, qEnd: 3 },
+        // Determine section group by question number from title (Q1-Q3 = Recall, Q4-Q6 = Understanding, Q7-Q9 = Application)
+        const titleQNum = (() => {
+          const t = typeof section.title === "string" ? section.title : "";
+          const m = t.match(/Q(\d+)/i);
+          return m ? parseInt(m[1]) : null;
+        })();
+        const getGroupByQNum = (qn: number | null, type: string): { label: string; qStart: number; qEnd: number } | undefined => {
+          if (qn !== null) {
+            if (qn >= 1 && qn <= 3) return { label: "SECTION 1 — RECALL", qStart: 1, qEnd: 3 };
+            if (qn >= 4 && qn <= 6) return { label: "SECTION 2 — UNDERSTANDING", qStart: 4, qEnd: 6 };
+            if (qn >= 7 && qn <= 9) return { label: "SECTION 3 — APPLICATION & ANALYSIS", qStart: 7, qEnd: 9 };
+          }
+          // Fallback by type
+          const QUESTION_GROUP_MAP: Record<string, { label: string; qStart: number; qEnd: number }> = {
+            "q-true-false":  { label: "SECTION 1 — RECALL",                  qStart: 1, qEnd: 3 },
+            "q-mcq":         { label: "SECTION 1 — RECALL",                  qStart: 1, qEnd: 3 },
+            "q-gap-fill":    { label: "SECTION 1 — RECALL",                  qStart: 1, qEnd: 3 },
+            "q-short-answer":{ label: "SECTION 2 — UNDERSTANDING",           qStart: 4, qEnd: 6 },
+            "q-extended":    { label: "SECTION 3 — APPLICATION & ANALYSIS",  qStart: 7, qEnd: 9 },
+            "q-circuit":     { label: "SECTION 3 — APPLICATION & ANALYSIS",  qStart: 7, qEnd: 9 },
+            "q-draw":        { label: "SECTION 3 — APPLICATION & ANALYSIS",  qStart: 7, qEnd: 9 },
+            "q-graph":       { label: "SECTION 3 — APPLICATION & ANALYSIS",  qStart: 7, qEnd: 9 },
+            "q-data-table":  { label: "SECTION 2 — UNDERSTANDING",           qStart: 4, qEnd: 6 },
+            "q-label-diagram":{ label: "SECTION 2 — UNDERSTANDING",          qStart: 4, qEnd: 6 },
+            "q-ordering":    { label: "SECTION 1 — RECALL",                  qStart: 1, qEnd: 3 },
+            "q-matching":    { label: "SECTION 1 — RECALL",                  qStart: 1, qEnd: 3 },
+          };
+          return QUESTION_GROUP_MAP[type];
         };
-        const groupInfo = QUESTION_GROUP_MAP[section.type];
-        // Show the group divider only before the FIRST question of that group type in the worksheet
-        const isFirstOfGroup = groupInfo && !worksheet.sections.slice(0, i).some((s: any) => s.type === section.type);
-        // Also check if it's the first of the broader group (e.g. first q-short-answer before any q-short-answer)
-        const groupTypes: Record<string, string[]> = {
-          "SECTION 1 — RECALL":                ["q-true-false", "q-mcq", "q-gap-fill", "q-ordering", "q-matching"],
-          "SECTION 2 — UNDERSTANDING":          ["q-short-answer", "q-data-table", "q-label-diagram"],
-          "SECTION 3 — APPLICATION & ANALYSIS": ["q-extended", "q-circuit", "q-draw", "q-graph"],
-        };
+        const groupInfo = getGroupByQNum(titleQNum, section.type);
         const myGroupLabel = groupInfo?.label;
-        const myGroupTypes = myGroupLabel ? (groupTypes[myGroupLabel] || []) : [];
-        const isFirstOfGroupSection = myGroupLabel && !worksheet.sections.slice(0, i).some((s: any) => myGroupTypes.includes(s.type));
+        // Show the group divider only before the FIRST question of that group in the worksheet
+        // Use question number from title to determine group membership
+        const isFirstOfGroupSection = myGroupLabel && !worksheet.sections.slice(0, i).some((s: any) => {
+          const prevQNum = (() => {
+            const t = typeof s.title === "string" ? s.title : "";
+            const m = t.match(/Q(\d+)/i);
+            return m ? parseInt(m[1]) : null;
+          })();
+          const prevGroup = getGroupByQNum(prevQNum, s.type);
+          return prevGroup?.label === myGroupLabel;
+        });
+        const isFirstOfGroup = isFirstOfGroupSection;
 
         // Map section types to teal section group labels
         const SECTION_GROUP_LABELS: Record<string, string> = {
@@ -3638,10 +3709,10 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
         const allQuestionTypes = new Set([...legacyQuestionTypes, ...newQuestionTypes]);
         const showQuestionBadge = allQuestionTypes.has(section.type);
         // For new individual question types, extract number from title (e.g. "Q1 — True or False" → 1)
-        const titleQNum = isIndividualQuestion ? parseInt((sectionTitle.match(/^Q(\d+)/i) || [])[1] || "0") : 0;
+        const badgeTitleQNum = isIndividualQuestion ? parseInt((sectionTitle.match(/^Q(\d+)/i) || [])[1] || "0") : 0;
         // For legacy types, count question sections before this one
         const questionSectionsBefore = worksheet.sections.slice(0, i).filter((s: any) => allQuestionTypes.has(s.type)).length;
-        const questionNumber = titleQNum > 0 ? titleQNum : questionSectionsBefore + 1;
+        const questionNumber = badgeTitleQNum > 0 ? badgeTitleQNum : questionSectionsBefore + 1;
 
         return (
           <React.Fragment key={i}>
@@ -3824,10 +3895,83 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                     return <GapFillInlineSection content={content} fmt={fmt} overlayColor={overlayColor} />;
                   }
                   if (section.type === "q-short-answer" || section.type === "q-extended") {
-                    // Extract marks from content e.g. "[3 marks]" or "[4 marks]"
+                    // Check if content has sub-questions (a)(b)(c) format
+                    const subQPattern = /^\s*\([a-z]\)/m;
+                    const hasSubQuestions = subQPattern.test(content);
+
+                    if (hasSubQuestions) {
+                      // Split into intro text + sub-questions
+                      const allLines = content.split("\n");
+                      const introLines: string[] = [];
+                      const subQBlocks: { letter: string; text: string; marks: number }[] = [];
+                      let currentSub: { letter: string; text: string; marks: number } | null = null;
+
+                      for (const line of allLines) {
+                        const subMatch = line.match(/^\s*\(([a-z])\)\s*(.*)/);
+                        if (subMatch) {
+                          if (currentSub) subQBlocks.push(currentSub);
+                          const mMatch = subMatch[2].match(/\[(\d+)\s*marks?\]/i);
+                          currentSub = {
+                            letter: subMatch[1],
+                            text: subMatch[2].replace(/\[\d+\s*marks?\]/i, "").trim(),
+                            marks: mMatch ? parseInt(mMatch[1]) : 2,
+                          };
+                        } else if (currentSub) {
+                          currentSub.text += " " + line.trim();
+                        } else {
+                          introLines.push(line);
+                        }
+                      }
+                      if (currentSub) subQBlocks.push(currentSub);
+
+                      const introText = introLines.join("\n").replace(/\[\d+\s*marks?\]/i, "").trim();
+                      const totalMarks = subQBlocks.reduce((s, q) => s + q.marks, 0) || (section.marks as number || 5);
+
+                      return (
+                        <div>
+                          {/* Extract / stimulus block */}
+                          {introText && (
+                            <div style={{
+                              background: "#f8fafc",
+                              border: "1px solid #e2e8f0",
+                              borderLeft: "4px solid #1B2A4A",
+                              borderRadius: "4px",
+                              padding: "10px 14px",
+                              marginBottom: "14px",
+                              fontSize: `${fmt.fontSize}px`,
+                              fontFamily: fmt.fontFamily,
+                              lineHeight: String(fmt.lineHeight),
+                              color: "#1e293b",
+                            }} dangerouslySetInnerHTML={{ __html: renderMath(introText) }} />
+                          )}
+                          <div style={{ fontSize: "11px", color: "#6b7280", fontStyle: "italic", marginBottom: "10px" }}>[{totalMarks} marks total]</div>
+                          {subQBlocks.map((sq, si) => (
+                            <div key={si} style={{ marginBottom: "16px" }}>
+                              <div style={{ display: "flex", gap: "8px", alignItems: "flex-start", marginBottom: "6px" }}>
+                                <span style={{
+                                  fontWeight: 700,
+                                  fontSize: `${fmt.fontSize}px`,
+                                  fontFamily: fmt.fontFamily,
+                                  color: "#1B2A4A",
+                                  minWidth: "20px",
+                                }}>({sq.letter})</span>
+                                <div style={{ flex: 1, fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, lineHeight: String(fmt.lineHeight), color: "#1e293b" }}
+                                  dangerouslySetInnerHTML={{ __html: renderMath(sq.text) }} />
+                                <span style={{ fontSize: "11px", color: "#6b7280", fontStyle: "italic", whiteSpace: "nowrap" as const }}>[{sq.marks}m]</span>
+                              </div>
+                              {Array.from({ length: Math.max(sq.marks + 1, 2) }).map((_: unknown, li: number) => (
+                                <div key={li} style={{ borderBottom: "1px solid #d1d5db", height: "28px", width: "100%", marginBottom: "3px" }} />
+                              ))}
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    }
+
+                    // Standard single-question format
                     const marksMatch = content.match(/\[(\d+)\s*marks?\]/i);
                     const marks = marksMatch ? parseInt(marksMatch[1]) : (section.marks as number || 4);
-                    const lineCount = Math.max(marks, 3);
+                    const lineCount = Math.max(marks + 1, 3);
                     const questionText = content.replace(/\[\d+\s*marks?\]/i, "").trim();
                     return (
                       <div>
@@ -3837,8 +3981,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                           lineHeight: String(fmt.lineHeight),
                           color: "#1e293b",
                           marginBottom: "12px",
-                          dangerouslySetInnerHTML: { __html: renderMath(questionText) },
-                        }} />
+                        }} dangerouslySetInnerHTML={{ __html: renderMath(questionText) }} />
                         <div style={{ fontSize: "11px", color: "#6b7280", fontStyle: "italic", marginBottom: "8px", fontFamily: fmt.fontFamily }}>
                           [{marks} mark{marks !== 1 ? "s" : ""}]
                         </div>
@@ -3940,6 +4083,44 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                     );
                   }
                   if (section.type === "q-data-table") {
+                    // Detect sequencing/ordering format: lines starting with [ ]
+                    const seqLines = content.split("\n").filter(l => /^\s*\[\s*\]/.test(l));
+                    if (seqLines.length >= 3) {
+                      // Sequencing layout: numbered boxes for students to fill in order
+                      const instrLines = content.split("\n").filter(l => !/^\s*\[\s*\]/.test(l) && !/^\d+\s*marks?:/i.test(l));
+                      const instrText = instrLines.filter(l => !l.includes("|") && !/^[-|:\s]+$/.test(l)).join(" ").replace(/\[\d+\s*marks?\]/i, "").trim();
+                      const items = seqLines.map(l => l.replace(/^\s*\[\s*\]\s*/, "").trim());
+                      return (
+                        <div>
+                          {instrText && (
+                            <div style={{ fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, lineHeight: String(fmt.lineHeight), color: "#1e293b", marginBottom: "12px" }}
+                              dangerouslySetInnerHTML={{ __html: renderMath(instrText) }} />
+                          )}
+                          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "8px" }}>
+                            {items.map((item, ii) => (
+                              <div key={ii} style={{
+                                display: "flex", alignItems: "center", gap: "10px",
+                                border: "1.5px solid #d1d5db", borderRadius: "4px",
+                                padding: "8px 10px", background: "white",
+                              }}>
+                                <div style={{
+                                  width: "28px", height: "28px", border: "2px solid #1B2A4A",
+                                  borderRadius: "3px", flexShrink: 0,
+                                  display: "flex", alignItems: "center", justifyContent: "center",
+                                  fontSize: "11px", fontWeight: 700, color: "#1B2A4A",
+                                }} />
+                                <span style={{ fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, color: "#1e293b" }}
+                                  dangerouslySetInnerHTML={{ __html: renderMath(item) }} />
+                              </div>
+                            ))}
+                          </div>
+                          <div style={{ fontSize: "11px", color: "#6b7280", fontStyle: "italic", marginTop: "8px" }}>
+                            Write the correct number (1–{items.length}) in each box.
+                          </div>
+                        </div>
+                      );
+                    }
+                    // Standard table format
                     return <TableCompleteSection content={content} fmt={fmt} isTeacher={isTeacherView} />;
                   }
                   if (section.type === "q-label-diagram") {
