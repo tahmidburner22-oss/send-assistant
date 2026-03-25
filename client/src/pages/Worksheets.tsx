@@ -351,6 +351,16 @@ export default function Worksheets() {
   const [uploadYearGroup, setUploadYearGroup] = useState("");
   const [uploadLoading, setUploadLoading] = useState(false);
   const [uploadResult, setUploadResult] = useState<any>(null);
+  // From-slides state
+  const [slidesFile, setSlidesFile] = useState<File | null>(null);
+  const [slidesSubject, setSlidesSubject] = useState("");
+  const [slidesYearGroup, setSlidesYearGroup] = useState("");
+  const [slidesSendNeeds, setSlidesSendNeeds] = useState("");
+  const [slidesLoading, setSlidesLoading] = useState(false);
+  const [slidesResult, setSlidesResult] = useState<any>(null);
+  const slidesFileInputRef = useRef<HTMLInputElement>(null);
+  const slidesWorksheetRef = useRef<HTMLDivElement>(null);
+  const [uploadSubTab, setUploadSubTab] = useState<"adapt" | "from-slides">("adapt");
 
   // Bank state
   const [bankSearch, setBankSearch] = useState("");
@@ -1291,6 +1301,37 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
       toast.error(err.message || "Failed to adapt worksheet. Please try again.");
     }
     setUploadLoading(false);
+  };
+
+  // ─── Generate Worksheet from Slides ────────────────────────────────────────
+  const handleSlidesGenerate = async () => {
+    if (!slidesFile) { toast.error("Please upload a file."); return; }
+    setSlidesLoading(true);
+    setSlidesResult(null);
+    try {
+      const formData = new FormData();
+      formData.append("file", slidesFile);
+      if (slidesSubject) formData.append("subject", slidesSubject);
+      if (slidesYearGroup) formData.append("yearGroup", slidesYearGroup);
+      if (slidesSendNeeds) formData.append("sendNeeds", slidesSendNeeds);
+      const token = localStorage.getItem("send_token");
+      const res = await fetch("/api/ai/worksheet-from-slides", {
+        method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        credentials: "include",
+        body: formData,
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: "Generation failed" }));
+        throw new Error(err.error || "Generation failed");
+      }
+      const data = await res.json();
+      setSlidesResult(data);
+      toast.success(`Worksheet generated from ${data.slideCount ? `${data.slideCount} slides` : "your file"}!`);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to generate worksheet. Please try again.");
+    }
+    setSlidesLoading(false);
   };
 
   // ─── Save ──────────────────────────────────────────────────────────────────
@@ -2406,19 +2447,38 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
             </Card>
           </TabsContent>
 
-          {/* ─── UPLOAD TAB ────────────────────────────────────────────── */}
+           {/* ─── UPLOAD TAB ────────────────────────────────────── */}
           <TabsContent value="upload" className="mt-4">
             <Card className="border-border/50">
               <CardContent className="p-4 space-y-4">
-                <div className="flex items-start gap-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                  <AlertCircle className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                  <div className="text-sm text-blue-700">
-                    <p className="font-medium">Upload a worksheet (PDF or Word document)</p>
-                    <p className="text-xs mt-0.5">All questions, symbols (× ÷ √ ²), and content are preserved verbatim. Only formatting and presentation are adapted for the SEND need.</p>
-                  </div>
+                {/* Sub-tab switcher */}
+                <div className="flex gap-2 p-1 bg-gray-100 rounded-lg">
+                  <button
+                    onClick={() => setUploadSubTab("adapt")}
+                    className={`flex-1 text-xs font-medium py-1.5 px-3 rounded-md transition-all ${
+                      uploadSubTab === "adapt" ? "bg-white shadow text-brand" : "text-gray-500 hover:text-gray-700"
+                    }`}
+                  >
+                    Adapt for SEND
+                  </button>
+                  <button
+                    onClick={() => setUploadSubTab("from-slides")}
+                    className={`flex-1 text-xs font-medium py-1.5 px-3 rounded-md transition-all ${
+                      uploadSubTab === "from-slides" ? "bg-white shadow text-brand" : "text-gray-500 hover:text-gray-700"
+                    }`}
+                  >
+                    Generate from Slides
+                  </button>
                 </div>
-
-                {/* Drop zone */}
+{uploadSubTab === "adapt" && (
+                <div className="space-y-4">
+                  <div className="flex items-start gap-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <AlertCircle className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                    <div className="text-sm text-blue-700">
+                      <p className="font-medium">Upload a worksheet (PDF or Word document)</p>
+                      <p className="text-xs mt-0.5">All questions, symbols (× ÷ √ ²), and content are preserved verbatim. Only formatting and presentation are adapted for the SEND need.</p>
+                    </div>
+                  </div>
                 <div
                   className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-emerald-400 hover:bg-emerald-50 transition-colors"
                   onClick={() => fileInputRef.current?.click()}
@@ -2592,6 +2652,174 @@ ${s.content}`).join("\n\n"),
                     </motion.div>
                   );
                 })()}
+
+                {/* ── From Slides sub-tab ─────────────────────────────── */}
+                {uploadSubTab === "from-slides" && (
+                  <div className="space-y-4">
+                    <div className="flex items-start gap-3 p-3 bg-purple-50 border border-purple-200 rounded-lg">
+                      <Sparkles className="h-5 w-5 text-purple-600 flex-shrink-0 mt-0.5" />
+                      <div className="text-sm text-purple-700">
+                        <p className="font-medium">Generate a worksheet from your slides or document</p>
+                        <p className="text-xs mt-0.5">Upload a PowerPoint (.pptx), PDF, or Word (.docx) file and AI will create a complete, print-ready worksheet based on your lesson content.</p>
+                      </div>
+                    </div>
+
+                    {/* Drop zone */}
+                    <div
+                      className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-purple-400 hover:bg-purple-50 transition-colors"
+                      onClick={() => slidesFileInputRef.current?.click()}
+                      onDragOver={e => e.preventDefault()}
+                      onDrop={e => {
+                        e.preventDefault();
+                        const file = e.dataTransfer.files[0];
+                        if (file) { setSlidesFile(file); setSlidesResult(null); }
+                      }}
+                    >
+                      <input
+                        ref={slidesFileInputRef}
+                        type="file"
+                        accept=".pdf,.doc,.docx,.pptx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.presentationml.presentation"
+                        className="hidden"
+                        onChange={e => { const f = e.target.files?.[0]; if (f) { setSlidesFile(f); setSlidesResult(null); } }}
+                      />
+                      {slidesFile ? (
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-center gap-2 text-purple-600">
+                            <FileText className="h-8 w-8" />
+                            <span className="font-medium">{slidesFile.name}</span>
+                          </div>
+                          <p className="text-sm text-gray-500">Click to change file</p>
+                        </div>
+                      ) : (
+                        <>
+                          <Upload className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+                          <p className="text-gray-600 font-medium">Drop your slides or document here</p>
+                          <p className="text-gray-400 text-sm mt-1">PowerPoint (.pptx), PDF (.pdf), or Word (.docx) — up to 25MB</p>
+                        </>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-medium">Subject</Label>
+                        <Select value={slidesSubject} onValueChange={setSlidesSubject}>
+                          <SelectTrigger className="h-10"><SelectValue placeholder="Optional" /></SelectTrigger>
+                          <SelectContent>
+                            {["Mathematics","English","Science","Biology","Chemistry","Physics","History","Geography","French","Spanish","German","Computing","Art","Music","PE","PSHE","Religious Studies","Business","Economics","Psychology","Sociology"].map(s => (
+                              <SelectItem key={s} value={s}>{s}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-medium">Year Group</Label>
+                        <Select value={slidesYearGroup} onValueChange={setSlidesYearGroup}>
+                          <SelectTrigger className="h-10"><SelectValue placeholder="Optional" /></SelectTrigger>
+                          <SelectContent>{yearGroups.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-medium">SEND Adaptations (optional)</Label>
+                      <Select value={slidesSendNeeds} onValueChange={setSlidesSendNeeds}>
+                        <SelectTrigger className="h-10"><SelectValue placeholder="No adaptations needed" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">No adaptations</SelectItem>
+                          {sendNeeds.map(n => <SelectItem key={n.id} value={n.id}>{n.name}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <Button
+                      onClick={handleSlidesGenerate}
+                      disabled={slidesLoading || !slidesFile}
+                      className="w-full h-11 bg-purple-600 hover:bg-purple-700 text-white"
+                    >
+                      {slidesLoading
+                        ? <><RefreshCw className="h-4 w-4 mr-2 animate-spin" />Generating Worksheet...</>
+                        : <><Sparkles className="h-4 w-4 mr-2" />Generate Worksheet from Slides</>}
+                    </Button>
+
+                    {/* Result */}
+                    {slidesResult && (() => {
+                      const ws = slidesResult.worksheet;
+                      const sections: any[] = ws?.sections ?? [];
+                      const slidesWorksheet = {
+                        title: ws?.title || slidesFile?.name?.replace(/\.[^.]+$/, "") || "Generated Worksheet",
+                        subtitle: ws?.subtitle || `${slidesYearGroup || ""} | ${slidesSubject || ""}`.replace(/^\s*\|\s*$/, ""),
+                        sections,
+                        metadata: {
+                          subject: slidesSubject || "uploaded",
+                          topic: ws?.title || "From slides",
+                          yearGroup: slidesYearGroup || "",
+                          sendNeed: slidesSendNeeds || "",
+                          sendNeedId: slidesSendNeeds || "",
+                          difficulty: "mixed",
+                          adaptations: [],
+                        },
+                      };
+                      return (
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
+                          <div className="flex items-center gap-2">
+                            <CheckCircle className="h-5 w-5 text-green-600" />
+                            <span className="font-medium text-sm">
+                              Worksheet generated{slidesResult.slideCount ? ` from ${slidesResult.slideCount} slides` : ""}
+                            </span>
+                          </div>
+                          <div className="border rounded-xl overflow-hidden shadow-sm" ref={slidesWorksheetRef}>
+                            <WorksheetRenderer
+                              worksheet={slidesWorksheet as any}
+                              viewMode="student"
+                              textSize={textSize}
+                              overlayColor={overlayBg || colorOverlays.find(o => o.id === "cream")?.color || ""}
+                              editedSections={{}}
+                              schoolLogoUrl={preferences.schoolLogoUrl}
+                              schoolName={preferences.schoolName}
+                            />
+                          </div>
+                          <div className="flex gap-2 flex-wrap">
+                            <Button size="sm" variant="outline" onClick={() => { if (slidesWorksheetRef.current) printWorksheetElement(slidesWorksheetRef.current); }}>
+                              <Printer className="h-4 w-4 mr-1" />Print
+                            </Button>
+                            <Button size="sm" variant="outline" onClick={async () => {
+                              if (slidesWorksheetRef.current) {
+                                try {
+                                  await downloadHtmlAsPdf(slidesWorksheetRef.current, `${slidesWorksheet.title}.pdf`);
+                                  toast.success("PDF downloaded!");
+                                } catch { toast.error("Could not generate PDF."); }
+                              }
+                            }}>
+                              <Download className="h-4 w-4 mr-1" />Download PDF
+                            </Button>
+                            <Button size="sm" variant="outline" className="gap-1 border-brand/30 text-brand hover:bg-brand/5" onClick={async () => {
+                              try {
+                                await saveWorksheet({
+                                  title: slidesWorksheet.title,
+                                  subtitle: slidesWorksheet.subtitle,
+                                  subject: slidesSubject || "uploaded",
+                                  topic: ws?.title || "From slides",
+                                  yearGroup: slidesYearGroup || "",
+                                  sendNeed: slidesSendNeeds || "",
+                                  difficulty: "mixed",
+                                  content: sections.filter((s: any) => !s.teacherOnly).map((s: any) => `## ${s.title}\n${s.content}`).join("\n\n"),
+                                  teacherContent: sections.map((s: any) => `## ${s.title}\n${s.content}`).join("\n\n"),
+                                  sections: sections as any,
+                                  isAI: true,
+                                });
+                                await refreshData();
+                                toast.success("Saved to history!");
+                              } catch { toast.error("Could not save. Please try again."); }
+                            }}>
+                              <Save className="h-4 w-4 mr-1" />Save to History
+                            </Button>
+                          </div>
+                        </motion.div>
+                      );
+                    })()}
+                  </div>
+                )}
+
               </CardContent>
             </Card>
           </TabsContent>
