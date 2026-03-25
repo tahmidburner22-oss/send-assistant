@@ -2653,6 +2653,8 @@ ${s.content}`).join("\n\n"),
                   );
                 })()}
 
+                </div>
+                )}
                 {/* ── From Slides sub-tab ─────────────────────────────── */}
                 {uploadSubTab === "from-slides" && (
                   <div className="space-y-4">
@@ -2817,6 +2819,7 @@ ${s.content}`).join("\n\n"),
                         </motion.div>
                       );
                     })()}
+                  </div>
                   </div>
                 )}
 
