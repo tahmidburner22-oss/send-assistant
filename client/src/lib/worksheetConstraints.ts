@@ -65,7 +65,7 @@ export interface WorksheetPlan {
   estimatedTime: string;
   sections: {
     name: string;
-    heading: string;     // e.g. "SECTION 1 — RECALL"
+    heading: string;     // e.g. "SECTION 1 — KNOWLEDGE CHECK"
     bloomLevel: BloomLevel;
     questionRange: string; // e.g. "Questions 1–3"
     questions: QuestionPlan[];
@@ -237,7 +237,7 @@ export function buildWorksheetPlan(
         { key: "application", heading: "SECTION C — APPLY",       bloom: "apply"     as BloomLevel, qs: [7,8,9] },
       ]
     : [
-        { key: "recall",      heading: "SECTION 1 — RECALL",                bloom: "remember"  as BloomLevel, qs: [1,2,3] },
+        { key: "recall",      heading: "SECTION 1 — KNOWLEDGE CHECK",        bloom: "remember"  as BloomLevel, qs: [1,2,3] },
         { key: "understanding",heading: "SECTION 2 — UNDERSTANDING",        bloom: "understand" as BloomLevel, qs: [4,5,6] },
         { key: "application", heading: "SECTION 3 — APPLICATION & ANALYSIS",bloom: "apply"     as BloomLevel, qs: [7,8,9] },
       ];
