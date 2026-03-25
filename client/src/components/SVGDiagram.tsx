@@ -3,7 +3,7 @@
  * Zero API cost: the AI outputs structured JSON describing the diagram,
  * this component renders it as clean SVG.
  *
- * Chalkie-style: diagrams are pure visuals — NO text labels on the diagram.
+ * Clean diagram style: pure visuals — NO text labels on the diagram.
  * Numbered callout dots are used for labelling questions.
  *
  * Supports: circuit, labeled, flow, cycle, number-line, bar, axes

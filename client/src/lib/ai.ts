@@ -670,6 +670,116 @@ MANDATORY RULES — violating any rule is wrong:
     yearNum <= 11 ? "Estimated time: 45–60 mins" :
                    "Estimated time: 60–90 mins";
 
+  // ── Question layout rotation system (smart, context-aware) ───────────────
+  // Deterministic seed from topic so same topic always gets same variant.
+  // New question types (error_correction, ranking, what_changed, constraint_problem)
+  // are selected based on topic/subject relevance — never forced.
+  const topicSeed = Math.abs(
+    params.topic.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0)
+  );
+  const topicLower = params.topic.toLowerCase();
+  const subjectLower = (params.subject || "").toLowerCase();
+
+  // ── Relevance scoring for context-aware question types ────────────────────
+  // Returns true if the topic/subject makes this question type a natural fit
+  const isRelevant = {
+    ERROR_CORRECTION: (
+      // Great for STEM topics with calculations, common misconceptions
+      isSTEM ||
+      /calculat|formula|equation|method|working|proof|solve|error|mistake|misconception|ohm|newton|force|energy|speed|circuit|reaction|titrat|algebra|trigon|fraction|decimal|percent/i.test(topicLower)
+    ),
+    RANKING: (
+      // Great for comparison topics, scales, hierarchies
+      /rank|order|compar|scale|hierarch|priorit|greatest|smallest|highest|lowest|most|least|stronger|weaker|reactiv|conduct|resist|density|speed|temperature|timeline|chronolog|import|significant/i.test(topicLower) ||
+      /science|physics|chemistry|biology|history|geography|economics/i.test(subjectLower)
+    ),
+    WHAT_CHANGED: (
+      // Great for cause-effect, before/after, change-over-time topics
+      /chang|effect|impact|cause|before|after|result|consequence|evolution|transform|react|process|cycle|growth|decay|war|revolution|industri|climate|adapt|mutation|circuit|variable/i.test(topicLower) ||
+      /science|physics|chemistry|biology|history|geography/i.test(subjectLower)
+    ),
+    CONSTRAINT_PROBLEM: (
+      // Great for design, problem-solving, engineering, maths application
+      /design|build|create|construct|circuit|engineer|plan|optimis|maximis|minimis|budget|limit|rule|condition|constraint|network|algorithm|program|code|proof|invest|resource/i.test(topicLower) ||
+      /maths|physics|computing|design|technology|engineering/i.test(subjectLower)
+    ),
+  };
+
+  // ── Base variant pool (classic types — always valid) ──────────────────────
+  type TripleType = [string, string, string];
+  const BASE_A_VARIANTS: TripleType[] = [
+    ["TRUE_FALSE",  "MCQ",      "GAP_FILL"],      // 0
+    ["MCQ",         "GAP_FILL", "ORDERING"],      // 1
+    ["GAP_FILL",    "TRUE_FALSE", "SHORT_ANSWER"], // 2
+    ["ORDERING",    "TRUE_FALSE", "MCQ"],          // 3
+    ["MATCHING",    "MCQ",      "GAP_FILL"],       // 4
+    ["TRUE_FALSE",  "ORDERING", "SHORT_ANSWER"],  // 5
+    ["MCQ",         "MATCHING", "TRUE_FALSE"],    // 6
+    ["GAP_FILL",    "ORDERING", "MCQ"],           // 7
+  ];
+  const BASE_B_VARIANTS: TripleType[] = [
+    ["SHORT_ANSWER", "TABLE",        "SHORT_ANSWER"],  // 0
+    ["TABLE",        "SHORT_ANSWER", "ORDERING"],      // 1
+    ["SHORT_ANSWER", "ORDERING",     "TABLE"],         // 2
+    ["TABLE",        "MATCHING",     "SHORT_ANSWER"],  // 3
+    ["SHORT_ANSWER", "TABLE",        "MATCHING"],      // 4
+    ["ORDERING",     "TABLE",        "SHORT_ANSWER"],  // 5
+    ["SHORT_ANSWER", "MATCHING",     "TABLE"],         // 6
+    ["TABLE",        "SHORT_ANSWER", "ORDERING"],      // 7
+  ];
+
+  // ── Build candidate pools including relevant new types ────────────────────
+  // New types are injected as alternatives to one slot in the variant only when relevant.
+  // They never replace all 3 slots — classic types always anchor at least 2 slots.
+  const SECTION_A_VARIANTS: TripleType[] = [...BASE_A_VARIANTS];
+  const SECTION_B_VARIANTS: TripleType[] = [...BASE_B_VARIANTS];
+
+  if (isRelevant.ERROR_CORRECTION) {
+    SECTION_A_VARIANTS.push(["ERROR_CORRECTION", "MCQ",       "GAP_FILL"]);
+    SECTION_B_VARIANTS.push(["ERROR_CORRECTION", "TABLE",     "SHORT_ANSWER"]);
+  }
+  if (isRelevant.RANKING) {
+    SECTION_A_VARIANTS.push(["RANKING",      "TRUE_FALSE",   "SHORT_ANSWER"]);
+    SECTION_B_VARIANTS.push(["RANKING",      "TABLE",        "SHORT_ANSWER"]);
+  }
+  if (isRelevant.WHAT_CHANGED) {
+    SECTION_A_VARIANTS.push(["WHAT_CHANGED", "MCQ",          "GAP_FILL"]);
+    SECTION_B_VARIANTS.push(["WHAT_CHANGED", "TABLE",        "SHORT_ANSWER"]);
+  }
+  if (isRelevant.CONSTRAINT_PROBLEM) {
+    SECTION_A_VARIANTS.push(["CONSTRAINT_PROBLEM", "MCQ",    "TRUE_FALSE"]);
+    SECTION_B_VARIANTS.push(["CONSTRAINT_PROBLEM", "TABLE",  "SHORT_ANSWER"]);
+  }
+
+  const variantIndex = topicSeed % SECTION_A_VARIANTS.length;
+
+  const blockInstructions: Record<string, string> = {
+    TRUE_FALSE:         "Write exactly 4 numbered statements (1. 2. 3. 4.), each ending with TRUE or FALSE on the same line. Exactly 2 must be TRUE and 2 must be FALSE. Example: '1. Water boils at 100°C. TRUE'",
+    MCQ:                "One question stem, then options: 'A  option' 'B  option' 'C  option' 'D  option' on separate lines. Only ONE is correct.",
+    GAP_FILL:           "One paragraph 40-60 words with 5-7 blanks as _____. Next line: 'WORD BANK: word1 | word2 | word3 | word4 | word5 | word6 | word7'",
+    ORDERING:           "6 items each on its own line starting with ☐. Instruction: 'Number the boxes 1–6 to show the correct order.'",
+    MATCHING:           "5 pairs. Each line: '1. [term] ←→ [definition]'. Pairs must be shuffled (term order ≠ definition order).",
+    SHORT_ANSWER:       "One focused question. Mark allocation in brackets: [X marks]. No answer given — student writes it.",
+    TABLE:              "Markdown table with | separators. 3-4 columns. 4-5 rows. Blank cells use '...........' for students to fill in.",
+    ERROR_CORRECTION:   "Present a worked solution with a deliberate mistake — choose an error that is realistic and topic-specific (wrong formula, arithmetic slip, incorrect unit, missed step). Format exactly:\n'Worked Answer\n[step 1]\n[step 2 — contains the error]\n[step 3 if needed]\n\nMistake\n[teacher-only: describe the exact error]\n\nTask\n1. Identify the mistake\n2. Explain why it is wrong\n3. Write the correct answer'\nIMPORTANT: The error must be plausible — something a real student would do. Do NOT make it trivially obvious. Use layout tag: error_correction.",
+    RANKING:            "Present 4–6 items that can be meaningfully ordered by a clear criterion relevant to the topic. Format exactly:\n'Rank these from [highest/strongest/fastest/most] to [lowest/weakest/slowest/least]:\n- [item A]\n- [item B]\n- [item C]\n- [item D]\n\nExplain your reasoning:'\nThe criterion must be scientifically/factually correct and unambiguous. Do NOT use ranking for subjective opinions. Use layout tag: ranking.",
+    WHAT_CHANGED:       "Present a before/after or cause/effect comparison that is directly relevant to the topic. Format exactly:\n'Scenario A\n[describe the initial state clearly]\n\nScenario B\n[describe the changed state — change exactly ONE variable]\n\nTask\n1. What changed between A and B?\n2. Why did this happen? (use subject vocabulary)\n3. What effect does this have on [relevant outcome]?'\nThe change must be scientifically/factually grounded. Use layout tag: what_changed.",
+    CONSTRAINT_PROBLEM: "Present a design or problem-solving task with 2–4 specific constraints that require genuine understanding of the topic. Format exactly:\n'Goal\n[clear task description — what must be achieved]\n\nConstraints\n- [rule 1 — must be topic-specific]\n- [rule 2]\n- [rule 3]\n\nOutput\nShow your working / draw your solution below:'\nConstraints must be non-trivial and require topic knowledge to satisfy. Do NOT use for pure recall. Use layout tag: constraint_problem.",
+  };
+
+  const variantA = SECTION_A_VARIANTS[variantIndex];
+  const variantB = SECTION_B_VARIANTS[variantIndex];
+
+  const sectionAPrompt = `Section A must contain exactly 3 blocks separated by a blank line:
+BLOCK 1 — ${blockInstructions[variantA[0]]}
+BLOCK 2 — ${blockInstructions[variantA[1]]}
+BLOCK 3 — ${blockInstructions[variantA[2]]}`;
+
+  const sectionBPrompt = `Section B must contain exactly 3 blocks separated by a blank line:
+BLOCK 1 — ${blockInstructions[variantB[0]]}
+BLOCK 2 — ${blockInstructions[variantB[1]]}
+BLOCK 3 — ${blockInstructions[variantB[2]]}`;
+
   // ── Primary (KS1/KS2) layout enhancement ──────────────────────────────────
   const isPrimary = yearNum <= 6;
   const primaryLayoutNote = isPrimary ? `
@@ -712,19 +822,34 @@ TONE: Positive, encouraging, child-voice. "You've got this!", "Great work!", "Di
 SUBJECT TYPE: ${isSTEM ? 'STEM' : 'HUMANITIES'}
 
 SECTION 1 — KNOWLEDGE CHECK (Q1–Q3):
-  Q1 — TRUE/FALSE [4 marks]: Write exactly 4 numbered statements. EXACTLY 2 must be TRUE and EXACTLY 2 must be FALSE. Each statement ends with TRUE or FALSE on the SAME LINE. The false ones must contain a plausible misconception, not an obvious error. Example: "1. Voltage is measured in volts. TRUE"
-  Q2 — MULTIPLE CHOICE [1 mark]: One clearly worded question. Provide exactly 4 options labelled A  B  C  D (letter then 2 spaces then text). Only ONE is correct. Distractors must reflect common errors students make. ${isSTEM ? 'Include a calculation-based question where possible.' : 'Ask about character, theme or author intent.'} Mark correct with ✓ ONLY in the Teacher Copy answer key.
-  Q3 — CLOZE PARAGRAPH [7 marks]: Write a 5–7 sentence summary paragraph with exactly 7 blanks shown as _____. Below the paragraph write: WORD BANK: word1 | word2 | word3 | word4 | word5 | word6 | word7 | word8 | word9 | word10 (exactly 10 words: 7 correct answers + 3 plausible distractors)
+${sectionAPrompt}
 
 SECTION 2 — UNDERSTANDING (Q4–Q6):
-  Q4 — VISUAL/DIAGRAM ACTIVITY [5 marks]: ${isSTEM ? 'Generate a labelled diagram prompt. Include a [[DIAGRAM:{"type":"circuit","layout":"series","labels":[{"text":"Battery","x":10,"y":50},{"text":"Resistor","x":50,"y":10},{"text":"Switch","x":90,"y":50},{"text":"Bulb","x":50,"y":90},{"text":"Ammeter","x":30,"y":30}]}]] spec for physics/electricity topics, or appropriate labeled diagram for other STEM topics. Ask students to label components. LABELS: Battery | Resistor | Switch | Bulb | Ammeter' : 'Generate a spider/character web diagram described in ASCII text. Draw a central oval with the main subject in the middle. Around it, place 5 connected nodes with lines/spokes. Leave a blank space on each spoke for students to write one descriptive word. Follow with a 2–3 sentence written response question.'}
+  Q4 — VISUAL/DIAGRAM ACTIVITY [5 marks]: ${isSTEM ? `Generate a labelled diagram prompt.
+
+DIAGRAM RULES — MANDATORY:
+When including a diagram, output EXACTLY this format on its own line:
+[[DIAGRAM:{"type":"labeled","title":"Topic Name","labels":[{"text":"Label 1","x":20,"y":30},{"text":"Label 2","x":70,"y":30},{"text":"Label 3","x":20,"y":70},{"text":"Label 4","x":70,"y":70},{"text":"Label 5","x":45,"y":50}]}]]
+
+Valid types: "labeled" | "circuit" | "flow" | "cycle" | "number-line" | "bar" | "axes"
+- "labeled": always include "title" and "labels" array. x/y are 0-100 percentages. Min 3 labels, max 8.
+- "circuit": always include "layout" ("series" or "parallel"). Include "labels" array with component positions.
+- "flow": always include "steps" array of 3-6 strings (max 20 chars each).
+- "cycle": always include "steps" array of 3-6 strings (max 20 chars each).
+- "number-line": always include "start" (number), "end" (number), "marked" (array of numbers to highlight).
+- "bar": always include "bars" array: [{"label":"Name","value":42}]. Include "xLabel" and "yLabel".
+- "axes": always include "xLabel" and "yLabel". Optionally include "title".
+
+NEVER output a diagram JSON with missing required fields.
+NEVER use x/y values outside 5-95 range.
+NEVER put more than 8 labels on one diagram.
+
+Ask students to label components. LABELS: [list the labels]` : 'Generate a spider/character web diagram described in ASCII text. Draw a central oval with the main subject in the middle. Around it, place 5 connected nodes with lines/spokes. Leave a blank space on each spoke for students to write one descriptive word. Follow with a 2–3 sentence written response question.'}
   Q5 — EXTRACT/STIMULUS RESPONSE [5 marks]: ${isSTEM ? 'Provide a scenario or data set (readings from an experiment, a word problem). Ask sub-questions: (a) Identify the relevant formula/law [1 mark] (b) Full worked calculation showing method [2 marks] (c) Explain what the result means in context [2 marks]' : 'Provide a 4–8 line extract from the primary text. Label with Act/Chapter/Section and speaker. Ask: (a) Identify ONE language/literary technique [1 mark] (b) What does this reveal about character/theme/author intent? [2 marks] (c) What does the key image/phrase/symbol represent? [2 marks]'}
   Q6 — SEQUENCING/STRUCTURED RESPONSE [4 marks]: ${isSTEM ? 'Generate a structured question appropriate to the topic. IMPORTANT: Only use a formula triangle if the topic genuinely has a triangular formula relationship (e.g. speed/distance/time, V=IR, P=IV, pressure=force/area, density=mass/volume). For all other topics, use a method scaffold: present a worked scenario and ask (a) Identify the key rule or principle [1 mark] (b) Apply it to a given scenario with full working [2 marks] (c) State the unit or explain the result [1 mark].' : 'Provide 6 events/plot points/key moments from the topic in a scrambled order. Ask students to number boxes 1–6 in the correct chronological or logical sequence. [3 marks: all correct = 3, 4–5 correct = 2, 2–3 correct = 1]'}
 
 SECTION 3 — APPLICATION & ANALYSIS (Q7–Q9):
-  Q7 — EXTENDED EXPLANATION [6 marks]: ${isSTEM ? 'Ask students to compare two cases (e.g. series vs parallel; acidic vs basic). Require them to identify key differences AND explain the underlying scientific reason using correct terminology.' : 'Ask students to explain how a recurring motif, technique or theme is used across the text. Require reference to AT LEAST TWO specific moments. Ask them to explain the effect on the audience/reader. [Level 1: 1–2m, Level 2: 3–4m, Level 3: 5–6m]'}
-  Q8 — TABLE TO COMPLETE [8 marks]: ${isSTEM ? 'Create a 4-row table with columns: Scenario | Formula used | Working | Answer with unit. Provide the scenario column filled in with 4 different calculation problems. Leave the rest blank. Award 2 marks per row.' : 'Create a 4-row table with columns: Theme | Key Quote (max 5 words) | Act/Scene/Chapter | Effect on audience/reader. Leave all cells blank except the Theme column. Award 2 marks per row (1 for quote, 1 for effect). Use 4 themes directly relevant to the topic.'} Format as markdown table with | separators. Blank cells use "...........".
-  Q9 — EVALUATIVE ESSAY [8 marks]: ${isSTEM ? 'Ask a higher-order thinking question requiring students to evaluate a claim, design an experiment, or apply a concept to an unfamiliar context. Require use of specific formula or scientific principle. Include mark scheme with 3 levels.' : 'Provide a challenging statement in quotation marks followed by "To what extent do you agree? Use evidence from the text to support your argument." Use a contested claim requiring students to argue BOTH sides. Include level descriptors: Level 4 (7–8m): Sustained, convincing, nuanced argument with precise embedded evidence. Level 3 (5–6m): Clear argument; analysis of both sides. Level 2 (3–4m): Some relevant points; limited analysis. Level 1 (1–2m): Narrative with little analysis.'}
+${sectionBPrompt}
 
 CHALLENGE QUESTION [${isSTEM ? '8' : '12'} marks]: ${isSTEM ? 'Present a multi-part real-world scenario requiring: (a) Choose and justify an approach/method/circuit/process (b) Perform at least 2–3 linked calculations showing all working (c) Explain what happens under a changed condition. Award: up to 3m for explanation + up to 5m for calculations.' : 'Present a short quotation from the text (3–8 words, with Act/scene reference). Instruction: "Starting with this extract, write about how [author] presents [concept/character/theme]." List what the answer must include. Award: Band 4 (10–12m) / Band 3 (7–9m) / Band 2 (4–6m) / Band 1 (1–3m). Describe each band in one sentence.'}
 
@@ -2477,13 +2602,53 @@ export interface DiagramSpec {
 }
 
 /**
+ * Validates a DiagramSpec object to ensure all required fields are present and valid.
+ * Returns false if the spec is invalid so extractDiagramSpec can return null.
+ */
+export function validateDiagramSpec(spec: DiagramSpec): boolean {
+  const validTypes = ["labeled", "circuit", "flow", "cycle", "number-line", "bar", "axes"];
+  if (!spec || !spec.type) return false;
+  if (!validTypes.includes(spec.type)) return false;
+
+  switch (spec.type) {
+    case "labeled":
+      if (!spec.labels || spec.labels.length < 3) return false;
+      if (spec.labels.some(l => l.x < 5 || l.x > 95 || l.y < 5 || l.y > 95)) return false;
+      if (spec.labels.length > 8) return false;
+      break;
+    case "circuit":
+      // circuit needs layout
+      if (!spec.layout) return false;
+      break;
+    case "flow":
+    case "cycle":
+      if (!spec.steps || spec.steps.length < 3 || spec.steps.length > 6) return false;
+      break;
+    case "bar":
+      if (!spec.bars || spec.bars.length < 2) return false;
+      break;
+    case "number-line":
+      if (spec.start === undefined || spec.end === undefined) return false;
+      break;
+    case "axes":
+      if (!spec.xLabel || !spec.yLabel) return false;
+      break;
+  }
+  return true;
+}
+
+/**
  * Detects [[DIAGRAM:{...}]] markers in section content and returns the JSON spec.
- * Returns null if no diagram marker is found.
+ * Returns null if no diagram marker is found or if the spec fails validation.
  */
 export function extractDiagramSpec(content: string): DiagramSpec | null {
   const match = content.match(/\[\[DIAGRAM:(\{[\s\S]*?\})\]\]/);
   if (!match) return null;
-  try { return JSON.parse(match[1]); } catch { return null; }
+  try {
+    const spec = JSON.parse(match[1]);
+    if (!validateDiagramSpec(spec)) return null;
+    return spec;
+  } catch { return null; }
 }
 
 /**

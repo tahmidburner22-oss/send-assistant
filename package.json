@@ -120,7 +120,8 @@
     "wouter": "^3.3.5",
     "ws": "^8.20.0",
     "zod": "^4.1.12",
-    "pptxgenjs": "^4.0.1"
+    "pptxgenjs": "^4.0.1",
+    "jszip": "^3.10.1"
   },
   "devDependencies": {
     "@builder.io/vite-plugin-jsx-loc": "^0.1.1",

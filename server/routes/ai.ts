@@ -1487,6 +1487,225 @@ ${textForAI}${truncated ? "\n\n[Truncated at 10,000 characters]" : ""}`;
   }
 });
 
+
+// ── Generate Worksheet from Slides / Presentation ──────────────────────────
+// POST /api/ai/worksheet-from-slides
+// Accepts PDF, Word (.docx), or PPTX file and generates a full worksheet from it.
+// Two-stage process: (1) extract text from file, (2) generate worksheet via AI.
+router.post("/worksheet-from-slides", requireAuth, worksheetUpload.single("file"), async (req: Request, res: Response) => {
+  if (!req.file) return res.status(400).json({ error: "No file uploaded" });
+
+  const { yearGroup = "Year 10", subject = "General", sendNeeds = "" } = req.body;
+  const schoolId = (req as any).user?.schoolId;
+  const mime = req.file.mimetype;
+  const originalName = req.file.originalname || "upload";
+
+  try {
+    // ── Step 1: Extract text from the uploaded file ──────────────────────────
+    let extractedText = "";
+    let slideCount = 0;
+
+    const isPDF  = mime === "application/pdf" || originalName.endsWith(".pdf");
+    const isDOCX = mime === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" || originalName.endsWith(".docx");
+    const isPPTX = mime === "application/vnd.openxmlformats-officedocument.presentationml.presentation" || originalName.endsWith(".pptx");
+
+    if (isPDF) {
+      try {
+        const pdfParse = (await import("pdf-parse" as any)).default;
+        const result = await pdfParse(req.file.buffer);
+        extractedText = result.text || "";
+        console.log(`[worksheet-from-slides] PDF: ${extractedText.length} chars`);
+      } catch (e: any) {
+        console.warn("[worksheet-from-slides] pdf-parse failed:", e?.message);
+        return res.status(422).json({ error: "Could not extract text from PDF. Please try a Word or PPTX file." });
+      }
+    } else if (isDOCX) {
+      try {
+        const mammoth = await import("mammoth" as any);
+        const lib = mammoth.default || mammoth;
+        const result = await lib.extractRawText({ buffer: req.file.buffer });
+        extractedText = result.value || "";
+        console.log(`[worksheet-from-slides] DOCX: ${extractedText.length} chars`);
+      } catch (e: any) {
+        console.warn("[worksheet-from-slides] mammoth failed:", e?.message);
+        return res.status(422).json({ error: "Could not extract text from Word document." });
+      }
+    } else if (isPPTX) {
+      try {
+        // PPTX files are ZIP archives containing XML slide files
+        const JSZip = (await import("jszip" as any)).default;
+        const zip = await JSZip.loadAsync(req.file.buffer);
+        const slideFiles = Object.keys(zip.files)
+          .filter(name => /^ppt\/slides\/slide\d+\.xml$/.test(name))
+          .sort((a, b) => {
+            const na = parseInt(a.match(/\d+/)?.[0] || "0");
+            const nb = parseInt(b.match(/\d+/)?.[0] || "0");
+            return na - nb;
+          });
+        slideCount = slideFiles.length;
+        const slideTexts: string[] = [];
+        for (const slideFile of slideFiles) {
+          const xml = await zip.files[slideFile].async("string");
+          // Extract text from <a:t> tags (PowerPoint text runs)
+          const textMatches = xml.match(/<a:t[^>]*>([^<]+)<\/a:t>/g) || [];
+          const slideText = textMatches
+            .map(m => m.replace(/<[^>]+>/g, "").trim())
+            .filter(t => t.length > 0)
+            .join(" ");
+          if (slideText) slideTexts.push(`[Slide ${slideFiles.indexOf(slideFile) + 1}] ${slideText}`);
+        }
+        extractedText = slideTexts.join("\n\n");
+        console.log(`[worksheet-from-slides] PPTX: ${slideCount} slides, ${extractedText.length} chars`);
+      } catch (e: any) {
+        console.warn("[worksheet-from-slides] PPTX parse failed:", e?.message);
+        return res.status(422).json({ error: "Could not extract text from PPTX file." });
+      }
+    } else {
+      return res.status(400).json({ error: "Unsupported file type. Please upload a PDF, Word (.docx), or PowerPoint (.pptx) file." });
+    }
+
+    if (!extractedText || extractedText.trim().length < 50) {
+      return res.status(422).json({ error: "Not enough text could be extracted from the file. Please ensure the file contains readable text (not just images)." });
+    }
+
+    // ── Step 2: Relevance-check the extracted content ────────────────────────
+    // Truncate to 8000 chars to stay within token limits
+    const contentForAI = extractedText.slice(0, 8000);
+    const truncated = extractedText.length > 8000;
+
+    // Detect topic from content (first 500 chars usually has the title/heading)
+    const topicHint = extractedText.slice(0, 500).replace(/\s+/g, " ").trim();
+
+    // ── Step 3: Generate the worksheet via AI ────────────────────────────────
+    const isSTEM = /maths|mathematics|physics|chemistry|biology|science|computing|computer|technology|engineering/i.test(subject);
+    const yearNum = parseInt(yearGroup.replace(/\D/g, "") || "10");
+    const phase = yearNum <= 6 ? "KS1/KS2" : yearNum <= 9 ? "KS3" : yearNum <= 11 ? "GCSE" : "A-Level";
+
+    const sendNote = sendNeeds
+      ? `\nSEND ADAPTATIONS: This worksheet must be adapted for: ${sendNeeds}. Use clear language, short sentences, and scaffolded support.`
+      : "";
+
+    const system = `You are an expert UK teacher creating a complete, print-ready worksheet based on provided lesson content.
+You must generate a worksheet that directly tests and reinforces the content from the provided slides/document.
+Every question must be answerable from the provided content — do not invent new topics.
+Return ONLY valid JSON — no markdown, no explanation, no code blocks.`;
+
+    const user = `Create a complete ${phase} worksheet for ${yearGroup} ${subject} based on the following lesson content.
+
+LESSON CONTENT (extracted from uploaded ${isPPTX ? `presentation (${slideCount} slides)` : isDOCX ? "Word document" : "PDF"}):
+${contentForAI}${truncated ? "\n\n[Content truncated — use the above to generate questions]" : ""}
+
+TOPIC HINT (from start of content): "${topicHint.slice(0, 200)}"
+${sendNote}
+
+WORKSHEET REQUIREMENTS:
+- All questions must be directly based on the provided content
+- Include a mix of question types: recall, understanding, application
+- ${isSTEM ? "Include at least one calculation or diagram question" : "Include at least one analysis or extended writing question"}
+- Include a self-assessment section
+- Include a teacher answer key
+
+Return this exact JSON structure:
+{
+  "title": "Worksheet title based on the content",
+  "subtitle": "${yearGroup} | ${subject} | ${phase}",
+  "estimatedTime": "45 minutes",
+  "sections": [
+    {
+      "title": "Section 1: Knowledge Check",
+      "type": "starter",
+      "content": "Question content here — use TRUE/FALSE, MCQ, or gap-fill format",
+      "marks": 10,
+      "teacherOnly": false
+    },
+    {
+      "title": "Section 2: Understanding",
+      "type": "guided",
+      "content": "Questions testing understanding of the content",
+      "marks": 15,
+      "teacherOnly": false
+    },
+    {
+      "title": "Section 3: Application",
+      "type": "independent",
+      "content": "Questions requiring application of knowledge from the content",
+      "marks": 15,
+      "teacherOnly": false
+    },
+    {
+      "title": "Challenge Question",
+      "type": "challenge",
+      "content": "Higher-order thinking question based on the content",
+      "marks": 10,
+      "teacherOnly": false
+    },
+    {
+      "title": "Self-Assessment",
+      "type": "reflection",
+      "content": "Confidence check table with 4-5 specific skills from this content",
+      "marks": 0,
+      "teacherOnly": false
+    },
+    {
+      "title": "Answer Key",
+      "type": "teacher-notes",
+      "content": "Complete answers for all sections with mark allocations",
+      "marks": 0,
+      "teacherOnly": true
+    }
+  ],
+  "totalMarks": 50,
+  "sourceType": "${isPPTX ? "presentation" : isDOCX ? "document" : "pdf"}",
+  "slideCount": ${slideCount}
+}`;
+
+    const { content: aiResponse, provider } = await callWithFallback(system, user, 6000, undefined, schoolId);
+
+    // Robust JSON parser
+    const tryParse = (raw: string): any | null => {
+      if (!raw?.trim()) return null;
+      const attempts = [
+        raw,
+        raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/, "").trim(),
+      ];
+      for (const s of attempts) {
+        const m = s.match(/\{[\s\S]*\}/);
+        const candidate = m ? m[0] : s;
+        if (!candidate?.startsWith("{")) continue;
+        try { return JSON.parse(candidate); } catch (_) {}
+        try {
+          const sanitized = candidate.replace(/"((?:[^"\\]|\\.)*)"/g, (_: string, inner: string) =>
+            `"${inner.replace(/\n/g, "\\n").replace(/\r/g, "\\r").replace(/\t/g, "\\t")}"`
+          );
+          return JSON.parse(sanitized);
+        } catch (_) {}
+      }
+      return null;
+    };
+
+    let parsed = tryParse(aiResponse);
+    if (!parsed?.sections?.length) {
+      console.warn("[worksheet-from-slides] JSON parse failed, using fallback");
+      parsed = {
+        title: originalName.replace(/\.[^.]+$/, "") + " — Worksheet",
+        subtitle: `${yearGroup} | ${subject}`,
+        estimatedTime: "45 minutes",
+        sections: [
+          { title: "Questions", type: "guided", content: aiResponse || contentForAI, marks: 50, teacherOnly: false },
+        ],
+        totalMarks: 50,
+        sourceType: isPPTX ? "presentation" : isDOCX ? "document" : "pdf",
+        slideCount,
+      };
+    }
+
+    res.json({ worksheet: parsed, provider, slideCount, extractedLength: extractedText.length });
+  } catch (err: any) {
+    console.error("[worksheet-from-slides] error:", err);
+    res.status(500).json({ error: err.message || "Failed to generate worksheet from slides" });
+  }
+});
+
 // ── Differentiate Existing Worksheet (Foundation / Higher) ─────────────────
 // POST /api/ai/differentiate-worksheet
 // Takes existing worksheet sections and transforms them to a different difficulty tier.

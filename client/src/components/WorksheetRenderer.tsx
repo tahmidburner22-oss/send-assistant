@@ -967,7 +967,7 @@ interface WorksheetRendererProps {
   isRevisionMat?: boolean;
 }
 
-// Section type → visual config (Chalkie-style: clean white, dark navy accent, no gradients, no emojis)
+// Section type → visual config (clean white, dark navy accent, no gradients, no emojis)
 // Matches the reference PDF exactly: flat dark navy header bar, white text, no colour fills on body.
 const SECTION_STYLES: Record<string, { border: string; bg: string; badge: string; badgeBg: string; icon: string; label: string; headerBg: string; headerText: string }> = {
   "objective":     { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Learning Objective",      headerBg: "#1a2744", headerText: "#ffffff" },
@@ -1795,24 +1795,14 @@ function LabelDiagramSection({
               showCallouts={false}
             />
           ) : (
-            <div style={{
-              minHeight: "200px",
-              border: `2px dashed ${accentColor}`,
-              borderRadius: "6px",
-              background: "#f8fafc",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "8px",
-              color: "#6b7280",
-              fontSize: `${Math.max(fmt.fontSize - 2, 10)}px`,
-              fontFamily: fmt.fontFamily,
-            }}>
-              <div style={{ fontSize: "32px", opacity: 0.4 }}>🖼</div>
-              <div style={{ fontStyle: "italic", textAlign: "center", padding: "0 12px" }}>Diagram space — draw or label here</div>
-              <div style={{ fontSize: `${Math.max(fmt.fontSize - 3, 9)}px`, color: "#9ca3af", textAlign: "center" }}>Number each part, then complete the table</div>
-            </div>
+            <svg width="100%" height="180" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <pattern id="dots-label" x="0" y="0" width="12" height="12" patternUnits="userSpaceOnUse">
+                  <circle cx="1" cy="1" r="0.8" fill="#cbd5e1" />
+                </pattern>
+              </defs>
+              <rect width="100%" height="100%" fill="url(#dots-label)" rx="4" />
+            </svg>
           )}
         </div>
         {/* 2-column table: Number | Component */}
@@ -1890,23 +1880,14 @@ function DiagramSubQSection({
             showCallouts={false}
           />
         ) : (
-          <div style={{
-            minHeight: "180px",
-            border: `2px dashed ${accentColor}`,
-            borderRadius: "6px",
-            background: "#f8fafc",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "8px",
-            color: "#6b7280",
-            fontSize: `${Math.max(fmt.fontSize - 2, 10)}px`,
-            fontFamily: fmt.fontFamily,
-          }}>
-            <div style={{ fontSize: "28px", opacity: 0.4 }}>🖼</div>
-            <div style={{ fontStyle: "italic", textAlign: "center", padding: "0 12px" }}>Diagram space</div>
-          </div>
+          <svg width="100%" height="180" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern id="dots-subq" x="0" y="0" width="12" height="12" patternUnits="userSpaceOnUse">
+                <circle cx="1" cy="1" r="0.8" fill="#cbd5e1" />
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#dots-subq)" rx="4" />
+          </svg>
         )}
       </div>
       {/* Sub-questions panel */}
@@ -1953,15 +1934,18 @@ function TableCompleteSection({
   isTeacher?: boolean;
 }) {
   const raw = stripLayoutTag(content);
-  const lines = raw.split("\n").filter(l => l.includes("|") && !/^[-|:\s]+$/.test(l));
+  // Filter: keep lines with pipes, remove pure separator rows (e.g. |---|---|)
+  const lines = raw.split("\n").filter(l => l.includes("|") && !/^[\s|:-]+$/.test(l));
   if (lines.length === 0) {
     return <div>{formatContent(raw, fmt)}</div>;
   }
 
   const accentColor = fmt.accentColor || "#1B2A4A";
+  // Strip leading/trailing pipes before splitting — handles both | col | col | and col | col
   const parseRow = (l: string) =>
-    l.split("|").map(c => c.trim()).filter((_, i, a) => i > 0 || a.length > 1 ? true : false);
+    l.replace(/^\|/, "").replace(/\|$/, "").split("|").map(c => c.trim());
 
+  // First non-separator line is always the header
   const header = parseRow(lines[0]);
   const rows   = lines.slice(1).map(parseRow);
   const colCount = Math.max(header.length, ...rows.map(r => r.length));
@@ -1972,22 +1956,26 @@ function TableCompleteSection({
 
   return (
     <div style={{ overflowX: "auto" as const }}>
-      <table style={{ width: "100%", borderCollapse: "collapse" as const, tableLayout: "fixed" as const }}>
+      <p style={{ fontSize: `${Math.max(fmt.fontSize - 1, 10)}px`, fontFamily: fmt.fontFamily, color: "#6b7280", fontStyle: "italic", marginBottom: "6px" }}>
+        Complete the table.
+      </p>
+      <table style={{ width: "100%", borderCollapse: "collapse" as const, tableLayout: "auto" as const }}>
         <thead>
           <tr>
             {header.map((h, i) => (
               <th key={i} style={{
-                background: accentColor,
+                background: "#1B2A4A",
                 color: "white",
                 padding: "8px 10px",
                 fontSize: `${Math.max(fmt.fontSize - 1, 10)}px`,
                 fontFamily: fmt.fontFamily,
                 fontWeight: 700,
                 textAlign: "center" as const,
-                border: "1px solid #e5e7eb",
+                border: "1px solid #1B2A4A",
+                borderRadius: i === 0 ? "9px 0 0 0" : i === header.length - 1 ? "0 9px 0 0" : undefined,
                 width: colW,
               }}>
-                <span dangerouslySetInnerHTML={{ __html: renderMath(h) }} />
+                <span dangerouslySetInnerHTML={{ __html: renderMath(h || "\u2014") }} />
               </th>
             ))}
           </tr>
@@ -2000,16 +1988,18 @@ function TableCompleteSection({
                 const blank = isBlank(cell) && !isTeacher;
                 return (
                   <td key={ci} style={{
-                    padding: "8px 10px",
+                    padding: blank ? "8px 10px 2px 10px" : "8px 10px",
                     border: "1px solid #e5e7eb",
+                    borderBottom: blank ? "2px solid #9ca3af" : "1px solid #e5e7eb",
                     fontSize: `${fmt.fontSize}px`,
                     fontFamily: fmt.fontFamily,
                     textAlign: "center" as const,
-                    color: blank ? "#d1d5db" : "#1e293b",
-                    borderBottom: blank ? `2px dotted #9ca3af` : "1px solid #e5e7eb",
+                    color: "#1e293b",
+                    background: blank ? "white" : undefined,
+                    minHeight: "32px",
                   }}>
                     {blank
-                      ? <span style={{ borderBottom: "2px dotted #9ca3af", display: "inline-block", minWidth: "60px", height: "1em" }} />
+                      ? <span style={{ display: "inline-block", minWidth: "60px", height: "1em" }}>&nbsp;</span>
                       : <span dangerouslySetInnerHTML={{ __html: renderMath(cell) }} />
                     }
                   </td>
@@ -2189,6 +2179,456 @@ function MatchingSection({
           </div>
         );
       })}
+    </div>
+  );
+}
+
+// ── 10. ANNOTATION TASK ────────────────────────────────────────────────────
+function AnnotationTaskSection({
+  content, fmt, isTeacher = false,
+}: {
+  content: string;
+  fmt: ReturnType<typeof getSendFormatting>;
+  isTeacher?: boolean;
+}) {
+  const raw = stripLayoutTag(content);
+  const accentColor = fmt.accentColor || "#1B2A4A";
+  const answerLineH = fmt.answerLineHeight || 26;
+
+  // Parse SOURCE: and ANNOTATION N: lines
+  const sourceMatch = raw.match(/SOURCE:\s*([\s\S]*?)(?=ANNOTATION\s*1:|$)/i);
+  const sourceText = sourceMatch ? sourceMatch[1].trim() : raw;
+
+  const annotations: string[] = [];
+  for (let i = 1; i <= 4; i++) {
+    const m = raw.match(new RegExp(`ANNOTATION\\s*${i}:\\s*([^\\n]+)`, 'i'));
+    if (m) annotations.push(m[1].trim());
+  }
+
+  // Replace [①][②][③][④] with styled red circle spans
+  const circleChars = ['\u2460', '\u2461', '\u2462', '\u2463'];
+  const bracketedCircles = ['[\u2460]', '[\u2461]', '[\u2462]', '[\u2463]'];
+  let renderedSource = sourceText;
+  bracketedCircles.forEach((bc, i) => {
+    renderedSource = renderedSource.replace(
+      new RegExp(bc.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'),
+      `<span style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#ef4444;color:white;font-size:10px;font-weight:700;margin:0 2px;vertical-align:middle">${i + 1}</span>`
+    );
+  });
+  circleChars.forEach((cc, i) => {
+    renderedSource = renderedSource.replace(
+      new RegExp(cc, 'g'),
+      `<span style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#ef4444;color:white;font-size:10px;font-weight:700;margin:0 2px;vertical-align:middle">${i + 1}</span>`
+    );
+  });
+
+  const annotationCount = Math.max(annotations.length, 4);
+
+  return (
+    <div>
+      <div style={{ display: "flex", gap: "16px", alignItems: "flex-start" }}>
+        {/* Left: source text box */}
+        <div style={{ flex: "0 0 55%" }}>
+          <div style={{
+            borderLeft: "4px solid #0d9488",
+            background: "#FEFCE8",
+            borderRadius: "0 6px 6px 0",
+            padding: "14px 16px",
+            fontSize: `${fmt.fontSize + 1}px`,
+            fontFamily: fmt.fontFamily,
+            lineHeight: String(fmt.lineHeight),
+            fontStyle: "italic",
+            color: "#1e293b",
+          }}>
+            <div dangerouslySetInnerHTML={{ __html: renderedSource }} />
+          </div>
+        </div>
+        {/* Right: annotation response lines */}
+        <div style={{ flex: 1, display: "flex", flexDirection: "column" as const, gap: "14px" }}>
+          {Array.from({ length: annotationCount }).map((_, i) => (
+            <div key={i}>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
+                <div style={{
+                  width: "20px", height: "20px", borderRadius: "50%",
+                  background: "#ef4444", color: "white",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: "11px", fontWeight: 700, flexShrink: 0,
+                }}>{i + 1}</div>
+                {isTeacher && annotations[i] ? (
+                  <span style={{ fontSize: `${Math.max(fmt.fontSize - 1, 10)}px`, fontFamily: fmt.fontFamily, color: "#166534", fontStyle: "italic" }}>
+                    {annotations[i]}
+                  </span>
+                ) : (
+                  <span style={{ fontSize: `${Math.max(fmt.fontSize - 1, 10)}px`, fontFamily: fmt.fontFamily, color: "#6b7280" }}>
+                    Annotate point {i + 1}
+                  </span>
+                )}
+              </div>
+              {[0, 1].map(li => (
+                <div key={li} style={{ borderBottom: "1px solid #d1d5db", height: `${answerLineH}px`, marginTop: "2px" }} />
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+      {/* Bottom effect prompt */}
+      <div style={{ marginTop: "12px" }}>
+        <div style={{ fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, color: "#1e293b", marginBottom: "4px" }}>
+          What effect does this have on the reader / result?
+        </div>
+        {[0, 1].map(li => (
+          <div key={li} style={{ borderBottom: "1px solid #d1d5db", height: `${answerLineH}px`, marginTop: "2px" }} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── 11. BUILD-IT GRID ────────────────────────────────────────────────────
+function BuildItGridSection({
+  content, fmt, isTeacher = false,
+}: {
+  content: string;
+  fmt: ReturnType<typeof getSendFormatting>;
+  isTeacher?: boolean;
+}) {
+  const raw = stripLayoutTag(content);
+  const answerLineH = fmt.answerLineHeight || 26;
+
+  // Parse CONCEPT:, DEFINE IT:, EXAMPLE IT:, DRAW IT:, QUESTION IT:, LINK IT:
+  const extract = (key: string) => {
+    const m = raw.match(new RegExp(`${key}:\\s*([^\\n]+)`, 'i'));
+    return m ? m[1].trim() : '';
+  };
+  const concept    = extract('CONCEPT');
+  const defineIt   = extract('DEFINE IT');
+  const exampleIt  = extract('EXAMPLE IT');
+  const drawIt     = extract('DRAW IT');
+  const questionIt = extract('QUESTION IT');
+  const linkIt     = extract('LINK IT');
+
+  const cells = [
+    { label: 'Define it',    bg: '#1B2A4A', text: defineIt,   hint: 'Write the definition...' },
+    { label: 'Example it',   bg: '#0d9488', text: exampleIt,  hint: 'Give a real-world example...' },
+    { label: 'Draw / Sketch it', bg: '#d97706', text: drawIt, hint: '', isDraw: true },
+    { label: 'Question it',  bg: '#7c3aed', text: questionIt, hint: 'Write a question you still have...' },
+  ];
+
+  return (
+    <div>
+      {/* Concept header */}
+      {concept && (
+        <div style={{
+          background: "#f1f5f9",
+          border: "1.5px solid #cbd5e1",
+          borderRadius: "6px",
+          padding: "8px 14px",
+          marginBottom: "10px",
+          fontSize: `${fmt.fontSize + 1}px`,
+          fontFamily: fmt.fontFamily,
+          fontWeight: 700,
+          color: "#1B2A4A",
+        }}>
+          Concept: {concept}
+        </div>
+      )}
+      {/* 2×2 grid */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
+        {cells.map((cell, i) => (
+          <div key={i} style={{ border: "1.5px solid #e5e7eb", borderRadius: "8px", overflow: "hidden" }}>
+            {/* Coloured header band */}
+            <div style={{
+              background: cell.bg,
+              color: "white",
+              padding: "6px 10px",
+              fontSize: `${Math.max(fmt.fontSize - 1, 10)}px`,
+              fontFamily: fmt.fontFamily,
+              fontWeight: 700,
+            }}>
+              {cell.label}
+            </div>
+            {/* Content area */}
+            <div style={{ padding: "8px 10px", background: "white", minHeight: "80px" }}>
+              {cell.isDraw ? (
+                <svg width="100%" height="70" xmlns="http://www.w3.org/2000/svg">
+                  <defs>
+                    <pattern id={`dots-grid-${i}`} x="0" y="0" width="12" height="12" patternUnits="userSpaceOnUse">
+                      <circle cx="1" cy="1" r="0.8" fill="#cbd5e1" />
+                    </pattern>
+                  </defs>
+                  <rect width="100%" height="100%" fill={`url(#dots-grid-${i})`} rx="4" />
+                  {isTeacher && cell.text && (
+                    <text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle"
+                      style={{ fontSize: "10px", fill: "#166534", fontStyle: "italic" }}>
+                      {cell.text}
+                    </text>
+                  )}
+                </svg>
+              ) : isTeacher && cell.text ? (
+                <div style={{ fontSize: `${Math.max(fmt.fontSize - 1, 10)}px`, fontFamily: fmt.fontFamily, color: "#166534", fontStyle: "italic" }}>
+                  {cell.text}
+                </div>
+              ) : (
+                <div>
+                  {[0, 1, 2].map(li => (
+                    <div key={li} style={{ borderBottom: "1px solid #d1d5db", height: `${answerLineH}px`, marginTop: "2px" }} />
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+      {/* Link it — full width */}
+      <div style={{ marginTop: "8px", border: "1.5px solid #e5e7eb", borderRadius: "8px", overflow: "hidden" }}>
+        <div style={{ background: "#0f172a", color: "white", padding: "6px 10px", fontSize: `${Math.max(fmt.fontSize - 1, 10)}px`, fontFamily: fmt.fontFamily, fontWeight: 700 }}>
+          Link it — connect this to another concept
+        </div>
+        <div style={{ padding: "8px 10px", background: "white" }}>
+          {isTeacher && linkIt ? (
+            <div style={{ fontSize: `${Math.max(fmt.fontSize - 1, 10)}px`, fontFamily: fmt.fontFamily, color: "#166534", fontStyle: "italic" }}>{linkIt}</div>
+          ) : (
+            <div style={{ borderBottom: "1px solid #d1d5db", height: `${answerLineH}px` }} />
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Error Detection & Correction ─────────────────────────────────────────────
+function ErrorCorrectionSection({
+  content, fmt, isTeacher = false,
+}: { content: string; fmt: ReturnType<typeof getSendFormatting>; isTeacher?: boolean }) {
+  const { fontSize: textSize, fontFamily, lineHeight } = fmt;
+  const lines = content.split("\n").map(l => l.trim()).filter(Boolean);
+
+  // Parse sections: WORKED_ANSWER / MISTAKE / TASKS
+  let workedAnswer: string[] = [];
+  let mistakeHint = "";
+  let tasks: string[] = [];
+  let mode: "worked" | "mistake" | "tasks" | "none" = "none";
+  for (const line of lines) {
+    const lower = line.toLowerCase();
+    if (/^(worked answer|student answer|student.?s answer|incorrect answer|given answer)/i.test(line)) { mode = "worked"; continue; }
+    if (/^(mistake|error|what.?s wrong|hint)/i.test(line)) { mode = "mistake"; continue; }
+    if (/^(task|your task|questions|find|identify|correct|explain)/i.test(line)) { mode = "tasks"; continue; }
+    if (mode === "worked") workedAnswer.push(line);
+    else if (mode === "mistake") mistakeHint = line;
+    else if (mode === "tasks") tasks.push(line.replace(/^[\d.)-]+\s*/, ""));
+    else workedAnswer.push(line); // fallback: treat as worked answer
+  }
+  if (tasks.length === 0) tasks = ["Identify the mistake", "Explain why it is wrong", "Write the correct answer"];
+
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", fontFamily, fontSize: `${textSize}px`, lineHeight }}>
+      {/* Left: Worked answer box */}
+      <div style={{ border: "2px solid #dc2626", borderRadius: "8px", overflow: "hidden" }}>
+        <div style={{ background: "#dc2626", color: "white", padding: "5px 10px", fontSize: `${Math.max(textSize - 1, 10)}px`, fontWeight: 700, fontFamily }}>
+          ⚠ Student Answer — contains an error
+        </div>
+        <div style={{ padding: "10px 12px", background: "#fff5f5" }}>
+          {workedAnswer.map((line, i) => (
+            <div key={i} style={{ fontSize: `${textSize}px`, fontFamily, marginBottom: "4px", color: "#1a1a1a" }}>{line}</div>
+          ))}
+          {isTeacher && mistakeHint && (
+            <div style={{ marginTop: "8px", padding: "4px 8px", background: "#fee2e2", borderRadius: "4px", fontSize: `${Math.max(textSize - 1, 10)}px`, color: "#991b1b", fontStyle: "italic" }}>
+              Teacher: {mistakeHint}
+            </div>
+          )}
+        </div>
+      </div>
+      {/* Right: Task boxes */}
+      <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+        {tasks.map((task, i) => (
+          <div key={i} style={{ border: "1.5px solid #e5e7eb", borderRadius: "6px", overflow: "hidden" }}>
+            <div style={{ background: "#1e293b", color: "white", padding: "4px 8px", fontSize: `${Math.max(textSize - 1, 10)}px`, fontWeight: 700, fontFamily }}>
+              {i + 1}. {task}
+            </div>
+            <div style={{ padding: "6px 8px", minHeight: "32px", background: "white" }}>
+              {isTeacher ? null : <div style={{ borderBottom: "1px solid #d1d5db", height: "28px" }} />}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── Ranking / Ordering ────────────────────────────────────────────────────────
+function RankingSection({
+  content, fmt, isTeacher = false,
+}: { content: string; fmt: ReturnType<typeof getSendFormatting>; isTeacher?: boolean }) {
+  const { fontSize: textSize, fontFamily, lineHeight } = fmt;
+  const lines = content.split("\n").map(l => l.trim()).filter(Boolean);
+
+  // Parse: instruction line, items (bullet/numbered), explanation prompt
+  let instruction = "";
+  let items: string[] = [];
+  let explanationPrompt = "";
+  let correctOrder: string[] = [];
+  for (const line of lines) {
+    if (/^(order|rank|arrange|put|sort|place)/i.test(line) && !instruction) { instruction = line; continue; }
+    if (/^(explain|justify|reason|why)/i.test(line)) { explanationPrompt = line; continue; }
+    if (/^(correct order|answer|teacher)/i.test(line)) continue;
+    const bulletMatch = line.match(/^[-*•]\s+(.+)$/) || line.match(/^\d+[.)\s]+(.+)$/);
+    if (bulletMatch) items.push(bulletMatch[1]);
+    else if (line && !instruction) instruction = line;
+  }
+  if (items.length === 0) items = lines.filter(l => l.length < 60);
+  if (!explanationPrompt) explanationPrompt = "Explain your reasoning:";
+
+  // Shuffle items for student view
+  const displayItems = [...items];
+
+  return (
+    <div style={{ fontFamily, fontSize: `${textSize}px`, lineHeight }}>
+      {instruction && (
+        <div style={{ marginBottom: "10px", fontWeight: 600, color: "#1a2744", fontSize: `${textSize}px`, fontFamily }}>{instruction}</div>
+      )}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "10px" }}>
+        {/* Left: items to rank */}
+        <div>
+          <div style={{ fontSize: `${Math.max(textSize - 1, 10)}px`, fontWeight: 700, color: "#6b7280", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.05em", fontFamily }}>Items</div>
+          {displayItems.map((item, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "6px", padding: "6px 10px", background: "#f8fafc", border: "1.5px solid #e2e8f0", borderRadius: "6px" }}>
+              <span style={{ fontSize: `${Math.max(textSize - 1, 10)}px`, fontWeight: 700, color: "#94a3b8", fontFamily }}>{String.fromCharCode(65 + i)}</span>
+              <span style={{ fontSize: `${textSize}px`, fontFamily, color: "#1a1a1a" }}>{item}</span>
+            </div>
+          ))}
+        </div>
+        {/* Right: ranking boxes */}
+        <div>
+          <div style={{ fontSize: `${Math.max(textSize - 1, 10)}px`, fontWeight: 700, color: "#6b7280", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.05em", fontFamily }}>Your Ranking (1 = highest)</div>
+          {displayItems.map((_, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "6px" }}>
+              <div style={{ width: "24px", height: "24px", borderRadius: "50%", background: "#1e293b", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: `${Math.max(textSize - 2, 9)}px`, fontWeight: 700, fontFamily, flexShrink: 0 }}>{i + 1}</div>
+              <div style={{ flex: 1, borderBottom: "1.5px solid #9ca3af", height: "24px" }} />
+            </div>
+          ))}
+        </div>
+      </div>
+      {/* Explanation box */}
+      <div style={{ border: "1.5px solid #e5e7eb", borderRadius: "6px", overflow: "hidden" }}>
+        <div style={{ background: "#1e293b", color: "white", padding: "4px 10px", fontSize: `${Math.max(textSize - 1, 10)}px`, fontWeight: 700, fontFamily }}>{explanationPrompt}</div>
+        <div style={{ padding: "8px 10px", background: "white" }}>
+          {[0, 1, 2].map(i => <div key={i} style={{ borderBottom: "1px solid #e5e7eb", height: "22px", marginBottom: "4px" }} />)}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── What Changed? ─────────────────────────────────────────────────────────────
+function WhatChangedSection({
+  content, fmt, isTeacher = false,
+}: { content: string; fmt: ReturnType<typeof getSendFormatting>; isTeacher?: boolean }) {
+  const { fontSize: textSize, fontFamily, lineHeight } = fmt;
+  const lines = content.split("\n").map(l => l.trim()).filter(Boolean);
+
+  let scenarioA: string[] = [];
+  let scenarioB: string[] = [];
+  let questions: string[] = [];
+  let mode: "a" | "b" | "q" | "none" = "none";
+  for (const line of lines) {
+    if (/^(scenario a|situation a|before|circuit a|state a|condition a)/i.test(line)) { mode = "a"; continue; }
+    if (/^(scenario b|situation b|after|circuit b|state b|condition b)/i.test(line)) { mode = "b"; continue; }
+    if (/^(question|task|your task|what|explain|describe|why)/i.test(line)) { mode = "q"; }
+    if (mode === "a") scenarioA.push(line);
+    else if (mode === "b") scenarioB.push(line);
+    else if (mode === "q") questions.push(line.replace(/^[\d.)-]+\s*/, ""));
+    else scenarioA.push(line); // fallback
+  }
+  if (questions.length === 0) questions = ["What changed between A and B?", "Why did this happen?", "What effect does this have?"];
+
+  return (
+    <div style={{ fontFamily, fontSize: `${textSize}px`, lineHeight }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "12px" }}>
+        {/* Scenario A */}
+        <div style={{ border: "2px solid #2563eb", borderRadius: "8px", overflow: "hidden" }}>
+          <div style={{ background: "#2563eb", color: "white", padding: "5px 10px", fontSize: `${Math.max(textSize - 1, 10)}px`, fontWeight: 700, fontFamily }}>Scenario A</div>
+          <div style={{ padding: "8px 10px", background: "#eff6ff", minHeight: "48px" }}>
+            {scenarioA.map((l, i) => <div key={i} style={{ fontSize: `${textSize}px`, fontFamily, color: "#1e3a5f", marginBottom: "3px" }}>{l}</div>)}
+          </div>
+        </div>
+        {/* Scenario B */}
+        <div style={{ border: "2px solid #7c3aed", borderRadius: "8px", overflow: "hidden" }}>
+          <div style={{ background: "#7c3aed", color: "white", padding: "5px 10px", fontSize: `${Math.max(textSize - 1, 10)}px`, fontWeight: 700, fontFamily }}>Scenario B</div>
+          <div style={{ padding: "8px 10px", background: "#f5f3ff", minHeight: "48px" }}>
+            {scenarioB.map((l, i) => <div key={i} style={{ fontSize: `${textSize}px`, fontFamily, color: "#3b0764", marginBottom: "3px" }}>{l}</div>)}
+          </div>
+        </div>
+      </div>
+      {/* Questions */}
+      <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+        {questions.map((q, i) => (
+          <div key={i} style={{ border: "1.5px solid #e5e7eb", borderRadius: "6px", overflow: "hidden" }}>
+            <div style={{ background: "#0f172a", color: "white", padding: "4px 10px", fontSize: `${Math.max(textSize - 1, 10)}px`, fontWeight: 700, fontFamily }}>{i + 1}. {q}</div>
+            <div style={{ padding: "6px 10px", background: "white" }}>
+              {[0, 1].map(j => <div key={j} style={{ borderBottom: "1px solid #e5e7eb", height: "22px", marginBottom: "4px" }} />)}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── Constraint Problem ────────────────────────────────────────────────────────
+function ConstraintProblemSection({
+  content, fmt, isTeacher = false,
+}: { content: string; fmt: ReturnType<typeof getSendFormatting>; isTeacher?: boolean }) {
+  const { fontSize: textSize, fontFamily, lineHeight } = fmt;
+  const lines = content.split("\n").map(l => l.trim()).filter(Boolean);
+
+  let goal = "";
+  let constraints: string[] = [];
+  let outputFormat = "";
+  let mode: "goal" | "constraints" | "output" | "none" = "none";
+  for (const line of lines) {
+    if (/^(goal|task|problem|design|create|find|calculate)/i.test(line) && !goal) { goal = line; mode = "goal"; continue; }
+    if (/^(constraint|rule|condition|must|limit|requirement)/i.test(line)) { mode = "constraints"; continue; }
+    if (/^(output|answer|draw|explain|show|write|calculate)/i.test(line)) { outputFormat = line; mode = "output"; continue; }
+    if (mode === "constraints") {
+      const m = line.match(/^[-*•\d.)-]+\s*(.+)$/);
+      constraints.push(m ? m[1] : line);
+    } else if (mode === "goal" && !goal) goal = line;
+    else if (mode === "none") {
+      const m = line.match(/^[-*•]\s*(.+)$/);
+      if (m) constraints.push(m[1]);
+      else if (!goal) goal = line;
+    }
+  }
+  if (!outputFormat) outputFormat = "Show your working below:";
+
+  return (
+    <div style={{ fontFamily, fontSize: `${textSize}px`, lineHeight }}>
+      {goal && (
+        <div style={{ marginBottom: "10px", padding: "8px 12px", background: "#fef3c7", border: "2px solid #d97706", borderRadius: "8px" }}>
+          <div style={{ fontSize: `${Math.max(textSize - 1, 10)}px`, fontWeight: 700, color: "#92400e", marginBottom: "3px", textTransform: "uppercase", letterSpacing: "0.05em", fontFamily }}>Your Task</div>
+          <div style={{ fontSize: `${textSize}px`, fontFamily, color: "#1a1a1a", fontWeight: 600 }}>{goal}</div>
+        </div>
+      )}
+      {constraints.length > 0 && (
+        <div style={{ marginBottom: "10px", border: "1.5px solid #e5e7eb", borderRadius: "8px", overflow: "hidden" }}>
+          <div style={{ background: "#1e293b", color: "white", padding: "5px 10px", fontSize: `${Math.max(textSize - 1, 10)}px`, fontWeight: 700, fontFamily }}>Constraints — you MUST follow all of these</div>
+          <div style={{ padding: "8px 12px", background: "#f8fafc" }}>
+            {constraints.map((c, i) => (
+              <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: "8px", marginBottom: "5px" }}>
+                <div style={{ width: "20px", height: "20px", borderRadius: "4px", border: "2px solid #1e293b", flexShrink: 0, marginTop: "1px" }} />
+                <span style={{ fontSize: `${textSize}px`, fontFamily, color: "#1a1a1a" }}>{c}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+      {/* Work space */}
+      <div style={{ border: "1.5px solid #e5e7eb", borderRadius: "6px", overflow: "hidden" }}>
+        <div style={{ background: "#0f172a", color: "white", padding: "4px 10px", fontSize: `${Math.max(textSize - 1, 10)}px`, fontWeight: 700, fontFamily }}>{outputFormat}</div>
+        <div style={{ padding: "8px 10px", background: "white", minHeight: "80px" }}>
+          {[0, 1, 2, 3, 4].map(i => <div key={i} style={{ borderBottom: "1px solid #e5e7eb", height: "22px", marginBottom: "4px" }} />)}
+        </div>
+      </div>
     </div>
   );
 }
@@ -2957,11 +3397,43 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
               {worksheet.subtitle && (
                 <div style={{ fontSize: `${fmt.fontSize}px`, color: "rgba(255,255,255,0.75)", fontFamily: fmt.fontFamily, marginTop: "2px" }}>{worksheet.subtitle}</div>
               )}
-              {isTeacherView && sendNeedId && sendNeedId !== "none" && sendNeedId !== "none-selected" && sendNeedId !== "general" && (
-                <div style={{ marginTop: "6px", display: "inline-block", background: "rgba(255,255,255,0.15)", color: "#fff", fontSize: "10px", fontWeight: 700, padding: "2px 10px", borderRadius: "2px", fontFamily: fmt.fontFamily, letterSpacing: "0.05em" }}>
-                  Adapted for {sendNeedId.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase())}
-                </div>
-              )}
+              {sendNeedId && sendNeedId !== "none" && sendNeedId !== "none-selected" && sendNeedId !== "general" && (() => {
+                const SEND_LABELS: Record<string, { icon: string; label: string; tip: string; color: string }> = {
+                  "dyslexia":         { icon: "\uD83D\uDCD6", label: "Dyslexia-Friendly",       tip: "Adapted font, spacing & layout",        color: "#7c3aed" },
+                  "adhd":             { icon: "\u26A1",       label: "ADHD Support",             tip: "Chunked tasks, clear structure",        color: "#d97706" },
+                  "autism":           { icon: "\uD83E\uDDE9", label: "Autism-Friendly",          tip: "Predictable layout, minimal clutter",   color: "#0d9488" },
+                  "esl":              { icon: "\uD83C\uDF0D", label: "EAL / ESL Support",        tip: "Simplified language, visual cues",      color: "#2563eb" },
+                  "visual":           { icon: "\uD83D\uDC41", label: "Visual Impairment",        tip: "Large print, high contrast",           color: "#1e293b" },
+                  "low-literacy":     { icon: "\uD83D\uDCDD", label: "Low Literacy Support",     tip: "Shorter sentences, word bank provided", color: "#dc2626" },
+                  "gifted":           { icon: "\u2B50",       label: "Gifted & Talented",        tip: "Extended challenge included",          color: "#0369a1" },
+                  "send-support":     { icon: "\u267F",       label: "SEND Support",             tip: "Accessibility adaptations applied",    color: "#1a2744" },
+                  "hearing":          { icon: "\uD83E\uDDB5", label: "Hearing Impairment",       tip: "Visual-first layout",                  color: "#065f46" },
+                  "motor":            { icon: "\u270F\uFE0F", label: "Motor Difficulties",       tip: "Larger answer boxes",                  color: "#92400e" },
+                };
+                const info = SEND_LABELS[sendNeedId] || { icon: "\u267F", label: sendNeedId.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase()), tip: "Accessibility adaptations applied", color: "#1a2744" };
+                return (
+                  <div style={{
+                    marginTop: "8px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    background: "rgba(255,255,255,0.12)",
+                    border: "1px solid rgba(255,255,255,0.25)",
+                    borderRadius: "6px",
+                    padding: "5px 10px",
+                    fontSize: "10px",
+                    fontFamily: fmt.fontFamily,
+                    color: "#fff",
+                    width: "fit-content",
+                  }}>
+                    <span style={{ fontSize: "14px" }}>{info.icon}</span>
+                    <div>
+                      <div style={{ fontWeight: 700, letterSpacing: "0.04em" }}>{info.label}</div>
+                      <div style={{ opacity: 0.8, fontSize: "9px", marginTop: "1px" }}>{info.tip}</div>
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
             {/* Name / Date / Class bar */}
             <div style={{
@@ -4219,8 +4691,25 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                   if (layoutTag === "matching") {
                     return <MatchingSection content={content} fmt={fmt} />;
                   }
-                  // ── Auto-detection from AI content patterns ──────────────
-                  // Broadly detects actual AI output patterns. Intentionally
+                  if (layoutTag === "annotation_task") {
+                    return <AnnotationTaskSection content={content} fmt={fmt} isTeacher={isTeacherView} />;
+                  }
+                  if (layoutTag === "build_it_grid") {
+                    return <BuildItGridSection content={content} fmt={fmt} isTeacher={isTeacherView} />;
+                  }
+                  if (layoutTag === "error_correction") {
+                    return <ErrorCorrectionSection content={content} fmt={fmt} isTeacher={isTeacherView} />;
+                  }
+                  if (layoutTag === "ranking") {
+                    return <RankingSection content={content} fmt={fmt} isTeacher={isTeacherView} />;
+                  }
+                  if (layoutTag === "what_changed") {
+                    return <WhatChangedSection content={content} fmt={fmt} isTeacher={isTeacherView} />;
+                  }
+                  if (layoutTag === "constraint_problem") {
+                    return <ConstraintProblemSection content={content} fmt={fmt} isTeacher={isTeacherView} />;
+                  }
+                  // ── Auto-detection from AI content patterns ────────────────────────────────             // Broadly detects actual AI output patterns. Intentionally
                   // permissive — better to render with a sub-renderer than fall through.
                   if (!layoutTag) {
                     const c = content;
