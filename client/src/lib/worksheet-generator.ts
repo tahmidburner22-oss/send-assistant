@@ -2086,7 +2086,7 @@ export function generateWorksheet(params: WorksheetParams): GeneratedWorksheet {
     });
   }
 
-  // ── Phase 7: SECTION 1 — RECALL (Questions 1–3) ───────────────────────────
+  // ── Phase 7: SECTION 1 — KNOWLEDGE CHECK (Questions 1–3) ─────────────────────────────────
   const recallQuestions = questionPlan.filter(p => p.section === "recall");
   const recallContent: string[] = [];
 
@@ -2142,7 +2142,7 @@ export function generateWorksheet(params: WorksheetParams): GeneratedWorksheet {
   });
 
   sections.push({
-    title: `SECTION 1 — RECALL`,
+    title: `SECTION 1 — KNOWLEDGE CHECK`,
     type: "guided",
     content: recallContent.join("\n\n─────\n\n"),
   });

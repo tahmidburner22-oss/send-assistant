@@ -318,7 +318,7 @@ export default function Worksheets() {
   const [loading, setLoading] = useState(false);
   const [generationStatus, setGenerationStatus] = useState(""); // live status during generation
   const [generated, setGenerated] = useState<AnyWorksheet | null>(null);
-  const [viewMode, setViewMode] = useState<"teacher" | "student">("teacher");
+  const [viewMode, setViewMode] = useState<"teacher" | "student">("student");
   const [showOverlayPicker, setShowOverlayPicker] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [hiddenSections, setHiddenSections] = useState<Set<number>>(new Set());
@@ -1780,35 +1780,59 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
   //  • send       — simplify wording, add word banks/chunked instructions/sentence starters/
   //                  step-by-step prompts, increase spacing. Keeps layouts, marks, structure.
   //
-  const handleDifferentiate = (tier: string) => {
+  const handleDifferentiate = async (tier: string) => {
     if (!generated) return;
     setDiffLoading(tier);
     try {
       const ws = generated as AIWorksheet;
+      const meta = ws.metadata || {};
+      const sections = ws.sections || [];
 
-      // Map dialog tier strings to applySEND tier strings
-      const sendTier = (tier === "send" || tier === "mixed_ability")
-        ? "send"
-        : tier === "foundation"
-        ? "foundation"
-        : "higher";
+      let adaptedWorksheet: AIWorksheet;
 
-      // Apply local adaptation — instant, no network call
-      const adapted = applySEND(ws, sendTier as any);
-
-      const adaptedWorksheet: AIWorksheet = {
-        ...adapted,
-        isAI: true as const,
-      };
+      if (tier === "foundation" || tier === "higher") {
+        // AI-powered differentiation — genuinely rewrites questions for the tier
+        const result = await aiDifferentiateExistingWorksheet({
+          sections,
+          tier: tier as "foundation" | "higher",
+          subject: meta.subject,
+          topic: meta.topic,
+          yearGroup: meta.yearGroup,
+          title: ws.title,
+        });
+        adaptedWorksheet = {
+          ...ws,
+          sections: result.sections,
+          title: `${ws.title} — ${tier === "foundation" ? "Foundation" : "Higher"}`,
+          isAI: true as const,
+        };
+      } else {
+        // SEND scaffolding — AI adds word banks, sentence starters, chunked instructions
+        const sendId = sendNeedForScaffold || sendNeed || "general";
+        const result = await aiScaffoldExistingWorksheet({
+          sections,
+          sendNeed: sendId,
+          subject: meta.subject,
+          topic: meta.topic,
+          yearGroup: meta.yearGroup,
+          title: ws.title,
+        });
+        adaptedWorksheet = {
+          ...ws,
+          sections: result.sections,
+          title: `${ws.title} — SEND Scaffolded`,
+          isAI: true as const,
+        };
+      }
 
       setDiffVersions(prev => ({ ...prev, [tier]: adaptedWorksheet }));
       setGenerated(adaptedWorksheet);
       setShowDiffDialog(false);
 
       const msgs: Record<string, string> = {
-        foundation: "Foundation version applied — command words simplified, scaffolds added, step prompts included.",
-        higher:     "Higher version applied — command words upgraded, extension prompts added.",
-        send:       "SEND version applied — word banks, sentence starters, and step-by-step prompts added.",
+        foundation: "Foundation version applied — questions simplified, scaffolds and step prompts added.",
+        higher:     "Higher version applied — questions upgraded with higher-order thinking and extension tasks.",
+        send:       "SEND version applied — word banks, sentence starters, and chunked instructions added.",
       };
       toast.success(msgs[tier] || `${tier} version applied!`);
     } catch (err) {
@@ -3174,20 +3198,6 @@ ${s.content}`).join("\n\n"),
               ) : (
                 <><Volume2 className="w-3.5 h-3.5" /> Read Aloud</>
               )}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                if (!generated) return;
-                const adapted = applySEND(generated, "mixed_ability");
-                setGenerated(adapted);
-                toast.success("Mixed-ability version applied — scaffolds added, wording simplified, layouts preserved.");
-              }}
-              className="gap-1.5 border-teal-400 text-teal-700 hover:bg-teal-50 font-semibold"
-              title="1-click: reduce density, add scaffolds, simplify wording — keeps layouts and marks"
-            >
-              <Sparkles className="w-3.5 h-3.5" /> 1-Click Differentiate
             </Button>
             <Button variant="outline" size="sm" onClick={() => setShowDiffDialog(true)} className="gap-1.5 border-indigo-300 text-indigo-700 hover:bg-indigo-50">
               <Sparkles className="w-3.5 h-3.5" /> Differentiate

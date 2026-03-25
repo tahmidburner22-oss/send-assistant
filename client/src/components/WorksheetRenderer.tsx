@@ -1593,8 +1593,7 @@ function MCQSection({
           lineHeight: String(fmt.lineHeight),
           color: "#1e293b",
           marginBottom: "10px",
-          dangerouslySetInnerHTML: { __html: renderMath(questionLines.join(" ")) },
-        }} />
+        }} dangerouslySetInnerHTML={{ __html: renderMath(questionLines.join(" ")) }} />
       )}
       <div style={{
         display: "grid",
@@ -1626,13 +1625,15 @@ function MCQSection({
               color: correct ? "white" : accentColor,
               fontFamily: fmt.fontFamily,
             }}>{label}</div>
-            <span style={{
-              fontSize: `${fmt.fontSize}px`,
-              fontFamily: fmt.fontFamily,
-              color: correct ? GREEN : "#1e293b",
-              fontWeight: correct ? 600 : 400,
-              dangerouslySetInnerHTML: { __html: renderMath(text) },
-            } as any} />
+            <span
+              style={{
+                fontSize: `${fmt.fontSize}px`,
+                fontFamily: fmt.fontFamily,
+                color: correct ? GREEN : "#1e293b",
+                fontWeight: correct ? 600 : 400,
+              }}
+              dangerouslySetInnerHTML={{ __html: renderMath(text) }}
+            />
           </div>
         ))}
       </div>
@@ -1749,31 +1750,38 @@ function LabelDiagramSection({
     ? answersLine.replace(/^ANSWERS:/i, "").split("|").map(s => s.trim())
     : [];
 
-  // Question instruction text (lines before LABELS:)
-  const instrLines = lines.filter(l => !/^LABELS:/i.test(l) && !/^ANSWERS:/i.test(l));
+  // Determine number of rows — use rawLabels count, fallback to 5
+  const rowCount = rawLabels.length > 0 ? rawLabels.length : 5;
 
   return (
     <div>
-      {instrLines.length > 0 && (
-        <div style={{ fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, lineHeight: String(fmt.lineHeight), color: "#1e293b", marginBottom: "12px" }}
-          dangerouslySetInnerHTML={{ __html: renderMath(instrLines.join(" ")) }} />
-      )}
+      {/* Instruction */}
+      <div style={{
+        fontSize: `${fmt.fontSize}px`,
+        fontFamily: fmt.fontFamily,
+        lineHeight: String(fmt.lineHeight),
+        color: "#1e293b",
+        marginBottom: "10px",
+        fontStyle: "italic",
+      }}>
+        Number the components on the diagram yourself, then complete the table below stating what each numbered component is.
+      </div>
       <div style={{ display: "flex", gap: "20px", alignItems: "flex-start" }}>
-        {/* Diagram panel — actual SVG or plain box */}
-        <div style={{ flex: "0 0 48%" }}>
+        {/* Diagram panel — actual SVG or plain box — NO callout dots */}
+        <div style={{ flex: "0 0 52%" }}>
           {diagramSpec ? (
             <SVGDiagram
               spec={diagramSpec}
-              width={280}
-              height={220}
+              width={300}
+              height={240}
               fontFamily={fmt.fontFamily}
               fontSize={fmt.fontSize - 1}
               accentColor={accentColor}
-              showCallouts={true}
+              showCallouts={false}
             />
           ) : (
             <div style={{
-              minHeight: "180px",
+              minHeight: "200px",
               border: `2px solid ${accentColor}`,
               borderRadius: "4px",
               background: "#fafafa",
@@ -1784,36 +1792,29 @@ function LabelDiagramSection({
               fontSize: `${Math.max(fmt.fontSize - 2, 10)}px`,
               fontFamily: fmt.fontFamily,
               fontStyle: "italic",
-            }}>Diagram</div>
+            }}>Draw / refer to diagram here</div>
           )}
         </div>
-        {/* Numbered answer lines on the right */}
-        <div style={{ flex: 1, display: "flex", flexDirection: "column" as const, gap: "10px", paddingTop: "8px" }}>
-          {rawLabels.map((label, i) => (
-            <div key={i} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              {/* Numbered callout dot matching diagram */}
-              <div style={{
-                width: "20px", height: "20px",
-                borderRadius: "50%",
-                background: accentColor,
-                color: "white",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: "10px", fontWeight: 700, fontFamily: fmt.fontFamily,
-                flexShrink: 0,
-              }}>{i + 1}</div>
-              <div style={{
-                flex: 1,
-                borderBottom: `1.5px solid #d1d5db`,
-                minHeight: "24px",
-                fontSize: `${fmt.fontSize}px`,
-                fontFamily: fmt.fontFamily,
-                color: isTeacher && answers[i] ? "#166534" : "transparent",
-                paddingBottom: "2px",
-              }}>
-                {isTeacher ? (answers[i] || label || "") : ""}
-              </div>
-            </div>
-          ))}
+        {/* 2-column table: Number | Component */}
+        <div style={{ flex: 1 }}>
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily }}>
+            <thead>
+              <tr>
+                <th style={{ background: accentColor, color: "white", fontWeight: 700, padding: "6px 10px", textAlign: "left" as const, width: "60px", border: `1px solid ${accentColor}` }}>No.</th>
+                <th style={{ background: accentColor, color: "white", fontWeight: 700, padding: "6px 10px", textAlign: "left" as const, border: `1px solid ${accentColor}` }}>Component / Label</th>
+              </tr>
+            </thead>
+            <tbody>
+              {Array.from({ length: rowCount }).map((_, i) => (
+                <tr key={i}>
+                  <td style={{ border: "1px solid #d1d5db", padding: "6px 10px", textAlign: "center" as const, fontWeight: 700, color: "#374151" }}>{i + 1}</td>
+                  <td style={{ border: "1px solid #d1d5db", padding: "6px 10px", color: isTeacher && answers[i] ? "#166534" : "transparent", minHeight: "28px" }}>
+                    {isTeacher ? (answers[i] || rawLabels[i] || "") : "\u00a0"}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
@@ -3620,15 +3621,15 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
         })();
         const getGroupByQNum = (qn: number | null, type: string): { label: string; qStart: number; qEnd: number } | undefined => {
           if (qn !== null) {
-            if (qn >= 1 && qn <= 3) return { label: "SECTION 1 — RECALL", qStart: 1, qEnd: 3 };
+            if (qn >= 1 && qn <= 3) return { label: "SECTION 1 — KNOWLEDGE CHECK", qStart: 1, qEnd: 3 };
             if (qn >= 4 && qn <= 6) return { label: "SECTION 2 — UNDERSTANDING", qStart: 4, qEnd: 6 };
             if (qn >= 7 && qn <= 9) return { label: "SECTION 3 — APPLICATION & ANALYSIS", qStart: 7, qEnd: 9 };
           }
           // Fallback by type
           const QUESTION_GROUP_MAP: Record<string, { label: string; qStart: number; qEnd: number }> = {
-            "q-true-false":  { label: "SECTION 1 — RECALL",                  qStart: 1, qEnd: 3 },
-            "q-mcq":         { label: "SECTION 1 — RECALL",                  qStart: 1, qEnd: 3 },
-            "q-gap-fill":    { label: "SECTION 1 — RECALL",                  qStart: 1, qEnd: 3 },
+            "q-true-false":  { label: "SECTION 1 — KNOWLEDGE CHECK",           qStart: 1, qEnd: 3 },
+            "q-mcq":         { label: "SECTION 1 — KNOWLEDGE CHECK",           qStart: 1, qEnd: 3 },
+            "q-gap-fill":    { label: "SECTION 1 — KNOWLEDGE CHECK",           qStart: 1, qEnd: 3 },
             "q-short-answer":{ label: "SECTION 2 — UNDERSTANDING",           qStart: 4, qEnd: 6 },
             "q-extended":    { label: "SECTION 3 — APPLICATION & ANALYSIS",  qStart: 7, qEnd: 9 },
             "q-circuit":     { label: "SECTION 3 — APPLICATION & ANALYSIS",  qStart: 7, qEnd: 9 },
@@ -3636,8 +3637,8 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
             "q-graph":       { label: "SECTION 3 — APPLICATION & ANALYSIS",  qStart: 7, qEnd: 9 },
             "q-data-table":  { label: "SECTION 2 — UNDERSTANDING",           qStart: 4, qEnd: 6 },
             "q-label-diagram":{ label: "SECTION 2 — UNDERSTANDING",          qStart: 4, qEnd: 6 },
-            "q-ordering":    { label: "SECTION 1 — RECALL",                  qStart: 1, qEnd: 3 },
-            "q-matching":    { label: "SECTION 1 — RECALL",                  qStart: 1, qEnd: 3 },
+            "q-ordering":    { label: "SECTION 1 — KNOWLEDGE CHECK",           qStart: 1, qEnd: 3 },
+            "q-matching":    { label: "SECTION 1 — KNOWLEDGE CHECK",           qStart: 1, qEnd: 3 },
           };
           return QUESTION_GROUP_MAP[type];
         };
@@ -3660,8 +3661,8 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
         const SECTION_GROUP_LABELS: Record<string, string> = {
           objective: "LEARNING OBJECTIVE",
           vocabulary: "KEY VOCABULARY",
-          starter: "SECTION 1 — RECALL",
-          guided: "SECTION 1 — RECALL",
+          starter: "SECTION 1 — KNOWLEDGE CHECK",
+          guided: "SECTION 1 — KNOWLEDGE CHECK",
           independent: "SECTION 3 — APPLICATION & ANALYSIS",
           challenge: "CHALLENGE QUESTION",
           "self-reflection": "SELF REFLECTION",
