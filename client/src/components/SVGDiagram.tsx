@@ -277,41 +277,97 @@ export default function SVGDiagram({
     );
   }
 
-  // ── LABELED DIAGRAM (generic — shows numbered callout dots, no text labels) ──
+  // ── LABELED / SPIDER DIAGRAM — renders as a mind-map with numbered nodes ──────
   if (spec.type === "labeled") {
     const labels = spec.labels || [];
+    const n = labels.length;
     const cx = width / 2;
-    const cy = height / 2;
-    const rx = inner_w * 0.28;
-    const ry = inner_h * 0.34;
+    const cy = height / 2 + 4;
+    // Central hub radius
+    const hubR = Math.min(inner_w, inner_h) * 0.18;
+    // Spoke radius — distance from centre to node centres
+    const spokeR = Math.min(inner_w, inner_h) * 0.38;
+    // Node box dimensions
+    const nodeW = 72;
+    const nodeH = 26;
+
+    // Distribute nodes evenly around the circle, starting from top
+    const angleStep = n > 0 ? (2 * Math.PI) / n : 0;
+    const nodePositions = labels.map((_, i) => {
+      const angle = -Math.PI / 2 + i * angleStep;
+      return {
+        x: cx + spokeR * Math.cos(angle),
+        y: cy + spokeR * Math.sin(angle),
+        angle,
+      };
+    });
+
+    // Central topic text — use spec.title or first label text as the hub label
+    const hubText = spec.title || "Topic";
+    // Wrap hub text to 2 lines if long
+    const hubWords = hubText.split(" ");
+    const hubLine1 = hubWords.slice(0, Math.ceil(hubWords.length / 2)).join(" ");
+    const hubLine2 = hubWords.slice(Math.ceil(hubWords.length / 2)).join(" ");
 
     return (
       <svg viewBox={`0 0 ${width} ${height}`} xmlns="http://www.w3.org/2000/svg"
         style={{ width: "100%", maxWidth: width, display: "block", background: "white" }}>
-        {/* Central shape */}
-        {spec.shape === "rectangle" ? (
-          <rect x={cx - rx} y={cy - ry} width={rx * 2} height={ry * 2}
-            rx="6" fill="#f8fafc" stroke={NAVY} strokeWidth="2" />
-        ) : spec.shape === "triangle" ? (
-          <polygon
-            points={`${cx},${cy - ry} ${cx - rx},${cy + ry} ${cx + rx},${cy + ry}`}
-            fill="#f8fafc" stroke={NAVY} strokeWidth="2" />
-        ) : (
-          <ellipse cx={cx} cy={cy} rx={rx} ry={ry}
-            fill="#f8fafc" stroke={NAVY} strokeWidth="2" />
+        {/* Spokes from hub to nodes */}
+        {nodePositions.map((pos, i) => {
+          // Spoke starts at hub edge, ends at node edge
+          const dx = pos.x - cx;
+          const dy = pos.y - cy;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          const ux = dx / dist;
+          const uy = dy / dist;
+          const x1 = cx + ux * hubR;
+          const y1 = cy + uy * hubR;
+          const x2 = pos.x - ux * (nodeW / 2 + 2);
+          const y2 = pos.y - uy * (nodeH / 2 + 2);
+          return (
+            <line key={i} x1={x1} y1={y1} x2={x2} y2={y2}
+              stroke={accentColor} strokeWidth="1.5" opacity="0.55" />
+          );
+        })}
+        {/* Central hub */}
+        <ellipse cx={cx} cy={cy} rx={hubR} ry={hubR * 0.72}
+          fill={accentColor} opacity="0.92" />
+        <text x={cx} y={cy - (hubLine2 ? 5 : 0)} textAnchor="middle" dominantBaseline="middle"
+          fontSize={fontSize - 1} fontFamily={fontFamily} fill="white" fontWeight="700">
+          {hubLine1}
+        </text>
+        {hubLine2 && (
+          <text x={cx} y={cy + 9} textAnchor="middle" dominantBaseline="middle"
+            fontSize={fontSize - 1} fontFamily={fontFamily} fill="white" fontWeight="700">
+            {hubLine2}
+          </text>
         )}
-        {/* Numbered callout dots — no text labels */}
-        {showCallouts && labels.map((label, i) => {
-          const lx = pad + (label.x / 100) * (width - pad * 2);
-          const ly = pad + (label.y / 100) * (height - pad * 2);
+        {/* Node boxes with numbered callout */}
+        {nodePositions.map((pos, i) => {
+          const label = labels[i];
+          const labelText = label?.text || "";
+          // Truncate long labels
+          const displayText = labelText.length > 14 ? labelText.slice(0, 13) + "…" : labelText;
           return (
             <g key={i}>
-              {/* Short line from dot toward centre */}
-              <line x1={lx} y1={ly}
-                x2={lx + (cx - lx) * 0.25}
-                y2={ly + (cy - ly) * 0.25}
-                stroke={accentColor} strokeWidth="1.5" strokeDasharray="3,2" opacity="0.6" />
-              <CalloutDot x={lx} y={ly} n={i + 1} accent={accentColor} />
+              {/* Node rectangle */}
+              <rect x={pos.x - nodeW / 2} y={pos.y - nodeH / 2}
+                width={nodeW} height={nodeH} rx="5"
+                fill={showCallouts ? "#f8fafc" : "#f8fafc"}
+                stroke={accentColor} strokeWidth="1.5" />
+              {/* Number badge */}
+              <circle cx={pos.x - nodeW / 2 + 10} cy={pos.y} r="8"
+                fill={accentColor} />
+              <text x={pos.x - nodeW / 2 + 10} y={pos.y} textAnchor="middle" dominantBaseline="middle"
+                fontSize={fontSize - 2} fontFamily={fontFamily} fill="white" fontWeight="700">
+                {i + 1}
+              </text>
+              {/* Label text — hidden in student view (showCallouts=false means student) */}
+              <text x={pos.x + 4} y={pos.y} textAnchor="middle" dominantBaseline="middle"
+                fontSize={fontSize - 1} fontFamily={fontFamily}
+                fill={showCallouts ? "#1e293b" : "transparent"}>
+                {displayText}
+              </text>
             </g>
           );
         })}
