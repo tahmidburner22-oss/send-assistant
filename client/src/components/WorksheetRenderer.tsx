@@ -1726,11 +1726,14 @@ function GapFillInlineSection({
 
 // ── 4. LABEL DIAGRAM ────────────────────────────────────────────────────────
 function LabelDiagramSection({
-  content, fmt, isTeacher = false,
+  content, fmt, isTeacher = false, imageUrl, caption, attribution,
 }: {
   content: string;
   fmt: ReturnType<typeof getSendFormatting>;
   isTeacher?: boolean;
+  imageUrl?: string;
+  caption?: string;
+  attribution?: string;
 }) {
   const raw = stripLayoutTag(content);
   const accentColor = fmt.accentColor || "#1B2A4A";
@@ -1767,9 +1770,21 @@ function LabelDiagramSection({
         Number the components on the diagram yourself, then complete the table below stating what each numbered component is.
       </div>
       <div style={{ display: "flex", gap: "20px", alignItems: "flex-start" }}>
-        {/* Diagram panel — actual SVG or plain box — NO callout dots */}
+        {/* Diagram panel — real image, SVG spec, or plain box */}
         <div style={{ flex: "0 0 52%" }}>
-          {diagramSpec ? (
+          {imageUrl ? (
+            <div style={{ border: `1px solid #e5e7eb`, borderRadius: "6px", overflow: "hidden", background: "white" }}>
+              <img
+                src={imageUrl}
+                alt={caption || "Diagram"}
+                style={{ width: "100%", maxWidth: "300px", display: "block", objectFit: "contain" }}
+                onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+              />
+              {attribution && (
+                <div style={{ fontSize: "9px", color: "#9ca3af", padding: "2px 6px", fontFamily: fmt.fontFamily }}>{attribution}</div>
+              )}
+            </div>
+          ) : diagramSpec && diagramSpec.type !== "labeled" ? (
             <SVGDiagram
               spec={diagramSpec}
               width={300}
@@ -1782,17 +1797,22 @@ function LabelDiagramSection({
           ) : (
             <div style={{
               minHeight: "200px",
-              border: `2px solid ${accentColor}`,
-              borderRadius: "4px",
-              background: "#fafafa",
+              border: `2px dashed ${accentColor}`,
+              borderRadius: "6px",
+              background: "#f8fafc",
               display: "flex",
+              flexDirection: "column",
               alignItems: "center",
               justifyContent: "center",
-              color: "#9ca3af",
+              gap: "8px",
+              color: "#6b7280",
               fontSize: `${Math.max(fmt.fontSize - 2, 10)}px`,
               fontFamily: fmt.fontFamily,
-              fontStyle: "italic",
-            }}>Draw / refer to diagram here</div>
+            }}>
+              <div style={{ fontSize: "32px", opacity: 0.4 }}>🖼</div>
+              <div style={{ fontStyle: "italic", textAlign: "center", padding: "0 12px" }}>Diagram space — draw or label here</div>
+              <div style={{ fontSize: `${Math.max(fmt.fontSize - 3, 9)}px`, color: "#9ca3af", textAlign: "center" }}>Number each part, then complete the table</div>
+            </div>
           )}
         </div>
         {/* 2-column table: Number | Component */}
@@ -1823,11 +1843,14 @@ function LabelDiagramSection({
 
 // ── 5. DIAGRAM + SUB-QUESTIONS ────────────────────────────────────────────────
 function DiagramSubQSection({
-  content, fmt, overlayColor = "white",
+  content, fmt, overlayColor = "white", imageUrl, caption, attribution,
 }: {
   content: string;
   fmt: ReturnType<typeof getSendFormatting>;
   overlayColor?: string;
+  imageUrl?: string;
+  caption?: string;
+  attribution?: string;
 }) {
   const raw = stripLayoutTag(content);
   const accentColor = fmt.accentColor || "#1B2A4A";
@@ -1842,9 +1865,21 @@ function DiagramSubQSection({
 
   return (
     <div style={{ display: "flex", gap: "12px", alignItems: "flex-start" }}>
-      {/* Diagram panel — actual SVG or plain box */}
+      {/* Diagram panel — real image, SVG spec, or plain box */}
       <div style={{ flex: "0 0 48%" }}>
-        {diagramSpec ? (
+        {imageUrl ? (
+          <div style={{ border: `1px solid #e5e7eb`, borderRadius: "6px", overflow: "hidden", background: "white" }}>
+            <img
+              src={imageUrl}
+              alt={caption || "Diagram"}
+              style={{ width: "100%", maxWidth: "280px", display: "block", objectFit: "contain" }}
+              onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+            />
+            {attribution && (
+              <div style={{ fontSize: "9px", color: "#9ca3af", padding: "2px 6px", fontFamily: fmt.fontFamily }}>{attribution}</div>
+            )}
+          </div>
+        ) : diagramSpec && diagramSpec.type !== "labeled" ? (
           <SVGDiagram
             spec={diagramSpec}
             width={280}
@@ -1857,17 +1892,21 @@ function DiagramSubQSection({
         ) : (
           <div style={{
             minHeight: "180px",
-            border: `2px solid ${accentColor}`,
-            borderRadius: "4px",
-            background: "#fafafa",
+            border: `2px dashed ${accentColor}`,
+            borderRadius: "6px",
+            background: "#f8fafc",
             display: "flex",
+            flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
-            color: "#9ca3af",
+            gap: "8px",
+            color: "#6b7280",
             fontSize: `${Math.max(fmt.fontSize - 2, 10)}px`,
             fontFamily: fmt.fontFamily,
-            fontStyle: "italic",
-          }}>Diagram</div>
+          }}>
+            <div style={{ fontSize: "28px", opacity: 0.4 }}>🖼</div>
+            <div style={{ fontStyle: "italic", textAlign: "center", padding: "0 12px" }}>Diagram space</div>
+          </div>
         )}
       </div>
       {/* Sub-questions panel */}
@@ -2918,7 +2957,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
               {worksheet.subtitle && (
                 <div style={{ fontSize: `${fmt.fontSize}px`, color: "rgba(255,255,255,0.75)", fontFamily: fmt.fontFamily, marginTop: "2px" }}>{worksheet.subtitle}</div>
               )}
-              {sendNeedId && sendNeedId !== "none" && sendNeedId !== "none-selected" && sendNeedId !== "general" && (
+              {isTeacherView && sendNeedId && sendNeedId !== "none" && sendNeedId !== "none-selected" && sendNeedId !== "general" && (
                 <div style={{ marginTop: "6px", display: "inline-block", background: "rgba(255,255,255,0.15)", color: "#fff", fontSize: "10px", fontWeight: 700, padding: "2px 10px", borderRadius: "2px", fontFamily: fmt.fontFamily, letterSpacing: "0.05em" }}>
                   Adapted for {sendNeedId.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase())}
                 </div>
@@ -4125,7 +4164,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                     return <TableCompleteSection content={content} fmt={fmt} isTeacher={isTeacherView} />;
                   }
                   if (section.type === "q-label-diagram") {
-                    return <LabelDiagramSection content={content} fmt={fmt} />;
+                    return <LabelDiagramSection content={content} fmt={fmt} imageUrl={section.imageUrl} caption={section.caption} attribution={section.attribution} />
                   }
                   if (section.type === "q-ordering") {
                     return <OrderingSection content={content} fmt={fmt} />;
@@ -4163,10 +4202,10 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                     return <GapFillInlineSection content={content} fmt={fmt} overlayColor={overlayColor} />;
                   }
                   if (layoutTag === "label_diagram") {
-                    return <LabelDiagramSection content={content} fmt={fmt} />;
+                    return <LabelDiagramSection content={content} fmt={fmt} imageUrl={section.imageUrl} caption={section.caption} attribution={section.attribution} />;
                   }
                   if (layoutTag === "diagram_subquestions") {
-                    return <DiagramSubQSection content={content} fmt={fmt} overlayColor={overlayColor} />;
+                    return <DiagramSubQSection content={content} fmt={fmt} overlayColor={overlayColor} imageUrl={section.imageUrl} caption={section.caption} attribution={section.attribution} />;
                   }
                   if (layoutTag === "table_complete") {
                     return <TableCompleteSection content={content} fmt={fmt} isTeacher={isTeacherView} />;

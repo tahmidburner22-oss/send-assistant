@@ -60,7 +60,7 @@ const SEND_RULES: Record<SendNeed, Partial<WorksheetAdaptation>> = {
   "dyslexia": {
     globalFontSize: 14,
     globalLineHeight: 1.8,
-    globalBackground: "#fffde7", // cream
+    globalBackground: "#ffffff", // white — cream removed per design update
     globalFontFamily: "Arial, Helvetica, sans-serif",
   },
   "dyscalculia": {
@@ -108,7 +108,7 @@ const SEND_RULES: Record<SendNeed, Partial<WorksheetAdaptation>> = {
   "general-sen": {
     globalFontSize: 14,
     globalLineHeight: 1.8,
-    globalBackground: "#fffde7",
+    globalBackground: "#ffffff", // white — cream removed per design update
     globalFontFamily: "Arial, Helvetica, sans-serif",
   },
 };
@@ -141,7 +141,7 @@ function buildSectionAdaptation(sectionId: string, profile: AdaptationProfile): 
         ...base,
         fontSizeMultiplier: 1.15,
         lineSpacingMultiplier: 1.5,
-        backgroundColour: "#fffde7",
+        backgroundColour: "#ffffff", // white — cream removed per design update
         fontFamily: "Arial, Helvetica, sans-serif",
         extraAnswerLines: 2,
         boldKeyTerms: true,

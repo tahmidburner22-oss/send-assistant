@@ -1095,8 +1095,7 @@ Return EXACTLY this JSON (raw JSON only):
     {"title": "Worked Example", "type": "example", "content": "[${exampleGuide}]"}${params.introOnly ? '' : `,
     {"title": "Q1 — True or False", "type": "q-true-false", "content": "Circle TRUE or FALSE for each statement. [4 marks]\n1. [statement about ${params.topic}] TRUE\n2. [statement about ${params.topic}] FALSE\n3. [statement about ${params.topic}] TRUE\n4. [statement about ${params.topic}] FALSE"},
     {"title": "Q2 — Multiple Choice", "type": "q-mcq", "content": "[Question about ${params.topic}] [1 mark]\nA  [option]\nB  [option]\nC  [option]\nD  [option]\nCORRECT: [correct letter only — do NOT mark with ✓ in the options above]"},
-    {"title": "Q3 — Cloze Paragraph", "type": "q-gap-fill", "content": "Complete the paragraph using words from the word bank. [7 marks]\n[5–7 sentence summary paragraph about ${params.topic} with exactly 7 blanks shown as _____]\nWORD BANK: word1 | word2 | word3 | word4 | word5 | word6 | word7 | word8 | word9 | word10"},
-    {"title": "Q4 — Visual/Diagram Activity", "type": "q-label-diagram", "content": "${isSTEM ? 'Label the diagram below. Write the correct component name next to each number. [5 marks]\n[[DIAGRAM:{"type":"circuit","layout":"series","labels":[{"text":"Battery","x":10,"y":50},{"text":"Switch","x":50,"y":10},{"text":"Bulb","x":90,"y":50},{"text":"Resistor","x":50,"y":90},{"text":"Ammeter","x":30,"y":30}]}]]' : 'Complete the spider diagram. Add ONE descriptive word on each spoke. [5 marks]\n[ASCII spider diagram with central oval: ${params.topic}\n    ___\n   /   \\\n  | ${params.topic} |\n   \\___/\n   / | \ \\\n  /  |  \\  \\\n___ ___ ___ ___\nSpoke 1: _____ Spoke 2: _____ Spoke 3: _____ Spoke 4: _____ Spoke 5: _____]'}", "marks": 5},
+    {"title": "Q3 — Cloze Paragraph", "type": "q-gap-fill", "content": "Complete the paragraph using words from the word bank. [7 marks]\n[5–7 sentence summary paragraph about ${params.topic} with exactly 7 blanks shown as _____]\nWORD BANK: word1 | word2 | word3 | word4 | word5 | word6 | word7 | word8 | word9 | word10"},    {"title": "Q4 — Visual/Diagram Activity", "type": "q-label-diagram", "content": "${isSTEM ? 'Label the diagram below. Write the correct component name next to each number. [5 marks]\n[[DIAGRAM:{"type":"circuit","layout":"series","labels":[{"text":"Battery","x":10,"y":50},{"text":"Switch","x":50,"y":10},{"text":"Bulb","x":90,"y":50},{"text":"Resistor","x":50,"y":90},{"text":"Ammeter","x":30,"y":30}]}]]\nLABELS: Battery | Switch | Bulb | Resistor | Ammeter\nANSWERS: Battery | Switch | Bulb | Resistor | Ammeter' : 'Study the diagram and label each part. Write the correct term next to each number. [5 marks]\nLABELS: [5 key parts or concepts related to ${params.topic}]\nANSWERS: [correct answers matching the labels above]'}", "marks": 5},
     {"title": "Q5 — Extract/Stimulus Response", "type": "q-short-answer", "content": "${isSTEM ? '[Scenario or data set related to ${params.topic}] [5 marks]\n(a) Identify the relevant formula or scientific law. [1 mark]\n(b) Show the full calculation with working. [2 marks]\n(c) Explain what the result means in context. [2 marks]' : '[4–8 line extract from text related to ${params.topic}] [5 marks]\n(a) Identify ONE language or literary technique used in this extract. [1 mark]\n(b) What does this reveal about character, theme or author intent? [2 marks]\n(c) What does the key image or symbol represent? [2 marks]'}", "marks": 5},
     {"title": "Q6 — Sequencing/Structured Response", "type": "q-data-table", "content": "${isSTEM ? 'Answer the structured questions below. [4 marks]\n(a) Identify the key rule, law or principle that applies to [specific aspect of ' + params.topic + ']. [1 mark]\n(b) Apply it to this scenario: [specific scenario about ' + params.topic + ']. Show all working. [2 marks]\n(c) State the unit of the answer or explain what the result means. [1 mark]' : 'Number the events 1–6 in the correct order. [3 marks]\n[ ] [event/plot point 1 from ${params.topic}]\n[ ] [event/plot point 2 from ${params.topic}]\n[ ] [event/plot point 3 from ${params.topic}]\n[ ] [event/plot point 4 from ${params.topic}]\n[ ] [event/plot point 5 from ${params.topic}]\n[ ] [event/plot point 6 from ${params.topic}]\n3 marks: all correct | 2 marks: 4–5 correct | 1 mark: 2–3 correct'}", "marks": 4},
     {"title": "Q7 — Extended Explanation", "type": "q-extended", "content": "[${isSTEM ? 'Compare two cases or explain a key concept in depth' : 'Explain how a recurring motif/technique/theme is used across the text, with reference to at least TWO specific moments'} — ${params.topic}] [6 marks]", "marks": 6},
@@ -1351,6 +1350,39 @@ Return EXACTLY this JSON (raw JSON only):
     } else if (!Array.isArray(raw)) {
       (result.metadata as any).adaptations = [];
     }
+  }
+
+  // ── Auto-fetch real diagrams for label_diagram / diagram_subquestions sections ──
+  // For any q-label-diagram or diagram_subquestions section that lacks an imageUrl,
+  // try to fetch a real Wikimedia diagram from the server bank.
+  try {
+    const diagramSectionTypes = new Set(['q-label-diagram', 'diagram']);
+    const diagramLayoutPattern = /^LAYOUT:(label_diagram|diagram_subquestions)/;
+    const sectionsNeedingDiagram = result.sections.filter(s =>
+      (diagramSectionTypes.has(s.type) || diagramLayoutPattern.test(s.content || '')) &&
+      !(s as any).imageUrl
+    );
+    if (sectionsNeedingDiagram.length > 0) {
+      const diagramResult = await Promise.race([
+        aiGenerateDiagram({
+          subject: params.subject,
+          topic: params.topic,
+          yearGroup: params.yearGroup || 'Year 9',
+          sendNeed: params.sendNeed,
+        }),
+        new Promise<null>((resolve) => setTimeout(() => resolve(null), 8000)),
+      ]);
+      if (diagramResult?.imageUrl) {
+        // Attach the real diagram image to the first matching section
+        const targetSection = sectionsNeedingDiagram[0] as any;
+        targetSection.imageUrl = diagramResult.imageUrl;
+        targetSection.caption = diagramResult.caption || `${params.topic} diagram`;
+        targetSection.attribution = diagramResult.attribution || '';
+        console.info('[Diagram] Auto-attached real diagram to label_diagram section');
+      }
+    }
+  } catch (autoErr) {
+    console.warn('[Diagram] Auto-diagram fetch failed:', autoErr);
   }
 
   // Optionally inject a diagram — uses server-side /api/ai/diagram with full fallback chain

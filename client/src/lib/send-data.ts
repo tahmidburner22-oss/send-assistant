@@ -680,7 +680,7 @@ const SEND_FORMATTING_MAP: Record<string, Partial<SendFormatting>> = {
     textAlign: "left",
     paragraphSpacing: "12px",
     theme: "dyslexia",
-    sectionBgColor: "#fefce8",  // warm cream — reduces visual stress (Irlen)
+    sectionBgColor: "#ffffff",  // white — cream removed per design update
     accentColor: "#b45309",     // amber — warm, readable, not harsh
     headerStyle: "solid",
     answerLineHeight: 30,
@@ -939,7 +939,7 @@ const SEND_FORMATTING_MAP: Record<string, Partial<SendFormatting>> = {
     textAlign: "left",
     paragraphSpacing: "10px",
     theme: "chunked",
-    sectionBgColor: "#fffbeb",  // warm cream-yellow — distinct from plain white
+    sectionBgColor: "#ffffff",  // white — cream removed per design update
     accentColor: "#d97706",
     headerStyle: "gradient",
     answerLineHeight: 32,
