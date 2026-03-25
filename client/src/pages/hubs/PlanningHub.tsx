@@ -4,10 +4,20 @@ import { Card, CardContent } from "@/components/ui/card";
 import {
   CalendarDays, Calendar, BookMarked, Table2, Ticket,
   Sparkles, BookOpen, LayoutGrid, ClipboardList, ArrowRight,
-  Pencil, ChevronRight, Lightbulb, Clock,
+  Pencil, ChevronRight, Lightbulb, Clock, Monitor,
 } from "lucide-react";
 
 const tools = [
+  {
+    path: "/tools/presentation-maker",
+    label: "Presentation Maker",
+    icon: Monitor,
+    color: "bg-indigo-50 text-indigo-600",
+    border: "border-indigo-100",
+    description: "Generate professional lesson slides with AI — structured content, activities, speaker notes, and PPTX export.",
+    badge: "New",
+    badgeColor: "bg-indigo-100 text-indigo-700",
+  },
   {
     path: "/tools/lesson-planner",
     label: "Lesson Planner",
@@ -89,7 +99,7 @@ const tools = [
 ];
 
 const stats = [
-  { label: "Planning Tools", value: "9", icon: Pencil, color: "text-green-600" },
+  { label: "Planning Tools", value: "10", icon: Pencil, color: "text-green-600" },
   { label: "Time Saved / Plan", value: "~30 min", icon: Clock, color: "text-amber-600" },
   { label: "Curriculum Aligned", value: "KS1–5", icon: Lightbulb, color: "text-purple-600" },
 ];

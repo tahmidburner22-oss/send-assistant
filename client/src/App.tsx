@@ -66,6 +66,7 @@ const VocabularyBuilder = lazy(() => import("./pages/tools/VocabularyBuilder"));
 const WellbeingSupport = lazy(() => import("./pages/tools/WellbeingSupport"));
 const RiskAssessment = lazy(() => import("./pages/tools/RiskAssessment"));
 const ParentNewsletter = lazy(() => import("./pages/tools/ParentNewsletter"));
+const PresentationMaker = lazy(() => import("./pages/tools/PresentationMaker"));
 
 // Legal & Compliance
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
@@ -178,6 +179,9 @@ function ProtectedRoutes() {
             <Route path="/tools/flash-cards" component={FlashCards} />
             <Route path="/tools/vocabulary-builder" component={VocabularyBuilder} />
             <Route path="/tools/risk-assessment" component={RiskAssessment} />
+
+            {/* Presentation Maker */}
+            <Route path="/tools/presentation-maker" component={PresentationMaker} />
 
             {/* Communication */}
             <Route path="/tools/report-comments" component={ReportComments} />

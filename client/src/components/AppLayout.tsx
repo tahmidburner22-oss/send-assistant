@@ -60,7 +60,7 @@ const hubs = [
     color: "text-green-600",
     bg: "bg-green-50",
     description: "Lesson plans, differentiation & resources",
-    toolPrefixes: ["/tools/lesson-planner","/tools/medium-term","/tools/rubric","/tools/exit-ticket","/templates","/tools/risk-assessment","/tools/vocabulary","/tools/comprehension","/tools/quiz-gen"],
+    toolPrefixes: ["/tools/lesson-planner","/tools/medium-term","/tools/rubric","/tools/exit-ticket","/templates","/tools/risk-assessment","/tools/vocabulary","/tools/comprehension","/tools/quiz-gen","/tools/presentation-maker"],
   },
   {
     path: "/communications-hub",
@@ -113,6 +113,7 @@ const allKnownPaths: { path: string; label: string }[] = [
   { path: "/quiz-game", label: "QuizBlast" },
   { path: "/quiz-builder", label: "Quiz Builder" },
   { path: "/tools/comprehension-generator", label: "Comprehension Generator" },
+  { path: "/tools/presentation-maker", label: "Presentation Maker" },
   { path: "/tools/lesson-planner", label: "Lesson Planner" },
   { path: "/tools/medium-term-planner", label: "Medium Term Planner" },
   { path: "/differentiate", label: "Differentiate" },
