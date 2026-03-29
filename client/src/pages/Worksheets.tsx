@@ -2325,14 +2325,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                     <Switch checked={includeAnswers} onCheckedChange={setIncludeAnswers} id="answers-sw" />
                     <Label htmlFor="answers-sw" className="text-xs">Include answers & mark scheme</Label>
                   </div>
-                  {useAI && (
-                    <div className="flex items-center gap-2">
-                      <Switch checked={generateDiagram} onCheckedChange={setGenerateDiagram} id="diagram-sw" />
-                      <Label htmlFor="diagram-sw" className="text-xs flex items-center gap-1">
-                        <Image className="h-3 w-3" /> Include topic diagram
-                      </Label>
-                    </div>
-                  )}
+
                 </div>
                   </div>{/* End advanced options content */}
                 </details>
