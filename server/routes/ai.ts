@@ -7,6 +7,7 @@ import { filterContent } from "../lib/contentFilter.js";
 import { getSchoolKey } from "./schoolApiKeys.js";
 import { findDiagram, searchWikimediaDiagram } from "../lib/diagramBank.js";
 import * as _fullDiagramBankModule from "../lib/diagramBankFull.js";
+import { getTemplate } from "../lib/diagramTemplates.js";
 // Static import (esbuild bundles everything into a single file, dynamic imports don't work)
 function getFullDiagramBank() {
   return _fullDiagramBankModule;
@@ -1194,6 +1195,22 @@ router.post("/diagram", requireAuth, async (req: Request, res: Response) => {
     return null;
   };
 
+  // ── Step 0: Hand-coded SVG templates (topic-specific, pixel-perfect, no external deps) ─
+  const svgTemplate = getTemplate(subject, topic);
+  if (svgTemplate) {
+    console.log(`[Diagram] Using hand-coded SVG template for "${topic}" (${subject})`);
+    return res.json({
+      svg: svgTemplate.svg,
+      caption: svgTemplate.caption,
+      attribution: null,
+      provider: "svg-template",
+      type: "svg",
+      imageKind: "diagram",
+      imageUrl: null,
+      fit: fitMeta,
+    });
+  }
+
   // ── Step 1: Curated fast diagram bank (verified Wikimedia URLs) ─────────────
   const bankedDiagram = findDiagram(subject, topic);
   if (bankedDiagram) {
@@ -1585,9 +1602,16 @@ router.post("/worksheet-from-slides", requireAuth, worksheetUpload.single("file"
       ? `\nSEND ADAPTATIONS: This worksheet must be adapted for: ${sendNeeds}. Use clear language, short sentences, and scaffolded support.`
       : "";
 
+    const isPrimaryPhase = yearNum <= 6;
+    const primaryVocabRules = isPrimaryPhase ? `
+PRIMARY SCHOOL VOCABULARY RULES (MANDATORY):
+- Reading age ceiling: ${yearNum <= 2 ? '5–7 years. Max 6 words per instruction. Simple everyday words only.' : yearNum <= 4 ? '7–9 years. Max 10 words per instruction. No Latin/Greek-root words.' : '9–11 years. Max 12 words per instruction. Define every subject word in brackets.'}
+- NEVER use: analyse, evaluate, assess, justify, synthesise, hypothesis, methodology, criterion, criteria, infer, deduce, extrapolate, correlate, quantify, magnitude.
+- Use encouraging, child-friendly language. Activities must be varied: circle, tick, draw, match, fill in.` : '';
+
     const system = `You are an expert UK teacher creating a complete, print-ready worksheet based on provided lesson content.
 You must generate a worksheet that directly tests and reinforces the content from the provided slides/document.
-Every question must be answerable from the provided content — do not invent new topics.
+Every question must be answerable from the provided content — do not invent new topics.${primaryVocabRules}
 Return ONLY valid JSON — no markdown, no explanation, no code blocks.`;
 
     const user = `Create a complete ${phase} worksheet for ${yearGroup} ${subject} based on the following lesson content.
@@ -2007,7 +2031,7 @@ router.post("/scaffold-worksheet", requireAuth, async (req: Request, res: Respon
 - Add a fully completed model answer for the first question of each section
 - Include a Word Bank with simple definitions
 - Use concrete examples before abstract questions
-- Add picture/emoji-based self-assessment at the end`;
+- Add a simple text-based self-assessment at the end (e.g. tick boxes: 'I found this: Easy / OK / Hard')`;
 
     if (sendNeedLower.includes("slcn") || sendNeedLower.includes("speech") || sendNeedLower.includes("language") || sendNeedLower.includes("communication")) return `SLCN SCAFFOLDING RULES:
 - Add a prominent Word Bank at the start with every key term defined in plain English (max 8 terms)
@@ -2019,14 +2043,14 @@ router.post("/scaffold-worksheet", requireAuth, async (req: Request, res: Respon
 - Add visual cues (arrows, boxes) alongside text`;
 
     if (sendNeedLower.includes("anxiety") || sendNeedLower.includes("mental health") || sendNeedLower.includes("semh")) return `ANXIETY/SEMH SCAFFOLDING RULES:
-- Add a 'How are you feeling?' emoji check-in at the start: 😕 🙂 😀
+- Add a 'How are you feeling?' check-in at the start with tick boxes: 'Not great / OK / Good'
 - Rename sections with encouraging labels: 'Warm-Up — no pressure!' and 'Main Practice — you've got this!'
 - Add a positive statement before each section: 'You already know how to do this — let's practise!'
 - Replace all 'must'/'should'/'need to' language with 'try to'/'you might like to'
 - Label the challenge section: 'OPTIONAL BONUS — only if you want to!'
 - Add a 'Tip' box in each section with a helpful reminder
 - Add a 'Take a break here if you need to' prompt midway
-- End with a 'How did you do?' emoji scale`;
+- End with a 'How did you do?' scale using tick boxes: 'Tricky / Getting there / Got it!'`;
 
     if (sendNeedLower.includes("eal") || sendNeedLower.includes("esl") || sendNeedLower.includes("additional language")) return `EAL SCAFFOLDING RULES:
 - Add a bilingual-friendly Word Bank at the start with every subject-specific term defined in plain English
@@ -2064,7 +2088,7 @@ router.post("/scaffold-worksheet", requireAuth, async (req: Request, res: Respon
 - Break multi-step questions into sub-parts (a) and (b)
 - Add tick boxes next to each question: [ ]
 - Add generous white space between questions
-- End with a simple self-assessment: 'I found this: 😕 🙂 😀'`;
+- End with a simple self-assessment: 'I found this: [ ] Tricky  [ ] OK  [ ] Easy'`;
   };
 
   const scaffoldingRules = getScaffoldingRules(sn);

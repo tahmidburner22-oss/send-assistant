@@ -86,6 +86,7 @@ export default function QuizJoin() {
         setHasAnswered(false);
         setLastAnswerIndex(null);
         setLastAnswerCorrect(null);
+        setShowA11yPanel(false); // Close settings panel on question change to prevent glitch
       }
     } catch {}
   }
@@ -345,8 +346,8 @@ export default function QuizJoin() {
                 ) : lastAnswerCorrect ? (
                   <>
                     <CheckCircle className="w-14 h-14 text-green-400 mx-auto mb-3" />
-                    <p className="text-white text-xl font-black">Correct! 🎉</p>
-                    {streak > 1 && <p className="text-yellow-400 font-bold mt-1">🔥 {streak} streak!</p>}
+                    <p className="text-white text-xl font-black">Correct!</p>
+                    {streak > 1 && <p className="text-yellow-400 font-bold mt-1">{streak} streak!</p>}
                     <p className="text-white/60 mt-2">{score.toLocaleString()} points</p>
                   </>
                 ) : (

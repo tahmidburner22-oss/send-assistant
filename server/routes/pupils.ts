@@ -6,6 +6,20 @@ import { sendDSLIncidentAlert } from "../email/index.js";
 
 const router = Router();
 
+// ── Initials helper ──────────────────────────────────────────────────────────
+// Converts any name string to initials format: "John Smith" → "J.S."
+// Already-initialised strings (e.g. "J.S.") are returned as-is.
+function toInitials(name: string): string {
+  if (!name || !name.trim()) return name;
+  const trimmed = name.trim();
+  // Already looks like initials (e.g. "J.S." or "A.B.C.")
+  if (/^([A-Z]\.){1,4}$/.test(trimmed)) return trimmed;
+  // Split on spaces, hyphens, or apostrophes
+  const parts = trimmed.split(/[\s\-']+/).filter(Boolean);
+  if (parts.length === 0) return trimmed;
+  return parts.map(p => (p[0] || "").toUpperCase() + ".").join("");
+}
+
 // Parse JSON fields in assignment rows returned from SQLite
 function parseAssignment(a: any): any {
   if (!a) return a;
@@ -52,25 +66,28 @@ router.get("/:id", requireAuth, (req: Request, res: Response) => {
   res.json({ ...pupil, auditTrail, assignments, attendance, behaviour });
 });
 
-// ── Create Pupil ──────────────────────────────────────────────────────────────
+//// ── Create Pupil ──────────────────────────────────────────────────────────
 router.post("/", requireAuth, (req: Request, res: Response) => {
   const { name, yearGroup, sendNeed, upn, dob } = req.body;
   if (!name) return res.status(400).json({ error: "Pupil name required" });
+
+  // Always store names as initials for privacy
+  const safeName = toInitials(name);
 
   const id = uuidv4();
   const code = "P" + Math.random().toString(36).slice(2, 7).toUpperCase();
 
   db.prepare(`INSERT INTO pupils (id, school_id, name, year_group, send_need, code, upn, dob, created_by)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
-    id, req.user!.schoolId, name, yearGroup || null, sendNeed || null,
+    id, req.user!.schoolId, safeName, yearGroup || null, sendNeed || null,
     code, upn || null, dob || null, req.user!.id
   );
 
-  auditLog(req.user!.id, req.user!.schoolId ?? null, "pupil.created", "pupil", id, { name }, req.ip ?? undefined);
+  auditLog(req.user!.id, req.user!.schoolId ?? null, "pupil.created", "pupil", id, { name: safeName }, req.ip ?? undefined);
   res.status(201).json({ id, code });
 });
 
-// ── Update Pupil (with audit trail) ──────────────────────────────────────────
+// ── Update Pupil(with audit trail) ──────────────────────────────────────────
 router.put("/:id", requireAuth, (req: Request, res: Response) => {
   const pupil = db.prepare("SELECT * FROM pupils WHERE id = ? AND school_id = ?")
     .get(req.params.id, req.user!.schoolId) as any;
@@ -94,7 +111,7 @@ router.put("/:id", requireAuth, (req: Request, res: Response) => {
 
   db.prepare(`UPDATE pupils SET name=?, year_group=?, send_need=?, upn=?, dob=?, parent_email=?, parent_name=?, updated_at=datetime('now') WHERE id=?`)
     .run(
-      req.body.name || pupil.name,
+      req.body.name ? toInitials(req.body.name) : pupil.name,
       req.body.yearGroup ?? pupil.year_group,
       req.body.sendNeed ?? pupil.send_need,
       req.body.upn ?? pupil.upn,

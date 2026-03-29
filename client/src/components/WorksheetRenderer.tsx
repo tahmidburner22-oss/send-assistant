@@ -1142,14 +1142,18 @@ function formatContent(content: string | any, fmt: ReturnType<typeof getSendForm
     const header = firstRowIsHeader ? rows[0] : [];
     const body = (firstRowIsHeader ? rows.slice(1) : rows).filter(r => r.length > 0);
     if (rows.length === 0) return;
+    const inlineColCount = Math.max(header.length, ...body.map(r => r.length));
+    const inlineColW = `${Math.floor(100 / Math.max(inlineColCount, 1))}%`;
+    const isInlineBlank = (c: string) => !c || /^\.{2,}$/.test(c.trim()) || /^_+$/.test(c.trim()) || c.trim() === "" || c.trim() === "[blank]";
     elements.push(
-      <div key={key} className="ws-table-wrap" style={{ overflowX: "auto", margin: "8px 0" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: `${textSize - 1}px`, fontFamily, letterSpacing, wordSpacing }}>
+      <div key={key} className="ws-table-wrap" style={{ overflowX: "auto", WebkitOverflowScrolling: "touch", maxWidth: "100%", margin: "8px 0" }}>
+        <table style={{ width: "100%", minWidth: `${inlineColCount * 80}px`, borderCollapse: "collapse", tableLayout: "fixed", fontSize: `${textSize - 1}px`, fontFamily, letterSpacing, wordSpacing }}>
+          <colgroup>{Array.from({ length: inlineColCount }).map((_, i) => <col key={i} style={{ width: inlineColW }} />)}</colgroup>
           {header.length > 0 && (
             <thead>
               <tr>
                 {header.map((h, hi) => (
-                  <th key={hi} style={{ padding: "8px 12px", background: "#1a2744", color: "white", textAlign: "left", fontWeight: 700, border: "1px solid #d1d5db" }}>{h}</th>
+                  <th key={hi} style={{ padding: "8px 12px", background: "#1a2744", color: "white", textAlign: "left", fontWeight: 700, border: "1px solid #d1d5db", wordBreak: "break-word", overflowWrap: "break-word" }}>{h}</th>
                 ))}
               </tr>
             </thead>
@@ -1157,11 +1161,18 @@ function formatContent(content: string | any, fmt: ReturnType<typeof getSendForm
           <tbody>
             {body.map((row, ri) => (
               <tr key={ri} style={{ background: ri % 2 === 0 ? "white" : "#f8f9fa" }}>
-                {row.map((cell, ci) => (
-                  <td key={ci} style={{ padding: "7px 12px", border: "1px solid #e5e7eb", fontSize: `${textSize - 1}px` }}>
-                    <span dangerouslySetInnerHTML={{ __html: renderMath(cell) }} />
-                  </td>
-                ))}
+                {Array.from({ length: inlineColCount }).map((_, ci) => {
+                  const cell = (row[ci] ?? "").trim();
+                  const blank = isInlineBlank(cell);
+                  return (
+                    <td key={ci} style={{ padding: blank ? "6px 12px 2px 12px" : "7px 12px", border: "1px solid #e5e7eb", borderBottom: blank ? "2px solid #94a3b8" : "1px solid #e5e7eb", fontSize: `${textSize - 1}px`, minHeight: "32px", height: "32px", wordBreak: "break-word", overflowWrap: "break-word", verticalAlign: "middle" }}>
+                      {blank
+                        ? <span style={{ display: "block", minWidth: "40px", minHeight: "20px" }}>&nbsp;</span>
+                        : <span dangerouslySetInnerHTML={{ __html: renderMath(cell) }} />
+                      }
+                    </td>
+                  );
+                })}
               </tr>
             ))}
           </tbody>
@@ -1767,7 +1778,7 @@ function LabelDiagramSection({
         marginBottom: "10px",
         fontStyle: "italic",
       }}>
-        Number the components on the diagram yourself, then complete the table below stating what each numbered component is.
+        Label the diagram. Use the word bank below to identify each numbered part.
       </div>
       <div style={{ display: "flex", gap: "20px", alignItems: "flex-start" }}>
         {/* Diagram panel — real image, SVG spec, or plain box */}
@@ -1805,13 +1816,13 @@ function LabelDiagramSection({
             </svg>
           )}
         </div>
-        {/* 2-column table: Number | Component */}
+        {/* 2-column table: Number | Label */}
         <div style={{ flex: 1 }}>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily }}>
             <thead>
               <tr>
                 <th style={{ background: accentColor, color: "white", fontWeight: 700, padding: "6px 10px", textAlign: "left" as const, width: "60px", border: `1px solid ${accentColor}` }}>No.</th>
-                <th style={{ background: accentColor, color: "white", fontWeight: 700, padding: "6px 10px", textAlign: "left" as const, border: `1px solid ${accentColor}` }}>Component / Label</th>
+                <th style={{ background: accentColor, color: "white", fontWeight: 700, padding: "6px 10px", textAlign: "left" as const, border: `1px solid ${accentColor}` }}>Label</th>
               </tr>
             </thead>
             <tbody>
@@ -1825,6 +1836,17 @@ function LabelDiagramSection({
               ))}
             </tbody>
           </table>
+          {/* Word bank — shown to students only */}
+          {!isTeacher && rawLabels.length > 0 && (
+            <div style={{ marginTop: "10px", padding: "8px 12px", background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: "6px" }}>
+              <div style={{ fontSize: `${fmt.fontSize - 1}px`, fontWeight: 700, color: "#64748b", fontFamily: fmt.fontFamily, marginBottom: "4px", textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>Word Bank</div>
+              <div style={{ display: "flex", flexWrap: "wrap" as const, gap: "6px" }}>
+                {[...rawLabels].sort(() => 0).map((lbl, idx) => (
+                  <span key={idx} style={{ padding: "2px 8px", background: "white", border: "1px solid #cbd5e1", borderRadius: "4px", fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, color: "#1e293b" }}>{lbl}</span>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -1952,28 +1974,31 @@ function TableCompleteSection({
   const colW = `${Math.floor(100 / colCount)}%`;
 
   const isBlank = (cell: string) =>
-    !cell || cell === "..........." || cell === "..." || cell === "____" || cell === "";
+    !cell || /^\.{2,}$/.test(cell.trim()) || /^_+$/.test(cell.trim()) || cell.trim() === "" || cell.trim() === "[blank]" || cell.trim() === "[answer]";
 
   return (
-    <div style={{ overflowX: "auto" as const }}>
+    <div style={{ overflowX: "auto" as const, WebkitOverflowScrolling: "touch" as any, maxWidth: "100%" }}>
       <p style={{ fontSize: `${Math.max(fmt.fontSize - 1, 10)}px`, fontFamily: fmt.fontFamily, color: "#6b7280", fontStyle: "italic", marginBottom: "6px" }}>
         Complete the table.
       </p>
-      <table style={{ width: "100%", borderCollapse: "collapse" as const, tableLayout: "auto" as const }}>
+      <table style={{ width: "100%", minWidth: `${colCount * 90}px`, borderCollapse: "collapse" as const, tableLayout: "fixed" as const }}>
+        <colgroup>
+          {header.map((_, i) => <col key={i} style={{ width: colW }} />)}
+        </colgroup>
         <thead>
           <tr>
             {header.map((h, i) => (
               <th key={i} style={{
-                background: "#1B2A4A",
+                background: accentColor,
                 color: "white",
                 padding: "8px 10px",
                 fontSize: `${Math.max(fmt.fontSize - 1, 10)}px`,
                 fontFamily: fmt.fontFamily,
                 fontWeight: 700,
                 textAlign: "center" as const,
-                border: "1px solid #1B2A4A",
-                borderRadius: i === 0 ? "9px 0 0 0" : i === header.length - 1 ? "0 9px 0 0" : undefined,
-                width: colW,
+                border: `1px solid ${accentColor}`,
+                wordBreak: "break-word" as const,
+                overflowWrap: "break-word" as const,
               }}>
                 <span dangerouslySetInnerHTML={{ __html: renderMath(h || "\u2014") }} />
               </th>
@@ -1984,22 +2009,28 @@ function TableCompleteSection({
           {rows.map((row, ri) => (
             <tr key={ri} style={{ background: ri % 2 === 0 ? "white" : "#f8fafc" }}>
               {Array.from({ length: colCount }).map((_, ci) => {
-                const cell = row[ci] || "";
+                const cell = (row[ci] ?? "").trim();
                 const blank = isBlank(cell) && !isTeacher;
+                // Teacher view: show answer in green if it was a blank
+                const teacherShowAnswer = isTeacher && isBlank(cell) && cell !== "";
                 return (
                   <td key={ci} style={{
-                    padding: blank ? "8px 10px 2px 10px" : "8px 10px",
+                    padding: "6px 8px",
                     border: "1px solid #e5e7eb",
-                    borderBottom: blank ? "2px solid #9ca3af" : "1px solid #e5e7eb",
+                    borderBottom: blank ? "2px solid #94a3b8" : "1px solid #e5e7eb",
                     fontSize: `${fmt.fontSize}px`,
                     fontFamily: fmt.fontFamily,
                     textAlign: "center" as const,
-                    color: "#1e293b",
-                    background: blank ? "white" : undefined,
-                    minHeight: "32px",
+                    color: teacherShowAnswer ? "#166534" : "#1e293b",
+                    background: blank ? "#fafafa" : undefined,
+                    minHeight: "36px",
+                    height: "36px",
+                    wordBreak: "break-word" as const,
+                    overflowWrap: "break-word" as const,
+                    verticalAlign: "middle" as const,
                   }}>
                     {blank
-                      ? <span style={{ display: "inline-block", minWidth: "60px", height: "1em" }}>&nbsp;</span>
+                      ? <span style={{ display: "block", minWidth: "50px", minHeight: "22px", borderBottom: "1.5px solid #94a3b8" }}>&nbsp;</span>
                       : <span dangerouslySetInnerHTML={{ __html: renderMath(cell) }} />
                     }
                   </td>
@@ -3397,43 +3428,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
               {worksheet.subtitle && (
                 <div style={{ fontSize: `${fmt.fontSize}px`, color: "rgba(255,255,255,0.75)", fontFamily: fmt.fontFamily, marginTop: "2px" }}>{worksheet.subtitle}</div>
               )}
-              {sendNeedId && sendNeedId !== "none" && sendNeedId !== "none-selected" && sendNeedId !== "general" && (() => {
-                const SEND_LABELS: Record<string, { icon: string; label: string; tip: string; color: string }> = {
-                  "dyslexia":         { icon: "\uD83D\uDCD6", label: "Dyslexia-Friendly",       tip: "Adapted font, spacing & layout",        color: "#7c3aed" },
-                  "adhd":             { icon: "\u26A1",       label: "ADHD Support",             tip: "Chunked tasks, clear structure",        color: "#d97706" },
-                  "autism":           { icon: "\uD83E\uDDE9", label: "Autism-Friendly",          tip: "Predictable layout, minimal clutter",   color: "#0d9488" },
-                  "esl":              { icon: "\uD83C\uDF0D", label: "EAL / ESL Support",        tip: "Simplified language, visual cues",      color: "#2563eb" },
-                  "visual":           { icon: "\uD83D\uDC41", label: "Visual Impairment",        tip: "Large print, high contrast",           color: "#1e293b" },
-                  "low-literacy":     { icon: "\uD83D\uDCDD", label: "Low Literacy Support",     tip: "Shorter sentences, word bank provided", color: "#dc2626" },
-                  "gifted":           { icon: "\u2B50",       label: "Gifted & Talented",        tip: "Extended challenge included",          color: "#0369a1" },
-                  "send-support":     { icon: "\u267F",       label: "SEND Support",             tip: "Accessibility adaptations applied",    color: "#1a2744" },
-                  "hearing":          { icon: "\uD83E\uDDB5", label: "Hearing Impairment",       tip: "Visual-first layout",                  color: "#065f46" },
-                  "motor":            { icon: "\u270F\uFE0F", label: "Motor Difficulties",       tip: "Larger answer boxes",                  color: "#92400e" },
-                };
-                const info = SEND_LABELS[sendNeedId] || { icon: "\u267F", label: sendNeedId.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase()), tip: "Accessibility adaptations applied", color: "#1a2744" };
-                return (
-                  <div style={{
-                    marginTop: "8px",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "8px",
-                    background: "rgba(255,255,255,0.12)",
-                    border: "1px solid rgba(255,255,255,0.25)",
-                    borderRadius: "6px",
-                    padding: "5px 10px",
-                    fontSize: "10px",
-                    fontFamily: fmt.fontFamily,
-                    color: "#fff",
-                    width: "fit-content",
-                  }}>
-                    <span style={{ fontSize: "14px" }}>{info.icon}</span>
-                    <div>
-                      <div style={{ fontWeight: 700, letterSpacing: "0.04em" }}>{info.label}</div>
-                      <div style={{ opacity: 0.8, fontSize: "9px", marginTop: "1px" }}>{info.tip}</div>
-                    </div>
-                  </div>
-                );
-              })()}
+              {/* SEND badge removed — accessibility adaptations are applied invisibly */}
             </div>
             {/* Name / Date / Class bar */}
             <div style={{
@@ -4944,7 +4939,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
             {worksheet.metadata.difficulty && worksheet.metadata.difficulty !== "mixed" && (
               <span>· {worksheet.metadata.difficulty === "foundation" ? "Foundation" : "Higher"}</span>
             )}
-            {worksheet.metadata.sendNeed && <span>· SEND: {worksheet.metadata.sendNeed}</span>}
+            {/* SEND need not shown in footer — adaptations are applied invisibly */}
           </span>
           <span>{new Date().toLocaleDateString("en-GB")}</span>
         </div>

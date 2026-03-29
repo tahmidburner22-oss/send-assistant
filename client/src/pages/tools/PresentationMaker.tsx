@@ -17,8 +17,9 @@ import {
   ChevronRight, Loader2, Palette, FileDown, Eye,
   BookOpen, Target, Lightbulb, HelpCircle, CheckSquare, Brain,
   ArrowRight, List, Copy, Check, Plus, Users, AlertCircle,
-  Pencil, Zap, Edit3, Calculator,
+  Pencil, Zap, Edit3, Calculator, GraduationCap, Sliders,
 } from "lucide-react";
+import { Slider } from "@/components/ui/slider";
 import { callAI } from "@/lib/ai";
 import { useApp } from "@/contexts/AppContext";
 import { useLocation } from "wouter";
@@ -224,6 +225,32 @@ const YEAR_GROUPS = [
 
 const SLIDE_COUNTS = ["8", "10", "12", "15", "18", "20"];
 
+const EXAM_BOARDS = [
+  { value: "", label: "Not applicable" },
+  { value: "AQA", label: "AQA" },
+  { value: "Edexcel", label: "Edexcel / Pearson" },
+  { value: "OCR", label: "OCR" },
+  { value: "WJEC", label: "WJEC / Eduqas" },
+  { value: "CIE", label: "Cambridge (CIE)" },
+  { value: "SQA", label: "SQA (Scotland)" },
+];
+
+// Reading age → label mapping
+const READING_AGE_LABELS: Record<number, string> = {
+  5:  "Age 5–6 (Reception/Y1)",
+  6:  "Age 6–7 (Year 1–2)",
+  7:  "Age 7–8 (Year 2–3)",
+  8:  "Age 8–9 (Year 3–4)",
+  9:  "Age 9–10 (Year 4–5)",
+  10: "Age 10–11 (Year 5–6)",
+  11: "Age 11–12 (Year 7)",
+  12: "Age 12–13 (Year 8)",
+  13: "Age 13–14 (Year 9)",
+  14: "Age 14–15 (Year 10)",
+  15: "Age 15–16 (Year 11)",
+  16: "Age 16+ (Sixth Form)",
+};
+
 const LESSON_TYPES = [
   { value: "introduction", label: "Introduction to Topic" },
   { value: "deepdive", label: "Deep Dive / Exploration" },
@@ -352,8 +379,11 @@ function buildSlidePrompt(params: {
   objectives?: string;
   additionalNotes?: string;
   sendNeeds?: string;
+  readingAge?: number;
+  examBoard?: string;
+  differentiationLevel?: "foundation" | "core" | "extension";
 }): { system: string; user: string } {
-  const { subject, yearGroup, topic, lessonType, slideCount, objectives, additionalNotes, sendNeeds } = params;
+  const { subject, yearGroup, topic, lessonType, slideCount, objectives, additionalNotes, sendNeeds, readingAge, examBoard, differentiationLevel } = params;
 
   const isSTEM = /maths|mathematics|physics|chemistry|biology|science|computing|computer|technology|engineering/i.test(subject);
   const isPrimary = /year [1-6]|ks1|ks2/i.test(yearGroup);
@@ -397,6 +427,23 @@ SEND ADAPTATIONS (apply throughout):
 - Chunk information into small steps
 - Include sentence starters where appropriate
 - Reduce cognitive load: max 3 bullets per slide for SEND pupils` : "";
+
+  const readingAgeNote = readingAge ? `
+READING AGE TARGET: ${READING_AGE_LABELS[readingAge] || `Age ${readingAge}`}
+- Every word of text on slides must be readable by a child of reading age ${readingAge}.
+- Vocabulary ceiling: ${readingAge <= 8 ? "only the 1,000 most common English words; no technical jargon without a definition" : readingAge <= 11 ? "everyday vocabulary; define all subject-specific terms on the key-terms slide" : readingAge <= 14 ? "GCSE-level vocabulary; avoid A-level register" : "full academic vocabulary appropriate for sixth form"}
+- Sentence length: max ${readingAge <= 8 ? "6" : readingAge <= 11 ? "10" : readingAge <= 14 ? "15" : "20"} words per sentence on slides.
+- ${readingAge <= 10 ? "Use concrete examples (objects, animals, everyday situations) not abstract concepts." : ""}` : "";
+
+  const examBoardNote = examBoard ? `
+EXAM BOARD: ${examBoard}
+- Use ${examBoard} command words, mark scheme language, and assessment objectives.
+- Reference ${examBoard} specification terminology where relevant.
+- Exam technique slides must reflect ${examBoard} mark scheme conventions.` : "";
+
+  const diffNote = differentiationLevel ? `
+DIFFERENTIATION LEVEL: ${differentiationLevel.toUpperCase()}
+- ${differentiationLevel === "foundation" ? "Pitch content at foundation/support level. Use scaffolding, sentence starters, word banks, and worked examples on every activity slide. Avoid open-ended tasks without structure." : differentiationLevel === "extension" ? "Pitch content at extension/challenge level. Include higher-order thinking, evaluation tasks, and stretch questions. Assume strong prior knowledge." : "Pitch content at core/expected level for this year group."}` : "";
 
   const system = `You are an expert UK teacher and curriculum designer. You create outstanding, Ofsted-ready lesson presentations that follow best pedagogical practice: Rosenshine's Principles, Bloom's Taxonomy, retrieval practice, and spaced learning.
 
@@ -457,6 +504,9 @@ SLIDE COUNT: ${slideCount}
 ${objectives ? `LEARNING OBJECTIVES: ${objectives}` : ""}
 ${additionalNotes ? `ADDITIONAL NOTES: ${additionalNotes}` : ""}
 ${sendNote}
+${readingAgeNote}
+${examBoardNote}
+${diffNote}
 
 SLIDE PLAN (follow this EXACTLY — do not change the order or types):
 ${planDescription}
@@ -1606,6 +1656,9 @@ export default function PresentationMaker() {
   const [sendNeeds, setSendNeeds] = useState("");
   const [additionalNotes, setAdditionalNotes] = useState("");
   const [selectedTheme, setSelectedTheme] = useState<ThemeKey>("navy");
+  const [readingAge, setReadingAge] = useState<number>(12);
+  const [examBoard, setExamBoard] = useState("");
+  const [differentiationLevel, setDifferentiationLevel] = useState<"foundation" | "core" | "extension">("core");
 
   // Auto-select Rainbow theme for primary school year groups
   const handleYearGroupChange = (value: string) => {
@@ -1648,6 +1701,9 @@ export default function PresentationMaker() {
         objectives,
         sendNeeds,
         additionalNotes,
+        readingAge,
+        examBoard,
+        differentiationLevel,
       });
 
       const result = await callAI(system, userPrompt, 8000);
@@ -1845,6 +1901,66 @@ export default function PresentationMaker() {
                     placeholder="Leave blank for AI to generate..."
                     className="text-xs resize-none h-16"
                   />
+                </div>
+
+                {/* Reading Age Slider */}
+                <div className="space-y-2">
+                  <Label className="text-xs font-semibold text-gray-700 flex items-center gap-1">
+                    <Sliders className="w-3 h-3" /> Reading Age
+                    <span className="ml-auto font-normal text-gray-500">{READING_AGE_LABELS[readingAge]}</span>
+                  </Label>
+                  <Slider
+                    min={5}
+                    max={16}
+                    step={1}
+                    value={[readingAge]}
+                    onValueChange={([v]) => setReadingAge(v)}
+                    className="w-full"
+                  />
+                  <div className="flex justify-between text-[9px] text-gray-400">
+                    <span>Age 5</span>
+                    <span>Age 11</span>
+                    <span>Age 16+</span>
+                  </div>
+                </div>
+
+                {/* Differentiation Level */}
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold text-gray-700 flex items-center gap-1">
+                    <GraduationCap className="w-3 h-3" /> Differentiation Level
+                  </Label>
+                  <div className="grid grid-cols-3 gap-1">
+                    {(["foundation", "core", "extension"] as const).map(level => (
+                      <button
+                        key={level}
+                        onClick={() => setDifferentiationLevel(level)}
+                        className={`py-1.5 rounded-lg text-[10px] font-semibold border-2 transition-all capitalize ${
+                          differentiationLevel === level
+                            ? level === "foundation" ? "bg-blue-50 border-blue-500 text-blue-700"
+                              : level === "extension" ? "bg-purple-50 border-purple-500 text-purple-700"
+                              : "bg-green-50 border-green-500 text-green-700"
+                            : "bg-white border-gray-200 text-gray-600 hover:border-gray-300"
+                        }`}
+                      >
+                        {level === "foundation" ? "Foundation" : level === "core" ? "Core" : "Extension"}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Exam Board */}
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold text-gray-700">Exam Board (optional)</Label>
+                  <Select value={examBoard} onValueChange={setExamBoard}>
+                    <SelectTrigger className="h-8 text-xs">
+                      <SelectValue placeholder="Select exam board..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {EXAM_BOARDS.map(b => (
+                        <SelectItem key={b.value} value={b.value} className="text-xs">{b.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 {/* SEND Needs */}

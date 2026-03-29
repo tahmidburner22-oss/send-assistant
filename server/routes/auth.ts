@@ -7,7 +7,14 @@ import QRCode from "qrcode";
 import db from "../db/index.js";
 import { JWT_SECRET, SESSION_TIMEOUT_MS, auditLog } from "../middleware/auth.js";
 import { requireAuth } from "../middleware/auth.js";
+import { createHash } from "crypto";
 import { sendPasswordReset, sendEmailVerification, sendWelcomeEmail } from "../email/index.js";
+
+// GDPR: Hash IPs before storing in sessions table
+function hashIp(ip: string | undefined): string | null {
+  if (!ip) return null;
+  return createHash("sha256").update(ip + (process.env.IP_HASH_SALT || "adaptly-ip-salt")).digest("hex").slice(0, 16);
+}
 
 const router = Router();
 
@@ -49,9 +56,14 @@ function clearFailedLogins(email: string): void {
 
 // ── Issue 7: Password strength validator ─────────────────────────────────────
 function validatePasswordStrength(password: string): string | null {
-  if (password.length < 8) return "Password must be at least 8 characters";
+  if (password.length < 10) return "Password must be at least 10 characters";
+  if (!/[A-Z]/.test(password)) return "Password must contain at least one uppercase letter";
+  if (!/[a-z]/.test(password)) return "Password must contain at least one lowercase letter";
   if (!/[0-9]/.test(password)) return "Password must contain at least one number";
-  if (!/[^a-zA-Z0-9]/.test(password)) return "Password must contain at least one special character";
+  if (!/[^a-zA-Z0-9]/.test(password)) return "Password must contain at least one special character (e.g. ! @ # $ %)";
+  // Reject trivially common passwords
+  const COMMON_PASSWORDS = ["password1!", "Password1!", "Qwerty123!", "Admin1234!", "Welcome1!", "School123!"];
+  if (COMMON_PASSWORDS.includes(password)) return "This password is too common. Please choose a more unique password.";
   return null; // valid
 }
 
@@ -469,7 +481,7 @@ function createSession(userId: string, token: string, req: Request) {
     uuidv4(),
     userId,
     token,
-    req.ip,
+    hashIp(req.ip), // GDPR: store hashed IP only
     req.headers["user-agent"] || null,
     expiresAt
   );
