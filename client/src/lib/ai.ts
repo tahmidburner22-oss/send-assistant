@@ -838,26 +838,28 @@ SECTION 1 — KNOWLEDGE CHECK (Q1–Q3):
 ${sectionAPrompt}
 
 SECTION 2 — UNDERSTANDING (Q4–Q6):
-  Q4 — VISUAL/DIAGRAM ACTIVITY [5 marks]: ${isSTEM ? `Generate a labelled diagram prompt.
+  Q4 — VISUAL/DIAGRAM ACTIVITY [5 marks]: Generate a TOPIC-SPECIFIC diagram for "${params.topic}".
 
 DIAGRAM RULES — MANDATORY:
-When including a diagram, output EXACTLY this format on its own line:
-[[DIAGRAM:{"type":"labeled","title":"Topic Name","labels":[{"text":"Label 1","x":20,"y":30},{"text":"Label 2","x":70,"y":30},{"text":"Label 3","x":20,"y":70},{"text":"Label 4","x":70,"y":70},{"text":"Label 5","x":45,"y":50}]}]]
+The diagram type MUST match the specific topic. Choose the BEST type from:
+- "labeled" → structures (cells, organs, apparatus), character webs (literature), geographic features, theme maps
+- "circuit" → ONLY for electricity/circuits topics (include "layout": "series" or "parallel")
+- "flow" → processes, timelines, sequences, cause-effect chains, algorithms
+- "cycle" → repeating processes (water cycle, rock cycle, nitrogen cycle, life cycles)
+- "number-line" → fractions, decimals, ordering, place value (include "start", "end", "marked")
+- "bar" → data/statistics questions (include "bars" array with real data, "xLabel", "yLabel")
+- "axes" → coordinate geometry, graph plotting (include "xLabel", "yLabel")
 
-Valid types: "labeled" | "circuit" | "flow" | "cycle" | "number-line" | "bar" | "axes"
-- "labeled": always include "title" and "labels" array. x/y are 0-100 percentages. Min 3 labels, max 8.
-- "circuit": always include "layout" ("series" or "parallel"). Include "labels" array with component positions.
-- "flow": always include "steps" array of 3-6 strings (max 20 chars each).
-- "cycle": always include "steps" array of 3-6 strings (max 20 chars each).
-- "number-line": always include "start" (number), "end" (number), "marked" (array of numbers to highlight).
-- "bar": always include "bars" array: [{"label":"Name","value":42}]. Include "xLabel" and "yLabel".
-- "axes": always include "xLabel" and "yLabel". Optionally include "title".
+CRITICAL: Every label, step, and title MUST use REAL terms specific to "${params.topic}".
+For literature: use actual character names, themes, or techniques from the text.
+For science: use correct scientific terminology for the specific process/structure.
+For maths: use appropriate numerical values matching the concept.
+For history: use real events, dates, or figures.
 
-NEVER output a diagram JSON with missing required fields.
-NEVER use x/y values outside 5-95 range.
-NEVER put more than 8 labels on one diagram.
-
-Ask students to label components. LABELS: [list the labels]` : 'Generate a spider/character web diagram described in ASCII text. Draw a central oval with the main subject in the middle. Around it, place 5 connected nodes with lines/spokes. Leave a blank space on each spoke for students to write one descriptive word. Follow with a 2–3 sentence written response question.'}
+Output format: [[DIAGRAM:{"type":"...","title":"...","labels":[...]}]]
+NEVER output a diagram with missing required fields. x/y values: 5-95 range. Max 8 labels.
+NEVER use generic placeholders like "Label 1" or "Step 1" — use real topic-specific terms.
+Ask students to label/identify parts. Include LABELS: and ANSWERS: lines.
   Q5 — EXTRACT/STIMULUS RESPONSE [5 marks]: ${isSTEM ? 'Provide a scenario or data set (readings from an experiment, a word problem). Ask sub-questions: (a) Identify the relevant formula/law [1 mark] (b) Full worked calculation showing method [2 marks] (c) Explain what the result means in context [2 marks]' : 'Provide a 4–8 line extract from the primary text. Label with Act/Chapter/Section and speaker. Ask: (a) Identify ONE language/literary technique [1 mark] (b) What does this reveal about character/theme/author intent? [2 marks] (c) What does the key image/phrase/symbol represent? [2 marks]'}
   Q6 — SEQUENCING/STRUCTURED RESPONSE [4 marks]: ${isSTEM ? 'Generate a structured question appropriate to the topic. IMPORTANT: Only use a formula triangle if the topic genuinely has a triangular formula relationship (e.g. speed/distance/time, V=IR, P=IV, pressure=force/area, density=mass/volume). For all other topics, use a method scaffold: present a worked scenario and ask (a) Identify the key rule or principle [1 mark] (b) Apply it to a given scenario with full working [2 marks] (c) State the unit or explain the result [1 mark].' : 'Provide 6 events/plot points/key moments from the topic in a scrambled order. Ask students to number boxes 1–6 in the correct chronological or logical sequence. [3 marks: all correct = 3, 4–5 correct = 2, 2–3 correct = 1]'}
 
@@ -1103,37 +1105,220 @@ STRICT JSON OUTPUT: Respond with valid JSON only — no markdown, no code blocks
 
   // ── SVG Diagram injection note ──────────────────────────────────────────────
   // Subjects where inline diagrams add genuine value
-  const diagramSubjects = ["science", "biology", "chemistry", "physics", "geography", "maths", "mathematics", "design", "engineering", "history"];
+  const diagramSubjects = ["science", "biology", "chemistry", "physics", "geography", "maths", "mathematics", "design", "engineering", "history", "english", "drama", "religious", "re", "rs", "economics", "business", "computing", "ict"];
   const isDiagramSubject = diagramSubjects.some(s => subjectLower.includes(s));
   const isVI = hasSend && !!(params.sendNeed?.toLowerCase().includes("vi") || params.sendNeed?.toLowerCase().includes("visual impair"));
 
+  // ── Dynamic diagram type selection based on subject + topic ─────────────────
+  // This replaces the old hardcoded circuit/spider approach with topic-aware selection.
+  const getDiagramForTopic = (subject: string, topic: string): { type: string; instruction: string; example: string } => {
+    const s = subject.toLowerCase();
+    const t = topic.toLowerCase();
+
+    // ── PHYSICS: Electricity/Circuits → circuit diagram ──
+    if (/circuit|electric|voltage|current|resist|ohm|component|series|parallel|ammeter|voltmeter/.test(t)) {
+      const layout = /parallel/.test(t) ? 'parallel' : 'series';
+      return {
+        type: 'circuit',
+        instruction: `Label the circuit diagram below. Write the correct component name next to each number.`,
+        example: `[[DIAGRAM:{"type":"circuit","layout":"${layout}","labels":[{"text":"Battery","x":10,"y":50},{"text":"Switch","x":50,"y":10},{"text":"Bulb","x":90,"y":50},{"text":"Resistor","x":50,"y":90},{"text":"Ammeter","x":30,"y":30}]}]]`
+      };
+    }
+
+    // ── BIOLOGY: Processes → flow or cycle diagram ──
+    if (/photosynthe|respirat|digestio|food chain|food web|nitrogen cycle|carbon cycle|water cycle|rock cycle|life cycle/.test(t)) {
+      const isCycle = /cycle/.test(t);
+      return {
+        type: isCycle ? 'cycle' : 'flow',
+        instruction: isCycle
+          ? `Study the cycle diagram below. Label each stage with the correct term.`
+          : `Study the process diagram below. Label each step with the correct term.`,
+        example: isCycle
+          ? `[[DIAGRAM:{"type":"cycle","title":"${topic}","steps":["Stage 1","Stage 2","Stage 3","Stage 4"]}]]`
+          : `[[DIAGRAM:{"type":"flow","title":"${topic}","steps":["Step 1","Step 2","Step 3","Step 4","Step 5"]}]]`
+      };
+    }
+
+    // ── BIOLOGY: Structures → labeled anatomy diagram ──
+    if (/cell|heart|lung|eye|ear|brain|kidney|leaf|flower|root|stem|organ|skeleton|muscle|tooth|skin|digestive|nervous|circulat/.test(t) && /bio|science/.test(s)) {
+      return {
+        type: 'labeled',
+        instruction: `Label the diagram below. Write the correct name for each numbered part.`,
+        example: `[[DIAGRAM:{"type":"labeled","title":"${topic}","labels":[{"text":"[part 1 of ${topic}]","x":20,"y":25},{"text":"[part 2 of ${topic}]","x":80,"y":25},{"text":"[part 3 of ${topic}]","x":20,"y":60},{"text":"[part 4 of ${topic}]","x":80,"y":60},{"text":"[part 5 of ${topic}]","x":50,"y":85}]}]]`
+      };
+    }
+
+    // ── CHEMISTRY: Atom/Bonding → labeled diagram ──
+    if (/atom|electron|proton|neutron|ionic|covalent|bond|molecule|element|compound|periodic|shell/.test(t)) {
+      return {
+        type: 'labeled',
+        instruction: `Label the diagram below. Write the correct term next to each numbered part.`,
+        example: `[[DIAGRAM:{"type":"labeled","title":"${topic}","labels":[{"text":"[component 1]","x":50,"y":15},{"text":"[component 2]","x":85,"y":50},{"text":"[component 3]","x":50,"y":85},{"text":"[component 4]","x":15,"y":50}]}]]`
+      };
+    }
+
+    // ── CHEMISTRY: Reactions/States → flow diagram ──
+    if (/reaction|state|solid|liquid|gas|evaporat|condens|melt|freez|dissolv|separat|distill|filtrat|chromatog/.test(t)) {
+      return {
+        type: 'flow',
+        instruction: `Study the process diagram below. Label each stage with the correct term.`,
+        example: `[[DIAGRAM:{"type":"flow","title":"${topic}","steps":["Stage 1","Stage 2","Stage 3","Stage 4"]}]]`
+      };
+    }
+
+    // ── MATHS: Fractions/Decimals/Percentages → number-line ──
+    if (/fraction|decimal|percent|number line|ordering|place value|rounding/.test(t) && /math/.test(s)) {
+      return {
+        type: 'number-line',
+        instruction: `Study the number line below. Identify the values at each marked position.`,
+        example: `[[DIAGRAM:{"type":"number-line","title":"${topic}","start":0,"end":10,"marked":[2,5,7]}]]`
+      };
+    }
+
+    // ── MATHS: Geometry/Shapes → labeled diagram ──
+    if (/circle|triangle|angle|polygon|quadrilateral|area|perimeter|pythag|trigon|shape|symmetry|transform|rotation|reflect/.test(t) && /math/.test(s)) {
+      return {
+        type: 'labeled',
+        instruction: `Label the diagram below. Write the correct mathematical term next to each numbered part.`,
+        example: `[[DIAGRAM:{"type":"labeled","title":"${topic}","labels":[{"text":"[part 1]","x":50,"y":10},{"text":"[part 2]","x":85,"y":50},{"text":"[part 3]","x":50,"y":90},{"text":"[part 4]","x":15,"y":50}]}]]`
+      };
+    }
+
+    // ── MATHS: Statistics/Data → bar chart ──
+    if (/statistic|data|graph|chart|frequen|average|mean|median|mode|range|probabilit|pie chart|bar chart|histogram|tally/.test(t) && /math/.test(s)) {
+      return {
+        type: 'bar',
+        instruction: `Study the bar chart below and answer the questions.`,
+        example: `[[DIAGRAM:{"type":"bar","title":"${topic}","bars":[{"label":"Category A","value":15},{"label":"Category B","value":23},{"label":"Category C","value":8},{"label":"Category D","value":31}],"xLabel":"Category","yLabel":"Frequency"}]]`
+      };
+    }
+
+    // ── MATHS: Coordinates/Algebra → axes ──
+    if (/coordinate|plot|graph|linear|quadratic|equation|y\s*=|gradient|intercept|simultaneous|inequalit/.test(t) && /math/.test(s)) {
+      return {
+        type: 'axes',
+        instruction: `Use the coordinate grid below to answer the questions.`,
+        example: `[[DIAGRAM:{"type":"axes","title":"${topic}","xLabel":"x","yLabel":"y"}]]`
+      };
+    }
+
+    // ── PHYSICS: Forces/Motion/Energy → labeled or flow ──
+    if (/force|motion|speed|velocity|accelerat|momentum|energy|wave|magnet|gravity|friction|pressure|density/.test(t) && !(/circuit|electric/.test(t))) {
+      return {
+        type: 'labeled',
+        instruction: `Label the diagram below. Write the correct term next to each numbered arrow or part.`,
+        example: `[[DIAGRAM:{"type":"labeled","title":"${topic}","labels":[{"text":"[force/component 1]","x":50,"y":10},{"text":"[force/component 2]","x":90,"y":50},{"text":"[force/component 3]","x":50,"y":90},{"text":"[force/component 4]","x":10,"y":50},{"text":"[force/component 5]","x":50,"y":50}]}]]`
+      };
+    }
+
+    // ── GEOGRAPHY: Physical features → labeled diagram ──
+    if (/volcano|earthquake|tectonic|plate|erosion|deposition|river|coast|glacier|weather|climate|biome|ecosystem|rainforest|desert|ocean/.test(t)) {
+      return {
+        type: 'labeled',
+        instruction: `Label the diagram below. Write the correct geographical term next to each numbered feature.`,
+        example: `[[DIAGRAM:{"type":"labeled","title":"${topic}","labels":[{"text":"[feature 1]","x":25,"y":20},{"text":"[feature 2]","x":75,"y":20},{"text":"[feature 3]","x":25,"y":70},{"text":"[feature 4]","x":75,"y":70},{"text":"[feature 5]","x":50,"y":45}]}]]`
+      };
+    }
+
+    // ── GEOGRAPHY: Human/processes → flow diagram ──
+    if (/population|migration|urbanis|globalisation|development|trade|sustainability|resource|farming|industry/.test(t) && /geog/.test(s)) {
+      return {
+        type: 'flow',
+        instruction: `Study the process diagram below. Label each stage with the correct term.`,
+        example: `[[DIAGRAM:{"type":"flow","title":"${topic}","steps":["Stage 1","Stage 2","Stage 3","Stage 4"]}]]`
+      };
+    }
+
+    // ── ENGLISH LITERATURE: Character relationships → labeled (character web) ──
+    if (/english|literature|drama/.test(s) && /macbeth|hamlet|romeo|juliet|inspector|gatsby|mice|men|mockingbird|christmas carol|jekyll|hyde|frankenstein|pride|prejudice|animal farm|lord of the flies|piggy|ralph|jack|othello|tempest|merchant|twelfth|midsummer/.test(t)) {
+      return {
+        type: 'labeled',
+        instruction: `Study the character web below. Label each numbered node with the correct character name and their role/relationship.`,
+        example: `[[DIAGRAM:{"type":"labeled","title":"${topic} Characters","labels":[{"text":"[Character 1]","x":50,"y":10},{"text":"[Character 2]","x":90,"y":35},{"text":"[Character 3]","x":75,"y":80},{"text":"[Character 4]","x":25,"y":80},{"text":"[Character 5]","x":10,"y":35}]}]]`
+      };
+    }
+
+    // ── ENGLISH: Themes/Concepts → labeled (theme map) ──
+    if (/english|literature|drama/.test(s)) {
+      return {
+        type: 'labeled',
+        instruction: `Study the theme/concept map below. Label each numbered node with the correct theme, technique, or concept from the text.`,
+        example: `[[DIAGRAM:{"type":"labeled","title":"${topic} Themes","labels":[{"text":"[Theme/Concept 1]","x":50,"y":10},{"text":"[Theme/Concept 2]","x":90,"y":35},{"text":"[Theme/Concept 3]","x":75,"y":80},{"text":"[Theme/Concept 4]","x":25,"y":80},{"text":"[Theme/Concept 5]","x":10,"y":35}]}]]`
+      };
+    }
+
+    // ── HISTORY: Events/Periods → flow (timeline) ──
+    if (/history/.test(s)) {
+      return {
+        type: 'flow',
+        instruction: `Study the timeline below. Label each event in the correct chronological order.`,
+        example: `[[DIAGRAM:{"type":"flow","title":"${topic} Timeline","steps":["Event 1","Event 2","Event 3","Event 4","Event 5"]}]]`
+      };
+    }
+
+    // ── COMPUTING/ICT → flow diagram ──
+    if (/comput|ict|algorithm|program|code|binary|network|internet|cyber|database/.test(t) || /comput|ict/.test(s)) {
+      return {
+        type: 'flow',
+        instruction: `Study the flowchart/process diagram below. Label each step with the correct term.`,
+        example: `[[DIAGRAM:{"type":"flow","title":"${topic}","steps":["Step 1","Step 2","Step 3","Step 4"]}]]`
+      };
+    }
+
+    // ── DEFAULT: Let the AI choose the best type dynamically ──
+    return {
+      type: 'auto',
+      instruction: `Study the diagram below and complete the labelling activity.`,
+      example: `[[DIAGRAM:{"type":"labeled","title":"${topic}","labels":[{"text":"[Key concept 1]","x":50,"y":10},{"text":"[Key concept 2]","x":90,"y":35},{"text":"[Key concept 3]","x":75,"y":80},{"text":"[Key concept 4]","x":25,"y":80},{"text":"[Key concept 5]","x":10,"y":35}]}]]`
+    };
+  };
+
+  const diagramSelection = getDiagramForTopic(params.subject, params.topic);
+
+  // Build the Q4 diagram prompt dynamically based on topic analysis
+  const q4DiagramPrompt = (() => {
+    const sel = diagramSelection;
+    const topicSpecificNote = sel.type === 'circuit'
+      ? `IMPORTANT: Generate a circuit diagram that matches the EXACT topic "${params.topic}". Use the correct circuit layout and components for this specific topic. The labels MUST be real circuit components relevant to "${params.topic}".`
+      : sel.type === 'flow' || sel.type === 'cycle'
+      ? `IMPORTANT: Generate a ${sel.type} diagram with steps/stages that are SPECIFIC to "${params.topic}". Each step must be a real stage/event from this topic — NOT generic placeholders. Use actual subject terminology.`
+      : sel.type === 'number-line'
+      ? `IMPORTANT: Generate a number line appropriate for "${params.topic}". Use values that match the specific mathematical concept being taught.`
+      : sel.type === 'bar'
+      ? `IMPORTANT: Generate a bar chart with REAL data relevant to "${params.topic}". Use realistic values and meaningful category labels.`
+      : sel.type === 'axes'
+      ? `IMPORTANT: Generate coordinate axes appropriate for "${params.topic}". Include relevant axis labels.`
+      : `IMPORTANT: Generate a labeled diagram where every label is a REAL term/concept/character/feature from "${params.topic}". Do NOT use generic labels like "Label 1" — use actual subject-specific terms. The diagram title must reflect the exact topic.`;
+
+    return `${sel.instruction} [5 marks]\n${topicSpecificNote}\n${sel.example}\nLABELS: [list the 5 correct labels separated by |]\nANSWERS: [list the 5 correct answers separated by |]`;
+  })();
+
   // Diagrams auto-generate for relevant subjects — no toggle needed
   const svgDiagramNote = (isDiagramSubject && !isVI && !params.examStyle)
-    ? `SVG DIAGRAM INSTRUCTION — AUTO-GENERATE:
-For the Worked Example section and/or one key question, if a labelled diagram would genuinely help students understand "${params.topic}", embed a diagram specification using this EXACT format at the END of that section's "content" string:
+    ? `SVG DIAGRAM INSTRUCTION — TOPIC-SPECIFIC DIAGRAMS:
+For Q4 and optionally the Worked Example, embed a diagram specification using this EXACT JSON format.
+The diagram MUST be specific to the topic "${params.topic}" — never use generic or placeholder content.
 
-[[DIAGRAM:{"type":"labeled","title":"${params.topic} Diagram","labels":[{"text":"Label 1","x":25,"y":35},{"text":"Label 2","x":75,"y":60},{"text":"Label 3","x":45,"y":80}]}]]
+DIAGRAM TYPES — you MUST choose the most appropriate type for the specific topic:
+- "labeled" → structures, anatomy, character webs, theme maps, geographic features, apparatus (central hub with labeled nodes)
+- "flow" → processes, timelines, sequences, algorithms, cause-effect chains (left-to-right boxes with arrows)
+- "cycle" → repeating processes like water cycle, rock cycle, nitrogen cycle, life cycles (circular arrangement)
+- "number-line" → fractions, decimals, ordering numbers, place value (horizontal line with marked points)
+- "bar" → data comparison, statistics, survey results (vertical bars with labels)
+- "axes" → coordinate geometry, plotting graphs, linear equations (x-y grid)
+- "circuit" → ONLY for electricity/circuits topics in physics (series or parallel layout)
 
-DIAGRAM TYPES — choose the most appropriate:
-- "labeled" → anatomy, geography features, physics apparatus, biology structures
-- "flow" → sequences, processes, steps (e.g. rock cycle, carbon cycle, algorithm)
-- "cycle" → cycles (e.g. water cycle, nitrogen cycle, mitosis stages)
-- "number-line" → number lines with start/end/marked values (maths only)
-- "bar" → bar chart with bars:[{label,value}] and xLabel/yLabel
-- "axes" → blank coordinate axes for students to plot (maths/physics)
-- "circuit" → circuit diagrams for electricity topics (physics)
-
-STRICT ACCURACY RULES for diagrams (all must be satisfied before including):
-1. Labels must be SHORT (2-4 words max) and FACTUALLY CORRECT for "${params.topic}"
-2. x and y values are percentages (0–100) — spread labels around the shape edge, no overlaps
-3. Only include a diagram if it directly illustrates the question being asked
-4. DO NOT include a diagram in every section — maximum 2 diagrams per worksheet
-5. All symbols must come from the approved symbol library (no invented symbols)
-6. All connectors must connect to valid anchor points on symbols
-7. All labels must be attached to a valid object — no floating labels
-8. Diagram must fit within its allotted box (no cut-off at edges)
-9. No component overlap — ensure adequate spacing between elements
-10. If any rule cannot be satisfied, omit the diagram entirely — no placeholder diagrams`
+CRITICAL RULES — TOPIC SPECIFICITY:
+1. Every label/step MUST use REAL terms from "${params.topic}" — never "Label 1", "Step 1", or any placeholder
+2. For English Literature: use actual character names, themes, or literary techniques from the text
+3. For Science: use correct scientific terminology for the specific process/structure
+4. For Maths: use appropriate numerical values that match the concept being taught
+5. For History: use real historical events, dates, or figures
+6. For Geography: use correct geographical terms and features
+7. The diagram title MUST name the specific topic, not a generic category
+8. x and y values are percentages (5–95) — spread labels evenly, no overlaps
+9. Maximum 2 diagrams per worksheet
+10. If no diagram genuinely helps teach "${params.topic}", omit it entirely`
     : ``;
 
   // ── Word problems note ─────────────────────────────────────────────────────
@@ -1233,7 +1418,8 @@ Return EXACTLY this JSON (raw JSON only):
     {"title": "Worked Example", "type": "example", "content": "[${exampleGuide}]"}${params.introOnly ? '' : `,
     {"title": "Q1 — True or False", "type": "q-true-false", "content": "Circle TRUE or FALSE for each statement. [4 marks]\n1. [statement about ${params.topic}] TRUE\n2. [statement about ${params.topic}] FALSE\n3. [statement about ${params.topic}] TRUE\n4. [statement about ${params.topic}] FALSE"},
     {"title": "Q2 — Multiple Choice", "type": "q-mcq", "content": "[Question about ${params.topic}] [1 mark]\nA  [option]\nB  [option]\nC  [option]\nD  [option]\nCORRECT: [correct letter only — do NOT mark with ✓ in the options above]"},
-    {"title": "Q3 — Cloze Paragraph", "type": "q-gap-fill", "content": "Complete the paragraph using words from the word bank. [7 marks]\n[5–7 sentence summary paragraph about ${params.topic} with exactly 7 blanks shown as _____]\nWORD BANK: word1 | word2 | word3 | word4 | word5 | word6 | word7 | word8 | word9 | word10"},    {"title": "Q4 — Visual/Diagram Activity", "type": "q-label-diagram", "content": "${isSTEM ? 'Label the diagram below. Write the correct component name next to each number. [5 marks]\n[[DIAGRAM:{"type":"circuit","layout":"series","labels":[{"text":"Battery","x":10,"y":50},{"text":"Switch","x":50,"y":10},{"text":"Bulb","x":90,"y":50},{"text":"Resistor","x":50,"y":90},{"text":"Ammeter","x":30,"y":30}]}]]\nLABELS: Battery | Switch | Bulb | Resistor | Ammeter\nANSWERS: Battery | Switch | Bulb | Resistor | Ammeter' : 'Study the spider diagram below and label each numbered node. Write the correct term next to each number. [5 marks]\n[[DIAGRAM:{"type":"labeled","title":"[2-3 word topic title e.g. Macbeth Themes]","labels":[{"text":"[key concept/part 1 of ${params.topic}]","x":50,"y":5},{"text":"[key concept/part 2 of ${params.topic}]","x":90,"y":35},{"text":"[key concept/part 3 of ${params.topic}]","x":75,"y":80},{"text":"[key concept/part 4 of ${params.topic}]","x":25,"y":80},{"text":"[key concept/part 5 of ${params.topic}]","x":10,"y":35}]}]]\nLABELS: [concept 1] | [concept 2] | [concept 3] | [concept 4] | [concept 5]\nANSWERS: [concept 1] | [concept 2] | [concept 3] | [concept 4] | [concept 5]'}", "marks": 5},
+    {"title": "Q3 — Cloze Paragraph", "type": "q-gap-fill", "content": "Complete the paragraph using words from the word bank. [7 marks]\n[5–7 sentence summary paragraph about ${params.topic} with exactly 7 blanks shown as _____]\nWORD BANK: word1 | word2 | word3 | word4 | word5 | word6 | word7 | word8 | word9 | word10"},
+    {"title": "Q4 — Visual/Diagram Activity", "type": "q-label-diagram", "content": "${q4DiagramPrompt}", "marks": 5},
     {"title": "Q5 — Extract/Stimulus Response", "type": "q-short-answer", "content": "${isSTEM ? '[Scenario or data set related to ${params.topic}] [5 marks]\n(a) Identify the relevant formula or scientific law. [1 mark]\n(b) Show the full calculation with working. [2 marks]\n(c) Explain what the result means in context. [2 marks]' : '[4–8 line extract from text related to ${params.topic}] [5 marks]\n(a) Identify ONE language or literary technique used in this extract. [1 mark]\n(b) What does this reveal about character, theme or author intent? [2 marks]\n(c) What does the key image or symbol represent? [2 marks]'}", "marks": 5},
     {"title": "Q6 — Sequencing/Structured Response", "type": "q-data-table", "content": "${isSTEM ? 'Answer the structured questions below. [4 marks]\n(a) Identify the key rule, law or principle that applies to [specific aspect of ' + params.topic + ']. [1 mark]\n(b) Apply it to this scenario: [specific scenario about ' + params.topic + ']. Show all working. [2 marks]\n(c) State the unit of the answer or explain what the result means. [1 mark]' : 'Number the events 1–6 in the correct order. [3 marks]\n[ ] [event/plot point 1 from ${params.topic}]\n[ ] [event/plot point 2 from ${params.topic}]\n[ ] [event/plot point 3 from ${params.topic}]\n[ ] [event/plot point 4 from ${params.topic}]\n[ ] [event/plot point 5 from ${params.topic}]\n[ ] [event/plot point 6 from ${params.topic}]\n3 marks: all correct | 2 marks: 4–5 correct | 1 mark: 2–3 correct'}", "marks": 4},
     {"title": "Q7 — Extended Explanation", "type": "q-extended", "content": "[${isSTEM ? 'Compare two cases or explain a key concept in depth' : 'Explain how a recurring motif/technique/theme is used across the text, with reference to at least TWO specific moments'} — ${params.topic}] [6 marks]", "marks": 6},
