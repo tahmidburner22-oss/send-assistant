@@ -181,14 +181,7 @@ export const LAYOUT_TEMPLATES: Record<LayoutFamily, LayoutTemplate> = {
     cssClass: "layout-what-changed",
     description: "Scenario A vs B side-by-side with structured analysis questions",
   },
-  "constraint-problem": {
-    family: "constraint-problem",
-    minHeightPx: 320,
-    supportsDiagram: false,
-    isSplitLayout: false,
-    cssClass: "layout-constraint-problem",
-    description: "Boxed constraint list + working/drawing space + explanation section",
-  },
+
 };
 
 // ─── Assigned question layout ─────────────────────────────────────────────────

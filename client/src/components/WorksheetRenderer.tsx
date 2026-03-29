@@ -4799,9 +4799,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                   if (section.type === "q-what-changed" || section.type === "what_changed") {
                     return <WhatChangedSection content={content} fmt={fmt} isTeacher={isTeacherView} />;
                   }
-                  if (section.type === "q-constraint-problem" || section.type === "constraint_problem") {
-                    return <ConstraintProblemSection content={content} fmt={fmt} isTeacher={isTeacherView} />;
-                  }
+
                   if (section.type === "prior-knowledge") {
                     // Prior knowledge check — appears after LO, before vocab
                     const pkLines = content.split("\n").filter(Boolean);
@@ -4864,9 +4862,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                   if (layoutTag === "what_changed") {
                     return <WhatChangedSection content={content} fmt={fmt} isTeacher={isTeacherView} />;
                   }
-                  if (layoutTag === "constraint_problem") {
-                    return <ConstraintProblemSection content={content} fmt={fmt} isTeacher={isTeacherView} />;
-                  }
+
                   // ── Auto-detection from AI content patterns ────────────────────────────────             // Broadly detects actual AI output patterns. Intentionally
                   // permissive — better to render with a sub-renderer than fall through.
                   if (!layoutTag) {
