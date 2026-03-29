@@ -2560,8 +2560,8 @@ function ErrorCorrectionSection({
     if (mode === "worked") {
       // Detect teacher-only hint lines that leaked into the worked answer section
       // e.g. "The mistake is in step 2", "Hint: look at step 3", "Error: ..."
-      if (/^(the mistake is|hint:|error:|teacher:|note to teacher|teacher note|teacher only|teacher hint)/i.test(line)) {
-        mistakeHint = line.replace(/^(the mistake is[:\s]*|hint[:\s]*|error[:\s]*|teacher[:\s]*|note to teacher[:\s]*|teacher note[:\s]*|teacher only[:\s]*|teacher hint[:\s]*)/i, "").trim() || line;
+      if (/^(\[?the mistake is|\[?hint:|\[?error:|\[?teacher:|\[?note to teacher|\[?teacher note|\[?teacher only|\[?teacher hint)/i.test(line)) {
+        mistakeHint = line.replace(/^\[?\s*(the mistake is[:\s]*|hint[:\s]*|error[:\s]*|teacher[:\s]*|note to teacher[:\s]*|teacher note[:\s]*|teacher only[:\s]*|teacher hint[:\s]*)/i, "").replace(/\]\s*$/, "").trim() || line;
         continue;
       }
       // Strip ** markdown bold markers that expose the error to students
@@ -2571,7 +2571,12 @@ function ErrorCorrectionSection({
       // Skip bare "Task" header lines, only add actual task descriptions
       if (!/^task$/i.test(line)) tasks.push(line.replace(/^[\d.)-]+\s*/, ""));
     } else {
-      workedAnswer.push(isTeacher ? line : line.replace(/\*\*([^*]+)\*\*/g, "$1")); // fallback
+      // Also detect [TEACHER ONLY: ...] in fallback mode
+      if (/^(\[?the mistake is|\[?hint:|\[?error:|\[?teacher:|\[?note to teacher|\[?teacher note|\[?teacher only|\[?teacher hint)/i.test(line)) {
+        mistakeHint = line.replace(/^\[?\s*(the mistake is[:\s]*|hint[:\s]*|error[:\s]*|teacher[:\s]*|note to teacher[:\s]*|teacher note[:\s]*|teacher only[:\s]*|teacher hint[:\s]*)/i, "").replace(/\]\s*$/, "").trim() || line;
+      } else {
+        workedAnswer.push(isTeacher ? line : line.replace(/\*\*([^*]+)\*\*/g, "$1")); // fallback
+      }
     }
   }
   if (tasks.length === 0) tasks = ["Identify the mistake", "Explain why it is wrong", "Write the correct answer"];
