@@ -1061,6 +1061,16 @@ function formatContent(content: string | any, fmt: ReturnType<typeof getSendForm
   // Strip [[DIAGRAM:{...}]] markers — handled by the outer section renderer.
   // If they reach formatContent they must be stripped silently so raw JSON never renders.
   content = content.replace(/\[\[DIAGRAM:\{[\s\S]*?\}\]\]/g, "").trim();
+  // Strip AI instruction lines that should never appear in rendered content
+  content = content.split("\n").filter((line: string) => {
+    const t = line.trim();
+    if (/^IMPORTANT:/i.test(t)) return false;
+    if (/^LABELS:/i.test(t)) return false;
+    if (/^ANSWERS:/i.test(t)) return false;
+    if (/^NOTE:/i.test(t) && /generic|placeholder|specific/i.test(t)) return false;
+    if (/^CRITICAL:/i.test(t)) return false;
+    return true;
+  }).join("\n");
   // ── Systemic content pre-processor ─────────────────────────────────────────────
   // Handles all known AI output patterns that cause broken rendering:
   //   1. Concatenated numbered items on a single line ("1. Q1 . 2. Q2 . 3. Q3")
@@ -2017,7 +2027,6 @@ function TableCompleteSection({
                   <td key={ci} style={{
                     padding: "6px 8px",
                     border: "1px solid #e5e7eb",
-                    borderBottom: blank ? "2px solid #94a3b8" : "1px solid #e5e7eb",
                     fontSize: `${fmt.fontSize}px`,
                     fontFamily: fmt.fontFamily,
                     textAlign: "center" as const,
@@ -2030,7 +2039,7 @@ function TableCompleteSection({
                     verticalAlign: "middle" as const,
                   }}>
                     {blank
-                      ? <span style={{ display: "block", minWidth: "50px", minHeight: "22px", borderBottom: "1.5px solid #94a3b8" }}>&nbsp;</span>
+                      ? <span style={{ display: "block", minWidth: "50px", minHeight: "22px" }}>&nbsp;</span>
                       : <span dangerouslySetInnerHTML={{ __html: renderMath(cell) }} />
                     }
                   </td>
@@ -4631,7 +4640,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                     return <TableCompleteSection content={content} fmt={fmt} isTeacher={isTeacherView} />;
                   }
                   if (section.type === "q-label-diagram") {
-                    return <LabelDiagramSection content={content} fmt={fmt} imageUrl={section.imageUrl} caption={section.caption} attribution={section.attribution} />
+                    return <LabelDiagramSection content={content} fmt={fmt} isTeacher={isTeacherView} imageUrl={section.imageUrl} caption={section.caption} attribution={section.attribution} />
                   }
                   if (section.type === "q-ordering") {
                     return <OrderingSection content={content} fmt={fmt} />;
@@ -4669,7 +4678,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                     return <GapFillInlineSection content={content} fmt={fmt} overlayColor={overlayColor} />;
                   }
                   if (layoutTag === "label_diagram") {
-                    return <LabelDiagramSection content={content} fmt={fmt} imageUrl={section.imageUrl} caption={section.caption} attribution={section.attribution} />;
+                    return <LabelDiagramSection content={content} fmt={fmt} isTeacher={isTeacherView} imageUrl={section.imageUrl} caption={section.caption} attribution={section.attribution} />;
                   }
                   if (layoutTag === "diagram_subquestions") {
                     return <DiagramSubQSection content={content} fmt={fmt} overlayColor={overlayColor} imageUrl={section.imageUrl} caption={section.caption} attribution={section.attribution} />;

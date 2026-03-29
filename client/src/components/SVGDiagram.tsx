@@ -380,40 +380,71 @@ export default function SVGDiagram({
     const steps = spec.steps || [];
     const n = steps.length;
     if (n === 0) return null;
-    const boxW = Math.min(140, (inner_w - (n - 1) * 20) / n);
-    const boxH = 36;
-    const totalW = n * boxW + (n - 1) * 28;
-    const startX = (width - totalW) / 2;
-    const midY = height / 2;
+
+    // Dynamic sizing: use wider viewBox for more steps
+    const flowW = Math.max(width, n * 130 + (n - 1) * 24 + 40);
+    const flowH = Math.max(height, 120);
+    const flowPad = 20;
+    const arrowGap = 20;
+    const boxW = Math.max(100, Math.min(160, (flowW - flowPad * 2 - (n - 1) * (arrowGap + 8)) / n));
+    const boxH = 48;
+    const totalW = n * boxW + (n - 1) * (arrowGap + 8);
+    const startX = (flowW - totalW) / 2;
+    const midY = flowH / 2 + (spec.title ? 8 : 0);
+
+    // Word-wrap helper: split text into lines that fit within box
+    const wrapText = (text: string, maxChars: number): string[] => {
+      if (text.length <= maxChars) return [text];
+      const words = text.split(/\s+/);
+      const lines: string[] = [];
+      let current = '';
+      for (const word of words) {
+        if (current && (current + ' ' + word).length > maxChars) {
+          lines.push(current);
+          current = word;
+        } else {
+          current = current ? current + ' ' + word : word;
+        }
+      }
+      if (current) lines.push(current);
+      return lines.length > 0 ? lines : [text];
+    };
+
+    // Calculate font size based on longest step text
+    const maxStepLen = Math.max(...steps.map(s => s.length));
+    const flowFontSize = maxStepLen > 20 ? Math.max(8, fontSize - 2) : fontSize - 1;
+    const maxCharsPerLine = Math.floor(boxW / (flowFontSize * 0.55));
 
     return (
-      <svg viewBox={`0 0 ${width} ${height}`} xmlns="http://www.w3.org/2000/svg"
-        style={{ width: "100%", maxWidth: width, display: "block", background: "white" }}>
+      <svg viewBox={`0 0 ${flowW} ${flowH}`} xmlns="http://www.w3.org/2000/svg"
+        style={{ width: "100%", maxWidth: flowW, display: "block", background: "white" }}>
         {spec.title && (
-          <text x={width / 2} y={16} textAnchor="middle" fontSize={fontSize + 1}
+          <text x={flowW / 2} y={16} textAnchor="middle" fontSize={fontSize + 1}
             fontFamily={fontFamily} fill={accentColor} fontWeight="700">{spec.title}</text>
         )}
         {steps.map((step, i) => {
-          const bx = startX + i * (boxW + 28);
+          const bx = startX + i * (boxW + arrowGap + 8);
           const by = midY - boxH / 2;
-          const textLines = step.length > 20 ? [step.slice(0, 20), step.slice(20)] : [step];
+          const textLines = wrapText(step, maxCharsPerLine);
+          const lineH = flowFontSize + 3;
+          const textStartY = by + boxH / 2 - ((textLines.length - 1) * lineH) / 2;
           return (
             <g key={i}>
-              <rect x={bx} y={by} width={boxW} height={boxH} rx="5"
-                fill={accentColor} opacity={0.85 - i * 0.07} />
+              <rect x={bx} y={by} width={boxW} height={boxH} rx="6"
+                fill={accentColor} opacity={0.85 - i * 0.04} />
               {textLines.map((line, li) => (
-                <text key={li} x={bx + boxW / 2} y={by + boxH / 2 + (li - (textLines.length - 1) / 2) * (fontSize + 2)}
+                <text key={li} x={bx + boxW / 2} y={textStartY + li * lineH}
                   textAnchor="middle" dominantBaseline="middle"
-                  fontSize={fontSize - 1} fontFamily={fontFamily} fill="white" fontWeight="600">
+                  fontSize={flowFontSize} fontFamily={fontFamily} fill="white" fontWeight="600">
                   {line}
                 </text>
               ))}
               {i < n - 1 && (
                 <>
-                  <line x1={bx + boxW} y1={midY} x2={bx + boxW + 20} y2={midY}
+                  <line x1={bx + boxW + 2} y1={midY} x2={bx + boxW + arrowGap} y2={midY}
                     stroke={accentColor} strokeWidth="2" />
                   <polygon
-                    points={`${bx + boxW + 28},${midY} ${bx + boxW + 20},${midY - 5} ${bx + boxW + 20},${midY + 5}`}
+                    points={`${bx + boxW + arrowGap + 8},${midY} ${bx + boxW + arrowGap},${midY - 5} ${bx + boxW + arrowGap},${midY + 5}`}
                     fill={accentColor} />
                 </>
               )}
