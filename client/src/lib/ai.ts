@@ -749,9 +749,9 @@ MANDATORY RULES — violating any rule is wrong:
 
   const blockInstructions: Record<string, string> = {
     TRUE_FALSE:         "Write exactly 4 numbered statements (1. 2. 3. 4.), each ending with TRUE or FALSE on the same line. Exactly 2 must be TRUE and 2 must be FALSE. Example: '1. Water boils at 100°C. TRUE'",
-    MCQ:                "One question stem, then options: 'A  option' 'B  option' 'C  option' 'D  option' on separate lines. Only ONE is correct.",
+    MCQ:                "MANDATORY: Start with a clear question stem (e.g. 'Which of the following...' or 'What is...') BEFORE the options. Then options: 'A  option' 'B  option' 'C  option' 'D  option' on separate lines. Only ONE is correct. The question stem MUST be the first line — never start with an option.",
     GAP_FILL:           "One paragraph 40-60 words with 5-7 blanks as _____. Next line: 'WORD BANK: word1 | word2 | word3 | word4 | word5 | word6 | word7'",
-    ORDERING:           "6 items each on its own line starting with ☐. Instruction: 'Number the boxes 1–6 to show the correct order.'",
+    ORDERING:           "MANDATORY: First line must be a clear instruction (e.g. 'Number the boxes 1–6 to show the correct order of [topic].'). Then 6 items each on its own line starting with ☐. The instruction MUST be the first line — never start with a ☐ item. For GCSE secondary school, only use ordering for sequences that have a definitive correct order (e.g. stages of mitosis, steps in a process) — NEVER use for ranking by complexity or importance.",
     MATCHING:           [
       "5 terms and 5 definitions. Format EXACTLY as two separate columns:",
       "TERMS (numbered 1-5, in any order):",
@@ -959,7 +959,15 @@ QUALITY STANDARDS — every question must meet professional UK teacher standards
    - EXTENDED ANSWER: structured essay/explain prompt. Use for challenge only.
    RULE: Section A (guided) must use at least 2 different formats. Section B (independent) must use at least 2 different formats. No adjacent questions may use the same format.
 
-STRICT JSON OUTPUT: Respond with valid JSON only — no markdown, no code blocks. NEVER use HTML tags inside content strings. Use plain text and LaTeX notation only.`;
+STRICT JSON OUTPUT: Respond with valid JSON only — no markdown, no code blocks. NEVER use HTML tags inside content strings. Use plain text and LaTeX notation only.
+
+${isSecondary ? `SECONDARY SCHOOL GCSE/A-LEVEL RULES — MANDATORY:
+- NEVER ask students to rank items by complexity, importance, or difficulty (e.g. 'rank organs from simplest to most complex' is FORBIDDEN — no GCSE exam paper ever asks this).
+- NEVER generate a question that has no correct answer in a real exam context.
+- Every question must reflect the actual GCSE/A-Level specification for this topic.
+- MCQ questions MUST have a clear question stem as the FIRST line — NEVER start with options.
+- ORDERING questions must only be used for sequences with a definitive correct order (e.g. stages of meiosis, steps in a reaction mechanism) — never for subjective rankings.
+- Questions must match the command words used in real ${params.subject} exam papers: describe, explain, evaluate, calculate, state, compare, suggest.` : ''}`;
 
   const examBoardNote = params.examBoard && params.examBoard !== "N/A" && params.examBoard !== "none"
     ? (() => {
