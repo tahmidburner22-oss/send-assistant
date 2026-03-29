@@ -319,7 +319,7 @@ export interface DiagramConnection {
 }
 
 export interface DiagramSpec {
-  type: "circuit" | "biology" | "flow" | "labeled" | "general";
+  type: "circuit" | "biology" | "flow" | "labeled" | "general" | "cycle" | "bar" | "number-line" | "axes" | "venn" | "timeline" | "pyramid" | "fraction-bar";
   title?: string;
   altText: string; // required for accessibility
   boxWidth: number;

@@ -1110,7 +1110,9 @@ STRICT JSON OUTPUT: Respond with valid JSON only — no markdown, no code blocks
   const isVI = hasSend && !!(params.sendNeed?.toLowerCase().includes("vi") || params.sendNeed?.toLowerCase().includes("visual impair"));
 
   // ── Dynamic diagram type selection based on subject + topic ─────────────────
-  // This replaces the old hardcoded circuit/spider approach with topic-aware selection.
+  // Comprehensive topic-specific mapping covering all subjects (primary + secondary).
+  // New types: venn, timeline, pyramid, fraction-bar.
+  // Diagrams are for LABELLING — students see numbered blanks, not answers.
   const getDiagramForTopic = (subject: string, topic: string): { type: string; instruction: string; example: string } => {
     const s = subject.toLowerCase();
     const t = topic.toLowerCase();
@@ -1120,120 +1122,169 @@ STRICT JSON OUTPUT: Respond with valid JSON only — no markdown, no code blocks
       const layout = /parallel/.test(t) ? 'parallel' : 'series';
       return {
         type: 'circuit',
-        instruction: `Label the circuit diagram below. Write the correct component name next to each number.`,
+        instruction: `Label the circuit diagram. Write the correct component name next to each number.`,
         example: `[[DIAGRAM:{"type":"circuit","layout":"${layout}","labels":[{"text":"Battery","x":10,"y":50},{"text":"Switch","x":50,"y":10},{"text":"Bulb","x":90,"y":50},{"text":"Resistor","x":50,"y":90},{"text":"Ammeter","x":30,"y":30}]}]]`
       };
     }
 
-    // ── BIOLOGY: Processes → flow or cycle diagram ──
-    if (/photosynthe|respirat|digestio|food chain|food web|nitrogen cycle|carbon cycle|water cycle|rock cycle|life cycle/.test(t)) {
-      const isCycle = /cycle/.test(t);
+    // ── BIOLOGY: Cycles → cycle diagram ──
+    if (/nitrogen cycle|carbon cycle|water cycle|rock cycle|life cycle|menstrual cycle|cell cycle|krebs/.test(t)) {
       return {
-        type: isCycle ? 'cycle' : 'flow',
-        instruction: isCycle
-          ? `Study the cycle diagram below. Label each stage with the correct term.`
-          : `Study the process diagram below. Label each step with the correct term.`,
-        example: isCycle
-          ? `[[DIAGRAM:{"type":"cycle","title":"${topic}","steps":["Stage 1","Stage 2","Stage 3","Stage 4"]}]]`
-          : `[[DIAGRAM:{"type":"flow","title":"${topic}","steps":["Step 1","Step 2","Step 3","Step 4","Step 5"]}]]`
+        type: 'cycle',
+        instruction: `Label each stage of the cycle diagram with the correct term.`,
+        example: `[[DIAGRAM:{"type":"cycle","title":"${topic}","steps":["Stage 1","Stage 2","Stage 3","Stage 4"]}]]`
+      };
+    }
+
+    // ── BIOLOGY: Processes → flow diagram ──
+    if (/photosynthe|respirat|digestio|food chain|food web|mitosis|meiosis|ferment|decompos|excret|osmo|diffus/.test(t)) {
+      return {
+        type: 'flow',
+        instruction: `Label each step of the process diagram with the correct term.`,
+        example: `[[DIAGRAM:{"type":"flow","title":"${topic}","steps":["Step 1","Step 2","Step 3","Step 4","Step 5"]}]]`
+      };
+    }
+
+    // ── BIOLOGY: Classification/Comparison → venn diagram ──
+    if (/classif|vertebrate|invertebrate|prokaryot|eukaryot|plant.*animal|animal.*plant|compare.*cell|aerobic.*anaerobic|anaerobic.*aerobic/.test(t) && /bio|science/.test(s)) {
+      return {
+        type: 'venn',
+        instruction: `Sort the items into the correct region of the Venn diagram.`,
+        example: `[[DIAGRAM:{"type":"venn","title":"${topic}","setA":"Group A","setB":"Group B","onlyA":["item 1","item 2"],"overlap":["shared item"],"onlyB":["item 3","item 4"]}]]`
       };
     }
 
     // ── BIOLOGY: Structures → labeled anatomy diagram ──
-    if (/cell|heart|lung|eye|ear|brain|kidney|leaf|flower|root|stem|organ|skeleton|muscle|tooth|skin|digestive|nervous|circulat/.test(t) && /bio|science/.test(s)) {
+    if (/cell|heart|lung|eye|ear|brain|kidney|leaf|flower|root|stem|organ|skeleton|muscle|tooth|skin|nervous|circulat|reproductive|immune|endocrine/.test(t) && /bio|science/.test(s)) {
       return {
         type: 'labeled',
-        instruction: `Label the diagram below. Write the correct name for each numbered part.`,
-        example: `[[DIAGRAM:{"type":"labeled","title":"${topic}","labels":[{"text":"[part 1 of ${topic}]","x":20,"y":25},{"text":"[part 2 of ${topic}]","x":80,"y":25},{"text":"[part 3 of ${topic}]","x":20,"y":60},{"text":"[part 4 of ${topic}]","x":80,"y":60},{"text":"[part 5 of ${topic}]","x":50,"y":85}]}]]`
+        instruction: `Label the diagram. Write the correct name for each numbered part.`,
+        example: `[[DIAGRAM:{"type":"labeled","title":"${topic}","labels":[{"text":"[part 1]","x":20,"y":25},{"text":"[part 2]","x":80,"y":25},{"text":"[part 3]","x":20,"y":60},{"text":"[part 4]","x":80,"y":60},{"text":"[part 5]","x":50,"y":85}]}]]`
+      };
+    }
+
+    // ── BIOLOGY: Ecology pyramids → pyramid diagram ──
+    if (/pyramid.*number|pyramid.*biomass|pyramid.*energy|trophic|food pyramid|ecological pyramid/.test(t)) {
+      return {
+        type: 'pyramid',
+        instruction: `Label each level of the pyramid with the correct term.`,
+        example: `[[DIAGRAM:{"type":"pyramid","title":"${topic}","levels":["Top predator","Secondary consumer","Primary consumer","Producer"]}]]`
       };
     }
 
     // ── CHEMISTRY: Atom/Bonding → labeled diagram ──
-    if (/atom|electron|proton|neutron|ionic|covalent|bond|molecule|element|compound|periodic|shell/.test(t)) {
+    if (/atom|electron|proton|neutron|ionic|covalent|bond|molecule|element|compound|periodic|shell|ion|isotope/.test(t)) {
       return {
         type: 'labeled',
-        instruction: `Label the diagram below. Write the correct term next to each numbered part.`,
+        instruction: `Label the diagram. Write the correct term next to each numbered part.`,
         example: `[[DIAGRAM:{"type":"labeled","title":"${topic}","labels":[{"text":"[component 1]","x":50,"y":15},{"text":"[component 2]","x":85,"y":50},{"text":"[component 3]","x":50,"y":85},{"text":"[component 4]","x":15,"y":50}]}]]`
       };
     }
 
     // ── CHEMISTRY: Reactions/States → flow diagram ──
-    if (/reaction|state|solid|liquid|gas|evaporat|condens|melt|freez|dissolv|separat|distill|filtrat|chromatog/.test(t)) {
+    if (/reaction|state|solid|liquid|gas|evaporat|condens|melt|freez|dissolv|separat|distill|filtrat|chromatog|electrolys|oxidat|reduct|neutralis|combust|thermal decomp/.test(t)) {
       return {
         type: 'flow',
-        instruction: `Study the process diagram below. Label each stage with the correct term.`,
+        instruction: `Label each stage of the process diagram with the correct term.`,
         example: `[[DIAGRAM:{"type":"flow","title":"${topic}","steps":["Stage 1","Stage 2","Stage 3","Stage 4"]}]]`
       };
     }
 
+    // ── MATHS: Fractions (primary) → fraction-bar diagram ──
+    if (/fraction/.test(t) && /math/.test(s) && isPrimary) {
+      return {
+        type: 'fraction-bar',
+        instruction: `Look at the fraction bar. What fraction is shaded?`,
+        example: `[[DIAGRAM:{"type":"fraction-bar","title":"${topic}","numerator":3,"denominator":4,"fractionLabel":"3/4"}]]`
+      };
+    }
+
     // ── MATHS: Fractions/Decimals/Percentages → number-line ──
-    if (/fraction|decimal|percent|number line|ordering|place value|rounding/.test(t) && /math/.test(s)) {
+    if (/fraction|decimal|percent|number line|ordering|place value|rounding|negative number|integer/.test(t) && /math/.test(s)) {
       return {
         type: 'number-line',
-        instruction: `Study the number line below. Identify the values at each marked position.`,
+        instruction: `Identify the values at each marked position on the number line.`,
         example: `[[DIAGRAM:{"type":"number-line","title":"${topic}","start":0,"end":10,"marked":[2,5,7]}]]`
       };
     }
 
     // ── MATHS: Geometry/Shapes → labeled diagram ──
-    if (/circle|triangle|angle|polygon|quadrilateral|area|perimeter|pythag|trigon|shape|symmetry|transform|rotation|reflect/.test(t) && /math/.test(s)) {
+    if (/circle|triangle|angle|polygon|quadrilateral|area|perimeter|pythag|trigon|shape|symmetry|transform|rotation|reflect|parallel.*line|perpendicular|bisect|locus|bearing/.test(t) && /math/.test(s)) {
       return {
         type: 'labeled',
-        instruction: `Label the diagram below. Write the correct mathematical term next to each numbered part.`,
+        instruction: `Label the diagram. Write the correct mathematical term next to each numbered part.`,
         example: `[[DIAGRAM:{"type":"labeled","title":"${topic}","labels":[{"text":"[part 1]","x":50,"y":10},{"text":"[part 2]","x":85,"y":50},{"text":"[part 3]","x":50,"y":90},{"text":"[part 4]","x":15,"y":50}]}]]`
       };
     }
 
     // ── MATHS: Statistics/Data → bar chart ──
-    if (/statistic|data|graph|chart|frequen|average|mean|median|mode|range|probabilit|pie chart|bar chart|histogram|tally/.test(t) && /math/.test(s)) {
+    if (/statistic|data|graph|chart|frequen|average|mean|median|mode|range|probabilit|pie chart|bar chart|histogram|tally|scatter|correlation|cumulative/.test(t) && /math/.test(s)) {
       return {
         type: 'bar',
-        instruction: `Study the bar chart below and answer the questions.`,
+        instruction: `Study the bar chart and answer the questions.`,
         example: `[[DIAGRAM:{"type":"bar","title":"${topic}","bars":[{"label":"Category A","value":15},{"label":"Category B","value":23},{"label":"Category C","value":8},{"label":"Category D","value":31}],"xLabel":"Category","yLabel":"Frequency"}]]`
       };
     }
 
     // ── MATHS: Coordinates/Algebra → axes ──
-    if (/coordinate|plot|graph|linear|quadratic|equation|y\s*=|gradient|intercept|simultaneous|inequalit/.test(t) && /math/.test(s)) {
+    if (/coordinate|plot|graph|linear|quadratic|equation|y\s*=|gradient|intercept|simultaneous|inequalit|function|cubic|exponential|reciprocal/.test(t) && /math/.test(s)) {
       return {
         type: 'axes',
-        instruction: `Use the coordinate grid below to answer the questions.`,
+        instruction: `Use the coordinate grid to answer the questions.`,
         example: `[[DIAGRAM:{"type":"axes","title":"${topic}","xLabel":"x","yLabel":"y"}]]`
       };
     }
 
     // ── PHYSICS: Forces/Motion/Energy → labeled or flow ──
-    if (/force|motion|speed|velocity|accelerat|momentum|energy|wave|magnet|gravity|friction|pressure|density/.test(t) && !(/circuit|electric/.test(t))) {
+    if (/force|motion|speed|velocity|accelerat|momentum|energy|wave|magnet|gravity|friction|pressure|density|moment|lever|pulley/.test(t) && !(/circuit|electric/.test(t))) {
       return {
         type: 'labeled',
-        instruction: `Label the diagram below. Write the correct term next to each numbered arrow or part.`,
+        instruction: `Label the diagram. Write the correct term next to each numbered arrow or part.`,
         example: `[[DIAGRAM:{"type":"labeled","title":"${topic}","labels":[{"text":"[force/component 1]","x":50,"y":10},{"text":"[force/component 2]","x":90,"y":50},{"text":"[force/component 3]","x":50,"y":90},{"text":"[force/component 4]","x":10,"y":50},{"text":"[force/component 5]","x":50,"y":50}]}]]`
       };
     }
 
+    // ── PHYSICS: Nuclear/Radioactivity → flow ──
+    if (/radioact|nuclear|decay|half.life|alpha|beta|gamma|fission|fusion/.test(t)) {
+      return {
+        type: 'flow',
+        instruction: `Label each stage of the process diagram with the correct term.`,
+        example: `[[DIAGRAM:{"type":"flow","title":"${topic}","steps":["Stage 1","Stage 2","Stage 3","Stage 4"]}]]`
+      };
+    }
+
     // ── GEOGRAPHY: Physical features → labeled diagram ──
-    if (/volcano|earthquake|tectonic|plate|erosion|deposition|river|coast|glacier|weather|climate|biome|ecosystem|rainforest|desert|ocean/.test(t)) {
+    if (/volcano|earthquake|tectonic|plate|erosion|deposition|river|coast|glacier|weather|climate|biome|ecosystem|rainforest|desert|ocean|meander|oxbow|waterfall|cave|stack|spit|delta/.test(t)) {
       return {
         type: 'labeled',
-        instruction: `Label the diagram below. Write the correct geographical term next to each numbered feature.`,
+        instruction: `Label the diagram. Write the correct geographical term next to each numbered feature.`,
         example: `[[DIAGRAM:{"type":"labeled","title":"${topic}","labels":[{"text":"[feature 1]","x":25,"y":20},{"text":"[feature 2]","x":75,"y":20},{"text":"[feature 3]","x":25,"y":70},{"text":"[feature 4]","x":75,"y":70},{"text":"[feature 5]","x":50,"y":45}]}]]`
       };
     }
 
     // ── GEOGRAPHY: Human/processes → flow diagram ──
-    if (/population|migration|urbanis|globalisation|development|trade|sustainability|resource|farming|industry/.test(t) && /geog/.test(s)) {
+    if (/population|migration|urbanis|globalisation|development|trade|sustainability|resource|farming|industry|deforestation|desertification/.test(t) && /geog/.test(s)) {
       return {
         type: 'flow',
-        instruction: `Study the process diagram below. Label each stage with the correct term.`,
+        instruction: `Label each stage of the process diagram with the correct term.`,
         example: `[[DIAGRAM:{"type":"flow","title":"${topic}","steps":["Stage 1","Stage 2","Stage 3","Stage 4"]}]]`
       };
     }
 
+    // ── GEOGRAPHY: Development comparison → venn diagram ──
+    if (/compare.*countr|developed.*developing|hic.*lic|urban.*rural|rural.*urban/.test(t) && /geog/.test(s)) {
+      return {
+        type: 'venn',
+        instruction: `Sort the features into the correct region of the Venn diagram.`,
+        example: `[[DIAGRAM:{"type":"venn","title":"${topic}","setA":"Group A","setB":"Group B","onlyA":["feature 1","feature 2"],"overlap":["shared feature"],"onlyB":["feature 3","feature 4"]}]]`
+      };
+    }
+
     // ── ENGLISH LITERATURE: Character relationships → labeled (character web) ──
-    if (/english|literature|drama/.test(s) && /macbeth|hamlet|romeo|juliet|inspector|gatsby|mice|men|mockingbird|christmas carol|jekyll|hyde|frankenstein|pride|prejudice|animal farm|lord of the flies|piggy|ralph|jack|othello|tempest|merchant|twelfth|midsummer/.test(t)) {
+    if (/english|literature|drama/.test(s) && /macbeth|hamlet|romeo|juliet|inspector|gatsby|mice|men|mockingbird|christmas carol|jekyll|hyde|frankenstein|pride|prejudice|animal farm|lord of the flies|piggy|ralph|jack|othello|tempest|merchant|twelfth|midsummer|great expectations|oliver twist|jane eyre|wuthering|1984|brave new world/.test(t)) {
       return {
         type: 'labeled',
-        instruction: `Study the character web below. Label each numbered node with the correct character name and their role/relationship.`,
+        instruction: `Label each numbered node of the character web with the correct character name and their role.`,
         example: `[[DIAGRAM:{"type":"labeled","title":"${topic} Characters","labels":[{"text":"[Character 1]","x":50,"y":10},{"text":"[Character 2]","x":90,"y":35},{"text":"[Character 3]","x":75,"y":80},{"text":"[Character 4]","x":25,"y":80},{"text":"[Character 5]","x":10,"y":35}]}]]`
       };
     }
@@ -1242,17 +1293,62 @@ STRICT JSON OUTPUT: Respond with valid JSON only — no markdown, no code blocks
     if (/english|literature|drama/.test(s)) {
       return {
         type: 'labeled',
-        instruction: `Study the theme/concept map below. Label each numbered node with the correct theme, technique, or concept from the text.`,
-        example: `[[DIAGRAM:{"type":"labeled","title":"${topic} Themes","labels":[{"text":"[Theme/Concept 1]","x":50,"y":10},{"text":"[Theme/Concept 2]","x":90,"y":35},{"text":"[Theme/Concept 3]","x":75,"y":80},{"text":"[Theme/Concept 4]","x":25,"y":80},{"text":"[Theme/Concept 5]","x":10,"y":35}]}]]`
+        instruction: `Label each numbered node with the correct theme, technique, or concept from the text.`,
+        example: `[[DIAGRAM:{"type":"labeled","title":"${topic} Themes","labels":[{"text":"[Theme 1]","x":50,"y":10},{"text":"[Theme 2]","x":90,"y":35},{"text":"[Theme 3]","x":75,"y":80},{"text":"[Theme 4]","x":25,"y":80},{"text":"[Theme 5]","x":10,"y":35}]}]]`
       };
     }
 
-    // ── HISTORY: Events/Periods → flow (timeline) ──
+    // ── HISTORY: Events/Periods → timeline diagram ──
     if (/history/.test(s)) {
       return {
+        type: 'timeline',
+        instruction: `Label each event on the timeline with the correct description.`,
+        example: `[[DIAGRAM:{"type":"timeline","title":"${topic} Timeline","events":[{"date":"Date 1","label":"Event 1"},{"date":"Date 2","label":"Event 2"},{"date":"Date 3","label":"Event 3"},{"date":"Date 4","label":"Event 4"},{"date":"Date 5","label":"Event 5"}]}]]`
+      };
+    }
+
+    // ── RE/RS: Comparison of beliefs → venn diagram ──
+    if (/religious|re|rs/.test(s) && /compare|similar|differ|christian.*muslim|muslim.*christian|hindu.*buddhist|buddhist.*hindu/.test(t)) {
+      return {
+        type: 'venn',
+        instruction: `Sort the beliefs/practices into the correct region of the Venn diagram.`,
+        example: `[[DIAGRAM:{"type":"venn","title":"${topic}","setA":"Religion A","setB":"Religion B","onlyA":["belief 1","belief 2"],"overlap":["shared belief"],"onlyB":["belief 3","belief 4"]}]]`
+      };
+    }
+
+    // ── RE/RS: General → labeled (concept map) ──
+    if (/religious|re|rs/.test(s)) {
+      return {
+        type: 'labeled',
+        instruction: `Label each numbered node with the correct concept, belief, or practice.`,
+        example: `[[DIAGRAM:{"type":"labeled","title":"${topic}","labels":[{"text":"[Concept 1]","x":50,"y":10},{"text":"[Concept 2]","x":90,"y":35},{"text":"[Concept 3]","x":75,"y":80},{"text":"[Concept 4]","x":25,"y":80}]}]]`
+      };
+    }
+
+    // ── BUSINESS/ECONOMICS: Hierarchy → pyramid diagram ──
+    if (/business|economics/.test(s) && /hierarch|management|organisation|structure|maslow|need/.test(t)) {
+      return {
+        type: 'pyramid',
+        instruction: `Label each level of the pyramid with the correct term.`,
+        example: `[[DIAGRAM:{"type":"pyramid","title":"${topic}","levels":["Top level","Second level","Third level","Base level"]}]]`
+      };
+    }
+
+    // ── BUSINESS/ECONOMICS: Processes → flow diagram ──
+    if (/business|economics/.test(s) && /supply chain|production|market|trade|business cycle|economic cycle/.test(t)) {
+      return {
         type: 'flow',
-        instruction: `Study the timeline below. Label each event in the correct chronological order.`,
-        example: `[[DIAGRAM:{"type":"flow","title":"${topic} Timeline","steps":["Event 1","Event 2","Event 3","Event 4","Event 5"]}]]`
+        instruction: `Label each stage of the process diagram with the correct term.`,
+        example: `[[DIAGRAM:{"type":"flow","title":"${topic}","steps":["Stage 1","Stage 2","Stage 3","Stage 4"]}]]`
+      };
+    }
+
+    // ── BUSINESS/ECONOMICS: General → labeled ──
+    if (/business|economics/.test(s)) {
+      return {
+        type: 'labeled',
+        instruction: `Label each numbered node with the correct business/economics term.`,
+        example: `[[DIAGRAM:{"type":"labeled","title":"${topic}","labels":[{"text":"[Term 1]","x":50,"y":10},{"text":"[Term 2]","x":90,"y":35},{"text":"[Term 3]","x":75,"y":80},{"text":"[Term 4]","x":25,"y":80}]}]]`
       };
     }
 
@@ -1260,65 +1356,65 @@ STRICT JSON OUTPUT: Respond with valid JSON only — no markdown, no code blocks
     if (/comput|ict|algorithm|program|code|binary|network|internet|cyber|database/.test(t) || /comput|ict/.test(s)) {
       return {
         type: 'flow',
-        instruction: `Study the flowchart/process diagram below. Label each step with the correct term.`,
+        instruction: `Label each step of the flowchart with the correct term.`,
         example: `[[DIAGRAM:{"type":"flow","title":"${topic}","steps":["Step 1","Step 2","Step 3","Step 4"]}]]`
       };
     }
 
-    // ── DEFAULT: Let the AI choose the best type dynamically ──
+    // ── DT/ENGINEERING → labeled diagram ──
+    if (/design|engineering|technology|dt/.test(s)) {
+      return {
+        type: 'labeled',
+        instruction: `Label the diagram. Write the correct term next to each numbered part.`,
+        example: `[[DIAGRAM:{"type":"labeled","title":"${topic}","labels":[{"text":"[Part 1]","x":50,"y":10},{"text":"[Part 2]","x":85,"y":50},{"text":"[Part 3]","x":50,"y":90},{"text":"[Part 4]","x":15,"y":50}]}]]`
+      };
+    }
+
+    // ── PRIMARY: Maths shapes/measures → labeled ──
+    if (isPrimary && /math/.test(s)) {
+      return {
+        type: 'labeled',
+        instruction: `Label the diagram. Write the correct word next to each number.`,
+        example: `[[DIAGRAM:{"type":"labeled","title":"${topic}","labels":[{"text":"[Part 1]","x":50,"y":10},{"text":"[Part 2]","x":85,"y":50},{"text":"[Part 3]","x":50,"y":90},{"text":"[Part 4]","x":15,"y":50}]}]]`
+      };
+    }
+
+    // ── PRIMARY: Science → labeled ──
+    if (isPrimary && /science/.test(s)) {
+      return {
+        type: 'labeled',
+        instruction: `Label the diagram. Write the correct word next to each number.`,
+        example: `[[DIAGRAM:{"type":"labeled","title":"${topic}","labels":[{"text":"[Part 1]","x":20,"y":25},{"text":"[Part 2]","x":80,"y":25},{"text":"[Part 3]","x":20,"y":60},{"text":"[Part 4]","x":80,"y":60},{"text":"[Part 5]","x":50,"y":85}]}]]`
+      };
+    }
+
+    // ── DEFAULT: labeled diagram ──
     return {
       type: 'auto',
-      instruction: `Study the diagram below and complete the labelling activity.`,
-      example: `[[DIAGRAM:{"type":"labeled","title":"${topic}","labels":[{"text":"[Key concept 1]","x":50,"y":10},{"text":"[Key concept 2]","x":90,"y":35},{"text":"[Key concept 3]","x":75,"y":80},{"text":"[Key concept 4]","x":25,"y":80},{"text":"[Key concept 5]","x":10,"y":35}]}]]`
+      instruction: `Label the diagram. Write the correct term next to each number.`,
+      example: `[[DIAGRAM:{"type":"labeled","title":"${topic}","labels":[{"text":"[Concept 1]","x":50,"y":10},{"text":"[Concept 2]","x":90,"y":35},{"text":"[Concept 3]","x":75,"y":80},{"text":"[Concept 4]","x":25,"y":80}]}]]`
     };
   };
 
   const diagramSelection = getDiagramForTopic(params.subject, params.topic);
 
-  // Build the Q4 diagram prompt dynamically based on topic analysis
+  // Build the Q4 diagram prompt — concise but topic-specific
   const q4DiagramPrompt = (() => {
     const sel = diagramSelection;
-    const topicSpecificNote = sel.type === 'circuit'
-      ? `IMPORTANT: Generate a circuit diagram that matches the EXACT topic "${params.topic}". Use the correct circuit layout and components for this specific topic. The labels MUST be real circuit components relevant to "${params.topic}".`
-      : sel.type === 'flow' || sel.type === 'cycle'
-      ? `IMPORTANT: Generate a ${sel.type} diagram with steps/stages that are SPECIFIC to "${params.topic}". Each step must be a real stage/event from this topic — NOT generic placeholders. Use actual subject terminology.`
-      : sel.type === 'number-line'
-      ? `IMPORTANT: Generate a number line appropriate for "${params.topic}". Use values that match the specific mathematical concept being taught.`
-      : sel.type === 'bar'
-      ? `IMPORTANT: Generate a bar chart with REAL data relevant to "${params.topic}". Use realistic values and meaningful category labels.`
-      : sel.type === 'axes'
-      ? `IMPORTANT: Generate coordinate axes appropriate for "${params.topic}". Include relevant axis labels.`
-      : `IMPORTANT: Generate a labeled diagram where every label is a REAL term/concept/character/feature from "${params.topic}". Do NOT use generic labels like "Label 1" — use actual subject-specific terms. The diagram title must reflect the exact topic.`;
-
-    return `${sel.instruction} [5 marks]\n${topicSpecificNote}\n${sel.example}\nLABELS: [list the 5 correct labels separated by |]\nANSWERS: [list the 5 correct answers separated by |]`;
+    // Single concise instruction: use real terms, match the exact topic
+    return `${sel.instruction} [5 marks]\nUse REAL terms from "${params.topic}" — no placeholders.\n${sel.example}\nLABELS: [correct labels separated by |]\nANSWERS: [correct answers separated by |]`;
   })();
 
   // Diagrams auto-generate for relevant subjects — no toggle needed
   const svgDiagramNote = (isDiagramSubject && !isVI && !params.examStyle)
-    ? `SVG DIAGRAM INSTRUCTION — TOPIC-SPECIFIC DIAGRAMS:
-For Q4 and optionally the Worked Example, embed a diagram specification using this EXACT JSON format.
-The diagram MUST be specific to the topic "${params.topic}" — never use generic or placeholder content.
+    ? `SVG DIAGRAM INSTRUCTION:
+For Q4, embed ONE diagram as [[DIAGRAM:{...JSON...}]]. Use type "${diagramSelection.type}" for this topic.
+The diagram is for LABELLING — students see numbered blanks, NOT the answers.
+Every label/step MUST use REAL terms from "${params.topic}" — never placeholders.
 
-DIAGRAM TYPES — you MUST choose the most appropriate type for the specific topic:
-- "labeled" → structures, anatomy, character webs, theme maps, geographic features, apparatus (central hub with labeled nodes)
-- "flow" → processes, timelines, sequences, algorithms, cause-effect chains (left-to-right boxes with arrows)
-- "cycle" → repeating processes like water cycle, rock cycle, nitrogen cycle, life cycles (circular arrangement)
-- "number-line" → fractions, decimals, ordering numbers, place value (horizontal line with marked points)
-- "bar" → data comparison, statistics, survey results (vertical bars with labels)
-- "axes" → coordinate geometry, plotting graphs, linear equations (x-y grid)
-- "circuit" → ONLY for electricity/circuits topics in physics (series or parallel layout)
-
-CRITICAL RULES — TOPIC SPECIFICITY:
-1. Every label/step MUST use REAL terms from "${params.topic}" — never "Label 1", "Step 1", or any placeholder
-2. For English Literature: use actual character names, themes, or literary techniques from the text
-3. For Science: use correct scientific terminology for the specific process/structure
-4. For Maths: use appropriate numerical values that match the concept being taught
-5. For History: use real historical events, dates, or figures
-6. For Geography: use correct geographical terms and features
-7. The diagram title MUST name the specific topic, not a generic category
-8. x and y values are percentages (5–95) — spread labels evenly, no overlaps
-9. Maximum 2 diagrams per worksheet
-10. If no diagram genuinely helps teach "${params.topic}", omit it entirely`
+Available types: labeled, flow, cycle, number-line, bar, axes, circuit, venn, timeline, pyramid, fraction-bar.
+Rules: x/y are percentages (5–95), max 2 diagrams, title must name the specific topic.
+If no diagram genuinely helps teach "${params.topic}", omit it entirely.`
     : ``;
 
   // ── Word problems note ─────────────────────────────────────────────────────
@@ -1403,7 +1499,14 @@ Formatting rules:
 - If SEND applies, show the adaptations in the pupil-facing sections, not just teacher notes.
 - For maths, keep notation clean and readable in print/PDF.
 - Use lots of variety: circle the answer, tick the box, fill the blank, match with a line, draw and label, true/false. Vary every 2-3 questions. Short instructions only — max 8 words each.
-- ABSOLUTELY NO EMOJIS anywhere in the output — not in section content, titles, labels, or any field. Use plain text alternatives only (e.g. use '[ ]' not '✅', use 'Great / OK / Struggling' not emoji scales).
+- ABSOLUTELY NO EMOJIS anywhere in the output.
+
+ADVANCED QUESTION TYPES — use 1–2 per worksheet for variety:
+- type "error_correction": Show a worked solution with a deliberate mistake. Student finds the error, explains why it is wrong, writes the correct answer. Layout: left = boxed solution, right = response questions.
+- type "ranking": Give 4–6 items to order by a rule (e.g. smallest to largest). Student ranks them and explains reasoning. Layout: item list + ranking boxes + explanation box.
+- type "what_changed": Show Scenario A vs Scenario B. Student identifies what changed, what happens, and why. Layout: left = two scenarios, right = structured questions.
+- type "constraint_problem": Give a goal with 2–4 constraints. Student solves while following all rules. Layout: boxed constraint list + working space + explanation.
+Place ranking in Section 1 (recall), error_correction/what_changed in Section 2 (understanding), constraint_problem in Section 3 (application). Never place the same advanced type adjacent to itself.
 
 Return EXACTLY this JSON (raw JSON only):
 {
@@ -2784,7 +2887,7 @@ Return JSON: {"title": "new title", "content": "full recontextualized story"}`;
 // This function extracts and renders them as clean SVG without any extra AI call.
 
 export interface DiagramSpec {
-  type: "labeled" | "flow" | "cycle" | "bar" | "number-line" | "axes" | "circuit";
+  type: "labeled" | "flow" | "cycle" | "bar" | "number-line" | "axes" | "circuit" | "venn" | "timeline" | "pyramid" | "fraction-bar";
   /** For circuit diagrams: "series" | "parallel" | "series-ammeter" | "parallel-voltmeter" */
   layout?: string;
   title?: string;
@@ -2798,6 +2901,15 @@ export interface DiagramSpec {
   // For bar charts / axes
   bars?: Array<{ label: string; value: number }>;
   xLabel?: string; yLabel?: string;
+  // For venn diagrams
+  setA?: string; setB?: string; overlap?: string[];
+  onlyA?: string[]; onlyB?: string[];
+  // For timeline diagrams
+  events?: Array<{ date: string; label: string }>;
+  // For pyramid diagrams
+  levels?: string[];
+  // For fraction-bar diagrams
+  numerator?: number; denominator?: number; fractionLabel?: string;
 }
 
 /**
@@ -2805,7 +2917,7 @@ export interface DiagramSpec {
  * Returns false if the spec is invalid so extractDiagramSpec can return null.
  */
 export function validateDiagramSpec(spec: DiagramSpec): boolean {
-  const validTypes = ["labeled", "circuit", "flow", "cycle", "number-line", "bar", "axes"];
+  const validTypes = ["labeled", "circuit", "flow", "cycle", "number-line", "bar", "axes", "venn", "timeline", "pyramid", "fraction-bar"];
   if (!spec || !spec.type) return false;
   if (!validTypes.includes(spec.type)) return false;
 
@@ -2816,12 +2928,11 @@ export function validateDiagramSpec(spec: DiagramSpec): boolean {
       if (spec.labels.length > 8) return false;
       break;
     case "circuit":
-      // circuit needs layout
       if (!spec.layout) return false;
       break;
     case "flow":
     case "cycle":
-      if (!spec.steps || spec.steps.length < 3 || spec.steps.length > 6) return false;
+      if (!spec.steps || spec.steps.length < 3 || spec.steps.length > 8) return false;
       break;
     case "bar":
       if (!spec.bars || spec.bars.length < 2) return false;
@@ -2831,6 +2942,19 @@ export function validateDiagramSpec(spec: DiagramSpec): boolean {
       break;
     case "axes":
       if (!spec.xLabel || !spec.yLabel) return false;
+      break;
+    case "venn":
+      if (!spec.setA || !spec.setB) return false;
+      break;
+    case "timeline":
+      if (!spec.events || spec.events.length < 2 || spec.events.length > 8) return false;
+      break;
+    case "pyramid":
+      if (!spec.levels || spec.levels.length < 2 || spec.levels.length > 7) return false;
+      break;
+    case "fraction-bar":
+      if (!spec.denominator || spec.denominator < 1 || spec.denominator > 12) return false;
+      if (spec.numerator === undefined || spec.numerator < 0) return false;
       break;
   }
   return true;
@@ -2856,25 +2980,32 @@ export function extractDiagramSpec(content: string): DiagramSpec | null {
  */
 export function stripDiagramMarker(content: string): string {
   let cleaned = content.replace(/\[\[DIAGRAM:\{[\s\S]*?\}\]\]/g, "");
-  // Strip AI instruction lines that leak into visible content
-  // Also strip pipe-table rows that contain LABELS:/ANSWERS: (e.g. | LABELS: x | y | z |)
+  // Strip AI instruction lines that leak into visible content.
+  // Robust matching: handles leading pipes, whitespace, asterisks, and partial matches.
   cleaned = cleaned.split("\n").filter(line => {
     const trimmed = line.trim();
-    if (/^IMPORTANT:/i.test(trimmed)) return false;
-    if (/^LABELS:/i.test(trimmed)) return false;
-    if (/^ANSWERS:/i.test(trimmed)) return false;
-    if (/^NOTE:/i.test(trimmed)) return false;
-    if (/^CRITICAL:/i.test(trimmed)) return false;
-    // Also match pipe-table rows: | LABELS: ... | or | ANSWERS: ... |
-    if (/^\|?\s*LABELS:/i.test(trimmed)) return false;
-    if (/^\|?\s*ANSWERS:/i.test(trimmed)) return false;
-    if (/^\|?\s*IMPORTANT:/i.test(trimmed)) return false;
+    // Strip empty lines that are just whitespace
+    if (!trimmed) return true; // keep blank lines for spacing
+    // Direct prefix matches (case-insensitive)
+    if (/^\*{0,2}\s*IMPORTANT\s*[:—-]/i.test(trimmed)) return false;
+    if (/^\*{0,2}\s*LABELS\s*[:—-]/i.test(trimmed)) return false;
+    if (/^\*{0,2}\s*ANSWERS\s*[:—-]/i.test(trimmed)) return false;
+    if (/^\*{0,2}\s*NOTE\s*[:—-]/i.test(trimmed)) return false;
+    if (/^\*{0,2}\s*CRITICAL\s*[:—-]/i.test(trimmed)) return false;
+    if (/^\*{0,2}\s*DIAGRAM\s*(TYPE|RULES|INSTRUCTION)\s*[:—-]/i.test(trimmed)) return false;
+    if (/^\*{0,2}\s*TOPIC[\s-]*SPECIFIC/i.test(trimmed)) return false;
+    // Pipe-table rows containing LABELS/ANSWERS/IMPORTANT
+    if (/^\|?\s*\*{0,2}\s*LABELS\s*[:—|]/i.test(trimmed)) return false;
+    if (/^\|?\s*\*{0,2}\s*ANSWERS\s*[:—|]/i.test(trimmed)) return false;
+    if (/^\|?\s*\*{0,2}\s*IMPORTANT\s*[:—|]/i.test(trimmed)) return false;
     // Strip separator rows between LABELS/ANSWERS tables (e.g. |---|---|)
     if (/^\|[\s\-:]+\|/.test(trimmed) && trimmed.split('|').length >= 3) {
-      // Only strip if it looks like a separator row with no text content
       const cells = trimmed.split('|').filter(c => c.trim());
       if (cells.every(c => /^[\s\-:]+$/.test(c))) return false;
     }
+    // Strip lines that are just "LABELS" or "ANSWERS" headers with no content
+    if (/^\|?\s*labels\s*\|?\s*$/i.test(trimmed)) return false;
+    if (/^\|?\s*answers\s*\|?\s*$/i.test(trimmed)) return false;
     return true;
   }).join("\n");
   return cleaned.trim();

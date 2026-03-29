@@ -11,6 +11,13 @@
  * - At least 3 layout families per section
  * - At least 5 distinct layout families on a 10-question GCSE sheet
  * - Mark allocation must match visual complexity
+ * - Advanced question types (error_correction, ranking, what_changed, constraint_problem)
+ *   are integrated as first-class layout families and rotated per the spec:
+ *     • max 1–2 per worksheet
+ *     • never adjacent to same type
+ *     • placed in appropriate Bloom's level sections
+ *
+ * @copyright 2026 Adaptly Ltd. All rights reserved.
  */
 
 export type LayoutFamily =
@@ -26,7 +33,12 @@ export type LayoutFamily =
   | "graph-box"
   | "circuit-box"
   | "ordering"
-  | "matching";
+  | "matching"
+  // ── Advanced question type families (from pasted spec) ──
+  | "error-correction"
+  | "ranking"
+  | "what-changed"
+  | "constraint-problem";
 
 export type QuestionType =
   | "q-true-false"
@@ -40,7 +52,12 @@ export type QuestionType =
   | "q-graph"
   | "q-circuit"
   | "q-ordering"
-  | "q-matching";
+  | "q-matching"
+  // ── Advanced question types ──
+  | "q-error-correction"
+  | "q-ranking"
+  | "q-what-changed"
+  | "q-constraint-problem";
 
 export interface SectionPlan {
   id: string;
@@ -83,15 +100,35 @@ export const QUESTION_LAYOUT_MAP: Record<QuestionType, LayoutFamily> = {
   "q-circuit": "circuit-box",
   "q-ordering": "ordering",
   "q-matching": "matching",
+  // ── Advanced types ──
+  "q-error-correction": "error-correction",
+  "q-ranking": "ranking",
+  "q-what-changed": "what-changed",
+  "q-constraint-problem": "constraint-problem",
 };
 
 /** Maps mark weight to minimum layout complexity */
 export const MARK_LAYOUT_RULES: { minMarks: number; maxMarks: number; allowedFamilies: LayoutFamily[] }[] = [
-  { minMarks: 1, maxMarks: 1, allowedFamilies: ["true-false", "mcq-2col", "inline-gap-fill", "matching"] },
-  { minMarks: 2, maxMarks: 3, allowedFamilies: ["true-false", "mcq-2col", "inline-gap-fill", "short-answer", "data-table", "ordering", "matching"] },
-  { minMarks: 4, maxMarks: 5, allowedFamilies: ["short-answer", "label-diagram", "diagram-subquestions", "data-table", "draw-box", "graph-box", "circuit-box"] },
-  { minMarks: 6, maxMarks: 99, allowedFamilies: ["extended-answer", "diagram-subquestions", "data-table", "draw-box", "graph-box", "circuit-box"] },
+  { minMarks: 1, maxMarks: 1, allowedFamilies: ["true-false", "mcq-2col", "inline-gap-fill", "matching", "ranking"] },
+  { minMarks: 2, maxMarks: 3, allowedFamilies: ["true-false", "mcq-2col", "inline-gap-fill", "short-answer", "data-table", "ordering", "matching", "ranking", "error-correction"] },
+  { minMarks: 4, maxMarks: 5, allowedFamilies: ["short-answer", "label-diagram", "diagram-subquestions", "data-table", "draw-box", "graph-box", "circuit-box", "error-correction", "what-changed", "ranking"] },
+  { minMarks: 6, maxMarks: 99, allowedFamilies: ["extended-answer", "diagram-subquestions", "data-table", "draw-box", "graph-box", "circuit-box", "constraint-problem", "what-changed", "error-correction"] },
 ];
+
+/**
+ * Section placement rules for advanced question types (from pasted spec):
+ * - Recall: Ranking (simple)
+ * - Understanding: What Changed, Error Correction
+ * - Application: Constraint Problems, Error Correction
+ */
+const ADVANCED_SECTION_PLACEMENT: Record<string, QuestionType[]> = {
+  "knowledge-check": ["q-ranking"],
+  "warm-up": ["q-ranking"],
+  "understanding": ["q-what-changed", "q-error-correction"],
+  "practice": ["q-what-changed", "q-error-correction"],
+  "application": ["q-constraint-problem", "q-error-correction"],
+  "challenge": ["q-constraint-problem"],
+};
 
 /** Standard 30-min base question plan for secondary GCSE */
 const BASE_30MIN_SECONDARY: QuestionType[] = [
@@ -163,6 +200,59 @@ function countDistinctFamilies(types: QuestionType[]): number {
 }
 
 /**
+ * Injects 1–2 advanced question types into the sequence based on section placement rules.
+ * Replaces one q-short-answer or q-extended with an advanced type where appropriate.
+ * Never places more than 2 advanced types per worksheet.
+ */
+function injectAdvancedTypes(types: QuestionType[], phase: "primary" | "secondary", durationMins: number): QuestionType[] {
+  // Only inject for worksheets with enough questions (20+ min)
+  if (durationMins < 20 || types.length < 5) return types;
+
+  const result = [...types];
+  const sectionDefs = phase === "primary" ? PRIMARY_SECTIONS : SECONDARY_SECTIONS;
+  let injected = 0;
+  const maxInjections = durationMins >= 45 ? 2 : 1;
+
+  // Pool of advanced types to try, shuffled for variety
+  const advancedPool: QuestionType[] = [
+    "q-error-correction", "q-ranking", "q-what-changed", "q-constraint-problem"
+  ];
+  // Simple shuffle
+  for (let i = advancedPool.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [advancedPool[i], advancedPool[j]] = [advancedPool[j], advancedPool[i]];
+  }
+
+  for (const section of sectionDefs) {
+    if (injected >= maxInjections) break;
+    const [qStart, qEnd] = section.qRange;
+    const allowedAdvanced = ADVANCED_SECTION_PLACEMENT[section.id] || [];
+    if (allowedAdvanced.length === 0) continue;
+
+    // Find a replaceable question in this section's range
+    for (let qi = qStart - 1; qi < Math.min(qEnd, result.length); qi++) {
+      if (injected >= maxInjections) break;
+      const currentType = result[qi];
+      // Only replace generic types, not already-advanced or diagram types
+      if (currentType !== "q-short-answer" && currentType !== "q-extended") continue;
+
+      // Pick an allowed advanced type from the pool
+      const candidate = advancedPool.find(at => allowedAdvanced.includes(at));
+      if (!candidate) continue;
+
+      result[qi] = candidate;
+      // Remove used candidate from pool so we don't repeat
+      const poolIdx = advancedPool.indexOf(candidate);
+      if (poolIdx !== -1) advancedPool.splice(poolIdx, 1);
+      injected++;
+      break; // Only one per section
+    }
+  }
+
+  return result;
+}
+
+/**
  * Scales the question plan based on duration.
  */
 function scaleForDuration(baseTypes: QuestionType[], durationMins: number, phase: "primary" | "secondary"): QuestionType[] {
@@ -207,16 +297,27 @@ export function createWorksheetPlan(params: {
   // 2. Scale for duration
   let questionTypes = scaleForDuration(baseTypes, params.durationMins, params.phase);
 
-  // 3. Enforce no adjacent same family
+  // 3. Inject advanced question types (1–2 per worksheet, section-appropriate)
+  questionTypes = injectAdvancedTypes(questionTypes, params.phase, params.durationMins);
+
+  // 4. Enforce no adjacent same family
   questionTypes = enforceNoAdjacentSameFamily(questionTypes);
 
-  // 4. Check distinct family count
+  // 5. Check distinct family count
   const distinctFamilies = countDistinctFamilies(questionTypes);
   if (questionTypes.length >= 10 && distinctFamilies < 5) {
     warnings.push(`Only ${distinctFamilies} distinct layout families on a ${questionTypes.length}-question sheet. Minimum 5 required for GCSE.`);
   }
 
-  // 5. Build section plans
+  // 6. Validate advanced type count (max 2)
+  const advancedCount = questionTypes.filter(t =>
+    ["q-error-correction", "q-ranking", "q-what-changed", "q-constraint-problem"].includes(t)
+  ).length;
+  if (advancedCount > 2) {
+    warnings.push(`${advancedCount} advanced question types found. Maximum 2 per worksheet.`);
+  }
+
+  // 7. Build section plans
   const sectionDefs = isPrimary ? PRIMARY_SECTIONS : SECONDARY_SECTIONS;
   const totalQ = questionTypes.length;
 
@@ -232,13 +333,15 @@ export function createWorksheetPlan(params: {
         warnings.push(`Section "${s.title}" has only ${families.length} layout families. Minimum 3 required.`);
       }
 
-      // Estimate marks: true-false=4, mcq=1, gap-fill=4, short=3-4, extended=4-5
+      // Estimate marks: includes advanced types
       const markMap: Record<QuestionType, number> = {
         "q-true-false": 4, "q-mcq": 1, "q-gap-fill": 4,
         "q-short-answer": 3, "q-extended": 5,
         "q-label-diagram": 4, "q-data-table": 4,
         "q-draw": 3, "q-graph": 4, "q-circuit": 4,
         "q-ordering": 3, "q-matching": 3,
+        "q-error-correction": 4, "q-ranking": 3,
+        "q-what-changed": 4, "q-constraint-problem": 5,
       };
       const totalMarks = sectionTypes.reduce((sum, t) => sum + (markMap[t] || 3), 0);
 
@@ -253,7 +356,7 @@ export function createWorksheetPlan(params: {
       };
     });
 
-  // 6. Validate section count (2–4 sections)
+  // 8. Validate section count (2–4 sections)
   if (sections.length < 2) {
     warnings.push(`Only ${sections.length} section(s) planned. Minimum 2 required.`);
   }
