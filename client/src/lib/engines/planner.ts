@@ -210,9 +210,10 @@ function injectAdvancedTypes(types: QuestionType[], phase: "primary" | "secondar
   const maxInjections = durationMins >= 30 ? 2 : 1;
 
   // Pool of advanced types to try, shuffled for variety
-  const advancedPool: QuestionType[] = [
-    "q-error-correction", "q-ranking", "q-what-changed"
-  ];
+  // Ranking is only appropriate for primary school — secondary GCSE never asks students to rank items
+  const advancedPool: QuestionType[] = phase === "primary"
+    ? ["q-error-correction", "q-ranking", "q-what-changed"]
+    : ["q-error-correction", "q-what-changed"];
   // Simple shuffle
   for (let i = advancedPool.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));

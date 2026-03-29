@@ -2171,11 +2171,18 @@ function OrderingSection({
   fmt: ReturnType<typeof getSendFormatting>;
 }) {
   const raw = stripLayoutTag(content);
-  const lines = raw.split("\n").filter(l => l.trim().startsWith("☐") || l.trim().match(/^\d+\.\s+/));
+  const allLines = raw.split("\n").map(l => l.trim()).filter(Boolean);
+  // Extract question instruction (lines before the first ☐ or numbered item)
+  const firstItemIdx = allLines.findIndex(l => l.startsWith("☐") || /^\d+\.\s+/.test(l));
+  const instructionLines = firstItemIdx > 0 ? allLines.slice(0, firstItemIdx) : [];
+  const lines = allLines.filter(l => l.startsWith("☐") || /^\d+\.\s+/.test(l));
+  // Fallback instruction if none provided
+  const instruction = instructionLines.join(" ").trim() || `Number the boxes 1\u2013${lines.length} to show the correct order.`;
   const accentColor = fmt.accentColor || "#1B2A4A";
 
   return (
     <div style={{ display: "flex", flexDirection: "column" as const, gap: "8px" }}>
+      <div style={{ fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, color: "#1e293b", marginBottom: "4px", fontStyle: "italic" }}>{instruction}</div>
       {lines.map((line, i) => {
         const text = line.replace(/^☐\s*/, "").replace(/^\d+\.\s*/, "").trim();
         return (
