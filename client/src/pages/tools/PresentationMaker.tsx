@@ -226,7 +226,7 @@ const YEAR_GROUPS = [
 const SLIDE_COUNTS = ["8", "10", "12", "15", "18", "20"];
 
 const EXAM_BOARDS = [
-  { value: "", label: "Not applicable" },
+  { value: "none", label: "Not applicable" },
   { value: "AQA", label: "AQA" },
   { value: "Edexcel", label: "Edexcel / Pearson" },
   { value: "OCR", label: "OCR" },
@@ -435,7 +435,7 @@ READING AGE TARGET: ${READING_AGE_LABELS[readingAge] || `Age ${readingAge}`}
 - Sentence length: max ${readingAge <= 8 ? "6" : readingAge <= 11 ? "10" : readingAge <= 14 ? "15" : "20"} words per sentence on slides.
 - ${readingAge <= 10 ? "Use concrete examples (objects, animals, everyday situations) not abstract concepts." : ""}` : "";
 
-  const examBoardNote = examBoard ? `
+  const examBoardNote = examBoard && examBoard !== "none" ? `
 EXAM BOARD: ${examBoard}
 - Use ${examBoard} command words, mark scheme language, and assessment objectives.
 - Reference ${examBoard} specification terminology where relevant.
@@ -1657,7 +1657,7 @@ export default function PresentationMaker() {
   const [additionalNotes, setAdditionalNotes] = useState("");
   const [selectedTheme, setSelectedTheme] = useState<ThemeKey>("navy");
   const [readingAge, setReadingAge] = useState<number>(12);
-  const [examBoard, setExamBoard] = useState("");
+  const [examBoard, setExamBoard] = useState("none");
   const [differentiationLevel, setDifferentiationLevel] = useState<"foundation" | "core" | "extension">("core");
 
   // Auto-select Rainbow theme for primary school year groups
