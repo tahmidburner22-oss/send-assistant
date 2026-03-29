@@ -156,6 +156,39 @@ export const LAYOUT_TEMPLATES: Record<LayoutFamily, LayoutTemplate> = {
     cssClass: "layout-matching",
     description: "Two columns connected by student-drawn lines",
   },
+  // ── Advanced question type layouts ──────────────────────────────────────────
+  "error-correction": {
+    family: "error-correction",
+    minHeightPx: 280,
+    supportsDiagram: false,
+    isSplitLayout: true,
+    cssClass: "layout-error-correction",
+    description: "Boxed worked solution on left, structured correction questions on right",
+  },
+  "ranking": {
+    family: "ranking",
+    minHeightPx: 200,
+    supportsDiagram: false,
+    isSplitLayout: false,
+    cssClass: "layout-ranking",
+    description: "Item list with numbered ranking boxes (1 = highest) and explanation space",
+  },
+  "what-changed": {
+    family: "what-changed",
+    minHeightPx: 300,
+    supportsDiagram: true,
+    isSplitLayout: true,
+    cssClass: "layout-what-changed",
+    description: "Scenario A vs B side-by-side with structured analysis questions",
+  },
+  "constraint-problem": {
+    family: "constraint-problem",
+    minHeightPx: 320,
+    supportsDiagram: false,
+    isSplitLayout: false,
+    cssClass: "layout-constraint-problem",
+    description: "Boxed constraint list + working/drawing space + explanation section",
+  },
 };
 
 // ─── Assigned question layout ─────────────────────────────────────────────────

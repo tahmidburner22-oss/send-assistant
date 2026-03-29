@@ -1061,30 +1061,32 @@ function formatContent(content: string | any, fmt: ReturnType<typeof getSendForm
   // Strip [[DIAGRAM:{...}]] markers — handled by the outer section renderer.
   // If they reach formatContent they must be stripped silently so raw JSON never renders.
   content = content.replace(/\[\[DIAGRAM:\{[\s\S]*?\}\]\]/g, "").trim();
-  // Strip AI instruction lines that should never appear in rendered content
-  // Robust: handles leading pipes, asterisks, whitespace, and partial matches
-  content = content.split("\n").filter((line: string) => {
-    const t = line.trim();
-    // Direct prefix matches (case-insensitive), with optional leading ** or |
-    if (/^\|?\s*\*{0,2}\s*IMPORTANT\s*[:—\-|]/i.test(t)) return false;
-    if (/^\|?\s*\*{0,2}\s*LABELS\s*[:—\-|]/i.test(t)) return false;
-    if (/^\|?\s*\*{0,2}\s*ANSWERS\s*[:—\-|]/i.test(t)) return false;
-    if (/^\|?\s*\*{0,2}\s*NOTE\s*[:—\-|]/i.test(t)) return false;
-    if (/^\|?\s*\*{0,2}\s*CRITICAL\s*[:—\-|]/i.test(t)) return false;
-    if (/^\|?\s*\*{0,2}\s*DIAGRAM\s*(TYPE|RULES|INSTRUCTION)\s*[:—\-|]/i.test(t)) return false;
-    if (/^\|?\s*\*{0,2}\s*TOPIC[\s-]*SPECIFIC/i.test(t)) return false;
-    if (/^\|?\s*\*{0,2}\s*SVG DIAGRAM/i.test(t)) return false;
-    if (/^\|?\s*\*{0,2}\s*ADVANCED QUESTION/i.test(t)) return false;
-    // Strip lines that are just "LABELS" or "ANSWERS" headers
-    if (/^\|?\s*labels\s*\|?\s*$/i.test(t)) return false;
-    if (/^\|?\s*answers\s*\|?\s*$/i.test(t)) return false;
-    // Strip separator rows between LABELS/ANSWERS tables (e.g. |---|---|)
-    if (/^\|[\s\-:]+\|/.test(t) && t.split('|').length >= 3) {
-      const cells = t.split('|').filter((c: string) => c.trim());
-      if (cells.every((c: string) => /^[\s\-:]+$/.test(c))) return false;
-    }
-    return true;
-  }).join("\n");
+    // Strip AI instruction lines that should never appear in rendered content
+    // Robust: handles leading pipes, asterisks, whitespace, and partial matches
+    content = content.split("\n").filter((line: string) => {
+      const t = line.trim();
+      // Direct prefix matches (case-insensitive), with optional leading ** or |
+      if (/^\|?\s*\*{0,2}\s*IMPORTANT\s*[:—\-|]/i.test(t)) return false;
+      if (/^\|?\s*\*{0,2}\s*LABELS\s*[:—\-|]/i.test(t)) return false;
+      if (/^\|?\s*\*{0,2}\s*ANSWERS\s*[:—\-|]/i.test(t)) return false;
+      if (/^\|?\s*\*{0,2}\s*NOTE\s*[:—\-|]/i.test(t)) return false;
+      if (/^\|?\s*\*{0,2}\s*CRITICAL\s*[:—\-|]/i.test(t)) return false;
+      if (/^\|?\s*\*{0,2}\s*DIAGRAM\s*(TYPE|RULES|INSTRUCTION)\s*[:—\-|]/i.test(t)) return false;
+      if (/^\|?\s*\*{0,2}\s*TOPIC[\s-]*SPECIFIC/i.test(t)) return false;
+      if (/^\|?\s*\*{0,2}\s*SVG DIAGRAM/i.test(t)) return false;
+      if (/^\|?\s*\*{0,2}\s*ADVANCED QUESTION/i.test(t)) return false;
+      // Strip CORRECT: answer lines from student view (primary MCQ answers must not leak)
+      if (/^CORRECT:\s*/i.test(t)) return false;
+      // Strip lines that are just "LABELS" or "ANSWERS" headers
+      if (/^\|?\s*labels\s*\|?\s*$/i.test(t)) return false;
+      if (/^\|?\s*answers\s*\|?\s*$/i.test(t)) return false;
+      // Strip separator rows between LABELS/ANSWERS tables (e.g. |---|---|)
+      if (/^\|[\s\-:]+\|/.test(t) && t.split('|').length >= 3) {
+        const cells = t.split('|').filter((c: string) => c.trim());
+        if (cells.every((c: string) => /^[\s\-:]+$/.test(c))) return false;
+      }
+      return true;
+    }).join("\n");
   // ── Systemic content pre-processor ─────────────────────────────────────────────
   // Handles all known AI output patterns that cause broken rendering:
   //   1. Concatenated numbered items on a single line ("1. Q1 . 2. Q2 . 3. Q3")
@@ -1221,7 +1223,7 @@ function formatContent(content: string | any, fmt: ReturnType<typeof getSendForm
     listItems = [];
   };
 
-  lines.forEach((line, idx) => {
+  lines.forEach((line: string, idx: number) => {
     let trimmed = line.trim();
     // Clean up lines that start with a lone period/dot (artifact of AI separator pattern)
     // Handles both ". " and "." at the start of a line
@@ -1529,8 +1531,8 @@ function TrueFalseSection({
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: fmt.lineHeight > 1.7 ? "14px" : "10px" }}>
       {displayLines.map((item, i) => {
-        const stmtText = typeof item === "string" ? item.replace(/^\d+[.)\s]+/, "").trim() : item.text;
-        const answer = typeof item === "string" ? undefined : item.answer;
+        const stmtText = item.text;
+        const answer = item.answer;
         return (
           <div key={i} style={{
             display: "flex",
@@ -1696,11 +1698,24 @@ function GapFillInlineSection({
     ? wbLine.replace(/^WORD BANK:\s*/i, "").split(/[|,]/).map((w: string) => w.trim()).filter(Boolean)
     : [];
 
-  // Join paragraph — preserve intentional line breaks
-  const paraText = paraLines.join(" ").trim();
+  // Join paragraph — collapse multi-line LaTeX \(...\) expressions before splitting
+  // This prevents \( being split from its closing \) when the AI wraps LaTeX across lines
+  let paraText = paraLines.join(" ").trim();
+  // Collapse any \( ... \) that got split across lines (now joined with spaces)
+  // The join already put spaces between lines, so \( expr \) should be intact.
+  // But if the AI put blanks inside the LaTeX, we need to protect them:
+  // Replace \( ... \) spans that contain ___ with a placeholder, split, then restore
+  const latexPlaceholders: string[] = [];
+  paraText = paraText.replace(/\\\([^)]*?\\\)/g, (match) => {
+    const idx = latexPlaceholders.length;
+    latexPlaceholders.push(match);
+    return `__LATEX_${idx}__`;
+  });
 
   // Render the paragraph — replace ___ sequences with styled blanks
-  const parts = paraText.split(/_{3,}/g);
+  const parts = paraText.split(/_{3,}/g).map(p =>
+    p.replace(/__LATEX_(\d+)__/g, (_, i) => latexPlaceholders[parseInt(i)] || "")
+  );
 
   return (
     <div>
@@ -1879,7 +1894,7 @@ function LabelDiagramSection({
 
 // ── 5. DIAGRAM + SUB-QUESTIONS ────────────────────────────────────────────────
 function DiagramSubQSection({
-  content, fmt, overlayColor = "white", imageUrl, caption, attribution,
+  content, fmt, overlayColor = "white", imageUrl, caption, attribution, isTeacher = false,
 }: {
   content: string;
   fmt: ReturnType<typeof getSendFormatting>;
@@ -1887,6 +1902,7 @@ function DiagramSubQSection({
   imageUrl?: string;
   caption?: string;
   attribution?: string;
+  isTeacher?: boolean;
 }) {
   const raw = stripLayoutTag(content);
   const accentColor = fmt.accentColor || "#1B2A4A";
@@ -1940,14 +1956,16 @@ function DiagramSubQSection({
       <div style={{ flex: 1, display: "flex", flexDirection: "column" as const, gap: "14px" }}>
         {subQLines.map((q, i) => (
           <div key={i}>
-            <div style={{
-              fontSize: `${fmt.fontSize}px`,
-              fontFamily: fmt.fontFamily,
-              lineHeight: String(fmt.lineHeight),
-              color: "#1e293b",
-              marginBottom: "4px",
-              dangerouslySetInnerHTML: { __html: renderMath(q) },
-            }} />
+            <div
+              style={{
+                fontSize: `${fmt.fontSize}px`,
+                fontFamily: fmt.fontFamily,
+                lineHeight: String(fmt.lineHeight),
+                color: "#1e293b",
+                marginBottom: "4px",
+              }}
+              dangerouslySetInnerHTML={{ __html: renderMath(q) }}
+            />
             {/* Answer lines */}
             {[0, 1, 2].map(li => (
               <div key={li} style={{
@@ -3222,8 +3240,15 @@ function PrimarySection({
         color: palette.text,
         background: palette.bg,
       }}>
-        {formatContent(content, fmt)}
-
+         {/* Auto-detect content type and use proper sub-renderers */}
+        {section.type === "self-assessment" || /CONFIDENCE_TABLE:|WRITTEN_PROMPTS:|EXIT_TICKET:/i.test(content)
+          ? <SelfReflectionSection content={content} fmt={fmt} overlayColor={palette.bg} />
+          : (section.type === "q-true-false" || /\b(TRUE|FALSE)\b/.test(content)) && /^\d+[.)\s].{4,}\s+(TRUE|FALSE)/im.test(content)
+            ? <TrueFalseSection content={content} fmt={fmt} overlayColor={palette.bg} isTeacher={isTeacherSection} />
+            : (/^[A-D][.)\s]{1,2}\S/m.test(content) && !/^\d+[.)\s].{4,}\s+(TRUE|FALSE)/im.test(content))
+              ? <MCQSection content={content} fmt={fmt} overlayColor={palette.bg} isTeacher={isTeacherSection} />
+              : formatContent(content, fmt)
+        }
         {/* Exercise-book style writing lines */}
         {needsWritingLines && answerLines > 0 && (
           <div style={{ marginTop: "14px" }}>
