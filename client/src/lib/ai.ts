@@ -732,9 +732,9 @@ MANDATORY RULES — violating any rule is wrong:
     RECALL_POOL.push("ERROR_CORRECTION");
     APPLICATION_POOL.push("ERROR_CORRECTION");
   }
-  // RANKING: exclude from pure maths — ranking quadratic equations by difficulty is subjective/meaningless.
-  // Only allow ranking in maths if the topic has a genuinely rankable factual criterion (e.g. shapes by sides).
-  if (isRelevant.RANKING && !isMaths) {
+  // RANKING: only for primary school — secondary GCSE/A-Level exams never ask students to rank items.
+  // No GCSE or A-Level paper asks 'rank organs by complexity' or similar subjective rankings.
+  if (isRelevant.RANKING && isPrimary) {
     RECALL_POOL.push("RANKING");
     APPLICATION_POOL.push("RANKING");
   }
@@ -1591,10 +1591,10 @@ Formatting rules:
 - ABSOLUTELY NO EMOJIS anywhere in the output.
 
 ADVANCED QUESTION TYPES — use 1–2 per worksheet for variety:
-- type "error_correction": Show a worked solution with a deliberate mistake. Student finds the error, explains why it is wrong, writes the correct answer. Layout: left = boxed solution, right = response questions.
-- type "ranking": Give 4–6 items to order by a rule (e.g. smallest to largest). Student ranks them and explains reasoning. Layout: item list + ranking boxes + explanation box.
+- type "error_correction": Show a worked solution with a GENUINE deliberate mistake (a step with a provably wrong calculation). Student finds the error, explains why it is wrong, writes the correct answer. Layout: left = boxed solution, right = response questions.
+${isPrimary ? `- type "ranking": Give 4–6 items to order by a measurable rule (e.g. smallest to largest). Student ranks them and explains reasoning. Layout: item list + ranking boxes + explanation box.` : `- Do NOT use ranking questions in secondary school — no GCSE or A-Level exam paper asks students to rank items by complexity or importance.`}
 - type "what_changed": Show Scenario A vs Scenario B. Student identifies what changed, what happens, and why. Layout: left = two scenarios, right = structured questions.
-Place ranking in Section 1 (recall), error_correction/what_changed in Section 2 (understanding). Never place the same advanced type adjacent to itself.
+${isPrimary ? 'Place ranking in Section 1 (recall), error_correction/what_changed in Section 2 (understanding).' : 'Place error_correction in Section 2 (understanding), what_changed in Section 3 (application).'} Never place the same advanced type adjacent to itself.
 
 Return EXACTLY this JSON (raw JSON only):
 {
