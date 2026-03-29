@@ -668,14 +668,11 @@ MANDATORY RULES — violating any rule is wrong:
     yearNum <= 9  ? "Estimated time: 35–45 mins" :
     yearNum <= 11 ? "Estimated time: 45–60 mins" :
                    "Estimated time: 60–90 mins";
-
-  // ── Question layout rotation system (smart, context-aware) ───────────────
-  // Deterministic seed from topic so same topic always gets same variant.
-  // New question types (error_correction, ranking, what_changed, constraint_problem)
-  // are selected based on topic/subject relevance — never forced.
-  const topicSeed = Math.abs(
-    params.topic.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0)
-  );
+  // ── Question layout rotation system (smart, context-aware) ───────────────────
+  // Fisher-Yates shuffle picks 3 types from recall pool (Section A) and 3 from
+  // application pool (Section B) — genuinely random every generation.
+  // Advanced types (error_correction, ranking, what_changed, constraint_problem)
+  // are added to the pools only when topic/subject relevance warrants them.
   const topicLower = params.topic.toLowerCase();
   const subjectLower = (params.subject || "").toLowerCase();
 
@@ -704,53 +701,44 @@ MANDATORY RULES — violating any rule is wrong:
     ),
   };
 
-  // ── Base variant pool (classic types — always valid) ──────────────────────
-  type TripleType = [string, string, string];
-  const BASE_A_VARIANTS: TripleType[] = [
-    ["TRUE_FALSE",  "MCQ",      "GAP_FILL"],      // 0
-    ["MCQ",         "GAP_FILL", "ORDERING"],      // 1
-    ["GAP_FILL",    "TRUE_FALSE", "SHORT_ANSWER"], // 2
-    ["ORDERING",    "TRUE_FALSE", "MCQ"],          // 3
-    ["MATCHING",    "MCQ",      "GAP_FILL"],       // 4
-    ["TRUE_FALSE",  "ORDERING", "SHORT_ANSWER"],  // 5
-    ["MCQ",         "MATCHING", "TRUE_FALSE"],    // 6
-    ["GAP_FILL",    "ORDERING", "MCQ"],           // 7
-  ];
-  const BASE_B_VARIANTS: TripleType[] = [
-    ["SHORT_ANSWER", "TABLE",        "SHORT_ANSWER"],  // 0
-    ["TABLE",        "SHORT_ANSWER", "ORDERING"],      // 1
-    ["SHORT_ANSWER", "ORDERING",     "TABLE"],         // 2
-    ["TABLE",        "MATCHING",     "SHORT_ANSWER"],  // 3
-    ["SHORT_ANSWER", "TABLE",        "MATCHING"],      // 4
-    ["ORDERING",     "TABLE",        "SHORT_ANSWER"],  // 5
-    ["SHORT_ANSWER", "MATCHING",     "TABLE"],         // 6
-    ["TABLE",        "SHORT_ANSWER", "ORDERING"],      // 7
-  ];
+  // ── Fisher-Yates shuffle + pickTypes ──────────────────────────────────────────
+  // Genuinely random every generation — no deterministic seed.
+  function fisherYatesShuffle<T>(arr: T[]): T[] {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+  // pickTypes: pick `count` unique types from a pool at random
+  function pickTypes(pool: string[], count: number): string[] {
+    return fisherYatesShuffle(pool).slice(0, count);
+  }
 
   // ── Build candidate pools including relevant new types ────────────────────
-  // New types are injected as alternatives to one slot in the variant only when relevant.
-  // They never replace all 3 slots — classic types always anchor at least 2 slots.
-  const SECTION_A_VARIANTS: TripleType[] = [...BASE_A_VARIANTS];
-  const SECTION_B_VARIANTS: TripleType[] = [...BASE_B_VARIANTS];
-
+  // Recall pool (Section A): knowledge-check types — always ascending difficulty
+  const RECALL_POOL: string[] = ["TRUE_FALSE", "MCQ", "GAP_FILL", "ORDERING", "MATCHING"];
+  // Application pool (Section B): analysis/application types
+  const APPLICATION_POOL: string[] = ["SHORT_ANSWER", "TABLE", "ORDERING", "MATCHING"];
+  // Inject advanced types into the relevant pool only when topic/subject warrants them
   if (isRelevant.ERROR_CORRECTION) {
-    SECTION_A_VARIANTS.push(["ERROR_CORRECTION", "MCQ",       "GAP_FILL"]);
-    SECTION_B_VARIANTS.push(["ERROR_CORRECTION", "TABLE",     "SHORT_ANSWER"]);
+    RECALL_POOL.push("ERROR_CORRECTION");
+    APPLICATION_POOL.push("ERROR_CORRECTION");
   }
   if (isRelevant.RANKING) {
-    SECTION_A_VARIANTS.push(["RANKING",      "TRUE_FALSE",   "SHORT_ANSWER"]);
-    SECTION_B_VARIANTS.push(["RANKING",      "TABLE",        "SHORT_ANSWER"]);
+    RECALL_POOL.push("RANKING");
+    APPLICATION_POOL.push("RANKING");
   }
   if (isRelevant.WHAT_CHANGED) {
-    SECTION_A_VARIANTS.push(["WHAT_CHANGED", "MCQ",          "GAP_FILL"]);
-    SECTION_B_VARIANTS.push(["WHAT_CHANGED", "TABLE",        "SHORT_ANSWER"]);
+    APPLICATION_POOL.push("WHAT_CHANGED");
   }
   if (isRelevant.CONSTRAINT_PROBLEM) {
-    SECTION_A_VARIANTS.push(["CONSTRAINT_PROBLEM", "MCQ",    "TRUE_FALSE"]);
-    SECTION_B_VARIANTS.push(["CONSTRAINT_PROBLEM", "TABLE",  "SHORT_ANSWER"]);
+    APPLICATION_POOL.push("CONSTRAINT_PROBLEM");
   }
-
-  const variantIndex = topicSeed % SECTION_A_VARIANTS.length;
+  // Pick 3 from each pool at random (Fisher-Yates) — genuinely different every generation
+  const variantA = pickTypes(RECALL_POOL, 3) as [string, string, string];
+  const variantB = pickTypes(APPLICATION_POOL, 3) as [string, string, string];
 
   const blockInstructions: Record<string, string> = {
     TRUE_FALSE:         "Write exactly 4 numbered statements (1. 2. 3. 4.), each ending with TRUE or FALSE on the same line. Exactly 2 must be TRUE and 2 must be FALSE. Example: '1. Water boils at 100°C. TRUE'",
@@ -765,9 +753,6 @@ MANDATORY RULES — violating any rule is wrong:
     WHAT_CHANGED:       "Present a before/after or cause/effect comparison that is directly relevant to the topic. Format exactly:\n'Scenario A\n[describe the initial state clearly]\n\nScenario B\n[describe the changed state — change exactly ONE variable]\n\nTask\n1. What changed between A and B?\n2. Why did this happen? (use subject vocabulary)\n3. What effect does this have on [relevant outcome]?'\nThe change must be scientifically/factually grounded. Use layout tag: what_changed.",
     CONSTRAINT_PROBLEM: "Present a design or problem-solving task with 2–4 specific constraints that require genuine understanding of the topic. Format exactly:\n'Goal\n[clear task description — what must be achieved]\n\nConstraints\n- [rule 1 — must be topic-specific]\n- [rule 2]\n- [rule 3]\n\nOutput\nShow your working / draw your solution below:'\nConstraints must be non-trivial and require topic knowledge to satisfy. Do NOT use for pure recall. Use layout tag: constraint_problem.",
   };
-
-  const variantA = SECTION_A_VARIANTS[variantIndex];
-  const variantB = SECTION_B_VARIANTS[variantIndex];
 
   const sectionAPrompt = `Section A must contain exactly 3 blocks separated by a blank line:
 BLOCK 1 — ${blockInstructions[variantA[0]]}
@@ -1406,14 +1391,17 @@ STRICT JSON OUTPUT: Respond with valid JSON only — no markdown, no code blocks
 
   // Diagrams auto-generate for relevant subjects — no toggle needed
   const svgDiagramNote = (isDiagramSubject && !isVI && !params.examStyle)
-    ? `SVG DIAGRAM INSTRUCTION:
-For Q4, embed ONE diagram as [[DIAGRAM:{...JSON...}]]. Use type "${diagramSelection.type}" for this topic.
+    ? `SVG DIAGRAM INSTRUCTION — MANDATORY:
+For Q4, you MUST embed exactly ONE diagram as [[DIAGRAM:{...JSON...}]]. Use type "${diagramSelection.type}" for this topic.
 The diagram is for LABELLING — students see numbered blanks, NOT the answers.
 Every label/step MUST use REAL terms from "${params.topic}" — never placeholders.
 
+Example JSON template for this topic:
+${diagramSelection.example}
+
 Available types: labeled, flow, cycle, number-line, bar, axes, circuit, venn, timeline, pyramid, fraction-bar.
 Rules: x/y are percentages (5–95), max 2 diagrams, title must name the specific topic.
-If no diagram genuinely helps teach "${params.topic}", omit it entirely.`
+Do NOT omit the diagram — it is required for this subject.`
     : ``;
 
   // ── Word problems note ─────────────────────────────────────────────────────
@@ -1453,7 +1441,9 @@ If no diagram genuinely helps teach "${params.topic}", omit it entirely.`
   // ── Topic enforcement note ─────────────────────────────────────────────────
   const topicEnforcementNote = `Every question, example, vocabulary term, and any diagram must be about "${params.topic}" only.`;
   const dataCompletenessNote = `Every question must be fully usable as written. Do not use placeholders, ellipses, missing values, unfinished lists, or references to unseen data. If a statistics question uses a table, survey, graph, grouped frequency table, histogram, cumulative frequency graph, box plot, or chart, include the complete numeric data needed to answer it directly in the worksheet text.`;
-  const diagramRelevanceNote = `Only include or request a diagram if it is essential to teaching "${params.topic}". The diagram must match the exact worksheet topic and the questions that refer to it. If no exact topic-matching diagram is needed, omit the diagram entirely.`;
+  const diagramRelevanceNote = isDiagramSubject
+    ? `DIAGRAM: A diagram is mandatory for this subject. Follow the SVG DIAGRAM INSTRUCTION above exactly.`
+    : `Only include a diagram if it is essential to teaching "${params.topic}". The diagram must match the exact worksheet topic and the questions that refer to it. If no exact topic-matching diagram is needed, omit the diagram entirely.`;
   const vocabularyCapNote = `Key Vocabulary must contain at most 5 items.`;
 
   const recallNote = params.recallTopic ? `PRIOR KNOWLEDGE CHECK REQUIRED: After the Learning Objective and BEFORE Key Vocabulary, include a section titled "Prior Knowledge Check — ${params.recallTopic}" (type: "prior-knowledge") with exactly 3 short retrieval questions on the PREVIOUS topic "${params.recallTopic}". These must be quick, accessible questions (True/False, short answer, or fill-in-blank) to activate prior knowledge. Do NOT mix these with the main topic questions. This section appears SECOND in the worksheet, right after the Learning Objective.` : '';
