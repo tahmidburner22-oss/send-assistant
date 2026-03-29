@@ -2972,7 +2972,7 @@ export default function SVGDiagram({
   if (spec.type === "labeled" || spec.type === "diagram") {
     const topic = (spec.topic || spec.title || "").toLowerCase();
     const labels = spec.labels || [];
-    const template = detectDiagramTemplate(topic, w, h, cx, cy, accent);
+    const template = detectDiagramTemplate(topic, w, h, accent);
     if (!template) return null;
     const { shape, anchors } = template;
     return (
