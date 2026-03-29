@@ -739,11 +739,14 @@ MANDATORY RULES — violating any rule is wrong:
     RECALL_POOL.push("ERROR_CORRECTION");
     APPLICATION_POOL.push("ERROR_CORRECTION");
   }
-  if (isRelevant.RANKING) {
+  // RANKING: exclude from pure maths — ranking quadratic equations by difficulty is subjective/meaningless.
+  // Only allow ranking in maths if the topic has a genuinely rankable factual criterion (e.g. shapes by sides).
+  if (isRelevant.RANKING && !isMaths) {
     RECALL_POOL.push("RANKING");
     APPLICATION_POOL.push("RANKING");
   }
-  if (isRelevant.WHAT_CHANGED) {
+  // WHAT_CHANGED: exclude from pure maths — not meaningful for pure calculation topics.
+  if (isRelevant.WHAT_CHANGED && !isMaths) {
     APPLICATION_POOL.push("WHAT_CHANGED");
   }
   if (isRelevant.CONSTRAINT_PROBLEM) {
@@ -758,7 +761,26 @@ MANDATORY RULES — violating any rule is wrong:
     MCQ:                "One question stem, then options: 'A  option' 'B  option' 'C  option' 'D  option' on separate lines. Only ONE is correct.",
     GAP_FILL:           "One paragraph 40-60 words with 5-7 blanks as _____. Next line: 'WORD BANK: word1 | word2 | word3 | word4 | word5 | word6 | word7'",
     ORDERING:           "6 items each on its own line starting with ☐. Instruction: 'Number the boxes 1–6 to show the correct order.'",
-    MATCHING:           "5 pairs. Each line: '1. [term] ←→ [definition]'. Pairs must be shuffled (term order ≠ definition order).",
+    MATCHING:           [
+      "5 terms and 5 definitions. Format EXACTLY as two separate columns:",
+      "TERMS (numbered 1-5, in any order):",
+      "1. [term A]",
+      "2. [term B]",
+      "3. [term C]",
+      "4. [term D]",
+      "5. [term E]",
+      "",
+      "DEFINITIONS (lettered A-E, in a DIFFERENT scrambled order from the terms — so term 1 does NOT match definition A, term 2 does NOT match definition B, etc.):",
+      "A. [definition for one of the terms — NOT the definition of term 1]",
+      "B. [definition for a different term — NOT the definition of term 2]",
+      "C. [definition for a different term — NOT the definition of term 3]",
+      "D. [definition for a different term — NOT the definition of term 4]",
+      "E. [definition for a different term — NOT the definition of term 5]",
+      "",
+      "ANSWER KEY (teacher only): 1-?, 2-?, 3-?, 4-?, 5-? (map each term number to its correct definition letter)",
+      "",
+      "CRITICAL: The definitions MUST be in a scrambled order. NEVER list definitions in the same order as their matching terms. Students must draw lines to connect them.",
+    ].join("\n"),
     SHORT_ANSWER:       "One focused question. Mark allocation in brackets: [X marks]. No answer given — student writes it.",
     TABLE:              "Markdown table with | separators. 3-4 columns. 4-5 rows. Blank cells use '...........' for students to fill in.",
     ERROR_CORRECTION: [
@@ -782,19 +804,22 @@ MANDATORY RULES — violating any rule is wrong:
       yearNum <= 9 ? "DIFFICULTY: one clear error, max 3 steps" : "DIFFICULTY: subtle multi-step error, deeper analysis required",
     ].join("\n"),
     RANKING: [
-      `Present ${hasSend ? '3–4' : '4–6'} items that can be meaningfully ordered by a clear, factually correct criterion relevant to the topic.`,
+      `Present ${hasSend ? '3–4' : '4–6'} items that can be meaningfully ordered by a SPECIFIC, measurable, factually correct criterion relevant to the topic.`,
+      "CRITICAL: The instruction MUST name the exact criterion — e.g. 'Rank from best electrical conductor to worst electrical conductor', 'Rank from most magnetic to least magnetic', 'Rank from highest melting point to lowest melting point', 'Rank from fastest to slowest reaction rate'. NEVER use vague phrases like 'strongest to weakest' without specifying what property is being measured.",
       "Format EXACTLY as follows:",
-      "Rank these from [highest/strongest/fastest/most important] to [lowest/weakest/slowest/least important]:",
-      "1. _____ [ ] [item A]",
-      "2. _____ [ ] [item B]",
-      "3. _____ [ ] [item C]",
-      ...(hasSend ? [] : ["4. _____ [ ] [item D]", "5. _____ [ ] [item E]"]),
+      "Rank the following [items] from [specific criterion — e.g. 'best electrical conductor to worst electrical conductor']:",
+      "A  [item A]",
+      "B  [item B]",
+      "C  [item C]",
+      ...(hasSend ? [] : ["D  [item D]", "E  [item E]"]),
       "",
-      "Explain your reasoning: _______________",
+      "Your ranking (write A–E in order): 1st _____ 2nd _____ 3rd _____ 4th _____ 5th _____",
+      "",
+      "Explain your reasoning:",
       "",
       "LAYOUT: ranking",
-      hasSend ? "SEND: 3 items only, provide partial ordering as scaffold, add visual cues" : "Criterion must be unambiguous and factually verifiable. Do NOT use for subjective opinions.",
-      yearNum <= 9 ? "DIFFICULTY: simple criterion, 3–4 items, one-sentence explanation" : "DIFFICULTY: complex criterion, 5–6 items, full paragraph explanation required",
+      "Criterion must be unambiguous, factually verifiable, and SUBJECT-SPECIFIC. Do NOT use for subjective opinions or difficulty ratings.",
+      yearNum <= 9 ? "DIFFICULTY: simple concrete criterion, 3–4 items, one-sentence explanation" : "DIFFICULTY: complex criterion with nuance, 5 items, full paragraph explanation required",
     ].join("\n"),
     WHAT_CHANGED: [
       "Present a before/after or cause/effect comparison that is directly relevant to the topic.",
@@ -1523,8 +1548,13 @@ Do NOT omit the diagram — it is required for this subject.`
     ? `In Teacher Notes, list 3–4 common mistakes students make with "${params.topic}". Include 1 misconception question in Section B showing wrong working for students to correct.`
     : "";
 
-  // ── Topic enforcement note ─────────────────────────────────────────────────
-  const topicEnforcementNote = `Every question, example, vocabulary term, and any diagram must be about "${params.topic}" only.`;
+  // ── Topic enforcement note ─────────────────────────────────────────────────────
+  // For English literature, add an explicit note to keep each text separate
+  const isEnglishLit = /english.*lit|literature/i.test(subjectLower);
+  const bookSeparationNote = isEnglishLit
+    ? ` CRITICAL: This worksheet is ONLY about "${params.topic}". Do NOT include any content, characters, quotes, events, or references from any other text, book, poem, play, or novel. Every single question, extract, example, and diagram node must come exclusively from "${params.topic}". If the topic names a single text (e.g. "An Inspector Calls"), use ONLY that text. Never combine multiple texts in the same worksheet.`
+    : "";
+  const topicEnforcementNote = `Every question, example, vocabulary term, and any diagram must be about "${params.topic}" only.${bookSeparationNote}`;
   const dataCompletenessNote = `Every question must be fully usable as written. Do not use placeholders, ellipses, missing values, unfinished lists, or references to unseen data. If a statistics question uses a table, survey, graph, grouped frequency table, histogram, cumulative frequency graph, box plot, or chart, include the complete numeric data needed to answer it directly in the worksheet text.`;
   const diagramRelevanceNote = isDiagramSubject
     ? `DIAGRAM: A diagram is mandatory for this subject. Follow the SVG DIAGRAM INSTRUCTION above exactly.`
@@ -1603,7 +1633,7 @@ Return EXACTLY this JSON (raw JSON only):
           case 'ORDERING': return `{"title": "Q${qNum} — Ordering", "type": "q-ordering", "content": "Number the boxes 1–6 to show the correct order. [3 marks]\\n☐ [item 1 from ${params.topic}]\\n☐ [item 2 from ${params.topic}]\\n☐ [item 3 from ${params.topic}]\\n☐ [item 4 from ${params.topic}]\\n☐ [item 5 from ${params.topic}]\\n☐ [item 6 from ${params.topic}]"}`;
           case 'MATCHING': return `{"title": "Q${qNum} — Matching", "type": "q-matching", "content": "Match each term to its definition. Draw a line or write the letter. [5 marks]\\n1. [term 1 from ${params.topic}] ←→ [definition A]\\n2. [term 2 from ${params.topic}] ←→ [definition B]\\n3. [term 3 from ${params.topic}] ←→ [definition C]\\n4. [term 4 from ${params.topic}] ←→ [definition D]\\n5. [term 5 from ${params.topic}] ←→ [definition E]"}`;
           case 'SHORT_ANSWER': return `{"title": "Q${qNum} — Short Answer", "type": "q-short-answer", "content": "${isMaths ? `[Pure calculation question on ${params.topic}. Do NOT ask students to explain or write in sentences. All answers must be numerical or algebraic.] [5 marks]\\n(a) Solve: [specific numerical equation or expression involving ${params.topic} — give real numbers]. [2 marks]\\n(b) Calculate: [a second specific numerical problem on ${params.topic} using a different method or value]. [2 marks]\\n(c) Write the answer to (b) in simplest form or correct to 2 significant figures. [1 mark]` : isSTEM ? `[Scenario or data set related to ${params.topic}] [5 marks]\\n(a) Identify the relevant formula or scientific law. [1 mark]\\n(b) Show the full calculation with working. [2 marks]\\n(c) Explain what the result means in context. [2 marks]` : `[4–8 line extract from text related to ${params.topic}] [5 marks]\\n(a) Identify ONE language or literary technique used in this extract. [1 mark]\\n(b) What does this reveal about character, theme or author intent? [2 marks]\\n(c) What does the key image or symbol represent? [2 marks]`}", "marks": 5}`;
-          case 'TABLE': return `{"title": "Q${qNum} — Complete the Table", "type": "q-data-table", "content": "Complete the table below. [8 marks]\\n${isMaths ? `| No. | Problem | Working | Answer |\\n|---|---|---|---|\\n| 1 | [specific calculation problem 1 on ${params.topic}] | ........... | ........... |\\n| 2 | [specific calculation problem 2 on ${params.topic}] | ........... | ........... |\\n| 3 | [specific calculation problem 3 on ${params.topic}] | ........... | ........... |\\n| 4 | [specific calculation problem 4 on ${params.topic}] | ........... | ........... |` : isSTEM ? `| No. | Scenario | Formula used | Working | Answer with unit |\\n|---|---|---|---|---|\\n| 1 | [scenario 1 about ${params.topic}] | ........... | ........... | ........... |\\n| 2 | [scenario 2 about ${params.topic}] | ........... | ........... | ........... |\\n| 3 | [scenario 3 about ${params.topic}] | ........... | ........... | ........... |\\n| 4 | [scenario 4 about ${params.topic}] | ........... | ........... | ........... |` : `| No. | Theme | Key Quote (max 5 words) | Act/Scene/Chapter | Effect |\\n|---|---|---|---|---|\\n| 1 | [theme 1 from ${params.topic}] | ........... | ........... | ........... |\\n| 2 | [theme 2 from ${params.topic}] | ........... | ........... | ........... |\\n| 3 | [theme 3 from ${params.topic}] | ........... | ........... | ........... |\\n| 4 | [theme 4 from ${params.topic}] | ........... | ........... | ........... |`}", "marks": 8}`;
+          case 'TABLE': return `{"title": "Q${qNum} — Complete the Table", "type": "q-data-table", "content": "Complete the table below. [8 marks]\\n${isMaths ? `| No. | Problem | Working | Answer |\\n|---|---|---|---|\\n| 1 | [specific calculation problem 1 on ${params.topic}] | ........... | ........... |\\n| 2 | [specific calculation problem 2 on ${params.topic}] | ........... | ........... |\\n| 3 | [specific calculation problem 3 on ${params.topic}] | ........... | ........... |\\n| 4 | [specific calculation problem 4 on ${params.topic}] | ........... | ........... |` : isSTEM ? `| No. | Scenario | Formula used | Working | Answer with unit |\\n|---|---|---|---|---|\\n| 1 | [scenario 1 about ${params.topic}] | ........... | ........... | ........... |\\n| 2 | [scenario 2 about ${params.topic}] | ........... | ........... | ........... |\\n| 3 | [scenario 3 about ${params.topic}] | ........... | ........... | ........... |\\n| 4 | [scenario 4 about ${params.topic}] | ........... | ........... | ........... |` : `| No. | Theme | Key Quote | Act/Scene/Chapter | Effect |\n|---|---|---|---|---|\n| 1 | [theme 1 from ${params.topic}] | ........... | ........... | ........... |\n| 2 | [theme 2 from ${params.topic}] | ........... | ........... | ........... |\n| 3 | [theme 3 from ${params.topic}] | ........... | ........... | ........... |\n| 4 | [theme 4 from ${params.topic}] | ........... | ........... | ........... |`}", "marks": 8}`;
           case 'ERROR_CORRECTION': return `{"title": "Q${qNum} — Error Correction", "type": "error_correction", "content": "${blockInstructions['ERROR_CORRECTION'].replace(/"/g, "'").replace(/\n/g, '\\n')}"}`;
           case 'RANKING': return `{"title": "Q${qNum} — Ranking", "type": "ranking", "content": "${blockInstructions['RANKING'].replace(/"/g, "'").replace(/\n/g, '\\n')}"}`;
           case 'WHAT_CHANGED': return `{"title": "Q${qNum} — What Changed?", "type": "what_changed", "content": "${blockInstructions['WHAT_CHANGED'].replace(/"/g, "'").replace(/\n/g, '\\n')}"}`;

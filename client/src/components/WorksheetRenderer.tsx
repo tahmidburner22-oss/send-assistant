@@ -1834,7 +1834,7 @@ function LabelDiagramSection({
                 <div style={{ fontSize: "9px", color: "#9ca3af", padding: "2px 6px", fontFamily: fmt.fontFamily }}>{attribution}</div>
               )}
             </div>
-          ) : diagramSpec && diagramSpec.type !== "labeled" ? (
+          ) : diagramSpec ? (
             <SVGDiagram
               spec={diagramSpec}
               width={300}
@@ -1880,7 +1880,7 @@ function LabelDiagramSection({
             <div style={{ marginTop: "10px", padding: "8px 12px", background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: "6px" }}>
               <div style={{ fontSize: `${fmt.fontSize - 1}px`, fontWeight: 700, color: "#64748b", fontFamily: fmt.fontFamily, marginBottom: "4px", textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>Word Bank</div>
               <div style={{ display: "flex", flexWrap: "wrap" as const, gap: "6px" }}>
-                {[...rawLabels].sort(() => 0).map((lbl, idx) => (
+                {[...rawLabels].sort(() => Math.random() - 0.5).map((lbl, idx) => (
                   <span key={idx} style={{ padding: "2px 8px", background: "white", border: "1px solid #cbd5e1", borderRadius: "4px", fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, color: "#1e293b" }}>{lbl}</span>
                 ))}
               </div>
@@ -1931,7 +1931,7 @@ function DiagramSubQSection({
               <div style={{ fontSize: "9px", color: "#9ca3af", padding: "2px 6px", fontFamily: fmt.fontFamily }}>{attribution}</div>
             )}
           </div>
-        ) : diagramSpec && diagramSpec.type !== "labeled" ? (
+        ) : diagramSpec ? (
           <SVGDiagram
             spec={diagramSpec}
             width={280}
@@ -2209,48 +2209,115 @@ function MatchingSection({
 }) {
   const raw = stripLayoutTag(content);
   const accentColor = fmt.accentColor || "#1B2A4A";
-  const lines = raw.split("\n").filter(l => l.match(/^\d+\.\s.+←→.+/) || l.match(/^\d+\.\s/));
+  const allLines = raw.split("\n").map(l => l.trim()).filter(Boolean);
+
+  // ── Parse two-column format: TERMS section + DEFINITIONS section ──
+  let terms: string[] = [];
+  let definitions: string[] = [];  // already scrambled by AI
+  let answerKey: Record<number, string> = {}; // term index → definition letter
+  let mode: "terms" | "defs" | "key" | "none" = "none";
+  for (const line of allLines) {
+    if (/^TERMS/i.test(line)) { mode = "terms"; continue; }
+    if (/^DEFINITIONS/i.test(line)) { mode = "defs"; continue; }
+    if (/^ANSWER KEY/i.test(line)) { mode = "key"; continue; }
+    if (/^CRITICAL/i.test(line)) continue;
+    if (mode === "terms") {
+      const m = line.match(/^\d+\.?\s+(.+)$/);
+      if (m) terms.push(m[1].trim());
+    } else if (mode === "defs") {
+      const m = line.match(/^[A-E]\.?\s+(.+)$/);
+      if (m) definitions.push(m[1].trim());
+    } else if (mode === "key") {
+      // Parse "1-C, 2-A, 3-E, ..." or "1-C 2-A 3-E"
+      const matches = line.matchAll(/(\d+)[\-–]([A-E])/g);
+      for (const m of matches) answerKey[parseInt(m[1])] = m[2];
+    }
+  }
+
+  // ── Fallback: parse old format "1. term ←→ definition" ──
+  let pairs: { term: string; definition: string }[] = [];
+  if (terms.length === 0) {
+    const pairLines = allLines.filter(l => l.match(/^\d+\.\s.+←→.+/));
+    pairs = pairLines.map((line) => {
+      const parts = line.replace(/^\d+\.\s*/, "").split("←→");
+      return { term: parts[0]?.trim() || line, definition: parts[1]?.trim() || "" };
+    });
+    // For old format, shuffle definitions
+    const defTexts = pairs.map(p => p.definition);
+    for (let i = defTexts.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [defTexts[i], defTexts[j]] = [defTexts[j], defTexts[i]];
+    }
+    terms = pairs.map(p => p.term);
+    definitions = defTexts;
+  }
+
+  // ── Shuffle definitions client-side as extra safety (in case AI didn't scramble) ──
+  const shuffledDefs = React.useMemo(() => {
+    // Check if definitions are already scrambled (AI should have done this)
+    // We do a final shuffle to guarantee scrambling regardless
+    const defs = definitions.map((text, i) => ({ text, origIndex: i }));
+    for (let i = defs.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [defs[i], defs[j]] = [defs[j], defs[i]];
+    }
+    return defs;
+  }, [definitions.join("|"), terms.join("|")]);  // re-shuffle when content changes
+
+  const defLetters = shuffledDefs.map((_, i) => String.fromCharCode(65 + i));
+
+  if (terms.length === 0) {
+    return <div style={{ fontFamily: fmt.fontFamily, fontSize: `${fmt.fontSize}px` }}>{formatContent(raw, fmt)}</div>;
+  }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column" as const, gap: "10px" }}>
-      {lines.map((line, i) => {
-        const parts = line.replace(/^\d+\.\s*/, "").split("←→");
-        const left  = parts[0]?.trim() || line;
-        const right = parts[1]?.trim();
-        return (
-          <div key={i} style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 40px 1fr",
-            alignItems: "center",
-            gap: "8px",
-          }}>
-            <div style={{
-              padding: "6px 10px",
-              border: `1.5px solid ${accentColor}44`,
-              borderRadius: "6px",
-              fontSize: `${fmt.fontSize}px`,
-              fontFamily: fmt.fontFamily,
-              color: "#1e293b",
-              background: "#f8fafc",
-            }}>{left}</div>
-            <div style={{
-              width: "100%",
-              borderBottom: `1.5px dashed #9ca3af`,
-              height: "1px",
-              alignSelf: "center",
-            }} />
-            <div style={{
-              padding: "6px 10px",
-              border: `1.5px solid ${accentColor}44`,
-              borderRadius: "6px",
-              fontSize: `${fmt.fontSize}px`,
-              fontFamily: fmt.fontFamily,
-              color: "#1e293b",
-              background: "#f8fafc",
-            }}>{right || "___________"}</div>
-          </div>
-        );
-      })}
+    <div style={{ fontFamily: fmt.fontFamily, fontSize: `${fmt.fontSize}px` }}>
+      {/* Instruction */}
+      <div style={{ marginBottom: "10px", fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, color: "#374151", fontStyle: "italic" }}>
+        Match each term (1–{terms.length}) to its correct definition (A–{defLetters[defLetters.length - 1]}) by writing the letter in the blank.
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+        {/* Left column: numbered terms with blank for answer */}
+        <div>
+          <div style={{ fontSize: `${Math.max(fmt.fontSize - 1, 10)}px`, fontWeight: 700, color: "#6b7280", marginBottom: "8px", textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>Terms</div>
+          {terms.map((term, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
+              <div style={{ width: "22px", height: "22px", borderRadius: "50%", background: accentColor, color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: `${Math.max(fmt.fontSize - 2, 9)}px`, fontWeight: 700, flexShrink: 0 }}>{i + 1}</div>
+              {/* Blank for student to write letter */}
+              <div style={{ width: "32px", borderBottom: `2px solid ${accentColor}`, height: "22px", flexShrink: 0 }} />
+              <div style={{
+                flex: 1,
+                padding: "5px 10px",
+                border: `1.5px solid ${accentColor}44`,
+                borderRadius: "6px",
+                fontSize: `${fmt.fontSize}px`,
+                fontFamily: fmt.fontFamily,
+                color: "#1e293b",
+                background: "#f8fafc",
+              }} dangerouslySetInnerHTML={{ __html: renderMath(term) }} />
+            </div>
+          ))}
+        </div>
+        {/* Right column: lettered definitions (shuffled) */}
+        <div>
+          <div style={{ fontSize: `${Math.max(fmt.fontSize - 1, 10)}px`, fontWeight: 700, color: "#6b7280", marginBottom: "8px", textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>Definitions</div>
+          {shuffledDefs.map((def, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: "8px", marginBottom: "8px" }}>
+              <div style={{ width: "22px", height: "22px", borderRadius: "50%", background: "#64748b", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: `${Math.max(fmt.fontSize - 2, 9)}px`, fontWeight: 700, flexShrink: 0, marginTop: "2px" }}>{defLetters[i]}</div>
+              <div style={{
+                flex: 1,
+                padding: "5px 10px",
+                border: "1.5px solid #e2e8f0",
+                borderRadius: "6px",
+                fontSize: `${fmt.fontSize}px`,
+                fontFamily: fmt.fontFamily,
+                color: "#1e293b",
+                background: "white",
+              }} dangerouslySetInnerHTML={{ __html: renderMath(def.text) }} />
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
@@ -2485,10 +2552,16 @@ function ErrorCorrectionSection({
     if (/^(worked answer|student answer|student.?s answer|incorrect answer|given answer)/i.test(line)) { mode = "worked"; continue; }
     if (/^(mistake|error|what.?s wrong|hint)/i.test(line)) { mode = "mistake"; continue; }
     if (/^(task|your task|questions|find|identify|correct|explain)/i.test(line)) { mode = "tasks"; continue; }
-    if (mode === "worked") workedAnswer.push(line);
-    else if (mode === "mistake") mistakeHint = line;
-    else if (mode === "tasks") tasks.push(line.replace(/^[\d.)-]+\s*/, ""));
-    else workedAnswer.push(line); // fallback: treat as worked answer
+    if (mode === "worked") {
+      // Strip ** markdown bold markers that expose the error to students
+      workedAnswer.push(isTeacher ? line : line.replace(/\*\*([^*]+)\*\*/g, "$1"));
+    } else if (mode === "mistake") mistakeHint = line;
+    else if (mode === "tasks") {
+      // Skip bare "Task" header lines, only add actual task descriptions
+      if (!/^task$/i.test(line)) tasks.push(line.replace(/^[\d.)-]+\s*/, ""));
+    } else {
+      workedAnswer.push(isTeacher ? line : line.replace(/\*\*([^*]+)\*\*/g, "$1")); // fallback
+    }
   }
   if (tasks.length === 0) tasks = ["Identify the mistake", "Explain why it is wrong", "Write the correct answer"];
 
@@ -2534,23 +2607,31 @@ function RankingSection({
   const { fontSize: textSize, fontFamily, lineHeight } = fmt;
   const lines = content.split("\n").map(l => l.trim()).filter(Boolean);
 
-  // Parse: instruction line, items (bullet/numbered), explanation prompt
+  // Parse: instruction line, items (bullet/numbered/lettered), explanation prompt
   let instruction = "";
   let items: string[] = [];
   let explanationPrompt = "";
-  let correctOrder: string[] = [];
   for (const line of lines) {
     if (/^(order|rank|arrange|put|sort|place)/i.test(line) && !instruction) { instruction = line; continue; }
-    if (/^(explain|justify|reason|why)/i.test(line)) { explanationPrompt = line; continue; }
-    if (/^(correct order|answer|teacher)/i.test(line)) continue;
-    const bulletMatch = line.match(/^[-*•]\s+(.+)$/) || line.match(/^\d+[.)\s]+(.+)$/);
-    if (bulletMatch) items.push(bulletMatch[1]);
-    else if (line && !instruction) instruction = line;
+    if (/^(explain|justify|reason|why|explain your)/i.test(line)) { explanationPrompt = line; continue; }
+    if (/^(correct order|answer|teacher|layout)/i.test(line)) continue;
+    // Match items: numbered like "1. _____ [ ] item" or "A ___ [] item" or "- item" or "• item"
+    const rankedItemMatch = line.match(/^[A-E]\s+_+\s*\[\s*\]\s*(.+)$/) ||
+      line.match(/^\d+\.?\s+_+\s*\[\s*\]\s*(.+)$/) ||
+      line.match(/^[-*•]\s+(.+)$/) ||
+      line.match(/^[A-E][.)\s]+(.+)$/) ||
+      line.match(/^\d+[.)\s]+(.+)$/);
+    if (rankedItemMatch) {
+      // Strip any remaining [ ] brackets and leading underscores from item text
+      const cleaned = rankedItemMatch[1].replace(/\[\s*\]/g, "").replace(/^_+\s*/, "").trim();
+      if (cleaned) items.push(cleaned);
+    } else if (line && !instruction && items.length === 0) {
+      instruction = line;
+    }
   }
-  if (items.length === 0) items = lines.filter(l => l.length < 60);
+  if (items.length === 0) items = lines.filter(l => l.length < 80 && !l.startsWith("LAYOUT"));
   if (!explanationPrompt) explanationPrompt = "Explain your reasoning:";
 
-  // Shuffle items for student view
   const displayItems = [...items];
 
   return (
@@ -2605,11 +2686,21 @@ function WhatChangedSection({
   for (const line of lines) {
     if (/^(scenario a|situation a|before|circuit a|state a|condition a)/i.test(line)) { mode = "a"; continue; }
     if (/^(scenario b|situation b|after|circuit b|state b|condition b)/i.test(line)) { mode = "b"; continue; }
-    if (/^(question|task|your task|what|explain|describe|why)/i.test(line)) { mode = "q"; }
+    // "Task" alone is just a section header — switch mode but don't add as a question
+    if (/^task$/i.test(line)) { mode = "q"; continue; }
+    if (/^(question|your task|what changed|explain|describe|why)/i.test(line)) { mode = "q"; }
     if (mode === "a") scenarioA.push(line);
-    else if (mode === "b") scenarioB.push(line);
-    else if (mode === "q") questions.push(line.replace(/^[\d.)-]+\s*/, ""));
-    else scenarioA.push(line); // fallback
+    else if (mode === "b") {
+      // Strip ** markdown bold markers from Scenario B (they expose the highlighted change)
+      scenarioB.push(line.replace(/\*\*([^*]+)\*\*/g, "$1"));
+    } else if (mode === "q") {
+      // Only add lines that look like actual questions (numbered or contain question words)
+      if (/^\d+\./.test(line) || /\?/.test(line) || /^(what|why|how|explain|describe|identify)/i.test(line)) {
+        questions.push(line.replace(/^[\d.)-]+\s*/, ""));
+      }
+    } else {
+      scenarioA.push(line); // fallback
+    }
   }
   if (questions.length === 0) questions = ["What changed between A and B?", "Why did this happen?", "What effect does this have?"];
 
