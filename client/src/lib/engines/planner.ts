@@ -11,8 +11,7 @@
  * - At least 3 layout families per section
  * - At least 5 distinct layout families on a 10-question GCSE sheet
  * - Mark allocation must match visual complexity
- * - Advanced question types (error_correction, ranking, what_changed, constraint_problem)
- *   are integrated as first-class layout families and rotated per the spec:
+ * - Advanced question types (error_correction, ranking, what_changed) as first-class layout families and rotated per the spec:
  *     • max 1–2 per worksheet
  *     • never adjacent to same type
  *     • placed in appropriate Bloom's level sections
@@ -37,8 +36,7 @@ export type LayoutFamily =
   // ── Advanced question type families (from pasted spec) ──
   | "error-correction"
   | "ranking"
-  | "what-changed"
-  | "constraint-problem";
+  | "what-changed";
 
 export type QuestionType =
   | "q-true-false"
@@ -56,8 +54,7 @@ export type QuestionType =
   // ── Advanced question types ──
   | "q-error-correction"
   | "q-ranking"
-  | "q-what-changed"
-  | "q-constraint-problem";
+  | "q-what-changed";
 
 export interface SectionPlan {
   id: string;
@@ -104,7 +101,6 @@ export const QUESTION_LAYOUT_MAP: Record<QuestionType, LayoutFamily> = {
   "q-error-correction": "error-correction",
   "q-ranking": "ranking",
   "q-what-changed": "what-changed",
-  "q-constraint-problem": "constraint-problem",
 };
 
 /** Maps mark weight to minimum layout complexity */
@@ -112,7 +108,7 @@ export const MARK_LAYOUT_RULES: { minMarks: number; maxMarks: number; allowedFam
   { minMarks: 1, maxMarks: 1, allowedFamilies: ["true-false", "mcq-2col", "inline-gap-fill", "matching", "ranking"] },
   { minMarks: 2, maxMarks: 3, allowedFamilies: ["true-false", "mcq-2col", "inline-gap-fill", "short-answer", "data-table", "ordering", "matching", "ranking", "error-correction"] },
   { minMarks: 4, maxMarks: 5, allowedFamilies: ["short-answer", "label-diagram", "diagram-subquestions", "data-table", "draw-box", "graph-box", "circuit-box", "error-correction", "what-changed", "ranking"] },
-  { minMarks: 6, maxMarks: 99, allowedFamilies: ["extended-answer", "diagram-subquestions", "data-table", "draw-box", "graph-box", "circuit-box", "constraint-problem", "what-changed", "error-correction"] },
+  { minMarks: 6, maxMarks: 99, allowedFamilies: ["extended-answer", "diagram-subquestions", "data-table", "draw-box", "graph-box", "circuit-box", "what-changed", "error-correction"] },
 ];
 
 /**
@@ -126,8 +122,8 @@ const ADVANCED_SECTION_PLACEMENT: Record<string, QuestionType[]> = {
   "warm-up": ["q-ranking"],
   "understanding": ["q-what-changed", "q-error-correction"],
   "practice": ["q-what-changed", "q-error-correction"],
-  "application": ["q-constraint-problem", "q-error-correction"],
-  "challenge": ["q-constraint-problem"],
+  "application": ["q-error-correction"],
+  "challenge": ["q-error-correction"],
 };
 
 /** Standard 30-min base question plan for secondary GCSE */
@@ -215,7 +211,7 @@ function injectAdvancedTypes(types: QuestionType[], phase: "primary" | "secondar
 
   // Pool of advanced types to try, shuffled for variety
   const advancedPool: QuestionType[] = [
-    "q-error-correction", "q-ranking", "q-what-changed", "q-constraint-problem"
+    "q-error-correction", "q-ranking", "q-what-changed"
   ];
   // Simple shuffle
   for (let i = advancedPool.length - 1; i > 0; i--) {
@@ -311,7 +307,7 @@ export function createWorksheetPlan(params: {
 
   // 6. Validate advanced type count (max 2)
   const advancedCount = questionTypes.filter(t =>
-    ["q-error-correction", "q-ranking", "q-what-changed", "q-constraint-problem"].includes(t)
+    ["q-error-correction", "q-ranking", "q-what-changed"].includes(t)
   ).length;
   if (advancedCount > 2) {
     warnings.push(`${advancedCount} advanced question types found. Maximum 2 per worksheet.`);
@@ -341,7 +337,7 @@ export function createWorksheetPlan(params: {
         "q-draw": 3, "q-graph": 4, "q-circuit": 4,
         "q-ordering": 3, "q-matching": 3,
         "q-error-correction": 4, "q-ranking": 3,
-        "q-what-changed": 4, "q-constraint-problem": 5,
+        "q-what-changed": 4,
       };
       const totalMarks = sectionTypes.reduce((sum, t) => sum + (markMap[t] || 3), 0);
 

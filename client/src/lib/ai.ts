@@ -671,7 +671,7 @@ MANDATORY RULES — violating any rule is wrong:
   // ── Question layout rotation system (smart, context-aware) ───────────────────
   // Fisher-Yates shuffle picks 3 types from recall pool (Section A) and 3 from
   // application pool (Section B) — genuinely random every generation.
-  // Advanced types (error_correction, ranking, what_changed, constraint_problem)
+  // Advanced types (error_correction, ranking, what_changed)
   // are added to the pools only when topic/subject relevance warrants them.
   const topicLower = params.topic.toLowerCase();
   const subjectLower = (params.subject || "").toLowerCase();
@@ -701,13 +701,6 @@ MANDATORY RULES — violating any rule is wrong:
       isSTEM ||
       /history|geography|economics|business|computing|ict|english|language|literature|drama|religious|re|rs/i.test(subjectLower) ||
       /chang|effect|impact|cause|before|after|result|consequence|evolution|transform|react|process|cycle|growth|decay|war|revolution|industri|climate|adapt|mutation|circuit|variable|develop|period|era|movement/i.test(topicLower)
-    ),
-    // Constraint problem: great for maths, science, design, computing, and any analytical subject
-    CONSTRAINT_PROBLEM: (
-      isMaths ||
-      isSTEM ||
-      /computing|design|technology|engineering|economics|business/i.test(subjectLower) ||
-      /design|build|create|construct|circuit|engineer|plan|optimis|maximis|minimis|budget|limit|rule|condition|constraint|network|algorithm|program|code|proof|invest|resource|solve|problem|apply/i.test(topicLower)
     ),
   };
 
@@ -749,9 +742,7 @@ MANDATORY RULES — violating any rule is wrong:
   if (isRelevant.WHAT_CHANGED && !isMaths) {
     APPLICATION_POOL.push("WHAT_CHANGED");
   }
-  if (isRelevant.CONSTRAINT_PROBLEM) {
-    APPLICATION_POOL.push("CONSTRAINT_PROBLEM");
-  }
+
   // Pick 3 from each pool at random (Fisher-Yates) — genuinely different every generation
   const variantA = pickTypes(RECALL_POOL, 3) as [string, string, string];
   const variantB = pickTypes(APPLICATION_POOL, 3) as [string, string, string];
@@ -839,28 +830,6 @@ MANDATORY RULES — violating any rule is wrong:
       "LAYOUT: what_changed",
       hasSend ? "SEND: highlight changed element, 2 task questions only, sentence starters provided" : "The change must be scientifically/factually grounded. Change exactly ONE variable.",
       yearNum <= 9 ? "DIFFICULTY: simple concrete change, two task questions max" : "DIFFICULTY: complex change with multiple downstream effects, three task questions",
-    ].join("\n"),
-    CONSTRAINT_PROBLEM: [
-      `Present a design or problem-solving task with ${hasSend ? '2' : '2–4'} specific constraints that require genuine understanding of the topic.`,
-      "CRITICAL: You MUST include a clear, specific question asking the student to solve the problem. The Goal section must end with a direct question (e.g. 'What values should you choose?' or 'Design a solution that satisfies all constraints.'). Do NOT leave the student without a clear task to complete.",
-      "Format EXACTLY as follows:",
-      "Goal",
-      "[Write the ACTUAL scenario here with real numbers/values — e.g. 'A circuit must power a 6V bulb using a 12V battery. Design the circuit so the bulb receives exactly 6V.']",
-      "Question: [Write a SPECIFIC question the student must answer — e.g. 'What resistance value do you need, and how should the components be arranged?']",
-      "",
-      "Constraints",
-      "- [Write a SPECIFIC rule 1 using real topic values — e.g. 'Total resistance must equal exactly 12Ω']",
-      ...(hasSend ? [] : ["- [Write a SPECIFIC rule 2 — e.g. 'You may only use resistors of 2Ω, 4Ω, or 6Ω']", "- [Write a SPECIFIC rule 3 — e.g. 'The circuit must include at least one parallel branch']"]),
-      "",
-      ...(hasSend ? ["Scaffold", "Step 1: [first step to guide students]", "Step 2: [second step]", ""] : []),
-      "Output",
-      "Show your working / draw your solution below:",
-      "",
-      "Explain your solution in one sentence: _______________",
-      "",
-      "LAYOUT: constraint_problem",
-      hasSend ? "SEND: 2 constraints only, partial worked example as scaffold, explicit steps" : "Constraints must be non-trivial and require topic knowledge. Do NOT use for pure recall.",
-      yearNum <= 9 ? "DIFFICULTY: simple goal, 2 constraints, scaffold steps provided" : "DIFFICULTY: complex goal, 3–4 constraints, full working required, no scaffold",
     ].join("\n"),
   };
 
@@ -1612,8 +1581,7 @@ ADVANCED QUESTION TYPES — use 1–2 per worksheet for variety:
 - type "error_correction": Show a worked solution with a deliberate mistake. Student finds the error, explains why it is wrong, writes the correct answer. Layout: left = boxed solution, right = response questions.
 - type "ranking": Give 4–6 items to order by a rule (e.g. smallest to largest). Student ranks them and explains reasoning. Layout: item list + ranking boxes + explanation box.
 - type "what_changed": Show Scenario A vs Scenario B. Student identifies what changed, what happens, and why. Layout: left = two scenarios, right = structured questions.
-- type "constraint_problem": Give a goal with 2–4 constraints. Student solves while following all rules. Layout: boxed constraint list + working space + explanation.
-Place ranking in Section 1 (recall), error_correction/what_changed in Section 2 (understanding), constraint_problem in Section 3 (application). Never place the same advanced type adjacent to itself.
+Place ranking in Section 1 (recall), error_correction/what_changed in Section 2 (understanding). Never place the same advanced type adjacent to itself.
 
 Return EXACTLY this JSON (raw JSON only):
 {
@@ -1640,7 +1608,7 @@ Return EXACTLY this JSON (raw JSON only):
           case 'ERROR_CORRECTION': return `{"title": "Q${qNum} — Error Correction", "type": "error_correction", "content": "Worked Answer\nStep 1: [Write a correct first step of a real ${params.topic} worked solution with actual numbers/values]\nStep 2: [Write the step that contains a deliberate realistic mistake — use real numbers, make the error plausible]\nStep 3: [Write the final step that follows from the wrong step 2]\n\nMistake\n[Teacher only: describe the exact error in one sentence]\n\nTask\n1. Identify the mistake in the worked answer above\n2. Explain why it is wrong\n3. Write the correct answer with full working"}`;
           case 'RANKING': return `{"title": "Q${qNum} — Ranking", "type": "ranking", "content": "Rank the following [write 4-6 specific ${params.topic} items] from [write the EXACT measurable criterion — e.g. 'best electrical conductor to worst electrical conductor']:\nA  [real item A from ${params.topic}]\nB  [real item B from ${params.topic}]\nC  [real item C from ${params.topic}]\nD  [real item D from ${params.topic}]\nE  [real item E from ${params.topic}]\n\nYour ranking (write A–E in order): 1st _____ 2nd _____ 3rd _____ 4th _____ 5th _____\n\nExplain your reasoning:"}`;
           case 'WHAT_CHANGED': return `{"title": "Q${qNum} — What Changed?", "type": "what_changed", "content": "Scenario A\n[Write the ACTUAL initial state — a real, specific ${params.topic} scenario with real numbers/values]\n\nScenario B\n[Write the ACTUAL changed state — change exactly ONE variable from Scenario A, keep everything else the same]\n\nTask\n1. What changed between A and B?\n2. Why did this happen? (use subject vocabulary)\n3. What effect does this have on [write the specific outcome being measured]?"}`;
-          case 'CONSTRAINT_PROBLEM': return `{"title": "Q${qNum} — Constraint Problem", "type": "constraint_problem", "content": "Goal\n[Write the ACTUAL scenario here with real numbers/values — e.g. 'A circuit must power a 6V bulb using a 12V battery.']\nQuestion: [Write a SPECIFIC question the student must answer — e.g. 'What resistance value do you need, and how should the components be arranged?']\n\nConstraints\n- [Write a SPECIFIC rule 1 using real topic values]\n- [Write a SPECIFIC rule 2]\n- [Write a SPECIFIC rule 3]\n\nOutput\nShow your working / draw your solution below:\n\nExplain your solution in one sentence: _______________"}`;
+
           default: return `{"title": "Q${qNum} — Short Answer", "type": "q-short-answer", "content": "[Question about ${params.topic}] [3 marks]"}`;
         }
       };
