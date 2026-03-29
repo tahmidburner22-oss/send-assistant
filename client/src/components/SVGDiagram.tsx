@@ -3,10 +3,11 @@
  * Zero API cost: the AI outputs structured JSON describing the diagram,
  * this component renders it as clean SVG.
  *
- * Clean diagram style: pure visuals — NO text labels on the diagram.
+ * Clean diagram style: pure visuals — NO text labels on the diagram for student view.
  * Numbered callout dots are used for labelling questions.
+ * Teacher view (showCallouts=true) reveals labels.
  *
- * Supports: circuit, labeled, flow, cycle, number-line, bar, axes
+ * Supports: circuit, labeled, flow, cycle, number-line, bar, axes, venn, timeline, pyramid, fraction-bar
  *
  * @copyright 2026 Adaptly Ltd. All rights reserved.
  */
@@ -20,13 +21,32 @@ interface SVGDiagramProps {
   fontFamily?: string;
   fontSize?: number;
   accentColor?: string;
-  /** When true, show callout numbers on diagram (for label-diagram questions) */
+  /** When true, show labels on diagram (teacher view). Student view hides labels. */
   showCallouts?: boolean;
 }
 
 const NAVY = "#1B2A4A";
 const WIRE_COLOR = "#1e293b";
 const WIRE_W = 2;
+
+// ── Word-wrap helper (shared across renderers) ─────────────────────────────
+function wrapText(text: string, maxChars: number): string[] {
+  if (!text) return [""];
+  if (text.length <= maxChars) return [text];
+  const words = text.split(/\s+/);
+  const lines: string[] = [];
+  let current = "";
+  for (const word of words) {
+    if (current && (current + " " + word).length > maxChars) {
+      lines.push(current);
+      current = word;
+    } else {
+      current = current ? current + " " + word : word;
+    }
+  }
+  if (current) lines.push(current);
+  return lines.length > 0 ? lines : [text];
+}
 
 // ── Circuit symbol renderers (coordinate-based, no text) ─────────────────────
 
@@ -35,11 +55,8 @@ function Battery({ x, y, size = 28 }: { x: number; y: number; size?: number }) {
   const h = size * 0.7;
   return (
     <g>
-      {/* Long line (positive) */}
       <line x1={x} y1={y - h / 2} x2={x} y2={y + h / 2} stroke={WIRE_COLOR} strokeWidth={WIRE_W + 1} />
-      {/* Short line (negative) */}
       <line x1={x + 8} y1={y - h * 0.35} x2={x + 8} y2={y + h * 0.35} stroke={WIRE_COLOR} strokeWidth={WIRE_W} />
-      {/* + and - symbols */}
       <text x={x - 6} y={y + 4} fontSize={9} fontFamily="Arial" fill={WIRE_COLOR} fontWeight="700">+</text>
       <text x={x + 14} y={y + 4} fontSize={9} fontFamily="Arial" fill={WIRE_COLOR} fontWeight="700">−</text>
     </g>
@@ -95,15 +112,10 @@ function Switch({ x, y, open = true }: { x: number; y: number; open?: boolean })
   const endY = open ? y - 10 : y;
   return (
     <g>
-      {/* Left wire stub */}
       <line x1={x - w / 2} y1={y} x2={pivotX} y2={pivotY} stroke={WIRE_COLOR} strokeWidth={WIRE_W} />
-      {/* Pivot dot */}
       <circle cx={pivotX} cy={pivotY} r={2.5} fill={WIRE_COLOR} />
-      {/* Lever */}
       <line x1={pivotX} y1={pivotY} x2={endX} y2={endY} stroke={WIRE_COLOR} strokeWidth={WIRE_W} />
-      {/* Right wire stub */}
       <line x1={x + w / 2} y1={y} x2={x + w / 2} y2={y} stroke={WIRE_COLOR} strokeWidth={WIRE_W} />
-      {/* Right contact dot */}
       <circle cx={x + w / 2 - 4} cy={y} r={2.5} fill={WIRE_COLOR} />
     </g>
   );
@@ -121,58 +133,36 @@ function CalloutDot({ x, y, n, accent }: { x: number; y: number; n: number; acce
 
 // ── Pre-built circuit layouts ─────────────────────────────────────────────────
 
-/**
- * Simple series circuit: battery → switch → bulb → resistor → back
- * Returns SVG elements only (no outer <svg>)
- */
 function SeriesCircuit({ w, h, callouts }: { w: number; h: number; callouts?: Array<{ x: number; y: number; n: number; accent: string }> }) {
   const pad = 40;
   const x1 = pad, y1 = pad;
   const x2 = w - pad, y2 = h - pad;
   const midX = (x1 + x2) / 2;
   const midY = (y1 + y2) / 2;
-
-  // Wire corners
-  const corners = [
-    [x1, y1], [x2, y1], [x2, y2], [x1, y2],
-  ];
-
-  // Component positions (on the wire path)
-  const battX = x1, battY = midY;           // left side, middle
-  const switchX = midX, switchY = y1;       // top, middle
-  const bulbX = x2, bulbY = midY;           // right side, middle
-  const resistorX = midX, resistorY = y2;   // bottom, middle
+  const battX = x1, battY = midY;
+  const switchX = midX, switchY = y1;
+  const bulbX = x2, bulbY = midY;
+  const resistorX = midX, resistorY = y2;
 
   return (
     <g>
-      {/* Outer wire rectangle */}
       <polyline
         points={`${x1},${y1} ${x2},${y1} ${x2},${y2} ${x1},${y2} ${x1},${y1}`}
         fill="none" stroke={WIRE_COLOR} strokeWidth={WIRE_W}
         strokeLinejoin="round"
       />
-      {/* Components — drawn over wire */}
-      {/* Battery on left side (vertical) */}
       <line x1={x1} y1={y1} x2={x1} y2={battY - 18} stroke={WIRE_COLOR} strokeWidth={WIRE_W} />
       <Battery x={x1} y={battY} size={32} />
       <line x1={x1} y1={battY + 18} x2={x1} y2={y2} stroke={WIRE_COLOR} strokeWidth={WIRE_W} />
-
-      {/* Switch on top */}
       <line x1={x1} y1={y1} x2={switchX - 18} y2={y1} stroke={WIRE_COLOR} strokeWidth={WIRE_W} />
       <Switch x={switchX} y={y1} open={true} />
       <line x1={switchX + 18} y1={y1} x2={x2} y2={y1} stroke={WIRE_COLOR} strokeWidth={WIRE_W} />
-
-      {/* Bulb on right side (vertical) */}
       <line x1={x2} y1={y1} x2={x2} y2={bulbY - 14} stroke={WIRE_COLOR} strokeWidth={WIRE_W} />
       <Bulb x={x2} y={bulbY} r={13} />
       <line x1={x2} y1={bulbY + 14} x2={x2} y2={y2} stroke={WIRE_COLOR} strokeWidth={WIRE_W} />
-
-      {/* Resistor on bottom */}
       <line x1={x1} y1={y2} x2={resistorX - 18} y2={y2} stroke={WIRE_COLOR} strokeWidth={WIRE_W} />
       <Resistor x={resistorX} y={y2} w={36} h={16} />
       <line x1={resistorX + 18} y1={y2} x2={x2} y2={y2} stroke={WIRE_COLOR} strokeWidth={WIRE_W} />
-
-      {/* Callout dots */}
       {callouts?.map((c, i) => (
         <CalloutDot key={i} x={c.x} y={c.y} n={c.n} accent={c.accent} />
       ))}
@@ -180,9 +170,6 @@ function SeriesCircuit({ w, h, callouts }: { w: number; h: number; callouts?: Ar
   );
 }
 
-/**
- * Parallel circuit: battery on left, two parallel branches (bulb + resistor)
- */
 function ParallelCircuit({ w, h, callouts }: { w: number; h: number; callouts?: Array<{ x: number; y: number; n: number; accent: string }> }) {
   const pad = 40;
   const x1 = pad, y1 = pad;
@@ -196,40 +183,27 @@ function ParallelCircuit({ w, h, callouts }: { w: number; h: number; callouts?: 
 
   return (
     <g>
-      {/* Main outer wire */}
       <line x1={x1} y1={y1} x2={x2} y2={y1} stroke={WIRE_COLOR} strokeWidth={WIRE_W} />
       <line x1={x2} y1={y1} x2={x2} y2={y2} stroke={WIRE_COLOR} strokeWidth={WIRE_W} />
       <line x1={x1} y1={y2} x2={x2} y2={y2} stroke={WIRE_COLOR} strokeWidth={WIRE_W} />
       <line x1={x1} y1={y1} x2={x1} y2={y2} stroke={WIRE_COLOR} strokeWidth={WIRE_W} />
-
-      {/* Battery on left */}
       <line x1={x1} y1={y1} x2={x1} y2={midY - 18} stroke={WIRE_COLOR} strokeWidth={WIRE_W} />
       <Battery x={x1} y={midY} size={32} />
       <line x1={x1} y1={midY + 18} x2={x1} y2={y2} stroke={WIRE_COLOR} strokeWidth={WIRE_W} />
-
-      {/* Junction lines */}
       <line x1={junctionX} y1={y1} x2={junctionX} y2={branchY1} stroke={WIRE_COLOR} strokeWidth={WIRE_W} />
       <line x1={junctionX} y1={branchY2} x2={junctionX} y2={y2} stroke={WIRE_COLOR} strokeWidth={WIRE_W} />
       <line x1={junctionX2} y1={y1} x2={junctionX2} y2={branchY1} stroke={WIRE_COLOR} strokeWidth={WIRE_W} />
       <line x1={junctionX2} y1={branchY2} x2={junctionX2} y2={y2} stroke={WIRE_COLOR} strokeWidth={WIRE_W} />
-
-      {/* Branch 1 (top): bulb */}
       <line x1={junctionX} y1={branchY1} x2={midX - 14} y2={branchY1} stroke={WIRE_COLOR} strokeWidth={WIRE_W} />
       <Bulb x={midX} y={branchY1} r={12} />
       <line x1={midX + 14} y1={branchY1} x2={junctionX2} y2={branchY1} stroke={WIRE_COLOR} strokeWidth={WIRE_W} />
-
-      {/* Branch 2 (bottom): resistor */}
       <line x1={junctionX} y1={branchY2} x2={midX - 18} y2={branchY2} stroke={WIRE_COLOR} strokeWidth={WIRE_W} />
       <Resistor x={midX} y={branchY2} w={36} h={16} />
       <line x1={midX + 18} y1={branchY2} x2={junctionX2} y2={branchY2} stroke={WIRE_COLOR} strokeWidth={WIRE_W} />
-
-      {/* Junction dots */}
       <circle cx={junctionX} cy={y1} r={3} fill={WIRE_COLOR} />
       <circle cx={junctionX} cy={y2} r={3} fill={WIRE_COLOR} />
       <circle cx={junctionX2} cy={y1} r={3} fill={WIRE_COLOR} />
       <circle cx={junctionX2} cy={y2} r={3} fill={WIRE_COLOR} />
-
-      {/* Callout dots */}
       {callouts?.map((c, i) => (
         <CalloutDot key={i} x={c.x} y={c.y} n={c.n} accent={c.accent} />
       ))}
@@ -255,43 +229,45 @@ export default function SVGDiagram({
   // ── CIRCUIT DIAGRAM ──────────────────────────────────────────────────────────
   if (spec.type === "circuit") {
     const labels = spec.labels || [];
-    // Build callout positions from label x/y percentages
-    const callouts = showCallouts ? labels.map((l, i) => ({
+    const callouts = labels.map((l, i) => ({
       x: pad + (l.x / 100) * (width - pad * 2),
       y: pad + (l.y / 100) * (height - pad * 2),
       n: i + 1,
       accent: accentColor,
-    })) : [];
+    }));
 
-    // Choose circuit layout based on spec.layout hint
     const layout = (spec as any).layout || "series";
 
     return (
       <svg viewBox={`0 0 ${width} ${height}`} xmlns="http://www.w3.org/2000/svg"
         style={{ width: "100%", maxWidth: width, display: "block", background: "white" }}>
-        {layout === "parallel"
-          ? <ParallelCircuit w={width} h={height} callouts={callouts} />
-          : <SeriesCircuit w={width} h={height} callouts={callouts} />
-        }
+        {spec.title && (
+          <text x={width / 2} y={14} textAnchor="middle" fontSize={fontSize + 1}
+            fontFamily={fontFamily} fill={accentColor} fontWeight="700">{spec.title}</text>
+        )}
+        {layout === "parallel" ? (
+          <ParallelCircuit w={width} h={height} callouts={callouts} />
+        ) : (
+          <SeriesCircuit w={width} h={height} callouts={callouts} />
+        )}
       </svg>
     );
   }
 
-  // ── LABELED / SPIDER DIAGRAM — renders as a mind-map with numbered nodes ──────
+  // ── LABELED DIAGRAM ─────────────────────────────────────────────────────────
   if (spec.type === "labeled") {
     const labels = spec.labels || [];
     const n = labels.length;
     const cx = width / 2;
     const cy = height / 2 + 4;
-    // Central hub radius
     const hubR = Math.min(inner_w, inner_h) * 0.18;
-    // Spoke radius — distance from centre to node centres
     const spokeR = Math.min(inner_w, inner_h) * 0.38;
-    // Node box dimensions
-    const nodeW = 72;
-    const nodeH = 26;
+    // Dynamic node sizing based on longest label
+    const maxLabelLen = Math.max(...labels.map(l => (l.text || "").length), 6);
+    const nodeFontSize = maxLabelLen > 20 ? Math.max(7, fontSize - 3) : maxLabelLen > 14 ? Math.max(8, fontSize - 2) : fontSize - 1;
+    const nodeW = Math.max(72, Math.min(110, maxLabelLen * 5.5 + 24));
+    const nodeH = 28;
 
-    // Distribute nodes evenly around the circle, starting from top
     const angleStep = n > 0 ? (2 * Math.PI) / n : 0;
     const nodePositions = labels.map((_, i) => {
       const angle = -Math.PI / 2 + i * angleStep;
@@ -302,9 +278,7 @@ export default function SVGDiagram({
       };
     });
 
-    // Central topic text — use spec.title or first label text as the hub label
     const hubText = spec.title || "Topic";
-    // Wrap hub text to 2 lines if long
     const hubWords = hubText.split(" ");
     const hubLine1 = hubWords.slice(0, Math.ceil(hubWords.length / 2)).join(" ");
     const hubLine2 = hubWords.slice(Math.ceil(hubWords.length / 2)).join(" ");
@@ -314,7 +288,6 @@ export default function SVGDiagram({
         style={{ width: "100%", maxWidth: width, display: "block", background: "white" }}>
         {/* Spokes from hub to nodes */}
         {nodePositions.map((pos, i) => {
-          // Spoke starts at hub edge, ends at node edge
           const dx = pos.x - cx;
           const dy = pos.y - cy;
           const dist = Math.sqrt(dx * dx + dy * dy);
@@ -342,18 +315,18 @@ export default function SVGDiagram({
             {hubLine2}
           </text>
         )}
-        {/* Node boxes with numbered callout */}
+        {/* Node boxes — numbered only. Labels HIDDEN for students, shown for teachers. */}
         {nodePositions.map((pos, i) => {
           const label = labels[i];
           const labelText = label?.text || "";
-          // Truncate long labels
-          const displayText = labelText.length > 14 ? labelText.slice(0, 13) + "…" : labelText;
+          // Word-wrap for teacher view
+          const wrappedLines = wrapText(labelText, Math.floor(nodeW / (nodeFontSize * 0.55)));
           return (
             <g key={i}>
               {/* Node rectangle */}
               <rect x={pos.x - nodeW / 2} y={pos.y - nodeH / 2}
                 width={nodeW} height={nodeH} rx="5"
-                fill={showCallouts ? "#f8fafc" : "#f8fafc"}
+                fill="#f8fafc"
                 stroke={accentColor} strokeWidth="1.5" />
               {/* Number badge */}
               <circle cx={pos.x - nodeW / 2 + 10} cy={pos.y} r="8"
@@ -362,12 +335,23 @@ export default function SVGDiagram({
                 fontSize={fontSize - 2} fontFamily={fontFamily} fill="white" fontWeight="700">
                 {i + 1}
               </text>
-              {/* Label text — hidden in student view (showCallouts=false means student) */}
-              <text x={pos.x + 4} y={pos.y} textAnchor="middle" dominantBaseline="middle"
-                fontSize={fontSize - 1} fontFamily={fontFamily}
-                fill={showCallouts ? "#1e293b" : "transparent"}>
-                {displayText}
-              </text>
+              {/* Label text — HIDDEN for student view (transparent), visible for teacher view */}
+              {showCallouts ? (
+                wrappedLines.map((line, li) => (
+                  <text key={li} x={pos.x + 4} y={pos.y - ((wrappedLines.length - 1) * (nodeFontSize + 1)) / 2 + li * (nodeFontSize + 1)}
+                    textAnchor="middle" dominantBaseline="middle"
+                    fontSize={nodeFontSize} fontFamily={fontFamily}
+                    fill="#1e293b">
+                    {line}
+                  </text>
+                ))
+              ) : (
+                <text x={pos.x + 4} y={pos.y} textAnchor="middle" dominantBaseline="middle"
+                  fontSize={nodeFontSize} fontFamily={fontFamily}
+                  fill="transparent">
+                  ?
+                </text>
+              )}
             </g>
           );
         })}
@@ -381,39 +365,19 @@ export default function SVGDiagram({
     const n = steps.length;
     if (n === 0) return null;
 
-    // Dynamic sizing: use wider viewBox for more steps
     const flowW = Math.max(width, n * 130 + (n - 1) * 24 + 40);
     const flowH = Math.max(height, 120);
     const flowPad = 20;
     const arrowGap = 20;
     const boxW = Math.max(100, Math.min(160, (flowW - flowPad * 2 - (n - 1) * (arrowGap + 8)) / n));
-    const boxH = 48;
+    const boxH = 52;
     const totalW = n * boxW + (n - 1) * (arrowGap + 8);
     const startX = (flowW - totalW) / 2;
     const midY = flowH / 2 + (spec.title ? 8 : 0);
 
-    // Word-wrap helper: split text into lines that fit within box
-    const wrapText = (text: string, maxChars: number): string[] => {
-      if (text.length <= maxChars) return [text];
-      const words = text.split(/\s+/);
-      const lines: string[] = [];
-      let current = '';
-      for (const word of words) {
-        if (current && (current + ' ' + word).length > maxChars) {
-          lines.push(current);
-          current = word;
-        } else {
-          current = current ? current + ' ' + word : word;
-        }
-      }
-      if (current) lines.push(current);
-      return lines.length > 0 ? lines : [text];
-    };
-
-    // Calculate font size based on longest step text
     const maxStepLen = Math.max(...steps.map(s => s.length));
-    const flowFontSize = maxStepLen > 20 ? Math.max(8, fontSize - 2) : fontSize - 1;
-    const maxCharsPerLine = Math.floor(boxW / (flowFontSize * 0.55));
+    const flowFontSize = maxStepLen > 25 ? Math.max(7, fontSize - 3) : maxStepLen > 18 ? Math.max(8, fontSize - 2) : fontSize - 1;
+    const maxCharsPerLine = Math.floor(boxW / (flowFontSize * 0.52));
 
     return (
       <svg viewBox={`0 0 ${flowW} ${flowH}`} xmlns="http://www.w3.org/2000/svg"
@@ -431,7 +395,13 @@ export default function SVGDiagram({
           return (
             <g key={i}>
               <rect x={bx} y={by} width={boxW} height={boxH} rx="6"
-                fill={accentColor} opacity={0.85 - i * 0.04} />
+                fill={accentColor} opacity={0.85 - i * 0.03} />
+              {/* Step number badge */}
+              <circle cx={bx + 12} cy={by + 12} r="8" fill="white" opacity="0.3" />
+              <text x={bx + 12} y={by + 12} textAnchor="middle" dominantBaseline="middle"
+                fontSize={flowFontSize - 1} fontFamily={fontFamily} fill="white" fontWeight="700" opacity="0.7">
+                {i + 1}
+              </text>
               {textLines.map((line, li) => (
                 <text key={li} x={bx + boxW / 2} y={textStartY + li * lineH}
                   textAnchor="middle" dominantBaseline="middle"
@@ -463,7 +433,12 @@ export default function SVGDiagram({
     const cx = width / 2;
     const cy = height / 2 + 8;
     const r = Math.min(inner_w, inner_h) * 0.36;
-    const boxW = 90; const boxH = 30;
+    // Dynamic box sizing based on longest step
+    const maxStepLen = Math.max(...steps.map(s => s.length), 6);
+    const cycleFontSize = maxStepLen > 22 ? Math.max(7, fontSize - 3) : maxStepLen > 15 ? Math.max(8, fontSize - 2) : fontSize - 1;
+    const boxW = Math.max(80, Math.min(120, maxStepLen * 5 + 20));
+    const boxH = 32;
+    const maxCharsPerLine = Math.floor(boxW / (cycleFontSize * 0.52));
 
     return (
       <svg viewBox={`0 0 ${width} ${height}`} xmlns="http://www.w3.org/2000/svg"
@@ -483,15 +458,20 @@ export default function SVGDiagram({
           const ay1 = cy + (r - 12) * Math.sin(angle + 0.3);
           const ax2 = cx + (r - 12) * Math.cos(nextAngle - 0.3);
           const ay2 = cy + (r - 12) * Math.sin(nextAngle - 0.3);
+          const textLines = wrapText(step, maxCharsPerLine);
+          const lineH = cycleFontSize + 2;
+          const textStartY = by + boxH / 2 - ((textLines.length - 1) * lineH) / 2;
           return (
             <g key={i}>
               <rect x={bx} y={by} width={boxW} height={boxH} rx="5"
                 fill={accentColor} opacity={0.8} />
-              <text x={bx + boxW / 2} y={by + boxH / 2}
-                textAnchor="middle" dominantBaseline="middle"
-                fontSize={fontSize - 1} fontFamily={fontFamily} fill="white" fontWeight="600">
-                {step.length > 18 ? step.slice(0, 18) + "…" : step}
-              </text>
+              {textLines.map((line, li) => (
+                <text key={li} x={bx + boxW / 2} y={textStartY + li * lineH}
+                  textAnchor="middle" dominantBaseline="middle"
+                  fontSize={cycleFontSize} fontFamily={fontFamily} fill="white" fontWeight="600">
+                  {line}
+                </text>
+              ))}
               <path d={`M ${ax1} ${ay1} Q ${cx + r * 0.9 * Math.cos(midAngle)} ${cy + r * 0.9 * Math.sin(midAngle)} ${ax2} ${ay2}`}
                 fill="none" stroke={accentColor} strokeWidth="1.5"
                 markerEnd={`url(#arrow-${i})`} opacity="0.7" />
@@ -583,16 +563,22 @@ export default function SVGDiagram({
           const barH = (bar.value / maxVal) * chartH;
           const bx = chartPad.left + gap + i * (barW + gap);
           const by = chartPad.top + chartH - barH;
+          // Dynamic label sizing
+          const barLabel = bar.label || "";
+          const barLabelSize = barLabel.length > 12 ? Math.max(7, fontSize - 3) : fontSize - 2;
+          const barLabelLines = wrapText(barLabel, Math.floor(barW / (barLabelSize * 0.5)));
           return (
             <g key={i}>
               <rect x={bx} y={by} width={barW} height={barH} rx="3"
                 fill={accentColor} opacity={0.75 + (i % 2) * 0.15} />
               <text x={bx + barW / 2} y={by - 4} textAnchor="middle"
                 fontSize={fontSize - 1} fontFamily={fontFamily} fill={accentColor} fontWeight="600">{bar.value}</text>
-              <text x={bx + barW / 2} y={chartPad.top + chartH + 14} textAnchor="middle"
-                fontSize={fontSize - 2} fontFamily={fontFamily} fill="#374151">
-                {bar.label.length > 10 ? bar.label.slice(0, 10) + "…" : bar.label}
-              </text>
+              {barLabelLines.map((line, li) => (
+                <text key={li} x={bx + barW / 2} y={chartPad.top + chartH + 14 + li * (barLabelSize + 2)} textAnchor="middle"
+                  fontSize={barLabelSize} fontFamily={fontFamily} fill="#374151">
+                  {line}
+                </text>
+              ))}
             </g>
           );
         })}
@@ -648,6 +634,236 @@ export default function SVGDiagram({
         <polygon points={`${cx},${cy - ah - 8} ${cx - 4},${cy - ah} ${cx + 4},${cy - ah}`} fill="#374151" />
         <text x={cx + aw + 16} y={cy + 4} fontSize={fontSize} fontFamily={fontFamily} fill="#374151" fontStyle="italic">{spec.xLabel || "x"}</text>
         <text x={cx + 6} y={cy - ah - 12} fontSize={fontSize} fontFamily={fontFamily} fill="#374151" fontStyle="italic">{spec.yLabel || "y"}</text>
+      </svg>
+    );
+  }
+
+  // ── VENN DIAGRAM ─────────────────────────────────────────────────────────────
+  if (spec.type === "venn") {
+    const setA = spec.setA || "Set A";
+    const setB = spec.setB || "Set B";
+    const onlyA = spec.onlyA || [];
+    const onlyB = spec.onlyB || [];
+    const overlap = spec.overlap || [];
+    const cx = width / 2;
+    const cy = height / 2 + 8;
+    const circleR = Math.min(inner_w * 0.32, inner_h * 0.38);
+    const offset = circleR * 0.55;
+    const itemFontSize = Math.max(7, fontSize - 2);
+
+    return (
+      <svg viewBox={`0 0 ${width} ${height}`} xmlns="http://www.w3.org/2000/svg"
+        style={{ width: "100%", maxWidth: width, display: "block", background: "white" }}>
+        {spec.title && (
+          <text x={width / 2} y={16} textAnchor="middle" fontSize={fontSize + 1}
+            fontFamily={fontFamily} fill={accentColor} fontWeight="700">{spec.title}</text>
+        )}
+        {/* Circle A */}
+        <circle cx={cx - offset} cy={cy} r={circleR} fill={accentColor} opacity="0.12"
+          stroke={accentColor} strokeWidth="2" />
+        {/* Circle B */}
+        <circle cx={cx + offset} cy={cy} r={circleR} fill="#dc2626" opacity="0.10"
+          stroke="#dc2626" strokeWidth="2" />
+        {/* Set labels */}
+        <text x={cx - offset - circleR * 0.4} y={cy - circleR - 6} textAnchor="middle"
+          fontSize={fontSize} fontFamily={fontFamily} fill={accentColor} fontWeight="700">{setA}</text>
+        <text x={cx + offset + circleR * 0.4} y={cy - circleR - 6} textAnchor="middle"
+          fontSize={fontSize} fontFamily={fontFamily} fill="#dc2626" fontWeight="700">{setB}</text>
+        {/* Only A items */}
+        {showCallouts && onlyA.map((item, i) => (
+          <text key={`a${i}`} x={cx - offset - circleR * 0.35} y={cy - circleR * 0.3 + i * (itemFontSize + 4)}
+            textAnchor="middle" fontSize={itemFontSize} fontFamily={fontFamily} fill="#1e293b">{item}</text>
+        ))}
+        {/* Overlap items */}
+        {showCallouts && overlap.map((item, i) => (
+          <text key={`o${i}`} x={cx} y={cy - (overlap.length - 1) * (itemFontSize + 4) / 2 + i * (itemFontSize + 4)}
+            textAnchor="middle" fontSize={itemFontSize} fontFamily={fontFamily} fill="#1e293b" fontWeight="600">{item}</text>
+        ))}
+        {/* Only B items */}
+        {showCallouts && onlyB.map((item, i) => (
+          <text key={`b${i}`} x={cx + offset + circleR * 0.35} y={cy - circleR * 0.3 + i * (itemFontSize + 4)}
+            textAnchor="middle" fontSize={itemFontSize} fontFamily={fontFamily} fill="#1e293b">{item}</text>
+        ))}
+        {/* Blank lines for student view */}
+        {!showCallouts && (
+          <>
+            {[0, 1, 2].map(i => (
+              <line key={`la${i}`} x1={cx - offset - circleR * 0.55} y1={cy - 15 + i * 18}
+                x2={cx - offset - circleR * 0.15} y2={cy - 15 + i * 18}
+                stroke="#d1d5db" strokeWidth="1" strokeDasharray="3,2" />
+            ))}
+            {[0, 1].map(i => (
+              <line key={`lo${i}`} x1={cx - 20} y1={cy - 8 + i * 18}
+                x2={cx + 20} y2={cy - 8 + i * 18}
+                stroke="#d1d5db" strokeWidth="1" strokeDasharray="3,2" />
+            ))}
+            {[0, 1, 2].map(i => (
+              <line key={`lb${i}`} x1={cx + offset + circleR * 0.15} y1={cy - 15 + i * 18}
+                x2={cx + offset + circleR * 0.55} y2={cy - 15 + i * 18}
+                stroke="#d1d5db" strokeWidth="1" strokeDasharray="3,2" />
+            ))}
+          </>
+        )}
+      </svg>
+    );
+  }
+
+  // ── TIMELINE DIAGRAM ─────────────────────────────────────────────────────────
+  if (spec.type === "timeline") {
+    const events = spec.events || [];
+    const n = events.length;
+    if (n === 0) return null;
+    const timelineH = Math.max(height, 140);
+    const timelineW = Math.max(width, n * 100 + 60);
+    const lineY = timelineH * 0.5;
+    const lineX1 = 30;
+    const lineX2 = timelineW - 30;
+    const eventSpacing = (lineX2 - lineX1) / (n - 1 || 1);
+    const eventFontSize = Math.max(7, fontSize - 2);
+
+    return (
+      <svg viewBox={`0 0 ${timelineW} ${timelineH}`} xmlns="http://www.w3.org/2000/svg"
+        style={{ width: "100%", maxWidth: timelineW, display: "block", background: "white" }}>
+        {spec.title && (
+          <text x={timelineW / 2} y={16} textAnchor="middle" fontSize={fontSize + 1}
+            fontFamily={fontFamily} fill={accentColor} fontWeight="700">{spec.title}</text>
+        )}
+        {/* Main timeline line */}
+        <line x1={lineX1} y1={lineY} x2={lineX2} y2={lineY} stroke={accentColor} strokeWidth="2.5" />
+        <polygon points={`${lineX2 + 8},${lineY} ${lineX2},${lineY - 5} ${lineX2},${lineY + 5}`} fill={accentColor} />
+        {/* Events */}
+        {events.map((event, i) => {
+          const ex = lineX1 + i * eventSpacing;
+          const above = i % 2 === 0;
+          const dateY = above ? lineY - 28 : lineY + 36;
+          const labelY = above ? lineY - 44 : lineY + 52;
+          const tickEnd = above ? lineY - 18 : lineY + 18;
+          const dateLines = wrapText(event.date || "", 12);
+          const labelLines = wrapText(event.label || "", 14);
+          return (
+            <g key={i}>
+              {/* Tick mark */}
+              <line x1={ex} y1={lineY} x2={ex} y2={tickEnd} stroke={accentColor} strokeWidth="1.5" />
+              <circle cx={ex} cy={lineY} r="4" fill={accentColor} />
+              {/* Date */}
+              {dateLines.map((dl, di) => (
+                <text key={`d${di}`} x={ex} y={dateY + di * (eventFontSize + 2)} textAnchor="middle"
+                  fontSize={eventFontSize} fontFamily={fontFamily} fill={accentColor} fontWeight="700">{dl}</text>
+              ))}
+              {/* Label — hidden for students */}
+              {showCallouts && labelLines.map((ll, li) => (
+                <text key={`l${li}`} x={ex} y={labelY + li * (eventFontSize + 2)} textAnchor="middle"
+                  fontSize={eventFontSize} fontFamily={fontFamily} fill="#374151">{ll}</text>
+              ))}
+              {!showCallouts && (
+                <text x={ex} y={labelY} textAnchor="middle"
+                  fontSize={eventFontSize + 1} fontFamily={fontFamily} fill={accentColor} fontWeight="700">{i + 1}</text>
+              )}
+            </g>
+          );
+        })}
+      </svg>
+    );
+  }
+
+  // ── PYRAMID DIAGRAM ──────────────────────────────────────────────────────────
+  if (spec.type === "pyramid") {
+    const levels = spec.levels || [];
+    const n = levels.length;
+    if (n === 0) return null;
+    const pyrW = width;
+    const pyrH = Math.max(height, n * 36 + 40);
+    const topX = pyrW / 2;
+    const topY = 30;
+    const baseW = pyrW * 0.85;
+    const totalH = pyrH - 50;
+    const levelH = totalH / n;
+    const pyrFontSize = Math.max(8, fontSize - 1);
+
+    return (
+      <svg viewBox={`0 0 ${pyrW} ${pyrH}`} xmlns="http://www.w3.org/2000/svg"
+        style={{ width: "100%", maxWidth: pyrW, display: "block", background: "white" }}>
+        {spec.title && (
+          <text x={pyrW / 2} y={16} textAnchor="middle" fontSize={fontSize + 1}
+            fontFamily={fontFamily} fill={accentColor} fontWeight="700">{spec.title}</text>
+        )}
+        {levels.map((level, i) => {
+          const y = topY + i * levelH;
+          const widthFrac = (i + 0.5) / n;
+          const nextWidthFrac = (i + 1.5) / n;
+          const topW = baseW * widthFrac;
+          const botW = baseW * Math.min(nextWidthFrac, 1);
+          const opacity = 0.9 - i * (0.4 / n);
+          const textLines = wrapText(level, Math.floor(botW / (pyrFontSize * 0.55)));
+          const lineH = pyrFontSize + 2;
+          const textMidY = y + levelH / 2;
+          return (
+            <g key={i}>
+              {/* Trapezoid shape */}
+              <polygon
+                points={`${topX - topW / 2},${y} ${topX + topW / 2},${y} ${topX + botW / 2},${y + levelH} ${topX - botW / 2},${y + levelH}`}
+                fill={accentColor} opacity={opacity}
+                stroke="white" strokeWidth="2" />
+              {/* Level number */}
+              <text x={topX - botW / 2 - 16} y={textMidY + 4} textAnchor="middle"
+                fontSize={pyrFontSize - 1} fontFamily={fontFamily} fill={accentColor} fontWeight="700">{i + 1}</text>
+              {/* Label — hidden for students */}
+              {showCallouts && textLines.map((line, li) => (
+                <text key={li} x={topX} y={textMidY - ((textLines.length - 1) * lineH) / 2 + li * lineH}
+                  textAnchor="middle" dominantBaseline="middle"
+                  fontSize={pyrFontSize} fontFamily={fontFamily} fill="white" fontWeight="600">{line}</text>
+              ))}
+              {!showCallouts && (
+                <text x={topX} y={textMidY} textAnchor="middle" dominantBaseline="middle"
+                  fontSize={pyrFontSize + 2} fontFamily={fontFamily} fill="white" fontWeight="700">?</text>
+              )}
+            </g>
+          );
+        })}
+      </svg>
+    );
+  }
+
+  // ── FRACTION BAR DIAGRAM ─────────────────────────────────────────────────────
+  if (spec.type === "fraction-bar") {
+    const denom = spec.denominator || 4;
+    const numer = spec.numerator ?? 1;
+    const label = spec.fractionLabel || `${numer}/${denom}`;
+    const barX = pad + 10;
+    const barY = height / 2 - 16;
+    const barW = width - pad * 2 - 20;
+    const barH = 32;
+    const segW = barW / denom;
+
+    return (
+      <svg viewBox={`0 0 ${width} ${height}`} xmlns="http://www.w3.org/2000/svg"
+        style={{ width: "100%", maxWidth: width, display: "block", background: "white" }}>
+        {spec.title && (
+          <text x={width / 2} y={16} textAnchor="middle" fontSize={fontSize + 1}
+            fontFamily={fontFamily} fill={accentColor} fontWeight="700">{spec.title}</text>
+        )}
+        {/* Fraction label */}
+        <text x={width / 2} y={barY - 8} textAnchor="middle"
+          fontSize={fontSize + 2} fontFamily={fontFamily} fill={accentColor} fontWeight="700">{label}</text>
+        {/* Bar segments */}
+        {Array.from({ length: denom }, (_, i) => {
+          const sx = barX + i * segW;
+          const filled = i < numer;
+          return (
+            <g key={i}>
+              <rect x={sx} y={barY} width={segW} height={barH} rx="2"
+                fill={filled ? accentColor : "#f1f5f9"}
+                stroke={accentColor} strokeWidth="1.5" opacity={filled ? 0.8 : 1} />
+              <text x={sx + segW / 2} y={barY + barH + 16} textAnchor="middle"
+                fontSize={fontSize - 2} fontFamily={fontFamily} fill="#6b7280">
+                {`1/${denom}`}
+              </text>
+            </g>
+          );
+        })}
+        {/* Whole bar outline */}
+        <rect x={barX} y={barY} width={barW} height={barH} rx="2"
+          fill="none" stroke={accentColor} strokeWidth="2" />
       </svg>
     );
   }

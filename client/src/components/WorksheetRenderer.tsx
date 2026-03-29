@@ -1062,13 +1062,27 @@ function formatContent(content: string | any, fmt: ReturnType<typeof getSendForm
   // If they reach formatContent they must be stripped silently so raw JSON never renders.
   content = content.replace(/\[\[DIAGRAM:\{[\s\S]*?\}\]\]/g, "").trim();
   // Strip AI instruction lines that should never appear in rendered content
+  // Robust: handles leading pipes, asterisks, whitespace, and partial matches
   content = content.split("\n").filter((line: string) => {
     const t = line.trim();
-    if (/^IMPORTANT:/i.test(t)) return false;
-    if (/^LABELS:/i.test(t)) return false;
-    if (/^ANSWERS:/i.test(t)) return false;
-    if (/^NOTE:/i.test(t) && /generic|placeholder|specific/i.test(t)) return false;
-    if (/^CRITICAL:/i.test(t)) return false;
+    // Direct prefix matches (case-insensitive), with optional leading ** or |
+    if (/^\|?\s*\*{0,2}\s*IMPORTANT\s*[:—\-|]/i.test(t)) return false;
+    if (/^\|?\s*\*{0,2}\s*LABELS\s*[:—\-|]/i.test(t)) return false;
+    if (/^\|?\s*\*{0,2}\s*ANSWERS\s*[:—\-|]/i.test(t)) return false;
+    if (/^\|?\s*\*{0,2}\s*NOTE\s*[:—\-|]/i.test(t)) return false;
+    if (/^\|?\s*\*{0,2}\s*CRITICAL\s*[:—\-|]/i.test(t)) return false;
+    if (/^\|?\s*\*{0,2}\s*DIAGRAM\s*(TYPE|RULES|INSTRUCTION)\s*[:—\-|]/i.test(t)) return false;
+    if (/^\|?\s*\*{0,2}\s*TOPIC[\s-]*SPECIFIC/i.test(t)) return false;
+    if (/^\|?\s*\*{0,2}\s*SVG DIAGRAM/i.test(t)) return false;
+    if (/^\|?\s*\*{0,2}\s*ADVANCED QUESTION/i.test(t)) return false;
+    // Strip lines that are just "LABELS" or "ANSWERS" headers
+    if (/^\|?\s*labels\s*\|?\s*$/i.test(t)) return false;
+    if (/^\|?\s*answers\s*\|?\s*$/i.test(t)) return false;
+    // Strip separator rows between LABELS/ANSWERS tables (e.g. |---|---|)
+    if (/^\|[\s\-:]+\|/.test(t) && t.split('|').length >= 3) {
+      const cells = t.split('|').filter((c: string) => c.trim());
+      if (cells.every((c: string) => /^[\s\-:]+$/.test(c))) return false;
+    }
     return true;
   }).join("\n");
   // ── Systemic content pre-processor ─────────────────────────────────────────────
@@ -1813,7 +1827,7 @@ function LabelDiagramSection({
               fontFamily={fmt.fontFamily}
               fontSize={fmt.fontSize - 1}
               accentColor={accentColor}
-              showCallouts={false}
+              showCallouts={isTeacher}
             />
           ) : (
             <svg width="100%" height="180" xmlns="http://www.w3.org/2000/svg">
@@ -1909,7 +1923,7 @@ function DiagramSubQSection({
             fontFamily={fmt.fontFamily}
             fontSize={fmt.fontSize - 1}
             accentColor={accentColor}
-            showCallouts={false}
+            showCallouts={isTeacher}
           />
         ) : (
           <svg width="100%" height="180" xmlns="http://www.w3.org/2000/svg">
@@ -4346,6 +4360,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                           fontFamily={fmt.fontFamily}
                           fontSize={fmt.fontSize - 1}
                           accentColor={fmt.accentColor}
+                          showCallouts={isTeacherView}
                         />
                         <p style={{ fontSize: `${fmt.fontSize - 2}px`, color: "#6b7280", textAlign: "center", marginTop: "4px", fontFamily: fmt.fontFamily, fontStyle: "italic" }}>
                           Diagram — refer to this when answering the questions above
@@ -4647,6 +4662,19 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                   }
                   if (section.type === "q-matching") {
                     return <MatchingSection content={content} fmt={fmt} />;
+                  }
+                  // ── Advanced question types (from pasted spec) ──
+                  if (section.type === "q-error-correction" || section.type === "error_correction") {
+                    return <ErrorCorrectionSection content={content} fmt={fmt} isTeacher={isTeacherView} />;
+                  }
+                  if (section.type === "q-ranking" || section.type === "ranking") {
+                    return <RankingSection content={content} fmt={fmt} isTeacher={isTeacherView} />;
+                  }
+                  if (section.type === "q-what-changed" || section.type === "what_changed") {
+                    return <WhatChangedSection content={content} fmt={fmt} isTeacher={isTeacherView} />;
+                  }
+                  if (section.type === "q-constraint-problem" || section.type === "constraint_problem") {
+                    return <ConstraintProblemSection content={content} fmt={fmt} isTeacher={isTeacherView} />;
                   }
                   if (section.type === "prior-knowledge") {
                     // Prior knowledge check — appears after LO, before vocab

@@ -248,6 +248,15 @@ function estimateMarksFromWorksheet(worksheet: WorksheetData, totalQuestions: nu
         "q-circuit": 4,
         "q-ordering": 3,
         "q-matching": 3,
+        // Advanced question types
+        "q-error-correction": 4,
+        "q-ranking": 3,
+        "q-what-changed": 4,
+        "q-constraint-problem": 5,
+        "error_correction": 4,
+        "ranking": 3,
+        "what_changed": 4,
+        "constraint_problem": 5,
       };
       marks.push(typeMarks[section.type] ?? 3);
     }
