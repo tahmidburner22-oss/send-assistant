@@ -1159,7 +1159,7 @@ STRICT JSON OUTPUT: Respond with valid JSON only — no markdown, no code blocks
       return {
         type: 'labeled',
         instruction: `Label the diagram. Write the correct name for each numbered part.`,
-        example: `[[DIAGRAM:{"type":"labeled","title":"${topic}","labels":[{"text":"[part 1]","x":20,"y":25},{"text":"[part 2]","x":80,"y":25},{"text":"[part 3]","x":20,"y":60},{"text":"[part 4]","x":80,"y":60},{"text":"[part 5]","x":50,"y":85}]}]]`
+        example: `[[DIAGRAM:{"type":"labeled","title":"${topic}","labels":[{"text":"Use REAL term A from ${topic}","x":20,"y":25},{"text":"Real term B","x":80,"y":25},{"text":"Real term C","x":20,"y":60},{"text":"Real term D","x":80,"y":60},{"text":"Real term E","x":50,"y":85}]}]]`
       };
     }
 
@@ -1177,7 +1177,7 @@ STRICT JSON OUTPUT: Respond with valid JSON only — no markdown, no code blocks
       return {
         type: 'labeled',
         instruction: `Label the diagram. Write the correct term next to each numbered part.`,
-        example: `[[DIAGRAM:{"type":"labeled","title":"${topic}","labels":[{"text":"[component 1]","x":50,"y":15},{"text":"[component 2]","x":85,"y":50},{"text":"[component 3]","x":50,"y":85},{"text":"[component 4]","x":15,"y":50}]}]]`
+        example: `[[DIAGRAM:{"type":"labeled","title":"${topic}","labels":[{"text":"Use REAL chemistry term from ${topic}","x":50,"y":15},{"text":"Real term 2","x":85,"y":50},{"text":"Real term 3","x":50,"y":85},{"text":"Real term 4","x":15,"y":50}]}]]`
       };
     }
 
@@ -1213,7 +1213,7 @@ STRICT JSON OUTPUT: Respond with valid JSON only — no markdown, no code blocks
       return {
         type: 'labeled',
         instruction: `Label the diagram. Write the correct mathematical term next to each numbered part.`,
-        example: `[[DIAGRAM:{"type":"labeled","title":"${topic}","labels":[{"text":"[part 1]","x":50,"y":10},{"text":"[part 2]","x":85,"y":50},{"text":"[part 3]","x":50,"y":90},{"text":"[part 4]","x":15,"y":50}]}]]`
+        example: `[[DIAGRAM:{"type":"labeled","title":"${topic}","labels":[{"text":"Use REAL maths term from ${topic}","x":50,"y":10},{"text":"Real term 2","x":85,"y":50},{"text":"Real term 3","x":50,"y":90},{"text":"Real term 4","x":15,"y":50}]}]]`
       };
     }
 
@@ -1240,7 +1240,7 @@ STRICT JSON OUTPUT: Respond with valid JSON only — no markdown, no code blocks
       return {
         type: 'labeled',
         instruction: `Label the diagram. Write the correct term next to each numbered arrow or part.`,
-        example: `[[DIAGRAM:{"type":"labeled","title":"${topic}","labels":[{"text":"[force/component 1]","x":50,"y":10},{"text":"[force/component 2]","x":90,"y":50},{"text":"[force/component 3]","x":50,"y":90},{"text":"[force/component 4]","x":10,"y":50},{"text":"[force/component 5]","x":50,"y":50}]}]]`
+        example: `[[DIAGRAM:{"type":"labeled","title":"${topic}","labels":[{"text":"Use REAL physics term from ${topic}","x":50,"y":10},{"text":"Real term 2","x":88,"y":50},{"text":"Real term 3","x":50,"y":88},{"text":"Real term 4","x":12,"y":50},{"text":"Real term 5","x":50,"y":50}]}]]`
       };
     }
 
@@ -1258,7 +1258,7 @@ STRICT JSON OUTPUT: Respond with valid JSON only — no markdown, no code blocks
       return {
         type: 'labeled',
         instruction: `Label the diagram. Write the correct geographical term next to each numbered feature.`,
-        example: `[[DIAGRAM:{"type":"labeled","title":"${topic}","labels":[{"text":"[feature 1]","x":25,"y":20},{"text":"[feature 2]","x":75,"y":20},{"text":"[feature 3]","x":25,"y":70},{"text":"[feature 4]","x":75,"y":70},{"text":"[feature 5]","x":50,"y":45}]}]]`
+        example: `[[DIAGRAM:{"type":"labeled","title":"${topic}","labels":[{"text":"Use REAL geography term from ${topic}","x":25,"y":20},{"text":"Real term 2","x":75,"y":20},{"text":"Real term 3","x":25,"y":70},{"text":"Real term 4","x":75,"y":70},{"text":"Real term 5","x":50,"y":45}]}]]`
       };
     }
 
@@ -1285,7 +1285,7 @@ STRICT JSON OUTPUT: Respond with valid JSON only — no markdown, no code blocks
       return {
         type: 'labeled',
         instruction: `Label each numbered node of the character web with the correct character name and their role.`,
-        example: `[[DIAGRAM:{"type":"labeled","title":"${topic} Characters","labels":[{"text":"[Character 1]","x":50,"y":10},{"text":"[Character 2]","x":90,"y":35},{"text":"[Character 3]","x":75,"y":80},{"text":"[Character 4]","x":25,"y":80},{"text":"[Character 5]","x":10,"y":35}]}]]`
+        example: `[[DIAGRAM:{"type":"labeled","title":"${topic} Characters","labels":[{"text":"Real character name from ${topic}","x":50,"y":10},{"text":"Real character name","x":88,"y":35},{"text":"Real character name","x":75,"y":80},{"text":"Real character name","x":25,"y":80},{"text":"Real character name","x":12,"y":35}]}]]`
       };
     }
 
@@ -1294,7 +1294,7 @@ STRICT JSON OUTPUT: Respond with valid JSON only — no markdown, no code blocks
       return {
         type: 'labeled',
         instruction: `Label each numbered node with the correct theme, technique, or concept from the text.`,
-        example: `[[DIAGRAM:{"type":"labeled","title":"${topic} Themes","labels":[{"text":"[Theme 1]","x":50,"y":10},{"text":"[Theme 2]","x":90,"y":35},{"text":"[Theme 3]","x":75,"y":80},{"text":"[Theme 4]","x":25,"y":80},{"text":"[Theme 5]","x":10,"y":35}]}]]`
+        example: `[[DIAGRAM:{"type":"labeled","title":"${topic} Themes","labels":[{"text":"Real theme from ${topic}","x":50,"y":10},{"text":"Real theme","x":88,"y":35},{"text":"Real technique","x":75,"y":80},{"text":"Real concept","x":25,"y":80},{"text":"Real theme","x":12,"y":35}]}]]`
       };
     }
 
@@ -1321,7 +1321,7 @@ STRICT JSON OUTPUT: Respond with valid JSON only — no markdown, no code blocks
       return {
         type: 'labeled',
         instruction: `Label each numbered node with the correct concept, belief, or practice.`,
-        example: `[[DIAGRAM:{"type":"labeled","title":"${topic}","labels":[{"text":"[Concept 1]","x":50,"y":10},{"text":"[Concept 2]","x":90,"y":35},{"text":"[Concept 3]","x":75,"y":80},{"text":"[Concept 4]","x":25,"y":80}]}]]`
+        example: `[[DIAGRAM:{"type":"labeled","title":"${topic}","labels":[{"text":"Real concept from ${topic}","x":50,"y":10},{"text":"Real belief","x":88,"y":35},{"text":"Real practice","x":75,"y":80},{"text":"Real term","x":25,"y":80}]}]]`
       };
     }
 
@@ -1348,7 +1348,7 @@ STRICT JSON OUTPUT: Respond with valid JSON only — no markdown, no code blocks
       return {
         type: 'labeled',
         instruction: `Label each numbered node with the correct business/economics term.`,
-        example: `[[DIAGRAM:{"type":"labeled","title":"${topic}","labels":[{"text":"[Term 1]","x":50,"y":10},{"text":"[Term 2]","x":90,"y":35},{"text":"[Term 3]","x":75,"y":80},{"text":"[Term 4]","x":25,"y":80}]}]]`
+        example: `[[DIAGRAM:{"type":"labeled","title":"${topic}","labels":[{"text":"Real term from ${topic}","x":50,"y":10},{"text":"Real term 2","x":88,"y":35},{"text":"Real term 3","x":75,"y":80},{"text":"Real term 4","x":25,"y":80}]}]]`
       };
     }
 
@@ -1366,7 +1366,7 @@ STRICT JSON OUTPUT: Respond with valid JSON only — no markdown, no code blocks
       return {
         type: 'labeled',
         instruction: `Label the diagram. Write the correct term next to each numbered part.`,
-        example: `[[DIAGRAM:{"type":"labeled","title":"${topic}","labels":[{"text":"[Part 1]","x":50,"y":10},{"text":"[Part 2]","x":85,"y":50},{"text":"[Part 3]","x":50,"y":90},{"text":"[Part 4]","x":15,"y":50}]}]]`
+        example: `[[DIAGRAM:{"type":"labeled","title":"${topic}","labels":[{"text":"Real part from ${topic}","x":50,"y":12},{"text":"Real part 2","x":85,"y":50},{"text":"Real part 3","x":50,"y":88},{"text":"Real part 4","x":15,"y":50}]}]]`
       };
     }
 
@@ -1375,7 +1375,7 @@ STRICT JSON OUTPUT: Respond with valid JSON only — no markdown, no code blocks
       return {
         type: 'labeled',
         instruction: `Label the diagram. Write the correct word next to each number.`,
-        example: `[[DIAGRAM:{"type":"labeled","title":"${topic}","labels":[{"text":"[Part 1]","x":50,"y":10},{"text":"[Part 2]","x":85,"y":50},{"text":"[Part 3]","x":50,"y":90},{"text":"[Part 4]","x":15,"y":50}]}]]`
+        example: `[[DIAGRAM:{"type":"labeled","title":"${topic}","labels":[{"text":"Real part from ${topic}","x":50,"y":12},{"text":"Real part 2","x":85,"y":50},{"text":"Real part 3","x":50,"y":88},{"text":"Real part 4","x":15,"y":50}]}]]`
       };
     }
 
@@ -1384,7 +1384,7 @@ STRICT JSON OUTPUT: Respond with valid JSON only — no markdown, no code blocks
       return {
         type: 'labeled',
         instruction: `Label the diagram. Write the correct word next to each number.`,
-        example: `[[DIAGRAM:{"type":"labeled","title":"${topic}","labels":[{"text":"[Part 1]","x":20,"y":25},{"text":"[Part 2]","x":80,"y":25},{"text":"[Part 3]","x":20,"y":60},{"text":"[Part 4]","x":80,"y":60},{"text":"[Part 5]","x":50,"y":85}]}]]`
+        example: `[[DIAGRAM:{"type":"labeled","title":"${topic}","labels":[{"text":"Real part from ${topic}","x":20,"y":25},{"text":"Real part 2","x":80,"y":25},{"text":"Real part 3","x":20,"y":60},{"text":"Real part 4","x":80,"y":60},{"text":"Real part 5","x":50,"y":85}]}]]`
       };
     }
 
@@ -1392,7 +1392,7 @@ STRICT JSON OUTPUT: Respond with valid JSON only — no markdown, no code blocks
     return {
       type: 'auto',
       instruction: `Label the diagram. Write the correct term next to each number.`,
-      example: `[[DIAGRAM:{"type":"labeled","title":"${topic}","labels":[{"text":"[Concept 1]","x":50,"y":10},{"text":"[Concept 2]","x":90,"y":35},{"text":"[Concept 3]","x":75,"y":80},{"text":"[Concept 4]","x":25,"y":80}]}]]`
+      example: `[[DIAGRAM:{"type":"labeled","title":"${topic}","labels":[{"text":"Real concept from ${topic}","x":50,"y":10},{"text":"Real belief","x":88,"y":35},{"text":"Real practice","x":75,"y":80},{"text":"Real term","x":25,"y":80}]}]]`
     };
   };
 

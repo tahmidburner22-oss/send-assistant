@@ -316,7 +316,7 @@ app.use("/api/mis", misRouter);
 app.use("/api/briefing", briefingRouter);
 app.use("/api/quiz", quizRouter);
 app.use("/api/admin", superadminRouter);
-app.use("/api/diagram-proxy", diagramProxyRouter);
+app.use("/api/diagram-proxy", aiLimiter, diagramProxyRouter);
 app.use("/api/feedback", feedbackRouter);
 app.use("/api/messages", parentMessagesRouter);
 
