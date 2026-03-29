@@ -126,29 +126,89 @@ const ADVANCED_SECTION_PLACEMENT: Record<string, QuestionType[]> = {
   "challenge": ["q-error-correction"],
 };
 
-/** Standard 30-min base question plan for secondary GCSE */
-const BASE_30MIN_SECONDARY: QuestionType[] = [
-  "q-true-false",     // Q1 — Knowledge Check
-  "q-mcq",            // Q2 — Knowledge Check
-  "q-gap-fill",       // Q3 — Knowledge Check
-  "q-short-answer",   // Q4 — Understanding
-  "q-matching",       // Q5 — Understanding (replaced by advanced type injection)
-  "q-short-answer",   // Q6 — Understanding
-  "q-extended",       // Q7 — Application & Analysis
-  "q-ordering",       // Q8 — Application & Analysis (replaced by advanced type injection)
-  "q-extended",       // Q9 — Application & Analysis
+/**
+ * Full pool of question types available per phase.
+ * Round-robin selection ensures all types are used once before any repeats.
+ */
+const SECONDARY_RECALL_POOL: QuestionType[] = [
+  "q-true-false", "q-mcq", "q-gap-fill", "q-ordering", "q-matching",
+];
+const SECONDARY_UNDERSTANDING_POOL: QuestionType[] = [
+  "q-short-answer", "q-matching", "q-ordering", "q-data-table",
+];
+const SECONDARY_APPLICATION_POOL: QuestionType[] = [
+  "q-extended", "q-data-table", "q-short-answer", "q-graph",
 ];
 
-/** Standard 30-min base question plan for primary */
-const BASE_30MIN_PRIMARY: QuestionType[] = [
-  "q-true-false",     // Q1 — Warm Up
-  "q-mcq",            // Q2 — Warm Up
-  "q-gap-fill",       // Q3 — Warm Up
-  "q-short-answer",   // Q4 — Practice
-  "q-short-answer",   // Q5 — Practice
-  "q-draw",           // Q6 — Practice
-  "q-short-answer",   // Q7 — Challenge
+const PRIMARY_WARMUP_POOL: QuestionType[] = [
+  "q-true-false", "q-mcq", "q-gap-fill", "q-ordering", "q-matching",
 ];
+const PRIMARY_PRACTICE_POOL: QuestionType[] = [
+  "q-short-answer", "q-draw", "q-matching", "q-gap-fill", "q-ordering",
+];
+const PRIMARY_CHALLENGE_POOL: QuestionType[] = [
+  "q-short-answer", "q-extended", "q-draw",
+];
+
+/** Fisher-Yates shuffle */
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+/**
+ * Round-robin picker: returns `count` items from `pool`, cycling through
+ * the shuffled pool so every type is used once before any type repeats.
+ * Avoids placing the same type as `lastType` at the start.
+ */
+function roundRobinPick(
+  pool: QuestionType[],
+  count: number,
+  lastType?: QuestionType,
+): QuestionType[] {
+  const shuffled = shuffle(pool);
+  // If the first item matches lastType, rotate it to the end
+  if (lastType && shuffled[0] === lastType && shuffled.length > 1) {
+    shuffled.push(shuffled.shift()!);
+  }
+  const result: QuestionType[] = [];
+  let i = 0;
+  while (result.length < count) {
+    result.push(shuffled[i % shuffled.length]);
+    i++;
+    // After exhausting the pool once, re-shuffle for the next cycle
+    if (i > 0 && i % shuffled.length === 0) {
+      const next = shuffle(pool);
+      shuffled.splice(0, shuffled.length, ...next);
+    }
+  }
+  return result;
+}
+
+/**
+ * Builds a round-robin question sequence for secondary school (9 questions).
+ * Each section draws from its own pool, exhausting all types before repeating.
+ */
+function buildSecondarySequence(): QuestionType[] {
+  const sec1 = roundRobinPick(SECONDARY_RECALL_POOL, 3);           // Q1-Q3
+  const sec2 = roundRobinPick(SECONDARY_UNDERSTANDING_POOL, 3, sec1[sec1.length - 1]); // Q4-Q6
+  const sec3 = roundRobinPick(SECONDARY_APPLICATION_POOL, 3, sec2[sec2.length - 1]);  // Q7-Q9
+  return [...sec1, ...sec2, ...sec3];
+}
+
+/**
+ * Builds a round-robin question sequence for primary school (7 questions).
+ */
+function buildPrimarySequence(): QuestionType[] {
+  const sec1 = roundRobinPick(PRIMARY_WARMUP_POOL, 3);             // Q1-Q3
+  const sec2 = roundRobinPick(PRIMARY_PRACTICE_POOL, 3, sec1[sec1.length - 1]); // Q4-Q6
+  const sec3 = roundRobinPick(PRIMARY_CHALLENGE_POOL, 1, sec2[sec2.length - 1]); // Q7
+  return [...sec1, ...sec2, ...sec3];
+}
 
 /** Section definitions for secondary worksheets */
 const SECONDARY_SECTIONS = [
@@ -260,14 +320,20 @@ function scaleForDuration(baseTypes: QuestionType[], durationMins: number, phase
     return baseTypes.slice(0, 5); // Q1-Q5
   }
   if (durationMins >= 60) {
-    // Add extra questions
-    const extra: QuestionType[] = phase === "secondary"
-      ? ["q-extended", "q-data-table"]
-      : ["q-short-answer", "q-draw"];
+    // Add 2 extra questions using round-robin from application pool (avoid repeating last type)
+    const lastType = baseTypes[baseTypes.length - 1];
+    const extra = phase === "secondary"
+      ? roundRobinPick(SECONDARY_APPLICATION_POOL, 2, lastType)
+      : roundRobinPick(PRIMARY_PRACTICE_POOL, 2, lastType);
     return [...baseTypes, ...extra];
   }
   if (durationMins >= 45) {
-    return [...baseTypes, "q-extended"];
+    // Add 1 extra question using round-robin
+    const lastType = baseTypes[baseTypes.length - 1];
+    const extra = phase === "secondary"
+      ? roundRobinPick(SECONDARY_APPLICATION_POOL, 1, lastType)
+      : roundRobinPick(PRIMARY_PRACTICE_POOL, 1, lastType);
+    return [...baseTypes, ...extra];
   }
   return baseTypes; // 30 min base
 }
@@ -288,8 +354,8 @@ export function createWorksheetPlan(params: {
   const warnings: string[] = [];
   const isPrimary = params.phase === "primary";
 
-  // 1. Choose base question sequence
-  const baseTypes = isPrimary ? [...BASE_30MIN_PRIMARY] : [...BASE_30MIN_SECONDARY];
+  // 1. Build round-robin question sequence (all types exhausted before repeating)
+  const baseTypes = isPrimary ? buildPrimarySequence() : buildSecondarySequence();
 
   // 2. Scale for duration
   let questionTypes = scaleForDuration(baseTypes, params.durationMins, params.phase);
