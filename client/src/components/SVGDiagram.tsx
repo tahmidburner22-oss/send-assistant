@@ -269,10 +269,10 @@ export default function SVGDiagram({
     const maxLabelLen = Math.max(...labels.map(l => (l.text || "").length), 6);
     const labelFontSize = maxLabelLen > 22 ? Math.max(7, fontSize - 3) : maxLabelLen > 15 ? Math.max(8, fontSize - 2) : fontSize - 1;
     const labelBoxW = Math.max(80, Math.min(120, maxLabelLen * 5.2 + 20));
-    const labelBoxH = 24;
-    const dotR = 8;
-    const margin = labelBoxW + 18;
-    const topMargin = spec.title ? 26 : 12;
+    const labelBoxH = 28;
+    const dotR = 9;
+    const margin = labelBoxW + 20;
+    const topMargin = spec.title ? 30 : 14;
     const diagX1 = margin;
     const diagY1 = topMargin + 8;
     const diagX2 = width - margin;
@@ -287,20 +287,20 @@ export default function SVGDiagram({
     const ys = labels.map(l => l.y ?? 50);
     const xSpread = Math.max(...xs) - Math.min(...xs);
     const ySpread = Math.max(...ys) - Math.min(...ys);
-    const isRadial = n >= 5 && xSpread > 50 && ySpread > 50;
-    const isChain = n <= 3 || (ySpread > xSpread * 1.5);
+    const isRadial = n >= 4 && xSpread > 40 && ySpread > 40;
+    const isChain = !isRadial && (n <= 3 || (ySpread > xSpread * 1.5));
     const isEllipse = !isRadial && !isChain && xSpread > ySpread * 1.5;
     // Default: organic blob
 
     // Build the background shape path
     let shapePath: string;
     if (isRadial) {
-      // Radial web: large circle as hub
-      const r = Math.min(diagW, diagH) * 0.38;
+      // Radial web: large circle as hub — good for character webs and concept maps
+      const r = Math.min(diagW, diagH) * 0.40;
       shapePath = `M ${cx} ${cy - r} A ${r} ${r} 0 1 1 ${cx - 0.01} ${cy - r} Z`;
     } else if (isChain) {
       // Vertical chain: tall rounded rectangle
-      const rw = diagW * 0.28;
+      const rw = diagW * 0.30;
       const rh = diagH * 0.82;
       const rx = cx - rw / 2;
       const ry = cy - rh / 2;
@@ -311,7 +311,7 @@ export default function SVGDiagram({
       const ry2 = diagH * 0.34;
       shapePath = `M ${cx - rx2} ${cy} A ${rx2} ${ry2} 0 1 1 ${cx + rx2} ${cy} A ${rx2} ${ry2} 0 1 1 ${cx - rx2} ${cy} Z`;
     } else {
-      // Organic blob: rounded asymmetric shape
+      // Organic blob: rounded asymmetric shape for cells/organs
       const bx = cx, by = cy;
       const bw = diagW * 0.44, bh = diagH * 0.56;
       shapePath = [
@@ -323,19 +323,21 @@ export default function SVGDiagram({
       ].join(' ');
     }
 
-    // Map each label's x/y (0-100) into the diagram area
+    // Map each label's x/y (0-100) into the diagram area, clamped to stay inside
     const dots = labels.map((l, i) => {
-      const dotX = diagX1 + (l.x / 100) * diagW;
-      const dotY = diagY1 + (l.y / 100) * diagH;
+      // Clamp dot positions to be within diagram bounds (avoid floating in empty space)
+      const clampedX = Math.max(10, Math.min(90, l.x ?? 50));
+      const clampedY = Math.max(10, Math.min(90, l.y ?? 50));
+      const dotX = diagX1 + (clampedX / 100) * diagW;
+      const dotY = diagY1 + (clampedY / 100) * diagH;
       const goLeft = dotX < cx;
-      const rawLabelY = dotY;
-      const clampedLabelY = Math.max(topMargin + labelBoxH / 2 + 4, Math.min(height - labelBoxH / 2 - 4, rawLabelY));
+      const clampedLabelY = Math.max(topMargin + labelBoxH / 2 + 4, Math.min(height - labelBoxH / 2 - 4, dotY));
       return { dotX, dotY, goLeft, labelY: clampedLabelY, label: l, index: i };
     });
 
     const spreadLabels = (items: typeof dots, minGap: number) => {
       const sorted = [...items].sort((a, b) => a.labelY - b.labelY);
-      for (let pass = 0; pass < 6; pass++) {
+      for (let pass = 0; pass < 8; pass++) {
         for (let i = 1; i < sorted.length; i++) {
           const prev = sorted[i - 1];
           const curr = sorted[i];
@@ -350,42 +352,43 @@ export default function SVGDiagram({
         item.labelY = Math.max(topMargin + labelBoxH / 2 + 4, Math.min(height - labelBoxH / 2 - 4, item.labelY));
       }
       return sorted;
-    }
+    };
 
     const leftDots = dots.filter(d => d.goLeft);
     const rightDots = dots.filter(d => !d.goLeft);
-    spreadLabels(leftDots, labelBoxH + 6);
-    spreadLabels(rightDots, labelBoxH + 6);
+    spreadLabels(leftDots, labelBoxH + 8);
+    spreadLabels(rightDots, labelBoxH + 8);
     const allDots = [...leftDots, ...rightDots];
 
-    // For radial web: draw spokes from hub centre to each dot
-    const hubR = isRadial ? Math.min(diagW, diagH) * 0.12 : 0;
+    // For radial web: hub radius and spoke rendering
+    const hubR = isRadial ? Math.min(diagW, diagH) * 0.14 : 0;
 
     return (
       <svg viewBox={`0 0 ${width} ${height}`} xmlns="http://www.w3.org/2000/svg"
         style={{ width: "100%", maxWidth: width, display: "block", background: "white" }}>
         {spec.title && (
-          <text x={width / 2} y={16} textAnchor="middle" fontSize={fontSize + 1}
+          <text x={width / 2} y={20} textAnchor="middle" fontSize={fontSize + 1}
             fontFamily={fontFamily} fill={accentColor} fontWeight="700">{spec.title}</text>
         )}
         {/* Topology-aware background shape */}
-        <path d={shapePath} fill={accentColor} opacity="0.08" stroke={accentColor} strokeWidth="1.5" />
-        {/* Inner detail hint (second smaller shape for depth) */}
-        {!isChain && (
-          <path d={shapePath}
-            fill="none" stroke={accentColor} strokeWidth="0.6" opacity="0.18"
-            transform={`scale(0.6) translate(${width * 0.33} ${height * 0.33})`} />
-        )}
-        {/* Radial spokes */}
+        <path d={shapePath} fill={accentColor} opacity="0.10" stroke={accentColor} strokeWidth="1.5" />
+        {/* Radial spokes from hub to each dot */}
         {isRadial && allDots.map(d => (
           <line key={`spoke-${d.index}`}
             x1={cx} y1={cy} x2={d.dotX} y2={d.dotY}
-            stroke={accentColor} strokeWidth="1" opacity="0.25" />
+            stroke={accentColor} strokeWidth="1.5" opacity="0.35" />
         ))}
-        {/* Hub circle for radial */}
+        {/* Hub circle for radial — central node */}
         {isRadial && (
-          <circle cx={cx} cy={cy} r={hubR}
-            fill={accentColor} opacity="0.15" stroke={accentColor} strokeWidth="1.2" />
+          <>
+            <circle cx={cx} cy={cy} r={hubR}
+              fill={accentColor} opacity="0.18" stroke={accentColor} strokeWidth="1.5" />
+            <text x={cx} y={cy} textAnchor="middle" dominantBaseline="middle"
+              fontSize={Math.max(7, fontSize - 3)} fontFamily={fontFamily}
+              fill={accentColor} fontWeight="700" opacity="0.7">
+              {spec.title ? spec.title.replace(/ Characters$/, "").replace(/ Character Web$/, "") : ""}
+            </text>
+          </>
         )}
         {/* Chain connector lines */}
         {isChain && allDots.map((d, i) => i < allDots.length - 1 ? (
@@ -393,30 +396,34 @@ export default function SVGDiagram({
             x1={d.dotX} y1={d.dotY} x2={allDots[i + 1].dotX} y2={allDots[i + 1].dotY}
             stroke={accentColor} strokeWidth="1.5" opacity="0.3" />
         ) : null)}
-        {/* Callout dots and labels */}
+        {/* Callout lines, label boxes, and numbered dots */}
         {allDots.map((d, i) => {
           const labelText = d.label?.text || "";
           const wrappedLines = wrapText(labelText, Math.floor((labelBoxW - 28) / (labelFontSize * 0.58)));
-          const actualBoxH = Math.max(labelBoxH, wrappedLines.length * (labelFontSize + 3) + 8);
+          const actualBoxH = Math.max(labelBoxH, wrappedLines.length * (labelFontSize + 4) + 10);
           const labelX = d.goLeft ? 0 : width - labelBoxW;
-          const elbowX = d.goLeft ? diagX1 - 2 : diagX2 + 2;
+          const elbowX = d.goLeft ? diagX1 - 4 : diagX2 + 4;
           return (
             <g key={d.index}>
+              {/* Line from dot to label box */}
               <line x1={d.dotX} y1={d.dotY} x2={elbowX} y2={d.labelY}
-                stroke={accentColor} strokeWidth="1.2" opacity="0.6" />
+                stroke={accentColor} strokeWidth="1.2" opacity="0.55" />
+              {/* Label box */}
               <rect x={labelX} y={d.labelY - actualBoxH / 2}
-                width={labelBoxW} height={actualBoxH} rx="4"
+                width={labelBoxW} height={actualBoxH} rx="5"
                 fill="white" stroke={accentColor} strokeWidth="1.5" />
-              <circle cx={labelX + 11} cy={d.labelY} r={dotR - 1} fill={accentColor} />
-              <text x={labelX + 11} y={d.labelY} textAnchor="middle" dominantBaseline="middle"
+              {/* Number badge in label box */}
+              <circle cx={labelX + 12} cy={d.labelY} r={dotR - 1} fill={accentColor} />
+              <text x={labelX + 12} y={d.labelY} textAnchor="middle" dominantBaseline="middle"
                 fontSize={labelFontSize - 1} fontFamily={fontFamily} fill="white" fontWeight="700">
                 {d.index + 1}
               </text>
+              {/* Label text (teacher) or blank line (student) */}
               {showCallouts ? (
                 wrappedLines.map((line, li) => (
                   <text key={li}
-                    x={labelX + 22}
-                    y={d.labelY - ((wrappedLines.length - 1) * (labelFontSize + 3)) / 2 + li * (labelFontSize + 3)}
+                    x={labelX + 24}
+                    y={d.labelY - ((wrappedLines.length - 1) * (labelFontSize + 4)) / 2 + li * (labelFontSize + 4)}
                     dominantBaseline="middle"
                     fontSize={labelFontSize} fontFamily={fontFamily} fill="#1e293b" fontWeight="500">
                     {line}
@@ -424,11 +431,12 @@ export default function SVGDiagram({
                 ))
               ) : (
                 <line
-                  x1={labelX + 22} y1={d.labelY + 3}
-                  x2={labelX + labelBoxW - 6} y2={d.labelY + 3}
+                  x1={labelX + 24} y1={d.labelY + 3}
+                  x2={labelX + labelBoxW - 8} y2={d.labelY + 3}
                   stroke="#94a3b8" strokeWidth="1" strokeDasharray="3,2" />
               )}
-              <circle cx={d.dotX} cy={d.dotY} r={dotR} fill={accentColor} />
+              {/* Numbered dot ON the diagram */}
+              <circle cx={d.dotX} cy={d.dotY} r={dotR} fill={accentColor} stroke="white" strokeWidth="1.5" />
               <text x={d.dotX} y={d.dotY} textAnchor="middle" dominantBaseline="middle"
                 fontSize={labelFontSize - 1} fontFamily={fontFamily} fill="white" fontWeight="700">
                 {d.index + 1}

@@ -197,7 +197,9 @@ export default function Worksheets() {
   const preSelectedYearGroup = _urlParams.get("yearGroup") || "";
   const preSelectedSendNeed = _urlParams.get("sendNeed") || "";
 
-  const [activeTab, setActiveTab] = useState("generate");
+  // Support ?tab=exam-questions from ClassroomHub deep-link
+  const preSelectedTab = _urlParams.get("tab") || "generate";
+  const [activeTab, setActiveTab] = useState(() => preSelectedTab);
   const [subject, setSubject] = useState(() => preSelectedSubject);
   const [yearGroup, setYearGroup] = useState(() => preSelectedYearGroup);
   const [topic, setTopic] = useState(() => preSelectedTopic);
@@ -666,6 +668,15 @@ export default function Worksheets() {
   useEffect(() => {
     if (preSelectedSubject) setSubject(preSelectedSubject);
     if (preSelectedTopic) setTopic(preSelectedTopic);
+    // If arriving via ?tab=exam-questions (from Classroom Hub), lazy-load the question bank immediately
+    if (preSelectedTab === 'exam-questions') {
+      setExamBankLoading(true);
+      import('@/lib/pastPaperQuestions').then(mod => {
+        setAllPastPaperQuestions(mod.allPastPaperQuestions);
+        setExamBankLoaded(true);
+        setExamBankLoading(false);
+      }).catch(() => setExamBankLoading(false));
+    }
   }, []);
 
   const overlayBg = colorOverlays.find(o => o.id === colorOverlay)?.color || "#ffffff";
@@ -1970,7 +1981,10 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
             {showLibraryTab && (
               <TabsTrigger value="bank" className="text-xs gap-1 flex-1 min-w-[72px]"><Library className="w-3 h-3" /> Library</TabsTrigger>
             )}
-            <TabsTrigger value="exam-questions" className="text-xs gap-1 flex-1 min-w-[80px]"><Award className="w-3 h-3" /><span className="hidden sm:inline">Exam Bank</span><span className="sm:hidden">Exams</span></TabsTrigger>
+            {/* Exam Paper Creator tab is hidden from the worksheet tab bar — accessible via Classroom Hub link */}
+            {activeTab === 'exam-questions' && (
+              <TabsTrigger value="exam-questions" className="text-xs gap-1 flex-1 min-w-[80px]"><Award className="w-3 h-3" /><span className="hidden sm:inline">Exam Paper Creator</span><span className="sm:hidden">Exams</span></TabsTrigger>
+            )}
             <TabsTrigger value="history" className="text-xs gap-1 flex-1 min-w-[72px]">
               <History className="w-3 h-3" /> History
               {worksheetHistory.length > 0 && (
