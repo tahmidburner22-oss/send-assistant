@@ -784,12 +784,13 @@ MANDATORY RULES — violating any rule is wrong:
     SHORT_ANSWER:       "One focused question. Mark allocation in brackets: [X marks]. No answer given — student writes it.",
     TABLE:              "Markdown table with | separators. 3-4 columns. 4-5 rows. Blank cells use '...........' for students to fill in.",
     ERROR_CORRECTION: [
-      "Present a worked solution with a deliberate mistake — choose an error that is realistic and topic-specific (wrong formula, arithmetic slip, incorrect unit, missed step, wrong sign).",
+      "Present a FULLY WORKED solution with a deliberate mistake — choose an error that is realistic and topic-specific (wrong formula, arithmetic slip, incorrect unit, missed step, wrong sign).",
+      "CRITICAL: You MUST show a complete step-by-step worked solution (not just a question). Write out every calculation step clearly. The student reads the working and finds the error — do NOT just ask a question without showing the working.",
       "Format EXACTLY as follows (use these exact section headers):",
       "Worked Answer",
-      "[step 1 — correct]",
-      hasSend ? "[step 2 — contains the error — HIGHLIGHT the error with ** around it]" : "[step 2 — contains the error]",
-      "[step 3 if needed]",
+      "[Write step 1 here — a correct calculation step with real numbers, e.g. 'Step 1: Identify the formula: F = ma']",
+      hasSend ? "[Write step 2 here — this step contains the error — HIGHLIGHT the error with ** around it, e.g. 'Step 2: Substitute values: F = **10** × 3 = 30 N' (where 10 should be 5)]" : "[Write step 2 here — this step contains the error, e.g. 'Step 2: Substitute values: F = 10 × 3 = 30 N' (where 10 should be 5)]",
+      "[Write step 3 here if needed — continues from the wrong step, e.g. 'Step 3: Final answer: F = 30 N']",
       "",
       "Mistake",
       "[teacher-only: describe the exact error in one sentence]",
@@ -841,18 +842,19 @@ MANDATORY RULES — violating any rule is wrong:
     ].join("\n"),
     CONSTRAINT_PROBLEM: [
       `Present a design or problem-solving task with ${hasSend ? '2' : '2–4'} specific constraints that require genuine understanding of the topic.`,
+      "CRITICAL: You MUST include a clear, specific question asking the student to solve the problem. The Goal section must end with a direct question (e.g. 'What values should you choose?' or 'Design a solution that satisfies all constraints.'). Do NOT leave the student without a clear task to complete.",
       "Format EXACTLY as follows:",
       "Goal",
-      "[clear task description — what must be achieved, with specific numbers or targets]",
+      "[Write the ACTUAL scenario here with real numbers/values — e.g. 'A circuit must power a 6V bulb using a 12V battery. Design the circuit so the bulb receives exactly 6V.']",
+      "Question: [Write a SPECIFIC question the student must answer — e.g. 'What resistance value do you need, and how should the components be arranged?']",
       "",
       "Constraints",
-      "- [rule 1 — must be topic-specific and require subject knowledge to satisfy]",
-      ...(hasSend ? [] : ["- [rule 2]", "- [rule 3]"]),
+      "- [Write a SPECIFIC rule 1 using real topic values — e.g. 'Total resistance must equal exactly 12Ω']",
+      ...(hasSend ? [] : ["- [Write a SPECIFIC rule 2 — e.g. 'You may only use resistors of 2Ω, 4Ω, or 6Ω']", "- [Write a SPECIFIC rule 3 — e.g. 'The circuit must include at least one parallel branch']"]),
       "",
       ...(hasSend ? ["Scaffold", "Step 1: [first step to guide students]", "Step 2: [second step]", ""] : []),
       "Output",
       "Show your working / draw your solution below:",
-      "[large blank space]",
       "",
       "Explain your solution in one sentence: _______________",
       "",
@@ -1496,15 +1498,16 @@ STRICT JSON OUTPUT: Respond with valid JSON only — no markdown, no code blocks
   const q4DiagramPrompt = (() => {
     const sel = diagramSelection;
     // Single concise instruction: use real terms, match the exact topic
-    return `${sel.instruction} [5 marks]\nUse REAL terms from "${params.topic}" — no placeholders.\n${sel.example}\nLABELS: [correct labels separated by |]\nANSWERS: [correct answers separated by |]`;
+    return `${sel.instruction} [5 marks]\n${sel.example}\nLABELS: [correct labels separated by |]\nANSWERS: [correct answers separated by |]`;
   })();
 
   // Diagrams auto-generate for relevant subjects — no toggle needed
+  // Resolve 'auto' type to 'labeled' so the AI always uses a valid diagram type
+  const resolvedDiagramType = diagramSelection.type === 'auto' ? 'labeled' : diagramSelection.type;
   const svgDiagramNote = (isDiagramSubject && !isVI && !params.examStyle)
     ? `SVG DIAGRAM INSTRUCTION — MANDATORY:
-For Q4, you MUST embed exactly ONE diagram as [[DIAGRAM:{...JSON...}]]. Use type "${diagramSelection.type}" for this topic.
+For Q4, you MUST embed exactly ONE diagram as [[DIAGRAM:{...JSON...}]]. Use type "${resolvedDiagramType}" for this topic.
 The diagram is for LABELLING — students see numbered blanks, NOT the answers.
-Every label/step MUST use REAL terms from "${params.topic}" — never placeholders.
 
 Example JSON template for this topic:
 ${diagramSelection.example}
@@ -1634,10 +1637,10 @@ Return EXACTLY this JSON (raw JSON only):
           case 'MATCHING': return `{"title": "Q${qNum} — Matching", "type": "q-matching", "content": "Match each term to its definition. Draw a line or write the letter. [5 marks]\\n1. [term 1 from ${params.topic}] ←→ [definition A]\\n2. [term 2 from ${params.topic}] ←→ [definition B]\\n3. [term 3 from ${params.topic}] ←→ [definition C]\\n4. [term 4 from ${params.topic}] ←→ [definition D]\\n5. [term 5 from ${params.topic}] ←→ [definition E]"}`;
           case 'SHORT_ANSWER': return `{"title": "Q${qNum} — Short Answer", "type": "q-short-answer", "content": "${isMaths ? `[Pure calculation question on ${params.topic}. Do NOT ask students to explain or write in sentences. All answers must be numerical or algebraic.] [5 marks]\\n(a) Solve: [specific numerical equation or expression involving ${params.topic} — give real numbers]. [2 marks]\\n(b) Calculate: [a second specific numerical problem on ${params.topic} using a different method or value]. [2 marks]\\n(c) Write the answer to (b) in simplest form or correct to 2 significant figures. [1 mark]` : isSTEM ? `[Scenario or data set related to ${params.topic}] [5 marks]\\n(a) Identify the relevant formula or scientific law. [1 mark]\\n(b) Show the full calculation with working. [2 marks]\\n(c) Explain what the result means in context. [2 marks]` : `[4–8 line extract from text related to ${params.topic}] [5 marks]\\n(a) Identify ONE language or literary technique used in this extract. [1 mark]\\n(b) What does this reveal about character, theme or author intent? [2 marks]\\n(c) What does the key image or symbol represent? [2 marks]`}", "marks": 5}`;
           case 'TABLE': return `{"title": "Q${qNum} — Complete the Table", "type": "q-data-table", "content": "Complete the table below. [8 marks]\\n${isMaths ? `| No. | Problem | Working | Answer |\\n|---|---|---|---|\\n| 1 | [specific calculation problem 1 on ${params.topic}] | ........... | ........... |\\n| 2 | [specific calculation problem 2 on ${params.topic}] | ........... | ........... |\\n| 3 | [specific calculation problem 3 on ${params.topic}] | ........... | ........... |\\n| 4 | [specific calculation problem 4 on ${params.topic}] | ........... | ........... |` : isSTEM ? `| No. | Scenario | Formula used | Working | Answer with unit |\\n|---|---|---|---|---|\\n| 1 | [scenario 1 about ${params.topic}] | ........... | ........... | ........... |\\n| 2 | [scenario 2 about ${params.topic}] | ........... | ........... | ........... |\\n| 3 | [scenario 3 about ${params.topic}] | ........... | ........... | ........... |\\n| 4 | [scenario 4 about ${params.topic}] | ........... | ........... | ........... |` : `| No. | Theme | Key Quote | Act/Scene/Chapter | Effect |\n|---|---|---|---|---|\n| 1 | [theme 1 from ${params.topic}] | ........... | ........... | ........... |\n| 2 | [theme 2 from ${params.topic}] | ........... | ........... | ........... |\n| 3 | [theme 3 from ${params.topic}] | ........... | ........... | ........... |\n| 4 | [theme 4 from ${params.topic}] | ........... | ........... | ........... |`}", "marks": 8}`;
-          case 'ERROR_CORRECTION': return `{"title": "Q${qNum} — Error Correction", "type": "error_correction", "content": "Worked Answer\n[Write step 1 of a real ${params.topic} worked solution — correct step]\n[Write step 2 — this step contains a deliberate realistic mistake]\n[Write step 3 if needed — continues from the wrong step]\n\nMistake\n[Teacher only: describe the exact error in one sentence]\n\nTask\n1. Identify the mistake\n2. Explain why it is wrong\n3. Write the correct answer"}`;
+          case 'ERROR_CORRECTION': return `{"title": "Q${qNum} — Error Correction", "type": "error_correction", "content": "Worked Answer\nStep 1: [Write a correct first step of a real ${params.topic} worked solution with actual numbers/values]\nStep 2: [Write the step that contains a deliberate realistic mistake — use real numbers, make the error plausible]\nStep 3: [Write the final step that follows from the wrong step 2]\n\nMistake\n[Teacher only: describe the exact error in one sentence]\n\nTask\n1. Identify the mistake in the worked answer above\n2. Explain why it is wrong\n3. Write the correct answer with full working"}`;
           case 'RANKING': return `{"title": "Q${qNum} — Ranking", "type": "ranking", "content": "Rank the following [write 4-6 specific ${params.topic} items] from [write the EXACT measurable criterion — e.g. 'best electrical conductor to worst electrical conductor']:\nA  [real item A from ${params.topic}]\nB  [real item B from ${params.topic}]\nC  [real item C from ${params.topic}]\nD  [real item D from ${params.topic}]\nE  [real item E from ${params.topic}]\n\nYour ranking (write A–E in order): 1st _____ 2nd _____ 3rd _____ 4th _____ 5th _____\n\nExplain your reasoning:"}`;
           case 'WHAT_CHANGED': return `{"title": "Q${qNum} — What Changed?", "type": "what_changed", "content": "Scenario A\n[Write the ACTUAL initial state — a real, specific ${params.topic} scenario with real numbers/values]\n\nScenario B\n[Write the ACTUAL changed state — change exactly ONE variable from Scenario A, keep everything else the same]\n\nTask\n1. What changed between A and B?\n2. Why did this happen? (use subject vocabulary)\n3. What effect does this have on [write the specific outcome being measured]?"}`;
-          case 'CONSTRAINT_PROBLEM': return `{"title": "Q${qNum} — Constraint Problem", "type": "constraint_problem", "content": "Goal\n[Write a specific, achievable task related to ${params.topic} with real numbers or targets]\n\nConstraints\n- [Write a specific rule 1 that requires topic knowledge to satisfy]\n- [Write a specific rule 2]\n- [Write a specific rule 3]\n\nOutput\nShow your working / draw your solution below:\n\nExplain your solution in one sentence: _______________"}`;
+          case 'CONSTRAINT_PROBLEM': return `{"title": "Q${qNum} — Constraint Problem", "type": "constraint_problem", "content": "Goal\n[Write the ACTUAL scenario here with real numbers/values — e.g. 'A circuit must power a 6V bulb using a 12V battery.']\nQuestion: [Write a SPECIFIC question the student must answer — e.g. 'What resistance value do you need, and how should the components be arranged?']\n\nConstraints\n- [Write a SPECIFIC rule 1 using real topic values]\n- [Write a SPECIFIC rule 2]\n- [Write a SPECIFIC rule 3]\n\nOutput\nShow your working / draw your solution below:\n\nExplain your solution in one sentence: _______________"}`;
           default: return `{"title": "Q${qNum} — Short Answer", "type": "q-short-answer", "content": "[Question about ${params.topic}] [3 marks]"}`;
         }
       };

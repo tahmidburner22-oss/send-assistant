@@ -1962,6 +1962,8 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
       {!generated ? (
         <Tabs value={activeTab} onValueChange={(tab) => {
           setActiveTab(tab);
+          // Scroll to top when switching tabs (fixes exam paper starting at bottom)
+          window.scrollTo({ top: 0, behavior: 'smooth' });
           // Lazy-load the question bank only when Exam Bank tab is first opened
           if (tab === 'exam-questions' && !examBankLoaded && !examBankLoading) {
             setExamBankLoading(true);
