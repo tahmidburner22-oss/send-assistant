@@ -255,11 +255,11 @@ export default function SVGDiagram({
   }
 
   // ── LABELED DIAGRAM ─────────────────────────────────────────────────────────
-  // Renders as a proper anatomical callout diagram:
-  // - Callout dots placed at the x/y positions from the spec (the "part" locations)
-  // - Leader lines extend outward toward the nearest edge
-  // - Label boxes sit at the end of the leader lines, clear of the centre
-  // - Student view: numbered dots + blank boxes | Teacher view: filled labels
+  // Renders a meaningful subject-appropriate shape in the diagram area based on
+  // how many labels there are and their positions. The shape gives students a real
+  // visual to annotate — not just a blank rectangle.
+  // Student view: numbered callout dots + blank answer lines.
+  // Teacher view: filled label text revealed.
   if (spec.type === "labeled") {
     const labels = spec.labels || [];
     const n = labels.length;
@@ -267,46 +267,126 @@ export default function SVGDiagram({
 
     const maxLabelLen = Math.max(...labels.map(l => (l.text || "").length), 6);
     const labelFontSize = maxLabelLen > 22 ? Math.max(7, fontSize - 3) : maxLabelLen > 15 ? Math.max(8, fontSize - 2) : fontSize - 1;
-    const labelBoxW = Math.max(80, Math.min(120, maxLabelLen * 5.2 + 20));
+    const labelBoxW = Math.max(82, Math.min(120, maxLabelLen * 5.2 + 20));
     const labelBoxH = 24;
     const dotR = 8;
-    // Reserve margin for label boxes on each edge
     const margin = labelBoxW + 18;
-    const topMargin = spec.title ? 26 : 12;
+    const topMargin = spec.title ? 28 : 14;
 
-    // The "diagram area" — the central space where callout dots are drawn
     const diagX1 = margin;
     const diagY1 = topMargin + 8;
     const diagX2 = width - margin;
     const diagY2 = height - 16;
     const diagW = diagX2 - diagX1;
     const diagH = diagY2 - diagY1;
+    const dcx = diagX1 + diagW / 2;
+    const dcy = diagY1 + diagH / 2;
 
-    // Map each label's x/y (0-100) into the diagram area
+    // ── Determine which illustrative shape to draw based on label count ──
+    // We look at the x/y spread of labels to determine the topology:
+    //   - Labels clustered around a centre → radial/star (concept map, anatomy)
+    //   - Labels spread in a ring → oval body shape
+    //   - Labels top/bottom heavy → asymmetric blob (leaf, heart, etc.)
+    const avgX = labels.reduce((s, l) => s + l.x, 0) / n;
+    const avgY = labels.reduce((s, l) => s + l.y, 0) / n;
+    const spreadX = Math.max(...labels.map(l => l.x)) - Math.min(...labels.map(l => l.x));
+    const spreadY = Math.max(...labels.map(l => l.y)) - Math.min(...labels.map(l => l.y));
+
+    // Choose shape based on label topology
+    const isRadial = spreadX > 40 && spreadY > 40 && n >= 4; // labels spread all around
+    const isVertical = spreadY > spreadX * 1.4; // tall structure
+    const isHorizontal = spreadX > spreadY * 1.4; // wide structure
+
+    // Build the interior shape
+    const shapeEls: React.ReactNode[] = [];
+
+    if (n <= 3 || (!isRadial && spreadX < 30)) {
+      // Narrow vertical column — draw stacked node circles (process/chain)
+      const nodeR = Math.min(28, diagH / (n * 2.5));
+      const nodeSpacing = diagH / (n + 1);
+      for (let i = 0; i < n; i++) {
+        const ny = diagY1 + nodeSpacing * (i + 1);
+        shapeEls.push(
+          <g key={`node${i}`}>
+            <circle cx={dcx} cy={ny} r={nodeR} fill={accentColor} opacity={0.12}
+              stroke={accentColor} strokeWidth="1.5" />
+            {i < n - 1 && (
+              <line x1={dcx} y1={ny + nodeR} x2={dcx} y2={ny + nodeSpacing - nodeR}
+                stroke={accentColor} strokeWidth="1.5" strokeDasharray="4,3" opacity="0.4" />
+            )}
+          </g>
+        );
+      }
+    } else if (isRadial && n >= 5) {
+      // Radial web — central circle with spokes (character web, concept map, atom)
+      const centreR = Math.min(22, Math.min(diagW, diagH) * 0.14);
+      const spokeR = Math.min(diagW, diagH) * 0.34;
+      shapeEls.push(
+        <circle key="centre" cx={dcx} cy={dcy} r={centreR}
+          fill={accentColor} opacity={0.15} stroke={accentColor} strokeWidth="2" />
+      );
+      for (let i = 0; i < n; i++) {
+        const angle = (i / n) * 2 * Math.PI - Math.PI / 2;
+        const nx = dcx + spokeR * Math.cos(angle);
+        const ny = dcy + spokeR * Math.sin(angle);
+        const nodeR2 = Math.min(14, spokeR * 0.22);
+        shapeEls.push(
+          <g key={`spoke${i}`}>
+            <line x1={dcx + centreR * Math.cos(angle)} y1={dcy + centreR * Math.sin(angle)}
+              x2={nx - nodeR2 * Math.cos(angle)} y2={ny - nodeR2 * Math.sin(angle)}
+              stroke={accentColor} strokeWidth="1.2" opacity="0.35" />
+            <circle cx={nx} cy={ny} r={nodeR2}
+              fill={accentColor} opacity={0.10} stroke={accentColor} strokeWidth="1.2" />
+          </g>
+        );
+      }
+    } else if (isHorizontal) {
+      // Horizontal ellipse body — good for landscape anatomy (leaf, heart cross-section)
+      const rx = diagW * 0.42;
+      const ry = diagH * 0.36;
+      shapeEls.push(
+        <ellipse key="body" cx={dcx} cy={dcy} rx={rx} ry={ry}
+          fill={accentColor} opacity={0.08} stroke={accentColor} strokeWidth="1.8" />
+      );
+      // Inner detail line (suggests internal structure)
+      shapeEls.push(
+        <ellipse key="inner" cx={dcx} cy={dcy} rx={rx * 0.55} ry={ry * 0.55}
+          fill="none" stroke={accentColor} strokeWidth="1" strokeDasharray="5,3" opacity="0.25" />
+      );
+    } else {
+      // Default: rounded organic blob — good for cells, organs, geographic features
+      const rx = diagW * 0.38;
+      const ry = diagH * 0.40;
+      // Slightly asymmetric to look organic, not mechanical
+      const path = `M ${dcx} ${dcy - ry}
+        C ${dcx + rx * 0.7} ${dcy - ry * 1.05}, ${dcx + rx * 1.05} ${dcy - ry * 0.55}, ${dcx + rx} ${dcy}
+        C ${dcx + rx * 1.05} ${dcy + ry * 0.6}, ${dcx + rx * 0.65} ${dcy + ry}, ${dcx} ${dcy + ry}
+        C ${dcx - rx * 0.65} ${dcy + ry}, ${dcx - rx * 1.05} ${dcy + ry * 0.6}, ${dcx - rx} ${dcy}
+        C ${dcx - rx * 1.05} ${dcy - ry * 0.55}, ${dcx - rx * 0.7} ${dcy - ry * 1.05}, ${dcx} ${dcy - ry} Z`;
+      shapeEls.push(
+        <path key="blob" d={path}
+          fill={accentColor} opacity={0.08} stroke={accentColor} strokeWidth="1.8" />
+      );
+      // Subtle inner detail
+      shapeEls.push(
+        <ellipse key="inner" cx={dcx} cy={dcy} rx={rx * 0.45} ry={ry * 0.45}
+          fill="none" stroke={accentColor} strokeWidth="0.8" strokeDasharray="4,3" opacity="0.2" />
+      );
+    }
+
+    // Map each label's x/y (0-100) into the diagram area and compute leader lines
     const dots = labels.map((l, i) => {
       const dotX = diagX1 + (l.x / 100) * diagW;
       const dotY = diagY1 + (l.y / 100) * diagH;
-      // Determine which edge the leader line should point toward
-      // by finding which side the dot is closest to (relative to diagram centre)
-      const cx = diagX1 + diagW / 2;
-      const cy = diagY1 + diagH / 2;
-      const dx = dotX - cx;
-      const dy = dotY - cy;
-      // Decide label side: left vs right based on dot's x position
-      const goLeft = dotX < cx;
-      const leaderEndX = goLeft ? diagX1 - 10 : diagX2 + 10;
-      // Keep label y within SVG bounds
+      const goLeft = dotX < dcx;
       const rawLabelY = dotY;
       const clampedLabelY = Math.max(topMargin + labelBoxH / 2 + 4, Math.min(height - labelBoxH / 2 - 4, rawLabelY));
-      return { dotX, dotY, goLeft, leaderEndX, labelY: clampedLabelY, label: l, index: i };
+      return { dotX, dotY, goLeft, labelY: clampedLabelY, label: l, index: i };
     });
 
-    // Separate left and right labels, then sort by Y and spread them to avoid overlap
     function spreadLabels(items: typeof dots, minGap: number) {
-      // Sort by raw labelY
       const sorted = [...items].sort((a, b) => a.labelY - b.labelY);
-      // Spread: push overlapping labels apart
-      for (let pass = 0; pass < 6; pass++) {
+      for (let pass = 0; pass < 8; pass++) {
         for (let i = 1; i < sorted.length; i++) {
           const prev = sorted[i - 1];
           const curr = sorted[i];
@@ -317,7 +397,6 @@ export default function SVGDiagram({
           }
         }
       }
-      // Clamp after spreading
       for (const item of sorted) {
         item.labelY = Math.max(topMargin + labelBoxH / 2 + 4, Math.min(height - labelBoxH / 2 - 4, item.labelY));
       }
@@ -326,47 +405,42 @@ export default function SVGDiagram({
 
     const leftDots = dots.filter(d => d.goLeft);
     const rightDots = dots.filter(d => !d.goLeft);
-    spreadLabels(leftDots, labelBoxH + 6);
-    spreadLabels(rightDots, labelBoxH + 6);
+    spreadLabels(leftDots, labelBoxH + 5);
+    spreadLabels(rightDots, labelBoxH + 5);
     const allDots = [...leftDots, ...rightDots];
 
     return (
       <svg viewBox={`0 0 ${width} ${height}`} xmlns="http://www.w3.org/2000/svg"
         style={{ width: "100%", maxWidth: width, display: "block", background: "white" }}>
-        {/* Title */}
         {spec.title && (
-          <text x={width / 2} y={16} textAnchor="middle" fontSize={fontSize + 1}
+          <text x={width / 2} y={18} textAnchor="middle" fontSize={fontSize + 1}
             fontFamily={fontFamily} fill={accentColor} fontWeight="700">{spec.title}</text>
         )}
-        {/* Diagram area background — light grey rectangle representing the structure */}
-        <rect x={diagX1} y={diagY1} width={diagW} height={diagH} rx="8"
-          fill="#f1f5f9" stroke={accentColor} strokeWidth="1.5" opacity="0.5" />
-        {/* Render each callout */}
-        {allDots.map((d, i) => {
+        {/* Illustrative shape — gives students something meaningful to annotate */}
+        {shapeEls}
+        {/* Callouts */}
+        {allDots.map((d, _i) => {
           const labelText = d.label?.text || "";
           const wrappedLines = wrapText(labelText, Math.floor((labelBoxW - 28) / (labelFontSize * 0.58)));
           const actualBoxH = Math.max(labelBoxH, wrappedLines.length * (labelFontSize + 3) + 8);
           const labelX = d.goLeft ? 0 : width - labelBoxW;
-          // Leader line: from dot to edge of diagram area, then horizontal to label box
           const elbowX = d.goLeft ? diagX1 - 2 : diagX2 + 2;
-          const labelAttachX = d.goLeft ? labelBoxW : width - labelBoxW;
           return (
             <g key={d.index}>
-              {/* Leader line — dot to elbow */}
+              {/* Leader line from dot to label box */}
               <line x1={d.dotX} y1={d.dotY} x2={elbowX} y2={d.labelY}
-                stroke={accentColor} strokeWidth="1.2" opacity="0.6" />
+                stroke={accentColor} strokeWidth="1.1" opacity="0.5" />
               {/* Label box */}
               <rect x={labelX} y={d.labelY - actualBoxH / 2}
                 width={labelBoxW} height={actualBoxH} rx="4"
                 fill="white" stroke={accentColor} strokeWidth="1.5" />
-              {/* Number badge in label box */}
-              <circle cx={labelX + 11} cy={d.labelY} r={dotR - 1}
-                fill={accentColor} />
+              {/* Number badge */}
+              <circle cx={labelX + 11} cy={d.labelY} r={dotR - 1} fill={accentColor} />
               <text x={labelX + 11} y={d.labelY} textAnchor="middle" dominantBaseline="middle"
                 fontSize={labelFontSize - 1} fontFamily={fontFamily} fill="white" fontWeight="700">
                 {d.index + 1}
               </text>
-              {/* Label text — hidden for students, shown for teachers */}
+              {/* Label text (teacher) or blank line (student) */}
               {showCallouts ? (
                 wrappedLines.map((line, li) => (
                   <text key={li}
@@ -378,15 +452,13 @@ export default function SVGDiagram({
                   </text>
                 ))
               ) : (
-                // Blank answer line for students
                 <line
                   x1={labelX + 22} y1={d.labelY + 3}
                   x2={labelX + labelBoxW - 6} y2={d.labelY + 3}
                   stroke="#94a3b8" strokeWidth="1" strokeDasharray="3,2" />
               )}
               {/* Callout dot on the diagram */}
-              <circle cx={d.dotX} cy={d.dotY} r={dotR}
-                fill={accentColor} />
+              <circle cx={d.dotX} cy={d.dotY} r={dotR} fill={accentColor} />
               <text x={d.dotX} y={d.dotY} textAnchor="middle" dominantBaseline="middle"
                 fontSize={labelFontSize - 1} fontFamily={fontFamily} fill="white" fontWeight="700">
                 {d.index + 1}
