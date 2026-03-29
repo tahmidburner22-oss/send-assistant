@@ -886,7 +886,7 @@ QUALITY STANDARDS — your output must beat TES, Twinkl, and MathsGenie in quali
    - GAP FILL: flowing paragraph with ___ blanks + "WORD BANK: word1 | word2 | word3" line below.
    - ORDERING: items listed with ☐ box prefix, instruction to "Number 1–N in correct order".
    - MATCHING: "1. [term] ←→ [definition]" pairs.
-   - TABLE: markdown table with | separators. Some cells contain "..........." (blanks to fill).
+   - TABLE: markdown table with | separators. Cells that students must complete MUST contain "..........." (dots) or "[blank]" — NEVER pre-fill answers in the student table. Only the first column (row numbers/given data) and header row should have content. All cells the student needs to fill in MUST be blank markers.
    - SHORT ANSWER: clear question + answer lines. Use for understanding/application sections.
    - EXTENDED ANSWER: structured essay/explain prompt. Use for challenge only.
    RULE: Section A (guided) must use at least 2 different formats. Section B (independent) must use at least 2 different formats. No adjacent questions may use the same format.
@@ -2852,9 +2852,21 @@ export function extractDiagramSpec(content: string): DiagramSpec | null {
 
 /**
  * Strips the [[DIAGRAM:{...}]] marker from content so only the text question remains.
+ * Also strips AI instruction lines (IMPORTANT:, LABELS:, ANSWERS:) that should not be visible.
  */
 export function stripDiagramMarker(content: string): string {
-  return content.replace(/\[\[DIAGRAM:\{[\s\S]*?\}\]\]/g, "").trim();
+  let cleaned = content.replace(/\[\[DIAGRAM:\{[\s\S]*?\}\]\]/g, "");
+  // Strip AI instruction lines that leak into visible content
+  cleaned = cleaned.split("\n").filter(line => {
+    const trimmed = line.trim();
+    if (/^IMPORTANT:/i.test(trimmed)) return false;
+    if (/^LABELS:/i.test(trimmed)) return false;
+    if (/^ANSWERS:/i.test(trimmed)) return false;
+    if (/^NOTE:/i.test(trimmed)) return false;
+    if (/^CRITICAL:/i.test(trimmed)) return false;
+    return true;
+  }).join("\n");
+  return cleaned.trim();
 }
 
 // Last verified: safe-updates-v2 applied, groq_1/2/3 rotation preserved
