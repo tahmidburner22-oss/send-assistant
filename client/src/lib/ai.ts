@@ -2857,6 +2857,7 @@ export function extractDiagramSpec(content: string): DiagramSpec | null {
 export function stripDiagramMarker(content: string): string {
   let cleaned = content.replace(/\[\[DIAGRAM:\{[\s\S]*?\}\]\]/g, "");
   // Strip AI instruction lines that leak into visible content
+  // Also strip pipe-table rows that contain LABELS:/ANSWERS: (e.g. | LABELS: x | y | z |)
   cleaned = cleaned.split("\n").filter(line => {
     const trimmed = line.trim();
     if (/^IMPORTANT:/i.test(trimmed)) return false;
@@ -2864,6 +2865,16 @@ export function stripDiagramMarker(content: string): string {
     if (/^ANSWERS:/i.test(trimmed)) return false;
     if (/^NOTE:/i.test(trimmed)) return false;
     if (/^CRITICAL:/i.test(trimmed)) return false;
+    // Also match pipe-table rows: | LABELS: ... | or | ANSWERS: ... |
+    if (/^\|?\s*LABELS:/i.test(trimmed)) return false;
+    if (/^\|?\s*ANSWERS:/i.test(trimmed)) return false;
+    if (/^\|?\s*IMPORTANT:/i.test(trimmed)) return false;
+    // Strip separator rows between LABELS/ANSWERS tables (e.g. |---|---|)
+    if (/^\|[\s\-:]+\|/.test(trimmed) && trimmed.split('|').length >= 3) {
+      // Only strip if it looks like a separator row with no text content
+      const cells = trimmed.split('|').filter(c => c.trim());
+      if (cells.every(c => /^[\s\-:]+$/.test(c))) return false;
+    }
     return true;
   }).join("\n");
   return cleaned.trim();
