@@ -255,103 +255,142 @@ export default function SVGDiagram({
   }
 
   // ── LABELED DIAGRAM ─────────────────────────────────────────────────────────
+  // Renders as a proper anatomical callout diagram:
+  // - Callout dots placed at the x/y positions from the spec (the "part" locations)
+  // - Leader lines extend outward toward the nearest edge
+  // - Label boxes sit at the end of the leader lines, clear of the centre
+  // - Student view: numbered dots + blank boxes | Teacher view: filled labels
   if (spec.type === "labeled") {
     const labels = spec.labels || [];
     const n = labels.length;
-    const cx = width / 2;
-    const cy = height / 2 + 4;
-    const hubR = Math.min(inner_w, inner_h) * 0.18;
-    const spokeR = Math.min(inner_w, inner_h) * 0.38;
-    // Dynamic node sizing based on longest label
-    const maxLabelLen = Math.max(...labels.map(l => (l.text || "").length), 6);
-    const nodeFontSize = maxLabelLen > 20 ? Math.max(7, fontSize - 3) : maxLabelLen > 14 ? Math.max(8, fontSize - 2) : fontSize - 1;
-    const nodeW = Math.max(72, Math.min(110, maxLabelLen * 5.5 + 24));
-    const nodeH = 28;
+    if (n === 0) return null;
 
-    const angleStep = n > 0 ? (2 * Math.PI) / n : 0;
-    const nodePositions = labels.map((_, i) => {
-      const angle = -Math.PI / 2 + i * angleStep;
-      return {
-        x: cx + spokeR * Math.cos(angle),
-        y: cy + spokeR * Math.sin(angle),
-        angle,
-      };
+    const maxLabelLen = Math.max(...labels.map(l => (l.text || "").length), 6);
+    const labelFontSize = maxLabelLen > 22 ? Math.max(7, fontSize - 3) : maxLabelLen > 15 ? Math.max(8, fontSize - 2) : fontSize - 1;
+    const labelBoxW = Math.max(80, Math.min(120, maxLabelLen * 5.2 + 20));
+    const labelBoxH = 24;
+    const dotR = 8;
+    // Reserve margin for label boxes on each edge
+    const margin = labelBoxW + 18;
+    const topMargin = spec.title ? 26 : 12;
+
+    // The "diagram area" — the central space where callout dots are drawn
+    const diagX1 = margin;
+    const diagY1 = topMargin + 8;
+    const diagX2 = width - margin;
+    const diagY2 = height - 16;
+    const diagW = diagX2 - diagX1;
+    const diagH = diagY2 - diagY1;
+
+    // Map each label's x/y (0-100) into the diagram area
+    const dots = labels.map((l, i) => {
+      const dotX = diagX1 + (l.x / 100) * diagW;
+      const dotY = diagY1 + (l.y / 100) * diagH;
+      // Determine which edge the leader line should point toward
+      // by finding which side the dot is closest to (relative to diagram centre)
+      const cx = diagX1 + diagW / 2;
+      const cy = diagY1 + diagH / 2;
+      const dx = dotX - cx;
+      const dy = dotY - cy;
+      // Decide label side: left vs right based on dot's x position
+      const goLeft = dotX < cx;
+      const leaderEndX = goLeft ? diagX1 - 10 : diagX2 + 10;
+      // Keep label y within SVG bounds
+      const rawLabelY = dotY;
+      const clampedLabelY = Math.max(topMargin + labelBoxH / 2 + 4, Math.min(height - labelBoxH / 2 - 4, rawLabelY));
+      return { dotX, dotY, goLeft, leaderEndX, labelY: clampedLabelY, label: l, index: i };
     });
 
-    const hubText = spec.title || "Topic";
-    const hubWords = hubText.split(" ");
-    const hubLine1 = hubWords.slice(0, Math.ceil(hubWords.length / 2)).join(" ");
-    const hubLine2 = hubWords.slice(Math.ceil(hubWords.length / 2)).join(" ");
+    // Separate left and right labels, then sort by Y and spread them to avoid overlap
+    function spreadLabels(items: typeof dots, minGap: number) {
+      // Sort by raw labelY
+      const sorted = [...items].sort((a, b) => a.labelY - b.labelY);
+      // Spread: push overlapping labels apart
+      for (let pass = 0; pass < 6; pass++) {
+        for (let i = 1; i < sorted.length; i++) {
+          const prev = sorted[i - 1];
+          const curr = sorted[i];
+          if (curr.labelY - prev.labelY < minGap) {
+            const mid = (prev.labelY + curr.labelY) / 2;
+            prev.labelY = mid - minGap / 2;
+            curr.labelY = mid + minGap / 2;
+          }
+        }
+      }
+      // Clamp after spreading
+      for (const item of sorted) {
+        item.labelY = Math.max(topMargin + labelBoxH / 2 + 4, Math.min(height - labelBoxH / 2 - 4, item.labelY));
+      }
+      return sorted;
+    }
+
+    const leftDots = dots.filter(d => d.goLeft);
+    const rightDots = dots.filter(d => !d.goLeft);
+    spreadLabels(leftDots, labelBoxH + 6);
+    spreadLabels(rightDots, labelBoxH + 6);
+    const allDots = [...leftDots, ...rightDots];
 
     return (
       <svg viewBox={`0 0 ${width} ${height}`} xmlns="http://www.w3.org/2000/svg"
         style={{ width: "100%", maxWidth: width, display: "block", background: "white" }}>
-        {/* Spokes from hub to nodes */}
-        {nodePositions.map((pos, i) => {
-          const dx = pos.x - cx;
-          const dy = pos.y - cy;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          const ux = dx / dist;
-          const uy = dy / dist;
-          const x1 = cx + ux * hubR;
-          const y1 = cy + uy * hubR;
-          const x2 = pos.x - ux * (nodeW / 2 + 2);
-          const y2 = pos.y - uy * (nodeH / 2 + 2);
-          return (
-            <line key={i} x1={x1} y1={y1} x2={x2} y2={y2}
-              stroke={accentColor} strokeWidth="1.5" opacity="0.55" />
-          );
-        })}
-        {/* Central hub */}
-        <ellipse cx={cx} cy={cy} rx={hubR} ry={hubR * 0.72}
-          fill={accentColor} opacity="0.92" />
-        <text x={cx} y={cy - (hubLine2 ? 5 : 0)} textAnchor="middle" dominantBaseline="middle"
-          fontSize={fontSize - 1} fontFamily={fontFamily} fill="white" fontWeight="700">
-          {hubLine1}
-        </text>
-        {hubLine2 && (
-          <text x={cx} y={cy + 9} textAnchor="middle" dominantBaseline="middle"
-            fontSize={fontSize - 1} fontFamily={fontFamily} fill="white" fontWeight="700">
-            {hubLine2}
-          </text>
+        {/* Title */}
+        {spec.title && (
+          <text x={width / 2} y={16} textAnchor="middle" fontSize={fontSize + 1}
+            fontFamily={fontFamily} fill={accentColor} fontWeight="700">{spec.title}</text>
         )}
-        {/* Node boxes — numbered only. Labels HIDDEN for students, shown for teachers. */}
-        {nodePositions.map((pos, i) => {
-          const label = labels[i];
-          const labelText = label?.text || "";
-          // Word-wrap for teacher view
-          const wrappedLines = wrapText(labelText, Math.floor(nodeW / (nodeFontSize * 0.55)));
+        {/* Diagram area background — light grey rectangle representing the structure */}
+        <rect x={diagX1} y={diagY1} width={diagW} height={diagH} rx="8"
+          fill="#f1f5f9" stroke={accentColor} strokeWidth="1.5" opacity="0.5" />
+        {/* Render each callout */}
+        {allDots.map((d, i) => {
+          const labelText = d.label?.text || "";
+          const wrappedLines = wrapText(labelText, Math.floor((labelBoxW - 28) / (labelFontSize * 0.58)));
+          const actualBoxH = Math.max(labelBoxH, wrappedLines.length * (labelFontSize + 3) + 8);
+          const labelX = d.goLeft ? 0 : width - labelBoxW;
+          // Leader line: from dot to edge of diagram area, then horizontal to label box
+          const elbowX = d.goLeft ? diagX1 - 2 : diagX2 + 2;
+          const labelAttachX = d.goLeft ? labelBoxW : width - labelBoxW;
           return (
-            <g key={i}>
-              {/* Node rectangle */}
-              <rect x={pos.x - nodeW / 2} y={pos.y - nodeH / 2}
-                width={nodeW} height={nodeH} rx="5"
-                fill="#f8fafc"
-                stroke={accentColor} strokeWidth="1.5" />
-              {/* Number badge */}
-              <circle cx={pos.x - nodeW / 2 + 10} cy={pos.y} r="8"
+            <g key={d.index}>
+              {/* Leader line — dot to elbow */}
+              <line x1={d.dotX} y1={d.dotY} x2={elbowX} y2={d.labelY}
+                stroke={accentColor} strokeWidth="1.2" opacity="0.6" />
+              {/* Label box */}
+              <rect x={labelX} y={d.labelY - actualBoxH / 2}
+                width={labelBoxW} height={actualBoxH} rx="4"
+                fill="white" stroke={accentColor} strokeWidth="1.5" />
+              {/* Number badge in label box */}
+              <circle cx={labelX + 11} cy={d.labelY} r={dotR - 1}
                 fill={accentColor} />
-              <text x={pos.x - nodeW / 2 + 10} y={pos.y} textAnchor="middle" dominantBaseline="middle"
-                fontSize={fontSize - 2} fontFamily={fontFamily} fill="white" fontWeight="700">
-                {i + 1}
+              <text x={labelX + 11} y={d.labelY} textAnchor="middle" dominantBaseline="middle"
+                fontSize={labelFontSize - 1} fontFamily={fontFamily} fill="white" fontWeight="700">
+                {d.index + 1}
               </text>
-              {/* Label text — HIDDEN for student view (transparent), visible for teacher view */}
+              {/* Label text — hidden for students, shown for teachers */}
               {showCallouts ? (
                 wrappedLines.map((line, li) => (
-                  <text key={li} x={pos.x + 4} y={pos.y - ((wrappedLines.length - 1) * (nodeFontSize + 1)) / 2 + li * (nodeFontSize + 1)}
-                    textAnchor="middle" dominantBaseline="middle"
-                    fontSize={nodeFontSize} fontFamily={fontFamily}
-                    fill="#1e293b">
+                  <text key={li}
+                    x={labelX + 22}
+                    y={d.labelY - ((wrappedLines.length - 1) * (labelFontSize + 3)) / 2 + li * (labelFontSize + 3)}
+                    dominantBaseline="middle"
+                    fontSize={labelFontSize} fontFamily={fontFamily} fill="#1e293b" fontWeight="500">
                     {line}
                   </text>
                 ))
               ) : (
-                <text x={pos.x + 4} y={pos.y} textAnchor="middle" dominantBaseline="middle"
-                  fontSize={nodeFontSize} fontFamily={fontFamily}
-                  fill="transparent">
-                  ?
-                </text>
+                // Blank answer line for students
+                <line
+                  x1={labelX + 22} y1={d.labelY + 3}
+                  x2={labelX + labelBoxW - 6} y2={d.labelY + 3}
+                  stroke="#94a3b8" strokeWidth="1" strokeDasharray="3,2" />
               )}
+              {/* Callout dot on the diagram */}
+              <circle cx={d.dotX} cy={d.dotY} r={dotR}
+                fill={accentColor} />
+              <text x={d.dotX} y={d.dotY} textAnchor="middle" dominantBaseline="middle"
+                fontSize={labelFontSize - 1} fontFamily={fontFamily} fill="white" fontWeight="700">
+                {d.index + 1}
+              </text>
             </g>
           );
         })}
