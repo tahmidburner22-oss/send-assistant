@@ -339,6 +339,11 @@ export function renderMath(text: string | any): string {
   // IMPORTANT: Process \(...\), \[...\], and $...$ BEFORE bare \dfrac, \frac,
   // \sqrt etc. Otherwise \dfrac inside \(\dfrac{a}{b}\) gets converted to KaTeX
   // HTML first, leaving orphaned \( and \) delimiters that never match.
+    // Handle $$...$$ display math BEFORE single $...$ inline math
+  result = result.replace(/\$\$([^$]+?)\$\$/g, (_, expr) => {
+    try { return katex.renderToString(expr.trim(), { displayMode: true, throwOnError: false }); }
+    catch { return expr; }
+  });
   result = result.replace(/\\\[(\s*[\s\S]+?\s*)\\\]/g, (_, expr) => {
     try { return katex.renderToString(expr.trim(), { displayMode: true, throwOnError: false }); }
     catch { return expr; }
@@ -347,7 +352,7 @@ export function renderMath(text: string | any): string {
     try { return katex.renderToString(expr.trim(), { displayMode: false, throwOnError: false }); }
     catch { return expr; }
   });
-  result = result.replace(/\$([^$\n]+?)\$/g, (_, expr) => {
+  result = result.replace(/\$([^\$\n]+?)\$/g, (_, expr) => {
     try { return katex.renderToString(expr.trim(), { displayMode: false, throwOnError: false }); }
     catch { return expr; }
   });
@@ -4202,7 +4207,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
           }
         }
         // In student view, strip any "Answer: ..." lines that the AI embedded in the content string.
-        // Also strip mark scheme lines and "[X marks]" labels that reveal answers.
+        // Also strip mark scheme lines, CORRECT: answer tags, and "[X marks]" labels that reveal answers.
         let content = rawContent as string;
         if (!isTeacherView && typeof content === 'string') {
           content = content
@@ -4212,8 +4217,13 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
               if (/^\s*Answer\s*:/i.test(t)) return false;
               if (/^\s*Mark scheme\s*:/i.test(t)) return false;
               if (/^\s*\*?\s*Answer\s*:/i.test(t)) return false;
-              // Strip lines that are ONLY an answer value after "Answer:" (e.g. "   (7 5)")
-              // following a question — handled by the Answer: filter above
+              // Strip CORRECT: answer lines from student view (primary MCQ answers must not leak)
+              if (/^CORRECT:\s*/i.test(t)) return false;
+              // Strip lines that are just "LABELS" or "ANSWERS" headers
+              if (/^\|?\s*labels\s*\|?\s*$/i.test(t)) return false;
+              if (/^\|?\s*answers\s*\|?\s*$/i.test(t)) return false;
+              // Strip "Mistake" teacher-only lines in error correction questions
+              if (/^Mistake\s*$/i.test(t)) return false;
               return true;
             })
             // Strip inline "[X marks]" badges that reveal total mark allocations hinting at answers
