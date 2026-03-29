@@ -3020,6 +3020,10 @@ export interface DiagramSpec {
   levels?: string[];
   // For fraction-bar diagrams
   numerator?: number; denominator?: number; fractionLabel?: string;
+  // For axes — curve/line plotting
+  curves?: Array<{ fn: string; color?: string; label?: string; dashed?: boolean }>;
+  points?: Array<{ x: number; y: number; label?: string; color?: string }>;
+  xMin?: number; xMax?: number; yMin?: number; yMax?: number;
 }
 
 /**
@@ -3027,7 +3031,7 @@ export interface DiagramSpec {
  * Returns false if the spec is invalid so extractDiagramSpec can return null.
  */
 export function validateDiagramSpec(spec: DiagramSpec): boolean {
-  const validTypes = ["labeled", "circuit", "flow", "cycle", "number-line", "bar", "axes", "venn", "timeline", "pyramid", "fraction-bar"];
+  const validTypes = ["labeled", "circuit", "flow", "cycle", "number-line", "bar", "axes", "venn", "timeline", "pyramid", "fraction-bar", "graph"];
   if (!spec || !spec.type) return false;
   if (!validTypes.includes(spec.type)) return false;
 
