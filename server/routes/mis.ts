@@ -211,9 +211,18 @@ router.post("/import-csv", requireAuth, requireAdmin, (req: Request, res: Respon
   const findByUpn = db.prepare("SELECT id FROM pupils WHERE school_id=? AND upn=? AND is_active=1");
   const findByName = db.prepare("SELECT id FROM pupils WHERE school_id=? AND name=? AND is_active=1");
 
+  // Helper: convert full name to initials for privacy
+  const toInitials = (n: string): string => {
+    if (!n || !n.trim()) return n;
+    const t = n.trim();
+    if (/^([A-Z]\.){1,4}$/.test(t)) return t;
+    return t.split(/[\s\-']+/).filter(Boolean).map((p: string) => (p[0] || "").toUpperCase() + ".").join("");
+  };
+
   const importTx = db.transaction(() => {
     for (const row of rows) {
-      const name = (row.name || row.Name || row["Preferred Name"] || row["Legal Name"] || "").toString().trim();
+      const rawName = (row.name || row.Name || row["Preferred Name"] || row["Legal Name"] || "").toString().trim();
+      const name = toInitials(rawName);
       if (!name) { skipped++; continue; }
       const yearGroup = normaliseYearGroup(row.yearGroup || row["Year Group"] || row["Year"] || row["year_group"] || "");
       const sendNeed = normaliseSendNeed(row.sendNeed || row["SEN Status"] || row["SEND Need"] || row["SEN Need"] || row["send_need"] || "");
@@ -425,11 +434,18 @@ router.post("/sync/:provider", requireAuth, requireAdmin, async (req: Request, r
       rawPupils = Array.isArray(data) ? data : (data.data || data.students || data.results || []);
     }
 
+    const toInitialsMIS = (n: string): string => {
+      if (!n || !n.trim()) return n;
+      const t = n.trim();
+      if (/^([A-Z]\.){1,4}$/.test(t)) return t;
+      return t.split(/[\s\-']+/).filter(Boolean).map((p: string) => (p[0] || "").toUpperCase() + ".").join("");
+    };
     const pupilTx = db.transaction(() => {
       for (const s of rawPupils) {
-        const name = provider === "bromcom"
+        const rawName = provider === "bromcom"
           ? [s.preferredFirstName || s.firstName || s.forename, s.preferredLastName || s.lastName || s.surname].filter(Boolean).join(" ").trim()
           : [s.preferredFirstName || s.firstName, s.preferredLastName || s.lastName].filter(Boolean).join(" ").trim();
+        const name = toInitialsMIS(rawName);
         if (!name) { results.pupils.skipped++; continue; }
 
         const yearGroup = normaliseYearGroup(s.yearGroup || s.year_group || s.yearGroupName || s.yearGroup?.name || "");
@@ -759,26 +775,26 @@ router.post("/sync-demo", requireAuth, requireAdmin, async (req: Request, res: R
   };
 
   const mockPupils = [
-    { name: "Amelia Johnson",    yearGroup: "Year 7",  sendNeed: "Dyslexia",           upn: "DEMO001", dob: "2012-03-14" },
-    { name: "Oliver Smith",      yearGroup: "Year 8",  sendNeed: "ADHD",               upn: "DEMO002", dob: "2011-07-22" },
-    { name: "Isla Williams",     yearGroup: "Year 9",  sendNeed: "Autism",             upn: "DEMO003", dob: "2010-11-05" },
-    { name: "Noah Brown",        yearGroup: "Year 7",  sendNeed: "",                   upn: "DEMO004", dob: "2012-01-30" },
-    { name: "Sophia Jones",      yearGroup: "Year 10", sendNeed: "Dyslexia",           upn: "DEMO005", dob: "2009-09-18" },
-    { name: "Liam Davis",        yearGroup: "Year 8",  sendNeed: "SLCN",               upn: "DEMO006", dob: "2011-04-02" },
-    { name: "Emily Wilson",      yearGroup: "Year 11", sendNeed: "",                   upn: "DEMO007", dob: "2008-06-25" },
-    { name: "James Taylor",      yearGroup: "Year 9",  sendNeed: "MLD",                upn: "DEMO008", dob: "2010-02-14" },
-    { name: "Mia Anderson",      yearGroup: "Year 7",  sendNeed: "Dyspraxia",          upn: "DEMO009", dob: "2012-08-09" },
-    { name: "Benjamin Thomas",   yearGroup: "Year 10", sendNeed: "ADHD",               upn: "DEMO010", dob: "2009-12-03" },
-    { name: "Charlotte Jackson", yearGroup: "Year 8",  sendNeed: "",                   upn: "DEMO011", dob: "2011-05-17" },
-    { name: "Ethan White",       yearGroup: "Year 9",  sendNeed: "Autism",             upn: "DEMO012", dob: "2010-10-28" },
-    { name: "Poppy Harris",      yearGroup: "Year 11", sendNeed: "Dyslexia",           upn: "DEMO013", dob: "2008-03-07" },
-    { name: "Alexander Martin",  yearGroup: "Year 7",  sendNeed: "",                   upn: "DEMO014", dob: "2012-11-19" },
-    { name: "Grace Thompson",    yearGroup: "Year 10", sendNeed: "EHC Plan",           upn: "DEMO015", dob: "2009-07-11" },
-    { name: "Harry Garcia",      yearGroup: "Year 8",  sendNeed: "Dyscalculia",        upn: "DEMO016", dob: "2011-09-23" },
-    { name: "Lily Martinez",     yearGroup: "Year 9",  sendNeed: "",                   upn: "DEMO017", dob: "2010-04-16" },
-    { name: "Oscar Robinson",    yearGroup: "Year 11", sendNeed: "ADHD",               upn: "DEMO018", dob: "2008-01-08" },
-    { name: "Freya Clark",       yearGroup: "Year 7",  sendNeed: "Hearing Impairment", upn: "DEMO019", dob: "2012-06-30" },
-    { name: "Jack Lewis",        yearGroup: "Year 10", sendNeed: "",                   upn: "DEMO020", dob: "2009-02-21" },
+    { name: "A.J.",  yearGroup: "Year 7",  sendNeed: "Dyslexia",           upn: "DEMO001", dob: "2012-03-14" },
+    { name: "O.S.",  yearGroup: "Year 8",  sendNeed: "ADHD",               upn: "DEMO002", dob: "2011-07-22" },
+    { name: "I.W.",  yearGroup: "Year 9",  sendNeed: "Autism",             upn: "DEMO003", dob: "2010-11-05" },
+    { name: "N.B.",  yearGroup: "Year 7",  sendNeed: "",                   upn: "DEMO004", dob: "2012-01-30" },
+    { name: "S.J.",  yearGroup: "Year 10", sendNeed: "Dyslexia",           upn: "DEMO005", dob: "2009-09-18" },
+    { name: "L.D.",  yearGroup: "Year 8",  sendNeed: "SLCN",               upn: "DEMO006", dob: "2011-04-02" },
+    { name: "E.W.",  yearGroup: "Year 11", sendNeed: "",                   upn: "DEMO007", dob: "2008-06-25" },
+    { name: "J.T.",  yearGroup: "Year 9",  sendNeed: "MLD",                upn: "DEMO008", dob: "2010-02-14" },
+    { name: "M.A.",  yearGroup: "Year 7",  sendNeed: "Dyspraxia",          upn: "DEMO009", dob: "2012-08-09" },
+    { name: "B.T.",  yearGroup: "Year 10", sendNeed: "ADHD",               upn: "DEMO010", dob: "2009-12-03" },
+    { name: "C.J.",  yearGroup: "Year 8",  sendNeed: "",                   upn: "DEMO011", dob: "2011-05-17" },
+    { name: "E.W2.", yearGroup: "Year 9",  sendNeed: "Autism",             upn: "DEMO012", dob: "2010-10-28" },
+    { name: "P.H.",  yearGroup: "Year 11", sendNeed: "Dyslexia",           upn: "DEMO013", dob: "2008-03-07" },
+    { name: "A.M.",  yearGroup: "Year 7",  sendNeed: "",                   upn: "DEMO014", dob: "2012-11-19" },
+    { name: "G.T.",  yearGroup: "Year 10", sendNeed: "EHC Plan",           upn: "DEMO015", dob: "2009-07-11" },
+    { name: "H.G.",  yearGroup: "Year 8",  sendNeed: "Dyscalculia",        upn: "DEMO016", dob: "2011-09-23" },
+    { name: "L.M.",  yearGroup: "Year 9",  sendNeed: "",                   upn: "DEMO017", dob: "2010-04-16" },
+    { name: "O.R.",  yearGroup: "Year 11", sendNeed: "ADHD",               upn: "DEMO018", dob: "2008-01-08" },
+    { name: "F.C.",  yearGroup: "Year 7",  sendNeed: "Hearing Impairment", upn: "DEMO019", dob: "2012-06-30" },
+    { name: "J.L.",  yearGroup: "Year 10", sendNeed: "",                   upn: "DEMO020", dob: "2009-02-21" },
   ];
 
   const findByUpn   = db.prepare("SELECT id FROM pupils WHERE school_id=? AND upn=?");

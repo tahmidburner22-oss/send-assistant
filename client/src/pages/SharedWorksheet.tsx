@@ -90,7 +90,10 @@ export default function SharedWorksheet() {
                 isAI: true,
               }}
               viewMode="student"
-              colorOverlay="none"
+              textSize={14}
+              overlayColor="#ffffff"
+              editMode={false}
+              editedSections={{}}
             />
 
             {/* Footer */}

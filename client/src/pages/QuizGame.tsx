@@ -38,9 +38,9 @@ function getAuthHeader(): Record<string, string> {
 type Tier = "bronze" | "silver" | "gold";
 
 const TIER_CONFIG: Record<Tier, { label: string; color: string; bg: string; border: string; points: number; icon: React.ReactNode; emoji: string }> = {
-  bronze: { label: "Bronze",  color: "text-amber-700",  bg: "bg-amber-100",  border: "border-amber-300",  points: 100, icon: <Shield className="w-4 h-4" />,  emoji: "🥉" },
-  silver: { label: "Silver",  color: "text-slate-600",  bg: "bg-slate-100",  border: "border-slate-300",  points: 200, icon: <Star className="w-4 h-4" />,    emoji: "🥈" },
-  gold:   { label: "Gold",    color: "text-yellow-600", bg: "bg-yellow-100", border: "border-yellow-300", points: 300, icon: <Crown className="w-4 h-4" />,   emoji: "🏆" },
+  bronze: { label: "Bronze",  color: "text-amber-700",  bg: "bg-amber-100",  border: "border-amber-300",  points: 100, icon: <Shield className="w-4 h-4" />,  emoji: "" },
+  silver: { label: "Silver",  color: "text-slate-600",  bg: "bg-slate-100",  border: "border-slate-300",  points: 200, icon: <Star className="w-4 h-4" />,    emoji: "" },
+  gold:   { label: "Gold",    color: "text-yellow-600", bg: "bg-yellow-100", border: "border-yellow-300", points: 300, icon: <Crown className="w-4 h-4" />,   emoji: "" },
 };
 
 // ─── Digital Badges ───────────────────────────────────────────────────────────
@@ -53,16 +53,16 @@ interface DigitalBadge {
 }
 
 const ALL_BADGES: DigitalBadge[] = [
-  { id: "perfect",      name: "Perfect Score",    description: "Answered every question correctly",     emoji: "⭐", color: "bg-yellow-400" },
-  { id: "gold_master",  name: "Gold Master",      description: "Answered 3+ Gold questions correctly",  emoji: "🏆", color: "bg-yellow-500" },
-  { id: "silver_star",  name: "Silver Star",      description: "Answered 5+ Silver questions correctly", emoji: "🌟", color: "bg-slate-400" },
-  { id: "bronze_start", name: "Bronze Badge",     description: "Completed the quiz",                    emoji: "🥉", color: "bg-amber-600" },
-  { id: "hot_streak",   name: "Hot Streak",       description: "5 correct answers in a row",            emoji: "🔥", color: "bg-orange-500" },
-  { id: "speed_demon",  name: "Speed Demon",      description: "Answered 3+ questions in under 5s",     emoji: "⚡", color: "bg-blue-500" },
-  { id: "champion",     name: "Champion",         description: "Finished in 1st place",                 emoji: "👑", color: "bg-purple-500" },
-  { id: "podium",       name: "Podium Finish",    description: "Finished in the top 3",                 emoji: "🎖️", color: "bg-indigo-500" },
-  { id: "comeback",     name: "Comeback Kid",     description: "Scored in the bottom half then top half", emoji: "🚀", color: "bg-green-500" },
-  { id: "participant",  name: "Participant",      description: "Completed the quiz",                    emoji: "🎮", color: "bg-gray-400" },
+  { id: "perfect",      name: "Perfect Score",    description: "Answered every question correctly",       emoji: "", color: "bg-yellow-400" },
+  { id: "gold_master",  name: "Gold Master",      description: "Answered 3+ Gold questions correctly",    emoji: "", color: "bg-yellow-500" },
+  { id: "silver_star",  name: "Silver Star",      description: "Answered 5+ Silver questions correctly",  emoji: "", color: "bg-slate-400" },
+  { id: "bronze_start", name: "Bronze Badge",     description: "Completed the quiz",                      emoji: "", color: "bg-amber-600" },
+  { id: "hot_streak",   name: "Hot Streak",       description: "5 correct answers in a row",              emoji: "", color: "bg-orange-500" },
+  { id: "speed_demon",  name: "Speed Demon",      description: "Answered 3+ questions in under 5s",       emoji: "", color: "bg-blue-500" },
+  { id: "champion",     name: "Champion",         description: "Finished in 1st place",                   emoji: "", color: "bg-purple-500" },
+  { id: "podium",       name: "Podium Finish",    description: "Finished in the top 3",                   emoji: "", color: "bg-indigo-500" },
+  { id: "comeback",     name: "Comeback Kid",     description: "Scored in the bottom half then top half", emoji: "", color: "bg-green-500" },
+  { id: "participant",  name: "Participant",      description: "Completed the quiz",                      emoji: "", color: "bg-gray-400" },
 ];
 
 function awardBadges(player: RoomPlayer, rank: number, totalPlayers: number, questions: ApiQuestion[]): DigitalBadge[] {
@@ -210,7 +210,7 @@ function TierBadge({ tier }: { tier: Tier }) {
   const cfg = TIER_CONFIG[tier];
   return (
     <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold ${cfg.bg} ${cfg.color} ${cfg.border} border`}>
-      {cfg.emoji} {cfg.label}
+      {cfg.icon} {cfg.label}
     </span>
   );
 }
@@ -395,7 +395,7 @@ export default function QuizGame() {
             <div className="flex items-center justify-center gap-3 mt-4">
               {(["bronze", "silver", "gold"] as Tier[]).map(t => (
                 <span key={t} className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${TIER_CONFIG[t].bg} ${TIER_CONFIG[t].color} ${TIER_CONFIG[t].border} border`}>
-                  {TIER_CONFIG[t].emoji} {TIER_CONFIG[t].label} — {TIER_CONFIG[t].points} pts
+                  {TIER_CONFIG[t].icon} {TIER_CONFIG[t].label} — {TIER_CONFIG[t].points} pts
                 </span>
               ))}
             </div>
@@ -426,7 +426,7 @@ export default function QuizGame() {
             <div className="flex flex-wrap gap-2">
               {ALL_BADGES.slice(0, 6).map(b => (
                 <div key={b.id} className="flex items-center gap-1.5 bg-white/10 rounded-full px-3 py-1">
-                  <span>{b.emoji}</span>
+                  <Award className="w-3 h-3 text-yellow-400" />
                   <span className="text-white text-xs font-semibold">{b.name}</span>
                 </div>
               ))}
@@ -459,8 +459,8 @@ export default function QuizGame() {
                   {subj}
                   <div className="text-sm font-normal opacity-80 mt-1">{cats.length} topics · {totalQs} questions</div>
                   <div className="flex gap-1 mt-2">
-                    {(["bronze", "silver", "gold"] as Tier[]).map(t => (
-                      <span key={t} className="text-xs opacity-70">{TIER_CONFIG[t].emoji}</span>
+                     {(["bronze", "silver", "gold"] as Tier[]).map(t => (
+                      <span key={t} className={`text-xs opacity-70 ${TIER_CONFIG[t].color}`}>{TIER_CONFIG[t].label[0]}</span>
                     ))}
                   </div>
                 </motion.button>
@@ -488,7 +488,7 @@ export default function QuizGame() {
               <Target className="w-4 h-4 text-yellow-400" />
               <span className="text-white text-sm font-semibold">Mixed Difficulty Mode</span>
             </div>
-            <p className="text-purple-200 text-xs">Each quiz contains a mix of Bronze (easy), Silver (medium), and Gold (hard) questions. Points awarded: 🥉 100 · 🥈 200 · 🏆 300</p>
+            <p className="text-purple-200 text-xs">Each quiz contains a mix of Bronze (easy), Silver (medium), and Gold (hard) questions. Points awarded: Bronze 100 · Silver 200 · Gold 300</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {filteredCategories.map(cat => {
@@ -502,14 +502,16 @@ export default function QuizGame() {
                   disabled={creatingRoom}
                   className="bg-white/10 backdrop-blur border border-white/20 rounded-xl p-5 text-left hover:bg-white/20 transition-all disabled:opacity-50">
                   <div className="flex items-start gap-3">
-                    <span className="text-3xl">{cat.emoji}</span>
+                    <div className="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center flex-shrink-0">
+                      <BookOpen className="w-5 h-5 text-white" />
+                    </div>
                     <div className="flex-1">
                       <div className="font-bold text-white text-lg">{cat.title}</div>
                       <div className="text-purple-200 text-sm mb-2">{cat.questions.length} questions</div>
                       <div className="flex gap-2">
-                        <span className="text-xs bg-amber-900/50 text-amber-300 rounded px-1.5 py-0.5">🥉 {bronzeCount}</span>
-                        <span className="text-xs bg-slate-800/50 text-slate-300 rounded px-1.5 py-0.5">🥈 {silverCount}</span>
-                        <span className="text-xs bg-yellow-900/50 text-yellow-300 rounded px-1.5 py-0.5">🏆 {goldCount}</span>
+                        <span className="text-xs bg-amber-900/50 text-amber-300 rounded px-1.5 py-0.5">B {bronzeCount}</span>
+                        <span className="text-xs bg-slate-800/50 text-slate-300 rounded px-1.5 py-0.5">S {silverCount}</span>
+                        <span className="text-xs bg-yellow-900/50 text-yellow-300 rounded px-1.5 py-0.5">G {goldCount}</span>
                       </div>
                     </div>
                     <ChevronRight className="w-5 h-5 text-purple-300 mt-1" />
@@ -564,9 +566,9 @@ export default function QuizGame() {
                     <div className="text-purple-200 text-sm">{quiz.subject} · {quiz.question_count} questions · by {quiz.created_by_name}</div>
                     <div className="flex gap-1 mt-1">
                       {(["bronze", "silver", "gold"] as Tier[]).map(t => (
-                        <span key={t} className="text-xs opacity-60">{TIER_CONFIG[t].emoji}</span>
+                        <span key={t} className={`text-xs opacity-60 ${TIER_CONFIG[t].color}`}>{TIER_CONFIG[t].label}</span>
                       ))}
-                      <span className="text-xs text-purple-300 ml-1">Auto-assigned tiers</span>
+                      <span className="text-xs text-purple-300 ml-1"> Auto-assigned tiers</span>
                     </div>
                   </div>
                   <div className="flex gap-2">
@@ -620,7 +622,7 @@ export default function QuizGame() {
             <div className="flex items-center justify-center gap-2 mt-3">
               {(["bronze", "silver", "gold"] as Tier[]).map(t => (
                 <span key={t} className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold ${TIER_CONFIG[t].bg} ${TIER_CONFIG[t].color}`}>
-                  {TIER_CONFIG[t].emoji} {TIER_CONFIG[t].label}
+                  {TIER_CONFIG[t].icon} {TIER_CONFIG[t].label}
                 </span>
               ))}
             </div>
@@ -794,7 +796,7 @@ export default function QuizGame() {
 
   if (view === "final" && room) {
     const sorted = [...room.players].sort((a, b) => b.score - a.score);
-    const podiumIcons = ["🥇", "🥈", "🥉"];
+    const podiumIcons = ["1st", "2nd", "3rd"];
     return (
       <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 p-6 overflow-y-auto">
         <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="max-w-3xl mx-auto">
@@ -813,7 +815,7 @@ export default function QuizGame() {
                   <motion.div key={p.id} initial={{ y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
                     transition={{ delay: rank * 0.15 }}
                     className={`flex flex-col items-center ${i === 1 ? "order-2" : i === 0 ? "order-1" : "order-3"}`}>
-                    <div className="text-3xl mb-1">{podiumIcons[rank]}</div>
+                    <div className="text-lg font-black text-yellow-300 mb-1">{podiumIcons[rank]}</div>
                     <div className="bg-white/20 rounded-t-xl px-6 py-3 text-center" style={{ minWidth: 80 }}>
                       <div className="text-white font-bold truncate max-w-[100px]">{p.name}</div>
                       <div className="font-black text-xl text-yellow-400">{p.score.toLocaleString()}</div>
@@ -838,7 +840,9 @@ export default function QuizGame() {
                     <span className="flex-1 text-white font-semibold">{p.name}</span>
                     <div className="flex gap-1">
                       {badges.slice(0, 3).map(b => (
-                        <span key={b.id} title={b.name} className="text-base">{b.emoji}</span>
+                        <span key={b.id} title={b.name} className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-yellow-400/20">
+                          <Award className="w-3 h-3 text-yellow-400" />
+                        </span>
                       ))}
                     </div>
                     <span className="text-yellow-400 font-black">{p.score.toLocaleString()}</span>
@@ -863,7 +867,7 @@ export default function QuizGame() {
                         <motion.div key={b.id} initial={{ scale: 0 }} animate={{ scale: 1 }}
                           transition={{ delay: i * 0.05 }}
                           className={`${b.color} rounded-xl px-3 py-2 flex items-center gap-2`}>
-                          <span className="text-xl">{b.emoji}</span>
+                          <Award className="w-5 h-5 text-white" />
                           <div>
                             <div className="text-white text-xs font-bold">{b.name}</div>
                             <div className="text-white/70 text-[10px]">{b.description}</div>

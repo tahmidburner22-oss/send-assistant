@@ -285,22 +285,25 @@ router.get("/rooms/:code", (req: Request, res: Response) => {
   res.json(sanitiseRoom(room));
 });
 
-// POST /api/quiz/rooms/:code/join — player joins
+// POST /api/quiz/rooms/:code/join — player joins (mid-game joining allowed)
 router.post("/rooms/:code/join", (req: Request, res: Response) => {
   const room = rooms[req.params.code];
   if (!room) return res.status(404).json({ error: "Room not found. Check your code." });
-  if (room.phase !== "lobby") return res.status(400).json({ error: "Game already started" });
+  // Allow joining in lobby OR during active game (phase: question/reveal)
+  if (room.phase === "ended") return res.status(400).json({ error: "This game has already ended." });
   const { name } = req.body;
   if (!name || name.trim().length === 0) return res.status(400).json({ error: "Name is required" });
   const playerId = uuidv4();
+  // If joining mid-game, pad answers array so player is in sync with current question
+  const answersNeeded = room.phase !== "lobby" ? room.currentQuestion : 0;
   room.players[playerId] = {
     id: playerId,
     name: name.trim().slice(0, 30),
     score: 0,
     streak: 0,
-    answers: [],
+    answers: Array(answersNeeded).fill(false), // mark skipped questions as incorrect
   };
-  res.json({ playerId, code: room.code });
+  res.json({ playerId, code: room.code, currentQuestion: room.currentQuestion, phase: room.phase });
 });
 
 // POST /api/quiz/rooms/:code/start — host starts game
@@ -337,7 +340,23 @@ router.post("/rooms/:code/answer", (req: Request, res: Response) => {
     player.streak = 0;
     player.answers[player.answers.length - 1] = false;
   }
-  res.json({ correct, score: player.score, streak: player.streak });
+
+  // Auto-advance to reveal phase when ALL players have answered this question
+  const playerList = Object.values(room.players);
+  const allAnswered = playerList.length > 0 && playerList.every(
+    (p: any) => p.answers.length > room.currentQuestion
+  );
+  if (allAnswered && room.phase === "question") {
+    // Delay 1.5s then move to reveal so clients can see the "all answered" state
+    setTimeout(() => {
+      if (room.phase === "question") {
+        room.phase = "reveal";
+        room.autoAdvancedAt = Date.now();
+      }
+    }, 1500);
+  }
+
+  res.json({ correct, score: player.score, streak: player.streak, allAnswered });
 });
 
 // POST /api/quiz/rooms/:code/next — host advances (reveal → next question or leaderboard)

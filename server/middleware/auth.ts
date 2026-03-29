@@ -1,7 +1,15 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { v4 as uuidv4 } from "uuid";
+import { createHash } from "crypto";
 import db from "../db/index.js";
+
+// GDPR: Hash IP addresses before storing in audit logs
+// This is a one-way hash — we can detect duplicate IPs for rate-limiting but cannot recover the original
+function anonymiseIp(ip: string | undefined): string | null {
+  if (!ip) return null;
+  return createHash("sha256").update(ip + (process.env.IP_HASH_SALT || "adaptly-ip-salt")).digest("hex").slice(0, 16);
+}
 
 export const JWT_SECRET = process.env.JWT_SECRET || "send-assistant-dev-secret-change-in-production";
 export const SESSION_TIMEOUT_MS = 30 * 24 * 60 * 60 * 1000; // 30 days — keeps scheduler working without re-login
@@ -148,6 +156,6 @@ export function auditLog(
     entityType || null,
     entityId || null,
     details ? JSON.stringify(details) : null,
-    ipAddress || null
+    anonymiseIp(ipAddress) // GDPR: store hashed IP only, never raw IP
   );
 }

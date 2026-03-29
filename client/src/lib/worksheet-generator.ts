@@ -1612,7 +1612,8 @@ function pickLayout(
   usedSoFar: LayoutFamily[],
   questionId: number,
   ageProfile: "primary_ks1" | "primary_ks2" | "secondary",
-  diagramsUsed: number
+  diagramsUsed: number,
+  hasDiagramData: boolean = true
 ): LayoutFamily {
   const last = usedSoFar[usedSoFar.length - 1];
 
@@ -1625,7 +1626,11 @@ function pickLayout(
   const sectionLayouts = SECTION_LAYOUTS[section] || profileLayouts;
 
   // Intersection: must be in both profile and section
-  let candidates = profileLayouts.filter(l => sectionLayouts.includes(l) && l !== last);
+  // Gate label_diagram: only allow it if the topic has actual diagram data
+  let candidates = profileLayouts.filter(l => {
+    if (!hasDiagramData && l === "label_diagram") return false;
+    return sectionLayouts.includes(l) && l !== last;
+  });
 
   // Prefer diagram layouts if < 2 used so far
   if (diagramsUsed < 2 && ageProfile === "secondary") {
@@ -2000,6 +2005,9 @@ export function generateWorksheet(params: WorksheetParams): GeneratedWorksheet {
   let diagramsUsed = 0;
   let questionId = 1;
 
+  // Only allow label_diagram layout when the topic has real diagram data
+  const hasDiagramData = !!(topicData.diagram || topicData.diagramSubQ);
+
   interface PlanEntry { section: string; layout: LayoutFamily; marks: number; requiresDiagram: boolean; }
   const questionPlan: PlanEntry[] = [];
 
@@ -2017,7 +2025,7 @@ export function generateWorksheet(params: WorksheetParams): GeneratedWorksheet {
 
   for (const sec of sectionDefs) {
     for (let q = 0; q < sec.qs; q++) {
-      const layout = pickLayout(sec.key, allUsedLayouts, questionId, ageProfile, diagramsUsed);
+      const layout = pickLayout(sec.key, allUsedLayouts, questionId, ageProfile, diagramsUsed, hasDiagramData);
       const requiresDiagram = DIAGRAM_LAYOUTS.has(layout);
       if (requiresDiagram) diagramsUsed++;
       allUsedLayouts.push(layout);
@@ -2271,7 +2279,7 @@ export function generateWorksheet(params: WorksheetParams): GeneratedWorksheet {
 
   // ── Phase 10: CHALLENGE (★) ────────────────────────────────────────────────
   if (difficulty === "higher" || difficulty === "stretch" || difficulty === "mixed") {
-    const challengeLayout = pickLayout("challenge", allUsedLayouts, questionId, ageProfile, diagramsUsed);
+    const challengeLayout = pickLayout("challenge", allUsedLayouts, questionId, ageProfile, diagramsUsed, hasDiagramData);
     const challengeMarks = 8;
     const markStr = `[${challengeMarks} marks]`;
 

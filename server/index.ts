@@ -183,7 +183,17 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS
   : [];
 app.use(cors({
   origin: (origin, cb) => {
-    if (!origin || allowedOrigins.length === 0 || allowedOrigins.some(o => origin.startsWith(o.trim()))) {
+    // Security: reject null origin (sandboxed iframes, data: URIs, file:// pages)
+    // Only allow undefined origin (same-origin server-to-server) or explicitly listed origins
+    if (origin === undefined) {
+      // Server-to-server or same-origin request — allow
+      return cb(null, true);
+    }
+    if (!origin || origin === "null") {
+      // Explicit null origin — reject (sandboxed iframe / data: URI attack vector)
+      return cb(new Error("Null origin not allowed"));
+    }
+    if (allowedOrigins.length === 0 || allowedOrigins.some(o => origin.startsWith(o.trim()))) {
       return cb(null, true);
     }
     cb(new Error("Not allowed by CORS"));
