@@ -1566,8 +1566,8 @@ router.post("/worksheet-from-slides", requireAuth, worksheetUpload.single("file"
           // Extract text from <a:t> tags (PowerPoint text runs)
           const textMatches = xml.match(/<a:t[^>]*>([^<]+)<\/a:t>/g) || [];
           const slideText = textMatches
-            .map(m => m.replace(/<[^>]+>/g, "").trim())
-            .filter(t => t.length > 0)
+            .map((m: string) => m.replace(/<[^>]+>/g, "").trim())
+            .filter((t: string) => t.length > 0)
             .join(" ");
           if (slideText) slideTexts.push(`[Slide ${slideFiles.indexOf(slideFile) + 1}] ${slideText}`);
         }

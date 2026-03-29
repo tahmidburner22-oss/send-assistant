@@ -678,26 +678,36 @@ MANDATORY RULES — violating any rule is wrong:
 
   // ── Relevance scoring for context-aware question types ────────────────────
   // Returns true if the topic/subject makes this question type a natural fit
+  // Advanced type eligibility — broadened so new types appear on most worksheets.
+  // Every type is eligible by default for its natural subject group; keyword checks
+  // only EXCLUDE types that would be genuinely nonsensical for the topic.
   const isRelevant = {
+    // Error correction: great for any subject with correct/incorrect answers
+    // Exclude only pure creative writing or open-ended art topics
     ERROR_CORRECTION: (
-      // Great for STEM topics with calculations, common misconceptions
       isSTEM ||
-      /calculat|formula|equation|method|working|proof|solve|error|mistake|misconception|ohm|newton|force|energy|speed|circuit|reaction|titrat|algebra|trigon|fraction|decimal|percent/i.test(topicLower)
+      /history|geography|economics|business|computing|ict|english|language|literature|drama|religious|re|rs/i.test(subjectLower) ||
+      /calculat|formula|equation|method|working|proof|solve|error|mistake|misconception|rule|law|principle|fact|date|event|term|defin/i.test(topicLower)
     ),
+    // Ranking: great for any topic where items can be ordered by a clear criterion
+    // Eligible for all subjects except pure creative writing
     RANKING: (
-      // Great for comparison topics, scales, hierarchies
-      /rank|order|compar|scale|hierarch|priorit|greatest|smallest|highest|lowest|most|least|stronger|weaker|reactiv|conduct|resist|density|speed|temperature|timeline|chronolog|import|significant/i.test(topicLower) ||
-      /science|physics|chemistry|biology|history|geography|economics/i.test(subjectLower)
+      isSTEM ||
+      /history|geography|economics|business|computing|ict|english|language|literature|drama|religious|re|rs/i.test(subjectLower) ||
+      /rank|order|compar|scale|hierarch|priorit|greatest|smallest|highest|lowest|most|least|stronger|weaker|reactiv|conduct|resist|density|speed|temperature|timeline|chronolog|import|significant|period|era|event|impact/i.test(topicLower)
     ),
+    // What changed: great for any topic with cause/effect, processes, or change over time
     WHAT_CHANGED: (
-      // Great for cause-effect, before/after, change-over-time topics
-      /chang|effect|impact|cause|before|after|result|consequence|evolution|transform|react|process|cycle|growth|decay|war|revolution|industri|climate|adapt|mutation|circuit|variable/i.test(topicLower) ||
-      /science|physics|chemistry|biology|history|geography/i.test(subjectLower)
+      isSTEM ||
+      /history|geography|economics|business|computing|ict|english|language|literature|drama|religious|re|rs/i.test(subjectLower) ||
+      /chang|effect|impact|cause|before|after|result|consequence|evolution|transform|react|process|cycle|growth|decay|war|revolution|industri|climate|adapt|mutation|circuit|variable|develop|period|era|movement/i.test(topicLower)
     ),
+    // Constraint problem: great for maths, science, design, computing, and any analytical subject
     CONSTRAINT_PROBLEM: (
-      // Great for design, problem-solving, engineering, maths application
-      /design|build|create|construct|circuit|engineer|plan|optimis|maximis|minimis|budget|limit|rule|condition|constraint|network|algorithm|program|code|proof|invest|resource/i.test(topicLower) ||
-      /maths|physics|computing|design|technology|engineering/i.test(subjectLower)
+      isMaths ||
+      isSTEM ||
+      /computing|design|technology|engineering|economics|business/i.test(subjectLower) ||
+      /design|build|create|construct|circuit|engineer|plan|optimis|maximis|minimis|budget|limit|rule|condition|constraint|network|algorithm|program|code|proof|invest|resource|solve|problem|apply/i.test(topicLower)
     ),
   };
 
@@ -715,6 +725,9 @@ MANDATORY RULES — violating any rule is wrong:
   function pickTypes(pool: string[], count: number): string[] {
     return fisherYatesShuffle(pool).slice(0, count);
   }
+
+  // ── SEND flag (needed by blockInstructions below) ───────────────────────────
+  const hasSend = params.sendNeed && params.sendNeed !== "none" && params.sendNeed !== "none-selected" && params.sendNeed !== "general";
 
   // ── Build candidate pools including relevant new types ────────────────────
   // Recall pool (Section A): knowledge-check types — always ascending difficulty
@@ -748,10 +761,80 @@ MANDATORY RULES — violating any rule is wrong:
     MATCHING:           "5 pairs. Each line: '1. [term] ←→ [definition]'. Pairs must be shuffled (term order ≠ definition order).",
     SHORT_ANSWER:       "One focused question. Mark allocation in brackets: [X marks]. No answer given — student writes it.",
     TABLE:              "Markdown table with | separators. 3-4 columns. 4-5 rows. Blank cells use '...........' for students to fill in.",
-    ERROR_CORRECTION:   "Present a worked solution with a deliberate mistake — choose an error that is realistic and topic-specific (wrong formula, arithmetic slip, incorrect unit, missed step). Format exactly:\n'Worked Answer\n[step 1]\n[step 2 — contains the error]\n[step 3 if needed]\n\nMistake\n[teacher-only: describe the exact error]\n\nTask\n1. Identify the mistake\n2. Explain why it is wrong\n3. Write the correct answer'\nIMPORTANT: The error must be plausible — something a real student would do. Do NOT make it trivially obvious. Use layout tag: error_correction.",
-    RANKING:            "Present 4–6 items that can be meaningfully ordered by a clear criterion relevant to the topic. Format exactly:\n'Rank these from [highest/strongest/fastest/most] to [lowest/weakest/slowest/least]:\n- [item A]\n- [item B]\n- [item C]\n- [item D]\n\nExplain your reasoning:'\nThe criterion must be scientifically/factually correct and unambiguous. Do NOT use ranking for subjective opinions. Use layout tag: ranking.",
-    WHAT_CHANGED:       "Present a before/after or cause/effect comparison that is directly relevant to the topic. Format exactly:\n'Scenario A\n[describe the initial state clearly]\n\nScenario B\n[describe the changed state — change exactly ONE variable]\n\nTask\n1. What changed between A and B?\n2. Why did this happen? (use subject vocabulary)\n3. What effect does this have on [relevant outcome]?'\nThe change must be scientifically/factually grounded. Use layout tag: what_changed.",
-    CONSTRAINT_PROBLEM: "Present a design or problem-solving task with 2–4 specific constraints that require genuine understanding of the topic. Format exactly:\n'Goal\n[clear task description — what must be achieved]\n\nConstraints\n- [rule 1 — must be topic-specific]\n- [rule 2]\n- [rule 3]\n\nOutput\nShow your working / draw your solution below:'\nConstraints must be non-trivial and require topic knowledge to satisfy. Do NOT use for pure recall. Use layout tag: constraint_problem.",
+    ERROR_CORRECTION: [
+      "Present a worked solution with a deliberate mistake — choose an error that is realistic and topic-specific (wrong formula, arithmetic slip, incorrect unit, missed step, wrong sign).",
+      "Format EXACTLY as follows (use these exact section headers):",
+      "Worked Answer",
+      "[step 1 — correct]",
+      hasSend ? "[step 2 — contains the error — HIGHLIGHT the error with ** around it]" : "[step 2 — contains the error]",
+      "[step 3 if needed]",
+      "",
+      "Mistake",
+      "[teacher-only: describe the exact error in one sentence]",
+      "",
+      "Task",
+      hasSend ? "1. Identify the mistake (Hint: look at Step 2)" : "1. Identify the mistake",
+      hasSend ? "2. Explain why it is wrong (sentence starter: 'This is wrong because...')" : "2. Explain why it is wrong",
+      "3. Write the correct answer",
+      "",
+      "LAYOUT: error_correction",
+      hasSend ? "SEND: single-step error only, highlight incorrect step, add sentence starters" : "Error must be plausible — do NOT make it trivially obvious.",
+      yearNum <= 9 ? "DIFFICULTY: one clear error, max 3 steps" : "DIFFICULTY: subtle multi-step error, deeper analysis required",
+    ].join("\n"),
+    RANKING: [
+      `Present ${hasSend ? '3–4' : '4–6'} items that can be meaningfully ordered by a clear, factually correct criterion relevant to the topic.`,
+      "Format EXACTLY as follows:",
+      "Rank these from [highest/strongest/fastest/most important] to [lowest/weakest/slowest/least important]:",
+      "1. _____ [ ] [item A]",
+      "2. _____ [ ] [item B]",
+      "3. _____ [ ] [item C]",
+      ...(hasSend ? [] : ["4. _____ [ ] [item D]", "5. _____ [ ] [item E]"]),
+      "",
+      "Explain your reasoning: _______________",
+      "",
+      "LAYOUT: ranking",
+      hasSend ? "SEND: 3 items only, provide partial ordering as scaffold, add visual cues" : "Criterion must be unambiguous and factually verifiable. Do NOT use for subjective opinions.",
+      yearNum <= 9 ? "DIFFICULTY: simple criterion, 3–4 items, one-sentence explanation" : "DIFFICULTY: complex criterion, 5–6 items, full paragraph explanation required",
+    ].join("\n"),
+    WHAT_CHANGED: [
+      "Present a before/after or cause/effect comparison that is directly relevant to the topic.",
+      "Format EXACTLY as follows:",
+      "Scenario A",
+      "[describe the initial state clearly — include specific values, names, or dates where relevant]",
+      "",
+      "Scenario B",
+      hasSend ? "[describe the changed state — change exactly ONE variable. HIGHLIGHT the change with ** around it]" : "[describe the changed state — change exactly ONE variable]",
+      "",
+      "Task",
+      hasSend ? "1. What changed between A and B? (sentence starter: 'Between A and B, ... changed')" : "1. What changed between A and B?",
+      hasSend ? "2. Why did this happen? (sentence starter: 'This happened because...')" : "2. Why did this happen? (use subject vocabulary)",
+      ...(hasSend ? [] : ["3. What effect does this have on [relevant outcome]?"]),
+      "",
+      "LAYOUT: what_changed",
+      hasSend ? "SEND: highlight changed element, 2 task questions only, sentence starters provided" : "The change must be scientifically/factually grounded. Change exactly ONE variable.",
+      yearNum <= 9 ? "DIFFICULTY: simple concrete change, two task questions max" : "DIFFICULTY: complex change with multiple downstream effects, three task questions",
+    ].join("\n"),
+    CONSTRAINT_PROBLEM: [
+      `Present a design or problem-solving task with ${hasSend ? '2' : '2–4'} specific constraints that require genuine understanding of the topic.`,
+      "Format EXACTLY as follows:",
+      "Goal",
+      "[clear task description — what must be achieved, with specific numbers or targets]",
+      "",
+      "Constraints",
+      "- [rule 1 — must be topic-specific and require subject knowledge to satisfy]",
+      ...(hasSend ? [] : ["- [rule 2]", "- [rule 3]"]),
+      "",
+      ...(hasSend ? ["Scaffold", "Step 1: [first step to guide students]", "Step 2: [second step]", ""] : []),
+      "Output",
+      "Show your working / draw your solution below:",
+      "[large blank space]",
+      "",
+      "Explain your solution in one sentence: _______________",
+      "",
+      "LAYOUT: constraint_problem",
+      hasSend ? "SEND: 2 constraints only, partial worked example as scaffold, explicit steps" : "Constraints must be non-trivial and require topic knowledge. Do NOT use for pure recall.",
+      yearNum <= 9 ? "DIFFICULTY: simple goal, 2 constraints, scaffold steps provided" : "DIFFICULTY: complex goal, 3–4 constraints, full working required, no scaffold",
+    ].join("\n"),
   };
 
   const sectionAPrompt = `Section A must contain exactly 3 blocks separated by a blank line:
@@ -910,8 +993,8 @@ STRICT JSON OUTPUT: Respond with valid JSON only — no markdown, no code blocks
         return `Exam board: ${params.examBoard}. ${boardMap[subjectKey]}`;
       })()
     : "";
-  // ── Per-condition SEND scaffolding ─────────────────────────────────────────
-  const hasSend = params.sendNeed && params.sendNeed !== "none" && params.sendNeed !== "none-selected" && params.sendNeed !== "general";
+  // ── Per-condition SEND scaffolding ───────────────────────────────────────────
+  // hasSend is declared earlier (before blockInstructions) — do not re-declare here
   const sendNote = hasSend ? (() => {
     const sn = params.sendNeed!.toLowerCase();
     // Shared base for all SEND: always chunked, always numbered steps
@@ -1089,7 +1172,9 @@ STRICT JSON OUTPUT: Respond with valid JSON only — no markdown, no code blocks
 
   // ── SVG Diagram injection note ──────────────────────────────────────────────
   // Subjects where inline diagrams add genuine value
-  const diagramSubjects = ["science", "biology", "chemistry", "physics", "geography", "maths", "mathematics", "design", "engineering", "history", "english", "drama", "religious", "re", "rs", "economics", "business", "computing", "ict"];
+  // Maths is excluded here — maths gets purpose-built graph/number-line/geometry diagrams
+  // via getDiagramForTopic only when the topic genuinely warrants one (not a labeled blob).
+  const diagramSubjects = ["science", "biology", "chemistry", "physics", "geography", "design", "engineering", "history", "english", "drama", "religious", "re", "rs", "economics", "business", "computing", "ict"];
   const isDiagramSubject = diagramSubjects.some(s => subjectLower.includes(s));
   const isVI = hasSend && !!(params.sendNeed?.toLowerCase().includes("vi") || params.sendNeed?.toLowerCase().includes("visual impair"));
 
@@ -1512,11 +1597,11 @@ Return EXACTLY this JSON (raw JSON only):
     {"title": "Q2 — Multiple Choice", "type": "q-mcq", "content": "[Question about ${params.topic}] [1 mark]\nA  [option]\nB  [option]\nC  [option]\nD  [option]\nCORRECT: [correct letter only — do NOT mark with ✓ in the options above]"},
     {"title": "Q3 — Cloze Paragraph", "type": "q-gap-fill", "content": "Complete the paragraph using words from the word bank. [7 marks]\n[5–7 sentence summary paragraph about ${params.topic} with exactly 7 blanks shown as _____]\nWORD BANK: word1 | word2 | word3 | word4 | word5 | word6 | word7 | word8 | word9 | word10"},
     {"title": "Q4 — Visual/Diagram Activity", "type": "q-label-diagram", "content": "${q4DiagramPrompt}", "marks": 5},
-    {"title": "Q5 — Calculation Practice", "type": "q-short-answer", "content": "${isMaths ? '[Pure calculation question on ${params.topic}] [5 marks]\n(a) Calculate: [specific numerical problem — show all working]. [2 marks]\n(b) Calculate: [a second numerical problem requiring a different method]. [2 marks]\n(c) Write the answer to part (b) correct to 2 significant figures. [1 mark]' : isSTEM ? '[Scenario or data set related to ${params.topic}] [5 marks]\n(a) Identify the relevant formula or scientific law. [1 mark]\n(b) Show the full calculation with working. [2 marks]\n(c) Explain what the result means in context. [2 marks]' : '[4–8 line extract from text related to ${params.topic}] [5 marks]\n(a) Identify ONE language or literary technique used in this extract. [1 mark]\n(b) What does this reveal about character, theme or author intent? [2 marks]\n(c) What does the key image or symbol represent? [2 marks]'}", "marks": 5},
-    {"title": "Q6 — Sequencing/Structured Response", "type": "q-data-table", "content": "${isSTEM ? 'Answer the structured questions below. [4 marks]\n(a) Identify the key rule, law or principle that applies to [specific aspect of ' + params.topic + ']. [1 mark]\n(b) Apply it to this scenario: [specific scenario about ' + params.topic + ']. Show all working. [2 marks]\n(c) State the unit of the answer or explain what the result means. [1 mark]' : 'Number the events 1–6 in the correct order. [3 marks]\n[ ] [event/plot point 1 from ${params.topic}]\n[ ] [event/plot point 2 from ${params.topic}]\n[ ] [event/plot point 3 from ${params.topic}]\n[ ] [event/plot point 4 from ${params.topic}]\n[ ] [event/plot point 5 from ${params.topic}]\n[ ] [event/plot point 6 from ${params.topic}]\n3 marks: all correct | 2 marks: 4–5 correct | 1 mark: 2–3 correct'}", "marks": 4},
-    {"title": "Q7 — Problem Solving", "type": "q-extended", "content": "[${isMaths ? 'Multi-step problem: solve a real-life numerical problem about ${params.topic}. No written explanation required — show full numerical working only. [6 marks]' : isSTEM ? 'Compare two cases or explain a key concept in depth' : 'Explain how a recurring motif/technique/theme is used across the text, with reference to at least TWO specific moments'} — ${params.topic}] [6 marks]", "marks": 6},
-    {"title": "Q8 — Complete the Table", "type": "q-data-table", "content": "Complete the table below. [8 marks]\n${isSTEM ? '| No. | Scenario | Formula used | Working | Answer with unit |\n|---|---|---|---|---|\n| 1 | [specific calculation problem 1 about ${params.topic}] | ........... | ........... | ........... |\n| 2 | [specific calculation problem 2 about ${params.topic}] | ........... | ........... | ........... |\n| 3 | [specific calculation problem 3 about ${params.topic}] | ........... | ........... | ........... |\n| 4 | [specific calculation problem 4 about ${params.topic}] | ........... | ........... | ........... |' : '| No. | Theme | Key Quote (max 5 words) | Act/Scene/Chapter | Effect on audience/reader |\n|---|---|---|---|---|\n| 1 | [theme 1 from ${params.topic}] | ........... | ........... | ........... |\n| 2 | [theme 2 from ${params.topic}] | ........... | ........... | ........... |\n| 3 | [theme 3 from ${params.topic}] | ........... | ........... | ........... |\n| 4 | [theme 4 from ${params.topic}] | ........... | ........... | ........... |'}", "marks": 8},
-    {"title": "Q9 — Extended Calculation", "type": "q-extended", "content": "${isMaths ? '[Multi-step calculation: a challenging problem on ${params.topic} that requires selecting and applying the correct method. No prose — show numerical working only. [8 marks]\nMark scheme: 1m method, 3m correct intermediate steps, 2m correct final answer with units, 2m correct rounding/simplification]' : isSTEM ? '[Higher-order evaluation question: evaluate a claim, design an experiment, or apply concept to unfamiliar context. Include 3 mark levels.] [8 marks]' : '\"[Contested statement about ${params.topic}]\"\nTo what extent do you agree? Use evidence from the text to support your argument. [8 marks]\nLevel 4 (7–8m): Sustained, convincing, nuanced argument with precise embedded evidence.\nLevel 3 (5–6m): Clear argument; analysis of both sides.\nLevel 2 (3–4m): Some relevant points; limited analysis.\nLevel 1 (1–2m): Narrative with little analysis.'}", "marks": 8},
+    {"title": "Q5 — Calculation Practice", "type": "q-short-answer", "content": "${isMaths ? '[Pure calculation question on ${params.topic}. IMPORTANT: Do NOT ask students to explain, describe, identify a formula, or write in sentences. Every sub-part must require a numerical or algebraic answer only.] [5 marks]\n(a) Calculate: [specific numerical problem directly testing ${params.topic} — show all working]. [2 marks]\n(b) Calculate: [a second numerical problem on ${params.topic} requiring a different step or method]. [2 marks]\n(c) Write the answer to part (b) correct to 2 significant figures (or simplest form if algebraic). [1 mark]' : isSTEM ? '[Scenario or data set related to ${params.topic}] [5 marks]\n(a) Identify the relevant formula or scientific law. [1 mark]\n(b) Show the full calculation with working. [2 marks]\n(c) Explain what the result means in context. [2 marks]' : '[4–8 line extract from text related to ${params.topic}] [5 marks]\n(a) Identify ONE language or literary technique used in this extract. [1 mark]\n(b) What does this reveal about character, theme or author intent? [2 marks]\n(c) What does the key image or symbol represent? [2 marks]'}", "marks": 5},
+    {"title": "Q6 — Structured Calculation", "type": "q-data-table", "content": "${isMaths ? 'Answer the structured calculation questions below. IMPORTANT: All answers must be numerical or algebraic — no written explanations. [4 marks]\n(a) [Specific calculation sub-question (a) about ${params.topic}]. Show all working. [2 marks]\n(b) [Specific calculation sub-question (b) about ${params.topic} — different aspect or method]. [2 marks]' : isSTEM ? 'Answer the structured questions below. [4 marks]\n(a) Identify the key rule, law or principle that applies to [specific aspect of ' + params.topic + ']. [1 mark]\n(b) Apply it to this scenario: [specific scenario about ' + params.topic + ']. Show all working. [2 marks]\n(c) State the unit of the answer or explain what the result means. [1 mark]' : 'Number the events 1–6 in the correct order. [3 marks]\n[ ] [event/plot point 1 from ${params.topic}]\n[ ] [event/plot point 2 from ${params.topic}]\n[ ] [event/plot point 3 from ${params.topic}]\n[ ] [event/plot point 4 from ${params.topic}]\n[ ] [event/plot point 5 from ${params.topic}]\n[ ] [event/plot point 6 from ${params.topic}]\n3 marks: all correct | 2 marks: 4–5 correct | 1 mark: 2–3 correct'}", "marks": 4},
+    {"title": "Q7 — Problem Solving", "type": "q-extended", "content": "[${isMaths ? 'Multi-step numerical problem about ${params.topic}. IMPORTANT: Do NOT ask students to explain, evaluate, or write in sentences. The entire answer must be numerical working. [6 marks]\nA real-life scenario involving ${params.topic}: [describe the scenario with specific numbers]. Show ALL working step by step. Final answer must include correct units or simplified form. No prose required.' : isSTEM ? 'Compare two cases or explain a key concept in depth — ${params.topic}' : 'Explain how a recurring motif/technique/theme is used across the text, with reference to at least TWO specific moments — ${params.topic}'} — ${params.topic}] [6 marks]", "marks": 6},
+    {"title": "Q8 — Complete the Table", "type": "q-data-table", "content": "Complete the table below. [8 marks]\n${isMaths ? '| No. | Problem | Working | Answer |\n|---|---|---|---|\n| 1 | [specific calculation problem 1 on ${params.topic} — numbers only, no writing] | ........... | ........... |\n| 2 | [specific calculation problem 2 on ${params.topic} — different method or value] | ........... | ........... |\n| 3 | [specific calculation problem 3 on ${params.topic}] | ........... | ........... |\n| 4 | [specific calculation problem 4 on ${params.topic}] | ........... | ........... |' : isSTEM ? '| No. | Scenario | Formula used | Working | Answer with unit |\n|---|---|---|---|---|\n| 1 | [specific calculation problem 1 about ${params.topic}] | ........... | ........... | ........... |\n| 2 | [specific calculation problem 2 about ${params.topic}] | ........... | ........... | ........... |\n| 3 | [specific calculation problem 3 about ${params.topic}] | ........... | ........... | ........... |\n| 4 | [specific calculation problem 4 about ${params.topic}] | ........... | ........... | ........... |' : '| No. | Theme | Key Quote (max 5 words) | Act/Scene/Chapter | Effect on audience/reader |\n|---|---|---|---|---|\n| 1 | [theme 1 from ${params.topic}] | ........... | ........... | ........... |\n| 2 | [theme 2 from ${params.topic}] | ........... | ........... | ........... |\n| 3 | [theme 3 from ${params.topic}] | ........... | ........... | ........... |\n| 4 | [theme 4 from ${params.topic}] | ........... | ........... | ........... |'}", "marks": 8},
+    {"title": "Q9 — Extended Calculation", "type": "q-extended", "content": "${isMaths ? '[Multi-step calculation on ${params.topic}. CRITICAL: Do NOT ask students to explain, evaluate, describe, or write in sentences. The entire answer must be numerical or algebraic working only. [8 marks]\nA challenging multi-step problem: [describe a specific problem involving ${params.topic} with real numbers]. Students must:\nStep 1: [first calculation step]\nStep 2: [second calculation step]\nStep 3: [final calculation step]\nShow ALL working. Final answer must be in correct form with units.\nMark scheme: 2m correct method setup, 3m correct intermediate steps, 2m correct final answer with units, 1m correct rounding/simplification]' : isSTEM ? '[Higher-order evaluation question: evaluate a claim, design an experiment, or apply concept to unfamiliar context. Include 3 mark levels.] [8 marks]' : '\"[Contested statement about ${params.topic}]\"\nTo what extent do you agree? Use evidence from the text to support your argument. [8 marks]\nLevel 4 (7–8m): Sustained, convincing, nuanced argument with precise embedded evidence.\nLevel 3 (5–6m): Clear argument; analysis of both sides.\nLevel 2 (3–4m): Some relevant points; limited analysis.\nLevel 1 (1–2m): Narrative with little analysis.'}", "marks": 8},
     {"title": "${sendSectionTitles.challenge}", "type": "challenge", "content": "[${challengeGuide}${hasSend ? ' — optional, labelled as bonus' : ''}]"},
     {"title": "Self Reflection", "type": "self-reflection", "teacherOnly": false, "content": "SUBTITLE: Review your understanding before moving on.\nCONFIDENCE_TABLE:\n[specific skill/concept 1 from ${params.topic}]\n[specific skill/concept 2 from ${params.topic}]\n[specific skill/concept 3 from ${params.topic}]\n[specific skill/concept 4 from ${params.topic}]\n[specific skill/concept 5 from ${params.topic}]\nWRITTEN_PROMPTS:\nOne concept I feel confident about is ...\nOne area I still need to practise is ...\nA question I still want to ask my teacher is ...\nEXIT_TICKET: Write ONE thing you learned today about ${params.topic} in one sentence:"},
     {"title": "Teacher Copy — Answer Key", "type": "mark-scheme", "teacherOnly": true, "content": "MARKING GUIDANCE: Accept reasonable alternatives. Award marks for clear reasoning and correct application.\nSECTION 1 — KNOWLEDGE CHECK [12 marks]\nQ1 TRUE/FALSE [4 marks]: [list each statement with TRUE or FALSE answer and brief justification]\nQ2 MCQ [1 mark]: [correct answer letter] — [brief explanation why correct and why distractors are wrong]\nQ3 CLOZE [7 marks]: [list all 7 correct answers in order, numbered 1–7]\nSECTION 2 — UNDERSTANDING [14 marks]\nQ4 DIAGRAM [5 marks]: [list each label with its correct position/component]\nQ5 EXTRACT/STIMULUS [5 marks]: (a) [answer] (b) [answer with mark allocation] (c) [answer with mark allocation]\nQ6 SEQUENCING/STRUCTURED [4 marks]: [correct sequence/answers with mark allocation]\nSECTION 3 — APPLICATION & ANALYSIS [22 marks]\nQ7 EXTENDED [6 marks]: [model answer with level descriptors — Level 1: 1–2m, Level 2: 3–4m, Level 3: 5–6m]\nQ8 TABLE [8 marks]: [complete table with all answers, 2 marks per row]\nQ9 EVALUATIVE [8 marks]: [model answer with level descriptors — Level 1–4 as specified in question]\nCHALLENGE [${isSTEM ? '8' : '12'} marks]: [full mark scheme with band descriptors]\nTOTAL MARKS: Section 1: 12m | Section 2: 14m | Section 3: 22m | Challenge: ${isSTEM ? '8' : '12'}m | TOTAL: ${isSTEM ? '56' : '60'}m"},

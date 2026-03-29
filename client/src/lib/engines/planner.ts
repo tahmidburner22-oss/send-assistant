@@ -136,10 +136,10 @@ const BASE_30MIN_SECONDARY: QuestionType[] = [
   "q-mcq",            // Q2 — Knowledge Check
   "q-gap-fill",       // Q3 — Knowledge Check
   "q-short-answer",   // Q4 — Understanding
-  "q-short-answer",   // Q5 — Understanding
+  "q-matching",       // Q5 — Understanding (replaced by advanced type injection)
   "q-short-answer",   // Q6 — Understanding
   "q-extended",       // Q7 — Application & Analysis
-  "q-extended",       // Q8 — Application & Analysis
+  "q-ordering",       // Q8 — Application & Analysis (replaced by advanced type injection)
   "q-extended",       // Q9 — Application & Analysis
 ];
 
@@ -211,7 +211,7 @@ function injectAdvancedTypes(types: QuestionType[], phase: "primary" | "secondar
   const result = [...types];
   const sectionDefs = phase === "primary" ? PRIMARY_SECTIONS : SECONDARY_SECTIONS;
   let injected = 0;
-  const maxInjections = durationMins >= 45 ? 2 : 1;
+  const maxInjections = durationMins >= 30 ? 2 : 1;
 
   // Pool of advanced types to try, shuffled for variety
   const advancedPool: QuestionType[] = [
@@ -327,7 +327,7 @@ export function createWorksheetPlan(params: {
       const [qStart, qEnd] = s.qRange;
       const actualEnd = Math.min(qEnd, totalQ);
       const sectionTypes = questionTypes.slice(qStart - 1, actualEnd);
-      const families = [...new Set(sectionTypes.map(t => QUESTION_LAYOUT_MAP[t]))] as LayoutFamily[];
+      const families = Array.from(new Set(sectionTypes.map(t => QUESTION_LAYOUT_MAP[t]))) as LayoutFamily[];
 
       if (families.length < 3 && sectionTypes.length >= 3) {
         warnings.push(`Section "${s.title}" has only ${families.length} layout families. Minimum 3 required.`);
