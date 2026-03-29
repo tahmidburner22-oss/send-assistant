@@ -2558,6 +2558,12 @@ function ErrorCorrectionSection({
     if (/^(mistake|error|what.?s wrong|hint)/i.test(line)) { mode = "mistake"; continue; }
     if (/^(task|your task|questions|find|identify|correct|explain)/i.test(line)) { mode = "tasks"; continue; }
     if (mode === "worked") {
+      // Detect teacher-only hint lines that leaked into the worked answer section
+      // e.g. "The mistake is in step 2", "Hint: look at step 3", "Error: ..."
+      if (/^(the mistake is|hint:|error:|teacher:|note to teacher|teacher note|teacher only|teacher hint)/i.test(line)) {
+        mistakeHint = line.replace(/^(the mistake is[:\s]*|hint[:\s]*|error[:\s]*|teacher[:\s]*|note to teacher[:\s]*|teacher note[:\s]*|teacher only[:\s]*|teacher hint[:\s]*)/i, "").trim() || line;
+        continue;
+      }
       // Strip ** markdown bold markers that expose the error to students
       workedAnswer.push(isTeacher ? line : line.replace(/\*\*([^*]+)\*\*/g, "$1"));
     } else if (mode === "mistake") mistakeHint = line;
