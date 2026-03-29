@@ -322,7 +322,7 @@ app.use("/api/messages", parentMessagesRouter);
 
 // ── Health check ──────────────────────────────────────────────────────────────
 app.get("/api/health", (_, res) => {
-  res.json({ status: "ok", timestamp: new Date().toISOString(), version: "2.2.0-Billing" });
+  res.json({ status: "ok", timestamp: new Date().toISOString(), version: "2.3.0-AllFixes" });
 });
 
 // ── Serve static frontend in production ───────────────────────────────────────
