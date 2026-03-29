@@ -2579,11 +2579,11 @@ function ErrorCorrectionSection({
         </div>
         <div style={{ padding: "10px 12px", background: "#fff5f5" }}>
           {workedAnswer.map((line, i) => (
-            <div key={i} style={{ fontSize: `${textSize}px`, fontFamily, marginBottom: "4px", color: "#1a1a1a" }}>{line}</div>
+            <div key={i} style={{ fontSize: `${textSize}px`, fontFamily, marginBottom: "4px", color: "#1a1a1a" }} dangerouslySetInnerHTML={{ __html: renderMath(line) }} />
           ))}
           {isTeacher && mistakeHint && (
             <div style={{ marginTop: "8px", padding: "4px 8px", background: "#fee2e2", borderRadius: "4px", fontSize: `${Math.max(textSize - 1, 10)}px`, color: "#991b1b", fontStyle: "italic" }}>
-              Teacher: {mistakeHint}
+              Teacher: <span dangerouslySetInnerHTML={{ __html: renderMath(mistakeHint) }} />
             </div>
           )}
         </div>
@@ -2593,7 +2593,7 @@ function ErrorCorrectionSection({
         {tasks.map((task, i) => (
           <div key={i} style={{ border: "1.5px solid #e5e7eb", borderRadius: "6px", overflow: "hidden" }}>
             <div style={{ background: "#1e293b", color: "white", padding: "4px 8px", fontSize: `${Math.max(textSize - 1, 10)}px`, fontWeight: 700, fontFamily }}>
-              {i + 1}. {task}
+              <span dangerouslySetInnerHTML={{ __html: `${i + 1}. ` + renderMath(task) }} />
             </div>
             <div style={{ padding: "6px 8px", minHeight: "32px", background: "white" }}>
               {isTeacher ? null : <div style={{ borderBottom: "1px solid #d1d5db", height: "28px" }} />}
@@ -4671,7 +4671,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                       <div style={{ display: "flex", flexDirection: "column" as const, gap: "12px" }}>
                         {mistakes.map((m, mi) => (
                           <div key={mi}>
-                            <div style={{ fontWeight: 700, fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, color: "#1a2744", marginBottom: "3px" }}>{m.title}</div>
+                            <div style={{ fontWeight: 700, fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, color: "#1a2744", marginBottom: "3px" }} dangerouslySetInnerHTML={{ __html: renderMath(m.title) }} />
                             {m.explanation && (
                               <div style={{ fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, color: "#374151", paddingLeft: "16px" }}>
                                 <span style={{ color: "#2a7f8f", fontWeight: 700, marginRight: "6px" }}>→</span>
