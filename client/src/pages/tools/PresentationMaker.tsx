@@ -142,6 +142,36 @@ const THEMES = {
     light: "#FDF4FF",
     gradient: "linear-gradient(135deg, #7C3AED 0%, #EC4899 50%, #F59E0B 100%)",
   },
+  midnight: {
+    name: "Midnight (Dark)",
+    primary: "#E2E8F0",
+    secondary: "#818CF8",
+    accent: "#F472B6",
+    bg: "#0F172A",
+    text: "#CBD5E1",
+    light: "#1E293B",
+    gradient: "linear-gradient(135deg, #0F172A 0%, #1E293B 100%)",
+  },
+  coral: {
+    name: "Coral Sunset",
+    primary: "#9A3412",
+    secondary: "#EA580C",
+    accent: "#FBBF24",
+    bg: "#FFFFFF",
+    text: "#1c1917",
+    light: "#FFF7ED",
+    gradient: "linear-gradient(135deg, #9A3412 0%, #EA580C 60%, #FBBF24 100%)",
+  },
+  ocean: {
+    name: "Ocean Blue",
+    primary: "#0C4A6E",
+    secondary: "#0284C7",
+    accent: "#38BDF8",
+    bg: "#FFFFFF",
+    text: "#0c4a6e",
+    light: "#F0F9FF",
+    gradient: "linear-gradient(135deg, #0C4A6E 0%, #0284C7 60%, #38BDF8 100%)",
+  },
 };
 type ThemeKey = keyof typeof THEMES;
 
@@ -1340,6 +1370,12 @@ async function exportToPptx(presentation: PresentationData, themeKey: ThemeKey):
   const accentClean = theme.accent.replace("#", "");
   const textClean = theme.text.replace("#", "");
   const lightClean = theme.light.replace("#", "");
+  const bgClean = theme.bg.replace("#", "");
+  // Dark theme detection: if bg is dark, use white text for non-title slides
+  const isDark = parseInt(bgClean.slice(0, 2), 16) < 60;
+  const slideBgClean = bgClean;
+  const slideTextClean = isDark ? "E2E8F0" : textClean;
+  const slideTitleClean = isDark ? "E2E8F0" : primaryClean;
 
   for (const [idx, slide] of presentation.slides.entries()) {
     const pSlide = pptx.addSlide();
@@ -1394,16 +1430,16 @@ async function exportToPptx(presentation: PresentationData, themeKey: ThemeKey):
         align: "right",
       });
     } else if (slide.type === "learning-objectives") {
-      pSlide.background = { fill: "FFFFFF" };
+      pSlide.background = { fill: slideBgClean };
       // Top accent bar
       pSlide.addShape(pptx.ShapeType.rect, {
         x: 0, y: 0, w: "100%", h: 0.08,
-        fill: { type: "solid", color: primaryClean },
+        fill: { type: "solid", color: isDark ? secondaryClean : primaryClean },
       });
       // Title
       pSlide.addText(slide.title, {
         x: 0.5, y: 0.3, w: 8.5, h: 0.6,
-        fontSize: 22, bold: true, color: primaryClean,
+        fontSize: 22, bold: true, color: slideTitleClean,
         fontFace: "Calibri",
       });
       // Underline
@@ -1443,14 +1479,14 @@ async function exportToPptx(presentation: PresentationData, themeKey: ThemeKey):
         });
       });
     } else if (slide.type === "key-terms") {
-      pSlide.background = { fill: "FFFFFF" };
+      pSlide.background = { fill: slideBgClean };
       pSlide.addShape(pptx.ShapeType.rect, {
         x: 0, y: 0, w: "100%", h: 0.08,
-        fill: { type: "solid", color: primaryClean },
+        fill: { type: "solid", color: isDark ? secondaryClean : primaryClean },
       });
       pSlide.addText(slide.title, {
         x: 0.5, y: 0.3, w: 8.5, h: 0.6,
-        fontSize: 22, bold: true, color: primaryClean,
+        fontSize: 22, bold: true, color: slideTitleClean,
         fontFace: "Calibri",
       });
       pSlide.addShape(pptx.ShapeType.rect, {
@@ -1477,19 +1513,19 @@ async function exportToPptx(presentation: PresentationData, themeKey: ThemeKey):
         });
         pSlide.addText(item.definition, {
           x: x + 0.1, y: y + 0.38, w: 4.3, h: 0.42,
-          fontSize: 10, color: textClean,
+          fontSize: 10, color: slideTextClean,
           fontFace: "Calibri", wrap: true,
         });
       });
     } else if (slide.type === "worked-example") {
-      pSlide.background = { fill: "FFFFFF" };
+      pSlide.background = { fill: slideBgClean };
       pSlide.addShape(pptx.ShapeType.rect, {
         x: 0, y: 0, w: "100%", h: 0.08,
-        fill: { type: "solid", color: primaryClean },
+        fill: { type: "solid", color: isDark ? secondaryClean : primaryClean },
       });
       pSlide.addText(slide.title, {
         x: 0.5, y: 0.3, w: 8.5, h: 0.6,
-        fontSize: 22, bold: true, color: primaryClean,
+        fontSize: 22, bold: true, color: slideTitleClean,
         fontFace: "Calibri",
       });
       pSlide.addShape(pptx.ShapeType.rect, {
@@ -1516,19 +1552,19 @@ async function exportToPptx(presentation: PresentationData, themeKey: ThemeKey):
         });
         pSlide.addText(step, {
           x: 1.2, y: y + 0.05, w: 8.1, h: 0.45,
-          fontSize: 12, color: textClean,
+          fontSize: 12, color: slideTextClean,
           fontFace: "Calibri", wrap: true,
         });
       });
     } else if (slide.type === "check-understanding") {
-      pSlide.background = { fill: "FFFFFF" };
+      pSlide.background = { fill: slideBgClean };
       pSlide.addShape(pptx.ShapeType.rect, {
         x: 0, y: 0, w: "100%", h: 0.08,
         fill: { type: "solid", color: accentClean },
       });
       pSlide.addText(slide.title, {
         x: 0.5, y: 0.3, w: 8.5, h: 0.6,
-        fontSize: 22, bold: true, color: primaryClean,
+        fontSize: 22, bold: true, color: slideTitleClean,
         fontFace: "Calibri",
       });
       if (slide.question) {
@@ -1539,7 +1575,7 @@ async function exportToPptx(presentation: PresentationData, themeKey: ThemeKey):
         });
         pSlide.addText(slide.question, {
           x: 0.7, y: 1.2, w: 8.6, h: 0.7,
-          fontSize: 15, bold: true, color: primaryClean,
+          fontSize: 15, bold: true, color: slideTitleClean,
           align: "center", fontFace: "Calibri", wrap: true,
         });
       }
@@ -1563,20 +1599,20 @@ async function exportToPptx(presentation: PresentationData, themeKey: ThemeKey):
         });
         pSlide.addText(opt, {
           x: x + 0.7, y: y + 0.12, w: 3.7, h: 0.46,
-          fontSize: 12, color: textClean,
+          fontSize: 12, color: slideTextClean,
           fontFace: "Calibri", wrap: true,
         });
       });
     } else {
       // Generic slide: content, activity, hook, discussion, summary, exit-ticket, extension
-      pSlide.background = { fill: "FFFFFF" };
+      pSlide.background = { fill: slideBgClean };
       pSlide.addShape(pptx.ShapeType.rect, {
         x: 0, y: 0, w: "100%", h: 0.08,
-        fill: { type: "solid", color: primaryClean },
+        fill: { type: "solid", color: isDark ? secondaryClean : primaryClean },
       });
       pSlide.addText(slide.title, {
         x: 0.5, y: 0.3, w: 8.5, h: 0.6,
-        fontSize: 22, bold: true, color: primaryClean,
+        fontSize: 22, bold: true, color: slideTitleClean,
         fontFace: "Calibri",
       });
       pSlide.addShape(pptx.ShapeType.rect, {
@@ -1589,7 +1625,7 @@ async function exportToPptx(presentation: PresentationData, themeKey: ThemeKey):
       if (slide.body) {
         pSlide.addText(slide.body, {
           x: 0.5, y: yPos, w: 9, h: 0.5,
-          fontSize: 12, color: "6B7280",
+          fontSize: 12, color: isDark ? "94A3B8" : "6B7280",
           italic: true, fontFace: "Calibri", wrap: true,
         });
         yPos += 0.6;
@@ -1603,7 +1639,7 @@ async function exportToPptx(presentation: PresentationData, themeKey: ThemeKey):
         });
         pSlide.addText(slide.question, {
           x: 0.7, y: yPos + 0.1, w: 8.6, h: 0.6,
-          fontSize: 15, bold: true, color: primaryClean,
+          fontSize: 15, bold: true, color: slideTitleClean,
           align: "center", fontFace: "Calibri", wrap: true,
         });
         yPos += 1.0;
@@ -1622,7 +1658,7 @@ async function exportToPptx(presentation: PresentationData, themeKey: ThemeKey):
           });
           pSlide.addText(bullet, {
             x: 1.0, y: yPos + 0.08, w: 8.3, h: 0.4,
-            fontSize: 12, color: textClean,
+            fontSize: 12, color: slideTextClean,
             fontFace: "Calibri", wrap: true,
           });
           yPos += 0.65;

@@ -69,6 +69,12 @@ export default function DPA() {
             <li><strong>OpenAI</strong> (USA) — AI content generation; zero data-retention policy applied</li>
             <li><strong>Google (Gemini)</strong> (USA) — AI content generation; zero data-retention policy applied</li>
             <li><strong>Groq</strong> (USA) — AI content generation; zero data-retention policy applied</li>
+            <li><strong>Cerebras</strong> (USA) — AI content generation; zero data-retention policy applied</li>
+            <li><strong>SambaNova</strong> (USA) — AI content generation; zero data-retention policy applied</li>
+            <li><strong>OpenRouter</strong> (USA) — AI model routing and content generation; zero data-retention policy applied</li>
+            <li><strong>DeepSeek</strong> (China/USA) — AI content generation; zero data-retention policy applied</li>
+            <li><strong>Cohere</strong> (Canada/USA) — AI content generation; zero data-retention policy applied</li>
+            <li><strong>HuggingFace</strong> (USA) — AI content generation; zero data-retention policy applied</li>
             <li><strong>Resend</strong> (USA) — Transactional email delivery</li>
           </ul>
           <p>No AI provider is permitted to use data submitted through Adaptly for training, fine-tuning, or improving their foundational models. We will notify the School of any changes to this sub-processor list.</p>
