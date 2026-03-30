@@ -1687,7 +1687,9 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
     setSendNeed(nextSendNeed);
     // Clear any leftover options that weren't mentioned
     setExamStyle(false);
-    setReadingAge(0);
+    // FIX: Only reset reading age if the NL prompt explicitly sets it to default.
+    // Previously this always reset to 0, losing the user's slider choice.
+    if (parsed.readingAge !== undefined) setReadingAge(parsed.readingAge);
     setAdditionalInstructions("");
 
     setNlInput("");

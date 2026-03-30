@@ -16,15 +16,30 @@ function getFullDiagramBank() {
 const router = Router();
 const worksheetUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 25 * 1024 * 1024 } });
 
-// ── Provider priority order — 3 Groq keys round-robin → Gemini fallback ────────
+// ── Provider priority order — 12 providers, ~65,200 RPD combined ───────────────
 //
-// Strategy: Rotate across 3 Groq keys (groq_1/groq_2/groq_3) to triple the
-// effective rate limit. Each key gets llama-3.3-70b-versatile (131K TPM).
-// Total effective capacity: 3 × 131K TPM = 393K TPM — enough for 100 worksheets/5min.
-// Gemini 2.5 Flash is the primary fallback (free tier: 500 RPD, 10 RPM).
-// Gemini 2.5 Flash Lite is a secondary fallback (separate quota from 2.5 Flash).
-// Mistral kept as last resort (unlimited RPD, just slow at 2 RPM).
-const PROVIDER_ORDER = ["groq_1", "groq_2", "groq_3", "gemini", "gemini_lite", "mistral"] as const;
+// Priority rationale:
+//   1. Groq (×3 keys) — fastest inference, 43,200 RPD combined
+//   2. Cerebras — same speed as Groq, separate 14,400 RPD limit
+//   3. Gemini Flash/Lite — high quality, lower quota (500/500 RPD)
+//   4. SambaNova — good quality, 1,000 RPD free tier
+//   5. OpenRouter — 1,000 RPD + access to 20+ free models internally
+//   6. DeepSeek — strong JSON output, 500 RPD free
+//   7. Cohere — reliable, 1,000 RPD free
+//   8. HuggingFace — variable quality, good backup
+//   9. Mistral — unlimited RPD but only 2 RPM, last resort
+// Perplexity/OpenAI/Claude intentionally excluded (paid only, no free tier).
+const PROVIDER_ORDER = [
+  "groq_1", "groq_2", "groq_3",
+  "cerebras",
+  "gemini", "gemini_lite",
+  "sambanova",
+  "openrouter",
+  "deepseek",
+  "cohere",
+  "huggingface",
+  "mistral",
+] as const;
 
 // ── Round-robin counter for Groq keys ────────────────────────────────────────
 // Distributes requests evenly across the 3 Groq keys to maximise throughput.
@@ -61,6 +76,37 @@ function setCooldown(provider: string): void {
   providerCooldowns.set(provider, expiresAt);
   // FIX: log message now reflects the actual COOLDOWN_MS value (was hardcoded "60s" before)
   console.warn(`[AI] ${provider} put on cooldown for ${COOLDOWN_MS / 1000}s (until ${new Date(expiresAt).toISOString()})`);
+}
+
+// ── Per-provider RPM (requests-per-minute) tracking ────────────────────────────────────────
+// Providers are skipped when they're within 2 requests of their RPM limit,
+// preventing 429s before they happen rather than reacting after.
+const rpmWindows: Record<string, number[]> = {};
+const PROVIDER_RPM_CAPS: Record<string, number> = {
+  groq_1:      28,  // Groq free: 30 RPM — 2 headroom
+  groq_2:      28,
+  groq_3:      28,
+  cerebras:    28,  // Cerebras free: 30 RPM
+  gemini:       8,  // Gemini Flash free: 10 RPM
+  gemini_lite: 28,  // Gemini Flash Lite free: 30 RPM
+  sambanova:   28,  // SambaNova free: 30 RPM
+  openrouter:  18,  // OpenRouter free: 20 RPM
+  deepseek:    18,  // DeepSeek free: ~20 RPM
+  cohere:      18,  // Cohere free: ~20 RPM
+  huggingface:  8,  // HuggingFace: conservative
+  mistral:      1,  // Mistral free: 2 RPM (very conservative)
+};
+function recordRpm(provider: string): void {
+  const now = Date.now();
+  if (!rpmWindows[provider]) rpmWindows[provider] = [];
+  rpmWindows[provider] = rpmWindows[provider].filter(t => now - t < 60_000);
+  rpmWindows[provider].push(now);
+}
+function isRpmSafe(provider: string): boolean {
+  const now = Date.now();
+  const window = (rpmWindows[provider] || []).filter(t => now - t < 60_000);
+  const cap = PROVIDER_RPM_CAPS[provider] ?? 10;
+  return window.length < cap;
 }
 
 // Returns a list of providers that are NOT currently on cooldown
@@ -121,9 +167,15 @@ function getEffectiveKey(provider: string, userKey?: string, schoolId?: string):
   }
   // 3. Platform-level env vars (Railway — for the Adaptly platform operator account only)
   const envMap: Record<string, string> = {
-    groq: process.env.GROQ_API_KEY || "",
-    gemini: process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || "",
-    mistral: process.env.MISTRAL_API_KEY || "",
+    groq:        process.env.GROQ_API_KEY || "",
+    gemini:      process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || "",
+    cerebras:    process.env.CEREBRAS_API_KEY || "",
+    sambanova:   process.env.SAMBANOVA_API_KEY || "",
+    openrouter:  process.env.OPENROUTER_API_KEY || "",
+    deepseek:    process.env.DEEPSEEK_API_KEY || "",
+    cohere:      process.env.COHERE_API_KEY || "",
+    huggingface: process.env.HUGGINGFACE_API_KEY || "",
+    mistral:     process.env.MISTRAL_API_KEY || "",
   };
   return envMap[provider] || "";
 }
@@ -131,6 +183,22 @@ function getEffectiveKey(provider: string, userKey?: string, schoolId?: string):
 function getAdminModel(provider: string, schoolId?: string): string {
   // gemini_lite always uses gemini-2.5-flash-lite regardless of DB config
   if (provider === "gemini_lite") return "gemini-2.5-flash-lite";
+  // Default model map for all providers
+  const defaultModels: Record<string, string> = {
+    groq:        "llama-3.3-70b-versatile",
+    groq_1:      "llama-3.3-70b-versatile",
+    groq_2:      "llama-3.3-70b-versatile",
+    groq_3:      "llama-3.3-70b-versatile",
+    cerebras:    "llama3.3-70b",
+    gemini:      "gemini-2.5-flash",
+    gemini_lite: "gemini-2.5-flash-lite",
+    sambanova:   "Meta-Llama-3.3-70B-Instruct",
+    openrouter:  "meta-llama/llama-4-scout:free",
+    deepseek:    "deepseek-chat",
+    cohere:      "command-r-plus",
+    huggingface: "Qwen/Qwen2.5-72B-Instruct",
+    mistral:     "mistral-small-latest",
+  };
   if (schoolId) {
     const schoolEntry = getSchoolKey(schoolId, provider);
     if (schoolEntry?.model) return schoolEntry.model;
@@ -139,8 +207,8 @@ function getAdminModel(provider: string, schoolId?: string): string {
     const row = db.prepare(
       "SELECT model FROM admin_api_keys WHERE provider = ?"
     ).get(provider) as any;
-    return row?.model || "";
-  } catch (_) { return ""; }
+    return row?.model || defaultModels[provider] || "";
+  } catch (_) { return defaultModels[provider] || ""; }
 }
 
 // ── Core: call a single provider ─────────────────────────────────────────────
@@ -163,7 +231,7 @@ async function callProvider(
   // Others: 20s
   // Worst case: 3×12 + 15 + 15 + 18 = 84s but cooldowns skip most providers
   const timeoutMs =
-    provider === "groq" || provider === "groq_1" || provider === "groq_2" || provider === "groq_3"
+    provider === "groq" || provider === "groq_1" || provider === "groq_2" || provider === "groq_3" || provider === "cerebras" || provider === "sambanova"
       ? 12_000
       : provider === "gemini" || provider === "gemini_lite"
       ? 15_000
@@ -201,6 +269,15 @@ async function callProvider(
       case "openai":
         result = await callOpenAI(system, user, key, model || "gpt-4o-mini", maxTokens, controller.signal);
         break;
+      case "cerebras":
+        // Cerebras wafer-scale inference — 14,400 RPD, 30 RPM free tier
+        // Same quota as one Groq key but separate provider = separate limit
+        result = await callCerebras(system, user, key, model || "llama3.3-70b", maxTokens, controller.signal);
+        break;
+      case "sambanova":
+        // SambaNova Cloud — 1,000 RPD, 30 RPM free tier, OpenAI-compatible
+        result = await callSambaNova(system, user, key, model || "Meta-Llama-3.3-70B-Instruct", maxTokens, controller.signal);
+        break;
       case "openrouter":
         result = await callOpenRouter(system, user, key, model, maxTokens, controller.signal);
         break;
@@ -231,6 +308,20 @@ async function callProvider(
   } finally {
     clearTimeout(timer);
   }
+}
+
+// ── Route heavy requests to high-context providers ────────────────────────────────
+// Groq/Cerebras: excellent for fast single-generation (short-medium prompts).
+// Gemini: better for long output, batch generation, file adaptation.
+// This ensures Groq quota isn't burned on 6,000-token batch calls.
+function reorderForHeavyRequest(providers: string[], promptLength: number): string[] {
+  if (promptLength < 3000) return providers; // short request — no reorder needed
+  // Move high-context providers to front, keep rest of order
+  const heavy = ["gemini", "gemini_lite", "sambanova", "deepseek"];
+  const prioritised = heavy.filter(p => providers.includes(p));
+  const rest = providers.filter(p => !heavy.includes(p));
+  console.log(`[AI] Heavy request (${promptLength} chars) — prioritising: ${prioritised.join(", ")}`);
+  return [...prioritised, ...rest];
 }
 
 // ── Auto-fallback: try every provider until one succeeds ─────────────────────
@@ -291,10 +382,20 @@ async function callWithFallback(
     console.log(`[AI] Skipping ${cooledDown.join(", ")} (on cooldown) — using: ${availableOrder.join(", ")}`);
   }
 
-  // Try available providers first
-  const ordersToTry = availableOrder.length > 0 ? availableOrder : rotatedOrder;
+  // Apply smart routing: heavy requests go to high-context providers first
+  const promptLength = system.length + user.length;
+  const ordersToTry = reorderForHeavyRequest(
+    availableOrder.length > 0 ? availableOrder : rotatedOrder,
+    promptLength
+  );
 
   for (const provider of ordersToTry) {
+    // Skip if we're near the RPM cap for this provider (proactive rate-limit prevention)
+    if (!isRpmSafe(provider)) {
+      errors.push(`${provider}: near RPM cap — skipping`);
+      console.log(`[AI] ${provider} near RPM cap — skipping`);
+      continue;
+    }
     const key = getEffectiveKey(provider, undefined, schoolId);
     if (!key) {
       errors.push(`${provider}: no key configured`);
@@ -305,6 +406,7 @@ async function callWithFallback(
       const content = await callProvider(provider, system, user, key, model, maxTokens);
       if (content && content.trim()) {
         console.log(`[AI] Success via ${provider}`);
+        recordRpm(provider); // track successful request for RPM window
         return { content, provider };
       }
       errors.push(`${provider}: empty response`);
@@ -675,6 +777,32 @@ async function callCerebras(system: string, user: string, key: string, model: st
   if (!res.ok) throw new Error(`Cerebras ${res.status}: ${(await res.text()).slice(0, 200)}`);
   const data = await res.json() as any;
   return data.choices[0].message.content;
+}
+
+// ── SambaNova Cloud ──────────────────────────────────────────────────────────────────────────────────
+// Wafer-scale inference with Llama 3.3 70B and 405B.
+// Free tier: 1,000 RPD, 30 RPM — OpenAI-compatible API.
+async function callSambaNova(system: string, user: string, key: string, model: string, maxTokens: number, signal?: AbortSignal): Promise<string> {
+  const res = await fetch("https://api.sambanova.ai/v1/chat/completions", {
+    method: "POST",
+    signal,
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
+    body: JSON.stringify({
+      model: model || "Meta-Llama-3.3-70B-Instruct",
+      messages: [
+        { role: "system", content: system || "You are a helpful SEND education assistant." },
+        { role: "user", content: user },
+      ],
+      max_tokens: maxTokens,
+      temperature: 0.1,
+    }),
+  });
+  if (res.status === 429) throw new Error(`SambaNova 429: rate limited`);
+  if (!res.ok) throw new Error(`SambaNova ${res.status}: ${(await res.text()).slice(0, 200)}`);
+  const data = await res.json() as any;
+  const content = data?.choices?.[0]?.message?.content;
+  if (!content) throw new Error("SambaNova returned empty content");
+  return content;
 }
 
 // FIX: callGemini now uses the dedicated systemInstruction field instead of
