@@ -1246,7 +1246,7 @@ router.post("/diagram", requireAuth, async (req: Request, res: Response) => {
   try {
     const wikiResult = await Promise.race([
       searchWikimediaDiagram(subject, topic),
-      new Promise<null>(resolve => setTimeout(() => resolve(null), 20_000)),
+      new Promise<null>(resolve => setTimeout(() => resolve(null), 10_000)),
     ]);
     if (wikiResult) {
       console.log(`[Diagram] Found via Wikimedia live search for "${topic}"`);

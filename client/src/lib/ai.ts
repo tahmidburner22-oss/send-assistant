@@ -2362,10 +2362,17 @@ export async function aiGenerateDiagram(params: {
     const storedToken = typeof localStorage !== 'undefined' ? localStorage.getItem('send_token') : null;
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
     if (storedToken) headers['Authorization'] = `Bearer ${storedToken}`;
+    // 12-second timeout: the server's Wikimedia live search can take up to 10s;
+    // we add 2s buffer. If the diagram fetch hangs, we skip it rather than
+    // blocking the entire worksheet generation (which caused the AI generation
+    // failed error — the 55s client timeout was exceeded waiting for diagrams).
+    const diagramAbort = new AbortController();
+    const diagramTimer = setTimeout(() => diagramAbort.abort(), 12_000);
     const res = await fetch('/api/ai/diagram', {
       method: 'POST',
       headers,
       credentials: 'include',
+      signal: diagramAbort.signal,
       body: JSON.stringify({
         subject: params.subject,
         topic: params.topic,
@@ -2374,6 +2381,7 @@ export async function aiGenerateDiagram(params: {
         diagramType: params.diagramType,
       }),
     });
+    clearTimeout(diagramTimer);
     if (res.ok) {
       const data = await res.json();
       // If server explicitly says no diagram is available, return null (do NOT fall back to AI SVG)
