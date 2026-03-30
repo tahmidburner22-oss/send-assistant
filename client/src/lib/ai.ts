@@ -607,6 +607,8 @@ MANDATORY RULES — violating any rule is wrong:
   // Parse the year number from strings like "Year 1", "Year 5", "Year 10", "Year 13"
   const is11Plus = (params.yearGroup || "").toLowerCase().includes("11+") || (params.yearGroup || "").toLowerCase().includes("eleven plus");
   const yearNum = is11Plus ? 6 : (parseInt((params.yearGroup || "").replace(/[^0-9]/g, ""), 10) || 7);
+  // isPrimary declared here (before first use at ~line 737) to avoid TDZ errors in the minified bundle
+  const isPrimary = yearNum <= 6;
 
   // Key Stage and phase
   const phase = is11Plus ? "11+ Preparation (ages 9–11, KS2 level)" :
@@ -850,7 +852,7 @@ BLOCK 2 — ${blockInstructions[variantB[1]]}
 BLOCK 3 — ${blockInstructions[variantB[2]]}`;
 
   // ── Primary (KS1/KS2) layout enhancement ──────────────────────────────────
-  const isPrimary = yearNum <= 6;
+  // isPrimary already declared above (moved to before first use to avoid TDZ)
   const primaryLayoutNote = isPrimary ? `
 PRIMARY SCHOOL LAYOUT RULES (${phase}) — MANDATORY — READ THIS FIRST:
 This is a KS1/KS2 worksheet. It must feel like a fun activity sheet, NOT a secondary school handout.
