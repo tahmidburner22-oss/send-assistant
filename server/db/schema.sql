@@ -449,6 +449,29 @@ CREATE TABLE IF NOT EXISTS parent_messages (
 );
 CREATE INDEX IF NOT EXISTS idx_parent_messages_pupil ON parent_messages(pupil_id);
 
+-- ── Worksheet Library (master worksheets — curated or AI-generated) ──────────
+CREATE TABLE IF NOT EXISTS worksheet_library (
+  id TEXT PRIMARY KEY,
+  subject TEXT NOT NULL,
+  topic TEXT NOT NULL,
+  year_group TEXT NOT NULL,
+  title TEXT NOT NULL,
+  subtitle TEXT,
+  sections TEXT NOT NULL DEFAULT '[]',     -- JSON array of WorksheetSection objects
+  teacher_sections TEXT NOT NULL DEFAULT '[]', -- JSON array of teacher-only sections (answer key)
+  key_vocab TEXT NOT NULL DEFAULT '[]',    -- JSON array of {term, definition}
+  learning_objective TEXT,
+  source TEXT NOT NULL DEFAULT 'ai',       -- 'ai' | 'upload' | 'curated'
+  curated INTEGER NOT NULL DEFAULT 0,      -- 1 = human-verified / gold standard
+  version INTEGER NOT NULL DEFAULT 1,
+  uploaded_by TEXT REFERENCES users(id),
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_library_topic ON worksheet_library(subject, topic, year_group);
+CREATE INDEX IF NOT EXISTS idx_library_subject ON worksheet_library(subject);
+CREATE INDEX IF NOT EXISTS idx_library_curated ON worksheet_library(curated);
+
 -- ── Quiz Results (persisted per pupil) ───────────────────────────────────────
 CREATE TABLE IF NOT EXISTS quiz_results (
   id TEXT PRIMARY KEY,

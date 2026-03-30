@@ -289,6 +289,7 @@ export default function AdminPanel() {
           <TabsTrigger value="logs" className="text-xs py-1.5 flex-1"><Terminal className="w-3.5 h-3.5 mr-1" />Logs</TabsTrigger>
           <TabsTrigger value="breach" className="text-xs py-1.5 flex-1"><Shield className="w-3.5 h-3.5 mr-1" />Breaches</TabsTrigger>
           <TabsTrigger value="settings" className="text-xs py-1.5 flex-1"><Settings2 className="w-3.5 h-3.5 mr-1" />System</TabsTrigger>
+          <TabsTrigger value="library" className="text-xs py-1.5 flex-1"><FileText className="w-3.5 h-3.5 mr-1" />Library</TabsTrigger>
           {isSuperAdmin && (
             <TabsTrigger value="super" className="text-xs py-1.5 flex-1 bg-purple-50 text-purple-700 data-[state=active]:bg-purple-600 data-[state=active]:text-white">
               <Building2 className="w-3.5 h-3.5 mr-1" />Schools
@@ -1173,7 +1174,256 @@ export default function AdminPanel() {
           </TabsContent>
         )}
 
+        {/* ── WORKSHEET LIBRARY ── */}
+        <TabsContent value="library" className="space-y-4 mt-4">
+          <WorksheetLibraryPanel />
+        </TabsContent>
+
       </Tabs>
+    </div>
+  );
+}
+
+// ───────────────────────────────────────────────────────────────────────────────────
+// WORKSHEET LIBRARY PANEL
+// ───────────────────────────────────────────────────────────────────────────────────
+function WorksheetLibraryPanel() {
+  const [entries, setEntries] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [filterSubject, setFilterSubject] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const [uploadForm, setUploadForm] = useState({ subject: "", topic: "", yearGroup: "", title: "" });
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewEntry, setPreviewEntry] = useState<any | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const token = typeof localStorage !== "undefined" ? localStorage.getItem("send_token") || "" : "";
+  const authHeaders = token ? { Authorization: `Bearer ${token}` } : {};
+
+  const loadEntries = async () => {
+    setLoading(true);
+    try {
+      const r = await fetch("/api/library/entries", { headers: authHeaders });
+      if (r.ok) {
+        const data = await r.json();
+        setEntries(data.entries || []);
+      }
+    } catch { toast.error("Failed to load library"); }
+    setLoading(false);
+  };
+
+  useEffect(() => { loadEntries(); }, []);
+
+  const handleCurate = async (id: number, curated: boolean) => {
+    try {
+      const r = await fetch(`/api/library/entries/${id}/curate`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", ...authHeaders },
+        body: JSON.stringify({ curated }),
+      });
+      if (r.ok) {
+        setEntries(prev => prev.map(e => e.id === id ? { ...e, curated } : e));
+        toast.success(curated ? "Marked as curated" : "Removed curated status");
+      }
+    } catch { toast.error("Failed to update entry"); }
+  };
+
+  const handleDelete = async (id: number, title: string) => {
+    if (!confirm(`Delete "${title}" from the library? This cannot be undone.`)) return;
+    try {
+      const r = await fetch(`/api/library/entries/${id}`, {
+        method: "DELETE",
+        headers: authHeaders,
+      });
+      if (r.ok) {
+        setEntries(prev => prev.filter(e => e.id !== id));
+        toast.success("Entry deleted");
+      }
+    } catch { toast.error("Failed to delete entry"); }
+  };
+
+  const handlePdfUpload = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedFile || !uploadForm.subject || !uploadForm.topic || !uploadForm.yearGroup) {
+      toast.error("Please fill in all fields and select a PDF.");
+      return;
+    }
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("pdf", selectedFile);
+      formData.append("subject", uploadForm.subject);
+      formData.append("topic", uploadForm.topic);
+      formData.append("yearGroup", uploadForm.yearGroup);
+      if (uploadForm.title) formData.append("title", uploadForm.title);
+      const r = await fetch("/api/library/ingest-pdf", {
+        method: "POST",
+        headers: authHeaders,
+        body: formData,
+      });
+      if (r.ok) {
+        const data = await r.json();
+        toast.success(`PDF ingested! ${data.sections_count} sections extracted.`);
+        setSelectedFile(null);
+        setUploadForm({ subject: "", topic: "", yearGroup: "", title: "" });
+        if (fileInputRef.current) fileInputRef.current.value = "";
+        await loadEntries();
+      } else {
+        const err = await r.json();
+        toast.error(err.error || "Ingestion failed");
+      }
+    } catch { toast.error("Upload failed"); }
+    setUploading(false);
+  };
+
+  const filtered = entries.filter(e => {
+    const q = search.toLowerCase();
+    const matchSearch = !q || e.title?.toLowerCase().includes(q) || e.topic?.toLowerCase().includes(q) || e.subject?.toLowerCase().includes(q);
+    const matchSubject = !filterSubject || e.subject === filterSubject;
+    return matchSearch && matchSubject;
+  });
+
+  const subjects = [...new Set(entries.map(e => e.subject).filter(Boolean))];
+
+  return (
+    <div className="space-y-6">
+      {/* Stats bar */}
+      <div className="grid grid-cols-3 gap-3">
+        <Card className="border-border/50">
+          <CardContent className="pt-4 pb-3">
+            <p className="text-2xl font-bold text-brand">{entries.length}</p>
+            <p className="text-xs text-muted-foreground">Total entries</p>
+          </CardContent>
+        </Card>
+        <Card className="border-border/50">
+          <CardContent className="pt-4 pb-3">
+            <p className="text-2xl font-bold text-emerald-600">{entries.filter(e => e.curated).length}</p>
+            <p className="text-xs text-muted-foreground">Curated</p>
+          </CardContent>
+        </Card>
+        <Card className="border-border/50">
+          <CardContent className="pt-4 pb-3">
+            <p className="text-2xl font-bold text-blue-600">{entries.filter(e => e.source === "pdf").length}</p>
+            <p className="text-xs text-muted-foreground">From PDF</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* PDF Upload */}
+      <Card className="border-border/50">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm font-semibold flex items-center gap-2">
+            <FileText className="w-4 h-4 text-brand" /> Upload Master Worksheet PDF
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handlePdfUpload} className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label className="text-xs">Subject *</Label>
+                <Input className="text-sm" placeholder="e.g. Science" value={uploadForm.subject} onChange={e => setUploadForm(f => ({ ...f, subject: e.target.value }))} />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Topic *</Label>
+                <Input className="text-sm" placeholder="e.g. Electricity: Circuits" value={uploadForm.topic} onChange={e => setUploadForm(f => ({ ...f, topic: e.target.value }))} />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Year Group *</Label>
+                <Input className="text-sm" placeholder="e.g. Year 10" value={uploadForm.yearGroup} onChange={e => setUploadForm(f => ({ ...f, yearGroup: e.target.value }))} />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Title (optional — auto-detected from PDF)</Label>
+                <Input className="text-sm" placeholder="Leave blank to auto-detect" value={uploadForm.title} onChange={e => setUploadForm(f => ({ ...f, title: e.target.value }))} />
+              </div>
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">PDF File *</Label>
+              <input ref={fileInputRef} type="file" accept=".pdf" className="text-sm w-full" onChange={e => setSelectedFile(e.target.files?.[0] || null)} />
+            </div>
+            <Button type="submit" disabled={uploading} className="w-full bg-brand hover:bg-brand/90 text-white">
+              {uploading ? "Ingesting PDF..." : "Upload & Ingest PDF"}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+
+      {/* Library Browser */}
+      <Card className="border-border/50">
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between gap-2">
+            <CardTitle className="text-sm font-semibold flex items-center gap-2">
+              <Activity className="w-4 h-4 text-brand" /> Library Browser
+            </CardTitle>
+            <Button size="sm" variant="outline" className="text-xs" onClick={loadEntries}>
+              <RefreshCw className="w-3 h-3 mr-1" /> Refresh
+            </Button>
+          </div>
+          <div className="flex gap-2 mt-2">
+            <Input className="text-xs h-8" placeholder="Search title, topic, subject..." value={search} onChange={e => setSearch(e.target.value)} />
+            <select className="text-xs border border-border rounded-md px-2 bg-background" value={filterSubject} onChange={e => setFilterSubject(e.target.value)}>
+              <option value="">All subjects</option>
+              {subjects.map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <p className="text-xs text-muted-foreground text-center py-6">Loading library...</p>
+          ) : filtered.length === 0 ? (
+            <p className="text-xs text-muted-foreground text-center py-6">No entries found. Upload a PDF above or generate worksheets to populate the library.</p>
+          ) : (
+            <div className="space-y-2">
+              {filtered.map(entry => (
+                <div key={entry.id} className="flex items-center gap-3 p-3 rounded-lg border border-border/50 hover:bg-muted/30 transition-colors">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-sm font-medium truncate">{entry.title}</span>
+                      {entry.curated && <Badge className="text-[10px] py-0 bg-emerald-100 text-emerald-700 border-emerald-200">Curated</Badge>}
+                      <Badge variant="outline" className="text-[10px] py-0">{entry.source === "pdf" ? "PDF" : "AI"}</Badge>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-0.5">{entry.subject} · {entry.topic} · {entry.year_group} · {Array.isArray(entry.sections) ? entry.sections.length : 0} sections</p>
+                  </div>
+                  <div className="flex items-center gap-1.5 flex-shrink-0">
+                    <Button size="sm" variant="outline" className="text-xs h-7 px-2" onClick={() => setPreviewEntry(previewEntry?.id === entry.id ? null : entry)}>
+                      {previewEntry?.id === entry.id ? "Hide" : "Preview"}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant={entry.curated ? "default" : "outline"}
+                      className={`text-xs h-7 px-2 ${entry.curated ? "bg-emerald-600 hover:bg-emerald-700 text-white" : ""}`}
+                      onClick={() => handleCurate(entry.id, !entry.curated)}
+                    >
+                      {entry.curated ? "Curated" : "Mark Curated"}
+                    </Button>
+                    <Button size="sm" variant="outline" className="text-xs h-7 px-2 text-red-600 hover:bg-red-50 border-red-200" onClick={() => handleDelete(entry.id, entry.title)}>
+                      Delete
+                    </Button>
+                  </div>
+                </div>
+              ))}
+              {previewEntry && (
+                <div className="mt-3 p-4 rounded-xl border border-brand/30 bg-brand/5 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-semibold text-brand">{previewEntry.title}</p>
+                    <Button size="sm" variant="ghost" className="text-xs h-6" onClick={() => setPreviewEntry(null)}>Close</Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">{previewEntry.subtitle}</p>
+                  <div className="space-y-1 max-h-64 overflow-y-auto">
+                    {(previewEntry.sections || []).map((s: any, i: number) => (
+                      <div key={i} className="text-xs p-2 rounded bg-background border border-border/40">
+                        <span className="font-medium text-brand">[{s.type}]</span> <span className="font-medium">{s.title}</span>
+                        {s.marks && <span className="ml-1 text-muted-foreground">({s.marks}m)</span>}
+                        <p className="text-muted-foreground mt-0.5 line-clamp-2">{s.content?.substring(0, 120)}...</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
