@@ -31,7 +31,7 @@
  * 10. Missing anchor point / unmatched label reference
  */
 
-import type { GeneratedWorksheet as WorksheetData } from "../worksheet-generator";
+import type { WorksheetData } from "../worksheet-generator";
 import type { WorksheetPlan } from "./planner";
 import type { AssignedQuestion } from "./layoutEngine";
 import { validateDiagram, type DiagramSpec } from "./diagramEngine";
@@ -70,15 +70,11 @@ function warn(id: string, name: string, messages: string[]): CheckResult {
 
 // ─── Worksheet-level checks ───────────────────────────────────────────────────
 
-/** Check 1: Section count must be 2–30
- * Note: AI-generated worksheets have 14+ sections (objective, vocab, worked example,
- * Q1–Q9, challenge, self-reflection). The original 4-section limit was for abstract
- * planner groups, not rendered sections. Relaxed to 30 to avoid false failures.
- */
+/** Check 1: Section count must be 2–4 */
 function checkSectionCount(worksheet: WorksheetData): CheckResult {
   const count = worksheet.sections?.length ?? 0;
   if (count < 2) return fail("section-count", "Section Count", [`Only ${count} section(s). Minimum 2 required.`]);
-  if (count > 30) return fail("section-count", "Section Count", [`${count} sections. Maximum 30 allowed.`]);
+  if (count > 4) return fail("section-count", "Section Count", [`${count} sections. Maximum 4 allowed.`]);
   return pass("section-count", "Section Count");
 }
 
@@ -182,9 +178,9 @@ function checkPageGeometry(assignedQuestions: AssignedQuestion[]): CheckResult {
 function checkAccessibility(worksheet: WorksheetData): CheckResult {
   const warnings: string[] = [];
   for (const section of (worksheet.sections ?? [])) {
-    // WorksheetSection does not have a 'diagram' type or 'altText' — skip diagram check
-    // This check is a no-op until the type is extended
-    void section;
+    if (section.type === "diagram" && !section.altText) {
+      warnings.push(`Section "${section.title}" is a diagram but has no alt text.`);
+    }
   }
   if (warnings.length > 0) return warn("accessibility", "Accessibility", warnings);
   return pass("accessibility", "Accessibility");
@@ -265,15 +261,11 @@ export function lockOutput(worksheet: WorksheetData, report: ValidationReport): 
     ...worksheet,
     metadata: {
       ...worksheet.metadata,
-      // Validation stamp stored as a serialised string to avoid type conflict
-      // (WorksheetSection.metadata does not declare these fields explicitly)
-      ...({
-        validationStatus: report.status,
-        validationTimestamp: new Date().toISOString(),
-        validationErrors: report.errors,
-        validationWarnings: report.warnings,
-        lockedForRender: report.readyToRender,
-      } as Record<string, unknown>),
-    } as typeof worksheet.metadata,
+      validationStatus: report.status,
+      validationTimestamp: new Date().toISOString(),
+      validationErrors: report.errors,
+      validationWarnings: report.warnings,
+      lockedForRender: report.readyToRender,
+    },
   };
 }

@@ -1533,24 +1533,16 @@ export async function searchWikimediaDiagram(
   const query = `${topic} ${subject} diagram educational`;
   const searchUrl = `https://commons.wikimedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&srnamespace=6&srlimit=5&format=json&origin=*`;
 
-  // Use a shared AbortController with an 8-second total budget for the entire search.
-  // Previously, each individual fetch had its own 5s timeout, meaning the loop could
-  // run for up to 50s (5 results × 2 fetches × 5s). This caused the diagram endpoint
-  // to hang and block worksheet generation.
-  const controller = new AbortController();
-  const totalTimeout = setTimeout(() => controller.abort(), 8000);
-
   try {
     const res = await fetch(searchUrl, {
       headers: { "User-Agent": "AdaptlyEduApp/1.0 (educational platform)" },
-      signal: controller.signal,
+      signal: AbortSignal.timeout(5000),
     });
-    if (!res.ok) { clearTimeout(totalTimeout); return null; }
+    if (!res.ok) return null;
     const data = await res.json() as any;
     const results = data?.query?.search || [];
 
     for (const result of results) {
-      if (controller.signal.aborted) break;
       const title = result.title as string;
       // Only use SVG, PNG, JPG files
       if (!title.match(/\.(svg|png|jpg|jpeg)$/i)) continue;
@@ -1559,40 +1551,31 @@ export async function searchWikimediaDiagram(
 
       // Get the actual image URL via imageinfo API
       const infoUrl = `https://commons.wikimedia.org/w/api.php?action=query&titles=${encodeURIComponent(title)}&prop=imageinfo&iiprop=url|extmetadata&iiurlwidth=960&format=json&origin=*`;
-      try {
-        const infoRes = await fetch(infoUrl, {
-          headers: { "User-Agent": "AdaptlyEduApp/1.0 (educational platform)" },
-          signal: controller.signal,
-        });
-        if (!infoRes.ok) continue;
-        const infoData = await infoRes.json() as any;
-        const pages = infoData?.query?.pages || {};
-        const page = Object.values(pages)[0] as any;
-        const imageInfo = page?.imageinfo?.[0];
-        // Use thumburl (960px) from the API response
-        const thumbUrl = imageInfo?.thumburl || imageInfo?.url;
-        if (!thumbUrl) continue;
+      const infoRes = await fetch(infoUrl, {
+        headers: { "User-Agent": "AdaptlyEduApp/1.0 (educational platform)" },
+        signal: AbortSignal.timeout(5000),
+      });
+      if (!infoRes.ok) continue;
+      const infoData = await infoRes.json() as any;
+      const pages = infoData?.query?.pages || {};
+      const page = Object.values(pages)[0] as any;
+      const imageInfo = page?.imageinfo?.[0];
+      // Use thumburl (960px) from the API response
+      const thumbUrl = imageInfo?.thumburl || imageInfo?.url;
+      if (!thumbUrl) continue;
 
-        const author = (imageInfo.extmetadata?.Artist?.value || "Wikimedia Commons")
-          .replace(/<[^>]+>/g, "").trim();
-        const license = imageInfo.extmetadata?.LicenseShortName?.value || "CC BY-SA";
+      const author = (imageInfo.extmetadata?.Artist?.value || "Wikimedia Commons")
+        .replace(/<[^>]+>/g, "").trim();
+      const license = imageInfo.extmetadata?.LicenseShortName?.value || "CC BY-SA";
 
-        clearTimeout(totalTimeout);
-        return {
-          url: thumbUrl,
-          caption: `${topic} — ${subject}`,
-          attribution: `${author}, Wikimedia Commons (${license})`,
-        };
-      } catch (innerErr: any) {
-        if (controller.signal.aborted) break;
-        console.warn("[DiagramBank] imageinfo fetch error:", innerErr?.message);
-        continue;
-      }
+      return {
+        url: thumbUrl,
+        caption: `${topic} — ${subject}`,
+        attribution: `${author}, Wikimedia Commons (${license})`,
+      };
     }
   } catch (e) {
     console.warn("[DiagramBank] Wikimedia search error:", e);
-  } finally {
-    clearTimeout(totalTimeout);
   }
 
   return null;
