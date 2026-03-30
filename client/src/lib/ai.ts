@@ -607,8 +607,9 @@ MANDATORY RULES — violating any rule is wrong:
   // Parse the year number from strings like "Year 1", "Year 5", "Year 10", "Year 13"
   const is11Plus = (params.yearGroup || "").toLowerCase().includes("11+") || (params.yearGroup || "").toLowerCase().includes("eleven plus");
   const yearNum = is11Plus ? 6 : (parseInt((params.yearGroup || "").replace(/[^0-9]/g, ""), 10) || 7);
-  // isPrimary declared here (before first use at ~line 737) to avoid TDZ errors in the minified bundle
+  // isPrimary and isSecondary declared here (before first use) to avoid TDZ errors in the minified bundle
   const isPrimary = yearNum <= 6;
+  const isSecondary = yearNum >= 7;
 
   // Key Stage and phase
   const phase = is11Plus ? "11+ Preparation (ages 9–11, KS2 level)" :
@@ -1130,7 +1131,7 @@ ${isSecondary ? `SECONDARY SCHOOL GCSE/A-LEVEL RULES — MANDATORY:
   })() : "";
 
   // ── Difficulty tier (secondary only) ─────────────────────────────────────
-  const isSecondary = yearNum >= 7;
+  // isSecondary already declared above near yearNum to avoid TDZ in minified bundle
   const difficultyTier = params.difficulty || "mixed";
 
   // Year group calibration for secondary (Issue #10)
@@ -3178,6 +3179,7 @@ export function validateDiagramSpec(spec: DiagramSpec): boolean {
  * Returns null if no diagram marker is found or if the spec fails validation.
  */
 export function extractDiagramSpec(content: string): DiagramSpec | null {
+  if (!content || typeof content !== 'string') return null;
   const match = content.match(/\[\[DIAGRAM:(\{[\s\S]*?\})\]\]/);
   if (!match) return null;
   try {
@@ -3192,6 +3194,7 @@ export function extractDiagramSpec(content: string): DiagramSpec | null {
  * Also strips AI instruction lines (IMPORTANT:, LABELS:, ANSWERS:) that should not be visible.
  */
 export function stripDiagramMarker(content: string): string {
+  if (!content || typeof content !== 'string') return content ?? '';
   let cleaned = content.replace(/\[\[DIAGRAM:\{[\s\S]*?\}\]\]/g, "");
   // Strip AI instruction lines that leak into visible content.
   // Robust matching: handles leading pipes, whitespace, asterisks, and partial matches.
