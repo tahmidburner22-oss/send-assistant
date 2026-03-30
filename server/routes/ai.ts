@@ -2697,4 +2697,139 @@ RULES:
   }
 });
 
+
+// ── POST /api/ai/differentiate-one-click — adapt existing worksheet for Higher/Foundation/SEND ──
+
+router.post("/differentiate-one-click", requireAuth, async (req: Request, res: Response) => {
+  const {
+    sections,           // WorksheetSection[] — the current worksheet
+    topic,
+    subject,
+    yearGroup,
+    tier,               // "higher" | "foundation" | "send"
+    sendNeeds,          // optional string — pupil's specific SEND needs
+  } = req.body;
+
+  if (!sections || !Array.isArray(sections) || !tier) {
+    return res.status(400).json({ error: "sections array and tier are required" });
+  }
+  if (!["higher", "foundation", "send"].includes(tier)) {
+    return res.status(400).json({ error: "tier must be higher, foundation, or send" });
+  }
+
+  const schoolId = (req as any).user?.schoolId;
+
+  const tierInstructions: Record<string, string> = {
+    higher: `You are adapting this worksheet to a HIGHER tier version for more able students.
+Rules:
+- Increase vocabulary complexity and use subject-specific technical language throughout
+- Remove sentence starters and word banks (students should work independently)
+- Add extension sub-parts to questions (e.g. "(c) Explain why..." or "(d) Evaluate...")
+- Increase mark allocations for extended questions
+- Make multiple choice distractors more plausible and closely related
+- Add a harder challenge question requiring synthesis or evaluation
+- Gap fills should use more complex or technical terms
+- True/false questions should include nuanced statements requiring careful reasoning
+- Keep the same topic, structure, and number of questions — only increase difficulty`,
+
+    foundation: `You are adapting this worksheet to a FOUNDATION tier version for students who need more support.
+Rules:
+- Simplify vocabulary — replace technical terms with plain English, then show the technical term in brackets
+- Add sentence starters for every written question (e.g. "The circuit works because...")
+- Add word banks to gap fill questions
+- Break multi-part questions into smaller, more guided steps
+- Add a worked example or model answer before each question type
+- Reduce mark allocations and expected answer length
+- Make multiple choice options more obviously different from each other
+- Add visual cues or reminders of key facts near questions
+- Keep the same topic, structure, and number of questions — only reduce difficulty`,
+
+    send: `You are adapting this worksheet for students with SEND (Special Educational Needs and Disabilities).
+Apply ALL of the following adaptations comprehensively:
+
+DYSLEXIA / READING DIFFICULTIES:
+- Use short sentences (max 15 words each)
+- Use active voice, never passive
+- Avoid double negatives
+- Break long paragraphs into bullet points
+- Add a word bank to EVERY question that requires writing
+
+AUTISM / ASD:
+- Use precise, literal language — no idioms, metaphors or ambiguous phrasing whatsoever
+- Give explicit, step-by-step instructions for every task
+- State exactly what is expected ("Write ONE sentence", "Circle ONE answer")
+- Replace all open-ended questions with structured prompts and sentence frames
+- Add a clear visual structure: number every step, use consistent formatting
+
+ADHD / ATTENTION DIFFICULTIES:
+- Break every question into small, numbered sub-steps
+- Add a "STOP — Check your work" prompt after every 2 questions
+- Keep questions short and focused — one concept per question
+- Add brain break prompts between sections
+- Use bold text to highlight the key action word in each question
+
+EAL (ENGLISH AS ADDITIONAL LANGUAGE):
+- Define every subject-specific term in simple English
+- Add a glossary box at the start of each section
+- Use simple sentence structures throughout
+- Avoid colloquial expressions
+- Provide sentence frames for every written response
+
+GENERAL SEND SCAFFOLDING:
+- Add word banks to every question requiring writing
+- Reduce writing demand — use tick boxes, circle answers, or fill-in-the-blank where possible
+- Add visual spacing between questions
+- Use simple, consistent formatting throughout
+- Keep the same topic and questions — only add scaffolding and simplify language`,
+  };
+
+  const systemPrompt = `You are an expert SEND-specialist teacher adapting educational worksheets.
+You will receive a worksheet as a JSON array of sections and must return an adapted version.
+Return ONLY a valid JSON array of the same sections, adapted according to the instructions.
+Do not add or remove sections. Do not change section IDs or types.
+Only modify the content, title, and label fields of each section.
+Do not include markdown code fences — return raw JSON only.`;
+
+  const userPrompt = `Topic: ${topic || "Unknown"}
+Subject: ${subject || "Unknown"}
+Year Group: ${yearGroup || "Unknown"}
+${sendNeeds ? `Student SEND needs: ${sendNeeds}\n` : ""}
+Adaptation instructions:
+${tierInstructions[tier]}
+
+Worksheet sections to adapt:
+${JSON.stringify(sections, null, 2)}`;
+
+  try {
+    const result = await callAI(
+      schoolId,
+      systemPrompt,
+      userPrompt,
+      { temperature: 0.3, maxTokens: 8000 }
+    );
+
+    let adapted: any[];
+    try {
+      const raw = result.content.trim();
+      const clean = raw.replace(/^```json\n?/, "").replace(/^```\n?/, "").replace(/\n?```$/, "").trim();
+      adapted = JSON.parse(clean);
+      if (!Array.isArray(adapted)) throw new Error("Not an array");
+    } catch {
+      return res.status(500).json({ error: "AI returned invalid JSON — please try again" });
+    }
+
+    // Preserve original section IDs
+    adapted = adapted.map((s: any, i: number) => ({
+      ...sections[i],
+      ...s,
+      id: sections[i]?.id || s.id,
+    }));
+
+    res.json({ sections: adapted, tier, provider: result.provider });
+  } catch (err: any) {
+    console.error("[differentiate-one-click] failed:", err.message);
+    res.status(500).json({ error: "Differentiation failed. Please try again." });
+  }
+});
+
 export default router;
