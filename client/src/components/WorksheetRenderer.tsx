@@ -1703,13 +1703,16 @@ function GapFillInlineSection({
     ? wbLine.replace(/^WORD BANK:\s*/i, "").split(/[|,]/).map((w: string) => w.trim()).filter(Boolean)
     : [];
 
-  // Join paragraph — collapse multi-line LaTeX \(...\) expressions before splitting
-  // This prevents \( being split from its closing \) when the AI wraps LaTeX across lines
+  // Issue #11: Fix maths rendering in gap-fill — process blanks FIRST, then renderMath
+  // This prevents KaTeX from trying to parse underscores as LaTeX subscripts/superscripts.
   let paraText = paraLines.join(" ").trim();
-  // Collapse any \( ... \) that got split across lines (now joined with spaces)
-  // The join already put spaces between lines, so \( expr \) should be intact.
-  // But if the AI put blanks inside the LaTeX, we need to protect them:
-  // Replace \( ... \) spans that contain ___ with a placeholder, split, then restore
+
+  // Step 1: Protect blank markers by converting to placeholder tokens BEFORE any math processing
+  const BLANK_TOKEN = "__ANSWER_BLANK__";
+  // Also handle dot-sequences used as blanks (e.g. ".............")
+  paraText = paraText.replace(/\.{6,}/g, BLANK_TOKEN).replace(/_{3,}/g, BLANK_TOKEN);
+
+  // Step 2: Protect LaTeX expressions so they survive the split intact
   const latexPlaceholders: string[] = [];
   paraText = paraText.replace(/\\\([^)]*?\\\)/g, (match) => {
     const idx = latexPlaceholders.length;
@@ -1717,10 +1720,11 @@ function GapFillInlineSection({
     return `__LATEX_${idx}__`;
   });
 
-  // Render the paragraph — replace ___ sequences with styled blanks
-  const parts = paraText.split(/_{3,}/g).map(p =>
-    p.replace(/__LATEX_(\d+)__/g, (_, i) => latexPlaceholders[parseInt(i)] || "")
-  );
+  // Step 3: Restore LaTeX placeholders and split on blank tokens
+  paraText = paraText.replace(/__LATEX_(\d+)__/g, (_, i) => latexPlaceholders[parseInt(i)] || "");
+
+  // Step 4: Split on blank tokens — each segment between tokens gets renderMath applied
+  const parts = paraText.split(BLANK_TOKEN);
 
   return (
     <div>
@@ -2844,11 +2848,12 @@ function VocabSection({ content, fmt, overlayColor = "white" }: { content: strin
     return <div style={{ fontSize: `${textSize}px`, lineHeight, fontFamily, letterSpacing }}>{content}</div>;
   }
 
+  // Issue #14a: Two-column vocab grid with styled term | definition pairs
   return (
     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4px 24px" }}>
       {entries.map((e, i) => (
-        <div key={i} style={{ display: "flex", gap: "4px", padding: "5px 0", borderBottom: "1px solid #e5e7eb" }}>
-          <span style={{ fontWeight: 700, color: "#1a2744", fontSize: `${textSize}px`, fontFamily, letterSpacing, flexShrink: 0, minWidth: "90px" }} dangerouslySetInnerHTML={{ __html: renderMath(e.term) + ":" }} />
+        <div key={i} style={{ display: "flex", gap: "4px", padding: "6px 0", borderBottom: "1px solid #e5e7eb", alignItems: "flex-start" }}>
+          <span style={{ fontWeight: 700, color: "#1a2744", fontSize: `${textSize}px`, fontFamily, letterSpacing, flexShrink: 0, minWidth: "100px", paddingRight: "4px" }} dangerouslySetInnerHTML={{ __html: renderMath(e.term) + " —" }} />
           <span style={{ color: "#374151", fontSize: `${textSize}px`, lineHeight, fontFamily, letterSpacing }} dangerouslySetInnerHTML={{ __html: renderMath(e.def) }} />
         </div>
       ))}
@@ -2988,14 +2993,25 @@ function SelfReflectionSection({ content, fmt, overlayColor = "white" }: { conte
           ))}
         </div>
       )}
-      {/* Exit ticket */}
-      <div style={{ marginTop: "16px", borderTop: "1.5px solid #d1d5db", paddingTop: "10px" }}>
-        <div style={{ fontSize: `${textSize}px`, fontWeight: 700, color: "#1a2744", fontFamily, textDecoration: "underline", marginBottom: "6px" }}>
-          Exit Ticket: {exitTicketText}
+      {/* Exit ticket — Issue #14e: visually distinct dashed-border box */}
+      <div style={{ marginTop: "16px" }}>
+        <div style={{
+          border: "2px dashed #4f46e5",
+          borderRadius: "8px",
+          padding: "10px 14px",
+          background: "#f5f3ff",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
+            <span style={{ fontSize: "16px" }}>✏️</span>
+            <span style={{ fontSize: `${textSize - 1}px`, fontWeight: 700, color: "#4f46e5", fontFamily, textTransform: "uppercase", letterSpacing: "0.06em" }}>Exit Ticket</span>
+          </div>
+          <div style={{ fontSize: `${textSize}px`, color: "#374151", fontFamily, marginBottom: "8px", fontStyle: "italic" }}>
+            {exitTicketText}
+          </div>
+          {[0, 1].map(li => (
+            <div key={li} style={{ borderBottom: "1px solid #c4b5fd", height: "28px", marginBottom: "4px" }} />
+          ))}
         </div>
-        {[0, 1].map(li => (
-          <div key={li} style={{ borderBottom: "1px solid #ccc", height: "28px", marginBottom: "4px" }} />
-        ))}
       </div>
     </div>
   );
@@ -4414,6 +4430,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
           <div
             className={`ws-section ws-section-${section.type}${isTeacherSection ? " ws-teacher-section" : ""}`}
             onClick={() => editMode && onSectionClick?.(i)}
+            data-teacher-only={isTeacherSection ? "true" : undefined}
             style={{
               marginBottom: "20px",
               background: isTeacherHeader ? "#8b1a1a" : fmt.theme === "high-contrast" ? "#ffffff" : "#ffffff",
@@ -4681,19 +4698,24 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                         if (current) current.explanation = trimmed.replace(/^(→|->)+\s*/, "");
                       } else if (trimmed.length > 0) {
                         if (current) mistakes.push(current);
-                        current = { title: trimmed.replace(/^\*+|\*+$/g, "").trim(), explanation: "" };
+                        current = { title: trimmed.replace(/^\*+|\*+$/g, "").replace(/^[✗✕×]\s*/, "").trim(), explanation: "" };
                       }
                     }
                     if (current) mistakes.push(current);
                     return (
-                      <div style={{ display: "flex", flexDirection: "column" as const, gap: "12px" }}>
+                      <div style={{ display: "flex", flexDirection: "column" as const, gap: "10px" }}>
                         {mistakes.map((m, mi) => (
-                          <div key={mi}>
-                            <div style={{ fontWeight: 700, fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, color: "#1a2744", marginBottom: "3px" }} dangerouslySetInnerHTML={{ __html: renderMath(m.title) }} />
+                          <div key={mi} style={{ borderLeft: "3px solid #dc2626", paddingLeft: "10px" }}>
+                            {/* Issue #14b: ✗ mistake line in red */}
+                            <div style={{ display: "flex", alignItems: "flex-start", gap: "6px", marginBottom: "3px" }}>
+                              <span style={{ color: "#dc2626", fontWeight: 700, fontSize: `${fmt.fontSize}px`, flexShrink: 0 }}>✗</span>
+                              <span style={{ fontWeight: 700, fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, color: "#991b1b" }} dangerouslySetInnerHTML={{ __html: renderMath(m.title) }} />
+                            </div>
+                            {/* → correction line in green */}
                             {m.explanation && (
-                              <div style={{ fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, color: "#374151", paddingLeft: "16px" }}>
-                                <span style={{ color: "#2a7f8f", fontWeight: 700, marginRight: "6px" }}>→</span>
-                                <span dangerouslySetInnerHTML={{ __html: renderMath(m.explanation) }} />
+                              <div style={{ display: "flex", alignItems: "flex-start", gap: "6px", paddingLeft: "4px" }}>
+                                <span style={{ color: "#16a34a", fontWeight: 700, fontSize: `${fmt.fontSize}px`, flexShrink: 0 }}>→</span>
+                                <span style={{ fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, color: "#166534" }} dangerouslySetInnerHTML={{ __html: renderMath(m.explanation) }} />
                               </div>
                             )}
                           </div>
@@ -4985,6 +5007,81 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                   <WordProblemsSection content={content} fmt={fmt} overlayColor={overlayColor} />
                 ) : section.type === "questions" ? (
                   <div>{formatContent(content, fmt)}</div>
+                ) : section.type === "example" ? (
+                  // Issue #14c: Structured worked example with alternating step rows
+                  (() => {
+                    const exLines = content.split("\n").filter(Boolean);
+                    const steps: string[] = [];
+                    const otherLines: string[] = [];
+                    let introText = "";
+                    for (const line of exLines) {
+                      const t = line.trim();
+                      if (/^Step\s*\d+/i.test(t) || /^(Formula|Substitute|Calculate|Units|Answer|Method):/i.test(t)) {
+                        steps.push(t);
+                      } else if (steps.length === 0) {
+                        introText += (introText ? "\n" : "") + t;
+                      } else {
+                        otherLines.push(t);
+                      }
+                    }
+                    if (steps.length < 2) {
+                      // No steps found — fall back to formatContent
+                      return (
+                        <div style={{
+                          background: "#f8fafc", border: "2px solid #1a2744",
+                          borderRadius: "6px", padding: "14px 16px",
+                        }}>
+                          {formatContent(content, fmt)}
+                        </div>
+                      );
+                    }
+                    return (
+                      <div>
+                        {introText && (
+                          <div style={{ fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, color: "#374151", marginBottom: "10px", lineHeight: String(fmt.lineHeight) }}
+                            dangerouslySetInnerHTML={{ __html: renderMath(introText) }} />
+                        )}
+                        <div style={{ border: "2px solid #1a2744", borderRadius: "6px", overflow: "hidden" }}>
+                          {steps.map((step, si) => {
+                            const colonIdx = step.indexOf(":");
+                            const label = colonIdx > 0 ? step.slice(0, colonIdx + 1) : step.split(" ").slice(0, 2).join(" ");
+                            const body = colonIdx > 0 ? step.slice(colonIdx + 1).trim() : step;
+                            return (
+                              <div key={si} style={{
+                                display: "grid", gridTemplateColumns: "120px 1fr",
+                                background: si % 2 === 0 ? "#f0f4ff" : "#ffffff",
+                                borderBottom: si < steps.length - 1 ? "1px solid #e5e7eb" : "none",
+                              }}>
+                                <div style={{
+                                  padding: "8px 10px",
+                                  background: "#1a2744",
+                                  color: "white",
+                                  fontSize: `${Math.max(fmt.fontSize - 1, 10)}px`,
+                                  fontWeight: 700,
+                                  fontFamily: fmt.fontFamily,
+                                  display: "flex", alignItems: "center",
+                                }} dangerouslySetInnerHTML={{ __html: renderMath(label) }} />
+                                <div style={{
+                                  padding: "8px 12px",
+                                  fontSize: `${fmt.fontSize}px`,
+                                  fontFamily: fmt.fontFamily,
+                                  color: "#1e293b",
+                                  lineHeight: String(fmt.lineHeight),
+                                }} dangerouslySetInnerHTML={{ __html: renderMath(body) }} />
+                              </div>
+                            );
+                          })}
+                        </div>
+                        {otherLines.length > 0 && (
+                          <div style={{ marginTop: "8px", fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, color: "#374151" }}>
+                            {otherLines.map((l, li) => (
+                              <div key={li} dangerouslySetInnerHTML={{ __html: renderMath(l) }} />
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()
                 ) : (section.type === "reading" || section.type === "passage" || section.type === "source-text" || section.type === "comprehension" || /reading.?passage|source.?text|comprehension.?text/i.test(section.title || "")) ? (
                   <div style={{
                     border: "2px solid #cbd5e1",
