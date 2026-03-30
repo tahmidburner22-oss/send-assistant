@@ -862,12 +862,58 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
       return;
     }
     setLoading(true);
-    setGenerationStatus("Connecting to AI...");
+    setGenerationStatus("Checking worksheet library...");
     setEditedSections({});
     setEditMode(false);
     setRating(0);
     setSavedWorksheetId(null);
     setVoiceAnswers({});
+
+    // ── LIBRARY LOOKUP: Check if a master worksheet exists for this topic ──────
+    // Only use library for standard AI mode (not exam-style, not SEND-adapted)
+    if (!examStyle && (!sendNeed || sendNeed === "none-selected")) {
+      try {
+        const libToken = localStorage.getItem("send_token") || "";
+        const libRes = await fetch(
+          `/api/library/lookup?subject=${encodeURIComponent(subject)}&topic=${encodeURIComponent(topic)}&yearGroup=${encodeURIComponent(yearGroup)}`,
+          { headers: libToken ? { Authorization: `Bearer ${libToken}` } : {} }
+        );
+        if (libRes.ok) {
+          const libData = await libRes.json();
+          if (libData.found && libData.entry) {
+            const entry = libData.entry;
+            const libWorksheet = {
+              title: entry.title,
+              subtitle: entry.subtitle || `${yearGroup} | ${subject}`,
+              sections: entry.sections || [],
+              metadata: {
+                subject,
+                topic,
+                yearGroup,
+                difficulty: difficulty || "standard",
+                examBoard: examBoard !== "none" ? examBoard : undefined,
+                totalMarks: (entry.sections || []).reduce((t: number, s: any) => t + (s.marks || 0), 0),
+              },
+              isAI: false,
+              fromLibrary: true,
+              libraryCurated: entry.curated,
+            } as any;
+            setGenerated(libWorksheet);
+            setHiddenSections(new Set());
+            setDiffVersions({});
+            setLoading(false);
+            setGenerationStatus("");
+            const badge = entry.curated ? "✓ Curated master worksheet" : "From worksheet library";
+            toast.success(`${badge} — loaded instantly!`, { duration: 4000 });
+            return;
+          }
+        }
+      } catch (libErr) {
+        console.warn("Library lookup failed, falling back to AI:", libErr);
+      }
+    }
+
+    setGenerationStatus("Connecting to AI...");
 
     // Cycle status messages so the user knows it's working
     const statusMessages = [
@@ -1110,6 +1156,31 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
         setSavedWorksheetId(saved.id);
         refreshData(); // Update dashboard counts immediately
       }).catch(() => {}); // Silent auto-save
+
+      // ── AUTO-SAVE TO LIBRARY: Store AI-generated worksheets for future instant retrieval ──
+      // Only save if no SEND adaptation and not exam-style (those are personalised, not master copies)
+      if (!examStyle && (!sendNeed || sendNeed === "none-selected") && isAIWorksheet(ws)) {
+        try {
+          const libToken = localStorage.getItem("send_token") || "";
+          fetch("/api/library/entries", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...(libToken ? { Authorization: `Bearer ${libToken}` } : {}),
+            },
+            body: JSON.stringify({
+              subject: ws.metadata.subject,
+              topic: ws.metadata.topic,
+              yearGroup: ws.metadata.yearGroup,
+              title: ws.title,
+              subtitle: (ws as any).subtitle,
+              sections: sectionsToSave,
+              source: "ai",
+              curated: false,
+            }),
+          }).catch(() => {}); // Silent library save
+        } catch (_) {}
+      }
     }
 
     clearInterval(statusInterval);

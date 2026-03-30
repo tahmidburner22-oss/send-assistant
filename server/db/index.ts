@@ -212,6 +212,28 @@ export async function initDb() {
       value INTEGER NOT NULL DEFAULT 0,
       updated_at TEXT NOT NULL DEFAULT (datetime('now'))
     )`,
+    // Worksheet Library — master worksheets for instant retrieval
+    `CREATE TABLE IF NOT EXISTS worksheet_library (
+      id TEXT PRIMARY KEY,
+      subject TEXT NOT NULL,
+      topic TEXT NOT NULL,
+      year_group TEXT NOT NULL,
+      title TEXT NOT NULL,
+      subtitle TEXT,
+      sections TEXT NOT NULL DEFAULT '[]',
+      teacher_sections TEXT NOT NULL DEFAULT '[]',
+      key_vocab TEXT NOT NULL DEFAULT '[]',
+      learning_objective TEXT,
+      source TEXT NOT NULL DEFAULT 'ai',
+      curated INTEGER NOT NULL DEFAULT 0,
+      version INTEGER NOT NULL DEFAULT 1,
+      uploaded_by TEXT REFERENCES users(id),
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+    )`,
+    `CREATE UNIQUE INDEX IF NOT EXISTS idx_library_topic ON worksheet_library(subject, topic, year_group)`,
+    `CREATE INDEX IF NOT EXISTS idx_library_subject ON worksheet_library(subject)`,
+    `CREATE INDEX IF NOT EXISTS idx_library_curated ON worksheet_library(curated)`,
   ];
   for (const migration of migrations) {
     try { _db.run(migration); } catch (_) { /* column already exists — ignore */ }
