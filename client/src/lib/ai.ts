@@ -1823,6 +1823,8 @@ Return EXACTLY this JSON (raw JSON only):
       throw new Error(`AI returned invalid JSON. Raw: ${text.slice(0, 100)}`);
     }
   }
+  const result: AIWorksheetResult = { ...json, isAI: true, provider };
+
   // ── Post-processing: strip challenge preamble (Issue #12) ────────────────────
   function stripChallengePreamble(content: string): string {
     const PREAMBLE_PATTERNS = [
