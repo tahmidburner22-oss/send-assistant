@@ -86,6 +86,11 @@ export default function AdminPanel() {
     user.email === "admin@adaptly.co.uk" ||
     user.email === "admin@sendassistant.app"
   );
+  // isPlatformOwner: only the exact platform owner email can see the Library
+  const isPlatformOwner = user && (
+    user.email === "admin@adaptly.co.uk" ||
+    user.email === "admin@sendassistant.app"
+  );
   const [allSchools, setAllSchools] = useState<any[]>([]);
   const [allUsers, setAllUsers] = useState<any[]>([]);
   const [superAuditLogs, setSuperAuditLogs] = useState<any[]>([]);
@@ -289,7 +294,9 @@ export default function AdminPanel() {
           <TabsTrigger value="logs" className="text-xs py-1.5 flex-1"><Terminal className="w-3.5 h-3.5 mr-1" />Logs</TabsTrigger>
           <TabsTrigger value="breach" className="text-xs py-1.5 flex-1"><Shield className="w-3.5 h-3.5 mr-1" />Breaches</TabsTrigger>
           <TabsTrigger value="settings" className="text-xs py-1.5 flex-1"><Settings2 className="w-3.5 h-3.5 mr-1" />System</TabsTrigger>
-          <TabsTrigger value="library" className="text-xs py-1.5 flex-1"><FileText className="w-3.5 h-3.5 mr-1" />Library</TabsTrigger>
+          {isPlatformOwner && (
+            <TabsTrigger value="library" className="text-xs py-1.5 flex-1 bg-amber-50 text-amber-700 data-[state=active]:bg-amber-600 data-[state=active]:text-white"><FileText className="w-3.5 h-3.5 mr-1" />Library</TabsTrigger>
+          )}
           {isSuperAdmin && (
             <TabsTrigger value="super" className="text-xs py-1.5 flex-1 bg-purple-50 text-purple-700 data-[state=active]:bg-purple-600 data-[state=active]:text-white">
               <Building2 className="w-3.5 h-3.5 mr-1" />Schools

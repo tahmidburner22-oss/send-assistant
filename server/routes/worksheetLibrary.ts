@@ -16,7 +16,18 @@ import { Router, Request, Response } from "express";
 import { v4 as uuidv4 } from "uuid";
 import multer from "multer";
 import db from "../db/index.js";
-import { requireAuth, requireAdmin } from "../middleware/auth.js";
+import { requireAuth } from "../middleware/auth.js";
+import type { NextFunction } from "express";
+
+// Only the platform super-admin can access the library
+const SUPER_ADMIN_EMAILS = ["admin@adaptly.co.uk", "admin@sendassistant.app"];
+function requireSuperAdmin(req: Request, res: Response, next: NextFunction) {
+  if (!req.user) return res.status(401).json({ error: "Authentication required" });
+  if (!SUPER_ADMIN_EMAILS.includes(req.user.email)) {
+    return res.status(403).json({ error: "Super-admin access required" });
+  }
+  next();
+}
 
 const pdfUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024 } });
 
@@ -52,7 +63,7 @@ interface ParsedWorksheet {
 
 // ── GET /api/library/entries — list all entries ───────────────────────────────
 
-router.get("/entries", requireAuth, requireAdmin, (req: Request, res: Response) => {
+router.get("/entries", requireAuth, requireSuperAdmin, (req: Request, res: Response) => {
   try {
     const { subject, curated, search } = req.query as Record<string, string>;
     let sql = `SELECT id, subject, topic, year_group, title, source, curated, version, created_at, updated_at
@@ -116,7 +127,7 @@ router.get("/lookup", requireAuth, (req: Request, res: Response) => {
 
 // ── GET /api/library/entries/:id — get single entry ──────────────────────────
 
-router.get("/entries/:id", requireAuth, requireAdmin, (req: Request, res: Response) => {
+router.get("/entries/:id", requireAuth, requireSuperAdmin, (req: Request, res: Response) => {
   try {
     const entry = db.prepare("SELECT * FROM worksheet_library WHERE id = ?").get(req.params.id) as LibraryEntry | undefined;
     if (!entry) return res.status(404).json({ error: "Not found" });
@@ -275,7 +286,7 @@ router.post("/auto-save", requireAuth, (req: Request, res: Response) => {
 
 // ── POST /api/library/ingest-pdf — parse PDF and ingest into library ──────────
 
-router.post("/ingest-pdf", requireAuth, requireAdmin, pdfUpload.single("pdf"), async (req: Request, res: Response) => {
+router.post("/ingest-pdf", requireAuth, requireSuperAdmin, pdfUpload.single("pdf"), async (req: Request, res: Response) => {
   try {
     const { subject, topic, yearGroup, title, subtitle, learning_objective } = req.body;
     const year_group = yearGroup || req.body.year_group;
@@ -373,7 +384,7 @@ router.post("/ingest-pdf", requireAuth, requireAdmin, pdfUpload.single("pdf"), a
 
 // ── PATCH /api/library/entries/:id/curate — mark as curated ──────────────────
 
-router.patch("/entries/:id/curate", requireAuth, requireAdmin, (req: Request, res: Response) => {
+router.patch("/entries/:id/curate", requireAuth, requireSuperAdmin, (req: Request, res: Response) => {
   try {
     const { curated } = req.body;
     db.prepare(
@@ -387,7 +398,7 @@ router.patch("/entries/:id/curate", requireAuth, requireAdmin, (req: Request, re
 
 // ── DELETE /api/library/entries/:id — delete a library entry ─────────────────
 
-router.delete("/entries/:id", requireAuth, requireAdmin, (req: Request, res: Response) => {
+router.delete("/entries/:id", requireAuth, requireSuperAdmin, (req: Request, res: Response) => {
   try {
     db.prepare("DELETE FROM worksheet_library WHERE id = ?").run(req.params.id);
     res.json({ success: true });
