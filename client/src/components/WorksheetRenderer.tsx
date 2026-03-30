@@ -1879,7 +1879,7 @@ function LabelDiagramSection({
 
 // ── 5. DIAGRAM + SUB-QUESTIONS ────────────────────────────────────────────────
 function DiagramSubQSection({
-  content, fmt, overlayColor = "white", imageUrl, caption, attribution,
+  content, fmt, overlayColor = "white", imageUrl, caption, attribution, isTeacher = false,
 }: {
   content: string;
   fmt: ReturnType<typeof getSendFormatting>;
@@ -1887,6 +1887,7 @@ function DiagramSubQSection({
   imageUrl?: string;
   caption?: string;
   attribution?: string;
+  isTeacher?: boolean;
 }) {
   const raw = stripLayoutTag(content);
   const accentColor = fmt.accentColor || "#1B2A4A";
@@ -4655,6 +4656,10 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                     return <TableCompleteSection content={content} fmt={fmt} isTeacher={isTeacherView} />;
                   }
                   if (section.type === "q-label-diagram") {
+                    // If content uses diagram_subquestions layout, show diagram + questions format
+                    if (/^LAYOUT:diagram_subquestions/.test(content.trim())) {
+                      return <DiagramSubQSection content={content} fmt={fmt} overlayColor={overlayColor} isTeacher={isTeacherView} imageUrl={section.imageUrl} caption={section.caption} attribution={section.attribution} />;
+                    }
                     return <LabelDiagramSection content={content} fmt={fmt} isTeacher={isTeacherView} imageUrl={section.imageUrl} caption={section.caption} attribution={section.attribution} />
                   }
                   if (section.type === "q-ordering") {
