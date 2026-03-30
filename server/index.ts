@@ -122,7 +122,13 @@ app.use(helmet({
         "https://openrouter.ai",
         "https://api.anthropic.com",
         "https://router.huggingface.co",
+        "https://api.cerebras.ai",
+        "https://api.sambanova.ai",
+        "https://api.deepseek.com",
+        "https://api.cohere.com",
+        "https://api.mistral.ai",
         "https://accounts.google.com",
+        "wss://adaptly.co.uk",
       ],
       frameSrc: ["accounts.google.com"],
       // Allow blob: URLs for neural voice audio playback
@@ -322,7 +328,7 @@ app.use("/api/messages", parentMessagesRouter);
 
 // ── Health check ──────────────────────────────────────────────────────────────
 app.get("/api/health", (_, res) => {
-  res.json({ status: "ok", timestamp: new Date().toISOString(), version: "2.3.0-AllFixes" });
+  res.json({ status: "ok", timestamp: new Date().toISOString(), version: "2.4.0-12Providers" });
 });
 
 // ── Serve static frontend in production ───────────────────────────────────────
