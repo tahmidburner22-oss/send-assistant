@@ -2573,4 +2573,128 @@ Respond with a JSON object in this exact format:
   }
 });
 
+// ── Batch Worksheet Generation ────────────────────────────────────────────────
+// POST /api/ai/batch-generate-worksheet
+// Generates all 4 differentiation tiers (Base, Foundation, Higher, SEND) in a
+// single AI call. ~4x more efficient than calling /generate three separate times.
+// Routes to high-context providers (Gemini) first via reorderForHeavyRequest.
+router.post("/batch-generate-worksheet", requireAuth, async (req: Request, res: Response) => {
+  const { subject, topic, yearGroup, examBoard, additionalInstructions, includeAnswers } = req.body;
+  if (!subject || !topic || !yearGroup) {
+    return res.status(400).json({ error: "subject, topic, and yearGroup are required" });
+  }
+  const schoolId = (req as any).user?.schoolId;
+  const examBoardNote = examBoard && examBoard !== "none" ? `Exam board: ${examBoard}.` : "";
+  const extraNote = additionalInstructions ? `Additional instructions: ${additionalInstructions}` : "";
+  const answerNote = includeAnswers
+    ? "Include a mark scheme / answer key for each tier."
+    : "Do NOT include answers in the student-facing sections.";
+
+  const system = `You are an expert UK SEND teacher. Generate differentiated worksheets for 4 tiers simultaneously. Return ONLY valid JSON — no markdown, no code fences, no explanation.`;
+
+  const user = `Generate 4 differentiated worksheets for the same topic, one per tier.
+Subject: ${subject} | Year Group: ${yearGroup} | Topic: ${topic}
+${examBoardNote} ${extraNote}
+${answerNote}
+
+Return this exact JSON structure:
+{
+  "base": {
+    "title": "${topic} — Base Tier (${yearGroup} ${subject})",
+    "tier": "base",
+    "sections": [
+      {"type": "objectives", "title": "Learning Objectives", "content": "Students will be able to: 1. ..."},
+      {"type": "guided", "title": "Section A — Guided Practice", "content": "1. Simple question with scaffold\n2. Fill-in-the-blank question\n3. Multiple choice question"},
+      {"type": "questions", "title": "Section B — Questions", "content": "1. Short answer question\n2. Short answer question\n3. Short answer question"}
+    ],
+    "metadata": {"subject": "${subject}", "topic": "${topic}", "yearGroup": "${yearGroup}", "tier": "base"}
+  },
+  "foundation": {
+    "title": "${topic} — Foundation Tier (${yearGroup} ${subject})",
+    "tier": "foundation",
+    "sections": [
+      {"type": "objectives", "title": "Learning Objectives", "content": "Students will be able to: 1. ..."},
+      {"type": "guided", "title": "Section A — Guided Practice", "content": "1. Foundation question\n2. Foundation question\n3. Foundation question"},
+      {"type": "questions", "title": "Section B — Questions", "content": "1. Foundation question\n2. Foundation question\n3. Foundation question"}
+    ],
+    "metadata": {"subject": "${subject}", "topic": "${topic}", "yearGroup": "${yearGroup}", "tier": "foundation"}
+  },
+  "higher": {
+    "title": "${topic} — Higher Tier (${yearGroup} ${subject})",
+    "tier": "higher",
+    "sections": [
+      {"type": "objectives", "title": "Learning Objectives", "content": "Students will be able to: 1. ..."},
+      {"type": "questions", "title": "Section A — Questions", "content": "1. Higher-order question\n2. Analysis question\n3. Evaluation question"},
+      {"type": "extension", "title": "Section B — Extension", "content": "1. Challenge question\n2. Exam-style question"}
+    ],
+    "metadata": {"subject": "${subject}", "topic": "${topic}", "yearGroup": "${yearGroup}", "tier": "higher"}
+  },
+  "send": {
+    "title": "${topic} — SEND Scaffolded (${yearGroup} ${subject})",
+    "tier": "send",
+    "sections": [
+      {"type": "word-bank", "title": "Word Bank", "content": "Key term 1 — definition\nKey term 2 — definition\nKey term 3 — definition"},
+      {"type": "guided", "title": "Section A — Guided Practice", "content": "1. Sentence starter: ___\n2. Fill in the blank: ___\n3. Circle the correct answer: A / B / C"},
+      {"type": "questions", "title": "Section B — Questions", "content": "1. Short scaffolded question\n2. Short scaffolded question"}
+    ],
+    "metadata": {"subject": "${subject}", "topic": "${topic}", "yearGroup": "${yearGroup}", "tier": "send"}
+  }
+}
+
+RULES:
+- Every section content MUST be a plain text string (NOT an array, NOT nested JSON)
+- Questions must be specific to the topic "${topic}" — no generic placeholders
+- Base tier: very simple, scaffolded, step-by-step, suitable for SEN pupils
+- Foundation tier: accessible, structured, clear language
+- Higher tier: challenging, higher-order thinking, exam-style
+- SEND tier: maximum scaffolding, word banks, sentence starters, visual cues described in text`;
+
+  try {
+    const result = await callWithFallback(system, user, 6000, undefined, schoolId);
+    const stripped = result.content
+      .replace(/^```(?:json)?\s*/i, "")
+      .replace(/\s*```\s*$/, "")
+      .trim();
+    const jsonMatch = stripped.match(/\{[\s\S]*\}/);
+    const candidate = jsonMatch ? jsonMatch[0] : stripped;
+    let parsed: any;
+    try {
+      parsed = JSON.parse(candidate);
+    } catch (_) {
+      try {
+        const sanitized = candidate.replace(
+          /"((?:[^"\\]|\\.)*)"/g,
+          (_m: string, inner: string) =>
+            `"${inner.replace(/\n/g, "\\n").replace(/\r/g, "\\r").replace(/\t/g, "\\t")}"`
+        );
+        parsed = JSON.parse(sanitized);
+      } catch (__) {
+        return res.status(500).json({ error: "AI returned invalid JSON for batch generation — please try again" });
+      }
+    }
+    const tiers = ["base", "foundation", "higher", "send"];
+    for (const tier of tiers) {
+      if (!parsed[tier] || !Array.isArray(parsed[tier].sections)) {
+        return res.status(500).json({ error: `AI response missing ${tier} tier — please try again` });
+      }
+      parsed[tier].sections = parsed[tier].sections.map((s: any) => ({
+        ...s,
+        title: typeof s.title === "string" ? s.title : String(s.title || ""),
+        content: (() => {
+          const c = s.content;
+          if (typeof c === "string") return c;
+          if (Array.isArray(c)) return (c as any[]).map((item: any) => (typeof item === "string" ? item : JSON.stringify(item))).join("\n");
+          if (c === null || c === undefined) return "";
+          return String(c);
+        })(),
+      }));
+      parsed[tier].isAI = true;
+    }
+    res.json({ tiers: parsed, provider: result.provider, aiGenerated: true });
+  } catch (err: any) {
+    console.error("[batch-generate-worksheet] failed:", err.message);
+    res.status(500).json({ error: "Batch generation failed. Please try again." });
+  }
+});
+
 export default router;

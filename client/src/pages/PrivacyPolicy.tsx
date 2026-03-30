@@ -144,7 +144,7 @@ export default function PrivacyPolicy() {
           </p>
           <div className="space-y-2">
             {[
-              ["No AI training on pupil data", "Our agreements with all AI providers (OpenAI, Google, Groq) strictly prohibit the use of any data submitted through Adaptly for training, fine-tuning, or improving their foundational AI models."],
+              ["No AI training on pupil data", "Our agreements with all AI providers (OpenAI, Google, Groq, Cerebras, SambaNova, OpenRouter, DeepSeek, Cohere, HuggingFace) strictly prohibit the use of any data submitted through Adaptly for training, fine-tuning, or improving their foundational AI models."],
               ["Zero data retention", "Data sent to AI providers is processed in real time and not retained beyond the immediate request (zero-day retention where supported by the provider)."],
               ["No automated decision-making", "Adaptly does not make fully automated decisions (UK GDPR Article 22) that produce legal or similarly significant effects on pupils. All AI outputs — including SEND screener results, behaviour summaries, and generated worksheets — are reviewed and actioned by a qualified teacher or SENCO before any decision is made about a pupil."],
               ["AI as an assistive tool", "AI features are designed to reduce teacher workload and improve resource quality. The teacher remains in control of all decisions affecting pupils."],
@@ -224,6 +224,12 @@ export default function PrivacyPolicy() {
                   ["OpenAI", "AI content generation", "USA", "UK IDTA / EU SCCs"],
                   ["Google (Gemini)", "AI content generation", "USA", "UK IDTA / EU SCCs"],
                   ["Groq", "AI content generation", "USA", "UK IDTA / EU SCCs"],
+                  ["Cerebras", "AI content generation", "USA", "UK IDTA / EU SCCs"],
+                  ["SambaNova", "AI content generation", "USA", "UK IDTA / EU SCCs"],
+                  ["OpenRouter", "AI model routing & content generation", "USA", "UK IDTA / EU SCCs"],
+                  ["DeepSeek", "AI content generation", "China/USA", "UK IDTA / EU SCCs"],
+                  ["Cohere", "AI content generation", "Canada/USA", "UK IDTA / EU SCCs"],
+                  ["HuggingFace", "AI content generation", "USA", "UK IDTA / EU SCCs"],
                   ["Resend", "Transactional email delivery", "USA", "UK IDTA / EU SCCs"],
                 ].map(([name, purpose, location, safeguard]) => (
                   <tr key={name} className="even:bg-muted/30">

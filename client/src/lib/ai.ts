@@ -1405,15 +1405,16 @@ STRICT JSON OUTPUT: Respond with valid JSON only — no markdown, no code blocks
   })();
 
   // Diagrams auto-generate for relevant subjects — no toggle needed
+  // For Science and Maths, diagrams are MANDATORY (not optional) to ensure visual learning
+  const isScienceMathsCore = isMaths || /science|biology|chemistry|physics/.test(subjectLower);
   const svgDiagramNote = (isDiagramSubject && !isVI && !params.examStyle)
     ? `SVG DIAGRAM INSTRUCTION:
 For Q4, embed ONE diagram as [[DIAGRAM:{...JSON...}]]. Use type "${diagramSelection.type}" for this topic.
 The diagram is for LABELLING — students see numbered blanks, NOT the answers.
 Every label/step MUST use REAL terms from "${params.topic}" — never placeholders.
-
+${isScienceMathsCore ? `MANDATORY FOR SCIENCE/MATHS: A diagram MUST be included in Q4. Do NOT omit it. Science and Maths worksheets always benefit from visual representation. Choose the most appropriate diagram type for "${params.topic}" from the list below.` : `If no diagram genuinely helps teach "${params.topic}", omit it entirely.`}
 Available types: labeled, flow, cycle, number-line, bar, axes, circuit, venn, timeline, pyramid, fraction-bar.
-Rules: x/y are percentages (5–95), max 2 diagrams, title must name the specific topic.
-If no diagram genuinely helps teach "${params.topic}", omit it entirely.`
+Rules: x/y are percentages (5–95), max 2 diagrams, title must name the specific topic.`
     : ``;
 
   // ── Word problems note ─────────────────────────────────────────────────────
@@ -1453,7 +1454,9 @@ If no diagram genuinely helps teach "${params.topic}", omit it entirely.`
   // ── Topic enforcement note ─────────────────────────────────────────────────
   const topicEnforcementNote = `Every question, example, vocabulary term, and any diagram must be about "${params.topic}" only.`;
   const dataCompletenessNote = `Every question must be fully usable as written. Do not use placeholders, ellipses, missing values, unfinished lists, or references to unseen data. If a statistics question uses a table, survey, graph, grouped frequency table, histogram, cumulative frequency graph, box plot, or chart, include the complete numeric data needed to answer it directly in the worksheet text.`;
-  const diagramRelevanceNote = `Only include or request a diagram if it is essential to teaching "${params.topic}". The diagram must match the exact worksheet topic and the questions that refer to it. If no exact topic-matching diagram is needed, omit the diagram entirely.`;
+  const diagramRelevanceNote = isScienceMathsCore
+    ? `DIAGRAM REQUIREMENT: For Science and Maths, a diagram MUST be included in Q4. The diagram must match the exact worksheet topic "${params.topic}" and the questions that refer to it. Use the most appropriate diagram type for this specific topic.`
+    : `Only include or request a diagram if it is essential to teaching "${params.topic}". The diagram must match the exact worksheet topic and the questions that refer to it. If no exact topic-matching diagram is needed, omit the diagram entirely.`;
   const vocabularyCapNote = `Key Vocabulary must contain at most 5 items.`;
 
   const recallNote = params.recallTopic ? `PRIOR KNOWLEDGE CHECK REQUIRED: After the Learning Objective and BEFORE Key Vocabulary, include a section titled "Prior Knowledge Check — ${params.recallTopic}" (type: "prior-knowledge") with exactly 3 short retrieval questions on the PREVIOUS topic "${params.recallTopic}". These must be quick, accessible questions (True/False, short answer, or fill-in-blank) to activate prior knowledge. Do NOT mix these with the main topic questions. This section appears SECOND in the worksheet, right after the Learning Objective.` : '';
@@ -3024,4 +3027,60 @@ ${params.text}`;
 
   const { text } = await callAI(system, user, 300);
   return text.trim().replace(/^["']|["']$/g, ""); // strip any surrounding quotes
+}
+
+// ── Batch Worksheet Generation ────────────────────────────────────────────────
+// Calls POST /api/ai/batch-generate-worksheet to generate all 4 differentiation
+// tiers (Base, Foundation, Higher, SEND) in a single AI call.
+// This is ~4x more efficient than calling aiGenerateWorksheet three separate times.
+export async function aiBatchGenerateWorksheet(params: {
+  subject: string;
+  topic: string;
+  yearGroup: string;
+  examBoard?: string;
+  additionalInstructions?: string;
+  includeAnswers?: boolean;
+}): Promise<{
+  tiers: {
+    base: any;
+    foundation: any;
+    higher: any;
+    send: any;
+  };
+  provider: string;
+}> {
+  const storedToken = typeof localStorage !== "undefined" ? localStorage.getItem("send_token") : null;
+  const reqHeaders: Record<string, string> = { "Content-Type": "application/json" };
+  if (storedToken) reqHeaders["Authorization"] = `Bearer ${storedToken}`;
+
+  const res = await fetch("/api/ai/batch-generate-worksheet", {
+    method: "POST",
+    headers: reqHeaders,
+    credentials: "include",
+    body: JSON.stringify({
+      subject: params.subject,
+      topic: params.topic,
+      yearGroup: params.yearGroup,
+      examBoard: params.examBoard,
+      additionalInstructions: params.additionalInstructions,
+      includeAnswers: params.includeAnswers,
+    }),
+  });
+
+  if (res.status === 401 || res.status === 403) {
+    if (typeof localStorage !== "undefined") localStorage.removeItem("send_token");
+    setTimeout(() => { window.location.href = "/login"; }, 2000);
+    throw new Error("AUTH_REQUIRED: Session expired. Please log in again.");
+  }
+
+  if (!res.ok) {
+    const errData = await res.json().catch(() => ({})) as any;
+    throw new Error(errData?.error || "Batch generation failed. Please try again.");
+  }
+
+  const data = await res.json();
+  if (!data.tiers) {
+    throw new Error("Invalid response from batch generation endpoint.");
+  }
+  return { tiers: data.tiers, provider: data.provider || "unknown" };
 }

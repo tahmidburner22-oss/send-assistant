@@ -38,14 +38,22 @@ export default function AIGovernance() {
 
         <div className="prose prose-sm max-w-none dark:prose-invert">
           <h2>Which AI Models We Use</h2>
-          <p>Adaptly is a <strong>Bring Your Own Key (BYOK)</strong> platform. This means you connect your own AI provider account. We support:</p>
+          <p>Adaptly uses a <strong>multi-provider AI architecture</strong> with intelligent routing across 12 providers. This ensures high availability, fast response times, and resilience against rate limits. The following providers are used to power content generation:</p>
           <ul>
-            <li><strong>Groq</strong> — Llama 3.1 8B Instant (default, free tier available)</li>
-            <li><strong>Google Gemini</strong> — Gemini 2.0 Flash</li>
+            <li><strong>Groq</strong> — Llama 3.3 70B / Llama 3.1 8B Instant (primary, fast inference)</li>
+            <li><strong>Google Gemini</strong> — Gemini 2.0 Flash / Gemini 2.0 Flash Lite (long-context tasks)</li>
             <li><strong>OpenAI</strong> — GPT-4o Mini, GPT-4o</li>
-            <li><strong>OpenRouter</strong> — Access to 100+ models</li>
+            <li><strong>Cerebras</strong> — Llama 3.3 70B (wafer-scale inference, high throughput)</li>
+            <li><strong>SambaNova</strong> — Llama 3.3 70B (fast inference)</li>
+            <li><strong>OpenRouter</strong> — Access to 100+ models via unified API</li>
+            <li><strong>DeepSeek</strong> — DeepSeek-V3 (high-capacity reasoning)</li>
+            <li><strong>Cohere</strong> — Command R+ (instruction following)</li>
+            <li><strong>HuggingFace</strong> — Open-source model access</li>
+            <li><strong>Mistral</strong> — Mistral Small (fallback provider)</li>
+            <li><strong>Together AI</strong> — Llama 3.3 70B (additional capacity)</li>
+            <li><strong>Nebius</strong> — Llama 3.3 70B (EU-hosted inference)</li>
           </ul>
-          <p>Your API key is stored in your browser and sent directly to the AI provider. Adaptly does not store your API key on our servers.</p>
+          <p>Adaptly's backend automatically routes each request to the most appropriate provider based on availability, rate limits, and request complexity. No API keys are stored in your browser; all AI calls are made server-side through Adaptly's secure backend.</p>
 
           <h2>How AI Is Used</h2>
           <ul>
