@@ -4242,7 +4242,8 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
         }
         // In student view, strip any "Answer: ..." lines that the AI embedded in the content string.
         // Also strip mark scheme lines, CORRECT: answer tags, and "[X marks]" labels that reveal answers.
-        let content = rawContent as string;
+        let content = (rawContent ?? '') as string;
+        if (content !== null && content !== undefined && typeof content !== 'string') content = String(content);
         if (!isTeacherView && typeof content === 'string') {
           content = content
             .split('\n')
