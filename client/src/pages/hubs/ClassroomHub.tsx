@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import {
   BookOpen, Users, Calendar, TrendingUp, ClipboardList,
   MessageSquare, Zap, NotebookPen, BarChart3,
-  ArrowRight, Monitor, ChevronRight, Star, Clock, Award,
+  ArrowRight, Monitor, ChevronRight, Star, Clock,
 } from "lucide-react";
 
 const tools = [
@@ -90,20 +90,10 @@ const tools = [
     border: "border-rose-100",
     description: "Review usage stats, worksheet ratings, pupil progress data and time-saved insights across your whole school.",
   },
-  {
-    path: "/worksheets?tab=exam-questions",
-    label: "Exam Paper Creator",
-    icon: Award,
-    color: "bg-indigo-50 text-indigo-600",
-    border: "border-indigo-100",
-    description: "Search and select real past paper questions by subject, board, and tier to build custom exam-style worksheets in seconds.",
-    badge: "New",
-    badgeColor: "bg-indigo-100 text-indigo-700",
-  },
 ];
 
 const stats = [
-  { label: "Classroom Tools", value: "10", icon: Monitor, color: "text-blue-600" },
+  { label: "Classroom Tools", value: "9", icon: Monitor, color: "text-blue-600" },
   { label: "Pupils Managed", value: "Unlimited", icon: Users, color: "text-violet-600" },
   { label: "Avg Session", value: "8 min", icon: Clock, color: "text-amber-600" },
 ];

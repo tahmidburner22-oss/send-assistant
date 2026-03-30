@@ -339,11 +339,6 @@ export function renderMath(text: string | any): string {
   // IMPORTANT: Process \(...\), \[...\], and $...$ BEFORE bare \dfrac, \frac,
   // \sqrt etc. Otherwise \dfrac inside \(\dfrac{a}{b}\) gets converted to KaTeX
   // HTML first, leaving orphaned \( and \) delimiters that never match.
-    // Handle $$...$$ display math BEFORE single $...$ inline math
-  result = result.replace(/\$\$([^$]+?)\$\$/g, (_, expr) => {
-    try { return katex.renderToString(expr.trim(), { displayMode: true, throwOnError: false }); }
-    catch { return expr; }
-  });
   result = result.replace(/\\\[(\s*[\s\S]+?\s*)\\\]/g, (_, expr) => {
     try { return katex.renderToString(expr.trim(), { displayMode: true, throwOnError: false }); }
     catch { return expr; }
@@ -352,7 +347,7 @@ export function renderMath(text: string | any): string {
     try { return katex.renderToString(expr.trim(), { displayMode: false, throwOnError: false }); }
     catch { return expr; }
   });
-  result = result.replace(/\$([^\$\n]+?)\$/g, (_, expr) => {
+  result = result.replace(/\$([^$\n]+?)\$/g, (_, expr) => {
     try { return katex.renderToString(expr.trim(), { displayMode: false, throwOnError: false }); }
     catch { return expr; }
   });
@@ -1066,32 +1061,30 @@ function formatContent(content: string | any, fmt: ReturnType<typeof getSendForm
   // Strip [[DIAGRAM:{...}]] markers — handled by the outer section renderer.
   // If they reach formatContent they must be stripped silently so raw JSON never renders.
   content = content.replace(/\[\[DIAGRAM:\{[\s\S]*?\}\]\]/g, "").trim();
-    // Strip AI instruction lines that should never appear in rendered content
-    // Robust: handles leading pipes, asterisks, whitespace, and partial matches
-    content = content.split("\n").filter((line: string) => {
-      const t = line.trim();
-      // Direct prefix matches (case-insensitive), with optional leading ** or |
-      if (/^\|?\s*\*{0,2}\s*IMPORTANT\s*[:—\-|]/i.test(t)) return false;
-      if (/^\|?\s*\*{0,2}\s*LABELS\s*[:—\-|]/i.test(t)) return false;
-      if (/^\|?\s*\*{0,2}\s*ANSWERS\s*[:—\-|]/i.test(t)) return false;
-      if (/^\|?\s*\*{0,2}\s*NOTE\s*[:—\-|]/i.test(t)) return false;
-      if (/^\|?\s*\*{0,2}\s*CRITICAL\s*[:—\-|]/i.test(t)) return false;
-      if (/^\|?\s*\*{0,2}\s*DIAGRAM\s*(TYPE|RULES|INSTRUCTION)\s*[:—\-|]/i.test(t)) return false;
-      if (/^\|?\s*\*{0,2}\s*TOPIC[\s-]*SPECIFIC/i.test(t)) return false;
-      if (/^\|?\s*\*{0,2}\s*SVG DIAGRAM/i.test(t)) return false;
-      if (/^\|?\s*\*{0,2}\s*ADVANCED QUESTION/i.test(t)) return false;
-      // Strip CORRECT: answer lines from student view (primary MCQ answers must not leak)
-      if (/^CORRECT:\s*/i.test(t)) return false;
-      // Strip lines that are just "LABELS" or "ANSWERS" headers
-      if (/^\|?\s*labels\s*\|?\s*$/i.test(t)) return false;
-      if (/^\|?\s*answers\s*\|?\s*$/i.test(t)) return false;
-      // Strip separator rows between LABELS/ANSWERS tables (e.g. |---|---|)
-      if (/^\|[\s\-:]+\|/.test(t) && t.split('|').length >= 3) {
-        const cells = t.split('|').filter((c: string) => c.trim());
-        if (cells.every((c: string) => /^[\s\-:]+$/.test(c))) return false;
-      }
-      return true;
-    }).join("\n");
+  // Strip AI instruction lines that should never appear in rendered content
+  // Robust: handles leading pipes, asterisks, whitespace, and partial matches
+  content = content.split("\n").filter((line: string) => {
+    const t = line.trim();
+    // Direct prefix matches (case-insensitive), with optional leading ** or |
+    if (/^\|?\s*\*{0,2}\s*IMPORTANT\s*[:—\-|]/i.test(t)) return false;
+    if (/^\|?\s*\*{0,2}\s*LABELS\s*[:—\-|]/i.test(t)) return false;
+    if (/^\|?\s*\*{0,2}\s*ANSWERS\s*[:—\-|]/i.test(t)) return false;
+    if (/^\|?\s*\*{0,2}\s*NOTE\s*[:—\-|]/i.test(t)) return false;
+    if (/^\|?\s*\*{0,2}\s*CRITICAL\s*[:—\-|]/i.test(t)) return false;
+    if (/^\|?\s*\*{0,2}\s*DIAGRAM\s*(TYPE|RULES|INSTRUCTION)\s*[:—\-|]/i.test(t)) return false;
+    if (/^\|?\s*\*{0,2}\s*TOPIC[\s-]*SPECIFIC/i.test(t)) return false;
+    if (/^\|?\s*\*{0,2}\s*SVG DIAGRAM/i.test(t)) return false;
+    if (/^\|?\s*\*{0,2}\s*ADVANCED QUESTION/i.test(t)) return false;
+    // Strip lines that are just "LABELS" or "ANSWERS" headers
+    if (/^\|?\s*labels\s*\|?\s*$/i.test(t)) return false;
+    if (/^\|?\s*answers\s*\|?\s*$/i.test(t)) return false;
+    // Strip separator rows between LABELS/ANSWERS tables (e.g. |---|---|)
+    if (/^\|[\s\-:]+\|/.test(t) && t.split('|').length >= 3) {
+      const cells = t.split('|').filter((c: string) => c.trim());
+      if (cells.every((c: string) => /^[\s\-:]+$/.test(c))) return false;
+    }
+    return true;
+  }).join("\n");
   // ── Systemic content pre-processor ─────────────────────────────────────────────
   // Handles all known AI output patterns that cause broken rendering:
   //   1. Concatenated numbered items on a single line ("1. Q1 . 2. Q2 . 3. Q3")
@@ -1228,7 +1221,7 @@ function formatContent(content: string | any, fmt: ReturnType<typeof getSendForm
     listItems = [];
   };
 
-  lines.forEach((line: string, idx: number) => {
+  lines.forEach((line, idx) => {
     let trimmed = line.trim();
     // Clean up lines that start with a lone period/dot (artifact of AI separator pattern)
     // Handles both ". " and "." at the start of a line
@@ -1536,8 +1529,8 @@ function TrueFalseSection({
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: fmt.lineHeight > 1.7 ? "14px" : "10px" }}>
       {displayLines.map((item, i) => {
-        const stmtText = item.text;
-        const answer = item.answer;
+        const stmtText = typeof item === "string" ? item.replace(/^\d+[.)\s]+/, "").trim() : item.text;
+        const answer = typeof item === "string" ? undefined : item.answer;
         return (
           <div key={i} style={{
             display: "flex",
@@ -1703,28 +1696,11 @@ function GapFillInlineSection({
     ? wbLine.replace(/^WORD BANK:\s*/i, "").split(/[|,]/).map((w: string) => w.trim()).filter(Boolean)
     : [];
 
-  // Issue #11: Fix maths rendering in gap-fill — process blanks FIRST, then renderMath
-  // This prevents KaTeX from trying to parse underscores as LaTeX subscripts/superscripts.
-  let paraText = paraLines.join(" ").trim();
+  // Join paragraph — preserve intentional line breaks
+  const paraText = paraLines.join(" ").trim();
 
-  // Step 1: Protect blank markers by converting to placeholder tokens BEFORE any math processing
-  const BLANK_TOKEN = "__ANSWER_BLANK__";
-  // Also handle dot-sequences used as blanks (e.g. ".............")
-  paraText = paraText.replace(/\.{6,}/g, BLANK_TOKEN).replace(/_{3,}/g, BLANK_TOKEN);
-
-  // Step 2: Protect LaTeX expressions so they survive the split intact
-  const latexPlaceholders: string[] = [];
-  paraText = paraText.replace(/\\\([^)]*?\\\)/g, (match) => {
-    const idx = latexPlaceholders.length;
-    latexPlaceholders.push(match);
-    return `__LATEX_${idx}__`;
-  });
-
-  // Step 3: Restore LaTeX placeholders and split on blank tokens
-  paraText = paraText.replace(/__LATEX_(\d+)__/g, (_, i) => latexPlaceholders[parseInt(i)] || "");
-
-  // Step 4: Split on blank tokens — each segment between tokens gets renderMath applied
-  const parts = paraText.split(BLANK_TOKEN);
+  // Render the paragraph — replace ___ sequences with styled blanks
+  const parts = paraText.split(/_{3,}/g);
 
   return (
     <div>
@@ -1843,7 +1819,7 @@ function LabelDiagramSection({
                 <div style={{ fontSize: "9px", color: "#9ca3af", padding: "2px 6px", fontFamily: fmt.fontFamily }}>{attribution}</div>
               )}
             </div>
-          ) : diagramSpec ? (
+          ) : diagramSpec && diagramSpec.type !== "labeled" ? (
             <SVGDiagram
               spec={diagramSpec}
               width={300}
@@ -1889,7 +1865,7 @@ function LabelDiagramSection({
             <div style={{ marginTop: "10px", padding: "8px 12px", background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: "6px" }}>
               <div style={{ fontSize: `${fmt.fontSize - 1}px`, fontWeight: 700, color: "#64748b", fontFamily: fmt.fontFamily, marginBottom: "4px", textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>Word Bank</div>
               <div style={{ display: "flex", flexWrap: "wrap" as const, gap: "6px" }}>
-                {[...rawLabels].sort(() => Math.random() - 0.5).map((lbl, idx) => (
+                {[...rawLabels].sort(() => 0).map((lbl, idx) => (
                   <span key={idx} style={{ padding: "2px 8px", background: "white", border: "1px solid #cbd5e1", borderRadius: "4px", fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, color: "#1e293b" }}>{lbl}</span>
                 ))}
               </div>
@@ -1903,7 +1879,7 @@ function LabelDiagramSection({
 
 // ── 5. DIAGRAM + SUB-QUESTIONS ────────────────────────────────────────────────
 function DiagramSubQSection({
-  content, fmt, overlayColor = "white", imageUrl, caption, attribution, isTeacher = false,
+  content, fmt, overlayColor = "white", imageUrl, caption, attribution,
 }: {
   content: string;
   fmt: ReturnType<typeof getSendFormatting>;
@@ -1911,7 +1887,6 @@ function DiagramSubQSection({
   imageUrl?: string;
   caption?: string;
   attribution?: string;
-  isTeacher?: boolean;
 }) {
   const raw = stripLayoutTag(content);
   const accentColor = fmt.accentColor || "#1B2A4A";
@@ -1940,7 +1915,7 @@ function DiagramSubQSection({
               <div style={{ fontSize: "9px", color: "#9ca3af", padding: "2px 6px", fontFamily: fmt.fontFamily }}>{attribution}</div>
             )}
           </div>
-        ) : diagramSpec ? (
+        ) : diagramSpec && diagramSpec.type !== "labeled" ? (
           <SVGDiagram
             spec={diagramSpec}
             width={280}
@@ -1965,16 +1940,14 @@ function DiagramSubQSection({
       <div style={{ flex: 1, display: "flex", flexDirection: "column" as const, gap: "14px" }}>
         {subQLines.map((q, i) => (
           <div key={i}>
-            <div
-              style={{
-                fontSize: `${fmt.fontSize}px`,
-                fontFamily: fmt.fontFamily,
-                lineHeight: String(fmt.lineHeight),
-                color: "#1e293b",
-                marginBottom: "4px",
-              }}
-              dangerouslySetInnerHTML={{ __html: renderMath(q) }}
-            />
+            <div style={{
+              fontSize: `${fmt.fontSize}px`,
+              fontFamily: fmt.fontFamily,
+              lineHeight: String(fmt.lineHeight),
+              color: "#1e293b",
+              marginBottom: "4px",
+              dangerouslySetInnerHTML: { __html: renderMath(q) },
+            }} />
             {/* Answer lines */}
             {[0, 1, 2].map(li => (
               <div key={li} style={{
@@ -2175,18 +2148,11 @@ function OrderingSection({
   fmt: ReturnType<typeof getSendFormatting>;
 }) {
   const raw = stripLayoutTag(content);
-  const allLines = raw.split("\n").map(l => l.trim()).filter(Boolean);
-  // Extract question instruction (lines before the first ☐ or numbered item)
-  const firstItemIdx = allLines.findIndex(l => l.startsWith("☐") || /^\d+\.\s+/.test(l));
-  const instructionLines = firstItemIdx > 0 ? allLines.slice(0, firstItemIdx) : [];
-  const lines = allLines.filter(l => l.startsWith("☐") || /^\d+\.\s+/.test(l));
-  // Fallback instruction if none provided
-  const instruction = instructionLines.join(" ").trim() || `Number the boxes 1\u2013${lines.length} to show the correct order.`;
+  const lines = raw.split("\n").filter(l => l.trim().startsWith("☐") || l.trim().match(/^\d+\.\s+/));
   const accentColor = fmt.accentColor || "#1B2A4A";
 
   return (
     <div style={{ display: "flex", flexDirection: "column" as const, gap: "8px" }}>
-      <div style={{ fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, color: "#1e293b", marginBottom: "4px", fontStyle: "italic" }}>{instruction}</div>
       {lines.map((line, i) => {
         const text = line.replace(/^☐\s*/, "").replace(/^\d+\.\s*/, "").trim();
         return (
@@ -2225,115 +2191,48 @@ function MatchingSection({
 }) {
   const raw = stripLayoutTag(content);
   const accentColor = fmt.accentColor || "#1B2A4A";
-  const allLines = raw.split("\n").map(l => l.trim()).filter(Boolean);
-
-  // ── Parse two-column format: TERMS section + DEFINITIONS section ──
-  let terms: string[] = [];
-  let definitions: string[] = [];  // already scrambled by AI
-  let answerKey: Record<number, string> = {}; // term index → definition letter
-  let mode: "terms" | "defs" | "key" | "none" = "none";
-  for (const line of allLines) {
-    if (/^TERMS/i.test(line)) { mode = "terms"; continue; }
-    if (/^DEFINITIONS/i.test(line)) { mode = "defs"; continue; }
-    if (/^ANSWER KEY/i.test(line)) { mode = "key"; continue; }
-    if (/^CRITICAL/i.test(line)) continue;
-    if (mode === "terms") {
-      const m = line.match(/^\d+\.?\s+(.+)$/);
-      if (m) terms.push(m[1].trim());
-    } else if (mode === "defs") {
-      const m = line.match(/^[A-E]\.?\s+(.+)$/);
-      if (m) definitions.push(m[1].trim());
-    } else if (mode === "key") {
-      // Parse "1-C, 2-A, 3-E, ..." or "1-C 2-A 3-E"
-      const matches = line.matchAll(/(\d+)[\-–]([A-E])/g);
-      for (const m of matches) answerKey[parseInt(m[1])] = m[2];
-    }
-  }
-
-  // ── Fallback: parse old format "1. term ←→ definition" ──
-  let pairs: { term: string; definition: string }[] = [];
-  if (terms.length === 0) {
-    const pairLines = allLines.filter(l => l.match(/^\d+\.\s.+←→.+/));
-    pairs = pairLines.map((line) => {
-      const parts = line.replace(/^\d+\.\s*/, "").split("←→");
-      return { term: parts[0]?.trim() || line, definition: parts[1]?.trim() || "" };
-    });
-    // For old format, shuffle definitions
-    const defTexts = pairs.map(p => p.definition);
-    for (let i = defTexts.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [defTexts[i], defTexts[j]] = [defTexts[j], defTexts[i]];
-    }
-    terms = pairs.map(p => p.term);
-    definitions = defTexts;
-  }
-
-  // ── Shuffle definitions client-side as extra safety (in case AI didn't scramble) ──
-  const shuffledDefs = React.useMemo(() => {
-    // Check if definitions are already scrambled (AI should have done this)
-    // We do a final shuffle to guarantee scrambling regardless
-    const defs = definitions.map((text, i) => ({ text, origIndex: i }));
-    for (let i = defs.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [defs[i], defs[j]] = [defs[j], defs[i]];
-    }
-    return defs;
-  }, [definitions.join("|"), terms.join("|")]);  // re-shuffle when content changes
-
-  const defLetters = shuffledDefs.map((_, i) => String.fromCharCode(65 + i));
-
-  if (terms.length === 0) {
-    return <div style={{ fontFamily: fmt.fontFamily, fontSize: `${fmt.fontSize}px` }}>{formatContent(raw, fmt)}</div>;
-  }
+  const lines = raw.split("\n").filter(l => l.match(/^\d+\.\s.+←→.+/) || l.match(/^\d+\.\s/));
 
   return (
-    <div style={{ fontFamily: fmt.fontFamily, fontSize: `${fmt.fontSize}px` }}>
-      {/* Instruction */}
-      <div style={{ marginBottom: "10px", fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, color: "#374151", fontStyle: "italic" }}>
-        Match each term (1–{terms.length}) to its correct definition (A–{defLetters[defLetters.length - 1]}) by writing the letter in the blank.
-      </div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
-        {/* Left column: numbered terms with blank for answer */}
-        <div>
-          <div style={{ fontSize: `${Math.max(fmt.fontSize - 1, 10)}px`, fontWeight: 700, color: "#6b7280", marginBottom: "8px", textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>Terms</div>
-          {terms.map((term, i) => (
-            <div key={i} style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
-              <div style={{ width: "22px", height: "22px", borderRadius: "50%", background: accentColor, color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: `${Math.max(fmt.fontSize - 2, 9)}px`, fontWeight: 700, flexShrink: 0 }}>{i + 1}</div>
-              {/* Blank for student to write letter */}
-              <div style={{ width: "32px", borderBottom: `2px solid ${accentColor}`, height: "22px", flexShrink: 0 }} />
-              <div style={{
-                flex: 1,
-                padding: "5px 10px",
-                border: `1.5px solid ${accentColor}44`,
-                borderRadius: "6px",
-                fontSize: `${fmt.fontSize}px`,
-                fontFamily: fmt.fontFamily,
-                color: "#1e293b",
-                background: "#f8fafc",
-              }} dangerouslySetInnerHTML={{ __html: renderMath(term) }} />
-            </div>
-          ))}
-        </div>
-        {/* Right column: lettered definitions (shuffled) */}
-        <div>
-          <div style={{ fontSize: `${Math.max(fmt.fontSize - 1, 10)}px`, fontWeight: 700, color: "#6b7280", marginBottom: "8px", textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>Definitions</div>
-          {shuffledDefs.map((def, i) => (
-            <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: "8px", marginBottom: "8px" }}>
-              <div style={{ width: "22px", height: "22px", borderRadius: "50%", background: "#64748b", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: `${Math.max(fmt.fontSize - 2, 9)}px`, fontWeight: 700, flexShrink: 0, marginTop: "2px" }}>{defLetters[i]}</div>
-              <div style={{
-                flex: 1,
-                padding: "5px 10px",
-                border: "1.5px solid #e2e8f0",
-                borderRadius: "6px",
-                fontSize: `${fmt.fontSize}px`,
-                fontFamily: fmt.fontFamily,
-                color: "#1e293b",
-                background: "white",
-              }} dangerouslySetInnerHTML={{ __html: renderMath(def.text) }} />
-            </div>
-          ))}
-        </div>
-      </div>
+    <div style={{ display: "flex", flexDirection: "column" as const, gap: "10px" }}>
+      {lines.map((line, i) => {
+        const parts = line.replace(/^\d+\.\s*/, "").split("←→");
+        const left  = parts[0]?.trim() || line;
+        const right = parts[1]?.trim();
+        return (
+          <div key={i} style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 40px 1fr",
+            alignItems: "center",
+            gap: "8px",
+          }}>
+            <div style={{
+              padding: "6px 10px",
+              border: `1.5px solid ${accentColor}44`,
+              borderRadius: "6px",
+              fontSize: `${fmt.fontSize}px`,
+              fontFamily: fmt.fontFamily,
+              color: "#1e293b",
+              background: "#f8fafc",
+            }}>{left}</div>
+            <div style={{
+              width: "100%",
+              borderBottom: `1.5px dashed #9ca3af`,
+              height: "1px",
+              alignSelf: "center",
+            }} />
+            <div style={{
+              padding: "6px 10px",
+              border: `1.5px solid ${accentColor}44`,
+              borderRadius: "6px",
+              fontSize: `${fmt.fontSize}px`,
+              fontFamily: fmt.fontFamily,
+              color: "#1e293b",
+              background: "#f8fafc",
+            }}>{right || "___________"}</div>
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -2568,27 +2467,10 @@ function ErrorCorrectionSection({
     if (/^(worked answer|student answer|student.?s answer|incorrect answer|given answer)/i.test(line)) { mode = "worked"; continue; }
     if (/^(mistake|error|what.?s wrong|hint)/i.test(line)) { mode = "mistake"; continue; }
     if (/^(task|your task|questions|find|identify|correct|explain)/i.test(line)) { mode = "tasks"; continue; }
-    if (mode === "worked") {
-      // Detect teacher-only hint lines that leaked into the worked answer section
-      // e.g. "The mistake is in step 2", "Hint: look at step 3", "Error: ..."
-      if (/^(\[?the mistake is|\[?hint:|\[?error:|\[?teacher:|\[?note to teacher|\[?teacher note|\[?teacher only|\[?teacher hint)/i.test(line)) {
-        mistakeHint = line.replace(/^\[?\s*(the mistake is[:\s]*|hint[:\s]*|error[:\s]*|teacher[:\s]*|note to teacher[:\s]*|teacher note[:\s]*|teacher only[:\s]*|teacher hint[:\s]*)/i, "").replace(/\]\s*$/, "").trim() || line;
-        continue;
-      }
-      // Strip ** markdown bold markers that expose the error to students
-      workedAnswer.push(isTeacher ? line : line.replace(/\*\*([^*]+)\*\*/g, "$1"));
-    } else if (mode === "mistake") mistakeHint = line;
-    else if (mode === "tasks") {
-      // Skip bare "Task" header lines, only add actual task descriptions
-      if (!/^task$/i.test(line)) tasks.push(line.replace(/^[\d.)-]+\s*/, ""));
-    } else {
-      // Also detect [TEACHER ONLY: ...] in fallback mode
-      if (/^(\[?the mistake is|\[?hint:|\[?error:|\[?teacher:|\[?note to teacher|\[?teacher note|\[?teacher only|\[?teacher hint)/i.test(line)) {
-        mistakeHint = line.replace(/^\[?\s*(the mistake is[:\s]*|hint[:\s]*|error[:\s]*|teacher[:\s]*|note to teacher[:\s]*|teacher note[:\s]*|teacher only[:\s]*|teacher hint[:\s]*)/i, "").replace(/\]\s*$/, "").trim() || line;
-      } else {
-        workedAnswer.push(isTeacher ? line : line.replace(/\*\*([^*]+)\*\*/g, "$1")); // fallback
-      }
-    }
+    if (mode === "worked") workedAnswer.push(line);
+    else if (mode === "mistake") mistakeHint = line;
+    else if (mode === "tasks") tasks.push(line.replace(/^[\d.)-]+\s*/, ""));
+    else workedAnswer.push(line); // fallback: treat as worked answer
   }
   if (tasks.length === 0) tasks = ["Identify the mistake", "Explain why it is wrong", "Write the correct answer"];
 
@@ -2601,11 +2483,11 @@ function ErrorCorrectionSection({
         </div>
         <div style={{ padding: "10px 12px", background: "#fff5f5" }}>
           {workedAnswer.map((line, i) => (
-            <div key={i} style={{ fontSize: `${textSize}px`, fontFamily, marginBottom: "4px", color: "#1a1a1a" }} dangerouslySetInnerHTML={{ __html: renderMath(line) }} />
+            <div key={i} style={{ fontSize: `${textSize}px`, fontFamily, marginBottom: "4px", color: "#1a1a1a" }}>{line}</div>
           ))}
           {isTeacher && mistakeHint && (
             <div style={{ marginTop: "8px", padding: "4px 8px", background: "#fee2e2", borderRadius: "4px", fontSize: `${Math.max(textSize - 1, 10)}px`, color: "#991b1b", fontStyle: "italic" }}>
-              Teacher: <span dangerouslySetInnerHTML={{ __html: renderMath(mistakeHint) }} />
+              Teacher: {mistakeHint}
             </div>
           )}
         </div>
@@ -2615,7 +2497,7 @@ function ErrorCorrectionSection({
         {tasks.map((task, i) => (
           <div key={i} style={{ border: "1.5px solid #e5e7eb", borderRadius: "6px", overflow: "hidden" }}>
             <div style={{ background: "#1e293b", color: "white", padding: "4px 8px", fontSize: `${Math.max(textSize - 1, 10)}px`, fontWeight: 700, fontFamily }}>
-              <span dangerouslySetInnerHTML={{ __html: `${i + 1}. ` + renderMath(task) }} />
+              {i + 1}. {task}
             </div>
             <div style={{ padding: "6px 8px", minHeight: "32px", background: "white" }}>
               {isTeacher ? null : <div style={{ borderBottom: "1px solid #d1d5db", height: "28px" }} />}
@@ -2634,31 +2516,23 @@ function RankingSection({
   const { fontSize: textSize, fontFamily, lineHeight } = fmt;
   const lines = content.split("\n").map(l => l.trim()).filter(Boolean);
 
-  // Parse: instruction line, items (bullet/numbered/lettered), explanation prompt
+  // Parse: instruction line, items (bullet/numbered), explanation prompt
   let instruction = "";
   let items: string[] = [];
   let explanationPrompt = "";
+  let correctOrder: string[] = [];
   for (const line of lines) {
     if (/^(order|rank|arrange|put|sort|place)/i.test(line) && !instruction) { instruction = line; continue; }
-    if (/^(explain|justify|reason|why|explain your)/i.test(line)) { explanationPrompt = line; continue; }
-    if (/^(correct order|answer|teacher|layout)/i.test(line)) continue;
-    // Match items: numbered like "1. _____ [ ] item" or "A ___ [] item" or "- item" or "• item"
-    const rankedItemMatch = line.match(/^[A-E]\s+_+\s*\[\s*\]\s*(.+)$/) ||
-      line.match(/^\d+\.?\s+_+\s*\[\s*\]\s*(.+)$/) ||
-      line.match(/^[-*•]\s+(.+)$/) ||
-      line.match(/^[A-E][.)\s]+(.+)$/) ||
-      line.match(/^\d+[.)\s]+(.+)$/);
-    if (rankedItemMatch) {
-      // Strip any remaining [ ] brackets and leading underscores from item text
-      const cleaned = rankedItemMatch[1].replace(/\[\s*\]/g, "").replace(/^_+\s*/, "").trim();
-      if (cleaned) items.push(cleaned);
-    } else if (line && !instruction && items.length === 0) {
-      instruction = line;
-    }
+    if (/^(explain|justify|reason|why)/i.test(line)) { explanationPrompt = line; continue; }
+    if (/^(correct order|answer|teacher)/i.test(line)) continue;
+    const bulletMatch = line.match(/^[-*•]\s+(.+)$/) || line.match(/^\d+[.)\s]+(.+)$/);
+    if (bulletMatch) items.push(bulletMatch[1]);
+    else if (line && !instruction) instruction = line;
   }
-  if (items.length === 0) items = lines.filter(l => l.length < 80 && !l.startsWith("LAYOUT"));
+  if (items.length === 0) items = lines.filter(l => l.length < 60);
   if (!explanationPrompt) explanationPrompt = "Explain your reasoning:";
 
+  // Shuffle items for student view
   const displayItems = [...items];
 
   return (
@@ -2713,21 +2587,11 @@ function WhatChangedSection({
   for (const line of lines) {
     if (/^(scenario a|situation a|before|circuit a|state a|condition a)/i.test(line)) { mode = "a"; continue; }
     if (/^(scenario b|situation b|after|circuit b|state b|condition b)/i.test(line)) { mode = "b"; continue; }
-    // "Task" alone is just a section header — switch mode but don't add as a question
-    if (/^task$/i.test(line)) { mode = "q"; continue; }
-    if (/^(question|your task|what changed|explain|describe|why)/i.test(line)) { mode = "q"; }
+    if (/^(question|task|your task|what|explain|describe|why)/i.test(line)) { mode = "q"; }
     if (mode === "a") scenarioA.push(line);
-    else if (mode === "b") {
-      // Strip ** markdown bold markers from Scenario B (they expose the highlighted change)
-      scenarioB.push(line.replace(/\*\*([^*]+)\*\*/g, "$1"));
-    } else if (mode === "q") {
-      // Only add lines that look like actual questions (numbered or contain question words)
-      if (/^\d+\./.test(line) || /\?/.test(line) || /^(what|why|how|explain|describe|identify)/i.test(line)) {
-        questions.push(line.replace(/^[\d.)-]+\s*/, ""));
-      }
-    } else {
-      scenarioA.push(line); // fallback
-    }
+    else if (mode === "b") scenarioB.push(line);
+    else if (mode === "q") questions.push(line.replace(/^[\d.)-]+\s*/, ""));
+    else scenarioA.push(line); // fallback
   }
   if (questions.length === 0) questions = ["What changed between A and B?", "Why did this happen?", "What effect does this have?"];
 
@@ -2848,12 +2712,11 @@ function VocabSection({ content, fmt, overlayColor = "white" }: { content: strin
     return <div style={{ fontSize: `${textSize}px`, lineHeight, fontFamily, letterSpacing }}>{content}</div>;
   }
 
-  // Issue #14a: Two-column vocab grid with styled term | definition pairs
   return (
     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4px 24px" }}>
       {entries.map((e, i) => (
-        <div key={i} style={{ display: "flex", gap: "4px", padding: "6px 0", borderBottom: "1px solid #e5e7eb", alignItems: "flex-start" }}>
-          <span style={{ fontWeight: 700, color: "#1a2744", fontSize: `${textSize}px`, fontFamily, letterSpacing, flexShrink: 0, minWidth: "100px", paddingRight: "4px" }} dangerouslySetInnerHTML={{ __html: renderMath(e.term) + " —" }} />
+        <div key={i} style={{ display: "flex", gap: "4px", padding: "5px 0", borderBottom: "1px solid #e5e7eb" }}>
+          <span style={{ fontWeight: 700, color: "#1a2744", fontSize: `${textSize}px`, fontFamily, letterSpacing, flexShrink: 0, minWidth: "90px" }} dangerouslySetInnerHTML={{ __html: renderMath(e.term) + ":" }} />
           <span style={{ color: "#374151", fontSize: `${textSize}px`, lineHeight, fontFamily, letterSpacing }} dangerouslySetInnerHTML={{ __html: renderMath(e.def) }} />
         </div>
       ))}
@@ -2993,25 +2856,14 @@ function SelfReflectionSection({ content, fmt, overlayColor = "white" }: { conte
           ))}
         </div>
       )}
-      {/* Exit ticket — Issue #14e: visually distinct dashed-border box */}
-      <div style={{ marginTop: "16px" }}>
-        <div style={{
-          border: "2px dashed #4f46e5",
-          borderRadius: "8px",
-          padding: "10px 14px",
-          background: "#f5f3ff",
-        }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
-            <span style={{ fontSize: "16px" }}>✏️</span>
-            <span style={{ fontSize: `${textSize - 1}px`, fontWeight: 700, color: "#4f46e5", fontFamily, textTransform: "uppercase", letterSpacing: "0.06em" }}>Exit Ticket</span>
-          </div>
-          <div style={{ fontSize: `${textSize}px`, color: "#374151", fontFamily, marginBottom: "8px", fontStyle: "italic" }}>
-            {exitTicketText}
-          </div>
-          {[0, 1].map(li => (
-            <div key={li} style={{ borderBottom: "1px solid #c4b5fd", height: "28px", marginBottom: "4px" }} />
-          ))}
+      {/* Exit ticket */}
+      <div style={{ marginTop: "16px", borderTop: "1.5px solid #d1d5db", paddingTop: "10px" }}>
+        <div style={{ fontSize: `${textSize}px`, fontWeight: 700, color: "#1a2744", fontFamily, textDecoration: "underline", marginBottom: "6px" }}>
+          Exit Ticket: {exitTicketText}
         </div>
+        {[0, 1].map(li => (
+          <div key={li} style={{ borderBottom: "1px solid #ccc", height: "28px", marginBottom: "4px" }} />
+        ))}
       </div>
     </div>
   );
@@ -3370,15 +3222,8 @@ function PrimarySection({
         color: palette.text,
         background: palette.bg,
       }}>
-         {/* Auto-detect content type and use proper sub-renderers */}
-        {section.type === "self-assessment" || /CONFIDENCE_TABLE:|WRITTEN_PROMPTS:|EXIT_TICKET:/i.test(content)
-          ? <SelfReflectionSection content={content} fmt={fmt} overlayColor={palette.bg} />
-          : (section.type === "q-true-false" || /\b(TRUE|FALSE)\b/.test(content)) && /^\d+[.)\s].{4,}\s+(TRUE|FALSE)/im.test(content)
-            ? <TrueFalseSection content={content} fmt={fmt} overlayColor={palette.bg} isTeacher={isTeacherSection} />
-            : (/^[A-D][.)\s]{1,2}\S/m.test(content) && !/^\d+[.)\s].{4,}\s+(TRUE|FALSE)/im.test(content))
-              ? <MCQSection content={content} fmt={fmt} overlayColor={palette.bg} isTeacher={isTeacherSection} />
-              : formatContent(content, fmt)
-        }
+        {formatContent(content, fmt)}
+
         {/* Exercise-book style writing lines */}
         {needsWritingLines && answerLines > 0 && (
           <div style={{ marginTop: "14px" }}>
@@ -4241,9 +4086,8 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
           }
         }
         // In student view, strip any "Answer: ..." lines that the AI embedded in the content string.
-        // Also strip mark scheme lines, CORRECT: answer tags, and "[X marks]" labels that reveal answers.
-        let content = (rawContent ?? '') as string;
-        if (content !== null && content !== undefined && typeof content !== 'string') content = String(content);
+        // Also strip mark scheme lines and "[X marks]" labels that reveal answers.
+        let content = rawContent as string;
         if (!isTeacherView && typeof content === 'string') {
           content = content
             .split('\n')
@@ -4252,13 +4096,8 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
               if (/^\s*Answer\s*:/i.test(t)) return false;
               if (/^\s*Mark scheme\s*:/i.test(t)) return false;
               if (/^\s*\*?\s*Answer\s*:/i.test(t)) return false;
-              // Strip CORRECT: answer lines from student view (primary MCQ answers must not leak)
-              if (/^CORRECT:\s*/i.test(t)) return false;
-              // Strip lines that are just "LABELS" or "ANSWERS" headers
-              if (/^\|?\s*labels\s*\|?\s*$/i.test(t)) return false;
-              if (/^\|?\s*answers\s*\|?\s*$/i.test(t)) return false;
-              // Strip "Mistake" teacher-only lines in error correction questions
-              if (/^Mistake\s*$/i.test(t)) return false;
+              // Strip lines that are ONLY an answer value after "Answer:" (e.g. "   (7 5)")
+              // following a question — handled by the Answer: filter above
               return true;
             })
             // Strip inline "[X marks]" badges that reveal total mark allocations hinting at answers
@@ -4431,7 +4270,6 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
           <div
             className={`ws-section ws-section-${section.type}${isTeacherSection ? " ws-teacher-section" : ""}`}
             onClick={() => editMode && onSectionClick?.(i)}
-            data-teacher-only={isTeacherSection ? "true" : undefined}
             style={{
               marginBottom: "20px",
               background: isTeacherHeader ? "#8b1a1a" : fmt.theme === "high-contrast" ? "#ffffff" : "#ffffff",
@@ -4699,24 +4537,19 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                         if (current) current.explanation = trimmed.replace(/^(→|->)+\s*/, "");
                       } else if (trimmed.length > 0) {
                         if (current) mistakes.push(current);
-                        current = { title: trimmed.replace(/^\*+|\*+$/g, "").replace(/^[✗✕×]\s*/, "").trim(), explanation: "" };
+                        current = { title: trimmed.replace(/^\*+|\*+$/g, "").trim(), explanation: "" };
                       }
                     }
                     if (current) mistakes.push(current);
                     return (
-                      <div style={{ display: "flex", flexDirection: "column" as const, gap: "10px" }}>
+                      <div style={{ display: "flex", flexDirection: "column" as const, gap: "12px" }}>
                         {mistakes.map((m, mi) => (
-                          <div key={mi} style={{ borderLeft: "3px solid #dc2626", paddingLeft: "10px" }}>
-                            {/* Issue #14b: ✗ mistake line in red */}
-                            <div style={{ display: "flex", alignItems: "flex-start", gap: "6px", marginBottom: "3px" }}>
-                              <span style={{ color: "#dc2626", fontWeight: 700, fontSize: `${fmt.fontSize}px`, flexShrink: 0 }}>✗</span>
-                              <span style={{ fontWeight: 700, fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, color: "#991b1b" }} dangerouslySetInnerHTML={{ __html: renderMath(m.title) }} />
-                            </div>
-                            {/* → correction line in green */}
+                          <div key={mi}>
+                            <div style={{ fontWeight: 700, fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, color: "#1a2744", marginBottom: "3px" }}>{m.title}</div>
                             {m.explanation && (
-                              <div style={{ display: "flex", alignItems: "flex-start", gap: "6px", paddingLeft: "4px" }}>
-                                <span style={{ color: "#16a34a", fontWeight: 700, fontSize: `${fmt.fontSize}px`, flexShrink: 0 }}>→</span>
-                                <span style={{ fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, color: "#166534" }} dangerouslySetInnerHTML={{ __html: renderMath(m.explanation) }} />
+                              <div style={{ fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, color: "#374151", paddingLeft: "16px" }}>
+                                <span style={{ color: "#2a7f8f", fontWeight: 700, marginRight: "6px" }}>→</span>
+                                <span dangerouslySetInnerHTML={{ __html: renderMath(m.explanation) }} />
                               </div>
                             )}
                           </div>
@@ -4840,7 +4673,9 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                   if (section.type === "q-what-changed" || section.type === "what_changed") {
                     return <WhatChangedSection content={content} fmt={fmt} isTeacher={isTeacherView} />;
                   }
-
+                  if (section.type === "q-constraint-problem" || section.type === "constraint_problem") {
+                    return <ConstraintProblemSection content={content} fmt={fmt} isTeacher={isTeacherView} />;
+                  }
                   if (section.type === "prior-knowledge") {
                     // Prior knowledge check — appears after LO, before vocab
                     const pkLines = content.split("\n").filter(Boolean);
@@ -4903,7 +4738,9 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                   if (layoutTag === "what_changed") {
                     return <WhatChangedSection content={content} fmt={fmt} isTeacher={isTeacherView} />;
                   }
-
+                  if (layoutTag === "constraint_problem") {
+                    return <ConstraintProblemSection content={content} fmt={fmt} isTeacher={isTeacherView} />;
+                  }
                   // ── Auto-detection from AI content patterns ────────────────────────────────             // Broadly detects actual AI output patterns. Intentionally
                   // permissive — better to render with a sub-renderer than fall through.
                   if (!layoutTag) {
@@ -5008,81 +4845,6 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                   <WordProblemsSection content={content} fmt={fmt} overlayColor={overlayColor} />
                 ) : section.type === "questions" ? (
                   <div>{formatContent(content, fmt)}</div>
-                ) : section.type === "example" ? (
-                  // Issue #14c: Structured worked example with alternating step rows
-                  (() => {
-                    const exLines = content.split("\n").filter(Boolean);
-                    const steps: string[] = [];
-                    const otherLines: string[] = [];
-                    let introText = "";
-                    for (const line of exLines) {
-                      const t = line.trim();
-                      if (/^Step\s*\d+/i.test(t) || /^(Formula|Substitute|Calculate|Units|Answer|Method):/i.test(t)) {
-                        steps.push(t);
-                      } else if (steps.length === 0) {
-                        introText += (introText ? "\n" : "") + t;
-                      } else {
-                        otherLines.push(t);
-                      }
-                    }
-                    if (steps.length < 2) {
-                      // No steps found — fall back to formatContent
-                      return (
-                        <div style={{
-                          background: "#f8fafc", border: "2px solid #1a2744",
-                          borderRadius: "6px", padding: "14px 16px",
-                        }}>
-                          {formatContent(content, fmt)}
-                        </div>
-                      );
-                    }
-                    return (
-                      <div>
-                        {introText && (
-                          <div style={{ fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, color: "#374151", marginBottom: "10px", lineHeight: String(fmt.lineHeight) }}
-                            dangerouslySetInnerHTML={{ __html: renderMath(introText) }} />
-                        )}
-                        <div style={{ border: "2px solid #1a2744", borderRadius: "6px", overflow: "hidden" }}>
-                          {steps.map((step, si) => {
-                            const colonIdx = step.indexOf(":");
-                            const label = colonIdx > 0 ? step.slice(0, colonIdx + 1) : step.split(" ").slice(0, 2).join(" ");
-                            const body = colonIdx > 0 ? step.slice(colonIdx + 1).trim() : step;
-                            return (
-                              <div key={si} style={{
-                                display: "grid", gridTemplateColumns: "120px 1fr",
-                                background: si % 2 === 0 ? "#f0f4ff" : "#ffffff",
-                                borderBottom: si < steps.length - 1 ? "1px solid #e5e7eb" : "none",
-                              }}>
-                                <div style={{
-                                  padding: "8px 10px",
-                                  background: "#1a2744",
-                                  color: "white",
-                                  fontSize: `${Math.max(fmt.fontSize - 1, 10)}px`,
-                                  fontWeight: 700,
-                                  fontFamily: fmt.fontFamily,
-                                  display: "flex", alignItems: "center",
-                                }} dangerouslySetInnerHTML={{ __html: renderMath(label) }} />
-                                <div style={{
-                                  padding: "8px 12px",
-                                  fontSize: `${fmt.fontSize}px`,
-                                  fontFamily: fmt.fontFamily,
-                                  color: "#1e293b",
-                                  lineHeight: String(fmt.lineHeight),
-                                }} dangerouslySetInnerHTML={{ __html: renderMath(body) }} />
-                              </div>
-                            );
-                          })}
-                        </div>
-                        {otherLines.length > 0 && (
-                          <div style={{ marginTop: "8px", fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, color: "#374151" }}>
-                            {otherLines.map((l, li) => (
-                              <div key={li} dangerouslySetInnerHTML={{ __html: renderMath(l) }} />
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })()
                 ) : (section.type === "reading" || section.type === "passage" || section.type === "source-text" || section.type === "comprehension" || /reading.?passage|source.?text|comprehension.?text/i.test(section.title || "")) ? (
                   <div style={{
                     border: "2px solid #cbd5e1",

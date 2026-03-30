@@ -24,17 +24,7 @@ const worksheetUpload = multer({ storage: multer.memoryStorage(), limits: { file
 // Gemini 2.5 Flash is the primary fallback (free tier: 500 RPD, 10 RPM).
 // Gemini 2.5 Flash Lite is a secondary fallback (separate quota from 2.5 Flash).
 // Mistral kept as last resort (unlimited RPD, just slow at 2 RPM).
-const PROVIDER_ORDER = [
-  "groq_1", "groq_2", "groq_3",
-  "cerebras",
-  "gemini", "gemini_lite",
-  "sambanova",
-  "openrouter",
-  "deepseek",
-  "cohere",
-  "huggingface",
-  "mistral",
-] as const;
+const PROVIDER_ORDER = ["groq_1", "groq_2", "groq_3", "gemini", "gemini_lite", "mistral"] as const;
 
 // ── Round-robin counter for Groq keys ────────────────────────────────────────
 // Distributes requests evenly across the 3 Groq keys to maximise throughput.
@@ -57,41 +47,6 @@ function getNextGroqKey(): string {
 // This prevents cascading failures where every provider gets exhausted at once.
 const COOLDOWN_MS = 30_000; // 30 seconds per provider — shorter cooldown since we now have 6 providers + quick retry
 const providerCooldowns = new Map<string, number>(); // provider → timestamp when cooldown expires
-
-// ── Per-provider RPM tracking — proactive rate control ───────────────────────
-// Tracks request timestamps per provider in a 60-second sliding window.
-// Providers are skipped when they're within 2 requests of their RPM limit,
-// preventing 429s before they happen rather than reacting after.
-const rpmWindows: Record<string, number[]> = {};
-
-const PROVIDER_RPM_CAPS: Record<string, number> = {
-  groq_1:      28,  // Groq free: 30 RPM — 2 headroom
-  groq_2:      28,
-  groq_3:      28,
-  cerebras:    28,  // Cerebras free: 30 RPM
-  gemini:       8,  // Gemini Flash free: 10 RPM
-  gemini_lite: 28,  // Gemini Flash Lite free: 30 RPM
-  sambanova:   28,  // SambaNova free: 30 RPM
-  openrouter:  18,  // OpenRouter free: 20 RPM
-  deepseek:    18,  // DeepSeek free: ~20 RPM
-  cohere:      18,  // Cohere free: ~20 RPM
-  huggingface:  8,  // HuggingFace: conservative
-  mistral:      1,  // Mistral free: 2 RPM (very conservative)
-};
-
-function recordRpm(provider: string): void {
-  const now = Date.now();
-  if (!rpmWindows[provider]) rpmWindows[provider] = [];
-  rpmWindows[provider] = rpmWindows[provider].filter(t => now - t < 60_000);
-  rpmWindows[provider].push(now);
-}
-
-function isRpmSafe(provider: string): boolean {
-  const now = Date.now();
-  const window = (rpmWindows[provider] || []).filter(t => now - t < 60_000);
-  const cap = PROVIDER_RPM_CAPS[provider] ?? 10;
-  return window.length < cap;
-}
 
 function isOnCooldown(provider: string): boolean {
   const expiresAt = providerCooldowns.get(provider);
@@ -166,15 +121,9 @@ function getEffectiveKey(provider: string, userKey?: string, schoolId?: string):
   }
   // 3. Platform-level env vars (Railway — for the Adaptly platform operator account only)
   const envMap: Record<string, string> = {
-    groq:        process.env.GROQ_API_KEY || "",
-    gemini:      process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || "",
-    mistral:     process.env.MISTRAL_API_KEY || "",
-    cerebras:    process.env.CEREBRAS_API_KEY || "",
-    sambanova:   process.env.SAMBANOVA_API_KEY || "",
-    openrouter:  process.env.OPENROUTER_API_KEY || "",
-    deepseek:    process.env.DEEPSEEK_API_KEY || "",
-    cohere:      process.env.COHERE_API_KEY || "",
-    huggingface: process.env.HUGGINGFACE_API_KEY || "",
+    groq: process.env.GROQ_API_KEY || "",
+    gemini: process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || "",
+    mistral: process.env.MISTRAL_API_KEY || "",
   };
   return envMap[provider] || "";
 }
@@ -182,22 +131,6 @@ function getEffectiveKey(provider: string, userKey?: string, schoolId?: string):
 function getAdminModel(provider: string, schoolId?: string): string {
   // gemini_lite always uses gemini-2.5-flash-lite regardless of DB config
   if (provider === "gemini_lite") return "gemini-2.5-flash-lite";
-  // Default model map for all providers
-  const defaultModels: Record<string, string> = {
-    groq:        "llama-3.3-70b-versatile",
-    groq_1:      "llama-3.3-70b-versatile",
-    groq_2:      "llama-3.3-70b-versatile",
-    groq_3:      "llama-3.3-70b-versatile",
-    cerebras:    "llama3.3-70b",
-    gemini:      "gemini-2.5-flash",
-    gemini_lite: "gemini-2.5-flash-lite",
-    sambanova:   "Meta-Llama-3.3-70B-Instruct",
-    openrouter:  "meta-llama/llama-4-scout:free",
-    deepseek:    "deepseek-chat",
-    cohere:      "command-r-plus",
-    huggingface: "Qwen/Qwen2.5-72B-Instruct",
-    mistral:     "mistral-small-latest",
-  };
   if (schoolId) {
     const schoolEntry = getSchoolKey(schoolId, provider);
     if (schoolEntry?.model) return schoolEntry.model;
@@ -206,8 +139,8 @@ function getAdminModel(provider: string, schoolId?: string): string {
     const row = db.prepare(
       "SELECT model FROM admin_api_keys WHERE provider = ?"
     ).get(provider) as any;
-    return row?.model || defaultModels[provider] || "";
-  } catch (_) { return defaultModels[provider] || ""; }
+    return row?.model || "";
+  } catch (_) { return ""; }
 }
 
 // ── Core: call a single provider ─────────────────────────────────────────────
@@ -230,17 +163,13 @@ async function callProvider(
   // Others: 20s
   // Worst case: 3×12 + 15 + 15 + 18 = 84s but cooldowns skip most providers
   const timeoutMs =
-    // Fast inference providers — tight timeout
-    ["groq", "groq_1", "groq_2", "groq_3", "cerebras", "sambanova"].includes(provider)
+    provider === "groq" || provider === "groq_1" || provider === "groq_2" || provider === "groq_3"
       ? 12_000
-    // Medium speed — standard timeout
-    : ["gemini", "gemini_lite", "deepseek", "cohere", "openrouter"].includes(provider)
+      : provider === "gemini" || provider === "gemini_lite"
       ? 15_000
-    // Slower providers
-    : provider === "mistral"
+      : provider === "mistral"
       ? 18_000
-    // Everything else
-    : 20_000;
+      : 20_000;
 
   const controller = new AbortController();
   const timer = setTimeout(() => {
@@ -271,14 +200,6 @@ async function callProvider(
         break;
       case "openai":
         result = await callOpenAI(system, user, key, model || "gpt-4o-mini", maxTokens, controller.signal);
-        break;
-      case "cerebras":
-        // Cerebras wafer-scale inference — 14,400 RPD, 30 RPM free tier
-        // Same quota as one Groq key but separate provider = separate limit
-        result = await callCerebras(system, user, key, model || "llama3.3-70b", maxTokens, controller.signal);
-        break;
-      case "sambanova":
-        result = await callSambaNova(system, user, key, model || "Meta-Llama-3.3-70B-Instruct", maxTokens, controller.signal);
         break;
       case "openrouter":
         result = await callOpenRouter(system, user, key, model, maxTokens, controller.signal);
@@ -370,26 +291,10 @@ async function callWithFallback(
     console.log(`[AI] Skipping ${cooledDown.join(", ")} (on cooldown) — using: ${availableOrder.join(", ")}`);
   }
 
-  // Change 7: Smart routing — heavy requests go to high-context providers first
-  const promptLength = system.length + user.length;
-  const baseOrder = availableOrder.length > 0 ? availableOrder : rotatedOrder;
-  const ordersToTry = (() => {
-    if (promptLength < 3000) return baseOrder; // short request — no reorder needed
-    const heavy = ["gemini", "gemini_lite", "sambanova", "deepseek"];
-    const prioritised = heavy.filter(p => baseOrder.includes(p));
-    const rest = baseOrder.filter(p => !heavy.includes(p));
-    if (prioritised.length > 0) {
-      console.log(`[AI] Heavy request (${promptLength} chars) — prioritising: ${prioritised.join(", ")}`);
-    }
-    return [...prioritised, ...rest];
-  })();
+  // Try available providers first
+  const ordersToTry = availableOrder.length > 0 ? availableOrder : rotatedOrder;
 
   for (const provider of ordersToTry) {
-    // Change 6: Skip if near RPM cap for this provider
-    if (!isRpmSafe(provider)) {
-      errors.push(`${provider}: near RPM cap — skipping to preserve quota`);
-      continue;
-    }
     const key = getEffectiveKey(provider, undefined, schoolId);
     if (!key) {
       errors.push(`${provider}: no key configured`);
@@ -400,7 +305,6 @@ async function callWithFallback(
       const content = await callProvider(provider, system, user, key, model, maxTokens);
       if (content && content.trim()) {
         console.log(`[AI] Success via ${provider}`);
-        recordRpm(provider);
         return { content, provider };
       }
       errors.push(`${provider}: empty response`);
@@ -420,7 +324,6 @@ async function callWithFallback(
             const retryContent = await callProvider(provider, system, user, key, model, maxTokens);
             if (retryContent && retryContent.trim()) {
               console.log(`[AI] Quick retry success via ${provider}`);
-              recordRpm(provider);
               return { content: retryContent, provider };
             }
           } catch (retryErr: any) {
@@ -464,122 +367,7 @@ async function callWithFallback(
   throw new Error(`All AI providers failed:\n${errors.join("\n")}`);
 }
 
-// ── Batch Worksheet Generation ─────────────────────────────────────────────────────────────────────────────
-// POST /api/ai/batch-generate-worksheet
-// 1 API call → 4 differentiated variants (base, foundation, higher, SEND scaffolded).
-// With 43,200 Groq RPD + 14,400 Cerebras RPD + batching = ~230,000 variants/day free.
-
-// In-memory batch cache — 6 hours TTL
-const BATCH_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
-const batchCache = new Map<string, { result: any; expires: number }>();
-
-function getBatchCache(key: string): any | null {
-  const entry = batchCache.get(key);
-  if (!entry || Date.now() > entry.expires) { batchCache.delete(key); return null; }
-  return entry.result;
-}
-function setBatchCache(key: string, result: any): void {
-  batchCache.set(key, { result, expires: Date.now() + BATCH_CACHE_TTL_MS });
-  if (batchCache.size > 200) batchCache.delete(batchCache.keys().next().value!);
-}
-
-router.post("/batch-generate-worksheet", requireAuth, async (req: Request, res: Response) => {
-  const {
-    subject, topic, yearGroup,
-    sendNeeds,
-    numQuestions = 8,
-    examStyle = false,
-    sections,
-  } = req.body;
-
-  if (!subject || !topic) {
-    return res.status(400).json({ error: "subject and topic are required" });
-  }
-
-  const yr = yearGroup || "Year 9";
-  const schoolId = req.user?.schoolId ?? undefined;
-
-  const cacheKey = `batch:${subject}:${topic}:${yr}:${numQuestions}:${examStyle}:${sendNeeds || "none"}`;
-  const cached = getBatchCache(cacheKey);
-  if (cached) return res.json({ ...cached, fromCache: true });
-
-  const sendNote = sendNeeds
-    ? `SEND needs: ${sendNeeds}. Apply targeted scaffolding for this specific need.`
-    : `No specific SEND need — apply general accessibility scaffolding.`;
-
-  const system = `You are an expert UK teacher. Return ONLY valid JSON — no markdown, no preamble.
-Generate four worksheet variants for ${yr} on the topic given.
-Each variant has: { "title": string, "sections": [{ "type": string, "title": string, "content": string, "marks": number }] }
-The "content" field of every section MUST be a plain text string. Never nested JSON or arrays.`;
-
-  const baseContent = sections
-    ? `DIFFERENTIATE THESE EXISTING SECTIONS into all four tiers:\n${JSON.stringify(sections, null, 2)}`
-    : `Generate ${numQuestions} questions on "${topic}" for ${subject}, ${yr}.${examStyle ? " Use exam command words: describe, explain, evaluate, calculate." : ""}`;
-
-  const userPrompt = `${baseContent}
-
-Return this exact JSON structure:
-{
-  "base": { "title": "...", "sections": [...] },
-  "foundation": { "title": "... (Foundation)", "sections": [...] },
-  "higher": { "title": "... (Higher)", "sections": [...] },
-  "send": { "title": "... (SEND Scaffolded)", "sections": [...] }
-}
-
-TIER RULES:
-
-BASE: Standard questions for ${yr}. Mix recall, application, analysis.
-
-FOUNDATION tier rules:
-- Add a word bank of 6–8 key terms at the start of each section
-- Break multi-part questions into numbered steps
-- Use sentence starters for written questions: "This happens because ______"
-- Reduce mark totals — max 2 marks per question
-- Short sentences only
-
-HIGHER tier rules:
-- Require evaluation: "justify", "assess", "to what extent"
-- Final question must be an extended response (4–6 marks) with a challenge element
-- Include "show your working" for maths/science questions
-- A-Level style command words where appropriate
-
-SEND tier rules (${sendNote}):
-- Add a "Steps to follow" numbered box at the top of each section
-- Every question gets a hint line: "Hint: ______"
-- Written questions get sentence starters: "Sentence starter: ______"
-- Word bank of 8–10 terms at the very top of the worksheet
-- Add [ ] checkbox before every question
-- No question longer than 2 lines
-- Short, plain English only`;
-
-  try {
-    const { content, provider } = await callWithFallback(system, userPrompt, 6000, undefined, schoolId);
-
-    let parsed: any;
-    try {
-      parsed = JSON.parse(content.replace(/```json|```/g, "").trim());
-    } catch {
-      return res.status(500).json({
-        error: "AI returned malformed JSON — please retry.",
-        raw: content.slice(0, 300),
-      });
-    }
-
-    const missing = ["base", "foundation", "higher", "send"].filter(k => !parsed[k]);
-    if (missing.length > 0) {
-      return res.status(500).json({ error: `Response missing tiers: ${missing.join(", ")} — retry.` });
-    }
-
-    const result = { variants: parsed, provider, generatedAt: new Date().toISOString() };
-    setBatchCache(cacheKey, result);
-    res.json(result);
-  } catch (err: any) {
-    console.error("[batch-generate-worksheet]", err);
-    res.status(502).json({ error: "AI temporarily unavailable. Please try again." });
-  }
-});
-
-// ── AI Proxy — auto-fallback, no manual key needed ───────────────────────────────────────
+// ── AI Proxy — auto-fallback, no manual key needed ───────────────────────────
 router.post("/generate", requireAuth, async (req: Request, res: Response) => {
   const { prompt, systemPrompt, provider, model, apiKey, maxTokens = 2000 } = req.body;
 
@@ -887,32 +675,6 @@ async function callCerebras(system: string, user: string, key: string, model: st
   if (!res.ok) throw new Error(`Cerebras ${res.status}: ${(await res.text()).slice(0, 200)}`);
   const data = await res.json() as any;
   return data.choices[0].message.content;
-}
-
-// ── SambaNova Cloud ─────────────────────────────────────────────────────────────────────────────
-// Wafer-scale inference with Llama 3.3 70B and 405B.
-// Free tier: 1,000 RPD, 30 RPM — OpenAI-compatible API.
-async function callSambaNova(system: string, user: string, key: string, model: string, maxTokens: number, signal?: AbortSignal): Promise<string> {
-  const res = await fetch("https://api.sambanova.ai/v1/chat/completions", {
-    method: "POST",
-    signal,
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
-    body: JSON.stringify({
-      model: model || "Meta-Llama-3.3-70B-Instruct",
-      messages: [
-        { role: "system", content: system || "You are a helpful SEND education assistant." },
-        { role: "user", content: user },
-      ],
-      max_tokens: maxTokens,
-      temperature: 0.1,
-    }),
-  });
-  if (res.status === 429) throw new Error(`SambaNova 429: rate limited`);
-  if (!res.ok) throw new Error(`SambaNova ${res.status}: ${(await res.text()).slice(0, 200)}`);
-  const data = await res.json() as any;
-  const content = data?.choices?.[0]?.message?.content;
-  if (!content) throw new Error("SambaNova returned empty content");
-  return content;
 }
 
 // FIX: callGemini now uses the dedicated systemInstruction field instead of
@@ -1484,7 +1246,7 @@ router.post("/diagram", requireAuth, async (req: Request, res: Response) => {
   try {
     const wikiResult = await Promise.race([
       searchWikimediaDiagram(subject, topic),
-      new Promise<null>(resolve => setTimeout(() => resolve(null), 10_000)),
+      new Promise<null>(resolve => setTimeout(() => resolve(null), 20_000)),
     ]);
     if (wikiResult) {
       console.log(`[Diagram] Found via Wikimedia live search for "${topic}"`);
@@ -1804,8 +1566,8 @@ router.post("/worksheet-from-slides", requireAuth, worksheetUpload.single("file"
           // Extract text from <a:t> tags (PowerPoint text runs)
           const textMatches = xml.match(/<a:t[^>]*>([^<]+)<\/a:t>/g) || [];
           const slideText = textMatches
-            .map((m: string) => m.replace(/<[^>]+>/g, "").trim())
-            .filter((t: string) => t.length > 0)
+            .map(m => m.replace(/<[^>]+>/g, "").trim())
+            .filter(t => t.length > 0)
             .join(" ");
           if (slideText) slideTexts.push(`[Slide ${slideFiles.indexOf(slideFile) + 1}] ${slideText}`);
         }

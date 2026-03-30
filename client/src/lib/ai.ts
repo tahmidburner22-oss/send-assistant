@@ -607,9 +607,6 @@ MANDATORY RULES — violating any rule is wrong:
   // Parse the year number from strings like "Year 1", "Year 5", "Year 10", "Year 13"
   const is11Plus = (params.yearGroup || "").toLowerCase().includes("11+") || (params.yearGroup || "").toLowerCase().includes("eleven plus");
   const yearNum = is11Plus ? 6 : (parseInt((params.yearGroup || "").replace(/[^0-9]/g, ""), 10) || 7);
-  // isPrimary and isSecondary declared here (before first use) to avoid TDZ errors in the minified bundle
-  const isPrimary = yearNum <= 6;
-  const isSecondary = yearNum >= 7;
 
   // Key Stage and phase
   const phase = is11Plus ? "11+ Preparation (ages 9–11, KS2 level)" :
@@ -671,176 +668,106 @@ MANDATORY RULES — violating any rule is wrong:
     yearNum <= 9  ? "Estimated time: 35–45 mins" :
     yearNum <= 11 ? "Estimated time: 45–60 mins" :
                    "Estimated time: 60–90 mins";
-  // ── Question layout rotation system (smart, context-aware) ───────────────────
-  // Fisher-Yates shuffle picks 3 types from recall pool (Section A) and 3 from
-  // application pool (Section B) — genuinely random every generation.
-  // Advanced types (error_correction, ranking, what_changed)
-  // are added to the pools only when topic/subject relevance warrants them.
+
+  // ── Question layout rotation system (smart, context-aware) ───────────────
+  // Deterministic seed from topic so same topic always gets same variant.
+  // New question types (error_correction, ranking, what_changed, constraint_problem)
+  // are selected based on topic/subject relevance — never forced.
+  const topicSeed = Math.abs(
+    params.topic.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0)
+  );
   const topicLower = params.topic.toLowerCase();
   const subjectLower = (params.subject || "").toLowerCase();
 
   // ── Relevance scoring for context-aware question types ────────────────────
   // Returns true if the topic/subject makes this question type a natural fit
-  // Advanced type eligibility — broadened so new types appear on most worksheets.
-  // Every type is eligible by default for its natural subject group; keyword checks
-  // only EXCLUDE types that would be genuinely nonsensical for the topic.
   const isRelevant = {
-    // Error correction: great for any subject with correct/incorrect answers
-    // Exclude only pure creative writing or open-ended art topics
     ERROR_CORRECTION: (
+      // Great for STEM topics with calculations, common misconceptions
       isSTEM ||
-      /history|geography|economics|business|computing|ict|english|language|literature|drama|religious|re|rs/i.test(subjectLower) ||
-      /calculat|formula|equation|method|working|proof|solve|error|mistake|misconception|rule|law|principle|fact|date|event|term|defin/i.test(topicLower)
+      /calculat|formula|equation|method|working|proof|solve|error|mistake|misconception|ohm|newton|force|energy|speed|circuit|reaction|titrat|algebra|trigon|fraction|decimal|percent/i.test(topicLower)
     ),
-    // Ranking: great for any topic where items can be ordered by a clear criterion
-    // Eligible for all subjects except pure creative writing
     RANKING: (
-      isSTEM ||
-      /history|geography|economics|business|computing|ict|english|language|literature|drama|religious|re|rs/i.test(subjectLower) ||
-      /rank|order|compar|scale|hierarch|priorit|greatest|smallest|highest|lowest|most|least|stronger|weaker|reactiv|conduct|resist|density|speed|temperature|timeline|chronolog|import|significant|period|era|event|impact/i.test(topicLower)
+      // Great for comparison topics, scales, hierarchies
+      /rank|order|compar|scale|hierarch|priorit|greatest|smallest|highest|lowest|most|least|stronger|weaker|reactiv|conduct|resist|density|speed|temperature|timeline|chronolog|import|significant/i.test(topicLower) ||
+      /science|physics|chemistry|biology|history|geography|economics/i.test(subjectLower)
     ),
-    // What changed: great for any topic with cause/effect, processes, or change over time
     WHAT_CHANGED: (
-      isSTEM ||
-      /history|geography|economics|business|computing|ict|english|language|literature|drama|religious|re|rs/i.test(subjectLower) ||
-      /chang|effect|impact|cause|before|after|result|consequence|evolution|transform|react|process|cycle|growth|decay|war|revolution|industri|climate|adapt|mutation|circuit|variable|develop|period|era|movement/i.test(topicLower)
+      // Great for cause-effect, before/after, change-over-time topics
+      /chang|effect|impact|cause|before|after|result|consequence|evolution|transform|react|process|cycle|growth|decay|war|revolution|industri|climate|adapt|mutation|circuit|variable/i.test(topicLower) ||
+      /science|physics|chemistry|biology|history|geography/i.test(subjectLower)
+    ),
+    CONSTRAINT_PROBLEM: (
+      // Great for design, problem-solving, engineering, maths application
+      /design|build|create|construct|circuit|engineer|plan|optimis|maximis|minimis|budget|limit|rule|condition|constraint|network|algorithm|program|code|proof|invest|resource/i.test(topicLower) ||
+      /maths|physics|computing|design|technology|engineering/i.test(subjectLower)
     ),
   };
 
-  // ── Fisher-Yates shuffle + pickTypes ──────────────────────────────────────────
-  // Genuinely random every generation — no deterministic seed.
-  function fisherYatesShuffle<T>(arr: T[]): T[] {
-    const a = [...arr];
-    for (let i = a.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [a[i], a[j]] = [a[j], a[i]];
-    }
-    return a;
-  }
-  // pickTypes: pick `count` unique types from a pool at random
-  function pickTypes(pool: string[], count: number): string[] {
-    return fisherYatesShuffle(pool).slice(0, count);
-  }
-
-  // ── SEND flag (needed by blockInstructions below) ───────────────────────────
-  const hasSend = params.sendNeed && params.sendNeed !== "none" && params.sendNeed !== "none-selected" && params.sendNeed !== "general";
+  // ── Base variant pool (classic types — always valid) ──────────────────────
+  type TripleType = [string, string, string];
+  const BASE_A_VARIANTS: TripleType[] = [
+    ["TRUE_FALSE",  "MCQ",      "GAP_FILL"],      // 0
+    ["MCQ",         "GAP_FILL", "ORDERING"],      // 1
+    ["GAP_FILL",    "TRUE_FALSE", "SHORT_ANSWER"], // 2
+    ["ORDERING",    "TRUE_FALSE", "MCQ"],          // 3
+    ["MATCHING",    "MCQ",      "GAP_FILL"],       // 4
+    ["TRUE_FALSE",  "ORDERING", "SHORT_ANSWER"],  // 5
+    ["MCQ",         "MATCHING", "TRUE_FALSE"],    // 6
+    ["GAP_FILL",    "ORDERING", "MCQ"],           // 7
+  ];
+  const BASE_B_VARIANTS: TripleType[] = [
+    ["SHORT_ANSWER", "TABLE",        "SHORT_ANSWER"],  // 0
+    ["TABLE",        "SHORT_ANSWER", "ORDERING"],      // 1
+    ["SHORT_ANSWER", "ORDERING",     "TABLE"],         // 2
+    ["TABLE",        "MATCHING",     "SHORT_ANSWER"],  // 3
+    ["SHORT_ANSWER", "TABLE",        "MATCHING"],      // 4
+    ["ORDERING",     "TABLE",        "SHORT_ANSWER"],  // 5
+    ["SHORT_ANSWER", "MATCHING",     "TABLE"],         // 6
+    ["TABLE",        "SHORT_ANSWER", "ORDERING"],      // 7
+  ];
 
   // ── Build candidate pools including relevant new types ────────────────────
-  // Recall pool (Section A): knowledge-check types — always ascending difficulty
-  const RECALL_POOL: string[] = ["TRUE_FALSE", "MCQ", "GAP_FILL", "ORDERING", "MATCHING"];
-  // Application pool (Section B): analysis/application types
-  const APPLICATION_POOL: string[] = ["SHORT_ANSWER", "TABLE", "ORDERING", "MATCHING"];
-  // Inject advanced types into the relevant pool only when topic/subject warrants them
+  // New types are injected as alternatives to one slot in the variant only when relevant.
+  // They never replace all 3 slots — classic types always anchor at least 2 slots.
+  const SECTION_A_VARIANTS: TripleType[] = [...BASE_A_VARIANTS];
+  const SECTION_B_VARIANTS: TripleType[] = [...BASE_B_VARIANTS];
+
   if (isRelevant.ERROR_CORRECTION) {
-    RECALL_POOL.push("ERROR_CORRECTION");
-    APPLICATION_POOL.push("ERROR_CORRECTION");
+    SECTION_A_VARIANTS.push(["ERROR_CORRECTION", "MCQ",       "GAP_FILL"]);
+    SECTION_B_VARIANTS.push(["ERROR_CORRECTION", "TABLE",     "SHORT_ANSWER"]);
   }
-  // RANKING: strictly primary school only — no secondary. Additionally enforce measurable criterion.
-  // No GCSE or A-Level paper ever asks students to rank by complexity, difficulty or importance.
-  if (isRelevant.RANKING && isPrimary) {
-    RECALL_POOL.push("RANKING");
-    APPLICATION_POOL.push("RANKING");
+  if (isRelevant.RANKING) {
+    SECTION_A_VARIANTS.push(["RANKING",      "TRUE_FALSE",   "SHORT_ANSWER"]);
+    SECTION_B_VARIANTS.push(["RANKING",      "TABLE",        "SHORT_ANSWER"]);
   }
-  // Extra safety: if yearNum >= 7 (secondary), never add ranking regardless of isRelevant flag
-  // WHAT_CHANGED: exclude from pure maths — not meaningful for pure calculation topics.
-  if (isRelevant.WHAT_CHANGED && !isMaths) {
-    APPLICATION_POOL.push("WHAT_CHANGED");
+  if (isRelevant.WHAT_CHANGED) {
+    SECTION_A_VARIANTS.push(["WHAT_CHANGED", "MCQ",          "GAP_FILL"]);
+    SECTION_B_VARIANTS.push(["WHAT_CHANGED", "TABLE",        "SHORT_ANSWER"]);
+  }
+  if (isRelevant.CONSTRAINT_PROBLEM) {
+    SECTION_A_VARIANTS.push(["CONSTRAINT_PROBLEM", "MCQ",    "TRUE_FALSE"]);
+    SECTION_B_VARIANTS.push(["CONSTRAINT_PROBLEM", "TABLE",  "SHORT_ANSWER"]);
   }
 
-  // Pick 3 from each pool at random (Fisher-Yates) — genuinely different every generation
-  const variantA = pickTypes(RECALL_POOL, 3) as [string, string, string];
-  const variantB = pickTypes(APPLICATION_POOL, 3) as [string, string, string];
+  const variantIndex = topicSeed % SECTION_A_VARIANTS.length;
 
   const blockInstructions: Record<string, string> = {
     TRUE_FALSE:         "Write exactly 4 numbered statements (1. 2. 3. 4.), each ending with TRUE or FALSE on the same line. Exactly 2 must be TRUE and 2 must be FALSE. Example: '1. Water boils at 100°C. TRUE'",
-    MCQ:                "MANDATORY: Start with a clear question stem (e.g. 'Which of the following...' or 'What is...') BEFORE the options. Then options: 'A  option' 'B  option' 'C  option' 'D  option' on separate lines. Only ONE is correct. The question stem MUST be the first line — never start with an option.",
+    MCQ:                "One question stem, then options: 'A  option' 'B  option' 'C  option' 'D  option' on separate lines. Only ONE is correct.",
     GAP_FILL:           "One paragraph 40-60 words with 5-7 blanks as _____. Next line: 'WORD BANK: word1 | word2 | word3 | word4 | word5 | word6 | word7'",
-    ORDERING:           "MANDATORY: First line must be a clear instruction (e.g. 'Number the boxes 1–6 to show the correct order of [topic].'). Then 6 items each on its own line starting with ☐. The instruction MUST be the first line — never start with a ☐ item. For GCSE secondary school, only use ordering for sequences that have a definitive correct order (e.g. stages of mitosis, steps in a process) — NEVER use for ranking by complexity or importance.",
-    MATCHING:           [
-      "5 terms and 5 definitions. Format EXACTLY as two separate columns:",
-      "TERMS (numbered 1-5, in any order):",
-      "1. [term A]",
-      "2. [term B]",
-      "3. [term C]",
-      "4. [term D]",
-      "5. [term E]",
-      "",
-      "DEFINITIONS (lettered A-E, in a DIFFERENT scrambled order from the terms — so term 1 does NOT match definition A, term 2 does NOT match definition B, etc.):",
-      "A. [definition for one of the terms — NOT the definition of term 1]",
-      "B. [definition for a different term — NOT the definition of term 2]",
-      "C. [definition for a different term — NOT the definition of term 3]",
-      "D. [definition for a different term — NOT the definition of term 4]",
-      "E. [definition for a different term — NOT the definition of term 5]",
-      "",
-      "ANSWER KEY (teacher only): 1-?, 2-?, 3-?, 4-?, 5-? (map each term number to its correct definition letter)",
-      "",
-      "CRITICAL: The definitions MUST be in a scrambled order. NEVER list definitions in the same order as their matching terms. Students must draw lines to connect them.",
-    ].join("\n"),
+    ORDERING:           "6 items each on its own line starting with ☐. Instruction: 'Number the boxes 1–6 to show the correct order.'",
+    MATCHING:           "5 pairs. Each line: '1. [term] ←→ [definition]'. Pairs must be shuffled (term order ≠ definition order).",
     SHORT_ANSWER:       "One focused question. Mark allocation in brackets: [X marks]. No answer given — student writes it.",
     TABLE:              "Markdown table with | separators. 3-4 columns. 4-5 rows. Blank cells use '...........' for students to fill in.",
-    ERROR_CORRECTION: [
-      "Present a FULLY WORKED solution with a REAL, DELIBERATE, VERIFIABLE mistake — the arithmetic or method in one step must be genuinely wrong.",
-      "CRITICAL RULES:",
-      "1. You MUST show a complete step-by-step worked solution with REAL NUMBERS (not placeholders).",
-      "2. The mistake MUST be a genuine mathematical/scientific error — e.g. wrong arithmetic (2+3=6), wrong formula, wrong sign, wrong unit, missed step. The wrong answer must be provably incorrect.",
-      "3. NEVER write 'The mistake is in step X' anywhere in the Worked Answer section — that is teacher-only information.",
-      "4. Do NOT write any teacher hints, notes or explanations inside the Worked Answer section.",
-      "5. The Worked Answer steps must flow naturally — the error should be subtle and plausible, not obvious.",
-      "Format EXACTLY as follows (use these exact section headers):",
-      "Worked Answer",
-      "[Step 1: correct first step with real numbers — e.g. 'Step 1: 34 + 25 = ?']",
-      "[Step 2: THE STEP WITH THE DELIBERATE ERROR — the calculation result must be WRONG, e.g. 'Step 2: 30 + 20 = 60' when it should be 50]",
-      "[Step 3: follows from the wrong step 2 result — e.g. 'Step 3: 60 + 9 = 69']",
-      "",
-      "Mistake",
-      "[TEACHER ONLY: one sentence describing the exact error — e.g. '30 + 20 was calculated as 60 instead of 50']",
-      "",
-      "Task",
-      hasSend ? "1. Identify the mistake (Hint: look at Step 2)" : "1. Identify the mistake",
-      hasSend ? "2. Explain why it is wrong (sentence starter: 'This is wrong because...')" : "2. Explain why it is wrong",
-      "3. Write the correct answer with full working",
-      "",
-      "LAYOUT: error_correction",
-      hasSend ? "SEND: single-step error only, highlight incorrect step, add sentence starters" : "Error must be plausible — do NOT make it trivially obvious.",
-      yearNum <= 9 ? "DIFFICULTY: one clear arithmetic error, max 3 steps" : "DIFFICULTY: subtle multi-step error, deeper analysis required",
-    ].join("\n"),
-    RANKING: [
-      `Present ${hasSend ? '3–4' : '4–6'} items that can be meaningfully ordered by a SPECIFIC, measurable, factually correct criterion relevant to the topic.`,
-      "CRITICAL: The instruction MUST name the exact criterion — e.g. 'Rank from best electrical conductor to worst electrical conductor', 'Rank from most magnetic to least magnetic', 'Rank from highest melting point to lowest melting point', 'Rank from fastest to slowest reaction rate'. NEVER use vague phrases like 'strongest to weakest' without specifying what property is being measured.",
-      "Format EXACTLY as follows:",
-      "Rank the following [items] from [specific criterion — e.g. 'best electrical conductor to worst electrical conductor']:",
-      "A  [item A]",
-      "B  [item B]",
-      "C  [item C]",
-      ...(hasSend ? [] : ["D  [item D]", "E  [item E]"]),
-      "",
-      "Your ranking (write A–E in order): 1st _____ 2nd _____ 3rd _____ 4th _____ 5th _____",
-      "",
-      "Explain your reasoning:",
-      "",
-      "LAYOUT: ranking",
-      "Criterion must be unambiguous, factually verifiable, and SUBJECT-SPECIFIC. Do NOT use for subjective opinions or difficulty ratings.",
-      yearNum <= 9 ? "DIFFICULTY: simple concrete criterion, 3–4 items, one-sentence explanation" : "DIFFICULTY: complex criterion with nuance, 5 items, full paragraph explanation required",
-    ].join("\n"),
-    WHAT_CHANGED: [
-      "INSTRUCTION: Write a before/after or cause/effect comparison relevant to the topic. Replace ALL placeholders in square brackets with real content.",
-      "OUTPUT FORMAT (replace placeholders — do NOT output this line):",
-      "Scenario A",
-      `[Write the ACTUAL initial state here — e.g. 'A circuit has a voltage of 12V and a resistance of 4Ω. The current is 3A.']`,
-      "",
-      "Scenario B",
-      hasSend ? `[Write the ACTUAL changed state here — change exactly ONE variable. HIGHLIGHT the change with ** around it — e.g. 'A circuit has a voltage of 12V and a resistance of **2Ω**. The current changes.']` : `[Write the ACTUAL changed state here — change exactly ONE variable — e.g. 'A circuit has a voltage of 12V and a resistance of 2Ω. The current changes.']`,
-      "",
-      "Task",
-      hasSend ? "1. What changed between A and B? (sentence starter: 'Between A and B, ... changed')" : "1. What changed between A and B?",
-      hasSend ? "2. Why did this happen? (sentence starter: 'This happened because...')" : "2. Why did this happen? (use subject vocabulary)",
-      ...(hasSend ? [] : ["3. What effect does this have on [relevant outcome — replace with the actual outcome being measured]?"]),
-      "",
-      "LAYOUT: what_changed",
-      hasSend ? "SEND: highlight changed element, 2 task questions only, sentence starters provided" : "The change must be scientifically/factually grounded. Change exactly ONE variable.",
-      yearNum <= 9 ? "DIFFICULTY: simple concrete change, two task questions max" : "DIFFICULTY: complex change with multiple downstream effects, three task questions",
-    ].join("\n"),
+    ERROR_CORRECTION:   "Present a worked solution with a deliberate mistake — choose an error that is realistic and topic-specific (wrong formula, arithmetic slip, incorrect unit, missed step). Format exactly:\n'Worked Answer\n[step 1]\n[step 2 — contains the error]\n[step 3 if needed]\n\nMistake\n[teacher-only: describe the exact error]\n\nTask\n1. Identify the mistake\n2. Explain why it is wrong\n3. Write the correct answer'\nIMPORTANT: The error must be plausible — something a real student would do. Do NOT make it trivially obvious. Use layout tag: error_correction.",
+    RANKING:            "Present 4–6 items that can be meaningfully ordered by a clear criterion relevant to the topic. Format exactly:\n'Rank these from [highest/strongest/fastest/most] to [lowest/weakest/slowest/least]:\n- [item A]\n- [item B]\n- [item C]\n- [item D]\n\nExplain your reasoning:'\nThe criterion must be scientifically/factually correct and unambiguous. Do NOT use ranking for subjective opinions. Use layout tag: ranking.",
+    WHAT_CHANGED:       "Present a before/after or cause/effect comparison that is directly relevant to the topic. Format exactly:\n'Scenario A\n[describe the initial state clearly]\n\nScenario B\n[describe the changed state — change exactly ONE variable]\n\nTask\n1. What changed between A and B?\n2. Why did this happen? (use subject vocabulary)\n3. What effect does this have on [relevant outcome]?'\nThe change must be scientifically/factually grounded. Use layout tag: what_changed.",
+    CONSTRAINT_PROBLEM: "Present a design or problem-solving task with 2–4 specific constraints that require genuine understanding of the topic. Format exactly:\n'Goal\n[clear task description — what must be achieved]\n\nConstraints\n- [rule 1 — must be topic-specific]\n- [rule 2]\n- [rule 3]\n\nOutput\nShow your working / draw your solution below:'\nConstraints must be non-trivial and require topic knowledge to satisfy. Do NOT use for pure recall. Use layout tag: constraint_problem.",
   };
+
+  const variantA = SECTION_A_VARIANTS[variantIndex];
+  const variantB = SECTION_B_VARIANTS[variantIndex];
 
   const sectionAPrompt = `Section A must contain exactly 3 blocks separated by a blank line:
 BLOCK 1 — ${blockInstructions[variantA[0]]}
@@ -853,7 +780,7 @@ BLOCK 2 — ${blockInstructions[variantB[1]]}
 BLOCK 3 — ${blockInstructions[variantB[2]]}`;
 
   // ── Primary (KS1/KS2) layout enhancement ──────────────────────────────────
-  // isPrimary already declared above (moved to before first use to avoid TDZ)
+  const isPrimary = yearNum <= 6;
   const primaryLayoutNote = isPrimary ? `
 PRIMARY SCHOOL LAYOUT RULES (${phase}) — MANDATORY — READ THIS FIRST:
 This is a KS1/KS2 worksheet. It must feel like a fun activity sheet, NOT a secondary school handout.
@@ -891,25 +818,6 @@ TONE: Positive, encouraging, child-voice. "You've got this!", "Great work!", "Di
 READING AGE CEILING — MANDATORY:
 ${yearNum <= 2 ? '- Reading age: 5–7. Use ONLY words a 5-year-old knows. Max 6 words per instruction. Simple CVC words and common sight words. No technical jargon at all.' : yearNum <= 4 ? '- Reading age: 7–9. Short, everyday sentences (max 10 words). Avoid any Latin/Greek-root words. Define every subject word the first time it appears.' : '- Reading age: 9–11. Clear sentences (max 12 words). Every subject-specific word must have a simple definition in brackets the first time it appears.'}
 
-YEAR GROUP CALIBRATION — UK National Curriculum (MANDATORY, never exceed these ceilings):
-${yearNum === 1 ? 'Year 1: Numbers to 100. Add/subtract within 20. Simple 2D shapes. Phonics — CVC words, simple sentences, full stops only.' :
-  yearNum === 2 ? 'Year 2: Numbers to 100. Add/subtract 2-digit (no carrying). Times tables: 2, 5, 10 only. Writing: adjectives, exclamation marks, simple conjunctions.' :
-  yearNum === 3 ? 'Year 3: Add/subtract 3-digit with regrouping. Times tables: 3, 4, 8. Fractions: unit fractions of shapes. Paragraphs in writing.' :
-  yearNum === 4 ? 'Year 4: 4-digit numbers. All times tables to 12. Fractions: add/subtract same denominator. Formal written methods. Topic sentences.' :
-  yearNum === 5 ? 'Year 5: Fractions with different denominators. Decimals to 2dp. Long multiplication. Formal essay structure.' :
-  'Year 6: Ratio. Simple algebra. BIDMAS. Percentages. SATs-style inference and reading comprehension.'
-}
-
-PRIMARY LANGUAGE RULES (MANDATORY):
-1. Every context sentence MUST start with a proper article or name: 'A', 'An', 'The', or a name (Sam, Maya, Tom).
-   CORRECT: 'A bookshelf has 45 books.' / 'Tom has 12 apples.'
-   WRONG: 'Bookshelf has 45 books.' / 'Tom has apples.'
-2. Use UK English throughout (colour, practise, metre, favourite).
-3. Maximum sentence length: ${yearNum <= 2 ? '8' : yearNum <= 4 ? '12' : '15'} words per sentence.
-4. Avoid passive voice. Write 'Sara solved the problem', not 'The problem was solved by Sara'.
-5. Every question must stand alone — include all needed context in the question itself.
-6. RANKING questions (if used): ONLY use for MEASURABLE, OBJECTIVE order. NEVER rank by complexity, difficulty, importance or any subjective criterion. Acceptable: smallest to largest, lightest to heaviest, coldest to hottest.
-
 VOCABULARY RULES — NEVER USE these secondary-school words in student-facing content:
 - Do NOT use: analyse, evaluate, assess, justify, synthesise, hypothesis, methodology, criterion, criteria, infer, deduce, extrapolate, correlate, quantify, magnitude, perpendicular, adjacent, coefficient, denominator, numerator, simultaneous, quadratic, trajectory, velocity, acceleration, momentum, photosynthesis (use 'how plants make food'), osmosis (use 'water moving through'), mitosis (use 'cell splitting'), covalent, ionic, oxidation (use 'rusting/burning'), reduction, equilibrium, gradient (use 'slope'), circumference (use 'distance around the circle'), diameter (use 'distance across the middle').
 - ALWAYS replace complex words with simple alternatives. If you must use a subject word, immediately define it in plain English in brackets.
@@ -918,12 +826,8 @@ TONE: Warm, encouraging, child-friendly. Use 'you', 'let's', 'have a go', 'well 
 
 FORMAT: Activity-based, NOT a secondary school handout. Lots of variety: circle, tick, draw, match, fill in. Short instructions only.
 
-ANSWER SECURITY (MANDATORY): Any section containing answers or mark scheme MUST have "teacherOnly": true. Never output answers in student-facing sections.
-
 Respond with valid JSON only — no markdown, no code blocks, no HTML tags inside content strings. Use plain text only.`
     : `You are an expert GCSE/curriculum worksheet designer creating a complete, print-ready, professionally structured student worksheet AND matching teacher answer key.
-
-ANSWER SECURITY RULE (NON-NEGOTIABLE): Any section containing answers, mark scheme, or teacher guidance MUST have "teacherOnly": true. The student copy must contain ZERO answer content. Sections with type 'mark-scheme', 'teacher-notes', 'answers' MUST always be teacherOnly: true.
 
 ⚠️ CRITICAL FORMAT RULES — THESE OVERRIDE EVERYTHING ELSE:
 
@@ -975,28 +879,18 @@ QUALITY STANDARDS — every question must meet professional UK teacher standards
 2. Questions must escalate in difficulty across the worksheet (Section A ≤ grade ${Math.max(3, (parseInt(params.yearGroup?.replace(/\D/g, "") || "9")) - 4)}, Section B = grade ${Math.max(5, (parseInt(params.yearGroup?.replace(/\D/g, "") || "9")) - 2)}, Challenge = top grade)
 3. Use REAL numbers, REAL contexts — never "a number", always "24", "3.7", "Birmingham", "2025"
 4. ${isMaths ? "MATHS: Every expression MUST use LaTeX \\\\(...\\\\). NEVER write fractions, equations or symbols in plain text. \\\\(\\\\dfrac{3}{4}\\\\) NOT 3/4. \\\\(x^{2}\\\\) NOT x². \\\\(\\\\sqrt{16}\\\\) NOT √16. \\\\(\\\\times\\\\) NOT ×. All numeric answers must show working method." : "Use precise subject vocabulary throughout. Answers must require genuine understanding, not just recall."}
-5. MARK ALLOCATIONS: Every question MUST end with [N mark] or [N marks]. No exceptions.
-6. CHALLENGE QUESTION RULE: The FIRST sentence of the challenge section MUST be the question itself — a scenario, calculation, or 'discuss' prompt. NEVER start with a meta-description. WRONG: 'A GCSE-style multi-step problem. A student sets up...' CORRECT: 'A student sets up a circuit with...' [8 marks]
-7. LAYOUT VARIATION IS MANDATORY — every section must use DIFFERENT question formats. Rotate through these types, never using the same format twice in a row:
+5. LAYOUT VARIATION IS MANDATORY — every section must use DIFFERENT question formats. Rotate through these types, never using the same format twice in a row:
    - TRUE/FALSE: "1. [statement]" per line, with "TRUE FALSE" on same line. Use for recall sections.
    - MCQ: "A  [option]\nB  [option]\nC  [option]\nD  [option]" — 2-column layout. One correct answer.
-   - GAP FILL: flowing paragraph with ___ blanks + "WORD BANK: word1 | word2 | word3" line below. NEVER put blanks inside LaTeX delimiters \\( \\) — put the blank outside: 'When \\(a = 5\\), then \\(a^2 =\\) ___'
+   - GAP FILL: flowing paragraph with ___ blanks + "WORD BANK: word1 | word2 | word3" line below.
    - ORDERING: items listed with ☐ box prefix, instruction to "Number 1–N in correct order".
    - MATCHING: "1. [term] ←→ [definition]" pairs.
-   - TABLE: markdown table with | separators. 3-4 columns. 4-5 rows. MANDATORY: At least 40% of answer cells MUST be blank markers using exactly "............." (12 dots). NEVER pre-fill all cells — that defeats the purpose. CORRECT: cells the student fills in use "............." WRONG: all cells have content. Only the first column (row label) and header row should always have content.
+   - TABLE: markdown table with | separators. Cells that students must complete MUST contain "..........." (dots) or "[blank]" — NEVER pre-fill answers in the student table. Only the first column (row numbers/given data) and header row should have content. All cells the student needs to fill in MUST be blank markers.
    - SHORT ANSWER: clear question + answer lines. Use for understanding/application sections.
    - EXTENDED ANSWER: structured essay/explain prompt. Use for challenge only.
    RULE: Section A (guided) must use at least 2 different formats. Section B (independent) must use at least 2 different formats. No adjacent questions may use the same format.
 
-STRICT JSON OUTPUT: Respond with valid JSON only — no markdown, no code blocks. NEVER use HTML tags inside content strings. Use plain text and LaTeX notation only.
-
-${isSecondary ? `SECONDARY SCHOOL GCSE/A-LEVEL RULES — MANDATORY:
-- NEVER ask students to rank items by complexity, importance, or difficulty (e.g. 'rank organs from simplest to most complex' is FORBIDDEN — no GCSE exam paper ever asks this).
-- NEVER generate a question that has no correct answer in a real exam context.
-- Every question must reflect the actual GCSE/A-Level specification for this topic.
-- MCQ questions MUST have a clear question stem as the FIRST line — NEVER start with options.
-- ORDERING questions must only be used for sequences with a definitive correct order (e.g. stages of meiosis, steps in a reaction mechanism) — never for subjective rankings.
-- Questions must match the command words used in real ${params.subject} exam papers: describe, explain, evaluate, calculate, state, compare, suggest.` : ''}`;
+STRICT JSON OUTPUT: Respond with valid JSON only — no markdown, no code blocks. NEVER use HTML tags inside content strings. Use plain text and LaTeX notation only.`;
 
   const examBoardNote = params.examBoard && params.examBoard !== "N/A" && params.examBoard !== "none"
     ? (() => {
@@ -1031,8 +925,8 @@ ${isSecondary ? `SECONDARY SCHOOL GCSE/A-LEVEL RULES — MANDATORY:
         return `Exam board: ${params.examBoard}. ${boardMap[subjectKey]}`;
       })()
     : "";
-  // ── Per-condition SEND scaffolding ───────────────────────────────────────────
-  // hasSend is declared earlier (before blockInstructions) — do not re-declare here
+  // ── Per-condition SEND scaffolding ─────────────────────────────────────────
+  const hasSend = params.sendNeed && params.sendNeed !== "none" && params.sendNeed !== "none-selected" && params.sendNeed !== "general";
   const sendNote = hasSend ? (() => {
     const sn = params.sendNeed!.toLowerCase();
     // Shared base for all SEND: always chunked, always numbered steps
@@ -1131,19 +1025,8 @@ ${isSecondary ? `SECONDARY SCHOOL GCSE/A-LEVEL RULES — MANDATORY:
   })() : "";
 
   // ── Difficulty tier (secondary only) ─────────────────────────────────────
-  // isSecondary already declared above near yearNum to avoid TDZ in minified bundle
+  const isSecondary = yearNum >= 7;
   const difficultyTier = params.difficulty || "mixed";
-
-  // Year group calibration for secondary (Issue #10)
-  const yearCalibrationNote = isSecondary
-    ? `YEAR GROUP CALIBRATION (${params.yearGroup}): ${
-        yearNum <= 8 ? 'KS3 level. Recall, application, some analysis. Mix short (1–2 marks) and medium (3–4 marks). Total ≤ 35 marks. No proof or synoptic questions.' :
-        yearNum === 9 ? 'KS3/GCSE bridge. Application, analysis, some evaluation. Mix 2–5 mark questions, one 6-mark extended answer. Total ≤ 40 marks.' :
-        yearNum <= 11 ? `GCSE level (${params.examBoard && params.examBoard !== 'none' ? params.examBoard : 'AQA'}). Application, analysis, evaluation. Include 1, 2, 4, and 6-mark questions. Use precise command words. Total ≤ 50 marks.` :
-        'A-Level. Analysis, evaluation, synthesis. Short (4m), medium (8m), extended (12m+) questions. Total ≤ 60 marks.'
-      }`
-    : '';
-
   const tierNote = isSecondary
     ? difficultyTier === "foundation" || difficultyTier === "basic"
       ? `FOUNDATION TIER (grades 1–5): Simple language, single-skill questions, hints/sentence starters in Section A, whole-number values, no multi-step problems. Challenge = straightforward application.`
@@ -1221,9 +1104,7 @@ ${isSecondary ? `SECONDARY SCHOOL GCSE/A-LEVEL RULES — MANDATORY:
 
   // ── SVG Diagram injection note ──────────────────────────────────────────────
   // Subjects where inline diagrams add genuine value
-  // Maths is excluded here — maths gets purpose-built graph/number-line/geometry diagrams
-  // via getDiagramForTopic only when the topic genuinely warrants one (not a labeled blob).
-  const diagramSubjects = ["science", "biology", "chemistry", "physics", "geography", "design", "engineering", "history", "english", "drama", "religious", "re", "rs", "economics", "business", "computing", "ict"];
+  const diagramSubjects = ["science", "biology", "chemistry", "physics", "geography", "maths", "mathematics", "design", "engineering", "history", "english", "drama", "religious", "re", "rs", "economics", "business", "computing", "ict"];
   const isDiagramSubject = diagramSubjects.some(s => subjectLower.includes(s));
   const isVI = hasSend && !!(params.sendNeed?.toLowerCase().includes("vi") || params.sendNeed?.toLowerCase().includes("visual impair"));
 
@@ -1520,23 +1401,19 @@ ${isSecondary ? `SECONDARY SCHOOL GCSE/A-LEVEL RULES — MANDATORY:
   const q4DiagramPrompt = (() => {
     const sel = diagramSelection;
     // Single concise instruction: use real terms, match the exact topic
-    return `${sel.instruction} [5 marks]\n${sel.example}\nLABELS: [correct labels separated by |]\nANSWERS: [correct answers separated by |]`;
+    return `${sel.instruction} [5 marks]\nUse REAL terms from "${params.topic}" — no placeholders.\n${sel.example}\nLABELS: [correct labels separated by |]\nANSWERS: [correct answers separated by |]`;
   })();
 
   // Diagrams auto-generate for relevant subjects — no toggle needed
-  // Resolve 'auto' type to 'labeled' so the AI always uses a valid diagram type
-  const resolvedDiagramType = diagramSelection.type === 'auto' ? 'labeled' : diagramSelection.type;
   const svgDiagramNote = (isDiagramSubject && !isVI && !params.examStyle)
-    ? `SVG DIAGRAM INSTRUCTION — MANDATORY:
-For Q4, you MUST embed exactly ONE diagram as [[DIAGRAM:{...JSON...}]]. Use type "${resolvedDiagramType}" for this topic.
+    ? `SVG DIAGRAM INSTRUCTION:
+For Q4, embed ONE diagram as [[DIAGRAM:{...JSON...}]]. Use type "${diagramSelection.type}" for this topic.
 The diagram is for LABELLING — students see numbered blanks, NOT the answers.
-
-Example JSON template for this topic:
-${diagramSelection.example}
+Every label/step MUST use REAL terms from "${params.topic}" — never placeholders.
 
 Available types: labeled, flow, cycle, number-line, bar, axes, circuit, venn, timeline, pyramid, fraction-bar.
 Rules: x/y are percentages (5–95), max 2 diagrams, title must name the specific topic.
-Do NOT omit the diagram — it is required for this subject.`
+If no diagram genuinely helps teach "${params.topic}", omit it entirely.`
     : ``;
 
   // ── Word problems note ─────────────────────────────────────────────────────
@@ -1573,17 +1450,10 @@ Do NOT omit the diagram — it is required for this subject.`
     ? `In Teacher Notes, list 3–4 common mistakes students make with "${params.topic}". Include 1 misconception question in Section B showing wrong working for students to correct.`
     : "";
 
-  // ── Topic enforcement note ─────────────────────────────────────────────────────
-  // For English literature, add an explicit note to keep each text separate
-  const isEnglishLit = /english.*lit|literature/i.test(subjectLower);
-  const bookSeparationNote = isEnglishLit
-    ? ` CRITICAL: This worksheet is ONLY about "${params.topic}". Do NOT include any content, characters, quotes, events, or references from any other text, book, poem, play, or novel. Every single question, extract, example, and diagram node must come exclusively from "${params.topic}". If the topic names a single text (e.g. "An Inspector Calls"), use ONLY that text. Never combine multiple texts in the same worksheet.`
-    : "";
-  const topicEnforcementNote = `Every question, example, vocabulary term, and any diagram must be about "${params.topic}" only.${bookSeparationNote}`;
+  // ── Topic enforcement note ─────────────────────────────────────────────────
+  const topicEnforcementNote = `Every question, example, vocabulary term, and any diagram must be about "${params.topic}" only.`;
   const dataCompletenessNote = `Every question must be fully usable as written. Do not use placeholders, ellipses, missing values, unfinished lists, or references to unseen data. If a statistics question uses a table, survey, graph, grouped frequency table, histogram, cumulative frequency graph, box plot, or chart, include the complete numeric data needed to answer it directly in the worksheet text.`;
-  const diagramRelevanceNote = isDiagramSubject
-    ? `DIAGRAM: A diagram is mandatory for this subject. Follow the SVG DIAGRAM INSTRUCTION above exactly.`
-    : `Only include a diagram if it is essential to teaching "${params.topic}". The diagram must match the exact worksheet topic and the questions that refer to it. If no exact topic-matching diagram is needed, omit the diagram entirely.`;
+  const diagramRelevanceNote = `Only include or request a diagram if it is essential to teaching "${params.topic}". The diagram must match the exact worksheet topic and the questions that refer to it. If no exact topic-matching diagram is needed, omit the diagram entirely.`;
   const vocabularyCapNote = `Key Vocabulary must contain at most 5 items.`;
 
   const recallNote = params.recallTopic ? `PRIOR KNOWLEDGE CHECK REQUIRED: After the Learning Objective and BEFORE Key Vocabulary, include a section titled "Prior Knowledge Check — ${params.recallTopic}" (type: "prior-knowledge") with exactly 3 short retrieval questions on the PREVIOUS topic "${params.recallTopic}". These must be quick, accessible questions (True/False, short answer, or fill-in-blank) to activate prior knowledge. Do NOT mix these with the main topic questions. This section appears SECOND in the worksheet, right after the Learning Objective.` : '';
@@ -1591,7 +1461,6 @@ Do NOT omit the diagram — it is required for this subject.`
   const user = `Create one printable worksheet in valid raw JSON only.
 Subject: ${params.subject} | Year: ${params.yearGroup} (${phase}) | Topic: ${params.topic} | Difficulty: ${params.difficulty || "mixed"}
 ${examBoardNote} ${lengthNote}
-${yearCalibrationNote}
 ${pageCountNote}
 ${readingAgeNote}
 ${primaryLayoutNote}
@@ -1632,10 +1501,11 @@ Formatting rules:
 - ABSOLUTELY NO EMOJIS anywhere in the output.
 
 ADVANCED QUESTION TYPES — use 1–2 per worksheet for variety:
-- type "error_correction": Show a worked solution with a GENUINE deliberate mistake (a step with a provably wrong calculation). Student finds the error, explains why it is wrong, writes the correct answer. Layout: left = boxed solution, right = response questions.
-${isPrimary ? `- type "ranking": Give 4–6 items to order by a measurable rule (e.g. smallest to largest). Student ranks them and explains reasoning. Layout: item list + ranking boxes + explanation box.` : `- Do NOT use ranking questions in secondary school — no GCSE or A-Level exam paper asks students to rank items by complexity or importance.`}
+- type "error_correction": Show a worked solution with a deliberate mistake. Student finds the error, explains why it is wrong, writes the correct answer. Layout: left = boxed solution, right = response questions.
+- type "ranking": Give 4–6 items to order by a rule (e.g. smallest to largest). Student ranks them and explains reasoning. Layout: item list + ranking boxes + explanation box.
 - type "what_changed": Show Scenario A vs Scenario B. Student identifies what changed, what happens, and why. Layout: left = two scenarios, right = structured questions.
-${isPrimary ? 'Place ranking in Section 1 (recall), error_correction/what_changed in Section 2 (understanding).' : 'Place error_correction in Section 2 (understanding), what_changed in Section 3 (application).'} Never place the same advanced type adjacent to itself.
+- type "constraint_problem": Give a goal with 2–4 constraints. Student solves while following all rules. Layout: boxed constraint list + working space + explanation.
+Place ranking in Section 1 (recall), error_correction/what_changed in Section 2 (understanding), constraint_problem in Section 3 (application). Never place the same advanced type adjacent to itself.
 
 Return EXACTLY this JSON (raw JSON only):
 {
@@ -1648,50 +1518,15 @@ Return EXACTLY this JSON (raw JSON only):
     {"title": "Common Mistakes to Avoid", "type": "common-mistakes", "teacherOnly": false, "content": "[3-4 common mistakes. Format each as:\nMISTAKE TITLE\n→ explanation of the mistake and how to avoid it]"},
     ${isMaths && !params.examStyle ? `{"title": "Key Formulas", "type": "example", "content": "[LaTeX formulas or: No formula required]"},` : ''}
     {"title": "Worked Example", "type": "example", "content": "[${exampleGuide}]"}${params.introOnly ? '' : `,
-    ${(() => {
-      // Map each pool key to its JSON section object
-      const typeToJSON = (key: string, qNum: number): string => {
-        switch (key) {
-          case 'TRUE_FALSE': return `{"title": "Q${qNum} — True or False", "type": "q-true-false", "content": "Circle TRUE or FALSE for each statement. [4 marks]\\n1. [statement about ${params.topic}] TRUE\\n2. [statement about ${params.topic}] FALSE\\n3. [statement about ${params.topic}] TRUE\\n4. [statement about ${params.topic}] FALSE"}`;
-          case 'MCQ': return `{"title": "Q${qNum} — Multiple Choice", "type": "q-mcq", "content": "[Question about ${params.topic}] [1 mark]\\nA  [option]\\nB  [option]\\nC  [option]\\nD  [option]\\nCORRECT: [correct letter only]"}`;
-          case 'GAP_FILL': return `{"title": "Q${qNum} — Cloze Paragraph", "type": "q-gap-fill", "content": "Complete the paragraph using words from the word bank. [7 marks]\\n[5–7 sentence summary paragraph about ${params.topic} with exactly 7 blanks shown as _____]\\nWORD BANK: word1 | word2 | word3 | word4 | word5 | word6 | word7 | word8 | word9 | word10"}`;
-          case 'ORDERING': return `{"title": "Q${qNum} — Ordering", "type": "q-ordering", "content": "Number the boxes 1–6 to show the correct order. [3 marks]\\n☐ [item 1 from ${params.topic}]\\n☐ [item 2 from ${params.topic}]\\n☐ [item 3 from ${params.topic}]\\n☐ [item 4 from ${params.topic}]\\n☐ [item 5 from ${params.topic}]\\n☐ [item 6 from ${params.topic}]"}`;
-          case 'MATCHING': return `{"title": "Q${qNum} — Matching", "type": "q-matching", "content": "Match each term to its definition. Draw a line or write the letter. [5 marks]\\n1. [term 1 from ${params.topic}] ←→ [definition A]\\n2. [term 2 from ${params.topic}] ←→ [definition B]\\n3. [term 3 from ${params.topic}] ←→ [definition C]\\n4. [term 4 from ${params.topic}] ←→ [definition D]\\n5. [term 5 from ${params.topic}] ←→ [definition E]"}`;
-          case 'SHORT_ANSWER': return `{"title": "Q${qNum} — Short Answer", "type": "q-short-answer", "content": "${isMaths ? `[Pure calculation question on ${params.topic}. Do NOT ask students to explain or write in sentences. All answers must be numerical or algebraic.] [5 marks]\\n(a) Solve: [specific numerical equation or expression involving ${params.topic} — give real numbers]. [2 marks]\\n(b) Calculate: [a second specific numerical problem on ${params.topic} using a different method or value]. [2 marks]\\n(c) Write the answer to (b) in simplest form or correct to 2 significant figures. [1 mark]` : isSTEM ? `[Scenario or data set related to ${params.topic}] [5 marks]\\n(a) Identify the relevant formula or scientific law. [1 mark]\\n(b) Show the full calculation with working. [2 marks]\\n(c) Explain what the result means in context. [2 marks]` : `[4–8 line extract from text related to ${params.topic}] [5 marks]\\n(a) Identify ONE language or literary technique used in this extract. [1 mark]\\n(b) What does this reveal about character, theme or author intent? [2 marks]\\n(c) What does the key image or symbol represent? [2 marks]`}", "marks": 5}`;
-          case 'TABLE': return `{"title": "Q${qNum} — Complete the Table", "type": "q-data-table", "content": "Complete the table below. [8 marks]\\n${isMaths ? `| No. | Problem | Working | Answer |\\n|---|---|---|---|\\n| 1 | [specific calculation problem 1 on ${params.topic}] | ........... | ........... |\\n| 2 | [specific calculation problem 2 on ${params.topic}] | ........... | ........... |\\n| 3 | [specific calculation problem 3 on ${params.topic}] | ........... | ........... |\\n| 4 | [specific calculation problem 4 on ${params.topic}] | ........... | ........... |` : isSTEM ? `| No. | Scenario | Formula used | Working | Answer with unit |\\n|---|---|---|---|---|\\n| 1 | [scenario 1 about ${params.topic}] | ........... | ........... | ........... |\\n| 2 | [scenario 2 about ${params.topic}] | ........... | ........... | ........... |\\n| 3 | [scenario 3 about ${params.topic}] | ........... | ........... | ........... |\\n| 4 | [scenario 4 about ${params.topic}] | ........... | ........... | ........... |` : `| No. | Theme | Key Quote | Act/Scene/Chapter | Effect |\n|---|---|---|---|---|\n| 1 | [theme 1 from ${params.topic}] | ........... | ........... | ........... |\n| 2 | [theme 2 from ${params.topic}] | ........... | ........... | ........... |\n| 3 | [theme 3 from ${params.topic}] | ........... | ........... | ........... |\n| 4 | [theme 4 from ${params.topic}] | ........... | ........... | ........... |`}", "marks": 8}`;
-          case 'ERROR_CORRECTION': return `{"title": "Q${qNum} — Error Correction", "type": "error_correction", "content": "Worked Answer\\nStep 1: [CORRECT step with REAL numbers — e.g. for ${params.topic}: write the actual correct first calculation]\\nStep 2: [DELIBERATELY WRONG step — use the WRONG operation or number so the result is provably incorrect. The wrong value MUST be numerically different from the correct value. Example: if correct is 120÷2=60, write 120×2=240 instead]\\nStep 3: [Continue FROM the wrong Step 2 answer — do NOT fix the error here]\\n\\nTask\\n1. Identify which step contains the mistake.\\n2. Explain exactly what is wrong and write the correct value for that step.\\n3. Write the full correct solution from scratch.\\n\\nTEACHER_ONLY: Error is in Step 2 — [state: correct operation/value was X, student sees wrong value Y]"}`;
-
-          case 'RANKING': return `{"title": "Q${qNum} — Ranking", "type": "ranking", "content": "Rank the following from [EXACT MEASURABLE criterion — MUST be objective e.g. 'smallest to largest', 'lightest to heaviest', 'coldest to hottest', 'fewest sides to most sides'. FORBIDDEN: 'by complexity', 'by importance', 'by difficulty', or any subjective criterion]:\\nA  [real specific item from ${params.topic}]\\nB  [real specific item from ${params.topic}]\\nC  [real specific item from ${params.topic}]\\nD  [real specific item from ${params.topic}]\\n\\nYour ranking (write A–D in order): 1st _____ 2nd _____ 3rd _____ 4th _____\\n\\nExplain your reasoning:"}`;
-          case 'WHAT_CHANGED': return `{"title": "Q${qNum} — What Changed?", "type": "what_changed", "content": "Scenario A\n[Write the ACTUAL initial state — a real, specific ${params.topic} scenario with real numbers/values]\n\nScenario B\n[Write the ACTUAL changed state — change exactly ONE variable from Scenario A, keep everything else the same]\n\nTask\n1. What changed between A and B?\n2. Why did this happen? (use subject vocabulary)\n3. What effect does this have on [write the specific outcome being measured]?"}`;
-
-          default: return `{"title": "Q${qNum} — Short Answer", "type": "q-short-answer", "content": "[Question about ${params.topic}] [3 marks]"}`;
-        }
-      };
-      // Q4: diagram for diagram subjects, calculation table for maths, extract for others
-      const q4Section = isDiagramSubject
-        ? `{"title": "Q4 — Visual/Diagram Activity", "type": "q-label-diagram", "content": "${q4DiagramPrompt}", "marks": 5}`
-        : isMaths
-        ? `{"title": "Q4 — Calculation Table", "type": "q-data-table", "content": "Complete the table. Show all working. [8 marks]\\n| No. | Problem | Working | Answer |\\n|---|---|---|---|\\n| 1 | [specific ${params.topic} calculation — use real numbers] | ........... | ........... |\\n| 2 | [specific ${params.topic} calculation — different method] | ........... | ........... |\\n| 3 | [specific ${params.topic} calculation] | ........... | ........... |\\n| 4 | [specific ${params.topic} calculation] | ........... | ........... |", "marks": 8}`
-        : `{"title": "Q4 — Source/Extract", "type": "q-short-answer", "content": "[4–8 line extract or source related to ${params.topic}] [5 marks]\\n(a) Identify ONE key feature of this source. [1 mark]\\n(b) What does this reveal about ${params.topic}? [2 marks]\\n(c) How does this connect to the wider context? [2 marks]", "marks": 5}`;
-      // Q5/Q6: for maths use SHORT_ANSWER and TABLE; for others use variantA picks
-      const q5Section = isMaths
-        ? `{"title": "Q5 — Structured Calculation", "type": "q-short-answer", "content": "[5 marks]\\n(a) Solve: [write a specific equation or expression involving ${params.topic} with real numbers — e.g. Solve \\\\(x^2 + 5x + 6 = 0\\\\)]. [2 marks]\\n(b) Calculate: [write a second specific ${params.topic} problem using a different value or method — e.g. Find the roots of \\\\(2x^2 - 3x - 2 = 0\\\\)]. [2 marks]\\n(c) Write the answer to (b) correct to 2 significant figures. [1 mark]", "marks": 5}`
-        : typeToJSON(variantA[1], 5);
-      const q6Section = isMaths
-        ? `{"title": "Q6 — Problem Solving", "type": "q-data-table", "content": "[4 marks]\\n(a) [Write a specific real-life ${params.topic} problem with actual numbers — e.g. A rectangle has area \\\\(x^2 + 7x + 12\\\\). Find the dimensions.]. Show all working. [2 marks]\\n(b) [Write a second specific ${params.topic} problem requiring a different technique — e.g. Use the quadratic formula to solve \\\\(3x^2 - 5x + 1 = 0\\\\). Give answers to 2 d.p.]. [2 marks]", "marks": 4}`
-        : typeToJSON(variantA[2], 6);
-      // Q7/Q8/Q9: use variantB picks
-      const q7Section = isMaths
-        ? `{"title": "Q7 — Multi-Step Problem", "type": "q-extended", "content": "[6 marks]\\nA real-life scenario: [write a specific word problem involving ${params.topic} with real numbers and a real context — e.g. A ball is thrown upward with initial velocity 20 m/s. Its height is given by \\\\(h = -5t^2 + 20t\\\\). Find the maximum height and the time it takes to reach it.]. Show ALL working step by step. Final answer must include correct units or simplified form.", "marks": 6}`
-        : typeToJSON(variantB[0], 7);
-      const q8Section = isMaths
-        ? `{"title": "Q8 — Complete the Table", "type": "q-data-table", "content": "Complete the table below. [8 marks]\\n| No. | Problem | Working | Answer |\\n|---|---|---|---|\\n| 1 | [specific ${params.topic} calculation 1 — use real numbers] | ........... | ........... |\\n| 2 | [specific ${params.topic} calculation 2 — different method or value] | ........... | ........... |\\n| 3 | [specific ${params.topic} calculation 3] | ........... | ........... |\\n| 4 | [specific ${params.topic} calculation 4] | ........... | ........... |", "marks": 8}`
-        : typeToJSON(variantB[1], 8);
-      const q9Section = isMaths
-        ? `{"title": "Q9 — Extended Calculation", "type": "q-extended", "content": "[8 marks]\\nA challenging multi-step problem: [write a specific multi-step ${params.topic} problem with real numbers — e.g. A quadratic equation \\\\(ax^2 + bx + c = 0\\\\) has roots that sum to -6 and multiply to 8. Find a, b, c and solve the equation.].\\nStudents must:\\nStep 1: [describe first calculation step]\\nStep 2: [describe second calculation step]\\nStep 3: [describe final calculation step]\\nShow ALL working. Final answer must be in correct form with units.", "marks": 8}`
-        : typeToJSON(variantB[2], 9);
-      return [typeToJSON(variantA[0], 1), typeToJSON(variantA[1] === variantA[0] ? 'MCQ' : variantA[1], 2), typeToJSON(variantA[2] === variantA[0] || variantA[2] === variantA[1] ? 'GAP_FILL' : variantA[2], 3), q4Section, q5Section, q6Section, q7Section, q8Section, q9Section].join(',\n    ');
-    })()}
+    {"title": "Q1 — True or False", "type": "q-true-false", "content": "Circle TRUE or FALSE for each statement. [4 marks]\n1. [statement about ${params.topic}] TRUE\n2. [statement about ${params.topic}] FALSE\n3. [statement about ${params.topic}] TRUE\n4. [statement about ${params.topic}] FALSE"},
+    {"title": "Q2 — Multiple Choice", "type": "q-mcq", "content": "[Question about ${params.topic}] [1 mark]\nA  [option]\nB  [option]\nC  [option]\nD  [option]\nCORRECT: [correct letter only — do NOT mark with ✓ in the options above]"},
+    {"title": "Q3 — Cloze Paragraph", "type": "q-gap-fill", "content": "Complete the paragraph using words from the word bank. [7 marks]\n[5–7 sentence summary paragraph about ${params.topic} with exactly 7 blanks shown as _____]\nWORD BANK: word1 | word2 | word3 | word4 | word5 | word6 | word7 | word8 | word9 | word10"},
+    {"title": "Q4 — Visual/Diagram Activity", "type": "q-label-diagram", "content": "${q4DiagramPrompt}", "marks": 5},
+    {"title": "Q5 — Calculation Practice", "type": "q-short-answer", "content": "${isMaths ? '[Pure calculation question on ${params.topic}] [5 marks]\n(a) Calculate: [specific numerical problem — show all working]. [2 marks]\n(b) Calculate: [a second numerical problem requiring a different method]. [2 marks]\n(c) Write the answer to part (b) correct to 2 significant figures. [1 mark]' : isSTEM ? '[Scenario or data set related to ${params.topic}] [5 marks]\n(a) Identify the relevant formula or scientific law. [1 mark]\n(b) Show the full calculation with working. [2 marks]\n(c) Explain what the result means in context. [2 marks]' : '[4–8 line extract from text related to ${params.topic}] [5 marks]\n(a) Identify ONE language or literary technique used in this extract. [1 mark]\n(b) What does this reveal about character, theme or author intent? [2 marks]\n(c) What does the key image or symbol represent? [2 marks]'}", "marks": 5},
+    {"title": "Q6 — Sequencing/Structured Response", "type": "q-data-table", "content": "${isSTEM ? 'Answer the structured questions below. [4 marks]\n(a) Identify the key rule, law or principle that applies to [specific aspect of ' + params.topic + ']. [1 mark]\n(b) Apply it to this scenario: [specific scenario about ' + params.topic + ']. Show all working. [2 marks]\n(c) State the unit of the answer or explain what the result means. [1 mark]' : 'Number the events 1–6 in the correct order. [3 marks]\n[ ] [event/plot point 1 from ${params.topic}]\n[ ] [event/plot point 2 from ${params.topic}]\n[ ] [event/plot point 3 from ${params.topic}]\n[ ] [event/plot point 4 from ${params.topic}]\n[ ] [event/plot point 5 from ${params.topic}]\n[ ] [event/plot point 6 from ${params.topic}]\n3 marks: all correct | 2 marks: 4–5 correct | 1 mark: 2–3 correct'}", "marks": 4},
+    {"title": "Q7 — Problem Solving", "type": "q-extended", "content": "[${isMaths ? 'Multi-step problem: solve a real-life numerical problem about ${params.topic}. No written explanation required — show full numerical working only. [6 marks]' : isSTEM ? 'Compare two cases or explain a key concept in depth' : 'Explain how a recurring motif/technique/theme is used across the text, with reference to at least TWO specific moments'} — ${params.topic}] [6 marks]", "marks": 6},
+    {"title": "Q8 — Complete the Table", "type": "q-data-table", "content": "Complete the table below. [8 marks]\n${isSTEM ? '| No. | Scenario | Formula used | Working | Answer with unit |\n|---|---|---|---|---|\n| 1 | [specific calculation problem 1 about ${params.topic}] | ........... | ........... | ........... |\n| 2 | [specific calculation problem 2 about ${params.topic}] | ........... | ........... | ........... |\n| 3 | [specific calculation problem 3 about ${params.topic}] | ........... | ........... | ........... |\n| 4 | [specific calculation problem 4 about ${params.topic}] | ........... | ........... | ........... |' : '| No. | Theme | Key Quote (max 5 words) | Act/Scene/Chapter | Effect on audience/reader |\n|---|---|---|---|---|\n| 1 | [theme 1 from ${params.topic}] | ........... | ........... | ........... |\n| 2 | [theme 2 from ${params.topic}] | ........... | ........... | ........... |\n| 3 | [theme 3 from ${params.topic}] | ........... | ........... | ........... |\n| 4 | [theme 4 from ${params.topic}] | ........... | ........... | ........... |'}", "marks": 8},
+    {"title": "Q9 — Extended Calculation", "type": "q-extended", "content": "${isMaths ? '[Multi-step calculation: a challenging problem on ${params.topic} that requires selecting and applying the correct method. No prose — show numerical working only. [8 marks]\nMark scheme: 1m method, 3m correct intermediate steps, 2m correct final answer with units, 2m correct rounding/simplification]' : isSTEM ? '[Higher-order evaluation question: evaluate a claim, design an experiment, or apply concept to unfamiliar context. Include 3 mark levels.] [8 marks]' : '\"[Contested statement about ${params.topic}]\"\nTo what extent do you agree? Use evidence from the text to support your argument. [8 marks]\nLevel 4 (7–8m): Sustained, convincing, nuanced argument with precise embedded evidence.\nLevel 3 (5–6m): Clear argument; analysis of both sides.\nLevel 2 (3–4m): Some relevant points; limited analysis.\nLevel 1 (1–2m): Narrative with little analysis.'}", "marks": 8},
     {"title": "${sendSectionTitles.challenge}", "type": "challenge", "content": "[${challengeGuide}${hasSend ? ' — optional, labelled as bonus' : ''}]"},
     {"title": "Self Reflection", "type": "self-reflection", "teacherOnly": false, "content": "SUBTITLE: Review your understanding before moving on.\nCONFIDENCE_TABLE:\n[specific skill/concept 1 from ${params.topic}]\n[specific skill/concept 2 from ${params.topic}]\n[specific skill/concept 3 from ${params.topic}]\n[specific skill/concept 4 from ${params.topic}]\n[specific skill/concept 5 from ${params.topic}]\nWRITTEN_PROMPTS:\nOne concept I feel confident about is ...\nOne area I still need to practise is ...\nA question I still want to ask my teacher is ...\nEXIT_TICKET: Write ONE thing you learned today about ${params.topic} in one sentence:"},
     {"title": "Teacher Copy — Answer Key", "type": "mark-scheme", "teacherOnly": true, "content": "MARKING GUIDANCE: Accept reasonable alternatives. Award marks for clear reasoning and correct application.\nSECTION 1 — KNOWLEDGE CHECK [12 marks]\nQ1 TRUE/FALSE [4 marks]: [list each statement with TRUE or FALSE answer and brief justification]\nQ2 MCQ [1 mark]: [correct answer letter] — [brief explanation why correct and why distractors are wrong]\nQ3 CLOZE [7 marks]: [list all 7 correct answers in order, numbered 1–7]\nSECTION 2 — UNDERSTANDING [14 marks]\nQ4 DIAGRAM [5 marks]: [list each label with its correct position/component]\nQ5 EXTRACT/STIMULUS [5 marks]: (a) [answer] (b) [answer with mark allocation] (c) [answer with mark allocation]\nQ6 SEQUENCING/STRUCTURED [4 marks]: [correct sequence/answers with mark allocation]\nSECTION 3 — APPLICATION & ANALYSIS [22 marks]\nQ7 EXTENDED [6 marks]: [model answer with level descriptors — Level 1: 1–2m, Level 2: 3–4m, Level 3: 5–6m]\nQ8 TABLE [8 marks]: [complete table with all answers, 2 marks per row]\nQ9 EVALUATIVE [8 marks]: [model answer with level descriptors — Level 1–4 as specified in question]\nCHALLENGE [${isSTEM ? '8' : '12'} marks]: [full mark scheme with band descriptors]\nTOTAL MARKS: Section 1: 12m | Section 2: 14m | Section 3: 22m | Challenge: ${isSTEM ? '8' : '12'}m | TOTAL: ${isSTEM ? '56' : '60'}m"},
@@ -1828,50 +1663,6 @@ Return EXACTLY this JSON (raw JSON only):
   }
   const result: AIWorksheetResult = { ...json, isAI: true, provider };
 
-  // ── Post-processing: strip challenge preamble (Issue #12) ────────────────────
-  function stripChallengePreamble(content: string): string {
-    const PREAMBLE_PATTERNS = [
-      /^A (GCSE|KS[1-4]|A-Level|primary)[\s\-]style[^.]+\./i,
-      /^This question (tests|assesses|requires)[^.]+\./i,
-      /^Show your (knowledge|understanding) of[^.]+\./i,
-      /^An? (evaluative|analytical|extended|discuss)[^.]+question\./i,
-    ];
-    const lines = content.split('\n');
-    while (lines.length > 0 && PREAMBLE_PATTERNS.some(p => p.test(lines[0].trim()))) {
-      lines.shift();
-    }
-    return lines.join('\n').trimStart();
-  }
-
-  // ── Post-processing: ensure tables have blank cells (Issue #5) ────────────────
-  function ensureTableHasBlanks(content: string): string {
-    const rows = content.split('\n').filter(l => l.trim().startsWith('|'));
-    const hasBlanks = rows.some(r => /\.{6,}|\[blank\]/i.test(r));
-    if (hasBlanks || rows.length < 2) return content; // already correct or no table
-    // Auto-blank last data column of every non-header/non-divider row
-    let headerDone = false;
-    return content.split('\n').map(line => {
-      if (!line.trim().startsWith('|')) return line;
-      // Skip divider rows (|---|---|)
-      if (/^\|[\s\-:|]+\|/.test(line.trim()) && line.split('|').slice(1,-1).every(c => /^[\s\-:]+$/.test(c))) return line;
-      if (!headerDone) { headerDone = true; return line; } // keep header intact
-      // Blank out the last data column
-      const cells = line.split('|');
-      if (cells.length >= 3) {
-        cells[cells.length - 2] = ' .............. ';
-      }
-      return cells.join('|');
-    }).join('\n');
-  }
-
-  // ── Post-processing: strip TEACHER_ONLY from student content (Issue #6) ──────
-  function stripTeacherOnly(content: string, isTeacherSection: boolean): string {
-    if (isTeacherSection) return content;
-    return content.replace(/TEACHER_ONLY:.*$/gm, '').replace(/TEACHER ONLY:.*$/gm, '').trim();
-  }
-
-
-
   // ── Normalise all section content to strings ─────────────────────────────────
   // The AI sometimes returns content as an array of objects, plain objects, or
   // other non-string types. Convert everything to a readable plain-text string.
@@ -1933,31 +1724,9 @@ Return EXACTLY this JSON (raw JSON only):
   if (result.sections && Array.isArray(result.sections)) {
     result.sections = result.sections.map((section: any) => {
       const rawContent = normaliseContent(section.content);
-      let cleanContent = stripHtmlFromContent(rawContent);
-
-      // Issue #6: Force teacherOnly flag on known teacher-only section types
-      const teacherOnlyTypes = new Set(['mark-scheme', 'teacher-notes', 'answers', 'adaptations', 'misconceptions-key']);
-      const isTeacherSec = section.teacherOnly ||
-        teacherOnlyTypes.has(section.type) ||
-        /answer key|mark scheme|teacher/i.test(section.title || '');
-      if (isTeacherSec) section.teacherOnly = true;
-
-      // Issue #6: Strip TEACHER_ONLY annotations from student-facing content
-      cleanContent = stripTeacherOnly(cleanContent, !!section.teacherOnly);
-
-      // Issue #5: Ensure table sections have blank cells
-      if (section.type === 'q-data-table' || /complete.the.table|table/i.test(section.title || '')) {
-        cleanContent = ensureTableHasBlanks(cleanContent);
-      }
-
-      // Issue #12: Strip challenge preamble
-      if (section.type === 'challenge') {
-        cleanContent = stripChallengePreamble(cleanContent);
-      }
-
+      const cleanContent = stripHtmlFromContent(rawContent);
       return {
         ...section,
-        teacherOnly: !!isTeacherSec,
         title: typeof section.title === 'string' ? section.title.replace(/^\*{1,2}|\*{1,2}$/g, '').replace(/^_{1,2}|_{1,2}$/g, '').trim() : section.title,
         content: cleanContent,
       };
@@ -2365,17 +2134,10 @@ export async function aiGenerateDiagram(params: {
     const storedToken = typeof localStorage !== 'undefined' ? localStorage.getItem('send_token') : null;
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
     if (storedToken) headers['Authorization'] = `Bearer ${storedToken}`;
-    // 12-second timeout: the server's Wikimedia live search can take up to 10s;
-    // we add 2s buffer. If the diagram fetch hangs, we skip it rather than
-    // blocking the entire worksheet generation (which caused the AI generation
-    // failed error — the 55s client timeout was exceeded waiting for diagrams).
-    const diagramAbort = new AbortController();
-    const diagramTimer = setTimeout(() => diagramAbort.abort(), 12_000);
     const res = await fetch('/api/ai/diagram', {
       method: 'POST',
       headers,
       credentials: 'include',
-      signal: diagramAbort.signal,
       body: JSON.stringify({
         subject: params.subject,
         topic: params.topic,
@@ -2384,7 +2146,6 @@ export async function aiGenerateDiagram(params: {
         diagramType: params.diagramType,
       }),
     });
-    clearTimeout(diagramTimer);
     if (res.ok) {
       const data = await res.json();
       // If server explicitly says no diagram is available, return null (do NOT fall back to AI SVG)
@@ -3120,10 +2881,6 @@ export interface DiagramSpec {
   levels?: string[];
   // For fraction-bar diagrams
   numerator?: number; denominator?: number; fractionLabel?: string;
-  // For axes — curve/line plotting
-  curves?: Array<{ fn: string; color?: string; label?: string; dashed?: boolean }>;
-  points?: Array<{ x: number; y: number; label?: string; color?: string }>;
-  xMin?: number; xMax?: number; yMin?: number; yMax?: number;
 }
 
 /**
@@ -3131,7 +2888,7 @@ export interface DiagramSpec {
  * Returns false if the spec is invalid so extractDiagramSpec can return null.
  */
 export function validateDiagramSpec(spec: DiagramSpec): boolean {
-  const validTypes = ["labeled", "circuit", "flow", "cycle", "number-line", "bar", "axes", "venn", "timeline", "pyramid", "fraction-bar", "graph"];
+  const validTypes = ["labeled", "circuit", "flow", "cycle", "number-line", "bar", "axes", "venn", "timeline", "pyramid", "fraction-bar"];
   if (!spec || !spec.type) return false;
   if (!validTypes.includes(spec.type)) return false;
 
@@ -3179,7 +2936,6 @@ export function validateDiagramSpec(spec: DiagramSpec): boolean {
  * Returns null if no diagram marker is found or if the spec fails validation.
  */
 export function extractDiagramSpec(content: string): DiagramSpec | null {
-  if (!content || typeof content !== 'string') return null;
   const match = content.match(/\[\[DIAGRAM:(\{[\s\S]*?\})\]\]/);
   if (!match) return null;
   try {
@@ -3194,7 +2950,6 @@ export function extractDiagramSpec(content: string): DiagramSpec | null {
  * Also strips AI instruction lines (IMPORTANT:, LABELS:, ANSWERS:) that should not be visible.
  */
 export function stripDiagramMarker(content: string): string {
-  if (!content || typeof content !== 'string') return content ?? '';
   let cleaned = content.replace(/\[\[DIAGRAM:\{[\s\S]*?\}\]\]/g, "");
   // Strip AI instruction lines that leak into visible content.
   // Robust matching: handles leading pipes, whitespace, asterisks, and partial matches.

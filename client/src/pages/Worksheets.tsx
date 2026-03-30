@@ -115,23 +115,11 @@ function formatContent(content: string): string {
     .replace(/\n/g, "<br/>");
 }
 
-// ── Centralised teacher-only section types (Issue #6) ──────────────────────
-const TEACHER_ONLY_TYPES = new Set([
-  'answers', 'mark-scheme', 'teacher-notes', 'prior-knowledge-teacher',
-  'adaptations', 'misconceptions-key',
-]);
-
 function renderWorksheetText(ws: GeneratedWorksheet, includeTeacher: boolean): string {
   let text = `${ws.title}\n${ws.subtitle}\n\n`;
-  ws.sections.forEach((s: any) => {
-    // Filter all teacher-only sections — not just 'answers' and 'adaptations'
-    if (!includeTeacher && (s.teacherOnly || TEACHER_ONLY_TYPES.has(s.type))) return;
-    // Also strip TEACHER_ONLY annotations from error-correction content
-    let content = s.content || '';
-    if (!includeTeacher) {
-      content = content.replace(/TEACHER_ONLY:.*$/gm, '').replace(/TEACHER ONLY:.*$/gm, '').trim();
-    }
-    text += `=== ${s.title} ===\n${content}\n\n`;
+  ws.sections.forEach(s => {
+    if (!includeTeacher && (s.type === "answers" || s.type === "adaptations")) return;
+    text += `=== ${s.title} ===\n${s.content}\n\n`;
   });
   return text;
 }
@@ -209,9 +197,7 @@ export default function Worksheets() {
   const preSelectedYearGroup = _urlParams.get("yearGroup") || "";
   const preSelectedSendNeed = _urlParams.get("sendNeed") || "";
 
-  // Support ?tab=exam-questions from ClassroomHub deep-link
-  const preSelectedTab = _urlParams.get("tab") || "generate";
-  const [activeTab, setActiveTab] = useState(() => preSelectedTab);
+  const [activeTab, setActiveTab] = useState("generate");
   const [subject, setSubject] = useState(() => preSelectedSubject);
   const [yearGroup, setYearGroup] = useState(() => preSelectedYearGroup);
   const [topic, setTopic] = useState(() => preSelectedTopic);
@@ -680,15 +666,6 @@ export default function Worksheets() {
   useEffect(() => {
     if (preSelectedSubject) setSubject(preSelectedSubject);
     if (preSelectedTopic) setTopic(preSelectedTopic);
-    // If arriving via ?tab=exam-questions (from Classroom Hub), lazy-load the question bank immediately
-    if (preSelectedTab === 'exam-questions') {
-      setExamBankLoading(true);
-      import('@/lib/pastPaperQuestions').then(mod => {
-        setAllPastPaperQuestions(mod.allPastPaperQuestions);
-        setExamBankLoaded(true);
-        setExamBankLoading(false);
-      }).catch(() => setExamBankLoading(false));
-    }
   }, []);
 
   const overlayBg = colorOverlays.find(o => o.id === colorOverlay)?.color || "#ffffff";
@@ -1101,10 +1078,6 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
         // Pipeline errors are non-fatal — continue with original worksheet
       }
 
-      // Store the readingAge used at generation time in metadata (Issue #13)
-      if (generatedWs && generatedWs.metadata) {
-        (generatedWs.metadata as any).readingAgeUsed = readingAge;
-      }
       setGenerated(generatedWs);
       setHiddenSections(new Set());
       setDiffVersions({});
@@ -1399,23 +1372,14 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
   };
 
   // ─── PDF Download (pixel-perfect HTML-to-PDF) ─────────────────────────────
-  // Helper: clone element and strip teacher-only sections for student PDF (Issue #6)
-  const cloneAndStripTeacherSections = (el: HTMLElement): HTMLElement => {
-    const clone = el.cloneNode(true) as HTMLElement;
-    clone.querySelectorAll('[data-teacher-only="true"]').forEach(node => node.remove());
-    return clone;
-  };
-
   const handleDownloadPdf = async () => {
     if (!generated) { toast.error("PDF error: no worksheet loaded"); return; }
     const container = worksheetRef.current || (document.querySelector(".worksheet-content") as HTMLElement);
     if (!container) { toast.error("PDF error: worksheet not found in DOM"); return; }
     const printRoot = (container.querySelector(".worksheet-print-root") as HTMLElement) || container;
-    // Issue #6: Strip teacher sections from student PDF export
-    const exportRoot = viewMode === "student" ? cloneAndStripTeacherSections(printRoot) : printRoot;
     try {
       const filename = `${generated.title.replace(/[^a-zA-Z0-9\s]/g, "").replace(/\s+/g, "_")}_${viewMode}.pdf`;
-      await downloadHtmlAsPdf(exportRoot, filename, {
+      await downloadHtmlAsPdf(printRoot, filename, {
         overlayColor: overlayBg,
         viewMode,
         textSize,
@@ -1987,8 +1951,6 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
       {!generated ? (
         <Tabs value={activeTab} onValueChange={(tab) => {
           setActiveTab(tab);
-          // Scroll to top when switching tabs (fixes exam paper starting at bottom)
-          window.scrollTo({ top: 0, behavior: 'smooth' });
           // Lazy-load the question bank only when Exam Bank tab is first opened
           if (tab === 'exam-questions' && !examBankLoaded && !examBankLoading) {
             setExamBankLoading(true);
@@ -2008,10 +1970,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
             {showLibraryTab && (
               <TabsTrigger value="bank" className="text-xs gap-1 flex-1 min-w-[72px]"><Library className="w-3 h-3" /> Library</TabsTrigger>
             )}
-            {/* Exam Paper Creator tab is hidden from the worksheet tab bar — accessible via Classroom Hub link */}
-            {activeTab === 'exam-questions' && (
-              <TabsTrigger value="exam-questions" className="text-xs gap-1 flex-1 min-w-[80px]"><Award className="w-3 h-3" /><span className="hidden sm:inline">Exam Paper Creator</span><span className="sm:hidden">Exams</span></TabsTrigger>
-            )}
+            <TabsTrigger value="exam-questions" className="text-xs gap-1 flex-1 min-w-[80px]"><Award className="w-3 h-3" /><span className="hidden sm:inline">Exam Bank</span><span className="sm:hidden">Exams</span></TabsTrigger>
             <TabsTrigger value="history" className="text-xs gap-1 flex-1 min-w-[72px]">
               <History className="w-3 h-3" /> History
               {worksheetHistory.length > 0 && (
@@ -3501,11 +3460,8 @@ ${s.content}`).join("\n\n"),
                 max={13}
                 step={1}
                 value={(() => {
-                  // Issue #13: Use the readingAge stored at generation time from metadata
-                  const ages = [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
-                  const storedAge = (generated as any)?.metadata?.readingAgeUsed;
-                  const effectiveAge = storedAge !== undefined ? storedAge : readingAge;
-                  if (effectiveAge <= 0) {
+                  // Convert readingAge (5–17) back to slider position (1–13)
+                  if (readingAge <= 0) {
                     // Auto — map to slider position based on yearGroup default
                     const yrToAge: Record<string, number> = {
                       "Year 1": 5, "Year 2": 6, "Year 3": 7, "Year 4": 8,
@@ -3515,10 +3471,11 @@ ${s.content}`).join("\n\n"),
                       "GCSE": 15, "A-Level": 17, "11+ Preparation": 10,
                     };
                     const defaultAge = yrToAge[yearGroup] ?? 11;
-                    const idx = ages.indexOf(defaultAge);
-                    return idx >= 0 ? idx + 1 : 7;
+                    const ages = [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
+                    return ages.indexOf(defaultAge) + 1 || 7;
                   }
-                  const idx = ages.indexOf(effectiveAge);
+                  const ages = [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
+                  const idx = ages.indexOf(readingAge);
                   return idx >= 0 ? idx + 1 : 7;
                 })()}
                 disabled={readingLevelLoading}
@@ -3543,22 +3500,17 @@ ${s.content}`).join("\n\n"),
             </div>
             {readingLevelLoading
               ? <><RefreshCw className="w-3.5 h-3.5 animate-spin text-brand" /><span className="text-xs text-muted-foreground">Adjusting...</span></>
-              : <span className="text-xs font-semibold text-brand bg-brand/10 px-2 py-0.5 rounded">{(() => {
-                  const storedAge = (generated as any)?.metadata?.readingAgeUsed;
-                  const effectiveAge = storedAge !== undefined ? storedAge : readingAge;
-                  if (effectiveAge === 0) {
-                    const yrToAge: Record<string, number> = {
-                      "Year 1": 5, "Year 2": 6, "Year 3": 7, "Year 4": 8,
-                      "Year 5": 9, "Year 6": 10, "Year 7": 11, "Year 8": 12,
-                      "Year 9": 13, "Year 10": 14, "Year 11": 15, "Year 12": 17,
-                      "Year 13": 17, "KS1": 6, "KS2": 9, "KS3": 12,
-                      "GCSE": 15, "A-Level": 17, "11+ Preparation": 10,
-                    };
-                    const defaultAge = yrToAge[yearGroup] ?? 11;
-                    return `Age ${defaultAge} (auto)`;
-                  }
-                  return effectiveAge >= 17 ? "Age 17+" : `Age ${effectiveAge}`;
-                })()}</span>
+              : <span className="text-xs font-semibold text-brand bg-brand/10 px-2 py-0.5 rounded">{readingAge === 0 ? (() => {
+                  const yrToAge: Record<string, number> = {
+                    "Year 1": 5, "Year 2": 6, "Year 3": 7, "Year 4": 8,
+                    "Year 5": 9, "Year 6": 10, "Year 7": 11, "Year 8": 12,
+                    "Year 9": 13, "Year 10": 14, "Year 11": 15, "Year 12": 17,
+                    "Year 13": 17, "KS1": 6, "KS2": 9, "KS3": 12,
+                    "GCSE": 15, "A-Level": 17, "11+ Preparation": 10,
+                  };
+                  const defaultAge = yrToAge[yearGroup] ?? 11;
+                  return `Age ${defaultAge} (default)`;
+                })() : readingAge >= 17 ? "Age 17+" : `Age ${readingAge}`}</span>
             }
           </div>
 

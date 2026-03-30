@@ -23,21 +23,7 @@ export default defineConfig({
       compress: {
         drop_console: true,
         drop_debugger: true,
-        // passes:1 and disabled optimizations prevent TDZ (temporal dead zone) errors
-        // caused by Terser reordering const declarations in large async functions
-        passes: 1,
-        sequences: false,
-        join_vars: false,
-        collapse_vars: false,
-        reduce_vars: false,
-        hoist_funs: false,
-        hoist_vars: false,
-        unsafe: false,
-        unsafe_comps: false,
-        unsafe_math: false,
-        unsafe_methods: false,
-        unsafe_proto: false,
-        unsafe_undefined: false,
+        passes: 2,
       },
     },
     // Increase chunk size warning limit since question banks are intentionally large
