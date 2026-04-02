@@ -220,6 +220,8 @@ export async function initDb() {
       year_group TEXT NOT NULL,
       title TEXT NOT NULL,
       subtitle TEXT,
+      tier TEXT NOT NULL DEFAULT 'standard',
+      send_need TEXT,
       sections TEXT NOT NULL DEFAULT '[]',
       teacher_sections TEXT NOT NULL DEFAULT '[]',
       key_vocab TEXT NOT NULL DEFAULT '[]',
@@ -231,9 +233,13 @@ export async function initDb() {
       created_at TEXT NOT NULL DEFAULT (datetime('now')),
       updated_at TEXT NOT NULL DEFAULT (datetime('now'))
     )`,
-    `CREATE UNIQUE INDEX IF NOT EXISTS idx_library_topic ON worksheet_library(subject, topic, year_group)`,
+    `CREATE UNIQUE INDEX IF NOT EXISTS idx_library_topic ON worksheet_library(subject, topic, year_group, tier)`,
     `CREATE INDEX IF NOT EXISTS idx_library_subject ON worksheet_library(subject)`,
     `CREATE INDEX IF NOT EXISTS idx_library_curated ON worksheet_library(curated)`,
+    `CREATE INDEX IF NOT EXISTS idx_library_tier ON worksheet_library(tier)`,
+    // Add tier column to existing worksheet_library tables (migration)
+    `ALTER TABLE worksheet_library ADD COLUMN tier TEXT NOT NULL DEFAULT 'standard'`,
+    `ALTER TABLE worksheet_library ADD COLUMN send_need TEXT`,
   ];
   for (const migration of migrations) {
     try { _db.run(migration); } catch (_) { /* column already exists — ignore */ }
