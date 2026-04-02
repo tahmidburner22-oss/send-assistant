@@ -457,6 +457,8 @@ CREATE TABLE IF NOT EXISTS worksheet_library (
   year_group TEXT NOT NULL,
   title TEXT NOT NULL,
   subtitle TEXT,
+  tier TEXT NOT NULL DEFAULT 'standard',   -- 'standard' | 'foundation' | 'higher' | 'scaffolded'
+  send_need TEXT,                           -- NULL = any need; or specific SEND need this was built for
   sections TEXT NOT NULL DEFAULT '[]',     -- JSON array of WorksheetSection objects
   teacher_sections TEXT NOT NULL DEFAULT '[]', -- JSON array of teacher-only sections (answer key)
   key_vocab TEXT NOT NULL DEFAULT '[]',    -- JSON array of {term, definition}
@@ -468,9 +470,13 @@ CREATE TABLE IF NOT EXISTS worksheet_library (
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
   updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
-CREATE UNIQUE INDEX IF NOT EXISTS idx_library_topic ON worksheet_library(subject, topic, year_group);
+-- Unique per subject+topic+year_group+tier combination
+CREATE UNIQUE INDEX IF NOT EXISTS idx_library_topic ON worksheet_library(subject, topic, year_group, tier);
 CREATE INDEX IF NOT EXISTS idx_library_subject ON worksheet_library(subject);
 CREATE INDEX IF NOT EXISTS idx_library_curated ON worksheet_library(curated);
+CREATE INDEX IF NOT EXISTS idx_library_tier ON worksheet_library(tier);
+-- Migration: add tier and send_need columns if they don't exist (for existing databases)
+CREATE TABLE IF NOT EXISTS _schema_migrations (id TEXT PRIMARY KEY, applied_at TEXT DEFAULT (datetime('now')));
 
 -- ── Quiz Results (persisted per pupil) ───────────────────────────────────────
 CREATE TABLE IF NOT EXISTS quiz_results (

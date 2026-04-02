@@ -42,6 +42,8 @@ interface LibraryEntry {
   year_group: string;
   title: string;
   subtitle?: string;
+  tier: string;              // 'standard' | 'foundation' | 'higher' | 'scaffolded'
+  send_need?: string;        // optional SEND need this was built for
   sections: string;          // JSON string
   teacher_sections: string;  // JSON string
   key_vocab: string;         // JSON string
@@ -84,25 +86,105 @@ router.get("/entries", requireAuth, requireSuperAdmin, (req: Request, res: Respo
   }
 });
 
-// ── GET /api/library/lookup — lookup by subject+topic+yearGroup ───────────────
+// ── GET /api/library/lookup — lookup by subject+topic+yearGroup[+tier] ──────────
+// Returns the matching entry. If tier is specified, returns that tier.
+// Also returns a `tiers` array listing all available tiers for this topic.
 
 router.get("/lookup", requireAuth, (req: Request, res: Response) => {
   try {
-    const { subject, topic, yearGroup } = req.query as Record<string, string>;
+    const { subject, topic, yearGroup, tier } = req.query as Record<string, string>;
     if (!subject || !topic || !yearGroup) {
       return res.status(400).json({ error: "subject, topic and yearGroup are required" });
     }
 
-    // Exact match first
-    let entry = db.prepare(
-      "SELECT * FROM worksheet_library WHERE subject = ? AND topic = ? AND year_group = ?"
-    ).get(subject, topic, yearGroup) as LibraryEntry | undefined;
+    // Normalise topic for fuzzy matching
+    const topicNorm = topic.toLowerCase().trim();
 
-    // Fuzzy match: same subject+topic, any year group
+    // Helper to parse an entry
+    const parseEntry = (e: LibraryEntry) => ({
+      ...e,
+      sections: JSON.parse(e.sections || "[]"),
+      teacher_sections: JSON.parse(e.teacher_sections || "[]"),
+      key_vocab: JSON.parse(e.key_vocab || "[]"),
+      curated: !!e.curated,
+    });
+
+    // Find all tiers available for this topic (exact + fuzzy)
+    let allTiers = db.prepare(
+      `SELECT id, tier, title FROM worksheet_library
+       WHERE subject = ? AND (topic = ? OR LOWER(topic) = ?) AND year_group = ?
+       ORDER BY tier ASC`
+    ).all(subject, topic, topicNorm, yearGroup) as { id: string; tier: string; title: string }[];
+
+    // Fuzzy fallback: any year group
+    if (allTiers.length === 0) {
+      allTiers = db.prepare(
+        `SELECT id, tier, title FROM worksheet_library
+         WHERE subject = ? AND (topic = ? OR LOWER(topic) = ?)
+         ORDER BY tier ASC`
+      ).all(subject, topic, topicNorm) as { id: string; tier: string; title: string }[];
+    }
+
+    if (allTiers.length === 0) {
+      return res.json({ found: false });
+    }
+
+    // Select the requested tier, or fall back to 'standard', then first available
+    const wantedTier = tier || "standard";
+    const targetTier = allTiers.find(t => t.tier === wantedTier)
+      || allTiers.find(t => t.tier === "standard")
+      || allTiers[0];
+
+    const entry = db.prepare("SELECT * FROM worksheet_library WHERE id = ?")
+      .get(targetTier.id) as LibraryEntry | undefined;
+
+    if (!entry) return res.json({ found: false });
+
+    res.json({
+      found: true,
+      entry: parseEntry(entry),
+      availableTiers: allTiers.map(t => t.tier),
+    });
+  } catch (err: any) {
+    console.error("Library lookup error:", err.message);
+    res.status(500).json({ error: "Failed to lookup library" });
+  }
+});
+
+// ── GET /api/library/lookup-tier — lookup a specific tier for differentiation ──
+// Used by the Differentiate button to fetch the correct tier worksheet.
+
+router.get("/lookup-tier", requireAuth, (req: Request, res: Response) => {
+  try {
+    const { subject, topic, yearGroup, tier } = req.query as Record<string, string>;
+    if (!subject || !topic || !yearGroup || !tier) {
+      return res.status(400).json({ error: "subject, topic, yearGroup and tier are required" });
+    }
+
+    const topicNorm = topic.toLowerCase().trim();
+
+    // Try exact match with requested tier
+    let entry = db.prepare(
+      `SELECT * FROM worksheet_library
+       WHERE subject = ? AND (topic = ? OR LOWER(topic) = ?) AND year_group = ? AND tier = ?`
+    ).get(subject, topic, topicNorm, yearGroup, tier) as LibraryEntry | undefined;
+
+    // Fuzzy: any year group with this tier
     if (!entry) {
       entry = db.prepare(
-        "SELECT * FROM worksheet_library WHERE subject = ? AND topic = ? ORDER BY curated DESC, updated_at DESC LIMIT 1"
-      ).get(subject, topic) as LibraryEntry | undefined;
+        `SELECT * FROM worksheet_library
+         WHERE subject = ? AND (topic = ? OR LOWER(topic) = ?) AND tier = ?
+         ORDER BY curated DESC, updated_at DESC LIMIT 1`
+      ).get(subject, topic, topicNorm, tier) as LibraryEntry | undefined;
+    }
+
+    // Fallback: standard tier for this topic
+    if (!entry) {
+      entry = db.prepare(
+        `SELECT * FROM worksheet_library
+         WHERE subject = ? AND (topic = ? OR LOWER(topic) = ?)
+         ORDER BY CASE tier WHEN 'standard' THEN 0 ELSE 1 END, curated DESC LIMIT 1`
+      ).get(subject, topic, topicNorm) as LibraryEntry | undefined;
     }
 
     if (!entry) {
@@ -120,8 +202,8 @@ router.get("/lookup", requireAuth, (req: Request, res: Response) => {
       },
     });
   } catch (err: any) {
-    console.error("Library lookup error:", err.message);
-    res.status(500).json({ error: "Failed to lookup library" });
+    console.error("Library lookup-tier error:", err.message);
+    res.status(500).json({ error: "Failed to lookup tier" });
   }
 });
 
