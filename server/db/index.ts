@@ -240,6 +240,10 @@ export async function initDb() {
     `ALTER TABLE worksheet_library ADD COLUMN send_need TEXT`,
     // Tier-based indexes — created after tier column is guaranteed to exist
     `CREATE INDEX IF NOT EXISTS idx_library_tier ON worksheet_library(tier)`,
+    // Drop the old unique index that was on (subject, topic, year_group) WITHOUT tier.
+    // The old index blocks inserting multiple tiers for the same topic.
+    // The new index below includes tier so each tier is stored as a separate row.
+    `DROP INDEX IF EXISTS idx_library_topic`,
     `CREATE UNIQUE INDEX IF NOT EXISTS idx_library_topic ON worksheet_library(subject, topic, year_group, tier)`,
   ];
   for (const migration of migrations) {
