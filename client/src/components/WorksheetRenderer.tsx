@@ -3378,37 +3378,47 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
       {/* ── Professional Header — hidden for revision mats ── */}
       {!isRevisionMat && (
         isPrimary ? (
-          /* ── PRIMARY HEADER: clean dark navy style — matches reference PDF ── */
-          <div className="ws-header" style={{ marginBottom: "18px", fontFamily: fmt.fontFamily }}>
-            {/* Top info bar */}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                {schoolLogoUrl && (
-                  <img src={schoolLogoUrl} alt="School logo" style={{ height: "28px", width: "auto", maxWidth: "56px", objectFit: "contain" }} />
+          /* ── PRIMARY HEADER: bright, colourful, child-friendly ── */
+          <div className="ws-header" style={{ marginBottom: "18px", fontFamily: fmt.fontFamily, borderRadius: "18px", overflow: "hidden", border: "3px solid #a855f7", boxShadow: "0 4px 16px rgba(168,85,247,0.25)" }}>
+            {/* Rainbow gradient title bar */}
+            <div style={{
+              background: "linear-gradient(135deg, #f472b6 0%, #a855f7 25%, #60a5fa 50%, #4ade80 75%, #facc15 100%)",
+              padding: "14px 18px 12px 18px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: "12px",
+              WebkitPrintColorAdjust: "exact",
+              printColorAdjust: "exact",
+            }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: `${fmt.fontSize + 10}px`, fontWeight: 900, color: "#fff", fontFamily: fmt.fontFamily, lineHeight: "1.2", textShadow: "0 2px 6px rgba(0,0,0,0.25)", marginBottom: "2px" }}>
+                  {worksheet.title}
+                </div>
+                {worksheet.subtitle && (
+                  <div style={{ fontSize: `${fmt.fontSize}px`, color: "rgba(255,255,255,0.9)", fontFamily: fmt.fontFamily, fontWeight: 600 }}>{worksheet.subtitle}</div>
                 )}
-                <span style={{ fontSize: "11px", fontWeight: 700, color: "#1a2744", fontFamily: fmt.fontFamily, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "2px", flexShrink: 0 }}>
+                {schoolLogoUrl && (
+                  <img src={schoolLogoUrl} alt="School logo" style={{ height: "32px", width: "auto", maxWidth: "64px", objectFit: "contain", background: "rgba(255,255,255,0.85)", borderRadius: "6px", padding: "2px" }} />
+                )}
+                <span style={{ fontSize: "10px", fontWeight: 700, color: "rgba(255,255,255,0.9)", fontFamily: fmt.fontFamily, textTransform: "uppercase", letterSpacing: "0.06em", background: "rgba(0,0,0,0.15)", padding: "2px 8px", borderRadius: "8px" }}>
                   {schoolName || "Adaptly"}
                 </span>
               </div>
-              <span style={{ fontSize: "10px", color: "#6b7280", fontFamily: fmt.fontFamily, textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 600 }}>
-                {[worksheet.metadata?.subject, worksheet.metadata?.yearGroup].filter(Boolean).join(" · ")}
-              </span>
             </div>
-            {/* Main header block: grey bg, navy left border */}
-            <div style={{ background: "#e8ecf0", borderLeft: "5px solid #1a2744", padding: "14px 18px 12px 18px", marginBottom: "10px" }}>
-              <div style={{ fontSize: `${fmt.fontSize + 8}px`, fontWeight: 700, color: "#1a2744", fontFamily: fmt.fontFamily, lineHeight: "1.2", marginBottom: "4px" }}>{worksheet.title}</div>
-              {worksheet.subtitle && (
-                <div style={{ fontSize: `${fmt.fontSize}px`, color: "#4b5563", fontFamily: fmt.fontFamily, marginTop: "2px" }}>{worksheet.subtitle}</div>
-              )}
-            </div>
-            {/* Name / Date / Class bar */}
-            <div style={{ display: "flex", gap: "32px", alignItems: "center", borderBottom: "1.5px solid #d1d5db", paddingBottom: "8px", marginBottom: "6px" }}>
-              {[{ label: "Name", value: "" }, { label: "Date", value: "" }, { label: "Class", value: "" }].map((field, fi) => (
+            {/* Name / Date / Class bar — white background */}
+            <div style={{ background: "#fff", padding: "10px 18px 8px 18px", display: "flex", gap: "24px", alignItems: "center", flexWrap: "wrap" }}>
+              {[{ label: "Name", width: 140 }, { label: "Date", width: 100 }, { label: "Class", width: 100 }].map((field, fi) => (
                 <div key={fi} style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                  <span style={{ fontSize: "11px", fontWeight: 700, color: "#1a2744", fontFamily: fmt.fontFamily }}>{field.label}:</span>
-                  <div style={{ borderBottom: "1.5px solid #9ca3af", minWidth: "100px", height: "18px" }} />
+                  <span style={{ fontSize: "12px", fontWeight: 800, color: "#7c3aed", fontFamily: fmt.fontFamily }}>{field.label}:</span>
+                  <div style={{ borderBottom: "2px solid #a855f7", width: `${field.width}px`, height: "20px" }} />
                 </div>
               ))}
+              <span style={{ marginLeft: "auto", fontSize: "10px", color: "#9ca3af", fontFamily: fmt.fontFamily, fontWeight: 600 }}>
+                {[worksheet.metadata?.subject, worksheet.metadata?.yearGroup].filter(Boolean).join(" · ")}
+              </span>
             </div>
           </div>
         ) : (
