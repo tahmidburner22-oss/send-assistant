@@ -86,20 +86,88 @@ router.get("/entries", requireAuth, requireSuperAdmin, (req: Request, res: Respo
   }
 });
 
+/// ── Subject expansion map: broad UI subject → specific library subjects ─────────
+const SUBJECT_EXPANSION: Record<string, string[]> = {
+  Science:  ["Physics", "Biology", "Chemistry", "Science"],
+  science:  ["Physics", "Biology", "Chemistry", "Science"],
+  Maths:    ["Maths", "Mathematics"],
+  maths:    ["Maths", "Mathematics"],
+  Mathematics: ["Maths", "Mathematics"],
+  mathematics: ["Maths", "Mathematics"],
+  "Computer Science": ["Computer Science", "Computing"],
+  "computer science": ["Computer Science", "Computing"],
+  Computing: ["Computing", "Computer Science"],
+  computing: ["Computing", "Computer Science"],
+  "Design & Technology": ["Design & Technology", "DT"],
+  "Religious Education": ["Religious Education", "RE"],
+  "Business Studies": ["Business Studies", "Business"],
+  "Physical Education": ["PE", "Physical Education"],
+  PE: ["PE", "Physical Education"],
+  pe: ["PE", "Physical Education"],
+  MFL: ["MFL", "French", "Spanish", "German"],
+  mfl: ["MFL", "French", "Spanish", "German"],
+};
+
+// ── Topic keyword map: UI topic keywords → library topic keywords ─────────────
+// Used for fuzzy matching when exact topic name doesn't match
+const TOPIC_KEYWORD_MAP: Array<[string[], string[]]> = [
+  [["electricity", "circuit", "ohm"], ["electricity", "circuit", "electrical"]],
+  [["atomic structure", "atomic", "atom"], ["atomic", "atom", "nuclear", "alpha"]],
+  [["waves"], ["waves", "wave"]],
+  [["forces", "motion", "newton"], ["forces", "motion", "free body", "vector"]],
+  [["energy"], ["energy", "sankey", "specific heat"]],
+  [["magnetism", "electromagnetism", "motor"], ["motor effect", "magnetic", "transformer", "fleming"]],
+  [["nuclear", "radioactiv"], ["nuclear", "half-life", "half life", "decay"]],
+  [["particle", "states of matter"], ["particle model", "states"]],
+  [["light", "optics", "ray"], ["ray diagram", "electromagnetic spectrum"]],
+  [["pressure", "fluid"], ["pressure", "fluid", "hydraulic"]],
+  [["space", "solar system", "star"], ["solar system", "star life cycle"]],
+  [["mitosis", "cell division", "cell biology"], ["mitosis", "cell"]],
+  [["dna", "genetics", "inheritance"], ["dna", "genetics", "inheritance"]],
+  [["photosynthesis", "bioenergetics"], ["photosynthesis"]],
+  [["heart", "circulatory"], ["heart", "circulatory"]],
+  [["homeostasis", "nervous", "hormone"], ["homeostasis", "nervous", "hormone"]],
+  [["ionic", "covalent", "bonding"], ["ionic bonding", "covalent", "bonding"]],
+  [["organic chemistry", "alkane", "alkene"], ["alkane", "alkene", "organic"]],
+  [["algebra", "equation"], ["algebra", "equation", "linear", "quadratic"]],
+  [["geometry", "angles", "shape"], ["geometry", "angles", "shape"]],
+  [["probability"], ["probability"]],
+  [["statistics", "data"], ["statistics", "data"]],
+  [["vectors"], ["vectors", "vector"]],
+  [["fractions", "ratio", "number"], ["fractions", "ratio", "number"]],
+];
+
+function expandSubjects(subject: string): string[] {
+  return SUBJECT_EXPANSION[subject] || SUBJECT_EXPANSION[subject.toLowerCase()] || [subject];
+}
+
+function topicKeywordsMatch(uiTopic: string, libraryTopic: string): boolean {
+  const ui = uiTopic.toLowerCase();
+  const lib = libraryTopic.toLowerCase();
+  // Direct substring match
+  if (lib.includes(ui) || ui.includes(lib)) return true;
+  // Keyword group match
+  for (const [uiKeys, libKeys] of TOPIC_KEYWORD_MAP) {
+    const uiMatch = uiKeys.some(k => ui.includes(k));
+    const libMatch = libKeys.some(k => lib.includes(k));
+    if (uiMatch && libMatch) return true;
+  }
+  return false;
+}
+
 // ── GET /api/library/lookup — lookup by subject+topic+yearGroup[+tier] ──────────
 // Returns the matching entry. If tier is specified, returns that tier.
 // Also returns a `tiers` array listing all available tiers for this topic.
-
 router.get("/lookup", requireAuth, (req: Request, res: Response) => {
   try {
     const { subject, topic, yearGroup, tier } = req.query as Record<string, string>;
     if (!subject || !topic || !yearGroup) {
       return res.status(400).json({ error: "subject, topic and yearGroup are required" });
     }
-
     // Normalise topic for fuzzy matching
     const topicNorm = topic.toLowerCase().trim();
-
+    // Expand subject to handle broad subjects like "Science"
+    const subjectsToSearch = expandSubjects(subject);
     // Helper to parse an entry
     const parseEntry = (e: LibraryEntry) => ({
       ...e,
@@ -108,23 +176,37 @@ router.get("/lookup", requireAuth, (req: Request, res: Response) => {
       key_vocab: JSON.parse(e.key_vocab || "[]"),
       curated: !!e.curated,
     });
-
-    // Find all tiers available for this topic (exact + fuzzy)
-    let allTiers = db.prepare(
-      `SELECT id, tier, title FROM worksheet_library
-       WHERE subject = ? AND (topic = ? OR LOWER(topic) = ?) AND year_group = ?
-       ORDER BY tier ASC`
-    ).all(subject, topic, topicNorm, yearGroup) as { id: string; tier: string; title: string }[];
-
-    // Fuzzy fallback: any year group
-    if (allTiers.length === 0) {
-      allTiers = db.prepare(
+    // Helper: find all tiers for a given subject list + topic
+    const findTiersForSubjects = (subjects: string[], topicStr: string, yg?: string): { id: string; tier: string; title: string }[] => {
+      const placeholders = subjects.map(() => "?").join(",");
+      if (yg) {
+        return db.prepare(
+          `SELECT id, tier, title FROM worksheet_library
+           WHERE subject IN (${placeholders}) AND (topic = ? OR LOWER(topic) = ?) AND (year_group = ? OR year_group LIKE ?)
+           ORDER BY curated DESC, tier ASC`
+        ).all(...subjects, topicStr, topicStr.toLowerCase(), yg, `%${yg.replace(/Year /, "")}%`) as { id: string; tier: string; title: string }[];
+      }
+      return db.prepare(
         `SELECT id, tier, title FROM worksheet_library
-         WHERE subject = ? AND (topic = ? OR LOWER(topic) = ?)
-         ORDER BY tier ASC`
-      ).all(subject, topic, topicNorm) as { id: string; tier: string; title: string }[];
+         WHERE subject IN (${placeholders}) AND (topic = ? OR LOWER(topic) = ?)
+         ORDER BY curated DESC, tier ASC`
+      ).all(...subjects, topicStr, topicStr.toLowerCase()) as { id: string; tier: string; title: string }[];
+    };
+    // 1. Exact topic match with year group
+    let allTiers = findTiersForSubjects(subjectsToSearch, topic, yearGroup);
+    // 2. Exact topic match, any year group
+    if (allTiers.length === 0) {
+      allTiers = findTiersForSubjects(subjectsToSearch, topic);
     }
-
+    // 3. Fuzzy topic match — keyword-based
+    if (allTiers.length === 0) {
+      const placeholders = subjectsToSearch.map(() => "?").join(",");
+      const allEntries = db.prepare(
+        `SELECT id, tier, title, topic FROM worksheet_library WHERE subject IN (${placeholders}) ORDER BY curated DESC`
+      ).all(...subjectsToSearch) as { id: string; tier: string; title: string; topic: string }[];
+      const matched = allEntries.filter(e => topicKeywordsMatch(topic, e.topic));
+      allTiers = matched.map(({ id, tier, title }) => ({ id, tier, title }));
+    }
     if (allTiers.length === 0) {
       return res.json({ found: false });
     }
@@ -162,29 +244,39 @@ router.get("/lookup-tier", requireAuth, (req: Request, res: Response) => {
     }
 
     const topicNorm = topic.toLowerCase().trim();
+    const subjectsToSearch = expandSubjects(subject);
+    const placeholders = subjectsToSearch.map(() => "?").join(",");
 
-    // Try exact match with requested tier
+    // Try exact match with requested tier + year group
     let entry = db.prepare(
       `SELECT * FROM worksheet_library
-       WHERE subject = ? AND (topic = ? OR LOWER(topic) = ?) AND year_group = ? AND tier = ?`
-    ).get(subject, topic, topicNorm, yearGroup, tier) as LibraryEntry | undefined;
+       WHERE subject IN (${placeholders}) AND (topic = ? OR LOWER(topic) = ?) AND (year_group = ? OR year_group LIKE ?) AND tier = ?
+       ORDER BY curated DESC LIMIT 1`
+    ).get(...subjectsToSearch, topic, topicNorm, yearGroup, `%${yearGroup.replace(/Year /, "")}%`, tier) as LibraryEntry | undefined;
 
     // Fuzzy: any year group with this tier
     if (!entry) {
       entry = db.prepare(
         `SELECT * FROM worksheet_library
-         WHERE subject = ? AND (topic = ? OR LOWER(topic) = ?) AND tier = ?
+         WHERE subject IN (${placeholders}) AND (topic = ? OR LOWER(topic) = ?) AND tier = ?
          ORDER BY curated DESC, updated_at DESC LIMIT 1`
-      ).get(subject, topic, topicNorm, tier) as LibraryEntry | undefined;
+      ).get(...subjectsToSearch, topic, topicNorm, tier) as LibraryEntry | undefined;
     }
 
-    // Fallback: standard tier for this topic
+    // Fuzzy topic keyword match with requested tier
     if (!entry) {
-      entry = db.prepare(
-        `SELECT * FROM worksheet_library
-         WHERE subject = ? AND (topic = ? OR LOWER(topic) = ?)
-         ORDER BY CASE tier WHEN 'standard' THEN 0 ELSE 1 END, curated DESC LIMIT 1`
-      ).get(subject, topic, topicNorm) as LibraryEntry | undefined;
+      const allEntries = db.prepare(
+        `SELECT * FROM worksheet_library WHERE subject IN (${placeholders}) AND tier = ? ORDER BY curated DESC`
+      ).all(...subjectsToSearch, tier) as LibraryEntry[];
+      entry = allEntries.find(e => topicKeywordsMatch(topic, e.topic));
+    }
+
+    // Fallback: any tier for this topic (keyword match)
+    if (!entry) {
+      const allEntries = db.prepare(
+        `SELECT * FROM worksheet_library WHERE subject IN (${placeholders}) ORDER BY CASE tier WHEN 'standard' THEN 0 ELSE 1 END, curated DESC`
+      ).all(...subjectsToSearch) as LibraryEntry[];
+      entry = allEntries.find(e => topicKeywordsMatch(topic, e.topic));
     }
 
     if (!entry) {

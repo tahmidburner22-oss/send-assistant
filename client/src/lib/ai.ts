@@ -1473,7 +1473,7 @@ Rules: x/y are percentages (5–95), max 2 diagrams, title must name the specifi
     : `Only include or request a diagram if it is essential to teaching "${params.topic}". The diagram must match the exact worksheet topic and the questions that refer to it. If no exact topic-matching diagram is needed, omit the diagram entirely.`;
   const vocabularyCapNote = `Key Vocabulary must contain at most 5 items.`;
 
-  const recallNote = params.recallTopic ? `PRIOR KNOWLEDGE CHECK REQUIRED: After the Learning Objective and BEFORE Key Vocabulary, include a section titled "Prior Knowledge Check — ${params.recallTopic}" (type: "prior-knowledge") with exactly 3 short retrieval questions on the PREVIOUS topic "${params.recallTopic}". These must be quick, accessible questions (True/False, short answer, or fill-in-blank) to activate prior knowledge. Do NOT mix these with the main topic questions. This section appears SECOND in the worksheet, right after the Learning Objective.` : '';
+  const recallNote = params.recallTopic ? `RETRIEVAL PRACTICE REQUIRED: After the Learning Objective and BEFORE Key Vocabulary, include a section titled "Retrieval Practice — ${params.recallTopic}" (type: "prior-knowledge") with exactly 3 short retrieval questions on the PREVIOUS topic "${params.recallTopic}". These must be quick, accessible questions (True/False, short answer, or fill-in-blank) to activate prior knowledge. Do NOT mix these with the main topic questions. This section appears SECOND in the worksheet, right after the Learning Objective.` : '';
 
   const user = `Create one printable worksheet in valid raw JSON only.
 Subject: ${params.subject} | Year: ${params.yearGroup} (${phase}) | Topic: ${params.topic} | Difficulty: ${params.difficulty || "mixed"}
@@ -1539,7 +1539,7 @@ Return EXACTLY this JSON (raw JSON only):
     ] : [
     // ── SECONDARY SCHOOL (GCSE style) ──
     {"title": "Learning Objectives", "type": "objective", "content": "[One clear learning objective sentence for ${params.topic}]"},
-    ${params.recallTopic ? `{"title": "Prior Knowledge Check \u2014 ${params.recallTopic}", "type": "prior-knowledge", "content": "Test your memory from last lesson!\n1. [True/False statement about ${params.recallTopic}] TRUE / FALSE\n2. [Short question about ${params.recallTopic}]\n3. [Fill-in-blank about ${params.recallTopic}]"},` : ''}
+    ${params.recallTopic ? `{"title": "Retrieval Practice \u2014 ${params.recallTopic}", "type": "prior-knowledge", "content": "Recall from last lesson!\n1. [True/False statement about ${params.recallTopic}] TRUE / FALSE\n2. [Short question about ${params.recallTopic}]\n3. [Fill-in-blank about ${params.recallTopic}]"},` : ''}
     {"title": "Key Vocabulary", "type": "vocabulary", "content": "[6-8 terms, one per line: term | definition]"},
     {"title": "Common Mistakes to Avoid", "type": "common-mistakes", "teacherOnly": false, "content": "[3-4 common mistakes. Format each as:\nMISTAKE TITLE\n→ explanation of the mistake and how to avoid it]"},
     ${isMaths && !params.examStyle ? `{"title": "Key Formulas", "type": "example", "content": "[LaTeX formulas or: No formula required]"},` : ''}
