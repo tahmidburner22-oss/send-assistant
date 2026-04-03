@@ -1873,7 +1873,107 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
 
     let generatedWs: AnyWorksheet | null = null;
     try {
-      if (useAI) {
+      // Try the worksheet library first for the natural-language quick-generate path as well.
+      // Previously this path skipped library lookup entirely and always went straight to AI.
+      try {
+        const libToken = localStorage.getItem("send_token") || "";
+        const authHeaders: Record<string, string> = libToken ? { Authorization: `Bearer ${libToken}` } : {};
+        const hasSendNeed = !!parsed.sendNeed && parsed.sendNeed !== "none-selected";
+        const lookupTier = hasSendNeed ? "standard" : (nextDifficulty === "higher" ? "higher" : nextDifficulty === "foundation" ? "foundation" : "standard");
+        const libRes = await fetch(
+          `/api/library/lookup?subject=${encodeURIComponent(getLibrarySubjectName(nextSubject))}&topic=${encodeURIComponent(nextTopic)}&yearGroup=${encodeURIComponent(nextYearGroup)}&tier=${lookupTier}`,
+          { headers: authHeaders }
+        );
+        if (libRes.ok) {
+          const libData = await libRes.json();
+          if (libData.found && libData.entry) {
+            const entry = libData.entry;
+            const libraryYearGroup = entry.year_group || entry.yearGroup;
+            const yearGroupMismatch = libraryYearGroup && libraryYearGroup !== nextYearGroup;
+
+            let finalSections = entry.sections || [];
+            let readingAdjusted = false;
+            let sendAdapted = false;
+
+            if (yearGroupMismatch) {
+              setGenerationStatus(`Adjusting reading level for ${nextYearGroup}...`);
+              try {
+                const adjustRes = await fetch("/api/ai/adjust-reading-level", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json", ...authHeaders },
+                  body: JSON.stringify({
+                    sections: finalSections,
+                    targetYearGroup: nextYearGroup,
+                    subject: nextSubject,
+                    topic: nextTopic,
+                    sendNeed: hasSendNeed ? parsed.sendNeed : undefined,
+                  }),
+                });
+                if (adjustRes.ok) {
+                  const adjustData = await adjustRes.json();
+                  if (adjustData.sections && adjustData.sections.length > 0) {
+                    finalSections = adjustData.sections;
+                    readingAdjusted = true;
+                  }
+                }
+              } catch (adjustErr) {
+                console.warn("Reading level adjustment failed in NL flow, using original:", adjustErr);
+              }
+            }
+
+            if (hasSendNeed) {
+              setGenerationStatus(`Applying ${parsed.sendNeed} scaffolding...`);
+              try {
+                const sendRes = await fetch("/api/ai/scaffold-worksheet", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json", ...authHeaders },
+                  body: JSON.stringify({
+                    sections: finalSections,
+                    sendNeed: parsed.sendNeed,
+                    subject: nextSubject,
+                    topic: nextTopic,
+                    yearGroup: nextYearGroup,
+                    title: entry.title,
+                  }),
+                });
+                if (sendRes.ok) {
+                  const sendData = await sendRes.json();
+                  if (sendData.sections && sendData.sections.length > 0) {
+                    finalSections = sendData.sections;
+                    sendAdapted = true;
+                  }
+                }
+              } catch (sendErr) {
+                console.warn("SEND scaffolding failed in NL flow, using original content with formatting overlay:", sendErr);
+              }
+            }
+
+            generatedWs = {
+              title: entry.title,
+              subtitle: entry.subtitle || `${nextYearGroup} | ${nextSubject}`,
+              sections: finalSections,
+              metadata: {
+                subject: nextSubject,
+                topic: nextTopic,
+                yearGroup: nextYearGroup,
+                difficulty: nextDifficulty || "standard",
+                examBoard: undefined,
+                totalMarks: finalSections.reduce((t: number, s: any) => t + (s.marks || 0), 0),
+                sendNeed: hasSendNeed ? parsed.sendNeed : undefined,
+              },
+              isAI: readingAdjusted || sendAdapted,
+              fromLibrary: true,
+              libraryCurated: entry.curated,
+              availableTiers: libData.availableTiers || ["standard"],
+            } as any;
+            toast.success("Worksheet loaded from library!");
+          }
+        }
+      } catch (libErr) {
+        console.warn("Natural-language library lookup failed, falling back to AI:", libErr);
+      }
+
+      if (!generatedWs && useAI) {
         const result = await aiGenerateWorksheet({
           subject: nextSubject,
           topic: nextTopic,
@@ -1895,7 +1995,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
         });
         generatedWs = { ...result, isAI: true } as AIWorksheet;
         toast.success("Worksheet generated!");
-      } else {
+      } else if (!generatedWs) {
         generatedWs = generateWorksheet({
           subject: nextSubject,
           topic: nextTopic,
