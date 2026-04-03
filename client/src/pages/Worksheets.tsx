@@ -870,41 +870,96 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
     setVoiceAnswers({});
 
     // ── LIBRARY LOOKUP: Check if a master worksheet exists for this topic ──────
-    // Only use library for standard AI mode (not exam-style, not SEND-adapted)
-    if (!examStyle && (!sendNeed || sendNeed === "none-selected")) {
+    // Always try the library first (even when SEND need is selected, or year group differs).
+    //
+    // Rule: If the library has the topic (e.g. Vectors) but for a different year group
+    // (e.g. Year 10) and the user selects Year 7, we still use the same worksheet
+    // but adjust the reading age/language to suit Year 7. Content, structure, marks
+    // and questions are unchanged — only vocabulary and sentence complexity change.
+    //
+    // SEND formatting (font/size/spacing) is applied as a display overlay by
+    // WorksheetRenderer via getSendFormatting — the content is never rewritten for SEND.
+    if (!examStyle) {
       try {
         const libToken = localStorage.getItem("send_token") || "";
+        const authHeaders = libToken ? { Authorization: `Bearer ${libToken}` } : {};
         const libRes = await fetch(
-          `/api/library/lookup?subject=${encodeURIComponent(subject)}&topic=${encodeURIComponent(topic)}&yearGroup=${encodeURIComponent(yearGroup)}`,
-          { headers: libToken ? { Authorization: `Bearer ${libToken}` } : {} }
+          `/api/library/lookup?subject=${encodeURIComponent(subject)}&topic=${encodeURIComponent(topic)}&yearGroup=${encodeURIComponent(yearGroup)}&tier=standard`,
+          { headers: authHeaders }
         );
         if (libRes.ok) {
           const libData = await libRes.json();
           if (libData.found && libData.entry) {
             const entry = libData.entry;
+            const hasSendNeed = sendNeed && sendNeed !== "none-selected";
+
+            // Check if the library entry's year group matches the requested year group.
+            // If not, we need to adjust the reading level to suit the selected year group.
+            const libraryYearGroup = entry.year_group || entry.yearGroup;
+            const yearGroupMismatch = libraryYearGroup && libraryYearGroup !== yearGroup;
+
+            let finalSections = entry.sections || [];
+            let readingAdjusted = false;
+
+            if (yearGroupMismatch) {
+              // Adjust reading level to match the selected year group.
+              // This changes ONLY vocabulary and sentence complexity — not questions or marks.
+              setGenerationStatus(`Adjusting reading level for ${yearGroup}...`);
+              try {
+                const adjustRes = await fetch("/api/ai/adjust-reading-level", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json", ...authHeaders },
+                  body: JSON.stringify({
+                    sections: finalSections,
+                    targetYearGroup: yearGroup,
+                    subject,
+                    topic,
+                    sendNeed: hasSendNeed ? sendNeed : undefined,
+                  }),
+                });
+                if (adjustRes.ok) {
+                  const adjustData = await adjustRes.json();
+                  if (adjustData.sections && adjustData.sections.length > 0) {
+                    finalSections = adjustData.sections;
+                    readingAdjusted = true;
+                  }
+                }
+              } catch (adjustErr) {
+                console.warn("Reading level adjustment failed, using original:", adjustErr);
+              }
+            }
+
             const libWorksheet = {
               title: entry.title,
               subtitle: entry.subtitle || `${yearGroup} | ${subject}`,
-              sections: entry.sections || [],
+              sections: finalSections,
               metadata: {
                 subject,
                 topic,
                 yearGroup,
                 difficulty: difficulty || "standard",
                 examBoard: examBoard !== "none" ? examBoard : undefined,
-                totalMarks: (entry.sections || []).reduce((t: number, s: any) => t + (s.marks || 0), 0),
+                totalMarks: finalSections.reduce((t: number, s: any) => t + (s.marks || 0), 0),
+                // Store SEND need in metadata so WorksheetRenderer applies the correct
+                // font/size/spacing overlay — content structure is never changed for SEND.
+                sendNeedId: hasSendNeed ? sendNeed : undefined,
+                sendNeed: hasSendNeed ? sendNeed : undefined,
               },
-              isAI: false,
+              isAI: readingAdjusted, // mark as AI-adjusted if reading level was changed
               fromLibrary: true,
               libraryCurated: entry.curated,
+              // Store available tiers so the differentiate panel knows what's in the library
+              availableTiers: libData.availableTiers || ["standard"],
             } as any;
             setGenerated(libWorksheet);
             setHiddenSections(new Set());
             setDiffVersions({});
             setLoading(false);
             setGenerationStatus("");
-            const badge = entry.curated ? "✓ Curated master worksheet" : "From worksheet library";
-            toast.success(`${badge} — loaded instantly!`, { duration: 4000 });
+            const badge = entry.curated ? "✓ Curated worksheet" : "From worksheet library";
+            const ygBadge = readingAdjusted ? ` · reading level adjusted for ${yearGroup}` : "";
+            const sendBadge = hasSendNeed ? " · SEND formatting applied" : "";
+            toast.success(`${badge}${ygBadge}${sendBadge} — loaded instantly!`, { duration: 4000 });
             return;
           }
         }
@@ -1899,14 +1954,117 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
     try {
       const ws = generated as AIWorksheet;
       const meta = ws.metadata || {};
-      const sections = ws.sections || [];
+      const libToken = localStorage.getItem("send_token") || "";
+      const authHeaders: Record<string, string> = libToken
+        ? { Authorization: `Bearer ${libToken}`, "Content-Type": "application/json" }
+        : { "Content-Type": "application/json" };
+
+      // ── Determine the SEND formatting to carry over from the original worksheet ──
+      // For the SEND tier, use the selected SEND need (or the one on the original sheet).
+      // For foundation/higher, carry over the original SEND formatting if any.
+      const originalSendNeed = meta.sendNeedId || meta.sendNeed;
+      const activeSendNeed = tier === "send"
+        ? (sendNeedForScaffold || sendNeed || originalSendNeed || "general")
+        : originalSendNeed;
+
+      // ── Map tier names: 'send' in the UI → 'scaffolded' in the library ──
+      const libraryTier = tier === "send" ? "scaffolded" : tier;
 
       let adaptedWorksheet: AIWorksheet;
 
-      if (tier === "foundation" || tier === "higher") {
-        // AI-powered differentiation — genuinely rewrites questions for the tier
+      // ── STEP 1: Try to fetch the correct tier from the worksheet library ──
+      // The library holds curated foundation/higher/scaffolded versions.
+      // If found, use that content directly — no AI content rewriting needed.
+      let libraryEntry: any = null;
+      try {
+        const lookupRes = await fetch(
+          `/api/library/lookup-tier?subject=${encodeURIComponent(meta.subject || subject)}&topic=${encodeURIComponent(meta.topic || topic)}&yearGroup=${encodeURIComponent(meta.yearGroup || yearGroup)}&tier=${encodeURIComponent(libraryTier)}`,
+          { headers: { Authorization: authHeaders.Authorization || "" } }
+        );
+        if (lookupRes.ok) {
+          const lookupData = await lookupRes.json();
+          if (lookupData.found && lookupData.entry) {
+            libraryEntry = lookupData.entry;
+          }
+        }
+      } catch (libErr) {
+        console.warn("Library tier lookup failed, falling back to AI:", libErr);
+      }
+
+      if (libraryEntry) {
+        // ── Library version found ──
+        // Use the library content as-is. Then:
+        //  1. If the library entry's year group differs from the selected year group,
+        //     adjust the reading level (vocabulary/sentence complexity only).
+        //  2. Apply SEND formatting overlay via metadata (font/size/spacing only).
+        const tierLabel = tier === "foundation" ? "Foundation" : tier === "higher" ? "Higher" : "Scaffolded";
+        let finalSections = libraryEntry.sections || ws.sections;
+        let readingAdjusted = false;
+
+        // Check if reading level adjustment is needed
+        const libYG = libraryEntry.year_group || libraryEntry.yearGroup;
+        const targetYG = meta.yearGroup || yearGroup;
+        if (libYG && libYG !== targetYG) {
+          try {
+            const adjustRes = await fetch("/api/ai/adjust-reading-level", {
+              method: "POST",
+              headers: authHeaders,
+              body: JSON.stringify({
+                sections: finalSections,
+                targetYearGroup: targetYG,
+                subject: meta.subject || subject,
+                topic: meta.topic || topic,
+                sendNeed: activeSendNeed || undefined,
+              }),
+            });
+            if (adjustRes.ok) {
+              const adjustData = await adjustRes.json();
+              if (adjustData.sections && adjustData.sections.length > 0) {
+                finalSections = adjustData.sections;
+                readingAdjusted = true;
+              }
+            }
+          } catch (adjustErr) {
+            console.warn("Reading level adjustment failed, using original:", adjustErr);
+          }
+        }
+
+        adaptedWorksheet = {
+          ...ws,
+          title: libraryEntry.title || `${ws.title} — ${tierLabel}`,
+          subtitle: libraryEntry.subtitle || ws.subtitle,
+          sections: finalSections,
+          metadata: {
+            ...meta,
+            // Carry the SEND formatting need into metadata so WorksheetRenderer
+            // applies the correct font/size/spacing overlay automatically.
+            sendNeedId: activeSendNeed || undefined,
+            sendNeed: activeSendNeed || undefined,
+          },
+          isAI: readingAdjusted,
+          fromLibrary: true,
+          libraryCurated: libraryEntry.curated,
+        };
+      } else if (tier === "send") {
+        // ── SEND tier: no library version found ──
+        // Keep the original content exactly. Only update the SEND formatting metadata
+        // so WorksheetRenderer applies the correct font/size/spacing overlay.
+        // Structure, questions, marks — all unchanged.
+        adaptedWorksheet = {
+          ...ws,
+          metadata: {
+            ...meta,
+            sendNeedId: activeSendNeed || undefined,
+            sendNeed: activeSendNeed || undefined,
+          },
+          isAI: ws.isAI,
+        };
+      } else {
+        // ── Foundation / Higher: no library version found — fall back to AI ──
+        // AI rewrites questions for the tier. Reading level adjustment is not needed
+        // here because the AI prompt already targets the correct year group.
         const result = await aiDifferentiateExistingWorksheet({
-          sections,
+          sections: ws.sections || [],
           tier: tier as "foundation" | "higher",
           subject: meta.subject,
           topic: meta.topic,
@@ -1917,23 +2075,11 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
           ...ws,
           sections: result.sections,
           title: `${ws.title} — ${tier === "foundation" ? "Foundation" : "Higher"}`,
-          isAI: true as const,
-        };
-      } else {
-        // SEND scaffolding — AI adds word banks, sentence starters, chunked instructions
-        const sendId = sendNeedForScaffold || sendNeed || "general";
-        const result = await aiScaffoldExistingWorksheet({
-          sections,
-          sendNeed: sendId,
-          subject: meta.subject,
-          topic: meta.topic,
-          yearGroup: meta.yearGroup,
-          title: ws.title,
-        });
-        adaptedWorksheet = {
-          ...ws,
-          sections: result.sections,
-          title: `${ws.title} — SEND Scaffolded`,
+          metadata: {
+            ...meta,
+            sendNeedId: activeSendNeed || undefined,
+            sendNeed: activeSendNeed || undefined,
+          },
           isAI: true as const,
         };
       }
@@ -1942,10 +2088,11 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
       setGenerated(adaptedWorksheet);
       setShowDiffDialog(false);
 
+      const source = libraryEntry ? "library" : "AI";
       const msgs: Record<string, string> = {
-        foundation: "Foundation version applied — questions simplified, scaffolds and step prompts added.",
-        higher:     "Higher version applied — questions upgraded with higher-order thinking and extension tasks.",
-        send:       "SEND version applied — word banks, sentence starters, and chunked instructions added.",
+        foundation: `Foundation version applied (${source}) — structure preserved, SEND formatting carried over.`,
+        higher:     `Higher version applied (${source}) — structure preserved, SEND formatting carried over.`,
+        send:       `SEND formatting applied — font, size and spacing adjusted. Content structure unchanged.`,
       };
       toast.success(msgs[tier] || `${tier} version applied!`);
     } catch (err) {

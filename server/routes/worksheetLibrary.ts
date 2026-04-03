@@ -239,15 +239,17 @@ router.post("/entries", requireAuth, (req: Request, res: Response) => {
     } = req.body;
 
     const year_group = yearGroup || req.body.year_group;
+    // tier: 'standard' | 'foundation' | 'higher' | 'scaffolded' — each stored as a separate row
+    const tier = (req.body.tier || "standard").toLowerCase().trim();
 
     if (!subject || !topic || !year_group || !title) {
       return res.status(400).json({ error: "subject, topic, yearGroup and title are required" });
     }
 
-    // Check if already exists (upsert)
+    // Check if already exists — keyed by subject + topic + year_group + tier
     const existing = db.prepare(
-      "SELECT id, version, curated FROM worksheet_library WHERE subject = ? AND topic = ? AND year_group = ?"
-    ).get(subject, topic, year_group) as { id: string; version: number; curated: number } | undefined;
+      "SELECT id, version, curated FROM worksheet_library WHERE subject = ? AND topic = ? AND year_group = ? AND tier = ?"
+    ).get(subject, topic, year_group, tier) as { id: string; version: number; curated: number } | undefined;
 
     // Don't overwrite curated entries with non-curated ones
     if (existing?.curated && !curated) {
@@ -262,7 +264,7 @@ router.post("/entries", requireAuth, (req: Request, res: Response) => {
         UPDATE worksheet_library SET
           title = ?, subtitle = ?, sections = ?, teacher_sections = ?,
           key_vocab = ?, learning_objective = ?, source = ?, curated = ?,
-          version = ?, uploaded_by = ?, updated_at = datetime('now')
+          tier = ?, version = ?, uploaded_by = ?, updated_at = datetime('now')
         WHERE id = ?
       `).run(
         title, subtitle || null,
@@ -272,6 +274,7 @@ router.post("/entries", requireAuth, (req: Request, res: Response) => {
         learning_objective || null,
         source || "upload",
         curated ? 1 : 0,
+        tier,
         version,
         (req as any).user?.id || null,
         id
@@ -280,8 +283,8 @@ router.post("/entries", requireAuth, (req: Request, res: Response) => {
       db.prepare(`
         INSERT INTO worksheet_library
           (id, subject, topic, year_group, title, subtitle, sections, teacher_sections,
-           key_vocab, learning_objective, source, curated, version, uploaded_by)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+           key_vocab, learning_objective, source, curated, tier, version, uploaded_by)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `).run(
         id, subject, topic, year_group, title, subtitle || null,
         JSON.stringify(sections || []),
@@ -290,6 +293,7 @@ router.post("/entries", requireAuth, (req: Request, res: Response) => {
         learning_objective || null,
         source || "upload",
         curated ? 1 : 0,
+        tier,
         version,
         (req as any).user?.id || null
       );
@@ -372,6 +376,8 @@ router.post("/ingest-pdf", requireAuth, requireSuperAdmin, pdfUpload.single("pdf
   try {
     const { subject, topic, yearGroup, title, subtitle, learning_objective } = req.body;
     const year_group = yearGroup || req.body.year_group;
+    // tier: 'standard' | 'foundation' | 'higher' | 'scaffolded' — each stored as a separate row
+    const tier = (req.body.tier || "standard").toLowerCase().trim();
 
     if (!subject || !topic || !year_group) {
       return res.status(400).json({ error: "subject, topic and yearGroup are required" });
@@ -408,10 +414,11 @@ router.post("/ingest-pdf", requireAuth, requireSuperAdmin, pdfUpload.single("pdf
       parsed = parsePdfToSections(pdfText, subject, topic);
     }
 
-    // Check if already exists
+    // Check if already exists — keyed by subject + topic + year_group + tier
+    // Each tier (standard/foundation/higher/scaffolded) is stored as a separate row.
     const existing = db.prepare(
-      "SELECT id, version FROM worksheet_library WHERE subject = ? AND topic = ? AND year_group = ?"
-    ).get(subject, topic, year_group) as { id: string; version: number } | undefined;
+      "SELECT id, version FROM worksheet_library WHERE subject = ? AND topic = ? AND year_group = ? AND tier = ?"
+    ).get(subject, topic, year_group, tier) as { id: string; version: number } | undefined;
 
     const id = existing?.id || uuidv4();
     const version = existing ? (existing.version + 1) : 1;
@@ -422,7 +429,7 @@ router.post("/ingest-pdf", requireAuth, requireSuperAdmin, pdfUpload.single("pdf
         UPDATE worksheet_library SET
           title = ?, subtitle = ?, sections = ?, teacher_sections = ?,
           key_vocab = ?, learning_objective = ?, source = 'pdf', curated = 1,
-          version = ?, uploaded_by = ?, updated_at = datetime('now')
+          tier = ?, version = ?, uploaded_by = ?, updated_at = datetime('now')
         WHERE id = ?
       `).run(
         entryTitle, subtitle || null,
@@ -430,21 +437,21 @@ router.post("/ingest-pdf", requireAuth, requireSuperAdmin, pdfUpload.single("pdf
         JSON.stringify(parsed.teacherSections),
         JSON.stringify(parsed.keyVocab),
         learning_objective || parsed.learningObjective || null,
-        version, (req as any).user?.id || null, id
+        tier, version, (req as any).user?.id || null, id
       );
     } else {
       db.prepare(`
         INSERT INTO worksheet_library
           (id, subject, topic, year_group, title, subtitle, sections, teacher_sections,
-           key_vocab, learning_objective, source, curated, version, uploaded_by)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pdf', 1, ?, ?)
+           key_vocab, learning_objective, source, curated, tier, version, uploaded_by)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pdf', 1, ?, ?, ?)
       `).run(
         id, subject, topic, year_group, entryTitle, subtitle || null,
         JSON.stringify(parsed.sections),
         JSON.stringify(parsed.teacherSections),
         JSON.stringify(parsed.keyVocab),
         learning_objective || parsed.learningObjective || null,
-        version, (req as any).user?.id || null
+        tier, version, (req as any).user?.id || null
       );
     }
 
