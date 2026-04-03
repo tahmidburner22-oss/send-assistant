@@ -1599,9 +1599,8 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
             width: ${A4_W}px;
           }
           .ws-section { margin-bottom: 10px !important; border-radius: 4px !important;
-            border: 1.5px solid #5b21b6 !important;
             -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-          .ws-header { border: 1.5px solid #5b21b6 !important; border-radius: 4px !important;
+          .ws-header { border-radius: 4px !important;
             margin-bottom: 10px !important; overflow: hidden !important;
             -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
           table { width: 100%; border-collapse: collapse; margin: 8px 0; }
