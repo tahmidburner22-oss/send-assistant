@@ -200,10 +200,43 @@ export function buildPopupHtml(
       print-color-adjust: exact !important;
     }
 
+    /* ── PRIMARY SCHOOL: preserve all colourful section styles in print/PDF ── */
+    /* Gradient header bars — must print in full colour */
+    [style*="linear-gradient"] {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    /* Coloured section borders (18px radius primary cards) */
+    [style*="border-radius: 18px"],
+    [style*="borderRadius: 18px"] {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+      border-radius: 18px !important;
+      overflow: hidden !important;
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+    }
+    /* Numbered circle bubbles in primary headers */
+    [style*="border-radius: 50%"] {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    /* Exercise-book writing lines */
+    [style*="border-bottom: 1px solid"],
+    [style*="borderBottom"] {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    /* Primary encouragement banner */
+    [style*="linear-gradient(90deg"] {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
     /* ── Ensure all coloured backgrounds print ── */
     * {
-      -webkit-print-color-adjust: exact;
-      print-color-adjust: exact;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
     }
 
     /* ── Tables ── */
@@ -424,7 +457,25 @@ export async function downloadHtmlAsPdf(
       max-width: ${RENDER_PX}px;
     }
     .ws-teacher-section { display: none !important; }
-    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    /* ── PRIMARY SCHOOL: preserve all colourful section styles in PDF ── */
+    /* Gradient header bars */
+    [style*="linear-gradient"] {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    /* Coloured section cards (18px radius) */
+    [style*="border-radius: 18px"] {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+      border-radius: 18px !important;
+      overflow: hidden !important;
+    }
+    /* Numbered circle bubbles */
+    [style*="border-radius: 50%"] {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
     .katex .katex-mathml {
       position: absolute !important; clip: rect(1px,1px,1px,1px) !important;
       padding: 0 !important; border: 0 !important;
