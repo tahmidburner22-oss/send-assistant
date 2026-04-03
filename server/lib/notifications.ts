@@ -89,7 +89,7 @@ export function initWebSocketServer(httpServer: Server): WebSocketServer {
 }
 
 // ── Push a notification to a specific user ────────────────────────────────────
-export function pushNotification(userId: string, notification: Omit<Notification, "id" | "createdAt" | "read">): void {
+export async function pushNotification(userId: string, notification: Omit<Notification, "id" | "createdAt" | "read">): Promise<void> {
   const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   const full: Notification = {
     ...notification,
@@ -100,8 +100,8 @@ export function pushNotification(userId: string, notification: Omit<Notification
 
   // Persist to DB
   try {
-    db.prepare(`
-      INSERT OR IGNORE INTO notifications (id, user_id, type, title, body, link, metadata, created_at, read)
+    await db.prepare(`
+      INSERT INTO notifications (id, user_id, type, title, body, link, metadata, created_at, read)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)
     `).run(
       full.id,
@@ -130,9 +130,9 @@ export function pushNotification(userId: string, notification: Omit<Notification
 }
 
 // ── Push a notification to all users in a school ─────────────────────────────
-export function pushSchoolNotification(schoolId: string, notification: Omit<Notification, "id" | "createdAt" | "read">): void {
+export async function pushSchoolNotification(schoolId: string, notification: Omit<Notification, "id" | "createdAt" | "read">): Promise<void> {
   try {
-    const users = db.prepare("SELECT id FROM users WHERE school_id = ?").all(schoolId) as any[];
+    const users = await db.prepare("SELECT id FROM users WHERE school_id = ?").all(schoolId) as any[];
     for (const user of users) {
       pushNotification(user.id, notification);
     }
@@ -142,9 +142,9 @@ export function pushSchoolNotification(schoolId: string, notification: Omit<Noti
 }
 
 // ── Get unread notifications for a user ──────────────────────────────────────
-export function getUnreadNotifications(userId: string): Notification[] {
+export async function getUnreadNotifications(userId: string): Promise<Notification[]> {
   try {
-    const rows = db.prepare(`
+    const rows = await db.prepare(`
       SELECT * FROM notifications WHERE user_id = ? AND read = 0
       ORDER BY created_at DESC LIMIT 50
     `).all(userId) as any[];
@@ -165,18 +165,18 @@ export function getUnreadNotifications(userId: string): Notification[] {
 }
 
 // ── Mark a notification as read ───────────────────────────────────────────────
-export function markNotificationRead(userId: string, notificationId: string): void {
+export async function markNotificationRead(userId: string, notificationId: string): Promise<void> {
   try {
-    db.prepare("UPDATE notifications SET read = 1 WHERE id = ? AND user_id = ?").run(notificationId, userId);
+    await db.prepare("UPDATE notifications SET read = 1 WHERE id = ? AND user_id = ?").run(notificationId, userId);
   } catch {
     // gracefully degrade
   }
 }
 
 // ── Mark all notifications as read ───────────────────────────────────────────
-export function markAllNotificationsRead(userId: string): void {
+export async function markAllNotificationsRead(userId: string): Promise<void> {
   try {
-    db.prepare("UPDATE notifications SET read = 1 WHERE user_id = ?").run(userId);
+    await db.prepare("UPDATE notifications SET read = 1 WHERE user_id = ?").run(userId);
   } catch {
     // gracefully degrade
   }

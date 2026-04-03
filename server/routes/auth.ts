@@ -116,12 +116,12 @@ router.post("/register", async (req: Request, res: Response) => {
     if (pwError) return res.status(400).json({ error: pwError });
 
     // Check email not already used
-    const existing = db.prepare("SELECT id FROM users WHERE email = ?").get(email);
+    const existing = await db.prepare("SELECT id FROM users WHERE email = ?").get(email);
     if (existing) return res.status(409).json({ error: "An account with this email already exists" });
 
     // Domain restriction check (if school has a locked domain)
     if (schoolId) {
-      const school = db.prepare("SELECT * FROM schools WHERE id = ?").get(schoolId) as any;
+      const school = await db.prepare("SELECT * FROM schools WHERE id = ?").get(schoolId) as any;
       if (school?.domain) {
         if (emailDomain !== school.domain) {
           return res.status(403).json({
@@ -135,7 +135,7 @@ router.post("/register", async (req: Request, res: Response) => {
     const verifyToken = uuidv4();
     const userId = uuidv4();
 
-    db.prepare(`INSERT INTO users (id, school_id, email, display_name, password_hash, role, email_verify_token)
+    await db.prepare(`INSERT INTO users (id, school_id, email, display_name, password_hash, role, email_verify_token)
       VALUES (?, ?, ?, ?, ?, ?, ?)`).run(userId, schoolId || null, email, displayName, hash, safeRole, verifyToken);
 
     // Send verification email (non-blocking)
@@ -143,7 +143,7 @@ router.post("/register", async (req: Request, res: Response) => {
 
     // If school exists, send welcome email
     if (schoolId) {
-      const school = db.prepare("SELECT name FROM schools WHERE id = ?").get(schoolId) as any;
+      const school = await db.prepare("SELECT name FROM schools WHERE id = ?").get(schoolId) as any;
       if (school) sendWelcomeEmail(email, displayName, school.name).catch(console.error);
     }
 
@@ -160,14 +160,14 @@ router.post("/register", async (req: Request, res: Response) => {
 });
 
 // ── Verify Email ──────────────────────────────────────────────────────────────
-router.get("/verify-email", (req: Request, res: Response) => {
+router.get("/verify-email", async (req: Request, res: Response) => {
   const { token } = req.query as { token: string };
   if (!token) return res.status(400).json({ error: "Token required" });
 
-  const user = db.prepare("SELECT * FROM users WHERE email_verify_token = ?").get(token) as any;
+  const user = await db.prepare("SELECT * FROM users WHERE email_verify_token = ?").get(token) as any;
   if (!user) return res.status(400).json({ error: "Invalid or expired verification link" });
 
-  db.prepare("UPDATE users SET email_verified = 1, email_verify_token = NULL WHERE id = ?").run(user.id);
+  await db.prepare("UPDATE users SET email_verified = 1, email_verify_token = NULL WHERE id = ?").run(user.id);
   auditLog(user.id, user.school_id, "user.email_verified", "user", user.id, {}, req.ip);
 
   res.json({ message: "Email verified successfully. You can now log in." });
@@ -179,10 +179,10 @@ router.post("/resend-verification", async (req: Request, res: Response) => {
   if (!email) return res.status(400).json({ error: "Email required" });
 
   // Always return success to prevent email enumeration
-  const user = db.prepare("SELECT * FROM users WHERE email = ? AND is_active = 1 AND email_verified = 0").get(email) as any;
+  const user = await db.prepare("SELECT * FROM users WHERE email = ? AND is_active = 1 AND email_verified = 0").get(email) as any;
   if (user) {
     const verifyToken = uuidv4();
-    db.prepare("UPDATE users SET email_verify_token = ? WHERE id = ?").run(verifyToken, user.id);
+    await db.prepare("UPDATE users SET email_verify_token = ? WHERE id = ?").run(verifyToken, user.id);
     sendEmailVerification(email, verifyToken).catch(console.error);
     auditLog(user.id, user.school_id, "user.verification_resent", "user", user.id, {}, req.ip);
   }
@@ -203,7 +203,7 @@ router.post("/login", async (req: Request, res: Response) => {
       });
     }
 
-    const user = db.prepare("SELECT * FROM users WHERE email = ? AND is_active = 1").get(email) as any;
+    const user = await db.prepare("SELECT * FROM users WHERE email = ? AND is_active = 1").get(email) as any;
     // Use same error message whether user exists or not (prevents email enumeration)
     if (!user) {
       recordFailedLogin(email);
@@ -238,7 +238,7 @@ router.post("/login", async (req: Request, res: Response) => {
     clearFailedLogins(email);
 
     // Update last login
-    db.prepare("UPDATE users SET last_login_at = datetime('now') WHERE id = ?").run(user.id);
+    await db.prepare("UPDATE users SET last_login_at = NOW() WHERE id = ?").run(user.id);
 
     const mfaVerified = !user.mfa_enabled;
     const token = createSessionToken(user, mfaVerified);
@@ -264,24 +264,24 @@ router.post("/google", async (req: Request, res: Response) => {
     const { idToken, googleId, email, displayName, photoUrl } = req.body;
     if (!email || !googleId) return res.status(400).json({ error: "Google auth data missing" });
 
-    let user = db.prepare("SELECT * FROM users WHERE google_id = ? OR email = ?").get(googleId, email) as any;
+    let user = await db.prepare("SELECT * FROM users WHERE google_id = ? OR email = ?").get(googleId, email) as any;
 
     if (!user) {
       // Auto-register via Google
       const userId = uuidv4();
-      db.prepare(`INSERT INTO users (id, email, display_name, google_id, role, email_verified)
+      await db.prepare(`INSERT INTO users (id, email, display_name, google_id, role, email_verified)
         VALUES (?, ?, ?, ?, 'teacher', 1)`).run(userId, email, displayName, googleId);
-      user = db.prepare("SELECT * FROM users WHERE id = ?").get(userId) as any;
+      user = await db.prepare("SELECT * FROM users WHERE id = ?").get(userId) as any;
       auditLog(userId, null, "user.register_google", "user", userId, { email }, req.ip);
     } else {
       // Link Google ID if not set
       if (!user.google_id) {
-        db.prepare("UPDATE users SET google_id = ?, email_verified = 1 WHERE id = ?").run(googleId, user.id);
+        await db.prepare("UPDATE users SET google_id = ?, email_verified = 1 WHERE id = ?").run(googleId, user.id);
       }
       if (!user.is_active) return res.status(403).json({ error: "Account deactivated" });
     }
 
-    db.prepare("UPDATE users SET last_login_at = datetime('now') WHERE id = ?").run(user.id);
+    await db.prepare("UPDATE users SET last_login_at = NOW() WHERE id = ?").run(user.id);
 
     const token = createSessionToken(user, true);
     createSession(user.id, token, req);
@@ -300,16 +300,16 @@ router.post("/mfa/setup", requireAuth, async (req: Request, res: Response) => {
   const user = req.user!;
   const secret = speakeasy.generateSecret({ name: `SEND Assistant (${user.email})`, length: 20 });
 
-  db.prepare("UPDATE users SET mfa_secret = ? WHERE id = ?").run(secret.base32, user.id);
+  await db.prepare("UPDATE users SET mfa_secret = ? WHERE id = ?").run(secret.base32, user.id);
 
   const qrDataUrl = await QRCode.toDataURL(secret.otpauth_url!);
   res.json({ secret: secret.base32, qrDataUrl });
 });
 
 // ── MFA Enable (confirm setup) ────────────────────────────────────────────────
-router.post("/mfa/enable", requireAuth, (req: Request, res: Response) => {
+router.post("/mfa/enable", requireAuth, async (req: Request, res: Response) => {
   const { code } = req.body;
-  const user = db.prepare("SELECT * FROM users WHERE id = ?").get(req.user!.id) as any;
+  const user = await db.prepare("SELECT * FROM users WHERE id = ?").get(req.user!.id) as any;
 
   const valid = speakeasy.totp.verify({
     secret: user.mfa_secret,
@@ -320,19 +320,19 @@ router.post("/mfa/enable", requireAuth, (req: Request, res: Response) => {
 
   if (!valid) return res.status(400).json({ error: "Invalid verification code" });
 
-  db.prepare("UPDATE users SET mfa_enabled = 1 WHERE id = ?").run(user.id);
+  await db.prepare("UPDATE users SET mfa_enabled = 1 WHERE id = ?").run(user.id);
   auditLog(user.id, user.school_id, "user.mfa_enabled", "user", user.id, {}, req.ip);
   res.json({ message: "MFA enabled successfully" });
 });
 
 // ── MFA Verify (during login) ─────────────────────────────────────────────────
-router.post("/mfa/verify", (req: Request, res: Response) => {
+router.post("/mfa/verify", async (req: Request, res: Response) => {
   const { token: sessionToken, code } = req.body;
   if (!sessionToken || !code) return res.status(400).json({ error: "Token and code required" });
 
   try {
     const payload = jwt.verify(sessionToken, JWT_SECRET) as any;
-    const user = db.prepare("SELECT * FROM users WHERE id = ?").get(payload.id) as any;
+    const user = await db.prepare("SELECT * FROM users WHERE id = ?").get(payload.id) as any;
     if (!user) return res.status(401).json({ error: "User not found" });
 
     const valid = speakeasy.totp.verify({
@@ -345,7 +345,7 @@ router.post("/mfa/verify", (req: Request, res: Response) => {
     if (!valid) return res.status(400).json({ error: "Invalid MFA code" });
 
     // Invalidate old session, create new one with mfaVerified=true
-    db.prepare("DELETE FROM sessions WHERE token = ?").run(sessionToken);
+    await db.prepare("DELETE FROM sessions WHERE token = ?").run(sessionToken);
     const newToken = createSessionToken(user, true);
     createSession(user.id, newToken, req);
 
@@ -357,8 +357,8 @@ router.post("/mfa/verify", (req: Request, res: Response) => {
 });
 
 // ── MFA Disable ───────────────────────────────────────────────────────────────
-router.post("/mfa/disable", requireAuth, (req: Request, res: Response) => {
-  db.prepare("UPDATE users SET mfa_enabled = 0, mfa_secret = NULL WHERE id = ?").run(req.user!.id);
+router.post("/mfa/disable", requireAuth, async (req: Request, res: Response) => {
+  await db.prepare("UPDATE users SET mfa_enabled = 0, mfa_secret = NULL WHERE id = ?").run(req.user!.id);
   auditLog(req.user!.id, req.user!.schoolId, "user.mfa_disabled", "user", req.user!.id, {}, req.ip);
   res.json({ message: "MFA disabled" });
 });
@@ -369,12 +369,12 @@ router.post("/forgot-password", async (req: Request, res: Response) => {
   if (!email) return res.status(400).json({ error: "Email required" });
 
   // Always return success to prevent email enumeration
-  const user = db.prepare("SELECT * FROM users WHERE email = ? AND is_active = 1").get(email) as any;
+  const user = await db.prepare("SELECT * FROM users WHERE email = ? AND is_active = 1").get(email) as any;
   if (user) {
     const token = uuidv4();
     const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString(); // 1 hour
-    db.prepare("DELETE FROM password_resets WHERE user_id = ?").run(user.id);
-    db.prepare("INSERT INTO password_resets (id, user_id, token, expires_at) VALUES (?, ?, ?, ?)")
+    await db.prepare("DELETE FROM password_resets WHERE user_id = ?").run(user.id);
+    await db.prepare("INSERT INTO password_resets (id, user_id, token, expires_at) VALUES (?, ?, ?, ?)")
       .run(uuidv4(), user.id, token, expiresAt);
     sendPasswordReset(email, token).catch(console.error);
     auditLog(user.id, user.school_id, "user.password_reset_requested", "user", user.id, {}, req.ip);
@@ -390,53 +390,53 @@ router.post("/reset-password", async (req: Request, res: Response) => {
   const pwError = validatePasswordStrength(password);
   if (pwError) return res.status(400).json({ error: pwError });
 
-  const reset = db.prepare(
-    "SELECT * FROM password_resets WHERE token = ? AND used = 0 AND expires_at > datetime('now')"
+  const reset = await db.prepare(
+    "SELECT * FROM password_resets WHERE token = ? AND used = 0 AND expires_at > NOW()"
   ).get(token) as any;
 
   if (!reset) return res.status(400).json({ error: "Invalid or expired reset link" });
 
   const hash = await bcrypt.hash(password, 12);
-  db.prepare("UPDATE users SET password_hash = ? WHERE id = ?").run(hash, reset.user_id);
-  db.prepare("UPDATE password_resets SET used = 1 WHERE id = ?").run(reset.id);
+  await db.prepare("UPDATE users SET password_hash = ? WHERE id = ?").run(hash, reset.user_id);
+  await db.prepare("UPDATE password_resets SET used = 1 WHERE id = ?").run(reset.id);
   // Invalidate all sessions
-  db.prepare("DELETE FROM sessions WHERE user_id = ?").run(reset.user_id);
+  await db.prepare("DELETE FROM sessions WHERE user_id = ?").run(reset.user_id);
 
   auditLog(reset.user_id, null, "user.password_reset", "user", reset.user_id, {}, req.ip);
   res.json({ message: "Password reset successfully. Please log in." });
 });
 
 // ── Logout ────────────────────────────────────────────────────────────────────
-router.post("/logout", requireAuth, (req: Request, res: Response) => {
+router.post("/logout", requireAuth, async (req: Request, res: Response) => {
   const token = req.headers.authorization?.slice(7) || req.cookies?.token;
-  if (token) db.prepare("DELETE FROM sessions WHERE token = ?").run(token);
+  if (token) await db.prepare("DELETE FROM sessions WHERE token = ?").run(token);
   auditLog(req.user!.id, req.user!.schoolId, "user.logout", "user", req.user!.id, {}, req.ip);
   res.clearCookie("token");
   res.json({ message: "Logged out" });
 });
 
 // ── Session Refresh — extend session expiry when user is active ────────────────
-router.post("/refresh", requireAuth, (req: Request, res: Response) => {
+router.post("/refresh", requireAuth, async (req: Request, res: Response) => {
   const token = req.headers.authorization?.slice(7) || req.cookies?.token;
   if (!token) return res.status(401).json({ error: "No token" });
   const newExpiry = new Date(Date.now() + SESSION_TIMEOUT_MS).toISOString();
-  db.prepare("UPDATE sessions SET expires_at = ? WHERE token = ?").run(newExpiry, token);
+  await db.prepare("UPDATE sessions SET expires_at = ? WHERE token = ?").run(newExpiry, token);
   res.json({ ok: true, expiresAt: newExpiry });
 });
 
 // ── Current User (/session and /me are aliases) ──────────────────────────────
-const getCurrentUser = (req: Request, res: Response) => {
-  const user = db.prepare("SELECT * FROM users WHERE id = ?").get(req.user!.id) as any;
+const getCurrentUser = async (req: Request, res: Response) => {
+  const user = await db.prepare("SELECT * FROM users WHERE id = ?").get(req.user!.id) as any;
   const school = user.school_id
-    ? db.prepare("SELECT * FROM schools WHERE id = ?").get(user.school_id)
+    ? await db.prepare("SELECT * FROM schools WHERE id = ?").get(user.school_id)
     : null;
   res.json({ user: safeUser(user), school });
 };
 router.get("/session", requireAuth, getCurrentUser);
-router.get("/me", requireAuth, (req: Request, res: Response) => {
-  const user = db.prepare("SELECT * FROM users WHERE id = ?").get(req.user!.id) as any;
+router.get("/me", requireAuth, async (req: Request, res: Response) => {
+  const user = await db.prepare("SELECT * FROM users WHERE id = ?").get(req.user!.id) as any;
   const school = user.school_id
-    ? db.prepare("SELECT * FROM schools WHERE id = ?").get(user.school_id)
+    ? await db.prepare("SELECT * FROM schools WHERE id = ?").get(user.school_id)
     : null;
   res.json({ user: safeUser(user), school });
 });
@@ -447,12 +447,12 @@ router.post("/change-password", requireAuth, async (req: Request, res: Response)
   if (!currentPassword || !newPassword) return res.status(400).json({ error: "Both passwords required" });
   if (newPassword.length < 8) return res.status(400).json({ error: "New password must be at least 8 characters" });
 
-  const user = db.prepare("SELECT * FROM users WHERE id = ?").get(req.user!.id) as any;
+  const user = await db.prepare("SELECT * FROM users WHERE id = ?").get(req.user!.id) as any;
   const valid = await bcrypt.compare(currentPassword, user.password_hash || "");
   if (!valid) return res.status(400).json({ error: "Current password is incorrect" });
 
   const hash = await bcrypt.hash(newPassword, 12);
-  db.prepare("UPDATE users SET password_hash = ? WHERE id = ?").run(hash, user.id);
+  await db.prepare("UPDATE users SET password_hash = ? WHERE id = ?").run(hash, user.id);
   auditLog(user.id, user.school_id, "user.password_changed", "user", user.id, {}, req.ip);
   res.json({ message: "Password changed successfully" });
 });
@@ -474,9 +474,9 @@ function createSessionToken(user: any, mfaVerified: boolean): string {
   );
 }
 
-function createSession(userId: string, token: string, req: Request) {
+async function createSession(userId: string, token: string, req: Request) {
   const expiresAt = new Date(Date.now() + SESSION_TIMEOUT_MS).toISOString();
-  db.prepare(`INSERT INTO sessions (id, user_id, token, ip_address, user_agent, expires_at)
+  await db.prepare(`INSERT INTO sessions (id, user_id, token, ip_address, user_agent, expires_at)
     VALUES (?, ?, ?, ?, ?, ?)`).run(
     uuidv4(),
     userId,

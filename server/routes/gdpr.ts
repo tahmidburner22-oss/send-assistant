@@ -27,35 +27,35 @@ const WORKSHEET_RETENTION_DAYS = 730;   // 2 years
  * Run data retention purge. Called by admin or scheduled task.
  * Only school_admin or mat_admin can trigger this.
  */
-router.post("/enforce-retention", requireAuth, requireMinRole("school_admin"), (req: Request, res: Response) => {
+router.post("/enforce-retention", requireAuth, requireMinRole("school_admin"), async (req: Request, res: Response) => {
   const schoolId = req.user!.schoolId;
 
   // Purge old behaviour records for this school's pupils
-  const behaviourResult = db.prepare(`
+  const behaviourResult = await db.prepare(`
     DELETE FROM behaviour_records
     WHERE pupil_id IN (SELECT id FROM pupils WHERE school_id = ?)
     AND date < date('now', '-${BEHAVIOUR_RETENTION_DAYS} days')
   `).run(schoolId);
 
   // Purge old attendance records
-  const attendanceResult = db.prepare(`
+  const attendanceResult = await db.prepare(`
     DELETE FROM attendance_records
     WHERE pupil_id IN (SELECT id FROM pupils WHERE school_id = ?)
     AND date < date('now', '-${ATTENDANCE_RETENTION_DAYS} days')
   `).run(schoolId);
 
   // Purge old worksheets
-  const worksheetResult = db.prepare(`
+  const worksheetResult = await db.prepare(`
     DELETE FROM worksheets
     WHERE school_id = ?
-    AND created_at < datetime('now', '-${WORKSHEET_RETENTION_DAYS} days')
+    AND created_at < NOW()
   `).run(schoolId);
 
-  auditLog(req.user!.id, schoolId, "gdpr.retention_enforced", "school", schoolId, {
+  auditLog(req.user!.id, schoolId ?? null, "gdpr.retention_enforced", "school", schoolId ?? undefined, {
     behaviourDeleted: behaviourResult.changes,
     attendanceDeleted: attendanceResult.changes,
     worksheetsDeleted: worksheetResult.changes,
-  }, req.ip);
+  }, req.ip ?? undefined);
 
   res.json({
     message: "Data retention policy enforced.",
@@ -72,34 +72,34 @@ router.post("/enforce-retention", requireAuth, requireMinRole("school_admin"), (
  * Right to erasure (Article 17) — permanently delete all data for a pupil.
  * Requires school_admin or above.
  */
-router.delete("/pupils/:id/erase", requireAuth, requireMinRole("school_admin"), (req: Request, res: Response) => {
+router.delete("/pupils/:id/erase", requireAuth, requireMinRole("school_admin"), async (req: Request, res: Response) => {
   const pupilId = req.params.id;
   const schoolId = req.user!.schoolId;
 
   // Verify pupil belongs to this school
-  const pupil = db.prepare("SELECT * FROM pupils WHERE id = ? AND school_id = ?")
+  const pupil = await db.prepare("SELECT * FROM pupils WHERE id = ? AND school_id = ?")
     .get(pupilId, schoolId) as any;
   if (!pupil) return res.status(404).json({ error: "Pupil not found" });
 
   // Cascade delete all pupil data
-  db.prepare("DELETE FROM behaviour_records WHERE pupil_id = ?").run(pupilId);
-  db.prepare("DELETE FROM attendance_records WHERE pupil_id = ?").run(pupilId);
-  db.prepare("DELETE FROM assignments WHERE pupil_id = ?").run(pupilId);
-  db.prepare("DELETE FROM pupil_audit WHERE pupil_id = ?").run(pupilId);
+  await db.prepare("DELETE FROM behaviour_records WHERE pupil_id = ?").run(pupilId);
+  await db.prepare("DELETE FROM attendance_records WHERE pupil_id = ?").run(pupilId);
+  await db.prepare("DELETE FROM assignments WHERE pupil_id = ?").run(pupilId);
+  await db.prepare("DELETE FROM pupil_audit WHERE pupil_id = ?").run(pupilId);
   // Soft-delete the pupil record itself (preserve anonymised audit trail)
-  db.prepare(`
+  await db.prepare(`
     UPDATE pupils SET
       name = '[ERASED]',
       upn = NULL,
       dob = NULL,
       is_active = 0,
-      updated_at = datetime('now')
+      updated_at = NOW()
     WHERE id = ?
   `).run(pupilId);
 
-  auditLog(req.user!.id, schoolId, "gdpr.pupil_erased", "pupil", pupilId, {
+  auditLog(req.user!.id, schoolId ?? null, "gdpr.pupil_erased", "pupil", pupilId, {
     initialsWere: pupil.name,
-  }, req.ip);
+  }, req.ip ?? undefined);
 
   res.json({ message: "Pupil data erased in accordance with UK GDPR Article 17." });
 });
@@ -108,20 +108,20 @@ router.delete("/pupils/:id/erase", requireAuth, requireMinRole("school_admin"), 
  * GET /api/gdpr/pupils/:id/export
  * Right to data portability (Article 20) — export all data held for a pupil as JSON.
  */
-router.get("/pupils/:id/export", requireAuth, requireMinRole("teacher"), (req: Request, res: Response) => {
+router.get("/pupils/:id/export", requireAuth, requireMinRole("teacher"), async (req: Request, res: Response) => {
   const pupilId = req.params.id;
   const schoolId = req.user!.schoolId;
 
-  const pupil = db.prepare("SELECT * FROM pupils WHERE id = ? AND school_id = ?")
+  const pupil = await db.prepare("SELECT * FROM pupils WHERE id = ? AND school_id = ?")
     .get(pupilId, schoolId) as any;
   if (!pupil) return res.status(404).json({ error: "Pupil not found" });
 
-  const assignments = db.prepare("SELECT * FROM assignments WHERE pupil_id = ?").all(pupilId);
-  const attendance = db.prepare("SELECT * FROM attendance_records WHERE pupil_id = ?").all(pupilId);
-  const behaviour = db.prepare("SELECT * FROM behaviour_records WHERE pupil_id = ?").all(pupilId);
-  const auditTrail = db.prepare("SELECT * FROM pupil_audit WHERE pupil_id = ?").all(pupilId);
+  const assignments = await db.prepare("SELECT * FROM assignments WHERE pupil_id = ?").all(pupilId);
+  const attendance = await db.prepare("SELECT * FROM attendance_records WHERE pupil_id = ?").all(pupilId);
+  const behaviour = await db.prepare("SELECT * FROM behaviour_records WHERE pupil_id = ?").all(pupilId);
+  const auditTrail = await db.prepare("SELECT * FROM pupil_audit WHERE pupil_id = ?").all(pupilId);
 
-  auditLog(req.user!.id, schoolId, "gdpr.data_exported", "pupil", pupilId, {}, req.ip);
+  auditLog(req.user!.id, schoolId ?? null, "gdpr.data_exported", "pupil", pupilId, {}, req.ip ?? undefined);
 
   const exportData = {
     exportedAt: new Date().toISOString(),
@@ -151,14 +151,14 @@ router.get("/pupils/:id/export", requireAuth, requireMinRole("teacher"), (req: R
  * Export all school data (for DPO/ICO requests).
  * Requires mat_admin.
  */
-router.get("/school/export", requireAuth, requireMinRole("mat_admin"), (req: Request, res: Response) => {
+router.get("/school/export", requireAuth, requireMinRole("mat_admin"), async (req: Request, res: Response) => {
   const schoolId = req.user!.schoolId;
 
-  const pupils = db.prepare("SELECT id, name, year_group, send_need, created_at FROM pupils WHERE school_id = ?").all(schoolId);
-  const users = db.prepare("SELECT id, email, display_name, role, created_at, last_login_at FROM users WHERE school_id = ?").all(schoolId);
-  const auditLogs = db.prepare("SELECT * FROM audit_logs WHERE school_id = ? ORDER BY created_at DESC LIMIT 1000").all(schoolId);
+  const pupils = await db.prepare("SELECT id, name, year_group, send_need, created_at FROM pupils WHERE school_id = ?").all(schoolId);
+  const users = await db.prepare("SELECT id, email, display_name, role, created_at, last_login_at FROM users WHERE school_id = ?").all(schoolId);
+  const auditLogs = await db.prepare("SELECT * FROM audit_logs WHERE school_id = ? ORDER BY created_at DESC LIMIT 1000").all(schoolId);
 
-  auditLog(req.user!.id, schoolId, "gdpr.school_data_exported", "school", schoolId, {}, req.ip);
+  auditLog(req.user!.id, schoolId ?? null, "gdpr.school_data_exported", "school", schoolId ?? undefined, {}, req.ip ?? undefined);
 
   res.setHeader("Content-Disposition", `attachment; filename="school-data-export-${schoolId}.json"`);
   res.setHeader("Content-Type", "application/json");
@@ -178,12 +178,12 @@ router.get("/school/export", requireAuth, requireMinRole("mat_admin"), (req: Req
  * DELETE /api/gdpr/account/erase
  * Teacher/staff account erasure — removes personal data but preserves anonymised audit trail.
  */
-router.delete("/account/erase", requireAuth, (req: Request, res: Response) => {
+router.delete("/account/erase", requireAuth, async (req: Request, res: Response) => {
   const userId = req.user!.id;
   const schoolId = req.user!.schoolId;
 
   // Anonymise the user record — preserve audit trail integrity
-  db.prepare(`
+  await db.prepare(`
     UPDATE users SET
       email = ? ,
       display_name = '[ERASED]',
@@ -191,14 +191,14 @@ router.delete("/account/erase", requireAuth, (req: Request, res: Response) => {
       mfa_secret = NULL,
       google_id = NULL,
       is_active = 0,
-      updated_at = datetime('now')
+      updated_at = NOW()
     WHERE id = ?
   `).run(`erased-${userId}@deleted.invalid`, userId);
 
   // Delete all active sessions
-  db.prepare("DELETE FROM sessions WHERE user_id = ?").run(userId);
+  await db.prepare("DELETE FROM sessions WHERE user_id = ?").run(userId);
 
-  auditLog(userId, schoolId, "gdpr.account_erased", "user", userId, {}, req.ip);
+  auditLog(userId, schoolId, "gdpr.account_erased", "user", userId, {}, req.ip ?? undefined);
 
   res.clearCookie("token");
   res.json({ message: "Your account data has been erased in accordance with UK GDPR Article 17." });

@@ -21,20 +21,20 @@ const router = Router();
 // ── Helper: check if school is on premium plan ────────────────────────────────
 const PLATFORM_OWNER_EMAILS = ["admin@adaptly.co.uk", "admin@sendassistant.app"];
 
-function isPremiumSchool(schoolId: string, userEmail?: string): boolean {
+async function isPremiumSchool(schoolId: string, userEmail?: string): Promise<boolean> {
   // 1. Direct check for platform owner email
   if (userEmail && PLATFORM_OWNER_EMAILS.includes(userEmail.toLowerCase())) return true;
 
   if (!schoolId) return false;
 
   // 2. Check if any platform owner user belongs to this school
-  const ownerUser = db.prepare(
+  const ownerUser = await db.prepare(
     "SELECT id FROM users WHERE school_id = ? AND email IN ('admin@adaptly.co.uk','admin@sendassistant.app') LIMIT 1"
   ).get(schoolId) as any;
   if (ownerUser) return true;
 
   // 3. Check school name and plan
-  const school = db.prepare(
+  const school = await db.prepare(
     "SELECT subscription_plan, licence_type, name FROM schools WHERE id = ?"
   ).get(schoolId) as any;
   if (!school) return false;
@@ -185,7 +185,7 @@ function buildHeaders(provider: string, apiKey: string): Record<string, string> 
 }
 
 // ── POST /api/mis/import-csv ─────────────────────────────────────────────────
-router.post("/import-csv", requireAuth, requireAdmin, (req: Request, res: Response) => {
+router.post("/import-csv", requireAuth, requireAdmin, async (req: Request, res: Response) => {
   const schoolId = req.user!.schoolId;
   if (!schoolId) return res.status(400).json({ error: "No school associated with your account" });
 
@@ -200,16 +200,16 @@ router.post("/import-csv", requireAuth, requireAdmin, (req: Request, res: Respon
   let created = 0, updated = 0, skipped = 0;
   const errors: string[] = [];
 
-  const insertStmt = db.prepare(
+  const insertStmt = await db.prepare(
     `INSERT INTO pupils (id, school_id, name, year_group, send_need, code, upn, dob, created_by)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
   );
-  const updateStmt = db.prepare(
-    `UPDATE pupils SET name=?, year_group=?, send_need=?, dob=?, updated_at=datetime('now')
+  const updateStmt = await db.prepare(
+    `UPDATE pupils SET name=?, year_group=?, send_need=?, dob=?, updated_at=NOW()
      WHERE school_id=? AND upn=? AND is_active=1`
   );
-  const findByUpn = db.prepare("SELECT id FROM pupils WHERE school_id=? AND upn=? AND is_active=1");
-  const findByName = db.prepare("SELECT id FROM pupils WHERE school_id=? AND name=? AND is_active=1");
+  const findByUpn = await db.prepare("SELECT id FROM pupils WHERE school_id=? AND upn=? AND is_active=1");
+  const findByName = await db.prepare("SELECT id FROM pupils WHERE school_id=? AND name=? AND is_active=1");
 
   // Helper: convert full name to initials for privacy
   const toInitials = (n: string): string => {
@@ -219,7 +219,7 @@ router.post("/import-csv", requireAuth, requireAdmin, (req: Request, res: Respon
     return t.split(/[\s\-']+/).filter(Boolean).map((p: string) => (p[0] || "").toUpperCase() + ".").join("");
   };
 
-  const importTx = db.transaction(() => {
+  const importTx = db.transaction(async () => {
     for (const row of rows) {
       const rawName = (row.name || row.Name || row["Preferred Name"] || row["Legal Name"] || "").toString().trim();
       const name = toInitials(rawName);
@@ -230,21 +230,21 @@ router.post("/import-csv", requireAuth, requireAdmin, (req: Request, res: Respon
       const dob = (row.dob || row.DOB || row["Date of Birth"] || row["DateOfBirth"] || "").toString().trim() || null;
 
       if (upn) {
-        const existing = findByUpn.get(schoolId, upn) as any;
+        const existing = await findByUpn.get(schoolId, upn) as any;
         if (existing) {
-          updateStmt.run(name, yearGroup || null, sendNeed || null, dob || null, schoolId, upn);
+          await updateStmt.run(name, yearGroup || null, sendNeed || null, dob || null, schoolId, upn);
           updated++;
           continue;
         }
       } else {
-        const existing = findByName.get(schoolId, name) as any;
+        const existing = await findByName.get(schoolId, name) as any;
         if (existing) { skipped++; continue; }
       }
 
       const id = uuidv4();
       const code = "P" + Math.random().toString(36).slice(2, 7).toUpperCase();
       try {
-        insertStmt.run(id, schoolId, name, yearGroup || null, sendNeed || null, code, upn, dob, req.user!.id);
+        await insertStmt.run(id, schoolId, name, yearGroup || null, sendNeed || null, code, upn, dob, req.user!.id);
         created++;
       } catch (e: any) {
         errors.push(`Row "${name}": ${e.message}`);
@@ -263,21 +263,21 @@ router.post("/import-csv", requireAuth, requireAdmin, (req: Request, res: Respon
 });
 
 // ── GET /api/mis/status ───────────────────────────────────────────────────────
-router.get("/status", requireAuth, requireAdmin, (req: Request, res: Response) => {
+router.get("/status", requireAuth, requireAdmin, async (req: Request, res: Response) => {
   const schoolId = req.user!.schoolId;
   const userEmail = req.user!.email;
   
-  const isPremium = isPremiumSchool(schoolId || "", userEmail);
+  const isPremium = await isPremiumSchool(schoolId || "", userEmail);
   if (!schoolId && !isPremium) return res.json({ bromcom: false, arbor: false, isPremium: false });
-  const bromcomRow = db.prepare(
+  const bromcomRow = await db.prepare(
     "SELECT id FROM school_api_keys WHERE school_id=? AND provider=? AND enabled=1"
   ).get(schoolId, "bromcom") as any;
-  const arborRow = db.prepare(
+  const arborRow = await db.prepare(
     "SELECT id FROM school_api_keys WHERE school_id=? AND provider=? AND enabled=1"
   ).get(schoolId, "arbor") as any;
 
   // Last sync info
-  const lastSync = db.prepare(
+  const lastSync = await db.prepare(
     `SELECT details, created_at FROM audit_logs
      WHERE school_id=? AND action LIKE 'mis.%_sync'
      ORDER BY created_at DESC LIMIT 1`
@@ -295,13 +295,13 @@ router.get("/status", requireAuth, requireAdmin, (req: Request, res: Response) =
 });
 
 // ── POST /api/mis/save-key ────────────────────────────────────────────────────
-router.post("/save-key", requireAuth, requireAdmin, (req: Request, res: Response) => {
+router.post("/save-key", requireAuth, requireAdmin, async (req: Request, res: Response) => {
   const schoolId = req.user!.schoolId;
   const userEmail = req.user!.email;
   if (!schoolId && !PLATFORM_OWNER_EMAILS.includes(userEmail.toLowerCase())) {
     return res.status(400).json({ error: "No school associated with your account" });
   }
-  if (!isPremiumSchool(schoolId || "", userEmail)) {
+  if (!await isPremiumSchool(schoolId || "", userEmail)) {
     return res.status(403).json({ error: "MIS API integration requires a Premium plan" });
   }
 
@@ -313,17 +313,17 @@ router.post("/save-key", requireAuth, requireAdmin, (req: Request, res: Response
 
   const { encrypted, iv } = encryptKey(apiKey.trim());
   const label = provider === "bromcom" ? "Bromcom MIS" : "Arbor MIS";
-  const existing = db.prepare(
+  const existing = await db.prepare(
     "SELECT id FROM school_api_keys WHERE school_id=? AND provider=?"
   ).get(schoolId, provider) as any;
 
   if (existing) {
-    db.prepare(
-      `UPDATE school_api_keys SET api_key_encrypted=?, api_key_iv=?, base_url=?, provider_label=?, enabled=1, added_by=?, updated_at=datetime('now')
+    await db.prepare(
+      `UPDATE school_api_keys SET api_key_encrypted=?, api_key_iv=?, base_url=?, provider_label=?, enabled=1, added_by=?, updated_at=NOW()
        WHERE school_id=? AND provider=?`
     ).run(encrypted, iv, misSchoolId || baseUrl || null, label, req.user!.id, schoolId, provider);
   } else {
-    db.prepare(
+    await db.prepare(
       `INSERT INTO school_api_keys (id, school_id, provider, provider_label, api_key_encrypted, api_key_iv, base_url, enabled, added_by)
        VALUES (?,?,?,?,?,?,?,1,?)`
     ).run(uuidv4(), schoolId, provider, label, encrypted, iv, misSchoolId || baseUrl || null, req.user!.id);
@@ -334,10 +334,10 @@ router.post("/save-key", requireAuth, requireAdmin, (req: Request, res: Response
 });
 
 // ── DELETE /api/mis/remove-key/:provider ─────────────────────────────────────
-router.delete("/remove-key/:provider", requireAuth, requireAdmin, (req: Request, res: Response) => {
+router.delete("/remove-key/:provider", requireAuth, requireAdmin, async (req: Request, res: Response) => {
   const schoolId = req.user!.schoolId;
   if (!schoolId) return res.status(400).json({ error: "No school" });
-  db.prepare("DELETE FROM school_api_keys WHERE school_id=? AND provider=?").run(schoolId, req.params.provider);
+  await db.prepare("DELETE FROM school_api_keys WHERE school_id=? AND provider=?").run(schoolId, req.params.provider);
   auditLog(req.user!.id, schoolId, "mis.key_removed", "school_api_keys", req.params.provider, {}, req.ip);
   res.json({ success: true });
 });
@@ -350,7 +350,7 @@ router.post("/sync/:provider", requireAuth, requireAdmin, async (req: Request, r
   if (!schoolId && !PLATFORM_OWNER_EMAILS.includes(userEmail.toLowerCase())) {
     return res.status(400).json({ error: "No school" });
   }
-  if (!isPremiumSchool(schoolId || "", userEmail)) {
+  if (!await isPremiumSchool(schoolId || "", userEmail)) {
     return res.status(403).json({ error: "MIS API integration requires a Premium plan" });
   }
 
@@ -359,7 +359,7 @@ router.post("/sync/:provider", requireAuth, requireAdmin, async (req: Request, r
     return res.status(400).json({ error: "Invalid provider" });
   }
 
-  const keyRow = db.prepare(
+  const keyRow = await db.prepare(
     "SELECT api_key_encrypted, api_key_iv, base_url FROM school_api_keys WHERE school_id=? AND provider=? AND enabled=1"
   ).get(schoolId, provider) as any;
 
@@ -393,34 +393,34 @@ router.post("/sync/:provider", requireAuth, requireAdmin, async (req: Request, r
   };
 
   // ── Prepared statements ──────────────────────────────────────────────────────
-  const findByUpn = db.prepare("SELECT id FROM pupils WHERE school_id=? AND upn=? AND is_active=1");
-  const findByName = db.prepare("SELECT id FROM pupils WHERE school_id=? AND name=? AND is_active=1");
-  const insertPupil = db.prepare(
+  const findByUpn = await db.prepare("SELECT id FROM pupils WHERE school_id=? AND upn=? AND is_active=1");
+  const findByName = await db.prepare("SELECT id FROM pupils WHERE school_id=? AND name=? AND is_active=1");
+  const insertPupil = await db.prepare(
     `INSERT INTO pupils (id, school_id, name, year_group, send_need, code, upn, dob, created_by)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
   );
-  const updatePupil = db.prepare(
-    `UPDATE pupils SET name=?, year_group=?, send_need=?, dob=?, updated_at=datetime('now')
+  const updatePupil = await db.prepare(
+    `UPDATE pupils SET name=?, year_group=?, send_need=?, dob=?, updated_at=NOW()
      WHERE school_id=? AND upn=? AND is_active=1`
   );
-  const insertBehaviour = db.prepare(
-    `INSERT OR IGNORE INTO behaviour_records
+  const insertBehaviour = await db.prepare(
+    `INSERT INTO behaviour_records
      (id, school_id, pupil_id, type, category, description, action_taken, date, points, mis_source, mis_id, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))`
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`
   );
-  const insertAttendance = db.prepare(
+  const insertAttendance = await db.prepare(
     `INSERT INTO attendance_records
      (id, school_id, pupil_id, date, am_status, am_reason, pm_status, pm_reason, notes, mis_source, recorded_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
      ON CONFLICT(pupil_id, date) DO UPDATE SET
        am_status=excluded.am_status, am_reason=excluded.am_reason,
        pm_status=excluded.pm_status, pm_reason=excluded.pm_reason,
        notes=excluded.notes, mis_source=excluded.mis_source`
   );
-  const insertComment = db.prepare(
-    `INSERT OR IGNORE INTO pupil_comments
+  const insertComment = await db.prepare(
+    `INSERT INTO pupil_comments
      (id, school_id, pupil_id, type, category, content, date, mis_source, mis_id, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))`
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`
   );
 
   // ── STEP 1: Sync Pupils ──────────────────────────────────────────────────────
@@ -440,7 +440,7 @@ router.post("/sync/:provider", requireAuth, requireAdmin, async (req: Request, r
       if (/^([A-Z]\.){1,4}$/.test(t)) return t;
       return t.split(/[\s\-']+/).filter(Boolean).map((p: string) => (p[0] || "").toUpperCase() + ".").join("");
     };
-    const pupilTx = db.transaction(() => {
+    const pupilTx = db.transaction(async () => {
       for (const s of rawPupils) {
         const rawName = provider === "bromcom"
           ? [s.preferredFirstName || s.firstName || s.forename, s.preferredLastName || s.lastName || s.surname].filter(Boolean).join(" ").trim()
@@ -454,21 +454,21 @@ router.post("/sync/:provider", requireAuth, requireAdmin, async (req: Request, r
         const dob = (s.dateOfBirth || s.dob || "").toString().trim() || null;
 
         if (upn) {
-          const existing = findByUpn.get(schoolId, upn) as any;
+          const existing = await findByUpn.get(schoolId, upn) as any;
           if (existing) {
-            updatePupil.run(name, yearGroup || null, sendNeed || null, dob || null, schoolId, upn);
+            await updatePupil.run(name, yearGroup || null, sendNeed || null, dob || null, schoolId, upn);
             results.pupils.updated++;
             continue;
           }
         } else {
-          const existing = findByName.get(schoolId, name) as any;
+          const existing = await findByName.get(schoolId, name) as any;
           if (existing) { results.pupils.skipped++; continue; }
         }
 
         const id = uuidv4();
         const code = "P" + Math.random().toString(36).slice(2, 7).toUpperCase();
         try {
-          insertPupil.run(id, schoolId, name, yearGroup || null, sendNeed || null, code, upn, dob, null);
+          await insertPupil.run(id, schoolId, name, yearGroup || null, sendNeed || null, code, upn, dob, null);
           results.pupils.created++;
         } catch { results.pupils.skipped++; }
       }
@@ -480,7 +480,7 @@ router.post("/sync/:provider", requireAuth, requireAdmin, async (req: Request, r
 
   // ── Build pupil lookup map (misStudentId → localPupilId) ────────────────────
   // We need to map MIS student IDs to our internal pupil IDs for behaviour/attendance
-  const allPupils = db.prepare(
+  const allPupils = await db.prepare(
     "SELECT id, upn, name FROM pupils WHERE school_id=? AND is_active=1"
   ).all(schoolId) as any[];
   const pupilByUpn = new Map<string, string>();
@@ -537,12 +537,12 @@ router.post("/sync/:provider", requireAuth, requireAdmin, async (req: Request, r
     const BATCH = 100;
     for (let i = 0; i < rawBehaviour.length; i += BATCH) {
       const batch = rawBehaviour.slice(i, i + BATCH);
-      const bTx = db.transaction(() => {
+      const bTx = db.transaction(async () => {
         for (const b of batch) {
           // Resolve pupil
           const student = b.student || b.pupil || b;
           const pupilId = resolvePupilId(student) ||
-            (b.pupilId ? (db.prepare("SELECT id FROM pupils WHERE school_id=? AND id=?").get(schoolId, b.pupilId) as any)?.id : null);
+            (b.pupilId ? (await db.prepare("SELECT id FROM pupils WHERE school_id=? AND id=?").get(schoolId, b.pupilId) as any)?.id : null);
           if (!pupilId) { results.behaviour.skipped++; continue; }
 
           const misId = (b.id || b.incidentId || b.behaviourId || "").toString();
@@ -554,7 +554,7 @@ router.post("/sync/:provider", requireAuth, requireAdmin, async (req: Request, r
           const points = parseInt(b.points || b.rewardPoints || b.demerits || "0") || 0;
 
           try {
-            insertBehaviour.run(
+            await insertBehaviour.run(
               uuidv4(), schoolId, pupilId, type, category || null, description || null,
               actionTaken || null, date, points, provider, misId || null
             );
@@ -595,11 +595,11 @@ router.post("/sync/:provider", requireAuth, requireAdmin, async (req: Request, r
     const BATCH = 100;
     for (let i = 0; i < rawAttendance.length; i += BATCH) {
       const batch = rawAttendance.slice(i, i + BATCH);
-      const aTx = db.transaction(() => {
+      const aTx = db.transaction(async () => {
         for (const a of batch) {
           const student = a.student || a.pupil || a;
           const pupilId = resolvePupilId(student) ||
-            (a.pupilId ? (db.prepare("SELECT id FROM pupils WHERE school_id=? AND id=?").get(schoolId, a.pupilId) as any)?.id : null);
+            (a.pupilId ? (await db.prepare("SELECT id FROM pupils WHERE school_id=? AND id=?").get(schoolId, a.pupilId) as any)?.id : null);
           if (!pupilId) { results.attendance.skipped++; continue; }
 
           const date = toISODate(a.date || a.attendanceDate || a.sessionDate || a.created_at);
@@ -623,7 +623,7 @@ router.post("/sync/:provider", requireAuth, requireAdmin, async (req: Request, r
           const notes = (a.notes || a.comment || "").toString().slice(0, 500) || null;
 
           try {
-            insertAttendance.run(
+            await insertAttendance.run(
               uuidv4(), schoolId, pupilId, date,
               amStatus, amReason, pmStatus, pmReason,
               notes, provider
@@ -666,11 +666,11 @@ router.post("/sync/:provider", requireAuth, requireAdmin, async (req: Request, r
     const BATCH = 100;
     for (let i = 0; i < rawComments.length; i += BATCH) {
       const batch = rawComments.slice(i, i + BATCH);
-      const cTx = db.transaction(() => {
+      const cTx = db.transaction(async () => {
         for (const c of batch) {
           const student = c.student || c.pupil || c;
           const pupilId = resolvePupilId(student) ||
-            (c.pupilId ? (db.prepare("SELECT id FROM pupils WHERE school_id=? AND id=?").get(schoolId, c.pupilId) as any)?.id : null);
+            (c.pupilId ? (await db.prepare("SELECT id FROM pupils WHERE school_id=? AND id=?").get(schoolId, c.pupilId) as any)?.id : null);
           if (!pupilId) { results.comments.skipped++; continue; }
 
           const misId = (c.id || c.noteId || c.commentId || "").toString();
@@ -681,7 +681,7 @@ router.post("/sync/:provider", requireAuth, requireAdmin, async (req: Request, r
           const date = toISODate(c.date || c.noteDate || c.created_at);
 
           try {
-            insertComment.run(
+            await insertComment.run(
               uuidv4(), schoolId, pupilId, type, category, content, date, provider, misId || null
             );
             results.comments.created++;
@@ -700,7 +700,7 @@ router.post("/sync/:provider", requireAuth, requireAdmin, async (req: Request, r
 
 // ── GET /api/mis/comments ─────────────────────────────────────────────────────
 // List all pupil comments for the school (with optional filters)
-router.get("/comments", requireAuth, (req: Request, res: Response) => {
+router.get("/comments", requireAuth, async (req: Request, res: Response) => {
   const schoolId = req.user!.schoolId;
   if (!schoolId) return res.status(400).json({ error: "No school" });
 
@@ -717,8 +717,8 @@ router.get("/comments", requireAuth, (req: Request, res: Response) => {
   query += " ORDER BY pc.date DESC, pc.created_at DESC LIMIT ? OFFSET ?";
   params.push(parseInt(limit) || 50, parseInt(offset) || 0);
 
-  const rows = db.prepare(query).all(...params);
-  const total = (db.prepare(
+  const rows = await db.prepare(query).all(...params);
+  const total = (await db.prepare(
     `SELECT COUNT(*) as n FROM pupil_comments WHERE school_id=?${pupilId ? " AND pupil_id=?" : ""}${type ? " AND type=?" : ""}`
   ).get(...params.slice(0, params.length - 2)) as any)?.n || 0;
 
@@ -727,7 +727,7 @@ router.get("/comments", requireAuth, (req: Request, res: Response) => {
 
 // ── POST /api/mis/comments ────────────────────────────────────────────────────
 // Manually add a pupil comment
-router.post("/comments", requireAuth, (req: Request, res: Response) => {
+router.post("/comments", requireAuth, async (req: Request, res: Response) => {
   const schoolId = req.user!.schoolId;
   if (!schoolId) return res.status(400).json({ error: "No school" });
 
@@ -735,13 +735,13 @@ router.post("/comments", requireAuth, (req: Request, res: Response) => {
   if (!pupilId || !content) return res.status(400).json({ error: "pupilId and content are required" });
 
   // Verify pupil belongs to this school
-  const pupil = db.prepare("SELECT id FROM pupils WHERE id=? AND school_id=? AND is_active=1").get(pupilId, schoolId);
+  const pupil = await db.prepare("SELECT id FROM pupils WHERE id=? AND school_id=? AND is_active=1").get(pupilId, schoolId);
   if (!pupil) return res.status(404).json({ error: "Pupil not found" });
 
   const id = uuidv4();
-  db.prepare(
+  await db.prepare(
     `INSERT INTO pupil_comments (id, school_id, pupil_id, recorded_by, type, category, content, date, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))`
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())`
   ).run(id, schoolId, pupilId, req.user!.id, type, category, content.slice(0, 2000), date || new Date().toISOString().slice(0, 10));
 
   auditLog(req.user!.id, schoolId, "comment.add", "pupil_comments", id, { pupilId, type }, req.ip);
@@ -749,10 +749,10 @@ router.post("/comments", requireAuth, (req: Request, res: Response) => {
 });
 
 // ── DELETE /api/mis/comments/:id ─────────────────────────────────────────────
-router.delete("/comments/:id", requireAuth, requireAdmin, (req: Request, res: Response) => {
+router.delete("/comments/:id", requireAuth, requireAdmin, async (req: Request, res: Response) => {
   const schoolId = req.user!.schoolId;
   if (!schoolId) return res.status(400).json({ error: "No school" });
-  db.prepare("DELETE FROM pupil_comments WHERE id=? AND school_id=?").run(req.params.id, schoolId);
+  await db.prepare("DELETE FROM pupil_comments WHERE id=? AND school_id=?").run(req.params.id, schoolId);
   auditLog(req.user!.id, schoolId, "comment.delete", "pupil_comments", req.params.id, {}, req.ip);
   res.json({ success: true });
 });
@@ -797,29 +797,29 @@ router.post("/sync-demo", requireAuth, requireAdmin, async (req: Request, res: R
     { name: "J.L.",  yearGroup: "Year 10", sendNeed: "",                   upn: "DEMO020", dob: "2009-02-21" },
   ];
 
-  const findByUpn   = db.prepare("SELECT id FROM pupils WHERE school_id=? AND upn=?");
-  const insertPupil = db.prepare(
+  const findByUpn   = await db.prepare("SELECT id FROM pupils WHERE school_id=? AND upn=?");
+  const insertPupil = await db.prepare(
     `INSERT INTO pupils (id, school_id, name, year_group, send_need, code, upn, dob, created_by)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
   );
-  const updatePupil = db.prepare(
-    `UPDATE pupils SET year_group=?, send_need=?, updated_at=datetime('now') WHERE school_id=? AND upn=?`
+  const updatePupil = await db.prepare(
+    `UPDATE pupils SET year_group=?, send_need=?, updated_at=NOW() WHERE school_id=? AND upn=?`
   );
 
   const pupilIds: Record<string, string> = {};
 
-  const pupilTx = db.transaction(() => {
+  const pupilTx = db.transaction(async () => {
     for (const p of mockPupils) {
-      const existing = findByUpn.get(schoolId, p.upn) as any;
+      const existing = await findByUpn.get(schoolId, p.upn) as any;
       if (existing) {
-        updatePupil.run(p.yearGroup, p.sendNeed, schoolId, p.upn);
+        await updatePupil.run(p.yearGroup, p.sendNeed, schoolId, p.upn);
         pupilIds[p.upn] = existing.id;
         results.pupils.updated++;
       } else {
         const id   = uuidv4();
         const code = "P" + Math.random().toString(36).slice(2, 7).toUpperCase();
         try {
-          insertPupil.run(id, schoolId, p.name, p.yearGroup, p.sendNeed, code, p.upn, p.dob, req.user!.id);
+          await insertPupil.run(id, schoolId, p.name, p.yearGroup, p.sendNeed, code, p.upn, p.dob, req.user!.id);
           pupilIds[p.upn] = id;
           results.pupils.created++;
         } catch { results.pupils.skipped++; }
@@ -829,8 +829,8 @@ router.post("/sync-demo", requireAuth, requireAdmin, async (req: Request, res: R
   pupilTx();
 
   // ── Mock behaviour records ─────────────────────────────────────────────────
-  const insertBehaviour = db.prepare(
-    `INSERT OR IGNORE INTO behaviour_records (id, school_id, pupil_id, recorded_by, type, category, description, action_taken, date)
+  const insertBehaviour = await db.prepare(
+    `INSERT INTO behaviour_records (id, school_id, pupil_id, recorded_by, type, category, description, action_taken, date)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
   );
   const behaviourData = [
@@ -843,12 +843,12 @@ router.post("/sync-demo", requireAuth, requireAdmin, async (req: Request, res: R
     { upn: "DEMO012", type: "positive", category: "Wellbeing",  description: "Used self-regulation strategies independently",                   action: "Shared with SENCO",                      date: "2026-03-07" },
     { upn: "DEMO015", type: "concern",  category: "Attendance", description: "Third late arrival this week",                                    action: "Parent contact made",                    date: "2026-03-08" },
   ];
-  const behaviourTx = db.transaction(() => {
+  const behaviourTx = db.transaction(async () => {
     for (const b of behaviourData) {
       const pupilId = pupilIds[b.upn];
       if (!pupilId) { results.behaviour.skipped++; continue; }
       try {
-        insertBehaviour.run(uuidv4(), schoolId, pupilId, req.user!.id, b.type, b.category, b.description, b.action, b.date);
+        await insertBehaviour.run(uuidv4(), schoolId, pupilId, req.user!.id, b.type, b.category, b.description, b.action, b.date);
         results.behaviour.created++;
       } catch { results.behaviour.skipped++; }
     }
@@ -856,12 +856,12 @@ router.post("/sync-demo", requireAuth, requireAdmin, async (req: Request, res: R
   behaviourTx();
 
   // ── Mock attendance records (last 5 school days) ───────────────────────────
-  const insertAttendance = db.prepare(
-    `INSERT OR IGNORE INTO attendance_records (id, school_id, pupil_id, recorded_by, date, am_status, pm_status, notes)
+  const insertAttendance = await db.prepare(
+    `INSERT INTO attendance_records (id, school_id, pupil_id, recorded_by, date, am_status, pm_status, notes)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
   );
   const recentDates = ["2026-03-09", "2026-03-10", "2026-03-11", "2026-03-12", "2026-03-13"];
-  const attendanceTx = db.transaction(() => {
+  const attendanceTx = db.transaction(async () => {
     for (const [upn, pupilId] of Object.entries(pupilIds)) {
       for (const date of recentDates) {
         const absent = ["DEMO015", "DEMO018"].includes(upn) && date >= "2026-03-11";
@@ -869,7 +869,7 @@ router.post("/sync-demo", requireAuth, requireAdmin, async (req: Request, res: R
         const am = absent ? "absent-unauthorised" : late ? "late" : "present";
         const pm = absent ? "absent-unauthorised" : "present";
         try {
-          insertAttendance.run(uuidv4(), schoolId, pupilId, req.user!.id, date, am, pm, absent ? "Unauthorised absence" : "");
+          await insertAttendance.run(uuidv4(), schoolId, pupilId, req.user!.id, date, am, pm, absent ? "Unauthorised absence" : "");
           results.attendance.created++;
         } catch { results.attendance.skipped++; }
       }
@@ -878,7 +878,7 @@ router.post("/sync-demo", requireAuth, requireAdmin, async (req: Request, res: R
   attendanceTx();
 
   // ── Mock pupil comments ────────────────────────────────────────────────────
-  const insertComment = db.prepare(
+  const insertComment = await db.prepare(
     `INSERT INTO pupil_comments (id, school_id, pupil_id, recorded_by, type, category, content, date)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
   );
@@ -889,12 +889,12 @@ router.post("/sync-demo", requireAuth, requireAdmin, async (req: Request, res: R
     { upn: "DEMO012", type: "positive", category: "Wellbeing",  content: "Ethan has been using his sensory toolkit effectively. Staff report much calmer transitions.",            date: "2026-03-11" },
     { upn: "DEMO015", type: "neutral",  category: "Attendance", content: "Grace's attendance has dropped to 87% this term. Attendance officer to follow up.",                      date: "2026-03-12" },
   ];
-  const commentTx = db.transaction(() => {
+  const commentTx = db.transaction(async () => {
     for (const c of commentData) {
       const pupilId = pupilIds[c.upn];
       if (!pupilId) { results.comments.skipped++; continue; }
       try {
-        insertComment.run(uuidv4(), schoolId, pupilId, req.user!.id, c.type, c.category, c.content, c.date);
+        await insertComment.run(uuidv4(), schoolId, pupilId, req.user!.id, c.type, c.category, c.content, c.date);
         results.comments.created++;
       } catch { results.comments.skipped++; }
     }

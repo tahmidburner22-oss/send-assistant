@@ -3,7 +3,7 @@ import multer from "multer";
 import { MsEdgeTTS, OUTPUT_FORMAT } from "msedge-tts";
 
 import { requireAuth } from "../middleware/auth.js";
-import db from "../db/index.js";
+import { db } from "../db/index.js";
 import { randomUUID } from "crypto";
 
 // ─── In-memory job queue for background document processing ───────────────────
@@ -55,7 +55,7 @@ const upload = multer({
 // If a Groq or Gemini key is added (free, much faster), they will be tried first.
 const PROVIDER_ORDER = ["groq", "gemini", "openai", "openrouter"] as const;
 
-function getEffectiveKey(provider: string): string {
+async function getEffectiveKey(provider: string): Promise<string> {
   // Prefer environment variables (always fresh) over DB rows (may be stale)
   const envMap: Record<string, string> = {
     groq: process.env.GROQ_API_KEY || "",
@@ -67,7 +67,7 @@ function getEffectiveKey(provider: string): string {
   if (envMap[provider]) return envMap[provider];
   // Fall back to DB (admin-configured keys via Admin Panel)
   try {
-    const row = db.prepare(
+    const row = await db.prepare(
       "SELECT api_key FROM admin_api_keys WHERE provider = ? ORDER BY updated_at DESC LIMIT 1"
     ).get(provider) as any;
     if (row?.api_key) return row.api_key;
@@ -75,9 +75,9 @@ function getEffectiveKey(provider: string): string {
   return "";
 }
 
-function getAdminModel(provider: string): string {
+async function getAdminModel(provider: string): Promise<string> {
   try {
-    const row = db.prepare(
+    const row = await db.prepare(
       "SELECT model FROM admin_api_keys WHERE provider = ? ORDER BY updated_at DESC LIMIT 1"
     ).get(provider) as any;
     return row?.model || "";
@@ -176,10 +176,10 @@ function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise
 async function callWithFallback(system: string, user: string, maxTokens: number): Promise<string> {
   const errors: string[] = [];
   for (const provider of PROVIDER_ORDER) {
-    const key = getEffectiveKey(provider);
+    const key = await getEffectiveKey(provider);
     if (!key) { errors.push(`${provider}: no key`); continue; }
     try {
-      const model = getAdminModel(provider);
+      const model = await getAdminModel(provider);
       let callPromise: Promise<string>;
       if (provider === "groq") callPromise = callGroq(system, user, key, model, maxTokens);
       else if (provider === "gemini") callPromise = callGemini(system, user, key, maxTokens);
@@ -207,7 +207,8 @@ async function extractText(buffer: Buffer, mimetype: string): Promise<string> {
     raw = buffer.toString("utf-8");
   } else if (mimetype === "application/pdf") {
     try {
-      const pdfParse = (await import("pdf-parse")).default;
+      const pdfMod = await import("pdf-parse");
+      const pdfParse = (pdfMod as any).default || pdfMod;
       const result = await pdfParse(buffer);
       raw = result?.text ?? "";
     } catch (pdfErr: any) {
@@ -262,7 +263,7 @@ async function extractText(buffer: Buffer, mimetype: string): Promise<string> {
 // Client polls GET /api/revision/job/:id to check status.
 // This bypasses Railway's 30-second HTTP timeout.
 // ─────────────────────────────────────────────────────────────────────────────
-router.post("/upload", requireAuth, upload.single("document"), (req: Request, res: Response) => {
+router.post("/upload", requireAuth, upload.single("document"), async (req: Request, res: Response) => {
   if (!req.file) return res.status(400).json({ error: "No file uploaded" });
 
   const jobId = randomUUID();
@@ -369,7 +370,7 @@ router.post("/upload", requireAuth, upload.single("document"), (req: Request, re
 // GET /api/revision/job/:id
 // Poll for job status. Returns progress message while pending, result when done.
 // ─────────────────────────────────────────────────────────────────────────────
-router.get("/job/:id", requireAuth, (req: Request, res: Response) => {
+router.get("/job/:id", requireAuth, async (req: Request, res: Response) => {
   const job = jobs.get(req.params.id);
   if (!job) return res.status(404).json({ error: "Job not found" });
   if (job.status === "pending") return res.json({ status: "pending", progress: job.progress });
@@ -648,10 +649,9 @@ router.post("/tts", requireAuth, async (req: Request, res: Response) => {
       );
 
       tts.close();
-      const valid = results.filter((b): b is Buffer => b !== null);
+       const valid = results.filter((b): b is Buffer<ArrayBuffer> => b !== null) as Buffer[];
       if (valid.length === 0) throw new Error("msedge-tts returned no audio");
-
-      const combined = Buffer.concat(valid);
+      const combined = Buffer.concat(valid as Uint8Array[]);
       console.log(`[TTS] msedge-tts success: ${combined.byteLength} bytes`);
       res.setHeader("Content-Type", "audio/mpeg");
       res.setHeader("Content-Length", combined.byteLength.toString());

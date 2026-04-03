@@ -53,9 +53,9 @@ function maskKey(key: string): string {
 }
 
 // ── Exported helper — used by ai.ts to resolve the best key for a school ─────
-export function getSchoolKey(schoolId: string, provider: string): { key: string; model: string; baseUrl?: string } | null {
+export async function getSchoolKey(schoolId: string, provider: string): Promise<{ key: string; model: string; baseUrl?: string } | null> {
   try {
-    const row = db.prepare(
+    const row = await db.prepare(
       "SELECT api_key_encrypted, api_key_iv, model, base_url FROM school_api_keys WHERE school_id=? AND provider=? AND enabled=1"
     ).get(schoolId, provider) as any;
     if (!row) return null;
@@ -67,11 +67,11 @@ export function getSchoolKey(schoolId: string, provider: string): { key: string;
 }
 
 // ── GET /api/school-keys — list all providers for the caller's school ─────────
-router.get("/", requireAuth, (req: Request, res: Response) => {
+router.get("/", requireAuth, async (req: Request, res: Response) => {
   const schoolId = req.user!.schoolId;
   if (!schoolId) return res.status(400).json({ error: "No school associated with your account" });
 
-  const rows = db.prepare(
+  const rows = await db.prepare(
     "SELECT id, provider, provider_label, model, base_url, enabled, updated_at FROM school_api_keys WHERE school_id=? ORDER BY provider"
   ).all(schoolId) as any[];
 
@@ -91,7 +91,7 @@ router.get("/", requireAuth, (req: Request, res: Response) => {
 });
 
 // ── POST /api/school-keys — add or update a provider key ─────────────────────
-router.post("/", requireAuth, requireAdmin, (req: Request, res: Response) => {
+router.post("/", requireAuth, requireAdmin, async (req: Request, res: Response) => {
   const schoolId = req.user!.schoolId;
   if (!schoolId) return res.status(400).json({ error: "No school associated with your account" });
 
@@ -105,14 +105,14 @@ router.post("/", requireAuth, requireAdmin, (req: Request, res: Response) => {
   }
 
   const { encrypted, iv } = encryptKey(apiKey.trim());
-  const existing = db.prepare("SELECT id FROM school_api_keys WHERE school_id=? AND provider=?").get(schoolId, provider) as any;
+  const existing = await db.prepare("SELECT id FROM school_api_keys WHERE school_id=? AND provider=?").get(schoolId, provider) as any;
 
   if (existing) {
-    db.prepare(
-      "UPDATE school_api_keys SET api_key_encrypted=?, api_key_iv=?, model=?, base_url=?, provider_label=?, enabled=1, added_by=?, updated_at=datetime('now') WHERE school_id=? AND provider=?"
+    await db.prepare(
+      "UPDATE school_api_keys SET api_key_encrypted=?, api_key_iv=?, model=?, base_url=?, provider_label=?, enabled=1, added_by=?, updated_at=NOW() WHERE school_id=? AND provider=?"
     ).run(encrypted, iv, model || null, baseUrl || null, providerLabel || provider, req.user!.id, schoolId, provider);
   } else {
-    db.prepare(
+    await db.prepare(
       "INSERT INTO school_api_keys (id, school_id, provider, provider_label, api_key_encrypted, api_key_iv, model, base_url, enabled, added_by) VALUES (?,?,?,?,?,?,?,?,1,?)"
     ).run(uuidv4(), schoolId, provider, providerLabel || provider, encrypted, iv, model || null, baseUrl || null, req.user!.id);
   }
@@ -122,22 +122,22 @@ router.post("/", requireAuth, requireAdmin, (req: Request, res: Response) => {
 });
 
 // ── PUT /api/school-keys/:id — update a provider key by row ID ───────────────
-router.put("/:id", requireAuth, requireAdmin, (req: Request, res: Response) => {
+router.put("/:id", requireAuth, requireAdmin, async (req: Request, res: Response) => {
   const schoolId = req.user!.schoolId;
   if (!schoolId) return res.status(400).json({ error: "No school associated with your account" });
 
   const { apiKey, model, baseUrl, providerLabel } = req.body;
-  const row = db.prepare("SELECT * FROM school_api_keys WHERE id=? AND school_id=?").get(req.params.id, schoolId) as any;
+  const row = await db.prepare("SELECT * FROM school_api_keys WHERE id=? AND school_id=?").get(req.params.id, schoolId) as any;
   if (!row) return res.status(404).json({ error: "Key not found" });
 
   if (apiKey && apiKey.trim()) {
     const { encrypted, iv } = encryptKey(apiKey.trim());
-    db.prepare(
-      "UPDATE school_api_keys SET api_key_encrypted=?, api_key_iv=?, model=?, base_url=?, provider_label=?, added_by=?, updated_at=datetime('now') WHERE id=? AND school_id=?"
+    await db.prepare(
+      "UPDATE school_api_keys SET api_key_encrypted=?, api_key_iv=?, model=?, base_url=?, provider_label=?, added_by=?, updated_at=NOW() WHERE id=? AND school_id=?"
     ).run(encrypted, iv, model || row.model || null, baseUrl || row.base_url || null, providerLabel || row.provider_label, req.user!.id, req.params.id, schoolId);
   } else {
-    db.prepare(
-      "UPDATE school_api_keys SET model=?, base_url=?, provider_label=?, updated_at=datetime('now') WHERE id=? AND school_id=?"
+    await db.prepare(
+      "UPDATE school_api_keys SET model=?, base_url=?, provider_label=?, updated_at=NOW() WHERE id=? AND school_id=?"
     ).run(model || row.model || null, baseUrl || row.base_url || null, providerLabel || row.provider_label, req.params.id, schoolId);
   }
 
@@ -146,34 +146,34 @@ router.put("/:id", requireAuth, requireAdmin, (req: Request, res: Response) => {
 });
 
 // ── DELETE /api/school-keys/:provider — remove a provider key ────────────────
-router.delete("/:provider", requireAuth, requireAdmin, (req: Request, res: Response) => {
+router.delete("/:provider", requireAuth, requireAdmin, async (req: Request, res: Response) => {
   const schoolId = req.user!.schoolId;
   if (!schoolId) return res.status(400).json({ error: "No school associated with your account" });
 
-  db.prepare("DELETE FROM school_api_keys WHERE school_id=? AND provider=?").run(schoolId, req.params.provider);
+  await db.prepare("DELETE FROM school_api_keys WHERE school_id=? AND provider=?").run(schoolId, req.params.provider);
   auditLog(req.user!.id, schoolId, "school.api_key_deleted", "school_api_keys", req.params.provider, {}, req.ip);
   res.json({ success: true });
 });
 
 // ── PATCH /api/school-keys/:provider/toggle — enable/disable ─────────────────
-router.patch("/:provider/toggle", requireAuth, requireAdmin, (req: Request, res: Response) => {
+router.patch("/:provider/toggle", requireAuth, requireAdmin, async (req: Request, res: Response) => {
   const schoolId = req.user!.schoolId;
   if (!schoolId) return res.status(400).json({ error: "No school associated with your account" });
 
-  const row = db.prepare("SELECT enabled FROM school_api_keys WHERE school_id=? AND provider=?").get(schoolId, req.params.provider) as any;
+  const row = await db.prepare("SELECT enabled FROM school_api_keys WHERE school_id=? AND provider=?").get(schoolId, req.params.provider) as any;
   if (!row) return res.status(404).json({ error: "Provider not found" });
 
   const newEnabled = row.enabled === 1 ? 0 : 1;
-  db.prepare("UPDATE school_api_keys SET enabled=? WHERE school_id=? AND provider=?").run(newEnabled, schoolId, req.params.provider);
+  await db.prepare("UPDATE school_api_keys SET enabled=? WHERE school_id=? AND provider=?").run(newEnabled, schoolId, req.params.provider);
   res.json({ success: true, enabled: newEnabled === 1 });
 });
 
 // ── GET /api/school-keys/status — check if school has any keys configured ────
-router.get("/status", requireAuth, (req: Request, res: Response) => {
+router.get("/status", requireAuth, async (req: Request, res: Response) => {
   const schoolId = req.user!.schoolId;
   if (!schoolId) return res.json({ hasKeys: false, count: 0 });
 
-  const count = (db.prepare("SELECT COUNT(*) as c FROM school_api_keys WHERE school_id=? AND enabled=1").get(schoolId) as any)?.c || 0;
+  const count = (await db.prepare("SELECT COUNT(*) as c FROM school_api_keys WHERE school_id=? AND enabled=1").get(schoolId) as any)?.c || 0;
   res.json({ hasKeys: count > 0, count });
 });
 

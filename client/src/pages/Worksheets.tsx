@@ -883,8 +883,10 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
       try {
         const libToken = localStorage.getItem("send_token") || "";
         const authHeaders = libToken ? { Authorization: `Bearer ${libToken}` } : {};
+        // Use the selected tier for the initial lookup (not hardcoded 'standard')
+        const lookupTier = (sendNeed && sendNeed !== "none-selected") ? "standard" : (difficulty === "higher" ? "higher" : difficulty === "foundation" ? "foundation" : "standard");
         const libRes = await fetch(
-          `/api/library/lookup?subject=${encodeURIComponent(getLibrarySubjectName(subject))}&topic=${encodeURIComponent(topic)}&yearGroup=${encodeURIComponent(yearGroup)}&tier=standard`,
+          `/api/library/lookup?subject=${encodeURIComponent(getLibrarySubjectName(subject))}&topic=${encodeURIComponent(topic)}&yearGroup=${encodeURIComponent(yearGroup)}&tier=${lookupTier}`,
           { headers: authHeaders }
         );
         if (libRes.ok) {
@@ -931,22 +933,23 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
               }
             }
 
-            // If a SEND need is selected, apply content adaptations (word banks, sentence starters,
-            // scaffolding etc.) on top of the library content. This is separate from the visual
-            // formatting overlay applied by WorksheetRenderer — this changes the actual content.
+            // If a SEND need is selected, apply per-need content scaffolding (word banks,
+            // sentence starters, hint boxes etc.) using the scaffold-worksheet endpoint which
+            // has specific prompts for each SEND need (Dyslexia, ADHD, Autism, MLD, EAL etc.).
+            // This is separate from the visual formatting overlay applied by WorksheetRenderer.
             if (hasSendNeed) {
-              setGenerationStatus(`Applying ${sendNeed} adaptations...`);
+              setGenerationStatus(`Applying ${sendNeed} scaffolding...`);
               try {
-                const sendRes = await fetch("/api/ai/differentiate-one-click", {
+                const sendRes = await fetch("/api/ai/scaffold-worksheet", {
                   method: "POST",
                   headers: { "Content-Type": "application/json", ...authHeaders },
                   body: JSON.stringify({
                     sections: finalSections,
-                    topic,
+                    sendNeed,
                     subject,
+                    topic,
                     yearGroup,
-                    tier: "send",
-                    sendNeeds: sendNeed,
+                    title: entry.title,
                   }),
                 });
                 if (sendRes.ok) {
@@ -957,7 +960,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                   }
                 }
               } catch (sendErr) {
-                console.warn("SEND adaptation failed, using original content with formatting overlay:", sendErr);
+                console.warn("SEND scaffolding failed, using original content with formatting overlay:", sendErr);
               }
             }
 
@@ -1145,6 +1148,8 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                 isRevisionMat,
                 generateDiagram: false,
                 worksheetLength,
+                // Bug fix: recallTopic was missing from retry attempts
+                recallTopic: recallTopic.trim() || undefined,
                 targetPages: targetPages || undefined,
                 readingAge: readingAge || undefined,
               });

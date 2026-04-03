@@ -12,12 +12,12 @@ import { pushNotification } from "../lib/notifications.js";
 const router = Router();
 
 // ── GET /api/messages/:pupilId — get all messages for a pupil ─────────────────
-router.get("/:pupilId", requireAuth, (req: Request, res: Response) => {
+router.get("/:pupilId", requireAuth, async (req: Request, res: Response) => {
   const user = req.user!;
   const { pupilId } = req.params;
 
   // Verify access: teacher must own the pupil, or it's a parent viewing their child
-  const pupil = db.prepare("SELECT * FROM pupils WHERE id = ?").get(pupilId) as any;
+  const pupil = await db.prepare("SELECT * FROM pupils WHERE id = ?").get(pupilId) as any;
   if (!pupil) return res.status(404).json({ error: "Pupil not found" });
 
   const isTeacher = pupil.school_id === user.schoolId;
@@ -27,7 +27,7 @@ router.get("/:pupilId", requireAuth, (req: Request, res: Response) => {
     return res.status(403).json({ error: "Access denied" });
   }
 
-  const messages = db.prepare(`
+  const messages = await db.prepare(`
     SELECT * FROM parent_messages
     WHERE pupil_id = ?
     ORDER BY created_at ASC
@@ -45,14 +45,14 @@ router.get("/:pupilId", requireAuth, (req: Request, res: Response) => {
 });
 
 // ── POST /api/messages/:pupilId — send a message ─────────────────────────────
-router.post("/:pupilId", requireAuth, (req: Request, res: Response) => {
+router.post("/:pupilId", requireAuth, async (req: Request, res: Response) => {
   const user = req.user!;
   const { pupilId } = req.params;
   const { body, senderType } = req.body;
 
   if (!body?.trim()) return res.status(400).json({ error: "Message body is required" });
 
-  const pupil = db.prepare("SELECT * FROM pupils WHERE id = ?").get(pupilId) as any;
+  const pupil = await db.prepare("SELECT * FROM pupils WHERE id = ?").get(pupilId) as any;
   if (!pupil) return res.status(404).json({ error: "Pupil not found" });
 
   const isTeacher = pupil.school_id === user.schoolId;
@@ -68,7 +68,7 @@ router.post("/:pupilId", requireAuth, (req: Request, res: Response) => {
   const id = uuidv4();
   const now = new Date().toISOString();
 
-  db.prepare(`
+  await db.prepare(`
     INSERT INTO parent_messages (id, pupil_id, sender_type, sender_name, body, created_at, read)
     VALUES (?, ?, ?, ?, ?, ?, 0)
   `).run(id, pupilId, actualSenderType, senderName, body.trim(), now);
@@ -86,7 +86,7 @@ router.post("/:pupilId", requireAuth, (req: Request, res: Response) => {
   // Push real-time notification
   if (actualSenderType === "parent") {
     // Notify the teacher who owns this pupil
-    const teacher = db.prepare("SELECT id FROM users WHERE school_id = ? AND role IN ('teacher', 'senco', 'school_admin') LIMIT 1").get(pupil.school_id) as any;
+    const teacher = await db.prepare("SELECT id FROM users WHERE school_id = ? AND role IN ('teacher', 'senco', 'school_admin') LIMIT 1").get(pupil.school_id) as any;
     if (teacher) {
       pushNotification(teacher.id, {
         type: "message",
@@ -105,11 +105,11 @@ router.post("/:pupilId", requireAuth, (req: Request, res: Response) => {
 });
 
 // ── PATCH /api/messages/:pupilId/:messageId/read — mark message as read ───────
-router.patch("/:pupilId/:messageId/read", requireAuth, (req: Request, res: Response) => {
+router.patch("/:pupilId/:messageId/read", requireAuth, async (req: Request, res: Response) => {
   const user = req.user!;
   const { pupilId, messageId } = req.params;
 
-  const pupil = db.prepare("SELECT * FROM pupils WHERE id = ?").get(pupilId) as any;
+  const pupil = await db.prepare("SELECT * FROM pupils WHERE id = ?").get(pupilId) as any;
   if (!pupil) return res.status(404).json({ error: "Pupil not found" });
 
   const isTeacher = pupil.school_id === user.schoolId;
@@ -119,23 +119,23 @@ router.patch("/:pupilId/:messageId/read", requireAuth, (req: Request, res: Respo
     return res.status(403).json({ error: "Access denied" });
   }
 
-  db.prepare("UPDATE parent_messages SET read = 1 WHERE id = ? AND pupil_id = ?").run(messageId, pupilId);
+  await db.prepare("UPDATE parent_messages SET read = 1 WHERE id = ? AND pupil_id = ?").run(messageId, pupilId);
   res.json({ success: true });
 });
 
 // ── GET /api/messages/:pupilId/unread-count — unread count for parent portal ──
-router.get("/:pupilId/unread-count", (req: Request, res: Response) => {
+router.get("/:pupilId/unread-count", async (req: Request, res: Response) => {
   const { pupilId } = req.params;
   const parentCode = req.headers["x-parent-code"] as string;
 
-  const pupil = db.prepare("SELECT * FROM pupils WHERE id = ?").get(pupilId) as any;
+  const pupil = await db.prepare("SELECT * FROM pupils WHERE id = ?").get(pupilId) as any;
   if (!pupil) return res.status(404).json({ error: "Pupil not found" });
 
   if (pupil.parent_access_code && parentCode !== pupil.parent_access_code) {
     return res.status(403).json({ error: "Access denied" });
   }
 
-  const result = db.prepare(`
+  const result = await db.prepare(`
     SELECT COUNT(*) as count FROM parent_messages
     WHERE pupil_id = ? AND sender_type = 'teacher' AND read = 0
   `).get(pupilId) as any;
@@ -144,10 +144,10 @@ router.get("/:pupilId/unread-count", (req: Request, res: Response) => {
 });
 
 // ── GET /api/messages/notifications — get unread notifications for logged-in user ──
-router.get("/", requireAuth, (req: Request, res: Response) => {
+router.get("/", requireAuth, async (req: Request, res: Response) => {
   const user = req.user!;
 
-  const notifications = db.prepare(`
+  const notifications = await db.prepare(`
     SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT 50
   `).all(user.id) as any[];
 
@@ -164,17 +164,17 @@ router.get("/", requireAuth, (req: Request, res: Response) => {
 });
 
 // ── PATCH /api/messages/notifications/:id/read — mark notification as read ────
-router.patch("/notifications/:id/read", requireAuth, (req: Request, res: Response) => {
+router.patch("/notifications/:id/read", requireAuth, async (req: Request, res: Response) => {
   const user = req.user!;
   const { id } = req.params;
-  db.prepare("UPDATE notifications SET read = 1 WHERE id = ? AND user_id = ?").run(id, user.id);
+  await db.prepare("UPDATE notifications SET read = 1 WHERE id = ? AND user_id = ?").run(id, user.id);
   res.json({ success: true });
 });
 
 // ── PATCH /api/messages/notifications/read-all — mark all as read ─────────────
-router.patch("/notifications/read-all", requireAuth, (req: Request, res: Response) => {
+router.patch("/notifications/read-all", requireAuth, async (req: Request, res: Response) => {
   const user = req.user!;
-  db.prepare("UPDATE notifications SET read = 1 WHERE user_id = ?").run(user.id);
+  await db.prepare("UPDATE notifications SET read = 1 WHERE user_id = ?").run(user.id);
   res.json({ success: true });
 });
 

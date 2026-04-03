@@ -27,7 +27,7 @@ const CLIENT_URL = process.env.CLIENT_URL || "https://adaptly.co.uk";
 
 // Only initialise Stripe if key is present
 const stripe = STRIPE_SECRET_KEY
-  ? new Stripe(STRIPE_SECRET_KEY, { apiVersion: "2025-01-27.acacia" })
+  ? new Stripe(STRIPE_SECRET_KEY, { apiVersion: "2026-02-25.clover" })
   : null;
 
 // ── Plan → Price ID mapping ───────────────────────────────────────────────────
@@ -60,7 +60,7 @@ async function getOrCreateStripeCustomer(school: any, adminEmail: string): Promi
     metadata: { school_id: school.id, school_name: school.name },
   });
 
-  db.prepare("UPDATE schools SET stripe_customer_id = ? WHERE id = ?").run(
+  await db.prepare("UPDATE schools SET stripe_customer_id = ? WHERE id = ?").run(
     customer.id,
     school.id
   );
@@ -68,7 +68,7 @@ async function getOrCreateStripeCustomer(school: any, adminEmail: string): Promi
 }
 
 // ── GET /api/billing/status — current subscription status ────────────────────
-router.get("/status", requireAuth, (req: Request, res: Response) => {
+router.get("/status", requireAuth, async (req: Request, res: Response) => {
   const user = req.user!;
 
   // Platform owner always has full premium access — no billing checks
@@ -89,7 +89,7 @@ router.get("/status", requireAuth, (req: Request, res: Response) => {
 
   if (!user.schoolId) return res.json({ status: "no_school", plan: null });
 
-  const school = db.prepare("SELECT * FROM schools WHERE id = ?").get(user.schoolId) as any;
+  const school = await db.prepare("SELECT * FROM schools WHERE id = ?").get(user.schoolId) as any;
   if (!school) return res.json({ status: "no_school", plan: null });
 
   const now = new Date().toISOString();
@@ -142,7 +142,7 @@ router.post("/checkout", requireAuth, async (req: Request, res: Response) => {
   }
 
   try {
-    const school = db.prepare("SELECT * FROM schools WHERE id = ?").get(user.schoolId) as any;
+    const school = await db.prepare("SELECT * FROM schools WHERE id = ?").get(user.schoolId) as any;
     const customerId = await getOrCreateStripeCustomer(school, user.email);
 
     const session = await stripe.checkout.sessions.create({
@@ -185,7 +185,7 @@ router.post("/portal", requireAuth, async (req: Request, res: Response) => {
     return res.status(403).json({ error: "Only school admins can manage billing" });
   }
 
-  const school = db.prepare("SELECT * FROM schools WHERE id = ?").get(user.schoolId) as any;
+  const school = await db.prepare("SELECT * FROM schools WHERE id = ?").get(user.schoolId) as any;
   if (!school?.stripe_customer_id) {
     return res.status(400).json({ error: "No billing account found. Please subscribe first." });
   }
@@ -208,7 +208,7 @@ router.post("/portal", requireAuth, async (req: Request, res: Response) => {
 router.post(
   "/webhook",
   // Raw body middleware — must be applied before express.json() in the main app
-  (req: Request, res: Response) => {
+  async (req: Request, res: Response) => {
     if (!stripe || !STRIPE_WEBHOOK_SECRET) {
       return res.status(200).json({ received: true }); // silently accept if not configured
     }
@@ -243,7 +243,7 @@ async function handleWebhookEvent(event: Stripe.Event) {
       const plan = session.metadata?.plan;
       if (!schoolId || !plan) break;
 
-      db.prepare(`UPDATE schools SET
+      await db.prepare(`UPDATE schools SET
         subscription_status = 'active',
         subscription_plan = ?,
         licence_type = ?,
@@ -261,9 +261,11 @@ async function handleWebhookEvent(event: Stripe.Event) {
       if (!schoolId) break;
 
       const plan = sub.metadata?.plan || (sub.items.data[0]?.price?.metadata?.plan ?? null);
-      const periodEnd = new Date(sub.current_period_end * 1000).toISOString();
+      const periodEnd = (sub as any).current_period_end
+        ? new Date((sub as any).current_period_end * 1000).toISOString()
+        : null;
 
-      db.prepare(`UPDATE schools SET
+      await db.prepare(`UPDATE schools SET
         subscription_status = ?,
         subscription_plan = COALESCE(?, subscription_plan),
         subscription_period_end = ?,
@@ -288,7 +290,7 @@ async function handleWebhookEvent(event: Stripe.Event) {
       const schoolId = sub.metadata?.school_id;
       if (!schoolId) break;
 
-      db.prepare(`UPDATE schools SET
+      await db.prepare(`UPDATE schools SET
         subscription_status = 'canceled',
         subscription_cancel_at_period_end = 0
         WHERE id = ?`).run(schoolId);
@@ -302,10 +304,10 @@ async function handleWebhookEvent(event: Stripe.Event) {
       const customerId = invoice.customer as string;
       if (!customerId) break;
 
-      const school = db.prepare("SELECT id FROM schools WHERE stripe_customer_id = ?").get(customerId) as any;
+      const school = await db.prepare("SELECT id FROM schools WHERE stripe_customer_id = ?").get(customerId) as any;
       if (!school) break;
 
-      db.prepare("UPDATE schools SET subscription_status = 'past_due' WHERE id = ?").run(school.id);
+      await db.prepare("UPDATE schools SET subscription_status = 'past_due' WHERE id = ?").run(school.id);
       console.log(`[Billing] Payment failed: school=${school.id}`);
       break;
     }
@@ -315,10 +317,10 @@ async function handleWebhookEvent(event: Stripe.Event) {
       const customerId = invoice.customer as string;
       if (!customerId) break;
 
-      const school = db.prepare("SELECT id FROM schools WHERE stripe_customer_id = ?").get(customerId) as any;
+      const school = await db.prepare("SELECT id FROM schools WHERE stripe_customer_id = ?").get(customerId) as any;
       if (!school) break;
 
-      db.prepare("UPDATE schools SET subscription_status = 'active' WHERE id = ?").run(school.id);
+      await db.prepare("UPDATE schools SET subscription_status = 'active' WHERE id = ?").run(school.id);
       console.log(`[Billing] Payment succeeded: school=${school.id}`);
       break;
     }

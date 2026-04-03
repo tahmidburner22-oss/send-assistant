@@ -65,7 +65,7 @@ interface ParsedWorksheet {
 
 // ── GET /api/library/entries — list all entries ───────────────────────────────
 
-router.get("/entries", requireAuth, requireSuperAdmin, (req: Request, res: Response) => {
+router.get("/entries", requireAuth, requireSuperAdmin, async (req: Request, res: Response) => {
   try {
     const { subject, curated, search } = req.query as Record<string, string>;
     let sql = `SELECT id, subject, topic, year_group, title, source, curated, version, created_at, updated_at
@@ -78,7 +78,7 @@ router.get("/entries", requireAuth, requireSuperAdmin, (req: Request, res: Respo
 
     sql += " ORDER BY subject ASC, year_group ASC, topic ASC";
 
-    const entries = db.prepare(sql).all(...params);
+    const entries = await db.prepare(sql).all(...params);
     res.json({ entries });
   } catch (err: any) {
     console.error("Library list error:", err.message);
@@ -158,7 +158,7 @@ function topicKeywordsMatch(uiTopic: string, libraryTopic: string): boolean {
 // ── GET /api/library/lookup — lookup by subject+topic+yearGroup[+tier] ──────────
 // Returns the matching entry. If tier is specified, returns that tier.
 // Also returns a `tiers` array listing all available tiers for this topic.
-router.get("/lookup", requireAuth, (req: Request, res: Response) => {
+router.get("/lookup", requireAuth, async (req: Request, res: Response) => {
   try {
     const { subject, topic, yearGroup, tier } = req.query as Record<string, string>;
     if (!subject || !topic || !yearGroup) {
@@ -176,32 +176,32 @@ router.get("/lookup", requireAuth, (req: Request, res: Response) => {
       key_vocab: JSON.parse(e.key_vocab || "[]"),
       curated: !!e.curated,
     });
-    // Helper: find all tiers for a given subject list + topic
-    const findTiersForSubjects = (subjects: string[], topicStr: string, yg?: string): { id: string; tier: string; title: string }[] => {
+    // Helper: find all tiers for a given subject list + topic (async)
+    const findTiersForSubjects = async (subjects: string[], topicStr: string, yg?: string): Promise<{ id: string; tier: string; title: string }[]> => {
       const placeholders = subjects.map(() => "?").join(",");
       if (yg) {
-        return db.prepare(
+        return await db.prepare(
           `SELECT id, tier, title FROM worksheet_library
-           WHERE subject IN (${placeholders}) AND (topic = ? OR LOWER(topic) = ?) AND (year_group = ? OR year_group LIKE ?)
+           WHERE subject IN (${placeholders}) AND (topic = ? OR LOWER(topic) = ?) AND (year_group = ? OR year_group ILIKE ?)
            ORDER BY curated DESC, tier ASC`
         ).all(...subjects, topicStr, topicStr.toLowerCase(), yg, `%${yg.replace(/Year /, "")}%`) as { id: string; tier: string; title: string }[];
       }
-      return db.prepare(
+      return await db.prepare(
         `SELECT id, tier, title FROM worksheet_library
          WHERE subject IN (${placeholders}) AND (topic = ? OR LOWER(topic) = ?)
          ORDER BY curated DESC, tier ASC`
       ).all(...subjects, topicStr, topicStr.toLowerCase()) as { id: string; tier: string; title: string }[];
     };
     // 1. Exact topic match with year group
-    let allTiers = findTiersForSubjects(subjectsToSearch, topic, yearGroup);
+    let allTiers = await findTiersForSubjects(subjectsToSearch, topic, yearGroup);
     // 2. Exact topic match, any year group
     if (allTiers.length === 0) {
-      allTiers = findTiersForSubjects(subjectsToSearch, topic);
+      allTiers = await findTiersForSubjects(subjectsToSearch, topic);
     }
     // 3. Fuzzy topic match — keyword-based
     if (allTiers.length === 0) {
       const placeholders = subjectsToSearch.map(() => "?").join(",");
-      const allEntries = db.prepare(
+      const allEntries = await db.prepare(
         `SELECT id, tier, title, topic FROM worksheet_library WHERE subject IN (${placeholders}) ORDER BY curated DESC`
       ).all(...subjectsToSearch) as { id: string; tier: string; title: string; topic: string }[];
       const matched = allEntries.filter(e => topicKeywordsMatch(topic, e.topic));
@@ -217,7 +217,7 @@ router.get("/lookup", requireAuth, (req: Request, res: Response) => {
       || allTiers.find(t => t.tier === "standard")
       || allTiers[0];
 
-    const entry = db.prepare("SELECT * FROM worksheet_library WHERE id = ?")
+    const entry = await db.prepare("SELECT * FROM worksheet_library WHERE id = ?")
       .get(targetTier.id) as LibraryEntry | undefined;
 
     if (!entry) return res.json({ found: false });
@@ -225,7 +225,8 @@ router.get("/lookup", requireAuth, (req: Request, res: Response) => {
     res.json({
       found: true,
       entry: parseEntry(entry),
-      availableTiers: allTiers.map(t => t.tier),
+      // Deduplicate tiers — each tier should appear only once
+      availableTiers: [...new Set(allTiers.map(t => t.tier))],
     });
   } catch (err: any) {
     console.error("Library lookup error:", err.message);
@@ -236,7 +237,7 @@ router.get("/lookup", requireAuth, (req: Request, res: Response) => {
 // ── GET /api/library/lookup-tier — lookup a specific tier for differentiation ──
 // Used by the Differentiate button to fetch the correct tier worksheet.
 
-router.get("/lookup-tier", requireAuth, (req: Request, res: Response) => {
+router.get("/lookup-tier", requireAuth, async (req: Request, res: Response) => {
   try {
     const { subject, topic, yearGroup, tier } = req.query as Record<string, string>;
     if (!subject || !topic || !yearGroup || !tier) {
@@ -248,7 +249,7 @@ router.get("/lookup-tier", requireAuth, (req: Request, res: Response) => {
     const placeholders = subjectsToSearch.map(() => "?").join(",");
 
     // Try exact match with requested tier + year group
-    let entry = db.prepare(
+    let entry = await db.prepare(
       `SELECT * FROM worksheet_library
        WHERE subject IN (${placeholders}) AND (topic = ? OR LOWER(topic) = ?) AND (year_group = ? OR year_group LIKE ?) AND tier = ?
        ORDER BY curated DESC LIMIT 1`
@@ -256,7 +257,7 @@ router.get("/lookup-tier", requireAuth, (req: Request, res: Response) => {
 
     // Fuzzy: any year group with this tier
     if (!entry) {
-      entry = db.prepare(
+      entry = await db.prepare(
         `SELECT * FROM worksheet_library
          WHERE subject IN (${placeholders}) AND (topic = ? OR LOWER(topic) = ?) AND tier = ?
          ORDER BY curated DESC, updated_at DESC LIMIT 1`
@@ -265,7 +266,7 @@ router.get("/lookup-tier", requireAuth, (req: Request, res: Response) => {
 
     // Fuzzy topic keyword match with requested tier
     if (!entry) {
-      const allEntries = db.prepare(
+      const allEntries = await db.prepare(
         `SELECT * FROM worksheet_library WHERE subject IN (${placeholders}) AND tier = ? ORDER BY curated DESC`
       ).all(...subjectsToSearch, tier) as LibraryEntry[];
       entry = allEntries.find(e => topicKeywordsMatch(topic, e.topic));
@@ -273,7 +274,7 @@ router.get("/lookup-tier", requireAuth, (req: Request, res: Response) => {
 
     // Fallback: any tier for this topic (keyword match)
     if (!entry) {
-      const allEntries = db.prepare(
+      const allEntries = await db.prepare(
         `SELECT * FROM worksheet_library WHERE subject IN (${placeholders}) ORDER BY CASE tier WHEN 'standard' THEN 0 ELSE 1 END, curated DESC`
       ).all(...subjectsToSearch) as LibraryEntry[];
       entry = allEntries.find(e => topicKeywordsMatch(topic, e.topic));
@@ -301,9 +302,9 @@ router.get("/lookup-tier", requireAuth, (req: Request, res: Response) => {
 
 // ── GET /api/library/entries/:id — get single entry ──────────────────────────
 
-router.get("/entries/:id", requireAuth, requireSuperAdmin, (req: Request, res: Response) => {
+router.get("/entries/:id", requireAuth, requireSuperAdmin, async (req: Request, res: Response) => {
   try {
-    const entry = db.prepare("SELECT * FROM worksheet_library WHERE id = ?").get(req.params.id) as LibraryEntry | undefined;
+    const entry = await db.prepare("SELECT * FROM worksheet_library WHERE id = ?").get(req.params.id) as LibraryEntry | undefined;
     if (!entry) return res.status(404).json({ error: "Not found" });
 
     res.json({
@@ -322,7 +323,7 @@ router.get("/entries/:id", requireAuth, requireSuperAdmin, (req: Request, res: R
 
 // ── POST /api/library/entries — create or upsert a library entry ──────────────
 
-router.post("/entries", requireAuth, (req: Request, res: Response) => {
+router.post("/entries", requireAuth, async (req: Request, res: Response) => {
   try {
     const {
       subject, topic, yearGroup, title, subtitle,
@@ -339,7 +340,7 @@ router.post("/entries", requireAuth, (req: Request, res: Response) => {
     }
 
     // Check if already exists — keyed by subject + topic + year_group + tier
-    const existing = db.prepare(
+    const existing = await db.prepare(
       "SELECT id, version, curated FROM worksheet_library WHERE subject = ? AND topic = ? AND year_group = ? AND tier = ?"
     ).get(subject, topic, year_group, tier) as { id: string; version: number; curated: number } | undefined;
 
@@ -352,11 +353,11 @@ router.post("/entries", requireAuth, (req: Request, res: Response) => {
     const version = existing ? (existing.version + 1) : 1;
 
     if (existing) {
-      db.prepare(`
+      await db.prepare(`
         UPDATE worksheet_library SET
           title = ?, subtitle = ?, sections = ?, teacher_sections = ?,
           key_vocab = ?, learning_objective = ?, source = ?, curated = ?,
-          tier = ?, version = ?, uploaded_by = ?, updated_at = datetime('now')
+          tier = ?, version = ?, uploaded_by = ?, updated_at = NOW()
         WHERE id = ?
       `).run(
         title, subtitle || null,
@@ -372,7 +373,7 @@ router.post("/entries", requireAuth, (req: Request, res: Response) => {
         id
       );
     } else {
-      db.prepare(`
+      await db.prepare(`
         INSERT INTO worksheet_library
           (id, subject, topic, year_group, title, subtitle, sections, teacher_sections,
            key_vocab, learning_objective, source, curated, tier, version, uploaded_by)
@@ -400,7 +401,7 @@ router.post("/entries", requireAuth, (req: Request, res: Response) => {
 
 // ── POST /api/library/auto-save — auto-save AI-generated worksheet ────────────
 
-router.post("/auto-save", requireAuth, (req: Request, res: Response) => {
+router.post("/auto-save", requireAuth, async (req: Request, res: Response) => {
   try {
     const {
       subject, topic, yearGroup, title, subtitle,
@@ -414,7 +415,7 @@ router.post("/auto-save", requireAuth, (req: Request, res: Response) => {
     }
 
     // Only auto-save if no curated entry exists
-    const existing = db.prepare(
+    const existing = await db.prepare(
       "SELECT id, curated FROM worksheet_library WHERE subject = ? AND topic = ? AND year_group = ?"
     ).get(subject, topic, year_group) as { id: string; curated: number } | undefined;
 
@@ -425,11 +426,11 @@ router.post("/auto-save", requireAuth, (req: Request, res: Response) => {
     const id = existing?.id || uuidv4();
 
     if (existing) {
-      db.prepare(`
+      await db.prepare(`
         UPDATE worksheet_library SET
           title = ?, subtitle = ?, sections = ?, teacher_sections = ?,
           key_vocab = ?, learning_objective = ?, source = 'ai',
-          updated_at = datetime('now')
+          updated_at = NOW()
         WHERE id = ?
       `).run(
         title, subtitle || null,
@@ -440,7 +441,7 @@ router.post("/auto-save", requireAuth, (req: Request, res: Response) => {
         id
       );
     } else {
-      db.prepare(`
+      await db.prepare(`
         INSERT INTO worksheet_library
           (id, subject, topic, year_group, title, subtitle, sections, teacher_sections,
            key_vocab, learning_objective, source, curated, version, uploaded_by)
@@ -536,7 +537,7 @@ router.post("/ingest-pdf", requireAuth, requireSuperAdmin, pdfUpload.single("pdf
 
     // Check if already exists — keyed by subject + topic + year_group + tier
     // Each tier (standard/foundation/higher/scaffolded) is stored as a separate row.
-    const existing = db.prepare(
+    const existing = await db.prepare(
       "SELECT id, version FROM worksheet_library WHERE subject = ? AND topic = ? AND year_group = ? AND tier = ?"
     ).get(subject, topic, year_group, tier) as { id: string; version: number } | undefined;
 
@@ -545,11 +546,11 @@ router.post("/ingest-pdf", requireAuth, requireSuperAdmin, pdfUpload.single("pdf
     const entryTitle = title || parsed.sections[0]?.title || `${topic} — ${subject} Worksheet`;
 
     if (existing) {
-      db.prepare(`
+      await db.prepare(`
         UPDATE worksheet_library SET
           title = ?, subtitle = ?, sections = ?, teacher_sections = ?,
           key_vocab = ?, learning_objective = ?, source = 'pdf', curated = 1,
-          tier = ?, version = ?, uploaded_by = ?, updated_at = datetime('now')
+          tier = ?, version = ?, uploaded_by = ?, updated_at = NOW()
         WHERE id = ?
       `).run(
         entryTitle, subtitle || null,
@@ -560,7 +561,7 @@ router.post("/ingest-pdf", requireAuth, requireSuperAdmin, pdfUpload.single("pdf
         tier, version, (req as any).user?.id || null, id
       );
     } else {
-      db.prepare(`
+      await db.prepare(`
         INSERT INTO worksheet_library
           (id, subject, topic, year_group, title, subtitle, sections, teacher_sections,
            key_vocab, learning_objective, source, curated, tier, version, uploaded_by)
@@ -593,11 +594,11 @@ router.post("/ingest-pdf", requireAuth, requireSuperAdmin, pdfUpload.single("pdf
 
 // ── PATCH /api/library/entries/:id/curate — mark as curated ──────────────────
 
-router.patch("/entries/:id/curate", requireAuth, requireSuperAdmin, (req: Request, res: Response) => {
+router.patch("/entries/:id/curate", requireAuth, requireSuperAdmin, async (req: Request, res: Response) => {
   try {
     const { curated } = req.body;
-    db.prepare(
-      "UPDATE worksheet_library SET curated = ?, updated_at = datetime('now') WHERE id = ?"
+    await db.prepare(
+      "UPDATE worksheet_library SET curated = ?, updated_at = NOW() WHERE id = ?"
     ).run(curated ? 1 : 0, req.params.id);
     res.json({ success: true });
   } catch (err: any) {
@@ -607,9 +608,9 @@ router.patch("/entries/:id/curate", requireAuth, requireSuperAdmin, (req: Reques
 
 // ── DELETE /api/library/entries/:id — delete a library entry ─────────────────
 
-router.delete("/entries/:id", requireAuth, requireSuperAdmin, (req: Request, res: Response) => {
+router.delete("/entries/:id", requireAuth, requireSuperAdmin, async (req: Request, res: Response) => {
   try {
-    db.prepare("DELETE FROM worksheet_library WHERE id = ?").run(req.params.id);
+    await db.prepare("DELETE FROM worksheet_library WHERE id = ?").run(req.params.id);
     res.json({ success: true });
   } catch (err: any) {
     res.status(500).json({ error: "Failed to delete entry" });
