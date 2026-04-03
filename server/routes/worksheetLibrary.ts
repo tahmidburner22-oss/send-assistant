@@ -161,6 +161,52 @@ function topicKeywordsMatch(uiTopic: string, libraryTopic: string): boolean {
   return false;
 }
 
+function isSafeTierTopicMatch(uiTopic: string, libraryTopic: string): boolean {
+  const normalizeTokens = (value: string) => value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .split(/\s+/)
+    .filter(Boolean)
+    .filter(token => token.length > 2)
+    .filter(token => ![
+      "maths",
+      "math",
+      "mathematics",
+      "worksheet",
+      "worksheets",
+      "question",
+      "questions",
+      "year",
+      "higher",
+      "foundation",
+      "standard",
+      "scaffolded",
+      "gcse",
+      "ks3",
+      "ks4",
+      "tier",
+      "level",
+      "topic",
+    ].includes(token));
+
+  const ui = uiTopic.toLowerCase().trim();
+  const lib = libraryTopic.toLowerCase().trim();
+
+  if (lib.includes(ui) || ui.includes(lib)) {
+    return true;
+  }
+
+  const uiTokens = normalizeTokens(uiTopic);
+  const libTokens = normalizeTokens(libraryTopic);
+  const sharedTokens = uiTokens.filter(token => libTokens.includes(token));
+
+  if (sharedTokens.length >= 2) {
+    return true;
+  }
+
+  return false;
+}
+
 // ── GET /api/library/lookup — lookup by subject+topic+yearGroup[+tier] ──────────
 // Returns the matching entry. If tier is specified, returns that tier.
 // Also returns a `tiers` array listing all available tiers for this topic.
@@ -204,14 +250,29 @@ router.get("/lookup", requireAuth, async (req: Request, res: Response) => {
     if (allTiers.length === 0) {
       allTiers = await findTiersForSubjects(subjectsToSearch, topic);
     }
-    // 3. Fuzzy topic match — keyword-based
+    // 3. Safe fuzzy topic match.
+    // Prefer entries in the requested year group, and only accept topic matches with
+    // meaningful token overlap so broad keywords like "equation" do not pull in the
+    // wrong worksheet from the library.
     if (allTiers.length === 0) {
       const placeholders = subjectsToSearch.map(() => "?").join(",");
+      const yearGroupLoose = `%${yearGroup.replace(/Year /, "")}%`;
       const allEntries = await db.prepare(
-        `SELECT id, tier, title, topic FROM worksheet_library WHERE subject IN (${placeholders}) ORDER BY curated DESC`
-      ).all(...subjectsToSearch) as { id: string; tier: string; title: string; topic: string }[];
-      const matched = allEntries.filter(e => topicKeywordsMatch(topic, e.topic));
-      allTiers = matched.map(({ id, tier, title }) => ({ id, tier, title }));
+        `SELECT id, tier, title, topic, year_group FROM worksheet_library
+         WHERE subject IN (${placeholders})
+         ORDER BY curated DESC, updated_at DESC`
+      ).all(...subjectsToSearch) as { id: string; tier: string; title: string; topic: string; year_group: string }[];
+
+      const sameYearMatches = allEntries.filter((entry) => {
+        const matchesYearGroup = entry.year_group === yearGroup || entry.year_group.toLowerCase().includes(yearGroupLoose.replace(/%/g, "").toLowerCase());
+        return matchesYearGroup && isSafeTierTopicMatch(topic, entry.topic);
+      });
+
+      const safeMatches = sameYearMatches.length > 0
+        ? sameYearMatches
+        : allEntries.filter((entry) => isSafeTierTopicMatch(topic, entry.topic));
+
+      allTiers = safeMatches.map(({ id, tier, title }) => ({ id, tier, title }));
     }
     if (allTiers.length === 0) {
       return res.json({ found: false });
