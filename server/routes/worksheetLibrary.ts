@@ -106,6 +106,12 @@ const SUBJECT_EXPANSION: Record<string, string[]> = {
   pe: ["PE", "Physical Education"],
   MFL: ["MFL", "French", "Spanish", "German"],
   mfl: ["MFL", "French", "Spanish", "German"],
+  "Art & Design": ["Art", "Art & Design"],
+  "art & design": ["Art", "Art & Design"],
+  Art: ["Art", "Art & Design"],
+  art: ["Art", "Art & Design"],
+  "Modern Foreign Languages": ["MFL", "French", "Spanish", "German", "Modern Foreign Languages"],
+  "modern foreign languages": ["MFL", "French", "Spanish", "German", "Modern Foreign Languages"],
 };
 
 // ── Topic keyword map: UI topic keywords → library topic keywords ─────────────
