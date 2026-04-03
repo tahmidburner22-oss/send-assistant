@@ -30,13 +30,13 @@ const upload = multer({
 });
 
 // ── GET /api/briefing?date=YYYY-MM-DD ────────────────────────────────────────
-router.get("/", requireAuth, (req: Request, res: Response) => {
+router.get("/", requireAuth, async (req: Request, res: Response) => {
   const schoolId = req.user!.schoolId;
   if (!schoolId) return res.json([]);
   const date = (req.query.date as string) || new Date().toISOString().slice(0, 10);
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return res.status(400).json({ error: "Invalid date format" });
 
-  const entries = db.prepare(
+  const entries = await db.prepare(
     `SELECT id, date, type, title, content, author_id, author_name, attachments, created_at, updated_at
      FROM daily_briefings WHERE school_id = ? AND date = ?
      ORDER BY type ASC, created_at ASC`
@@ -57,21 +57,21 @@ router.get("/", requireAuth, (req: Request, res: Response) => {
 });
 
 // ── GET /api/briefing/dates?month=YYYY-MM ────────────────────────────────────
-router.get("/dates", requireAuth, (req: Request, res: Response) => {
+router.get("/dates", requireAuth, async (req: Request, res: Response) => {
   const schoolId = req.user!.schoolId;
   if (!schoolId) return res.json([]);
   const month = (req.query.month as string) || new Date().toISOString().slice(0, 7);
   if (!/^\d{4}-\d{2}$/.test(month)) return res.status(400).json({ error: "Invalid month format" });
-  const rows = db.prepare(
+  const rows = await db.prepare(
     `SELECT DISTINCT date FROM daily_briefings WHERE school_id = ? AND date LIKE ? ORDER BY date ASC`
   ).all(schoolId, `${month}-%`) as any[];
   res.json(rows.map((r: any) => r.date));
 });
 
 // ── GET /api/briefing/:id/attachment/:idx ─────────────────────────────────────
-router.get("/:id/attachment/:idx", requireAuth, (req: Request, res: Response) => {
+router.get("/:id/attachment/:idx", requireAuth, async (req: Request, res: Response) => {
   const schoolId = req.user!.schoolId;
-  const entry = db.prepare("SELECT * FROM daily_briefings WHERE id = ? AND school_id = ?").get(req.params.id, schoolId) as any;
+  const entry = await db.prepare("SELECT * FROM daily_briefings WHERE id = ? AND school_id = ?").get(req.params.id, schoolId) as any;
   if (!entry) return res.status(404).json({ error: "Entry not found" });
   let attachments: any[] = [];
   try { attachments = JSON.parse(entry.attachments || "[]"); } catch {}
@@ -84,7 +84,7 @@ router.get("/:id/attachment/:idx", requireAuth, (req: Request, res: Response) =>
 });
 
 // ── POST /api/briefing ────────────────────────────────────────────────────────
-router.post("/", requireAuth, upload.array("files", 5), (req: Request, res: Response) => {
+router.post("/", requireAuth, upload.array("files", 5), async (req: Request, res: Response) => {
   const schoolId = req.user!.schoolId;
   if (!schoolId) return res.status(400).json({ error: "No school associated with your account" });
   const { date, type, title, content } = req.body;
@@ -102,7 +102,7 @@ router.post("/", requireAuth, upload.array("files", 5), (req: Request, res: Resp
   });
 
   const id = uuidv4();
-  db.prepare(
+  await db.prepare(
     `INSERT INTO daily_briefings (id, school_id, date, type, title, content, author_id, author_name, attachments)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
   ).run(id, schoolId, entryDate, entryType, title.trim(), content.trim(),
@@ -121,10 +121,10 @@ router.post("/", requireAuth, upload.array("files", 5), (req: Request, res: Resp
 });
 
 // ── PUT /api/briefing/:id ─────────────────────────────────────────────────────
-router.put("/:id", requireAuth, upload.array("files", 5), (req: Request, res: Response) => {
+router.put("/:id", requireAuth, upload.array("files", 5), async (req: Request, res: Response) => {
   const schoolId = req.user!.schoolId;
   if (!schoolId) return res.status(400).json({ error: "No school" });
-  const entry = db.prepare("SELECT * FROM daily_briefings WHERE id = ? AND school_id = ?").get(req.params.id, schoolId) as any;
+  const entry = await db.prepare("SELECT * FROM daily_briefings WHERE id = ? AND school_id = ?").get(req.params.id, schoolId) as any;
   if (!entry) return res.status(404).json({ error: "Entry not found" });
   const isAdmin = ["school_admin", "mat_admin"].includes(req.user!.role);
   if (entry.author_id !== req.user!.id && !isAdmin) return res.status(403).json({ error: "You can only edit your own entries" });
@@ -145,8 +145,8 @@ router.put("/:id", requireAuth, upload.array("files", 5), (req: Request, res: Re
   });
 
   const mergedAtts = [...existingAtts, ...newAtts];
-  db.prepare(
-    `UPDATE daily_briefings SET title=?, content=?, type=?, attachments=?, updated_at=datetime('now') WHERE id=? AND school_id=?`
+  await db.prepare(
+    `UPDATE daily_briefings SET title=?, content=?, type=?, attachments=?, updated_at=NOW() WHERE id=? AND school_id=?`
   ).run(newTitle, newContent, newType, JSON.stringify(mergedAtts), req.params.id, schoolId);
 
   auditLog(req.user!.id, schoolId, "briefing.updated", "daily_briefings", req.params.id, {}, req.ip);
@@ -154,14 +154,14 @@ router.put("/:id", requireAuth, upload.array("files", 5), (req: Request, res: Re
 });
 
 // ── DELETE /api/briefing/:id ──────────────────────────────────────────────────
-router.delete("/:id", requireAuth, (req: Request, res: Response) => {
+router.delete("/:id", requireAuth, async (req: Request, res: Response) => {
   const schoolId = req.user!.schoolId;
   if (!schoolId) return res.status(400).json({ error: "No school" });
-  const entry = db.prepare("SELECT * FROM daily_briefings WHERE id = ? AND school_id = ?").get(req.params.id, schoolId) as any;
+  const entry = await db.prepare("SELECT * FROM daily_briefings WHERE id = ? AND school_id = ?").get(req.params.id, schoolId) as any;
   if (!entry) return res.status(404).json({ error: "Entry not found" });
   const isAdmin = ["school_admin", "mat_admin"].includes(req.user!.role);
   if (entry.author_id !== req.user!.id && !isAdmin) return res.status(403).json({ error: "You can only delete your own entries" });
-  db.prepare("DELETE FROM daily_briefings WHERE id=? AND school_id=?").run(req.params.id, schoolId);
+  await db.prepare("DELETE FROM daily_briefings WHERE id=? AND school_id=?").run(req.params.id, schoolId);
   auditLog(req.user!.id, schoolId, "briefing.deleted", "daily_briefings", req.params.id, {}, req.ip);
   res.json({ success: true });
 });

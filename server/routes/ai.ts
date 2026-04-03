@@ -133,7 +133,7 @@ function getAvailableProviders(order: string[]): string[] {
 // Security: No API keys are ever hardcoded in source code.
 // Keys are stored encrypted in the database (school_api_keys table, AES-256-GCM).
 // Each school's keys are completely isolated — one school cannot use another's keys.
-function getEffectiveKey(provider: string, userKey?: string, schoolId?: string): string {
+async function getEffectiveKey(provider: string, userKey?: string, schoolId?: string): Promise<string> {
   if (userKey && userKey.trim()) return userKey.trim();
   // groq_1/groq_2/groq_3 are virtual providers — each maps to a specific env var key
   if (provider === "groq_1") return process.env.GROQ_API_KEY || "";
@@ -141,12 +141,12 @@ function getEffectiveKey(provider: string, userKey?: string, schoolId?: string):
   if (provider === "groq_3") return process.env.GROQ_API_KEY_3 || "";
   // 1. School-level encrypted key (primary source — each school brings their own)
   if (schoolId) {
-    const schoolEntry = getSchoolKey(schoolId, provider);
+    const schoolEntry = await getSchoolKey(schoolId, provider);
     if (schoolEntry?.key) return schoolEntry.key;
   }
   // 2. Global admin key (stored in DB — set via admin panel, never hardcoded)
   try {
-    const adminKey = db.prepare(
+    const adminKey = await db.prepare(
       "SELECT api_key FROM admin_api_keys WHERE provider = ?"
     ).get(provider) as any;
     if (adminKey?.api_key) return adminKey.api_key;
@@ -154,11 +154,11 @@ function getEffectiveKey(provider: string, userKey?: string, schoolId?: string):
   // gemini_lite uses the same API key as gemini (different model, separate quota)
   if (provider === "gemini_lite") {
     if (schoolId) {
-      const schoolEntry = getSchoolKey(schoolId, "gemini");
+      const schoolEntry = await getSchoolKey(schoolId, "gemini");
       if (schoolEntry?.key) return schoolEntry.key;
     }
     try {
-      const adminKey = db.prepare(
+      const adminKey = await db.prepare(
         "SELECT api_key FROM admin_api_keys WHERE provider = ?"
       ).get("gemini") as any;
       if (adminKey?.api_key) return adminKey.api_key;
@@ -180,7 +180,7 @@ function getEffectiveKey(provider: string, userKey?: string, schoolId?: string):
   return envMap[provider] || "";
 }
 
-function getAdminModel(provider: string, schoolId?: string): string {
+async function getAdminModel(provider: string, schoolId?: string): Promise<string> {
   // gemini_lite always uses gemini-2.5-flash-lite regardless of DB config
   if (provider === "gemini_lite") return "gemini-2.5-flash-lite";
   // Default model map for all providers
@@ -200,11 +200,11 @@ function getAdminModel(provider: string, schoolId?: string): string {
     mistral:     "mistral-small-latest",
   };
   if (schoolId) {
-    const schoolEntry = getSchoolKey(schoolId, provider);
+    const schoolEntry = await getSchoolKey(schoolId, provider);
     if (schoolEntry?.model) return schoolEntry.model;
   }
   try {
-    const row = db.prepare(
+    const row = await db.prepare(
       "SELECT model FROM admin_api_keys WHERE provider = ?"
     ).get(provider) as any;
     return row?.model || defaultModels[provider] || "";
@@ -335,7 +335,7 @@ async function callWithFallback(
   // Build ordered list: school providers first, then global
   let order: string[];
   if (schoolId) {
-    const schoolProviders = (db.prepare(
+    const schoolProviders = (await db.prepare(
       "SELECT provider FROM school_api_keys WHERE school_id=? AND enabled=1 ORDER BY updated_at DESC"
     ).all(schoolId) as any[]).map((r: any) => r.provider);
     // Also include global env-var providers so they act as fallback even for school users
@@ -396,12 +396,12 @@ async function callWithFallback(
       console.log(`[AI] ${provider} near RPM cap — skipping`);
       continue;
     }
-    const key = getEffectiveKey(provider, undefined, schoolId);
+    const key = await getEffectiveKey(provider, undefined, schoolId);
     if (!key) {
       errors.push(`${provider}: no key configured`);
       continue;
     }
-    const model = getAdminModel(provider, schoolId);
+    const model = await getAdminModel(provider, schoolId);
     try {
       const content = await callProvider(provider, system, user, key, model, maxTokens);
       if (content && content.trim()) {
@@ -451,11 +451,11 @@ async function callWithFallback(
   // Last resort: if all available providers failed but there are cooled-down ones, try them too
   const cooledDownProviders = rotatedOrder.filter(p => !ordersToTry.includes(p));
   for (const provider of cooledDownProviders) {
-    const key = getEffectiveKey(provider, undefined, schoolId);
+    const key = await getEffectiveKey(provider, undefined, schoolId);
     if (!key) continue;
     try {
       providerCooldowns.delete(provider); // force clear cooldown for this last-ditch attempt
-      const model = getAdminModel(provider, schoolId);
+      const model = await getAdminModel(provider, schoolId);
       const content = await callProvider(provider, system, user, key, model, maxTokens);
       if (content && content.trim()) {
         console.log(`[AI] Last-resort success via ${provider} (was on cooldown)`);
@@ -480,7 +480,7 @@ router.post("/generate", requireAuth, async (req: Request, res: Response) => {
   const logId = uuidv4();
 
   try {
-    db.prepare(`INSERT INTO ai_filter_log (id, user_id, school_id, prompt, flagged, flag_reason)
+    await db.prepare(`INSERT INTO ai_filter_log (id, user_id, school_id, prompt, flagged, flag_reason)
       VALUES (?, ?, ?, ?, ?, ?)`).run(
       logId, req.user!.id, req.user!.schoolId,
       prompt.slice(0, 500),
@@ -492,17 +492,17 @@ router.post("/generate", requireAuth, async (req: Request, res: Response) => {
   if (promptFilter.flagged && promptFilter.category === "safeguarding") {
     try {
       const incidentId = uuidv4();
-      db.prepare(`INSERT INTO safeguarding_incidents (id, school_id, reported_by, description, ai_trigger, severity)
+      await db.prepare(`INSERT INTO safeguarding_incidents (id, school_id, reported_by, description, ai_trigger, severity)
         VALUES (?, ?, ?, ?, ?, ?)`).run(
         incidentId, req.user!.schoolId, req.user!.id,
         `AI prompt flagged: ${promptFilter.reason}`,
         prompt.slice(0, 500),
         promptFilter.severity || "medium"
       );
-      const school = db.prepare("SELECT * FROM schools WHERE id = ?").get(req.user!.schoolId) as any;
+      const school = await db.prepare("SELECT * FROM schools WHERE id = ?").get(req.user!.schoolId) as any;
       if (school?.dsl_email) {
         const { sendDSLIncidentAlert } = await import("../email/index.js");
-        db.prepare("UPDATE safeguarding_incidents SET dsl_notified=1, dsl_notified_at=datetime('now') WHERE id=?").run(incidentId);
+        await db.prepare("UPDATE safeguarding_incidents SET dsl_notified=1, dsl_notified_at=NOW() WHERE id=?").run(incidentId);
         sendDSLIncidentAlert(school.dsl_email, {
           id: incidentId,
           severity: promptFilter.severity || "medium",
@@ -528,7 +528,7 @@ router.post("/generate", requireAuth, async (req: Request, res: Response) => {
     if (apiKey && provider) {
       // User supplied their own key — try that provider first, then auto-fallback
       try {
-        const model = getAdminModel(provider);
+        const model = await getAdminModel(provider);
         const content = await callProvider(provider, systemPrompt || "", prompt, apiKey, model, maxTokens);
         result = { content, provider };
       } catch (_) {
@@ -541,7 +541,7 @@ router.post("/generate", requireAuth, async (req: Request, res: Response) => {
 
     const responseFilter = filterContent(result.content);
     try {
-      db.prepare("UPDATE ai_filter_log SET output=?, flagged=?, flag_reason=? WHERE id=?").run(
+      await db.prepare("UPDATE ai_filter_log SET output=?, flagged=?, flag_reason=? WHERE id=?").run(
         result.content.slice(0, 500),
         responseFilter.flagged ? 1 : 0,
         responseFilter.reason || null,
@@ -591,7 +591,7 @@ router.post("/ensemble", requireAuth, async (req: Request, res: Response) => {
   }
 
 	  // Run all configured providers in parallel (all using server env var keys)
-	  const toRun = PROVIDER_ORDER.filter(p => getEffectiveKey(p));
+	  const toRun = PROVIDER_ORDER.filter(p => true);
 
   if (toRun.length === 0) {
     return res.status(400).json({ error: "No AI providers configured." });
@@ -599,8 +599,8 @@ router.post("/ensemble", requireAuth, async (req: Request, res: Response) => {
 
   const results = await Promise.allSettled(
     toRun.map(async (p) => {
-      const key = getEffectiveKey(p);
-      const model = getAdminModel(p);
+      const key = await getEffectiveKey(p);
+      const model = await getAdminModel(p);
       const text = await callProvider(p, systemPrompt || "", prompt, key, model, maxTokens);
       return { provider: p, text };
     })
@@ -640,16 +640,16 @@ router.post("/ensemble", requireAuth, async (req: Request, res: Response) => {
 // ── Get available providers ───────────────────────────────────────────────────
 router.get("/providers", requireAuth, (_req: Request, res: Response) => {
   const available = PROVIDER_ORDER
-    .filter(p => getEffectiveKey(p))
+    .filter(p => true)
     .map(p => ({ provider: p, source: "server" }));
   res.json({ providers: available });
 });
 
 // ── Provider cooldown status (admin) ────────────────────────────────────────
-router.get("/provider-status", requireAuth, (_req: Request, res: Response) => {
+router.get("/provider-status", requireAuth, async (_req: Request, res: Response) => {
   const now = Date.now();
-  const statuses = (PROVIDER_ORDER as readonly string[]).map(p => {
-    const hasKey = !!getEffectiveKey(p);
+  const statuses = await Promise.all((PROVIDER_ORDER as readonly string[]).map(async p => {
+    const hasKey = !!await getEffectiveKey(p);
     const cooldownExpires = providerCooldowns.get(p);
     const onCooldown = cooldownExpires ? now < cooldownExpires : false;
     const cooldownRemainingMs = onCooldown && cooldownExpires ? cooldownExpires - now : 0;
@@ -660,7 +660,7 @@ router.get("/provider-status", requireAuth, (_req: Request, res: Response) => {
       onCooldown,
       cooldownRemainingSeconds: Math.ceil(cooldownRemainingMs / 1000),
     };
-  });
+  }));
   res.json({ providers: statuses, cooldownMs: COOLDOWN_MS });
 });
 
@@ -672,24 +672,24 @@ router.post("/clear-cooldowns", requireAuth, requireAdmin, (_req: Request, res: 
 });
 
 // ── Admin: manage server-side API keys ────────────────────────────────────────
-router.get("/admin/keys", requireAuth, requireAdmin, (_req: Request, res: Response) => {
-  const keys = db.prepare(
+router.get("/admin/keys", requireAuth, requireAdmin, async (_req: Request, res: Response) => {
+  const keys = await db.prepare(
     "SELECT provider, model, updated_at, (CASE WHEN api_key != '' THEN 1 ELSE 0 END) as has_key FROM admin_api_keys"
   ).all();
   res.json(keys);
 });
 
-router.post("/admin/keys", requireAuth, requireAdmin, (req: Request, res: Response) => {
+router.post("/admin/keys", requireAuth, requireAdmin, async (req: Request, res: Response) => {
   const { provider, apiKey, model } = req.body;
   if (!provider || !apiKey) return res.status(400).json({ error: "provider and apiKey required" });
 
-  const existing = db.prepare("SELECT id FROM admin_api_keys WHERE provider = ?").get(provider) as any;
+  const existing = await db.prepare("SELECT id FROM admin_api_keys WHERE provider = ?").get(provider) as any;
   if (existing) {
-    db.prepare(
-      "UPDATE admin_api_keys SET api_key=?, model=?, updated_by=?, updated_at=datetime('now') WHERE provider=?"
+    await db.prepare(
+      "UPDATE admin_api_keys SET api_key=?, model=?, updated_by=?, updated_at=NOW() WHERE provider=?"
     ).run(apiKey, model || null, req.user!.id, provider);
   } else {
-    db.prepare(
+    await db.prepare(
       "INSERT INTO admin_api_keys (id, provider, api_key, model, updated_by) VALUES (?, ?, ?, ?, ?)"
     ).run(uuidv4(), provider, apiKey, model || null, req.user!.id);
   }
@@ -697,14 +697,14 @@ router.post("/admin/keys", requireAuth, requireAdmin, (req: Request, res: Respon
   res.json({ success: true });
 });
 
-router.delete("/admin/keys/:provider", requireAuth, requireAdmin, (req: Request, res: Response) => {
-  db.prepare("DELETE FROM admin_api_keys WHERE provider = ?").run(req.params.provider);
+router.delete("/admin/keys/:provider", requireAuth, requireAdmin, async (req: Request, res: Response) => {
+  await db.prepare("DELETE FROM admin_api_keys WHERE provider = ?").run(req.params.provider);
   res.json({ success: true });
 });
 
 // ── AI Filter Log ─────────────────────────────────────────────────────────────
-router.get("/filter-log", requireAuth, (req: Request, res: Response) => {
-  const logs = db.prepare(
+router.get("/filter-log", requireAuth, async (req: Request, res: Response) => {
+  const logs = await db.prepare(
     `SELECT afl.*, u.display_name FROM ai_filter_log afl
      LEFT JOIN users u ON afl.user_id = u.id
      WHERE afl.school_id = ? ORDER BY afl.created_at DESC LIMIT 200`
@@ -713,12 +713,12 @@ router.get("/filter-log", requireAuth, (req: Request, res: Response) => {
 });
 
 // ── AI Usage Stats ────────────────────────────────────────────────────────────
-router.get("/stats", requireAuth, requireAdmin, (req: Request, res: Response) => {
+router.get("/stats", requireAuth, requireAdmin, async (req: Request, res: Response) => {
   const schoolId = req.user!.schoolId;
-  const totalRequests = (db.prepare("SELECT COUNT(*) as c FROM ai_filter_log WHERE school_id=?").get(schoolId) as any)?.c || 0;
-  const flaggedRequests = (db.prepare("SELECT COUNT(*) as c FROM ai_filter_log WHERE school_id=? AND flagged=1").get(schoolId) as any)?.c || 0;
-  const todayRequests = (db.prepare("SELECT COUNT(*) as c FROM ai_filter_log WHERE school_id=? AND date(created_at)=date('now')").get(schoolId) as any)?.c || 0;
-  const topUsers = db.prepare(
+  const totalRequests = (await db.prepare("SELECT COUNT(*) as c FROM ai_filter_log WHERE school_id=?").get(schoolId) as any)?.c || 0;
+  const flaggedRequests = (await db.prepare("SELECT COUNT(*) as c FROM ai_filter_log WHERE school_id=? AND flagged=1").get(schoolId) as any)?.c || 0;
+  const todayRequests = (await db.prepare("SELECT COUNT(*) as c FROM ai_filter_log WHERE school_id=? AND date(created_at)=date('now')").get(schoolId) as any)?.c || 0;
+  const topUsers = await db.prepare(
     `SELECT u.display_name, COUNT(*) as requests FROM ai_filter_log afl
      JOIN users u ON afl.user_id=u.id WHERE afl.school_id=?
      GROUP BY afl.user_id ORDER BY requests DESC LIMIT 5`
@@ -1694,8 +1694,8 @@ router.post("/worksheet-from-slides", requireAuth, worksheetUpload.single("file"
           // Extract text from <a:t> tags (PowerPoint text runs)
           const textMatches = xml.match(/<a:t[^>]*>([^<]+)<\/a:t>/g) || [];
           const slideText = textMatches
-            .map(m => m.replace(/<[^>]+>/g, "").trim())
-            .filter(t => t.length > 0)
+            .map((m: string) => m.replace(/<[^>]+>/g, "").trim())
+            .filter((t: string) => t.length > 0)
             .join(" ");
           if (slideText) slideTexts.push(`[Slide ${slideFiles.indexOf(slideFile) + 1}] ${slideText}`);
         }

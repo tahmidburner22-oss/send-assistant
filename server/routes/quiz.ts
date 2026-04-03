@@ -19,7 +19,7 @@ import { v4 as uuidv4 } from "uuid";
 import multer from "multer";
 import fs from "fs";
 import path from "path";
-import db from "../db/index.js";
+import { db } from "../db/index.js";
 import { requireAuth } from "../middleware/auth.js";
 
 const router = Router();
@@ -51,6 +51,7 @@ interface Room {
   phase: "lobby" | "question" | "reveal" | "leaderboard" | "ended";
   currentQuestion: number;
   questionStartedAt?: number;
+  autoAdvancedAt?: number;
   createdAt: number;
 }
 
@@ -109,49 +110,49 @@ function sanitiseRoom(room: Room) {
 
 // ─── Custom Quiz CRUD ─────────────────────────────────────────────────────────
 
-router.get("/custom", requireAuth, (req: Request, res: Response) => {
+router.get("/custom", requireAuth, async (req: Request, res: Response) => {
   const schoolId = req.user!.schoolId;
-  const quizzes = db.prepare(
+  const quizzes = await db.prepare(
     `SELECT id, title, subject, topic, question_count, created_by_name, created_at
      FROM custom_quizzes WHERE school_id = ? ORDER BY created_at DESC`
   ).all(schoolId);
   res.json(quizzes);
 });
 
-router.post("/custom", requireAuth, (req: Request, res: Response) => {
+router.post("/custom", requireAuth, async (req: Request, res: Response) => {
   const schoolId = req.user!.schoolId;
   const { title, subject, topic, questions } = req.body;
   if (!title || !questions || !Array.isArray(questions) || questions.length === 0) {
     return res.status(400).json({ error: "title and questions are required" });
   }
   const id = uuidv4();
-  db.prepare(
+  await db.prepare(
     `INSERT INTO custom_quizzes (id, school_id, title, subject, topic, questions, question_count, created_by, created_by_name, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))`
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`
   ).run(id, schoolId, title, subject || "", topic || "", JSON.stringify(questions), questions.length, req.user!.id, req.user!.displayName || "Teacher");
   res.json({ id });
 });
 
-router.put("/custom/:id", requireAuth, (req: Request, res: Response) => {
+router.put("/custom/:id", requireAuth, async (req: Request, res: Response) => {
   const schoolId = req.user!.schoolId;
   const { title, subject, topic, questions } = req.body;
-  const existing = db.prepare("SELECT id FROM custom_quizzes WHERE id = ? AND school_id = ?").get(req.params.id, schoolId);
+  const existing = await db.prepare("SELECT id FROM custom_quizzes WHERE id = ? AND school_id = ?").get(req.params.id, schoolId);
   if (!existing) return res.status(404).json({ error: "Not found" });
-  db.prepare(
+  await db.prepare(
     `UPDATE custom_quizzes SET title=?, subject=?, topic=?, questions=?, question_count=? WHERE id=?`
   ).run(title, subject || "", topic || "", JSON.stringify(questions), questions.length, req.params.id);
   res.json({ ok: true });
 });
 
-router.delete("/custom/:id", requireAuth, (req: Request, res: Response) => {
+router.delete("/custom/:id", requireAuth, async (req: Request, res: Response) => {
   const schoolId = req.user!.schoolId;
-  db.prepare("DELETE FROM custom_quizzes WHERE id = ? AND school_id = ?").run(req.params.id, schoolId);
+  await db.prepare("DELETE FROM custom_quizzes WHERE id = ? AND school_id = ?").run(req.params.id, schoolId);
   res.json({ ok: true });
 });
 
-router.get("/custom/:id", requireAuth, (req: Request, res: Response) => {
+router.get("/custom/:id", requireAuth, async (req: Request, res: Response) => {
   const schoolId = req.user!.schoolId;
-  const quiz = db.prepare("SELECT * FROM custom_quizzes WHERE id = ? AND school_id = ?").get(req.params.id, schoolId) as any;
+  const quiz = await db.prepare("SELECT * FROM custom_quizzes WHERE id = ? AND school_id = ?").get(req.params.id, schoolId) as any;
   if (!quiz) return res.status(404).json({ error: "Not found" });
   quiz.questions = JSON.parse(quiz.questions || "[]");
   res.json(quiz);
@@ -252,7 +253,7 @@ correctIndex is 0-based. Make questions clear, educational, and based ONLY on th
 // ─── Room Management ──────────────────────────────────────────────────────────
 
 // POST /api/quiz/rooms — create room
-router.post("/rooms", requireAuth, (req: Request, res: Response) => {
+router.post("/rooms", requireAuth, async (req: Request, res: Response) => {
   const { quizTitle, questions } = req.body;
   if (!questions || !Array.isArray(questions) || questions.length === 0) {
     return res.status(400).json({ error: "questions array is required" });
@@ -279,14 +280,14 @@ router.post("/rooms", requireAuth, (req: Request, res: Response) => {
 });
 
 // GET /api/quiz/rooms/:code — poll room state
-router.get("/rooms/:code", (req: Request, res: Response) => {
+router.get("/rooms/:code", async (req: Request, res: Response) => {
   const room = rooms[req.params.code];
   if (!room) return res.status(404).json({ error: "Room not found or expired" });
   res.json(sanitiseRoom(room));
 });
 
 // POST /api/quiz/rooms/:code/join — player joins (mid-game joining allowed)
-router.post("/rooms/:code/join", (req: Request, res: Response) => {
+router.post("/rooms/:code/join", async (req: Request, res: Response) => {
   const room = rooms[req.params.code];
   if (!room) return res.status(404).json({ error: "Room not found. Check your code." });
   // Allow joining in lobby OR during active game (phase: question/reveal)
@@ -307,7 +308,7 @@ router.post("/rooms/:code/join", (req: Request, res: Response) => {
 });
 
 // POST /api/quiz/rooms/:code/start — host starts game
-router.post("/rooms/:code/start", requireAuth, (req: Request, res: Response) => {
+router.post("/rooms/:code/start", requireAuth, async (req: Request, res: Response) => {
   const room = rooms[req.params.code];
   if (!room) return res.status(404).json({ error: "Room not found" });
   if (room.hostId !== req.user!.id) return res.status(403).json({ error: "Only the host can start the game" });
@@ -319,7 +320,7 @@ router.post("/rooms/:code/start", requireAuth, (req: Request, res: Response) => 
 });
 
 // POST /api/quiz/rooms/:code/answer — player submits answer
-router.post("/rooms/:code/answer", (req: Request, res: Response) => {
+router.post("/rooms/:code/answer", async (req: Request, res: Response) => {
   const room = rooms[req.params.code];
   if (!room) return res.status(404).json({ error: "Room not found" });
   if (room.phase !== "question") return res.status(400).json({ error: "Not in question phase" });
@@ -360,7 +361,7 @@ router.post("/rooms/:code/answer", (req: Request, res: Response) => {
 });
 
 // POST /api/quiz/rooms/:code/next — host advances (reveal → next question or leaderboard)
-router.post("/rooms/:code/next", requireAuth, (req: Request, res: Response) => {
+router.post("/rooms/:code/next", requireAuth, async (req: Request, res: Response) => {
   const room = rooms[req.params.code];
   if (!room) return res.status(404).json({ error: "Room not found" });
   if (room.hostId !== req.user!.id) return res.status(403).json({ error: "Only the host can advance" });
@@ -381,7 +382,7 @@ router.post("/rooms/:code/next", requireAuth, (req: Request, res: Response) => {
 });
 
 // POST /api/quiz/rooms/:code/save-results — host saves final results to pupil profiles
-router.post("/rooms/:code/save-results", requireAuth, (req: Request, res: Response) => {
+router.post("/rooms/:code/save-results", requireAuth, async (req: Request, res: Response) => {
   const room = rooms[req.params.code];
   if (!room) return res.status(404).json({ error: "Room not found" });
   if (room.hostId !== req.user!.id) return res.status(403).json({ error: "Only the host can save results" });
@@ -403,10 +404,10 @@ router.post("/rooms/:code/save-results", requireAuth, (req: Request, res: Respon
     const pupilId = mappingMap[playerName] || null;
     const id = uuidv4();
     try {
-      db.prepare(`
+      await db.prepare(`
         INSERT INTO quiz_results (id, school_id, pupil_id, pupil_name, quiz_id, quiz_title, subject, topic,
           score, max_score, percentage, correct_count, total_questions, badge, played_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
       `).run(
         id, room.schoolId, pupilId, playerName,
         null, room.quizTitle, null, null,
@@ -422,15 +423,15 @@ router.post("/rooms/:code/save-results", requireAuth, (req: Request, res: Respon
 });
 
 // GET /api/quiz/results — get quiz results for school (analytics)
-router.get("/results", requireAuth, (req: Request, res: Response) => {
+router.get("/results", requireAuth, async (req: Request, res: Response) => {
   const { pupilId, limit = 50 } = req.query;
   let results: any[];
   if (pupilId) {
-    results = db.prepare(
+    results = await db.prepare(
       "SELECT * FROM quiz_results WHERE pupil_id = ? ORDER BY played_at DESC LIMIT ?"
     ).all(pupilId as string, Number(limit)) as any[];
   } else {
-    results = db.prepare(
+    results = await db.prepare(
       "SELECT * FROM quiz_results WHERE school_id = ? ORDER BY played_at DESC LIMIT ?"
     ).all(req.user!.schoolId, Number(limit)) as any[];
   }
@@ -438,7 +439,7 @@ router.get("/results", requireAuth, (req: Request, res: Response) => {
 });
 
 // DELETE /api/quiz/rooms/:code — host closes room
-router.delete("/rooms/:code", requireAuth, (req: Request, res: Response) => {
+router.delete("/rooms/:code", requireAuth, async (req: Request, res: Response) => {
   const room = rooms[req.params.code];
   if (!room) return res.status(404).json({ error: "Room not found" });
   if (room.hostId !== req.user!.id) return res.status(403).json({ error: "Only the host can close the room" });

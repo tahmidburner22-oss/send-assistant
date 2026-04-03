@@ -19,9 +19,9 @@ function requirePlatformOwner(req: Request, res: Response, next: Function) {
 
 // ── GET /api/admin/users ────────────────────────────────────────────────────────
 // Fetch all users with their school and plan information
-router.get("/users", requireAuth, requireAdmin, requirePlatformOwner, (req: Request, res: Response) => {
+router.get("/users", requireAuth, requireAdmin, requirePlatformOwner, async (req: Request, res: Response) => {
   try {
-    const users = db.prepare(
+    const users = await db.prepare(
       `SELECT 
         u.id, u.email, u.display_name, u.role, u.school_id, u.email_verified, u.created_at,
         s.name as school_name, s.subscription_plan, s.licence_type
@@ -39,7 +39,7 @@ router.get("/users", requireAuth, requireAdmin, requirePlatformOwner, (req: Requ
 
 // ── PATCH /api/admin/users/:userId ──────────────────────────────────────────────
 // Update a user's role or subscription plan
-router.patch("/users/:userId", requireAuth, requireAdmin, requirePlatformOwner, (req: Request, res: Response) => {
+router.patch("/users/:userId", requireAuth, requireAdmin, requirePlatformOwner, async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
     const { field, value } = req.body;
@@ -48,13 +48,16 @@ router.patch("/users/:userId", requireAuth, requireAdmin, requirePlatformOwner, 
       return res.status(400).json({ error: "Invalid field to update" });
     }
 
+    // Fetch user for audit log and subscription update
+    const user = await db.prepare("SELECT school_id FROM users WHERE id = ?").get(userId) as any;
+
     // Validate role
     if (field === "role") {
       const validRoles = ["mat_admin", "school_admin", "senco", "teacher", "ta", "staff"];
       if (!validRoles.includes(value)) {
         return res.status(400).json({ error: "Invalid role" });
       }
-      db.prepare("UPDATE users SET role = ? WHERE id = ?").run(value, userId);
+      await db.prepare("UPDATE users SET role = ? WHERE id = ?").run(value, userId);
     }
 
     // Validate and update subscription plan
@@ -63,9 +66,8 @@ router.patch("/users/:userId", requireAuth, requireAdmin, requirePlatformOwner, 
       if (!validPlans.includes(value)) {
         return res.status(400).json({ error: "Invalid plan" });
       }
-      const user = db.prepare("SELECT school_id FROM users WHERE id = ?").get(userId) as any;
       if (user?.school_id) {
-        db.prepare("UPDATE schools SET subscription_plan = ?, subscription_status = 'active' WHERE id = ?").run(
+        await db.prepare("UPDATE schools SET subscription_plan = ?, subscription_status = 'active' WHERE id = ?").run(
           value,
           user.school_id
         );
@@ -73,7 +75,7 @@ router.patch("/users/:userId", requireAuth, requireAdmin, requirePlatformOwner, 
     }
 
     // Fetch updated user
-    const updated = db.prepare(
+    const updated = await db.prepare(
       `SELECT 
         u.id, u.email, u.display_name, u.role, u.school_id, u.email_verified, u.created_at,
         s.name as school_name, s.subscription_plan, s.licence_type
@@ -101,7 +103,7 @@ router.patch("/users/:userId", requireAuth, requireAdmin, requirePlatformOwner, 
 
 // ── DELETE /api/admin/users/:userId ─────────────────────────────────────────────
 // Delete a user account
-router.delete("/users/:userId", requireAuth, requireAdmin, requirePlatformOwner, (req: Request, res: Response) => {
+router.delete("/users/:userId", requireAuth, requireAdmin, requirePlatformOwner, async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
 
@@ -111,10 +113,10 @@ router.delete("/users/:userId", requireAuth, requireAdmin, requirePlatformOwner,
     }
 
     // Get user info before deletion
-    const user = db.prepare("SELECT school_id, email FROM users WHERE id = ?").get(userId) as any;
+    const user = await db.prepare("SELECT school_id, email FROM users WHERE id = ?").get(userId) as any;
 
     // Delete user
-    db.prepare("DELETE FROM users WHERE id = ?").run(userId);
+    await db.prepare("DELETE FROM users WHERE id = ?").run(userId);
 
     auditLog(
       req.user!.id,
@@ -135,16 +137,16 @@ router.delete("/users/:userId", requireAuth, requireAdmin, requirePlatformOwner,
 
 // ── GET /api/admin/stats ────────────────────────────────────────────────────────
 // Platform statistics for the Super Admin dashboard
-router.get("/stats", requireAuth, requireAdmin, requirePlatformOwner, (req: Request, res: Response) => {
+router.get("/stats", requireAuth, requireAdmin, requirePlatformOwner, async (req: Request, res: Response) => {
   try {
-    const totalUsers = (db.prepare("SELECT COUNT(*) as c FROM users").get() as any).c;
-    const totalSchools = (db.prepare("SELECT COUNT(*) as c FROM schools").get() as any).c;
+    const totalUsers = (await db.prepare("SELECT COUNT(*) as c FROM users").get() as any).c;
+    const totalSchools = (await db.prepare("SELECT COUNT(*) as c FROM schools").get() as any).c;
     const premiumSchools = (
-      db.prepare(
+      await db.prepare(
         "SELECT COUNT(*) as c FROM schools WHERE subscription_plan IN ('premium', 'mat', 'enterprise')"
       ).get() as any
     ).c;
-    const totalPupils = (db.prepare("SELECT COUNT(*) as c FROM pupils WHERE is_active = 1").get() as any).c;
+    const totalPupils = (await db.prepare("SELECT COUNT(*) as c FROM pupils WHERE is_active = 1").get() as any).c;
 
     res.json({
       totalUsers,

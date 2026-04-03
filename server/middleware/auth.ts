@@ -32,7 +32,7 @@ declare global {
   }
 }
 
-export function requireAuth(req: Request, res: Response, next: NextFunction) {
+export async function requireAuth(req: Request, res: Response, next: NextFunction) {
   const token = extractToken(req);
   if (!token) return res.status(401).json({ error: "Authentication required" });
 
@@ -40,14 +40,14 @@ export function requireAuth(req: Request, res: Response, next: NextFunction) {
     const payload = jwt.verify(token, JWT_SECRET) as AuthUser & { mfaVerified?: boolean };
 
     // Check session still valid in DB
-    const session = db.prepare(
-      "SELECT * FROM sessions WHERE token = ? AND expires_at > datetime('now')"
+    const session = await db.prepare(
+      "SELECT * FROM sessions WHERE token = ? AND expires_at > NOW()"
     ).get(token) as any;
 
     if (!session) return res.status(401).json({ error: "Session expired. Please log in again." });
 
     // Check user still active
-    const user = db.prepare("SELECT * FROM users WHERE id = ? AND is_active = 1").get(payload.id) as any;
+    const user = await db.prepare("SELECT * FROM users WHERE id = ? AND is_active = 1").get(payload.id) as any;
     if (!user) return res.status(401).json({ error: "Account deactivated" });
 
     // If MFA is enabled, require MFA verification
@@ -138,7 +138,7 @@ export function extractToken(req: Request): string | null {
   return null;
 }
 
-export function auditLog(
+export async function auditLog(
   userId: string | null,
   schoolId: string | null,
   action: string,
@@ -146,8 +146,8 @@ export function auditLog(
   entityId?: string,
   details?: object,
   ipAddress?: string
-) {
-  db.prepare(`INSERT INTO audit_logs (id, user_id, school_id, action, entity_type, entity_id, details, ip_address)
+): Promise<void> {
+  await db.prepare(`INSERT INTO audit_logs (id, user_id, school_id, action, entity_type, entity_id, details, ip_address)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`).run(
     uuidv4(),
     userId,

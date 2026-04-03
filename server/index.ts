@@ -246,10 +246,10 @@ const generalLimiter = rateLimit({
 
 // ── Issue 4: Expired session + password reset cleanup (runs hourly) ───────────
 import db from "./db/index.js";
-setInterval(() => {
+setInterval(async () => {
   try {
-    const deletedSessions = db.prepare("DELETE FROM sessions WHERE expires_at < datetime('now')").run();
-    const deletedResets   = db.prepare("DELETE FROM password_resets WHERE expires_at < datetime('now') OR used = 1").run();
+    const deletedSessions = await db.prepare("DELETE FROM sessions WHERE expires_at < NOW()").run();
+    const deletedResets   = await db.prepare("DELETE FROM password_resets WHERE expires_at < NOW() OR used = 1").run();
     if (deletedSessions.changes > 0 || deletedResets.changes > 0) {
       console.log(`[Cleanup] Removed ${deletedSessions.changes} expired sessions, ${deletedResets.changes} used/expired password resets`);
     }
