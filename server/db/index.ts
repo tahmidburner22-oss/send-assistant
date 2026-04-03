@@ -213,6 +213,8 @@ export async function initDb() {
       updated_at TEXT NOT NULL DEFAULT (datetime('now'))
     )`,
     // Worksheet Library — master worksheets for instant retrieval
+    // IMPORTANT: tier and send_need are NOT in the base CREATE TABLE — they are added via
+    // ALTER TABLE migrations below. This ensures safe deployment on existing databases.
     `CREATE TABLE IF NOT EXISTS worksheet_library (
       id TEXT PRIMARY KEY,
       subject TEXT NOT NULL,
@@ -220,8 +222,6 @@ export async function initDb() {
       year_group TEXT NOT NULL,
       title TEXT NOT NULL,
       subtitle TEXT,
-      tier TEXT NOT NULL DEFAULT 'standard',
-      send_need TEXT,
       sections TEXT NOT NULL DEFAULT '[]',
       teacher_sections TEXT NOT NULL DEFAULT '[]',
       key_vocab TEXT NOT NULL DEFAULT '[]',
@@ -233,13 +233,14 @@ export async function initDb() {
       created_at TEXT NOT NULL DEFAULT (datetime('now')),
       updated_at TEXT NOT NULL DEFAULT (datetime('now'))
     )`,
-    `CREATE UNIQUE INDEX IF NOT EXISTS idx_library_topic ON worksheet_library(subject, topic, year_group, tier)`,
     `CREATE INDEX IF NOT EXISTS idx_library_subject ON worksheet_library(subject)`,
     `CREATE INDEX IF NOT EXISTS idx_library_curated ON worksheet_library(curated)`,
-    `CREATE INDEX IF NOT EXISTS idx_library_tier ON worksheet_library(tier)`,
-    // Add tier column to existing worksheet_library tables (migration)
+    // Add tier and send_need columns BEFORE creating indexes that reference them
     `ALTER TABLE worksheet_library ADD COLUMN tier TEXT NOT NULL DEFAULT 'standard'`,
     `ALTER TABLE worksheet_library ADD COLUMN send_need TEXT`,
+    // Tier-based indexes — created after tier column is guaranteed to exist
+    `CREATE INDEX IF NOT EXISTS idx_library_tier ON worksheet_library(tier)`,
+    `CREATE UNIQUE INDEX IF NOT EXISTS idx_library_topic ON worksheet_library(subject, topic, year_group, tier)`,
   ];
   for (const migration of migrations) {
     try { _db.run(migration); } catch (_) { /* column already exists — ignore */ }
