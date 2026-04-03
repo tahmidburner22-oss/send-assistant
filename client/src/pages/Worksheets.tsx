@@ -900,10 +900,12 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
 
             let finalSections = entry.sections || [];
             let readingAdjusted = false;
+            let sendAdapted = false;
 
             if (yearGroupMismatch) {
               // Adjust reading level to match the selected year group.
-              // This changes ONLY vocabulary and sentence complexity — not questions or marks.
+              // For Year 7 and below: ONLY vocabulary/sentence complexity is changed.
+              // Questions, marks, diagrams, and structure are preserved exactly.
               setGenerationStatus(`Adjusting reading level for ${yearGroup}...`);
               try {
                 const adjustRes = await fetch("/api/ai/adjust-reading-level", {
@@ -929,6 +931,36 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
               }
             }
 
+            // If a SEND need is selected, apply content adaptations (word banks, sentence starters,
+            // scaffolding etc.) on top of the library content. This is separate from the visual
+            // formatting overlay applied by WorksheetRenderer — this changes the actual content.
+            if (hasSendNeed) {
+              setGenerationStatus(`Applying ${sendNeed} adaptations...`);
+              try {
+                const sendRes = await fetch("/api/ai/differentiate-one-click", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json", ...authHeaders },
+                  body: JSON.stringify({
+                    sections: finalSections,
+                    topic,
+                    subject,
+                    yearGroup,
+                    tier: "send",
+                    sendNeeds: sendNeed,
+                  }),
+                });
+                if (sendRes.ok) {
+                  const sendData = await sendRes.json();
+                  if (sendData.sections && sendData.sections.length > 0) {
+                    finalSections = sendData.sections;
+                    sendAdapted = true;
+                  }
+                }
+              } catch (sendErr) {
+                console.warn("SEND adaptation failed, using original content with formatting overlay:", sendErr);
+              }
+            }
+
             const libWorksheet = {
               title: entry.title,
               subtitle: entry.subtitle || `${yearGroup} | ${subject}`,
@@ -945,7 +977,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                 sendNeedId: hasSendNeed ? sendNeed : undefined,
                 sendNeed: hasSendNeed ? sendNeed : undefined,
               },
-              isAI: readingAdjusted, // mark as AI-adjusted if reading level was changed
+              isAI: readingAdjusted || sendAdapted, // mark as AI-adjusted if reading level or SEND was applied
               fromLibrary: true,
               libraryCurated: entry.curated,
               // Store available tiers so the differentiate panel knows what's in the library
@@ -958,7 +990,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
             setGenerationStatus("");
             const badge = entry.curated ? "✓ Curated worksheet" : "From worksheet library";
             const ygBadge = readingAdjusted ? ` · reading level adjusted for ${yearGroup}` : "";
-            const sendBadge = hasSendNeed ? " · SEND formatting applied" : "";
+            const sendBadge = sendAdapted ? ` · SEND content adapted for ${sendNeed}` : hasSendNeed ? " · SEND formatting applied" : "";
             toast.success(`${badge}${ygBadge}${sendBadge} — loaded instantly!`, { duration: 4000 });
             return;
           }
@@ -2473,20 +2505,20 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                   <summary className="flex items-center gap-2 cursor-pointer p-3 rounded-xl border border-border/40 bg-slate-50/50 hover:bg-slate-100/50 transition-colors">
                     <ChevronRight className="h-4 w-4 text-muted-foreground group-open:rotate-90 transition-transform" />
                     <span className="text-sm font-medium text-foreground">Advanced Options</span>
-                    <span className="text-xs text-muted-foreground ml-auto">Recall topic, exam board, instructions & more</span>
+                    <span className="text-xs text-muted-foreground ml-auto">Retrieval topic, exam board, instructions & more</span>
                   </summary>
                   <div className="mt-3 p-4 rounded-xl border border-border/40 bg-slate-50/30 space-y-4">
 
-                {/* Recall Topic - moved to advanced */}
+                {/* Retrieval Topic - moved to advanced */}
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-medium">Recall Topic (optional)</Label>
+                  <Label className="text-xs font-medium">Retrieval Topic (optional)</Label>
                   <Input
                     value={recallTopic}
                     onChange={e => setRecallTopic(e.target.value)}
-                    placeholder="e.g. Fractions, Photosynthesis… — adds 2–3 recap questions at the start"
+                    placeholder="e.g. Fractions, Photosynthesis… — adds 2–3 retrieval questions at the start"
                     className="h-10"
                   />
-                  <p className="text-[10px] text-muted-foreground">If set, 2–3 recall questions on this previous topic will appear at the top of the worksheet before the main content.</p>
+                  <p className="text-[10px] text-muted-foreground">If set, 2–3 retrieval questions on this previous topic will appear after the Learning Objective and before the main content.</p>
                 </div>
 
                 {/* Page Count — moved to Advanced Options */}
