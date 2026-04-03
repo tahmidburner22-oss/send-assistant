@@ -2799,15 +2799,15 @@ ${tierInstructions[tier]}
 
 Worksheet sections to adapt:
 ${JSON.stringify(sections, null, 2)}`;
-
   try {
-    const result = await callAI(
-      schoolId,
+    // Fix: callAI was a bug — the correct function is callWithFallback
+    const result = await callWithFallback(
       systemPrompt,
       userPrompt,
-      { temperature: 0.3, maxTokens: 8000 }
+      8000,
+      undefined,
+      schoolId
     );
-
     let adapted: any[];
     try {
       const raw = result.content.trim();
@@ -2815,20 +2815,118 @@ ${JSON.stringify(sections, null, 2)}`;
       adapted = JSON.parse(clean);
       if (!Array.isArray(adapted)) throw new Error("Not an array");
     } catch {
-      return res.status(500).json({ error: "AI returned invalid JSON — please try again" });
+      return res.status(500).json({ error: "AI returned invalid JSON \u2014 please try again" });
     }
-
     // Preserve original section IDs
     adapted = adapted.map((s: any, i: number) => ({
       ...sections[i],
       ...s,
       id: sections[i]?.id || s.id,
     }));
-
     res.json({ sections: adapted, tier, provider: result.provider });
   } catch (err: any) {
     console.error("[differentiate-one-click] failed:", err.message);
     res.status(500).json({ error: "Differentiation failed. Please try again." });
+  }
+});
+
+// ── POST /api/ai/adjust-reading-level — reword worksheet text for a target year group ──────
+// Changes ONLY language complexity, vocabulary, and sentence length.
+// Does NOT change: questions, marks, numbers, formulas, section structure.
+router.post("/adjust-reading-level", requireAuth, async (req: Request, res: Response) => {
+  const { sections, targetYearGroup, subject, topic, sendNeed } = req.body;
+  if (!sections || !Array.isArray(sections) || sections.length === 0) {
+    return res.status(400).json({ error: "sections array is required" });
+  }
+  if (!targetYearGroup) {
+    return res.status(400).json({ error: "targetYearGroup is required" });
+  }
+  const schoolId = (req as any).user?.schoolId;
+
+  // Map year group to a reading age target
+  const yearToAge: Record<string, number> = {
+    "Year 1": 6, "Year 2": 7, "Year 3": 8, "Year 4": 9, "Year 5": 10, "Year 6": 11,
+    "Year 7": 12, "Year 8": 13, "Year 9": 14, "Year 10": 15, "Year 11": 16,
+    "Year 12": 17, "Year 13": 18,
+  };
+  // Normalise: "7" -> "Year 7", "Year 7" -> "Year 7"
+  const normYG = targetYearGroup.toString().trim();
+  const ygKey = normYG.startsWith("Year ") ? normYG : `Year ${normYG}`;
+  const targetAge = yearToAge[ygKey] || 14; // default to Year 9 reading age
+
+  const getAgeGuide = (age: number): string => {
+    if (age <= 6) return "Reading age 6: Very short sentences (4\u20136 words). Only the most common everyday words. Explain all subject words in the simplest terms.";
+    if (age <= 7) return "Reading age 7: Very short sentences (5\u20138 words max). Simple, common words only. One instruction per sentence. No compound or complex sentences. Avoid all technical jargon \u2014 use everyday words instead.";
+    if (age <= 8) return "Reading age 8: Short sentences (6\u20139 words). Common vocabulary with simple explanations for subject terms. Simple compound sentences allowed.";
+    if (age <= 9) return "Reading age 9: Short, clear sentences (8\u201312 words). Everyday vocabulary. Simple compound sentences allowed. Define any technical terms in brackets immediately after.";
+    if (age <= 10) return "Reading age 10: Sentences of 8\u201313 words. Accessible vocabulary with definitions for subject-specific terms. Mix of simple and compound sentences.";
+    if (age <= 11) return "Reading age 11: Moderate sentences (10\u201315 words). Subject vocabulary with brief definitions. Some complex sentences acceptable. Clear, direct instructions.";
+    if (age <= 12) return "Reading age 12: Sentences of 10\u201316 words. Good vocabulary range including subject-specific terms with brief definitions. Varied sentence structures.";
+    if (age <= 13) return "Reading age 13: Standard academic language. Technical vocabulary expected. Multi-clause sentences acceptable. GCSE-level command words (describe, explain, evaluate).";
+    if (age <= 14) return "Reading age 14: Confident academic language. Technical vocabulary used naturally. Complex sentence structures. GCSE command words throughout.";
+    if (age <= 15) return "Reading age 15: Advanced secondary-level language. Rich vocabulary, complex sentence structures, nuanced expression. GCSE/A-Level standard.";
+    if (age <= 16) return "Reading age 16: A-Level standard language. Sophisticated vocabulary, complex analytical language, mature academic expression.";
+    return "Reading age 17+: University-entrance standard. Highly sophisticated vocabulary, mature complex academic expression, analytical and evaluative depth.";
+  };
+
+  const guide = getAgeGuide(targetAge);
+
+  // Only adjust student-facing sections; preserve teacher/answer sections
+  const sectionsToAdjust = sections.filter((s: any) => !s.teacherOnly && s.type !== "answers" && s.type !== "mark-scheme");
+  const preservedSections = sections.filter((s: any) => s.teacherOnly || s.type === "answers" || s.type === "mark-scheme");
+
+  const system = `You are a UK SEND specialist teacher. Rewrite the worksheet text to match a specific reading age level.
+CRITICAL: Change ONLY the language complexity, vocabulary, and sentence structure.
+Do NOT change the academic content, questions, numbers, formulas, or difficulty of the tasks themselves.
+Return a valid JSON ARRAY only \u2014 no wrapper object, no markdown code blocks, no extra keys.
+Output MUST start with [ and end with ].`;
+
+  const user = `Rewrite ALL instructions and text in this worksheet to match: ${guide}
+
+Subject: ${subject || "general"}
+Year Group: ${targetYearGroup}
+${sendNeed ? `SEND Need: ${sendNeed}` : ""}
+
+RULES:
+- Rewrite ONLY the instructional text, question wording, and vocabulary definitions
+- Do NOT change: numbers, formulas, equations, mark allocations, answer spaces, section titles
+- Keep all scaffolding structures (word banks, sentence starters, checklists) but simplify their language
+- If content is already at or below the target reading level, leave it unchanged
+- Preserve all section IDs exactly
+
+SECTIONS:
+${JSON.stringify(sectionsToAdjust, null, 2)}
+
+Return a JSON array of sections with adjusted language \u2014 start with [ and end with ]:
+[{"title": "...", "content": "...", "type": "...", "teacherOnly": false}]`;
+
+  try {
+    const { content, provider } = await callWithFallback(system, user, 4000, undefined, schoolId);
+    const cleaned = content.replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/\s*```$/i, "").trim();
+    let parsed: any;
+    try {
+      parsed = JSON.parse(cleaned);
+    } catch {
+      return res.status(500).json({ error: "Reading level adjustment failed \u2014 AI returned unparseable response." });
+    }
+    let adjustedSections: any[];
+    if (Array.isArray(parsed)) {
+      adjustedSections = parsed;
+    } else if (parsed && Array.isArray(parsed.sections)) {
+      adjustedSections = parsed.sections;
+    } else {
+      return res.status(500).json({ error: "Reading level adjustment failed \u2014 unexpected AI response format." });
+    }
+    // Restore original IDs and merge with preserved sections
+    const merged = adjustedSections.map((s: any, i: number) => ({
+      ...sectionsToAdjust[i],
+      ...s,
+      id: sectionsToAdjust[i]?.id || s.id,
+    }));
+    res.json({ sections: [...merged, ...preservedSections], provider, targetYearGroup, targetAge });
+  } catch (err: any) {
+    console.error("[adjust-reading-level] failed:", err.message);
+    res.status(500).json({ error: "Reading level adjustment failed. Please try again." });
   }
 });
 

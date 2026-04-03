@@ -201,6 +201,12 @@ export function buildPopupHtml(
     }
 
     /* ── PRIMARY SCHOOL: preserve all colourful section styles in print/PDF ── */
+    /* Force colour printing at the root level — must come before specific rules */
+    :root {
+      color-scheme: light;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
     /* Gradient header bars — must print in full colour */
     [style*="linear-gradient"] {
       -webkit-print-color-adjust: exact !important;
@@ -232,8 +238,25 @@ export function buildPopupHtml(
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
     }
-
-    /* ── Ensure all coloured backgrounds print ── */
+    /* Primary palette background colours — force print */
+    [style*="background: #fff0f6"], [style*="background:#fff0f6"],
+    [style*="background: #eff6ff"], [style*="background:#eff6ff"],
+    [style*="background: #f0fdf4"], [style*="background:#f0fdf4"],
+    [style*="background: #fff7ed"], [style*="background:#fff7ed"],
+    [style*="background: #faf5ff"], [style*="background:#faf5ff"],
+    [style*="background: #ecfeff"], [style*="background:#ecfeff"],
+    [style*="background: #fefce8"], [style*="background:#fefce8"],
+    [style*="background: #f0fdfa"], [style*="background:#f0fdfa"] {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    /* Primary palette border colours */
+    [style*="border: 3px solid"],
+    [style*="border:3px solid"] {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    /* ── Ensure ALL coloured backgrounds and borders print ── */
     * {
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
@@ -457,6 +480,7 @@ export async function downloadHtmlAsPdf(
       max-width: ${RENDER_PX}px;
     }
     .ws-teacher-section { display: none !important; }
+    :root { color-scheme: light; }
     * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
     /* ── PRIMARY SCHOOL: preserve all colourful section styles in PDF ── */
     /* Gradient header bars */
@@ -465,7 +489,8 @@ export async function downloadHtmlAsPdf(
       print-color-adjust: exact !important;
     }
     /* Coloured section cards (18px radius) */
-    [style*="border-radius: 18px"] {
+    [style*="border-radius: 18px"],
+    [style*="borderRadius: 18px"] {
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
       border-radius: 18px !important;
@@ -473,6 +498,23 @@ export async function downloadHtmlAsPdf(
     }
     /* Numbered circle bubbles */
     [style*="border-radius: 50%"] {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    /* Primary palette background colours — force render in PDF */
+    [style*="background: #fff0f6"],[style*="background:#fff0f6"],
+    [style*="background: #eff6ff"],[style*="background:#eff6ff"],
+    [style*="background: #f0fdf4"],[style*="background:#f0fdf4"],
+    [style*="background: #fff7ed"],[style*="background:#fff7ed"],
+    [style*="background: #faf5ff"],[style*="background:#faf5ff"],
+    [style*="background: #ecfeff"],[style*="background:#ecfeff"],
+    [style*="background: #fefce8"],[style*="background:#fefce8"],
+    [style*="background: #f0fdfa"],[style*="background:#f0fdfa"] {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    /* Primary palette border colours */
+    [style*="border: 3px solid"],[style*="border:3px solid"] {
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
     }
