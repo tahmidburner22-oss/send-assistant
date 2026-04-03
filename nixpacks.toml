@@ -3,11 +3,12 @@ nixPkgs = ["nodejs_22", "poppler_utils"]
 
 [phases.install]
 cmds = [
-  "npm install -g pnpm@10.32.1 && pnpm install --no-frozen-lockfile"
+  "npm install -g pnpm@10.32.1",
+  "PATH=$(npm prefix -g)/bin:$PATH pnpm install --no-frozen-lockfile"
 ]
 
 [phases.build]
-cmds = ["npm install -g pnpm@10.32.1 && pnpm build"]
+cmds = ["PATH=$(npm prefix -g)/bin:$PATH pnpm build"]
 
 [start]
 cmd = "node dist/server/index.js"
