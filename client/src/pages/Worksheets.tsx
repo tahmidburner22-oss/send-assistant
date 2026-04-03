@@ -14,7 +14,7 @@ import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { useApp, type Worksheet } from "@/contexts/AppContext";
 import { useUserPreferences } from "@/contexts/UserPreferencesContext";
-import { subjects, yearGroups, sendNeeds, examBoards, difficulties, colorOverlays, getDifficultyOptions, subjectTierMode } from "@/lib/send-data";
+import { subjects, yearGroups, sendNeeds, examBoards, difficulties, colorOverlays, getDifficultyOptions, subjectTierMode, getLibrarySubjectName } from "@/lib/send-data";
 import { generateWorksheet, type GeneratedWorksheet } from "@/lib/worksheet-generator";
 import { downloadWorksheetPdf } from "@/lib/pdf-generator";
 import { downloadHtmlAsPdf, printWorksheetElement, serialiseElement, buildPopupHtml, getKatexCssInline } from "@/lib/pdf-generator-v2";
@@ -884,7 +884,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
         const libToken = localStorage.getItem("send_token") || "";
         const authHeaders = libToken ? { Authorization: `Bearer ${libToken}` } : {};
         const libRes = await fetch(
-          `/api/library/lookup?subject=${encodeURIComponent(subject)}&topic=${encodeURIComponent(topic)}&yearGroup=${encodeURIComponent(yearGroup)}&tier=standard`,
+          `/api/library/lookup?subject=${encodeURIComponent(getLibrarySubjectName(subject))}&topic=${encodeURIComponent(topic)}&yearGroup=${encodeURIComponent(yearGroup)}&tier=standard`,
           { headers: authHeaders }
         );
         if (libRes.ok) {
@@ -1978,7 +1978,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
       let libraryEntry: any = null;
       try {
         const lookupRes = await fetch(
-          `/api/library/lookup-tier?subject=${encodeURIComponent(meta.subject || subject)}&topic=${encodeURIComponent(meta.topic || topic)}&yearGroup=${encodeURIComponent(meta.yearGroup || yearGroup)}&tier=${encodeURIComponent(libraryTier)}`,
+          `/api/library/lookup-tier?subject=${encodeURIComponent(getLibrarySubjectName(meta.subject || subject))}&topic=${encodeURIComponent(meta.topic || topic)}&yearGroup=${encodeURIComponent(meta.yearGroup || yearGroup)}&tier=${encodeURIComponent(libraryTier)}`,
           { headers: { Authorization: authHeaders.Authorization || "" } }
         );
         if (lookupRes.ok) {

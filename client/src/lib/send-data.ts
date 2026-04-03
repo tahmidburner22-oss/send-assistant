@@ -3,13 +3,18 @@
 export const subjects = [
   { id: "english", name: "English", icon: "BookOpen", color: "#7C3AED" },
   { id: "mathematics", name: "Mathematics", icon: "Calculator", color: "#10B981" },
+  { id: "maths", name: "Maths", icon: "Calculator", color: "#10B981" },
   { id: "science", name: "Science", icon: "Flask", color: "#3B82F6" },
+  { id: "biology", name: "Biology", icon: "Flask", color: "#22C55E" },
+  { id: "chemistry", name: "Chemistry", icon: "Flask", color: "#F59E0B" },
+  { id: "physics", name: "Physics", icon: "Flask", color: "#6366F1" },
   { id: "history", name: "History", icon: "Landmark", color: "#F59E0B" },
   { id: "geography", name: "Geography", icon: "Globe", color: "#06B6D4" },
   { id: "art", name: "Art & Design", icon: "Palette", color: "#EC4899" },
   { id: "music", name: "Music", icon: "Music", color: "#8B5CF6" },
   { id: "pe", name: "Physical Education", icon: "Dumbbell", color: "#EF4444" },
   { id: "computing", name: "Computing", icon: "Monitor", color: "#6366F1" },
+  { id: "computer-science", name: "Computer Science", icon: "Monitor", color: "#6366F1" },
   { id: "dt", name: "Design & Technology", icon: "Wrench", color: "#F97316" },
   { id: "re", name: "Religious Education", icon: "Heart", color: "#14B8A6" },
   { id: "mfl", name: "Modern Foreign Languages", icon: "Languages", color: "#A855F7" },
@@ -50,7 +55,11 @@ export type TierMode = "tiered" | "single" | "levelled" | "eleven-plus";
 
 export const subjectTierMode: Record<string, TierMode> = {
   mathematics: "tiered",
+  maths: "tiered",
   science: "tiered",
+  biology: "tiered",
+  chemistry: "tiered",
+  physics: "tiered",
   mfl: "tiered",
   english: "single",
   history: "levelled",
@@ -59,6 +68,7 @@ export const subjectTierMode: Record<string, TierMode> = {
   music: "levelled",
   pe: "levelled",
   computing: "levelled",
+  "computer-science": "levelled",
   dt: "levelled",
   re: "levelled",
   pshe: "levelled",
@@ -66,6 +76,37 @@ export const subjectTierMode: Record<string, TierMode> = {
   drama: "levelled",
   "eleven-plus": "eleven-plus",
 };
+
+/**
+ * Maps a subject ID to the display name used in the worksheet library.
+ * The library stores subjects with specific names (Biology, Chemistry, Physics, Maths)
+ * that may differ from the UI subject IDs.
+ */
+export function getLibrarySubjectName(subjectId: string): string {
+  const map: Record<string, string> = {
+    biology: "Biology",
+    chemistry: "Chemistry",
+    physics: "Physics",
+    maths: "Maths",
+    mathematics: "Maths",
+    science: "Science",
+    english: "English",
+    history: "History",
+    geography: "Geography",
+    art: "Art",
+    music: "Music",
+    pe: "PE",
+    computing: "Computing",
+    "computer-science": "Computer Science",
+    dt: "Design & Technology",
+    re: "Religious Education",
+    mfl: "MFL",
+    pshe: "PSHE",
+    business: "Business Studies",
+    drama: "Drama",
+  };
+  return map[subjectId.toLowerCase()] ?? subjectId;
+}
 
 /** Returns the difficulty/tier buttons appropriate for a given subject. */
 export function getDifficultyOptions(subject: string): { id: string; name: string; description: string }[] {

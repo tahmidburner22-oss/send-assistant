@@ -386,13 +386,41 @@ router.post("/ingest-pdf", requireAuth, requireSuperAdmin, pdfUpload.single("pdf
     // Extract text from the uploaded PDF
     let pdfText = "";
     if (req.file) {
+      // Primary: pdf-parse (works on text-based PDFs)
       try {
         const pdfParse = (await import("pdf-parse" as any)).default;
         const result = await pdfParse(req.file.buffer);
         pdfText = result.text || "";
-        console.log(`[library/ingest-pdf] Extracted ${pdfText.length} chars from PDF`);
+        console.log(`[library/ingest-pdf] pdf-parse extracted ${pdfText.length} chars`);
       } catch (e: any) {
         console.warn("[library/ingest-pdf] pdf-parse failed:", e?.message);
+      }
+
+      // Fallback: pdftotext (poppler-utils) for image-based or complex PDFs
+      if (!pdfText || pdfText.trim().length < 50) {
+        try {
+          const { execSync } = await import("child_process");
+          const { writeFileSync, unlinkSync } = await import("fs");
+          const os = await import("os");
+          const path = await import("path");
+          const tmpIn = path.join(os.tmpdir(), `ingest_${Date.now()}.pdf`);
+          const tmpOut = path.join(os.tmpdir(), `ingest_${Date.now()}.txt`);
+          writeFileSync(tmpIn, req.file.buffer);
+          try {
+            execSync(`pdftotext -layout "${tmpIn}" "${tmpOut}"`, { timeout: 30000 });
+            const { readFileSync } = await import("fs");
+            pdfText = readFileSync(tmpOut, "utf8");
+            console.log(`[library/ingest-pdf] pdftotext extracted ${pdfText.length} chars`);
+          } finally {
+            try { unlinkSync(tmpIn); } catch {}
+            try { unlinkSync(tmpOut); } catch {}
+          }
+        } catch (e2: any) {
+          console.warn("[library/ingest-pdf] pdftotext fallback failed:", e2?.message);
+        }
+      }
+
+      if (!pdfText || pdfText.trim().length < 50) {
         return res.status(422).json({ error: "Could not extract text from PDF. Ensure the file contains readable text." });
       }
     } else if (req.body.pdfText) {
