@@ -3069,6 +3069,7 @@ function getPrimaryBadge(type: string): string {
     comprehension: "Reading",
     reading: "Reading",
     passage: "Reading",
+    "q-primary-activity": "Activity",
   };
   return map[type] || "";
 }
@@ -3135,7 +3136,7 @@ function PrimarySection({
     !normTitle.includes(normBadge) &&                 // title contains badge
     !synonyms.includes(normTitle));                   // title is a known synonym
   const needsWritingLines = !isTeacherSection &&
-    (section.type === "independent" || section.type === "guided" || section.type === "challenge") &&
+    (section.type === "independent" || section.type === "guided" || section.type === "challenge" || section.type === "q-primary-activity") &&
     !/sentence starter:|steps to follow:|quick start:|what you need to do:|help box|key facts|word bank/i.test(content || "");
 
   return (
@@ -3308,6 +3309,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
     guided: 3,
     independent: 4,
     challenge: 5,
+    "q-primary-activity": 2,
   };
 
   // Content-aware line count: inspect the section content to determine
