@@ -1111,6 +1111,245 @@ export const SYLLABUS_DATA: Record<string, Partial<Record<YearGroupKey, Syllabus
       { topic: "Spatial Reasoning", keyVocabulary: ["spatial", "3D", "net", "fold", "rotate"] },
     ],
   },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // BIOLOGY (GCSE separate science)
+  // ═══════════════════════════════════════════════════════════════════════════
+  biology: {
+    "Year 7": [
+      { topic: "Cells and Organisation", keyVocabulary: ["cell", "nucleus", "cytoplasm", "cell membrane", "tissue", "organ"] },
+      { topic: "Reproduction in Plants and Animals", keyVocabulary: ["fertilisation", "gamete", "pollination", "puberty"] },
+      { topic: "Ecosystems and Food Webs", keyVocabulary: ["ecosystem", "food web", "producer", "consumer", "decomposer"] },
+    ],
+    "Year 8": [
+      { topic: "Breathing and Gas Exchange", keyVocabulary: ["lungs", "alveoli", "diaphragm", "oxygen", "carbon dioxide"] },
+      { topic: "Health and Lifestyle", keyVocabulary: ["nutrient", "enzyme", "drug", "alcohol", "balanced diet"] },
+      { topic: "Genetics and Evolution", keyVocabulary: ["gene", "chromosome", "DNA", "mutation", "natural selection"] },
+    ],
+    "Year 9": [
+      { topic: "Cell Biology", keyVocabulary: ["mitosis", "stem cell", "differentiation", "microscopy"] },
+      { topic: "Bioenergetics", keyVocabulary: ["photosynthesis", "respiration", "aerobic", "anaerobic", "metabolism"] },
+      { topic: "Infection and Response", keyVocabulary: ["pathogen", "bacteria", "virus", "antibiotic", "vaccination"] },
+    ],
+    "Year 10": [
+      { topic: "Cell Biology and Organisation", keyVocabulary: ["cell", "organ system", "enzyme", "diffusion", "osmosis"] },
+      { topic: "Bioenergetics", keyVocabulary: ["photosynthesis", "respiration", "aerobic", "anaerobic", "metabolism"] },
+      { topic: "Infection and Response", keyVocabulary: ["pathogen", "bacteria", "virus", "antibiotic", "vaccination"] },
+      { topic: "Enzymes", keyVocabulary: ["enzyme", "substrate", "active site", "denaturation", "catalyst"] },
+      { topic: "The Heart", keyVocabulary: ["heart", "ventricle", "atrium", "valve", "coronary artery"] },
+      { topic: "The Kidney", keyVocabulary: ["kidney", "nephron", "filtration", "reabsorption", "urea"] },
+      { topic: "The Eye", keyVocabulary: ["retina", "cornea", "lens", "iris", "optic nerve"] },
+      { topic: "Eukaryotic Cells", keyVocabulary: ["eukaryote", "nucleus", "mitochondria", "ribosome", "cell wall"] },
+      { topic: "DNA and Genetics", keyVocabulary: ["DNA", "gene", "allele", "dominant", "recessive"] },
+      { topic: "Digestive System", keyVocabulary: ["digestion", "enzyme", "stomach", "intestine", "absorption"] },
+      { topic: "Hormones", keyVocabulary: ["hormone", "gland", "insulin", "adrenaline", "oestrogen"] },
+      { topic: "Nervous System", keyVocabulary: ["neuron", "synapse", "reflex arc", "receptor", "effector"] },
+      { topic: "Plant Biology", keyVocabulary: ["photosynthesis", "transpiration", "xylem", "phloem", "stomata"] },
+      { topic: "Ecology", keyVocabulary: ["ecosystem", "biodiversity", "food web", "adaptation", "competition"] },
+    ],
+    "Year 11": [
+      { topic: "Homeostasis and Response", keyVocabulary: ["homeostasis", "nervous system", "hormone", "reflex arc", "diabetes"] },
+      { topic: "Inheritance, Variation and Evolution", keyVocabulary: ["DNA", "gene", "allele", "natural selection", "speciation"] },
+      { topic: "Ecology", keyVocabulary: ["ecosystem", "biodiversity", "decomposition", "carbon cycle", "water cycle"] },
+      { topic: "Enzymes", keyVocabulary: ["enzyme", "substrate", "active site", "denaturation", "catalyst"] },
+      { topic: "The Heart", keyVocabulary: ["heart", "ventricle", "atrium", "valve", "coronary artery"] },
+      { topic: "The Kidney", keyVocabulary: ["kidney", "nephron", "filtration", "reabsorption", "urea"] },
+      { topic: "DNA and Genetics", keyVocabulary: ["DNA", "gene", "allele", "dominant", "recessive"] },
+    ],
+    "Year 12": [
+      { topic: "Biological Molecules", keyVocabulary: ["carbohydrate", "protein", "lipid", "nucleic acid", "enzyme"] },
+      { topic: "Cells — Advanced", keyVocabulary: ["eukaryote", "prokaryote", "mitosis", "meiosis", "cell cycle"] },
+      { topic: "Exchange and Transport", keyVocabulary: ["gas exchange", "mass transport", "haemoglobin", "transpiration"] },
+    ],
+    "Year 13": [
+      { topic: "Genetic Information and Variation", keyVocabulary: ["DNA replication", "transcription", "translation", "mutation"] },
+      { topic: "Energy Transfers in Organisms", keyVocabulary: ["ATP", "chemiosmosis", "Calvin cycle", "light-dependent reaction"] },
+      { topic: "Organisms Respond to Changes", keyVocabulary: ["nerve impulse", "synapse", "muscle contraction", "homeostasis"] },
+      { topic: "Genetics, Populations and Ecosystems", keyVocabulary: ["Hardy-Weinberg", "speciation", "succession", "nutrient cycle"] },
+    ],
+  },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // CHEMISTRY (GCSE separate science)
+  // ═══════════════════════════════════════════════════════════════════════════
+  chemistry: {
+    "Year 7": [
+      { topic: "Atoms, Elements and Compounds", keyVocabulary: ["atom", "element", "compound", "molecule", "periodic table"] },
+      { topic: "Acids and Alkalis", keyVocabulary: ["acid", "alkali", "neutral", "pH", "indicator"] },
+      { topic: "Particles and Their Behaviour", keyVocabulary: ["particle", "solid", "liquid", "gas", "diffusion"] },
+    ],
+    "Year 8": [
+      { topic: "Chemical Reactions", keyVocabulary: ["reactant", "product", "exothermic", "endothermic", "word equation"] },
+      { topic: "The Periodic Table", keyVocabulary: ["group", "period", "metal", "non-metal", "noble gas"] },
+      { topic: "Earth and Atmosphere", keyVocabulary: ["rock cycle", "atmosphere", "greenhouse effect", "climate change"] },
+    ],
+    "Year 9": [
+      { topic: "Atomic Structure and the Periodic Table", keyVocabulary: ["proton", "neutron", "electron", "isotope", "electronic structure"] },
+      { topic: "Bonding and Structure", keyVocabulary: ["ionic", "covalent", "metallic", "giant structure", "polymer"] },
+      { topic: "Rates of Reaction", keyVocabulary: ["rate", "catalyst", "concentration", "temperature", "surface area"] },
+    ],
+    "Year 10": [
+      { topic: "Atomic Structure and the Periodic Table", keyVocabulary: ["proton", "neutron", "electron", "isotope", "electronic structure"] },
+      { topic: "Bonding, Structure and Properties", keyVocabulary: ["ionic bonding", "covalent bonding", "metallic bonding", "properties"] },
+      { topic: "Quantitative Chemistry", keyVocabulary: ["mole", "relative atomic mass", "concentration", "yield"] },
+      { topic: "Chemical Changes", keyVocabulary: ["oxidation", "reduction", "electrolysis", "reactivity series"] },
+      { topic: "Rates of Reaction", keyVocabulary: ["rate", "catalyst", "concentration", "temperature", "surface area"] },
+      { topic: "Organic Chemistry", keyVocabulary: ["hydrocarbon", "alkane", "alkene", "polymer", "crude oil"] },
+      { topic: "Chemical Analysis", keyVocabulary: ["chromatography", "flame test", "pure substance", "formulation"] },
+      { topic: "Acids and Bases", keyVocabulary: ["acid", "base", "neutralisation", "pH", "salt"] },
+      { topic: "Electrolysis", keyVocabulary: ["electrolysis", "electrode", "anode", "cathode", "electrolyte"] },
+      { topic: "Energy Changes", keyVocabulary: ["exothermic", "endothermic", "bond energy", "activation energy", "enthalpy"] },
+    ],
+    "Year 11": [
+      { topic: "Chemical Changes", keyVocabulary: ["oxidation", "reduction", "electrolysis", "reactivity series"] },
+      { topic: "Organic Chemistry", keyVocabulary: ["hydrocarbon", "alkane", "alkene", "polymer", "crude oil"] },
+      { topic: "Chemical Analysis", keyVocabulary: ["chromatography", "flame test", "pure substance", "formulation"] },
+      { topic: "Using Resources", keyVocabulary: ["life cycle assessment", "potable water", "Haber process", "sustainability"] },
+      { topic: "Quantitative Chemistry", keyVocabulary: ["mole", "relative atomic mass", "concentration", "yield"] },
+    ],
+    "Year 12": [
+      { topic: "Physical Chemistry — Atomic Structure and Bonding", keyVocabulary: ["ionisation energy", "electron configuration", "electronegativity"] },
+      { topic: "Inorganic Chemistry — Periodicity and Groups", keyVocabulary: ["periodicity", "Group 2", "Group 7", "trend"] },
+    ],
+    "Year 13": [
+      { topic: "Organic Chemistry — Advanced", keyVocabulary: ["carbonyl", "carboxylic acid", "ester", "amine", "polymer"] },
+      { topic: "Transition Metals and Reactions", keyVocabulary: ["transition metal", "ligand", "complex ion", "redox titration"] },
+    ],
+  },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // PHYSICS (GCSE separate science)
+  // ═══════════════════════════════════════════════════════════════════════════
+  physics: {
+    "Year 7": [
+      { topic: "Forces and Motion", keyVocabulary: ["force", "Newton", "speed", "distance", "time", "friction"] },
+      { topic: "Energy Transfers and Resources", keyVocabulary: ["kinetic", "thermal", "potential", "conservation", "renewable"] },
+      { topic: "Sound", keyVocabulary: ["vibration", "frequency", "pitch", "amplitude", "wave"] },
+    ],
+    "Year 8": [
+      { topic: "Light", keyVocabulary: ["reflection", "refraction", "spectrum", "lens", "colour"] },
+      { topic: "Electricity and Magnetism", keyVocabulary: ["current", "voltage", "resistance", "magnet", "electromagnet"] },
+      { topic: "Motion and Pressure", keyVocabulary: ["velocity", "acceleration", "pressure", "Pascal", "upthrust"] },
+    ],
+    "Year 9": [
+      { topic: "Waves and the Electromagnetic Spectrum", keyVocabulary: ["wavelength", "frequency", "electromagnetic", "gamma", "infrared"] },
+      { topic: "Energy and Power", keyVocabulary: ["power", "watt", "efficiency", "energy transfer", "dissipation"] },
+      { topic: "Motion and Pressure", keyVocabulary: ["velocity", "acceleration", "pressure", "Pascal", "upthrust"] },
+    ],
+    "Year 10": [
+      { topic: "Energy", keyVocabulary: ["kinetic energy", "potential energy", "specific heat capacity", "power", "efficiency"] },
+      { topic: "Electricity", keyVocabulary: ["current", "voltage", "resistance", "Ohm's law", "power"] },
+      { topic: "Forces", keyVocabulary: ["resultant force", "Newton's laws", "momentum", "stopping distance"] },
+      { topic: "Waves", keyVocabulary: ["transverse", "longitudinal", "electromagnetic spectrum", "reflection", "refraction"] },
+      { topic: "Radioactivity", keyVocabulary: ["alpha", "beta", "gamma", "half-life", "ionisation"] },
+      { topic: "Circuit Diagrams", keyVocabulary: ["circuit", "component", "series", "parallel", "symbol"] },
+      { topic: "Electromagnetic Spectrum", keyVocabulary: ["wavelength", "frequency", "gamma", "infrared", "ultraviolet"] },
+      { topic: "Energy Transfers", keyVocabulary: ["conduction", "convection", "radiation", "insulation", "efficiency"] },
+      { topic: "Vectors", keyVocabulary: ["vector", "scalar", "magnitude", "direction", "resultant"] },
+      { topic: "Space Physics", keyVocabulary: ["orbit", "gravity", "planet", "star", "galaxy"] },
+    ],
+    "Year 11": [
+      { topic: "Waves", keyVocabulary: ["transverse", "longitudinal", "electromagnetic spectrum", "reflection", "refraction"] },
+      { topic: "Magnetism and Electromagnetism", keyVocabulary: ["magnetic field", "solenoid", "motor effect", "transformer"] },
+      { topic: "Forces", keyVocabulary: ["resultant force", "Newton's laws", "momentum", "stopping distance"] },
+      { topic: "Radioactivity", keyVocabulary: ["alpha", "beta", "gamma", "half-life", "ionisation"] },
+      { topic: "Space Physics", keyVocabulary: ["orbit", "gravity", "planet", "star", "galaxy"] },
+      { topic: "Vectors", keyVocabulary: ["vector", "scalar", "magnitude", "direction", "resultant"] },
+    ],
+    "Year 12": [
+      { topic: "Particles and Radiation", keyVocabulary: ["quark", "lepton", "boson", "antimatter", "photoelectric effect"] },
+      { topic: "Waves and Optics", keyVocabulary: ["superposition", "diffraction", "interference", "standing wave"] },
+      { topic: "Mechanics and Materials", keyVocabulary: ["stress", "strain", "Young's modulus", "momentum"] },
+      { topic: "Electricity — Advanced", keyVocabulary: ["EMF", "internal resistance", "potential divider", "superconductor"] },
+    ],
+    "Year 13": [
+      { topic: "Fields and Their Consequences", keyVocabulary: ["gravitational field", "electric field", "capacitor", "magnetic flux"] },
+      { topic: "Nuclear Physics", keyVocabulary: ["radioactive decay", "half-life", "binding energy", "fission", "fusion"] },
+    ],
+  },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // MATHS (separate from Mathematics for library matching)
+  // ═══════════════════════════════════════════════════════════════════════════
+  maths: {
+    "Year 7": [
+      { topic: "Number and Place Value", keyVocabulary: ["integer", "decimal", "place value", "rounding", "estimation"] },
+      { topic: "Fractions, Decimals and Percentages", keyVocabulary: ["fraction", "decimal", "percentage", "equivalent", "convert"] },
+      { topic: "Algebra — Introduction", keyVocabulary: ["variable", "expression", "equation", "term", "simplify"] },
+      { topic: "Geometry — Angles and Shapes", keyVocabulary: ["angle", "triangle", "quadrilateral", "parallel", "perpendicular"] },
+    ],
+    "Year 8": [
+      { topic: "Ratio and Proportion", keyVocabulary: ["ratio", "proportion", "scale factor", "direct proportion", "unitary method"] },
+      { topic: "Algebra — Linear Equations", keyVocabulary: ["equation", "solve", "balance", "unknown", "linear"] },
+      { topic: "Statistics and Probability", keyVocabulary: ["mean", "median", "mode", "range", "probability"] },
+      { topic: "Geometry — Area and Perimeter", keyVocabulary: ["area", "perimeter", "circumference", "radius", "diameter"] },
+    ],
+    "Year 9": [
+      { topic: "Algebra — Quadratics", keyVocabulary: ["quadratic", "factorise", "expand", "roots", "parabola"] },
+      { topic: "Trigonometry", keyVocabulary: ["sine", "cosine", "tangent", "hypotenuse", "SOHCAHTOA"] },
+      { topic: "Probability", keyVocabulary: ["probability", "event", "outcome", "tree diagram", "Venn diagram"] },
+      { topic: "Geometry — Transformations", keyVocabulary: ["translation", "rotation", "reflection", "enlargement", "vector"] },
+    ],
+    "Year 10": [
+      { topic: "Algebra — Graphs", keyVocabulary: ["gradient", "intercept", "linear", "quadratic", "coordinate"] },
+      { topic: "Trigonometry", keyVocabulary: ["sine", "cosine", "tangent", "hypotenuse", "SOHCAHTOA"] },
+      { topic: "Statistics", keyVocabulary: ["mean", "median", "mode", "range", "frequency"] },
+      { topic: "Geometry — Circles", keyVocabulary: ["radius", "diameter", "circumference", "arc", "sector"] },
+      { topic: "Vectors", keyVocabulary: ["vector", "scalar", "magnitude", "direction", "resultant"] },
+      { topic: "Simultaneous Equations", keyVocabulary: ["simultaneous", "eliminate", "substitute", "solution", "linear"] },
+      { topic: "Inequalities", keyVocabulary: ["inequality", "greater than", "less than", "number line", "region"] },
+      { topic: "Sequences", keyVocabulary: ["sequence", "term", "nth term", "arithmetic", "geometric"] },
+    ],
+    "Year 11": [
+      { topic: "Algebra — Quadratics", keyVocabulary: ["quadratic", "factorise", "expand", "roots", "parabola"] },
+      { topic: "Trigonometry", keyVocabulary: ["sine", "cosine", "tangent", "hypotenuse", "SOHCAHTOA"] },
+      { topic: "Probability", keyVocabulary: ["probability", "event", "outcome", "tree diagram", "Venn diagram"] },
+      { topic: "Vectors", keyVocabulary: ["vector", "scalar", "magnitude", "direction", "resultant"] },
+      { topic: "Statistics", keyVocabulary: ["mean", "median", "mode", "range", "frequency"] },
+      { topic: "Geometry — Circles", keyVocabulary: ["radius", "diameter", "circumference", "arc", "sector"] },
+      { topic: "Simultaneous Equations", keyVocabulary: ["simultaneous", "eliminate", "substitute", "solution", "linear"] },
+    ],
+    "Year 12": [
+      { topic: "Pure Mathematics — Algebra and Functions", keyVocabulary: ["function", "domain", "range", "composite", "inverse"] },
+      { topic: "Pure Mathematics — Calculus", keyVocabulary: ["differentiation", "integration", "gradient", "area under curve"] },
+      { topic: "Statistics — Probability Distributions", keyVocabulary: ["binomial", "normal distribution", "hypothesis test", "p-value"] },
+    ],
+    "Year 13": [
+      { topic: "Pure Mathematics — Advanced Calculus", keyVocabulary: ["integration by parts", "differential equation", "parametric"] },
+      { topic: "Mechanics", keyVocabulary: ["force", "momentum", "projectile", "kinematics", "equilibrium"] },
+    ],
+  },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // COMPUTER SCIENCE
+  // ═══════════════════════════════════════════════════════════════════════════
+  "computer-science": {
+    "Year 7": [
+      { topic: "Introduction to Programming", keyVocabulary: ["algorithm", "variable", "loop", "condition", "function"] },
+      { topic: "Digital Literacy and E-Safety", keyVocabulary: ["password", "phishing", "cyberbullying", "privacy", "digital footprint"] },
+    ],
+    "Year 8": [
+      { topic: "Data Representation", keyVocabulary: ["binary", "bit", "byte", "hexadecimal", "ASCII"] },
+      { topic: "Networks and the Internet", keyVocabulary: ["network", "router", "IP address", "protocol", "bandwidth"] },
+    ],
+    "Year 9": [
+      { topic: "Algorithms and Problem Solving", keyVocabulary: ["algorithm", "pseudocode", "flowchart", "decomposition", "abstraction"] },
+      { topic: "Programming Concepts", keyVocabulary: ["variable", "function", "loop", "array", "object-oriented"] },
+    ],
+    "Year 10": [
+      { topic: "Computer Systems", keyVocabulary: ["CPU", "RAM", "storage", "operating system", "fetch-decode-execute"] },
+      { topic: "Algorithms and Data Structures", keyVocabulary: ["sorting", "searching", "array", "linked list", "stack"] },
+      { topic: "Programming", keyVocabulary: ["variable", "function", "loop", "condition", "debugging"] },
+      { topic: "Networks and Cybersecurity", keyVocabulary: ["encryption", "firewall", "malware", "protocol", "network topology"] },
+    ],
+    "Year 11": [
+      { topic: "Computer Systems", keyVocabulary: ["CPU", "RAM", "storage", "operating system", "fetch-decode-execute"] },
+      { topic: "Algorithms and Data Structures", keyVocabulary: ["sorting", "searching", "array", "linked list", "stack"] },
+      { topic: "Programming", keyVocabulary: ["variable", "function", "loop", "condition", "debugging"] },
+      { topic: "Databases", keyVocabulary: ["table", "query", "SQL", "primary key", "relationship"] },
+    ],
+  },
+
 };
 
 /**
