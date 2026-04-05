@@ -1064,6 +1064,16 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
               // Self reflection
               'self-reflection': 'self-reflection',
               'self_reflection': 'self-reflection',
+              // Section headers — structural dividers, map to section-b so they are always shown
+              'section-header': 'section-b',
+              // Reference diagrams — always shown alongside questions
+              'diagram': 'section-b',
+              // Draw questions — map to section-c (application)
+              'q-draw': 'section-c',
+              'draw': 'section-c',
+              // Challenge questions — map to section-c
+              'q-challenge': 'section-c',
+              'challenge-question': 'section-c',
             };
             // Always keep teacher-only sections (mark scheme etc)
             // For student sections, only keep those whose type maps to a selected section

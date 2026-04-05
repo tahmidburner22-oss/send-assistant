@@ -999,6 +999,8 @@ const SECTION_STYLES: Record<string, { border: string; bg: string; badge: string
   "misconceptions":{ border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Common Mistakes to Avoid",headerBg: "#1a2744", headerText: "#ffffff" },
   "revision-mat-box":{ border:"#1a2744",bg:"#ffffff",  badge:"#1a2744",  badgeBg:"#1a2744",  icon:"",  label: "",                        headerBg: "#1a2744", headerText: "#ffffff" },
   "default":       { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "",                        headerBg: "#1a2744", headerText: "#ffffff" },
+  "section-header": { border: "#2a7f8f", bg: "#ffffff", badge: "#2a7f8f", badgeBg: "#2a7f8f", icon: "", label: "",                        headerBg: "#2a7f8f", headerText: "#ffffff" },
+  "q-challenge":    { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Challenge",               headerBg: "#1a2744", headerText: "#ffffff" },
 };
 function getSectionStyle(type: string, _yearNum?: number) {
   // All section types are now locked to the indigo/blue/violet palette —
@@ -4181,6 +4183,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
             "q-label-diagram":{ label: "SECTION 2 — UNDERSTANDING",          qStart: 4, qEnd: 6 },
             "q-ordering":    { label: "SECTION 1 — KNOWLEDGE CHECK",           qStart: 1, qEnd: 3 },
             "q-matching":    { label: "SECTION 1 — KNOWLEDGE CHECK",           qStart: 1, qEnd: 3 },
+            "q-challenge":   { label: "CHALLENGE QUESTION",                    qStart: 10, qEnd: 12 },
           };
           return QUESTION_GROUP_MAP[type];
         };
@@ -4235,11 +4238,29 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
           "q-label-diagram": "",
           "q-ordering": "",
           "q-matching": "",
+          "q-challenge": "",
+          // Section header — rendered as a teal divider bar, no section box
+          "section-header": "",
         };
 
         // Individual question types — use navy badge + question text inline (no teal divider)
         const isIndividualQuestion = ["q-true-false", "q-mcq", "q-gap-fill", "q-short-answer", "q-extended",
-          "q-circuit", "q-draw", "q-graph", "q-data-table", "q-label-diagram", "q-ordering", "q-matching"].includes(section.type);
+          "q-circuit", "q-draw", "q-graph", "q-data-table", "q-label-diagram", "q-ordering", "q-matching",
+          "q-challenge"].includes(section.type);
+        // Section headers render as teal divider bars — not as section boxes
+        if (section.type === "section-header") {
+          return (
+            <React.Fragment key={i}>
+              <div style={{ marginBottom: "16px", marginTop: i > 0 ? "24px" : "0" }}>
+                <div style={{ borderTop: "2px solid #1a2744", marginBottom: "5px" }} />
+                <div style={{ fontSize: "10px", fontWeight: 700, color: "#2a7f8f", fontFamily: fmt.fontFamily, textTransform: "uppercase" as const, letterSpacing: "0.08em" }}>
+                  {content || sectionTitle}
+                </div>
+                <div style={{ borderTop: "1px solid #d1d5db", marginTop: "5px" }} />
+              </div>
+            </React.Fragment>
+          );
+        }
 
         // Section group label — for individual questions, derive from section title (e.g. "Q1 — True or False")
         const groupLabel = isIndividualQuestion
@@ -4676,11 +4697,23 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                   }
                   if (section.type === "q-ordering") {
                     return <OrderingSection content={content} fmt={fmt} />;
-                  }
-                  if (section.type === "q-matching") {
+                  }                  if (section.type === "q-matching") {
                     return <MatchingSection content={content} fmt={fmt} />;
                   }
-                  // ── Advanced question types (from pasted spec) ──
+                  if (section.type === "q-challenge") {
+                    // Challenge question — renders like q-short-answer with a star badge
+                    return (
+                      <div>
+                        <div style={{ fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, lineHeight: String(fmt.lineHeight), color: "#1e293b", marginBottom: "12px" }}
+                          dangerouslySetInnerHTML={{ __html: renderMath(content.replace(/\[\d+\s*marks?\]/i, "").trim()) }} />
+                        {Array.from({ length: 6 }).map((_: unknown, li: number) => (
+                          <div key={li} style={{ borderBottom: "1px solid #d1d5db", minHeight: "28px", marginBottom: "6px" }} />
+                        ))}
+                        <div style={{ fontSize: "11px", color: "#6b7280", fontStyle: "italic" }}>[{(section.marks as number) || 4} marks]</div>
+                      </div>
+                    );
+                  }
+                  // —— Advanced question types (from pasted spec) ——─
                   if (section.type === "q-error-correction" || section.type === "error_correction") {
                     return <ErrorCorrectionSection content={content} fmt={fmt} isTeacher={isTeacherView} />;
                   }
