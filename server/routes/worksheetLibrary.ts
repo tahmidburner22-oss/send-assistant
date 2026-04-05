@@ -278,10 +278,21 @@ router.get("/lookup", requireAuth, async (req: Request, res: Response) => {
       return res.json({ found: false });
     }
 
-    // Select the requested tier, or fall back to 'standard', then first available
-    const wantedTier = tier || "standard";
-    const targetTier = allTiers.find(t => t.tier === wantedTier)
-      || allTiers.find(t => t.tier === "standard")
+    // Select the requested tier, or fall back to 'base'/'standard', then first available
+    // Handle both old naming (standard/scaffolded) and new naming (base/send)
+    const wantedTier = tier || "base";
+    const tierAliasMap: Record<string, string[]> = {
+      base:       ["base", "standard"],
+      standard:   ["standard", "base"],
+      send:       ["send", "scaffolded"],
+      scaffolded: ["scaffolded", "send"],
+      foundation: ["foundation"],
+      higher:     ["higher"],
+    };
+    const wantedAliases = tierAliasMap[wantedTier] || [wantedTier];
+    const targetTier = wantedAliases.reduce((found: any, alias: string) => found || allTiers.find((t: any) => t.tier === alias), null)
+      || allTiers.find((t: any) => t.tier === "base")
+      || allTiers.find((t: any) => t.tier === "standard")
       || allTiers[0];
 
     const entry = await db.prepare("SELECT * FROM worksheet_library WHERE id = ?")
@@ -315,34 +326,51 @@ router.get("/lookup-tier", requireAuth, async (req: Request, res: Response) => {
     const subjectsToSearch = expandSubjects(subject);
     const placeholders = subjectsToSearch.map(() => "?").join(",");
 
-    // Try exact match with requested tier + year group
-    let entry = await db.prepare(
-      `SELECT * FROM worksheet_library
-       WHERE subject IN (${placeholders}) AND (topic = ? OR LOWER(topic) = ?) AND (year_group = ? OR year_group LIKE ?) AND tier = ?
-       ORDER BY curated DESC LIMIT 1`
-    ).get(...subjectsToSearch, topic, topicNorm, yearGroup, `%${yearGroup.replace(/Year /, "")}%`, tier) as LibraryEntry | undefined;
+    // Normalise tier name: handle both old naming (standard/scaffolded) and new naming (base/send)
+    // The main library uses 'base' for standard/mixed, 'send' for SEND scaffolded
+    // Older entries use 'standard' and 'scaffolded'
+    const tierAliases: Record<string, string[]> = {
+      base:       ["base", "standard"],
+      standard:   ["standard", "base"],
+      send:       ["send", "scaffolded"],
+      scaffolded: ["scaffolded", "send"],
+      foundation: ["foundation"],
+      higher:     ["higher"],
+    };
+    const tiersToTry = tierAliases[tier] || [tier];
 
-    // Fuzzy: any year group with this tier
-    if (!entry) {
+    let entry: LibraryEntry | undefined;
+
+    // Try each tier alias in order
+    for (const t of tiersToTry) {
+      // Try exact match with requested tier + year group
+      entry = await db.prepare(
+        `SELECT * FROM worksheet_library
+         WHERE subject IN (${placeholders}) AND (topic = ? OR LOWER(topic) = ?) AND (year_group = ? OR year_group LIKE ?) AND tier = ?
+         ORDER BY curated DESC LIMIT 1`
+      ).get(...subjectsToSearch, topic, topicNorm, yearGroup, `%${yearGroup.replace(/Year /, "")}%`, t) as LibraryEntry | undefined;
+      if (entry) break;
+
+      // Fuzzy: any year group with this tier
       entry = await db.prepare(
         `SELECT * FROM worksheet_library
          WHERE subject IN (${placeholders}) AND (topic = ? OR LOWER(topic) = ?) AND tier = ?
          ORDER BY curated DESC, updated_at DESC LIMIT 1`
-      ).get(...subjectsToSearch, topic, topicNorm, tier) as LibraryEntry | undefined;
-    }
+      ).get(...subjectsToSearch, topic, topicNorm, t) as LibraryEntry | undefined;
+      if (entry) break;
 
-    // Fuzzy topic keyword match with requested tier
-    if (!entry) {
-      const allEntries = await db.prepare(
+      // Fuzzy topic keyword match with this tier
+      const allEntriesForTier = await db.prepare(
         `SELECT * FROM worksheet_library WHERE subject IN (${placeholders}) AND tier = ? ORDER BY curated DESC`
-      ).all(...subjectsToSearch, tier) as LibraryEntry[];
-      entry = allEntries.find(e => topicKeywordsMatch(topic, e.topic));
+      ).all(...subjectsToSearch, t) as LibraryEntry[];
+      entry = allEntriesForTier.find(e => topicKeywordsMatch(topic, e.topic));
+      if (entry) break;
     }
 
-    // Fallback: any tier for this topic (keyword match)
+    // Fallback: any tier for this topic (keyword match), prefer base/standard
     if (!entry) {
       const allEntries = await db.prepare(
-        `SELECT * FROM worksheet_library WHERE subject IN (${placeholders}) ORDER BY CASE tier WHEN 'standard' THEN 0 ELSE 1 END, curated DESC`
+        `SELECT * FROM worksheet_library WHERE subject IN (${placeholders}) ORDER BY CASE tier WHEN 'base' THEN 0 WHEN 'standard' THEN 0 ELSE 1 END, curated DESC`
       ).all(...subjectsToSearch) as LibraryEntry[];
       entry = allEntries.find(e => topicKeywordsMatch(topic, e.topic));
     }

@@ -888,10 +888,11 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
         const libToken = localStorage.getItem("send_token") || "";
         const authHeaders = libToken ? { Authorization: `Bearer ${libToken}` } : {};
         // Map difficulty to library tier:
-        // foundation → foundation, mixed/standard → standard, higher → higher
+        // foundation → foundation, mixed/standard → base (the default tier in the library), higher → higher
         // SEND need does NOT override the tier — we always pull the correct difficulty tier
         // first, then apply SEND adaptations on top of that content.
-        const lookupTier = difficulty === "higher" ? "higher" : difficulty === "foundation" ? "foundation" : "standard";
+        // The library uses 'base' for standard/mixed ability, 'send' for SEND scaffolded versions.
+        const lookupTier = difficulty === "higher" ? "higher" : difficulty === "foundation" ? "foundation" : "base";
         const libRes = await fetch(
           `/api/library/lookup?subject=${encodeURIComponent(getLibrarySubjectName(subject))}&topic=${encodeURIComponent(topic)}&yearGroup=${encodeURIComponent(yearGroup)}&tier=${lookupTier}`,
           { headers: authHeaders }
@@ -1044,7 +1045,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
               fromLibrary: true,
               libraryCurated: entry.curated,
               // Store available tiers so the differentiate panel knows what's in the library
-              availableTiers: libData.availableTiers || ["standard"],
+              availableTiers: libData.availableTiers || ["base"],
             } as any;
             setGenerated(libWorksheet);
             setHiddenSections(new Set());
@@ -1939,8 +1940,9 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
       try {
         const libToken = localStorage.getItem("send_token") || "";
         const authHeaders: Record<string, string> = libToken ? { Authorization: `Bearer ${libToken}` } : {};
-        const hasSendNeed = !!parsed.sendNeed && parsed.sendNeed !== "none-selected";
-        const lookupTier = hasSendNeed ? "standard" : (nextDifficulty === "higher" ? "higher" : nextDifficulty === "foundation" ? "foundation" : "standard");
+        // Always use the difficulty tier — SEND need is applied on top, not instead of the difficulty tier
+        // The library uses 'base' for standard/mixed ability, 'send' for SEND scaffolded versions.
+        const lookupTier = nextDifficulty === "higher" ? "higher" : nextDifficulty === "foundation" ? "foundation" : "base";
         const libRes = await fetch(
           `/api/library/lookup?subject=${encodeURIComponent(getLibrarySubjectName(nextSubject))}&topic=${encodeURIComponent(nextTopic)}&yearGroup=${encodeURIComponent(nextYearGroup)}&tier=${lookupTier}`,
           { headers: authHeaders }
@@ -2030,7 +2032,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
               isAI: readingAdjusted || sendAdapted,
               fromLibrary: true,
               libraryCurated: entry.curated,
-              availableTiers: libData.availableTiers || ["standard"],
+              availableTiers: libData.availableTiers || ["base"],
             } as any;
             toast.success("Worksheet loaded from library!");
           }
@@ -2170,9 +2172,11 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
         ? (sendNeedForScaffold || sendNeed || originalSendNeed || "general")
         : (sendNeed && sendNeed !== "none-selected" ? sendNeed : originalSendNeed);
 
-      // ── Map tier names: 'mixed' in the UI → 'standard' in the library ──
-      // 'scaffolded' in the UI → 'scaffolded' in the library
-      const libraryTier = tier === "mixed" ? "standard" : tier;
+       // ── Map tier names to correct database tier values —
+      // UI 'mixed' → library 'base' (the default tier in the main library)
+      // UI 'scaffolded' → library 'send' (the SEND scaffolded tier in the main library)
+      // Also handle older entries that use 'standard'/'scaffolded' tier names
+      const libraryTier = tier === "mixed" ? "base" : tier === "scaffolded" ? "send" : tier;
 
       let adaptedWorksheet: AIWorksheet;
 
