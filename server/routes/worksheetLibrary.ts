@@ -57,6 +57,7 @@ interface LibraryEntry {
 }
 
 interface ParsedWorksheet {
+  title?: string;
   sections: any[];
   teacherSections: any[];
   keyVocab: Array<{ term: string; definition: string }>;
@@ -666,7 +667,10 @@ router.post("/ingest-pdf", requireAuth, requireSuperAdmin, pdfUpload.single("pdf
 
     const id = existing?.id || uuidv4();
     const version = existing ? (existing.version + 1) : 1;
-    const entryTitle = title || parsed.sections[0]?.title || `${topic} — ${subject} Worksheet`;
+    // Use explicit title if provided, otherwise use the parsed title from AI, otherwise use topic name
+    // Never use the first section's title (e.g. "Question 1") as the worksheet title
+    const parsedTitle = parsed.title && !parsed.title.match(/^question\s*\d/i) ? parsed.title : null;
+    const entryTitle = title || parsedTitle || topic;
 
     if (existing) {
       await db.prepare(`
@@ -749,14 +753,15 @@ async function parsePdfWithAI(pdfText: string, subject: string, topic: string): 
   const { OpenAI } = await import("openai");
   const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-  const truncatedText = pdfText.slice(0, 12000);
+  // Use up to 20,000 chars to capture full multi-page worksheets
+  const truncatedText = pdfText.slice(0, 20000);
 
   const systemPrompt = `You are an expert at parsing educational worksheets into structured JSON.
 You will receive raw text extracted from a PDF worksheet and must convert it into a structured JSON object.
 
 Return ONLY valid JSON with this exact structure:
 {
-  "title": "string — worksheet title",
+  "title": "string — the worksheet topic title (e.g. 'Atomic Structure', NOT 'Question 1')",
   "subtitle": "string — subtitle or null",
   "learningObjective": "string — the learning objective or empty string",
   "keyVocab": [{"term": "string", "definition": "string"}],
@@ -766,7 +771,7 @@ Return ONLY valid JSON with this exact structure:
       "type": "one of: q-mcq | q-gap-fill | q-true-false | q-short-answer | q-free-response | q-label-diagram | q-worked-example | self-reflection | key-terms | brain-break | stop-check",
       "title": "string",
       "label": "string — e.g. MULTIPLE CHOICE, GAP FILL, TRUE / FALSE, SHORT ANSWER",
-      "content": "string — the full question text",
+      "content": "string — the full question text including all sub-parts (a), (b), (c) etc.",
       "marks": number or null,
       "teacherOnly": false
     }
@@ -783,8 +788,11 @@ Return ONLY valid JSON with this exact structure:
 }
 
 Rules:
+- The title MUST be the topic name (e.g. 'Atomic Structure'), NEVER a question number
 - Each question in the worksheet becomes a separate section object
+- Include ALL questions — do not truncate or skip any
 - Identify question types: MCQ (multiple choice A/B/C/D), gap fill (blanks/word bank), true/false, short answer, free response
+- For short answer questions with multiple sub-parts (a)(b)(c), keep them in ONE section with type q-short-answer
 - Teacher answer keys go in teacherSections with teacherOnly: true
 - Self-reflection tables go in sections with type "self-reflection"
 - Brain breaks go with type "brain-break"
@@ -801,7 +809,7 @@ Rules:
       { role: "user", content: `Parse this ${subject} worksheet about "${topic}" into structured JSON:\n\n${truncatedText}` },
     ],
     temperature: 0.1,
-    max_tokens: 6000,
+    max_tokens: 10000,
   });
 
   const rawJson = response.choices[0]?.message?.content?.trim() || "";
@@ -819,6 +827,7 @@ Rules:
   }));
 
   return {
+    title: parsed.title || undefined,
     sections,
     teacherSections,
     keyVocab: parsed.keyVocab || [],
