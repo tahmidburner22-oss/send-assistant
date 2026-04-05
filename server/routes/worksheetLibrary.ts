@@ -88,12 +88,22 @@ router.get("/entries", requireAuth, requireSuperAdmin, async (req: Request, res:
 
 /// ── Subject expansion map: broad UI subject → specific library subjects ─────────
 const SUBJECT_EXPANSION: Record<string, string[]> = {
-  Science:  ["Physics", "Biology", "Chemistry", "Science"],
-  science:  ["Physics", "Biology", "Chemistry", "Science"],
-  Maths:    ["Maths", "Mathematics"],
-  maths:    ["Maths", "Mathematics"],
-  Mathematics: ["Maths", "Mathematics"],
-  mathematics: ["Maths", "Mathematics"],
+  // Science expands to all science subjects
+  Science:  ["Physics", "Biology", "Chemistry", "Science", "physics", "biology", "chemistry", "science"],
+  science:  ["Physics", "Biology", "Chemistry", "Science", "physics", "biology", "chemistry", "science"],
+  // Individual sciences — match both capitalised and lowercase (PDFs ingested as lowercase)
+  Chemistry: ["Chemistry", "chemistry"],
+  chemistry: ["Chemistry", "chemistry"],
+  Biology:   ["Biology", "biology"],
+  biology:   ["Biology", "biology"],
+  Physics:   ["Physics", "physics"],
+  physics:   ["Physics", "physics"],
+  // Maths
+  Maths:    ["Maths", "Mathematics", "maths", "mathematics"],
+  maths:    ["Maths", "Mathematics", "maths", "mathematics"],
+  Mathematics: ["Maths", "Mathematics", "maths", "mathematics"],
+  mathematics: ["Maths", "Mathematics", "maths", "mathematics"],
+  // Other subjects
   "Computer Science": ["Computer Science", "Computing"],
   "computer science": ["Computer Science", "Computing"],
   Computing: ["Computing", "Computer Science"],
@@ -229,20 +239,27 @@ router.get("/lookup", requireAuth, async (req: Request, res: Response) => {
       curated: !!e.curated,
     });
     // Helper: find all tiers for a given subject list + topic (async)
+    // Normalise subjects to lowercase for case-insensitive matching
+    const subjectsLower = subjectsToSearch.map(s => s.toLowerCase());
     const findTiersForSubjects = async (subjects: string[], topicStr: string, yg?: string): Promise<{ id: string; tier: string; title: string }[]> => {
-      const placeholders = subjects.map(() => "?").join(",");
+      const subjectsNorm = subjects.map(s => s.toLowerCase());
+      const placeholders = subjectsNorm.map(() => "?").join(",");
       if (yg) {
+        // Match year group: exact, ILIKE, or range match (e.g. 'Year 10/11' matches 'Year 11')
+        const ygNum = yg.replace(/[^0-9]/g, "");
         return await db.prepare(
           `SELECT id, tier, title FROM worksheet_library
-           WHERE subject IN (${placeholders}) AND (topic = ? OR LOWER(topic) = ?) AND (year_group = ? OR year_group ILIKE ?)
+           WHERE LOWER(subject) IN (${placeholders})
+             AND (LOWER(topic) = ? OR LOWER(topic) LIKE ?)
+             AND (year_group = ? OR LOWER(year_group) LIKE ? OR (? != '' AND year_group LIKE ?))
            ORDER BY curated DESC, tier ASC`
-        ).all(...subjects, topicStr, topicStr.toLowerCase(), yg, `%${yg.replace(/Year /, "")}%`) as { id: string; tier: string; title: string }[];
+        ).all(...subjectsNorm, topicStr.toLowerCase(), `%${topicStr.toLowerCase()}%`, yg, `%${ygNum}%`, ygNum, `%${ygNum}%`) as { id: string; tier: string; title: string }[];
       }
       return await db.prepare(
         `SELECT id, tier, title FROM worksheet_library
-         WHERE subject IN (${placeholders}) AND (topic = ? OR LOWER(topic) = ?)
+         WHERE LOWER(subject) IN (${placeholders}) AND (LOWER(topic) = ? OR LOWER(topic) LIKE ?)
          ORDER BY curated DESC, tier ASC`
-      ).all(...subjects, topicStr, topicStr.toLowerCase()) as { id: string; tier: string; title: string }[];
+      ).all(...subjectsNorm, topicStr.toLowerCase(), `%${topicStr.toLowerCase()}%`) as { id: string; tier: string; title: string }[];
     };
     // 1. Exact topic match with year group
     let allTiers = await findTiersForSubjects(subjectsToSearch, topic, yearGroup);
@@ -255,16 +272,21 @@ router.get("/lookup", requireAuth, async (req: Request, res: Response) => {
     // meaningful token overlap so broad keywords like "equation" do not pull in the
     // wrong worksheet from the library.
     if (allTiers.length === 0) {
-      const placeholders = subjectsToSearch.map(() => "?").join(",");
-      const yearGroupLoose = `%${yearGroup.replace(/Year /, "")}%`;
+      const subjectsNormFuzzy = subjectsToSearch.map(s => s.toLowerCase());
+      const placeholdersFuzzy = subjectsNormFuzzy.map(() => "?").join(",");
+      const ygNum = yearGroup.replace(/[^0-9]/g, "");
       const allEntries = await db.prepare(
         `SELECT id, tier, title, topic, year_group FROM worksheet_library
-         WHERE subject IN (${placeholders})
+         WHERE LOWER(subject) IN (${placeholdersFuzzy})
          ORDER BY curated DESC, updated_at DESC`
-      ).all(...subjectsToSearch) as { id: string; tier: string; title: string; topic: string; year_group: string }[];
+      ).all(...subjectsNormFuzzy) as { id: string; tier: string; title: string; topic: string; year_group: string }[];
 
       const sameYearMatches = allEntries.filter((entry) => {
-        const matchesYearGroup = entry.year_group === yearGroup || entry.year_group.toLowerCase().includes(yearGroupLoose.replace(/%/g, "").toLowerCase());
+        const entryYgNum = entry.year_group.replace(/[^0-9]/g, "");
+        const matchesYearGroup = entry.year_group === yearGroup
+          || entry.year_group.toLowerCase().includes(ygNum)
+          || entryYgNum.includes(ygNum)
+          || ygNum.includes(entryYgNum);
         return matchesYearGroup && isSafeTierTopicMatch(topic, entry.topic);
       });
 
@@ -324,7 +346,10 @@ router.get("/lookup-tier", requireAuth, async (req: Request, res: Response) => {
 
     const topicNorm = topic.toLowerCase().trim();
     const subjectsToSearch = expandSubjects(subject);
-    const placeholders = subjectsToSearch.map(() => "?").join(",");
+    // Normalise subjects to lowercase for case-insensitive matching
+    const subjectsNorm = subjectsToSearch.map(s => s.toLowerCase());
+    const placeholders = subjectsNorm.map(() => "?").join(",");
+    const ygNum = yearGroup.replace(/[^0-9]/g, "");
 
     // Normalise tier name: handle both old naming (standard/scaffolded) and new naming (base/send)
     // The main library uses 'base' for standard/mixed, 'send' for SEND scaffolded
@@ -343,26 +368,29 @@ router.get("/lookup-tier", requireAuth, async (req: Request, res: Response) => {
 
     // Try each tier alias in order
     for (const t of tiersToTry) {
-      // Try exact match with requested tier + year group
+      // Try exact match with requested tier + year group (case-insensitive subject)
       entry = await db.prepare(
         `SELECT * FROM worksheet_library
-         WHERE subject IN (${placeholders}) AND (topic = ? OR LOWER(topic) = ?) AND (year_group = ? OR year_group LIKE ?) AND tier = ?
+         WHERE LOWER(subject) IN (${placeholders})
+           AND (LOWER(topic) = ? OR LOWER(topic) LIKE ?)
+           AND (year_group = ? OR year_group LIKE ? OR year_group LIKE ?)
+           AND tier = ?
          ORDER BY curated DESC LIMIT 1`
-      ).get(...subjectsToSearch, topic, topicNorm, yearGroup, `%${yearGroup.replace(/Year /, "")}%`, t) as LibraryEntry | undefined;
+      ).get(...subjectsNorm, topicNorm, `%${topicNorm}%`, yearGroup, `%${ygNum}%`, `%/${ygNum}%`, t) as LibraryEntry | undefined;
       if (entry) break;
 
       // Fuzzy: any year group with this tier
       entry = await db.prepare(
         `SELECT * FROM worksheet_library
-         WHERE subject IN (${placeholders}) AND (topic = ? OR LOWER(topic) = ?) AND tier = ?
+         WHERE LOWER(subject) IN (${placeholders}) AND (LOWER(topic) = ? OR LOWER(topic) LIKE ?) AND tier = ?
          ORDER BY curated DESC, updated_at DESC LIMIT 1`
-      ).get(...subjectsToSearch, topic, topicNorm, t) as LibraryEntry | undefined;
+      ).get(...subjectsNorm, topicNorm, `%${topicNorm}%`, t) as LibraryEntry | undefined;
       if (entry) break;
 
       // Fuzzy topic keyword match with this tier
       const allEntriesForTier = await db.prepare(
-        `SELECT * FROM worksheet_library WHERE subject IN (${placeholders}) AND tier = ? ORDER BY curated DESC`
-      ).all(...subjectsToSearch, t) as LibraryEntry[];
+        `SELECT * FROM worksheet_library WHERE LOWER(subject) IN (${placeholders}) AND tier = ? ORDER BY curated DESC`
+      ).all(...subjectsNorm, t) as LibraryEntry[];
       entry = allEntriesForTier.find(e => topicKeywordsMatch(topic, e.topic));
       if (entry) break;
     }
@@ -370,8 +398,8 @@ router.get("/lookup-tier", requireAuth, async (req: Request, res: Response) => {
     // Fallback: any tier for this topic (keyword match), prefer base/standard
     if (!entry) {
       const allEntries = await db.prepare(
-        `SELECT * FROM worksheet_library WHERE subject IN (${placeholders}) ORDER BY CASE tier WHEN 'base' THEN 0 WHEN 'standard' THEN 0 ELSE 1 END, curated DESC`
-      ).all(...subjectsToSearch) as LibraryEntry[];
+        `SELECT * FROM worksheet_library WHERE LOWER(subject) IN (${placeholders}) ORDER BY CASE tier WHEN 'base' THEN 0 WHEN 'standard' THEN 0 ELSE 1 END, curated DESC`
+      ).all(...subjectsNorm) as LibraryEntry[];
       entry = allEntries.find(e => topicKeywordsMatch(topic, e.topic));
     }
 
