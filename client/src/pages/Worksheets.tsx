@@ -205,6 +205,10 @@ export default function Worksheets() {
   const [sendNeed, setSendNeed] = useState(() => preSelectedSendNeed);
   const [difficulty, setDifficulty] = useState("mixed");
   const [worksheetLength, setWorksheetLength] = useState("30");
+  // Sections selector — all selected by default
+  const ALL_SECTIONS = ['learning-objective', 'retrieval', 'worked-example', 'common-mistakes', 'true-false', 'mcq', 'word-bank-gap-fill', 'match', 'questions'] as const;
+  type SectionId = typeof ALL_SECTIONS[number];
+  const [selectedSections, setSelectedSections] = useState<SectionId[]>([...ALL_SECTIONS]);
   const [examBoard, setExamBoard] = useState("none");
   const [includeAnswers, setIncludeAnswers] = useState(true);
   const [examStyle, setExamStyle] = useState(false);
@@ -883,8 +887,11 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
       try {
         const libToken = localStorage.getItem("send_token") || "";
         const authHeaders = libToken ? { Authorization: `Bearer ${libToken}` } : {};
-        // Use the selected tier for the initial lookup (not hardcoded 'standard')
-        const lookupTier = (sendNeed && sendNeed !== "none-selected") ? "standard" : (difficulty === "higher" ? "higher" : difficulty === "foundation" ? "foundation" : "standard");
+        // Map difficulty to library tier:
+        // foundation → foundation, mixed/standard → standard, higher → higher
+        // SEND need does NOT override the tier — we always pull the correct difficulty tier
+        // first, then apply SEND adaptations on top of that content.
+        const lookupTier = difficulty === "higher" ? "higher" : difficulty === "foundation" ? "foundation" : "standard";
         const libRes = await fetch(
           `/api/library/lookup?subject=${encodeURIComponent(getLibrarySubjectName(subject))}&topic=${encodeURIComponent(topic)}&yearGroup=${encodeURIComponent(yearGroup)}&tier=${lookupTier}`,
           { headers: authHeaders }
@@ -895,20 +902,27 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
             const entry = libData.entry;
             const hasSendNeed = sendNeed && sendNeed !== "none-selected";
 
-            // Check if the library entry's year group matches the requested year group.
-            // If not, we need to adjust the reading level to suit the selected year group.
+            // Always adjust reading level:
+            // 1. If a specific reading age was manually selected by the teacher, use that.
+            // 2. Otherwise, adjust to match the selected year group (in case the library
+            //    entry was written for a different year group).
+            // Only vocabulary and sentence complexity change — questions, marks, diagrams,
+            // and structure are preserved exactly.
             const libraryYearGroup = entry.year_group || entry.yearGroup;
             const yearGroupMismatch = libraryYearGroup && libraryYearGroup !== yearGroup;
+            // readingAge > 0 means the teacher manually selected a specific reading age
+            const needsReadingAdjustment = readingAge > 0 || yearGroupMismatch;
 
             let finalSections = entry.sections || [];
             let readingAdjusted = false;
             let sendAdapted = false;
 
-            if (yearGroupMismatch) {
-              // Adjust reading level to match the selected year group.
+            if (needsReadingAdjustment) {
+              // Adjust reading level to match the selected year group or manually chosen reading age.
               // For Year 7 and below: ONLY vocabulary/sentence complexity is changed.
               // Questions, marks, diagrams, and structure are preserved exactly.
-              setGenerationStatus(`Adjusting reading level for ${yearGroup}...`);
+              const adjustLabel = readingAge > 0 ? `reading age ${readingAge}` : yearGroup;
+              setGenerationStatus(`Adjusting reading level for ${adjustLabel}...`);
               try {
                 const adjustRes = await fetch("/api/ai/adjust-reading-level", {
                   method: "POST",
@@ -916,6 +930,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                   body: JSON.stringify({
                     sections: finalSections,
                     targetYearGroup: yearGroup,
+                    targetReadingAge: readingAge > 0 ? readingAge : undefined,
                     subject,
                     topic,
                     sendNeed: hasSendNeed ? sendNeed : undefined,
@@ -954,7 +969,14 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                 });
                 if (sendRes.ok) {
                   const sendData = await sendRes.json();
-                  if (sendData.sections && sendData.sections.length > 0) {
+                  // Server returns { scaffolded: { sections: [...], wordBank: "...", scaffoldingApplied: [...] } }
+                  // We must read sendData.scaffolded.sections, NOT sendData.sections
+                  const scaffoldedSections = sendData?.scaffolded?.sections;
+                  if (scaffoldedSections && Array.isArray(scaffoldedSections) && scaffoldedSections.length > 0) {
+                    finalSections = scaffoldedSections;
+                    sendAdapted = true;
+                  } else if (sendData?.sections && Array.isArray(sendData.sections) && sendData.sections.length > 0) {
+                    // Legacy fallback: some older responses may return sections at top level
                     finalSections = sendData.sections;
                     sendAdapted = true;
                   }
@@ -964,10 +986,48 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
               }
             }
 
+            // Filter sections based on selectedSections
+            // Map section types to our section IDs
+            const sectionTypeMap: Record<string, string> = {
+              'objectives': 'learning-objective',
+              'learning-objective': 'learning-objective',
+              'lo': 'learning-objective',
+              'retrieval': 'retrieval',
+              'recall': 'retrieval',
+              'worked-example': 'worked-example',
+              'worked_example': 'worked-example',
+              'example': 'worked-example',
+              'common-mistakes': 'common-mistakes',
+              'common_mistakes': 'common-mistakes',
+              'mistakes': 'common-mistakes',
+              'true-false': 'true-false',
+              'true_false': 'true-false',
+              'mcq': 'mcq',
+              'multiple-choice': 'mcq',
+              'word-bank': 'word-bank-gap-fill',
+              'word-bank-gap-fill': 'word-bank-gap-fill',
+              'gap-fill': 'word-bank-gap-fill',
+              'match': 'match',
+              'matching': 'match',
+              'questions': 'questions',
+              'guided': 'questions',
+              'extension': 'questions',
+              'exam-questions': 'questions',
+            };
+            // Always keep teacher-only sections (mark scheme etc)
+            // For student sections, only keep those whose type maps to a selected section
+            const filteredSections = finalSections.filter((s: any) => {
+              if (s.teacherOnly) return true; // always keep teacher sections
+              const mappedType = sectionTypeMap[s.type?.toLowerCase() || ''] || 'questions';
+              return selectedSections.includes(mappedType as any);
+            });
+            // If filtering removed all sections, keep originals (safety fallback)
+            const sectionsToUse = filteredSections.length > 0 ? filteredSections : finalSections;
+
             const libWorksheet = {
               title: entry.title,
               subtitle: entry.subtitle || `${yearGroup} | ${subject}`,
-              sections: finalSections,
+              sections: sectionsToUse,
               metadata: {
                 subject,
                 topic,
@@ -1091,7 +1151,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
         }
       }
     } else if (useAI) {
-      // ── STANDARD AI MODE ───────────────────────────────────────────────────
+      // ── STANDARD AI MODE ─────────────────────────────────────────
       try {
         const result = await aiGenerateWorksheet({
           subject, topic, subtopic: subtopic || undefined, yearGroup,
@@ -1107,6 +1167,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
           recallTopic: recallTopic.trim() || undefined,
           targetPages: targetPages || undefined,
           readingAge: readingAge || undefined,
+          selectedSections: selectedSections as string[], // Pass selected sections for structured generation
         });
         generatedWs = { ...result, isAI: true } as AIWorksheet;
         toast.success(generateDiagram ? "Worksheet with diagram generated!" : "Worksheet generated with AI!");
@@ -1938,7 +1999,12 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                 });
                 if (sendRes.ok) {
                   const sendData = await sendRes.json();
-                  if (sendData.sections && sendData.sections.length > 0) {
+                  // Server returns { scaffolded: { sections: [...], wordBank: "...", scaffoldingApplied: [...] } }
+                  const scaffoldedSections = sendData?.scaffolded?.sections;
+                  if (scaffoldedSections && Array.isArray(scaffoldedSections) && scaffoldedSections.length > 0) {
+                    finalSections = scaffoldedSections;
+                    sendAdapted = true;
+                  } else if (sendData?.sections && Array.isArray(sendData.sections) && sendData.sections.length > 0) {
                     finalSections = sendData.sections;
                     sendAdapted = true;
                   }
@@ -2097,15 +2163,16 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
         : { "Content-Type": "application/json" };
 
       // ── Determine the SEND formatting to carry over from the original worksheet ──
-      // For the SEND tier, use the selected SEND need (or the one on the original sheet).
-      // For foundation/higher, carry over the original SEND formatting if any.
+      // For the scaffolded tier, use the selected SEND need (or the one on the original sheet).
+      // For foundation/mixed/higher, carry over the original SEND formatting if any.
       const originalSendNeed = meta.sendNeedId || meta.sendNeed;
-      const activeSendNeed = tier === "send"
+      const activeSendNeed = tier === "scaffolded"
         ? (sendNeedForScaffold || sendNeed || originalSendNeed || "general")
-        : originalSendNeed;
+        : (sendNeed && sendNeed !== "none-selected" ? sendNeed : originalSendNeed);
 
-      // ── Map tier names: 'send' in the UI → 'scaffolded' in the library ──
-      const libraryTier = tier === "send" ? "scaffolded" : tier;
+      // ── Map tier names: 'mixed' in the UI → 'standard' in the library ──
+      // 'scaffolded' in the UI → 'scaffolded' in the library
+      const libraryTier = tier === "mixed" ? "standard" : tier;
 
       let adaptedWorksheet: AIWorksheet;
 
@@ -2131,17 +2198,20 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
       if (libraryEntry) {
         // ── Library version found ──
         // Use the library content as-is. Then:
-        //  1. If the library entry's year group differs from the selected year group,
-        //     adjust the reading level (vocabulary/sentence complexity only).
-        //  2. Apply SEND formatting overlay via metadata (font/size/spacing only).
-        const tierLabel = tier === "foundation" ? "Foundation" : tier === "higher" ? "Higher" : "Scaffolded";
+        //  1. Always adjust reading level (vocabulary/sentence complexity only — structure preserved).
+        //  2. If a SEND need is active, apply SEND content scaffolding on top.
+        //  3. Apply SEND visual formatting overlay via metadata (font/size/spacing).
+        const tierLabel = tier === "foundation" ? "Foundation" : tier === "higher" ? "Higher" : tier === "mixed" ? "Mixed Ability" : "SEND Scaffolded";
         let finalSections = libraryEntry.sections || ws.sections;
         let readingAdjusted = false;
+        let sendAdapted = false;
 
-        // Check if reading level adjustment is needed
+        // Always adjust reading level — either to match the selected year group or the manually chosen reading age
         const libYG = libraryEntry.year_group || libraryEntry.yearGroup;
         const targetYG = meta.yearGroup || yearGroup;
-        if (libYG && libYG !== targetYG) {
+        const targetRA = readingAge > 0 ? readingAge : undefined;
+        const needsReadingAdjustment = targetRA || (libYG && libYG !== targetYG);
+        if (needsReadingAdjustment) {
           try {
             const adjustRes = await fetch("/api/ai/adjust-reading-level", {
               method: "POST",
@@ -2149,6 +2219,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
               body: JSON.stringify({
                 sections: finalSections,
                 targetYearGroup: targetYG,
+                targetReadingAge: targetRA,
                 subject: meta.subject || subject,
                 topic: meta.topic || topic,
                 sendNeed: activeSendNeed || undefined,
@@ -2166,6 +2237,38 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
           }
         }
 
+        // Apply SEND content scaffolding if a SEND need is active
+        // (word banks, sentence starters, hint boxes, chunked instructions — additive, non-structural)
+        if (activeSendNeed && activeSendNeed !== "none-selected") {
+          try {
+            const sendRes = await fetch("/api/ai/scaffold-worksheet", {
+              method: "POST",
+              headers: authHeaders,
+              body: JSON.stringify({
+                sections: finalSections,
+                sendNeed: activeSendNeed,
+                subject: meta.subject || subject,
+                topic: meta.topic || topic,
+                yearGroup: targetYG,
+                title: libraryEntry.title || ws.title,
+              }),
+            });
+            if (sendRes.ok) {
+              const sendData = await sendRes.json();
+              const scaffoldedSections = sendData?.scaffolded?.sections;
+              if (scaffoldedSections && Array.isArray(scaffoldedSections) && scaffoldedSections.length > 0) {
+                finalSections = scaffoldedSections;
+                sendAdapted = true;
+              } else if (sendData?.sections && Array.isArray(sendData.sections) && sendData.sections.length > 0) {
+                finalSections = sendData.sections;
+                sendAdapted = true;
+              }
+            }
+          } catch (sendErr) {
+            console.warn("SEND scaffolding failed in differentiation, using reading-adjusted content:", sendErr);
+          }
+        }
+
         adaptedWorksheet = {
           ...ws,
           title: libraryEntry.title || `${ws.title} — ${tierLabel}`,
@@ -2173,47 +2276,114 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
           sections: finalSections,
           metadata: {
             ...meta,
+            difficulty: tier === "mixed" ? "mixed" : tier,
             // Carry the SEND formatting need into metadata so WorksheetRenderer
             // applies the correct font/size/spacing overlay automatically.
             sendNeedId: activeSendNeed || undefined,
             sendNeed: activeSendNeed || undefined,
           },
-          isAI: readingAdjusted,
+          isAI: readingAdjusted || sendAdapted,
           fromLibrary: true,
           libraryCurated: libraryEntry.curated,
         };
-      } else if (tier === "send") {
-        // ── SEND tier: no library version found ──
-        // Keep the original content exactly. Only update the SEND formatting metadata
-        // so WorksheetRenderer applies the correct font/size/spacing overlay.
-        // Structure, questions, marks — all unchanged.
+      } else if (tier === "scaffolded") {
+        // ── SEND scaffolded tier: no library version found ──
+        // Apply SEND content scaffolding on top of the original content.
+        // Then apply SEND formatting overlay via metadata (font/size/spacing).
+        let finalSections = ws.sections || [];
+        let sendAdapted = false;
+
+        if (activeSendNeed && activeSendNeed !== "none-selected") {
+          try {
+            const sendRes = await fetch("/api/ai/scaffold-worksheet", {
+              method: "POST",
+              headers: authHeaders,
+              body: JSON.stringify({
+                sections: finalSections,
+                sendNeed: activeSendNeed,
+                subject: meta.subject || subject,
+                topic: meta.topic || topic,
+                yearGroup: meta.yearGroup || yearGroup,
+                title: ws.title,
+              }),
+            });
+            if (sendRes.ok) {
+              const sendData = await sendRes.json();
+              const scaffoldedSections = sendData?.scaffolded?.sections;
+              if (scaffoldedSections && Array.isArray(scaffoldedSections) && scaffoldedSections.length > 0) {
+                finalSections = scaffoldedSections;
+                sendAdapted = true;
+              } else if (sendData?.sections && Array.isArray(sendData.sections) && sendData.sections.length > 0) {
+                finalSections = sendData.sections;
+                sendAdapted = true;
+              }
+            }
+          } catch (sendErr) {
+            console.warn("SEND scaffolding failed, using original content with formatting overlay:", sendErr);
+          }
+        }
+
         adaptedWorksheet = {
           ...ws,
+          sections: finalSections,
           metadata: {
             ...meta,
             sendNeedId: activeSendNeed || undefined,
             sendNeed: activeSendNeed || undefined,
           },
-          isAI: ws.isAI,
+          isAI: sendAdapted,
         };
       } else {
-        // ── Foundation / Higher: no library version found — fall back to AI ──
-        // AI rewrites questions for the tier. Reading level adjustment is not needed
-        // here because the AI prompt already targets the correct year group.
+        // ── Foundation / Mixed / Higher: no library version found — fall back to AI ──
+        // AI rewrites questions for the tier.
+        const aiTier = tier === "mixed" ? "standard" : (tier as "foundation" | "higher");
         const result = await aiDifferentiateExistingWorksheet({
           sections: ws.sections || [],
-          tier: tier as "foundation" | "higher",
+          tier: aiTier as "foundation" | "higher",
           subject: meta.subject,
           topic: meta.topic,
           yearGroup: meta.yearGroup,
           title: ws.title,
         });
+        let finalSections = result.sections;
+
+        // Apply SEND content scaffolding if a SEND need is active
+        if (activeSendNeed && activeSendNeed !== "none-selected") {
+          try {
+            const sendRes = await fetch("/api/ai/scaffold-worksheet", {
+              method: "POST",
+              headers: authHeaders,
+              body: JSON.stringify({
+                sections: finalSections,
+                sendNeed: activeSendNeed,
+                subject: meta.subject || subject,
+                topic: meta.topic || topic,
+                yearGroup: meta.yearGroup || yearGroup,
+                title: ws.title,
+              }),
+            });
+            if (sendRes.ok) {
+              const sendData = await sendRes.json();
+              const scaffoldedSections = sendData?.scaffolded?.sections;
+              if (scaffoldedSections && Array.isArray(scaffoldedSections) && scaffoldedSections.length > 0) {
+                finalSections = scaffoldedSections;
+              } else if (sendData?.sections && Array.isArray(sendData.sections) && sendData.sections.length > 0) {
+                finalSections = sendData.sections;
+              }
+            }
+          } catch (sendErr) {
+            console.warn("SEND scaffolding failed in AI differentiation:", sendErr);
+          }
+        }
+
+        const tierLabel = tier === "foundation" ? "Foundation" : tier === "mixed" ? "Mixed Ability" : "Higher";
         adaptedWorksheet = {
           ...ws,
-          sections: result.sections,
-          title: `${ws.title} — ${tier === "foundation" ? "Foundation" : "Higher"}`,
+          sections: finalSections,
+          title: `${ws.title} — ${tierLabel}`,
           metadata: {
             ...meta,
+            difficulty: tier === "mixed" ? "mixed" : tier,
             sendNeedId: activeSendNeed || undefined,
             sendNeed: activeSendNeed || undefined,
           },
@@ -2227,9 +2397,10 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
 
       const source = libraryEntry ? "library" : "AI";
       const msgs: Record<string, string> = {
-        foundation: `Foundation version applied (${source}) — structure preserved, SEND formatting carried over.`,
-        higher:     `Higher version applied (${source}) — structure preserved, SEND formatting carried over.`,
-        send:       `SEND formatting applied — font, size and spacing adjusted. Content structure unchanged.`,
+        foundation: `Foundation version applied (${source}) — reading level adjusted, SEND formatting applied.`,
+        mixed:      `Mixed Ability version applied (${source}) — reading level adjusted, SEND formatting applied.`,
+        higher:     `Higher version applied (${source}) — reading level adjusted, SEND formatting applied.`,
+        scaffolded: `SEND Scaffolded version applied — content scaffolded for ${activeSendNeed || "SEND"}.`,
       };
       toast.success(msgs[tier] || `${tier} version applied!`);
     } catch (err) {
@@ -2543,22 +2714,55 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                   </div>
                 </div>
 
-                {/* Worksheet Length inside core settings */}
+                {/* Sections selector with page estimate */}
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-medium">Worksheet Length</Label>
-                  <div className="flex gap-1.5">
-                    {[
-                      { id: "10", name: "10 mins", desc: "Quick practice — 5–8 focused questions" },
-                      { id: "30", name: "30 mins", desc: "Standard lesson — 15–20 questions" },
-                      { id: "60", name: "1 hour", desc: "Full lesson — 30+ questions across all sections" },
-                    ].map(l => (
-                      <button key={l.id} onClick={() => setWorksheetLength(l.id)}
-                        title={l.desc}
-                        className={`flex-1 py-2.5 rounded-lg text-xs font-medium transition-all ${worksheetLength === l.id ? "bg-brand text-white shadow-sm" : "bg-white text-muted-foreground border border-border/60 hover:border-brand/30"}`}>
-                        {l.name}
-                      </button>
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs font-medium">Sections</Label>
+                    <span className="text-xs font-semibold text-brand">
+                      {(() => {
+                        const count = selectedSections.length;
+                        // Estimate pages: LO = 0.3, Retrieval = 0.5, Worked Example = 0.5, Common Mistakes = 0.3, T/F = 0.3, MCQ = 0.4, Word Bank Gap Fill = 0.5, Match = 0.4, Questions = 1.0
+                        const pageWeights: Record<string, number> = {
+                          'learning-objective': 0.3, 'retrieval': 0.5, 'worked-example': 0.5,
+                          'common-mistakes': 0.3, 'true-false': 0.3, 'mcq': 0.4,
+                          'word-bank-gap-fill': 0.5, 'match': 0.4, 'questions': 1.0,
+                        };
+                        const total = selectedSections.reduce((sum, s) => sum + (pageWeights[s] || 0.4), 0);
+                        const pages = Math.max(1, Math.round(total));
+                        return `Estimated ${pages} page${pages !== 1 ? 's' : ''}`;
+                      })()}
+                    </span>
+                  </div>
+                  <div className="space-y-1.5">
+                    {([
+                      { id: 'learning-objective', label: 'Learning Objective' },
+                      { id: 'retrieval', label: 'Retrieval' },
+                      { id: 'worked-example', label: 'Worked Example' },
+                      { id: 'common-mistakes', label: 'Common Mistakes' },
+                      { id: 'true-false', label: 'True & False' },
+                      { id: 'mcq', label: 'Multiple Choice (MCQ)' },
+                      { id: 'word-bank-gap-fill', label: 'Word Bank Gap Fill' },
+                      { id: 'match', label: 'Match the Column' },
+                      { id: 'questions', label: 'Questions' },
+                    ] as const).map(sec => (
+                      <label key={sec.id} className="flex items-center gap-2 cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          checked={selectedSections.includes(sec.id)}
+                          onChange={e => {
+                            if (e.target.checked) {
+                              setSelectedSections(prev => [...prev, sec.id]);
+                            } else {
+                              setSelectedSections(prev => prev.filter(s => s !== sec.id));
+                            }
+                          }}
+                          className="w-4 h-4 accent-brand rounded"
+                        />
+                        <span className="text-xs text-foreground">{sec.label}</span>
+                      </label>
                     ))}
                   </div>
+                  <p className="text-[10px] text-muted-foreground">All sections are selected by default. Untick any you don’t want included.</p>
                 </div>
 
                 {/* Reading Age Slider */}
@@ -2610,7 +2814,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                   <summary className="flex items-center gap-2 cursor-pointer p-3 rounded-xl border border-border/40 bg-slate-50/50 hover:bg-slate-100/50 transition-colors">
                     <ChevronRight className="h-4 w-4 text-muted-foreground group-open:rotate-90 transition-transform" />
                     <span className="text-sm font-medium text-foreground">Advanced Options</span>
-                    <span className="text-xs text-muted-foreground ml-auto">Retrieval topic, exam board, instructions & more</span>
+                    <span className="text-xs text-muted-foreground ml-auto">Retrieval topic, exam board & more</span>
                   </summary>
                   <div className="mt-3 p-4 rounded-xl border border-border/40 bg-slate-50/30 space-y-4">
 
@@ -2626,35 +2830,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                   <p className="text-[10px] text-muted-foreground">If set, 2–3 retrieval questions on this previous topic will appear after the Learning Objective and before the main content.</p>
                 </div>
 
-                {/* Page Count — moved to Advanced Options */}
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-medium">Page Count (optional)</Label>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => setTargetPages(0)}
-                      className={`px-3 py-2 rounded-lg text-xs font-medium transition-all border ${
-                        targetPages === 0 ? "bg-brand text-white border-brand" : "bg-white text-foreground border-border hover:border-brand/30"
-                      }`}>
-                      Auto
-                    </button>
-                    <div className="flex items-center gap-1 flex-1">
-                      <input
-                        type="number"
-                        min={1}
-                        max={20}
-                        value={targetPages > 0 ? targetPages : ""}
-                        placeholder="e.g. 1, 2, 4..."
-                        onChange={e => {
-                          const v = parseInt(e.target.value);
-                          setTargetPages(isNaN(v) || v < 1 ? 0 : Math.min(v, 20));
-                        }}
-                        className="flex-1 h-9 px-3 rounded-lg text-xs border border-border focus:outline-none focus:ring-1 focus:ring-brand"
-                      />
-                      <span className="text-xs text-muted-foreground whitespace-nowrap">pages</span>
-                    </div>
-                  </div>
-                  <p className="text-[10px] text-muted-foreground">Set how many A4 pages the worksheet should fill. Leave as Auto to let the AI decide based on worksheet length.</p>
-                </div>
+                {/* Page Count removed per user request — sections selector now controls content */}
 
                 <div className="hidden">
                   <Label className="text-xs font-medium">Exam Board (GCSE / A-Level)</Label>
@@ -2668,13 +2844,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                   </div>
                 </div>
 
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-medium">Additional Instructions (optional)</Label>
-                  <Textarea value={additionalInstructions} onChange={e => setAdditionalInstructions(e.target.value)}
-                    placeholder={`Examples:\n• "Include 2 worked examples showing full method steps"\n• "Focus on calculating gradient, avoid y-intercept"\n• "Add a formulae box at the top, use Edexcel command words"\n• "Make questions progressively harder, last 2 must be exam-style"\n• "Include a data table students fill in"`}
-                    className="min-h-[80px] text-sm" />
-                  <p className="text-[10px] text-muted-foreground">Specific instructions override defaults. The more detail you give, the better the output.</p>
-                </div>
+                {/* Additional Instructions removed per user request */}
 
                 <div className="flex flex-wrap gap-4 items-center py-1">
                   <div className="flex items-center gap-2">
@@ -4586,17 +4756,29 @@ ${s.content}`).join("\n\n"),
             <p className="text-sm text-muted-foreground">Choose one version to generate and apply immediately to the worksheet.</p>
           </DialogHeader>
           <div className="space-y-4 mt-2">
-            {/* Tier cards */}
-            {([
-              { tier: "foundation", label: "Foundation", desc: "Accessible version with simpler language, more scaffolding, and fewer questions. Ideal for lower-attaining students.", colour: "blue", icon: "🟦" },
-              { tier: "higher", label: "Higher", desc: "Challenging version with multi-step problems, reasoning questions, and extension tasks. Ideal for higher-attaining students.", colour: "purple", icon: "🟣" },
-              { tier: "send", label: "SEND Scaffolded", desc: "Full SEND scaffolding: fill-in-the-blank guided questions, vocabulary box, sentence starters, chunked instructions, and visual supports.", colour: "green", icon: "🟢" },
-            ] as const).map(({ tier, label, desc, colour, icon }) => (
+            {/* Tier cards — show the 3 options that are NOT the current difficulty */}
+            {(() => {
+              // Determine which 3 tiers to show based on the current difficulty
+              // foundation → show: mixed, higher, scaffolded
+              // mixed/standard → show: foundation, higher, scaffolded
+              // higher → show: foundation, mixed, scaffolded
+              const currentDiff = (generated?.metadata as any)?.difficulty || difficulty || "mixed";
+              const allTiers = [
+                { tier: "foundation", label: "Foundation", desc: "Accessible version with simpler language, more scaffolding, and fewer questions. Ideal for lower-attaining students.", colour: "blue" as const, icon: "🟦" },
+                { tier: "mixed", label: "Mixed Ability", desc: "Standard mixed-ability version covering the full range of the topic. Suitable for most students.", colour: "amber" as const, icon: "🟡" },
+                { tier: "higher", label: "Higher", desc: "Challenging version with multi-step problems, reasoning questions, and extension tasks. Ideal for higher-attaining students.", colour: "purple" as const, icon: "🟣" },
+                { tier: "scaffolded", label: "SEND Scaffolded", desc: "Full SEND scaffolding: fill-in-the-blank guided questions, vocabulary box, sentence starters, chunked instructions, and visual supports.", colour: "green" as const, icon: "🟢" },
+              ];
+              // Filter out the current difficulty tier
+              const currentTierKey = currentDiff === "higher" ? "higher" : currentDiff === "foundation" ? "foundation" : "mixed";
+              return allTiers.filter(t => t.tier !== currentTierKey);
+            })().map(({ tier, label, desc, colour, icon }) => (
               <div key={tier} className={`rounded-xl border p-4 space-y-3 ${
-                // extra top padding for SEND card to accommodate the SEND picker
-                tier === "send" ? "pb-4" : ""} ${
+                // extra top padding for SEND/scaffolded card to accommodate the SEND picker
+                tier === "scaffolded" ? "pb-4" : ""} ${
                 colour === "blue" ? "border-blue-200 bg-blue-50" :
                 colour === "purple" ? "border-purple-200 bg-purple-50" :
+                colour === "amber" ? "border-amber-200 bg-amber-50" :
                 "border-green-200 bg-green-50"
               }`}>
                 <div className="flex items-start justify-between gap-3">
@@ -4606,19 +4788,21 @@ ${s.content}`).join("\n\n"),
                       <span className={`font-semibold text-sm ${
                         colour === "blue" ? "text-blue-800" :
                         colour === "purple" ? "text-purple-800" :
+                        colour === "amber" ? "text-amber-800" :
                         "text-green-800"
                       }`}>{label}</span>
                     </div>
-                    {/* Only show desc in the header row for non-SEND tiers */}
-                    {tier !== "send" && (
+                    {/* Only show desc in the header row for non-scaffolded tiers */}
+                    {tier !== "scaffolded" && (
                       <p className={`text-xs mt-1 ${
                         colour === "blue" ? "text-blue-700" :
                         colour === "purple" ? "text-purple-700" :
+                        colour === "amber" ? "text-amber-700" :
                         "text-green-700"
                       }`}>{desc}</p>
                     )}
                   </div>
-                  {tier === "send" && (
+                  {tier === "scaffolded" && (
                     <div className="mt-2 space-y-2">
                       <Label className="text-xs font-medium text-green-800">SEND Need for scaffolding</Label>
                       <Select
@@ -4633,7 +4817,6 @@ ${s.content}`).join("\n\n"),
                           {sendNeeds.map(n => <SelectItem key={n.id} value={n.id}>{n.name}</SelectItem>)}
                         </SelectContent>
                       </Select>
-
                     </div>
                   )}
                   <Button
@@ -4643,10 +4826,14 @@ ${s.content}`).join("\n\n"),
                     className={`shrink-0 ${
                       colour === "blue" ? "bg-blue-600 hover:bg-blue-700 text-white" :
                       colour === "purple" ? "bg-purple-600 hover:bg-purple-700 text-white" :
+                      colour === "amber" ? "bg-amber-600 hover:bg-amber-700 text-white" :
                       "bg-green-600 hover:bg-green-700 text-white"
                     }`}
                   >
-                    {diffLoading === tier ? <><RefreshCw className="h-3 w-3 mr-1.5 animate-spin" /> Generating...</> : <><Sparkles className="h-3 w-3 mr-1.5" /> {tier === "send" ? "Apply SEND scaffolding" : tier === "foundation" ? "Apply Foundation version" : "Apply Higher version"}</>}
+                    {diffLoading === tier
+                      ? <><RefreshCw className="h-3 w-3 mr-1.5 animate-spin" /> Generating...</>
+                      : <><Sparkles className="h-3 w-3 mr-1.5" /> {tier === "scaffolded" ? "Apply SEND Scaffolded" : tier === "foundation" ? "Apply Foundation" : tier === "mixed" ? "Apply Mixed Ability" : "Apply Higher"}</>
+                    }
                   </Button>
                 </div>
                 {diffVersions[tier] && (

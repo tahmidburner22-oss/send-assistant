@@ -516,6 +516,8 @@ export async function aiGenerateWorksheet(params: {
   targetPages?: number; // Target number of printed A4 pages (any positive integer, 0 = auto)
   readingAge?: number; // Target reading age (5–17) — controls vocabulary and sentence complexity
   isRevisionMat?: boolean; // When true, generate a revision mat instead of a standard worksheet
+  selectedSections?: string[]; // Which sections to include (from the sections selector)
+  subtopic?: string; // Optional subtopic for more specific generation
 }): Promise<AIWorksheetResult> {
   // ── REVISION MAT: completely separate prompt path ─────────────────────────
   if (params.isRevisionMat) {
@@ -1474,6 +1476,129 @@ Rules: x/y are percentages (5–95), max 2 diagrams, title must name the specifi
   const vocabularyCapNote = `Key Vocabulary must contain at most 5 items.`;
 
   const recallNote = params.recallTopic ? `RETRIEVAL PRACTICE REQUIRED: After the Learning Objective and BEFORE Key Vocabulary, include a section titled "Retrieval Practice — ${params.recallTopic}" (type: "prior-knowledge") with exactly 3 short retrieval questions on the PREVIOUS topic "${params.recallTopic}". These must be quick, accessible questions (True/False, short answer, or fill-in-blank) to activate prior knowledge. Do NOT mix these with the main topic questions. This section appears SECOND in the worksheet, right after the Learning Objective.` : '';
+
+  // ── NEW STRUCTURED GENERATION PATH ─────────────────────────────────────────
+  // When selectedSections is provided (AI fallback for topics not in library),
+  // use the structured format specified by the user:
+  // Header, LO, Retrieval (if set), Worked Example, Common Mistakes,
+  // True/False pills, MCQ, Word Bank Gap Fill, Match (if fits), Questions
+  if (params.selectedSections && !params.isRevisionMat && !params.examStyle && !params.introOnly && !isPrimary) {
+    const secs = params.selectedSections;
+    const wantLO = secs.includes('learning-objective');
+    const wantRetrieval = secs.includes('retrieval') && !!params.recallTopic;
+    const wantWorkedExample = secs.includes('worked-example');
+    const wantCommonMistakes = secs.includes('common-mistakes');
+    const wantTrueFalse = secs.includes('true-false');
+    const wantMCQ = secs.includes('mcq');
+    const wantWordBankGapFill = secs.includes('word-bank-gap-fill');
+    const wantMatch = secs.includes('match');
+    const wantQuestions = secs.includes('questions');
+
+    const structuredSystem = `You are an expert UK teacher creating a professional, print-ready worksheet. You respond with valid raw JSON only — no markdown, no code blocks, no HTML. Every rule below is mandatory.
+
+SUBJECT TYPE: ${isSTEM ? 'STEM' : 'HUMANITIES'}
+${isMaths ? 'MATHS RULES: All questions must be numerical/calculation-based ONLY. Never ask students to explain, describe, or write prose. Use LaTeX for all math: wrap in \\(...\\). E.g. \\(\\dfrac{3}{4}\\), \\(x^{2}\\), \\(\\sqrt{x}\\). Write units as plain text outside LaTeX.' : ''}
+${readingAgeNote}
+${sendNote}
+${tierNote}
+QUALITY STANDARD: Every question must be fully usable — no placeholders, no ellipses, no unfinished sentences. Use real numbers, real contexts. Textbook quality.`;
+
+    const structuredSections: string[] = [];
+
+    if (wantLO) {
+      structuredSections.push(`{"title": "Learning Objective", "type": "objective", "content": "By the end of this lesson, students will be able to [one clear, specific learning objective for ${params.topic}]"}`);
+    }
+
+    if (wantRetrieval && params.recallTopic) {
+      structuredSections.push(`{"title": "Retrieval — ${params.recallTopic}", "type": "prior-knowledge", "content": "Recall from last lesson!\n1. [True/False statement about ${params.recallTopic}] TRUE / FALSE\n2. [Short answer question about ${params.recallTopic}] [1 mark]\n3. [Fill-in-blank sentence about ${params.recallTopic}. The answer is _____.]"}`);
+    }
+
+    if (wantWorkedExample) {
+      if (isMaths) {
+        structuredSections.push(`{"title": "Worked Example", "type": "example", "content": "Study this worked example carefully before attempting the questions.\n\nQuestion: [A specific ${params.topic} problem with real numbers]\n\nStep 1: [First step — state the method or formula used]\nStep 2: [Substitute values and show calculation]\nStep 3: [Complete the calculation]\nAnswer: [Final answer with correct units/form]\n\n✓ Key point: [One sentence explaining the key method or rule]"}`);
+      } else {
+        structuredSections.push(`{"title": "Worked Example", "type": "example", "content": "Study this example carefully.\n\n[A clear, specific example demonstrating the key concept of ${params.topic}]\n\nStep 1: [First step]\nStep 2: [Second step]\nStep 3: [Third step — conclusion or result]\n\n✓ Key point: [One sentence explaining the main principle]"}`);
+      }
+    }
+
+    if (wantCommonMistakes) {
+      structuredSections.push(`{"title": "Common Mistakes to Avoid", "type": "common-mistakes", "teacherOnly": false, "content": "Watch out for these common errors:\n\nMISTAKE 1: [Name of mistake]\n→ [Explanation of the mistake and how to avoid it]\n\nMISTAKE 2: [Name of mistake]\n→ [Explanation of the mistake and how to avoid it]\n\nMISTAKE 3: [Name of mistake]\n→ [Explanation of the mistake and how to avoid it]"}`);
+    }
+
+    if (wantTrueFalse) {
+      structuredSections.push(`{"title": "True or False", "type": "q-true-false", "marks": 4, "content": "Circle TRUE or FALSE for each statement. [4 marks]\n1. [Statement about ${params.topic} — TRUE]  TRUE  /  FALSE\n2. [Statement about ${params.topic} — FALSE]  TRUE  /  FALSE\n3. [Statement about ${params.topic} — TRUE]  TRUE  /  FALSE\n4. [Statement about ${params.topic} — FALSE]  TRUE  /  FALSE"}`);
+    }
+
+    if (wantMCQ) {
+      structuredSections.push(`{"title": "Multiple Choice", "type": "q-mcq", "marks": 1, "content": "[A specific question about ${params.topic}] [1 mark]\nA  [option — incorrect]\nB  [option — CORRECT]\nC  [option — incorrect]\nD  [option — incorrect]\nCORRECT: B"}`);
+    }
+
+    if (wantWordBankGapFill) {
+      structuredSections.push(`{"title": "Word Bank Gap Fill", "type": "q-gap-fill", "marks": 7, "content": "Complete the paragraph using words from the word bank below. [7 marks]\n[A 5–7 sentence paragraph about ${params.topic} with exactly 7 blanks shown as _____. ${isMaths ? 'Write all numbers and expressions as plain text in this paragraph — no LaTeX here.' : ''}]\nWORD BANK: [word1] | [word2] | [word3] | [word4] | [word5] | [word6] | [word7] | [word8] | [word9] | [word10]"}`);
+    }
+
+    if (wantMatch) {
+      structuredSections.push(`{"title": "Match the Column", "type": "q-matching", "marks": 5, "content": "Draw a line to match each term with its correct definition. [5 marks]\n${isMaths ? '1. [mathematical term from ' + params.topic + '] ←→ [its definition]\n2. [mathematical term] ←→ [its definition]\n3. [mathematical term] ←→ [its definition]\n4. [mathematical term] ←→ [its definition]\n5. [mathematical term] ←→ [its definition]' : '1. [key term from ' + params.topic + '] ←→ [its definition]\n2. [key term] ←→ [its definition]\n3. [key term] ←→ [its definition]\n4. [key term] ←→ [its definition]\n5. [key term] ←→ [its definition]'}"}`);
+    }
+
+    if (wantQuestions) {
+      if (isMaths) {
+        structuredSections.push(`{"title": "Questions", "type": "questions", "marks": 20, "content": "Answer all questions. Show all working. [20 marks]\n\n1. [Straightforward ${params.topic} calculation — 1 mark] [1 mark]\n\n2. [Slightly harder ${params.topic} calculation — 2 marks] [2 marks]\n\n3. [${params.topic} calculation requiring two steps] [2 marks]\n\n4. [${params.topic} problem with a real-world context] [3 marks]\n\n5. (a) [First part of a multi-part ${params.topic} problem] [2 marks]\n   (b) [Second part — builds on (a)] [2 marks]\n   (c) [Third part — applies the result] [2 marks]\n\n6. [Challenging ${params.topic} problem requiring full method — show all working] [4 marks]\n\n7. ★ Extension: [A harder ${params.topic} problem for students who finish early] [2 marks]"}`);
+      } else {
+        structuredSections.push(`{"title": "Questions", "type": "questions", "marks": 20, "content": "Answer all questions. [20 marks]\n\n1. [Knowledge recall question about ${params.topic}] [1 mark]\n\n2. [Comprehension question about ${params.topic}] [2 marks]\n\n3. [Application question — apply knowledge of ${params.topic} to a given scenario] [3 marks]\n\n4. [Analysis question — explain or describe an aspect of ${params.topic}] [4 marks]\n\n5. [Evaluation question — assess or discuss ${params.topic}] [6 marks]\n   Your answer should include:\n   • [Point 1]\n   • [Point 2]\n   • [Point 3]\n\n6. ★ Extension: [A challenging question requiring deeper thinking about ${params.topic}] [4 marks]"}`);
+      }
+    }
+
+    // Always add mark scheme (teacher only)
+    structuredSections.push(`{"title": "Mark Scheme", "type": "mark-scheme", "teacherOnly": true, "content": "[Complete mark scheme for all questions above. For each question: state the correct answer, acceptable alternatives, and mark allocation. For maths: show full working for each answer.]"}`);
+
+    const structuredUser = `Create a professional, print-ready worksheet in valid raw JSON only.
+Subject: ${params.subject} | Year: ${params.yearGroup} (${phase}) | Topic: ${params.topic} | Difficulty: ${params.difficulty || "mixed"}
+${examBoardNote}
+${mathsNote}
+${topicEnforcementNote}
+${dataCompletenessNote}
+
+RULES:
+1. Every question must be COMPLETE and fully usable — no placeholders, no "...", no unfinished sentences.
+2. Use REAL numbers and REAL contexts — never "a number", always "24", "3.7", "Birmingham".
+3. Questions must escalate in difficulty (easiest first, hardest last).
+4. ABSOLUTELY NO EMOJIS anywhere in the output.
+5. No HTML, no markdown, no code fences in content strings.
+6. Each step, question, or item must be on its own line using \n.
+${isMaths ? '7. MATHS ONLY: All questions must be numerical/calculation-based. Never ask students to explain, describe, or write prose. Use LaTeX for all math expressions.' : ''}
+
+Return EXACTLY this JSON (raw JSON only, no markdown fences):
+{
+  "title": "${params.topic} — ${params.yearGroup} ${subjectDisplay} Worksheet",
+  "subtitle": "${params.yearGroup} | ${subjectDisplay} | ${params.difficulty || 'Standard'}",
+  "sections": [
+    ${structuredSections.join(',\n    ')}
+  ]
+}`;
+
+    const { text: structuredText, provider: structuredProvider } = await callAI(structuredSystem, structuredUser, 4000);
+    const structuredCleaned = structuredText.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/i, '').trim();
+    let structuredJson: any;
+    try {
+      structuredJson = JSON.parse(structuredCleaned);
+    } catch (_) {
+      const repaired = repairTruncatedJson(structuredCleaned);
+      if (repaired) {
+        try { structuredJson = JSON.parse(repaired); } catch { /* fall through to legacy path */ }
+      }
+    }
+    if (structuredJson && structuredJson.sections && Array.isArray(structuredJson.sections) && structuredJson.sections.length > 0) {
+      // Strip asterisks from all content
+      structuredJson.sections = structuredJson.sections.map((s: any) => ({
+        ...s,
+        title: typeof s.title === 'string' ? s.title.replace(/\*\*(.+?)\*\*/g, '$1').replace(/\*/g, '').trim() : s.title,
+        content: typeof s.content === 'string' ? s.content.replace(/\*\*(.+?)\*\*/g, '$1').replace(/\*/g, '').trim() : s.content,
+      }));
+      return { ...structuredJson, isAI: true, provider: structuredProvider };
+    }
+    // If structured generation failed, fall through to legacy path
+  }
 
   const user = `Create one printable worksheet in valid raw JSON only.
 Subject: ${params.subject} | Year: ${params.yearGroup} (${phase}) | Topic: ${params.topic} | Difficulty: ${params.difficulty || "mixed"}
