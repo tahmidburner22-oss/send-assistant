@@ -205,10 +205,11 @@ export default function Worksheets() {
   const [sendNeed, setSendNeed] = useState(() => preSelectedSendNeed);
   const [difficulty, setDifficulty] = useState("mixed");
   const [worksheetLength, setWorksheetLength] = useState("30");
-  // Sections selector — all selected by default
-  const ALL_SECTIONS = ['learning-objective', 'retrieval', 'worked-example', 'common-mistakes', 'true-false', 'mcq', 'word-bank-gap-fill', 'match', 'questions'] as const;
+  // Sections selector — retrieval unticked by default, all others ticked
+  const ALL_SECTIONS = ['learning-objective', 'retrieval', 'worked-example', 'common-mistakes', 'true-false', 'mcq', 'word-bank-gap-fill', 'match', 'section-a', 'section-b', 'section-c', 'self-reflection'] as const;
   type SectionId = typeof ALL_SECTIONS[number];
-  const [selectedSections, setSelectedSections] = useState<SectionId[]>([...ALL_SECTIONS]);
+  const defaultSections = ALL_SECTIONS.filter(s => s !== 'retrieval') as SectionId[];
+  const [selectedSections, setSelectedSections] = useState<SectionId[]>(defaultSections);
   const [examBoard, setExamBoard] = useState("none");
   const [includeAnswers, setIncludeAnswers] = useState(true);
   const [examStyle, setExamStyle] = useState(false);
@@ -492,6 +493,8 @@ export default function Worksheets() {
   const historyPrintRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const diagnosticRef = useRef<HTMLDivElement>(null);
+  const advancedOptionsRef = useRef<HTMLDetailsElement>(null);
+  const retrievalTopicRef = useRef<HTMLInputElement>(null);
 
   // tRPC mutations
   
@@ -993,8 +996,10 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
               'objectives': 'learning-objective',
               'learning-objective': 'learning-objective',
               'lo': 'learning-objective',
+              'objective': 'learning-objective',
               'retrieval': 'retrieval',
               'recall': 'retrieval',
+              'prior-knowledge': 'retrieval',
               'worked-example': 'worked-example',
               'worked_example': 'worked-example',
               'example': 'worked-example',
@@ -1003,17 +1008,31 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
               'mistakes': 'common-mistakes',
               'true-false': 'true-false',
               'true_false': 'true-false',
+              'q-true-false': 'true-false',
               'mcq': 'mcq',
               'multiple-choice': 'mcq',
+              'q-mcq': 'mcq',
               'word-bank': 'word-bank-gap-fill',
               'word-bank-gap-fill': 'word-bank-gap-fill',
               'gap-fill': 'word-bank-gap-fill',
+              'q-gap-fill': 'word-bank-gap-fill',
               'match': 'match',
               'matching': 'match',
-              'questions': 'questions',
-              'guided': 'questions',
-              'extension': 'questions',
-              'exam-questions': 'questions',
+              'q-matching': 'match',
+              // Split question sections — map to section-a/b/c
+              'guided': 'section-a',
+              'section-a': 'section-a',
+              'independent': 'section-b',
+              'section-b': 'section-b',
+              'challenge': 'section-c',
+              'section-c': 'section-c',
+              // Legacy 'questions' maps to section-b (core practice) as best fit
+              'questions': 'section-b',
+              'extension': 'section-c',
+              'exam-questions': 'section-b',
+              // Self reflection
+              'self-reflection': 'self-reflection',
+              'self_reflection': 'self-reflection',
             };
             // Always keep teacher-only sections (mark scheme etc)
             // For student sections, only keep those whose type maps to a selected section
@@ -1025,8 +1044,11 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
             // If filtering removed all sections, keep originals (safety fallback)
             const sectionsToUse = filteredSections.length > 0 ? filteredSections : finalSections;
 
+            // Strip tier suffix from title (e.g. "Fractions — Base Tier (Year 9 Maths)" → "Fractions")
+            const strippedTitle = (entry.title || "").replace(/\s*[—–-]\s*(Base Tier|Foundation Tier|Higher Tier|Standard Tier|SEND Tier|Scaffolded Tier|Access Tier|Extended Tier|Mixed Tier)[^)]*\)?/gi, "").replace(/\s*\(Year \d+[^)]*\)\s*$/gi, "").trim() || entry.title;
+
             const libWorksheet = {
-              title: entry.title,
+              title: strippedTitle,
               subtitle: entry.subtitle || `${yearGroup} | ${subject}`,
               sections: sectionsToUse,
               metadata: {
@@ -2016,8 +2038,11 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
               }
             }
 
+            // Strip tier suffix from title in NL path too
+            const strippedNlTitle = (entry.title || "").replace(/\s*[—–-]\s*(Base Tier|Foundation Tier|Higher Tier|Standard Tier|SEND Tier|Scaffolded Tier|Access Tier|Extended Tier|Mixed Tier)[^)]*\)?/gi, "").replace(/\s*\(Year \d+[^)]*\)\s*$/gi, "").trim() || entry.title;
+
             generatedWs = {
-              title: entry.title,
+              title: strippedNlTitle,
               subtitle: entry.subtitle || `${nextYearGroup} | ${nextSubject}`,
               sections: finalSections,
               metadata: {
@@ -2273,9 +2298,12 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
           }
         }
 
+        // Strip tier suffix from differentiated worksheet title
+        const strippedDiffTitle = (libraryEntry.title || "").replace(/\s*[—–-]\s*(Base Tier|Foundation Tier|Higher Tier|Standard Tier|SEND Tier|Scaffolded Tier|Access Tier|Extended Tier|Mixed Tier)[^)]*\)?/gi, "").replace(/\s*\(Year \d+[^)]*\)\s*$/gi, "").trim() || libraryEntry.title || ws.title;
+
         adaptedWorksheet = {
           ...ws,
-          title: libraryEntry.title || `${ws.title} — ${tierLabel}`,
+          title: strippedDiffTitle,
           subtitle: libraryEntry.subtitle || ws.subtitle,
           sections: finalSections,
           metadata: {
@@ -2724,15 +2752,16 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                     <Label className="text-xs font-medium">Sections</Label>
                     <span className="text-xs font-semibold text-brand">
                       {(() => {
-                        const count = selectedSections.length;
-                        // Estimate pages: LO = 0.3, Retrieval = 0.5, Worked Example = 0.5, Common Mistakes = 0.3, T/F = 0.3, MCQ = 0.4, Word Bank Gap Fill = 0.5, Match = 0.4, Questions = 1.0
+                        // Page weight estimates per section
                         const pageWeights: Record<string, number> = {
-                          'learning-objective': 0.3, 'retrieval': 0.5, 'worked-example': 0.5,
-                          'common-mistakes': 0.3, 'true-false': 0.3, 'mcq': 0.4,
-                          'word-bank-gap-fill': 0.5, 'match': 0.4, 'questions': 1.0,
+                          'learning-objective': 0.3, 'retrieval': 0.2, 'worked-example': 0.4,
+                          'common-mistakes': 0.3, 'true-false': 0.4, 'mcq': 0.5,
+                          'word-bank-gap-fill': 0.4, 'match': 0.3,
+                          'section-a': 0.8, 'section-b': 1.0, 'section-c': 0.8,
+                          'self-reflection': 0.2,
                         };
                         const total = selectedSections.reduce((sum, s) => sum + (pageWeights[s] || 0.4), 0);
-                        const pages = Math.max(1, Math.round(total));
+                        const pages = Math.max(1, Math.ceil(total));
                         return `Estimated ${pages} page${pages !== 1 ? 's' : ''}`;
                       })()}
                     </span>
@@ -2747,14 +2776,23 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                       { id: 'mcq', label: 'Multiple Choice (MCQ)' },
                       { id: 'word-bank-gap-fill', label: 'Word Bank Gap Fill' },
                       { id: 'match', label: 'Match the Column' },
-                      { id: 'questions', label: 'Questions' },
+                      { id: 'section-a', label: 'Section A — Foundation Questions' },
+                      { id: 'section-b', label: 'Section B — Core Practice' },
+                      { id: 'section-c', label: 'Section C — Stretch & Challenge' },
+                      { id: 'self-reflection', label: 'Self Reflection' },
                     ] as const).map(sec => (
                       <label key={sec.id} className="flex items-center gap-2 cursor-pointer select-none">
                         <input
                           type="checkbox"
                           checked={selectedSections.includes(sec.id)}
                           onChange={e => {
-                            if (e.target.checked) {
+                            const checked = e.target.checked;
+                            // When ticking Retrieval, auto-open Advanced Options and focus the retrieval topic field
+                            if (sec.id === 'retrieval' && checked) {
+                              advancedOptionsRef.current?.setAttribute('open', 'open');
+                              setTimeout(() => retrievalTopicRef.current?.focus(), 100);
+                            }
+                            if (checked) {
                               setSelectedSections(prev => [...prev, sec.id]);
                             } else {
                               setSelectedSections(prev => prev.filter(s => s !== sec.id));
@@ -2766,7 +2804,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                       </label>
                     ))}
                   </div>
-                  <p className="text-[10px] text-muted-foreground">All sections are selected by default. Untick any you don’t want included.</p>
+                  <p className="text-[10px] text-muted-foreground">All sections selected by default except Retrieval. Untick any you don't want included.</p>
                 </div>
 
                 {/* Reading Age Slider */}
@@ -2814,7 +2852,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                 )}
 
                 {/* Advanced Options - collapsible */}
-                <details className="group">
+                <details ref={advancedOptionsRef} className="group">
                   <summary className="flex items-center gap-2 cursor-pointer p-3 rounded-xl border border-border/40 bg-slate-50/50 hover:bg-slate-100/50 transition-colors">
                     <ChevronRight className="h-4 w-4 text-muted-foreground group-open:rotate-90 transition-transform" />
                     <span className="text-sm font-medium text-foreground">Advanced Options</span>
@@ -2826,6 +2864,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                 <div className="space-y-1.5">
                   <Label className="text-xs font-medium">Retrieval Topic (optional)</Label>
                   <Input
+                    ref={retrievalTopicRef}
                     value={recallTopic}
                     onChange={e => setRecallTopic(e.target.value)}
                     placeholder="e.g. Fractions, Photosynthesis… — adds 2–3 retrieval questions at the start"
