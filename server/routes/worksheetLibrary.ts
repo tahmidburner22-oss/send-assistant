@@ -793,12 +793,14 @@ Rules:
 - Include ALL questions — do not truncate or skip any
 - Identify question types: MCQ (multiple choice A/B/C/D), gap fill (blanks/word bank), true/false, short answer, free response
 - For short answer questions with multiple sub-parts (a)(b)(c), keep them in ONE section with type q-short-answer
+- COMMON MISTAKES sections MUST be extracted as a section with type "common-mistakes"
+- WORKED EXAMPLE sections MUST be extracted as a section with type "q-worked-example"
+- KEY VOCABULARY sections go in the keyVocab array AND as a section with type "key-terms"
 - Teacher answer keys go in teacherSections with teacherOnly: true
 - Self-reflection tables go in sections with type "self-reflection"
 - Brain breaks go with type "brain-break"
 - Stop/check prompts go with type "stop-check"
-- Key vocabulary goes in the keyVocab array AND as a section with type "key-terms"
-- Preserve all question text exactly as written
+- Preserve all question text exactly as written, including word banks and answer options
 - Generate unique IDs like "s1", "s2", "s3" etc.
 - Do not include markdown, only return the JSON object`;
 

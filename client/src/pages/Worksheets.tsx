@@ -1030,6 +1030,10 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
               'questions': 'section-b',
               'extension': 'section-c',
               'exam-questions': 'section-b',
+              // Common mistakes and worked example
+              'common-mistakes': 'common-mistakes',
+              'common_mistakes': 'common-mistakes',
+              'mistakes': 'common-mistakes',
               // Short answer and free response map to section-b (core practice)
               'q-short-answer': 'section-b',
               'short-answer': 'section-b',
