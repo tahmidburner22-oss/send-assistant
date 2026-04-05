@@ -1492,7 +1492,11 @@ Rules: x/y are percentages (5–95), max 2 diagrams, title must name the specifi
     const wantMCQ = secs.includes('mcq');
     const wantWordBankGapFill = secs.includes('word-bank-gap-fill');
     const wantMatch = secs.includes('match');
-    const wantQuestions = secs.includes('questions');
+    // Support both legacy 'questions' and new split section IDs
+    const wantQuestions = secs.includes('questions') || secs.includes('section-b');
+    const wantSectionA = secs.includes('section-a');
+    const wantSectionC = secs.includes('section-c');
+    const wantSelfReflection = secs.includes('self-reflection');
 
     const structuredSystem = `You are an expert UK teacher creating a professional, print-ready worksheet. You respond with valid raw JSON only — no markdown, no code blocks, no HTML. Every rule below is mandatory.
 
@@ -1541,12 +1545,36 @@ QUALITY STANDARD: Every question must be fully usable — no placeholders, no el
       structuredSections.push(`{"title": "Match the Column", "type": "q-matching", "marks": 5, "content": "Draw a line to match each term with its correct definition. [5 marks]\n${isMaths ? '1. [mathematical term from ' + params.topic + '] ←→ [its definition]\n2. [mathematical term] ←→ [its definition]\n3. [mathematical term] ←→ [its definition]\n4. [mathematical term] ←→ [its definition]\n5. [mathematical term] ←→ [its definition]' : '1. [key term from ' + params.topic + '] ←→ [its definition]\n2. [key term] ←→ [its definition]\n3. [key term] ←→ [its definition]\n4. [key term] ←→ [its definition]\n5. [key term] ←→ [its definition]'}"}`);
     }
 
+    // Section A — Foundation / Guided Practice
+    if (wantSectionA) {
+      if (isMaths) {
+        structuredSections.push(`{"title": "Section A — Foundation Questions", "type": "guided", "marks": 8, "content": "Answer all questions. Show all working. [8 marks]\n\n1. [Very straightforward ${params.topic} calculation — 1 step] [1 mark]\n\n2. [Basic ${params.topic} calculation] [1 mark]\n\n3. [${params.topic} calculation with a simple context] [2 marks]\n\n4. [${params.topic} question — fill in the blank or complete the working] [2 marks]\n\n5. [${params.topic} question — two steps, scaffolded] [2 marks]"}`);
+      } else {
+        structuredSections.push(`{"title": "Section A — Foundation Questions", "type": "guided", "marks": 8, "content": "Answer all questions. [8 marks]\n\n1. [Knowledge recall question about ${params.topic}] [1 mark]\n\n2. [Simple comprehension question about ${params.topic}] [2 marks]\n\n3. [Application question — apply basic knowledge of ${params.topic}] [2 marks]\n\n4. [Describe or identify question about ${params.topic}] [3 marks]"}`);
+      }
+    }
+
+    // Section B — Core Practice (maps to legacy 'questions')
     if (wantQuestions) {
       if (isMaths) {
-        structuredSections.push(`{"title": "Questions", "type": "questions", "marks": 20, "content": "Answer all questions. Show all working. [20 marks]\n\n1. [Straightforward ${params.topic} calculation — 1 mark] [1 mark]\n\n2. [Slightly harder ${params.topic} calculation — 2 marks] [2 marks]\n\n3. [${params.topic} calculation requiring two steps] [2 marks]\n\n4. [${params.topic} problem with a real-world context] [3 marks]\n\n5. (a) [First part of a multi-part ${params.topic} problem] [2 marks]\n   (b) [Second part — builds on (a)] [2 marks]\n   (c) [Third part — applies the result] [2 marks]\n\n6. [Challenging ${params.topic} problem requiring full method — show all working] [4 marks]\n\n7. ★ Extension: [A harder ${params.topic} problem for students who finish early] [2 marks]"}`);
+        structuredSections.push(`{"title": "Section B — Core Practice", "type": "independent", "marks": 20, "content": "Answer all questions. Show all working. [20 marks]\n\n1. [Straightforward ${params.topic} calculation — 1 mark] [1 mark]\n\n2. [Slightly harder ${params.topic} calculation — 2 marks] [2 marks]\n\n3. [${params.topic} calculation requiring two steps] [2 marks]\n\n4. [${params.topic} problem with a real-world context] [3 marks]\n\n5. (a) [First part of a multi-part ${params.topic} problem] [2 marks]\n   (b) [Second part — builds on (a)] [2 marks]\n   (c) [Third part — applies the result] [2 marks]\n\n6. [${params.topic} problem requiring full method — show all working] [4 marks]\n\n7. [${params.topic} problem with interpretation or explanation] [4 marks]"}`);
       } else {
-        structuredSections.push(`{"title": "Questions", "type": "questions", "marks": 20, "content": "Answer all questions. [20 marks]\n\n1. [Knowledge recall question about ${params.topic}] [1 mark]\n\n2. [Comprehension question about ${params.topic}] [2 marks]\n\n3. [Application question — apply knowledge of ${params.topic} to a given scenario] [3 marks]\n\n4. [Analysis question — explain or describe an aspect of ${params.topic}] [4 marks]\n\n5. [Evaluation question — assess or discuss ${params.topic}] [6 marks]\n   Your answer should include:\n   • [Point 1]\n   • [Point 2]\n   • [Point 3]\n\n6. ★ Extension: [A challenging question requiring deeper thinking about ${params.topic}] [4 marks]"}`);
+        structuredSections.push(`{"title": "Section B — Core Practice", "type": "independent", "marks": 20, "content": "Answer all questions. [20 marks]\n\n1. [Knowledge recall question about ${params.topic}] [1 mark]\n\n2. [Comprehension question about ${params.topic}] [2 marks]\n\n3. [Application question — apply knowledge of ${params.topic} to a given scenario] [3 marks]\n\n4. [Analysis question — explain or describe an aspect of ${params.topic}] [4 marks]\n\n5. [Evaluation question — assess or discuss ${params.topic}] [6 marks]\n   Your answer should include:\n   • [Point 1]\n   • [Point 2]\n   • [Point 3]\n\n6. [Extended response question about ${params.topic}] [4 marks]"}`);
       }
+    }
+
+    // Section C — Stretch & Challenge
+    if (wantSectionC) {
+      if (isMaths) {
+        structuredSections.push(`{"title": "Section C — Stretch & Challenge", "type": "challenge", "marks": 8, "content": "Challenge yourself! [8 marks]\n\n1. [Multi-step ${params.topic} problem requiring full method] [3 marks]\n\n2. [${params.topic} problem with a complex real-world context — show all working] [3 marks]\n\n3. ★ Stretch: [A proof, 'show that', or open-ended ${params.topic} problem] [2 marks]"}`);
+      } else {
+        structuredSections.push(`{"title": "Section C — Stretch & Challenge", "type": "challenge", "marks": 8, "content": "Challenge yourself! [8 marks]\n\n1. [Higher-order analysis or evaluation question about ${params.topic}] [4 marks]\n\n2. [Synoptic or cross-topic question linking ${params.topic} to a wider concept] [4 marks]"}`);
+      }
+    }
+
+    // Self Reflection
+    if (wantSelfReflection) {
+      structuredSections.push(`{"title": "Self Reflection", "type": "self-reflection", "teacherOnly": false, "content": "SUBTITLE: Review your understanding before moving on.\nCONFIDENCE_TABLE:\n[specific skill/concept 1 from ${params.topic}]\n[specific skill/concept 2 from ${params.topic}]\n[specific skill/concept 3 from ${params.topic}]\n[specific skill/concept 4 from ${params.topic}]\n[specific skill/concept 5 from ${params.topic}]\nWRITTEN_PROMPTS:\nOne concept I feel confident about is ...\nOne area I still need to practise is ...\nA question I still want to ask my teacher is ...\nEXIT_TICKET: Write ONE thing you learned today about ${params.topic} in one sentence:"}`);
     }
 
     // Always add mark scheme (teacher only)
