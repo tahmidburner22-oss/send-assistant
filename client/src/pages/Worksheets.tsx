@@ -1030,6 +1030,33 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
               'questions': 'section-b',
               'extension': 'section-c',
               'exam-questions': 'section-b',
+              // Short answer and free response map to section-b (core practice)
+              'q-short-answer': 'section-b',
+              'short-answer': 'section-b',
+              'short_answer': 'section-b',
+              'q-free-response': 'section-c',
+              'free-response': 'section-c',
+              'free_response': 'section-c',
+              // Label diagram maps to section-b
+              'q-label-diagram': 'section-b',
+              'label-diagram': 'section-b',
+              'label_diagram': 'section-b',
+              // Worked example
+              'q-worked-example': 'worked-example',
+              // Key terms
+              'key-terms': 'learning-objective',
+              'key_terms': 'learning-objective',
+              'key-vocab': 'learning-objective',
+              'vocabulary': 'learning-objective',
+              // Stop/check maps to section-a (foundation)
+              'stop-check': 'section-a',
+              'stop_check': 'section-a',
+              'brain-break': 'section-a',
+              'brain_break': 'section-a',
+              // Learning objective
+              'learning-objective': 'learning-objective',
+              'learning_objective': 'learning-objective',
+              'objective': 'learning-objective',
               // Self reflection
               'self-reflection': 'self-reflection',
               'self_reflection': 'self-reflection',
