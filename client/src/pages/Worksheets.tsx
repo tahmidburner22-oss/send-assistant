@@ -1128,6 +1128,33 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
             const ygBadge = readingAdjusted ? ` · reading level adjusted for ${yearGroup}` : "";
             const sendBadge = sendAdapted ? ` · SEND content adapted for ${sendNeed}` : hasSendNeed ? " · SEND formatting applied" : "";
             toast.success(`${badge}${ygBadge}${sendBadge} — loaded instantly!`, { duration: 4000 });
+            // Auto-save library worksheets to history so they appear in the History tab
+            {
+              const lw = libWorksheet;
+              const lwSections = lw.sections.map((s: any) => ({ ...s }));
+              const lwContent = lwSections.filter((s: any) => !s.teacherOnly).map((s: any) => `## ${s.title}\n${s.content}`).join("\n\n");
+              const lwTeacherContent = lwSections.map((s: any) => `## ${s.title}\n${s.content}`).join("\n\n");
+              saveWorksheet({
+                title: lw.title,
+                subtitle: lw.subtitle,
+                subject: lw.metadata.subject,
+                topic: lw.metadata.topic,
+                yearGroup: lw.metadata.yearGroup,
+                sendNeed: lw.metadata.sendNeed,
+                difficulty: lw.metadata.difficulty,
+                examBoard: lw.metadata.examBoard,
+                content: lwContent,
+                teacherContent: lwTeacherContent,
+                rating: 0,
+                overlay: colorOverlay,
+                sections: lwSections,
+                metadata: lw.metadata as any,
+                isAI: lw.isAI,
+              }).then(saved => {
+                setSavedWorksheetId(saved.id);
+                refreshData();
+              }).catch(() => {}); // Silent auto-save
+            }
             return;
           }
         }
@@ -2485,6 +2512,33 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
         scaffolded: `SEND Scaffolded version applied — content scaffolded for ${activeSendNeed || "SEND"}.`,
       };
       toast.success(msgs[tier] || `${tier} version applied!`);
+      // Auto-save differentiated worksheets to history
+      {
+        const dw = adaptedWorksheet;
+        const dwSections = dw.sections.map((s: any) => ({ ...s }));
+        const dwContent = dwSections.filter((s: any) => !s.teacherOnly).map((s: any) => `## ${s.title}\n${s.content}`).join("\n\n");
+        const dwTeacherContent = dwSections.map((s: any) => `## ${s.title}\n${s.content}`).join("\n\n");
+        saveWorksheet({
+          title: dw.title,
+          subtitle: (dw as any).subtitle,
+          subject: dw.metadata.subject,
+          topic: dw.metadata.topic,
+          yearGroup: dw.metadata.yearGroup,
+          sendNeed: dw.metadata.sendNeed,
+          difficulty: dw.metadata.difficulty,
+          examBoard: dw.metadata.examBoard,
+          content: dwContent,
+          teacherContent: dwTeacherContent,
+          rating: 0,
+          overlay: colorOverlay,
+          sections: dwSections,
+          metadata: dw.metadata as any,
+          isAI: dw.isAI,
+        }).then(saved => {
+          setSavedWorksheetId(saved.id);
+          refreshData();
+        }).catch(() => {}); // Silent auto-save
+      }
     } catch (err) {
       console.error("Differentiation failed:", err);
       toast.error("Differentiation failed. Please try again.");
