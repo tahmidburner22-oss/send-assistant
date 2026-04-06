@@ -914,14 +914,15 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
             // and structure are preserved exactly.
             const libraryYearGroup = entry.year_group || entry.yearGroup;
             // A library entry may span multiple year groups (e.g. "Year 10/11").
-            // Split on "/" and check whether the selected year group is covered.
+            // Normalise both sides to just the numeric part (e.g. "Year 11" -> "11")
+            // so that "Year 10/11".split("/") = ["Year 10", "11"] still matches "Year 11".
+            const normaliseYG = (yg: string) => yg.replace(/^Year\s*/i, "").trim();
+            const selectedYGNorm = normaliseYG(yearGroup || "");
             const libraryYearGroups = libraryYearGroup
-              ? libraryYearGroup.split("/").map((y: string) => y.trim())
+              ? libraryYearGroup.split("/").map((y: string) => normaliseYG(y))
               : [];
             const yearGroupMismatch = libraryYearGroup &&
-              !libraryYearGroups.some((lyg: string) =>
-                lyg === yearGroup || yearGroup === lyg
-              );
+              !libraryYearGroups.some((lyg: string) => lyg === selectedYGNorm);
             // readingAge > 0 means the teacher manually selected a specific reading age
             const needsReadingAdjustment = readingAge > 0 || yearGroupMismatch;
 
