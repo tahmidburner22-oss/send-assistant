@@ -1201,6 +1201,7 @@ export const SYLLABUS_DATA: Record<string, Partial<Record<YearGroupKey, Syllabus
       { topic: "Energy Changes", keyVocabulary: ["exothermic", "endothermic", "bond energy", "activation energy", "enthalpy"] },
     ],
     "Year 11": [
+      { topic: "Atomic Structure", keyVocabulary: ["proton", "neutron", "electron", "isotope", "electronic structure", "subatomic particle"] },
       { topic: "Chemical Changes", keyVocabulary: ["oxidation", "reduction", "electrolysis", "reactivity series"] },
       { topic: "Organic Chemistry", keyVocabulary: ["hydrocarbon", "alkane", "alkene", "polymer", "crude oil"] },
       { topic: "Chemical Analysis", keyVocabulary: ["chromatography", "flame test", "pure substance", "formulation"] },
