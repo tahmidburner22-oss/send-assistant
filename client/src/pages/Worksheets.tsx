@@ -913,7 +913,15 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
             // Only vocabulary and sentence complexity change — questions, marks, diagrams,
             // and structure are preserved exactly.
             const libraryYearGroup = entry.year_group || entry.yearGroup;
-            const yearGroupMismatch = libraryYearGroup && libraryYearGroup !== yearGroup;
+            // A library entry may span multiple year groups (e.g. "Year 10/11").
+            // Split on "/" and check whether the selected year group is covered.
+            const libraryYearGroups = libraryYearGroup
+              ? libraryYearGroup.split("/").map((y: string) => y.trim())
+              : [];
+            const yearGroupMismatch = libraryYearGroup &&
+              !libraryYearGroups.some((lyg: string) =>
+                lyg === yearGroup || yearGroup === lyg
+              );
             // readingAge > 0 means the teacher manually selected a specific reading age
             const needsReadingAdjustment = readingAge > 0 || yearGroupMismatch;
 
