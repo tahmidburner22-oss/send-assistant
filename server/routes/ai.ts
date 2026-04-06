@@ -2287,7 +2287,24 @@ Return a JSON object with this EXACT structure:
 
     const parsed = tryParseJSON(content);
     if (parsed && parsed.sections && Array.isArray(parsed.sections)) {
-      res.json({ scaffolded: parsed, provider });
+      // Merge AI-scaffolded sections back with originals to preserve imageUrl, svg,
+      // caption, attribution, marks, questionNumber — the AI only rewrites text.
+      const mergedSections = parsed.sections.map((s: any, i: number) => {
+        const orig = (sections as any[])[i] || {};
+        return {
+          ...orig,
+          ...s,
+          id: orig.id || s.id,
+          imageUrl: orig.imageUrl,
+          svg: orig.svg,
+          caption: orig.caption,
+          attribution: orig.attribution,
+          marks: orig.marks ?? s.marks,
+          questionNumber: orig.questionNumber ?? s.questionNumber,
+          teacherOnly: orig.teacherOnly ?? s.teacherOnly,
+        };
+      });
+      res.json({ scaffolded: { ...parsed, sections: mergedSections }, provider });
     } else {
       // Fallback: return original sections with a note
       res.json({
@@ -2917,12 +2934,25 @@ Return a JSON array of sections with adjusted language \u2014 start with [ and e
     } else {
       return res.status(500).json({ error: "Reading level adjustment failed \u2014 unexpected AI response format." });
     }
-    // Restore original IDs and merge with preserved sections
-    const merged = adjustedSections.map((s: any, i: number) => ({
-      ...sectionsToAdjust[i],
-      ...s,
-      id: sectionsToAdjust[i]?.id || s.id,
-    }));
+    // Restore original IDs and merge with preserved sections.
+    // Always keep imageUrl, svg, caption, attribution from the original —
+    // the AI only rewrites text and must never strip visual assets.
+    const merged = adjustedSections.map((s: any, i: number) => {
+      const orig = sectionsToAdjust[i] || {};
+      return {
+        ...orig,
+        ...s,
+        id: orig.id || s.id,
+        // Preserve visual/structural fields from original regardless of AI output
+        imageUrl: orig.imageUrl,
+        svg: orig.svg,
+        caption: orig.caption,
+        attribution: orig.attribution,
+        marks: orig.marks ?? s.marks,
+        questionNumber: orig.questionNumber ?? s.questionNumber,
+        teacherOnly: orig.teacherOnly ?? s.teacherOnly,
+      };
+    });
     res.json({ sections: [...merged, ...preservedSections], provider, targetYearGroup, targetAge });
   } catch (err: any) {
     console.error("[adjust-reading-level] failed:", err.message);
