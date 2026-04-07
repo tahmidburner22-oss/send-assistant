@@ -2421,11 +2421,15 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
         // Strip tier suffix from differentiated worksheet title
         const strippedDiffTitle = (libraryEntry.title || "").replace(/\s*[—–-]\s*(Base Tier|Foundation Tier|Higher Tier|Standard Tier|SEND Tier|Scaffolded Tier|Access Tier|Extended Tier|Mixed Tier)[^)]*\)?/gi, "").replace(/\s*\(Year \d+[^)]*\)\s*$/gi, "").trim() || libraryEntry.title || ws.title;
 
+        // Merge teacher_sections from the library entry into the final sections (marked teacherOnly)
+        const libTeacherSections = (libraryEntry.teacher_sections || libraryEntry.teacherSections || []).map((s: any) => ({ ...s, teacherOnly: true }));
+        const finalSectionsWithTeacher = [...finalSections, ...libTeacherSections];
+
         adaptedWorksheet = {
           ...ws,
           title: strippedDiffTitle,
           subtitle: libraryEntry.subtitle || ws.subtitle,
-          sections: finalSections,
+          sections: finalSectionsWithTeacher,
           metadata: {
             ...meta,
             difficulty: tier === "mixed" ? "mixed" : tier,
