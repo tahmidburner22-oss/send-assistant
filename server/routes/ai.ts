@@ -2894,6 +2894,10 @@ router.post("/adjust-reading-level", requireAuth, async (req: Request, res: Resp
   const PRESERVE_TYPES = new Set(["answers", "mark-scheme", "worked-example", "diagram", "q-label-diagram"]);
   const sectionsToAdjust = sections.filter((s: any) => !s.teacherOnly && !PRESERVE_TYPES.has(s.type));
   const preservedSections = sections.filter((s: any) => s.teacherOnly || PRESERVE_TYPES.has(s.type));
+  // Early exit: if nothing needs adjusting, return original sections immediately
+  if (sectionsToAdjust.length === 0) {
+    return res.json({ sections, provider: "none", targetYearGroup, targetAge });
+  }
 
   const system = `You are a UK SEND specialist teacher. Rewrite the worksheet text to match a specific reading age level.
 CRITICAL: Change ONLY the language complexity, vocabulary, and sentence structure.
