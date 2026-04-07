@@ -2960,4 +2960,49 @@ Return a JSON array of sections with adjusted language \u2014 start with [ and e
   }
 });
 
+// POST /api/ai/generate-retrieval
+// Generates 3 short retrieval questions on a previous topic.
+// Called by the library path in Worksheets.tsx when recallTopic is set and retrieval is selected.
+router.post("/generate-retrieval", requireAuth, async (req: Request, res: Response) => {
+  const { recallTopic, subject, yearGroup, sendNeed } = req.body;
+  if (!recallTopic || typeof recallTopic !== 'string' || !recallTopic.trim()) {
+    return res.status(400).json({ error: "recallTopic is required" });
+  }
+  const schoolId = req.user?.schoolId ?? undefined;
+  const yr = yearGroup || "Year 9";
+  const sendNote = sendNeed && sendNeed !== 'none-selected'
+    ? `The student has ${sendNeed}. Keep questions very short (max 10 words each). Use True/False or fill-in-blank formats. Add a sentence starter for any written answer.`
+    : '';
+  const system = `You are an expert UK teacher. You respond with valid raw JSON only — no markdown, no code blocks, no asterisks.`;
+  const user = `Generate exactly 3 short retrieval questions on the previous topic "${recallTopic}" for ${yr} ${subject || 'students'}.
+${sendNote}
+Return EXACTLY this JSON (raw JSON only, no markdown fences):
+{"section":{"type":"prior-knowledge","title":"Retrieval Practice — ${recallTopic}","content":"Recall from last lesson!\n1. [True/False statement about ${recallTopic}] TRUE / FALSE\n2. [Short answer question about ${recallTopic}]\n3. [Fill-in-blank: complete the sentence about ${recallTopic}. The answer is _______________.]"}}
+RULES:
+1. All 3 questions must be about "${recallTopic}" only.
+2. Q1: True/False. Q2: Short answer (one word or phrase). Q3: Fill-in-blank.
+3. No asterisks, no markdown, no bold. Plain text only.
+4. Each question on its own numbered line.`;
+  try {
+    const { content } = await callWithFallback(system, user, 400, undefined, schoolId);
+    const raw = content.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '').trim();
+    const match = raw.match(/\{[\s\S]*\}/);
+    const parsed = match ? JSON.parse(match[0]) : JSON.parse(raw);
+    if (!parsed?.section) {
+      return res.status(500).json({ error: "AI did not return a valid section" });
+    }
+    res.json({ section: parsed.section });
+  } catch (err: any) {
+    console.error("[generate-retrieval] failed:", err.message);
+    // Fallback: return a static retrieval section so the worksheet still works
+    res.json({
+      section: {
+        type: "prior-knowledge",
+        title: `Retrieval Practice — ${recallTopic}`,
+        content: `Recall from last lesson!\n1. ${recallTopic} is a topic studied in ${subject || 'Science'}. TRUE / FALSE\n2. Name one key term from ${recallTopic}: _______________\n3. Complete the sentence: ${recallTopic} is important because _______________.`,
+      }
+    });
+  }
+});
+
 export default router;

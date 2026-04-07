@@ -999,6 +999,46 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
               }
             }
 
+            // ── RETRIEVAL SECTION: If recallTopic is set and retrieval is selected,
+            // generate 2-3 retrieval questions and prepend them after the LO.
+            // This ensures retrieval works for library worksheets just as it does for AI-generated ones.
+            const wantsRetrieval = selectedSections.includes('retrieval') && recallTopic.trim();
+            if (wantsRetrieval) {
+              setGenerationStatus(`Generating retrieval questions on "${recallTopic.trim()}"...`);
+              try {
+                const retrievalRes = await fetch("/api/ai/generate-retrieval", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json", ...authHeaders },
+                  body: JSON.stringify({
+                    recallTopic: recallTopic.trim(),
+                    subject,
+                    yearGroup,
+                    sendNeed: hasSendNeed ? sendNeed : undefined,
+                  }),
+                });
+                if (retrievalRes.ok) {
+                  const retrievalData = await retrievalRes.json();
+                  if (retrievalData?.section) {
+                    // Insert the retrieval section after the learning-objective section
+                    const loIdx = finalSections.findIndex((s: any) =>
+                      ['objectives', 'learning-objective', 'lo', 'objective'].includes((s.type || '').toLowerCase())
+                    );
+                    if (loIdx >= 0) {
+                      finalSections = [
+                        ...finalSections.slice(0, loIdx + 1),
+                        retrievalData.section,
+                        ...finalSections.slice(loIdx + 1),
+                      ];
+                    } else {
+                      finalSections = [retrievalData.section, ...finalSections];
+                    }
+                  }
+                }
+              } catch (retrievalErr) {
+                console.warn("Retrieval section generation failed, continuing without it:", retrievalErr);
+              }
+            }
+
             // Filter sections based on selectedSections
             // Map section types to our section IDs
             const sectionTypeMap: Record<string, string> = {
