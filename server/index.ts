@@ -276,7 +276,8 @@ function sanitiseString(val: string): string {
     .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, "")
     .replace(/<[^>]+>/g, "")
     .replace(/javascript:/gi, "")
-    .replace(/on\w+\s*=/gi, "")
+    // Only strip HTML event handler attributes (e.g. onclick="..."), not plain text like "Protons = 11"
+    .replace(/\s+on\w+\s*=\s*["']/gi, " ")
     .trim();
 }
 function sanitiseBody(obj: any): any {
