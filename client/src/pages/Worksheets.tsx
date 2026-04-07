@@ -1002,7 +1002,10 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
             // ── RETRIEVAL SECTION: If recallTopic is set and retrieval is selected,
             // generate 2-3 retrieval questions and prepend them after the LO.
             // This ensures retrieval works for library worksheets just as it does for AI-generated ones.
-            const wantsRetrieval = selectedSections.includes('retrieval') && recallTopic.trim();
+            // Trigger retrieval injection if: (a) retrieval checkbox is ticked, OR (b) a retrieval topic has been typed.
+            // This ensures the retrieval section always appears when the teacher has entered a topic,
+            // even if they forgot to tick the checkbox.
+            const wantsRetrieval = (selectedSections.includes('retrieval') || recallTopic.trim()) && recallTopic.trim();
             if (wantsRetrieval) {
               setGenerationStatus(`Generating retrieval questions on "${recallTopic.trim()}"...`);
               try {
