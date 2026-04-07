@@ -2888,9 +2888,12 @@ router.post("/adjust-reading-level", requireAuth, async (req: Request, res: Resp
 
   const guide = getAgeGuide(targetAge);
 
-  // Only adjust student-facing sections; preserve teacher/answer sections
-  const sectionsToAdjust = sections.filter((s: any) => !s.teacherOnly && s.type !== "answers" && s.type !== "mark-scheme");
-  const preservedSections = sections.filter((s: any) => s.teacherOnly || s.type === "answers" || s.type === "mark-scheme");
+  // Only adjust student-facing sections; preserve teacher/answer sections,
+  // worked examples (contain precise mathematical steps that must not be altered),
+  // and diagram sections (visual assets with fixed labels).
+  const PRESERVE_TYPES = new Set(["answers", "mark-scheme", "worked-example", "diagram", "q-label-diagram"]);
+  const sectionsToAdjust = sections.filter((s: any) => !s.teacherOnly && !PRESERVE_TYPES.has(s.type));
+  const preservedSections = sections.filter((s: any) => s.teacherOnly || PRESERVE_TYPES.has(s.type));
 
   const system = `You are a UK SEND specialist teacher. Rewrite the worksheet text to match a specific reading age level.
 CRITICAL: Change ONLY the language complexity, vocabulary, and sentence structure.
@@ -2937,7 +2940,7 @@ Return a JSON array of sections with adjusted language \u2014 start with [ and e
     // Restore original IDs and merge with preserved sections.
     // Always keep imageUrl, svg, caption, attribution from the original —
     // the AI only rewrites text and must never strip visual assets.
-    const merged = adjustedSections.map((s: any, i: number) => {
+    const mergedAdjusted = adjustedSections.map((s: any, i: number) => {
       const orig = sectionsToAdjust[i] || {};
       return {
         ...orig,
@@ -2953,7 +2956,22 @@ Return a JSON array of sections with adjusted language \u2014 start with [ and e
         teacherOnly: orig.teacherOnly ?? s.teacherOnly,
       };
     });
-    res.json({ sections: [...merged, ...preservedSections], provider, targetYearGroup, targetAge });
+    // Re-insert preserved sections at their original positions in the sections array.
+    // Build a map of original index → section for preserved sections.
+    const preservedByOrigIdx = new Map<number, any>();
+    sections.forEach((s: any, idx: number) => {
+      if (s.teacherOnly || PRESERVE_TYPES.has(s.type)) {
+        preservedByOrigIdx.set(idx, s);
+      }
+    });
+    // Walk through original sections array, replacing adjusted sections with their
+    // AI-rewritten versions and keeping preserved sections in place.
+    let adjustedIdx = 0;
+    const finalSections = sections.map((s: any, idx: number) => {
+      if (preservedByOrigIdx.has(idx)) return s; // keep original unchanged
+      return mergedAdjusted[adjustedIdx++] || s;
+    });
+    res.json({ sections: finalSections, provider, targetYearGroup, targetAge });
   } catch (err: any) {
     console.error("[adjust-reading-level] failed:", err.message);
     res.status(500).json({ error: "Reading level adjustment failed. Please try again." });
