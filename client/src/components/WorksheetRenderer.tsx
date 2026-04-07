@@ -1499,12 +1499,21 @@ function TrueFalseSection({
   const raw = stripLayoutTag(content);
   const allLines = raw.split("\n").map(l => l.trim()).filter(Boolean);
 
-  // Build statement list — handles BOTH formats:
-  // Format A (same line): "1. Statement TRUE" or "1. Statement → TRUE"
-  // Format B (next line): "1. Statement" followed by "TRUE" or "FALSE" on next line
+  // Build statement list — handles THREE formats:
+  // Format A (numbered, same line): "1. Statement TRUE" or "1. Statement → TRUE"
+  // Format B (numbered, next line): "1. Statement" followed by "TRUE" or "FALSE" on next line
+  // Format C (bullet point): "- Statement" or "* Statement"
   const statements: { text: string; answer: string | undefined }[] = [];
   for (let i = 0; i < allLines.length; i++) {
     const line = allLines[i];
+    // Handle bullet-point format: lines starting with - or *
+    if (/^[-*]\s+/.test(line)) {
+      const stmtText = line.replace(/^[-*]\s+/, "").trim();
+      if (stmtText.length > 4) {
+        statements.push({ text: stmtText, answer: undefined });
+      }
+      continue;
+    }
     if (!/^\d+[.)\s]/.test(line)) continue;
     // Check if TRUE/FALSE is on this line
     const inlineMatch = line.match(/[.→\s]+(TRUE|FALSE)[.\s]*$/i);
@@ -1522,9 +1531,9 @@ function TrueFalseSection({
       }
     }
   }
-  // Fallback: if nothing parsed, show all numbered lines without TRUE/FALSE
+  // Fallback: if nothing parsed, show all numbered or bullet lines without TRUE/FALSE
   const displayLines = statements.length > 0 ? statements :
-    allLines.filter(l => /^\d+[.)\s].{8,}/.test(l)).map(l => ({ text: l.replace(/^\d+[.)\s]+/, "").trim(), answer: undefined }));
+    allLines.filter(l => /^\d+[.)\s].{8,}/.test(l) || /^[-*]\s+.{8,}/.test(l)).map(l => ({ text: l.replace(/^(\d+[.)\s]+|[-*]\s+)/, "").trim(), answer: undefined }));
   const accentColor = fmt.accentColor || "#2A6F6F";
   const RED = "#8B0000";
 
@@ -1600,24 +1609,36 @@ function MCQSection({
 }) {
   const raw = stripLayoutTag(content);
   const lines = raw.split("\n").filter(Boolean);
-  // Question is everything before the first A/B/C/D line
-  // Handle both "A  text" and "A. text" and "A) text" formats
-  const optStartIdx = lines.findIndex(l => /^[A-D][.\s)]{1,2}\s*\S/.test(l));
+  // Question is everything before the first A/B/C/D line OR first bullet-point option
+  // Handle both "A  text" and "A. text" and "A) text" formats AND "- option" bullet format
+  const hasBulletOptions = lines.filter(l => /^[-*]\s+\S/.test(l)).length >= 2;
+  const optStartIdx = hasBulletOptions
+    ? lines.findIndex(l => /^[-*]\s+\S/.test(l))
+    : lines.findIndex(l => /^[A-D][.\s)]{1,2}\s*\S/.test(l));
   const questionLines = optStartIdx > 0 ? lines.slice(0, optStartIdx) : [];
   const optionLines  = optStartIdx >= 0 ? lines.slice(optStartIdx) : lines;
 
   const accentColor = fmt.accentColor || "#1B2A4A";
   const GREEN = "#166534";
 
-  const options = optionLines
-    .filter(l => /^[A-D][.\s)]{1,2}\s*\S/.test(l))
-    .map(l => {
-      const label  = l[0];
-      // Strip "A. " or "A  " or "A) " prefix
-      const text   = l.slice(1).replace(/^[.\s)]+/, "").replace(/\s*✓\s*$/, "").trim();
-      const correct = isTeacher && l.includes("✓");
-      return { label, text, correct };
-    });
+  const OPTION_LABELS = ["A", "B", "C", "D", "E", "F"];
+  const options = hasBulletOptions
+    ? optionLines
+        .filter(l => /^[-*]\s+\S/.test(l))
+        .map((l, idx) => ({
+          label: OPTION_LABELS[idx] || String(idx + 1),
+          text: l.replace(/^[-*]\s+/, "").replace(/\s*✓\s*$/, "").trim(),
+          correct: isTeacher && l.includes("✓"),
+        }))
+    : optionLines
+        .filter(l => /^[A-D][.\s)]{1,2}\s*\S/.test(l))
+        .map(l => {
+          const label  = l[0];
+          // Strip "A. " or "A  " or "A) " prefix
+          const text   = l.slice(1).replace(/^[.\s)]+/, "").replace(/\s*✓\s*$/, "").trim();
+          const correct = isTeacher && l.includes("✓");
+          return { label, text, correct };
+        });
 
   const gridCols = options.length > 2 ? 2 : 1;
 
