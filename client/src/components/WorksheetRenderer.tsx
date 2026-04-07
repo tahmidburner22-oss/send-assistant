@@ -2706,6 +2706,14 @@ function VocabSection({ content, fmt, overlayColor = "white" }: { content: strin
     const normalised = l.trim().replace(/^\|/, "").replace(/\|$/, "");
     const parts = normalised.split("|");
     if (parts.length >= 2) return { term: parts[0].trim(), def: parts.slice(1).join("|").trim() };
+    // Handle em-dash separator: **Term** — definition  (used in library entries)
+    // Matches both Unicode em-dash (\u2014) and ' — ' with spaces
+    const emDashMatch = normalised.match(/^(.+?)\s*[\u2014\u2013]\s*(.+)$/);
+    if (emDashMatch) {
+      // Strip markdown bold markers from term
+      const rawTerm = emDashMatch[1].trim().replace(/^\*\*(.+)\*\*$/, '$1');
+      return { term: rawTerm, def: emDashMatch[2].trim() };
+    }
     const colonIdx = normalised.indexOf(":");
     if (colonIdx > 0) return { term: normalised.slice(0, colonIdx).trim(), def: normalised.slice(colonIdx + 1).trim() };
     return null;
