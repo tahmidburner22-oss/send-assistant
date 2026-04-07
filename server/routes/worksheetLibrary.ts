@@ -445,8 +445,36 @@ router.get("/entries/:id", requireAuth, requireSuperAdmin, async (req: Request, 
   }
 });
 
-// ── POST /api/library/entries — create or upsert a library entry ──────────────
+/// ── PUT /api/library/entries/:id — update a library entry directly by ID ────────
+router.put("/entries/:id", requireAuth, requireSuperAdmin, async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { sections, teacher_sections, key_vocab, title, subtitle, learning_objective } = req.body;
+    const existing = await db.prepare("SELECT id, version FROM worksheet_library WHERE id = ?").get(id) as { id: string; version: number } | undefined;
+    if (!existing) return res.status(404).json({ error: "Entry not found" });
+    const version = existing.version + 1;
+    await db.prepare(`
+      UPDATE worksheet_library SET
+        sections = ?, teacher_sections = ?, key_vocab = ?,
+        title = COALESCE(?, title), subtitle = COALESCE(?, subtitle),
+        learning_objective = COALESCE(?, learning_objective),
+        version = ?, updated_at = NOW()
+      WHERE id = ?
+    `).run(
+      JSON.stringify(sections || []),
+      JSON.stringify(teacher_sections || []),
+      JSON.stringify(key_vocab || []),
+      title || null, subtitle || null, learning_objective || null,
+      version, id
+    );
+    res.json({ success: true, id, version });
+  } catch (err: any) {
+    console.error("Library update error:", err.message);
+    res.status(500).json({ error: "Failed to update library entry" });
+  }
+});
 
+// ── POST /api/library/entries — create or upsert a library entry ──────────────
 router.post("/entries", requireAuth, async (req: Request, res: Response) => {
   try {
     const {
