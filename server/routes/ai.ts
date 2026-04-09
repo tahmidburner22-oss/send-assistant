@@ -2874,16 +2874,16 @@ router.post("/adjust-reading-level", requireAuth, async (req: Request, res: Resp
   const getAgeGuide = (age: number): string => {
     if (age <= 6) return "Reading age 6: Very short sentences (4\u20136 words). Only the most common everyday words. Explain all subject words in the simplest terms.";
     if (age <= 7) return "Reading age 7: Very short sentences (5\u20138 words max). Simple, common words only. One instruction per sentence. No compound or complex sentences. Avoid all technical jargon \u2014 use everyday words instead.";
-    if (age <= 8) return "Reading age 8: Short sentences (6\u20139 words). Common vocabulary with simple explanations for subject terms. Simple compound sentences allowed.";
-    if (age <= 9) return "Reading age 9: Short, clear sentences (8\u201312 words). Everyday vocabulary. Simple compound sentences allowed. Define any technical terms in brackets immediately after.";
-    if (age <= 10) return "Reading age 10: Sentences of 8\u201313 words. Accessible vocabulary with definitions for subject-specific terms. Mix of simple and compound sentences.";
-    if (age <= 11) return "Reading age 11: Moderate sentences (10\u201315 words). Subject vocabulary with brief definitions. Some complex sentences acceptable. Clear, direct instructions.";
-    if (age <= 12) return "Reading age 12: Sentences of 10\u201316 words. Good vocabulary range including subject-specific terms with brief definitions. Varied sentence structures.";
-    if (age <= 13) return "Reading age 13: Standard academic language. Technical vocabulary expected. Multi-clause sentences acceptable. GCSE-level command words (describe, explain, evaluate).";
-    if (age <= 14) return "Reading age 14: Confident academic language. Technical vocabulary used naturally. Complex sentence structures. GCSE command words throughout.";
-    if (age <= 15) return "Reading age 15: Advanced secondary-level language. Rich vocabulary, complex sentence structures, nuanced expression. GCSE/A-Level standard.";
-    if (age <= 16) return "Reading age 16: A-Level standard language. Sophisticated vocabulary, complex analytical language, mature academic expression.";
-    return "Reading age 17+: University-entrance standard. Highly sophisticated vocabulary, mature complex academic expression, analytical and evaluative depth.";
+    if (age <= 8) return "Reading age 8: Short sentences (6\u20139 words). Only common everyday words. Explain any subject word immediately in the simplest terms. Simple compound sentences allowed.";
+    if (age <= 9) return "Reading age 9: Short, clear sentences (8\u201312 words). Plain everyday vocabulary. Define subject words in simple terms straight away. Simple compound sentences allowed.";
+    if (age <= 10) return "Reading age 10: Sentences of 8\u201313 words. Plain English with brief explanations for subject words. Mix of simple and compound sentences. Direct, clear instructions.";
+    if (age <= 11) return "Reading age 11: Sentences of 10\u201315 words. Straightforward vocabulary. Explain subject words briefly. Clear, direct instructions. Avoid formal or unusual words.";
+    if (age <= 12) return "Reading age 12: Sentences of 10\u201316 words. Normal everyday vocabulary plus subject terms with short definitions. Varied sentence structures. Instructions are clear and direct.";
+    if (age <= 13) return "Reading age 13: Clear, natural language a secondary school student would use day-to-day. Subject vocabulary with brief definitions. Sentences up to 16 words. GCSE command words (describe, explain, state) are fine. No unnecessarily formal words.";
+    if (age <= 14) return "Reading age 14: Natural, confident language a Year 9-10 student would understand. Subject vocabulary used naturally. Sentences up to 18 words. GCSE command words throughout. No unnecessarily formal or rare words.";
+    if (age <= 15) return "Reading age 15: Clear, direct language a Year 10-11 student would use. Subject vocabulary used naturally. Varied sentence structures. GCSE standard. Avoid overly formal or obscure words \u2014 write how a good teacher would explain it out loud.";
+    if (age <= 16) return "Reading age 16: Natural language a confident 16-year-old would understand and use. Subject vocabulary used correctly. Clear, direct sentences. GCSE/AS standard. Do NOT use unnecessarily formal words like 'elucidate', 'articulate', 'ascertain', 'endeavour' \u2014 use plain equivalents like 'explain', 'describe', 'find out', 'try'.";
+    return "Reading age 17+: Clear, precise language a sixth-form student would use. Subject vocabulary used accurately. Well-structured sentences. A-Level standard. Write naturally and directly \u2014 avoid pompous or overly formal vocabulary. Use words a student would actually say.";
   };
 
   const guide = getAgeGuide(targetAge);
