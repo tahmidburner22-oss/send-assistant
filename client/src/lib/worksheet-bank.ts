@@ -1280,49 +1280,136 @@ Describe and calculate the effects of forces on objects, including balanced and 
     topic: "Atomic Structure",
     yearGroup: "Year 9",
     difficulty: "mixed",
-    source: "TES Style",
-    tags: ["atoms", "periodic table", "chemistry", "KS4", "GCSE"],
+    source: "Adaptly",
+    tags: ["atoms", "atomic structure", "periodic table", "chemistry", "KS4", "GCSE", "bohr model", "subatomic particles"],
     sendFriendly: true,
     overlayRecommended: "pale-yellow",
-    estimatedTime: "50 minutes",
+    estimatedTime: "55 minutes",
     totalMarks: 35,
     content: `## Learning Objective
-Describe atomic structure and use the periodic table to find information about elements.
-## Key Facts
-- Atom = protons + neutrons + electrons
-- Protons: positive charge, in nucleus
-- Neutrons: no charge, in nucleus
-- Electrons: negative charge, in shells
-- Atomic number = number of protons
-- Mass number = protons + neutrons
-## Electron Shell Rules
-- Shell 1: max 2 electrons
-- Shell 2: max 8 electrons
-- Shell 3: max 8 electrons
+By the end of this lesson you will be able to:
+1. Describe the structure of an atom and name the three subatomic particles.
+2. Use atomic number and mass number to calculate the number of protons, neutrons and electrons.
+3. Draw and interpret Bohr model (shell) diagrams for the first 20 elements.
+4. Explain what isotopes are and give an example.
+
+## Key Vocabulary
+**Atom** — The smallest particle of an element that retains its chemical properties.
+**Proton** — Positively charged particle in the nucleus. Relative charge: +1. Relative mass: 1.
+**Neutron** — Neutral particle in the nucleus. Relative charge: 0. Relative mass: 1.
+**Electron** — Negatively charged particle in shells. Relative charge: −1. Relative mass: negligible.
+**Nucleus** — The dense, positively charged centre of an atom.
+**Atomic number (Z)** — The number of protons in the nucleus.
+**Mass number (A)** — The total number of protons + neutrons in the nucleus.
+**Electron shell** — An energy level around the nucleus where electrons are found.
+**Isotope** — Atoms of the same element with the same proton number but different mass numbers.
+
+## Common Mistakes to Avoid
+**Mistake 1:** Confusing atomic number and mass number.
+→ Atomic number = protons only. Mass number = protons + neutrons.
+**Mistake 2:** Thinking electrons have significant mass.
+→ Electrons have negligible mass — they do NOT contribute to the mass number.
+**Mistake 3:** Forgetting that in a neutral atom, protons = electrons.
+→ A neutral atom has no overall charge, so electrons always equal protons.
+
+## Worked Example — Calculating Subatomic Particles
+**Element: Sodium (Na)** — Atomic number (Z) = 11, Mass number (A) = 23
+Step 1 — Protons: Number of protons = Atomic number = **11**
+Step 2 — Electrons: In a neutral atom, electrons = protons = **11**
+Step 3 — Neutrons: Mass number − Atomic number = 23 − 11 = **12**
+Step 4 — Electronic configuration: 2, 8, 1
+**Answer: 11 protons, 12 neutrons, 11 electrons. Configuration: 2, 8, 1**
+
 ---
-## Section A — Atomic Structure (12 marks)
-For each element, state the number of protons, neutrons, and electrons:
-1. Carbon (C): Atomic number 6, Mass number 12
-   - Protons: ___ Neutrons: ___ Electrons: ___
-2. Sodium (Na): Atomic number 11, Mass number 23
-   - Protons: ___ Neutrons: ___ Electrons: ___
-3. Chlorine (Cl): Atomic number 17, Mass number 35
-   - Protons: ___ Neutrons: ___ Electrons: ___
+
+## Section 1 — Label the Atom Diagram
+[Unlabelled Bohr model diagram of Carbon-12 — see library entry for image]
+Use the word bank below to label the five parts of the atom.
+
+**Word Bank:** Nucleus | Proton | Neutron | Electron | Electron shell (orbit)
+
+1. ___________  2. ___________  3. ___________  4. ___________  5. ___________
+
 ---
-## Section B — Electron Configuration (9 marks)
-Draw the electron configuration for:
-4. Lithium (3 electrons)
-5. Oxygen (8 electrons)
-6. Magnesium (12 electrons)
+
+## Section 2 — Knowledge and Understanding
+
+**Q1.** State the relative charge and relative mass of each subatomic particle. [3 marks]
+
+| Particle | Relative charge | Relative mass |
+|---|---|---|
+| Proton | | |
+| Neutron | | |
+| Electron | | |
+
+**Q2.** An atom of chlorine has the symbol ³⁵₁₇Cl. [3 marks]
+a) How many protons does it have? ___________
+b) How many neutrons does it have? ___________
+c) How many electrons does it have? ___________
+
+**Q3.** Write the electronic configuration for the following atoms. [3 marks]
+a) Lithium (Z = 3): ___________
+b) Oxygen (Z = 8): ___________
+c) Magnesium (Z = 12): ___________
+
+**Q4.** Complete the table below. [6 marks]
+
+| Element | Symbol | Atomic number | Mass number | Protons | Neutrons | Electrons |
+|---|---|---|---|---|---|---|
+| Carbon | C | 6 | 12 | | | |
+| Sodium | Na | 11 | 23 | | | |
+| Calcium | Ca | 20 | 40 | | | |
+
 ---
-## Section C — Periodic Table (14 marks)
-7. What do elements in the same GROUP have in common? (2 marks)
-8. What do elements in the same PERIOD have in common? (2 marks)
-9. Why are noble gases unreactive? (3 marks)
-10. Explain why sodium and potassium have similar properties. (3 marks)
-11. What is an isotope? Give an example. (4 marks)`,
-    teacherNotes: `Provide periodic table for all sections. For SEND: provide a completed example atom diagram for reference.`,
-    markScheme: `A: 1)6,6,6 2)11,12,11 3)17,18,17 | B: 4)2,1 5)2,6 6)2,8,2 | C: 7)Same number of outer electrons/similar properties 8)Same number of electron shells 9)Full outer shell, no need to gain/lose electrons 10)Both in Group 1, same number of outer electrons 11)Same element, different number of neutrons e.g. C-12 and C-14`,
+
+## Section 3 — Application Questions
+[Labelled reference diagram of Carbon-12 — see library entry for image]
+
+**Q5.** Carbon-12 has atomic number 6 and mass number 12. [2 marks]
+a) How many protons are in the nucleus? ___________
+b) How many neutrons are in the nucleus? ___________
+
+**Q6.** Carbon-14 (C-14) is an isotope of carbon. Atomic number 6, mass number 14. [3 marks]
+a) How many neutrons does C-14 have? ___________
+b) How is C-14 different from C-12? ___________
+c) How is C-14 the same as C-12? ___________
+
+**Q7.** Draw the electron shell diagram for Sodium (Na, Z = 11). [2 marks]
+[Space for diagram]
+
+---
+
+## Section 4 — Analysis and Evaluation
+
+**Q8.** Explain why atoms are electrically neutral. [2 marks]
+___________________________________________
+
+**Q9.** Potassium (K) and sodium (Na) are both in Group 1. Explain why they have similar chemical properties. [3 marks]
+___________________________________________
+
+**Q10 — Challenge (6 marks).** An unknown element X has 17 protons and 18 neutrons.
+a) Atomic number of X: ___________
+b) Mass number of X: ___________
+c) Electronic configuration of X: ___________
+d) In which group of the periodic table would you find X? Explain your reasoning. [3 marks]
+___________________________________________
+
+---
+
+## Self Reflection
+
+| Learning objective | Not sure | Getting there | Confident |
+|---|---|---|---|
+| Name the three subatomic particles and their charges | | | |
+| Use Z and A to find protons, neutrons, electrons | | | |
+| Draw a Bohr model shell diagram | | | |
+| Explain what an isotope is | | | |
+
+What went well today? ___________________________________________
+What do I need to practise more? ___________________________________________
+Exit Ticket: Write the electronic configuration of Argon (Z = 18): ___________`,
+    teacherNotes: `Provide periodic tables for all sections. The worksheet uses a Carbon-12 Bohr model diagram (unlabelled in Section 1 for labelling activity; labelled in Section 3 as a reference scaffold). For SEND students: provide the labelled diagram from the start and reduce Q4 to Carbon and Sodium only. For higher ability: ask students to research why C-14 is used in radiocarbon dating as an extension task. Common misconceptions: students confuse atomic number and mass number; students forget electrons have negligible mass; students think isotopes are different elements.`,
+    markScheme: `Section 1: 1)Nucleus 2)Proton 3)Neutron 4)Electron 5)Electron shell (orbit) | Q1: Proton +1/1, Neutron 0/1, Electron -1/negligible | Q2: a)17 b)18 c)17 | Q3: a)2,1 b)2,6 c)2,8,2 | Q4: Carbon 6/6/6, Sodium 11/12/11, Calcium 20/20/20 | Q5: a)6 b)6 | Q6: a)8 b)2 more neutrons/mass number 14 c)same proton number/same element/same electronic config | Q7: nucleus + 2 on shell 1 + 8 on shell 2 + 1 on shell 3 | Q8: protons=electrons so charges cancel/overall charge zero | Q9: both Group 1/both have 1 outer electron/same number of outer electrons determines chemical properties | Q10: a)17 b)35 c)2,8,7 d)Group 7 — 7 outer electrons | Exit ticket: 2,8,8`,
   },
   // ─── HISTORY ────────────────────────────────────────────────────────────────
   {
