@@ -1237,6 +1237,14 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
               'q-challenge': 'section-c',
               'challenge-question': 'section-c',
             };
+            // Merge teacher_sections from library entry into finalSections (marked teacherOnly)
+            // This ensures the teacher answer key appears in teacher view for all library worksheets
+            const libTeacherSectionsMain = normaliseLibrarySections(
+              (entry.teacher_sections || entry.teacherSections || []).map((s: any) => ({ ...s, teacherOnly: true }))
+            );
+            if (libTeacherSectionsMain.length > 0) {
+              finalSections = [...finalSections, ...libTeacherSectionsMain];
+            }
             // Always keep teacher-only sections (mark scheme etc)
             // For student sections, only keep those whose type maps to a selected section
             const filteredSections = finalSections.filter((s: any) => {
