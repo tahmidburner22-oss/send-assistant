@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -6,13 +6,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Textarea } from "@/components/ui/textarea";
 import { motion } from "framer-motion";
 import { useApp } from "@/contexts/AppContext";
-import { callAI, parseWithFixes } from "@/lib/ai";
+import { callAI, parseWithFixes, repairTruncatedJson } from "@/lib/ai";
 import { subjects, sendNeeds } from "@/lib/send-data";
 import { FileText, BookOpen, Star, Eye, Trash2, Clock, Edit3, Save, X, GraduationCap, CheckCircle, Sparkles, PenLine, Loader2, UserPlus, Layers, Copy, Share2, Link, Check } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import type { Worksheet, Story, Differentiation } from "@/contexts/AppContext";
 import WorksheetRenderer, { renderMath } from "@/components/WorksheetRenderer";
+import WorksheetErrorBoundary from "@/components/WorksheetErrorBoundary";
 
 type Section = { title: string; type: string; content: string; teacherOnly?: boolean; svg?: string; caption?: string };
 
@@ -594,15 +595,120 @@ export default function History() {
                           setAiEditLoading(true);
                           try {
                             const baseSections = buildSections(selectedWs);
-                            const system = `You are an expert SEND teacher editing a worksheet. Apply the instruction to ALL sections and return a JSON array: [{"title":"...","content":"...","teacherOnly":bool}]. Keep the same section titles and structure.`;
-                            const user = `Worksheet: "${selectedWs.title}"\nSubject: ${(selectedWs as any).subject || 'general'}\nYear Group: ${selectedWs.yearGroup || ''}\nSEND Need: ${selectedWs.sendNeed || ''}\n\nSections:\n${JSON.stringify(baseSections.map(s => ({ title: s.title, content: s.content, teacherOnly: s.teacherOnly })), null, 2)}\n\nInstruction: ${aiEditPrompt}\n\nReturn ONLY the JSON array:`;
+
+                            // ── Build rich SEND context for the AI ─────────────────────────────
+                            const sendNeedId = selectedWs.sendNeed || '';
+                            const sendNeedObj = sendNeeds.find(n => n.id === sendNeedId);
+                            const sendNeedName = sendNeedObj?.name || sendNeedId || 'General';
+                            const sendAdaptations = sendNeedObj?.worksheetAdaptations?.join('; ') || '';
+                            const sendSummary = (sendNeedObj as any)?.worksheetChanges?.summary || '';
+
+                            // ── Year-group pedagogy guidance ───────────────────────────────────
+                            const yearGroup = selectedWs.yearGroup || '';
+                            const yearNum = parseInt(yearGroup.replace(/\D/g, ''), 10);
+                            const yearGuidance = !isNaN(yearNum)
+                              ? yearNum <= 2
+                                ? 'KS1 (Year 1–2): use very short sentences (max 8 words), concrete examples, picture supports, and minimal abstract language.'
+                                : yearNum <= 6
+                                ? 'KS2 (Year 3–6): use clear, direct language, step-by-step instructions, and relatable real-world contexts.'
+                                : yearNum <= 9
+                                ? 'KS3 (Year 7–9): use subject-specific vocabulary with definitions, structured scaffolding, and age-appropriate contexts.'
+                                : 'KS4/KS5 (Year 10–13): use precise academic language, exam-style question formats, and mark-scheme aligned answers.'
+                              : '';
+
+                            // ── Subject-specific guidance ──────────────────────────────────────
+                            const subjectId = (selectedWs as any).subject || '';
+                            const subjectName = subjects.find(s => s.id === subjectId)?.name || subjectId || 'General';
+
+                            // ── System prompt ─────────────────────────────────────────────────
+                            const system = [
+                              `You are an expert SEND teacher and educational content specialist editing a worksheet for a student with ${sendNeedName}.`,
+                              `Your edits must comply with evidence-based SEND pedagogy and the COBS Handbook guidelines.`,
+                              ``,
+                              `STUDENT CONTEXT:`,
+                              `- SEND Need: ${sendNeedName}`,
+                              sendAdaptations ? `- Required adaptations: ${sendAdaptations}` : '',
+                              sendSummary ? `- Worksheet approach: ${sendSummary}` : '',
+                              yearGuidance ? `- Year group: ${yearGroup} — ${yearGuidance}` : '',
+                              `- Subject: ${subjectName}`,
+                              ``,
+                              `EDITING RULES:`,
+                              `1. Apply the teacher's instruction to ALL sections.`,
+                              `2. Preserve every section's title exactly as given.`,
+                              `3. Preserve the teacherOnly flag on every section — never change it.`,
+                              `4. Preserve svg and caption fields if present — do not remove them.`,
+                              `5. Do NOT add new sections or remove existing ones.`,
+                              `6. Ensure all content remains appropriate for the student's SEND need and year group.`,
+                              `7. Return ONLY a valid JSON array — no markdown fences, no explanation text.`,
+                              ``,
+                              `OUTPUT FORMAT (strict):`,
+                              `[{"title":"Section Title","content":"Section content...","teacherOnly":false},{...}]`,
+                            ].filter(Boolean).join('\n');
+
+                            // ── User prompt ───────────────────────────────────────────────────
+                            const user = [
+                              `Worksheet: "${selectedWs.title}"`,
+                              `Subject: ${subjectName}`,
+                              `Year Group: ${yearGroup}`,
+                              `Difficulty: ${selectedWs.difficulty || ''}`,
+                              `SEND Need: ${sendNeedName}`,
+                              selectedWs.examBoard ? `Exam Board: ${selectedWs.examBoard}` : '',
+                              ``,
+                              `Current sections (${baseSections.length} total):`,
+                              JSON.stringify(
+                                baseSections.map(s => ({
+                                  title: s.title,
+                                  content: s.content,
+                                  teacherOnly: s.teacherOnly ?? false,
+                                })),
+                                null, 2
+                              ),
+                              ``,
+                              `Teacher instruction: ${aiEditPrompt}`,
+                              ``,
+                              `Return ONLY the JSON array with all ${baseSections.length} sections updated:`,
+                            ].filter(s => s !== null && s !== undefined).join('\n');
+
                             const { text } = await callAI(system, user, 4000);
-                            const jsonMatch = text.match(/\[.*\]/s);
-                            if (!jsonMatch) throw new Error('No JSON');
-                            const updatedSections = parseWithFixes(jsonMatch[0]);
+
+                            // ── Robust JSON extraction ────────────────────────────────────────
+                            // Try to extract a JSON array from the response, handling common
+                            // AI formatting issues (markdown fences, leading text, truncation).
+                            let jsonStr: string | null = null;
+                            const fenceMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+                            if (fenceMatch) {
+                              jsonStr = fenceMatch[1].trim();
+                            } else {
+                              const arrMatch = text.match(/\[\s*\{[\s\S]*\}\s*\]/);
+                              jsonStr = arrMatch ? arrMatch[0] : null;
+                            }
+                            if (!jsonStr) {
+                              // Last resort: try to find the first '[' and take everything from there
+                              const idx = text.indexOf('[');
+                              if (idx !== -1) jsonStr = text.slice(idx);
+                            }
+                            if (!jsonStr) throw new Error('AI did not return a JSON array. Please try again.');
+
+                            let updatedSections: any[];
+                            try {
+                              updatedSections = parseWithFixes(jsonStr);
+                            } catch {
+                              // Attempt truncation repair as a last resort
+                              const repaired = repairTruncatedJson(jsonStr);
+                              if (!repaired) throw new Error('Could not parse AI response. Please try again.');
+                              updatedSections = parseWithFixes(repaired);
+                            }
+
+                            if (!Array.isArray(updatedSections) || updatedSections.length === 0) {
+                              throw new Error('AI returned an empty or invalid response.');
+                            }
+
+                            // Merge: use AI content but always keep original metadata (svg, caption, type, teacherOnly)
                             const mergedSections = baseSections.map((s, i) => ({
                               ...s,
                               content: updatedSections[i]?.content ?? s.content,
+                              // Preserve teacherOnly from original — never let AI override it
+                              teacherOnly: s.teacherOnly,
                             }));
                             const content = mergedSections.filter(s => !s.teacherOnly).map(s => `## ${s.title}\n${s.content}`).join('\n\n');
                             const teacherContent = mergedSections.map(s => `## ${s.title}\n${s.content}`).join('\n\n');
@@ -611,8 +717,9 @@ export default function History() {
                             setEditType('none');
                             setAiEditPrompt('');
                             toast.success('Worksheet updated with AI!');
-                          } catch {
-                            toast.error('AI edit failed. Please try again.');
+                          } catch (err: any) {
+                            const msg = err?.message || 'AI edit failed. Please try again.';
+                            toast.error(msg.length < 120 ? msg : 'AI edit failed. Please try again.');
                           }
                           setAiEditLoading(false);
                         }}
@@ -656,16 +763,22 @@ export default function History() {
                 ) : sections.length === 0 ? (
                   <p className="text-sm text-muted-foreground text-center py-6">No content available — please regenerate this worksheet.</p>
                 ) : (
-                  /* Full WorksheetRenderer — identical to how it looks when generated */
-                  <WorksheetRenderer
-                    worksheet={toWorksheetData(selectedWs)}
-                    viewMode={viewMode}
-                    textSize={15}
-                    overlayColor="transparent"
-                    editedSections={editedSections}
-                    editMode={false}
-                    isRevisionMat={sections.some(s => s.type === "revision-mat-box" || s.type === "revision-mat-lo" || s.type === "revision-mat-title")}
-                  />
+                  /* Full WorksheetRenderer wrapped in an inline error boundary so that
+                   * malformed section data or unexpected AI output cannot crash the dialog. */
+                  <WorksheetErrorBoundary
+                    onReset={() => { setSelectedWs(null); }}
+                    resetLabel="Close worksheet"
+                  >
+                    <WorksheetRenderer
+                      worksheet={toWorksheetData(selectedWs)}
+                      viewMode={viewMode}
+                      textSize={15}
+                      overlayColor="transparent"
+                      editedSections={editedSections}
+                      editMode={false}
+                      isRevisionMat={sections.some(s => s.type === "revision-mat-box" || s.type === "revision-mat-lo" || s.type === "revision-mat-title")}
+                    />
+                  </WorksheetErrorBoundary>
                 )}
               </div>
             );

@@ -4984,6 +4984,50 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                 ))
               )}
 
+              {/* ── Universal visual aid block ──────────────────────────────────────────────
+               * If a section has an svg or imageUrl but is NOT type="diagram" (which has its
+               * own dedicated renderer above), we still render the visual aid here so that
+               * any section type can carry an illustrative image or inline SVG.
+               * This ensures the svg/caption fields on the Section type are fully utilised
+               * regardless of the section's content type.
+               */}
+              {section.type !== "diagram" && !extractDiagramSpec(content) && (section.svg || section.imageUrl) && (
+                <div style={{ textAlign: "center", marginTop: "12px" }}>
+                  {section.imageUrl ? (
+                    <img
+                      src={section.imageUrl}
+                      alt={section.caption || "Visual aid"}
+                      style={{ maxWidth: "520px", width: "100%", borderRadius: "8px", border: "1px solid #e5e7eb" }}
+                      onError={(e) => {
+                        const target = e.currentTarget;
+                        target.style.display = "none";
+                        if (section.svg) {
+                          const wrapper = document.createElement("div");
+                          wrapper.style.cssText = "display:inline-block;width:100%;max-width:520px;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;background:white;";
+                          wrapper.innerHTML = section.svg;
+                          target.parentNode?.insertBefore(wrapper, target.nextSibling);
+                        }
+                      }}
+                    />
+                  ) : section.svg ? (
+                    <div
+                      style={{ display: "inline-block", width: "100%", maxWidth: "520px", border: "1px solid #e5e7eb", borderRadius: "8px", overflow: "hidden", background: "white" }}
+                      dangerouslySetInnerHTML={{ __html: section.svg }}
+                    />
+                  ) : null}
+                  {section.caption && (
+                    <p style={{ fontSize: `${fmt.fontSize - 2}px`, color: "#6b7280", marginTop: "6px", fontStyle: "italic", fontFamily: fmt.fontFamily }}>
+                      Figure: {section.caption}
+                    </p>
+                  )}
+                  {section.attribution && (
+                    <p style={{ fontSize: `${fmt.fontSize - 3}px`, color: "#9ca3af", marginTop: "2px", fontFamily: fmt.fontFamily }}>
+                      Source: {section.attribution}
+                    </p>
+                  )}
+                </div>
+              )}
+
               {/* Answer boxes for practice sections — size-controlled, removable in edit mode */}
               {!isTeacherSection && (section.type === "independent" || section.type === "guided" || section.type === "challenge") && !/(sentence starter:|steps to follow:|quick start:|what you need to do:|help box|key facts|word bank)/i.test(String(content || "")) && (() => {
                 const lineCount = getAnswerLines(i, section.type, String(content || ""));
