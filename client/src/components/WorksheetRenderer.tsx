@@ -14,6 +14,40 @@ import SVGDiagram from "@/components/SVGDiagram";
 import katex from "katex";
 import "katex/dist/katex.min.css";
 
+const LEGACY_SECTION_TYPE_ALIASES: Record<string, string> = {
+  "true-false": "q-true-false",
+  "mcq": "q-mcq",
+  "multiple-choice": "q-mcq",
+  "gap-fill": "q-gap-fill",
+  "cloze": "q-gap-fill",
+  "short-answer": "q-short-answer",
+  "extended-answer": "q-extended",
+  "table-fill": "q-data-table",
+  "data-table": "q-data-table",
+  "label-diagram": "q-label-diagram",
+};
+
+function normalizeWorksheetSectionType(type: unknown): string {
+  const rawType = typeof type === "string" ? type.trim() : String(type || "").trim();
+  return LEGACY_SECTION_TYPE_ALIASES[rawType] || rawType;
+}
+
+function normalizeWorksheetTitleForDisplay(title: unknown, difficulty?: unknown): string {
+  const rawTitle = typeof title === "string" ? title.trim() : String(title || "").trim();
+  if (!rawTitle) return "";
+  const diff = typeof difficulty === "string" ? difficulty.trim().toLowerCase() : String(difficulty || "").trim().toLowerCase();
+
+  if (diff === "mixed") {
+    return rawTitle.replace(/\s*[—–-]\s*(?:scaffolded|foundation|send(?:\s+scaffolded)?|access)\s+tier\b/gi, " — Mixed Ability");
+  }
+
+  if (diff === "foundation") {
+    return rawTitle.replace(/\s*[—–-]\s*scaffolded\s+tier\b/gi, " — Foundation Tier");
+  }
+
+  return rawTitle;
+}
+
 /**
  * Render a string that may contain LaTeX math expressions (\(...\) or \[...\]).
  * Falls back to plain text if KaTeX fails.
@@ -3424,7 +3458,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
             }}>
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: `${fmt.fontSize + 10}px`, fontWeight: 900, color: "#fff", fontFamily: fmt.fontFamily, lineHeight: "1.2", textShadow: "0 2px 6px rgba(0,0,0,0.25)", marginBottom: "2px" }}>
-                  {worksheet.title}
+                  {normalizeWorksheetTitleForDisplay(worksheet.title, worksheet.metadata?.difficulty || (worksheet as any).difficulty)}
                 </div>
                 {worksheet.subtitle && (
                   <div style={{ fontSize: `${fmt.fontSize}px`, color: "rgba(255,255,255,0.9)", fontFamily: fmt.fontFamily, fontWeight: 600 }}>{worksheet.subtitle}</div>
@@ -3491,7 +3525,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                 fontFamily: fmt.fontFamily,
                 lineHeight: "1.25",
                 marginBottom: "2px",
-              }}>{worksheet.title}</div>
+              }}>{normalizeWorksheetTitleForDisplay(worksheet.title, worksheet.metadata?.difficulty || (worksheet as any).difficulty)}</div>
               {worksheet.subtitle && (
                 <div style={{ fontSize: `${fmt.fontSize}px`, color: "rgba(255,255,255,0.75)", fontFamily: fmt.fontFamily, marginTop: "2px" }}>{worksheet.subtitle}</div>
               )}
@@ -4093,6 +4127,10 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
 
       {/* ── Sections (normal portrait layout — hidden when revision mat active) ── */}
       {!isRevisionMat && worksheet.sections.map((section, i) => {
+        const normalizedSectionType = normalizeWorksheetSectionType(section.type);
+        if (normalizedSectionType !== section.type) {
+          section = { ...section, type: normalizedSectionType };
+        }
         // Hide teacher sections in student view
         // self-reflection, objective, and vocabulary are ALWAYS shown to students
         const isAlwaysStudentVisible = section.type === "self-reflection" || section.type === "objective" || section.type === "vocabulary";
@@ -4226,7 +4264,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
             const m = t.match(/Q(\d+)/i);
             return m ? parseInt(m[1]) : null;
           })();
-          const prevGroup = getGroupByQNum(prevQNum, s.type);
+          const prevGroup = getGroupByQNum(prevQNum, normalizeWorksheetSectionType(s.type));
           return prevGroup?.label === myGroupLabel;
         });
         const isFirstOfGroup = isFirstOfGroupSection;
@@ -4298,13 +4336,13 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
 
         // Determine question number badge — for new individual question types AND legacy question sections
         const legacyQuestionTypes = new Set(["starter", "guided", "independent", "challenge", "word-problems", "comprehension"]);
-        const newQuestionTypes = new Set(["q-true-false", "q-mcq", "q-gap-fill", "q-short-answer", "q-extended"]);
+        const newQuestionTypes = new Set(["q-true-false", "q-mcq", "q-gap-fill", "q-short-answer", "q-extended", "q-data-table", "q-label-diagram", "q-ordering", "q-matching", "q-circuit", "q-draw", "q-graph", "q-challenge"]);
         const allQuestionTypes = new Set([...legacyQuestionTypes, ...newQuestionTypes]);
         const showQuestionBadge = allQuestionTypes.has(section.type);
         // For new individual question types, extract number from title (e.g. "Q1 — True or False" → 1)
         const badgeTitleQNum = isIndividualQuestion ? parseInt((sectionTitle.match(/^Q(\d+)/i) || [])[1] || "0") : 0;
         // For legacy types, count question sections before this one
-        const questionSectionsBefore = worksheet.sections.slice(0, i).filter((s: any) => allQuestionTypes.has(s.type)).length;
+        const questionSectionsBefore = worksheet.sections.slice(0, i).filter((s: any) => allQuestionTypes.has(normalizeWorksheetSectionType(s.type))).length;
         const questionNumber = badgeTitleQNum > 0 ? badgeTitleQNum : questionSectionsBefore + 1;
 
         return (
@@ -4367,7 +4405,9 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                      section.type === "q-mcq" ? "MULTIPLE CHOICE" :
                      section.type === "q-gap-fill" ? "GAP FILL" :
                      section.type === "q-short-answer" ? "SHORT ANSWER" :
-                     section.type === "q-extended" ? "EXTENDED ANSWER" : ""}
+                     section.type === "q-extended" ? "EXTENDED ANSWER" :
+                     section.type === "q-data-table" ? "DATA TABLE" :
+                     section.type === "q-label-diagram" ? "LABEL DIAGRAM" : ""}
                   </div>
                 </div>
               </div>
