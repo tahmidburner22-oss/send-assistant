@@ -1323,7 +1323,7 @@ Step 4 — Electronic configuration: 2, 8, 1
 ---
 
 ## Section 1 — Label the Atom Diagram
-[Unlabelled Bohr model diagram of Carbon-12 — see library entry for image]
+[Unlabelled Bohr model diagram of Carbon-12 — https://files.manuscdn.com/user_upload_by_module/session_file/310519663535019640/arRcRewaTucpPWLC.png]
 Use the word bank below to label the five parts of the atom.
 
 **Word Bank:** Nucleus | Proton | Neutron | Electron | Electron shell (orbit)
@@ -1363,7 +1363,7 @@ c) Magnesium (Z = 12): ___________
 ---
 
 ## Section 3 — Application Questions
-[Labelled reference diagram of Carbon-12 — see library entry for image]
+[Labelled reference diagram of Carbon-12 — https://files.manuscdn.com/user_upload_by_module/session_file/310519663535019640/nwnWpYoEiPWvzHEI.png]
 
 **Q5.** Carbon-12 has atomic number 6 and mass number 12. [2 marks]
 a) How many protons are in the nucleus? ___________

@@ -20,9 +20,9 @@ const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "Admin1234!";
 
 // ─── Image URLs (hosted on Adaptly CDN) ──────────────────────────────────────
 const UNLABELLED_DIAGRAM_URL =
-  "https://files.manuscdn.com/user_upload_by_module/session_file/310519663535019640/JyokeLYFDgAEWJMt.png";
+  "https://files.manuscdn.com/user_upload_by_module/session_file/310519663535019640/arRcRewaTucpPWLC.png";
 const LABELLED_DIAGRAM_URL =
-  "https://files.manuscdn.com/user_upload_by_module/session_file/310519663535019640/ZvFCcGVykMqGyaIc.png";
+  "https://files.manuscdn.com/user_upload_by_module/session_file/310519663535019640/nwnWpYoEiPWvzHEI.png";
 
 // ─── Worksheet data ───────────────────────────────────────────────────────────
 
