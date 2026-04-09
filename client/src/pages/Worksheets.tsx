@@ -2216,7 +2216,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
             let finalSections = normaliseLibrarySections(entry.sections || []);
             let readingAdjusted = false;
             let sendAdapted = false;
-            if (yearGroupMismatch) {{
+            if (yearGroupMismatch) {
               setGenerationStatus(`Adjusting reading level for ${nextYearGroup}...`);
               try {
                 const adjustRes = await fetch("/api/ai/adjust-reading-level", {
