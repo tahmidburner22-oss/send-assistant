@@ -1034,8 +1034,10 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
               : [];
             const yearGroupMismatch = libraryYearGroup &&
               !libraryYearGroups.some((lyg: string) => lyg === selectedYGNorm);
-            // readingAge > 0 means the teacher manually selected a specific reading age
-            const needsReadingAdjustment = readingAge > 0 || yearGroupMismatch;
+            // For library worksheets: ONLY adjust if year group mismatches the library entry.
+            // Never rewrite library content just because the reading age slider was moved —
+            // library worksheets are already written at the correct level for their tier.
+            const needsReadingAdjustment = yearGroupMismatch;
 
              let finalSections = normaliseLibrarySections(entry.sections || []);
             let readingAdjusted = false;
