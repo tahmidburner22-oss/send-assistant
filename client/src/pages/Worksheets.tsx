@@ -174,6 +174,117 @@ function AnimatedProgressBar() {
   );
 }
 
+// ─── Library Section Normaliser ─────────────────────────────────────────────
+// Converts structured library sections (statements, sentences, questions, etc.)
+// into the text-based `content` string that WorksheetRenderer expects.
+// This is needed because the library stores worksheets in a rich structured format
+// (with arrays of statements, labels, sentences etc.) whereas the renderer only
+// handles a plain-text `content` field.
+function normaliseLibrarySection(section: any): any {
+  // Already has a content string — nothing to do
+  if (typeof section.content === 'string' && section.content.trim().length > 0) return section;
+
+  let content = '';
+  const instructions = section.instructions ? `${section.instructions}\n\n` : '';
+
+  switch (section.type) {
+    case 'true-false': {
+      const stmts: any[] = section.statements || [];
+      const lines = stmts.map((s: any, i: number) => {
+        const text = s.statement || s.text || '';
+        const ans = s.answer ? ` → ${s.answer}` : '';
+        return `${i + 1}. ${text}${ans}`;
+      });
+      content = instructions + lines.join('\n');
+      break;
+    }
+    case 'gap-fill': {
+      const sentences: string[] = section.sentences || [];
+      const wordBank: string[] = section.word_bank || [];
+      const wbLine = wordBank.length > 0 ? `Word bank: ${wordBank.join(' | ')}\n\n` : '';
+      const lines = sentences.map((s: string, i: number) => `${i + 1}. ${s}`);
+      content = instructions + wbLine + lines.join('\n');
+      break;
+    }
+    case 'label-diagram': {
+      const wordBank: string[] = section.word_bank || [];
+      const desc = section.diagram_description || '';
+      const wbLine = wordBank.length > 0 ? `Word bank: ${wordBank.join(' | ')}\n\n` : '';
+      const labels: any[] = section.labels || [];
+      const lines = labels.map((l: any) => `${l.number}. ___________`);
+      content = instructions + (desc ? `[Diagram: ${desc}]\n\n` : '') + wbLine + lines.join('\n');
+      break;
+    }
+    case 'short-answer': {
+      const questions: any[] = section.questions || [];
+      const lines = questions.map((q: any, i: number) => {
+        const marksLabel = q.marks ? ` [${q.marks} mark${q.marks > 1 ? 's' : ''}]` : '';
+        return `${i + 1}. ${q.q || q.question || ''}${marksLabel}`;
+      });
+      content = instructions + lines.join('\n\n');
+      break;
+    }
+    case 'mcq': {
+      const questions: any[] = section.questions || [];
+      const lines: string[] = [];
+      questions.forEach((q: any, i: number) => {
+        lines.push(`${i + 1}. ${q.question || q.q || ''}`);
+        const opts: any[] = q.options || [];
+        opts.forEach((o: any) => {
+          lines.push(`${o.letter || o.key || ''}. ${o.text || o.value || ''}`);
+        });
+      });
+      content = instructions + lines.join('\n');
+      break;
+    }
+    case 'matching': {
+      const pairs: any[] = section.pairs || [];
+      const lines = pairs.map((p: any, i: number) => `${i + 1}. ${p.left || ''} ←→ ${p.right || ''}`);
+      content = instructions + lines.join('\n');
+      break;
+    }
+    case 'self-reflection': {
+      const prompts: string[] = section.prompts || [];
+      const lines = prompts.map((p: string) => `• ${p}`);
+      content = lines.join('\n');
+      break;
+    }
+    case 'key-terms': {
+      const terms: any[] = section.terms || section.vocab || [];
+      const lines = terms.map((t: any) => `**${t.term || t.word || ''}** — ${t.definition || t.meaning || ''}`);
+      content = lines.join('\n');
+      break;
+    }
+    default: {
+      const fallbackFields = ['text', 'body', 'description', 'question', 'q'];
+      for (const field of fallbackFields) {
+        if (typeof (section as any)[field] === 'string' && (section as any)[field].trim()) {
+          content = (section as any)[field];
+          break;
+        }
+      }
+      if (!content) {
+        const arrayFields = ['statements', 'sentences', 'questions', 'items', 'prompts', 'pairs'];
+        for (const field of arrayFields) {
+          if (Array.isArray((section as any)[field]) && (section as any)[field].length > 0) {
+            content = ((section as any)[field] as any[]).map((item: any, i: number) => {
+              if (typeof item === 'string') return `${i + 1}. ${item}`;
+              return `${i + 1}. ${item.q || item.statement || item.text || item.question || JSON.stringify(item)}`;
+            }).join('\n');
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  return { ...section, content: content || '' };
+}
+
+function normaliseLibrarySections(sections: any[]): any[] {
+  return sections.map(normaliseLibrarySection);
+}
+
 // ─── Main Component ──────────────────────────────────────────────────────────
 export default function Worksheets() {
   const [location] = useLocation();
@@ -926,10 +1037,9 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
             // readingAge > 0 means the teacher manually selected a specific reading age
             const needsReadingAdjustment = readingAge > 0 || yearGroupMismatch;
 
-            let finalSections = entry.sections || [];
+             let finalSections = normaliseLibrarySections(entry.sections || []);
             let readingAdjusted = false;
             let sendAdapted = false;
-
             if (needsReadingAdjustment) {
               // Adjust reading level to match the selected year group or manually chosen reading age.
               // For Year 7 and below: ONLY vocabulary/sentence complexity is changed.
@@ -2092,15 +2202,13 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
         if (libRes.ok) {
           const libData = await libRes.json();
           if (libData.found && libData.entry) {
-            const entry = libData.entry;
+             const entry = libData.entry;
             const libraryYearGroup = entry.year_group || entry.yearGroup;
             const yearGroupMismatch = libraryYearGroup && libraryYearGroup !== nextYearGroup;
-
-            let finalSections = entry.sections || [];
+            let finalSections = normaliseLibrarySections(entry.sections || []);
             let readingAdjusted = false;
             let sendAdapted = false;
-
-            if (yearGroupMismatch) {
+            if (yearGroupMismatch) {{
               setGenerationStatus(`Adjusting reading level for ${nextYearGroup}...`);
               try {
                 const adjustRes = await fetch("/api/ai/adjust-reading-level", {
@@ -2351,11 +2459,10 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
         //  2. If a SEND need is active, apply SEND content scaffolding on top.
         //  3. Apply SEND visual formatting overlay via metadata (font/size/spacing).
         const tierLabel = tier === "foundation" ? "Foundation" : tier === "higher" ? "Higher" : tier === "mixed" ? "Mixed Ability" : "SEND Scaffolded";
-        let finalSections = libraryEntry.sections || ws.sections;
+        let finalSections = normaliseLibrarySections(libraryEntry.sections || ws.sections || []);
         let readingAdjusted = false;
         let sendAdapted = false;
-
-        // Always adjust reading level — either to match the selected year group or the manually chosen reading age
+        // Always adjust reading level — either to match the selected year group or the manually chosen reading agee
         const libYG = libraryEntry.year_group || libraryEntry.yearGroup;
         const targetYG = meta.yearGroup || yearGroup;
         const targetRA = readingAge > 0 ? readingAge : undefined;
@@ -2422,7 +2529,9 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
         const strippedDiffTitle = (libraryEntry.title || "").replace(/\s*[—–-]\s*(Base Tier|Foundation Tier|Higher Tier|Standard Tier|SEND Tier|Scaffolded Tier|Access Tier|Extended Tier|Mixed Tier)[^)]*\)?/gi, "").replace(/\s*\(Year \d+[^)]*\)\s*$/gi, "").trim() || libraryEntry.title || ws.title;
 
         // Merge teacher_sections from the library entry into the final sections (marked teacherOnly)
-        const libTeacherSections = (libraryEntry.teacher_sections || libraryEntry.teacherSections || []).map((s: any) => ({ ...s, teacherOnly: true }));
+        const libTeacherSections = normaliseLibrarySections(
+          (libraryEntry.teacher_sections || libraryEntry.teacherSections || []).map((s: any) => ({ ...s, teacherOnly: true }))
+        );
         const finalSectionsWithTeacher = [...finalSections, ...libTeacherSections];
 
         adaptedWorksheet = {
