@@ -53,6 +53,86 @@ export interface AppliedOverlay {
   appliedAt: string;
 }
 
+const KEY_TERMS = [
+  "atom",
+  "proton",
+  "neutron",
+  "electron",
+  "nucleus",
+  "atomic number",
+  "mass number",
+  "isotope",
+  "electron shell",
+  "electronic configuration",
+];
+
+const BILINGUAL_GLOSSARY: Record<string, string> = {
+  atom: "atom / átomo",
+  proton: "proton / protón",
+  neutron: "neutron / neutrón",
+  electron: "electron / electrón",
+  nucleus: "nucleus / núcleo",
+  "atomic number": "atomic number / número atómico",
+  "mass number": "mass number / número másico",
+  isotope: "isotope / isótopo",
+  "electron shell": "electron shell / capa electrónica",
+  "electronic configuration": "electronic configuration / configuración electrónica",
+};
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function boldKeyTerms(content?: string): string | undefined {
+  if (!content) return content;
+  let updated = content;
+  for (const term of [...KEY_TERMS].sort((a, b) => b.length - a.length)) {
+    const regex = new RegExp(`\\b${escapeRegExp(term)}\\b`, "gi");
+    updated = updated.replace(regex, (match) => {
+      if (match.includes("**")) return match;
+      return `**${match}**`;
+    });
+  }
+  return updated;
+}
+
+function addSentenceStarters(section: WorksheetSection): WorksheetSection {
+  if (!section.content || typeof section.content !== "string") return section;
+  if (/sentence starters?/i.test(section.content)) return section;
+  if (!["q-short-answer", "q-extended", "q-challenge"].includes(section.type)) return section;
+
+  const starters = [
+    "Sentence starters:",
+    "- One important idea is...",
+    "- I know this because...",
+    "- The evidence from atomic structure shows...",
+  ].join("\n");
+
+  return {
+    ...section,
+    content: `${section.content}\n\n${starters}`,
+  };
+}
+
+function applyBilingualSupport(section: WorksheetSection): WorksheetSection {
+  if (!section.content || typeof section.content !== "string") return section;
+  const isVocabulary = ["key-terms", "vocabulary", "key-vocab"].includes(section.type);
+  if (!isVocabulary) return section;
+
+  const glossaryLines = Object.values(BILINGUAL_GLOSSARY).map((line) => `- ${line}`).join("\n");
+  if (section.content.includes("/ átomo")) return section;
+
+  return {
+    ...section,
+    content: `${section.content}\n\n**Bilingual support glossary:**\n${glossaryLines}`,
+  };
+}
+
+function includesBilingualRequest(value?: string | null): boolean {
+  if (!value) return false;
+  return /bilingual|translation|translate|spanish|español/i.test(value);
+}
+
 // ── Structural hash ───────────────────────────────────────────────────────────
 
 /**
@@ -104,21 +184,37 @@ export function applyOverlays(
   const baseStructuralHash = computeStructuralHash(result);
   const appliedOverlays: AppliedOverlay[] = [];
 
-  // ── 1. SEND need note ────────────────────────────────────────────────────────
+  // ── 1. SEND need note and deterministic SEND formatting ─────────────────────
   if (overlays.sendNeed && overlays.sendNeed !== "none") {
     const sendLabel = SEND_LABELS[overlays.sendNeed] || overlays.sendNeed;
     const readingAgeNote = overlays.readingAge
       ? ` | Reading age adjusted to ${overlays.readingAge}`
       : "";
+
+    if (overlays.sendNeed === "dyslexia") {
+      result = result.map((section) => addSentenceStarters({
+        ...section,
+        content: boldKeyTerms(typeof section.content === "string" ? section.content : undefined),
+      }));
+    }
+
+    if (overlays.sendNeed === "esl") {
+      result = result.map((section) => applyBilingualSupport(section));
+    }
+
     const sendNote: WorksheetSection = {
       id: `send-note-overlay-${Date.now()}`,
       type: "teacher-note",
       title: "SEND Adaptations Applied",
-      content: `SEND adaptations applied: ${sendLabel}${readingAgeNote}. Formatting, font size, line spacing and language complexity have been adjusted accordingly.`,
+      content:
+        overlays.sendNeed === "dyslexia"
+          ? `SEND adaptations applied: ${sendLabel}${readingAgeNote}. Key scientific terms have been emboldened, sentence starters have been added to extended-response tasks, and presentation settings should use dyslexia-friendly spacing and font choices.`
+          : overlays.sendNeed === "esl"
+            ? `SEND adaptations applied: ${sendLabel}${readingAgeNote}. Bilingual key-term support has been added, beginning with the vocabulary section, while preserving the worksheet structure.`
+            : `SEND adaptations applied: ${sendLabel}${readingAgeNote}. Formatting, font size, line spacing and language complexity have been adjusted accordingly.`,
       isOverlay: true,
       teacherOnly: false,
     };
-    // Replace existing SEND note or prepend
     const existingIdx = result.findIndex(s => s.id?.startsWith("send-note-overlay"));
     if (existingIdx >= 0) {
       result[existingIdx] = sendNote;
@@ -183,6 +279,7 @@ export function applyOverlays(
 
   // ── 4. Additional instructions note ─────────────────────────────────────────
   if (overlays.additionalInstructions) {
+    const bilingualRequested = includesBilingualRequest(overlays.additionalInstructions);
     // Annotate the key-vocab section if present
     const vocabIdx = result.findIndex(
       s => s.type === "key-terms" || s.type === "vocabulary" || s.type === "key-vocab"
@@ -193,19 +290,24 @@ export function applyOverlays(
         additionalInstructions: overlays.additionalInstructions,
       };
     }
+    if (bilingualRequested) {
+      result = result.map((section) => applyBilingualSupport(section));
+    }
     // Add a teacher note at the top
     const noteSection: WorksheetSection = {
       id: `additional-note-overlay-${Date.now()}`,
       type: "teacher-note",
       title: "Additional Requirements",
-      content: `Additional requirement applied: ${overlays.additionalInstructions}`,
+      content: bilingualRequested
+        ? `Additional requirement applied: ${overlays.additionalInstructions}. Bilingual support has been added to the vocabulary section.`
+        : `Additional requirement applied: ${overlays.additionalInstructions}`,
       isOverlay: true,
       teacherOnly: false,
     };
     result.unshift(noteSection);
     appliedOverlays.push({
       type: "additional_instructions",
-      params: { instructions: overlays.additionalInstructions },
+      params: { instructions: overlays.additionalInstructions, bilingualRequested },
       appliedAt: new Date().toISOString(),
     });
   }
