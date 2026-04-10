@@ -2757,6 +2757,12 @@ function VocabSection({ content, fmt, overlayColor = "white" }: { content: strin
       const rawTerm = emDashMatch[1].trim().replace(/^\*\*(.+)\*\*$/, '$1');
       return { term: rawTerm, def: emDashMatch[2].trim() };
     }
+    // Handle hyphen-space separator: **Term** - definition  (legacy format)
+    const hyphenMatch = normalised.match(/^(.+?)\s+-\s+(.+)$/);
+    if (hyphenMatch) {
+      const rawTerm = hyphenMatch[1].trim().replace(/^\*\*(.+)\*\*$/, '$1');
+      return { term: rawTerm, def: hyphenMatch[2].trim() };
+    }
     const colonIdx = normalised.indexOf(":");
     if (colonIdx > 0) return { term: normalised.slice(0, colonIdx).trim(), def: normalised.slice(colonIdx + 1).trim() };
     return null;

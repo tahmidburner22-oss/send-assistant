@@ -1247,15 +1247,11 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
             if (libTeacherSectionsMain.length > 0) {
               finalSections = [...finalSections, ...libTeacherSectionsMain];
             }
-            // Always keep teacher-only sections (mark scheme etc)
-            // For student sections, only keep those whose type maps to a selected section
-            const filteredSections = finalSections.filter((s: any) => {
-              if (s.teacherOnly) return true; // always keep teacher sections
-              const mappedType = sectionTypeMap[s.type?.toLowerCase() || ''] || 'questions';
-              return selectedSections.includes(mappedType as any);
-            });
-            // If filtering removed all sections, keep originals (safety fallback)
-            const sectionsToUse = filteredSections.length > 0 ? filteredSections : finalSections;
+            // Library worksheets are already fully structured — skip section filtering.
+            // Section filtering only applies to AI-generated worksheets where the teacher
+            // picks which sections to include. For library worksheets, show everything.
+            // Teacher-only sections (mark scheme etc) are always kept.
+            const sectionsToUse = finalSections;
 
             // Strip tier suffix from title (e.g. "Fractions — Base Tier (Year 9 Maths)" → "Fractions")
             const strippedTitle = (entry.title || "").replace(/\s*[—–-]\s*(Base Tier|Foundation Tier|Higher Tier|Standard Tier|SEND Tier|Scaffolded Tier|Access Tier|Extended Tier|Mixed Tier)[^)]*\)?/gi, "").replace(/\s*\(Year \d+[^)]*\)\s*$/gi, "").trim() || entry.title;

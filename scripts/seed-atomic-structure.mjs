@@ -43,33 +43,33 @@ const LEARNING_OBJECTIVE =
   "4. Explain what isotopes are and give an example.";
 
 const KEY_VOCAB_CONTENT =
-  "**Atom** - The smallest particle of an element that retains its chemical properties.\n" +
-  "**Proton** - Positively charged particle in the nucleus. Relative charge: +1. Relative mass: 1.\n" +
-  "**Neutron** - Neutral particle in the nucleus. Relative charge: 0. Relative mass: 1.\n" +
-  "**Electron** - Negatively charged particle in shells around the nucleus. Relative charge: -1. Relative mass: negligible.\n" +
-  "**Nucleus** - The dense, positively charged centre of an atom.\n" +
-  "**Atomic number (Z)** - The number of protons in the nucleus.\n" +
-  "**Mass number (A)** - The total number of protons + neutrons in the nucleus.\n" +
-  "**Electron shell** - An energy level around the nucleus where electrons are found.\n" +
-  "**Isotope** - Atoms of the same element with the same proton number but different mass numbers.\n" +
-  "**Electronic configuration** - The arrangement of electrons in shells (e.g. 2,8,1).";
+  "**Atom** — The smallest particle of an element that retains its chemical properties.\n" +
+  "**Proton** — Positively charged particle in the nucleus. Relative charge: +1. Relative mass: 1.\n" +
+  "**Neutron** — Neutral particle in the nucleus. Relative charge: 0. Relative mass: 1.\n" +
+  "**Electron** — Negatively charged particle in shells around the nucleus. Relative charge: -1. Relative mass: negligible.\n" +
+  "**Nucleus** — The dense, positively charged centre of an atom.\n" +
+  "**Atomic number (Z)** — The number of protons in the nucleus.\n" +
+  "**Mass number (A)** — The total number of protons + neutrons in the nucleus.\n" +
+  "**Electron shell** — An energy level around the nucleus where electrons are found.\n" +
+  "**Isotope** — Atoms of the same element with the same proton number but different mass numbers.\n" +
+  "**Electronic configuration** — The arrangement of electrons in shells (e.g. 2,8,1).";
 
 const COMMON_MISTAKES =
-  "**Mistake 1:** Confusing atomic number and mass number.\n" +
+  "Mistake 1: Confusing atomic number and mass number.\n" +
   "-> Atomic number = protons only. Mass number = protons + neutrons.\n\n" +
-  "**Mistake 2:** Thinking electrons have significant mass.\n" +
+  "Mistake 2: Thinking electrons have significant mass.\n" +
   "-> Electrons have negligible mass - they do NOT contribute to the mass number.\n\n" +
-  "**Mistake 3:** Forgetting that in a neutral atom, protons = electrons.\n" +
+  "Mistake 3: Forgetting that in a neutral atom, protons = electrons.\n" +
   "-> A neutral atom has no overall charge, so the number of electrons always equals the number of protons.";
 
 const WORKED_EXAMPLE =
-  "**Element: Sodium (Na)**\n\n" +
+  "Element: Sodium (Na)\n\n" +
   "From the periodic table: Atomic number (Z) = 11, Mass number (A) = 23\n\n" +
-  "**Step 1 - Protons:**\nNumber of protons = Atomic number = **11**\n\n" +
-  "**Step 2 - Electrons:**\nIn a neutral atom, electrons = protons = **11**\n\n" +
-  "**Step 3 - Neutrons:**\nNumber of neutrons = Mass number - Atomic number = 23 - 11 = **12**\n\n" +
-  "**Step 4 - Electronic configuration:**\nShell 1 = 2, Shell 2 = 8, Shell 3 = 1 -> Written as **2, 8, 1**\n\n" +
-  "**Answer: 11 protons, 12 neutrons, 11 electrons. Configuration: 2, 8, 1**";
+  "Step 1 - Protons:\nNumber of protons = Atomic number = 11\n\n" +
+  "Step 2 - Electrons:\nIn a neutral atom, electrons = protons = 11\n\n" +
+  "Step 3 - Neutrons:\nNumber of neutrons = Mass number - Atomic number = 23 - 11 = 12\n\n" +
+  "Step 4 - Electronic configuration:\nShell 1 = 2, Shell 2 = 8, Shell 3 = 1 -> Written as 2, 8, 1\n\n" +
+  "Answer: 11 protons, 12 neutrons, 11 electrons. Configuration: 2, 8, 1";
 
 const SELF_REFLECTION =
   "TOPICS:\n" +
