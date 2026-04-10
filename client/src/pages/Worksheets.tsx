@@ -1006,7 +1006,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
         // SEND need does NOT override the tier — we always pull the correct difficulty tier
         // first, then apply SEND adaptations on top of that content.
         // The library uses 'base' for standard/mixed ability, 'send' for SEND scaffolded versions.
-        const lookupTier = difficulty === "higher" ? "higher" : difficulty === "foundation" ? "foundation" : "base";
+        const lookupTier = difficulty === "higher" ? "higher" : difficulty === "foundation" ? "foundation" : difficulty === "scaffolded" ? "scaffolded" : "mixed";
         const libRes = await fetch(
           `/api/library/lookup?subject=${encodeURIComponent(getLibrarySubjectName(subject))}&topic=${encodeURIComponent(topic)}&yearGroup=${encodeURIComponent(yearGroup)}&tier=${lookupTier}`,
           { headers: authHeaders }
@@ -1276,7 +1276,13 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
               fromLibrary: true,
               libraryCurated: entry.curated,
               // Store available tiers so the differentiate panel knows what's in the library
-              availableTiers: libData.availableTiers || ["base"],
+              availableTiers: libData.availableTiers || ["mixed"],
+              // Store library metadata for asset resolution and structural tracking
+              libraryId: entry.id,
+              canonicalTopicKey: libData.canonicalTopicKey || entry.canonical_topic_key,
+              structuralHash: libData.structuralHash,
+              // Store resolved assets for stable diagram/image rendering
+              libraryAssets: libData.assets || [],
               // Store the overlay transform state so tier switches can re-apply the same overlays
               overlayState: {
                 retrievalTopic: recallTopic || null,
@@ -2538,6 +2544,10 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
           fromLibrary: true,
           libraryCurated: switchTierResult.curated,
           availableTiers: switchTierResult.availableTiers || (ws as any).availableTiers || [],
+          libraryId: switchTierResult.libraryId || (ws as any).libraryId,
+          canonicalTopicKey: switchTierResult.canonicalTopicKey || (ws as any).canonicalTopicKey,
+          structuralHash: switchTierResult.structuralHash,
+          libraryAssets: switchTierResult.assets || (ws as any).libraryAssets || [],
           // Preserve the overlay transform state so further tier switches re-apply the same overlays
           overlayState: {
             retrievalTopic: retrievalTopicToApply,
