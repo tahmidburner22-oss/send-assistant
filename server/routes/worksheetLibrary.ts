@@ -159,14 +159,22 @@ function expandSubjects(subject: string): string[] {
 }
 
 function topicKeywordsMatch(uiTopic: string, libraryTopic: string): boolean {
-  const ui = uiTopic.toLowerCase();
-  const lib = libraryTopic.toLowerCase();
-  // Direct substring match
-  if (lib.includes(ui) || ui.includes(lib)) return true;
-  // Keyword group match
+  const ui = uiTopic.toLowerCase().trim();
+  const lib = libraryTopic.toLowerCase().trim();
+  // Exact match
+  if (lib === ui) return true;
+  // Direct substring match — require whole-word boundary to avoid
+  // "Atom Economy" matching "Atomic Structure"
+  const wordBoundaryMatch = (haystack: string, needle: string): boolean => {
+    if (needle.length < 4) return false; // too short to be reliable
+    const re = new RegExp("(^|[\\s,:\\-])(" + needle.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + ")($|[\\s,:\\-])", "i");
+    return re.test(haystack);
+  };
+  if (wordBoundaryMatch(lib, ui) || wordBoundaryMatch(ui, lib)) return true;
+  // Keyword group match — use word-boundary matching for each keyword
   for (const [uiKeys, libKeys] of TOPIC_KEYWORD_MAP) {
-    const uiMatch = uiKeys.some(k => ui.includes(k));
-    const libMatch = libKeys.some(k => lib.includes(k));
+    const uiMatch = uiKeys.some(k => k.length >= 4 && wordBoundaryMatch(ui, k));
+    const libMatch = libKeys.some(k => k.length >= 4 && wordBoundaryMatch(lib, k));
     if (uiMatch && libMatch) return true;
   }
   return false;
@@ -1045,7 +1053,16 @@ router.post("/resolve", requireAuth, async (req: Request, res: Response) => {
         const allForTier = await db.prepare(
           `SELECT * FROM worksheet_library WHERE LOWER(subject) IN (${placeholders}) AND tier = ? ORDER BY curated DESC`
         ).all(...subjectsNorm, t) as LibraryEntry[];
-        entry = allForTier.find(e => topicKeywordsMatch(topic, e.topic));
+        // Prefer entries whose year group matches the requested year number
+        const yearMatches = allForTier.filter(e =>
+          topicKeywordsMatch(topic, e.topic) && (
+            e.year_group === yearGroup ||
+            (ygNum && e.year_group.replace(/[^0-9]/g, "").includes(ygNum))
+          )
+        );
+        entry = yearMatches.length > 0
+          ? yearMatches[0]
+          : allForTier.find(e => topicKeywordsMatch(topic, e.topic));
         if (entry) break;
       }
     }
@@ -1149,7 +1166,16 @@ router.post("/switch-tier", requireAuth, async (req: Request, res: Response) => 
         const allForTier = await db.prepare(
           `SELECT * FROM worksheet_library WHERE LOWER(subject) IN (${placeholders}) AND tier = ? ORDER BY curated DESC`
         ).all(...subjectsNorm, t) as LibraryEntry[];
-        entry = allForTier.find(e => topicKeywordsMatch(topic, e.topic));
+        // Prefer entries whose year group matches the requested year number
+        const yearMatches = allForTier.filter(e =>
+          topicKeywordsMatch(topic, e.topic) && (
+            e.year_group === yearGroup ||
+            (ygNum && e.year_group.replace(/[^0-9]/g, "").includes(ygNum))
+          )
+        );
+        entry = yearMatches.length > 0
+          ? yearMatches[0]
+          : allForTier.find(e => topicKeywordsMatch(topic, e.topic));
         if (entry) break;
       }
     }
