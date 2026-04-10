@@ -129,7 +129,7 @@ const SUBJECT_EXPANSION: Record<string, string[]> = {
 // Used for fuzzy matching when exact topic name doesn't match
 const TOPIC_KEYWORD_MAP: Array<[string[], string[]]> = [
   [["electricity", "circuit", "ohm"], ["electricity", "circuit", "electrical"]],
-  [["atomic structure", "atomic", "atom"], ["atomic", "atom", "nuclear", "alpha"]],
+  [["atomic structure", "atomic model", "subatomic"], ["atomic structure", "atomic", "nuclear", "subatomic", "proton", "neutron", "electron"]],
   [["waves"], ["waves", "wave"]],
   [["forces", "motion", "newton"], ["forces", "motion", "free body", "vector"]],
   [["energy"], ["energy", "sankey", "specific heat"]],
