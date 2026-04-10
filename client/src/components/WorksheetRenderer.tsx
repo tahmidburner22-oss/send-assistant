@@ -1845,95 +1845,37 @@ function LabelDiagramSection({
     ? answersLine.replace(/^ANSWERS:/i, "").split("|").map(s => s.trim())
     : [];
 
-  // Determine number of rows — use rawLabels count, fallback to 5
-  const rowCount = rawLabels.length > 0 ? rawLabels.length : 5;
-
+  // Determine number of columns for word bank grid — 4 per row matches reference PDF
+  const COLS = 4;
   return (
     <div>
-      {/* Instruction */}
-      <div style={{
-        fontSize: `${fmt.fontSize}px`,
-        fontFamily: fmt.fontFamily,
-        lineHeight: String(fmt.lineHeight),
-        color: "#1e293b",
-        marginBottom: "10px",
-        fontStyle: "italic",
-      }}>
-        Label the diagram. Use the word bank below to identify each numbered part.
+      {/* Word bank header */}
+      <div style={{ fontSize: `${fmt.fontSize - 1}px`, fontWeight: 700, color: "#1e293b", fontFamily: fmt.fontFamily, textTransform: "uppercase" as const, letterSpacing: "0.08em", marginBottom: "6px" }}>
+        WORD BANK
       </div>
-      <div style={{ display: "flex", gap: "20px", alignItems: "flex-start" }}>
-        {/* Diagram panel — real image, SVG spec, or plain box */}
-        <div style={{ flex: "0 0 52%" }}>
-          {imageUrl ? (
-            <div style={{ border: `1px solid #e5e7eb`, borderRadius: "6px", overflow: "hidden", background: "white" }}>
-              <img
-                src={imageUrl}
-                alt={caption || "Diagram"}
-                style={{ width: "100%", maxWidth: "300px", display: "block", objectFit: "contain" }}
-                onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
-              />
-              {attribution && (
-                <div style={{ fontSize: "9px", color: "#9ca3af", padding: "2px 6px", fontFamily: fmt.fontFamily }}>{attribution}</div>
-              )}
-            </div>
-          ) : diagramSpec && diagramSpec.type !== "labeled" ? (
-            <SVGDiagram
-              spec={diagramSpec}
-              width={300}
-              height={240}
-              fontFamily={fmt.fontFamily}
-              fontSize={fmt.fontSize - 1}
-              accentColor={accentColor}
-              showCallouts={isTeacher}
-            />
-          ) : (
-            <svg width="100%" height="180" xmlns="http://www.w3.org/2000/svg">
-              <defs>
-                <pattern id="dots-label" x="0" y="0" width="12" height="12" patternUnits="userSpaceOnUse">
-                  <circle cx="1" cy="1" r="0.8" fill="#cbd5e1" />
-                </pattern>
-              </defs>
-              <rect width="100%" height="100%" fill="url(#dots-label)" rx="4" />
-            </svg>
-          )}
-        </div>
-        {/* 2-column table: Number | Label */}
-        <div style={{ flex: 1 }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily }}>
-            <thead>
-              <tr>
-                <th style={{ background: accentColor, color: "white", fontWeight: 700, padding: "6px 10px", textAlign: "left" as const, width: "60px", border: `1px solid ${accentColor}` }}>No.</th>
-                <th style={{ background: accentColor, color: "white", fontWeight: 700, padding: "6px 10px", textAlign: "left" as const, border: `1px solid ${accentColor}` }}>Label</th>
+      {/* Word bank as grid table matching reference PDF */}
+      {rawLabels.length > 0 && (
+        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, marginBottom: "0" }}>
+          <tbody>
+            {Array.from({ length: Math.ceil(rawLabels.length / COLS) }).map((_, rowIdx) => (
+              <tr key={rowIdx}>
+                {Array.from({ length: COLS }).map((_, colIdx) => {
+                  const lbl = rawLabels[rowIdx * COLS + colIdx];
+                  const ansIdx = rowIdx * COLS + colIdx;
+                  return (
+                    <td key={colIdx} style={{ border: "1px solid #d1d5db", padding: "8px 12px", textAlign: "center" as const, fontWeight: isTeacher ? 400 : 700, color: isTeacher && answers[ansIdx] ? "#166534" : "#1e293b", width: `${100 / COLS}%` }}>
+                      {isTeacher ? (answers[ansIdx] || lbl || "") : (lbl || "\u00a0")}
+                    </td>
+                  );
+                })}
               </tr>
-            </thead>
-            <tbody>
-              {Array.from({ length: rowCount }).map((_, i) => (
-                <tr key={i}>
-                  <td style={{ border: "1px solid #d1d5db", padding: "6px 10px", textAlign: "center" as const, fontWeight: 700, color: "#374151" }}>{i + 1}</td>
-                  <td style={{ border: "1px solid #d1d5db", padding: "6px 10px", color: isTeacher && answers[i] ? "#166534" : "transparent", minHeight: "28px" }}>
-                    {isTeacher ? (answers[i] || rawLabels[i] || "") : "\u00a0"}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          {/* Word bank — shown to students only */}
-          {!isTeacher && rawLabels.length > 0 && (
-            <div style={{ marginTop: "10px", padding: "8px 12px", background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: "6px" }}>
-              <div style={{ fontSize: `${fmt.fontSize - 1}px`, fontWeight: 700, color: "#64748b", fontFamily: fmt.fontFamily, marginBottom: "4px", textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>Word Bank</div>
-              <div style={{ display: "flex", flexWrap: "wrap" as const, gap: "6px" }}>
-                {[...rawLabels].sort(() => 0).map((lbl, idx) => (
-                  <span key={idx} style={{ padding: "2px 8px", background: "white", border: "1px solid #cbd5e1", borderRadius: "4px", fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, color: "#1e293b" }}>{lbl}</span>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
+            ))}
+          </tbody>
+        </table>
+      )}
     </div>
   );
 }
-
 // ── 5. DIAGRAM + SUB-QUESTIONS ────────────────────────────────────────────────
 function DiagramSubQSection({
   content, fmt, overlayColor = "white", imageUrl, caption, attribution, isTeacher = false,
@@ -2980,6 +2922,47 @@ function SentenceStartersSection({ content, fmt, overlayColor = "white" }: { con
   );
 }
 
+function MarkSchemeSection({ content, fmt }: { content: string; fmt: ReturnType<typeof getSendFormatting> }) {
+  const { fontSize: textSize, fontFamily } = fmt;
+  const lines = content.split("\n");
+  const blocks: { header: string; answers: string[] }[] = [];
+  let current: { header: string; answers: string[] } | null = null;
+
+  for (const raw of lines) {
+    const line = raw.trim();
+    if (!line) continue;
+    // Detect question headers: Q1, Q2, Q1 —, Q1:, Challenge Question, etc.
+    if (/^(Q\d+|Challenge Question|Challenge)/i.test(line) || /^[A-Z][A-Z ]+\s*[—\-:]/.test(line)) {
+      if (current) blocks.push(current);
+      current = { header: line, answers: [] };
+    } else {
+      if (!current) {
+        // Content before first question header (e.g. title line)
+        current = { header: line, answers: [] };
+      } else {
+        current.answers.push(line);
+      }
+    }
+  }
+  if (current) blocks.push(current);
+
+  return (
+    <div style={{ padding: "4px 0" }}>
+      {blocks.map((block, bi) => (
+        <div key={bi} style={{ marginBottom: bi < blocks.length - 1 ? "12px" : "0", borderBottom: bi < blocks.length - 1 ? "0.5px solid #f0c0c0" : "none", paddingBottom: bi < blocks.length - 1 ? "10px" : "0" }}>
+          <div style={{ fontSize: `${textSize - 0.5}px`, fontWeight: 700, color: "#8b1a1a", fontFamily, marginBottom: "4px", letterSpacing: "0.02em" }}>
+            {block.header}
+          </div>
+          {block.answers.map((ans, ai) => (
+            <div key={ai} style={{ fontSize: `${textSize - 1}px`, color: "#5a0f0f", fontFamily, lineHeight: "1.6", paddingLeft: "8px" }}>
+              {ans}
+            </div>
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
 function ReminderBoxSection({ content, fmt, overlayColor = "white" }: { content: string; fmt: ReturnType<typeof getSendFormatting>; overlayColor?: string }) {
   const { fontSize: textSize, fontFamily, lineHeight } = fmt;
   const lines = content.split("\n").filter(l => l.trim());
@@ -4373,7 +4356,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
             onClick={() => editMode && onSectionClick?.(i)}
             style={{
               marginBottom: "20px",
-              background: isTeacherHeader ? "#8b1a1a" : fmt.theme === "high-contrast" ? "#ffffff" : "#ffffff",
+              background: isTeacherHeader ? "#fff8f8" : fmt.theme === "high-contrast" ? "#ffffff" : "#ffffff",
               border: fmt.theme === "high-contrast" ? "2px solid #111827" : "none",
               borderRadius: "0",
               overflow: "visible",
@@ -4437,7 +4420,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
             {/* Section content */}
             <div style={{
               padding: "0",
-              background: isTeacherHeader ? "#8b1a1a" : (fmt.sectionBgColor || "#ffffff"),
+              background: isTeacherHeader ? "#fff8f8" : (fmt.sectionBgColor || "#ffffff"),
             }}>
               {/* Detect and render inline SVG diagram if content has [[DIAGRAM:{...}]] marker */}
               {(() => {
@@ -4962,6 +4945,8 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                   <ReminderBoxSection content={content} fmt={fmt} overlayColor={overlayColor} />
                 ) : section.type === "word-problems" ? (
                   <WordProblemsSection content={content} fmt={fmt} overlayColor={overlayColor} />
+                ) : (section.type === "mark-scheme" || section.type === "answers") ? (
+                  <MarkSchemeSection content={content} fmt={fmt} />
                 ) : section.type === "questions" ? (
                   <div>{formatContent(content, fmt)}</div>
                 ) : (section.type === "reading" || section.type === "passage" || section.type === "source-text" || section.type === "comprehension" || /reading.?passage|source.?text|comprehension.?text/i.test(section.title || "")) ? (
