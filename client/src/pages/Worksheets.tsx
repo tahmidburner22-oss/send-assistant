@@ -2171,6 +2171,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
     const nextDifficulty = parsed.difficulty || "mixed";
     // Only apply SEND if explicitly mentioned — otherwise no SEND adaptation
     const nextSendNeed   = parsed.sendNeed  || "none-selected";
+    const hasSendNeed = nextSendNeed && nextSendNeed !== "none-selected";
 
     // Update the visible dropdowns so they reflect what was generated
     setSubject(nextSubject);
@@ -5022,7 +5023,7 @@ ${s.content}`).join("\n\n"),
                   // Mark whether this tier is available in the library
                   inLibrary: libTiers.length === 0 || libTierNorm.includes(t.tier) || t.tier === "scaffolded",
                 }));
-            })().map(({ tier, label, desc, colour, icon }) => (
+            })().map(({ tier, label, desc, colour, icon, inLibrary }) => (
               <div key={tier} className={`rounded-xl border p-4 space-y-3 ${
                 // extra top padding for SEND/scaffolded card to accommodate the SEND picker
                 tier === "scaffolded" ? "pb-4" : ""} ${
