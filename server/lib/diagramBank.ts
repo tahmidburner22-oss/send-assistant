@@ -278,10 +278,17 @@ const DIAGRAM_BANK: DiagramEntry[] = [
   // ── CHEMISTRY ─────────────────────────────────────────────────────────────
   {
     key: "atom_structure",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Helium_atom_QM.svg/960px-Helium_atom_QM.svg.png",
-    label: "Atomic Structure (Bohr Model)",
-    attribution: "Wikimedia Commons (CC BY-SA 3.0)",
-    keywords: ["atom", "atomic structure", "bohr model", "electron", "proton", "neutron", "nucleus", "electron shell", "orbit", "atomic model"],
+    url: "/images/atom_nb_labelled_final.png",
+    label: "Atomic Structure — Labelled Bohr Model (Carbon-12)",
+    attribution: "Adaptly nano-banana diagram",
+    keywords: ["atom", "atomic structure", "bohr model", "electron", "proton", "neutron", "nucleus", "electron shell", "orbit", "atomic model", "carbon", "subatomic particles", "chemistry", "gcse chemistry"],
+  },
+  {
+    key: "atom_structure_unlabelled",
+    url: "/images/atom_nb_unlabelled_final.png",
+    label: "Atomic Structure — Unlabelled Bohr Model (Carbon-12)",
+    attribution: "Adaptly nano-banana diagram",
+    keywords: ["atom unlabelled", "label the atom", "label the diagram", "atomic structure diagram", "bohr model blank", "carbon atom diagram"],
   },
   {
     key: "periodic_table",
@@ -723,10 +730,10 @@ const DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "nuclear_atom_gcse",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Helium_atom_QM.svg/640px-Helium_atom_QM.svg.png",
-    label: "Nuclear Atom Structure",
-    attribution: "Wikimedia Commons (CC BY-SA 3.0)",
-    keywords: ["nuclear model", "atom structure", "proton", "neutron", "electron", "nucleus", "atomic number", "mass number", "isotopes", "bohr model", "nuclear atom"],
+    url: "/images/atom_nb_labelled_final.png",
+    label: "Nuclear Atom Structure — Labelled Bohr Model",
+    attribution: "Adaptly nano-banana diagram",
+    keywords: ["nuclear model", "atom structure", "proton", "neutron", "electron", "nucleus", "atomic number", "mass number", "isotopes", "bohr model", "nuclear atom", "gcse chemistry", "year 9 chemistry"],
   },
   {
     key: "hormone_endocrine",

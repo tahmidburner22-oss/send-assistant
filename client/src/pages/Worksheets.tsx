@@ -1281,6 +1281,13 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
               libraryCurated: entry.curated,
               // Store available tiers so the differentiate panel knows what's in the library
               availableTiers: libData.availableTiers || ["base"],
+              // Store the overlay transform state so tier switches can re-apply the same overlays
+              overlayState: {
+                retrievalTopic: recallTopic || null,
+                additionalInstructions: additionalInstructions || null,
+                sendNeed: (sendNeed && sendNeed !== "none-selected") ? sendNeed : null,
+                readingAge: readingAge > 0 ? String(readingAge) : null,
+              },
             } as any;
             setGenerated(libWorksheet);
             setHiddenSections(new Set());
@@ -2296,6 +2303,13 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
               fromLibrary: true,
               libraryCurated: entry.curated,
               availableTiers: libData.availableTiers || ["base"],
+              // Store the overlay transform state so tier switches can re-apply the same overlays
+              overlayState: {
+                retrievalTopic: recallTopic || null,
+                additionalInstructions: additionalInstructions || null,
+                sendNeed: (parsed.sendNeed && parsed.sendNeed !== "none-selected") ? parsed.sendNeed : null,
+                readingAge: null,
+              },
             } as any;
             toast.success("Worksheet loaded from library!");
           }
@@ -2427,202 +2441,119 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
         ? { Authorization: `Bearer ${libToken}`, "Content-Type": "application/json" }
         : { "Content-Type": "application/json" };
 
-      // ── Determine the SEND formatting to carry over from the original worksheet ──
-      // For the scaffolded tier, use the selected SEND need (or the one on the original sheet).
-      // For foundation/mixed/higher, carry over the original SEND formatting if any.
+      // Carry over the SEND need from the original worksheet or the selected one
       const originalSendNeed = meta.sendNeedId || meta.sendNeed;
       const activeSendNeed = tier === "scaffolded"
         ? (sendNeedForScaffold || sendNeed || originalSendNeed || "general")
         : (sendNeed && sendNeed !== "none-selected" ? sendNeed : originalSendNeed);
 
-       // ── Map tier names to correct database tier values —
-      // UI 'mixed' → library 'base' (the default tier in the main library)
-      // UI 'scaffolded' → library 'send' (the SEND scaffolded tier in the main library)
-      // Also handle older entries that use 'standard'/'scaffolded' tier names
+      // Carry over the overlay transform state from the original worksheet
+      const overlayState = (ws as any).overlayState || {};
+      const retrievalTopicToApply = overlayState.retrievalTopic || null;
+      const additionalInstructionsToApply = overlayState.additionalInstructions || null;
+      const readingAgeToApply = overlayState.readingAge || (readingAge > 0 ? String(readingAge) : null);
+
+      // Map UI tier names to database tier values
       const libraryTier = tier === "mixed" ? "base" : tier === "scaffolded" ? "send" : tier;
 
       let adaptedWorksheet: AIWorksheet;
 
-      // ── STEP 1: Try to fetch the correct tier from the worksheet library ──
-      // The library holds curated foundation/higher/scaffolded versions.
-      // If found, use that content directly — no AI content rewriting needed.
-      let libraryEntry: any = null;
+      // ── Try to fetch the target tier from the library via switch-tier endpoint ──
+      // This endpoint loads the correct tier and re-applies all overlays in one call.
+      let switchTierResult: any = null;
       try {
-        const lookupRes = await fetch(
-          `/api/library/lookup-tier?subject=${encodeURIComponent(getLibrarySubjectName(meta.subject || subject))}&topic=${encodeURIComponent(meta.topic || topic)}&yearGroup=${encodeURIComponent(meta.yearGroup || yearGroup)}&tier=${encodeURIComponent(libraryTier)}`,
-          { headers: { Authorization: authHeaders.Authorization || "" } }
-        );
-        if (lookupRes.ok) {
-          const lookupData = await lookupRes.json();
-          if (lookupData.found && lookupData.entry) {
-            libraryEntry = lookupData.entry;
+        const switchRes = await fetch("/api/library/switch-tier", {
+          method: "POST",
+          headers: authHeaders,
+          body: JSON.stringify({
+            subject: getLibrarySubjectName(meta.subject || subject),
+            topic: meta.topic || topic,
+            yearGroup: meta.yearGroup || yearGroup,
+            targetTier: libraryTier,
+            retrievalTopic: retrievalTopicToApply,
+            additionalInstructions: additionalInstructionsToApply,
+            sendNeed: activeSendNeed && activeSendNeed !== "none-selected" ? activeSendNeed : null,
+            readingAge: readingAgeToApply,
+          }),
+        });
+        if (switchRes.ok) {
+          const switchData = await switchRes.json();
+          if (switchData.found) {
+            switchTierResult = switchData;
           }
         }
-      } catch (libErr) {
-        console.warn("Library tier lookup failed, falling back to AI:", libErr);
+      } catch (switchErr) {
+        console.warn("Library switch-tier failed, falling back to AI:", switchErr);
       }
 
-      if (libraryEntry) {
-        // ── Library version found ──
-        // Use the library content as-is. Then:
-        //  1. Always adjust reading level (vocabulary/sentence complexity only — structure preserved).
-        //  2. If a SEND need is active, apply SEND content scaffolding on top.
-        //  3. Apply SEND visual formatting overlay via metadata (font/size/spacing).
-        const tierLabel = tier === "foundation" ? "Foundation" : tier === "higher" ? "Higher" : tier === "mixed" ? "Mixed Ability" : "SEND Scaffolded";
-        let finalSections = normaliseLibrarySections(libraryEntry.sections || ws.sections || []);
-        let readingAdjusted = false;
-        let sendAdapted = false;
-        // Always adjust reading level — either to match the selected year group or the manually chosen reading agee
-        const libYG = libraryEntry.year_group || libraryEntry.yearGroup;
-        const targetYG = meta.yearGroup || yearGroup;
-        const targetRA = readingAge > 0 ? readingAge : undefined;
-        const needsReadingAdjustment = targetRA || (libYG && libYG !== targetYG);
-        if (needsReadingAdjustment) {
-          try {
-            const adjustRes = await fetch("/api/ai/adjust-reading-level", {
-              method: "POST",
-              headers: authHeaders,
-              body: JSON.stringify({
-                sections: finalSections,
-                targetYearGroup: targetYG,
-                targetReadingAge: targetRA,
-                subject: meta.subject || subject,
-                topic: meta.topic || topic,
-                sendNeed: activeSendNeed || undefined,
-              }),
-            });
-            if (adjustRes.ok) {
-              const adjustData = await adjustRes.json();
-              if (adjustData.sections && adjustData.sections.length > 0) {
-                finalSections = adjustData.sections;
-                readingAdjusted = true;
-              }
-            }
-          } catch (adjustErr) {
-            console.warn("Reading level adjustment failed, using original:", adjustErr);
-          }
-        }
-
-        // Apply SEND content scaffolding if a SEND need is active
-        // (word banks, sentence starters, hint boxes, chunked instructions — additive, non-structural)
-        if (activeSendNeed && activeSendNeed !== "none-selected") {
-          try {
-            const sendRes = await fetch("/api/ai/scaffold-worksheet", {
-              method: "POST",
-              headers: authHeaders,
-              body: JSON.stringify({
-                sections: finalSections,
-                sendNeed: activeSendNeed,
-                subject: meta.subject || subject,
-                topic: meta.topic || topic,
-                yearGroup: targetYG,
-                title: libraryEntry.title || ws.title,
-              }),
-            });
-            if (sendRes.ok) {
-              const sendData = await sendRes.json();
-              const scaffoldedSections = sendData?.scaffolded?.sections;
-              if (scaffoldedSections && Array.isArray(scaffoldedSections) && scaffoldedSections.length > 0) {
-                finalSections = scaffoldedSections;
-                sendAdapted = true;
-              } else if (sendData?.sections && Array.isArray(sendData.sections) && sendData.sections.length > 0) {
-                finalSections = sendData.sections;
-                sendAdapted = true;
-              }
-            }
-          } catch (sendErr) {
-            console.warn("SEND scaffolding failed in differentiation, using reading-adjusted content:", sendErr);
-          }
-        }
-
-        // Strip tier suffix from differentiated worksheet title
-        const strippedDiffTitle = (libraryEntry.title || "").replace(/\s*[—–-]\s*(Base Tier|Foundation Tier|Higher Tier|Standard Tier|SEND Tier|Scaffolded Tier|Access Tier|Extended Tier|Mixed Tier)[^)]*\)?/gi, "").replace(/\s*\(Year \d+[^)]*\)\s*$/gi, "").trim() || libraryEntry.title || ws.title;
-
-        // Merge teacher_sections from the library entry into the final sections (marked teacherOnly)
+      if (switchTierResult) {
+        // ── Library version found — use it directly ──
+        const libSections = normaliseLibrarySections(switchTierResult.sections || []);
         const libTeacherSections = normaliseLibrarySections(
-          (libraryEntry.teacher_sections || libraryEntry.teacherSections || []).map((s: any) => ({ ...s, teacherOnly: true }))
+          (switchTierResult.teacherSections || []).map((s: any) => ({ ...s, teacherOnly: true }))
         );
-        const finalSectionsWithTeacher = [...finalSections, ...libTeacherSections];
+        const allSections = [...libSections, ...libTeacherSections];
 
-        adaptedWorksheet = {
-          ...ws,
-          title: strippedDiffTitle,
-          subtitle: libraryEntry.subtitle || ws.subtitle,
-          sections: finalSectionsWithTeacher,
-          metadata: {
-            ...meta,
-            difficulty: tier === "mixed" ? "mixed" : tier,
-            // Carry the SEND formatting need into metadata so WorksheetRenderer
-            // applies the correct font/size/spacing overlay automatically.
-            sendNeedId: activeSendNeed || undefined,
-            sendNeed: activeSendNeed || undefined,
-          },
-          isAI: readingAdjusted || sendAdapted,
-          fromLibrary: true,
-          libraryCurated: libraryEntry.curated,
-        };
-      } else if (tier === "scaffolded") {
-        // ── SEND scaffolded tier: no library version found ──
-        // Apply SEND content scaffolding on top of the original content.
-        // Then apply SEND formatting overlay via metadata (font/size/spacing).
-        let finalSections = ws.sections || [];
+        // Apply SEND visual formatting overlay if a SEND need is active
+        let finalSections = allSections;
         let sendAdapted = false;
-
         if (activeSendNeed && activeSendNeed !== "none-selected") {
           try {
             const sendRes = await fetch("/api/ai/scaffold-worksheet", {
               method: "POST",
               headers: authHeaders,
               body: JSON.stringify({
-                sections: finalSections,
+                sections: libSections, // Only scaffold student sections
                 sendNeed: activeSendNeed,
                 subject: meta.subject || subject,
                 topic: meta.topic || topic,
                 yearGroup: meta.yearGroup || yearGroup,
-                title: ws.title,
+                title: switchTierResult.title || ws.title,
               }),
             });
             if (sendRes.ok) {
               const sendData = await sendRes.json();
               const scaffoldedSections = sendData?.scaffolded?.sections;
               if (scaffoldedSections && Array.isArray(scaffoldedSections) && scaffoldedSections.length > 0) {
-                finalSections = scaffoldedSections;
-                sendAdapted = true;
-              } else if (sendData?.sections && Array.isArray(sendData.sections) && sendData.sections.length > 0) {
-                finalSections = sendData.sections;
+                finalSections = [...scaffoldedSections, ...libTeacherSections];
                 sendAdapted = true;
               }
             }
           } catch (sendErr) {
-            console.warn("SEND scaffolding failed, using original content with formatting overlay:", sendErr);
+            console.warn("SEND scaffolding failed in differentiation:", sendErr);
           }
         }
 
+        const strippedTitle = (switchTierResult.title || ws.title || "").replace(/\s*[—–-]\s*(Base Tier|Foundation Tier|Higher Tier|Standard Tier|SEND Tier|Scaffolded Tier|Access Tier|Extended Tier|Mixed Tier)[^)]*\)?/gi, "").replace(/\s*\(Year \d+[^)]*\)\s*$/gi, "").trim() || switchTierResult.title || ws.title;
+
         adaptedWorksheet = {
           ...ws,
+          title: strippedTitle,
+          subtitle: switchTierResult.subtitle || ws.subtitle,
           sections: finalSections,
           metadata: {
             ...meta,
-            sendNeedId: activeSendNeed || undefined,
-            sendNeed: activeSendNeed || undefined,
+            difficulty: tier === "mixed" ? "mixed" : tier,
+            sendNeedId: activeSendNeed && activeSendNeed !== "none-selected" ? activeSendNeed : undefined,
+            sendNeed: activeSendNeed && activeSendNeed !== "none-selected" ? activeSendNeed : undefined,
           },
           isAI: sendAdapted,
-        };
+          fromLibrary: true,
+          libraryCurated: switchTierResult.curated,
+          availableTiers: switchTierResult.availableTiers || (ws as any).availableTiers || [],
+          // Preserve the overlay transform state so further tier switches re-apply the same overlays
+          overlayState: {
+            retrievalTopic: retrievalTopicToApply,
+            additionalInstructions: additionalInstructionsToApply,
+            sendNeed: activeSendNeed && activeSendNeed !== "none-selected" ? activeSendNeed : null,
+            readingAge: readingAgeToApply,
+          },
+        } as any;
       } else {
-        // ── Foundation / Mixed / Higher: no library version found — fall back to AI ──
-        // AI rewrites questions for the tier.
-        const aiTier = tier === "mixed" ? "standard" : (tier as "foundation" | "higher");
-        const result = await aiDifferentiateExistingWorksheet({
-          sections: ws.sections || [],
-          tier: aiTier as "foundation" | "higher",
-          subject: meta.subject,
-          topic: meta.topic,
-          yearGroup: meta.yearGroup,
-          title: ws.title,
-        });
-        let finalSections = result.sections;
-
-        // Apply SEND content scaffolding if a SEND need is active
+        // ── No library version found — fall back to AI differentiation ──
+        // Apply SEND content scaffolding on the current worksheet content.
+        let finalSections = ws.sections || [];
+        let sendAdapted = false;
         if (activeSendNeed && activeSendNeed !== "none-selected") {
           try {
             const sendRes = await fetch("/api/ai/scaffold-worksheet", {
@@ -2642,40 +2573,38 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
               const scaffoldedSections = sendData?.scaffolded?.sections;
               if (scaffoldedSections && Array.isArray(scaffoldedSections) && scaffoldedSections.length > 0) {
                 finalSections = scaffoldedSections;
-              } else if (sendData?.sections && Array.isArray(sendData.sections) && sendData.sections.length > 0) {
-                finalSections = sendData.sections;
+                sendAdapted = true;
               }
             }
           } catch (sendErr) {
-            console.warn("SEND scaffolding failed in AI differentiation:", sendErr);
+            console.warn("SEND scaffolding failed, using original content:", sendErr);
           }
         }
-
-        const tierLabel = tier === "foundation" ? "Foundation" : tier === "mixed" ? "Mixed Ability" : "Higher";
         adaptedWorksheet = {
           ...ws,
           sections: finalSections,
-          title: `${ws.title} — ${tierLabel}`,
           metadata: {
             ...meta,
             difficulty: tier === "mixed" ? "mixed" : tier,
-            sendNeedId: activeSendNeed || undefined,
-            sendNeed: activeSendNeed || undefined,
+            sendNeedId: activeSendNeed && activeSendNeed !== "none-selected" ? activeSendNeed : undefined,
+            sendNeed: activeSendNeed && activeSendNeed !== "none-selected" ? activeSendNeed : undefined,
           },
-          isAI: true as const,
-        };
+          isAI: sendAdapted,
+          overlayState: {
+            retrievalTopic: retrievalTopicToApply,
+            additionalInstructions: additionalInstructionsToApply,
+            sendNeed: activeSendNeed && activeSendNeed !== "none-selected" ? activeSendNeed : null,
+            readingAge: readingAgeToApply,
+          },
+        } as any;
       }
 
       setDiffVersions(prev => ({ ...prev, [tier]: adaptedWorksheet }));
-      setGenerated(adaptedWorksheet);
-      setShowDiffDialog(false);
-
-      const source = libraryEntry ? "library" : "AI";
       const msgs: Record<string, string> = {
-        foundation: `Foundation version applied (${source}) — reading level adjusted, SEND formatting applied.`,
-        mixed:      `Mixed Ability version applied (${source}) — reading level adjusted, SEND formatting applied.`,
-        higher:     `Higher version applied (${source}) — reading level adjusted, SEND formatting applied.`,
-        scaffolded: `SEND Scaffolded version applied — content scaffolded for ${activeSendNeed || "SEND"}.`,
+        foundation: "Foundation tier version ready!",
+        higher: "Higher tier version ready!",
+        mixed: "Mixed ability version ready!",
+        scaffolded: "SEND scaffolded version ready!",
       };
       toast.success(msgs[tier] || `${tier} version applied!`);
       // Auto-save differentiated worksheets to history
@@ -5064,20 +4993,35 @@ ${s.content}`).join("\n\n"),
           <div className="space-y-4 mt-2">
             {/* Tier cards — show the 3 options that are NOT the current difficulty */}
             {(() => {
-              // Determine which 3 tiers to show based on the current difficulty
-              // foundation → show: mixed, higher, scaffolded
-              // mixed/standard → show: foundation, higher, scaffolded
-              // higher → show: foundation, mixed, scaffolded
+              // Determine which tiers to show based on the current difficulty and library availability
               const currentDiff = (generated?.metadata as any)?.difficulty || difficulty || "mixed";
+              // Normalise the current tier key to match the library tier names
+              const currentTierKey = currentDiff === "higher" ? "higher"
+                : currentDiff === "foundation" ? "foundation"
+                : currentDiff === "scaffolded" || currentDiff === "send" ? "scaffolded"
+                : "mixed";
+              // Get available tiers from the library (stored on the generated worksheet)
+              const libTiers: string[] = (generated as any)?.availableTiers || [];
+              // Map library tier names to UI tier names for comparison
+              const libTierNorm = libTiers.map((t: string) =>
+                t === "base" || t === "standard" ? "mixed"
+                : t === "send" || t === "scaffolded" ? "scaffolded"
+                : t
+              );
               const allTiers = [
                 { tier: "foundation", label: "Foundation", desc: "Accessible version with simpler language, more scaffolding, and fewer questions. Ideal for lower-attaining students.", colour: "blue" as const, icon: "🟦" },
                 { tier: "mixed", label: "Mixed Ability", desc: "Standard mixed-ability version covering the full range of the topic. Suitable for most students.", colour: "amber" as const, icon: "🟡" },
                 { tier: "higher", label: "Higher", desc: "Challenging version with multi-step problems, reasoning questions, and extension tasks. Ideal for higher-attaining students.", colour: "purple" as const, icon: "🟣" },
                 { tier: "scaffolded", label: "SEND Scaffolded", desc: "Full SEND scaffolding: fill-in-the-blank guided questions, vocabulary box, sentence starters, chunked instructions, and visual supports.", colour: "green" as const, icon: "🟢" },
               ];
-              // Filter out the current difficulty tier
-              const currentTierKey = currentDiff === "higher" ? "higher" : currentDiff === "foundation" ? "foundation" : "mixed";
-              return allTiers.filter(t => t.tier !== currentTierKey);
+              // Filter out the current tier; always show scaffolded as an option
+              return allTiers
+                .filter(t => t.tier !== currentTierKey)
+                .map(t => ({
+                  ...t,
+                  // Mark whether this tier is available in the library
+                  inLibrary: libTiers.length === 0 || libTierNorm.includes(t.tier) || t.tier === "scaffolded",
+                }));
             })().map(({ tier, label, desc, colour, icon }) => (
               <div key={tier} className={`rounded-xl border p-4 space-y-3 ${
                 // extra top padding for SEND/scaffolded card to accommodate the SEND picker
@@ -5097,6 +5041,11 @@ ${s.content}`).join("\n\n"),
                         colour === "amber" ? "text-amber-800" :
                         "text-green-800"
                       }`}>{label}</span>
+                      {(inLibrary as boolean) ? (
+                        <span className="text-xs px-1.5 py-0.5 rounded bg-green-100 text-green-700 font-medium">✓ In library</span>
+                      ) : (
+                        <span className="text-xs px-1.5 py-0.5 rounded bg-gray-100 text-gray-500 font-medium">AI generated</span>
+                      )}
                     </div>
                     {/* Only show desc in the header row for non-scaffolded tiers */}
                     {tier !== "scaffolded" && (

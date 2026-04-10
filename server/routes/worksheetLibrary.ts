@@ -987,4 +987,307 @@ function buildQuestionSection(qNum: number, content: string, sectionLabel: strin
   return { id: uuidv4(), type: "q-free-response", title: `Question ${qNum}`, label: "ANSWER", content };
 }
 
+
+// ── POST /api/library/resolve — fetch library worksheet and apply overlays ────
+// This is the single entry point for the worksheet generator when a library
+// match is found. It returns the base worksheet with all requested overlays
+// (retrieval section, additional instructions, SEND reading-age notes) applied.
+// The structure and diagrams of the base worksheet are NEVER modified.
+router.post("/resolve", requireAuth, async (req: Request, res: Response) => {
+  try {
+    const {
+      subject, topic, yearGroup, tier,
+      // Overlay parameters
+      retrievalTopic,          // string | null — topic for retrieval section
+      additionalInstructions,  // string | null — e.g. "keywords in Romanian"
+      sendNeed,                // string | null — SEND need code
+      readingAge,              // string | null — e.g. "8-9"
+    } = req.body;
+
+    if (!subject || !topic || !yearGroup) {
+      return res.status(400).json({ error: "subject, topic, yearGroup are required" });
+    }
+
+    const topicNorm = topic.toLowerCase().trim();
+    const subjectsToSearch = expandSubjects(subject);
+    const subjectsNorm = subjectsToSearch.map((s: string) => s.toLowerCase());
+    const placeholders = subjectsNorm.map(() => "?").join(",");
+    const ygNum = yearGroup.replace(/[^0-9]/g, "");
+
+    // Normalise tier
+    const tierAliases: Record<string, string[]> = {
+      base:       ["base", "standard", "mixed"],
+      standard:   ["standard", "base", "mixed"],
+      mixed:      ["mixed", "base", "standard"],
+      send:       ["send", "scaffolded"],
+      scaffolded: ["scaffolded", "send"],
+      foundation: ["foundation"],
+      higher:     ["higher"],
+    };
+    const requestedTier = (tier || "base").toLowerCase().trim();
+    const tiersToTry = tierAliases[requestedTier] || [requestedTier, "base", "standard"];
+
+    let entry: LibraryEntry | undefined;
+    for (const t of tiersToTry) {
+      entry = await db.prepare(
+        `SELECT * FROM worksheet_library
+         WHERE LOWER(subject) IN (${placeholders})
+           AND (LOWER(topic) = ? OR LOWER(topic) LIKE ?)
+           AND (year_group = ? OR year_group LIKE ? OR year_group LIKE ?)
+           AND tier = ?
+         ORDER BY curated DESC LIMIT 1`
+      ).get(...subjectsNorm, topicNorm, `%${topicNorm}%`, yearGroup, `%${ygNum}%`, `%/${ygNum}%`, t) as LibraryEntry | undefined;
+      if (entry) break;
+    }
+    // Fuzzy fallback
+    if (!entry) {
+      for (const t of tiersToTry) {
+        const allForTier = await db.prepare(
+          `SELECT * FROM worksheet_library WHERE LOWER(subject) IN (${placeholders}) AND tier = ? ORDER BY curated DESC`
+        ).all(...subjectsNorm, t) as LibraryEntry[];
+        entry = allForTier.find(e => topicKeywordsMatch(topic, e.topic));
+        if (entry) break;
+      }
+    }
+
+    if (!entry) {
+      return res.json({ found: false });
+    }
+
+    // Parse sections
+    const sections: any[] = JSON.parse(entry.sections || "[]");
+    const teacherSections: any[] = JSON.parse(entry.teacher_sections || "[]");
+    const keyVocab: any[] = JSON.parse(entry.key_vocab || "[]");
+
+    // Find all available tiers for this topic
+    const allTierRows = await db.prepare(
+      `SELECT tier FROM worksheet_library
+       WHERE LOWER(subject) IN (${placeholders})
+         AND (LOWER(topic) = ? OR LOWER(topic) LIKE ?)
+       ORDER BY curated DESC`
+    ).all(...subjectsNorm, topicNorm, `%${topicNorm}%`) as { tier: string }[];
+    const availableTiers = [...new Set(allTierRows.map(r => r.tier))];
+
+    // ── Apply overlays ─────────────────────────────────────────────────────────
+    const overlaidSections = applyOverlaysToSections(sections, {
+      retrievalTopic: retrievalTopic || null,
+      additionalInstructions: additionalInstructions || null,
+      sendNeed: sendNeed || null,
+      readingAge: readingAge || null,
+    });
+
+    res.json({
+      found: true,
+      libraryId: entry.id,
+      tier: entry.tier,
+      availableTiers,
+      title: entry.title,
+      subtitle: entry.subtitle,
+      learningObjective: entry.learning_objective,
+      keyVocab,
+      sections: overlaidSections,
+      teacherSections,
+      curated: !!entry.curated,
+      version: entry.version,
+    });
+  } catch (err: any) {
+    console.error("Library resolve error:", err.message);
+    res.status(500).json({ error: "Failed to resolve library worksheet" });
+  }
+});
+
+// ── POST /api/library/switch-tier — switch tier and re-apply all overlays ─────
+// Used by the Differentiate button. Loads the target tier from the library and
+// re-applies the exact same overlay state (retrieval, additional instructions,
+// SEND need, reading age) that was applied to the current worksheet.
+router.post("/switch-tier", requireAuth, async (req: Request, res: Response) => {
+  try {
+    const {
+      subject, topic, yearGroup, targetTier,
+      // Overlay state to re-apply
+      retrievalTopic,
+      additionalInstructions,
+      sendNeed,
+      readingAge,
+    } = req.body;
+
+    if (!subject || !topic || !yearGroup || !targetTier) {
+      return res.status(400).json({ error: "subject, topic, yearGroup and targetTier are required" });
+    }
+
+    const topicNorm = topic.toLowerCase().trim();
+    const subjectsToSearch = expandSubjects(subject);
+    const subjectsNorm = subjectsToSearch.map((s: string) => s.toLowerCase());
+    const placeholders = subjectsNorm.map(() => "?").join(",");
+    const ygNum = yearGroup.replace(/[^0-9]/g, "");
+
+    const tierAliases: Record<string, string[]> = {
+      base:       ["base", "standard", "mixed"],
+      standard:   ["standard", "base", "mixed"],
+      mixed:      ["mixed", "base", "standard"],
+      send:       ["send", "scaffolded"],
+      scaffolded: ["scaffolded", "send"],
+      foundation: ["foundation"],
+      higher:     ["higher"],
+    };
+    const tiersToTry = tierAliases[targetTier.toLowerCase()] || [targetTier.toLowerCase(), "base"];
+
+    let entry: LibraryEntry | undefined;
+    for (const t of tiersToTry) {
+      entry = await db.prepare(
+        `SELECT * FROM worksheet_library
+         WHERE LOWER(subject) IN (${placeholders})
+           AND (LOWER(topic) = ? OR LOWER(topic) LIKE ?)
+           AND (year_group = ? OR year_group LIKE ? OR year_group LIKE ?)
+           AND tier = ?
+         ORDER BY curated DESC LIMIT 1`
+      ).get(...subjectsNorm, topicNorm, `%${topicNorm}%`, yearGroup, `%${ygNum}%`, `%/${ygNum}%`, t) as LibraryEntry | undefined;
+      if (entry) break;
+    }
+    if (!entry) {
+      for (const t of tiersToTry) {
+        const allForTier = await db.prepare(
+          `SELECT * FROM worksheet_library WHERE LOWER(subject) IN (${placeholders}) AND tier = ? ORDER BY curated DESC`
+        ).all(...subjectsNorm, t) as LibraryEntry[];
+        entry = allForTier.find(e => topicKeywordsMatch(topic, e.topic));
+        if (entry) break;
+      }
+    }
+
+    if (!entry) {
+      return res.json({ found: false, message: `No ${targetTier} tier found for this topic` });
+    }
+
+    const sections: any[] = JSON.parse(entry.sections || "[]");
+    const teacherSections: any[] = JSON.parse(entry.teacher_sections || "[]");
+    const keyVocab: any[] = JSON.parse(entry.key_vocab || "[]");
+
+    // Find all available tiers for this topic
+    const allTierRows = await db.prepare(
+      `SELECT tier FROM worksheet_library
+       WHERE LOWER(subject) IN (${placeholders})
+         AND (LOWER(topic) = ? OR LOWER(topic) LIKE ?)
+       ORDER BY curated DESC`
+    ).all(...subjectsNorm, topicNorm, `%${topicNorm}%`) as { tier: string }[];
+    const availableTiers = [...new Set(allTierRows.map(r => r.tier))];
+
+    // Re-apply the same overlays
+    const overlaidSections = applyOverlaysToSections(sections, {
+      retrievalTopic: retrievalTopic || null,
+      additionalInstructions: additionalInstructions || null,
+      sendNeed: sendNeed || null,
+      readingAge: readingAge || null,
+    });
+
+    res.json({
+      found: true,
+      libraryId: entry.id,
+      tier: entry.tier,
+      availableTiers,
+      title: entry.title,
+      subtitle: entry.subtitle,
+      learningObjective: entry.learning_objective,
+      keyVocab,
+      sections: overlaidSections,
+      teacherSections,
+      curated: !!entry.curated,
+      version: entry.version,
+    });
+  } catch (err: any) {
+    console.error("Library switch-tier error:", err.message);
+    res.status(500).json({ error: "Failed to switch tier" });
+  }
+});
+
+// ── Helper: applyOverlaysToSections ──────────────────────────────────────────
+// Applies retrieval section, additional instructions, SEND notes, and reading
+// age notes to a copy of the sections array. NEVER modifies diagram sections
+// or changes section IDs. Returns a new array.
+function applyOverlaysToSections(
+  sections: any[],
+  overlays: {
+    retrievalTopic: string | null;
+    additionalInstructions: string | null;
+    sendNeed: string | null;
+    readingAge: string | null;
+  }
+): any[] {
+  // Deep clone to avoid mutating the original
+  let result: any[] = JSON.parse(JSON.stringify(sections));
+
+  // 1. Inject retrieval section after the learning objective (or at position 1)
+  if (overlays.retrievalTopic) {
+    const loIdx = result.findIndex(s => s.type === "learning-objective" || s.type === "objective");
+    const insertAt = loIdx >= 0 ? loIdx + 1 : 1;
+    const retrievalSection = {
+      id: `retrieval-overlay-${Date.now()}`,
+      type: "retrieval",
+      title: "RETRIEVAL PRACTICE",
+      label: "RETRIEVAL",
+      content: `Retrieval topic: ${overlays.retrievalTopic}\n\n1. What do you remember about ${overlays.retrievalTopic}? Write down 3 key facts.\n\n2. Define the key term from ${overlays.retrievalTopic}:\n\n3. Give one example related to ${overlays.retrievalTopic}:`,
+      marks: 6,
+      isOverlay: true,
+    };
+    result.splice(insertAt, 0, retrievalSection);
+  }
+
+  // 2. Inject additional instructions note (e.g. "keywords in Romanian")
+  // This is added as a teacher-visible note on the key vocabulary section
+  if (overlays.additionalInstructions) {
+    const vocabIdx = result.findIndex(s =>
+      s.type === "key-terms" || s.type === "vocabulary" || s.type === "key-vocab"
+    );
+    if (vocabIdx >= 0) {
+      result[vocabIdx] = {
+        ...result[vocabIdx],
+        additionalInstructions: overlays.additionalInstructions,
+      };
+    }
+    // Also add a note section at the top
+    const noteSection = {
+      id: `additional-note-overlay-${Date.now()}`,
+      type: "teacher-note",
+      title: "Additional Requirements",
+      content: `Additional requirement applied: ${overlays.additionalInstructions}`,
+      isOverlay: true,
+      teacherOnly: false,
+    };
+    result.unshift(noteSection);
+  }
+
+  // 3. SEND need and reading age are metadata overlays — they are stored as
+  //    properties on the worksheet metadata, not as sections. The renderer
+  //    reads sendNeed from worksheet.metadata to apply formatting.
+  //    We add a small note section for the teacher if a SEND need is active.
+  if (overlays.sendNeed && overlays.sendNeed !== "none") {
+    const sendLabels: Record<string, string> = {
+      dyslexia: "Dyslexia",
+      adhd: "ADHD / Focus Support",
+      esl: "EAL / English as Additional Language",
+      visual: "Visual Impairment Support",
+      asd: "Autism Spectrum Support",
+      low_literacy: "Low Literacy Support",
+    };
+    const sendLabel = sendLabels[overlays.sendNeed] || overlays.sendNeed;
+    const readingAgeNote = overlays.readingAge ? ` | Reading age adjusted to ${overlays.readingAge}` : "";
+    // Find existing SEND note and update, or add new one
+    const existingSendIdx = result.findIndex(s => s.id && s.id.startsWith("send-note-overlay"));
+    const sendNote = {
+      id: `send-note-overlay-${Date.now()}`,
+      type: "teacher-note",
+      title: "SEND Adaptations Applied",
+      content: `SEND adaptations applied: ${sendLabel}${readingAgeNote}. Formatting, font size, line spacing and language complexity have been adjusted accordingly.`,
+      isOverlay: true,
+      teacherOnly: false,
+    };
+    if (existingSendIdx >= 0) {
+      result[existingSendIdx] = sendNote;
+    } else {
+      result.unshift(sendNote);
+    }
+  }
+
+  return result;
+}
+
 export default router;

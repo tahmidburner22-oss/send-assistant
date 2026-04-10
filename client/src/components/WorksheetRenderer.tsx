@@ -1829,49 +1829,95 @@ function LabelDiagramSection({
 }) {
   const raw = stripLayoutTag(content);
   const accentColor = fmt.accentColor || "#1B2A4A";
-
   // Extract diagram spec from [[DIAGRAM:{...}]] marker
   const diagramSpec = extractDiagramSpec(raw);
   const textWithoutDiagram = stripDiagramMarker(raw);
-
   // Parse LABELS: and ANSWERS: lines from the text
   const lines = textWithoutDiagram.split("\n").filter(Boolean);
-  const labelsLine  = lines.find(l => /^LABELS:/i.test(l));
-  const answersLine = lines.find(l => /^ANSWERS:/i.test(l));
+  const labelsLine  = lines.find((l: string) => /^LABELS:/i.test(l));
+  const answersLine = lines.find((l: string) => /^ANSWERS:/i.test(l));
   const rawLabels = labelsLine
-    ? labelsLine.replace(/^LABELS:/i, "").split("|").map(s => s.trim())
-    : (diagramSpec?.labels?.map(l => l.text) || []);
+    ? labelsLine.replace(/^LABELS:/i, "").split("|").map((s: string) => s.trim())
+    : (diagramSpec?.labels?.map((l: any) => l.text) || []);
   const answers = answersLine
-    ? answersLine.replace(/^ANSWERS:/i, "").split("|").map(s => s.trim())
+    ? answersLine.replace(/^ANSWERS:/i, "").split("|").map((s: string) => s.trim())
     : [];
-
+  // Instruction text (lines before LABELS: and ANSWERS:)
+  const instructionLines = lines.filter((l: string) => !/^LABELS:/i.test(l) && !/^ANSWERS:/i.test(l));
+  const instructionText = instructionLines.join(" ").trim();
   // Determine number of columns for word bank grid — 4 per row matches reference PDF
   const COLS = 4;
   return (
     <div>
-      {/* Word bank header */}
-      <div style={{ fontSize: `${fmt.fontSize - 1}px`, fontWeight: 700, color: "#1e293b", fontFamily: fmt.fontFamily, textTransform: "uppercase" as const, letterSpacing: "0.08em", marginBottom: "6px" }}>
-        WORD BANK
-      </div>
-      {/* Word bank as grid table matching reference PDF */}
+      {/* Instruction text */}
+      {instructionText && (
+        <div style={{ fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, lineHeight: String(fmt.lineHeight), color: "#1e293b", marginBottom: "12px" }}
+          dangerouslySetInnerHTML={{ __html: renderMath(instructionText) }} />
+      )}
+      {/* Diagram image — centred, with italic caption below */}
+      {imageUrl && (
+        <div style={{ textAlign: "center", marginBottom: "14px" }}>
+          <img
+            src={imageUrl}
+            alt={caption || "Diagram"}
+            style={{ maxWidth: "420px", width: "100%", borderRadius: "6px", border: "1px solid #e5e7eb", display: "inline-block" }}
+            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+          />
+          {caption && (
+            <p style={{ fontSize: `${fmt.fontSize - 2}px`, color: "#6b7280", marginTop: "4px", fontStyle: "italic", fontFamily: fmt.fontFamily, textAlign: "center" }}>
+              {caption}
+            </p>
+          )}
+          {attribution && (
+            <p style={{ fontSize: `${fmt.fontSize - 3}px`, color: "#9ca3af", marginTop: "2px", fontFamily: fmt.fontFamily, textAlign: "center" }}>
+              Source: {attribution}
+            </p>
+          )}
+        </div>
+      )}
+      {/* SVG diagram fallback if no imageUrl */}
+      {!imageUrl && diagramSpec && (
+        <div style={{ textAlign: "center", marginBottom: "14px" }}>
+          <SVGDiagram
+            spec={diagramSpec}
+            width={420}
+            height={220}
+            fontFamily={fmt.fontFamily}
+            fontSize={fmt.fontSize - 1}
+            accentColor={accentColor}
+            showCallouts={isTeacher}
+          />
+          {caption && (
+            <p style={{ fontSize: `${fmt.fontSize - 2}px`, color: "#6b7280", marginTop: "4px", fontStyle: "italic", fontFamily: fmt.fontFamily, textAlign: "center" }}>
+              {caption}
+            </p>
+          )}
+        </div>
+      )}
+      {/* Word bank header + grid table */}
       {rawLabels.length > 0 && (
-        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, marginBottom: "0" }}>
-          <tbody>
-            {Array.from({ length: Math.ceil(rawLabels.length / COLS) }).map((_, rowIdx) => (
-              <tr key={rowIdx}>
-                {Array.from({ length: COLS }).map((_, colIdx) => {
-                  const lbl = rawLabels[rowIdx * COLS + colIdx];
-                  const ansIdx = rowIdx * COLS + colIdx;
-                  return (
-                    <td key={colIdx} style={{ border: "1px solid #d1d5db", padding: "8px 12px", textAlign: "center" as const, fontWeight: isTeacher ? 400 : 700, color: isTeacher && answers[ansIdx] ? "#166534" : "#1e293b", width: `${100 / COLS}%` }}>
-                      {isTeacher ? (answers[ansIdx] || lbl || "") : (lbl || "\u00a0")}
-                    </td>
-                  );
-                })}
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <>
+          <div style={{ fontSize: `${fmt.fontSize - 1}px`, fontWeight: 700, color: "#1e293b", fontFamily: fmt.fontFamily, textTransform: "uppercase" as const, letterSpacing: "0.08em", marginBottom: "6px" }}>
+            WORD BANK
+          </div>
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, marginBottom: "0" }}>
+            <tbody>
+              {Array.from({ length: Math.ceil(rawLabels.length / COLS) }).map((_, rowIdx) => (
+                <tr key={rowIdx}>
+                  {Array.from({ length: COLS }).map((_, colIdx) => {
+                    const lbl = rawLabels[rowIdx * COLS + colIdx];
+                    const ansIdx = rowIdx * COLS + colIdx;
+                    return (
+                      <td key={colIdx} style={{ border: "1px solid #d1d5db", padding: "8px 12px", textAlign: "center" as const, fontWeight: isTeacher ? 400 : 700, color: isTeacher && answers[ansIdx] ? "#166534" : "#1e293b", width: `${100 / COLS}%` }}>
+                        {isTeacher ? (answers[ansIdx] || lbl || "") : (lbl || " ")}
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </>
       )}
     </div>
   );
@@ -4737,8 +4783,37 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                         </div>
                       );
                     }
-                    // Standard table format
-                    return <TableCompleteSection content={content} fmt={fmt} isTeacher={isTeacherView} />;
+                    // Standard table format — extract intro text before the table
+                    const tableLines = content.split("\n");
+                    const introTextLines: string[] = [];
+                    const tableBodyLines: string[] = [];
+                    let foundTable = false;
+                    for (const tl of tableLines) {
+                      if (!foundTable && tl.includes("|") && tl.split("|").length >= 3 && !/^[-|:\s]+$/.test(tl)) {
+                        foundTable = true;
+                      }
+                      if (foundTable) {
+                        tableBodyLines.push(tl);
+                      } else {
+                        introTextLines.push(tl);
+                      }
+                    }
+                    const tableIntroText = introTextLines.join("\n").replace(/\[\d+\s*marks?\]/i, "").trim();
+                    const marksMatchTable = content.match(/\[(\d+)\s*marks?\]/i);
+                    const tableMarks = marksMatchTable ? parseInt(marksMatchTable[1]) : (section.marks as number || 6);
+                    const tableOnlyContent = tableBodyLines.join("\n");
+                    return (
+                      <div>
+                        {tableIntroText && (
+                          <div style={{ fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, lineHeight: String(fmt.lineHeight), color: "#1e293b", marginBottom: "10px" }}
+                            dangerouslySetInnerHTML={{ __html: renderMath(tableIntroText) }} />
+                        )}
+                        <TableCompleteSection content={tableOnlyContent || content} fmt={fmt} isTeacher={isTeacherView} />
+                        {!tableIntroText && (
+                          <div style={{ fontSize: "11px", color: "#6b7280", fontStyle: "italic", marginTop: "6px" }}>[{tableMarks} marks]</div>
+                        )}
+                      </div>
+                    );
                   }
                   if (section.type === "q-label-diagram") {
                     // If content uses diagram_subquestions layout, show diagram + questions format
@@ -4753,15 +4828,64 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                     return <MatchingSection content={content} fmt={fmt} />;
                   }
                   if (section.type === "q-challenge") {
-                    // Challenge question — renders like q-short-answer with a star badge
+                    // Challenge question — supports multi-part sub-questions (a)(b)(c)(d)
+                    const subQPattern = /^\s*\([a-z]\)/m;
+                    const hasSubQs = subQPattern.test(content);
+                    if (hasSubQs) {
+                      const allChalLines = content.split("\n");
+                      const challengeIntroLines: string[] = [];
+                      const challengeSubQs: { letter: string; text: string; marks: number }[] = [];
+                      let currentChalSub: { letter: string; text: string; marks: number } | null = null;
+                      for (const cline of allChalLines) {
+                        const subMatch = cline.match(/^\s*\(([a-z])\)\s*(.*)/);
+                        if (subMatch) {
+                          if (currentChalSub) challengeSubQs.push(currentChalSub);
+                          const mMatch = subMatch[2].match(/\[(\d+)\s*marks?\]/i);
+                          currentChalSub = { letter: subMatch[1], text: subMatch[2].replace(/\[\d+\s*marks?\]/i, "").trim(), marks: mMatch ? parseInt(mMatch[1]) : 2 };
+                        } else if (currentChalSub) {
+                          currentChalSub.text += " " + cline.trim();
+                        } else {
+                          challengeIntroLines.push(cline);
+                        }
+                      }
+                      if (currentChalSub) challengeSubQs.push(currentChalSub);
+                      const challengeIntroText = challengeIntroLines.join("\n").replace(/\[\d+\s*marks?\]/i, "").trim();
+                      const challengeTotalMarks = challengeSubQs.reduce((s, q) => s + q.marks, 0) || (section.marks as number || 6);
+                      return (
+                        <div>
+                          {challengeIntroText && (
+                            <div style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderLeft: "4px solid #1B2A4A", borderRadius: "4px", padding: "10px 14px", marginBottom: "14px", fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, lineHeight: String(fmt.lineHeight), color: "#1e293b" }}
+                              dangerouslySetInnerHTML={{ __html: renderMath(challengeIntroText) }} />
+                          )}
+                          <div style={{ fontSize: "11px", color: "#6b7280", fontStyle: "italic", marginBottom: "10px" }}>[{challengeTotalMarks} marks total]</div>
+                          {challengeSubQs.map((sq, si) => (
+                            <div key={si} style={{ marginBottom: "16px" }}>
+                              <div style={{ display: "flex", gap: "8px", alignItems: "flex-start", marginBottom: "6px" }}>
+                                <span style={{ fontWeight: 700, fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, color: "#1B2A4A", minWidth: "20px" }}>({sq.letter})</span>
+                                <div style={{ flex: 1, fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, lineHeight: String(fmt.lineHeight), color: "#1e293b" }}
+                                  dangerouslySetInnerHTML={{ __html: renderMath(sq.text) }} />
+                                <span style={{ fontSize: "11px", color: "#6b7280", fontStyle: "italic", whiteSpace: "nowrap" as const }}>[{sq.marks}m]</span>
+                              </div>
+                              {Array.from({ length: Math.max(sq.marks + 1, 2) }).map((_: unknown, li: number) => (
+                                <div key={li} style={{ borderBottom: "1px solid #d1d5db", height: "28px", width: "100%", marginBottom: "3px" }} />
+                              ))}
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    }
+                    // Single-part challenge question
+                    const challengeMarksMatch = content.match(/\[(\d+)\s*marks?\]/i);
+                    const challengeMarks = challengeMarksMatch ? parseInt(challengeMarksMatch[1]) : (section.marks as number || 6);
+                    const challengeText = content.replace(/\[\d+\s*marks?\]/i, "").trim();
                     return (
                       <div>
                         <div style={{ fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, lineHeight: String(fmt.lineHeight), color: "#1e293b", marginBottom: "12px" }}
-                          dangerouslySetInnerHTML={{ __html: renderMath(content.replace(/\[\d+\s*marks?\]/i, "").trim()) }} />
-                        {Array.from({ length: 6 }).map((_: unknown, li: number) => (
+                          dangerouslySetInnerHTML={{ __html: renderMath(challengeText) }} />
+                        <div style={{ fontSize: "11px", color: "#6b7280", fontStyle: "italic", marginBottom: "8px" }}>[{challengeMarks} marks]</div>
+                        {Array.from({ length: Math.max(challengeMarks + 1, 4) }).map((_: unknown, li: number) => (
                           <div key={li} style={{ borderBottom: "1px solid #d1d5db", minHeight: "28px", marginBottom: "6px" }} />
                         ))}
-                        <div style={{ fontSize: "11px", color: "#6b7280", fontStyle: "italic" }}>[{(section.marks as number) || 4} marks]</div>
                       </div>
                     );
                   }
