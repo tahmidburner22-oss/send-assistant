@@ -337,10 +337,11 @@ router.get("/lookup", requireAuth, async (req: Request, res: Response) => {
 
     // Select the requested tier, or fall back to 'base'/'standard', then first available
     // Handle both old naming (standard/scaffolded) and new naming (base/send)
-    const wantedTier = tier || "base";
+    const wantedTier = (tier || "base").toLowerCase().trim();
     const tierAliasMap: Record<string, string[]> = {
-      base:       ["base", "standard"],
-      standard:   ["standard", "base"],
+      base:       ["base", "standard", "mixed"],
+      standard:   ["standard", "base", "mixed"],
+      mixed:      ["mixed", "base", "standard"],
       send:       ["send", "scaffolded"],
       scaffolded: ["scaffolded", "send"],
       foundation: ["foundation"],
@@ -389,15 +390,17 @@ router.get("/lookup-tier", requireAuth, async (req: Request, res: Response) => {
     // Normalise tier name: handle both old naming (standard/scaffolded) and new naming (base/send)
     // The main library uses 'base' for standard/mixed, 'send' for SEND scaffolded
     // Older entries use 'standard' and 'scaffolded'
+    const normalizedTier = tier.toLowerCase().trim();
     const tierAliases: Record<string, string[]> = {
-      base:       ["base", "standard"],
-      standard:   ["standard", "base"],
+      base:       ["base", "standard", "mixed"],
+      standard:   ["standard", "base", "mixed"],
+      mixed:      ["mixed", "base", "standard"],
       send:       ["send", "scaffolded"],
       scaffolded: ["scaffolded", "send"],
       foundation: ["foundation"],
       higher:     ["higher"],
     };
-    const tiersToTry = tierAliases[tier] || [tier];
+    const tiersToTry = tierAliases[normalizedTier] || [normalizedTier];
 
     let entry: LibraryEntry | undefined;
 
