@@ -253,116 +253,40 @@ function isSafeTierTopicMatch(uiTopic: string, libraryTopic: string): boolean {
 }
 
 // ── GET /api/library/lookup — lookup by subject+topic+yearGroup[+tier] ──────────
-// Returns the matching entry. If tier is specified, returns that tier.
-// Also returns a `tiers` array listing all available tiers for this topic.
+// Returns the matching entry enriched for immediate worksheet rendering.
 router.get("/lookup", requireAuth, async (req: Request, res: Response) => {
   try {
     const { subject, topic, yearGroup, tier } = req.query as Record<string, string>;
     if (!subject || !topic || !yearGroup) {
       return res.status(400).json({ error: "subject, topic and yearGroup are required" });
     }
-    // Normalise topic for fuzzy matching
-    const topicNorm = topic.toLowerCase().trim();
-    // Expand subject to handle broad subjects like "Science"
-    const subjectsToSearch = expandSubjects(subject);
-    // Helper to parse an entry
-    const parseEntry = (e: LibraryEntry) => ({
-      ...e,
-      sections: JSON.parse(e.sections || "[]"),
-      teacher_sections: JSON.parse(e.teacher_sections || "[]"),
-      key_vocab: JSON.parse(e.key_vocab || "[]"),
-      curated: !!e.curated,
-    });
-    // Helper: find all tiers for a given subject list + topic (async)
-    // Normalise subjects to lowercase for case-insensitive matching
-    const subjectsLower = subjectsToSearch.map(s => s.toLowerCase());
-    const findTiersForSubjects = async (subjects: string[], topicStr: string, yg?: string): Promise<{ id: string; tier: string; title: string }[]> => {
-      const subjectsNorm = subjects.map(s => s.toLowerCase());
-      const placeholders = subjectsNorm.map(() => "?").join(",");
-      if (yg) {
-        // Match year group: exact, ILIKE, or range match (e.g. 'Year 10/11' matches 'Year 11')
-        const ygNum = yg.replace(/[^0-9]/g, "");
-        return await db.prepare(
-          `SELECT id, tier, title FROM worksheet_library
-           WHERE LOWER(subject) IN (${placeholders})
-             AND (LOWER(topic) = ? OR LOWER(topic) LIKE ?)
-             AND (year_group = ? OR LOWER(year_group) LIKE ? OR (? != '' AND year_group LIKE ?))
-           ORDER BY curated DESC, tier ASC`
-        ).all(...subjectsNorm, topicStr.toLowerCase(), `%${topicStr.toLowerCase()}%`, yg, `%${ygNum}%`, ygNum, `%${ygNum}%`) as { id: string; tier: string; title: string }[];
-      }
-      return await db.prepare(
-        `SELECT id, tier, title FROM worksheet_library
-         WHERE LOWER(subject) IN (${placeholders}) AND (LOWER(topic) = ? OR LOWER(topic) LIKE ?)
-         ORDER BY curated DESC, tier ASC`
-      ).all(...subjectsNorm, topicStr.toLowerCase(), `%${topicStr.toLowerCase()}%`) as { id: string; tier: string; title: string }[];
-    };
-    // 1. Exact topic match with year group
-    let allTiers = await findTiersForSubjects(subjectsToSearch, topic, yearGroup);
-    // 2. Exact topic match, any year group
-    if (allTiers.length === 0) {
-      allTiers = await findTiersForSubjects(subjectsToSearch, topic);
-    }
-    // 3. Safe fuzzy topic match.
-    // Prefer entries in the requested year group, and only accept topic matches with
-    // meaningful token overlap so broad keywords like "equation" do not pull in the
-    // wrong worksheet from the library.
-    if (allTiers.length === 0) {
-      const subjectsNormFuzzy = subjectsToSearch.map(s => s.toLowerCase());
-      const placeholdersFuzzy = subjectsNormFuzzy.map(() => "?").join(",");
-      const ygNum = yearGroup.replace(/[^0-9]/g, "");
-      const allEntries = await db.prepare(
-        `SELECT id, tier, title, topic, year_group FROM worksheet_library
-         WHERE LOWER(subject) IN (${placeholdersFuzzy})
-         ORDER BY curated DESC, updated_at DESC`
-      ).all(...subjectsNormFuzzy) as { id: string; tier: string; title: string; topic: string; year_group: string }[];
 
-      const sameYearMatches = allEntries.filter((entry) => {
-        const entryYgNum = entry.year_group.replace(/[^0-9]/g, "");
-        const matchesYearGroup = entry.year_group === yearGroup
-          || entry.year_group.toLowerCase().includes(ygNum)
-          || entryYgNum.includes(ygNum)
-          || ygNum.includes(entryYgNum);
-        return matchesYearGroup && isSafeTierTopicMatch(topic, entry.topic);
-      });
-
-      const safeMatches = sameYearMatches.length > 0
-        ? sameYearMatches
-        : allEntries.filter((entry) => isSafeTierTopicMatch(topic, entry.topic));
-
-      allTiers = safeMatches.map(({ id, tier, title }) => ({ id, tier, title }));
-    }
-    if (allTiers.length === 0) {
+    const requestedTier = (tier || "mixed").toLowerCase().trim();
+    const entry = await findLibraryEntry(subject, topic, yearGroup, requestedTier);
+    if (!entry) {
       return res.json({ found: false });
     }
 
-    // Select the requested tier, or fall back to 'base'/'standard', then first available
-    // Handle both old naming (standard/scaffolded) and new naming (base/send)
-    const wantedTier = (tier || "base").toLowerCase().trim();
-    const tierAliasMap: Record<string, string[]> = {
-      base:       ["base", "standard", "mixed"],
-      standard:   ["standard", "base", "mixed"],
-      mixed:      ["mixed", "base", "standard"],
-      send:       ["send", "scaffolded"],
-      scaffolded: ["scaffolded", "send"],
-      foundation: ["foundation"],
-      higher:     ["higher"],
-    };
-    const wantedAliases = tierAliasMap[wantedTier] || [wantedTier];
-    const targetTier = wantedAliases.reduce((found: any, alias: string) => found || allTiers.find((t: any) => t.tier === alias), null)
-      || allTiers.find((t: any) => t.tier === "base")
-      || allTiers.find((t: any) => t.tier === "standard")
-      || allTiers[0];
-
-    const entry = await db.prepare("SELECT * FROM worksheet_library WHERE id = ?")
-      .get(targetTier.id) as LibraryEntry | undefined;
-
-    if (!entry) return res.json({ found: false });
+    const sections: any[] = JSON.parse(entry.sections || "[]");
+    const teacherSections: any[] = JSON.parse(entry.teacher_sections || "[]");
+    const keyVocab: any[] = JSON.parse(entry.key_vocab || "[]");
+    const assets = await resolveEntryAssets(entry.id);
+    const sectionsWithAssets = injectAssetRefs(sections, assets);
+    const availableTiers = await findAvailableTiers(subject, topic, yearGroup);
 
     res.json({
       found: true,
-      entry: parseEntry(entry),
-      // Deduplicate tiers — each tier should appear only once
-      availableTiers: [...new Set(allTiers.map(t => t.tier))],
+      entry: {
+        ...entry,
+        sections: sectionsWithAssets,
+        teacher_sections: teacherSections,
+        key_vocab: keyVocab,
+        curated: !!entry.curated,
+      },
+      availableTiers,
+      canonicalTopicKey: entry.canonical_topic_key || canonicalTopicKey(topic),
+      structuralHash: computeStructuralHash(extractBaseStructure(sections)),
+      assets: assets.map(a => ({ id: a.id, sectionKey: a.section_key, publicUrl: a.public_url, assetType: a.asset_type })),
     });
   } catch (err: any) {
     console.error("Library lookup error:", err.message);
