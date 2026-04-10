@@ -960,7 +960,21 @@ export interface WorksheetSection {
   svg?: string;
   caption?: string;
   imageUrl?: string;
+  assetRef?: string;   // stable asset ID — resolved to URL via libraryAssets
   attribution?: string;
+  isOverlay?: boolean;
+  marks?: number;
+  [key: string]: unknown;
+}
+
+export interface LibraryAsset {
+  id: string;
+  sectionKey: string;
+  assetType: string;
+  publicUrl: string;
+  width?: number;
+  height?: number;
+  altText?: string;
 }
 
 export interface WorksheetData {
@@ -981,6 +995,18 @@ export interface WorksheetData {
   };
   isAI?: boolean;
   provider?: string;
+  fromLibrary?: boolean;
+  libraryId?: string;
+  canonicalTopicKey?: string;
+  structuralHash?: string;
+  libraryAssets?: LibraryAsset[];  // stable asset registry for assetRef resolution
+  availableTiers?: string[];
+  overlayState?: {
+    retrievalTopic?: string | null;
+    additionalInstructions?: string | null;
+    sendNeed?: string | null;
+    readingAge?: string | null;
+  };
 }
 
 interface WorksheetRendererProps {
@@ -1642,93 +1668,138 @@ function MCQSection({
   isTeacher?: boolean;
 }) {
   const raw = stripLayoutTag(content);
-  const lines = raw.split("\n").filter(Boolean);
-  // Question is everything before the first A/B/C/D line OR first bullet-point option
-  // Handle both "A  text" and "A. text" and "A) text" formats AND "- option" bullet format
-  const hasBulletOptions = lines.filter(l => /^[-*]\s+\S/.test(l)).length >= 2;
-  const optStartIdx = hasBulletOptions
-    ? lines.findIndex(l => /^[-*]\s+\S/.test(l))
-    : lines.findIndex(l => /^[A-D][.\s)]{1,2}\s*\S/.test(l));
-  const questionLines = optStartIdx > 0 ? lines.slice(0, optStartIdx) : [];
-  const optionLines  = optStartIdx >= 0 ? lines.slice(optStartIdx) : lines;
-
   const accentColor = fmt.accentColor || "#1B2A4A";
   const GREEN = "#166534";
-
   const OPTION_LABELS = ["A", "B", "C", "D", "E", "F"];
-  const options = hasBulletOptions
-    ? optionLines
+
+  // ── Parse multiple numbered questions from a single content block ──────────
+  // Supports formats:
+  //   "1. Question text\nA. opt\nB. opt\n2. Next question\nA. opt..."
+  //   "1) Question text\nA  opt\nB  opt..."
+  //   Single question with no number prefix
+  const allLines = raw.split("\n").filter(Boolean);
+
+  // Check if content has multiple numbered questions (e.g. "1.", "2.", "3.")
+  const numberedQPattern = /^(\d+)[.)\s]\s*\S/;
+  const questionStartIndices = allLines
+    .map((l, i) => ({ l, i }))
+    .filter(({ l }) => numberedQPattern.test(l))
+    .map(({ i }) => i);
+
+  // Build question blocks
+  interface MCQBlock { questionLines: string[]; optionLines: string[]; qNum: number; }
+  let blocks: MCQBlock[] = [];
+
+  if (questionStartIndices.length >= 2) {
+    // Multiple numbered questions — split into blocks
+    for (let bi = 0; bi < questionStartIndices.length; bi++) {
+      const start = questionStartIndices[bi];
+      const end = bi + 1 < questionStartIndices.length ? questionStartIndices[bi + 1] : allLines.length;
+      const blockLines = allLines.slice(start, end);
+      const hasBullet = blockLines.filter(l => /^[-*]\s+\S/.test(l)).length >= 2;
+      const optIdx = hasBullet
+        ? blockLines.findIndex(l => /^[-*]\s+\S/.test(l))
+        : blockLines.findIndex(l => /^[A-D][.\s)]{1,2}\s*\S/.test(l));
+      blocks.push({
+        qNum: bi + 1,
+        questionLines: optIdx > 0 ? blockLines.slice(0, optIdx) : blockLines,
+        optionLines: optIdx >= 0 ? blockLines.slice(optIdx) : [],
+      });
+    }
+  } else {
+    // Single question (no numbered prefix)
+    const hasBullet = allLines.filter(l => /^[-*]\s+\S/.test(l)).length >= 2;
+    const optIdx = hasBullet
+      ? allLines.findIndex(l => /^[-*]\s+\S/.test(l))
+      : allLines.findIndex(l => /^[A-D][.\s)]{1,2}\s*\S/.test(l));
+    blocks = [{
+      qNum: 1,
+      questionLines: optIdx > 0 ? allLines.slice(0, optIdx) : [],
+      optionLines: optIdx >= 0 ? allLines.slice(optIdx) : allLines,
+    }];
+  }
+
+  function parseOptions(optionLines: string[], hasBullet: boolean) {
+    if (hasBullet) {
+      return optionLines
         .filter(l => /^[-*]\s+\S/.test(l))
         .map((l, idx) => ({
           label: OPTION_LABELS[idx] || String(idx + 1),
           text: l.replace(/^[-*]\s+/, "").replace(/\s*✓\s*$/, "").trim(),
           correct: isTeacher && l.includes("✓"),
-        }))
-    : optionLines
-        .filter(l => /^[A-D][.\s)]{1,2}\s*\S/.test(l))
-        .map(l => {
-          const label  = l[0];
-          // Strip "A. " or "A  " or "A) " prefix
-          const text   = l.slice(1).replace(/^[.\s)]+/, "").replace(/\s*✓\s*$/, "").trim();
-          const correct = isTeacher && l.includes("✓");
-          return { label, text, correct };
-        });
-
-  const gridCols = options.length > 2 ? 2 : 1;
+        }));
+    }
+    return optionLines
+      .filter(l => /^[A-D][.\s)]{1,2}\s*\S/.test(l))
+      .map(l => ({
+        label: l[0],
+        text: l.slice(1).replace(/^[.\s)]+/, "").replace(/\s*✓\s*$/, "").trim(),
+        correct: isTeacher && l.includes("✓"),
+      }));
+  }
 
   return (
-    <div>
-      {questionLines.length > 0 && (
-        <div style={{
-          fontSize: `${fmt.fontSize}px`,
-          fontFamily: fmt.fontFamily,
-          lineHeight: String(fmt.lineHeight),
-          color: "#1e293b",
-          marginBottom: "10px",
-        }} dangerouslySetInnerHTML={{ __html: renderMath(questionLines.join(" ")) }} />
-      )}
-      <div style={{
-        display: "grid",
-        gridTemplateColumns: `repeat(${gridCols}, 1fr)`,
-        gap: "8px",
-      }}>
-        {options.map(({ label, text, correct }) => (
-          <div key={label} style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "10px",
-            padding: "8px 12px",
-            borderRadius: "6px",
-            border: `1.5px solid ${correct ? GREEN : `${accentColor}33`}`,
-            background: correct ? "#f0fdf4" : overlayColor,
-          }}>
-            <div style={{
-              width: "24px",
-              height: "24px",
-              borderRadius: "50%",
-              border: `2px solid ${correct ? GREEN : accentColor}`,
-              background: correct ? GREEN : "white",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              flexShrink: 0,
-              fontSize: `${Math.max(fmt.fontSize - 3, 9)}px`,
-              fontWeight: 700,
-              color: correct ? "white" : accentColor,
-              fontFamily: fmt.fontFamily,
-            }}>{label}</div>
-            <span
-              style={{
+    <div style={{ display: "flex", flexDirection: "column", gap: blocks.length > 1 ? "20px" : "0" }}>
+      {blocks.map((block, blockIdx) => {
+        const hasBullet = block.optionLines.filter(l => /^[-*]\s+\S/.test(l)).length >= 2;
+        const options = parseOptions(block.optionLines, hasBullet);
+        const gridCols = options.length > 2 ? 2 : 1;
+        return (
+          <div key={blockIdx}>
+            {block.questionLines.length > 0 && (
+              <div style={{
                 fontSize: `${fmt.fontSize}px`,
                 fontFamily: fmt.fontFamily,
-                color: correct ? GREEN : "#1e293b",
-                fontWeight: correct ? 600 : 400,
-              }}
-              dangerouslySetInnerHTML={{ __html: renderMath(text) }}
-            />
+                lineHeight: String(fmt.lineHeight),
+                color: "#1e293b",
+                marginBottom: "10px",
+              }} dangerouslySetInnerHTML={{ __html: renderMath(block.questionLines.join(" ")) }} />
+            )}
+            <div style={{
+              display: "grid",
+              gridTemplateColumns: `repeat(${gridCols}, 1fr)`,
+              gap: "8px",
+            }}>
+              {options.map(({ label, text, correct }) => (
+                <div key={label} style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "10px",
+                  padding: "8px 12px",
+                  borderRadius: "6px",
+                  border: `1.5px solid ${correct ? GREEN : `${accentColor}33`}`,
+                  background: correct ? "#f0fdf4" : overlayColor,
+                }}>
+                  <div style={{
+                    width: "24px",
+                    height: "24px",
+                    borderRadius: "50%",
+                    border: `2px solid ${correct ? GREEN : accentColor}`,
+                    background: correct ? GREEN : "white",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
+                    fontSize: `${Math.max(fmt.fontSize - 3, 9)}px`,
+                    fontWeight: 700,
+                    color: correct ? "white" : accentColor,
+                    fontFamily: fmt.fontFamily,
+                  }}>{label}</div>
+                  <span
+                    style={{
+                      fontSize: `${fmt.fontSize}px`,
+                      fontFamily: fmt.fontFamily,
+                      color: correct ? GREEN : "#1e293b",
+                      fontWeight: correct ? 600 : 400,
+                    }}
+                    dangerouslySetInnerHTML={{ __html: renderMath(text) }}
+                  />
+                </div>
+              ))}
+            </div>
           </div>
-        ))}
-      </div>
+        );
+      })}
     </div>
   );
 }
@@ -3382,6 +3453,31 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
   }: WorksheetRendererProps, ref: React.Ref<HTMLDivElement>) {
   const isTeacherView = viewMode === "teacher";
 
+  // ── Asset resolution: build a lookup map from assetRef ID → stable public URL ────────────────
+  // This allows sections to reference assets by stable ID rather than raw URL,
+  // so diagrams remain stable even if the underlying storage URL changes.
+  const assetRefMap = new Map<string, string>();
+  if (worksheet.libraryAssets && worksheet.libraryAssets.length > 0) {
+    for (const asset of worksheet.libraryAssets) {
+      assetRefMap.set(asset.id, asset.publicUrl);
+      assetRefMap.set(asset.sectionKey, asset.publicUrl); // also index by section key
+    }
+  }
+
+  /**
+   * Resolve the best image URL for a section:
+   * 1. If section has assetRef, look it up in assetRefMap
+   * 2. Fall back to section.imageUrl
+   * 3. Return undefined if neither is available
+   */
+  function resolveImageUrl(section: WorksheetSection): string | undefined {
+    if (section.assetRef) {
+      const resolved = assetRefMap.get(section.assetRef);
+      if (resolved) return resolved;
+    }
+    return section.imageUrl as string | undefined;
+  }
+
   // Resolve SEND need ID from metadata (may be stored as sendNeedId or inferred from sendNeed label)
   const sendNeedId = worksheet.metadata.sendNeedId || worksheet.metadata.sendNeed;
   const fmt = getSendFormatting(sendNeedId, textSize);
@@ -4938,10 +5034,10 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                     return <GapFillInlineSection content={content} fmt={fmt} overlayColor={overlayColor} />;
                   }
                   if (layoutTag === "label_diagram") {
-                    return <LabelDiagramSection content={content} fmt={fmt} isTeacher={isTeacherView} imageUrl={section.imageUrl} caption={section.caption} attribution={section.attribution} />;
+                    return <LabelDiagramSection content={content} fmt={fmt} isTeacher={isTeacherView} imageUrl={resolveImageUrl(section)} caption={section.caption} attribution={section.attribution} />;
                   }
                   if (layoutTag === "diagram_subquestions") {
-                    return <DiagramSubQSection content={content} fmt={fmt} overlayColor={overlayColor} imageUrl={section.imageUrl} caption={section.caption} attribution={section.attribution} />;
+                    return <DiagramSubQSection content={content} fmt={fmt} overlayColor={overlayColor} imageUrl={resolveImageUrl(section)} caption={section.caption} attribution={section.attribution} />;
                   }
                   if (layoutTag === "table_complete") {
                     return <TableCompleteSection content={content} fmt={fmt} isTeacher={isTeacherView} />;
@@ -5106,7 +5202,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                * This ensures the svg/caption fields on the Section type are fully utilised
                * regardless of the section's content type.
                */}
-              {section.type !== "diagram" && !extractDiagramSpec(content) && (section.svg || section.imageUrl) && (
+              {section.type !== "diagram" && section.type !== "q-label-diagram" && !extractDiagramSpec(content) && (section.svg || section.imageUrl) && (
                 <div style={{ textAlign: "center", marginTop: "12px" }}>
                   {section.imageUrl ? (
                     <img

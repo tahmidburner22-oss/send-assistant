@@ -16,8 +16,11 @@ import { Router, Request, Response } from "express";
 import { v4 as uuidv4 } from "uuid";
 import multer from "multer";
 import db from "../db/index.js";
+import { query } from "../db/index.js";
 import { requireAuth } from "../middleware/auth.js";
 import type { NextFunction } from "express";
+import { applyOverlays, extractBaseStructure, extractDiagramSlots, computeStructuralHash } from "../lib/overlayEngine.js";
+import { canonicalTopicKey } from "../lib/topicNormalizer.js";
 
 // Only the platform super-admin can access the library
 const SUPER_ADMIN_EMAILS = ["admin@adaptly.co.uk", "admin@sendassistant.app"];
@@ -42,7 +45,7 @@ interface LibraryEntry {
   year_group: string;
   title: string;
   subtitle?: string;
-  tier: string;              // 'standard' | 'foundation' | 'higher' | 'scaffolded'
+  tier: string;              // 'mixed' | 'foundation' | 'higher' | 'scaffolded' | 'standard'
   send_need?: string;        // optional SEND need this was built for
   sections: string;          // JSON string
   teacher_sections: string;  // JSON string
@@ -52,6 +55,29 @@ interface LibraryEntry {
   curated: number;
   version: number;
   uploaded_by?: string;
+  // Base+Variant architecture
+  base_entry_id?: string;    // null = this IS a base entry; set = this is a variant
+  base_version?: number;     // version of base entry this was derived from
+  base_structure_json: string;  // JSON: { sectionIds, sectionTypes, diagramSlotIds, structuralHash }
+  diagram_slots_json: string;   // JSON array of diagram slot descriptors
+  applied_overlays: string;     // JSON array of AppliedOverlay objects
+  canonical_topic_key?: string; // normalised topic key (e.g. 'atomic_structure')
+  created_at: string;
+  updated_at: string;
+}
+
+interface LibraryAsset {
+  id: string;
+  library_entry_id: string;
+  section_key: string;
+  asset_type: string;
+  content_hash?: string;
+  storage_key?: string;
+  public_url: string;
+  width?: number;
+  height?: number;
+  alt_text?: string;
+  topic_tags: string; // JSON string
   created_at: string;
   updated_at: string;
 }
@@ -1008,101 +1034,56 @@ function buildQuestionSection(qNum: number, content: string, sectionLabel: strin
 
 
 // ── POST /api/library/resolve — fetch library worksheet and apply overlays ────
-// This is the single entry point for the worksheet generator when a library
-// match is found. It returns the base worksheet with all requested overlays
-// (retrieval section, additional instructions, SEND reading-age notes) applied.
-// The structure and diagrams of the base worksheet are NEVER modified.
+// Single entry point for worksheet generator when a library match is found.
+// Returns the base worksheet with all requested overlays applied.
+// Structure and diagrams of the base worksheet are NEVER modified.
 router.post("/resolve", requireAuth, async (req: Request, res: Response) => {
   try {
     const {
       subject, topic, yearGroup, tier,
-      // Overlay parameters
-      retrievalTopic,          // string | null — topic for retrieval section
-      additionalInstructions,  // string | null — e.g. "keywords in Romanian"
-      sendNeed,                // string | null — SEND need code
-      readingAge,              // string | null — e.g. "8-9"
+      retrievalTopic, additionalInstructions, sendNeed, readingAge,
     } = req.body;
 
     if (!subject || !topic || !yearGroup) {
       return res.status(400).json({ error: "subject, topic, yearGroup are required" });
     }
 
-    const topicNorm = topic.toLowerCase().trim();
-    const subjectsToSearch = expandSubjects(subject);
-    const subjectsNorm = subjectsToSearch.map((s: string) => s.toLowerCase());
-    const placeholders = subjectsNorm.map(() => "?").join(",");
-    const ygNum = yearGroup.replace(/[^0-9]/g, "");
+    const entry = await findLibraryEntry(subject, topic, yearGroup, tier || "mixed");
+    if (!entry) return res.json({ found: false });
 
-    // Normalise tier
-    const tierAliases: Record<string, string[]> = {
-      base:       ["base", "standard", "mixed"],
-      standard:   ["standard", "base", "mixed"],
-      mixed:      ["mixed", "base", "standard"],
-      send:       ["send", "scaffolded"],
-      scaffolded: ["scaffolded", "send"],
-      foundation: ["foundation"],
-      higher:     ["higher"],
-    };
-    const requestedTier = (tier || "base").toLowerCase().trim();
-    const tiersToTry = tierAliases[requestedTier] || [requestedTier, "base", "standard"];
-
-    let entry: LibraryEntry | undefined;
-    for (const t of tiersToTry) {
-      entry = await db.prepare(
-        `SELECT * FROM worksheet_library
-         WHERE LOWER(subject) IN (${placeholders})
-           AND (LOWER(topic) = ? OR LOWER(topic) LIKE ?)
-           AND (year_group = ? OR year_group LIKE ? OR year_group LIKE ?)
-           AND tier = ?
-         ORDER BY curated DESC LIMIT 1`
-      ).get(...subjectsNorm, topicNorm, `%${topicNorm}%`, yearGroup, `%${ygNum}%`, `%/${ygNum}%`, t) as LibraryEntry | undefined;
-      if (entry) break;
-    }
-    // Fuzzy fallback
-    if (!entry) {
-      for (const t of tiersToTry) {
-        const allForTier = await db.prepare(
-          `SELECT * FROM worksheet_library WHERE LOWER(subject) IN (${placeholders}) AND tier = ? ORDER BY curated DESC`
-        ).all(...subjectsNorm, t) as LibraryEntry[];
-        // Prefer entries whose year group matches the requested year number
-        const yearMatches = allForTier.filter(e =>
-          topicKeywordsMatch(topic, e.topic) && (
-            e.year_group === yearGroup ||
-            (ygNum && e.year_group.replace(/[^0-9]/g, "").includes(ygNum))
-          )
-        );
-        entry = yearMatches.length > 0
-          ? yearMatches[0]
-          : allForTier.find(e => topicKeywordsMatch(topic, e.topic));
-        if (entry) break;
-      }
-    }
-
-    if (!entry) {
-      return res.json({ found: false });
-    }
-
-    // Parse sections
     const sections: any[] = JSON.parse(entry.sections || "[]");
     const teacherSections: any[] = JSON.parse(entry.teacher_sections || "[]");
     const keyVocab: any[] = JSON.parse(entry.key_vocab || "[]");
 
-    // Find all available tiers for this topic
-    const allTierRows = await db.prepare(
-      `SELECT tier FROM worksheet_library
-       WHERE LOWER(subject) IN (${placeholders})
-         AND (LOWER(topic) = ? OR LOWER(topic) LIKE ?)
-       ORDER BY curated DESC`
-    ).all(...subjectsNorm, topicNorm, `%${topicNorm}%`) as { tier: string }[];
-    const availableTiers = [...new Set(allTierRows.map(r => r.tier))];
+    // Resolve assets for this entry
+    const assets = await resolveEntryAssets(entry.id);
+    // Inject assetRef into sections where imageUrl matches a known asset
+    const sectionsWithAssets = injectAssetRefs(sections, assets);
 
-    // ── Apply overlays ─────────────────────────────────────────────────────────
-    const overlaidSections = applyOverlaysToSections(sections, {
+    // Find all available tiers for this topic
+    const availableTiers = await findAvailableTiers(subject, topic, yearGroup);
+
+    // Apply overlays using the overlay engine
+    const overlayResult = applyOverlays(sectionsWithAssets, {
       retrievalTopic: retrievalTopic || null,
       additionalInstructions: additionalInstructions || null,
       sendNeed: sendNeed || null,
       readingAge: readingAge || null,
     });
+
+    if (!overlayResult.structurePreserved) {
+      console.warn("[library/resolve] Structural hash mismatch after overlays — returning anyway");
+    }
+
+    // Backfill base_structure_json and diagram_slots_json if not set
+    if (!entry.base_structure_json || entry.base_structure_json === "{}") {
+      const baseStructure = extractBaseStructure(sections);
+      const diagramSlots = extractDiagramSlots(sections);
+      const topicKey = canonicalTopicKey(topic);
+      await db.prepare(
+        `UPDATE worksheet_library SET base_structure_json = ?, diagram_slots_json = ?, canonical_topic_key = ?, updated_at = NOW() WHERE id = ?`
+      ).run(JSON.stringify(baseStructure), JSON.stringify(diagramSlots), topicKey, entry.id);
+    }
 
     res.json({
       found: true,
@@ -1113,10 +1094,14 @@ router.post("/resolve", requireAuth, async (req: Request, res: Response) => {
       subtitle: entry.subtitle,
       learningObjective: entry.learning_objective,
       keyVocab,
-      sections: overlaidSections,
+      sections: overlayResult.sections,
       teacherSections,
       curated: !!entry.curated,
       version: entry.version,
+      canonicalTopicKey: entry.canonical_topic_key || canonicalTopicKey(topic),
+      appliedOverlays: overlayResult.appliedOverlays,
+      structuralHash: overlayResult.baseStructuralHash,
+      assets: assets.map(a => ({ id: a.id, sectionKey: a.section_key, publicUrl: a.public_url, assetType: a.asset_type })),
     });
   } catch (err: any) {
     console.error("Library resolve error:", err.message);
@@ -1124,73 +1109,78 @@ router.post("/resolve", requireAuth, async (req: Request, res: Response) => {
   }
 });
 
+// ── GET /api/library/assets/:entryId — get all assets for a library entry ────
+router.get("/assets/:entryId", requireAuth, async (req: Request, res: Response) => {
+  try {
+    const assets = await resolveEntryAssets(req.params.entryId);
+    res.json({ assets: assets.map(a => ({
+      id: a.id,
+      sectionKey: a.section_key,
+      assetType: a.asset_type,
+      publicUrl: a.public_url,
+      width: a.width,
+      height: a.height,
+      altText: a.alt_text,
+      topicTags: JSON.parse(a.topic_tags || "[]"),
+    })) });
+  } catch (err: any) {
+    res.status(500).json({ error: "Failed to get assets" });
+  }
+});
+
+// ── POST /api/library/assets — register an asset for a library entry ─────────
+router.post("/assets", requireAuth, requireSuperAdmin, async (req: Request, res: Response) => {
+  try {
+    const { libraryEntryId, sectionKey, assetType, publicUrl, width, height, altText, topicTags, contentHash } = req.body;
+    if (!libraryEntryId || !sectionKey || !publicUrl) {
+      return res.status(400).json({ error: "libraryEntryId, sectionKey and publicUrl are required" });
+    }
+    const id = uuidv4();
+    await db.prepare(
+      `INSERT INTO worksheet_library_assets (id, library_entry_id, section_key, asset_type, public_url, width, height, alt_text, topic_tags, content_hash)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    ).run(id, libraryEntryId, sectionKey, assetType || "image_url", publicUrl, width || null, height || null, altText || null, JSON.stringify(topicTags || []), contentHash || null);
+    res.json({ success: true, id });
+  } catch (err: any) {
+    res.status(500).json({ error: "Failed to register asset" });
+  }
+});
+
+// ── POST /api/library/assets/verify — check for broken asset URLs ─────────────
+router.post("/assets/verify", requireAuth, requireSuperAdmin, async (req: Request, res: Response) => {
+  try {
+    const assets = await db.prepare("SELECT id, public_url FROM worksheet_library_assets").all() as { id: string; public_url: string }[];
+    const results: { id: string; url: string; ok: boolean }[] = [];
+    for (const asset of assets) {
+      try {
+        const r = await fetch(asset.public_url, { method: "HEAD" });
+        results.push({ id: asset.id, url: asset.public_url, ok: r.ok });
+      } catch {
+        results.push({ id: asset.id, url: asset.public_url, ok: false });
+      }
+    }
+    const broken = results.filter(r => !r.ok);
+    res.json({ total: results.length, broken: broken.length, brokenAssets: broken });
+  } catch (err: any) {
+    res.status(500).json({ error: "Failed to verify assets" });
+  }
+});
+
 // ── POST /api/library/switch-tier — switch tier and re-apply all overlays ─────
 // Used by the Differentiate button. Loads the target tier from the library and
-// re-applies the exact same overlay state (retrieval, additional instructions,
-// SEND need, reading age) that was applied to the current worksheet.
+// re-applies the exact same overlay state that was applied to the current worksheet.
 router.post("/switch-tier", requireAuth, async (req: Request, res: Response) => {
   try {
     const {
       subject, topic, yearGroup, targetTier,
-      // Overlay state to re-apply
-      retrievalTopic,
-      additionalInstructions,
-      sendNeed,
-      readingAge,
+      retrievalTopic, additionalInstructions, sendNeed, readingAge,
     } = req.body;
 
     if (!subject || !topic || !yearGroup || !targetTier) {
       return res.status(400).json({ error: "subject, topic, yearGroup and targetTier are required" });
     }
 
-    const topicNorm = topic.toLowerCase().trim();
-    const subjectsToSearch = expandSubjects(subject);
-    const subjectsNorm = subjectsToSearch.map((s: string) => s.toLowerCase());
-    const placeholders = subjectsNorm.map(() => "?").join(",");
-    const ygNum = yearGroup.replace(/[^0-9]/g, "");
-
-    const tierAliases: Record<string, string[]> = {
-      base:       ["base", "standard", "mixed"],
-      standard:   ["standard", "base", "mixed"],
-      mixed:      ["mixed", "base", "standard"],
-      send:       ["send", "scaffolded"],
-      scaffolded: ["scaffolded", "send"],
-      foundation: ["foundation"],
-      higher:     ["higher"],
-    };
-    const tiersToTry = tierAliases[targetTier.toLowerCase()] || [targetTier.toLowerCase(), "base"];
-
-    let entry: LibraryEntry | undefined;
-    for (const t of tiersToTry) {
-      entry = await db.prepare(
-        `SELECT * FROM worksheet_library
-         WHERE LOWER(subject) IN (${placeholders})
-           AND (LOWER(topic) = ? OR LOWER(topic) LIKE ?)
-           AND (year_group = ? OR year_group LIKE ? OR year_group LIKE ?)
-           AND tier = ?
-         ORDER BY curated DESC LIMIT 1`
-      ).get(...subjectsNorm, topicNorm, `%${topicNorm}%`, yearGroup, `%${ygNum}%`, `%/${ygNum}%`, t) as LibraryEntry | undefined;
-      if (entry) break;
-    }
-    if (!entry) {
-      for (const t of tiersToTry) {
-        const allForTier = await db.prepare(
-          `SELECT * FROM worksheet_library WHERE LOWER(subject) IN (${placeholders}) AND tier = ? ORDER BY curated DESC`
-        ).all(...subjectsNorm, t) as LibraryEntry[];
-        // Prefer entries whose year group matches the requested year number
-        const yearMatches = allForTier.filter(e =>
-          topicKeywordsMatch(topic, e.topic) && (
-            e.year_group === yearGroup ||
-            (ygNum && e.year_group.replace(/[^0-9]/g, "").includes(ygNum))
-          )
-        );
-        entry = yearMatches.length > 0
-          ? yearMatches[0]
-          : allForTier.find(e => topicKeywordsMatch(topic, e.topic));
-        if (entry) break;
-      }
-    }
-
+    const entry = await findLibraryEntry(subject, topic, yearGroup, targetTier);
     if (!entry) {
       return res.json({ found: false, message: `No ${targetTier} tier found for this topic` });
     }
@@ -1200,16 +1190,14 @@ router.post("/switch-tier", requireAuth, async (req: Request, res: Response) => 
     const keyVocab: any[] = JSON.parse(entry.key_vocab || "[]");
 
     // Find all available tiers for this topic
-    const allTierRows = await db.prepare(
-      `SELECT tier FROM worksheet_library
-       WHERE LOWER(subject) IN (${placeholders})
-         AND (LOWER(topic) = ? OR LOWER(topic) LIKE ?)
-       ORDER BY curated DESC`
-    ).all(...subjectsNorm, topicNorm, `%${topicNorm}%`) as { tier: string }[];
-    const availableTiers = [...new Set(allTierRows.map(r => r.tier))];
+    const availableTiers = await findAvailableTiers(subject, topic, yearGroup);
 
-    // Re-apply the same overlays
-    const overlaidSections = applyOverlaysToSections(sections, {
+    // Resolve assets and inject assetRefs
+    const assets = await resolveEntryAssets(entry.id);
+    const sectionsWithAssets = injectAssetRefs(sections, assets);
+
+    // Re-apply the same overlays using the overlay engine
+    const overlayResult = applyOverlays(sectionsWithAssets, {
       retrievalTopic: retrievalTopic || null,
       additionalInstructions: additionalInstructions || null,
       sendNeed: sendNeed || null,
@@ -1225,10 +1213,14 @@ router.post("/switch-tier", requireAuth, async (req: Request, res: Response) => 
       subtitle: entry.subtitle,
       learningObjective: entry.learning_objective,
       keyVocab,
-      sections: overlaidSections,
+      sections: overlayResult.sections,
       teacherSections,
       curated: !!entry.curated,
       version: entry.version,
+      canonicalTopicKey: entry.canonical_topic_key || canonicalTopicKey(topic),
+      appliedOverlays: overlayResult.appliedOverlays,
+      structuralHash: overlayResult.baseStructuralHash,
+      assets: assets.map(a => ({ id: a.id, sectionKey: a.section_key, publicUrl: a.public_url, assetType: a.asset_type })),
     });
   } catch (err: any) {
     console.error("Library switch-tier error:", err.message);
@@ -1236,95 +1228,126 @@ router.post("/switch-tier", requireAuth, async (req: Request, res: Response) => 
   }
 });
 
-// ── Helper: applyOverlaysToSections ──────────────────────────────────────────
-// Applies retrieval section, additional instructions, SEND notes, and reading
-// age notes to a copy of the sections array. NEVER modifies diagram sections
-// or changes section IDs. Returns a new array.
-function applyOverlaysToSections(
-  sections: any[],
-  overlays: {
-    retrievalTopic: string | null;
-    additionalInstructions: string | null;
-    sendNeed: string | null;
-    readingAge: string | null;
-  }
-): any[] {
-  // Deep clone to avoid mutating the original
-  let result: any[] = JSON.parse(JSON.stringify(sections));
+// ───────────────────────────────────────────────────────────────────────────────
+// ── Shared helper functions ─────────────────────────────────────────────────────────────────────────────
 
-  // 1. Inject retrieval section after the learning objective (or at position 1)
-  if (overlays.retrievalTopic) {
-    const loIdx = result.findIndex(s => s.type === "learning-objective" || s.type === "objective");
-    const insertAt = loIdx >= 0 ? loIdx + 1 : 1;
-    const retrievalSection = {
-      id: `retrieval-overlay-${Date.now()}`,
-      type: "retrieval",
-      title: "RETRIEVAL PRACTICE",
-      label: "RETRIEVAL",
-      content: `Retrieval topic: ${overlays.retrievalTopic}\n\n1. What do you remember about ${overlays.retrievalTopic}? Write down 3 key facts.\n\n2. Define the key term from ${overlays.retrievalTopic}:\n\n3. Give one example related to ${overlays.retrievalTopic}:`,
-      marks: 6,
-      isOverlay: true,
-    };
-    result.splice(insertAt, 0, retrievalSection);
+/**
+ * Find a library entry for the given subject/topic/yearGroup/tier.
+ * Tries exact match first, then tier aliases, then fuzzy topic matching.
+ */
+async function findLibraryEntry(
+  subject: string,
+  topic: string,
+  yearGroup: string,
+  tier: string
+): Promise<LibraryEntry | undefined> {
+  const topicNorm = topic.toLowerCase().trim();
+  const subjectsToSearch = expandSubjects(subject);
+  const subjectsNorm = subjectsToSearch.map((s: string) => s.toLowerCase());
+  const placeholders = subjectsNorm.map(() => "?").join(",");
+  const ygNum = yearGroup.replace(/[^0-9]/g, "");
+
+  const tierAliases: Record<string, string[]> = {
+    base:       ["base", "standard", "mixed"],
+    standard:   ["standard", "base", "mixed"],
+    mixed:      ["mixed", "base", "standard"],
+    send:       ["send", "scaffolded"],
+    scaffolded: ["scaffolded", "send"],
+    foundation: ["foundation"],
+    higher:     ["higher"],
+  };
+  const tiersToTry = tierAliases[tier.toLowerCase()] || [tier.toLowerCase(), "mixed", "base"];
+
+  let entry: LibraryEntry | undefined;
+
+  // 1. Exact topic + year group match
+  for (const t of tiersToTry) {
+    entry = await db.prepare(
+      `SELECT * FROM worksheet_library
+       WHERE LOWER(subject) IN (${placeholders})
+         AND (LOWER(topic) = ? OR LOWER(topic) ILIKE ?)
+         AND (year_group = ? OR year_group ILIKE ? OR year_group ILIKE ?)
+         AND tier = ?
+       ORDER BY curated DESC LIMIT 1`
+    ).get(...subjectsNorm, topicNorm, `%${topicNorm}%`, yearGroup, `%${ygNum}%`, `%/${ygNum}%`, t) as LibraryEntry | undefined;
+    if (entry) return entry;
   }
 
-  // 2. Inject additional instructions note (e.g. "keywords in Romanian")
-  // This is added as a teacher-visible note on the key vocabulary section
-  if (overlays.additionalInstructions) {
-    const vocabIdx = result.findIndex(s =>
-      s.type === "key-terms" || s.type === "vocabulary" || s.type === "key-vocab"
+  // 2. Fuzzy topic match with year group preference
+  for (const t of tiersToTry) {
+    const allForTier = await db.prepare(
+      `SELECT * FROM worksheet_library WHERE LOWER(subject) IN (${placeholders}) AND tier = ? ORDER BY curated DESC`
+    ).all(...subjectsNorm, t) as LibraryEntry[];
+    const yearMatches = allForTier.filter(e =>
+      topicKeywordsMatch(topic, e.topic) && (
+        e.year_group === yearGroup ||
+        (ygNum && e.year_group.replace(/[^0-9]/g, "").includes(ygNum))
+      )
     );
-    if (vocabIdx >= 0) {
-      result[vocabIdx] = {
-        ...result[vocabIdx],
-        additionalInstructions: overlays.additionalInstructions,
-      };
-    }
-    // Also add a note section at the top
-    const noteSection = {
-      id: `additional-note-overlay-${Date.now()}`,
-      type: "teacher-note",
-      title: "Additional Requirements",
-      content: `Additional requirement applied: ${overlays.additionalInstructions}`,
-      isOverlay: true,
-      teacherOnly: false,
-    };
-    result.unshift(noteSection);
+    entry = yearMatches.length > 0
+      ? yearMatches[0]
+      : allForTier.find(e => topicKeywordsMatch(topic, e.topic));
+    if (entry) return entry;
   }
 
-  // 3. SEND need and reading age are metadata overlays — they are stored as
-  //    properties on the worksheet metadata, not as sections. The renderer
-  //    reads sendNeed from worksheet.metadata to apply formatting.
-  //    We add a small note section for the teacher if a SEND need is active.
-  if (overlays.sendNeed && overlays.sendNeed !== "none") {
-    const sendLabels: Record<string, string> = {
-      dyslexia: "Dyslexia",
-      adhd: "ADHD / Focus Support",
-      esl: "EAL / English as Additional Language",
-      visual: "Visual Impairment Support",
-      asd: "Autism Spectrum Support",
-      low_literacy: "Low Literacy Support",
-    };
-    const sendLabel = sendLabels[overlays.sendNeed] || overlays.sendNeed;
-    const readingAgeNote = overlays.readingAge ? ` | Reading age adjusted to ${overlays.readingAge}` : "";
-    // Find existing SEND note and update, or add new one
-    const existingSendIdx = result.findIndex(s => s.id && s.id.startsWith("send-note-overlay"));
-    const sendNote = {
-      id: `send-note-overlay-${Date.now()}`,
-      type: "teacher-note",
-      title: "SEND Adaptations Applied",
-      content: `SEND adaptations applied: ${sendLabel}${readingAgeNote}. Formatting, font size, line spacing and language complexity have been adjusted accordingly.`,
-      isOverlay: true,
-      teacherOnly: false,
-    };
-    if (existingSendIdx >= 0) {
-      result[existingSendIdx] = sendNote;
-    } else {
-      result.unshift(sendNote);
-    }
-  }
+  // 3. Canonical topic key match (cross-tier fallback)
+  const topicKey = canonicalTopicKey(topic);
+  const allEntries = await db.prepare(
+    `SELECT * FROM worksheet_library WHERE LOWER(subject) IN (${placeholders}) AND (canonical_topic_key = ? OR canonical_topic_key IS NULL) ORDER BY curated DESC`
+  ).all(...subjectsNorm, topicKey) as LibraryEntry[];
+  return allEntries.find(e => isSafeTierTopicMatch(topic, e.topic));
+}
 
-  return result;
+/**
+ * Find all available tiers for a given subject/topic/yearGroup combination.
+ */
+async function findAvailableTiers(subject: string, topic: string, yearGroup: string): Promise<string[]> {
+  const topicNorm = topic.toLowerCase().trim();
+  const subjectsToSearch = expandSubjects(subject);
+  const subjectsNorm = subjectsToSearch.map((s: string) => s.toLowerCase());
+  const placeholders = subjectsNorm.map(() => "?").join(",");
+  const rows = await db.prepare(
+    `SELECT DISTINCT tier FROM worksheet_library
+     WHERE LOWER(subject) IN (${placeholders})
+       AND (LOWER(topic) = ? OR LOWER(topic) ILIKE ?)
+     ORDER BY tier ASC`
+  ).all(...subjectsNorm, topicNorm, `%${topicNorm}%`) as { tier: string }[];
+  return rows.map(r => r.tier);
+}
+
+/**
+ * Resolve all assets registered for a library entry.
+ */
+async function resolveEntryAssets(libraryEntryId: string): Promise<LibraryAsset[]> {
+  try {
+    return await db.prepare(
+      `SELECT * FROM worksheet_library_assets WHERE library_entry_id = ? ORDER BY section_key ASC`
+    ).all(libraryEntryId) as LibraryAsset[];
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Inject assetRef IDs into sections where the imageUrl matches a registered asset.
+ * This replaces brittle raw URLs with stable asset references.
+ */
+function injectAssetRefs(sections: any[], assets: LibraryAsset[]): any[] {
+  if (!assets.length) return sections;
+  const assetsByUrl = new Map<string, LibraryAsset>();
+  const assetsBySectionKey = new Map<string, LibraryAsset>();
+  for (const asset of assets) {
+    assetsByUrl.set(asset.public_url, asset);
+    assetsBySectionKey.set(asset.section_key, asset);
+  }
+  return sections.map(section => {
+    // Match by section ID or imageUrl
+    const asset = assetsBySectionKey.get(section.id) || (section.imageUrl ? assetsByUrl.get(section.imageUrl) : undefined);
+    if (asset && !section.assetRef) {
+      return { ...section, assetRef: asset.id, imageUrl: asset.public_url };
+    }
+    return section;
+  });
 }
 
 export default router;

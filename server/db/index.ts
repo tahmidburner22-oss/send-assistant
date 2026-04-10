@@ -656,6 +656,13 @@ CREATE TABLE IF NOT EXISTS worksheet_library (
   uploaded_by TEXT REFERENCES users(id),
   tier TEXT NOT NULL DEFAULT 'standard',
   send_need TEXT,
+  -- Base+Variant architecture columns
+  base_entry_id TEXT REFERENCES worksheet_library(id) ON DELETE SET NULL,
+  base_version INTEGER,
+  base_structure_json TEXT NOT NULL DEFAULT '{}',
+  diagram_slots_json TEXT NOT NULL DEFAULT '[]',
+  applied_overlays TEXT NOT NULL DEFAULT '[]',
+  canonical_topic_key TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -663,6 +670,27 @@ CREATE INDEX IF NOT EXISTS idx_library_subject ON worksheet_library(subject);
 CREATE INDEX IF NOT EXISTS idx_library_curated ON worksheet_library(curated);
 CREATE INDEX IF NOT EXISTS idx_library_tier ON worksheet_library(tier);
 CREATE UNIQUE INDEX IF NOT EXISTS idx_library_topic ON worksheet_library(subject, topic, year_group, tier);
+CREATE INDEX IF NOT EXISTS idx_library_base_entry ON worksheet_library(base_entry_id);
+CREATE INDEX IF NOT EXISTS idx_library_canonical_topic ON worksheet_library(canonical_topic_key);
+
+-- Worksheet Library Assets (stable asset registry — diagrams, images, SVGs)
+CREATE TABLE IF NOT EXISTS worksheet_library_assets (
+  id TEXT PRIMARY KEY,
+  library_entry_id TEXT NOT NULL REFERENCES worksheet_library(id) ON DELETE CASCADE,
+  section_key TEXT NOT NULL,
+  asset_type TEXT NOT NULL DEFAULT 'image_url',  -- 'diagram_svg' | 'image_url' | 'image_s3' | 'latex'
+  content_hash TEXT,
+  storage_key TEXT,
+  public_url TEXT NOT NULL,
+  width INTEGER,
+  height INTEGER,
+  alt_text TEXT,
+  topic_tags TEXT NOT NULL DEFAULT '[]',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_assets_library_entry ON worksheet_library_assets(library_entry_id);
+CREATE INDEX IF NOT EXISTS idx_assets_section_key ON worksheet_library_assets(section_key);
 
 -- Quiz Results
 CREATE TABLE IF NOT EXISTS quiz_results (
@@ -739,6 +767,27 @@ export async function initDb() {
   // Run schema (all CREATE TABLE IF NOT EXISTS — idempotent)
   await db.exec(SCHEMA_SQL);
   console.log("✅ Schema applied");
+
+  // ── Runtime migrations for existing databases ──────────────────────────────
+  // These ADD COLUMN statements are idempotent via DO $$ ... EXCEPTION block.
+  const alterMigrations = [
+    // Base+Variant architecture columns on worksheet_library
+    `DO $$ BEGIN ALTER TABLE worksheet_library ADD COLUMN base_entry_id TEXT REFERENCES worksheet_library(id) ON DELETE SET NULL; EXCEPTION WHEN duplicate_column THEN NULL; END $$`,
+    `DO $$ BEGIN ALTER TABLE worksheet_library ADD COLUMN base_version INTEGER; EXCEPTION WHEN duplicate_column THEN NULL; END $$`,
+    `DO $$ BEGIN ALTER TABLE worksheet_library ADD COLUMN base_structure_json TEXT NOT NULL DEFAULT '{}'; EXCEPTION WHEN duplicate_column THEN NULL; END $$`,
+    `DO $$ BEGIN ALTER TABLE worksheet_library ADD COLUMN diagram_slots_json TEXT NOT NULL DEFAULT '[]'; EXCEPTION WHEN duplicate_column THEN NULL; END $$`,
+    `DO $$ BEGIN ALTER TABLE worksheet_library ADD COLUMN applied_overlays TEXT NOT NULL DEFAULT '[]'; EXCEPTION WHEN duplicate_column THEN NULL; END $$`,
+    `DO $$ BEGIN ALTER TABLE worksheet_library ADD COLUMN canonical_topic_key TEXT; EXCEPTION WHEN duplicate_column THEN NULL; END $$`,
+    // Asset table (CREATE TABLE IF NOT EXISTS handles this, but index creation may need guarding)
+    `CREATE INDEX IF NOT EXISTS idx_library_base_entry ON worksheet_library(base_entry_id)`,
+    `CREATE INDEX IF NOT EXISTS idx_library_canonical_topic ON worksheet_library(canonical_topic_key)`,
+    `CREATE INDEX IF NOT EXISTS idx_assets_library_entry ON worksheet_library_assets(library_entry_id)`,
+    `CREATE INDEX IF NOT EXISTS idx_assets_section_key ON worksheet_library_assets(section_key)`,
+  ];
+  for (const sql of alterMigrations) {
+    try { await query(sql); } catch (e: any) { /* ignore if already exists */ }
+  }
+  console.log("✅ Library asset migrations applied");
 
   // Seed default admin if no users exist
   const userCountResult = await query("SELECT COUNT(*)::int as c FROM users");
