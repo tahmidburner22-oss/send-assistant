@@ -780,6 +780,17 @@ router.delete("/entries/:id", requireAuth, requireSuperAdmin, async (req: Reques
   }
 });
 
+// ── DELETE /api/library/entries — delete ALL library entries (super-admin only) ──
+
+router.delete("/entries", requireAuth, requireSuperAdmin, async (_req: Request, res: Response) => {
+  try {
+    const result = await db.prepare("DELETE FROM worksheet_library").run();
+    res.json({ success: true, deleted: (result as any).changes ?? 0 });
+  } catch (err: any) {
+    res.status(500).json({ error: "Failed to delete all entries", detail: err.message });
+  }
+});
+
 // ── AI-powered PDF Parser ─────────────────────────────────────────────────────
 
 /**
