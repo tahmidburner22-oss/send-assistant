@@ -543,24 +543,29 @@ async function fetchAssets(token, entryId) {
 }
 
 async function ensureAsset(token, entryId, sectionKey, publicUrl, altText) {
-  const existingAssets = await fetchAssets(token, entryId);
+  const existingAssets = await fetchAssets(token, entryId).catch(() => []);
   const alreadyThere = existingAssets.find(a => a.sectionKey === sectionKey || a.publicUrl === publicUrl);
   if (alreadyThere) {
     console.log(`  asset already present for ${sectionKey}`);
-    return alreadyThere.id;
+    return { assetId: alreadyThere.id, publicUrl };
   }
 
-  const result = await requestJson(`${APP_URL}/api/library/assets`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(assetPayload(entryId, sectionKey, publicUrl, altText)),
-  });
+  try {
+    const result = await requestJson(`${APP_URL}/api/library/assets`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(assetPayload(entryId, sectionKey, publicUrl, altText)),
+    });
 
-  console.log(`  registered asset ${sectionKey} -> ${publicUrl}`);
-  return result.id;
+    console.log(`  registered asset ${sectionKey} -> ${publicUrl}`);
+    return { assetId: result.id, publicUrl };
+  } catch (error) {
+    console.warn(`  asset registration failed for ${sectionKey}; falling back to direct image URL rendering.`);
+    return { assetId: null, publicUrl };
+  }
 }
 
 async function main() {
