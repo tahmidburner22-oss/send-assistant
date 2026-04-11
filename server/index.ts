@@ -1,7 +1,7 @@
 import "dotenv/config";
 // ── Crypto polyfill for msedge-tts (needs globalThis.crypto.subtle and crypto.getRandomValues) ──
 // Railway may run Node.js < 19 where globalThis.crypto is not available as a global
-import { webcrypto } from "crypto";
+import { webcrypto, randomUUID } from "crypto";
 if (typeof (globalThis as any).crypto === "undefined") {
   (globalThis as any).crypto = webcrypto;
 }
@@ -67,6 +67,7 @@ import rateLimit from "express-rate-limit";
 import path from "path";
 import { fileURLToPath } from "url";
 import fs from "fs";
+import { logError, logInfo, reqContext } from "./lib/logger.js";
 
 // Import routes
 import authRouter from "./routes/auth.js";
@@ -187,7 +188,10 @@ app.use(compression({
 // ── CORS ──────────────────────────────────────────────────────────────────────
 const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(",")
+      .map((o) => o.trim())
+      .filter(Boolean)
   : [];
+const allowedOriginSet = new Set(allowedOrigins);
 app.use(cors({
   origin: (origin, cb) => {
     // Security: reject null origin (sandboxed iframes, data: URIs, file:// pages)
@@ -200,7 +204,13 @@ app.use(cors({
       // Explicit null origin — reject (sandboxed iframe / data: URI attack vector)
       return cb(new Error("Null origin not allowed"));
     }
-    if (allowedOrigins.length === 0 || allowedOrigins.some(o => origin.startsWith(o.trim()))) {
+    let normalisedOrigin: string;
+    try {
+      normalisedOrigin = new URL(origin).origin;
+    } catch {
+      return cb(new Error("Invalid origin"));
+    }
+    if (allowedOrigins.length === 0 || allowedOriginSet.has(normalisedOrigin)) {
       return cb(null, true);
     }
     cb(new Error("Not allowed by CORS"));
@@ -268,6 +278,28 @@ app.use(express.json({ limit: "5mb" })); // increased to 5mb to handle large AI-
 app.use(express.urlencoded({ extended: true, limit: "5mb" }));
 app.use(cookieParser());
 app.use(generalLimiter);
+
+// ── Request ID middleware for traceability ───────────────────────────────────
+app.use((req, res, next) => {
+  const incomingRequestId = req.headers["x-request-id"];
+  const requestId = typeof incomingRequestId === "string" && incomingRequestId.trim()
+    ? incomingRequestId
+    : randomUUID();
+  (req as any).requestId = requestId;
+  res.setHeader("X-Request-Id", requestId);
+  next();
+});
+
+app.use((req, res, next) => {
+  const startedAt = Date.now();
+  res.on("finish", () => {
+    logInfo("http.request", reqContext(req as any, {
+      status: res.statusCode,
+      durationMs: Date.now() - startedAt,
+    }));
+  });
+  next();
+});
 
 // ── Input sanitisation middleware ─────────────────────────────────────────────
 // Strip dangerous HTML/script tags from all string fields in request body
@@ -361,13 +393,21 @@ if (!isDev && fs.existsSync(indexHtml)) {
 // ── Global error handler — never leak stack traces in production ──────────────
 app.use((err: any, req: express.Request, res: express.Response, _next: express.NextFunction) => {
   const status = err.status || err.statusCode || 500;
+  const requestId = (req as any).requestId || "unknown";
   if (isDev) {
-    console.error("Unhandled error:", err);
-    res.status(status).json({ error: err.message, stack: err.stack });
+    logError("http.unhandled_error", reqContext(req as any, {
+      requestId,
+      status,
+      error: err?.message || String(err),
+    }));
+    res.status(status).json({ error: err.message, stack: err.stack, requestId });
   } else {
-    // In production, log internally but return a generic message
-    console.error(`[${new Date().toISOString()}] ${req.method} ${req.path} — ${err.message}`);
-    res.status(status).json({ error: status < 500 ? err.message : "An unexpected error occurred." });
+    logError("http.unhandled_error", reqContext(req as any, {
+      requestId,
+      status,
+      error: err?.message || String(err),
+    }));
+    res.status(status).json({ error: status < 500 ? err.message : "An unexpected error occurred.", requestId });
   }
 });
 
@@ -394,4 +434,3 @@ initDb().then(() => {
 });
 
 export default app;
-

@@ -664,6 +664,55 @@ CREATE INDEX IF NOT EXISTS idx_library_curated ON worksheet_library(curated);
 CREATE INDEX IF NOT EXISTS idx_library_tier ON worksheet_library(tier);
 CREATE UNIQUE INDEX IF NOT EXISTS idx_library_topic ON worksheet_library(subject, topic, year_group, tier);
 
+-- Worksheet library assets (stable asset manifest for diagrams/images)
+CREATE TABLE IF NOT EXISTS worksheet_library_assets (
+  id TEXT PRIMARY KEY,
+  library_entry_id TEXT NOT NULL REFERENCES worksheet_library(id) ON DELETE CASCADE,
+  section_key TEXT,
+  asset_type TEXT NOT NULL,
+  content_hash TEXT,
+  storage_key TEXT,
+  public_url TEXT,
+  width INTEGER,
+  height INTEGER,
+  alt_text TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_library_assets_entry ON worksheet_library_assets(library_entry_id);
+CREATE INDEX IF NOT EXISTS idx_library_assets_hash ON worksheet_library_assets(content_hash);
+
+-- SEND variants derived from canonical library entries
+CREATE TABLE IF NOT EXISTS worksheet_library_variants (
+  id TEXT PRIMARY KEY,
+  base_entry_id TEXT NOT NULL REFERENCES worksheet_library(id) ON DELETE CASCADE,
+  send_need TEXT NOT NULL,
+  version INTEGER NOT NULL DEFAULT 1,
+  adapted_sections TEXT NOT NULL DEFAULT '[]',
+  adapted_teacher_sections TEXT NOT NULL DEFAULT '[]',
+  adaptation_meta TEXT NOT NULL DEFAULT '{}',
+  created_by TEXT REFERENCES users(id),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_library_variant_unique ON worksheet_library_variants(base_entry_id, send_need, version);
+
+-- Teacher feedback loop for worksheet quality tuning
+CREATE TABLE IF NOT EXISTS worksheet_library_feedback (
+  id TEXT PRIMARY KEY,
+  base_entry_id TEXT NOT NULL REFERENCES worksheet_library(id) ON DELETE CASCADE,
+  variant_id TEXT REFERENCES worksheet_library_variants(id) ON DELETE SET NULL,
+  send_need TEXT,
+  rating INTEGER NOT NULL,
+  ease_level TEXT,
+  issues TEXT NOT NULL DEFAULT '[]',
+  comments TEXT,
+  submitted_by TEXT REFERENCES users(id),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_library_feedback_base ON worksheet_library_feedback(base_entry_id);
+CREATE INDEX IF NOT EXISTS idx_library_feedback_send ON worksheet_library_feedback(send_need);
+
 -- Quiz Results
 CREATE TABLE IF NOT EXISTS quiz_results (
   id TEXT PRIMARY KEY,

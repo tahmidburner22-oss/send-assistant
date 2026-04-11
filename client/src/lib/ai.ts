@@ -388,12 +388,7 @@ export async function callAI(
 ): Promise<{ text: string; provider: AIProvider }> {
   // Primary: route through server so admin API keys are used automatically for all users
   try {
-    // Include the JWT token from localStorage in the Authorization header.
-    // The server's requireAuth middleware reads from req.headers.authorization first.
-    // Without this header the request returns 401 and AI generation silently fails.
-    const storedToken = typeof localStorage !== 'undefined' ? localStorage.getItem('send_token') : null;
     const reqHeaders: Record<string, string> = { "Content-Type": "application/json" };
-    if (storedToken) reqHeaders["Authorization"] = `Bearer ${storedToken}`;
     const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
     const timeoutMs = 55000; // 55s — just under Railway's 60s limit; triggers fast retry instead of hanging
     const timeoutId = controller ? window.setTimeout(() => controller.abort(), timeoutMs) : null;
@@ -418,8 +413,6 @@ export async function callAI(
     // This MUST throw immediately — do NOT silently fall through to empty client keys
     if (res.status === 401 || res.status === 403) {
       const errData = await res.json().catch(() => ({})) as any;
-      // Clear the stale token so the user gets redirected to login
-      if (typeof localStorage !== 'undefined') localStorage.removeItem('send_token');
       const msg = errData?.error || (res.status === 401 ? 'Session expired. Please log in again.' : 'Access denied.');
       // Redirect to login after a short delay so any toast can show
       setTimeout(() => { window.location.href = '/login'; }, 2000);
@@ -448,7 +441,16 @@ export async function callAI(
       console.warn("[Adaptly AI] Server route unavailable, using client keys:", serverErr);
     }
   }
-  // Fallback: locally stored keys (offline / dev)
+  // Security hardening: disallow browser-side provider key fallback in production.
+  const allowClientFallback = typeof window !== "undefined" && (
+    window.location.hostname === "localhost" ||
+    window.location.hostname === "127.0.0.1"
+  );
+  if (!allowClientFallback) {
+    throw new Error("AI service unavailable. Please check your authenticated session and server provider configuration.");
+  }
+
+  // Fallback: locally stored keys (localhost/dev only)
   const order: AIProvider[] = ["groq", "gemini", "openrouter", "openai", "claude", "huggingface"];
   const errors: string[] = [];
   for (const provider of order) {

@@ -1007,15 +1007,17 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
         // first, then apply SEND adaptations on top of that content.
         // The library uses 'base' for standard/mixed ability, 'send' for SEND scaffolded versions.
         const lookupTier = difficulty === "higher" ? "higher" : difficulty === "foundation" ? "foundation" : "base";
+        const hasSendNeed = sendNeed && sendNeed !== "none-selected";
+        const sendParam = hasSendNeed ? `&sendNeed=${encodeURIComponent(sendNeed)}` : "";
         const libRes = await fetch(
-          `/api/library/lookup?subject=${encodeURIComponent(getLibrarySubjectName(subject))}&topic=${encodeURIComponent(topic)}&yearGroup=${encodeURIComponent(yearGroup)}&tier=${lookupTier}`,
+          `/api/library/resolve?subject=${encodeURIComponent(getLibrarySubjectName(subject))}&topic=${encodeURIComponent(topic)}&yearGroup=${encodeURIComponent(yearGroup)}&tier=${lookupTier}${sendParam}`,
           { headers: authHeaders }
         );
         if (libRes.ok) {
           const libData = await libRes.json();
-          if (libData.found && libData.entry) {
+          if (libData.entry) {
             const entry = libData.entry;
-            const hasSendNeed = sendNeed && sendNeed !== "none-selected";
+            const preAdaptedForSend = !!entry.send_need || !!entry.adaptation_meta;
 
             // Always adjust reading level:
             // 1. If a specific reading age was manually selected by the teacher, use that.
@@ -1077,7 +1079,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
             // sentence starters, hint boxes etc.) using the scaffold-worksheet endpoint which
             // has specific prompts for each SEND need (Dyslexia, ADHD, Autism, MLD, EAL etc.).
             // This is separate from the visual formatting overlay applied by WorksheetRenderer.
-            if (hasSendNeed) {
+            if (hasSendNeed && !preAdaptedForSend) {
               setGenerationStatus(`Applying ${sendNeed} scaffolding...`);
               try {
                 const sendRes = await fetch("/api/ai/scaffold-worksheet", {
@@ -1280,7 +1282,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
               fromLibrary: true,
               libraryCurated: entry.curated,
               // Store available tiers so the differentiate panel knows what's in the library
-              availableTiers: libData.availableTiers || ["base"],
+              availableTiers: libData.availableTiers || [lookupTier],
             } as any;
             setGenerated(libWorksheet);
             setHiddenSections(new Set());
@@ -1289,7 +1291,13 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
             setGenerationStatus("");
             const badge = entry.curated ? "✓ Curated worksheet" : "From worksheet library";
             const ygBadge = readingAdjusted ? ` · reading level adjusted for ${yearGroup}` : "";
-            const sendBadge = sendAdapted ? ` · SEND content adapted for ${sendNeed}` : hasSendNeed ? " · SEND formatting applied" : "";
+            const sendBadge = sendAdapted
+              ? ` · SEND content adapted for ${sendNeed}`
+              : preAdaptedForSend
+              ? ` · SEND variant loaded for ${sendNeed}`
+              : hasSendNeed
+              ? " · SEND formatting applied"
+              : "";
             toast.success(`${badge}${ygBadge}${sendBadge} — loaded instantly!`, { duration: 4000 });
             // Auto-save library worksheets to history so they appear in the History tab
             {
@@ -2205,14 +2213,17 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
         // Always use the difficulty tier — SEND need is applied on top, not instead of the difficulty tier
         // The library uses 'base' for standard/mixed ability, 'send' for SEND scaffolded versions.
         const lookupTier = nextDifficulty === "higher" ? "higher" : nextDifficulty === "foundation" ? "foundation" : "base";
+        const hasSendNeed = !!parsed.sendNeed;
+        const sendParam = hasSendNeed ? `&sendNeed=${encodeURIComponent(parsed.sendNeed)}` : "";
         const libRes = await fetch(
-          `/api/library/lookup?subject=${encodeURIComponent(getLibrarySubjectName(nextSubject))}&topic=${encodeURIComponent(nextTopic)}&yearGroup=${encodeURIComponent(nextYearGroup)}&tier=${lookupTier}`,
+          `/api/library/resolve?subject=${encodeURIComponent(getLibrarySubjectName(nextSubject))}&topic=${encodeURIComponent(nextTopic)}&yearGroup=${encodeURIComponent(nextYearGroup)}&tier=${lookupTier}${sendParam}`,
           { headers: authHeaders }
         );
         if (libRes.ok) {
           const libData = await libRes.json();
-          if (libData.found && libData.entry) {
+          if (libData.entry) {
              const entry = libData.entry;
+            const preAdaptedForSend = !!entry.send_need || !!entry.adaptation_meta;
             const libraryYearGroup = entry.year_group || entry.yearGroup;
             const yearGroupMismatch = libraryYearGroup && libraryYearGroup !== nextYearGroup;
             let finalSections = normaliseLibrarySections(entry.sections || []);
@@ -2244,7 +2255,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
               }
             }
 
-            if (hasSendNeed) {
+            if (hasSendNeed && !preAdaptedForSend) {
               setGenerationStatus(`Applying ${parsed.sendNeed} scaffolding...`);
               try {
                 const sendRes = await fetch("/api/ai/scaffold-worksheet", {
@@ -2295,7 +2306,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
               isAI: readingAdjusted || sendAdapted,
               fromLibrary: true,
               libraryCurated: entry.curated,
-              availableTiers: libData.availableTiers || ["base"],
+              availableTiers: libData.availableTiers || [lookupTier],
             } as any;
             toast.success("Worksheet loaded from library!");
           }

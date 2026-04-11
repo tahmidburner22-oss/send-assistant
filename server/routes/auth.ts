@@ -24,34 +24,30 @@ if (process.env.NODE_ENV === "production" && process.env.JWT_SECRET === undefine
   process.exit(1);
 }
 
-// ── Issue 2: Per-account failed login tracking (brute force protection) ───────
-// IP-based rate limiting catches distributed attacks; this catches single-target attacks.
-// In-memory only — resets on restart, which is acceptable (better than nothing).
-const failedLoginAttempts = new Map<string, number>();   // email → count
-const lockoutUntil        = new Map<string, number>();   // email → timestamp
-
-function isLockedOut(email: string): boolean {
-  const until = lockoutUntil.get(email);
-  if (!until) return false;
-  if (Date.now() < until) return true;
-  lockoutUntil.delete(email);
-  failedLoginAttempts.delete(email);
-  return false;
+// ── Issue 2: Per-account failed login tracking (distributed, DB-backed) ──────
+async function getLockoutState(email: string): Promise<{ locked: boolean; attempts: number }> {
+  const row = await db.prepare("SELECT failed_login_attempts, locked_until FROM users WHERE email = ?").get(email) as any;
+  if (!row) return { locked: false, attempts: 0 };
+  const lockedUntil = row.locked_until ? new Date(row.locked_until).getTime() : 0;
+  return { locked: lockedUntil > Date.now(), attempts: row.failed_login_attempts || 0 };
 }
 
-function recordFailedLogin(email: string): number {
-  const attempts = (failedLoginAttempts.get(email) || 0) + 1;
-  failedLoginAttempts.set(email, attempts);
-  if (attempts >= 10) {
-    lockoutUntil.set(email, Date.now() + 15 * 60 * 1000); // 15-minute lockout
-    failedLoginAttempts.delete(email);
-  }
-  return attempts;
+async function recordFailedLogin(userId: string): Promise<number> {
+  await db.prepare(`
+    UPDATE users
+    SET failed_login_attempts = COALESCE(failed_login_attempts, 0) + 1,
+        locked_until = CASE
+          WHEN COALESCE(failed_login_attempts, 0) + 1 >= 10 THEN NOW() + INTERVAL '15 minutes'
+          ELSE locked_until
+        END
+    WHERE id = ?
+  `).run(userId);
+  const updated = await db.prepare("SELECT failed_login_attempts FROM users WHERE id = ?").get(userId) as any;
+  return updated?.failed_login_attempts || 0;
 }
 
-function clearFailedLogins(email: string): void {
-  failedLoginAttempts.delete(email);
-  lockoutUntil.delete(email);
+async function clearFailedLogins(userId: string): Promise<void> {
+  await db.prepare("UPDATE users SET failed_login_attempts = 0, locked_until = NULL WHERE id = ?").run(userId);
 }
 
 // ── Issue 7: Password strength validator ─────────────────────────────────────
@@ -86,6 +82,17 @@ const ROLE_LABELS: Record<string, string> = {
   ta: "Teaching Assistant",
   staff: "Support Staff",
 };
+
+function setSessionCookie(res: Response, token: string): void {
+  const isProd = process.env.NODE_ENV === "production";
+  res.cookie("token", token, {
+    httpOnly: true,
+    secure: isProd,
+    sameSite: "lax",
+    maxAge: SESSION_TIMEOUT_MS,
+    path: "/",
+  });
+}
 
 router.post("/register", async (req: Request, res: Response) => {
   try {
@@ -196,17 +203,15 @@ router.post("/login", async (req: Request, res: Response) => {
     const { email, password } = req.body;
     if (!email || !password) return res.status(400).json({ error: "Email and password are required" });
 
-    // Issue 2: Check per-account lockout before hitting the DB
-    if (isLockedOut(email)) {
+    const user = await db.prepare("SELECT * FROM users WHERE email = ? AND is_active = 1").get(email) as any;
+    const lockState = await getLockoutState(email);
+    if (lockState.locked) {
       return res.status(429).json({
         error: "Account temporarily locked due to too many failed attempts. Please try again in 15 minutes or use Forgot Password.",
       });
     }
-
-    const user = await db.prepare("SELECT * FROM users WHERE email = ? AND is_active = 1").get(email) as any;
     // Use same error message whether user exists or not (prevents email enumeration)
     if (!user) {
-      recordFailedLogin(email);
       return res.status(401).json({ error: "Invalid email or password" });
     }
 
@@ -216,7 +221,7 @@ router.post("/login", async (req: Request, res: Response) => {
 
     const valid = await bcrypt.compare(password, user.password_hash);
     if (!valid) {
-      const attempts = recordFailedLogin(email);
+      const attempts = await recordFailedLogin(user.id);
       auditLog(user.id, user.school_id, "user.login_failed", "user", user.id, { attempts }, req.ip);
       if (attempts >= 10) {
         return res.status(429).json({
@@ -235,7 +240,7 @@ router.post("/login", async (req: Request, res: Response) => {
     }
 
     // Successful login — clear any failed attempt tracking
-    clearFailedLogins(email);
+    await clearFailedLogins(user.id);
 
     // Update last login
     await db.prepare("UPDATE users SET last_login_at = NOW() WHERE id = ?").run(user.id);
@@ -243,6 +248,7 @@ router.post("/login", async (req: Request, res: Response) => {
     const mfaVerified = !user.mfa_enabled;
     const token = createSessionToken(user, mfaVerified);
     createSession(user.id, token, req);
+    setSessionCookie(res, token);
 
     auditLog(user.id, user.school_id, "user.login", "user", user.id, { email }, req.ip);
 
@@ -261,7 +267,7 @@ router.post("/login", async (req: Request, res: Response) => {
 // Frontend exchanges Google ID token; we verify and upsert user
 router.post("/google", async (req: Request, res: Response) => {
   try {
-    const { idToken, googleId, email, displayName, photoUrl } = req.body;
+    const { googleId, email, displayName } = req.body;
     if (!email || !googleId) return res.status(400).json({ error: "Google auth data missing" });
 
     let user = await db.prepare("SELECT * FROM users WHERE google_id = ? OR email = ?").get(googleId, email) as any;
@@ -285,6 +291,7 @@ router.post("/google", async (req: Request, res: Response) => {
 
     const token = createSessionToken(user, true);
     createSession(user.id, token, req);
+    setSessionCookie(res, token);
 
     auditLog(user.id, user.school_id, "user.login_google", "user", user.id, { email }, req.ip);
 
@@ -348,6 +355,7 @@ router.post("/mfa/verify", async (req: Request, res: Response) => {
     await db.prepare("DELETE FROM sessions WHERE token = ?").run(sessionToken);
     const newToken = createSessionToken(user, true);
     createSession(user.id, newToken, req);
+    setSessionCookie(res, newToken);
 
     auditLog(user.id, user.school_id, "user.mfa_verified", "user", user.id, {}, req.ip);
     res.json({ token: newToken, user: safeUser(user) });
@@ -421,6 +429,7 @@ router.post("/refresh", requireAuth, async (req: Request, res: Response) => {
   if (!token) return res.status(401).json({ error: "No token" });
   const newExpiry = new Date(Date.now() + SESSION_TIMEOUT_MS).toISOString();
   await db.prepare("UPDATE sessions SET expires_at = ? WHERE token = ?").run(newExpiry, token);
+  setSessionCookie(res, token);
   res.json({ ok: true, expiresAt: newExpiry });
 });
 

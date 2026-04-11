@@ -8,6 +8,11 @@
  * POST   /api/library/entries             — create/upsert a library entry (admin)
  * POST   /api/library/auto-save           — auto-save AI-generated worksheet (any authenticated user)
  * POST   /api/library/ingest-pdf          — parse a PDF and ingest it into the library (admin)
+ * GET    /api/library/resolve             — resolve base/variant worksheet with stable assets
+ * GET    /api/library/tiers               — list available tiers excluding the active tier
+ * POST   /api/library/switch-tier         — switch tier and reapply active transforms
+ * POST   /api/library/purge-assets        — remove all library entries/assets/variants (super-admin)
+ * POST   /api/library/feedback            — store teacher quality feedback for tuning
  * PATCH  /api/library/entries/:id/curate  — mark as curated (admin)
  * DELETE /api/library/entries/:id         — delete a library entry (admin)
  */
@@ -62,6 +67,147 @@ interface ParsedWorksheet {
   teacherSections: any[];
   keyVocab: Array<{ term: string; definition: string }>;
   learningObjective: string;
+}
+
+interface LibraryAsset {
+  id: string;
+  library_entry_id: string;
+  section_key: string | null;
+  asset_type: string;
+  content_hash: string | null;
+  storage_key: string | null;
+  public_url: string | null;
+  width: number | null;
+  height: number | null;
+  alt_text: string | null;
+  inline_svg?: string | null;
+}
+
+function buildSendSupportNote(sendNeed: string): string {
+  const key = (sendNeed || "").toLowerCase();
+  if (key.includes("dyslexia")) return "Use short instructions, larger spacing, and keyword highlighting.";
+  if (key.includes("adhd")) return "Chunk tasks into short timed blocks and include explicit check-in prompts.";
+  if (key.includes("autism")) return "Use predictable task sequence, explicit transitions, and concrete language.";
+  if (key.includes("eal")) return "Pre-teach vocabulary and include simple sentence stems for responses.";
+  return "Provide scaffolded prompts, visual supports, and reduced cognitive load instructions.";
+}
+
+function adaptSectionsForSend(sections: any[], sendNeed: string): any[] {
+  const supportNote = buildSendSupportNote(sendNeed);
+  return (sections || []).map((section: any) => {
+    const content = typeof section?.content === "string" ? section.content : "";
+    return {
+      ...section,
+      content: `${content}\n\nSEND Support (${sendNeed}): ${supportNote}`.trim(),
+      // Preserve asset references if present so diagrams/images remain stable
+      assetRefs: Array.isArray(section?.assetRefs) ? section.assetRefs : section?.assetRefs || [],
+    };
+  });
+}
+
+function validateSectionSchema(section: any): string[] {
+  const errors: string[] = [];
+  if (!section || typeof section !== "object") return ["Section is not an object"];
+  if (!section.id || typeof section.id !== "string") errors.push("Missing string id");
+  if (!section.type || typeof section.type !== "string") errors.push("Missing string type");
+  if (!section.title || typeof section.title !== "string") errors.push("Missing string title");
+  if (typeof section.content !== "string") errors.push("Missing string content");
+  if (section.assetRefs && !Array.isArray(section.assetRefs)) errors.push("assetRefs must be an array");
+  return errors;
+}
+
+function qualityScore(sections: any[], teacherSections: any[]): { score: number; reasons: string[] } {
+  const reasons: string[] = [];
+  let score = 100;
+  if (!sections?.length) { score -= 60; reasons.push("No student sections"); }
+  if (!teacherSections?.length) { score -= 15; reasons.push("No teacher sections"); }
+  const withContent = (sections || []).filter((s: any) => typeof s.content === "string" && s.content.trim().length > 20).length;
+  const coverage = sections?.length ? withContent / sections.length : 0;
+  if (coverage < 0.8) { score -= 20; reasons.push("Low section content coverage"); }
+  const withMarks = (sections || []).filter((s: any) => typeof s.marks === "number" && s.marks > 0).length;
+  if (withMarks === 0) { score -= 10; reasons.push("No marked questions"); }
+  const diagramSections = (sections || []).filter((s: any) => (Array.isArray(s.assetRefs) && s.assetRefs.length > 0) || s.svg).length;
+  if (diagramSections === 0) { score -= 8; reasons.push("No diagram/asset sections"); }
+  return { score: Math.max(0, Math.min(100, score)), reasons };
+}
+
+function applyAssetIntegrity(sections: any[], assets: LibraryAsset[]): { sections: any[]; warnings: string[] } {
+  const warnings: string[] = [];
+  const assetIds = new Set((assets || []).map(a => a.id));
+  const safeSections = (sections || []).map((s: any) => {
+    const refs = Array.isArray(s.assetRefs) ? s.assetRefs : [];
+    if (refs.length === 0) return s;
+    const validRefs = refs.filter((ref: string) => assetIds.has(ref));
+    if (validRefs.length !== refs.length) {
+      warnings.push(`Section ${s.id || s.title || "unknown"} had orphaned assetRefs`);
+    }
+    if (validRefs.length === 0 && s.svg) {
+      const fallbackId = `inline:${s.id || uuidv4()}`;
+      assets.push({
+        id: fallbackId,
+        library_entry_id: "",
+        section_key: s.id || null,
+        asset_type: "diagram_svg",
+        content_hash: null,
+        storage_key: null,
+        public_url: null,
+        width: null,
+        height: null,
+        alt_text: "Inline diagram fallback",
+        inline_svg: s.svg,
+      });
+      return { ...s, assetRefs: [fallbackId] };
+    }
+    return { ...s, assetRefs: validRefs };
+  });
+  return { sections: safeSections, warnings };
+}
+
+function applyReadingAgeTransform(sections: any[], readingAge?: number): any[] {
+  if (!readingAge || readingAge <= 0) return sections;
+  return (sections || []).map((s: any) => {
+    const content = typeof s?.content === "string" ? s.content : "";
+    // Text-only simplifier (keeps structure and assets intact)
+    const simplified = content
+      .replace(/\btherefore\b/gi, "so")
+      .replace(/\bconsequently\b/gi, "so")
+      .replace(/\bapproximately\b/gi, "about");
+    return { ...s, content: simplified };
+  });
+}
+
+function insertRetrievalAfterLO(sections: any[], retrievalTopic?: string): any[] {
+  if (!retrievalTopic || !retrievalTopic.trim()) return sections;
+  const retrievalSection = {
+    id: "retrieval_dynamic",
+    type: "retrieval",
+    title: "Retrieval Practice",
+    content: `Recall and answer quick questions on: ${retrievalTopic.trim()}\n1) Define one key term.\n2) Give one example.\n3) Explain one common misconception.`,
+    marks: 3,
+    assetRefs: [],
+  };
+  const idx = (sections || []).findIndex((s: any) =>
+    ["learning-objective", "objectives", "lo", "objective"].includes((s?.type || "").toLowerCase())
+  );
+  if (idx >= 0) return [...sections.slice(0, idx + 1), retrievalSection, ...sections.slice(idx + 1)];
+  return [retrievalSection, ...(sections || [])];
+}
+
+function applyFeatureTransforms(sections: any[], keyVocab: any[], features?: any): { sections: any[]; keyVocab: any[] } {
+  if (!features?.bilingualKeywords?.enabled) return { sections, keyVocab };
+  const lang = (features.bilingualKeywords.lang || "ro").toLowerCase();
+  if (lang !== "ro") return { sections, keyVocab };
+  const vocab = (keyVocab || []).map((v: any) => {
+    const term = v.term || "";
+    const definition = v.definition || v.definition_en || "";
+    return {
+      ...v,
+      definition_en: definition,
+      definition_ro: v.definition_ro || `RO: ${definition}`,
+      term_ro: v.term_ro || `RO: ${term}`,
+    };
+  });
+  return { sections, keyVocab: vocab };
 }
 
 // ── GET /api/library/entries — list all entries ───────────────────────────────
@@ -866,6 +1012,296 @@ Rules:
 }
 
 // ── Regex-based PDF Parser (fallback) ─────────────────────────────────────────
+
+// ── GET /api/library/resolve — base-or-variant retrieval with assets ─────────
+router.get("/resolve", requireAuth, async (req: Request, res: Response) => {
+  try {
+    const { subject, topic, yearGroup, tier = "standard", sendNeed } = req.query as Record<string, string>;
+    if (!subject || !topic || !yearGroup) {
+      return res.status(400).json({ error: "subject, topic and yearGroup are required" });
+    }
+
+    const base = await db.prepare(
+      `SELECT * FROM worksheet_library
+       WHERE LOWER(subject)=LOWER(?) AND LOWER(topic)=LOWER(?) AND year_group=? AND tier=?
+       ORDER BY curated DESC, updated_at DESC
+       LIMIT 1`
+    ).get(subject, topic, yearGroup, tier) as LibraryEntry | undefined;
+
+    if (!base) {
+      return res.status(404).json({ error: "No base worksheet found in library" });
+    }
+
+    const assets = await db.prepare(
+      `SELECT * FROM worksheet_library_assets WHERE library_entry_id = ? ORDER BY created_at ASC`
+    ).all(base.id) as LibraryAsset[];
+
+    const parsedBase = {
+      ...base,
+      sections: JSON.parse(base.sections || "[]"),
+      teacher_sections: JSON.parse(base.teacher_sections || "[]"),
+      key_vocab: JSON.parse(base.key_vocab || "[]"),
+      assets,
+    };
+
+    const baseSectionErrors = parsedBase.sections.flatMap((s: any, idx: number) =>
+      validateSectionSchema(s).map((e) => `Section ${idx + 1}: ${e}`)
+    );
+    if (baseSectionErrors.length > 0) {
+      return res.status(422).json({ error: "Library entry failed schema validation", details: baseSectionErrors.slice(0, 12) });
+    }
+    const baseAssetIntegrity = applyAssetIntegrity(parsedBase.sections, parsedBase.assets as LibraryAsset[]);
+    parsedBase.sections = baseAssetIntegrity.sections;
+
+    if (!sendNeed) {
+      const baseQuality = qualityScore(parsedBase.sections, parsedBase.teacher_sections);
+      if (baseQuality.score < 55) {
+        return res.status(422).json({
+          error: "Library worksheet quality gate failed",
+          qualityScore: baseQuality.score,
+          reasons: baseQuality.reasons,
+          warnings: baseAssetIntegrity.warnings,
+        });
+      }
+      return res.json({ source: "base", entry: parsedBase, quality: baseQuality, assetWarnings: baseAssetIntegrity.warnings });
+    }
+
+    const variant = await db.prepare(
+      `SELECT * FROM worksheet_library_variants
+       WHERE base_entry_id = ? AND LOWER(send_need)=LOWER(?)
+       ORDER BY version DESC, updated_at DESC
+       LIMIT 1`
+    ).get(base.id, sendNeed) as any;
+
+    if (variant) {
+      const variantSections = JSON.parse(variant.adapted_sections || "[]");
+      const variantTeacher = JSON.parse(variant.adapted_teacher_sections || "[]");
+      const variantErrors = variantSections.flatMap((s: any, idx: number) =>
+        validateSectionSchema(s).map((e) => `Variant section ${idx + 1}: ${e}`)
+      );
+      if (variantErrors.length > 0) {
+        return res.status(422).json({ error: "Variant failed schema validation", details: variantErrors.slice(0, 12) });
+      }
+      const variantAssetIntegrity = applyAssetIntegrity(variantSections, parsedBase.assets as LibraryAsset[]);
+      const variantQuality = qualityScore(variantAssetIntegrity.sections, variantTeacher);
+      if (variantQuality.score < 55) {
+        return res.status(422).json({
+          error: "Variant quality gate failed",
+          qualityScore: variantQuality.score,
+          reasons: variantQuality.reasons,
+          warnings: variantAssetIntegrity.warnings,
+        });
+      }
+      return res.json({
+        source: "variant-cache",
+        entry: {
+          ...parsedBase,
+          send_need: sendNeed,
+          sections: variantAssetIntegrity.sections,
+          teacher_sections: variantTeacher,
+          adaptation_meta: JSON.parse(variant.adaptation_meta || "{}"),
+          base_entry_id: base.id,
+        },
+        quality: variantQuality,
+        assetWarnings: variantAssetIntegrity.warnings,
+      });
+    }
+
+    // Create deterministic text-only variant from base while preserving assets
+    const adaptedSections = adaptSectionsForSend(parsedBase.sections, sendNeed);
+    const adaptedTeacherSections = adaptSectionsForSend(parsedBase.teacher_sections, sendNeed);
+    const variantId = uuidv4();
+    const adaptationMeta = {
+      mode: "text-only",
+      sendNeed,
+      generatedAt: new Date().toISOString(),
+      preservedAssets: assets.length,
+    };
+
+    await db.prepare(
+      `INSERT INTO worksheet_library_variants
+       (id, base_entry_id, send_need, version, adapted_sections, adapted_teacher_sections, adaptation_meta, created_by)
+       VALUES (?, ?, ?, 1, ?, ?, ?, ?)`
+    ).run(
+      variantId,
+      base.id,
+      sendNeed,
+      JSON.stringify(adaptedSections),
+      JSON.stringify(adaptedTeacherSections),
+      JSON.stringify(adaptationMeta),
+      req.user!.id
+    );
+
+    const generatedErrors = adaptedSections.flatMap((s: any, idx: number) =>
+      validateSectionSchema(s).map((e) => `Generated variant section ${idx + 1}: ${e}`)
+    );
+    if (generatedErrors.length > 0) {
+      return res.status(422).json({ error: "Generated variant failed schema validation", details: generatedErrors.slice(0, 12) });
+    }
+    const generatedIntegrity = applyAssetIntegrity(adaptedSections, parsedBase.assets as LibraryAsset[]);
+    const generatedQuality = qualityScore(generatedIntegrity.sections, adaptedTeacherSections);
+    if (generatedQuality.score < 55) {
+      return res.status(422).json({
+        error: "Generated variant quality gate failed",
+        qualityScore: generatedQuality.score,
+        reasons: generatedQuality.reasons,
+        warnings: generatedIntegrity.warnings,
+      });
+    }
+
+    res.json({
+      source: "variant-generated",
+      entry: {
+        ...parsedBase,
+        send_need: sendNeed,
+        sections: generatedIntegrity.sections,
+        teacher_sections: adaptedTeacherSections,
+        adaptation_meta: adaptationMeta,
+        base_entry_id: base.id,
+      },
+      quality: generatedQuality,
+      assetWarnings: generatedIntegrity.warnings,
+    });
+  } catch (err: any) {
+    console.error("Library resolve error:", err.message);
+    res.status(500).json({ error: "Failed to resolve library worksheet" });
+  }
+});
+
+// ── GET /api/library/tiers — return available tiers excluding current ─────────
+router.get("/tiers", requireAuth, async (req: Request, res: Response) => {
+  try {
+    const { subject, topic, yearGroup, currentTier } = req.query as Record<string, string>;
+    if (!subject || !topic || !yearGroup) {
+      return res.status(400).json({ error: "subject, topic and yearGroup are required" });
+    }
+    const rows = await db.prepare(
+      `SELECT DISTINCT tier FROM worksheet_library
+       WHERE LOWER(subject)=LOWER(?) AND LOWER(topic)=LOWER(?) AND year_group=?
+       ORDER BY tier ASC`
+    ).all(subject, topic, yearGroup) as Array<{ tier: string }>;
+    const tiers = rows.map(r => r.tier).filter(t => t !== currentTier);
+    return res.json({ tiers });
+  } catch (err: any) {
+    console.error("Library tiers error:", err.message);
+    return res.status(500).json({ error: "Failed to fetch tiers" });
+  }
+});
+
+// ── POST /api/library/switch-tier — switch tier and reapply transforms ────────
+router.post("/switch-tier", requireAuth, async (req: Request, res: Response) => {
+  try {
+    const {
+      subject, topic, yearGroup, targetTier,
+      transforms = {},
+    } = req.body as any;
+    if (!subject || !topic || !yearGroup || !targetTier) {
+      return res.status(400).json({ error: "subject, topic, yearGroup and targetTier are required" });
+    }
+
+    const base = await db.prepare(
+      `SELECT * FROM worksheet_library
+       WHERE LOWER(subject)=LOWER(?) AND LOWER(topic)=LOWER(?) AND year_group=? AND tier=?
+       ORDER BY curated DESC, updated_at DESC LIMIT 1`
+    ).get(subject, topic, yearGroup, targetTier) as LibraryEntry | undefined;
+    if (!base) {
+      return res.status(404).json({ error: "Requested tier not found in library" });
+    }
+
+    const assets = await db.prepare(`SELECT * FROM worksheet_library_assets WHERE library_entry_id=?`).all(base.id) as LibraryAsset[];
+    let sections = JSON.parse(base.sections || "[]");
+    const teacherSections = JSON.parse(base.teacher_sections || "[]");
+    let keyVocab = JSON.parse(base.key_vocab || "[]");
+
+    sections = applyReadingAgeTransform(sections, Number(transforms.readingAge || 0));
+    if (transforms.sendNeed) sections = adaptSectionsForSend(sections, transforms.sendNeed);
+    sections = insertRetrievalAfterLO(sections, transforms.retrievalTopic);
+    ({ sections, keyVocab } = applyFeatureTransforms(sections, keyVocab, transforms.features || {}));
+
+    const schemaErrors = sections.flatMap((s: any, idx: number) =>
+      validateSectionSchema(s).map((e) => `Section ${idx + 1}: ${e}`)
+    );
+    if (schemaErrors.length > 0) {
+      return res.status(422).json({ error: "Tier switch failed schema validation", details: schemaErrors.slice(0, 12) });
+    }
+    const integrity = applyAssetIntegrity(sections, assets);
+    const quality = qualityScore(integrity.sections, teacherSections);
+    if (quality.score < 55) {
+      return res.status(422).json({ error: "Tier switch failed quality gate", qualityScore: quality.score, reasons: quality.reasons });
+    }
+
+    return res.json({
+      entry: {
+        ...base,
+        sections: integrity.sections,
+        teacher_sections: teacherSections,
+        key_vocab: keyVocab,
+        assets,
+      },
+      quality,
+      assetWarnings: integrity.warnings,
+      appliedTransforms: transforms,
+    });
+  } catch (err: any) {
+    console.error("Library switch-tier error:", err.message);
+    return res.status(500).json({ error: "Failed to switch tier" });
+  }
+});
+
+// ── POST /api/library/purge-assets — remove current library assets/entries ───
+router.post("/purge-assets", requireAuth, requireSuperAdmin, async (_req: Request, res: Response) => {
+  try {
+    const deletedVariants = await db.prepare("DELETE FROM worksheet_library_variants").run();
+    const deletedAssets = await db.prepare("DELETE FROM worksheet_library_assets").run();
+    const deletedEntries = await db.prepare("DELETE FROM worksheet_library").run();
+    res.json({
+      ok: true,
+      deleted: {
+        variants: deletedVariants.changes || 0,
+        assets: deletedAssets.changes || 0,
+        entries: deletedEntries.changes || 0,
+      },
+    });
+  } catch (err: any) {
+    console.error("Library purge error:", err.message);
+    res.status(500).json({ error: "Failed to purge library assets" });
+  }
+});
+
+// ── POST /api/library/feedback — teacher quality loop for base/variants ──────
+router.post("/feedback", requireAuth, async (req: Request, res: Response) => {
+  try {
+    const { baseEntryId, variantId, sendNeed, rating, easeLevel, issues, comments } = req.body as any;
+    if (!baseEntryId || typeof baseEntryId !== "string") {
+      return res.status(400).json({ error: "baseEntryId is required" });
+    }
+    const numericRating = Number(rating);
+    if (!Number.isFinite(numericRating) || numericRating < 1 || numericRating > 5) {
+      return res.status(400).json({ error: "rating must be between 1 and 5" });
+    }
+    const issueList = Array.isArray(issues) ? issues.slice(0, 20) : [];
+    const feedbackId = uuidv4();
+    await db.prepare(
+      `INSERT INTO worksheet_library_feedback
+       (id, base_entry_id, variant_id, send_need, rating, ease_level, issues, comments, submitted_by)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    ).run(
+      feedbackId,
+      baseEntryId,
+      variantId || null,
+      sendNeed || null,
+      numericRating,
+      easeLevel || null,
+      JSON.stringify(issueList),
+      comments || null,
+      req.user!.id
+    );
+    return res.status(201).json({ ok: true, feedbackId });
+  } catch (err: any) {
+    console.error("Library feedback error:", err.message);
+    return res.status(500).json({ error: "Failed to save worksheet feedback" });
+  }
+});
 
 /**
  * Fallback parser using regex to parse standard Adaptly worksheet format.

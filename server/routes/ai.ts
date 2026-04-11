@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
 import { v4 as uuidv4 } from "uuid";
 import multer from "multer";
+import { z } from "zod";
 import db from "../db/index.js";
 import { requireAuth, requireAdmin, auditLog } from "../middleware/auth.js";
 import { filterContent } from "../lib/contentFilter.js";
@@ -8,6 +9,7 @@ import { getSchoolKey } from "./schoolApiKeys.js";
 import { findDiagram, searchWikimediaDiagram } from "../lib/diagramBank.js";
 import * as _fullDiagramBankModule from "../lib/diagramBankFull.js";
 import { getTemplate } from "../lib/diagramTemplates.js";
+import { logError, reqContext } from "../lib/logger.js";
 // Static import (esbuild bundles everything into a single file, dynamic imports don't work)
 function getFullDiagramBank() {
   return _fullDiagramBankModule;
@@ -15,6 +17,20 @@ function getFullDiagramBank() {
 
 const router = Router();
 const worksheetUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 25 * 1024 * 1024 } });
+
+const generateRequestSchema = z.object({
+  prompt: z.string().min(1).max(20000),
+  systemPrompt: z.string().max(20000).optional().default(""),
+  provider: z.string().max(64).optional(),
+  apiKey: z.string().max(500).optional(),
+  maxTokens: z.number().int().min(100).max(8000).optional().default(2000),
+});
+
+const ensembleRequestSchema = z.object({
+  prompt: z.string().min(1).max(20000),
+  systemPrompt: z.string().max(20000).optional().default(""),
+  maxTokens: z.number().int().min(100).max(8000).optional().default(3000),
+});
 
 // ── Provider priority order — 12 providers, ~65,200 RPD combined ───────────────
 //
@@ -471,7 +487,11 @@ async function callWithFallback(
 
 // ── AI Proxy — auto-fallback, no manual key needed ───────────────────────────
 router.post("/generate", requireAuth, async (req: Request, res: Response) => {
-  const { prompt, systemPrompt, provider, model, apiKey, maxTokens = 2000 } = req.body;
+  const parsed = generateRequestSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: "Invalid AI generate payload", details: parsed.error.issues.slice(0, 3) });
+  }
+  const { prompt, systemPrompt, provider, apiKey, maxTokens } = parsed.data;
 
   if (!prompt) return res.status(400).json({ error: "Prompt required" });
 
@@ -566,7 +586,7 @@ router.post("/generate", requireAuth, async (req: Request, res: Response) => {
     } catch (_) {}
     res.json({ content: result.content, provider: result.provider, aiGenerated: true });
   } catch (err: any) {
-    console.error("AI proxy error:", err);
+    logError("ai.generate_failed", reqContext(req, { error: err?.message || String(err), provider }));
     const errMsg = err?.message || String(err);
     // Check if all providers failed due to missing keys (not rate limits or network errors)
     const allNoKey = errMsg.includes("no key configured") && !errMsg.includes("429") && !errMsg.includes("401") && !errMsg.includes("failed:");
@@ -582,8 +602,11 @@ router.post("/generate", requireAuth, async (req: Request, res: Response) => {
 
 // ── Collaborative AI Ensemble ─────────────────────────────────────────────────
 router.post("/ensemble", requireAuth, async (req: Request, res: Response) => {
-  const { prompt, systemPrompt, maxTokens = 3000 } = req.body;
-  if (!prompt) return res.status(400).json({ error: "Prompt required" });
+  const parsed = ensembleRequestSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: "Invalid AI ensemble payload", details: parsed.error.issues.slice(0, 3) });
+  }
+  const { prompt, systemPrompt, maxTokens } = parsed.data;
 
   const promptFilter = filterContent(prompt);
   if (promptFilter.flagged && promptFilter.category === "safeguarding") {

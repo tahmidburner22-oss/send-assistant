@@ -22,6 +22,8 @@ import { FunFactsCarousel } from "@/components/FunFactsCarousel";
 import { exportToDocx } from "@/lib/docx-export";
 import { useLocation } from "wouter";
 import { useUserPreferences } from "@/contexts/UserPreferencesContext";
+import { sanitizeHtmlOutput } from "@/lib/sanitizeHtml";
+import { auditToolContent, type ToolQualityReport } from "@/lib/toolQuality";
 
 export interface AIToolField {
   id: string;
@@ -169,7 +171,7 @@ function LessonPlanRenderer({ text, title: planTitle }: { text: string; title: s
               </h2>
             </div>
             <div className="px-5 py-4">
-              <div dangerouslySetInnerHTML={{ __html: renderContent(sec.content) }} />
+              <div dangerouslySetInnerHTML={{ __html: sanitizeHtmlOutput(renderContent(sec.content)) }} />
             </div>
           </div>
         ))}
@@ -231,6 +233,7 @@ export default function AIToolPage({
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [provider, setProvider] = useState<string>("");
+  const [qualityReport, setQualityReport] = useState<ToolQualityReport | null>(null);
   const outputRef = useRef<HTMLDivElement>(null);
   // Edit state
   const [editMode, setEditMode] = useState<EditMode>("none");
@@ -257,11 +260,13 @@ export default function AIToolPage({
     }
     setLoading(true);
     setResult(null);
+    setQualityReport(null);
     setEditMode("none");
     try {
       const { system, user, maxTokens } = buildPrompt(values);
       const { text, provider: p } = await callAI(system, user, maxTokens || 2500);
       setResult(text);
+      setQualityReport(auditToolContent(title, text));
       setProvider(p);
       onResult?.(text, values);
       toast.success("Generated successfully!");
@@ -319,6 +324,7 @@ export default function AIToolPage({
       const user = `Tool: ${title}\nCurrent content:\n${result}\n\nInstruction: ${aiPrompt}\n\nReturn the full updated content:`;
       const { text } = await callAI(system, user, 3000);
       setResult(text.trim());
+      setQualityReport(auditToolContent(title, text.trim()));
       setEditMode("none");
       setAiPrompt("");
       toast.success("Content updated with AI!");
@@ -328,7 +334,9 @@ export default function AIToolPage({
     setAiEditLoading(false);
   };
 
-  const formattedOutput = result ? (formatOutput ? formatOutput(result) : formatAIText(result)) : "";
+  const formattedOutput = result
+    ? sanitizeHtmlOutput(formatOutput ? formatOutput(result) : formatAIText(result))
+    : "";
 
   return (
     <div className="px-4 py-6 max-w-2xl mx-auto space-y-4">
@@ -439,6 +447,11 @@ export default function AIToolPage({
                   <Sparkles className="h-3 w-3 mr-1" />{provider}
                 </Badge>
               )}
+              {qualityReport && (
+                <Badge className="bg-blue-100 text-blue-700 text-xs">
+                  Quality {qualityReport.score}/100
+                </Badge>
+              )}
               <div className="ml-auto flex flex-wrap gap-2">
                 {/* Edit buttons — only shown when not in edit mode */}
                 {editMode === "none" && (
@@ -477,7 +490,12 @@ export default function AIToolPage({
                     <Button
                       size="sm"
                       className="bg-brand hover:bg-brand/90 text-white gap-1.5"
-                      onClick={() => { setResult(manualText); setEditMode("none"); toast.success("Changes saved!"); }}
+                      onClick={() => {
+                        setResult(manualText);
+                        setQualityReport(auditToolContent(title, manualText));
+                        setEditMode("none");
+                        toast.success("Changes saved!");
+                      }}
                     >
                       <Check className="w-3.5 h-3.5" />Save Changes
                     </Button>
@@ -527,6 +545,15 @@ export default function AIToolPage({
                 </Button>
               </div>
             </div>
+
+            {qualityReport?.suggestions?.length ? (
+              <div className="rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-900">
+                <p className="font-semibold mb-1">Content improvements:</p>
+                <ul className="list-disc ml-4 space-y-0.5">
+                  {qualityReport.suggestions.map((s, i) => <li key={`${i}-${s}`}>{s}</li>)}
+                </ul>
+              </div>
+            ) : null}
 
             {/* AI edit panel */}
             {editMode === "ai" && (
