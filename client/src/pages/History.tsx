@@ -14,19 +14,163 @@ import { toast } from "sonner";
 import type { Worksheet, Story, Differentiation } from "@/contexts/AppContext";
 import WorksheetRenderer, { renderMath } from "@/components/WorksheetRenderer";
 import WorksheetErrorBoundary from "@/components/WorksheetErrorBoundary";
+import { getTopicImages } from "@/lib/topic-image-bank";
 
-type Section = { title: string; type: string; content: string; teacherOnly?: boolean; svg?: string; caption?: string };
+type Section = {
+  id?: string;
+  title: string;
+  type: string;
+  content: string;
+  teacherOnly?: boolean;
+  svg?: string;
+  caption?: string;
+  imageUrl?: string;
+  assetRef?: string;
+  attribution?: string;
+  [key: string]: unknown;
+};
+
+function enrichAtomicStructureSections(ws: Worksheet, sections: Section[]): Section[] {
+  const isAtomicStructure = /atomic structure/i.test(ws.topic || "") || /atomic structure/i.test(ws.title || "");
+  if (!isAtomicStructure) return sections;
+
+  const atomicImages = getTopicImages("chemistry", "Atomic Structure");
+  const unlabelledImage = atomicImages[0]?.url || "/images/atom_nb_unlabelled_final.png";
+  const labelledImage = atomicImages[1]?.url || "/images/atom_nb_labelled_final.png";
+
+  return sections.map((section, index) => {
+    const title = String(section.title || "");
+    const content = String(section.content || "");
+    const normalizedTitle = title.toLowerCase();
+    const normalizedContent = content.toLowerCase();
+    const merged: Section = {
+      ...section,
+      teacherOnly: section.teacherOnly ?? normalizedTitle.startsWith("teacher "),
+    };
+
+    const isLabelDiagram =
+      section.type === "q-label-diagram" ||
+      /q1\s*[-—:]\s*label the diagram/i.test(title) ||
+      /label the diagram/i.test(title) ||
+      /labels:/i.test(content);
+
+    const isReferenceDiagram =
+      section.type === "diagram" ||
+      /reference diagram/i.test(title) ||
+      /labelled carbon atom/i.test(title) ||
+      /labelled bohr model/i.test(content);
+
+    if (isLabelDiagram) {
+      return {
+        ...merged,
+        id: section.id || `atomic-structure-label-diagram-${index}`,
+        type: "q-label-diagram",
+        imageUrl: section.imageUrl || unlabelledImage,
+        assetRef: section.assetRef || "q1-label-diagram",
+        caption: section.caption || "Unlabelled Bohr model of a carbon atom for the labelling task.",
+      };
+    }
+
+    if (isReferenceDiagram) {
+      return {
+        ...merged,
+        id: section.id || `atomic-structure-reference-diagram-${index}`,
+        type: "diagram",
+        imageUrl: section.imageUrl || labelledImage,
+        assetRef: section.assetRef || "reference-labelled-carbon",
+        caption: section.caption || "Labelled Bohr model of a carbon atom used as a reference scaffold.",
+      };
+    }
+
+    if (/teacher answer key/i.test(title) || /teacher answer key/i.test(content)) {
+      return {
+        ...merged,
+        id: section.id || `atomic-structure-teacher-answer-key-${index}`,
+        type: "mark-scheme",
+        title: /higher/i.test(ws.title || "") && /mixed ability/i.test(title)
+          ? title.replace(/mixed ability/ig, "Higher")
+          : title,
+        content: /higher/i.test(ws.title || "") && /mixed ability/i.test(normalizedContent)
+          ? content.replace(/mixed ability/ig, "Higher")
+          : content,
+        teacherOnly: true,
+      };
+    }
+
+    if (/teacher notes/i.test(title)) {
+      return {
+        ...merged,
+        id: section.id || `atomic-structure-teacher-notes-${index}`,
+        type: "teacher-notes",
+        teacherOnly: true,
+      };
+    }
+
+    return merged;
+  });
+}
 
 function buildSections(ws: Worksheet): Section[] {
-  if (ws.sections && ws.sections.length > 0) return ws.sections;
+  if (ws.sections && ws.sections.length > 0) return enrichAtomicStructureSections(ws, ws.sections as Section[]);
   const source = ws.teacherContent || ws.content || "";
   if (!source) return [];
-  return source.split(/\n(?=## )/).map(block => {
+
+  const isAtomicStructure = /atomic structure/i.test(ws.topic || "") || /atomic structure/i.test(ws.title || "");
+
+  const built = source.split(/\n(?=## )/).map(block => {
     const lines = block.split("\n");
     const title = lines[0].replace(/^## /, "").trim();
     const content = lines.slice(1).join("\n").trim();
-    return { title, type: "text", content };
+    const normalizedTitle = title.toLowerCase();
+
+    const base: Section = {
+      title,
+      type: normalizedTitle.startsWith("teacher ") ? "teacher-notes" : "text",
+      content,
+      teacherOnly: normalizedTitle.startsWith("teacher "),
+    };
+
+    if (isAtomicStructure) {
+      if (/q1\s*-\s*label the diagram/i.test(title)) {
+        return {
+          ...base,
+          id: "q1-label-diagram",
+          type: "q-label-diagram",
+          imageUrl: "/images/atom_nb_unlabelled_final.png",
+          caption: "Unlabelled Bohr model of a carbon atom for the labelling task.",
+        };
+      }
+      if (/reference diagram\s*-\s*carbon atom/i.test(title)) {
+        return {
+          ...base,
+          id: "reference-labelled-carbon",
+          type: "diagram",
+          imageUrl: "/images/atom_nb_labelled_final.png",
+          caption: "Labelled Bohr model of a carbon atom used as a reference scaffold.",
+        };
+      }
+      if (/teacher answer key/i.test(title)) {
+        return {
+          ...base,
+          id: "teacher-answer-key",
+          type: "mark-scheme",
+          teacherOnly: true,
+        };
+      }
+      if (/teacher notes/i.test(title)) {
+        return {
+          ...base,
+          id: "teacher-notes",
+          type: "teacher-notes",
+          teacherOnly: true,
+        };
+      }
+    }
+
+    return base;
   }).filter(s => s.title);
+
+  return enrichAtomicStructureSections(ws, built);
 }
 
 /** Convert a Worksheet record into WorksheetData for WorksheetRenderer */
@@ -46,6 +190,10 @@ function toWorksheetData(ws: Worksheet) {
       examBoard: ws.examBoard,
       ...(ws.metadata || {}),
     },
+    libraryAssets: (ws as any).libraryAssets || (ws as any).library_assets || [],
+    canonicalTopicKey: (ws as any).canonicalTopicKey || (ws as any).canonical_topic_key,
+    structuralHash: (ws as any).structuralHash || (ws as any).structural_hash,
+    availableTiers: (ws as any).availableTiers || (ws as any).available_tiers || [],
     isAI: ws.isAI,
   };
 }

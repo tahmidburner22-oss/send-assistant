@@ -5,7 +5,7 @@
  * Purpose:
  *  - Create curated Atomic Structure library entries that load instantly.
  *  - Keep the Nano Banana atom diagrams stable through worksheet_library_assets.
- *  - Ensure the mixed/base worksheet is the canonical reference used for Year 11,
+ *  - Ensure the mixed worksheet is the canonical reference used for Year 11,
  *    while Foundation, Higher, and Scaffolded are available for one-click tier switches.
  *
  * Run:
@@ -104,6 +104,32 @@ const MARK_SCHEME =
   "**Q12 - Challenge**\n" +
   "Atomic number 17; mass number 35; configuration 2,8,7; Group 7 because it has seven outer-shell electrons.";
 
+const HIGHER_MARK_SCHEME =
+  "**Q1 - Label the atom diagram**\n" +
+  "Nucleus; proton; neutron; electron; electron shell.\n\n" +
+  "**Q2 - True or False**\n" +
+  "1. False  2. True  3. False  4. True  5. False\n\n" +
+  "**Q3 - Multiple choice**\n" +
+  "1. B  2. B  3. A\n\n" +
+  "**Q4 - Particle properties**\n" +
+  "Proton: +1 and 1\nNeutron: 0 and 1\nElectron: -1 and 1/1840\n\n" +
+  "**Q5 - Chlorine-35 & 37**\n" +
+  "a) 17p, 18n, 17e. b) Isotopes have same protons but different neutrons.\n\n" +
+  "**Q6 - Electronic configurations**\n" +
+  "Lithium 2,1; Oxygen 2,6; Magnesium 2,8,2; Fluorine 2,7.\n\n" +
+  "**Q7 - Complete the table**\n" +
+  "Carbon: 6, 6, 6. Sodium: 11, 12, 11. Calcium: 20, 20, 20.\n\n" +
+  "**Q8 - Evidence for Nucleus**\n" +
+  "Alpha particles deflected/bounced back by concentrated positive charge.\n\n" +
+  "**Q9 - Relative Atomic Mass**\n" +
+  "RAM = 6.925.\n\n" +
+  "**Q10 - Nuclear Charge**\n" +
+  "Positive charge from protons in nucleus.\n\n" +
+  "**Q11 - Group Properties**\n" +
+  "Both have 1 electron in outer shell.\n\n" +
+  "**Q12 - Challenge (Period 2)**\n" +
+  "Fluorine is in Period 2 because it has 2 occupied shells.";
+
 const TEACHER_NOTES =
   "- Use the unlabelled Nano Banana diagram for the first labelling task.\n" +
   "- Use the labelled Nano Banana diagram later as a checking scaffold.\n" +
@@ -153,9 +179,9 @@ function selfReflectionSection() {
   return section("self-reflection-atomic-structure", "self-reflection", "Self Reflection", SELF_REFLECTION);
 }
 
-function teacherSections(extraMarkScheme = "", extraNotes = "") {
+function teacherSections(markScheme = MARK_SCHEME, extraNotes = "") {
   return [
-    { id: "teacher-answer-key", title: "Teacher Answer Key", type: "mark-scheme", teacherOnly: true, content: MARK_SCHEME + extraMarkScheme },
+    { id: "teacher-answer-key", title: "Teacher Answer Key", type: "mark-scheme", teacherOnly: true, content: markScheme },
     { id: "teacher-notes", title: "Teacher Notes", type: "teacher-notes", teacherOnly: true, content: TEACHER_NOTES + extraNotes },
   ];
 }
@@ -443,9 +469,9 @@ const SCAFFOLDED_SECTIONS = [
 
 const TIER_DEFINITIONS = [
   {
-    tier: "base",
-    title: "Atomic Structure - Mixed Ability (Year 11 Chemistry)",
-    subtitle: "Curated GCSE Chemistry worksheet - Mixed Ability",
+    tier: "mixed",
+    title: "Atomic Structure - Mixed (Year 11 Chemistry)",
+    subtitle: "Curated GCSE Chemistry worksheet - Mixed",
     sections: BASE_SECTIONS,
     teacher_sections: teacherSections(),
   },
@@ -461,9 +487,7 @@ const TIER_DEFINITIONS = [
     title: "Atomic Structure - Higher (Year 11 Chemistry)",
     subtitle: "Curated GCSE Chemistry worksheet - Higher",
     sections: HIGHER_SECTIONS,
-    teacher_sections: teacherSections(
-      "\n\nHigher-only additions: fluorine configuration = 2,7; carbon is in Period 2; the 1- ion has 18 electrons."
-    ),
+    teacher_sections: teacherSections(HIGHER_MARK_SCHEME),
   },
   {
     tier: "scaffolded",

@@ -38,6 +38,8 @@ router.get("/worksheets", requireAuth, async (req: Request, res: Response) => {
         teacherOnly: !!s.teacher_only,
         svg: s.svg,
         caption: s.caption,
+        imageUrl: s.image_url,
+        assetRef: s.asset_ref,
         symbols: s.symbols ? JSON.parse(s.symbols) : undefined,
       })),
     };
@@ -71,10 +73,11 @@ router.post("/worksheets", requireAuth, async (req: Request, res: Response) => {
         const sContent = typeof rawContent === 'string'
           ? rawContent.split('\n').map((line: string) => line.replace(/^\*{1,2}\s*|\s*\*{1,2}$/g, '').replace(/\*\*(.+?)\*\*/g, '$1')).join('\n')
           : rawContent;
-        await db.prepare(`INSERT INTO worksheet_sections (id, worksheet_id, section_index, title, type, content, teacher_only, svg, caption, symbols)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
+        await db.prepare(`INSERT INTO worksheet_sections (id, worksheet_id, section_index, title, type, content, teacher_only, svg, caption, image_url, asset_ref, symbols)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
           uuidv4(), id, idx, sTitle, s.type || null, sContent,
           s.teacherOnly ? 1 : 0, s.svg || null, s.caption || null,
+          s.imageUrl || null, s.assetRef || null,
           s.symbols ? JSON.stringify(s.symbols) : null
         );
       }
@@ -100,8 +103,8 @@ router.put("/worksheets/:id", requireAuth, async (req: Request, res: Response) =
     for (let idx = 0; idx < sections.length; idx++) {
 
       const s = sections[idx];
-      await db.prepare(`INSERT INTO worksheet_sections (id, worksheet_id, section_index, title, type, content, teacher_only, svg, caption, symbols) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
-        .run(uuidv4(), req.params.id, idx, s.title || null, s.type || null, s.content || null, s.teacherOnly ? 1 : 0, s.svg || null, s.caption || null, s.symbols ? JSON.stringify(s.symbols) : null);
+        await db.prepare(`INSERT INTO worksheet_sections (id, worksheet_id, section_index, title, type, content, teacher_only, svg, caption, image_url, asset_ref, symbols) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+        .run(uuidv4(), req.params.id, idx, s.title || null, s.type || null, s.content || null, s.teacherOnly ? 1 : 0, s.svg || null, s.caption || null, s.imageUrl || s.image_url || null, s.assetRef || s.asset_ref || null, s.symbols ? JSON.stringify(s.symbols) : null);
     }
   }
   res.json({ message: "Updated" });

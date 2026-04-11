@@ -334,6 +334,8 @@ CREATE TABLE IF NOT EXISTS worksheet_sections (
   teacher_only INTEGER NOT NULL DEFAULT 0,
   svg TEXT,
   caption TEXT,
+  image_url TEXT,
+  asset_ref TEXT,
   symbols TEXT -- JSON: array of {word, svgPath} for Widgit-style symbols
 );
 
@@ -471,6 +473,26 @@ CREATE TABLE IF NOT EXISTS worksheet_library (
 -- Indexes (tier index added via migration once column exists)
 CREATE INDEX IF NOT EXISTS idx_library_subject ON worksheet_library(subject);
 CREATE INDEX IF NOT EXISTS idx_library_curated ON worksheet_library(curated);
+
+-- Worksheet Library Assets (stable asset registry for shared diagrams and images)
+CREATE TABLE IF NOT EXISTS worksheet_library_assets (
+  id TEXT PRIMARY KEY,
+  library_entry_id TEXT NOT NULL REFERENCES worksheet_library(id) ON DELETE CASCADE,
+  section_key TEXT NOT NULL,
+  asset_type TEXT NOT NULL DEFAULT 'image_url',
+  content_hash TEXT,
+  storage_key TEXT,
+  public_url TEXT NOT NULL,
+  width INTEGER,
+  height INTEGER,
+  alt_text TEXT,
+  topic_tags TEXT NOT NULL DEFAULT '[]',
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_assets_library_entry ON worksheet_library_assets(library_entry_id);
+CREATE INDEX IF NOT EXISTS idx_assets_section_key ON worksheet_library_assets(section_key);
+
 -- Migration: add tier and send_need columns if they don't exist (for existing databases)
 CREATE TABLE IF NOT EXISTS _schema_migrations (id TEXT PRIMARY KEY, applied_at TEXT DEFAULT (datetime('now')));
 
