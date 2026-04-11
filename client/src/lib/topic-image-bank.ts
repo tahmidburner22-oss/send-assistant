@@ -38,6 +38,14 @@ const bio = (svgPath: string, label: string, bg = "#dbeafe"): TopicImage => ({
   credit: "Bioicons (MIT)",
 });
 
+// ── Local curated image helper ────────────────────────────────────────────────
+const local = (url: string, label: string, credit = "Adaptly Curated"): TopicImage => ({
+  type: "photo",
+  url,
+  label,
+  credit,
+});
+
 // ── Fallback images used when no specific topic match ─────────────────────────
 const SUBJECT_FALLBACKS: Record<string, TopicImage[]> = {
   mathematics: [
@@ -454,10 +462,10 @@ export const TOPIC_IMAGES: Record<string, Record<string, TopicImage[]>> = {
   // ── CHEMISTRY ────────────────────────────────────────────────────────────────
   chemistry: {
     "Atomic Structure": [
-      u("photo-1635241161466-541f065683ba", "Periodic table elements"),
-      u("photo-1603126857599-f6e157fa2fe6", "Chemistry atoms lab"),
-      u("photo-1532187863486-abf9dbad1b69", "Atomic model display"),
-      u("photo-1556910103-1c02745aae4d", "Elements chemistry"),
+      local("/images/atom_nb_unlabelled_final.png", "Atomic structure diagram — unlabelled"),
+      local("/images/atom_nb_labelled_final.png", "Atomic structure diagram — labelled"),
+      local("/images/atom_nb_unlabelled_final.png", "Atomic structure labelling task diagram"),
+      local("/images/atom_nb_labelled_final.png", "Atomic structure reference diagram"),
     ],
     "Bonding": [
       u("photo-1603126857599-f6e157fa2fe6", "Molecular bonding models"),

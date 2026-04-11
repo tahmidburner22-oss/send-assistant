@@ -539,6 +539,8 @@ CREATE TABLE IF NOT EXISTS worksheet_sections (
   teacher_only INTEGER NOT NULL DEFAULT 0,
   svg TEXT,
   caption TEXT,
+  image_url TEXT,
+  asset_ref TEXT,
   symbols TEXT
 );
 
@@ -778,6 +780,8 @@ export async function initDb() {
     `DO $$ BEGIN ALTER TABLE worksheet_library ADD COLUMN diagram_slots_json TEXT NOT NULL DEFAULT '[]'; EXCEPTION WHEN duplicate_column THEN NULL; END $$`,
     `DO $$ BEGIN ALTER TABLE worksheet_library ADD COLUMN applied_overlays TEXT NOT NULL DEFAULT '[]'; EXCEPTION WHEN duplicate_column THEN NULL; END $$`,
     `DO $$ BEGIN ALTER TABLE worksheet_library ADD COLUMN canonical_topic_key TEXT; EXCEPTION WHEN duplicate_column THEN NULL; END $$`,
+    `DO $$ BEGIN ALTER TABLE worksheet_sections ADD COLUMN image_url TEXT; EXCEPTION WHEN duplicate_column THEN NULL; END $$`,
+    `DO $$ BEGIN ALTER TABLE worksheet_sections ADD COLUMN asset_ref TEXT; EXCEPTION WHEN duplicate_column THEN NULL; END $$`,
     // Asset table (CREATE TABLE IF NOT EXISTS handles this, but index creation may need guarding)
     `CREATE INDEX IF NOT EXISTS idx_library_base_entry ON worksheet_library(base_entry_id)`,
     `CREATE INDEX IF NOT EXISTS idx_library_canonical_topic ON worksheet_library(canonical_topic_key)`,

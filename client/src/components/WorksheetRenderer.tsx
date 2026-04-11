@@ -4607,11 +4607,11 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
               })()}
               {/* Standard content rendering (no diagram marker) */}
               {!extractDiagramSpec(content) && (
-                section.type === "diagram" && (section.imageUrl || section.svg) ? (
+                section.type === "diagram" && (resolveImageUrl(section) || section.svg) ? (
                   <div style={{ textAlign: "center" }}>
-                    {section.imageUrl ? (
+                    {resolveImageUrl(section) ? (
                       <img
-                        src={section.imageUrl}
+                        src={resolveImageUrl(section)}
                         alt={section.caption || "Diagram"}
                         style={{ maxWidth: "560px", width: "100%", borderRadius: "8px", border: "1px solid #e5e7eb" }}
                         onError={(e) => {
@@ -4918,11 +4918,12 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                     );
                   }
                   if (section.type === "q-label-diagram") {
+                    const resolvedImageUrl = resolveImageUrl(section);
                     // If content uses diagram_subquestions layout, show diagram + questions format
                     if (/^LAYOUT:diagram_subquestions/.test(content.trim())) {
-                      return <DiagramSubQSection content={content} fmt={fmt} overlayColor={overlayColor} isTeacher={isTeacherView} imageUrl={section.imageUrl} caption={section.caption} attribution={section.attribution} />;
+                      return <DiagramSubQSection content={content} fmt={fmt} overlayColor={overlayColor} isTeacher={isTeacherView} imageUrl={resolvedImageUrl} caption={section.caption} attribution={section.attribution} />;
                     }
-                    return <LabelDiagramSection content={content} fmt={fmt} isTeacher={isTeacherView} imageUrl={section.imageUrl} caption={section.caption} attribution={section.attribution} />
+                    return <LabelDiagramSection content={content} fmt={fmt} isTeacher={isTeacherView} imageUrl={resolvedImageUrl} caption={section.caption} attribution={section.attribution} />
                   }
                   if (section.type === "q-ordering") {
                     return <OrderingSection content={content} fmt={fmt} />;
@@ -5202,11 +5203,11 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                * This ensures the svg/caption fields on the Section type are fully utilised
                * regardless of the section's content type.
                */}
-              {section.type !== "diagram" && section.type !== "q-label-diagram" && !extractDiagramSpec(content) && (section.svg || section.imageUrl) && (
+              {section.type !== "diagram" && section.type !== "q-label-diagram" && !extractDiagramSpec(content) && (section.svg || resolveImageUrl(section)) && (
                 <div style={{ textAlign: "center", marginTop: "12px" }}>
-                  {section.imageUrl ? (
+                  {resolveImageUrl(section) ? (
                     <img
-                      src={section.imageUrl}
+                      src={resolveImageUrl(section)}
                       alt={section.caption || "Visual aid"}
                       style={{ maxWidth: "520px", width: "100%", borderRadius: "8px", border: "1px solid #e5e7eb" }}
                       onError={(e) => {
