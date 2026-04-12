@@ -44,7 +44,7 @@ function generateComprehensionQuestions(_content: string, genre: string): string
 }
 
 /** Two-way messaging panel between parent and teacher */
-function ParentMessagesPanel({ childId, childName, token }: { childId: string; childName: string; token: string }) {
+function ParentMessagesPanel({ childId, childName }: { childId: string; childName: string }) {
   const [messages, setMessages] = useState<Array<{ id: string; sender: string; body: string; createdAt: string }>>([]);
   const [newMsg, setNewMsg] = useState("");
   const [sending, setSending] = useState(false);
@@ -55,7 +55,6 @@ function ParentMessagesPanel({ childId, childName, token }: { childId: string; c
     try {
       const res = await fetch(`/api/parent-messages/${childId}`, {
         credentials: "include",
-        credentials: "include",
       });
       if (res.ok) {
         const data = await res.json();
@@ -63,7 +62,7 @@ function ParentMessagesPanel({ childId, childName, token }: { childId: string; c
       }
     } catch {}
     setLoading(false);
-  }, [childId, token]);
+  }, [childId]);
 
   useEffect(() => { fetchMessages(); }, [fetchMessages]);
 
