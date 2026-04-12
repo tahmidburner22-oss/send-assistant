@@ -237,6 +237,8 @@ const generalLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   validate: { xForwardedForHeader: false },
+  // Skip rate limiting for session check and keep-alive — called on every page load
+  skip: (req: any) => req.path === '/api/auth/me' || req.path === '/api/auth/refresh',
 });
 
 // JWT_SECRET and ENCRYPTION_KEY are configured via Railway environment variables
