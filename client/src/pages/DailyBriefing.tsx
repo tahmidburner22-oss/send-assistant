@@ -24,8 +24,6 @@ import {
   Calendar, Paperclip, Download, X, Upload, Sparkles, Loader2,
 } from "lucide-react";
 
-// Auth is cookie-based — no Authorization header needed` } : {};
-}
 function formatDate(d: Date): string { return d.toISOString().slice(0, 10); }
 function formatDisplayDate(dateStr: string): string {
   const d = new Date(dateStr + "T12:00:00");

@@ -11,8 +11,6 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 
-// Auth is cookie-based — no Authorization header needed` } : {};
-}
 
 interface QuizQuestion {
   id: string;

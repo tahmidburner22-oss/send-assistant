@@ -22,8 +22,6 @@ import { useApp } from "@/contexts/AppContext";
 
 type FeedbackType = "suggestion" | "bug" | "praise" | "other";
 
-// Auth is cookie-based — no Authorization header needed` } : {};
-}
 
 export default function FeedbackWidget() {
   const { user } = useApp();

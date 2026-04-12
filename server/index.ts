@@ -181,7 +181,8 @@ app.use(compression({
   filter: (req, res) => {
     if (req.headers['x-no-compression']) return false;
     return compression.filter(req, res);
-});
+  },
+}));
 
 // ── CORS ──────────────────────────────────────────────────────────────────────────────────────
 // Exact-match origins only — startsWith() would allow subdomain spoofing (e.g. adaptly.co.uk.evil.com)

@@ -281,8 +281,6 @@ function ProgressionTab({ child }: { child: import("@/contexts/AppContext").Chil
   );
 }
 
-// Auth is cookie-based — no Authorization header needed` } : {};
-}
 
 export default function Children() {
   const { children, addChild, removeChild, updateChild, updateAssignment, deleteAssignment, updateSubmission, assignWork } = useApp();
