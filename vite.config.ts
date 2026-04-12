@@ -31,6 +31,12 @@ export default defineConfig({
     // ── Code splitting — keep large question bank files out of the main bundle ──
     rollupOptions: {
       output: {
+                chunkFileNames: (chunkInfo) => {
+          return `assets/[name]-[hash]-${Date.now()}.js`;
+        },
+        entryFileNames: (chunkInfo) => {
+          return `assets/[name]-[hash]-${Date.now()}.js`;
+        },
         manualChunks(id) {
           // Split the large science question banks into their own lazy chunks
           if (id.includes("questionBankBiology")) return "qbank-biology";
