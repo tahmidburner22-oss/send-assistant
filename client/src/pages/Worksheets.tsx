@@ -729,7 +729,6 @@ export default function Worksheets() {
         const res = await fetch("/api/revision/tts", {
         method: "POST",
         headers: { "Content-Type": "application/json" }, credentials: "include",
-        credentials: "include",
         body: JSON.stringify({ text: fullText.slice(0, 8000), voice: "nova", language: "en" }),
       });
       if (!res.ok) { const d = await res.json(); throw new Error(d.error || "TTS failed"); }
@@ -760,7 +759,6 @@ export default function Worksheets() {
         const res = await fetch("/api/revision/tts", {
         method: "POST",
         headers: { "Content-Type": "application/json" }, credentials: "include",
-        credentials: "include",
         body: JSON.stringify({ text: text.slice(0, 4000), voice: "nova", language: "en" }),
       });
       if (!res.ok) { const d = await res.json(); throw new Error(d.error || "TTS failed"); }
@@ -997,7 +995,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
     // WorksheetRenderer via getSendFormatting — the content is never rewritten for SEND.
     if (!examStyle) {
       try {
-        const authHeaders = libToken ? { Authorization: `Bearer ${libToken}` } : {};
+        const authHeaders: Record<string, string> = {};
         // Map difficulty to library tier:
         // foundation → foundation, mixed/standard → base (the default tier in the library), higher → higher
         // SEND need does NOT override the tier — we always pull the correct difficulty tier
@@ -1418,7 +1416,6 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              ...(libToken ? { Authorization: `Bearer ${libToken}` } : {}),
             },
             body: JSON.stringify({
               subject: ws.metadata.subject,
@@ -1451,8 +1448,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
     setDiagnosticFailed(false);
     try {
       const diagnosticHeaders: Record<string, string> = { "Content-Type": "application/json" };
-      if (storedToken) diagnosticHeaders["Authorization"] = `Bearer ${storedToken}`;
-      const response = await fetch("/api/ai/diagnostic-starter", {
+            const response = await fetch("/api/ai/diagnostic-starter", {
         method: "POST",
         headers: diagnosticHeaders,
         credentials: "include",
@@ -1480,8 +1476,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
     setDiagSheetResult(null);
     try {
       const diagHeaders: Record<string, string> = { "Content-Type": "application/json" };
-      if (storedToken) diagHeaders["Authorization"] = `Bearer ${storedToken}`;
-      const res = await fetch("/api/ai/diagnostic-starter", {
+            const res = await fetch("/api/ai/diagnostic-starter", {
         method: "POST",
         headers: diagHeaders,
         credentials: "include",
@@ -1609,7 +1604,6 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
         const res = await fetch("/api/ai/adapt-worksheet", {
         method: "POST",
         credentials: "include",
-        credentials: "include",
         body: formData,
       });
       if (!res.ok) {
@@ -1638,7 +1632,6 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
       if (slidesSendNeeds) formData.append("sendNeeds", slidesSendNeeds);
         const res = await fetch("/api/ai/worksheet-from-slides", {
         method: "POST",
-        credentials: "include",
         credentials: "include",
         body: formData,
       });
@@ -2046,7 +2039,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
       // Try the worksheet library first for the natural-language quick-generate path as well.
       // Previously this path skipped library lookup entirely and always went straight to AI.
       try {
-        const authHeaders: Record<string, string> = libToken ? { Authorization: `Bearer ${libToken}` } : {};
+        const authHeaders: Record<string, string> = {};
         // Always use the difficulty tier — SEND need is applied on top, not instead of the difficulty tier
         // The library uses 'base' for standard/mixed ability, 'send' for SEND scaffolded versions.
         const lookupTier = nextDifficulty === "higher" ? "higher" : nextDifficulty === "foundation" ? "foundation" : "mixed";
@@ -2266,9 +2259,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
     try {
       const ws = generated as AIWorksheet;
       const meta = ws.metadata || {};
-      const authHeaders: Record<string, string> = libToken
-        ? { Authorization: `Bearer ${libToken}`, "Content-Type": "application/json" }
-        : { "Content-Type": "application/json" };
+      const authHeaders: Record<string, string> = { "Content-Type": "application/json" };
 
       // Carry over the SEND need from the original worksheet or the selected one
       const originalSendNeed = meta.sendNeedId || meta.sendNeed;
