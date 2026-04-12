@@ -66,7 +66,8 @@ function translateSql(sql: string): string {
     // JSON stored as TEXT — keep as TEXT in PG for compatibility
     // LIKE is case-sensitive in PG; use ILIKE for case-insensitive
     // (routes use LIKE for subject/topic matching — convert to ILIKE)
-    .replace(/\bLIKE\b/g, "ILIKE");
+    .replace(/\bLIKE\b/g, "ILIKE")
+    .replace(/\bNOW\(\)/g, "NOW()");
 }
 
 let _paramCounter = 0;
