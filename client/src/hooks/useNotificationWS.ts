@@ -28,7 +28,7 @@ export interface RealNotif {
 
 interface UseNotificationWSOptions {
   /** JWT token for authenticating the WebSocket connection */
-  token: string | undefined | null;
+  token?: string | undefined | null;
   /** Maximum notifications to keep in memory (default: 50) */
   maxNotifs?: number;
 }
