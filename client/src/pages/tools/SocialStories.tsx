@@ -92,7 +92,18 @@ export default function SocialStories() {
         { id: "length", label: "Story Length", type: "select", options: [{ value: "short", label: "Short (6-8 sentences)" }, { value: "medium", label: "Medium (10-14 sentences)" }, { value: "long", label: "Long (16-20 sentences)" }], span: "half" },
       ]}
       buildPrompt={(v) => ({
-        system: `You are an expert in autism education and Carol Gray's Social Stories™ methodology. You write social stories that follow the 10.2 ratio (for every directive/control sentence, there are at least 2 descriptive/perspective sentences). Your stories are warm, positive, and empowering — never negative or threatening. You write in first person, present tense, using simple language appropriate for the age group.`,
+        system: `You are an expert in autism education and Carol Gray's Social Stories™ methodology. You strictly follow the Carol Gray 10.2 ratio rule.
+
+CARROL GRAY RATIO RULE — CRITICAL: For every 1 directive/control sentence, you MUST write at least 2 descriptive or perspective sentences. Before outputting the story, count your sentence types:
+- Descriptive sentences: describe what happens, where, who is involved, what people do (most sentences)
+- Perspective sentences: describe how others think, feel, or react ("My teacher feels happy when...")
+- Coaching sentences: suggest what the student can try ("I can try to...")
+- Affirmative sentences: express values or reassurance ("Many children find this tricky at first")
+- Control sentences: strategies the student chooses ("I will...", "I can choose to...")
+
+Directive/control sentences = coaching + control sentences combined. If your ratio is less than 2:1 (descriptive+perspective vs directive+control), add more descriptive sentences before outputting.
+
+Your stories are warm, positive, and empowering — never negative, threatening, or shame-inducing. Write in first person, present tense, using simple language appropriate for the age group.`,
         user: `Write a Social Story for:
 
 Name: ${v.studentName}
@@ -103,15 +114,19 @@ ${v.interests ? `Interests to incorporate: ${v.interests}` : ""}
 Length: ${v.length || "medium"}
 Include perspective sentences: ${v.perspective !== "no" ? "Yes" : "No"}
 
-Follow Carol Gray's Social Stories™ format:
-- Title that describes the situation positively
-- Descriptive sentences (what happens, where, who is involved)
-- Perspective sentences (how others think/feel — if included)
-- Coaching sentences (what the student can try)
-- Affirmative sentences (values, reassurance)
-- Control sentences (strategies the student chooses)
+STRUCTURE REQUIREMENTS:
+1. A positive title describing the situation
+2. Opening descriptive sentences (2-3): what the situation is, where it happens, who is involved
+3. Descriptive/perspective sentences (majority of story): what happens, how people feel, what others do
+4. ${v.perspective !== "no" ? "Perspective sentences (2-3): how others think and feel during this situation" : ""}
+5. Coaching sentences (max 2): what the student can try ("I can try to...")
+6. Affirmative sentences (1-2): reassurance and values
+7. Control sentence (max 1): a strategy the student chooses
+8. Closing affirmation: positive, empowering ending
 
-Write in first person ("I"), present tense. Use simple, clear language. Be warm and positive. End with an affirming statement. After the story, provide a brief "How to Use This Story" note for the teacher/parent.`,
+After the story, on a new line starting with "How to Use This Story:", provide a brief note for the teacher/parent on how to read and use this story effectively.
+
+IMPORTANT: Write in first person ("I"), present tense. Simple, clear language. Warm and positive throughout. Check your ratio before finishing — descriptive+perspective sentences must outnumber coaching+control sentences by at least 2:1.`,
         maxTokens: 2000,
       })}
       formatOutput={(text) => formatSocialStory(text, preferences.schoolLogoUrl, preferences.schoolName)}

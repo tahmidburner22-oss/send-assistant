@@ -190,14 +190,12 @@ function syncToServer(prefs: UserPreferences) {
   if (_serverSyncTimer) clearTimeout(_serverSyncTimer);
   _serverSyncTimer = setTimeout(async () => {
     try {
-      const token = typeof localStorage !== 'undefined' ? localStorage.getItem('send_token') : null;
-      if (!token) return; // Not logged in — skip server sync
+          if (!token) return; // Not logged in — skip server sync
       await fetch('/api/data/preferences', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
+          },
         credentials: 'include',
         body: JSON.stringify(prefs),
       });
@@ -219,10 +217,9 @@ export function UserPreferencesProvider({
     const local = loadPrefs(userId);
     setPreferences(local);
     // Fetch server preferences and merge (server wins for sidebarCollapsed, local wins for everything else)
-    const token = typeof localStorage !== 'undefined' ? localStorage.getItem('send_token') : null;
-    if (!token || !userId) return;
+      if (!token || !userId) return;
     fetch('/api/data/preferences', {
-      headers: { 'Authorization': `Bearer ${token}` },
+      credentials: "include",
       credentials: 'include',
     })
       .then(r => r.ok ? r.json() : null)

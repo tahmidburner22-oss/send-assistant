@@ -54,7 +54,7 @@ function ParentMessagesPanel({ childId, childName, token }: { childId: string; c
   const fetchMessages = useCallback(async () => {
     try {
       const res = await fetch(`/api/parent-messages/${childId}`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        credentials: "include",
         credentials: "include",
       });
       if (res.ok) {
@@ -77,7 +77,7 @@ function ParentMessagesPanel({ childId, childName, token }: { childId: string; c
     try {
       const res = await fetch(`/api/parent-messages/${childId}`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        headers: { "Content-Type": "application/json" }, credentials: "include",
         credentials: "include",
         body: JSON.stringify({ body: newMsg.trim(), sender: "parent" }),
       });
@@ -529,9 +529,7 @@ export default function ParentPortal() {
       toast.success(`Welcome! Viewing ${found.name}'s portal.`);
       // Fetch behaviour records and support plans from the server
       setBehaviourLoading(true);
-      const token = localStorage.getItem('send_token');
-      const hdrs = { Authorization: `Bearer ${token}` };
-      Promise.all([
+        Promise.all([
         fetch(`/api/data/parent/behaviour/${found.id}`, { headers: hdrs }).then(r => r.ok ? r.json() : []),
         fetch(`/api/data/parent/support-plans/${found.id}`, { headers: hdrs }).then(r => r.ok ? r.json() : []),
       ])
@@ -611,10 +609,9 @@ Return EXACTLY this JSON:
   "suggestedPractice": ["[specific practice activity 1 parents can do at home]", "[specific practice activity 2]", "[specific practice activity 3]"],
   "encouragement": "[1-2 sentences of warm, personalised encouragement for the parent and child]"
 }`;
-      const token = localStorage.getItem("send_token");
-      const res = await fetch("/api/ai/generate", {
+        const res = await fetch("/api/ai/generate", {
         method: "POST",
-        headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        headers: { "Content-Type": "application/json" }, credentials: "include",
         credentials: "include",
         body: JSON.stringify({ prompt: userPrompt, systemPrompt, maxTokens: 800 }),
       });
@@ -1952,7 +1949,7 @@ Return EXACTLY this JSON:
             <p className="text-[10px] text-muted-foreground">Your child's teacher will share the room code when a live quiz is running.</p>
           </div>
         )}
-        {sec.id === "messages" && <ParentMessagesPanel childId={child.id} childName={child.name} token={localStorage.getItem('send_token') || ''} />}
+        {sec.id === "messages" && <ParentMessagesPanel childId={child.id} childName={child.name} />}
         {sec.id === "send-screener" && (() => {
           const completedScreeners = child?.assignments?.filter(a => a.type === "send-screener") ?? [];
           const inProgressScreeners = child?.assignments?.filter(a => a.type === "send-screener-progress") ?? [];

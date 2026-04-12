@@ -57,29 +57,36 @@ export default function SmartTargets() {
         { id: "reviewPeriod", label: "Review Period", type: "select", options: [{ value: "6 weeks", label: "6 Weeks" }, { value: "1 term", label: "1 Term" }, { value: "2 terms", label: "2 Terms" }, { value: "1 year", label: "1 Year" }], span: "half" },
         { id: "numTargets", label: "Number of Targets", type: "select", options: [2,3,4,5].map(n => ({ value: String(n), label: String(n) })), span: "half" },
       ]}
-      buildPrompt={(v) => ({
-        system: `You are an expert SENCO with 20 years of experience writing SMART targets for pupils with SEND. You write targets that are Specific, Measurable, Achievable, Relevant, and Time-bound. You use UK SEND Code of Practice 2015 terminology and person-centred language.`,
-        user: `Generate ${v.numTargets || 3} SMART targets for:
+        buildPrompt={(v) => ({
+        system: `You are an expert SENCO with 20 years of experience writing SMART targets for pupils with SEND. You write targets that are Specific, Measurable, Achievable, Relevant, and Time-bound. You use UK SEND Code of Practice 2015 terminology and person-centred language.
 
+SMART VALIDATION RULE — CRITICAL: Before outputting any target, mentally check it against all 5 SMART criteria:
+- SPECIFIC: Does it name the exact skill, behaviour, or outcome? (Not "improve reading" — instead "read CVC words with 90% accuracy")
+- MEASURABLE: Is there a number, frequency, or observable criterion? (Not "make progress" — instead "on 4 out of 5 occasions")
+- ACHIEVABLE: Is it realistic given the baseline and review period? (Not a leap of 3 years in 6 weeks)
+- RELEVANT: Does it directly address the identified SEND need and area?
+- TIME-BOUND: Does it specify "By [review date]" or "within [review period]"?
+If any criterion is missing, rewrite the target before outputting it. Never output a target that fails any SMART criterion.`,
+        user: `Generate ${v.numTargets || 3} SMART targets for:
 Student: ${v.studentName}
 Year Group: ${v.yearGroup}
 SEND Need: ${v.sendNeed}
 Target Area: ${v.area}
 Review Period: ${v.reviewPeriod || "1 term"}
-
 Current Level / Baseline:
 ${v.currentLevel}
 
-For each target provide:
-**Target:** [SMART statement — specific, measurable, time-bound]
-**Baseline:** [Where the student is now]
-**Success Criteria:** [3 measurable indicators — what does achievement look like?]
-**Strategies:** [2-3 specific teaching/support strategies]
-**Resources:** [Materials, interventions, or tools needed]
-**Monitoring:** [How often and how progress will be tracked]
+For each target, provide ALL of the following sections:
+**Target ${1}:** [Full SMART statement — must include: specific skill, measurable criterion (number/frequency), and time-bound phrase "By [review date]" or "Within [review period]"]
+**SMART Check:** [One sentence confirming: Specific ✓ Measurable ✓ Achievable ✓ Relevant ✓ Time-bound ✓ — or rewrite if any fail]
+**Baseline:** [Precise current level — what the student can/cannot do now]
+**Success Criteria:** [Exactly 3 measurable indicators — observable, countable evidence of achievement]
+**Strategies:** [2-3 specific, evidence-based teaching/support strategies for this SEND need]
+**Resources:** [Named interventions, tools, or materials — e.g. "Toe by Toe programme", "visual timer", "Word Wasp"]
+**Monitoring:** [Specific frequency and method — e.g. "Weekly 5-minute probe test recorded on tracking sheet"]
 
-Make targets ambitious yet achievable. Use pupil-friendly language where possible. Ensure each target directly addresses the identified need.`,
-        maxTokens: 2500,
+Make targets ambitious yet achievable given the baseline. Use person-centred language. Ensure each target directly addresses ${v.sendNeed} in the area of ${v.area}.`,
+        maxTokens: 3000,
       })}
       outputTitle={(v) => `SMART Targets — ${v.studentName} (${v.area})`}
       formatOutput={(text) => formatToolOutput(text, { logoUrl: preferences.schoolLogoUrl, schoolName: preferences.schoolName, accentColor: "#0d9488", emoji: "🎯", title: "SMART Targets" })}

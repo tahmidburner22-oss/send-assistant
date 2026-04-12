@@ -47,7 +47,6 @@ const TYPE_CONFIG = {
 const CATEGORIES = ["Pastoral", "Academic", "Social", "Wellbeing", "Behaviour", "Attendance", "Medical", "Family", "Other"];
 
 function getAuthHeader() {
-  const token = localStorage.getItem("send_token");
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 

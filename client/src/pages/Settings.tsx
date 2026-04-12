@@ -169,7 +169,6 @@ const PRESET_PROVIDERS = [
 interface SavedKey { id: number; provider: string; providerLabel: string; model: string; baseUrl?: string; isCustom: boolean; }
 
 function getAuthHeader(): Record<string, string> {
-  const token = localStorage.getItem("send_token");
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 

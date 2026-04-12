@@ -50,8 +50,8 @@ export default function CookiePolicy() {
               </thead>
               <tbody>
                 <tr className="even:bg-muted/30">
-                  <td className="p-2 border border-border font-mono text-xs">send_token</td>
-                  <td className="p-2 border border-border">Authentication token to keep you logged in</td>
+                  <td className="p-2 border border-border font-mono text-xs">adaptly_session</td>
+                  <td className="p-2 border border-border">Secure, httpOnly authentication session cookie that keeps you logged in. This cookie is not accessible to JavaScript and cannot be read by third-party scripts.</td>
                   <td className="p-2 border border-border">7 days</td>
                 </tr>
                 <tr className="even:bg-muted/30">

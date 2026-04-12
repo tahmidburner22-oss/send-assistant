@@ -81,12 +81,11 @@ export default function Onboarding() {
   const handleSaveKeys = async () => {
     if (apiKeys.length === 0) { setStep(5); return; }
     setSavingKeys(true);
-    const token = authToken || localStorage.getItem("send_token");
     let saved = 0;
     for (const entry of apiKeys) {
       if (!entry.apiKey.trim()) continue;
       try {
-        await fetch("/api/school-keys", { method: "POST", headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) }, body: JSON.stringify({ provider: entry.provider, providerLabel: entry.providerLabel, apiKey: entry.apiKey, model: entry.model, baseUrl: entry.baseUrl || undefined }) });
+        await fetch("/api/school-keys", { method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify({ provider: entry.provider, providerLabel: entry.providerLabel, apiKey: entry.apiKey, model: entry.model, baseUrl: entry.baseUrl || undefined }) });
         saved++;
       } catch (_) {}
     }

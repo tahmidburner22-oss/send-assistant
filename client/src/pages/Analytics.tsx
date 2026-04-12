@@ -106,7 +106,7 @@ export default function Analytics() {
   const [quizResults, setQuizResults] = useState<any[]>([]);
   useEffect(() => {
     if (!user?.token) return;
-    fetch("/api/quiz/results", { headers: { Authorization: `Bearer ${user.token}` } })
+    fetch("/api/quiz/results", { credentials: "include" })
       .then(r => r.ok ? r.json() : [])
       .then(d => setQuizResults(Array.isArray(d) ? d : []))
       .catch(() => {});

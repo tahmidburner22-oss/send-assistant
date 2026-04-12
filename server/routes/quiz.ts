@@ -16,11 +16,21 @@
  */
 import { Router, Request, Response } from "express";
 import { v4 as uuidv4 } from "uuid";
+import { randomBytes } from "crypto";
 import multer from "multer";
 import fs from "fs";
 import path from "path";
 import { db } from "../db/index.js";
 import { requireAuth } from "../middleware/auth.js";
+import { z } from "zod";
+
+// Zod schema for AI-generated quiz questions (generate-from-doc route)
+const GeneratedQuizQuestionSchema = z.object({
+  question: z.string().min(1).max(1000),
+  options: z.array(z.string().min(1).max(500)).length(4),
+  correctIndex: z.number().int().min(0).max(3),
+});
+const GeneratedQuizArraySchema = z.array(GeneratedQuizQuestionSchema).min(1).max(50);
 
 const router = Router();
 const upload = multer({ dest: "/tmp/quiz-uploads/", limits: { fileSize: 20 * 1024 * 1024 } });
@@ -66,9 +76,13 @@ setInterval(() => {
 }, 30 * 60 * 1000);
 
 function generateCode(): string {
+  // Use crypto.randomBytes for a cryptographically secure 6-digit room code
   let code: string;
-  do { code = Math.floor(100000 + Math.random() * 900000).toString(); }
-  while (rooms[code]);
+  do {
+    // randomBytes(3) gives 0-16777215; take modulo 900000 + 100000 to get 100000-999999
+    const n = randomBytes(3).readUIntBE(0, 3) % 900000 + 100000;
+    code = n.toString();
+  } while (rooms[code]);
   return code;
 }
 
@@ -220,29 +234,29 @@ correctIndex is 0-based. Make questions clear, educational, and based ONLY on th
     });
 
     const raw = completion.choices[0]?.message?.content?.trim() || "[]";
-    let questions: any[];
+    let parsedRaw: unknown;
     try {
       // Strip markdown code fences if present
       const cleaned = raw.replace(/^```[a-z]*\n?/i, "").replace(/\n?```$/i, "").trim();
-      questions = JSON.parse(cleaned);
+      parsedRaw = JSON.parse(cleaned);
     } catch {
       return res.status(500).json({ error: "AI returned invalid JSON. Please try again." });
     }
 
-    // Validate and normalise
-    const valid = questions
-      .filter((q: any) => q.question && Array.isArray(q.options) && q.options.length === 4 && typeof q.correctIndex === "number")
-      .map((q: any, i: number) => ({
-        id: `gen-${i}`,
-        question: q.question,
-        options: q.options,
-        correctIndex: q.correctIndex,
-        timeLimit: 20,
-      }));
-
-    if (valid.length === 0) {
+    // Validate with Zod schema
+    const zodResult = GeneratedQuizArraySchema.safeParse(parsedRaw);
+    if (!zodResult.success) {
+      console.warn("[QuizGen] Zod validation failed:", zodResult.error.flatten());
       return res.status(500).json({ error: "AI could not generate valid questions from this document." });
     }
+
+    const valid = zodResult.data.map((q, i) => ({
+      id: `gen-${i}`,
+      question: q.question,
+      options: q.options,
+      correctIndex: q.correctIndex,
+      timeLimit: 20,
+    }));
 
     res.json({ title, questions: valid });
   } catch (err: any) {

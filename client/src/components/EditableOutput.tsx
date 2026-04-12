@@ -11,6 +11,7 @@
  *   />
  */
 import { useState } from "react";
+import DOMPurify from "dompurify";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
@@ -96,7 +97,12 @@ Return the full updated content:`;
     setAiLoading(false);
   }
 
-  const displayHtml = formatHtml ? formatHtml(content) : null;
+  const rawHtml = formatHtml ? formatHtml(content) : null;
+  const displayHtml = rawHtml ? DOMPurify.sanitize(rawHtml, {
+    ALLOWED_TAGS: ["p", "br", "strong", "em", "b", "i", "h3", "h4", "ul", "ol", "li",
+      "span", "div", "sup", "sub", "table", "thead", "tbody", "tr", "th", "td"],
+    ALLOWED_ATTR: ["class", "style"],
+  }) : null;
 
   return (
     <div className="space-y-3">

@@ -11,9 +11,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 
-function getAuthHeader(): Record<string, string> {
-  const token = localStorage.getItem("send_token");
-  return token ? { Authorization: `Bearer ${token}` } : {};
+// Auth is cookie-based — no Authorization header needed` } : {};
 }
 
 interface QuizQuestion {

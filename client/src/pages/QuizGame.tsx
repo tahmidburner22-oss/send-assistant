@@ -30,7 +30,6 @@ import {
 } from "../lib/quiz-bank";
 
 function getAuthHeader(): Record<string, string> {
-  const token = localStorage.getItem("send_token");
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 

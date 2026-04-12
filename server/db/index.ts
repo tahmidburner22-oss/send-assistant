@@ -793,28 +793,37 @@ export async function initDb() {
   }
   console.log("✅ Library asset migrations applied");
 
-  // Seed default admin if no users exist
+  // Bootstrap admin from environment variables (no hard-coded credentials)
+  // Run `node scripts/bootstrap-admin.mjs` once on a fresh deployment to create the first admin.
   const userCountResult = await query("SELECT COUNT(*)::int as c FROM users");
   const userCount = userCountResult.rows[0]?.c ?? 0;
 
   if (userCount === 0) {
-    const schoolId = uuidv4();
-    const adminId = uuidv4();
-    const hash = bcrypt.hashSync("Admin1234!", 12);
-
-    await query(
-      `INSERT INTO schools (id, name, urn, domain, onboarding_complete, licence_type, subscription_plan, subscription_status)
-       VALUES ($1, 'Adaptly', '000000', '', 1, 'premium', 'premium', 'active')`,
-      [schoolId]
-    );
-    await query(
-      `INSERT INTO users (id, school_id, email, display_name, password_hash, role, email_verified)
-       VALUES ($1, $2, 'admin@adaptly.co.uk', 'System Admin', $3, 'mat_admin', 1)`,
-      [adminId, schoolId, hash]
-    );
-    console.log("✅ Seeded default admin: admin@adaptly.co.uk / Admin1234!");
+    const bootstrapEmail = process.env.BOOTSTRAP_ADMIN_EMAIL;
+    const bootstrapPassword = process.env.BOOTSTRAP_ADMIN_PASSWORD;
+    if (bootstrapEmail && bootstrapPassword) {
+      const schoolId = uuidv4();
+      const adminId = uuidv4();
+      const hash = bcrypt.hashSync(bootstrapPassword, 12);
+      await query(
+        `INSERT INTO schools (id, name, urn, domain, onboarding_complete, licence_type, subscription_plan, subscription_status)
+         VALUES ($1, 'Adaptly', '000000', '', 1, 'premium', 'premium', 'active')`,
+        [schoolId]
+      );
+      await query(
+        `INSERT INTO users (id, school_id, email, display_name, password_hash, role, email_verified)
+         VALUES ($1, $2, $3, 'System Admin', $4, 'mat_admin', 1)`,
+        [adminId, schoolId, bootstrapEmail, hash]
+      );
+      console.log(`✅ Bootstrapped admin account: ${bootstrapEmail}`);
+    } else {
+      console.warn(
+        "[SECURITY] No users exist and BOOTSTRAP_ADMIN_EMAIL/BOOTSTRAP_ADMIN_PASSWORD are not set. " +
+        "Run `node scripts/bootstrap-admin.mjs` to create the first admin account."
+      );
+    }
   } else {
-    // Ensure admin email is correct (migration from old email)
+    // Migration: update legacy email if still present
     await query(
       `UPDATE users SET email = 'admin@adaptly.co.uk' WHERE email = 'admin@sendassistant.app'`
     );

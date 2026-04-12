@@ -3,6 +3,7 @@
  * Handles: form → generate → display → edit (AI or manual) → save/print/PDF/DOCX
  */
 import { useState, useRef } from "react";
+import DOMPurify from "dompurify";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -328,7 +329,13 @@ export default function AIToolPage({
     setAiEditLoading(false);
   };
 
-  const formattedOutput = result ? (formatOutput ? formatOutput(result) : formatAIText(result)) : "";
+  const rawOutput = result ? (formatOutput ? formatOutput(result) : formatAIText(result)) : "";
+  // Sanitize AI-generated HTML before rendering to prevent XSS
+  const formattedOutput = rawOutput ? DOMPurify.sanitize(rawOutput, {
+    ALLOWED_TAGS: ["p", "br", "strong", "em", "b", "i", "h3", "h4", "ul", "ol", "li",
+      "span", "div", "sup", "sub", "table", "thead", "tbody", "tr", "th", "td"],
+    ALLOWED_ATTR: ["class", "style"],
+  }) : "";
 
   return (
     <div className="px-4 py-6 max-w-2xl mx-auto space-y-4">

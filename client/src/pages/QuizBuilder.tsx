@@ -18,7 +18,6 @@ import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 
 function getAuthHeader(): Record<string, string> {
-  const token = localStorage.getItem("send_token");
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 

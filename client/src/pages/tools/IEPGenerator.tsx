@@ -338,7 +338,6 @@ export default function EHCPPlanGenerator() {
   const mark = (s: Stage) => setCompleted(prev => new Set([...prev, s]));
 
   const authHeaders = () => {
-    const token = localStorage.getItem("send_token");
     return token ? { Authorization: `Bearer ${token}` } : {};
   };
 
@@ -370,11 +369,10 @@ export default function EHCPPlanGenerator() {
     const res = await fetch("/api/revision/upload", { method: "POST", headers: authHeaders(), credentials: "include", body: fd });
     if (!res.ok) throw new Error(`Upload failed for ${file.name}`);
     const { jobId } = await res.json();
-    const token = localStorage.getItem("send_token");
     for (let i = 0; i < 60; i++) {
       await new Promise(r => setTimeout(r, 2000));
       const poll = await fetch(`/api/revision/job/${jobId}`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {}, credentials: "include",
+        credentials: "include", credentials: "include",
       });
       const data = await poll.json();
       if (data.status === "done") return data.text || "";

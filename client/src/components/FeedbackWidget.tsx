@@ -22,9 +22,7 @@ import { useApp } from "@/contexts/AppContext";
 
 type FeedbackType = "suggestion" | "bug" | "praise" | "other";
 
-function getAuthHeader(): Record<string, string> {
-  const token = localStorage.getItem("send_token");
-  return token ? { Authorization: `Bearer ${token}` } : {};
+// Auth is cookie-based — no Authorization header needed` } : {};
 }
 
 export default function FeedbackWidget() {

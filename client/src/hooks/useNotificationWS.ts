@@ -132,7 +132,7 @@ export function useNotificationWS({
       // Fallback REST call
       fetch(`/api/messages/notifications/${id}/read`, {
         method: "PATCH",
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        credentials: "include",
       }).catch(() => {});
     }
   }, [token]);
@@ -144,7 +144,7 @@ export function useNotificationWS({
     } else {
       fetch("/api/messages/notifications/read-all", {
         method: "PATCH",
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        credentials: "include",
       }).catch(() => {});
     }
   }, [token]);

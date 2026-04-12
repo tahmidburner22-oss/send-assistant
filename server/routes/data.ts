@@ -1,5 +1,6 @@
 import { Router, Request, Response } from "express";
 import { v4 as uuidv4 } from "uuid";
+import { randomBytes } from "crypto";
 import db from "../db/index.js";
 import { requireAuth, auditLog } from "../middleware/auth.js";
 import { sendBehaviourAlert, sendDirectParentMessage } from "../email/index.js";
@@ -247,7 +248,7 @@ router.get("/behaviour", requireAuth, async (req: Request, res: Response) => {
 router.post("/behaviour", requireAuth, async (req: Request, res: Response) => {
   const { pupilId, type, category, description, actionTaken, date } = req.body;
   if (!pupilId || !type || !date) return res.status(400).json({ error: "pupilId, type, date required" });
-  const id = `br_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  const id = `br_${Date.now()}_${randomBytes(3).toString("hex")}`;
   await db.prepare(
     `INSERT INTO behaviour_records (id, school_id, pupil_id, recorded_by, type, category, description, action_taken, date, created_at)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`

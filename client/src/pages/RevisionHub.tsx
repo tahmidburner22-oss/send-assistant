@@ -65,7 +65,6 @@ const YEAR_GROUPS = [
 ];
 
 function getAuthHeaders(extra: Record<string, string> = {}): Record<string, string> {
-  const token = localStorage.getItem("send_token");
   return token ? { Authorization: `Bearer ${token}`, ...extra } : extra;
 }
 
@@ -271,12 +270,11 @@ export default function RevisionHub() {
     const timeoutId = setTimeout(() => controller.abort(), 150000); // 150s timeout for long scripts
 
     try {
-      const token = localStorage.getItem("send_token");
-      const res = await fetch("/api/revision/tts", {
+        const res = await fetch("/api/revision/tts", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          ,
         },
         credentials: "include",
         signal: controller.signal,
@@ -441,11 +439,10 @@ export default function RevisionHub() {
       toast.info("Extracting text from document...", { id: "revision-progress", duration: 120000 });
 
       let finalData: { text: string; script: string } | null = null;
-      const token = localStorage.getItem("send_token");
-      for (let attempt = 0; attempt < 90; attempt++) {
+        for (let attempt = 0; attempt < 90; attempt++) {
         await new Promise(r => setTimeout(r, 2000));
         const pollRes = await fetch(`/api/revision/job/${jobId}`, {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
+          credentials: "include",
           credentials: "include",
         });
         if (!pollRes.ok) throw new Error("Job polling failed");

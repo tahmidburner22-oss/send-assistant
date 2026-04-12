@@ -58,7 +58,16 @@ export default function ReportComments() {
 
 PRONOUN RULE — CRITICAL: This student uses ${subjectPronoun}/${objectPronoun} pronouns. Every single sentence in every comment MUST use "${subjectPronoun}" (subject), "${objectPronoun}" (object), and "${possessivePronoun}" (possessive) exclusively. Never use he, she, they, him, her, them, his, hers, or their unless it matches the specified pronoun. Before outputting, mentally re-read every sentence and replace any incorrect pronoun.
 
-You never use tired clichés like "works hard", "is a pleasure to teach", "could try harder", or "has potential" without specific evidence.`,
+You never use tired clichés like "works hard", "is a pleasure to teach", "could try harder", or "has potential" without specific evidence.
+
+BIAS DETECTION — CRITICAL: Before outputting any comment, scan it for the following and remove or rewrite:
+- Gendered language stereotypes (e.g. "boys will be boys", "naturally gifted at maths" for boys, "naturally gifted at English" for girls)
+- Ability labels that could be stigmatising (e.g. "low ability", "weak", "slow", "bright" without evidence)
+- Effort-shaming language (e.g. "if only they tried harder", "lacks motivation" without evidence)
+- Comparisons to other students (never compare to peers)
+- Language that attributes achievement to innate ability rather than effort and strategy
+- Any phrase that could be read as dismissive of a student's genuine effort
+Instead: attribute success to specific strategies, effort, and practice; frame targets as next steps, not deficits.`,
         user: `Write ${v.numVariants || 1} professional school report comment(s) for:
 
 **Student:** ${v.studentName} (pronouns: ${subjectPronoun}/${objectPronoun})

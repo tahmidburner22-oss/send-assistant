@@ -281,9 +281,7 @@ function ProgressionTab({ child }: { child: import("@/contexts/AppContext").Chil
   );
 }
 
-function getAuthHeader(): Record<string, string> {
-  const token = localStorage.getItem("send_token");
-  return token ? { Authorization: `Bearer ${token}` } : {};
+// Auth is cookie-based — no Authorization header needed` } : {};
 }
 
 export default function Children() {
@@ -308,9 +306,8 @@ export default function Children() {
     if (sencoReport) return; // cached
     setSencoReportLoading(true);
     try {
-      const token = localStorage.getItem("send_token");
-      const res = await fetch("/api/admin/senco-report", {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
+          const res = await fetch("/api/admin/senco-report", {
+        credentials: "include",
         credentials: "include",
       });
       if (res.ok) setSencoReport(await res.json());
@@ -320,9 +317,8 @@ export default function Children() {
 
   const handleGdprExportPupil = async (pupilId: string, pupilName: string) => {
     try {
-      const token = localStorage.getItem("send_token");
-      const res = await fetch(`/api/gdpr/pupils/${pupilId}/export`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
+          const res = await fetch(`/api/gdpr/pupils/${pupilId}/export`, {
+        credentials: "include",
         credentials: "include",
       });
       if (!res.ok) { import("sonner").then(m => m.toast.error("Export failed — admin access required")); return; }
@@ -510,10 +506,9 @@ Return EXACTLY this JSON:
 }
 
 If the submission is empty or too short to mark, return mark: "N/A", feedback: "No work submitted to mark.", misconceptions: []`;
-      const token = localStorage.getItem("send_token");
-      const res = await fetch("/api/ai/generate", {
+          const res = await fetch("/api/ai/generate", {
         method: "POST",
-        headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        headers: { "Content-Type": "application/json" }, credentials: "include",
         credentials: "include",
         body: JSON.stringify({ prompt: userPrompt, systemPrompt, maxTokens: 800 }),
       });
