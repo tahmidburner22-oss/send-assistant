@@ -233,15 +233,14 @@ const aiLimiter = rateLimit({
 // General API limiter
 const generalLimiter = rateLimit({
   windowMs: 60 * 1000,
-  max: 200,
+  max: 1000, // 1000 req/min per IP — prevents abuse while allowing normal usage
   standardHeaders: true,
   legacyHeaders: false,
   validate: { xForwardedForHeader: false },
-  // Skip rate limiting for session check and keep-alive — called on every page load
+  // Skip rate limiting for session check and auth endpoints — called on every page load
   skip: (req: any) => {
     const p = req.originalUrl || req.path;
-    return p === '/api/auth/me' || p.startsWith('/api/auth/me?') ||
-           p === '/api/auth/refresh' || p.startsWith('/api/auth/refresh?');
+    return p.startsWith('/api/auth/');
   },
 });
 
