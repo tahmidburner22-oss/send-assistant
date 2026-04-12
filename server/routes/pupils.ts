@@ -228,6 +228,8 @@ router.post("/:id/assignments", requireAuth, async (req: Request, res: Response)
 });
 
 router.put("/:id/assignments/:assignmentId", requireAuth, async (req: Request, res: Response) => {
+  const pupil = await db.prepare("SELECT id FROM pupils WHERE id = ? AND school_id = ?").get(req.params.id, req.user!.schoolId);
+  if (!pupil) return res.status(404).json({ error: "Pupil not found" });
   const { status, feedback, mark, progress, teacherComment, content } = req.body;
   await db.prepare(`UPDATE assignments SET
     status=COALESCE(?,status), feedback=COALESCE(?,feedback),
@@ -249,6 +251,8 @@ router.delete("/:id/assignments/:assignmentId", requireAuth, async (req: Request
 
 // ── Attendance ────────────────────────────────────────────────────────────────
 router.post("/:id/attendance", requireAuth, async (req: Request, res: Response) => {
+  const pupil = await db.prepare("SELECT id FROM pupils WHERE id = ? AND school_id = ?").get(req.params.id, req.user!.schoolId);
+  if (!pupil) return res.status(404).json({ error: "Pupil not found" });
   const { date, amStatus, amReason, pmStatus, pmReason, notes } = req.body;
   const pupilId = req.params.id;
 
@@ -267,6 +271,8 @@ router.post("/:id/attendance", requireAuth, async (req: Request, res: Response) 
 
 // ── Behaviour ─────────────────────────────────────────────────────────────────
 router.post("/:id/behaviour", requireAuth, async (req: Request, res: Response) => {
+  const pupil = await db.prepare("SELECT id FROM pupils WHERE id = ? AND school_id = ?").get(req.params.id, req.user!.schoolId);
+  if (!pupil) return res.status(404).json({ error: "Pupil not found" });
   const { type, category, description, actionTaken, date } = req.body;
   const id = uuidv4();
   await db.prepare(`INSERT INTO behaviour_records (id, school_id, pupil_id, recorded_by, type, category, description, action_taken, date)

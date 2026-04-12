@@ -25,6 +25,7 @@ import { useApp } from "@/contexts/AppContext";
 import { useLocation } from "wouter";
 
 import { FunFactsCarousel } from "@/components/FunFactsCarousel";
+import { resolvePresentationTemplate } from "@/lib/presentation-templates";
 import { z } from "zod";
 
 // ─── Zod schema for AI-generated slide validation ────────────────────────────
@@ -440,6 +441,21 @@ function getImageSearchQuery(slide: { type: string; title: string; topic: string
   return `${topicKeyword} ${refinement} education`.slice(0, 80);
 }
 
+function applyTemplateBias(basePlan: string[], bias: string[]): string[] {
+  if (!bias.length) return basePlan;
+  const plan = [...basePlan];
+  const locked = new Set([0, 1, Math.max(0, plan.length - 1)]);
+  let insertCursor = 2;
+  for (const preferred of bias) {
+    if (plan.includes(preferred)) continue;
+    while (locked.has(insertCursor) && insertCursor < plan.length - 1) insertCursor += 1;
+    if (insertCursor >= plan.length - 1) break;
+    plan[insertCursor] = preferred;
+    insertCursor += 1;
+  }
+  return plan;
+}
+
 function buildSlidePrompt(params: {
   subject: string;
   yearGroup: string;
@@ -459,8 +475,10 @@ function buildSlidePrompt(params: {
   const isPrimary = /year [1-6]|ks1|ks2/i.test(yearGroup);
   const isExamYear = /year 1[0-3]|gcse|a.?level|sixth/i.test(yearGroup);
 
+  const template = resolvePresentationTemplate({ subject, yearGroup, lessonType, sendNeeds, differentiationLevel });
+
   // Build the structured slide plan
-  const slidePlan = buildSlidePlan(slideCount, lessonType, yearGroup);
+  const slidePlan = applyTemplateBias(buildSlidePlan(slideCount, lessonType, yearGroup), template.slidePlanBias);
 
   // Bloom's taxonomy mapping for teaching progression
   const bloomsMap: Record<string, string> = {
@@ -514,6 +532,12 @@ EXAM BOARD: ${examBoard}
   const diffNote = differentiationLevel ? `
 DIFFERENTIATION LEVEL: ${differentiationLevel.toUpperCase()}
 - ${differentiationLevel === "foundation" ? "Pitch content at foundation/support level. Use scaffolding, sentence starters, word banks, and worked examples on every activity slide. Avoid open-ended tasks without structure." : differentiationLevel === "extension" ? "Pitch content at extension/challenge level. Include higher-order thinking, evaluation tasks, and stretch questions. Assume strong prior knowledge." : "Pitch content at core/expected level for this year group."}` : "";
+
+  const templateNote = `
+PRESENTATION TEMPLATE: ${template.label}
+- Follow this presentation style strictly.
+- Preferred image style: ${template.imageStyle}.
+${template.promptAdditions.map(line => `- ${line}`).join("\n")}`;
 
   const system = `You are an expert UK teacher and curriculum designer. You create outstanding, Ofsted-ready lesson presentations that follow best pedagogical practice: Rosenshine's Principles, Bloom's Taxonomy, retrieval practice, and spaced learning.
 
@@ -577,6 +601,7 @@ ${sendNote}
 ${readingAgeNote}
 ${examBoardNote}
 ${diffNote}
+${templateNote}
 
 SLIDE PLAN (follow this EXACTLY — do not change the order or types):
 ${planDescription}
@@ -588,6 +613,7 @@ For every slide with an image_prompt field:
 1. First check: Is this slide type visual? (title, hook, content, real-world-link, diagram-label = YES; objectives, key-terms, exit-ticket = NO)
 2. Second check: Is the topic specific enough for a relevant image? (e.g. "Ohm's Law circuit" = YES; "Introduction" = NO)
 Only include image_prompt if BOTH checks pass. Make it specific: "photograph of a series circuit with labelled components" not "science image".
+When you do include images, they must match this style: ${template.imageStyle}.
 
 QUALITY STANDARDS:
 - Every bullet max 8 words, factually accurate for ${topic}
@@ -1768,6 +1794,7 @@ export default function PresentationMaker() {
     setActiveSlide(0);
 
     try {
+      const template = resolvePresentationTemplate({ subject, yearGroup, lessonType, sendNeeds, differentiationLevel });
       const { system, user: userPrompt } = buildSlidePrompt({
         subject,
         yearGroup,
@@ -1795,7 +1822,7 @@ export default function PresentationMaker() {
         const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
         const rawParsed = JSON.parse(jsonMatch ? jsonMatch[0] : cleaned);
         // Validate with Zod schema
-        const zodResult = PresentationDataSchema.safeParse(rawParsed);
+        const zodResult = PresentationDataSchema.safeParse({ ...rawParsed, theme: rawParsed.theme || template.defaultTheme || selectedTheme });
         if (!zodResult.success) {
           console.warn("[PresentationMaker] Zod validation issues:", zodResult.error.flatten());
           // Fall back to raw parsed data if it has slides — Zod errors are non-fatal here
@@ -1803,7 +1830,7 @@ export default function PresentationMaker() {
           if (!rawParsed.slides || !Array.isArray(rawParsed.slides) || rawParsed.slides.length === 0) {
             throw new Error("No slides were generated. Please try again.");
           }
-          parsed = rawParsed as PresentationData;
+          parsed = { ...(rawParsed as PresentationData), theme: rawParsed.theme || template.defaultTheme || selectedTheme } as PresentationData;
         } else {
           parsed = zodResult.data as PresentationData;
         }
@@ -1812,6 +1839,9 @@ export default function PresentationMaker() {
         throw new Error("Failed to parse AI response as JSON. Please try again.");
       }
 
+      if (!parsed.theme && template.defaultTheme) {
+        parsed.theme = template.defaultTheme;
+      }
       setPresentation(parsed);
       toast.success(`Generated ${parsed.slides.length} slides!`);
     } catch (err: any) {

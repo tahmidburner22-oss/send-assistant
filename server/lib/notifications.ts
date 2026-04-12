@@ -54,8 +54,17 @@ export function initWebSocketServer(httpServer: Server): WebSocketServer {
     connections.get(userId)!.add(ws);
 
     // Send unread notifications on connect — "init" type for client compatibility
-    const unread = getUnreadNotifications(userId);
-    ws.send(JSON.stringify({ type: "init", notifications: unread }));
+    getUnreadNotifications(userId)
+      .then((unread) => {
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify({ type: "init", notifications: unread }));
+        }
+      })
+      .catch(() => {
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify({ type: "init", notifications: [] }));
+        }
+      });
 
     ws.on("message", (data) => {
       try {

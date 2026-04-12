@@ -36,6 +36,21 @@ const pdfUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 
 
 const router = Router();
 
+function normalizeTier(value?: string | null): string {
+  const tier = (value || "mixed").toLowerCase().trim();
+  if (["base", "standard", "mixed"].includes(tier)) return "mixed";
+  if (["send", "scaffolded"].includes(tier)) return "scaffolded";
+  if (["foundation", "higher", "mixed", "scaffolded"].includes(tier)) return tier;
+  return "mixed";
+}
+
+function tierCandidates(value?: string | null): string[] {
+  const normal = normalizeTier(value);
+  if (normal === "mixed") return ["mixed", "base", "standard"];
+  if (normal === "scaffolded") return ["scaffolded", "send"];
+  return [normal];
+}
+
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 interface LibraryEntry {
@@ -285,7 +300,7 @@ router.get("/lookup", requireAuth, async (req: Request, res: Response) => {
       },
       availableTiers,
       canonicalTopicKey: entry.canonical_topic_key || canonicalTopicKey(topic),
-      structuralHash: computeStructuralHash(extractBaseStructure(sections)),
+      structuralHash: computeStructuralHash(sections),
       assets: assets.map(a => ({ id: a.id, sectionKey: a.section_key, publicUrl: a.public_url, assetType: a.asset_type })),
     });
   } catch (err: any) {
@@ -967,46 +982,42 @@ function buildQuestionSection(qNum: number, content: string, sectionLabel: strin
 router.post("/resolve", requireAuth, async (req: Request, res: Response) => {
   try {
     const {
-      subject, topic, yearGroup, tier,
-      retrievalTopic, additionalInstructions, sendNeed, readingAge,
+      subject, topic, yearGroup, tier, retrievalTopic, additionalInstructions,
+      sendNeed, readingAge, canonicalTopicKey: requestedTopicKey, sourceLibraryId, featureFlags,
     } = req.body;
 
     if (!subject || !topic || !yearGroup) {
       return res.status(400).json({ error: "subject, topic, yearGroup are required" });
     }
 
-    const entry = await findLibraryEntry(subject, topic, yearGroup, tier || "mixed");
+    const entry = await findLibraryEntry(subject, topic, yearGroup, tier || "mixed", {
+      canonicalTopicKey: requestedTopicKey,
+      sourceLibraryId,
+    });
     if (!entry) return res.json({ found: false });
 
     const sections: any[] = JSON.parse(entry.sections || "[]");
     const teacherSections: any[] = JSON.parse(entry.teacher_sections || "[]");
     const keyVocab: any[] = JSON.parse(entry.key_vocab || "[]");
-
-    // Resolve assets for this entry
     const assets = await resolveEntryAssets(entry.id);
-    // Inject assetRef into sections where imageUrl matches a known asset
     const sectionsWithAssets = injectAssetRefs(sections, assets);
+    const availableTiers = await findAvailableTiers(subject, topic, yearGroup, {
+      canonicalTopicKey: entry.canonical_topic_key || requestedTopicKey || canonicalTopicKey(topic),
+      sourceLibraryId: entry.id,
+    });
 
-    // Find all available tiers for this topic
-    const availableTiers = await findAvailableTiers(subject, topic, yearGroup);
-
-    // Apply overlays using the overlay engine
     const overlayResult = applyOverlays(sectionsWithAssets, {
       retrievalTopic: retrievalTopic || null,
       additionalInstructions: additionalInstructions || null,
       sendNeed: sendNeed || null,
       readingAge: readingAge || null,
+      featureFlags: featureFlags || null,
     });
 
-    if (!overlayResult.structurePreserved) {
-      console.warn("[library/resolve] Structural hash mismatch after overlays — returning anyway");
-    }
-
-    // Backfill base_structure_json and diagram_slots_json if not set
     if (!entry.base_structure_json || entry.base_structure_json === "{}") {
       const baseStructure = extractBaseStructure(sections);
       const diagramSlots = extractDiagramSlots(sections);
-      const topicKey = canonicalTopicKey(topic);
+      const topicKey = entry.canonical_topic_key || requestedTopicKey || canonicalTopicKey(topic);
       await db.prepare(
         `UPDATE worksheet_library SET base_structure_json = ?, diagram_slots_json = ?, canonical_topic_key = ?, updated_at = NOW() WHERE id = ?`
       ).run(JSON.stringify(baseStructure), JSON.stringify(diagramSlots), topicKey, entry.id);
@@ -1014,8 +1025,19 @@ router.post("/resolve", requireAuth, async (req: Request, res: Response) => {
 
     res.json({
       found: true,
+      entry: {
+        id: entry.id,
+        title: entry.title,
+        subtitle: entry.subtitle,
+        subject: entry.subject,
+        topic: entry.topic,
+        year_group: entry.year_group,
+        tier: normalizeTier(entry.tier),
+        curated: !!entry.curated,
+        canonical_topic_key: entry.canonical_topic_key || requestedTopicKey || canonicalTopicKey(topic),
+      },
       libraryId: entry.id,
-      tier: entry.tier,
+      tier: normalizeTier(entry.tier),
       availableTiers,
       title: entry.title,
       subtitle: entry.subtitle,
@@ -1025,10 +1047,22 @@ router.post("/resolve", requireAuth, async (req: Request, res: Response) => {
       teacherSections,
       curated: !!entry.curated,
       version: entry.version,
-      canonicalTopicKey: entry.canonical_topic_key || canonicalTopicKey(topic),
+      canonicalTopicKey: entry.canonical_topic_key || requestedTopicKey || canonicalTopicKey(topic),
       appliedOverlays: overlayResult.appliedOverlays,
       structuralHash: overlayResult.baseStructuralHash,
       assets: assets.map(a => ({ id: a.id, sectionKey: a.section_key, publicUrl: a.public_url, assetType: a.asset_type })),
+      worksheetManifest: {
+        sourceLibraryId: entry.id,
+        sourceTopic: entry.topic,
+        canonicalTopicKey: entry.canonical_topic_key || requestedTopicKey || canonicalTopicKey(topic),
+        tier: normalizeTier(entry.tier),
+        yearGroup,
+        retrievalTopic: retrievalTopic || null,
+        additionalInstructions: additionalInstructions || null,
+        sendNeed: sendNeed || null,
+        readingAge: readingAge || null,
+        featureFlags: featureFlags || null,
+      },
     });
   } catch (err: any) {
     console.error("Library resolve error:", err.message);
@@ -1099,15 +1133,18 @@ router.post("/assets/verify", requireAuth, requireSuperAdmin, async (req: Reques
 router.post("/switch-tier", requireAuth, async (req: Request, res: Response) => {
   try {
     const {
-      subject, topic, yearGroup, targetTier,
-      retrievalTopic, additionalInstructions, sendNeed, readingAge,
+      subject, topic, yearGroup, targetTier, retrievalTopic, additionalInstructions,
+      sendNeed, readingAge, canonicalTopicKey: requestedTopicKey, sourceLibraryId, featureFlags,
     } = req.body;
 
     if (!subject || !topic || !yearGroup || !targetTier) {
       return res.status(400).json({ error: "subject, topic, yearGroup and targetTier are required" });
     }
 
-    const entry = await findLibraryEntry(subject, topic, yearGroup, targetTier);
+    const entry = await findLibraryEntry(subject, topic, yearGroup, targetTier, {
+      canonicalTopicKey: requestedTopicKey,
+      sourceLibraryId,
+    });
     if (!entry) {
       return res.json({ found: false, message: `No ${targetTier} tier found for this topic` });
     }
@@ -1115,26 +1152,25 @@ router.post("/switch-tier", requireAuth, async (req: Request, res: Response) => 
     const sections: any[] = JSON.parse(entry.sections || "[]");
     const teacherSections: any[] = JSON.parse(entry.teacher_sections || "[]");
     const keyVocab: any[] = JSON.parse(entry.key_vocab || "[]");
+    const availableTiers = await findAvailableTiers(subject, topic, yearGroup, {
+      canonicalTopicKey: entry.canonical_topic_key || requestedTopicKey || canonicalTopicKey(topic),
+      sourceLibraryId: sourceLibraryId || entry.id,
+    });
 
-    // Find all available tiers for this topic
-    const availableTiers = await findAvailableTiers(subject, topic, yearGroup);
-
-    // Resolve assets and inject assetRefs
     const assets = await resolveEntryAssets(entry.id);
     const sectionsWithAssets = injectAssetRefs(sections, assets);
-
-    // Re-apply the same overlays using the overlay engine
     const overlayResult = applyOverlays(sectionsWithAssets, {
       retrievalTopic: retrievalTopic || null,
       additionalInstructions: additionalInstructions || null,
       sendNeed: sendNeed || null,
       readingAge: readingAge || null,
+      featureFlags: featureFlags || null,
     });
 
     res.json({
       found: true,
       libraryId: entry.id,
-      tier: entry.tier,
+      tier: normalizeTier(entry.tier),
       availableTiers,
       title: entry.title,
       subtitle: entry.subtitle,
@@ -1144,10 +1180,22 @@ router.post("/switch-tier", requireAuth, async (req: Request, res: Response) => 
       teacherSections,
       curated: !!entry.curated,
       version: entry.version,
-      canonicalTopicKey: entry.canonical_topic_key || canonicalTopicKey(topic),
+      canonicalTopicKey: entry.canonical_topic_key || requestedTopicKey || canonicalTopicKey(topic),
       appliedOverlays: overlayResult.appliedOverlays,
       structuralHash: overlayResult.baseStructuralHash,
       assets: assets.map(a => ({ id: a.id, sectionKey: a.section_key, publicUrl: a.public_url, assetType: a.asset_type })),
+      worksheetManifest: {
+        sourceLibraryId: entry.id,
+        sourceTopic: entry.topic,
+        canonicalTopicKey: entry.canonical_topic_key || requestedTopicKey || canonicalTopicKey(topic),
+        tier: normalizeTier(entry.tier),
+        yearGroup,
+        retrievalTopic: retrievalTopic || null,
+        additionalInstructions: additionalInstructions || null,
+        sendNeed: sendNeed || null,
+        readingAge: readingAge || null,
+        featureFlags: featureFlags || null,
+      },
     });
   } catch (err: any) {
     console.error("Library switch-tier error:", err.message);
@@ -1166,80 +1214,97 @@ async function findLibraryEntry(
   subject: string,
   topic: string,
   yearGroup: string,
-  tier: string
+  tier: string,
+  opts?: { canonicalTopicKey?: string | null; sourceLibraryId?: string | null }
 ): Promise<LibraryEntry | undefined> {
   const topicNorm = topic.toLowerCase().trim();
   const subjectsToSearch = expandSubjects(subject);
   const subjectsNorm = subjectsToSearch.map((s: string) => s.toLowerCase());
   const placeholders = subjectsNorm.map(() => "?").join(",");
   const ygNum = yearGroup.replace(/[^0-9]/g, "");
+  const topicKey = opts?.canonicalTopicKey || canonicalTopicKey(topic);
+  const tiersToTry = tierCandidates(tier);
 
-  const tierAliases: Record<string, string[]> = {
-    base:       ["base", "standard", "mixed"],
-    standard:   ["standard", "base", "mixed"],
-    mixed:      ["mixed", "base", "standard"],
-    send:       ["send", "scaffolded"],
-    scaffolded: ["scaffolded", "send"],
-    foundation: ["foundation"],
-    higher:     ["higher"],
-  };
-  const tiersToTry = tierAliases[tier.toLowerCase()] || [tier.toLowerCase(), "mixed", "base"];
+  if (opts?.sourceLibraryId) {
+    const source = await db.prepare("SELECT id, base_entry_id, canonical_topic_key, year_group, topic FROM worksheet_library WHERE id = ? LIMIT 1").get(opts.sourceLibraryId) as any;
+    if (source) {
+      for (const candidateTier of tiersToTry) {
+        const sibling = await db.prepare(
+          `SELECT * FROM worksheet_library
+           WHERE (id = ? OR base_entry_id = ? OR base_entry_id = ?)
+             AND tier = ?
+           ORDER BY curated DESC, updated_at DESC
+           LIMIT 1`
+        ).get(source.id, source.base_entry_id || source.id, source.id, candidateTier) as LibraryEntry | undefined;
+        if (sibling) return sibling;
+      }
+    }
+  }
 
-  let entry: LibraryEntry | undefined;
-
-  // 1. Exact topic + year group match
-  for (const t of tiersToTry) {
-    entry = await db.prepare(
+  for (const candidateTier of tiersToTry) {
+    const entry = await db.prepare(
       `SELECT * FROM worksheet_library
        WHERE LOWER(subject) IN (${placeholders})
-         AND (LOWER(topic) = ? OR LOWER(topic) ILIKE ?)
-         AND (year_group = ? OR year_group ILIKE ? OR year_group ILIKE ?)
          AND tier = ?
-       ORDER BY curated DESC LIMIT 1`
-    ).get(...subjectsNorm, topicNorm, `%${topicNorm}%`, yearGroup, `%${ygNum}%`, `%/${ygNum}%`, t) as LibraryEntry | undefined;
+         AND (
+           LOWER(topic) = ? OR
+           LOWER(topic) ILIKE ? OR
+           canonical_topic_key = ?
+         )
+         AND (year_group = ? OR year_group ILIKE ? OR year_group ILIKE ?)
+       ORDER BY curated DESC, updated_at DESC
+       LIMIT 1`
+    ).get(...subjectsNorm, candidateTier, topicNorm, `%${topicNorm}%`, topicKey, yearGroup, `%${ygNum}%`, `%/${ygNum}%`) as LibraryEntry | undefined;
     if (entry) return entry;
   }
 
-  // 2. Fuzzy topic match with year group preference
-  for (const t of tiersToTry) {
+  for (const candidateTier of tiersToTry) {
     const allForTier = await db.prepare(
-      `SELECT * FROM worksheet_library WHERE LOWER(subject) IN (${placeholders}) AND tier = ? ORDER BY curated DESC`
-    ).all(...subjectsNorm, t) as LibraryEntry[];
-    const yearMatches = allForTier.filter(e =>
-      topicKeywordsMatch(topic, e.topic) && (
-        e.year_group === yearGroup ||
-        (ygNum && e.year_group.replace(/[^0-9]/g, "").includes(ygNum))
-      )
-    );
-    entry = yearMatches.length > 0
-      ? yearMatches[0]
-      : allForTier.find(e => topicKeywordsMatch(topic, e.topic));
-    if (entry) return entry;
+      `SELECT * FROM worksheet_library WHERE LOWER(subject) IN (${placeholders}) AND tier = ? ORDER BY curated DESC, updated_at DESC`
+    ).all(...subjectsNorm, candidateTier) as LibraryEntry[];
+    const byCanonical = allForTier.filter(entry => entry.canonical_topic_key && entry.canonical_topic_key === topicKey);
+    const canonicalMatch = byCanonical.find(entry => !ygNum || entry.year_group.replace(/[^0-9]/g, "").includes(ygNum));
+    if (canonicalMatch) return canonicalMatch;
+    const fuzzyYearMatch = allForTier.find(entry => topicKeywordsMatch(topic, entry.topic) && (!ygNum || entry.year_group.replace(/[^0-9]/g, "").includes(ygNum)));
+    if (fuzzyYearMatch) return fuzzyYearMatch;
+    const fuzzyMatch = allForTier.find(entry => topicKeywordsMatch(topic, entry.topic));
+    if (fuzzyMatch) return fuzzyMatch;
   }
 
-  // 3. Canonical topic key match (cross-tier fallback)
-  const topicKey = canonicalTopicKey(topic);
-  const allEntries = await db.prepare(
-    `SELECT * FROM worksheet_library WHERE LOWER(subject) IN (${placeholders}) AND (canonical_topic_key = ? OR canonical_topic_key IS NULL) ORDER BY curated DESC`
-  ).all(...subjectsNorm, topicKey) as LibraryEntry[];
-  return allEntries.find(e => isSafeTierTopicMatch(topic, e.topic));
+  return undefined;
 }
 
-/**
- * Find all available tiers for a given subject/topic/yearGroup combination.
- */
-async function findAvailableTiers(subject: string, topic: string, yearGroup: string): Promise<string[]> {
+async function findAvailableTiers(
+  subject: string,
+  topic: string,
+  yearGroup: string,
+  opts?: { canonicalTopicKey?: string | null; sourceLibraryId?: string | null }
+): Promise<string[]> {
   const topicNorm = topic.toLowerCase().trim();
   const subjectsToSearch = expandSubjects(subject);
   const subjectsNorm = subjectsToSearch.map((s: string) => s.toLowerCase());
   const placeholders = subjectsNorm.map(() => "?").join(",");
-  const rows = await db.prepare(
-    `SELECT DISTINCT tier FROM worksheet_library
-     WHERE LOWER(subject) IN (${placeholders})
-       AND (LOWER(topic) = ? OR LOWER(topic) ILIKE ?)
-     ORDER BY tier ASC`
-  ).all(...subjectsNorm, topicNorm, `%${topicNorm}%`) as { tier: string }[];
-  return rows.map(r => r.tier);
+  const topicKey = opts?.canonicalTopicKey || canonicalTopicKey(topic);
+
+  let rows: { tier: string }[] = [];
+  if (opts?.sourceLibraryId) {
+    rows = await db.prepare(
+      `SELECT DISTINCT tier FROM worksheet_library
+       WHERE id = ? OR base_entry_id = (SELECT COALESCE(base_entry_id, id) FROM worksheet_library WHERE id = ?) OR base_entry_id = ?
+       ORDER BY tier ASC`
+    ).all(opts.sourceLibraryId, opts.sourceLibraryId, opts.sourceLibraryId) as { tier: string }[];
+  }
+
+  if (rows.length === 0) {
+    rows = await db.prepare(
+      `SELECT DISTINCT tier FROM worksheet_library
+       WHERE LOWER(subject) IN (${placeholders})
+         AND ((LOWER(topic) = ? OR LOWER(topic) ILIKE ?) OR canonical_topic_key = ?)
+       ORDER BY tier ASC`
+    ).all(...subjectsNorm, topicNorm, `%${topicNorm}%`, topicKey) as { tier: string }[];
+  }
+
+  return [...new Set(rows.map(row => normalizeTier(row.tier)))];
 }
 
 /**

@@ -1,4 +1,5 @@
 import { Router, Request, Response } from "express";
+import rateLimit from "express-rate-limit";
 import { v4 as uuidv4 } from "uuid";
 import { randomBytes } from "crypto";
 import db from "../db/index.js";
@@ -6,6 +7,14 @@ import { requireAuth, auditLog } from "../middleware/auth.js";
 import { sendBehaviourAlert, sendDirectParentMessage } from "../email/index.js";
 
 const router = Router();
+
+const parentReplyLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many parent reply attempts. Please try again later." },
+});
 
 // ── Worksheets ────────────────────────────────────────────────────────────────
 router.get("/worksheets", requireAuth, async (req: Request, res: Response) => {
@@ -32,6 +41,9 @@ router.get("/worksheets", requireAuth, async (req: Request, res: Response) => {
       ratingLabel: r.rating_label,
       overlay: r.overlay,
       createdAt: r.created_at,
+      metadata: r.metadata_json ? JSON.parse(r.metadata_json) : undefined,
+      sourceLibraryId: r.source_library_id || undefined,
+      sourceCanonicalTopicKey: r.source_canonical_topic_key || undefined,
       sections: sections.map((s: any) => ({
         title: s.title,
         type: s.type,
@@ -50,16 +62,16 @@ router.get("/worksheets", requireAuth, async (req: Request, res: Response) => {
 
 router.post("/worksheets", requireAuth, async (req: Request, res: Response) => {
   try {
-    const { title: rawTitle, subject, topic, yearGroup, sendNeed, difficulty, examBoard, content, teacherContent, overlay, sections } = req.body;
+    const { title: rawTitle, subject, topic, yearGroup, sendNeed, difficulty, examBoard, content, teacherContent, overlay, sections, metadata, sourceLibraryId, sourceCanonicalTopicKey } = req.body;
     if (!rawTitle) return res.status(400).json({ error: "Title required" });
     // Strip rogue markdown bold markers from title
     const title = typeof rawTitle === 'string' ? rawTitle.replace(/^\*{1,2}|\*{1,2}$/g, '').replace(/^_{1,2}|_{1,2}$/g, '').trim() : rawTitle;
     console.log(`[POST /worksheets] title=${title} subject=${subject} yearGroup=${yearGroup} sections=${Array.isArray(sections) ? sections.length : 'none'}`);
     const id = uuidv4();
     const n = (v: any) => (v === undefined || v === null ? null : v);
-    await db.prepare(`INSERT INTO worksheets (id, school_id, created_by, title, subject, topic, year_group, send_need, difficulty, exam_board, content, teacher_content, overlay)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
-      id, n(req.user!.schoolId), n(req.user!.id), n(title), n(subject), n(topic), n(yearGroup), n(sendNeed), n(difficulty), n(examBoard), n(content), n(teacherContent), n(overlay)
+    await db.prepare(`INSERT INTO worksheets (id, school_id, created_by, title, subject, topic, year_group, send_need, difficulty, exam_board, content, teacher_content, overlay, metadata_json, source_library_id, source_canonical_topic_key)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
+      id, n(req.user!.schoolId), n(req.user!.id), n(title), n(subject), n(topic), n(yearGroup), n(sendNeed), n(difficulty), n(examBoard), n(content), n(teacherContent), n(overlay), metadata ? JSON.stringify(metadata) : null, n(sourceLibraryId), n(sourceCanonicalTopicKey)
     );
     console.log(`[POST /worksheets] worksheet inserted id=${id}`);
     // Save sections if provided
@@ -87,17 +99,16 @@ router.post("/worksheets", requireAuth, async (req: Request, res: Response) => {
     auditLog(req.user!.id, req.user!.schoolId, "worksheet.created", "worksheet", id, { title, subject, yearGroup }, req.ip);
     res.status(201).json({ id });
   } catch (err: any) {
-    const errStr = typeof err === 'string' ? err : (err?.message || JSON.stringify(err) || 'unknown error');
     console.error(`[POST /worksheets] CAUGHT ERROR type=${typeof err}:`, err);
-    res.status(500).json({ error: errStr, type: typeof err, raw: String(err) });
+    res.status(500).json({ error: "Failed to save worksheet" });
   }
 });
 
 router.put("/worksheets/:id", requireAuth, async (req: Request, res: Response) => {
-  const { rating, ratingLabel, overlay, content, teacherContent, sections } = req.body;
+  const { rating, ratingLabel, overlay, content, teacherContent, sections, metadata, sourceLibraryId, sourceCanonicalTopicKey } = req.body;
   // Use COALESCE for all fields so partial updates (e.g. rating-only) don't wipe other fields
-  await db.prepare("UPDATE worksheets SET rating=COALESCE(?, rating), rating_label=COALESCE(?, rating_label), overlay=COALESCE(?, overlay), content=COALESCE(?, content), teacher_content=COALESCE(?, teacher_content) WHERE id=? AND created_by=?")
-    .run(rating ?? null, ratingLabel ?? null, overlay ?? null, content ?? null, teacherContent ?? null, req.params.id, req.user!.id);
+  await db.prepare("UPDATE worksheets SET rating=COALESCE(?, rating), rating_label=COALESCE(?, rating_label), overlay=COALESCE(?, overlay), content=COALESCE(?, content), teacher_content=COALESCE(?, teacher_content), metadata_json=COALESCE(?, metadata_json), source_library_id=COALESCE(?, source_library_id), source_canonical_topic_key=COALESCE(?, source_canonical_topic_key) WHERE id=? AND created_by=?")
+    .run(rating ?? null, ratingLabel ?? null, overlay ?? null, content ?? null, teacherContent ?? null, metadata ? JSON.stringify(metadata) : null, sourceLibraryId ?? null, sourceCanonicalTopicKey ?? null, req.params.id, req.user!.id);
   // Update sections if provided
   if (Array.isArray(sections)) {
     await db.prepare("DELETE FROM worksheet_sections WHERE worksheet_id=?").run(req.params.id);
@@ -447,7 +458,7 @@ router.get("/audit-trail", requireAuth, async (req: Request, res: Response) => {
 });
 
 // ── Parent messaging (parent → teacher) ──────────────────────────────────────
-router.post("/parent-reply", async (req: Request, res: Response) => {
+router.post("/parent-reply", parentReplyLimiter, async (req: Request, res: Response) => {
   // Public endpoint — authenticated by pupil access code
   const { accessCode, message, parentName } = req.body;
   if (!accessCode || !message?.trim()) {
@@ -466,10 +477,12 @@ router.post("/parent-reply", async (req: Request, res: Response) => {
 });
 
 router.get("/parent-messages/:pupilId", requireAuth, async (req: Request, res: Response) => {
+  const pupil = await db.prepare("SELECT id FROM pupils WHERE id = ? AND school_id = ?").get(req.params.pupilId, req.user!.schoolId) as any;
+  if (!pupil) return res.status(404).json({ error: "Pupil not found" });
   const messages = await db.prepare(`
     SELECT * FROM pupil_comments
-    WHERE pupil_id = ? AND type = 'parent_message' ORDER BY created_at DESC LIMIT 50
-  `).all(req.params.pupilId);
+    WHERE pupil_id = ? AND school_id = ? AND type = 'parent_message' ORDER BY created_at DESC LIMIT 50
+  `).all(req.params.pupilId, req.user!.schoolId);
   res.json({ messages });
 });
 

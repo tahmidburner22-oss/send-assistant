@@ -1004,45 +1004,37 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
         // first, then apply SEND adaptations on top of that content.
         // The library uses 'base' for standard/mixed ability, 'send' for SEND scaffolded versions.
         const lookupTier = difficulty === "higher" ? "higher" : difficulty === "foundation" ? "foundation" : difficulty === "scaffolded" ? "scaffolded" : "mixed";
-        const libRes = await fetch(
-          `/api/library/lookup?subject=${encodeURIComponent(getLibrarySubjectName(subject))}&topic=${encodeURIComponent(topic)}&yearGroup=${encodeURIComponent(yearGroup)}&tier=${lookupTier}`,
-          { headers: authHeaders }
-        );
+        const libRes = await fetch("/api/library/resolve", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", ...authHeaders },
+          body: JSON.stringify({
+            subject: getLibrarySubjectName(subject),
+            topic,
+            yearGroup,
+            tier: lookupTier,
+            retrievalTopic: recallTopic.trim() || null,
+            additionalInstructions: additionalInstructions || null,
+            sendNeed: (sendNeed && sendNeed !== "none-selected") ? sendNeed : null,
+            readingAge: readingAge > 0 ? String(readingAge) : null,
+          }),
+        });
         if (libRes.ok) {
           const libData = await libRes.json();
-          if (libData.found && libData.entry) {
-            const entry = libData.entry;
+          if (libData.found) {
+            const entry = libData.entry || {};
             const hasSendNeed = sendNeed && sendNeed !== "none-selected";
-
-            // Always adjust reading level:
-            // 1. If a specific reading age was manually selected by the teacher, use that.
-            // 2. Otherwise, adjust to match the selected year group (in case the library
-            //    entry was written for a different year group).
-            // Only vocabulary and sentence complexity change — questions, marks, diagrams,
-            // and structure are preserved exactly.
-            const libraryYearGroup = entry.year_group || entry.yearGroup;
-            // A library entry may span multiple year groups (e.g. "Year 10/11").
-            // Normalise both sides to just the numeric part (e.g. "Year 11" -> "11")
-            // so that "Year 10/11".split("/") = ["Year 10", "11"] still matches "Year 11".
+            const libraryYearGroup = entry.year_group || entry.yearGroup || yearGroup;
             const normaliseYG = (yg: string) => yg.replace(/^Year\s*/i, "").trim();
             const selectedYGNorm = normaliseYG(yearGroup || "");
             const libraryYearGroups = libraryYearGroup
-              ? libraryYearGroup.split("/").map((y: string) => normaliseYG(y))
+              ? String(libraryYearGroup).split("/").map((y: string) => normaliseYG(y))
               : [];
-            const yearGroupMismatch = libraryYearGroup &&
-              !libraryYearGroups.some((lyg: string) => lyg === selectedYGNorm);
-            // For library worksheets: ONLY adjust if year group mismatches the library entry.
-            // Never rewrite library content just because the reading age slider was moved —
-            // library worksheets are already written at the correct level for their tier.
-            const needsReadingAdjustment = yearGroupMismatch;
+            const yearGroupMismatch = libraryYearGroup && !libraryYearGroups.some((lyg: string) => lyg === selectedYGNorm);
+            const needsReadingAdjustment = Boolean((readingAge > 0) || yearGroupMismatch);
 
-             let finalSections = normaliseLibrarySections(entry.sections || []);
+            let finalSections = normaliseLibrarySections(libData.sections || []);
             let readingAdjusted = false;
-            let sendAdapted = false;
             if (needsReadingAdjustment) {
-              // Adjust reading level to match the selected year group or manually chosen reading age.
-              // For Year 7 and below: ONLY vocabulary/sentence complexity is changed.
-              // Questions, marks, diagrams, and structure are preserved exactly.
               const adjustLabel = readingAge > 0 ? `reading age ${readingAge}` : yearGroup;
               setGenerationStatus(`Adjusting reading level for ${adjustLabel}...`);
               try {
@@ -1050,7 +1042,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                   method: "POST",
                   headers: { "Content-Type": "application/json", ...authHeaders },
                   body: JSON.stringify({
-                    sections: finalSections,
+                    sections: finalSections.filter((s: any) => !s.teacherOnly),
                     targetYearGroup: yearGroup,
                     targetReadingAge: readingAge > 0 ? readingAge : undefined,
                     subject,
@@ -1070,192 +1062,29 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
               }
             }
 
-            // If a SEND need is selected, apply per-need content scaffolding (word banks,
-            // sentence starters, hint boxes etc.) using the scaffold-worksheet endpoint which
-            // has specific prompts for each SEND need (Dyslexia, ADHD, Autism, MLD, EAL etc.).
-            // This is separate from the visual formatting overlay applied by WorksheetRenderer.
-            if (hasSendNeed) {
-              setGenerationStatus(`Applying ${sendNeed} scaffolding...`);
-              try {
-                const sendRes = await fetch("/api/ai/scaffold-worksheet", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json", ...authHeaders },
-                  body: JSON.stringify({
-                    sections: finalSections,
-                    sendNeed,
-                    subject,
-                    topic,
-                    yearGroup,
-                    title: entry.title,
-                  }),
-                });
-                if (sendRes.ok) {
-                  const sendData = await sendRes.json();
-                  // Server returns { scaffolded: { sections: [...], wordBank: "...", scaffoldingApplied: [...] } }
-                  // We must read sendData.scaffolded.sections, NOT sendData.sections
-                  const scaffoldedSections = sendData?.scaffolded?.sections;
-                  if (scaffoldedSections && Array.isArray(scaffoldedSections) && scaffoldedSections.length > 0) {
-                    finalSections = scaffoldedSections;
-                    sendAdapted = true;
-                  } else if (sendData?.sections && Array.isArray(sendData.sections) && sendData.sections.length > 0) {
-                    // Legacy fallback: some older responses may return sections at top level
-                    finalSections = sendData.sections;
-                    sendAdapted = true;
-                  }
-                }
-              } catch (sendErr) {
-                console.warn("SEND scaffolding failed, using original content with formatting overlay:", sendErr);
-              }
-            }
-
-            // ── RETRIEVAL SECTION: If recallTopic is set and retrieval is selected,
-            // generate 2-3 retrieval questions and prepend them after the LO.
-            // This ensures retrieval works for library worksheets just as it does for AI-generated ones.
-            // Trigger retrieval injection if: (a) retrieval checkbox is ticked, OR (b) a retrieval topic has been typed.
-            // This ensures the retrieval section always appears when the teacher has entered a topic,
-            // even if they forgot to tick the checkbox.
-            const wantsRetrieval = (selectedSections.includes('retrieval') || recallTopic.trim()) && recallTopic.trim();
-            if (wantsRetrieval) {
-              setGenerationStatus(`Generating retrieval questions on "${recallTopic.trim()}"...`);
-              try {
-                const retrievalRes = await fetch("/api/ai/generate-retrieval", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json", ...authHeaders },
-                  body: JSON.stringify({
-                    recallTopic: recallTopic.trim(),
-                    subject,
-                    yearGroup,
-                    sendNeed: hasSendNeed ? sendNeed : undefined,
-                  }),
-                });
-                if (retrievalRes.ok) {
-                  const retrievalData = await retrievalRes.json();
-                  if (retrievalData?.section) {
-                    // Insert the retrieval section after the learning-objective section
-                    const loIdx = finalSections.findIndex((s: any) =>
-                      ['objectives', 'learning-objective', 'lo', 'objective'].includes((s.type || '').toLowerCase())
-                    );
-                    if (loIdx >= 0) {
-                      finalSections = [
-                        ...finalSections.slice(0, loIdx + 1),
-                        retrievalData.section,
-                        ...finalSections.slice(loIdx + 1),
-                      ];
-                    } else {
-                      finalSections = [retrievalData.section, ...finalSections];
-                    }
-                  }
-                }
-              } catch (retrievalErr) {
-                console.warn("Retrieval section generation failed, continuing without it:", retrievalErr);
-              }
-            }
-
-            // Filter sections based on selectedSections
-            // Map section types to our section IDs
-            const sectionTypeMap: Record<string, string> = {
-              'objectives': 'learning-objective',
-              'learning-objective': 'learning-objective',
-              'lo': 'learning-objective',
-              'objective': 'learning-objective',
-              'retrieval': 'retrieval',
-              'recall': 'retrieval',
-              'prior-knowledge': 'retrieval',
-              'worked-example': 'worked-example',
-              'worked_example': 'worked-example',
-              'example': 'worked-example',
-              'common-mistakes': 'common-mistakes',
-              'common_mistakes': 'common-mistakes',
-              'mistakes': 'common-mistakes',
-              'true-false': 'true-false',
-              'true_false': 'true-false',
-              'q-true-false': 'true-false',
-              'mcq': 'mcq',
-              'multiple-choice': 'mcq',
-              'q-mcq': 'mcq',
-              'word-bank': 'word-bank-gap-fill',
-              'word-bank-gap-fill': 'word-bank-gap-fill',
-              'gap-fill': 'word-bank-gap-fill',
-              'q-gap-fill': 'word-bank-gap-fill',
-              'match': 'match',
-              'matching': 'match',
-              'q-matching': 'match',
-              // Split question sections — map to section-a/b/c
-              'guided': 'section-a',
-              'section-a': 'section-a',
-              'independent': 'section-b',
-              'section-b': 'section-b',
-              'challenge': 'section-c',
-              'section-c': 'section-c',
-              // Legacy 'questions' maps to section-b (core practice) as best fit
-              'questions': 'section-b',
-              'extension': 'section-c',
-              'exam-questions': 'section-b',
-              // Common mistakes and worked example
-              'common-mistakes': 'common-mistakes',
-              'common_mistakes': 'common-mistakes',
-              'mistakes': 'common-mistakes',
-              // Short answer and free response map to section-b (core practice)
-              'q-short-answer': 'section-b',
-              'short-answer': 'section-b',
-              'short_answer': 'section-b',
-              'q-free-response': 'section-c',
-              'free-response': 'section-c',
-              'free_response': 'section-c',
-              // Label diagram maps to section-b
-              'q-label-diagram': 'section-b',
-              'label-diagram': 'section-b',
-              'label_diagram': 'section-b',
-              // Worked example
-              'q-worked-example': 'worked-example',
-              // Key terms
-              'key-terms': 'learning-objective',
-              'key_terms': 'learning-objective',
-              'key-vocab': 'learning-objective',
-              'vocabulary': 'learning-objective',
-              // Stop/check maps to section-a (foundation)
-              'stop-check': 'section-a',
-              'stop_check': 'section-a',
-              'brain-break': 'section-a',
-              'brain_break': 'section-a',
-              // Learning objective
-              'learning-objective': 'learning-objective',
-              'learning_objective': 'learning-objective',
-              'objective': 'learning-objective',
-              // Self reflection
-              'self-reflection': 'self-reflection',
-              'self_reflection': 'self-reflection',
-              // Section headers — structural dividers, map to section-b so they are always shown
-              'section-header': 'section-b',
-              // Reference diagrams — always shown alongside questions
-              'diagram': 'section-b',
-              // Draw questions — map to section-c (application)
-              'q-draw': 'section-c',
-              'draw': 'section-c',
-              // Challenge questions — map to section-c
-              'q-challenge': 'section-c',
-              'challenge-question': 'section-c',
-            };
-            // Merge teacher_sections from library entry into finalSections (marked teacherOnly)
-            // This ensures the teacher answer key appears in teacher view for all library worksheets
             const libTeacherSectionsMain = normaliseLibrarySections(
-              (entry.teacher_sections || entry.teacherSections || []).map((s: any) => ({ ...s, teacherOnly: true }))
+              (libData.teacherSections || []).map((s: any) => ({ ...s, teacherOnly: true }))
             );
-            if (libTeacherSectionsMain.length > 0) {
-              finalSections = [...finalSections, ...libTeacherSectionsMain];
-            }
-            // Library worksheets are already fully structured — skip section filtering.
-            // Section filtering only applies to AI-generated worksheets where the teacher
-            // picks which sections to include. For library worksheets, show everything.
-            // Teacher-only sections (mark scheme etc) are always kept.
-            const sectionsToUse = finalSections;
+            const sectionsToUse = [...finalSections, ...libTeacherSectionsMain];
+            const strippedTitle = (libData.title || entry.title || "")
+              .replace(/\s*[—–-]\s*(Base Tier|Foundation Tier|Higher Tier|Standard Tier|SEND Tier|Scaffolded Tier|Access Tier|Extended Tier|Mixed Tier)[^)]*\)?/gi, "")
+              .replace(/\s*\(Year \d+[^)]*\)\s*$/gi, "")
+              .trim() || libData.title || entry.title;
 
-            // Strip tier suffix from title (e.g. "Fractions — Base Tier (Year 9 Maths)" → "Fractions")
-            const strippedTitle = (entry.title || "").replace(/\s*[—–-]\s*(Base Tier|Foundation Tier|Higher Tier|Standard Tier|SEND Tier|Scaffolded Tier|Access Tier|Extended Tier|Mixed Tier)[^)]*\)?/gi, "").replace(/\s*\(Year \d+[^)]*\)\s*$/gi, "").trim() || entry.title;
+            const manifest = libData.worksheetManifest || {
+              sourceLibraryId: libData.libraryId || entry.id,
+              canonicalTopicKey: libData.canonicalTopicKey || entry.canonical_topic_key,
+              tier: libData.tier || lookupTier,
+              yearGroup,
+              retrievalTopic: recallTopic || null,
+              additionalInstructions: additionalInstructions || null,
+              sendNeed: hasSendNeed ? sendNeed : null,
+              readingAge: readingAge > 0 ? String(readingAge) : null,
+            };
 
             const libWorksheet = {
               title: strippedTitle,
-              subtitle: entry.subtitle || `${yearGroup} | ${subject}`,
+              subtitle: libData.subtitle || `${yearGroup} | ${subject}`,
               sections: sectionsToUse,
               metadata: {
                 subject,
@@ -1263,29 +1092,27 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                 yearGroup,
                 difficulty: difficulty || "standard",
                 examBoard: examBoard !== "none" ? examBoard : undefined,
-                totalMarks: finalSections.reduce((t: number, s: any) => t + (s.marks || 0), 0),
-                // Store SEND need in metadata so WorksheetRenderer applies the correct
-                // font/size/spacing overlay — content structure is never changed for SEND.
+                totalMarks: sectionsToUse.reduce((t: number, s: any) => t + (s.marks || 0), 0),
                 sendNeedId: hasSendNeed ? sendNeed : undefined,
                 sendNeed: hasSendNeed ? sendNeed : undefined,
+                buildManifest: manifest,
               },
-              isAI: readingAdjusted || sendAdapted, // mark as AI-adjusted if reading level or SEND was applied
+              isAI: readingAdjusted || hasSendNeed,
               fromLibrary: true,
-              libraryCurated: entry.curated,
-              // Store available tiers so the differentiate panel knows what's in the library
+              libraryCurated: libData.curated,
               availableTiers: libData.availableTiers || ["mixed"],
-              // Store library metadata for asset resolution and structural tracking
-              libraryId: entry.id,
+              libraryId: libData.libraryId || entry.id,
               canonicalTopicKey: libData.canonicalTopicKey || entry.canonical_topic_key,
               structuralHash: libData.structuralHash,
-              // Store resolved assets for stable diagram/image rendering
               libraryAssets: libData.assets || [],
-              // Store the overlay transform state so tier switches can re-apply the same overlays
+              sourceLibraryId: libData.libraryId || entry.id,
+              sourceCanonicalTopicKey: libData.canonicalTopicKey || entry.canonical_topic_key,
               overlayState: {
-                retrievalTopic: recallTopic || null,
-                additionalInstructions: additionalInstructions || null,
-                sendNeed: (sendNeed && sendNeed !== "none-selected") ? sendNeed : null,
-                readingAge: readingAge > 0 ? String(readingAge) : null,
+                retrievalTopic: manifest.retrievalTopic || null,
+                additionalInstructions: manifest.additionalInstructions || null,
+                sendNeed: manifest.sendNeed || null,
+                readingAge: manifest.readingAge || null,
+                featureFlags: manifest.featureFlags || null,
               },
             } as any;
             setGenerated(libWorksheet);
@@ -1293,9 +1120,9 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
             setDiffVersions({});
             setLoading(false);
             setGenerationStatus("");
-            const badge = entry.curated ? "✓ Curated worksheet" : "From worksheet library";
+            const badge = libData.curated ? "✓ Curated worksheet" : "From worksheet library";
             const ygBadge = readingAdjusted ? ` · reading level adjusted for ${yearGroup}` : "";
-            const sendBadge = sendAdapted ? ` · SEND content adapted for ${sendNeed}` : hasSendNeed ? " · SEND formatting applied" : "";
+            const sendBadge = hasSendNeed ? ` · SEND support applied for ${sendNeed}` : "";
             toast.success(`${badge}${ygBadge}${sendBadge} — loaded instantly!`, { duration: 4000 });
             // Auto-save library worksheets to history so they appear in the History tab
             {
@@ -1318,6 +1145,8 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                 overlay: colorOverlay,
                 sections: lwSections,
                 metadata: lw.metadata as any,
+                sourceLibraryId: lw.sourceLibraryId,
+                sourceCanonicalTopicKey: lw.sourceCanonicalTopicKey,
                 isAI: lw.isAI,
               }).then(saved => {
                 setSavedWorksheetId(saved.id);
@@ -1573,6 +1402,8 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
         content, teacherContent, rating: 0, overlay: colorOverlay,
         sections: sectionsToSave,
         metadata: ws.metadata as any,
+        sourceLibraryId: (ws as any).sourceLibraryId,
+        sourceCanonicalTopicKey: (ws as any).sourceCanonicalTopicKey,
         isAI: isAIWorksheet(ws),
       }).then(saved => {
         setSavedWorksheetId(saved.id);
@@ -1729,6 +1560,8 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
         content, teacherContent, rating: 0, overlay: colorOverlay,
         sections: sectionsToSave,
         metadata: generatedWs.metadata as any,
+        sourceLibraryId: (generatedWs as any).sourceLibraryId,
+        sourceCanonicalTopicKey: (generatedWs as any).sourceCanonicalTopicKey,
         isAI: true,
       }).then(saved => {
         setSavedWorksheetId(saved.id);
@@ -1836,7 +1669,16 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
     const teacherContent = visibleSections.map(s => `## ${s.title}\n${s.content}`).join("\n\n");
     if (savedWorksheetId) {
       // Already auto-saved — just update the existing record with latest edits + rating
-      await updateWorksheet(savedWorksheetId, { content, teacherContent, rating, overlay: colorOverlay, sections: sectionsWithEdits });
+      await updateWorksheet(savedWorksheetId, {
+        content,
+        teacherContent,
+        rating,
+        overlay: colorOverlay,
+        sections: sectionsWithEdits,
+        metadata: generated.metadata as any,
+        sourceLibraryId: (generated as any).sourceLibraryId,
+        sourceCanonicalTopicKey: (generated as any).sourceCanonicalTopicKey,
+      });
     } else {
       const saved = await saveWorksheet({
         title: generated.title,
@@ -1851,6 +1693,8 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
         // Preserve full sections for re-editing
         sections: sectionsWithEdits,
         metadata: generated.metadata as any,
+        sourceLibraryId: (generated as any).sourceLibraryId,
+        sourceCanonicalTopicKey: (generated as any).sourceCanonicalTopicKey,
         isAI: isAIWorksheet(generated),
       });
       setSavedWorksheetId(saved.id);
@@ -2205,29 +2049,39 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
         const authHeaders: Record<string, string> = libToken ? { Authorization: `Bearer ${libToken}` } : {};
         // Always use the difficulty tier — SEND need is applied on top, not instead of the difficulty tier
         // The library uses 'base' for standard/mixed ability, 'send' for SEND scaffolded versions.
-        const lookupTier = nextDifficulty === "higher" ? "higher" : nextDifficulty === "foundation" ? "foundation" : "base";
-        const libRes = await fetch(
-          `/api/library/lookup?subject=${encodeURIComponent(getLibrarySubjectName(nextSubject))}&topic=${encodeURIComponent(nextTopic)}&yearGroup=${encodeURIComponent(nextYearGroup)}&tier=${lookupTier}`,
-          { headers: authHeaders }
-        );
+        const lookupTier = nextDifficulty === "higher" ? "higher" : nextDifficulty === "foundation" ? "foundation" : "mixed";
+        const libRes = await fetch("/api/library/resolve", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", ...authHeaders },
+          body: JSON.stringify({
+            subject: getLibrarySubjectName(nextSubject),
+            topic: nextTopic,
+            yearGroup: nextYearGroup,
+            tier: lookupTier,
+            retrievalTopic: recallTopic || null,
+            additionalInstructions: additionalInstructions || null,
+            sendNeed: hasSendNeed ? parsed.sendNeed : null,
+            readingAge: readingAge > 0 ? String(readingAge) : null,
+          }),
+        });
         if (libRes.ok) {
           const libData = await libRes.json();
-          if (libData.found && libData.entry) {
-             const entry = libData.entry;
-            const libraryYearGroup = entry.year_group || entry.yearGroup;
+          if (libData.found) {
+            const entry = libData.entry || {};
+            const libraryYearGroup = entry.year_group || entry.yearGroup || nextYearGroup;
             const yearGroupMismatch = libraryYearGroup && libraryYearGroup !== nextYearGroup;
-            let finalSections = normaliseLibrarySections(entry.sections || []);
+            let finalSections = normaliseLibrarySections(libData.sections || []);
             let readingAdjusted = false;
-            let sendAdapted = false;
-            if (yearGroupMismatch) {
-              setGenerationStatus(`Adjusting reading level for ${nextYearGroup}...`);
+            if (yearGroupMismatch || readingAge > 0) {
+              setGenerationStatus(`Adjusting reading level for ${readingAge > 0 ? `reading age ${readingAge}` : nextYearGroup}...`);
               try {
                 const adjustRes = await fetch("/api/ai/adjust-reading-level", {
                   method: "POST",
                   headers: { "Content-Type": "application/json", ...authHeaders },
                   body: JSON.stringify({
-                    sections: finalSections,
+                    sections: finalSections.filter((s: any) => !s.teacherOnly),
                     targetYearGroup: nextYearGroup,
+                    targetReadingAge: readingAge > 0 ? readingAge : undefined,
                     subject: nextSubject,
                     topic: nextTopic,
                     sendNeed: hasSendNeed ? parsed.sendNeed : undefined,
@@ -2245,64 +2099,44 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
               }
             }
 
-            if (hasSendNeed) {
-              setGenerationStatus(`Applying ${parsed.sendNeed} scaffolding...`);
-              try {
-                const sendRes = await fetch("/api/ai/scaffold-worksheet", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json", ...authHeaders },
-                  body: JSON.stringify({
-                    sections: finalSections,
-                    sendNeed: parsed.sendNeed,
-                    subject: nextSubject,
-                    topic: nextTopic,
-                    yearGroup: nextYearGroup,
-                    title: entry.title,
-                  }),
-                });
-                if (sendRes.ok) {
-                  const sendData = await sendRes.json();
-                  // Server returns { scaffolded: { sections: [...], wordBank: "...", scaffoldingApplied: [...] } }
-                  const scaffoldedSections = sendData?.scaffolded?.sections;
-                  if (scaffoldedSections && Array.isArray(scaffoldedSections) && scaffoldedSections.length > 0) {
-                    finalSections = scaffoldedSections;
-                    sendAdapted = true;
-                  } else if (sendData?.sections && Array.isArray(sendData.sections) && sendData.sections.length > 0) {
-                    finalSections = sendData.sections;
-                    sendAdapted = true;
-                  }
-                }
-              } catch (sendErr) {
-                console.warn("SEND scaffolding failed in NL flow, using original content with formatting overlay:", sendErr);
-              }
-            }
-
-            // Strip tier suffix from title in NL path too
-            const strippedNlTitle = (entry.title || "").replace(/\s*[—–-]\s*(Base Tier|Foundation Tier|Higher Tier|Standard Tier|SEND Tier|Scaffolded Tier|Access Tier|Extended Tier|Mixed Tier)[^)]*\)?/gi, "").replace(/\s*\(Year \d+[^)]*\)\s*$/gi, "").trim() || entry.title;
+            const libTeacherSections = normaliseLibrarySections(
+              (libData.teacherSections || []).map((s: any) => ({ ...s, teacherOnly: true }))
+            );
+            const strippedNlTitle = (libData.title || entry.title || "")
+              .replace(/\s*[—–-]\s*(Base Tier|Foundation Tier|Higher Tier|Standard Tier|SEND Tier|Scaffolded Tier|Access Tier|Extended Tier|Mixed Tier)[^)]*\)?/gi, "")
+              .replace(/\s*\(Year \d+[^)]*\)\s*$/gi, "")
+              .trim() || libData.title || entry.title;
 
             generatedWs = {
               title: strippedNlTitle,
-              subtitle: entry.subtitle || `${nextYearGroup} | ${nextSubject}`,
-              sections: finalSections,
+              subtitle: libData.subtitle || `${nextYearGroup} | ${nextSubject}`,
+              sections: [...finalSections, ...libTeacherSections],
               metadata: {
                 subject: nextSubject,
                 topic: nextTopic,
                 yearGroup: nextYearGroup,
                 difficulty: nextDifficulty || "standard",
                 examBoard: undefined,
-                totalMarks: finalSections.reduce((t: number, s: any) => t + (s.marks || 0), 0),
+                totalMarks: [...finalSections, ...libTeacherSections].reduce((t: number, s: any) => t + (s.marks || 0), 0),
                 sendNeed: hasSendNeed ? parsed.sendNeed : undefined,
+                buildManifest: libData.worksheetManifest,
               },
-              isAI: readingAdjusted || sendAdapted,
+              isAI: readingAdjusted || hasSendNeed,
               fromLibrary: true,
-              libraryCurated: entry.curated,
-              availableTiers: libData.availableTiers || ["base"],
-              // Store the overlay transform state so tier switches can re-apply the same overlays
+              libraryCurated: libData.curated,
+              availableTiers: libData.availableTiers || ["mixed"],
+              libraryId: libData.libraryId || entry.id,
+              canonicalTopicKey: libData.canonicalTopicKey || entry.canonical_topic_key,
+              structuralHash: libData.structuralHash,
+              libraryAssets: libData.assets || [],
+              sourceLibraryId: libData.libraryId || entry.id,
+              sourceCanonicalTopicKey: libData.canonicalTopicKey || entry.canonical_topic_key,
               overlayState: {
                 retrievalTopic: recallTopic || null,
                 additionalInstructions: additionalInstructions || null,
                 sendNeed: (parsed.sendNeed && parsed.sendNeed !== "none-selected") ? parsed.sendNeed : null,
-                readingAge: null,
+                readingAge: readingAge > 0 ? String(readingAge) : null,
+                featureFlags: libData.worksheetManifest?.featureFlags || null,
               },
             } as any;
             toast.success("Worksheet loaded from library!");
@@ -2403,6 +2237,8 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
         content, teacherContent, rating: 0, overlay: colorOverlay,
         sections: sectionsToSave,
         metadata: ws.metadata as any,
+        sourceLibraryId: (ws as any).sourceLibraryId,
+        sourceCanonicalTopicKey: (ws as any).sourceCanonicalTopicKey,
         isAI: isAIWorksheet(ws),
       }).then(saved => {
         setSavedWorksheetId(saved.id);
@@ -2447,7 +2283,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
       const readingAgeToApply = overlayState.readingAge || (readingAge > 0 ? String(readingAge) : null);
 
       // Map UI tier names to database tier values
-      const libraryTier = tier === "mixed" ? "base" : tier === "scaffolded" ? "send" : tier;
+      const libraryTier = tier === "mixed" ? "mixed" : tier === "scaffolded" ? "scaffolded" : tier;
 
       let adaptedWorksheet: AIWorksheet;
 
@@ -2467,6 +2303,9 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
             additionalInstructions: additionalInstructionsToApply,
             sendNeed: activeSendNeed && activeSendNeed !== "none-selected" ? activeSendNeed : null,
             readingAge: readingAgeToApply,
+            canonicalTopicKey: (ws as any).canonicalTopicKey || meta.buildManifest?.canonicalTopicKey || null,
+            sourceLibraryId: (ws as any).sourceLibraryId || (ws as any).libraryId || meta.buildManifest?.sourceLibraryId || null,
+            featureFlags: overlayState.featureFlags || meta.buildManifest?.featureFlags || null,
           }),
         });
         if (switchRes.ok) {
@@ -2480,44 +2319,52 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
       }
 
       if (switchTierResult) {
-        // ── Library version found — use it directly ──
-        const libSections = normaliseLibrarySections(switchTierResult.sections || []);
+        // ── Library version found — use it directly, then replay reading-level adjustments if needed ──
+        let libSections = normaliseLibrarySections(switchTierResult.sections || []);
         const libTeacherSections = normaliseLibrarySections(
           (switchTierResult.teacherSections || []).map((s: any) => ({ ...s, teacherOnly: true }))
         );
-        const allSections = [...libSections, ...libTeacherSections];
-
-        // Apply SEND visual formatting overlay if a SEND need is active
-        let finalSections = allSections;
-        let sendAdapted = false;
-        if (activeSendNeed && activeSendNeed !== "none-selected") {
+        let readingAdjusted = false;
+        if (readingAgeToApply) {
           try {
-            const sendRes = await fetch("/api/ai/scaffold-worksheet", {
+            const adjustRes = await fetch("/api/ai/adjust-reading-level", {
               method: "POST",
               headers: authHeaders,
               body: JSON.stringify({
-                sections: libSections, // Only scaffold student sections
-                sendNeed: activeSendNeed,
+                sections: libSections.filter((s: any) => !s.teacherOnly),
+                targetYearGroup: meta.yearGroup || yearGroup,
+                targetReadingAge: Number(readingAgeToApply),
                 subject: meta.subject || subject,
                 topic: meta.topic || topic,
-                yearGroup: meta.yearGroup || yearGroup,
-                title: switchTierResult.title || ws.title,
+                sendNeed: activeSendNeed && activeSendNeed !== "none-selected" ? activeSendNeed : undefined,
               }),
             });
-            if (sendRes.ok) {
-              const sendData = await sendRes.json();
-              const scaffoldedSections = sendData?.scaffolded?.sections;
-              if (scaffoldedSections && Array.isArray(scaffoldedSections) && scaffoldedSections.length > 0) {
-                finalSections = [...scaffoldedSections, ...libTeacherSections];
-                sendAdapted = true;
+            if (adjustRes.ok) {
+              const adjustData = await adjustRes.json();
+              if (adjustData.sections && Array.isArray(adjustData.sections) && adjustData.sections.length > 0) {
+                libSections = adjustData.sections;
+                readingAdjusted = true;
               }
             }
-          } catch (sendErr) {
-            console.warn("SEND scaffolding failed in differentiation:", sendErr);
+          } catch (adjustErr) {
+            console.warn("Reading age replay failed in differentiation:", adjustErr);
           }
         }
 
+        const finalSections = [...libSections, ...libTeacherSections];
         const strippedTitle = (switchTierResult.title || ws.title || "").replace(/\s*[—–-]\s*(Base Tier|Foundation Tier|Higher Tier|Standard Tier|SEND Tier|Scaffolded Tier|Access Tier|Extended Tier|Mixed Tier)[^)]*\)?/gi, "").replace(/\s*\(Year \d+[^)]*\)\s*$/gi, "").trim() || switchTierResult.title || ws.title;
+        const nextManifest = switchTierResult.worksheetManifest || {
+          ...(meta.buildManifest || {}),
+          sourceLibraryId: switchTierResult.libraryId || (ws as any).sourceLibraryId || (ws as any).libraryId,
+          canonicalTopicKey: switchTierResult.canonicalTopicKey || (ws as any).canonicalTopicKey,
+          tier: libraryTier,
+          yearGroup: meta.yearGroup || yearGroup,
+          retrievalTopic: retrievalTopicToApply,
+          additionalInstructions: additionalInstructionsToApply,
+          sendNeed: activeSendNeed && activeSendNeed !== "none-selected" ? activeSendNeed : null,
+          readingAge: readingAgeToApply,
+          featureFlags: overlayState.featureFlags || meta.buildManifest?.featureFlags || null,
+        };
 
         adaptedWorksheet = {
           ...ws,
@@ -2529,8 +2376,9 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
             difficulty: tier === "mixed" ? "mixed" : tier,
             sendNeedId: activeSendNeed && activeSendNeed !== "none-selected" ? activeSendNeed : undefined,
             sendNeed: activeSendNeed && activeSendNeed !== "none-selected" ? activeSendNeed : undefined,
+            buildManifest: nextManifest,
           },
-          isAI: sendAdapted,
+          isAI: readingAdjusted || Boolean(activeSendNeed && activeSendNeed !== "none-selected"),
           fromLibrary: true,
           libraryCurated: switchTierResult.curated,
           availableTiers: switchTierResult.availableTiers || (ws as any).availableTiers || [],
@@ -2538,12 +2386,14 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
           canonicalTopicKey: switchTierResult.canonicalTopicKey || (ws as any).canonicalTopicKey,
           structuralHash: switchTierResult.structuralHash,
           libraryAssets: switchTierResult.assets || (ws as any).libraryAssets || [],
-          // Preserve the overlay transform state so further tier switches re-apply the same overlays
+          sourceLibraryId: switchTierResult.libraryId || (ws as any).sourceLibraryId || (ws as any).libraryId,
+          sourceCanonicalTopicKey: switchTierResult.canonicalTopicKey || (ws as any).sourceCanonicalTopicKey || (ws as any).canonicalTopicKey,
           overlayState: {
             retrievalTopic: retrievalTopicToApply,
             additionalInstructions: additionalInstructionsToApply,
             sendNeed: activeSendNeed && activeSendNeed !== "none-selected" ? activeSendNeed : null,
             readingAge: readingAgeToApply,
+            featureFlags: nextManifest.featureFlags || null,
           },
         } as any;
       } else {
@@ -2625,6 +2475,8 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
           overlay: colorOverlay,
           sections: dwSections,
           metadata: dw.metadata as any,
+          sourceLibraryId: (dw as any).sourceLibraryId,
+          sourceCanonicalTopicKey: (dw as any).sourceCanonicalTopicKey,
           isAI: dw.isAI,
         }).then(saved => {
           setSavedWorksheetId(saved.id);
