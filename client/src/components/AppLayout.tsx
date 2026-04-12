@@ -151,7 +151,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     dismiss: dismissWsNotif,
     markAllRead: markWsAllRead,
     isConnected: wsConnected,
-  } = useNotificationWS({ token: user?.token });
+  } = useNotificationWS({});
 
   // Also include local assignment-completion notifications for backwards compat
   const assignmentNotifs = pupils.flatMap(p =>

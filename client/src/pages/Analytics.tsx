@@ -105,12 +105,12 @@ export default function Analytics() {
   // ── Outcome-focused: quiz results from API ──────────────────────────────────
   const [quizResults, setQuizResults] = useState<any[]>([]);
   useEffect(() => {
-    if (!user?.token) return;
+    if (!user) return;
     fetch("/api/quiz/results", { credentials: "include" })
       .then(r => r.ok ? r.json() : [])
       .then(d => setQuizResults(Array.isArray(d) ? d : []))
       .catch(() => {});
-  }, [user?.token]);
+  }, [user]);
 
   const quizByPupil = useMemo(() => {
     const m: Record<string, { name: string; scores: number[]; avg: number }> = {};

@@ -190,7 +190,6 @@ function syncToServer(prefs: UserPreferences) {
   if (_serverSyncTimer) clearTimeout(_serverSyncTimer);
   _serverSyncTimer = setTimeout(async () => {
     try {
-          if (!token) return; // Not logged in — skip server sync
       await fetch('/api/data/preferences', {
         method: 'PUT',
         headers: {
@@ -217,7 +216,6 @@ export function UserPreferencesProvider({
     const local = loadPrefs(userId);
     setPreferences(local);
     // Fetch server preferences and merge (server wins for sidebarCollapsed, local wins for everything else)
-      if (!token || !userId) return;
     fetch('/api/data/preferences', {
       credentials: "include",
       credentials: 'include',
