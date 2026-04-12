@@ -30,7 +30,7 @@ import {
 } from "../lib/quiz-bank";
 
 function getAuthHeader(): Record<string, string> {
-  return token ? { Authorization: `Bearer ${token}` } : {};
+  return {};
 }
 
 // ─── Difficulty Tier ──────────────────────────────────────────────────────────
