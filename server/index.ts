@@ -218,6 +218,11 @@ const authLimiter = rateLimit({
   legacyHeaders: false,
   validate: { xForwardedForHeader: false },
   skipSuccessfulRequests: true, // only count failed attempts
+  // Skip session check and token refresh — these are not login attempts
+  skip: (req: any) => {
+    const p = req.path || '';
+    return p === '/me' || p === '/refresh' || p.endsWith('/me') || p.endsWith('/refresh');
+  },
 });
 
 // AI endpoints — expensive, limit tightly
