@@ -388,7 +388,7 @@ export async function callAI(
 ): Promise<{ text: string; provider: AIProvider }> {
   // Primary: route through server so admin API keys are used automatically for all users
   try {
-    const reqHeaders: Record<string, string> = { \"Content-Type\": \"application/json\" };
+    const reqHeaders: Record<string, string> = { "Content-Type": "application/json" };
     const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
     const timeoutMs = 55000; // 55s — just under Railway's 60s limit; triggers fast retry instead of hanging
     const timeoutId = controller ? window.setTimeout(() => controller.abort(), timeoutMs) : null;

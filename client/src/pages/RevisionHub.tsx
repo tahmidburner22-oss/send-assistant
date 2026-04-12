@@ -274,7 +274,6 @@ export default function RevisionHub() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          ,
         },
         credentials: "include",
         signal: controller.signal,
