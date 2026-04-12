@@ -88,13 +88,14 @@ router.post("/:pupilId", requireAuth, async (req: Request, res: Response) => {
     // Notify the teacher who owns this pupil
     const teacher = await db.prepare("SELECT id FROM users WHERE school_id = ? AND role IN ('teacher', 'senco', 'school_admin') LIMIT 1").get(pupil.school_id) as any;
     if (teacher) {
-      pushNotification(teacher.id, {
+      // await the push so errors surface rather than being silently swallowed
+      await pushNotification(teacher.id, {
         type: "message",
         title: `New message from ${senderName}`,
         body: `Re: ${pupil.name} — ${body.trim().slice(0, 80)}${body.trim().length > 80 ? "…" : ""}`,
         link: `/pupils/${pupilId}?tab=messages`,
         metadata: { pupilId, messageId: id },
-      });
+      }).catch(err => console.error("pushNotification failed:", err));
     }
   } else {
     // Notify parent (via polling — parents don't have WS connections)

@@ -24,9 +24,7 @@ import {
   Calendar, Paperclip, Download, X, Upload, Sparkles, Loader2,
 } from "lucide-react";
 
-function getAuthHeader(): Record<string, string> {
-  const token = localStorage.getItem("send_token");
-  return token ? { Authorization: `Bearer ${token}` } : {};
+// Auth is cookie-based — no Authorization header needed` } : {};
 }
 function formatDate(d: Date): string { return d.toISOString().slice(0, 10); }
 function formatDisplayDate(dateStr: string): string {

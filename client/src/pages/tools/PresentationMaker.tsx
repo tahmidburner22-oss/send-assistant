@@ -25,6 +25,46 @@ import { useApp } from "@/contexts/AppContext";
 import { useLocation } from "wouter";
 
 import { FunFactsCarousel } from "@/components/FunFactsCarousel";
+import { z } from "zod";
+
+// ─── Zod schema for AI-generated slide validation ────────────────────────────
+const SlideContentSchema = z.object({
+  type: z.enum(["title","learning-objectives","hook","content","key-terms","worked-example",
+    "activity","discussion","check-understanding","summary","exit-ticket","extension",
+    "retrieval-warm-up","misconception-bust","exam-technique","real-world-link",
+    "think-pair-share","mini-quiz","diagram-label","pause-and-solve"]),
+  title: z.string().min(1).max(200),
+  subtitle: z.string().max(300).optional(),
+  bullets: z.array(z.string().min(1).max(500)).max(8).optional(),
+  body: z.string().max(2000).optional(),
+  terms: z.array(z.object({ term: z.string().min(1), definition: z.string().min(1) })).max(20).optional(),
+  question: z.string().max(1000).optional(),
+  options: z.array(z.string().min(1)).max(6).optional(),
+  answer: z.string().max(500).optional(),
+  steps: z.array(z.string().min(1)).max(10).optional(),
+  misconception: z.string().max(500).optional(),
+  correction: z.string().max(500).optional(),
+  retrievalQuestions: z.array(z.string().min(1)).max(8).optional(),
+  realWorldContext: z.string().max(1000).optional(),
+  examTip: z.string().max(500).optional(),
+  markSchemeHint: z.string().max(500).optional(),
+  diagramDescription: z.string().max(500).optional(),
+  diagramLabels: z.array(z.string().min(1)).max(20).optional(),
+  image_prompt: z.string().max(500).optional(),
+  layout: z.enum(["full","two-col","image-right","image-left","centered"]).optional(),
+  accent: z.string().max(50).optional(),
+  speakerNotes: z.string().max(2000).optional(),
+});
+
+const PresentationDataSchema = z.object({
+  title: z.string().min(1).max(300),
+  subject: z.string().min(1).max(100),
+  yearGroup: z.string().min(1).max(50),
+  topic: z.string().min(1).max(300),
+  slides: z.array(SlideContentSchema).min(1).max(40),
+  theme: z.string().max(50).optional().default("navy"),
+  totalSlides: z.number().int().min(1).max(40).optional(),
+});
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 export interface SlideContent {
@@ -1753,13 +1793,23 @@ export default function PresentationMaker() {
           .replace(/\s*```\s*$/, "")
           .trim();
         const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
-        parsed = JSON.parse(jsonMatch ? jsonMatch[0] : cleaned);
-      } catch (parseErr) {
+        const rawParsed = JSON.parse(jsonMatch ? jsonMatch[0] : cleaned);
+        // Validate with Zod schema
+        const zodResult = PresentationDataSchema.safeParse(rawParsed);
+        if (!zodResult.success) {
+          console.warn("[PresentationMaker] Zod validation issues:", zodResult.error.flatten());
+          // Fall back to raw parsed data if it has slides — Zod errors are non-fatal here
+          // as the AI may return extra fields or slightly different types
+          if (!rawParsed.slides || !Array.isArray(rawParsed.slides) || rawParsed.slides.length === 0) {
+            throw new Error("No slides were generated. Please try again.");
+          }
+          parsed = rawParsed as PresentationData;
+        } else {
+          parsed = zodResult.data as PresentationData;
+        }
+      } catch (parseErr: any) {
+        if (parseErr.message?.includes("No slides")) throw parseErr;
         throw new Error("Failed to parse AI response as JSON. Please try again.");
-      }
-
-      if (!parsed.slides || !Array.isArray(parsed.slides) || parsed.slides.length === 0) {
-        throw new Error("No slides were generated. Please try again.");
       }
 
       setPresentation(parsed);

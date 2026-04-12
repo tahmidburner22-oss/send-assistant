@@ -242,7 +242,7 @@ router.post("/import-csv", requireAuth, requireAdmin, async (req: Request, res: 
       }
 
       const id = uuidv4();
-      const code = "P" + Math.random().toString(36).slice(2, 7).toUpperCase();
+      const code = "P" + randomBytes(3).toString("hex").toUpperCase();
       try {
         await insertStmt.run(id, schoolId, name, yearGroup || null, sendNeed || null, code, upn, dob, req.user!.id);
         created++;
@@ -466,7 +466,7 @@ router.post("/sync/:provider", requireAuth, requireAdmin, async (req: Request, r
         }
 
         const id = uuidv4();
-        const code = "P" + Math.random().toString(36).slice(2, 7).toUpperCase();
+        const code = "P" + randomBytes(3).toString("hex").toUpperCase();
         try {
           await insertPupil.run(id, schoolId, name, yearGroup || null, sendNeed || null, code, upn, dob, null);
           results.pupils.created++;
@@ -817,7 +817,7 @@ router.post("/sync-demo", requireAuth, requireAdmin, async (req: Request, res: R
         results.pupils.updated++;
       } else {
         const id   = uuidv4();
-        const code = "P" + Math.random().toString(36).slice(2, 7).toUpperCase();
+        const code = "P" + randomBytes(3).toString("hex").toUpperCase();
         try {
           await insertPupil.run(id, schoolId, p.name, p.yearGroup, p.sendNeed, code, p.upn, p.dob, req.user!.id);
           pupilIds[p.upn] = id;

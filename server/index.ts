@@ -181,28 +181,24 @@ app.use(compression({
   filter: (req, res) => {
     if (req.headers['x-no-compression']) return false;
     return compression.filter(req, res);
-  },
-}));
+});
 
-// ── CORS ──────────────────────────────────────────────────────────────────────
-const allowedOrigins = process.env.ALLOWED_ORIGINS
-  ? process.env.ALLOWED_ORIGINS.split(",")
-  : [];
+// ── CORS ──────────────────────────────────────────────────────────────────────────────────────
+// Exact-match origins only — startsWith() would allow subdomain spoofing (e.g. adaptly.co.uk.evil.com)
+const allowedOrigins: Set<string> = new Set(
+  (process.env.ALLOWED_ORIGINS || "https://adaptly.co.uk")
+    .split(",")
+    .map(o => o.trim())
+    .filter(Boolean)
+);
 app.use(cors({
   origin: (origin, cb) => {
-    // Security: reject null origin (sandboxed iframes, data: URIs, file:// pages)
-    // Only allow undefined origin (same-origin server-to-server) or explicitly listed origins
-    if (origin === undefined) {
-      // Server-to-server or same-origin request — allow
-      return cb(null, true);
-    }
-    if (!origin || origin === "null") {
-      // Explicit null origin — reject (sandboxed iframe / data: URI attack vector)
-      return cb(new Error("Null origin not allowed"));
-    }
-    if (allowedOrigins.length === 0 || allowedOrigins.some(o => origin.startsWith(o.trim()))) {
-      return cb(null, true);
-    }
+    // Server-to-server or same-origin request (no Origin header) — allow
+    if (origin === undefined) return cb(null, true);
+    // Explicit null origin — reject (sandboxed iframe / data: URI attack vector)
+    if (!origin || origin === "null") return cb(new Error("Null origin not allowed"));
+    // Exact match only
+    if (allowedOrigins.has(origin)) return cb(null, true);
     cb(new Error("Not allowed by CORS"));
   },
   credentials: true,
@@ -211,7 +207,7 @@ app.use(cors({
   exposedHeaders: ["RateLimit-Limit", "RateLimit-Remaining"],
 }));
 
-// ── Rate limiting ─────────────────────────────────────────────────────────────
+// ── Rate limiting ──────────────────────────────────────────────────────────────────────────────────────
 // Strict limiter for auth endpoints (brute-force protection)
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -358,16 +354,21 @@ if (!isDev && fs.existsSync(indexHtml)) {
   console.warn(`⚠️  Frontend not found at ${distPath} (isDev=${isDev})`);
 }
 
-// ── Global error handler — never leak stack traces in production ──────────────
+// ── Global error handler — never leak stack traces or internal details in production ────────
 app.use((err: any, req: express.Request, res: express.Response, _next: express.NextFunction) => {
   const status = err.status || err.statusCode || 500;
+  // Always log the full error internally for debugging
+  console.error(`[${new Date().toISOString()}] ${req.method} ${req.path} [${status}] ${err.message}`);
   if (isDev) {
-    console.error("Unhandled error:", err);
+    // In development, include stack trace for easier debugging
     res.status(status).json({ error: err.message, stack: err.stack });
   } else {
-    // In production, log internally but return a generic message
-    console.error(`[${new Date().toISOString()}] ${req.method} ${req.path} — ${err.message}`);
-    res.status(status).json({ error: status < 500 ? err.message : "An unexpected error occurred." });
+    // In production: only expose client errors (4xx) verbatim; mask all server errors (5xx)
+    // Never expose err.message for 5xx — it may contain DB details, file paths, or secrets
+    const safeMessage = status >= 500
+      ? "An unexpected error occurred. Please try again or contact support."
+      : (err.message || "Request failed");
+    res.status(status).json({ error: safeMessage });
   }
 });
 

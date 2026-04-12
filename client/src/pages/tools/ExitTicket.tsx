@@ -1,3 +1,4 @@
+import DOMPurify from "dompurify";
 import { useUserPreferences } from "@/contexts/UserPreferencesContext";
 import { formatToolOutput } from "@/lib/format-tool-output";
 import AIToolPage from "@/components/AIToolPage";
@@ -31,7 +32,7 @@ function ExitTicketOutput({ text, logoUrl, schoolName }: { text: string; logoUrl
           <span style={{ background: "rgba(255,255,255,0.25)", color: "#fff", padding: "2px 10px", borderRadius: "20px", fontSize: "11px", fontWeight: 700 }}>Print & give to students</span>
         </div>
         <div style={{ padding: "14px 16px", background: "#faf5ff", fontSize: "13px", lineHeight: "1.7" }}
-             dangerouslySetInnerHTML={{ __html: mdToHtml(studentPart) }} />
+             dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(mdToHtml(studentPart), { ALLOWED_TAGS: ["strong","em","br","li","ul","ol"], ALLOWED_ATTR: ["style"] }) }} />
       </div>
 
       {/* Teacher answer key */}
@@ -42,7 +43,7 @@ function ExitTicketOutput({ text, logoUrl, schoolName }: { text: string; logoUrl
             <span style={{ background: "rgba(255,255,255,0.25)", color: "#fff", padding: "2px 10px", borderRadius: "20px", fontSize: "11px", fontWeight: 700 }}>Do not distribute to students</span>
           </div>
           <div style={{ padding: "14px 16px", background: "#ecfeff", fontSize: "13px", lineHeight: "1.7" }}
-               dangerouslySetInnerHTML={{ __html: mdToHtml(answerPart) }} />
+               dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(mdToHtml(answerPart), { ALLOWED_TAGS: ["strong","em","br","li","ul","ol"], ALLOWED_ATTR: ["style"] }) }} />
         </div>
       )}
     </div>

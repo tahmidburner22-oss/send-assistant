@@ -190,26 +190,23 @@ export function AppProvider({ children: childrenProp }: { children: React.ReactN
   }, []);
 
   useEffect(() => {
-    const token = getToken();
-    if (!token) { setState(s => ({ ...s, loading: false })); return; }
+    // Session is cookie-based: always try /auth/me to check if a valid session exists
     authApi.me()
       .then(({ user, school }) => {
         setState(s => ({ ...s, user, school, isLoggedIn: true, loading: false }));
         loadUserData();
       })
-      .catch(() => { clearToken(); setState(s => ({ ...s, loading: false })); });
+      .catch(() => { setState(s => ({ ...s, loading: false })); });
   }, []);
 
   // Session keep-alive: refresh session every 20 minutes to prevent expiry
   useEffect(() => {
     const keepAlive = async () => {
-      const token = getToken();
-      if (!token) return;
       try {
         await fetch('/api/auth/refresh', {
           method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include', // Cookie-based auth
         });
       } catch { /* ignore network errors */ }
     };
@@ -225,13 +222,14 @@ export function AppProvider({ children: childrenProp }: { children: React.ReactN
     try {
       const result = await authApi.login(email, password);
       if (result.mfaRequired) {
+        // Store pending token in state only (not localStorage) for MFA step
         setState(s => ({ ...s, mfaRequired: true, pendingToken: result.token }));
         return { mfaRequired: true };
       }
       if (result.emailNotVerified) {
         return { emailNotVerified: true };
       }
-      setToken(result.token);
+      // Cookie is set by server — just fetch the user
       const { user, school } = await authApi.me();
       setState(s => ({ ...s, user, school, isLoggedIn: true, mfaRequired: false, pendingToken: null }));
       await loadUserData();
@@ -239,9 +237,9 @@ export function AppProvider({ children: childrenProp }: { children: React.ReactN
     } catch (err: any) { return { error: err.message }; }
   }, [loadUserData]);
 
-  const loginWithGoogle = useCallback(async (googleData: { googleId: string; email: string; displayName: string }) => {
-    const result = await authApi.googleAuth(googleData);
-    setToken(result.token);
+  const loginWithGoogle = useCallback(async (idToken: string) => {
+    await authApi.googleAuth(idToken);
+    // Cookie is set by server — just fetch the user
     const { user, school } = await authApi.me();
     setState(s => ({ ...s, user, school, isLoggedIn: true }));
     await loadUserData();
@@ -250,8 +248,8 @@ export function AppProvider({ children: childrenProp }: { children: React.ReactN
   const verifyMfa = useCallback(async (code: string) => {
     const pendingToken = state.pendingToken;
     if (!pendingToken) throw new Error("No pending MFA session");
-    const result = await authApi.mfaVerify(pendingToken, code);
-    setToken(result.token);
+    await authApi.mfaVerify(pendingToken, code);
+    // Cookie is set by server — just fetch the user
     const { user, school } = await authApi.me();
     setState(s => ({ ...s, user, school, isLoggedIn: true, mfaRequired: false, pendingToken: null }));
     await loadUserData();
@@ -259,6 +257,7 @@ export function AppProvider({ children: childrenProp }: { children: React.ReactN
 
   const logout = useCallback(async () => {
     try { await authApi.logout(); } catch {}
+    // Clear any legacy localStorage token
     clearToken();
     setState(s => ({ ...s, user: null, school: null, isLoggedIn: false, children: [], worksheetHistory: [], storyHistory: [], differentiationHistory: [], attendanceRecords: [], ideas: [] }));
   }, []);

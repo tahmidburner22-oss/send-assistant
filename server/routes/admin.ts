@@ -1,4 +1,5 @@
 import { Router, Request, Response } from "express";
+import { randomBytes } from "crypto";
 import db from "../db/index.js";
 import { requireAuth } from "../middleware/auth.js";
 
@@ -56,19 +57,19 @@ router.get("/stats", requireAuth, requireAdmin, async (req: Request, res: Respon
     // Active users in last 7 days
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
     const activeUsers7d = (await db.prepare(
-      "SELECT COUNT(DISTINCT user_id) as c FROM audit_log WHERE created_at > ?"
+      "SELECT COUNT(DISTINCT user_id) as c FROM audit_logs WHERE created_at > ?"
     ).get(sevenDaysAgo) as any)?.c || 0;
 
     // AI calls today
     const todayStart = new Date();
     todayStart.setHours(0, 0, 0, 0);
     const aiCallsToday = (await db.prepare(
-      "SELECT COUNT(*) as c FROM audit_log WHERE action LIKE '%generate%' AND created_at > ?"
+      "SELECT COUNT(*) as c FROM audit_logs WHERE action LIKE '%generate%' AND created_at > ?"
     ).get(todayStart.toISOString()) as any)?.c || 0;
 
     // Top tools (from audit log)
     const topToolsRaw = await db.prepare(
-      "SELECT action as tool, COUNT(*) as count FROM audit_log WHERE action LIKE '%generate%' GROUP BY action ORDER BY count DESC LIMIT 5"
+      "SELECT action as tool, COUNT(*) as count FROM audit_logs WHERE action LIKE '%generate%' GROUP BY action ORDER BY count DESC LIMIT 5"
     ).all() as any[];
 
     res.json({
@@ -215,7 +216,7 @@ router.post("/breach-log", requireAuth, requireAdmin, async (req: Request, res: 
     if (!title || !description || !data_types) {
       return res.status(400).json({ error: "title, description, and data_types are required" });
     }
-    const id = `breach_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+    const id = `breach_${Date.now()}_${randomBytes(3).toString("hex")}`;
     await db.prepare(
       `INSERT INTO breach_log (id, school_id, reported_by, title, description, data_types, affected_count, severity)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
@@ -278,8 +279,8 @@ router.get("/super/schools", requireAuth, requireSuperAdmin, async (req: Request
         MAX(al.created_at) as last_activity
       FROM schools s
       LEFT JOIN users u ON u.school_id = s.id
-      LEFT JOIN pupils p ON p.school_id = s.id AND p.archived = 0
-      LEFT JOIN audit_log al ON al.school_id = s.id
+      LEFT JOIN pupils p ON p.school_id = s.id AND p.is_active = 1
+      LEFT JOIN audit_logs al ON al.school_id = s.id
       GROUP BY s.id
       ORDER BY s.created_at DESC
     `).all();
@@ -294,7 +295,7 @@ router.get("/super/schools/:id/activity", requireAuth, requireSuperAdmin, async 
   try {
     const logs = await db.prepare(`
       SELECT al.*, u.display_name, u.email
-      FROM audit_log al
+      FROM audit_logs al
       LEFT JOIN users u ON u.id = al.user_id
       WHERE al.school_id = ?
       ORDER BY al.created_at DESC
@@ -386,7 +387,7 @@ router.post("/super/invoice", requireAuth, requireSuperAdmin, async (req: Reques
     // Log the invoice creation in audit log
     try {
       await db.prepare(
-        `INSERT INTO audit_log (id, school_id, user_id, action, created_at)
+        `INSERT INTO audit_logs (id, school_id, user_id, action, created_at)
          VALUES (?, ?, ?, ?, NOW())`
       ).run(`inv_${Date.now()}`, school_id, (req as any).user.id, `INVOICE_ISSUED: ${invoiceNumber} £${amount}`);
     } catch (_) {}
@@ -430,7 +431,7 @@ router.patch("/super/users/:id", requireAuth, requireSuperAdmin, async (req: Req
       await db.prepare("UPDATE users SET email_verified = ? WHERE id = ?").run(email_verified ? 1 : 0, userId);
     }
     try {
-      await db.prepare(`INSERT INTO audit_log (id, school_id, user_id, action, created_at) VALUES (?, ?, ?, ?, NOW())`)
+      await db.prepare(`INSERT INTO audit_logs (id, school_id, user_id, action, created_at) VALUES (?, ?, ?, ?, NOW())`)
         .run(`sa_u_${Date.now()}`, null, (req as any).user.id, `SUPER_ADMIN_USER_UPDATE: userId=${userId} role=${role} active=${is_active}`);
     } catch (_) {}
     res.json({ ok: true });
@@ -449,7 +450,7 @@ router.delete("/super/users/:id", requireAuth, requireSuperAdmin, async (req: Re
     if (!user) return res.status(404).json({ error: "User not found" });
     await db.prepare("DELETE FROM users WHERE id = ?").run(userId);
     try {
-      await db.prepare(`INSERT INTO audit_log (id, school_id, user_id, action, created_at) VALUES (?, ?, ?, ?, NOW())`)
+      await db.prepare(`INSERT INTO audit_logs (id, school_id, user_id, action, created_at) VALUES (?, ?, ?, ?, NOW())`)
         .run(`sa_del_${Date.now()}`, null, adminId, `SUPER_ADMIN_USER_DELETED: ${user.email}`);
     } catch (_) {}
     res.json({ ok: true, message: `User ${user.email} deleted` });
@@ -464,7 +465,7 @@ router.get("/super/audit", requireAuth, requireSuperAdmin, async (req: Request, 
     const limit = parseInt(req.query.limit as string) || 200;
     const logs = await db.prepare(`
       SELECT al.*, u.display_name, u.email, s.name as school_name
-      FROM audit_log al
+      FROM audit_logs al
       LEFT JOIN users u ON u.id = al.user_id
       LEFT JOIN schools s ON s.id = al.school_id
       ORDER BY al.created_at DESC
@@ -501,7 +502,7 @@ router.patch("/super/schools/:id/subscription", requireAuth, requireSuperAdmin, 
     `).run(subscription_status || null, subscription_plan || null, licence_type || null, req.params.id);
     try {
       await db.prepare(
-        `INSERT INTO audit_log (id, school_id, user_id, action, created_at)
+        `INSERT INTO audit_logs (id, school_id, user_id, action, created_at)
          VALUES (?, ?, ?, ?, NOW())`
       ).run(`sa_${Date.now()}`, req.params.id, (req as any).user.id,
         `SUPER_ADMIN_SUBSCRIPTION_OVERRIDE: status=${subscription_status} plan=${subscription_plan}`);
@@ -582,7 +583,7 @@ router.get("/school-usage-trend", requireAuth, async (req: Request, res: Respons
       const worksheets = (await db.prepare("SELECT COUNT(*) as c FROM worksheets WHERE school_id=? AND created_at>=? AND created_at<?").get(schoolId, s, e) as any)?.c || 0;
       const stories = (await db.prepare("SELECT COUNT(*) as c FROM stories WHERE school_id=? AND created_at>=? AND created_at<?").get(schoolId, s, e) as any)?.c || 0;
       const diffs = (await db.prepare("SELECT COUNT(*) as c FROM differentiations WHERE school_id=? AND created_at>=? AND created_at<?").get(schoolId, s, e) as any)?.c || 0;
-      const activeUsers = (await db.prepare("SELECT COUNT(DISTINCT user_id) as c FROM audit_log WHERE school_id=? AND created_at>=? AND created_at<?").get(schoolId, s, e) as any)?.c || 0;
+      const activeUsers = (await db.prepare("SELECT COUNT(DISTINCT user_id) as c FROM audit_logs WHERE school_id=? AND created_at>=? AND created_at<?").get(schoolId, s, e) as any)?.c || 0;
       weeks.push({ week: label, worksheets, stories, differentiations: diffs, activeUsers });
     }
     res.json(weeks);

@@ -388,12 +388,7 @@ export async function callAI(
 ): Promise<{ text: string; provider: AIProvider }> {
   // Primary: route through server so admin API keys are used automatically for all users
   try {
-    // Include the JWT token from localStorage in the Authorization header.
-    // The server's requireAuth middleware reads from req.headers.authorization first.
-    // Without this header the request returns 401 and AI generation silently fails.
-    const storedToken = typeof localStorage !== 'undefined' ? localStorage.getItem('send_token') : null;
-    const reqHeaders: Record<string, string> = { "Content-Type": "application/json" };
-    if (storedToken) reqHeaders["Authorization"] = `Bearer ${storedToken}`;
+    const reqHeaders: Record<string, string> = { \"Content-Type\": \"application/json\" };
     const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
     const timeoutMs = 55000; // 55s — just under Railway's 60s limit; triggers fast retry instead of hanging
     const timeoutId = controller ? window.setTimeout(() => controller.abort(), timeoutMs) : null;
@@ -419,7 +414,6 @@ export async function callAI(
     if (res.status === 401 || res.status === 403) {
       const errData = await res.json().catch(() => ({})) as any;
       // Clear the stale token so the user gets redirected to login
-      if (typeof localStorage !== 'undefined') localStorage.removeItem('send_token');
       const msg = errData?.error || (res.status === 401 ? 'Session expired. Please log in again.' : 'Access denied.');
       // Redirect to login after a short delay so any toast can show
       setTimeout(() => { window.location.href = '/login'; }, 2000);
@@ -2310,9 +2304,7 @@ export async function aiGenerateDiagram(params: {
 }): Promise<{ svg: string; caption: string; imageUrl?: string; attribution?: string; provider?: string } | null> {
   // ── Primary: dedicated server endpoint with Wikimedia bank + live search ──
   try {
-    const storedToken = typeof localStorage !== 'undefined' ? localStorage.getItem('send_token') : null;
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-    if (storedToken) headers['Authorization'] = `Bearer ${storedToken}`;
     const res = await fetch('/api/ai/diagram', {
       method: 'POST',
       headers,
@@ -2435,9 +2427,7 @@ export async function aiScaffoldExistingWorksheet(params: {
   scaffoldingApplied?: string[];
   provider?: string;
 }> {
-  const storedToken = typeof localStorage !== 'undefined' ? localStorage.getItem('send_token') : null;
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-  if (storedToken) headers['Authorization'] = `Bearer ${storedToken}`;
 
   const res = await fetch('/api/ai/scaffold-worksheet', {
     method: 'POST',
@@ -2486,9 +2476,7 @@ export async function aiDifferentiateExistingWorksheet(params: {
   changesNote?: string;
   provider?: string;
 }> {
-  const storedToken = typeof localStorage !== 'undefined' ? localStorage.getItem('send_token') : null;
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-  if (storedToken) headers['Authorization'] = `Bearer ${storedToken}`;
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 45000);
@@ -3225,9 +3213,7 @@ export async function aiBatchGenerateWorksheet(params: {
   };
   provider: string;
 }> {
-  const storedToken = typeof localStorage !== "undefined" ? localStorage.getItem("send_token") : null;
   const reqHeaders: Record<string, string> = { "Content-Type": "application/json" };
-  if (storedToken) reqHeaders["Authorization"] = `Bearer ${storedToken}`;
 
   const res = await fetch("/api/ai/batch-generate-worksheet", {
     method: "POST",
@@ -3244,7 +3230,6 @@ export async function aiBatchGenerateWorksheet(params: {
   });
 
   if (res.status === 401 || res.status === 403) {
-    if (typeof localStorage !== "undefined") localStorage.removeItem("send_token");
     setTimeout(() => { window.location.href = "/login"; }, 2000);
     throw new Error("AUTH_REQUIRED: Session expired. Please log in again.");
   }

@@ -1205,13 +1205,10 @@ function WorksheetLibraryPanel() {
   const [previewEntry, setPreviewEntry] = useState<any | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const token = typeof localStorage !== "undefined" ? localStorage.getItem("send_token") || "" : "";
-  const authHeaders = token ? { Authorization: `Bearer ${token}` } : {};
-
   const loadEntries = async () => {
     setLoading(true);
     try {
-      const r = await fetch("/api/library/entries", { headers: authHeaders });
+      const r = await fetch("/api/library/entries", { credentials: "include" });
       if (r.ok) {
         const data = await r.json();
         setEntries(data.entries || []);
@@ -1226,7 +1223,8 @@ function WorksheetLibraryPanel() {
     try {
       const r = await fetch(`/api/library/entries/${id}/curate`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json", ...authHeaders },
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ curated }),
       });
       if (r.ok) {
@@ -1241,7 +1239,7 @@ function WorksheetLibraryPanel() {
     try {
       const r = await fetch(`/api/library/entries/${id}`, {
         method: "DELETE",
-        headers: authHeaders,
+        credentials: "include",
       });
       if (r.ok) {
         setEntries(prev => prev.filter(e => e.id !== id));
@@ -1266,7 +1264,7 @@ function WorksheetLibraryPanel() {
       if (uploadForm.title) formData.append("title", uploadForm.title);
       const r = await fetch("/api/library/ingest-pdf", {
         method: "POST",
-        headers: authHeaders,
+        credentials: "include",
         body: formData,
       });
       if (r.ok) {

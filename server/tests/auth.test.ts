@@ -80,9 +80,14 @@ describe("Auth Routes", () => {
     }
 
     expect(res.status).toBe(200);
-    expect(res.body).toHaveProperty("token");
+    // Auth is now cookie-based — token should NOT be in the response body
+    expect(res.body.token).toBeUndefined();
+    // User info should still be in the body
     expect(res.body).toHaveProperty("user");
     expect(res.body.user.email).toBe(testEmail);
+    // Auth cookie should be set in the response headers
+    const setCookie = res.headers["set-cookie"] as string[] | string | undefined;
+    expect(setCookie).toBeTruthy();
   });
 
   it("should fail login with wrong password", async () => {

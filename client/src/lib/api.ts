@@ -3,17 +3,22 @@
 
 const API_BASE = import.meta.env.VITE_API_URL || "";
 
-// ── Token management ──────────────────────────────────────────────────────────
+// ── Token management (legacy stubs kept for backward-compat during migration) ──
+// Auth is now cookie-based (httpOnly). These helpers are no-ops but kept to
+// avoid breaking any callers that haven't been updated yet.
 export function getToken(): string | null {
-  return localStorage.getItem("send_token");
+  // Token is in an httpOnly cookie — not accessible from JS
+  return null;
 }
 
-export function setToken(token: string) {
-  localStorage.setItem("send_token", token);
+export function setToken(_token: string) {
+  // No-op: token is set by the server as an httpOnly cookie
 }
 
 export function clearToken() {
-  localStorage.removeItem("send_token");
+  // No-op: token is cleared by the server on logout
+  // Also clear any legacy localStorage entry if it exists
+  try { localStorage.removeItem("send_token"); } catch {}
 }
 
 // ── Core fetch wrapper ────────────────────────────────────────────────────────
@@ -21,21 +26,18 @@ async function apiFetch<T>(
   path: string,
   options: RequestInit = {}
 ): Promise<T> {
-  const token = getToken();
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     ...(options.headers as Record<string, string>),
   };
-  if (token) headers["Authorization"] = `Bearer ${token}`;
 
   const res = await fetch(`${API_BASE}/api${path}`, {
     ...options,
     headers,
-    credentials: "include",
+    credentials: "include", // Always send httpOnly cookie
   });
 
   if (res.status === 401) {
-    clearToken();
     window.location.href = "/";
     throw new Error("Session expired");
   }
@@ -62,8 +64,8 @@ export const auth = {
   register: (data: { email: string; password: string; displayName: string; schoolId?: string; role?: string }) =>
     apiFetch<{ message: string }>("/auth/register", { method: "POST", body: JSON.stringify(data) }),
 
-  googleAuth: (data: { googleId: string; email: string; displayName: string }) =>
-    apiFetch<{ token: string; user: any }>("/auth/google", { method: "POST", body: JSON.stringify(data) }),
+  googleAuth: (idToken: string) =>
+    apiFetch<{ token: string; user: any }>("/auth/google", { method: "POST", body: JSON.stringify({ idToken }) }),
 
   logout: () => apiFetch<{ message: string }>("/auth/logout", { method: "POST" }),
 

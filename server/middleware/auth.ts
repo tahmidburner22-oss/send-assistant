@@ -11,7 +11,14 @@ function anonymiseIp(ip: string | undefined): string | null {
   return createHash("sha256").update(ip + (process.env.IP_HASH_SALT || "adaptly-ip-salt")).digest("hex").slice(0, 16);
 }
 
-export const JWT_SECRET = process.env.JWT_SECRET || "send-assistant-dev-secret-change-in-production";
+const rawJwtSecret = process.env.JWT_SECRET;
+if (!rawJwtSecret || rawJwtSecret.length < 32) {
+  throw new Error(
+    "[SECURITY] JWT_SECRET must be set and at least 32 characters long. " +
+    "Set it in your Railway / environment variables before starting the server."
+  );
+}
+export const JWT_SECRET = rawJwtSecret;
 export const SESSION_TIMEOUT_MS = 30 * 24 * 60 * 60 * 1000; // 30 days — keeps scheduler working without re-login
 
 export interface AuthUser {

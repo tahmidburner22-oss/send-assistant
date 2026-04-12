@@ -261,11 +261,10 @@ export default function History() {
     if (!confirm(`Delete ${selectedIds.size} worksheet(s)? This cannot be undone.`)) return;
     setBulkDeleting(true);
     try {
-      const token = localStorage.getItem("send_token");
-      await Promise.all([...selectedIds].map(id =>
+          await Promise.all([...selectedIds].map(id =>
         fetch(`/api/data/worksheets/${id}`, {
           method: "DELETE",
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
+          credentials: "include",
           credentials: "include",
         })
       ));
@@ -283,10 +282,9 @@ export default function History() {
   const handleShare = useCallback(async (wsId: string) => {
     setSharingId(wsId);
     try {
-      const token = localStorage.getItem("send_token");
-      const res = await fetch(`/api/data/worksheets/${wsId}/share`, {
+          const res = await fetch(`/api/data/worksheets/${wsId}/share`, {
         method: "POST",
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        credentials: "include",
         credentials: "include",
       });
       if (res.ok) {

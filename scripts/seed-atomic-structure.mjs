@@ -65,18 +65,22 @@ const COMMON_MISTAKES =
 
 const WORKED_EXAMPLE =
   "Worked example: Sodium (Na)\n\n" +
-  "Atomic number = 11, so sodium has 11 protons.\n" +
-  "A neutral sodium atom also has 11 electrons.\n" +
-  "Mass number = 23, so neutrons = 23 - 11 = 12.\n" +
-  "Electronic configuration = 2,8,1.";
+  "Step 1: Find the atomic number. Sodium has atomic number 11, so it has 11 protons.\n" +
+  "Step 2: Find the number of electrons. In a neutral atom, electrons = protons = 11.\n" +
+  "Step 3: Find the number of neutrons. Mass number = 23, so neutrons = 23 - 11 = 12.\n" +
+  "Step 4: Write the electronic configuration. Fill shell 1 (max 2), then shell 2 (max 8), then shell 3. Configuration = 2,8,1.";
 
 const SELF_REFLECTION =
-  "Self-check:\n" +
-  "- I can name the three subatomic particles and give their charges.\n" +
-  "- I can calculate protons, neutrons and electrons.\n" +
-  "- I can write simple electronic configurations.\n" +
-  "- I can explain what an isotope is.\n\n" +
-  "Exit ticket: Write the electronic configuration for argon (atomic number 18).";
+  "SUBTITLE: How well do you understand Atomic Structure?\n" +
+  "CONFIDENCE_TABLE:\n" +
+  "I can name the three subatomic particles and give their charges.|Not yet|Almost|Got it!\n" +
+  "I can use atomic number and mass number to find protons, neutrons and electrons.|Not yet|Almost|Got it!\n" +
+  "I can write simple electronic configurations.|Not yet|Almost|Got it!\n" +
+  "I can explain what an isotope is.|Not yet|Almost|Got it!\n" +
+  "WRITTEN_PROMPTS:\n" +
+  "What is the difference between atomic number and mass number?\n" +
+  "Describe how electrons are arranged in shells.\n" +
+  "EXIT_TICKET: Write the electronic configuration for argon (atomic number 18) and explain your working.";
 
 const MARK_SCHEME =
   "**Q1 - Label the atom diagram**\n" +

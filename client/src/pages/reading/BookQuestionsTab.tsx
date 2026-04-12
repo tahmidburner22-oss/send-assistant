@@ -115,10 +115,9 @@ export default function BookQuestionsTab() {
         formData.append("chapterInfo", chapterInfo);
         formData.append("questionCount", questionCount);
 
-        const token = localStorage.getItem("send_token");
-        const response = await fetch("/api/ai/book-questions", {
+            const response = await fetch("/api/ai/book-questions", {
           method: "POST",
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
+          credentials: "include",
           credentials: "include",
           body: formData,
         });

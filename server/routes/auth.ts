@@ -4,11 +4,14 @@ import jwt from "jsonwebtoken";
 import { v4 as uuidv4 } from "uuid";
 import speakeasy from "speakeasy";
 import QRCode from "qrcode";
+import { OAuth2Client } from "google-auth-library";
 import db from "../db/index.js";
 import { JWT_SECRET, SESSION_TIMEOUT_MS, auditLog } from "../middleware/auth.js";
 import { requireAuth } from "../middleware/auth.js";
 import { createHash } from "crypto";
 import { sendPasswordReset, sendEmailVerification, sendWelcomeEmail } from "../email/index.js";
+
+const googleOAuthClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // GDPR: Hash IPs before storing in sessions table
 function hashIp(ip: string | undefined): string | null {
@@ -22,6 +25,17 @@ const router = Router();
 if (process.env.NODE_ENV === "production" && process.env.JWT_SECRET === undefined) {
   console.error("[SECURITY] FATAL: JWT_SECRET environment variable is not set. Set it in Railway Variables.");
   process.exit(1);
+}
+
+// ── Cookie helper — set auth cookie on every successful login ─────────────────
+function setAuthCookie(res: Response, token: string): void {
+  res.cookie("token", token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: SESSION_TIMEOUT_MS,
+    path: "/",
+  });
 }
 
 // ── Issue 2: Per-account failed login tracking (brute force protection) ───────
@@ -242,10 +256,11 @@ router.post("/login", async (req: Request, res: Response) => {
 
     const mfaVerified = !user.mfa_enabled;
     const token = createSessionToken(user, mfaVerified);
-    createSession(user.id, token, req);
+    await createSession(user.id, token, req);
 
     auditLog(user.id, user.school_id, "user.login", "user", user.id, { email }, req.ip);
 
+    setAuthCookie(res, token);
     res.json({
       token,
       user: safeUser(user),
@@ -258,19 +273,40 @@ router.post("/login", async (req: Request, res: Response) => {
 });
 
 // ── Google OAuth callback ─────────────────────────────────────────────────────
-// Frontend exchanges Google ID token; we verify and upsert user
+// Frontend sends Google ID token; we verify it server-side with google-auth-library
 router.post("/google", async (req: Request, res: Response) => {
   try {
-    const { idToken, googleId, email, displayName, photoUrl } = req.body;
-    if (!email || !googleId) return res.status(400).json({ error: "Google auth data missing" });
+    const { idToken } = req.body;
+    if (!idToken) return res.status(400).json({ error: "Google token missing" });
+
+    // Verify the token with Google — rejects forged tokens, wrong audience, unverified emails
+    let googlePayload: any;
+    try {
+      const ticket = await googleOAuthClient.verifyIdToken({
+        idToken,
+        audience: process.env.GOOGLE_CLIENT_ID,
+      });
+      googlePayload = ticket.getPayload();
+    } catch {
+      return res.status(401).json({ error: "Invalid Google token" });
+    }
+
+    if (!googlePayload?.sub || !googlePayload?.email || !googlePayload.email_verified) {
+      return res.status(401).json({ error: "Invalid Google identity" });
+    }
+
+    const googleId = googlePayload.sub;
+    const email = googlePayload.email.toLowerCase().trim();
+    const displayName = googlePayload.name || email;
+    const photoUrl = googlePayload.picture || null;
 
     let user = await db.prepare("SELECT * FROM users WHERE google_id = ? OR email = ?").get(googleId, email) as any;
 
     if (!user) {
       // Auto-register via Google
       const userId = uuidv4();
-      await db.prepare(`INSERT INTO users (id, email, display_name, google_id, role, email_verified)
-        VALUES (?, ?, ?, ?, 'teacher', 1)`).run(userId, email, displayName, googleId);
+      await db.prepare(`INSERT INTO users (id, email, display_name, google_id, photo_url, role, email_verified)
+        VALUES (?, ?, ?, ?, ?, 'teacher', 1)`).run(userId, email, displayName, googleId, photoUrl);
       user = await db.prepare("SELECT * FROM users WHERE id = ?").get(userId) as any;
       auditLog(userId, null, "user.register_google", "user", userId, { email }, req.ip);
     } else {
@@ -284,10 +320,11 @@ router.post("/google", async (req: Request, res: Response) => {
     await db.prepare("UPDATE users SET last_login_at = NOW() WHERE id = ?").run(user.id);
 
     const token = createSessionToken(user, true);
-    createSession(user.id, token, req);
+    await createSession(user.id, token, req);
 
     auditLog(user.id, user.school_id, "user.login_google", "user", user.id, { email }, req.ip);
 
+    setAuthCookie(res, token);
     res.json({ token, user: safeUser(user), mfaRequired: false });
   } catch (err) {
     console.error("Google auth error:", err);
@@ -347,9 +384,10 @@ router.post("/mfa/verify", async (req: Request, res: Response) => {
     // Invalidate old session, create new one with mfaVerified=true
     await db.prepare("DELETE FROM sessions WHERE token = ?").run(sessionToken);
     const newToken = createSessionToken(user, true);
-    createSession(user.id, newToken, req);
+    await createSession(user.id, newToken, req);
 
     auditLog(user.id, user.school_id, "user.mfa_verified", "user", user.id, {}, req.ip);
+    setAuthCookie(res, newToken);
     res.json({ token: newToken, user: safeUser(user) });
   } catch {
     res.status(401).json({ error: "Invalid session token" });
@@ -411,7 +449,12 @@ router.post("/logout", requireAuth, async (req: Request, res: Response) => {
   const token = req.headers.authorization?.slice(7) || req.cookies?.token;
   if (token) await db.prepare("DELETE FROM sessions WHERE token = ?").run(token);
   auditLog(req.user!.id, req.user!.schoolId, "user.logout", "user", req.user!.id, {}, req.ip);
-  res.clearCookie("token");
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+  });
   res.json({ message: "Logged out" });
 });
 

@@ -3086,6 +3086,104 @@ function MarkSchemeSection({ content, fmt }: { content: string; fmt: ReturnType<
     </div>
   );
 }
+function WorkedExampleSection({ content, fmt }: { content: string; fmt: ReturnType<typeof getSendFormatting> }) {
+  const { fontSize: textSize, fontFamily, lineHeight } = fmt;
+
+  // Parse content into a title and ordered steps.
+  // Supports two formats:
+  //   1. "Worked example: <title>\n\n<step1>\n<step2>..." (seed script format)
+  //   2. Plain numbered/bulleted lines (AI-generated format)
+  const rawLines = content
+    .replace(/\\n/g, '\n')
+    .split('\n')
+    .map(l => l.trim())
+    .filter(Boolean);
+
+  // Extract title: first line that starts with "Worked example" or similar heading
+  let title = "";
+  let stepLines: string[] = [];
+
+  const titleMatch = content.replace(/\\n/g, '\n').match(/^[Ww]orked[\s\-][Ee]xample[:\s]+([^\n]+)/m);
+  if (titleMatch) {
+    title = titleMatch[1].trim();
+    // All remaining non-empty lines are steps
+    const afterTitle = rawLines.filter(l => !l.match(/^[Ww]orked[\s\-][Ee]xample[:\s]+/i));
+    stepLines = afterTitle;
+  } else {
+    // No explicit title — treat first line as title if it looks like a heading
+    if (rawLines.length > 0 && !/^\d+[.)\s]/.test(rawLines[0]) && !/^[•\-\*]/.test(rawLines[0])) {
+      title = rawLines[0];
+      stepLines = rawLines.slice(1);
+    } else {
+      stepLines = rawLines;
+    }
+  }
+
+  // Clean step lines: strip leading numbers/bullets and trailing stray digits
+  const steps = stepLines
+    .map(l => l
+      .replace(/^\d+[.)\s]+/, '')  // strip leading "1. " or "1) "
+      .replace(/^[•\-\*]\s*/, '')  // strip leading bullets
+      .replace(/\s+\d+\s*$/, '')   // strip trailing stray numbers (e.g. "...config = 2,8,1.4" → remove trailing "4")
+      .trim()
+    )
+    .filter(Boolean);
+
+  return (
+    <div style={{ fontFamily }}>
+      {/* Title */}
+      {title && (
+        <div style={{
+          fontSize: `${textSize + 1}px`,
+          fontWeight: 700,
+          color: '#1a2744',
+          fontFamily,
+          marginBottom: '12px',
+          borderBottom: '1.5px solid #1a2744',
+          paddingBottom: '6px',
+        }}>
+          {title}
+        </div>
+      )}
+      {/* Steps as ordered list */}
+      <ol style={{ margin: 0, padding: 0, listStyle: 'none' }}>
+        {steps.map((step, i) => (
+          <li key={i} style={{
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: '10px',
+            marginBottom: '10px',
+          }}>
+            {/* Step number badge */}
+            <div style={{
+              minWidth: '24px',
+              height: '24px',
+              background: '#1a2744',
+              color: '#ffffff',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: `${textSize - 2}px`,
+              fontWeight: 700,
+              fontFamily,
+              flexShrink: 0,
+              marginTop: '1px',
+            }}>
+              {i + 1}
+            </div>
+            {/* Step text with math rendering */}
+            <div
+              style={{ fontSize: `${textSize}px`, color: '#1f2937', fontFamily, lineHeight, flex: 1 }}
+              dangerouslySetInnerHTML={{ __html: renderMath(step) }}
+            />
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
+}
+
 function ReminderBoxSection({ content, fmt, overlayColor = "white" }: { content: string; fmt: ReturnType<typeof getSendFormatting>; overlayColor?: string }) {
   const { fontSize: textSize, fontFamily, lineHeight } = fmt;
   const lines = content.split("\n").filter(l => l.trim());
@@ -5170,6 +5268,8 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                   <SentenceStartersSection content={content} fmt={fmt} overlayColor={overlayColor} />
                 ) : section.type === "reminder-box" ? (
                   <ReminderBoxSection content={content} fmt={fmt} overlayColor={overlayColor} />
+                ) : section.type === "example" ? (
+                  <WorkedExampleSection content={content} fmt={fmt} />
                 ) : section.type === "word-problems" ? (
                   <WordProblemsSection content={content} fmt={fmt} overlayColor={overlayColor} />
                 ) : (section.type === "mark-scheme" || section.type === "answers") ? (

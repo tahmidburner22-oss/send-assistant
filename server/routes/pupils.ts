@@ -1,8 +1,14 @@
 import { Router, Request, Response } from "express";
 import { v4 as uuidv4 } from "uuid";
+import { randomBytes } from "crypto";
 import db from "../db/index.js";
 import { requireAuth, requireMinRole, auditLog } from "../middleware/auth.js";
 import { sendDSLIncidentAlert } from "../email/index.js";
+
+// Cryptographically secure pupil access code (e.g. "P3A9F2")
+function generatePupilCode(): string {
+  return "P" + randomBytes(3).toString("hex").toUpperCase();
+}
 
 const router = Router();
 
@@ -75,7 +81,7 @@ router.post("/", requireAuth, async (req: Request, res: Response) => {
   const safeName = toInitials(name);
 
   const id = uuidv4();
-  const code = "P" + Math.random().toString(36).slice(2, 7).toUpperCase();
+  const code = generatePupilCode();
 
   await db.prepare(`INSERT INTO pupils (id, school_id, name, year_group, send_need, code, upn, dob, created_by)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
@@ -147,7 +153,7 @@ router.post("/bulk-import", requireAuth, requireMinRole("school_admin"), async (
   for (const p of pupils) {
     if (!p.name) continue;
     const id = uuidv4();
-    const code = "P" + Math.random().toString(36).slice(2, 7).toUpperCase();
+    const code = generatePupilCode();
     insert.run(id, req.user!.schoolId, p.name, p.yearGroup || null, p.sendNeed || null, code, p.upn || null, req.user!.id);
     count++;
   }

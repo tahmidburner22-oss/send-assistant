@@ -1,4 +1,5 @@
 import { Router, Request, Response } from "express";
+import { randomBytes } from "crypto";
 import { v4 as uuidv4 } from "uuid";
 import bcrypt from "bcryptjs";
 import db from "../db/index.js";
@@ -121,7 +122,7 @@ router.post("/users/invite", requireAuth, requireMinRole("school_admin"), async 
       }
     }
 
-    const tempPassword = Math.random().toString(36).slice(-10) + "A1!";
+    const tempPassword = randomBytes(8).toString("base64url").slice(0, 10) + "A1!";
     const hash = await bcrypt.hash(tempPassword, 12);
     const userId = uuidv4();
     const verifyToken = uuidv4();

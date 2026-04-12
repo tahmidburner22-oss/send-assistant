@@ -726,10 +726,9 @@ export default function Worksheets() {
     if (!fullText.trim()) return;
     setTtsLoading(true);
     try {
-      const token = localStorage.getItem("send_token") || "";
-      const res = await fetch("/api/revision/tts", {
+        const res = await fetch("/api/revision/tts", {
         method: "POST",
-        headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        headers: { "Content-Type": "application/json" }, credentials: "include",
         credentials: "include",
         body: JSON.stringify({ text: fullText.slice(0, 8000), voice: "nova", language: "en" }),
       });
@@ -758,10 +757,9 @@ export default function Worksheets() {
     if (selectionAudioRef.current) { selectionAudioRef.current.pause(); selectionAudioRef.current.src = ""; selectionAudioRef.current = null; }
     setSelectionTtsLoading(true);
     try {
-      const token = localStorage.getItem("send_token") || "";
-      const res = await fetch("/api/revision/tts", {
+        const res = await fetch("/api/revision/tts", {
         method: "POST",
-        headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        headers: { "Content-Type": "application/json" }, credentials: "include",
         credentials: "include",
         body: JSON.stringify({ text: text.slice(0, 4000), voice: "nova", language: "en" }),
       });
@@ -999,7 +997,6 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
     // WorksheetRenderer via getSendFormatting — the content is never rewritten for SEND.
     if (!examStyle) {
       try {
-        const libToken = localStorage.getItem("send_token") || "";
         const authHeaders = libToken ? { Authorization: `Bearer ${libToken}` } : {};
         // Map difficulty to library tier:
         // foundation → foundation, mixed/standard → base (the default tier in the library), higher → higher
@@ -1586,8 +1583,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
       // Only save if no SEND adaptation and not exam-style (those are personalised, not master copies)
       if (!examStyle && (!sendNeed || sendNeed === "none-selected") && isAIWorksheet(ws)) {
         try {
-          const libToken = localStorage.getItem("send_token") || "";
-          fetch("/api/library/entries", {
+            fetch("/api/library/entries", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -1623,7 +1619,6 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
     setDiagnosticResult(null);
     setDiagnosticFailed(false);
     try {
-      const storedToken = typeof localStorage !== "undefined" ? localStorage.getItem("send_token") : null;
       const diagnosticHeaders: Record<string, string> = { "Content-Type": "application/json" };
       if (storedToken) diagnosticHeaders["Authorization"] = `Bearer ${storedToken}`;
       const response = await fetch("/api/ai/diagnostic-starter", {
@@ -1653,7 +1648,6 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
     setDiagChatLoading(true);
     setDiagSheetResult(null);
     try {
-      const storedToken = typeof localStorage !== 'undefined' ? localStorage.getItem('send_token') : null;
       const diagHeaders: Record<string, string> = { "Content-Type": "application/json" };
       if (storedToken) diagHeaders["Authorization"] = `Bearer ${storedToken}`;
       const res = await fetch("/api/ai/diagnostic-starter", {
@@ -1779,10 +1773,9 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
       formData.append("file", uploadFile);
       formData.append("sendNeed", uploadSendNeed);
       if (uploadYearGroup) formData.append("yearGroup", uploadYearGroup);
-      const token = localStorage.getItem("send_token");
-      const res = await fetch("/api/ai/adapt-worksheet", {
+        const res = await fetch("/api/ai/adapt-worksheet", {
         method: "POST",
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        credentials: "include",
         credentials: "include",
         body: formData,
       });
@@ -1810,10 +1803,9 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
       if (slidesSubject) formData.append("subject", slidesSubject);
       if (slidesYearGroup) formData.append("yearGroup", slidesYearGroup);
       if (slidesSendNeeds) formData.append("sendNeeds", slidesSendNeeds);
-      const token = localStorage.getItem("send_token");
-      const res = await fetch("/api/ai/worksheet-from-slides", {
+        const res = await fetch("/api/ai/worksheet-from-slides", {
         method: "POST",
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        credentials: "include",
         credentials: "include",
         body: formData,
       });
@@ -2210,7 +2202,6 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
       // Try the worksheet library first for the natural-language quick-generate path as well.
       // Previously this path skipped library lookup entirely and always went straight to AI.
       try {
-        const libToken = localStorage.getItem("send_token") || "";
         const authHeaders: Record<string, string> = libToken ? { Authorization: `Bearer ${libToken}` } : {};
         // Always use the difficulty tier — SEND need is applied on top, not instead of the difficulty tier
         // The library uses 'base' for standard/mixed ability, 'send' for SEND scaffolded versions.
@@ -2439,7 +2430,6 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
     try {
       const ws = generated as AIWorksheet;
       const meta = ws.metadata || {};
-      const libToken = localStorage.getItem("send_token") || "";
       const authHeaders: Record<string, string> = libToken
         ? { Authorization: `Bearer ${libToken}`, "Content-Type": "application/json" }
         : { "Content-Type": "application/json" };
