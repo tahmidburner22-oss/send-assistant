@@ -47,7 +47,7 @@ const TYPE_CONFIG = {
 const CATEGORIES = ["Pastoral", "Academic", "Social", "Wellbeing", "Behaviour", "Attendance", "Medical", "Family", "Other"];
 
 function getAuthHeader() {
-  return token ? { Authorization: `Bearer ${token}` } : {};
+  return {}; // Auth is cookie-based
 }
 
 export default function PupilComments() {
