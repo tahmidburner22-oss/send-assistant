@@ -338,7 +338,7 @@ export default function EHCPPlanGenerator() {
   const mark = (s: Stage) => setCompleted(prev => new Set([...prev, s]));
 
   const authHeaders = () => {
-    return token ? { Authorization: `Bearer ${token}` } : {};
+    return {};
   };
 
   // ── Step 1 ────────────────────────────────────────────────────────────────

@@ -18,7 +18,7 @@ import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 
 function getAuthHeader(): Record<string, string> {
-  return token ? { Authorization: `Bearer ${token}` } : {};
+  return {};
 }
 
 interface QuizQuestion {

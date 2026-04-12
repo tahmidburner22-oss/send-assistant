@@ -65,7 +65,7 @@ const YEAR_GROUPS = [
 ];
 
 function getAuthHeaders(extra: Record<string, string> = {}): Record<string, string> {
-  return token ? { Authorization: `Bearer ${token}`, ...extra } : extra;
+  return extra;
 }
 
 async function apiPost(path: string, body: Record<string, any>) {

@@ -169,7 +169,7 @@ const PRESET_PROVIDERS = [
 interface SavedKey { id: number; provider: string; providerLabel: string; model: string; baseUrl?: string; isCustom: boolean; }
 
 function getAuthHeader(): Record<string, string> {
-  return token ? { Authorization: `Bearer ${token}` } : {};
+  return {};
 }
 
 // ── MIS Integration Section ───────────────────────────────────────────────────
