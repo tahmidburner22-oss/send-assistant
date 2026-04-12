@@ -72,8 +72,10 @@ export interface Worksheet {
   sendNeed?: string; difficulty: string; examBoard?: string; content: string;
   teacherContent: string; createdAt: string; rating?: number; ratingLabel?: string; overlay?: string;
   // Full sections array preserved for re-editing saved worksheets
-  sections?: Array<{ title: string; type: string; content: string; teacherOnly?: boolean; svg?: string; caption?: string }>;
-  metadata?: { subject?: string; topic?: string; yearGroup?: string; difficulty?: string; examBoard?: string; totalMarks?: number; estimatedTime?: string; adaptations?: string[]; phase?: string; };
+  sections?: Array<{ title: string; type: string; content: string; teacherOnly?: boolean; svg?: string; caption?: string; imageUrl?: string; assetRef?: string }>;
+  metadata?: { subject?: string; topic?: string; yearGroup?: string; difficulty?: string; examBoard?: string; totalMarks?: number; estimatedTime?: string; adaptations?: string[]; phase?: string; buildManifest?: any; [key: string]: any };
+  sourceLibraryId?: string;
+  sourceCanonicalTopicKey?: string;
   isAI?: boolean;
 }
 

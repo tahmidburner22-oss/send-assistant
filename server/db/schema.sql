@@ -166,6 +166,9 @@ CREATE TABLE IF NOT EXISTS worksheets (
   rating INTEGER,
   rating_label TEXT,
   overlay TEXT,
+  metadata_json TEXT,
+  source_library_id TEXT,
+  source_canonical_topic_key TEXT,
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 

@@ -1,22 +1,15 @@
 /**
  * Overlay Engine
  *
- * Pure function interface for applying worksheet overlays.
- * Overlays are applied in a fixed order and MUST NOT alter:
- *  - Section IDs
- *  - Section order (except retrieval injection after LO)
- *  - Diagram slot IDs or imageUrl fields
- *  - Question numbering
+ * Deterministic worksheet overlays that preserve the underlying worksheet
+ * structure, ordering, numbering, and diagram assets.
  *
- * Contract:
- *   applyOverlays(baseWorksheet, overlays): RenderedWorksheet
- *
- * Structural integrity is verified before and after via a structural hash.
+ * Design rules:
+ * - Never remove or reorder base sections.
+ * - Never touch diagram/image references.
+ * - Only insert overlay sections (teacher notes / retrieval) or append clearly
+ *   delimited support text within existing text sections.
  */
-
-import { v4 as uuidv4 } from "uuid";
-
-// ── Types ─────────────────────────────────────────────────────────────────────
 
 export interface WorksheetSection {
   id: string;
@@ -32,11 +25,20 @@ export interface WorksheetSection {
   [key: string]: unknown;
 }
 
+export interface OverlayFeatureFlags {
+  bilingualKeywords?: {
+    enabled: boolean;
+    languageCode?: string;
+    languageLabel?: string;
+  } | boolean;
+}
+
 export interface OverlayParams {
   retrievalTopic?: string | null;
   additionalInstructions?: string | null;
   sendNeed?: string | null;
   readingAge?: string | null;
+  featureFlags?: OverlayFeatureFlags | null;
 }
 
 export interface OverlayResult {
@@ -48,210 +50,285 @@ export interface OverlayResult {
 }
 
 export interface AppliedOverlay {
-  type: "retrieval" | "additional_instructions" | "send_need" | "reading_age";
+  type: "retrieval" | "additional_instructions" | "send_need" | "reading_age" | "bilingual_keywords";
   params: Record<string, unknown>;
   appliedAt: string;
 }
 
-const KEY_TERMS = [
-  "atom",
-  "proton",
-  "neutron",
-  "electron",
-  "nucleus",
-  "atomic number",
-  "mass number",
-  "isotope",
-  "electron shell",
-  "electronic configuration",
-];
-
-const BILINGUAL_GLOSSARY: Record<string, string> = {
-  atom: "atom / átomo",
-  proton: "proton / protón",
-  neutron: "neutron / neutrón",
-  electron: "electron / electrón",
-  nucleus: "nucleus / núcleo",
-  "atomic number": "atomic number / número atómico",
-  "mass number": "mass number / número másico",
-  isotope: "isotope / isótopo",
-  "electron shell": "electron shell / capa electrónica",
-  "electronic configuration": "electronic configuration / configuración electrónica",
+const SEND_LABELS: Record<string, string> = {
+  dyslexia: "Dyslexia",
+  adhd: "ADHD / Focus Support",
+  esl: "EAL / English as an Additional Language",
+  eal: "EAL / English as an Additional Language",
+  visual: "Visual Impairment Support",
+  asd: "Autism Spectrum Support",
+  autism: "Autism Spectrum Support",
+  low_literacy: "Low Literacy Support",
+  dyscalculia: "Dyscalculia Support",
+  memory: "Working Memory Support",
+  mld: "Moderate Learning Difficulties Support",
+  semh: "SEMH Support",
 };
 
-function escapeRegExp(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const QUESTION_TYPES = new Set([
+  "q-short-answer", "q-extended", "q-challenge", "q-free-response", "q-mcq",
+  "q-gap-fill", "q-true-false", "q-label-diagram", "short-answer", "free-response",
+  "guided", "independent", "challenge", "section-a", "section-b", "section-c",
+]);
+
+const VOCAB_TYPES = new Set(["key-terms", "vocabulary", "key-vocab", "glossary"]);
+const DIAGRAM_TYPES = new Set(["diagram", "q-label-diagram", "label-diagram", "diagram-subq"]);
+const OBJECTIVE_TYPES = new Set(["learning-objective", "learning_objective", "objective", "lo"]);
+
+const TERM_TRANSLATIONS: Record<string, Record<string, string>> = {
+  ro: {
+    current: "curent",
+    voltage: "tensiune",
+    resistance: "rezistență",
+    conductor: "conductor",
+    insulator: "izolator",
+    series: "serie",
+    parallel: "paralel",
+    circuit: "circuit",
+    battery: "baterie",
+    lamp: "bec",
+    switch: "întrerupător",
+    charge: "sarcină",
+    current_flow: "curgerea curentului",
+    ohm: "ohm",
+    ohms_law: "legea lui Ohm",
+    force: "forță",
+    energy: "energie",
+    power: "putere",
+    cell: "pilă",
+    bulb: "bec",
+    resistor: "rezistor",
+    ammeter: "ampermetru",
+    voltmeter: "voltmetru",
+    equation: "ecuație",
+    fraction: "fracție",
+    numerator: "numărător",
+    denominator: "numitor",
+  },
+  es: {
+    current: "corriente",
+    voltage: "voltaje",
+    resistance: "resistencia",
+    conductor: "conductor",
+    insulator: "aislante",
+    series: "serie",
+    parallel: "paralelo",
+    circuit: "circuito",
+    battery: "batería",
+    lamp: "lámpara",
+    switch: "interruptor",
+    charge: "carga",
+    ohms_law: "ley de Ohm",
+  },
+};
+
+function nowIso(): string {
+  return new Date().toISOString();
 }
 
-function boldKeyTerms(content?: string): string | undefined {
-  if (!content) return content;
-  let updated = content;
-  for (const term of [...KEY_TERMS].sort((a, b) => b.length - a.length)) {
-    const regex = new RegExp(`\\b${escapeRegExp(term)}\\b`, "gi");
-    updated = updated.replace(regex, (match) => {
-      if (match.includes("**")) return match;
-      return `**${match}**`;
-    });
+function cloneSections<T>(value: T): T {
+  return JSON.parse(JSON.stringify(value));
+}
+
+function isTextualSection(section: WorksheetSection): boolean {
+  return typeof section.content === "string" && section.content.trim().length > 0 && !DIAGRAM_TYPES.has(section.type);
+}
+
+function appendDelimitedBlock(content: string, heading: string, lines: string[]): string {
+  if (!content.trim()) return content;
+  if (content.includes(heading)) return content;
+  const block = [heading, ...lines].join("\n");
+  return `${content.trim()}\n\n${block}`;
+}
+
+function languageLabel(code: string): string {
+  return ({ ro: "Romanian", es: "Spanish" } as Record<string, string>)[code] || code.toUpperCase();
+}
+
+function parseRequestedLanguage(additionalInstructions?: string | null, featureFlags?: OverlayFeatureFlags | null): { code: string; label: string } | null {
+  const bilingualFlag = featureFlags?.bilingualKeywords;
+  if (typeof bilingualFlag === "object" && bilingualFlag?.enabled) {
+    const code = (bilingualFlag.languageCode || "ro").toLowerCase();
+    return { code, label: bilingualFlag.languageLabel || languageLabel(code) };
   }
-  return updated;
+
+  const text = (additionalInstructions || "").toLowerCase();
+  if (!text) return null;
+  if (!/(bilingual|translate|translation|keywords? in|vocabulary in)/i.test(additionalInstructions || "")) return null;
+  if (text.includes("romanian") || text.includes("română") || text.includes("romana")) return { code: "ro", label: "Romanian" };
+  if (text.includes("spanish") || text.includes("español")) return { code: "es", label: "Spanish" };
+  return { code: "ro", label: "Romanian" };
 }
 
-function addSentenceStarters(section: WorksheetSection): WorksheetSection {
-  if (!section.content || typeof section.content !== "string") return section;
-  if (/sentence starters?/i.test(section.content)) return section;
-  if (!["q-short-answer", "q-extended", "q-challenge"].includes(section.type)) return section;
+function parseVocabularyPairs(content: string): Array<{ term: string; definition?: string }> {
+  return content
+    .split(/\n+/)
+    .map(line => line.replace(/^[-•*]\s*/, "").trim())
+    .filter(Boolean)
+    .map(line => {
+      const match = line.match(/^([^:–—-]{2,80})\s*[:–—-]\s*(.+)$/);
+      if (match) return { term: match[1].trim(), definition: match[2].trim() };
+      return { term: line.trim() };
+    })
+    .filter(item => item.term.length > 1)
+    .slice(0, 12);
+}
 
-  const starters = [
-    "Sentence starters:",
-    "- One important idea is...",
-    "- I know this because...",
-    "- The evidence from atomic structure shows...",
-  ].join("\n");
+function normaliseLookupKey(term: string): string {
+  return term.toLowerCase().replace(/[^a-z0-9\s]/g, " ").replace(/\s+/g, " ").trim();
+}
+
+function translateTerm(term: string, languageCode: string): string | null {
+  const table = TERM_TRANSLATIONS[languageCode];
+  if (!table) return null;
+  const key = normaliseLookupKey(term);
+  if (table[key]) return table[key];
+  const compact = key.replace(/\s+/g, "_");
+  return table[compact] || null;
+}
+
+function applyBilingualVocabulary(section: WorksheetSection, languageCode: string, languageLabelText: string): WorksheetSection {
+  if (!section.content || typeof section.content !== "string") return section;
+  if (!VOCAB_TYPES.has(section.type)) return section;
+  if (section.content.includes(`Keywords in ${languageLabelText}`)) return section;
+
+  const pairs = parseVocabularyPairs(section.content);
+  const glossaryLines = pairs
+    .map(pair => {
+      const translated = translateTerm(pair.term, languageCode);
+      if (!translated) return null;
+      return `- ${pair.term} — ${translated}`;
+    })
+    .filter((line): line is string => Boolean(line));
+
+  if (glossaryLines.length === 0) return section;
 
   return {
     ...section,
-    content: `${section.content}\n\n${starters}`,
+    content: appendDelimitedBlock(section.content, `Keywords in ${languageLabelText}:`, glossaryLines),
   };
 }
 
-function applyBilingualSupport(section: WorksheetSection): WorksheetSection {
-  if (!section.content || typeof section.content !== "string") return section;
-  const isVocabulary = ["key-terms", "vocabulary", "key-vocab"].includes(section.type);
-  if (!isVocabulary) return section;
-
-  const glossaryLines = Object.values(BILINGUAL_GLOSSARY).map((line) => `- ${line}`).join("\n");
-  if (section.content.includes("/ átomo")) return section;
-
+function applyDyslexiaSupport(section: WorksheetSection): WorksheetSection {
+  if (!isTextualSection(section) || !QUESTION_TYPES.has(section.type)) return section;
   return {
     ...section,
-    content: `${section.content}\n\n**Bilingual support glossary:**\n${glossaryLines}`,
+    content: appendDelimitedBlock(section.content as string, "Support:", [
+      "- Sentence starters: One idea is... / I know this because... / The evidence shows...",
+      "- Work one line at a time.",
+      "- Underline the command word before you answer.",
+    ]),
   };
 }
 
-function includesBilingualRequest(value?: string | null): boolean {
-  if (!value) return false;
-  return /bilingual|translation|translate|spanish|español/i.test(value);
+function applyAdhdSupport(section: WorksheetSection): WorksheetSection {
+  if (!isTextualSection(section) || !QUESTION_TYPES.has(section.type)) return section;
+  return {
+    ...section,
+    content: appendDelimitedBlock(section.content as string, "Support:", [
+      "- Complete the task in 2 short steps.",
+      "- Tick each step when finished.",
+      "- Focus on one command word at a time.",
+    ]),
+  };
 }
 
-// ── Structural hash ───────────────────────────────────────────────────────────
+function applyAutismSupport(section: WorksheetSection): WorksheetSection {
+  if (!isTextualSection(section) || !QUESTION_TYPES.has(section.type)) return section;
+  return {
+    ...section,
+    content: appendDelimitedBlock(section.content as string, "Support:", [
+      "- Read the instruction exactly as written.",
+      "- Use the worked example first, then copy the method.",
+      "- Write one clear answer for each question.",
+    ]),
+  };
+}
 
-/**
- * Compute a structural hash from section IDs, types, and diagram slot IDs.
- * This hash changes only if the structure changes — not if text content changes.
- */
+function applyEalSupport(section: WorksheetSection): WorksheetSection {
+  if (!isTextualSection(section)) return section;
+  if (VOCAB_TYPES.has(section.type)) return section;
+  if (!QUESTION_TYPES.has(section.type)) return section;
+  return {
+    ...section,
+    content: appendDelimitedBlock(section.content as string, "Language support:", [
+      "- Key word bank: define the subject words before you answer.",
+      "- You may answer in short clear sentences.",
+      "- Match each command word to the task: describe / explain / calculate.",
+    ]),
+  };
+}
+
+function applySendSupport(sections: WorksheetSection[], sendNeed?: string | null): WorksheetSection[] {
+  if (!sendNeed || sendNeed === "none" || sendNeed === "none-selected") return sections;
+  const key = sendNeed.toLowerCase();
+  if (key === "dyslexia") return sections.map(applyDyslexiaSupport);
+  if (key === "adhd") return sections.map(applyAdhdSupport);
+  if (key === "asd" || key === "autism") return sections.map(applyAutismSupport);
+  if (key === "esl" || key === "eal") return sections.map(applyEalSupport);
+  return sections;
+}
+
 export function computeStructuralHash(sections: WorksheetSection[]): string {
   const structural = sections
-    .filter(s => !s.isOverlay) // exclude overlay-injected sections
-    .map(s => `${s.id}:${s.type}:${s.assetRef || s.imageUrl || ""}`)
+    .filter(section => !section.isOverlay)
+    .map(section => `${section.id}:${section.type}:${section.assetRef || section.imageUrl || ""}`)
     .join("|");
-  // Simple deterministic hash (djb2)
+
   let hash = 5381;
   for (let i = 0; i < structural.length; i++) {
     hash = ((hash << 5) + hash) ^ structural.charCodeAt(i);
-    hash = hash >>> 0; // convert to unsigned 32-bit
+    hash >>>= 0;
   }
   return hash.toString(16).padStart(8, "0");
 }
 
-// ── Overlay application ───────────────────────────────────────────────────────
-
-const SEND_LABELS: Record<string, string> = {
-  dyslexia: "Dyslexia",
-  adhd: "ADHD / Focus Support",
-  esl: "EAL / English as Additional Language",
-  visual: "Visual Impairment Support",
-  asd: "Autism Spectrum Support",
-  low_literacy: "Low Literacy Support",
-  dyscalculia: "Dyscalculia Support",
-  memory: "Working Memory Support",
-};
-
-/**
- * Apply overlays to a base sections array in fixed order:
- *  1. SEND adaptation note
- *  2. Reading age note (merged with SEND note if both present)
- *  3. Retrieval section injection (after learning objective)
- *  4. Additional instructions note
- *
- * Returns a new array — never mutates the original.
- */
-export function applyOverlays(
-  baseSections: WorksheetSection[],
-  overlays: OverlayParams
-): OverlayResult {
-  // Deep clone to avoid mutating the original
-  let result: WorksheetSection[] = JSON.parse(JSON.stringify(baseSections));
+export function applyOverlays(baseSections: WorksheetSection[], overlays: OverlayParams): OverlayResult {
+  let result = cloneSections(baseSections);
   const baseStructuralHash = computeStructuralHash(result);
   const appliedOverlays: AppliedOverlay[] = [];
+  const overlayNotes: string[] = [];
 
-  // ── 1. SEND need note and deterministic SEND formatting ─────────────────────
-  if (overlays.sendNeed && overlays.sendNeed !== "none") {
+  const requestedLanguage = parseRequestedLanguage(overlays.additionalInstructions, overlays.featureFlags);
+
+  if (overlays.sendNeed && overlays.sendNeed !== "none" && overlays.sendNeed !== "none-selected") {
     const sendLabel = SEND_LABELS[overlays.sendNeed] || overlays.sendNeed;
-    const readingAgeNote = overlays.readingAge
-      ? ` | Reading age adjusted to ${overlays.readingAge}`
-      : "";
-
-    if (overlays.sendNeed === "dyslexia") {
-      result = result.map((section) => addSentenceStarters({
-        ...section,
-        content: boldKeyTerms(typeof section.content === "string" ? section.content : undefined),
-      }));
-    }
-
-    if (overlays.sendNeed === "esl") {
-      result = result.map((section) => applyBilingualSupport(section));
-    }
-
-    const sendNote: WorksheetSection = {
-      id: `send-note-overlay-${Date.now()}`,
-      type: "teacher-note",
-      title: "SEND Adaptations Applied",
-      content:
-        overlays.sendNeed === "dyslexia"
-          ? `SEND adaptations applied: ${sendLabel}${readingAgeNote}. Key scientific terms have been emboldened, sentence starters have been added to extended-response tasks, and presentation settings should use dyslexia-friendly spacing and font choices.`
-          : overlays.sendNeed === "esl"
-            ? `SEND adaptations applied: ${sendLabel}${readingAgeNote}. Bilingual key-term support has been added, beginning with the vocabulary section, while preserving the worksheet structure.`
-            : `SEND adaptations applied: ${sendLabel}${readingAgeNote}. Formatting, font size, line spacing and language complexity have been adjusted accordingly.`,
-      isOverlay: true,
-      teacherOnly: false,
-    };
-    const existingIdx = result.findIndex(s => s.id?.startsWith("send-note-overlay"));
-    if (existingIdx >= 0) {
-      result[existingIdx] = sendNote;
-    } else {
-      result.unshift(sendNote);
-    }
+    result = applySendSupport(result, overlays.sendNeed);
+    overlayNotes.push(`SEND support applied: ${sendLabel}.`);
     appliedOverlays.push({
       type: "send_need",
       params: { sendNeed: overlays.sendNeed, sendLabel },
-      appliedAt: new Date().toISOString(),
+      appliedAt: nowIso(),
     });
   }
 
-  // ── 2. Reading age (standalone, if no SEND need) ─────────────────────────────
-  if (overlays.readingAge && (!overlays.sendNeed || overlays.sendNeed === "none")) {
-    const readingNote: WorksheetSection = {
-      id: `reading-age-overlay-${Date.now()}`,
-      type: "teacher-note",
-      title: "Reading Age Adjustment",
-      content: `Reading age adjusted to ${overlays.readingAge}. Language complexity and vocabulary have been simplified accordingly.`,
-      isOverlay: true,
-      teacherOnly: false,
-    };
-    result.unshift(readingNote);
+  if (overlays.readingAge) {
+    overlayNotes.push(`Reading age target preserved at ${overlays.readingAge}.`);
     appliedOverlays.push({
       type: "reading_age",
       params: { readingAge: overlays.readingAge },
-      appliedAt: new Date().toISOString(),
+      appliedAt: nowIso(),
     });
   }
 
-  // ── 3. Retrieval section injection ──────────────────────────────────────────
+  if (requestedLanguage) {
+    result = result.map(section => applyBilingualVocabulary(section, requestedLanguage.code, requestedLanguage.label));
+    overlayNotes.push(`Bilingual keyword support added in ${requestedLanguage.label}.`);
+    appliedOverlays.push({
+      type: "bilingual_keywords",
+      params: { languageCode: requestedLanguage.code, languageLabel: requestedLanguage.label },
+      appliedAt: nowIso(),
+    });
+  }
+
   if (overlays.retrievalTopic) {
-    const loIdx = result.findIndex(
-      s => s.type === "learning-objective" || s.type === "objective" || s.type === "lo"
-    );
-    const insertAt = loIdx >= 0 ? loIdx + 1 : Math.min(2, result.length);
+    const loIdx = result.findIndex(section => OBJECTIVE_TYPES.has(section.type));
+    const insertAt = loIdx >= 0 ? loIdx + 1 : Math.min(1, result.length);
     const retrievalSection: WorksheetSection = {
       id: `retrieval-overlay-${Date.now()}`,
       type: "retrieval",
@@ -260,69 +337,45 @@ export function applyOverlays(
       content: [
         `Retrieval topic: ${overlays.retrievalTopic}`,
         "",
-        `1. What do you remember about ${overlays.retrievalTopic}? Write down 3 key facts.`,
-        "",
-        `2. Define a key term from ${overlays.retrievalTopic}:`,
-        "",
-        `3. Give one example related to ${overlays.retrievalTopic}:`,
+        `1. Write three facts you remember about ${overlays.retrievalTopic}.`,
+        `2. Define one key term from ${overlays.retrievalTopic}.`,
+        `3. Give one example linked to ${overlays.retrievalTopic}.`,
       ].join("\n"),
       marks: 6,
       isOverlay: true,
+      teacherOnly: false,
     };
     result.splice(insertAt, 0, retrievalSection);
     appliedOverlays.push({
       type: "retrieval",
       params: { retrievalTopic: overlays.retrievalTopic, insertedAt: insertAt },
-      appliedAt: new Date().toISOString(),
+      appliedAt: nowIso(),
     });
+    overlayNotes.push("Retrieval section inserted after the learning objective.");
   }
 
-  // ── 4. Additional instructions note ─────────────────────────────────────────
   if (overlays.additionalInstructions) {
-    const bilingualRequested = includesBilingualRequest(overlays.additionalInstructions);
-    // Annotate the key-vocab section if present
-    const vocabIdx = result.findIndex(
-      s => s.type === "key-terms" || s.type === "vocabulary" || s.type === "key-vocab"
-    );
-    if (vocabIdx >= 0) {
-      result[vocabIdx] = {
-        ...result[vocabIdx],
-        additionalInstructions: overlays.additionalInstructions,
-      };
-    }
-    if (bilingualRequested) {
-      result = result.map((section) => applyBilingualSupport(section));
-    }
-    // Add a teacher note at the top
-    const noteSection: WorksheetSection = {
-      id: `additional-note-overlay-${Date.now()}`,
-      type: "teacher-note",
-      title: "Additional Requirements",
-      content: bilingualRequested
-        ? `Additional requirement applied: ${overlays.additionalInstructions}. Bilingual support has been added to the vocabulary section.`
-        : `Additional requirement applied: ${overlays.additionalInstructions}`,
-      isOverlay: true,
-      teacherOnly: false,
-    };
-    result.unshift(noteSection);
+    overlayNotes.push(`Additional requirement captured: ${overlays.additionalInstructions}`);
     appliedOverlays.push({
       type: "additional_instructions",
-      params: { instructions: overlays.additionalInstructions, bilingualRequested },
-      appliedAt: new Date().toISOString(),
+      params: { instructions: overlays.additionalInstructions },
+      appliedAt: nowIso(),
     });
   }
 
-  // ── Structural integrity check ───────────────────────────────────────────────
+  if (overlayNotes.length > 0) {
+    result.unshift({
+      id: `worksheet-overlay-note-${Date.now()}`,
+      type: "teacher-note",
+      title: "Overlay summary",
+      content: overlayNotes.map(line => `- ${line}`).join("\n"),
+      isOverlay: true,
+      teacherOnly: false,
+    });
+  }
+
   const finalStructuralHash = computeStructuralHash(result);
   const structurePreserved = finalStructuralHash === baseStructuralHash;
-
-  if (!structurePreserved) {
-    // This should never happen — overlays only add/annotate, never remove base sections
-    console.warn(
-      "[overlayEngine] Structural hash mismatch after overlays!",
-      { baseStructuralHash, finalStructuralHash }
-    );
-  }
 
   return {
     sections: result,
@@ -333,11 +386,6 @@ export function applyOverlays(
   };
 }
 
-/**
- * Extract the base structure from a sections array.
- * Returns an object with section IDs, types, and diagram slot IDs.
- * This is stored as base_structure_json on library entries.
- */
 export function extractBaseStructure(sections: WorksheetSection[]): {
   sectionIds: string[];
   sectionTypes: string[];
@@ -345,24 +393,20 @@ export function extractBaseStructure(sections: WorksheetSection[]): {
   questionIds: string[];
   structuralHash: string;
 } {
-  const baseSections = sections.filter(s => !s.isOverlay);
+  const baseSections = sections.filter(section => !section.isOverlay);
   return {
-    sectionIds: baseSections.map(s => s.id),
-    sectionTypes: baseSections.map(s => s.type),
+    sectionIds: baseSections.map(section => section.id),
+    sectionTypes: baseSections.map(section => section.type),
     diagramSlotIds: baseSections
-      .filter(s => s.imageUrl || s.assetRef || s.type?.includes("diagram"))
-      .map(s => s.id),
+      .filter(section => section.imageUrl || section.assetRef || DIAGRAM_TYPES.has(section.type))
+      .map(section => section.id),
     questionIds: baseSections
-      .filter(s => s.type?.startsWith("q-") || s.type?.startsWith("question"))
-      .map(s => s.id),
+      .filter(section => section.type.startsWith("q-") || QUESTION_TYPES.has(section.type))
+      .map(section => section.id),
     structuralHash: computeStructuralHash(baseSections),
   };
 }
 
-/**
- * Extract diagram slots from a sections array.
- * Returns an array of slot descriptors for the diagram_slots_json column.
- */
 export function extractDiagramSlots(sections: WorksheetSection[]): Array<{
   sectionId: string;
   slotType: string;
@@ -371,12 +415,12 @@ export function extractDiagramSlots(sections: WorksheetSection[]): Array<{
   required: boolean;
 }> {
   return sections
-    .filter(s => !s.isOverlay && (s.imageUrl || s.assetRef || s.type?.includes("diagram") || s.type === "q-label-diagram"))
-    .map(s => ({
-      sectionId: s.id,
-      slotType: s.type || "diagram",
-      assetRef: s.assetRef as string | undefined,
-      imageUrl: s.imageUrl as string | undefined,
+    .filter(section => !section.isOverlay && (section.imageUrl || section.assetRef || DIAGRAM_TYPES.has(section.type)))
+    .map(section => ({
+      sectionId: section.id,
+      slotType: section.type || "diagram",
+      assetRef: section.assetRef as string | undefined,
+      imageUrl: section.imageUrl as string | undefined,
       required: true,
     }));
 }
