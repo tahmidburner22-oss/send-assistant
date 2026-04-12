@@ -8,7 +8,7 @@ cmds = [
 ]
 
 [phases.build]
-cmds = ["PATH=$(npm prefix -g)/bin:$PATH pnpm build"]
+cmds = ["rm -rf dist", "PATH=$(npm prefix -g)/bin:$PATH pnpm build"]
 
 [start]
 cmd = "node dist/server/index.js"
