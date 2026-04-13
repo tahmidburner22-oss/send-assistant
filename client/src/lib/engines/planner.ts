@@ -62,7 +62,7 @@ export type QuestionType =
 export interface SectionPlan {
   id: string;
   title: string;
-  groupLabel: string; // e.g. "SECTION 1 — KNOWLEDGE CHECK"
+  groupLabel: string; // e.g. "SECTION 1 — RECALL"
   questionRange: [number, number]; // e.g. [1, 3]
   layoutFamilies: LayoutFamily[];
   questionTypes: QuestionType[];
@@ -156,7 +156,7 @@ const BASE_30MIN_PRIMARY: QuestionType[] = [
 
 /** Section definitions for secondary worksheets */
 const SECONDARY_SECTIONS = [
-  { id: "knowledge-check", title: "Knowledge Check", groupLabel: "SECTION 1 — KNOWLEDGE CHECK", qRange: [1, 3] as [number, number] },
+  { id: "knowledge-check", title: "Knowledge Check", groupLabel: "SECTION 1 — RECALL", qRange: [1, 3] as [number, number] },
   { id: "understanding", title: "Understanding", groupLabel: "SECTION 2 — UNDERSTANDING", qRange: [4, 6] as [number, number] },
   { id: "application", title: "Application & Analysis", groupLabel: "SECTION 3 — APPLICATION & ANALYSIS", qRange: [7, 9] as [number, number] },
 ];
