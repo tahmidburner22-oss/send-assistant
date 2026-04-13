@@ -3577,11 +3577,13 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
   }
 
   // Resolve SEND need ID from metadata (may be stored as sendNeedId or inferred from sendNeed label)
-  const sendNeedId = worksheet.metadata.sendNeedId || worksheet.metadata.sendNeed;
+  // Robust: handle cases where metadata is missing (e.g. from older history items)
+  const metadata = worksheet.metadata || {};
+  const sendNeedId = metadata.sendNeedId || metadata.sendNeed;
   const fmt = getSendFormatting(sendNeedId, textSize);
 
   // Detect primary (KS1/KS2: Reception – Year 6)
-  const yg = (worksheet.metadata.yearGroup || "").toLowerCase();
+  const yg = (metadata.yearGroup || "").toLowerCase();
   const isPrimary = /reception|year [1-6]\b|yr [1-6]\b|ks1|ks2|key stage 1|key stage 2/.test(yg);
   const yrNumMatch = yg.match(/(\d+)/);
   const yrNum = yrNumMatch ? parseInt(yrNumMatch[1]) : (isPrimary ? 5 : 8);
