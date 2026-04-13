@@ -15,6 +15,7 @@ import katex from "katex";
 import "katex/dist/katex.min.css";
 
 const LEGACY_SECTION_TYPE_ALIASES: Record<string, string> = {
+  // Legacy question type aliases
   "true-false": "q-true-false",
   "mcq": "q-mcq",
   "multiple-choice": "q-mcq",
@@ -25,6 +26,19 @@ const LEGACY_SECTION_TYPE_ALIASES: Record<string, string> = {
   "table-fill": "q-data-table",
   "data-table": "q-data-table",
   "label-diagram": "q-label-diagram",
+  // New question type aliases (from AI-generated worksheets)
+  "q-worked-example": "example",
+  "q-free-response": "q-extended",
+  "q-free-write": "q-extended",
+  "q-open-ended": "q-extended",
+  // Section type aliases
+  "learning-objective": "objective",
+  "learning-objectives": "objective",
+  "key-terms": "vocabulary",
+  "key-vocabulary": "vocabulary",
+  "section-heading": "section-header",
+  "section-divider": "section-header",
+  "section-break": "section-header",
 };
 
 function normalizeWorksheetSectionType(type: unknown): string {

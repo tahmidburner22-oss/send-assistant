@@ -3102,7 +3102,8 @@ export function validateDiagramSpec(spec: DiagramSpec): boolean {
  * Detects [[DIAGRAM:{...}]] markers in section content and returns the JSON spec.
  * Returns null if no diagram marker is found or if the spec fails validation.
  */
-export function extractDiagramSpec(content: string): DiagramSpec | null {
+export function extractDiagramSpec(content: string | null | undefined): DiagramSpec | null {
+  if (!content) return null;
   const match = content.match(/\[\[DIAGRAM:(\{[\s\S]*?\})\]\]/);
   if (!match) return null;
   try {
