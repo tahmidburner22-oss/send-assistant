@@ -31,6 +31,7 @@ router.get("/worksheets", requireAuth, async (req: Request, res: Response) => {
       title: r.title,
       subject: r.subject,
       topic: r.topic,
+      subtitle: r.subtitle,
       yearGroup: r.year_group,
       sendNeed: r.send_need,
       difficulty: r.difficulty,
@@ -62,16 +63,17 @@ router.get("/worksheets", requireAuth, async (req: Request, res: Response) => {
 
 router.post("/worksheets", requireAuth, async (req: Request, res: Response) => {
   try {
-    const { title: rawTitle, subject, topic, yearGroup, sendNeed, difficulty, examBoard, content, teacherContent, overlay, sections, metadata, sourceLibraryId, sourceCanonicalTopicKey } = req.body;
+    const { title: rawTitle, subtitle: rawSubtitle, subject, topic, yearGroup, sendNeed, difficulty, examBoard, content, teacherContent, overlay, sections, metadata, sourceLibraryId, sourceCanonicalTopicKey } = req.body;
     if (!rawTitle) return res.status(400).json({ error: "Title required" });
-    // Strip rogue markdown bold markers from title
+    // Strip rogue markdown bold markers from title and subtitle
     const title = typeof rawTitle === 'string' ? rawTitle.replace(/^\*{1,2}|\*{1,2}$/g, '').replace(/^_{1,2}|_{1,2}$/g, '').trim() : rawTitle;
+    const subtitle = typeof rawSubtitle === 'string' ? rawSubtitle.replace(/^\*{1,2}|\*{1,2}$/g, '').replace(/^_{1,2}|_{1,2}$/g, '').trim() : (rawSubtitle || null);
     console.log(`[POST /worksheets] title=${title} subject=${subject} yearGroup=${yearGroup} sections=${Array.isArray(sections) ? sections.length : 'none'}`);
     const id = uuidv4();
     const n = (v: any) => (v === undefined || v === null ? null : v);
-    await db.prepare(`INSERT INTO worksheets (id, school_id, created_by, title, subject, topic, year_group, send_need, difficulty, exam_board, content, teacher_content, overlay, metadata_json, source_library_id, source_canonical_topic_key)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
-      id, n(req.user!.schoolId), n(req.user!.id), n(title), n(subject), n(topic), n(yearGroup), n(sendNeed), n(difficulty), n(examBoard), n(content), n(teacherContent), n(overlay), metadata ? JSON.stringify(metadata) : null, n(sourceLibraryId), n(sourceCanonicalTopicKey)
+    await db.prepare(`INSERT INTO worksheets (id, school_id, created_by, title, subtitle, subject, topic, year_group, send_need, difficulty, exam_board, content, teacher_content, overlay, metadata_json, source_library_id, source_canonical_topic_key)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
+      id, n(req.user!.schoolId), n(req.user!.id), n(title), n(subtitle), n(subject), n(topic), n(yearGroup), n(sendNeed), n(difficulty), n(examBoard), n(content), n(teacherContent), n(overlay), metadata ? JSON.stringify(metadata) : null, n(sourceLibraryId), n(sourceCanonicalTopicKey)
     );
     console.log(`[POST /worksheets] worksheet inserted id=${id}`);
     // Save sections if provided
@@ -105,10 +107,10 @@ router.post("/worksheets", requireAuth, async (req: Request, res: Response) => {
 });
 
 router.put("/worksheets/:id", requireAuth, async (req: Request, res: Response) => {
-  const { rating, ratingLabel, overlay, content, teacherContent, sections, metadata, sourceLibraryId, sourceCanonicalTopicKey } = req.body;
+  const { title, subtitle, rating, ratingLabel, overlay, content, teacherContent, sections, metadata, sourceLibraryId, sourceCanonicalTopicKey } = req.body;
   // Use COALESCE for all fields so partial updates (e.g. rating-only) don't wipe other fields
-  await db.prepare("UPDATE worksheets SET rating=COALESCE(?, rating), rating_label=COALESCE(?, rating_label), overlay=COALESCE(?, overlay), content=COALESCE(?, content), teacher_content=COALESCE(?, teacher_content), metadata_json=COALESCE(?, metadata_json), source_library_id=COALESCE(?, source_library_id), source_canonical_topic_key=COALESCE(?, source_canonical_topic_key) WHERE id=? AND created_by=?")
-    .run(rating ?? null, ratingLabel ?? null, overlay ?? null, content ?? null, teacherContent ?? null, metadata ? JSON.stringify(metadata) : null, sourceLibraryId ?? null, sourceCanonicalTopicKey ?? null, req.params.id, req.user!.id);
+  await db.prepare("UPDATE worksheets SET title=COALESCE(?, title), subtitle=COALESCE(?, subtitle), rating=COALESCE(?, rating), rating_label=COALESCE(?, rating_label), overlay=COALESCE(?, overlay), content=COALESCE(?, content), teacher_content=COALESCE(?, teacher_content), metadata_json=COALESCE(?, metadata_json), source_library_id=COALESCE(?, source_library_id), source_canonical_topic_key=COALESCE(?, source_canonical_topic_key) WHERE id=? AND created_by=?")
+    .run(title ?? null, subtitle ?? null, rating ?? null, ratingLabel ?? null, overlay ?? null, content ?? null, teacherContent ?? null, metadata ? JSON.stringify(metadata) : null, sourceLibraryId ?? null, sourceCanonicalTopicKey ?? null, req.params.id, req.user!.id);
   // Update sections if provided
   if (Array.isArray(sections)) {
     await db.prepare("DELETE FROM worksheet_sections WHERE worksheet_id=?").run(req.params.id);
