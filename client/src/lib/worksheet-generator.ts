@@ -2150,7 +2150,7 @@ export function generateWorksheet(params: WorksheetParams): GeneratedWorksheet {
   });
 
   sections.push({
-    title: `SECTION 1 — KNOWLEDGE CHECK`,
+    title: `SECTION 1 — RECALL`,
     type: "guided",
     content: recallContent.join("\n\n─────\n\n"),
   });

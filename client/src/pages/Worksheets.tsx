@@ -174,6 +174,99 @@ function AnimatedProgressBar() {
   );
 }
 
+// ─── Teacher Key Auto-Generator ────────────────────────────────────────────
+// When a library entry has no stored teacher_sections, auto-generate a teacher
+// answer key from the question sections so every worksheet always has a Teacher Copy.
+function generateTeacherKeyFromSections(sections: any[]): any[] {
+  const SECTION_LABELS: Record<string, string> = {
+    'q-true-false': 'SECTION 1 \u2014 RECALL',
+    'q-mcq': 'SECTION 1 \u2014 RECALL',
+    'q-gap-fill': 'SECTION 1 \u2014 RECALL',
+    'q-ordering': 'SECTION 1 \u2014 RECALL',
+    'q-matching': 'SECTION 1 \u2014 RECALL',
+    'q-short-answer': 'SECTION 2 \u2014 UNDERSTANDING',
+    'q-extended': 'SECTION 3 \u2014 APPLICATION & ANALYSIS',
+    'q-free-response': 'SECTION 3 \u2014 APPLICATION & ANALYSIS',
+    'q-label-diagram': 'SECTION 2 \u2014 UNDERSTANDING',
+    'q-data-table': 'SECTION 2 \u2014 UNDERSTANDING',
+    'q-challenge': 'CHALLENGE',
+  };
+  const NORMALIZE: Record<string, string> = {
+    'true-false': 'q-true-false', 'mcq': 'q-mcq', 'multiple-choice': 'q-mcq',
+    'gap-fill': 'q-gap-fill', 'cloze': 'q-gap-fill', 'short-answer': 'q-short-answer',
+    'extended-answer': 'q-extended', 'q-free-response': 'q-extended',
+    'label-diagram': 'q-label-diagram', 'data-table': 'q-data-table',
+    'section-heading': 'section-header', 'section-divider': 'section-header',
+    'learning-objective': 'objective', 'key-terms': 'vocabulary',
+  };
+  const normalize = (t: string) => NORMALIZE[t] || t;
+
+  // Collect all question sections with their answers
+  const answerLines: string[] = [];
+  let qNum = 0;
+  let lastSection = '';
+  for (const s of sections) {
+    const type = normalize(s.type || '');
+    if (!SECTION_LABELS[type]) continue;
+    qNum++;
+    const sectionLabel = SECTION_LABELS[type];
+    if (sectionLabel !== lastSection) {
+      answerLines.push(`\n${sectionLabel}`);
+      lastSection = sectionLabel;
+    }
+    // Extract answer from structured data or content string
+    let answer = '';
+    const content = typeof s.content === 'string' ? s.content : '';
+    if (type === 'q-true-false') {
+      const stmts: any[] = s.statements || [];
+      if (stmts.length > 0) {
+        answer = stmts.map((st: any, i: number) => `  ${i + 1}. ${st.statement || st.text || ''} \u2192 ${st.answer || 'TRUE'}`).join('\n');
+      } else {
+        // Parse from content string: lines with " → TRUE/FALSE"
+        const lines = content.split('\n').filter((l: string) => /\u2192|TRUE|FALSE/i.test(l));
+        answer = lines.join('\n') || '(See mark scheme)';
+      }
+    } else if (type === 'q-mcq') {
+      const qs: any[] = s.questions || [];
+      if (qs.length > 0) {
+        answer = qs.map((q: any, i: number) => `  ${i + 1}. ${q.correct_answer || q.answer || q.correct || ''}`).join('\n');
+      } else {
+        answer = '(See mark scheme)';
+      }
+    } else if (type === 'q-gap-fill') {
+      const answers: string[] = s.answers || s.word_bank || [];
+      answer = answers.length > 0 ? answers.join(', ') : '(See mark scheme)';
+    } else if (type === 'q-short-answer' || type === 'q-extended') {
+      const qs: any[] = s.questions || [];
+      if (qs.length > 0) {
+        answer = qs.map((q: any, i: number) => `  ${i + 1}. ${q.answer || q.a || q.model_answer || ''}`).join('\n');
+      } else {
+        // Try to extract answer from content
+        const ansMatch = content.match(/Answer:\s*([^\n]+)/i);
+        answer = ansMatch ? ansMatch[1].trim() : '(Model answer — see teacher notes)';
+      }
+    } else {
+      answer = '(See mark scheme)';
+    }
+    const marks = s.marks ? ` [${s.marks}m]` : '';
+    const title = (typeof s.title === 'string' ? s.title : `Question ${qNum}`).replace(/^Question\s*/i, 'Q');
+    answerLines.push(`${title}${marks}\n${answer}`);
+  }
+
+  if (answerLines.length === 0) return [];
+
+  return [{
+    id: 'teacher-answer-key',
+    type: 'mark-scheme',
+    title: 'Answer Key',
+    teacherOnly: true,
+    content: [
+      'Marking guidance: award marks as shown. Accept equivalent correct answers.',
+      ...answerLines,
+    ].join('\n'),
+  }];
+}
+
 // ─── Library Section Normaliser ─────────────────────────────────────────────
 // Converts structured library sections (statements, sentences, questions, etc.)
 // into the text-based `content` string that WorksheetRenderer expects.
@@ -1060,8 +1153,13 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
               }
             }
 
+            const rawTeacherSections = libData.teacherSections || [];
+            // Auto-generate teacher key from question sections when library has no teacher sections stored
+            const autoTeacherSections: any[] = rawTeacherSections.length === 0
+              ? generateTeacherKeyFromSections(finalSections)
+              : rawTeacherSections;
             const libTeacherSectionsMain = normaliseLibrarySections(
-              (libData.teacherSections || []).map((s: any) => ({ ...s, teacherOnly: true }))
+              autoTeacherSections.map((s: any) => ({ ...s, teacherOnly: true }))
             );
             const sectionsToUse = [...finalSections, ...libTeacherSectionsMain];
             const strippedTitle = (libData.title || entry.title || "")
@@ -2092,8 +2190,12 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
               }
             }
 
+            const rawNlTeacherSections = libData.teacherSections || [];
+            const autoNlTeacherSections: any[] = rawNlTeacherSections.length === 0
+              ? generateTeacherKeyFromSections(finalSections)
+              : rawNlTeacherSections;
             const libTeacherSections = normaliseLibrarySections(
-              (libData.teacherSections || []).map((s: any) => ({ ...s, teacherOnly: true }))
+              autoNlTeacherSections.map((s: any) => ({ ...s, teacherOnly: true }))
             );
             const strippedNlTitle = (libData.title || entry.title || "")
               .replace(/\s*[—–-]\s*(Base Tier|Foundation Tier|Higher Tier|Standard Tier|SEND Tier|Scaffolded Tier|Access Tier|Extended Tier|Mixed Tier)[^)]*\)?/gi, "")
@@ -2312,8 +2414,12 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
       if (switchTierResult) {
         // ── Library version found — use it directly, then replay reading-level adjustments if needed ──
         let libSections = normaliseLibrarySections(switchTierResult.sections || []);
+        const rawSwitchTeacherSections = switchTierResult.teacherSections || [];
+        const autoSwitchTeacherSections: any[] = rawSwitchTeacherSections.length === 0
+          ? generateTeacherKeyFromSections(libSections)
+          : rawSwitchTeacherSections;
         const libTeacherSections = normaliseLibrarySections(
-          (switchTierResult.teacherSections || []).map((s: any) => ({ ...s, teacherOnly: true }))
+          autoSwitchTeacherSections.map((s: any) => ({ ...s, teacherOnly: true }))
         );
         let readingAdjusted = false;
         if (readingAgeToApply) {

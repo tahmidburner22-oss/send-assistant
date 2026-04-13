@@ -2940,6 +2940,28 @@ function SelfReflectionSection({ content, fmt, overlayColor = "white" }: { conte
 
     const etMatch = content.match(/EXIT_TICKET:\s*([^\n]+)/i);
     if (etMatch) exitTicketText = etMatch[1].trim();
+  } else if (/^A\.\s*How confident|\| Not Yet \| Getting There \| Confident/i.test(content)) {
+    // Library format: A. How confident... table rows | topic | Not Yet | Getting There | Confident
+    // B. Written reflection prompts
+    // Exit Ticket: ...
+    const lines = content.split("\n");
+    let inSectionA = false;
+    let inSectionB = false;
+    for (const line of lines) {
+      const t = line.trim();
+      if (!t) continue;
+      if (/^A\.\s*How confident/i.test(t)) { inSectionA = true; inSectionB = false; continue; }
+      if (/^B\.\s*Written reflection/i.test(t)) { inSectionA = false; inSectionB = true; continue; }
+      if (/^Exit Ticket:/i.test(t)) { exitTicketText = t.replace(/^Exit Ticket:\s*/i, "").trim(); inSectionA = false; inSectionB = false; continue; }
+      if (inSectionA) {
+        // Lines like: "Series vs Parallel circuits | Not Yet | Getting There | Confident"
+        const topicMatch = t.match(/^(.+?)\s*\|\s*Not Yet/i);
+        if (topicMatch) topics.push(topicMatch[1].trim());
+        else if (!/Not Yet|Getting There|Confident/i.test(t)) topics.push(t.replace(/^[•\-\*\d.)]\s*/, "").trim());
+      } else if (inSectionB) {
+        reflectionPrompts.push(t.replace(/^[•\-\*\d.)]\s*/, "").trim());
+      }
+    }
   } else {
     // Legacy parser: lines without Q: or > prefix are topic rows
     const lines = content.split("\n").filter(l => l.trim());
@@ -3062,41 +3084,83 @@ function SentenceStartersSection({ content, fmt, overlayColor = "white" }: { con
 function MarkSchemeSection({ content, fmt }: { content: string; fmt: ReturnType<typeof getSendFormatting> }) {
   const { fontSize: textSize, fontFamily } = fmt;
   const lines = content.split("\n");
-  const blocks: { header: string; answers: string[] }[] = [];
-  let current: { header: string; answers: string[] } | null = null;
 
+  // Parse into typed entries: section-header, guidance, question, answer-line
+  type MsEntry =
+    | { kind: 'guidance'; text: string }
+    | { kind: 'section'; text: string }
+    | { kind: 'question'; qLabel: string; marks: string; rest: string }
+    | { kind: 'answer'; text: string };
+
+  const entries: MsEntry[] = [];
   for (const raw of lines) {
     const line = raw.trim();
     if (!line) continue;
-    // Detect question headers: Q1, Q2, Q1 —, Q1:, Challenge Question, etc.
-    if (/^(Q\d+|Challenge Question|Challenge)/i.test(line) || /^[A-Z][A-Z ]+\s*[—\-:]/.test(line)) {
-      if (current) blocks.push(current);
-      current = { header: line, answers: [] };
-    } else {
-      if (!current) {
-        // Content before first question header (e.g. title line)
-        current = { header: line, answers: [] };
-      } else {
-        current.answers.push(line);
-      }
+    // Section header: "SECTION 1 — RECALL", "CHALLENGE", etc.
+    if (/^SECTION\s+\d|^CHALLENGE/i.test(line) && !/^Q\d/.test(line)) {
+      entries.push({ kind: 'section', text: line });
+      continue;
     }
+    // Guidance line (first line starting with "Marking guidance")
+    if (/^Marking guidance/i.test(line)) {
+      entries.push({ kind: 'guidance', text: line });
+      continue;
+    }
+    // Question header: Q1, Q2, Q1., Q1:, Q1 [2m], Challenge Question, etc.
+    const qMatch = line.match(/^(Q\d+|Challenge Question|Challenge)\s*[.:\-—]?\s*(.*?)\s*(\[\d+m?\])?\s*$/i);
+    if (qMatch) {
+      entries.push({ kind: 'question', qLabel: qMatch[1], marks: qMatch[3] || '', rest: qMatch[2] || '' });
+      continue;
+    }
+    // Everything else is an answer line
+    entries.push({ kind: 'answer', text: line });
   }
-  if (current) blocks.push(current);
 
   return (
     <div style={{ padding: "4px 0" }}>
-      {blocks.map((block, bi) => (
-        <div key={bi} style={{ marginBottom: bi < blocks.length - 1 ? "12px" : "0", borderBottom: bi < blocks.length - 1 ? "0.5px solid #f0c0c0" : "none", paddingBottom: bi < blocks.length - 1 ? "10px" : "0" }}>
-          <div style={{ fontSize: `${textSize - 0.5}px`, fontWeight: 700, color: "#8b1a1a", fontFamily, marginBottom: "4px", letterSpacing: "0.02em" }}>
-            {block.header}
-          </div>
-          {block.answers.map((ans, ai) => (
-            <div key={ai} style={{ fontSize: `${textSize - 1}px`, color: "#5a0f0f", fontFamily, lineHeight: "1.6", paddingLeft: "8px" }}>
-              {ans}
+      {entries.map((entry, ei) => {
+        if (entry.kind === 'guidance') {
+          return (
+            <div key={ei} style={{ fontSize: `${textSize - 2}px`, color: "#9b1c1c", fontFamily, fontStyle: "italic", marginBottom: "12px" }}>
+              {entry.text}
             </div>
-          ))}
-        </div>
-      ))}
+          );
+        }
+        if (entry.kind === 'section') {
+          return (
+            <div key={ei} style={{ marginTop: ei > 0 ? "16px" : "0", marginBottom: "8px" }}>
+              <div style={{ borderTop: "1.5px solid #2a7f8f", marginBottom: "4px" }} />
+              <div style={{ fontSize: "8.5px", fontWeight: 700, color: "#2a7f8f", fontFamily, textTransform: "uppercase", letterSpacing: "0.1em" }}>
+                {entry.text}
+              </div>
+              <div style={{ borderTop: "0.5px solid #d1d5db", marginTop: "4px" }} />
+            </div>
+          );
+        }
+        if (entry.kind === 'question') {
+          return (
+            <div key={ei} style={{ display: "flex", alignItems: "flex-start", gap: "8px", marginBottom: "4px", marginTop: "10px" }}>
+              <div style={{ minWidth: "28px", background: "#7f1d1d", color: "#fff", fontSize: "10px", fontWeight: 700, fontFamily, padding: "2px 5px", textAlign: "center" }}>
+                {entry.qLabel}
+              </div>
+              <div style={{ flex: 1, fontSize: `${textSize - 1}px`, color: "#1a1a1a", fontFamily }}>
+                {entry.rest}
+              </div>
+              {entry.marks && (
+                <div style={{ fontSize: "10px", fontWeight: 700, color: "#8b1a1a", fontFamily, whiteSpace: "nowrap" }}>
+                  {entry.marks}
+                </div>
+              )}
+            </div>
+          );
+        }
+        // answer line
+        return (
+          <div key={ei} style={{ fontSize: `${textSize - 1}px`, color: "#374151", fontFamily, lineHeight: "1.6", paddingLeft: "36px", marginBottom: "2px" }}>
+            {entry.text}
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -4477,15 +4541,15 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
         })();
         const getGroupByQNum = (qn: number | null, type: string): { label: string; qStart: number; qEnd: number } | undefined => {
           if (qn !== null) {
-            if (qn >= 1 && qn <= 3) return { label: "SECTION 1 — KNOWLEDGE CHECK", qStart: 1, qEnd: 3 };
+            if (qn >= 1 && qn <= 3) return { label: "SECTION 1 — RECALL", qStart: 1, qEnd: 3 };
             if (qn >= 4 && qn <= 6) return { label: "SECTION 2 — UNDERSTANDING", qStart: 4, qEnd: 6 };
             if (qn >= 7 && qn <= 9) return { label: "SECTION 3 — APPLICATION & ANALYSIS", qStart: 7, qEnd: 9 };
           }
           // Fallback by type
           const QUESTION_GROUP_MAP: Record<string, { label: string; qStart: number; qEnd: number }> = {
-            "q-true-false":  { label: "SECTION 1 — KNOWLEDGE CHECK",           qStart: 1, qEnd: 3 },
-            "q-mcq":         { label: "SECTION 1 — KNOWLEDGE CHECK",           qStart: 1, qEnd: 3 },
-            "q-gap-fill":    { label: "SECTION 1 — KNOWLEDGE CHECK",           qStart: 1, qEnd: 3 },
+            "q-true-false":  { label: "SECTION 1 — RECALL",           qStart: 1, qEnd: 3 },
+            "q-mcq":         { label: "SECTION 1 — RECALL",           qStart: 1, qEnd: 3 },
+            "q-gap-fill":    { label: "SECTION 1 — RECALL",           qStart: 1, qEnd: 3 },
             "q-short-answer":{ label: "SECTION 2 — UNDERSTANDING",           qStart: 4, qEnd: 6 },
             "q-extended":    { label: "SECTION 3 — APPLICATION & ANALYSIS",  qStart: 7, qEnd: 9 },
             "q-circuit":     { label: "SECTION 3 — APPLICATION & ANALYSIS",  qStart: 7, qEnd: 9 },
@@ -4493,8 +4557,8 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
             "q-graph":       { label: "SECTION 3 — APPLICATION & ANALYSIS",  qStart: 7, qEnd: 9 },
             "q-data-table":  { label: "SECTION 2 — UNDERSTANDING",           qStart: 4, qEnd: 6 },
             "q-label-diagram":{ label: "SECTION 2 — UNDERSTANDING",          qStart: 4, qEnd: 6 },
-            "q-ordering":    { label: "SECTION 1 — KNOWLEDGE CHECK",           qStart: 1, qEnd: 3 },
-            "q-matching":    { label: "SECTION 1 — KNOWLEDGE CHECK",           qStart: 1, qEnd: 3 },
+            "q-ordering":    { label: "SECTION 1 — RECALL",           qStart: 1, qEnd: 3 },
+            "q-matching":    { label: "SECTION 1 — RECALL",           qStart: 1, qEnd: 3 },
             "q-challenge":   { label: "CHALLENGE QUESTION",                    qStart: 10, qEnd: 12 },
           };
           return QUESTION_GROUP_MAP[type];
@@ -4503,7 +4567,19 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
         const myGroupLabel = groupInfo?.label;
         // Show the group divider only before the FIRST question of that group in the worksheet
         // Use question number from title to determine group membership
-        const isFirstOfGroupSection = myGroupLabel && !worksheet.sections.slice(0, i).some((s: any) => {
+        // Also suppress auto-inject if the worksheet already has an explicit section-header covering this group
+        const hasExplicitSectionHeader = myGroupLabel && worksheet.sections.some((s: any) => {
+          const normType = normalizeWorksheetSectionType(s.type);
+          if (normType !== "section-header") return false;
+          const headerTitle = (typeof s.title === "string" ? s.title : String(s.title || "")).toUpperCase();
+          const headerContent = (typeof s.content === "string" ? s.content : String(s.content || "")).toUpperCase();
+          // Match if the section-header title/content contains the group name
+          if (myGroupLabel === "SECTION 1 \u2014 RECALL") return /SECTION\s*1|RECALL/i.test(headerTitle + headerContent);
+          if (myGroupLabel === "SECTION 2 \u2014 UNDERSTANDING") return /SECTION\s*2|UNDERSTANDING/i.test(headerTitle + headerContent);
+          if (myGroupLabel === "SECTION 3 \u2014 APPLICATION") return /SECTION\s*3|APPLICATION/i.test(headerTitle + headerContent);
+          return false;
+        });
+        const isFirstOfGroupSection = !hasExplicitSectionHeader && myGroupLabel && !worksheet.sections.slice(0, i).some((s: any) => {
           const prevQNum = (() => {
             const t = typeof s.title === "string" ? s.title : "";
             const m = t.match(/Q(\d+)/i);
@@ -4518,8 +4594,8 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
         const SECTION_GROUP_LABELS: Record<string, string> = {
           objective: "LEARNING OBJECTIVE",
           vocabulary: "KEY VOCABULARY",
-          starter: "SECTION 1 — KNOWLEDGE CHECK",
-          guided: "SECTION 1 — KNOWLEDGE CHECK",
+          starter: "SECTION 1 — RECALL",
+          guided: "SECTION 1 — RECALL",
           independent: "SECTION 3 — APPLICATION & ANALYSIS",
           challenge: "CHALLENGE QUESTION",
           "self-reflection": "SELF REFLECTION",
@@ -4590,8 +4666,42 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
         const questionSectionsBefore = worksheet.sections.slice(0, i).filter((s: any) => allQuestionTypes.has(normalizeWorksheetSectionType(s.type))).length;
         const questionNumber = badgeTitleQNum > 0 ? badgeTitleQNum : questionSectionsBefore + 1;
 
+        // Detect if this is the FIRST teacher section in the worksheet (to show the crimson page header)
+        const isFirstTeacherSection = isTeacherSection && !worksheet.sections.slice(0, i).some((s: any) => {
+          const nt = normalizeWorksheetSectionType(s.type);
+          return s.teacherOnly || nt === 'teacher-notes' || nt === 'mark-scheme' || nt === 'answers';
+        });
         return (
           <React.Fragment key={i}>
+          {/* ── TEACHER COPY — ANSWER KEY full-width crimson page header ── */}
+          {isFirstTeacherSection && (
+            <div style={{
+              marginTop: "32px",
+              marginBottom: "20px",
+              pageBreakBefore: "always",
+              breakBefore: "page",
+            }}>
+              <div style={{
+                background: "#7f1d1d",
+                color: "#ffffff",
+                padding: "14px 20px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                borderRadius: "0",
+              }}>
+                <div style={{ fontSize: "16px", fontWeight: 800, fontFamily: fmt.fontFamily, letterSpacing: "0.04em", textTransform: "uppercase" }}>
+                  TEACHER COPY — ANSWER KEY
+                </div>
+                <div style={{ fontSize: "10px", fontStyle: "italic", fontFamily: fmt.fontFamily, opacity: 0.85 }}>
+                  Not for Student Distribution
+                </div>
+              </div>
+              <div style={{ background: "#fef2f2", padding: "8px 20px", borderLeft: "4px solid #7f1d1d", fontSize: "10px", color: "#7f1d1d", fontFamily: fmt.fontFamily, fontStyle: "italic" }}>
+                Marking guidance: award marks as indicated. Accept equivalent correct answers unless otherwise stated.
+              </div>
+            </div>
+          )}
           {/* ── Section group divider: shown before the first question of each group ── */}
           {isFirstOfGroupSection && groupInfo && (
             <div style={{
