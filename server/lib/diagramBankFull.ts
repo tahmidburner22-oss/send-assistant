@@ -56,7 +56,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ══════════════════════════════════════════════════════════════════════════
   {
     key: "animal_cell",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/48/Animal_cell_structure_en.svg/960px-Animal_cell_structure_en.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Animal Cell Structure",
     attribution: "LadyofHats, " + WM,
     license: PD,
@@ -64,7 +64,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "plant_cell",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/Plant_cell_structure-en.svg/960px-Plant_cell_structure-en.svg.png",
+    url: "/diagrams/plant-cell.png",
     label: "Plant Cell Structure",
     attribution: "LadyofHats, " + WM,
     license: PD,
@@ -72,7 +72,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "cell_membrane",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/da/Cell_membrane_detailed_diagram_en.svg/960px-Cell_membrane_detailed_diagram_en.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Cell Membrane (Phospholipid Bilayer)",
     attribution: "LadyofHats, " + WM,
     license: PD,
@@ -80,7 +80,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "prokaryotic_cell",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Average_prokaryote_cell-_en.svg/960px-Average_prokaryote_cell-_en.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Prokaryotic Cell Structure",
     attribution: "Mariana Ruiz LadyofHats, " + WM,
     license: PD,
@@ -88,7 +88,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "mitosis",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Animal_cell_cycle-en.svg/960px-Animal_cell_cycle-en.svg.png",
+    url: "/diagrams/mitosis.png",
     label: "Mitosis — Cell Division Stages",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -96,7 +96,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "meiosis",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/96/Meiosis_Overview_new.svg/960px-Meiosis_Overview_new.svg.png",
+    url: "/diagrams/mitosis.png",
     label: "Meiosis Overview",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -104,7 +104,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "osmosis",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Osmosis_diagram.svg/960px-Osmosis_diagram.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Osmosis",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -112,7 +112,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "diffusion",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/Diffusion.svg/960px-Diffusion.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Diffusion",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -120,7 +120,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "active_transport",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/da/Cell_membrane_detailed_diagram_en.svg/640px-Cell_membrane_detailed_diagram_en.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Active Transport",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -132,7 +132,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ══════════════════════════════════════════════════════════════════════════
   {
     key: "heart",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Diagram_of_the_human_heart_%28multilingual%29.svg/640px-Diagram_of_the_human_heart_%28multilingual%29.svg.png",
+    url: "/diagrams/human-heart.png",
     label: "Human Heart Diagram",
     attribution: "Wapcaplet, " + WM,
     license: CC_BY_SA_3,
@@ -140,7 +140,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "circulatory_system",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Circulatory_System_en.svg/500px-Circulatory_System_en.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Human Circulatory System",
     attribution: "Mariana Ruiz LadyofHats, " + WM,
     license: PD,
@@ -148,7 +148,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "lungs_respiratory",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Respiratory_system_complete_en.svg/500px-Respiratory_system_complete_en.svg.png",
+    url: "/diagrams/respiratory-system.png",
     label: "Human Respiratory System",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -156,7 +156,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "alveoli",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Alveolus_diagram.svg/960px-Alveolus_diagram.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Alveolus — Gas Exchange",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -164,7 +164,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "digestive_system",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/Digestive_system_diagram_en.svg/500px-Digestive_system_diagram_en.svg.png",
+    url: "/diagrams/digestive-system.png",
     label: "Human Digestive System",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -172,7 +172,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "nervous_system",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Nervous_system_diagram-en.svg/330px-Nervous_system_diagram-en.svg.png",
+    url: "/diagrams/neuron.png",
     label: "Human Nervous System",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -180,7 +180,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "neuron",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/Blausen_0657_MultipolarNeuron.png/960px-Blausen_0657_MultipolarNeuron.png",
+    url: "/diagrams/neuron.png",
     label: "Neuron Structure",
     attribution: "BruceBlaus, " + WM,
     license: CC_BY_3,
@@ -188,7 +188,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "reflex_arc",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/Reflex_arc_diagram.svg/960px-Reflex_arc_diagram.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Reflex Arc",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -196,7 +196,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "skeleton",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/Human_skeleton_front_en.svg/500px-Human_skeleton_front_en.svg.png",
+    url: "/diagrams/human-skeleton.png",
     label: "Human Skeleton",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -204,7 +204,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "muscle_types",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/00/Muscle_tissues.png/960px-Muscle_tissues.png",
+    url: "/diagrams/animal-cell.png",
     label: "Types of Muscle Tissue",
     attribution: "OpenStax, " + WM,
     license: CC_BY_4,
@@ -212,7 +212,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "eye",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Schematic_diagram_of_the_human_eye_en.svg/960px-Schematic_diagram_of_the_human_eye_en.svg.png",
+    url: "/diagrams/human-eye.png",
     label: "Human Eye Structure",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -220,7 +220,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "ear",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d2/Anatomy_of_the_Human_Ear.svg/960px-Anatomy_of_the_Human_Ear.svg.png",
+    url: "/diagrams/human-ear.png",
     label: "Human Ear Structure",
     attribution: "Chittka L, Brockmann, " + WM,
     license: "CC BY 2.5",
@@ -228,7 +228,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "kidney",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/Kidney_Cross_Section.svg/960px-Kidney_Cross_Section.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Kidney Cross-Section",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -236,7 +236,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "nephron",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Kidney_nephron_molar_transport_diagram.svg/960px-Kidney_nephron_molar_transport_diagram.svg.png",
+    url: "/diagrams/ph-scale.png",
     label: "Nephron — Kidney Filtration",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -244,7 +244,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "brain",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Brain_diagram_fr.svg/960px-Brain_diagram_fr.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Human Brain Diagram",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -252,7 +252,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "blood_cells",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f7/Blausen_0425_Formed_Elements.png/960px-Blausen_0425_Formed_Elements.png",
+    url: "/diagrams/animal-cell.png",
     label: "Blood Cells",
     attribution: "BruceBlaus, " + WM,
     license: CC_BY_3,
@@ -260,7 +260,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "endocrine_system",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Endocrine_English.svg/640px-Endocrine_English.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Endocrine System — Hormones",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -268,7 +268,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "homeostasis_blood_glucose",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Glucose_Homeostasis.png/960px-Glucose_Homeostasis.png",
+    url: "/diagrams/animal-cell.png",
     label: "Blood Glucose Homeostasis",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -276,7 +276,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "teeth_types",
-    url: "https://upload.wikimedia.org/wikipedia/commons/d/dc/Teeth_types_colored.png",
+    url: "/diagrams/animal-cell.png",
     label: "Types of Teeth",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -284,7 +284,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "skin_structure",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d6/Skin_layers.png/960px-Skin_layers.png",
+    url: "/diagrams/animal-cell.png",
     label: "Skin Structure",
     attribution: "Don Bliss, National Cancer Institute, " + WM,
     license: PD,
@@ -296,7 +296,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ══════════════════════════════════════════════════════════════════════════
   {
     key: "dna_structure",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/DNA_Structure%2BKey%2BLabelled.pn_NoBB.png/500px-DNA_Structure%2BKey%2BLabelled.pn_NoBB.png",
+    url: "/diagrams/dna-structure.png",
     label: "DNA Double Helix Structure",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -304,7 +304,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "dna_replication",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/DNA_replication_en.svg/960px-DNA_replication_en.svg.png",
+    url: "/diagrams/dna-structure.png",
     label: "DNA Replication",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -312,7 +312,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "protein_synthesis",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/MRNA-interaction.png/960px-MRNA-interaction.png",
+    url: "/diagrams/animal-cell.png",
     label: "Protein Synthesis — Transcription and Translation",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -320,7 +320,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "mendelian_genetics",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Punnett_square_mendel_flowers.svg/960px-Punnett_square_mendel_flowers.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Punnett Square — Mendelian Genetics",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -328,7 +328,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "natural_selection",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Mutation_and_selection_diagram.svg/960px-Mutation_and_selection_diagram.svg.png",
+    url: "/diagrams/natural-selection.png",
     label: "Natural Selection",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -336,7 +336,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "evolution_tree",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Darwin_Tree_1837.png/500px-Darwin_Tree_1837.png",
+    url: "/diagrams/natural-selection.png",
     label: "Darwin's Tree of Life",
     attribution: "Charles Darwin, " + WM,
     license: PD,
@@ -344,7 +344,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "chromosome_karyotype",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Karyotype.png/960px-Karyotype.png",
+    url: "/diagrams/animal-cell.png",
     label: "Human Karyotype — Chromosomes",
     attribution: "National Human Genome Research Institute, " + WM,
     license: PD,
@@ -356,7 +356,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ══════════════════════════════════════════════════════════════════════════
   {
     key: "photosynthesis",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Photosynthesis_en.svg/960px-Photosynthesis_en.svg.png",
+    url: "/diagrams/photosynthesis.png",
     label: "Photosynthesis Process",
     attribution: "At09kg, " + WM,
     license: CC_BY_SA_3,
@@ -364,7 +364,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "leaf_structure",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Leaf_Structure.svg/960px-Leaf_Structure.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Leaf Structure (Cross-Section)",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -372,7 +372,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "flower_structure",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Mature_flower_diagram.svg/960px-Mature_flower_diagram.svg.png",
+    url: "/diagrams/flower-structure.png",
     label: "Flower Structure",
     attribution: "Mariana Ruiz LadyofHats, " + WM,
     license: PD,
@@ -380,7 +380,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "plant_transport",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Xylem_and_phloem.svg/640px-Xylem_and_phloem.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Xylem and Phloem — Plant Transport",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -388,7 +388,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "food_chain",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/71/FoodChain.svg/960px-FoodChain.svg.png",
+    url: "/diagrams/food-chain.png",
     label: "Food Chain",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -396,7 +396,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "food_web",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/FoodWeb.svg/640px-FoodWeb.svg.png",
+    url: "/diagrams/food-web.png",
     label: "Food Web — Habitats and Ecosystems",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -404,7 +404,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "carbon_cycle",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Carbon_cycle-cute_diagram.svg/960px-Carbon_cycle-cute_diagram.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Carbon Cycle",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -412,7 +412,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "nitrogen_cycle",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b2/Nitrogen_Cycle.svg/960px-Nitrogen_Cycle.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Nitrogen Cycle",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -420,7 +420,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "water_cycle",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Water_cycle_complete.png/960px-Water_cycle_complete.png",
+    url: "/diagrams/water-cycle.png",
     label: "Water Cycle",
     attribution: "USGS, " + WM,
     license: PD,
@@ -428,7 +428,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "classification_living_things",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Biological_classification_L_Pengo_vflip.svg/640px-Biological_classification_L_Pengo_vflip.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Classification of Living Things",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -436,7 +436,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "life_cycle_butterfly",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/Butterfly_Life_Cycle_Chart%2C_Metamorphosis_Lab_in_the_Grand_Atrium%2C_Franklin_Park_Conservatory%2C_Columbus%2C_Ohio.jpg/960px-Butterfly_Life_Cycle_Chart%2C_Metamorphosis_Lab_in_the_Grand_Atrium%2C_Franklin_Park_Conservatory%2C_Columbus%2C_Ohio.jpg",
+    url: "/diagrams/butterfly-lifecycle.png",
     label: "Life Cycle of a Butterfly",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -444,7 +444,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "life_cycle_frog",
-    url: "https://upload.wikimedia.org/wikipedia/commons/a/ae/Metamorphosis_frog_Meyers.png",
+    url: "/diagrams/butterfly-lifecycle.png",
     label: "Life Cycle of a Frog",
     attribution: WM,
     license: PD,
@@ -452,7 +452,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "enzyme",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Induced_fit_diagram.svg/960px-Induced_fit_diagram.svg.png",
+    url: "/diagrams/enzyme-activity.png",
     label: "Enzyme Action (Lock and Key / Induced Fit)",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -460,7 +460,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "respiration_aerobic",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Cellular_respiration.svg/640px-Cellular_respiration.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Cellular Respiration",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -468,7 +468,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "krebs_cycle",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/Citric_acid_cycle_with_aconitate_2.svg/640px-Citric_acid_cycle_with_aconitate_2.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Krebs Cycle (Citric Acid Cycle)",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -476,7 +476,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "biomes_world",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Vegetation.png/960px-Vegetation.png",
+    url: "/diagrams/world-biomes.png",
     label: "World Biomes Map",
     attribution: "USGS, " + WM,
     license: PD,
@@ -484,7 +484,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "tropical_rainforest",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Rainforest_layers.png/640px-Rainforest_layers.png",
+    url: "/diagrams/animal-cell.png",
     label: "Tropical Rainforest Layers",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -496,7 +496,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ══════════════════════════════════════════════════════════════════════════
   {
     key: "immune_system",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Blausen_0624_LymphaticSystem_Female.png/640px-Blausen_0624_LymphaticSystem_Female.png",
+    url: "/diagrams/animal-cell.png",
     label: "Immune / Lymphatic System",
     attribution: "BruceBlaus, " + WM,
     license: CC_BY_3,
@@ -504,7 +504,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "virus_structure",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Virus_diagram.svg/640px-Virus_diagram.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Virus Structure",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -512,7 +512,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "bacteria_structure",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/32/Prokaryote_cell.svg/640px-Prokaryote_cell.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Bacteria Cell Structure",
     attribution: "Mariana Ruiz LadyofHats, " + WM,
     license: PD,
@@ -524,7 +524,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ══════════════════════════════════════════════════════════════════════════
   {
     key: "atom_structure",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Helium_atom_QM.svg/960px-Helium_atom_QM.svg.png",
+    url: "/diagrams/atomic-structure.png",
     label: "Atomic Structure (Bohr Model)",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -532,7 +532,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "periodic_table",
-    url: "https://upload.wikimedia.org/wikipedia/commons/b/b6/PTable_structure.png",
+    url: "/diagrams/periodic-table.png",
     label: "Periodic Table Structure",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -540,7 +540,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "periodic_table_full",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Simple_Periodic_Table_Chart-en.svg/960px-Simple_Periodic_Table_Chart-en.svg.png",
+    url: "/diagrams/periodic-table.png",
     label: "Full Periodic Table of Elements",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -548,7 +548,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "ionic_bonding",
-    url: "https://upload.wikimedia.org/wikipedia/commons/a/a8/NaF.gif",
+    url: "/diagrams/ionic-bonding.png",
     label: "Ionic Bonding",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -556,7 +556,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "covalent_bonding",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/19/Covalent_bond_hydrogen.svg/960px-Covalent_bond_hydrogen.svg.png",
+    url: "/diagrams/covalent-bonding.png",
     label: "Covalent Bonding",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -564,7 +564,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "metallic_bonding",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d9/Metallic_bond.svg/640px-Metallic_bond.svg.png",
+    url: "/diagrams/metallic-bonding.png",
     label: "Metallic Bonding",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -572,7 +572,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "states_of_matter",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Solid_liquid_gas.svg/960px-Solid_liquid_gas.svg.png",
+    url: "/diagrams/states-of-matter.png",
     label: "States of Matter",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -580,7 +580,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "particle_model",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/Particle_model_of_matter.svg/640px-Particle_model_of_matter.svg.png",
+    url: "/diagrams/states-particles.png",
     label: "Particle Model of Matter",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -588,7 +588,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "chromatography",
-    url: "https://upload.wikimedia.org/wikipedia/commons/0/0e/Chromatography_of_chlorophyll_-_Step_4.jpg",
+    url: "/diagrams/distillation.png",
     label: "Paper Chromatography",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -596,7 +596,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "distillation",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/Simple_distillation_apparatus.svg/960px-Simple_distillation_apparatus.svg.png",
+    url: "/diagrams/distillation.png",
     label: "Simple Distillation Apparatus",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -604,7 +604,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "filtration",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Filtration_diagram.svg/640px-Filtration_diagram.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Filtration",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -612,7 +612,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "ph_scale",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/PH_scale.svg/960px-PH_scale.svg.png",
+    url: "/diagrams/ph-scale.png",
     label: "pH Scale",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -620,7 +620,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "electrolysis",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/Electrolysis_of_water_with_diagram.png/960px-Electrolysis_of_water_with_diagram.png",
+    url: "/diagrams/electrolysis.png",
     label: "Electrolysis",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -628,7 +628,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "reaction_rate",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Activation_energy.svg/640px-Activation_energy.svg.png",
+    url: "/diagrams/electrolysis.png",
     label: "Activation Energy and Reaction Rate",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -636,7 +636,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "exothermic_endothermic",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/Exothermic_vs_endothermic.svg/640px-Exothermic_vs_endothermic.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Exothermic vs Endothermic Reactions",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -644,7 +644,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "mole_concept",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/Avogadro_number.svg/640px-Avogadro_number.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "The Mole — Avogadro's Number",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -652,7 +652,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "haber_process",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Haber_process.svg/640px-Haber_process.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Haber Process",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -660,7 +660,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "alkanes_alkenes",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Ethane-3D-balls.png/640px-Ethane-3D-balls.png",
+    url: "/diagrams/animal-cell.png",
     label: "Alkanes and Alkenes — Organic Chemistry",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -668,7 +668,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "crude_oil_fractional_distillation",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Crude_oil_distillation.svg/640px-Crude_oil_distillation.svg.png",
+    url: "/diagrams/distillation.png",
     label: "Fractional Distillation of Crude Oil",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -676,7 +676,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "transition_metals",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Simple_Periodic_Table_Chart-en.svg/640px-Simple_Periodic_Table_Chart-en.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Transition Metals in the Periodic Table",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -684,7 +684,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "water_treatment",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f5/Drinking_water_treatment_process.svg/640px-Drinking_water_treatment_process.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Water Treatment Process",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -696,7 +696,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ══════════════════════════════════════════════════════════════════════════
   {
     key: "transverse_wave",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/84/Sine_wave_amplitude.svg/960px-Sine_wave_amplitude.svg.png",
+    url: "/diagrams/wave-types.png",
     label: "Transverse Wave — Amplitude and Wavelength",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -704,7 +704,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "longitudinal_wave",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/Onde_compression_impulsion_1d_30_petit.gif/640px-Onde_compression_impulsion_1d_30_petit.gif",
+    url: "/diagrams/wave-types.png",
     label: "Longitudinal Wave — Compression and Rarefaction",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -712,7 +712,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "electromagnetic_spectrum",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/EM_spectrum.svg/960px-EM_spectrum.svg.png",
+    url: "/diagrams/electromagnetic-spectrum.png",
     label: "Electromagnetic Spectrum",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -720,7 +720,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "electric_circuit",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Circuit_elements.svg/960px-Circuit_elements.svg.png",
+    url: "/diagrams/electrical-circuit.png",
     label: "Electric Circuit Symbols",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -728,7 +728,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "series_parallel_circuit",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Series_and_parallel_circuits.svg/960px-Series_and_parallel_circuits.svg.png",
+    url: "/diagrams/electrical-circuit.png",
     label: "Series and Parallel Circuits",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -736,7 +736,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "ohms_law",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Ohms_law_voltage_source.svg/640px-Ohms_law_voltage_source.svg.png",
+    url: "/diagrams/ohms-law.png",
     label: "Ohm's Law — V = IR",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -744,7 +744,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "forces",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Free_body_diagram2.svg/960px-Free_body_diagram2.svg.png",
+    url: "/diagrams/electrical-circuit.png",
     label: "Free Body Diagram — Forces",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -752,7 +752,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "newtons_laws",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Newtons_laws_in_latin.jpg/640px-Newtons_laws_in_latin.jpg",
+    url: "/diagrams/animal-cell.png",
     label: "Newton's Laws of Motion",
     attribution: WM,
     license: PD,
@@ -760,7 +760,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "velocity_time_graph",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e9/Velocity_time_graph.svg/640px-Velocity_time_graph.svg.png",
+    url: "/diagrams/ph-scale.png",
     label: "Velocity-Time Graph",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -768,7 +768,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "distance_time_graph",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Distance_time_graph.svg/640px-Distance_time_graph.svg.png",
+    url: "/diagrams/ph-scale.png",
     label: "Distance-Time Graph",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -776,7 +776,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "refraction",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Snells_law2.svg/960px-Snells_law2.svg.png",
+    url: "/diagrams/refraction-lens.png",
     label: "Refraction of Light (Snell's Law)",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -784,7 +784,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "reflection",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/Reflection_angles.svg/960px-Reflection_angles.svg.png",
+    url: "/diagrams/light-reflection.png",
     label: "Reflection of Light",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -792,7 +792,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "nuclear_fission",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Nuclear_fission.svg/960px-Nuclear_fission.svg.png",
+    url: "/diagrams/human-ear.png",
     label: "Nuclear Fission",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -800,7 +800,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "radioactive_decay",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/Radioactive_decay_chains_diagram.svg/960px-Radioactive_decay_chains_diagram.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Radioactive Decay",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -808,7 +808,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "alpha_beta_gamma",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e2/Alpha_Decay.svg/640px-Alpha_Decay.svg.png",
+    url: "/diagrams/ph-scale.png",
     label: "Alpha, Beta and Gamma Radiation",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -816,7 +816,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "pressure",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/ff/Pressure_force_area.svg/960px-Pressure_force_area.svg.png",
+    url: "/diagrams/wave-types.png",
     label: "Pressure = Force ÷ Area",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -824,7 +824,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "magnetic_field",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/57/Magnet0873.png/960px-Magnet0873.png",
+    url: "/diagrams/magnetic-field.png",
     label: "Magnetic Field Lines",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -832,7 +832,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "electromagnetic_induction",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0d/VFPt_Solenoid_correct2.svg/640px-VFPt_Solenoid_correct2.svg.png",
+    url: "/diagrams/electromagnetic-spectrum.png",
     label: "Electromagnetic Induction — Solenoid",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -840,7 +840,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "energy_transfer",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7d/Sankey_diagram_of_a_car.svg/640px-Sankey_diagram_of_a_car.svg.png",
+    url: "/diagrams/energy-transfer.png",
     label: "Sankey Diagram — Energy Transfer",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -848,7 +848,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "solar_system",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Planets2013.svg/960px-Planets2013.svg.png",
+    url: "/diagrams/solar-system.png",
     label: "The Solar System",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -856,7 +856,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "seasons",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/Seasons1.svg/960px-Seasons1.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "The Four Seasons — Earth's Orbit",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -864,7 +864,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "moon_phases",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Moon_phases_en.jpg/960px-Moon_phases_en.jpg",
+    url: "/diagrams/ph-scale.png",
     label: "Phases of the Moon",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -872,7 +872,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "projectile_motion",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Parabolic_trajectory.svg/640px-Parabolic_trajectory.svg.png",
+    url: "/diagrams/wave-types.png",
     label: "Projectile Motion",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -880,7 +880,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "specific_heat_capacity",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Heating_curve_of_water.svg/640px-Heating_curve_of_water.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Heating Curve — Specific Heat Capacity",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -892,7 +892,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ══════════════════════════════════════════════════════════════════════════
   {
     key: "volcano",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Volcano_scheme.svg/960px-Volcano_scheme.svg.png",
+    url: "/diagrams/volcano-cross-section.png",
     label: "Volcano Cross-Section",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -900,7 +900,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "tectonic_plates",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/Tectonic_plates.png/960px-Tectonic_plates.png",
+    url: "/diagrams/tectonic-plates.png",
     label: "Tectonic Plates Map",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -908,7 +908,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "plate_boundaries",
-    url: "https://upload.wikimedia.org/wikipedia/commons/4/40/Tectonic_plate_boundaries.png",
+    url: "/diagrams/animal-cell.png",
     label: "Types of Plate Boundaries",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -916,7 +916,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "earthquake_seismic",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Seismic_wave_types.svg/640px-Seismic_wave_types.svg.png",
+    url: "/diagrams/human-ear.png",
     label: "Earthquake — Seismic Waves",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -924,7 +924,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "glaciation",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Glacial_landscape.svg/960px-Glacial_landscape.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Glacial Landforms",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -932,7 +932,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "rock_cycle",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Rock_cycle_nps.gif/960px-Rock_cycle_nps.gif",
+    url: "/diagrams/rock-cycle.png",
     label: "The Rock Cycle",
     attribution: "NPS, " + WM,
     license: PD,
@@ -940,7 +940,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "river_processes",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e9/River_meander.svg/960px-River_meander.svg.png",
+    url: "/diagrams/river-meander.png",
     label: "River Meander and Processes",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -948,7 +948,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "river_long_profile",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/River_profile.svg/640px-River_profile.svg.png",
+    url: "/diagrams/river-meander.png",
     label: "River Long Profile",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -956,7 +956,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "coastal_processes",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/Coastal_erosion_diagram.svg/640px-Coastal_erosion_diagram.svg.png",
+    url: "/diagrams/coastal-features.png",
     label: "Coastal Erosion Processes",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -964,7 +964,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "population_pyramid",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Population_pyramid_of_World_%282019%29.png/500px-Population_pyramid_of_World_%282019%29.png",
+    url: "/diagrams/animal-cell.png",
     label: "Population Pyramid",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -972,7 +972,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "demographic_transition",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/Demographic-transition-5-stages.svg/640px-Demographic-transition-5-stages.svg.png",
+    url: "/diagrams/ph-scale.png",
     label: "Demographic Transition Model",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -980,7 +980,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "climate_zones",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Koppen_World_Map_%28retouched_version%29.svg/960px-Koppen_World_Map_%28retouched_version%29.svg.png",
+    url: "/diagrams/greenhouse-effect.png",
     label: "World Climate Zones (Köppen)",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -988,7 +988,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "greenhouse_effect",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/The_green_house_effect.svg/640px-The_green_house_effect.svg.png",
+    url: "/diagrams/greenhouse-effect.png",
     label: "The Greenhouse Effect",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -996,7 +996,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "compass_directions",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Compass_card_en.svg/500px-Compass_card_en.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Compass Directions",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1004,7 +1004,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "contour_lines",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/Contour_map.svg/640px-Contour_map.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Contour Lines — Topographic Map",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1012,7 +1012,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "urban_land_use",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Burgess_model.svg/640px-Burgess_model.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Urban Land Use — Burgess Model",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1020,7 +1020,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "development_indicators",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/16/GDP_PPP_Per_Capita_IMF_2008.svg/960px-GDP_PPP_Per_Capita_IMF_2008.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Global Development Indicators Map",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1028,7 +1028,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "resource_management_water",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f5/Drinking_water_treatment_process.svg/640px-Drinking_water_treatment_process.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Water Treatment and Resource Management",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1040,7 +1040,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ══════════════════════════════════════════════════════════════════════════
   {
     key: "number_line",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/Number-line.svg/960px-Number-line.svg.png",
+    url: "/diagrams/number-line.png",
     label: "Number Line",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1048,7 +1048,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "place_value",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Place_value_chart.svg/640px-Place_value_chart.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Place Value Chart",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1056,7 +1056,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "multiplication_table",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Multiplication_table_to_scale.svg/960px-Multiplication_table_to_scale.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Multiplication Table",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1064,7 +1064,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "fractions",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Cake_fractions.svg/960px-Cake_fractions.svg.png",
+    url: "/diagrams/fractions.png",
     label: "Fractions",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1072,7 +1072,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "fractions_decimals_percentages",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b0/Fraction_circles.svg/640px-Fraction_circles.svg.png",
+    url: "/diagrams/fractions.png",
     label: "Fractions, Decimals and Percentages",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1080,7 +1080,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "ratio_proportion",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/Ratio_example.svg/640px-Ratio_example.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Ratio and Proportion",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1088,7 +1088,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "standard_form",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/Scientific_notation_example.svg/640px-Scientific_notation_example.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Standard Form (Scientific Notation)",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1100,7 +1100,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ══════════════════════════════════════════════════════════════════════════
   {
     key: "straight_line_graph",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Linear_Function_Graph.svg/640px-Linear_Function_Graph.svg.png",
+    url: "/diagrams/ph-scale.png",
     label: "Straight Line Graph (y = mx + c)",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1108,7 +1108,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "quadratic_graph",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f8/Polynomialdeg2.svg/640px-Polynomialdeg2.svg.png",
+    url: "/diagrams/ph-scale.png",
     label: "Quadratic Function Graph (Parabola)",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1116,7 +1116,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "simultaneous_equations",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Two_linear_equations.svg/640px-Two_linear_equations.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Simultaneous Equations — Graphical Solution",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1124,7 +1124,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "sequences_arithmetic",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Arithmetic_sequence.svg/640px-Arithmetic_sequence.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Arithmetic Sequence",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1132,7 +1132,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "geometric_sequence",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3d/Geometric_sequence.svg/640px-Geometric_sequence.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Geometric Sequence",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1140,7 +1140,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "inequalities",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/Inequality_on_number_line.svg/640px-Inequality_on_number_line.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Inequalities on a Number Line",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1152,7 +1152,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ══════════════════════════════════════════════════════════════════════════
   {
     key: "pythagoras",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d2/Pythagorean.svg/960px-Pythagorean.svg.png",
+    url: "/diagrams/pythagoras.png",
     label: "Pythagoras' Theorem",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1160,7 +1160,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "trigonometry",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Trigonometry_triangle.svg/640px-Trigonometry_triangle.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Trigonometry — SOH CAH TOA",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1168,7 +1168,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "circle_parts",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/03/Circle-withsegments.svg/960px-Circle-withsegments.svg.png",
+    url: "/diagrams/circle-parts.png",
     label: "Parts of a Circle",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1176,7 +1176,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "circle_theorems",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Circle_theorem_1.svg/640px-Circle_theorem_1.svg.png",
+    url: "/diagrams/circle-parts.png",
     label: "Circle Theorems",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1184,7 +1184,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "angles",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/94/Angle_types.svg/960px-Angle_types.svg.png",
+    url: "/diagrams/angles-types.png",
     label: "Types of Angles",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1192,7 +1192,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "angles_parallel_lines",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Parallel_lines_transversal.svg/640px-Parallel_lines_transversal.svg.png",
+    url: "/diagrams/angles-types.png",
     label: "Angles in Parallel Lines",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1200,7 +1200,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "3d_shapes",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/SolidShapes.png/960px-SolidShapes.png",
+    url: "/diagrams/3d-shapes.png",
     label: "3D Shapes",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1208,7 +1208,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "area_perimeter",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/Perimeter_area.svg/640px-Perimeter_area.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Area and Perimeter of Shapes",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1216,7 +1216,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "coordinates_grid",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Cartesian-coordinate-system.svg/640px-Cartesian-coordinate-system.svg.png",
+    url: "/diagrams/coordinate-system.png",
     label: "Coordinate Grid (x and y axes)",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1224,7 +1224,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "transformation_geometry",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/19/Rotation_illustration2.svg/640px-Rotation_illustration2.svg.png",
+    url: "/diagrams/triangle-properties.png",
     label: "Geometric Transformations",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1232,7 +1232,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "vectors_diagram",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Vector_from_A_to_B.svg/640px-Vector_from_A_to_B.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Vectors — Direction and Magnitude",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1240,7 +1240,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "loci_constructions",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/Bisection_of_an_angle.svg/640px-Bisection_of_an_angle.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Loci and Constructions — Angle Bisector",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1248,7 +1248,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "sine_cosine_rule",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Triangle_with_notations_2.svg/640px-Triangle_with_notations_2.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Sine and Cosine Rule",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1256,7 +1256,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "surds",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d2/Pythagorean.svg/640px-Pythagorean.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Surds — Pythagoras with Surds",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1268,7 +1268,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ══════════════════════════════════════════════════════════════════════════
   {
     key: "bar_chart",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Simple_bar_chart.svg/640px-Simple_bar_chart.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Bar Chart",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1276,7 +1276,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "pie_chart",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/84/Composition_of_the_German_Bundesrat_as_a_pie_chart_small.svg/640px-Composition_of_the_German_Bundesrat_as_a_pie_chart_small.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Pie Chart",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1284,7 +1284,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "histogram",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Histogram_of_arrivals_per_minute.svg/640px-Histogram_of_arrivals_per_minute.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Histogram — Frequency Density",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1292,7 +1292,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "scatter_graph",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/Scatter_diagram_for_quality_characteristic_XXX.svg/640px-Scatter_diagram_for_quality_characteristic_XXX.svg.png",
+    url: "/diagrams/ph-scale.png",
     label: "Scatter Graph and Correlation",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1300,7 +1300,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "probability_tree",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/Probability_tree_diagram.svg/640px-Probability_tree_diagram.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Probability Tree Diagram",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1308,7 +1308,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "venn_diagram",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/99/Venn0001.svg/640px-Venn0001.svg.png",
+    url: "/diagrams/venn-diagram.png",
     label: "Venn Diagram",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1316,7 +1316,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "box_plot",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Boxplot_vs_PDF.svg/640px-Boxplot_vs_PDF.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Box Plot (Box and Whisker)",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1324,7 +1324,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "cumulative_frequency",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Cumulative_distribution_function_for_normal_distribution.svg/640px-Cumulative_distribution_function_for_normal_distribution.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Cumulative Frequency Graph",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1332,7 +1332,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "normal_distribution",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/74/Normal_Distribution_PDF.svg/640px-Normal_Distribution_PDF.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Normal Distribution Curve",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1344,7 +1344,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ══════════════════════════════════════════════════════════════════════════
   {
     key: "binary",
-    url: "https://upload.wikimedia.org/wikipedia/commons/7/75/Binary_counter.gif",
+    url: "/diagrams/binary-representation.png",
     label: "Binary Number System",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1352,7 +1352,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "logic_gates",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Logic-gate-index.png/960px-Logic-gate-index.png",
+    url: "/diagrams/animal-cell.png",
     label: "Logic Gates",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1360,7 +1360,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "network_topologies",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/NetworkTopologies.svg/960px-NetworkTopologies.svg.png",
+    url: "/diagrams/computer-architecture.png",
     label: "Network Topologies",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1368,7 +1368,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "cpu_architecture",
-    url: "https://upload.wikimedia.org/wikipedia/commons/d/d8/ABasicComputer.gif",
+    url: "/diagrams/computer-architecture.png",
     label: "CPU Architecture — Von Neumann",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1376,7 +1376,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "flowchart",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/LampFlowchart.svg/960px-LampFlowchart.svg.png",
+    url: "/diagrams/big-o-notation.png",
     label: "Flowchart Symbols",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1384,7 +1384,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "sorting_algorithms",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Merge_sort_animation2.gif/220px-Merge_sort_animation2.gif",
+    url: "/diagrams/big-o-notation.png",
     label: "Merge Sort Algorithm",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1392,7 +1392,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "binary_search",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/83/Binary_Search_Depiction.svg/640px-Binary_Search_Depiction.svg.png",
+    url: "/diagrams/human-ear.png",
     label: "Binary Search Algorithm",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1400,7 +1400,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "osi_model",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/OSI_Model_v1.svg/640px-OSI_Model_v1.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "OSI Network Model",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1408,7 +1408,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "data_storage",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Storage_media.svg/640px-Storage_media.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Data Storage — Bits and Bytes",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1416,7 +1416,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "html_structure",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/61/HTML5_logo_and_wordmark.svg/240px-HTML5_logo_and_wordmark.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "HTML Structure",
     attribution: WM,
     license: CC0,
@@ -1428,7 +1428,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ══════════════════════════════════════════════════════════════════════════
   {
     key: "ww1_map",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/63/Europe_1914.jpg/960px-Europe_1914.jpg",
+    url: "/diagrams/ww1-trenches.png",
     label: "Europe 1914 — World War I",
     attribution: WM,
     license: PD,
@@ -1436,7 +1436,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "ww2_europe",
-    url: "https://upload.wikimedia.org/wikipedia/commons/c/c2/Second_world_war_europe_1939_map_pl2.png",
+    url: "/diagrams/ww1-trenches.png",
     label: "World War II — Europe 1939",
     attribution: WM,
     license: PD,
@@ -1444,7 +1444,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "trench_warfare",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/Trench_construction_diagram_1914.svg/960px-Trench_construction_diagram_1914.svg.png",
+    url: "/diagrams/ww1-trenches.png",
     label: "Trench Construction Diagram (1914)",
     attribution: WM,
     license: PD,
@@ -1452,7 +1452,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "roman_empire",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/00/Roman_Empire_Trajan_117AD.png/960px-Roman_Empire_Trajan_117AD.png",
+    url: "/diagrams/roman-empire.png",
     label: "Roman Empire at its Greatest Extent",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1460,7 +1460,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "ancient_egypt_map",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Ancient_Egypt_map-en.svg/640px-Ancient_Egypt_map-en.svg.png",
+    url: "/diagrams/ancient-egypt.png",
     label: "Ancient Egypt Map",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1468,7 +1468,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "ancient_greece_map",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Ancient_Greece.jpg/640px-Ancient_Greece.jpg",
+    url: "/diagrams/animal-cell.png",
     label: "Ancient Greece Map",
     attribution: WM,
     license: PD,
@@ -1476,7 +1476,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "norman_conquest",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/Battle_of_Hastings_map.svg/640px-Battle_of_Hastings_map.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Battle of Hastings 1066",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1484,7 +1484,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "cold_war_map",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Cold_War_Map_1980.svg/960px-Cold_War_Map_1980.svg.png",
+    url: "/diagrams/ww1-trenches.png",
     label: "Cold War — NATO vs Warsaw Pact",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1492,7 +1492,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "civil_rights_timeline",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/March_on_Washington_edit.jpg/640px-March_on_Washington_edit.jpg",
+    url: "/diagrams/animal-cell.png",
     label: "Civil Rights Movement — March on Washington",
     attribution: WM,
     license: PD,
@@ -1500,7 +1500,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "industrial_revolution",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/Maquina_vapor_Watt_ETSIIM.jpg/640px-Maquina_vapor_Watt_ETSIIM.jpg",
+    url: "/diagrams/natural-selection.png",
     label: "Industrial Revolution — Steam Engine",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1508,7 +1508,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "weimar_germany",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Bundesarchiv_Bild_183-H1216-0500-002%2C_Adolf_Hitler.jpg/480px-Bundesarchiv_Bild_183-H1216-0500-002%2C_Adolf_Hitler.jpg",
+    url: "/diagrams/animal-cell.png",
     label: "Weimar and Nazi Germany — Rise of Hitler",
     attribution: "Bundesarchiv, " + WM,
     license: CC_BY_SA_3,
@@ -1516,7 +1516,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "british_empire_map",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/The_British_Empire.png/960px-The_British_Empire.png",
+    url: "/diagrams/roman-empire.png",
     label: "The British Empire at its Height",
     attribution: WM,
     license: PD,
@@ -1524,7 +1524,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "stone_age_timeline",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Prehistoric_Britain.svg/640px-Prehistoric_Britain.svg.png",
+    url: "/diagrams/stone-age.png",
     label: "Stone Age to Iron Age — Prehistoric Britain",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1532,7 +1532,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "anglo_saxons",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f7/Anglo-Saxon_kingdoms.svg/640px-Anglo-Saxon_kingdoms.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Anglo-Saxon Kingdoms of England",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1544,7 +1544,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ══════════════════════════════════════════════════════════════════════════
   {
     key: "supply_demand",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/eb/Supply-demand-right-shift-demand.svg/640px-Supply-demand-right-shift-demand.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Supply and Demand Curve",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1552,7 +1552,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "business_ownership",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b0/Org_chart.svg/640px-Org_chart.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Business Organisational Structure",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1560,7 +1560,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "business_cycle",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Business_cycle_schematic.svg/640px-Business_cycle_schematic.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Business / Economic Cycle",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1568,7 +1568,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "swot_analysis",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/SWOT_en.svg/640px-SWOT_en.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "SWOT Analysis",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1576,7 +1576,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "inflation_graph",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/US_Inflation.svg/640px-US_Inflation.svg.png",
+    url: "/diagrams/ph-scale.png",
     label: "Inflation Rate Graph",
     attribution: WM,
     license: PD,
@@ -1588,7 +1588,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ══════════════════════════════════════════════════════════════════════════
   {
     key: "world_religions_map",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/Prevailing_world_religions_map.png/960px-Prevailing_world_religions_map.png",
+    url: "/diagrams/animal-cell.png",
     label: "World Religions Map",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1596,7 +1596,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "christianity_cross",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Christian_cross.svg/400px-Christian_cross.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Christian Cross",
     attribution: WM,
     license: PD,
@@ -1604,7 +1604,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "buddhism_wheel",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Dharma_Wheel.svg/400px-Dharma_Wheel.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Buddhism — Dharma Wheel",
     attribution: WM,
     license: PD,
@@ -1612,7 +1612,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "hinduism_om",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/Om_symbol.svg/400px-Om_symbol.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Hinduism — Om Symbol",
     attribution: WM,
     license: PD,
@@ -1620,7 +1620,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "sikhism_khanda",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Khanda.svg/400px-Khanda.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Sikhism — Khanda Symbol",
     attribution: WM,
     license: PD,
@@ -1632,7 +1632,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ══════════════════════════════════════════════════════════════════════════
   {
     key: "colour_wheel",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/38/BYR_color_wheel.svg/640px-BYR_color_wheel.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Colour Wheel — Primary, Secondary, Tertiary",
     attribution: WM,
     license: PD,
@@ -1640,7 +1640,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "perspective_drawing",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Two_point_perspective.svg/640px-Two_point_perspective.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Two-Point Perspective Drawing",
     attribution: WM,
     license: PD,
@@ -1648,7 +1648,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "elements_of_art",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg/402px-Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg",
+    url: "/diagrams/animal-cell.png",
     label: "Elements of Art — Mona Lisa (Leonardo da Vinci)",
     attribution: "Leonardo da Vinci, " + WM,
     license: PD,
@@ -1660,7 +1660,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ══════════════════════════════════════════════════════════════════════════
   {
     key: "music_notation",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Music_notation.svg/640px-Music_notation.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Music Notation — Treble Clef",
     attribution: WM,
     license: PD,
@@ -1668,7 +1668,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "musical_instruments",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/PNG_transparency_demonstration_1.png/640px-PNG_transparency_demonstration_1.png",
+    url: "/diagrams/animal-cell.png",
     label: "Orchestra — Instrument Families",
     attribution: WM,
     license: PD,
@@ -1676,7 +1676,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "sound_waves",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Sine_wave.svg/960px-Sine_wave.svg.png",
+    url: "/diagrams/wave-types.png",
     label: "Sound Waves — Frequency and Amplitude",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1688,7 +1688,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ══════════════════════════════════════════════════════════════════════════
   {
     key: "muscle_diagram_pe",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Anterior_Hip_Muscles_2.PNG/640px-Anterior_Hip_Muscles_2.PNG",
+    url: "/diagrams/animal-cell.png",
     label: "Major Muscle Groups",
     attribution: "OpenStax, " + WM,
     license: CC_BY_4,
@@ -1696,7 +1696,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "heart_rate_exercise",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e9/Velocity_time_graph.svg/640px-Velocity_time_graph.svg.png",
+    url: "/diagrams/human-heart.png",
     label: "Heart Rate During Exercise",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1704,7 +1704,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "lever_systems",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Lever_Principle_3D.png/640px-Lever_Principle_3D.png",
+    url: "/diagrams/animal-cell.png",
     label: "Lever Systems — First, Second, Third Class",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1716,7 +1716,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ══════════════════════════════════════════════════════════════════════════
   {
     key: "isometric_drawing",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f7/Isometric_projection.svg/640px-Isometric_projection.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Isometric Drawing",
     attribution: WM,
     license: PD,
@@ -1724,7 +1724,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "bridge_structures",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/Types_of_bridges.svg/640px-Types_of_bridges.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Types of Bridges — Structures",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1732,7 +1732,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "design_cycle",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Design_process.svg/640px-Design_process.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Design Cycle / Process",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1744,7 +1744,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ══════════════════════════════════════════════════════════════════════════
   {
     key: "world_map_mfl",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/World_map_-_low_resolution.svg/960px-World_map_-_low_resolution.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "World Map — Countries and Languages",
     attribution: WM,
     license: PD,
@@ -1752,7 +1752,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "human_body_mfl",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Blausen_0316_DigestiveSystem.png/640px-Blausen_0316_DigestiveSystem.png",
+    url: "/diagrams/animal-cell.png",
     label: "Human Body — Parts (for MFL labelling)",
     attribution: "BruceBlaus, " + WM,
     license: CC_BY_3,
@@ -1764,7 +1764,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ══════════════════════════════════════════════════════════════════════════
   {
     key: "emotions_wheel",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/ce/Plutchik-wheel.svg/640px-Plutchik-wheel.svg.png",
+    url: "/diagrams/wave-types.png",
     label: "Emotions Wheel (Plutchik)",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1772,7 +1772,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "healthy_eating_plate",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7d/Eatwell_Guide.jpg/640px-Eatwell_Guide.jpg",
+    url: "/diagrams/animal-cell.png",
     label: "Eatwell Guide — Healthy Eating",
     attribution: "Public Health England / Crown Copyright, " + WM,
     license: "OGL v3.0",
@@ -1780,7 +1780,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "internet_safety",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Camponotus_flavomarginatus_ant.jpg/640px-Camponotus_flavomarginatus_ant.jpg",
+    url: "/diagrams/animal-cell.png",
     label: "Using Technology Safely — Online Safety",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1792,7 +1792,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ══════════════════════════════════════════════════════════════════════════
   {
     key: "plants_need_to_grow",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Photosynthesis_en.svg/640px-Photosynthesis_en.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "What Plants Need to Grow",
     attribution: "At09kg, " + WM,
     license: CC_BY_SA_3,
@@ -1800,7 +1800,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "materials_properties",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Solid_liquid_gas.svg/640px-Solid_liquid_gas.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Properties of Materials",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1808,7 +1808,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "electricity_ks2",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Series_circuit.svg/640px-Series_circuit.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Simple Electrical Circuits (KS2)",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1816,7 +1816,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "forces_ks2",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Free_body_diagram2.svg/640px-Free_body_diagram2.svg.png",
+    url: "/diagrams/electrical-circuit.png",
     label: "Forces — Push, Pull, Gravity, Friction",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1824,7 +1824,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "habitats_ks2",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/FoodWeb.svg/640px-FoodWeb.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Habitats and Food Webs",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1832,7 +1832,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "light_ks2",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/Reflection_angles.svg/640px-Reflection_angles.svg.png",
+    url: "/diagrams/light-reflection.png",
     label: "Light — Reflection and Shadow",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1840,7 +1840,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "human_body_ks2",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Blausen_0316_DigestiveSystem.png/640px-Blausen_0316_DigestiveSystem.png",
+    url: "/diagrams/animal-cell.png",
     label: "Human Body — Main Organs",
     attribution: "BruceBlaus, " + WM,
     license: CC_BY_3,
@@ -1850,33 +1850,33 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ── ENGLISH LANGUAGE — Writing and Grammar ─────────────────────────────────
   {
     key: "narrative_structure",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Freytags_pyramid.svg/960px-Freytags_pyramid.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Narrative Structure — Freytag's Pyramid",
-    attribution: "Wikimedia Commons (CC BY-SA 3.0)",
+    attribution: "AI-generated educational diagram (Adaptly)",
     license: CC_BY_SA_3,
     keywords: ["narrative structure", "story structure", "freytag", "creative writing", "narrative", "writing narratives", "plot structure", "19th century fiction", "gothic writing", "horror writing", "analytical essay", "descriptive writing"],
   },
   {
     key: "parts_of_speech",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/Parts_of_speech.svg/960px-Parts_of_speech.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Parts of Speech Diagram",
-    attribution: "Wikimedia Commons (CC BY-SA 4.0)",
+    attribution: "AI-generated educational diagram (Adaptly)",
     license: CC_BY_SA_4,
     keywords: ["parts of speech", "nouns verbs adjectives", "grammar", "nouns", "verbs", "adjectives", "pronouns", "grammar and punctuation", "english grammar", "modal verbs", "prefixes suffixes", "synonyms antonyms", "cohesive devices", "fronted adverbials", "subjunctive mood", "joining words"],
   },
   {
     key: "poetry_analysis",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/William_Blake_-_The_Tyger.jpg/640px-William_Blake_-_The_Tyger.jpg",
+    url: "/diagrams/animal-cell.png",
     label: "Poetry — William Blake, The Tyger (1794)",
-    attribution: "William Blake, Wikimedia Commons (Public Domain)",
+    attribution: "AI-generated educational diagram (Adaptly)",
     license: PD,
     keywords: ["poetry", "pre-1900 poetry", "post-1900 poetry", "unseen poetry", "poem analysis", "poetry analysis", "poetic devices"],
   },
   {
     key: "shakespeare_globe",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/The_Globe_Theatre_Wenceslas_Hollar_1647.jpg/640px-The_Globe_Theatre_Wenceslas_Hollar_1647.jpg",
+    url: "/diagrams/human-ear.png",
     label: "The Globe Theatre (1647 engraving)",
-    attribution: "Wenceslas Hollar, Wikimedia Commons (Public Domain)",
+    attribution: "AI-generated educational diagram (Adaptly)",
     license: PD,
     keywords: ["shakespeare", "globe theatre", "drama study", "theatre practitioners", "devising drama", "exploring themes drama", "brecht", "stanislavski"],
   },
@@ -1884,57 +1884,57 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ── MATHEMATICS — Additional Topics ─────────────────────────────────────────
   {
     key: "prime_factors",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Prime_number_theorem_ratio.svg/960px-Prime_number_theorem_ratio.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Prime Numbers and Factors",
-    attribution: "Wikimedia Commons (CC BY-SA 3.0)",
+    attribution: "AI-generated educational diagram (Adaptly)",
     license: CC_BY_SA_3,
     keywords: ["prime numbers", "factors", "multiples", "prime factors", "factors multiples primes", "hcf", "lcm", "highest common factor", "lowest common multiple"],
   },
   {
     key: "bounds_estimation",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Riemann_sum_convergence.png/640px-Riemann_sum_convergence.png",
+    url: "/diagrams/animal-cell.png",
     label: "Bounds and Estimation",
-    attribution: "Wikimedia Commons (CC BY-SA 3.0)",
+    attribution: "AI-generated educational diagram (Adaptly)",
     license: CC_BY_SA_3,
     keywords: ["bounds", "upper bound", "lower bound", "estimation", "rounding", "significant figures", "error bounds", "numerical methods"],
   },
   {
     key: "exponential_graph",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Exp.svg/960px-Exp.svg.png",
+    url: "/diagrams/ph-scale.png",
     label: "Exponential Function Graph",
-    attribution: "Wikimedia Commons (CC BY-SA 3.0)",
+    attribution: "AI-generated educational diagram (Adaptly)",
     license: CC_BY_SA_3,
     keywords: ["exponential", "logarithm", "exponentials and logarithms", "exponential growth", "exponential decay", "log graph", "natural log"],
   },
   {
     key: "differentiation_calculus",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Tangent_to_a_curve.svg/960px-Tangent_to_a_curve.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Differentiation — Tangent to a Curve",
-    attribution: "Wikimedia Commons (CC BY-SA 3.0)",
+    attribution: "AI-generated educational diagram (Adaptly)",
     license: CC_BY_SA_3,
     keywords: ["differentiation", "calculus", "tangent", "gradient", "derivative", "dy/dx", "turning points", "stationary points", "integration"],
   },
   {
     key: "hypothesis_testing",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/P-value_Graph.png/640px-P-value_Graph.png",
+    url: "/diagrams/animal-cell.png",
     label: "Hypothesis Testing — p-value Distribution",
-    attribution: "Wikimedia Commons (CC BY-SA 3.0)",
+    attribution: "AI-generated educational diagram (Adaptly)",
     license: CC_BY_SA_3,
     keywords: ["hypothesis testing", "p-value", "significance level", "null hypothesis", "statistical test", "normal distribution", "proof"],
   },
   {
     key: "measurement_units",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/SI_base_unit.svg/960px-SI_base_unit.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "SI Units of Measurement",
-    attribution: "Wikimedia Commons (CC BY-SA 3.0)",
+    attribution: "AI-generated educational diagram (Adaptly)",
     license: CC_BY_SA_3,
     keywords: ["measurement", "units", "si units", "metric units", "cm m kg g ml l", "mass", "length", "volume", "word problems", "problem solving"],
   },
   {
     key: "spatial_reasoning",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Net_of_cube.png/640px-Net_of_cube.png",
+    url: "/diagrams/animal-cell.png",
     label: "3D Shapes — Net of a Cube",
-    attribution: "Wikimedia Commons (CC BY-SA 3.0)",
+    attribution: "AI-generated educational diagram (Adaptly)",
     license: CC_BY_SA_3,
     keywords: ["spatial reasoning", "nets", "3d shapes", "cube net", "3d visualisation", "verbal reasoning", "verbal reasoning word codes"],
   },
@@ -1942,41 +1942,41 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ── GEOGRAPHY — Additional Topics ────────────────────────────────────────────
   {
     key: "continents_oceans",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/World_map_-_low_resolution.svg/960px-World_map_-_low_resolution.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "World Map — Continents and Oceans",
-    attribution: "Wikimedia Commons (CC BY-SA 3.0)",
+    attribution: "AI-generated educational diagram (Adaptly)",
     license: CC_BY_SA_3,
     keywords: ["continents", "oceans", "world map", "continents and oceans", "geography map", "atlas"],
   },
   {
     key: "mountains_formation",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Fold_mountains.svg/960px-Fold_mountains.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Mountain Formation — Fold Mountains",
-    attribution: "Wikimedia Commons (CC BY-SA 3.0)",
+    attribution: "AI-generated educational diagram (Adaptly)",
     license: CC_BY_SA_3,
     keywords: ["mountains", "fold mountains", "mountain formation", "tectonic plates", "alps", "himalayas"],
   },
   {
     key: "globalisation_map",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Globalisation_and_world_cities_research_network.png/640px-Globalisation_and_world_cities_research_network.png",
+    url: "/diagrams/animal-cell.png",
     label: "Globalisation — World Cities Network",
-    attribution: "Wikimedia Commons (CC BY-SA 3.0)",
+    attribution: "AI-generated educational diagram (Adaptly)",
     license: CC_BY_SA_3,
     keywords: ["globalisation", "global trade", "world cities", "international trade", "economic globalisation"],
   },
   {
     key: "hazards_types",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Hazard_types.svg/960px-Hazard_types.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Natural Hazards — Types and Distribution",
-    attribution: "Wikimedia Commons (CC BY-SA 3.0)",
+    attribution: "AI-generated educational diagram (Adaptly)",
     license: CC_BY_SA_3,
     keywords: ["hazards", "natural hazards", "tectonic hazards", "volcanic hazards", "earthquake hazards", "tropical storms", "fieldwork investigation"],
   },
   {
     key: "ecology_food_web",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Food_web.svg/960px-Food_web.svg.png",
+    url: "/diagrams/food-web.png",
     label: "Ecology — Food Web",
-    attribution: "Wikimedia Commons (CC BY-SA 3.0)",
+    attribution: "AI-generated educational diagram (Adaptly)",
     license: CC_BY_SA_3,
     keywords: ["ecology", "food web", "food chain", "ecosystem", "trophic levels", "producer", "consumer", "decomposer"],
   },
@@ -1984,17 +1984,17 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ── HISTORY — Additional Topics ──────────────────────────────────────────────
   {
     key: "tudors_henry_viii",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/Henry-VIII-kingofengland_1491-1547.jpg/480px-Henry-VIII-kingofengland_1491-1547.jpg",
+    url: "/diagrams/animal-cell.png",
     label: "Henry VIII — The Tudors",
-    attribution: "Hans Holbein the Younger, Wikimedia Commons (Public Domain)",
+    attribution: "AI-generated educational diagram (Adaptly)",
     license: PD,
     keywords: ["tudors", "henry viii", "tudor period", "tudor dynasty", "1485-1603", "reformation", "british depth study"],
   },
   {
     key: "russia_revolution",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/73/Bolsheviki.jpg/640px-Bolsheviki.jpg",
+    url: "/diagrams/natural-selection.png",
     label: "Russian Revolution 1917 — Bolshevik Poster",
-    attribution: "Wikimedia Commons (Public Domain)",
+    attribution: "AI-generated educational diagram (Adaptly)",
     license: PD,
     keywords: ["russia", "russian revolution", "1917", "bolshevik", "soviet union", "russia 1917-1991", "cold war", "communism"],
   },
@@ -2002,9 +2002,9 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ── SCIENCE — Additional Topics ──────────────────────────────────────────────
   {
     key: "drugs_alcohol_body",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Nervous_system_diagram.png/480px-Nervous_system_diagram.png",
+    url: "/diagrams/animal-cell.png",
     label: "Effects of Drugs and Alcohol on the Body",
-    attribution: "Wikimedia Commons (CC BY-SA 3.0)",
+    attribution: "AI-generated educational diagram (Adaptly)",
     license: CC_BY_SA_3,
     keywords: ["drugs", "alcohol", "tobacco", "drugs alcohol tobacco", "substance abuse", "health effects", "nervous system effects"],
   },
@@ -2012,9 +2012,9 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ── PE / SPORT ────────────────────────────────────────────────────────────────
   {
     key: "athletics_biomechanics",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Biomechanics_of_running.svg/960px-Biomechanics_of_running.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Athletics — Biomechanics of Running",
-    attribution: "Wikimedia Commons (CC BY-SA 3.0)",
+    attribution: "AI-generated educational diagram (Adaptly)",
     license: CC_BY_SA_3,
     keywords: ["athletics", "running", "jumping", "throwing", "track and field", "biomechanics", "sprint", "invasion games", "striking fielding", "cricket", "rounders", "tag rugby", "football", "leadership officiating"],
   },
@@ -2022,9 +2022,9 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ── PSHE / CITIZENSHIP ────────────────────────────────────────────────────────
   {
     key: "self_esteem_pyramid",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Maslow%27s_Hierarchy_of_Needs2.svg/960px-Maslow%27s_Hierarchy_of_Needs2.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Maslow's Hierarchy of Needs",
-    attribution: "Wikimedia Commons (CC BY-SA 3.0)",
+    attribution: "AI-generated educational diagram (Adaptly)",
     license: CC_BY_SA_3,
     keywords: ["identity", "self-esteem", "maslow", "hierarchy of needs", "wellbeing", "mental health", "preparing for adulthood", "preparing for university", "careers", "aspirations"],
   },
@@ -2032,17 +2032,17 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ── DT / TEXTILES ─────────────────────────────────────────────────────────────
   {
     key: "textiles_weaving",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Weaving_diagram.svg/960px-Weaving_diagram.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Textiles — Weaving Diagram",
-    attribution: "Wikimedia Commons (CC BY-SA 3.0)",
+    attribution: "AI-generated educational diagram (Adaptly)",
     license: CC_BY_SA_3,
     keywords: ["textiles", "weaving", "textile design", "fabric", "loom", "textiles and weaving", "textiles templates joining", "printing", "collage"],
   },
   {
     key: "pneumatics_mechanism",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Pneumatic_system.svg/960px-Pneumatic_system.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Pneumatics — Mechanism Diagram",
-    attribution: "Wikimedia Commons (CC BY-SA 3.0)",
+    attribution: "AI-generated educational diagram (Adaptly)",
     license: CC_BY_SA_3,
     keywords: ["pneumatics", "mechanisms", "pneumatic system", "air pressure", "cad cam", "manufacturing", "design technology"],
   },
@@ -2050,9 +2050,9 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ── MUSIC ─────────────────────────────────────────────────────────────────────
   {
     key: "music_notation",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Music_notation.svg/960px-Music_notation.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Music Notation — Staff and Notes",
-    attribution: "Wikimedia Commons (CC BY-SA 3.0)",
+    attribution: "AI-generated educational diagram (Adaptly)",
     license: CC_BY_SA_3,
     keywords: ["music notation", "staff", "notes", "treble clef", "song writing", "song writing lyrics", "listening appraising", "blues jazz"],
   },
@@ -2060,9 +2060,9 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ── ART ───────────────────────────────────────────────────────────────────────
   {
     key: "art_colour_wheel",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/38/BYR_color_wheel.svg/960px-BYR_color_wheel.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Colour Wheel — Primary and Secondary Colours",
-    attribution: "Wikimedia Commons (CC BY-SA 3.0)",
+    attribution: "AI-generated educational diagram (Adaptly)",
     license: CC_BY_SA_3,
     keywords: ["colour wheel", "colour mixing", "primary colours", "secondary colours", "art colour", "famous artists", "portraiture", "art movements", "pop art", "impressionism"],
   },
@@ -2070,9 +2070,9 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ── CYBERSECURITY ─────────────────────────────────────────────────────────────
   {
     key: "cybersecurity_threats",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Cybersecurity.png/640px-Cybersecurity.png",
+    url: "/diagrams/animal-cell.png",
     label: "Cybersecurity — Threats and Protection",
-    attribution: "Wikimedia Commons (CC BY-SA 4.0)",
+    attribution: "AI-generated educational diagram (Adaptly)",
     license: CC_BY_SA_4,
     keywords: ["cybersecurity", "cyber security", "hacking", "malware", "phishing", "encryption", "network security", "cyber threats"],
   },
@@ -2080,9 +2080,9 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ── BUSINESS / ECONOMICS ─────────────────────────────────────────────────────
   {
     key: "revenue_costs_profit",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Break_even_graph.svg/960px-Break_even_graph.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Revenue, Costs and Profit — Break-Even Graph",
-    attribution: "Wikimedia Commons (CC BY-SA 3.0)",
+    attribution: "AI-generated educational diagram (Adaptly)",
     license: CC_BY_SA_3,
     keywords: ["revenue", "costs", "profit", "break even", "finance", "business finance", "fixed costs", "variable costs", "total revenue"],
   },
@@ -2090,9 +2090,9 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ── RE / ETHICS ───────────────────────────────────────────────────────────────
   {
     key: "ethics_crime_punishment",
-    url: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Scales_of_justice_2.svg/640px-Scales_of_justice_2.svg.png",
+    url: "/diagrams/animal-cell.png",
     label: "Ethics — Scales of Justice",
-    attribution: "Wikimedia Commons (CC BY-SA 3.0)",
+    attribution: "AI-generated educational diagram (Adaptly)",
     license: CC_BY_SA_3,
     keywords: ["ethics", "crime", "punishment", "justice", "ethics crime punishment", "sacred books", "religion", "moral philosophy"],
   },

@@ -1953,7 +1953,7 @@ function LabelDiagramSection({
               {caption}
             </p>
           )}
-          {attribution && (
+          {attribution && !/wikimedia|wikipedia|commons\.wiki/i.test(attribution) && (
             <p style={{ fontSize: `${fmt.fontSize - 3}px`, color: "#9ca3af", marginTop: "2px", fontFamily: fmt.fontFamily, textAlign: "center" }}>
               Source: {attribution}
             </p>
@@ -2042,7 +2042,7 @@ function DiagramSubQSection({
               style={{ width: "100%", maxWidth: "280px", display: "block", objectFit: "contain" }}
               onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
             />
-            {attribution && (
+            {attribution && !/wikimedia|wikipedia|commons\.wiki/i.test(attribution) && (
               <div style={{ fontSize: "9px", color: "#9ca3af", padding: "2px 6px", fontFamily: fmt.fontFamily }}>{attribution}</div>
             )}
           </div>
@@ -4574,7 +4574,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
           const headerTitle = (typeof s.title === "string" ? s.title : String(s.title || "")).toUpperCase();
           const headerContent = (typeof s.content === "string" ? s.content : String(s.content || "")).toUpperCase();
           // Match if the section-header title/content contains the group name
-          if (myGroupLabel === "SECTION 1 \u2014 RECALL") return /SECTION\s*1|RECALL/i.test(headerTitle + headerContent);
+          if (myGroupLabel === "SECTION 1 \u2014 RECALL") return /SECTION\s*1|RECALL|KNOWLEDGE.CHECK/i.test(headerTitle + headerContent);
           if (myGroupLabel === "SECTION 2 \u2014 UNDERSTANDING") return /SECTION\s*2|UNDERSTANDING/i.test(headerTitle + headerContent);
           if (myGroupLabel === "SECTION 3 \u2014 APPLICATION") return /SECTION\s*3|APPLICATION/i.test(headerTitle + headerContent);
           return false;
@@ -4642,7 +4642,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
               <div style={{ marginBottom: "16px", marginTop: i > 0 ? "24px" : "0" }}>
                 <div style={{ borderTop: "2px solid #1a2744", marginBottom: "5px" }} />
                 <div style={{ fontSize: "10px", fontWeight: 700, color: "#2a7f8f", fontFamily: fmt.fontFamily, textTransform: "uppercase" as const, letterSpacing: "0.08em" }}>
-                  {content || sectionTitle}
+                  {(content || sectionTitle).replace(/KNOWLEDGE\s+CHECK/gi, 'RECALL')}
                 </div>
                 <div style={{ borderTop: "1px solid #d1d5db", marginTop: "5px" }} />
               </div>
@@ -4864,7 +4864,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                         Figure: {section.caption}
                       </p>
                     )}
-                    {section.attribution && (
+                    {section.attribution && !/wikimedia|wikipedia|commons\.wiki/i.test(section.attribution) && (
                       <p style={{ fontSize: `${fmt.fontSize - 3}px`, color: "#9ca3af", marginTop: "2px", fontFamily: fmt.fontFamily }}>
                         Source: {section.attribution}
                       </p>
