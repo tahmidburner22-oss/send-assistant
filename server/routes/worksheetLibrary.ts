@@ -737,6 +737,67 @@ router.patch("/entries/:id/curate", requireAuth, requireSuperAdmin, async (req: 
   }
 });
 
+// ── PATCH /api/library/entries/:id/reingest-teacher — re-parse teacher sections from PDF ──
+
+router.patch("/entries/:id/reingest-teacher", requireAuth, requireSuperAdmin, pdfUpload.single("pdf"), async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const existing = await db.prepare("SELECT id FROM worksheet_library WHERE id = ?").get(id) as { id: string } | undefined;
+    if (!existing) return res.status(404).json({ error: "Entry not found" });
+    let pdfText = "";
+    if (req.file) {
+      try {
+        const pdfParse = (await import("pdf-parse" as any)).default;
+        const result = await pdfParse(req.file.buffer);
+        pdfText = result.text || "";
+      } catch (e: any) {
+        console.warn("[reingest-teacher] pdf-parse failed:", e?.message);
+      }
+      if (!pdfText || pdfText.trim().length < 50) {
+        try {
+          const { execSync } = await import("child_process");
+          const { writeFileSync, unlinkSync, readFileSync } = await import("fs");
+          const os = await import("os");
+          const path = await import("path");
+          const tmpIn = path.join(os.tmpdir(), `reingest_${Date.now()}.pdf`);
+          const tmpOut = path.join(os.tmpdir(), `reingest_${Date.now()}.txt`);
+          writeFileSync(tmpIn, req.file.buffer);
+          try {
+            execSync(`pdftotext -layout "${tmpIn}" "${tmpOut}"`, { timeout: 30000 });
+            pdfText = readFileSync(tmpOut, "utf8");
+          } finally {
+            try { unlinkSync(tmpIn); } catch {}
+            try { unlinkSync(tmpOut); } catch {}
+          }
+        } catch (e2: any) {
+          console.warn("[reingest-teacher] pdftotext fallback failed:", e2?.message);
+        }
+      }
+    } else if (req.body && req.body.pdfText) {
+      pdfText = req.body.pdfText;
+    }
+    if (!pdfText) return res.status(400).json({ error: "No PDF text could be extracted" });
+    const teacherSections: any[] = [];
+    const teacherMatch = pdfText.match(/TEACHER COPY[\s\S]*$/i);
+    if (teacherMatch) {
+      teacherSections.push({
+        id: uuidv4(),
+        type: "q-teacher-answers",
+        title: "ANSWER KEY",
+        content: teacherMatch[0].trim(),
+        teacherOnly: true,
+      });
+    }
+    await db.prepare("UPDATE worksheet_library SET teacher_sections = ?, updated_at = NOW() WHERE id = ?").run(
+      JSON.stringify(teacherSections), id
+    );
+    res.json({ success: true, teacherSectionsCount: teacherSections.length, preview: teacherSections[0]?.content?.substring(0, 200) });
+  } catch (err: any) {
+    console.error("[reingest-teacher] error:", err.message);
+    res.status(500).json({ error: "Failed to re-ingest teacher sections", detail: err.message });
+  }
+});
+
 // ── DELETE /api/library/entries/:id — delete a library entry ─────────────────
 
 router.delete("/entries/:id", requireAuth, requireSuperAdmin, async (req: Request, res: Response) => {
