@@ -39,6 +39,10 @@ const LEGACY_SECTION_TYPE_ALIASES: Record<string, string> = {
   "section-heading": "section-header",
   "section-divider": "section-header",
   "section-break": "section-header",
+  // Teacher section aliases
+  "q-teacher-answers": "mark-scheme",
+  "teacher-answers": "mark-scheme",
+  "answer-key": "mark-scheme",
 };
 
 function normalizeWorksheetSectionType(type: unknown): string {
@@ -2940,26 +2944,35 @@ function SelfReflectionSection({ content, fmt, overlayColor = "white" }: { conte
 
     const etMatch = content.match(/EXIT_TICKET:\s*([^\n]+)/i);
     if (etMatch) exitTicketText = etMatch[1].trim();
-  } else if (/^A\.\s*How confident|\| Not Yet \| Getting There \| Confident/i.test(content)) {
-    // Library format: A. How confident... table rows | topic | Not Yet | Getting There | Confident
-    // B. Written reflection prompts
-    // Exit Ticket: ...
+  } else if (/A\.?\s*How confident|\| Not Yet \| Getting There \| Confident|Not Yet.*Getting There.*Confident/i.test(content)) {
+    // Library format (PDF-extracted): handles "A. How confident" and "A How confident" (no period)
+    // Also handles PDF-extracted format with ■ checkboxes on separate lines
     const lines = content.split("\n");
     let inSectionA = false;
     let inSectionB = false;
     for (const line of lines) {
       const t = line.trim();
       if (!t) continue;
-      if (/^A\.\s*How confident/i.test(t)) { inSectionA = true; inSectionB = false; continue; }
-      if (/^B\.\s*Written reflection/i.test(t)) { inSectionA = false; inSectionB = true; continue; }
+      // Skip pure checkbox/symbol lines and column header lines
+      if (/^[■□✓✗\s]+$/.test(t)) continue;
+      if (/^(Topic|Not Yet|Getting There|Confident)$/i.test(t)) continue;
+      if (/^Review your understanding/i.test(t)) continue;
+      if (/A\.?\s*How confident/i.test(t)) { inSectionA = true; inSectionB = false; continue; }
+      if (/B\.?\s*Written reflection/i.test(t)) { inSectionA = false; inSectionB = true; continue; }
       if (/^Exit Ticket:/i.test(t)) { exitTicketText = t.replace(/^Exit Ticket:\s*/i, "").trim(); inSectionA = false; inSectionB = false; continue; }
       if (inSectionA) {
         // Lines like: "Series vs Parallel circuits | Not Yet | Getting There | Confident"
+        // or just: "Series vs Parallel circuits" (PDF-extracted, one topic per line)
         const topicMatch = t.match(/^(.+?)\s*\|\s*Not Yet/i);
-        if (topicMatch) topics.push(topicMatch[1].trim());
-        else if (!/Not Yet|Getting There|Confident/i.test(t)) topics.push(t.replace(/^[•\-\*\d.)]\s*/, "").trim());
+        if (topicMatch) {
+          topics.push(topicMatch[1].trim());
+        } else if (!/Not Yet|Getting There|Confident|■|□/i.test(t)) {
+          const cleaned = t.replace(/^[•\-\*\d.)\s]+/, "").trim();
+          if (cleaned.length > 2) topics.push(cleaned);
+        }
       } else if (inSectionB) {
-        reflectionPrompts.push(t.replace(/^[•\-\*\d.)]\s*/, "").trim());
+        const cleaned = t.replace(/^[•\-\*\d.)\s]+/, "").trim();
+        if (cleaned.length > 2) reflectionPrompts.push(cleaned);
       }
     }
   } else {
@@ -3083,7 +3096,13 @@ function SentenceStartersSection({ content, fmt, overlayColor = "white" }: { con
 
 function MarkSchemeSection({ content, fmt }: { content: string; fmt: ReturnType<typeof getSendFormatting> }) {
   const { fontSize: textSize, fontFamily } = fmt;
-  const lines = content.split("\n");
+  // Strip the TEACHER COPY header lines (already shown in the crimson banner above)
+  const cleanContent = content
+    .replace(/^TEACHER COPY[^\n]*\n?/im, '')
+    .replace(/^Not for Student Distribution[^\n]*\n?/im, '')
+    .replace(/^✓[^\n]*\n?/gm, (m) => m.startsWith('✓ Marking') ? m : '')
+    .trim();
+  const lines = cleanContent.split("\n");
 
   // Parse into typed entries: section-header, guidance, question, answer-line
   type MsEntry =
@@ -3106,10 +3125,22 @@ function MarkSchemeSection({ content, fmt }: { content: string; fmt: ReturnType<
       entries.push({ kind: 'guidance', text: line });
       continue;
     }
-    // Question header: Q1, Q2, Q1., Q1:, Q1 [2m], Challenge Question, etc.
-    const qMatch = line.match(/^(Q\d+|Challenge Question|Challenge)\s*[.:\-—]?\s*(.*?)\s*(\[\d+m?\])?\s*$/i);
+    // Question header: Q1, Q2, Q1., Q1:, Q1 [2m], Q1 4m, QCh, Challenge Question, etc.
+    const qMatch = line.match(/^(Q(?:Ch|\d+)|Challenge Question|Challenge)\s*[.:\-—]?\s*(.*?)\s*(?:(\[\d+m?\])|(?<![\w])([1-9]\d?m))?\s*$/i);
     if (qMatch) {
-      entries.push({ kind: 'question', qLabel: qMatch[1], marks: qMatch[3] || '', rest: qMatch[2] || '' });
+      entries.push({ kind: 'question', qLabel: qMatch[1], marks: qMatch[3] || qMatch[4] || '', rest: qMatch[2] || '' });
+      continue;
+    }
+    // Standalone marks line: "4m", "7m", "3m" on its own line — attach to previous question
+    if (/^\d+m$/.test(line)) {
+      // Find the last question entry and update its marks
+      for (let ei = entries.length - 1; ei >= 0; ei--) {
+        const e = entries[ei];
+        if (e.kind === 'question' && !e.marks) {
+          (e as any).marks = line;
+          break;
+        }
+      }
       continue;
     }
     // Everything else is an answer line
