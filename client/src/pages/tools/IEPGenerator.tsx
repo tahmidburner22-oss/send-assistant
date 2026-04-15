@@ -364,21 +364,23 @@ export default function EHCPPlanGenerator() {
   const extractFileText = async (file: File): Promise<string> => {
     const fd = new FormData();
     fd.append("document", file);
-    fd.append("language", "en");
-    fd.append("yearGroup", "year10");
-    const res = await fetch("/api/revision/upload", { method: "POST", headers: authHeaders(), credentials: "include", body: fd });
-    if (!res.ok) throw new Error(`Upload failed for ${file.name}`);
+    // Use the dedicated EHCP extraction endpoint — returns raw text without
+    // any AI processing, preserving structure (line breaks, headings, scores)
+    const res = await fetch("/api/ehcp/extract", { method: "POST", credentials: "include", body: fd });
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.error || `Upload failed for ${file.name}`);
+    }
     const { jobId } = await res.json();
-    for (let i = 0; i < 60; i++) {
+    // Poll up to 90 seconds (large PDFs can take a moment)
+    for (let i = 0; i < 45; i++) {
       await new Promise(r => setTimeout(r, 2000));
-      const poll = await fetch(`/api/revision/job/${jobId}`, {
-        credentials: "include", credentials: "include",
-      });
+      const poll = await fetch(`/api/ehcp/job/${jobId}`, { credentials: "include" });
       const data = await poll.json();
       if (data.status === "done") return data.text || "";
       if (data.status === "error") throw new Error(data.error || `Processing failed for ${file.name}`);
     }
-    throw new Error(`Timed out processing ${file.name}`);
+    throw new Error(`Timed out processing ${file.name} — please try a smaller file`);
   };
 
   const handleEvidenceNext = async () => {

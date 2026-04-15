@@ -18,6 +18,9 @@ import { useApp } from "@/contexts/AppContext";
 import { schools as schoolsApi, pupils as pupilsApi } from "@/lib/api";
 import { useLocation } from "wouter";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import WorksheetRenderer from "@/components/WorksheetRenderer";
+import WorksheetErrorBoundary from "@/components/WorksheetErrorBoundary";
 
 const ROLE_LABELS: Record<string, string> = {
   mat_admin: "MAT Admin",
@@ -1203,7 +1206,72 @@ function WorksheetLibraryPanel() {
   const [uploadForm, setUploadForm] = useState({ subject: "", topic: "", yearGroup: "", title: "" });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewEntry, setPreviewEntry] = useState<any | null>(null);
+  const [viewEntry, setViewEntry] = useState<any | null>(null);
+  const [viewLoading, setViewLoading] = useState(false);
+  const [reingestTarget, setReingestTarget] = useState<{ id: string; title: string } | null>(null);
+  const [reingestFile, setReingestFile] = useState<File | null>(null);
+  const [reingestLoading, setReingestLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const reingestFileRef = useRef<HTMLInputElement>(null);
+
+  const handleViewEntry = async (id: string, title: string) => {
+    setViewLoading(true);
+    try {
+      const r = await fetch(`/api/library/entries/${id}`, { credentials: "include" });
+      if (!r.ok) throw new Error("Failed to load entry");
+      const data = await r.json();
+      const entry = data.entry;
+      const sections = Array.isArray(entry.sections) ? entry.sections : [];
+      const teacherSections = Array.isArray(entry.teacher_sections) ? entry.teacher_sections : [];
+      // Build a WorksheetData object compatible with WorksheetRenderer
+      const worksheetData = {
+        title: entry.title || title,
+        subtitle: entry.subtitle || "",
+        sections: [...sections, ...teacherSections],
+        metadata: {
+          subject: entry.subject || "",
+          topic: entry.topic || "",
+          yearGroup: entry.year_group || "",
+        },
+        fromLibrary: true,
+        libraryId: entry.id,
+        canonicalTopicKey: entry.canonical_topic_key || "",
+        structuralHash: "",
+        libraryAssets: [],
+        availableTiers: [],
+      };
+      setViewEntry(worksheetData);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to load worksheet");
+    }
+    setViewLoading(false);
+  };
+
+  const handleReingestTeacher = async () => {
+    if (!reingestTarget || !reingestFile) return;
+    setReingestLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append("pdf", reingestFile);
+      const r = await fetch(`/api/library/entries/${reingestTarget.id}/reingest-teacher`, {
+        method: "PATCH",
+        credentials: "include",
+        body: formData,
+      });
+      if (r.ok) {
+        const data = await r.json();
+        toast.success(`Teacher sections re-ingested! ${data.teacher_sections_count ?? 0} sections extracted.`);
+        setReingestTarget(null);
+        setReingestFile(null);
+        if (reingestFileRef.current) reingestFileRef.current.value = "";
+        await loadEntries();
+      } else {
+        const err = await r.json();
+        toast.error(err.error || "Re-ingest failed");
+      }
+    } catch { toast.error("Re-ingest failed"); }
+    setReingestLoading(false);
+  };
 
   const loadEntries = async () => {
     setLoading(true);
@@ -1387,11 +1455,26 @@ function WorksheetLibraryPanel() {
                       {entry.curated && <Badge className="text-[10px] py-0 bg-emerald-100 text-emerald-700 border-emerald-200">Curated</Badge>}
                       <Badge variant="outline" className="text-[10px] py-0">{entry.source === "pdf" ? "PDF" : "AI"}</Badge>
                     </div>
-                    <p className="text-xs text-muted-foreground mt-0.5">{entry.subject} · {entry.topic} · {entry.year_group} · {Array.isArray(entry.sections) ? entry.sections.length : 0} sections</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {entry.subject} · {entry.topic} · {entry.year_group}
+                      {entry.tier && entry.tier !== "standard" && ` · ${entry.tier}`}
+                      {` · ${entry.sections_count ?? 0} sections`}
+                      {entry.teacher_sections_count > 0 && ` · ${entry.teacher_sections_count} teacher`}
+                    </p>
                   </div>
                   <div className="flex items-center gap-1.5 flex-shrink-0">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="text-xs h-7 px-2 gap-1"
+                      disabled={viewLoading}
+                      onClick={() => handleViewEntry(entry.id, entry.title)}
+                    >
+                      <Eye className="w-3 h-3" />
+                      View
+                    </Button>
                     <Button size="sm" variant="outline" className="text-xs h-7 px-2" onClick={() => setPreviewEntry(previewEntry?.id === entry.id ? null : entry)}>
-                      {previewEntry?.id === entry.id ? "Hide" : "Preview"}
+                      {previewEntry?.id === entry.id ? "Hide" : "JSON"}
                     </Button>
                     <Button
                       size="sm"
@@ -1399,7 +1482,15 @@ function WorksheetLibraryPanel() {
                       className={`text-xs h-7 px-2 ${entry.curated ? "bg-emerald-600 hover:bg-emerald-700 text-white" : ""}`}
                       onClick={() => handleCurate(entry.id, !entry.curated)}
                     >
-                      {entry.curated ? "Curated" : "Mark Curated"}
+                      {entry.curated ? "Curated" : "Curate"}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="text-xs h-7 px-2 text-amber-600 hover:bg-amber-50 border-amber-200"
+                      onClick={() => { setReingestTarget({ id: entry.id, title: entry.title }); setReingestFile(null); }}
+                    >
+                      Re-ingest
                     </Button>
                     <Button size="sm" variant="outline" className="text-xs h-7 px-2 text-red-600 hover:bg-red-50 border-red-200" onClick={() => handleDelete(entry.id, entry.title)}>
                       Delete
@@ -1429,6 +1520,73 @@ function WorksheetLibraryPanel() {
           )}
         </CardContent>
       </Card>
+
+      {/* Full Worksheet Viewer Dialog */}
+      <Dialog open={!!viewEntry} onOpenChange={(open) => { if (!open) setViewEntry(null); }}>
+        <DialogContent className="max-w-5xl w-full h-[90vh] flex flex-col p-0 gap-0">
+          <DialogHeader className="px-6 py-4 border-b border-border/50 flex-shrink-0">
+            <div className="flex items-center justify-between">
+              <DialogTitle className="text-base font-semibold">
+                {viewEntry?.title}
+              </DialogTitle>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <span>{viewEntry?.metadata?.subject}</span>
+                {viewEntry?.metadata?.yearGroup && <span>· {viewEntry.metadata.yearGroup}</span>}
+                <span>· {(viewEntry?.sections || []).length} sections</span>
+              </div>
+            </div>
+          </DialogHeader>
+          <div className="flex-1 overflow-y-auto p-6">
+            {viewEntry && (
+              <WorksheetErrorBoundary>
+                <WorksheetRenderer
+                  worksheet={viewEntry}
+                  viewMode="teacher"
+                  textSize={16}
+                  overlayColor="none"
+                />
+              </WorksheetErrorBoundary>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Re-ingest Teacher Sections Dialog */}
+      <Dialog open={!!reingestTarget} onOpenChange={(open) => { if (!open) { setReingestTarget(null); setReingestFile(null); } }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-sm font-semibold">Re-ingest Teacher Sections</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <p className="text-xs text-muted-foreground">
+              Upload the master PDF for <span className="font-medium text-foreground">{reingestTarget?.title}</span> to extract and replace its teacher answer key sections.
+            </p>
+            <div className="space-y-1">
+              <Label className="text-xs">Master Worksheet PDF *</Label>
+              <input
+                ref={reingestFileRef}
+                type="file"
+                accept=".pdf"
+                className="text-sm w-full"
+                onChange={e => setReingestFile(e.target.files?.[0] || null)}
+              />
+            </div>
+            <div className="flex gap-2 justify-end">
+              <Button size="sm" variant="outline" className="text-xs" onClick={() => { setReingestTarget(null); setReingestFile(null); }}>
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                className="text-xs bg-amber-600 hover:bg-amber-700 text-white"
+                disabled={!reingestFile || reingestLoading}
+                onClick={handleReingestTeacher}
+              >
+                {reingestLoading ? "Re-ingesting..." : "Re-ingest Teacher Sections"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

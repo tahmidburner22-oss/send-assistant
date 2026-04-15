@@ -87,6 +87,7 @@ import diagramProxyRouter from "./routes/diagram-proxy.js";
 import feedbackRouter from "./routes/feedback.js";
 import parentMessagesRouter from "./routes/parentMessages.js";
 import worksheetLibraryRouter from "./routes/worksheetLibrary.js";
+import ehcpRouter from "./routes/ehcp.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -335,6 +336,7 @@ app.use("/api/diagram-proxy", aiLimiter, diagramProxyRouter);
 app.use("/api/feedback", feedbackRouter);
 app.use("/api/messages", parentMessagesRouter);
 app.use("/api/library", worksheetLibraryRouter);
+app.use("/api/ehcp", aiLimiter, ehcpRouter);
 
 // ── Health check ──────────────────────────────────────────────────────────────
 app.get("/api/health", (_, res) => {
