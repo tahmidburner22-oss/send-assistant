@@ -7,6 +7,10 @@
  *   it simply extracts and returns the document text so the client-side EHCP
  *   generator can use it directly.
  *
+ * PDF extraction uses the system `pdftotext` binary (poppler-utils) via a
+ * child process — this is far more reliable than pdf-parse v2 which changed
+ * its API completely and requires a browser-like environment.
+ *
  * The endpoint uses the same async job pattern as the revision route to avoid
  * Railway's 30-second HTTP timeout on large documents.
  */
@@ -15,7 +19,13 @@ import { Router, Request, Response } from "express";
 import multer from "multer";
 import { requireAuth } from "../middleware/auth.js";
 import { randomUUID } from "crypto";
+import { exec } from "child_process";
+import { promisify } from "util";
+import { writeFile, unlink } from "fs/promises";
+import { tmpdir } from "os";
+import { join } from "path";
 
+const execAsync = promisify(exec);
 const router = Router();
 
 // ── Multer — memory storage, max 25MB ────────────────────────────────────────
@@ -60,18 +70,35 @@ setInterval(() => {
 async function extractText(buffer: Buffer, mimetype: string, filename: string): Promise<string> {
   let raw = "";
 
-  if (mimetype === "text/plain" || mimetype === "application/octet-stream") {
+  if (mimetype === "text/plain" || (mimetype === "application/octet-stream" && filename.endsWith(".txt"))) {
     raw = buffer.toString("utf-8");
   } else if (mimetype === "application/pdf") {
+    // Write buffer to a temp file and run pdftotext
+    const tmpPath = join(tmpdir(), `ehcp_${randomUUID()}.pdf`);
     try {
-      const pdfMod = await import("pdf-parse");
-      const pdfParse = (pdfMod as any).default || pdfMod;
-      const result = await pdfParse(buffer);
-      raw = result?.text ?? "";
+      await writeFile(tmpPath, buffer);
+      // -layout preserves table/column structure; stdout output with "-"
+      const { stdout } = await execAsync(`pdftotext -layout "${tmpPath}" -`, {
+        timeout: 30_000,
+        maxBuffer: 10 * 1024 * 1024,
+      });
+      raw = stdout;
     } catch (pdfErr: any) {
-      console.error("[EHCP extractText] pdf-parse error:", pdfErr?.message || pdfErr);
-      // Fallback: try reading as UTF-8 (may contain some readable text)
-      raw = buffer.toString("utf-8");
+      console.error("[EHCP extractText] pdftotext error:", pdfErr?.message || pdfErr);
+      // Try without -layout as fallback
+      try {
+        const { stdout } = await execAsync(`pdftotext "${tmpPath}" -`, {
+          timeout: 30_000,
+          maxBuffer: 10 * 1024 * 1024,
+        });
+        raw = stdout;
+      } catch (fallbackErr: any) {
+        console.error("[EHCP extractText] pdftotext fallback error:", fallbackErr?.message || fallbackErr);
+        raw = "";
+      }
+    } finally {
+      // Clean up temp file
+      unlink(tmpPath).catch(() => {});
     }
   } else if (
     mimetype === "application/msword" ||
