@@ -110,7 +110,9 @@ interface ParsedWorksheet {
 router.get("/entries", requireAuth, requireSuperAdmin, async (req: Request, res: Response) => {
   try {
     const { subject, curated, search } = req.query as Record<string, string>;
-    let sql = `SELECT id, subject, topic, year_group, tier, title, source, curated, version, created_at, updated_at
+    let sql = `SELECT id, subject, topic, year_group, tier, title, source, curated, version, created_at, updated_at,
+               JSON_ARRAY_LENGTH(sections) as sections_count,
+               JSON_ARRAY_LENGTH(teacher_sections) as teacher_sections_count
                FROM worksheet_library WHERE 1=1`;
     const params: unknown[] = [];
 

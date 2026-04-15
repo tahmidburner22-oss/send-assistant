@@ -42,7 +42,7 @@ export default function EHCPHub() {
               <p className="text-xs font-bold text-violet-900 mb-1">Key Legal Principle — Section F</p>
               <p className="text-xs text-violet-800 leading-relaxed">
                 <strong>Section F must specify exact provision.</strong> It cannot be vague or refer to other documents alone.
-                ISP, SSPP and ECHNAR are supporting documents — they do not replace Section F.
+                ISP, SSPP and EHCNAR are supporting documents — they do not replace Section F.
                 Vague wording can be legally challenged and leaves the child without enforceable protection.
               </p>
             </div>
@@ -125,20 +125,20 @@ export default function EHCPHub() {
                 <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center flex-shrink-0"><AlertTriangle className="w-4 h-4" /></div>
                 <div className="flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-sm font-bold text-foreground">3. ECHNAR — EHC Needs Assessment Review</span>
+                    <span className="text-sm font-bold text-foreground">3. EHCNAR — EHC Needs Assessment Review</span>
                     <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700">Review Process</span>
                   </div>
                   <p className="text-xs text-muted-foreground mt-0.5">This is NOT provision — it does not go in Section F</p>
                 </div>
               </div>
-              <p className="text-xs text-muted-foreground leading-relaxed">ECHNAR belongs in the review process, annual review notes and Section E (outcomes) updates. It is a review mechanism, not a provision document.</p>
+              <p className="text-xs text-muted-foreground leading-relaxed">EHCNAR belongs in the review process, annual review notes and Section E (outcomes) updates. It is a review mechanism, not a provision document.</p>
               <div className="space-y-1.5">
                 <div className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0 mt-0.5" /><p className="text-xs">Reference in the annual review notes</p></div>
                 <div className="flex items-start gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0 mt-0.5" /><p className="text-xs">Use to update Section E outcomes at annual review</p></div>
               </div>
               <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3">
                 <p className="text-[10px] font-bold text-emerald-700 mb-1 uppercase tracking-wide">✓ Example Wording</p>
-                <p className="text-xs text-emerald-800 italic leading-relaxed">"Provision and outcomes to be reviewed annually through the ECHNAR process."</p>
+                <p className="text-xs text-emerald-800 italic leading-relaxed">"Provision and outcomes to be reviewed annually through the EHCNAR process."</p>
               </div>
             </CardContent>
           </Card>

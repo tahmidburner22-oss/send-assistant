@@ -30,7 +30,7 @@ const ehcpSidebarItem = {
   icon: ClipboardList,
   color: "text-violet-700",
   bg: "bg-violet-100",
-  description: "ISP, SSPP, ECHNAR guidance & EHCP drafting",
+  description: "ISP, SSPP, EHCNAR guidance & EHCP drafting",
   toolPrefixes: ["/ehcp-hub", "/tools/iep-generator"],
 };
 
