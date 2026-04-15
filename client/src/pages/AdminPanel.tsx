@@ -4,7 +4,7 @@ import {
   AlertTriangle, BarChart3, Settings2, Terminal, RefreshCw,
   Eye, EyeOff, CheckCircle2, Cpu, Zap, Globe, TrendingUp,
   CreditCard, Building2, FileText, ChevronDown, ChevronRight,
-  PoundSterling, Calendar, ExternalLink
+  PoundSterling, Calendar, ExternalLink, Image, Presentation, Trash2, Plus, Download
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -298,7 +298,13 @@ export default function AdminPanel() {
           <TabsTrigger value="breach" className="text-xs py-1.5 flex-1"><Shield className="w-3.5 h-3.5 mr-1" />Breaches</TabsTrigger>
           <TabsTrigger value="settings" className="text-xs py-1.5 flex-1"><Settings2 className="w-3.5 h-3.5 mr-1" />System</TabsTrigger>
           {isPlatformOwner && (
-            <TabsTrigger value="library" className="text-xs py-1.5 flex-1 bg-amber-50 text-amber-700 data-[state=active]:bg-amber-600 data-[state=active]:text-white"><FileText className="w-3.5 h-3.5 mr-1" />Library</TabsTrigger>
+            <TabsTrigger value="library" className="text-xs py-1.5 flex-1 bg-amber-50 text-amber-700 data-[state=active]:bg-amber-600 data-[state=active]:text-white"><FileText className="w-3.5 h-3.5 mr-1" />Worksheets</TabsTrigger>
+          )}
+          {isPlatformOwner && (
+            <TabsTrigger value="presentations" className="text-xs py-1.5 flex-1 bg-blue-50 text-blue-700 data-[state=active]:bg-blue-600 data-[state=active]:text-white"><Presentation className="w-3.5 h-3.5 mr-1" />Slides</TabsTrigger>
+          )}
+          {isPlatformOwner && (
+            <TabsTrigger value="diagrams" className="text-xs py-1.5 flex-1 bg-emerald-50 text-emerald-700 data-[state=active]:bg-emerald-600 data-[state=active]:text-white"><Image className="w-3.5 h-3.5 mr-1" />Diagrams</TabsTrigger>
           )}
           {isSuperAdmin && (
             <TabsTrigger value="super" className="text-xs py-1.5 flex-1 bg-purple-50 text-purple-700 data-[state=active]:bg-purple-600 data-[state=active]:text-white">
@@ -1189,6 +1195,20 @@ export default function AdminPanel() {
           <WorksheetLibraryPanel />
         </TabsContent>
 
+        {/* ── PRESENTATION LIBRARY ── */}
+        {isPlatformOwner && (
+          <TabsContent value="presentations" className="space-y-4 mt-4">
+            <PresentationLibraryPanel />
+          </TabsContent>
+        )}
+
+        {/* ── DIAGRAM LIBRARY ── */}
+        {isPlatformOwner && (
+          <TabsContent value="diagrams" className="space-y-4 mt-4">
+            <DiagramLibraryPanel />
+          </TabsContent>
+        )}
+
       </Tabs>
     </div>
   );
@@ -1202,6 +1222,7 @@ function WorksheetLibraryPanel() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [filterSubject, setFilterSubject] = useState("");
+  const [filterTier, setFilterTier] = useState("");
   const [uploading, setUploading] = useState(false);
   const [uploadForm, setUploadForm] = useState({ subject: "", topic: "", yearGroup: "", title: "" });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -1350,14 +1371,27 @@ function WorksheetLibraryPanel() {
     setUploading(false);
   };
 
+  const TIER_LABELS: Record<string, string> = {
+    foundation: "Foundation",
+    higher: "Higher",
+    scaffolded: "Scaffolded",
+    mixed: "Mixed",
+    standard: "Standard",
+  };
+
   const filtered = entries.filter(e => {
     const q = search.toLowerCase();
     const matchSearch = !q || e.title?.toLowerCase().includes(q) || e.topic?.toLowerCase().includes(q) || e.subject?.toLowerCase().includes(q);
-    const matchSubject = !filterSubject || e.subject === filterSubject;
-    return matchSearch && matchSubject;
+    const matchSubject = !filterSubject || e.subject?.toLowerCase() === filterSubject.toLowerCase();
+    const entryTier = (e.tier || e.difficulty || "").toLowerCase();
+    const matchTier = !filterTier || entryTier === filterTier.toLowerCase();
+    return matchSearch && matchSubject && matchTier;
   });
 
-  const subjects = [...new Set(entries.map(e => e.subject).filter(Boolean))];
+  // Build unique subjects from entries, normalised
+  const subjects = [...new Set(entries.map(e => e.subject).filter(Boolean))].sort();
+  // Build unique tiers from entries
+  const tiers = [...new Set(entries.map(e => (e.tier || e.difficulty || "")).toLowerCase().trim()).values()].filter(Boolean).sort();
 
   return (
     <div className="space-y-6">
@@ -1427,17 +1461,62 @@ function WorksheetLibraryPanel() {
           <div className="flex items-center justify-between gap-2">
             <CardTitle className="text-sm font-semibold flex items-center gap-2">
               <Activity className="w-4 h-4 text-brand" /> Library Browser
+              <span className="text-xs font-normal text-muted-foreground">({filtered.length} of {entries.length})</span>
             </CardTitle>
             <Button size="sm" variant="outline" className="text-xs" onClick={loadEntries}>
               <RefreshCw className="w-3 h-3 mr-1" /> Refresh
             </Button>
           </div>
-          <div className="flex gap-2 mt-2">
-            <Input className="text-xs h-8" placeholder="Search title, topic, subject..." value={search} onChange={e => setSearch(e.target.value)} />
-            <select className="text-xs border border-border rounded-md px-2 bg-background" value={filterSubject} onChange={e => setFilterSubject(e.target.value)}>
-              <option value="">All subjects</option>
-              {subjects.map(s => <option key={s} value={s}>{s}</option>)}
-            </select>
+          {/* Search */}
+          <Input className="text-xs h-8 mt-2" placeholder="Search title, topic, subject..." value={search} onChange={e => setSearch(e.target.value)} />
+          {/* Subject tabs */}
+          <div className="flex gap-1.5 mt-2 flex-wrap">
+            <button
+              className={`text-xs px-3 py-1 rounded-full border transition-colors ${
+                filterSubject === "" ? "bg-brand text-white border-brand" : "bg-background text-muted-foreground border-border hover:border-brand/50"
+              }`}
+              onClick={() => setFilterSubject("")}
+            >
+              All
+            </button>
+            {subjects.map(s => (
+              <button
+                key={s}
+                className={`text-xs px-3 py-1 rounded-full border transition-colors ${
+                  filterSubject === s ? "bg-brand text-white border-brand" : "bg-background text-muted-foreground border-border hover:border-brand/50"
+                }`}
+                onClick={() => setFilterSubject(filterSubject === s ? "" : s)}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+          {/* Tier filter pills */}
+          <div className="flex gap-1.5 mt-1.5 flex-wrap">
+            <button
+              className={`text-xs px-2.5 py-0.5 rounded-full border transition-colors ${
+                filterTier === "" ? "bg-slate-700 text-white border-slate-700" : "bg-background text-muted-foreground border-border hover:border-slate-400"
+              }`}
+              onClick={() => setFilterTier("")}
+            >
+              All tiers
+            </button>
+            {["foundation", "higher", "scaffolded", "mixed"].map(t => (
+              <button
+                key={t}
+                className={`text-xs px-2.5 py-0.5 rounded-full border transition-colors ${
+                  filterTier === t
+                    ? t === "foundation" ? "bg-blue-600 text-white border-blue-600"
+                      : t === "higher" ? "bg-purple-600 text-white border-purple-600"
+                      : t === "scaffolded" ? "bg-emerald-600 text-white border-emerald-600"
+                      : "bg-amber-600 text-white border-amber-600"
+                    : "bg-background text-muted-foreground border-border hover:border-slate-400"
+                }`}
+                onClick={() => setFilterTier(filterTier === t ? "" : t)}
+              >
+                {TIER_LABELS[t] ?? t}
+              </button>
+            ))}
           </div>
         </CardHeader>
         <CardContent>
@@ -1454,6 +1533,17 @@ function WorksheetLibraryPanel() {
                       <span className="text-sm font-medium truncate">{entry.title}</span>
                       {entry.curated && <Badge className="text-[10px] py-0 bg-emerald-100 text-emerald-700 border-emerald-200">Curated</Badge>}
                       <Badge variant="outline" className="text-[10px] py-0">{entry.source === "pdf" ? "PDF" : "AI"}</Badge>
+                      {(() => {
+                        const t = (entry.tier || entry.difficulty || "").toLowerCase();
+                        if (!t || t === "standard") return null;
+                        const tierColors: Record<string, string> = {
+                          foundation: "bg-blue-100 text-blue-700 border-blue-200",
+                          higher: "bg-purple-100 text-purple-700 border-purple-200",
+                          scaffolded: "bg-emerald-100 text-emerald-700 border-emerald-200",
+                          mixed: "bg-amber-100 text-amber-700 border-amber-200",
+                        };
+                        return <Badge className={`text-[10px] py-0 ${tierColors[t] || ""}`}>{TIER_LABELS[t] ?? t}</Badge>;
+                      })()}
                     </div>
                     <p className="text-xs text-muted-foreground mt-0.5">
                       {entry.subject} · {entry.topic} · {entry.year_group}
@@ -1587,6 +1677,357 @@ function WorksheetLibraryPanel() {
           </div>
         </DialogContent>
       </Dialog>
+    </div>
+  );
+}
+
+// ───────────────────────────────────────────────────────────────────────────────────
+// PRESENTATION LIBRARY PANEL
+// ───────────────────────────────────────────────────────────────────────────────────
+function PresentationLibraryPanel() {
+  const [entries, setEntries] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [subjectFilter, setSubjectFilter] = useState("All");
+  const [tierFilter, setTierFilter] = useState("All");
+  const [viewEntry, setViewEntry] = useState<any | null>(null);
+  const [viewLoading, setViewLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 20;
+
+  const loadEntries = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/presentation-library/entries", { credentials: "include" });
+      const data = await res.json();
+      setEntries(data.entries || []);
+    } catch { /* ignore */ }
+    setLoading(false);
+  };
+
+  useEffect(() => { loadEntries(); }, []);
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Delete this presentation?")) return;
+    await fetch(`/api/presentation-library/entries/${id}`, { method: "DELETE", credentials: "include" });
+    setEntries(e => e.filter(x => x.id !== id));
+  };
+
+  const handleToggleCurate = async (id: string, current: number) => {
+    await fetch(`/api/presentation-library/entries/${id}/curate`, {
+      method: "PATCH", credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ curated: current ? 0 : 1 })
+    });
+    setEntries(e => e.map(x => x.id === id ? { ...x, curated: current ? 0 : 1 } : x));
+  };
+
+  const handleView = async (entry: any) => {
+    setViewLoading(true);
+    try {
+      const res = await fetch(`/api/presentation-library/entries/${entry.id}`, { credentials: "include" });
+      const data = await res.json();
+      setViewEntry(data.entry);
+    } catch { setViewEntry(entry); }
+    setViewLoading(false);
+  };
+
+  const subjects = ["All", ...Array.from(new Set(entries.map(e => e.subject).filter(Boolean))).sort()];
+  const tiers = ["All", "Foundation", "Higher", "Scaffolded", "Mixed"];
+
+  const filtered = entries.filter(e => {
+    if (subjectFilter !== "All" && e.subject !== subjectFilter) return false;
+    if (tierFilter !== "All" && e.tier !== tierFilter) return false;
+    if (search && !`${e.title} ${e.subject} ${e.topic}`.toLowerCase().includes(search.toLowerCase())) return false;
+    return true;
+  });
+
+  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+
+  const tierColour: Record<string, string> = {
+    Foundation: "bg-blue-100 text-blue-700",
+    Higher: "bg-purple-100 text-purple-700",
+    Scaffolded: "bg-green-100 text-green-700",
+    Mixed: "bg-orange-100 text-orange-700",
+  };
+
+  return (
+    <div className="space-y-4">
+      <Card className="border-border/50">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm font-semibold flex items-center gap-2">
+            <Presentation className="w-4 h-4 text-blue-600" />
+            Presentation Library
+            <Badge variant="secondary" className="ml-auto text-xs">{entries.length} Total</Badge>
+            <Badge variant="outline" className="text-xs text-blue-600">{entries.filter(e => e.curated).length} Curated</Badge>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {/* Subject tabs */}
+          <div className="flex flex-wrap gap-1">
+            {subjects.map(s => (
+              <button key={s} onClick={() => { setSubjectFilter(s); setPage(1); }}
+                className={`px-2 py-0.5 rounded text-xs font-medium transition-colors ${subjectFilter === s ? "bg-blue-600 text-white" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}>
+                {s}
+              </button>
+            ))}
+          </div>
+          {/* Tier filter pills */}
+          <div className="flex flex-wrap gap-1">
+            {tiers.map(t => (
+              <button key={t} onClick={() => { setTierFilter(t); setPage(1); }}
+                className={`px-2 py-0.5 rounded-full text-xs font-medium border transition-colors ${tierFilter === t ? "bg-blue-600 text-white border-blue-600" : "border-border text-muted-foreground hover:bg-muted/50"}`}>
+                {t}
+              </button>
+            ))}
+          </div>
+          {/* Search */}
+          <Input className="text-xs h-8" placeholder="Search presentations..." value={search} onChange={e => { setSearch(e.target.value); setPage(1); }} />
+
+          {loading ? (
+            <div className="text-xs text-muted-foreground py-4 text-center">Loading...</div>
+          ) : paginated.length === 0 ? (
+            <div className="text-xs text-muted-foreground py-8 text-center">
+              {entries.length === 0 ? "No presentations in library yet. Generate presentations from the Lesson Hub to populate this library." : "No results match your filters."}
+            </div>
+          ) : (
+            <div className="space-y-1">
+              {paginated.map(entry => (
+                <div key={entry.id} className="flex items-center gap-2 p-2 rounded-lg border border-border/40 hover:bg-muted/30 text-xs">
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium truncate">{entry.title}</div>
+                    <div className="text-muted-foreground flex gap-1 flex-wrap mt-0.5">
+                      {entry.subject && <Badge variant="outline" className="text-[10px] px-1 py-0">{entry.subject}</Badge>}
+                      {entry.year_group && <Badge variant="outline" className="text-[10px] px-1 py-0">{entry.year_group}</Badge>}
+                      {entry.tier && <Badge className={`text-[10px] px-1 py-0 ${tierColour[entry.tier] || "bg-gray-100 text-gray-600"}`}>{entry.tier}</Badge>}
+                      <span className="text-muted-foreground">{entry.slide_count} slides</span>
+                    </div>
+                  </div>
+                  <div className="flex gap-1 shrink-0">
+                    <Button size="sm" variant="outline" className="h-6 text-[10px] px-2" onClick={() => handleView(entry)} disabled={viewLoading}>View</Button>
+                    <Button size="sm" variant="outline" className={`h-6 text-[10px] px-2 ${entry.curated ? "bg-amber-50 text-amber-700 border-amber-300" : ""}`} onClick={() => handleToggleCurate(entry.id, entry.curated)}>
+                      {entry.curated ? "✓ Curated" : "Curate"}
+                    </Button>
+                    <Button size="sm" variant="outline" className="h-6 text-[10px] px-2 text-red-600 hover:bg-red-50" onClick={() => handleDelete(entry.id)}>
+                      <Trash2 className="w-3 h-3" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between pt-2">
+              <span className="text-xs text-muted-foreground">{filtered.length} results</span>
+              <div className="flex gap-1">
+                <Button size="sm" variant="outline" className="h-6 text-xs px-2" disabled={page === 1} onClick={() => setPage(p => p - 1)}>Prev</Button>
+                <span className="text-xs px-2 py-1">{page} / {totalPages}</span>
+                <Button size="sm" variant="outline" className="h-6 text-xs px-2" disabled={page === totalPages} onClick={() => setPage(p => p + 1)}>Next</Button>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* View Presentation Dialog */}
+      {viewEntry && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={() => setViewEntry(null)}>
+          <div className="bg-background rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-4 border-b sticky top-0 bg-background z-10">
+              <div>
+                <h2 className="font-semibold text-sm">{viewEntry.title}</h2>
+                <div className="flex gap-1 mt-1 flex-wrap">
+                  {viewEntry.subject && <Badge variant="outline" className="text-[10px]">{viewEntry.subject}</Badge>}
+                  {viewEntry.year_group && <Badge variant="outline" className="text-[10px]">{viewEntry.year_group}</Badge>}
+                  {viewEntry.tier && <Badge className={`text-[10px] ${tierColour[viewEntry.tier] || "bg-gray-100 text-gray-600"}`}>{viewEntry.tier}</Badge>}
+                  <Badge variant="secondary" className="text-[10px]">{viewEntry.slide_count} slides</Badge>
+                </div>
+              </div>
+              <Button size="sm" variant="ghost" onClick={() => setViewEntry(null)}>✕</Button>
+            </div>
+            <div className="p-4 space-y-3">
+              {(viewEntry.slides || []).length === 0 ? (
+                <div className="text-xs text-muted-foreground text-center py-8">No slide data available for this presentation.</div>
+              ) : (
+                (viewEntry.slides as any[]).map((slide: any, i: number) => (
+                  <div key={i} className="border rounded-lg p-3 bg-muted/20">
+                    <div className="text-xs font-semibold text-muted-foreground mb-1">Slide {i + 1}{slide.title ? ` — ${slide.title}` : ""}</div>
+                    {slide.content && <div className="text-xs whitespace-pre-wrap">{slide.content}</div>}
+                    {slide.bullets && Array.isArray(slide.bullets) && (
+                      <ul className="list-disc list-inside text-xs space-y-0.5 mt-1">
+                        {slide.bullets.map((b: string, j: number) => <li key={j}>{b}</li>)}
+                      </ul>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ───────────────────────────────────────────────────────────────────────────────────
+// DIAGRAM LIBRARY PANEL
+// ───────────────────────────────────────────────────────────────────────────────────
+function DiagramLibraryPanel() {
+  const [entries, setEntries] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [subjectFilter, setSubjectFilter] = useState("All");
+  const [viewEntry, setViewEntry] = useState<any | null>(null);
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 24;
+
+  const loadEntries = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/diagram-library/entries", { credentials: "include" });
+      const data = await res.json();
+      setEntries(data.entries || []);
+    } catch { /* ignore */ }
+    setLoading(false);
+  };
+
+  useEffect(() => { loadEntries(); }, []);
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Delete this diagram?")) return;
+    await fetch(`/api/diagram-library/entries/${id}`, { method: "DELETE", credentials: "include" });
+    setEntries(e => e.filter(x => x.id !== id));
+  };
+
+  const handleToggleCurate = async (id: string, current: number) => {
+    await fetch(`/api/diagram-library/entries/${id}/curate`, {
+      method: "PATCH", credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ curated: current ? 0 : 1 })
+    });
+    setEntries(e => e.map(x => x.id === id ? { ...x, curated: current ? 0 : 1 } : x));
+  };
+
+  const subjects = ["All", ...Array.from(new Set(entries.map(e => e.subject).filter(Boolean))).sort()];
+
+  const filtered = entries.filter(e => {
+    if (subjectFilter !== "All" && e.subject !== subjectFilter) return false;
+    if (search && !`${e.title} ${e.subject} ${e.topic} ${e.description || ""}`.toLowerCase().includes(search.toLowerCase())) return false;
+    return true;
+  });
+
+  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+
+  return (
+    <div className="space-y-4">
+      <Card className="border-border/50">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm font-semibold flex items-center gap-2">
+            <Image className="w-4 h-4 text-emerald-600" />
+            Diagram Library
+            <Badge variant="secondary" className="ml-auto text-xs">{entries.length} Total</Badge>
+            <Badge variant="outline" className="text-xs text-emerald-600">{entries.filter(e => e.curated).length} Curated</Badge>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {/* Subject tabs */}
+          <div className="flex flex-wrap gap-1">
+            {subjects.map(s => (
+              <button key={s} onClick={() => { setSubjectFilter(s); setPage(1); }}
+                className={`px-2 py-0.5 rounded text-xs font-medium transition-colors ${subjectFilter === s ? "bg-emerald-600 text-white" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}>
+                {s}
+              </button>
+            ))}
+          </div>
+          {/* Search */}
+          <Input className="text-xs h-8" placeholder="Search diagrams..." value={search} onChange={e => { setSearch(e.target.value); setPage(1); }} />
+
+          {loading ? (
+            <div className="text-xs text-muted-foreground py-4 text-center">Loading...</div>
+          ) : paginated.length === 0 ? (
+            <div className="text-xs text-muted-foreground py-8 text-center">
+              {entries.length === 0
+                ? "No diagrams in library yet. Diagrams are auto-added when worksheets with reference diagrams are generated."
+                : "No results match your filters."}
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+              {paginated.map(entry => (
+                <div key={entry.id} className="border rounded-lg overflow-hidden hover:shadow-md transition-shadow cursor-pointer group" onClick={() => setViewEntry(entry)}>
+                  <div className="aspect-video bg-muted flex items-center justify-center overflow-hidden">
+                    {entry.image_url ? (
+                      <img src={entry.image_url} alt={entry.title} className="w-full h-full object-contain" />
+                    ) : (
+                      <Image className="w-8 h-8 text-muted-foreground/30" />
+                    )}
+                  </div>
+                  <div className="p-2">
+                    <div className="text-xs font-medium truncate">{entry.title}</div>
+                    <div className="flex gap-1 mt-1 flex-wrap">
+                      {entry.subject && <Badge variant="outline" className="text-[10px] px-1 py-0">{entry.subject}</Badge>}
+                      {entry.curated ? <Badge className="text-[10px] px-1 py-0 bg-amber-100 text-amber-700">Curated</Badge> : null}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between pt-2">
+              <span className="text-xs text-muted-foreground">{filtered.length} results</span>
+              <div className="flex gap-1">
+                <Button size="sm" variant="outline" className="h-6 text-xs px-2" disabled={page === 1} onClick={() => setPage(p => p - 1)}>Prev</Button>
+                <span className="text-xs px-2 py-1">{page} / {totalPages}</span>
+                <Button size="sm" variant="outline" className="h-6 text-xs px-2" disabled={page === totalPages} onClick={() => setPage(p => p + 1)}>Next</Button>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* View Diagram Dialog */}
+      {viewEntry && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={() => setViewEntry(null)}>
+          <div className="bg-background rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-4 border-b sticky top-0 bg-background z-10">
+              <div>
+                <h2 className="font-semibold text-sm">{viewEntry.title}</h2>
+                <div className="flex gap-1 mt-1 flex-wrap">
+                  {viewEntry.subject && <Badge variant="outline" className="text-[10px]">{viewEntry.subject}</Badge>}
+                  {viewEntry.topic && <Badge variant="outline" className="text-[10px]">{viewEntry.topic}</Badge>}
+                  {viewEntry.year_group && <Badge variant="outline" className="text-[10px]">{viewEntry.year_group}</Badge>}
+                </div>
+                {viewEntry.description && <p className="text-xs text-muted-foreground mt-1">{viewEntry.description}</p>}
+              </div>
+              <div className="flex gap-2">
+                <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => { const a = document.createElement("a"); a.href = viewEntry.image_url; a.download = viewEntry.title + ".png"; a.click(); }}>
+                  <Download className="w-3 h-3 mr-1" />Download
+                </Button>
+                <Button size="sm" variant="outline" className={`h-7 text-xs ${viewEntry.curated ? "bg-amber-50 text-amber-700 border-amber-300" : ""}`} onClick={() => { handleToggleCurate(viewEntry.id, viewEntry.curated); setViewEntry((v: any) => ({ ...v, curated: v.curated ? 0 : 1 })); }}>
+                  {viewEntry.curated ? "✓ Curated" : "Curate"}
+                </Button>
+                <Button size="sm" variant="outline" className="h-7 text-xs text-red-600 hover:bg-red-50" onClick={() => { handleDelete(viewEntry.id); setViewEntry(null); }}>
+                  <Trash2 className="w-3 h-3" />
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => setViewEntry(null)}>✕</Button>
+              </div>
+            </div>
+            <div className="p-4">
+              {viewEntry.image_url ? (
+                <img src={viewEntry.image_url} alt={viewEntry.title} className="w-full rounded-lg border" />
+              ) : (
+                <div className="text-xs text-muted-foreground text-center py-8">No image available</div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
