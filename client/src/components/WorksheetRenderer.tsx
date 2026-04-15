@@ -735,6 +735,53 @@ export function renderMath(text: string | any): string {
   result = result.replace(/\u2265/g, "\u2265"); // greater than or equal
   result = result.replace(/\u03c0/g, "\u03c0"); // pi symbol
   result = result.replace(/\u221e/g, "\u221e"); // infinity
+  // ── Step 4a: Convert iteration/sequence fractions BEFORE subscript conversion ──────
+  // e.g. x_(n+1) = (x_n + 5)/2 — handle the full expression as a KaTeX block
+  // This must run before Step 4b so subscripts inside fractions are handled correctly.
+  //
+  // Pattern: identifier_(expr) = (expr_with_subscripts)/number
+  // e.g. x_(n+1) = (x_n + 5)/2  →  x_{n+1} = \dfrac{x_n + 5}{2}
+  result = result.replace(
+    /([A-Za-z])_\(([^()]+)\)\s*=\s*\(([^()]+)\)\s*\/\s*([A-Za-z0-9]+)/g,
+    (full, lhsVar, lhsSub, num, den) => {
+      if (/<[a-z]/i.test(full)) return full;
+      // Convert subscripts inside numerator: x_n → x_{n}
+      const numLatex = num.replace(/([A-Za-z])_([0-9]|[a-z](?![a-z]))/g, '$1_{$2}');
+      const lhsLatex = `${lhsVar}_{${lhsSub}}`;
+      const fracLatex = `\\dfrac{${numLatex}}{${den}}`;
+      try { return katex.renderToString(`${lhsLatex} = ${fracLatex}`, { displayMode: false, throwOnError: false }); }
+      catch { return full; }
+    }
+  );
+  // Also handle: x_(n+1) = (expr)/number without the leading variable=
+  result = result.replace(
+    /([A-Za-z])_\(([^()]+)\)\s*=\s*\(([^()]+)\)\s*\/\s*([A-Za-z0-9]+)/g,
+    (full, lhsVar, lhsSub, num, den) => {
+      if (/<[a-z]/i.test(full)) return full;
+      const numLatex = num.replace(/([A-Za-z])_([0-9]|[a-z](?![a-z]))/g, '$1_{$2}');
+      try { return katex.renderToString(`${lhsVar}_{${lhsSub}} = \\dfrac{${numLatex}}{${den}}`, { displayMode: false, throwOnError: false }); }
+      catch { return full; }
+    }
+  );
+
+  // ── Step 4b: Convert subscript notation x_(n+1) and x_n to KaTeX ─────────────
+  // Handles iteration/sequence notation like x_(n+1), u_(n+1), a_n, x_1, etc.
+  // Must run BEFORE fraction conversion so (x_n + 5)/2 is handled correctly.
+  //
+  // Pattern A: variable_(expr) — subscript with parenthesised expression: x_(n+1) → x_{n+1}
+  result = result.replace(/([A-Za-z])_\(([^()]+)\)/g, (full, v, sub) => {
+    if (/<[a-z]/i.test(full)) return full;
+    try { return katex.renderToString(`${v}_{${sub}}`, { displayMode: false, throwOnError: false }); }
+    catch { return full; }
+  });
+  // Pattern B: variable_n or variable_1 — simple subscript: x_n, x_1, a_n, u_n
+  // Only match single-letter or digit subscripts to avoid false positives
+  result = result.replace(/([A-Za-z])_([0-9]|[a-z](?![a-z]))/g, (full, v, sub) => {
+    if (/<[a-z]/i.test(full)) return full;
+    try { return katex.renderToString(`${v}_{${sub}}`, { displayMode: false, throwOnError: false }); }
+    catch { return full; }
+  });
+
   // ── Step 5: Convert plain-text fractions to proper KaTeX stacked fractions ──
   // IMPORTANT: At this point, superscripts have already been converted to KaTeX HTML.
   // The fraction regexes only match plain text (no HTML tags inside parens).
@@ -3681,6 +3728,16 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
     if (section.assetRef) {
       const resolved = assetRefMap.get(section.assetRef);
       if (resolved) return resolved;
+      // Fallback: map "assets/foo-bar.svg" or "assets/foo-bar.png" → "/diagrams/foo-bar.png"
+      const ref = section.assetRef;
+      if (ref.startsWith('assets/')) {
+        const basename = ref.replace(/^assets\//, '').replace(/\.[^.]+$/, '');
+        return `/diagrams/${basename}.png`;
+      }
+      // Also handle bare names like "algebra-function-machine"
+      if (/^[a-z0-9-]+$/.test(ref)) {
+        return `/diagrams/${ref}.png`;
+      }
     }
     return section.imageUrl as string | undefined;
   }

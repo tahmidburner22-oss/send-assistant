@@ -87,6 +87,8 @@ import diagramProxyRouter from "./routes/diagram-proxy.js";
 import feedbackRouter from "./routes/feedback.js";
 import parentMessagesRouter from "./routes/parentMessages.js";
 import worksheetLibraryRouter from "./routes/worksheetLibrary.js";
+import presentationLibraryRouter from "./routes/presentationLibrary.js";
+import diagramLibraryRouter from "./routes/diagramLibrary.js";
 import ehcpRouter from "./routes/ehcp.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -336,6 +338,8 @@ app.use("/api/diagram-proxy", aiLimiter, diagramProxyRouter);
 app.use("/api/feedback", feedbackRouter);
 app.use("/api/messages", parentMessagesRouter);
 app.use("/api/library", worksheetLibraryRouter);
+app.use("/api/presentation-library", presentationLibraryRouter);
+app.use("/api/diagram-library", diagramLibraryRouter);
 app.use("/api/ehcp", aiLimiter, ehcpRouter);
 
 // ── Health check ──────────────────────────────────────────────────────────────
