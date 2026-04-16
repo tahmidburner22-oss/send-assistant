@@ -884,7 +884,17 @@ export function renderMath(text: string | any): string {
     result = segments.map(({ text, isHtml }) => {
       if (isHtml) return text; // Leave all HTML / KaTeX segments untouched
       // Apply fraction conversion to plain text only.
-      return text.replace(/([A-Za-z0-9]+)\/([A-Za-z0-9]+)/g, (full, num, den) => {
+      // Step A: Handle parenthesized numerators like (x² + 5x)/x, (3x + 9)/3
+      let t0 = text.replace(/\(([^)]{1,80})\)\/([A-Za-z0-9²³⁴-⁹]+)/g, (full: string, num: string, den: string) => {
+        if (!/[A-Za-z]/.test(num) && !/[A-Za-z]/.test(den)) return full;
+        const toLaTeX = (s: string) => s
+          .replace(/²/g, '^{2}').replace(/³/g, '^{3}').replace(/⁴/g, '^{4}')
+          .replace(/⁵/g, '^{5}').replace(/⁶/g, '^{6}').replace(/⁷/g, '^{7}')
+          .replace(/⁸/g, '^{8}').replace(/⁹/g, '^{9}');
+        try { return katex.renderToString(`\dfrac{${toLaTeX(num)}}{${toLaTeX(den)}}`, { displayMode: false, throwOnError: false }); }
+        catch { return full; }
+      });
+      return t0.replace(/([A-Za-z0-9²³⁴-⁹]+)\/([A-Za-z0-9²³⁴-⁹]+)/g, (full, num, den) => {
         // Skip year ranges (e.g. 2023/24)
         if (/^\d{4}$/.test(num) || /^\d{4}$/.test(den)) return full;
         // Skip if either part is a long number that looks like a year
@@ -903,10 +913,14 @@ export function renderMath(text: string | any): string {
         const isNumeric = (s: string) => /^\d+$/.test(s);
         const isSingleVar = (s: string) => /^[A-Za-z]$/.test(s);
         const isSimpleAlgebra = (s: string) => /^[0-9]*[A-Za-z]$/.test(s); // x, y, 2x, 3n
+        // Algebraic term: 12x, 14a, 9y², 16p²q, 4pq, 3y, 2x, etc.
+        const isAlgebraicTerm = (s: string) => /^[0-9]*[A-Za-z][A-Za-z0-9²³⁴⁵⁶⁷⁸⁹²³⁴-⁹]*$/.test(s);
         const bothNumeric = isNumeric(num) && isNumeric(den);
         const bothSimpleAlgebra = isSimpleAlgebra(num) && isSimpleAlgebra(den);
         const oneSideSingleVarAndOtherNumeric = (isSingleVar(num) && isNumeric(den)) || (isNumeric(num) && isSingleVar(den));
-        const looksMathy = bothNumeric || bothSimpleAlgebra || oneSideSingleVarAndOtherNumeric;
+        // Algebraic fraction: at least one side is an algebraic term and the other is numeric or algebraic
+        const isAlgebraicFraction = (isAlgebraicTerm(num) || isNumeric(num)) && (isAlgebraicTerm(den) || isNumeric(den));
+        const looksMathy = bothNumeric || bothSimpleAlgebra || oneSideSingleVarAndOtherNumeric || isAlgebraicFraction;
         if (!looksMathy) {
           return full;
         }
@@ -1639,11 +1653,25 @@ function TrueFalseSection({
       }
       continue;
     }
-    if (!/^\d+[.)\s]/.test(line)) continue;
+    // Handle plain lines with TRUE/FALSE at end (library/PDF format): "Statement. TRUE /" or "Statement. TRUE / FALSE"
+    const plainInlineMatch = line.match(/^(.{5,}?)[.→\s]+(TRUE|FALSE)(?:\s*\/\s*(?:FALSE|TRUE))?[.\s]*$/i);
+    if (plainInlineMatch && !/^\d+[.)\s]/.test(line)) {
+      statements.push({ text: plainInlineMatch[1].trim(), answer: plainInlineMatch[2].toUpperCase() });
+      continue;
+    }
+    // Handle plain lines without TRUE/FALSE (library/PDF format): just the statement text
+    if (!/^\d+[.)\s]/.test(line)) {
+      // Only add if it looks like a statement (not a header or short label)
+      if (line.length > 10 && !/^(TRUE|FALSE|QUESTION|STATEMENT|SECTION|RECALL|UNDERSTANDING|APPLICATION)/i.test(line)) {
+        statements.push({ text: line.trim(), answer: undefined });
+      }
+      continue;
+    }
     // Check if TRUE/FALSE is on this line
-    const inlineMatch = line.match(/[.→\s]+(TRUE|FALSE)[.\s]*$/i);
+    // Handle formats: 'Statement TRUE', 'Statement → TRUE', 'Statement. TRUE /', 'Statement. TRUE / FALSE'
+    const inlineMatch = line.match(/[.→\s]+(TRUE|FALSE)(?:\s*\/\s*(?:FALSE|TRUE))?[.\s]*$/i);
     if (inlineMatch) {
-      const stmtText = line.replace(/^\d+[.)\s]+/, "").replace(/[.→\s]+(TRUE|FALSE)[.\s]*$/i, "").trim();
+      const stmtText = line.replace(/^\d+[.)\s]+/, "").replace(/[.→\s]+(TRUE|FALSE)(?:\s*\/\s*(?:FALSE|TRUE))?[.\s]*$/i, "").trim();
       statements.push({ text: stmtText, answer: inlineMatch[1].toUpperCase() });
     } else {
       // Check if next line is TRUE or FALSE
@@ -1762,9 +1790,14 @@ function MCQSection({
       const end = bi + 1 < questionStartIndices.length ? questionStartIndices[bi + 1] : allLines.length;
       const blockLines = allLines.slice(start, end);
       const hasBullet = blockLines.filter(l => /^[-*]\s+\S/.test(l)).length >= 2;
+      const isRealOpt = (l: string) => {
+        if (!/^[A-D][.\s)]{1,2}\s*\S/.test(l)) return false;
+        const after = l.slice(1).replace(/^[.\s)]+/, "").trim();
+        return after.length < 80 && !after.endsWith("?");
+      };
       const optIdx = hasBullet
         ? blockLines.findIndex(l => /^[-*]\s+\S/.test(l))
-        : blockLines.findIndex(l => /^[A-D][.\s)]{1,2}\s*\S/.test(l));
+        : blockLines.findIndex(l => isRealOpt(l));
       blocks.push({
         qNum: bi + 1,
         questionLines: optIdx > 0 ? blockLines.slice(0, optIdx) : blockLines,
@@ -1774,13 +1807,22 @@ function MCQSection({
   } else {
     // Single question (no numbered prefix)
     const hasBullet = allLines.filter(l => /^[-*]\s+\S/.test(l)).length >= 2;
+    // Find the first true option line: starts with A/B/C/D followed by space/period/paren
+    // AND is a short answer (not a long sentence that happens to start with A/B/C/D)
+    // True options are typically < 60 chars and don't end with "?"
+    const isRealOptionLine = (l: string) => {
+      if (!/^[A-D][.\s)]{1,2}\s*\S/.test(l)) return false;
+      const afterLabel = l.slice(1).replace(/^[.\s)]+/, "").trim();
+      // A real option is short (< 80 chars) and doesn't end with a question mark
+      return afterLabel.length > 0 && afterLabel.length < 80 && !afterLabel.endsWith("?");
+    };
     const optIdx = hasBullet
       ? allLines.findIndex(l => /^[-*]\s+\S/.test(l))
-      : allLines.findIndex(l => /^[A-D][.\s)]{1,2}\s*\S/.test(l));
+      : allLines.findIndex(l => isRealOptionLine(l));
     blocks = [{
       qNum: 1,
-      questionLines: optIdx > 0 ? allLines.slice(0, optIdx) : [],
-      optionLines: optIdx >= 0 ? allLines.slice(optIdx) : allLines,
+      questionLines: optIdx > 0 ? allLines.slice(0, optIdx) : (optIdx === -1 ? allLines : []),
+      optionLines: optIdx >= 0 ? allLines.slice(optIdx) : [],
     }];
   }
 
@@ -3005,8 +3047,11 @@ function SelfReflectionSection({ content, fmt, overlayColor = "white" }: { conte
       if (/^(Topic|Not Yet|Getting There|Confident)$/i.test(t)) continue;
       if (/^Review your understanding/i.test(t)) continue;
       if (/A\.?\s*How confident/i.test(t)) { inSectionA = true; inSectionB = false; continue; }
-      if (/B\.?\s*Written reflection/i.test(t)) { inSectionA = false; inSectionB = true; continue; }
+      if (/B\.?\s*(Written reflection|Write down|Reflection|Your thoughts|Thoughts)/i.test(t)) { inSectionA = false; inSectionB = true; continue; }
       if (/^Exit Ticket:/i.test(t)) { exitTicketText = t.replace(/^Exit Ticket:\s*/i, "").trim(); inSectionA = false; inSectionB = false; continue; }
+      if (/^Check your understanding/i.test(t)) { subtitle = t; continue; }
+      // "question I still want to ask" is a reflection prompt
+      if (/question.*want.*ask|still.*want.*ask/i.test(t)) { reflectionPrompts.push(t); continue; }
       if (inSectionA) {
         // Lines like: "Series vs Parallel circuits | Not Yet | Getting There | Confident"
         // or just: "Series vs Parallel circuits" (PDF-extracted, one topic per line)

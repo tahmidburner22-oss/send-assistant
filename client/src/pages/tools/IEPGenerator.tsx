@@ -141,12 +141,14 @@ const STAGES: { id: Stage; label: string; icon: React.ElementType }[] = [
 const SECTION_STYLES: Record<string, { color: string; bg: string; border: string; icon: React.ElementType }> = {
   A: { color: "text-slate-700",  bg: "bg-slate-50",  border: "border-slate-200", icon: Users },
   B: { color: "text-blue-700",   bg: "bg-blue-50",   border: "border-blue-200",  icon: Brain },
-  C: { color: "text-purple-700", bg: "bg-purple-50", border: "border-purple-200",icon: Heart },
+  // C = Health Needs, G = Health Provision — same colour (cyan/teal)
+  C: { color: "text-cyan-700",   bg: "bg-cyan-50",   border: "border-cyan-200",  icon: Heart },
+  // D = Social Care Needs, H = Social Care Provision — same colour (orange)
   D: { color: "text-orange-700", bg: "bg-orange-50", border: "border-orange-200",icon: FileText },
   E: { color: "text-green-700",  bg: "bg-green-50",  border: "border-green-200", icon: Target },
   F: { color: "text-indigo-700", bg: "bg-indigo-50", border: "border-indigo-200",icon: Layers },
   G: { color: "text-cyan-700",   bg: "bg-cyan-50",   border: "border-cyan-200",  icon: Shield },
-  H: { color: "text-rose-700",   bg: "bg-rose-50",   border: "border-rose-200",  icon: Zap },
+  H: { color: "text-orange-700", bg: "bg-orange-50", border: "border-orange-200",icon: Zap },
   I: { color: "text-amber-700",  bg: "bg-amber-50",  border: "border-amber-200", icon: School },
   K: { color: "text-gray-700",   bg: "bg-gray-50",   border: "border-gray-200",  icon: BookMarked },
 };
@@ -225,7 +227,15 @@ function SectionCard({ section, onEdit }: { section: EHCPSection; onEdit: (id: s
             </div>
           </div>
         ) : (
-          <div className="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap">{section.content}</div>
+          <div className="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap">{section.content
+            .replace(/^#{1,6}\s+/gm, '')           // Remove markdown headings (# ## ###)
+            .replace(/\*\*(.+?)\*\*/g, '$1')        // Remove bold **text**
+            .replace(/\*(.+?)\*/g, '$1')             // Remove italic *text*
+            .replace(/^[*\-]\s+/gm, '• ')           // Convert bullet * or - to •
+            .replace(/^\*{1,2}\s*$/gm, '')           // Remove lone asterisk lines
+            .replace(/\*{1,3}/g, '')                 // Remove remaining asterisks
+            .trim()
+          }</div>
         )}
       </div>
     </div>
@@ -466,7 +476,8 @@ MANDATORY REQUIREMENTS:
 - Section F provisions MUST contain all five legal elements: WHAT (description), HOW OFTEN (frequency), HOW LONG (duration), WHO DELIVERS (person/role), WHERE (setting/context)
 - All outcomes must be SMART: specific, measurable, achievable, relevant, and time-bound to ${reviewDate}
 - Use professional, strengths-based, person-centred language throughout
-- Return valid JSON only — no markdown fences`;
+- Return valid JSON only — no markdown fences
+- CRITICAL: Do NOT use markdown formatting (no asterisks *, no hash symbols #, no bold **text**) in the text content of any section — write plain prose only`;
 
     const baseInfo = `Pupil: ${pupilInfo.initials} | Year: ${pupilInfo.yearGroup} | Primary Need: ${pupilInfo.primaryNeed}
 Secondary Needs: ${pupilInfo.secondaryNeeds.join(", ") || "None"}

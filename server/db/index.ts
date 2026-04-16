@@ -827,6 +827,7 @@ export async function initDb() {
     `DO $$ BEGIN ALTER TABLE worksheet_library ADD COLUMN canonical_topic_key TEXT; EXCEPTION WHEN duplicate_column THEN NULL; END $$`,
     `DO $$ BEGIN ALTER TABLE worksheet_sections ADD COLUMN image_url TEXT; EXCEPTION WHEN duplicate_column THEN NULL; END $$`,
     `DO $$ BEGIN ALTER TABLE worksheet_sections ADD COLUMN asset_ref TEXT; EXCEPTION WHEN duplicate_column THEN NULL; END $$`,
+    `DO $$ BEGIN ALTER TABLE worksheets ADD COLUMN subtitle TEXT; EXCEPTION WHEN duplicate_column THEN NULL; END $$`,
     `DO $$ BEGIN ALTER TABLE worksheets ADD COLUMN metadata_json TEXT; EXCEPTION WHEN duplicate_column THEN NULL; END $$`,
     `DO $$ BEGIN ALTER TABLE worksheets ADD COLUMN source_library_id TEXT; EXCEPTION WHEN duplicate_column THEN NULL; END $$`,
     `DO $$ BEGIN ALTER TABLE worksheets ADD COLUMN source_canonical_topic_key TEXT; EXCEPTION WHEN duplicate_column THEN NULL; END $$`,
@@ -839,6 +840,32 @@ export async function initDb() {
   for (const sql of alterMigrations) {
     try { await query(sql); } catch (e: any) { /* ignore if already exists */ }
   }
+  // Fix canonical_topic_key for maths library entries that may have been incorrectly assigned
+  // This ensures "Algebraic Fractions" doesn't match "Quadratic Equations" etc.
+  try {
+    await query(`
+      UPDATE worksheet_library
+      SET canonical_topic_key = CASE
+        WHEN LOWER(topic) LIKE '%quadratic%' THEN 'quadratic_equations'
+        WHEN LOWER(topic) LIKE '%algebraic fraction%' THEN 'algebraic_fractions'
+        WHEN LOWER(topic) LIKE '%simultaneous%' THEN 'simultaneous_equations'
+        WHEN LOWER(topic) LIKE '%linear equation%' OR LOWER(topic) LIKE '%solving equation%' THEN 'linear_equations'
+        WHEN LOWER(topic) LIKE '%probability%' THEN 'probability'
+        WHEN LOWER(topic) LIKE '%statistics%' OR LOWER(topic) LIKE '%data handling%' THEN 'statistics'
+        WHEN LOWER(topic) LIKE '%trigonometry%' OR LOWER(topic) LIKE '%pythagoras%' THEN 'trigonometry'
+        WHEN LOWER(topic) LIKE '%vector%' THEN 'vectors'
+        WHEN LOWER(topic) LIKE '%calculus%' OR LOWER(topic) LIKE '%differentiation%' OR LOWER(topic) LIKE '%integration%' THEN 'calculus'
+        WHEN LOWER(topic) LIKE '%geometry%' OR LOWER(topic) LIKE '%angle%' THEN 'geometry'
+        ELSE canonical_topic_key
+      END
+      WHERE LOWER(subject) IN ('mathematics', 'maths', 'math')
+        AND (
+          canonical_topic_key IS NULL
+          OR canonical_topic_key = 'algebra'
+          OR canonical_topic_key = 'number'
+        )
+    `);
+  } catch (e: any) { console.warn("canonical_topic_key fix migration skipped:", e.message); }
   console.log("✅ Library asset migrations applied");
 
   // Bootstrap admin from environment variables (no hard-coded credentials)

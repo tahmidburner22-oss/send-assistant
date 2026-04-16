@@ -1487,7 +1487,34 @@ function findTopicData(subject: string, topic: string): any {
       "cumulative frequency graph": "histograms-cumulative-frequency",
       "grouped data": "histograms-cumulative-frequency",
       "grouped frequency": "histograms-cumulative-frequency",
-      "frequency density": "histograms-cumulative-frequency"
+      "frequency density": "histograms-cumulative-frequency",
+      // Quadratics
+      "quadratic equations": "quadratics",
+      "quadratic equation": "quadratics",
+      "solving quadratics": "quadratics",
+      "quadratic formula": "quadratics",
+      "completing the square": "quadratics",
+      "factorising quadratics": "quadratics",
+      "factorising quadratic": "quadratics",
+      // Algebraic fractions
+      "algebraic fractions": "algebraic-fractions",
+      "algebraic fraction": "algebraic-fractions",
+      // Simultaneous equations
+      "simultaneous equations": "simultaneous-equations",
+      "simultaneous equation": "simultaneous-equations",
+      // Linear equations
+      "linear equations": "linear-equations",
+      "solving equations": "linear-equations",
+      "solving linear equations": "linear-equations",
+      // Inequalities
+      "inequalities": "inequalities",
+      "linear inequalities": "inequalities",
+      "quadratic inequalities": "inequalities",
+      // Sequences
+      "sequences": "sequences",
+      "arithmetic sequences": "sequences",
+      "geometric sequences": "sequences",
+      "nth term": "sequences",
     };
     const aliasedKey = statisticsAliases[topicLower];
     if (aliasedKey && subjectTopics[aliasedKey]) return subjectTopics[aliasedKey];
