@@ -50,7 +50,11 @@ const CANONICAL_TOPIC_MAP: Array<[string[], string]> = [
   [["quantitative chemistry", "moles", "relative formula mass", "empirical formula"], "quantitative_chemistry"],
   [["atom economy", "percentage yield", "green chemistry"], "atom_economy"],
   // Maths
-  [["algebra", "equations", "linear equations", "quadratic", "simultaneous equations"], "algebra"],
+  [["quadratic equations", "quadratics", "solving quadratics", "quadratic formula", "completing the square", "factorising quadratics"], "quadratic_equations"],
+  [["simultaneous equations", "simultaneous"], "simultaneous_equations"],
+  [["linear equations", "solving equations", "one-step equations", "two-step equations"], "linear_equations"],
+  [["algebraic fractions", "algebraic fraction"], "algebraic_fractions"],
+  [["algebra", "algebraic expressions", "expanding brackets", "factorising", "simplifying expressions"], "algebra"],
   [["geometry", "angles", "shapes", "polygons", "circles"], "geometry"],
   [["probability", "chance", "likelihood", "tree diagram"], "probability"],
   [["statistics", "data", "mean median mode", "histograms", "cumulative frequency"], "statistics"],

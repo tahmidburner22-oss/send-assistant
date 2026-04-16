@@ -518,7 +518,26 @@ CROSS-CURRICULAR: Physics (projectile motion), Economics (profit maximisation), 
     ],
     challenge: "By completing the square, find the minimum value of x² + 6x + 2 and the value of x at which it occurs. Sketch the parabola, labelling the vertex and y-intercept.",
     challengeAnswer: "x² + 6x + 2 = (x+3)² − 7. Minimum value = −7 at x = −3. y-intercept at (0, 2).",
-    extension: "Research: What is the discriminant and what does it tell you about the graph of a quadratic? Investigate how the quadratic formula is derived by completing the square on ax² + bx + c = 0."
+    extension: "Research: What is the discriminant and what does it tell you about the graph of a quadratic? Investigate how the quadratic formula is derived by completing the square on ax² + bx + c = 0.",
+    trueFalse: [
+      { statement: "A quadratic equation always has two different real solutions.", answer: false },
+      { statement: "The quadratic formula can be used to solve any quadratic equation.", answer: true },
+      { statement: "x² − 4 = 0 has solutions x = 2 and x = −2.", answer: true },
+      { statement: "Completing the square always gives a positive value inside the bracket.", answer: false },
+      { statement: "The discriminant b² − 4ac tells you how many real roots a quadratic has.", answer: true },
+      { statement: "If the discriminant is zero, the quadratic has no real roots.", answer: false },
+    ],
+    mcqOptions: [
+      ["x = 3 or x = −2", "x = −3 or x = 2", "x = 3 or x = 2", "x = −3 or x = −2"],
+      ["x = 5 or x = −1", "x = −5 or x = 1", "x = 5 or x = 1", "x = −5 or x = −1"],
+      ["x ≈ 0.56 or x ≈ −3.56", "x ≈ 1.56 or x ≈ −2.56", "x ≈ 0.56 or x ≈ 3.56", "x ≈ −0.56 or x ≈ 3.56"],
+      ["(x + 3)² − 7", "(x + 3)² + 7", "(x − 3)² − 7", "(x + 6)² − 7"],
+    ],
+    gapFill: {
+      paragraph: "A quadratic equation has the form ax² + bx + c = 0. To solve by ________, we find two numbers that multiply to ac and add to b. The ________ formula x = (−b ± √(b²−4ac)) ÷ 2a always works. The expression b²−4ac is called the ________, and if it is ________ the equation has two distinct real roots.",
+      wordBank: ["factorising", "quadratic", "discriminant", "positive", "negative", "zero", "completing"],
+      answers: ["factorising", "quadratic", "discriminant", "positive"],
+    },
   },
 
   "simultaneous-equations": {
