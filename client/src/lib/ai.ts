@@ -868,6 +868,7 @@ SELF REFLECTION: Generate a 5-row confidence table (Topic | Not Yet | Getting Th
 TEACHER COPY — ANSWER KEY: Provide answers for EVERY question. For Q9 and Challenge: reproduce full level descriptor bands. For STEM: show every step of working. For HUMANITIES: provide suggested quotes and page/act references. End with total mark breakdown: Section 1: Xm | Section 2: Xm | Section 3: Xm | Challenge: Xm | TOTAL: Xm
 
 DO NOT include a Reminder Box. DO NOT deviate from these formats. ABSOLUTELY NO EMOJIS in student-facing content.
+CRITICAL SEND RULE: SEND adaptations affect FORMATTING ONLY. NEVER add SEND instructions, scaffolding hints, or support prompts as extra items inside True/False statements, MCQ options, Gap Fill blanks, or any question content. The True/False section must contain ONLY factual statements about the topic. The MCQ section must contain ONLY the question and 4 answer options (A, B, C, D). Do NOT insert 'Complete the task in steps', 'Tick each step', 'Focus on one question', or any ADHD/SEND management instructions into question content.
 Topic: "${params.topic}" | Year: ${params.yearGroup} (${phase})
 
 QUALITY STANDARDS — every question must meet professional UK teacher standards:
@@ -942,7 +943,7 @@ STRICT JSON OUTPUT: Respond with valid JSON only — no markdown, no code blocks
 
     if (sn.includes("adhd")) return `${base}
 (1) [ ] checkbox next to every question. Max 3 questions in Section A, max 5 in Section B. 'STOP — check your work' after Section A.
-(2) Vary question types: calculation, fill-in, matching, true/false. 'BRAIN BREAK — stand up and stretch!' prompt midway through Section B.
+(2) Across the worksheet as a whole, use varied question SECTION TYPES (e.g. one calculation section, one fill-in section, one matching section, one true/false section). Do NOT add extra items to any individual section — each section keeps its standard number of questions/statements/options.
 (3) Bold the action word in every instruction. Numbered bullet points only — no embedded instructions. Max 5-step worked example.
 (4) Challenge labelled 'BONUS — only if you want to!'. Reflection: 'How focused were you today? 1 / 2 / 3 / 4 / 5'.`;
 
@@ -1499,7 +1500,9 @@ ${isMaths ? 'MATHS RULES: All questions must be numerical/calculation-based ONLY
 ${readingAgeNote}
 ${sendNote}
 ${tierNote}
-QUALITY STANDARD: Every question must be fully usable — no placeholders, no ellipses, no unfinished sentences. Use real numbers, real contexts. Textbook quality.`;
+QUALITY STANDARD: Every question must be fully usable — no placeholders, no ellipses, no unfinished sentences. Use real numbers, real contexts. Textbook quality.
+
+CRITICAL SEND RULE: SEND adaptations affect FORMATTING ONLY (font size, spacing, checkboxes, tone). NEVER add SEND instructions, scaffolding hints, or support prompts as extra items inside True/False statements, MCQ options, Gap Fill blanks, or any question content. The True/False section must contain ONLY factual statements about the topic. The MCQ section must contain ONLY the question and 4 answer options (A, B, C, D). Do NOT insert 'Complete the task in steps', 'Tick each step', 'Focus on one question', or any ADHD/SEND management instructions into question content.`;
 
     const structuredSections: string[] = [];
 
