@@ -1,6 +1,6 @@
 import { Router, Request, Response } from "express";
 import { randomBytes } from "crypto";
-import db from "../db/index.js";
+import db, { query } from "../db/index.js";
 import { requireAuth } from "../middleware/auth.js";
 
 const router = Router();
@@ -509,6 +509,59 @@ router.patch("/super/schools/:id/subscription", requireAuth, requireSuperAdmin, 
     } catch (_) {}
     res.json({ ok: true });
   } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── POST /api/admin/run-migrations — force-run DB migrations (super admin only) ─
+router.post("/run-migrations", requireAuth, requireSuperAdmin, async (req: Request, res: Response) => {
+  try {
+    // Create diagram_library table if it doesn't exist
+    await query(`
+      CREATE TABLE IF NOT EXISTS diagram_library (
+        id TEXT PRIMARY KEY,
+        title TEXT NOT NULL,
+        subject TEXT,
+        topic TEXT,
+        year_group TEXT,
+        description TEXT,
+        image_url TEXT NOT NULL,
+        asset_ref TEXT,
+        tags TEXT NOT NULL DEFAULT '[]',
+        source TEXT NOT NULL DEFAULT 'ai',
+        curated INTEGER NOT NULL DEFAULT 0,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )
+    `);
+    await query(`CREATE INDEX IF NOT EXISTS idx_diagram_library_subject ON diagram_library(subject)`);
+    await query(`CREATE INDEX IF NOT EXISTS idx_diagram_library_curated ON diagram_library(curated)`);
+    // Create presentation_library table if it doesn't exist
+    await query(`
+      CREATE TABLE IF NOT EXISTS presentation_library (
+        id TEXT PRIMARY KEY,
+        school_id TEXT REFERENCES schools(id) ON DELETE CASCADE,
+        title TEXT NOT NULL,
+        subject TEXT,
+        topic TEXT,
+        year_group TEXT,
+        tier TEXT,
+        slide_count INTEGER NOT NULL DEFAULT 0,
+        slides_json TEXT NOT NULL DEFAULT '[]',
+        thumbnail_url TEXT,
+        source TEXT NOT NULL DEFAULT 'ai',
+        curated INTEGER NOT NULL DEFAULT 0,
+        tags TEXT NOT NULL DEFAULT '[]',
+        created_by TEXT REFERENCES users(id) ON DELETE SET NULL,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )
+    `);
+    await query(`CREATE INDEX IF NOT EXISTS idx_presentation_library_subject ON presentation_library(subject)`);
+    await query(`CREATE INDEX IF NOT EXISTS idx_presentation_library_curated ON presentation_library(curated)`);
+    res.json({ ok: true, message: "Migrations applied: diagram_library and presentation_library tables created" });
+  } catch (err: any) {
+    console.error("[admin] run-migrations error:", err);
     res.status(500).json({ error: err.message });
   }
 });
