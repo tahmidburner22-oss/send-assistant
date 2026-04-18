@@ -113,7 +113,7 @@ const DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "kidney",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/digestive-system.png",
     label: "Kidney Cross-Section",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["kidney", "kidneys", "nephron", "renal system", "excretion", "filtration", "urine", "cortex", "medulla"],
@@ -134,7 +134,7 @@ const DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "human_body_organs",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/digestive-system.png",
     label: "Human Body — Main Organs",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["human body", "organs", "body parts", "ks2 science", "primary science", "organ systems"],
@@ -157,7 +157,7 @@ const DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "leaf_structure",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/flower-structure.png",
     label: "Leaf Structure (Cross-Section)",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["leaf", "leaf structure", "leaf cross section", "stomata", "palisade cells", "mesophyll", "epidermis", "guard cells"],
@@ -178,14 +178,14 @@ const DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "carbon_cycle",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/greenhouse-effect.png",
     label: "Carbon Cycle",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["carbon cycle", "carbon dioxide", "respiration", "decomposition", "fossil fuels", "atmosphere", "global warming"],
   },
   {
     key: "nitrogen_cycle",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/water-cycle.png",
     label: "Nitrogen Cycle",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["nitrogen cycle", "nitrogen fixation", "nitrification", "denitrification", "ammonia", "nitrates", "bacteria"],
@@ -220,14 +220,14 @@ const DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "osmosis",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/plant-cell.png",
     label: "Osmosis",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["osmosis", "semi-permeable membrane", "concentration gradient", "water potential", "turgor pressure"],
   },
   {
     key: "diffusion",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/states-particles.png",
     label: "Diffusion",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["diffusion", "concentration gradient", "particles", "random movement", "passive transport", "net movement"],
@@ -262,7 +262,7 @@ const DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "moon_phases",
-    url: "/diagrams/ph-scale.png",
+    url: "/diagrams/solar-system.png",
     label: "Phases of the Moon",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["moon phases", "phases of the moon", "new moon", "full moon", "crescent", "waxing", "waning", "ks2 science"],
@@ -399,14 +399,14 @@ const DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "nuclear_fission",
-    url: "/diagrams/human-ear.png",
+    url: "/diagrams/radiation-types.png",
     label: "Nuclear Fission",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["nuclear fission", "fission", "nuclear reaction", "uranium", "chain reaction", "neutron", "radioactive", "nuclear energy"],
   },
   {
     key: "radioactive_decay",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/radiation-types.png",
     label: "Radioactive Decay",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["radioactive decay", "alpha decay", "beta decay", "gamma radiation", "half-life", "radioactivity", "nuclear decay", "isotopes"],
@@ -737,14 +737,14 @@ const DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "hormone_endocrine",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/neuron.png",
     label: "Endocrine System — Hormones",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["hormones", "endocrine system", "glands", "pituitary", "thyroid", "adrenal", "pancreas", "insulin", "glucagon", "adrenaline", "oestrogen", "testosterone"],
   },
   {
     key: "respiration_diagram",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/energy-transfer.png",
     label: "Cellular Respiration",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["respiration", "cellular respiration", "aerobic respiration", "anaerobic respiration", "glucose", "atp", "mitochondria", "oxygen", "carbon dioxide", "lactic acid"],
@@ -758,7 +758,7 @@ const DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "alpha_beta_gamma",
-    url: "/diagrams/ph-scale.png",
+    url: "/diagrams/radiation-types.png",
     label: "Nuclear Decay — Alpha, Beta, Gamma",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["nuclear decay", "alpha decay", "beta decay", "gamma radiation", "radioactive decay", "half life", "nuclear equation", "radiation types", "ionising radiation"],
@@ -1020,7 +1020,7 @@ const DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "normal_distribution",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/statistics-histogram.svg",
     label: "Normal Distribution",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["normal distribution", "bell curve", "standard deviation", "mean", "spread", "symmetrical distribution", "statistics"],
@@ -1333,7 +1333,7 @@ const DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "nuclear_model",
-    url: "/diagrams/human-ear.png",
+    url: "/diagrams/atomic-structure.png",
     label: "Nuclear Model — Rutherford Scattering",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["nuclear model", "atom", "rutherford", "nucleus", "proton", "neutron", "electron", "atomic model", "gold foil experiment", "alpha particle", "plum pudding model"],
@@ -1354,7 +1354,7 @@ const DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "moments_levers",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/energy-transfer.png",
     label: "Moments and Levers — Principle",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["moments", "lever", "pivot", "turning effect", "moment = force x distance", "balanced moments", "principle of moments", "torque", "first class lever", "fulcrum"],
