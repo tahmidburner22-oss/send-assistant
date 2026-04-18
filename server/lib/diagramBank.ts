@@ -515,7 +515,7 @@ const DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "multiplication_table",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/number-line.png",
     label: "Multiplication Table",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["multiplication", "times tables", "multiplication table", "times table", "ks2 maths", "primary maths"],
@@ -543,7 +543,7 @@ const DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "pie_chart",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/statistics-bar-pie-charts.svg",
     label: "Pie Chart",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["pie chart", "pie graph", "sector", "percentage", "proportion", "data", "statistics", "maths"],
@@ -656,7 +656,7 @@ const DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "vectors_diagram",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/coordinate-system.png",
     label: "Vectors — Direction and Magnitude",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["vectors", "vector addition", "vector subtraction", "magnitude", "direction", "column vector", "resultant vector", "vector diagram"],
@@ -686,7 +686,7 @@ const DIAGRAM_BANK: DiagramEntry[] = [
   // ── MATHEMATICS — Year 6 / KS2 ──────────────────────────────────────────────────────
   {
     key: "area_perimeter",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/polygons.png",
     label: "Area and Perimeter of Shapes",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["area", "perimeter", "rectangle area", "square area", "triangle area", "area formula", "perimeter formula", "length width", "compound shapes"],
@@ -804,7 +804,7 @@ const DIAGRAM_BANK: DiagramEntry[] = [
   // ── MATHEMATICS — Number & Arithmetic ────────────────────────────────────
   {
     key: "place_value",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/number-standard-form-place-value.png",
     label: "Place Value — Positional Notation",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["place value", "positional notation", "units", "tens", "hundreds", "thousands", "decimals", "number system", "digits"],
@@ -825,7 +825,7 @@ const DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "long_division",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/number-line.png",
     label: "Long Division Method",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["long division", "division", "remainder", "bus stop method", "short division", "dividing"],
@@ -839,7 +839,7 @@ const DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "prime_factor_tree",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/number-line.png",
     label: "Prime Factor Tree",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["prime factor tree", "prime factorisation", "factors", "prime numbers", "product of prime factors", "hcf", "lcm", "factor tree"],
@@ -869,7 +869,7 @@ const DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "simultaneous_equations",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/algebra-blank-axes.png",
     label: "Simultaneous Equations — Graphical Solution",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["simultaneous equations", "intersecting lines", "elimination", "substitution", "linear simultaneous", "solve simultaneously", "system of equations"],
@@ -883,14 +883,14 @@ const DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "function_mapping",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/algebra-function-machine.png",
     label: "Functions — Domain and Range Mapping",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["functions", "function machine", "domain", "range", "mapping", "input output", "inverse function", "composite function", "f(x)", "notation"],
   },
   {
     key: "sequences_arithmetic",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/algebra-sequence-dot-pattern.png",
     label: "Sequences — Arithmetic and Geometric",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["sequences", "arithmetic sequence", "geometric sequence", "nth term", "term to term rule", "common difference", "fibonacci", "triangular numbers", "square numbers"],
@@ -906,7 +906,7 @@ const DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "angle_types",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/angles-types.png",
     label: "Types of Angles",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["angles", "acute angle", "right angle", "obtuse angle", "reflex angle", "straight angle", "types of angles", "angle rules", "angles on a straight line", "angles in a triangle"],
@@ -927,7 +927,7 @@ const DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "trigonometry",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/unit-circle.png",
     label: "Trigonometry — Unit Circle",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["trigonometry", "sine", "cosine", "tangent", "sohcahtoa", "trig ratios", "unit circle", "sin cos tan", "right-angled triangle trigonometry", "trig graphs"],
