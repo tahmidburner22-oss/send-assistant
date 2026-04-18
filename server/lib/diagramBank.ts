@@ -141,7 +141,7 @@ const DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "teeth_types",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/digestive-system.png",
     label: "Types of Teeth",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["teeth", "types of teeth", "incisor", "canine", "molar", "premolar", "dental", "ks2 science"],
@@ -248,7 +248,7 @@ const DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "seasons",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/solar-system.png",
     label: "The Four Seasons",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["seasons", "four seasons", "spring", "summer", "autumn", "winter", "earth orbit", "ks1 science", "ks2 science"],
@@ -707,14 +707,14 @@ const DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "bar_chart_ks2",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/statistics-bar-pie-charts.svg",
     label: "Bar Chart",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["bar chart", "bar graph", "data handling", "tally chart", "pictogram", "frequency chart"],
   },
   {
     key: "ratio_proportion_ks2",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/fractions.png",
     label: "Ratio and Proportion",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["ratio", "proportion", "sharing in a ratio", "equivalent ratio", "simplifying ratio", "direct proportion", "unitary method"],
@@ -767,7 +767,7 @@ const DIAGRAM_BANK: DiagramEntry[] = [
   // ── SCIENCE — Year 6 / KS2 ────────────────────────────────────────────────────────────
   {
     key: "classification_living_things",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/food-web.png",
     label: "Classification of Living Things",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["classification", "living things", "vertebrates", "invertebrates", "mammals", "reptiles", "amphibians", "fish", "birds", "taxonomy", "kingdom", "species"],
@@ -781,7 +781,7 @@ const DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "electricity_ks2",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/electrical-circuit.png",
     label: "Electricity — Simple Circuits (KS2)",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["electricity", "circuit", "battery", "bulb", "switch", "conductor", "insulator", "series circuit", "current", "voltage", "components", "ks2 electricity"],
@@ -1050,8 +1050,7 @@ const DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "earthquake_seismic",
-    url: "/diagrams/human-ear.png",
-    label: "Earthquake — Seismic Waves",
+    url: "/diagrams/tectonic-plates.png",   label: "Earthquake — Seismic Waves",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["earthquake", "seismic waves", "focus", "epicentre", "p waves", "s waves", "richter scale", "seismograph", "tremor", "fault line"],
   },
@@ -1108,14 +1107,14 @@ const DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "urban_land_use",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/scale-grid.png",
     label: "Urban Land Use — Burgess Model",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["urban land use", "burgess model", "hoyt model", "cbd", "inner city", "suburbs", "urban zones", "urban structure", "urbanisation", "city model"],
   },
   {
     key: "development_indicators",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/statistics-bar-pie-charts.svg",
     label: "Global Development — GNI Map",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["development", "gni", "gdp", "hdi", "north south divide", "lic", "hic", "nee", "inequality", "development indicators"],
@@ -1159,14 +1158,14 @@ const DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "feudal_system",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/hadrians-wall.png",
     label: "The Feudal System — Hierarchy",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["feudal system", "feudalism", "hierarchy", "king", "barons", "knights", "peasants", "serfs", "middle ages", "medieval society", "domesday book"],
   },
   {
     key: "tudor_timeline",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/great-fire-london.png",
     label: "Tudor Period — Hampton Court Palace",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["tudors", "tudor", "henry viii", "elizabeth i", "reformation", "dissolution of monasteries", "spanish armada", "renaissance", "tudor england"],
@@ -1180,7 +1179,7 @@ const DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "slave_trade_map",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/roman-empire.png",
     label: "Transatlantic Slave Trade — Triangle Trade Map",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["slave trade", "transatlantic slave trade", "triangular trade", "slavery", "abolition", "middle passage", "plantations", "atlantic", "africa", "americas"],
@@ -1194,14 +1193,14 @@ const DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "suffragettes",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/great-fire-london.png",
     label: "Suffragettes — Votes for Women",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["suffragettes", "votes for women", "suffrage", "emmeline pankhurst", "wspu", "women's rights", "reform", "1918", "1928"],
   },
   {
     key: "civil_rights",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/roman-empire.png",
     label: "Civil Rights Movement",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["civil rights", "civil rights movement", "martin luther king", "rosa parks", "segregation", "discrimination", "march on washington", "montgomery bus boycott", "usa history"],
@@ -1252,7 +1251,7 @@ const DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "menstrual_cycle",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/mitosis.png",
     label: "Menstrual Cycle",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["menstrual cycle", "menstruation", "ovulation", "hormones", "oestrogen", "progesterone", "fsh", "lh", "reproduction", "fertility", "uterus lining"],
@@ -1303,14 +1302,14 @@ const DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "reactivity_series",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/periodic-table.png",
     label: "Reactivity Series of Metals",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["reactivity series", "metals", "potassium", "sodium", "calcium", "magnesium", "aluminium", "zinc", "iron", "copper", "gold", "displacement reaction", "extraction"],
   },
   {
     key: "haber_process",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/states-of-matter.png",
     label: "Haber Process — Ammonia Synthesis",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["haber process", "ammonia", "nitrogen", "hydrogen", "fertiliser", "iron catalyst", "temperature", "pressure", "reversible reaction", "equilibrium", "le chatelier"],
@@ -1391,21 +1390,21 @@ const DIAGRAM_BANK: DiagramEntry[] = [
   // ── ENGLISH / LITERACY ────────────────────────────────────────────────────
   {
     key: "narrative_structure",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/algebra-sequence-dot-pattern.png",
     label: "Narrative Structure — Story Arc",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["narrative structure", "story arc", "freytag pyramid", "exposition", "rising action", "climax", "falling action", "resolution", "plot structure", "narrative", "story mountain"],
   },
   {
     key: "shakespeare_globe",
-    url: "/diagrams/human-ear.png",
+    url: "/diagrams/hadrians-wall.png",
     label: "Shakespeare — The Globe Theatre",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["shakespeare", "globe theatre", "elizabethan theatre", "play", "drama", "tragedy", "comedy", "sonnet", "macbeth", "romeo and juliet", "hamlet", "tempest"],
   },
   {
     key: "punctuation_marks",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/algebra-function-machine.png",
     label: "Punctuation Marks",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["punctuation", "comma", "full stop", "question mark", "exclamation mark", "semicolon", "colon", "apostrophe", "inverted commas", "speech marks", "dash", "hyphen", "brackets"],
@@ -1444,21 +1443,21 @@ const DIAGRAM_BANK: DiagramEntry[] = [
   // ── RE / PSHE ─────────────────────────────────────────────────────────────
   {
     key: "world_religions_symbols",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/venn-diagram.png",
     label: "World Religion Symbols",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["religion", "world religions", "christianity", "islam", "judaism", "hinduism", "buddhism", "sikhism", "symbols", "beliefs", "faith", "worship"],
   },
   {
     key: "mosque_features",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/hadrians-wall.png",
     label: "Mosque — Key Features",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["mosque", "islam", "minaret", "dome", "mihrab", "minbar", "wudu", "prayer", "allah", "muslim", "five pillars"],
   },
   {
     key: "church_features",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/hadrians-wall.png",
     label: "Church — Key Features",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["church", "christianity", "font", "altar", "nave", "pulpit", "stained glass", "cross", "christian", "worship", "cathedral"],
@@ -1467,14 +1466,14 @@ const DIAGRAM_BANK: DiagramEntry[] = [
   // ── ART & DESIGN ──────────────────────────────────────────────────────────
   {
     key: "colour_wheel",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/light-reflection.png",
     label: "Colour Wheel — Primary, Secondary, Tertiary",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["colour wheel", "color wheel", "primary colours", "secondary colours", "tertiary colours", "complementary colours", "warm colours", "cool colours", "hue", "tone", "tint", "shade", "art"],
   },
   {
     key: "elements_of_art",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/light-reflection.png",
     label: "Elements of Art",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["elements of art", "line", "shape", "form", "texture", "value", "space", "colour", "art elements", "design principles", "composition"],
@@ -1483,7 +1482,7 @@ const DIAGRAM_BANK: DiagramEntry[] = [
   // ── PE / SPORT ────────────────────────────────────────────────────────────
   {
     key: "muscular_system",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/human-skeleton.png",
     label: "Muscular System",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["muscles", "muscular system", "bicep", "tricep", "quadriceps", "hamstring", "gluteus", "deltoid", "calf", "muscle contraction", "antagonistic muscles", "pe"],
