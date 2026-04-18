@@ -3769,19 +3769,37 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
    * 2. Fall back to section.imageUrl
    * 3. Return undefined if neither is available
    */
+  // Diagrams that are stored as SVG (not PNG) in /public/diagrams/
+  const SVG_DIAGRAM_NAMES = new Set([
+    "probability-sample-space-grid",
+    "probability-scale-spinner",
+    "probability-tree-independent",
+    "probability-tree-no-replacement",
+    "probability-two-way-table",
+    "probability-venn-sets",
+    "statistics-averages-raw-data",
+    "statistics-bar-pie-charts",
+    "statistics-box-plots",
+    "statistics-cumulative-frequency",
+    "statistics-grouped-frequency-table",
+    "statistics-histogram",
+    "statistics-questionnaire-results",
+    "statistics-sampling-methods",
+    "statistics-scatter-graph",
+  ]);
+
   function resolveImageUrl(section: WorksheetSection): string | undefined {
     if (section.assetRef) {
       const resolved = assetRefMap.get(section.assetRef);
       if (resolved) return resolved;
-      // Fallback: map "assets/foo-bar.svg" or "assets/foo-bar.png" → "/diagrams/foo-bar.png"
+      // Fallback: map "assets/foo-bar.svg" or "assets/foo-bar.png" → correct extension
       const ref = section.assetRef;
-      if (ref.startsWith('assets/')) {
-        const basename = ref.replace(/^assets\//, '').replace(/\.[^.]+$/, '');
-        return `/diagrams/${basename}.png`;
-      }
-      // Also handle bare names like "algebra-function-machine"
-      if (/^[a-z0-9-]+$/.test(ref)) {
-        return `/diagrams/${ref}.png`;
+      const basename = ref.startsWith('assets/')
+        ? ref.replace(/^assets\//, '').replace(/\.[^.]+$/, '')
+        : /^[a-z0-9-]+$/.test(ref) ? ref : null;
+      if (basename) {
+        const ext = SVG_DIAGRAM_NAMES.has(basename) ? 'svg' : 'png';
+        return `/diagrams/${basename}.${ext}`;
       }
     }
     return section.imageUrl as string | undefined;

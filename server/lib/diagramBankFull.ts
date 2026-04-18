@@ -1284,7 +1284,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "histogram",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/statistics-histogram.svg",
     label: "Histogram — Frequency Density",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1292,7 +1292,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "scatter_graph",
-    url: "/diagrams/ph-scale.png",
+    url: "/diagrams/statistics-scatter-graph.svg",
     label: "Scatter Graph and Correlation",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1300,7 +1300,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "probability_tree",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/probability-tree-independent.svg",
     label: "Probability Tree Diagram",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1308,7 +1308,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "venn_diagram",
-    url: "/diagrams/venn-diagram.png",
+    url: "/diagrams/probability-venn-sets.svg",
     label: "Venn Diagram",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1316,7 +1316,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "box_plot",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/statistics-box-plots.svg",
     label: "Box Plot (Box and Whisker)",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1324,7 +1324,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "cumulative_frequency",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/statistics-cumulative-frequency.svg",
     label: "Cumulative Frequency Graph",
     attribution: WM,
     license: CC_BY_SA_3,
