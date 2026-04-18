@@ -945,7 +945,8 @@ STRICT JSON OUTPUT: Respond with valid JSON only — no markdown, no code blocks
 (1) [ ] checkbox next to every question. Max 3 questions in Section A, max 5 in Section B. 'STOP — check your work' after Section A.
 (2) Across the worksheet as a whole, use varied question SECTION TYPES (e.g. one calculation section, one fill-in section, one matching section, one true/false section). Do NOT add extra items to any individual section — each section keeps its standard number of questions/statements/options.
 (3) Bold the action word in every instruction. Numbered bullet points only — no embedded instructions. Max 5-step worked example.
-(4) Challenge labelled 'BONUS — only if you want to!'. Reflection: 'How focused were you today? 1 / 2 / 3 / 4 / 5'.`;
+(4) After the midpoint question in Section B (e.g. after question 3 of 5), insert a standalone line: '🧠 BRAIN BREAK — stand up and stretch for 30 seconds before continuing!'
+(5) Challenge labelled 'BONUS — only if you want to!'. Reflection: 'How focused were you today? 1 / 2 / 3 / 4 / 5'.`;
 
     if (sn.includes("asc") || sn.includes("autism") || sn.includes("asperger")) return `${base}
 (1) Literal, unambiguous language only — no idioms or figurative language (write 'calculate the value of x', not 'find x'). One word per concept — never mix synonyms.

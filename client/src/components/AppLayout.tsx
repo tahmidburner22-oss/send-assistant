@@ -514,7 +514,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                     </div>
                   </div>
                   <button
-                    onClick={() => { logout(); setSidebarOpen(false); window.location.href = "/"; }}
+                    onClick={() => { logout(); setSidebarOpen(false); window.location.href = "/login"; }}
                     className="p-2 rounded-lg hover:bg-red-50 text-muted-foreground hover:text-red-600 transition-colors"
                     title="Sign out"
                   >
