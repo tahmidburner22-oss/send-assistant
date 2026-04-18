@@ -1070,7 +1070,7 @@ const DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "glaciation",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/coastal-features.png",
     label: "Glaciation — Glacial Features",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["glaciation", "glacier", "glacial", "corrie", "arête", "pyramidal peak", "u-shaped valley", "hanging valley", "drumlin", "moraine", "terminal moraine", "ice age", "freeze thaw"],
@@ -1091,7 +1091,7 @@ const DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "carbon_cycle",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/greenhouse-effect.png",
     label: "The Carbon Cycle",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["carbon cycle", "carbon dioxide", "photosynthesis", "respiration", "decomposition", "fossil fuels", "carbon sink", "global warming", "greenhouse effect"],
@@ -1100,7 +1100,7 @@ const DIAGRAM_BANK: DiagramEntry[] = [
   // ── GEOGRAPHY — Human ─────────────────────────────────────────────────────
   {
     key: "population_pyramid",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/statistics-bar-pie-charts.svg",
     label: "Population Pyramid — DTM",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["population pyramid", "demographic transition model", "dtm", "birth rate", "death rate", "age structure", "population growth", "dependency ratio", "ageing population"],
@@ -1434,7 +1434,7 @@ const DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "logic_gates",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/computer-architecture.png",
     label: "Logic Gates",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["logic gates", "and gate", "or gate", "not gate", "nand gate", "nor gate", "xor gate", "boolean logic", "truth table", "binary", "computing"],
