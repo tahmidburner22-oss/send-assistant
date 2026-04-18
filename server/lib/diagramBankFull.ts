@@ -104,7 +104,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "osmosis",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/plant-cell.png",
     label: "Osmosis",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -112,7 +112,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "diffusion",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/states-particles.png",
     label: "Diffusion",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -120,7 +120,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "active_transport",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/plant-cell.png",
     label: "Active Transport",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -156,7 +156,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "alveoli",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/respiratory-system.png",
     label: "Alveolus — Gas Exchange",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -188,7 +188,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "reflex_arc",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/neuron.png",
     label: "Reflex Arc",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -204,7 +204,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "muscle_types",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/human-skeleton.png",
     label: "Types of Muscle Tissue",
     attribution: "OpenStax, " + WM,
     license: CC_BY_4,
@@ -228,7 +228,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "kidney",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/digestive-system.png",
     label: "Kidney Cross-Section",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -236,7 +236,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "nephron",
-    url: "/diagrams/ph-scale.png",
+    url: "/diagrams/digestive-system.png",
     label: "Nephron — Kidney Filtration",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -260,7 +260,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "endocrine_system",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/neuron.png",
     label: "Endocrine System — Hormones",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -268,7 +268,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "homeostasis_blood_glucose",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/neuron.png",
     label: "Blood Glucose Homeostasis",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -276,7 +276,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "teeth_types",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/digestive-system.png",
     label: "Types of Teeth",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -312,7 +312,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "protein_synthesis",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/dna-structure.png",
     label: "Protein Synthesis — Transcription and Translation",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -320,7 +320,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "mendelian_genetics",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/mitosis.png",
     label: "Punnett Square — Mendelian Genetics",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -344,7 +344,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "chromosome_karyotype",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/mitosis.png",
     label: "Human Karyotype — Chromosomes",
     attribution: "National Human Genome Research Institute, " + WM,
     license: PD,
@@ -364,7 +364,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "leaf_structure",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/flower-structure.png",
     label: "Leaf Structure (Cross-Section)",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -380,7 +380,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "plant_transport",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/flower-structure.png",
     label: "Xylem and Phloem — Plant Transport",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -404,7 +404,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "carbon_cycle",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/greenhouse-effect.png",
     label: "Carbon Cycle",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -412,7 +412,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "nitrogen_cycle",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/water-cycle.png",
     label: "Nitrogen Cycle",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -428,7 +428,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "classification_living_things",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/food-web.png",
     label: "Classification of Living Things",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -460,7 +460,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "respiration_aerobic",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/energy-transfer.png",
     label: "Cellular Respiration",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -468,7 +468,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "krebs_cycle",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/energy-transfer.png",
     label: "Krebs Cycle (Citric Acid Cycle)",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -484,7 +484,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "tropical_rainforest",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/food-web.png",
     label: "Tropical Rainforest Layers",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -496,7 +496,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ══════════════════════════════════════════════════════════════════════════
   {
     key: "immune_system",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/neuron.png",
     label: "Immune / Lymphatic System",
     attribution: "BruceBlaus, " + WM,
     license: CC_BY_3,
@@ -504,7 +504,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "virus_structure",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/dna-structure.png",
     label: "Virus Structure",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -604,7 +604,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "filtration",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/states-particles.png",
     label: "Filtration",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -636,7 +636,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "exothermic_endothermic",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/energy-transfer.png",
     label: "Exothermic vs Endothermic Reactions",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -644,7 +644,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "mole_concept",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/periodic-table.png",
     label: "The Mole — Avogadro's Number",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -652,7 +652,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "haber_process",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/states-of-matter.png",
     label: "Haber Process",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -660,7 +660,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "alkanes_alkenes",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/covalent-bonding.png",
     label: "Alkanes and Alkenes — Organic Chemistry",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -676,7 +676,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "transition_metals",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/periodic-table.png",
     label: "Transition Metals in the Periodic Table",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -684,7 +684,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "water_treatment",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/distillation.png",
     label: "Water Treatment Process",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -752,7 +752,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "newtons_laws",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/energy-transfer.png",
     label: "Newton's Laws of Motion",
     attribution: WM,
     license: PD,
@@ -792,7 +792,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "nuclear_fission",
-    url: "/diagrams/human-ear.png",
+    url: "/diagrams/radiation-types.png",
     label: "Nuclear Fission",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -800,7 +800,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "radioactive_decay",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/radiation-types.png",
     label: "Radioactive Decay",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -808,7 +808,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "alpha_beta_gamma",
-    url: "/diagrams/ph-scale.png",
+    url: "/diagrams/radiation-types.png",
     label: "Alpha, Beta and Gamma Radiation",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -856,7 +856,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "seasons",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/solar-system.png",
     label: "The Four Seasons — Earth's Orbit",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -864,7 +864,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "moon_phases",
-    url: "/diagrams/ph-scale.png",
+    url: "/diagrams/solar-system.png",
     label: "Phases of the Moon",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -880,7 +880,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "specific_heat_capacity",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/energy-transfer.png",
     label: "Heating Curve — Specific Heat Capacity",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -908,7 +908,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "plate_boundaries",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/tectonic-plates.png",
     label: "Types of Plate Boundaries",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -916,7 +916,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "earthquake_seismic",
-    url: "/diagrams/human-ear.png",
+    url: "/diagrams/tectonic-plates.png",
     label: "Earthquake — Seismic Waves",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -924,7 +924,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "glaciation",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/coastal-features.png",
     label: "Glacial Landforms",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -964,7 +964,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "population_pyramid",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/statistics-bar-pie-charts.svg",
     label: "Population Pyramid",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -972,7 +972,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "demographic_transition",
-    url: "/diagrams/ph-scale.png",
+    url: "/diagrams/statistics-bar-pie-charts.svg",
     label: "Demographic Transition Model",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -996,7 +996,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "compass_directions",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/scale-grid.png",
     label: "Compass Directions",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1004,7 +1004,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "contour_lines",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/scale-grid.png",
     label: "Contour Lines — Topographic Map",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1012,7 +1012,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "urban_land_use",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/scale-grid.png",
     label: "Urban Land Use — Burgess Model",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1020,7 +1020,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "development_indicators",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/statistics-bar-pie-charts.svg",
     label: "Global Development Indicators Map",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1028,7 +1028,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "resource_management_water",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/water-cycle.png",
     label: "Water Treatment and Resource Management",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1048,7 +1048,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "place_value",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/number-standard-form-place-value.png",
     label: "Place Value Chart",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1056,7 +1056,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "multiplication_table",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/number-line.png",
     label: "Multiplication Table",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1080,7 +1080,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "ratio_proportion",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/fractions.png",
     label: "Ratio and Proportion",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1088,7 +1088,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "standard_form",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/number-standard-form-place-value.png",
     label: "Standard Form (Scientific Notation)",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1116,7 +1116,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "simultaneous_equations",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/algebra-blank-axes.png",
     label: "Simultaneous Equations — Graphical Solution",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1124,7 +1124,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "sequences_arithmetic",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/algebra-sequence-dot-pattern.png",
     label: "Arithmetic Sequence",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1132,7 +1132,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "geometric_sequence",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/algebra-sequence-dot-pattern.png",
     label: "Geometric Sequence",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1140,7 +1140,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "inequalities",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/algebra-blank-axes.png",
     label: "Inequalities on a Number Line",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1160,7 +1160,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "trigonometry",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/unit-circle.png",
     label: "Trigonometry — SOH CAH TOA",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1208,7 +1208,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "area_perimeter",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/polygons.png",
     label: "Area and Perimeter of Shapes",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1232,7 +1232,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "vectors_diagram",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/coordinate-system.png",
     label: "Vectors — Direction and Magnitude",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1240,7 +1240,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "loci_constructions",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/circle-parts.png",
     label: "Loci and Constructions — Angle Bisector",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1248,7 +1248,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "sine_cosine_rule",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/triangle-properties.png",
     label: "Sine and Cosine Rule",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1256,7 +1256,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "surds",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/number-line.png",
     label: "Surds — Pythagoras with Surds",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1268,7 +1268,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ══════════════════════════════════════════════════════════════════════════
   {
     key: "bar_chart",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/statistics-bar-pie-charts.svg",
     label: "Bar Chart",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1276,7 +1276,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "pie_chart",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/statistics-bar-pie-charts.svg",
     label: "Pie Chart",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1332,7 +1332,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "normal_distribution",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/statistics-histogram.svg",
     label: "Normal Distribution Curve",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1352,7 +1352,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "logic_gates",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/computer-architecture.png",
     label: "Logic Gates",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1392,7 +1392,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "binary_search",
-    url: "/diagrams/human-ear.png",
+    url: "/diagrams/binary-representation.png",
     label: "Binary Search Algorithm",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1400,7 +1400,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "osi_model",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/computer-architecture.png",
     label: "OSI Network Model",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1408,7 +1408,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "data_storage",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/binary-representation.png",
     label: "Data Storage — Bits and Bytes",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1416,7 +1416,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "html_structure",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/computer-architecture.png",
     label: "HTML Structure",
     attribution: WM,
     license: CC0,
@@ -1468,7 +1468,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "ancient_greece_map",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/roman-empire.png",
     label: "Ancient Greece Map",
     attribution: WM,
     license: PD,
@@ -1476,7 +1476,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "norman_conquest",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/hadrians-wall.png",
     label: "Battle of Hastings 1066",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1492,7 +1492,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "civil_rights_timeline",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/roman-empire.png",
     label: "Civil Rights Movement — March on Washington",
     attribution: WM,
     license: PD,
@@ -1508,7 +1508,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "weimar_germany",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/roman-empire.png",
     label: "Weimar and Nazi Germany — Rise of Hitler",
     attribution: "Bundesarchiv, " + WM,
     license: CC_BY_SA_3,
@@ -1532,7 +1532,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "anglo_saxons",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/hadrians-wall.png",
     label: "Anglo-Saxon Kingdoms of England",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1544,7 +1544,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ══════════════════════════════════════════════════════════════════════════
   {
     key: "supply_demand",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/algebra-blank-axes.png",
     label: "Supply and Demand Curve",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1552,7 +1552,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "business_ownership",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/venn-diagram.png",
     label: "Business Organisational Structure",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1560,7 +1560,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "business_cycle",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/algebra-blank-axes.png",
     label: "Business / Economic Cycle",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1568,7 +1568,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "swot_analysis",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/venn-diagram.png",
     label: "SWOT Analysis",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1576,7 +1576,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "inflation_graph",
-    url: "/diagrams/ph-scale.png",
+    url: "/diagrams/algebra-blank-axes.png",
     label: "Inflation Rate Graph",
     attribution: WM,
     license: PD,
@@ -1588,7 +1588,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ══════════════════════════════════════════════════════════════════════════
   {
     key: "world_religions_map",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/world-biomes.png",
     label: "World Religions Map",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1596,7 +1596,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "christianity_cross",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/venn-diagram.png",
     label: "Christian Cross",
     attribution: WM,
     license: PD,
@@ -1604,7 +1604,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "buddhism_wheel",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/venn-diagram.png",
     label: "Buddhism — Dharma Wheel",
     attribution: WM,
     license: PD,
@@ -1612,7 +1612,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "hinduism_om",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/venn-diagram.png",
     label: "Hinduism — Om Symbol",
     attribution: WM,
     license: PD,
@@ -1620,7 +1620,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "sikhism_khanda",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/venn-diagram.png",
     label: "Sikhism — Khanda Symbol",
     attribution: WM,
     license: PD,
@@ -1632,7 +1632,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ══════════════════════════════════════════════════════════════════════════
   {
     key: "colour_wheel",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/light-reflection.png",
     label: "Colour Wheel — Primary, Secondary, Tertiary",
     attribution: WM,
     license: PD,
@@ -1640,7 +1640,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "perspective_drawing",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/3d-shapes.png",
     label: "Two-Point Perspective Drawing",
     attribution: WM,
     license: PD,
@@ -1648,7 +1648,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "elements_of_art",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/light-reflection.png",
     label: "Elements of Art — Mona Lisa (Leonardo da Vinci)",
     attribution: "Leonardo da Vinci, " + WM,
     license: PD,
@@ -1660,7 +1660,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ══════════════════════════════════════════════════════════════════════════
   {
     key: "music_notation",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/wave-types.png",
     label: "Music Notation — Treble Clef",
     attribution: WM,
     license: PD,
@@ -1668,7 +1668,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "musical_instruments",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/wave-types.png",
     label: "Orchestra — Instrument Families",
     attribution: WM,
     license: PD,
@@ -1688,7 +1688,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ══════════════════════════════════════════════════════════════════════════
   {
     key: "muscle_diagram_pe",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/human-skeleton.png",
     label: "Major Muscle Groups",
     attribution: "OpenStax, " + WM,
     license: CC_BY_4,
@@ -1704,7 +1704,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "lever_systems",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/energy-transfer.png",
     label: "Lever Systems — First, Second, Third Class",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1716,7 +1716,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ══════════════════════════════════════════════════════════════════════════
   {
     key: "isometric_drawing",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/3d-shapes.png",
     label: "Isometric Drawing",
     attribution: WM,
     license: PD,
@@ -1724,7 +1724,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "bridge_structures",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/energy-transfer.png",
     label: "Types of Bridges — Structures",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1732,7 +1732,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "design_cycle",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/algebra-sequence-dot-pattern.png",
     label: "Design Cycle / Process",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1744,7 +1744,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ══════════════════════════════════════════════════════════════════════════
   {
     key: "world_map_mfl",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/world-biomes.png",
     label: "World Map — Countries and Languages",
     attribution: WM,
     license: PD,
@@ -1752,7 +1752,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "human_body_mfl",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/digestive-system.png",
     label: "Human Body — Parts (for MFL labelling)",
     attribution: "BruceBlaus, " + WM,
     license: CC_BY_3,
@@ -1772,7 +1772,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "healthy_eating_plate",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/food-chain.png",
     label: "Eatwell Guide — Healthy Eating",
     attribution: "Public Health England / Crown Copyright, " + WM,
     license: "OGL v3.0",
@@ -1780,7 +1780,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "internet_safety",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/computer-architecture.png",
     label: "Using Technology Safely — Online Safety",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1792,7 +1792,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ══════════════════════════════════════════════════════════════════════════
   {
     key: "plants_need_to_grow",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/flower-structure.png",
     label: "What Plants Need to Grow",
     attribution: "At09kg, " + WM,
     license: CC_BY_SA_3,
@@ -1800,7 +1800,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "materials_properties",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/states-of-matter.png",
     label: "Properties of Materials",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1808,7 +1808,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "electricity_ks2",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/electrical-circuit.png",
     label: "Simple Electrical Circuits (KS2)",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1824,7 +1824,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "habitats_ks2",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/food-chain.png",
     label: "Habitats and Food Webs",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1840,7 +1840,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "human_body_ks2",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/digestive-system.png",
     label: "Human Body — Main Organs",
     attribution: "BruceBlaus, " + WM,
     license: CC_BY_3,
@@ -1850,7 +1850,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ── ENGLISH LANGUAGE — Writing and Grammar ─────────────────────────────────
   {
     key: "narrative_structure",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/algebra-sequence-dot-pattern.png",
     label: "Narrative Structure — Freytag's Pyramid",
     attribution: "AI-generated educational diagram (Adaptly)",
     license: CC_BY_SA_3,
@@ -1858,7 +1858,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "parts_of_speech",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/algebra-function-machine.png",
     label: "Parts of Speech Diagram",
     attribution: "AI-generated educational diagram (Adaptly)",
     license: CC_BY_SA_4,
@@ -1866,7 +1866,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "poetry_analysis",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/algebra-function-machine.png",
     label: "Poetry — William Blake, The Tyger (1794)",
     attribution: "AI-generated educational diagram (Adaptly)",
     license: PD,
@@ -1874,7 +1874,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "shakespeare_globe",
-    url: "/diagrams/human-ear.png",
+    url: "/diagrams/hadrians-wall.png",
     label: "The Globe Theatre (1647 engraving)",
     attribution: "AI-generated educational diagram (Adaptly)",
     license: PD,
@@ -1884,7 +1884,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ── MATHEMATICS — Additional Topics ─────────────────────────────────────────
   {
     key: "prime_factors",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/number-line.png",
     label: "Prime Numbers and Factors",
     attribution: "AI-generated educational diagram (Adaptly)",
     license: CC_BY_SA_3,
@@ -1892,7 +1892,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "bounds_estimation",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/number-line.png",
     label: "Bounds and Estimation",
     attribution: "AI-generated educational diagram (Adaptly)",
     license: CC_BY_SA_3,
@@ -1900,7 +1900,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "exponential_graph",
-    url: "/diagrams/ph-scale.png",
+    url: "/diagrams/algebra-parabola-reference.png",
     label: "Exponential Function Graph",
     attribution: "AI-generated educational diagram (Adaptly)",
     license: CC_BY_SA_3,
@@ -1908,7 +1908,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "differentiation_calculus",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/algebra-parabola-reference.png",
     label: "Differentiation — Tangent to a Curve",
     attribution: "AI-generated educational diagram (Adaptly)",
     license: CC_BY_SA_3,
@@ -1916,7 +1916,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "hypothesis_testing",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/statistics-scatter-graph.svg",
     label: "Hypothesis Testing — p-value Distribution",
     attribution: "AI-generated educational diagram (Adaptly)",
     license: CC_BY_SA_3,
@@ -1924,7 +1924,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "measurement_units",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/number-line.png",
     label: "SI Units of Measurement",
     attribution: "AI-generated educational diagram (Adaptly)",
     license: CC_BY_SA_3,
@@ -1932,7 +1932,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "spatial_reasoning",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/3d-shapes.png",
     label: "3D Shapes — Net of a Cube",
     attribution: "AI-generated educational diagram (Adaptly)",
     license: CC_BY_SA_3,
@@ -1942,7 +1942,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ── GEOGRAPHY — Additional Topics ────────────────────────────────────────────
   {
     key: "continents_oceans",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/world-biomes.png",
     label: "World Map — Continents and Oceans",
     attribution: "AI-generated educational diagram (Adaptly)",
     license: CC_BY_SA_3,
@@ -1950,7 +1950,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "mountains_formation",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/tectonic-plates.png",
     label: "Mountain Formation — Fold Mountains",
     attribution: "AI-generated educational diagram (Adaptly)",
     license: CC_BY_SA_3,
@@ -1958,7 +1958,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "globalisation_map",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/world-biomes.png",
     label: "Globalisation — World Cities Network",
     attribution: "AI-generated educational diagram (Adaptly)",
     license: CC_BY_SA_3,
@@ -1966,7 +1966,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "hazards_types",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/tectonic-plates.png",
     label: "Natural Hazards — Types and Distribution",
     attribution: "AI-generated educational diagram (Adaptly)",
     license: CC_BY_SA_3,
@@ -1984,7 +1984,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ── HISTORY — Additional Topics ──────────────────────────────────────────────
   {
     key: "tudors_henry_viii",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/great-fire-london.png",
     label: "Henry VIII — The Tudors",
     attribution: "AI-generated educational diagram (Adaptly)",
     license: PD,
@@ -2002,7 +2002,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ── SCIENCE — Additional Topics ──────────────────────────────────────────────
   {
     key: "drugs_alcohol_body",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/neuron.png",
     label: "Effects of Drugs and Alcohol on the Body",
     attribution: "AI-generated educational diagram (Adaptly)",
     license: CC_BY_SA_3,
@@ -2012,7 +2012,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ── PE / SPORT ────────────────────────────────────────────────────────────────
   {
     key: "athletics_biomechanics",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/human-skeleton.png",
     label: "Athletics — Biomechanics of Running",
     attribution: "AI-generated educational diagram (Adaptly)",
     license: CC_BY_SA_3,
@@ -2022,7 +2022,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ── PSHE / CITIZENSHIP ────────────────────────────────────────────────────────
   {
     key: "self_esteem_pyramid",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/algebra-sequence-dot-pattern.png",
     label: "Maslow's Hierarchy of Needs",
     attribution: "AI-generated educational diagram (Adaptly)",
     license: CC_BY_SA_3,
@@ -2032,7 +2032,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ── DT / TEXTILES ─────────────────────────────────────────────────────────────
   {
     key: "textiles_weaving",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/algebra-function-machine.png",
     label: "Textiles — Weaving Diagram",
     attribution: "AI-generated educational diagram (Adaptly)",
     license: CC_BY_SA_3,
@@ -2040,7 +2040,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "pneumatics_mechanism",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/energy-transfer.png",
     label: "Pneumatics — Mechanism Diagram",
     attribution: "AI-generated educational diagram (Adaptly)",
     license: CC_BY_SA_3,
@@ -2050,7 +2050,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ── MUSIC ─────────────────────────────────────────────────────────────────────
   {
     key: "music_notation",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/wave-types.png",
     label: "Music Notation — Staff and Notes",
     attribution: "AI-generated educational diagram (Adaptly)",
     license: CC_BY_SA_3,
@@ -2060,7 +2060,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ── ART ───────────────────────────────────────────────────────────────────────
   {
     key: "art_colour_wheel",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/light-reflection.png",
     label: "Colour Wheel — Primary and Secondary Colours",
     attribution: "AI-generated educational diagram (Adaptly)",
     license: CC_BY_SA_3,
@@ -2070,7 +2070,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ── CYBERSECURITY ─────────────────────────────────────────────────────────────
   {
     key: "cybersecurity_threats",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/computer-architecture.png",
     label: "Cybersecurity — Threats and Protection",
     attribution: "AI-generated educational diagram (Adaptly)",
     license: CC_BY_SA_4,
@@ -2080,7 +2080,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ── BUSINESS / ECONOMICS ─────────────────────────────────────────────────────
   {
     key: "revenue_costs_profit",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/algebra-blank-axes.png",
     label: "Revenue, Costs and Profit — Break-Even Graph",
     attribution: "AI-generated educational diagram (Adaptly)",
     license: CC_BY_SA_3,
@@ -2090,7 +2090,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ── RE / ETHICS ───────────────────────────────────────────────────────────────
   {
     key: "ethics_crime_punishment",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/venn-diagram.png",
     label: "Ethics — Scales of Justice",
     attribution: "AI-generated educational diagram (Adaptly)",
     license: CC_BY_SA_3,
