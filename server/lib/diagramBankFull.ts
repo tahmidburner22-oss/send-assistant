@@ -760,7 +760,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "velocity_time_graph",
-    url: "/diagrams/ph-scale.png",
+    url: "/diagrams/graph-velocity-time.png",
     label: "Velocity-Time Graph",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -768,7 +768,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "distance_time_graph",
-    url: "/diagrams/ph-scale.png",
+    url: "/diagrams/graph-distance-time.png",
     label: "Distance-Time Graph",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1100,7 +1100,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ══════════════════════════════════════════════════════════════════════════
   {
     key: "straight_line_graph",
-    url: "/diagrams/ph-scale.png",
+    url: "/diagrams/algebra-straight-line-reference.png",
     label: "Straight Line Graph (y = mx + c)",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1108,7 +1108,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "quadratic_graph",
-    url: "/diagrams/ph-scale.png",
+    url: "/diagrams/quadratic-graph.png",
     label: "Quadratic Function Graph (Parabola)",
     attribution: WM,
     license: CC_BY_SA_3,
