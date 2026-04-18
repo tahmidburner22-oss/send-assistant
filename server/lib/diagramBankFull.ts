@@ -2087,10 +2087,235 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
     keywords: ["revenue", "costs", "profit", "break even", "finance", "business finance", "fixed costs", "variable costs", "total revenue"],
   },
 
-  // ── RE / ETHICS ───────────────────────────────────────────────────────────────
+  // ── MATHS — PROBABILITY (additional) ────────────────────────────────────────────────────
   {
-    key: "ethics_crime_punishment",
-    url: "/diagrams/venn-diagram.png",
+    key: "probability_sample_space",
+    url: "/diagrams/probability-sample-space-grid.svg",
+    label: "Probability — Sample Space Grid",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["sample space", "sample space diagram", "two events", "combined events", "probability grid", "listing outcomes", "equally likely outcomes", "probability", "maths"],
+  },
+  {
+    key: "probability_spinner",
+    url: "/diagrams/probability-scale-spinner.svg",
+    label: "Probability Scale and Spinner",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["probability scale", "spinner", "probability spinner", "impossible", "certain", "likely", "unlikely", "even chance", "probability", "maths"],
+  },
+  {
+    key: "probability_two_way_table",
+    url: "/diagrams/probability-two-way-table.svg",
+    label: "Two-Way Table — Probability",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["two-way table", "two way table", "frequency table", "conditional probability", "relative frequency", "probability from table", "probability", "maths"],
+  },
+  {
+    key: "probability_tree_no_replacement",
+    url: "/diagrams/probability-tree-no-replacement.svg",
+    label: "Probability Tree — Without Replacement",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["probability tree", "tree diagram", "without replacement", "dependent events", "conditional probability", "probability", "maths"],
+  },
+
+  // ── MATHS — STATISTICS (additional) ────────────────────────────────────────────────────
+  {
+    key: "statistics_averages",
+    url: "/diagrams/statistics-averages-raw-data.svg",
+    label: "Averages — Mean, Median, Mode, Range",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["mean", "median", "mode", "range", "averages", "average", "raw data", "statistics", "data", "maths"],
+  },
+  {
+    key: "statistics_grouped_frequency",
+    url: "/diagrams/statistics-grouped-frequency-table.svg",
+    label: "Grouped Frequency Table",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["grouped frequency", "frequency table", "class interval", "tally", "grouped data", "statistics", "data collection", "maths"],
+  },
+  {
+    key: "statistics_questionnaire",
+    url: "/diagrams/statistics-questionnaire-results.svg",
+    label: "Questionnaire Results — Data Handling",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["questionnaire", "survey", "data collection", "primary data", "results", "statistics", "data handling", "maths"],
+  },
+  {
+    key: "statistics_sampling",
+    url: "/diagrams/statistics-sampling-methods.svg",
+    label: "Sampling Methods — Statistics",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["sampling", "random sampling", "stratified sampling", "systematic sampling", "sample", "population", "bias", "statistics", "maths"],
+  },
+
+  // ── MATHS — ALGEBRA (additional) ────────────────────────────────────────────────────
+  {
+    key: "algebra_blank_grid",
+    url: "/diagrams/algebra-blank-grid.png",
+    label: "Blank Coordinate Grid",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["coordinate grid", "blank grid", "axes", "x axis", "y axis", "plotting", "graph paper", "algebra", "maths"],
+  },
+  {
+    key: "algebra_inequality_region",
+    url: "/diagrams/algebra-inequality-region.png",
+    label: "Inequalities — Shaded Region",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["inequalities", "inequality region", "shaded region", "linear inequality", "graphical inequality", "algebra", "maths"],
+  },
+  {
+    key: "algebra_parabola",
+    url: "/diagrams/algebra-parabola-reference.png",
+    label: "Parabola — Quadratic Reference",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["parabola", "quadratic graph", "quadratic function", "vertex", "roots", "turning point", "quadratic", "algebra", "maths"],
+  },
+  {
+    key: "algebra_linear_graph",
+    url: "/diagrams/algebra-linear-graph-reference.png",
+    label: "Linear Graph Reference",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["linear graph", "straight line graph", "gradient", "y intercept", "y=mx+c", "algebra", "maths"],
+  },
+
+  // ── MATHS — NUMBER (additional) ────────────────────────────────────────────────────
+  {
+    key: "accuracy_number_line",
+    url: "/diagrams/accuracy-number-line.png",
+    label: "Accuracy — Number Line",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["accuracy", "rounding", "number line", "upper bound", "lower bound", "error interval", "truncation", "significant figures", "decimal places", "maths"],
+  },
+  {
+    key: "standard_form_place_value",
+    url: "/diagrams/standard-form-place-value.png",
+    label: "Standard Form — Place Value",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["standard form", "place value", "powers of 10", "scientific notation", "index notation", "number", "maths"],
+  },
+  {
+    key: "real_life_conversion_graph",
+    url: "/diagrams/real-life-conversion-graph.png",
+    label: "Real-Life Graph — Conversion",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["conversion graph", "real life graph", "currency conversion", "unit conversion", "straight line graph", "proportion", "ratio", "maths"],
+  },
+
+  // ── PHYSICS — EQUATIONS (additional) ────────────────────────────────────────────────────
+  {
+    key: "equation_triangle_sdt",
+    url: "/diagrams/equation-triangle-sdt.png",
+    label: "Equation Triangle — Speed, Distance, Time",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["speed distance time", "sdt triangle", "equation triangle", "speed formula", "distance formula", "time formula", "physics", "kinematics"],
+  },
+  {
+    key: "equation_triangle_density",
+    url: "/diagrams/equation-triangle-density.png",
+    label: "Equation Triangle — Density, Mass, Volume",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["density", "mass", "volume", "density formula", "equation triangle", "density mass volume", "dmv triangle", "physics", "chemistry"],
+  },
+  {
+    key: "equation_triangle_pressure",
+    url: "/diagrams/equation-triangle-pressure.png",
+    label: "Equation Triangle — Pressure, Force, Area",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["pressure", "force", "area", "pressure formula", "equation triangle", "pressure force area", "pfa triangle", "physics"],
+  },
+  {
+    key: "graph_distance_time",
+    url: "/diagrams/graph-distance-time.png",
+    label: "Distance-Time Graph",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["distance time graph", "distance-time graph", "speed", "gradient", "motion", "kinematics", "stationary", "constant speed", "physics"],
+  },
+
+  // ── CHEMISTRY — BONDING (additional) ────────────────────────────────────────────────────
+  {
+    key: "metallic_bonding",
+    url: "/diagrams/metallic-bonding.png",
+    label: "Metallic Bonding",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["metallic bonding", "metallic bond", "sea of electrons", "delocalised electrons", "metal lattice", "positive ions", "conductivity", "chemistry"],
+  },
+
+  // ── PHYSICS — CIRCUITS (additional) ────────────────────────────────────────────────────
+  {
+    key: "parallel_circuit",
+    url: "/diagrams/parallel-circuit.png",
+    label: "Parallel Circuit",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["parallel circuit", "parallel", "current", "voltage", "resistance", "branches", "electrical circuit", "circuit diagram", "physics"],
+  },
+
+  // ── HISTORY (additional) ───────────────────────────────────────────────────────────────────
+  {
+    key: "ancient_egypt",
+    url: "/diagrams/ancient-egypt.png",
+    label: "Ancient Egypt",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["ancient egypt", "egypt", "pharaoh", "pyramid", "hieroglyphics", "nile", "mummification", "gods", "history"],
+  },
+  {
+    key: "battle_of_hastings",
+    url: "/diagrams/battle-of-hastings.png",
+    label: "Battle of Hastings — 1066",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["battle of hastings", "1066", "william the conqueror", "harold", "norman conquest", "normans", "saxons", "medieval", "history"],
+  },
+  {
+    key: "stone_age",
+    url: "/diagrams/stone-age.png",
+    label: "Stone Age",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["stone age", "prehistoric", "hunter gatherer", "cave paintings", "tools", "neolithic", "palaeolithic", "mesolithic", "history"],
+  },
+  {
+    key: "viking_longship",
+    url: "/diagrams/viking-longship.png",
+    label: "Viking Longship",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["vikings", "viking longship", "longship", "norse", "scandinavia", "raid", "invasion", "history"],
+  },
+
+  // ── GEOGRAPHY (additional) ───────────────────────────────────────────────────────────────────
+  {
+    key: "world_biomes",
+    url: "/diagrams/world-biomes.png",
+    label: "World Biomes",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["biomes", "world biomes", "tropical rainforest", "desert", "tundra", "grassland", "savanna", "temperate forest", "taiga", "geography", "ecosystems"],
+  },
+
+  // ── RE / ETHICS ───────────────────────────────────────────────────────────────────
+  {
+    key: "ethics_crime_punishment", url: "/diagrams/venn-diagram.png",
     label: "Ethics — Scales of Justice",
     attribution: "AI-generated educational diagram (Adaptly)",
     license: CC_BY_SA_3,

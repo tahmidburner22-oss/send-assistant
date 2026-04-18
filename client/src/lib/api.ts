@@ -41,7 +41,7 @@ async function apiFetch<T>(
     // Don't redirect for auth check endpoints — they're expected to return 401 when not logged in
     const isAuthCheck = path === "/auth/me" || path === "/auth/refresh";
     if (!isAuthCheck) {
-      window.location.href = "/";
+      window.location.href = "/login";
     }
     throw new Error("Session expired");
   }
