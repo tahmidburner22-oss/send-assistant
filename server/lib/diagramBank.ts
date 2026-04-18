@@ -628,7 +628,7 @@ const DIAGRAM_BANK: DiagramEntry[] = [
   // ── MATHEMATICS — Year 11 / GCSE ───────────────────────────────────────────────────
   {
     key: "quadratic_graph",
-    url: "/diagrams/ph-scale.png",
+    url: "/diagrams/quadratic-graph.png",
     label: "Quadratic Function Graph (Parabola)",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["quadratic", "quadratic equation", "quadratic formula", "parabola", "quadratic graph", "completing the square", "roots", "vertex", "discriminant", "quadratic function"],
@@ -642,7 +642,7 @@ const DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "straight_line_graph",
-    url: "/diagrams/ph-scale.png",
+    url: "/diagrams/algebra-straight-line-reference.png",
     label: "Straight Line Graph (y = mx + c)",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["straight line", "linear graph", "y = mx + c", "gradient", "y-intercept", "slope", "linear equation", "coordinate geometry", "linear function"],
@@ -723,7 +723,7 @@ const DIAGRAM_BANK: DiagramEntry[] = [
   // ── SCIENCE — Year 11 / GCSE ─────────────────────────────────────────────────────────
   {
     key: "velocity_time_graph",
-    url: "/diagrams/ph-scale.png",
+    url: "/diagrams/graph-velocity-time.png",
     label: "Velocity-Time Graph",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["velocity time graph", "speed time graph", "acceleration", "deceleration", "distance", "area under graph", "motion graph", "kinematics"],
@@ -855,14 +855,14 @@ const DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "linear_graph",
-    url: "/diagrams/human-ear.png",
+    url: "/diagrams/algebra-linear-graph-reference.png",
     label: "Linear Graph — Gradient and Intercept",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["linear graph", "straight line graph", "gradient", "y intercept", "slope", "y=mx+c", "linear equation", "plotting graphs", "rate of change"],
   },
   {
     key: "quadratic_graph",
-    url: "/diagrams/ph-scale.png",
+    url: "/diagrams/quadratic-graph.png",
     label: "Quadratic Graph — Parabola",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["quadratic graph", "parabola", "quadratic function", "quadratic equation", "completing the square", "roots", "turning point", "vertex", "quadratics"],
@@ -1347,7 +1347,7 @@ const DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "motion_graphs",
-    url: "/diagrams/ph-scale.png",
+    url: "/diagrams/graph-velocity-time.png",
     label: "Motion Graphs — Distance-Time and Velocity-Time",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["motion graphs", "distance time graph", "velocity time graph", "speed time graph", "acceleration", "deceleration", "gradient", "area under graph", "kinematics"],
