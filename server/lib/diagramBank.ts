@@ -443,14 +443,14 @@ const DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "plate_boundaries",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/tectonic-plates.png",
     label: "Types of Plate Boundaries",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["plate boundary", "constructive boundary", "destructive boundary", "conservative boundary", "transform fault", "ridge", "trench"],
   },
   {
     key: "glaciation",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/coastal-features.png",
     label: "Glacial Landforms",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["glaciation", "glacier", "glacial landforms", "corrie", "arête", "horn", "u-shaped valley", "moraine", "drumlin", "ice age"],
@@ -464,14 +464,14 @@ const DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "compass_directions",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/scale-grid.png",
     label: "Compass Directions",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["compass", "compass directions", "north", "south", "east", "west", "compass rose", "map skills", "geography ks2", "cardinal directions"],
   },
   {
     key: "population_pyramid",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/statistics-bar-pie-charts.svg",
     label: "Population Pyramid",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["population pyramid", "age-sex pyramid", "birth rate", "death rate", "population structure", "demographics", "population"],
@@ -589,7 +589,7 @@ const DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "logic_gates",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/computer-architecture.png",
     label: "Logic Gates",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["logic gates", "and gate", "or gate", "not gate", "nand gate", "nor gate", "xor gate", "boolean logic", "computer science"],
@@ -619,7 +619,7 @@ const DIAGRAM_BANK: DiagramEntry[] = [
   // ── ECONOMICS / BUSINESS ─────────────────────────────────────────────────────────────
   {
     key: "supply_demand",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/algebra-blank-axes.png",
     label: "Supply and Demand Curve",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["supply and demand", "demand curve", "supply curve", "equilibrium", "price", "quantity", "market", "economics"],
@@ -941,7 +941,7 @@ const DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "transformations",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/coordinate-system.png",
     label: "Transformations — Reflection, Rotation, Translation",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["transformations", "reflection", "rotation", "translation", "enlargement", "congruence", "similar shapes", "scale factor", "vector translation", "line of symmetry"],
@@ -955,14 +955,14 @@ const DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "vectors",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/coordinate-system.png",
     label: "Vectors — Magnitude and Direction",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["vectors", "vector", "magnitude", "direction", "column vector", "resultant vector", "vector addition", "scalar multiplication", "displacement", "velocity"],
   },
   {
     key: "loci_constructions",
-    url: "/diagrams/animal-cell.png",
+    url: "/diagrams/circle-parts.png",
     label: "Loci and Constructions — Perpendicular Bisector",
     attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["loci", "locus", "constructions", "perpendicular bisector", "angle bisector", "compass constructions", "geometric constructions", "equidistant"],
