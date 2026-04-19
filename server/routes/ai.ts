@@ -3027,4 +3027,121 @@ RULES:
   }
 });
 
+// ── POST /api/ai/diagram-questions ──────────────────────────────────────────
+// Given a diagram library entry (description, image_url, title, topic) and
+// worksheet context, generate multiple dynamic diagram-based questions.
+// Uses the diagram description as the source of truth — no vision API needed.
+router.post("/diagram-questions", requireAuth, async (req: Request, res: Response) => {
+  const {
+    diagramTitle,
+    diagramDescription,
+    diagramImageUrl,
+    subject,
+    topic,
+    yearGroup,
+    difficulty = "standard",
+    sendNeed,
+  } = req.body;
+
+  if (!diagramDescription && !diagramTitle) {
+    return res.status(400).json({ error: "diagramDescription or diagramTitle required" });
+  }
+
+  const difficultyNote = difficulty === "foundation"
+    ? "Questions should be accessible, with sentence starters and clear structure. Avoid multi-step reasoning."
+    : difficulty === "higher"
+    ? "Questions should be challenging, requiring analysis, evaluation, and extended reasoning."
+    : "Questions should be at standard GCSE level, a mix of recall, application, and analysis.";
+
+  const sendNote = sendNeed && sendNeed !== "none" && sendNeed !== "none-selected"
+    ? `The student has a SEND need: ${sendNeed}. Adjust language and scaffolding accordingly — shorter sentences, clearer instructions, more structure.`
+    : "";
+
+  const systemPrompt = `You are an expert ${subject || ""} teacher creating exam-quality worksheet questions based on a diagram.
+Generate questions that test a range of skills: recall, identification, explanation, application, analysis, and evaluation.
+All questions must be directly answerable from the diagram shown.
+Return ONLY a JSON object — no markdown, no prose, no code fences.`;
+
+  const userPrompt = `Diagram title: "${diagramTitle || topic}"
+Subject: ${subject || "Science"}
+Topic: ${topic}
+Year group: ${yearGroup || "Year 10"}
+Difficulty: ${difficulty}
+
+Diagram description:
+${diagramDescription || `A diagram showing key concepts related to ${topic} in ${subject}.`}
+
+${difficultyNote}
+${sendNote}
+
+Generate 5 questions based on this diagram. Include a variety of question types:
+- At least 1 identification question ("What is labelled X?", "Identify the part that...")
+- At least 1 explanation question ("Explain why...", "Describe what happens when...")
+- At least 1 application question ("Using the diagram, calculate/predict/suggest...")
+- At least 1 comparison or analysis question ("Compare...", "Why is... different from...")
+- 1 extended/evaluation question worth more marks
+
+Return this exact JSON structure:
+{"title":"Diagram Questions — ${diagramTitle || topic}","questions":[{"number":1,"text":"...","marks":1,"type":"identify"},{"number":2,"text":"...","marks":2,"type":"explain"},{"number":3,"text":"...","marks":3,"type":"apply"},{"number":4,"text":"...","marks":3,"type":"analyse"},{"number":5,"text":"...","marks":4,"type":"evaluate"}],"totalMarks":13}`;
+
+  try {
+    const result = await callWithFallback(systemPrompt, userPrompt, 1200, undefined, req.user!.schoolId || undefined);
+    const raw = result.content.trim();
+    const match = raw.match(/\{[\s\S]*\}/);
+    if (!match) throw new Error("No JSON in response");
+    const parsed = JSON.parse(match[0]);
+
+    const questions = Array.isArray(parsed.questions) ? parsed.questions : [];
+    const totalMarks = parsed.totalMarks || questions.reduce((sum: number, q: any) => sum + (q.marks || 1), 0);
+    const contentLines: string[] = [
+      `**Study the diagram carefully, then answer all questions below.**`,
+      ``,
+    ];
+    for (const q of questions) {
+      contentLines.push(`**Q${q.number}.** ${q.text} [${q.marks} mark${q.marks !== 1 ? 's' : ''}]`);
+      contentLines.push(``);
+    }
+
+    res.json({
+      section: {
+        id: `diagram-questions-${Date.now()}`,
+        type: "q-diagram",
+        title: parsed.title || `Diagram Questions — ${diagramTitle || topic}`,
+        content: contentLines.join("\n"),
+        marks: totalMarks,
+        diagramImageUrl: diagramImageUrl || null,
+        diagramTitle: diagramTitle || null,
+        questions,
+        teacherOnly: false,
+      }
+    });
+  } catch (err: any) {
+    console.error("[diagram-questions] failed:", err.message);
+    res.json({
+      section: {
+        id: `diagram-questions-fallback-${Date.now()}`,
+        type: "q-diagram",
+        title: `Diagram Questions — ${diagramTitle || topic}`,
+        content: [
+          `**Study the diagram carefully, then answer all questions below.**`,
+          ``,
+          `**Q1.** Identify and label the key parts shown in the diagram. [2 marks]`,
+          ``,
+          `**Q2.** Describe what is shown in the diagram. Use subject vocabulary. [3 marks]`,
+          ``,
+          `**Q3.** Explain the process or relationship shown in the diagram. [4 marks]`,
+          ``,
+          `**Q4.** Using the diagram, suggest what would happen if one component changed. [3 marks]`,
+          ``,
+          `**Q5.** Evaluate the importance of what is shown in the diagram. [4 marks]`,
+        ].join("\n"),
+        marks: 16,
+        diagramImageUrl: diagramImageUrl || null,
+        diagramTitle: diagramTitle || null,
+        teacherOnly: false,
+      }
+    });
+  }
+});
+
 export default router;

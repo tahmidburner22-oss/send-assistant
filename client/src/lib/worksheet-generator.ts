@@ -2087,13 +2087,19 @@ export function generateWorksheet(params: WorksheetParams): GeneratedWorksheet {
     content: topicData.objective,
   });
 
-  // Key Vocabulary — always present, uses existing VocabSection renderer
-  const vocabWords = topicData.vocabulary || [];
-  sections.push({
-    title: "KEY VOCABULARY",
-    type: "vocabulary",
-    content: vocabWords.join(" | "),
-  });
+  // Key Vocabulary — only added for non-Maths subjects.
+  // Maths worksheets are strictly question-based with no vocabulary section.
+  const isMathsWorksheet = /^maths?$|^mathematics$|^math$/i.test((subject || "").trim());
+  if (!isMathsWorksheet) {
+    const vocabWords = topicData.vocabulary || [];
+    if (vocabWords.length > 0) {
+      sections.push({
+        title: "KEY VOCABULARY",
+        type: "vocabulary",
+        content: vocabWords.join(" | "),
+      });
+    }
+  }
 
   // Common Mistakes — mapped to misconceptions type
   if (topicData.commonMistakes || topicData.teacherNotes) {

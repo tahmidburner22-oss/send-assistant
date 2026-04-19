@@ -1103,7 +1103,8 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
             topic,
             yearGroup,
             tier: lookupTier,
-            retrievalTopic: recallTopic.trim() || null,
+            // If retrieval checkbox is selected but no topic entered, use the current topic as fallback
+            retrievalTopic: (selectedSections.includes('retrieval') ? (recallTopic.trim() || topic) : recallTopic.trim()) || null,
             additionalInstructions: additionalInstructions || null,
             sendNeed: (sendNeed && sendNeed !== "none-selected") ? sendNeed : null,
             readingAge: readingAge > 0 ? String(readingAge) : null,
@@ -1358,7 +1359,8 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
           isRevisionMat,
           generateDiagram,
           worksheetLength,
-          recallTopic: recallTopic.trim() || undefined,
+          // If retrieval checkbox is selected but no topic entered, use the current topic as fallback
+          recallTopic: (selectedSections.includes('retrieval') ? (recallTopic.trim() || topic) : recallTopic.trim()) || undefined,
           targetPages: targetPages || undefined,
           readingAge: readingAge || undefined,
           selectedSections: selectedSections as string[], // Pass selected sections for structured generation
@@ -1404,7 +1406,8 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                 generateDiagram: false,
                 worksheetLength,
                 // Bug fix: recallTopic was missing from retry attempts
-                recallTopic: recallTopic.trim() || undefined,
+                // If retrieval checkbox is selected but no topic entered, use the current topic as fallback
+                recallTopic: (selectedSections.includes('retrieval') ? (recallTopic.trim() || topic) : recallTopic.trim()) || undefined,
                 targetPages: targetPages || undefined,
                 readingAge: readingAge || undefined,
               });
@@ -1469,6 +1472,74 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
       } catch (pipelineErr) {
         console.error('[Pipeline] Error:', pipelineErr);
         // Pipeline errors are non-fatal — continue with original worksheet
+      }
+
+      // ── Post-generation: Diagram Library Lookup ───────────────────────────────
+      // For AI-generated (non-library) worksheets, check the diagram library for a
+      // matching diagram. If found, generate dynamic questions from the diagram
+      // description and inject them as a q-diagram section.
+      const isNonLibraryAI = isAIWorksheet(generatedWs) && !(generatedWs as any).fromLibrary;
+      if (isNonLibraryAI && !examStyle) {
+        try {
+          const diagLibRes = await fetch('/api/diagram-library/entries', { credentials: 'include' });
+          if (diagLibRes.ok) {
+            const diagLibData = await diagLibRes.json();
+            const diagEntries: any[] = diagLibData.entries || [];
+            const subjectLower = subject.toLowerCase();
+            const topicLower = topic.toLowerCase();
+            // Find best match: exact topic match first, then subject+topic keyword match
+            const diagMatch = diagEntries.find(e => {
+              const eSubject = (e.subject || '').toLowerCase();
+              const eTopic = (e.topic || '').toLowerCase();
+              const eTitle = (e.title || '').toLowerCase();
+              const subjectMatch = eSubject.includes(subjectLower) || subjectLower.includes(eSubject);
+              const topicMatch = eTopic.includes(topicLower) || topicLower.includes(eTopic) ||
+                eTitle.includes(topicLower) || topicLower.includes(eTitle);
+              return subjectMatch && topicMatch;
+            }) || diagEntries.find(e => {
+              const eSubject = (e.subject || '').toLowerCase();
+              return eSubject.includes(subjectLower) || subjectLower.includes(eSubject);
+            });
+
+            if (diagMatch) {
+              // Generate dynamic diagram-based questions from the diagram description
+              const diagQRes = await fetch('/api/ai/diagram-questions', {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  diagramTitle: diagMatch.title,
+                  diagramDescription: diagMatch.description,
+                  diagramImageUrl: diagMatch.image_url,
+                  subject,
+                  topic,
+                  yearGroup,
+                  difficulty: difficulty || 'standard',
+                  sendNeed: sendNeed && sendNeed !== 'none-selected' ? sendNeed : undefined,
+                }),
+              });
+              if (diagQRes.ok) {
+                const diagQData = await diagQRes.json();
+                if (diagQData.section) {
+                  // Inject diagram section before the challenge/self-reflection section
+                  const sections = [...(generatedWs.sections || [])];
+                  const insertIdx = sections.findIndex(s =>
+                    s.type === 'challenge' || s.type === 'self-reflection' || s.type === 'teacher-key'
+                  );
+                  if (insertIdx >= 0) {
+                    sections.splice(insertIdx, 0, diagQData.section);
+                  } else {
+                    sections.push(diagQData.section);
+                  }
+                  generatedWs = { ...generatedWs, sections } as typeof generatedWs;
+                }
+              }
+            }
+          }
+        } catch (diagErr) {
+          console.warn('[DiagramLookup] Non-fatal error:', diagErr);
+          // Non-fatal — worksheet still works without diagram section
+        }
       }
 
       setGenerated(generatedWs);

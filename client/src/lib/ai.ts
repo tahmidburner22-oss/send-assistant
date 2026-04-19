@@ -1413,18 +1413,11 @@ STRICT JSON OUTPUT: Respond with valid JSON only — no markdown, no code blocks
     return `LAYOUT:diagram_subquestions\n${sel.example}\nStudy the diagram above and answer the questions below. [5 marks]\n(a) [Identify or name a specific part/feature shown in the diagram — 1 mark]\n(b) [Explain what the diagram shows or describe the process/relationship — 2 marks]\n(c) [Apply knowledge: predict, compare or extend what is shown — 2 marks]\nANSWERS: (a) [answer] (b) [answer] (c) [answer]`;
   })();
 
-  // Diagrams auto-generate for relevant subjects — no toggle needed
-  // For Science and Maths, diagrams are MANDATORY (not optional) to ensure visual learning
-  const isScienceMathsCore = isMaths || /science|biology|chemistry|physics/.test(subjectLower);
-  const svgDiagramNote = (isDiagramSubject && !isVI && !params.examStyle)
-    ? `SVG DIAGRAM INSTRUCTION:
-For Q4, embed ONE diagram as [[DIAGRAM:{...JSON...}]]. Use type "${diagramSelection.type}" for this topic.
-The diagram is for LABELLING — students see numbered blanks, NOT the answers.
-Every label/step MUST use REAL terms from "${params.topic}" — never placeholders.
-${isScienceMathsCore ? `MANDATORY FOR SCIENCE/MATHS: A diagram MUST be included in Q4. Do NOT omit it. Science and Maths worksheets always benefit from visual representation. Choose the most appropriate diagram type for "${params.topic}" from the list below.` : `If no diagram genuinely helps teach "${params.topic}", omit it entirely.`}
-Available types: labeled, flow, cycle, number-line, bar, axes, circuit, venn, timeline, pyramid, fraction-bar.
-Rules: x/y are percentages (5–95), max 2 diagrams, title must name the specific topic.`
-    : ``;
+  // Diagrams are served from the diagram library only — never AI-generated.
+  // After worksheet generation, the caller queries /api/diagram-library/entries
+  // to find a matching diagram, then calls /api/ai/diagram-questions to generate
+  // dynamic questions based on the diagram description.
+  const svgDiagramNote = ``;
 
   // ── Word problems note ─────────────────────────────────────────────────────
   const wordProblemsNote = !params.examStyle
