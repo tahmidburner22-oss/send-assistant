@@ -1140,6 +1140,11 @@ const SECTION_STYLES: Record<string, { border: string; bg: string; badge: string
   "default":       { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "",                        headerBg: "#1a2744", headerText: "#ffffff" },
   "section-header": { border: "#2a7f8f", bg: "#ffffff", badge: "#2a7f8f", badgeBg: "#2a7f8f", icon: "", label: "",                        headerBg: "#2a7f8f", headerText: "#ffffff" },
   "q-challenge":    { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Challenge",               headerBg: "#1a2744", headerText: "#ffffff" },
+  // Overlay section types
+  "retrieval":      { border: "#1a2744", bg: "#f0f4ff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Retrieval Practice",       headerBg: "#1a2744", headerText: "#ffffff" },
+  "teacher-note":   { border: "#1a2744", bg: "#fffbeb", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Teacher Note",             headerBg: "#1a2744", headerText: "#ffffff" },
+  "question":       { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Question",                 headerBg: "#1a2744", headerText: "#ffffff" },
+  "prior-knowledge":{ border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Prior Knowledge Check",    headerBg: "#1a2744", headerText: "#ffffff" },
 };
 function getSectionStyle(type: string, _yearNum?: number) {
   // All section types are now locked to the indigo/blue/violet palette —
@@ -3814,6 +3819,11 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
   // Detect primary (KS1/KS2: Reception – Year 6)
   const yg = (metadata.yearGroup || "").toLowerCase();
   const isPrimary = /reception|year [1-6]\b|yr [1-6]\b|ks1|ks2|key stage 1|key stage 2/.test(yg);
+
+  // Detect Maths subject — vocabulary/key-terms sections are suppressed for Maths
+  // as Maths worksheets are strictly question-based with no vocabulary section.
+  const subjectLower = (metadata.subject || "").toLowerCase();
+  const isMathsSubject = /^maths?$|^mathematics$|^math$/.test(subjectLower.trim());
   const yrNumMatch = yg.match(/(\d+)/);
   const yrNum = yrNumMatch ? parseInt(yrNumMatch[1]) : (isPrimary ? 5 : 8);
 
@@ -4594,7 +4604,14 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
         // Hide teacher sections in student view
         // self-reflection, objective, and vocabulary are ALWAYS shown to students
         const isAlwaysStudentVisible = section.type === "self-reflection" || section.type === "objective" || section.type === "vocabulary";
-        if (!isTeacherView && !isAlwaysStudentVisible && (section.teacherOnly || section.type === "answers" || section.type === "mark-scheme" || section.type === "teacher-notes")) {
+        if (!isTeacherView && !isAlwaysStudentVisible && (section.teacherOnly || section.type === "answers" || section.type === "mark-scheme" || section.type === "teacher-notes" || section.type === "teacher-note")) {
+          return null;
+        }
+
+        // Suppress vocabulary/key-terms sections for Maths worksheets — Maths is
+        // strictly question-based and does not use a key vocabulary section.
+        const normalizedTypeForMaths = normalizeWorksheetSectionType(section.type);
+        if (isMathsSubject && (normalizedTypeForMaths === "vocabulary" || section.type === "key-terms" || section.type === "key-vocabulary")) {
           return null;
         }
 
@@ -4651,7 +4668,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
           ? { ...(PRIMARY_SECTION_COLOURS[i % PRIMARY_SECTION_COLOURS.length]), icon: ["A","B","C","D","E","F","G","H"][i % 8], label: section.title as string || "", badgeText: "" }
           : getSectionStyle(section.type, yrNum);
         // Teacher-only sections: mark-scheme, teacher-notes, answers, and any explicitly flagged teacherOnly
-        const isTeacherSection = section.teacherOnly || section.type === "teacher-notes" || section.type === "mark-scheme" || section.type === "answers";
+        const isTeacherSection = section.teacherOnly || section.type === "teacher-notes" || section.type === "teacher-note" || section.type === "mark-scheme" || section.type === "answers";
 
         // ── PRIMARY: delegate entirely to child-friendly renderer ──
         if (isPrimary) {
@@ -5292,6 +5309,36 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                       </div>
                     );
                   }
+                  if (section.type === "q-diagram") {
+                    // Dynamic diagram questions section — generated from diagram library
+                    const diagImageUrl = (section as any).diagramImageUrl || resolveImageUrl(section);
+                    const diagTitle = (section as any).diagramTitle || section.title;
+                    const accentColor = fmt.accentColor || "#1B2A4A";
+                    return (
+                      <div>
+                        {/* Diagram image */}
+                        {diagImageUrl && (
+                          <div style={{ textAlign: "center", marginBottom: "16px" }}>
+                            <img
+                              src={diagImageUrl}
+                              alt={diagTitle || "Diagram"}
+                              style={{ maxWidth: "480px", width: "100%", borderRadius: "6px", border: "1px solid #e5e7eb", display: "inline-block" }}
+                              onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                            />
+                            {diagTitle && (
+                              <p style={{ fontSize: `${fmt.fontSize - 2}px`, color: "#6b7280", marginTop: "4px", fontStyle: "italic", fontFamily: fmt.fontFamily, textAlign: "center" }}>
+                                {diagTitle}
+                              </p>
+                            )}
+                          </div>
+                        )}
+                        {/* Questions */}
+                        <div style={{ fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, lineHeight: String(fmt.lineHeight), color: "#1e293b" }}>
+                          {formatContent(content, fmt)}
+                        </div>
+                      </div>
+                    );
+                  }
                   if (section.type === "q-label-diagram") {
                     const resolvedImageUrl = resolveImageUrl(section);
                     // If content uses diagram_subquestions layout, show diagram + questions format
@@ -5551,6 +5598,37 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                   <WordProblemsSection content={content} fmt={fmt} overlayColor={overlayColor} />
                 ) : (section.type === "mark-scheme" || section.type === "answers") ? (
                   <MarkSchemeSection content={content} fmt={fmt} />
+                ) : section.type === "question" ? (
+                  // Maths library question type — render question text + answer lines
+                  (() => {
+                    // Use section.marks first (always available), then fall back to content parsing
+                    // Note: content may have [X marks] stripped in student view, so section.marks is the reliable source
+                    const marksMatch = content.match(/(\[\s*(\d+)\s*marks?\s*\])/i);
+                    const marks = (section as any).marks || (marksMatch ? parseInt(marksMatch[2]) : 2);
+                    const lineCount = Math.max(marks + 1, 2);
+                    const questionText = content.replace(/\[\s*\d+\s*marks?\s*\]/i, "").trim();
+                    // Check for SEND support block appended by overlay engine
+                    const supportBlockIdx = questionText.indexOf("\nSupport:");
+                    const supportBlockIdxAlt = questionText.indexOf("\nLanguage support:");
+                    const supportBlockIdxRA = questionText.indexOf("\nReading support:");
+                    const splitIdx = [supportBlockIdx, supportBlockIdxAlt, supportBlockIdxRA].filter(i => i >= 0).sort((a, b) => a - b)[0];
+                    const mainText = splitIdx !== undefined ? questionText.slice(0, splitIdx).trim() : questionText;
+                    const supportText = splitIdx !== undefined ? questionText.slice(splitIdx).trim() : "";
+                    return (
+                      <div>
+                        <div style={{ fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, lineHeight: String(fmt.lineHeight), color: "#1e293b", marginBottom: "8px" }}
+                          dangerouslySetInnerHTML={{ __html: renderMath(mainText) }} />
+                        {supportText && (
+                          <div style={{ fontSize: `${fmt.fontSize - 1}px`, fontFamily: fmt.fontFamily, color: "#1d4ed8", background: "#eff6ff", borderLeft: "3px solid #3b82f6", padding: "6px 10px", borderRadius: "3px", marginBottom: "8px" }}
+                            dangerouslySetInnerHTML={{ __html: renderMath(supportText) }} />
+                        )}
+                        <div style={{ fontSize: "11px", color: "#6b7280", fontStyle: "italic", marginBottom: "6px" }}>[{marks} mark{marks !== 1 ? "s" : ""}]</div>
+                        {Array.from({ length: lineCount }).map((_: unknown, li: number) => (
+                          <div key={li} style={{ borderBottom: "1px solid #d1d5db", height: "30px", width: "100%", marginBottom: "3px" }} />
+                        ))}
+                      </div>
+                    );
+                  })()
                 ) : section.type === "questions" ? (
                   <div>{formatContent(content, fmt)}</div>
                 ) : (section.type === "reading" || section.type === "passage" || section.type === "source-text" || section.type === "comprehension" || /reading.?passage|source.?text|comprehension.?text/i.test(section.title || "")) ? (

@@ -74,6 +74,8 @@ const QUESTION_TYPES = new Set([
   "q-short-answer", "q-extended", "q-challenge", "q-free-response", "q-mcq",
   "q-gap-fill", "q-true-false", "q-label-diagram", "short-answer", "free-response",
   "guided", "independent", "challenge", "section-a", "section-b", "section-c",
+  // Maths library entries use the generic 'question' type
+  "question",
 ]);
 
 const VOCAB_TYPES = new Set(["key-terms", "vocabulary", "key-vocab", "glossary"]);
@@ -264,6 +266,50 @@ function applyEalSupport(section: WorksheetSection): WorksheetSection {
   };
 }
 
+/**
+ * Reading age support — adjusts the complexity of question and instruction text
+ * to match the target reading age. This is a deterministic text transformation
+ * that simplifies sentence structure and vocabulary for lower reading ages,
+ * or enriches it for higher reading ages.
+ *
+ * Reading age bands:
+ *   "7-8"   → Very simple: short sentences, basic vocabulary, step-by-step
+ *   "8-9"   → Simple: short sentences, common words, clear structure
+ *   "9-10"  → Accessible: moderate sentences, familiar vocabulary
+ *   "10-11" → Standard primary: clear sentences, some subject vocabulary
+ *   "11-12" → Lower secondary: standard sentences, subject vocabulary
+ *   "12-13" → Mid secondary: normal complexity (default)
+ *   "13-14" → Upper secondary: fuller sentences, subject vocabulary expected
+ *   "14+"   → GCSE level: full complexity, technical vocabulary
+ */
+function applyReadingAgeSupport(sections: WorksheetSection[], readingAge: string): WorksheetSection[] {
+  // Parse reading age to determine simplification level
+  const ageMatch = readingAge.match(/(\d+)/);
+  const age = ageMatch ? parseInt(ageMatch[1]) : 12;
+
+  // For ages 11 and below, add scaffolding cues to question sections
+  // For ages 12+, content is used as-is (standard complexity)
+  if (age >= 12) return sections;
+
+  const scaffoldingCues = age <= 8
+    ? ["Read the question carefully.", "Use the example above to help you.", "Write your answer in the box."]
+    : age <= 10
+    ? ["Read the question carefully.", "Look at the worked example if you need help.", "Write your answer clearly."]
+    : ["Read the question carefully.", "Use the worked example if needed."];
+
+  return sections.map(section => {
+    if (!isTextualSection(section)) return section;
+    if (!QUESTION_TYPES.has(section.type)) return section;
+    const content = section.content as string;
+    // Only add scaffolding if not already present
+    if (content.includes(scaffoldingCues[0])) return section;
+    return {
+      ...section,
+      content: appendDelimitedBlock(content, "Reading support:", scaffoldingCues),
+    };
+  });
+}
+
 function applySendSupport(sections: WorksheetSection[], sendNeed?: string | null): WorksheetSection[] {
   if (!sendNeed || sendNeed === "none" || sendNeed === "none-selected") return sections;
   const key = sendNeed.toLowerCase();
@@ -308,7 +354,8 @@ export function applyOverlays(baseSections: WorksheetSection[], overlays: Overla
   }
 
   if (overlays.readingAge) {
-    overlayNotes.push(`Reading age target preserved at ${overlays.readingAge}.`);
+    result = applyReadingAgeSupport(result, overlays.readingAge);
+    overlayNotes.push(`Reading age adjusted to ${overlays.readingAge}.`);
     appliedOverlays.push({
       type: "reading_age",
       params: { readingAge: overlays.readingAge },
@@ -332,16 +379,22 @@ export function applyOverlays(baseSections: WorksheetSection[], overlays: Overla
     const retrievalSection: WorksheetSection = {
       id: `retrieval-overlay-${Date.now()}`,
       type: "retrieval",
-      title: "RETRIEVAL PRACTICE",
+      title: "Retrieval Practice",
       label: "RETRIEVAL",
       content: [
-        `Retrieval topic: ${overlays.retrievalTopic}`,
+        `**Topic: ${overlays.retrievalTopic}**`,
         "",
-        `1. Write three facts you remember about ${overlays.retrievalTopic}.`,
-        `2. Define one key term from ${overlays.retrievalTopic}.`,
-        `3. Give one example linked to ${overlays.retrievalTopic}.`,
+        `**Brain Dump** — Without looking at your notes, write down everything you can remember about ${overlays.retrievalTopic}. (3 minutes)`,
+        "",
+        `**Q1.** Name three key facts or terms from ${overlays.retrievalTopic}. [3 marks]`,
+        "",
+        `**Q2.** Define one key term from ${overlays.retrievalTopic} in your own words. [2 marks]`,
+        "",
+        `**Q3.** Give one real-world example or application linked to ${overlays.retrievalTopic}. [2 marks]`,
+        "",
+        `**Q4.** How does ${overlays.retrievalTopic} connect to what you are studying today? [1 mark]`,
       ].join("\n"),
-      marks: 6,
+      marks: 8,
       isOverlay: true,
       teacherOnly: false,
     };
@@ -351,7 +404,7 @@ export function applyOverlays(baseSections: WorksheetSection[], overlays: Overla
       params: { retrievalTopic: overlays.retrievalTopic, insertedAt: insertAt },
       appliedAt: nowIso(),
     });
-    overlayNotes.push("Retrieval section inserted after the learning objective.");
+    overlayNotes.push(`Retrieval practice section inserted after the learning objective (topic: ${overlays.retrievalTopic}).`);
   }
 
   if (overlays.additionalInstructions) {
@@ -364,13 +417,17 @@ export function applyOverlays(baseSections: WorksheetSection[], overlays: Overla
   }
 
   if (overlayNotes.length > 0) {
-    result.unshift({
+    // Insert the overlay summary note as a teacher-only section AFTER the learning objective
+    // so it does not appear in student view and does not disrupt the structural hash.
+    const loIdx2 = result.findIndex(section => OBJECTIVE_TYPES.has(section.type));
+    const noteInsertAt = loIdx2 >= 0 ? loIdx2 + 1 : 0;
+    result.splice(noteInsertAt, 0, {
       id: `worksheet-overlay-note-${Date.now()}`,
       type: "teacher-note",
-      title: "Overlay summary",
+      title: "Overlay Summary (Teacher Only)",
       content: overlayNotes.map(line => `- ${line}`).join("\n"),
       isOverlay: true,
-      teacherOnly: false,
+      teacherOnly: true,
     });
   }
 

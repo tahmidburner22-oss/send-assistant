@@ -1391,7 +1391,7 @@ function WorksheetLibraryPanel() {
   // Build unique subjects from entries, normalised
   const subjects = [...new Set(entries.map(e => e.subject).filter(Boolean))].sort();
   // Build unique tiers from entries
-  const tiers = [...new Set(entries.map(e => (e.tier || e.difficulty || "")).toLowerCase().trim()).values()].filter(Boolean).sort();
+  const tiers = [...new Set(entries.map(e => (e.tier || e.difficulty || "").toLowerCase().trim()))].filter(Boolean).sort();
 
   return (
     <div className="space-y-6">

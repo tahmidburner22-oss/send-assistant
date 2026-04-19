@@ -1064,9 +1064,48 @@ router.post("/resolve", requireAuth, async (req: Request, res: Response) => {
 
     const sections: any[] = JSON.parse(entry.sections || "[]");
     const teacherSections: any[] = JSON.parse(entry.teacher_sections || "[]");
-    const keyVocab: any[] = JSON.parse(entry.key_vocab || "[]");
+    let keyVocab: any[] = JSON.parse(entry.key_vocab || "[]");
+
+    // ── Key vocab fallback: if the key_vocab column is empty, extract from the
+    // key-terms section's `terms` array (populated during PDF ingestion).
+    if (keyVocab.length === 0) {
+      const vocabSection = sections.find((s: any) =>
+        s.type === "key-terms" || s.type === "vocabulary" || s.type === "key-vocab" || s.type === "glossary"
+      );
+      if (vocabSection?.terms && Array.isArray(vocabSection.terms) && vocabSection.terms.length > 0) {
+        keyVocab = vocabSection.terms.map((t: any) =>
+          typeof t === "string" ? { term: t } : { term: t.term || "", definition: t.definition || "" }
+        ).filter((t: any) => t.term);
+      } else if (vocabSection?.content && typeof vocabSection.content === "string" && vocabSection.content.trim()) {
+        keyVocab = vocabSection.content
+          .split(/[\n|]+/)
+          .map((s: string) => s.trim())
+          .filter(Boolean)
+          .map((s: string) => {
+            const match = s.match(/^([^:–\-]{2,60})\s*[:–\-]\s*(.+)$/);
+            return match ? { term: match[1].trim(), definition: match[2].trim() } : { term: s };
+          })
+          .filter((t: any) => t.term && t.term.length > 1)
+          .slice(0, 12);
+      }
+    }
+
+    // ── Maths structure enforcement: filter out vocabulary/key-terms sections.
+    // Maths worksheets are strictly question-based with no vocabulary section.
+    const isMathsEntry = /^maths?$|^mathematics$|^math$/i.test((entry.subject || "").trim());
+    const filteredSections = isMathsEntry
+      ? sections.filter((s: any) => {
+          const t = (s.type || "").toLowerCase();
+          // Maths structure: Header, LO, Common Mistakes, Worked Example, Section 1/2/3 Questions, Challenge, Self Reflection, Teacher Key
+          // Remove: key vocab, exit tickets, formula references, match columns, gap fills, MCQ, true-false
+          return t !== "key-terms" && t !== "vocabulary" && t !== "key-vocab" && t !== "glossary" && t !== "key-vocabulary"
+            && t !== "exit-ticket" && t !== "formula-reference" && t !== "q-match" && t !== "q-gap-fill"
+            && t !== "q-true-false" && t !== "q-mcq" && t !== "match-column" && t !== "gap-fill" && t !== "true-false";
+        })
+      : sections;
+
     const assets = await resolveEntryAssets(entry.id);
-    const sectionsWithAssets = injectAssetRefs(sections, assets);
+    const sectionsWithAssets = injectAssetRefs(filteredSections, assets);
     const availableTiers = await findAvailableTiers(subject, topic, yearGroup, {
       canonicalTopicKey: entry.canonical_topic_key || requestedTopicKey || canonicalTopicKey(topic),
       sourceLibraryId: entry.id,
@@ -1081,8 +1120,8 @@ router.post("/resolve", requireAuth, async (req: Request, res: Response) => {
     });
 
     if (!entry.base_structure_json || entry.base_structure_json === "{}") {
-      const baseStructure = extractBaseStructure(sections);
-      const diagramSlots = extractDiagramSlots(sections);
+      const baseStructure = extractBaseStructure(filteredSections);
+      const diagramSlots = extractDiagramSlots(filteredSections);
       const topicKey = entry.canonical_topic_key || requestedTopicKey || canonicalTopicKey(topic);
       await db.prepare(
         `UPDATE worksheet_library SET base_structure_json = ?, diagram_slots_json = ?, canonical_topic_key = ?, updated_at = NOW() WHERE id = ?`
