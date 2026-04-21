@@ -1678,7 +1678,15 @@ function WorksheetLibraryPanel() {
                                   </div>
                                 </details>
                               ))}
-                              {previewEntry && (
+                            </div>
+                          </details>
+                        );
+                      })}
+                    </div>
+                  </details>
+                );
+              })}
+              {previewEntry && (
                 <div className="mt-3 p-4 rounded-xl border border-brand/30 bg-brand/5 space-y-2">
                   <div className="flex items-center justify-between">
                     <p className="text-sm font-semibold text-brand">{previewEntry.title}</p>
