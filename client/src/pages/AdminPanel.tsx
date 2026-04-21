@@ -47,6 +47,58 @@ const ROLE_ACCESS: Record<string, string> = {
   staff: "Limited access — view assigned resources only",
 };
 
+const LIBRARY_YEAR_ORDER = [
+  "Year 1", "Year 2", "Year 3", "Year 4", "Year 5", "Year 6",
+  "Year 7", "Year 8", "Year 9", "Year 10", "Year 11",
+];
+
+function normaliseLibraryLabel(value: unknown, fallback: string) {
+  const label = String(value ?? "").trim();
+  return label || fallback;
+}
+
+function sortLibraryYearGroups(a: string, b: string) {
+  const aIndex = LIBRARY_YEAR_ORDER.indexOf(a);
+  const bIndex = LIBRARY_YEAR_ORDER.indexOf(b);
+  if (aIndex !== -1 || bIndex !== -1) {
+    if (aIndex === -1) return 1;
+    if (bIndex === -1) return -1;
+    return aIndex - bIndex;
+  }
+  return a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" });
+}
+
+function buildLibraryGroups(entries: any[]) {
+  const grouped = new Map<string, Map<string, Map<string, any[]>>>();
+
+  for (const entry of entries) {
+    const yearGroup = normaliseLibraryLabel(entry.year_group ?? entry.yearGroup, "Unassigned year");
+    const subject = normaliseLibraryLabel(entry.subject, "Unassigned subject");
+    const topic = normaliseLibraryLabel(entry.topic, "Unassigned topic");
+
+    if (!grouped.has(yearGroup)) grouped.set(yearGroup, new Map());
+    const subjectMap = grouped.get(yearGroup)!;
+    if (!subjectMap.has(subject)) subjectMap.set(subject, new Map());
+    const topicMap = subjectMap.get(subject)!;
+    if (!topicMap.has(topic)) topicMap.set(topic, []);
+    topicMap.get(topic)!.push(entry);
+  }
+
+  return Array.from(grouped.entries())
+    .sort(([a], [b]) => sortLibraryYearGroups(a, b))
+    .map(([yearGroup, subjectMap]) => ({
+      yearGroup,
+      subjects: Array.from(subjectMap.entries())
+        .sort(([a], [b]) => a.localeCompare(b, undefined, { sensitivity: "base" }))
+        .map(([subject, topicMap]) => ({
+          subject,
+          topics: Array.from(topicMap.entries())
+            .sort(([a], [b]) => a.localeCompare(b, undefined, { sensitivity: "base" }))
+            .map(([topic, topicEntries]) => ({ topic, entries: topicEntries })),
+        })),
+    }));
+}
+
 const AI_PROVIDERS = [
   { id: "groq", label: "Groq (Llama 3.1 8B)", icon: Zap, color: "text-orange-500", description: "Ultra-fast, free tier" },
   { id: "gemini", label: "Google Gemini", icon: Globe, color: "text-blue-500", description: "Google's flagship model" },
@@ -1392,6 +1444,7 @@ function WorksheetLibraryPanel() {
   const subjects = [...new Set(entries.map(e => e.subject).filter(Boolean))].sort();
   // Build unique tiers from entries
   const tiers = [...new Set(entries.map(e => (e.tier || e.difficulty || "").toLowerCase().trim()))].filter(Boolean).sort();
+  const groupedEntries = buildLibraryGroups(filtered);
 
   return (
     <div className="space-y-6">
@@ -1525,70 +1578,107 @@ function WorksheetLibraryPanel() {
           ) : filtered.length === 0 ? (
             <p className="text-xs text-muted-foreground text-center py-6">No entries found. Upload a PDF above or generate worksheets to populate the library.</p>
           ) : (
-            <div className="space-y-2">
-              {filtered.map(entry => (
-                <div key={entry.id} className="flex items-center gap-3 p-3 rounded-lg border border-border/50 hover:bg-muted/30 transition-colors">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-sm font-medium truncate">{entry.title}</span>
-                      {entry.curated && <Badge className="text-[10px] py-0 bg-emerald-100 text-emerald-700 border-emerald-200">Curated</Badge>}
-                      <Badge variant="outline" className="text-[10px] py-0">{entry.source === "pdf" ? "PDF" : "AI"}</Badge>
-                      {(() => {
-                        const t = (entry.tier || entry.difficulty || "").toLowerCase();
-                        if (!t || t === "standard") return null;
-                        const tierColors: Record<string, string> = {
-                          foundation: "bg-blue-100 text-blue-700 border-blue-200",
-                          higher: "bg-purple-100 text-purple-700 border-purple-200",
-                          scaffolded: "bg-emerald-100 text-emerald-700 border-emerald-200",
-                          mixed: "bg-amber-100 text-amber-700 border-amber-200",
-                        };
-                        return <Badge className={`text-[10px] py-0 ${tierColors[t] || ""}`}>{TIER_LABELS[t] ?? t}</Badge>;
-                      })()}
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      {entry.subject} · {entry.topic} · {entry.year_group}
-                      {entry.tier && entry.tier !== "standard" && ` · ${entry.tier}`}
-                      {` · ${entry.sections_count ?? 0} sections`}
-                      {entry.teacher_sections_count > 0 && ` · ${entry.teacher_sections_count} teacher`}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-1.5 flex-shrink-0">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="text-xs h-7 px-2 gap-1"
-                      disabled={viewLoading}
-                      onClick={() => handleViewEntry(entry.id, entry.title)}
-                    >
-                      <Eye className="w-3 h-3" />
-                      View
-                    </Button>
-                    <Button size="sm" variant="outline" className="text-xs h-7 px-2" onClick={() => setPreviewEntry(previewEntry?.id === entry.id ? null : entry)}>
-                      {previewEntry?.id === entry.id ? "Hide" : "JSON"}
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant={entry.curated ? "default" : "outline"}
-                      className={`text-xs h-7 px-2 ${entry.curated ? "bg-emerald-600 hover:bg-emerald-700 text-white" : ""}`}
-                      onClick={() => handleCurate(entry.id, !entry.curated)}
-                    >
-                      {entry.curated ? "Curated" : "Curate"}
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="text-xs h-7 px-2 text-amber-600 hover:bg-amber-50 border-amber-200"
-                      onClick={() => { setReingestTarget({ id: entry.id, title: entry.title }); setReingestFile(null); }}
-                    >
-                      Re-ingest
-                    </Button>
-                    <Button size="sm" variant="outline" className="text-xs h-7 px-2 text-red-600 hover:bg-red-50 border-red-200" onClick={() => handleDelete(entry.id, entry.title)}>
-                      Delete
-                    </Button>
-                  </div>
-                </div>
-              ))}
-              {previewEntry && (
+            <div className="space-y-3">
+              {groupedEntries.map(yearGroup => {
+                const yearCount = yearGroup.subjects.reduce((total, subjectGroup) => total + subjectGroup.topics.reduce((topicTotal, topicGroup) => topicTotal + topicGroup.entries.length, 0), 0);
+                return (
+                  <details key={yearGroup.yearGroup} className="rounded-xl border border-border/50 bg-muted/20" open>
+                    <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3">
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">{yearGroup.yearGroup}</p>
+                        <p className="text-xs text-muted-foreground">Browse worksheet entries by subject and topic</p>
+                      </div>
+                      <Badge variant="outline" className="text-[10px]">{yearCount} entries</Badge>
+                    </summary>
+                    <div className="px-4 pb-4 space-y-3">
+                      {yearGroup.subjects.map(subjectGroup => {
+                        const subjectCount = subjectGroup.topics.reduce((total, topicGroup) => total + topicGroup.entries.length, 0);
+                        return (
+                          <details key={`${yearGroup.yearGroup}-${subjectGroup.subject}`} className="rounded-lg border border-border/40 bg-background" open>
+                            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-3 py-2.5">
+                              <div>
+                                <p className="text-sm font-medium text-foreground">{subjectGroup.subject}</p>
+                                <p className="text-xs text-muted-foreground">Topics and master worksheets</p>
+                              </div>
+                              <Badge variant="outline" className="text-[10px]">{subjectCount} entries</Badge>
+                            </summary>
+                            <div className="px-3 pb-3 space-y-2">
+                              {subjectGroup.topics.map(topicGroup => (
+                                <details key={`${yearGroup.yearGroup}-${subjectGroup.subject}-${topicGroup.topic}`} className="rounded-lg border border-dashed border-border/50 bg-muted/10" open>
+                                  <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-3 py-2">
+                                    <div>
+                                      <p className="text-sm font-medium text-foreground">{topicGroup.topic}</p>
+                                      <p className="text-xs text-muted-foreground">{topicGroup.entries.length} worksheet{topicGroup.entries.length === 1 ? "" : "s"}</p>
+                                    </div>
+                                    <Badge variant="secondary" className="text-[10px]">{topicGroup.entries.length}</Badge>
+                                  </summary>
+                                  <div className="px-3 pb-3 space-y-2">
+                                    {topicGroup.entries.map(entry => (
+                                      <div key={entry.id} className="flex items-center gap-3 p-3 rounded-lg border border-border/50 hover:bg-muted/30 transition-colors">
+                                        <div className="flex-1 min-w-0">
+                                          <div className="flex items-center gap-2 flex-wrap">
+                                            <span className="text-sm font-medium truncate">{entry.title}</span>
+                                            {entry.curated && <Badge className="text-[10px] py-0 bg-emerald-100 text-emerald-700 border-emerald-200">Curated</Badge>}
+                                            <Badge variant="outline" className="text-[10px] py-0">{entry.source === "pdf" ? "PDF" : "AI"}</Badge>
+                                            {(() => {
+                                              const t = (entry.tier || entry.difficulty || "").toLowerCase();
+                                              if (!t || t === "standard") return null;
+                                              const tierColors: Record<string, string> = {
+                                                foundation: "bg-blue-100 text-blue-700 border-blue-200",
+                                                higher: "bg-purple-100 text-purple-700 border-purple-200",
+                                                scaffolded: "bg-emerald-100 text-emerald-700 border-emerald-200",
+                                                mixed: "bg-amber-100 text-amber-700 border-amber-200",
+                                              };
+                                              return <Badge className={`text-[10px] py-0 ${tierColors[t] || ""}`}>{TIER_LABELS[t] ?? t}</Badge>;
+                                            })()}
+                                          </div>
+                                          <p className="text-xs text-muted-foreground mt-0.5">
+                                            {entry.subject} · {entry.topic} · {entry.year_group}
+                                            {entry.tier && entry.tier !== "standard" && ` · ${entry.tier}`}
+                                            {` · ${entry.sections_count ?? 0} sections`}
+                                            {entry.teacher_sections_count > 0 && ` · ${entry.teacher_sections_count} teacher`}
+                                          </p>
+                                        </div>
+                                        <div className="flex items-center gap-1.5 flex-shrink-0">
+                                          <Button
+                                            size="sm"
+                                            variant="outline"
+                                            className="text-xs h-7 px-2 gap-1"
+                                            disabled={viewLoading}
+                                            onClick={() => handleViewEntry(entry.id, entry.title)}
+                                          >
+                                            <Eye className="w-3 h-3" />
+                                            View
+                                          </Button>
+                                          <Button size="sm" variant="outline" className="text-xs h-7 px-2" onClick={() => setPreviewEntry(previewEntry?.id === entry.id ? null : entry)}>
+                                            {previewEntry?.id === entry.id ? "Hide" : "JSON"}
+                                          </Button>
+                                          <Button
+                                            size="sm"
+                                            variant={entry.curated ? "default" : "outline"}
+                                            className={`text-xs h-7 px-2 ${entry.curated ? "bg-emerald-600 hover:bg-emerald-700 text-white" : ""}`}
+                                            onClick={() => handleCurate(entry.id, !entry.curated)}
+                                          >
+                                            {entry.curated ? "Curated" : "Curate"}
+                                          </Button>
+                                          <Button
+                                            size="sm"
+                                            variant="outline"
+                                            className="text-xs h-7 px-2 text-amber-600 hover:bg-amber-50 border-amber-200"
+                                            onClick={() => { setReingestTarget({ id: entry.id, title: entry.title }); setReingestFile(null); }}
+                                          >
+                                            Re-ingest
+                                          </Button>
+                                          <Button size="sm" variant="outline" className="text-xs h-7 px-2 text-red-600 hover:bg-red-50 border-red-200" onClick={() => handleDelete(entry.id, entry.title)}>
+                                            Delete
+                                          </Button>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </details>
+                              ))}
+                              {previewEntry && (
                 <div className="mt-3 p-4 rounded-xl border border-brand/30 bg-brand/5 space-y-2">
                   <div className="flex items-center justify-between">
                     <p className="text-sm font-semibold text-brand">{previewEntry.title}</p>
@@ -1881,8 +1971,6 @@ function DiagramLibraryPanel() {
   const [search, setSearch] = useState("");
   const [subjectFilter, setSubjectFilter] = useState("All");
   const [viewEntry, setViewEntry] = useState<any | null>(null);
-  const [page, setPage] = useState(1);
-  const PAGE_SIZE = 24;
 
   const loadEntries = async () => {
     setLoading(true);
@@ -1919,8 +2007,7 @@ function DiagramLibraryPanel() {
     return true;
   });
 
-  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
-  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  const groupedEntries = buildLibraryGroups(filtered);
 
   return (
     <div className="space-y-4">
@@ -1937,55 +2024,88 @@ function DiagramLibraryPanel() {
           {/* Subject tabs */}
           <div className="flex flex-wrap gap-1">
             {subjects.map(s => (
-              <button key={s} onClick={() => { setSubjectFilter(s); setPage(1); }}
+              <button key={s} onClick={() => { setSubjectFilter(s); }}
                 className={`px-2 py-0.5 rounded text-xs font-medium transition-colors ${subjectFilter === s ? "bg-emerald-600 text-white" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}>
                 {s}
               </button>
             ))}
           </div>
           {/* Search */}
-          <Input className="text-xs h-8" placeholder="Search diagrams..." value={search} onChange={e => { setSearch(e.target.value); setPage(1); }} />
+          <Input className="text-xs h-8" placeholder="Search diagrams..." value={search} onChange={e => { setSearch(e.target.value); }} />
 
           {loading ? (
             <div className="text-xs text-muted-foreground py-4 text-center">Loading...</div>
-          ) : paginated.length === 0 ? (
+          ) : groupedEntries.length === 0 ? (
             <div className="text-xs text-muted-foreground py-8 text-center">
               {entries.length === 0
                 ? "No diagrams in library yet. Diagrams are auto-added when worksheets with reference diagrams are generated."
                 : "No results match your filters."}
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-              {paginated.map(entry => (
-                <div key={entry.id} className="border rounded-lg overflow-hidden hover:shadow-md transition-shadow cursor-pointer group" onClick={() => setViewEntry(entry)}>
-                  <div className="aspect-video bg-muted flex items-center justify-center overflow-hidden">
-                    {entry.image_url ? (
-                      <img src={entry.image_url} alt={entry.title} className="w-full h-full object-contain" />
-                    ) : (
-                      <Image className="w-8 h-8 text-muted-foreground/30" />
-                    )}
-                  </div>
-                  <div className="p-2">
-                    <div className="text-xs font-medium truncate">{entry.title}</div>
-                    <div className="flex gap-1 mt-1 flex-wrap">
-                      {entry.subject && <Badge variant="outline" className="text-[10px] px-1 py-0">{entry.subject}</Badge>}
-                      {entry.curated ? <Badge className="text-[10px] px-1 py-0 bg-amber-100 text-amber-700">Curated</Badge> : null}
+            <div className="space-y-3">
+              {groupedEntries.map(yearGroup => {
+                const yearCount = yearGroup.subjects.reduce((total, subjectGroup) => total + subjectGroup.topics.reduce((topicTotal, topicGroup) => topicTotal + topicGroup.entries.length, 0), 0);
+                return (
+                  <details key={yearGroup.yearGroup} className="rounded-xl border border-border/50 bg-muted/20" open>
+                    <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3">
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">{yearGroup.yearGroup}</p>
+                        <p className="text-xs text-muted-foreground">Browse diagrams by subject and topic</p>
+                      </div>
+                      <Badge variant="outline" className="text-[10px]">{yearCount} diagrams</Badge>
+                    </summary>
+                    <div className="px-4 pb-4 space-y-3">
+                      {yearGroup.subjects.map(subjectGroup => {
+                        const subjectCount = subjectGroup.topics.reduce((total, topicGroup) => total + topicGroup.entries.length, 0);
+                        return (
+                          <details key={`${yearGroup.yearGroup}-${subjectGroup.subject}`} className="rounded-lg border border-border/40 bg-background" open>
+                            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-3 py-2.5">
+                              <div>
+                                <p className="text-sm font-medium text-foreground">{subjectGroup.subject}</p>
+                                <p className="text-xs text-muted-foreground">Topic-indexed diagram sets</p>
+                              </div>
+                              <Badge variant="outline" className="text-[10px]">{subjectCount} diagrams</Badge>
+                            </summary>
+                            <div className="px-3 pb-3 space-y-3">
+                              {subjectGroup.topics.map(topicGroup => (
+                                <details key={`${yearGroup.yearGroup}-${subjectGroup.subject}-${topicGroup.topic}`} className="rounded-lg border border-dashed border-border/50 bg-muted/10" open>
+                                  <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-3 py-2">
+                                    <div>
+                                      <p className="text-sm font-medium text-foreground">{topicGroup.topic}</p>
+                                      <p className="text-xs text-muted-foreground">{topicGroup.entries.length} diagram{topicGroup.entries.length === 1 ? "" : "s"}</p>
+                                    </div>
+                                    <Badge variant="secondary" className="text-[10px]">{topicGroup.entries.length}</Badge>
+                                  </summary>
+                                  <div className="px-3 pb-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                                    {topicGroup.entries.map(entry => (
+                                      <div key={entry.id} className="border rounded-lg overflow-hidden hover:shadow-md transition-shadow cursor-pointer group bg-background" onClick={() => setViewEntry(entry)}>
+                                        <div className="aspect-video bg-muted flex items-center justify-center overflow-hidden">
+                                          {entry.image_url ? (
+                                            <img src={entry.image_url} alt={entry.title} className="w-full h-full object-contain" />
+                                          ) : (
+                                            <Image className="w-8 h-8 text-muted-foreground/30" />
+                                          )}
+                                        </div>
+                                        <div className="p-2">
+                                          <div className="text-xs font-medium truncate">{entry.title}</div>
+                                          <div className="flex gap-1 mt-1 flex-wrap">
+                                            {entry.subject && <Badge variant="outline" className="text-[10px] px-1 py-0">{entry.subject}</Badge>}
+                                            {entry.curated ? <Badge className="text-[10px] px-1 py-0 bg-amber-100 text-amber-700">Curated</Badge> : null}
+                                          </div>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </details>
+                              ))}
+                            </div>
+                          </details>
+                        );
+                      })}
                     </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between pt-2">
-              <span className="text-xs text-muted-foreground">{filtered.length} results</span>
-              <div className="flex gap-1">
-                <Button size="sm" variant="outline" className="h-6 text-xs px-2" disabled={page === 1} onClick={() => setPage(p => p - 1)}>Prev</Button>
-                <span className="text-xs px-2 py-1">{page} / {totalPages}</span>
-                <Button size="sm" variant="outline" className="h-6 text-xs px-2" disabled={page === totalPages} onClick={() => setPage(p => p + 1)}>Next</Button>
-              </div>
+                  </details>
+                );
+              })}
             </div>
           )}
         </CardContent>
