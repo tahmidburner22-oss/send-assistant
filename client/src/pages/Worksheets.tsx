@@ -14,7 +14,7 @@ import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { useApp, type Worksheet } from "@/contexts/AppContext";
 import { useUserPreferences } from "@/contexts/UserPreferencesContext";
-import { subjects, yearGroups, sendNeeds, examBoards, difficulties, colorOverlays, getDifficultyOptions, subjectTierMode, getLibrarySubjectName } from "@/lib/send-data";
+import { subjects, yearGroups, sendNeeds, examBoards, difficulties, colorOverlays, getDifficultyOptions, subjectTierMode, getLibrarySubjectName, getSubjectsForYearGroup } from "@/lib/send-data";
 import { generateWorksheet, type GeneratedWorksheet } from "@/lib/worksheet-generator";
 import { downloadWorksheetPdf } from "@/lib/pdf-generator";
 import { downloadHtmlAsPdf, printWorksheetElement, serialiseElement, buildPopupHtml, getKatexCssInline } from "@/lib/pdf-generator-v2";
@@ -385,10 +385,7 @@ export default function Worksheets() {
   const isPlatformAdmin = user?.email === "admin@adaptly.co.uk" || user?.email === "admin@sendassistant.app";
   const { preferences } = useUserPreferences();
   const showLibraryTab = preferences.showWorksheetLibrary === true;
-  // Filter out 11+ unless user has enabled it in Settings → Features
-  const filteredSubjects = (preferences.show11Plus ?? false)
-    ? subjects
-    : subjects.filter(s => s.id !== "eleven-plus");
+  const filteredSubjects = useMemo(() => getSubjectsForYearGroup(yearGroup), [yearGroup]);
 
   // Re-fetch data from server on mount so history count is always current
   useEffect(() => { refreshData(); }, []);

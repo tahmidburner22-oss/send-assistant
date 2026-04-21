@@ -3,7 +3,6 @@
 export const subjects = [
   { id: "english", name: "English", icon: "BookOpen", color: "#7C3AED" },
   { id: "mathematics", name: "Mathematics", icon: "Calculator", color: "#10B981" },
-  { id: "maths", name: "Maths", icon: "Calculator", color: "#10B981" },
   { id: "science", name: "Science", icon: "Flask", color: "#3B82F6" },
   { id: "biology", name: "Biology", icon: "Flask", color: "#22C55E" },
   { id: "chemistry", name: "Chemistry", icon: "Flask", color: "#F59E0B" },
@@ -21,13 +20,57 @@ export const subjects = [
   { id: "pshe", name: "PSHE", icon: "Users", color: "#22C55E" },
   { id: "business", name: "Business Studies", icon: "Briefcase", color: "#64748B" },
   { id: "drama", name: "Drama", icon: "Theater", color: "#E11D48" },
-  { id: "eleven-plus", name: "11+ Preparation", icon: "Star", color: "#F97316" },
 ];
+
+const PRIMARY_SUBJECT_IDS = new Set([
+  "english",
+  "mathematics",
+  "science",
+  "history",
+  "geography",
+  "art",
+  "music",
+  "pe",
+  "computing",
+  "dt",
+  "re",
+  "mfl",
+  "pshe",
+  "drama",
+]);
+
+const SECONDARY_SUBJECT_IDS = new Set([
+  "english",
+  "mathematics",
+  "science",
+  "biology",
+  "chemistry",
+  "physics",
+  "history",
+  "geography",
+  "art",
+  "music",
+  "pe",
+  "computer-science",
+  "dt",
+  "re",
+  "mfl",
+  "pshe",
+  "business",
+  "drama",
+]);
+
+export function getSubjectsForYearGroup(yearGroup?: string) {
+  const year = Number.parseInt(String(yearGroup || "").replace(/[^0-9]/g, ""), 10);
+  if (!Number.isFinite(year)) return subjects;
+  if (year >= 1 && year <= 6) return subjects.filter(subject => PRIMARY_SUBJECT_IDS.has(subject.id));
+  if (year >= 7 && year <= 11) return subjects.filter(subject => SECONDARY_SUBJECT_IDS.has(subject.id));
+  return subjects;
+}
 
 export const yearGroups = [
   "Year 1", "Year 2", "Year 3", "Year 4", "Year 5", "Year 6",
-  "Year 7", "Year 8", "Year 9", "Year 10", "Year 11", "Year 12", "Year 13",
-  "11+ Preparation",
+  "Year 7", "Year 8", "Year 9", "Year 10", "Year 11",
 ];
 
 export const examBoards = [

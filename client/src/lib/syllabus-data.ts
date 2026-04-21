@@ -1519,19 +1519,25 @@ export function getSyllabusTopics(subject: string, yearGroup: string): SyllabusT
   const subjectData = SYLLABUS_DATA[subject.toLowerCase()];
   if (!subjectData) return [];
 
-  // Return ALL topics for the subject across every year group,
-  // labelled with their originating year so teachers can see context.
-  // This allows any year group to access any topic in the dropdown.
+  const selectedYear = Number.parseInt(String(yearGroup || "").replace(/[^0-9]/g, ""), 10);
+  if (!Number.isFinite(selectedYear)) return [];
+
+  const eligibleYearGroups = (selectedYear >= 1 && selectedYear <= 6)
+    ? Array.from({ length: selectedYear }, (_, index) => `Year ${index + 1}` as YearGroupKey)
+    : (selectedYear >= 7 && selectedYear <= 11)
+      ? Array.from({ length: selectedYear - 6 }, (_, index) => `Year ${index + 7}` as YearGroupKey)
+      : [yearGroup as YearGroupKey];
+
   const accumulated: SyllabusTopic[] = [];
   const seenTopics = new Set<string>();
 
-  for (const [key, topics] of Object.entries(subjectData)) {
+  for (const eligibleYearGroup of eligibleYearGroups) {
+    const topics = subjectData[eligibleYearGroup];
     if (!topics) continue;
-    for (const t of topics) {
-      if (!seenTopics.has(t.topic)) {
-        seenTopics.add(t.topic);
-        accumulated.push({ ...t, yearGroup: key as YearGroupKey });
-      }
+    for (const topicEntry of topics) {
+      if (seenTopics.has(topicEntry.topic)) continue;
+      seenTopics.add(topicEntry.topic);
+      accumulated.push({ ...topicEntry, yearGroup: eligibleYearGroup });
     }
   }
 
