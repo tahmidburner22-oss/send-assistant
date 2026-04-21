@@ -385,7 +385,6 @@ export default function Worksheets() {
   const isPlatformAdmin = user?.email === "admin@adaptly.co.uk" || user?.email === "admin@sendassistant.app";
   const { preferences } = useUserPreferences();
   const showLibraryTab = preferences.showWorksheetLibrary === true;
-  const filteredSubjects = useMemo(() => getSubjectsForYearGroup(yearGroup), [yearGroup]);
 
   // Re-fetch data from server on mount so history count is always current
   useEffect(() => { refreshData(); }, []);
@@ -401,6 +400,7 @@ export default function Worksheets() {
   const [activeTab, setActiveTab] = useState("generate");
   const [subject, setSubject] = useState(() => preSelectedSubject);
   const [yearGroup, setYearGroup] = useState(() => preSelectedYearGroup);
+  const filteredSubjects = useMemo(() => getSubjectsForYearGroup(yearGroup), [yearGroup]);
   const [topic, setTopic] = useState(() => preSelectedTopic);
   const [subtopic, setSubtopic] = useState("");
   const [sendNeed, setSendNeed] = useState(() => preSelectedSendNeed);
