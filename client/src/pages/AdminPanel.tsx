@@ -1286,6 +1286,9 @@ function WorksheetLibraryPanel() {
   const [reingestLoading, setReingestLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const reingestFileRef = useRef<HTMLInputElement>(null);
+  const jsonFileInputRef = useRef<HTMLInputElement>(null);
+  const [jsonUploading, setJsonUploading] = useState(false);
+  const [selectedJsonFile, setSelectedJsonFile] = useState<File | null>(null);
 
   const handleViewEntry = async (id: string, title: string) => {
     setViewLoading(true);
@@ -1423,6 +1426,66 @@ function WorksheetLibraryPanel() {
     setUploading(false);
   };
 
+  const handleJsonUpload = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedJsonFile) {
+      toast.error("Please select a JSON file.");
+      return;
+    }
+    setJsonUploading(true);
+    try {
+      const text = await selectedJsonFile.text();
+      let parsed: any;
+      try {
+        parsed = JSON.parse(text);
+      } catch {
+        toast.error("Invalid JSON file — could not parse.");
+        setJsonUploading(false);
+        return;
+      }
+      // Support both the structured worksheet JSON format and direct library entry format
+      const subject = parsed.subject || "";
+      const topic = parsed.topic || parsed.subtopic || "";
+      const yearGroup = parsed.year_group || parsed.yearGroup || "";
+      const title = parsed.title || "";
+      const subtitle = parsed.subtitle || "";
+      const learningObjective = parsed.learning_objective || parsed.learningObjective || "";
+      const sections = parsed.sections || parsed.pages || [];
+      const teacherSections = parsed.teacher_sections || parsed.teacherSections || [];
+      const keyVocab = parsed.key_vocab || parsed.keyVocab || [];
+      const tier = parsed.tier || "standard";
+      if (!subject || !topic || !yearGroup || !title) {
+        toast.error("JSON must include: subject, topic, year_group (or yearGroup), and title.");
+        setJsonUploading(false);
+        return;
+      }
+      const r = await fetch("/api/library/entries", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          subject, topic, yearGroup, title, subtitle,
+          sections, teacher_sections: teacherSections, key_vocab: keyVocab,
+          learning_objective: learningObjective,
+          source: "json_upload",
+          curated: true,
+          tier,
+        }),
+      });
+      if (r.ok) {
+        const data = await r.json();
+        toast.success(`JSON uploaded! Entry ${data.upserted ? "updated" : "created"} (ID: ${data.id}).`);
+        setSelectedJsonFile(null);
+        if (jsonFileInputRef.current) jsonFileInputRef.current.value = "";
+        await loadEntries();
+      } else {
+        const err = await r.json();
+        toast.error(err.error || "JSON upload failed");
+      }
+    } catch (err: any) { toast.error(err.message || "Upload failed"); }
+    setJsonUploading(false);
+  };
+
   const TIER_LABELS: Record<string, string> = {
     foundation: "Foundation",
     higher: "Higher",
@@ -1503,6 +1566,27 @@ function WorksheetLibraryPanel() {
             </div>
             <Button type="submit" disabled={uploading} className="w-full bg-brand hover:bg-brand/90 text-white">
               {uploading ? "Ingesting PDF..." : "Upload & Ingest PDF"}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+
+      {/* JSON Upload */}
+      <Card className="border-border/50">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm font-semibold flex items-center gap-2">
+            <FileText className="w-4 h-4 text-emerald-600" /> Upload Worksheet JSON
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleJsonUpload} className="space-y-3">
+            <p className="text-xs text-muted-foreground">Upload a structured worksheet JSON file directly to the library. The JSON must include <code className="bg-muted px-1 rounded">subject</code>, <code className="bg-muted px-1 rounded">topic</code>, <code className="bg-muted px-1 rounded">year_group</code>, and <code className="bg-muted px-1 rounded">title</code> fields.</p>
+            <div className="space-y-1">
+              <Label className="text-xs">JSON File *</Label>
+              <input ref={jsonFileInputRef} type="file" accept=".json,application/json" className="text-sm w-full" onChange={e => setSelectedJsonFile(e.target.files?.[0] || null)} />
+            </div>
+            <Button type="submit" disabled={jsonUploading} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white">
+              {jsonUploading ? "Uploading JSON..." : "Upload & Save JSON"}
             </Button>
           </form>
         </CardContent>
