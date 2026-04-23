@@ -18,7 +18,11 @@ import {
   BookOpen, Target, Lightbulb, HelpCircle, CheckSquare, Brain,
   ArrowRight, List, Copy, Check, Plus, Users, AlertCircle,
   Pencil, Zap, Edit3, Calculator, GraduationCap, Sliders,
+  Printer, Mail, Save, Maximize2, X, ChevronUp, ChevronDown,
+  Accessibility, Trash2, MoreVertical,
 } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Slider } from "@/components/ui/slider";
 import { callAI } from "@/lib/ai";
 import { useApp } from "@/contexts/AppContext";
@@ -1781,6 +1785,28 @@ export default function PresentationMaker() {
   const [copied, setCopied] = useState(false);
   const [editingSlide, setEditingSlide] = useState<number | null>(null);
 
+  // ── Feature state ────────────────────────────────────────────────────────────
+  // Fullscreen mode
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  // Email dialog
+  const [showEmailDialog, setShowEmailDialog] = useState(false);
+  const [emailTo, setEmailTo] = useState("");
+  const [emailMsg, setEmailMsg] = useState("");
+  const [emailFormat, setEmailFormat] = useState<"pdf" | "pptx">("pdf");
+  const [sendingEmail, setSendingEmail] = useState(false);
+  // Save to library
+  const [savingToLib, setSavingToLib] = useState(false);
+  const [savedToLib, setSavedToLib] = useState(false);
+  // SEND Adaptation
+  const [showSendAdaptDialog, setShowSendAdaptDialog] = useState(false);
+  const [sendAdaptNeed, setSendAdaptNeed] = useState("dyslexia");
+  const [adaptingForSend, setAdaptingForSend] = useState(false);
+  const [adaptedPresentation, setAdaptedPresentation] = useState<PresentationData | null>(null);
+  const [showSendComparison, setShowSendComparison] = useState(false);
+  const [comparisonActiveSlide, setComparisonActiveSlide] = useState(0);
+  // Inline slide edit
+  const [slideEditValues, setSlideEditValues] = useState<Partial<SlideContent>>({});
+
   const theme = THEMES[selectedTheme];
 
   const handleGenerate = async () => {
@@ -1877,6 +1903,249 @@ export default function PresentationMaker() {
     toast.success("Copied to clipboard!");
   };
 
+  // ── Save to Library ──────────────────────────────────────────────────────────
+  const handleSaveToLibrary = async () => {
+    if (!presentation) return;
+    setSavingToLib(true);
+    try {
+      const res = await fetch("/api/presentation-library/entries", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: presentation.title,
+          subject: presentation.subject,
+          topic: presentation.topic,
+          year_group: presentation.yearGroup,
+          slides: presentation.slides,
+          tags: [presentation.subject, presentation.yearGroup, lessonType],
+        }),
+      });
+      if (!res.ok) throw new Error("Save failed");
+      setSavedToLib(true);
+      toast.success("Saved to Presentation Library!");
+      setTimeout(() => setSavedToLib(false), 3000);
+    } catch {
+      toast.error("Could not save to library. Please try again.");
+    }
+    setSavingToLib(false);
+  };
+
+  // ── Email handler ────────────────────────────────────────────────────────────
+  const handleSendEmail = async () => {
+    if (!presentation || !emailTo.trim()) return;
+    setSendingEmail(true);
+    try {
+      const res = await fetch("/api/presentation/email", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          presentation,
+          themeKey: selectedTheme,
+          recipientEmail: emailTo.trim(),
+          message: emailMsg,
+          format: emailFormat,
+        }),
+      });
+      if (!res.ok) throw new Error("Email failed");
+      toast.success(`Presentation sent to ${emailTo}!`);
+      setShowEmailDialog(false);
+      setEmailTo("");
+      setEmailMsg("");
+    } catch {
+      toast.error("Could not send email. Please try again.");
+    }
+    setSendingEmail(false);
+  };
+
+  // ── SEND Adaptation ──────────────────────────────────────────────────────────
+  const SEND_NEEDS_OPTIONS = [
+    { value: "dyslexia", label: "Dyslexia" },
+    { value: "autism", label: "Autism / ASD" },
+    { value: "adhd", label: "ADHD" },
+    { value: "eal", label: "EAL (English as Additional Language)" },
+    { value: "visual-impairment", label: "Visual Impairment" },
+    { value: "hearing-impairment", label: "Hearing Impairment" },
+    { value: "dyscalculia", label: "Dyscalculia" },
+    { value: "low-literacy", label: "Low Literacy / Below Expected Level" },
+    { value: "complex-needs", label: "Complex / Multiple Needs" },
+  ];
+
+  const handleAdaptForSend = async () => {
+    if (!presentation) return;
+    setAdaptingForSend(true);
+    const needLabel = SEND_NEEDS_OPTIONS.find(o => o.value === sendAdaptNeed)?.label || sendAdaptNeed;
+    try {
+      const slideSummary = presentation.slides.map((s, i) => ({
+        index: i,
+        type: s.type,
+        title: s.title,
+        subtitle: s.subtitle,
+        body: s.body,
+        question: s.question,
+        bullets: s.bullets,
+        steps: s.steps,
+        misconception: s.misconception,
+        correction: s.correction,
+        retrievalQuestions: s.retrievalQuestions,
+        realWorldContext: s.realWorldContext,
+        examTip: s.examTip,
+        terms: s.terms,
+        speakerNotes: s.speakerNotes,
+      }));
+
+      const systemPrompt = `You are an expert UK SEND teacher adapting a lesson presentation for pupils with ${needLabel}.
+Adapt the text of each slide to be more accessible for this specific need while keeping the same structure and slide types.
+Rules:
+- Return ONLY valid JSON matching the input structure exactly
+- Keep all fields that were not present as null/undefined
+- For "${needLabel}": ${
+  sendAdaptNeed === "dyslexia" ? "Use shorter sentences, remove unnecessary words, use active voice, add whitespace between bullets, avoid italics/ALL CAPS" :
+  sendAdaptNeed === "autism" ? "Be literal and explicit, avoid metaphors/idioms, use precise language, add clear structure cues like 'First:', 'Next:', 'Finally:'" :
+  sendAdaptNeed === "adhd" ? "Use very short punchy sentences, add action words, keep bullets to 3 max, make instructions crystal clear and numbered" :
+  sendAdaptNeed === "eal" ? "Use simple common vocabulary, avoid idioms and colloquialisms, define key terms in plain English, use visual cue words" :
+  sendAdaptNeed === "low-literacy" ? "Use the simplest possible vocabulary, max 5 words per bullet, short sentences, concrete examples only" :
+  "Reduce cognitive load, chunk information, use clear simple language, add support cues"
+}
+- Preserve the pedagogical intent of each slide
+- Adapt titles, bullets, body, question, steps, terms definitions, retrievalQuestions, and speakerNotes`;
+
+      const userPrompt = `Adapt these ${presentation.slides.length} slides for pupils with ${needLabel}.
+Input slides JSON:
+${JSON.stringify(slideSummary)}
+
+Return JSON array of adapted slides with the same indices and structure.`;
+
+      const result = await callAI(systemPrompt, userPrompt, 8000);
+      const rawText = typeof result === "string" ? result : (result as any).text || JSON.stringify(result);
+      const cleaned = rawText.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/, "").trim();
+      const jsonMatch = cleaned.match(/\[[\s\S]*\]/);
+      const adaptedSlides: any[] = JSON.parse(jsonMatch ? jsonMatch[0] : cleaned);
+
+      const newPresentation: PresentationData = {
+        ...presentation,
+        title: `${presentation.title} — ${needLabel} Adapted`,
+        slides: presentation.slides.map((orig, i) => {
+          const adapted = adaptedSlides.find((a: any) => a.index === i) || adaptedSlides[i];
+          if (!adapted) return orig;
+          return {
+            ...orig,
+            title: adapted.title || orig.title,
+            subtitle: adapted.subtitle ?? orig.subtitle,
+            body: adapted.body ?? orig.body,
+            question: adapted.question ?? orig.question,
+            bullets: adapted.bullets ?? orig.bullets,
+            steps: adapted.steps ?? orig.steps,
+            misconception: adapted.misconception ?? orig.misconception,
+            correction: adapted.correction ?? orig.correction,
+            retrievalQuestions: adapted.retrievalQuestions ?? orig.retrievalQuestions,
+            realWorldContext: adapted.realWorldContext ?? orig.realWorldContext,
+            examTip: adapted.examTip ?? orig.examTip,
+            terms: adapted.terms ?? orig.terms,
+            speakerNotes: adapted.speakerNotes ?? orig.speakerNotes,
+          };
+        }),
+      };
+
+      setAdaptedPresentation(newPresentation);
+      setShowSendAdaptDialog(false);
+      setShowSendComparison(true);
+      setComparisonActiveSlide(0);
+      toast.success(`Adapted for ${needLabel} — pick which version to use!`);
+    } catch (err: any) {
+      console.error("SEND adaptation failed:", err);
+      toast.error("Adaptation failed. Please try again.");
+    }
+    setAdaptingForSend(false);
+  };
+
+  // ── Print Handout ────────────────────────────────────────────────────────────
+  const handlePrintHandout = (layout: "1up" | "2up" | "notes") => {
+    if (!presentation) return;
+    const theme = THEMES[selectedTheme];
+    const slidesHtml = presentation.slides.map((slide, i) => {
+      const bullets = slide.bullets?.map(b => `<li>${b}</li>`).join("") || "";
+      const steps = slide.steps?.map((s, si) => `<li><strong>${si + 1}.</strong> ${s}</li>`).join("") || "";
+      const terms = slide.terms?.map(t => `<tr><td><strong>${t.term}</strong></td><td>${t.definition}</td></tr>`).join("") || "";
+      const slideContent = `
+        <div class="slide-card" style="background:${slide.type === "title" ? theme.primary : "#fff"};color:${slide.type === "title" ? "#fff" : theme.text};border:2px solid ${theme.secondary};border-radius:8px;padding:16px;page-break-inside:avoid;">
+          <div style="font-size:8px;color:${slide.type === "title" ? "rgba(255,255,255,0.7)" : "#888"};margin-bottom:4px;text-transform:uppercase;letter-spacing:1px;">${SLIDE_LABELS[slide.type] || slide.type}</div>
+          <div style="font-size:${layout === "1up" ? "20px" : "13px"};font-weight:bold;margin-bottom:8px;color:${slide.type === "title" ? "#fff" : theme.primary}">${slide.title}</div>
+          ${slide.subtitle ? `<div style="font-size:${layout === "1up" ? "14px" : "10px"};color:${slide.type === "title" ? "rgba(255,255,255,0.8)" : "#555"};margin-bottom:8px">${slide.subtitle}</div>` : ""}
+          ${slide.body ? `<p style="font-size:${layout === "1up" ? "13px" : "9px"};margin:4px 0">${slide.body}</p>` : ""}
+          ${slide.question ? `<p style="font-size:${layout === "1up" ? "13px" : "9px"};font-weight:bold;background:${theme.light};padding:6px;border-radius:4px">${slide.question}</p>` : ""}
+          ${bullets ? `<ul style="font-size:${layout === "1up" ? "13px" : "9px"};margin:4px 0;padding-left:16px">${bullets}</ul>` : ""}
+          ${steps ? `<ol style="font-size:${layout === "1up" ? "13px" : "9px"};margin:4px 0;padding-left:16px">${steps}</ol>` : ""}
+          ${terms ? `<table style="font-size:9px;width:100%;border-collapse:collapse">${terms}</table>` : ""}
+          <div style="text-align:right;font-size:7px;color:#aaa;margin-top:4px">${i+1}/${presentation.slides.length}</div>
+        </div>`;
+      if (layout === "notes") {
+        return `<div style="margin-bottom:24px;page-break-after:always">${slideContent}<div style="margin-top:8px;padding:8px;border:1px solid #ddd;border-radius:4px;min-height:60px;font-size:10px;color:#555"><strong>Speaker Notes:</strong><br>${slide.speakerNotes || "<em>(no notes)</em>"}</div></div>`;
+      }
+      return slideContent;
+    });
+
+    const cols = layout === "1up" ? 1 : 2;
+    const printHtml = `<!DOCTYPE html><html><head><title>${presentation.title} — Handout</title>
+<style>body{font-family:sans-serif;margin:0;padding:16px}.grid{display:grid;grid-template-columns:repeat(${cols},1fr);gap:12px}@media print{body{margin:0;padding:8px}.slide-card{break-inside:avoid}}</style>
+</head><body><h2 style="font-size:14px;margin-bottom:12px;color:${theme.primary}">${presentation.title} · ${presentation.subject} · ${presentation.yearGroup}</h2>
+<div class="${layout === "notes" ? "" : "grid"}">${slidesHtml.join(layout === "notes" ? "" : "\n")}</div>
+<p style="font-size:9px;color:#aaa;margin-top:16px;text-align:center">Generated by Adaptly · adaptly.co.uk</p>
+</body></html>`;
+
+    const w = window.open("", "_blank");
+    if (!w) { toast.error("Please allow popups to print."); return; }
+    w.document.write(printHtml);
+    w.document.close();
+    w.focus();
+    setTimeout(() => { w.print(); }, 500);
+  };
+
+  // ── Fullscreen keyboard nav ───────────────────────────────────────────────────
+  const handleFullscreenKeyDown = (e: React.KeyboardEvent) => {
+    if (!isFullscreen || !presentation) return;
+    if (e.key === "ArrowRight" || e.key === "ArrowDown" || e.key === " ")
+      setActiveSlide(s => Math.min(presentation.slides.length - 1, s + 1));
+    if (e.key === "ArrowLeft" || e.key === "ArrowUp")
+      setActiveSlide(s => Math.max(0, s - 1));
+    if (e.key === "Escape") setIsFullscreen(false);
+  };
+
+  // ── Inline slide editing ─────────────────────────────────────────────────────
+  const startEditSlide = (idx: number) => {
+    if (!presentation) return;
+    setEditingSlide(idx);
+    setSlideEditValues({ ...presentation.slides[idx] });
+  };
+
+  const saveEditSlide = () => {
+    if (!presentation || editingSlide === null) return;
+    const newSlides = [...presentation.slides];
+    newSlides[editingSlide] = { ...newSlides[editingSlide], ...slideEditValues } as SlideContent;
+    setPresentation({ ...presentation, slides: newSlides });
+    setEditingSlide(null);
+    toast.success("Slide updated!");
+  };
+
+  const deleteSlide = (idx: number) => {
+    if (!presentation || presentation.slides.length <= 1) return;
+    const newSlides = presentation.slides.filter((_, i) => i !== idx);
+    setPresentation({ ...presentation, slides: newSlides, totalSlides: newSlides.length });
+    if (activeSlide >= newSlides.length) setActiveSlide(newSlides.length - 1);
+    toast.success("Slide deleted.");
+  };
+
+  const moveSlide = (idx: number, dir: -1 | 1) => {
+    if (!presentation) return;
+    const newIdx = idx + dir;
+    if (newIdx < 0 || newIdx >= presentation.slides.length) return;
+    const newSlides = [...presentation.slides];
+    [newSlides[idx], newSlides[newIdx]] = [newSlides[newIdx], newSlides[idx]];
+    setPresentation({ ...presentation, slides: newSlides });
+    setActiveSlide(newIdx);
+  };
+
   const currentSlide = presentation?.slides[activeSlide];
 
   return (
@@ -1899,24 +2168,38 @@ export default function PresentationMaker() {
             </div>
           </div>
           {presentation && (
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleCopyText}
-                className="text-xs"
-              >
-                {copied ? <Check className="w-3 h-3 mr-1" /> : <Copy className="w-3 h-3 mr-1" />}
-                Copy Text
+            <div className="flex items-center gap-2 flex-wrap">
+              <Button variant="outline" size="sm" onClick={handleSaveToLibrary} disabled={savingToLib} className="text-xs gap-1">
+                {savedToLib ? <Check className="w-3 h-3 text-green-600" /> : <Save className="w-3 h-3" />}
+                {savedToLib ? "Saved!" : "Save"}
               </Button>
-              <Button
-                size="sm"
-                onClick={handleExportPptx}
-                disabled={exporting}
-                className="text-xs text-white"
-                style={{ background: theme.gradient, border: "none" }}
-              >
-                {exporting ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <FileDown className="w-3 h-3 mr-1" />}
+              <Button variant="outline" size="sm" onClick={() => setShowEmailDialog(true)} className="text-xs gap-1">
+                <Mail className="w-3 h-3" />Send
+              </Button>
+              {/* Print dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="text-xs gap-1">
+                    <Printer className="w-3 h-3" />Print
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => handlePrintHandout("1up")}>📄 1 slide per page</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handlePrintHandout("2up")}>📑 2 slides per page (handout)</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handlePrintHandout("notes")}>📋 Notes page (slide + notes)</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <Button variant="outline" size="sm" onClick={() => setIsFullscreen(true)} className="text-xs gap-1">
+                <Maximize2 className="w-3 h-3" />Present
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => setShowSendAdaptDialog(true)} className="text-xs gap-1 border-purple-300 text-purple-700 hover:bg-purple-50">
+                <Accessibility className="w-3 h-3" />Adapt for SEND
+              </Button>
+              <Button variant="outline" size="sm" onClick={handleCopyText} className="text-xs gap-1">
+                {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}Copy
+              </Button>
+              <Button size="sm" onClick={handleExportPptx} disabled={exporting} className="text-xs text-white gap-1" style={{ background: theme.gradient, border: "none" }}>
+                {exporting ? <Loader2 className="w-3 h-3 animate-spin" /> : <FileDown className="w-3 h-3" />}
                 Export .pptx
               </Button>
             </div>
@@ -2265,43 +2548,93 @@ export default function PresentationMaker() {
                   </div>
                 )}
 
-                {/* Slide strip */}
+                {/* Slide strip with inline edit controls */}
                 <div>
-                  <div className="text-xs font-semibold text-gray-700 mb-2">All Slides</div>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="text-xs font-semibold text-gray-700">All Slides ({presentation.slides.length})</div>
+                    <Button size="sm" variant="outline" className="text-xs h-6 gap-1"
+                      onClick={() => {
+                        const newSlide: SlideContent = { type: "content", title: "New Slide", bullets: ["Add your content here"] };
+                        const newSlides = [...presentation.slides, newSlide];
+                        setPresentation({ ...presentation, slides: newSlides, totalSlides: newSlides.length });
+                        setActiveSlide(newSlides.length - 1);
+                      }}>
+                      <Plus className="w-3 h-3" />Add Slide
+                    </Button>
+                  </div>
                   <div className="grid grid-cols-4 gap-2 max-h-64 overflow-y-auto pr-1">
                     {presentation.slides.map((slide, i) => (
-                      <SlidePreview
-                        key={i}
-                        slide={slide}
-                        theme={theme}
-                        index={i}
-                        total={presentation.slides.length}
-                        isActive={i === activeSlide}
-                        onClick={() => setActiveSlide(i)}
-                      />
+                      <div key={i} className="relative group">
+                        <SlidePreview slide={slide} theme={theme} index={i} total={presentation.slides.length} isActive={i === activeSlide} onClick={() => setActiveSlide(i)} />
+                        {/* Per-slide controls */}
+                        <div className="absolute top-0.5 right-0.5 hidden group-hover:flex gap-0.5 bg-white/90 rounded p-0.5 shadow">
+                          <button onClick={(e) => { e.stopPropagation(); moveSlide(i, -1); }} disabled={i === 0} className="w-4 h-4 flex items-center justify-center hover:bg-gray-100 rounded disabled:opacity-30"><ChevronUp className="w-2.5 h-2.5" /></button>
+                          <button onClick={(e) => { e.stopPropagation(); moveSlide(i, 1); }} disabled={i === presentation.slides.length - 1} className="w-4 h-4 flex items-center justify-center hover:bg-gray-100 rounded disabled:opacity-30"><ChevronDown className="w-2.5 h-2.5" /></button>
+                          <button onClick={(e) => { e.stopPropagation(); startEditSlide(i); }} className="w-4 h-4 flex items-center justify-center hover:bg-blue-50 rounded"><Pencil className="w-2.5 h-2.5 text-blue-600" /></button>
+                          <button onClick={(e) => { e.stopPropagation(); deleteSlide(i); }} disabled={presentation.slides.length <= 1} className="w-4 h-4 flex items-center justify-center hover:bg-red-50 rounded disabled:opacity-30"><Trash2 className="w-2.5 h-2.5 text-red-500" /></button>
+                        </div>
+                      </div>
                     ))}
                   </div>
                 </div>
 
-                {/* Export buttons */}
-                <div className="flex gap-2 pt-2 border-t">
-                  <Button
-                    onClick={handleExportPptx}
-                    disabled={exporting}
-                    className="flex-1 text-white font-semibold"
-                    style={{ background: theme.gradient, border: "none" }}
-                  >
-                    {exporting ? (
-                      <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Exporting...</>
-                    ) : (
-                      <><FileDown className="w-4 h-4 mr-2" />Download PowerPoint (.pptx)</>
+                {/* Inline slide editor */}
+                {editingSlide !== null && (
+                  <div className="border border-blue-200 rounded-lg bg-blue-50 p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="text-sm font-semibold text-blue-800">Editing Slide {editingSlide + 1}</div>
+                      <button onClick={() => setEditingSlide(null)} className="text-gray-400 hover:text-gray-600"><X className="w-4 h-4" /></button>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs">Title</Label>
+                      <Input className="h-8 text-xs" value={slideEditValues.title || ""} onChange={e => setSlideEditValues(v => ({ ...v, title: e.target.value }))} />
+                    </div>
+                    {slideEditValues.subtitle !== undefined && (
+                      <div className="space-y-2">
+                        <Label className="text-xs">Subtitle</Label>
+                        <Input className="h-8 text-xs" value={slideEditValues.subtitle || ""} onChange={e => setSlideEditValues(v => ({ ...v, subtitle: e.target.value }))} />
+                      </div>
                     )}
+                    {slideEditValues.body !== undefined && (
+                      <div className="space-y-2">
+                        <Label className="text-xs">Body text</Label>
+                        <Textarea className="text-xs resize-none h-16" value={slideEditValues.body || ""} onChange={e => setSlideEditValues(v => ({ ...v, body: e.target.value }))} />
+                      </div>
+                    )}
+                    {slideEditValues.question !== undefined && (
+                      <div className="space-y-2">
+                        <Label className="text-xs">Question</Label>
+                        <Input className="h-8 text-xs" value={slideEditValues.question || ""} onChange={e => setSlideEditValues(v => ({ ...v, question: e.target.value }))} />
+                      </div>
+                    )}
+                    {slideEditValues.bullets && (
+                      <div className="space-y-2">
+                        <Label className="text-xs">Bullets (one per line)</Label>
+                        <Textarea className="text-xs resize-none h-24" value={(slideEditValues.bullets || []).join("\n")} onChange={e => setSlideEditValues(v => ({ ...v, bullets: e.target.value.split("\n").filter(Boolean) }))} />
+                      </div>
+                    )}
+                    {slideEditValues.speakerNotes !== undefined && (
+                      <div className="space-y-2">
+                        <Label className="text-xs">Speaker Notes</Label>
+                        <Textarea className="text-xs resize-none h-16" value={slideEditValues.speakerNotes || ""} onChange={e => setSlideEditValues(v => ({ ...v, speakerNotes: e.target.value }))} />
+                      </div>
+                    )}
+                    <div className="flex gap-2">
+                      <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white text-xs" onClick={saveEditSlide}>Save Changes</Button>
+                      <Button size="sm" variant="outline" className="text-xs" onClick={() => setEditingSlide(null)}>Cancel</Button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Export buttons */}
+                <div className="flex gap-2 pt-2 border-t flex-wrap">
+                  <Button onClick={handleExportPptx} disabled={exporting} className="flex-1 text-white font-semibold" style={{ background: theme.gradient, border: "none" }}>
+                    {exporting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Exporting...</> : <><FileDown className="w-4 h-4 mr-2" />Download PowerPoint (.pptx)</>}
                   </Button>
-                  <Button
-                    variant="outline"
-                    onClick={handleCopyText}
-                    className="text-xs"
-                  >
+                  <Button variant="outline" onClick={handleSaveToLibrary} disabled={savingToLib} className="text-xs gap-1">
+                    {savedToLib ? <Check className="w-4 h-4 text-green-600" /> : <Save className="w-4 h-4" />}
+                  </Button>
+                  <Button variant="outline" onClick={handleCopyText} className="text-xs">
                     {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                   </Button>
                 </div>
@@ -2310,6 +2643,170 @@ export default function PresentationMaker() {
           </div>
         </div>
       </div>
+
+      {/* ── Fullscreen Presentation Mode ─────────────────────────────────────── */}
+      {isFullscreen && presentation && currentSlide && (
+        <div
+          className="fixed inset-0 z-50 bg-black flex flex-col outline-none"
+          tabIndex={0}
+          onKeyDown={handleFullscreenKeyDown}
+          // eslint-disable-next-line jsx-a11y/no-autofocus
+          ref={el => el?.focus()}
+        >
+          <div className="flex-1 flex items-center justify-center p-4">
+            <div className="w-full max-w-5xl" style={{ aspectRatio: "16/9" }}>
+              <FullSlideView slide={currentSlide} theme={theme} index={activeSlide} total={presentation.slides.length} />
+            </div>
+          </div>
+          {/* Fullscreen controls */}
+          <div className="flex items-center justify-between px-8 py-3 bg-black/60 text-white">
+            <button onClick={() => setActiveSlide(s => Math.max(0, s - 1))} disabled={activeSlide === 0} className="flex items-center gap-1 text-sm disabled:opacity-30 hover:text-gray-300">
+              <ChevronLeft className="w-5 h-5" />Previous
+            </button>
+            <div className="text-center">
+              <div className="text-sm font-semibold">{currentSlide.title}</div>
+              <div className="text-xs text-gray-400">{activeSlide + 1} / {presentation.slides.length}</div>
+            </div>
+            <div className="flex items-center gap-4">
+              <button onClick={() => setActiveSlide(s => Math.min(presentation.slides.length - 1, s + 1))} disabled={activeSlide === presentation.slides.length - 1} className="flex items-center gap-1 text-sm disabled:opacity-30 hover:text-gray-300">
+                Next<ChevronRight className="w-5 h-5" />
+              </button>
+              <button onClick={() => setIsFullscreen(false)} className="text-gray-400 hover:text-white ml-4">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+          <div className="text-center pb-2 text-gray-600 text-xs">Press ← → to navigate · Esc to exit</div>
+        </div>
+      )}
+
+      {/* ── Email Dialog ────────────────────────────────────────────────────── */}
+      <Dialog open={showEmailDialog} onOpenChange={setShowEmailDialog}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><Mail className="w-4 h-4" />Send Presentation</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="space-y-1">
+              <Label className="text-xs">Recipient Email *</Label>
+              <Input className="h-8 text-xs" type="email" placeholder="teacher@school.co.uk" value={emailTo} onChange={e => setEmailTo(e.target.value)} />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Message (optional)</Label>
+              <Textarea className="text-xs resize-none h-16" placeholder="Here's the lesson presentation..." value={emailMsg} onChange={e => setEmailMsg(e.target.value)} />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Format</Label>
+              <div className="grid grid-cols-2 gap-2">
+                {(["pdf", "pptx"] as const).map(f => (
+                  <button key={f} onClick={() => setEmailFormat(f)} className={`py-2 rounded-lg text-xs font-semibold border-2 transition-all uppercase ${emailFormat === f ? "bg-blue-50 border-blue-500 text-blue-700" : "bg-white border-gray-200 text-gray-600"}`}>{f === "pdf" ? "📄 PDF" : "📊 PowerPoint"}</button>
+                ))}
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" size="sm" onClick={() => setShowEmailDialog(false)}>Cancel</Button>
+            <Button size="sm" onClick={handleSendEmail} disabled={sendingEmail || !emailTo.trim()} className="bg-blue-600 hover:bg-blue-700 text-white">
+              {sendingEmail ? <><Loader2 className="w-3 h-3 mr-1 animate-spin" />Sending...</> : <><Mail className="w-3 h-3 mr-1" />Send</>}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── SEND Adaptation Dialog ───────────────────────────────────────────── */}
+      <Dialog open={showSendAdaptDialog} onOpenChange={setShowSendAdaptDialog}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><Accessibility className="w-4 h-4 text-purple-600" />Adapt for SEND</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <p className="text-xs text-gray-600">AI will generate an adapted copy of this presentation side-by-side, so you can compare and pick the version that best suits your pupils.</p>
+            <div className="space-y-1">
+              <Label className="text-xs font-semibold">Select SEND Need</Label>
+              <select className="w-full h-9 px-3 text-sm border rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-purple-300"
+                value={sendAdaptNeed} onChange={e => setSendAdaptNeed(e.target.value)}>
+                {(SEND_NEEDS_OPTIONS ?? [
+                  { value: "dyslexia", label: "Dyslexia" },
+                  { value: "autism", label: "Autism / ASD" },
+                  { value: "adhd", label: "ADHD" },
+                  { value: "eal", label: "EAL" },
+                  { value: "low-literacy", label: "Low Literacy" },
+                  { value: "complex-needs", label: "Complex Needs" },
+                ]).map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+              </select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" size="sm" onClick={() => setShowSendAdaptDialog(false)}>Cancel</Button>
+            <Button size="sm" onClick={handleAdaptForSend} disabled={adaptingForSend} className="bg-purple-600 hover:bg-purple-700 text-white">
+              {adaptingForSend ? <><Loader2 className="w-3 h-3 mr-1 animate-spin" />Adapting...</> : <><Sparkles className="w-3 h-3 mr-1" />Generate Adapted Copy</>}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── SEND Comparison View ─────────────────────────────────────────────── */}
+      {showSendComparison && adaptedPresentation && presentation && (
+        <div className="fixed inset-0 z-50 bg-white overflow-auto">
+          <div className="sticky top-0 bg-white border-b z-10 px-6 py-3 flex items-center justify-between shadow-sm">
+            <div>
+              <h2 className="font-bold text-gray-900">SEND Adaptation — Side by Side</h2>
+              <p className="text-xs text-gray-500">Choose which version to keep, or use either for different groups</p>
+            </div>
+            <div className="flex gap-2">
+              <Button size="sm" variant="outline" onClick={() => { setShowSendComparison(false); setAdaptedPresentation(null); }} className="text-xs">Discard Adapted</Button>
+              <Button size="sm" className="bg-purple-600 hover:bg-purple-700 text-white text-xs" onClick={() => { setPresentation(adaptedPresentation); setShowSendComparison(false); setAdaptedPresentation(null); toast.success("Switched to SEND-adapted version!"); }}>Use Adapted Version</Button>
+              <Button size="sm" variant="outline" className="text-xs" onClick={() => setShowSendComparison(false)}>Keep Original</Button>
+            </div>
+          </div>
+          {/* Slide nav */}
+          <div className="flex items-center justify-center gap-4 py-3 border-b bg-gray-50">
+            <Button variant="outline" size="sm" onClick={() => setComparisonActiveSlide(s => Math.max(0, s - 1))} disabled={comparisonActiveSlide === 0}><ChevronLeft className="w-4 h-4" /></Button>
+            <span className="text-sm font-medium">Slide {comparisonActiveSlide + 1} of {presentation.slides.length}</span>
+            <Button variant="outline" size="sm" onClick={() => setComparisonActiveSlide(s => Math.min(presentation.slides.length - 1, s + 1))} disabled={comparisonActiveSlide === presentation.slides.length - 1}><ChevronRight className="w-4 h-4" /></Button>
+          </div>
+          {/* Side-by-side */}
+          <div className="grid grid-cols-2 gap-6 p-6 max-w-7xl mx-auto">
+            {/* Original */}
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs font-semibold">Original</span>
+              </div>
+              <FullSlideView slide={presentation.slides[comparisonActiveSlide]} theme={theme} index={comparisonActiveSlide} total={presentation.slides.length} />
+              {presentation.slides[comparisonActiveSlide]?.speakerNotes && (
+                <div className="mt-2 p-2 bg-amber-50 border border-amber-200 rounded text-xs text-amber-700">
+                  <strong>Notes:</strong> {presentation.slides[comparisonActiveSlide].speakerNotes}
+                </div>
+              )}
+            </div>
+            {/* Adapted */}
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <span className="px-2 py-0.5 bg-purple-100 text-purple-700 rounded text-xs font-semibold">SEND Adapted</span>
+                <Accessibility className="w-3 h-3 text-purple-500" />
+              </div>
+              <FullSlideView slide={adaptedPresentation.slides[comparisonActiveSlide]} theme={theme} index={comparisonActiveSlide} total={adaptedPresentation.slides.length} />
+              {adaptedPresentation.slides[comparisonActiveSlide]?.speakerNotes && (
+                <div className="mt-2 p-2 bg-purple-50 border border-purple-200 rounded text-xs text-purple-700">
+                  <strong>Notes:</strong> {adaptedPresentation.slides[comparisonActiveSlide].speakerNotes}
+                </div>
+              )}
+            </div>
+          </div>
+          {/* Slide strip thumbnails */}
+          <div className="px-6 pb-6">
+            <div className="text-xs font-semibold text-gray-600 mb-2">All Slides</div>
+            <div className="grid grid-cols-8 gap-2">
+              {presentation.slides.map((_, i) => (
+                <button key={i} onClick={() => setComparisonActiveSlide(i)} className={`text-[10px] py-1 px-2 rounded border transition-all ${i === comparisonActiveSlide ? "border-blue-500 bg-blue-50 text-blue-700 font-bold" : "border-gray-200 hover:border-gray-400 text-gray-500"}`}>
+                  {i + 1}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+

@@ -3144,4 +3144,31 @@ Return this exact JSON structure:
   }
 });
 
+// ── POST /api/ai/presentation/email ────────────────────────────────────────────
+// Emails a presentation as an HTML digest (PDF generation is client-side PPTX;
+// server sends styled HTML email with slide content and an optional PPTX note).
+router.post("/presentation/email", requireAuth, async (req: Request, res: Response) => {
+  const { presentation, themeKey, recipientEmail, message, format } = req.body;
+  if (!presentation || !recipientEmail) {
+    return res.status(400).json({ error: "presentation and recipientEmail are required" });
+  }
+
+  try {
+    const { sendPresentationEmail } = await import("../email/index.js");
+    await sendPresentationEmail(recipientEmail, {
+      title: presentation.title,
+      subject: presentation.subject,
+      yearGroup: presentation.yearGroup,
+      slides: presentation.slides,
+      message: message || "",
+      format: format || "pdf",
+      senderName: (req as any).user?.displayName || "A teacher",
+    });
+    res.json({ success: true });
+  } catch (err: any) {
+    console.error("[presentation/email] error:", err);
+    res.status(500).json({ error: "Failed to send email. Please try again." });
+  }
+});
+
 export default router;
