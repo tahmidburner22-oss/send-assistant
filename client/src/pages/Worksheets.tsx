@@ -1365,6 +1365,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
         generatedWs = { ...result, isAI: true } as AIWorksheet;
         toast.success(generateDiagram ? "Worksheet with diagram generated!" : "Worksheet generated with AI!");
       } catch (err: any) {
+        console.error("[DEBUG] AI generation failed - full error:", err?.name, err?.message, String(err));
         console.error("AI generation failed:", err?.message);
         const errMsg = err?.message || String(err);
         // Handle session expiry — show clear message and redirect to login

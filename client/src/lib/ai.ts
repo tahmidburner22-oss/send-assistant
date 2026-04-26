@@ -439,6 +439,7 @@ export async function callAI(
     if (serverErr?.name === "AbortError") {
       console.warn("[Adaptly AI] Server generation timed out, using client keys fallback.");
     } else {
+      console.error("[Adaptly AI DEBUG] Server route error:", serverErr?.name, serverErr?.message, serverErr);
       console.warn("[Adaptly AI] Server route unavailable, using client keys:", serverErr);
     }
   }
