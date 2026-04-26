@@ -221,7 +221,8 @@ async function callProvider(
   user: string,
   key: string,
   model: string,
-  maxTokens: number
+  maxTokens: number,
+  options?: { baseUrl?: string }
 ): Promise<string> {
   // Per-provider timeouts — chosen so the full fallback chain fits inside Railway's 60s limit.
   // With 6 providers (3 Groq + gemini + gemini_lite + mistral), we need tight timeouts:
@@ -269,6 +270,9 @@ async function callProvider(
       case "openai":
         result = await callOpenAI(system, user, key, model || "gpt-4o-mini", maxTokens, controller.signal);
         break;
+      // Custom OpenAI-compatible providers (added via Settings → AI Providers with a base URL)
+      // These are stored in school_api_keys with a base_url field and a custom provider name.
+      // The baseUrl is passed in via the options parameter below.
       case "cerebras":
         // Cerebras wafer-scale inference — 14,400 RPD, 30 RPM free tier
         // Same quota as one Groq key but separate provider = separate limit
@@ -302,7 +306,12 @@ async function callProvider(
         result = await callPerplexity(system, user, key, model || "llama-3.1-sonar-large-128k-online", maxTokens, controller.signal);
         break;
       default:
-        throw new Error(`Unknown provider: ${provider}`);
+        // Custom OpenAI-compatible provider — requires baseUrl to be passed
+        if (options?.baseUrl) {
+          result = await callOpenAI(system, user, key, model || "gpt-4o-mini", maxTokens, controller.signal, options.baseUrl);
+        } else {
+          throw new Error(`Unknown provider: ${provider}`);
+        }
     }
     return result;
   } finally {
@@ -402,8 +411,16 @@ async function callWithFallback(
       continue;
     }
     const model = await getAdminModel(provider, schoolId);
+    // For custom providers (not in the known list), fetch the baseUrl from school keys
+    let baseUrl: string | undefined;
+    if (schoolId) {
+      try {
+        const schoolEntry = await getSchoolKey(schoolId, provider);
+        if (schoolEntry?.baseUrl) baseUrl = schoolEntry.baseUrl;
+      } catch (_) {}
+    }
     try {
-      const content = await callProvider(provider, system, user, key, model, maxTokens);
+      const content = await callProvider(provider, system, user, key, model, maxTokens, baseUrl ? { baseUrl } : undefined);
       if (content && content.trim()) {
         console.log(`[AI] Success via ${provider}`);
         recordRpm(provider); // track successful request for RPM window
@@ -834,8 +851,8 @@ async function callGemini(system: string, user: string, key: string, maxTokens: 
   return content;
 }
 
-async function callOpenAI(system: string, user: string, key: string, model: string, maxTokens: number, signal?: AbortSignal): Promise<string> {
-  const res = await fetch("https://api.openai.com/v1/chat/completions", {
+async function callOpenAI(system: string, user: string, key: string, model: string, maxTokens: number, signal?: AbortSignal, baseUrl?: string): Promise<string> {
+  const res = await fetch(`${baseUrl || "https://api.openai.com/v1"}/chat/completions`, {
     method: "POST",
     signal,
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
