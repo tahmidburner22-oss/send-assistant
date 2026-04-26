@@ -407,7 +407,7 @@ export default function Worksheets() {
   const [difficulty, setDifficulty] = useState("mixed");
   const [worksheetLength, setWorksheetLength] = useState("30");
   // Sections selector — retrieval unticked by default, all others ticked
-  const ALL_SECTIONS = ['learning-objective', 'retrieval', 'worked-example', 'common-mistakes', 'true-false', 'mcq', 'word-bank-gap-fill', 'match', 'section-a', 'section-b', 'section-c', 'self-reflection'] as const;
+  const ALL_SECTIONS = ['learning-objective', 'retrieval', 'key-vocabulary', 'worked-example', 'common-mistakes', 'diagram-a', 'true-false', 'mcq', 'word-bank-gap-fill', 'match', 'section-a', 'diagram-b', 'section-b', 'section-c', 'self-reflection'] as const;
   type SectionId = typeof ALL_SECTIONS[number];
   const defaultSections = ALL_SECTIONS.filter(s => s !== 'retrieval') as SectionId[];
   const [selectedSections, setSelectedSections] = useState<SectionId[]>(defaultSections);
@@ -2960,8 +2960,10 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                       {(() => {
                         // Page weight estimates per section
                         const pageWeights: Record<string, number> = {
-                          'learning-objective': 0.3, 'retrieval': 0.2, 'worked-example': 0.4,
-                          'common-mistakes': 0.3, 'true-false': 0.4, 'mcq': 0.5,
+                          'learning-objective': 0.3, 'retrieval': 0.2, 'key-vocabulary': 0.3,
+                          'worked-example': 0.4, 'common-mistakes': 0.3,
+                          'diagram-a': 1.0, 'diagram-b': 1.0,
+                          'true-false': 0.4, 'mcq': 0.5,
                           'word-bank-gap-fill': 0.4, 'match': 0.3,
                           'section-a': 0.8, 'section-b': 1.0, 'section-c': 0.8,
                           'self-reflection': 0.2,
@@ -2976,13 +2978,16 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                     {([
                       { id: 'learning-objective', label: 'Learning Objective' },
                       { id: 'retrieval', label: 'Retrieval' },
-                      { id: 'worked-example', label: 'Worked Example' },
+                      { id: 'key-vocabulary', label: 'Key Vocabulary' },
                       { id: 'common-mistakes', label: 'Common Mistakes' },
+                      { id: 'worked-example', label: 'Worked Example' },
+                      { id: 'diagram-a', label: 'Diagram A (full-page spread)' },
                       { id: 'true-false', label: 'True & False' },
                       { id: 'mcq', label: 'Multiple Choice (MCQ)' },
                       { id: 'word-bank-gap-fill', label: 'Word Bank Gap Fill' },
                       { id: 'match', label: 'Match the Column' },
                       { id: 'section-a', label: 'Section A — Foundation Questions' },
+                      { id: 'diagram-b', label: 'Diagram B (full-page spread)' },
                       { id: 'section-b', label: 'Section B — Core Practice' },
                       { id: 'section-c', label: 'Section C — Stretch & Challenge' },
                       { id: 'self-reflection', label: 'Self Reflection' },
@@ -3093,7 +3098,18 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                   </div>
                 </div>
 
-                {/* Additional Instructions removed per user request */}
+                {/* Additional Requirements */}
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-medium">Additional Requirements (optional)</Label>
+                  <textarea
+                    value={additionalInstructions}
+                    onChange={e => setAdditionalInstructions(e.target.value)}
+                    placeholder="e.g. Include a real-world context about climate change, use simple language, add a glossary box…"
+                    rows={3}
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand/40 resize-none"
+                  />
+                  <p className="text-[10px] text-muted-foreground">Any specific instructions or requirements for the worksheet. These will be applied as a priority override during generation.</p>
+                </div>
 
                 <div className="flex flex-wrap gap-4 items-center py-1">
                   <div className="flex items-center gap-2">
