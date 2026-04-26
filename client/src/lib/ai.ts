@@ -1475,8 +1475,11 @@ STRICT JSON OUTPUT: Respond with valid JSON only — no markdown, no code blocks
     const secs = params.selectedSections;
     const wantLO = secs.includes('learning-objective');
     const wantRetrieval = secs.includes('retrieval') && !!params.recallTopic;
+    const wantKeyVocab = secs.includes('key-vocabulary');
     const wantWorkedExample = secs.includes('worked-example');
     const wantCommonMistakes = secs.includes('common-mistakes');
+    const wantDiagramA = secs.includes('diagram-a');
+    const wantDiagramB = secs.includes('diagram-b');
     const wantTrueFalse = secs.includes('true-false');
     const wantMCQ = secs.includes('mcq');
     const wantWordBankGapFill = secs.includes('word-bank-gap-fill');
@@ -1505,7 +1508,15 @@ CRITICAL SEND RULE: SEND adaptations affect FORMATTING ONLY (font size, spacing,
     }
 
     if (wantRetrieval && params.recallTopic) {
-      structuredSections.push(`{"title": "Retrieval — ${params.recallTopic}", "type": "prior-knowledge", "content": "Recall from last lesson!\n1. [True/False statement about ${params.recallTopic}] TRUE / FALSE\n2. [Short answer question about ${params.recallTopic}] [1 mark]\n3. [Fill-in-blank sentence about ${params.recallTopic}. The answer is _____.]"}`);
+      structuredSections.push(`{"title": "Retrieval — ${params.recallTopic}", "type": "prior-knowledge", "content": "Recall from last lesson!\n1. [True/False statement about ${params.recallTopic}] TRUE / FALSE\n2. [Short answer question about ${params.recallTopic}] [1 mark]\n3. [Fill-in-blank sentence about ${params.recallTopic}. The answer is _____.]"}`)
+    }
+
+    if (wantKeyVocab) {
+      structuredSections.push(`{"title": "Key Vocabulary", "type": "vocabulary", "content": "KEY_TERMS:\n[Term 1] — [clear, student-friendly definition relevant to ${params.topic}]\n[Term 2] — [clear, student-friendly definition relevant to ${params.topic}]\n[Term 3] — [clear, student-friendly definition relevant to ${params.topic}]\n[Term 4] — [clear, student-friendly definition relevant to ${params.topic}]\n[Term 5] — [clear, student-friendly definition relevant to ${params.topic}]"}`);
+    }
+
+    if (wantCommonMistakes) {
+      structuredSections.push(`{"title": "Common Mistakes to Avoid", "type": "common-mistakes", "teacherOnly": false, "content": "Watch out for these common errors:\n\nMISTAKE 1: [Name of mistake]\n→ [Explanation of the mistake and how to avoid it]\n\nMISTAKE 2: [Name of mistake]\n→ [Explanation of the mistake and how to avoid it]\n\nMISTAKE 3: [Name of mistake]\n→ [Explanation of the mistake and how to avoid it]"}`);
     }
 
     if (wantWorkedExample) {
@@ -1516,8 +1527,9 @@ CRITICAL SEND RULE: SEND adaptations affect FORMATTING ONLY (font size, spacing,
       }
     }
 
-    if (wantCommonMistakes) {
-      structuredSections.push(`{"title": "Common Mistakes to Avoid", "type": "common-mistakes", "teacherOnly": false, "content": "Watch out for these common errors:\n\nMISTAKE 1: [Name of mistake]\n→ [Explanation of the mistake and how to avoid it]\n\nMISTAKE 2: [Name of mistake]\n→ [Explanation of the mistake and how to avoid it]\n\nMISTAKE 3: [Name of mistake]\n→ [Explanation of the mistake and how to avoid it]"}`);
+    // Diagram A — full-page spread after Worked Example, before Section 1 questions
+    if (wantDiagramA) {
+      structuredSections.push(`{"title": "Diagram A", "type": "diagram", "content": "[Diagram A — full-page visual reference for ${params.topic}. Use this diagram to help answer the questions below.]", "caption": "${params.topic} — Diagram A"}`);
     }
 
     if (wantTrueFalse) {
@@ -1536,7 +1548,8 @@ CRITICAL SEND RULE: SEND adaptations affect FORMATTING ONLY (font size, spacing,
       structuredSections.push(`{"title": "Match the Column", "type": "q-matching", "marks": 5, "content": "Draw a line to match each term with its correct definition. [5 marks]\n${isMaths ? '1. [mathematical term from ' + params.topic + '] ←→ [its definition]\n2. [mathematical term] ←→ [its definition]\n3. [mathematical term] ←→ [its definition]\n4. [mathematical term] ←→ [its definition]\n5. [mathematical term] ←→ [its definition]' : '1. [key term from ' + params.topic + '] ←→ [its definition]\n2. [key term] ←→ [its definition]\n3. [key term] ←→ [its definition]\n4. [key term] ←→ [its definition]\n5. [key term] ←→ [its definition]'}"}`);
     }
 
-    // Section A — Foundation / Guided Practice
+    // Section 1 questions: True/False, MCQ, Word Bank, Match
+    // Section A — Foundation / Guided Practice (Section 2)
     if (wantSectionA) {
       if (isMaths) {
         structuredSections.push(`{"title": "Section A — Foundation Questions", "type": "guided", "marks": 8, "content": "Answer all questions. Show all working. [8 marks]\n\n1. [Very straightforward ${params.topic} calculation — 1 step] [1 mark]\n\n2. [Basic ${params.topic} calculation] [1 mark]\n\n3. [${params.topic} calculation with a simple context] [2 marks]\n\n4. [${params.topic} question — fill in the blank or complete the working] [2 marks]\n\n5. [${params.topic} question — two steps, scaffolded] [2 marks]"}`);
@@ -1545,7 +1558,12 @@ CRITICAL SEND RULE: SEND adaptations affect FORMATTING ONLY (font size, spacing,
       }
     }
 
-    // Section B — Core Practice (maps to legacy 'questions')
+    // Diagram B — full-page spread between Section A (Section 2) and Section B (Section 3)
+    if (wantDiagramB) {
+      structuredSections.push(`{"title": "Diagram B", "type": "diagram", "content": "[Diagram B — full-page visual reference for ${params.topic}. Use this diagram to help answer the questions below.]", "caption": "${params.topic} — Diagram B"}`);
+    }
+
+    // Section B — Core Practice (Section 2 questions, maps to legacy 'questions')
     if (wantQuestions) {
       if (isMaths) {
         structuredSections.push(`{"title": "Section B — Core Practice", "type": "independent", "marks": 20, "content": "Answer all questions. Show all working. [20 marks]\n\n1. [Straightforward ${params.topic} calculation — 1 mark] [1 mark]\n\n2. [Slightly harder ${params.topic} calculation — 2 marks] [2 marks]\n\n3. [${params.topic} calculation requiring two steps] [2 marks]\n\n4. [${params.topic} problem with a real-world context] [3 marks]\n\n5. (a) [First part of a multi-part ${params.topic} problem] [2 marks]\n   (b) [Second part — builds on (a)] [2 marks]\n   (c) [Third part — applies the result] [2 marks]\n\n6. [${params.topic} problem requiring full method — show all working] [4 marks]\n\n7. [${params.topic} problem with interpretation or explanation] [4 marks]"}`);
@@ -1577,6 +1595,7 @@ ${examBoardNote}
 ${mathsNote}
 ${topicEnforcementNote}
 ${dataCompletenessNote}
+${params.additionalInstructions ? `\nADDITIONAL REQUIREMENTS (Priority override — must be followed):\n${params.additionalInstructions}\n` : ""}
 
 RULES:
 1. Every question must be COMPLETE and fully usable — no placeholders, no "...", no unfinished sentences.
@@ -2006,9 +2025,8 @@ Return EXACTLY this JSON (raw JSON only):
     });
   }
 
-  // ── Auto-fetch real diagrams for label_diagram / diagram_subquestions sections ──
-  // For any q-label-diagram or diagram_subquestions section that lacks an imageUrl,
-  // try to fetch a real Wikimedia diagram from the server bank.
+  // ── Auto-fetch real diagrams for diagram sections (including Diagram A and Diagram B) ──
+  // For any diagram section that lacks an imageUrl, try to fetch a real Wikimedia diagram.
   try {
     const diagramSectionTypes = new Set(['q-label-diagram', 'diagram']);
     const diagramLayoutPattern = /^LAYOUT:(label_diagram|diagram_subquestions)/;
@@ -2017,6 +2035,7 @@ Return EXACTLY this JSON (raw JSON only):
       !(s as any).imageUrl
     );
     if (sectionsNeedingDiagram.length > 0) {
+      // Fetch one diagram result and apply to all diagram sections that need one
       const diagramResult = await Promise.race([
         aiGenerateDiagram({
           subject: params.subject,
@@ -2027,12 +2046,13 @@ Return EXACTLY this JSON (raw JSON only):
         new Promise<null>((resolve) => setTimeout(() => resolve(null), 8000)),
       ]);
       if (diagramResult?.imageUrl) {
-        // Attach the real diagram image to the first matching section
-        const targetSection = sectionsNeedingDiagram[0] as any;
-        targetSection.imageUrl = diagramResult.imageUrl;
-        targetSection.caption = diagramResult.caption || `${params.topic} diagram`;
-        targetSection.attribution = diagramResult.attribution || '';
-        console.info('[Diagram] Auto-attached real diagram to label_diagram section');
+        // Attach the real diagram image to ALL matching diagram sections
+        for (const targetSection of sectionsNeedingDiagram) {
+          (targetSection as any).imageUrl = diagramResult.imageUrl;
+          (targetSection as any).caption = (targetSection as any).caption || diagramResult.caption || `${params.topic} diagram`;
+          (targetSection as any).attribution = diagramResult.attribution || '';
+        }
+        console.info(`[Diagram] Auto-attached real diagram to ${sectionsNeedingDiagram.length} diagram section(s)`);
       }
     }
   } catch (autoErr) {

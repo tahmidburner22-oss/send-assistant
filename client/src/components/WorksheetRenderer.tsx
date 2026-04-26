@@ -4781,6 +4781,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
           example: "WORKED EXAMPLE",
           "common-mistakes": "COMMON MISTAKES TO AVOID",
           "prior-knowledge": "PRIOR KNOWLEDGE CHECK",
+          diagram: "DIAGRAM",
           // Individual question types (no teal divider, just navy badge)
           "q-true-false": "",
           "q-mcq": "",
@@ -4999,7 +5000,23 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
               })()}
               {/* Standard content rendering (no diagram marker) */}
               {!extractDiagramSpec(content) && (
-                section.type === "diagram" && (resolveImageUrl(section) || section.svg) ? (
+                section.type === "diagram" && !(resolveImageUrl(section) || section.svg) ? (
+                  // Full-page diagram placeholder — shown when no image is available from the library
+                  <div style={{ border: "2px dashed #cbd5e1", borderRadius: "8px", background: "#f8fafc", minHeight: "320px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "32px", textAlign: "center" }}>
+                    <div style={{ fontSize: "40px", marginBottom: "12px", opacity: 0.4 }}>🖼️</div>
+                    <div style={{ fontSize: `${fmt.fontSize}px`, fontWeight: 700, color: "#475569", fontFamily: fmt.fontFamily, marginBottom: "6px" }}>
+                      {section.title || "Diagram"}
+                    </div>
+                    <div style={{ fontSize: `${fmt.fontSize - 1}px`, color: "#94a3b8", fontFamily: fmt.fontFamily, fontStyle: "italic", maxWidth: "360px" }}>
+                      No diagram available in the library for this topic. A full-page diagram will appear here when one is available.
+                    </div>
+                    {section.caption && (
+                      <div style={{ fontSize: `${fmt.fontSize - 2}px`, color: "#64748b", fontFamily: fmt.fontFamily, marginTop: "10px" }}>
+                        {section.caption}
+                      </div>
+                    )}
+                  </div>
+                ) : section.type === "diagram" && (resolveImageUrl(section) || section.svg) ? (
                   <div style={{ textAlign: "center" }}>
                     {resolveImageUrl(section) ? (
                       <img
