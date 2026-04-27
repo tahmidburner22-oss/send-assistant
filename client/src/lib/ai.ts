@@ -1502,87 +1502,96 @@ QUALITY STANDARD: Every question must be fully usable — no placeholders, no el
 
 CRITICAL SEND RULE: SEND adaptations affect FORMATTING ONLY (font size, spacing, checkboxes, tone). NEVER add SEND instructions, scaffolding hints, or support prompts as extra items inside True/False statements, MCQ options, Gap Fill blanks, or any question content. The True/False section must contain ONLY factual statements about the topic. The MCQ section must contain ONLY the question and 4 answer options (A, B, C, D). Do NOT insert 'Complete the task in steps', 'Tick each step', 'Focus on one question', or any ADHD/SEND management instructions into question content.`;
 
+    // ── STRUCTURED SECTION ORDER (matches requested format) ──────────────────
+    // Format: Header → LO → Retrieval → Key Vocabulary → Common Mistakes →
+    //         Worked Example → Diagram A → Section 1 Questions → Section 2 Questions →
+    //         Diagram B → Section 3 Questions → Challenge → Self Reflection → Teacher Key
     const structuredSections: string[] = [];
 
+    // 1. Learning Objective
     if (wantLO) {
       structuredSections.push(`{"title": "Learning Objective", "type": "objective", "content": "By the end of this lesson, students will be able to [one clear, specific learning objective for ${params.topic}]"}`);
     }
 
+    // 2. Retrieval Practice (if selected and topic provided)
     if (wantRetrieval && params.recallTopic) {
-      structuredSections.push(`{"title": "Retrieval — ${params.recallTopic}", "type": "prior-knowledge", "content": "Recall from last lesson!\n1. [True/False statement about ${params.recallTopic}] TRUE / FALSE\n2. [Short answer question about ${params.recallTopic}] [1 mark]\n3. [Fill-in-blank sentence about ${params.recallTopic}. The answer is _____.]"}`)
+      structuredSections.push(`{"title": "Retrieval \u2014 ${params.recallTopic}", "type": "prior-knowledge", "content": "Recall from last lesson!\n1. [True/False statement about ${params.recallTopic}] TRUE / FALSE\n2. [Short answer question about ${params.recallTopic}] [1 mark]\n3. [Fill-in-blank sentence about ${params.recallTopic}. The answer is _____.]"}`)
     }
 
+    // 3. Key Vocabulary
     if (wantKeyVocab) {
-      structuredSections.push(`{"title": "Key Vocabulary", "type": "vocabulary", "content": "KEY_TERMS:\n[Term 1] — [clear, student-friendly definition relevant to ${params.topic}]\n[Term 2] — [clear, student-friendly definition relevant to ${params.topic}]\n[Term 3] — [clear, student-friendly definition relevant to ${params.topic}]\n[Term 4] — [clear, student-friendly definition relevant to ${params.topic}]\n[Term 5] — [clear, student-friendly definition relevant to ${params.topic}]"}`);
+      structuredSections.push(`{"title": "Key Vocabulary", "type": "vocabulary", "content": "KEY_TERMS:\n[Term 1] \u2014 [clear, student-friendly definition relevant to ${params.topic}]\n[Term 2] \u2014 [clear, student-friendly definition relevant to ${params.topic}]\n[Term 3] \u2014 [clear, student-friendly definition relevant to ${params.topic}]\n[Term 4] \u2014 [clear, student-friendly definition relevant to ${params.topic}]\n[Term 5] \u2014 [clear, student-friendly definition relevant to ${params.topic}]"}`);
     }
 
+    // 4. Common Mistakes
     if (wantCommonMistakes) {
-      structuredSections.push(`{"title": "Common Mistakes to Avoid", "type": "common-mistakes", "teacherOnly": false, "content": "Watch out for these common errors:\n\nMISTAKE 1: [Name of mistake]\n→ [Explanation of the mistake and how to avoid it]\n\nMISTAKE 2: [Name of mistake]\n→ [Explanation of the mistake and how to avoid it]\n\nMISTAKE 3: [Name of mistake]\n→ [Explanation of the mistake and how to avoid it]"}`);
+      structuredSections.push(`{"title": "Common Mistakes to Avoid", "type": "common-mistakes", "teacherOnly": false, "content": "Watch out for these common errors:\n\nMISTAKE 1: [Name of mistake]\n\u2192 [Explanation of the mistake and how to avoid it]\n\nMISTAKE 2: [Name of mistake]\n\u2192 [Explanation of the mistake and how to avoid it]\n\nMISTAKE 3: [Name of mistake]\n\u2192 [Explanation of the mistake and how to avoid it]"}`);
     }
 
+    // 5. Worked Example
     if (wantWorkedExample) {
       if (isMaths) {
-        structuredSections.push(`{"title": "Worked Example", "type": "example", "content": "Study this worked example carefully before attempting the questions.\n\nQuestion: [A specific ${params.topic} problem with real numbers]\n\nStep 1: [First step — state the method or formula used]\nStep 2: [Substitute values and show calculation]\nStep 3: [Complete the calculation]\nAnswer: [Final answer with correct units/form]\n\n✓ Key point: [One sentence explaining the key method or rule]"}`);
+        structuredSections.push(`{"title": "Worked Example", "type": "example", "content": "Study this worked example carefully before attempting the questions.\n\nQuestion: [A specific ${params.topic} problem with real numbers]\n\nStep 1: [First step \u2014 state the method or formula used]\nStep 2: [Substitute values and show calculation]\nStep 3: [Complete the calculation]\nAnswer: [Final answer with correct units/form]\n\n\u2713 Key point: [One sentence explaining the key method or rule]"}`);
       } else {
-        structuredSections.push(`{"title": "Worked Example", "type": "example", "content": "Study this example carefully.\n\n[A clear, specific example demonstrating the key concept of ${params.topic}]\n\nStep 1: [First step]\nStep 2: [Second step]\nStep 3: [Third step — conclusion or result]\n\n✓ Key point: [One sentence explaining the main principle]"}`);
+        structuredSections.push(`{"title": "Worked Example", "type": "example", "content": "Study this example carefully.\n\n[A clear, specific example demonstrating the key concept of ${params.topic}]\n\nStep 1: [First step]\nStep 2: [Second step]\nStep 3: [Third step \u2014 conclusion or result]\n\n\u2713 Key point: [One sentence explaining the main principle]"}`);
       }
     }
 
-    // Diagram A — full-page spread after Worked Example, before Section 1 questions
+    // 6. Diagram A \u2014 full-page spread (after Worked Example, before Section 1 Questions)
     if (wantDiagramA) {
-      structuredSections.push(`{"title": "Diagram A", "type": "diagram", "content": "[Diagram A — full-page visual reference for ${params.topic}. Use this diagram to help answer the questions below.]", "caption": "${params.topic} — Diagram A"}`);
+      structuredSections.push(`{"title": "Diagram A", "type": "diagram", "content": "[Diagram A \u2014 full-page visual reference for ${params.topic}. Use this diagram to help answer the questions below.]", "caption": "${params.topic} \u2014 Diagram A"}`);
     }
 
+    // 7. Section 1 Questions (True/False, MCQ, Word Bank, Match)
     if (wantTrueFalse) {
-      structuredSections.push(`{"title": "True or False", "type": "q-true-false", "marks": 4, "content": "Circle TRUE or FALSE for each statement. [4 marks]\n1. [Statement about ${params.topic} — TRUE]  TRUE  /  FALSE\n2. [Statement about ${params.topic} — FALSE]  TRUE  /  FALSE\n3. [Statement about ${params.topic} — TRUE]  TRUE  /  FALSE\n4. [Statement about ${params.topic} — FALSE]  TRUE  /  FALSE"}`);
+      structuredSections.push(`{"title": "Section 1 \u2014 True or False", "type": "q-true-false", "marks": 4, "content": "Circle TRUE or FALSE for each statement. [4 marks]\n1. [Statement about ${params.topic} \u2014 TRUE]  TRUE  /  FALSE\n2. [Statement about ${params.topic} \u2014 FALSE]  TRUE  /  FALSE\n3. [Statement about ${params.topic} \u2014 TRUE]  TRUE  /  FALSE\n4. [Statement about ${params.topic} \u2014 FALSE]  TRUE  /  FALSE"}`);
     }
 
     if (wantMCQ) {
-      structuredSections.push(`{"title": "Multiple Choice", "type": "q-mcq", "marks": 1, "content": "[A specific question about ${params.topic}] [1 mark]\nA  [option — incorrect]\nB  [option — CORRECT]\nC  [option — incorrect]\nD  [option — incorrect]\nCORRECT: B"}`);
+      structuredSections.push(`{"title": "Section 1 \u2014 Multiple Choice", "type": "q-mcq", "marks": 1, "content": "[A specific question about ${params.topic}] [1 mark]\nA  [option \u2014 incorrect]\nB  [option \u2014 CORRECT]\nC  [option \u2014 incorrect]\nD  [option \u2014 incorrect]\nCORRECT: B"}`);
     }
 
     if (wantWordBankGapFill) {
-      structuredSections.push(`{"title": "Word Bank Gap Fill", "type": "q-gap-fill", "marks": 7, "content": "Complete the paragraph using words from the word bank below. [7 marks]\n[A 5–7 sentence paragraph about ${params.topic} with exactly 7 blanks shown as _____. ${isMaths ? 'Write all numbers and expressions as plain text in this paragraph — no LaTeX here.' : ''}]\nWORD BANK: [word1] | [word2] | [word3] | [word4] | [word5] | [word6] | [word7] | [word8] | [word9] | [word10]"}`);
+      structuredSections.push(`{"title": "Section 1 \u2014 Word Bank Gap Fill", "type": "q-gap-fill", "marks": 7, "content": "Complete the paragraph using words from the word bank below. [7 marks]\n[A 5\u20137 sentence paragraph about ${params.topic} with exactly 7 blanks shown as _____. ${isMaths ? 'Write all numbers and expressions as plain text in this paragraph \u2014 no LaTeX here.' : ''}]\nWORD BANK: [word1] | [word2] | [word3] | [word4] | [word5] | [word6] | [word7] | [word8] | [word9] | [word10]"}`);
     }
 
     if (wantMatch) {
-      structuredSections.push(`{"title": "Match the Column", "type": "q-matching", "marks": 5, "content": "Draw a line to match each term with its correct definition. [5 marks]\n${isMaths ? '1. [mathematical term from ' + params.topic + '] ←→ [its definition]\n2. [mathematical term] ←→ [its definition]\n3. [mathematical term] ←→ [its definition]\n4. [mathematical term] ←→ [its definition]\n5. [mathematical term] ←→ [its definition]' : '1. [key term from ' + params.topic + '] ←→ [its definition]\n2. [key term] ←→ [its definition]\n3. [key term] ←→ [its definition]\n4. [key term] ←→ [its definition]\n5. [key term] ←→ [its definition]'}"}`);
+      structuredSections.push(`{"title": "Section 1 \u2014 Match the Column", "type": "q-matching", "marks": 5, "content": "Draw a line to match each term with its correct definition. [5 marks]\n${isMaths ? '1. [mathematical term from ' + params.topic + '] \u2194 [its definition]\n2. [mathematical term] \u2194 [its definition]\n3. [mathematical term] \u2194 [its definition]\n4. [mathematical term] \u2194 [its definition]\n5. [mathematical term] \u2194 [its definition]' : '1. [key term from ' + params.topic + '] \u2194 [its definition]\n2. [key term] \u2194 [its definition]\n3. [key term] \u2194 [its definition]\n4. [key term] \u2194 [its definition]\n5. [key term] \u2194 [its definition]'}"}`);
     }
 
-    // Section 1 questions: True/False, MCQ, Word Bank, Match
-    // Section A — Foundation / Guided Practice (Section 2)
+    // 8. Section 2 Questions \u2014 Foundation / Guided Practice
     if (wantSectionA) {
       if (isMaths) {
-        structuredSections.push(`{"title": "Section A — Foundation Questions", "type": "guided", "marks": 8, "content": "Answer all questions. Show all working. [8 marks]\n\n1. [Very straightforward ${params.topic} calculation — 1 step] [1 mark]\n\n2. [Basic ${params.topic} calculation] [1 mark]\n\n3. [${params.topic} calculation with a simple context] [2 marks]\n\n4. [${params.topic} question — fill in the blank or complete the working] [2 marks]\n\n5. [${params.topic} question — two steps, scaffolded] [2 marks]"}`);
+        structuredSections.push(`{"title": "Section 2 \u2014 Foundation Questions", "type": "guided", "marks": 8, "content": "Answer all questions. Show all working. [8 marks]\n\n1. [Very straightforward ${params.topic} calculation \u2014 1 step] [1 mark]\n\n2. [Basic ${params.topic} calculation] [1 mark]\n\n3. [${params.topic} calculation with a simple context] [2 marks]\n\n4. [${params.topic} question \u2014 fill in the blank or complete the working] [2 marks]\n\n5. [${params.topic} question \u2014 two steps, scaffolded] [2 marks]"}`);
       } else {
-        structuredSections.push(`{"title": "Section A — Foundation Questions", "type": "guided", "marks": 8, "content": "Answer all questions. [8 marks]\n\n1. [Knowledge recall question about ${params.topic}] [1 mark]\n\n2. [Simple comprehension question about ${params.topic}] [2 marks]\n\n3. [Application question — apply basic knowledge of ${params.topic}] [2 marks]\n\n4. [Describe or identify question about ${params.topic}] [3 marks]"}`);
+        structuredSections.push(`{"title": "Section 2 \u2014 Foundation Questions", "type": "guided", "marks": 8, "content": "Answer all questions. [8 marks]\n\n1. [Knowledge recall question about ${params.topic}] [1 mark]\n\n2. [Simple comprehension question about ${params.topic}] [2 marks]\n\n3. [Application question \u2014 apply basic knowledge of ${params.topic}] [2 marks]\n\n4. [Describe or identify question about ${params.topic}] [3 marks]"}`);
       }
     }
 
-    // Diagram B — full-page spread between Section A (Section 2) and Section B (Section 3)
+    // 9. Diagram B \u2014 full-page spread (between Section 2 and Section 3 Questions)
     if (wantDiagramB) {
-      structuredSections.push(`{"title": "Diagram B", "type": "diagram", "content": "[Diagram B — full-page visual reference for ${params.topic}. Use this diagram to help answer the questions below.]", "caption": "${params.topic} — Diagram B"}`);
+      structuredSections.push(`{"title": "Diagram B", "type": "diagram", "content": "[Diagram B \u2014 full-page visual reference for ${params.topic}. Use this diagram to help answer the questions below.]", "caption": "${params.topic} \u2014 Diagram B"}`);
     }
 
-    // Section B — Core Practice (Section 2 questions, maps to legacy 'questions')
+    // 10. Section 3 Questions \u2014 Core Practice
     if (wantQuestions) {
       if (isMaths) {
-        structuredSections.push(`{"title": "Section B — Core Practice", "type": "independent", "marks": 20, "content": "Answer all questions. Show all working. [20 marks]\n\n1. [Straightforward ${params.topic} calculation — 1 mark] [1 mark]\n\n2. [Slightly harder ${params.topic} calculation — 2 marks] [2 marks]\n\n3. [${params.topic} calculation requiring two steps] [2 marks]\n\n4. [${params.topic} problem with a real-world context] [3 marks]\n\n5. (a) [First part of a multi-part ${params.topic} problem] [2 marks]\n   (b) [Second part — builds on (a)] [2 marks]\n   (c) [Third part — applies the result] [2 marks]\n\n6. [${params.topic} problem requiring full method — show all working] [4 marks]\n\n7. [${params.topic} problem with interpretation or explanation] [4 marks]"}`);
+        structuredSections.push(`{"title": "Section 3 \u2014 Core Practice", "type": "independent", "marks": 20, "content": "Answer all questions. Show all working. [20 marks]\n\n1. [Straightforward ${params.topic} calculation \u2014 1 mark] [1 mark]\n\n2. [Slightly harder ${params.topic} calculation \u2014 2 marks] [2 marks]\n\n3. [${params.topic} calculation requiring two steps] [2 marks]\n\n4. [${params.topic} problem with a real-world context] [3 marks]\n\n5. (a) [First part of a multi-part ${params.topic} problem] [2 marks]\n   (b) [Second part \u2014 builds on (a)] [2 marks]\n   (c) [Third part \u2014 applies the result] [2 marks]\n\n6. [${params.topic} problem requiring full method \u2014 show all working] [4 marks]\n\n7. [${params.topic} problem with interpretation or explanation] [4 marks]"}`);
       } else {
-        structuredSections.push(`{"title": "Section B — Core Practice", "type": "independent", "marks": 20, "content": "Answer all questions. [20 marks]\n\n1. [Knowledge recall question about ${params.topic}] [1 mark]\n\n2. [Comprehension question about ${params.topic}] [2 marks]\n\n3. [Application question — apply knowledge of ${params.topic} to a given scenario] [3 marks]\n\n4. [Analysis question — explain or describe an aspect of ${params.topic}] [4 marks]\n\n5. [Evaluation question — assess or discuss ${params.topic}] [6 marks]\n   Your answer should include:\n   • [Point 1]\n   • [Point 2]\n   • [Point 3]\n\n6. [Extended response question about ${params.topic}] [4 marks]"}`);
+        structuredSections.push(`{"title": "Section 3 \u2014 Core Practice", "type": "independent", "marks": 20, "content": "Answer all questions. [20 marks]\n\n1. [Knowledge recall question about ${params.topic}] [1 mark]\n\n2. [Comprehension question about ${params.topic}] [2 marks]\n\n3. [Application question \u2014 apply knowledge of ${params.topic} to a given scenario] [3 marks]\n\n4. [Analysis question \u2014 explain or describe an aspect of ${params.topic}] [4 marks]\n\n5. [Evaluation question \u2014 assess or discuss ${params.topic}] [6 marks]\n   Your answer should include:\n   \u2022 [Point 1]\n   \u2022 [Point 2]\n   \u2022 [Point 3]\n\n6. [Extended response question about ${params.topic}] [4 marks]"}`);
       }
     }
 
-    // Section C — Stretch & Challenge
+    // 11. Challenge Question
     if (wantSectionC) {
       if (isMaths) {
-        structuredSections.push(`{"title": "Section C — Stretch & Challenge", "type": "challenge", "marks": 8, "content": "Challenge yourself! [8 marks]\n\n1. [Multi-step ${params.topic} problem requiring full method] [3 marks]\n\n2. [${params.topic} problem with a complex real-world context — show all working] [3 marks]\n\n3. ★ Stretch: [A proof, 'show that', or open-ended ${params.topic} problem] [2 marks]"}`);
+        structuredSections.push(`{"title": "Challenge Question", "type": "challenge", "marks": 8, "content": "Challenge yourself! [8 marks]\n\n1. [Multi-step ${params.topic} problem requiring full method] [3 marks]\n\n2. [${params.topic} problem with a complex real-world context \u2014 show all working] [3 marks]\n\n3. \u2605 Stretch: [A proof, 'show that', or open-ended ${params.topic} problem] [2 marks]"}`);
       } else {
-        structuredSections.push(`{"title": "Section C — Stretch & Challenge", "type": "challenge", "marks": 8, "content": "Challenge yourself! [8 marks]\n\n1. [Higher-order analysis or evaluation question about ${params.topic}] [4 marks]\n\n2. [Synoptic or cross-topic question linking ${params.topic} to a wider concept] [4 marks]"}`);
+        structuredSections.push(`{"title": "Challenge Question", "type": "challenge", "marks": 8, "content": "Challenge yourself! [8 marks]\n\n1. [Higher-order analysis or evaluation question about ${params.topic}] [4 marks]\n\n2. [Synoptic or cross-topic question linking ${params.topic} to a wider concept] [4 marks]"}`);
       }
     }
 
-    // Self Reflection
+    // 12. Self Reflection
     if (wantSelfReflection) {
       structuredSections.push(`{"title": "Self Reflection", "type": "self-reflection", "teacherOnly": false, "content": "SUBTITLE: Review your understanding before moving on.\nCONFIDENCE_TABLE:\n[specific skill/concept 1 from ${params.topic}]\n[specific skill/concept 2 from ${params.topic}]\n[specific skill/concept 3 from ${params.topic}]\n[specific skill/concept 4 from ${params.topic}]\n[specific skill/concept 5 from ${params.topic}]\nWRITTEN_PROMPTS:\nOne concept I feel confident about is ...\nOne area I still need to practise is ...\nA question I still want to ask my teacher is ...\nEXIT_TICKET: Write ONE thing you learned today about ${params.topic} in one sentence:"}`);
     }

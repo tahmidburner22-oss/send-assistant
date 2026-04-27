@@ -70,11 +70,11 @@ function warn(id: string, name: string, messages: string[]): CheckResult {
 
 // ─── Worksheet-level checks ───────────────────────────────────────────────────
 
-/** Check 1: Section count must be 2–4 */
+/** Check 1: Section count must be 2–15 (supports full structured format) */
 function checkSectionCount(worksheet: WorksheetData): CheckResult {
   const count = worksheet.sections?.length ?? 0;
   if (count < 2) return fail("section-count", "Section Count", [`Only ${count} section(s). Minimum 2 required.`]);
-  if (count > 4) return fail("section-count", "Section Count", [`${count} sections. Maximum 4 allowed.`]);
+  if (count > 15) return fail("section-count", "Section Count", [`${count} sections. Maximum 15 allowed.`]);
   return pass("section-count", "Section Count");
 }
 
