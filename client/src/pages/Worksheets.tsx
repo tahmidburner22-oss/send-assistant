@@ -1065,6 +1065,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
 
 
   const handleGenerate = async () => {
+    console.log('[ADAPTLY_DEBUG] handleGenerate called. subject:', subject, 'yearGroup:', yearGroup, 'topic:', topic, 'useAI:', useAI, 'examStyle:', examStyle, 'loading:', loading);
     if (!subject || !yearGroup || !topic) {
       toast.error("Please fill in Subject, Year Group, and Topic.");
       return;
@@ -1349,6 +1350,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
       }
     } else if (useAI) {
       // ── STANDARD AI MODE ─────────────────────────────────────────
+      console.log('[ADAPTLY_DEBUG] Entering useAI path, calling aiGenerateWorksheet...');
       try {
         const result = await aiGenerateWorksheet({
           subject, topic, subtopic: subtopic || undefined, yearGroup,
