@@ -407,7 +407,11 @@ export default function Worksheets() {
   const [difficulty, setDifficulty] = useState("mixed");
   const [worksheetLength, setWorksheetLength] = useState("30");
   // Sections selector — retrieval unticked by default, all others ticked
-  const ALL_SECTIONS = ['learning-objective', 'retrieval', 'key-vocabulary', 'worked-example', 'common-mistakes', 'diagram-a', 'true-false', 'mcq', 'word-bank-gap-fill', 'match', 'section-a', 'diagram-b', 'section-b', 'section-c', 'self-reflection'] as const;
+  // Section order matches the requested worksheet format:
+  // Header → LO → Retrieval → Key Vocabulary → Common Mistakes → Worked Example →
+  // Diagram A → Section 1 (T/F, MCQ, Word Bank, Match) → Section 2 (Foundation) →
+  // Diagram B → Section 3 (Core) → Challenge → Self Reflection → Teacher Key
+  const ALL_SECTIONS = ['learning-objective', 'retrieval', 'key-vocabulary', 'common-mistakes', 'worked-example', 'diagram-a', 'true-false', 'mcq', 'word-bank-gap-fill', 'match', 'section-a', 'diagram-b', 'section-b', 'section-c', 'self-reflection'] as const;
   type SectionId = typeof ALL_SECTIONS[number];
   const defaultSections = ALL_SECTIONS.filter(s => s !== 'retrieval') as SectionId[];
   const [selectedSections, setSelectedSections] = useState<SectionId[]>(defaultSections);
@@ -1094,6 +1098,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
         const lookupTier = difficulty === "higher" ? "higher" : difficulty === "foundation" ? "foundation" : difficulty === "scaffolded" ? "scaffolded" : "mixed";
         const libRes = await fetch("/api/library/resolve", {
           method: "POST",
+          credentials: "include",
           headers: { "Content-Type": "application/json", ...authHeaders },
           body: JSON.stringify({
             subject: getLibrarySubjectName(subject),
@@ -1408,6 +1413,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                 recallTopic: (selectedSections.includes('retrieval') ? (recallTopic.trim() || topic) : recallTopic.trim()) || undefined,
                 targetPages: targetPages || undefined,
                 readingAge: readingAge || undefined,
+                selectedSections: selectedSections as string[], // Fix: pass selectedSections so retries use the structured path
               });
               generatedWs = { ...retryResult, isAI: true } as AIWorksheet;
               if (isPlatformAdmin) toast.success(`Worksheet generated via ${providerLabel}!`, { id: "ai-retry" });
@@ -2212,6 +2218,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
         const lookupTier = nextDifficulty === "higher" ? "higher" : nextDifficulty === "foundation" ? "foundation" : "mixed";
         const libRes = await fetch("/api/library/resolve", {
           method: "POST",
+          credentials: "include",
           headers: { "Content-Type": "application/json", ...authHeaders },
           body: JSON.stringify({
             subject: getLibrarySubjectName(nextSubject),
@@ -2978,19 +2985,19 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                   <div className="space-y-1.5">
                     {([
                       { id: 'learning-objective', label: 'Learning Objective' },
-                      { id: 'retrieval', label: 'Retrieval' },
+                      { id: 'retrieval', label: 'Retrieval Topic' },
                       { id: 'key-vocabulary', label: 'Key Vocabulary' },
                       { id: 'common-mistakes', label: 'Common Mistakes' },
                       { id: 'worked-example', label: 'Worked Example' },
-                      { id: 'diagram-a', label: 'Diagram A (full-page spread)' },
-                      { id: 'true-false', label: 'True & False' },
-                      { id: 'mcq', label: 'Multiple Choice (MCQ)' },
-                      { id: 'word-bank-gap-fill', label: 'Word Bank Gap Fill' },
-                      { id: 'match', label: 'Match the Column' },
-                      { id: 'section-a', label: 'Section A — Foundation Questions' },
-                      { id: 'diagram-b', label: 'Diagram B (full-page spread)' },
-                      { id: 'section-b', label: 'Section B — Core Practice' },
-                      { id: 'section-c', label: 'Section C — Stretch & Challenge' },
+                      { id: 'diagram-a', label: 'Diagram A — Full Page Spread' },
+                      { id: 'true-false', label: 'Section 1 — True & False' },
+                      { id: 'mcq', label: 'Section 1 — Multiple Choice (MCQ)' },
+                      { id: 'word-bank-gap-fill', label: 'Section 1 — Word Bank Gap Fill' },
+                      { id: 'match', label: 'Section 1 — Match the Column' },
+                      { id: 'section-a', label: 'Section 2 — Foundation Questions' },
+                      { id: 'diagram-b', label: 'Diagram B — Full Page Spread' },
+                      { id: 'section-b', label: 'Section 3 — Core Practice' },
+                      { id: 'section-c', label: 'Challenge Question' },
                       { id: 'self-reflection', label: 'Self Reflection' },
                     ] as const).map(sec => (
                       <label key={sec.id} className="flex items-center gap-2 cursor-pointer select-none">
@@ -3099,9 +3106,21 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                   </div>
                 </div>
 
-                {/* Additional Requirements */}
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-medium">Additional Requirements (optional)</Label>
+                 <div className="flex flex-wrap gap-4 items-center py-1">
+                  <div className="flex items-center gap-2">
+                    <Switch checked={includeAnswers} onCheckedChange={setIncludeAnswers} id="answers-sw" />
+                    <Label htmlFor="answers-sw" className="text-xs">Include answers & mark scheme</Label>
+                  </div>
+
+                </div>
+                  </div>{/* End advanced options content */}
+                </details>
+
+                {/* Additional Requirements — always visible, outside Advanced Options */}
+                <div className="space-y-1.5 p-4 rounded-xl border border-border/40 bg-amber-50/30">
+                  <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                    <span>📝</span> Additional Requirements <span className="font-normal text-muted-foreground">(optional)</span>
+                  </Label>
                   <textarea
                     value={additionalInstructions}
                     onChange={e => setAdditionalInstructions(e.target.value)}
@@ -3111,16 +3130,6 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                   />
                   <p className="text-[10px] text-muted-foreground">Any specific instructions or requirements for the worksheet. These will be applied as a priority override during generation.</p>
                 </div>
-
-                <div className="flex flex-wrap gap-4 items-center py-1">
-                  <div className="flex items-center gap-2">
-                    <Switch checked={includeAnswers} onCheckedChange={setIncludeAnswers} id="answers-sw" />
-                    <Label htmlFor="answers-sw" className="text-xs">Include answers & mark scheme</Label>
-                  </div>
-
-                </div>
-                  </div>{/* End advanced options content */}
-                </details>
 
                 {/* ── Class Presets ────────────────────────────────────────── */}
                 <div className="space-y-2">
