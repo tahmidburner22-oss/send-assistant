@@ -571,11 +571,11 @@ MANDATORY RULES — violating any rule is wrong:
     const rmCleaned = rmText.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/i, '').trim();
     let rmJson: any;
     try {
-      rmJson = JSON.parse(rmCleaned);
+      rmJson = parseWithFixes(rmCleaned);
     } catch (_) {
       const repaired = repairTruncatedJson(rmCleaned);
       if (repaired) {
-        try { rmJson = JSON.parse(repaired); } catch { throw new Error('Revision mat JSON parse failed'); }
+        try { rmJson = parseWithFixes(repaired); } catch { throw new Error('Revision mat JSON parse failed'); }
       } else {
         throw new Error('Revision mat JSON parse failed');
       }
@@ -1629,11 +1629,11 @@ Return EXACTLY this JSON (raw JSON only, no markdown fences):
     const structuredCleaned = structuredText.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/i, '').trim();
     let structuredJson: any;
     try {
-      structuredJson = JSON.parse(structuredCleaned);
+      structuredJson = parseWithFixes(structuredCleaned);
     } catch (_) {
       const repaired = repairTruncatedJson(structuredCleaned);
       if (repaired) {
-        try { structuredJson = JSON.parse(repaired); } catch { /* fall through to legacy path */ }
+        try { structuredJson = parseWithFixes(repaired); } catch { /* fall through to legacy path */ }
       }
     }
     if (structuredJson && structuredJson.sections && Array.isArray(structuredJson.sections) && structuredJson.sections.length > 0) {
