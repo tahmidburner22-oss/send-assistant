@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -2882,19 +2882,50 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                       <Select value={topic} onValueChange={(val) => { if (val === "__custom__") { setTopic(""); setShowTopicSuggestions(true); } else { setTopic(val); setShowTopicSuggestions(false); } }}>
                         <SelectTrigger className="h-10"><SelectValue placeholder="Select a curriculum topic" /></SelectTrigger>
                         <SelectContent className="max-h-64">
-                          {syllabusTopics.map((st, i) => {
-                            // Show year-group label for topics from prior years (not the currently selected year)
-                            const isFromPriorYear = st.yearGroup && yearGroup && st.yearGroup !== yearGroup;
+                          {(() => {
+                            const useKsGroups = subject === 'mathematics' || subject === 'science';
+                            if (!useKsGroups) {
+                              return (
+                                <>
+                                  {syllabusTopics.map((st, i) => {
+                                    const isFromPriorYear = st.yearGroup && yearGroup && st.yearGroup !== yearGroup;
+                                    return (
+                                      <SelectItem key={i} value={st.topic}>
+                                        <span>{st.topic}</span>
+                                        {isFromPriorYear && (
+                                          <span className="ml-2 text-[10px] text-muted-foreground font-medium opacity-70">({st.yearGroup})</span>
+                                        )}
+                                      </SelectItem>
+                                    );
+                                  })}
+                                  <SelectItem value="__custom__">Enter custom topic...</SelectItem>
+                                </>
+                              );
+                            }
+                            // Group topics by KS stage for Maths and Science
+                            const groups: Record<string, typeof syllabusTopics> = {};
+                            const ksOrder = ['KS1', 'KS2', 'KS3', 'KS4', 'KS5'];
+                            for (const st of syllabusTopics) {
+                              const ks = st.ksStage || 'Other';
+                              if (!groups[ks]) groups[ks] = [];
+                              groups[ks].push(st);
+                            }
                             return (
-                              <SelectItem key={i} value={st.topic}>
-                                <span>{st.topic}</span>
-                                {isFromPriorYear && (
-                                  <span className="ml-2 text-[10px] text-muted-foreground font-medium opacity-70">({st.yearGroup})</span>
-                                )}
-                              </SelectItem>
+                              <>
+                                {ksOrder.filter(ks => groups[ks]?.length).map(ks => (
+                                  <SelectGroup key={ks}>
+                                    <SelectLabel className="text-xs font-semibold text-muted-foreground px-2 py-1">{ks}</SelectLabel>
+                                    {groups[ks].map((st, i) => (
+                                      <SelectItem key={ks + i} value={st.topic}>
+                                        <span>{st.topic}</span>
+                                      </SelectItem>
+                                    ))}
+                                  </SelectGroup>
+                                ))}
+                                <SelectItem value="__custom__">Enter custom topic...</SelectItem>
+                              </>
                             );
-                          })}
-                          <SelectItem value="__custom__">Enter custom topic...</SelectItem>
+                          })()}
                         </SelectContent>
                       </Select>
                       {showTopicSuggestions && (

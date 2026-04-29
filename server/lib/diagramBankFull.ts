@@ -1896,7 +1896,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
     label: "Bounds and Estimation",
     attribution: "AI-generated educational diagram (Adaptly)",
     license: CC_BY_SA_3,
-    keywords: ["bounds", "upper bound", "lower bound", "estimation", "rounding", "significant figures", "error bounds", "numerical methods"],
+    keywords: ["bounds", "upper bound", "lower bound", "estimation", "rounding", "significant figures", "error bounds", "numerical methods", "proof", "algebraic proof", "direct and inverse proportion", "direct proportion", "inverse proportion"],
   },
   {
     key: "exponential_graph",
@@ -1904,7 +1904,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
     label: "Exponential Function Graph",
     attribution: "AI-generated educational diagram (Adaptly)",
     license: CC_BY_SA_3,
-    keywords: ["exponential", "logarithm", "exponentials and logarithms", "exponential growth", "exponential decay", "log graph", "natural log"],
+    keywords: ["exponential", "logarithm", "exponentials and logarithms", "exponential growth", "exponential decay", "log graph", "natural log", "growth and decay", "growth decay", "iteration", "iterative methods", "numerical methods", "compound interest", "depreciation"],
   },
   {
     key: "differentiation_calculus",
@@ -2204,7 +2204,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
     label: "Standard Form — Place Value",
     attribution: "AI-generated educational diagram (Adaptly)",
     license: CC_BY_SA_4,
-    keywords: ["standard form", "place value", "powers of 10", "scientific notation", "index notation", "number", "maths"],
+    keywords: ["standard form", "place value", "powers of 10", "scientific notation", "index notation", "number", "maths", "indices and roots", "indices", "laws of indices", "square root", "cube root", "index laws", "powers and roots"],
   },
   {
     key: "real_life_conversion_graph",
@@ -2222,7 +2222,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
     label: "Equation Triangle — Speed, Distance, Time",
     attribution: "AI-generated educational diagram (Adaptly)",
     license: CC_BY_SA_4,
-    keywords: ["speed distance time", "sdt triangle", "equation triangle", "speed formula", "distance formula", "time formula", "physics", "kinematics"],
+    keywords: ["speed distance time", "sdt triangle", "equation triangle", "speed formula", "distance formula", "time formula", "physics", "kinematics", "compound measures", "compound measure", "speed", "density", "pressure", "maths"],
   },
   {
     key: "equation_triangle_density",

@@ -1568,7 +1568,7 @@ const DIAGRAM_BANK: DiagramEntry[] = [
     url: "/diagrams/standard-form-place-value.png",
     label: "Standard Form — Place Value",
     attribution: "AI-generated educational diagram (Adaptly)",
-    keywords: ["standard form", "place value", "powers of 10", "scientific notation", "index notation", "number", "maths"],
+    keywords: ["standard form", "place value", "powers of 10", "scientific notation", "index notation", "number", "maths", "indices and roots", "indices", "laws of indices", "square root", "cube root", "index laws", "powers and roots"],
   },
   {
     key: "real_life_conversion_graph",
@@ -1584,7 +1584,7 @@ const DIAGRAM_BANK: DiagramEntry[] = [
     url: "/diagrams/equation-triangle-sdt.png",
     label: "Equation Triangle — Speed, Distance, Time",
     attribution: "AI-generated educational diagram (Adaptly)",
-    keywords: ["speed distance time", "sdt triangle", "equation triangle", "speed formula", "distance formula", "time formula", "physics", "kinematics"],
+    keywords: ["speed distance time", "sdt triangle", "equation triangle", "speed formula", "distance formula", "time formula", "physics", "kinematics", "compound measures", "compound measure", "speed", "density", "pressure", "maths"],
   },
   {
     key: "equation_triangle_density",

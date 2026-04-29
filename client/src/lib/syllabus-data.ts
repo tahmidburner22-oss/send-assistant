@@ -14,6 +14,7 @@ export interface SyllabusTopic {
   topic: string;
   keyVocabulary: string[];
   yearGroup?: string; // originating year group label, e.g. "Year 7"
+  ksStage?: string; // e.g. "KS1", "KS2", "KS3", "KS4", "KS5"
 }
 
 export type YearGroupKey =
@@ -1531,13 +1532,23 @@ export function getSyllabusTopics(subject: string, yearGroup: string): SyllabusT
   const accumulated: SyllabusTopic[] = [];
   const seenTopics = new Set<string>();
 
+  function getKsStage(yg: string): string {
+    const y = Number.parseInt(yg.replace(/[^0-9]/g, ''), 10);
+    if (y <= 2) return 'KS1';
+    if (y <= 6) return 'KS2';
+    if (y <= 9) return 'KS3';
+    if (y <= 11) return 'KS4';
+    if (y <= 13) return 'KS5';
+    return '';
+  }
+
   for (const eligibleYearGroup of eligibleYearGroups) {
     const topics = subjectData[eligibleYearGroup];
     if (!topics) continue;
     for (const topicEntry of topics) {
       if (seenTopics.has(topicEntry.topic)) continue;
       seenTopics.add(topicEntry.topic);
-      accumulated.push({ ...topicEntry, yearGroup: eligibleYearGroup });
+      accumulated.push({ ...topicEntry, yearGroup: eligibleYearGroup, ksStage: getKsStage(eligibleYearGroup) });
     }
   }
 
