@@ -4117,8 +4117,11 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
               s.type !== "mark-scheme" && s.type !== "adaptations" &&
               s.type !== "revision-mat-title" && s.type !== "revision-mat-lo" &&
               s.type !== "objective" && s.type !== "self-reflection" &&
-              s.type !== "vocabulary" && s.type !== "revision-mat-vocab"
+              s.type !== "vocabulary" && s.type !== "revision-mat-vocab" &&
+              s.type !== "diagram" // Diagrams are handled separately for full-page landscape
             );
+
+            const diagramSections = worksheet.sections.filter((s: any) => s.type === "diagram");
 
             // ── Split multi-question boxes into individual questions ──────
             const splitSections: any[] = [];
@@ -4590,6 +4593,56 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                   </div>
                 )}
               </div>
+
+              {/* ── Full-page Landscape Diagrams for Revision Mat ── */}
+              {diagramSections.map((ds: any, dsi: number) => (
+                <div key={dsi} style={{
+                  width: "100%",
+                  height: "190mm",
+                  pageBreakBefore: "always",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: "5mm",
+                  boxSizing: "border-box"
+                }}>
+                  {ds.imageUrl ? (
+                    <img
+                      src={ds.imageUrl}
+                      alt={ds.caption || "Diagram"}
+                      style={{
+                        maxWidth: "100%",
+                        maxHeight: "100%",
+                        objectFit: "contain"
+                      }}
+                    />
+                  ) : ds.svg ? (
+                    <div
+                      dangerouslySetInnerHTML={{ __html: ds.svg }}
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center"
+                      }}
+                    />
+                  ) : null}
+                  {ds.caption && (
+                    <div style={{
+                      marginTop: "10px",
+                      fontSize: "12px",
+                      fontWeight: 600,
+                      color: "#374151",
+                      textAlign: "center"
+                    }}>
+                      {ds.caption}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </>
             );
           })()}
         </div>
