@@ -1104,6 +1104,7 @@ interface WorksheetRendererProps {
   onAnswerBoxSizeChange?: (sectionIndex: number, lines: number) => void;
   onAnswerBoxRemove?: (sectionIndex: number) => void;
   isRevisionMat?: boolean;
+  onDiagramChange?: (sectionIndex: number, newImageUrl: string, newCaption?: string) => void;
 }
 
 // Section type → visual config (clean white, dark navy accent, no gradients, no emojis)
@@ -2051,7 +2052,7 @@ function LabelDiagramSection({
               {caption}
             </p>
           )}
-          {attribution && !/wikimedia|wikipedia|commons\.wiki/i.test(attribution) && (
+          {attribution && (
             <p style={{ fontSize: `${fmt.fontSize - 3}px`, color: "#9ca3af", marginTop: "2px", fontFamily: fmt.fontFamily, textAlign: "center" }}>
               Source: {attribution}
             </p>
@@ -2140,7 +2141,7 @@ function DiagramSubQSection({
               style={{ width: "100%", maxWidth: "280px", display: "block", objectFit: "contain" }}
               onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
             />
-            {attribution && !/wikimedia|wikipedia|commons\.wiki/i.test(attribution) && (
+            {attribution && (
               <div style={{ fontSize: "9px", color: "#9ca3af", padding: "2px 6px", fontFamily: fmt.fontFamily }}>{attribution}</div>
             )}
           </div>
@@ -3754,6 +3755,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
   onAnswerBoxSizeChange,
   onAnswerBoxRemove,
   isRevisionMat = false,
+  onDiagramChange,
   }: WorksheetRendererProps, ref: React.Ref<HTMLDivElement>) {
   const isTeacherView = viewMode === "teacher";
 
@@ -4376,11 +4378,20 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                   const isBig     = marks >= 6;
                   const isMedBig  = marks >= 4;
                   // Dynamically shrink font for longer content to prevent cut-off
+                  // Also detect complex LaTeX (fractions, square roots, matrices) which
+                  // render taller than plain text and need extra vertical breathing room.
                   const contentLength = displayContent.length;
                   const lineCount = lines.length;
-                  const qFontSize = (contentLength > 200 || lineCount > 8) ? "5.5px"
-                                  : (contentLength > 120 || lineCount > 5) ? "6px"
+                  const hasComplexLatex = /\\frac|\\dfrac|\\tfrac|\\sqrt|\\sum|\\int|\\prod|\\binom|\\matrix|\\begin\{|\\overline|\\underbrace|\\overbrace/.test(displayContent);
+                  const latexLineCount = (displayContent.match(/\\frac|\\dfrac|\\sqrt/g) || []).length;
+                  // Complex LaTeX fractions/roots make each line ~1.8x taller — account for this
+                  const effectiveLineCount = hasComplexLatex ? lineCount + latexLineCount * 1.5 : lineCount;
+                  const qFontSize = (contentLength > 200 || effectiveLineCount > 8) ? "5px"
+                                  : (contentLength > 140 || effectiveLineCount > 6) ? "5.5px"
+                                  : (contentLength > 100 || effectiveLineCount > 4 || hasComplexLatex) ? "6px"
                                   : "7px";
+                  // Line height: increase for complex LaTeX to prevent fraction clipping
+                  const qLineHeight = hasComplexLatex ? "1.6" : "1.35";
 
                   const borderStyle = isBig    ? "2px solid #c0392b"
                                     : isMedBig ? "1.5px solid #d97706"
@@ -4514,7 +4525,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                               // Fill-in-the-blank
                               if (t.includes("___")) {
                                 return (
-                                  <div key={li} style={{ marginBottom: "1px", fontSize: qFontSize, lineHeight: "1.4" }}>
+                                  <div key={li} style={{ marginBottom: "1px", fontSize: qFontSize, lineHeight: qLineHeight }}>
                                     {t.split(/(_+)/).map((part: string, pi: number) =>
                                       /^_+$/.test(part)
                                         ? <span key={pi} style={{
@@ -4529,7 +4540,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                               }
                               // Standard line
                               return (
-                                <div key={li} style={{ marginBottom: "1px", fontSize: qFontSize, lineHeight: "1.35" }}
+                                <div key={li} style={{ marginBottom: "1px", fontSize: qFontSize, lineHeight: qLineHeight }}
                                   dangerouslySetInnerHTML={{ __html: renderMath(t) }} />
                               );
                             })}
@@ -5070,7 +5081,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
               {!extractDiagramSpec(content) && (
                 section.type === "diagram" && (resolveImageUrl(section) || section.svg) ? (
                   <div style={{ textAlign: "center", width: "100%" }}>
-                    {/* Diagram title bar */}
+                    {/* Diagram title bar with Change Diagram button in edit mode */}
                     <div style={{
                       background: "#1a2744",
                       color: "#ffffff",
@@ -5082,8 +5093,44 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                       letterSpacing: "0.08em",
                       textAlign: "left",
                       marginBottom: "16px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
                     }}>
-                      {section.title || "Diagram"}
+                      <span>{section.title || "Diagram"}</span>
+                      {editMode && onDiagramChange && (
+                        <button
+                          className="change-diagram-btn"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            // Dispatch a custom event that Worksheets.tsx listens to
+                            const evt = new CustomEvent("adaptly:changeDiagram", {
+                              detail: { sectionIndex: i },
+                              bubbles: true,
+                            });
+                            (e.currentTarget as HTMLElement).dispatchEvent(evt);
+                          }}
+                          style={{
+                            background: "rgba(255,255,255,0.15)",
+                            border: "1px solid rgba(255,255,255,0.4)",
+                            color: "#ffffff",
+                            padding: "4px 10px",
+                            borderRadius: "4px",
+                            fontSize: "10px",
+                            fontWeight: 600,
+                            cursor: "pointer",
+                            fontFamily: fmt.fontFamily,
+                            letterSpacing: "0.04em",
+                            textTransform: "none" as const,
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "4px",
+                          }}
+                          title="Choose a different diagram from the library"
+                        >
+                          &#8635; Change Diagram
+                        </button>
+                      )}
                     </div>
                     {resolveImageUrl(section) ? (
                       <img
@@ -5112,7 +5159,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                         <strong>Figure:</strong> {section.caption}
                       </p>
                     )}
-                    {section.attribution && !/wikimedia|wikipedia|commons\.wiki/i.test(section.attribution) && (
+                    {section.attribution && (
                       <p style={{ fontSize: `${fmt.fontSize - 2}px`, color: "#9ca3af", marginTop: "4px", fontFamily: fmt.fontFamily }}>
                         Source: {section.attribution}
                       </p>

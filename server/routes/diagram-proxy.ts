@@ -1,11 +1,11 @@
 /**
  * diagram-proxy.ts
  * Server-side proxy for educational diagram images.
- * Fetches images from Wikimedia Commons and other sources server-side
- * to avoid CORS/rate-limiting issues when loading in the browser.
+ * All diagrams now come from the admin diagram library (DB) or local /diagrams/ paths.
+ * External proxying is retained only for any image_url values stored in the DB
+ * that point to trusted CDN sources (e.g. S3, Cloudinary, OpenStax).
  *
- * Includes in-memory caching (up to 200 images, 24h TTL) to avoid
- * repeated requests to Wikimedia which rate-limits aggressively.
+ * Includes in-memory caching (up to 200 images, 24h TTL).
  */
 
 import { Router, Request, Response } from "express";
@@ -31,15 +31,17 @@ function pruneCache() {
   for (const [key] of toRemove) imageCache.delete(key);
 }
 
-// Allowed domains for security (only trusted educational sources)
+// Allowed domains — only trusted CDN/storage sources used by the admin diagram library.
+// Wikimedia is NOT included; all diagrams must come from the admin library or local paths.
 const ALLOWED_DOMAINS = [
-  "upload.wikimedia.org",
-  "commons.wikimedia.org",
   "openstax.org",
   "cdn.kastatic.org",
   "khanacademy.org",
-  "bbc.co.uk",
   "s3-us-west-2.amazonaws.com",
+  "s3.amazonaws.com",
+  "res.cloudinary.com",
+  "storage.googleapis.com",
+  "adaptly.co.uk",
 ];
 
 function isAllowedUrl(url: string): boolean {
@@ -53,7 +55,7 @@ function isAllowedUrl(url: string): boolean {
 
 /**
  * GET /api/diagram-proxy?url=<encoded_image_url>
- * Proxies an educational image from a trusted source with in-memory caching.
+ * Proxies an educational image from a trusted CDN source with in-memory caching.
  */
 router.get("/", async (req: Request, res: Response) => {
   const { url } = req.query;

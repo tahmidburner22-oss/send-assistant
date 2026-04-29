@@ -1,28 +1,10 @@
 /**
  * diagramBankFull.ts
  * ─────────────────────────────────────────────────────────────────────────────
- * Comprehensive curated bank of real educational diagrams covering every topic
- * in the UK National Curriculum (KS1–KS4, A-Level).
- *
- * LEGAL COMPLIANCE:
- * Every image in this bank is either:
- *   • Public Domain (PD) — no copyright restrictions
- *   • CC0 1.0 — Creative Commons Zero, no rights reserved
- *   • CC BY 2.0 / CC BY 3.0 / CC BY 4.0 — free to use with attribution
- *   • CC BY-SA 2.0 / CC BY-SA 3.0 / CC BY-SA 4.0 — free to use with attribution, share-alike
- *   • Open Government Licence (OGL) — UK government materials
- *
- * Sources used:
- *   • Wikimedia Commons (commons.wikimedia.org) — all images verified CC/PD
- *   • OpenStax (openstax.org) — CC BY 4.0
- *   • USGS / NASA / NOAA — US federal government, public domain
- *
- * LAZY LOADING:
- * This module is imported dynamically via findDiagramFull() to avoid loading
- * the full bank on every request. The main diagramBank.ts handles the fast
- * curated subset; this file handles the full curriculum coverage.
- *
- * Attribution format: "Author/Organisation, Source (Licence)"
+ * Local static diagram bank — fallback only.
+ * Primary diagram source is the admin diagram library (DB, 1722 entries).
+ * This bank provides local /diagrams/ path fallbacks for topics not yet
+ * covered by the admin library. All URLs are local paths only.
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
@@ -2321,7 +2303,426 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
     license: CC_BY_SA_3,
     keywords: ["ethics", "crime", "punishment", "justice", "ethics crime punishment", "sacred books", "religion", "moral philosophy"],
   },
+
+  // ── MATHS — GEOMETRY: Circle Theorems ─────────────────────────────────────
+  {
+    key: "circle_theorems_full",
+    url: "/diagrams/circle-parts.png",
+    label: "Circle Theorems — All Six",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["circle theorems", "angle at centre", "angle in semicircle", "angles in same segment", "cyclic quadrilateral", "tangent chord angle", "alternate segment theorem", "tangent perpendicular", "chord bisector", "circle theorem", "geometry", "maths"],
+  },
+
+  // ── MATHS — GEOMETRY: Similarity and Congruence ───────────────────────────
+  {
+    key: "similarity_congruence",
+    url: "/diagrams/triangle-properties.png",
+    label: "Similarity and Congruence",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["similarity", "congruence", "similar triangles", "congruent triangles", "scale factor", "sss", "sas", "asa", "rhs", "similar shapes", "ratio of areas", "ratio of volumes", "geometry", "maths"],
+  },
+
+  // ── MATHS — GEOMETRY: Constructions and Loci ─────────────────────────────
+  {
+    key: "constructions_loci_full",
+    url: "/diagrams/triangle-properties.png",
+    label: "Constructions and Loci",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["constructions", "loci", "locus", "angle bisector", "perpendicular bisector", "perpendicular from point", "equidistant", "region", "compass construction", "geometric construction", "ruler and compass", "maths"],
+  },
+
+  // ── MATHS — GEOMETRY: 3D Shapes, Volume and Surface Area ─────────────────
+  {
+    key: "3d_shapes_volume",
+    url: "/diagrams/3d-shapes.png",
+    label: "3D Shapes — Volume and Surface Area",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["3d shapes", "volume", "surface area", "prism", "cylinder", "cone", "sphere", "pyramid", "cuboid", "cube", "net", "cross section", "3d shapes and volume", "area and volume", "cones spheres pyramids", "geometry", "maths"],
+  },
+
+  // ── MATHS — ALGEBRA: Surds and Exact Values ──────────────────────────────
+  {
+    key: "surds_exact_values",
+    url: "/diagrams/algebra-straight-line-reference.png",
+    label: "Surds and Exact Values",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["surds", "exact values", "irrational numbers", "simplifying surds", "rationalising the denominator", "rationalise", "surd form", "number surds", "number surds and exact values", "indices and surds", "maths"],
+  },
+
+  // ── MATHS — ALGEBRA: Algebraic Fractions ─────────────────────────────────
+  {
+    key: "algebraic_fractions_full",
+    url: "/diagrams/fractions.png",
+    label: "Algebraic Fractions",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["algebraic fractions", "algebraic fraction", "simplifying algebraic fractions", "adding algebraic fractions", "multiplying algebraic fractions", "dividing algebraic fractions", "common denominator", "algebra fractions", "algebra algebraic fractions", "maths"],
+  },
+
+  // ── MATHS — ALGEBRA: Functions and Iteration ─────────────────────────────
+  {
+    key: "functions_iteration",
+    url: "/diagrams/algebra-function-machine.png",
+    label: "Functions and Iteration",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["functions", "function notation", "f(x)", "composite functions", "inverse function", "iteration", "iterative methods", "numerical methods", "newton raphson", "algebra functions", "algebra functions and iteration", "functions and modelling", "maths"],
+  },
+
+  // ── MATHS — ALGEBRA: Quadratic Formula and Completing the Square ──────────
+  {
+    key: "quadratic_completing_square",
+    url: "/diagrams/quadratic-graph.png",
+    label: "Quadratic Formula and Completing the Square",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["quadratic formula", "completing the square", "discriminant", "quadratic equations", "roots of quadratic", "vertex form", "quadratic quadratic formula", "algebra quadratic formula", "algebra quadratics", "maths"],
+  },
+
+  // ── MATHS — ALGEBRA: Sequences and Series ────────────────────────────────
+  {
+    key: "sequences_series",
+    url: "/diagrams/algebra-sequence-dot-pattern.png",
+    label: "Sequences and Series",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["sequences", "series", "arithmetic sequence", "geometric sequence", "nth term", "arithmetic progression", "geometric progression", "sum of series", "fibonacci", "sequences and series", "algebra quadratic and special sequences", "maths"],
+  },
+
+  // ── MATHS — RATIO: Direct and Inverse Proportion ─────────────────────────
+  {
+    key: "direct_inverse_proportion",
+    url: "/diagrams/real-life-conversion-graph.png",
+    label: "Direct and Inverse Proportion",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["direct proportion", "inverse proportion", "proportionality", "y proportional to x", "y inversely proportional", "constant of proportionality", "k value", "direct and inverse proportion", "ratio proportion", "maths"],
+  },
+
+  // ── MATHS — RATIO: Compound Interest and Growth/Decay ────────────────────
+  {
+    key: "compound_interest_growth",
+    url: "/diagrams/algebra-parabola-reference.png",
+    label: "Compound Interest and Exponential Growth",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["compound interest", "exponential growth", "exponential decay", "growth and decay", "percentage multiplier", "depreciation", "appreciation", "compound growth", "ratio proportion growth decay", "growth decay and compound interest", "maths"],
+  },
+
+  // ── MATHS — TRIGONOMETRY: Sine and Cosine Rules ───────────────────────────
+  {
+    key: "sine_cosine_rules",
+    url: "/diagrams/triangle-properties.png",
+    label: "Sine Rule and Cosine Rule",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["sine rule", "cosine rule", "non-right-angled triangle", "area of triangle", "trigonometry sine and cosine rules", "ambiguous case", "bearing trigonometry", "trigonometry", "maths"],
+  },
+
+  // ── MATHS — TRIGONOMETRY: Further Identities ─────────────────────────────
+  {
+    key: "trig_identities",
+    url: "/diagrams/unit-circle.png",
+    label: "Trigonometric Identities",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["trigonometric identities", "trig identities", "sin squared cos squared", "pythagorean identity", "double angle formula", "addition formula", "compound angle", "trigonometry further identities", "a-level maths trig", "maths"],
+  },
+
+  // ── MATHS — VECTORS: Resultant Vectors ───────────────────────────────────
+  {
+    key: "vectors_resultant",
+    url: "/diagrams/triangle-properties.png",
+    label: "Vectors — Resultant and Proof",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["vectors", "resultant vector", "vector proof", "vector addition", "vector subtraction", "parallel vectors", "collinear points", "position vector", "vector and resultant forces", "maths"],
+  },
+
+  // ── MATHS — STATISTICS: Histograms and Cumulative Frequency ──────────────
+  {
+    key: "histograms_cumulative_full",
+    url: "/diagrams/statistics-histogram.svg",
+    label: "Histograms and Cumulative Frequency",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["histogram", "cumulative frequency", "frequency density", "class width", "ogive", "box plot", "interquartile range", "quartile", "histograms and cumulative frequency", "statistics", "maths"],
+  },
+
+  // ── MATHS — STATISTICS: Statistical Sampling ─────────────────────────────
+  {
+    key: "statistical_sampling_full",
+    url: "/diagrams/statistics-sampling-methods.svg",
+    label: "Statistical Sampling and Data Presentation",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["statistical sampling", "data presentation", "random sample", "stratified sample", "systematic sample", "cluster sample", "quota sample", "bias", "statistical sampling and data presentation", "statistics", "maths"],
+  },
+
+  // ── SCIENCE — BIOLOGY: Homeostasis and Response ───────────────────────────
+  {
+    key: "homeostasis_response",
+    url: "/diagrams/neuron.png",
+    label: "Homeostasis and Response",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["homeostasis", "homeostasis and response", "negative feedback", "thermoregulation", "blood glucose regulation", "osmoregulation", "nervous system", "hormonal system", "reflex arc", "coordination and control", "biology"],
+  },
+
+  // ── SCIENCE — BIOLOGY: Respiration ───────────────────────────────────────
+  {
+    key: "respiration_full",
+    url: "/diagrams/respiratory-system.png",
+    label: "Aerobic and Anaerobic Respiration",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["respiration", "aerobic respiration", "anaerobic respiration", "cellular respiration", "glucose", "atp", "lactic acid", "fermentation", "bioenergetics", "energy transfers in organisms", "biology"],
+  },
+
+  // ── SCIENCE — BIOLOGY: Osmosis and Diffusion ─────────────────────────────
+  {
+    key: "osmosis_diffusion",
+    url: "/diagrams/animal-cell.png",
+    label: "Osmosis, Diffusion and Active Transport",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["osmosis", "diffusion", "active transport", "concentration gradient", "semi-permeable membrane", "water potential", "net movement", "exchange and transport", "transport across membranes", "cell biology", "biology"],
+  },
+
+  // ── SCIENCE — BIOLOGY: Genetics and Inheritance ──────────────────────────
+  {
+    key: "genetics_inheritance",
+    url: "/diagrams/dna-structure.png",
+    label: "Genetics and Inheritance",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["genetics", "inheritance", "dominant", "recessive", "allele", "genotype", "phenotype", "punnett square", "monohybrid cross", "dihybrid cross", "codominance", "sex-linked", "genetics and evolution", "inheritance variation and evolution", "biology"],
+  },
+
+  // ── SCIENCE — BIOLOGY: Immune System and Disease ─────────────────────────
+  {
+    key: "immune_disease",
+    url: "/diagrams/animal-cell.png",
+    label: "Immune System and Infectious Disease",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["immune system", "vaccination", "antibodies", "pathogen", "bacteria", "virus", "white blood cells", "lymphocytes", "phagocytosis", "herd immunity", "infection and response", "communicable diseases", "biology"],
+  },
+
+  // ── SCIENCE — BIOLOGY: Ecosystems and Biodiversity ───────────────────────
+  {
+    key: "ecosystems_biodiversity",
+    url: "/diagrams/food-web.png",
+    label: "Ecosystems and Biodiversity",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["ecosystems", "biodiversity", "food chain", "food web", "trophic level", "biomass", "energy transfer", "decomposer", "producer", "consumer", "habitat", "population", "community", "abiotic", "biotic", "genetics populations and ecosystems", "the living world", "biology"],
+  },
+
+  // ── SCIENCE — BIOLOGY: Transpiration and Plant Transport ─────────────────
+  {
+    key: "transpiration_plant",
+    url: "/diagrams/flower-structure.png",
+    label: "Transpiration and Plant Transport",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["transpiration", "xylem", "phloem", "translocation", "stomata", "guard cells", "water uptake", "plant transport", "plant tissues organs and systems", "exchange and transport", "biology"],
+  },
+
+  // ── SCIENCE — CHEMISTRY: Rates of Reaction ───────────────────────────────
+  {
+    key: "rates_of_reaction",
+    url: "/diagrams/enzyme-activity.png",
+    label: "Rates of Reaction",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["rates of reaction", "rate of reaction", "collision theory", "activation energy", "catalyst", "concentration", "temperature", "surface area", "pressure", "reaction rate", "chemical kinetics", "chemistry"],
+  },
+
+  // ── SCIENCE — CHEMISTRY: Equilibrium ─────────────────────────────────────
+  {
+    key: "chemical_equilibrium",
+    url: "/diagrams/energy-transfer.png",
+    label: "Chemical Equilibrium — Le Chatelier",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["equilibrium", "chemical equilibrium", "le chatelier", "dynamic equilibrium", "reversible reaction", "haber process", "contact process", "yield", "inorganic chemistry", "chemistry"],
+  },
+
+  // ── SCIENCE — CHEMISTRY: Organic Chemistry ───────────────────────────────
+  {
+    key: "organic_chemistry",
+    url: "/diagrams/distillation.png",
+    label: "Organic Chemistry — Hydrocarbons",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["organic chemistry", "hydrocarbons", "alkanes", "alkenes", "alcohols", "carboxylic acids", "esters", "polymers", "addition polymerisation", "condensation polymerisation", "crude oil", "carbon compounds", "chemistry"],
+  },
+
+  // ── SCIENCE — CHEMISTRY: Energy Changes ──────────────────────────────────
+  {
+    key: "energy_changes_chemistry",
+    url: "/diagrams/energy-transfer.png",
+    label: "Energy Changes in Reactions",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["energy changes", "exothermic", "endothermic", "enthalpy", "bond energy", "activation energy", "energy profile diagram", "reaction profile", "calorimetry", "energy changes chemistry", "chemistry"],
+  },
+
+  // ── SCIENCE — CHEMISTRY: Using Resources ─────────────────────────────────
+  {
+    key: "using_resources",
+    url: "/diagrams/water-cycle.png",
+    label: "Using Resources — Sustainability",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["using resources", "resource management", "sustainability", "recycling", "life cycle assessment", "potable water", "water treatment", "finite resources", "renewable", "non-renewable", "chemistry"],
+  },
+
+  // ── SCIENCE — PHYSICS: Forces and Newton's Laws ───────────────────────────
+  {
+    key: "forces_newtons_laws",
+    url: "/diagrams/equation-triangle-sdt.png",
+    label: "Forces and Newton's Laws",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["forces", "newton's laws", "newton's first law", "newton's second law", "newton's third law", "resultant force", "free body diagram", "balanced forces", "unbalanced forces", "weight", "mass", "acceleration", "f=ma", "forces and newton's laws", "forces and motion", "physics"],
+  },
+
+  // ── SCIENCE — PHYSICS: Momentum ──────────────────────────────────────────
+  {
+    key: "momentum_conservation",
+    url: "/diagrams/graph-velocity-time.png",
+    label: "Momentum and Conservation",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["momentum", "conservation of momentum", "impulse", "collision", "elastic collision", "inelastic collision", "force time graph", "change in momentum", "vector and resultant forces", "forces", "physics"],
+  },
+
+  // ── SCIENCE — PHYSICS: Specific Heat Capacity ────────────────────────────
+  {
+    key: "specific_heat_capacity",
+    url: "/diagrams/energy-transfer.png",
+    label: "Specific Heat Capacity",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["specific heat capacity", "thermal energy", "heat capacity", "temperature change", "shc", "q=mcdeltat", "energy stored", "heating cooling", "thermal physics", "specific heat capacity physics", "physics"],
+  },
+
+  // ── SCIENCE — PHYSICS: Pressure and Density ──────────────────────────────
+  {
+    key: "pressure_density",
+    url: "/diagrams/equation-triangle-pressure.png",
+    label: "Pressure, Density and Upthrust",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["pressure", "density", "upthrust", "buoyancy", "archimedes", "fluid pressure", "atmospheric pressure", "pressure in fluids", "p=f/a", "p=rho g h", "forces", "physics"],
+  },
+
+  // ── SCIENCE — PHYSICS: Space and Stars ───────────────────────────────────
+  {
+    key: "space_stars",
+    url: "/diagrams/solar-system.png",
+    label: "Space — Stars and Galaxies",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["stars", "galaxy", "universe", "star life cycle", "main sequence", "red giant", "white dwarf", "supernova", "neutron star", "black hole", "nebula", "solar system and star life cycle", "space", "earth and space", "physics"],
+  },
+
+  // ── SCIENCE — PHYSICS: Nuclear Physics ───────────────────────────────────
+  {
+    key: "nuclear_physics",
+    url: "/diagrams/radiation-types.png",
+    label: "Nuclear Physics — Fission and Fusion",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["nuclear fission", "nuclear fusion", "chain reaction", "nuclear reactor", "uranium", "plutonium", "binding energy", "mass defect", "nuclear power", "atomic structure and alpha scattering", "nuclear atom gcse", "radioactivity", "physics"],
+  },
+
+  // ── SCIENCE — PHYSICS: Waves and Optics ──────────────────────────────────
+  {
+    key: "waves_optics",
+    url: "/diagrams/refraction-lens.png",
+    label: "Waves and Optics",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["waves", "optics", "refraction", "reflection", "diffraction", "interference", "wavelength", "frequency", "amplitude", "transverse wave", "longitudinal wave", "electromagnetic spectrum", "waves and optics", "waves and the electromagnetic spectrum", "physics"],
+  },
+
+  // ── HISTORY — Modern British and World History ────────────────────────────
+  {
+    key: "ww2_holocaust",
+    url: "/diagrams/ww1-trenches.png",
+    label: "World War Two and the Holocaust",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["world war two", "world war 2", "ww2", "second world war", "holocaust", "nazi germany", "blitz", "d-day", "allied powers", "axis powers", "weimar", "weimar and nazi germany", "history"],
+  },
+  {
+    key: "cold_war",
+    url: "/diagrams/ww1-trenches.png",
+    label: "The Cold War",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["cold war", "superpower relations", "nato", "warsaw pact", "arms race", "space race", "cuban missile crisis", "berlin wall", "ussr", "usa", "containment", "superpower relations and the cold war", "history"],
+  },
+  {
+    key: "civil_rights",
+    url: "/diagrams/venn-diagram.png",
+    label: "The Civil Rights Movement",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["civil rights", "martin luther king", "rosa parks", "segregation", "discrimination", "montgomery bus boycott", "march on washington", "naacp", "the civil rights movement", "history"],
+  },
+  {
+    key: "industrial_revolution",
+    url: "/diagrams/energy-transfer.png",
+    label: "The Industrial Revolution",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["industrial revolution", "factories", "steam engine", "urbanisation", "child labour", "textile mills", "railways", "the industrial revolution", "history"],
+  },
+  {
+    key: "british_empire",
+    url: "/diagrams/roman-empire.png",
+    label: "The British Empire",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["british empire", "colonialism", "imperialism", "trade routes", "slave trade", "abolition", "commonwealth", "the british empire", "the slave trade and abolition", "history"],
+  },
+
+  // ── GEOGRAPHY — Urban and Economic ───────────────────────────────────────
+  {
+    key: "urban_issues",
+    url: "/diagrams/coastal-features.png",
+    label: "Urban Issues and Challenges",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["urban issues", "urbanisation", "megacities", "squatter settlements", "slums", "urban regeneration", "sustainable cities", "urban growth", "urban issues and challenges", "geography"],
+  },
+  {
+    key: "changing_economic_world",
+    url: "/diagrams/world-biomes.png",
+    label: "The Changing Economic World",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["economic development", "hdi", "gnp", "trade", "aid", "tncs", "tourism", "fairtrade", "development gap", "newly industrialised countries", "the changing economic world", "geography"],
+  },
+  {
+    key: "resource_management",
+    url: "/diagrams/water-cycle.png",
+    label: "Resource Management",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["resource management", "food security", "water security", "energy security", "sustainable development", "resource depletion", "resource management water food energy", "geography"],
+  },
 ];
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 // LOOKUP FUNCTION — fuzzy keyword match with scoring
