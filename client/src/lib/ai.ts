@@ -588,6 +588,7 @@ export async function aiGenerateWorksheet(params: {
   isRevisionMat?: boolean; // When true, generate a revision mat instead of a standard worksheet
   selectedSections?: string[]; // Which sections to include (from the sections selector)
   subtopic?: string; // Optional subtopic for more specific generation
+  generateDiagram?: boolean; // Whether to include diagram sections (default: true for relevant subjects)
 }): Promise<AIWorksheetResult> {
   // ── REVISION MAT: completely separate prompt path ─────────────────────────
   if (params.isRevisionMat) {
