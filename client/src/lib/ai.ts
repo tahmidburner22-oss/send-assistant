@@ -1460,7 +1460,7 @@ STRICT JSON OUTPUT: Respond with valid JSON only — no markdown, no code blocks
   const graphDrawingNote = (isGraphingMathsTopic && !params.examStyle)
     ? `GRAPH DRAWING REQUIREMENT: Because this is a graphical maths topic ("${params.topic}"), at least ONE question (ideally Q8 or Q9) MUST ask students to plot a graph. Provide a complete set of coordinate pairs or data values (minimum 5 pairs) and ask students to: (1) plot the points on a grid, (2) draw the line/curve, (3) read off a specific value, (4) find the gradient or describe the shape. Use type "q-graph" for this question. The data MUST be specific to "${params.topic}" — real numbers, not placeholders.`
     : ``;
-  const diagramRelevanceNote = isScienceMathsCore
+  const diagramRelevanceNote = isScienceOrMaths
     ? `DIAGRAM REQUIREMENT: For Science and Maths, a diagram MUST be included in Q4. The diagram must match the exact worksheet topic "${params.topic}" and the questions that refer to it. Use the most appropriate diagram type for this specific topic.`
     : `Only include or request a diagram if it is essential to teaching "${params.topic}". The diagram must match the exact worksheet topic and the questions that refer to it. If no exact topic-matching diagram is needed, omit the diagram entirely.`;
   const vocabularyCapNote = `Key Vocabulary must contain at most 5 items.`;
@@ -1758,89 +1758,7 @@ Return EXACTLY this JSON (raw JSON only):
     .trim();
   let json: any;
 
-  // Robust JSON parsing with multiple fallback strategies
-  const parseWithFixes = (s: string): any => {
-    // Pre-process: escape \f (\frac) and \t (\times, \text, \theta) that appear to be LaTeX.
-    // JSON treats \f as form feed and \t as tab, but the AI uses them as LaTeX commands.
-    const preProcess = (raw: string): string => {
-      const latexOnly = new Set(['f', 't']); // Only these two conflict with common LaTeX commands
-      const out: string[] = [];
-      let inStr = false;
-      let i = 0;
-      while (i < raw.length) {
-        const ch = raw[i];
-        if (!inStr) { if (ch === '"') inStr = true; out.push(ch); i++; continue; }
-        if (ch === '\\') {
-          const next = raw[i + 1];
-          const afterNext = raw[i + 2];
-          if (next && latexOnly.has(next) && afterNext && /[a-zA-Z]/.test(afterNext)) {
-            out.push('\\\\'); i++; continue;
-          }
-          out.push(ch); i++; continue;
-        }
-        if (ch === '"') { inStr = false; out.push(ch); i++; continue; }
-        out.push(ch); i++;
-      }
-      return out.join('');
-    };
-    // Strategy 1: direct parse (with LaTeX pre-processing)
-    try { return JSON.parse(preProcess(s)); } catch (_) {}
-    // Strategy 1b: direct parse without pre-processing (fallback)
-    try { return JSON.parse(s); } catch (_) {}
-
-    // Strategy 2: fix literal control characters AND invalid backslash escapes inside strings
-    // Process character by character to correctly handle string context
-    const fixJsonContent = (raw: string): string => {
-      const result: string[] = [];
-      let inString = false;
-      let i = 0;
-      while (i < raw.length) {
-        const ch = raw[i];
-        if (!inString) {
-          if (ch === '"') inString = true;
-          result.push(ch);
-          i++;
-          continue;
-        }
-        // Inside a JSON string
-        if (ch === '\\') {
-          const next = raw[i + 1];
-          const afterNext3 = raw[i + 2];
-          // \f (\frac) and \t (\times) conflict with JSON escapes but are LaTeX commands.
-          // Double the backslash when followed by a letter (indicating a LaTeX command).
-          const latexConflicts2 = new Set(['f', 't']);
-          if (next !== undefined && latexConflicts2.has(next) && afterNext3 && /[a-zA-Z]/.test(afterNext3)) {
-            result.push('\\\\');
-          } else if (next !== undefined && '"\\/bnrtu'.includes(next)) {
-            // Valid JSON escape — keep as-is
-            result.push(ch);
-          } else {
-            // Invalid escape (e.g. LaTeX \( \) \dfrac) — double the backslash
-            result.push('\\\\');
-          }
-          i++;
-          continue;
-        }
-        if (ch === '"') { inString = false; result.push(ch); i++; continue; }
-        if (ch === '\n') { result.push('\\n'); i++; continue; }
-        if (ch === '\r') { result.push('\\r'); i++; continue; }
-        if (ch === '\t') { result.push('\\t'); i++; continue; }
-        if (ch.charCodeAt(0) < 0x20) { result.push(`\\u${ch.charCodeAt(0).toString(16).padStart(4, '0')}`); i++; continue; }
-        result.push(ch);
-        i++;
-      }
-      return result.join('');
-    };
-    const fixed = fixJsonContent(s);
-    try { return JSON.parse(fixed); } catch (_) {}
-
-    // Strategy 3: extract largest JSON object with regex
-    const match = fixed.match(/\{[\s\S]*\}/);
-    if (match) { try { return JSON.parse(match[0]); } catch (_) {} }
-
-    throw new Error('all strategies failed');
-  };
-
+  // Use module-level parseWithFixes (defined at top of file)
   try {
     json = parseWithFixes(cleaned);
   } catch (parseErr) {
