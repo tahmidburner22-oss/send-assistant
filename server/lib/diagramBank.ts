@@ -137,7 +137,7 @@ const DIAGRAM_BANK: DiagramEntry[] = [
     url: "/diagrams/digestive-system.png",
     label: "Human Body — Main Organs",
     attribution: "AI-generated educational diagram (Adaptly)",
-    keywords: ["human body", "organs", "body parts", "ks2 science", "primary science", "organ systems"],
+    keywords: ["human body", "organs", "body parts", "ks2 science", "primary science", "organ systems", "revision mat", "revision map"],
   },
   {
     key: "teeth_types",

@@ -663,6 +663,27 @@ MANDATORY RULES — violating any rule is wrong:
         title: typeof s.title === 'string' ? s.title.replace(/\*/g, '').trim() : s.title,
         content: typeof s.content === 'string' ? s.content.replace(/\*\*(.+?)\*\*/g, '$1').replace(/\*/g, '').trim() : s.content,
       }));
+
+      // ── Revision Mat Diagram Lookup ──
+      // Pull a diagram from the library instantly for the revision mat
+      try {
+        const diagResult = await aiGenerateWorksheetDiagram({
+          subject: params.subject,
+          topic: params.topic,
+          yearGroup: params.yearGroup,
+          sendNeed: params.sendNeed
+        });
+        if (diagResult) {
+          // Inject as a diagram section
+          rmJson.sections.push({
+            ...diagResult,
+            type: "diagram",
+            isFullPage: true // Hint for the renderer
+          });
+        }
+      } catch (diagErr) {
+        console.warn("[RevisionMat] Diagram lookup failed:", diagErr);
+      }
     }
     return { ...rmJson, isAI: true, provider: rmProvider };
   }
