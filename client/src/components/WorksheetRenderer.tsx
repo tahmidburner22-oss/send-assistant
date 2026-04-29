@@ -4819,6 +4819,11 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
           );
         }
 
+        // Diagram sections: skip entirely if no image/SVG available (no placeholder)
+        if (section.type === "diagram" && !(resolveImageUrl(section) || section.svg)) {
+          return null;
+        }
+
         // Section group label — for individual questions, derive from section title (e.g. "Q1 — True or False")
         const groupLabel = isIndividualQuestion
           ? sectionTitle
@@ -4896,15 +4901,25 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
             className={`ws-section ws-section-${section.type}${isTeacherSection ? " ws-teacher-section" : ""}`}
             onClick={() => editMode && onSectionClick?.(i)}
             style={{
-              marginBottom: "20px",
+              marginBottom: section.type === "diagram" ? "0" : "20px",
+              marginTop: section.type === "diagram" ? "0" : undefined,
               background: isTeacherHeader ? "#fff8f8" : fmt.theme === "high-contrast" ? "#ffffff" : "#ffffff",
               border: fmt.theme === "high-contrast" ? "2px solid #111827" : "none",
               borderRadius: "0",
               overflow: "visible",
               cursor: editMode ? "pointer" : "default",
               outline: editMode && editedSections[i] !== undefined ? "2px solid #2a7f8f" : "none",
-              pageBreakInside: "avoid",
-              breakInside: "avoid",
+              pageBreakInside: section.type === "diagram" ? "auto" : "avoid",
+              breakInside: section.type === "diagram" ? "auto" : "avoid",
+              pageBreakBefore: section.type === "diagram" ? "always" : "auto",
+              breakBefore: section.type === "diagram" ? "page" : "auto",
+              pageBreakAfter: section.type === "diagram" ? "always" : "auto",
+              breakAfter: section.type === "diagram" ? "page" : "auto",
+              minHeight: section.type === "diagram" ? "calc(100vh - 80px)" : undefined,
+              display: section.type === "diagram" ? "flex" : undefined,
+              flexDirection: section.type === "diagram" ? "column" as const : undefined,
+              justifyContent: section.type === "diagram" ? "center" : undefined,
+              padding: section.type === "diagram" ? "20px 0" : undefined,
             }}
           >
             {/* ── Section header: individual question OR section divider ── */}
@@ -4935,7 +4950,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                   </div>
                 </div>
               </div>
-            ) : (
+            ) : section.type === "diagram" ? null : (
               /* Section header: thick navy rule + teal label + thin grey rule — matches reference PDF */
               <div style={{ marginBottom: "12px" }}>
                 <div style={{ borderTop: isTeacherHeader ? "1.5px solid #8b1a1a" : "1.5px solid #1B2A4A", marginBottom: "4px" }} />
@@ -5000,57 +5015,52 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
               })()}
               {/* Standard content rendering (no diagram marker) */}
               {!extractDiagramSpec(content) && (
-                section.type === "diagram" && !(resolveImageUrl(section) || section.svg) ? (
-                  // Full-page diagram placeholder — shown when no image is available from the library
-                  <div style={{ border: "2px dashed #cbd5e1", borderRadius: "8px", background: "#f8fafc", minHeight: "320px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "32px", textAlign: "center" }}>
-                    <div style={{ fontSize: "40px", marginBottom: "12px", opacity: 0.4 }}>🖼️</div>
-                    <div style={{ fontSize: `${fmt.fontSize}px`, fontWeight: 700, color: "#475569", fontFamily: fmt.fontFamily, marginBottom: "6px" }}>
+                section.type === "diagram" && (resolveImageUrl(section) || section.svg) ? (
+                  <div style={{ textAlign: "center", width: "100%" }}>
+                    {/* Diagram title bar */}
+                    <div style={{
+                      background: "#1a2744",
+                      color: "#ffffff",
+                      padding: "10px 20px",
+                      fontSize: `${fmt.fontSize}px`,
+                      fontWeight: 700,
+                      fontFamily: fmt.fontFamily,
+                      textTransform: "uppercase" as const,
+                      letterSpacing: "0.08em",
+                      textAlign: "left",
+                      marginBottom: "16px",
+                    }}>
                       {section.title || "Diagram"}
                     </div>
-                    <div style={{ fontSize: `${fmt.fontSize - 1}px`, color: "#94a3b8", fontFamily: fmt.fontFamily, fontStyle: "italic", maxWidth: "360px" }}>
-                      No diagram available in the library for this topic. A full-page diagram will appear here when one is available.
-                    </div>
-                    {section.caption && (
-                      <div style={{ fontSize: `${fmt.fontSize - 2}px`, color: "#64748b", fontFamily: fmt.fontFamily, marginTop: "10px" }}>
-                        {section.caption}
-                      </div>
-                    )}
-                  </div>
-                ) : section.type === "diagram" && (resolveImageUrl(section) || section.svg) ? (
-                  <div style={{ textAlign: "center" }}>
                     {resolveImageUrl(section) ? (
                       <img
                         src={resolveImageUrl(section)}
                         alt={section.caption || "Diagram"}
-                        style={{ maxWidth: "560px", width: "100%", borderRadius: "8px", border: "1px solid #e5e7eb" }}
+                        style={{ width: "100%", maxWidth: "100%", objectFit: "contain", maxHeight: "calc(100vh - 200px)", border: "1px solid #e5e7eb", background: "#fff" }}
                         onError={(e) => {
                           const target = e.currentTarget;
                           target.style.display = "none";
                           if (section.svg) {
                             const svgWrapper = document.createElement("div");
-                            svgWrapper.style.cssText = "display:inline-block;width:100%;max-width:560px;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;background:white;";
+                            svgWrapper.style.cssText = "display:block;width:100%;border:1px solid #e5e7eb;overflow:hidden;background:white;";
                             svgWrapper.innerHTML = section.svg;
                             target.parentNode?.insertBefore(svgWrapper, target.nextSibling);
-                          } else {
-                            const fallback = document.createElement("div");
-                            fallback.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;gap:8px;padding:24px;border:1px dashed #d1d5db;border-radius:8px;background:#f9fafb;max-width:560px;"><span style="font-size:22px">🖼️</span><span style="color:#6b7280;font-style:italic;font-size:13px;">Diagram unavailable — the image could not be loaded.<br><span style=\"font-size:11px;color:#9ca3af\">Tip: ensure you have an internet connection and try regenerating.</span></span></div>';
-                            target.parentNode?.insertBefore(fallback, target.nextSibling);
                           }
                         }}
                       />
                     ) : section.svg ? (
                       <div
-                        style={{ display: "inline-block", width: "100%", maxWidth: "560px", border: "1px solid #e5e7eb", borderRadius: "8px", overflow: "hidden", background: "white" }}
+                        style={{ display: "block", width: "100%", border: "1px solid #e5e7eb", overflow: "hidden", background: "white" }}
                         dangerouslySetInnerHTML={{ __html: section.svg }}
                       />
                     ) : null}
                     {section.caption && (
-                      <p style={{ fontSize: `${fmt.fontSize - 2}px`, color: "#6b7280", marginTop: "6px", fontStyle: "italic", fontFamily: fmt.fontFamily }}>
-                        Figure: {section.caption}
+                      <p style={{ fontSize: `${fmt.fontSize - 1}px`, color: "#374151", marginTop: "10px", fontStyle: "italic", fontFamily: fmt.fontFamily, textAlign: "center" }}>
+                        <strong>Figure:</strong> {section.caption}
                       </p>
                     )}
                     {section.attribution && !/wikimedia|wikipedia|commons\.wiki/i.test(section.attribution) && (
-                      <p style={{ fontSize: `${fmt.fontSize - 3}px`, color: "#9ca3af", marginTop: "2px", fontFamily: fmt.fontFamily }}>
+                      <p style={{ fontSize: `${fmt.fontSize - 2}px`, color: "#9ca3af", marginTop: "4px", fontFamily: fmt.fontFamily }}>
                         Source: {section.attribution}
                       </p>
                     )}

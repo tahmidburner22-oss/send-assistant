@@ -1447,7 +1447,7 @@ const geographyTopics: Record<string, any> = {
 // Merge original + expanded maths topics (expanded takes precedence for updated topics)
 const mergedMathTopics = { ...mathTopics, ...expandedMathTopics };
 
-const allTopics: Record<string, Record<string, any>> = {
+export const allTopics: Record<string, Record<string, any>> = {
   mathematics: mergedMathTopics,
   english: englishTopics,
   science: scienceTopics,
