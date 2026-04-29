@@ -966,7 +966,16 @@ SELF REFLECTION: Generate a 5-row confidence table (Topic | Not Yet | Getting Th
 TEACHER COPY — ANSWER KEY: Provide answers for EVERY question. For Q9 and Challenge: reproduce full level descriptor bands. For STEM: show every step of working. For HUMANITIES: provide suggested quotes and page/act references. End with total mark breakdown: Section 1: Xm | Section 2: Xm | Section 3: Xm | Challenge: Xm | TOTAL: Xm
 
 DO NOT include a Reminder Box. DO NOT deviate from these formats. ABSOLUTELY NO EMOJIS in student-facing content.
-CRITICAL SEND RULE: SEND adaptations affect FORMATTING ONLY. NEVER add SEND instructions, scaffolding hints, or support prompts as extra items inside True/False statements, MCQ options, Gap Fill blanks, or any question content. The True/False section must contain ONLY factual statements about the topic. The MCQ section must contain ONLY the question and 4 answer options (A, B, C, D). Do NOT insert 'Complete the task in steps', 'Tick each step', 'Focus on one question', or any ADHD/SEND management instructions into question content.
+CRITICAL SEND RULE: SEND adaptations affect FORMATTING AND PRESENTATION ONLY — never the academic content or intellectual rigour of questions.
+- The actual question content (what is being asked, the numbers used, the concepts tested) must remain at the correct GCSE/curriculum level for the year group.
+- SEND overlays change HOW questions are presented (font, spacing, scaffolding frames, sentence starters, checkboxes, worked examples) — NOT WHAT is being asked.
+- True/False statements must be factually correct curriculum statements at the appropriate level — not simplified to the point of being trivial.
+- MCQ options must be plausible distractors at curriculum level — not dumbed-down guesses.
+- Gap-fill paragraphs must use correct subject terminology — not replaced with everyday words.
+- Short-answer and extended questions must require genuine subject knowledge — not just recall of simple facts.
+- NEVER add SEND management instructions ('Complete the task in steps', 'Tick each step', 'Focus on one question', 'Take a break') as question content items.
+- SEND scaffolding (sentence starters, answer frames, worked examples) goes in SEPARATE support boxes AROUND the questions — not inside the question text itself.
+- Do NOT simplify the academic content or intellectual challenge of questions just because SEND adaptations are applied.
 Topic: "${params.topic}" | Year: ${params.yearGroup} (${phase})
 
 QUALITY STANDARDS — every question must meet professional UK teacher standards:
@@ -1600,9 +1609,17 @@ ${isMaths ? 'MATHS RULES: All questions must be numerical/calculation-based ONLY
 ${readingAgeNote}
 ${sendNote}
 ${tierNote}
-QUALITY STANDARD: Every question must be fully usable — no placeholders, no ellipses, no unfinished sentences. Use real numbers, real contexts. Textbook quality.
+QUALITY STANDARD: Every question must be fully usable — no placeholders, no ellipses, no unfinished sentences. Use real numbers, real contexts. Textbook quality. Every question must be at the correct curriculum level for ${params.yearGroup || 'the year group'} — GCSE/KS3/KS4 standard as appropriate. Do NOT simplify the academic content or intellectual challenge of questions just because SEND adaptations are applied.
 ${specExamples ? `\n${specExamples}\n` : ''}
-CRITICAL SEND RULE: SEND adaptations affect FORMATTING ONLY (font size, spacing, checkboxes, tone). NEVER add SEND instructions, scaffolding hints, or support prompts as extra items inside True/False statements, MCQ options, Gap Fill blanks, or any question content. The True/False section must contain ONLY factual statements about the topic. The MCQ section must contain ONLY the question and 4 answer options (A, B, C, D). Do NOT insert 'Complete the task in steps', 'Tick each step', 'Focus on one question', or any ADHD/SEND management instructions into question content.`;
+CRITICAL SEND RULE: SEND adaptations affect FORMATTING AND PRESENTATION ONLY — never the academic content or intellectual rigour of questions.
+- The actual question content (what is being asked, the numbers used, the concepts tested) must remain at the correct GCSE/curriculum level for ${params.yearGroup || 'the year group'}.
+- SEND overlays change HOW questions are presented (font, spacing, scaffolding frames, sentence starters, checkboxes, worked examples) — NOT WHAT is being asked.
+- True/False statements must be factually correct curriculum statements at the appropriate level — not simplified to the point of being trivial.
+- MCQ options must be plausible distractors at curriculum level — not dumbed-down guesses.
+- Gap-fill paragraphs must use correct subject terminology — not replaced with everyday words.
+- Short-answer and extended questions must require genuine subject knowledge — not just recall of simple facts.
+- NEVER add SEND management instructions ('Complete the task in steps', 'Tick each step', 'Focus on one question', 'Take a break') as question content items.
+- SEND scaffolding (sentence starters, answer frames, worked examples) goes in SEPARATE support boxes AROUND the questions — not inside the question text itself.`;
 
     // ── STRUCTURED SECTION ORDER (matches requested format) ──────────────────
     // Format: Header → LO → Retrieval → Key Vocabulary → Common Mistakes →

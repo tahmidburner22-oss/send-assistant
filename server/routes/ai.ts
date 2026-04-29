@@ -1,11 +1,11 @@
 import { Router, Request, Response } from "express";
 import { v4 as uuidv4 } from "uuid";
 import multer from "multer";
-import db from "../db/index.js";
+import db, { query as dbQuery } from "../db/index.js";
 import { requireAuth, requireAdmin, auditLog } from "../middleware/auth.js";
 import { filterContent } from "../lib/contentFilter.js";
 import { getSchoolKey } from "./schoolApiKeys.js";
-import { findDiagram, searchWikimediaDiagram } from "../lib/diagramBank.js";
+import { findDiagram } from "../lib/diagramBank.js";
 import * as _fullDiagramBankModule from "../lib/diagramBankFull.js";
 import { getTemplate } from "../lib/diagramTemplates.js";
 // Static import (esbuild bundles everything into a single file, dynamic imports don't work)
@@ -1265,81 +1265,6 @@ router.post("/diagram", requireAuth, async (req: Request, res: Response) => {
     fit: fitMeta,
   });
 
-  const topicHasAny = (...terms: string[]) => terms.some((term) => combined.includes(term));
-
-  const pickApprovedSourceFallback = () => {
-    if (subjectLower.includes("biology") || subjectLower.includes("science")) {
-      if (topicHasAny("cell", "cells and organisation", "animal cell", "plant cell")) {
-        return buildImageResponse({
-          imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/48/Animal_cell_structure_en.svg/960px-Animal_cell_structure_en.svg.png",
-          caption: `Animal cell structure — ${subject} (${yr})`,
-          attribution: "LadyofHats, Wikimedia Commons (Public Domain)",
-          provider: "wikimedia-approved",
-          imageKind: "diagram",
-        });
-      }
-      if (topicHasAny("photosynthesis", "chloroplast")) {
-        return buildImageResponse({
-          imageUrl: "https://bioicons.com/icons/photosynthesis.svg",
-          caption: `Photosynthesis visual support — ${subject} (${yr})`,
-          attribution: "Bioicons (licence retained per asset)",
-          provider: "bioicons-approved",
-          imageKind: "icon",
-        });
-      }
-      if (topicHasAny("space", "solar system", "planet", "moon", "mars", "earth")) {
-        return buildImageResponse({
-          imageUrl: "https://images-assets.nasa.gov/image/PIA18033/PIA18033~orig.jpg",
-          caption: `NASA scientific visual for ${topic} — ${subject} (${yr})`,
-          attribution: "NASA",
-          provider: "nasa-approved",
-          imageKind: "scientific-visual",
-        });
-      }
-      if (topicHasAny("fossil", "evolution", "natural history", "skeleton", "animal")) {
-        return buildImageResponse({
-          imageUrl: "https://ids.si.edu/ids/deliveryService?id=NMNH-PALEO-00001",
-          caption: `Smithsonian Open Access scientific visual for ${topic} — ${subject} (${yr})`,
-          attribution: "Smithsonian Open Access (CC0)",
-          provider: "smithsonian-approved",
-          imageKind: "scientific-visual",
-        });
-      }
-    }
-
-    if (subjectLower.includes("geography") && topicHasAny("earth", "planet", "climate", "weather", "storm", "atmosphere")) {
-      return buildImageResponse({
-        imageUrl: "https://images-assets.nasa.gov/image/iss063e054463/iss063e054463~orig.jpg",
-        caption: `NASA Earth visual for ${topic} — ${subject} (${yr})`,
-        attribution: "NASA",
-        provider: "nasa-approved",
-        imageKind: "scientific-visual",
-      });
-    }
-
-    if ((subjectLower.includes("art") || subjectLower.includes("design")) && topicHasAny("texture", "nature", "landscape", "light", "shadow")) {
-      return buildImageResponse({
-        imageUrl: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80",
-        caption: `${topic} reference photo — ${subject} (${yr})`,
-        attribution: "Unsplash",
-        provider: "unsplash-approved",
-        imageKind: "photo",
-      });
-    }
-
-    if (topicHasAny("habitat", "forest", "ocean", "animal", "plant")) {
-      return buildImageResponse({
-        imageUrl: "https://cdn.pixabay.com/photo/2016/11/29/09/32/animal-1866808_1280.jpg",
-        caption: `${topic} reference photo — ${subject} (${yr})`,
-        attribution: "Pixabay",
-        provider: "pixabay-approved",
-        imageKind: "photo",
-      });
-    }
-
-    return null;
-  };
-
   // ── Step 0: Hand-coded SVG templates (topic-specific, pixel-perfect, no external deps) ─
   const svgTemplate = getTemplate(subject, topic);
   if (svgTemplate) {
@@ -1356,65 +1281,108 @@ router.post("/diagram", requireAuth, async (req: Request, res: Response) => {
     });
   }
 
-  // ── Step 1: Curated fast diagram bank (verified Wikimedia URLs) ─────────────
+  // ── Step 1: Admin diagram library (DB — 1722 curated educational diagrams) ──
+  // This is the ONLY image source. No Wikimedia or external URLs are used.
+  try {
+    const allRows = await dbQuery(
+      `SELECT id, title, subject, topic, image_url, description, tags, curated
+       FROM diagram_library
+       ORDER BY curated DESC, subject ASC, title ASC`
+    );
+    const entries: any[] = allRows.rows;
+
+    if (entries.length > 0) {
+      // Score each entry for relevance
+      const scored = entries.map((e) => {
+        const eSubject = (e.subject || "").toLowerCase();
+        const eTopic = (e.topic || "").toLowerCase();
+        const eTitle = (e.title || "").toLowerCase();
+        const eTags: string[] = (() => {
+          try { return JSON.parse(e.tags || "[]").map((t: string) => t.toLowerCase()); } catch { return []; }
+        })();
+
+        let score = 0;
+
+        // Subject match
+        const subjectMatch =
+          subjectLower &&
+          (eSubject.includes(subjectLower) || subjectLower.includes(eSubject) ||
+           eTitle.includes(subjectLower) || eTags.some((t: string) => t.includes(subjectLower)));
+        if (subjectMatch) score += 10;
+
+        // Topic match
+        if (topicLower && eTopic === topicLower) score += 50;
+        else if (topicLower && eTopic.includes(topicLower)) score += 30;
+        else if (topicLower && topicLower.includes(eTopic) && eTopic.length > 3) score += 20;
+        else if (topicLower && eTitle.includes(topicLower)) score += 15;
+        else if (topicLower && topicLower.includes(eTitle) && eTitle.length > 3) score += 10;
+
+        // Tag / keyword match
+        if (topicLower) {
+          const topicWords = topicLower.split(/\s+/).filter((w: string) => w.length > 3);
+          for (const tw of topicWords) {
+            if (eTopic.includes(tw) || eTitle.includes(tw) || eTags.some((t: string) => t.includes(tw))) {
+              score += 5;
+            }
+          }
+        }
+
+        // Curated bonus
+        if (e.curated) score += 8;
+
+        return { entry: e, score };
+      });
+
+      scored.sort((a, b) => b.score - a.score);
+      const best = scored[0];
+
+      if (best && best.score > 0) {
+        console.log(`[Diagram] Admin library match for "${topic}" (${subject}): "${best.entry.title}" score=${best.score}`);
+        return res.json(buildImageResponse({
+          imageUrl: best.entry.image_url,
+          caption: `${best.entry.title} — ${subject} (${yr})`,
+          attribution: null,
+          provider: "admin-library",
+          imageKind: "diagram",
+        }));
+      }
+    }
+  } catch (dbErr) {
+    console.warn("[Diagram] Admin library lookup failed:", dbErr);
+  }
+
+  // ── Step 2: Local static diagram bank (local /diagrams/ paths only) ──────────
   const bankedDiagram = findDiagram(subject, topic);
   if (bankedDiagram) {
-    console.log(`[Diagram] Found in curated bank: ${bankedDiagram.key}`);
+    console.log(`[Diagram] Found in local static bank: ${bankedDiagram.key}`);
     return res.json(buildImageResponse({
       imageUrl: bankedDiagram.url,
       caption: `${bankedDiagram.label} — ${subject} (${yr})`,
-      attribution: bankedDiagram.attribution,
-      provider: "wikimedia-bank",
+      attribution: null,
+      provider: "local-bank",
       imageKind: "diagram",
     }));
   }
 
-  // ── Step 2: Full comprehensive diagram bank (lazy-loaded, all 623 curriculum topics) ──
+  // ── Step 3: Full local static bank ───────────────────────────────────────────
   try {
     const fullBank = getFullDiagramBank();
     const fullMatch = fullBank.findDiagramFull(subject, topic);
     if (fullMatch) {
-      console.log(`[Diagram] Found in full bank: ${fullMatch.key}`);
+      console.log(`[Diagram] Found in full local bank: ${fullMatch.key}`);
       return res.json(buildImageResponse({
         imageUrl: fullMatch.url,
         caption: `${fullMatch.label} — ${subject} (${yr})`,
-        attribution: `${fullMatch.attribution} | Licence: ${fullMatch.license}`,
-        provider: "wikimedia-full-bank",
+        attribution: null,
+        provider: "local-full-bank",
         imageKind: "diagram",
       }));
     }
   } catch (fullBankErr) {
-    console.warn("[Diagram] Full bank lookup failed:", fullBankErr);
+    console.warn("[Diagram] Full local bank lookup failed:", fullBankErr);
   }
 
-  // ── Step 3: Live Wikimedia Commons search (CC/PD images only) ────────────────────
-  try {
-    const wikiResult = await Promise.race([
-      searchWikimediaDiagram(subject, topic),
-      new Promise<null>(resolve => setTimeout(() => resolve(null), 20_000)),
-    ]);
-    if (wikiResult) {
-      console.log(`[Diagram] Found via Wikimedia live search for "${topic}"`);
-      return res.json(buildImageResponse({
-        imageUrl: wikiResult.url,
-        caption: wikiResult.caption || `${topic} — ${subject} (${yr})`,
-        attribution: wikiResult.attribution,
-        provider: "wikimedia-live",
-        imageKind: "diagram",
-      }));
-    }
-  } catch (wikiErr) {
-    console.warn(`[Diagram] Wikimedia live search failed for "${topic}":`, wikiErr);
-  }
-
-  // ── Step 4: Approved-source topic fallback bank ─────────────────────────────
-  const approvedFallback = pickApprovedSourceFallback();
-  if (approvedFallback) {
-    console.log(`[Diagram] Using approved-source fallback for "${topic}" (${subject}) via ${approvedFallback.provider}`);
-    return res.json(approvedFallback);
-  }
-
-  console.log(`[Diagram] No approved diagram found for "${topic}" (${subject}) — returning not-available`);
+  console.log(`[Diagram] No diagram found for "${topic}" (${subject}) — returning not-available`);
   return res.json(buildImageResponse({
     imageUrl: null,
     caption: `No diagram available for ${topic}`,

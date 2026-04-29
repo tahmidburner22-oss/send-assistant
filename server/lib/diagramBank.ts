@@ -1712,58 +1712,10 @@ export function findDiagram(subject: string, topic: string): DiagramEntry | null
 
 // ── Wikimedia Commons API search (for topics not in the curated bank) ─────────
 export async function searchWikimediaDiagram(
-  subject: string,
-  topic: string
+  _subject: string,
+  _topic: string
 ): Promise<{ url: string; caption: string; attribution: string } | null> {
-  // Wikimedia search disabled — all diagrams are now AI-generated local assets
-  return null;
-  const query = `${topic} ${subject} diagram educational`;
-  const searchUrl = `https://commons.wikimedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&srnamespace=6&srlimit=5&format=json&origin=*`;
-
-  try {
-    const res = await fetch(searchUrl, {
-      headers: { "User-Agent": "AdaptlyEduApp/1.0 (educational platform)" },
-      signal: AbortSignal.timeout(5000),
-    });
-    if (!res.ok) return null;
-    const data = await res.json() as any;
-    const results = data?.query?.search || [];
-
-    for (const result of results) {
-      const title = result.title as string;
-      // Only use SVG, PNG, JPG files
-      if (!title.match(/\.(svg|png|jpg|jpeg)$/i)) continue;
-      // Skip files that look like books, scans, or unrelated content
-      if (title.match(/book|page|scan|manuscript|photo|portrait|landscape/i)) continue;
-
-      // Get the actual image URL via imageinfo API
-      const infoUrl = `https://commons.wikimedia.org/w/api.php?action=query&titles=${encodeURIComponent(title)}&prop=imageinfo&iiprop=url|extmetadata&iiurlwidth=960&format=json&origin=*`;
-      const infoRes = await fetch(infoUrl, {
-        headers: { "User-Agent": "AdaptlyEduApp/1.0 (educational platform)" },
-        signal: AbortSignal.timeout(5000),
-      });
-      if (!infoRes.ok) continue;
-      const infoData = await infoRes.json() as any;
-      const pages = infoData?.query?.pages || {};
-      const page = Object.values(pages)[0] as any;
-      const imageInfo = page?.imageinfo?.[0];
-      // Use thumburl (960px) from the API response
-      const thumbUrl = imageInfo?.thumburl || imageInfo?.url;
-      if (!thumbUrl) continue;
-
-      const author = (imageInfo.extmetadata?.Artist?.value || "Wikimedia Commons")
-        .replace(/<[^>]+>/g, "").trim();
-      const license = imageInfo.extmetadata?.LicenseShortName?.value || "CC BY-SA";
-
-      return {
-        url: thumbUrl,
-        caption: `${topic} — ${subject}`,
-        attribution: `${author}, Wikimedia Commons (${license})`,
-      };
-    }
-  } catch (e) {
-    console.warn("[DiagramBank] Wikimedia search error:", e);
-  }
-
+  // Wikimedia search permanently disabled.
+  // All diagrams are served exclusively from the admin diagram library (DB).
   return null;
 }

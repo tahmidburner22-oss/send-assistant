@@ -548,6 +548,12 @@ export default function Worksheets() {
   const handleAnswerBoxRemove = (sectionIndex: number) => {
     setAnswerBoxSizes(prev => ({ ...prev, [sectionIndex]: 0 }));
   };
+  // Change Diagram modal state
+  const [changeDiagramSectionIndex, setChangeDiagramSectionIndex] = useState<number | null>(null);
+  const [diagramLibraryEntries, setDiagramLibraryEntries] = useState<any[]>([]);
+  const [diagramLibrarySearch, setDiagramLibrarySearch] = useState("");
+  const [diagramLibraryLoading, setDiagramLibraryLoading] = useState(false);
+
   const [rating, setRating] = useState(0);
   const [savedWorksheetId, setSavedWorksheetId] = useState<string | null>(null);
   const [textSize, setTextSize] = useState(14);
@@ -700,6 +706,51 @@ export default function Worksheets() {
   const diagnosticRef = useRef<HTMLDivElement>(null);
   const advancedOptionsRef = useRef<HTMLDetailsElement>(null);
   const retrievalTopicRef = useRef<HTMLInputElement>(null);
+
+  // ── Change Diagram: listen for custom event from WorksheetRenderer ────────
+  const openDiagramLibrary = useCallback(async (sectionIndex: number) => {
+    setChangeDiagramSectionIndex(sectionIndex);
+    setDiagramLibrarySearch("");
+    setDiagramLibraryLoading(true);
+    try {
+      const res = await fetch("/api/diagram-library/entries", { credentials: "include" });
+      const data = await res.json();
+      setDiagramLibraryEntries(data.entries || []);
+    } catch (e) {
+      console.error("[ChangeDiagram] Failed to load library:", e);
+      setDiagramLibraryEntries([]);
+    } finally {
+      setDiagramLibraryLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail && typeof detail.sectionIndex === "number") {
+        openDiagramLibrary(detail.sectionIndex);
+      }
+    };
+    document.addEventListener("adaptly:changeDiagram", handler);
+    return () => document.removeEventListener("adaptly:changeDiagram", handler);
+  }, [openDiagramLibrary]);
+
+  const handleDiagramSelect = useCallback((entry: any) => {
+    if (changeDiagramSectionIndex === null || !generated) return;
+    const newSections = generated.sections.map((s: any, idx: number) => {
+      if (idx !== changeDiagramSectionIndex) return s;
+      return {
+        ...s,
+        imageUrl: entry.image_url,
+        caption: entry.description || entry.title || s.caption,
+        attribution: null,
+        svg: undefined,
+        assetRef: undefined,
+      };
+    });
+    setGenerated((prev: any) => prev ? { ...prev, sections: newSections } : prev);
+    setChangeDiagramSectionIndex(null);
+  }, [changeDiagramSectionIndex, generated]);
 
   // tRPC mutations
   
@@ -4534,11 +4585,18 @@ ${s.content}`).join("\n\n"),
                     overlayColor={overlayBg}
                     editedSections={editedSections}
                     onSectionClick={undefined}
-                    editMode={false}
+                    editMode={viewMode === "teacher"}
                     answerBoxSizes={answerBoxSizes}
                     schoolLogoUrl={preferences.schoolLogoUrl}
                     schoolName={preferences.schoolName}
                     isRevisionMat={isRevisionMat}
+                    onDiagramChange={(sectionIndex, newImageUrl, newCaption) => {
+                      const newSections = generated.sections.map((s: any, idx: number) => {
+                        if (idx !== sectionIndex) return s;
+                        return { ...s, imageUrl: newImageUrl, caption: newCaption || s.caption, attribution: null, svg: undefined, assetRef: undefined };
+                      });
+                      setGenerated((prev: any) => prev ? { ...prev, sections: newSections } : prev);
+                    }}
                   />
                 )}
                 {/* Inline section edit rendering (Manual + AI) */}
@@ -5273,6 +5331,119 @@ ${s.content}`).join("\n\n"),
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* ── Change Diagram Modal ────────────────────────────────────────────────── */}
+      {changeDiagramSectionIndex !== null && (
+        <div
+          style={{
+            position: "fixed", inset: 0, zIndex: 9999,
+            background: "rgba(0,0,0,0.55)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}
+          onClick={() => setChangeDiagramSectionIndex(null)}
+        >
+          <div
+            style={{
+              background: "#fff", borderRadius: "12px", padding: "24px",
+              width: "min(92vw, 760px)", maxHeight: "80vh",
+              display: "flex", flexDirection: "column", gap: "16px",
+              boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div>
+                <h2 style={{ margin: 0, fontSize: "18px", fontWeight: 700, color: "#1a2744" }}>Change Diagram</h2>
+                <p style={{ margin: "4px 0 0", fontSize: "13px", color: "#6b7280" }}>Select a diagram from the library to replace the current one</p>
+              </div>
+              <button
+                onClick={() => setChangeDiagramSectionIndex(null)}
+                style={{ background: "none", border: "none", fontSize: "20px", cursor: "pointer", color: "#6b7280", lineHeight: 1 }}
+              >×</button>
+            </div>
+
+            {/* Search */}
+            <input
+              type="text"
+              placeholder="Search by title, subject or topic…"
+              value={diagramLibrarySearch}
+              onChange={(e) => setDiagramLibrarySearch(e.target.value)}
+              style={{
+                width: "100%", padding: "8px 12px", borderRadius: "6px",
+                border: "1px solid #d1d5db", fontSize: "14px", boxSizing: "border-box" as const,
+              }}
+            />
+
+            {/* Grid */}
+            <div style={{ overflowY: "auto", flex: 1 }}>
+              {diagramLibraryLoading ? (
+                <div style={{ textAlign: "center", padding: "40px", color: "#6b7280" }}>Loading library…</div>
+              ) : (() => {
+                const filtered = diagramLibraryEntries.filter((e) => {
+                  const q = diagramLibrarySearch.toLowerCase();
+                  if (!q) return true;
+                  return (
+                    (e.title || "").toLowerCase().includes(q) ||
+                    (e.subject || "").toLowerCase().includes(q) ||
+                    (e.topic || "").toLowerCase().includes(q) ||
+                    (e.description || "").toLowerCase().includes(q)
+                  );
+                });
+                if (!filtered.length) {
+                  return <div style={{ textAlign: "center", padding: "40px", color: "#6b7280" }}>No diagrams found</div>;
+                }
+                return (
+                  <div style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))",
+                    gap: "12px",
+                    padding: "4px 2px",
+                  }}>
+                    {filtered.map((entry: any) => (
+                      <div
+                        key={entry.id}
+                        onClick={() => handleDiagramSelect(entry)}
+                        style={{
+                          border: "1.5px solid #e5e7eb",
+                          borderRadius: "8px",
+                          overflow: "hidden",
+                          cursor: "pointer",
+                          transition: "border-color 0.15s, box-shadow 0.15s",
+                          background: "#fafafa",
+                        }}
+                        onMouseEnter={(e) => {
+                          (e.currentTarget as HTMLElement).style.borderColor = "#1a2744";
+                          (e.currentTarget as HTMLElement).style.boxShadow = "0 2px 8px rgba(26,39,68,0.15)";
+                        }}
+                        onMouseLeave={(e) => {
+                          (e.currentTarget as HTMLElement).style.borderColor = "#e5e7eb";
+                          (e.currentTarget as HTMLElement).style.boxShadow = "none";
+                        }}
+                      >
+                        <img
+                          src={entry.image_url}
+                          alt={entry.title}
+                          style={{ width: "100%", height: "110px", objectFit: "contain", background: "#fff", display: "block" }}
+                          onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                        />
+                        <div style={{ padding: "8px" }}>
+                          <div style={{ fontSize: "11px", fontWeight: 600, color: "#1a2744", lineHeight: 1.3, marginBottom: "2px" }}>
+                            {entry.title}
+                          </div>
+                          {entry.subject && (
+                            <div style={{ fontSize: "10px", color: "#6b7280" }}>{entry.subject}{entry.topic ? ` — ${entry.topic}` : ""}</div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

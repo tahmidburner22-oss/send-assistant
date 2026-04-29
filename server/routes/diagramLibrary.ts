@@ -22,6 +22,88 @@ router.get("/entries", requireAuth, async (req: any, res) => {
   }
 });
 
+// ─── GET /api/diagram-library/search?subject=&topic= ────────────────────────
+// Smart search: finds the best-matching diagram for a given subject + topic.
+// Priority: curated > subject+topic match > subject-only match > title keyword match.
+router.get("/search", requireAuth, async (req: any, res) => {
+  try {
+    const subjectRaw = String(req.query.subject || "").toLowerCase().trim();
+    const topicRaw = String(req.query.topic || "").toLowerCase().trim();
+
+    if (!subjectRaw && !topicRaw) {
+      return res.status(400).json({ error: "subject or topic required" });
+    }
+
+    // Fetch all entries (1722 rows — still fast with index on subject)
+    const result = await query(
+      `SELECT id, title, subject, topic, year_group, description, image_url, asset_ref,
+              tags, source, curated
+       FROM diagram_library
+       ORDER BY curated DESC, subject ASC, title ASC`
+    );
+    const entries: any[] = result.rows;
+
+    if (!entries.length) {
+      return res.json({ entry: null });
+    }
+
+    // Score each entry: higher = better match
+    const scored = entries.map((e) => {
+      const eSubject = (e.subject || "").toLowerCase();
+      const eTopic = (e.topic || "").toLowerCase();
+      const eTitle = (e.title || "").toLowerCase();
+      const eTags: string[] = (() => {
+        try { return JSON.parse(e.tags || "[]").map((t: string) => t.toLowerCase()); } catch { return []; }
+      })();
+
+      let score = 0;
+
+      // Subject match
+      const subjectMatch =
+        subjectRaw &&
+        (eSubject.includes(subjectRaw) || subjectRaw.includes(eSubject) ||
+         eTitle.includes(subjectRaw) || eTags.some(t => t.includes(subjectRaw)));
+      if (subjectMatch) score += 10;
+
+      // Topic match — exact
+      if (topicRaw && eTopic === topicRaw) score += 50;
+      else if (topicRaw && eTopic.includes(topicRaw)) score += 30;
+      else if (topicRaw && topicRaw.includes(eTopic) && eTopic.length > 3) score += 20;
+      else if (topicRaw && eTitle.includes(topicRaw)) score += 15;
+      else if (topicRaw && topicRaw.includes(eTitle) && eTitle.length > 3) score += 10;
+
+      // Tag match
+      if (topicRaw) {
+        const topicWords = topicRaw.split(/\s+/).filter(w => w.length > 3);
+        for (const tw of topicWords) {
+          if (eTopic.includes(tw) || eTitle.includes(tw) || eTags.some(t => t.includes(tw))) {
+            score += 5;
+          }
+        }
+      }
+
+      // Curated bonus
+      if (e.curated) score += 8;
+
+      return { entry: e, score };
+    });
+
+    // Sort by score descending
+    scored.sort((a, b) => b.score - a.score);
+
+    const best = scored[0];
+    if (!best || best.score === 0) {
+      return res.json({ entry: null });
+    }
+
+    console.log(`[DiagramLibrary] Best match for "${topicRaw}" (${subjectRaw}): "${best.entry.title}" score=${best.score}`);
+    return res.json({ entry: best.entry });
+  } catch (err: any) {
+    console.error("[diagramLibrary] GET /search error:", err);
+    res.status(500).json({ error: "Failed to search diagram library" });
+  }
+});
+
 // ─── GET /api/diagram-library/entries/:id ───────────────────────────────────
 router.get("/entries/:id", requireAuth, async (req: any, res) => {
   try {
