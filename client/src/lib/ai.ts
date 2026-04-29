@@ -7,6 +7,10 @@
  * API keys stored in localStorage so users can update without redeploying.
  */
 
+// ─── Spec-aligned question banks ────────────────────────────────────────────
+import { expandedMathTopics } from './mathTopicsExpanded';
+import { allTopics as worksheetAllTopics } from './worksheet-generator';
+
 // ─── Built-in keys — hardcoded server-side fallback (always available) ────────
 // These are the admin keys used as fallback when no user key is provided.
 // The server-side /api/ai/generate endpoint uses these from env vars directly.
@@ -492,6 +496,77 @@ export interface AIWorksheetResult {
   };
   isAI: true;
   provider?: string;
+}
+
+// ─── Spec-aligned question injection helper ─────────────────────────────────
+/**
+ * Returns a block of real specification-aligned example questions for the given
+ * subject + topic, formatted for injection into the AI system prompt as few-shot
+ * quality benchmarks. Falls back to an empty string if no data is available.
+ */
+function getSpecQuestions(subject: string, topic: string): string {
+  const subjectKey = subject.toLowerCase().replace(/[^a-z]/g, '');
+  // Normalise topic to a lookup key: lowercase, spaces→hyphens, strip apostrophes
+  const topicKey = topic.toLowerCase().replace(/'/g, '').replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+
+  // Try maths-specific banks first (expandedMathTopics has richer content)
+  let topicData: any = null;
+  if (subjectKey.includes('math')) {
+    topicData = (expandedMathTopics as Record<string, any>)[topicKey] || null;
+  }
+  // Fall back to the merged allTopics bank (covers maths, english, science, history, geography)
+  if (!topicData) {
+    const subjectBank = worksheetAllTopics[subjectKey] || worksheetAllTopics['mathematics'];
+    if (subjectBank) topicData = subjectBank[topicKey] || null;
+  }
+  if (!topicData) return '';
+
+  const lines: string[] = [];
+  lines.push('=== SPECIFICATION-ALIGNED EXAMPLE QUESTIONS (use these as your quality benchmark) ===');
+  lines.push(`Topic: ${topicData.title || topic}`);
+  if (topicData.objective) lines.push(`Learning Objective: ${topicData.objective}`);
+  lines.push('');
+
+  // Worked example
+  if (topicData.example) {
+    lines.push('WORKED EXAMPLE:');
+    if (topicData.example.question) lines.push(`Q: ${topicData.example.question}`);
+    if (Array.isArray(topicData.example.steps)) {
+      topicData.example.steps.forEach((s: string) => lines.push(s));
+    }
+    lines.push('');
+  }
+
+  // Guided questions (Section 1 style)
+  if (Array.isArray(topicData.guided) && topicData.guided.length > 0) {
+    lines.push('SECTION 1 — GUIDED QUESTIONS (scaffolded, lower-stakes):');
+    topicData.guided.slice(0, 4).forEach((item: any) => {
+      lines.push(`• ${item.q}  [${item.marks} mark${item.marks !== 1 ? 's' : ''}]  Answer: ${item.a}`);
+    });
+    lines.push('');
+  }
+
+  // Independent questions (Section 2/3 style)
+  if (Array.isArray(topicData.independent) && topicData.independent.length > 0) {
+    lines.push('SECTION 2/3 — INDEPENDENT QUESTIONS (exam-style, increasing difficulty):');
+    topicData.independent.slice(0, 6).forEach((item: any) => {
+      lines.push(`• ${item.q}  [${item.marks} mark${item.marks !== 1 ? 's' : ''}]  Answer: ${item.a}`);
+    });
+    lines.push('');
+  }
+
+  // Challenge
+  if (topicData.challenge) {
+    lines.push('CHALLENGE QUESTION:');
+    lines.push(`• ${topicData.challenge}`);
+    if (topicData.challengeAnswer) lines.push(`  Answer: ${topicData.challengeAnswer}`);
+    lines.push('');
+  }
+
+  lines.push('=== END OF SPECIFICATION EXAMPLES ===');
+  lines.push('INSTRUCTION: Generate questions of EQUAL or HIGHER quality than the examples above.');
+  lines.push('Match the exact style: numbered, mark-allocated, exam-board language, no trivial questions.');
+  return lines.join('\n');
 }
 
 export async function aiGenerateWorksheet(params: {
@@ -1479,8 +1554,10 @@ STRICT JSON OUTPUT: Respond with valid JSON only — no markdown, no code blocks
     const wantKeyVocab = secs.includes('key-vocabulary');
     const wantWorkedExample = secs.includes('worked-example');
     const wantCommonMistakes = secs.includes('common-mistakes');
-    const wantDiagramA = secs.includes('diagram-a');
-    const wantDiagramB = secs.includes('diagram-b');
+    // Diagrams are always included — every topic has a diagram via the SVG template + Wikimedia chain.
+    // The checkbox only controls whether the section appears in the UI selector, not whether it's generated.
+    const wantDiagramA = true;
+    const wantDiagramB = true;
     const wantTrueFalse = secs.includes('true-false');
     const wantMCQ = secs.includes('mcq');
     const wantWordBankGapFill = secs.includes('word-bank-gap-fill');
@@ -1491,6 +1568,9 @@ STRICT JSON OUTPUT: Respond with valid JSON only — no markdown, no code blocks
     const wantSectionC = secs.includes('section-c');
     const wantSelfReflection = secs.includes('self-reflection');
 
+    // Retrieve spec-aligned example questions for this topic (if available)
+    const specExamples = getSpecQuestions(params.subject, params.topic);
+
     const structuredSystem = `You are an expert UK teacher creating a professional, print-ready worksheet. You respond with valid raw JSON only — no markdown, no code blocks, no HTML. Every rule below is mandatory.
 
 SUBJECT TYPE: ${isSTEM ? 'STEM' : 'HUMANITIES'}
@@ -1499,7 +1579,7 @@ ${readingAgeNote}
 ${sendNote}
 ${tierNote}
 QUALITY STANDARD: Every question must be fully usable — no placeholders, no ellipses, no unfinished sentences. Use real numbers, real contexts. Textbook quality.
-
+${specExamples ? `\n${specExamples}\n` : ''}
 CRITICAL SEND RULE: SEND adaptations affect FORMATTING ONLY (font size, spacing, checkboxes, tone). NEVER add SEND instructions, scaffolding hints, or support prompts as extra items inside True/False statements, MCQ options, Gap Fill blanks, or any question content. The True/False section must contain ONLY factual statements about the topic. The MCQ section must contain ONLY the question and 4 answer options (A, B, C, D). Do NOT insert 'Complete the task in steps', 'Tick each step', 'Focus on one question', or any ADHD/SEND management instructions into question content.`;
 
     // ── STRUCTURED SECTION ORDER (matches requested format) ──────────────────
