@@ -4269,6 +4269,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
             };
 
             return (
+              <>
               <div
                 className="rm-jigsaw"
                 style={{
