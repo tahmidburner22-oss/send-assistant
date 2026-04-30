@@ -165,4 +165,25 @@ router.delete("/entries/:id", requireAuth, async (req: any, res) => {
   }
 });
 
+
+// ─── GET /api/diagram-library/revision-map-topics ───────────────────────────
+// Returns a lightweight list of { subject, topic } pairs that have a
+// "revision-map" tag in the library. Used by the client to decide whether
+// the Revision Mat toggle should be enabled for the current subject+topic.
+router.get("/revision-map-topics", requireAuth, async (_req: any, res) => {
+  try {
+    const result = await query(
+      `SELECT DISTINCT subject, topic
+       FROM diagram_library
+       WHERE tags::text ILIKE '%revision-map%'
+          OR tags::text ILIKE '%revision map%'
+       ORDER BY subject ASC, topic ASC`
+    );
+    res.json({ topics: result.rows });
+  } catch (err: any) {
+    console.error("[diagramLibrary] GET /revision-map-topics error:", err);
+    res.status(500).json({ error: "Failed to load revision map topics" });
+  }
+});
+
 export default router;

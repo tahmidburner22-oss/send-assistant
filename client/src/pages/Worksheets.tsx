@@ -388,6 +388,13 @@ export default function Worksheets() {
 
   // Re-fetch data from server on mount so history count is always current
   useEffect(() => { refreshData(); }, []);
+  // Fetch revision map topics once on mount so we know which subject+topic combos support Revision Mat
+  useEffect(() => {
+    fetch("/api/diagram-library/revision-map-topics", { credentials: "include" })
+      .then(r => r.json())
+      .then(d => setRevisionMapTopics(d.topics || []))
+      .catch(() => setRevisionMapTopics([]));
+  }, []);
 
   // Parse URL params for pre-filling from Curriculum Progression or external links
   const _urlParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : new URLSearchParams();
@@ -501,6 +508,16 @@ export default function Worksheets() {
 
   // Reset subtopic when topic changes
   useEffect(() => { setSubtopic(""); }, [topic]);
+  // Auto-disable Revision Mat if the newly selected topic has no Revision Map in the library
+  useEffect(() => {
+    if (!isRevisionMat) return;
+    const subjectLower = subject.toLowerCase();
+    const topicLower = topic.toLowerCase();
+    const available = revisionMapTopics.some(
+      e => e.subject.toLowerCase() === subjectLower && e.topic.toLowerCase() === topicLower
+    );
+    if (!available) setIsRevisionMat(false);
+  }, [subject, topic, revisionMapTopics]);
 
   // Reset difficulty to a valid option when subject changes
   // Exam-style always defaults OFF — user must opt in
@@ -523,6 +540,8 @@ export default function Worksheets() {
   // Diagram toggle — always off by default; user can enable it manually for any subject
   const [generateDiagram, setGenerateDiagram] = useState(false);
   const [isRevisionMat, setIsRevisionMat] = useState(false);
+  // Revision Map availability — fetched once on mount from the diagram library
+  const [revisionMapTopics, setRevisionMapTopics] = useState<{subject: string; topic: string}[]>([]);
   const [useAI, setUseAI] = useState(true);
 
   const [loading, setLoading] = useState(false);
@@ -3276,33 +3295,58 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                   )}
                 </div>
 
-                {/* Revision Mat Toggle — prominent, outside advanced options */}
-                <div
-                  onClick={() => setIsRevisionMat(!isRevisionMat)}
-                  className={`flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all select-none ${
-                    isRevisionMat
-                      ? "border-amber-400 bg-amber-50"
-                      : "border-border/50 bg-muted/20 hover:border-border hover:bg-muted/40"
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${isRevisionMat ? "bg-amber-500" : "bg-muted"}`}>
-                      <span className="text-lg">{isRevisionMat ? "📐" : "📋"}</span>
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <p className="text-sm font-semibold text-foreground">Revision Mat</p>
-                        <span className="text-[9px] font-bold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full">Different layout</span>
+                {/* Revision Mat Toggle — only enabled when the selected topic has a Revision Map in the diagram library */}
+                {(() => {
+                  const subjectLower = subject.toLowerCase();
+                  const topicLower = topic.toLowerCase();
+                  const revMatAvailable = revisionMapTopics.length > 0 && revisionMapTopics.some(
+                    e => e.subject.toLowerCase() === subjectLower && e.topic.toLowerCase() === topicLower
+                  );
+                  return (
+                    <div
+                      onClick={() => { if (revMatAvailable) setIsRevisionMat(!isRevisionMat); }}
+                      title={revMatAvailable ? undefined : "Revision Mat is only available for Biology, Chemistry, and Physics topics that have a Revision Map in the diagram library"}
+                      className={`flex items-center justify-between p-4 rounded-xl border-2 transition-all select-none ${
+                        !revMatAvailable
+                          ? "border-border/30 bg-muted/10 opacity-50 cursor-not-allowed"
+                          : isRevisionMat
+                          ? "border-amber-400 bg-amber-50 cursor-pointer"
+                          : "border-border/50 bg-muted/20 hover:border-border hover:bg-muted/40 cursor-pointer"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${isRevisionMat && revMatAvailable ? "bg-amber-500" : "bg-muted"}`}>
+                          <span className="text-lg">{isRevisionMat && revMatAvailable ? "📐" : "📋"}</span>
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <p className="text-sm font-semibold text-foreground">Revision Mat</p>
+                            {revMatAvailable
+                              ? <span className="text-[9px] font-bold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full">Different layout</span>
+                              : <span className="text-[9px] font-bold bg-muted text-muted-foreground px-1.5 py-0.5 rounded-full">Science only</span>
+                            }
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {!revMatAvailable
+                              ? !subject || !topic
+                                ? "Select a Biology, Chemistry or Physics topic to enable"
+                                : "No Revision Map available for this topic"
+                              : isRevisionMat
+                              ? "Landscape · 3-tier grid · Foundation / Core / Extension on one sheet"
+                              : "Switch to a landscape revision mat with activities circling a central topic"}
+                          </p>
+                        </div>
                       </div>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        {isRevisionMat
-                          ? "Landscape · 3-tier grid · Foundation / Core / Extension on one sheet"
-                          : "Switch to a landscape revision mat with activities circling a central topic"}
-                      </p>
+                      <Switch
+                        checked={isRevisionMat && revMatAvailable}
+                        onCheckedChange={(v) => { if (revMatAvailable) setIsRevisionMat(v); }}
+                        disabled={!revMatAvailable}
+                        id="revmat-sw"
+                        onClick={e => e.stopPropagation()}
+                      />
                     </div>
-                  </div>
-                  <Switch checked={isRevisionMat} onCheckedChange={setIsRevisionMat} id="revmat-sw" onClick={e => e.stopPropagation()} />
-                </div>
+                  );
+                })()}
 
                 <Button onClick={handleGenerate} disabled={loading} className="w-full h-12 bg-brand hover:bg-brand/90 text-white text-base font-semibold shadow-sm">
                   {loading
