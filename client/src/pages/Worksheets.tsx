@@ -505,6 +505,11 @@ export default function Worksheets() {
   const [diagChatLoading, setDiagChatLoading] = useState(false);
   const diagChatEndRef = useRef<HTMLDivElement>(null);
   const [diagSheetResult, setDiagSheetResult] = useState<{ topic: string; questions: string[] } | null>(null);
+  // Diagram toggle — always off by default; user can enable it manually for any subject
+  const [generateDiagram, setGenerateDiagram] = useState(false);
+  const [isRevisionMat, setIsRevisionMat] = useState(false);
+  // Revision Map availability — fetched once on mount from the diagram library
+  const [revisionMapTopics, setRevisionMapTopics] = useState<{subject: string; topic: string}[]>([]);
 
   // Reset subtopic when topic changes
   useEffect(() => { setSubtopic(""); }, [topic]);
@@ -537,11 +542,6 @@ export default function Worksheets() {
     if (!subject || !yearGroup) return [];
     return getSyllabusTopics(subject, yearGroup);
   }, [subject, yearGroup]);
-  // Diagram toggle — always off by default; user can enable it manually for any subject
-  const [generateDiagram, setGenerateDiagram] = useState(false);
-  const [isRevisionMat, setIsRevisionMat] = useState(false);
-  // Revision Map availability — fetched once on mount from the diagram library
-  const [revisionMapTopics, setRevisionMapTopics] = useState<{subject: string; topic: string}[]>([]);
   const [useAI, setUseAI] = useState(true);
 
   const [loading, setLoading] = useState(false);
