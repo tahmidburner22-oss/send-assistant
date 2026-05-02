@@ -214,10 +214,11 @@
     page-break-after: avoid !important;
   }
 
-  /* Each worksheet section must NOT split across pages */
+  /* Each worksheet section starts on its own page and must NOT split */
   .ws-section,
-  .worksheet-section,
-  .worksheet-content > div > div > div {
+  .worksheet-section {
+    break-before: page !important;
+    page-break-before: always !important;
     break-inside: avoid !important;
     page-break-inside: avoid !important;
     orphans: 3;
