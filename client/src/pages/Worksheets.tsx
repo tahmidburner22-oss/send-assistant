@@ -4641,6 +4641,7 @@ ${s.content}`).join("\n\n"),
                     schoolLogoUrl={preferences.schoolLogoUrl}
                     schoolName={preferences.schoolName}
                     isRevisionMat={isRevisionMat}
+                    paginated={true}
                     onDiagramChange={(sectionIndex, newImageUrl, newCaption) => {
                       const newSections = generated.sections.map((s: any, idx: number) => {
                         if (idx !== sectionIndex) return s;

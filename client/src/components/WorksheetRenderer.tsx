@@ -1105,6 +1105,8 @@ interface WorksheetRendererProps {
   onAnswerBoxRemove?: (sectionIndex: number) => void;
   isRevisionMat?: boolean;
   onDiagramChange?: (sectionIndex: number, newImageUrl: string, newCaption?: string) => void;
+  /** When true, wraps the worksheet in a grey background with the content as a white A4 card (paginated on-screen view). Default: false. */
+  paginated?: boolean;
 }
 
 // Section type → visual config (clean white, dark navy accent, no gradients, no emojis)
@@ -3799,6 +3801,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
   onAnswerBoxRemove,
   isRevisionMat = false,
   onDiagramChange,
+  paginated = false,
   }: WorksheetRendererProps, ref: React.Ref<HTMLDivElement>) {
   const isTeacherView = viewMode === "teacher";
 
@@ -3925,7 +3928,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
   const hasOverlay = overlayColor && overlayColor !== "white" && overlayColor !== "#ffffff"
     && overlayColor !== "transparent";
 
-  return (
+  const worksheetCard = (
     <div
       ref={ref}
       className="worksheet-print-root"
@@ -3938,6 +3941,14 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
         wordSpacing: fmt.wordSpacing,
         fontWeight: fmt.fontWeight,
         position: "relative",
+        ...(paginated ? {
+          maxWidth: "794px",
+          margin: "0 auto",
+          padding: "40px 48px",
+          boxShadow: "0 4px 24px rgba(0,0,0,0.13), 0 1px 4px rgba(0,0,0,0.08)",
+          borderRadius: "2px",
+          minHeight: "1123px",
+        } : {}),
       }}
     >
       {/* Colour overlay — sits above all section backgrounds, covers all text boxes */}
@@ -5990,6 +6001,24 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
       )}
     </div>
   );
+
+  if (paginated) {
+    return (
+      <div
+        className="worksheet-paginated-bg"
+        style={{
+          background: "#e5e7eb",
+          minHeight: "100%",
+          padding: "32px 16px",
+          boxSizing: "border-box" as const,
+        }}
+      >
+        {worksheetCard}
+      </div>
+    );
+  }
+
+  return worksheetCard;
 });
 
 WorksheetRenderer.displayName = "WorksheetRenderer";
