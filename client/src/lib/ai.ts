@@ -1631,8 +1631,10 @@ CRITICAL SEND RULE: SEND adaptations affect FORMATTING AND PRESENTATION ONLY —
     // imageUrl is injected directly into the structured sections string.
     let diagramAUrl = '';
     let diagramACaption = `${params.topic} — Diagram A`;
+    let diagramASvg = '';
     let diagramBUrl = '';
     let diagramBCaption = `${params.topic} — Diagram B`;
+    let diagramBSvg = '';
     try {
       const [diagARes, diagBRes] = await Promise.allSettled([
         fetch('/api/ai/diagram', {
@@ -1648,13 +1650,17 @@ CRITICAL SEND RULE: SEND adaptations affect FORMATTING AND PRESENTATION ONLY —
           body: JSON.stringify({ subject: params.subject, topic: params.topic, yearGroup: params.yearGroup || 'Year 9', slot: 'B' }),
         }).then(r => r.ok ? r.json() : null),
       ]);
-      if (diagARes.status === 'fulfilled' && diagARes.value?.imageUrl) {
-        diagramAUrl = diagARes.value.imageUrl;
-        diagramACaption = diagARes.value.caption || diagramACaption;
+      if (diagARes.status === 'fulfilled' && diagARes.value) {
+        const dA = diagARes.value;
+        if (dA.imageUrl) diagramAUrl = dA.imageUrl;
+        if (dA.svg) diagramASvg = dA.svg;
+        if (dA.caption) diagramACaption = dA.caption;
       }
-      if (diagBRes.status === 'fulfilled' && diagBRes.value?.imageUrl) {
-        diagramBUrl = diagBRes.value.imageUrl;
-        diagramBCaption = diagBRes.value.caption || diagramBCaption;
+      if (diagBRes.status === 'fulfilled' && diagBRes.value) {
+        const dB = diagBRes.value;
+        if (dB.imageUrl) diagramBUrl = dB.imageUrl;
+        if (dB.svg) diagramBSvg = dB.svg;
+        if (dB.caption) diagramBCaption = dB.caption;
       }
     } catch (diagPrefetchErr) {
       console.warn('[Diagram] Pre-fetch failed:', diagPrefetchErr);
@@ -1701,10 +1707,11 @@ CRITICAL SEND RULE: SEND adaptations affect FORMATTING AND PRESENTATION ONLY —
         title: 'Diagram A',
         type: 'diagram',
         fullPage: true,
-        content: `${diagramACaption}`,
+        content: diagramACaption,
         caption: diagramACaption,
       };
       if (diagramAUrl) diagASection.imageUrl = diagramAUrl;
+      // Note: svg is NOT embedded in the prompt string (too large) — injected post-parse below
       structuredSections.push(JSON.stringify(diagASection));
     }
 
@@ -1740,10 +1747,11 @@ CRITICAL SEND RULE: SEND adaptations affect FORMATTING AND PRESENTATION ONLY —
         title: 'Diagram B',
         type: 'diagram',
         fullPage: true,
-        content: `${diagramBCaption}`,
+        content: diagramBCaption,
         caption: diagramBCaption,
       };
       if (diagramBUrl) diagBSection.imageUrl = diagramBUrl;
+      // Note: svg is NOT embedded in the prompt string (too large) — injected post-parse below
       structuredSections.push(JSON.stringify(diagBSection));
     }
 
@@ -1823,6 +1831,17 @@ Return EXACTLY this JSON (raw JSON only, no markdown fences):
         title: typeof s.title === 'string' ? s.title.replace(/\*\*(.+?)\*\*/g, '$1').replace(/\*/g, '').trim() : s.title,
         content: typeof s.content === 'string' ? s.content.replace(/\*\*(.+?)\*\*/g, '$1').replace(/\*/g, '').trim() : s.content,
       }));
+      // Post-parse: inject pre-fetched svg into diagram sections that have no imageUrl
+      // (svg was not embedded in the prompt to avoid token bloat)
+      let diagramSlotsFound = 0;
+      structuredJson.sections = structuredJson.sections.map((s: any) => {
+        if (s.type !== 'diagram') return s;
+        diagramSlotsFound++;
+        if (s.imageUrl) return s; // already has a real image URL — keep it
+        if (diagramSlotsFound === 1 && diagramASvg) return { ...s, svg: diagramASvg, caption: s.caption || diagramACaption };
+        if (diagramSlotsFound === 2 && diagramBSvg) return { ...s, svg: diagramBSvg, caption: s.caption || diagramBCaption };
+        return s;
+      });
       return { ...structuredJson, isAI: true, provider: structuredProvider };
     }
     // If structured generation failed, fall through to legacy path

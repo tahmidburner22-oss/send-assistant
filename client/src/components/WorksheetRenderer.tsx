@@ -5034,11 +5034,13 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
               breakBefore: "page",
               pageBreakAfter: "auto",
               breakAfter: "auto",
-              minHeight: section.type === "diagram" ? "calc(100vh - 80px)" : undefined,
+              minHeight: section.type === "diagram" ? "calc(100vh - 40px)" : undefined,
+              height: section.type === "diagram" ? "calc(100vh - 40px)" : undefined,
               display: section.type === "diagram" ? "flex" : undefined,
               flexDirection: section.type === "diagram" ? "column" as const : undefined,
               justifyContent: section.type === "diagram" ? "center" : undefined,
-              padding: section.type === "diagram" ? "20px 0" : undefined,
+              padding: section.type === "diagram" ? "0" : undefined,
+              overflow: section.type === "diagram" ? "hidden" : "visible",
             }}
           >
             {/* ── Section header: individual question OR section divider ── */}
@@ -5191,13 +5193,13 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                       <img
                         src={resolveImageUrl(section)}
                         alt={section.caption || "Diagram"}
-                        style={{ width: "100%", maxWidth: "100%", objectFit: "contain", maxHeight: "calc(100vh - 200px)", border: "1px solid #e5e7eb", background: "#fff" }}
+                        style={{ width: "100%", height: "calc(100vh - 120px)", objectFit: "contain", background: "#fff", display: "block" }}
                         onError={(e) => {
                           const target = e.currentTarget;
                           target.style.display = "none";
                           if (section.svg) {
                             const svgWrapper = document.createElement("div");
-                            svgWrapper.style.cssText = "display:block;width:100%;border:1px solid #e5e7eb;overflow:hidden;background:white;";
+                            svgWrapper.style.cssText = "display:block;width:100%;height:calc(100vh - 120px);overflow:hidden;background:white;";
                             svgWrapper.innerHTML = section.svg;
                             target.parentNode?.insertBefore(svgWrapper, target.nextSibling);
                           }
@@ -5205,7 +5207,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                       />
                     ) : section.svg ? (
                       <div
-                        style={{ display: "block", width: "100%", border: "1px solid #e5e7eb", overflow: "hidden", background: "white" }}
+                        style={{ display: "block", width: "100%", height: "calc(100vh - 120px)", overflow: "hidden", background: "white" }}
                         dangerouslySetInnerHTML={{ __html: section.svg }}
                       />
                     ) : null}
