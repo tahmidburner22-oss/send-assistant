@@ -1269,9 +1269,11 @@ router.post("/diagram", requireAuth, async (req: Request, res: Response) => {
   });
 
   // ── Step 0: Hand-coded SVG templates (topic-specific, pixel-perfect, no external deps) ─
+  // For slot A: use SVG template if available (pixel-perfect, no external deps)
+  // For slot B: skip SVG template and fall through to admin library to get a DIFFERENT diagram
   const svgTemplate = getTemplate(subject, topic);
-  if (svgTemplate) {
-    console.log(`[Diagram] Using hand-coded SVG template for "${topic}" (${subject})`);
+  if (svgTemplate && diagramSlot !== 'B') {
+    console.log(`[Diagram] Using hand-coded SVG template for "${topic}" (${subject}) slot=A`);
     return res.json({
       svg: svgTemplate.svg,
       caption: svgTemplate.caption,
@@ -1407,6 +1409,21 @@ router.post("/diagram", requireAuth, async (req: Request, res: Response) => {
     }
   } catch (fullBankErr) {
     console.warn("[Diagram] Full local bank lookup failed:", fullBankErr);
+  }
+
+  // Last resort for slot B: fall back to SVG template if no library match found
+  if (diagramSlot === 'B' && svgTemplate) {
+    console.log(`[Diagram] Slot B fallback to SVG template for "${topic}" (${subject})`);
+    return res.json({
+      svg: svgTemplate.svg,
+      caption: `${svgTemplate.caption} (B)`,
+      attribution: null,
+      provider: "svg-template-fallback",
+      type: "svg",
+      imageKind: "diagram",
+      imageUrl: null,
+      fit: fitMeta,
+    });
   }
 
   console.log(`[Diagram] No diagram found for "${topic}" (${subject}) — returning not-available`);
