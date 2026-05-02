@@ -1573,13 +1573,18 @@ STRICT JSON OUTPUT: Respond with valid JSON only — no markdown, no code blocks
 
   const recallNote = params.recallTopic ? `RETRIEVAL PRACTICE REQUIRED: After the Learning Objective and BEFORE Key Vocabulary, include a section titled "Retrieval Practice — ${params.recallTopic}" (type: "prior-knowledge") with exactly 3 short retrieval questions on the PREVIOUS topic "${params.recallTopic}". These must be quick, accessible questions (True/False, short answer, or fill-in-blank) to activate prior knowledge. Do NOT mix these with the main topic questions. This section appears SECOND in the worksheet, right after the Learning Objective.` : '';
 
-  // ── NEW STRUCTURED GENERATION PATH ─────────────────────────────────────────
-  // When selectedSections is provided (AI fallback for topics not in library),
-  // use the structured format specified by the user:
-  // Header, LO, Retrieval (if set), Worked Example, Common Mistakes,
-  // True/False pills, MCQ, Word Bank Gap Fill, Match (if fits), Questions
-  if (params.selectedSections && !params.isRevisionMat && !params.examStyle && !params.introOnly && !isPrimary) {
-    const secs = params.selectedSections;
+  // ── STRUCTURED GENERATION PATH (always-on for all secondary worksheets) ────
+  // This is the primary generation path for all non-primary, non-exam, non-revision worksheets.
+  // It enforces the correct structure: LO → Retrieval → Key Vocab → Common Mistakes →
+  // Worked Example → Diagram A → Section A (T/F, MCQ, Gap Fill, Match) → Section B →
+  // Diagram B → Section C → Challenge → Self Reflection → Teacher Key
+  if (!params.isRevisionMat && !params.examStyle && !params.introOnly && !isPrimary) {
+    // Use selectedSections if provided, otherwise default to all sections enabled
+    const secs = params.selectedSections ?? [
+      'learning-objective', 'retrieval', 'key-vocabulary', 'common-mistakes',
+      'worked-example', 'true-false', 'mcq', 'word-bank-gap-fill', 'match',
+      'section-a', 'questions', 'section-b', 'section-c', 'self-reflection'
+    ];
     const wantLO = secs.includes('learning-objective');
     const wantRetrieval = secs.includes('retrieval') && !!params.recallTopic;
     const wantKeyVocab = secs.includes('key-vocabulary');
@@ -1621,10 +1626,44 @@ CRITICAL SEND RULE: SEND adaptations affect FORMATTING AND PRESENTATION ONLY —
 - NEVER add SEND management instructions ('Complete the task in steps', 'Tick each step', 'Focus on one question', 'Take a break') as question content items.
 - SEND scaffolding (sentence starters, answer frames, worked examples) goes in SEPARATE support boxes AROUND the questions — not inside the question text itself.`;
 
-    // ── STRUCTURED SECTION ORDER (matches requested format) ──────────────────
+    // ── PRE-FETCH DIAGRAM URLS (parallel, before AI call) ──────────────────────
+    // Fetch Diagram A and Diagram B from the library in parallel so the real
+    // imageUrl is injected directly into the structured sections string.
+    let diagramAUrl = '';
+    let diagramACaption = `${params.topic} — Diagram A`;
+    let diagramBUrl = '';
+    let diagramBCaption = `${params.topic} — Diagram B`;
+    try {
+      const [diagARes, diagBRes] = await Promise.allSettled([
+        fetch('/api/ai/diagram', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ subject: params.subject, topic: params.topic, yearGroup: params.yearGroup || 'Year 9', slot: 'A' }),
+        }).then(r => r.ok ? r.json() : null),
+        fetch('/api/ai/diagram', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ subject: params.subject, topic: params.topic, yearGroup: params.yearGroup || 'Year 9', slot: 'B' }),
+        }).then(r => r.ok ? r.json() : null),
+      ]);
+      if (diagARes.status === 'fulfilled' && diagARes.value?.imageUrl) {
+        diagramAUrl = diagARes.value.imageUrl;
+        diagramACaption = diagARes.value.caption || diagramACaption;
+      }
+      if (diagBRes.status === 'fulfilled' && diagBRes.value?.imageUrl) {
+        diagramBUrl = diagBRes.value.imageUrl;
+        diagramBCaption = diagBRes.value.caption || diagramBCaption;
+      }
+    } catch (diagPrefetchErr) {
+      console.warn('[Diagram] Pre-fetch failed:', diagPrefetchErr);
+    }
+
+    // ── STRUCTURED SECTION ORDER (matches required format) ───────────────────
     // Format: Header → LO → Retrieval → Key Vocabulary → Common Mistakes →
-    //         Worked Example → Diagram A → Section 1 Questions → Section 2 Questions →
-    //         Diagram B → Section 3 Questions → Challenge → Self Reflection → Teacher Key
+    //         Worked Example → Diagram A → Section A Questions → Section B Questions →
+    //         Diagram B → Section C Questions → Challenge → Self Reflection → Teacher Key
     const structuredSections: string[] = [];
 
     // 1. Learning Objective
@@ -1656,48 +1695,64 @@ CRITICAL SEND RULE: SEND adaptations affect FORMATTING AND PRESENTATION ONLY —
       }
     }
 
-    // 6. Diagram A \u2014 full-page spread (after Worked Example, before Section 1 Questions)
+    // 6. Diagram A — full-page spread (after Worked Example, before Section A Questions)
     if (wantDiagramA) {
-      structuredSections.push(`{"title": "Diagram A", "type": "diagram", "content": "[Diagram A \u2014 full-page visual reference for ${params.topic}. Use this diagram to help answer the questions below.]", "caption": "${params.topic} \u2014 Diagram A"}`);
+      const diagASection: Record<string, unknown> = {
+        title: 'Diagram A',
+        type: 'diagram',
+        fullPage: true,
+        content: `${diagramACaption}`,
+        caption: diagramACaption,
+      };
+      if (diagramAUrl) diagASection.imageUrl = diagramAUrl;
+      structuredSections.push(JSON.stringify(diagASection));
     }
 
-    // 7. Section 1 Questions (True/False, MCQ, Word Bank, Match)
+    // 7. Section A Questions (True/False, MCQ, Word Bank, Match)
     if (wantTrueFalse) {
-      structuredSections.push(`{"title": "Section 1 \u2014 True or False", "type": "q-true-false", "marks": 4, "content": "Circle TRUE or FALSE for each statement. [4 marks]\n1. [Statement about ${params.topic} \u2014 TRUE]  TRUE  /  FALSE\n2. [Statement about ${params.topic} \u2014 FALSE]  TRUE  /  FALSE\n3. [Statement about ${params.topic} \u2014 TRUE]  TRUE  /  FALSE\n4. [Statement about ${params.topic} \u2014 FALSE]  TRUE  /  FALSE"}`);
+      structuredSections.push(`{"title": "Section A — True or False", "type": "q-true-false", "marks": 4, "content": "Circle TRUE or FALSE for each statement. [4 marks]\n1. [Statement about ${params.topic} \u2014 TRUE]  TRUE  /  FALSE\n2. [Statement about ${params.topic} \u2014 FALSE]  TRUE  /  FALSE\n3. [Statement about ${params.topic} \u2014 TRUE]  TRUE  /  FALSE\n4. [Statement about ${params.topic} \u2014 FALSE]  TRUE  /  FALSE"}`);
     }
 
     if (wantMCQ) {
-      structuredSections.push(`{"title": "Section 1 \u2014 Multiple Choice", "type": "q-mcq", "marks": 1, "content": "[A specific question about ${params.topic} at ${params.yearGroup} curriculum level — use real subject-specific language] [1 mark]\nA  [plausible incorrect option — a common misconception]\nB  [correct answer \u2014 mark with \u2713 at the end of this line] \u2713\nC  [plausible incorrect option]\nD  [plausible incorrect option]"}`);
+      structuredSections.push(`{"title": "Section A — Multiple Choice", "type": "q-mcq", "marks": 1, "content": "[A specific question about ${params.topic} at ${params.yearGroup} curriculum level — use real subject-specific language] [1 mark]\nA  [plausible incorrect option — a common misconception]\nB  [correct answer \u2014 mark with \u2713 at the end of this line] \u2713\nC  [plausible incorrect option]\nD  [plausible incorrect option]"}`);
     }
 
     if (wantWordBankGapFill) {
-      structuredSections.push(`{"title": "Section 1 \u2014 Word Bank Gap Fill", "type": "q-gap-fill", "marks": 7, "content": "Complete the paragraph using words from the word bank below. [7 marks]\n[Write EXACTLY 7 sentences about ${params.topic}. Each sentence MUST contain exactly ONE blank shown as _____. The blank must replace a key subject term. Do NOT number the blanks. Do NOT put two blanks in one sentence. Result: 7 sentences = 7 blanks. ${isMaths ? 'Write all numbers and expressions as plain text \u2014 no LaTeX here.' : ''} Example format:\nThe _____ is the organelle where photosynthesis occurs.\nPlants absorb _____ from the air through their stomata.\n[continue for 5 more sentences, each with one _____ blank]]\nWORD BANK: [the 7 correct answers in shuffled order, plus 3 plausible distractors \u2014 total EXACTLY 10 words] [word1] | [word2] | [word3] | [word4] | [word5] | [word6] | [word7] | [word8] | [word9] | [word10]\nRULE: EXACTLY 7 sentences, EXACTLY 7 blanks (one per sentence), EXACTLY 10 words in word bank."}`);
+      structuredSections.push(`{"title": "Section A — Word Bank Gap Fill", "type": "q-gap-fill", "marks": 7, "content": "Complete the paragraph using words from the word bank below. [7 marks]\n[Write EXACTLY 7 sentences about ${params.topic}. Each sentence MUST contain exactly ONE blank shown as _____. The blank must replace a key subject term. Do NOT number the blanks. Do NOT put two blanks in one sentence. Result: 7 sentences = 7 blanks. ${isMaths ? 'Write all numbers and expressions as plain text \u2014 no LaTeX here.' : ''} Example format:\nThe _____ is the organelle where photosynthesis occurs.\nPlants absorb _____ from the air through their stomata.\n[continue for 5 more sentences, each with one _____ blank]]\nWORD BANK: [the 7 correct answers in shuffled order, plus 3 plausible distractors \u2014 total EXACTLY 10 words] [word1] | [word2] | [word3] | [word4] | [word5] | [word6] | [word7] | [word8] | [word9] | [word10]\nRULE: EXACTLY 7 sentences, EXACTLY 7 blanks (one per sentence), EXACTLY 10 words in word bank."}`);
     }
 
     if (wantMatch) {
-      structuredSections.push(`{"title": "Section 1 \u2014 Match the Column", "type": "q-matching", "marks": 5, "content": "Draw a line to match each term with its correct definition. [5 marks]\nIMPORTANT: Write CORRECT pairs only — each term paired with its own accurate definition. The renderer will shuffle the definitions column for the student. Do NOT pre-shuffle or swap definitions between terms.\n${isMaths ? '1. [mathematical term from ' + params.topic + '] \u2194 [the accurate definition of THAT specific term — not another term\'s definition]\n2. [mathematical term] \u2194 [the accurate definition of THAT specific term]\n3. [mathematical term] \u2194 [the accurate definition of THAT specific term]\n4. [mathematical term] \u2194 [the accurate definition of THAT specific term]\n5. [mathematical term] \u2194 [the accurate definition of THAT specific term]' : '1. [key term from ' + params.topic + '] \u2194 [the accurate definition of THAT specific term — not another term\'s definition]\n2. [key term] \u2194 [the accurate definition of THAT specific term]\n3. [key term] \u2194 [the accurate definition of THAT specific term]\n4. [key term] \u2194 [the accurate definition of THAT specific term]\n5. [key term] \u2194 [the accurate definition of THAT specific term]'}"}`);
+      structuredSections.push(`{"title": "Section A — Match the Column", "type": "q-matching", "marks": 5, "content": "Draw a line to match each term with its correct definition. [5 marks]\nIMPORTANT: Write CORRECT pairs only — each term paired with its own accurate definition. The renderer will shuffle the definitions column for the student. Do NOT pre-shuffle or swap definitions between terms.\n${isMaths ? '1. [mathematical term from ' + params.topic + '] \u2194 [the accurate definition of THAT specific term — not another term\'s definition]\n2. [mathematical term] \u2194 [the accurate definition of THAT specific term]\n3. [mathematical term] \u2194 [the accurate definition of THAT specific term]\n4. [mathematical term] \u2194 [the accurate definition of THAT specific term]\n5. [mathematical term] \u2194 [the accurate definition of THAT specific term]' : '1. [key term from ' + params.topic + '] \u2194 [the accurate definition of THAT specific term — not another term\'s definition]\n2. [key term] \u2194 [the accurate definition of THAT specific term]\n3. [key term] \u2194 [the accurate definition of THAT specific term]\n4. [key term] \u2194 [the accurate definition of THAT specific term]\n5. [key term] \u2194 [the accurate definition of THAT specific term]'}"}`);
     }
 
-    // 8. Section 2 Questions \u2014 Foundation / Guided Practice
+    // 8. Section B Questions — Foundation / Guided Practice
     if (wantSectionA) {
       if (isMaths) {
-        structuredSections.push(`{"title": "Section 2 \u2014 Foundation Questions", "type": "guided", "marks": 8, "content": "Answer all questions. Show all working. [8 marks]\n\n1. [Very straightforward ${params.topic} calculation \u2014 1 step] [1 mark]\n\n2. [Basic ${params.topic} calculation] [1 mark]\n\n3. [${params.topic} calculation with a simple context] [2 marks]\n\n4. [${params.topic} question \u2014 fill in the blank or complete the working] [2 marks]\n\n5. [${params.topic} question \u2014 two steps, scaffolded] [2 marks]"}`);
+        structuredSections.push(`{"title": "Section B — Foundation Questions", "type": "q-short-answer", "marks": 8, "content": "Answer all questions. Show all working. [8 marks]\n\n1. [Very straightforward ${params.topic} calculation \u2014 1 step] [1 mark]\n\n2. [Basic ${params.topic} calculation] [1 mark]\n\n3. [${params.topic} calculation with a simple context] [2 marks]\n\n4. [${params.topic} question \u2014 fill in the blank or complete the working] [2 marks]\n\n5. [${params.topic} question \u2014 two steps, scaffolded] [2 marks]"}`);
       } else {
-        structuredSections.push(`{"title": "Section 2 \u2014 Foundation Questions", "type": "guided", "marks": 8, "content": "Answer all questions. [8 marks]\n\n1. [Knowledge recall question about ${params.topic}] [1 mark]\n\n2. [Simple comprehension question about ${params.topic}] [2 marks]\n\n3. [Application question \u2014 apply basic knowledge of ${params.topic}] [2 marks]\n\n4. [Describe or identify question about ${params.topic}] [3 marks]"}`);
+        structuredSections.push(`{"title": "Section B — Foundation Questions", "type": "q-short-answer", "marks": 8, "content": "Answer all questions. [8 marks]\n\n1. [Knowledge recall question about ${params.topic}] [1 mark]\n\n2. [Simple comprehension question about ${params.topic}] [2 marks]\n\n3. [Application question \u2014 apply basic knowledge of ${params.topic}] [2 marks]\n\n4. [Describe or identify question about ${params.topic}] [3 marks]"}`);
       }
     }
 
-    // 9. Diagram B \u2014 full-page spread (between Section 2 and Section 3 Questions)
+    // 9. Diagram B — full-page spread (between Section B and Section C Questions)
     if (wantDiagramB) {
-      structuredSections.push(`{"title": "Diagram B", "type": "diagram", "content": "[Diagram B \u2014 full-page visual reference for ${params.topic}. Use this diagram to help answer the questions below.]", "caption": "${params.topic} \u2014 Diagram B"}`);
+      const diagBSection: Record<string, unknown> = {
+        title: 'Diagram B',
+        type: 'diagram',
+        fullPage: true,
+        content: `${diagramBCaption}`,
+        caption: diagramBCaption,
+      };
+      if (diagramBUrl) diagBSection.imageUrl = diagramBUrl;
+      structuredSections.push(JSON.stringify(diagBSection));
     }
 
-    // 10. Section 3 Questions \u2014 Core Practice
+    // 10. Section C Questions — Core Practice
     if (wantQuestions) {
       if (isMaths) {
-        structuredSections.push(`{"title": "Section 3 \u2014 Core Practice", "type": "independent", "marks": 20, "content": "Answer all questions. Show all working. [20 marks]\n\n1. [Straightforward ${params.topic} calculation \u2014 1 mark] [1 mark]\n\n2. [Slightly harder ${params.topic} calculation \u2014 2 marks] [2 marks]\n\n3. [${params.topic} calculation requiring two steps] [2 marks]\n\n4. [${params.topic} problem with a real-world context] [3 marks]\n\n5. (a) [First part of a multi-part ${params.topic} problem] [2 marks]\n   (b) [Second part \u2014 builds on (a)] [2 marks]\n   (c) [Third part \u2014 applies the result] [2 marks]\n\n6. [${params.topic} problem requiring full method \u2014 show all working] [4 marks]\n\n7. [${params.topic} problem with interpretation or explanation] [4 marks]"}`);
+        structuredSections.push(`{"title": "Section C — Core Practice", "type": "q-extended", "marks": 20, "content": "Answer all questions. Show all working. [20 marks]\n\n1. [Straightforward ${params.topic} calculation \u2014 1 mark] [1 mark]\n\n2. [Slightly harder ${params.topic} calculation \u2014 2 marks] [2 marks]\n\n3. [${params.topic} calculation requiring two steps] [2 marks]\n\n4. [${params.topic} problem with a real-world context] [3 marks]\n\n5. (a) [First part of a multi-part ${params.topic} problem] [2 marks]\n   (b) [Second part \u2014 builds on (a)] [2 marks]\n   (c) [Third part \u2014 applies the result] [2 marks]\n\n6. [${params.topic} problem requiring full method \u2014 show all working] [4 marks]\n\n7. [${params.topic} problem with interpretation or explanation] [4 marks]"}`);
       } else {
-        structuredSections.push(`{"title": "Section 3 \u2014 Core Practice", "type": "independent", "marks": 20, "content": "Answer all questions. [20 marks]\n\n1. [Knowledge recall question about ${params.topic}] [1 mark]\n\n2. [Comprehension question about ${params.topic}] [2 marks]\n\n3. [Application question \u2014 apply knowledge of ${params.topic} to a given scenario] [3 marks]\n\n4. [Analysis question \u2014 explain or describe an aspect of ${params.topic}] [4 marks]\n\n5. [Evaluation question \u2014 assess or discuss ${params.topic}] [6 marks]\n   Your answer should include:\n   \u2022 [Point 1]\n   \u2022 [Point 2]\n   \u2022 [Point 3]\n\n6. [Extended response question about ${params.topic}] [4 marks]"}`);
+        structuredSections.push(`{"title": "Section C — Core Practice", "type": "q-extended", "marks": 20, "content": "Answer all questions. [20 marks]\n\n1. [Knowledge recall question about ${params.topic}] [1 mark]\n\n2. [Comprehension question about ${params.topic}] [2 marks]\n\n3. [Application question \u2014 apply knowledge of ${params.topic} to a given scenario] [3 marks]\n\n4. [Analysis question \u2014 explain or describe an aspect of ${params.topic}] [4 marks]\n\n5. [Evaluation question \u2014 assess or discuss ${params.topic}] [6 marks]\n   Your answer should include:\n   \u2022 [Point 1]\n   \u2022 [Point 2]\n   \u2022 [Point 3]\n\n6. [Extended response question about ${params.topic}] [4 marks]"}`);
       }
     }
 
@@ -1715,8 +1770,8 @@ CRITICAL SEND RULE: SEND adaptations affect FORMATTING AND PRESENTATION ONLY —
       structuredSections.push(`{"title": "Self Reflection", "type": "self-reflection", "teacherOnly": false, "content": "SUBTITLE: Review your understanding before moving on.\nCONFIDENCE_TABLE:\n[specific skill/concept 1 from ${params.topic}]\n[specific skill/concept 2 from ${params.topic}]\n[specific skill/concept 3 from ${params.topic}]\n[specific skill/concept 4 from ${params.topic}]\n[specific skill/concept 5 from ${params.topic}]\nWRITTEN_PROMPTS:\nOne concept I feel confident about is ...\nOne area I still need to practise is ...\nA question I still want to ask my teacher is ...\nEXIT_TICKET: Write ONE thing you learned today about ${params.topic} in one sentence:"}`);
     }
 
-    // Always add mark scheme (teacher only)
-    structuredSections.push(`{"title": "Mark Scheme", "type": "mark-scheme", "teacherOnly": true, "content": "MARK SCHEME — TEACHER USE ONLY\n\nYou MUST write a complete answer for EVERY question generated above. Do not use placeholders. Follow this format exactly:\n\nRETRIEVAL (if present):\nQ1: [correct answer]\nQ2: [correct answer with mark allocation]\nQ3: [correct answer]\n\nSECTION 1 — True or False:\n1. [TRUE/FALSE] — [brief explanation]\n2. [TRUE/FALSE] — [brief explanation]\n3. [TRUE/FALSE] — [brief explanation]\n4. [TRUE/FALSE] — [brief explanation]\n\nSECTION 1 — Multiple Choice:\n[Letter]: [full correct answer text] [1 mark]\n\nSECTION 1 — Word Bank Gap Fill (in order of blanks):\n1. [word] 2. [word] 3. [word] 4. [word] 5. [word] 6. [word] 7. [word]\n\nSECTION 1 — Match the Column (correct pairs):\n1. [Term] ↔ [correct definition]\n2. [Term] ↔ [correct definition]\n3. [Term] ↔ [correct definition]\n4. [Term] ↔ [correct definition]\n5. [Term] ↔ [correct definition]\n\nSECTION 2 — Foundation Questions:\n1. [full model answer] [mark allocation]\n2. [full model answer] [mark allocation]\n3. [full model answer] [mark allocation]\n4. [full model answer] [mark allocation]\n\nSECTION 3 — Core Practice:\n1. [full model answer] [mark allocation]\n2. [full model answer] [mark allocation]\n3. [full model answer] [mark allocation]\n4. [full model answer] [mark allocation]\n5. [full model answer] [mark allocation]\n6. [full model answer] [mark allocation]\n\nCHALLENGE QUESTION:\n1. [full model answer including any required method/working] [mark allocation]\n2. [full model answer] [mark allocation]\n\nFor extended/essay questions: provide a model answer with key marking points listed (e.g. Award 1 mark for each of: [point 1], [point 2], [point 3]).\n${isMaths ? 'For maths: show full working for every calculation. State the method used. Show substitution and simplification steps.' : 'For science/humanities: state the command word requirement and what a full-mark answer must include.'}"}`);
+    // Always add Teacher Key (teacher only)
+    structuredSections.push(`{"title": "Teacher Key", "type": "mark-scheme", "teacherOnly": true, "content": "TEACHER KEY — TEACHER USE ONLY\n\nYou MUST write a complete answer for EVERY question generated above. Do not use placeholders. Follow this format exactly:\n\nRETRIEVAL (if present):\nQ1: [correct answer]\nQ2: [correct answer with mark allocation]\nQ3: [correct answer]\n\nSECTION A — True or False:\n1. [TRUE/FALSE] — [brief explanation]\n2. [TRUE/FALSE] — [brief explanation]\n3. [TRUE/FALSE] — [brief explanation]\n4. [TRUE/FALSE] — [brief explanation]\n\nSECTION A — Multiple Choice:\n[Letter]: [full correct answer text] [1 mark]\n\nSECTION A — Word Bank Gap Fill (in order of blanks):\n1. [word] 2. [word] 3. [word] 4. [word] 5. [word] 6. [word] 7. [word]\n\nSECTION A — Match the Column (correct pairs):\n1. [Term] ↔ [correct definition]\n2. [Term] ↔ [correct definition]\n3. [Term] ↔ [correct definition]\n4. [Term] ↔ [correct definition]\n5. [Term] ↔ [correct definition]\n\nSECTION B — Foundation Questions:\n1. [full model answer] [mark allocation]\n2. [full model answer] [mark allocation]\n3. [full model answer] [mark allocation]\n4. [full model answer] [mark allocation]\n\nSECTION C — Core Practice:\n1. [full model answer] [mark allocation]\n2. [full model answer] [mark allocation]\n3. [full model answer] [mark allocation]\n4. [full model answer] [mark allocation]\n5. [full model answer] [mark allocation]\n6. [full model answer] [mark allocation]\n\nCHALLENGE QUESTION:\n1. [full model answer including any required method/working] [mark allocation]\n2. [full model answer] [mark allocation]\n\nFor extended/essay questions: provide a model answer with key marking points listed (e.g. Award 1 mark for each of: [point 1], [point 2], [point 3]).\n${isMaths ? 'For maths: show full working for every calculation. State the method used. Show substitution and simplification steps.' : 'For science/humanities: state the command word requirement and what a full-mark answer must include.'}"}`);
 
     const structuredUser = `Create a professional, print-ready worksheet in valid raw JSON only.
 Subject: ${params.subject} | Year: ${params.yearGroup} (${phase}) | Topic: ${params.topic} | Difficulty: ${params.difficulty || "mixed"}
@@ -1750,7 +1805,7 @@ Return EXACTLY this JSON (raw JSON only, no markdown fences):
   ]
 }`;
 
-    const { text: structuredText, provider: structuredProvider } = await callAI(structuredSystem, structuredUser, 4000);
+    const { text: structuredText, provider: structuredProvider } = await callAI(structuredSystem, structuredUser, 6500);
     const structuredCleaned = structuredText.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/i, '').trim();
     let structuredJson: any;
     try {

@@ -1232,8 +1232,11 @@ REMINDER: All labels in Zone B (x=55-150), C (x=550-645), D (y=45-52), or E (y=4
 
 // ── POST /api/ai/diagram — dedicated diagram generation with fallback chain ───
 router.post("/diagram", requireAuth, async (req: Request, res: Response) => {
-  const { subject, topic, yearGroup, sendNeed } = req.body;
+  const { subject, topic, yearGroup, sendNeed, slot } = req.body;
   if (!subject || !topic) return res.status(400).json({ error: "subject and topic required" });
+
+  // slot: 'A' = first/best match, 'B' = second-best match (different image)
+  const diagramSlot = String(slot || 'A').toUpperCase();
 
   const yr = yearGroup || "Year 9";
   const subjectLower = String(subject).toLowerCase();
@@ -1334,13 +1337,37 @@ router.post("/diagram", requireAuth, async (req: Request, res: Response) => {
       });
 
       scored.sort((a, b) => b.score - a.score);
-      const best = scored[0];
 
-      if (best && best.score > 0) {
-        console.log(`[Diagram] Admin library match for "${topic}" (${subject}): "${best.entry.title}" score=${best.score}`);
+      // Filter to entries with a meaningful score
+      const candidates = scored.filter(s => s.score > 0);
+
+      // For slot B: prefer entries whose title contains "Diagram B" or "— B";
+      // otherwise use the second-best candidate (different image from slot A).
+      let chosen: typeof candidates[0] | undefined;
+      if (diagramSlot === 'B') {
+        // First try: find an entry explicitly labelled Diagram B
+        const explicitB = candidates.find(c =>
+          /diagram\s*b\b/i.test(c.entry.title) || /\u2014\s*b\b/i.test(c.entry.title)
+        );
+        if (explicitB) {
+          chosen = explicitB;
+        } else {
+          // Fall back to second-best candidate (skip the top result used for A)
+          chosen = candidates[1] || candidates[0];
+        }
+      } else {
+        // Slot A: prefer entries explicitly labelled Diagram A, else top result
+        const explicitA = candidates.find(c =>
+          /diagram\s*a\b/i.test(c.entry.title) || /\u2014\s*a\b/i.test(c.entry.title)
+        );
+        chosen = explicitA || candidates[0];
+      }
+
+      if (chosen) {
+        console.log(`[Diagram] Admin library match for "${topic}" (${subject}) slot=${diagramSlot}: "${chosen.entry.title}" score=${chosen.score}`);
         return res.json(buildImageResponse({
-          imageUrl: best.entry.image_url,
-          caption: `${best.entry.title} — ${subject} (${yr})`,
+          imageUrl: chosen.entry.image_url,
+          caption: `${chosen.entry.title} — ${subject} (${yr})`,
           attribution: null,
           provider: "admin-library",
           imageKind: "diagram",
