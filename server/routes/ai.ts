@@ -1289,12 +1289,31 @@ router.post("/diagram", requireAuth, async (req: Request, res: Response) => {
   // ── Step 1: Admin diagram library (DB — 1722 curated educational diagrams) ──
   // This is the ONLY image source. No Wikimedia or external URLs are used.
   try {
-    const allRows = await dbQuery(
+    // Fast targeted query: filter by subject and topic at DB level to avoid scanning all rows in JS.
+    const subjectPat = `%${subjectLower}%`;
+    const topicWords = topicLower.split(/\s+/).filter((w: string) => w.length > 3);
+    const topicPat = topicWords.length > 0 ? `%${topicWords[0]}%` : `%${topicLower}%`;
+    let targetedRows = await dbQuery(
       `SELECT id, title, subject, topic, image_url, description, tags, curated
        FROM diagram_library
-       ORDER BY curated DESC, subject ASC, title ASC`
+       WHERE (LOWER(subject) LIKE $1 OR LOWER(title) LIKE $1)
+         AND (LOWER(topic) LIKE $2 OR LOWER(title) LIKE $2)
+       ORDER BY curated DESC, subject ASC, title ASC
+       LIMIT 80`,
+      [subjectPat, topicPat]
     );
-    const entries: any[] = allRows.rows;
+    // If no targeted results, fall back to subject-only match
+    if (targetedRows.rows.length === 0) {
+      targetedRows = await dbQuery(
+        `SELECT id, title, subject, topic, image_url, description, tags, curated
+         FROM diagram_library
+         WHERE LOWER(subject) LIKE $1
+         ORDER BY curated DESC, subject ASC, title ASC
+         LIMIT 120`,
+        [subjectPat]
+      );
+    }
+    const entries: any[] = targetedRows.rows;
 
     if (entries.length > 0) {
       // Score each entry for relevance
