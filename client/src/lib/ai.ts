@@ -1667,11 +1667,11 @@ CRITICAL SEND RULE: SEND adaptations affect FORMATTING AND PRESENTATION ONLY —
     }
 
     if (wantMCQ) {
-      structuredSections.push(`{"title": "Section 1 \u2014 Multiple Choice", "type": "q-mcq", "marks": 1, "content": "[A specific question about ${params.topic} at ${params.yearGroup} curriculum level — use real subject-specific language] [1 mark]\nA  [plausible incorrect option — a common misconception]\nB  [correct answer \u2014 mark with \u2713 at the end of this line] \u2713\nC  [plausible incorrect option]\nD  [plausible incorrect option]\nNOTE: The \u2713 symbol marks the correct answer for the mark scheme ONLY — do NOT write CORRECT: anywhere in student content. The renderer will hide the \u2713 from students and only show it in teacher view."}`);
+      structuredSections.push(`{"title": "Section 1 \u2014 Multiple Choice", "type": "q-mcq", "marks": 1, "content": "[A specific question about ${params.topic} at ${params.yearGroup} curriculum level — use real subject-specific language] [1 mark]\nA  [plausible incorrect option — a common misconception]\nB  [correct answer \u2014 mark with \u2713 at the end of this line] \u2713\nC  [plausible incorrect option]\nD  [plausible incorrect option]"}`);
     }
 
     if (wantWordBankGapFill) {
-      structuredSections.push(`{"title": "Section 1 \u2014 Word Bank Gap Fill", "type": "q-gap-fill", "marks": 7, "content": "Complete the paragraph using words from the word bank below. [7 marks]\n[Write a 5\u20137 sentence paragraph about ${params.topic} using correct subject terminology. The paragraph MUST contain EXACTLY 7 blanks shown as _____. Count your blanks before writing — there must be exactly 7. ${isMaths ? 'Write all numbers and expressions as plain text in this paragraph \u2014 no LaTeX here.' : ''} Each blank must be a key subject term, not a common word.]\nWORD BANK: [the 7 correct answers in shuffled order, plus 3 distractors — total 10 words] [word1] | [word2] | [word3] | [word4] | [word5] | [word6] | [word7] | [word8] | [word9] | [word10]\nRULE: The word bank must contain EXACTLY 10 words: the 7 correct answers (shuffled) plus 3 plausible distractors."}`);
+      structuredSections.push(`{"title": "Section 1 \u2014 Word Bank Gap Fill", "type": "q-gap-fill", "marks": 7, "content": "Complete the paragraph using words from the word bank below. [7 marks]\n[MANDATORY: Write a paragraph of 6-8 sentences about ${params.topic} using correct subject terminology. You MUST include EXACTLY 7 blanks shown as _____. Before finalising, count your blanks: 1st _____, 2nd _____, 3rd _____, 4th _____, 5th _____, 6th _____, 7th _____. If you have fewer than 7, add more sentences. Each blank must be a key subject term or important number — not a common word like 'the' or 'is'. ${isMaths ? 'Write all numbers and expressions as plain text in this paragraph \u2014 no LaTeX here.' : ''}]\nWORD BANK: [the 7 correct answers in shuffled order, plus 3 plausible distractors — total EXACTLY 10 words] [word1] | [word2] | [word3] | [word4] | [word5] | [word6] | [word7] | [word8] | [word9] | [word10]\nRULE: EXACTLY 7 blanks in the paragraph. EXACTLY 10 words in the word bank (7 answers + 3 distractors). No more, no fewer."}`);
     }
 
     if (wantMatch) {
@@ -1735,11 +1735,11 @@ RULES:
 6. Each step, question, or item must be on its own line using \n.
 ${isMaths ? '7. MATHS ONLY: All questions must be numerical/calculation-based. Never ask students to explain, describe, or write prose. Use LaTeX for all math expressions.' : ''}
 8. SPEC QUALITY: Every question must be at genuine ${params.yearGroup} exam standard — use real exam command words (describe, explain, evaluate, calculate, state, identify, compare, justify, analyse). Questions must test the actual curriculum content of "${params.topic}" — not generic or trivially easy questions.
-9. MCQ RULE: Mark the correct MCQ option with \u2713 at the end of that option line ONLY. Do NOT write "CORRECT:" anywhere. The \u2713 is hidden from students by the renderer.
+9. MCQ RULE: Mark the correct MCQ option with \u2713 at the end of that option line ONLY. Do NOT write "CORRECT:", "NOTE:", or any meta-instruction text in the content string — output ONLY the question and four options.
 10. MATCH RULE: Write CORRECT pairs only — each term with its own accurate definition. Do NOT swap or shuffle definitions between terms.
 11. MARK SCHEME RULE: The mark scheme section MUST contain a complete, full answer for every single question. No placeholders. Write actual answers.
 12. VOCAB RULE: Key Vocabulary must contain EXACTLY 5 terms — no more, no fewer.
-13. GAP FILL RULE: The gap fill paragraph must contain EXACTLY 7 blanks (shown as _____). Count them. The word bank must have EXACTLY 10 words.
+13. GAP FILL RULE: The gap fill paragraph MUST contain EXACTLY 7 blanks (shown as _____). Before you finish, count every _____ in your paragraph — if there are fewer than 7, add more sentences until you reach exactly 7. The word bank MUST have EXACTLY 10 words (7 correct answers + 3 distractors).
 
 Return EXACTLY this JSON (raw JSON only, no markdown fences):
 {
