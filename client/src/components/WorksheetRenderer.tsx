@@ -3336,57 +3336,99 @@ function WorkedExampleSection({ content, fmt }: { content: string; fmt: ReturnTy
     )
     .filter(Boolean);
 
+  // Separate key-point lines (lines starting with ✓) from regular steps
+  const keyPoints = steps.filter(s => /^✓/.test(s.trim()));
+  const regularSteps = steps.filter(s => !/^✓/.test(s.trim()));
+
   return (
-    <div style={{ fontFamily }}>
-      {/* Title */}
-      {title && (
-        <div style={{
-          fontSize: `${textSize + 1}px`,
-          fontWeight: 700,
-          color: '#1a2744',
-          fontFamily,
-          marginBottom: '12px',
-          borderBottom: '1.5px solid #1a2744',
-          paddingBottom: '6px',
-        }}>
-          {title}
-        </div>
-      )}
-      {/* Steps as ordered list */}
-      <ol style={{ margin: 0, padding: 0, listStyle: 'none' }}>
-        {steps.map((step, i) => (
-          <li key={i} style={{
-            display: 'flex',
-            alignItems: 'flex-start',
-            gap: '10px',
-            marginBottom: '10px',
-          }}>
-            {/* Step number badge */}
-            <div style={{
-              minWidth: '24px',
-              height: '24px',
-              background: '#1a2744',
-              color: '#ffffff',
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: `${textSize - 2}px`,
-              fontWeight: 700,
-              fontFamily,
-              flexShrink: 0,
-              marginTop: '1px',
-            }}>
-              {i + 1}
-            </div>
-            {/* Step text with math rendering */}
-            <div
-              style={{ fontSize: `${textSize}px`, color: '#1f2937', fontFamily, lineHeight, flex: 1 }}
-              dangerouslySetInnerHTML={{ __html: renderMath(step) }}
-            />
-          </li>
-        ))}
-      </ol>
+    <div style={{ fontFamily, border: '2px solid #1a2744', borderRadius: '8px', overflow: 'hidden' }}>
+      {/* Coloured header bar */}
+      <div style={{
+        background: '#1a2744',
+        padding: '8px 16px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '10px',
+      }}>
+        <span style={{ fontSize: `${textSize - 1}px`, fontWeight: 700, color: '#ffffff', fontFamily, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+          Worked Example
+        </span>
+        {title && (
+          <span style={{ fontSize: `${textSize}px`, color: 'rgba(255,255,255,0.85)', fontFamily, fontWeight: 400 }}>
+            — {title}
+          </span>
+        )}
+      </div>
+      {/* Steps */}
+      <div style={{ padding: '14px 16px', background: '#f8fafc' }}>
+        <ol style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          {regularSteps.map((step, i) => {
+            const isQuestion = /^Question:/i.test(step.trim());
+            const isAnswer = /^Answer:/i.test(step.trim());
+            return (
+              <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                {/* Step badge */}
+                <div style={{
+                  minWidth: isQuestion ? 'auto' : '26px',
+                  height: '26px',
+                  background: isQuestion ? '#2a7f8f' : isAnswer ? '#166534' : '#1a2744',
+                  color: '#ffffff',
+                  borderRadius: isQuestion ? '4px' : '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: `${textSize - 3}px`,
+                  fontWeight: 700,
+                  fontFamily,
+                  flexShrink: 0,
+                  marginTop: '1px',
+                  padding: isQuestion ? '0 8px' : '0',
+                }}>
+                  {isQuestion ? 'Q' : isAnswer ? '\u2713' : i + 1}
+                </div>
+                {/* Step text */}
+                <div
+                  style={{
+                    fontSize: `${textSize}px`,
+                    color: isQuestion ? '#1e3a5f' : isAnswer ? '#166534' : '#1f2937',
+                    fontFamily,
+                    lineHeight,
+                    flex: 1,
+                    fontWeight: isQuestion || isAnswer ? 600 : 400,
+                    background: isQuestion ? '#e0f2fe' : isAnswer ? '#f0fdf4' : 'transparent',
+                    padding: isQuestion || isAnswer ? '4px 8px' : '0',
+                    borderRadius: isQuestion || isAnswer ? '4px' : '0',
+                  }}
+                  dangerouslySetInnerHTML={{ __html: renderMath(step) }}
+                />
+              </li>
+            );
+          })}
+        </ol>
+        {/* Key points */}
+        {keyPoints.length > 0 && (
+          <div style={{ marginTop: '12px', borderTop: '1px solid #d1d5db', paddingTop: '10px' }}>
+            {keyPoints.map((kp, ki) => (
+              <div key={ki} style={{
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: '8px',
+                background: '#fef9c3',
+                border: '1px solid #fbbf24',
+                borderRadius: '6px',
+                padding: '6px 10px',
+                marginBottom: ki < keyPoints.length - 1 ? '6px' : '0',
+              }}>
+                <span style={{ color: '#d97706', fontWeight: 700, fontSize: `${textSize}px`, flexShrink: 0 }}>✓</span>
+                <span
+                  style={{ fontSize: `${textSize}px`, color: '#78350f', fontFamily, lineHeight, fontWeight: 600 }}
+                  dangerouslySetInnerHTML={{ __html: renderMath(kp.replace(/^✓\s*/, '')) }}
+                />
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -5174,7 +5216,12 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                     return <TrueFalseSection content={content} fmt={fmt} overlayColor={overlayColor} isTeacher={isTeacherView} />;
                   }
                   if (section.type === "q-mcq") {
-                    return <MCQSection content={content} fmt={fmt} overlayColor={overlayColor} isTeacher={isTeacherView} />;
+                    // Belt-and-braces: strip any "CORRECT: X" or "NOTE: ..." lines the AI may have leaked into student content
+                    const mcqContent = isTeacherView ? content : content
+                      .split("\n")
+                      .filter(l => !/^\s*CORRECT\s*:/i.test(l) && !/^\s*NOTE\s*:/i.test(l) && !/^\s*ANSWER\s*:/i.test(l))
+                      .join("\n");
+                    return <MCQSection content={mcqContent} fmt={fmt} overlayColor={overlayColor} isTeacher={isTeacherView} />;
                   }
                   if (section.type === "q-gap-fill") {
                     return <GapFillInlineSection content={content} fmt={fmt} overlayColor={overlayColor} />;
@@ -5244,7 +5291,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                                   dangerouslySetInnerHTML={{ __html: renderMath(sq.text) }} />
                                 <span style={{ fontSize: "11px", color: "#6b7280", fontStyle: "italic", whiteSpace: "nowrap" as const }}>[{sq.marks}m]</span>
                               </div>
-                              {Array.from({ length: Math.max(sq.marks + 1, 2) }).map((_: unknown, li: number) => (
+                              {Array.from({ length: sq.marks <= 2 ? 3 : sq.marks <= 4 ? 5 : sq.marks <= 6 ? 8 : Math.min(Math.ceil(sq.marks * 1.5), 20) }).map((_: unknown, li: number) => (
                                 <div key={li} style={{ borderBottom: "1px solid #d1d5db", height: "28px", width: "100%", marginBottom: "3px" }} />
                               ))}
                             </div>
@@ -5256,7 +5303,8 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                     // Standard single-question format
                     const marksMatch = content.match(/\[(\d+)\s*marks?\]/i);
                     const marks = marksMatch ? parseInt(marksMatch[1]) : (section.marks as number || 4);
-                    const lineCount = Math.max(marks + 1, 3);
+                    // Scale answer lines properly: 1-2 marks → 3 lines, 3-4 marks → 5 lines, 5-6 marks → 8 lines, 7+ marks → marks * 1.5 lines
+                    const lineCount = marks <= 2 ? 3 : marks <= 4 ? 5 : marks <= 6 ? 8 : Math.min(Math.ceil(marks * 1.5), 20);
                     const questionText = content.replace(/\[\d+\s*marks?\]/i, "").trim();
                     return (
                       <div>
@@ -5519,7 +5567,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                                   dangerouslySetInnerHTML={{ __html: renderMath(sq.text) }} />
                                 <span style={{ fontSize: "11px", color: "#6b7280", fontStyle: "italic", whiteSpace: "nowrap" as const }}>[{sq.marks}m]</span>
                               </div>
-                              {Array.from({ length: Math.max(sq.marks + 1, 2) }).map((_: unknown, li: number) => (
+                              {Array.from({ length: sq.marks <= 2 ? 3 : sq.marks <= 4 ? 5 : sq.marks <= 6 ? 8 : Math.min(Math.ceil(sq.marks * 1.5), 20) }).map((_: unknown, li: number) => (
                                 <div key={li} style={{ borderBottom: "1px solid #d1d5db", height: "28px", width: "100%", marginBottom: "3px" }} />
                               ))}
                             </div>
