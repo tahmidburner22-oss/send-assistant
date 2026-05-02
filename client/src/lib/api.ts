@@ -22,17 +22,19 @@ export function clearToken() {
 }
 
 // ── Core fetch wrapper ────────────────────────────────────────────────────────
+// noRedirect: if true, throw on 401 instead of redirecting (used for background saves)
 async function apiFetch<T>(
   path: string,
-  options: RequestInit = {}
+  options: RequestInit & { noRedirect?: boolean } = {}
 ): Promise<T> {
+  const { noRedirect, ...fetchOptions } = options;
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
-    ...(options.headers as Record<string, string>),
+    ...(fetchOptions.headers as Record<string, string>),
   };
 
   const res = await fetch(`${API_BASE}/api${path}`, {
-    ...options,
+    ...fetchOptions,
     headers,
     credentials: "include", // Always send httpOnly cookie
   });
@@ -40,7 +42,7 @@ async function apiFetch<T>(
   if (res.status === 401) {
     // Don't redirect for auth check endpoints — they're expected to return 401 when not logged in
     const isAuthCheck = path === "/auth/me" || path === "/auth/refresh";
-    if (!isAuthCheck) {
+    if (!isAuthCheck && !noRedirect) {
       window.location.href = "/login";
     }
     throw new Error("Session expired");
@@ -153,7 +155,7 @@ export const pupils = {
 export const data = {
   worksheets: {
     list: () => apiFetch<any[]>("/data/worksheets"),
-    create: (d: any) => apiFetch<any>("/data/worksheets", { method: "POST", body: JSON.stringify(d) }),
+    create: (d: any) => apiFetch<any>("/data/worksheets", { method: "POST", body: JSON.stringify(d), noRedirect: true }),
     update: (id: string, d: any) => apiFetch<any>(`/data/worksheets/${id}`, { method: "PUT", body: JSON.stringify(d) }),
     delete: (id: string) => apiFetch<any>(`/data/worksheets/${id}`, { method: "DELETE" }),
   },

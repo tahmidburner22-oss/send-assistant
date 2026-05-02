@@ -415,12 +415,12 @@ export async function callAI(
     }
     // Handle 401/403 — session expired or not authenticated
     // This MUST throw immediately — do NOT silently fall through to empty client keys
+    // NOTE: Do NOT redirect here — the caller (Worksheets.tsx) handles AUTH_REQUIRED
+    // errors and shows a toast without destroying the page. A redirect here would
+    // lose any partially-generated content and is jarring for the teacher.
     if (res.status === 401 || res.status === 403) {
       const errData = await res.json().catch(() => ({})) as any;
-      // Clear the stale token so the user gets redirected to login
       const msg = errData?.error || (res.status === 401 ? 'Session expired. Please log in again.' : 'Access denied.');
-      // Redirect to login after a short delay so any toast can show
-      setTimeout(() => { window.location.href = '/login'; }, 2000);
       throw new Error(`AUTH_REQUIRED: ${msg}`);
     }
     // If server says no keys configured, throw immediately — don't silently fall back
@@ -3295,7 +3295,7 @@ export async function aiBatchGenerateWorksheet(params: {
   });
 
   if (res.status === 401 || res.status === 403) {
-    setTimeout(() => { window.location.href = "/login"; }, 2000);
+    // Do NOT redirect — let the caller handle AUTH_REQUIRED gracefully
     throw new Error("AUTH_REQUIRED: Session expired. Please log in again.");
   }
 
