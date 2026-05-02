@@ -1925,7 +1925,8 @@ function GapFillInlineSection({
   fmt: ReturnType<typeof getSendFormatting>;
   overlayColor?: string;
 }) {
-  const raw = stripLayoutTag(content);
+  // Normalise numbered blanks like _____1_____ or ___1___ → plain _____
+  const raw = stripLayoutTag(content).replace(/_{3,}\s*\d+\s*_{3,}/g, "_____");
   const accentColor = fmt.accentColor || "#2A6F6F";
 
   // Split off word bank — supports "WORD BANK:", "Word Bank:", inline after last blank
