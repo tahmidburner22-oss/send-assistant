@@ -1651,7 +1651,14 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
       }).then(saved => {
         setSavedWorksheetId(saved.id);
         refreshData(); // Update dashboard counts immediately
-      }).catch(() => {}); // Silent auto-save
+      }).catch((err: any) => {
+        // Show a non-blocking toast so the teacher knows the worksheet wasn't saved
+        // (e.g. server restarted mid-generation). The worksheet is still visible on screen.
+        const msg = err?.message === "Session expired"
+          ? "Worksheet generated but not saved — your session expired. Please download or copy before leaving."
+          : "Worksheet generated but could not be saved to history. Please download it now.";
+        toast.warning(msg, { duration: 10000 });
+      });
 
       // ── AUTO-SAVE TO LIBRARY: Store AI-generated worksheets for future instant retrieval ──
       // Only save if no SEND adaptation and not exam-style (those are personalised, not master copies)
