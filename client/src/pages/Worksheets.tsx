@@ -418,7 +418,7 @@ export default function Worksheets() {
   // Header → LO → Retrieval → Key Vocabulary → Common Mistakes → Worked Example →
   // Diagram A → Section 1 (T/F, MCQ, Word Bank, Match) → Section 2 (Foundation) →
   // Diagram B → Section 3 (Core) → Challenge → Self Reflection → Teacher Key
-  const ALL_SECTIONS = ['learning-objective', 'retrieval', 'key-vocabulary', 'common-mistakes', 'worked-example', 'diagram-a', 'true-false', 'mcq', 'word-bank-gap-fill', 'match', 'section-a', 'diagram-b', 'section-b', 'section-c', 'self-reflection'] as const;
+  const ALL_SECTIONS = ['learning-objective', 'retrieval', 'key-vocabulary', 'common-mistakes', 'worked-example', 'diagram-a', 'true-false', 'mcq', 'word-bank-gap-fill', 'section-a', 'diagram-b', 'section-b', 'section-c', 'self-reflection'] as const;
   type SectionId = typeof ALL_SECTIONS[number];
   const defaultSections = ALL_SECTIONS.filter(s => s !== 'retrieval') as SectionId[];
   const [selectedSections, setSelectedSections] = useState<SectionId[]>(defaultSections);
@@ -3085,7 +3085,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                           'worked-example': 0.4, 'common-mistakes': 0.3,
                           'diagram-a': 1.0, 'diagram-b': 1.0,
                           'true-false': 0.4, 'mcq': 0.5,
-                          'word-bank-gap-fill': 0.4, 'match': 0.3,
+                          'word-bank-gap-fill': 0.4,
                           'section-a': 0.8, 'section-b': 1.0, 'section-c': 0.8,
                           'self-reflection': 0.2,
                         };
@@ -3106,7 +3106,6 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                       { id: 'true-false', label: 'Section 1 — True & False' },
                       { id: 'mcq', label: 'Section 1 — Multiple Choice (MCQ)' },
                       { id: 'word-bank-gap-fill', label: 'Section 1 — Word Bank Gap Fill' },
-                      { id: 'match', label: 'Section 1 — Match the Column' },
                       { id: 'section-a', label: 'Section 2 — Foundation Questions' },
                       { id: 'diagram-b', label: 'Diagram B — Full Page Spread' },
                       { id: 'section-b', label: 'Section 3 — Core Practice' },

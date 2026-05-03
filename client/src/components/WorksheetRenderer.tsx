@@ -5142,58 +5142,44 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
               {/* Standard content rendering (no diagram marker) */}
               {!extractDiagramSpec(content) && (
                 section.type === "diagram" && (resolveImageUrl(section) || section.svg) ? (
-                  <div style={{ textAlign: "center", width: "100%" }}>
-                    {/* Diagram title bar with Change Diagram button in edit mode */}
-                    <div style={{
-                      background: "#1a2744",
-                      color: "#ffffff",
-                      padding: "10px 20px",
-                      fontSize: `${fmt.fontSize}px`,
-                      fontWeight: 700,
-                      fontFamily: fmt.fontFamily,
-                      textTransform: "uppercase" as const,
-                      letterSpacing: "0.08em",
-                      textAlign: "left",
-                      marginBottom: "16px",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                    }}>
-                      <span>{section.title || "Diagram"}</span>
-                      {editMode && onDiagramChange && (
-                        <button
-                          className="change-diagram-btn"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            // Dispatch a custom event that Worksheets.tsx listens to
-                            const evt = new CustomEvent("adaptly:changeDiagram", {
-                              detail: { sectionIndex: i },
-                              bubbles: true,
-                            });
-                            (e.currentTarget as HTMLElement).dispatchEvent(evt);
-                          }}
-                          style={{
-                            background: "rgba(255,255,255,0.15)",
-                            border: "1px solid rgba(255,255,255,0.4)",
-                            color: "#ffffff",
-                            padding: "4px 10px",
-                            borderRadius: "4px",
-                            fontSize: "10px",
-                            fontWeight: 600,
-                            cursor: "pointer",
-                            fontFamily: fmt.fontFamily,
-                            letterSpacing: "0.04em",
-                            textTransform: "none" as const,
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "4px",
-                          }}
-                          title="Choose a different diagram from the library"
-                        >
-                          &#8635; Change Diagram
-                        </button>
-                      )}
-                    </div>
+                  <div style={{ textAlign: "center", width: "100%", position: "relative" }}>
+                    {/* Change Diagram floating button — only visible in edit mode, no dark header bar */}
+                    {editMode && onDiagramChange && (
+                      <button
+                        className="change-diagram-btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          // Dispatch a custom event that Worksheets.tsx listens to
+                          const evt = new CustomEvent("adaptly:changeDiagram", {
+                            detail: { sectionIndex: i },
+                            bubbles: true,
+                          });
+                          (e.currentTarget as HTMLElement).dispatchEvent(evt);
+                        }}
+                        style={{
+                          position: "absolute",
+                          top: "10px",
+                          right: "10px",
+                          zIndex: 10,
+                          background: "rgba(26,39,68,0.85)",
+                          border: "1px solid rgba(255,255,255,0.3)",
+                          color: "#ffffff",
+                          padding: "5px 12px",
+                          borderRadius: "4px",
+                          fontSize: "10px",
+                          fontWeight: 600,
+                          cursor: "pointer",
+                          fontFamily: fmt.fontFamily,
+                          letterSpacing: "0.04em",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "4px",
+                        }}
+                        title="Choose a different diagram from the library"
+                      >
+                        &#8635; Change Diagram
+                      </button>
+                    )}
                     {resolveImageUrl(section) ? (
                       <img
                         src={resolveImageUrl(section)}
@@ -5246,6 +5232,79 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                     return <GapFillInlineSection content={content} fmt={fmt} overlayColor={overlayColor} />;
                   }
                   if (section.type === "q-short-answer" || section.type === "q-extended") {
+                    // Check if content has numbered questions (1. 2. 3.) format — each needs its own answer lines
+                    const numberedQPattern = /^\s*\d+\.\s+/m;
+                    const hasNumberedQuestions = numberedQPattern.test(content);
+
+                    if (hasNumberedQuestions) {
+                      // Split into header/intro + numbered question blocks
+                      const allLines = content.split("\n");
+                      const headerLines: string[] = [];
+                      const numQBlocks: { num: number; text: string; marks: number }[] = [];
+                      let currentNQ: { num: number; text: string; marks: number } | null = null;
+
+                      for (const line of allLines) {
+                        const nqMatch = line.match(/^\s*(\d+)\.\s+(.*)/);
+                        if (nqMatch) {
+                          if (currentNQ) numQBlocks.push(currentNQ);
+                          const mMatch = nqMatch[2].match(/\[(\d+)\s*marks?\]/i);
+                          currentNQ = {
+                            num: parseInt(nqMatch[1]),
+                            text: nqMatch[2].replace(/\[\d+\s*marks?\]/i, "").trim(),
+                            marks: mMatch ? parseInt(mMatch[1]) : (section.type === "q-extended" ? 4 : 2),
+                          };
+                        } else if (currentNQ) {
+                          // Continuation line of current question
+                          const trimmed = line.trim();
+                          if (trimmed) currentNQ.text += "\n" + trimmed;
+                        } else {
+                          headerLines.push(line);
+                        }
+                      }
+                      if (currentNQ) numQBlocks.push(currentNQ);
+
+                      const headerText = headerLines.join("\n").replace(/\[\d+\s*marks?\]/i, "").trim();
+                      const totalMarks = numQBlocks.reduce((s, q) => s + q.marks, 0) || (section.marks as number || 5);
+
+                      return (
+                        <div>
+                          {/* Header / instructions block */}
+                          {headerText && (
+                            <div style={{
+                              fontSize: `${fmt.fontSize}px`,
+                              fontFamily: fmt.fontFamily,
+                              lineHeight: String(fmt.lineHeight),
+                              color: "#374151",
+                              marginBottom: "12px",
+                              fontStyle: "italic",
+                            }} dangerouslySetInnerHTML={{ __html: renderMath(headerText) }} />
+                          )}
+                          <div style={{ fontSize: "11px", color: "#6b7280", fontStyle: "italic", marginBottom: "10px" }}>[{totalMarks} marks total]</div>
+                          {numQBlocks.map((nq, ni) => (
+                            <div key={ni} style={{ marginBottom: "20px" }}>
+                              <div style={{ display: "flex", gap: "8px", alignItems: "flex-start", marginBottom: "6px" }}>
+                                <span style={{
+                                  fontWeight: 700,
+                                  fontSize: `${fmt.fontSize}px`,
+                                  fontFamily: fmt.fontFamily,
+                                  color: "#1B2A4A",
+                                  minWidth: "22px",
+                                }}>{nq.num}.</span>
+                                <div style={{ flex: 1 }}>
+                                  <div style={{ fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, lineHeight: String(fmt.lineHeight), color: "#1e293b", marginBottom: "6px" }}
+                                    dangerouslySetInnerHTML={{ __html: renderMath(nq.text) }} />
+                                  <span style={{ fontSize: "11px", color: "#6b7280", fontStyle: "italic" }}>[{nq.marks} mark{nq.marks !== 1 ? "s" : ""}]</span>
+                                </div>
+                              </div>
+                              {Array.from({ length: nq.marks <= 1 ? 2 : nq.marks <= 2 ? 3 : nq.marks <= 4 ? 5 : nq.marks <= 6 ? 8 : Math.min(Math.ceil(nq.marks * 1.5), 20) }).map((_: unknown, li: number) => (
+                                <div key={li} style={{ borderBottom: "1px solid #d1d5db", height: "28px", width: "100%", marginBottom: "3px" }} />
+                              ))}
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    }
+
                     // Check if content has sub-questions (a)(b)(c) format
                     const subQPattern = /^\s*\([a-z]\)/m;
                     const hasSubQuestions = subQPattern.test(content);

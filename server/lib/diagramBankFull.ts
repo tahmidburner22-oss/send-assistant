@@ -442,7 +442,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "respiration_aerobic",
-    url: "/diagrams/energy-transfer.png",
+    url: "/diagrams/respiration.png",
     label: "Cellular Respiration",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -450,7 +450,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "krebs_cycle",
-    url: "/diagrams/energy-transfer.png",
+    url: "/diagrams/respiration.png",
     label: "Krebs Cycle (Citric Acid Cycle)",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -618,7 +618,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "exothermic_endothermic",
-    url: "/diagrams/energy-transfer.png",
+    url: "/diagrams/rates-of-reaction.png",
     label: "Exothermic vs Endothermic Reactions",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -726,7 +726,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "forces",
-    url: "/diagrams/electrical-circuit.png",
+    url: "/diagrams/forces.png",
     label: "Free Body Diagram — Forces",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -734,7 +734,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "newtons_laws",
-    url: "/diagrams/energy-transfer.png",
+    url: "/diagrams/forces.png",
     label: "Newton's Laws of Motion",
     attribution: WM,
     license: PD,
@@ -798,7 +798,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "pressure",
-    url: "/diagrams/wave-types.png",
+    url: "/diagrams/equation-triangle-pressure.png",
     label: "Pressure = Force ÷ Area",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -854,7 +854,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "projectile_motion",
-    url: "/diagrams/wave-types.png",
+    url: "/diagrams/graph-velocity-time.png",
     label: "Projectile Motion",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -862,7 +862,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "specific_heat_capacity",
-    url: "/diagrams/energy-transfer.png",
+    url: "/diagrams/specific-heat-capacity.png",
     label: "Heating Curve — Specific Heat Capacity",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1642,7 +1642,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ══════════════════════════════════════════════════════════════════════════
   {
     key: "music_notation",
-    url: "/diagrams/wave-types.png",
+    url: "/diagrams/waves.png",
     label: "Music Notation — Treble Clef",
     attribution: WM,
     license: PD,
@@ -1650,7 +1650,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "musical_instruments",
-    url: "/diagrams/wave-types.png",
+    url: "/diagrams/waves.png",
     label: "Orchestra — Instrument Families",
     attribution: WM,
     license: PD,
@@ -1658,7 +1658,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "sound_waves",
-    url: "/diagrams/wave-types.png",
+    url: "/diagrams/waves.png",
     label: "Sound Waves — Frequency and Amplitude",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1686,7 +1686,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "lever_systems",
-    url: "/diagrams/energy-transfer.png",
+    url: "/diagrams/forces.png",
     label: "Lever Systems — First, Second, Third Class",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1706,7 +1706,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "bridge_structures",
-    url: "/diagrams/energy-transfer.png",
+    url: "/diagrams/3d-shapes.png",
     label: "Types of Bridges — Structures",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1746,7 +1746,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ══════════════════════════════════════════════════════════════════════════
   {
     key: "emotions_wheel",
-    url: "/diagrams/wave-types.png",
+    url: "/diagrams/venn-diagram.png",
     label: "Emotions Wheel (Plutchik)",
     attribution: WM,
     license: CC_BY_SA_3,
@@ -1840,7 +1840,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "parts_of_speech",
-    url: "/diagrams/algebra-function-machine.png",
+    url: "/diagrams/venn-diagram.png",
     label: "Parts of Speech Diagram",
     attribution: "AI-generated educational diagram (Adaptly)",
     license: CC_BY_SA_4,
@@ -1848,7 +1848,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "poetry_analysis",
-    url: "/diagrams/algebra-function-machine.png",
+    url: "/diagrams/venn-diagram.png",
     label: "Poetry — William Blake, The Tyger (1794)",
     attribution: "AI-generated educational diagram (Adaptly)",
     license: PD,
@@ -2004,7 +2004,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ── PSHE / CITIZENSHIP ────────────────────────────────────────────────────────
   {
     key: "self_esteem_pyramid",
-    url: "/diagrams/algebra-sequence-dot-pattern.png",
+    url: "/diagrams/venn-diagram.png",
     label: "Maslow's Hierarchy of Needs",
     attribution: "AI-generated educational diagram (Adaptly)",
     license: CC_BY_SA_3,
@@ -2014,7 +2014,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ── DT / TEXTILES ─────────────────────────────────────────────────────────────
   {
     key: "textiles_weaving",
-    url: "/diagrams/algebra-function-machine.png",
+    url: "/diagrams/polygons.png",
     label: "Textiles — Weaving Diagram",
     attribution: "AI-generated educational diagram (Adaptly)",
     license: CC_BY_SA_3,
@@ -2022,7 +2022,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "pneumatics_mechanism",
-    url: "/diagrams/energy-transfer.png",
+    url: "/diagrams/electrical-circuit.png",
     label: "Pneumatics — Mechanism Diagram",
     attribution: "AI-generated educational diagram (Adaptly)",
     license: CC_BY_SA_3,
@@ -2032,7 +2032,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ── MUSIC ─────────────────────────────────────────────────────────────────────
   {
     key: "music_notation",
-    url: "/diagrams/wave-types.png",
+    url: "/diagrams/waves.png",
     label: "Music Notation — Staff and Notes",
     attribution: "AI-generated educational diagram (Adaptly)",
     license: CC_BY_SA_3,
@@ -2062,7 +2062,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ── BUSINESS / ECONOMICS ─────────────────────────────────────────────────────
   {
     key: "revenue_costs_profit",
-    url: "/diagrams/algebra-blank-axes.png",
+    url: "/diagrams/real-life-conversion-graph.png",
     label: "Revenue, Costs and Profit — Break-Even Graph",
     attribution: "AI-generated educational diagram (Adaptly)",
     license: CC_BY_SA_3,
@@ -2366,7 +2366,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
 
   // ── MATHS — ALGEBRA: Functions and Iteration ─────────────────────────────
   {
-    key: "functions_iteration",
+    key: "function_mapping",
     url: "/diagrams/algebra-function-machine.png",
     label: "Functions and Iteration",
     attribution: "AI-generated educational diagram (Adaptly)",
@@ -2547,7 +2547,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ── SCIENCE — CHEMISTRY: Equilibrium ─────────────────────────────────────
   {
     key: "chemical_equilibrium",
-    url: "/diagrams/energy-transfer.png",
+    url: "/diagrams/rates-of-reaction.png",
     label: "Chemical Equilibrium — Le Chatelier",
     attribution: "AI-generated educational diagram (Adaptly)",
     license: CC_BY_SA_4,
@@ -2567,7 +2567,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ── SCIENCE — CHEMISTRY: Energy Changes ──────────────────────────────────
   {
     key: "energy_changes_chemistry",
-    url: "/diagrams/energy-transfer.png",
+    url: "/diagrams/rates-of-reaction.png",
     label: "Energy Changes in Reactions",
     attribution: "AI-generated educational diagram (Adaptly)",
     license: CC_BY_SA_4,
@@ -2607,7 +2607,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ── SCIENCE — PHYSICS: Specific Heat Capacity ────────────────────────────
   {
     key: "specific_heat_capacity",
-    url: "/diagrams/energy-transfer.png",
+    url: "/diagrams/specific-heat-capacity.png",
     label: "Specific Heat Capacity",
     attribution: "AI-generated educational diagram (Adaptly)",
     license: CC_BY_SA_4,
@@ -2673,7 +2673,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "civil_rights",
-    url: "/diagrams/venn-diagram.png",
+    url: "/diagrams/ww1-trenches.png",
     label: "The Civil Rights Movement",
     attribution: "AI-generated educational diagram (Adaptly)",
     license: CC_BY_SA_4,
@@ -2681,7 +2681,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   },
   {
     key: "industrial_revolution",
-    url: "/diagrams/energy-transfer.png",
+    url: "/diagrams/rock-cycle.png",
     label: "The Industrial Revolution",
     attribution: "AI-generated educational diagram (Adaptly)",
     license: CC_BY_SA_4,
@@ -2699,7 +2699,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ── GEOGRAPHY — Urban and Economic ───────────────────────────────────────
   {
     key: "urban_issues",
-    url: "/diagrams/coastal-features.png",
+    url: "/diagrams/tectonic-plates.png",
     label: "Urban Issues and Challenges",
     attribution: "AI-generated educational diagram (Adaptly)",
     license: CC_BY_SA_4,
@@ -2767,7 +2767,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ══════════════════════════════════════════════════════════════════════════
   {
     key: "simultaneous_equations",
-    url: "/diagrams/algebra-linear-graph-reference.png",
+    url: "/diagrams/simultaneous-equations.png",
     label: "Simultaneous Equations — Graphical Solution",
     attribution: "AI-generated educational diagram (Adaptly)",
     license: CC_BY_SA_4,
@@ -2867,7 +2867,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
   // ══════════════════════════════════════════════════════════════════════════
   {
     key: "specific_heat_capacity",
-    url: "/diagrams/energy-transfer.png",
+    url: "/diagrams/specific-heat-capacity.png",
     label: "Specific Heat Capacity — Energy and Temperature",
     attribution: "AI-generated educational diagram (Adaptly)",
     license: CC_BY_SA_4,
