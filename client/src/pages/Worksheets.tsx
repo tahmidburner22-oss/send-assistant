@@ -1555,7 +1555,10 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
       // matching diagram. If found, generate dynamic questions from the diagram
       // description and inject them as a q-diagram section.
       const isNonLibraryAI = isAIWorksheet(generatedWs) && !(generatedWs as any).fromLibrary;
-      if (isNonLibraryAI && !examStyle) {
+      // Skip post-generation diagram lookup if the worksheet already has diagram sections
+      // (structured path always injects Diagram A and Diagram B — no need for extra lookup)
+      const alreadyHasDiagrams = (generatedWs.sections || []).some((s: any) => s.type === 'diagram');
+      if (isNonLibraryAI && !examStyle && !alreadyHasDiagrams) {
         try {
           const diagLibRes = await fetch('/api/diagram-library/entries', { credentials: 'include' });
           if (diagLibRes.ok) {
