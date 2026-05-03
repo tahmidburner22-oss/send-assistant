@@ -1597,7 +1597,6 @@ STRICT JSON OUTPUT: Respond with valid JSON only — no markdown, no code blocks
     const wantTrueFalse = secs.includes('true-false');
     const wantMCQ = secs.includes('mcq');
     const wantWordBankGapFill = secs.includes('word-bank-gap-fill');
-    const wantMatch = secs.includes('match');
     // Support both legacy 'questions' and new split section IDs
     const wantQuestions = secs.includes('questions') || secs.includes('section-b');
     const wantSectionA = secs.includes('section-a');
@@ -1714,9 +1713,7 @@ CRITICAL SEND RULE: SEND adaptations affect FORMATTING AND PRESENTATION ONLY —
       structuredSections.push(`{"title": "Section A — Word Bank Gap Fill", "type": "q-gap-fill", "marks": 7, "content": "Complete the paragraph using words from the word bank below. [7 marks]\n[Write EXACTLY 7 sentences about ${params.topic}. Each sentence MUST contain exactly ONE blank shown as _____. The blank must replace a key subject term. Do NOT number the blanks. Do NOT put two blanks in one sentence. Result: 7 sentences = 7 blanks. ${isMaths ? 'Write all numbers and expressions as plain text \u2014 no LaTeX here.' : ''} Example format:\nThe _____ is the organelle where photosynthesis occurs.\nPlants absorb _____ from the air through their stomata.\n[continue for 5 more sentences, each with one _____ blank]]\nWORD BANK: [the 7 correct answers in shuffled order, plus 3 plausible distractors \u2014 total EXACTLY 10 words] [word1] | [word2] | [word3] | [word4] | [word5] | [word6] | [word7] | [word8] | [word9] | [word10]\nRULE: EXACTLY 7 sentences, EXACTLY 7 blanks (one per sentence), EXACTLY 10 words in word bank."}`);
     }
 
-    if (wantMatch) {
-      structuredSections.push(`{"title": "Section A — Match the Column", "type": "q-matching", "marks": 5, "content": "Draw a line to match each term with its correct definition. [5 marks]\nIMPORTANT: Write CORRECT pairs only — each term paired with its own accurate definition. The renderer will shuffle the definitions column for the student. Do NOT pre-shuffle or swap definitions between terms.\n${isMaths ? '1. [mathematical term from ' + params.topic + '] \u2194 [the accurate definition of THAT specific term — not another term\'s definition]\n2. [mathematical term] \u2194 [the accurate definition of THAT specific term]\n3. [mathematical term] \u2194 [the accurate definition of THAT specific term]\n4. [mathematical term] \u2194 [the accurate definition of THAT specific term]\n5. [mathematical term] \u2194 [the accurate definition of THAT specific term]' : '1. [key term from ' + params.topic + '] \u2194 [the accurate definition of THAT specific term — not another term\'s definition]\n2. [key term] \u2194 [the accurate definition of THAT specific term]\n3. [key term] \u2194 [the accurate definition of THAT specific term]\n4. [key term] \u2194 [the accurate definition of THAT specific term]\n5. [key term] \u2194 [the accurate definition of THAT specific term]'}"}`);
-    }
+
 
     // 7. Diagram A — full-page spread (after Section A questions, before Section B)
     if (wantDiagramA) {
