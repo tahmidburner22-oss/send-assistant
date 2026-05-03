@@ -1684,7 +1684,7 @@ CRITICAL SEND RULE: SEND adaptations affect FORMATTING AND PRESENTATION ONLY —
 
     // 3. Key Vocabulary
     if (wantKeyVocab) {
-      structuredSections.push(`{"title": "Key Vocabulary", "type": "vocabulary", "content": "KEY_TERMS:\n[Term 1 — most important term for ${params.topic}] \u2014 [precise, curriculum-accurate definition using subject-specific language appropriate for ${params.yearGroup}]\n[Term 2] \u2014 [precise, curriculum-accurate definition]\n[Term 3] \u2014 [precise, curriculum-accurate definition]\n[Term 4] \u2014 [precise, curriculum-accurate definition]\n[Term 5] \u2014 [precise, curriculum-accurate definition]\nRULE: EXACTLY 5 terms — no more, no fewer. Each definition must be factually accurate and use correct subject terminology."}`);
+      structuredSections.push(`{"title": "Key Vocabulary", "type": "vocabulary", "content": "[key term 1 for ${params.topic}] — [precise, curriculum-accurate definition in one sentence]\n[key term 2 for ${params.topic}] — [precise, curriculum-accurate definition in one sentence]\n[key term 3 for ${params.topic}] — [precise, curriculum-accurate definition in one sentence]\n[key term 4 for ${params.topic}] — [precise, curriculum-accurate definition in one sentence]\n[key term 5 for ${params.topic}] — [precise, curriculum-accurate definition in one sentence]"}`);
     }
 
     // 4. Common Mistakes
