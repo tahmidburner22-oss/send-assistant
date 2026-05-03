@@ -2721,6 +2721,766 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
     license: CC_BY_SA_4,
     keywords: ["resource management", "food security", "water security", "energy security", "sustainable development", "resource depletion", "resource management water food energy", "geography"],
   },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // MATHEMATICS — Trigonometry
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    key: "trigonometry_right_angle",
+    url: "/diagrams/pythagoras.png",
+    label: "Trigonometry — Right-Angled Triangle (SOH CAH TOA)",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["trigonometry", "trigonometry introduction", "soh cah toa", "sine cosine tangent", "right-angled triangle", "opposite adjacent hypotenuse", "sin cos tan", "trig ratios", "mathematics"],
+  },
+  {
+    key: "trigonometry_sine_cosine_rule",
+    url: "/diagrams/triangle-properties.png",
+    label: "Sine and Cosine Rules",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["sine rule", "cosine rule", "trigonometry sine and cosine rules", "non-right-angled triangle", "area of triangle", "ambiguous case", "mathematics"],
+  },
+  {
+    key: "trigonometry_unit_circle",
+    url: "/diagrams/unit-circle.png",
+    label: "Unit Circle — Trigonometric Functions",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["unit circle", "trigonometry further identities", "trig identities", "sin cos graph", "radians", "degrees", "trigonometric functions", "mathematics"],
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // MATHEMATICS — Circle Theorems
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    key: "circle_theorems",
+    url: "/diagrams/circle-parts.png",
+    label: "Circle Theorems",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["circle theorems", "angle at centre", "angle in semicircle", "cyclic quadrilateral", "tangent chord", "alternate segment", "inscribed angle", "mathematics"],
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // MATHEMATICS — Simultaneous Equations
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    key: "simultaneous_equations",
+    url: "/diagrams/algebra-linear-graph-reference.png",
+    label: "Simultaneous Equations — Graphical Solution",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["simultaneous equations", "simultaneous equations introduction", "elimination method", "substitution method", "graphical solution", "intersection", "linear equations", "mathematics"],
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // MATHEMATICS — Compound Measures & Standard Form
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    key: "compound_measures",
+    url: "/diagrams/equation-triangle-sdt.png",
+    label: "Compound Measures — Speed, Density, Pressure Triangles",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["compound measures", "speed distance time", "density mass volume", "pressure force area", "formula triangle", "rates and compound measures", "mathematics"],
+  },
+  {
+    key: "standard_form",
+    url: "/diagrams/number-standard-form-place-value.png",
+    label: "Standard Form — Place Value and Powers of 10",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["standard form", "standard index form", "powers of 10", "scientific notation", "place value", "number standard form", "mathematics"],
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // MATHEMATICS — Surds, Indices and Bounds
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    key: "indices_surds",
+    url: "/diagrams/algebra-straight-line-reference.png",
+    label: "Indices, Surds and Exact Values",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["surds", "indices", "index laws", "indices and roots", "number surds", "exact values", "powers and roots", "surd simplification", "rationalise denominator", "mathematics"],
+  },
+  {
+    key: "bounds_rounding",
+    url: "/diagrams/accuracy-number-line.png",
+    label: "Bounds and Rounding — Error Intervals",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["bounds", "error interval", "upper bound", "lower bound", "rounding estimation bounds", "truncation", "significant figures", "mathematics"],
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // MATHEMATICS — Vectors and Constructions
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    key: "vectors",
+    url: "/diagrams/triangle-properties.png",
+    label: "Vectors — Magnitude and Direction",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["vectors", "vector and resultant forces", "resultant vector", "magnitude", "direction", "column vector", "vector addition", "scalar multiplication", "mathematics"],
+  },
+  {
+    key: "constructions_loci",
+    url: "/diagrams/algebra-blank-grid.png",
+    label: "Constructions and Loci",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["constructions", "loci", "constructions and loci", "perpendicular bisector", "angle bisector", "equidistant", "compass constructions", "mathematics"],
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // PHYSICS — Waves and Optics
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    key: "waves_properties",
+    url: "/diagrams/wave-types.png",
+    label: "Waves — Transverse and Longitudinal",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["waves", "transverse wave", "longitudinal wave", "amplitude", "wavelength", "frequency", "wave properties", "wave speed", "physics"],
+  },
+  {
+    key: "waves_optics",
+    url: "/diagrams/refraction-lens.png",
+    label: "Waves and Optics — Reflection, Refraction, Lenses",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["waves and optics", "refraction", "reflection", "lens", "convex lens", "concave lens", "focal point", "ray diagram", "optics", "physics"],
+  },
+  {
+    key: "electromagnetic_spectrum_waves",
+    url: "/diagrams/electromagnetic-spectrum.png",
+    label: "Waves and the Electromagnetic Spectrum",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["waves and the electromagnetic spectrum", "electromagnetic spectrum", "radio waves", "microwaves", "infrared", "visible light", "ultraviolet", "x-rays", "gamma rays", "physics"],
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // PHYSICS — Specific Heat Capacity and Energy
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    key: "specific_heat_capacity",
+    url: "/diagrams/energy-transfer.png",
+    label: "Specific Heat Capacity — Energy and Temperature",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["specific heat capacity", "thermal energy", "temperature change", "mass", "shc", "energy equation", "calorimetry", "physics"],
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // PHYSICS — Nuclear Physics and Radioactivity
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    key: "nuclear_physics",
+    url: "/diagrams/radiation-types.png",
+    label: "Nuclear Physics — Radioactive Decay",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["nuclear physics", "nuclear decay equations", "radioactive decay", "alpha decay", "beta decay", "gamma radiation", "half-life", "nuclear equation", "atomic number", "mass number", "physics"],
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // PHYSICS — Transformers
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    key: "transformers",
+    url: "/diagrams/electrical-circuit.png",
+    label: "Transformers — Step-Up and Step-Down",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["transformers", "step-up transformer", "step-down transformer", "primary coil", "secondary coil", "turns ratio", "voltage", "electromagnetic induction", "national grid", "physics"],
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // CHEMISTRY — Rates of Reaction
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    key: "rates_of_reaction",
+    url: "/diagrams/enzyme-activity.png",
+    label: "Rates of Reaction — Collision Theory",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["rates of reaction", "collision theory", "activation energy", "catalyst", "concentration", "temperature", "surface area", "reaction rate", "chemistry"],
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // CHEMISTRY — Organic Chemistry
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    key: "organic_chemistry",
+    url: "/diagrams/covalent-bonding.png",
+    label: "Organic Chemistry — Alkanes and Alkenes",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["organic chemistry", "alkanes", "alkenes", "organic chemistry 1", "organic chemistry 2", "homologous series", "functional groups", "hydrocarbon", "structural formula", "displayed formula", "chemistry"],
+  },
+  {
+    key: "organic_chemistry_advanced",
+    url: "/diagrams/distillation.png",
+    label: "Organic Chemistry — Functional Groups and Reactions",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["organic chemistry advanced", "organic chemistry 3", "functional groups", "alcohols", "carboxylic acids", "esters", "addition polymerisation", "condensation polymerisation", "chemistry"],
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // BIOLOGY — Bioenergetics and Respiration
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    key: "bioenergetics",
+    url: "/diagrams/photosynthesis.png",
+    label: "Bioenergetics — Photosynthesis and Respiration",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["bioenergetics", "aerobic respiration", "anaerobic respiration", "atp", "glucose", "oxygen", "carbon dioxide", "respiration equation", "biology"],
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // BIOLOGY — Homeostasis and Response
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    key: "homeostasis",
+    url: "/diagrams/neuron.png",
+    label: "Homeostasis and Response — Nervous System",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["homeostasis", "homeostasis and response", "nervous system", "reflex arc", "the reflex arc", "receptor", "effector", "stimulus", "response", "negative feedback", "biology"],
+  },
+  {
+    key: "hormones_endocrine",
+    url: "/diagrams/neuron.png",
+    label: "Hormones and the Endocrine System",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["hormones", "endocrine system", "glands", "insulin", "glucagon", "adrenaline", "testosterone", "oestrogen", "blood glucose", "diabetes", "biology"],
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // BIOLOGY — Genetics, Inheritance and Evolution
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    key: "genetics_inheritance",
+    url: "/diagrams/dna-structure.png",
+    label: "Genetics — DNA, Inheritance and Punnett Squares",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["genetics", "dna and genetics", "inheritance", "evolution and inheritance", "genetics and evolution", "punnett square", "alleles", "dominant", "recessive", "genotype", "phenotype", "chromosome", "biology"],
+  },
+  {
+    key: "evolution_natural_selection",
+    url: "/diagrams/natural-selection.png",
+    label: "Evolution and Natural Selection",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["evolution", "natural selection", "inheritance variation and evolution", "genetics populations and ecosystems", "adaptation", "variation", "survival of the fittest", "speciation", "darwin", "biology"],
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // BIOLOGY — Ecology
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    key: "ecology_ecosystems",
+    url: "/diagrams/food-web.png",
+    label: "Ecology — Ecosystems and Food Webs",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["ecology", "ecosystem", "food web", "food chain", "producer", "consumer", "decomposer", "biodiversity", "population", "community", "habitat", "biology"],
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // BIOLOGY — Human Body Systems
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    key: "human_circulatory_system",
+    url: "/diagrams/human-heart.png",
+    label: "The Human Circulatory System",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["the human circulatory system", "circulatory system", "heart", "blood vessels", "arteries", "veins", "capillaries", "double circulation", "blood pressure", "biology"],
+  },
+  {
+    key: "human_digestive_system",
+    url: "/diagrams/digestive-system.png",
+    label: "The Human Digestive System",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["the human digestive system", "digestive system", "the digestive system", "digestion", "stomach", "small intestine", "large intestine", "oesophagus", "liver", "pancreas", "bile", "biology"],
+  },
+  {
+    key: "human_skeleton_muscles",
+    url: "/diagrams/human-skeleton.png",
+    label: "The Human Skeleton and Muscles",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["the human skeleton and muscles", "skeleton", "muscles", "joints", "tendons", "ligaments", "antagonistic muscles", "biceps", "triceps", "bone structure", "biology"],
+  },
+  {
+    key: "kidney_excretion",
+    url: "/diagrams/digestive-system.png",
+    label: "The Kidney — Excretion and Filtration",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["the kidney", "kidney", "excretion", "filtration", "reabsorption", "urine", "nephron", "osmoregulation", "biology"],
+  },
+  {
+    key: "breathing_gas_exchange",
+    url: "/diagrams/respiratory-system.png",
+    label: "Breathing and Gas Exchange",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["breathing and gas exchange", "gas exchange", "alveoli", "lungs", "diaphragm", "intercostal muscles", "ventilation", "diffusion", "oxygen", "carbon dioxide", "biology"],
+  },
+  {
+    key: "the_eye_structure",
+    url: "/diagrams/human-eye.png",
+    label: "The Eye — Structure and Function",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["the eye", "eye structure", "cornea", "lens", "retina", "iris", "pupil", "optic nerve", "accommodation", "biology"],
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // BIOLOGY — Cell Biology Advanced
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    key: "cell_biology_organisation",
+    url: "/diagrams/animal-cell.png",
+    label: "Cell Biology and Organisation",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["cell biology and organisation", "cell biology", "cells and organisation", "cell biology advanced", "cells advanced", "tissue", "organ", "organ system", "specialised cells", "biology"],
+  },
+  {
+    key: "meiosis_cell_division",
+    url: "/diagrams/mitosis.png",
+    label: "Meiosis — Cell Division for Reproduction",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["meiosis", "sexual reproduction", "gametes", "haploid", "diploid", "cell division", "biology"],
+  },
+  {
+    key: "mitosis_cell_cycle",
+    url: "/diagrams/mitosis.png",
+    label: "Mitosis — Cell Cycle and Division",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["mitosis", "cell cycle", "cell division", "prophase", "metaphase", "anaphase", "telophase", "growth", "repair", "biology"],
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // CHEMISTRY — Electrolysis
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    key: "electrolysis_diagram",
+    url: "/diagrams/electrolysis.png",
+    label: "Electrolysis — Electrode Reactions",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["electrolysis", "electrode", "anode", "cathode", "electrolyte", "ions", "oxidation", "reduction", "electroplating", "chemistry"],
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // MATHEMATICS — Iteration and Functions
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    key: "iteration_functions",
+    url: "/diagrams/algebra-function-machine.png",
+    label: "Iteration and Functions",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["iteration", "functions and iteration", "iterative formula", "function machine", "function notation", "inverse function", "composite function", "algebra", "mathematics"],
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // MATHEMATICS — Quadratics and Graphs
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    key: "quadratic_graphs",
+    url: "/diagrams/quadratic-graph.png",
+    label: "Quadratic Graphs and Equations",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["quadratic", "quadratic graph", "parabola", "quadratic formula", "completing the square", "factorising quadratics", "roots", "vertex", "algebra quadratics", "mathematics"],
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // MATHEMATICS — Coordinate Geometry
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    key: "coordinate_geometry",
+    url: "/diagrams/coordinate-system.png",
+    label: "Coordinate Geometry — Straight Lines and Circles",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["coordinate geometry", "straight line", "gradient", "y-intercept", "midpoint", "distance formula", "equation of circle", "mathematics"],
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // PHYSICS — Ray Diagrams
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    key: "ray_diagrams",
+    url: "/diagrams/refraction-lens.png",
+    label: "Ray Diagrams — Lenses and Mirrors",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["ray diagrams", "ray diagram", "converging lens", "diverging lens", "concave mirror", "convex mirror", "focal length", "real image", "virtual image", "optics", "physics"],
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // CHEMISTRY — Earth and Atmosphere
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    key: "earth_atmosphere",
+    url: "/diagrams/greenhouse-effect.png",
+    label: "Earth's Atmosphere — Composition and Climate",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["earth and atmosphere", "earth's atmosphere", "atmosphere", "greenhouse effect", "global warming", "carbon dioxide", "nitrogen", "oxygen", "climate change", "chemistry"],
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // MATHEMATICS — Algebraic Fractions
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    key: "algebraic_fractions",
+    url: "/diagrams/fractions.png",
+    label: "Algebraic Fractions — Simplifying and Operations",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["algebraic fractions", "algebra algebraic fractions", "simplifying fractions", "adding fractions", "multiplying fractions", "dividing fractions", "common denominator", "mathematics"],
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // MATHEMATICS — Sequences and Series
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    key: "sequences_series",
+    url: "/diagrams/algebra-sequence-dot-pattern.png",
+    label: "Sequences and Series — Arithmetic and Geometric",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["sequences", "sequences and series", "arithmetic sequence", "geometric sequence", "nth term", "common difference", "common ratio", "sum of series", "mathematics"],
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // PHYSICS — Forces and Motion
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    key: "vector_resultant_forces",
+    url: "/diagrams/triangle-properties.png",
+    label: "Vector and Resultant Forces",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["vector and resultant forces", "resultant force", "vector addition", "parallelogram law", "free body diagram", "equilibrium", "forces", "physics"],
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // MATHS — Area and Perimeter
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    key: "area_perimeter",
+    url: "/diagrams/area-perimeter.png",
+    label: "Area and Perimeter",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["area", "perimeter", "area and perimeter", "rectangle area", "triangle area", "circle area", "circumference", "pi", "maths", "mathematics"],
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // MATHS — Bearings
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    key: "bearings",
+    url: "/diagrams/bearings.png",
+    label: "Bearings",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["bearings", "compass bearing", "three figure bearing", "back bearing", "north", "clockwise", "maths", "mathematics"],
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // MATHS — Percentages
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    key: "percentages",
+    url: "/diagrams/percentages.png",
+    label: "Percentages",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["percentage", "percentages", "percentage increase", "percentage decrease", "percentage change", "multiplier", "maths", "mathematics"],
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // MATHS — Transformations
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    key: "transformations",
+    url: "/diagrams/transformations.png",
+    label: "Transformations",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["transformations", "translation", "reflection", "rotation", "enlargement", "scale factor", "congruent", "similar", "maths", "mathematics"],
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // MATHS — Coordinates and Straight-Line Graphs
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    key: "coordinates_graphs",
+    url: "/diagrams/coordinates.png",
+    label: "Coordinates and Straight-Line Graphs",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["coordinates", "straight line graphs", "gradient", "y-intercept", "y = mx + c", "midpoint", "quadrant", "maths", "mathematics"],
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // MATHS — Simultaneous Equations
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    key: "simultaneous_equations",
+    url: "/diagrams/simultaneous-equations.png",
+    label: "Simultaneous Equations",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["simultaneous equations", "elimination method", "substitution method", "solve simultaneously", "linear equations", "maths", "mathematics"],
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // MATHS — Circle Theorems
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    key: "circle_theorems",
+    url: "/diagrams/circle-theorems.png",
+    label: "Circle Theorems",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["circle theorems", "angle at centre", "angle at circumference", "cyclic quadrilateral", "tangent", "chord", "semicircle", "maths", "mathematics"],
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // MATHS — Trigonometry
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    key: "trigonometry_sohcahtoa",
+    url: "/diagrams/trigonometry.png",
+    label: "Trigonometry — SOH CAH TOA",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["trigonometry", "soh cah toa", "sine", "cosine", "tangent", "hypotenuse", "opposite", "adjacent", "right-angled triangle", "maths", "mathematics"],
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // MATHS — Ratio and Proportion
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    key: "ratio_proportion",
+    url: "/diagrams/ratio.png",
+    label: "Ratio and Proportion",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["ratio", "proportion", "ratio and proportion", "direct proportion", "simplify ratio", "share in ratio", "unitary method", "maths", "mathematics"],
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // MATHS — Probability
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    key: "probability_tree",
+    url: "/diagrams/probability.png",
+    label: "Probability and Tree Diagrams",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["probability", "tree diagram", "probability scale", "independent events", "combined probability", "sample space", "maths", "mathematics"],
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // MATHS — Quadratic Equations
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    key: "quadratic_equations",
+    url: "/diagrams/quadratics.png",
+    label: "Quadratic Equations",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["quadratic equations", "factorising quadratics", "quadratic formula", "completing the square", "roots", "parabola", "maths", "mathematics"],
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // MATHS — Vectors
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    key: "vectors_gcse",
+    url: "/diagrams/vectors.png",
+    label: "Vectors",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["vectors", "vector addition", "vector notation", "column vector", "magnitude", "vector paths", "maths", "mathematics"],
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // MATHS — Fractions
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    key: "fractions_operations",
+    url: "/diagrams/fractions.png",
+    label: "Fractions — Operations",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["fractions", "adding fractions", "subtracting fractions", "multiplying fractions", "dividing fractions", "equivalent fractions", "mixed numbers", "maths", "mathematics"],
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // MATHS — Statistics and Averages
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    key: "statistics_averages",
+    url: "/diagrams/statistics.png",
+    label: "Statistics and Averages",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["statistics", "averages", "mean", "median", "mode", "range", "frequency table", "data", "maths", "mathematics"],
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // PHYSICS — Waves
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    key: "waves_gcse",
+    url: "/diagrams/waves.png",
+    label: "Waves",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["waves", "transverse wave", "wavelength", "amplitude", "frequency", "wave speed", "crest", "trough", "physics"],
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // PHYSICS — Specific Heat Capacity
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    key: "specific_heat_capacity",
+    url: "/diagrams/specific-heat-capacity.png",
+    label: "Specific Heat Capacity",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["specific heat capacity", "thermal energy", "Q = mcΔT", "temperature change", "heating", "cooling", "physics"],
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // PHYSICS — Forces and Motion (Newton's Laws)
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    key: "forces_motion_newton",
+    url: "/diagrams/forces.png",
+    label: "Forces and Motion — Newton's Second Law",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["forces", "motion", "newton's second law", "F = ma", "free body diagram", "resultant force", "acceleration", "mass", "physics"],
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // PHYSICS — Energy Stores and Transfers
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    key: "energy_stores_transfers",
+    url: "/diagrams/energy-stores.png",
+    label: "Energy Stores and Transfers",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["energy stores", "energy transfers", "kinetic energy", "gravitational potential energy", "elastic potential energy", "thermal energy", "chemical energy", "KE = ½mv²", "GPE = mgh", "physics"],
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // CHEMISTRY — Rates of Reaction
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    key: "rates_of_reaction",
+    url: "/diagrams/rates-of-reaction.png",
+    label: "Rates of Reaction",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["rates of reaction", "rate of reaction", "temperature", "concentration", "surface area", "catalyst", "activation energy", "collision theory", "chemistry"],
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // CHEMISTRY — Acids and Bases
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    key: "acids_bases_ph",
+    url: "/diagrams/acids-bases.png",
+    label: "Acids and Bases — pH Scale",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["acids", "bases", "alkalis", "pH scale", "neutralisation", "acid base reaction", "salt", "universal indicator", "chemistry"],
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // CHEMISTRY — The Periodic Table
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    key: "periodic_table_structure",
+    url: "/diagrams/periodic-table.png",
+    label: "The Periodic Table",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["periodic table", "groups", "periods", "alkali metals", "halogens", "noble gases", "transition metals", "atomic number", "mass number", "chemistry"],
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // CHEMISTRY — Atomic Structure
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    key: "atomic_structure_bohr",
+    url: "/diagrams/atomic-structure.png",
+    label: "Atomic Structure",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["atomic structure", "atom", "proton", "neutron", "electron", "electron shell", "nucleus", "subatomic particles", "Bohr model", "chemistry"],
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // BIOLOGY — Animal and Plant Cells
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    key: "cells_animal_plant",
+    url: "/diagrams/cells-biology.png",
+    label: "Animal and Plant Cells",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["cells", "animal cell", "plant cell", "nucleus", "cytoplasm", "cell membrane", "cell wall", "chloroplast", "vacuole", "mitochondria", "biology"],
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // BIOLOGY — Photosynthesis
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    key: "photosynthesis_gcse",
+    url: "/diagrams/photosynthesis.png",
+    label: "Photosynthesis",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["photosynthesis", "carbon dioxide", "water", "glucose", "oxygen", "light energy", "chlorophyll", "chloroplast", "biology"],
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // BIOLOGY — Respiration
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    key: "respiration_gcse",
+    url: "/diagrams/respiration.png",
+    label: "Respiration — Aerobic and Anaerobic",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    license: CC_BY_SA_4,
+    keywords: ["respiration", "aerobic respiration", "anaerobic respiration", "glucose", "oxygen", "ATP", "mitochondria", "lactic acid", "biology"],
+  },
 ];
 
 
