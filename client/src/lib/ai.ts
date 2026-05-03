@@ -1701,21 +1701,7 @@ CRITICAL SEND RULE: SEND adaptations affect FORMATTING AND PRESENTATION ONLY —
       }
     }
 
-    // 6. Diagram A — full-page spread (after Worked Example, before Section A Questions)
-    if (wantDiagramA) {
-      const diagASection: Record<string, unknown> = {
-        title: 'Diagram A',
-        type: 'diagram',
-        fullPage: true,
-        content: diagramACaption,
-        caption: diagramACaption,
-      };
-      if (diagramAUrl) diagASection.imageUrl = diagramAUrl;
-      // Note: svg is NOT embedded in the prompt string (too large) — injected post-parse below
-      structuredSections.push(JSON.stringify(diagASection));
-    }
-
-    // 7. Section A Questions (True/False, MCQ, Word Bank, Match)
+    // 6. Section A Questions (True/False, MCQ, Word Bank, Match) — BEFORE Diagram A
     if (wantTrueFalse) {
       structuredSections.push(`{"title": "Section A — True or False", "type": "q-true-false", "marks": 4, "content": "Circle TRUE or FALSE for each statement. [4 marks]\n1. [Statement about ${params.topic} \u2014 TRUE]  TRUE  /  FALSE\n2. [Statement about ${params.topic} \u2014 FALSE]  TRUE  /  FALSE\n3. [Statement about ${params.topic} \u2014 TRUE]  TRUE  /  FALSE\n4. [Statement about ${params.topic} \u2014 FALSE]  TRUE  /  FALSE"}`);
     }
@@ -1730,6 +1716,20 @@ CRITICAL SEND RULE: SEND adaptations affect FORMATTING AND PRESENTATION ONLY —
 
     if (wantMatch) {
       structuredSections.push(`{"title": "Section A — Match the Column", "type": "q-matching", "marks": 5, "content": "Draw a line to match each term with its correct definition. [5 marks]\nIMPORTANT: Write CORRECT pairs only — each term paired with its own accurate definition. The renderer will shuffle the definitions column for the student. Do NOT pre-shuffle or swap definitions between terms.\n${isMaths ? '1. [mathematical term from ' + params.topic + '] \u2194 [the accurate definition of THAT specific term — not another term\'s definition]\n2. [mathematical term] \u2194 [the accurate definition of THAT specific term]\n3. [mathematical term] \u2194 [the accurate definition of THAT specific term]\n4. [mathematical term] \u2194 [the accurate definition of THAT specific term]\n5. [mathematical term] \u2194 [the accurate definition of THAT specific term]' : '1. [key term from ' + params.topic + '] \u2194 [the accurate definition of THAT specific term — not another term\'s definition]\n2. [key term] \u2194 [the accurate definition of THAT specific term]\n3. [key term] \u2194 [the accurate definition of THAT specific term]\n4. [key term] \u2194 [the accurate definition of THAT specific term]\n5. [key term] \u2194 [the accurate definition of THAT specific term]'}"}`);
+    }
+
+    // 7. Diagram A — full-page spread (after Section A questions, before Section B)
+    if (wantDiagramA) {
+      const diagASection: Record<string, unknown> = {
+        title: 'Diagram A',
+        type: 'diagram',
+        fullPage: true,
+        content: diagramACaption,
+        caption: diagramACaption,
+      };
+      if (diagramAUrl) diagASection.imageUrl = diagramAUrl;
+      // Note: svg is NOT embedded in the prompt string (too large) — injected post-parse below
+      structuredSections.push(JSON.stringify(diagASection));
     }
 
     // 8. Section B Questions — Foundation / Guided Practice
