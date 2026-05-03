@@ -827,6 +827,7 @@ export async function initDb() {
     `DO $$ BEGIN ALTER TABLE worksheet_library ADD COLUMN canonical_topic_key TEXT; EXCEPTION WHEN duplicate_column THEN NULL; END $$`,
     `DO $$ BEGIN ALTER TABLE worksheet_sections ADD COLUMN image_url TEXT; EXCEPTION WHEN duplicate_column THEN NULL; END $$`,
     `DO $$ BEGIN ALTER TABLE worksheet_sections ADD COLUMN asset_ref TEXT; EXCEPTION WHEN duplicate_column THEN NULL; END $$`,
+    `DO $$ BEGIN ALTER TABLE worksheet_sections ADD COLUMN symbols TEXT; EXCEPTION WHEN duplicate_column THEN NULL; END $$`,
     `DO $$ BEGIN ALTER TABLE worksheets ADD COLUMN subtitle TEXT; EXCEPTION WHEN duplicate_column THEN NULL; END $$`,
     `DO $$ BEGIN ALTER TABLE worksheets ADD COLUMN metadata_json TEXT; EXCEPTION WHEN duplicate_column THEN NULL; END $$`,
     `DO $$ BEGIN ALTER TABLE worksheets ADD COLUMN source_library_id TEXT; EXCEPTION WHEN duplicate_column THEN NULL; END $$`,
