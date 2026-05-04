@@ -474,7 +474,12 @@ export async function downloadHtmlAsPdf(
   const styleEl = document.createElement("style");
   const styles: string[] = [];
   doc.querySelectorAll("style").forEach((s) => styles.push(s.textContent || ""));
-  styleEl.textContent = styles.join("\n");
+  // html2canvas does not support oklch() CSS color function — strip any CSS property
+  // that uses it so the capture doesn't throw. Worksheet sections use hard-coded hex
+  // colours so removing these CSS variable declarations has no visual impact.
+  const rawStyles = styles.join("\n");
+  const safeStyles = rawStyles.replace(/:[^;{}]*oklch\([^)]*\)[^;{}]*;/g, ": transparent;");
+  styleEl.textContent = safeStyles;
   container.appendChild(styleEl);
 
   // Copy the body content
