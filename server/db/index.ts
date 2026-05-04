@@ -872,6 +872,7 @@ export async function initDb() {
   } catch (e: any) { console.warn("canonical_topic_key fix migration skipped:", e.message); }
 
   // Auto-classify diagram_type based on title keywords (idempotent — only updates rows still at default)
+  // Handles both em-dash (—) and en-dash (–) title formats used in different batches of entries
   try {
     await query(`
       UPDATE diagram_library
@@ -879,7 +880,9 @@ export async function initDb() {
         WHEN title ILIKE '%revision map%' OR title ILIKE '%revision mat%' OR title ILIKE '%revision sheet%'
              OR tags::text ILIKE '%revision-map%' OR tags::text ILIKE '%revision map%'
              THEN 'revision_map'
-        WHEN title ILIKE '%diagram b%' OR title ILIKE '% — b%' OR title ILIKE '% - b%'
+        WHEN title ILIKE '%diagram b%'
+             OR title ILIKE '% — b%' OR title ILIKE '% - b%'
+             OR title ILIKE '% – diagram b%' OR title ILIKE '% — diagram b%'
              OR title ILIKE '%panel b%'
              THEN 'diagram_b'
         ELSE 'diagram_a'
@@ -888,6 +891,17 @@ export async function initDb() {
     `);
     console.log("✅ diagram_type auto-classification applied");
   } catch (e: any) { console.warn("diagram_type classification migration skipped:", e.message); }
+
+  // Clean up broken diagram_library entries (image_url starting with '[FAILED]')
+  // These were created during a failed bulk upload and can never render correctly
+  try {
+    const cleanupResult = await query(`
+      DELETE FROM diagram_library
+      WHERE image_url LIKE '[FAILED]%'
+    `);
+    const deleted = cleanupResult.rowCount ?? 0;
+    if (deleted > 0) console.log(`✅ Cleaned up ${deleted} broken diagram_library entries`);
+  } catch (e: any) { console.warn("Broken diagram cleanup skipped:", e.message); }
 
   console.log("✅ Library asset migrations applied");
 
