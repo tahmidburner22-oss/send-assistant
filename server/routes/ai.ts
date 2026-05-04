@@ -1294,15 +1294,18 @@ router.post("/diagram", requireAuth, async (req: Request, res: Response) => {
       : diagramSlot === 'REVISION' ? 'revision_map'
       : 'diagram_a';
     // Fast targeted query: filter by diagram_type + subject + topic at DB level.
+    // Also filter out broken entries (image_url starting with '[FAILED]')
     const subjectPat = `%${subjectLower}%`;
     const topicWords = topicLower.split(/\s+/).filter((w: string) => w.length > 3);
     const topicPat = topicWords.length > 0 ? `%${topicWords[0]}%` : `%${topicLower}%`;
+    const brokenFilter = `image_url NOT LIKE '[FAILED]%' AND image_url IS NOT NULL AND image_url != ''`;
     let targetedRows = await dbQuery(
       `SELECT id, title, subject, topic, year_group, image_url, description, tags, curated, diagram_type
        FROM diagram_library
        WHERE diagram_type = $1
          AND (LOWER(subject) LIKE $2 OR LOWER(title) LIKE $2)
          AND (LOWER(topic) LIKE $3 OR LOWER(title) LIKE $3)
+         AND ${brokenFilter}
        ORDER BY curated DESC, subject ASC, title ASC
        LIMIT 80`,
       [diagramTypeFilter, subjectPat, topicPat]
@@ -1314,22 +1317,59 @@ router.post("/diagram", requireAuth, async (req: Request, res: Response) => {
          FROM diagram_library
          WHERE diagram_type = $1
            AND LOWER(subject) LIKE $2
+           AND ${brokenFilter}
          ORDER BY curated DESC, subject ASC, title ASC
          LIMIT 120`,
         [diagramTypeFilter, subjectPat]
       );
     }
-    // If still no results (diagram_type column not yet migrated on this DB), fall back to unfiltered
+    // If still no results (diagram_type column not yet migrated on this DB), fall back to title-based type filtering
+    // Handles BOTH em-dash (—) and en-dash (–) used in different entry title formats
     if (targetedRows.rows.length === 0) {
+      const titleTypeCondition = diagramSlot === 'B'
+        ? `(LOWER(title) LIKE '%diagram b%' OR LOWER(title) LIKE '% – diagram b%' OR LOWER(title) LIKE '%— b%' OR LOWER(title) LIKE '%– b%')`
+        : diagramSlot === 'REVISION'
+          ? `(LOWER(title) LIKE '%revision map%' OR LOWER(title) LIKE '%revision mat%' OR LOWER(title) LIKE '%revision sheet%')`
+          : `(LOWER(title) NOT LIKE '%diagram b%' AND LOWER(title) NOT LIKE '%revision map%' AND LOWER(title) NOT LIKE '%revision mat%')`;
       targetedRows = await dbQuery(
         `SELECT id, title, subject, topic, year_group, image_url, description, tags, curated,
                 COALESCE(diagram_type, 'diagram_a') as diagram_type
          FROM diagram_library
          WHERE (LOWER(subject) LIKE $1 OR LOWER(title) LIKE $1)
            AND (LOWER(topic) LIKE $2 OR LOWER(title) LIKE $2)
+           AND ${titleTypeCondition}
+           AND ${brokenFilter}
          ORDER BY curated DESC, subject ASC, title ASC
          LIMIT 80`,
         [subjectPat, topicPat]
+      );
+    }
+    // Slot B: if no topic-specific B found, widen to subject-only B search (handles year group mismatches)
+    if (targetedRows.rows.length === 0 && diagramSlot === 'B') {
+      targetedRows = await dbQuery(
+        `SELECT id, title, subject, topic, year_group, image_url, description, tags, curated,
+                COALESCE(diagram_type, 'diagram_a') as diagram_type
+         FROM diagram_library
+         WHERE (LOWER(subject) LIKE $1 OR LOWER(title) LIKE $1)
+           AND (LOWER(title) LIKE '%diagram b%' OR LOWER(title) LIKE '% – diagram b%')
+           AND ${brokenFilter}
+         ORDER BY curated DESC, subject ASC, title ASC
+         LIMIT 80`,
+        [subjectPat]
+      );
+    }
+    // Slot A: if still no results, widen to subject-only A search
+    if (targetedRows.rows.length === 0 && diagramSlot === 'A') {
+      targetedRows = await dbQuery(
+        `SELECT id, title, subject, topic, year_group, image_url, description, tags, curated,
+                COALESCE(diagram_type, 'diagram_a') as diagram_type
+         FROM diagram_library
+         WHERE (LOWER(subject) LIKE $1 OR LOWER(title) LIKE $1)
+           AND (LOWER(title) NOT LIKE '%diagram b%' AND LOWER(title) NOT LIKE '%revision map%' AND LOWER(title) NOT LIKE '%revision mat%')
+           AND ${brokenFilter}
+         ORDER BY curated DESC, subject ASC, title ASC
+         LIMIT 80`,
+        [subjectPat]
       );
     }
     const entries: any[] = targetedRows.rows;
