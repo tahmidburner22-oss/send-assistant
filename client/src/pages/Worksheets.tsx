@@ -1953,27 +1953,174 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
 
   // ─── PDF Download (pixel-perfect HTML-to-PDF) ─────────────────────────────
   const handleDownloadPdf = async () => {
-    if (!generated) { toast.error("PDF error: no worksheet loaded"); return; }
+    if (!generated) { toast.error("No worksheet loaded"); return; }
     const container = worksheetRef.current || (document.querySelector(".worksheet-content") as HTMLElement);
-    if (!container) { toast.error("PDF error: worksheet not found in DOM"); return; }
-    const printRoot = (container.querySelector(".worksheet-print-root") as HTMLElement) || container;
+    if (!container) { toast.error("Worksheet not found"); return; }
+    const filename = `${generated.title.replace(/[^a-zA-Z0-9\s]/g, "").replace(/\s+/g, "_")}_${viewMode}.pdf`;
     try {
-      const filename = `${generated.title.replace(/[^a-zA-Z0-9\s]/g, "").replace(/\s+/g, "_")}_${viewMode}.pdf`;
-      await downloadHtmlAsPdf(printRoot, filename, {
-        overlayColor: overlayBg,
-        viewMode,
-        textSize,
-        title: generated.title,
-        sendNeedId: generated?.metadata?.sendNeed || sendNeed || undefined,
-        landscape: isRevisionMat,
+      // ── Step 1: Build self-contained paginated HTML (no oklch, no live document styles) ──
+      const contentHtml = serialiseElement(container, viewMode);
+      const { getKatexCssInline } = await import("@/lib/pdf-generator-v2");
+      const katexCss = getKatexCssInline();
+      const sendNeedId = generated?.metadata?.sendNeed || sendNeed || undefined;
+      const bg = overlayBg || "#ffffff";
+      const A4_W = isRevisionMat ? 1123 : 794;
+      const A4_H = isRevisionMat ? 794 : 1123;
+      const MARGIN = isRevisionMat ? 23 : 45;
+      const CONTENT_H = A4_H - MARGIN * 2;
+      const { getSendFormatting } = await import("@/lib/send-data");
+      const fmt = getSendFormatting(sendNeedId, textSize);
+      // Measure blocks in a hidden iframe
+      const measureHtml = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+        <style>${katexCss}</style>
+        <style>
+          *, *::before, *::after { box-sizing: border-box; }
+          html, body { margin: 0; padding: 0; background: ${bg};
+            font-family: ${fmt.fontFamily}; font-size: ${fmt.fontSize}px;
+            line-height: ${fmt.lineHeight}; width: ${A4_W}px; }
+          .worksheet-print-root { background: ${bg}; width: ${A4_W}px; padding: ${MARGIN}px; }
+          .ws-teacher-section { ${viewMode === "student" ? "display:none!important;" : ""} }
+          * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+          .katex .katex-mathml { position:absolute!important; clip:rect(1px,1px,1px,1px)!important;
+            padding:0!important; border:0!important; height:1px!important; width:1px!important; overflow:hidden!important; }
+        </style></head><body>${contentHtml}</body></html>`;
+      const measureIframe = document.createElement("iframe");
+      measureIframe.style.cssText = `position:fixed;top:0;left:-9999px;width:${A4_W}px;height:${A4_H * 3}px;border:none;visibility:hidden;`;
+      document.body.appendChild(measureIframe);
+      await new Promise<void>((resolve, reject) => {
+        const timer = setTimeout(() => reject(new Error("measure iframe timeout")), 15000);
+        measureIframe.onload = () => { clearTimeout(timer); resolve(); };
+        measureIframe.srcdoc = measureHtml;
       });
-      toast.success(`PDF downloaded!`);
+      try {
+        const iDoc2 = measureIframe.contentDocument!;
+        if (iDoc2.fonts?.ready) await Promise.race([iDoc2.fonts.ready, new Promise<void>(r => setTimeout(r, 2000))]);
+      } catch (_) {}
+      await new Promise<void>(r => requestAnimationFrame(() => setTimeout(r, 300)));
+      const iDoc = measureIframe.contentDocument!;
+      const root = iDoc.querySelector(".worksheet-print-root") as HTMLElement || iDoc.body;
+      const blockEls = Array.from(root.querySelectorAll<HTMLElement>(":scope > *"))
+        .filter(el => {
+          if (el.getAttribute("aria-hidden") === "true") return false;
+          const pos = (el.style.position || "").toLowerCase();
+          if (pos === "absolute" || pos === "fixed") return false;
+          return true;
+        });
+      const blocks = blockEls.map(el => ({
+        html: el.outerHTML,
+        height: el.getBoundingClientRect().height,
+        isDiagram: el.classList.contains("ws-section-diagram"),
+      }));
+      document.body.removeChild(measureIframe);
+      // Pack blocks into pages
+      const pages: string[][] = [[]];
+      const pageIsDiagram: boolean[] = [false];
+      let curPageH = 0;
+      for (const blk of blocks) {
+        if (blk.isDiagram) {
+          if (pages[pages.length - 1].length > 0) { pages.push([blk.html]); pageIsDiagram.push(true); }
+          else { pages[pages.length - 1].push(blk.html); pageIsDiagram[pageIsDiagram.length - 1] = true; }
+          curPageH = A4_H;
+        } else if (curPageH === 0 || curPageH + blk.height <= CONTENT_H + 10) {
+          pages[pages.length - 1].push(blk.html); curPageH += blk.height;
+        } else {
+          pages.push([blk.html]); pageIsDiagram.push(false); curPageH = blk.height;
+        }
+      }
+      // Build self-contained page HTML (no oklch — uses only KaTeX CSS + explicit styles)
+      const pageCards = pages.map((pageBlocks, i) => `
+        <div class="preview-page${pageIsDiagram[i] ? " diagram-page" : ""}" id="page-${i}">
+          <div class="worksheet-print-root">${pageBlocks.join("")}</div>
+        </div>`).join("");
+      const pdfHtml = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+        <style>${katexCss}</style>
+        <style>
+          *, *::before, *::after { box-sizing: border-box; }
+          html, body { margin: 0; padding: 0; background: #374151;
+            font-family: ${fmt.fontFamily}; font-size: ${fmt.fontSize}px;
+            line-height: ${fmt.lineHeight}; }
+          * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+          .katex .katex-mathml { position:absolute!important; clip:rect(1px,1px,1px,1px)!important;
+            padding:0!important; border:0!important; height:1px!important; width:1px!important; overflow:hidden!important; }
+          .preview-page { position:relative; width:${A4_W}px; height:${A4_H}px; background:${bg}; overflow:hidden; margin:0; }
+          .worksheet-print-root { background:${bg}; padding:${MARGIN}px; width:${A4_W}px; }
+          .diagram-page .worksheet-print-root { padding:0!important; overflow:hidden!important; }
+          .ws-section { margin-bottom:10px!important; border-radius:4px!important;
+            -webkit-print-color-adjust:exact!important; print-color-adjust:exact!important; }
+          .ws-section-diagram {
+            margin-top:-${MARGIN}px!important; margin-left:-${MARGIN}px!important;
+            margin-right:-${MARGIN}px!important; margin-bottom:0!important;
+            width:${A4_W}px!important; height:${A4_H}px!important;
+            min-height:${A4_H}px!important; overflow:hidden!important; }
+          .ws-section-diagram img, .ws-section-diagram > div > div {
+            width:${A4_W}px!important; height:${A4_H}px!important;
+            object-fit:cover!important; object-position:top center!important; display:block!important; }
+          .ws-header { border-radius:4px!important; margin-bottom:10px!important; overflow:hidden!important;
+            -webkit-print-color-adjust:exact!important; print-color-adjust:exact!important; }
+          table { width:100%; border-collapse:collapse; margin:8px 0; }
+          th { background:#5b21b6!important; color:white!important; padding:8px 12px; text-align:left; font-weight:600; }
+          td { padding:7px 12px; border:1px solid #e5e7eb; vertical-align:top; }
+          h1, h2, h3 { line-height:1.3; }
+          p { margin-bottom:0.5em; }
+          ul, ol { padding-left:20px; margin:6px 0; }
+          li { margin-bottom:4px; }
+          .ws-teacher-section { ${viewMode === "student" ? "display:none!important;" : ""} }
+        </style></head><body>${pageCards}</body></html>`;
+      // ── Step 2: Render pdfHtml in a hidden iframe and capture each page ──
+      const pdfIframe = document.createElement("iframe");
+      pdfIframe.style.cssText = `position:fixed;top:0;left:-9999px;width:${A4_W}px;height:${A4_H * pages.length + 100}px;border:none;visibility:hidden;`;
+      document.body.appendChild(pdfIframe);
+      await new Promise<void>((resolve, reject) => {
+        const timer = setTimeout(() => reject(new Error("PDF iframe timeout")), 20000);
+        pdfIframe.onload = () => { clearTimeout(timer); resolve(); };
+        pdfIframe.srcdoc = pdfHtml;
+      });
+      try {
+        const pDoc2 = pdfIframe.contentDocument!;
+        if (pDoc2.fonts?.ready) await Promise.race([pDoc2.fonts.ready, new Promise<void>(r => setTimeout(r, 3000))]);
+      } catch (_) {}
+      const pdfDoc = pdfIframe.contentDocument!;
+      // Wait for images to load in the iframe
+      await Promise.all(Array.from(pdfDoc.querySelectorAll<HTMLImageElement>("img")).map(img =>
+        new Promise<void>(resolve => {
+          if (img.complete && img.naturalWidth > 0) { resolve(); return; }
+          const done = () => { img.removeEventListener("load", done); img.removeEventListener("error", done); resolve(); };
+          img.addEventListener("load", done);
+          img.addEventListener("error", done);
+          setTimeout(resolve, 5000);
+        })
+      ));
+      await new Promise<void>(r => requestAnimationFrame(() => setTimeout(r, 500)));
+      // ── Step 3: Capture each page with html2canvas and build jsPDF ──
+      const html2canvas = (await import("html2canvas")).default;
+      const { jsPDF } = await import("jspdf");
+      const pdf = new jsPDF({ orientation: isRevisionMat ? "landscape" : "portrait", unit: "mm", format: "a4" });
+      const A4_W_MM = isRevisionMat ? 297 : 210;
+      const A4_H_MM = isRevisionMat ? 210 : 297;
+      const JPEG_QUALITY = 0.92;
+      for (let i = 0; i < pages.length; i++) {
+        const pageEl = pdfDoc.getElementById(`page-${i}`) as HTMLElement;
+        if (!pageEl) continue;
+        const canvas = await html2canvas(pageEl, {
+          scale: 1.5,
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: bg,
+          logging: false,
+          windowWidth: A4_W,
+          width: A4_W,
+          height: A4_H,
+        });
+        const imgData = canvas.toDataURL("image/jpeg", JPEG_QUALITY);
+        if (i > 0) pdf.addPage();
+        pdf.addImage(imgData, "JPEG", 0, 0, A4_W_MM, A4_H_MM);
+      }
+      document.body.removeChild(pdfIframe);
+      pdf.save(filename.endsWith(".pdf") ? filename : `${filename}.pdf`);
+      toast.success("PDF downloaded!");
     } catch (err) {
       const errMsg = err instanceof Error ? err.message : String(err);
-      const errStack = err instanceof Error ? (err.stack || '').substring(0, 400) : '';
       console.error("PDF download error:", err);
-      console.error("PDF error message:", errMsg);
-      console.error("PDF error stack:", errStack);
       toast.error("PDF error: " + errMsg.substring(0, 120));
     }
   };
