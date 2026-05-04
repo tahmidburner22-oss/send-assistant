@@ -1294,7 +1294,7 @@ router.post("/diagram", requireAuth, async (req: Request, res: Response) => {
     const topicWords = topicLower.split(/\s+/).filter((w: string) => w.length > 3);
     const topicPat = topicWords.length > 0 ? `%${topicWords[0]}%` : `%${topicLower}%`;
     let targetedRows = await dbQuery(
-      `SELECT id, title, subject, topic, image_url, description, tags, curated
+      `SELECT id, title, subject, topic, year_group, image_url, description, tags, curated
        FROM diagram_library
        WHERE (LOWER(subject) LIKE $1 OR LOWER(title) LIKE $1)
          AND (LOWER(topic) LIKE $2 OR LOWER(title) LIKE $2)
@@ -1305,7 +1305,7 @@ router.post("/diagram", requireAuth, async (req: Request, res: Response) => {
     // If no targeted results, fall back to subject-only match
     if (targetedRows.rows.length === 0) {
       targetedRows = await dbQuery(
-        `SELECT id, title, subject, topic, image_url, description, tags, curated
+        `SELECT id, title, subject, topic, year_group, image_url, description, tags, curated
          FROM diagram_library
          WHERE LOWER(subject) LIKE $1
          ORDER BY curated DESC, subject ASC, title ASC
@@ -1318,22 +1318,29 @@ router.post("/diagram", requireAuth, async (req: Request, res: Response) => {
     if (entries.length > 0) {
       // Score each entry for relevance
       const scored = entries.map((e) => {
-        const eSubject = (e.subject || "").toLowerCase();
+          const eSubject = (e.subject || "").toLowerCase();
         const eTopic = (e.topic || "").toLowerCase();
         const eTitle = (e.title || "").toLowerCase();
+        const eYearGroup = (e.year_group || "").toLowerCase();
         const eTags: string[] = (() => {
           try { return JSON.parse(e.tags || "[]").map((t: string) => t.toLowerCase()); } catch { return []; }
         })();
-
         let score = 0;
-
         // Subject match
         const subjectMatch =
           subjectLower &&
           (eSubject.includes(subjectLower) || subjectLower.includes(eSubject) ||
            eTitle.includes(subjectLower) || eTags.some((t: string) => t.includes(subjectLower)));
         if (subjectMatch) score += 10;
-
+        // Year group match — strongly prefer diagrams for the correct year group
+        if (yearGroup) {
+          const yrLower = yearGroup.toLowerCase();
+          const yrNum = yrLower.match(/(\d+)/)?.[1];
+          if (eYearGroup && eYearGroup === yrLower) score += 40;
+          else if (eYearGroup && yrNum && eYearGroup.includes(yrNum)) score += 25;
+          else if (eTitle && yrNum && eTitle.includes(`year ${yrNum}`)) score += 20;
+          else if (eYearGroup && eYearGroup !== "" && yrNum && !eYearGroup.includes(yrNum)) score -= 15;
+        }
         // Topic match
         if (topicLower && eTopic === topicLower) score += 50;
         else if (topicLower && eTopic.includes(topicLower)) score += 30;
