@@ -5788,7 +5788,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                     );
                     const hasTrueFalse =
                       tfLines.length >= 2 ||
-                      (/true or false|circle.*true|FORMAT 1 TRUE/i.test(c) && c.includes("TRUE") && c.includes("FALSE"));
+                      (/FORMAT 1 TRUE/i.test(c) && c.includes("TRUE") && c.includes("FALSE"));
 
                     // MCQ: 3+ lines starting with A/B/C/D
                     const mcqLines = lines.filter((l: string) => /^[A-D][.)\s]{1,3}\S/.test(l));
