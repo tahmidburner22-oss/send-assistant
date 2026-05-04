@@ -117,30 +117,30 @@ export function buildPopupHtml(
 
     /* ── Page setup ── */
     @page {
-      size: A4 \${landscape ? "landscape" : "portrait"};
-      margin: \${landscape ? "6mm" : "12mm 12mm 12mm 12mm"};
+      size: A4 ${landscape ? "landscape" : "portrait"};
+      margin: ${landscape ? "6mm" : "12mm 12mm 12mm 12mm"};
     }
 
     /* ── Screen preview ── */
     @media screen {
       body {
-        max-width: \${landscape ? "297mm" : "210mm"};
+        max-width: ${landscape ? "297mm" : "210mm"};
         margin: 0 auto;
         padding: 12mm;
         background: #f3f4f6;
       }
       .worksheet-print-root {
-        background: \${overlayColor};
+        background: ${overlayColor};
         box-shadow: 0 2px 8px rgba(0,0,0,0.12);
         padding: 12mm;
-        min-height: \${landscape ? "190mm" : "270mm"};
+        min-height: ${landscape ? "190mm" : "270mm"};
       }
     }
 
     /* ── Print ── */
     @media print {
       html, body {
-        background: \${overlayColor} !important;
+        background: ${overlayColor} !important;
         padding: 0;
         margin: 0;
       }
@@ -149,18 +149,18 @@ export function buildPopupHtml(
         box-shadow: none;
       }
       .no-print { display: none !important; }
-      \${hideTeacher}
-      \${perPageCss}
+      ${hideTeacher}
+      ${perPageCss}
     }
 
     /* ── Worksheet root ── */
     .worksheet-print-root {
-      background: \${overlayColor};
-      font-family: \${fmt.fontFamily};
-      font-size: \${fmt.fontSize}px;
-      line-height: \${fmt.lineHeight};
-      letter-spacing: \${fmt.letterSpacing};
-      word-spacing: \${fmt.wordSpacing};
+      background: ${overlayColor};
+      font-family: ${fmt.fontFamily};
+      font-size: ${fmt.fontSize}px;
+      line-height: ${fmt.lineHeight};
+      letter-spacing: ${fmt.letterSpacing};
+      word-spacing: ${fmt.wordSpacing};
       width: 100%;
       max-width: 100%;
       overflow: visible;
