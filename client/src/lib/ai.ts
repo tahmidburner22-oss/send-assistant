@@ -1743,16 +1743,16 @@ CRITICAL SEND RULE: SEND adaptations affect FORMATTING AND PRESENTATION ONLY —
 
 
     // 7. Diagram A — full-page spread (after Section A questions, before Section B)
-    if (wantDiagramA) {
+    // Only include if we have a real image from the admin library (no SVG fallbacks)
+    if (wantDiagramA && diagramAUrl) {
       const diagASection: Record<string, unknown> = {
         title: 'Diagram A',
         type: 'diagram',
         fullPage: true,
         content: diagramACaption,
         caption: diagramACaption,
+        imageUrl: diagramAUrl,
       };
-      if (diagramAUrl) diagASection.imageUrl = diagramAUrl;
-      // Note: svg is NOT embedded in the prompt string (too large) — injected post-parse below
       structuredSections.push(JSON.stringify(diagASection));
     }
 
@@ -1766,17 +1766,16 @@ CRITICAL SEND RULE: SEND adaptations affect FORMATTING AND PRESENTATION ONLY —
     }
 
     // 9. Diagram B — full-page spread (between Section B and Section C Questions)
-    // Only include Diagram B if it has a unique image URL or SVG (not a duplicate of A)
-    if (wantDiagramB && (diagramBUrl || diagramBSvg)) {
+    // Only include Diagram B if it has a unique image URL from the admin library (no SVG fallbacks)
+    if (wantDiagramB && diagramBUrl) {
       const diagBSection: Record<string, unknown> = {
         title: 'Diagram B',
         type: 'diagram',
         fullPage: true,
         content: diagramBCaption,
         caption: diagramBCaption,
+        imageUrl: diagramBUrl,
       };
-      if (diagramBUrl) diagBSection.imageUrl = diagramBUrl;
-      // Note: svg is NOT embedded in the prompt string (too large) — injected post-parse below
       structuredSections.push(JSON.stringify(diagBSection));
     }
 
