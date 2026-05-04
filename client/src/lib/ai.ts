@@ -1606,13 +1606,29 @@ STRICT JSON OUTPUT: Respond with valid JSON only — no markdown, no code blocks
     // Retrieve spec-aligned example questions for this topic (if available)
     const specExamples = getSpecQuestions(params.subject, params.topic);
 
+    const ksGcseNote = (yearNum >= 7 && yearNum <= 11) ? `
+KS3/4 GCSE SPEC REQUIREMENTS (MANDATORY for Year ${yearNum}):
+- This worksheet must be usable as a COMPLETE, STANDALONE lesson resource — not a quiz or revision aid.
+- Every section must be substantive and teach/reinforce the topic, not just test it.
+- LEARNING OBJECTIVE: One clear, specific, measurable objective using Bloom's taxonomy verbs (identify, describe, explain, calculate, evaluate, analyse, compare).
+- KEY VOCABULARY: EXACTLY 5 terms with precise, mark-scheme-quality definitions. Include units where applicable (e.g. "Resistance (Ω) — the opposition to the flow of current in a circuit").
+- COMMON MISTAKES: 3 specific, topic-relevant misconceptions students make at GCSE level. Each must name the mistake AND explain the correct understanding.
+- WORKED EXAMPLE: A complete, step-by-step solution to a real exam-style question. Show every step. Include formula, substitution, calculation, and answer with units. Add an examiner tip.
+- SECTION A (True/False, MCQ, Gap Fill): Must test RECALL of specific facts, definitions, and formulae from the topic. True/False statements must be factually precise. MCQ distractors must be plausible misconceptions.
+- SECTION B (Foundation Questions): 4 scaffolded questions escalating from 1 to 3 marks. Use command words: state, identify, describe, calculate.
+- SECTION C (Core Practice): 6 exam-style questions escalating from 1 to 6 marks. Use command words: explain, calculate, evaluate, compare, analyse, justify. Include at least one multi-step calculation and one extended response.
+- CHALLENGE: A synoptic or higher-order question linking the topic to a wider concept. Must require genuine analysis or evaluation.
+- SELF REFLECTION: 5 specific, topic-relevant skills for the confidence table (not generic). Written prompts must be meaningful and specific to the topic.
+- TEACHER KEY: Complete model answers for EVERY question with mark allocations. For extended answers, list marking points explicitly.
+- DIAGRAM SECTIONS: Diagram A and Diagram B are full-page visual resources from the diagram library — they are already provided as images. Do NOT generate text-based diagram descriptions. Do NOT include diagram-related questions in the text sections.
+` : '';
     const structuredSystem = `You are an expert UK teacher creating a professional, print-ready worksheet. You respond with valid raw JSON only — no markdown, no code blocks, no HTML. Every rule below is mandatory.
-
 SUBJECT TYPE: ${isSTEM ? 'STEM' : 'HUMANITIES'}
 ${isMaths ? 'MATHS RULES: All questions must be numerical/calculation-based ONLY. Never ask students to explain, describe, or write prose. Use LaTeX for all math: wrap in \\(...\\). E.g. \\(\\dfrac{3}{4}\\), \\(x^{2}\\), \\(\\sqrt{x}\\). Write units as plain text outside LaTeX.' : ''}
 ${readingAgeNote}
 ${sendNote}
 ${tierNote}
+${ksGcseNote}
 QUALITY STANDARD: Every question must be fully usable — no placeholders, no ellipses, no unfinished sentences. Use real numbers, real contexts. Textbook quality. Every question must be at the correct curriculum level for ${params.yearGroup || 'the year group'} — GCSE/KS3/KS4 standard as appropriate. Do NOT simplify the academic content or intellectual challenge of questions just because SEND adaptations are applied.
 ${specExamples ? `\n${specExamples}\n` : ''}
 CRITICAL SEND RULE: SEND adaptations affect FORMATTING AND PRESENTATION ONLY — never the academic content or intellectual rigour of questions.

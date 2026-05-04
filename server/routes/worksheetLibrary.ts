@@ -290,12 +290,29 @@ router.get("/lookup", requireAuth, async (req: Request, res: Response) => {
     const sections: any[] = JSON.parse(entry.sections || "[]");
     const teacherSections: any[] = JSON.parse(entry.teacher_sections || "[]");
     const keyVocab: any[] = JSON.parse(entry.key_vocab || "[]");
-    const assets = await resolveEntryAssets(entry.id);
+     const assets = await resolveEntryAssets(entry.id);
     const sectionsWithAssets = injectAssetRefs(sections, assets);
     const availableTiers = await findAvailableTiers(subject, topic, yearGroup);
-
+    // If the entry has fewer than 5 sections it is incomplete — signal the client
+    // to fall through to AI generation rather than serving a broken worksheet.
+    const isComplete = sectionsWithAssets.length >= 5;
+    if (!isComplete) {
+      return res.json({ found: false, incomplete: true });
+    }
     res.json({
       found: true,
+      // Return sections at the top level so the client (libData.sections) can read them directly.
+      sections: sectionsWithAssets,
+      teacherSections,
+      title: entry.title,
+      subtitle: entry.subtitle,
+      curated: !!entry.curated,
+      worksheetManifest: {
+        sourceLibraryId: entry.id,
+        canonicalTopicKey: entry.canonical_topic_key || canonicalTopicKey(topic),
+        tier: entry.tier,
+        yearGroup,
+      },
       entry: {
         ...entry,
         sections: sectionsWithAssets,
