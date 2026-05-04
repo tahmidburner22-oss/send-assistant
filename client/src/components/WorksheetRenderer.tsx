@@ -1651,6 +1651,7 @@ function TrueFalseSection({
   // Format B (numbered, next line): "1. Statement" followed by "TRUE" or "FALSE" on next line
   // Format C (bullet point): "- Statement" or "* Statement"
   const statements: { text: string; answer: string | undefined }[] = [];
+  const instructionLines: string[] = []; // instruction/header lines shown above the rows without pills
   for (let i = 0; i < allLines.length; i++) {
     const line = allLines[i];
     // Handle bullet-point format: lines starting with - or *
@@ -1669,9 +1670,20 @@ function TrueFalseSection({
     }
     // Handle plain lines without TRUE/FALSE (library/PDF format): just the statement text
     if (!/^\d+[.)\s]/.test(line)) {
-      // Only add if it looks like a statement (not a header or short label)
-      if (line.length > 10 && !/^(TRUE|FALSE|QUESTION|STATEMENT|SECTION|RECALL|UNDERSTANDING|APPLICATION)/i.test(line)) {
+      // Skip instruction/header lines — these should NOT get TRUE/FALSE pills.
+      // Instruction lines typically start with imperative verbs or contain
+      // phrases that describe what the student should do, not a statement to judge.
+      const isInstructionLine =
+        /^(circle|tick|read|decide|for each|look at|state whether|write true|mark each|choose|indicate|label|identify|answer|complete|select)/i.test(line) ||
+        /\bfor each (statement|question|sentence|one)\b/i.test(line) ||
+        /\b(each statement|the following|below|instructions?:)/i.test(line) ||
+        /^(TRUE|FALSE|QUESTION|STATEMENT|SECTION|RECALL|UNDERSTANDING|APPLICATION)/i.test(line);
+      // Only add if it looks like a statement (not a header, short label, or instruction)
+      if (line.length > 10 && !isInstructionLine) {
         statements.push({ text: line.trim(), answer: undefined });
+      } else if (isInstructionLine && line.length > 4) {
+        // Collect instruction lines so they can be rendered above the rows without pills
+        instructionLines.push(line.trim());
       }
       continue;
     }
@@ -1700,6 +1712,16 @@ function TrueFalseSection({
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: fmt.lineHeight > 1.7 ? "14px" : "10px" }}>
+      {instructionLines.map((instr, ii) => (
+        <div key={`instr-${ii}`} style={{
+          fontSize: `${fmt.fontSize}px`,
+          fontFamily: fmt.fontFamily,
+          lineHeight: String(fmt.lineHeight),
+          color: "#374151",
+          fontStyle: "italic",
+          marginBottom: "4px",
+        }} dangerouslySetInnerHTML={{ __html: renderMath(instr) }} />
+      ))}
       {displayLines.map((item, i) => {
         const stmtText = typeof item === "string" ? item.replace(/^\d+[.)\s]+/, "").trim() : item.text;
         const answer = typeof item === "string" ? undefined : item.answer;
