@@ -2049,7 +2049,16 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
       // Step 2: Measure each direct child block of the print root
       const iDoc = measureIframe.contentDocument!;
       const root = iDoc.querySelector(".worksheet-print-root") as HTMLElement || iDoc.body;
-      const blockEls = Array.from(root.querySelectorAll<HTMLElement>(":scope > *"));
+      const blockEls = Array.from(root.querySelectorAll<HTMLElement>(":scope > *"))
+        // Skip the colour-overlay div (aria-hidden, position:absolute) — it spans
+        // the full worksheet height and would otherwise be packed alone onto page 1,
+        // leaving that page completely blank.
+        .filter(el => {
+          if (el.getAttribute("aria-hidden") === "true") return false;
+          const pos = (el.style.position || "").toLowerCase();
+          if (pos === "absolute" || pos === "fixed") return false;
+          return true;
+        });
       const blocks = blockEls.map(el => ({
         html: el.outerHTML,
         height: el.getBoundingClientRect().height,
