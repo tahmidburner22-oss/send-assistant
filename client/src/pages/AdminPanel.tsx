@@ -2062,6 +2062,7 @@ function DiagramLibraryPanel() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [subjectFilter, setSubjectFilter] = useState("All");
+  const [folderFilter, setFolderFilter] = useState<"diagram_a" | "diagram_b" | "revision_map">("diagram_a");
   const [viewEntry, setViewEntry] = useState<any | null>(null);
 
   const loadEntries = async () => {
@@ -2073,7 +2074,6 @@ function DiagramLibraryPanel() {
     } catch { /* ignore */ }
     setLoading(false);
   };
-
   useEffect(() => { loadEntries(); }, []);
 
   const handleDelete = async (id: string) => {
@@ -2081,7 +2081,6 @@ function DiagramLibraryPanel() {
     await fetch(`/api/diagram-library/entries/${id}`, { method: "DELETE", credentials: "include" });
     setEntries(e => e.filter(x => x.id !== id));
   };
-
   const handleToggleCurate = async (id: string, current: number) => {
     await fetch(`/api/diagram-library/entries/${id}/curate`, {
       method: "PATCH", credentials: "include",
@@ -2090,16 +2089,42 @@ function DiagramLibraryPanel() {
     });
     setEntries(e => e.map(x => x.id === id ? { ...x, curated: current ? 0 : 1 } : x));
   };
+  const handleChangeType = async (id: string, newType: string) => {
+    await fetch(`/api/diagram-library/entries/${id}/type`, {
+      method: "PATCH", credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ diagram_type: newType })
+    });
+    setEntries(e => e.map(x => x.id === id ? { ...x, diagram_type: newType } : x));
+    setViewEntry((v: any) => v && v.id === id ? { ...v, diagram_type: newType } : v);
+  };
 
-  const subjects = ["All", ...Array.from(new Set(entries.map(e => e.subject).filter(Boolean))).sort()];
+  // Normalise diagram_type for entries that may not have it set yet
+  const normalisedEntries = entries.map(e => ({
+    ...e,
+    diagram_type: e.diagram_type || (
+      (e.title || "").toLowerCase().includes("diagram b") ? "diagram_b"
+      : ((e.title || "").toLowerCase().includes("revision map") || (e.title || "").toLowerCase().includes("revision mat")) ? "revision_map"
+      : "diagram_a"
+    )
+  }));
 
-  const filtered = entries.filter(e => {
+  const folderEntries = normalisedEntries.filter(e => e.diagram_type === folderFilter);
+  const subjects = ["All", ...Array.from(new Set(folderEntries.map((e: any) => e.subject).filter(Boolean))).sort()];
+  const filtered = folderEntries.filter(e => {
     if (subjectFilter !== "All" && e.subject !== subjectFilter) return false;
     if (search && !`${e.title} ${e.subject} ${e.topic} ${e.description || ""}`.toLowerCase().includes(search.toLowerCase())) return false;
     return true;
   });
-
   const groupedEntries = buildLibraryGroups(filtered);
+
+  const FOLDER_LABELS: Record<string, string> = { diagram_a: "Diagram A", diagram_b: "Diagram B", revision_map: "Revision Map" };
+  const FOLDER_COLOURS: Record<string, string> = { diagram_a: "bg-blue-600", diagram_b: "bg-purple-600", revision_map: "bg-emerald-600" };
+  const folderCounts = {
+    diagram_a: normalisedEntries.filter(e => e.diagram_type === "diagram_a").length,
+    diagram_b: normalisedEntries.filter(e => e.diagram_type === "diagram_b").length,
+    revision_map: normalisedEntries.filter(e => e.diagram_type === "revision_map").length,
+  };
 
   return (
     <div className="space-y-4">
@@ -2113,42 +2138,61 @@ function DiagramLibraryPanel() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
+          {/* Folder tabs: Diagram A / Diagram B / Revision Map */}
+          <div className="flex gap-2 border-b border-border/40 pb-3">
+            {(["diagram_a", "diagram_b", "revision_map"] as const).map(folder => (
+              <button
+                key={folder}
+                onClick={() => { setFolderFilter(folder); setSubjectFilter("All"); setSearch(""); }}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                  folderFilter === folder
+                    ? `${FOLDER_COLOURS[folder]} text-white shadow-sm`
+                    : "bg-muted text-muted-foreground hover:bg-muted/80"
+                }`}
+              >
+                {FOLDER_LABELS[folder]}
+                <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${
+                  folderFilter === folder ? "bg-white/20 text-white" : "bg-border/60 text-muted-foreground"
+                }`}>{folderCounts[folder as keyof typeof folderCounts]}</span>
+              </button>
+            ))}
+          </div>
           {/* Subject tabs */}
           <div className="flex flex-wrap gap-1">
             {subjects.map(s => (
               <button key={s} onClick={() => { setSubjectFilter(s); }}
-                className={`px-2 py-0.5 rounded text-xs font-medium transition-colors ${subjectFilter === s ? "bg-emerald-600 text-white" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}>
+                className={`px-2 py-0.5 rounded text-xs font-medium transition-colors ${subjectFilter === s ? `${FOLDER_COLOURS[folderFilter]} text-white` : "bg-muted text-muted-foreground hover:bg-muted/80"}`}>
                 {s}
               </button>
             ))}
           </div>
           {/* Search */}
-          <Input className="text-xs h-8" placeholder="Search diagrams..." value={search} onChange={e => { setSearch(e.target.value); }} />
+          <Input className="text-xs h-8" placeholder={`Search ${FOLDER_LABELS[folderFilter]} diagrams...`} value={search} onChange={e => { setSearch(e.target.value); }} />
 
           {loading ? (
             <div className="text-xs text-muted-foreground py-4 text-center">Loading...</div>
           ) : groupedEntries.length === 0 ? (
             <div className="text-xs text-muted-foreground py-8 text-center">
-              {entries.length === 0
-                ? "No diagrams in library yet. Diagrams are auto-added when worksheets with reference diagrams are generated."
+              {folderEntries.length === 0
+                ? `No ${FOLDER_LABELS[folderFilter]} diagrams in library yet.`
                 : "No results match your filters."}
             </div>
           ) : (
             <div className="space-y-3">
               {groupedEntries.map(yearGroup => {
-                const yearCount = yearGroup.subjects.reduce((total, subjectGroup) => total + subjectGroup.topics.reduce((topicTotal, topicGroup) => topicTotal + topicGroup.entries.length, 0), 0);
+                const yearCount = yearGroup.subjects.reduce((total: number, subjectGroup: any) => total + subjectGroup.topics.reduce((topicTotal: number, topicGroup: any) => topicTotal + topicGroup.entries.length, 0), 0);
                 return (
                   <details key={yearGroup.yearGroup} className="rounded-xl border border-border/50 bg-muted/20" open>
                     <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3">
                       <div>
                         <p className="text-sm font-semibold text-foreground">{yearGroup.yearGroup}</p>
-                        <p className="text-xs text-muted-foreground">Browse diagrams by subject and topic</p>
+                        <p className="text-xs text-muted-foreground">{FOLDER_LABELS[folderFilter]} — browse by subject and topic</p>
                       </div>
                       <Badge variant="outline" className="text-[10px]">{yearCount} diagrams</Badge>
                     </summary>
                     <div className="px-4 pb-4 space-y-3">
-                      {yearGroup.subjects.map(subjectGroup => {
-                        const subjectCount = subjectGroup.topics.reduce((total, topicGroup) => total + topicGroup.entries.length, 0);
+                      {yearGroup.subjects.map((subjectGroup: any) => {
+                        const subjectCount = subjectGroup.topics.reduce((total: number, topicGroup: any) => total + topicGroup.entries.length, 0);
                         return (
                           <details key={`${yearGroup.yearGroup}-${subjectGroup.subject}`} className="rounded-lg border border-border/40 bg-background" open>
                             <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-3 py-2.5">
@@ -2159,7 +2203,7 @@ function DiagramLibraryPanel() {
                               <Badge variant="outline" className="text-[10px]">{subjectCount} diagrams</Badge>
                             </summary>
                             <div className="px-3 pb-3 space-y-3">
-                              {subjectGroup.topics.map(topicGroup => (
+                              {subjectGroup.topics.map((topicGroup: any) => (
                                 <details key={`${yearGroup.yearGroup}-${subjectGroup.subject}-${topicGroup.topic}`} className="rounded-lg border border-dashed border-border/50 bg-muted/10" open>
                                   <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-3 py-2">
                                     <div>
@@ -2169,7 +2213,7 @@ function DiagramLibraryPanel() {
                                     <Badge variant="secondary" className="text-[10px]">{topicGroup.entries.length}</Badge>
                                   </summary>
                                   <div className="px-3 pb-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                                    {topicGroup.entries.map(entry => (
+                                    {topicGroup.entries.map((entry: any) => (
                                       <div key={entry.id} className="border rounded-lg overflow-hidden hover:shadow-md transition-shadow cursor-pointer group bg-background" onClick={() => setViewEntry(entry)}>
                                         <div className="aspect-video bg-muted flex items-center justify-center overflow-hidden">
                                           {entry.image_url ? (
@@ -2214,10 +2258,28 @@ function DiagramLibraryPanel() {
                   {viewEntry.subject && <Badge variant="outline" className="text-[10px]">{viewEntry.subject}</Badge>}
                   {viewEntry.topic && <Badge variant="outline" className="text-[10px]">{viewEntry.topic}</Badge>}
                   {viewEntry.year_group && <Badge variant="outline" className="text-[10px]">{viewEntry.year_group}</Badge>}
+                  <Badge className={`text-[10px] ${
+                    viewEntry.diagram_type === "diagram_b" ? "bg-purple-100 text-purple-700" :
+                    viewEntry.diagram_type === "revision_map" ? "bg-emerald-100 text-emerald-700" :
+                    "bg-blue-100 text-blue-700"
+                  }`}>
+                    {{ diagram_a: "Diagram A", diagram_b: "Diagram B", revision_map: "Revision Map" }[viewEntry.diagram_type as string] || "Diagram A"}
+                  </Badge>
                 </div>
                 {viewEntry.description && <p className="text-xs text-muted-foreground mt-1">{viewEntry.description}</p>}
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap justify-end">
+                {/* Move to folder */}
+                <select
+                  className="h-7 text-xs border border-border/50 rounded px-1.5 bg-background text-foreground"
+                  value={viewEntry.diagram_type || "diagram_a"}
+                  onChange={e => handleChangeType(viewEntry.id, e.target.value)}
+                  onClick={ev => ev.stopPropagation()}
+                >
+                  <option value="diagram_a">Diagram A</option>
+                  <option value="diagram_b">Diagram B</option>
+                  <option value="revision_map">Revision Map</option>
+                </select>
                 <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => { const a = document.createElement("a"); a.href = viewEntry.image_url; a.download = viewEntry.title + ".png"; a.click(); }}>
                   <Download className="w-3 h-3 mr-1" />Download
                 </Button>

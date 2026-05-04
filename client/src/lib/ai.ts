@@ -1681,6 +1681,17 @@ CRITICAL SEND RULE: SEND adaptations affect FORMATTING AND PRESENTATION ONLY —
       console.warn('[Diagram] Pre-fetch failed:', diagPrefetchErr);
     }
 
+    // ── DEDUPLICATION: if Diagram B is identical to Diagram A, clear B ──────────
+    if (diagramBUrl && diagramBUrl === diagramAUrl) {
+      console.log('[Diagram] Diagram B URL is identical to Diagram A — clearing B to avoid duplication');
+      diagramBUrl = '';
+      diagramBSvg = '';
+    }
+    if (!diagramBUrl && diagramBSvg && diagramBSvg === diagramASvg) {
+      console.log('[Diagram] Diagram B SVG is identical to Diagram A — clearing B to avoid duplication');
+      diagramBSvg = '';
+    }
+
     // ── STRUCTURED SECTION ORDER (matches required format) ───────────────────
     // Format: Header → LO → Retrieval → Key Vocabulary → Common Mistakes →
     //         Worked Example → Diagram A → Section A Questions → Section B Questions →
@@ -1755,7 +1766,8 @@ CRITICAL SEND RULE: SEND adaptations affect FORMATTING AND PRESENTATION ONLY —
     }
 
     // 9. Diagram B — full-page spread (between Section B and Section C Questions)
-    if (wantDiagramB) {
+    // Only include Diagram B if it has a unique image URL or SVG (not a duplicate of A)
+    if (wantDiagramB && (diagramBUrl || diagramBSvg)) {
       const diagBSection: Record<string, unknown> = {
         title: 'Diagram B',
         type: 'diagram',

@@ -1066,7 +1066,7 @@ const DIAGRAM_BANK: DiagramEntry[] = [
     url: "/diagrams/coastal-features.png",
     label: "Coastal Erosion Processes",
     attribution: "AI-generated educational diagram (Adaptly)",
-    keywords: ["coastal erosion", "hydraulic action", "abrasion", "attrition", "solution", "cliff", "wave cut platform", "cave arch stack stump", "longshore drift", "beach", "deposition", "coastal features", "headland", "bay"],
+    keywords: ["coastal erosion", "hydraulic action", "abrasion", "attrition", "solution", "cliff", "wave cut platform", "cave arch stack stump", "longshore drift", "beach", "deposition", "coastal features", "headland", "bay", "coasts", "coast", "physical landscapes", "physical landscape", "coastline"],
   },
   {
     key: "glaciation",
@@ -1658,6 +1658,143 @@ const DIAGRAM_BANK: DiagramEntry[] = [
     keywords: ["biomes", "world biomes", "tropical rainforest", "desert", "tundra", "grassland", "savanna", "temperate forest", "taiga", "geography", "ecosystems"],
   },
 
+  // ── MATHS (additional — previously unregistered files) ────────────────────
+  {
+    key: "area_perimeter",
+    url: "/diagrams/area-perimeter.png",
+    label: "Area and Perimeter",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    keywords: ["area", "perimeter", "rectangle", "triangle", "circle", "compound shapes", "area and perimeter", "maths", "shape", "2d shapes", "surface area"],
+  },
+  {
+    key: "bearings_maths",
+    url: "/diagrams/bearings.png",
+    label: "Bearings and Directions",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    keywords: ["bearings", "compass", "north", "direction", "angle", "three figure bearing", "navigation", "maths", "geometry"],
+  },
+  {
+    key: "circle_theorems",
+    url: "/diagrams/circle-theorems.png",
+    label: "Circle Theorems",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    keywords: ["circle theorems", "circle", "chord", "tangent", "arc", "sector", "inscribed angle", "cyclic quadrilateral", "maths", "geometry", "angles in a circle"],
+  },
+  {
+    key: "coordinates_maths",
+    url: "/diagrams/coordinates.png",
+    label: "Coordinates and Graphs",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    keywords: ["coordinates", "x-axis", "y-axis", "cartesian", "grid", "plotting", "quadrant", "maths", "graphs", "straight line"],
+  },
+  {
+    key: "percentages_maths",
+    url: "/diagrams/percentages.png",
+    label: "Percentages",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    keywords: ["percentages", "percent", "percentage change", "percentage increase", "percentage decrease", "fraction", "decimal", "maths", "proportion", "ratio"],
+  },
+  {
+    key: "probability_maths",
+    url: "/diagrams/probability.png",
+    label: "Probability",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    keywords: ["probability", "chance", "likelihood", "event", "outcome", "sample space", "tree diagram", "venn diagram", "maths", "statistics", "experimental probability", "theoretical probability"],
+  },
+  {
+    key: "quadratics_maths",
+    url: "/diagrams/quadratics.png",
+    label: "Quadratic Graphs and Equations",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    keywords: ["quadratic", "quadratic equation", "quadratic graph", "parabola", "factorising", "completing the square", "quadratic formula", "roots", "vertex", "maths", "algebra"],
+  },
+  {
+    key: "ratio_maths",
+    url: "/diagrams/ratio.png",
+    label: "Ratio and Proportion",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    keywords: ["ratio", "proportion", "direct proportion", "inverse proportion", "sharing in a ratio", "maths", "fractions", "scale", "unitary method"],
+  },
+  {
+    key: "simultaneous_equations",
+    url: "/diagrams/simultaneous-equations.png",
+    label: "Simultaneous Equations",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    keywords: ["simultaneous equations", "linear equations", "elimination", "substitution", "solving equations", "algebra", "maths", "two unknowns", "graphical solution"],
+  },
+  {
+    key: "statistics_maths",
+    url: "/diagrams/statistics.png",
+    label: "Statistics and Data",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    keywords: ["statistics", "mean", "median", "mode", "range", "average", "data", "histogram", "frequency", "cumulative frequency", "box plot", "maths", "data handling", "stem and leaf"],
+  },
+  {
+    key: "transformations_maths",
+    url: "/diagrams/transformations.png",
+    label: "Transformations",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    keywords: ["transformations", "translation", "rotation", "reflection", "enlargement", "scale factor", "congruence", "similarity", "maths", "geometry", "vector"],
+  },
+  {
+    key: "trigonometry_maths",
+    url: "/diagrams/trigonometry.png",
+    label: "Trigonometry",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    keywords: ["trigonometry", "sine", "cosine", "tangent", "sohcahtoa", "right-angled triangle", "angle", "hypotenuse", "opposite", "adjacent", "maths", "pythagoras", "sin cos tan"],
+  },
+  {
+    key: "vectors_maths",
+    url: "/diagrams/vectors.png",
+    label: "Vectors",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    keywords: ["vectors", "vector", "column vector", "magnitude", "direction", "resultant", "addition of vectors", "maths", "geometry", "scalar"],
+  },
+
+  // ── SCIENCE (additional — previously unregistered files) ─────────────────
+  {
+    key: "acids_bases",
+    url: "/diagrams/acids-bases.png",
+    label: "Acids, Bases and pH Scale",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    keywords: ["acids", "bases", "alkalis", "ph scale", "neutralisation", "acid base", "indicator", "litmus", "universal indicator", "chemistry", "hydrogen ions", "hydroxide ions", "salt", "ph"],
+  },
+  {
+    key: "cells_biology_diagram",
+    url: "/diagrams/cells-biology.png",
+    label: "Animal and Plant Cells",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    keywords: ["cells", "cell biology", "animal cell", "plant cell", "nucleus", "cell membrane", "cytoplasm", "mitochondria", "chloroplast", "cell wall", "vacuole", "biology", "organelles"],
+  },
+  {
+    key: "energy_stores_physics",
+    url: "/diagrams/energy-stores.png",
+    label: "Energy Stores and Transfers",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    keywords: ["energy stores", "energy transfers", "kinetic energy", "potential energy", "thermal energy", "chemical energy", "elastic energy", "gravitational potential", "conservation of energy", "physics", "energy"],
+  },
+  {
+    key: "rates_of_reaction",
+    url: "/diagrams/rates-of-reaction.png",
+    label: "Rates of Reaction",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    keywords: ["rates of reaction", "rate of reaction", "activation energy", "collision theory", "catalyst", "concentration", "temperature", "surface area", "chemistry", "reaction rate", "reactants", "products"],
+  },
+  {
+    key: "specific_heat_capacity",
+    url: "/diagrams/specific-heat-capacity.png",
+    label: "Specific Heat Capacity",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    keywords: ["specific heat capacity", "thermal energy", "heat", "temperature change", "shc", "physics", "energy transfer", "thermal physics", "calorimetry", "joules"],
+  },
+  {
+    key: "waves_physics",
+    url: "/diagrams/waves.png",
+    label: "Waves — Properties and Types",
+    attribution: "AI-generated educational diagram (Adaptly)",
+    keywords: ["waves", "transverse waves", "longitudinal waves", "amplitude", "wavelength", "frequency", "wave speed", "electromagnetic spectrum", "sound waves", "light waves", "physics", "wave properties", "reflection", "refraction", "diffraction"],
+  },
+
   // ── PE / SPORT ────────────────────────────────────────────────────────────
   {
     key: "muscular_system",
@@ -1675,7 +1812,7 @@ const DIAGRAM_BANK: DiagramEntry[] = [
   },
 ];
 // ── Lookup function: fuzzy keyword match ─────────────────────────────────────
-export function findDiagram(subject: string, topic: string): DiagramEntry | null {
+export function findDiagram(subject: string, topic: string, slot: string = 'A'): DiagramEntry | null {
   const subjectLower = subject.toLowerCase().trim();
   const topicLower = topic.toLowerCase().trim();
   const combined = `${subjectLower} ${topicLower}`;
@@ -1688,26 +1825,32 @@ export function findDiagram(subject: string, topic: string): DiagramEntry | null
     return re.test(text);
   }
 
-  let bestMatch: DiagramEntry | null = null;
-  let bestScore = 0;
-
+  // Score all entries and sort by score descending
+  const scored: { entry: DiagramEntry; score: number }[] = [];
   for (const entry of DIAGRAM_BANK) {
     let score = 0;
     for (const kw of entry.keywords) {
       if (wordMatch(combined, kw)) {
-        // Longer keyword matches score higher (more specific)
         score += kw.length;
       }
     }
-    if (score > bestScore) {
-      bestScore = score;
-      bestMatch = entry;
+    if (score >= 6) {
+      scored.push({ entry, score });
     }
   }
+  scored.sort((a, b) => b.score - a.score);
 
-  // Require a minimum match score to avoid false positives
-  // Score must be at least 6 to ensure meaningful matches
-  return bestScore >= 6 ? bestMatch : null;
+  if (scored.length === 0) return null;
+
+  // Slot A: return best match; Slot B: return second-best (different image)
+  if (slot.toUpperCase() === 'B') {
+    // Find a second entry with a different URL than the best match
+    const bestUrl = scored[0].entry.url;
+    const secondBest = scored.find(s => s.entry.url !== bestUrl);
+    return secondBest ? secondBest.entry : null; // Don't duplicate A
+  }
+
+  return scored[0].entry;
 }
 
 // ── Wikimedia Commons API search (for topics not in the curated bank) ─────────

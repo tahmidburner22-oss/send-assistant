@@ -1289,28 +1289,47 @@ router.post("/diagram", requireAuth, async (req: Request, res: Response) => {
   // ── Step 1: Admin diagram library (DB — 1722 curated educational diagrams) ──
   // This is the ONLY image source. No Wikimedia or external URLs are used.
   try {
-    // Fast targeted query: filter by subject and topic at DB level to avoid scanning all rows in JS.
+    // Map slot to diagram_type for precise filtering (eliminates A/B duplication)
+    const diagramTypeFilter = diagramSlot === 'B' ? 'diagram_b'
+      : diagramSlot === 'REVISION' ? 'revision_map'
+      : 'diagram_a';
+    // Fast targeted query: filter by diagram_type + subject + topic at DB level.
     const subjectPat = `%${subjectLower}%`;
     const topicWords = topicLower.split(/\s+/).filter((w: string) => w.length > 3);
     const topicPat = topicWords.length > 0 ? `%${topicWords[0]}%` : `%${topicLower}%`;
     let targetedRows = await dbQuery(
-      `SELECT id, title, subject, topic, year_group, image_url, description, tags, curated
+      `SELECT id, title, subject, topic, year_group, image_url, description, tags, curated, diagram_type
        FROM diagram_library
-       WHERE (LOWER(subject) LIKE $1 OR LOWER(title) LIKE $1)
-         AND (LOWER(topic) LIKE $2 OR LOWER(title) LIKE $2)
+       WHERE diagram_type = $1
+         AND (LOWER(subject) LIKE $2 OR LOWER(title) LIKE $2)
+         AND (LOWER(topic) LIKE $3 OR LOWER(title) LIKE $3)
        ORDER BY curated DESC, subject ASC, title ASC
        LIMIT 80`,
-      [subjectPat, topicPat]
+      [diagramTypeFilter, subjectPat, topicPat]
     );
-    // If no targeted results, fall back to subject-only match
+    // If no targeted results, fall back to subject-only match (still filtered by type)
     if (targetedRows.rows.length === 0) {
       targetedRows = await dbQuery(
-        `SELECT id, title, subject, topic, year_group, image_url, description, tags, curated
+        `SELECT id, title, subject, topic, year_group, image_url, description, tags, curated, diagram_type
          FROM diagram_library
-         WHERE LOWER(subject) LIKE $1
+         WHERE diagram_type = $1
+           AND LOWER(subject) LIKE $2
          ORDER BY curated DESC, subject ASC, title ASC
          LIMIT 120`,
-        [subjectPat]
+        [diagramTypeFilter, subjectPat]
+      );
+    }
+    // If still no results (diagram_type column not yet migrated on this DB), fall back to unfiltered
+    if (targetedRows.rows.length === 0) {
+      targetedRows = await dbQuery(
+        `SELECT id, title, subject, topic, year_group, image_url, description, tags, curated,
+                COALESCE(diagram_type, 'diagram_a') as diagram_type
+         FROM diagram_library
+         WHERE (LOWER(subject) LIKE $1 OR LOWER(title) LIKE $1)
+           AND (LOWER(topic) LIKE $2 OR LOWER(title) LIKE $2)
+         ORDER BY curated DESC, subject ASC, title ASC
+         LIMIT 80`,
+        [subjectPat, topicPat]
       );
     }
     const entries: any[] = targetedRows.rows;
@@ -1318,7 +1337,7 @@ router.post("/diagram", requireAuth, async (req: Request, res: Response) => {
     if (entries.length > 0) {
       // Score each entry for relevance
       const scored = entries.map((e) => {
-          const eSubject = (e.subject || "").toLowerCase();
+        const eSubject = (e.subject || "").toLowerCase();
         const eTopic = (e.topic || "").toLowerCase();
         const eTitle = (e.title || "").toLowerCase();
         const eYearGroup = (e.year_group || "").toLowerCase();
@@ -1347,55 +1366,28 @@ router.post("/diagram", requireAuth, async (req: Request, res: Response) => {
         else if (topicLower && topicLower.includes(eTopic) && eTopic.length > 3) score += 20;
         else if (topicLower && eTitle.includes(topicLower)) score += 15;
         else if (topicLower && topicLower.includes(eTitle) && eTitle.length > 3) score += 10;
-
         // Tag / keyword match
         if (topicLower) {
-          const topicWords = topicLower.split(/\s+/).filter((w: string) => w.length > 3);
-          for (const tw of topicWords) {
+          const topicWords2 = topicLower.split(/\s+/).filter((w: string) => w.length > 3);
+          for (const tw of topicWords2) {
             if (eTopic.includes(tw) || eTitle.includes(tw) || eTags.some((t: string) => t.includes(tw))) {
               score += 5;
             }
           }
         }
-
         // Curated bonus
         if (e.curated) score += 8;
-
         return { entry: e, score };
       });
 
       scored.sort((a, b) => b.score - a.score);
-
-      // Filter to entries with a meaningful score
-      const candidates = scored.filter(s => s.score > 0);
-
-      // For slot B: prefer entries whose title contains "Diagram B" or "— B";
-      // otherwise use the second-best candidate (different image from slot A).
-      let chosen: typeof candidates[0] | undefined;
-      if (diagramSlot === 'B') {
-        // First try: find an entry explicitly labelled Diagram B
-        const explicitB = candidates.find(c =>
-          /diagram\s*b\b/i.test(c.entry.title) || /\u2014\s*b\b/i.test(c.entry.title)
-        );
-        if (explicitB) {
-          chosen = explicitB;
-        } else {
-          // Fall back to second-best candidate (skip the top result used for A)
-          chosen = candidates[1] || candidates[0];
-        }
-      } else {
-        // Slot A: prefer entries explicitly labelled Diagram A, else top result
-        const explicitA = candidates.find(c =>
-          /diagram\s*a\b/i.test(c.entry.title) || /\u2014\s*a\b/i.test(c.entry.title)
-        );
-        chosen = explicitA || candidates[0];
-      }
-
-      if (chosen) {
-        console.log(`[Diagram] Admin library match for "${topic}" (${subject}) slot=${diagramSlot}: "${chosen.entry.title}" score=${chosen.score}`);
+      // Use the top-scoring entry — diagram_type filter already ensures correct slot
+      const best = scored.find(s => s.score > 0);
+      if (best) {
+        console.log(`[Diagram] Admin library match for "${topic}" (${subject}) slot=${diagramSlot} type=${diagramTypeFilter}: "${best.entry.title}" score=${best.score}`);
         return res.json(buildImageResponse({
-          imageUrl: chosen.entry.image_url,
-          caption: `${chosen.entry.title} — ${subject} (${yr})`,
+          imageUrl: best.entry.image_url,
+          caption: `${best.entry.title} — ${subject} (${yr})`,
           attribution: null,
           provider: "admin-library",
           imageKind: "diagram",
@@ -1407,9 +1399,9 @@ router.post("/diagram", requireAuth, async (req: Request, res: Response) => {
   }
 
   // ── Step 2: Local static diagram bank (local /diagrams/ paths only) ──────────
-  const bankedDiagram = findDiagram(subject, topic);
+  const bankedDiagram = findDiagram(subject, topic, diagramSlot);
   if (bankedDiagram) {
-    console.log(`[Diagram] Found in local static bank: ${bankedDiagram.key}`);
+    console.log(`[Diagram] Found in local static bank: ${bankedDiagram.key} (slot=${diagramSlot})`);
     return res.json(buildImageResponse({
       imageUrl: bankedDiagram.url,
       caption: `${bankedDiagram.label} — ${subject} (${yr})`,
@@ -1422,9 +1414,9 @@ router.post("/diagram", requireAuth, async (req: Request, res: Response) => {
   // ── Step 3: Full local static bank ───────────────────────────────────────────
   try {
     const fullBank = getFullDiagramBank();
-    const fullMatch = fullBank.findDiagramFull(subject, topic);
+    const fullMatch = fullBank.findDiagramFull(subject, topic, diagramSlot);
     if (fullMatch) {
-      console.log(`[Diagram] Found in full local bank: ${fullMatch.key}`);
+      console.log(`[Diagram] Found in full local bank: ${fullMatch.key} (slot=${diagramSlot})`);
       return res.json(buildImageResponse({
         imageUrl: fullMatch.url,
         caption: `${fullMatch.label} — ${subject} (${yr})`,

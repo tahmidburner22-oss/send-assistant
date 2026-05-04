@@ -3487,7 +3487,7 @@ export const FULL_DIAGRAM_BANK: DiagramEntry[] = [
 // ─────────────────────────────────────────────────────────────────────────────
 // LOOKUP FUNCTION — fuzzy keyword match with scoring
 // ─────────────────────────────────────────────────────────────────────────────
-export function findDiagramFull(subject: string, topic: string): DiagramEntry | null {
+export function findDiagramFull(subject: string, topic: string, slot: string = 'A'): DiagramEntry | null {
   const subjectLower = subject.toLowerCase().trim();
   const topicLower = topic.toLowerCase().trim();
   const combined = `${subjectLower} ${topicLower}`;
@@ -3499,24 +3499,29 @@ export function findDiagramFull(subject: string, topic: string): DiagramEntry | 
     return re.test(text);
   }
 
-  let bestMatch: DiagramEntry | null = null;
-  let bestScore = 0;
-
+  // Score all entries and sort by score descending
+  const scored: { entry: DiagramEntry; score: number }[] = [];
   for (const entry of FULL_DIAGRAM_BANK) {
     let score = 0;
     for (const kw of entry.keywords) {
       if (wordMatch(combined, kw)) {
-        // Longer keyword matches score higher (more specific)
         score += kw.length;
       }
     }
-    if (score > bestScore) {
-      bestScore = score;
-      bestMatch = entry;
+    if (score >= 6) {
+      scored.push({ entry, score });
     }
   }
+  scored.sort((a, b) => b.score - a.score);
 
-  // Require a minimum match score to avoid false positives
-  // Score must be at least 6 to ensure meaningful matches
-  return bestScore >= 6 ? bestMatch : null;
+  if (scored.length === 0) return null;
+
+  // Slot A: return best match; Slot B: return second-best (different image)
+  if (slot.toUpperCase() === 'B') {
+    const bestUrl = scored[0].entry.url;
+    const secondBest = scored.find(s => s.entry.url !== bestUrl);
+    return secondBest ? secondBest.entry : null; // Don't duplicate A
+  }
+
+  return scored[0].entry;
 }

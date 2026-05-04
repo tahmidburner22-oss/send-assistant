@@ -837,6 +837,9 @@ export async function initDb() {
     `CREATE INDEX IF NOT EXISTS idx_library_canonical_topic ON worksheet_library(canonical_topic_key)`,
     `CREATE INDEX IF NOT EXISTS idx_assets_library_entry ON worksheet_library_assets(library_entry_id)`,
     `CREATE INDEX IF NOT EXISTS idx_assets_section_key ON worksheet_library_assets(section_key)`,
+    // diagram_type folder classification column
+    `DO $$ BEGIN ALTER TABLE diagram_library ADD COLUMN diagram_type TEXT NOT NULL DEFAULT 'diagram_a'; EXCEPTION WHEN duplicate_column THEN NULL; END $$`,
+    `CREATE INDEX IF NOT EXISTS idx_diagram_library_type ON diagram_library(diagram_type)`,
   ];
   for (const sql of alterMigrations) {
     try { await query(sql); } catch (e: any) { /* ignore if already exists */ }
@@ -867,6 +870,25 @@ export async function initDb() {
         )
     `);
   } catch (e: any) { console.warn("canonical_topic_key fix migration skipped:", e.message); }
+
+  // Auto-classify diagram_type based on title keywords (idempotent — only updates rows still at default)
+  try {
+    await query(`
+      UPDATE diagram_library
+      SET diagram_type = CASE
+        WHEN title ILIKE '%revision map%' OR title ILIKE '%revision mat%' OR title ILIKE '%revision sheet%'
+             OR tags::text ILIKE '%revision-map%' OR tags::text ILIKE '%revision map%'
+             THEN 'revision_map'
+        WHEN title ILIKE '%diagram b%' OR title ILIKE '% — b%' OR title ILIKE '% - b%'
+             OR title ILIKE '%panel b%'
+             THEN 'diagram_b'
+        ELSE 'diagram_a'
+      END
+      WHERE diagram_type = 'diagram_a'
+    `);
+    console.log("✅ diagram_type auto-classification applied");
+  } catch (e: any) { console.warn("diagram_type classification migration skipped:", e.message); }
+
   console.log("✅ Library asset migrations applied");
 
   // Bootstrap admin from environment variables (no hard-coded credentials)
