@@ -1667,13 +1667,23 @@ CRITICAL SEND RULE: SEND adaptations affect FORMATTING AND PRESENTATION ONLY —
       ]);
       if (diagARes.status === 'fulfilled' && diagARes.value) {
         const dA = diagARes.value;
-        if (dA.imageUrl) diagramAUrl = dA.imageUrl;
+        if (dA.imageUrl) {
+          // Proxy external CDN URLs to avoid CORS issues in browser and PDF rendering
+          diagramAUrl = (dA.imageUrl.startsWith('http://') || dA.imageUrl.startsWith('https://'))
+            ? `/api/diagram-proxy?url=${encodeURIComponent(dA.imageUrl)}`
+            : dA.imageUrl;
+        }
         if (dA.svg) diagramASvg = dA.svg;
         if (dA.caption) diagramACaption = dA.caption;
       }
       if (diagBRes.status === 'fulfilled' && diagBRes.value) {
         const dB = diagBRes.value;
-        if (dB.imageUrl) diagramBUrl = dB.imageUrl;
+        if (dB.imageUrl) {
+          // Proxy external CDN URLs to avoid CORS issues in browser and PDF rendering
+          diagramBUrl = (dB.imageUrl.startsWith('http://') || dB.imageUrl.startsWith('https://'))
+            ? `/api/diagram-proxy?url=${encodeURIComponent(dB.imageUrl)}`
+            : dB.imageUrl;
+        }
         if (dB.svg) diagramBSvg = dB.svg;
         if (dB.caption) diagramBCaption = dB.caption;
       }
