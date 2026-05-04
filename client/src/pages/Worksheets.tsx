@@ -1969,8 +1969,12 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
       });
       toast.success(`PDF downloaded!`);
     } catch (err) {
+      const errMsg = err instanceof Error ? err.message : String(err);
+      const errStack = err instanceof Error ? (err.stack || '').substring(0, 400) : '';
       console.error("PDF download error:", err);
-      toast.error("Could not generate PDF. Please try again.");
+      console.error("PDF error message:", errMsg);
+      console.error("PDF error stack:", errStack);
+      toast.error("PDF error: " + errMsg.substring(0, 120));
     }
   };
 
