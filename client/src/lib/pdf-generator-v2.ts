@@ -569,16 +569,18 @@ export async function downloadHtmlAsPdf(
 <body>${contentHtml}</body>
 </html>`;
 
-  // Create a hidden iframe off-screen (NOT opacity:0 — html2canvas respects opacity)
+  // Create an iframe at left:0 top:0 with opacity:0 — must be on-screen for html2canvas to capture correctly
   const iframe = document.createElement("iframe");
   iframe.style.cssText = [
     "position:fixed",
     "top:0",
-    "left:-9999px",
+    "left:0",
     `width:${RENDER_PX}px`,
     "height:1px",
     "border:none",
-    "visibility:hidden",
+    "opacity:0",
+    "pointer-events:none",
+    "z-index:-9999",
   ].join(";");
   document.body.appendChild(iframe);
 
@@ -618,7 +620,8 @@ export async function downloadHtmlAsPdf(
     // Expand iframe to full content height so nothing is clipped
     const fullH = iframeBody.scrollHeight;
     iframe.style.height = `${fullH}px`;
-    iframe.style.visibility = "visible";
+    iframe.style.opacity = "1";
+    iframe.style.zIndex = "99999";
 
     // Another frame to let the browser re-layout at the new height
     await new Promise<void>((r) => requestAnimationFrame(() => setTimeout(r, 100)));
