@@ -2062,25 +2062,41 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
       const blocks = blockEls.map(el => ({
         html: el.outerHTML,
         height: el.getBoundingClientRect().height,
+        // Detect diagram sections so they can be forced onto their own page
+        isDiagram: el.classList.contains("ws-section-diagram"),
       }));
       document.body.removeChild(measureIframe);
 
-      // Step 3: Pack blocks into pages — never split a block across pages
+      // Step 3: Pack blocks into pages — never split a block across pages.
+      // Diagram sections always start a new page and occupy the full page alone.
       const pages: string[][] = [[]];
+      const pageIsDiagram: boolean[] = [false];
       let curPageH = 0;
       for (const blk of blocks) {
-        if (curPageH === 0 || curPageH + blk.height <= CONTENT_H + 10) {
+        if (blk.isDiagram) {
+          // Diagram: always force onto its own page
+          if (pages[pages.length - 1].length > 0) {
+            pages.push([blk.html]);
+            pageIsDiagram.push(true);
+          } else {
+            pages[pages.length - 1].push(blk.html);
+            pageIsDiagram[pageIsDiagram.length - 1] = true;
+          }
+          curPageH = A4_H; // Mark page as full so next block starts a new page
+        } else if (curPageH === 0 || curPageH + blk.height <= CONTENT_H + 10) {
           pages[pages.length - 1].push(blk.html);
           curPageH += blk.height;
         } else {
           pages.push([blk.html]);
+          pageIsDiagram.push(false);
           curPageH = blk.height;
         }
       }
 
-      // Step 4: Build paginated preview HTML — each page is a white A4 card
+      // Step 4: Build paginated preview HTML — each page is a white A4 card.
+      // Diagram pages get class "diagram-page" so CSS can remove the root padding.
       const pageCards = pages.map((pageBlocks, i) => `
-        <div class="preview-page">
+        <div class="preview-page${pageIsDiagram[i] ? " diagram-page" : ""}">
           <div class="page-label">Page ${i + 1} of ${pages.length}</div>
           <div class="worksheet-print-root">${pageBlocks.join("")}</div>
         </div>`).join("");
@@ -2116,8 +2132,32 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
             padding: ${MARGIN}px;
             width: ${A4_W}px;
           }
+          /* Diagram-only pages: remove all padding so the image fills the full A4 card */
+          .diagram-page .worksheet-print-root {
+            padding: 0 !important;
+            overflow: hidden !important;
+          }
           .ws-section { margin-bottom: 10px !important; border-radius: 4px !important;
             -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+          /* Diagram sections bleed edge-to-edge — cancel the MARGIN padding with negative margins */
+          .ws-section-diagram {
+            margin-top: -${MARGIN}px !important;
+            margin-left: -${MARGIN}px !important;
+            margin-right: -${MARGIN}px !important;
+            margin-bottom: 0 !important;
+            width: ${A4_W}px !important;
+            height: ${A4_H}px !important;
+            min-height: ${A4_H}px !important;
+            overflow: hidden !important;
+          }
+          .ws-section-diagram img,
+          .ws-section-diagram > div > div {
+            width: ${A4_W}px !important;
+            height: ${A4_H}px !important;
+            object-fit: cover !important;
+            object-position: top center !important;
+            display: block !important;
+          }
           .ws-header { border-radius: 4px !important;
             margin-bottom: 10px !important; overflow: hidden !important;
             -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }

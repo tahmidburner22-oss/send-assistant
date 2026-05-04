@@ -5026,7 +5026,12 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
             onClick={() => editMode && onSectionClick?.(i)}
             style={{
               marginBottom: section.type === "diagram" ? "0" : "20px",
-              marginTop: section.type === "diagram" ? "0" : undefined,
+              // Diagram pages bleed to the full A4 edge — cancel the worksheet-print-root
+              // padding (40px top, 48px left/right) with negative margins so the image
+              // fills edge-to-edge exactly like the reference PDF.
+              marginTop: section.type === "diagram" ? (paginated ? "-40px" : "0") : undefined,
+              marginLeft: section.type === "diagram" ? (paginated ? "-48px" : "0") : undefined,
+              marginRight: section.type === "diagram" ? (paginated ? "-48px" : "0") : undefined,
               background: isTeacherHeader ? "#fff8f8" : fmt.theme === "high-contrast" ? "#ffffff" : "#ffffff",
               border: fmt.theme === "high-contrast" ? "2px solid #111827" : "none",
               borderRadius: "0",
@@ -5039,8 +5044,9 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
               breakBefore: "page",
               pageBreakAfter: "auto",
               breakAfter: "auto",
-              minHeight: section.type === "diagram" ? "calc(100vh - 40px)" : undefined,
-              height: section.type === "diagram" ? "calc(100vh - 40px)" : undefined,
+              // Full A4 height (1123px) in paginated mode so the image fills the page
+              minHeight: section.type === "diagram" ? (paginated ? "1123px" : "calc(100vh - 40px)") : undefined,
+              height: section.type === "diagram" ? (paginated ? "1123px" : "calc(100vh - 40px)") : undefined,
               display: section.type === "diagram" ? "flex" : undefined,
               flexDirection: section.type === "diagram" ? "column" as const : undefined,
               justifyContent: section.type === "diagram" ? "center" : undefined,
@@ -5184,13 +5190,13 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                       <img
                         src={resolveImageUrl(section)}
                         alt={section.caption || "Diagram"}
-                        style={{ width: "100%", height: "calc(100vh - 120px)", objectFit: "contain", background: "#fff", display: "block" }}
+                        style={{ width: "100%", height: paginated ? "1123px" : "calc(100vh - 120px)", objectFit: "cover", objectPosition: "top center", background: "#fff", display: "block" }}
                         onError={(e) => {
                           const target = e.currentTarget;
                           target.style.display = "none";
                           if (section.svg) {
                             const svgWrapper = document.createElement("div");
-                            svgWrapper.style.cssText = "display:block;width:100%;height:calc(100vh - 120px);overflow:hidden;background:white;";
+                            svgWrapper.style.cssText = "display:block;width:100%;height:1123px;overflow:hidden;background:white;";
                             svgWrapper.innerHTML = section.svg;
                             target.parentNode?.insertBefore(svgWrapper, target.nextSibling);
                           }
@@ -5198,7 +5204,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                       />
                     ) : section.svg ? (
                       <div
-                        style={{ display: "block", width: "100%", height: "calc(100vh - 120px)", overflow: "hidden", background: "white" }}
+                        style={{ display: "block", width: "100%", height: paginated ? "1123px" : "calc(100vh - 120px)", overflow: "hidden", background: "white" }}
                         dangerouslySetInnerHTML={{ __html: section.svg }}
                       />
                     ) : null}
