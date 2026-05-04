@@ -640,6 +640,10 @@ export async function downloadHtmlAsPdf(
     });
 
     // Capture the iframe body at 1.5× scale
+    console.log('[PDF Debug] iframe body scrollHeight:', iframeBody.scrollHeight, 'scrollWidth:', iframeBody.scrollWidth);
+    console.log('[PDF Debug] iframe body innerHTML length:', iframeBody.innerHTML.length);
+    console.log('[PDF Debug] iframe opacity:', iframe.style.opacity, 'zIndex:', iframe.style.zIndex);
+    console.log('[PDF Debug] iframe rect:', JSON.stringify(iframe.getBoundingClientRect()));
     const canvas = await html2canvas(iframeBody, {
       scale: 1.5,
       useCORS: true,
@@ -652,6 +656,14 @@ export async function downloadHtmlAsPdf(
       scrollY: 0,
     });
 
+    console.log('[PDF Debug] canvas size:', canvas.width, 'x', canvas.height);
+    // Check if canvas has any non-white pixels
+    const debugCtx = canvas.getContext('2d');
+    if (debugCtx) {
+      const debugData = debugCtx.getImageData(0, 0, Math.min(100, canvas.width), Math.min(100, canvas.height)).data;
+      const nonWhite = Array.from(debugData).filter((v, i) => i % 4 !== 3 && v < 240).length;
+      console.log('[PDF Debug] non-white pixels in first 100x100:', nonWhite);
+    }
     const canvasW = canvas.width;
     const canvasH = canvas.height;
     const DPR = canvasW / RENDER_PX;
