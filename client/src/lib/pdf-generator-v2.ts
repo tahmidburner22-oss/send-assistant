@@ -429,6 +429,7 @@ export async function downloadHtmlAsPdf(
   options: {
     overlayColor?: string;
     viewMode?: "teacher" | "student";
+    layout?: "together" | "per-page";
     textSize?: number;
     title?: string;
     sendNeedId?: string;
@@ -438,199 +439,70 @@ export async function downloadHtmlAsPdf(
   const viewMode = options.viewMode || "student";
   const overlayColor = options.overlayColor || "#ffffff";
   const landscape = options.landscape ?? false;
-
-  // A4 portrait: 210×297mm; A4 landscape: 297×210mm
   const A4_W_MM = landscape ? 297 : 210;
   const A4_H_MM = landscape ? 210 : 297;
-  const MARGIN_MM = 3;
+  const MARGIN_MM = 10;
   const printableW_MM = A4_W_MM - MARGIN_MM * 2;
   const printableH_MM = A4_H_MM - MARGIN_MM * 2;
-  // Landscape renders at A4-landscape width (1123px @ 96dpi ≈ 297mm)
   const RENDER_PX = landscape ? 1123 : 794;
-  const JPEG_QUALITY = 0.88;
+  const JPEG_QUALITY = 0.92;
 
-  // Serialise the live DOM into a complete self-contained HTML document.
-  // This ensures KaTeX CSS, all inline styles, and backgrounds are present
-  // in the iframe — identical to what the user sees on screen.
   const contentHtml = serialiseElement(element, viewMode);
   const katexCss = getKatexCssInline();
+  const iframeHtml = buildPopupHtml(contentHtml, katexCss, { ...options, isPdf: true });
 
-  // Build a minimal HTML doc (no print script — we just need layout, not printing)
-  const fmt = getSendFormatting(options.sendNeedId, options.textSize ?? 14);
-  const iframeHtml = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <style>${katexCss}</style>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; }
-    html, body {
-      margin: 0; padding: 0;
-      background: ${overlayColor};
-      font-family: ${fmt.fontFamily};
-      font-size: ${fmt.fontSize}px;
-      line-height: ${fmt.lineHeight};
-      width: ${RENDER_PX}px;
-      -webkit-print-color-adjust: exact;
-      print-color-adjust: exact;
-    }
-    .worksheet-print-root {
-      background: ${overlayColor};
-      width: ${RENDER_PX}px;
-      max-width: ${RENDER_PX}px;
-    }
-    .ws-teacher-section { display: none !important; }
-    :root { color-scheme: light; }
-    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-    /* ── PRIMARY SCHOOL: preserve all colourful section styles in PDF ── */
-    /* Gradient header bars */
-    [style*="linear-gradient"] {
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
-    }
-    /* Coloured section cards (18px radius) */
-    [style*="border-radius: 18px"],
-    [style*="borderRadius: 18px"] {
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
-      border-radius: 18px !important;
-      overflow: hidden !important;
-    }
-    /* Numbered circle bubbles */
-    [style*="border-radius: 50%"] {
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
-    }
-    /* Primary palette background colours — force render in PDF */
-    [style*="background: #fff0f6"],[style*="background:#fff0f6"],
-    [style*="background: #eff6ff"],[style*="background:#eff6ff"],
-    [style*="background: #f0fdf4"],[style*="background:#f0fdf4"],
-    [style*="background: #fff7ed"],[style*="background:#fff7ed"],
-    [style*="background: #faf5ff"],[style*="background:#faf5ff"],
-    [style*="background: #ecfeff"],[style*="background:#ecfeff"],
-    [style*="background: #fefce8"],[style*="background:#fefce8"],
-    [style*="background: #f0fdfa"],[style*="background:#f0fdfa"] {
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
-    }
-    /* Primary palette border colours */
-    [style*="border: 3px solid"],[style*="border:3px solid"] {
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
-    }
-    .katex .katex-mathml {
-      position: absolute !important; clip: rect(1px,1px,1px,1px) !important;
-      padding: 0 !important; border: 0 !important;
-      height: 1px !important; width: 1px !important; overflow: hidden !important;
-    }
-    /* ── Fraction bar fixes ─────────────────────────────────────────────────
-       KaTeX renders fractions using .frac-line which is a thin <span> with
-       border-top. html2canvas can misplace it if the surrounding text hasn't
-       fully measured. These rules lock it in place. */
-    .katex .frac-line {
-      display: block !important;
-      border-bottom-width: 0 !important;
-      border-top-style: solid !important;
-      border-top-width: 0.04em !important;
-      width: 100% !important;
-      position: relative !important;
-    }
-    .katex .mfrac .frac-line {
-      min-height: 0.04em !important;
-    }
-    .katex .vlist-t { border-collapse: separate !important; }
-    .katex .vlist-t2 { margin-right: -2px !important; }
-    /* Ensure fraction numerator/denominator align correctly */
-    .katex .mfrac > span > span { text-align: center !important; }
-    .katex { font-size: 1em !important; line-height: 1.2 !important; }
-    .katex .katex-html { white-space: nowrap !important; }
-    /* Tailwind utilities for story/tool HTML exports */
-    .bg-gradient-to-br{background-image:linear-gradient(to bottom right,var(--tw-gradient-from,#6366f1),var(--tw-gradient-to,#8b5cf6))}
-    .from-amber-600{--tw-gradient-from:#d97706}.from-violet-700{--tw-gradient-from:#6d28d9}.from-slate-800{--tw-gradient-from:#1e293b}
-    .from-cyan-700{--tw-gradient-from:#0e7490}.from-yellow-500{--tw-gradient-from:#eab308}.from-gray-900{--tw-gradient-from:#111827}
-    .from-green-600{--tw-gradient-from:#16a34a}.via-orange-500{--tw-gradient-via:#f97316}.via-purple-600{--tw-gradient-via:#9333ea}
-    .via-blue-600{--tw-gradient-via:#2563eb}.via-amber-700{--tw-gradient-via:#b45309}.via-orange-400{--tw-gradient-via:#fb923c}
-    .via-purple-900{--tw-gradient-via:#581c87}.via-emerald-500{--tw-gradient-via:#10b981}.via-gray-700{--tw-gradient-via:#374151}
-    .to-red-600{--tw-gradient-to:#dc2626}.to-indigo-700{--tw-gradient-to:#4338ca}.to-zinc-800{--tw-gradient-to:#27272a}
-    .to-yellow-800{--tw-gradient-to:#92400e}.to-pink-500{--tw-gradient-to:#ec4899}.to-slate-900{--tw-gradient-to:#0f172a}
-    .to-teal-600{--tw-gradient-to:#0d9488}
-    .rounded-2xl{border-radius:1rem}.rounded-xl{border-radius:.75rem}.rounded-lg{border-radius:.5rem}.rounded-full{border-radius:9999px}
-    .overflow-hidden{overflow:hidden}.relative{position:relative}.absolute{position:absolute}.inset-0{top:0;right:0;bottom:0;left:0}
-    .flex{display:flex}.flex-col{flex-direction:column}.items-center{align-items:center}.justify-center{justify-content:center}
-    .text-center{text-align:center}.text-white{color:white}.font-black{font-weight:900}.font-bold{font-weight:700}
-    .text-2xl{font-size:1.5rem}.text-3xl{font-size:1.875rem}.gap-3{gap:.75rem}.gap-2{gap:.5rem}
-    .px-8{padding-left:2rem;padding-right:2rem}.py-10{padding-top:2.5rem;padding-bottom:2.5rem}
-    .mb-1{margin-bottom:.25rem}.mt-1{margin-top:.25rem}.shadow-2xl{box-shadow:0 25px 50px -12px rgba(0,0,0,.25)}
-    .select-none{user-select:none}.leading-tight{line-height:1.25}.max-w-lg{max-width:32rem}
-    .opacity-20{opacity:.2}.rotate-12{transform:rotate(12deg)}.bottom-0{bottom:0}.left-0{left:0}.right-0{right:0}
-    .text-xs{font-size:.75rem}.text-lg{font-size:1.125rem}.capitalize{text-transform:capitalize}
-  </style>
-</head>
-<body>${contentHtml}</body>
-</html>`;
+  // Parse the iframe HTML to extract styles and body content
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(iframeHtml, "text/html");
 
-  // Create an iframe at left:0 top:0 with opacity:0 — must be on-screen for html2canvas to capture correctly
-  const iframe = document.createElement("iframe");
-  iframe.style.cssText = [
+  // Create a hidden container div in the main document.
+  // html2canvas works reliably on elements in the main document (not iframes).
+  const container = document.createElement("div");
+  container.style.cssText = [
     "position:fixed",
     "top:0",
     "left:0",
     `width:${RENDER_PX}px`,
-    "height:1px",
-    "border:none",
-    "opacity:0",
+    "min-height:100vh",
+    `background:${overlayColor}`,
+    "z-index:999999",
+    "overflow:visible",
     "pointer-events:none",
-    "z-index:-9999",
   ].join(";");
-  document.body.appendChild(iframe);
+
+  // Copy all styles from the parsed document
+  const styleEl = document.createElement("style");
+  const styles: string[] = [];
+  doc.querySelectorAll("style").forEach((s) => styles.push(s.textContent || ""));
+  styleEl.textContent = styles.join("\n");
+  container.appendChild(styleEl);
+
+  // Copy the body content
+  const bodyWrapper = document.createElement("div");
+  bodyWrapper.style.cssText = `width:${RENDER_PX}px; background:${overlayColor};`;
+  bodyWrapper.innerHTML = doc.body.innerHTML;
+  container.appendChild(bodyWrapper);
+
+  document.body.appendChild(container);
 
   try {
-    // Write the document into the iframe and wait for it to fully load
-    await new Promise<void>((resolve, reject) => {
-      const timer = setTimeout(() => reject(new Error("iframe load timeout")), 15000);
-      iframe.onload = () => { clearTimeout(timer); resolve(); };
-      iframe.srcdoc = iframeHtml;
-    });
-
-    // Give fonts and images extra time to render
+    // Wait for fonts and images to load
     await new Promise<void>((r) =>
-      requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(r, 400)))
+      requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(r, 600)))
     );
-
-    const iframeDoc = iframe.contentDocument!;
-    const iframeBody = iframeDoc.body;
-
-    // ── Wait for KaTeX fonts to fully load inside the iframe ─────────────
-    // KaTeX fraction bars rely on CSS-positioned elements that only render
-    // correctly once the KaTeX fonts are loaded. Without this wait,
-    // html2canvas captures before fonts load and fraction lines appear
-    // in the wrong position.
     try {
-      if (iframeDoc.fonts && iframeDoc.fonts.ready) {
-        await Promise.race([
-          iframeDoc.fonts.ready,
-          new Promise<void>((r) => setTimeout(r, 3000)), // 3s max wait
-        ]);
-      }
+      await Promise.race([
+        document.fonts.ready,
+        new Promise<void>((r) => setTimeout(r, 3000)),
+      ]);
     } catch (_) {}
-
-    // Extra frame after font load to let the browser re-paint fraction elements
-    await new Promise<void>((r) => requestAnimationFrame(() => setTimeout(r, 200)));
-
-    // Expand iframe to full content height so nothing is clipped
-    const fullH = iframeBody.scrollHeight;
-    iframe.style.height = `${fullH}px`;
-    iframe.style.opacity = "1";
-    iframe.style.zIndex = "99999";
-
-    // Another frame to let the browser re-layout at the new height
-    await new Promise<void>((r) => requestAnimationFrame(() => setTimeout(r, 100)));
+    await new Promise<void>((r) => requestAnimationFrame(() => setTimeout(r, 300)));
 
     const html2canvas = (await import("html2canvas")).default;
     const { jsPDF } = await import("jspdf");
 
-    // Measure section blocks inside the iframe
-    const rootEl = iframeDoc.querySelector(".worksheet-print-root") as HTMLElement || iframeBody;
+    // Measure section blocks for smart page breaks
+    const rootEl = container.querySelector(".worksheet-print-root") as HTMLElement || bodyWrapper;
     const rootRect = rootEl.getBoundingClientRect();
     const blocks: Array<{ top: number; bottom: number }> = Array.from(
       rootEl.querySelectorAll<HTMLElement>(".ws-header, .ws-section")
@@ -639,12 +511,7 @@ export async function downloadHtmlAsPdf(
       return { top: r.top - rootRect.top, bottom: r.bottom - rootRect.top };
     });
 
-    // Capture the iframe body at 1.5× scale
-    console.log('[PDF Debug] iframe body scrollHeight:', iframeBody.scrollHeight, 'scrollWidth:', iframeBody.scrollWidth);
-    console.log('[PDF Debug] iframe body innerHTML length:', iframeBody.innerHTML.length);
-    console.log('[PDF Debug] iframe opacity:', iframe.style.opacity, 'zIndex:', iframe.style.zIndex);
-    console.log('[PDF Debug] iframe rect:', JSON.stringify(iframe.getBoundingClientRect()));
-    const canvas = await html2canvas(iframeBody, {
+    const canvas = await html2canvas(container, {
       scale: 1.5,
       useCORS: true,
       allowTaint: true,
@@ -652,31 +519,21 @@ export async function downloadHtmlAsPdf(
       logging: false,
       windowWidth: RENDER_PX,
       width: RENDER_PX,
+      height: container.scrollHeight,
       scrollX: 0,
-      scrollY: 0,
+      scrollY: -window.scrollY,
     });
 
-    console.log('[PDF Debug] canvas size:', canvas.width, 'x', canvas.height);
-    // Check if canvas has any non-white pixels
-    const debugCtx = canvas.getContext('2d');
-    if (debugCtx) {
-      const debugData = debugCtx.getImageData(0, 0, Math.min(100, canvas.width), Math.min(100, canvas.height)).data;
-      const nonWhite = Array.from(debugData).filter((v, i) => i % 4 !== 3 && v < 240).length;
-      console.log('[PDF Debug] non-white pixels in first 100x100:', nonWhite);
-    }
     const canvasW = canvas.width;
     const canvasH = canvas.height;
     const DPR = canvasW / RENDER_PX;
-
     const scaledBlocks = blocks.map((b) => ({
       top: b.top * DPR,
       bottom: b.bottom * DPR,
     }));
-
     const mmPerPx = printableW_MM / canvasW;
     const pageH_Px = printableH_MM / mmPerPx;
 
-    // Section-aware page break — never slice through a block
     const findBreak = (curY: number): number => {
       const ideal = curY + pageH_Px;
       if (ideal >= canvasH) return canvasH;
@@ -698,15 +555,18 @@ export async function downloadHtmlAsPdf(
       return Math.min(breakAt, canvasH);
     };
 
-    const pdf = new jsPDF({ orientation: landscape ? "landscape" : "portrait", unit: "mm", format: "a4", compress: true });
+    const pdf = new jsPDF({
+      orientation: landscape ? "landscape" : "portrait",
+      unit: "mm",
+      format: "a4",
+      compress: true,
+    });
     let curY = 0;
     let pageNum = 0;
-
     while (curY < canvasH) {
       if (pageNum > 0) pdf.addPage();
       const endY = findBreak(curY);
       const sliceH_Px = Math.ceil(endY - curY);
-
       const pageCanvas = document.createElement("canvas");
       pageCanvas.width = canvasW;
       pageCanvas.height = sliceH_Px;
@@ -714,7 +574,6 @@ export async function downloadHtmlAsPdf(
       ctx.fillStyle = overlayColor && overlayColor !== "transparent" ? overlayColor : "#ffffff";
       ctx.fillRect(0, 0, canvasW, sliceH_Px);
       ctx.drawImage(canvas, 0, -curY);
-
       pdf.addImage(
         pageCanvas.toDataURL("image/jpeg", JPEG_QUALITY),
         "JPEG",
@@ -723,13 +582,11 @@ export async function downloadHtmlAsPdf(
         printableW_MM,
         sliceH_Px * mmPerPx
       );
-
       curY = endY;
       pageNum++;
     }
-
     pdf.save(filename.endsWith(".pdf") ? filename : `${filename}.pdf`);
   } finally {
-    document.body.removeChild(iframe);
+    document.body.removeChild(container);
   }
 }
