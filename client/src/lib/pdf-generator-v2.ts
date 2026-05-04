@@ -537,6 +537,15 @@ export async function downloadHtmlAsPdf(
           })
       )
     );
+    // html2canvas reads window.getComputedStyle() which uses the live document's
+    // stylesheets. Tailwind/shadcn use oklch() colors which html2canvas cannot parse.
+    // Temporarily replace oklch() values in all live <style> tags, then restore after.
+    const liveStyleEls = Array.from(document.querySelectorAll<HTMLStyleElement>("style"));
+    const originalContents = liveStyleEls.map((s) => s.textContent || "");
+    const oklchRegex = /:[^;{}]*oklch\([^)]*\)[^;{}]*;/g;
+    liveStyleEls.forEach((s) => {
+      s.textContent = (s.textContent || "").replace(oklchRegex, ": transparent;");
+    });
     const html2canvas = (await import("html2canvas")).default;
     const { jsPDF } = await import("jspdf");
 
@@ -562,6 +571,8 @@ export async function downloadHtmlAsPdf(
       scrollX: 0,
       scrollY: -window.scrollY,
     });
+    // Restore live stylesheets after html2canvas capture
+    liveStyleEls.forEach((s, i) => { s.textContent = originalContents[i]; });
 
     const canvasW = canvas.width;
     const canvasH = canvas.height;
@@ -627,5 +638,9 @@ export async function downloadHtmlAsPdf(
     pdf.save(filename.endsWith(".pdf") ? filename : `${filename}.pdf`);
   } finally {
     document.body.removeChild(container);
+    // Always restore live stylesheets even if an error occurred
+    if (typeof liveStyleEls !== 'undefined') {
+      liveStyleEls.forEach((s: HTMLStyleElement, i: number) => { s.textContent = (originalContents as string[])[i]; });
+    }
   }
 }
