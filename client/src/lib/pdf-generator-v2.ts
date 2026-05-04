@@ -498,6 +498,40 @@ export async function downloadHtmlAsPdf(
     } catch (_) {}
     await new Promise<void>((r) => requestAnimationFrame(() => setTimeout(r, 300)));
 
+    // Replace broken or cross-origin images with blank placeholders before html2canvas
+    // This prevents html2canvas from throwing on CORS-blocked or expired image URLs
+    await Promise.all(
+      Array.from(container.querySelectorAll<HTMLImageElement>("img")).map(
+        (img) =>
+          new Promise<void>((resolve) => {
+            if (img.complete && img.naturalWidth > 0) { resolve(); return; }
+            const onLoad = () => { img.removeEventListener("load", onLoad); img.removeEventListener("error", onErr); resolve(); };
+            const onErr = () => {
+              img.removeEventListener("load", onLoad);
+              img.removeEventListener("error", onErr);
+              // Replace broken image with a 1x1 transparent PNG so html2canvas doesn't throw
+              img.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==";
+              img.crossOrigin = null;
+              resolve();
+            };
+            img.addEventListener("load", onLoad);
+            img.addEventListener("error", onErr);
+            // Force reload to trigger load/error
+            if (img.src) { const s = img.src; img.src = ""; img.src = s; }
+            else { resolve(); }
+            // Timeout fallback: if neither fires in 5s, replace with placeholder
+            setTimeout(() => {
+              img.removeEventListener("load", onLoad);
+              img.removeEventListener("error", onErr);
+              if (!img.complete || img.naturalWidth === 0) {
+                img.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==";
+                img.crossOrigin = null;
+              }
+              resolve();
+            }, 5000);
+          })
+      )
+    );
     const html2canvas = (await import("html2canvas")).default;
     const { jsPDF } = await import("jspdf");
 
