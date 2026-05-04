@@ -348,6 +348,20 @@ function escapeHtml(str: string): string {
 
 // ── Serialise the live DOM element with all inline styles preserved ───────────
 
+// CDN domains whose images must be proxied through /api/diagram-proxy to avoid
+// CORS issues when html2canvas captures the PDF iframe.
+const PROXY_DOMAINS = ["files.manuscdn.com", "manuscdn.com"];
+
+function proxyImageSrc(src: string): string {
+  try {
+    const parsed = new URL(src);
+    if (PROXY_DOMAINS.some(d => parsed.hostname === d || parsed.hostname.endsWith("." + d))) {
+      return `/api/diagram-proxy?url=${encodeURIComponent(src)}`;
+    }
+  } catch (_) {}
+  return src;
+}
+
 export function serialiseElement(element: HTMLElement, viewMode: "teacher" | "student"): string {
   // Clone the element so we can modify it without affecting the live DOM
   const clone = element.cloneNode(true) as HTMLElement;
@@ -358,6 +372,12 @@ export function serialiseElement(element: HTMLElement, viewMode: "teacher" | "st
       el.parentNode?.removeChild(el);
     });
   }
+
+  // Rewrite CDN image URLs to use the server-side proxy so html2canvas can
+  // capture them without CORS issues in the PDF iframe.
+  clone.querySelectorAll<HTMLImageElement>("img").forEach((img) => {
+    if (img.src) img.src = proxyImageSrc(img.src);
+  });
 
   // The React-rendered HTML already has all styles as inline `style` attributes.
   // We just need to return the outerHTML of the worksheet-print-root.

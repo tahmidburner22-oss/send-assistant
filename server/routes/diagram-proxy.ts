@@ -42,6 +42,8 @@ const ALLOWED_DOMAINS = [
   "res.cloudinary.com",
   "storage.googleapis.com",
   "adaptly.co.uk",
+  "files.manuscdn.com",  // Manus CDN — used for admin diagram library images
+  "manuscdn.com",
 ];
 
 function isAllowedUrl(url: string): boolean {

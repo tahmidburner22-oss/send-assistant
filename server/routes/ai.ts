@@ -1268,23 +1268,9 @@ router.post("/diagram", requireAuth, async (req: Request, res: Response) => {
     fit: fitMeta,
   });
 
-  // ── Step 0: Hand-coded SVG templates (topic-specific, pixel-perfect, no external deps) ─
-  // For slot A: use SVG template if available (pixel-perfect, no external deps)
-  // For slot B: skip SVG template and fall through to admin library to get a DIFFERENT diagram
-  const svgTemplate = getTemplate(subject, topic);
-  if (svgTemplate && diagramSlot !== 'B') {
-    console.log(`[Diagram] Using hand-coded SVG template for "${topic}" (${subject}) slot=A`);
-    return res.json({
-      svg: svgTemplate.svg,
-      caption: svgTemplate.caption,
-      attribution: null,
-      provider: "svg-template",
-      type: "svg",
-      imageKind: "diagram",
-      imageUrl: null,
-      fit: fitMeta,
-    });
-  }
+  // ── Step 0: SVG templates DISABLED — all diagrams must come from the admin library ──────
+  // SVG template fallback removed per product requirement: only admin library images are used.
+  // If no admin library image is found, the diagram section is silently skipped.
 
   // ── Step 1: Admin diagram library (DB — 1722 curated educational diagrams) ──
   // This is the ONLY image source. No Wikimedia or external URLs are used.
@@ -1438,51 +1424,8 @@ router.post("/diagram", requireAuth, async (req: Request, res: Response) => {
     console.warn("[Diagram] Admin library lookup failed:", dbErr);
   }
 
-  // ── Step 2: Local static diagram bank (local /diagrams/ paths only) ──────────
-  const bankedDiagram = findDiagram(subject, topic, diagramSlot);
-  if (bankedDiagram) {
-    console.log(`[Diagram] Found in local static bank: ${bankedDiagram.key} (slot=${diagramSlot})`);
-    return res.json(buildImageResponse({
-      imageUrl: bankedDiagram.url,
-      caption: `${bankedDiagram.label} — ${subject} (${yr})`,
-      attribution: null,
-      provider: "local-bank",
-      imageKind: "diagram",
-    }));
-  }
-
-  // ── Step 3: Full local static bank ───────────────────────────────────────────
-  try {
-    const fullBank = getFullDiagramBank();
-    const fullMatch = fullBank.findDiagramFull(subject, topic, diagramSlot);
-    if (fullMatch) {
-      console.log(`[Diagram] Found in full local bank: ${fullMatch.key} (slot=${diagramSlot})`);
-      return res.json(buildImageResponse({
-        imageUrl: fullMatch.url,
-        caption: `${fullMatch.label} — ${subject} (${yr})`,
-        attribution: null,
-        provider: "local-full-bank",
-        imageKind: "diagram",
-      }));
-    }
-  } catch (fullBankErr) {
-    console.warn("[Diagram] Full local bank lookup failed:", fullBankErr);
-  }
-
-  // Last resort for slot B: fall back to SVG template if no library match found
-  if (diagramSlot === 'B' && svgTemplate) {
-    console.log(`[Diagram] Slot B fallback to SVG template for "${topic}" (${subject})`);
-    return res.json({
-      svg: svgTemplate.svg,
-      caption: `${svgTemplate.caption} (B)`,
-      attribution: null,
-      provider: "svg-template-fallback",
-      type: "svg",
-      imageKind: "diagram",
-      imageUrl: null,
-      fit: fitMeta,
-    });
-  }
+  // ── Steps 2 & 3: Local static banks DISABLED — only admin library images are used ──────
+  // (Local static bank fallbacks removed per product requirement)
 
   console.log(`[Diagram] No diagram found for "${topic}" (${subject}) — returning not-available`);
   return res.json(buildImageResponse({
