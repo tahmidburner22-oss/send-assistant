@@ -1,5 +1,5 @@
 /**
- * WorksheetRenderer.tsx
+ * WorksheetRenderer.tsx — v2.1.0 (2026-05-07 improvements: working-out boxes, scaffolded writing, diagram fixes)
  * @copyright 2026 Adaptly Ltd. All rights reserved.
  * @license Proprietary — unauthorised copying, modification, or distribution is strictly prohibited.
  *
