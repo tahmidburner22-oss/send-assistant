@@ -5066,14 +5066,16 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
               breakBefore: "page",
               pageBreakAfter: "auto",
               breakAfter: "auto",
-              // Full A4 height (1123px) in paginated mode so the image fills the page
-              minHeight: section.type === "diagram" ? (paginated ? "1123px" : "calc(100vh - 40px)") : undefined,
-              height: section.type === "diagram" ? (paginated ? "1123px" : "calc(100vh - 40px)") : undefined,
+              // Diagram sections: flex column to center the image, no forced height so image
+              // can size naturally (objectFit:contain prevents cropping/blurriness)
+              minHeight: section.type === "diagram" ? (paginated ? "300px" : "200px") : undefined,
+              height: undefined,
               display: section.type === "diagram" ? "flex" : undefined,
               flexDirection: section.type === "diagram" ? "column" as const : undefined,
               justifyContent: section.type === "diagram" ? "center" : undefined,
-              padding: section.type === "diagram" ? "0" : undefined,
-              overflow: section.type === "diagram" ? "hidden" : "visible",
+              alignItems: section.type === "diagram" ? "center" : undefined,
+              padding: section.type === "diagram" ? "16px" : undefined,
+              overflow: "visible",
             }}
           >
             {/* ── Section header: individual question OR section divider ── */}
@@ -5212,21 +5214,39 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                       <img
                         src={resolveImageUrl(section)}
                         alt={section.caption || "Diagram"}
-                        style={{ width: "100%", height: paginated ? "1123px" : "calc(100vh - 120px)", objectFit: "cover", objectPosition: "top center", background: "#fff", display: "block" }}
+                        style={{
+                          width: "100%",
+                          maxWidth: "100%",
+                          height: "auto",
+                          maxHeight: paginated ? "1020px" : "calc(100vh - 160px)",
+                          objectFit: "contain",
+                          objectPosition: "center center",
+                          background: "#fff",
+                          display: "block",
+                          margin: "0 auto",
+                          imageRendering: "crisp-edges",
+                        }}
+                        loading="eager"
                         onError={(e) => {
                           const target = e.currentTarget;
                           target.style.display = "none";
+                          // Show a friendly fallback message instead of blank space
+                          const fallback = document.createElement("div");
+                          fallback.style.cssText = "display:flex;align-items:center;justify-content:center;width:100%;min-height:300px;background:#f8fafc;border:2px dashed #cbd5e1;border-radius:8px;color:#64748b;font-size:14px;font-family:Arial,sans-serif;text-align:center;padding:24px;";
+                          fallback.innerHTML = `<div><div style='font-size:32px;margin-bottom:8px;'>🖼️</div><div style='font-weight:600;margin-bottom:4px;'>Diagram not available</div><div style='font-size:12px;'>${section.caption || 'No diagram found for this topic'}</div></div>`;
                           if (section.svg) {
                             const svgWrapper = document.createElement("div");
-                            svgWrapper.style.cssText = "display:block;width:100%;height:1123px;overflow:hidden;background:white;";
+                            svgWrapper.style.cssText = "display:block;width:100%;max-height:1020px;overflow:auto;background:white;";
                             svgWrapper.innerHTML = section.svg;
                             target.parentNode?.insertBefore(svgWrapper, target.nextSibling);
+                          } else {
+                            target.parentNode?.insertBefore(fallback, target.nextSibling);
                           }
                         }}
                       />
                     ) : section.svg ? (
                       <div
-                        style={{ display: "block", width: "100%", height: paginated ? "1123px" : "calc(100vh - 120px)", overflow: "hidden", background: "white" }}
+                        style={{ display: "block", width: "100%", maxHeight: paginated ? "1020px" : "calc(100vh - 160px)", overflow: "auto", background: "white" }}
                         dangerouslySetInnerHTML={{ __html: section.svg }}
                       />
                     ) : null}
@@ -5308,27 +5328,57 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                             }} dangerouslySetInnerHTML={{ __html: renderMath(headerText) }} />
                           )}
                           <div style={{ fontSize: "11px", color: "#6b7280", fontStyle: "italic", marginBottom: "10px" }}>[{totalMarks} marks total]</div>
-                          {numQBlocks.map((nq, ni) => (
-                            <div key={ni} style={{ marginBottom: "20px" }}>
-                              <div style={{ display: "flex", gap: "8px", alignItems: "flex-start", marginBottom: "6px" }}>
+                          {numQBlocks.map((nq, ni) => {
+                              // Maths subjects get a working-out box; writing subjects get ruled lines
+                              const isMathsQ = isMathsSubject;
+                              const lineCount = nq.marks <= 1 ? 2 : nq.marks <= 2 ? 3 : nq.marks <= 4 ? 5 : nq.marks <= 6 ? 8 : Math.min(Math.ceil(nq.marks * 1.5), 20);
+                              const lineHeight = fmt.answerLineHeight || 30;
+                              return (
+                            <div key={ni} style={{ marginBottom: "24px", pageBreakInside: "avoid", breakInside: "avoid" }}>
+                              <div style={{ display: "flex", gap: "8px", alignItems: "flex-start", marginBottom: "8px" }}>
                                 <span style={{
                                   fontWeight: 700,
                                   fontSize: `${fmt.fontSize}px`,
                                   fontFamily: fmt.fontFamily,
                                   color: "#1B2A4A",
                                   minWidth: "22px",
+                                  flexShrink: 0,
                                 }}>{nq.num}.</span>
                                 <div style={{ flex: 1 }}>
-                                  <div style={{ fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, lineHeight: String(fmt.lineHeight), color: "#1e293b", marginBottom: "6px" }}
+                                  <div style={{ fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, lineHeight: String(fmt.lineHeight), color: "#1e293b", marginBottom: "4px" }}
                                     dangerouslySetInnerHTML={{ __html: renderMath(nq.text) }} />
                                   <span style={{ fontSize: "11px", color: "#6b7280", fontStyle: "italic" }}>[{nq.marks} mark{nq.marks !== 1 ? "s" : ""}]</span>
                                 </div>
                               </div>
-                              {Array.from({ length: nq.marks <= 1 ? 2 : nq.marks <= 2 ? 3 : nq.marks <= 4 ? 5 : nq.marks <= 6 ? 8 : Math.min(Math.ceil(nq.marks * 1.5), 20) }).map((_: unknown, li: number) => (
-                                <div key={li} style={{ borderBottom: "1px solid #d1d5db", height: "28px", width: "100%", marginBottom: "3px" }} />
-                              ))}
+                              {isMathsQ ? (
+                                /* Maths: working-out box with grid dots + answer line at bottom */
+                                <div style={{ border: "1.5px solid #cbd5e1", borderRadius: "6px", background: "#fafafa", padding: "8px", marginTop: "4px" }}>
+                                  <div style={{ fontSize: "10px", color: "#94a3b8", fontFamily: fmt.fontFamily, marginBottom: "6px", letterSpacing: "0.04em" }}>WORKING OUT</div>
+                                  {/* Dot grid for working out */}
+                                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, 20px)", gap: "0", minHeight: `${Math.max(lineCount * lineHeight, 80)}px`, position: "relative" as const, overflow: "hidden" }}>
+                                    {Array.from({ length: Math.ceil((Math.max(lineCount * lineHeight, 80) / 20)) * 30 }).map((_: unknown, di: number) => (
+                                      <div key={di} style={{ width: "20px", height: "20px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                        <div style={{ width: "2px", height: "2px", borderRadius: "50%", background: "#d1d5db" }} />
+                                      </div>
+                                    ))}
+                                  </div>
+                                  {/* Answer line at bottom of working box */}
+                                  <div style={{ borderTop: "2px solid #1a2744", marginTop: "8px", paddingTop: "4px", display: "flex", alignItems: "center", gap: "8px" }}>
+                                    <span style={{ fontSize: "11px", fontWeight: 700, color: "#1a2744", fontFamily: fmt.fontFamily, whiteSpace: "nowrap" as const }}>Answer:</span>
+                                    <div style={{ flex: 1, borderBottom: "1.5px solid #1a2744", height: "24px" }} />
+                                  </div>
+                                </div>
+                              ) : (
+                                /* Writing/humanities: ruled answer lines */
+                                <div style={{ marginTop: "4px" }}>
+                                  {Array.from({ length: lineCount }).map((_: unknown, li: number) => (
+                                    <div key={li} style={{ borderBottom: "1px solid #d1d5db", height: `${lineHeight}px`, width: "100%", marginBottom: "2px" }} />
+                                  ))}
+                                </div>
+                              )}
                             </div>
-                          ))}
+                              );
+                            })}
                         </div>
                       );
                     }
@@ -5383,25 +5433,49 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                             }} dangerouslySetInnerHTML={{ __html: renderMath(introText) }} />
                           )}
                           <div style={{ fontSize: "11px", color: "#6b7280", fontStyle: "italic", marginBottom: "10px" }}>[{totalMarks} marks total]</div>
-                          {subQBlocks.map((sq, si) => (
-                            <div key={si} style={{ marginBottom: "16px" }}>
-                              <div style={{ display: "flex", gap: "8px", alignItems: "flex-start", marginBottom: "6px" }}>
+                          {subQBlocks.map((sq, si) => {
+                              const sqLineCount = sq.marks <= 2 ? 3 : sq.marks <= 4 ? 5 : sq.marks <= 6 ? 8 : Math.min(Math.ceil(sq.marks * 1.5), 20);
+                              const sqLineH = fmt.answerLineHeight || 30;
+                              return (
+                            <div key={si} style={{ marginBottom: "20px", pageBreakInside: "avoid", breakInside: "avoid" }}>
+                              <div style={{ display: "flex", gap: "8px", alignItems: "flex-start", marginBottom: "8px" }}>
                                 <span style={{
                                   fontWeight: 700,
                                   fontSize: `${fmt.fontSize}px`,
                                   fontFamily: fmt.fontFamily,
                                   color: "#1B2A4A",
                                   minWidth: "20px",
+                                  flexShrink: 0,
                                 }}>({sq.letter})</span>
                                 <div style={{ flex: 1, fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, lineHeight: String(fmt.lineHeight), color: "#1e293b" }}
                                   dangerouslySetInnerHTML={{ __html: renderMath(sq.text) }} />
                                 <span style={{ fontSize: "11px", color: "#6b7280", fontStyle: "italic", whiteSpace: "nowrap" as const }}>[{sq.marks}m]</span>
                               </div>
-                              {Array.from({ length: sq.marks <= 2 ? 3 : sq.marks <= 4 ? 5 : sq.marks <= 6 ? 8 : Math.min(Math.ceil(sq.marks * 1.5), 20) }).map((_: unknown, li: number) => (
-                                <div key={li} style={{ borderBottom: "1px solid #d1d5db", height: "28px", width: "100%", marginBottom: "3px" }} />
-                              ))}
+                              {isMathsSubject ? (
+                                <div style={{ border: "1.5px solid #cbd5e1", borderRadius: "6px", background: "#fafafa", padding: "8px" }}>
+                                  <div style={{ fontSize: "10px", color: "#94a3b8", fontFamily: fmt.fontFamily, marginBottom: "6px", letterSpacing: "0.04em" }}>WORKING OUT</div>
+                                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, 20px)", gap: "0", minHeight: `${Math.max(sqLineCount * sqLineH, 60)}px`, overflow: "hidden" }}>
+                                    {Array.from({ length: Math.ceil((Math.max(sqLineCount * sqLineH, 60) / 20)) * 30 }).map((_: unknown, di: number) => (
+                                      <div key={di} style={{ width: "20px", height: "20px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                        <div style={{ width: "2px", height: "2px", borderRadius: "50%", background: "#d1d5db" }} />
+                                      </div>
+                                    ))}
+                                  </div>
+                                  <div style={{ borderTop: "2px solid #1a2744", marginTop: "8px", paddingTop: "4px", display: "flex", alignItems: "center", gap: "8px" }}>
+                                    <span style={{ fontSize: "11px", fontWeight: 700, color: "#1a2744", fontFamily: fmt.fontFamily, whiteSpace: "nowrap" as const }}>Answer:</span>
+                                    <div style={{ flex: 1, borderBottom: "1.5px solid #1a2744", height: "24px" }} />
+                                  </div>
+                                </div>
+                              ) : (
+                                <div style={{ marginTop: "4px" }}>
+                                  {Array.from({ length: sqLineCount }).map((_: unknown, li: number) => (
+                                    <div key={li} style={{ borderBottom: "1px solid #d1d5db", height: `${sqLineH}px`, width: "100%", marginBottom: "2px" }} />
+                                  ))}
+                                </div>
+                              )}
                             </div>
-                          ))}
+                              );
+                            })}
                         </div>
                       );
                     }
@@ -5412,6 +5486,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                     // Scale answer lines properly: 1-2 marks → 3 lines, 3-4 marks → 5 lines, 5-6 marks → 8 lines, 7+ marks → marks * 1.5 lines
                     const lineCount = marks <= 2 ? 3 : marks <= 4 ? 5 : marks <= 6 ? 8 : Math.min(Math.ceil(marks * 1.5), 20);
                     const questionText = content.replace(/\[\d+\s*marks?\]/i, "").trim();
+                    const sqLineH = fmt.answerLineHeight || 30;
                     return (
                       <div>
                         <div style={{
@@ -5424,14 +5499,50 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                         <div style={{ fontSize: "11px", color: "#6b7280", fontStyle: "italic", marginBottom: "8px", fontFamily: fmt.fontFamily }}>
                           [{marks} mark{marks !== 1 ? "s" : ""}]
                         </div>
-                        {Array.from({ length: lineCount }).map((_: unknown, li: number) => (
-                          <div key={li} style={{
-                            borderBottom: "1px solid #d1d5db",
-                            height: "32px",
-                            width: "100%",
-                            marginBottom: "4px",
-                          }} />
-                        ))}
+                        {isMathsSubject ? (
+                          /* Maths: working-out box with dot grid */
+                          <div style={{ border: "1.5px solid #cbd5e1", borderRadius: "6px", background: "#fafafa", padding: "8px" }}>
+                            <div style={{ fontSize: "10px", color: "#94a3b8", fontFamily: fmt.fontFamily, marginBottom: "6px", letterSpacing: "0.04em" }}>WORKING OUT</div>
+                            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, 20px)", gap: "0", minHeight: `${Math.max(lineCount * sqLineH, 80)}px`, overflow: "hidden" }}>
+                              {Array.from({ length: Math.ceil((Math.max(lineCount * sqLineH, 80) / 20)) * 30 }).map((_: unknown, di: number) => (
+                                <div key={di} style={{ width: "20px", height: "20px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                  <div style={{ width: "2px", height: "2px", borderRadius: "50%", background: "#d1d5db" }} />
+                                </div>
+                              ))}
+                            </div>
+                            <div style={{ borderTop: "2px solid #1a2744", marginTop: "8px", paddingTop: "4px", display: "flex", alignItems: "center", gap: "8px" }}>
+                              <span style={{ fontSize: "11px", fontWeight: 700, color: "#1a2744", fontFamily: fmt.fontFamily, whiteSpace: "nowrap" as const }}>Answer:</span>
+                              <div style={{ flex: 1, borderBottom: "1.5px solid #1a2744", height: "24px" }} />
+                            </div>
+                          </div>
+                        ) : marks >= 6 ? (
+                          /* Writing: extended response — scaffolded paragraph guide */
+                          <div>
+                            {/* Planning box for 6+ mark questions */}
+                            <div style={{ border: "1px dashed #94a3b8", borderRadius: "4px", padding: "8px 12px", marginBottom: "10px", background: "#f8fafc" }}>
+                              <div style={{ fontSize: "10px", fontWeight: 700, color: "#64748b", fontFamily: fmt.fontFamily, letterSpacing: "0.06em", marginBottom: "6px" }}>PLAN YOUR ANSWER (use this space to plan — it will not be marked)</div>
+                              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px" }}>
+                                {["Point 1:", "Point 2:", "Point 3:", "Evidence/Example:"].map((label, li) => (
+                                  <div key={li} style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "3px", padding: "4px 8px" }}>
+                                    <div style={{ fontSize: "9px", color: "#94a3b8", fontFamily: fmt.fontFamily, marginBottom: "2px" }}>{label}</div>
+                                    <div style={{ height: "20px" }} />
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                            {/* Ruled writing lines */}
+                            {Array.from({ length: lineCount }).map((_: unknown, li: number) => (
+                              <div key={li} style={{ borderBottom: "1px solid #d1d5db", height: `${sqLineH}px`, width: "100%", marginBottom: "2px" }} />
+                            ))}
+                          </div>
+                        ) : (
+                          /* Writing: standard ruled lines */
+                          <div>
+                            {Array.from({ length: lineCount }).map((_: unknown, li: number) => (
+                              <div key={li} style={{ borderBottom: "1px solid #d1d5db", height: `${sqLineH}px`, width: "100%", marginBottom: "2px" }} />
+                            ))}
+                          </div>
+                        )}
                       </div>
                     );
                   }
@@ -5685,14 +5796,48 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                     const challengeMarksMatch = content.match(/\[(\d+)\s*marks?\]/i);
                     const challengeMarks = challengeMarksMatch ? parseInt(challengeMarksMatch[1]) : (section.marks as number || 6);
                     const challengeText = content.replace(/\[\d+\s*marks?\]/i, "").trim();
+                    const challengeLineH = fmt.answerLineHeight || 30;
+                    const challengeLineCount = Math.max(challengeMarks + 1, 4);
                     return (
                       <div>
                         <div style={{ fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, lineHeight: String(fmt.lineHeight), color: "#1e293b", marginBottom: "12px" }}
                           dangerouslySetInnerHTML={{ __html: renderMath(challengeText) }} />
                         <div style={{ fontSize: "11px", color: "#6b7280", fontStyle: "italic", marginBottom: "8px" }}>[{challengeMarks} marks]</div>
-                        {Array.from({ length: Math.max(challengeMarks + 1, 4) }).map((_: unknown, li: number) => (
-                          <div key={li} style={{ borderBottom: "1px solid #d1d5db", minHeight: "28px", marginBottom: "6px" }} />
-                        ))}
+                        {isMathsSubject ? (
+                          <div style={{ border: "1.5px solid #cbd5e1", borderRadius: "6px", background: "#fafafa", padding: "8px" }}>
+                            <div style={{ fontSize: "10px", color: "#94a3b8", fontFamily: fmt.fontFamily, marginBottom: "6px", letterSpacing: "0.04em" }}>WORKING OUT</div>
+                            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, 20px)", gap: "0", minHeight: `${Math.max(challengeLineCount * challengeLineH, 100)}px`, overflow: "hidden" }}>
+                              {Array.from({ length: Math.ceil((Math.max(challengeLineCount * challengeLineH, 100) / 20)) * 30 }).map((_: unknown, di: number) => (
+                                <div key={di} style={{ width: "20px", height: "20px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                  <div style={{ width: "2px", height: "2px", borderRadius: "50%", background: "#d1d5db" }} />
+                                </div>
+                              ))}
+                            </div>
+                            <div style={{ borderTop: "2px solid #1a2744", marginTop: "8px", paddingTop: "4px", display: "flex", alignItems: "center", gap: "8px" }}>
+                              <span style={{ fontSize: "11px", fontWeight: 700, color: "#1a2744", fontFamily: fmt.fontFamily, whiteSpace: "nowrap" as const }}>Answer:</span>
+                              <div style={{ flex: 1, borderBottom: "1.5px solid #1a2744", height: "24px" }} />
+                            </div>
+                          </div>
+                        ) : (
+                          <div>
+                            {challengeMarks >= 6 && (
+                              <div style={{ border: "1px dashed #94a3b8", borderRadius: "4px", padding: "8px 12px", marginBottom: "10px", background: "#f8fafc" }}>
+                                <div style={{ fontSize: "10px", fontWeight: 700, color: "#64748b", fontFamily: fmt.fontFamily, letterSpacing: "0.06em", marginBottom: "6px" }}>PLAN YOUR ANSWER</div>
+                                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px" }}>
+                                  {["Point 1:", "Point 2:", "Evidence:", "Conclusion:"].map((label, li) => (
+                                    <div key={li} style={{ background: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "3px", padding: "4px 8px" }}>
+                                      <div style={{ fontSize: "9px", color: "#94a3b8", fontFamily: fmt.fontFamily, marginBottom: "2px" }}>{label}</div>
+                                      <div style={{ height: "20px" }} />
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                            {Array.from({ length: challengeLineCount }).map((_: unknown, li: number) => (
+                              <div key={li} style={{ borderBottom: "1px solid #d1d5db", height: `${challengeLineH}px`, width: "100%", marginBottom: "2px" }} />
+                            ))}
+                          </div>
+                        )}
                       </div>
                     );
                   }
@@ -5875,7 +6020,27 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                 ) : section.type === "reminder-box" ? (
                   <ReminderBoxSection content={content} fmt={fmt} overlayColor={overlayColor} />
                 ) : section.type === "example" ? (
-                  <WorkedExampleSection content={content} fmt={fmt} />
+                  <div>
+                    <WorkedExampleSection content={content} fmt={fmt} />
+                    {isMathsSubject && (
+                      /* Maths: "Try it yourself" practice box directly below worked example */
+                      <div style={{ marginTop: "14px", border: "1.5px dashed #1a2744", borderRadius: "6px", padding: "12px 14px", background: "#f8fafc" }}>
+                        <div style={{ fontSize: "11px", fontWeight: 700, color: "#1a2744", fontFamily: fmt.fontFamily, letterSpacing: "0.06em", marginBottom: "10px", textTransform: "uppercase" as const }}>Try it yourself</div>
+                        {/* Dot grid for practice */}
+                        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, 20px)", gap: "0", minHeight: "120px", overflow: "hidden" }}>
+                          {Array.from({ length: 180 }).map((_: unknown, di: number) => (
+                            <div key={di} style={{ width: "20px", height: "20px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                              <div style={{ width: "2px", height: "2px", borderRadius: "50%", background: "#d1d5db" }} />
+                            </div>
+                          ))}
+                        </div>
+                        <div style={{ borderTop: "2px solid #1a2744", marginTop: "8px", paddingTop: "4px", display: "flex", alignItems: "center", gap: "8px" }}>
+                          <span style={{ fontSize: "11px", fontWeight: 700, color: "#1a2744", fontFamily: fmt.fontFamily, whiteSpace: "nowrap" as const }}>Answer:</span>
+                          <div style={{ flex: 1, borderBottom: "1.5px solid #1a2744", height: "24px" }} />
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 ) : section.type === "word-problems" ? (
                   <WordProblemsSection content={content} fmt={fmt} overlayColor={overlayColor} />
                 ) : (section.type === "mark-scheme" || section.type === "answers") ? (
@@ -5914,20 +6079,51 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                 ) : section.type === "questions" ? (
                   <div>{formatContent(content, fmt)}</div>
                 ) : (section.type === "reading" || section.type === "passage" || section.type === "source-text" || section.type === "comprehension" || /reading.?passage|source.?text|comprehension.?text/i.test(section.title || "")) ? (
-                  <div style={{
-                    border: "2px solid #cbd5e1",
-                    borderRadius: "6px",
-                    padding: "16px",
-                    background: "#f8fafc",
-                    lineHeight: "1.8",
-                    fontSize: `${fmt.fontSize}px`,
-                    fontFamily: fmt.fontFamily,
-                    letterSpacing: fmt.letterSpacing,
-                    wordSpacing: fmt.wordSpacing,
-                    color: "#1e293b",
-                  }}>
-                    {formatContent(content, fmt)}
-                  </div>
+                  (() => {
+                    // Split passage into paragraphs and add line numbers
+                    const passageLines = content.split("\n").filter((l: string) => l.trim());
+                    let lineNum = 1;
+                    return (
+                      <div style={{ border: "2px solid #1a2744", borderRadius: "6px", overflow: "hidden" }}>
+                        {/* Passage header bar */}
+                        <div style={{ background: "#1a2744", padding: "6px 14px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                          <span style={{ fontSize: "11px", fontWeight: 700, color: "#ffffff", fontFamily: fmt.fontFamily, letterSpacing: "0.08em", textTransform: "uppercase" as const }}>Reading Passage</span>
+                          <span style={{ fontSize: "10px", color: "rgba(255,255,255,0.6)", fontFamily: fmt.fontFamily }}>Read carefully before answering</span>
+                        </div>
+                        {/* Passage body with line numbers */}
+                        <div style={{ background: "#fafafa", padding: "14px 0" }}>
+                          {passageLines.map((para: string, pi: number) => {
+                            const startLine = lineNum;
+                            // Count words to estimate lines (approx 10 words per line)
+                            const wordCount = para.split(/\s+/).filter(Boolean).length;
+                            const linesInPara = Math.max(1, Math.ceil(wordCount / 10));
+                            lineNum += linesInPara;
+                            return (
+                              <div key={pi} style={{ display: "flex", gap: "0", marginBottom: pi < passageLines.length - 1 ? "10px" : "0" }}>
+                                {/* Line number gutter */}
+                                <div style={{ minWidth: "36px", paddingLeft: "10px", paddingTop: "2px", fontSize: "10px", color: "#9ca3af", fontFamily: "monospace", lineHeight: "1.8", userSelect: "none" as const, flexShrink: 0 }}>
+                                  {startLine}
+                                </div>
+                                {/* Paragraph text */}
+                                <div style={{
+                                  flex: 1,
+                                  paddingRight: "14px",
+                                  fontSize: `${fmt.fontSize}px`,
+                                  fontFamily: fmt.fontFamily,
+                                  lineHeight: "1.8",
+                                  letterSpacing: fmt.letterSpacing,
+                                  wordSpacing: fmt.wordSpacing,
+                                  color: "#1e293b",
+                                  borderLeft: "1px solid #e5e7eb",
+                                  paddingLeft: "12px",
+                                }} dangerouslySetInnerHTML={{ __html: renderMath(para) }} />
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })()
                 ) : (
                   <div>{formatContent(content, fmt)}</div>
                 ))
