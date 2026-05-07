@@ -297,12 +297,44 @@ const PRIMARY_COLOURS = [
 // ANSWER LINES (matches ws_primitives.py AnswerLines)
 // ─────────────────────────────────────────────────────────────────────────────
 
-function AnswerLines({ n, lineH = 28 }: { n: number; lineH?: number }) {
+function AnswerLines({ n, lineH = 32 }: { n: number; lineH?: number }) {
   return (
     <div style={{ marginTop: "8px" }}>
       {Array.from({ length: n }).map((_, i) => (
-        <div key={i} style={{ borderBottom: `1px solid ${RULE}`, height: `${lineH}px`, marginBottom: "2px" }} />
+        <div key={i} style={{ borderBottom: `1.5px solid ${RULE}`, height: `${lineH}px`, marginBottom: "4px" }} />
       ))}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// WORKING OUT BOX (maths subjects — dot-grid space for working)
+// ─────────────────────────────────────────────────────────────────────────────
+
+function WorkingOutBox({ marks, fontSize, fontFamily }: { marks: number; fontSize: number; fontFamily: string }) {
+  const boxHeight = Math.max(80, marks * 28);
+  return (
+    <div style={{ marginTop: "10px" }}>
+      <div style={{
+        border: `1.5px solid ${RULE}`,
+        borderRadius: "4px",
+        height: `${boxHeight}px`,
+        background: `radial-gradient(circle, ${RULE} 1px, transparent 1px)`,
+        backgroundSize: "16px 16px",
+        backgroundPosition: "8px 8px",
+        position: "relative",
+        overflow: "hidden",
+      }}>
+        <div style={{
+          position: "absolute", top: "6px", left: "10px",
+          fontSize: `${fontSize - 3}px`, color: LIGHT, fontFamily,
+          fontStyle: "italic", userSelect: "none",
+        }}>
+          Working out
+        </div>
+      </div>
+      <div style={{ borderBottom: `1.5px solid ${RULE}`, height: "32px", marginTop: "6px", marginBottom: "4px" }} />
+      <div style={{ fontSize: `${fontSize - 2}px`, color: LIGHT, fontFamily, marginTop: "2px" }}>Answer</div>
     </div>
   );
 }
@@ -758,8 +790,8 @@ function DrawBoxRenderer({ content, fontSize, fontFamily }: {
  * SHORT ANSWER — numbered questions with ruled answer lines.
  * Marks badge shown top-right.
  */
-function ShortAnswerRenderer({ content, fontSize, fontFamily, isTeacher }: {
-  content: string; fontSize: number; fontFamily: string; isTeacher: boolean;
+function ShortAnswerRenderer({ content, fontSize, fontFamily, isTeacher, isMaths, isWriting }: {
+  content: string; fontSize: number; fontFamily: string; isTeacher: boolean; isMaths?: boolean; isWriting?: boolean;
 }) {
   const lines = content.split("\n").filter(l => l.trim() && !l.startsWith("LAYOUT:"));
   const qLines = lines.filter(l => /^\d+[.)]\s/.test(l.trim()));
@@ -816,6 +848,14 @@ function ShortAnswerRenderer({ content, fontSize, fontFamily, isTeacher }: {
               <div style={{ marginLeft: "36px", padding: "6px 10px", background: "#ecfdf5", border: `1px solid ${TEAL}`, borderRadius: "4px", fontSize: `${fontSize - 1}px`, fontFamily, color: "#166534" }}>
                 ✓ {answerMatch[1]}
               </div>
+            ) : isMaths ? (
+              <div style={{ marginLeft: "36px" }}>
+                <WorkingOutBox marks={marks} fontSize={fontSize} fontFamily={fontFamily} />
+              </div>
+            ) : isWriting && marks >= 4 ? (
+              <div style={{ marginLeft: "36px" }}>
+                <AnswerLines n={marks >= 6 ? 8 : marks >= 4 ? 6 : 4} lineH={36} />
+              </div>
             ) : (
               <div style={{ marginLeft: "36px" }}>
                 <AnswerLines n={marks >= 4 ? 4 : 2} />
@@ -831,8 +871,8 @@ function ShortAnswerRenderer({ content, fontSize, fontFamily, isTeacher }: {
 /**
  * EXTENDED ANSWER — single question with large writing area.
  */
-function ExtendedAnswerRenderer({ content, fontSize, fontFamily, isTeacher }: {
-  content: string; fontSize: number; fontFamily: string; isTeacher: boolean;
+function ExtendedAnswerRenderer({ content, fontSize, fontFamily, isTeacher, isMaths, isWriting }: {
+  content: string; fontSize: number; fontFamily: string; isTeacher: boolean; isMaths?: boolean; isWriting?: boolean;
 }) {
   const lines = content.split("\n").filter(l => l.trim() && !l.startsWith("LAYOUT:"));
   const markMatch = content.match(/\[(\d+)\s*marks?\]/i);
@@ -845,7 +885,11 @@ function ExtendedAnswerRenderer({ content, fontSize, fontFamily, isTeacher }: {
         <div key={i} style={{ fontSize: `${fontSize}px`, fontFamily, color: MID, lineHeight: "1.6", marginBottom: "6px" }}
           dangerouslySetInnerHTML={{ __html: renderMath(line) }} />
       ))}
-      <AnswerLines n={numLines} />
+      {isMaths ? (
+        <WorkingOutBox marks={marks} fontSize={fontSize} fontFamily={fontFamily} />
+      ) : (
+        <AnswerLines n={isWriting ? Math.max(numLines, 10) : numLines} lineH={isWriting ? 36 : 32} />
+      )}
     </div>
   );
 }
@@ -1005,9 +1049,9 @@ function detectLayout(content: string): string {
 }
 
 function renderLayoutContent({
-  content, layout, fontSize, fontFamily, accentColor, isTeacher,
+  content, layout, fontSize, fontFamily, accentColor, isTeacher, isMaths, isWriting,
 }: {
-  content: string; layout: string; fontSize: number; fontFamily: string; accentColor: string; isTeacher: boolean;
+  content: string; layout: string; fontSize: number; fontFamily: string; accentColor: string; isTeacher: boolean; isMaths?: boolean; isWriting?: boolean;
 }): React.ReactNode {
   switch (layout) {
     case "true_false":
@@ -1025,14 +1069,14 @@ function renderLayoutContent({
     case "draw_box":
       return <DrawBoxRenderer content={content} fontSize={fontSize} fontFamily={fontFamily} />;
     case "extended_answer":
-      return <ExtendedAnswerRenderer content={content} fontSize={fontSize} fontFamily={fontFamily} isTeacher={isTeacher} />;
+      return <ExtendedAnswerRenderer content={content} fontSize={fontSize} fontFamily={fontFamily} isTeacher={isTeacher} isMaths={isMaths} isWriting={isWriting} />;
     case "matching":
       return <MatchingRenderer content={content} fontSize={fontSize} fontFamily={fontFamily} />;
     case "ordering":
       return <OrderingRenderer content={content} fontSize={fontSize} fontFamily={fontFamily} />;
     case "short_answer":
     default:
-      return <ShortAnswerRenderer content={content} fontSize={fontSize} fontFamily={fontFamily} isTeacher={isTeacher} />;
+      return <ShortAnswerRenderer content={content} fontSize={fontSize} fontFamily={fontFamily} isTeacher={isTeacher} isMaths={isMaths} isWriting={isWriting} />;
   }
 }
 
@@ -1080,10 +1124,10 @@ function SectionHeader({ title, headerBg, headerText, marks, icon, fontSize, fon
 // Numbered badge + question text + layout-specific content + marks.
 // ─────────────────────────────────────────────────────────────────────────────
 
-function QuestionBlock({ questionNumber, content, layout, marks, fontSize, fontFamily, accentColor, isTeacher, hasSvg, svgContent, caption }: {
+function QuestionBlock({ questionNumber, content, layout, marks, fontSize, fontFamily, accentColor, isTeacher, hasSvg, svgContent, caption, isMaths, isWriting }: {
   questionNumber: number; content: string; layout: string; marks: number;
   fontSize: number; fontFamily: string; accentColor: string; isTeacher: boolean;
-  hasSvg?: boolean; svgContent?: string; caption?: string;
+  hasSvg?: boolean; svgContent?: string; caption?: string; isMaths?: boolean; isWriting?: boolean;
 }) {
   // Strip LAYOUT: tag from display
   const displayContent = content.replace(/^LAYOUT:\S+\s*/m, "").trim();
@@ -1150,7 +1194,7 @@ function QuestionBlock({ questionNumber, content, layout, marks, fontSize, fontF
             )}
           </div>
         )}
-        {renderLayoutContent({ content: displayContent, layout, fontSize, fontFamily, accentColor, isTeacher })}
+        {renderLayoutContent({ content: displayContent, layout, fontSize, fontFamily, accentColor, isTeacher, isMaths, isWriting })}
       </div>
     </div>
   );
@@ -1219,8 +1263,8 @@ function SelfReflectionTable({ fontSize, fontFamily }: { fontSize: number; fontF
 // CHALLENGE BLOCK (matches ws_primitives.py challenge_block)
 // ─────────────────────────────────────────────────────────────────────────────
 
-function ChallengeBlock({ content, fontSize, fontFamily, isTeacher }: {
-  content: string; fontSize: number; fontFamily: string; isTeacher: boolean;
+function ChallengeBlock({ content, fontSize, fontFamily, isTeacher, isMaths, isWriting }: {
+  content: string; fontSize: number; fontFamily: string; isTeacher: boolean; isMaths?: boolean; isWriting?: boolean;
 }) {
   const lines = content.split("\n").filter(l => l.trim() && !l.startsWith("LAYOUT:"));
   return (
@@ -1248,7 +1292,11 @@ function ChallengeBlock({ content, fontSize, fontFamily, isTeacher }: {
           <div key={i} style={{ fontSize: `${fontSize}px`, fontFamily, color: MID, lineHeight: "1.6", marginBottom: "6px" }}
             dangerouslySetInnerHTML={{ __html: renderMath(line) }} />
         ))}
-        <AnswerLines n={6} />
+        {isMaths ? (
+          <WorkingOutBox marks={6} fontSize={fontSize} fontFamily={fontFamily} />
+        ) : (
+          <AnswerLines n={isWriting ? 12 : 6} lineH={isWriting ? 36 : 32} />
+        )}
       </div>
     </div>
   );
@@ -1368,8 +1416,8 @@ function MistakesSection({ content, fontSize, fontFamily }: {
 // WORKED EXAMPLE SECTION (matches ws_primitives.py worked_example_section)
 // ─────────────────────────────────────────────────────────────────────────────
 
-function WorkedExampleSection({ content, fontSize, fontFamily }: {
-  content: string; fontSize: number; fontFamily: string;
+function WorkedExampleSection({ content, fontSize, fontFamily, isMaths }: {
+  content: string; fontSize: number; fontFamily: string; isMaths?: boolean;
 }) {
   const lines = content.split("\n").filter(l => l.trim());
   const qLine = lines.find(l => /^question:/i.test(l.trim()) || /^\*\*question/i.test(l.trim()));
@@ -1403,6 +1451,20 @@ function WorkedExampleSection({ content, fontSize, fontFamily }: {
         <div key={i} style={{ fontSize: `${fontSize}px`, fontFamily, color: MID, lineHeight: "1.6", marginBottom: "6px" }}
           dangerouslySetInnerHTML={{ __html: renderMath(line) }} />
       ))}
+      {isMaths && (
+        <div style={{
+          marginTop: "14px",
+          border: `1.5px dashed ${TEAL}`,
+          borderRadius: "6px",
+          padding: "10px 14px",
+          background: "#f0fdfa",
+        }}>
+          <div style={{ fontWeight: 700, fontSize: `${fontSize - 1}px`, fontFamily, color: TEAL, marginBottom: "8px" }}>
+            ✏️ Try it yourself
+          </div>
+          <WorkingOutBox marks={4} fontSize={fontSize} fontFamily={fontFamily} />
+        </div>
+      )}
     </div>
   );
 }
@@ -1488,7 +1550,7 @@ function renderSection({
   section, sectionIndex, questionCounter, fontSize, fontFamily,
   isTeacher, isPrimary, primaryColourIndex, editedContent, isEditing,
   onSectionClick, editMode, hiddenSections, answerBoxSizes,
-  onAnswerBoxSizeChange, onAnswerBoxRemove,
+  onAnswerBoxSizeChange, onAnswerBoxRemove, isMaths, isWriting,
 }: {
   section: WorksheetSection;
   sectionIndex: number;
@@ -1506,6 +1568,8 @@ function renderSection({
   answerBoxSizes?: Record<number, number>;
   onAnswerBoxSizeChange?: (sectionIndex: number, lines: number) => void;
   onAnswerBoxRemove?: (sectionIndex: number) => void;
+  isMaths?: boolean;
+  isWriting?: boolean;
 }): React.ReactNode {
   if (hiddenSections?.has(sectionIndex)) return null;
   if (!isTeacher && section.teacherOnly) return null;
@@ -1591,6 +1655,8 @@ function renderSection({
           hasSvg={!!svgContent}
           svgContent={svgContent}
           caption={section.caption}
+          isMaths={isMaths}
+          isWriting={isWriting}
         />
       </div>
     );
@@ -1603,7 +1669,7 @@ function renderSection({
         onClick={() => editMode && onSectionClick?.(sectionIndex)}
         style={{ cursor: editMode ? "pointer" : "default", outline: isEditing ? `2px solid ${TEAL}` : "none", borderRadius: "6px" }}
       >
-        <ChallengeBlock content={content} fontSize={fontSize} fontFamily={fontFamily} isTeacher={isTeacher} />
+        <ChallengeBlock content={content} fontSize={fontSize} fontFamily={fontFamily} isTeacher={isTeacher} isMaths={isMaths} isWriting={isWriting} />
       </div>
     );
   }
@@ -1702,7 +1768,7 @@ function renderSection({
           fontFamily={fontFamily}
         />
         <div style={{ padding: "14px 16px", background: bgColor }}>
-          <WorkedExampleSection content={content} fontSize={fontSize} fontFamily={fontFamily} />
+          <WorkedExampleSection content={content} fontSize={fontSize} fontFamily={fontFamily} isMaths={isMaths} />
         </div>
       </div>
     );
@@ -1751,10 +1817,35 @@ function renderSection({
         fontFamily={fontFamily}
       />
       <div style={{ padding: "14px 16px", background: bgColor }}>
+        {/* Library image diagram (Diagram A / Diagram B from admin library) */}
+        {section.imageUrl && (
+          <div style={{ marginBottom: "12px", textAlign: "center" }}>
+            <img
+              src={section.imageUrl}
+              alt={section.caption || section.title || "Diagram"}
+              style={{
+                maxWidth: "100%",
+                width: "auto",
+                height: "auto",
+                maxHeight: "480px",
+                objectFit: "contain",
+                borderRadius: "4px",
+                border: `1px solid ${RULE}`,
+                display: "block",
+                margin: "0 auto",
+              }}
+            />
+            {section.caption && (
+              <div style={{ fontSize: `${fontSize - 2}px`, color: LIGHT, fontFamily, textAlign: "center", marginTop: "6px", fontStyle: "italic" }}>
+                {section.caption}
+              </div>
+            )}
+          </div>
+        )}
         {/* SVG diagram if present */}
-        {section.svg && (
+        {!section.imageUrl && section.svg && (
           <div style={{ marginBottom: "12px" }}>
-            <div style={{ border: `1px solid ${RULE}`, borderRadius: "4px", background: SOFT, padding: "8px", overflow: "hidden" }}
+            <div style={{ border: `1px solid ${RULE}`, borderRadius: "4px", background: SOFT, padding: "8px", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}
               dangerouslySetInnerHTML={{ __html: section.svg }} />
             {section.caption && (
               <div style={{ fontSize: `${fontSize - 2}px`, color: LIGHT, fontFamily, textAlign: "center", marginTop: "4px", fontStyle: "italic" }}>
@@ -1897,6 +1988,11 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
     yg.includes("year 3") || yg.includes("year 4") || yg.includes("year 5") || yg.includes("year 6") ||
     yg.includes("ks1") || yg.includes("ks2") || yg.includes("primary");
 
+  // Detect subject type for specialised answer areas
+  const subjectLower = (worksheet.metadata?.subject || "").toLowerCase();
+  const isMaths = /^math|^maths|^numeracy|statistics|further math/i.test(subjectLower);
+  const isWriting = /english|literacy|creative writing|media|drama|history|geography|rs|religious|philosophy/i.test(subjectLower);
+
   // Question counter (shared across all question sections)
   const questionCounter = { value: 1 };
 
@@ -1955,6 +2051,8 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
             answerBoxSizes,
             onAnswerBoxSizeChange,
             onAnswerBoxRemove,
+            isMaths,
+            isWriting,
           });
 
           return node;

@@ -2092,5 +2092,20 @@ export async function generateStoryWorksheet(params: WorksheetParams): Promise<G
   return generateWorksheet(params);
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// STORY CONTENT GENERATOR (local fallback for Stories page)
+// ─────────────────────────────────────────────────────────────────────────────
+export function generateStoryContent(params: {
+  genre?: string; yearGroup?: string; sendNeed?: string;
+  characters?: string[]; setting?: string; theme?: string;
+  readingLevel?: string; length?: string;
+}): { title: string; content: string } {
+  const { genre = "adventure", characters = [], setting = "a mysterious place", theme = "friendship" } = params;
+  const charList = characters.length > 0 ? characters.join(" and ") : "Alex";
+  const title = `${charList} and the ${genre.charAt(0).toUpperCase() + genre.slice(1)}`;
+  const content = `Once upon a time, ${charList} went on a ${genre} in ${setting}. The theme of ${theme} guided them throughout their journey. [Continue the story here...]`;
+  return { title, content };
+}
+
 // Default export
 export default generateWorksheet;
