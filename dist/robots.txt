@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://adaptly.co.uk/sitemap.xml

@@ -26,6 +26,11 @@ import katex from "katex";
 import "katex/dist/katex.min.css";
 
 // ─────────────────────────────────────────────────────────────────────────────
+// BUILD VERSION — bumped to force cache invalidation on Railway
+// ─────────────────────────────────────────────────────────────────────────────
+export const RENDERER_VERSION = "2.1.0-20260507";
+
+// ─────────────────────────────────────────────────────────────────────────────
 // PALETTE (matches ws_primitives.py exactly)
 // ─────────────────────────────────────────────────────────────────────────────
 const NAVY  = "#1B3A6B";
