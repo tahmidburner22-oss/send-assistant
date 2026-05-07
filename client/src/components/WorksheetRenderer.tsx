@@ -1,6 +1,7 @@
 /**
  * @copyright 2026 Adaptly Ltd. All rights reserved.
  * @license Proprietary — unauthorised copying, modification, or distribution is strictly prohibited.
+ * @version 2.1.0
  *
  * WorksheetRenderer — Professional, print-ready worksheet display component.
  * Matches PDF output pixel-for-pixel using CSS @media print.
