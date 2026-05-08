@@ -5049,12 +5049,11 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
             onClick={() => editMode && onSectionClick?.(i)}
             style={{
               marginBottom: section.type === "diagram" ? "0" : "20px",
-              // Diagram pages bleed to the full A4 edge — cancel the worksheet-print-root
-              // padding (40px top, 48px left/right) with negative margins so the image
-              // fills edge-to-edge exactly like the reference PDF.
-              marginTop: section.type === "diagram" ? (paginated ? "-40px" : "0") : undefined,
-              marginLeft: section.type === "diagram" ? (paginated ? "-48px" : "0") : undefined,
-              marginRight: section.type === "diagram" ? (paginated ? "-48px" : "0") : undefined,
+              // Diagram sections do NOT use negative margins — those caused overflow/cut-off.
+              // The diagram image uses max-width: 100% and object-fit: contain to fit naturally.
+              marginTop: undefined,
+              marginLeft: undefined,
+              marginRight: undefined,
               background: isTeacherHeader ? "#fff8f8" : fmt.theme === "high-contrast" ? "#ffffff" : "#ffffff",
               border: fmt.theme === "high-contrast" ? "2px solid #111827" : "none",
               borderRadius: "0",
@@ -5063,8 +5062,10 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
               outline: editMode && editedSections[i] !== undefined ? "2px solid #2a7f8f" : "none",
               pageBreakInside: "avoid",
               breakInside: "avoid",
-              pageBreakBefore: "always",
-              breakBefore: "page",
+              // Only diagram sections force a new page — forcing page-break on ALL sections
+              // creates blank pages between small sections in print/PDF view.
+              pageBreakBefore: section.type === "diagram" ? "always" : "auto",
+              breakBefore: section.type === "diagram" ? "page" : "auto",
               pageBreakAfter: "auto",
               breakAfter: "auto",
               // Diagram sections: flex column to center the image, no forced height so image
@@ -5076,7 +5077,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
               justifyContent: section.type === "diagram" ? "center" : undefined,
               alignItems: section.type === "diagram" ? "center" : undefined,
               padding: section.type === "diagram" ? "16px" : undefined,
-              overflow: "visible",
+              overflow: section.type === "diagram" ? "hidden" : "visible",
             }}
           >
             {/* ── Section header: individual question OR section divider ── */}
@@ -5237,7 +5238,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                           fallback.innerHTML = `<div><div style='font-size:32px;margin-bottom:8px;'>🖼️</div><div style='font-weight:600;margin-bottom:4px;'>Diagram not available</div><div style='font-size:12px;'>${section.caption || 'No diagram found for this topic'}</div></div>`;
                           if (section.svg) {
                             const svgWrapper = document.createElement("div");
-                            svgWrapper.style.cssText = "display:block;width:100%;max-height:1020px;overflow:auto;background:white;";
+                            svgWrapper.style.cssText = "display:block;width:100%;max-width:100%;max-height:1020px;overflow:hidden;background:white;box-sizing:border-box;";
                             svgWrapper.innerHTML = section.svg;
                             target.parentNode?.insertBefore(svgWrapper, target.nextSibling);
                           } else {
@@ -5247,7 +5248,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                       />
                     ) : section.svg ? (
                       <div
-                        style={{ display: "block", width: "100%", maxHeight: paginated ? "1020px" : "calc(100vh - 160px)", overflow: "auto", background: "white" }}
+                        style={{ display: "block", width: "100%", maxWidth: "100%", maxHeight: paginated ? "1020px" : "calc(100vh - 160px)", overflow: "hidden", background: "white", boxSizing: "border-box" }}
                         dangerouslySetInnerHTML={{ __html: section.svg }}
                       />
                     ) : null}
