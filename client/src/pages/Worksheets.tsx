@@ -1868,6 +1868,23 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
       const data = await res.json();
       setUploadResult(data);
       toast.success("Worksheet adapted successfully!");
+      // Auto-save uploaded & adapted worksheet to history
+      try {
+        const adapted = data.adapted;
+        const sections: any[] = adapted?.sections ?? [];
+        const uTitle = adapted?.title || uploadFile?.name?.replace(/\.[^.]+$/, "") || "Uploaded Worksheet";
+        const uContent = sections.filter((s: any) => !s.teacherOnly).map((s: any) => `## ${s.title}\n${s.content}`).join("\n\n");
+        const uTeacherContent = sections.map((s: any) => `## ${s.title}\n${s.content}`).join("\n\n");
+        const saved = await saveWorksheet({
+          title: uTitle, subtitle: adapted?.subtitle || "",
+          subject: "uploaded", topic: "Uploaded & adapted worksheet",
+          yearGroup: uploadYearGroup || "", sendNeed: uploadSendNeed,
+          difficulty: "mixed", content: uContent, teacherContent: uTeacherContent,
+          rating: 0, overlay: colorOverlay, sections, isAI: true,
+        });
+        setSavedWorksheetId(saved.id);
+        refreshData();
+      } catch (_) {} // Silent auto-save
     } catch (err: any) {
       toast.error(err.message || "Failed to adapt worksheet. Please try again.");
     }
@@ -1897,6 +1914,23 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
       const data = await res.json();
       setSlidesResult(data);
       toast.success(`Worksheet generated from ${data.slideCount ? `${data.slideCount} slides` : "your file"}!`);
+      // Auto-save slides-generated worksheet to history
+      try {
+        const ws = data.worksheet;
+        const sections: any[] = ws?.sections ?? [];
+        const sTitle = ws?.title || slidesFile?.name?.replace(/\.[^.]+$/, "") || "Generated Worksheet";
+        const sContent = sections.filter((s: any) => !s.teacherOnly).map((s: any) => `## ${s.title}\n${s.content}`).join("\n\n");
+        const sTeacherContent = sections.map((s: any) => `## ${s.title}\n${s.content}`).join("\n\n");
+        const saved = await saveWorksheet({
+          title: sTitle, subtitle: ws?.subtitle || "",
+          subject: slidesSubject || "uploaded", topic: ws?.title || "From slides",
+          yearGroup: slidesYearGroup || "", sendNeed: slidesSendNeeds || "",
+          difficulty: "mixed", content: sContent, teacherContent: sTeacherContent,
+          rating: 0, overlay: colorOverlay, sections, isAI: true,
+        });
+        setSavedWorksheetId(saved.id);
+        refreshData();
+      } catch (_) {} // Silent auto-save
     } catch (err: any) {
       toast.error(err.message || "Failed to generate worksheet. Please try again.");
     }
@@ -2056,15 +2090,20 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
           .ws-section-diagram {
             margin:0!important;
             width:100%!important; max-width:100%!important;
-            min-height:200px!important; overflow:hidden!important;
+            height:${A4_H - MARGIN * 2}px!important;
+            min-height:${A4_H - MARGIN * 2}px!important;
+            overflow:hidden!important;
             box-sizing:border-box!important;
             display:flex!important; flex-direction:column!important;
-            align-items:center!important; justify-content:center!important;
-            padding:${MARGIN}px!important; }
+            align-items:stretch!important; justify-content:center!important;
+            padding:8px!important; }
           .ws-section-diagram img, .ws-section-diagram svg,
+          .ws-section-diagram > div,
           .ws-section-diagram > div > div, .ws-section-diagram > div > img {
             max-width:100%!important; width:100%!important;
-            height:auto!important; object-fit:contain!important; display:block!important; }
+            height:${A4_H - MARGIN * 2 - 16}px!important;
+            max-height:${A4_H - MARGIN * 2 - 16}px!important;
+            object-fit:contain!important; display:block!important; flex:1!important; }
           .ws-header { border-radius:4px!important; margin-bottom:10px!important; overflow:hidden!important;
             -webkit-print-color-adjust:exact!important; print-color-adjust:exact!important; }
           table { width:100%; border-collapse:collapse; margin:8px 0; }
@@ -2305,29 +2344,33 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
           }
           .ws-section { margin-bottom: 10px !important; border-radius: 4px !important;
             -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-          /* Diagram sections: fit within the page with padding */
+          /* Diagram sections: fill the full A4 page height */
           .ws-section-diagram {
             margin: 0 !important;
             width: 100% !important;
             max-width: 100% !important;
-            min-height: 200px !important;
+            height: ${A4_H - MARGIN * 2}px !important;
+            min-height: ${A4_H - MARGIN * 2}px !important;
             overflow: hidden !important;
             box-sizing: border-box !important;
             display: flex !important;
             flex-direction: column !important;
-            align-items: center !important;
+            align-items: stretch !important;
             justify-content: center !important;
-            padding: ${MARGIN}px !important;
+            padding: 8px !important;
           }
           .ws-section-diagram img,
           .ws-section-diagram svg,
+          .ws-section-diagram > div,
           .ws-section-diagram > div > div,
           .ws-section-diagram > div > img {
             max-width: 100% !important;
             width: 100% !important;
-            height: auto !important;
+            height: ${A4_H - MARGIN * 2 - 16}px !important;
+            max-height: ${A4_H - MARGIN * 2 - 16}px !important;
             object-fit: contain !important;
             display: block !important;
+            flex: 1 !important;
           }
           .ws-header { border-radius: 4px !important;
             margin-bottom: 10px !important; overflow: hidden !important;
@@ -2368,10 +2411,21 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
         yearGroup: generated.metadata?.yearGroup,
         sendNeed: generated.metadata?.sendNeed,
       });
-      setEditedSections(prev => ({ ...prev, [aiEditSectionIndex]: newContent }));
+      const updatedEditedSections = { ...editedSections, [aiEditSectionIndex]: newContent };
+      setEditedSections(updatedEditedSections);
       setAiEditSectionIndex(null);
       setAiEditPrompt("");
       toast.success("Section updated with AI!");
+      // Auto-save the AI-edited worksheet to history
+      if (savedWorksheetId && generated) {
+        const sectionsWithEdits = generated.sections.map((s, i) => ({
+          ...s,
+          content: updatedEditedSections[i] !== undefined ? updatedEditedSections[i] : s.content,
+        }));
+        const editedContent = sectionsWithEdits.filter(s => !s.teacherOnly).map(s => `## ${s.title}\n${s.content}`).join("\n\n");
+        const editedTeacherContent = sectionsWithEdits.map(s => `## ${s.title}\n${s.content}`).join("\n\n");
+        updateWorksheet(savedWorksheetId, { content: editedContent, teacherContent: editedTeacherContent, sections: sectionsWithEdits }).catch(() => {});
+      }
     } catch (e) {
       toast.error("AI edit failed. Please try again.");
     }
@@ -2422,6 +2476,28 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
       setShowScenarioDialog(false);
       setScenarioInput("");
       toast.success(`Questions recontextualized to "${scenarioInput.trim()}"!`);
+      // Auto-save the swapped worksheet to history
+      {
+        const sw = swappedWorksheet;
+        const swSections = sw.sections.map((s: any) => ({ ...s }));
+        const swContent = swSections.filter((s: any) => !s.teacherOnly).map((s: any) => `## ${s.title}\n${s.content}`).join("\n\n");
+        const swTeacherContent = swSections.map((s: any) => `## ${s.title}\n${s.content}`).join("\n\n");
+        if (savedWorksheetId) {
+          updateWorksheet(savedWorksheetId, { content: swContent, teacherContent: swTeacherContent, sections: swSections }).catch(() => {});
+        } else {
+          saveWorksheet({
+            title: sw.title, subtitle: (sw as any).subtitle,
+            subject: sw.metadata.subject, topic: sw.metadata.topic,
+            yearGroup: sw.metadata.yearGroup, sendNeed: sw.metadata.sendNeed,
+            difficulty: sw.metadata.difficulty, examBoard: sw.metadata.examBoard,
+            content: swContent, teacherContent: swTeacherContent, rating: 0, overlay: colorOverlay,
+            sections: swSections, metadata: sw.metadata as any,
+            sourceLibraryId: (sw as any).sourceLibraryId,
+            sourceCanonicalTopicKey: (sw as any).sourceCanonicalTopicKey,
+            isAI: true,
+          }).then(saved => { setSavedWorksheetId(saved.id); refreshData(); }).catch(() => {});
+        }
+      }
     } catch (err) {
       console.error("Scenario swap failed:", err);
       toast.error("Scenario swap failed. Please try again.");
@@ -2450,6 +2526,28 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
       setGenerated(adjustedWorksheet);
       setEditedSections({});
       toast.success(`Reading level adjusted to Age ${age}!`);
+      // Auto-save the adjusted worksheet to history
+      {
+        const aw = adjustedWorksheet;
+        const awSections = aw.sections.map((s: any) => ({ ...s }));
+        const awContent = awSections.filter((s: any) => !s.teacherOnly).map((s: any) => `## ${s.title}\n${s.content}`).join("\n\n");
+        const awTeacherContent = awSections.map((s: any) => `## ${s.title}\n${s.content}`).join("\n\n");
+        if (savedWorksheetId) {
+          updateWorksheet(savedWorksheetId, { content: awContent, teacherContent: awTeacherContent, sections: awSections }).catch(() => {});
+        } else {
+          saveWorksheet({
+            title: aw.title, subtitle: (aw as any).subtitle,
+            subject: aw.metadata.subject, topic: aw.metadata.topic,
+            yearGroup: aw.metadata.yearGroup, sendNeed: aw.metadata.sendNeed,
+            difficulty: aw.metadata.difficulty, examBoard: aw.metadata.examBoard,
+            content: awContent, teacherContent: awTeacherContent, rating: 0, overlay: colorOverlay,
+            sections: awSections, metadata: aw.metadata as any,
+            sourceLibraryId: (aw as any).sourceLibraryId,
+            sourceCanonicalTopicKey: (aw as any).sourceCanonicalTopicKey,
+            isAI: true,
+          }).then(saved => { setSavedWorksheetId(saved.id); refreshData(); }).catch(() => {});
+        }
+      }
     } catch (err) {
       console.error("Reading level adjustment failed:", err);
       toast.error("Reading level adjustment failed. Please try again.");

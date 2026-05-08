@@ -228,22 +228,34 @@
   .ws-section-diagram {
     break-before: page !important;
     page-break-before: always !important;
-    /* Diagrams must fit within the page — no overflow */
+    /* Diagrams fill the full page — no overflow */
+    width: 100% !important;
     max-width: 100% !important;
+    /* Use almost the full printable height (A4 portrait = 297mm, minus 16mm margins = ~281mm) */
+    height: 260mm !important;
+    min-height: 260mm !important;
     overflow: hidden !important;
     box-sizing: border-box !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    justify-content: center !important;
+    padding: 4mm !important;
   }
 
-  /* Ensure diagram images and SVGs fit within page bounds */
+  /* Diagram images and SVGs fill the full diagram section */
   .ws-section-diagram img,
   .ws-section-diagram svg,
+  .ws-section-diagram > div,
   .ws-section-diagram > div > div,
   .ws-section-diagram > div > img {
     max-width: 100% !important;
     width: 100% !important;
-    height: auto !important;
+    height: 252mm !important;
+    max-height: 252mm !important;
     object-fit: contain !important;
     display: block !important;
+    flex: 1 !important;
   }
 
   /* Section headers stay with their content */
@@ -303,4 +315,4 @@
   border-color: var(--card-border-override) !important;
 }
 
-/* deploy trigger v2 — fix diagram overflow and blank pages in print/PDF */
+/* deploy trigger v3 — auto-save all worksheets + larger diagrams */
