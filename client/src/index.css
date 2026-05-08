@@ -214,21 +214,54 @@
     page-break-after: avoid !important;
   }
 
-  /* Each worksheet section starts on its own page and must NOT split */
+  /* Worksheet sections must NOT split across pages — but do NOT force a new page
+     before every section (that creates blank pages between small sections). */
   .ws-section,
   .worksheet-section {
-    break-before: page !important;
-    page-break-before: always !important;
     break-inside: avoid !important;
     page-break-inside: avoid !important;
     orphans: 3;
     widows: 3;
   }
 
+  /* Only diagram sections and teacher sections force a new page */
+  .ws-section-diagram {
+    break-before: page !important;
+    page-break-before: always !important;
+    /* Diagrams must fit within the page — no overflow */
+    max-width: 100% !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Ensure diagram images and SVGs fit within page bounds */
+  .ws-section-diagram img,
+  .ws-section-diagram svg,
+  .ws-section-diagram > div > div,
+  .ws-section-diagram > div > img {
+    max-width: 100% !important;
+    width: 100% !important;
+    height: auto !important;
+    object-fit: contain !important;
+    display: block !important;
+  }
+
   /* Section headers stay with their content */
   h2.worksheet-section-title {
     break-after: avoid !important;
     page-break-after: avoid !important;
+  }
+
+  /* Ensure all images and SVGs fit within the page — no overflow */
+  img, svg {
+    max-width: 100% !important;
+    height: auto !important;
+  }
+
+  /* Prevent table wrappers from overflowing the page */
+  .ws-table-wrap {
+    overflow: hidden !important;
+    max-width: 100% !important;
   }
 
   /* Tables must not split */
@@ -270,4 +303,4 @@
   border-color: var(--card-border-override) !important;
 }
 
-/* deploy trigger */
+/* deploy trigger v2 — fix diagram overflow and blank pages in print/PDF */
