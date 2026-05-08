@@ -5068,15 +5068,15 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
               breakBefore: section.type === "diagram" ? "page" : "auto",
               pageBreakAfter: "auto",
               breakAfter: "auto",
-              // Diagram sections: flex column to center the image, no forced height so image
-              // can size naturally (objectFit:contain prevents cropping/blurriness)
-              minHeight: section.type === "diagram" ? (paginated ? "300px" : "200px") : undefined,
-              height: undefined,
+              // Diagram sections: flex column to fill the page — use a large minHeight so
+              // the image expands to fill the available page space.
+              minHeight: section.type === "diagram" ? (paginated ? "900px" : "400px") : undefined,
+              height: section.type === "diagram" ? (paginated ? "900px" : undefined) : undefined,
               display: section.type === "diagram" ? "flex" : undefined,
               flexDirection: section.type === "diagram" ? "column" as const : undefined,
               justifyContent: section.type === "diagram" ? "center" : undefined,
-              alignItems: section.type === "diagram" ? "center" : undefined,
-              padding: section.type === "diagram" ? "16px" : undefined,
+              alignItems: section.type === "diagram" ? "stretch" : undefined,
+              padding: section.type === "diagram" ? "8px" : undefined,
               overflow: section.type === "diagram" ? "hidden" : "visible",
             }}
           >
@@ -5219,13 +5219,14 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                         style={{
                           width: "100%",
                           maxWidth: "100%",
-                          height: "auto",
-                          maxHeight: paginated ? "1020px" : "calc(100vh - 160px)",
+                          height: paginated ? "860px" : "auto",
+                          maxHeight: paginated ? "860px" : "calc(100vh - 120px)",
                           objectFit: "contain",
                           objectPosition: "center center",
                           background: "#fff",
                           display: "block",
                           margin: "0 auto",
+                          flex: paginated ? "1" : undefined,
                           imageRendering: "crisp-edges",
                         }}
                         loading="eager"
@@ -5248,7 +5249,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                       />
                     ) : section.svg ? (
                       <div
-                        style={{ display: "block", width: "100%", maxWidth: "100%", maxHeight: paginated ? "1020px" : "calc(100vh - 160px)", overflow: "hidden", background: "white", boxSizing: "border-box" }}
+                        style={{ display: "block", width: "100%", maxWidth: "100%", height: paginated ? "860px" : "auto", maxHeight: paginated ? "860px" : "calc(100vh - 120px)", overflow: "hidden", background: "white", boxSizing: "border-box", flex: paginated ? "1" : undefined }}
                         dangerouslySetInnerHTML={{ __html: section.svg }}
                       />
                     ) : null}
