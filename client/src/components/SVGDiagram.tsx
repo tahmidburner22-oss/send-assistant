@@ -637,42 +637,55 @@ export default function SVGDiagram({
   // ── AXES (coordinate grid) ───────────────────────────────────────────────────
   if (spec.type === "axes") {
     const cx = width / 2;
-    const cy = height / 2;
-    const aw = inner_w / 2;
-    const ah = inner_h / 2;
-    const gridCount = 5;
+    const cy = height / 2 + 10;
+    const aw = inner_w * 0.45;
+    const ah = inner_h * 0.4;
+    const gridCount = 10;
 
     return (
       <svg viewBox={`0 0 ${width} ${height}`} xmlns="http://www.w3.org/2000/svg"
         style={{ width: "100%", maxWidth: width, display: "block", background: "white" }}>
         {spec.title && (
-          <text x={width / 2} y={14} textAnchor="middle" fontSize={fontSize + 1}
+          <text x={width / 2} y={20} textAnchor="middle" fontSize={fontSize + 2}
             fontFamily={fontFamily} fill={accentColor} fontWeight="700">{spec.title}</text>
         )}
+        {/* Grid lines */}
         {Array.from({ length: gridCount * 2 + 1 }, (_, i) => i - gridCount).map(n => {
           const gx = cx + n * (aw / gridCount);
-          const gy = cy + n * (ah / gridCount);
+          const gy = cy - n * (ah / gridCount);
           return (
             <g key={n}>
-              <line x1={gx} y1={cy - ah} x2={gx} y2={cy + ah} stroke="#e5e7eb" strokeWidth="1" />
-              <line x1={cx - aw} y1={gy} x2={cx + aw} y2={gy} stroke="#e5e7eb" strokeWidth="1" />
-              {n !== 0 && (
-                <>
-                  <text x={gx} y={cy + 14} textAnchor="middle" fontSize={fontSize - 2}
-                    fontFamily={fontFamily} fill="#9ca3af">{n}</text>
-                  <text x={cx - 10} y={gy + 4} textAnchor="end" fontSize={fontSize - 2}
-                    fontFamily={fontFamily} fill="#9ca3af">{-n}</text>
-                </>
+              <line x1={gx} y1={cy - ah} x2={gx} y2={cy + ah} stroke="#f1f5f9" strokeWidth="1" />
+              <line x1={cx - aw} y1={gy} x2={cx + aw} y2={gy} stroke="#f1f5f9" strokeWidth="1" />
+              {/* Main 5-unit grid lines */}
+              {n % 5 === 0 && (
+                <g>
+                  <line x1={gx} y1={cy - ah} x2={gx} y2={cy + ah} stroke="#e2e8f0" strokeWidth="1.2" />
+                  <line x1={cx - aw} y1={gy} x2={cx + aw} y2={gy} stroke="#e2e8f0" strokeWidth="1.2" />
+                  {n !== 0 && (
+                    <>
+                      <text x={gx} y={cy + 16} textAnchor="middle" fontSize={fontSize - 2}
+                        fontFamily={fontFamily} fill="#64748b" fontWeight="600">{n}</text>
+                      <text x={cx - 8} y={gy + 4} textAnchor="end" fontSize={fontSize - 2}
+                        fontFamily={fontFamily} fill="#64748b" fontWeight="600">{n}</text>
+                    </>
+                  )}
+                </g>
               )}
             </g>
           );
         })}
-        <line x1={cx - aw - 8} y1={cy} x2={cx + aw + 8} y2={cy} stroke="#374151" strokeWidth="2" />
-        <line x1={cx} y1={cy + ah + 8} x2={cx} y2={cy - ah - 8} stroke="#374151" strokeWidth="2" />
-        <polygon points={`${cx + aw + 8},${cy} ${cx + aw},${cy - 4} ${cx + aw},${cy + 4}`} fill="#374151" />
-        <polygon points={`${cx},${cy - ah - 8} ${cx - 4},${cy - ah} ${cx + 4},${cy - ah}`} fill="#374151" />
-        <text x={cx + aw + 16} y={cy + 4} fontSize={fontSize} fontFamily={fontFamily} fill="#374151" fontStyle="italic">{spec.xLabel || "x"}</text>
-        <text x={cx + 6} y={cy - ah - 12} fontSize={fontSize} fontFamily={fontFamily} fill="#374151" fontStyle="italic">{spec.yLabel || "y"}</text>
+        {/* Axes */}
+        <line x1={cx - aw - 10} y1={cy} x2={cx + aw + 15} y2={cy} stroke="#1e293b" strokeWidth="2" markerEnd="url(#arrowhead)" />
+        <line x1={cx} y1={cy + ah + 10} x2={cx} y2={cy - ah - 15} stroke="#1e293b" strokeWidth="2" markerEnd="url(#arrowhead)" />
+        <defs>
+          <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#1e293b" />
+          </marker>
+        </defs>
+        <text x={cx + aw + 20} y={cy + 4} fontSize={fontSize} fontFamily={fontFamily} fill="#1e293b" fontWeight="700" fontStyle="italic">{spec.xLabel || "x"}</text>
+        <text x={cx + 6} y={cy - ah - 20} fontSize={fontSize} fontFamily={fontFamily} fill="#1e293b" fontWeight="700" fontStyle="italic">{spec.yLabel || "y"}</text>
+        <text x={cx - 10} y={cy + 14} fontSize={fontSize - 2} fontFamily={fontFamily} fill="#1e293b" fontWeight="700">0</text>
       </svg>
     );
   }

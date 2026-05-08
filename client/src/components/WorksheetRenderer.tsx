@@ -392,7 +392,7 @@ export function renderMath(text: string | any): string {
   // IMPORTANT: Process \(...\), \[...\], and $...$ BEFORE bare \dfrac, \frac,
   // \sqrt etc. Otherwise \dfrac inside \(\dfrac{a}{b}\) gets converted to KaTeX
   // HTML first, leaving orphaned \( and \) delimiters that never match.
-  result = result.replace(/\\\[(\s*[\s\S]+?\s*)\\\]/g, (_, expr) => {
+  result = result.replace(/\\\[([\s\S]+?)\\\]/g, (_, expr) => {
     try { return katex.renderToString(expr.trim(), { displayMode: true, throwOnError: false }); }
     catch { return expr; }
   });
@@ -2594,7 +2594,133 @@ function AnnotationTaskSection({
   );
 }
 
-// ── 11. BUILD-IT GRID ────────────────────────────────────────────────────
+// ── 11. READING PASSAGE ──────────────────────────────────────────────────
+function ReadingPassageSection({
+  content, fmt,
+}: {
+  content: string;
+  fmt: ReturnType<typeof getSendFormatting>;
+}) {
+  const raw = stripLayoutTag(content);
+  const lines = raw.split("\n").filter(l => l.trim());
+  let lineNum = 1;
+
+  return (
+    <div style={{
+      border: "1.5px solid #1a2744",
+      borderRadius: "6px",
+      overflow: "hidden",
+      margin: "10px 0",
+      backgroundColor: "#fffbeb", // Pale cream background for passages
+    }}>
+      <div style={{
+        background: "#1a2744",
+        padding: "6px 14px",
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+      }}>
+        <span style={{
+          fontSize: "10px",
+          fontWeight: 700,
+          color: "white",
+          textTransform: "uppercase",
+          letterSpacing: "0.08em",
+        }}>Reading Passage</span>
+        <span style={{ fontSize: "9px", color: "rgba(255,255,255,0.7)" }}>Read carefully before answering</span>
+      </div>
+      <div style={{ padding: "16px 0" }}>
+        {lines.map((para, pi) => {
+          const startLine = lineNum;
+          const wordCount = para.split(/\s+/).filter(Boolean).length;
+          const linesInPara = Math.max(1, Math.ceil(wordCount / 10));
+          lineNum += linesInPara;
+
+          return (
+            <div key={pi} style={{
+              display: "flex",
+              marginBottom: pi < lines.length - 1 ? "12px" : "0",
+            }}>
+              {/* Line numbers gutter */}
+              <div style={{
+                width: "40px",
+                textAlign: "right",
+                paddingRight: "12px",
+                fontSize: "10px",
+                color: "#94a3b8",
+                fontFamily: "monospace",
+                lineHeight: "1.8",
+                userSelect: "none",
+                flexShrink: 0,
+                marginTop: "2px",
+              }}>
+                {startLine}
+              </div>
+              {/* Text content with serif font for better readability */}
+              <div style={{
+                flex: 1,
+                paddingRight: "20px",
+                fontSize: `${fmt.fontSize + 1}px`,
+                fontFamily: "Georgia, serif",
+                lineHeight: "1.8",
+                color: "#1e293b",
+                borderLeft: "1px solid #e5e7eb",
+                paddingLeft: "16px",
+              }} dangerouslySetInnerHTML={{ __html: renderMath(para) }} />
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ── 12. WORKING OUT BOX ──────────────────────────────────────────────────
+function WorkingOutBox({
+  minHeight = 120, fmt,
+}: {
+  minHeight?: number;
+  fmt: ReturnType<typeof getSendFormatting>;
+}) {
+  return (
+    <div style={{
+      border: "1.5px solid #cbd5e1",
+      borderRadius: "6px",
+      background: "#fafafa",
+      padding: "8px",
+      marginTop: "8px",
+      position: "relative",
+    }}>
+      <div style={{
+        fontSize: "9px",
+        fontWeight: 700,
+        color: "#94a3b8",
+        textTransform: "uppercase",
+        letterSpacing: "0.05em",
+        marginBottom: "4px",
+      }}>Working Out</div>
+      <div style={{
+        minHeight: `${minHeight}px`,
+        background: "radial-gradient(circle, #cbd5e1 1px, transparent 1px)",
+        backgroundSize: "20px 20px",
+        width: "100%",
+      }} />
+      <div style={{
+        marginTop: "8px",
+        borderTop: "1.5px solid #1a2744",
+        paddingTop: "4px",
+        display: "flex",
+        alignItems: "center",
+        gap: "8px",
+      }}>
+        <span style={{ fontSize: "11px", fontWeight: 700, color: "#1a2744" }}>Answer:</span>
+        <div style={{ flex: 1, borderBottom: "1.5px solid #1a2744", height: "20px" }} />
+      </div>
+    </div>
+  );
+}
+
+// ── 13. BUILD-IT GRID ────────────────────────────────────────────────────
 function BuildItGridSection({
   content, fmt, isTeacher = false,
 }: {
@@ -5055,6 +5181,8 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
               marginTop: section.type === "diagram" ? (paginated ? "-40px" : "0") : undefined,
               marginLeft: section.type === "diagram" ? (paginated ? "-48px" : "0") : undefined,
               marginRight: section.type === "diagram" ? (paginated ? "-48px" : "0") : undefined,
+              paddingTop: section.type === "diagram" ? "0" : undefined,
+              paddingBottom: section.type === "diagram" ? "0" : undefined,
               background: isTeacherHeader ? "#fff8f8" : fmt.theme === "high-contrast" ? "#ffffff" : "#ffffff",
               border: fmt.theme === "high-contrast" ? "2px solid #111827" : "none",
               borderRadius: "0",
@@ -5069,8 +5197,8 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
               breakAfter: "auto",
               // Diagram sections: flex column to center the image, no forced height so image
               // can size naturally (objectFit:contain prevents cropping/blurriness)
-              minHeight: section.type === "diagram" ? (paginated ? "300px" : "200px") : undefined,
-              height: undefined,
+              minHeight: section.type === "diagram" ? "1123px" : undefined,
+              height: section.type === "diagram" ? "1123px" : undefined,
               display: section.type === "diagram" ? "flex" : undefined,
               flexDirection: section.type === "diagram" ? "column" as const : undefined,
               justifyContent: section.type === "diagram" ? "center" : undefined,
@@ -5218,8 +5346,8 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                         style={{
                           width: "100%",
                           maxWidth: "100%",
-                          height: "auto",
-                          maxHeight: paginated ? "1020px" : "calc(100vh - 160px)",
+                          height: "1123px", // Full A4 height
+                          maxHeight: paginated ? "1123px" : "calc(100vh - 160px)",
                           objectFit: "contain",
                           objectPosition: "center center",
                           background: "#fff",
@@ -5247,7 +5375,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                       />
                     ) : section.svg ? (
                       <div
-                        style={{ display: "block", width: "100%", maxHeight: paginated ? "1020px" : "calc(100vh - 160px)", overflow: "auto", background: "white" }}
+                        style={{ display: "block", width: "100%", height: "1123px", maxHeight: paginated ? "1123px" : "calc(100vh - 160px)", overflow: "auto", background: "white" }}
                         dangerouslySetInnerHTML={{ __html: section.svg }}
                       />
                     ) : null}
@@ -5281,6 +5409,19 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                     return <GapFillInlineSection content={content} fmt={fmt} overlayColor={overlayColor} />;
                   }
                   if (section.type === "q-short-answer" || section.type === "q-extended") {
+                    if (isMathsSubject) {
+                      const questionText = content.replace(/\[\d+\s*marks?\]/i, "").trim();
+                      const marksMatch = content.match(/\[(\d+)\s*marks?\]/i);
+                      const marks = marksMatch ? parseInt(marksMatch[1]) : (section.type === "q-extended" ? 4 : 2);
+                      return (
+                        <div style={{ marginBottom: "20px" }}>
+                           <div style={{ fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, lineHeight: String(fmt.lineHeight), color: "#1e293b", marginBottom: "8px" }}
+                            dangerouslySetInnerHTML={{ __html: renderMath(questionText) }} />
+                          <div style={{ fontSize: "11px", color: "#6b7280", fontStyle: "italic", marginBottom: "8px" }}>[{marks} mark{marks !== 1 ? "s" : ""}]</div>
+                          <WorkingOutBox fmt={fmt} minHeight={marks <= 2 ? 100 : 180} />
+                        </div>
+                      );
+                    }
                     // Check if content has numbered questions (1. 2. 3.) format — each needs its own answer lines
                     const numberedQPattern = /^\s*\d+\.\s+/m;
                     const hasNumberedQuestions = numberedQPattern.test(content);
@@ -5370,10 +5511,18 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                                   </div>
                                 </div>
                               ) : (
-                                /* Writing/humanities: ruled answer lines */
+                                /* Writing/humanities: scaffolded ruled answer lines */
                                 <div style={{ marginTop: "4px" }}>
                                   {Array.from({ length: lineCount }).map((_: unknown, li: number) => (
-                                    <div key={li} style={{ borderBottom: "1px solid #d1d5db", height: `${lineHeight}px`, width: "100%", marginBottom: "2px" }} />
+                                    <div key={li} style={{ borderBottom: "1px solid #d1d5db", height: `${lineHeight}px`, width: "100%", marginBottom: "2px", display: "flex", alignItems: "flex-end" }}>
+                                      {li === 0 && (
+                                        <span style={{ color: "#d1d5db", fontSize: `${fmt.fontSize - 1}px`, fontStyle: "italic", paddingBottom: "4px" }}>
+                                          {subjectLower.includes("english") ? "In this passage, the writer uses..." :
+                                           subjectLower.includes("history") ? "The source suggests that..." :
+                                           "Your response here..."}
+                                        </span>
+                                      )}
+                                    </div>
                                   ))}
                                 </div>
                               )}
@@ -5470,7 +5619,15 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                               ) : (
                                 <div style={{ marginTop: "4px" }}>
                                   {Array.from({ length: sqLineCount }).map((_: unknown, li: number) => (
-                                    <div key={li} style={{ borderBottom: "1px solid #d1d5db", height: `${sqLineH}px`, width: "100%", marginBottom: "2px" }} />
+                                    <div key={li} style={{ borderBottom: "1px solid #d1d5db", height: `${sqLineH}px`, width: "100%", marginBottom: "2px", display: "flex", alignItems: "flex-end" }}>
+                                      {li === 0 && (
+                                        <span style={{ color: "#d1d5db", fontSize: `${fmt.fontSize - 1}px`, fontStyle: "italic", paddingBottom: "4px" }}>
+                                          {subjectLower.includes("science") ? "One scientific reason for this is..." :
+                                           subjectLower.includes("history") ? "This was significant because..." :
+                                           "One reason for this is..."}
+                                        </span>
+                                      )}
+                                    </div>
                                   ))}
                                 </div>
                               )}
@@ -5537,10 +5694,18 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                             ))}
                           </div>
                         ) : (
-                          /* Writing: standard ruled lines */
+                          /* Writing: scaffolded ruled lines */
                           <div>
                             {Array.from({ length: lineCount }).map((_: unknown, li: number) => (
-                              <div key={li} style={{ borderBottom: "1px solid #d1d5db", height: `${sqLineH}px`, width: "100%", marginBottom: "2px" }} />
+                              <div key={li} style={{ borderBottom: "1px solid #d1d5db", height: `${sqLineH}px`, width: "100%", marginBottom: "2px", display: "flex", alignItems: "flex-end" }}>
+                                {li === 0 && (
+                                  <span style={{ color: "#d1d5db", fontSize: `${fmt.fontSize - 1}px`, fontStyle: "italic", paddingBottom: "4px" }}>
+                                    {subjectLower.includes("english") ? "I believe that..." :
+                                     subjectLower.includes("history") ? "Evidence from the period shows..." :
+                                     "Your answer here..."}
+                                  </span>
+                                )}
+                              </div>
                             ))}
                           </div>
                         )}
@@ -5919,6 +6084,61 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                   }
                   if (layoutTag === "constraint_problem") {
                     return <ConstraintProblemSection content={content} fmt={fmt} isTeacher={isTeacherView} />;
+                  }
+                  if (layoutTag === "reading_passage") {
+                    return <ReadingPassageSection content={content} fmt={fmt} />;
+                  }
+                  if (layoutTag === "math_grid") {
+                    const rawText = stripLayoutTag(content);
+                    const firstNewline = rawText.indexOf('\n');
+                    const instrText = firstNewline !== -1 ? rawText.substring(0, firstNewline) : rawText;
+                    const possibleJson = firstNewline !== -1 ? rawText.substring(firstNewline).trim() : "";
+                    let gridSpec: any = { type: "axes", xLabel: "x", yLabel: "y" };
+                    if (possibleJson.startsWith('{')) {
+                      try { gridSpec = JSON.parse(possibleJson); } catch(e) {}
+                    }
+                    return (
+                      <div>
+                        <div style={{ fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, color: "#1e293b", marginBottom: "12px" }}
+                          dangerouslySetInnerHTML={{ __html: renderMath(instrText) }} />
+                        <div style={{ textAlign: "center" }}>
+                          <SVGDiagram
+                            spec={gridSpec}
+                            width={520}
+                            height={340}
+                            fontFamily={fmt.fontFamily}
+                            fontSize={fmt.fontSize}
+                            accentColor="#1a2744"
+                          />
+                        </div>
+                      </div>
+                    );
+                  }
+                  if (layoutTag === "graphic_organiser") {
+                    const rawText = stripLayoutTag(content);
+                    const firstNewline = rawText.indexOf('\n');
+                    const instrText = firstNewline !== -1 ? rawText.substring(0, firstNewline) : rawText;
+                    const possibleJson = firstNewline !== -1 ? rawText.substring(firstNewline).trim() : "";
+                    let orgSpec: any = { type: "venn", setA: "Topic A", setB: "Topic B" };
+                    if (possibleJson.startsWith('{')) {
+                      try { orgSpec = JSON.parse(possibleJson); } catch(e) {}
+                    }
+                    return (
+                      <div>
+                         <div style={{ fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, color: "#1e293b", marginBottom: "12px" }}
+                          dangerouslySetInnerHTML={{ __html: renderMath(instrText) }} />
+                        <div style={{ textAlign: "center" }}>
+                          <SVGDiagram
+                            spec={orgSpec}
+                            width={520}
+                            height={340}
+                            fontFamily={fmt.fontFamily}
+                            fontSize={fmt.fontSize}
+                            accentColor="#1a2744"
+                          />
+                        </div>
+                      </div>
+                    );
                   }
                   // ── Auto-detection from AI content patterns ────────────────────────────────             // Broadly detects actual AI output patterns. Intentionally
                   // permissive — better to render with a sub-renderer than fall through.
