@@ -1582,13 +1582,14 @@ STRICT JSON OUTPUT: Respond with valid JSON only — no markdown, no code blocks
     // Use selectedSections if provided, otherwise default to all sections enabled
     const secs = params.selectedSections ?? [
       'learning-objective', 'retrieval', 'key-vocabulary', 'common-mistakes',
-      'worked-example', 'true-false', 'mcq', 'word-bank-gap-fill', 'match',
+      'worked-example', 'reading-passage', 'true-false', 'mcq', 'word-bank-gap-fill', 'match',
       'section-a', 'questions', 'section-b', 'section-c', 'self-reflection'
     ];
     const wantLO = secs.includes('learning-objective');
     const wantRetrieval = secs.includes('retrieval') && !!params.recallTopic;
     const wantKeyVocab = secs.includes('key-vocabulary');
     const wantWorkedExample = secs.includes('worked-example');
+    const wantReadingPassage = isHumanities && secs.includes('reading-passage');
     const wantCommonMistakes = secs.includes('common-mistakes');
     // Diagrams are always included — every topic has a diagram via the SVG template + Wikimedia chain.
     // The checkbox only controls whether the section appears in the UI selector, not whether it's generated.
@@ -1620,11 +1621,23 @@ KS3/4 GCSE SPEC REQUIREMENTS (MANDATORY for Year ${yearNum}):
 - CHALLENGE: A synoptic or higher-order question linking the topic to a wider concept. Must require genuine analysis or evaluation.
 - SELF REFLECTION: 5 specific, topic-relevant skills for the confidence table (not generic). Written prompts must be meaningful and specific to the topic.
 - TEACHER KEY: Complete model answers for EVERY question with mark allocations. For extended answers, list marking points explicitly.
-- DIAGRAM SECTIONS: Diagram A and Diagram B are full-page visual resources from the diagram library — they are already provided as images. Do NOT generate text-based diagram descriptions. Do NOT include diagram-related questions in the text sections.
+- DIAGRAM SECTIONS: Diagram A and Diagram B are full-page visual resources. If an imageUrl is present, use it. If not, you MUST specify a procedural layout using "LAYOUT:math_grid" or "LAYOUT:graphic_organiser" in the "content" field. These sections occupy a full portrait A4 page.
 ` : '';
     const structuredSystem = `You are an expert UK teacher creating a professional, print-ready worksheet. You respond with valid raw JSON only — no markdown, no code blocks, no HTML. Every rule below is mandatory.
 SUBJECT TYPE: ${isSTEM ? 'STEM' : 'HUMANITIES'}
-${isMaths ? 'MATHS RULES: All questions must be numerical/calculation-based ONLY. Never ask students to explain, describe, or write prose. Use LaTeX for all math: wrap in \\(...\\). E.g. \\(\\dfrac{3}{4}\\), \\(x^{2}\\), \\(\\sqrt{x}\\). Write units as plain text outside LaTeX.' : ''}
+
+STRICT LATEX RULE (MANDATORY):
+- Every single mathematical expression, number, variable, or symbol MUST be wrapped in LaTeX delimiters: \\(...\\) for inline or \\[...\\] for block.
+- NEVER use plain text for maths. Use \\(x = 5\\) NOT x=5. Use \\(\\dfrac{3}{4}\\) NOT 3/4. Use \\(y^{2}\\) NOT y2. Use \\(\\times\\) NOT x or *.
+- Even standalone numbers in a mathematical context (e.g., "Calculate \(5\) + \(3\)") must be wrapped.
+- Write units as plain text OUTSIDE the delimiters. Example: \\(25\\) m/s NOT \\(25\\text{ m/s}\\).
+
+LAYOUT TAGS — Use these at the START of the "content" string to trigger special professional layouts:
+- "LAYOUT:reading_passage\\n[Text]" — Use for long stimulus texts (poems, historical extracts). This adds line numbers and professional serif typography.
+- "LAYOUT:math_grid\\n[Instructions]" — Use for graph-drawing tasks or when a coordinate grid is needed.
+- "LAYOUT:graphic_organiser\n[JSON-like spec]" — Use for planning tasks. For Venn: {"type":"venn","setA":"...","setB":"..."}. For Flow: {"type":"flow","steps":["..."]}.
+${isMaths ? 'MATHS CONTENT RULE: All questions must be numerical/calculation-based ONLY. Never ask students to explain, describe, or write prose. All math questions automatically render with "Working Out" boxes.' : ''}
+
 ${readingAgeNote}
 ${sendNote}
 ${tierNote}
@@ -1634,10 +1647,7 @@ ${specExamples ? `\n${specExamples}\n` : ''}
 CRITICAL SEND RULE: SEND adaptations affect FORMATTING AND PRESENTATION ONLY — never the academic content or intellectual rigour of questions.
 - The actual question content (what is being asked, the numbers used, the concepts tested) must remain at the correct GCSE/curriculum level for ${params.yearGroup || 'the year group'}.
 - SEND overlays change HOW questions are presented (font, spacing, scaffolding frames, sentence starters, checkboxes, worked examples) — NOT WHAT is being asked.
-- True/False statements must be factually correct curriculum statements at the appropriate level — not simplified to the point of being trivial.
-- MCQ options must be plausible distractors at curriculum level — not dumbed-down guesses.
-- Gap-fill paragraphs must use correct subject terminology — not replaced with everyday words.
-- Short-answer and extended questions must require genuine subject knowledge — not just recall of simple facts.
+- DO NOT inject scaffolding (sentence starters, word banks) directly into the question text. These are handled by the renderer.
 - NEVER add SEND management instructions ('Complete the task in steps', 'Tick each step', 'Focus on one question', 'Take a break') as question content items.
 - SEND scaffolding (sentence starters, answer frames, worked examples) goes in SEPARATE support boxes AROUND the questions — not inside the question text itself.`;
 
@@ -1728,7 +1738,11 @@ CRITICAL SEND RULE: SEND adaptations affect FORMATTING AND PRESENTATION ONLY —
       structuredSections.push(`{"title": "Common Mistakes to Avoid", "type": "common-mistakes", "teacherOnly": false, "content": "Watch out for these common errors:\n\nMISTAKE 1: [Name of mistake]\n\u2192 [Explanation of the mistake and how to avoid it]\n\nMISTAKE 2: [Name of mistake]\n\u2192 [Explanation of the mistake and how to avoid it]\n\nMISTAKE 3: [Name of mistake]\n\u2192 [Explanation of the mistake and how to avoid it]"}`);
     }
 
-    // 5. Worked Example
+    // 5. Worked Example / Reading Passage
+    if (wantReadingPassage) {
+      structuredSections.push(`{"title": "Reading Passage", "type": "passage", "content": "LAYOUT:reading_passage\\n[Provide a substantial stimulus text, poem, or historical extract relevant to ${params.topic}. For English Literature, include line numbers every 5 lines.]"}`);
+    }
+
     if (wantWorkedExample) {
       if (isMaths) {
         structuredSections.push(`{"title": "Worked Example", "type": "example", "content": "Study this worked example carefully before attempting the questions.\n\nQuestion: [A specific ${params.topic} problem with real numbers]\n\nStep 1: [First step \u2014 state the method or formula used]\nStep 2: [Substitute values and show calculation]\nStep 3: [Complete the calculation]\nAnswer: [Final answer with correct units/form]\n\n\u2713 Key point: [One sentence explaining the key method or rule]"}`);
@@ -1753,15 +1767,14 @@ CRITICAL SEND RULE: SEND adaptations affect FORMATTING AND PRESENTATION ONLY —
 
 
     // 7. Diagram A — full-page spread (after Section A questions, before Section B)
-    // Only include if we have a real image from the admin library (no SVG fallbacks)
-    if (wantDiagramA && diagramAUrl) {
+    if (wantDiagramA) {
       const diagASection: Record<string, unknown> = {
         title: 'Diagram A',
         type: 'diagram',
         fullPage: true,
-        content: diagramACaption,
+        content: diagramAUrl ? diagramACaption : `LAYOUT:math_grid\nProvide instructions for a relevant coordinate grid or diagram for ${params.topic}`,
         caption: diagramACaption,
-        imageUrl: diagramAUrl,
+        imageUrl: diagramAUrl || "",
       };
       structuredSections.push(JSON.stringify(diagASection));
     }
@@ -1776,15 +1789,14 @@ CRITICAL SEND RULE: SEND adaptations affect FORMATTING AND PRESENTATION ONLY —
     }
 
     // 9. Diagram B — full-page spread (between Section B and Section C Questions)
-    // Only include Diagram B if it has a unique image URL from the admin library (no SVG fallbacks)
-    if (wantDiagramB && diagramBUrl) {
+    if (wantDiagramB) {
       const diagBSection: Record<string, unknown> = {
         title: 'Diagram B',
         type: 'diagram',
         fullPage: true,
-        content: diagramBCaption,
+        content: diagramBUrl ? diagramBCaption : `LAYOUT:graphic_organiser\nProvide a relevant planning organiser (e.g. Venn diagram or flow-chart) for ${params.topic}`,
         caption: diagramBCaption,
-        imageUrl: diagramBUrl,
+        imageUrl: diagramBUrl || "",
       };
       structuredSections.push(JSON.stringify(diagBSection));
     }
