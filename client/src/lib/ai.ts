@@ -1629,12 +1629,13 @@ SUBJECT TYPE: ${isSTEM ? 'STEM' : 'HUMANITIES'}
 STRICT LATEX RULE (MANDATORY):
 - Every single mathematical expression, number, variable, or symbol MUST be wrapped in LaTeX delimiters: \\(...\\) for inline or \\[...\\] for block.
 - NEVER use plain text for maths. Use \\(x = 5\\) NOT x=5. Use \\(\\dfrac{3}{4}\\) NOT 3/4. Use \\(y^{2}\\) NOT y2. Use \\(\\times\\) NOT x or *.
+- Even standalone numbers in a mathematical context (e.g., "Calculate \(5\) + \(3\)") must be wrapped.
 - Write units as plain text OUTSIDE the delimiters. Example: \\(25\\) m/s NOT \\(25\\text{ m/s}\\).
 
 LAYOUT TAGS — Use these at the START of the "content" string to trigger special professional layouts:
 - "LAYOUT:reading_passage\\n[Text]" — Use for long stimulus texts (poems, historical extracts). This adds line numbers and professional serif typography.
 - "LAYOUT:math_grid\\n[Instructions]" — Use for graph-drawing tasks or when a coordinate grid is needed.
-- "LAYOUT:graphic_organiser\\n[JSON]" — Use for planning tasks (e.g., a Venn diagram or flow-chart).
+- "LAYOUT:graphic_organiser\n[JSON-like spec]" — Use for planning tasks. For Venn: {"type":"venn","setA":"...","setB":"..."}. For Flow: {"type":"flow","steps":["..."]}.
 ${isMaths ? 'MATHS CONTENT RULE: All questions must be numerical/calculation-based ONLY. Never ask students to explain, describe, or write prose. All math questions automatically render with "Working Out" boxes.' : ''}
 
 ${readingAgeNote}

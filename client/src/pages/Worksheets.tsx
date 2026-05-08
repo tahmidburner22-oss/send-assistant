@@ -2054,7 +2054,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
             min-height:${A4_H}px!important; overflow:hidden!important; }
           .ws-section-diagram img, .ws-section-diagram > div > div {
             width:${A4_W}px!important; height:${A4_H}px!important;
-            object-fit:cover!important; object-position:top center!important; display:block!important; }
+            object-fit:contain!important; object-position:center center!important; display:block!important; }
           .ws-header { border-radius:4px!important; margin-bottom:10px!important; overflow:hidden!important;
             -webkit-print-color-adjust:exact!important; print-color-adjust:exact!important; }
           table { width:100%; border-collapse:collapse; margin:8px 0; }
@@ -2305,8 +2305,8 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
           .ws-section-diagram > div > div {
             width: ${A4_W}px !important;
             height: ${A4_H}px !important;
-            object-fit: cover !important;
-            object-position: top center !important;
+            object-fit: contain !important;
+            object-position: center center !important;
             display: block !important;
           }
           .ws-header { border-radius: 4px !important;
