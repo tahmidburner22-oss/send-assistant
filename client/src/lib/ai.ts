@@ -1188,7 +1188,7 @@ STRICT JSON OUTPUT: Respond with valid JSON only — no markdown, no code blocks
       : targetPages === 3
       ? `PAGE LIMIT: This worksheet MUST fill approximately 3 printed A4 pages. Include extra questions, extended worked examples, more word problems, and a detailed challenge section. 25–35 questions total. Do NOT exceed 3 pages.`
       : `PAGE LIMIT: This worksheet MUST fill approximately ${targetPages} printed A4 pages. Scale the number of questions, examples, and sections proportionally — roughly ${Math.round(targetPages * 12)} questions total, with ${targetPages > 4 ? 'multiple extended' : 'full'} sections, worked examples, and word problems. Do NOT exceed ${targetPages} pages.`
-    : ``; // No constraint
+    : `Each section of the worksheet should be concise and ideally fit on a single page.`; // No constraint
 
   // ── Reading age override ───────────────────────────────────────────────────
   const readingAge = params.readingAge || 0; // 0 = match year group naturally
