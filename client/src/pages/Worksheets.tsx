@@ -837,7 +837,7 @@ export default function Worksheets() {
 
   const handleDiagramSelect = useCallback((entry: any) => {
     if (changeDiagramSectionIndex === null || !generated) return;
-    const newSections = generated.sections.map((s: any, idx: number) => {
+    const newSections = (generated.sections || []).map((s: any, idx: number) => {
       if (idx !== changeDiagramSectionIndex) return s;
       return {
         ...s,
@@ -952,7 +952,7 @@ export default function Worksheets() {
     // Build plain text from all visible sections
     const parts: string[] = [];
     if (generated.title) parts.push(generated.title);
-    const visibleSections = generated.sections.filter((_, i) => !hiddenSections.has(i));
+    const visibleSections = (generated.sections || []).filter((_, i) => !hiddenSections.has(i));
     for (const section of visibleSections) {
       if ((section as any).teacherOnly && viewMode === "student") continue;
       if (section.type === "answers" && viewMode === "student") continue;
@@ -1063,7 +1063,7 @@ export default function Worksheets() {
   const displaySections = useMemo(() => {
     if (!generated) return [];
     // Start with all sections, applying teacher/student visibility rules
-    let sections = generated.sections.filter((s) => {
+    let sections = (generated.sections || []).filter((s) => {
       if (viewMode === "student") {
         // Always hide teacher-only, answers, mark-scheme, teacher-notes in student view
         if (s.teacherOnly || s.type === "answers" || s.type === "mark-scheme" || s.type === "teacher-notes" || s.type === "adaptations") return false;
@@ -2035,7 +2035,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
   const handleSave = async () => {
     if (!generated) return;
     // Apply any manual edits to sections before saving
-    const sectionsWithEdits = generated.sections.map((s, i) => ({
+    const sectionsWithEdits = (generated.sections || []).map((s, i) => ({
       ...s,
       content: editedSections[i] !== undefined ? editedSections[i] : s.content,
     }));
@@ -2527,7 +2527,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
       toast.success("Section updated with AI!");
       // Auto-save the AI-edited worksheet to history
       if (savedWorksheetId && generated) {
-        const sectionsWithEdits = generated.sections.map((s, i) => ({
+        const sectionsWithEdits = (generated.sections || []).map((s, i) => ({
           ...s,
           content: updatedEditedSections[i] !== undefined ? updatedEditedSections[i] : s.content,
         }));
@@ -2545,7 +2545,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
   const handleAssign = (childId: string) => {
     if (!generated) return;
     // Filter out teacher-only sections for student view
-    const studentSections = generated.sections.filter(s => !s.teacherOnly);
+    const studentSections = (generated.sections || []).filter(s => !s.teacherOnly);
     const content = studentSections.map(s => `## ${s.title}\n${s.content}`).join("\n\n");
     assignWork(childId, {
       title: generated.title,
@@ -4969,7 +4969,7 @@ ${s.content}`).join("\n\n"),
                   </div>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-                  {generated.sections.map((section, i) => {
+                  {(generated.sections || []).map((section, i) => {
                     const isHidden = hiddenSections.has(i);
                     const isTeacher = (section as any).teacherOnly;
                     return (
@@ -5075,7 +5075,7 @@ ${s.content}`).join("\n\n"),
                     isRevisionMat={isRevisionMat}
                     paginated={true}
                     onDiagramChange={(sectionIndex, newImageUrl, newCaption) => {
-                      const newSections = generated.sections.map((s: any, idx: number) => {
+                      const newSections = (generated.sections || []).map((s: any, idx: number) => {
                         if (idx !== sectionIndex) return s;
                         return { ...s, imageUrl: newImageUrl, caption: newCaption || s.caption, attribution: null, svg: undefined, assetRef: undefined };
                       });
@@ -5086,7 +5086,7 @@ ${s.content}`).join("\n\n"),
                 {/* Inline section edit rendering (Manual + AI) */}
                 {editMode && (
                   <div className="mt-4 space-y-3">
-                    {generated.sections.map((section, i) => {
+                    {(generated.sections || []).map((section, i) => {
                       if (hiddenSections.has(i)) return null;
                       if (viewMode === "student" && (section.type === "answers" || section.type === "adaptations" || section.teacherOnly)) return null;
                       const currentContent = getSectionContent(i, section.content);
