@@ -17,28 +17,30 @@ function getFullDiagramBank() {
 const router = Router();
 const worksheetUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 25 * 1024 * 1024 } });
 
-// ── Provider priority order — 12 providers, ~65,200 RPD combined ───────────────
+// ── Provider priority order — 14 providers, ~90,000+ RPD combined ──────────────
 //
-// Priority rationale:
-//   1. Groq (×3 keys) — fastest inference, 43,200 RPD combined
-//   2. Cerebras — same speed as Groq, separate 14,400 RPD limit
-//   3. Gemini Flash/Lite — high quality, lower quota (500/500 RPD)
-//   4. SambaNova — good quality, 1,000 RPD free tier
-//   5. OpenRouter — 1,000 RPD + access to 20+ free models internally
-//   6. DeepSeek — strong JSON output, 500 RPD free
-//   7. Cohere — reliable, 1,000 RPD free
-//   8. HuggingFace — variable quality, good backup
-//   9. Mistral — unlimited RPD but only 2 RPM, last resort
-// Perplexity/OpenAI/Claude intentionally excluded (paid only, no free tier).
+// Priority rationale (May 2026):
+//   1. Groq (×3 keys, Llama 4 Scout) — fastest inference, 43,200 RPD combined
+//   2. Cerebras (gpt-oss-120b) — same speed as Groq, separate 14,400 RPD limit
+//   3. Gemini 2.5 Flash — high quality, 250 RPD free
+//   4. Gemini 2.5 Flash-Lite — fast, 1,000 RPD free
+//   5. Gemini 3.1 Flash-Lite — newest Google model, 500 RPD free
+//   6. NVIDIA NIM — ~40 RPM, Llama 405B / Nemotron 253B quality
+//   7. SambaNova — good quality, 1,000 RPD free tier
+//   8. Cohere Command A — 111B model, 20 RPM, no daily cap
+//   9. HuggingFace — variable quality, good backup
+//  10. OpenRouter — 200 RPD (low, last resort before Mistral)
+//  11. Mistral — unlimited RPD but only ~1 RPS, last resort
+// DeepSeek/Perplexity/OpenAI/Claude intentionally excluded (paid or unreliable free tier).
 const PROVIDER_ORDER = [
   "groq_1", "groq_2", "groq_3",
   "cerebras",
-  "gemini", "gemini_lite",
+  "gemini", "gemini_lite", "gemini_3lite",
+  "nvidia_nim",
   "sambanova",
-  "openrouter",
-  "deepseek",
   "cohere",
   "huggingface",
+  "openrouter",
   "mistral",
 ] as const;
 
@@ -88,8 +90,10 @@ const PROVIDER_RPM_CAPS: Record<string, number> = {
   groq_2:      28,
   groq_3:      28,
   cerebras:    28,  // Cerebras free: 30 RPM
-  gemini:       8,  // Gemini Flash free: 10 RPM
-  gemini_lite: 28,  // Gemini Flash Lite free: 30 RPM
+  gemini:       8,  // Gemini 2.5 Flash free: 10 RPM
+  gemini_lite: 13,  // Gemini 2.5 Flash-Lite free: 15 RPM
+  gemini_3lite:13,  // Gemini 3.1 Flash-Lite free: 15 RPM
+  nvidia_nim:  35,  // NVIDIA NIM free: ~40 RPM
   sambanova:   28,  // SambaNova free: 30 RPM
   openrouter:  18,  // OpenRouter free: 20 RPM
   deepseek:    18,  // DeepSeek free: ~20 RPM
@@ -152,8 +156,8 @@ async function getEffectiveKey(provider: string, userKey?: string, schoolId?: st
     ).get(provider) as any;
     if (adminKey?.api_key) return adminKey.api_key;
   } catch (_) {}
-  // gemini_lite uses the same API key as gemini (different model, separate quota)
-  if (provider === "gemini_lite") {
+  // gemini_lite and gemini_3lite use the same API key as gemini (different model, separate quota)
+  if (provider === "gemini_lite" || provider === "gemini_3lite") {
     if (schoolId) {
       const schoolEntry = await getSchoolKey(schoolId, "gemini");
       if (schoolEntry?.key) return schoolEntry.key;
@@ -171,6 +175,7 @@ async function getEffectiveKey(provider: string, userKey?: string, schoolId?: st
     groq:        process.env.GROQ_API_KEY || "",
     gemini:      process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || "",
     cerebras:    process.env.CEREBRAS_API_KEY || "",
+    nvidia_nim:  process.env.NVIDIA_NIM_API_KEY || "",
     sambanova:   process.env.SAMBANOVA_API_KEY || "",
     openrouter:  process.env.OPENROUTER_API_KEY || "",
     deepseek:    process.env.DEEPSEEK_API_KEY || "",
@@ -184,19 +189,23 @@ async function getEffectiveKey(provider: string, userKey?: string, schoolId?: st
 async function getAdminModel(provider: string, schoolId?: string): Promise<string> {
   // gemini_lite always uses gemini-2.5-flash-lite regardless of DB config
   if (provider === "gemini_lite") return "gemini-2.5-flash-lite";
+  // gemini_3lite always uses gemini-3.1-flash-lite-preview regardless of DB config
+  if (provider === "gemini_3lite") return "gemini-3.1-flash-lite-preview";
   // Default model map for all providers
   const defaultModels: Record<string, string> = {
-    groq:        "llama-3.3-70b-versatile",
-    groq_1:      "llama-3.3-70b-versatile",
-    groq_2:      "llama-3.3-70b-versatile",
-    groq_3:      "llama-3.3-70b-versatile",
-    cerebras:    "llama3.3-70b",
+    groq:        "meta-llama/llama-4-scout-17b-16e-instruct",  // Llama 4 Scout — best free on Groq
+    groq_1:      "meta-llama/llama-4-scout-17b-16e-instruct",
+    groq_2:      "meta-llama/llama-4-scout-17b-16e-instruct",
+    groq_3:      "meta-llama/llama-4-scout-17b-16e-instruct",
+    cerebras:    "gpt-oss-120b",                               // OpenAI 120B on Cerebras hardware
     gemini:      "gemini-2.5-flash",
     gemini_lite: "gemini-2.5-flash-lite",
+    gemini_3lite:"gemini-3.1-flash-lite-preview",
+    nvidia_nim:  "nvidia/llama-3.1-nemotron-ultra-253b-v1",   // Best free NVIDIA NIM model
     sambanova:   "Meta-Llama-3.3-70B-Instruct",
     openrouter:  "meta-llama/llama-4-scout:free",
     deepseek:    "deepseek-chat",
-    cohere:      "command-r-plus",
+    cohere:      "command-a-03-2025",                         // Cohere Command A 111B — best free
     huggingface: "Qwen/Qwen2.5-72B-Instruct",
     mistral:     "mistral-small-latest",
   };
@@ -226,16 +235,17 @@ async function callProvider(
   options?: { baseUrl?: string }
 ): Promise<string> {
   // Per-provider timeouts — chosen so the full fallback chain fits inside Railway's 60s limit.
-  // With 6 providers (3 Groq + gemini + gemini_lite + mistral), we need tight timeouts:
-  // Groq: 12s each (fast inference; if it's slow it's rate-limited)
+  // With 14 providers, cooldowns ensure most are skipped; only 2-3 are tried per request.
+  // Groq: 12s each (fast LPU inference)
+  // Cerebras: 12s (fast wafer-scale inference)
   // Gemini: 15s (fast provider)
   // Mistral: 18s (slower but reliable)
-  // Others: 20s
-  // Worst case: 3×12 + 15 + 15 + 18 = 84s but cooldowns skip most providers
+  // NVIDIA NIM / others: 20s
+  // Worst case: 3×12 + 15 + 15 + 15 + 20 + 18 = 119s but cooldowns skip most providers
   const timeoutMs =
     provider === "groq" || provider === "groq_1" || provider === "groq_2" || provider === "groq_3" || provider === "cerebras" || provider === "sambanova"
       ? 12_000
-      : provider === "gemini" || provider === "gemini_lite"
+      : provider === "gemini" || provider === "gemini_lite" || provider === "gemini_3lite"
       ? 15_000
       : provider === "mistral"
       ? 18_000
@@ -267,6 +277,14 @@ async function callProvider(
       case "gemini_lite":
         // Gemini 2.5 Flash Lite — separate quota from 2.5 Flash, used as additional fallback
         result = await callGemini(system, user, key, maxTokens, controller.signal, "gemini-2.5-flash-lite");
+        break;
+      case "gemini_3lite":
+        // Gemini 3.1 Flash Lite Preview — newest Google model, 500 RPD / 15 RPM free tier
+        result = await callGemini(system, user, key, maxTokens, controller.signal, "gemini-3.1-flash-lite-preview");
+        break;
+      case "nvidia_nim":
+        // NVIDIA NIM — ~40 RPM free, access to Llama 3.1 Nemotron Ultra 253B and others
+        result = await callNvidiaNim(system, user, key, model || "nvidia/llama-3.1-nemotron-ultra-253b-v1", maxTokens, controller.signal);
         break;
       case "openai":
         result = await callOpenAI(system, user, key, model || "gpt-4o-mini", maxTokens, controller.signal);
@@ -327,7 +345,7 @@ async function callProvider(
 function reorderForHeavyRequest(providers: string[], promptLength: number): string[] {
   if (promptLength < 3000) return providers; // short request — no reorder needed
   // Move high-context providers to front, keep rest of order
-  const heavy = ["gemini", "gemini_lite", "sambanova", "deepseek"];
+  const heavy = ["gemini", "gemini_lite", "gemini_3lite", "sambanova"];
   const prioritised = heavy.filter(p => providers.includes(p));
   const rest = providers.filter(p => !heavy.includes(p));
   console.log(`[AI] Heavy request (${promptLength} chars) — prioritising: ${prioritised.join(", ")}`);
@@ -1045,6 +1063,50 @@ async function callCohere(system: string, user: string, key: string, model: stri
 }
 
 // ── Perplexity ───────────────────────────────────────────────────────────────
+
+// ── NVIDIA NIM ────────────────────────────────────────────────────────────────
+// NVIDIA NIM free tier: ~40 RPM, access to Llama 3.1 Nemotron Ultra 253B and others.
+// OpenAI-compatible API — same interface as callOpenAI.
+// Sign up at: https://build.nvidia.com/explore/discover
+async function callNvidiaNim(system: string, user: string, key: string, model: string, maxTokens: number, signal?: AbortSignal): Promise<string> {
+  const fallbackModels = [
+    model,
+    "nvidia/llama-3.1-nemotron-ultra-253b-v1",  // Best quality — 253B params
+    "meta/llama-3.1-405b-instruct",              // Meta Llama 405B
+    "nvidia/nemotron-3-super-120b-a12b",         // Nemotron Super 120B — fast
+    "qwen/qwen2.5-72b-instruct",                 // Qwen 72B fallback
+  ].filter(Boolean);
+  for (const m of fallbackModels) {
+    try {
+      const res = await fetch("https://integrate.api.nvidia.com/v1/chat/completions", {
+        method: "POST",
+        signal,
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${key}`,
+        },
+        body: JSON.stringify({
+          model: m,
+          messages: [
+            { role: "system", content: system || "You are a helpful SEND education assistant." },
+            { role: "user", content: user },
+          ],
+          max_tokens: maxTokens,
+          temperature: 0.1,
+        }),
+      });
+      if (res.status === 429) throw new Error(`NVIDIA NIM 429: rate limited`);
+      if (!res.ok) { const t = await res.text(); continue; }
+      const data = await res.json() as any;
+      const content = data?.choices?.[0]?.message?.content;
+      if (content) return content;
+    } catch (err: any) {
+      if (err?.message?.includes("429")) throw err; // propagate rate limit
+      continue;
+    }
+  }
+  throw new Error("NVIDIA NIM: all models failed");
+}
 async function callPerplexity(system: string, user: string, key: string, model: string, maxTokens: number, signal?: AbortSignal): Promise<string> {
   const res = await fetch("https://api.perplexity.ai/chat/completions", {
     method: "POST",
