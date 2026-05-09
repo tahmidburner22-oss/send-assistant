@@ -160,6 +160,34 @@ interface AIWorksheet {
 
 type AnyWorksheet = GeneratedWorksheet | AIWorksheet;
 
+type WorksheetMetadataFallback = {
+  subject: string;
+  topic: string;
+  yearGroup: string;
+  sendNeed?: string;
+  difficulty: string;
+  examBoard?: string;
+};
+
+function normaliseWorksheetForRender<T extends AnyWorksheet>(ws: T, fallback: WorksheetMetadataFallback): T {
+  const existing = (ws as any)?.metadata && typeof (ws as any).metadata === "object" ? (ws as any).metadata : {};
+  const safeMetadata = {
+    ...existing,
+    subject: existing.subject || (ws as any).subject || fallback.subject || "General",
+    topic: existing.topic || (ws as any).topic || fallback.topic || "Worksheet",
+    yearGroup: existing.yearGroup || (ws as any).yearGroup || fallback.yearGroup || "Year 7",
+    sendNeed: existing.sendNeed ?? (ws as any).sendNeed ?? fallback.sendNeed ?? null,
+    difficulty: existing.difficulty || (ws as any).difficulty || fallback.difficulty || "mixed",
+    examBoard: existing.examBoard || (ws as any).examBoard || fallback.examBoard || "General",
+    adaptations: Array.isArray(existing.adaptations) ? existing.adaptations : [],
+  };
+  return {
+    ...(ws as any),
+    metadata: safeMetadata,
+    sections: Array.isArray((ws as any).sections) ? (ws as any).sections : [],
+  } as T;
+}
+
 function isAIWorksheet(ws: AnyWorksheet): ws is AIWorksheet {
   return (ws as AIWorksheet).isAI === true;
 }
@@ -566,7 +594,13 @@ export default function Worksheets() {
 
   const [loading, setLoading] = useState(false);
   const [generationStatus, setGenerationStatus] = useState(""); // live status during generation
-  const [generated, setGenerated] = useState<AnyWorksheet | null>(null);
+  const [generated, setGeneratedRaw] = useState<AnyWorksheet | null>(null);
+  const setGenerated = useCallback((value: React.SetStateAction<AnyWorksheet | null>) => {
+    setGeneratedRaw(prev => {
+      const next = typeof value === "function" ? (value as (prev: AnyWorksheet | null) => AnyWorksheet | null)(prev) : value;
+      return next ? normaliseWorksheetForRender(next, { subject, topic, yearGroup, sendNeed, difficulty, examBoard }) : next;
+    });
+  }, [subject, topic, yearGroup, sendNeed, difficulty, examBoard]);
   const [viewMode, setViewMode] = useState<"teacher" | "student">("student");
   const [showOverlayPicker, setShowOverlayPicker] = useState(false);
   const [editMode, setEditMode] = useState(false);
