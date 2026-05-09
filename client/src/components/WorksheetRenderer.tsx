@@ -5120,7 +5120,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                     textTransform: "uppercase",
                     letterSpacing: "0.12em",
                   }}>
-                    {isTeacherHeader ? "TEACHER COPY — ANSWER KEY" : groupLabel}
+                    {isTeacherHeader ? "TEACHER COPY — ANSWER KEY" : myGroupLabel}
                   </span>
                   {isTeacherSection && !isTeacherHeader && (
                     <span style={{ background: "#8b1a1a", color: "#fff", padding: "1px 7px", borderRadius: "2px", fontSize: "9px", fontWeight: 700, fontFamily: fmt.fontFamily, letterSpacing: "0.05em" }}>TEACHER ONLY</span>
