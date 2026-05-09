@@ -3321,7 +3321,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                 {/* AI Toggle */}
                 <div className="flex items-center justify-between p-3.5 bg-emerald-50/80 rounded-xl border border-emerald-200/80">
                   <div>
-                    <p className="font-medium text-emerald-800 text-sm">AI Generation (Groq · Llama 3.1 8B)</p>
+                    <p className="font-medium text-emerald-800 text-sm">AI Generation (Groq · Llama 4 Scout)</p>
                     <p className="text-xs text-emerald-600">High-quality AI for rich, curriculum-aligned content</p>
                   </div>
                   <Switch checked={useAI} onCheckedChange={setUseAI} />
