@@ -4945,6 +4945,17 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
           const nt = normalizeWorksheetSectionType(s.type);
           return s.teacherOnly || nt === 'teacher-notes' || nt === 'mark-scheme' || nt === 'answers';
         });
+        // Show the section group divider only before the FIRST question of that group in the worksheet
+        const isFirstOfGroupSection = !hasExplicitSectionHeader && !!myGroupLabel &&
+          !(worksheet.sections || []).slice(0, i).some((s: any) => {
+            const prevTitleQNum = (() => {
+              const t = typeof s.title === "string" ? s.title : "";
+              const m = t.match(/Q(\d+)/i);
+              return m ? parseInt(m[1]) : null;
+            })();
+            const prevGroup = getGroupByQNum(prevTitleQNum, s.type);
+            return prevGroup?.label === myGroupLabel;
+          });
 
         // Blank-page fix: only apply ws-section-diagram class when content exists
         // Without this, empty diagram slots still trigger CSS break-before: page
