@@ -26,6 +26,7 @@ interface WorksheetParams {
 // ── Adaptly 14-section canonical structure ────────────────────────────────────
 // Based on the Adaptly Worksheet Generator Specification (§3.1)
 export interface WorksheetSection {
+  sectionId?: string;          // spec §10.2 — unique identifier for this section
   title: string;
   type:
     | "header"              // Section 1  — subject, topic, name/date/class
@@ -45,10 +46,13 @@ export interface WorksheetSection {
     // Legacy types (kept for renderer compatibility)
     | "objective" | "example" | "guided" | "independent" | "answers"
     | "adaptations" | "review" | "teacher-notes" | "mark-scheme"
-    | "extension" | "prior-knowledge" | "misconceptions" | "self-reflection";
+    | "extension" | "prior-knowledge" | "misconceptions" | "self-reflection" | "diagnostic";
   content: string;
   teacherOnly?: boolean;
+  studentVisible?: boolean;    // spec §10.2 — explicit student visibility flag
+  teacherVisible?: boolean;    // spec §10.2 — explicit teacher visibility flag
   diagramRef?: string | null;  // links to diagramId in diagram bank
+  altText?: string;            // spec §8.3 — accessibility alt text for diagram sections
   layoutFamily?: string;       // layout hint for renderer
   marks?: number;
 }
@@ -65,7 +69,7 @@ export interface WorksheetQAScore {
   notationAccuracy: number;       // /10
   metadataValidity: number;       // /5
   total: number;                  // /100
-  status: "publish-ready" | "good" | "needs-revision" | "do-not-publish" | "regenerate";
+  status: "publish-ready" | "good" | "needs-revision" | "do-not-publish" | "regenerate" | "pass" | "warn" | "fail";
   failConditions: string[];        // auto-fail messages
 }
 
@@ -78,6 +82,8 @@ export interface GeneratedWorksheet {
     baseWorksheetId?: string;    // canonical worksheet this was derived from
     variantId?: string;          // unique ID for this specific variant
     generatorVersion: string;    // for debugging regression
+    createdAt: string;           // spec §31 — ISO timestamp
+    createdBy: "ai" | "teacher" | "admin"; // spec §31
     // Content identifiers
     subject: string;
     topic: string;
@@ -90,6 +96,9 @@ export interface GeneratedWorksheet {
     difficulty: string;          // legacy — maps to abilityTier
     abilityTier: "foundation" | "standard" | "higher" | "scaffolded";
     readingAge: number;          // inferred from year group if not set by teacher
+    // Diagram traceability (spec §4.5)
+    diagramAId?: string;         // sectionId of the diagram-a section
+    diagramBId?: string;         // sectionId of the diagram-b section
     // Marks & timing
     adaptations: string[];
     totalMarks?: number;
@@ -98,8 +107,11 @@ export interface GeneratedWorksheet {
     validationStatus: "pass" | "warn" | "fail" | "pending";
     qaScore?: WorksheetQAScore;
     validationWarnings?: string[];
+    fromLibrary?: boolean;
   };
 }
+
+export type WorksheetData = GeneratedWorksheet;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // MATHEMATICS TOPICS (Maths Genie / TES style)
@@ -1632,24 +1644,16 @@ function findTopicData(subject: string, topic: string): any {
 // \u2500\u2500 Reading-age inference (spec \u00a77.3) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 // Teacher can override; if not set, we infer from year group.
 // Band map: YG 1-2 \u2192 7-9, YG 3-4 \u2192 10-11, YG 5-6 \u2192 12-13, YG 7-9 \u2192 13, YG 10-11 \u2192 14-15, YG 12-13 \u2192 16+
-export function inferReadingAge(yearGroup: string, overrideAge?: number): number {
-  if (overrideAge && overrideAge > 0) return overrideAge;
+export function inferReadingAge(yearGroup: string, explicit?: number): number {
+  if (explicit && explicit > 0) return explicit;
   const y = parseInt((yearGroup || "").replace(/[^0-9]/g, ""), 10) || 7;
-  if (y <= 2)  return 7;
-  if (y <= 4)  return 10;
-  if (y <= 6)  return 12;
-  if (y <= 9)  return 13;
-  if (y <= 11) return 15;
-  return 17;
+  return y + 5;
 }
 
 // \u2500\u2500 Ability tier mapper (spec \u00a75.2) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 // Maps legacy 'difficulty' string to canonical Adaptly ability tier.
-export function resolveAbilityTier(
-  difficulty: string,
-  explicitTier?: "foundation" | "standard" | "higher" | "scaffolded"
-): "foundation" | "standard" | "higher" | "scaffolded" {
-  if (explicitTier) return explicitTier;
+export function resolveAbilityTier(difficulty: string, explicit?: string): "foundation" | "standard" | "higher" | "scaffolded" {
+  if (explicit === "foundation" || explicit === "standard" || explicit === "higher" || explicit === "scaffolded") return explicit;
   const d = difficulty.toLowerCase();
   if (d === "foundation" || d === "basic" || d === "lower") return "foundation";
   if (d === "higher" || d === "stretch" || d === "advanced") return "higher";
@@ -1657,130 +1661,471 @@ export function resolveAbilityTier(
   return "standard";
 }
 
+// ── Phase 0: Helper Functions ───────────────────────────────────────────────
+function hashVariant(p: WorksheetParams): string {
+  // Create a deterministic hash of the parameters to enable library lookup
+  const s = `${p.subject}|${p.topic}|${p.yearGroup}|${p.sendNeed || 'none'}|${p.difficulty}|${p.abilityTier || 'standard'}|${p.readingAge || 0}|${p.examBoard || 'none'}|${p.isRevisionMat ? 'rm' : 'ws'}`;
+  let hash = 0;
+  for (let i = 0; i < s.length; i++) {
+    const char = s.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  return `v${Math.abs(hash).toString(16)}`;
+}
+
+function findTopicData(subject: string, topic: string): any {
+  const sub = subject.toLowerCase();
+  const top = topic.toLowerCase();
+  if (sub.includes("math")) {
+    const match = Object.keys(expandedMathTopics).find(k => k.toLowerCase() === top || top.includes(k.toLowerCase()));
+    if (match) return expandedMathTopics[match];
+  }
+  return { title: topic };
+}
+
+function getAdaptations(sendNeed?: string): string[] {
+  if (!sendNeed || sendNeed === "none-selected") return [];
+  const overlay = getSENDOverlay(sendNeed);
+  const ads: string[] = [];
+  if (overlay.addStepScaffolds) ads.push("step-by-step scaffolds");
+  if (overlay.addWordBanks) ads.push("word banks");
+  if (overlay.sentenceFrames) ads.push("sentence frames");
+  if (overlay.simplifyLanguage) ads.push("simplified language");
+  return ads;
+}
+
+function getExamBoardNote(examBoard?: string): string | null {
+  if (!examBoard || examBoard === "none") return null;
+  const board = examBoards.find(b => b.id === examBoard);
+  return board ? `Exam Board: ${board.name}` : null;
+}
+
+// Primary-only layouts (KS1 only uses first 4)
+const PRIMARY_KS1_LAYOUTS: LayoutFamily[] = ["true_false", "matching", "ordering", "mcq_2col"];
+const PRIMARY_KS2_LAYOUTS: LayoutFamily[] = ["true_false", "mcq_2col", "matching", "ordering", "gap_fill_inline", "label_diagram"];
+
+// Layouts that produce a visual diagram element
+const DIAGRAM_LAYOUTS = new Set<LayoutFamily>([
+  "label_diagram", "diagram_subquestions", "draw_box",
+]);
+
+// Marks budget per layout [min, max]
+const MARKS_RANGE: Record<LayoutFamily, [number, number]> = {
+  true_false:           [1, 4],
+  mcq_2col:             [1, 2],
+  label_diagram:        [2, 6],
+  gap_fill_inline:      [2, 8],
+  diagram_subquestions: [3, 8],
+  table_complete:       [2, 6],
+  draw_box:             [3, 8],
+  short_answer:         [2, 5],
+  extended_answer:      [4, 10],
+  matching:             [1, 4],
+  ordering:             [1, 4],
+};
+
+// ── Layout picker ─────────────────────────────────────────────────────────────
+function pickLayout(
+  section: string,
+  usedSoFar: LayoutFamily[],
+  questionId: number,
+  ageProfile: "primary_ks1" | "primary_ks2" | "secondary",
+  diagramsUsed: number,
+  hasDiagramData: boolean = true
+): LayoutFamily {
+  const last = usedSoFar[usedSoFar.length - 1];
+
+  const profileLayouts: LayoutFamily[] =
+    ageProfile === "primary_ks1" ? PRIMARY_KS1_LAYOUTS :
+    ageProfile === "primary_ks2" ? PRIMARY_KS2_LAYOUTS :
+    ["true_false","mcq_2col","label_diagram","gap_fill_inline",
+     "diagram_subquestions","table_complete","draw_box","short_answer","extended_answer","matching","ordering"];
+
+  const sectionLayouts = SECTION_LAYOUTS[section] || profileLayouts;
+
+  let candidates = profileLayouts.filter(l => {
+    if (!hasDiagramData && l === "label_diagram") return false;
+    return sectionLayouts.includes(l) && l !== last;
+  });
+
+  if (diagramsUsed < 2 && ageProfile === "secondary") {
+    const diagrams = candidates.filter(l => DIAGRAM_LAYOUTS.has(l));
+    if (diagrams.length > 0) candidates = diagrams;
+  }
+
+  const overused = candidates.filter(l => usedSoFar.filter(u => u === l).length >= 2);
+  if (overused.length < candidates.length) {
+    candidates = candidates.filter(l => !overused.includes(l));
+  }
+
+  if (candidates.length === 0) {
+    candidates = sectionLayouts.filter(l => l !== last);
+    if (candidates.length === 0) candidates = sectionLayouts;
+  }
+
+  return candidates[questionId % candidates.length];
+}
+
+// ── Plan validator ────────────────────────────────────────────────────────────
+interface QuestionPlan {
+  id: number;
+  section: string;
+  layout: LayoutFamily;
+  marks: number;
+  requiresDiagram: boolean;
+}
+
+function validatePlan(questions: QuestionPlan[], ageProfile: string): string[] {
+  const errors: string[] = [];
+  for (let i = 1; i < questions.length; i++) {
+    if (questions[i].layout === questions[i-1].layout) {
+      errors.push(`Q${questions[i].id} and Q${questions[i-1].id} share layout "${questions[i].layout}" — no adjacent repeats allowed.`);
+    }
+  }
+  const distinct = new Set(questions.map(q => q.layout)).size;
+  const minFamilies = ageProfile === "secondary" ? 5 : 3;
+  if (distinct < minFamilies) {
+    errors.push(`Only ${distinct} layout families (minimum ${minFamilies}).`);
+  }
+  if (ageProfile === "secondary") {
+    const diagramCount = questions.filter(q => q.requiresDiagram).length;
+    if (diagramCount < 2) {
+      errors.push(`Only ${diagramCount} diagram question(s) — need at least 2.`);
+    }
+  }
+  return errors;
+}
+
+// ── SEND overlay spec ─────────────────────────────────────────────────────────
+interface SENDOverlay {
+  extraAnswerLinesMultiplier: number;
+  simplifyLanguage: boolean;
+  addStepScaffolds: boolean;
+  addWordBanks: boolean;
+  reducedDensity: boolean;
+  maxWordsPerPrompt: number;
+  iconCues: boolean;
+  sentenceFrames: boolean;
+  fontSizeBoost: number;
+  lineHeightBoost: number;
+}
+
+const DEFAULT_SEND_OVERLAY: SENDOverlay = {
+  extraAnswerLinesMultiplier: 1,
+  simplifyLanguage: false,
+  addStepScaffolds: false,
+  addWordBanks: false,
+  reducedDensity: false,
+  maxWordsPerPrompt: 999,
+  iconCues: false,
+  sentenceFrames: false,
+  fontSizeBoost: 0,
+  lineHeightBoost: 0,
+};
+
+const SEND_OVERLAY_MAP: Record<string, Partial<SENDOverlay>> = {
+  dyslexia:       { extraAnswerLinesMultiplier: 1.5, reducedDensity: true, fontSizeBoost: 1, lineHeightBoost: 0.3, maxWordsPerPrompt: 40 },
+  adhd:           { addStepScaffolds: true, reducedDensity: true, iconCues: true, maxWordsPerPrompt: 30 },
+  asc:            { addStepScaffolds: true, reducedDensity: true, simplifyLanguage: true, maxWordsPerPrompt: 25 },
+  asperger:       { addStepScaffolds: true, reducedDensity: true, simplifyLanguage: true, maxWordsPerPrompt: 30 },
+  mld:            { extraAnswerLinesMultiplier: 2, simplifyLanguage: true, addWordBanks: true, addStepScaffolds: true, reducedDensity: true, iconCues: true, fontSizeBoost: 1, lineHeightBoost: 0.2, sentenceFrames: true, maxWordsPerPrompt: 20 },
+  slcn:           { extraAnswerLinesMultiplier: 1.5, simplifyLanguage: true, addWordBanks: true, reducedDensity: true, iconCues: true, sentenceFrames: true, maxWordsPerPrompt: 20 },
+  dyspraxia:      { extraAnswerLinesMultiplier: 2, reducedDensity: true, fontSizeBoost: 1, lineHeightBoost: 0.2, addStepScaffolds: true },
+  dyscalculia:    { extraAnswerLinesMultiplier: 2, addStepScaffolds: true, addWordBanks: true, reducedDensity: true, maxWordsPerPrompt: 30 },
+  vi:             { extraAnswerLinesMultiplier: 2, reducedDensity: true, fontSizeBoost: 6, lineHeightBoost: 0.3 },
+  hi:             { reducedDensity: true, iconCues: true, simplifyLanguage: true },
+  eal:            { addWordBanks: true, simplifyLanguage: true, reducedDensity: true, sentenceFrames: true, maxWordsPerPrompt: 25, addStepScaffolds: true },
+  anxiety:        { reducedDensity: true, addStepScaffolds: true, iconCues: true, fontSizeBoost: 1 },
+  "pda-odd":      { reducedDensity: true, simplifyLanguage: true, iconCues: true },
+  tourettes:      { reducedDensity: true },
+  "older-learners":{ maxWordsPerPrompt: 50 },
+};
+
+function getSENDOverlay(sendNeedId?: string): SENDOverlay {
+  if (!sendNeedId || sendNeedId === "none-selected") return { ...DEFAULT_SEND_OVERLAY };
+  const overrides = SEND_OVERLAY_MAP[sendNeedId.toLowerCase()] || {};
+  return { ...DEFAULT_SEND_OVERLAY, ...overrides };
+}
+
+function layoutTag(layout: LayoutFamily): string {
+  return `LAYOUT:${layout}\n`;
+}
+
+function stripHints(text: string): string {
+  return text
+    .replace(/\s*Hint:[^\n]*/gi, '')
+    .replace(/\s*\(Hint:[^)]*\)/gi, '')
+    .replace(/\s*\[Hint:[^\]]*\]/gi, '')
+    .replace(/\s*Remember:[^\n]*/gi, '')
+    .trim();
+}
+
+function wrapWithStepScaffold(content: string): string {
+  return `📌 Step-by-step:\n${content}`;
+}
+
+function wrapWithSentenceFrame(content: string, type: string): string {
+  const frames: Record<string, string> = {
+    recall:        "I know that... because...",
+    understanding: "This shows that... which means...",
+    application:   "I would... because...",
+    default:       "I think... because...",
+  };
+  const frame = frames[type] || frames.default;
+  return `${content}\n\n💬 Sentence frame: "${frame}"`;
+}
+
+function marksForLayout(layout: LayoutFamily, section: string): number {
+  const [min, max] = MARKS_RANGE[layout];
+  const bySection: Record<string, number> = {
+    recall: Math.min(2, max),
+    understanding: Math.min(4, max),
+    application: Math.min(5, max),
+    challenge: 8,
+  };
+  return Math.max(min, bySection[section] || 3);
+}
+
+function buildTrueFalseContent(
+  statements: Array<{ stmt: string; answer: boolean }>,
+  sendOverlay: SENDOverlay,
+  includeAnswers: boolean
+): string {
+  let out = layoutTag("true_false");
+  statements.forEach((s, i) => {
+    const ans = includeAnswers ? `  → ${s.answer ? "TRUE" : "FALSE"}` : "";
+    out += `${i + 1}. ${stripHints(s.stmt)}${ans}\n`;
+  });
+  return out.trim();
+}
+
+function buildMCQContent(
+  question: string,
+  options: string[],
+  correctIndex: number,
+  includeAnswers: boolean
+): string {
+  let out = layoutTag("mcq_2col");
+  out += `${stripHints(question)}\n\n`;
+  const labels = ["A", "B", "C", "D"];
+  options.forEach((opt, i) => {
+    const tick = includeAnswers && i === correctIndex ? " ✓" : "";
+    out += `${labels[i]}  ${opt}${tick}\n`;
+  });
+  return out.trim();
+}
+
+function buildGapFillContent(
+  paragraph: string,
+  wordBank: string[],
+  answers: string[],
+  sendOverlay: SENDOverlay,
+  includeAnswers: boolean
+): string {
+  let out = layoutTag("gap_fill_inline");
+  const answerBankNote = sendOverlay.addWordBanks || true
+    ? `\nWORD BANK: ${wordBank.join("  |  ")}\n`
+    : "";
+  out += paragraph + answerBankNote;
+  if (includeAnswers) {
+    out += `\nAnswers: ${answers.join(", ")}`;
+  }
+  return out.trim();
+}
+
+function buildMatchingContent(
+  pairs: Array<{ left: string; right: string }>,
+  sendOverlay: SENDOverlay,
+  includeAnswers: boolean
+): string {
+  let out = layoutTag("matching");
+  const shuffled = [...pairs].sort(() => 0.5 - Math.random());
+  out += "Draw a line to match each item on the left to its pair on the right.\n\n";
+  const leftCol = pairs.map(p => p.left);
+  const rightCol = shuffled.map(p => p.right);
+  leftCol.forEach((l, i) => {
+    out += `${i + 1}. ${l}   ←→   ${rightCol[i]}\n`;
+  });
+  if (includeAnswers) {
+    out += "\nAnswer key:\n";
+    pairs.forEach(p => { out += `${p.left} → ${p.right}\n`; });
+  }
+  return out.trim();
+}
+
+function buildOrderingContent(
+  items: string[],
+  correctOrder: number[],
+  sendOverlay: SENDOverlay,
+  includeAnswers: boolean
+): string {
+  let out = layoutTag("ordering");
+  out += "Number the boxes 1–" + items.length + " to put these in the correct order.\n\n";
+  items.forEach((item, i) => {
+    out += `☐  ${item}\n`;
+  });
+  if (includeAnswers) {
+    out += `\nCorrect order: ${correctOrder.map(n => items[n]).join(" → ")}`;
+  }
+  return out.trim();
+}
+
+function buildTableContent(
+  headers: string[],
+  rows: Array<Array<string | null>>,
+  includeAnswers: boolean
+): string {
+  let out = layoutTag("table_complete");
+  out += `| ${headers.join(" | ")} |\n`;
+  out += `| ${headers.map(() => "---").join(" | ")} |\n`;
+  rows.forEach(row => {
+    const cells = row.map(cell => cell === null ? (includeAnswers ? "___" : "......") : cell);
+    out += `| ${cells.join(" | ")} |\n`;
+  });
+  return out.trim();
+}
+
+function buildDrawBoxContent(
+  instructions: string,
+  symbolReference: string | null,
+  requirements: string[]
+): string {
+  let out = layoutTag("draw_box");
+  out += `${instructions}\n`;
+  if (requirements.length > 0) {
+    out += "\nYour drawing must include:\n";
+    requirements.forEach(r => { out += `• ${r}\n`; });
+  }
+  if (symbolReference) {
+    out += `\nSymbol reference: ${symbolReference}`;
+  }
+  return out.trim();
+}
+
+function buildShortAnswerContent(
+  question: string,
+  sendOverlay: SENDOverlay,
+  section: string,
+  includeAnswers: boolean,
+  modelAnswer?: string
+): string {
+  let out = layoutTag("short_answer");
+  let q = stripHints(question);
+  if (sendOverlay.addStepScaffolds) q = wrapWithStepScaffold(q);
+  if (sendOverlay.sentenceFrames) q = wrapWithSentenceFrame(q, section);
+  if (sendOverlay.addWordBanks) {
+    out += `Key words: [relevant vocabulary listed here]\n\n`;
+  }
+  out += q;
+  if (includeAnswers && modelAnswer) {
+    out += `\n\n**Model answer:** ${modelAnswer}`;
+  }
+  return out.trim();
+}
+
+function buildExtendedAnswerContent(
+  question: string,
+  sendOverlay: SENDOverlay,
+  includeAnswers: boolean,
+  markPoints?: string[]
+): string {
+  let out = layoutTag("extended_answer");
+  let q = stripHints(question);
+  if (sendOverlay.addStepScaffolds) q = wrapWithStepScaffold(q);
+  if (sendOverlay.sentenceFrames) q = wrapWithSentenceFrame(q, "application");
+  out += q;
+  if (includeAnswers && markPoints && markPoints.length > 0) {
+    out += `\n\n**Mark points:**\n`;
+    markPoints.forEach((mp, i) => { out += `[${i+1}] ${mp}\n`; });
+  }
+  return out.trim();
+}
+
+function answerLinesForLayout(
+  layout: LayoutFamily,
+  marks: number,
+  sendOverlay: SENDOverlay
+): number {
+  const base: Record<LayoutFamily, number> = {
+    true_false: 0, mcq_2col: 0, gap_fill_inline: 0,
+    label_diagram: 0, matching: 0, ordering: 0, table_complete: 0,
+    diagram_subquestions: 3,
+    draw_box: 0,
+    short_answer: Math.max(3, marks),
+    extended_answer: Math.max(5, marks + 1),
+  };
+  const b = base[layout] ?? 3;
+  return Math.round(b * sendOverlay.extraAnswerLinesMultiplier);
+}
+
 // \u2500\u2500 Library-first check (spec \u00a72.2) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 // The canonical library is currently empty. This function is a stub that will
 // return null until the library is populated. When populated, it should return
 // the base worksheet JSON so overlays can be applied on top of it.
-export function checkWorksheetLibrary(
-  _subject: string, _topic: string, _yearGroup: string, _abilityTier: string
-): null {
-  // TODO: query worksheet_library table via API once library is populated
-  // For now always returns null so generation falls through to fresh generation
+export function checkWorksheetLibrary(variantId: string): GeneratedWorksheet | null {
+  // Stub for client-side library lookup. In production, this would check
+  // an indexedDB or local cache of canonical worksheets.
   return null;
 }
 
 // \u2500\u2500 QA scorecard (spec \u00a729) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-export function scoreWorksheet(
-  sections: WorksheetSection[],
-  metadata: GeneratedWorksheet["metadata"],
-  hasDiagramA: boolean,
-  hasDiagramB: boolean
-): WorksheetQAScore {
-  const failConditions: string[] = [];
-  const sectionTypes = sections.map(s => s.type);
-  const studentSections = sections.filter(s => !s.teacherOnly);
-  const teacherSections = sections.filter(s => s.teacherOnly);
+export function scoreWorksheet(sections: WorksheetSection[], meta: any, hasDiagA: boolean, hasDiagB: boolean): WorksheetQAScore {
+  const score: WorksheetQAScore = {
+    curriculumAlignment: 15,
+    examStyleAccuracy: 15,
+    questionProgression: 10,
+    diagramQuality: 10,
+    sendAdaptationQuality: 15,
+    layoutPrintQuality: 10,
+    teacherKeyQuality: 10,
+    notationAccuracy: 10,
+    metadataValidity: 5,
+    total: 100,
+    status: "pass",
+    failConditions: [],
+  };
 
-  // \u2500\u2500 Auto-fail conditions (spec \u00a712.5) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-  const teacherKeyInStudentView = studentSections.some(
-    s => s.type === "teacher-key" || s.type === "answers" || s.type === "mark-scheme"
-  );
-  if (teacherKeyInStudentView) failConditions.push("Teacher answers visible in student view");
+  const sectionTypes = new Set(sections.map(s => s.type));
 
-  const hasNullContent = sections.some(s => !s.content || s.content.trim() === "");
-  if (hasNullContent) failConditions.push("One or more sections have empty content");
+  // ── Spec §29: Fail conditions ──
+  if (!sectionTypes.has("learning-objective") && !sectionTypes.has("objective")) score.failConditions.push("Missing Learning Objective");
+  if (!sectionTypes.has("teacher-key") && !sectionTypes.has("mark-scheme") && !sectionTypes.has("answers")) score.failConditions.push("Missing Teacher Key");
+  if (sections.length < 10) score.failConditions.push("Insufficient section count for 14-section pipeline");
 
-  const challengePresent = sectionTypes.includes("challenge");
-  const sendNeed = metadata.sendNeed;
-  // SEND must not remove challenge (spec \u00a76.1, \u00a712.4)
-  if (sendNeed && sendNeed !== "none-selected" && !challengePresent) {
-    failConditions.push("SEND overlay removed the challenge question \u2014 challenge must be preserved");
+  // ── Alignment check ──
+  if (!hasDiagA || !hasDiagB) {
+    score.curriculumAlignment -= 5;
+    score.questionProgression -= 3;
+    score.diagramQuality -= 5;
   }
 
-  // \u2500\u2500 Score each category \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+  // ── Layout diversity ──
+  const layoutTags = sections.map(s => (s.content.match(/LAYOUT:(\w+)/) || [])[1]).filter(Boolean);
+  const distinctLayouts = new Set(layoutTags).size;
+  if (distinctLayouts < 4) score.layoutPrintQuality -= 5;
 
-  // Curriculum alignment /15
-  const hasObjective = sectionTypes.includes("learning-objective") || sectionTypes.includes("objective");
-  const hasVocab = sectionTypes.includes("vocabulary");
-  const hasRetrieval = sectionTypes.includes("retrieval");
-  const curriculumAlignment = failConditions.length > 0 ? 0
-    : (hasObjective ? 7 : 0) + (hasVocab ? 4 : 0) + (hasRetrieval ? 2 : 0) + (metadata.keyStage ? 2 : 0);
+  // ── Reading age check ──
+  if (meta.readingAge < 5) score.notationAccuracy -= 5;
 
-  // Exam-style accuracy /15
-  const hasWorkedExample = sectionTypes.includes("worked-example") || sectionTypes.includes("example");
-  const totalMarks = metadata.totalMarks || 0;
-  const examStyleAccuracy = failConditions.length > 0 ? 0
-    : (hasWorkedExample ? 7 : 0)
-    + (totalMarks >= 20 && totalMarks <= 60 ? 5 : 0)
-    + (metadata.examBoard ? 3 : 0);
-
-  // Question progression /10
-  const hasRecall = sectionTypes.includes("recall") || sectionTypes.includes("guided");
-  const hasUnderstanding = sectionTypes.includes("understanding") || sectionTypes.includes("independent");
-  const hasApplication = sectionTypes.includes("application");
-  const questionProgression = (hasRecall ? 3 : 0) + (hasUnderstanding ? 3 : 0) + (hasApplication ? 2 : 0) + (challengePresent ? 2 : 0);
-
-  // Diagram quality /10
-  const diagramQuality = (hasDiagramA ? 5 : 0) + (hasDiagramB ? 5 : 0);
-
-  // SEND adaptation quality /15 (spec \u00a76.1: at least 3 meaningful changes)
-  const hasSendNotes = teacherSections.some(
-    s => s.type === "adaptations" || (s.content || "").toLowerCase().includes("send")
+  // ── Recalculate total ──
+  score.total = (
+    score.curriculumAlignment +
+    score.examStyleAccuracy +
+    score.questionProgression +
+    score.diagramQuality +
+    score.sendAdaptationQuality +
+    score.layoutPrintQuality +
+    score.teacherKeyQuality +
+    score.notationAccuracy +
+    score.metadataValidity
   );
-  const hasCommonMistakes = sectionTypes.includes("common-mistakes") || sectionTypes.includes("misconceptions");
-  const sendAdaptationQuality = !sendNeed || sendNeed === "none-selected"
-    ? 15  // no SEND needed \u2014 full marks
-    : (hasSendNotes ? 8 : 0) + (hasCommonMistakes ? 4 : 0) + (metadata.readingAge > 0 ? 3 : 0);
 
-  // Layout and print quality /10
-  const hasReflection = sectionTypes.includes("reflection") || sectionTypes.includes("self-reflection") || sectionTypes.includes("review");
-  const layoutPrintQuality = (hasReflection ? 3 : 0)
-    + (studentSections.length >= 6 ? 4 : 2)
-    + (teacherSections.length >= 1 ? 3 : 0);
+  score.status = score.failConditions.length > 0 ? "fail" : score.total < 70 ? "warn" : "pass";
 
-  // Teacher key quality /10
-  const hasTeacherKey = teacherSections.some(
-    s => s.type === "teacher-key" || s.type === "answers" || s.type === "mark-scheme" || s.type === "teacher-notes"
-  );
-  const teacherKeyQuality = hasTeacherKey ? 10 : 0;
-
-  // Notation and subject accuracy /10 \u2014 heuristic (full QA requires human review)
-  const notationAccuracy = hasWorkedExample ? 8 : 4;
-
-  // Metadata and schema validity /5
-  const metadataValidity = (metadata.variantId ? 1 : 0)
-    + (metadata.generatorVersion ? 1 : 0)
-    + (metadata.abilityTier ? 1 : 0)
-    + (metadata.readingAge > 0 ? 1 : 0)
-    + (metadata.validationStatus !== "pending" ? 1 : 0);
-
-  const total = failConditions.length > 0 ? 0
-    : curriculumAlignment + examStyleAccuracy + questionProgression + diagramQuality
-      + sendAdaptationQuality + layoutPrintQuality + teacherKeyQuality + notationAccuracy + metadataValidity;
-
-  const status: WorksheetQAScore["status"] =
-    failConditions.length > 0  ? "regenerate"
-    : total >= 90              ? "publish-ready"
-    : total >= 80              ? "good"
-    : total >= 70              ? "needs-revision"
-    : total >= 60              ? "do-not-publish"
-    : "regenerate";
-
-  return {
-    curriculumAlignment: Math.min(15, curriculumAlignment),
-    examStyleAccuracy:   Math.min(15, examStyleAccuracy),
-    questionProgression: Math.min(10, questionProgression),
-    diagramQuality:      Math.min(10, diagramQuality),
-    sendAdaptationQuality: Math.min(15, sendAdaptationQuality),
-    layoutPrintQuality:  Math.min(10, layoutPrintQuality),
-    teacherKeyQuality:   Math.min(10, teacherKeyQuality),
-    notationAccuracy:    Math.min(10, notationAccuracy),
-    metadataValidity:    Math.min(5, metadataValidity),
-    total:               Math.min(100, total),
-    status,
-    failConditions,
-  };
+  return score;
 }
+
 
 // \u2500\u2500 Improved teacher key builder (spec \u00a711) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 // Teacher key must include: final answers, method marks, acceptable alternatives,
@@ -2005,511 +2350,10 @@ const SECTION_LAYOUTS: Record<string, LayoutFamily[]> = {
     "table_complete", "short_answer",
   ],
   application: [
-    "diagram_subquestions", "table_complete", "draw_box",
-    "short_answer", "extended_answer",
+    "diagram_subquestions", "table_complete", "draw_box", "short_answer", "extended_answer",
   ],
   challenge: ["extended_answer", "draw_box", "diagram_subquestions"],
 };
-
-function resolveAbilityTier(difficulty: string, explicit?: string): "foundation" | "standard" | "higher" | "scaffolded" {
-  if (explicit === "foundation" || explicit === "standard" || explicit === "higher" || explicit === "scaffolded") return explicit;
-  const d = difficulty.toLowerCase();
-  if (d === "foundation") return "foundation";
-  if (d === "higher") return "higher";
-  if (d === "scaffolded") return "scaffolded";
-  return "standard";
-}
-
-function inferReadingAge(yearGroup: string, explicit?: number): number {
-  if (explicit && explicit > 0) return explicit;
-  const y = parseInt((yearGroup || "").replace(/[^0-9]/g, ""), 10) || 7;
-  return y + 5;
-}
-
-function findTopicData(subject: string, topic: string): any {
-  // Mock topic data lookup - in production this uses a large library of curriculum data
-  // For maths, we use the expandedMathTopics if available
-  const sub = subject.toLowerCase();
-  const top = topic.toLowerCase();
-  if (sub.includes("math")) {
-    const match = Object.keys(expandedMathTopics).find(k => k.toLowerCase() === top || top.includes(k.toLowerCase()));
-    if (match) return expandedMathTopics[match];
-  }
-  return { title: topic };
-}
-
-function getAdaptations(sendNeed?: string): string[] {
-  if (!sendNeed || sendNeed === "none-selected") return [];
-  const overlay = getSENDOverlay(sendNeed);
-  const ads: string[] = [];
-  if (overlay.addStepScaffolds) ads.push("step-by-step scaffolds");
-  if (overlay.addWordBanks) ads.push("word banks");
-  if (overlay.sentenceFrames) ads.push("sentence frames");
-  if (overlay.simplifyLanguage) ads.push("simplified language");
-  return ads;
-}
-
-function getExamBoardNote(examBoard?: string): string | null {
-  if (!examBoard || examBoard === "none") return null;
-  const board = examBoards.find(b => b.id === examBoard);
-  return board ? `Exam Board: ${board.name}` : null;
-}
-
-// Primary-only layouts (KS1 only uses first 4)
-const PRIMARY_KS1_LAYOUTS: LayoutFamily[] = ["true_false", "matching", "ordering", "mcq_2col"];
-const PRIMARY_KS2_LAYOUTS: LayoutFamily[] = ["true_false", "mcq_2col", "matching", "ordering", "gap_fill_inline", "label_diagram"];
-
-// Layouts that produce a visual diagram element
-const DIAGRAM_LAYOUTS = new Set<LayoutFamily>([
-  "label_diagram", "diagram_subquestions", "draw_box",
-]);
-
-// Marks budget per layout [min, max]
-const MARKS_RANGE: Record<LayoutFamily, [number, number]> = {
-  true_false:           [1, 4],
-  mcq_2col:             [1, 2],
-  label_diagram:        [2, 6],
-  gap_fill_inline:      [2, 8],
-  diagram_subquestions: [3, 8],
-  table_complete:       [2, 6],
-  draw_box:             [3, 8],
-  short_answer:         [2, 5],
-  extended_answer:      [4, 10],
-  matching:             [1, 4],
-  ordering:             [1, 4],
-};
-
-// ── Layout picker ─────────────────────────────────────────────────────────────
-function pickLayout(
-  section: string,
-  usedSoFar: LayoutFamily[],
-  questionId: number,
-  ageProfile: "primary_ks1" | "primary_ks2" | "secondary",
-  diagramsUsed: number,
-  hasDiagramData: boolean = true
-): LayoutFamily {
-  const last = usedSoFar[usedSoFar.length - 1];
-
-  const profileLayouts: LayoutFamily[] =
-    ageProfile === "primary_ks1" ? PRIMARY_KS1_LAYOUTS :
-    ageProfile === "primary_ks2" ? PRIMARY_KS2_LAYOUTS :
-    ["true_false","mcq_2col","label_diagram","gap_fill_inline",
-     "diagram_subquestions","table_complete","draw_box","short_answer","extended_answer","matching","ordering"];
-
-  const sectionLayouts = SECTION_LAYOUTS[section] || profileLayouts;
-
-  // Intersection: must be in both profile and section
-  // Gate label_diagram: only allow it if the topic has actual diagram data
-  let candidates = profileLayouts.filter(l => {
-    if (!hasDiagramData && l === "label_diagram") return false;
-    return sectionLayouts.includes(l) && l !== last;
-  });
-
-  // Prefer diagram layouts if < 2 used so far
-  if (diagramsUsed < 2 && ageProfile === "secondary") {
-    const diagrams = candidates.filter(l => DIAGRAM_LAYOUTS.has(l));
-    if (diagrams.length > 0) candidates = diagrams;
-  }
-
-  // Avoid layouts used ≥ 2 times already
-  const overused = candidates.filter(l => usedSoFar.filter(u => u === l).length >= 2);
-  if (overused.length < candidates.length) {
-    candidates = candidates.filter(l => !overused.includes(l));
-  }
-
-  if (candidates.length === 0) {
-    candidates = sectionLayouts.filter(l => l !== last);
-    if (candidates.length === 0) candidates = sectionLayouts;
-  }
-
-  return candidates[questionId % candidates.length];
-}
-
-function scoreWorksheet(sections: WorksheetSection[], meta: any, hasDiagA: boolean, hasDiagB: boolean): WorksheetQAScore {
-  const score: WorksheetQAScore = {
-    curriculumAlignment: 15,
-    examStyleAccuracy: 15,
-    questionProgression: 10,
-    accessibilityCompliance: 10,
-    scaffoldingQuality: 10,
-    mathsRigour: 10,
-    readingAgeMatch: 10,
-    layoutDiversity: 10,
-    teacherKeyCompleteness: 10,
-    total: 100,
-    failConditions: [],
-  };
-
-  const sectionTypes = new Set(sections.map(s => s.type));
-
-  // ── Spec §29: Fail conditions ──
-  if (!sectionTypes.has("learning-objective") && !sectionTypes.has("objective")) score.failConditions.push("Missing Learning Objective");
-  if (!sectionTypes.has("teacher-key") && !sectionTypes.has("mark-scheme") && !sectionTypes.has("answers")) score.failConditions.push("Missing Teacher Key");
-  if (sections.length < 6) score.failConditions.push("Insufficient section count");
-
-  // ── Alignment check ──
-  if (!hasDiagA || !hasDiagB) {
-    score.curriculumAlignment -= 5;
-    score.questionProgression -= 3;
-  }
-
-  // ── Layout diversity ──
-  const layoutTags = sections.map(s => (s.content.match(/LAYOUT:(\w+)/) || [])[1]).filter(Boolean);
-  const distinctLayouts = new Set(layoutTags).size;
-  if (distinctLayouts < 3) score.layoutDiversity -= 5;
-
-  // ── Reading age check ──
-  if (meta.readingAge < 5) score.readingAgeMatch -= 10;
-
-  // ── Recalculate total ──
-  score.total = (
-    score.curriculumAlignment +
-    score.examStyleAccuracy +
-    score.questionProgression +
-    score.accessibilityCompliance +
-    score.scaffoldingQuality +
-    score.mathsRigour +
-    score.readingAgeMatch +
-    score.layoutDiversity +
-    score.teacherKeyCompleteness
-  );
-
-  return score;
-}
-
-// ── Plan validator ────────────────────────────────────────────────────────────
-interface QuestionPlan {
-  id: number;
-  section: string;
-  layout: LayoutFamily;
-  marks: number;
-  requiresDiagram: boolean;
-}
-
-function validatePlan(questions: QuestionPlan[], ageProfile: string): string[] {
-  const errors: string[] = [];
-
-  // No adjacent repeat
-  for (let i = 1; i < questions.length; i++) {
-    if (questions[i].layout === questions[i-1].layout) {
-      errors.push(`Q${questions[i].id} and Q${questions[i-1].id} share layout "${questions[i].layout}" — no adjacent repeats allowed.`);
-    }
-  }
-
-  // Min distinct families
-  const distinct = new Set(questions.map(q => q.layout)).size;
-  const minFamilies = ageProfile === "secondary" ? 5 : 3;
-  if (distinct < minFamilies) {
-    errors.push(`Only ${distinct} layout families (minimum ${minFamilies}).`);
-  }
-
-  // Diagrams ≥ 2 (secondary only)
-  if (ageProfile === "secondary") {
-    const diagramCount = questions.filter(q => q.requiresDiagram).length;
-    if (diagramCount < 2) {
-      errors.push(`Only ${diagramCount} diagram question(s) — need at least 2.`);
-    }
-  }
-
-  return errors;
-}
-
-// ── SEND overlay spec ─────────────────────────────────────────────────────────
-interface SENDOverlay {
-  extraAnswerLinesMultiplier: number;
-  simplifyLanguage: boolean;
-  addStepScaffolds: boolean;
-  addWordBanks: boolean;
-  reducedDensity: boolean;
-  maxWordsPerPrompt: number;
-  iconCues: boolean;
-  sentenceFrames: boolean;
-  fontSizeBoost: number;
-  lineHeightBoost: number;
-}
-
-const DEFAULT_SEND_OVERLAY: SENDOverlay = {
-  extraAnswerLinesMultiplier: 1,
-  simplifyLanguage: false,
-  addStepScaffolds: false,
-  addWordBanks: false,
-  reducedDensity: false,
-  maxWordsPerPrompt: 999,
-  iconCues: false,
-  sentenceFrames: false,
-  fontSizeBoost: 0,
-  lineHeightBoost: 0,
-};
-
-const SEND_OVERLAY_MAP: Record<string, Partial<SENDOverlay>> = {
-  dyslexia:       { extraAnswerLinesMultiplier: 1.5, reducedDensity: true, fontSizeBoost: 1, lineHeightBoost: 0.3, maxWordsPerPrompt: 40 },
-  adhd:           { addStepScaffolds: true, reducedDensity: true, iconCues: true, maxWordsPerPrompt: 30 },
-  asc:            { addStepScaffolds: true, reducedDensity: true, simplifyLanguage: true, maxWordsPerPrompt: 25 },
-  asperger:       { addStepScaffolds: true, reducedDensity: true, simplifyLanguage: true, maxWordsPerPrompt: 30 },
-  mld:            { extraAnswerLinesMultiplier: 2, simplifyLanguage: true, addWordBanks: true, addStepScaffolds: true, reducedDensity: true, iconCues: true, fontSizeBoost: 1, lineHeightBoost: 0.2, sentenceFrames: true, maxWordsPerPrompt: 20 },
-  slcn:           { extraAnswerLinesMultiplier: 1.5, simplifyLanguage: true, addWordBanks: true, reducedDensity: true, iconCues: true, sentenceFrames: true, maxWordsPerPrompt: 20 },
-  dyspraxia:      { extraAnswerLinesMultiplier: 2, reducedDensity: true, fontSizeBoost: 1, lineHeightBoost: 0.2, addStepScaffolds: true },
-  dyscalculia:    { extraAnswerLinesMultiplier: 2, addStepScaffolds: true, addWordBanks: true, reducedDensity: true, maxWordsPerPrompt: 30 },
-  vi:             { extraAnswerLinesMultiplier: 2, reducedDensity: true, fontSizeBoost: 6, lineHeightBoost: 0.3 },
-  hi:             { reducedDensity: true, iconCues: true, simplifyLanguage: true },
-  eal:            { addWordBanks: true, simplifyLanguage: true, reducedDensity: true, sentenceFrames: true, maxWordsPerPrompt: 25, addStepScaffolds: true },
-  anxiety:        { reducedDensity: true, addStepScaffolds: true, iconCues: true, fontSizeBoost: 1 },
-  "pda-odd":      { reducedDensity: true, simplifyLanguage: true, iconCues: true },
-  tourettes:      { reducedDensity: true },
-  "older-learners":{ maxWordsPerPrompt: 50 },
-};
-
-function getSENDOverlay(sendNeedId?: string): SENDOverlay {
-  if (!sendNeedId || sendNeedId === "none-selected") return { ...DEFAULT_SEND_OVERLAY };
-  const overrides = SEND_OVERLAY_MAP[sendNeedId.toLowerCase()] || {};
-  return { ...DEFAULT_SEND_OVERLAY, ...overrides };
-}
-
-// ── Content-rule tags embedded in section content ─────────────────────────────
-// The renderer reads LAYOUT:<type> as the first line to pick the right sub-renderer.
-// This means ALL existing renderer logic still works — we're adding signals to
-// existing string content, not changing the section schema.
-function layoutTag(layout: LayoutFamily): string {
-  return `LAYOUT:${layout}\n`;
-}
-
-// ── Strip hints from question text (student view) ─────────────────────────────
-function stripHints(text: string): string {
-  return text
-    .replace(/\s*Hint:[^\n]*/gi, '')
-    .replace(/\s*\(Hint:[^)]*\)/gi, '')
-    .replace(/\s*\[Hint:[^\]]*\]/gi, '')
-    .replace(/\s*Remember:[^\n]*/gi, '')
-    .trim();
-}
-
-// ── SEND scaffold wrappers ────────────────────────────────────────────────────
-function wrapWithStepScaffold(content: string): string {
-  return `📌 Step-by-step:\n${content}`;
-}
-
-function wrapWithSentenceFrame(content: string, type: string): string {
-  const frames: Record<string, string> = {
-    recall:        "I know that... because...",
-    understanding: "This shows that... which means...",
-    application:   "I would... because...",
-    default:       "I think... because...",
-  };
-  const frame = frames[type] || frames.default;
-  return `${content}\n\n💬 Sentence frame: "${frame}"`;
-}
-
-// ── Marks calculator ──────────────────────────────────────────────────────────
-function marksForLayout(layout: LayoutFamily, section: string): number {
-  const [min, max] = MARKS_RANGE[layout];
-  const bySection: Record<string, number> = {
-    recall: Math.min(2, max),
-    understanding: Math.min(4, max),
-    application: Math.min(5, max),
-    challenge: 8,
-  };
-  return Math.max(min, bySection[section] || 3);
-}
-
-// ── Section content builders ──────────────────────────────────────────────────
-// Each builder returns the section content string with a LAYOUT tag header.
-// The existing WorksheetRenderer picks up these tags in the new render path.
-
-function buildTrueFalseContent(
-  statements: Array<{ stmt: string; answer: boolean }>,
-  sendOverlay: SENDOverlay,
-  includeAnswers: boolean
-): string {
-  let out = layoutTag("true_false");
-  statements.forEach((s, i) => {
-    const ans = includeAnswers ? `  → ${s.answer ? "TRUE" : "FALSE"}` : "";
-    out += `${i + 1}. ${stripHints(s.stmt)}${ans}\n`;
-  });
-  return out.trim();
-}
-
-function buildMCQContent(
-  question: string,
-  options: string[],
-  correctIndex: number,
-  includeAnswers: boolean
-): string {
-  let out = layoutTag("mcq_2col");
-  out += `${stripHints(question)}\n\n`;
-  const labels = ["A", "B", "C", "D"];
-  options.forEach((opt, i) => {
-    const tick = includeAnswers && i === correctIndex ? " ✓" : "";
-    out += `${labels[i]}  ${opt}${tick}\n`;
-  });
-  return out.trim();
-}
-
-function buildGapFillContent(
-  paragraph: string,
-  wordBank: string[],
-  answers: string[],
-  sendOverlay: SENDOverlay,
-  includeAnswers: boolean
-): string {
-  let out = layoutTag("gap_fill_inline");
-  const answerBankNote = sendOverlay.addWordBanks || true
-    ? `\nWORD BANK: ${wordBank.join("  |  ")}\n`
-    : "";
-  out += paragraph + answerBankNote;
-  if (includeAnswers) {
-    out += `\nAnswers: ${answers.join(", ")}`;
-  }
-  return out.trim();
-}
-
-function buildMatchingContent(
-  pairs: Array<{ left: string; right: string }>,
-  sendOverlay: SENDOverlay,
-  includeAnswers: boolean
-): string {
-  let out = layoutTag("matching");
-  const shuffled = [...pairs].sort(() => 0.5 - Math.random());
-  out += "Draw a line to match each item on the left to its pair on the right.\n\n";
-  const leftCol = pairs.map(p => p.left);
-  const rightCol = shuffled.map(p => p.right);
-  leftCol.forEach((l, i) => {
-    out += `${i + 1}. ${l}   ←→   ${rightCol[i]}\n`;
-  });
-  if (includeAnswers) {
-    out += "\nAnswer key:\n";
-    pairs.forEach(p => { out += `${p.left} → ${p.right}\n`; });
-  }
-  return out.trim();
-}
-
-function buildOrderingContent(
-  items: string[],
-  correctOrder: number[],
-  sendOverlay: SENDOverlay,
-  includeAnswers: boolean
-): string {
-  let out = layoutTag("ordering");
-  out += "Number the boxes 1–" + items.length + " to put these in the correct order.\n\n";
-  items.forEach((item, i) => {
-    out += `☐  ${item}\n`;
-  });
-  if (includeAnswers) {
-    out += `\nCorrect order: ${correctOrder.map(n => items[n]).join(" → ")}`;
-  }
-  return out.trim();
-}
-
-function buildTableContent(
-  headers: string[],
-  rows: Array<Array<string | null>>,
-  includeAnswers: boolean
-): string {
-  let out = layoutTag("table_complete");
-  out += `| ${headers.join(" | ")} |\n`;
-  out += `| ${headers.map(() => "---").join(" | ")} |\n`;
-  rows.forEach(row => {
-    const cells = row.map(cell => cell === null ? (includeAnswers ? "___" : "......") : cell);
-    out += `| ${cells.join(" | ")} |\n`;
-  });
-  return out.trim();
-}
-
-function buildDrawBoxContent(
-  instructions: string,
-  symbolReference: string | null,
-  requirements: string[]
-): string {
-  let out = layoutTag("draw_box");
-  out += `${instructions}\n`;
-  if (requirements.length > 0) {
-    out += "\nYour drawing must include:\n";
-    requirements.forEach(r => { out += `• ${r}\n`; });
-  }
-  if (symbolReference) {
-    out += `\nSymbol reference: ${symbolReference}`;
-  }
-  return out.trim();
-}
-
-function buildShortAnswerContent(
-  question: string,
-  sendOverlay: SENDOverlay,
-  section: string,
-  includeAnswers: boolean,
-  modelAnswer?: string
-): string {
-  let out = layoutTag("short_answer");
-  let q = stripHints(question);
-  if (sendOverlay.addStepScaffolds) q = wrapWithStepScaffold(q);
-  if (sendOverlay.sentenceFrames) q = wrapWithSentenceFrame(q, section);
-  if (sendOverlay.addWordBanks) {
-    out += `Key words: [relevant vocabulary listed here]\n\n`;
-  }
-  out += q;
-  if (includeAnswers && modelAnswer) {
-    out += `\n\n**Model answer:** ${modelAnswer}`;
-  }
-  return out.trim();
-}
-
-function buildExtendedAnswerContent(
-  question: string,
-  sendOverlay: SENDOverlay,
-  includeAnswers: boolean,
-  markPoints?: string[]
-): string {
-  let out = layoutTag("extended_answer");
-  let q = stripHints(question);
-  if (sendOverlay.addStepScaffolds) q = wrapWithStepScaffold(q);
-  if (sendOverlay.sentenceFrames) q = wrapWithSentenceFrame(q, "application");
-  out += q;
-  if (includeAnswers && markPoints && markPoints.length > 0) {
-    out += `\n\n**Mark points:**\n`;
-    markPoints.forEach((mp, i) => { out += `[${i+1}] ${mp}\n`; });
-  }
-  return out.trim();
-}
-
-// ── Answer-line count per layout + SEND ───────────────────────────────────────
-function answerLinesForLayout(
-  layout: LayoutFamily,
-  marks: number,
-  sendOverlay: SENDOverlay
-): number {
-  const base: Record<LayoutFamily, number> = {
-    true_false: 0, mcq_2col: 0, gap_fill_inline: 0,
-    label_diagram: 0, matching: 0, ordering: 0, table_complete: 0,
-    diagram_subquestions: 3,
-    draw_box: 0,
-    short_answer: Math.max(3, marks),
-    extended_answer: Math.max(5, marks + 1),
-  };
-  const b = base[layout] ?? 3;
-  return Math.round(b * sendOverlay.extraAnswerLinesMultiplier);
-}
-
-// ── Phase 0: Helper Functions ───────────────────────────────────────────────
-function hashVariant(p: WorksheetParams): string {
-  // Create a deterministic hash of the parameters to enable library lookup
-  const s = `${p.subject}|${p.topic}|${p.yearGroup}|${p.sendNeed || 'none'}|${p.difficulty}|${p.abilityTier || 'standard'}|${p.readingAge || 0}|${p.examBoard || 'none'}|${p.isRevisionMat ? 'rm' : 'ws'}`;
-  let hash = 0;
-  for (let i = 0; i < s.length; i++) {
-    const char = s.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash; // Convert to 32bit integer
-  }
-  return `v${Math.abs(hash).toString(16)}`;
-}
-
-function checkWorksheetLibrary(variantId: string): GeneratedWorksheet | null {
-  // Stub for client-side library lookup. In production, this would check
-  // an indexedDB or local cache of canonical worksheets.
-  return null;
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// MAIN GENERATE FUNCTION
-// ─────────────────────────────────────────────────────────────────────────────
 
 export function generateWorksheet(params: WorksheetParams): GeneratedWorksheet {
   const { subject, topic, subtopic, yearGroup, sendNeed, difficulty, abilityTier: explicitTier, readingAge: explicitReadingAge, examBoard, includeAnswers } = params;
@@ -2677,7 +2521,18 @@ export function generateWorksheet(params: WorksheetParams): GeneratedWorksheet {
     });
   }
 
-  // Section 7: Diagnostic A (spec §3.1 — check point 1)
+  // Section 7: Diagram A (spec §3.1 — reference/stimulus diagram)
+  if (hasDiagramData) {
+    sections.push({
+      title: topicData.diagram?.title || "Reference Diagram",
+      type: "diagram-a",
+      content: `LAYOUT:diagram\nDIAGRAM_TYPE:${topicData.diagram?.type || "label_image"}`,
+      marks: 0,
+      altText: topicData.diagram?.description || `Reference diagram for ${topic}`,
+    });
+  }
+
+  // Section 8: Diagnostic A (spec §3.1 — check point 1)
   sections.push({
     title: "CHECK POINT — Are you ready to continue?",
     type: "diagnostic",
@@ -2934,7 +2789,7 @@ export function generateWorksheet(params: WorksheetParams): GeneratedWorksheet {
   // ── Phase 13: Teacher-only sections (spec §11 — teacher key is a first-class output)
 
   // Section 14: Teacher’s Key (spec §11 — method marks, alternatives, common errors, SEND notes)
-  if (includeAnswers) {
+  {
     // Build structured teacher key questions from mark scheme
     const teacherKeyQuestions = topicData.markScheme?.map((m: any) => ({
       qRef: `Q${m.q}`,
@@ -3043,10 +2898,26 @@ export function generateWorksheet(params: WorksheetParams): GeneratedWorksheet {
   const hasDiagramASection = sections.some(s => s.type === "diagram-a");
   const hasDiagramBSection = sections.some(s => s.type === "diagram-b");
 
+  // -- Stamp sectionId on every section (spec §10.2) --------------------------
+  sections.forEach((s, idx) => {
+    if (!s.sectionId) {
+      s.sectionId = `${variantId}-s${String(idx).padStart(2, "0")}-${s.type}`;
+    }
+    // Set explicit visibility flags based on teacherOnly
+    if (s.studentVisible === undefined) s.studentVisible = !s.teacherOnly;
+    if (s.teacherVisible === undefined) s.teacherVisible = true;
+    // Populate altText on diagram sections from caption/title if missing
+    if ((s.type === "diagram-a" || s.type === "diagram-b" || s.type === "diagram") && !s.altText) {
+      s.altText = s.title || `${s.type === "diagram-a" ? "Reference" : "Completion"} diagram for ${topic}`;
+    }
+  });
+
   const partialMeta: GeneratedWorksheet["metadata"] = {
     generatorVersion: "3.1.0-adaptly",
     variantId,
     baseWorksheetId: undefined,
+    createdAt: new Date().toISOString(),
+    createdBy: "ai",
     subject,
     topic,
     subtopic,
@@ -3057,6 +2928,8 @@ export function generateWorksheet(params: WorksheetParams): GeneratedWorksheet {
     difficulty,
     abilityTier,
     readingAge,
+    diagramAId: sections.find(s => s.type === "diagram-a")?.sectionId,
+    diagramBId: sections.find(s => s.type === "diagram-b")?.sectionId,
     adaptations,
     totalMarks,
     estimatedTime,

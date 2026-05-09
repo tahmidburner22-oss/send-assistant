@@ -442,7 +442,6 @@ export default function RevisionHub() {
         await new Promise(r => setTimeout(r, 2000));
         const pollRes = await fetch(`/api/revision/job/${jobId}`, {
           credentials: "include",
-          credentials: "include",
         });
         if (!pollRes.ok) throw new Error("Job polling failed");
         const poll = await pollRes.json();

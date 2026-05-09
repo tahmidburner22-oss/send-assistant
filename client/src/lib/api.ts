@@ -21,6 +21,11 @@ export function clearToken() {
   try { localStorage.removeItem("send_token"); } catch {}
 }
 
+export function getAuthHeader(): Record<string, string> {
+  // Auth is now cookie-based (httpOnly). This helper is a legacy stub.
+  return {};
+}
+
 // ── Core fetch wrapper ────────────────────────────────────────────────────────
 // noRedirect: if true, throw on 401 instead of redirecting (used for background saves)
 async function apiFetch<T>(

@@ -118,7 +118,7 @@ ${commentList}`,
     setLoading(true);
     try {
       const [commentsRes, pupilsData] = await Promise.all([
-        fetch("/api/mis/comments?limit=200", { headers: getAuthHeader() }),
+        fetch("/api/mis/comments?limit=200", { headers: getAuthHeader(), credentials: "include" }),
         pupilsApi.list(),
       ]);
       if (commentsRes.ok) {
@@ -164,6 +164,7 @@ ${commentList}`,
       const res = await fetch("/api/mis/comments", {
         method: "POST",
         headers: { "Content-Type": "application/json", ...getAuthHeader() },
+        credentials: "include",
         body: JSON.stringify({
           pupilId: newPupilId,
           type: newType,
@@ -188,7 +189,7 @@ ${commentList}`,
   const handleDelete = async (id: string) => {
     if (!confirm("Delete this comment? This cannot be undone.")) return;
     try {
-      const res = await fetch(`/api/mis/comments/${id}`, { method: "DELETE", headers: getAuthHeader() });
+      const res = await fetch(`/api/mis/comments/${id}`, { method: "DELETE", headers: getAuthHeader(), credentials: "include" });
       if (!res.ok) throw new Error("Failed");
       toast.success("Comment deleted");
       setComments(prev => prev.filter(c => c.id !== id));

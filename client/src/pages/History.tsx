@@ -265,7 +265,6 @@ export default function History() {
         fetch(`/api/data/worksheets/${id}`, {
           method: "DELETE",
           credentials: "include",
-          credentials: "include",
         })
       ));
       toast.success(`Deleted ${selectedIds.size} worksheet(s)`);
@@ -284,7 +283,6 @@ export default function History() {
     try {
           const res = await fetch(`/api/data/worksheets/${wsId}/share`, {
         method: "POST",
-        credentials: "include",
         credentials: "include",
       });
       if (res.ok) {

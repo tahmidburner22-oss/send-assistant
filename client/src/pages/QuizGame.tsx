@@ -239,7 +239,7 @@ export default function QuizGame() {
   // Poll room state every 1.5s
   const pollRoom = useCallback(async (code: string) => {
     try {
-      const res = await fetch(`/api/quiz/rooms/${code}`, { headers: getAuthHeader() });
+      const res = await fetch(`/api/quiz/rooms/${code}`, { headers: getAuthHeader(), credentials: "include" });
       if (!res.ok) return;
       const data: RoomState = await res.json();
       setRoom(data);
@@ -279,7 +279,7 @@ export default function QuizGame() {
   async function loadCustomQuizzes() {
     setLoadingCustom(true);
     try {
-      const res = await fetch("/api/quiz/custom", { headers: getAuthHeader() });
+      const res = await fetch("/api/quiz/custom", { headers: getAuthHeader(), credentials: "include" });
       if (res.ok) setCustomQuizzes(await res.json());
     } finally { setLoadingCustom(false); }
   }
@@ -291,6 +291,7 @@ export default function QuizGame() {
       const res = await fetch("/api/quiz/rooms", {
         method: "POST",
         headers: { ...getAuthHeader(), "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ quizTitle: title, questions }),
       });
       if (!res.ok) throw new Error("Failed to create room");
@@ -311,7 +312,7 @@ export default function QuizGame() {
 
   async function startFromCustom(quizId: string) {
     try {
-      const res = await fetch(`/api/quiz/custom/${quizId}`, { headers: getAuthHeader() });
+      const res = await fetch(`/api/quiz/custom/${quizId}`, { headers: getAuthHeader(), credentials: "include" });
       if (!res.ok) throw new Error("Quiz not found");
       const quiz = await res.json();
       // Assign tiers to custom quiz questions
@@ -328,7 +329,7 @@ export default function QuizGame() {
     if (!roomCode) return;
     try {
       const res = await fetch(`/api/quiz/rooms/${roomCode}/start`, {
-        method: "POST", headers: getAuthHeader(),
+        method: "POST", headers: getAuthHeader(), credentials: "include",
       });
       if (!res.ok) throw new Error("Could not start game");
       const data = await res.json();
@@ -342,7 +343,7 @@ export default function QuizGame() {
     setAdvancing(true);
     try {
       const res = await fetch(`/api/quiz/rooms/${roomCode}/next`, {
-        method: "POST", headers: getAuthHeader(),
+        method: "POST", headers: getAuthHeader(), credentials: "include",
       });
       if (!res.ok) throw new Error("Could not advance");
       const data = await res.json();
@@ -356,7 +357,7 @@ export default function QuizGame() {
 
   async function endGame() {
     if (roomCode) {
-      await fetch(`/api/quiz/rooms/${roomCode}`, { method: "DELETE", headers: getAuthHeader() });
+      await fetch(`/api/quiz/rooms/${roomCode}`, { method: "DELETE", headers: getAuthHeader(), credentials: "include" });
     }
     stopPolling();
     setRoom(null); setRoomCode(""); setView("home"); setCurrentQuestions([]);

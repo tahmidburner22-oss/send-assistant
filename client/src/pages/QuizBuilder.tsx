@@ -57,7 +57,7 @@ export default function QuizBuilder() {
   useEffect(() => {
     if (!editId) return;
     setLoading(true);
-    fetch(`/api/quiz/custom/${editId}`, { headers: getAuthHeader() })
+    fetch(`/api/quiz/custom/${editId}`, { headers: getAuthHeader(), credentials: "include" })
       .then(r => r.json())
       .then(data => {
         setTitle(data.title || "");
@@ -112,6 +112,7 @@ export default function QuizBuilder() {
       const res = await fetch("/api/quiz/generate-from-doc", {
         method: "POST",
         headers: getAuthHeader(),
+        credentials: "include",
         body: fd,
       });
       const data = await res.json();
@@ -141,6 +142,7 @@ export default function QuizBuilder() {
       const res = await fetch(url, {
         method,
         headers: { ...getAuthHeader(), "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify(body),
       });
       if (!res.ok) throw new Error("Save failed");

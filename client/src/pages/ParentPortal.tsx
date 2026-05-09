@@ -76,7 +76,7 @@ function ParentMessagesPanel({ childId, childName }: { childId: string; childNam
     try {
       const res = await fetch(`/api/parent-messages/${childId}`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" }, credentials: "include",
+          headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({ body: newMsg.trim(), sender: "parent" }),
       });
@@ -529,8 +529,8 @@ export default function ParentPortal() {
       // Fetch behaviour records and support plans from the server
       setBehaviourLoading(true);
         Promise.all([
-        fetch(`/api/data/parent/behaviour/${found.id}`, { headers: hdrs }).then(r => r.ok ? r.json() : []),
-        fetch(`/api/data/parent/support-plans/${found.id}`, { headers: hdrs }).then(r => r.ok ? r.json() : []),
+        fetch(`/api/data/parent/behaviour/${found.id}`, { credentials: "include" }).then(r => r.ok ? r.json() : []),
+        fetch(`/api/data/parent/support-plans/${found.id}`, { credentials: "include" }).then(r => r.ok ? r.json() : []),
       ])
         .then(([beh, plans]) => {
           setBehaviourRecords(Array.isArray(beh) ? beh : []);
@@ -610,7 +610,7 @@ Return EXACTLY this JSON:
 }`;
         const res = await fetch("/api/ai/generate", {
         method: "POST",
-        headers: { "Content-Type": "application/json" }, credentials: "include",
+          headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({ prompt: userPrompt, systemPrompt, maxTokens: 800 }),
       });
