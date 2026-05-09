@@ -178,12 +178,55 @@ function checkPageGeometry(assignedQuestions: AssignedQuestion[]): CheckResult {
 function checkAccessibility(worksheet: WorksheetData): CheckResult {
   const warnings: string[] = [];
   for (const section of (worksheet.sections ?? [])) {
-    if (section.type === "diagram" && !section.altText) {
+    const sectionType = String(section.type || "");
+    const isDiagram = sectionType === "diagram-a" || sectionType === "diagram-b" || sectionType === "diagram" || !!section.diagramRef;
+    if (isDiagram && !section.altText) {
       warnings.push(`Section "${section.title}" is a diagram but has no alt text.`);
     }
   }
   if (warnings.length > 0) return warn("accessibility", "Accessibility", warnings);
   return pass("accessibility", "Accessibility");
+}
+
+/** Spec gate: generated worksheets must carry the traceability metadata needed to debug variants. */
+function checkRequiredMetadata(worksheet: WorksheetData): CheckResult {
+  const meta: any = worksheet.metadata || {};
+  const missing = ["subject", "topic", "yearGroup", "difficulty"].filter(k => !meta[k]);
+  if (!meta.generatorVersion) missing.push("generatorVersion");
+  if (!meta.createdAt) missing.push("createdAt");
+  if (!meta.createdBy) missing.push("createdBy");
+  if (missing.length > 0) {
+    return fail("required-metadata", "Required Worksheet Metadata", [`Missing required metadata: ${missing.join(", ")}.`]);
+  }
+  return pass("required-metadata", "Required Worksheet Metadata");
+}
+
+/** Spec gate: teacher-only answer material must be present and hidden from student mode. */
+function checkTeacherKey(worksheet: WorksheetData): CheckResult {
+  const sections = worksheet.sections ?? [];
+  const teacherSections = sections.filter((s: any) => s.teacherOnly || s.type === "teacher-key" || s.type === "answers" || s.type === "mark-scheme");
+  if (teacherSections.length === 0) {
+    return warn("teacher-key", "Teacher Copy / Answer Key", ["No teacher-only answer key or mark-scheme section was found."]);
+  }
+  const exposed = teacherSections.filter((s: any) => s.studentVisible === true);
+  if (exposed.length > 0) {
+    return fail("teacher-key", "Teacher Copy / Answer Key", exposed.map((s: any) => `Teacher-only section "${s.title}" is marked studentVisible.`));
+  }
+  return pass("teacher-key", "Teacher Copy / Answer Key");
+}
+
+/** Spec gate: diagram sections must have traceable refs or image metadata, not only generic captions. */
+function checkDiagramTraceability(worksheet: WorksheetData): CheckResult {
+  const warnings: string[] = [];
+  for (const section of (worksheet.sections ?? []) as any[]) {
+    const isDiagram = section.type === "diagram-a" || section.type === "diagram-b" || section.type === "diagram" || section.imageUrl || section.svg;
+    if (!isDiagram) continue;
+    if (!section.diagramRef && !section.assetRef && !section.imageUrl && !section.svg) {
+      warnings.push(`Diagram section "${section.title}" has no diagramRef, assetRef, imageUrl, or svg.`);
+    }
+  }
+  if (warnings.length > 0) return warn("diagram-traceability", "Diagram Traceability", warnings);
+  return pass("diagram-traceability", "Diagram Traceability");
 }
 
 // ─── Diagram preflight checks ─────────────────────────────────────────────────
@@ -236,6 +279,9 @@ export function validateWorksheet(params: {
     checkSendOverlay(worksheet, originalSectionCount ?? worksheet.sections?.length ?? 0),
     checkPageGeometry(assignedQuestions),
     checkAccessibility(worksheet),
+    checkRequiredMetadata(worksheet),
+    checkTeacherKey(worksheet),
+    checkDiagramTraceability(worksheet),
     ...runDiagramPreflightChecks(diagrams),
   ];
 
@@ -261,7 +307,7 @@ export function lockOutput(worksheet: WorksheetData, report: ValidationReport): 
     ...worksheet,
     metadata: {
       ...worksheet.metadata,
-      validationStatus: report.status,
+      validationStatus: report.status.toLowerCase() as "pass" | "fail",
       validationTimestamp: new Date().toISOString(),
       validationErrors: report.errors,
       validationWarnings: report.warnings,

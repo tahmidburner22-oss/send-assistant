@@ -1674,33 +1674,6 @@ function hashVariant(p: WorksheetParams): string {
   return `v${Math.abs(hash).toString(16)}`;
 }
 
-function findTopicData(subject: string, topic: string): any {
-  const sub = subject.toLowerCase();
-  const top = topic.toLowerCase();
-  if (sub.includes("math")) {
-    const match = Object.keys(expandedMathTopics).find(k => k.toLowerCase() === top || top.includes(k.toLowerCase()));
-    if (match) return expandedMathTopics[match];
-  }
-  return { title: topic };
-}
-
-function getAdaptations(sendNeed?: string): string[] {
-  if (!sendNeed || sendNeed === "none-selected") return [];
-  const overlay = getSENDOverlay(sendNeed);
-  const ads: string[] = [];
-  if (overlay.addStepScaffolds) ads.push("step-by-step scaffolds");
-  if (overlay.addWordBanks) ads.push("word banks");
-  if (overlay.sentenceFrames) ads.push("sentence frames");
-  if (overlay.simplifyLanguage) ads.push("simplified language");
-  return ads;
-}
-
-function getExamBoardNote(examBoard?: string): string | null {
-  if (!examBoard || examBoard === "none") return null;
-  const board = examBoards.find(b => b.id === examBoard);
-  return board ? `Exam Board: ${board.name}` : null;
-}
-
 // Primary-only layouts (KS1 only uses first 4)
 const PRIMARY_KS1_LAYOUTS: LayoutFamily[] = ["true_false", "matching", "ordering", "mcq_2col"];
 const PRIMARY_KS2_LAYOUTS: LayoutFamily[] = ["true_false", "mcq_2col", "matching", "ordering", "gap_fill_inline", "label_diagram"];
