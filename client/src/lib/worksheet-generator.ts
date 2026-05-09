@@ -4,19 +4,69 @@ import { expandedMathTopics } from './mathTopicsExpanded';
 interface WorksheetParams {
   subject: string;
   topic: string;
+  subtopic?: string;
   yearGroup: string;
   sendNeed?: string;
   difficulty: string;
+  abilityTier?: "foundation" | "standard" | "higher" | "scaffolded";
+  readingAge?: number;
   examBoard?: string;
   includeAnswers: boolean;
   additionalInstructions?: string;
+  // Legacy params kept for Worksheets.tsx compatibility
+  generateDiagram?: boolean;
+  worksheetLength?: string;
+  targetPages?: number;
+  recallTopic?: string;
+  isRevisionMat?: boolean;
+  examStyle?: boolean;
+  selectedSections?: string[];
 }
 
+// ── Adaptly 14-section canonical structure ────────────────────────────────────
+// Based on the Adaptly Worksheet Generator Specification (§3.1)
 export interface WorksheetSection {
   title: string;
-  type: "objective" | "vocabulary" | "example" | "guided" | "independent" | "challenge" | "answers" | "adaptations" | "review" | "teacher-notes" | "mark-scheme" | "extension" | "prior-knowledge";
+  type:
+    | "header"              // Section 1  — subject, topic, name/date/class
+    | "learning-objective" // Section 2  — measurable learning goal
+    | "retrieval"          // Section 3  — optional prior-knowledge recall
+    | "vocabulary"         // Section 4  — Tier 2 & 3 terms
+    | "common-mistakes"    // Section 5  — predictable errors, tested later
+    | "worked-example"     // Section 6  — fully modelled example
+    | "diagram-a"          // Section 7  — reference/stimulus diagram
+    | "recall"             // Section 8  — low-load knowledge & simple procedures
+    | "understanding"      // Section 9  — multi-step explanation & interpretation
+    | "diagram-b"          // Section 10 — completion/interpretation/annotation task
+    | "application"        // Section 11 — exam-style applied questions
+    | "challenge"          // Section 12 — stretch, proof, evaluation
+    | "reflection"         // Section 13 — RAG rating, confidence, next-step prompt
+    | "teacher-key"        // Section 14 — answers, mark scheme, SEND notes (teacher only)
+    // Legacy types (kept for renderer compatibility)
+    | "objective" | "example" | "guided" | "independent" | "answers"
+    | "adaptations" | "review" | "teacher-notes" | "mark-scheme"
+    | "extension" | "prior-knowledge" | "misconceptions" | "self-reflection";
   content: string;
   teacherOnly?: boolean;
+  diagramRef?: string | null;  // links to diagramId in diagram bank
+  layoutFamily?: string;       // layout hint for renderer
+  marks?: number;
+}
+
+// ── QA scorecard weights (spec §29) ──────────────────────────────────────────
+export interface WorksheetQAScore {
+  curriculumAlignment: number;    // /15
+  examStyleAccuracy: number;      // /15
+  questionProgression: number;    // /10
+  diagramQuality: number;         // /10
+  sendAdaptationQuality: number;  // /15
+  layoutPrintQuality: number;     // /10
+  teacherKeyQuality: number;      // /10
+  notationAccuracy: number;       // /10
+  metadataValidity: number;       // /5
+  total: number;                  // /100
+  status: "publish-ready" | "good" | "needs-revision" | "do-not-publish" | "regenerate";
+  failConditions: string[];        // auto-fail messages
 }
 
 export interface GeneratedWorksheet {
@@ -24,15 +74,30 @@ export interface GeneratedWorksheet {
   subtitle: string;
   sections: WorksheetSection[];
   metadata: {
+    // Core identifiers
+    baseWorksheetId?: string;    // canonical worksheet this was derived from
+    variantId?: string;          // unique ID for this specific variant
+    generatorVersion: string;    // for debugging regression
+    // Content identifiers
     subject: string;
     topic: string;
+    subtopic?: string;
     yearGroup: string;
-    sendNeed?: string;
-    difficulty: string;
+    keyStage?: string;
     examBoard?: string;
+    // Differentiation
+    sendNeed?: string;
+    difficulty: string;          // legacy — maps to abilityTier
+    abilityTier: "foundation" | "standard" | "higher" | "scaffolded";
+    readingAge: number;          // inferred from year group if not set by teacher
+    // Marks & timing
     adaptations: string[];
     totalMarks?: number;
     estimatedTime?: string;
+    // QA
+    validationStatus: "pass" | "warn" | "fail" | "pending";
+    qaScore?: WorksheetQAScore;
+    validationWarnings?: string[];
   };
 }
 
@@ -1560,7 +1625,344 @@ function findTopicData(subject: string, topic: string): any {
 
 
 // ─────────────────────────────────────────────────────────────────────────────
-// STRUCTURED WORKSHEET GENERATOR  (v3)
+// ADAPTLY SPEC HELPERS
+// Added to comply with Adaptly Worksheet Generator Specification v1.0
+// ─────────────────────────────────────────────────────────────────────────────
+
+// \u2500\u2500 Reading-age inference (spec \u00a77.3) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+// Teacher can override; if not set, we infer from year group.
+// Band map: YG 1-2 \u2192 7-9, YG 3-4 \u2192 10-11, YG 5-6 \u2192 12-13, YG 7-9 \u2192 13, YG 10-11 \u2192 14-15, YG 12-13 \u2192 16+
+export function inferReadingAge(yearGroup: string, overrideAge?: number): number {
+  if (overrideAge && overrideAge > 0) return overrideAge;
+  const y = parseInt((yearGroup || "").replace(/[^0-9]/g, ""), 10) || 7;
+  if (y <= 2)  return 7;
+  if (y <= 4)  return 10;
+  if (y <= 6)  return 12;
+  if (y <= 9)  return 13;
+  if (y <= 11) return 15;
+  return 17;
+}
+
+// \u2500\u2500 Ability tier mapper (spec \u00a75.2) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+// Maps legacy 'difficulty' string to canonical Adaptly ability tier.
+export function resolveAbilityTier(
+  difficulty: string,
+  explicitTier?: "foundation" | "standard" | "higher" | "scaffolded"
+): "foundation" | "standard" | "higher" | "scaffolded" {
+  if (explicitTier) return explicitTier;
+  const d = difficulty.toLowerCase();
+  if (d === "foundation" || d === "basic" || d === "lower") return "foundation";
+  if (d === "higher" || d === "stretch" || d === "advanced") return "higher";
+  if (d === "scaffolded") return "scaffolded";
+  return "standard";
+}
+
+// \u2500\u2500 Library-first check (spec \u00a72.2) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+// The canonical library is currently empty. This function is a stub that will
+// return null until the library is populated. When populated, it should return
+// the base worksheet JSON so overlays can be applied on top of it.
+export function checkWorksheetLibrary(
+  _subject: string, _topic: string, _yearGroup: string, _abilityTier: string
+): null {
+  // TODO: query worksheet_library table via API once library is populated
+  // For now always returns null so generation falls through to fresh generation
+  return null;
+}
+
+// \u2500\u2500 QA scorecard (spec \u00a729) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+export function scoreWorksheet(
+  sections: WorksheetSection[],
+  metadata: GeneratedWorksheet["metadata"],
+  hasDiagramA: boolean,
+  hasDiagramB: boolean
+): WorksheetQAScore {
+  const failConditions: string[] = [];
+  const sectionTypes = sections.map(s => s.type);
+  const studentSections = sections.filter(s => !s.teacherOnly);
+  const teacherSections = sections.filter(s => s.teacherOnly);
+
+  // \u2500\u2500 Auto-fail conditions (spec \u00a712.5) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+  const teacherKeyInStudentView = studentSections.some(
+    s => s.type === "teacher-key" || s.type === "answers" || s.type === "mark-scheme"
+  );
+  if (teacherKeyInStudentView) failConditions.push("Teacher answers visible in student view");
+
+  const hasNullContent = sections.some(s => !s.content || s.content.trim() === "");
+  if (hasNullContent) failConditions.push("One or more sections have empty content");
+
+  const challengePresent = sectionTypes.includes("challenge");
+  const sendNeed = metadata.sendNeed;
+  // SEND must not remove challenge (spec \u00a76.1, \u00a712.4)
+  if (sendNeed && sendNeed !== "none-selected" && !challengePresent) {
+    failConditions.push("SEND overlay removed the challenge question \u2014 challenge must be preserved");
+  }
+
+  // \u2500\u2500 Score each category \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+
+  // Curriculum alignment /15
+  const hasObjective = sectionTypes.includes("learning-objective") || sectionTypes.includes("objective");
+  const hasVocab = sectionTypes.includes("vocabulary");
+  const hasRetrieval = sectionTypes.includes("retrieval");
+  const curriculumAlignment = failConditions.length > 0 ? 0
+    : (hasObjective ? 7 : 0) + (hasVocab ? 4 : 0) + (hasRetrieval ? 2 : 0) + (metadata.keyStage ? 2 : 0);
+
+  // Exam-style accuracy /15
+  const hasWorkedExample = sectionTypes.includes("worked-example") || sectionTypes.includes("example");
+  const totalMarks = metadata.totalMarks || 0;
+  const examStyleAccuracy = failConditions.length > 0 ? 0
+    : (hasWorkedExample ? 7 : 0)
+    + (totalMarks >= 20 && totalMarks <= 60 ? 5 : 0)
+    + (metadata.examBoard ? 3 : 0);
+
+  // Question progression /10
+  const hasRecall = sectionTypes.includes("recall") || sectionTypes.includes("guided");
+  const hasUnderstanding = sectionTypes.includes("understanding") || sectionTypes.includes("independent");
+  const hasApplication = sectionTypes.includes("application");
+  const questionProgression = (hasRecall ? 3 : 0) + (hasUnderstanding ? 3 : 0) + (hasApplication ? 2 : 0) + (challengePresent ? 2 : 0);
+
+  // Diagram quality /10
+  const diagramQuality = (hasDiagramA ? 5 : 0) + (hasDiagramB ? 5 : 0);
+
+  // SEND adaptation quality /15 (spec \u00a76.1: at least 3 meaningful changes)
+  const hasSendNotes = teacherSections.some(
+    s => s.type === "adaptations" || (s.content || "").toLowerCase().includes("send")
+  );
+  const hasCommonMistakes = sectionTypes.includes("common-mistakes") || sectionTypes.includes("misconceptions");
+  const sendAdaptationQuality = !sendNeed || sendNeed === "none-selected"
+    ? 15  // no SEND needed \u2014 full marks
+    : (hasSendNotes ? 8 : 0) + (hasCommonMistakes ? 4 : 0) + (metadata.readingAge > 0 ? 3 : 0);
+
+  // Layout and print quality /10
+  const hasReflection = sectionTypes.includes("reflection") || sectionTypes.includes("self-reflection") || sectionTypes.includes("review");
+  const layoutPrintQuality = (hasReflection ? 3 : 0)
+    + (studentSections.length >= 6 ? 4 : 2)
+    + (teacherSections.length >= 1 ? 3 : 0);
+
+  // Teacher key quality /10
+  const hasTeacherKey = teacherSections.some(
+    s => s.type === "teacher-key" || s.type === "answers" || s.type === "mark-scheme" || s.type === "teacher-notes"
+  );
+  const teacherKeyQuality = hasTeacherKey ? 10 : 0;
+
+  // Notation and subject accuracy /10 \u2014 heuristic (full QA requires human review)
+  const notationAccuracy = hasWorkedExample ? 8 : 4;
+
+  // Metadata and schema validity /5
+  const metadataValidity = (metadata.variantId ? 1 : 0)
+    + (metadata.generatorVersion ? 1 : 0)
+    + (metadata.abilityTier ? 1 : 0)
+    + (metadata.readingAge > 0 ? 1 : 0)
+    + (metadata.validationStatus !== "pending" ? 1 : 0);
+
+  const total = failConditions.length > 0 ? 0
+    : curriculumAlignment + examStyleAccuracy + questionProgression + diagramQuality
+      + sendAdaptationQuality + layoutPrintQuality + teacherKeyQuality + notationAccuracy + metadataValidity;
+
+  const status: WorksheetQAScore["status"] =
+    failConditions.length > 0  ? "regenerate"
+    : total >= 90              ? "publish-ready"
+    : total >= 80              ? "good"
+    : total >= 70              ? "needs-revision"
+    : total >= 60              ? "do-not-publish"
+    : "regenerate";
+
+  return {
+    curriculumAlignment: Math.min(15, curriculumAlignment),
+    examStyleAccuracy:   Math.min(15, examStyleAccuracy),
+    questionProgression: Math.min(10, questionProgression),
+    diagramQuality:      Math.min(10, diagramQuality),
+    sendAdaptationQuality: Math.min(15, sendAdaptationQuality),
+    layoutPrintQuality:  Math.min(10, layoutPrintQuality),
+    teacherKeyQuality:   Math.min(10, teacherKeyQuality),
+    notationAccuracy:    Math.min(10, notationAccuracy),
+    metadataValidity:    Math.min(5, metadataValidity),
+    total:               Math.min(100, total),
+    status,
+    failConditions,
+  };
+}
+
+// \u2500\u2500 Improved teacher key builder (spec \u00a711) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+// Teacher key must include: final answers, method marks, acceptable alternatives,
+// common wrong answers, misconception notes, marking guidance, SEND support notes.
+interface TeacherKeyQuestion {
+  qRef: string;              // "Q1", "Q2.3", "Challenge" etc.
+  marks: number;
+  answer: string;
+  method?: string;           // how to arrive at answer
+  acceptableAlternatives?: string[];
+  commonWrongAnswers?: string[];
+  sendSupportNote?: string;
+}
+
+export function buildTeacherKey(
+  questions: TeacherKeyQuestion[],
+  subject: string,
+  sendNeed?: string,
+  teacherNotes?: string
+): string {
+  const sendLabel = sendNeed && sendNeed !== "none-selected"
+    ? `\n\u26a0\ufe0f SEND profile applied: ${sendNeed.toUpperCase()}. See SEND support notes below.\n`
+    : "";
+
+  const lines: string[] = [
+    "TEACHER\u2019S KEY \u2014 DO NOT DISTRIBUTE TO STUDENTS",
+    "=".repeat(54),
+    sendLabel,
+  ];
+
+  questions.forEach(q => {
+    lines.push(`\n${q.qRef}  [${q.marks} mark${q.marks !== 1 ? "s" : ""}]`);
+    lines.push(`Answer: ${q.answer}`);
+    if (q.method) lines.push(`Method: ${q.method}`);
+    if (q.acceptableAlternatives?.length) {
+      lines.push(`Also accept: ${q.acceptableAlternatives.join("; ")}`);
+    }
+    if (q.commonWrongAnswers?.length) {
+      lines.push(`Common errors: ${q.commonWrongAnswers.join("; ")}`);
+    }
+    if (q.sendSupportNote) {
+      lines.push(`SEND support (${sendNeed}): ${q.sendSupportNote}`);
+    }
+    lines.push("\u2500".repeat(40));
+  });
+
+  // Subject-specific marking guidance (spec \u00a711.2)
+  const subjectLower = subject.toLowerCase();
+  if (subjectLower.includes("math")) {
+    lines.push("\nMaths marking: Award method marks even if final answer is wrong. Accept equivalent forms.");
+  } else if (subjectLower.includes("chem")) {
+    lines.push("\nChemistry marking: Formula must be correct for M1. Substitution correct for M2. Unit required for final mark.");
+  } else if (subjectLower.includes("phys")) {
+    lines.push("\nPhysics marking: Equation \u2192 rearrangement \u2192 substitution \u2192 unit. Each step earnable.");
+  } else if (subjectLower.includes("english")) {
+    lines.push("\nEnglish marking: Award for quotation use, technique identification and effect on reader. Accept interpretations supported by evidence.");
+  }
+
+  if (teacherNotes) {
+    lines.push(`\nTeacher notes:\n${teacherNotes}`);
+  }
+
+  return lines.filter(l => l !== "").join("\n");
+}
+
+// \u2500\u2500 Retrieval practice builder (spec \u00a73.2) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+// 3 quick recall questions + 1 prior-topic link + 1 misconception check
+function buildRetrievalPractice(
+  topic: string,
+  priorKnowledge: string,
+  vocabulary: string[]
+): string {
+  const vocabSample = vocabulary.slice(0, 3).join(", ");
+  return [
+    "Quick recall \u2014 complete without notes:",
+    "",
+    `1. Write the definition of: ${vocabulary[0] || topic}`,
+    `2. What do you already know about ${topic}? Write two facts.`,
+    `3. ${priorKnowledge ? `Prior knowledge check: ${priorKnowledge.split(".")[0]}.` : `Name one thing you learned in your last lesson on this topic.`}`,
+    "",
+    "Prior-topic link:",
+    `4. How does ${topic} connect to a topic you have studied before?`,
+    "",
+    "Misconception check:",
+    `5. A student says: \u201c${vocabulary[1] ? `${vocabulary[1]} and ${vocabulary[0]} mean the same thing` : `all answers to this topic are straightforward`}\u201d \u2014 are they right? Explain.`,
+  ].join("\n");
+}
+
+// \u2500\u2500 Common-mistakes builder (spec \u00a73.2) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+// Must warn students AND promise it will be tested later in the worksheet.
+function buildCommonMistakes(
+  rawMistakes: Array<string | { head: string; body: string }> | undefined,
+  teacherNotes: string | undefined
+): string {
+  const items: string[] = [];
+
+  if (rawMistakes && rawMistakes.length > 0) {
+    rawMistakes.forEach((m, i) => {
+      if (typeof m === "string") {
+        items.push(`${i + 1}. \u2718 ${m}`);
+      } else {
+        items.push(`${i + 1}. \u2718 ${m.head}\n   \u2192 ${m.body}`);
+      }
+    });
+  } else if (teacherNotes) {
+    // Extract common-mistake hints from teacher notes
+    const matches = teacherNotes.match(/[Cc]ommon (?:error|mistake|misconception)[^.]*\.[^.]*\./g) || [];
+    matches.slice(0, 3).forEach((m, i) => items.push(`${i + 1}. \u2718 ${m.trim()}`));
+  }
+
+  if (items.length === 0) return "";
+
+  return [
+    "Watch out for these common mistakes. You will be tested on them later in this worksheet.",
+    "",
+    ...items,
+    "",
+    "\ud83d\udca1 Tip: After finishing the worksheet, come back here and tick the mistakes you avoided.",
+  ].join("\n");
+}
+
+// \u2500\u2500 Adaptly system prompt (spec \u00a727.1) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+// Strict rules for AI generation. No hallucination. No softened command words.
+// SEND = access only. Ability tier = challenge level.
+export function buildAdaptlySystemPrompt(params: {
+  subject: string;
+  topic: string;
+  subtopic?: string;
+  yearGroup: string;
+  abilityTier: "foundation" | "standard" | "higher" | "scaffolded";
+  sendNeed?: string;
+  readingAge: number;
+  examBoard?: string;
+}): string {
+  const { subject, topic, subtopic, yearGroup, abilityTier, sendNeed, readingAge, examBoard } = params;
+  const sendRule = sendNeed && sendNeed !== "none-selected"
+    ? `SEND profile: ${sendNeed}. Apply this as ACCESS CHANGES ONLY. Do NOT lower the challenge level, remove the challenge question, change the learning objective, or remove diagram tasks. Change how the pupil accesses the task \u2014 not what the task fundamentally is.`
+    : "No SEND profile. Standard access.";
+
+  return `You are the Adaptly worksheet engine. You generate structured, exam-quality GCSE and KS3 worksheets.
+
+GENERATION REQUEST:
+Subject: ${subject}
+Year group: ${yearGroup}
+Topic: ${topic}${subtopic ? `\nSubtopic: ${subtopic}` : ""}
+Ability tier: ${abilityTier}
+${sendRule}
+Reading age target: ${readingAge}
+Exam board: ${examBoard || "None specified"}
+
+FIXED SECTION ORDER \u2014 you must follow this exactly:
+1. Header (subject, topic, name/date/class fields)
+2. Learning Objective \u2014 must be measurable: "Calculate\u2026", "Explain\u2026", "Analyse\u2026" not "Understand\u2026"
+3. Retrieval Practice (5 questions \u2014 3 recall, 1 prior-topic link, 1 misconception check)
+4. Key Vocabulary (term, definition, symbol/example if relevant)
+5. Common Mistakes \u2014 these MUST be tested later in the worksheet questions
+6. Worked Example (question, method steps, final answer, why it works, common mistake note)
+7. Diagram A \u2014 reference/stimulus. Student uses it to answer questions. Include alt text.
+8. Section 1 \u2014 Recall (low-load, questions 1\u20133, mark tariff 1\u20132 marks each)
+9. Section 2 \u2014 Understanding (questions 4\u20136, multi-step, 2\u20134 marks each)
+10. Diagram B \u2014 completion/annotation/interpretation task. Student must do something with it.
+11. Section 3 \u2014 Application (exam-style, questions 7\u20139, 3\u20136 marks each)
+12. Challenge Question (stretch/proof/evaluation, 6\u20138 marks, always present)
+13. Self-Reflection (RAG rating, confidence check, linked to learning objective)
+14. Teacher\u2019s Key (answers, method marks, acceptable alternatives, common wrong answers, SEND support notes)
+
+STRICT RULES:
+\u2022 Ability tier controls challenge level. SEND controls access route. Never confuse these.
+\u2022 Do not soften exam command words. Keep: Evaluate, Analyse, Calculate, Explain.
+\u2022 If SEND is set, add scaffolds/sentence frames/word banks \u2014 do not remove questions.
+\u2022 Do not invent exam board specific content unless the board is specified.
+\u2022 Do not claim specific mark allocations from real past papers.
+\u2022 Teacher key must include method marks for every question, not just final answers.
+\u2022 Mark scheme must say: answer, method, acceptable alternatives, common errors.
+\u2022 Reading age ${readingAge}: adjust sentence length and vocabulary support accordingly.
+  Keep all required subject vocabulary. Explain it in the vocabulary section.
+\u2022 Foundation tier: smaller steps, direct command words, more scaffolds.
+\u2022 Higher tier: algebraic/abstract reasoning, proof, evaluation, unfamiliar contexts.
+\u2022 Scaffolded tier: same objective, step-by-step prompts, sentence frames, worked stems.`;
+}
+
+
 //
 // Three-layer system:
 //   1. CONTENT RULES  — what each question type must contain
@@ -1608,6 +2010,50 @@ const SECTION_LAYOUTS: Record<string, LayoutFamily[]> = {
   ],
   challenge: ["extended_answer", "draw_box", "diagram_subquestions"],
 };
+
+function resolveAbilityTier(difficulty: string, explicit?: string): "foundation" | "standard" | "higher" | "scaffolded" {
+  if (explicit === "foundation" || explicit === "standard" || explicit === "higher" || explicit === "scaffolded") return explicit;
+  const d = difficulty.toLowerCase();
+  if (d === "foundation") return "foundation";
+  if (d === "higher") return "higher";
+  if (d === "scaffolded") return "scaffolded";
+  return "standard";
+}
+
+function inferReadingAge(yearGroup: string, explicit?: number): number {
+  if (explicit && explicit > 0) return explicit;
+  const y = parseInt((yearGroup || "").replace(/[^0-9]/g, ""), 10) || 7;
+  return y + 5;
+}
+
+function findTopicData(subject: string, topic: string): any {
+  // Mock topic data lookup - in production this uses a large library of curriculum data
+  // For maths, we use the expandedMathTopics if available
+  const sub = subject.toLowerCase();
+  const top = topic.toLowerCase();
+  if (sub.includes("math")) {
+    const match = Object.keys(expandedMathTopics).find(k => k.toLowerCase() === top || top.includes(k.toLowerCase()));
+    if (match) return expandedMathTopics[match];
+  }
+  return { title: topic };
+}
+
+function getAdaptations(sendNeed?: string): string[] {
+  if (!sendNeed || sendNeed === "none-selected") return [];
+  const overlay = getSENDOverlay(sendNeed);
+  const ads: string[] = [];
+  if (overlay.addStepScaffolds) ads.push("step-by-step scaffolds");
+  if (overlay.addWordBanks) ads.push("word banks");
+  if (overlay.sentenceFrames) ads.push("sentence frames");
+  if (overlay.simplifyLanguage) ads.push("simplified language");
+  return ads;
+}
+
+function getExamBoardNote(examBoard?: string): string | null {
+  if (!examBoard || examBoard === "none") return null;
+  const board = examBoards.find(b => b.id === examBoard);
+  return board ? `Exam Board: ${board.name}` : null;
+}
 
 // Primary-only layouts (KS1 only uses first 4)
 const PRIMARY_KS1_LAYOUTS: LayoutFamily[] = ["true_false", "matching", "ordering", "mcq_2col"];
@@ -1677,6 +2123,58 @@ function pickLayout(
   }
 
   return candidates[questionId % candidates.length];
+}
+
+function scoreWorksheet(sections: WorksheetSection[], meta: any, hasDiagA: boolean, hasDiagB: boolean): WorksheetQAScore {
+  const score: WorksheetQAScore = {
+    curriculumAlignment: 15,
+    examStyleAccuracy: 15,
+    questionProgression: 10,
+    accessibilityCompliance: 10,
+    scaffoldingQuality: 10,
+    mathsRigour: 10,
+    readingAgeMatch: 10,
+    layoutDiversity: 10,
+    teacherKeyCompleteness: 10,
+    total: 100,
+    failConditions: [],
+  };
+
+  const sectionTypes = new Set(sections.map(s => s.type));
+
+  // ── Spec §29: Fail conditions ──
+  if (!sectionTypes.has("learning-objective") && !sectionTypes.has("objective")) score.failConditions.push("Missing Learning Objective");
+  if (!sectionTypes.has("teacher-key") && !sectionTypes.has("mark-scheme") && !sectionTypes.has("answers")) score.failConditions.push("Missing Teacher Key");
+  if (sections.length < 6) score.failConditions.push("Insufficient section count");
+
+  // ── Alignment check ──
+  if (!hasDiagA || !hasDiagB) {
+    score.curriculumAlignment -= 5;
+    score.questionProgression -= 3;
+  }
+
+  // ── Layout diversity ──
+  const layoutTags = sections.map(s => (s.content.match(/LAYOUT:(\w+)/) || [])[1]).filter(Boolean);
+  const distinctLayouts = new Set(layoutTags).size;
+  if (distinctLayouts < 3) score.layoutDiversity -= 5;
+
+  // ── Reading age check ──
+  if (meta.readingAge < 5) score.readingAgeMatch -= 10;
+
+  // ── Recalculate total ──
+  score.total = (
+    score.curriculumAlignment +
+    score.examStyleAccuracy +
+    score.questionProgression +
+    score.accessibilityCompliance +
+    score.scaffoldingQuality +
+    score.mathsRigour +
+    score.readingAgeMatch +
+    score.layoutDiversity +
+    score.teacherKeyCompleteness
+  );
+
+  return score;
 }
 
 // ── Plan validator ────────────────────────────────────────────────────────────
@@ -1990,12 +2488,43 @@ function answerLinesForLayout(
   return Math.round(b * sendOverlay.extraAnswerLinesMultiplier);
 }
 
+// ── Phase 0: Helper Functions ───────────────────────────────────────────────
+function hashVariant(p: WorksheetParams): string {
+  // Create a deterministic hash of the parameters to enable library lookup
+  const s = `${p.subject}|${p.topic}|${p.yearGroup}|${p.sendNeed || 'none'}|${p.difficulty}|${p.abilityTier || 'standard'}|${p.readingAge || 0}|${p.examBoard || 'none'}|${p.isRevisionMat ? 'rm' : 'ws'}`;
+  let hash = 0;
+  for (let i = 0; i < s.length; i++) {
+    const char = s.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  return `v${Math.abs(hash).toString(16)}`;
+}
+
+function checkWorksheetLibrary(variantId: string): GeneratedWorksheet | null {
+  // Stub for client-side library lookup. In production, this would check
+  // an indexedDB or local cache of canonical worksheets.
+  return null;
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // MAIN GENERATE FUNCTION
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function generateWorksheet(params: WorksheetParams): GeneratedWorksheet {
-  const { subject, topic, yearGroup, sendNeed, difficulty, examBoard, includeAnswers } = params;
+  const { subject, topic, subtopic, yearGroup, sendNeed, difficulty, abilityTier: explicitTier, readingAge: explicitReadingAge, examBoard, includeAnswers } = params;
+
+  // ── Phase 0: Library Lookup (Spec §2.2 — Library-First) ──
+  const variantId = hashVariant(params);
+  const cached = checkWorksheetLibrary(variantId);
+  if (cached) return { ...cached, metadata: { ...cached.metadata, fromLibrary: true } };
+
+  const abilityTier = resolveAbilityTier(difficulty, params.abilityTier);
+  const readingAge = inferReadingAge(yearGroup, params.readingAge);
+  const keyStage = (() => {
+    const y = parseInt((yearGroup || "").replace(/[^0-9]/g, ""), 10) || 7;
+    return y <= 2 ? "KS1" : y <= 6 ? "KS2" : y <= 9 ? "KS3" : y <= 11 ? "KS4" : "KS5";
+  })();
 
   const topicData = findTopicData(subject, topic);
   const adaptations = getAdaptations(sendNeed);
@@ -2003,7 +2532,7 @@ export function generateWorksheet(params: WorksheetParams): GeneratedWorksheet {
 
   const sections: WorksheetSection[] = [];
 
-  // ── Phase 1: Year-group calibration ────────────────────────────────────────
+  // ── Phase 1: Year-group calibration ────────────────────────────────
   const yearNum = parseInt((yearGroup || "").replace(/[^0-9]/g, ""), 10) || 7;
   const phase =
     yearNum <= 2  ? "KS1" :
@@ -2021,19 +2550,20 @@ export function generateWorksheet(params: WorksheetParams): GeneratedWorksheet {
     "secondary";
   const isPrimary = ageProfile !== "secondary";
 
-  // ── Phase 2: SEND overlay ──────────────────────────────────────────────────
+  // ── Phase 2: SEND overlay (spec §4.4 — applied after ability tier) ────────
   const sendOverlay = getSENDOverlay(sendNeed);
 
   const title = topicData.title || `${topic} — ${subject}`;
-  const subtitle = `${yearGroup} (${phase}) | ${subject} | ${difficulty.charAt(0).toUpperCase() + difficulty.slice(1)} Difficulty${examBoard && examBoard !== "none" ? ` | ${examBoards.find(b => b.id === examBoard)?.name}` : ""} | ${estimatedTime}`;
+  const subtitle = `${yearGroup} (${phase}) | ${subject} | ${abilityTier.charAt(0).toUpperCase() + abilityTier.slice(1)} | Reading Age ${readingAge}${examBoard && examBoard !== "none" ? ` | ${examBoards.find(b => b.id === examBoard)?.name}` : ""} | ${estimatedTime}`;
 
-  // ── Phase 3: Build layout plan ─────────────────────────────────────────────
+  // ── Phase 3: Build layout plan ────────────────────────────────────────
   const allUsedLayouts: LayoutFamily[] = [];
   let diagramsUsed = 0;
   let questionId = 1;
 
   // Only allow label_diagram layout when the topic has real diagram data
   const hasDiagramData = !!(topicData.diagram || topicData.diagramSubQ);
+
 
   interface PlanEntry { section: string; layout: LayoutFamily; marks: number; requiresDiagram: boolean; }
   const questionPlan: PlanEntry[] = [];
@@ -2068,7 +2598,7 @@ export function generateWorksheet(params: WorksheetParams): GeneratedWorksheet {
   );
   // Errors are advisory — we log them but never crash; the fallback plan still produces a worksheet
 
-  // ── Phase 5: Teacher-only prior knowledge ─────────────────────────────────
+  // ── Phase 5: Teacher-only prior knowledge ──────────────────────────────
   if (topicData.priorKnowledge) {
     sections.push({
       title: "Prior Knowledge Required",
@@ -2078,17 +2608,37 @@ export function generateWorksheet(params: WorksheetParams): GeneratedWorksheet {
     });
   }
 
-  // ── Phase 6: PAGE 1 — Header sections ─────────────────────────────────────
+  // ── Phase 6: PAGE 1 — Header sections (spec §3.1 fixed order) ───────────
 
-  // Learning Objective
+  // Section 1: Header (spec: subject, topic, variantId, readingAge)
+  sections.push({
+    title: "Worksheet Header",
+    type: "header",
+    content: `# ${title}\nYear Group: ${yearGroup}\nReading Age: ${readingAge}\nAbility Tier: ${abilityTier}\nVariant ID: ${variantId}`,
+  });
+
+  // Section 2: Learning Objective (spec: measurable, not vague)
   sections.push({
     title: "Learning Objective",
-    type: "objective",
+    type: "learning-objective",
     content: topicData.objective,
   });
 
-  // Key Vocabulary — only added for non-Maths subjects.
-  // Maths worksheets are strictly question-based with no vocabulary section.
+  // Section 3: Retrieval Practice (spec §3.2 — 3 recall + 1 prior-topic + 1 misconception)
+  if (!isPrimary) {
+    const retrievalContent = buildRetrievalPractice(
+      topic,
+      topicData.priorKnowledge || "",
+      topicData.vocabulary || []
+    );
+    sections.push({
+      title: "RETRIEVAL PRACTICE — No notes!",
+      type: "retrieval",
+      content: retrievalContent,
+    });
+  }
+
+  // Section 4: Key Vocabulary
   const isMathsWorksheet = /^maths?$|^mathematics$|^math$/i.test((subject || "").trim());
   if (!isMathsWorksheet) {
     const vocabWords = topicData.vocabulary || [];
@@ -2117,15 +2667,22 @@ export function generateWorksheet(params: WorksheetParams): GeneratedWorksheet {
     }
   }
 
-  // Worked Example
+  // Section 6: Worked Example
   if (topicData.example) {
     const exContent = `**${topicData.example.question}**\n\n${topicData.example.steps.join("\n")}`;
     sections.push({
       title: "WORKED EXAMPLE — Work Through This Together",
-      type: "example",
+      type: "worked-example",
       content: exContent,
     });
   }
+
+  // Section 7: Diagnostic A (spec §3.1 — check point 1)
+  sections.push({
+    title: "CHECK POINT — Are you ready to continue?",
+    type: "diagnostic",
+    content: "Stop! Check your answers to the retrieval and worked example before moving on. Do you understand the key vocabulary?",
+  });
 
   // ── Phase 7: SECTION 1 — RECALL (Questions 1–3) ─────────────────────────────────
   const recallQuestions = questionPlan.filter(p => p.section === "recall");
@@ -2184,7 +2741,7 @@ export function generateWorksheet(params: WorksheetParams): GeneratedWorksheet {
 
   sections.push({
     title: `SECTION 1 — RECALL`,
-    type: "guided",
+    type: "recall",
     content: recallContent.join("\n\n─────\n\n"),
   });
 
@@ -2244,8 +2801,15 @@ export function generateWorksheet(params: WorksheetParams): GeneratedWorksheet {
 
   sections.push({
     title: `SECTION 2 — UNDERSTANDING`,
-    type: "independent",
+    type: "understanding",
     content: understandingContent.join("\n\n─────\n\n"),
+  });
+
+  // Section 10: Diagnostic B (spec §3.1 — check point 2)
+  sections.push({
+    title: "CHECK POINT — Review your understanding",
+    type: "diagnostic",
+    content: "Pause and check. Can you explain the steps we used in the worked example? If not, ask for a prompt.",
   });
 
   // ── Phase 9: SECTION 3 — APPLICATION & ANALYSIS (Questions 7–9) ───────────
@@ -2306,12 +2870,14 @@ export function generateWorksheet(params: WorksheetParams): GeneratedWorksheet {
 
   sections.push({
     title: `SECTION 3 — APPLICATION & ANALYSIS`,
-    type: "independent",
+    type: "application",
     content: applicationContent.join("\n\n─────\n\n"),
   });
 
-  // ── Phase 10: CHALLENGE (★) ────────────────────────────────────────────────
-  if (difficulty === "higher" || difficulty === "stretch" || difficulty === "mixed") {
+  // ── Phase 10: CHALLENGE (★) — ALWAYS shown for secondary; tier-gated for primary
+  // Spec §5.2: challenge present for all tiers. SEND must not remove it (spec §6.1).
+  const showChallenge = !isPrimary || difficulty === "higher" || difficulty === "stretch" || difficulty === "mixed";
+  if (showChallenge) {
     const challengeLayout = pickLayout("challenge", allUsedLayouts, questionId, ageProfile, diagramsUsed, hasDiagramData);
     const challengeMarks = 8;
     const markStr = `[${challengeMarks} marks]`;
@@ -2352,9 +2918,10 @@ export function generateWorksheet(params: WorksheetParams): GeneratedWorksheet {
 
   sections.push({
     title: "SELF REFLECTION",
-    type: "self-reflection",
+    type: "reflection",
     content: [
-      "A  How confident do you feel? Tick the column that best describes you.\n",
+      "A  How confident do you feel about today’s learning objective?\n",
+      `Learning objective: ${topicData.objective}\n`,
       reflectionTopics.map(t => `${t} | Not Yet | Getting There | Confident`).join("\n"),
       "\nB  Written reflection:\n",
       "One concept I feel confident about is ...\n",
@@ -2364,45 +2931,71 @@ export function generateWorksheet(params: WorksheetParams): GeneratedWorksheet {
     ].join("\n"),
   });
 
-  // ── Phase 13: Teacher-only sections ──────────────────────────────────────
+  // ── Phase 13: Teacher-only sections (spec §11 — teacher key is a first-class output)
 
-  // Answer Key
+  // Section 14: Teacher’s Key (spec §11 — method marks, alternatives, common errors, SEND notes)
   if (includeAnswers) {
-    const allAnswers: string[] = [];
+    // Build structured teacher key questions from mark scheme
+    const teacherKeyQuestions = topicData.markScheme?.map((m: any) => ({
+      qRef: `Q${m.q}`,
+      marks: m.marks || 1,
+      answer: m.answer || "",
+      method: m.method,
+      acceptableAlternatives: m.acceptableAlternatives || [],
+      commonWrongAnswers: m.commonWrongAnswers || [],
+      sendSupportNote: sendNeed && sendNeed !== "none-selected"
+        ? `For ${sendNeed}: ensure student has access to relevant scaffolds for this question type.`
+        : undefined,
+    })) || [];
 
-    // Guided (Section 1)
+    // Add simple answer key for guided and independent questions not in markScheme
+    const allAnswers: string[] = [];
     topicData.guided?.forEach((g: any, i: number) => {
       allAnswers.push(`Q${i + 1}. ${g.a}${g.marks ? ` [${g.marks}m]` : ""}`);
     });
-
-    // Independent (Sections 2+3)
+    const independentQs = abilityTier === "foundation"
+      ? topicData.independent?.slice(0, 4) ?? []
+      : abilityTier === "higher"
+      ? topicData.independent ?? []
+      : topicData.independent?.slice(0, Math.ceil((topicData.independent?.length || 0) * 0.75)) ?? [];
     independentQs.forEach((q: any, i: number) => {
       allAnswers.push(`Q${i + 4}. ${q.a}${q.marks ? ` [${q.marks}m]` : ""}`);
     });
-
-    if ((difficulty === "higher" || difficulty === "stretch" || difficulty === "mixed") && topicData.challengeAnswer) {
+    if (showChallenge && topicData.challengeAnswer) {
       allAnswers.push(`Challenge: ${topicData.challengeAnswer} [8m]`);
     }
 
-    sections.push({
-      title: "Answer Key",
-      type: "answers",
-      content: allAnswers.join("\n"),
-      teacherOnly: true,
-    });
-  }
+    const teacherKeyContent = teacherKeyQuestions.length > 0
+      ? buildTeacherKey(teacherKeyQuestions, subject, sendNeed, topicData.teacherNotes)
+      : [
+          "TEACHER’S KEY — DO NOT DISTRIBUTE TO STUDENTS",
+          "=".repeat(54),
+          sendNeed && sendNeed !== "none-selected"
+            ? `\n⚠️ SEND profile: ${sendNeed.toUpperCase()}. Apply access changes, not lower challenge.\n`
+            : "",
+          allAnswers.join("\n"),
+          topicData.teacherNotes ? `\nTeacher notes:\n${topicData.teacherNotes}` : "",
+        ].filter(Boolean).join("\n");
 
-  // Mark Scheme
-  if (includeAnswers && topicData.markScheme) {
-    const msContent = topicData.markScheme.map((m: any) =>
-      `Q${m.q}: ${m.answer}${m.method ? ` — Method: ${m.method}` : ""} [${m.marks} mark${m.marks > 1 ? "s" : ""}]`
-    ).join("\n");
     sections.push({
-      title: "Mark Scheme",
-      type: "mark-scheme",
-      content: msContent,
+      title: "Teacher’s Key",
+      type: "teacher-key",
+      content: teacherKeyContent,
       teacherOnly: true,
     });
+
+    // Also keep mark scheme section for renderer compatibility
+    if (topicData.markScheme) {
+      const msContent = topicData.markScheme.map((m: any) =>
+        `Q${m.q}: ${m.answer}${m.method ? ` — Method: ${m.method}` : ""} [${m.marks} mark${m.marks > 1 ? "s" : ""}]`
+      ).join("\n");
+      sections.push({
+        title: "Mark Scheme",
+        type: "mark-scheme",
+        content: msContent,
+        teacherOnly: true,
+      });
+    }
   }
 
   // Teacher Notes
@@ -2441,28 +3034,53 @@ export function generateWorksheet(params: WorksheetParams): GeneratedWorksheet {
     });
   }
 
-  // ── Calculate total marks ─────────────────────────────────────────────────
+  // -- Calculate total marks -----------------------------------------------
   const totalMarks = topicData.markScheme
     ? topicData.markScheme.reduce((sum: number, m: any) => sum + (m.marks || 0), 0)
     : questionPlan.reduce((sum, p) => sum + p.marks, 0);
+
+  // -- QA scoring (spec section 29) -----------------------------------------
+  const hasDiagramASection = sections.some(s => s.type === "diagram-a");
+  const hasDiagramBSection = sections.some(s => s.type === "diagram-b");
+
+  const partialMeta: GeneratedWorksheet["metadata"] = {
+    generatorVersion: "3.1.0-adaptly",
+    variantId,
+    baseWorksheetId: undefined,
+    subject,
+    topic,
+    subtopic,
+    yearGroup,
+    keyStage,
+    examBoard,
+    sendNeed,
+    difficulty,
+    abilityTier,
+    readingAge,
+    adaptations,
+    totalMarks,
+    estimatedTime,
+    validationStatus: "pending",
+    validationWarnings: planValidationErrors.length > 0 ? planValidationErrors : undefined,
+  };
+
+  const qaScore = scoreWorksheet(sections, partialMeta, hasDiagramASection, hasDiagramBSection);
+  const validationStatus: "pass" | "warn" | "fail" = qaScore.failConditions.length > 0 ? "fail"
+    : planValidationErrors.length > 0 ? "warn"
+    : "pass";
 
   return {
     title,
     subtitle,
     sections,
     metadata: {
-      subject,
-      topic,
-      yearGroup,
-      sendNeed,
-      difficulty,
-      examBoard,
-      adaptations,
-      totalMarks,
-      estimatedTime,
+      ...partialMeta,
+      validationStatus,
+      qaScore,
     },
   };
 }
+
 
 export function generateStoryContent(params: {
   genre: string;

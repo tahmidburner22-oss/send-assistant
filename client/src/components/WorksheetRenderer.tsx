@@ -32,7 +32,7 @@ const LEGACY_SECTION_TYPE_ALIASES: Record<string, string> = {
   "q-free-response": "q-extended",
   "q-free-write": "q-extended",
   "q-open-ended": "q-extended",
-  // Section type aliases
+  // ── Canonical 14-section Aliases ──
   "learning-objective": "objective",
   "learning-objectives": "objective",
   "key-terms": "vocabulary",
@@ -40,6 +40,14 @@ const LEGACY_SECTION_TYPE_ALIASES: Record<string, string> = {
   "section-heading": "section-header",
   "section-divider": "section-header",
   "section-break": "section-header",
+  "reflection": "self-reflection",
+  "teacher-key": "mark-scheme",
+  "diagnostic-a": "diagnostic",
+  "diagnostic-b": "diagnostic",
+  "recall": "independent", // recall questions use independent practice style
+  "understanding": "independent",
+  "application": "independent",
+  "retrieval": "prior-knowledge",
   // Teacher section aliases
   "q-teacher-answers": "mark-scheme",
   "teacher-answers": "mark-scheme",
@@ -6012,6 +6020,29 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                   return undefined;
                 })() ?? (section.type === "vocabulary" ? (
                   <VocabSection content={content} fmt={fmt} overlayColor={overlayColor} />
+                ) : section.type === "diagnostic" ? (
+                  <div style={{ background: "#fefce8", border: "1.5px solid #facc15", borderRadius: "6px", padding: "14px 16px" }}>
+                    <div style={{ fontSize: "11px", fontWeight: 700, color: "#854d0e", letterSpacing: "0.05em", marginBottom: "8px", fontFamily: fmt.fontFamily, textTransform: "uppercase" }}>Check for Understanding</div>
+                    <div style={{ fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, lineHeight: String(fmt.lineHeight), color: "#1e293b" }}
+                      dangerouslySetInnerHTML={{ __html: renderMath(content) }} />
+                  </div>
+                ) : section.type === "common-mistakes" ? (
+                  <div style={{ background: "#fff1f2", border: "1.5px solid #fecdd3", borderRadius: "6px", padding: "14px 16px" }}>
+                    <div style={{ fontSize: "11px", fontWeight: 700, color: "#9f1239", letterSpacing: "0.05em", marginBottom: "8px", fontFamily: fmt.fontFamily, textTransform: "uppercase" }}>⚠️ Watch Out! Common Mistakes</div>
+                    <div style={{ fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, lineHeight: String(fmt.lineHeight), color: "#1e293b" }}
+                      dangerouslySetInnerHTML={{ __html: renderMath(content) }} />
+                  </div>
+                ) : section.type === "header" ? (
+                  <div style={{ background: "#1B2A4A", padding: "16px 20px", marginBottom: "20px", color: "white", borderRadius: "2px" }}>
+                    <div style={{ fontSize: "20px", fontWeight: 800, fontFamily: fmt.fontFamily, marginBottom: "4px" }}>{content.split("\n")[0].replace(/^#+\s*/, "")}</div>
+                    <div style={{ fontSize: "10px", color: "#99BBBB", opacity: 0.9, textTransform: "uppercase", letterSpacing: "0.1em" }}>{content.split("\n").slice(1).join(" · ")}</div>
+                  </div>
+                ) : section.type === "retrieval" || section.type === "prior-knowledge" ? (
+                  <div style={{ background: "#f0fdf4", border: "1.5px solid #86efac", borderRadius: "6px", padding: "14px 16px" }}>
+                    <div style={{ fontSize: "11px", fontWeight: 700, color: "#166534", letterSpacing: "0.05em", marginBottom: "8px", fontFamily: fmt.fontFamily, textTransform: "uppercase" }}>Retrieval Starter: Quick Quiz</div>
+                    <div style={{ fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, lineHeight: String(fmt.lineHeight), color: "#1e293b" }}
+                      dangerouslySetInnerHTML={{ __html: renderMath(content) }} />
+                  </div>
                 ) : section.type === "self-assessment" ? (
                   <SelfAssessmentSection content={content} fmt={fmt} />
                 ) : section.type === "self-reflection" ? (

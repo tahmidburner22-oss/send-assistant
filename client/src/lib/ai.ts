@@ -580,6 +580,7 @@ export async function aiGenerateWorksheet(params: {
   additionalInstructions?: string;
   examStyle?: boolean;
   diagramType?: string;
+  generateDiagram?: boolean;  // alias for diagramType — true enables diagram generation
   worksheetLength?: string;
   introOnly?: boolean; // When true, only generate intro sections (objectives, vocab, worked example) — used for hybrid exam mode
   recallTopic?: string; // When set, prepend 2-3 recall questions on this previous topic at the start of the worksheet
@@ -590,6 +591,7 @@ export async function aiGenerateWorksheet(params: {
   subtopic?: string; // Optional subtopic for more specific generation
   generateDiagram?: boolean; // Whether to include diagram sections (default: true for relevant subjects)
 }): Promise<AIWorksheetResult> {
+
   // ── REVISION MAT: completely separate prompt path ─────────────────────────
   if (params.isRevisionMat) {
     const rmSystem = `You are an expert UK teacher creating a GCSE revision mat. You respond with valid raw JSON only — no markdown, no code blocks, no HTML. Every rule below is mandatory.`;
@@ -2870,6 +2872,7 @@ export function parseNaturalLanguageInput(input: string): {
   topic?: string;
   difficulty?: string;
   sendNeed?: string;
+  readingAge?: number;
 } {
   const text = input.trim().toLowerCase();
   const result: {
@@ -2878,6 +2881,7 @@ export function parseNaturalLanguageInput(input: string): {
     topic?: string;
     difficulty?: string;
     sendNeed?: string;
+    readingAge?: number;
   } = {};
 
   // ── Year Group extraction ──
@@ -2889,6 +2893,13 @@ export function parseNaturalLanguageInput(input: string): {
   // 11+ detection
   if (/11\s*\+|eleven\s*plus/i.test(text)) {
     result.yearGroup = "11+ Preparation";
+  }
+
+  // ── Reading Age extraction ──
+  const raMatch = text.match(/reading\s*age\s*(\d{1,2})/i) || text.match(/ra\s*(\d{1,2})/i);
+  if (raMatch) {
+    const age = parseInt(raMatch[1], 10);
+    if (age >= 5 && age <= 18) result.readingAge = age;
   }
 
   // ── Subject extraction ──

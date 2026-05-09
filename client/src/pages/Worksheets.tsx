@@ -133,6 +133,26 @@ interface AIWorksheet {
     subject: string; topic: string; yearGroup: string; sendNeed?: string;
     difficulty: string; examBoard?: string; adaptations?: string[];
     totalMarks?: number; estimatedTime?: string;
+    // Extended fields from Adaptly spec
+    abilityTier?: string;
+    readingAge?: number;
+    keyStage?: string;
+    subtopic?: string;
+    variantId?: string;
+    generatorVersion?: string;
+    validationStatus?: string;
+    qaScore?: Record<string, unknown>;
+    validationWarnings?: string[];
+    // Fields used in differentiation flow
+    sendNeedId?: string;
+    buildManifest?: {
+      canonicalTopicKey?: string;
+      sourceLibraryId?: string;
+      featureFlags?: Record<string, unknown>;
+      [key: string]: unknown;
+    };
+    // Allow any extra fields set by AI generation path
+    [key: string]: unknown;
   };
   diagramUrl?: string | null;
   isAI: true;
@@ -1456,7 +1476,20 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
             "No AI keys configured. Go to Settings → AI Providers to add your school's API keys. Using local generator for now.",
             { duration: 10000 }
           );
-          generatedWs = generateWorksheet({ subject, topic, yearGroup, sendNeed: sendNeed || undefined, difficulty, examBoard, includeAnswers, additionalInstructions });
+          generatedWs = generateWorksheet({
+            subject,
+            topic,
+            yearGroup,
+            sendNeed: sendNeed && sendNeed !== "none-selected" ? sendNeed : undefined,
+            difficulty,
+            examBoard: examBoard !== "none" ? examBoard : undefined,
+            includeAnswers,
+            additionalInstructions,
+            readingAge: readingAge || undefined,
+            recallTopic: (selectedSections.includes('retrieval') ? (recallTopic.trim() || topic) : recallTopic.trim()) || undefined,
+            examStyle,
+            selectedSections: selectedSections as string[],
+          });
         } else {
           // Retry across all available providers — server tries Groq→Cerebras→Gemini→OpenRouter→OpenAI→Claude→Mistral→DeepSeek
           const providerNames = ["Groq", "Gemini", "OpenRouter", "OpenAI", "Claude", "Mistral", "DeepSeek", "Fallback"];
@@ -2735,7 +2768,8 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
           generateDiagram: false,
           worksheetLength: "30",
           targetPages: undefined,
-          readingAge: undefined,
+          readingAge: parsed.readingAge || readingAge || undefined,
+          recallTopic: recallTopic || undefined,
         });
         generatedWs = { ...result, isAI: true } as AIWorksheet;
         toast.success("Worksheet generated!");
@@ -2749,6 +2783,8 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
           examBoard: "none",
           includeAnswers,
           additionalInstructions: rawPrompt,
+          readingAge: parsed.readingAge || readingAge || undefined,
+          recallTopic: recallTopic || undefined,
         });
         toast.success("Worksheet generated!");
       }
