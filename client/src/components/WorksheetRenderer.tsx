@@ -4210,14 +4210,14 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
             //   A line:  "LO: Students will be able to..."
             //   A line:  "Key Vocabulary:"
             //   Rest:    one vocab term per line
-            const titleSec = worksheet.sections.find((s: any) =>
+            const titleSec = (worksheet.sections || []).find((s: any) =>
               s.type === "revision-mat-title"
             );
             // Fallbacks: separate LO / vocab sections from older worksheets
-            const loSec    = worksheet.sections.find((s: any) =>
+            const loSec    = (worksheet.sections || []).find((s: any) =>
               s.type === "revision-mat-lo" || s.type === "objective"
             );
-            const vocabSec = worksheet.sections.find((s: any) =>
+            const vocabSec = (worksheet.sections || []).find((s: any) =>
               s.type === "vocabulary" || s.type === "revision-mat-vocab"
             );
 
@@ -4242,7 +4242,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
             }
 
             // ── Collect question sections (max 16), strip meta/self-reflection ──
-            const rawQSections = worksheet.sections.filter((s: any) =>
+            const rawQSections = (worksheet.sections || []).filter((s: any) =>
               !s.teacherOnly &&
               s.type !== "answers" && s.type !== "teacher-notes" &&
               s.type !== "mark-scheme" && s.type !== "adaptations" &&
@@ -4252,7 +4252,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
               s.type !== "diagram" // Diagrams are handled separately for full-page landscape
             );
 
-            const diagramSections = worksheet.sections.filter((s: any) => s.type === "diagram");
+            const diagramSections = (worksheet.sections || []).filter((s: any) => s.type === "diagram");
 
             // ── Split multi-question boxes into individual questions ──────
             const splitSections: any[] = [];
@@ -4489,7 +4489,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                     ════════════════════════════════════════════════════════ */}
                 {placed.filter(b => !b.isTitle).map((box, bi) => {
                   const { section, label, colSpan, rowSpan, colStart, rowStart, marks = 1 } = box;
-                  const origIdx = worksheet.sections.indexOf(section);
+                  const origIdx = (worksheet.sections || []).indexOf(section);
                   const rawContent = (editedSections && editedSections[origIdx] !== undefined)
                     ? editedSections[origIdx] : section.content;
                   const displayContent = typeof rawContent === "string" ? rawContent : String(rawContent || "");
@@ -4793,7 +4793,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
       )}
 
       {/* ── Sections (normal portrait layout — hidden when revision mat active) ── */}
-      {!isRevisionMat && worksheet.sections.map((section, i) => {
+      {!isRevisionMat && (worksheet.sections || []).map((section, i) => {
         const normalizedSectionType = normalizeWorksheetSectionType(section.type);
         if (normalizedSectionType !== section.type) {
           section = { ...section, type: normalizedSectionType };
@@ -4930,7 +4930,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
         // Show the group divider only before the FIRST question of that group in the worksheet
         // Use question number from title to determine group membership
         // Also suppress auto-inject if the worksheet already has an explicit section-header covering this group
-        const hasExplicitSectionHeader = myGroupLabel && worksheet.sections.some((s: any) => {
+        const hasExplicitSectionHeader = myGroupLabel && (worksheet.sections || []).some((s: any) => {
           const normType = normalizeWorksheetSectionType(s.type);
           if (normType !== "section-header") return false;
           const headerTitle = (typeof s.title === "string" ? s.title : String(s.title || "")).toUpperCase();
@@ -4941,7 +4941,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
           if (myGroupLabel === "SECTION 3 \u2014 APPLICATION") return /SECTION\s*3|APPLICATION/i.test(headerTitle + headerContent);
           return false;
         });
-        const isFirstTeacherSection = isTeacherSection && !worksheet.sections.slice(0, i).some((s: any) => {
+        const isFirstTeacherSection = isTeacherSection && !(worksheet.sections || []).slice(0, i).some((s: any) => {
           const nt = normalizeWorksheetSectionType(s.type);
           return s.teacherOnly || nt === 'teacher-notes' || nt === 'mark-scheme' || nt === 'answers';
         });
