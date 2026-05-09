@@ -117,7 +117,7 @@ function formatContent(content: string): string {
 
 function renderWorksheetText(ws: GeneratedWorksheet, includeTeacher: boolean): string {
   let text = `${ws.title}\n${ws.subtitle}\n\n`;
-  ws.sections.forEach(s => {
+  (ws.sections || []).forEach(s => {
     if (!includeTeacher && (s.type === "answers" || s.type === "adaptations")) return;
     text += `=== ${s.title} ===\n${s.content}\n\n`;
   });
@@ -1378,7 +1378,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
             // Auto-save library worksheets to history so they appear in the History tab
             {
               const lw = libWorksheet;
-              const lwSections = lw.sections.map((s: any) => ({ ...s }));
+              const lwSections = (lw.sections || []).map((s: any) => ({ ...s }));
               const lwContent = lwSections.filter((s: any) => !s.teacherOnly).map((s: any) => `## ${s.title}\n${s.content}`).join("\n\n");
               const lwTeacherContent = lwSections.map((s: any) => `## ${s.title}\n${s.content}`).join("\n\n");
               saveWorksheet({
@@ -2588,7 +2588,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
       // Auto-save the swapped worksheet to history
       {
         const sw = swappedWorksheet;
-        const swSections = sw.sections.map((s: any) => ({ ...s }));
+        const swSections = (sw.sections || []).map((s: any) => ({ ...s }));
         const swContent = swSections.filter((s: any) => !s.teacherOnly).map((s: any) => `## ${s.title}\n${s.content}`).join("\n\n");
         const swTeacherContent = swSections.map((s: any) => `## ${s.title}\n${s.content}`).join("\n\n");
         if (savedWorksheetId) {
@@ -2638,7 +2638,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
       // Auto-save the adjusted worksheet to history
       {
         const aw = adjustedWorksheet;
-        const awSections = aw.sections.map((s: any) => ({ ...s }));
+        const awSections = (aw.sections || []).map((s: any) => ({ ...s }));
         const awContent = awSections.filter((s: any) => !s.teacherOnly).map((s: any) => `## ${s.title}\n${s.content}`).join("\n\n");
         const awTeacherContent = awSections.map((s: any) => `## ${s.title}\n${s.content}`).join("\n\n");
         if (savedWorksheetId) {
@@ -3142,7 +3142,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
       // Auto-save differentiated worksheets to history
       {
         const dw = adaptedWorksheet;
-        const dwSections = dw.sections.map((s: any) => ({ ...s }));
+        const dwSections = (dw.sections || []).map((s: any) => ({ ...s }));
         const dwContent = dwSections.filter((s: any) => !s.teacherOnly).map((s: any) => `## ${s.title}\n${s.content}`).join("\n\n");
         const dwTeacherContent = dwSections.map((s: any) => `## ${s.title}\n${s.content}`).join("\n\n");
         saveWorksheet({
