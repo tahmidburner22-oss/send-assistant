@@ -697,6 +697,20 @@ MANDATORY RULES — violating any rule is wrong:
   ].some(h => subjectLowerFlag.includes(h));
   const isSTEM = !isHumanities;
 
+  // ── Subject-specific classification flags ────────────────────────────────────
+  const isEnglishLang = subjectLowerFlag.includes("english language") || (subjectLowerFlag.includes("english") && !subjectLowerFlag.includes("literature"));
+  const isEnglishLit = subjectLowerFlag.includes("english literature") || subjectLowerFlag.includes("literature");
+  const isBiology = subjectLowerFlag.includes("biology") || subjectLowerFlag.includes("bio");
+  const isChemistry = subjectLowerFlag.includes("chemistry") || subjectLowerFlag.includes("chem");
+  const isPhysics = subjectLowerFlag.includes("physics") || subjectLowerFlag.includes("phys");
+  const isScience = isBiology || isChemistry || isPhysics || subjectLowerFlag.includes("science");
+  const isHistory = subjectLowerFlag.includes("history");
+  const isGeography = subjectLowerFlag.includes("geography") || subjectLowerFlag.includes("geog");
+  const isRS = subjectLowerFlag.includes("religious") || subjectLowerFlag.includes(" re ") || subjectLowerFlag === "re" || subjectLowerFlag === "rs" || subjectLowerFlag.includes(" rs ");
+  const isCS = subjectLowerFlag.includes("computer science") || subjectLowerFlag.includes("computing");
+  const isBusiness = subjectLowerFlag.includes("business") || subjectLowerFlag.includes("economics");
+  const isMFL = subjectLowerFlag.includes("french") || subjectLowerFlag.includes("spanish") || subjectLowerFlag.includes("german") || subjectLowerFlag.includes("mfl") || subjectLowerFlag.includes("languages");
+
   // ── Year-group calibration ──────────────────────────────────────────────────
   // Parse the year number from strings like "Year 1", "Year 5", "Year 10", "Year 13"
   const is11Plus = (params.yearGroup || "").toLowerCase().includes("11+") || (params.yearGroup || "").toLowerCase().includes("eleven plus");
@@ -1622,24 +1636,163 @@ KS3/4 GCSE SPEC REQUIREMENTS (MANDATORY for Year ${yearNum}):
 - TEACHER KEY: Complete model answers for EVERY question with mark allocations. For extended answers, list marking points explicitly.
 - DIAGRAM SECTIONS: Diagram A and Diagram B are full-page visual resources from the diagram library — they are already provided as images. Do NOT generate text-based diagram descriptions. Do NOT include diagram-related questions in the text sections.
 ` : '';
+    // ── Build subject-specific rules block ────────────────────────────────────────
+    const subjectSpecificRules = (() => {
+      if (isMaths) return `
+SUBJECT-SPECIFIC RULES — MATHEMATICS:
+- ALL questions must be numerical/calculation-based. Never ask students to explain, describe, or write prose unless the topic explicitly requires proof or justification (e.g. 'Show that', 'Prove that').
+- Use LaTeX for ALL mathematical notation: wrap in \\(...\\). E.g. \\(\\dfrac{3}{4}\\), \\(x^{2}\\), \\(\\sqrt{x}\\), \\(\\leq\\). Write units as plain text outside LaTeX.
+- Notation must be checked carefully: use \\(x^{2}\\) not x2, \\(\\sqrt{x}\\) not sqrt(x), \\(\\frac{a}{b}\\) not a/b for fractions.
+- Worked example MUST show: (1) the question, (2) method/formula stated, (3) substitution step, (4) calculation step, (5) final answer with units, (6) method mark note.
+- Include at least ONE error-correction question somewhere in Section B or C (show a worked solution with a deliberate mistake; student finds and corrects it).
+- Include at least ONE multi-step problem in Section C.
+- Include at least ONE diagram, table, graph, or visual where the topic warrants it (geometry, statistics, coordinates, probability).
+- Teacher Key MUST show full working for every calculation, state the method used, and show substitution and simplification steps separately.
+- Ability tier guidance: Foundation = smaller numbers, clear steps, more worked scaffolds. Higher = algebraic generalisation, proof, surds, bounds, compound reasoning.`;
+
+      if (isEnglishLit) return `
+SUBJECT-SPECIFIC RULES — ENGLISH LITERATURE:
+- Every worksheet MUST include: an extract or poem section, a context link, a key quotation focus, methods/language/form/structure analysis, a whole-text connection, and a mini exam-style question.
+- Include a model paragraph with AO breakdown (AO1: ideas, AO2: methods, AO3: context).
+- Include a comparative prompt where the topic allows.
+- Section B MUST include at least one question using a specific quotation from the text.
+- Section C MUST include at least one 8+ mark evaluation question with level descriptors (Level 1-4).
+- Teacher Key MUST include: AO1/AO2/AO3 breakdown, context note, alternative interpretations, and level descriptor guidance.
+- Diagram A = extract, poem or key passage. Diagram B = comparison poem, context timeline, methods bank or model answer annotation.
+- SEND notes: provide quotation banks for dyslexia/working-memory; use context timelines for EAL/SLCN; keep challenge through interpretation, not reading density.`;
+
+      if (isEnglishLang) return `
+SUBJECT-SPECIFIC RULES — ENGLISH LANGUAGE:
+- Every worksheet MUST be built around a source text. A worksheet without a proper source text is NOT a valid English Language worksheet.
+- The source text MUST include line numbers and be at least 8-12 lines long.
+- Required components: source text with line numbers, retrieval question, language analysis question, structure or viewpoint question, evaluation question, writing task or short crafted response, model answer or paragraph scaffold, vocabulary support for complex words.
+- Section B MUST include: (a) a retrieval question referencing specific lines, (b) a language analysis question with a named technique, (c) a structure or viewpoint question.
+- Section C MUST include: (a) an evaluation question, (b) a writing task with a clear purpose and audience.
+- Teacher Key MUST include: model answer features, quotation use, method analysis, and band descriptors for extended questions.
+- Diagram A = source extract with line numbers. Diagram B = writing stimulus image, second source, model answer, or planning frame.
+- SEND notes: dyslexia = avoid dense extracts, increase spacing; EAL = glossary difficult words, avoid idioms in instructions; SLCN = sentence starters and analysis frames; ASC = make questions literal, avoid vague prompts.`;
+
+      if (isBiology) return `
+SUBJECT-SPECIFIC RULES — BIOLOGY:
+- Worksheets must combine: factual recall, structure-function links, data interpretation, and required practical thinking.
+- Required components: labelled or partially labelled biological structure, one data/graph/table task where relevant, one explain question using structure-function reasoning, one required-practical style question where relevant, one misconception check.
+- Use correct biological terminology throughout. Do not simplify scientific terms — define them instead.
+- Worked example MUST show a complete explanation of a biological process, not just a definition.
+- Teacher Key MUST include: acceptable wording alternatives, required key terms that MUST appear in the answer, common misconceptions, and mark-scheme wording for longer answers.
+- Diagram A = labelled cell, organ, body system, graph or microscope image. Diagram B = blank label task, graph completion, Punnett square or practical results table.
+- SEND notes: MLD = use labelled before unlabelled diagrams; EAL = define process words (diffusion, osmosis, active transport); SLCN = cause-effect sentence frames; VI = text descriptions of diagrams.`;
+
+      if (isChemistry) return `
+SUBJECT-SPECIFIC RULES — CHEMISTRY:
+- Worksheets must show calculations clearly. Formula, substitution, answer and unit must ALL be visible in worked examples.
+- Required components: key vocabulary and symbols, particle or apparatus diagram where relevant, balanced equation practice where relevant, worked calculation with units, required practical question where relevant, error-correction question for common misconception.
+- Every calculation question MUST show: formula → substitution → answer → unit.
+- Balanced equations must use correct state symbols where appropriate.
+- Teacher Key MUST include: formula used, substitution shown, units, significant figures where relevant, and acceptable alternative phrasings.
+- Diagram A = particle model, apparatus, reaction profile, bonding diagram or data table. Diagram B = practical setup to label, chromatography/titration/electrolysis diagram, results table to complete.
+- SEND notes: dyscalculia = formula triangle/step table; EAL = define yield, excess, rate, concentration; ASC = sequence practical methods clearly; dyslexia = avoid long chemical names without spacing.`;
+
+      if (isPhysics) return `
+SUBJECT-SPECIFIC RULES — PHYSICS:
+- Worksheets must build equation fluency AND conceptual understanding together. Do not make physics only formula substitution.
+- Required components: equation recall or equation bank, worked calculation with rearrangement where relevant, unit check, diagram/graph interpretation, practical/data question, explanation question for concept understanding.
+- Every calculation MUST show: equation stated → rearrangement (if needed) → substitution → answer → unit.
+- Include at least one graph interpretation or data analysis question.
+- Teacher Key MUST include: equation used, rearrangement shown, substitution, unit, graph-reading method, and acceptable alternative phrasings.
+- Diagram A = circuit, force diagram, wave diagram, velocity-time graph, I-V graph. Diagram B = complete a circuit, ray diagram, graph, force arrows or wave labels.
+- SEND notes: dyscalculia = formula/substitute/solve/unit boxes; EAL = define resultant, potential difference, frequency, amplitude; ASC = make graph-reading steps explicit; VI = avoid small circuit labels, provide text description.`;
+
+      if (isHistory) return `
+SUBJECT-SPECIFIC RULES — HISTORY:
+- Worksheets must train second-order thinking: cause, consequence, change, continuity, similarity, difference and significance.
+- Required components: key chronology, source or interpretation, factual recall, explanation question, source utility or interpretation question where relevant, extended answer plan, model paragraph using own knowledge and judgement.
+- Every worksheet MUST include at least one source or primary evidence item.
+- Section C MUST include at least one extended question requiring a structured argument with evidence.
+- Teacher Key MUST include: own knowledge points, provenance comments for sources, judgement guidance, and level descriptors for extended answers.
+- Diagram A = primary source, image, cartoon, written extract or timeline. Diagram B = interpretation, cause-consequence map, significance ranking or judgement plan.
+- SEND notes: EAL/SLCN = timeline and vocabulary for political/social terms; dyslexia = chunk sources, avoid huge text blocks; ASC = define the historical concept being tested.`;
+
+      if (isGeography) return `
+SUBJECT-SPECIFIC RULES — GEOGRAPHY:
+- Worksheets must include data and geographical skills. A worksheet without map/graph/data interpretation is INCOMPLETE.
+- Required components: named example or case study where relevant, map/graph/photo/table stimulus, AO4 skills question (data/calculation), process explanation, evaluation question where relevant, command word support.
+- Include at least one data/calculation question (e.g. percentage change, grid reference, graph reading).
+- Use real named places, real case studies, real data where possible.
+- Teacher Key MUST include: data use, case-study detail, AO4 calculation steps, and mark-scheme wording.
+- Diagram A = map, graph, satellite image, photograph, data table. Diagram B = blank map/graph, annotated process diagram, fieldwork table or case-study organiser.
+- SEND notes: EAL = define process words and geographical terms; dyscalculia = scaffold percentage change, grid references, graph scales; VI = text descriptions of maps/graphs; ADHD = chunk long case-study information.`;
+
+      if (isRS) return `
+SUBJECT-SPECIFIC RULES — RELIGIOUS STUDIES:
+- Worksheets must train balanced argument. Description alone is NOT enough.
+- Required components: key beliefs/practices vocabulary, source of authority where relevant, short recall questions, explanation question, 12-mark evaluation plan where relevant, contrasting religious and non-religious views, conclusion frame.
+- Every worksheet MUST include at least one question requiring a balanced argument with multiple perspectives.
+- Section C MUST include at least one extended evaluation question with level descriptors.
+- Teacher Key MUST include: religious teaching, contrasting view, conclusion quality guidance, and level descriptors.
+- Diagram A = quotation, image, short source, news stimulus or belief comparison. Diagram B = argument scaffold, viewpoint comparison table or 12-mark planning grid.
+- SEND notes: EAL = define abstract words (sanctity, stewardship, atonement, justice); SLCN = argument frames; ASC = make viewpoint comparison explicit and respectful.`;
+
+      if (isCS) return `
+SUBJECT-SPECIFIC RULES — COMPUTER SCIENCE:
+- Worksheets must include algorithmic thinking, not just definitions.
+- Required components: key terms, pseudocode or flowchart, trace table where relevant, error correction/debug task, application to a real problem, evaluation or design question.
+- Pseudocode must use consistent, standard notation (e.g. WHILE, IF, FOR, PRINT, INPUT).
+- Include at least one trace table or algorithm tracing task.
+- Include at least one debug/error-correction task.
+- Teacher Key MUST include: expected output for trace tables, corrected code/pseudocode, and explanation of why errors occur.
+- Diagram A = pseudocode, flowchart, network diagram or data structure. Diagram B = trace table, algorithm to complete, error diagram or binary conversion grid.
+- SEND notes: dyslexia = monospaced code blocks with clear spacing; ADHD = chunk algorithms, show line numbers; ASC = state exact expected output format; dyscalculia = support binary/denary conversion with place-value tables.`;
+
+      if (isBusiness) return `
+SUBJECT-SPECIFIC RULES — BUSINESS STUDIES / ECONOMICS:
+- Worksheets must be case-study driven. Generic answers should be treated as weak.
+- Required components: business/economic context (real or realistic named business), data table or graph, key terms, calculation question, application question, analysis chain (Point → Evidence → Explain → Link), evaluation with judgement.
+- Every worksheet MUST include a realistic business/economic context with named figures or data.
+- Section C MUST include at least one evaluation question requiring a justified judgement.
+- Teacher Key MUST include: context application, calculation steps, justified judgement guidance, and level descriptors for evaluation questions.
+- Diagram A = case study, data table, market graph or financial figures. Diagram B = break-even chart, cash-flow table, supply-demand diagram or decision matrix.
+- SEND notes: EAL = define commercial/economic terms; dyscalculia = scaffold formula questions; SLCN = because/therefore chains; ADHD = break case studies into labelled facts.`;
+
+      if (isMFL) return `
+SUBJECT-SPECIFIC RULES — MODERN FOREIGN LANGUAGES:
+- Worksheets must build vocabulary, grammar AND communication. They must NOT be only translation lists.
+- Required components: topic vocabulary, grammar focus, short reading/listening transcript or prompt, comprehension questions, translation task where relevant, writing or speaking frame, self-check for tense/agreement/opinion phrases.
+- Include at least one reading comprehension task with a target-language text.
+- Include at least one grammar-focused task (e.g. verb conjugation, adjective agreement, tense identification).
+- Include at least one productive task (writing or speaking frame).
+- Teacher Key MUST include: model translations, grammar rule explanations, and acceptable alternative phrasings.
+- Diagram A = reading text, advert, blog, email, infographic. Diagram B = photo card, writing prompt, grammar table or vocabulary organiser.
+- SEND notes: dyslexia = space vocabulary clearly, avoid dense word lists; EAL = remember pupil may be multilingual; SLCN = sentence frames and oral rehearsal; ADHD = matching, sorting and short production tasks.`;
+
+      // Default: general STEM or Humanities
+      return `
+SUBJECT-SPECIFIC RULES — ${params.subject.toUpperCase()}:
+- Use exam-style command words appropriate to this subject.
+- Include a worked example that models the full thought process, not just the answer.
+- Include at least one data, source, or stimulus-based question.
+- Include at least one higher-order question requiring analysis, evaluation or justification.
+- Teacher Key MUST include model answers with mark allocations and acceptable alternatives.`;
+    })();
+
     const structuredSystem = `You are an expert UK teacher creating a professional, print-ready worksheet. You respond with valid raw JSON only — no markdown, no code blocks, no HTML. Every rule below is mandatory.
-SUBJECT TYPE: ${isSTEM ? 'STEM' : 'HUMANITIES'}
-${isMaths ? 'MATHS RULES: All questions must be numerical/calculation-based ONLY. Never ask students to explain, describe, or write prose. Use LaTeX for all math: wrap in \\(...\\). E.g. \\(\\dfrac{3}{4}\\), \\(x^{2}\\), \\(\\sqrt{x}\\). Write units as plain text outside LaTeX.' : ''}
+SUBJECT TYPE: ${isSTEM ? 'STEM' : 'HUMANITIES'} | SUBJECT: ${params.subject}
 ${readingAgeNote}
 ${sendNote}
 ${tierNote}
 ${ksGcseNote}
-QUALITY STANDARD: Every question must be fully usable — no placeholders, no ellipses, no unfinished sentences. Use real numbers, real contexts. Textbook quality. Every question must be at the correct curriculum level for ${params.yearGroup || 'the year group'} — GCSE/KS3/KS4 standard as appropriate. Do NOT simplify the academic content or intellectual challenge of questions just because SEND adaptations are applied.
+${subjectSpecificRules}
+QUALITY STANDARD: Every question must be fully usable — no placeholders, no ellipses, no unfinished sentences. Use real numbers, real contexts. Textbook quality. Every question must be at the correct curriculum level for ${params.yearGroup || 'the year group'} — GCSE/KS3/KS4 standard as appropriate.
 ${specExamples ? `\n${specExamples}\n` : ''}
-CRITICAL SEND RULE: SEND adaptations affect FORMATTING AND PRESENTATION ONLY — never the academic content or intellectual rigour of questions.
-- The actual question content (what is being asked, the numbers used, the concepts tested) must remain at the correct GCSE/curriculum level for ${params.yearGroup || 'the year group'}.
-- SEND overlays change HOW questions are presented (font, spacing, scaffolding frames, sentence starters, checkboxes, worked examples) — NOT WHAT is being asked.
-- True/False statements must be factually correct curriculum statements at the appropriate level — not simplified to the point of being trivial.
-- MCQ options must be plausible distractors at curriculum level — not dumbed-down guesses.
-- Gap-fill paragraphs must use correct subject terminology — not replaced with everyday words.
-- Short-answer and extended questions must require genuine subject knowledge — not just recall of simple facts.
-- NEVER add SEND management instructions ('Complete the task in steps', 'Tick each step', 'Focus on one question', 'Take a break') as question content items.
-- SEND scaffolding (sentence starters, answer frames, worked examples) goes in SEPARATE support boxes AROUND the questions — not inside the question text itself.`;
+CRITICAL SEND SEPARATION RULE — READ CAREFULLY:
+SEND adaptations affect FORMATTING AND PRESENTATION ONLY. They must NEVER lower the academic challenge or change what is being assessed.
+- challenge level = ability tier (Foundation/Standard/Higher/Scaffolded)
+- access method = SEND overlay (dyslexia/ADHD/ASC/MLD/EAL/etc.)
+- language complexity = reading age / EAL overlay
+These three dimensions are INDEPENDENT. A higher-attaining pupil can need a dyslexia overlay. A pupil with EAL may still need Higher-tier challenge.
+What SEND overlays MAY change: font size, line spacing, answer-space size, instruction length, vocabulary support, hints, scaffold steps, sentence starters, bilingual keyword support, worked-example detail, number of subparts (only where mark scheme is preserved).
+What SEND overlays MUST NOT change: subject, topic, learning objective, diagram meaning, core assessment objective, answer accuracy, mark allocation, mathematical notation, science facts, exam-board command word meaning, question order.
+SEND scaffolding (sentence starters, answer frames, worked examples) goes in SEPARATE support boxes AROUND the questions — not inside the question text itself.
+NEVER add SEND management instructions as question content items ('Complete the task in steps', 'Tick each step', 'Focus on one question').`;
 
     // ── PRE-FETCH DIAGRAM URLS (parallel, before AI call) ──────────────────────
     // Fetch Diagram A and Diagram B from the library in parallel so the real
@@ -1766,13 +1919,37 @@ CRITICAL SEND RULE: SEND adaptations affect FORMATTING AND PRESENTATION ONLY —
       structuredSections.push(JSON.stringify(diagASection));
     }
 
-    // 8. Section B Questions — Foundation / Guided Practice
+    // 8. Section B Questions — Foundation / Guided Practice (subject-specific)
     if (wantSectionA) {
+      let sectionBContent = '';
       if (isMaths) {
-        structuredSections.push(`{"title": "Section B — Foundation Questions", "type": "q-short-answer", "marks": 8, "content": "Answer all questions. Show all working. [8 marks]\n\n1. [Very straightforward ${params.topic} calculation \u2014 1 step] [1 mark]\n\n2. [Basic ${params.topic} calculation] [1 mark]\n\n3. [${params.topic} calculation with a simple context] [2 marks]\n\n4. [${params.topic} question \u2014 fill in the blank or complete the working] [2 marks]\n\n5. [${params.topic} question \u2014 two steps, scaffolded] [2 marks]"}`);
+        sectionBContent = `Answer all questions. Show all working. [8 marks]\n\n1. [Very straightforward ${params.topic} calculation \u2014 1 step, whole numbers] [1 mark]\n\n2. [Basic ${params.topic} calculation with clear method] [1 mark]\n\n3. [${params.topic} calculation with a simple real-world context] [2 marks]\n\n4. ERROR CORRECTION: The following working contains one mistake. Find it, explain why it is wrong, and write the correct answer. [2 marks]\n[Show a worked ${params.topic} calculation with a deliberate error]\n\n5. [${params.topic} question \u2014 two steps, scaffolded with sub-parts (a) and (b)] [2 marks]`;
+      } else if (isEnglishLang) {
+        sectionBContent = `Answer all questions. [8 marks]\n\n1. Read lines 1\u20134. Identify TWO things the writer tells us about [aspect of ${params.topic}]. [2 marks]\n\n2. How does the writer use language to [effect related to ${params.topic}]? Refer to a specific word or phrase. [3 marks]\n\n3. How does the writer structure the text to [structural effect related to ${params.topic}]? [3 marks]`;
+      } else if (isEnglishLit) {
+        sectionBContent = `Answer all questions. [8 marks]\n\n1. Identify a quotation from the extract that shows [key theme/character trait related to ${params.topic}]. [1 mark]\n\n2. Explain how the writer uses language to present [character/theme related to ${params.topic}] in this extract. Refer to a specific technique. [3 marks]\n\n3. How does this extract link to the rest of the text? Give one specific example. [4 marks]`;
+      } else if (isBiology) {
+        sectionBContent = `Answer all questions. [8 marks]\n\n1. State the function of [key structure related to ${params.topic}]. [1 mark]\n\n2. Describe the process of [key process related to ${params.topic}]. [2 marks]\n\n3. Explain how the structure of [biological structure related to ${params.topic}] is adapted for its function. [3 marks]\n\n4. A student investigates [required practical related to ${params.topic}]. Identify ONE variable they must control and explain why. [2 marks]`;
+      } else if (isChemistry) {
+        sectionBContent = `Answer all questions. Show all working. [8 marks]\n\n1. State the symbol equation for [reaction related to ${params.topic}]. Include state symbols. [2 marks]\n\n2. Calculate [quantity related to ${params.topic}]. Show: formula \u2192 substitution \u2192 answer \u2192 unit. [3 marks]\n\nGiven: [relevant data]\n\n3. ERROR CORRECTION: The following calculation contains one mistake. Identify it and write the correct answer. [3 marks]\n[Show a ${params.topic} calculation with a deliberate error]`;
+      } else if (isPhysics) {
+        sectionBContent = `Answer all questions. Show all working. [8 marks]\n\n1. State the equation that links [quantities related to ${params.topic}]. Give the symbol and unit for each quantity. [2 marks]\n\n2. Calculate [quantity related to ${params.topic}]. Show: equation \u2192 rearrangement \u2192 substitution \u2192 answer \u2192 unit. [3 marks]\n\nGiven: [relevant data]\n\n3. Describe and explain [physical process or phenomenon related to ${params.topic}]. [3 marks]`;
+      } else if (isHistory) {
+        sectionBContent = `Answer all questions. [8 marks]\n\n1. Give ONE cause/consequence/factor related to ${params.topic}. [1 mark]\n\n2. Describe TWO key features of [aspect of ${params.topic}]. [4 marks]\n\n3. Study Source A. How useful is this source to a historian studying ${params.topic}? Use the source AND your own knowledge. [3 marks]`;
+      } else if (isGeography) {
+        sectionBContent = `Answer all questions. [8 marks]\n\n1. State the meaning of [key geographical term related to ${params.topic}]. [1 mark]\n\n2. Using the data provided, calculate [geographical calculation related to ${params.topic}]. Show your working. [2 marks]\n\n3. Using a named example, describe [geographical process or feature related to ${params.topic}]. [3 marks]\n\n4. Explain ONE cause of [geographical issue related to ${params.topic}]. [2 marks]`;
+      } else if (isRS) {
+        sectionBContent = `Answer all questions. [8 marks]\n\n1. State ONE religious teaching about ${params.topic}. [1 mark]\n\n2. Explain TWO religious beliefs about ${params.topic}. [4 marks]\n\n3. 'Explain why some people agree and some people disagree with [statement about ${params.topic}].' Give two contrasting views. [3 marks]`;
+      } else if (isCS) {
+        sectionBContent = `Answer all questions. [8 marks]\n\n1. Define the term [key CS term related to ${params.topic}]. [1 mark]\n\n2. Complete the trace table for the following algorithm related to ${params.topic}. [4 marks]\n[pseudocode algorithm]\n| Variable | Value |\n|---|---|\n| ... | ... |\n\n3. DEBUG TASK: The following pseudocode contains ONE error. Identify it and write the corrected line. [3 marks]\n[pseudocode with deliberate error]`;
+      } else if (isBusiness) {
+        sectionBContent = `Answer all questions. [8 marks]\n\nContext: [Realistic business scenario related to ${params.topic}]\n\n1. Define the term [key business term related to ${params.topic}]. [1 mark]\n\n2. Calculate [business/financial calculation related to ${params.topic}]. Show your working. [2 marks]\n\n3. Explain ONE way that [business concept related to ${params.topic}] might affect [named business in context]. [3 marks]\n\n4. Identify ONE advantage and ONE disadvantage of [business decision related to ${params.topic}]. [2 marks]`;
+      } else if (isMFL) {
+        sectionBContent = `Answer all questions. [8 marks]\n\n1. COMPREHENSION: Read the text. Answer the following questions in English. [3 marks]\n(a) [Retrieval question about the text] [1 mark]\n(b) [Inference question about the text] [2 marks]\n\n2. GRAMMAR FOCUS: Complete the sentences using the correct form of [grammar point related to ${params.topic}]. [3 marks]\n(a) [sentence with gap] ___\n(b) [sentence with gap] ___\n(c) [sentence with gap] ___\n\n3. TRANSLATION: Translate the following sentences into [target language]. [2 marks]\n(a) [English sentence related to ${params.topic}]\n(b) [English sentence related to ${params.topic}]`;
       } else {
-        structuredSections.push(`{"title": "Section B — Foundation Questions", "type": "q-short-answer", "marks": 8, "content": "Answer all questions. [8 marks]\n\n1. [Knowledge recall question about ${params.topic}] [1 mark]\n\n2. [Simple comprehension question about ${params.topic}] [2 marks]\n\n3. [Application question \u2014 apply basic knowledge of ${params.topic}] [2 marks]\n\n4. [Describe or identify question about ${params.topic}] [3 marks]"}`);
+        sectionBContent = `Answer all questions. [8 marks]\n\n1. [Knowledge recall question about ${params.topic}] [1 mark]\n\n2. [Simple comprehension or identification question about ${params.topic}] [2 marks]\n\n3. [Application question \u2014 apply basic knowledge of ${params.topic} to a given scenario] [2 marks]\n\n4. [Describe or explain question about ${params.topic} using subject-specific terminology] [3 marks]`;
       }
+      structuredSections.push(`{"title": "Section B — Foundation Questions", "type": "q-short-answer", "marks": 8, "content": "${sectionBContent.replace(/"/g, '\\"')}"}`);
     }
 
     // 9. Diagram B — full-page spread (between Section B and Section C Questions)
@@ -1789,22 +1966,60 @@ CRITICAL SEND RULE: SEND adaptations affect FORMATTING AND PRESENTATION ONLY —
       structuredSections.push(JSON.stringify(diagBSection));
     }
 
-    // 10. Section C Questions — Core Practice
+    // 10. Section C Questions — Core Practice (subject-specific)
     if (wantQuestions) {
+      let sectionCContent = '';
       if (isMaths) {
-        structuredSections.push(`{"title": "Section C — Core Practice", "type": "q-extended", "marks": 20, "content": "Answer all questions. Show all working. [20 marks]\n\n1. [Straightforward ${params.topic} calculation \u2014 1 mark] [1 mark]\n\n2. [Slightly harder ${params.topic} calculation \u2014 2 marks] [2 marks]\n\n3. [${params.topic} calculation requiring two steps] [2 marks]\n\n4. [${params.topic} problem with a real-world context] [3 marks]\n\n5. (a) [First part of a multi-part ${params.topic} problem] [2 marks]\n   (b) [Second part \u2014 builds on (a)] [2 marks]\n   (c) [Third part \u2014 applies the result] [2 marks]\n\n6. [${params.topic} problem requiring full method \u2014 show all working] [4 marks]\n\n7. [${params.topic} problem with interpretation or explanation] [4 marks]"}`);
+        sectionCContent = `Answer all questions. Show all working. [20 marks]\n\n1. [Straightforward ${params.topic} calculation \u2014 1 mark] [1 mark]\n\n2. [${params.topic} calculation requiring two steps] [2 marks]\n\n3. [${params.topic} problem with a real-world context] [3 marks]\n\n4. (a) [First part of a multi-part ${params.topic} problem] [2 marks]\n   (b) [Second part \u2014 builds on (a)] [2 marks]\n   (c) [Third part \u2014 applies the result] [2 marks]\n\n5. [${params.topic} problem requiring full method \u2014 show all working] [4 marks]\n\n6. [${params.topic} multi-step problem with interpretation \u2014 show all working and state units] [6 marks]`;
+      } else if (isEnglishLang) {
+        sectionCContent = `Answer all questions. [20 marks]\n\n1. EVALUATION: A student says: '[Claim about the source text related to ${params.topic}]'. To what extent do you agree? Evaluate the text, supporting your views with evidence from the text. [8 marks]\n\n2. WRITING TASK: Write for a [specific audience] about [topic related to ${params.topic}]. Your purpose is to [persuade/inform/describe/argue]. [12 marks]\nRemember to: organise your writing clearly, use a range of vocabulary and sentence structures, check your spelling and punctuation.`;
+      } else if (isEnglishLit) {
+        sectionCContent = `Answer all questions. [20 marks]\n\n1. How does [author] present [theme/character] in this extract? Refer to language, structure and form. [8 marks]\nLevel 4 (7\u20138m): Perceptive, detailed analysis with subject terminology; convincing interpretation.\nLevel 3 (5\u20136m): Clear, explained analysis; relevant subject terminology.\nLevel 2 (3\u20134m): Some understanding; some language comment.\nLevel 1 (1\u20132m): Simple comment; limited reference.\n\n2. How does [author] explore [theme related to ${params.topic}] across the whole text? Use evidence from different parts of the text. [12 marks]\nLevel 4 (10\u201312m): Convincing, nuanced argument; precise embedded evidence; context integrated.\nLevel 3 (7\u20139m): Clear argument; relevant evidence; some context.\nLevel 2 (4\u20136m): Some relevant points; limited analysis.\nLevel 1 (1\u20133m): Simple comments; narrative retelling.`;
+      } else if (isBiology) {
+        sectionCContent = `Answer all questions. [20 marks]\n\n1. Explain the process of [key biological process related to ${params.topic}]. Include the role of [key structure/molecule]. [4 marks]\n\n2. A student carries out a required practical to investigate [practical related to ${params.topic}]. The results are shown below:\n[Data table with results]\n(a) Identify the trend shown in the data. [1 mark]\n(b) Calculate [relevant calculation from data]. Show your working. [2 marks]\n(c) Explain the trend using your knowledge of [biological concept]. [3 marks]\n\n3. Evaluate the evidence for [biological claim related to ${params.topic}]. [4 marks]\n\n4. 'Explain how [biological concept related to ${params.topic}] is important for [organism/system/health].' [6 marks]\nYour answer should include: [key point 1], [key point 2], [key point 3], [key point 4].`;
+      } else if (isChemistry) {
+        sectionCContent = `Answer all questions. Show all working. [20 marks]\n\n1. A student carries out a required practical to investigate [practical related to ${params.topic}]. Describe the method, including how they would make it a fair test. [4 marks]\n\n2. Calculate [multi-step chemistry calculation related to ${params.topic}]. Show: formula \u2192 substitution \u2192 answer \u2192 unit. [4 marks]\nGiven: [relevant data]\n\n3. Explain, in terms of particles/bonds/structure, why [chemical phenomenon related to ${params.topic}]. [4 marks]\n\n4. Evaluate the advantages and disadvantages of [industrial/environmental process related to ${params.topic}]. [4 marks]\n\n5. [Multi-step problem: [complex calculation or extended explanation related to ${params.topic}]] [4 marks]`;
+      } else if (isPhysics) {
+        sectionCContent = `Answer all questions. Show all working. [20 marks]\n\n1. A student investigates [practical related to ${params.topic}]. The results are shown below:\n[Data table with results]\n(a) Plot a graph of [variable] against [variable]. [2 marks]\n(b) Use your graph to determine [quantity]. Show your method. [2 marks]\n\n2. Calculate [multi-step physics calculation related to ${params.topic}]. Show: equation \u2192 rearrangement \u2192 substitution \u2192 answer \u2192 unit. [4 marks]\nGiven: [relevant data]\n\n3. Explain, using physics principles, why [physical phenomenon related to ${params.topic}]. [4 marks]\n\n4. Evaluate [claim or application related to ${params.topic}]. Include relevant calculations and a justified conclusion. [8 marks]`;
+      } else if (isHistory) {
+        sectionCContent = `Answer all questions. [20 marks]\n\n1. Explain why [cause/event related to ${params.topic}] happened. Give TWO reasons. [8 marks]\n\n2. 'How far do you agree that [historical claim related to ${params.topic}]?' Use your own knowledge and the sources to support your answer. [12 marks]\nLevel 4 (10\u201312m): Sustained, convincing argument; precise own knowledge; evaluates sources.\nLevel 3 (7\u20139m): Clear argument; relevant own knowledge; uses sources.\nLevel 2 (4\u20136m): Some relevant points; limited analysis.\nLevel 1 (1\u20133m): Simple statements; narrative.`;
+      } else if (isGeography) {
+        sectionCContent = `Answer all questions. [20 marks]\n\n1. Study Figure 1 [map/graph/data related to ${params.topic}].\n(a) Describe the pattern shown in Figure 1. [2 marks]\n(b) Suggest TWO reasons for this pattern. [4 marks]\n\n2. Using a named example, explain [geographical process related to ${params.topic}]. [6 marks]\n\n3. 'Evaluate the effectiveness of [management strategy related to ${params.topic}].' Use evidence and named examples. [8 marks]\nLevel 4 (7\u20138m): Balanced evaluation; precise named examples; justified conclusion.\nLevel 3 (5\u20136m): Clear explanation; some named examples.\nLevel 2 (3\u20134m): Some relevant points; limited examples.\nLevel 1 (1\u20132m): Simple statements.`;
+      } else if (isRS) {
+        sectionCContent = `Answer all questions. [20 marks]\n\n1. Explain TWO contrasting religious views about ${params.topic}. Refer to specific religious teachings. [8 marks]\n\n2. 'Evaluate the view that [statement about ${params.topic}].' In your answer you should:\n\u2022 Refer to religious and non-religious arguments.\n\u2022 Refer to different religious perspectives.\n\u2022 Reach a justified conclusion. [12 marks]\nLevel 4 (10\u201312m): Comprehensive, balanced evaluation; precise religious teachings; justified conclusion.\nLevel 3 (7\u20139m): Clear argument; relevant religious teachings; some balance.\nLevel 2 (4\u20136m): Some relevant points; limited balance.\nLevel 1 (1\u20133m): Simple statements; little religious knowledge.`;
+      } else if (isCS) {
+        sectionCContent = `Answer all questions. [20 marks]\n\n1. Write pseudocode for an algorithm that [task related to ${params.topic}]. [6 marks]\nYour algorithm must include: [key programming construct 1], [key programming construct 2].\n\n2. Explain how [CS concept related to ${params.topic}] works. Use an example in your answer. [4 marks]\n\n3. A system uses [technology related to ${params.topic}]. Evaluate the advantages and disadvantages of this approach. [6 marks]\n\n4. Describe how you would improve [algorithm/system related to ${params.topic}] to make it more efficient. Justify your answer. [4 marks]`;
+      } else if (isBusiness) {
+        sectionCContent = `Answer all questions. [20 marks]\n\nContext: [Extended realistic business scenario related to ${params.topic}]\n\n1. Calculate [business/financial calculation related to ${params.topic}]. Show your working. [4 marks]\n\n2. Analyse how [business concept related to ${params.topic}] might affect [named business in context]. Use the Point \u2192 Evidence \u2192 Explain \u2192 Link chain. [6 marks]\n\n3. 'Evaluate whether [business decision related to ${params.topic}] is the best option for [named business].' Consider both sides and reach a justified conclusion. [10 marks]\nLevel 4 (9\u201310m): Balanced evaluation; precise use of context; justified conclusion.\nLevel 3 (6\u20138m): Clear analysis; relevant context; some balance.\nLevel 2 (3\u20135m): Some relevant points; limited context.\nLevel 1 (1\u20132m): Simple statements.`;
+      } else if (isMFL) {
+        sectionCContent = `Answer all questions. [20 marks]\n\n1. READING COMPREHENSION: Read the text and answer the questions. [6 marks]\n[Target language text related to ${params.topic}]\n(a) [Retrieval question in English] [2 marks]\n(b) [Inference question in English] [2 marks]\n(c) [Vocabulary question: what does '...' mean?] [2 marks]\n\n2. TRANSLATION: Translate the following passage into English. [6 marks]\n[Target language passage related to ${params.topic}]\n\n3. WRITING TASK: Write approximately 90 words in [target language] about ${params.topic}. Include your opinion and give a reason. [8 marks]\nYou could include: [bullet point 1 in English], [bullet point 2 in English], [bullet point 3 in English].`;
       } else {
-        structuredSections.push(`{"title": "Section C — Core Practice", "type": "q-extended", "marks": 20, "content": "Answer all questions. [20 marks]\n\n1. [Knowledge recall question about ${params.topic}] [1 mark]\n\n2. [Comprehension question about ${params.topic}] [2 marks]\n\n3. [Application question \u2014 apply knowledge of ${params.topic} to a given scenario] [3 marks]\n\n4. [Analysis question \u2014 explain or describe an aspect of ${params.topic}] [4 marks]\n\n5. [Evaluation question \u2014 assess or discuss ${params.topic}] [6 marks]\n   Your answer should include:\n   \u2022 [Point 1]\n   \u2022 [Point 2]\n   \u2022 [Point 3]\n\n6. [Extended response question about ${params.topic}] [4 marks]"}`);
+        sectionCContent = `Answer all questions. [20 marks]\n\n1. [Knowledge recall question about ${params.topic}] [1 mark]\n\n2. [Comprehension question about ${params.topic}] [2 marks]\n\n3. [Application question \u2014 apply knowledge of ${params.topic} to a given scenario] [3 marks]\n\n4. [Analysis question \u2014 explain or describe an aspect of ${params.topic} with subject-specific detail] [4 marks]\n\n5. [Evaluation question \u2014 assess or discuss ${params.topic} with evidence] [6 marks]\n   Your answer should include:\n   \u2022 [Point 1 with evidence]\n   \u2022 [Point 2 with evidence]\n   \u2022 [Point 3 with evidence]\n\n6. [Extended response question about ${params.topic}] [4 marks]`;
       }
+      structuredSections.push(`{"title": "Section C \u2014 Core Practice", "type": "q-extended", "marks": 20, "content": "${sectionCContent.replace(/"/g, '\\"')}"}`);
     }
 
-    // 11. Challenge Question
+    // 11. Challenge Question (subject-specific)
     if (wantSectionC) {
+      let challengeContent = '';
       if (isMaths) {
-        structuredSections.push(`{"title": "Challenge Question", "type": "challenge", "marks": 8, "content": "Challenge yourself! [8 marks]\n\n1. [Multi-step ${params.topic} problem requiring full method] [3 marks]\n\n2. [${params.topic} problem with a complex real-world context \u2014 show all working] [3 marks]\n\n3. \u2605 Stretch: [A proof, 'show that', or open-ended ${params.topic} problem] [2 marks]"}`);
+        challengeContent = `Challenge yourself! [8 marks]\n\n1. [Multi-step ${params.topic} problem requiring full method \u2014 show all working] [3 marks]\n\n2. [${params.topic} problem with a complex real-world context \u2014 show all working and state units] [3 marks]\n\n3. \u2605 Stretch: [A proof, 'show that', or open-ended ${params.topic} problem requiring algebraic reasoning] [2 marks]`;
+      } else if (isEnglishLang || isEnglishLit) {
+        challengeContent = `Challenge yourself! [8 marks]\n\n1. COMPARATIVE QUESTION: Compare how [author/text A] and [author/text B] present [theme/technique related to ${params.topic}]. Refer to both texts in your answer. [8 marks]\nLevel 4 (7\u20138m): Perceptive comparison; precise embedded evidence from both texts; subject terminology.\nLevel 3 (5\u20136m): Clear comparison; relevant evidence from both texts.\nLevel 2 (3\u20134m): Some comparison; limited evidence.\nLevel 1 (1\u20132m): Simple comment; one text only.`;
+      } else if (isScience) {
+        challengeContent = `Challenge yourself! [8 marks]\n\n1. SYNOPTIC QUESTION: A scientist claims that [scientific claim related to ${params.topic}]. Evaluate this claim using your knowledge of [related concept]. Include relevant calculations or data where appropriate. [8 marks]\nYour answer should include: [key point 1], [key point 2], [key point 3], a justified conclusion.`;
+      } else if (isHistory || isGeography || isRS) {
+        challengeContent = `Challenge yourself! [8 marks]\n\n1. EXTENDED ESSAY PLAN: Plan and write the opening paragraph of an essay responding to:\n'[Contested historical/geographical/ethical statement related to ${params.topic}]'\nYour plan should include: thesis statement, three supporting points with evidence, counter-argument, conclusion. [8 marks]`;
+      } else if (isCS) {
+        challengeContent = `Challenge yourself! [8 marks]\n\n1. DESIGN TASK: Design and justify a solution to the following problem:\n[Complex real-world problem related to ${params.topic}]\nYour answer should include: algorithm/pseudocode, explanation of key design decisions, evaluation of efficiency. [8 marks]`;
+      } else if (isBusiness) {
+        challengeContent = `Challenge yourself! [8 marks]\n\n1. DECISION-MAKING TASK: [Named business] is considering [major decision related to ${params.topic}].\nUsing all the information provided and your own knowledge, recommend what [named business] should do. Justify your recommendation with reference to specific evidence. [8 marks]\nLevel 4 (7\u20138m): Justified recommendation; precise use of data; balanced evaluation.\nLevel 3 (5\u20136m): Clear recommendation; relevant evidence; some balance.\nLevel 2 (3\u20134m): Some relevant points; limited justification.\nLevel 1 (1\u20132m): Simple statement.`;
+      } else if (isMFL) {
+        challengeContent = `Challenge yourself! [8 marks]\n\n1. EXTENDED WRITING: Write approximately 150 words in [target language] about ${params.topic}. Give your opinion and justify it with reasons and examples. [8 marks]\nYou should aim to use: a range of tenses, opinions with justification, a variety of connectives.`;
       } else {
-        structuredSections.push(`{"title": "Challenge Question", "type": "challenge", "marks": 8, "content": "Challenge yourself! [8 marks]\n\n1. [Higher-order analysis or evaluation question about ${params.topic}] [4 marks]\n\n2. [Synoptic or cross-topic question linking ${params.topic} to a wider concept] [4 marks]"}`);
+        challengeContent = `Challenge yourself! [8 marks]\n\n1. [Higher-order analysis or evaluation question about ${params.topic} requiring synthesis across the topic] [4 marks]\n\n2. [Synoptic or cross-topic question linking ${params.topic} to a wider concept or real-world application] [4 marks]`;
       }
+      structuredSections.push(`{"title": "Challenge Question", "type": "challenge", "marks": 8, "content": "${challengeContent.replace(/"/g, '\\"')}"}`);
     }
 
     // 12. Self Reflection
@@ -2128,63 +2343,14 @@ Return EXACTLY this JSON (raw JSON only):
     }
   }
 
-  // ── Section randomisation — shuffle within difficulty tiers, preserve ascending order ──
-  // Tiers: intro (non-question) → Section 1 (recall) → Section 2 (understanding) → Section 3 (application) → outro
-  // Within each tier, sections are shuffled so each generation has a different order.
-  if (result.sections && Array.isArray(result.sections)) {
-    const INTRO_TYPES = new Set(['objective', 'prior-knowledge', 'vocabulary', 'common-mistakes', 'example']);
-    const TIER1_TYPES = new Set(['q-true-false', 'q-mcq', 'q-gap-fill', 'q-ordering', 'q-matching']);
-    const TIER2_TYPES = new Set(['q-label-diagram', 'q-short-answer', 'q-data-table', 'q-circuit', 'q-draw', 'q-graph']);
-    const TIER3_TYPES = new Set(['q-extended', 'q-essay']);
-    const OUTRO_TYPES = new Set(['challenge', 'self-reflection', 'mark-scheme', 'teacher-notes']);
-
-    const shuffle = <T>(arr: T[]): T[] => {
-      const a = [...arr];
-      for (let i = a.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [a[i], a[j]] = [a[j], a[i]];
-      }
-      return a;
-    };
-
-    const intro: typeof result.sections = [];
-    const tier1: typeof result.sections = [];
-    const tier2: typeof result.sections = [];
-    const tier3: typeof result.sections = [];
-    const outro: typeof result.sections = [];
-    const other: typeof result.sections = [];
-
-    for (const s of result.sections) {
-      if (INTRO_TYPES.has(s.type)) intro.push(s);
-      else if (TIER1_TYPES.has(s.type)) tier1.push(s);
-      else if (TIER2_TYPES.has(s.type)) tier2.push(s);
-      else if (TIER3_TYPES.has(s.type)) tier3.push(s);
-      else if (OUTRO_TYPES.has(s.type)) outro.push(s);
-      else other.push(s);
-    }
-
-    // Shuffle within each tier (but keep intro and outro in original order)
-    result.sections = [
-      ...intro,
-      ...shuffle(tier1),
-      ...shuffle(tier2),
-      ...shuffle(tier3),
-      ...other,
-      ...outro,
-    ];
-
-    // Renumber question titles so they remain sequential after shuffling
-    // e.g. "Q3 — Cloze Paragraph" becomes "Q1 — Cloze Paragraph" if it ends up first
-    let qNum = 1;
-    result.sections = result.sections.map(s => {
-      if (!INTRO_TYPES.has(s.type) && !OUTRO_TYPES.has(s.type) && !s.teacherOnly) {
-        const newTitle = s.title.replace(/^Q\d+\s*[—–-]\s*/, `Q${qNum} — `);
-        qNum++;
-        return { ...s, title: newTitle };
-      }
-      return s;
-    });
-  }
+  // ── Section order — fixed per spec, NO shuffling ────────────────────────────────────
+  // The spec requires a fixed section order:
+  // LO → Retrieval → Key Vocab → Common Mistakes → Worked Example →
+  // Section A (T/F, MCQ, Gap Fill, Match) → Diagram A → Section B →
+  // Diagram B → Section C → Challenge → Self Reflection → Teacher Key
+  // Shuffling within tiers is DISABLED — it conflicts with the fixed order
+  // and causes confusion when diagrams are interleaved between sections.
+  // The legacy path (non-structured) preserves the order returned by the AI.
 
   // ── Auto-fetch real diagrams for diagram sections (including Diagram A and Diagram B) ──
   // For any diagram section that lacks an imageUrl, try to fetch a real Wikimedia diagram.

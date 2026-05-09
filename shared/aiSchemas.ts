@@ -38,6 +38,8 @@ export function parseAIOutput<T>(
 }
 
 // ── Worksheet Section Schema ──────────────────────────────────────────────────
+// Spec-aligned: includes all fields used by the generation engine, overlay engine,
+// diagram injection pipeline, and QA validation gate.
 
 export const WorksheetSectionSchema = z.object({
   title: z.string().min(1).max(200),
@@ -46,11 +48,48 @@ export const WorksheetSectionSchema = z.object({
   teacherOnly: z.boolean().optional().default(false),
   difficulty: z.string().optional(),
   order: z.number().int().optional(),
+  // Diagram / asset fields
+  imageUrl: z.string().url().optional().or(z.string().startsWith("/").optional()),
+  assetRef: z.string().optional(),
+  svg: z.string().optional(),
+  caption: z.string().max(500).optional(),
+  fullPage: z.boolean().optional(),
+  attribution: z.string().optional(),
+  // Overlay / SEND fields
+  isOverlay: z.boolean().optional().default(false),
+  marks: z.number().int().min(0).max(100).optional(),
+  label: z.string().optional(),
+  // QA fields
+  qualityIssues: z.array(z.string()).optional(),
 });
 
 export type WorksheetSection = z.infer<typeof WorksheetSectionSchema>;
 
-export const WorksheetSectionArraySchema = z.array(WorksheetSectionSchema).min(1).max(50);
+export const WorksheetSectionArraySchema = z.array(WorksheetSectionSchema).min(1).max(80);
+
+// Full worksheet output schema — validates the complete AI-generated worksheet object
+export const WorksheetOutputSchema = z.object({
+  title: z.string().min(1).max(300),
+  subtitle: z.string().max(300).optional(),
+  sections: WorksheetSectionArraySchema,
+  metadata: z.object({
+    subject: z.string().optional(),
+    yearGroup: z.string().optional(),
+    topic: z.string().optional(),
+    difficulty: z.string().optional(),
+    examBoard: z.string().optional(),
+    sendNeed: z.string().nullable().optional(),
+    adaptations: z.array(z.string()).optional(),
+    qualityIssues: z.array(z.string()).optional(),
+    qualityWarning: z.string().optional(),
+    generatedAt: z.string().optional(),
+    provider: z.string().optional(),
+  }).optional(),
+  isAI: z.boolean().optional(),
+  provider: z.string().optional(),
+});
+
+export type WorksheetOutput = z.infer<typeof WorksheetOutputSchema>;
 
 // ── Quiz Schema ───────────────────────────────────────────────────────────────
 
