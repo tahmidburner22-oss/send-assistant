@@ -175,7 +175,7 @@ async function getEffectiveKey(provider: string, userKey?: string, schoolId?: st
     groq:        process.env.GROQ_API_KEY || "",
     gemini:      process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || "",
     cerebras:    process.env.CEREBRAS_API_KEY || "",
-    nvidia_nim:  process.env.NVIDIA_NIM_API_KEY || "",
+    nvidia_nim:  process.env.NVIDIA_NIM || process.env.NVIDIA_NIM_API_KEY || "",
     sambanova:   process.env.SAMBANOVA_API_KEY || "",
     openrouter:  process.env.OPENROUTER_API_KEY || "",
     deepseek:    process.env.DEEPSEEK_API_KEY || "",
