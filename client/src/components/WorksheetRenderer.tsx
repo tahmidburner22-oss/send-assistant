@@ -4968,6 +4968,19 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
         const isHeavyTeacherSection = isTeacherSection &&
           (section.type === "teacher-key" || section.type === "mark-scheme" ||
            section.type === "answers" || (section as any).type === "answer-key");
+        // Determine if this section is an individual question (numbered badge style)
+        const INDIVIDUAL_QUESTION_TYPES = new Set([
+          'q-true-false', 'q-mcq', 'q-gap-fill', 'q-short-answer', 'q-extended',
+          'q-data-table', 'q-label-diagram', 'q-ordering', 'q-matching', 'q-challenge',
+          'q-circuit', 'q-draw', 'q-graph',
+        ]);
+        const isIndividualQuestion = INDIVIDUAL_QUESTION_TYPES.has(normalizeWorksheetSectionType(section.type));
+        // Calculate the sequential question number for this section
+        const questionNumber = isIndividualQuestion
+          ? (worksheet.sections || []).slice(0, i).filter((s: any) =>
+              INDIVIDUAL_QUESTION_TYPES.has(normalizeWorksheetSectionType(s.type))
+            ).length + 1
+          : null;
         return (
           <React.Fragment key={i}>
           {/* ── TEACHER COPY — ANSWER KEY full-width crimson page header ── */}
