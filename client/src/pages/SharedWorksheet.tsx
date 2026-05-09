@@ -19,7 +19,7 @@ export default function SharedWorksheet() {
 
   useEffect(() => {
     if (!token) { setError("Invalid link."); setLoading(false); return; }
-    fetch(`/api/data/shared/${token}`)
+    fetch(`/api/data/shared/${token}`, { credentials: "include" })
       .then(r => r.ok ? r.json() : r.json().then(e => { throw new Error(e.error || "Not found"); }))
       .then(data => { setWorksheet(data); setLoading(false); })
       .catch(err => { setError(err.message || "Worksheet not found."); setLoading(false); });

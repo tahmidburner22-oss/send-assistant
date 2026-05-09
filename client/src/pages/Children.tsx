@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { useApp, type Child, type Assignment, type Submission, type TimetableLesson } from "@/contexts/AppContext";
 import { yearGroups, sendNeeds, subjects } from "@/lib/send-data";
+import { getAuthHeader } from "@/lib/api";
 import SENDInfoPanel from "@/components/SENDInfoPanel";
 import { SendScreenerResultsView } from "@/components/SendScreenerResultsView";
 import { useScheduler } from "@/hooks/useScheduler";
@@ -306,7 +307,6 @@ export default function Children() {
     try {
           const res = await fetch("/api/admin/senco-report", {
         credentials: "include",
-        credentials: "include",
       });
       if (res.ok) setSencoReport(await res.json());
     } catch (_) {}
@@ -316,7 +316,6 @@ export default function Children() {
   const handleGdprExportPupil = async (pupilId: string, pupilName: string) => {
     try {
           const res = await fetch(`/api/gdpr/pupils/${pupilId}/export`, {
-        credentials: "include",
         credentials: "include",
       });
       if (!res.ok) { import("sonner").then(m => m.toast.error("Export failed — admin access required")); return; }
@@ -386,6 +385,7 @@ export default function Children() {
         method: "POST",
         headers: { "Content-Type": "application/json", ...getAuthHeader() },
         body: JSON.stringify({ rows }),
+        credentials: "include"
       });
       const data = await res.json();
       if (res.ok) {
@@ -506,7 +506,7 @@ Return EXACTLY this JSON:
 If the submission is empty or too short to mark, return mark: "N/A", feedback: "No work submitted to mark.", misconceptions: []`;
           const res = await fetch("/api/ai/generate", {
         method: "POST",
-        headers: { "Content-Type": "application/json" }, credentials: "include",
+        headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({ prompt: userPrompt, systemPrompt, maxTokens: 800 }),
       });

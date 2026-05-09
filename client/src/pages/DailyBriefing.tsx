@@ -7,6 +7,7 @@
  */
 import { useState, useEffect, useCallback, useRef } from "react";
 import { callAI } from "@/lib/ai";
+import { getAuthHeader } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -304,7 +305,7 @@ Generate a structured morning briefing summary for ${dateLabel}.`
   const fetchEntries = useCallback(async (date: string) => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/briefing?date=${date}`, { headers: getAuthHeader() });
+      const res = await fetch(`/api/briefing?date=${date}`, { headers: getAuthHeader(), credentials: "include" });
       if (res.ok) setEntries(await res.json());
     } catch { toast.error("Failed to load entries"); }
     setLoading(false);
@@ -320,7 +321,7 @@ Generate a structured morning briefing summary for ${dateLabel}.`
     const results: string[] = [];
     for (const month of months) {
       try {
-        const res = await fetch(`/api/briefing/dates?month=${month}`, { headers: getAuthHeader() });
+        const res = await fetch(`/api/briefing/dates?month=${month}`, { headers: getAuthHeader(), credentials: "include" });
         if (res.ok) results.push(...await res.json());
       } catch {}
     }
@@ -357,7 +358,7 @@ Generate a structured morning briefing summary for ${dateLabel}.`
 
       const method = editEntry ? "PUT" : "POST";
       const url = editEntry ? `/api/briefing/${editEntry.id}` : "/api/briefing";
-      const res = await fetch(url, { method, headers: getAuthHeader(), body: fd });
+      const res = await fetch(url, { method, headers: getAuthHeader(), body: fd, credentials: "include" });
       if (res.ok) {
         toast.success(editEntry ? "Entry updated" : "Entry added");
         setShowForm(false);
@@ -375,7 +376,7 @@ Generate a structured morning briefing summary for ${dateLabel}.`
     if (!confirm("Delete this entry?")) return;
     setDeleting(id);
     try {
-      const res = await fetch(`/api/briefing/${id}`, { method: "DELETE", headers: getAuthHeader() });
+      const res = await fetch(`/api/briefing/${id}`, { method: "DELETE", headers: getAuthHeader(), credentials: "include" });
       if (res.ok) {
         toast.success("Entry deleted");
         await fetchEntries(selectedDate);

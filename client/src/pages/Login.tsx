@@ -135,6 +135,7 @@ export default function Login() {
       await fetch("/api/auth/resend-verification", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ email }),
       });
       toast.success("Verification email resent — please check your inbox");
@@ -156,6 +157,7 @@ export default function Login() {
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ email, password, displayName, role: selectedRole }),
       });
       const data = await res.json();

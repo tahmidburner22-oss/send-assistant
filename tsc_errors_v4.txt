@@ -1,0 +1,138 @@
+npm warn Unknown project config "frozen-lockfile". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+client/src/components/AppLayout.tsx(167,23): error TS2339: Property 'completedAt' does not exist on type 'Assignment'.
+client/src/components/FeedbackWidget.tsx(80,14): error TS2304: Cannot find name 'getAuthHeader'.
+client/src/components/InlineQuizBuilder.tsx(53,52): error TS2304: Cannot find name 'getAuthHeader'.
+client/src/components/InlineQuizBuilder.tsx(102,18): error TS2304: Cannot find name 'getAuthHeader'.
+client/src/components/InlineQuizBuilder.tsx(130,23): error TS2304: Cannot find name 'getAuthHeader'.
+client/src/components/SubscriptionGate.tsx(47,73): error TS2367: This comparison appears to be unintentional because the types '"school_admin" | "senco" | "teacher" | "ta" | undefined' and '"super_admin"' have no overlap.
+client/src/components/WorksheetRenderer.tsx(1382,18): error TS7006: Parameter 'line' implicitly has an 'any' type.
+client/src/components/WorksheetRenderer.tsx(1382,24): error TS7006: Parameter 'idx' implicitly has an 'any' type.
+client/src/components/WorksheetRenderer.tsx(1735,58): error TS2339: Property 'replace' does not exist on type 'never'.
+client/src/components/WorksheetRenderer.tsx(2213,15): error TS2353: Object literal may only specify known properties, and 'dangerouslySetInnerHTML' does not exist in type 'Properties<string | number, string & {}>'.
+client/src/components/WorksheetRenderer.tsx(4535,36): error TS2304: Cannot find name 'onSectionEdit'.
+client/src/components/WorksheetRenderer.tsx(4539,51): error TS2304: Cannot find name 'onSectionEdit'.
+client/src/components/WorksheetRenderer.tsx(5088,15): error TS1117: An object literal cannot have multiple properties with the same name.
+client/src/contexts/AppContext.tsx(399,52): error TS2322: Type '(idToken: string) => Promise<void>' is not assignable to type '(googleData: { googleId: string; email: string; displayName: string; }) => Promise<void>'.
+  Types of parameters 'idToken' and 'googleData' are incompatible.
+    Type '{ googleId: string; email: string; displayName: string; }' is not assignable to type 'string'.
+client/src/contexts/UserPreferencesContext.tsx(221,7): error TS1117: An object literal cannot have multiple properties with the same name.
+client/src/hooks/useScheduler.ts(198,11): error TS2353: Object literal may only specify known properties, and 'sendNeed' does not exist in type '{ subject?: string | undefined; topic?: string | undefined; yearGroup?: string | undefined; difficulty?: string | undefined; examBoard?: string | undefined; }'.
+client/src/lib/ai.ts(583,3): error TS2300: Duplicate identifier 'generateDiagram'.
+client/src/lib/ai.ts(592,3): error TS2300: Duplicate identifier 'generateDiagram'.
+client/src/lib/engines/adaptationEngine.ts(14,15): error TS2305: Module '"../worksheet-generator"' has no exported member 'WorksheetData'.
+client/src/lib/engines/adaptationEngine.ts(230,82): error TS7006: Parameter 'section' implicitly has an 'any' type.
+client/src/lib/engines/adaptationEngine.ts(287,47): error TS7006: Parameter 'section' implicitly has an 'any' type.
+client/src/lib/engines/adaptationEngine.ts(287,56): error TS7006: Parameter 'i' implicitly has an 'any' type.
+client/src/lib/engines/layoutEngine.ts(54,14): error TS2739: Type '{ "true-false": { family: "true-false"; minHeightPx: number; supportsDiagram: false; isSplitLayout: false; cssClass: string; description: string; }; "mcq-2col": { family: "mcq-2col"; minHeightPx: number; supportsDiagram: false; isSplitLayout: false; cssClass: string; description: string; }; ... 10 more ...; matching...' is missing the following properties from type 'Record<LayoutFamily, LayoutTemplate>': "error-correction", ranking, "what-changed", "constraint-problem"
+client/src/lib/engines/pipeline.ts(27,15): error TS2305: Module '"../worksheet-generator"' has no exported member 'WorksheetData'.
+client/src/lib/engines/validator.ts(34,15): error TS2305: Module '"../worksheet-generator"' has no exported member 'WorksheetData'.
+client/src/lib/index.ts(72,24): error TS2307: Cannot find module './routes/auth.js' or its corresponding type declarations.
+client/src/lib/index.ts(73,27): error TS2307: Cannot find module './routes/schools.js' or its corresponding type declarations.
+client/src/lib/index.ts(74,26): error TS2307: Cannot find module './routes/pupils.js' or its corresponding type declarations.
+client/src/lib/index.ts(75,22): error TS2307: Cannot find module './routes/ai.js' or its corresponding type declarations.
+client/src/lib/index.ts(76,24): error TS2307: Cannot find module './routes/data.js' or its corresponding type declarations.
+client/src/lib/index.ts(77,25): error TS2307: Cannot find module './routes/admin.js' or its corresponding type declarations.
+client/src/lib/index.ts(78,24): error TS2307: Cannot find module './routes/gdpr.js' or its corresponding type declarations.
+client/src/lib/index.ts(79,28): error TS2307: Cannot find module './routes/revision.js' or its corresponding type declarations.
+client/src/lib/index.ts(80,33): error TS2307: Cannot find module './routes/schoolApiKeys.js' or its corresponding type declarations.
+client/src/lib/index.ts(81,27): error TS2307: Cannot find module './routes/billing.js' or its corresponding type declarations.
+client/src/lib/index.ts(82,23): error TS2307: Cannot find module './routes/mis.js' or its corresponding type declarations.
+client/src/lib/index.ts(83,28): error TS2307: Cannot find module './routes/briefing.js' or its corresponding type declarations.
+client/src/lib/index.ts(84,24): error TS2307: Cannot find module './routes/quiz.js' or its corresponding type declarations.
+client/src/lib/index.ts(85,30): error TS2307: Cannot find module './routes/superadmin.js' or its corresponding type declarations.
+client/src/lib/index.ts(86,32): error TS2307: Cannot find module './routes/diagram-proxy.js' or its corresponding type declarations.
+client/src/lib/index.ts(87,28): error TS2307: Cannot find module './routes/feedback.js' or its corresponding type declarations.
+client/src/lib/index.ts(88,34): error TS2307: Cannot find module './routes/parentMessages.js' or its corresponding type declarations.
+client/src/lib/index.ts(241,16): error TS2307: Cannot find module './db/index.js' or its corresponding type declarations.
+client/src/lib/index.ts(366,24): error TS2307: Cannot find module './db/index.js' or its corresponding type declarations.
+client/src/lib/index.ts(367,37): error TS2307: Cannot find module './lib/notifications.js' or its corresponding type declarations.
+client/src/lib/index.ts(382,10): error TS7006: Parameter 'err' implicitly has an 'any' type.
+client/src/lib/pdf-generator-v2.ts(662,16): error TS2304: Cannot find name 'liveStyleEls'.
+client/src/lib/pdf-generator-v2.ts(663,7): error TS2304: Cannot find name 'liveStyleEls'.
+client/src/lib/pdf-generator-v2.ts(663,83): error TS2304: Cannot find name 'originalContents'.
+client/src/lib/questionBankEnglish.ts(1367,118): error TS2322: Type '""' is not assignable to type '"Foundation" | "Higher" | undefined'.
+client/src/lib/questionBankOtherSubjects.ts(583,163): error TS2322: Type '"ale"' is not assignable to type 'ExamStage | undefined'.
+client/src/lib/questionBankOtherSubjects.ts(726,156): error TS2322: Type '"gc"' is not assignable to type 'ExamStage | undefined'.
+client/src/lib/questionBankPhysics.ts(148,160): error TS2322: Type '""' is not assignable to type 'ExamStage | undefined'.
+client/src/lib/send-data.ts(739,3): error TS2322: Type '"flat"' is not assignable to type '"solid" | "minimal" | "gradient" | "stripe"'.
+client/src/lib/worksheet-generator.ts(1952,21): error TS2304: Cannot find name 'hashVariant'.
+client/src/lib/worksheet-generator.ts(1954,67): error TS2353: Object literal may only specify known properties, and 'fromLibrary' does not exist in type '{ baseWorksheetId?: string | undefined; variantId?: string | undefined; generatorVersion: string; subject: string; topic: string; subtopic?: string | undefined; yearGroup: string; keyStage?: string | undefined; ... 10 more ...; validationWarnings?: string[] | undefined; }'.
+client/src/lib/worksheet-generator.ts(1988,23): error TS2552: Cannot find name 'getSENDOverlay'. Did you mean 'sendOverlay'?
+client/src/lib/worksheet-generator.ts(2019,22): error TS2304: Cannot find name 'pickLayout'.
+client/src/lib/worksheet-generator.ts(2020,31): error TS2304: Cannot find name 'DIAGRAM_LAYOUTS'.
+client/src/lib/worksheet-generator.ts(2023,60): error TS2304: Cannot find name 'marksForLayout'.
+client/src/lib/worksheet-generator.ts(2029,32): error TS2304: Cannot find name 'validatePlan'.
+client/src/lib/worksheet-generator.ts(2133,9): error TS2304: Cannot find name 'buildTrueFalseContent'.
+client/src/lib/worksheet-generator.ts(2137,17): error TS2304: Cannot find name 'stripHints'.
+client/src/lib/worksheet-generator.ts(2141,9): error TS2304: Cannot find name 'buildMCQContent'.
+client/src/lib/worksheet-generator.ts(2147,9): error TS2304: Cannot find name 'buildGapFillContent'.
+client/src/lib/worksheet-generator.ts(2156,9): error TS2304: Cannot find name 'buildMatchingContent'.
+client/src/lib/worksheet-generator.ts(2163,9): error TS2304: Cannot find name 'buildOrderingContent'.
+client/src/lib/worksheet-generator.ts(2168,21): error TS2304: Cannot find name 'stripHints'.
+client/src/lib/worksheet-generator.ts(2171,9): error TS2304: Cannot find name 'buildShortAnswerContent'.
+client/src/lib/worksheet-generator.ts(2204,9): error TS2304: Cannot find name 'buildGapFillContent'.
+client/src/lib/worksheet-generator.ts(2218,9): error TS2304: Cannot find name 'buildTableContent'.
+client/src/lib/worksheet-generator.ts(2221,17): error TS2304: Cannot find name 'stripHints'.
+client/src/lib/worksheet-generator.ts(2224,9): error TS2304: Cannot find name 'buildShortAnswerContent'.
+client/src/lib/worksheet-generator.ts(2228,24): error TS2304: Cannot find name 'stripHints'.
+client/src/lib/worksheet-generator.ts(2231,9): error TS2304: Cannot find name 'buildShortAnswerContent'.
+client/src/lib/worksheet-generator.ts(2269,9): error TS2304: Cannot find name 'buildDrawBoxContent'.
+client/src/lib/worksheet-generator.ts(2283,9): error TS2304: Cannot find name 'buildTableContent'.
+client/src/lib/worksheet-generator.ts(2286,17): error TS2304: Cannot find name 'stripHints'.
+client/src/lib/worksheet-generator.ts(2289,9): error TS2304: Cannot find name 'buildExtendedAnswerContent'.
+client/src/lib/worksheet-generator.ts(2292,17): error TS2304: Cannot find name 'stripHints'.
+client/src/lib/worksheet-generator.ts(2295,9): error TS2304: Cannot find name 'buildShortAnswerContent'.
+client/src/lib/worksheet-generator.ts(2300,9): error TS2304: Cannot find name 'buildShortAnswerContent'.
+client/src/lib/worksheet-generator.ts(2315,29): error TS2304: Cannot find name 'pickLayout'.
+client/src/lib/worksheet-generator.ts(2319,28): error TS2304: Cannot find name 'layoutTag'.
+client/src/lib/worksheet-generator.ts(2326,58): error TS2304: Cannot find name 'wrapWithStepScaffold'.
+client/src/lib/worksheet-generator.ts(2459,67): error TS7006: Parameter 'e' implicitly has an 'any' type.
+client/src/pages/AdminPanel.tsx(1065,65): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ starter: number; professional: number; premium: number; mat: number; }'.
+client/src/pages/Attendance.tsx(179,66): error TS2367: This comparison appears to be unintentional because the types '"attended" | "late" | "other" | "not-recorded"' and '"unauthorised"' have no overlap.
+client/src/pages/Children.tsx(309,9): error TS1117: An object literal cannot have multiple properties with the same name.
+client/src/pages/Children.tsx(320,9): error TS1117: An object literal cannot have multiple properties with the same name.
+client/src/pages/Children.tsx(387,59): error TS2304: Cannot find name 'getAuthHeader'.
+client/src/pages/Children.tsx(510,9): error TS1117: An object literal cannot have multiple properties with the same name.
+client/src/pages/Children.tsx(1270,36): error TS2339: Property 'notes' does not exist on type 'Child'.
+client/src/pages/DailyBriefing.tsx(307,72): error TS2304: Cannot find name 'getAuthHeader'.
+client/src/pages/DailyBriefing.tsx(323,82): error TS2304: Cannot find name 'getAuthHeader'.
+client/src/pages/DailyBriefing.tsx(360,55): error TS2304: Cannot find name 'getAuthHeader'.
+client/src/pages/DailyBriefing.tsx(378,83): error TS2304: Cannot find name 'getAuthHeader'.
+client/src/pages/Differentiate.tsx(80,17): error TS2345: Argument of type 'null' is not assignable to parameter of type 'SetStateAction<string>'.
+client/src/pages/History.tsx(268,11): error TS1117: An object literal cannot have multiple properties with the same name.
+client/src/pages/History.tsx(288,9): error TS1117: An object literal cannot have multiple properties with the same name.
+client/src/pages/ParentPortal.tsx(80,9): error TS1117: An object literal cannot have multiple properties with the same name.
+client/src/pages/ParentPortal.tsx(532,68): error TS2304: Cannot find name 'hdrs'.
+client/src/pages/ParentPortal.tsx(533,72): error TS2304: Cannot find name 'hdrs'.
+client/src/pages/ParentPortal.tsx(614,9): error TS1117: An object literal cannot have multiple properties with the same name.
+client/src/pages/Pricing.tsx(229,31): error TS2339: Property 'plan' does not exist on type 'User'.
+client/src/pages/QuizGame.tsx(779,80): error TS2322: Type '{ className: string; title: string; }' is not assignable to type 'IntrinsicAttributes & Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>'.
+  Property 'title' does not exist on type 'IntrinsicAttributes & Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>'.
+client/src/pages/reading/BookQuestionsTab.tsx(121,11): error TS1117: An object literal cannot have multiple properties with the same name.
+client/src/pages/reading/BookQuestionsTab.tsx(331,58): error TS2322: Type '"reading"' is not assignable to type '"questions" | "story" | "worksheet" | "differentiation" | "scheduler" | undefined'.
+client/src/pages/RevisionHub.tsx(445,11): error TS1117: An object literal cannot have multiple properties with the same name.
+client/src/pages/Settings.tsx(27,82): error TS2367: This comparison appears to be unintentional because the types '"senco" | "teacher" | "ta" | undefined' and '"admin"' have no overlap.
+client/src/pages/Settings.tsx(27,108): error TS2367: This comparison appears to be unintentional because the types '"senco" | "teacher" | "ta" | undefined' and '"super_admin"' have no overlap.
+client/src/pages/Settings.tsx(178,82): error TS2367: This comparison appears to be unintentional because the types '"senco" | "teacher" | "ta" | undefined' and '"admin"' have no overlap.
+client/src/pages/Settings.tsx(178,108): error TS2367: This comparison appears to be unintentional because the types '"senco" | "teacher" | "ta" | undefined' and '"super_admin"' have no overlap.
+client/src/pages/Settings.tsx(1066,82): error TS2367: This comparison appears to be unintentional because the types '"senco" | "teacher" | "ta" | undefined' and '"admin"' have no overlap.
+client/src/pages/Settings.tsx(1066,108): error TS2367: This comparison appears to be unintentional because the types '"senco" | "teacher" | "ta" | undefined' and '"super_admin"' have no overlap.
+client/src/pages/Settings.tsx(1330,38): error TS2339: Property 'plan' does not exist on type 'User'.
+client/src/pages/Settings.tsx(1330,52): error TS2339: Property 'plan' does not exist on type 'User'.
+client/src/pages/Settings.tsx(1330,77): error TS2339: Property 'plan' does not exist on type 'User'.
+client/src/pages/Settings.tsx(1340,26): error TS2339: Property 'plan' does not exist on type 'User'.
+client/src/pages/Stories.tsx(11,29): error TS2300: Duplicate identifier 'Sparkles'.
+client/src/pages/Stories.tsx(43,20): error TS2300: Duplicate identifier 'Sparkles'.
+client/src/pages/Templates.tsx(33,3): error TS2741: Property 'description' is missing in type '{ label: string; icon: React.ForwardRefExoticComponent<Omit<LucideProps, "ref"> & React.RefAttributes<SVGSVGElement>>; color: string; bgColor: string; worksheets: { ...; }[]; }' but required in type 'SubjectData'.
+client/src/pages/tools/ComprehensionGenerator.tsx(160,26): error TS2353: Object literal may only specify known properties, and 'onChange' does not exist in type 'AIToolField'.
+client/src/pages/tools/Differentiate.tsx(80,17): error TS2345: Argument of type 'null' is not assignable to parameter of type 'SetStateAction<string>'.
+client/src/pages/tools/PresentationMaker.tsx(1157,12): error TS2678: Type '"story-time"' is not comparable to type '"worked-example" | "extension" | "title" | "content" | "summary" | "key-terms" | "learning-objectives" | "hook" | "activity" | "discussion" | "check-understanding" | "exit-ticket" | ... 7 more ... | "pause-and-solve"'.
+client/src/pages/tools/PresentationMaker.tsx(1180,12): error TS2678: Type '"draw-it"' is not comparable to type '"worked-example" | "extension" | "title" | "content" | "summary" | "key-terms" | "learning-objectives" | "hook" | "activity" | "discussion" | "check-understanding" | "exit-ticket" | ... 7 more ... | "pause-and-solve"'.
+client/src/pages/tools/PresentationMaker.tsx(1209,12): error TS2678: Type '"sort-it"' is not comparable to type '"worked-example" | "extension" | "title" | "content" | "summary" | "key-terms" | "learning-objectives" | "hook" | "activity" | "discussion" | "check-understanding" | "exit-ticket" | ... 7 more ... | "pause-and-solve"'.
+client/src/pages/tools/PresentationMaker.tsx(1241,12): error TS2678: Type '"match-it"' is not comparable to type '"worked-example" | "extension" | "title" | "content" | "summary" | "key-terms" | "learning-objectives" | "hook" | "activity" | "discussion" | "check-understanding" | "exit-ticket" | ... 7 more ... | "pause-and-solve"'.
+client/src/pages/tools/PresentationMaker.tsx(1269,12): error TS2678: Type '"fill-the-gap"' is not comparable to type '"worked-example" | "extension" | "title" | "content" | "summary" | "key-terms" | "learning-objectives" | "hook" | "activity" | "discussion" | "check-understanding" | "exit-ticket" | ... 7 more ... | "pause-and-solve"'.
+client/src/pages/tools/PresentationMaker.tsx(1301,12): error TS2678: Type '"spot-the-mistake"' is not comparable to type '"worked-example" | "extension" | "title" | "content" | "summary" | "key-terms" | "learning-objectives" | "hook" | "activity" | "discussion" | "check-understanding" | "exit-ticket" | ... 7 more ... | "pause-and-solve"'.
+client/src/pages/tools/PresentationMaker.tsx(1327,12): error TS2678: Type '"number-talk"' is not comparable to type '"worked-example" | "extension" | "title" | "content" | "summary" | "key-terms" | "learning-objectives" | "hook" | "activity" | "discussion" | "check-understanding" | "exit-ticket" | ... 7 more ... | "pause-and-solve"'.
+client/src/pages/tools/Stories.tsx(11,29): error TS2300: Duplicate identifier 'Sparkles'.
+client/src/pages/tools/Stories.tsx(43,20): error TS2300: Duplicate identifier 'Sparkles'.
+client/src/pages/tools/WellbeingSupport.tsx(145,11): error TS2353: Object literal may only specify known properties, and 'onChange' does not exist in type 'AIToolField'.

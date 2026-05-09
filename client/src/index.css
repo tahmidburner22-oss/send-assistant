@@ -290,11 +290,16 @@
     page-break-inside: avoid !important;
   }
 
-  /* Teacher-only sections always start on a new page — student pages stay clean */
-  .ws-teacher-section,
-  .teacher-section {
+  /* Teacher key + mark scheme always start on a new page — student pages stay clean */
+  .ws-teacher-section {
     break-before: page !important;
     page-break-before: always !important;
+  }
+
+  /* Lightweight teacher sections (SEND notes, teacher notes) flow naturally — no forced page break */
+  .ws-teacher-section-light {
+    break-before: auto !important;
+    page-break-before: auto !important;
   }
 }
 

@@ -4027,6 +4027,25 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                 )}
               </div>
               <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "2px", flexShrink: 0 }}>
+                {isTeacherView && worksheet.metadata?.qaScore && (
+                  <div style={{
+                    background: worksheet.metadata.validationStatus === "fail" ? "#ef4444" : worksheet.metadata.validationStatus === "warn" ? "#f59e0b" : "#10b981",
+                    color: "white",
+                    fontSize: "10px",
+                    fontWeight: 900,
+                    padding: "2px 8px",
+                    borderRadius: "12px",
+                    marginBottom: "4px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "4px",
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+                    fontFamily: fmt.fontFamily,
+                  }}>
+                    <span>QA: {worksheet.metadata.qaScore.overallScore}%</span>
+                    <span style={{ fontSize: "8px", opacity: 0.9 }}>[{worksheet.metadata.validationStatus.toUpperCase()}]</span>
+                  </div>
+                )}
                 {schoolLogoUrl && (
                   <img src={schoolLogoUrl} alt="School logo" style={{ height: "32px", width: "auto", maxWidth: "64px", objectFit: "contain", background: "rgba(255,255,255,0.85)", borderRadius: "6px", padding: "2px" }} />
                 )}
@@ -4066,9 +4085,29 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                   {schoolName || "Adaptly"}
                 </span>
               </div>
-              <span style={{ fontSize: "10px", color: "#6b7280", fontFamily: fmt.fontFamily, textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 600 }}>
-                {[worksheet.metadata.subject, worksheet.metadata.yearGroup, worksheet.metadata.examBoard && worksheet.metadata.examBoard !== "General" && worksheet.metadata.examBoard !== "none" ? worksheet.metadata.examBoard.toUpperCase() : null].filter(Boolean).join(" · ")}
-              </span>
+              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                {isTeacherView && worksheet.metadata?.qaScore && (
+                  <div style={{
+                    background: worksheet.metadata.validationStatus === "fail" ? "#7f1d1d" : worksheet.metadata.validationStatus === "warn" ? "#92400e" : "#064e3b",
+                    color: "white",
+                    fontSize: "9px",
+                    fontWeight: 800,
+                    padding: "2px 10px",
+                    borderRadius: "4px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    fontFamily: fmt.fontFamily,
+                  }}>
+                    <span>QA SCORE: {worksheet.metadata.qaScore.overallScore}%</span>
+                    <div style={{ width: "1px", height: "10px", background: "rgba(255,255,255,0.3)" }} />
+                    <span>{worksheet.metadata.validationStatus.toUpperCase()}</span>
+                  </div>
+                )}
+                <span style={{ fontSize: "10px", color: "#6b7280", fontFamily: fmt.fontFamily, textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 600 }}>
+                  {[worksheet.metadata.subject, worksheet.metadata.yearGroup, worksheet.metadata.examBoard && worksheet.metadata.examBoard !== "General" && worksheet.metadata.examBoard !== "none" ? worksheet.metadata.examBoard.toUpperCase() : null].filter(Boolean).join(" · ")}
+                </span>
+              </div>
             </div>
             {/* Main header block: full dark navy filled rectangle — matches reference PDF exactly */}
             <div style={{
@@ -4902,104 +4941,22 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
           if (myGroupLabel === "SECTION 3 \u2014 APPLICATION") return /SECTION\s*3|APPLICATION/i.test(headerTitle + headerContent);
           return false;
         });
-        const isFirstOfGroupSection = !hasExplicitSectionHeader && myGroupLabel && !worksheet.sections.slice(0, i).some((s: any) => {
-          const prevQNum = (() => {
-            const t = typeof s.title === "string" ? s.title : "";
-            const m = t.match(/Q(\d+)/i);
-            return m ? parseInt(m[1]) : null;
-          })();
-          const prevGroup = getGroupByQNum(prevQNum, normalizeWorksheetSectionType(s.type));
-          return prevGroup?.label === myGroupLabel;
-        });
-        const isFirstOfGroup = isFirstOfGroupSection;
-
-        // Map section types to teal section group labels
-        const SECTION_GROUP_LABELS: Record<string, string> = {
-          objective: "LEARNING OBJECTIVE",
-          vocabulary: "KEY VOCABULARY",
-          starter: "SECTION 1 — RECALL",
-          guided: "SECTION 1 — RECALL",
-          independent: "SECTION 3 — APPLICATION & ANALYSIS",
-          challenge: "CHALLENGE QUESTION",
-          "self-reflection": "SELF REFLECTION",
-          "self-assessment": "SELF REFLECTION",
-          "mark-scheme": "ANSWER KEY",
-          answers: "ANSWER KEY",
-          "teacher-notes": "TEACHER NOTES",
-          "reminder-box": "REMINDER",
-          "word-bank": "WORD BANK",
-          "sentence-starters": "SENTENCE STARTERS",
-          "word-problems": "PRACTICE PROBLEMS",
-          comprehension: "READING COMPREHENSION",
-          reading: "READING PASSAGE",
-          passage: "READING PASSAGE",
-          example: "WORKED EXAMPLE",
-          "common-mistakes": "COMMON MISTAKES TO AVOID",
-          "prior-knowledge": "PRIOR KNOWLEDGE CHECK",
-          diagram: "DIAGRAM",
-          // Individual question types (no teal divider, just navy badge)
-          "q-true-false": "",
-          "q-mcq": "",
-          "q-gap-fill": "",
-          "q-short-answer": "",
-          "q-extended": "",
-          "q-circuit": "",
-          "q-draw": "",
-          "q-graph": "",
-          "q-data-table": "",
-          "q-label-diagram": "",
-          "q-ordering": "",
-          "q-matching": "",
-          "q-challenge": "",
-          // Section header — rendered as a teal divider bar, no section box
-          "section-header": "",
-        };
-
-        // Individual question types — use navy badge + question text inline (no teal divider)
-        const isIndividualQuestion = ["q-true-false", "q-mcq", "q-gap-fill", "q-short-answer", "q-extended",
-          "q-circuit", "q-draw", "q-graph", "q-data-table", "q-label-diagram", "q-ordering", "q-matching",
-          "q-challenge"].includes(section.type);
-        // Section headers render as teal divider bars — not as section boxes
-        if (section.type === "section-header") {
-          return (
-            <React.Fragment key={i}>
-              <div style={{ marginBottom: "16px", marginTop: i > 0 ? "24px" : "0" }}>
-                <div style={{ borderTop: "2px solid #1a2744", marginBottom: "5px" }} />
-                <div style={{ fontSize: "10px", fontWeight: 700, color: "#2a7f8f", fontFamily: fmt.fontFamily, textTransform: "uppercase" as const, letterSpacing: "0.08em" }}>
-                  {(content || sectionTitle).replace(/KNOWLEDGE\s+CHECK/gi, 'RECALL')}
-                </div>
-                <div style={{ borderTop: "1px solid #d1d5db", marginTop: "5px" }} />
-              </div>
-            </React.Fragment>
-          );
-        }
-
-        // Diagram sections: skip entirely if no image/SVG available (no placeholder)
-        if (section.type === "diagram" && !(resolveImageUrl(section) || section.svg)) {
-          return null;
-        }
-
-        // Section group label — for individual questions, derive from section title (e.g. "Q1 — True or False")
-        const groupLabel = isIndividualQuestion
-          ? sectionTitle
-          : (SECTION_GROUP_LABELS[section.type] !== undefined ? SECTION_GROUP_LABELS[section.type] : sectionTitle.toUpperCase());
-
-        // Determine question number badge — for new individual question types AND legacy question sections
-        const legacyQuestionTypes = new Set(["starter", "guided", "independent", "challenge", "word-problems", "comprehension"]);
-        const newQuestionTypes = new Set(["q-true-false", "q-mcq", "q-gap-fill", "q-short-answer", "q-extended", "q-data-table", "q-label-diagram", "q-ordering", "q-matching", "q-circuit", "q-draw", "q-graph", "q-challenge"]);
-        const allQuestionTypes = new Set([...legacyQuestionTypes, ...newQuestionTypes]);
-        const showQuestionBadge = allQuestionTypes.has(section.type);
-        // For new individual question types, extract number from title (e.g. "Q1 — True or False" → 1)
-        const badgeTitleQNum = isIndividualQuestion ? parseInt((sectionTitle.match(/^Q(\d+)/i) || [])[1] || "0") : 0;
-        // For legacy types, count question sections before this one
-        const questionSectionsBefore = worksheet.sections.slice(0, i).filter((s: any) => allQuestionTypes.has(normalizeWorksheetSectionType(s.type))).length;
-        const questionNumber = badgeTitleQNum > 0 ? badgeTitleQNum : questionSectionsBefore + 1;
-
-        // Detect if this is the FIRST teacher section in the worksheet (to show the crimson page header)
         const isFirstTeacherSection = isTeacherSection && !worksheet.sections.slice(0, i).some((s: any) => {
           const nt = normalizeWorksheetSectionType(s.type);
           return s.teacherOnly || nt === 'teacher-notes' || nt === 'mark-scheme' || nt === 'answers';
         });
+
+        // Blank-page fix: only apply ws-section-diagram class when content exists
+        // Without this, empty diagram slots still trigger CSS break-before: page
+        const hasDiagramContent = section.type === "diagram" &&
+          !!(resolveImageUrl(section) || (section as any).svg ||
+             extractDiagramSpec(typeof content === 'string' ? content : ''));
+
+        // Blank-page fix: only heavy teacher sections get break-before: page
+        // SEND adaptations and teacher notes are small — don't force a new page
+        const isHeavyTeacherSection = isTeacherSection &&
+          (section.type === "teacher-key" || section.type === "mark-scheme" ||
+           section.type === "answers" || (section as any).type === "answer-key");
         return (
           <React.Fragment key={i}>
           {/* ── TEACHER COPY — ANSWER KEY full-width crimson page header ── */}
@@ -5053,7 +5010,14 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
             </div>
           )}
           <div
-            className={`ws-section ws-section-${section.type}${isTeacherSection ? " ws-teacher-section" : ""}`}
+            className={[
+              `ws-section ws-section-${section.type}`,
+              // Only apply diagram class (which CSS uses for break-before: page) when content exists
+              section.type === "diagram" && !hasDiagramContent ? "ws-section-diagram-empty" : "",
+              // Only heavy teacher sections (Key/Mark-Scheme) get the break-before: page CSS class
+              isHeavyTeacherSection ? "ws-teacher-section" : "",
+              isTeacherSection && !isHeavyTeacherSection ? "ws-teacher-section-light" : "",
+            ].filter(Boolean).join(" ")}
             onClick={() => editMode && onSectionClick?.(i)}
             style={{
               marginBottom: section.type === "diagram" ? "0" : "20px",
@@ -5070,16 +5034,17 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
               outline: editMode && editedSections[i] !== undefined ? "2px solid #2a7f8f" : "none",
               pageBreakInside: "avoid",
               breakInside: "avoid",
-              // Only diagram sections force a new page — forcing page-break on ALL sections
-              // creates blank pages between small sections in print/PDF view.
-              pageBreakBefore: section.type === "diagram" ? "always" : "auto",
-              breakBefore: section.type === "diagram" ? "page" : "auto",
+              // Blank-page fix: remove inline page-break on diagram sections.
+              // CSS class .ws-section-diagram handles break-before: page —
+              // having BOTH inline + CSS caused a double page-break / blank page.
+              pageBreakBefore: "auto",
+              breakBefore: "auto",
               pageBreakAfter: "auto",
               breakAfter: "auto",
-              // Diagram sections: flex column to fill the page — use a large minHeight so
-              // the image expands to fill the available page space.
-              minHeight: section.type === "diagram" ? (paginated ? "900px" : "400px") : undefined,
-              height: section.type === "diagram" ? (paginated ? "900px" : undefined) : undefined,
+              // Blank-page fix: remove 900px fixed height — it inflated diagram sections
+              // beyond one print page, creating overflow that appeared as blank page.
+              minHeight: section.type === "diagram" ? (hasDiagramContent ? "400px" : undefined) : undefined,
+              height: undefined,
               display: section.type === "diagram" ? "flex" : undefined,
               flexDirection: section.type === "diagram" ? "column" as const : undefined,
               justifyContent: section.type === "diagram" ? "center" : undefined,

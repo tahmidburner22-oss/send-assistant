@@ -190,7 +190,7 @@ function MisIntegrationSection() {
 
   useEffect(() => {
     if (!isAdmin) return;
-    fetch("/api/mis/status", { headers: getAuthHeader() })
+    fetch("/api/mis/status", { headers: getAuthHeader(), credentials: "include" })
       .then(r => r.json())
       .then(d => setMisStatus(d))
       .catch(() => setMisStatus({ isPremium: false, bromcom: false, arbor: false }))
@@ -206,6 +206,7 @@ function MisIntegrationSection() {
       const res = await fetch("/api/mis/save-key", {
         method: "POST",
         headers: { "Content-Type": "application/json", ...getAuthHeader() },
+        credentials: "include",
         body: JSON.stringify({ provider, apiKey, schoolId }),
       });
       const data = await res.json();
@@ -223,7 +224,7 @@ function MisIntegrationSection() {
 
   const removeKey = async (provider: "bromcom" | "arbor") => {
     try {
-      const res = await fetch(`/api/mis/remove-key/${provider}`, { method: "DELETE", headers: getAuthHeader() });
+      const res = await fetch(`/api/mis/remove-key/${provider}`, { method: "DELETE", headers: getAuthHeader(), credentials: "include" });
       if (res.ok) {
         toast.success(`${provider === "bromcom" ? "Bromcom" : "Arbor"} credentials removed`);
         setMisStatus(prev => prev ? { ...prev, [provider]: false } : prev);

@@ -75,6 +75,7 @@ export default function SuperAdminUsers() {
       try {
         setLoading(true);
         const res = await fetch("/api/admin/users", {
+          credentials: "include",
           headers: {
           },
         });

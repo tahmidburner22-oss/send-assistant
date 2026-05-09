@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
+import { getAuthHeader } from "@/lib/api";
 
 
 interface QuizQuestion {
@@ -50,7 +51,7 @@ export default function InlineQuizBuilder({ editId, onSaved, onCancel }: Props) 
   useEffect(() => {
     if (!editId) return;
     setLoading(true);
-    fetch(`/api/quiz/custom/${editId}`, { headers: getAuthHeader() })
+    fetch(`/api/quiz/custom/${editId}`, { headers: getAuthHeader(), credentials: "include" })
       .then(r => r.json())
       .then(data => {
         setTitle(data.title || "");
@@ -101,6 +102,7 @@ export default function InlineQuizBuilder({ editId, onSaved, onCancel }: Props) 
         method: "POST",
         headers: getAuthHeader(),
         body: fd,
+        credentials: "include"
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Generation failed");
@@ -129,6 +131,7 @@ export default function InlineQuizBuilder({ editId, onSaved, onCancel }: Props) 
         method,
         headers: { ...getAuthHeader(), "Content-Type": "application/json" },
         body: JSON.stringify(body),
+        credentials: "include"
       });
       if (!res.ok) throw new Error("Save failed");
       toast.success(editId ? "Quiz updated!" : "Quiz saved to your library!");

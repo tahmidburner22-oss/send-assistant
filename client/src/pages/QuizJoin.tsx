@@ -76,7 +76,7 @@ export default function QuizJoin() {
   // Poll room state
   async function pollRoom(code: string) {
     try {
-      const res = await fetch(`/api/quiz/rooms/${code}`);
+      const res = await fetch(`/api/quiz/rooms/${code}`, { credentials: "include" });
       if (!res.ok) { stopPolling(); setRoom(null); return; }
       const data: RoomState = await res.json();
       setRoom(data);
@@ -126,6 +126,7 @@ export default function QuizJoin() {
       const res = await fetch(`/api/quiz/rooms/${code}/join`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ name }),
       });
       const data = await res.json();
@@ -146,6 +147,7 @@ export default function QuizJoin() {
       const res = await fetch(`/api/quiz/rooms/${joinedCode}/answer`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ playerId, answerIndex: optionIndex }),
       });
       const data = await res.json();
