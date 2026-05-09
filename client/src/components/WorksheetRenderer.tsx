@@ -4029,7 +4029,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
               <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "2px", flexShrink: 0 }}>
                 {isTeacherView && worksheet.metadata?.qaScore && (
                   <div style={{
-                    background: worksheet.metadata.validationStatus === "fail" ? "#ef4444" : worksheet.metadata.validationStatus === "warn" ? "#f59e0b" : "#10b981",
+                    background: worksheet.metadata?.validationStatus === "fail" ? "#ef4444" : worksheet.metadata?.validationStatus === "warn" ? "#f59e0b" : "#10b981",
                     color: "white",
                     fontSize: "10px",
                     fontWeight: 900,
@@ -4042,8 +4042,8 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                     boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
                     fontFamily: fmt.fontFamily,
                   }}>
-                    <span>QA: {worksheet.metadata.qaScore.overallScore}%</span>
-                    <span style={{ fontSize: "8px", opacity: 0.9 }}>[{worksheet.metadata.validationStatus.toUpperCase()}]</span>
+                    <span>QA: {worksheet.metadata?.qaScore.overallScore}%</span>
+                    <span style={{ fontSize: "8px", opacity: 0.9 }}>[{worksheet.metadata?.validationStatus.toUpperCase()}]</span>
                   </div>
                 )}
                 {schoolLogoUrl && (
@@ -4088,7 +4088,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
               <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                 {isTeacherView && worksheet.metadata?.qaScore && (
                   <div style={{
-                    background: worksheet.metadata.validationStatus === "fail" ? "#7f1d1d" : worksheet.metadata.validationStatus === "warn" ? "#92400e" : "#064e3b",
+                    background: worksheet.metadata?.validationStatus === "fail" ? "#7f1d1d" : worksheet.metadata?.validationStatus === "warn" ? "#92400e" : "#064e3b",
                     color: "white",
                     fontSize: "9px",
                     fontWeight: 800,
@@ -4099,13 +4099,13 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                     gap: "6px",
                     fontFamily: fmt.fontFamily,
                   }}>
-                    <span>QA SCORE: {worksheet.metadata.qaScore.overallScore}%</span>
+                    <span>QA SCORE: {worksheet.metadata?.qaScore.overallScore}%</span>
                     <div style={{ width: "1px", height: "10px", background: "rgba(255,255,255,0.3)" }} />
-                    <span>{worksheet.metadata.validationStatus.toUpperCase()}</span>
+                    <span>{worksheet.metadata?.validationStatus.toUpperCase()}</span>
                   </div>
                 )}
                 <span style={{ fontSize: "10px", color: "#6b7280", fontFamily: fmt.fontFamily, textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 600 }}>
-                  {[worksheet.metadata.subject, worksheet.metadata.yearGroup, worksheet.metadata.examBoard && worksheet.metadata.examBoard !== "General" && worksheet.metadata.examBoard !== "none" ? worksheet.metadata.examBoard.toUpperCase() : null].filter(Boolean).join(" · ")}
+                  {[worksheet.metadata?.subject, worksheet.metadata?.yearGroup, worksheet.metadata?.examBoard && worksheet.metadata?.examBoard !== "General" && worksheet.metadata?.examBoard !== "none" ? worksheet.metadata?.examBoard.toUpperCase() : null].filter(Boolean).join(" · ")}
                 </span>
               </div>
             </div>
@@ -4117,7 +4117,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
             }}>
               {/* Subject/year line above title */}
               <div style={{ fontSize: "9px", color: "#99BBBB", fontFamily: fmt.fontFamily, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: "4px", fontWeight: 400 }}>
-                {[worksheet.metadata.subject, worksheet.metadata.yearGroup, worksheet.metadata.examBoard && worksheet.metadata.examBoard !== "General" && worksheet.metadata.examBoard !== "none" ? worksheet.metadata.examBoard.toUpperCase() : null].filter(Boolean).join(" · ")}
+                {[worksheet.metadata?.subject, worksheet.metadata?.yearGroup, worksheet.metadata?.examBoard && worksheet.metadata?.examBoard !== "General" && worksheet.metadata?.examBoard !== "none" ? worksheet.metadata?.examBoard.toUpperCase() : null].filter(Boolean).join(" · ")}
               </div>
               <div style={{
                 fontSize: `${fmt.fontSize + 10}px`,
@@ -6237,7 +6237,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
       {isRevisionMat ? (
         <div style={{ marginTop: "6px", padding: "4px 8px", display: "flex", justifyContent: "space-between", fontSize: "9px", color: "#9ca3af", fontFamily: fmt.fontFamily }}>
           <span>Generated by Adaptly · adaptly.co.uk</span>
-          <span>{worksheet.metadata.yearGroup} {worksheet.metadata.subject && `| ${worksheet.metadata.subject}`} {worksheet.metadata.topic && `| ${worksheet.metadata.topic}`}</span>
+          <span>{worksheet.metadata?.yearGroup} {worksheet.metadata?.subject && `| ${worksheet.metadata?.subject}`} {worksheet.metadata?.topic && `| ${worksheet.metadata?.topic}`}</span>
           <span>{new Date().toLocaleDateString("en-GB")}</span>
         </div>
       ) : isPrimary ? (
@@ -6258,9 +6258,9 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
         }}>
           <span style={{ fontWeight: 600 }}>Generated by Adaptly</span>
           <span style={{ display: "flex", gap: "6px", alignItems: "center", flexWrap: "wrap" }}>
-            {worksheet.metadata.yearGroup && <span>{worksheet.metadata.yearGroup}</span>}
-            {worksheet.metadata.subject && <span>| {worksheet.metadata.subject.charAt(0).toUpperCase() + worksheet.metadata.subject.slice(1)}</span>}
-            {worksheet.metadata.topic && <span>| {worksheet.metadata.topic}</span>}
+            {worksheet.metadata?.yearGroup && <span>{worksheet.metadata?.yearGroup}</span>}
+            {worksheet.metadata?.subject && <span>| {worksheet.metadata?.subject.charAt(0).toUpperCase() + worksheet.metadata?.subject.slice(1)}</span>}
+            {worksheet.metadata?.topic && <span>| {worksheet.metadata?.topic}</span>}
           </span>
           <span>{new Date().toLocaleDateString("en-GB")} | adaptly.co.uk</span>
         </div>
@@ -6279,11 +6279,11 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
         }}>
           <span>Generated by Adaptly · adaptly.co.uk</span>
           <span style={{ display: "flex", gap: "4px" }}>
-            {worksheet.metadata.yearGroup && <span>{worksheet.metadata.yearGroup}</span>}
-            {worksheet.metadata.subject && <span>· {worksheet.metadata.subject.charAt(0).toUpperCase() + worksheet.metadata.subject.slice(1)}</span>}
-            {worksheet.metadata.topic && <span>· {worksheet.metadata.topic}</span>}
-            {worksheet.metadata.difficulty && worksheet.metadata.difficulty !== "mixed" && (
-              <span>· {worksheet.metadata.difficulty === "foundation" ? "Foundation" : "Higher"}</span>
+            {worksheet.metadata?.yearGroup && <span>{worksheet.metadata?.yearGroup}</span>}
+            {worksheet.metadata?.subject && <span>· {worksheet.metadata?.subject.charAt(0).toUpperCase() + worksheet.metadata?.subject.slice(1)}</span>}
+            {worksheet.metadata?.topic && <span>· {worksheet.metadata?.topic}</span>}
+            {worksheet.metadata?.difficulty && worksheet.metadata?.difficulty !== "mixed" && (
+              <span>· {worksheet.metadata?.difficulty === "foundation" ? "Foundation" : "Higher"}</span>
             )}
             {/* SEND need not shown in footer — adaptations are applied invisibly */}
           </span>
