@@ -2230,6 +2230,31 @@ Return EXACTLY this JSON (raw JSON only):
   }
   const result: AIWorksheetResult = { ...json, isAI: true, provider };
 
+  // ── Defensive metadata normalisation ─────────────────────────────────────────
+  // Some provider responses legitimately contain title/subtitle/sections but omit
+  // the metadata object. The worksheet page, renderer, validator, auto-save and
+  // diagram selection all expect metadata.subject/topic/yearGroup to exist, so
+  // create a canonical fallback from the trusted request parameters before any
+  // downstream code touches result.metadata.*.
+  const incomingMetadata = (result as any).metadata && typeof (result as any).metadata === 'object'
+    ? (result as any).metadata
+    : {};
+  (result as any).metadata = {
+    ...incomingMetadata,
+    subject: subjectDisplay,
+    topic: incomingMetadata.topic || params.topic,
+    subtopic: incomingMetadata.subtopic || params.subtopic || undefined,
+    yearGroup: incomingMetadata.yearGroup || params.yearGroup,
+    difficulty: incomingMetadata.difficulty || params.difficulty || 'standard',
+    examBoard: incomingMetadata.examBoard || params.examBoard || 'General',
+    sendNeed: incomingMetadata.sendNeed ?? params.sendNeed ?? null,
+    readingAge: incomingMetadata.readingAge ?? params.readingAge ?? undefined,
+    adaptations: Array.isArray(incomingMetadata.adaptations) ? incomingMetadata.adaptations : [],
+  };
+  if (!Array.isArray((result as any).sections)) {
+    (result as any).sections = [];
+  }
+
   // ── Normalise all section content to strings ─────────────────────────────────
   // The AI sometimes returns content as an array of objects, plain objects, or
   // other non-string types. Convert everything to a readable plain-text string.
@@ -2318,9 +2343,7 @@ Return EXACTLY this JSON (raw JSON only):
 
   // ── Subject capitalisation in metadata and subtitle ────────────────────────────
   // Ensure the metadata subject field uses the properly capitalised display name
-  if (result.metadata) {
-    (result.metadata as any).subject = subjectDisplay;
-  }
+  (result.metadata as any).subject = subjectDisplay;
   // Fix subtitle capitalisation — replace lowercase subject name with capitalised version
   if (result.subtitle && params.subject) {
     const lowerSubject = params.subject.toLowerCase();
@@ -2328,21 +2351,17 @@ Return EXACTLY this JSON (raw JSON only):
     result.subtitle = result.subtitle.replace(new RegExp(lowerSubject, 'gi'), subjectDisplay);
   }
   // Fix SEND badge — if sendNeed is 'none' or 'none-selected', hide it
-  if (result.metadata) {
-    const sn = (result.metadata as any).sendNeed;
-    if (!sn || sn === 'none' || sn === 'none-selected' || sn === 'Standard') {
-      (result.metadata as any).sendNeed = null;
-    }
+  const sn = (result.metadata as any).sendNeed;
+  if (!sn || sn === 'none' || sn === 'none-selected' || sn === 'Standard') {
+    (result.metadata as any).sendNeed = null;
   }
 
   // Normalise metadata.adaptations — AI sometimes returns a string instead of an array
-  if (result.metadata) {
-    const raw = (result.metadata as any).adaptations;
-    if (typeof raw === "string") {
-      (result.metadata as any).adaptations = raw.length > 0 ? [raw] : [];
-    } else if (!Array.isArray(raw)) {
-      (result.metadata as any).adaptations = [];
-    }
+  const raw = (result.metadata as any).adaptations;
+  if (typeof raw === "string") {
+    (result.metadata as any).adaptations = raw.length > 0 ? [raw] : [];
+  } else if (!Array.isArray(raw)) {
+    (result.metadata as any).adaptations = [];
   }
 
   // ── Section order — fixed per spec, NO shuffling ────────────────────────────────────
