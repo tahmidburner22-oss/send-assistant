@@ -24,6 +24,15 @@ class ErrorBoundary extends Component<Props, State> {
   componentDidCatch(error: Error, info: any) {
     // Log error internally — never expose stack traces to users in production
     console.error("[ErrorBoundary] Caught error:", error, info);
+    // Store error in localStorage for diagnosis
+    try {
+      localStorage.setItem('_lastErrorBoundaryError', JSON.stringify({
+        message: error?.message,
+        stack: error?.stack,
+        componentStack: info?.componentStack,
+        time: new Date().toISOString()
+      }));
+    } catch(_e) {}
   }
 
   render() {
