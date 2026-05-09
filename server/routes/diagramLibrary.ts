@@ -2,6 +2,7 @@ import { Router } from "express";
 import { v4 as uuidv4 } from "uuid";
 import { query } from "../db/index.js";
 import { requireAuth } from "../middleware/auth.js";
+import { canonicalTopicKey, topicsMatch } from "../lib/topicNormalizer.js";
 
 const router = Router();
 
@@ -42,6 +43,8 @@ router.get("/search", requireAuth, async (req: any, res) => {
   try {
     const subjectRaw = String(req.query.subject || "").toLowerCase().trim();
     const topicRaw = String(req.query.topic || "").toLowerCase().trim();
+    const subtopicRaw = String(req.query.subtopic || "").toLowerCase().trim();
+    const yearGroupRaw = String(req.query.yearGroup || req.query.year_group || "").toLowerCase().trim();
     const slot = String(req.query.slot || "").toLowerCase().trim(); // 'a', 'b', 'revision', or ''
     if (!subjectRaw && !topicRaw) {
       return res.status(400).json({ error: "subject or topic required" });
@@ -74,48 +77,62 @@ router.get("/search", requireAuth, async (req: any, res) => {
       return res.json({ entry: null });
     }
 
-    // Score each entry: higher = better match
+    const subjectFamily = (s: string) => {
+      const v = s.toLowerCase().trim();
+      if (["biology", "chemistry", "physics", "science", "combined science", "triple science"].includes(v)) return "science";
+      if (["math", "maths", "mathematics"].includes(v)) return "maths";
+      return v;
+    };
+    const requestedTopicKey = canonicalTopicKey([topicRaw, subtopicRaw].filter(Boolean).join(" ") || topicRaw);
+
+    // Score each entry with hard relevance gates. A diagram should not be returned
+    // merely because it shares one generic word with the worksheet topic.
     const scored = entries.map((e) => {
-      const eSubject = (e.subject || "").toLowerCase();
-      const eTopic = (e.topic || "").toLowerCase();
-      const eTitle = (e.title || "").toLowerCase();
+      const eSubject = (e.subject || "").toLowerCase().trim();
+      const eTopic = (e.topic || "").toLowerCase().trim();
+      const eYearGroup = String(e.year_group || "").toLowerCase().trim();
+      const eTitle = (e.title || "").toLowerCase().trim();
       const eTags: string[] = (() => {
-        try { return JSON.parse(e.tags || "[]").map((t: string) => t.toLowerCase()); } catch { return []; }
+        try { return JSON.parse(e.tags || "[]").map((t: string) => String(t).toLowerCase().trim()); } catch { return []; }
       })();
+      const searchable = [eTopic, eTitle, ...eTags].filter(Boolean).join(" ");
+      const entryTopicKey = canonicalTopicKey(eTopic || eTitle || eTags.join(" "));
+      const exactTopicMatch = !!topicRaw && (eTopic === topicRaw || topicsMatch(eTopic, topicRaw));
+      const subtopicMatch = !!subtopicRaw && (searchable.includes(subtopicRaw) || topicsMatch(searchable, subtopicRaw));
+      const canonicalMatch = !!topicRaw && (entryTopicKey === requestedTopicKey || exactTopicMatch || subtopicMatch);
+      const subjectMatch = !subjectRaw || !eSubject ||
+        eSubject === subjectRaw || subjectFamily(eSubject) === subjectFamily(subjectRaw) ||
+        eSubject.includes(subjectRaw) || subjectRaw.includes(eSubject);
+      const yearGroupMatch = !yearGroupRaw || !eYearGroup || eYearGroup === yearGroupRaw || eYearGroup.includes(yearGroupRaw);
+
       let score = 0;
-      // Subject match
-      const subjectMatch =
-        subjectRaw &&
-        (eSubject.includes(subjectRaw) || subjectRaw.includes(eSubject) ||
-         eTitle.includes(subjectRaw) || eTags.some(t => t.includes(subjectRaw)));
-      if (subjectMatch) score += 10;
-      // Topic match — exact
-      if (topicRaw && eTopic === topicRaw) score += 50;
-      else if (topicRaw && eTopic.includes(topicRaw)) score += 30;
-      else if (topicRaw && topicRaw.includes(eTopic) && eTopic.length > 3) score += 20;
-      else if (topicRaw && eTitle.includes(topicRaw)) score += 15;
-      else if (topicRaw && topicRaw.includes(eTitle) && eTitle.length > 3) score += 10;
-      // Tag match
+      if (subjectMatch) score += 25; else score -= 50;
+      if (canonicalMatch) score += 70;
+      if (exactTopicMatch) score += 20;
+      if (subtopicMatch) score += 15;
+      if (yearGroupMatch) score += 8; else score -= 10;
+      if (topicRaw && eTitle.includes(topicRaw)) score += 10;
       if (topicRaw) {
         const topicWords = topicRaw.split(/\s+/).filter(w => w.length > 3);
-        for (const tw of topicWords) {
-          if (eTopic.includes(tw) || eTitle.includes(tw) || eTags.some(t => t.includes(tw))) {
-            score += 5;
-          }
-        }
+        const matchedWords = topicWords.filter(tw => searchable.includes(tw));
+        score += Math.min(matchedWords.length * 4, 12);
       }
-      // Curated bonus
       if (e.curated) score += 8;
-      return { entry: e, score };
-    });
-    // Sort by score descending
+
+      // Hard gate: for topic-based searches, require canonical/exact/subtopic relevance
+      // plus subject compatibility. This returns null rather than a wrong diagram.
+      const passesGate = subjectMatch && yearGroupMatch && (!topicRaw || canonicalMatch || exactTopicMatch || subtopicMatch);
+      return { entry: e, score, passesGate, reasons: { canonicalMatch, exactTopicMatch, subtopicMatch, subjectMatch, yearGroupMatch } };
+    }).filter(s => s.passesGate);
+
     scored.sort((a, b) => b.score - a.score);
     const best = scored[0];
-    if (!best || best.score === 0) {
-      return res.json({ entry: null });
+    if (!best || best.score < (topicRaw ? 75 : 25)) {
+      console.log(`[DiagramLibrary] No confident match for "${topicRaw}" (${subjectRaw}) slot=${slot || "any"}; bestScore=${best?.score ?? 0}`);
+      return res.json({ entry: null, confidence: best?.score ?? 0 });
     }
     console.log(`[DiagramLibrary] Best match for "${topicRaw}" (${subjectRaw}) slot=${slot || "any"}: "${best.entry.title}" score=${best.score}`);
-    return res.json({ entry: best.entry });
+    return res.json({ entry: best.entry, confidence: best.score, reasons: best.reasons });
   } catch (err: any) {
     console.error("[diagramLibrary] GET /search error:", err);
     res.status(500).json({ error: "Failed to search diagram library" });

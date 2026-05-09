@@ -5011,9 +5011,11 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
           )}
           <div
             className={[
-              `ws-section ws-section-${section.type}`,
-              // Only apply diagram class (which CSS uses for break-before: page) when content exists
-              section.type === "diagram" && !hasDiagramContent ? "ws-section-diagram-empty" : "",
+              section.type === "diagram" && !hasDiagramContent
+                ? "ws-section ws-section-diagram-empty"
+                : `ws-section ws-section-${section.type}`,
+              // Only non-empty diagram sections receive ws-section-diagram; PDF pagination
+              // uses that class to reserve a full page for a real diagram.
               // Only heavy teacher sections (Key/Mark-Scheme) get the break-before: page CSS class
               isHeavyTeacherSection ? "ws-teacher-section" : "",
               isTeacherSection && !isHeavyTeacherSection ? "ws-teacher-section-light" : "",

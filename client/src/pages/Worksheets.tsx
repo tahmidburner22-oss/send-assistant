@@ -752,16 +752,43 @@ export default function Worksheets() {
     setDiagramLibrarySearch("");
     setDiagramLibraryLoading(true);
     try {
-      const res = await fetch("/api/diagram-library/entries", { credentials: "include" });
-      const data = await res.json();
-      setDiagramLibraryEntries(data.entries || []);
+      const section = generated?.sections?.[sectionIndex] as any;
+      const sectionType = String(section?.type || "").toLowerCase();
+      const title = String(section?.title || "").toLowerCase();
+      const slot = sectionType.includes("diagram-b") || title.includes("diagram b")
+        ? "b"
+        : sectionType.includes("revision") || title.includes("revision")
+          ? "revision"
+          : "a";
+      const meta = (generated as any)?.metadata || {};
+      const params = new URLSearchParams({
+        subject: String(meta.subject || subject || ""),
+        topic: String(meta.topic || topic || ""),
+        subtopic: String(meta.subtopic || subtopic || ""),
+        yearGroup: String(meta.yearGroup || yearGroup || ""),
+        slot,
+      });
+      const [searchRes, entriesRes] = await Promise.all([
+        fetch(`/api/diagram-library/search?${params.toString()}`, { credentials: "include" }).catch(() => null),
+        fetch("/api/diagram-library/entries", { credentials: "include" }),
+      ]);
+      const entriesData = await entriesRes.json();
+      const allEntries = entriesData.entries || [];
+      let ranked = allEntries;
+      if (searchRes?.ok) {
+        const searchData = await searchRes.json().catch(() => ({}));
+        if (searchData.entry?.id) {
+          ranked = [searchData.entry, ...allEntries.filter((e: any) => e.id !== searchData.entry.id)];
+        }
+      }
+      setDiagramLibraryEntries(ranked);
     } catch (e) {
       console.error("[ChangeDiagram] Failed to load library:", e);
       setDiagramLibraryEntries([]);
     } finally {
       setDiagramLibraryLoading(false);
     }
-  }, []);
+  }, [generated, subject, topic, subtopic, yearGroup]);
 
   useEffect(() => {
     const handler = (e: Event) => {
@@ -2079,27 +2106,39 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
         isDiagram: el.classList.contains("ws-section-diagram"),
       }));
       document.body.removeChild(measureIframe);
-      // Pack blocks into pages
-      const pages: string[][] = [[]];
-      const pageIsDiagram: boolean[] = [false];
+      // Pack blocks into pages without ever emitting intermediate blank pages.
+      // Diagram blocks occupy a page alone, but we flush the current page rather
+      // than appending a speculative empty page after every diagram.
+      const pages: string[][] = [];
+      const pageIsDiagram: boolean[] = [];
+      let currentPage: string[] = [];
       let curPageH = 0;
+      const flushCurrentPage = () => {
+        if (currentPage.join("").trim().length > 0) {
+          pages.push(currentPage);
+          pageIsDiagram.push(false);
+        }
+        currentPage = [];
+        curPageH = 0;
+      };
       for (const blk of blocks) {
         if (blk.isDiagram) {
-          if (pages[pages.length - 1].length > 0) { pages.push([blk.html]); pageIsDiagram.push(true); }
-          else { pages[pages.length - 1].push(blk.html); pageIsDiagram[pageIsDiagram.length - 1] = true; }
-          // Reset curPageH to 0 so the next block starts a fresh page (not forced onto its own page)
+          flushCurrentPage();
+          pages.push([blk.html]);
+          pageIsDiagram.push(true);
           curPageH = 0;
-          pages.push([]); pageIsDiagram.push(false);
-        } else if (curPageH === 0 || curPageH + blk.height <= CONTENT_H + 10) {
-          pages[pages.length - 1].push(blk.html); curPageH += blk.height;
+          continue;
+        }
+        if (currentPage.length === 0 || curPageH + blk.height <= CONTENT_H + 10) {
+          currentPage.push(blk.html);
+          curPageH += blk.height;
         } else {
-          pages.push([blk.html]); pageIsDiagram.push(false); curPageH = blk.height;
+          flushCurrentPage();
+          currentPage.push(blk.html);
+          curPageH = blk.height;
         }
       }
-      // Remove any trailing empty pages
-      while (pages.length > 0 && pages[pages.length - 1].length === 0) {
-        pages.pop(); pageIsDiagram.pop();
-      }
+      flushCurrentPage();
       // Build self-contained page HTML (no oklch — uses only KaTeX CSS + explicit styles)
       const pageCards = pages.map((pageBlocks, i) => `
         <div class="preview-page${pageIsDiagram[i] ? " diagram-page" : ""}" id="page-${i}">
@@ -2301,36 +2340,39 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
       document.body.removeChild(measureIframe);
 
       // Step 3: Pack blocks into pages — never split a block across pages.
-      // Diagram sections always start a new page and occupy the full page alone.
-      const pages: string[][] = [[]];
-      const pageIsDiagram: boolean[] = [false];
+      // Diagram sections start a new page and occupy it alone, but the packer
+      // must not create speculative empty pages because those survive as blank
+      // pages in the middle of preview/PDF output.
+      const pages: string[][] = [];
+      const pageIsDiagram: boolean[] = [];
+      let currentPage: string[] = [];
       let curPageH = 0;
+      const flushCurrentPage = () => {
+        if (currentPage.join("").trim().length > 0) {
+          pages.push(currentPage);
+          pageIsDiagram.push(false);
+        }
+        currentPage = [];
+        curPageH = 0;
+      };
       for (const blk of blocks) {
         if (blk.isDiagram) {
-          // Diagram: always force onto its own page
-          if (pages[pages.length - 1].length > 0) {
-            pages.push([blk.html]);
-            pageIsDiagram.push(true);
-          } else {
-            pages[pages.length - 1].push(blk.html);
-            pageIsDiagram[pageIsDiagram.length - 1] = true;
-          }
-          // Reset curPageH to 0 so the next block starts a fresh page (not forced alone)
+          flushCurrentPage();
+          pages.push([blk.html]);
+          pageIsDiagram.push(true);
           curPageH = 0;
-          pages.push([]); pageIsDiagram.push(false);
-        } else if (curPageH === 0 || curPageH + blk.height <= CONTENT_H + 10) {
-          pages[pages.length - 1].push(blk.html);
+          continue;
+        }
+        if (currentPage.length === 0 || curPageH + blk.height <= CONTENT_H + 10) {
+          currentPage.push(blk.html);
           curPageH += blk.height;
         } else {
-          pages.push([blk.html]);
-          pageIsDiagram.push(false);
+          flushCurrentPage();
+          currentPage.push(blk.html);
           curPageH = blk.height;
         }
       }
-      // Remove any trailing empty pages created by the diagram page logic
-      while (pages.length > 0 && pages[pages.length - 1].length === 0) {
-        pages.pop(); pageIsDiagram.pop();
-      }
+      flushCurrentPage();
 
       // Step 4: Build paginated preview HTML — each page is a white A4 card.
       // Diagram pages get class "diagram-page" so CSS can remove the root padding.

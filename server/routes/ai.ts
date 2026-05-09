@@ -8,6 +8,7 @@ import { getSchoolKey } from "./schoolApiKeys.js";
 import { findDiagram } from "../lib/diagramBank.js";
 import * as _fullDiagramBankModule from "../lib/diagramBankFull.js";
 import { getTemplate } from "../lib/diagramTemplates.js";
+import { canonicalTopicKey, topicsMatch } from "../lib/topicNormalizer.js";
 // Static import (esbuild bundles everything into a single file, dynamic imports don't work)
 function getFullDiagramBank() {
   return _fullDiagramBankModule;
@@ -1296,19 +1297,9 @@ router.post("/diagram", requireAuth, async (req: Request, res: Response) => {
        LIMIT 80`,
       [diagramTypeFilter, subjectPat, topicPat]
     );
-    // If no targeted results, fall back to subject-only match (still filtered by type)
-    if (targetedRows.rows.length === 0) {
-      targetedRows = await dbQuery(
-        `SELECT id, title, subject, topic, year_group, image_url, description, tags, curated, diagram_type
-         FROM diagram_library
-         WHERE diagram_type = $1
-           AND LOWER(subject) LIKE $2
-           AND ${brokenFilter}
-         ORDER BY curated DESC, subject ASC, title ASC
-         LIMIT 120`,
-        [diagramTypeFilter, subjectPat]
-      );
-    }
+    // Do not fall back to subject-only at DB level. Subject-only matches are the
+    // main source of irrelevant diagrams; the post-query scorer below can only
+    // select from topic-bearing candidates, otherwise the section remains blank.
     // If still no results (diagram_type column not yet migrated on this DB), fall back to title-based type filtering
     // Handles BOTH em-dash (—) and en-dash (–) used in different entry title formats
     if (targetedRows.rows.length === 0) {
@@ -1330,85 +1321,50 @@ router.post("/diagram", requireAuth, async (req: Request, res: Response) => {
         [subjectPat, topicPat]
       );
     }
-    // Slot B: if no topic-specific B found, widen to subject-only B search (handles year group mismatches)
-    if (targetedRows.rows.length === 0 && diagramSlot === 'B') {
-      targetedRows = await dbQuery(
-        `SELECT id, title, subject, topic, year_group, image_url, description, tags, curated,
-                COALESCE(diagram_type, 'diagram_a') as diagram_type
-         FROM diagram_library
-         WHERE (LOWER(subject) LIKE $1 OR LOWER(title) LIKE $1)
-           AND (LOWER(title) LIKE '%diagram b%' OR LOWER(title) LIKE '% – diagram b%')
-           AND ${brokenFilter}
-         ORDER BY curated DESC, subject ASC, title ASC
-         LIMIT 80`,
-        [subjectPat]
-      );
-    }
-    // Slot A: if still no results, widen to subject-only A search
-    if (targetedRows.rows.length === 0 && diagramSlot === 'A') {
-      targetedRows = await dbQuery(
-        `SELECT id, title, subject, topic, year_group, image_url, description, tags, curated,
-                COALESCE(diagram_type, 'diagram_a') as diagram_type
-         FROM diagram_library
-         WHERE (LOWER(subject) LIKE $1 OR LOWER(title) LIKE $1)
-           AND (LOWER(title) NOT LIKE '%diagram b%' AND LOWER(title) NOT LIKE '%revision map%' AND LOWER(title) NOT LIKE '%revision mat%')
-           AND ${brokenFilter}
-         ORDER BY curated DESC, subject ASC, title ASC
-         LIMIT 80`,
-        [subjectPat]
-      );
-    }
+    // Slot-level subject-only fallbacks removed: a missing topic-specific B/A
+    // diagram is safer than a wrong diagram that undermines teacher trust.
     const entries: any[] = targetedRows.rows;
 
     if (entries.length > 0) {
-      // Score each entry for relevance
+      const subjectFamily = (s: string) => {
+        const v = s.toLowerCase().trim();
+        if (["biology", "chemistry", "physics", "science", "combined science", "triple science"].includes(v)) return "science";
+        if (["math", "maths", "mathematics"].includes(v)) return "maths";
+        return v;
+      };
+      const requestedTopicKey = canonicalTopicKey(topicLower);
+      // Score each entry for relevance with hard topic gates.
       const scored = entries.map((e) => {
-        const eSubject = (e.subject || "").toLowerCase();
-        const eTopic = (e.topic || "").toLowerCase();
-        const eTitle = (e.title || "").toLowerCase();
-        const eYearGroup = (e.year_group || "").toLowerCase();
+        const eSubject = (e.subject || "").toLowerCase().trim();
+        const eTopic = (e.topic || "").toLowerCase().trim();
+        const eTitle = (e.title || "").toLowerCase().trim();
+        const eYearGroup = (e.year_group || "").toLowerCase().trim();
         const eTags: string[] = (() => {
-          try { return JSON.parse(e.tags || "[]").map((t: string) => t.toLowerCase()); } catch { return []; }
+          try { return JSON.parse(e.tags || "[]").map((t: string) => String(t).toLowerCase().trim()); } catch { return []; }
         })();
+        const searchable = [eTopic, eTitle, ...eTags].filter(Boolean).join(" ");
+        const entryTopicKey = canonicalTopicKey(eTopic || eTitle || eTags.join(" "));
+        const canonicalMatch = entryTopicKey === requestedTopicKey || topicsMatch(eTopic || eTitle, topicLower);
+        const subjectMatch = !eSubject || eSubject === subjectLower || subjectFamily(eSubject) === subjectFamily(subjectLower) || eSubject.includes(subjectLower) || subjectLower.includes(eSubject);
+        const yrLower = yearGroup ? yearGroup.toLowerCase() : "";
+        const yrNum = yrLower.match(/(\d+)/)?.[1];
+        const yearGroupMatch = !yrLower || !eYearGroup || eYearGroup === yrLower || (!!yrNum && (eYearGroup.includes(yrNum) || eTitle.includes(`year ${yrNum}`)));
+        const topicWords2 = topicLower.split(/\s+/).filter((w: string) => w.length > 3);
+        const matchedWords = topicWords2.filter((tw: string) => searchable.includes(tw));
+        const passesGate = subjectMatch && yearGroupMatch && (canonicalMatch || matchedWords.length >= Math.min(2, topicWords2.length || 1));
         let score = 0;
-        // Subject match
-        const subjectMatch =
-          subjectLower &&
-          (eSubject.includes(subjectLower) || subjectLower.includes(eSubject) ||
-           eTitle.includes(subjectLower) || eTags.some((t: string) => t.includes(subjectLower)));
-        if (subjectMatch) score += 10;
-        // Year group match — strongly prefer diagrams for the correct year group
-        if (yearGroup) {
-          const yrLower = yearGroup.toLowerCase();
-          const yrNum = yrLower.match(/(\d+)/)?.[1];
-          if (eYearGroup && eYearGroup === yrLower) score += 40;
-          else if (eYearGroup && yrNum && eYearGroup.includes(yrNum)) score += 25;
-          else if (eTitle && yrNum && eTitle.includes(`year ${yrNum}`)) score += 20;
-          else if (eYearGroup && eYearGroup !== "" && yrNum && !eYearGroup.includes(yrNum)) score -= 15;
-        }
-        // Topic match
-        if (topicLower && eTopic === topicLower) score += 50;
-        else if (topicLower && eTopic.includes(topicLower)) score += 30;
-        else if (topicLower && topicLower.includes(eTopic) && eTopic.length > 3) score += 20;
-        else if (topicLower && eTitle.includes(topicLower)) score += 15;
-        else if (topicLower && topicLower.includes(eTitle) && eTitle.length > 3) score += 10;
-        // Tag / keyword match
-        if (topicLower) {
-          const topicWords2 = topicLower.split(/\s+/).filter((w: string) => w.length > 3);
-          for (const tw of topicWords2) {
-            if (eTopic.includes(tw) || eTitle.includes(tw) || eTags.some((t: string) => t.includes(tw))) {
-              score += 5;
-            }
-          }
-        }
-        // Curated bonus
+        if (subjectMatch) score += 25;
+        if (yearGroupMatch) score += 12;
+        if (canonicalMatch) score += 80;
+        score += Math.min(matchedWords.length * 6, 18);
         if (e.curated) score += 8;
-        return { entry: e, score };
-      });
+        if (!passesGate) score = -100;
+        return { entry: e, score, passesGate };
+      }).filter(s => s.passesGate);
 
       scored.sort((a, b) => b.score - a.score);
-      // Use the top-scoring entry — diagram_type filter already ensures correct slot
-      const best = scored.find(s => s.score > 0);
+      // Use the top-scoring entry only when confidence is strong enough.
+      const best = scored.find(s => s.score >= 90);
       if (best) {
         console.log(`[Diagram] Admin library match for "${topic}" (${subject}) slot=${diagramSlot} type=${diagramTypeFilter}: "${best.entry.title}" score=${best.score}`);
         return res.json(buildImageResponse({
