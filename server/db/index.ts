@@ -787,6 +787,53 @@ CREATE TABLE IF NOT EXISTS diagram_library (
 CREATE INDEX IF NOT EXISTS idx_diagram_library_subject ON diagram_library(subject);
 CREATE INDEX IF NOT EXISTS idx_diagram_library_curated ON diagram_library(curated);
 
+-- Pupil Documents (CV / Personal Statement / Cover Letter).
+-- Data owned by the pupil but authored via parent portal; visible to teachers (read-only).
+CREATE TABLE IF NOT EXISTS pupil_documents (
+  id TEXT PRIMARY KEY,
+  pupil_id TEXT NOT NULL REFERENCES pupils(id) ON DELETE CASCADE,
+  school_id TEXT REFERENCES schools(id) ON DELETE CASCADE,
+  doc_type TEXT NOT NULL,              -- 'cv' | 'personal_statement' | 'cover_letter'
+  title TEXT NOT NULL,
+  fields_json TEXT NOT NULL DEFAULT '{}',  -- structured input fields (role, course, bullets, etc.)
+  content TEXT,                         -- rendered/polished content (from AI assist or manual)
+  updated_by TEXT REFERENCES users(id), -- teacher id if teacher edited (parents have no user id)
+  updated_by_role TEXT NOT NULL DEFAULT 'parent',  -- 'parent' | 'teacher'
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_pupil_documents_pupil ON pupil_documents(pupil_id);
+CREATE INDEX IF NOT EXISTS idx_pupil_documents_school ON pupil_documents(school_id);
+
+-- Scheduler Configs (daily autonomous worksheet generation per pupil + subject).
+-- Composite PK allows the same pupil to be scheduled across multiple subjects.
+CREATE TABLE IF NOT EXISTS scheduler_configs (
+  pupil_id TEXT NOT NULL REFERENCES pupils(id) ON DELETE CASCADE,
+  subject TEXT NOT NULL,
+  school_id TEXT REFERENCES schools(id) ON DELETE CASCADE,
+  enabled INTEGER NOT NULL DEFAULT 1,
+  frequency TEXT NOT NULL DEFAULT 'daily',    -- 'daily' | 'weekly' | 'biweekly'
+  difficulty TEXT NOT NULL DEFAULT 'mixed',   -- 'foundation' | 'mixed' | 'higher'
+  include_answers INTEGER NOT NULL DEFAULT 1,
+  include_recall INTEGER NOT NULL DEFAULT 1,
+  next_fire_at TIMESTAMPTZ,
+  last_fired_at TIMESTAMPTZ,
+  last_worksheet_title TEXT,
+  last_key_vocab TEXT NOT NULL DEFAULT '[]',
+  topic_index INTEGER NOT NULL DEFAULT 0,
+  progression_topic_index INTEGER NOT NULL DEFAULT 0,
+  progression_step_index INTEGER NOT NULL DEFAULT 0,
+  last_error TEXT,
+  retry_after TIMESTAMPTZ,
+  pass_threshold INTEGER NOT NULL DEFAULT 70, -- percent pass gate (default 70)
+  created_by TEXT REFERENCES users(id),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (pupil_id, subject)
+);
+CREATE INDEX IF NOT EXISTS idx_scheduler_next_fire ON scheduler_configs(enabled, next_fire_at);
+CREATE INDEX IF NOT EXISTS idx_scheduler_school ON scheduler_configs(school_id);
+
 -- Indexes
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_users_school ON users(school_id);
@@ -840,6 +887,15 @@ export async function initDb() {
     // diagram_type folder classification column
     `DO $$ BEGIN ALTER TABLE diagram_library ADD COLUMN diagram_type TEXT NOT NULL DEFAULT 'diagram_a'; EXCEPTION WHEN duplicate_column THEN NULL; END $$`,
     `CREATE INDEX IF NOT EXISTS idx_diagram_library_type ON diagram_library(diagram_type)`,
+    // Assignment columns for scheduler auto-mark + source traceability
+    `DO $$ BEGIN ALTER TABLE assignments ADD COLUMN mark_scheme TEXT; EXCEPTION WHEN duplicate_column THEN NULL; END $$`,
+    `DO $$ BEGIN ALTER TABLE assignments ADD COLUMN source TEXT NOT NULL DEFAULT 'manual'; EXCEPTION WHEN duplicate_column THEN NULL; END $$`,
+    `DO $$ BEGIN ALTER TABLE assignments ADD COLUMN submitted_at TIMESTAMPTZ; EXCEPTION WHEN duplicate_column THEN NULL; END $$`,
+    `DO $$ BEGIN ALTER TABLE assignments ADD COLUMN marked_at TIMESTAMPTZ; EXCEPTION WHEN duplicate_column THEN NULL; END $$`,
+    `DO $$ BEGIN ALTER TABLE assignments ADD COLUMN marked_score INTEGER; EXCEPTION WHEN duplicate_column THEN NULL; END $$`,
+    `DO $$ BEGIN ALTER TABLE assignments ADD COLUMN scheduler_subject TEXT; EXCEPTION WHEN duplicate_column THEN NULL; END $$`,
+    `DO $$ BEGIN ALTER TABLE assignments ADD COLUMN auto_mark_accepted INTEGER NOT NULL DEFAULT 0; EXCEPTION WHEN duplicate_column THEN NULL; END $$`,
+    `CREATE INDEX IF NOT EXISTS idx_assignments_source_subject ON assignments(source, scheduler_subject)`,
   ];
   for (const sql of alterMigrations) {
     try { await query(sql); } catch (e: any) { /* ignore if already exists */ }
