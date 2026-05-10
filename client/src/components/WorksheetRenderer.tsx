@@ -3354,49 +3354,119 @@ function MarkSchemeSection({ content, fmt }: { content: string; fmt: ReturnType<
 function WorkedExampleSection({ content, fmt }: { content: string; fmt: ReturnType<typeof getSendFormatting> }) {
   const { fontSize: textSize, fontFamily, lineHeight } = fmt;
 
-  // Parse content into a title and ordered steps.
-  // Supports two formats:
-  //   1. "Worked example: <title>\n\n<step1>\n<step2>..." (seed script format)
-  //   2. Plain numbered/bulleted lines (AI-generated format)
-  const rawLines = content
-    .replace(/\\n/g, '\n')
-    .split('\n')
-    .map(l => l.trim())
-    .filter(Boolean);
+  // Parse content into a title, ordered MAIN steps, and un-numbered sub-steps.
+  //
+  // Main step: line that matches one of:
+  //   "Step 1:"  "Step 1."  "1." "1)"  "**Step 1:**"
+  // Sub-step: any line that is (a) indented (leading whitespace in the raw source),
+  //   (b) starts with a bullet (-, •, *), (c) starts with "(a)", "(i)", "a.",
+  //   or (d) a continuation line that doesn't match the main-step pattern.
+  //
+  // Rationale: math/science content in the seed banks contains lines like:
+  //   Step 1: Write out the place value columns
+  //       Millions | Hundred-thousands | Ten-thousands | ...
+  //   Step 2: Identify which column the digit 6 is in
+  //       The digit 6 is in the ten-thousands column
+  // Sub-lines must render un-numbered under their parent step.
 
-  // Extract title: first line that starts with "Worked example" or similar heading
+  const normalised = content.replace(/\\n/g, '\n');
+  // Keep original indentation so we can detect sub-steps
+  const rawLines = normalised.split('\n').filter(l => l.trim().length > 0);
+
   let title = "";
-  let stepLines: string[] = [];
+  let bodyLines: string[] = rawLines;
 
-  const titleMatch = content.replace(/\\n/g, '\n').match(/^[Ww]orked[\s\-][Ee]xample[:\s]+([^\n]+)/m);
+  const titleMatch = normalised.match(/^[Ww]orked[\s\-][Ee]xample[:\s]+([^\n]+)/m);
   if (titleMatch) {
     title = titleMatch[1].trim();
-    // All remaining non-empty lines are steps
-    const afterTitle = rawLines.filter(l => !l.match(/^[Ww]orked[\s\-][Ee]xample[:\s]+/i));
-    stepLines = afterTitle;
+    bodyLines = rawLines.filter(l => !/^[\s]*[Ww]orked[\s\-][Ee]xample[:\s]+/.test(l));
   } else {
     // No explicit title — treat first line as title if it looks like a heading
-    if (rawLines.length > 0 && !/^\d+[.)\s]/.test(rawLines[0]) && !/^[•\-\*]/.test(rawLines[0])) {
-      title = rawLines[0];
-      stepLines = rawLines.slice(1);
-    } else {
-      stepLines = rawLines;
+    const first = rawLines[0]?.trim() || "";
+    if (first && !/^\*{0,2}\s*Step\s*\d+[:.)]/i.test(first) && !/^\d+[.)\s]/.test(first) && !/^[•\-\*]/.test(first)) {
+      title = first;
+      bodyLines = rawLines.slice(1);
     }
   }
 
-  // Clean step lines: strip leading numbers/bullets and trailing stray digits
-  const steps = stepLines
-    .map(l => l
-      .replace(/^\d+[.)\s]+/, '')  // strip leading "1. " or "1) "
-      .replace(/^[•\-\*]\s*/, '')  // strip leading bullets
-      .replace(/\s+\d+\s*$/, '')   // strip trailing stray numbers (e.g. "...config = 2,8,1.4" → remove trailing "4")
-      .trim()
-    )
-    .filter(Boolean);
+  // Patterns for classifying lines
+  const mainStepPattern = /^\s*\*{0,2}\s*(?:Step\s*)?\d+[.):]\s*\*{0,2}\s*/i;
+  const subStepBulletPattern = /^\s*[•\-\*]\s+/;
+  const subStepLetterPattern = /^\s*\(?[a-z]\)?[.)]\s+/i;
+  const answerPattern = /^\s*\*{0,2}\s*Answer\s*:\s*/i;
+  const questionPattern = /^\s*\*{0,2}\s*Question\s*:\s*/i;
+  const keyPointPattern = /^\s*\*{0,2}\s*✓\s*/;
 
-  // Separate key-point lines (lines starting with ✓) from regular steps
-  const keyPoints = steps.filter(s => /^✓/.test(s.trim()));
-  const regularSteps = steps.filter(s => !/^✓/.test(s.trim()));
+  type Step = {
+    kind: 'question' | 'answer' | 'keypoint' | 'main';
+    text: string;
+    subs: string[];
+  };
+  const steps: Step[] = [];
+  let current: Step | null = null;
+
+  const stripLeadingMainStep = (line: string) =>
+    line
+      .replace(/^\s*\*{0,2}\s*/, '')      // leading bold asterisks
+      .replace(/^(?:Step\s*)?\d+[.):]\s*/i, '')
+      .replace(/^\*{0,2}\s*/, '')
+      .replace(/\*{0,2}\s*$/, '')
+      .trim();
+  const stripLeadingSub = (line: string) =>
+    line
+      .replace(/^\s*[•\-\*]\s+/, '')
+      .replace(/^\s*\(?[a-z]\)?[.)]\s+/i, '')
+      .trim();
+  const stripBold = (line: string) => line.replace(/^\s*\*{0,2}/, '').replace(/\*{0,2}\s*$/, '').trim();
+
+  for (const raw of bodyLines) {
+    const trimmed = raw.trim();
+    if (!trimmed) continue;
+
+    // Sub-step heuristic: line has >= 2 leading spaces/tabs in the source
+    const isIndented = /^(?:\t|  )/.test(raw);
+    const isKeyPoint = keyPointPattern.test(trimmed);
+    const isBulletSub = subStepBulletPattern.test(raw);
+    const isLetterSub = subStepLetterPattern.test(raw);
+    const isAnswer = answerPattern.test(trimmed);
+    const isQuestion = questionPattern.test(trimmed);
+    const isMainStep = !isBulletSub && !isKeyPoint && (mainStepPattern.test(trimmed) || (!current && !isIndented && !isAnswer && !isQuestion));
+
+    if (isKeyPoint) {
+      // Standalone key point — flush current, add keypoint on its own
+      if (current) { steps.push(current); current = null; }
+      steps.push({ kind: 'keypoint', text: trimmed.replace(/^\s*\*{0,2}\s*✓\s*/, '').replace(/\*{0,2}\s*$/, '').trim(), subs: [] });
+      continue;
+    }
+    if (isQuestion) {
+      if (current) { steps.push(current); current = null; }
+      steps.push({ kind: 'question', text: trimmed.replace(questionPattern, '').replace(/\*{0,2}\s*$/, '').trim(), subs: [] });
+      continue;
+    }
+    if (isAnswer) {
+      if (current) { steps.push(current); current = null; }
+      steps.push({ kind: 'answer', text: trimmed.replace(answerPattern, '').replace(/\*{0,2}\s*$/, '').trim(), subs: [] });
+      continue;
+    }
+    if (isMainStep) {
+      if (current) steps.push(current);
+      current = { kind: 'main', text: stripLeadingMainStep(trimmed), subs: [] };
+      continue;
+    }
+    // Otherwise: sub-step — append to current main step's subs
+    if (!current) {
+      // No parent yet — treat as the first main step so we don't drop content
+      current = { kind: 'main', text: stripBold(stripLeadingSub(trimmed)), subs: [] };
+    } else {
+      current.subs.push(stripBold(isBulletSub || isLetterSub ? stripLeadingSub(trimmed) : trimmed));
+    }
+  }
+  if (current) steps.push(current);
+
+  const mainSteps = steps.filter(s => s.kind === 'main');
+  const keyPoints = steps.filter(s => s.kind === 'keypoint').map(s => s.text);
+  const questions = steps.filter(s => s.kind === 'question').map(s => s.text);
+  const answers = steps.filter(s => s.kind === 'answer').map(s => s.text);
 
   return (
     <div style={{ fontFamily, border: '2px solid #1a2744', borderRadius: '8px', overflow: 'hidden' }}>
@@ -3419,50 +3489,69 @@ function WorkedExampleSection({ content, fmt }: { content: string; fmt: ReturnTy
       </div>
       {/* Steps */}
       <div style={{ padding: '14px 16px', background: '#f8fafc' }}>
+        {/* Question line(s) — sit above numbered steps */}
+        {questions.map((q, i) => (
+          <div key={`q-${i}`} style={{
+            background: '#e0f2fe', padding: '6px 10px', borderRadius: '4px', marginBottom: '10px',
+            fontSize: `${textSize}px`, color: '#1e3a5f', fontFamily, fontWeight: 600, lineHeight,
+          }}>
+            <span style={{ background: '#2a7f8f', color: '#fff', padding: '2px 8px', borderRadius: '4px', fontSize: `${textSize - 3}px`, fontWeight: 700, marginRight: '8px' }}>Q</span>
+            <span dangerouslySetInnerHTML={{ __html: renderMath(q) }} />
+          </div>
+        ))}
         <ol style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          {regularSteps.map((step, i) => {
-            const isQuestion = /^Question:/i.test(step.trim());
-            const isAnswer = /^Answer:/i.test(step.trim());
-            return (
-              <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
-                {/* Step badge */}
-                <div style={{
-                  minWidth: isQuestion ? 'auto' : '26px',
-                  height: '26px',
-                  background: isQuestion ? '#2a7f8f' : isAnswer ? '#166534' : '#1a2744',
-                  color: '#ffffff',
-                  borderRadius: isQuestion ? '4px' : '50%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: `${textSize - 3}px`,
-                  fontWeight: 700,
-                  fontFamily,
-                  flexShrink: 0,
-                  marginTop: '1px',
-                  padding: isQuestion ? '0 8px' : '0',
-                }}>
-                  {isQuestion ? 'Q' : isAnswer ? '\u2713' : i + 1}
-                </div>
-                {/* Step text */}
+          {mainSteps.map((step, i) => (
+            <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+              {/* Numbered badge — ONLY main steps get numbers */}
+              <div style={{
+                minWidth: '26px',
+                height: '26px',
+                background: '#1a2744',
+                color: '#ffffff',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: `${textSize - 3}px`,
+                fontWeight: 700,
+                fontFamily,
+                flexShrink: 0,
+                marginTop: '1px',
+              }}>
+                {i + 1}
+              </div>
+              <div style={{ flex: 1 }}>
+                {/* Main step text */}
                 <div
-                  style={{
-                    fontSize: `${textSize}px`,
-                    color: isQuestion ? '#1e3a5f' : isAnswer ? '#166534' : '#1f2937',
-                    fontFamily,
-                    lineHeight,
-                    flex: 1,
-                    fontWeight: isQuestion || isAnswer ? 600 : 400,
-                    background: isQuestion ? '#e0f2fe' : isAnswer ? '#f0fdf4' : 'transparent',
-                    padding: isQuestion || isAnswer ? '4px 8px' : '0',
-                    borderRadius: isQuestion || isAnswer ? '4px' : '0',
-                  }}
-                  dangerouslySetInnerHTML={{ __html: renderMath(step) }}
+                  style={{ fontSize: `${textSize}px`, color: '#1f2937', fontFamily, lineHeight, fontWeight: 500 }}
+                  dangerouslySetInnerHTML={{ __html: renderMath(step.text) }}
                 />
-              </li>
-            );
-          })}
+                {/* Sub-steps — rendered indented and un-numbered */}
+                {step.subs.length > 0 && (
+                  <div style={{ marginTop: '4px', paddingLeft: '10px', borderLeft: '2px solid #e5e7eb', display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                    {step.subs.map((sub, si) => (
+                      <div key={si}
+                        style={{ fontSize: `${textSize - 1}px`, color: '#4b5563', fontFamily, lineHeight, fontWeight: 400 }}
+                        dangerouslySetInnerHTML={{ __html: renderMath(sub) }}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            </li>
+          ))}
         </ol>
+        {/* Answer line — sits below numbered steps */}
+        {answers.map((a, i) => (
+          <div key={`a-${i}`} style={{
+            marginTop: '10px', background: '#f0fdf4', padding: '6px 10px', borderRadius: '4px',
+            fontSize: `${textSize}px`, color: '#166534', fontFamily, fontWeight: 600, lineHeight,
+            display: 'flex', alignItems: 'flex-start', gap: '10px',
+          }}>
+            <span style={{ background: '#166534', color: '#fff', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, flexShrink: 0, fontSize: `${textSize - 3}px` }}>✓</span>
+            <span dangerouslySetInnerHTML={{ __html: renderMath(a) }} />
+          </div>
+        ))}
         {/* Key points */}
         {keyPoints.length > 0 && (
           <div style={{ marginTop: '12px', borderTop: '1px solid #d1d5db', paddingTop: '10px' }}>
@@ -3480,7 +3569,7 @@ function WorkedExampleSection({ content, fmt }: { content: string; fmt: ReturnTy
                 <span style={{ color: '#d97706', fontWeight: 700, fontSize: `${textSize}px`, flexShrink: 0 }}>✓</span>
                 <span
                   style={{ fontSize: `${textSize}px`, color: '#78350f', fontFamily, lineHeight, fontWeight: 600 }}
-                  dangerouslySetInnerHTML={{ __html: renderMath(kp.replace(/^✓\s*/, '')) }}
+                  dangerouslySetInnerHTML={{ __html: renderMath(kp) }}
                 />
               </div>
             ))}

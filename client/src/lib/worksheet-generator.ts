@@ -2255,7 +2255,7 @@ FIXED SECTION ORDER \u2014 you must follow this exactly:
 3. Retrieval Practice (5 questions \u2014 3 recall, 1 prior-topic link, 1 misconception check)
 4. Key Vocabulary (term, definition, symbol/example if relevant)
 5. Common Mistakes \u2014 these MUST be tested later in the worksheet questions
-6. Worked Example (question, method steps, final answer, why it works, common mistake note)
+6. Worked Example (question, numbered method steps ONLY on main steps \u2014 sub-steps must be indented with two spaces and NOT numbered, final answer, why it works, common mistake note)
 7. Diagram A \u2014 reference/stimulus. Student uses it to answer questions. Include alt text.
 8. Section 1 \u2014 Recall (low-load, questions 1\u20133, mark tariff 1\u20132 marks each)
 9. Section 2 \u2014 Understanding (questions 4\u20136, multi-step, 2\u20134 marks each)
