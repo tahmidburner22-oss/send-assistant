@@ -3431,4 +3431,41 @@ OUTPUT RULES:
   }
 });
 
+// ── POST /api/ai/apply-send-overlay ──────────────────────────────────────────
+// Applies the SEND overlay engine to AI-generated worksheet sections.
+// This ensures the same support boxes (sentence starters, scaffolds, brain breaks)
+// that library worksheets get are also applied to AI-generated ones.
+// IMPORTANT: This only adds presentation scaffolding — it never modifies question
+// content, reorders sections, changes mark allocations, or touches diagrams.
+router.post("/apply-send-overlay", requireAuth, async (req: Request, res: Response) => {
+  try {
+    const { sections, sendNeed } = req.body;
+    if (!sections || !Array.isArray(sections) || !sendNeed) {
+      return res.status(400).json({ error: "Missing sections or sendNeed" });
+    }
+    // Skip if SEND support sections already exist (avoid double-applying)
+    const alreadyHasSendSupport = sections.some((s: any) => s.type === "send-support");
+    if (alreadyHasSendSupport) {
+      return res.json({ sections, appliedOverlays: [] });
+    }
+    // Import and apply the overlay engine
+    const { applyOverlays } = await import("../lib/overlayEngine.js");
+    // Ensure sections have IDs for the overlay engine
+    const sectionsWithIds = sections.map((s: any, i: number) => ({
+      ...s,
+      id: s.id || s.sectionId || `section-${i}`,
+    }));
+    const overlayResult = applyOverlays(sectionsWithIds, {
+      sendNeed,
+      retrievalTopic: null,
+      additionalInstructions: null,
+      readingAge: null,
+    });
+    res.json({ sections: overlayResult.sections, appliedOverlays: overlayResult.appliedOverlays });
+  } catch (err: any) {
+    console.error("SEND overlay application error:", err);
+    res.status(500).json({ error: "Failed to apply SEND overlay" });
+  }
+});
+
 export default router;

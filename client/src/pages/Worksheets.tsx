@@ -1645,73 +1645,38 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
       }
 
       // ── Post-generation: Diagram Library Lookup ───────────────────────────────
-      // For AI-generated (non-library) worksheets, check the diagram library for a
-      // matching diagram. If found, generate dynamic questions from the diagram
-      // description and inject them as a q-diagram section.
+      // Diagrams are visual aids only — they should NOT have questions generated from them.
+      // The worksheet structure provides all questions via Section 1, Section 2, and Section 3.
+      // Diagram A and Diagram B are full-page visual reference spreads with no attached questions.
       const isNonLibraryAI = isAIWorksheet(generatedWs) && !(generatedWs as any).fromLibrary;
-      // Skip post-generation diagram lookup if the worksheet already has diagram sections
-      // (structured path always injects Diagram A and Diagram B — no need for extra lookup)
+      // Skip post-generation diagram lookup entirely — diagrams are handled by the structured path
       const alreadyHasDiagrams = (generatedWs.sections || []).some((s: any) => s.type === 'diagram');
-      if (isNonLibraryAI && !examStyle && !alreadyHasDiagrams) {
-        try {
-          const diagLibRes = await fetch('/api/diagram-library/entries', { credentials: 'include' });
-          if (diagLibRes.ok) {
-            const diagLibData = await diagLibRes.json();
-            const diagEntries: any[] = diagLibData.entries || [];
-            const subjectLower = subject.toLowerCase();
-            const topicLower = topic.toLowerCase();
-            // Find best match: exact topic match first, then subject+topic keyword match
-            const diagMatch = diagEntries.find(e => {
-              const eSubject = (e.subject || '').toLowerCase();
-              const eTopic = (e.topic || '').toLowerCase();
-              const eTitle = (e.title || '').toLowerCase();
-              const subjectMatch = eSubject.includes(subjectLower) || subjectLower.includes(eSubject);
-              const topicMatch = eTopic.includes(topicLower) || topicLower.includes(eTopic) ||
-                eTitle.includes(topicLower) || topicLower.includes(eTitle);
-              return subjectMatch && topicMatch;
-            }) || diagEntries.find(e => {
-              const eSubject = (e.subject || '').toLowerCase();
-              return eSubject.includes(subjectLower) || subjectLower.includes(eSubject);
-            });
 
-            if (diagMatch) {
-              // Generate dynamic diagram-based questions from the diagram description
-              const diagQRes = await fetch('/api/ai/diagram-questions', {
-                method: 'POST',
-                credentials: 'include',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  diagramTitle: diagMatch.title,
-                  diagramDescription: diagMatch.description,
-                  diagramImageUrl: diagMatch.image_url,
-                  subject,
-                  topic,
-                  yearGroup,
-                  difficulty: difficulty || 'standard',
-                  sendNeed: sendNeed && sendNeed !== 'none-selected' ? sendNeed : undefined,
-                }),
-              });
-              if (diagQRes.ok) {
-                const diagQData = await diagQRes.json();
-                if (diagQData.section) {
-                  // Inject diagram section before the challenge/self-reflection section
-                  const sections = [...(generatedWs.sections || [])];
-                  const insertIdx = sections.findIndex(s =>
-                    s.type === 'challenge' || s.type === 'self-reflection' || s.type === 'teacher-key'
-                  );
-                  if (insertIdx >= 0) {
-                    sections.splice(insertIdx, 0, diagQData.section);
-                  } else {
-                    sections.push(diagQData.section);
-                  }
-                  generatedWs = { ...generatedWs, sections } as typeof generatedWs;
-                }
-              }
+      // ── Post-generation: Apply SEND overlay for AI-generated worksheets ──────
+      // For library worksheets, SEND is applied server-side via the overlay engine.
+      // For AI worksheets, SEND instructions are in the prompt, but we also need to
+      // apply the server-side overlay engine to add support boxes (sentence starters,
+      // scaffolds, brain breaks etc.) that the renderer displays alongside questions.
+      if (isNonLibraryAI && sendNeed && sendNeed !== "none-selected") {
+        try {
+          const overlayRes = await fetch('/api/ai/apply-send-overlay', {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              sections: generatedWs.sections || [],
+              sendNeed,
+            }),
+          });
+          if (overlayRes.ok) {
+            const overlayData = await overlayRes.json();
+            if (overlayData.sections && overlayData.sections.length > 0) {
+              generatedWs = { ...generatedWs, sections: overlayData.sections } as typeof generatedWs;
             }
           }
-        } catch (diagErr) {
-          console.warn('[DiagramLookup] Non-fatal error:', diagErr);
-          // Non-fatal — worksheet still works without diagram section
+        } catch (overlayErr) {
+          console.warn('[SEND Overlay] Non-fatal error applying overlay to AI worksheet:', overlayErr);
+          // Non-fatal — worksheet still works, AI prompt already has SEND instructions baked in
         }
       }
 
