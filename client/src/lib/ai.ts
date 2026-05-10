@@ -1657,9 +1657,9 @@ ABSOLUTE RULES:
     const sel = diagramSelection;
     if (isGraphingMathsTopic) {
       // For graphical maths: give data and ask students to plot a graph
-      return `LAYOUT:diagram_subquestions\n${sel.example}\nStudy the diagram above and answer the questions below. [5 marks]\n(a) [Question about a specific feature of the ${params.topic} diagram — e.g. read a value, identify a point, describe a trend]. [1 mark]\n(b) [Question requiring interpretation or calculation using the diagram]. [2 marks]\n(c) [Question asking student to extend, predict or apply the diagram to a new value]. [2 marks]\nANSWERS: (a) [answer] (b) [answer with working] (c) [answer]`;
+      return `LAYOUT:diagram_subquestions\n${sel.example}\n[5 marks]\n(a) [Question about a specific feature of the ${params.topic} diagram — e.g. read a value, identify a point, describe a trend]. [1 mark]\n(b) [Question requiring interpretation or calculation using the diagram]. [2 marks]\n(c) [Question asking student to extend, predict or apply the diagram to a new value]. [2 marks]\nANSWERS: (a) [answer] (b) [answer with working] (c) [answer]`;
     }
-    return `LAYOUT:diagram_subquestions\n${sel.example}\nStudy the diagram above and answer the questions below. [5 marks]\n(a) [Identify or name a specific part/feature shown in the diagram — 1 mark]\n(b) [Explain what the diagram shows or describe the process/relationship — 2 marks]\n(c) [Apply knowledge: predict, compare or extend what is shown — 2 marks]\nANSWERS: (a) [answer] (b) [answer] (c) [answer]`;
+    return `LAYOUT:diagram_subquestions\n${sel.example}\n[5 marks]\n(a) [Identify or name a specific part/feature shown in the diagram — 1 mark]\n(b) [Explain what the diagram shows or describe the process/relationship — 2 marks]\n(c) [Apply knowledge: predict, compare or extend what is shown — 2 marks]\nANSWERS: (a) [answer] (b) [answer] (c) [answer]`;
   })();
 
   // Diagrams are served from the diagram library only — never AI-generated.

@@ -5,14 +5,7 @@ import db, { query as dbQuery } from "../db/index.js";
 import { requireAuth, requireAdmin, auditLog } from "../middleware/auth.js";
 import { filterContent } from "../lib/contentFilter.js";
 import { getSchoolKey } from "./schoolApiKeys.js";
-import { findDiagram } from "../lib/diagramBank.js";
-import * as _fullDiagramBankModule from "../lib/diagramBankFull.js";
-import { getTemplate } from "../lib/diagramTemplates.js";
 import { canonicalTopicKey, topicsMatch } from "../lib/topicNormalizer.js";
-// Static import (esbuild bundles everything into a single file, dynamic imports don't work)
-function getFullDiagramBank() {
-  return _fullDiagramBankModule;
-}
 
 const router = Router();
 const worksheetUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 25 * 1024 * 1024 } });
@@ -3141,10 +3134,7 @@ Return this exact JSON structure:
 
     const questions = Array.isArray(parsed.questions) ? parsed.questions : [];
     const totalMarks = parsed.totalMarks || questions.reduce((sum: number, q: any) => sum + (q.marks || 1), 0);
-    const contentLines: string[] = [
-      `**Study the diagram carefully, then answer all questions below.**`,
-      ``,
-    ];
+    const contentLines: string[] = [];
     for (const q of questions) {
       contentLines.push(`**Q${q.number}.** ${q.text} [${q.marks} mark${q.marks !== 1 ? 's' : ''}]`);
       contentLines.push(``);
@@ -3171,8 +3161,6 @@ Return this exact JSON structure:
         type: "q-diagram",
         title: `Diagram Questions — ${diagramTitle || topic}`,
         content: [
-          `**Study the diagram carefully, then answer all questions below.**`,
-          ``,
           `**Q1.** Identify and label the key parts shown in the diagram. [2 marks]`,
           ``,
           `**Q2.** Describe what is shown in the diagram. Use subject vocabulary. [3 marks]`,
