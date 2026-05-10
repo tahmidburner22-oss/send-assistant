@@ -225,6 +225,38 @@ const SEND_ADAPTATION_SPECS: SendAdaptationSpec[] = [
     ],
   },
   {
+    id: "asperger",
+    name: "Asperger Syndrome",
+    bullets: [
+      { what: "'What you need to do' box added before every section",
+        why: "Removes ambiguity and reduces anxiety caused by unstated expectations." },
+      { what: "Direct, literal language with no figurative phrasing",
+        why: "Asperger Syndrome involves difficulty interpreting non-literal language." },
+      { what: "Identical, predictable layout across every slide",
+        why: "Predictable formatting reduces cognitive load so pupils focus on content." },
+      { what: "Interest-based contexts permitted where relevant",
+        why: "Interest-based learning sustains engagement and is an Asperger-specific strength." },
+      { what: "Visual diagrams and supports alongside text",
+        why: "Visual processing is often stronger than verbal." },
+    ],
+    worksheetRules: [
+      "Every section begins with a 'What you need to do:' box listing exact steps.",
+      "Use direct, literal language. No idioms, no figurative phrasing.",
+      "Use one word per concept. Never swap synonyms (pick either 'calculate' OR 'work out').",
+      "Identical layout across every section — predictable is the goal.",
+      "Where the pupil's interest (e.g. trains, a sport, computing) is known, use that as the real-world context.",
+      "Reflection is a tick-box checklist.",
+    ],
+    presentationRules: [
+      "Every activity slide opens with a 'What you need to do:' box listing exact steps.",
+      "Direct, literal language on every slide. No idioms, no figurative phrasing.",
+      "One word per concept — never swap synonyms across the deck.",
+      "Identical layout on every slide (same title position, same bullet area, same font size).",
+      "Interest-based contexts permitted — where relevant, tie real-world links to areas of pupil interest.",
+      "Pair every text instruction with a visual cue (diagram, arrow, icon).",
+    ],
+  },
+  {
     id: "mld",
     name: "Moderate Learning Difficulties (MLD)",
     bullets: [
@@ -556,7 +588,8 @@ export function resolveSendSpec(sendNeed: string | undefined | null): SendAdapta
     [/\b(adhd)\b/, "adhd"],
     [/\b(dyslexia)\b/, "dyslexia"],
     [/\b(dyscalculia)\b/, "dyscalculia"],
-    [/\b(asc|asperger|autism|autistic|asd)\b/, "asc"],
+    [/\b(asperger)\b/, "asperger"],
+    [/\b(asc|autism|autistic|asd)\b/, "asc"],
     [/\b(mld|moderate learning)\b/, "mld"],
     [/\b(slcn|speech|language|communication)\b/, "slcn"],
     [/\b(anxiety|semh|mental)\b/, "anxiety"],
@@ -635,4 +668,190 @@ CRITICAL: SEND adaptations change HOW content is presented — never the academi
  */
 export function getAllSendSpecs(): SendAdaptationSpec[] {
   return SEND_ADAPTATION_SPECS;
+}
+
+// ─── Multi-need support ──────────────────────────────────────────────────────
+// Real classrooms are mixed-ability — a single pupil can be ADHD + Dyslexic +
+// EAL, and a teacher will routinely want to apply two or three specs at once.
+// These helpers resolve an array of free-text / id inputs into a deduplicated
+// list of SendAdaptationSpec, and compose the merged presentation note.
+
+/**
+ * Resolves any number of SEND need inputs (ids, labels, or free text) into
+ * the deduplicated list of adaptation specs that apply. Accepts a string
+ * (comma-separated tolerated) or a string[] for convenience.
+ */
+export function resolveSendSpecs(input: string | string[] | undefined | null): SendAdaptationSpec[] {
+  if (!input) return [];
+  const raw = Array.isArray(input) ? input : String(input).split(/[,\n]/);
+  const specs: SendAdaptationSpec[] = [];
+  const seen = new Set<string>();
+  for (const item of raw) {
+    const spec = resolveSendSpec(item);
+    if (spec && !seen.has(spec.id)) {
+      specs.push(spec);
+      seen.add(spec.id);
+    }
+  }
+  return specs;
+}
+
+/**
+ * Merged presentation note for multiple SEND needs. If two specs conflict
+ * (e.g. ADHD's "bold action verbs" vs Dyslexia's "never ALL CAPS") we output
+ * BOTH rules — the LLM resolves conflicts by picking the strictest access
+ * requirement, which is the correct pedagogical default.
+ */
+export function composeSendNoteForPresentation(input: string | string[] | undefined | null): string {
+  const specs = resolveSendSpecs(input);
+  if (!specs.length) return "";
+  if (specs.length === 1) return getSendNoteForPresentation(specs[0].id);
+
+  const header = `THIS PRESENTATION IS ADAPTED FOR PUPILS WITH MULTIPLE SEND NEEDS: ${specs.map(s => s.name).join(" + ").toUpperCase()}.
+Apply EVERY rule from EVERY need below. When rules conflict, pick the strictest access requirement (the one that removes the most barriers for the most pupils).`;
+
+  const blocks = specs.map(spec => {
+    const rulesList = spec.presentationRules.map((r, i) => `(${i + 1}) ${r}`).join("\n");
+    return `── ${spec.name} ──
+${rulesList}`;
+  }).join("\n\n");
+
+  const bullets = specs.flatMap(s => s.bullets.map(b => `- [${s.name}] ${b.what}`)).join("\n");
+
+  return `${header}
+
+${blocks}
+
+The published 'SEND adaptations' summary for this presentation lists every change:
+${bullets}
+
+CRITICAL: SEND adaptations change HOW content is presented — never the academic rigour of the lesson. Slide plan, pedagogy and curriculum accuracy stay at the correct level for the year group.`;
+}
+
+/**
+ * Structured data for the UI banner — each applied spec with its bullets
+ * and a why for each bullet. Callers render this as a collapsible panel.
+ */
+export interface AppliedSendAdaptation {
+  id: string;
+  name: string;
+  changes: SendAdaptationBullet[];
+}
+
+export function getAppliedAdaptations(input: string | string[] | undefined | null): AppliedSendAdaptation[] {
+  return resolveSendSpecs(input).map(s => ({ id: s.id, name: s.name, changes: s.bullets }));
+}
+
+/**
+ * Reading-age ceiling implied by the selected SEND needs. The generator uses
+ * this to clamp the teacher's reading-age slider so the prompt and the
+ * adaptation don't disagree (e.g. Dyslexia + "age 16" is contradictory).
+ */
+export function getSendReadingAgeCeiling(input: string | string[] | undefined | null): number | null {
+  const specs = resolveSendSpecs(input);
+  if (!specs.length) return null;
+  // Per-spec ceilings reflect the access requirement, not the academic level.
+  // The academic level is preserved separately via differentiationLevel.
+  const ceilings: Record<string, number> = {
+    "mld": 10,        // "KS2 reading level throughout" — caps at ~10
+    "slcn": 10,       // Max 12 words per sentence, S-V-O only
+    "dyslexia": 11,   // 12 words max, generous spacing
+    "eal": 11,        // Short sentences, simple grammar
+    "hi": 11,         // Self-contained text, simple structures
+  };
+  const values = specs.map(s => ceilings[s.id]).filter((n): n is number => typeof n === "number");
+  if (!values.length) return null;
+  return Math.min(...values);
+}
+
+// ─── Presentation SEND theme overrides ──────────────────────────────────────
+// Minimal, non-opinionated overrides each selected SEND need can apply ON TOP
+// of the teacher's chosen base theme. Returned as a merge-able object so the
+// presentation renderer can simply spread it over the base theme.
+export interface SendThemeOverride {
+  /** Override slide background (hex with #). */
+  bg?: string;
+  /** Override body-text colour. */
+  text?: string;
+  /** Force a font family (e.g. "Verdana" for Dyslexia; "Arial" for VI). */
+  fontFamily?: string;
+  /** Force min body font size in pt for PPTX export. */
+  minBodyPt?: number;
+  /** Force min title font size in pt for PPTX export. */
+  minTitlePt?: number;
+  /** Force line height multiplier. */
+  lineHeight?: number;
+  /** Enforce high-contrast dark-on-light for VI. */
+  highContrast?: boolean;
+  /** Ban red alarm colours (Anxiety/SEMH). */
+  banAlarmRed?: boolean;
+  /** Soften palette to pastel tones (Anxiety/SEMH/PDA). */
+  softPalette?: boolean;
+  /** Rename challenge/activity slides to invitational labels. */
+  invitationalLabels?: boolean;
+  /** Insert brain-break slides mid-deck. */
+  insertBrainBreak?: boolean;
+  /** Insert emoji check-in slides at start and end. */
+  insertCheckins?: boolean;
+  /** Show visible [ ] checkboxes on activity slides. */
+  visibleCheckboxes?: boolean;
+}
+
+/**
+ * Compose the theme override from the selected SEND needs. If no needs
+ * apply, returns an empty object and the renderer uses the base theme
+ * unchanged. Multiple needs merge conservatively (the stricter wins).
+ */
+export function getSendThemeOverride(input: string | string[] | undefined | null): SendThemeOverride {
+  const specs = resolveSendSpecs(input);
+  const out: SendThemeOverride = {};
+  for (const spec of specs) {
+    switch (spec.id) {
+      case "dyslexia":
+        out.bg = "#FFF8E7";           // cream — BDA recommended
+        out.text = "#1A1410";
+        out.fontFamily = "Verdana";    // sans-serif, wide-spaced
+        out.lineHeight = 1.5;
+        break;
+      case "vi":
+        out.highContrast = true;
+        out.bg = "#FFFFFF";
+        out.text = "#000000";
+        out.fontFamily = "Arial";
+        out.minBodyPt = 24;
+        out.minTitlePt = 40;
+        out.lineHeight = 1.4;
+        break;
+      case "anxiety":
+        out.softPalette = true;
+        out.banAlarmRed = true;
+        out.insertCheckins = true;
+        out.invitationalLabels = true;
+        break;
+      case "pda-odd":
+        out.softPalette = true;
+        out.invitationalLabels = true;
+        break;
+      case "adhd":
+        out.visibleCheckboxes = true;
+        out.insertBrainBreak = true;
+        break;
+      case "eal":
+      case "slcn":
+      case "hi":
+        // These need predictable, uncluttered layouts; min body 20pt for HI
+        // but no palette override.
+        out.minBodyPt = Math.max(out.minBodyPt || 0, 20);
+        break;
+      case "tourettes":
+        out.banAlarmRed = true;
+        out.softPalette = true;
+        break;
+      case "mld":
+        out.lineHeight = Math.max(out.lineHeight || 0, 1.4);
+        out.minBodyPt = Math.max(out.minBodyPt || 0, 18);
+        break;
+    }
+  }
+  return out;
 }
