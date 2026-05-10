@@ -1,15 +1,12 @@
 /**
- * Adaptly landing page.
- * Variant-aware: V2 Immersive / V3 Overdrive. V3 is the default.
+ * Adaptly landing page — Overdrive edition.
+ * One locked variant: scroll storytelling hero, horizontal Services rail,
+ * companion scroll rail (xl+), magnetic cursor (fine pointer only).
  */
 import { useEffect } from "react";
 import { injectLandingStyles } from "./landing/styles";
 // @ts-ignore
-import { VariantProvider } from "./landing/lib/useVariant";
-// @ts-ignore
 import { useLenis } from "./landing/lib/useLenis";
-// @ts-ignore
-import VariantSwitcher from "./landing/VariantSwitcher.jsx";
 // @ts-ignore
 import ScrollRail from "./landing/ScrollRail.jsx";
 // @ts-ignore
@@ -21,7 +18,7 @@ import Hero from "./landing/Hero.jsx";
 // @ts-ignore
 import About from "./landing/About.jsx";
 // @ts-ignore
-import Services from "./landing/ServicesVariantGate.jsx";
+import Services from "./landing/ServicesHorizontal.jsx";
 // @ts-ignore
 import LiveDifferentiate from "./landing/LiveDifferentiate.jsx";
 // @ts-ignore
@@ -71,7 +68,6 @@ function LandingInner() {
         <Contact />
       </main>
       <Footer />
-      <VariantSwitcher />
     </div>
   );
 }
@@ -79,11 +75,7 @@ function LandingInner() {
 export default function LandingPage() {
   useEffect(() => {
     injectLandingStyles();
+    document.documentElement.dataset.landingVariant = "overdrive";
   }, []);
-
-  return (
-    <VariantProvider initial="v3">
-      <LandingInner />
-    </VariantProvider>
-  );
+  return <LandingInner />;
 }
