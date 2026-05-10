@@ -971,12 +971,12 @@ Respond with valid JSON only — no markdown, no code blocks, no HTML tags insid
 
 SUBJECT TYPE: ${isSTEM ? 'STEM' : 'HUMANITIES'}
 
-PRINTED PAGE LAYOUT (MANDATORY ORDER — every worksheet must follow this exactly):
+PRINTED PAGE LAYOUT (MANDATORY ORDER — every worksheet INCLUDING MATHS must follow this exactly):
   Page 1 (may span 1–2 pages if content is long): Learning Objective → ${params.recallTopic ? 'Retrieval → ' : ''}Key Vocabulary → Common Mistakes → Worked Example
   Section 1 — Recall (Q1, Q2, Q3) — starts on its own fresh page
   DIAGRAM A (full-page reference spread, own page)
   Section 2 — Understanding (Q4, Q5, Q6) — starts on its own fresh page
-  DIAGRAM B (full-page task spread, own page — may be skipped if topic has no second visual)
+  DIAGRAM B (full-page visual reference spread, own page — may be skipped if topic has no second visual)
   Section 3 — Application & Analysis (Q7, Q8, Q9) + Challenge Question — starts on its own fresh page
   Self Reflection + Exit Ticket — starts on its own fresh page
   Teacher Copy — Answer Key (teacher view only) — starts on its own fresh page
@@ -987,11 +987,13 @@ DIAGRAM A — REFERENCE DIAGRAM (MANDATORY, placed BETWEEN Section 1 and Section
 Every worksheet MUST include a REFERENCE diagram called "Diagram A" as its own full-page spread. This is a fully-labelled visual the student can refer back to while answering questions — it is NOT a task. Place it immediately AFTER the last question of Section 1 (Q3) and BEFORE the first question of Section 2 (Q4). Use format:
   {"type":"diagram-a","title":"Diagram A — [brief title e.g. 'The Water Cycle']","content":"Diagram A — Reference. Refer back to this diagram as you work through Section 2 and Section 3.\n[[DIAGRAM:{"type":"...","title":"...","labels":[...]}]]","altText":"..."}
 
-DIAGRAM B — TASK DIAGRAM (place BETWEEN Section 2 and Section 3):
-Every worksheet SHOULD include a TASK diagram called "Diagram B" as its own full-page spread between Section 2 (Q6) and Section 3 (Q7). Students interpret, complete, or extract information from this diagram. If the topic has no genuinely valuable second diagram (e.g. pure algebra topics), emit a diagram-b section with content "[skipped — topic does not require a second visual]" so it can be dropped. Use format:
-  {"type":"diagram-b","title":"Diagram B — [brief title]","content":"Diagram B — Task. Use this diagram to answer the questions in Section 3.\n[[DIAGRAM:...]]\n(a) [interpretation question from diagram] [2 marks]\n(b) [calculation or application from diagram] [2 marks]\n(c) [extension question] [1 mark]","altText":"..."}
+DIAGRAM B — VISUAL REFERENCE (place BETWEEN Section 2 and Section 3):
+Every worksheet SHOULD include a second diagram called "Diagram B" as its own full-page spread between Section 2 (Q6) and Section 3 (Q7). This is a VISUAL REFERENCE ONLY — it contains NO questions. If the topic has no genuinely valuable second diagram (e.g. pure algebra topics), emit a diagram-b section with content "[skipped — topic does not require a second visual]" so it can be dropped. Use format:
+  {"type":"diagram-b","title":"Diagram B — [brief title]","content":"Diagram B — Visual Reference.\n[[DIAGRAM:...]]","altText":"..."}
 
-⚠️ Diagram A MUST appear in EVERY worksheet. Diagram B should appear unless the topic genuinely has no second visual.
+⚠️ CRITICAL: Diagram A and Diagram B are VISUAL AIDS ONLY. They MUST NOT contain any questions, sub-questions, or tasks. All questions come ONLY from Section 1 (Q1–Q3), Section 2 (Q4–Q6), and Section 3 (Q7–Q9). No extra questions should exist anywhere else in the worksheet.
+
+⚠️ Diagram A MUST appear in EVERY worksheet. Diagram B should appear unless the topic genuinely has no second visual. NEITHER diagram should contain questions — questions come only from Sections 1, 2, and 3.
 
 SECTION 1 — RECALL (Q1–Q3):
 ${sectionAPrompt}
@@ -1025,7 +1027,7 @@ Output format: [[DIAGRAM:{"type":"...","title":"...","labels":[...]}]]
 NEVER output a diagram with missing required fields. x/y values: 5-95 range. Max 8 labels.
 NEVER use generic placeholders like "Label 1" or "Step 1" — use real topic-specific terms.
 For DIAGRAM A: the diagram must be FULLY LABELLED (every part has a real term shown).
-For DIAGRAM B: include 3 sub-questions beside/below it (do not leave labels blank on the diagram itself).
+For DIAGRAM B: the diagram must be FULLY LABELLED — it is a visual reference only with NO questions attached.
 
 SECTION 3 — APPLICATION & ANALYSIS (Q7–Q9):
 ${sectionBPrompt}
@@ -1723,9 +1725,7 @@ ABSOLUTE RULES:
   const graphDrawingNote = (isGraphingMathsTopic && !params.examStyle)
     ? `GRAPH DRAWING REQUIREMENT: Because this is a graphical maths topic ("${params.topic}"), at least ONE question (ideally Q8 or Q9) MUST ask students to plot a graph. Provide a complete set of coordinate pairs or data values (minimum 5 pairs) and ask students to: (1) plot the points on a grid, (2) draw the line/curve, (3) read off a specific value, (4) find the gradient or describe the shape. Use type "q-graph" for this question. The data MUST be specific to "${params.topic}" — real numbers, not placeholders.`
     : ``;
-  const diagramRelevanceNote = isScienceOrMaths
-    ? `DIAGRAM REQUIREMENT: For Science and Maths, a diagram MUST be included in Q4. The diagram must match the exact worksheet topic "${params.topic}" and the questions that refer to it. Use the most appropriate diagram type for this specific topic.`
-    : `Only include or request a diagram if it is essential to teaching "${params.topic}". The diagram must match the exact worksheet topic and the questions that refer to it. If no exact topic-matching diagram is needed, omit the diagram entirely.`;
+  const diagramRelevanceNote = `DIAGRAM RULE: Diagram A and Diagram B are separate full-page visual reference pages. They are NOT question sections. Do NOT include any questions about diagrams. All questions come only from Sections 1, 2, and 3.`;
   const vocabularyCapNote = `Key Vocabulary must contain at most 5 items.`;
 
   const recallNote = params.recallTopic ? `RETRIEVAL PRACTICE REQUIRED: After the Learning Objective and BEFORE Key Vocabulary, include a section titled "Retrieval Practice — ${params.recallTopic}" (type: "prior-knowledge") with exactly 3 short retrieval questions on the PREVIOUS topic "${params.recallTopic}". These must be quick, accessible questions (True/False, short answer, or fill-in-blank) to activate prior knowledge. Do NOT mix these with the main topic questions. This section appears SECOND in the worksheet, right after the Learning Objective.` : '';
@@ -1777,7 +1777,7 @@ KS3/4 GCSE SPEC REQUIREMENTS (MANDATORY for Year ${yearNum}):
 - CHALLENGE: A synoptic or higher-order question linking the topic to a wider concept. Must require genuine analysis or evaluation.
 - SELF REFLECTION: 5 specific, topic-relevant skills for the confidence table (not generic). Written prompts must be meaningful and specific to the topic.
 - TEACHER KEY: Complete model answers for EVERY question with mark allocations. For extended answers, list marking points explicitly.
-- DIAGRAM SECTIONS: Diagram A and Diagram B are full-page visual resources from the diagram library — they are already provided as images. Do NOT generate text-based diagram descriptions. Do NOT include diagram-related questions in the text sections.
+- DIAGRAM SECTIONS: Diagram A and Diagram B are full-page visual resources from the diagram library — they are already provided as images. Do NOT generate text-based diagram descriptions. Do NOT include any questions about diagrams. All questions come ONLY from Section A (True/False, MCQ, Gap Fill), Section B (Foundation Questions), and Section C (Core Practice + Challenge).
 ` : '';
     // ── Build subject-specific rules block ────────────────────────────────────────
     const subjectSpecificRules = (() => {
@@ -1935,7 +1935,8 @@ These three dimensions are INDEPENDENT. A higher-attaining pupil can need a dysl
 What SEND overlays MAY change: font size, line spacing, answer-space size, instruction length, vocabulary support, hints, scaffold steps, sentence starters, bilingual keyword support, worked-example detail, number of subparts (only where mark scheme is preserved).
 What SEND overlays MUST NOT change: subject, topic, learning objective, diagram meaning, core assessment objective, answer accuracy, mark allocation, mathematical notation, science facts, exam-board command word meaning, question order.
 SEND scaffolding (sentence starters, answer frames, worked examples) goes in SEPARATE support boxes AROUND the questions — not inside the question text itself.
-NEVER add SEND management instructions as question content items ('Complete the task in steps', 'Tick each step', 'Focus on one question').`;
+NEVER add SEND management instructions as question content items ('Complete the task in steps', 'Tick each step', 'Focus on one question').
+CRITICAL STRUCTURE RULE: ALL questions come ONLY from Section A (True/False, MCQ, Word Bank), Section B (Foundation Questions), and Section C (Core Practice + Challenge). Diagrams are VISUAL AIDS ONLY — they MUST NOT contain any questions, sub-questions, or tasks. Do NOT generate questions that reference diagrams (e.g. "Using the diagram, calculate..." or "What is labelled in the diagram?"). This applies to ALL subjects including Maths.`;
 
     // ── PRE-FETCH DIAGRAM URLS (parallel, before AI call) ──────────────────────
     // Fetch Diagram A and Diagram B from the library in parallel so the real
@@ -2252,7 +2253,7 @@ Return EXACTLY this JSON (raw JSON only):
     {"title": "Q1 — True or False", "type": "q-true-false", "content": "Circle TRUE or FALSE for each statement. [4 marks]\n1. [statement about ${params.topic}] TRUE\n2. [statement about ${params.topic}] FALSE\n3. [statement about ${params.topic}] TRUE\n4. [statement about ${params.topic}] FALSE"},
     {"title": "Q2 — Multiple Choice", "type": "q-mcq", "content": "[Question about ${params.topic}] [1 mark]\nA  [option]\nB  [option]\nC  [option]\nD  [option]\nCORRECT: [correct letter only — do NOT mark with ✓ in the options above]"},
     {"title": "Q3 — Cloze Paragraph", "type": "q-gap-fill", "content": "Complete the paragraph using words from the word bank. [7 marks]\n[5–7 sentence summary paragraph about ${params.topic} with exactly 7 blanks shown as _____]\nWORD BANK: word1 | word2 | word3 | word4 | word5 | word6 | word7 | word8 | word9 | word10"},
-    {"title": "Q4 — Visual/Diagram Activity", "type": "q-label-diagram", "content": "${q4DiagramPrompt}", "marks": 5},
+    {"title": "Q4 — Understanding", "type": "q-short-answer", "content": "${isMaths ? '[A calculation question on ${params.topic} requiring application of a method or formula] [5 marks]\n(a) State the formula or method needed. [1 mark]\n(b) Substitute the values and calculate, showing all working. [2 marks]\n(c) Check your answer or express in a different form. [2 marks]' : isSTEM ? '[A focused question requiring understanding of ${params.topic}] [5 marks]\n(a) Define the key term or concept. [1 mark]\n(b) Explain how it works or why it is important, using subject terminology. [2 marks]\n(c) Give a specific example to support your explanation. [2 marks]' : '[A focused question requiring understanding of ${params.topic}] [5 marks]\n(a) Identify the key idea, technique or concept. [1 mark]\n(b) Explain its significance or effect, using evidence from the text. [2 marks]\n(c) Connect this to a wider theme or context. [2 marks]'}", "marks": 5},
     {"title": "Q5 — Calculation Practice", "type": "q-short-answer", "content": "${isMaths ? '[Pure calculation question on ${params.topic}] [5 marks]\n(a) Calculate: [specific numerical problem — show all working]. [2 marks]\n(b) Calculate: [a second numerical problem requiring a different method]. [2 marks]\n(c) Write the answer to part (b) correct to 2 significant figures. [1 mark]' : isSTEM ? '[Scenario or data set related to ${params.topic}] [5 marks]\n(a) Identify the relevant formula or scientific law. [1 mark]\n(b) Show the full calculation with working. [2 marks]\n(c) Explain what the result means in context. [2 marks]' : '[4–8 line extract from text related to ${params.topic}] [5 marks]\n(a) Identify ONE language or literary technique used in this extract. [1 mark]\n(b) What does this reveal about character, theme or author intent? [2 marks]\n(c) What does the key image or symbol represent? [2 marks]'}", "marks": 5},
     {"title": "Q6 — Sequencing/Structured Response", "type": "q-data-table", "content": "${isSTEM ? 'Answer the structured questions below. [4 marks]\n(a) Identify the key rule, law or principle that applies to [specific aspect of ' + params.topic + ']. [1 mark]\n(b) Apply it to this scenario: [specific scenario about ' + params.topic + ']. Show all working. [2 marks]\n(c) State the unit of the answer or explain what the result means. [1 mark]' : 'Number the events 1–6 in the correct order. [3 marks]\n[ ] [event/plot point 1 from ${params.topic}]\n[ ] [event/plot point 2 from ${params.topic}]\n[ ] [event/plot point 3 from ${params.topic}]\n[ ] [event/plot point 4 from ${params.topic}]\n[ ] [event/plot point 5 from ${params.topic}]\n[ ] [event/plot point 6 from ${params.topic}]\n3 marks: all correct | 2 marks: 4–5 correct | 1 mark: 2–3 correct'}", "marks": 4},
     {"title": "Q7 — Problem Solving", "type": "q-extended", "content": "[${isMaths ? 'Multi-step problem: solve a real-life numerical problem about ${params.topic}. No written explanation required — show full numerical working only. [6 marks]' : isSTEM ? 'Compare two cases or explain a key concept in depth' : 'Explain how a recurring motif/technique/theme is used across the text, with reference to at least TWO specific moments'} — ${params.topic}] [6 marks]", "marks": 6},
@@ -2260,7 +2261,7 @@ Return EXACTLY this JSON (raw JSON only):
     {"title": "Q9 — Extended Calculation", "type": "q-extended", "content": "${isMaths ? '[Multi-step calculation: a challenging problem on ${params.topic} that requires selecting and applying the correct method. No prose — show numerical working only. [8 marks]\nMark scheme: 1m method, 3m correct intermediate steps, 2m correct final answer with units, 2m correct rounding/simplification]' : isSTEM ? '[Higher-order evaluation question: evaluate a claim, design an experiment, or apply concept to unfamiliar context. Include 3 mark levels.] [8 marks]' : '\"[Contested statement about ${params.topic}]\"\nTo what extent do you agree? Use evidence from the text to support your argument. [8 marks]\nLevel 4 (7–8m): Sustained, convincing, nuanced argument with precise embedded evidence.\nLevel 3 (5–6m): Clear argument; analysis of both sides.\nLevel 2 (3–4m): Some relevant points; limited analysis.\nLevel 1 (1–2m): Narrative with little analysis.'}", "marks": 8},
     {"title": "${sendSectionTitles.challenge}", "type": "challenge", "content": "[${challengeGuide}${hasSend ? ' — optional, labelled as bonus' : ''}]"},
     {"title": "Self Reflection", "type": "self-reflection", "teacherOnly": false, "content": "SUBTITLE: Review your understanding before moving on.\nCONFIDENCE_TABLE:\n[specific skill/concept 1 from ${params.topic}]\n[specific skill/concept 2 from ${params.topic}]\n[specific skill/concept 3 from ${params.topic}]\n[specific skill/concept 4 from ${params.topic}]\n[specific skill/concept 5 from ${params.topic}]\nWRITTEN_PROMPTS:\nOne concept I feel confident about is ...\nOne area I still need to practise is ...\nA question I still want to ask my teacher is ...\nEXIT_TICKET: Write ONE thing you learned today about ${params.topic} in one sentence:"},
-    {"title": "Teacher Copy — Answer Key", "type": "mark-scheme", "teacherOnly": true, "content": "MARKING GUIDANCE: Accept reasonable alternatives. Award marks for clear reasoning and correct application.\nSECTION 1 — RECALL [12 marks]\nQ1 TRUE/FALSE [4 marks]: [list each statement with TRUE or FALSE answer and brief justification]\nQ2 MCQ [1 mark]: [correct answer letter] — [brief explanation why correct and why distractors are wrong]\nQ3 CLOZE [7 marks]: [list all 7 correct answers in order, numbered 1–7]\nSECTION 2 — UNDERSTANDING [14 marks]\nQ4 DIAGRAM [5 marks]: [list each label with its correct position/component]\nQ5 EXTRACT/STIMULUS [5 marks]: (a) [answer] (b) [answer with mark allocation] (c) [answer with mark allocation]\nQ6 SEQUENCING/STRUCTURED [4 marks]: [correct sequence/answers with mark allocation]\nSECTION 3 — APPLICATION & ANALYSIS [22 marks]\nQ7 EXTENDED [6 marks]: [model answer with level descriptors — Level 1: 1–2m, Level 2: 3–4m, Level 3: 5–6m]\nQ8 TABLE [8 marks]: [complete table with all answers, 2 marks per row]\nQ9 EVALUATIVE [8 marks]: [model answer with level descriptors — Level 1–4 as specified in question]\nCHALLENGE [${isSTEM ? '8' : '12'} marks]: [full mark scheme with band descriptors]\nTOTAL MARKS: Section 1: 12m | Section 2: 14m | Section 3: 22m | Challenge: ${isSTEM ? '8' : '12'}m | TOTAL: ${isSTEM ? '56' : '60'}m"},
+    {"title": "Teacher Copy — Answer Key", "type": "mark-scheme", "teacherOnly": true, "content": "MARKING GUIDANCE: Accept reasonable alternatives. Award marks for clear reasoning and correct application.\nSECTION 1 — RECALL [12 marks]\nQ1 TRUE/FALSE [4 marks]: [list each statement with TRUE or FALSE answer and brief justification]\nQ2 MCQ [1 mark]: [correct answer letter] — [brief explanation why correct and why distractors are wrong]\nQ3 CLOZE [7 marks]: [list all 7 correct answers in order, numbered 1–7]\nSECTION 2 — UNDERSTANDING [14 marks]\nQ4 UNDERSTANDING [5 marks]: (a) [answer] (b) [answer with mark allocation] (c) [answer with mark allocation]\nQ5 EXTRACT/STIMULUS [5 marks]: (a) [answer] (b) [answer with mark allocation] (c) [answer with mark allocation]\nQ6 SEQUENCING/STRUCTURED [4 marks]: [correct sequence/answers with mark allocation]\nSECTION 3 — APPLICATION & ANALYSIS [22 marks]\nQ7 EXTENDED [6 marks]: [model answer with level descriptors — Level 1: 1–2m, Level 2: 3–4m, Level 3: 5–6m]\nQ8 TABLE [8 marks]: [complete table with all answers, 2 marks per row]\nQ9 EVALUATIVE [8 marks]: [model answer with level descriptors — Level 1–4 as specified in question]\nCHALLENGE [${isSTEM ? '8' : '12'} marks]: [full mark scheme with band descriptors]\nTOTAL MARKS: Section 1: 12m | Section 2: 14m | Section 3: 22m | Challenge: ${isSTEM ? '8' : '12'}m | TOTAL: ${isSTEM ? '56' : '60'}m"},
     {"title": "Teacher Notes", "type": "teacher-notes", "teacherOnly": true, "content": "[timings, misconceptions, interventions, next topic]"},
     {"title": "SEND Adaptations & Rationale", "type": "teacher-notes", "teacherOnly": true, "content": "${hasSend ? `ADAPTED FOR: ${params.sendNeed!.toUpperCase()}\nADAPTATIONS: [list every specific change made]\nRATIONALE: [3-4 sentences: how ${params.sendNeed} affects learning, SEND Code of Practice, how each adaptation removes a barrier]\nCLASSROOM TIPS: [3-4 practical tips for the teacher]\nIF STUDENT STRUGGLES: [next steps / further scaffolding]` : 'No SEND adaptations — standard worksheet.'}"}`}
   ],
@@ -2624,9 +2625,9 @@ Return EXACTLY this JSON (raw JSON only):
       const diagramBPlaceholder = {
         type: 'diagram-b',
         title: `Diagram B — ${params.topic}`,
-        content: `Diagram B — Task. Use this diagram to answer the questions in Section 3.\n\n[A task diagram for "${params.topic}" will be shown here.]\n\n(a) Describe what the diagram shows. [1 mark]\n(b) ${isMaths ? 'Calculate a value from the diagram, showing your working.' : 'Use the diagram to explain the key idea.'} [2 marks]\n(c) ${isMaths ? 'Apply the result to solve a related problem.' : 'Apply the idea to a new situation.'} [2 marks]`,
-        marks: 5,
-        altText: `Task diagram for ${params.topic}`,
+        content: `Diagram B — Visual Reference.\n\n[A diagram for "${params.topic}" will be shown here. This is a visual aid only — no questions are attached to this diagram.]`,
+        marks: 0,
+        altText: `Visual reference diagram for ${params.topic}`,
       };
       if (q7Idx > 0) {
         refreshedSections.splice(q7Idx, 0, diagramBPlaceholder as any);
@@ -2821,7 +2822,7 @@ Return EXACTLY this JSON (raw JSON only):
     String(s.title || '').toLowerCase().includes('diagram b')
   );
   if (!hasDiagramATag) qualityIssues.push('Worksheet missing Diagram A (reference diagram)');
-  if (!hasDiagramBTag) qualityIssues.push('Worksheet missing Diagram B (task diagram)');
+  if (!hasDiagramBTag) qualityIssues.push('Worksheet missing Diagram B (visual reference diagram)');
 
   // Log quality issues (visible in dev console, doesn't block rendering)
   if (qualityIssues.length > 0) {
