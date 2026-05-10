@@ -194,6 +194,50 @@ export function buildPopupHtml(
       print-color-adjust: exact !important;
     }
 
+    /* ── Section group divider (e.g. "SECTION 3 — APPLICATION & ANALYSIS") ──
+       Must NEVER render alone on a page. Keep attached to the next question. */
+    .ws-section-group-divider {
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+      page-break-after: avoid !important;
+      break-after: avoid !important;
+    }
+    /* Ensure the section immediately following a group divider stays with it. */
+    .ws-section-group-divider + .ws-section {
+      page-break-before: avoid !important;
+      break-before: avoid !important;
+    }
+
+    /* ── Page-layout spec breaks (teacher request) ──────────────────────
+       Each of the following sections starts a fresh printed page:
+         • Diagram A / Diagram B  → their own full-page spread
+         • First question of Section 2 (Q4)  → starts Page 4
+         • First question of Section 3 (Q7)  → starts Page 6
+         • Self-reflection                    → starts Page 7
+         • Teacher-only answer-key            → starts Page 8
+       The group-divider rule above keeps dividers attached to the first
+       question, so the divider automatically follows the page break. */
+    .ws-section-diagram-a,
+    .ws-section-diagram-b {
+      page-break-before: always !important;
+      break-before: page !important;
+      page-break-after: always !important;
+      break-after: page !important;
+    }
+    .ws-section-self-reflection,
+    .ws-section-reflection {
+      page-break-before: always !important;
+      break-before: page !important;
+    }
+    /* The renderer emits the first Section-1 question after Page 1 intro;
+       the first Q4 and first Q7 need page breaks. This uses the group
+       divider marker which sits immediately before them. */
+    .ws-section-group-divider[data-section="2"],
+    .ws-section-group-divider[data-section="3"] {
+      page-break-before: always !important;
+      break-before: page !important;
+    }
+
     /* Section header row: ensure background prints */
     .ws-section > div:first-child {
       -webkit-print-color-adjust: exact !important;
@@ -569,15 +613,36 @@ export async function downloadHtmlAsPdf(
     const html2canvas = (await import("html2canvas")).default;
     const { jsPDF } = await import("jspdf");
 
-    // Measure section blocks for smart page breaks
+    // Measure section blocks for smart page breaks.
+    // We merge each section-group-divider with its immediately-following
+    // .ws-section into a single "merged" block so the pagination logic never
+    // leaves a divider dangling at the bottom of one page or alone at the
+    // top of a new page (which was the "Section 3 header on a blank page" bug).
     const rootEl = container.querySelector(".worksheet-print-root") as HTMLElement || bodyWrapper;
     const rootRect = rootEl.getBoundingClientRect();
-    const blocks: Array<{ top: number; bottom: number }> = Array.from(
-      rootEl.querySelectorAll<HTMLElement>(".ws-header, .ws-section")
-    ).map((el) => {
+    const topLevelEls = Array.from(
+      rootEl.querySelectorAll<HTMLElement>(".ws-header, .ws-section, .ws-section-group-divider")
+    );
+    const blocks: Array<{ top: number; bottom: number }> = [];
+    for (let k = 0; k < topLevelEls.length; k++) {
+      const el = topLevelEls[k];
       const r = el.getBoundingClientRect();
-      return { top: r.top - rootRect.top, bottom: r.bottom - rootRect.top };
-    });
+      // If this is a group-divider and the next element is a .ws-section,
+      // merge them into one block so they page-break together.
+      if (el.classList.contains("ws-section-group-divider")) {
+        const next = topLevelEls[k + 1];
+        if (next && next.classList.contains("ws-section")) {
+          const nr = next.getBoundingClientRect();
+          blocks.push({
+            top: r.top - rootRect.top,
+            bottom: nr.bottom - rootRect.top,
+          });
+          k++; // skip the next element — already merged
+          continue;
+        }
+      }
+      blocks.push({ top: r.top - rootRect.top, bottom: r.bottom - rootRect.top });
+    }
 
     const canvas = await html2canvas(container, {
       scale: 1.5,
