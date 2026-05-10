@@ -1,15 +1,11 @@
 import { useEffect, useRef, useState } from "react";
-import { useVariant } from "./lib/useVariant";
 
-// Custom magnetic cursor (V3 only, desktop, fine-pointer devices).
-// A trailing dot + ring that scale up on interactive elements. This is a
-// hallmark of premium editorial sites (see godly/awwwards). Kept off V2.
-//
-// We don't hide the native cursor — just layer ours on top. That way any
-// accessibility affordance (e.g. text selection, focus rings) still works.
+// Custom magnetic cursor — desktop + fine-pointer only, respects reduced
+// motion. A trailing dot + ring that scale up on interactive elements.
+// Hallmark of premium editorial sites (see godly/awwwards). On touch devices
+// we render nothing so the native tap affordance stays.
 
 export default function MagneticCursor() {
-  const { variant } = useVariant();
   const ringRef = useRef(null);
   const dotRef = useRef(null);
   const [enabled, setEnabled] = useState(false);
@@ -22,8 +18,8 @@ export default function MagneticCursor() {
     if (typeof window === "undefined") return;
     const fine = window.matchMedia("(pointer: fine) and (min-width: 1024px)").matches;
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    setEnabled(fine && !reduced && variant === "v3");
-  }, [variant]);
+    setEnabled(fine && !reduced);
+  }, []);
 
   useEffect(() => {
     if (!enabled) return;
