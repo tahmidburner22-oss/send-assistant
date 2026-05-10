@@ -1,10 +1,15 @@
 /**
- * Adaptly — immersive scroll-based landing page.
- * Sections live under ./landing/. Theme is injected at mount so we don't
- * touch the global app theme.
+ * Adaptly landing page.
+ * Variant-aware: V2 Immersive / V3 Overdrive — toggle bottom-right.
  */
 import { useEffect } from "react";
 import { injectLandingStyles } from "./landing/styles";
+// @ts-ignore
+import { VariantProvider } from "./landing/lib/useVariant";
+// @ts-ignore
+import { useLenis } from "./landing/lib/useLenis";
+// @ts-ignore
+import VariantSwitcher from "./landing/VariantSwitcher.jsx";
 // @ts-ignore
 import Nav from "./landing/Nav.jsx";
 // @ts-ignore
@@ -38,11 +43,8 @@ import Contact from "./landing/Contact.jsx";
 // @ts-ignore
 import Footer from "./landing/Footer.jsx";
 
-export default function LandingPage() {
-  useEffect(() => {
-    injectLandingStyles();
-  }, []);
-
+function LandingInner() {
+  useLenis();
   return (
     <div className="adaptly-landing min-h-screen relative overflow-x-hidden">
       <Nav />
@@ -63,6 +65,19 @@ export default function LandingPage() {
         <Contact />
       </main>
       <Footer />
+      <VariantSwitcher />
     </div>
+  );
+}
+
+export default function LandingPage() {
+  useEffect(() => {
+    injectLandingStyles();
+  }, []);
+
+  return (
+    <VariantProvider initial="v2">
+      <LandingInner />
+    </VariantProvider>
   );
 }
