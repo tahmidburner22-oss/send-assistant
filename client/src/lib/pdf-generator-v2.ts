@@ -230,8 +230,9 @@ export function buildPopupHtml(
       break-before: page !important;
     }
     /* The renderer emits the first Section-1 question after Page 1 intro;
-       the first Q4 and first Q7 need page breaks. This uses the group
-       divider marker which sits immediately before them. */
+       the first Q1, Q4 and Q7 need page breaks. The data-section attribute
+       on the divider drives which section boundary triggers a new page. */
+    .ws-section-group-divider[data-section="1"],
     .ws-section-group-divider[data-section="2"],
     .ws-section-group-divider[data-section="3"] {
       page-break-before: always !important;
