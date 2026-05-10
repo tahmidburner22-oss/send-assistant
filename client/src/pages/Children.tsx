@@ -17,6 +17,7 @@ import { yearGroups, sendNeeds, subjects } from "@/lib/send-data";
 import { getAuthHeader } from "@/lib/api";
 import SENDInfoPanel from "@/components/SENDInfoPanel";
 import { SendScreenerResultsView } from "@/components/SendScreenerResultsView";
+import PupilDocumentsPanel from "@/components/PupilDocumentsPanel";
 import { useScheduler } from "@/hooks/useScheduler";
 import { TOPIC_BANK } from "@/lib/topic-bank";
 import { CURRICULUM_PROGRESSIONS, getProgressionsForSubject, getRecommendedStep, type TopicProgression } from "@/lib/curriculum-progression";
@@ -26,7 +27,7 @@ import {
   CheckCircle, Clock, AlertCircle, MessageSquare, TrendingUp,
   ChevronLeft, Shield, Star, Send, Calendar, X, Zap, BrainCircuit,
   PlayCircle, PauseCircle, RotateCcw, Settings2, Upload, RefreshCw, Database,
-  Users, ChevronRight, ChevronDown, Layers, Lock, Eye, Sparkles, Search
+  Users, ChevronRight, ChevronDown, Layers, Lock, Eye, Sparkles, Search, BookMarked
 } from "lucide-react";
 
 
@@ -1380,10 +1381,11 @@ If the submission is empty or too short to mark, return mark: "N/A", feedback: "
               </div>
 
               <Tabs defaultValue="assignments">
-                <TabsList className="w-full grid grid-cols-4 h-9">
+                <TabsList className="w-full grid grid-cols-5 h-9">
                   <TabsTrigger value="assignments" className="text-xs">Assignments ({selectedChild.assignments.length})</TabsTrigger>
                   <TabsTrigger value="submissions" className="text-xs">Submissions ({selectedChild.submissions.length})</TabsTrigger>
                   <TabsTrigger value="scheduler" className="text-xs"><Zap className="h-3 w-3 mr-1" />Scheduler</TabsTrigger>
+                  <TabsTrigger value="documents" className="text-xs"><BookMarked className="h-3 w-3 mr-1" />Docs</TabsTrigger>
                   <TabsTrigger value="messages" className="text-xs"><MessageSquare className="h-3 w-3 mr-1" />Messages</TabsTrigger>
                 </TabsList>
 
@@ -1985,6 +1987,15 @@ If the submission is empty or too short to mark, return mark: "N/A", feedback: "
                       </div>
                     );
                   })()}
+                </TabsContent>
+
+                <TabsContent value="documents" className="mt-3">
+                  <PupilDocumentsPanel
+                    pupilId={selectedChild.id}
+                    pupilName={selectedChild.name}
+                    yearGroup={selectedChild.yearGroup}
+                    mode="teacher"
+                  />
                 </TabsContent>
 
                 <TabsContent value="messages" className="mt-3">

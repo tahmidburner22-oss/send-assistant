@@ -51,6 +51,17 @@ interface AIToolPageProps {
   worksheetLink?: boolean; // show "Generate Worksheet" button after generation
   isLessonPlan?: boolean; // use the rich lesson plan renderer
   initialValues?: Record<string, string>; // pre-populate fields (e.g. from SEND screener)
+  /**
+   * Optional custom React renderer for the generated text — takes precedence over
+   * formatOutput. Used by tools (Exit Ticket) that need a structured split view
+   * rather than a single block of HTML.
+   */
+  renderCustomOutput?: (text: string, values: Record<string, string>) => React.ReactNode;
+  /**
+   * Optional transformer applied to the text before it is assigned to a student.
+   * E.g. Exit Ticket uses this to strip the teacher answer key.
+   */
+  transformBeforeAssign?: (text: string) => string;
 }
 
 // ─── Lesson Plan Renderer ────────────────────────────────────────────────────
@@ -214,7 +225,7 @@ function formatAIText(text: string): string {
 type EditMode = "none" | "manual" | "ai";
 
 export default function AIToolPage({
-  title, description, icon, accentColor, fields, buildPrompt, formatOutput, outputTitle, onResult, assignable, worksheetLink, isLessonPlan, initialValues,
+  title, description, icon, accentColor, fields, buildPrompt, formatOutput, outputTitle, onResult, assignable, worksheetLink, isLessonPlan, initialValues, renderCustomOutput, transformBeforeAssign,
 }: AIToolPageProps) {
   const { children, assignWork, user } = useApp();
   const isPlatformAdmin = user?.email === "admin@adaptly.co.uk" || user?.email === "admin@sendassistant.app";
@@ -243,7 +254,8 @@ export default function AIToolPage({
   const handleAssign = (childId: string) => {
     if (!result) return;
     const outputTitleStr = outputTitle ? outputTitle(values) : title;
-    assignWork(childId, { title: outputTitleStr, type: title.toLowerCase().replace(/\s+/g, "-"), content: result });
+    const assignContent = transformBeforeAssign ? transformBeforeAssign(result) : result;
+    assignWork(childId, { title: outputTitleStr, type: title.toLowerCase().replace(/\s+/g, "-"), content: assignContent });
     setShowAssignDialog(false);
     toast.success("Assigned to student!");
   };
@@ -586,6 +598,15 @@ export default function AIToolPage({
                       text={result}
                       title={outputTitle ? outputTitle(values) : title}
                     />
+                  ) : renderCustomOutput && result ? (
+                    <>
+                      {outputTitle && (
+                        <h2 className="font-bold text-lg mb-4 text-foreground border-b pb-2">
+                          {outputTitle(values)}
+                        </h2>
+                      )}
+                      {renderCustomOutput(result, values)}
+                    </>
                   ) : (
                     <>
                       {outputTitle && (
