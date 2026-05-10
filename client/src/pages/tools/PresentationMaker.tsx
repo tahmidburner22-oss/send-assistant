@@ -56,7 +56,11 @@ const SlideContentSchema = z.object({
   diagramDescription: z.string().max(500).optional(),
   diagramLabels: z.array(z.string().min(1)).max(20).optional(),
   image_prompt: z.string().max(500).optional(),
-  layout: z.enum(["full","two-col","image-right","image-left","centered"]).optional(),
+  layout: z.enum(["full","two-col","image-right","image-left","centered","bullet-list","hero-number","definition","process","quote-block"]).optional(),
+  bulletsRight: z.array(z.string().min(1).max(500)).max(6).optional(),
+  headline: z.string().max(200).optional(),
+  quote: z.string().max(600).optional(),
+  attribution: z.string().max(200).optional(),
   accent: z.string().max(50).optional(),
   speakerNotes: z.string().max(2000).optional(),
 });
@@ -100,7 +104,11 @@ export interface SlideContent {
   diagramDescription?: string;
   diagramLabels?: string[];
   image_prompt?: string;
-  layout?: "full" | "two-col" | "image-right" | "image-left" | "centered";
+  layout?: "full" | "two-col" | "image-right" | "image-left" | "centered" | "bullet-list" | "hero-number" | "definition" | "process" | "quote-block";
+  bulletsRight?: string[];
+  headline?: string;
+  quote?: string;
+  attribution?: string;
   accent?: string;
   speakerNotes?: string;
 }
@@ -555,6 +563,18 @@ PRESENTATION DESIGN RULES (NON-NEGOTIABLE):
 7. CONCISENESS: Slide titles max 6 words. Speaker notes 2-4 sentences, practical and actionable.
 8. IMAGE PROMPTS: For visual slides, include a specific image_prompt field describing an ideal photograph or diagram.
 
+LAYOUT DIRECTIVE (MANDATORY FOR EVERY NON-TITLE SLIDE):
+Every non-title slide MUST include a "layout" field that tells the renderer how to arrange content. Choose from:
+- "bullet-list"   → default bullets list (use when simply listing facts)
+- "two-col"       → two balanced columns (use when comparing A vs B, Before vs After, Pros vs Cons). Put left-column bullets in "bullets" and right-column bullets in "bulletsRight".
+- "hero-number"   → one big headline number + supporting bullets (use for statistics, key data, formulae). Put the number/formula in "headline" and supporting points in "bullets".
+- "image-left"    → image on left, bullets on right. Requires image_prompt.
+- "image-right"   → image on right, bullets on left. Requires image_prompt.
+- "definition"    → big word + definition + example underneath (use for single key terms).
+- "process"       → horizontal step-by-step flow (use for processes, methods). Put numbered stages in "steps".
+- "quote-block"   → large quote in the centre + attribution (use for primary sources, quotes).
+The layout MUST match the slide's content — do not pick bullet-list if the content would be clearer as two columns or a process flow. Layout is the #1 thing that makes a slide "look like a real lesson slide, not text on a page".
+
 CRITICAL: Return ONLY valid JSON. No markdown, no explanation, no code blocks.`;
 
   const slideTypeGuide = `SLIDE TYPE SPECIFICATIONS:
@@ -739,6 +759,164 @@ function SlideHeader({ slide, theme, Icon }: { slide: SlideContent; theme: typeo
       <div className="h-[3px] w-14 rounded-full" style={{ background: badgeColour }} />
     </div>
   );
+}
+
+// ─── Layout-aware renderer for generic (content / activity / extension / …) slides ──
+function renderLayoutSlide(
+  slide: SlideContent,
+  theme: typeof THEMES[ThemeKey],
+  badgeColour: string,
+  Icon: React.ElementType,
+) {
+  const layout = slide.layout || "bullet-list";
+  const hasImage = Boolean(slide.image_prompt);
+  const imgUrl = slide.image_prompt
+    ? `https://source.unsplash.com/featured/800x600/?${encodeURIComponent(slide.image_prompt)}`
+    : null;
+
+  const BulletList = ({ bullets, size = "sm" }: { bullets?: string[]; size?: "sm" | "xs" }) => (
+    <div className="space-y-2">
+      {(bullets || []).map((bullet, i) => (
+        <div key={i} className="flex items-start gap-3 rounded-lg p-2.5" style={{ background: theme.light }}>
+          <div className="w-2 h-2 rounded-full mt-1.5 flex-shrink-0" style={{ background: badgeColour }} />
+          <div className={`${size === "xs" ? "text-xs" : "text-sm"} font-medium`} style={{ color: theme.text }}>{bullet}</div>
+        </div>
+      ))}
+    </div>
+  );
+
+  // Header-then-body shell used by most layouts
+  const Shell: React.FC<{ children: React.ReactNode; contentClass?: string }> = ({ children, contentClass }) => (
+    <div className="flex flex-col h-full">
+      <SlideHeader slide={slide} theme={theme} Icon={Icon} />
+      <div className={`flex-1 px-10 pb-7 ${contentClass || "flex flex-col justify-center gap-2"}`}>
+        {children}
+      </div>
+    </div>
+  );
+
+  switch (layout) {
+    case "two-col":
+      return (
+        <Shell contentClass="grid grid-cols-2 gap-5 items-start">
+          <div>
+            {slide.body && <div className="text-xs uppercase tracking-wide font-bold mb-2" style={{ color: badgeColour }}>{slide.body}</div>}
+            <BulletList bullets={slide.bullets} />
+          </div>
+          <div>
+            <BulletList bullets={slide.bulletsRight} />
+          </div>
+        </Shell>
+      );
+
+    case "hero-number":
+      return (
+        <Shell>
+          {slide.headline && (
+            <div className="text-center my-3">
+              <div className="text-[4rem] font-black leading-none" style={{ color: theme.primary }}>{slide.headline}</div>
+              {slide.body && <div className="text-sm text-gray-600 mt-2 italic">{slide.body}</div>}
+            </div>
+          )}
+          <BulletList bullets={slide.bullets} />
+        </Shell>
+      );
+
+    case "image-left":
+    case "image-right":
+      return (
+        <Shell contentClass={`grid grid-cols-2 gap-5 items-center ${layout === "image-right" ? "" : "grid-flow-col-dense"}`}>
+          <div className={layout === "image-right" ? "order-1" : "order-2"}>
+            {slide.body && <div className="text-sm text-gray-600 mb-2 italic">{slide.body}</div>}
+            {slide.question && (
+              <div className="rounded-xl p-3 mb-2" style={{ background: theme.light, border: `1px solid ${badgeColour}30` }}>
+                <div className="text-sm font-semibold" style={{ color: theme.primary }}>{slide.question}</div>
+              </div>
+            )}
+            <BulletList bullets={slide.bullets} />
+          </div>
+          <div className={`rounded-xl overflow-hidden h-full min-h-[220px] ${layout === "image-right" ? "order-2" : "order-1"}`}
+               style={{ background: `#f1f5f9 center/cover no-repeat url(${imgUrl || ""})`, border: `1px solid ${badgeColour}30` }}>
+            {!hasImage && <div className="h-full flex items-center justify-center text-xs text-muted-foreground italic">No image prompt provided</div>}
+          </div>
+        </Shell>
+      );
+
+    case "definition":
+      return (
+        <Shell contentClass="flex flex-col justify-center gap-4 items-center text-center">
+          <div className="text-3xl font-black" style={{ color: theme.primary }}>{slide.headline || slide.title}</div>
+          {slide.body && (
+            <div className="max-w-2xl text-base" style={{ color: theme.text }}>{slide.body}</div>
+          )}
+          {slide.bullets && slide.bullets.length > 0 && (
+            <div className="rounded-xl p-4 max-w-2xl" style={{ background: theme.light, border: `1px solid ${badgeColour}30` }}>
+              <div className="text-[11px] font-bold uppercase tracking-wide mb-1.5" style={{ color: badgeColour }}>Example</div>
+              {slide.bullets.map((b, i) => <div key={i} className="text-sm mb-1" style={{ color: theme.text }}>{b}</div>)}
+            </div>
+          )}
+        </Shell>
+      );
+
+    case "process":
+      return (
+        <Shell contentClass="flex flex-col justify-center gap-3">
+          {slide.body && <div className="text-sm text-gray-600 mb-1 italic">{slide.body}</div>}
+          <div className="flex items-stretch gap-2 overflow-x-auto">
+            {(slide.steps || []).map((step, i) => (
+              <div key={i} className="flex items-center gap-2 flex-shrink-0">
+                <div className="rounded-xl px-3 py-2 min-w-[130px] max-w-[180px]" style={{ background: theme.light, border: `1.5px solid ${badgeColour}`, color: theme.text }}>
+                  <div className="text-[10px] font-bold uppercase mb-0.5" style={{ color: badgeColour }}>Step {i + 1}</div>
+                  <div className="text-xs font-medium">{step}</div>
+                </div>
+                {i < (slide.steps?.length || 0) - 1 && <div className="text-xl flex-shrink-0" style={{ color: badgeColour }}>→</div>}
+              </div>
+            ))}
+          </div>
+        </Shell>
+      );
+
+    case "quote-block":
+      return (
+        <Shell contentClass="flex flex-col justify-center items-center text-center gap-2">
+          {slide.quote && (
+            <div className="max-w-3xl">
+              <div className="text-4xl leading-none mb-2" style={{ color: badgeColour }}>“</div>
+              <div className="text-xl font-medium italic leading-snug" style={{ color: theme.primary }}>{slide.quote}</div>
+              <div className="text-4xl leading-none mt-2 text-right" style={{ color: badgeColour }}>”</div>
+            </div>
+          )}
+          {slide.attribution && (
+            <div className="text-sm font-semibold mt-1" style={{ color: theme.text }}>— {slide.attribution}</div>
+          )}
+          {slide.body && <div className="text-xs italic text-gray-500 mt-2">{slide.body}</div>}
+        </Shell>
+      );
+
+    case "centered":
+      return (
+        <Shell contentClass="flex flex-col justify-center items-center text-center gap-3">
+          {slide.headline && <div className="text-4xl font-black" style={{ color: theme.primary }}>{slide.headline}</div>}
+          {slide.body && <div className="text-base max-w-2xl" style={{ color: theme.text }}>{slide.body}</div>}
+          <BulletList bullets={slide.bullets} />
+        </Shell>
+      );
+
+    case "bullet-list":
+    case "full":
+    default:
+      return (
+        <Shell>
+          {slide.body && <div className="text-sm text-gray-600 mb-1 italic">{slide.body}</div>}
+          {slide.question && (
+            <div className="rounded-xl p-3.5 mb-1" style={{ background: theme.light, border: `1px solid ${badgeColour}30` }}>
+              <div className="text-sm font-semibold" style={{ color: theme.primary }}>{slide.question}</div>
+            </div>
+          )}
+          <BulletList bullets={slide.bullets} />
+        </Shell>
+      );
+  }
 }
 
 function FullSlideView({
@@ -1353,31 +1531,7 @@ function FullSlideView({
 
       // ── Default: content / activity / extension ────────────────────────────
       default:
-        return (
-          <div className="flex flex-col h-full">
-            <SlideHeader slide={slide} theme={theme} Icon={Icon} />
-            <div className="flex-1 px-10 pb-7 flex flex-col justify-center gap-2">
-              {slide.body && (
-                <div className="text-sm text-gray-600 mb-1 italic">{slide.body}</div>
-              )}
-              {slide.question && (
-                <div className="rounded-xl p-3.5 mb-1" style={{ background: theme.light, border: `1px solid ${badgeColour}30` }}>
-                  <div className="text-sm font-semibold" style={{ color: theme.primary }}>{slide.question}</div>
-                </div>
-              )}
-              {slide.bullets && slide.bullets.length > 0 && (
-                <div className="space-y-2">
-                  {slide.bullets.map((bullet, i) => (
-                    <div key={i} className="flex items-start gap-3 rounded-lg p-2.5" style={{ background: theme.light }}>
-                      <div className="w-2 h-2 rounded-full mt-1.5 flex-shrink-0" style={{ background: badgeColour }} />
-                      <div className="text-sm font-medium" style={{ color: theme.text }}>{bullet}</div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        );
+        return renderLayoutSlide(slide, theme, badgeColour, Icon);
     }
   };
 

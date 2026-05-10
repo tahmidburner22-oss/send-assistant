@@ -1,4 +1,6 @@
 import { Resend } from "resend";
+import { v4 as uuidv4 } from "uuid";
+import db from "../db/index.js";
 
 const isDev = process.env.NODE_ENV !== "production";
 
@@ -18,16 +20,106 @@ function getResend(): Resend {
 const FROM = process.env.EMAIL_FROM || "Adaptly <noreply@send.adaptly.co.uk>";
 const BASE_URL = process.env.APP_URL || "http://localhost:5173";
 
-async function send(to: string, subject: string, html: string) {
-  if (isDev) {
-    console.log(`📧 [DEV EMAIL] To: ${to} | Subject: ${subject}`);
+// ── Observability ────────────────────────────────────────────────────────────
+export interface EmailAttempt {
+  id: string;
+  at: string;
+  to: string;
+  subject: string;
+  template?: string;
+  status: "sent" | "skipped_dev" | "failed" | "misconfigured";
+  error?: string;
+  durationMs?: number;
+}
+const RECENT_ATTEMPTS: EmailAttempt[] = [];
+const MAX_RECENT = 50;
+
+function recordAttempt(a: EmailAttempt) {
+  RECENT_ATTEMPTS.unshift(a);
+  if (RECENT_ATTEMPTS.length > MAX_RECENT) RECENT_ATTEMPTS.pop();
+  // Best-effort persist to audit_logs (silently ignore failures)
+  db.prepare(
+    `INSERT INTO audit_logs (id, action, entity_type, entity_id, details) VALUES (?, ?, ?, ?, ?)`
+  ).run(
+    uuidv4(),
+    "email.send",
+    "email",
+    a.id,
+    JSON.stringify({ to: a.to, subject: a.subject, template: a.template, status: a.status, error: a.error, durationMs: a.durationMs })
+  ).catch(() => { /* swallow — email logging must never crash the request */ });
+}
+
+/** Returns the last N email attempts (admin-only — called by /api/admin/email/health). */
+export function getRecentEmailAttempts(): EmailAttempt[] {
+  return RECENT_ATTEMPTS.slice();
+}
+
+/** Boot-time env check — call from server/index.ts at start-up. */
+export function checkEmailConfigOnBoot() {
+  const issues: string[] = [];
+  if (!process.env.RESEND_API_KEY) {
+    issues.push("RESEND_API_KEY is not set");
+  }
+  if (!process.env.EMAIL_FROM) {
+    issues.push("EMAIL_FROM is not set — using default 'Adaptly <noreply@send.adaptly.co.uk>'. This domain must be verified in Resend, otherwise sends will silently fail.");
+  }
+  if (!process.env.APP_URL) {
+    issues.push("APP_URL is not set — email links will point to http://localhost:5173");
+  }
+  if (issues.length === 0) {
+    console.log("✉️  Email config OK (RESEND_API_KEY set, EMAIL_FROM=" + FROM + ", APP_URL=" + BASE_URL + ")");
     return;
   }
+  if (isDev) {
+    console.log("✉️  Email in DEV mode — sends will be logged to console, not delivered. Config notes:");
+  } else {
+    console.warn("⚠️  [email] Production email configuration issues:");
+  }
+  for (const msg of issues) console.warn("    - " + msg);
+}
+
+async function send(to: string, subject: string, html: string, template?: string) {
+  const id = uuidv4();
+  const startedAt = Date.now();
+
+  if (!to || !to.includes("@")) {
+    const attempt: EmailAttempt = { id, at: new Date().toISOString(), to: to || "", subject, template, status: "failed", error: "Invalid recipient address", durationMs: 0 };
+    recordAttempt(attempt);
+    console.error(`[email] Skipped — invalid recipient: ${to}`);
+    return;
+  }
+
+  if (isDev) {
+    const attempt: EmailAttempt = { id, at: new Date().toISOString(), to, subject, template, status: "skipped_dev", durationMs: 0 };
+    recordAttempt(attempt);
+    console.log(`📧 [DEV EMAIL] id=${id.slice(0, 8)} to=${to} subject="${subject}" template=${template || "-"} (dev mode, not sent)`);
+    return;
+  }
+
+  if (!process.env.RESEND_API_KEY) {
+    const attempt: EmailAttempt = { id, at: new Date().toISOString(), to, subject, template, status: "misconfigured", error: "RESEND_API_KEY not set", durationMs: 0 };
+    recordAttempt(attempt);
+    console.error(`[email] Cannot send — RESEND_API_KEY missing. to=${to} subject="${subject}"`);
+    return;
+  }
+
   try {
     const { error } = await getResend().emails.send({ from: FROM, to, subject, html });
-    if (error) console.error("[email] Resend error:", error);
-  } catch (err) {
-    console.error("[email] Failed to send email:", err);
+    const durationMs = Date.now() - startedAt;
+    if (error) {
+      const attempt: EmailAttempt = { id, at: new Date().toISOString(), to, subject, template, status: "failed", error: String((error as any)?.message || error), durationMs };
+      recordAttempt(attempt);
+      console.error(`[email] Resend error for id=${id.slice(0, 8)} to=${to}:`, error);
+      return;
+    }
+    const attempt: EmailAttempt = { id, at: new Date().toISOString(), to, subject, template, status: "sent", durationMs };
+    recordAttempt(attempt);
+    console.log(`[email] Sent id=${id.slice(0, 8)} to=${to} subject="${subject}" (${durationMs}ms)`);
+  } catch (err: any) {
+    const durationMs = Date.now() - startedAt;
+    const attempt: EmailAttempt = { id, at: new Date().toISOString(), to, subject, template, status: "failed", error: err?.message || String(err), durationMs };
+    recordAttempt(attempt);
+    console.error(`[email] Failed to send id=${id.slice(0, 8)} to=${to}:`, err);
   }
 }
 

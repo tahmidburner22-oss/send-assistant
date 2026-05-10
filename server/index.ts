@@ -397,6 +397,7 @@ app.use((err: any, req: express.Request, res: express.Response, _next: express.N
 import { initDb } from "./db/index.js";
 import { initWebSocketServer } from "./lib/notifications.js";
 import { startSchedulerWorker } from "./lib/schedulerWorker.js";
+import { checkEmailConfigOnBoot } from "./email/index.js";
 import http from "http";
 
 initDb().then(() => {
@@ -415,6 +416,10 @@ initDb().then(() => {
   // Start the in-process scheduler worker (daily worksheet generation + auto-mark)
   try { startSchedulerWorker(); }
   catch (err) { console.error("Failed to start scheduler worker:", err); }
+
+  // Check email config so misconfigurations surface in deployment logs
+  try { checkEmailConfigOnBoot(); }
+  catch (err) { console.error("Email boot check failed:", err); }
 }).catch(err => {
   console.error("Failed to initialise database:", err);
   process.exit(1);
