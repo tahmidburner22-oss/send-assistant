@@ -1,60 +1,13 @@
-import { lazy, Suspense, useEffect, useState } from "react";
+// Stub for the 3D lazy loader.
+// The full 3D implementation (Hero3DScene / SkillLadder3D) is temporarily
+// disabled to keep deployment builds green. We always render the 2D fallback
+// passed by the parent. See Hero3DScene.jsx.disabled / SkillLadder3D.jsx.disabled
+// for the original implementation.
 
-// Lazy-load the R3F bundles only when the container is near the viewport.
-// Also gates on prefers-reduced-motion and on `@react-three/fiber` being
-// available — on a fresh clone without `pnpm install` we render the fallback.
-
-const Hero3DScene = lazy(() => import("./Hero3DScene.jsx"));
-const SkillLadder3D = lazy(() => import("./SkillLadder3D.jsx"));
-
-function useShouldRender3D(containerRef) {
-  const [should, setShould] = useState(false);
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (prefersReduced) return;
-
-    // Defer until near viewport — keeps LCP fast.
-    const el = containerRef?.current;
-    if (!el) {
-      // Immediate render when no container is given.
-      setShould(true);
-      return;
-    }
-    const obs = new IntersectionObserver(
-      (entries) => {
-        for (const e of entries) {
-          if (e.isIntersecting) {
-            setShould(true);
-            obs.disconnect();
-            break;
-          }
-        }
-      },
-      { rootMargin: "200px" }
-    );
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, [containerRef]);
-  return should;
+export function LazyHero3D({ fallback }) {
+  return fallback || null;
 }
 
-export function LazyHero3D({ variant, containerRef, fallback }) {
-  const should = useShouldRender3D(containerRef);
-  if (!should) return fallback || null;
-  return (
-    <Suspense fallback={fallback || null}>
-      <Hero3DScene variant={variant} />
-    </Suspense>
-  );
-}
-
-export function LazySkillLadder3D({ progressRef, containerRef, fallback }) {
-  const should = useShouldRender3D(containerRef);
-  if (!should) return fallback || null;
-  return (
-    <Suspense fallback={fallback || null}>
-      <SkillLadder3D progressRef={progressRef} />
-    </Suspense>
-  );
+export function LazySkillLadder3D({ fallback }) {
+  return fallback || null;
 }
