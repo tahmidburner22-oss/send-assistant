@@ -77,28 +77,38 @@ html.lenis-active { scroll-behavior: auto; }
   will-change: transform;
 }
 
-/* V3-only: subtly punchier section padding + dividers */
-html[data-landing-variant="v3"] .adaptly-landing section { scroll-margin-top: 96px; }
-html[data-landing-variant="v3"] .adaptly-landing .glass {
+/* Section scroll margin so anchor nav doesn't sit under the fixed header */
+.adaptly-landing section { scroll-margin-top: 96px; }
+
+/* Slightly punchier glass for the locked Overdrive look */
+.adaptly-landing .glass {
   background: rgba(255,255,255,0.55);
   backdrop-filter: blur(28px) saturate(150%);
   -webkit-backdrop-filter: blur(28px) saturate(150%);
 }
 
-/* V3 — hide native cursor on fine-pointer devices so our custom cursor can take over */
-html[data-landing-variant="v3"] .adaptly-landing { cursor: none; }
-@media (hover: none), (pointer: coarse) { html[data-landing-variant="v3"] .adaptly-landing { cursor: auto; } }
-html[data-landing-variant="v3"] .adaptly-landing a,
-html[data-landing-variant="v3"] .adaptly-landing button,
-html[data-landing-variant="v3"] .adaptly-landing input,
-html[data-landing-variant="v3"] .adaptly-landing textarea,
-html[data-landing-variant="v3"] .adaptly-landing [role="button"] { cursor: none; }
-@media (hover: none), (pointer: coarse) {
-  html[data-landing-variant="v3"] .adaptly-landing a,
-  html[data-landing-variant="v3"] .adaptly-landing button,
-  html[data-landing-variant="v3"] .adaptly-landing input,
-  html[data-landing-variant="v3"] .adaptly-landing textarea,
-  html[data-landing-variant="v3"] .adaptly-landing [role="button"] { cursor: pointer; }
+/* Mobile — tighten the default py-28 md:py-40 sections so we don't get long
+   dead stretches between content blocks on tall phone viewports. We target
+   the two Tailwind padding classes used by every section. */
+@media (max-width: 639px) {
+  .adaptly-landing section.py-28,
+  .adaptly-landing section[class*="py-28"] {
+    padding-top: 4.5rem !important;
+    padding-bottom: 4.5rem !important;
+  }
+}
+
+/* Hide the native cursor on pointer-fine devices so the custom one can shine.
+   Touch devices keep the default behaviour. */
+@media (hover: hover) and (pointer: fine) and (min-width: 1024px) {
+  .adaptly-landing,
+  .adaptly-landing a,
+  .adaptly-landing button,
+  .adaptly-landing input,
+  .adaptly-landing textarea,
+  .adaptly-landing [role="button"] {
+    cursor: none;
+  }
 }
 
 /* Ensure large display text never clips descenders when animated into view */
