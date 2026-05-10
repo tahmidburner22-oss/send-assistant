@@ -5014,7 +5014,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
           )}
           {/* ── Section group divider: shown before the first question of each group ── */}
           {isFirstOfGroupSection && groupInfo && (
-            <div style={{
+            <div className="ws-section-group-divider" style={{
               marginBottom: "16px",
               marginTop: i > 0 ? "24px" : "0",
               pageBreakBefore: "auto",
@@ -5075,7 +5075,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
               flexDirection: section.type === "diagram" ? "column" as const : undefined,
               justifyContent: section.type === "diagram" ? "center" : undefined,
               alignItems: section.type === "diagram" ? "stretch" : undefined,
-              padding: section.type === "diagram" ? "8px" : undefined,
+              padding: section.type === "diagram" ? "0" : undefined,
               overflow: section.type === "diagram" ? "hidden" : "visible",
             }}
           >
@@ -5365,7 +5365,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                                     ))}
                                   </div>
                                   {/* Answer line at bottom of working box */}
-                                  <div style={{ borderTop: "2px solid #1a2744", marginTop: "8px", paddingTop: "4px", display: "flex", alignItems: "center", gap: "8px" }}>
+                                  <div style={{ marginTop: "8px", paddingTop: "4px", display: "flex", alignItems: "center", gap: "8px" }}>
                                     <span style={{ fontSize: "11px", fontWeight: 700, color: "#1a2744", fontFamily: fmt.fontFamily, whiteSpace: "nowrap" as const }}>Answer:</span>
                                     <div style={{ flex: 1, borderBottom: "1.5px solid #1a2744", height: "24px" }} />
                                   </div>
@@ -5463,7 +5463,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                                       </div>
                                     ))}
                                   </div>
-                                  <div style={{ borderTop: "2px solid #1a2744", marginTop: "8px", paddingTop: "4px", display: "flex", alignItems: "center", gap: "8px" }}>
+                                  <div style={{ marginTop: "8px", paddingTop: "4px", display: "flex", alignItems: "center", gap: "8px" }}>
                                     <span style={{ fontSize: "11px", fontWeight: 700, color: "#1a2744", fontFamily: fmt.fontFamily, whiteSpace: "nowrap" as const }}>Answer:</span>
                                     <div style={{ flex: 1, borderBottom: "1.5px solid #1a2744", height: "24px" }} />
                                   </div>
@@ -5512,7 +5512,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                                 </div>
                               ))}
                             </div>
-                            <div style={{ borderTop: "2px solid #1a2744", marginTop: "8px", paddingTop: "4px", display: "flex", alignItems: "center", gap: "8px" }}>
+                            <div style={{ marginTop: "8px", paddingTop: "4px", display: "flex", alignItems: "center", gap: "8px" }}>
                               <span style={{ fontSize: "11px", fontWeight: 700, color: "#1a2744", fontFamily: fmt.fontFamily, whiteSpace: "nowrap" as const }}>Answer:</span>
                               <div style={{ flex: 1, borderBottom: "1.5px solid #1a2744", height: "24px" }} />
                             </div>
@@ -5709,24 +5709,25 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                     const diagImageUrl = (section as any).diagramImageUrl || resolveImageUrl(section);
                     const diagTitle = (section as any).diagramTitle || section.title;
                     const accentColor = fmt.accentColor || "#1B2A4A";
+                    // If no diagram image is available, skip this section entirely —
+                    // questions that reference a diagram make no sense without the diagram.
+                    if (!diagImageUrl) return null;
                     return (
                       <div>
                         {/* Diagram image */}
-                        {diagImageUrl && (
-                          <div style={{ textAlign: "center", marginBottom: "16px" }}>
-                            <img
-                              src={diagImageUrl}
-                              alt={diagTitle || "Diagram"}
-                              style={{ maxWidth: "480px", width: "100%", borderRadius: "6px", border: "1px solid #e5e7eb", display: "inline-block" }}
-                              onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
-                            />
-                            {diagTitle && (
-                              <p style={{ fontSize: `${fmt.fontSize - 2}px`, color: "#6b7280", marginTop: "4px", fontStyle: "italic", fontFamily: fmt.fontFamily, textAlign: "center" }}>
-                                {diagTitle}
-                              </p>
-                            )}
-                          </div>
-                        )}
+                        <div style={{ textAlign: "center", marginBottom: "16px" }}>
+                          <img
+                            src={diagImageUrl}
+                            alt={diagTitle || "Diagram"}
+                            style={{ maxWidth: "480px", width: "100%", borderRadius: "6px", border: "1px solid #e5e7eb", display: "inline-block" }}
+                            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                          />
+                          {diagTitle && (
+                            <p style={{ fontSize: `${fmt.fontSize - 2}px`, color: "#6b7280", marginTop: "4px", fontStyle: "italic", fontFamily: fmt.fontFamily, textAlign: "center" }}>
+                              {diagTitle}
+                            </p>
+                          )}
+                        </div>
                         {/* Questions */}
                         <div style={{ fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, lineHeight: String(fmt.lineHeight), color: "#1e293b" }}>
                           {formatContent(content, fmt)}
@@ -5815,7 +5816,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                                 </div>
                               ))}
                             </div>
-                            <div style={{ borderTop: "2px solid #1a2744", marginTop: "8px", paddingTop: "4px", display: "flex", alignItems: "center", gap: "8px" }}>
+                            <div style={{ marginTop: "8px", paddingTop: "4px", display: "flex", alignItems: "center", gap: "8px" }}>
                               <span style={{ fontSize: "11px", fontWeight: 700, color: "#1a2744", fontFamily: fmt.fontFamily, whiteSpace: "nowrap" as const }}>Answer:</span>
                               <div style={{ flex: 1, borderBottom: "1.5px solid #1a2744", height: "24px" }} />
                             </div>
@@ -6059,7 +6060,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                             </div>
                           ))}
                         </div>
-                        <div style={{ borderTop: "2px solid #1a2744", marginTop: "8px", paddingTop: "4px", display: "flex", alignItems: "center", gap: "8px" }}>
+                        <div style={{ marginTop: "8px", paddingTop: "4px", display: "flex", alignItems: "center", gap: "8px" }}>
                           <span style={{ fontSize: "11px", fontWeight: 700, color: "#1a2744", fontFamily: fmt.fontFamily, whiteSpace: "nowrap" as const }}>Answer:</span>
                           <div style={{ flex: 1, borderBottom: "1.5px solid #1a2744", height: "24px" }} />
                         </div>

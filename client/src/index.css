@@ -228,19 +228,19 @@
   .ws-section-diagram {
     break-before: page !important;
     page-break-before: always !important;
-    /* Diagrams fill the full page — no overflow */
+    /* Diagrams fill the full A4 page — no padding, starts from the top */
     width: 100% !important;
     max-width: 100% !important;
-    /* Use almost the full printable height (A4 portrait = 297mm, minus 16mm margins = ~281mm) */
-    height: 260mm !important;
-    min-height: 260mm !important;
+    height: 297mm !important;
+    min-height: 297mm !important;
     overflow: hidden !important;
     box-sizing: border-box !important;
     display: flex !important;
     flex-direction: column !important;
     align-items: stretch !important;
-    justify-content: center !important;
-    padding: 4mm !important;
+    justify-content: flex-start !important;
+    padding: 0 !important;
+    margin: 0 !important;
   }
 
   /* Diagram images and SVGs fill the full diagram section */
@@ -251,8 +251,8 @@
   .ws-section-diagram > div > img {
     max-width: 100% !important;
     width: 100% !important;
-    height: 252mm !important;
-    max-height: 252mm !important;
+    height: 297mm !important;
+    max-height: 297mm !important;
     object-fit: contain !important;
     display: block !important;
     flex: 1 !important;

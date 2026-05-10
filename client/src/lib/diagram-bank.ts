@@ -150,14 +150,14 @@ export const VERIFIED_DIAGRAMS: VerifiedDiagram[] = [
   {
     imageUrl: "/images/atom_nb_labelled_final.png",
     caption: "Atomic structure — labelled Bohr model of Carbon-12 (6 protons, 6 neutrons, 2,4 electron configuration)",
-    attribution: "Adaptly nano-banana diagram",
+    attribution: "AI-generated educational diagram (Adaptly)",
     source: "/images/atom_nb_labelled_final.png",
     keywords: ["atom", "atomic structure", "proton", "neutron", "electron", "isotope", "bohr model", "carbon", "nucleus", "electron shell", "subatomic particles", "gcse chemistry", "year 9 chemistry", "atomic number", "mass number"],
   },
   {
     imageUrl: "/images/atom_nb_unlabelled_final.png",
     caption: "Atomic structure — unlabelled Bohr model for labelling activity",
-    attribution: "Adaptly nano-banana diagram",
+    attribution: "AI-generated educational diagram (Adaptly)",
     source: "/images/atom_nb_unlabelled_final.png",
     keywords: ["label the atom", "label the diagram", "atom unlabelled", "atomic structure diagram blank", "bohr model blank"],
   },
@@ -266,7 +266,7 @@ export const VERIFIED_DIAGRAMS: VerifiedDiagram[] = [
   {
     imageUrl: "/images/atom_nb_labelled_final.png",
     caption: "Bohr model of the atom — electron shells (Carbon-12)",
-    attribution: "Adaptly nano-banana diagram",
+    attribution: "AI-generated educational diagram (Adaptly)",
     source: "/images/atom_nb_labelled_final.png",
     keywords: ["atomic structure", "electron shell", "bohr model", "particles and radiation", "nuclear model", "atom structure physics"],
   },

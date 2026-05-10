@@ -280,14 +280,14 @@ const DIAGRAM_BANK: DiagramEntry[] = [
     key: "atom_structure",
     url: "/images/atom_nb_labelled_final.png",
     label: "Atomic Structure — Labelled Bohr Model (Carbon-12)",
-    attribution: "Adaptly nano-banana diagram",
+    attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["atom", "atomic structure", "bohr model", "electron", "proton", "neutron", "nucleus", "electron shell", "orbit", "atomic model", "carbon", "subatomic particles", "chemistry", "gcse chemistry"],
   },
   {
     key: "atom_structure_unlabelled",
     url: "/images/atom_nb_unlabelled_final.png",
     label: "Atomic Structure — Unlabelled Bohr Model (Carbon-12)",
-    attribution: "Adaptly nano-banana diagram",
+    attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["atom unlabelled", "label the atom", "label the diagram", "atomic structure diagram", "bohr model blank", "carbon atom diagram"],
   },
   {
@@ -732,7 +732,7 @@ const DIAGRAM_BANK: DiagramEntry[] = [
     key: "nuclear_atom_gcse",
     url: "/images/atom_nb_labelled_final.png",
     label: "Nuclear Atom Structure — Labelled Bohr Model",
-    attribution: "Adaptly nano-banana diagram",
+    attribution: "AI-generated educational diagram (Adaptly)",
     keywords: ["nuclear model", "atom structure", "proton", "neutron", "electron", "nucleus", "atomic number", "mass number", "isotopes", "bohr model", "nuclear atom", "gcse chemistry", "year 9 chemistry"],
   },
   {
