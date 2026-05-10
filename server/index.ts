@@ -90,6 +90,8 @@ import worksheetLibraryRouter from "./routes/worksheetLibrary.js";
 import presentationLibraryRouter from "./routes/presentationLibrary.js";
 import diagramLibraryRouter from "./routes/diagramLibrary.js";
 import ehcpRouter from "./routes/ehcp.js";
+import pupilDocumentsRouter from "./routes/pupilDocuments.js";
+import schedulerRouter from "./routes/scheduler.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -341,6 +343,8 @@ app.use("/api/library", worksheetLibraryRouter);
 app.use("/api/presentation-library", presentationLibraryRouter);
 app.use("/api/diagram-library", diagramLibraryRouter);
 app.use("/api/ehcp", aiLimiter, ehcpRouter);
+app.use("/api/pupil-documents", pupilDocumentsRouter);
+app.use("/api/scheduler", schedulerRouter);
 
 // ── Health check ──────────────────────────────────────────────────────────────
 app.get("/api/health", (_, res) => {
@@ -392,6 +396,8 @@ app.use((err: any, req: express.Request, res: express.Response, _next: express.N
 // ── Start ─────────────────────────────────────────────────────────────────────
 import { initDb } from "./db/index.js";
 import { initWebSocketServer } from "./lib/notifications.js";
+import { startSchedulerWorker } from "./lib/schedulerWorker.js";
+import { checkEmailConfigOnBoot } from "./email/index.js";
 import http from "http";
 
 initDb().then(() => {
@@ -406,6 +412,14 @@ initDb().then(() => {
   httpServer.timeout = 150000; // 150 seconds
   (httpServer as any).keepAliveTimeout = 155000; // slightly above timeout
   (httpServer as any).headersTimeout = 160000; // slightly above keepAliveTimeout
+
+  // Start the in-process scheduler worker (daily worksheet generation + auto-mark)
+  try { startSchedulerWorker(); }
+  catch (err) { console.error("Failed to start scheduler worker:", err); }
+
+  // Check email config so misconfigurations surface in deployment logs
+  try { checkEmailConfigOnBoot(); }
+  catch (err) { console.error("Email boot check failed:", err); }
 }).catch(err => {
   console.error("Failed to initialise database:", err);
   process.exit(1);

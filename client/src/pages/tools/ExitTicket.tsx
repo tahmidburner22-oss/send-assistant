@@ -1,6 +1,5 @@
 import DOMPurify from "dompurify";
 import { useUserPreferences } from "@/contexts/UserPreferencesContext";
-import { formatToolOutput } from "@/lib/format-tool-output";
 import AIToolPage from "@/components/AIToolPage";
 import { Ticket } from "lucide-react";
 
@@ -9,8 +8,52 @@ const years = ["Reception","Year 1","Year 2","Year 3","Year 4","Year 5","Year 6"
 
 const ANSWER_KEY_SEPARATOR = "--- TEACHER ANSWER KEY ---";
 
+// Alternative separators produced by some AI providers when they ignore the exact instruction
+const FALLBACK_SEPARATORS = [
+  /^-{2,}\s*teacher\s*(answer\s*key|copy|key|answers?)\s*-{0,}\s*$/im,
+  /^#{1,3}\s*teacher\s*(answer\s*key|copy|key|answers?)\s*$/im,
+  /^#{1,3}\s*answer\s*key\s*$/im,
+  /^#{1,3}\s*mark\s*scheme\s*$/im,
+];
+
+/** Split a raw exit-ticket response into student vs teacher parts, with fallback separator detection. */
+function splitExitTicket(text: string): { student: string; teacher: string | null } {
+  const exact = text.indexOf(ANSWER_KEY_SEPARATOR);
+  if (exact >= 0) {
+    return {
+      student: text.slice(0, exact).trim(),
+      teacher: text.slice(exact + ANSWER_KEY_SEPARATOR.length).trim(),
+    };
+  }
+  for (const rx of FALLBACK_SEPARATORS) {
+    const m = text.match(rx);
+    if (m && m.index !== undefined) {
+      return {
+        student: text.slice(0, m.index).trim(),
+        teacher: text.slice(m.index + m[0].length).trim(),
+      };
+    }
+  }
+  return { student: text.trim(), teacher: null };
+}
+
+/** Minimal markdown → HTML conversion that also turns `[ ]` / `- [ ]` into real checkboxes. */
 function mdToHtml(text: string): string {
-  return text
+  // Render tickbox markers that the AI produces when SEND-adapted is on
+  // e.g. "- [ ] I can add fractions" → checkbox + label
+  const withBoxes = text
+    // list checkbox form ("- [ ] ..." or "- [x] ...")
+    .replace(/^[-*•]\s*\[\s*([ xX])\s*\]\s+(.+)$/gm, (_, mark, label) => {
+      const checked = /x/i.test(mark) ? "checked" : "";
+      return `<label style='display:flex;align-items:flex-start;gap:8px;margin:4px 0'><input type='checkbox' ${checked} disabled style='margin-top:3px;flex-shrink:0' /><span>${label}</span></label>`;
+    })
+    // standalone inline "[ ]" anywhere in a line
+    .replace(/\[\s*([ xX])\s*\]/g, (_, mark) => {
+      const checked = /x/i.test(mark) ? "checked" : "";
+      return `<input type='checkbox' ${checked} disabled style='margin:0 4px;vertical-align:middle' />`;
+    });
+
+  return withBoxes
     .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
     .replace(/\*(.+?)\*/g, "<em>$1</em>")
     .replace(/^[-•]\s+(.+)$/gm, "<li style='margin-left:16px'>$1</li>")
@@ -18,10 +61,13 @@ function mdToHtml(text: string): string {
     .replace(/\n/g, "<br/>");
 }
 
-function ExitTicketOutput({ text, logoUrl, schoolName }: { text: string; logoUrl?: string; schoolName?: string }) {
-  const sepIdx = text.indexOf(ANSWER_KEY_SEPARATOR);
-  const studentPart = sepIdx >= 0 ? text.slice(0, sepIdx).trim() : text.trim();
-  const answerPart  = sepIdx >= 0 ? text.slice(sepIdx + ANSWER_KEY_SEPARATOR.length).trim() : null;
+const SANITIZE_OPTS = {
+  ALLOWED_TAGS: ["strong", "em", "br", "li", "ul", "ol", "label", "input", "span", "div", "p", "h3", "h4"],
+  ALLOWED_ATTR: ["style", "type", "checked", "disabled", "class"],
+};
+
+function ExitTicketOutput({ text }: { text: string }) {
+  const { student, teacher } = splitExitTicket(text);
 
   return (
     <div className="space-y-4">
@@ -31,19 +77,23 @@ function ExitTicketOutput({ text, logoUrl, schoolName }: { text: string; logoUrl
           <div style={{ fontWeight: 800, fontSize: "14px", color: "#fff" }}>Exit Ticket — Student Copy</div>
           <span style={{ background: "rgba(255,255,255,0.25)", color: "#fff", padding: "2px 10px", borderRadius: "20px", fontSize: "11px", fontWeight: 700 }}>Print & give to students</span>
         </div>
-        <div style={{ padding: "14px 16px", background: "#faf5ff", fontSize: "13px", lineHeight: "1.7" }}
-             dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(mdToHtml(studentPart), { ALLOWED_TAGS: ["strong","em","br","li","ul","ol"], ALLOWED_ATTR: ["style"] }) }} />
+        <div
+          style={{ padding: "14px 16px", background: "#faf5ff", fontSize: "13px", lineHeight: "1.7" }}
+          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(mdToHtml(student), SANITIZE_OPTS) }}
+        />
       </div>
 
       {/* Teacher answer key */}
-      {answerPart && (
+      {teacher && (
         <div style={{ border: "2px solid #0891b2", borderRadius: "12px", overflow: "hidden", pageBreakInside: "avoid" }}>
           <div style={{ background: "linear-gradient(135deg,#0891b2,#0e7490)", padding: "8px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <div style={{ fontWeight: 800, fontSize: "14px", color: "#fff" }}>Teacher Answer Key</div>
             <span style={{ background: "rgba(255,255,255,0.25)", color: "#fff", padding: "2px 10px", borderRadius: "20px", fontSize: "11px", fontWeight: 700 }}>Do not distribute to students</span>
           </div>
-          <div style={{ padding: "14px 16px", background: "#ecfeff", fontSize: "13px", lineHeight: "1.7" }}
-               dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(mdToHtml(answerPart), { ALLOWED_TAGS: ["strong","em","br","li","ul","ol"], ALLOWED_ATTR: ["style"] }) }} />
+          <div
+            style={{ padding: "14px 16px", background: "#ecfeff", fontSize: "13px", lineHeight: "1.7" }}
+            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(mdToHtml(teacher), SANITIZE_OPTS) }}
+          />
         </div>
       )}
     </div>
@@ -51,7 +101,8 @@ function ExitTicketOutput({ text, logoUrl, schoolName }: { text: string; logoUrl
 }
 
 export default function ExitTicket() {
-  const { preferences } = useUserPreferences();
+  // Preferences kept for parity with other tools — currently unused after refactor
+  useUserPreferences();
   return (
     <AIToolPage
       assignable={true}
@@ -93,23 +144,20 @@ Student ticket requirements:
 - Name / Class / Date field at the top
 - Quick to complete (max 5 minutes)
 - Directly assesses the learning objective
-- ${v.sendAdapted === "yes" ? "Visual supports (tick boxes, simple language)" : "Clear, unambiguous questions"}
+- ${v.sendAdapted === "yes" ? "Use markdown checkbox syntax \"- [ ] option text\" for tick-box questions so they render as real checkboxes. Keep language simple and offer visual/pictorial hints where possible." : "Clear, unambiguous questions"}
 - Format as a compact half-A4 slip
 
-IMPORTANT — output structure:
-First output the complete student-facing exit ticket(s) with NO answers embedded.
-Then output EXACTLY this separator on its own line: ${ANSWER_KEY_SEPARATOR}
-Then output the teacher answer key with: model answers for each question, marking guidance, and a "What to do next lesson" note based on common responses.`,
+CRITICAL — output structure (follow EXACTLY):
+1. First output the complete student-facing exit ticket(s) with NO answers embedded.
+2. Then output EXACTLY this separator on its own line: ${ANSWER_KEY_SEPARATOR}
+3. Then output the teacher answer key with: model answers for each question, marking guidance, and a "What to do next lesson" note based on common responses.
+
+Do not substitute the separator. Do not wrap it in a markdown heading.`,
         maxTokens: 2000,
       })}
       outputTitle={(v) => `Exit Ticket — ${v.subject}: ${v.learningObjective}`}
-      formatOutput={(text) => {
-        // Check for our separator — if present, use the custom split renderer
-        if (text.includes(ANSWER_KEY_SEPARATOR)) {
-          return `<div data-exit-ticket="${encodeURIComponent(text)}"></div>`;
-        }
-        return formatToolOutput(text, { logoUrl: preferences.schoolLogoUrl, schoolName: preferences.schoolName, accentColor: "#c026d3", emoji: "🎫", title: "Exit Ticket" });
-      }}
+      renderCustomOutput={(text) => <ExitTicketOutput text={text} />}
+      transformBeforeAssign={(text) => splitExitTicket(text).student}
     />
   );
 }

@@ -346,7 +346,7 @@ function reorderForHeavyRequest(providers: string[], promptLength: number): stri
 }
 
 // ── Auto-fallback: try every provider until one succeeds ─────────────────────
-async function callWithFallback(
+export async function callWithFallback(
   system: string,
   user: string,
   maxTokens: number,
@@ -3204,6 +3204,230 @@ router.post("/presentation/email", requireAuth, async (req: Request, res: Respon
   } catch (err: any) {
     console.error("[presentation/email] error:", err);
     res.status(500).json({ error: "Failed to send email. Please try again." });
+  }
+});
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Pupil document generators — CV, Personal Statement, Cover Letter
+// Used by Parent Portal + teacher Pupils page.
+// Parents can call these routes via cookie-less session by supplying the pupil
+// access code in the X-Parent-Code header. Teachers call them with a normal
+// authenticated session. For simplicity we require either an authenticated
+// teacher session OR an X-Parent-Code that matches an existing pupil row.
+// ──────────────────────────────────────────────────────────────────────────────
+
+async function assertPupilDocAccess(req: Request): Promise<{ ok: true; schoolId: string | null } | { ok: false; status: number; message: string }> {
+  // If teacher is authenticated, allow. (req.user is only set after requireAuth.)
+  if (req.user?.id) return { ok: true, schoolId: req.user.schoolId || null };
+  // Otherwise require a parent code matching a real pupil.
+  const parentCode = (req.headers["x-parent-code"] as string || "").trim().toUpperCase();
+  if (!parentCode) return { ok: false, status: 401, message: "Sign in or provide X-Parent-Code." };
+  const pupil = await db.prepare("SELECT school_id FROM pupils WHERE UPPER(code) = ?").get(parentCode) as any;
+  if (!pupil) return { ok: false, status: 403, message: "Invalid parent code." };
+  return { ok: true, schoolId: pupil.school_id || null };
+}
+
+/**
+ * Lightweight middleware: try to authenticate via JWT. If no token is present,
+ * do not block — continue to the route and let it check X-Parent-Code instead.
+ * If a token IS present but invalid, still continue (route will fall back).
+ */
+async function tryAuthForDocs(req: Request, res: Response, next: () => void) {
+  const hasCookie = typeof req.headers.cookie === "string" && /(?:^|;\s*)token=/.test(req.headers.cookie);
+  const hasAuthHeader = typeof req.headers.authorization === "string" && req.headers.authorization.startsWith("Bearer ");
+  if (!hasCookie && !hasAuthHeader) return next();
+
+  const originalStatus = res.status.bind(res);
+  const originalJson = res.json.bind(res);
+  let intercepted = false;
+  (res as any).status = (code: number) => {
+    if (code === 401 || code === 403) { intercepted = true; return { json: () => res }; }
+    return originalStatus(code);
+  };
+  (res as any).json = (body: unknown) => {
+    if (intercepted) return res;
+    return originalJson(body);
+  };
+  try {
+    await new Promise<void>((resolve) => { requireAuth(req, res, (() => resolve()) as any); });
+  } catch { /* ignore */ }
+  finally {
+    (res as any).status = originalStatus;
+    (res as any).json = originalJson;
+  }
+  next();
+}
+
+function safeStr(v: any, max = 400): string {
+  if (v == null) return "";
+  return String(v).slice(0, max);
+}
+
+// ── POST /api/ai/cv — generate a polished single-page CV ─────────────────────
+router.post("/cv", tryAuthForDocs, async (req: Request, res: Response) => {
+  const access = await assertPupilDocAccess(req);
+  if (!access.ok) return res.status(access.status).json({ error: access.message });
+
+  const { pupilName, yearGroup, schoolName, personalSummary, skills, achievements, workExperience, volunteering, interests, references } = req.body || {};
+
+  const system = `You are a professional UK careers adviser who writes concise, high-impact single-page CVs for school-age students (Year 7–13). You write with specificity — no generic filler. You use action verbs and quantifiable outcomes where possible. British English spelling. Style must be clean and suitable for printing on one A4 page.`;
+
+  const user = `Generate a polished, printable, single-page CV for a UK school student.
+
+Pupil name: ${safeStr(pupilName, 120)}
+Year group: ${safeStr(yearGroup, 40)}
+School: ${safeStr(schoolName, 200)}
+
+Personal summary (rough notes):
+${safeStr(personalSummary, 800)}
+
+Skills (bullet list — expand each if useful, keep punchy):
+${Array.isArray(skills) ? skills.map((s: any) => "- " + safeStr(s, 150)).join("\n") : safeStr(skills, 800)}
+
+Achievements:
+${Array.isArray(achievements) ? achievements.map((a: any) => "- " + safeStr(a, 200)).join("\n") : safeStr(achievements, 1200)}
+
+Work experience:
+${Array.isArray(workExperience) ? workExperience.map((w: any) => `- ${safeStr(w.role, 120)} at ${safeStr(w.organisation, 150)}${w.dates ? ` (${safeStr(w.dates, 40)})` : ""}: ${safeStr(w.description, 400)}`).join("\n") : safeStr(workExperience, 1600)}
+
+Volunteering:
+${Array.isArray(volunteering) ? volunteering.map((v: any) => `- ${safeStr(v.role, 120)} at ${safeStr(v.organisation, 150)}: ${safeStr(v.description, 300)}`).join("\n") : safeStr(volunteering, 1200)}
+
+Interests: ${safeStr(interests, 400)}
+References: ${safeStr(references, 400)}
+
+OUTPUT RULES — follow strictly:
+- Return a single clean markdown document that fits on ONE A4 page when rendered.
+- Structure (use these exact H2 headings in this order):
+  ## Profile
+  ## Skills
+  ## Experience
+  ## Education
+  ## Achievements
+  ## Interests
+  ## References
+- "Profile" is 2–3 punchy sentences.
+- "Skills" — 6–8 bullets, each a specific, evidenced skill (no empty adjectives).
+- "Experience" — each entry: bold role + organisation on one line, italic dates on next line, then 2–3 outcome-led bullets starting with an action verb.
+- "Education" — include the school and year group. If not provided, write a single line inviting the pupil to add their school.
+- "Achievements" — 3–5 specific bullets, include grades, awards, positions of responsibility.
+- "Interests" — one concise line (not a bullet list).
+- "References" — "Available on request" unless specific names given.
+- Use British English. No emojis. No markdown tables.
+- DO NOT invent experience or achievements that the user did not mention. If a section has no input, write "Ask ${safeStr(pupilName, 80) || "the pupil"} to add this." so it's visible but honest.
+- DO NOT exceed 550 words total — CV must fit on one page.
+- Return ONLY the markdown, nothing else.`;
+
+  try {
+    const { content, provider } = await callWithFallback(system, user, 1800, undefined, access.schoolId || undefined);
+    res.json({ content, provider });
+  } catch (err: any) {
+    console.error("CV generation error:", err);
+    res.status(502).json({ error: "AI is temporarily unavailable. Please try again." });
+  }
+});
+
+// ── POST /api/ai/personal-statement ──────────────────────────────────────────
+router.post("/personal-statement", tryAuthForDocs, async (req: Request, res: Response) => {
+  const access = await assertPupilDocAccess(req);
+  if (!access.ok) return res.status(access.status).json({ error: access.message });
+
+  const { pupilName, yearGroup, target, targetDetail, motivation, achievements, experience, goals, maxChars } = req.body || {};
+
+  // UCAS personal statement limit is 4000 chars. Sixth-form/apprenticeship typically 2000.
+  const targetLabel = safeStr(target, 40) || "sixth_form";
+  const hardLimit = Math.min(Number(maxChars) || (targetLabel === "ucas" ? 4000 : 2000), 4000);
+
+  const system = `You are an expert UK careers and admissions adviser. You write clear, specific, genuine personal statements in British English for UK school students. No clichés ("I have always been passionate about…"), no hyperbole. Evidence every claim with a concrete example. Match the tone to the target audience (UCAS, sixth-form application, apprenticeship, school transition).`;
+
+  const user = `Write a polished personal statement for a UK school student.
+
+Pupil name: ${safeStr(pupilName, 120)}
+Year group: ${safeStr(yearGroup, 40)}
+Target: ${targetLabel}${targetDetail ? ` (${safeStr(targetDetail, 200)})` : ""}
+
+Rough notes from the pupil/parent:
+
+Why this course/role/transition matters to me:
+${safeStr(motivation, 1200)}
+
+Relevant achievements:
+${safeStr(achievements, 1200)}
+
+Relevant experience:
+${safeStr(experience, 1200)}
+
+Future goals:
+${safeStr(goals, 800)}
+
+OUTPUT RULES — follow strictly:
+- Plain prose. No headings, no bullet points, no markdown.
+- British English.
+- Maximum ${hardLimit} characters INCLUDING spaces. If you exceed this, trim before returning.
+- Four paragraphs:
+   1. Opening hook — a specific reason for pursuing this course/role/transition. No cliché openers.
+   2. Academic/educational evidence — reference specific achievements from the notes.
+   3. Broader experience — work, volunteering, extra-curricular — always tie back to the target.
+   4. Forward-looking close — what the pupil will bring and what they want to learn.
+- Every paragraph must include at least one specific, checkable detail from the notes.
+- Do NOT invent facts. If the notes are thin, keep the statement shorter and more focused rather than padding with generic claims.
+- Return ONLY the statement text, nothing else.`;
+
+  try {
+    const { content, provider } = await callWithFallback(system, user, 2000, undefined, access.schoolId || undefined);
+    // enforce hard limit client-side too
+    const clipped = content.length > hardLimit ? content.slice(0, hardLimit) : content;
+    res.json({ content: clipped, provider, charCount: clipped.length, hardLimit });
+  } catch (err: any) {
+    console.error("Personal statement generation error:", err);
+    res.status(502).json({ error: "AI is temporarily unavailable. Please try again." });
+  }
+});
+
+// ── POST /api/ai/cover-letter ────────────────────────────────────────────────
+router.post("/cover-letter", tryAuthForDocs, async (req: Request, res: Response) => {
+  const access = await assertPupilDocAccess(req);
+  if (!access.ok) return res.status(access.status).json({ error: access.message });
+
+  const { pupilName, yearGroup, role, organisation, addressee, motivation, relevantExperience, skills, closing } = req.body || {};
+
+  const system = `You are an expert UK careers adviser who writes concise, specific cover letters for school-age students applying for work experience, apprenticeships, or Saturday jobs. Plain British English, professional tone, no filler.`;
+
+  const user = `Write a one-page cover letter for a UK school student.
+
+Pupil name: ${safeStr(pupilName, 120)}
+Year group: ${safeStr(yearGroup, 40)}
+Role applied for: ${safeStr(role, 200)}
+Organisation: ${safeStr(organisation, 200)}
+Addressed to: ${safeStr(addressee, 120) || "Hiring Manager"}
+
+Why the pupil wants this role:
+${safeStr(motivation, 1000)}
+
+Relevant experience:
+${safeStr(relevantExperience, 1200)}
+
+Skills they bring:
+${Array.isArray(skills) ? skills.map((s: any) => "- " + safeStr(s, 150)).join("\n") : safeStr(skills, 600)}
+
+Closing note:
+${safeStr(closing, 400)}
+
+OUTPUT RULES:
+- Plain prose with standard letter layout (placeholder address block at top, date, addressee, body, sign-off).
+- Use "Dear ${safeStr(addressee, 120) || "Hiring Manager"}," and end with "Yours sincerely" if the addressee is named, "Yours faithfully" otherwise.
+- Three body paragraphs: (1) what role you are applying for and why, (2) specific evidence you are a good fit, (3) courteous close with availability.
+- Maximum 350 words for the letter body (excluding address block).
+- British English. No markdown. No bullet points.
+- Do NOT invent facts beyond what is provided.
+- Return ONLY the letter.`;
+
+  try {
+    const { content, provider } = await callWithFallback(system, user, 1400, undefined, access.schoolId || undefined);
+    res.json({ content, provider });
+  } catch (err: any) {
+    console.error("Cover letter generation error:", err);
+    res.status(502).json({ error: "AI is temporarily unavailable. Please try again." });
   }
 });
 

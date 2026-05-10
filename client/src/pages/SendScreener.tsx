@@ -1095,22 +1095,29 @@ export default function SendScreener() {
             <div className="space-y-2.5">
               {RESPONSE_OPTIONS.map((opt) => {
                 const isSelected = currentAnswer === opt.value;
+                // Cosmetic progression dot — Never (green) → Always (red)
+                const dotColor = ["#10b981", "#84cc16", "#eab308", "#f97316", "#ef4444"][opt.value] || "#6366f1";
                 return (
                   <motion.button
                     key={opt.value}
                     onClick={() => handleAnswer(question.id, opt.value)}
                     whileTap={{ scale: 0.97 }}
-                    className={`w-full flex items-center gap-4 p-4 rounded-2xl border-2 text-left transition-all duration-150 ${
+                    className={`w-full flex items-center gap-3 p-4 rounded-2xl border-2 text-left transition-all duration-150 ${
                       isSelected
                         ? `${section.accentColor} border-transparent text-white shadow-lg`
                         : "bg-white border-gray-200 text-gray-700 hover:border-indigo-300 hover:bg-indigo-50 active:bg-indigo-100"
                     }`}
                   >
+                    <div
+                      className={`w-3 h-3 rounded-full flex-shrink-0 ring-2 ${isSelected ? "ring-white/60" : "ring-transparent"}`}
+                      style={{ background: isSelected ? "#fff" : dotColor }}
+                      aria-hidden
+                    />
                     <div className="flex-1">
                       <p className={`font-semibold text-sm ${isSelected ? "text-white" : "text-gray-900"}`}>
                         {opt.label}
                       </p>
-                      <p className={`text-xs mt-0.5 ${isSelected ? "text-white/80" : "text-gray-500"}`}>
+                      <p className={`text-xs mt-0.5 ${isSelected ? "text-white/85" : "text-gray-500"}`}>
                         {opt.description}
                       </p>
                     </div>
