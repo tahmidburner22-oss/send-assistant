@@ -11,6 +11,16 @@
 import { expandedMathTopics } from './mathTopicsExpanded';
 import { allTopics as worksheetAllTopics } from './worksheet-generator';
 
+// ─── Shared SEND + subject prompt fragments ─────────────────────────────────
+// These two modules own the per-SEND-need adaptation rules and the
+// per-subject palette / slide-structure rules that are used by BOTH the
+// worksheet generator (this file) and the presentation generator
+// (client/src/pages/tools/PresentationMaker.tsx). One source of truth
+// prevents the two generators drifting apart and guarantees content matches.
+import { getSendNoteForWorksheet, getSendSectionTitles } from './sendPromptFragments';
+import { buildSubjectPromptFragments } from './subject-profiles';
+import { enforceSendAdaptations } from './sendEnforcer';
+
 // ─── Built-in keys — hardcoded server-side fallback (always available) ────────
 // These are the admin keys used as fallback when no user key is provided.
 // The server-side /api/ai/generate endpoint uses these from env vars directly.
@@ -1115,104 +1125,17 @@ STRICT JSON OUTPUT: Respond with valid JSON only — no markdown, no code blocks
       })()
     : "";
   // ── Per-condition SEND scaffolding ─────────────────────────────────────────
+  // Source of truth is client/src/lib/sendPromptFragments.ts — the per-need
+  // rules there are a direct translation of send-data.ts worksheetChanges so
+  // what the AI is told matches what the teacher was promised in the UI.
   const hasSend = params.sendNeed && params.sendNeed !== "none" && params.sendNeed !== "none-selected" && params.sendNeed !== "general";
-  const sendNote = hasSend ? (() => {
-    const sn = params.sendNeed!.toLowerCase();
-    // Shared base for all SEND: always chunked, always numbered steps
-    const base = `THIS WORKSHEET IS ADAPTED FOR A STUDENT WITH ${params.sendNeed!.toUpperCase()}. Apply ALL of the following SEND rules throughout every section:`;
+  const sendNote = hasSend ? getSendNoteForWorksheet(params.sendNeed!) : "";
 
-    if (sn.includes("dyslexia")) return `${base}
-(1) Short sentences max 12 words. Bold every key term. Word Bank at top of each section (4–6 terms + definitions).
-(2) Every question = ONE sentence. Section A: sentence starter or answer frame per question (e.g. "The answer is ___ because ___"). Step-by-step method box before Section A.
-(3) Section B: 'Steps to follow' reminder at top. Answer frames (blanks/tables/starters) for ≥3 questions.
-(4) Generous line spacing. Each question on its own line. Tick-box 'I can' reflection.`;
-
-    if (sn.includes("dyscalculia")) return `${base}
-(1) ${isMaths ? "Section A: small whole numbers only (1–20). Break every question into sub-steps with blanks: 'Step 1: ___ Step 2: ___ Answer: ___'." : "Use very simple numerical data if numbers appear. Break every task into sub-steps with blanks."}
-(2) Key Facts box at top of Section B (formulas, number facts). Partially completed working shown for each question.
-(3) Worked example: every arithmetic step shown with WHY annotation. Word problems: 'What do I need to find?' prompt before each.
-(4) No timed pressure language. Tick-box reflection with 'Great / OK / Struggling' scale.`;
-
-    if (sn.includes("adhd")) return `${base}
-(1) [ ] checkbox next to every question. Max 3 questions in Section A, max 5 in Section B. 'STOP — check your work' after Section A.
-(2) Across the worksheet as a whole, use varied question SECTION TYPES (e.g. one calculation section, one fill-in section, one matching section, one true/false section). Do NOT add extra items to any individual section — each section keeps its standard number of questions/statements/options.
-(3) Bold the action word in every instruction. Numbered bullet points only — no embedded instructions. Max 5-step worked example.
-(4) After the midpoint question in Section B (e.g. after question 3 of 5), insert a standalone line: '🧠 BRAIN BREAK — stand up and stretch for 30 seconds before continuing!'
-(5) Challenge labelled 'BONUS — only if you want to!'. Reflection: 'How focused were you today? 1 / 2 / 3 / 4 / 5'.`;
-
-    if (sn.includes("asc") || sn.includes("autism") || sn.includes("asperger")) return `${base}
-(1) Literal, unambiguous language only — no idioms or figurative language (write 'calculate the value of x', not 'find x'). One word per concept — never mix synonyms.
-(2) Every section starts with 'What you need to do:' box listing exact steps. Fully worked identical example before Section A labelled 'EXAMPLE — follow these exact steps'.
-(3) Neutral, factual contexts only — no social/emotional scenarios. Consistent identical layout across every section.
-(4) Reflection: structured checklist 'I did: [checkbox] Section A [checkbox] Section B [checkbox] Challenge'.`;
-
-    if (sn.includes("mld") || sn.includes("moderate learning")) return `${base}
-(1) KS2 reading level. Short sentences. Fully completed model answer for Question 1. Concrete-pictorial-abstract progression in Section A.
-(2) Every Section A question: sentence starter, partial answer, or hint. 'Help Box' at top of Section B (key facts, formulas, vocabulary).
-(3) No multi-step problems in Section A. Section B: 2-step problems with sub-parts (a)(b). Worked example: full steps + partially completed second example.
-(4) Challenge labelled optional. Tick-box reflection with sentence starters.`;
-
-    if (sn.includes("slcn") || sn.includes("speech") || sn.includes("language") || sn.includes("communication")) return `${base}
-(1) Word Bank at start (max 8 terms, plain English definitions). Short sentences, subject-verb-object structure only.
-(2) Sentence frame for every question: 'The answer is ___ because ___'. Visual cues alongside every text question.
-(3) 'Key Words' reminder at top of Section B. Matching, labelling, or multiple-choice for ≥3 questions. At least 2 visual/diagram-based questions.
-(4) Numbered steps in worked example. Bold key action words. Reflection: 'I can ___ . I need to practise ___'.`;
-
-    if (sn.includes("anxiety") || sn.includes("mental health") || sn.includes("semh")) return `${base}
-(1) Section A labelled 'Warm-Up — no pressure!'. Section B labelled 'Main Practice — you've got this!'. Positive statement at start of each section.
-(2) Replace 'must'/'should'/'need to' with 'try to'/'have a go at'. Challenge labelled 'OPTIONAL BONUS — only if you want to!'.
-(3) 'Tip' box in each section. 'Take a break here if you need to' prompt midway. No timed pressure language.
-(4) Reflection: 'How are you feeling? Calm / OK / Anxious' check-in. 'I tried...' and 'I found...' sentence starters.`;
-
-    if (sn.includes("eal") || sn.includes("esl") || sn.includes("english as") || sn.includes("additional language")) return `${base}
-(1) Bilingual-friendly Word Bank at start. Every subject term defined in plain English. Short sentences, no idioms or UK-specific cultural references.
-(2) Sentence frame for every question. 'Key Phrases' box with useful academic language ('The answer is...', 'This shows that...').
-(3) At least 2 visual/diagram-based questions. 'Useful Words' reminder in Section B. Bold key instruction words.
-(4) Culturally neutral contexts. Minimal writing demands. Sentence starters for reflection.`;
-
-    if (sn.includes("dyspraxia") || sn.includes("dcd") || sn.includes("coordination")) return `${base}
-(1) Minimise handwriting. Use tick boxes, circle-the-answer, matching, and fill-in-the-blank formats. Large answer boxes throughout.
-(2) Section A: multiple-choice or matching for ≥3 questions. Section B: tables or structured answer frames — no extended writing.
-(3) Numbered bullet points for all instructions. Brief worked example steps (bullet points, not paragraphs).
-(4) Challenge optional and in a low-writing format (circle correct answer or draw a diagram).`;
-
-    if (sn.includes("vi") || sn.includes("visual impair")) return `${base}
-(1) Minimum 18pt equivalent text. Bold all headings. High-contrast formatting. Generous spacing — no cluttered layouts.
-(2) Every diagram described in words as well. No diagram-only questions. Text-based alternatives throughout.
-(3) Every worked example step written in full text — no reliance on diagrams. Questions numbered prominently.
-(4) Large answer spaces. Avoid small print, low-contrast text, or visually complex layouts.`;
-
-    if (sn.includes("hi") || sn.includes("hearing impair") || sn.includes("deaf")) return `${base}
-(1) All instructions written in full — no reliance on verbal explanation. Word Bank with all key terms defined.
-(2) Diagrams, tables, and visual aids throughout. Every question fully self-contained in writing.
-(3) Fully written worked example with clear annotations. No audio-dependent content.
-(4) Clear, structured layout easy to navigate independently.`;
-
-    if (sn.includes("pda") || sn.includes("odd")) return `${base}
-(1) Replace demands with invitations: 'You might like to try...' not 'Answer the following'. Section A: 'Explore — choose where to start'. Section B: 'Investigate'.
-(2) Offer 2 options per question where possible. Challenge: 'Secret Mission — if you choose to accept it'.
-(3) 'We' language throughout ('Let's look at...'). 'Take a break here if you need to' prompt midway.
-(4) No mandatory language, no timed pressure. Calm, uncluttered layout.`;
-
-    if (sn.includes("tourette")) return `${base}
-(1) Use multiple response formats — tick the answer, circle the correct word, fill in the blank, match with a line. Avoid requiring extended handwriting in any single section.
-(2) Add natural break points between questions: a short horizontal rule and the text 'Take a breath here if you need to.' after every 3 questions.
-(3) Calm, supportive, non-judgmental tone throughout. Remove all timed pressure language ('quickly', 'in 5 minutes', 'hurry'). No loud or urgent language.
-(4) Section A: maximum 4 questions with varied formats. Section B: short-answer format only. Challenge: circle or tick format.`;
-
-    if (sn.includes("older") || sn.includes("adult") || sn.includes("ks4") || sn.includes("ks5")) return `${base}
-(1) Use adult-appropriate, professional register throughout. Contexts must be real-world, relevant to age 14+: workplace, finance, media, current affairs, health, technology.
-(2) No childish language, no primary-school tone. 'Section A — Skills Practice', 'Section B — Application', 'Challenge — Extension Task'. Academic command words (analyse, evaluate, justify, assess).
-(3) Include a 'Study Tips' box at the start of Section A with 1-2 exam technique reminders. Worked example in academic style — similar to mark scheme exemplar answers.
-(4) Reflection: 'What went well?', 'What do I need to revise further?' — not traffic light circles.`;
-
-    // Default for any other SEND need
-    return `${base}
-(1) Simple language, short sentences, all technical terms defined. Word Bank at start.
-(2) Section A: sentence starter, hint, or partial answer for every question. Section B: 'Key Facts' box at top, varied question types.
-(3) Worked example: clearly numbered steps with annotations. Visual supports throughout.
-(4) Generous spacing, clear headings, tick-box or sentence-starter reflection.`;
-  })() : "";
+  // ── Subject profile (shared with the presentation generator) ──────────────
+  // Injecting the subject spec-anchor here is what keeps the worksheet and
+  // presentation generators producing matching spec-aligned content.
+  const subjectFragments = buildSubjectPromptFragments(params.subject);
+  const subjectSpecNote = `${subjectFragments.specAnchorBlock}\n\n${subjectFragments.domainRulesBlock}`;
 
   // ── Difficulty tier (secondary only) ─────────────────────────────────────
   const isSecondary = yearNum >= 7;
@@ -1691,17 +1614,12 @@ ABSOLUTE RULES:
     : "";
 
   // ── SEND section title overrides ─────────────────────────────────────────
-  // When SEND is active, rename sections to be less intimidating
-  const sendSectionTitles = hasSend ? (() => {
-    const sn = params.sendNeed!.toLowerCase();
-    if (sn.includes("anxiety") || sn.includes("mental health") || sn.includes("semh"))
-      return { sectionA: "Warm-Up — no pressure!", sectionB: "Main Practice — you've got this!", challenge: "OPTIONAL BONUS" };
-    if (sn.includes("pda") || sn.includes("odd"))
-      return { sectionA: "Explore — choose where to start", sectionB: "Investigate", challenge: "Secret Mission — if you choose to accept it" };
-    if (sn.includes("adhd"))
-      return { sectionA: "Section A — Quick Start (3 questions)", sectionB: "Section B — Main Practice (5 questions)", challenge: "BONUS — only if you want to!" };
-    return { sectionA: "Section A — Guided Practice", sectionB: "Section B — Core Practice", challenge: "Challenge Question" };
-  })() : { sectionA: "Section A — Guided Practice", sectionB: "Section B — Core Practice", challenge: "Challenge Question" };
+  // Delegated to client/src/lib/sendPromptFragments.ts so the generator,
+  // the server overlay engine, and the client enforcer all agree on the
+  // exact strings (otherwise the 3-Q cap enforcer cannot find "Section A").
+  const sendSectionTitles = hasSend
+    ? getSendSectionTitles(params.sendNeed!)
+    : { sectionA: "Section A — Guided Practice", sectionB: "Section B — Core Practice", challenge: "Challenge Question" };
 
   // ── Exam-style instruction ────────────────────────────────────────────────
   const examStyleNote = params.examStyle
@@ -1921,6 +1839,7 @@ SUBJECT-SPECIFIC RULES — ${params.subject.toUpperCase()}:
 SUBJECT TYPE: ${isSTEM ? 'STEM' : 'HUMANITIES'} | SUBJECT: ${params.subject}
 ${readingAgeNote}
 ${sendNote}
+${subjectSpecNote}
 ${tierNote}
 ${ksGcseNote}
 ${subjectSpecificRules}
@@ -2176,7 +2095,12 @@ Return EXACTLY this JSON (raw JSON only, no markdown fences):
           sendNeed: params.sendNeed || undefined,
         };
       }
-      return { ...structuredJson, isAI: true, provider: structuredProvider };
+      // ── SEND enforcer: deterministic post-process that guarantees the
+      // adaptations the UI promised (ADHD inline checkboxes, 3-Q cap, brain
+      // break, etc.) actually appear — even if the LLM skipped them. Runs on
+      // the structured (primary) path before the overlay engine sees it.
+      const enforcedStructured = enforceSendAdaptations(structuredJson, params.sendNeed);
+      return { ...enforcedStructured.worksheet, isAI: true, provider: structuredProvider };
     }
     // If structured generation failed, fall through to legacy path
   }
@@ -2189,6 +2113,7 @@ ${readingAgeNote}
 ${primaryLayoutNote}
 ${mathsNote}
 ${sendNote}
+${subjectSpecNote}
 ${tierNote}
 ${examStyleNote}
 ${formulaNote} ${reminderBoxNote} ${wordProblemsNote} ${commonMistakesNote}
@@ -2830,7 +2755,13 @@ Return EXACTLY this JSON (raw JSON only):
     (result.metadata as any).qualityIssues = qualityIssues;
   }
 
-  return result;
+  // ── SEND enforcer: final defensive pass before we hand the worksheet to
+  //    the overlay engine. Guarantees ADHD inline checkboxes, 3-Q / 5-Q caps,
+  //    bolded action verbs and a BRAIN BREAK mid-Section-B; strips dyslexia
+  //    italics from question text. No-op for other SEND needs (their rules
+  //    are fully delegated to the prompt + server overlay).
+  const legacyEnforced = enforceSendAdaptations(result, params.sendNeed);
+  return legacyEnforced.worksheet as AIWorksheetResult;
 }
 
 export async function aiGenerateStory(params: {

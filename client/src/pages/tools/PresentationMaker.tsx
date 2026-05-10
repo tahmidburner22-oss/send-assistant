@@ -30,6 +30,8 @@ import { useLocation } from "wouter";
 
 import { FunFactsCarousel } from "@/components/FunFactsCarousel";
 import { resolvePresentationTemplate } from "@/lib/presentation-templates";
+import { buildSubjectPromptFragments } from "@/lib/subject-profiles";
+import { getSendNoteForPresentation, resolveSendSpec } from "@/lib/sendPromptFragments";
 import { z } from "zod";
 
 // ─── Zod schema for AI-generated slide validation ────────────────────────────
@@ -520,13 +522,24 @@ function buildSlidePrompt(params: {
     `  Slide ${i + 1}: "${type}" — ${bloomsMap[type] || "APPLY"}`
   ).join("\n");
 
-  const sendNote = sendNeeds ? `
-SEND ADAPTATIONS (apply throughout):
-- ${sendNeeds}
-- Use clear, unambiguous language
-- Chunk information into small steps
-- Include sentence starters where appropriate
-- Reduce cognitive load: max 3 bullets per slide for SEND pupils` : "";
+  // ── Subject profile (SHARED with the worksheet generator) ──────────────
+  // buildSubjectPromptFragments returns palette + slide structure + domain
+  // rules + a spec anchor, keyed off the subject. Using the SAME helper in
+  // both tools is how we keep presentation content and worksheet content
+  // anchored to the same UK GCSE specification for a given topic.
+  const subjectFragments = buildSubjectPromptFragments(subject);
+
+  // ── SEND adaptation (SHARED with the worksheet generator) ─────────────
+  // getSendNoteForPresentation reads from client/src/lib/sendPromptFragments.ts
+  // — the single source of truth for every SEND need's rules. This replaces
+  // a fragile one-line-per-need map with the full, evidence-based rule set
+  // that the worksheet already honours.
+  const sendNote = sendNeeds ? getSendNoteForPresentation(sendNeeds) : "";
+
+  // If the SEND need imposes a "max N bullets per slide" cap we also surface
+  // it here so the LLM can't ignore it as "flavour text".
+  const sendSpec = resolveSendSpec(sendNeeds);
+  const sendHardCap = sendSpec ? `\nSEND HARD CAP (non-negotiable): Every slide in this deck MUST comply with the ${sendSpec.name} rules above. No exceptions — the deck will be rejected and regenerated if any slide breaks them.` : "";
 
   const readingAgeNote = readingAge ? `
 READING AGE TARGET: ${READING_AGE_LABELS[readingAge] || `Age ${readingAge}`}
@@ -550,6 +563,25 @@ PRESENTATION TEMPLATE: ${template.label}
 - Follow this presentation style strictly.
 - Preferred image style: ${template.imageStyle}.
 ${template.promptAdditions.map(line => `- ${line}`).join("\n")}`;
+
+  // Subject-specific design + content anchors. paletteBlock informs colour
+  // choices, slideStructureBlock is a 12-slide plan tuned to the discipline
+  // (only used as GUIDANCE — the authoritative plan is still `planDescription`
+  // below), and domainRulesBlock + specAnchorBlock force the LLM to use
+  // real spec points and discipline-appropriate conventions (e.g. Consolas
+  // for maths formulae, state symbols for chemistry equations).
+  const subjectNote = `
+SUBJECT PROFILE — ${subjectFragments.profile.label.toUpperCase()}
+
+${subjectFragments.paletteBlock}
+
+${subjectFragments.domainRulesBlock}
+
+${subjectFragments.specAnchorBlock}
+
+Additional slide-design guidance for this subject (may be blended with the plan below):
+${subjectFragments.slideStructureBlock}
+`;
 
   const system = `You are an expert UK teacher and curriculum designer. You create outstanding, Ofsted-ready lesson presentations that follow best pedagogical practice: Rosenshine's Principles, Bloom's Taxonomy, retrieval practice, and spaced learning.
 
@@ -622,9 +654,11 @@ SLIDE COUNT: ${slideCount}
 ${objectives ? `LEARNING OBJECTIVES: ${objectives}` : ""}
 ${additionalNotes ? `ADDITIONAL NOTES: ${additionalNotes}` : ""}
 ${sendNote}
+${sendHardCap}
 ${readingAgeNote}
 ${examBoardNote}
 ${diffNote}
+${subjectNote}
 ${templateNote}
 
 SLIDE PLAN (follow this EXACTLY — do not change the order or types):
@@ -2114,16 +2148,25 @@ export default function PresentationMaker() {
   };
 
   // ── SEND Adaptation ──────────────────────────────────────────────────────────
+  // Values below align to the canonical SEND spec ids used across the app
+  // (client/src/lib/sendPromptFragments.ts). Using the same ids means the
+  // worksheet generator and the presentation generator apply the SAME
+  // evidence-based adaptations for a given need — no silent drift.
   const SEND_NEEDS_OPTIONS = [
     { value: "dyslexia", label: "Dyslexia" },
-    { value: "autism", label: "Autism / ASD" },
-    { value: "adhd", label: "ADHD" },
-    { value: "eal", label: "EAL (English as Additional Language)" },
-    { value: "visual-impairment", label: "Visual Impairment" },
-    { value: "hearing-impairment", label: "Hearing Impairment" },
     { value: "dyscalculia", label: "Dyscalculia" },
-    { value: "low-literacy", label: "Low Literacy / Below Expected Level" },
-    { value: "complex-needs", label: "Complex / Multiple Needs" },
+    { value: "adhd", label: "ADHD" },
+    { value: "asc", label: "Autism Spectrum Condition (ASC)" },
+    { value: "mld", label: "Moderate Learning Difficulties (MLD)" },
+    { value: "slcn", label: "Speech, Language & Communication Needs (SLCN)" },
+    { value: "anxiety", label: "Anxiety / SEMH" },
+    { value: "dyspraxia", label: "Dyspraxia / DCD" },
+    { value: "vi", label: "Visual Impairment" },
+    { value: "hi", label: "Hearing Impairment" },
+    { value: "eal", label: "EAL (English as Additional Language)" },
+    { value: "pda-odd", label: "PDA / ODD" },
+    { value: "tourettes", label: "Tourette's Syndrome" },
+    { value: "older-learners", label: "Older Learners (KS3/KS4/KS5)" },
   ];
 
   const handleAdaptForSend = async () => {
@@ -2151,19 +2194,15 @@ export default function PresentationMaker() {
 
       const systemPrompt = `You are an expert UK SEND teacher adapting a lesson presentation for pupils with ${needLabel}.
 Adapt the text of each slide to be more accessible for this specific need while keeping the same structure and slide types.
+
+${getSendNoteForPresentation(sendAdaptNeed) || `For "${needLabel}": reduce cognitive load, chunk information, use clear simple language, and add support cues appropriate to the need.`}
+
 Rules:
 - Return ONLY valid JSON matching the input structure exactly
 - Keep all fields that were not present as null/undefined
-- For "${needLabel}": ${
-  sendAdaptNeed === "dyslexia" ? "Use shorter sentences, remove unnecessary words, use active voice, add whitespace between bullets, avoid italics/ALL CAPS" :
-  sendAdaptNeed === "autism" ? "Be literal and explicit, avoid metaphors/idioms, use precise language, add clear structure cues like 'First:', 'Next:', 'Finally:'" :
-  sendAdaptNeed === "adhd" ? "Use very short punchy sentences, add action words, keep bullets to 3 max, make instructions crystal clear and numbered" :
-  sendAdaptNeed === "eal" ? "Use simple common vocabulary, avoid idioms and colloquialisms, define key terms in plain English, use visual cue words" :
-  sendAdaptNeed === "low-literacy" ? "Use the simplest possible vocabulary, max 5 words per bullet, short sentences, concrete examples only" :
-  "Reduce cognitive load, chunk information, use clear simple language, add support cues"
-}
-- Preserve the pedagogical intent of each slide
-- Adapt titles, bullets, body, question, steps, terms definitions, retrievalQuestions, and speakerNotes`;
+- Preserve the pedagogical intent of each slide and the academic rigour
+- Adapt titles, bullets, body, question, steps, terms definitions, retrievalQuestions, and speakerNotes
+- Do NOT change the slide types or the index order`;
 
       const userPrompt = `Adapt these ${presentation.slides.length} slides for pupils with ${needLabel}.
 Input slides JSON:
