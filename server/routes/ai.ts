@@ -3217,7 +3217,7 @@ router.post("/presentation/email", requireAuth, async (req: Request, res: Respon
 // ──────────────────────────────────────────────────────────────────────────────
 
 async function assertPupilDocAccess(req: Request): Promise<{ ok: true; schoolId: string | null } | { ok: false; status: number; message: string }> {
-  // If teacher is authenticated, allow.
+  // If teacher is authenticated, allow. (req.user is only set after requireAuth.)
   if (req.user?.id) return { ok: true, schoolId: req.user.schoolId || null };
   // Otherwise require a parent code matching a real pupil.
   const parentCode = (req.headers["x-parent-code"] as string || "").trim().toUpperCase();
@@ -3227,13 +3227,44 @@ async function assertPupilDocAccess(req: Request): Promise<{ ok: true; schoolId:
   return { ok: true, schoolId: pupil.school_id || null };
 }
 
+/**
+ * Lightweight middleware: try to authenticate via JWT. If no token is present,
+ * do not block — continue to the route and let it check X-Parent-Code instead.
+ * If a token IS present but invalid, still continue (route will fall back).
+ */
+async function tryAuthForDocs(req: Request, res: Response, next: () => void) {
+  const hasCookie = typeof req.headers.cookie === "string" && /(?:^|;\s*)token=/.test(req.headers.cookie);
+  const hasAuthHeader = typeof req.headers.authorization === "string" && req.headers.authorization.startsWith("Bearer ");
+  if (!hasCookie && !hasAuthHeader) return next();
+
+  const originalStatus = res.status.bind(res);
+  const originalJson = res.json.bind(res);
+  let intercepted = false;
+  (res as any).status = (code: number) => {
+    if (code === 401 || code === 403) { intercepted = true; return { json: () => res }; }
+    return originalStatus(code);
+  };
+  (res as any).json = (body: unknown) => {
+    if (intercepted) return res;
+    return originalJson(body);
+  };
+  try {
+    await new Promise<void>((resolve) => { requireAuth(req, res, (() => resolve()) as any); });
+  } catch { /* ignore */ }
+  finally {
+    (res as any).status = originalStatus;
+    (res as any).json = originalJson;
+  }
+  next();
+}
+
 function safeStr(v: any, max = 400): string {
   if (v == null) return "";
   return String(v).slice(0, max);
 }
 
 // ── POST /api/ai/cv — generate a polished single-page CV ─────────────────────
-router.post("/cv", async (req: Request, res: Response) => {
+router.post("/cv", tryAuthForDocs, async (req: Request, res: Response) => {
   const access = await assertPupilDocAccess(req);
   if (!access.ok) return res.status(access.status).json({ error: access.message });
 
@@ -3297,7 +3328,7 @@ OUTPUT RULES — follow strictly:
 });
 
 // ── POST /api/ai/personal-statement ──────────────────────────────────────────
-router.post("/personal-statement", async (req: Request, res: Response) => {
+router.post("/personal-statement", tryAuthForDocs, async (req: Request, res: Response) => {
   const access = await assertPupilDocAccess(req);
   if (!access.ok) return res.status(access.status).json({ error: access.message });
 
@@ -3354,7 +3385,7 @@ OUTPUT RULES — follow strictly:
 });
 
 // ── POST /api/ai/cover-letter ────────────────────────────────────────────────
-router.post("/cover-letter", async (req: Request, res: Response) => {
+router.post("/cover-letter", tryAuthForDocs, async (req: Request, res: Response) => {
   const access = await assertPupilDocAccess(req);
   if (!access.ok) return res.status(access.status).json({ error: access.message });
 

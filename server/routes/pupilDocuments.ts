@@ -45,16 +45,43 @@ async function resolvePupilAccess(req: Request): Promise<
 }
 
 // Parent routes don't require requireAuth (they use x-parent-code). Teacher
-// routes go through requireAuth. To support both seamlessly we use a light
-// wrapper that tries auth but doesn't fail when it's missing.
-async function tryAuth(req: Request, _res: Response, next: () => void) {
+// routes need a valid session. We try to authenticate without responding on
+// failure — if no valid token is present, req.user stays undefined and the
+// parent-code path is tried instead.
+async function tryAuth(req: Request, res: Response, next: () => void) {
+  // Only attempt JWT-based auth if there's a token. We can't call requireAuth
+  // directly because it responds with 401 on failure, which would prevent the
+  // parent-code fallback from running.
+  const hasCookie = typeof req.headers.cookie === "string" && /(?:^|;\s*)token=/.test(req.headers.cookie);
+  const hasAuthHeader = typeof req.headers.authorization === "string" && req.headers.authorization.startsWith("Bearer ");
+
+  if (!hasCookie && !hasAuthHeader) {
+    // No token provided — skip straight to parent-code fallback
+    return next();
+  }
+
+  // Create a fake response that swallows 401s so requireAuth doesn't short-circuit
+  const originalStatus = res.status.bind(res);
+  const originalJson = res.json.bind(res);
+  let intercepted = false;
+  (res as any).status = (code: number) => {
+    if (code === 401 || code === 403) { intercepted = true; return { json: () => res }; }
+    return originalStatus(code);
+  };
+  (res as any).json = (body: unknown) => {
+    if (intercepted) { return res; }
+    return originalJson(body);
+  };
+
   try {
-    // requireAuth will set req.user if cookie is valid, or call next(error) otherwise
-    await new Promise<void>((resolve, reject) => {
-      requireAuth(req, _res, (err?: any) => (err ? reject(err) : resolve()));
+    await new Promise<void>((resolve) => {
+      requireAuth(req, res, (() => resolve()) as any);
     });
   } catch {
-    // fall through with req.user undefined — parent code will be checked instead
+    /* ignore */
+  } finally {
+    (res as any).status = originalStatus;
+    (res as any).json = originalJson;
   }
   next();
 }

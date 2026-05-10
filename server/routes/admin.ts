@@ -644,3 +644,51 @@ router.get("/school-usage-trend", requireAuth, async (req: Request, res: Respons
     res.status(500).json({ error: err.message });
   }
 });
+
+
+
+// ── GET /api/admin/email/health — email config + recent attempts ─────────────
+// Admin-only. Does NOT expose RESEND_API_KEY — only whether it is set.
+router.get("/email/health", requireAuth, requireAdmin, async (_req: Request, res: Response) => {
+  const { getRecentEmailAttempts } = await import("../email/index.js");
+  const config = {
+    resendApiKeySet: Boolean(process.env.RESEND_API_KEY),
+    emailFrom: process.env.EMAIL_FROM || "Adaptly <noreply@send.adaptly.co.uk>",
+    appUrl: process.env.APP_URL || "(not set — links will use http://localhost:5173)",
+    nodeEnv: process.env.NODE_ENV || "development",
+    isDev: process.env.NODE_ENV !== "production",
+  };
+  const recent = getRecentEmailAttempts();
+
+  // Summarise last-24h counts by status
+  const cutoff = Date.now() - 24 * 60 * 60 * 1000;
+  const last24h = recent.filter(a => new Date(a.at).getTime() >= cutoff);
+  const counts = last24h.reduce<Record<string, number>>((acc, a) => {
+    acc[a.status] = (acc[a.status] || 0) + 1;
+    return acc;
+  }, {});
+
+  // Also pull last 20 persisted attempts from audit_logs so the page shows
+  // history across restarts.
+  let persisted: any[] = [];
+  try {
+    persisted = await db.prepare(
+      `SELECT id, details, created_at
+       FROM audit_logs
+       WHERE action = 'email.send'
+       ORDER BY created_at DESC
+       LIMIT 20`
+    ).all() as any[];
+  } catch (_) {}
+
+  res.json({
+    config,
+    last24hCounts: counts,
+    recent,
+    persisted: persisted.map(r => {
+      let d: any = {};
+      try { d = r.details ? JSON.parse(r.details) : {}; } catch {}
+      return { id: r.id, at: r.created_at, ...d };
+    }),
+  });
+});
