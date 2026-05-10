@@ -395,6 +395,68 @@ async function callHuggingFace(systemPrompt: string, userPrompt: string, maxToke
 
 export type AIProvider = "groq" | "gemini" | "openrouter" | "openai" | "claude" | "huggingface";
 
+// ─── Messages-array variant ──────────────────────────────────────────────────
+// Some tools (e.g. the Presentation Maker refinement flow) need multi-turn
+// conversation history so the AI can remember context across "refine slide N"
+// requests. `callAI` still takes (system, user, maxTokens) for every other
+// caller — `callAIMessages` is a thin parallel surface that accepts a full
+// messages array and routes it through the same server endpoint. The server
+// already accepts a `messages` array, so no server change is needed.
+export interface AIChatMessage {
+  role: "system" | "user" | "assistant";
+  content: string;
+}
+
+export async function callAIMessages(
+  messages: AIChatMessage[],
+  maxTokens = 2000
+): Promise<{ text: string; provider: AIProvider }> {
+  // Derive (systemPrompt, userPrompt) for the single-prompt providers in the
+  // fallback branch. System = all system messages concatenated. User =
+  // concatenation of every subsequent turn rendered as "USER: …" / "ASSISTANT: …".
+  const systemParts = messages.filter(m => m.role === "system").map(m => m.content);
+  const conversation = messages.filter(m => m.role !== "system");
+  const systemPrompt = systemParts.join("\n\n");
+  const userPrompt = conversation
+    .map(m => (m.role === "user" ? `USER: ${m.content}` : `ASSISTANT: ${m.content}`))
+    .join("\n\n");
+
+  try {
+    const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    const timeoutId = controller ? window.setTimeout(() => controller.abort(), 55000) : null;
+    const res = await fetch("/api/ai/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      signal: controller?.signal,
+      // Send BOTH shapes so the server can use messages[] (preferred) but
+      // falls back to prompt/systemPrompt for older server builds.
+      body: JSON.stringify({ messages, prompt: userPrompt, systemPrompt, maxTokens }),
+    });
+    if (timeoutId) window.clearTimeout(timeoutId);
+    if (res.ok) {
+      const data = await res.json();
+      const content = data.content || data.text;
+      if (content) return { text: content, provider: (data.provider || "groq") as AIProvider };
+    }
+    if (res.status === 401 || res.status === 403) {
+      const errData = await res.json().catch(() => ({})) as any;
+      throw new Error(`AUTH_REQUIRED: ${errData?.error || "Session expired. Please log in again."}`);
+    }
+    if (res.status === 503) {
+      const errData = await res.json().catch(() => ({})) as any;
+      if (errData?.noKeysConfigured) throw new Error(errData.error || "No AI provider keys configured.");
+    }
+  } catch (serverErr: any) {
+    if (serverErr?.message?.startsWith('AUTH_REQUIRED') || serverErr?.message?.includes("No AI provider keys configured")) {
+      throw serverErr;
+    }
+    console.warn("[Adaptly AI] callAIMessages server error:", serverErr?.message);
+  }
+  // Client-keys fallback: collapses the conversation into a single prompt.
+  return callAI(systemPrompt, userPrompt, maxTokens);
+}
+
 export async function callAI(
   systemPrompt: string,
   userPrompt: string,

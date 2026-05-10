@@ -19,36 +19,56 @@ import {
   ArrowRight, List, Copy, Check, Plus, Users, AlertCircle,
   Pencil, Zap, Edit3, Calculator, GraduationCap, Sliders,
   Printer, Mail, Save, Maximize2, X, ChevronUp, ChevronDown,
-  Accessibility, Trash2, MoreVertical,
+  Trash2, MoreVertical,
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Slider } from "@/components/ui/slider";
-import { callAI } from "@/lib/ai";
+import { callAI, callAIMessages, type AIChatMessage } from "@/lib/ai";
 import { useApp } from "@/contexts/AppContext";
 import { useLocation } from "wouter";
 
 import { FunFactsCarousel } from "@/components/FunFactsCarousel";
 import { resolvePresentationTemplate } from "@/lib/presentation-templates";
 import { buildSubjectPromptFragments } from "@/lib/subject-profiles";
-import { getSendNoteForPresentation, resolveSendSpec } from "@/lib/sendPromptFragments";
+import { resolveSendSpecs, composeSendNoteForPresentation, getSendReadingAgeCeiling, getAppliedAdaptations, getSendThemeOverride } from "@/lib/sendPromptFragments";
 import { z } from "zod";
 
 // ─── Zod schema for AI-generated slide validation ────────────────────────────
+// Slide type enum. New types for the teacher-framework:
+//   vocab-reference   — full glossary table (replaces/augments key-terms for revision decks)
+//   model-answer      — annotated exemplar showing mark-scheme points
+//   exam-practice     — timed exam question card with mark allocation + command word
+//   brain-break       — ADHD mid-deck "stand up and stretch" slide
+//   checkin           — Anxiety/SEMH emoji feelings check-in
+//   method-steps      — Dyslexia/Dyscalculia "Step-by-step method" reference
+//   help-box          — MLD key-facts reference panel
+//   word-bank         — SLCN/EAL vocabulary strip with plain-English definitions
+//   take-a-break      — PDA/Anxiety/Tourette's break slide
+const SlideTypeEnum = z.enum([
+  "title","learning-objectives","hook","content","key-terms","worked-example",
+  "activity","discussion","check-understanding","summary","exit-ticket","extension",
+  "retrieval-warm-up","misconception-bust","exam-technique","real-world-link",
+  "think-pair-share","mini-quiz","diagram-label","pause-and-solve",
+  // Teacher-framework additions
+  "vocab-reference","model-answer","exam-practice",
+  // SEND-native slide types (inserted by the prompt when specific needs apply)
+  "brain-break","checkin","method-steps","help-box","word-bank","take-a-break",
+  // Primary-school types (already supported by the renderer)
+  "story-time","draw-it","sort-it","match-it","fill-the-gap","spot-the-mistake","number-talk",
+]);
+
 const SlideContentSchema = z.object({
-  type: z.enum(["title","learning-objectives","hook","content","key-terms","worked-example",
-    "activity","discussion","check-understanding","summary","exit-ticket","extension",
-    "retrieval-warm-up","misconception-bust","exam-technique","real-world-link",
-    "think-pair-share","mini-quiz","diagram-label","pause-and-solve"]),
+  type: SlideTypeEnum,
   title: z.string().min(1).max(200),
   subtitle: z.string().max(300).optional(),
-  bullets: z.array(z.string().min(1).max(500)).max(8).optional(),
+  bullets: z.array(z.string().min(1).max(500)).max(10).optional(),
   body: z.string().max(2000).optional(),
   terms: z.array(z.object({ term: z.string().min(1), definition: z.string().min(1) })).max(20).optional(),
   question: z.string().max(1000).optional(),
   options: z.array(z.string().min(1)).max(6).optional(),
   answer: z.string().max(500).optional(),
-  steps: z.array(z.string().min(1)).max(10).optional(),
+  steps: z.array(z.string().min(1)).max(12).optional(),
   misconception: z.string().max(500).optional(),
   correction: z.string().max(500).optional(),
   retrievalQuestions: z.array(z.string().min(1)).max(8).optional(),
@@ -65,6 +85,75 @@ const SlideContentSchema = z.object({
   attribution: z.string().max(200).optional(),
   accent: z.string().max(50).optional(),
   speakerNotes: z.string().max(2000).optional(),
+
+  // ── Teacher-framework content fields ───────────────────────────────────────
+  /** Timing chip shown top-right. "5" becomes "⏱ 5 min". */
+  timingMinutes: z.number().int().min(1).max(60).optional(),
+  /** Learning-objectives banding (must/should/could). */
+  successCriteria: z.object({
+    must: z.string().max(300),
+    should: z.string().max(300),
+    could: z.string().max(300),
+  }).optional(),
+  /** Structured worked example — renders as a bordered box with distinct steps. */
+  workedExampleBox: z.object({
+    problem: z.string().max(500),
+    steps: z.array(z.string().min(1).max(300)).min(1).max(8),
+    answer: z.string().max(300),
+    units: z.string().max(50).optional(),
+    commonError: z.string().max(300).optional(),
+  }).optional(),
+  /** Full vocabulary reference table (vocab-reference slide). */
+  vocabTable: z.array(z.object({
+    term: z.string().min(1).max(80),
+    definition: z.string().min(1).max(240),
+    example: z.string().max(200).optional(),
+  })).max(16).optional(),
+  /** Mark-scheme annotations for model-answer slides. */
+  markScheme: z.array(z.object({
+    point: z.string().min(1).max(300),
+    marks: z.number().int().min(1).max(10),
+  })).max(12).optional(),
+  /** Exam-practice question structure. */
+  examQuestion: z.object({
+    stem: z.string().max(1000),
+    marks: z.number().int().min(1).max(30),
+    timeMins: z.number().int().min(1).max(60).optional(),
+    commandWord: z.string().max(40).optional(),
+  }).optional(),
+  /** Per-slide differentiation variants. */
+  differentiation: z.object({
+    support: z.string().max(500).optional(),
+    core: z.string().max(500).optional(),
+    extension: z.string().max(500).optional(),
+  }).optional(),
+
+  // ── SEND-structured fields (rendered as distinct boxes) ────────────────────
+  /** ASC / Asperger "What you need to do:" box (numbered steps). */
+  whatYouNeedToDo: z.array(z.string().min(1).max(200)).max(8).optional(),
+  /** SLCN / EAL / MLD word bank shown at the top of the slide. */
+  wordBank: z.array(z.object({
+    term: z.string().min(1).max(60),
+    definition: z.string().min(1).max(200),
+  })).max(8).optional(),
+  /** SLCN / Dyslexia sentence starter shown underneath a question. */
+  sentenceStarter: z.string().max(200).optional(),
+  /** SLCN / MLD "The answer is ___ because ___" answer frame. */
+  answerFrame: z.string().max(200).optional(),
+  /** Dyslexia / Dyscalculia method reference steps. */
+  methodSteps: z.array(z.string().min(1).max(200)).max(8).optional(),
+  /** MLD help-box key facts (formulas, number bonds, reminders). */
+  helpBox: z.array(z.string().min(1).max(200)).max(8).optional(),
+  /** ASC / Tourette's completion checklist (renders as tick boxes). */
+  completionChecklist: z.array(z.string().min(1).max(200)).max(8).optional(),
+  /** SLCN / EAL visual-cue label (arrow, icon, diagram reference). */
+  visualCue: z.string().max(200).optional(),
+  /** PDA / Anxiety label override — "BONUS", "Secret Mission", "Optional". */
+  bonusLabel: z.string().max(60).optional(),
+  /** ADHD bolded action verb surfaced at the top of activity slides. */
+  actionVerb: z.string().max(40).optional(),
+  /** ADHD visible-checkbox flag (render `[ ]` in front of every bullet). */
+  visibleCheckboxes: z.boolean().optional(),
 });
 
 const PresentationDataSchema = z.object({
@@ -78,11 +167,10 @@ const PresentationDataSchema = z.object({
 });
 
 // ─── Types ───────────────────────────────────────────────────────────────────
+export type SlideType = z.infer<typeof SlideTypeEnum>;
+
 export interface SlideContent {
-  type: "title" | "learning-objectives" | "hook" | "content" | "key-terms" | "worked-example"
-    | "activity" | "discussion" | "check-understanding" | "summary" | "exit-ticket" | "extension"
-    | "retrieval-warm-up" | "misconception-bust" | "exam-technique" | "real-world-link"
-    | "think-pair-share" | "mini-quiz" | "diagram-label" | "pause-and-solve";
+  type: SlideType;
   title: string;
   subtitle?: string;
   bullets?: string[];
@@ -113,6 +201,34 @@ export interface SlideContent {
   attribution?: string;
   accent?: string;
   speakerNotes?: string;
+
+  // Teacher-framework content fields
+  timingMinutes?: number;
+  successCriteria?: { must: string; should: string; could: string };
+  workedExampleBox?: {
+    problem: string;
+    steps: string[];
+    answer: string;
+    units?: string;
+    commonError?: string;
+  };
+  vocabTable?: { term: string; definition: string; example?: string }[];
+  markScheme?: { point: string; marks: number }[];
+  examQuestion?: { stem: string; marks: number; timeMins?: number; commandWord?: string };
+  differentiation?: { support?: string; core?: string; extension?: string };
+
+  // SEND-structured fields
+  whatYouNeedToDo?: string[];
+  wordBank?: { term: string; definition: string }[];
+  sentenceStarter?: string;
+  answerFrame?: string;
+  methodSteps?: string[];
+  helpBox?: string[];
+  completionChecklist?: string[];
+  visualCue?: string;
+  bonusLabel?: string;
+  actionVerb?: string;
+  visibleCheckboxes?: boolean;
 }
 
 export interface PresentationData {
@@ -230,6 +346,113 @@ const THEMES = {
 };
 type ThemeKey = keyof typeof THEMES;
 
+// ─── SEND-aware theme composer ───────────────────────────────────────────────
+// Layers SEND-driven overrides on top of the teacher-chosen base theme. This
+// is the single function both FullSlideView and exportToPptx call when
+// rendering, so the preview and the exported .pptx always match.
+//
+// The stricter access requirement wins when multiple needs disagree (e.g. if
+// both Dyslexia and VI are selected, VI's high-contrast rules take priority
+// because removing the visual-access barrier is the more urgent constraint).
+export interface ComposedTheme {
+  name: string;
+  primary: string;
+  secondary: string;
+  accent: string;
+  bg: string;
+  text: string;
+  light: string;
+  gradient: string;
+  /** Font to use for body text — overrides the default. */
+  fontFamily?: string;
+  /** Min body font size in pt (for PPTX export). */
+  minBodyPt?: number;
+  /** Min title font size in pt (for PPTX export). */
+  minTitlePt?: number;
+  /** Line-height multiplier for on-screen. */
+  lineHeight?: number;
+  /** True when a SEND need imposes high-contrast mode. */
+  highContrast?: boolean;
+  /** True when red alarm colours are banned (substitute with amber). */
+  banAlarmRed?: boolean;
+  /** True when activity/challenge slides should use invitational labels. */
+  invitationalLabels?: boolean;
+  /** List of applied SEND spec names for the "adaptations applied" banner. */
+  appliedSendNames: string[];
+}
+
+export function composeTheme(
+  baseKey: ThemeKey,
+  sendNeeds: string[] | string | null | undefined,
+): ComposedTheme {
+  const base = THEMES[baseKey];
+  const override = getSendThemeOverride(sendNeeds);
+  const applied = resolveSendSpecs(sendNeeds).map(s => s.name);
+
+  // Start from the base theme and layer SEND overrides on top.
+  let primary = base.primary;
+  let secondary = base.secondary;
+  let accent = base.accent;
+  let bg = base.bg;
+  let text = base.text;
+  let light = base.light;
+  let gradient = base.gradient;
+
+  // Dyslexia: cream background + dark text for BDA readability.
+  if (override.bg) bg = override.bg;
+  if (override.text) text = override.text;
+
+  // VI high-contrast: black-on-white regardless of base theme. Also widen the
+  // `light` container so it doesn't wash out text.
+  if (override.highContrast) {
+    bg = "#FFFFFF";
+    text = "#000000";
+    light = "#F4F4F4";
+    // Force the primary/secondary to very dark for the header bars/titles
+    primary = "#0A0A0A";
+    secondary = "#1F2937";
+    gradient = "linear-gradient(135deg, #0A0A0A 0%, #1F2937 100%)";
+  }
+
+  // Anxiety / PDA / Tourette's soft palette: replace any red accent with amber.
+  if (override.banAlarmRed) {
+    if (/^#?[eE][0-9a-fA-F]{2}[0-9a-fA-F][0-9a-fA-F]/.test(accent) || accent.toLowerCase().startsWith("#e11d48") || accent.toLowerCase().startsWith("#dc2626")) {
+      accent = "#F59E0B";
+    }
+  }
+  if (override.softPalette) {
+    // Push primary towards its lighter sibling if it's currently a strong red.
+    if (primary.toLowerCase() === "#881337" || primary.toLowerCase() === "#dc2626") {
+      primary = "#7C3AED";
+      gradient = "linear-gradient(135deg, #7C3AED 0%, #A78BFA 100%)";
+    }
+  }
+
+  return {
+    name: base.name,
+    primary,
+    secondary,
+    accent,
+    bg,
+    text,
+    light,
+    gradient,
+    fontFamily: override.fontFamily,
+    minBodyPt: override.minBodyPt,
+    minTitlePt: override.minTitlePt,
+    lineHeight: override.lineHeight,
+    highContrast: override.highContrast,
+    banAlarmRed: override.banAlarmRed,
+    invitationalLabels: override.invitationalLabels,
+    appliedSendNames: applied,
+  };
+}
+
+// Build the PPTX font-family string pptxgenjs accepts.
+function themeFontFamily(theme: ComposedTheme): string {
+  return theme.fontFamily || "Calibri";
+}
+
 // ─── Slide type icons ────────────────────────────────────────────────────
 const SLIDE_ICONS: Record<string, React.ElementType> = {
   "title": Monitor,
@@ -259,6 +482,17 @@ const SLIDE_ICONS: Record<string, React.ElementType> = {
   "fill-the-gap": Edit3,
   "story-time": BookOpen,
   "number-talk": Calculator,
+  // Teacher-framework additions
+  "vocab-reference": List,
+  "model-answer": Target,
+  "exam-practice": GraduationCap,
+  // SEND-native types
+  "brain-break": Zap,
+  "checkin": HelpCircle,
+  "method-steps": List,
+  "help-box": BookOpen,
+  "word-bank": List,
+  "take-a-break": HelpCircle,
 };
 
 // ─── Slide type labels ────────────────────────────────────────────────────
@@ -290,6 +524,17 @@ const SLIDE_LABELS: Record<string, string> = {
   "fill-the-gap": "Fill the Gap",
   "story-time": "Story Time",
   "number-talk": "Number Talk",
+  // Teacher-framework additions
+  "vocab-reference": "Key Vocabulary Reference",
+  "model-answer": "Model Answer",
+  "exam-practice": "Exam Practice",
+  // SEND-native types
+  "brain-break": "Brain Break",
+  "checkin": "Feelings Check-In",
+  "method-steps": "Step-by-Step Method",
+  "help-box": "Help Box",
+  "word-bank": "Word Bank",
+  "take-a-break": "Take a Break",
 };
 
 // ─── Subject options ──────────────────────────────────────────────────────────
@@ -308,7 +553,196 @@ const YEAR_GROUPS = [
   "Mixed / All Years",
 ];
 
-const SLIDE_COUNTS = ["8", "10", "12", "15", "18", "20"];
+const SLIDE_COUNTS = ["18", "20", "15", "12", "10", "8"];
+
+// ─── SEND needs — canonical ids grouped by COBS / SEND Code of Practice ─────
+// The ids match client/src/lib/sendPromptFragments.ts so the prompt builder
+// and the UI speak the same language. "asperger" is routed separately from
+// "asc" so teachers can pick either.
+const SEND_CATEGORIES: Array<{
+  label: string;
+  needs: Array<{ id: string; label: string; blurb: string }>;
+}> = [
+  {
+    label: "Communication & Interaction",
+    needs: [
+      { id: "asc",       label: "Autism Spectrum Condition (ASC)", blurb: "Literal language, 'what you need to do' boxes, neutral contexts" },
+      { id: "asperger",  label: "Asperger Syndrome",               blurb: "Literal, predictable layout, interest-based contexts permitted" },
+      { id: "slcn",      label: "Speech, Language & Communication (SLCN)", blurb: "Word banks, sentence frames, visual cues, S-V-O sentences" },
+      { id: "pda-odd",   label: "PDA / ODD",                       blurb: "Invitational language, optional missions, natural break points" },
+    ],
+  },
+  {
+    label: "Cognition & Learning",
+    needs: [
+      { id: "dyslexia",    label: "Dyslexia",        blurb: "Cream background, max 12 words/sentence, 1.5× spacing, method steps" },
+      { id: "dyscalculia", label: "Dyscalculia",     blurb: "Sub-step blanks, key-facts slide, number-line reference, real-world contexts" },
+      { id: "mld",         label: "Moderate Learning Difficulties (MLD)", blurb: "Model-answer first, help-box, KS2 reading level, CPA progression" },
+    ],
+  },
+  {
+    label: "Social, Emotional & Mental Health",
+    needs: [
+      { id: "adhd",      label: "ADHD",                   blurb: "Visible checkboxes, bolded action verbs, brain-break slide, varied formats" },
+      { id: "anxiety",   label: "Anxiety / SEMH",         blurb: "Emoji check-ins, invitational language, softer palette, no red alarms" },
+      { id: "tourettes", label: "Tourette's Syndrome",    blurb: "Varied response formats, take-a-break slides, calm supportive tone" },
+    ],
+  },
+  {
+    label: "Sensory & Physical",
+    needs: [
+      { id: "vi",        label: "Visual Impairment",      blurb: "High-contrast, 24pt+ body, 40pt+ titles, text-described diagrams" },
+      { id: "hi",        label: "Hearing Impairment",     blurb: "Every slide self-contained, no listening tasks, visual supports" },
+      { id: "dyspraxia", label: "Dyspraxia / DCD",        blurb: "Structured response frames, MCQ/matching, no extended writing" },
+    ],
+  },
+  {
+    label: "Language & Access",
+    needs: [
+      { id: "eal",             label: "EAL",                              blurb: "Key vocabulary, plain-English definitions, culturally neutral contexts" },
+      { id: "older-learners",  label: "Older Learners (KS3/KS4/KS5)",     blurb: "Graphic organisers, Cornell notes, study tips, age-appropriate language" },
+    ],
+  },
+];
+
+// Flat list of all SEND need ids (used for validation).
+const SEND_ALL_IDS = SEND_CATEGORIES.flatMap(c => c.needs.map(n => n.id));
+
+/** Reusable multi-select chip group used by both the generate form and the
+ *  Adapt-for-SEND dialog. Free-form — any combination of chips can be
+ *  selected; there is no pupil-linking. Designed to be visually compact so
+ *  it fits in the narrow left-hand form panel. */
+function SendNeedsPicker({
+  selectedIds,
+  onChange,
+  notes,
+  onNotesChange,
+  compact = false,
+}: {
+  selectedIds: string[];
+  onChange: (ids: string[]) => void;
+  notes?: string;
+  onNotesChange?: (v: string) => void;
+  compact?: boolean;
+}) {
+  const toggle = (id: string) => {
+    if (selectedIds.includes(id)) {
+      onChange(selectedIds.filter(x => x !== id));
+    } else {
+      onChange([...selectedIds, id]);
+    }
+  };
+
+  return (
+    <div className="space-y-2">
+      {SEND_CATEGORIES.map(cat => (
+        <div key={cat.label} className="space-y-1">
+          <div className="text-[10px] font-bold uppercase tracking-wide text-gray-500">{cat.label}</div>
+          <div className="flex flex-wrap gap-1">
+            {cat.needs.map(n => {
+              const on = selectedIds.includes(n.id);
+              return (
+                <button
+                  key={n.id}
+                  type="button"
+                  onClick={() => toggle(n.id)}
+                  title={n.blurb}
+                  className={`text-[10px] leading-tight rounded-full border transition-all px-2 py-1 text-left ${
+                    on
+                      ? "bg-purple-600 text-white border-purple-600 shadow"
+                      : "bg-white text-gray-700 border-gray-300 hover:border-purple-400 hover:bg-purple-50"
+                  }`}
+                >
+                  <span className="font-semibold">{n.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+      {!compact && onNotesChange && (
+        <div className="pt-1">
+          <Label className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide">Extra context (free text, optional)</Label>
+          <Textarea
+            value={notes || ""}
+            onChange={e => onNotesChange(e.target.value)}
+            placeholder="e.g. 3 pupils — one needs enlarged print, one uses a laptop..."
+            className="text-xs resize-none h-14 mt-1"
+          />
+        </div>
+      )}
+      {selectedIds.length > 0 && (
+        <div className="flex items-center justify-between pt-1">
+          <div className="text-[10px] text-gray-500">{selectedIds.length} need{selectedIds.length > 1 ? "s" : ""} selected</div>
+          <button type="button" onClick={() => onChange([])} className="text-[10px] text-gray-400 hover:text-red-600 underline">
+            Clear all
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** Banner shown above the deck preview listing every applied SEND adaptation
+ *  with an expandable per-spec rule list. Each change bullet has a "why"
+ *  popover revealing the evidence-based rationale from the COBS handbook /
+ *  SEND Code of Practice. This is the audit trail teachers surface when
+ *  parents, SENCOs or Ofsted ask "why did you adapt it this way?". */
+function SendAppliedBanner({ sendNeedIds }: { sendNeedIds: string[] }) {
+  const [expanded, setExpanded] = useState(false);
+  const applied = getAppliedAdaptations(sendNeedIds);
+  if (!applied.length) return null;
+  const totalChanges = applied.reduce((sum, a) => sum + a.changes.length, 0);
+
+  return (
+    <div className="rounded-lg border-2 border-purple-300 bg-gradient-to-r from-purple-50 to-indigo-50 overflow-hidden">
+      <button
+        type="button"
+        onClick={() => setExpanded(e => !e)}
+        className="w-full px-3 py-2 flex items-center justify-between hover:bg-purple-100/50 transition-colors"
+      >
+        <div className="flex items-center gap-2 flex-wrap text-left">
+          <span className="px-2 py-0.5 bg-purple-700 text-white text-[10px] font-bold uppercase tracking-wide rounded">
+            SEND Adapted
+          </span>
+          <span className="text-sm font-semibold text-purple-900">
+            {applied.map(a => a.name).join(" + ")}
+          </span>
+          <span className="text-xs text-purple-600">
+            ({totalChanges} change{totalChanges !== 1 ? "s" : ""} applied)
+          </span>
+        </div>
+        <ChevronDown
+          className={`w-4 h-4 text-purple-600 transition-transform ${expanded ? "rotate-180" : ""}`}
+        />
+      </button>
+      {expanded && (
+        <div className="px-3 pb-3 pt-1 space-y-2 border-t border-purple-200 bg-white/40">
+          {applied.map(spec => (
+            <div key={spec.id} className="rounded bg-white border border-purple-200 p-2">
+              <div className="text-[11px] font-bold text-purple-900 mb-1">{spec.name}</div>
+              <ul className="space-y-1">
+                {spec.changes.map((c, i) => (
+                  <li key={i} className="text-[11px] text-gray-700 flex items-start gap-2" title={c.why}>
+                    <span className="text-purple-400 flex-shrink-0 mt-0.5">✦</span>
+                    <div>
+                      <span>{c.what}</span>
+                      <span className="text-gray-500 italic"> — {c.why}</span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+          <div className="text-[10px] text-purple-700 italic pt-1">
+            Rationale drawn from the UK SEND Code of Practice and COBS handbook.
+            The academic rigour of the lesson is unchanged — only HOW content is presented.
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 const EXAM_BOARDS = [
   { value: "none", label: "Not applicable" },
@@ -386,6 +820,39 @@ function buildSlidePlan(slideCount: number, lessonType: string, yearGroup?: stri
   }
 
   // Secondary school slide plan
+  // ─── 18-slide canonical teacher-framework flow ─────────────────────────────
+  // When the teacher asks for exactly 18 slides and it's a secondary lesson,
+  // emit the full teacher-focused framework plan straight out of the guide:
+  //   1 title → 2 starter/retrieval → 3 objectives (must/should/could)
+  //   → 4,5 concept1+example → 6,7 concept2+application → 8 concept3
+  //   → 9 activity → 10 concept4/extension → 11 worked example → 12 misconception
+  //   → 13 visual summary → 14 exam technique → 15 model answer
+  //   → 16 exam practice → 17 key vocab → 18 plenary exit ticket
+  // This plan is the single biggest driver of "this looks like a real lesson,
+  // not a generic deck". Other slide counts still use the flexible plan below.
+  if (slideCount === 18) {
+    return [
+      "title",
+      "retrieval-warm-up",
+      "learning-objectives",
+      "content",            // concept 1 — explanation with key definitions
+      "worked-example",     // concept 1 — worked example or deeper explanation
+      "content",            // concept 2 — explanation with key definitions
+      "activity",           // concept 2 — application or practice task
+      "content",            // concept 3 — explanation
+      "activity",           // student task — 8-10 minute independent/paired
+      "diagram-label",      // concept 4 or extension — visual
+      "worked-example",     // worked example or case study
+      "misconception-bust", // common misconceptions
+      "summary",            // visual summary of concepts so far
+      "exam-technique",     // exam technique
+      "model-answer",       // model exam answer with annotations
+      "exam-practice",      // exam practice question (timed, marked)
+      "vocab-reference",    // key vocabulary reference
+      "exit-ticket",        // plenary — exit ticket / summary quiz
+    ];
+  }
+
   const core = [
     "title",
     "learning-objectives",
@@ -491,8 +958,15 @@ function buildSlidePrompt(params: {
 
   const template = resolvePresentationTemplate({ subject, yearGroup, lessonType, sendNeeds, differentiationLevel });
 
-  // Build the structured slide plan
-  const slidePlan = applyTemplateBias(buildSlidePlan(slideCount, lessonType, yearGroup), template.slidePlanBias);
+  // Build the structured slide plan. The 18-slide canonical teacher-framework
+  // flow is protected from template bias — it's the "gold standard" that must
+  // not be mutated. All other slide counts still go through applyTemplateBias
+  // so teacher-chosen templates (maths-gold / science-gold / etc.) can swap
+  // in their preferred slide types.
+  const basePlan = buildSlidePlan(slideCount, lessonType, yearGroup);
+  const slidePlan = slideCount === 18
+    ? basePlan
+    : applyTemplateBias(basePlan, template.slidePlanBias);
 
   // Bloom's taxonomy mapping for teaching progression
   const bloomsMap: Record<string, string> = {
@@ -516,6 +990,17 @@ function buildSlidePrompt(params: {
     "extension":          "CREATE — challenge for higher attainers",
     "summary":            "RECALL — consolidate key learning",
     "exit-ticket":        "RECALL/APPLY — end-of-lesson assessment",
+    // Teacher-framework additions
+    "vocab-reference":    "RECALL — glossary reference for revision and follow-up",
+    "model-answer":       "EVALUATE — exemplar showing how marks are earned",
+    "exam-practice":      "APPLY/EVALUATE — timed exam-style attempt with marks visible",
+    // SEND-native types
+    "brain-break":        "REGULATE — restore attention (ADHD-specific)",
+    "checkin":            "REGULATE — emotional readiness (SEMH/Anxiety)",
+    "method-steps":       "UNDERSTAND — visible reference method (Dyslexia/Dyscalculia)",
+    "help-box":           "UNDERSTAND — reference of key facts (MLD)",
+    "word-bank":          "UNDERSTAND — pre-taught vocabulary (SLCN/EAL)",
+    "take-a-break":       "REGULATE — permission to pause (PDA/Anxiety/Tourette's)",
   };
 
   const planDescription = slidePlan.map((type, i) =>
@@ -530,23 +1015,51 @@ function buildSlidePrompt(params: {
   const subjectFragments = buildSubjectPromptFragments(subject);
 
   // ── SEND adaptation (SHARED with the worksheet generator) ─────────────
-  // getSendNoteForPresentation reads from client/src/lib/sendPromptFragments.ts
-  // — the single source of truth for every SEND need's rules. This replaces
-  // a fragile one-line-per-need map with the full, evidence-based rule set
-  // that the worksheet already honours.
-  const sendNote = sendNeeds ? getSendNoteForPresentation(sendNeeds) : "";
+  // Multi-need aware — teachers can select multiple SEND needs and the
+  // helper merges every applicable spec into one note. composeSendNoteForPresentation
+  // handles both single-id and array inputs gracefully and is the single
+  // source of truth for what "adapt this deck for X + Y" means.
+  const sendNote = sendNeeds ? composeSendNoteForPresentation(sendNeeds) : "";
 
-  // If the SEND need imposes a "max N bullets per slide" cap we also surface
-  // it here so the LLM can't ignore it as "flavour text".
-  const sendSpec = resolveSendSpec(sendNeeds);
-  const sendHardCap = sendSpec ? `\nSEND HARD CAP (non-negotiable): Every slide in this deck MUST comply with the ${sendSpec.name} rules above. No exceptions — the deck will be rejected and regenerated if any slide breaks them.` : "";
+  // Resolve every applicable spec for the hard-cap + structured-field hints.
+  const appliedSendSpecs = resolveSendSpecs(sendNeeds);
+  const sendSpec = appliedSendSpecs[0] || null;
+  const sendHardCap = appliedSendSpecs.length
+    ? `\nSEND HARD CAP (non-negotiable): Every slide in this deck MUST comply with EVERY rule from ${appliedSendSpecs.map(s => s.name).join(" + ")} above. No exceptions — when rules conflict, pick the strictest access requirement.`
+    : "";
 
-  const readingAgeNote = readingAge ? `
-READING AGE TARGET: ${READING_AGE_LABELS[readingAge] || `Age ${readingAge}`}
-- Every word of text on slides must be readable by a child of reading age ${readingAge}.
-- Vocabulary ceiling: ${readingAge <= 8 ? "only the 1,000 most common English words; no technical jargon without a definition" : readingAge <= 11 ? "everyday vocabulary; define all subject-specific terms on the key-terms slide" : readingAge <= 14 ? "GCSE-level vocabulary; avoid A-level register" : "full academic vocabulary appropriate for sixth form"}
-- Sentence length: max ${readingAge <= 8 ? "6" : readingAge <= 11 ? "10" : readingAge <= 14 ? "15" : "20"} words per sentence on slides.
-- ${readingAge <= 10 ? "Use concrete examples (objects, animals, everyday situations) not abstract concepts." : ""}` : "";
+  // Reading-age auto-clamp: some SEND needs impose a ceiling that conflicts
+  // with a teacher-set reading age. We don't override the teacher's number
+  // but we surface the conflict to the LLM so it defaults to the ceiling.
+  const sendReadingCeiling = getSendReadingAgeCeiling(sendNeeds);
+  const effectiveReadingAge = sendReadingCeiling && readingAge && readingAge > sendReadingCeiling
+    ? sendReadingCeiling
+    : readingAge;
+  const readingAgeClampNote = sendReadingCeiling && readingAge && readingAge > sendReadingCeiling
+    ? `\nNOTE: Teacher selected reading age ${readingAge} but the SEND adaptation caps reading age at ${sendReadingCeiling}. Use the capped reading age of ${sendReadingCeiling} for ALL slide text. The academic rigour of the content stays at year-group level — only the READING LEVEL drops.`
+    : "";
+
+  // Teacher-framework SEND-native slide type hints — when certain needs apply,
+  // instruct the LLM to use the dedicated slide types we added to the schema
+  // rather than cramming SEND support into `body` or `bullets`.
+  const sendStructuredFieldsNote = appliedSendSpecs.length ? `
+SEND STRUCTURED FIELDS (use these fields on relevant slides — do NOT stuff SEND content into generic \`body\`/\`bullets\`):
+${appliedSendSpecs.some(s => ["adhd"].includes(s.id)) ? `- ADHD: set "visibleCheckboxes": true on every activity/check-understanding slide so the renderer shows [ ] before each item. Set "actionVerb" to the bolded verb. Insert one "brain-break" slide roughly mid-deck.
+` : ""}${appliedSendSpecs.some(s => ["dyslexia", "dyscalculia"].includes(s.id)) ? `- Dyslexia/Dyscalculia: populate "methodSteps" on worked-example slides. Add a dedicated "method-steps" slide before the first practice slide.
+` : ""}${appliedSendSpecs.some(s => ["asc", "asperger"].includes(s.id)) ? `- ASC/Asperger: populate "whatYouNeedToDo" on every activity slide. Populate "completionChecklist" on the exit-ticket slide.
+` : ""}${appliedSendSpecs.some(s => ["mld"].includes(s.id)) ? `- MLD: populate "helpBox" on the slide before independent practice. Use "sentenceStarter" on every activity slide.
+` : ""}${appliedSendSpecs.some(s => ["slcn", "eal"].includes(s.id)) ? `- SLCN/EAL: populate "wordBank" on the first content slide (use a dedicated "word-bank" slide type). Populate "answerFrame" on every check-understanding slide. Populate "visualCue" where relevant.
+` : ""}${appliedSendSpecs.some(s => ["anxiety"].includes(s.id)) ? `- Anxiety/SEMH: insert a "checkin" slide near the start AND before the exit-ticket. Label any challenge slide with "bonusLabel": "OPTIONAL BONUS — only if you want to!".
+` : ""}${appliedSendSpecs.some(s => ["pda-odd"].includes(s.id)) ? `- PDA/ODD: label every activity slide with "bonusLabel": "Explore — choose where to start" or "Secret Mission — if you choose to accept it". Insert a "take-a-break" slide mid-deck.
+` : ""}${appliedSendSpecs.some(s => ["tourettes"].includes(s.id)) ? `- Tourette's: insert a "take-a-break" slide every 3–4 content slides. Avoid any alarm-red styling language.
+` : ""}` : "";
+
+  const readingAgeNote = effectiveReadingAge ? `
+READING AGE TARGET: ${READING_AGE_LABELS[effectiveReadingAge] || `Age ${effectiveReadingAge}`}
+- Every word of text on slides must be readable by a child of reading age ${effectiveReadingAge}.
+- Vocabulary ceiling: ${effectiveReadingAge <= 8 ? "only the 1,000 most common English words; no technical jargon without a definition" : effectiveReadingAge <= 11 ? "everyday vocabulary; define all subject-specific terms on the key-terms slide" : effectiveReadingAge <= 14 ? "GCSE-level vocabulary; avoid A-level register" : "full academic vocabulary appropriate for sixth form"}
+- Sentence length: max ${effectiveReadingAge <= 8 ? "6" : effectiveReadingAge <= 11 ? "10" : effectiveReadingAge <= 14 ? "15" : "20"} words per sentence on slides.
+- ${effectiveReadingAge <= 10 ? "Use concrete examples (objects, animals, everyday situations) not abstract concepts." : ""}` : "";
 
   const examBoardNote = examBoard && examBoard !== "none" ? `
 EXAM BOARD: ${examBoard}
@@ -585,15 +1098,40 @@ ${subjectFragments.slideStructureBlock}
 
   const system = `You are an expert UK teacher and curriculum designer. You create outstanding, Ofsted-ready lesson presentations that follow best pedagogical practice: Rosenshine's Principles, Bloom's Taxonomy, retrieval practice, and spaced learning.
 
-PRESENTATION DESIGN RULES (NON-NEGOTIABLE):
-1. TEXT LIMITS: Max 8 words per bullet. Max 4 bullets per slide. No paragraphs. No dense text blocks.
+SUPPLY-TEACHER DEPTH TEST (NON-NEGOTIABLE):
+Write every slide so that a supply teacher with NO subject knowledge could deliver it from these slides alone, with NO textbook. Every concept must be EXPLAINED, not just named. This is the difference between a slide deck and a real lesson:
+- WRONG: "Step 1: Rearrange the equation." (names the step, doesn't explain how)
+- RIGHT: "Step 1: Move the +5 to the other side by subtracting 5 from both sides. This gives: 2x = 7 − 5 = 2."
+
+PRESENTATION DESIGN RULES:
+1. TEXT LIMITS: Max 12 words per bullet (8 words preferred). Max 5 bullets per slide. No paragraphs. No dense text blocks.
 2. TEACHING FLOW: Every slide has a clear pedagogical role. Follow the slide plan exactly.
-3. VISUAL-FIRST: Prefer diagrams, examples, and visuals over text explanations.
+3. VISUAL-FIRST: Every non-title slide must include at least one shape element (card, table, callout box, or diagram) — never plain text on a blank background. Use the appropriate slide type so the renderer picks the right shape set.
 4. PROGRESSION: Difficulty escalates: recall → understand → apply → analyse → evaluate.
 5. INTERACTION: At least 30% of slides must be interactive (questions, activities, discussions).
-6. SPECIFICITY: Use real numbers, real contexts, real examples — never generic placeholders.
+6. SPECIFICITY: Use real numbers, real contexts, real examples — never generic placeholders. If you write a worked example, SHOW the actual numbers. Do NOT write "solve this equation" — solve it yourself and show the solution. If you write a historical claim, cite the real date, real event, real named historian with their actual interpretation.
 7. CONCISENESS: Slide titles max 6 words. Speaker notes 2-4 sentences, practical and actionable.
 8. IMAGE PROMPTS: For visual slides, include a specific image_prompt field describing an ideal photograph or diagram.
+
+TIMING (MANDATORY FOR EVERY ACTIVITY/TASK SLIDE):
+Every slide whose type is "activity", "pause-and-solve", "think-pair-share", "check-understanding", "mini-quiz", "discussion", "exam-practice", "retrieval-warm-up", "hook", "brain-break" or "take-a-break" MUST include a "timingMinutes" number. The renderer shows this as "⏱ X min" in the top-right so pupils can self-regulate. Typical values: starter 5, retrieval 5, activity 6-10, exam-practice 5-10, plenary 5, brain-break 1, take-a-break 2.
+
+MARK ALLOCATIONS:
+- Every exam-practice slide MUST populate "examQuestion" with {stem, marks, timeMins, commandWord}. The marks value is shown as a "[X marks]" chip.
+- Every model-answer slide MUST populate "markScheme" — an array of {point, marks} showing exactly where each mark is earned.
+- Every exam-technique slide must reference the exam board's command words (e.g. describe, explain, evaluate, calculate, state).
+
+LEARNING OBJECTIVES:
+Objectives slides MUST populate "successCriteria" with three strings: must / should / could. The renderer shows each in a distinct coloured card. Do NOT use the old "All:/Most:/Some:" prefix format when successCriteria is provided.
+
+WORKED EXAMPLES:
+Worked-example slides MUST populate "workedExampleBox" with {problem, steps[], answer, units?, commonError?}. The renderer places this in a bordered box with a distinct background so pupils can visually find the worked-example box on the slide. "steps" must include the formula, the substitution, any rearrangement, and the final answer with units.
+
+KEY VOCABULARY REFERENCE:
+Vocab-reference slides MUST populate "vocabTable" — an array of {term, definition, example?}. This becomes a full-width reference table. Include every essential term for the topic (aim for 8-12).
+
+DIFFERENTIATION (built into every activity slide):
+Where appropriate, populate "differentiation" with {support, core, extension}. Support = scaffolded version with sentence starter. Core = standard task. Extension = harder application or evaluation question. The renderer shows these as three colour-coded cards.
 
 LAYOUT DIRECTIVE (MANDATORY FOR EVERY NON-TITLE SLIDE):
 Every non-title slide MUST include a "layout" field that tells the renderer how to arrange content. Choose from:
@@ -612,25 +1150,38 @@ CRITICAL: Return ONLY valid JSON. No markdown, no explanation, no code blocks.`;
   const slideTypeGuide = `SLIDE TYPE SPECIFICATIONS:
 
 "title" → title (engaging, specific), subtitle (subject | year | date line), body (one hook sentence), image_prompt (relevant background image)
-"learning-objectives" → title, bullets (All/Most/Some format — 3 bullets), speakerNotes
-"retrieval-warm-up" → title, retrievalQuestions (array of 3-5 quick recall questions from prior lessons), speakerNotes
-"hook" → title, question (thought-provoking opener), bullets (2-3 instructions), body (timing/context), image_prompt
+"learning-objectives" → title, successCriteria {must, should, could}, speakerNotes
+"retrieval-warm-up" → title, retrievalQuestions (array of 3-5 quick recall questions from prior lessons), timingMinutes (5), speakerNotes
+"hook" → title, question (thought-provoking opener), bullets (2-3 instructions), body (timing/context), timingMinutes (3-5), image_prompt
 "key-terms" → title, terms (array of {term, definition} — 5-8 terms, definitions max 10 words each)
 "content" → title, bullets (3-5 concise facts/concepts, max 8 words each), body (optional context sentence), layout ("two-col" if comparing), image_prompt (optional)
-"worked-example" → title, steps (4-6 numbered steps, each max 15 words, show full working), body (what to notice), speakerNotes
+"worked-example" → title, workedExampleBox {problem, steps[3-6], answer, units, commonError}, speakerNotes. The steps MUST include the formula, the substitution, any rearrangement, and the final answer with units.
 "diagram-label" → title, diagramDescription (describe the diagram clearly for rendering), diagramLabels (array of 4-8 label strings), question (what to label/identify), speakerNotes
-"activity" → title, question (task instruction), bullets (3-5 step-by-step instructions), body (time allocation e.g. "5 minutes"), speakerNotes
-"pause-and-solve" → title, question (the problem to solve), steps (reveal steps — show method progressively), answer (final answer), speakerNotes
-"check-understanding" → title, question (MCQ question stem), options (array of 4 options A-D), answer (correct letter), speakerNotes
-"mini-quiz" → title, retrievalQuestions (3-5 questions with answers embedded as "Q: ... A: ..."), speakerNotes
+"activity" → title, question (task instruction), bullets (3-5 step-by-step instructions), differentiation {support, core, extension}, timingMinutes, body (brief context), speakerNotes
+"pause-and-solve" → title, question (the problem to solve), steps (reveal steps — show method progressively), answer (final answer), timingMinutes, speakerNotes
+"check-understanding" → title, question (MCQ question stem), options (array of 4 options A-D), answer (correct letter), timingMinutes (2-3), speakerNotes
+"mini-quiz" → title, retrievalQuestions (3-5 questions with answers embedded as "Q: ... A: ..."), timingMinutes (5), speakerNotes
 "misconception-bust" → title, misconception (what students often think — quote it), correction (what is actually correct), bullets (why the misconception is wrong — 2-3 points), speakerNotes
-"think-pair-share" → title, question (discussion question), bullets (Think/Pair/Share instructions), body (time: "2 min think, 2 min pair, share"), speakerNotes
-"discussion" → title, question (debate/discussion prompt), bullets (2-3 discussion points or sentence starters), body (context), speakerNotes
+"think-pair-share" → title, question (discussion question), bullets (Think/Pair/Share instructions), body (time: "2 min think, 2 min pair, share"), timingMinutes (4-6), speakerNotes
+"discussion" → title, question (debate/discussion prompt), bullets (2-3 discussion points or sentence starters), body (context), timingMinutes, speakerNotes
 "real-world-link" → title, realWorldContext (1-2 sentences connecting to real life), bullets (3 real-world applications), image_prompt (relevant real-world image), speakerNotes
 "exam-technique" → title, examTip (specific exam strategy), markSchemeHint (what examiners look for), bullets (2-3 command word tips), speakerNotes
 "extension" → title, question (challenge task), bullets (scaffolding steps for extension), body (hint or context), speakerNotes
 "summary" → title, bullets (3-5 key takeaways — the most important things to remember), body (link to next lesson), speakerNotes
-"exit-ticket" → title, question (assessment question), options (optional MCQ options), answer (correct answer or model answer), speakerNotes
+"exit-ticket" → title, question (assessment question), options (optional MCQ options), answer (correct answer or model answer), timingMinutes (3-5), speakerNotes
+
+── Teacher-framework additions (use these exactly as specified):
+"vocab-reference" → title, vocabTable (array of 8-12 {term, definition, example?} — every essential term for this topic with plain-English definition and a brief example). This is the reference slide pupils will revisit.
+"model-answer" → title, body (the full model answer text, 2-5 sentences), markScheme (array of {point, marks} showing exactly where each mark is earned — sum matches the total), examTip (one-line tip on structure), speakerNotes
+"exam-practice" → title, examQuestion {stem, marks, timeMins, commandWord}, differentiation (optional support/core/extension variants), speakerNotes. Render this as a timed exam card with the mark chip visible.
+
+── SEND-native slide types (use these when the named need applies):
+"brain-break" → title ("BRAIN BREAK"), body ("Stand up and stretch for 30 seconds"), timingMinutes (1). Do NOT add bullets or questions — the slide is deliberately sparse.
+"checkin" → title ("How are you feeling?"), bullets (the 5 emoji scale: 😀 Calm / 🙂 OK / 😐 Not sure / 😟 Worried / 😣 Struggling), body (optional: "Show the teacher on your fingers"), timingMinutes (1-2).
+"method-steps" → title ("Step-by-Step Method"), methodSteps (4-6 numbered steps), body (one-line reminder).
+"help-box" → title ("Help Box — Key Facts"), helpBox (4-8 one-line facts/formulas/reminders), body (when to use this).
+"word-bank" → title ("Word Bank"), wordBank (4-8 {term, definition} — plain-English definitions), body (optional: when to refer to this).
+"take-a-break" → title ("Take a Break"), body ("Take a breath here if you need to. Come back when you're ready."), timingMinutes (2).
 
 ${isPrimary ? `
 PRIMARY SLIDE TYPE SPECIFICATIONS (use these for primary school):
@@ -655,7 +1206,9 @@ ${objectives ? `LEARNING OBJECTIVES: ${objectives}` : ""}
 ${additionalNotes ? `ADDITIONAL NOTES: ${additionalNotes}` : ""}
 ${sendNote}
 ${sendHardCap}
+${sendStructuredFieldsNote}
 ${readingAgeNote}
+${readingAgeClampNote}
 ${examBoardNote}
 ${diffNote}
 ${subjectNote}
@@ -714,7 +1267,7 @@ function SlidePreview({
   onClick,
 }: {
   slide: SlideContent;
-  theme: typeof THEMES[ThemeKey];
+  theme: ComposedTheme;
   index: number;
   total: number;
   isActive: boolean;
@@ -778,9 +1331,20 @@ const SLIDE_TYPE_COLOURS: Record<string, string> = {
   "extension":           "#7C3AED",
   "summary":             "#1B2A4A",
   "exit-ticket":         "#dc2626",
+  // Teacher-framework additions
+  "vocab-reference":     "#0891b2",
+  "model-answer":        "#1d4ed8",
+  "exam-practice":       "#b45309",
+  // SEND-native types
+  "brain-break":         "#f59e0b",
+  "checkin":             "#14b8a6",
+  "method-steps":        "#1d4ed8",
+  "help-box":            "#ca8a04",
+  "word-bank":           "#0891b2",
+  "take-a-break":        "#14b8a6",
 };
 
-function SlideHeader({ slide, theme, Icon }: { slide: SlideContent; theme: typeof THEMES[ThemeKey]; Icon: React.ElementType }) {
+function SlideHeader({ slide, theme, Icon }: { slide: SlideContent; theme: ComposedTheme; Icon: React.ElementType }) {
   const badgeColour = SLIDE_TYPE_COLOURS[slide.type] || theme.secondary;
   return (
     <div className="px-10 pt-7 pb-3">
@@ -798,7 +1362,7 @@ function SlideHeader({ slide, theme, Icon }: { slide: SlideContent; theme: typeo
 // ─── Layout-aware renderer for generic (content / activity / extension / …) slides ──
 function renderLayoutSlide(
   slide: SlideContent,
-  theme: typeof THEMES[ThemeKey],
+  theme: ComposedTheme,
   badgeColour: string,
   Icon: React.ElementType,
 ) {
@@ -812,12 +1376,91 @@ function renderLayoutSlide(
     <div className="space-y-2">
       {(bullets || []).map((bullet, i) => (
         <div key={i} className="flex items-start gap-3 rounded-lg p-2.5" style={{ background: theme.light }}>
-          <div className="w-2 h-2 rounded-full mt-1.5 flex-shrink-0" style={{ background: badgeColour }} />
+          {slide.visibleCheckboxes ? (
+            <div className="w-4 h-4 rounded border-2 flex-shrink-0 mt-0.5" style={{ borderColor: badgeColour }} />
+          ) : (
+            <div className="w-2 h-2 rounded-full mt-1.5 flex-shrink-0" style={{ background: badgeColour }} />
+          )}
           <div className={`${size === "xs" ? "text-xs" : "text-sm"} font-medium`} style={{ color: theme.text }}>{bullet}</div>
         </div>
       ))}
     </div>
   );
+
+  // Differentiation card strip — shown below content when the AI has provided
+  // support / core / extension variants. Matches Lever 5 from the guide.
+  const DifferentiationStrip = () => {
+    const d = slide.differentiation;
+    if (!d || (!d.support && !d.core && !d.extension)) return null;
+    return (
+      <div className="grid grid-cols-3 gap-2 mt-3">
+        {d.support && (
+          <div className="rounded-lg p-2" style={{ background: "#dcfce7", border: "1px solid #16a34a" }}>
+            <div className="text-[9px] font-bold uppercase text-green-900 mb-0.5">Support</div>
+            <div className="text-[11px] text-green-950 leading-tight">{d.support}</div>
+          </div>
+        )}
+        {d.core && (
+          <div className="rounded-lg p-2" style={{ background: "#dbeafe", border: "1px solid #2563eb" }}>
+            <div className="text-[9px] font-bold uppercase text-blue-900 mb-0.5">Core</div>
+            <div className="text-[11px] text-blue-950 leading-tight">{d.core}</div>
+          </div>
+        )}
+        {d.extension && (
+          <div className="rounded-lg p-2" style={{ background: "#f5f3ff", border: "1px solid #7c3aed" }}>
+            <div className="text-[9px] font-bold uppercase text-purple-900 mb-0.5">Extension</div>
+            <div className="text-[11px] text-purple-950 leading-tight">{d.extension}</div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // Completion checklist — ASC/Tourette's structured tick boxes.
+  const CompletionChecklist = () => {
+    if (!slide.completionChecklist || slide.completionChecklist.length === 0) return null;
+    return (
+      <div className="rounded-lg border bg-white p-2 mt-2" style={{ borderColor: badgeColour + "60" }}>
+        <div className="text-[9px] font-bold uppercase tracking-wide text-gray-500 mb-1">Completion checklist</div>
+        {slide.completionChecklist.map((item, i) => (
+          <div key={i} className="flex items-start gap-2 py-0.5">
+            <div className="w-4 h-4 rounded border-2 flex-shrink-0 mt-0.5" style={{ borderColor: badgeColour }} />
+            <div className="text-[11px]" style={{ color: theme.text }}>{item}</div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  // Method-steps inline strip — Dyslexia/Dyscalculia method reference inside
+  // activity/content slides (for when there isn't a dedicated method-steps slide).
+  const MethodStepsStrip = () => {
+    if (!slide.methodSteps || slide.methodSteps.length === 0) return null;
+    return (
+      <div className="rounded-lg border-2 bg-white p-2 mt-2" style={{ borderColor: badgeColour }}>
+        <div className="text-[9px] font-bold uppercase tracking-wide text-gray-500 mb-1">Method steps</div>
+        {slide.methodSteps.map((step, i) => (
+          <div key={i} className="flex items-start gap-2 py-0.5">
+            <div className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0" style={{ background: badgeColour }}>{i + 1}</div>
+            <div className="text-[11px]" style={{ color: theme.text }}>{step}</div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  // Help-box inline strip — MLD key facts inside a content/activity slide.
+  const HelpBoxStrip = () => {
+    if (!slide.helpBox || slide.helpBox.length === 0) return null;
+    return (
+      <div className="rounded-md border border-yellow-400 bg-yellow-50 p-2 mt-2">
+        <div className="text-[9px] font-bold uppercase tracking-wide text-yellow-900 mb-1">Help box</div>
+        {slide.helpBox.map((item, i) => (
+          <div key={i} className="text-[11px] text-yellow-950 py-0.5">• {item}</div>
+        ))}
+      </div>
+    );
+  };
 
   // Header-then-body shell used by most layouts
   const Shell: React.FC<{ children: React.ReactNode; contentClass?: string }> = ({ children, contentClass }) => (
@@ -948,6 +1591,10 @@ function renderLayoutSlide(
             </div>
           )}
           <BulletList bullets={slide.bullets} />
+          <MethodStepsStrip />
+          <HelpBoxStrip />
+          <CompletionChecklist />
+          <DifferentiationStrip />
         </Shell>
       );
   }
@@ -960,7 +1607,7 @@ function FullSlideView({
   total,
 }: {
   slide: SlideContent;
-  theme: typeof THEMES[ThemeKey];
+  theme: ComposedTheme;
   index: number;
   total: number;
 }) {
@@ -996,7 +1643,30 @@ function FullSlideView({
         );
 
       // ── Learning Objectives ────────────────────────────────────────────────
+      // Prefer the structured successCriteria ({must, should, could}) when
+      // the AI provides it — this is the teacher-framework format. Fall back
+      // to the legacy All:/Most:/Some: bullet prefixes for older decks.
       case "learning-objectives":
+        if (slide.successCriteria) {
+          const bands: Array<["MUST"|"SHOULD"|"COULD", string, string, string]> = [
+            ["MUST",   slide.successCriteria.must,   "#dcfce7", "#16a34a"],
+            ["SHOULD", slide.successCriteria.should, "#dbeafe", "#2563eb"],
+            ["COULD",  slide.successCriteria.could,  "#fef3c7", "#d97706"],
+          ];
+          return (
+            <div className="flex flex-col h-full">
+              <SlideHeader slide={slide} theme={theme} Icon={Target} />
+              <div className="flex-1 px-10 pb-7 flex flex-col justify-center gap-2.5">
+                {bands.map(([label, text, bg, border]) => (
+                  <div key={label} className="flex items-start gap-3 rounded-xl p-3" style={{ background: bg, border: `2px solid ${border}` }}>
+                    <div className="px-2 py-0.5 rounded-full text-[10px] font-bold text-white flex-shrink-0" style={{ background: border }}>{label}</div>
+                    <div className="text-sm font-medium" style={{ color: theme.text }}>{text}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        }
         return (
           <div className="flex flex-col h-full">
             <SlideHeader slide={slide} theme={theme} Icon={Target} />
@@ -1056,7 +1726,53 @@ function FullSlideView({
         );
 
       // ── Worked Example ─────────────────────────────────────────────────────
+      // Prefer the structured workedExampleBox ({problem, steps, answer, units,
+      // commonError}) when the AI provides it — renders as a bordered box
+      // with a distinct background so it's visually identifiable as a worked
+      // example (per the teacher-framework guide). Falls back to the legacy
+      // loose `steps` array for older decks.
       case "worked-example":
+        if (slide.workedExampleBox) {
+          const w = slide.workedExampleBox;
+          return (
+            <div className="flex flex-col h-full">
+              <SlideHeader slide={slide} theme={theme} Icon={Brain} />
+              <div className="flex-1 px-10 pb-7 flex flex-col justify-center">
+                <div className="rounded-2xl border-2 overflow-hidden" style={{ borderColor: badgeColour, background: theme.light }}>
+                  <div className="px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide text-white" style={{ background: badgeColour }}>
+                    Worked Example
+                  </div>
+                  <div className="p-3 space-y-2">
+                    <div>
+                      <div className="text-[10px] font-bold uppercase tracking-wide text-gray-500">Problem</div>
+                      <div className="text-sm font-medium" style={{ color: theme.text, fontFamily: "Consolas, monospace" }}>{w.problem}</div>
+                    </div>
+                    <div className="space-y-1.5">
+                      {w.steps.map((step, i) => (
+                        <div key={i} className="flex items-start gap-2">
+                          <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0" style={{ background: badgeColour }}>{i + 1}</div>
+                          <div className="flex-1 text-sm rounded-lg bg-white border border-gray-200 px-2 py-1" style={{ color: theme.text, fontFamily: "Consolas, monospace" }}>{step}</div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="flex items-center justify-between pt-1 border-t border-gray-200">
+                      <div className="text-[10px] font-bold uppercase tracking-wide text-gray-500">Answer</div>
+                      <div className="text-base font-black" style={{ color: badgeColour, fontFamily: "Consolas, monospace" }}>
+                        {w.answer}{w.units ? ` ${w.units}` : ""}
+                      </div>
+                    </div>
+                    {w.commonError && (
+                      <div className="rounded-md border border-red-300 bg-red-50 px-2 py-1.5 mt-1">
+                        <span className="text-[10px] font-bold uppercase tracking-wide text-red-800">Common error: </span>
+                        <span className="text-[11px] text-red-900">{w.commonError}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        }
         return (
           <div className="flex flex-col h-full">
             <SlideHeader slide={slide} theme={theme} Icon={Brain} />
@@ -1563,6 +2279,211 @@ function FullSlideView({
           </div>
         );
 
+      // ── Vocab Reference ────────────────────────────────────────────────────
+      // Full-width glossary table. Renders vocabTable (term, definition, example?)
+      // as a multi-row card. Falls back to `terms` for back-compat with key-terms
+      // decks that accidentally choose this type.
+      case "vocab-reference": {
+        const rows = slide.vocabTable && slide.vocabTable.length
+          ? slide.vocabTable
+          : (slide.terms || []).map(t => ({ term: t.term, definition: t.definition, example: undefined as string | undefined }));
+        return (
+          <div className="flex flex-col h-full">
+            <SlideHeader slide={slide} theme={theme} Icon={List} />
+            <div className="flex-1 px-8 pb-7 overflow-hidden">
+              <div className="rounded-xl border overflow-hidden" style={{ borderColor: badgeColour + "60" }}>
+                <div className="grid grid-cols-[160px_1fr_180px] text-[10px] font-bold uppercase tracking-wide text-white" style={{ background: badgeColour }}>
+                  <div className="px-2 py-1.5">Term</div>
+                  <div className="px-2 py-1.5">Definition</div>
+                  <div className="px-2 py-1.5">Example</div>
+                </div>
+                <div className="max-h-[360px] overflow-y-auto">
+                  {rows.slice(0, 12).map((r, i) => (
+                    <div key={i} className="grid grid-cols-[160px_1fr_180px] text-[11px]" style={{ background: i % 2 ? "white" : theme.light }}>
+                      <div className="px-2 py-1.5 font-bold" style={{ color: badgeColour }}>{r.term}</div>
+                      <div className="px-2 py-1.5" style={{ color: theme.text }}>{r.definition}</div>
+                      <div className="px-2 py-1.5 italic text-gray-600">{r.example || "—"}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      // ── Model Answer ───────────────────────────────────────────────────────
+      // Displays the full model answer with an annotated mark scheme breakdown.
+      case "model-answer":
+        return (
+          <div className="flex flex-col h-full">
+            <SlideHeader slide={slide} theme={theme} Icon={Target} />
+            <div className="flex-1 px-8 pb-7 grid grid-cols-[1fr_260px] gap-3">
+              <div className="rounded-xl border-2 p-3 overflow-y-auto" style={{ borderColor: badgeColour, background: theme.light }}>
+                <div className="text-[10px] font-bold uppercase tracking-wide mb-1" style={{ color: badgeColour }}>Model Answer</div>
+                <div className="text-sm leading-relaxed" style={{ color: theme.text }}>
+                  {slide.body || slide.answer || "(Model answer)"}
+                </div>
+              </div>
+              <div className="space-y-1.5 overflow-y-auto">
+                <div className="text-[10px] font-bold uppercase tracking-wide text-gray-500">Mark Scheme</div>
+                {(slide.markScheme || []).map((m, i) => (
+                  <div key={i} className="flex items-start gap-2 rounded-lg bg-white border p-1.5" style={{ borderColor: badgeColour + "40" }}>
+                    <div className="px-1.5 py-0.5 rounded text-[10px] font-bold text-white flex-shrink-0" style={{ background: badgeColour }}>+{m.marks}</div>
+                    <div className="text-[11px] leading-tight" style={{ color: theme.text }}>{m.point}</div>
+                  </div>
+                ))}
+                {slide.examTip && (
+                  <div className="rounded-md border border-amber-300 bg-amber-50 p-1.5 mt-2">
+                    <div className="text-[10px] font-bold uppercase tracking-wide text-amber-900 mb-0.5">Tip</div>
+                    <div className="text-[11px] text-amber-950">{slide.examTip}</div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+
+      // ── Exam Practice ──────────────────────────────────────────────────────
+      // Timed exam card with mark chip, time chip, and command-word badge.
+      case "exam-practice": {
+        const q = slide.examQuestion;
+        return (
+          <div className="flex flex-col h-full">
+            <SlideHeader slide={slide} theme={theme} Icon={GraduationCap} />
+            <div className="flex-1 px-10 pb-7 flex flex-col gap-3 justify-center">
+              <div className="rounded-2xl border-2 p-4" style={{ borderColor: badgeColour, background: "#fffbeb" }}>
+                <div className="flex items-center gap-2 mb-2">
+                  {q?.commandWord && <span className="px-2 py-0.5 rounded bg-slate-900 text-white text-[10px] font-bold uppercase">{q.commandWord}</span>}
+                  {q?.marks != null && <span className="px-2 py-0.5 rounded bg-amber-600 text-white text-[10px] font-bold">[{q.marks} marks]</span>}
+                  {q?.timeMins != null && <span className="px-2 py-0.5 rounded bg-slate-200 text-slate-800 text-[10px] font-bold">⏱ {q.timeMins} min</span>}
+                </div>
+                <div className="text-base font-medium leading-relaxed" style={{ color: theme.text }}>
+                  {q?.stem || slide.question || slide.body}
+                </div>
+              </div>
+              {slide.differentiation && (
+                <div className="grid grid-cols-3 gap-2">
+                  {slide.differentiation.support && (
+                    <div className="rounded-lg p-2" style={{ background: "#dcfce7", border: "1px solid #16a34a" }}>
+                      <div className="text-[9px] font-bold uppercase text-green-900 mb-0.5">Support</div>
+                      <div className="text-[11px] text-green-950">{slide.differentiation.support}</div>
+                    </div>
+                  )}
+                  {slide.differentiation.core && (
+                    <div className="rounded-lg p-2" style={{ background: "#dbeafe", border: "1px solid #2563eb" }}>
+                      <div className="text-[9px] font-bold uppercase text-blue-900 mb-0.5">Core</div>
+                      <div className="text-[11px] text-blue-950">{slide.differentiation.core}</div>
+                    </div>
+                  )}
+                  {slide.differentiation.extension && (
+                    <div className="rounded-lg p-2" style={{ background: "#f5f3ff", border: "1px solid #7c3aed" }}>
+                      <div className="text-[9px] font-bold uppercase text-purple-900 mb-0.5">Extension</div>
+                      <div className="text-[11px] text-purple-950">{slide.differentiation.extension}</div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      }
+
+      // ── SEND: Brain Break (ADHD) ──────────────────────────────────────────
+      case "brain-break":
+        return (
+          <div className="flex flex-col items-center justify-center h-full text-center px-14 gap-3" style={{ background: "linear-gradient(135deg,#fef3c7,#fde68a)" }}>
+            <div className="text-6xl">🧠</div>
+            <div className="text-4xl font-black tracking-tight" style={{ color: "#92400e" }}>BRAIN BREAK</div>
+            <div className="text-lg font-semibold" style={{ color: "#92400e" }}>{slide.body || "Stand up and stretch for 30 seconds"}</div>
+          </div>
+        );
+
+      // ── SEND: Check-In (Anxiety/SEMH) ─────────────────────────────────────
+      case "checkin":
+        return (
+          <div className="flex flex-col items-center justify-center h-full text-center px-10 gap-4">
+            <div className="text-2xl font-bold" style={{ color: theme.primary }}>{slide.title || "How are you feeling?"}</div>
+            <div className="flex gap-3 flex-wrap justify-center">
+              {["😀 Calm","🙂 OK","😐 Not sure","😟 Worried","😣 Struggling"].map((f, i) => (
+                <div key={i} className="px-3 py-2 rounded-xl border-2 text-sm font-semibold" style={{ background: "white", borderColor: "#14b8a6" }}>{f}</div>
+              ))}
+            </div>
+            {slide.body && <div className="text-xs italic text-gray-600 mt-1">{slide.body}</div>}
+          </div>
+        );
+
+      // ── SEND: Method Steps (Dyslexia/Dyscalculia) ─────────────────────────
+      case "method-steps":
+        return (
+          <div className="flex flex-col h-full">
+            <SlideHeader slide={slide} theme={theme} Icon={List} />
+            <div className="flex-1 px-10 pb-7 flex flex-col justify-center gap-2">
+              {(slide.methodSteps || slide.steps || []).map((step, i) => (
+                <div key={i} className="flex items-start gap-3 rounded-lg border-2 p-2.5" style={{ background: "white", borderColor: badgeColour + "80" }}>
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-black text-white flex-shrink-0" style={{ background: badgeColour }}>{i + 1}</div>
+                  <div className="text-sm font-medium pt-0.5" style={{ color: theme.text }}>{step}</div>
+                </div>
+              ))}
+              {slide.body && <div className="text-xs italic text-gray-600 mt-1 text-center">{slide.body}</div>}
+            </div>
+          </div>
+        );
+
+      // ── SEND: Help Box (MLD) ──────────────────────────────────────────────
+      case "help-box":
+        return (
+          <div className="flex flex-col h-full">
+            <SlideHeader slide={slide} theme={theme} Icon={BookOpen} />
+            <div className="flex-1 px-10 pb-7 flex flex-col justify-center">
+              <div className="rounded-xl border-2 overflow-hidden" style={{ borderColor: "#ca8a04", background: "#fef9c3" }}>
+                <div className="px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide text-yellow-950" style={{ background: "#facc15" }}>
+                  Help Box — refer back to this any time
+                </div>
+                <div className="p-3 space-y-1.5">
+                  {(slide.helpBox || slide.bullets || []).map((h, i) => (
+                    <div key={i} className="flex items-start gap-2">
+                      <div className="w-4 h-4 rounded bg-yellow-400 flex-shrink-0 mt-0.5" />
+                      <div className="text-sm font-medium text-yellow-950">{h}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+
+      // ── SEND: Word Bank (SLCN/EAL) ────────────────────────────────────────
+      case "word-bank":
+        return (
+          <div className="flex flex-col h-full">
+            <SlideHeader slide={slide} theme={theme} Icon={List} />
+            <div className="flex-1 px-10 pb-7 flex flex-col justify-center">
+              <div className="grid grid-cols-2 gap-2">
+                {(slide.wordBank || slide.terms || []).slice(0, 8).map((w, i) => (
+                  <div key={i} className="rounded-lg border-2 p-2" style={{ background: "#ecfeff", borderColor: "#06b6d4" }}>
+                    <div className="text-[13px] font-black text-cyan-900">{w.term}</div>
+                    <div className="text-[11px] text-cyan-800 leading-tight">{w.definition}</div>
+                  </div>
+                ))}
+              </div>
+              {slide.body && <div className="text-[11px] italic text-gray-600 mt-2 text-center">{slide.body}</div>}
+            </div>
+          </div>
+        );
+
+      // ── SEND: Take a Break (PDA/Anxiety/Tourette's) ───────────────────────
+      case "take-a-break":
+        return (
+          <div className="flex flex-col items-center justify-center h-full text-center px-14 gap-3" style={{ background: "linear-gradient(135deg,#f0fdfa,#ccfbf1)" }}>
+            <div className="text-5xl">☕</div>
+            <div className="text-3xl font-black" style={{ color: "#134e4a" }}>Take a Break</div>
+            <div className="text-base font-medium max-w-lg" style={{ color: "#134e4a" }}>
+              {slide.body || "Take a breath here if you need to. Come back when you're ready."}
+            </div>
+          </div>
+        );
+
       // ── Default: content / activity / extension ────────────────────────────
       default:
         return renderLayoutSlide(slide, theme, badgeColour, Icon);
@@ -1571,6 +2492,101 @@ function FullSlideView({
 
   const isTitleSlide = slide.type === "title";
 
+  // SEND field strips — rendered ABOVE the slide's main content so they are
+  // unmissable and don't get pushed off-screen on short slides.
+  const renderSendStrips = () => {
+    const strips: React.ReactElement[] = [];
+    if (slide.wordBank && slide.wordBank.length > 0) {
+      strips.push(
+        <div key="wordBank" className="mx-6 mt-4 rounded-lg border border-cyan-300 bg-cyan-50/80 px-3 py-2">
+          <div className="text-[9px] font-bold uppercase tracking-wide text-cyan-800 mb-1">Word Bank</div>
+          <div className="flex flex-wrap gap-1.5">
+            {slide.wordBank.slice(0, 8).map((w, i) => (
+              <div key={i} className="bg-white border border-cyan-200 rounded px-2 py-0.5 text-[11px]">
+                <span className="font-bold text-cyan-900">{w.term}</span>
+                <span className="text-cyan-700"> — {w.definition}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+    if (slide.whatYouNeedToDo && slide.whatYouNeedToDo.length > 0) {
+      strips.push(
+        <div key="whatYouNeedToDo" className="mx-6 mt-3 rounded-lg border-2 border-yellow-400 bg-yellow-50 px-3 py-2">
+          <div className="text-[9px] font-bold uppercase tracking-wide text-yellow-900 mb-1">What you need to do:</div>
+          <ol className="list-decimal pl-4 space-y-0.5">
+            {slide.whatYouNeedToDo.slice(0, 8).map((step, i) => (
+              <li key={i} className="text-[11px] text-yellow-950">{step}</li>
+            ))}
+          </ol>
+        </div>
+      );
+    }
+    if (slide.actionVerb) {
+      strips.push(
+        <div key="actionVerb" className="mx-6 mt-2 inline-flex items-center gap-1.5">
+          <span className="text-[9px] uppercase tracking-wide text-gray-500">Action</span>
+          <span className="px-2 py-0.5 rounded bg-amber-100 border border-amber-300 text-[11px] font-bold text-amber-900">{slide.actionVerb}</span>
+        </div>
+      );
+    }
+    return strips.length ? <div>{strips}</div> : null;
+  };
+
+  // Footer SEND strips — sentence starter + answer frame + visual cue
+  const renderSendFooter = () => {
+    const parts: React.ReactElement[] = [];
+    if (slide.sentenceStarter) {
+      parts.push(
+        <div key="sentenceStarter" className="italic text-[11px] text-gray-700 bg-gray-50 border-l-2 border-gray-300 px-2 py-1">
+          Sentence starter: "<span className="font-medium">{slide.sentenceStarter}</span>"
+        </div>
+      );
+    }
+    if (slide.answerFrame) {
+      parts.push(
+        <div key="answerFrame" className="text-[11px] text-gray-700 bg-blue-50 border-l-2 border-blue-300 px-2 py-1">
+          Answer frame: <span className="font-medium">{slide.answerFrame}</span>
+        </div>
+      );
+    }
+    if (slide.visualCue) {
+      parts.push(
+        <div key="visualCue" className="text-[11px] text-gray-700 bg-purple-50 border-l-2 border-purple-300 px-2 py-1">
+          Visual cue: <span className="font-medium">{slide.visualCue}</span>
+        </div>
+      );
+    }
+    if (!parts.length) return null;
+    return (
+      <div className="absolute left-4 right-4 bottom-10 flex flex-col gap-1 pointer-events-none">
+        {parts}
+      </div>
+    );
+  };
+
+  // Timing chip — shown top-right under the slide number when the AI has
+  // populated timingMinutes. Never shown on the title slide.
+  const renderTimingChip = () => {
+    if (isTitleSlide || !slide.timingMinutes) return null;
+    return (
+      <div className="absolute top-10 right-4 text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-100 border border-amber-300 text-amber-900">
+        ⏱ {slide.timingMinutes} min
+      </div>
+    );
+  };
+
+  // Bonus label override — PDA/Anxiety rename "challenge"/"extension" slides.
+  const renderBonusLabel = () => {
+    if (isTitleSlide || !slide.bonusLabel) return null;
+    return (
+      <div className="absolute bottom-10 right-4 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-purple-100 border border-purple-300 text-purple-800">
+        {slide.bonusLabel}
+      </div>
+    );
+  };
+
   return (
     <div
       className="w-full rounded-2xl overflow-hidden shadow-2xl"
@@ -1578,11 +2594,17 @@ function FullSlideView({
         aspectRatio: "16/9",
         background: isTitleSlide ? theme.gradient : theme.bg,
         position: "relative",
+        fontFamily: theme.fontFamily || undefined,
+        lineHeight: theme.lineHeight || undefined,
       }}
     >
       {/* Top accent bar — coloured by slide type */}
       {!isTitleSlide && (
         <div className="absolute top-0 left-0 right-0 h-[4px]" style={{ background: badgeColour }} />
+      )}
+      {/* Left accent bar — coloured by slide type (matches the guide's spec) */}
+      {!isTitleSlide && (
+        <div className="absolute top-0 bottom-0 left-0 w-[6px]" style={{ background: badgeColour }} />
       )}
       {/* Slide number badge */}
       <div className="absolute top-3 right-4 text-xs font-medium" style={{ color: isTitleSlide ? "rgba(255,255,255,0.6)" : "#9ca3af" }}>
@@ -1598,17 +2620,30 @@ function FullSlideView({
           {SLIDE_LABELS[slide.type] || slide.type}
         </span>
       </div>
+      {renderTimingChip()}
+      {renderBonusLabel()}
+      {!isTitleSlide && renderSendStrips()}
       {renderSlideContent()}
+      {!isTitleSlide && renderSendFooter()}
     </div>
   );
 }
 
 
 // ─── PPTX Export ─────────────────────────────────────────────────────────────
-async function exportToPptx(presentation: PresentationData, themeKey: ThemeKey): Promise<void> {
+async function exportToPptx(
+  presentation: PresentationData,
+  themeKey: ThemeKey,
+  sendNeedIds: string[] = [],
+): Promise<void> {
   const PptxGenJS = (await import("pptxgenjs")).default;
   const pptx = new PptxGenJS();
-  const theme = THEMES[themeKey];
+  const theme = composeTheme(themeKey, sendNeedIds);
+  // Font family: Dyslexia forces Verdana, VI forces Arial, else the theme default.
+  const pptxFont = themeFontFamily(theme);
+  // Minimum font sizes — raised by SEND needs (VI = 24pt body, 40pt title).
+  const minBodyPt = theme.minBodyPt || 12;
+  const minTitlePt = theme.minTitlePt || 22;
 
   pptx.layout = "LAYOUT_WIDE"; // 16:9
   pptx.title = presentation.title;
@@ -1629,11 +2664,144 @@ async function exportToPptx(presentation: PresentationData, themeKey: ThemeKey):
   const textClean = theme.text.replace("#", "");
   const lightClean = theme.light.replace("#", "");
   const bgClean = theme.bg.replace("#", "");
-  // Dark theme detection: if bg is dark, use white text for non-title slides
+  // Dark theme detection: if bg is dark, use white text for non-title slides.
+  // VI high-contrast forces bg=white so this always resolves to isDark=false.
   const isDark = parseInt(bgClean.slice(0, 2), 16) < 60;
   const slideBgClean = bgClean;
   const slideTextClean = isDark ? "E2E8F0" : textClean;
   const slideTitleClean = isDark ? "E2E8F0" : primaryClean;
+
+  // ── Per-slide-type colour lookup (matches SLIDE_TYPE_COLOURS) ──────────────
+  // The preview uses these as the left accent bar colour; the PPTX export
+  // mirrors them on the top accent bar + slide-type pill so the two outputs
+  // look visually consistent.
+  const slideAccent = (t: string) => (SLIDE_TYPE_COLOURS[t] || theme.secondary).replace("#", "");
+
+  // Reusable header painter — accent bar + title + underline + optional
+  // timing chip / slide-type pill. Every non-title slide calls this so the
+  // export matches the on-screen preview.
+  const paintHeader = (pSlide: any, slide: SlideContent) => {
+    const accent = slideAccent(slide.type);
+    // Top accent bar (full width)
+    pSlide.addShape(pptx.ShapeType.rect, { x: 0, y: 0, w: "100%", h: 0.08, fill: { type: "solid", color: accent } });
+    // Left accent bar (vertical)
+    pSlide.addShape(pptx.ShapeType.rect, { x: 0, y: 0.08, w: 0.08, h: 5.52, fill: { type: "solid", color: accent } });
+    // Slide type pill — bottom-left
+    pSlide.addShape(pptx.ShapeType.rect, {
+      x: 0.35, y: 5.15, w: 1.9, h: 0.28,
+      fill: { type: "solid", color: accent + "18" },
+      line: { color: accent, width: 0.5 },
+      rectRadius: 0.14,
+    });
+    pSlide.addText(SLIDE_LABELS[slide.type] || slide.type, {
+      x: 0.35, y: 5.15, w: 1.9, h: 0.28,
+      fontSize: 8, bold: true, color: accent,
+      align: "center", fontFace: pptxFont,
+    });
+    // Title + underline
+    pSlide.addText(slide.title, {
+      x: 0.5, y: 0.3, w: 8.5, h: 0.6,
+      fontSize: Math.max(22, minTitlePt - 18), bold: true, color: slideTitleClean,
+      fontFace: pptxFont,
+    });
+    pSlide.addShape(pptx.ShapeType.rect, {
+      x: 0.5, y: 0.95, w: 1.2, h: 0.05,
+      fill: { type: "solid", color: accent },
+    });
+    // Timing chip — top-right under the slide number
+    if (slide.timingMinutes) {
+      pSlide.addShape(pptx.ShapeType.rect, {
+        x: 8.3, y: 0.52, w: 1.2, h: 0.3,
+        fill: { type: "solid", color: "FEF3C7" },
+        line: { color: "D97706", width: 0.75 },
+        rectRadius: 0.15,
+      });
+      pSlide.addText(`⏱ ${slide.timingMinutes} min`, {
+        x: 8.3, y: 0.52, w: 1.2, h: 0.3,
+        fontSize: 10, bold: true, color: "92400E",
+        align: "center", fontFace: pptxFont,
+      });
+    }
+    // Bonus label — bottom-right
+    if (slide.bonusLabel) {
+      const blWidth = Math.min(4.2, 0.8 + slide.bonusLabel.length * 0.08);
+      pSlide.addShape(pptx.ShapeType.rect, {
+        x: 9.6 - blWidth, y: 5.15, w: blWidth, h: 0.28,
+        fill: { type: "solid", color: "F5F3FF" },
+        line: { color: "7C3AED", width: 0.75 },
+        rectRadius: 0.14,
+      });
+      pSlide.addText(slide.bonusLabel, {
+        x: 9.6 - blWidth, y: 5.15, w: blWidth, h: 0.28,
+        fontSize: 9, bold: true, color: "5B21B6",
+        align: "center", fontFace: pptxFont,
+      });
+    }
+  };
+
+  // SEND field strip painter — word bank, what-you-need-to-do, sentence
+  // frame, answer frame. Returns the new Y cursor for the caller.
+  const paintSendStrips = (pSlide: any, slide: SlideContent, startY: number): number => {
+    let y = startY;
+    if (slide.wordBank && slide.wordBank.length) {
+      pSlide.addShape(pptx.ShapeType.rect, {
+        x: 0.5, y, w: 9, h: 0.55,
+        fill: { type: "solid", color: "ECFEFF" },
+        line: { color: "06B6D4", width: 0.75 },
+        rectRadius: 0.06,
+      });
+      pSlide.addText("Word Bank:", { x: 0.65, y: y + 0.05, w: 1.2, h: 0.22, fontSize: 9, bold: true, color: "155E75", fontFace: pptxFont });
+      const wbText = slide.wordBank.slice(0, 6).map(w => `${w.term} — ${w.definition}`).join("   ·   ");
+      pSlide.addText(wbText, { x: 1.9, y: y + 0.05, w: 7.5, h: 0.45, fontSize: 10, color: "164E63", fontFace: pptxFont, wrap: true });
+      y += 0.65;
+    }
+    if (slide.whatYouNeedToDo && slide.whatYouNeedToDo.length) {
+      const h = 0.28 + slide.whatYouNeedToDo.length * 0.22;
+      pSlide.addShape(pptx.ShapeType.rect, {
+        x: 0.5, y, w: 9, h,
+        fill: { type: "solid", color: "FEFCE8" },
+        line: { color: "CA8A04", width: 1 },
+        rectRadius: 0.06,
+      });
+      pSlide.addText("What you need to do:", { x: 0.65, y: y + 0.05, w: 8.7, h: 0.22, fontSize: 9, bold: true, color: "713F12", fontFace: pptxFont });
+      const steps = slide.whatYouNeedToDo.map((s, i) => `${i + 1}. ${s}`).join("\n");
+      pSlide.addText(steps, { x: 0.8, y: y + 0.26, w: 8.5, h: h - 0.28, fontSize: 10, color: "713F12", fontFace: pptxFont, wrap: true });
+      y += h + 0.08;
+    }
+    if (slide.actionVerb) {
+      pSlide.addShape(pptx.ShapeType.rect, {
+        x: 0.5, y, w: 2.5, h: 0.3,
+        fill: { type: "solid", color: "FEF3C7" },
+        line: { color: "F59E0B", width: 0.75 },
+        rectRadius: 0.14,
+      });
+      pSlide.addText(`ACTION: ${slide.actionVerb}`, {
+        x: 0.5, y, w: 2.5, h: 0.3,
+        fontSize: 10, bold: true, color: "92400E",
+        align: "center", fontFace: pptxFont,
+      });
+      y += 0.4;
+    }
+    return y;
+  };
+
+  // Footer SEND strip painter — sentence starter, answer frame, visual cue.
+  const paintSendFooter = (pSlide: any, slide: SlideContent) => {
+    let y = 4.8;
+    const rows = [
+      slide.sentenceStarter && { label: "Sentence starter:", value: `"${slide.sentenceStarter}"`, bg: "F3F4F6", border: "9CA3AF", text: "374151" },
+      slide.answerFrame && { label: "Answer frame:", value: slide.answerFrame, bg: "EFF6FF", border: "3B82F6", text: "1E3A8A" },
+      slide.visualCue && { label: "Visual cue:", value: slide.visualCue, bg: "F5F3FF", border: "7C3AED", text: "5B21B6" },
+    ].filter(Boolean) as Array<{ label: string; value: string; bg: string; border: string; text: string }>;
+    if (!rows.length) return;
+    // Each row is 0.28 tall. Stack upward from y=4.8.
+    y = 4.8 - rows.length * 0.3;
+    rows.forEach((r, i) => {
+      const ry = y + i * 0.3;
+      pSlide.addShape(pptx.ShapeType.rect, { x: 0.5, y: ry, w: 9, h: 0.28, fill: { type: "solid", color: r.bg }, line: { color: r.border, width: 0.5 }, rectRadius: 0.04 });
+      pSlide.addText(`${r.label} ${r.value}`, { x: 0.65, y: ry + 0.03, w: 8.7, h: 0.22, fontSize: 10, color: r.text, fontFace: pptxFont, italic: true, wrap: true });
+    });
+  };
 
   for (const [idx, slide] of presentation.slides.entries()) {
     const pSlide = pptx.addSlide();
@@ -1660,7 +2828,7 @@ async function exportToPptx(presentation: PresentationData, themeKey: ThemeKey):
       pSlide.addText(slide.title, {
         x: 0.5, y: 1.8, w: 9, h: 1.5,
         fontSize: 36, bold: true, color: "FFFFFF",
-        align: "center", fontFace: "Calibri",
+        align: "center", fontFace: pptxFont,
         wrap: true,
       });
       // Subtitle
@@ -1668,7 +2836,7 @@ async function exportToPptx(presentation: PresentationData, themeKey: ThemeKey):
         pSlide.addText(slide.subtitle, {
           x: 0.5, y: 3.5, w: 9, h: 0.5,
           fontSize: 16, color: "CCDDFF",
-          align: "center", fontFace: "Calibri",
+          align: "center", fontFace: pptxFont,
           italic: true,
         });
       }
@@ -1677,7 +2845,7 @@ async function exportToPptx(presentation: PresentationData, themeKey: ThemeKey):
         pSlide.addText(slide.body, {
           x: 1, y: 4.2, w: 8, h: 0.6,
           fontSize: 13, color: "AABBDD",
-          align: "center", fontFace: "Calibri",
+          align: "center", fontFace: pptxFont,
           italic: true,
         });
       }
@@ -1689,50 +2857,34 @@ async function exportToPptx(presentation: PresentationData, themeKey: ThemeKey):
       });
     } else if (slide.type === "learning-objectives") {
       pSlide.background = { fill: slideBgClean };
-      // Top accent bar
-      pSlide.addShape(pptx.ShapeType.rect, {
-        x: 0, y: 0, w: "100%", h: 0.08,
-        fill: { type: "solid", color: isDark ? secondaryClean : primaryClean },
-      });
-      // Title
-      pSlide.addText(slide.title, {
-        x: 0.5, y: 0.3, w: 8.5, h: 0.6,
-        fontSize: 22, bold: true, color: slideTitleClean,
-        fontFace: "Calibri",
-      });
-      // Underline
-      pSlide.addShape(pptx.ShapeType.rect, {
-        x: 0.5, y: 0.95, w: 1.2, h: 0.05,
-        fill: { type: "solid", color: secondaryClean },
-      });
-      // Objectives
+      paintHeader(pSlide, slide);
+      // Prefer the structured successCriteria format when the AI provides it.
       const objColors = ["16A34A", "2563EB", "D97706"];
-      const objLabels = ["ALL", "MOST", "SOME"];
-      (slide.bullets || []).forEach((bullet, i) => {
-        const text = bullet.replace(/^(All:|Most:|Some:)\s*/i, "");
+      const objLabels = ["MUST", "SHOULD", "COULD"];
+      const band = slide.successCriteria
+        ? [slide.successCriteria.must, slide.successCriteria.should, slide.successCriteria.could]
+        : (slide.bullets || []).slice(0, 3).map(b => b.replace(/^(All:|Most:|Some:|Must:|Should:|Could:)\s*/i, ""));
+      band.forEach((text, i) => {
         const color = objColors[i] || secondaryClean;
         const label = objLabels[i] || String(i + 1);
         const yPos = 1.2 + i * 1.1;
-        // Background rect
         pSlide.addShape(pptx.ShapeType.rect, {
           x: 0.5, y: yPos, w: 9, h: 0.85,
           fill: { type: "solid", color: color + "15" },
           line: { color, width: 1.5 },
           rectRadius: 0.1,
         });
-        // Label badge
         pSlide.addText(label, {
-          x: 0.6, y: yPos + 0.2, w: 0.7, h: 0.45,
-          fontSize: 11, bold: true, color: "FFFFFF",
+          x: 0.6, y: yPos + 0.2, w: 0.85, h: 0.45,
+          fontSize: 10, bold: true, color: "FFFFFF",
           align: "center",
           fill: { type: "solid", color },
           rectRadius: 0.1,
         });
-        // Objective text
         pSlide.addText(text, {
-          x: 1.5, y: yPos + 0.15, w: 7.8, h: 0.55,
-          fontSize: 13, color: textClean,
-          fontFace: "Calibri",
+          x: 1.65, y: yPos + 0.15, w: 7.6, h: 0.55,
+          fontSize: Math.max(13, minBodyPt), color: textClean,
+          fontFace: pptxFont,
           wrap: true,
         });
       });
@@ -1745,7 +2897,7 @@ async function exportToPptx(presentation: PresentationData, themeKey: ThemeKey):
       pSlide.addText(slide.title, {
         x: 0.5, y: 0.3, w: 8.5, h: 0.6,
         fontSize: 22, bold: true, color: slideTitleClean,
-        fontFace: "Calibri",
+        fontFace: pptxFont,
       });
       pSlide.addShape(pptx.ShapeType.rect, {
         x: 0.5, y: 0.95, w: 1.2, h: 0.05,
@@ -1767,53 +2919,57 @@ async function exportToPptx(presentation: PresentationData, themeKey: ThemeKey):
         pSlide.addText(item.term, {
           x: x + 0.1, y: y + 0.05, w: 4.3, h: 0.3,
           fontSize: 11, bold: true, color: secondaryClean,
-          fontFace: "Calibri",
+          fontFace: pptxFont,
         });
         pSlide.addText(item.definition, {
           x: x + 0.1, y: y + 0.38, w: 4.3, h: 0.42,
           fontSize: 10, color: slideTextClean,
-          fontFace: "Calibri", wrap: true,
+          fontFace: pptxFont, wrap: true,
         });
       });
     } else if (slide.type === "worked-example") {
       pSlide.background = { fill: slideBgClean };
-      pSlide.addShape(pptx.ShapeType.rect, {
-        x: 0, y: 0, w: "100%", h: 0.08,
-        fill: { type: "solid", color: isDark ? secondaryClean : primaryClean },
-      });
-      pSlide.addText(slide.title, {
-        x: 0.5, y: 0.3, w: 8.5, h: 0.6,
-        fontSize: 22, bold: true, color: slideTitleClean,
-        fontFace: "Calibri",
-      });
-      pSlide.addShape(pptx.ShapeType.rect, {
-        x: 0.5, y: 0.95, w: 1.2, h: 0.05,
-        fill: { type: "solid", color: secondaryClean },
-      });
-      (slide.steps || []).forEach((step, i) => {
-        const y = 1.15 + i * 0.75;
-        // Step circle
-        pSlide.addShape(pptx.ShapeType.ellipse, {
-          x: 0.5, y: y, w: 0.4, h: 0.4,
-          fill: { type: "solid", color: secondaryClean },
+      paintHeader(pSlide, slide);
+      const accent = slideAccent(slide.type);
+      // Prefer the structured workedExampleBox if the AI populated it —
+      // renders as a bordered "Worked Example" box with distinct background
+      // so it's visually identifiable (per the teacher-framework guide).
+      if (slide.workedExampleBox) {
+        const w = slide.workedExampleBox;
+        pSlide.addShape(pptx.ShapeType.rect, { x: 0.5, y: 1.15, w: 9, h: 3.6, fill: { type: "solid", color: lightClean }, line: { color: accent, width: 2 }, rectRadius: 0.1 });
+        // Top band
+        pSlide.addShape(pptx.ShapeType.rect, { x: 0.5, y: 1.15, w: 9, h: 0.32, fill: { type: "solid", color: accent } });
+        pSlide.addText("WORKED EXAMPLE", { x: 0.65, y: 1.17, w: 8.7, h: 0.28, fontSize: 10, bold: true, color: "FFFFFF", fontFace: pptxFont });
+        // Problem
+        pSlide.addText("Problem", { x: 0.65, y: 1.52, w: 8.7, h: 0.22, fontSize: 9, bold: true, color: "4B5563", fontFace: pptxFont });
+        pSlide.addText(w.problem, { x: 0.65, y: 1.72, w: 8.7, h: 0.35, fontSize: 12, color: slideTextClean, fontFace: "Consolas", wrap: true });
+        // Steps
+        let sy = 2.1;
+        w.steps.slice(0, 6).forEach((step, i) => {
+          pSlide.addShape(pptx.ShapeType.ellipse, { x: 0.65, y: sy, w: 0.3, h: 0.3, fill: { type: "solid", color: accent } });
+          pSlide.addText(String(i + 1), { x: 0.65, y: sy, w: 0.3, h: 0.3, fontSize: 11, bold: true, color: "FFFFFF", align: "center", valign: "middle", fontFace: pptxFont });
+          pSlide.addShape(pptx.ShapeType.rect, { x: 1.05, y: sy, w: 8.3, h: 0.32, fill: { type: "solid", color: "FFFFFF" }, line: { color: "E5E7EB", width: 0.5 }, rectRadius: 0.04 });
+          pSlide.addText(step, { x: 1.15, y: sy + 0.04, w: 8.15, h: 0.26, fontSize: 11, color: slideTextClean, fontFace: "Consolas", wrap: true });
+          sy += 0.38;
         });
-        pSlide.addText(String(i + 1), {
-          x: 0.5, y: y, w: 0.4, h: 0.4,
-          fontSize: 12, bold: true, color: "FFFFFF",
-          align: "center", valign: "middle",
+        // Answer
+        pSlide.addShape(pptx.ShapeType.rect, { x: 0.65, y: 4.3, w: 8.7, h: 0.35, fill: { type: "solid", color: "FFFFFF" }, line: { color: accent, width: 1 }, rectRadius: 0.04 });
+        pSlide.addText("Answer:", { x: 0.75, y: 4.33, w: 1.2, h: 0.3, fontSize: 10, bold: true, color: "4B5563", fontFace: pptxFont });
+        pSlide.addText(`${w.answer}${w.units ? ` ${w.units}` : ""}`, { x: 1.95, y: 4.33, w: 7.3, h: 0.3, fontSize: 13, bold: true, color: accent, fontFace: "Consolas" });
+        // Common error
+        if (w.commonError) {
+          pSlide.addText(`⚠ Common error: ${w.commonError}`, { x: 0.65, y: 4.7, w: 8.7, h: 0.3, fontSize: 10, color: "991B1B", italic: true, fontFace: pptxFont, wrap: true });
+        }
+      } else {
+        // Fallback: loose steps array (legacy decks).
+        (slide.steps || []).forEach((step, i) => {
+          const y = 1.15 + i * 0.75;
+          pSlide.addShape(pptx.ShapeType.ellipse, { x: 0.5, y: y, w: 0.4, h: 0.4, fill: { type: "solid", color: secondaryClean } });
+          pSlide.addText(String(i + 1), { x: 0.5, y: y, w: 0.4, h: 0.4, fontSize: 12, bold: true, color: "FFFFFF", align: "center", valign: "middle" });
+          pSlide.addShape(pptx.ShapeType.rect, { x: 1.1, y: y, w: 8.3, h: 0.55, fill: { type: "solid", color: lightClean }, rectRadius: 0.08 });
+          pSlide.addText(step, { x: 1.2, y: y + 0.05, w: 8.1, h: 0.45, fontSize: 12, color: slideTextClean, fontFace: pptxFont, wrap: true });
         });
-        // Step text
-        pSlide.addShape(pptx.ShapeType.rect, {
-          x: 1.1, y: y, w: 8.3, h: 0.55,
-          fill: { type: "solid", color: lightClean },
-          rectRadius: 0.08,
-        });
-        pSlide.addText(step, {
-          x: 1.2, y: y + 0.05, w: 8.1, h: 0.45,
-          fontSize: 12, color: slideTextClean,
-          fontFace: "Calibri", wrap: true,
-        });
-      });
+      }
     } else if (slide.type === "check-understanding") {
       pSlide.background = { fill: slideBgClean };
       pSlide.addShape(pptx.ShapeType.rect, {
@@ -1823,7 +2979,7 @@ async function exportToPptx(presentation: PresentationData, themeKey: ThemeKey):
       pSlide.addText(slide.title, {
         x: 0.5, y: 0.3, w: 8.5, h: 0.6,
         fontSize: 22, bold: true, color: slideTitleClean,
-        fontFace: "Calibri",
+        fontFace: pptxFont,
       });
       if (slide.question) {
         pSlide.addShape(pptx.ShapeType.rect, {
@@ -1834,7 +2990,7 @@ async function exportToPptx(presentation: PresentationData, themeKey: ThemeKey):
         pSlide.addText(slide.question, {
           x: 0.7, y: 1.2, w: 8.6, h: 0.7,
           fontSize: 15, bold: true, color: slideTitleClean,
-          align: "center", fontFace: "Calibri", wrap: true,
+          align: "center", fontFace: pptxFont, wrap: true,
         });
       }
       const letters = ["A", "B", "C", "D"];
@@ -1858,33 +3014,205 @@ async function exportToPptx(presentation: PresentationData, themeKey: ThemeKey):
         pSlide.addText(opt, {
           x: x + 0.7, y: y + 0.12, w: 3.7, h: 0.46,
           fontSize: 12, color: slideTextClean,
-          fontFace: "Calibri", wrap: true,
+          fontFace: pptxFont, wrap: true,
         });
       });
-    } else {
-      // Generic slide: content, activity, hook, discussion, summary, exit-ticket, extension
+    } else if (slide.type === "misconception-bust") {
+      // ─── Misconception Buster — red ❌ / green ✅ two-column split ────────
       pSlide.background = { fill: slideBgClean };
-      pSlide.addShape(pptx.ShapeType.rect, {
-        x: 0, y: 0, w: "100%", h: 0.08,
-        fill: { type: "solid", color: isDark ? secondaryClean : primaryClean },
+      paintHeader(pSlide, slide);
+      let y = paintSendStrips(pSlide, slide, 1.15);
+      // Misconception card (red)
+      pSlide.addShape(pptx.ShapeType.rect, { x: 0.5, y, w: 4.4, h: 1.4, fill: { type: "solid", color: "FEE2E2" }, line: { color: "DC2626", width: 1.5 }, rectRadius: 0.08 });
+      pSlide.addText("❌ Students often think:", { x: 0.6, y: y + 0.05, w: 4.2, h: 0.3, fontSize: 11, bold: true, color: "991B1B", fontFace: pptxFont });
+      pSlide.addText(slide.misconception || "", { x: 0.6, y: y + 0.35, w: 4.2, h: 1.0, fontSize: 12, color: "7F1D1D", fontFace: pptxFont, wrap: true });
+      // Correction card (green)
+      pSlide.addShape(pptx.ShapeType.rect, { x: 5.1, y, w: 4.4, h: 1.4, fill: { type: "solid", color: "DCFCE7" }, line: { color: "16A34A", width: 1.5 }, rectRadius: 0.08 });
+      pSlide.addText("✅ What is actually true:", { x: 5.2, y: y + 0.05, w: 4.2, h: 0.3, fontSize: 11, bold: true, color: "14532D", fontFace: pptxFont });
+      pSlide.addText(slide.correction || "", { x: 5.2, y: y + 0.35, w: 4.2, h: 1.0, fontSize: 12, color: "14532D", fontFace: pptxFont, wrap: true });
+      y += 1.55;
+      // Why the misconception is wrong
+      if (slide.bullets && slide.bullets.length) {
+        pSlide.addText("Why the misconception is wrong:", { x: 0.5, y, w: 9, h: 0.25, fontSize: 10, bold: true, color: "4B5563", fontFace: pptxFont });
+        y += 0.3;
+        slide.bullets.slice(0, 4).forEach(b => {
+          pSlide.addText(`• ${b}`, { x: 0.7, y, w: 8.8, h: 0.3, fontSize: Math.max(11, minBodyPt), color: slideTextClean, fontFace: pptxFont, wrap: true });
+          y += 0.3;
+        });
+      }
+      paintSendFooter(pSlide, slide);
+    } else if (slide.type === "model-answer") {
+      // ─── Model Answer — answer on left, mark scheme on right ────────────
+      pSlide.background = { fill: slideBgClean };
+      paintHeader(pSlide, slide);
+      const accent = slideAccent(slide.type);
+      // Answer card
+      pSlide.addShape(pptx.ShapeType.rect, { x: 0.5, y: 1.15, w: 5.6, h: 3.6, fill: { type: "solid", color: lightClean }, line: { color: accent, width: 1.5 }, rectRadius: 0.08 });
+      pSlide.addText("MODEL ANSWER", { x: 0.65, y: 1.22, w: 5.3, h: 0.25, fontSize: 9, bold: true, color: accent, fontFace: pptxFont });
+      pSlide.addText(slide.body || slide.answer || "", { x: 0.65, y: 1.55, w: 5.3, h: 3.1, fontSize: Math.max(12, minBodyPt), color: slideTextClean, fontFace: pptxFont, wrap: true });
+      // Mark scheme column
+      pSlide.addText("MARK SCHEME", { x: 6.2, y: 1.22, w: 3.3, h: 0.25, fontSize: 9, bold: true, color: "4B5563", fontFace: pptxFont });
+      let my = 1.52;
+      (slide.markScheme || []).slice(0, 8).forEach(m => {
+        pSlide.addShape(pptx.ShapeType.rect, { x: 6.2, y: my, w: 3.3, h: 0.42, fill: { type: "solid", color: "FFFFFF" }, line: { color: accent + "50", width: 0.5 }, rectRadius: 0.04 });
+        pSlide.addShape(pptx.ShapeType.rect, { x: 6.25, y: my + 0.08, w: 0.45, h: 0.26, fill: { type: "solid", color: accent }, rectRadius: 0.04 });
+        pSlide.addText(`+${m.marks}`, { x: 6.25, y: my + 0.08, w: 0.45, h: 0.26, fontSize: 9, bold: true, color: "FFFFFF", align: "center", fontFace: pptxFont });
+        pSlide.addText(m.point, { x: 6.75, y: my + 0.05, w: 2.7, h: 0.34, fontSize: 10, color: slideTextClean, fontFace: pptxFont, wrap: true });
+        my += 0.48;
       });
-      pSlide.addText(slide.title, {
-        x: 0.5, y: 0.3, w: 8.5, h: 0.6,
-        fontSize: 22, bold: true, color: slideTitleClean,
-        fontFace: "Calibri",
+      if (slide.examTip) {
+        pSlide.addShape(pptx.ShapeType.rect, { x: 6.2, y: my + 0.1, w: 3.3, h: 0.65, fill: { type: "solid", color: "FEF3C7" }, line: { color: "D97706", width: 0.75 }, rectRadius: 0.04 });
+        pSlide.addText("TIP", { x: 6.3, y: my + 0.15, w: 3.2, h: 0.2, fontSize: 8, bold: true, color: "92400E", fontFace: pptxFont });
+        pSlide.addText(slide.examTip, { x: 6.3, y: my + 0.32, w: 3.2, h: 0.42, fontSize: 10, color: "92400E", fontFace: pptxFont, wrap: true });
+      }
+      paintSendFooter(pSlide, slide);
+    } else if (slide.type === "exam-practice") {
+      // ─── Exam Practice — exam card with command/marks/time chips ─────────
+      pSlide.background = { fill: slideBgClean };
+      paintHeader(pSlide, slide);
+      const accent = slideAccent(slide.type);
+      const q = slide.examQuestion;
+      let y = paintSendStrips(pSlide, slide, 1.15);
+      pSlide.addShape(pptx.ShapeType.rect, { x: 0.5, y, w: 9, h: 2.4, fill: { type: "solid", color: "FFFBEB" }, line: { color: accent, width: 2 }, rectRadius: 0.1 });
+      // Chips row
+      let cx = 0.65;
+      if (q?.commandWord) {
+        pSlide.addShape(pptx.ShapeType.rect, { x: cx, y: y + 0.12, w: 1.0, h: 0.28, fill: { type: "solid", color: "0F172A" }, rectRadius: 0.04 });
+        pSlide.addText(q.commandWord.toUpperCase(), { x: cx, y: y + 0.12, w: 1.0, h: 0.28, fontSize: 9, bold: true, color: "FFFFFF", align: "center", fontFace: pptxFont });
+        cx += 1.1;
+      }
+      if (q?.marks != null) {
+        pSlide.addShape(pptx.ShapeType.rect, { x: cx, y: y + 0.12, w: 1.0, h: 0.28, fill: { type: "solid", color: "D97706" }, rectRadius: 0.04 });
+        pSlide.addText(`[${q.marks} marks]`, { x: cx, y: y + 0.12, w: 1.0, h: 0.28, fontSize: 9, bold: true, color: "FFFFFF", align: "center", fontFace: pptxFont });
+        cx += 1.1;
+      }
+      if (q?.timeMins != null) {
+        pSlide.addShape(pptx.ShapeType.rect, { x: cx, y: y + 0.12, w: 1.2, h: 0.28, fill: { type: "solid", color: "E2E8F0" }, rectRadius: 0.04 });
+        pSlide.addText(`⏱ ${q.timeMins} min`, { x: cx, y: y + 0.12, w: 1.2, h: 0.28, fontSize: 9, bold: true, color: "334155", align: "center", fontFace: pptxFont });
+      }
+      // Question stem
+      pSlide.addText(q?.stem || slide.question || slide.body || "", { x: 0.7, y: y + 0.5, w: 8.6, h: 1.8, fontSize: Math.max(14, minBodyPt + 2), color: slideTextClean, fontFace: pptxFont, wrap: true });
+      y += 2.55;
+      // Differentiation cards (optional)
+      if (slide.differentiation) {
+        const d = slide.differentiation;
+        const cards = [
+          d.support && { bg: "DCFCE7", border: "16A34A", label: "SUPPORT", text: d.support, tcol: "14532D" },
+          d.core && { bg: "DBEAFE", border: "2563EB", label: "CORE", text: d.core, tcol: "1E3A8A" },
+          d.extension && { bg: "F5F3FF", border: "7C3AED", label: "EXTENSION", text: d.extension, tcol: "5B21B6" },
+        ].filter(Boolean) as any[];
+        const w = 9.0 / Math.max(cards.length, 1) - 0.1;
+        cards.forEach((c, i) => {
+          const x = 0.5 + i * (w + 0.1);
+          pSlide.addShape(pptx.ShapeType.rect, { x, y, w, h: 0.85, fill: { type: "solid", color: c.bg }, line: { color: c.border, width: 1 }, rectRadius: 0.06 });
+          pSlide.addText(c.label, { x: x + 0.08, y: y + 0.05, w: w - 0.16, h: 0.22, fontSize: 8, bold: true, color: c.tcol, fontFace: pptxFont });
+          pSlide.addText(c.text, { x: x + 0.08, y: y + 0.28, w: w - 0.16, h: 0.55, fontSize: 10, color: c.tcol, fontFace: pptxFont, wrap: true });
+        });
+      }
+      paintSendFooter(pSlide, slide);
+    } else if (slide.type === "vocab-reference") {
+      // ─── Vocab Reference — full table ───────────────────────────────────
+      pSlide.background = { fill: slideBgClean };
+      paintHeader(pSlide, slide);
+      const accent = slideAccent(slide.type);
+      const rows = slide.vocabTable && slide.vocabTable.length
+        ? slide.vocabTable
+        : (slide.terms || []).map(t => ({ term: t.term, definition: t.definition, example: undefined as string | undefined }));
+      const rowH = 0.36;
+      // Header row
+      pSlide.addShape(pptx.ShapeType.rect, { x: 0.5, y: 1.15, w: 9, h: 0.32, fill: { type: "solid", color: accent } });
+      pSlide.addText("Term",       { x: 0.6, y: 1.17, w: 2.0, h: 0.28, fontSize: 10, bold: true, color: "FFFFFF", fontFace: pptxFont });
+      pSlide.addText("Definition", { x: 2.7, y: 1.17, w: 4.0, h: 0.28, fontSize: 10, bold: true, color: "FFFFFF", fontFace: pptxFont });
+      pSlide.addText("Example",    { x: 6.8, y: 1.17, w: 2.6, h: 0.28, fontSize: 10, bold: true, color: "FFFFFF", fontFace: pptxFont });
+      rows.slice(0, 10).forEach((r, i) => {
+        const ry = 1.47 + i * rowH;
+        pSlide.addShape(pptx.ShapeType.rect, { x: 0.5, y: ry, w: 9, h: rowH, fill: { type: "solid", color: i % 2 ? "FFFFFF" : lightClean } });
+        pSlide.addText(r.term,       { x: 0.6, y: ry + 0.04, w: 2.0, h: rowH - 0.08, fontSize: 10, bold: true, color: accent, fontFace: pptxFont, wrap: true });
+        pSlide.addText(r.definition, { x: 2.7, y: ry + 0.04, w: 4.0, h: rowH - 0.08, fontSize: 10, color: slideTextClean, fontFace: pptxFont, wrap: true });
+        pSlide.addText(r.example || "—", { x: 6.8, y: ry + 0.04, w: 2.6, h: rowH - 0.08, fontSize: 10, italic: true, color: "6B7280", fontFace: pptxFont, wrap: true });
       });
-      pSlide.addShape(pptx.ShapeType.rect, {
-        x: 0.5, y: 0.95, w: 1.2, h: 0.05,
-        fill: { type: "solid", color: secondaryClean },
+    } else if (slide.type === "brain-break") {
+      // ─── Brain Break — bold amber page ──────────────────────────────────
+      pSlide.background = { fill: "FEF3C7" };
+      pSlide.addShape(pptx.ShapeType.rect, { x: 0, y: 0, w: "100%", h: 0.08, fill: { type: "solid", color: "F59E0B" } });
+      pSlide.addText("🧠", { x: 0, y: 1.4, w: 10, h: 1.2, fontSize: 72, align: "center", fontFace: pptxFont });
+      pSlide.addText("BRAIN BREAK", { x: 0, y: 2.7, w: 10, h: 0.8, fontSize: 44, bold: true, color: "92400E", align: "center", fontFace: pptxFont });
+      pSlide.addText(slide.body || "Stand up and stretch for 30 seconds", { x: 0.5, y: 3.6, w: 9, h: 0.6, fontSize: 18, color: "92400E", align: "center", fontFace: pptxFont });
+    } else if (slide.type === "checkin") {
+      // ─── Check-in — 5 emoji feelings ────────────────────────────────────
+      pSlide.background = { fill: slideBgClean };
+      paintHeader(pSlide, slide);
+      const feelings = ["😀 Calm", "🙂 OK", "😐 Not sure", "😟 Worried", "😣 Struggling"];
+      const w = 1.6, gap = 0.15;
+      const startX = (10 - (w * feelings.length + gap * (feelings.length - 1))) / 2;
+      feelings.forEach((f, i) => {
+        const x = startX + i * (w + gap);
+        pSlide.addShape(pptx.ShapeType.rect, { x, y: 2.3, w, h: 1.2, fill: { type: "solid", color: "FFFFFF" }, line: { color: "14B8A6", width: 2 }, rectRadius: 0.1 });
+        pSlide.addText(f, { x, y: 2.3, w, h: 1.2, fontSize: 18, bold: true, color: "134E4A", align: "center", valign: "middle", fontFace: pptxFont });
       });
-
-      let yPos = 1.2;
+      if (slide.body) {
+        pSlide.addText(slide.body, { x: 0.5, y: 3.8, w: 9, h: 0.4, fontSize: 12, italic: true, color: "6B7280", align: "center", fontFace: pptxFont });
+      }
+    } else if (slide.type === "method-steps") {
+      // ─── Method Steps — numbered cards ───────────────────────────────────
+      pSlide.background = { fill: slideBgClean };
+      paintHeader(pSlide, slide);
+      const accent = slideAccent(slide.type);
+      const steps = slide.methodSteps || slide.steps || [];
+      let y = 1.15;
+      steps.slice(0, 6).forEach((step, i) => {
+        pSlide.addShape(pptx.ShapeType.rect, { x: 0.5, y, w: 9, h: 0.5, fill: { type: "solid", color: "FFFFFF" }, line: { color: accent, width: 1.5 }, rectRadius: 0.06 });
+        pSlide.addShape(pptx.ShapeType.ellipse, { x: 0.6, y: y + 0.08, w: 0.34, h: 0.34, fill: { type: "solid", color: accent } });
+        pSlide.addText(String(i + 1), { x: 0.6, y: y + 0.08, w: 0.34, h: 0.34, fontSize: 14, bold: true, color: "FFFFFF", align: "center", valign: "middle", fontFace: pptxFont });
+        pSlide.addText(step, { x: 1.05, y: y + 0.1, w: 8.35, h: 0.3, fontSize: Math.max(12, minBodyPt), color: slideTextClean, fontFace: pptxFont, wrap: true });
+        y += 0.6;
+      });
+    } else if (slide.type === "help-box") {
+      // ─── Help Box — yellow callout ──────────────────────────────────────
+      pSlide.background = { fill: slideBgClean };
+      paintHeader(pSlide, slide);
+      pSlide.addShape(pptx.ShapeType.rect, { x: 0.5, y: 1.15, w: 9, h: 3.5, fill: { type: "solid", color: "FEF9C3" }, line: { color: "CA8A04", width: 2 }, rectRadius: 0.1 });
+      pSlide.addShape(pptx.ShapeType.rect, { x: 0.5, y: 1.15, w: 9, h: 0.35, fill: { type: "solid", color: "FACC15" } });
+      pSlide.addText("Help Box — refer back to this any time", { x: 0.65, y: 1.18, w: 8.8, h: 0.28, fontSize: 11, bold: true, color: "713F12", fontFace: pptxFont });
+      const items = slide.helpBox || slide.bullets || [];
+      let y = 1.6;
+      items.slice(0, 8).forEach(item => {
+        pSlide.addText(`• ${item}`, { x: 0.8, y, w: 8.5, h: 0.32, fontSize: Math.max(12, minBodyPt), color: "713F12", fontFace: pptxFont, wrap: true });
+        y += 0.32;
+      });
+    } else if (slide.type === "word-bank") {
+      // ─── Word Bank — cyan grid ──────────────────────────────────────────
+      pSlide.background = { fill: slideBgClean };
+      paintHeader(pSlide, slide);
+      const items = slide.wordBank || slide.terms || [];
+      items.slice(0, 8).forEach((w, i) => {
+        const col = i % 2;
+        const row = Math.floor(i / 2);
+        const x = col === 0 ? 0.5 : 5.15;
+        const y = 1.2 + row * 0.95;
+        pSlide.addShape(pptx.ShapeType.rect, { x, y, w: 4.35, h: 0.85, fill: { type: "solid", color: "ECFEFF" }, line: { color: "06B6D4", width: 1.5 }, rectRadius: 0.08 });
+        pSlide.addText(w.term, { x: x + 0.1, y: y + 0.05, w: 4.15, h: 0.3, fontSize: 13, bold: true, color: "155E75", fontFace: pptxFont });
+        pSlide.addText(w.definition, { x: x + 0.1, y: y + 0.38, w: 4.15, h: 0.42, fontSize: 11, color: "164E63", fontFace: pptxFont, wrap: true });
+      });
+    } else if (slide.type === "take-a-break") {
+      // ─── Take a Break — soft teal page ──────────────────────────────────
+      pSlide.background = { fill: "F0FDFA" };
+      pSlide.addShape(pptx.ShapeType.rect, { x: 0, y: 0, w: "100%", h: 0.08, fill: { type: "solid", color: "14B8A6" } });
+      pSlide.addText("☕", { x: 0, y: 1.4, w: 10, h: 1.2, fontSize: 64, align: "center", fontFace: pptxFont });
+      pSlide.addText("Take a Break", { x: 0, y: 2.7, w: 10, h: 0.7, fontSize: 36, bold: true, color: "134E4A", align: "center", fontFace: pptxFont });
+      pSlide.addText(slide.body || "Take a breath here if you need to. Come back when you're ready.", { x: 1.5, y: 3.5, w: 7, h: 0.8, fontSize: 16, color: "134E4A", align: "center", fontFace: pptxFont, wrap: true });
+    } else {
+      // Generic slide: content, activity, hook, discussion, summary, exit-ticket, extension,
+      // plus any other type without a bespoke branch. Uses the shared header painter + strips.
+      pSlide.background = { fill: slideBgClean };
+      paintHeader(pSlide, slide);
+      let yPos = paintSendStrips(pSlide, slide, 1.15);
 
       if (slide.body) {
         pSlide.addText(slide.body, {
           x: 0.5, y: yPos, w: 9, h: 0.5,
-          fontSize: 12, color: isDark ? "94A3B8" : "6B7280",
-          italic: true, fontFace: "Calibri", wrap: true,
+          fontSize: Math.max(12, minBodyPt), color: isDark ? "94A3B8" : "6B7280",
+          italic: true, fontFace: pptxFont, wrap: true,
         });
         yPos += 0.6;
       }
@@ -1897,31 +3225,91 @@ async function exportToPptx(presentation: PresentationData, themeKey: ThemeKey):
         });
         pSlide.addText(slide.question, {
           x: 0.7, y: yPos + 0.1, w: 8.6, h: 0.6,
-          fontSize: 15, bold: true, color: slideTitleClean,
-          align: "center", fontFace: "Calibri", wrap: true,
+          fontSize: Math.max(15, minBodyPt + 3), bold: true, color: slideTitleClean,
+          align: "center", fontFace: pptxFont, wrap: true,
         });
         yPos += 1.0;
       }
 
       if (slide.bullets && slide.bullets.length > 0) {
-        slide.bullets.forEach((bullet, i) => {
+        slide.bullets.forEach(bullet => {
           pSlide.addShape(pptx.ShapeType.rect, {
             x: 0.5, y: yPos, w: 9, h: 0.55,
             fill: { type: "solid", color: lightClean },
             rectRadius: 0.06,
           });
-          pSlide.addShape(pptx.ShapeType.ellipse, {
-            x: 0.65, y: yPos + 0.18, w: 0.18, h: 0.18,
-            fill: { type: "solid", color: secondaryClean },
-          });
+          // Visible checkbox (ADHD) or regular bullet dot
+          if (slide.visibleCheckboxes) {
+            pSlide.addShape(pptx.ShapeType.rect, {
+              x: 0.6, y: yPos + 0.14, w: 0.28, h: 0.28,
+              fill: { type: "solid", color: "FFFFFF" }, line: { color: secondaryClean, width: 1.5 },
+              rectRadius: 0.03,
+            });
+          } else {
+            pSlide.addShape(pptx.ShapeType.ellipse, {
+              x: 0.65, y: yPos + 0.18, w: 0.18, h: 0.18,
+              fill: { type: "solid", color: secondaryClean },
+            });
+          }
           pSlide.addText(bullet, {
-            x: 1.0, y: yPos + 0.08, w: 8.3, h: 0.4,
-            fontSize: 12, color: slideTextClean,
-            fontFace: "Calibri", wrap: true,
+            x: 1.05, y: yPos + 0.08, w: 8.3, h: 0.4,
+            fontSize: Math.max(12, minBodyPt), color: slideTextClean,
+            fontFace: pptxFont, wrap: true,
           });
           yPos += 0.65;
         });
       }
+
+      // Method steps inline (Dyslexia/Dyscalculia)
+      if (slide.methodSteps && slide.methodSteps.length) {
+        pSlide.addShape(pptx.ShapeType.rect, { x: 0.5, y: yPos, w: 9, h: 0.3 + slide.methodSteps.length * 0.28, fill: { type: "solid", color: "FFFFFF" }, line: { color: secondaryClean, width: 1.5 }, rectRadius: 0.06 });
+        pSlide.addText("Method steps", { x: 0.6, y: yPos + 0.04, w: 8.8, h: 0.22, fontSize: 9, bold: true, color: "4B5563", fontFace: pptxFont });
+        slide.methodSteps.forEach((step, i) => {
+          pSlide.addText(`${i + 1}. ${step}`, { x: 0.8, y: yPos + 0.26 + i * 0.28, w: 8.4, h: 0.26, fontSize: 11, color: slideTextClean, fontFace: pptxFont, wrap: true });
+        });
+        yPos += 0.4 + slide.methodSteps.length * 0.28;
+      }
+
+      // Help box inline (MLD)
+      if (slide.helpBox && slide.helpBox.length) {
+        pSlide.addShape(pptx.ShapeType.rect, { x: 0.5, y: yPos, w: 9, h: 0.3 + slide.helpBox.length * 0.26, fill: { type: "solid", color: "FEF9C3" }, line: { color: "CA8A04", width: 1 }, rectRadius: 0.06 });
+        pSlide.addText("Help box", { x: 0.6, y: yPos + 0.04, w: 8.8, h: 0.22, fontSize: 9, bold: true, color: "713F12", fontFace: pptxFont });
+        slide.helpBox.forEach((item, i) => {
+          pSlide.addText(`• ${item}`, { x: 0.8, y: yPos + 0.26 + i * 0.26, w: 8.4, h: 0.24, fontSize: 11, color: "713F12", fontFace: pptxFont, wrap: true });
+        });
+        yPos += 0.4 + slide.helpBox.length * 0.26;
+      }
+
+      // Completion checklist (ASC/Tourette's)
+      if (slide.completionChecklist && slide.completionChecklist.length) {
+        pSlide.addShape(pptx.ShapeType.rect, { x: 0.5, y: yPos, w: 9, h: 0.3 + slide.completionChecklist.length * 0.26, fill: { type: "solid", color: "FFFFFF" }, line: { color: secondaryClean, width: 1 }, rectRadius: 0.06 });
+        pSlide.addText("Completion checklist", { x: 0.6, y: yPos + 0.04, w: 8.8, h: 0.22, fontSize: 9, bold: true, color: "4B5563", fontFace: pptxFont });
+        slide.completionChecklist.forEach((item, i) => {
+          const ry = yPos + 0.26 + i * 0.26;
+          pSlide.addShape(pptx.ShapeType.rect, { x: 0.75, y: ry + 0.03, w: 0.18, h: 0.18, fill: { type: "solid", color: "FFFFFF" }, line: { color: secondaryClean, width: 1 }, rectRadius: 0.02 });
+          pSlide.addText(item, { x: 1.0, y: ry, w: 8.3, h: 0.24, fontSize: 11, color: slideTextClean, fontFace: pptxFont, wrap: true });
+        });
+        yPos += 0.4 + slide.completionChecklist.length * 0.26;
+      }
+
+      // Differentiation cards strip
+      if (slide.differentiation && (slide.differentiation.support || slide.differentiation.core || slide.differentiation.extension)) {
+        const d = slide.differentiation;
+        const cards = [
+          d.support && { bg: "DCFCE7", border: "16A34A", label: "SUPPORT", text: d.support, tcol: "14532D" },
+          d.core && { bg: "DBEAFE", border: "2563EB", label: "CORE", text: d.core, tcol: "1E3A8A" },
+          d.extension && { bg: "F5F3FF", border: "7C3AED", label: "EXTENSION", text: d.extension, tcol: "5B21B6" },
+        ].filter(Boolean) as any[];
+        const cw = 9.0 / Math.max(cards.length, 1) - 0.1;
+        cards.forEach((c, i) => {
+          const cx = 0.5 + i * (cw + 0.1);
+          pSlide.addShape(pptx.ShapeType.rect, { x: cx, y: yPos, w: cw, h: 0.7, fill: { type: "solid", color: c.bg }, line: { color: c.border, width: 1 }, rectRadius: 0.06 });
+          pSlide.addText(c.label, { x: cx + 0.08, y: yPos + 0.04, w: cw - 0.16, h: 0.2, fontSize: 8, bold: true, color: c.tcol, fontFace: pptxFont });
+          pSlide.addText(c.text, { x: cx + 0.08, y: yPos + 0.24, w: cw - 0.16, h: 0.44, fontSize: 10, color: c.tcol, fontFace: pptxFont, wrap: true });
+        });
+      }
+
+      paintSendFooter(pSlide, slide);
     }
 
     // Slide number footer
@@ -1945,9 +3333,17 @@ export default function PresentationMaker() {
   const [yearGroup, setYearGroup] = useState("");
   const [topic, setTopic] = useState("");
   const [lessonType, setLessonType] = useState("introduction");
-  const [slideCount, setSlideCount] = useState("12");
+  const [slideCount, setSlideCount] = useState("18");
   const [objectives, setObjectives] = useState("");
-  const [sendNeeds, setSendNeeds] = useState("");
+  // Multi-select SEND needs — stored as a string[] of canonical spec ids
+  // (e.g. ["adhd","dyslexia"]). Empty array = no adaptations. Teachers can
+  // also type free-form notes via `sendNeedsNotes` which is combined with
+  // the structured ids when the prompt is built.
+  const [sendNeedIds, setSendNeedIds] = useState<string[]>([]);
+  const [sendNeedsNotes, setSendNeedsNotes] = useState("");
+  // Compose the sendNeeds string used by buildSlidePrompt (structured ids +
+  // optional free-text notes, comma-separated).
+  const sendNeeds = [...sendNeedIds, sendNeedsNotes.trim()].filter(Boolean).join(",");
   const [additionalNotes, setAdditionalNotes] = useState("");
   const [selectedTheme, setSelectedTheme] = useState<ThemeKey>("navy");
   const [readingAge, setReadingAge] = useState<number>(12);
@@ -1985,9 +3381,12 @@ export default function PresentationMaker() {
   // Save to library
   const [savingToLib, setSavingToLib] = useState(false);
   const [savedToLib, setSavedToLib] = useState(false);
-  // SEND Adaptation
+  // SEND Adaptation — multi-select ids (canonical spec ids from send-data.ts).
+  // Same ids used by the main generate form; the adapt dialog simply re-uses
+  // them so the two flows stay in lock-step.
   const [showSendAdaptDialog, setShowSendAdaptDialog] = useState(false);
-  const [sendAdaptNeed, setSendAdaptNeed] = useState("dyslexia");
+  const [sendAdaptNeedIds, setSendAdaptNeedIds] = useState<string[]>(["dyslexia"]);
+  const [sendAdaptNotes, setSendAdaptNotes] = useState("");
   const [adaptingForSend, setAdaptingForSend] = useState(false);
   const [adaptedPresentation, setAdaptedPresentation] = useState<PresentationData | null>(null);
   const [showSendComparison, setShowSendComparison] = useState(false);
@@ -1995,7 +3394,24 @@ export default function PresentationMaker() {
   // Inline slide edit
   const [slideEditValues, setSlideEditValues] = useState<Partial<SlideContent>>({});
 
-  const theme = THEMES[selectedTheme];
+  // ── Iterative refinement ─────────────────────────────────────────────────────
+  // We keep the conversation history across generate → refine rounds so the
+  // AI remembers the full deck context and the teacher's prior instructions.
+  // Per the guide: "Iterating with specific feedback is more powerful than
+  // getting the perfect first prompt. The AI remembers context within a
+  // conversation, so you can refine slide by slide without regenerating the
+  // whole presentation."
+  const [conversation, setConversation] = useState<AIChatMessage[]>([]);
+  const [showRefineDialog, setShowRefineDialog] = useState(false);
+  const [refineScope, setRefineScope] = useState<"slide" | "deck">("slide");
+  const [refineTargetSlide, setRefineTargetSlide] = useState<number>(0);
+  const [refineText, setRefineText] = useState("");
+  const [refining, setRefining] = useState(false);
+
+  // Base theme is what the teacher chose; `theme` is the SEND-composed version
+  // used for every render. When no SEND needs are selected, composeTheme
+  // returns the base theme unchanged (applied* fields empty).
+  const theme = composeTheme(selectedTheme, sendNeedIds);
 
   const handleGenerate = async () => {
     if (!subject || !yearGroup || !topic) {
@@ -2057,6 +3473,16 @@ export default function PresentationMaker() {
         parsed.theme = template.defaultTheme;
       }
       setPresentation(parsed);
+      // Seed the conversation with the system + user + assistant round so
+      // refinement turns can build on this context without re-sending
+      // everything. The assistant message stores the AI's JSON output so the
+      // model "remembers" what it previously produced.
+      const assistantText = typeof result === 'string' ? result : (result as any).text || JSON.stringify(result);
+      setConversation([
+        { role: "system", content: system },
+        { role: "user", content: userPrompt },
+        { role: "assistant", content: assistantText },
+      ]);
       toast.success(`Generated ${parsed.slides.length} slides!`);
     } catch (err: any) {
       console.error("Presentation generation failed:", err);
@@ -2066,11 +3492,132 @@ export default function PresentationMaker() {
     }
   };
 
+  // ── Iterative refinement ─────────────────────────────────────────────────
+  // The centrepiece of the teacher-framework: "Iterating with specific
+  // feedback is more powerful than getting the perfect first prompt."
+  //
+  // Opens the refine dialog. When scope === "slide" the panel is pre-seeded
+  // with a template that pinpoints the current slide; when scope === "deck"
+  // the panel drops the per-slide pointer and talks about the whole deck.
+  const openRefineDialog = (scope: "slide" | "deck", slideIndex?: number) => {
+    const idx = typeof slideIndex === "number" ? slideIndex : activeSlide;
+    setRefineScope(scope);
+    setRefineTargetSlide(idx);
+    const slide = presentation?.slides[idx];
+    const slideLabel = slide ? `slide ${idx + 1} (${SLIDE_LABELS[slide.type] || slide.type})` : `slide ${idx + 1}`;
+    const template = scope === "slide"
+      ? `The previous output was missing [describe what's missing]. On this version, ensure ${slideLabel} has [specific improvement]. Give it [e.g. a worked example box with these contents / a misconception callout / a word bank / a timing indicator / a mark allocation / a SEND "what you need to do" box].`
+      : `The previous output was missing [describe what's missing]. On this version, ensure every slide has [specific improvement across the whole deck]. Focus particularly on [e.g. richer worked examples / SEND support / mark scheme rigour / command word accuracy].`;
+    setRefineText(template);
+    setShowRefineDialog(true);
+  };
+
+  // Quick-pick templates matching the teacher-framework guide. These are
+  // one-click instructions that expand the refinement prompt so the teacher
+  // doesn't have to type them every time.
+  const REFINE_QUICK_PICKS: Array<{ label: string; template: (slideLabel: string) => string }> = [
+    { label: "Add worked example box",       template: s => `Add a full worked example box to ${s} with a realistic problem, 4-6 numbered steps showing the formula, substitution, rearrangement, final answer with units, and a common error callout. Use Consolas for the maths.` },
+    { label: "Add timing indicator",         template: s => `Add a timingMinutes value to ${s} appropriate for the activity (typical starter 5, activity 6-10, plenary 5).` },
+    { label: "Add mark allocation",          template: s => `Add an examQuestion {stem, marks, timeMins, commandWord} block to ${s} using the exam board's actual command words and realistic marks.` },
+    { label: "Add common misconception",     template: s => `Add a misconception + correction pair to ${s} naming the SPECIFIC misconception pupils have for this topic — not a generic error.` },
+    { label: "Increase supply-teacher depth", template: s => `Expand ${s} so a supply teacher with no subject knowledge could deliver it from these slides alone. Every concept must be explained, not just named.` },
+    { label: "Add must/should/could bands",  template: s => `Populate the successCriteria {must, should, could} on ${s} with three concrete, measurable outcomes.` },
+    { label: "Add differentiation cards",    template: s => `Populate the differentiation {support, core, extension} block on ${s}. Support = scaffolded with sentence starter. Core = standard. Extension = harder application or evaluation.` },
+    { label: "Add SEND word bank",           template: s => `Add a wordBank to ${s} with 4-6 essential terms and plain-English definitions appropriate for SLCN / EAL pupils.` },
+    { label: "Add SEND 'what to do' box",    template: s => `Add a whatYouNeedToDo numbered-steps box to ${s} listing exactly what pupils need to do, in literal unambiguous language (ASC-friendly).` },
+    { label: "Add method steps",             template: s => `Add a methodSteps list to ${s} giving the canonical method as 4-6 numbered reference steps pupils can refer back to (Dyslexia/Dyscalculia-friendly).` },
+    { label: "Add sentence starter",         template: s => `Add a sentenceStarter to ${s} that pupils can copy and complete (e.g. "The answer is ___ because ___").` },
+    { label: "Add exam technique",           template: s => `Add an examTip and markSchemeHint to ${s} explaining exactly how marks are awarded for this question type and what examiners look for.` },
+  ];
+
+  // Applies the refinement by calling the AI with the full conversation so
+  // the model remembers the prior deck. The AI is asked to return ONLY the
+  // changed slide(s) as a JSON object — we then splice those back into the
+  // current presentation without regenerating anything the teacher didn't ask
+  // to change.
+  const handleRefine = async () => {
+    if (!presentation || !refineText.trim()) return;
+    setRefining(true);
+    try {
+      const slide = presentation.slides[refineTargetSlide];
+      const scopeHeader = refineScope === "slide"
+        ? `REFINE SCOPE: A SINGLE SLIDE — slide index ${refineTargetSlide} (type "${slide?.type}", title "${slide?.title}").`
+        : `REFINE SCOPE: THE WHOLE DECK — every slide.`;
+
+      // Current slide snapshot so the AI knows exactly what the "previous
+      // output" looked like. For deck-wide refinement we send a compact
+      // summary of all slides (title + type) to keep tokens manageable.
+      const snapshot = refineScope === "slide" && slide
+        ? JSON.stringify(slide)
+        : JSON.stringify(presentation.slides.map((s, i) => ({ index: i, type: s.type, title: s.title })));
+
+      const userMsg = `${scopeHeader}
+
+TEACHER REFINEMENT REQUEST:
+${refineText}
+
+CURRENT ${refineScope === "slide" ? "SLIDE" : "DECK"} STATE:
+${snapshot}
+
+RESPONSE FORMAT (STRICT):
+${refineScope === "slide"
+  ? `Return ONLY a JSON object like: {"slideIndex": ${refineTargetSlide}, "slide": { ...the full updated slide object... }}. Do not return any other slides.`
+  : `Return ONLY a JSON object like: {"slides": [ ...N slides in the SAME ORDER and count as the current deck, each with its full content... ]}. Preserve every slide's type and index; only change content.`}
+Keep the slide types unchanged. Populate the NEW structured fields (workedExampleBox, successCriteria, vocabTable, markScheme, examQuestion, differentiation, wordBank, whatYouNeedToDo, methodSteps, helpBox, sentenceStarter, answerFrame, completionChecklist, timingMinutes, visibleCheckboxes, actionVerb, bonusLabel) as appropriate.
+No markdown, no code fences, JSON only.`;
+
+      const messages: AIChatMessage[] = [
+        ...conversation,
+        { role: "user", content: userMsg },
+      ];
+      const result = await callAIMessages(messages, 8000);
+      const rawText = result.text;
+      const cleaned = rawText.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/, "").trim();
+      const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
+      const parsed = JSON.parse(jsonMatch ? jsonMatch[0] : cleaned);
+
+      let updatedSlides: SlideContent[];
+      if (refineScope === "slide") {
+        const idx = typeof parsed.slideIndex === "number" ? parsed.slideIndex : refineTargetSlide;
+        const incoming = parsed.slide || parsed;
+        if (!incoming || typeof incoming !== "object") throw new Error("Refinement response missing slide data.");
+        updatedSlides = [...presentation.slides];
+        // Preserve the existing type — the AI MUST NOT change slide types.
+        updatedSlides[idx] = { ...updatedSlides[idx], ...incoming, type: updatedSlides[idx].type } as SlideContent;
+      } else {
+        const arr = Array.isArray(parsed.slides) ? parsed.slides : null;
+        if (!arr) throw new Error("Refinement response missing slides array.");
+        updatedSlides = presentation.slides.map((orig, i) => {
+          const incoming = arr[i] || arr.find((s: any) => s?.index === i);
+          if (!incoming) return orig;
+          return { ...orig, ...incoming, type: orig.type } as SlideContent;
+        });
+      }
+
+      setPresentation({ ...presentation, slides: updatedSlides, totalSlides: updatedSlides.length });
+      if (refineScope === "slide") setActiveSlide(refineTargetSlide);
+      // Append this round to the conversation so future refinements know
+      // what was asked and what the AI produced.
+      setConversation([
+        ...messages,
+        { role: "assistant", content: rawText },
+      ]);
+      setShowRefineDialog(false);
+      setRefineText("");
+      toast.success(refineScope === "slide" ? "Slide refined." : "Deck refined.");
+    } catch (err: any) {
+      console.error("Refinement failed:", err);
+      toast.error(err.message || "Refinement failed. Please try again.");
+    } finally {
+      setRefining(false);
+    }
+  };
+
   const handleExportPptx = async () => {
     if (!presentation) return;
     setExporting(true);
     try {
-      await exportToPptx(presentation, selectedTheme);
+      await exportToPptx(presentation, selectedTheme, sendNeedIds);
       toast.success("PowerPoint downloaded!");
     } catch (err: any) {
       console.error("PPTX export failed:", err);
@@ -2148,67 +3695,63 @@ export default function PresentationMaker() {
   };
 
   // ── SEND Adaptation ──────────────────────────────────────────────────────────
-  // Values below align to the canonical SEND spec ids used across the app
-  // (client/src/lib/sendPromptFragments.ts). Using the same ids means the
-  // worksheet generator and the presentation generator apply the SAME
-  // evidence-based adaptations for a given need — no silent drift.
-  const SEND_NEEDS_OPTIONS = [
-    { value: "dyslexia", label: "Dyslexia" },
-    { value: "dyscalculia", label: "Dyscalculia" },
-    { value: "adhd", label: "ADHD" },
-    { value: "asc", label: "Autism Spectrum Condition (ASC)" },
-    { value: "mld", label: "Moderate Learning Difficulties (MLD)" },
-    { value: "slcn", label: "Speech, Language & Communication Needs (SLCN)" },
-    { value: "anxiety", label: "Anxiety / SEMH" },
-    { value: "dyspraxia", label: "Dyspraxia / DCD" },
-    { value: "vi", label: "Visual Impairment" },
-    { value: "hi", label: "Hearing Impairment" },
-    { value: "eal", label: "EAL (English as Additional Language)" },
-    { value: "pda-odd", label: "PDA / ODD" },
-    { value: "tourettes", label: "Tourette's Syndrome" },
-    { value: "older-learners", label: "Older Learners (KS3/KS4/KS5)" },
-  ];
-
+  // Applies one or more canonical SEND adaptations (ids from
+  // client/src/lib/sendPromptFragments.ts) to the existing deck by re-writing
+  // every slide through the AI. The AI sees the full composed SEND note
+  // (multi-need aware) and the structured-fields guidance so it can populate
+  // the new SEND fields (wordBank, whatYouNeedToDo, methodSteps, etc.).
   const handleAdaptForSend = async () => {
     if (!presentation) return;
+    if (sendAdaptNeedIds.length === 0 && !sendAdaptNotes.trim()) {
+      toast.error("Pick at least one SEND need first.");
+      return;
+    }
     setAdaptingForSend(true);
-    const needLabel = SEND_NEEDS_OPTIONS.find(o => o.value === sendAdaptNeed)?.label || sendAdaptNeed;
+    const appliedSpecs = resolveSendSpecs(sendAdaptNeedIds);
+    const needLabel = appliedSpecs.length
+      ? appliedSpecs.map(s => s.name).join(" + ")
+      : sendAdaptNotes.trim() || "Additional needs";
+    const allNeedsForPrompt = [...sendAdaptNeedIds, sendAdaptNotes.trim()].filter(Boolean).join(",");
     try {
-      const slideSummary = presentation.slides.map((s, i) => ({
-        index: i,
-        type: s.type,
-        title: s.title,
-        subtitle: s.subtitle,
-        body: s.body,
-        question: s.question,
-        bullets: s.bullets,
-        steps: s.steps,
-        misconception: s.misconception,
-        correction: s.correction,
-        retrievalQuestions: s.retrievalQuestions,
-        realWorldContext: s.realWorldContext,
-        examTip: s.examTip,
-        terms: s.terms,
-        speakerNotes: s.speakerNotes,
-      }));
+      // Full slide JSON — we send everything so the AI can adapt the new
+      // structured fields (vocabTable, workedExampleBox, examQuestion, etc.)
+      // that the generic passthrough used to strip.
+      const slideSummary = presentation.slides.map((s, i) => ({ index: i, ...s }));
+
+      const sendNote = composeSendNoteForPresentation(allNeedsForPrompt) ||
+        `For "${needLabel}": reduce cognitive load, chunk information, use clear simple language, and add support cues appropriate to the need.`;
 
       const systemPrompt = `You are an expert UK SEND teacher adapting a lesson presentation for pupils with ${needLabel}.
-Adapt the text of each slide to be more accessible for this specific need while keeping the same structure and slide types.
+Adapt EVERY slide to be accessible for this specific combination of needs while preserving the academic rigour.
 
-${getSendNoteForPresentation(sendAdaptNeed) || `For "${needLabel}": reduce cognitive load, chunk information, use clear simple language, and add support cues appropriate to the need.`}
+${sendNote}
+
+SEND STRUCTURED FIELDS (populate these on relevant slides — do NOT stuff SEND content into generic body/bullets):
+- "whatYouNeedToDo": string[] — numbered "what you need to do:" steps (ASC, Asperger)
+- "wordBank": {term, definition}[] — plain-English key vocabulary (SLCN, EAL, MLD)
+- "sentenceStarter": string — "The answer is..." etc. (SLCN, Dyslexia)
+- "answerFrame": string — "The X is ___ because ___" (SLCN, MLD)
+- "methodSteps": string[] — numbered method reference (Dyslexia, Dyscalculia)
+- "helpBox": string[] — key facts/formulas (MLD)
+- "completionChecklist": string[] — tick-box checklist (ASC, Tourette's)
+- "visualCue": string — one-line visual cue reference (SLCN, EAL)
+- "bonusLabel": string — "OPTIONAL BONUS", "Secret Mission", "Explore" (Anxiety, PDA)
+- "actionVerb": string — bolded action verb at top of activity (ADHD)
+- "visibleCheckboxes": boolean — draw [ ] before every bullet (ADHD)
+- "timingMinutes": number — add timing if not present on activity slides
 
 Rules:
-- Return ONLY valid JSON matching the input structure exactly
-- Keep all fields that were not present as null/undefined
-- Preserve the pedagogical intent of each slide and the academic rigour
-- Adapt titles, bullets, body, question, steps, terms definitions, retrievalQuestions, and speakerNotes
-- Do NOT change the slide types or the index order`;
+- Return ONLY valid JSON array matching input structure exactly.
+- Keep all fields not relevant as null/undefined.
+- Preserve the pedagogical intent and academic rigour of every slide.
+- Do NOT change the slide types or the index order.
+- You MAY insert NEW slides of type "brain-break" (ADHD), "checkin" (Anxiety), "method-steps" (Dyslexia), "help-box" (MLD), "word-bank" (SLCN/EAL), "take-a-break" (PDA/Tourette's) using index values that sit BETWEEN original slides (e.g. 2.5 between slides 2 and 3) — the caller will re-sequence indices afterward.`;
 
       const userPrompt = `Adapt these ${presentation.slides.length} slides for pupils with ${needLabel}.
 Input slides JSON:
 ${JSON.stringify(slideSummary)}
 
-Return JSON array of adapted slides with the same indices and structure.`;
+Return JSON array of adapted slides.`;
 
       const result = await callAI(systemPrompt, userPrompt, 8000);
       const rawText = typeof result === "string" ? result : (result as any).text || JSON.stringify(result);
@@ -2216,29 +3759,40 @@ Return JSON array of adapted slides with the same indices and structure.`;
       const jsonMatch = cleaned.match(/\[[\s\S]*\]/);
       const adaptedSlides: any[] = JSON.parse(jsonMatch ? jsonMatch[0] : cleaned);
 
+      // Merge each adapted slide back onto the original so fields the AI didn't
+      // touch survive. This is a SPREAD merge — we take the original, then the
+      // adapted fields win, then we force-preserve `type` (never let the AI
+      // change it). New slides the AI injected (index values not in 0..N-1) are
+      // appended in order.
+      const adaptedMap = new Map<number, any>();
+      const newSlides: any[] = [];
+      for (const a of adaptedSlides) {
+        if (typeof a.index === "number" && Number.isInteger(a.index) && a.index < presentation.slides.length) {
+          adaptedMap.set(a.index, a);
+        } else if (typeof a.index === "number") {
+          newSlides.push(a);
+        }
+      }
+      const merged = presentation.slides.map((orig, i) => {
+        const adapted = adaptedMap.get(i) || adaptedSlides[i];
+        if (!adapted) return orig;
+        const { index: _i, type: _t, ...fields } = adapted;
+        return { ...orig, ...fields } as SlideContent;
+      });
+      // Insert any AI-injected SEND slides between originals, sorted by index.
+      newSlides
+        .sort((a, b) => (a.index || 0) - (b.index || 0))
+        .forEach(ns => {
+          const pos = Math.max(0, Math.min(merged.length, Math.round(ns.index)));
+          const { index: _i, ...rest } = ns;
+          merged.splice(pos, 0, rest as SlideContent);
+        });
+
       const newPresentation: PresentationData = {
         ...presentation,
         title: `${presentation.title} — ${needLabel} Adapted`,
-        slides: presentation.slides.map((orig, i) => {
-          const adapted = adaptedSlides.find((a: any) => a.index === i) || adaptedSlides[i];
-          if (!adapted) return orig;
-          return {
-            ...orig,
-            title: adapted.title || orig.title,
-            subtitle: adapted.subtitle ?? orig.subtitle,
-            body: adapted.body ?? orig.body,
-            question: adapted.question ?? orig.question,
-            bullets: adapted.bullets ?? orig.bullets,
-            steps: adapted.steps ?? orig.steps,
-            misconception: adapted.misconception ?? orig.misconception,
-            correction: adapted.correction ?? orig.correction,
-            retrievalQuestions: adapted.retrievalQuestions ?? orig.retrievalQuestions,
-            realWorldContext: adapted.realWorldContext ?? orig.realWorldContext,
-            examTip: adapted.examTip ?? orig.examTip,
-            terms: adapted.terms ?? orig.terms,
-            speakerNotes: adapted.speakerNotes ?? orig.speakerNotes,
-          };
-        }),
+        slides: merged,
+        totalSlides: merged.length,
       };
 
       setAdaptedPresentation(newPresentation);
@@ -2256,7 +3810,7 @@ Return JSON array of adapted slides with the same indices and structure.`;
   // ── Print Handout ────────────────────────────────────────────────────────────
   const handlePrintHandout = (layout: "1up" | "2up" | "notes") => {
     if (!presentation) return;
-    const theme = THEMES[selectedTheme];
+    const theme = composeTheme(selectedTheme, sendNeedIds);
     const slidesHtml = presentation.slides.map((slide, i) => {
       const bullets = slide.bullets?.map(b => `<li>${b}</li>`).join("") || "";
       const steps = slide.steps?.map((s, si) => `<li><strong>${si + 1}.</strong> ${s}</li>`).join("") || "";
@@ -2385,8 +3939,8 @@ Return JSON array of adapted slides with the same indices and structure.`;
               <Button variant="outline" size="sm" onClick={() => setIsFullscreen(true)} className="text-xs gap-1">
                 <Maximize2 className="w-3 h-3" />Present
               </Button>
-              <Button variant="outline" size="sm" onClick={() => setShowSendAdaptDialog(true)} className="text-xs gap-1 border-purple-300 text-purple-700 hover:bg-purple-50">
-                <Accessibility className="w-3 h-3" />Adapt for SEND
+              <Button variant="outline" size="sm" onClick={() => setShowSendAdaptDialog(true)} className="text-xs border-purple-300 text-purple-700 hover:bg-purple-50 font-semibold">
+                Adapt for SEND
               </Button>
               <Button variant="outline" size="sm" onClick={handleCopyText} className="text-xs gap-1">
                 {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}Copy
@@ -2555,15 +4109,17 @@ Return JSON array of adapted slides with the same indices and structure.`;
                   </Select>
                 </div>
 
-                {/* SEND Needs */}
+                {/* SEND Needs — multi-select chip group */}
                 <div className="space-y-1">
                   <Label className="text-xs font-semibold text-gray-700">SEND / Additional Needs (optional)</Label>
-                  <Input
-                    value={sendNeeds}
-                    onChange={e => setSendNeeds(e.target.value)}
-                    placeholder="e.g. 3 pupils with dyslexia, 2 EAL..."
-                    className="h-8 text-xs"
-                  />
+                  <div className="rounded-lg border border-gray-200 bg-white p-2">
+                    <SendNeedsPicker
+                      selectedIds={sendNeedIds}
+                      onChange={setSendNeedIds}
+                      notes={sendNeedsNotes}
+                      onNotesChange={setSendNeedsNotes}
+                    />
+                  </div>
                 </div>
 
                 {/* Additional Notes */}
@@ -2665,6 +4221,16 @@ Return JSON array of adapted slides with the same indices and structure.`;
 
             {!loading && presentation && (
               <div className="space-y-4">
+                {/* ── SEND adaptations applied banner ─────────────────────── */}
+                {/* Renders when any SEND need was selected for this deck. Shows
+                    the list of applied specs with an expandable "what will
+                    change" list and the evidence-based "why" popover for each
+                    bullet. This is what the teacher shows a parent / SENDCO / Ofsted
+                    inspector as justification for the adaptation. */}
+                {sendNeedIds.length > 0 && (
+                  <SendAppliedBanner sendNeedIds={sendNeedIds} />
+                )}
+
                 {/* Presentation header */}
                 <div className="flex items-center justify-between">
                   <div>
@@ -2675,7 +4241,7 @@ Return JSON array of adapted slides with the same indices and structure.`;
                       <Badge variant="outline" className="text-xs">{presentation.slides.length} slides</Badge>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <Button
                       variant="outline"
                       size="sm"
@@ -2684,6 +4250,24 @@ Return JSON array of adapted slides with the same indices and structure.`;
                     >
                       <Eye className="w-3 h-3 mr-1" />
                       {showNotes ? "Hide" : "Show"} Notes
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => openRefineDialog("slide", activeSlide)}
+                      disabled={conversation.length === 0}
+                      className="text-xs border-purple-300 text-purple-700 hover:bg-purple-50 font-semibold"
+                    >
+                      Refine this slide
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => openRefineDialog("deck")}
+                      disabled={conversation.length === 0}
+                      className="text-xs border-purple-300 text-purple-700 hover:bg-purple-50 font-semibold"
+                    >
+                      Refine whole deck
                     </Button>
                     <Button
                       variant="outline"
@@ -2908,31 +4492,103 @@ Return JSON array of adapted slides with the same indices and structure.`;
 
       {/* ── SEND Adaptation Dialog ───────────────────────────────────────────── */}
       <Dialog open={showSendAdaptDialog} onOpenChange={setShowSendAdaptDialog}>
-        <DialogContent className="max-w-sm">
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2"><Accessibility className="w-4 h-4 text-purple-600" />Adapt for SEND</DialogTitle>
+            <DialogTitle className="flex items-center gap-2"><span className="inline-block w-2 h-6 rounded bg-purple-600" />Adapt for SEND</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
-            <p className="text-xs text-gray-600">AI will generate an adapted copy of this presentation side-by-side, so you can compare and pick the version that best suits your pupils.</p>
-            <div className="space-y-1">
-              <Label className="text-xs font-semibold">Select SEND Need</Label>
-              <select className="w-full h-9 px-3 text-sm border rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-purple-300"
-                value={sendAdaptNeed} onChange={e => setSendAdaptNeed(e.target.value)}>
-                {(SEND_NEEDS_OPTIONS ?? [
-                  { value: "dyslexia", label: "Dyslexia" },
-                  { value: "autism", label: "Autism / ASD" },
-                  { value: "adhd", label: "ADHD" },
-                  { value: "eal", label: "EAL" },
-                  { value: "low-literacy", label: "Low Literacy" },
-                  { value: "complex-needs", label: "Complex Needs" },
-                ]).map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-              </select>
-            </div>
+            <p className="text-xs text-gray-600">
+              Pick any combination of SEND needs. Adaptations follow the UK SEND Code of Practice and
+              are layered together — when rules conflict, the strictest access requirement wins.
+              The AI will regenerate each slide with the correct structured fields (word banks,
+              method steps, check-ins, etc.) and show a side-by-side comparison.
+            </p>
+            <SendNeedsPicker
+              selectedIds={sendAdaptNeedIds}
+              onChange={setSendAdaptNeedIds}
+              notes={sendAdaptNotes}
+              onNotesChange={setSendAdaptNotes}
+            />
+            {sendAdaptNeedIds.length > 0 && (
+              <div className="rounded-lg border border-purple-200 bg-purple-50 p-2 space-y-1">
+                <div className="text-[10px] font-bold uppercase tracking-wide text-purple-800">What will change</div>
+                <ul className="text-[11px] text-purple-950 space-y-0.5 list-disc pl-4">
+                  {resolveSendSpecs(sendAdaptNeedIds).flatMap(spec =>
+                    spec.bullets.slice(0, 3).map((b, i) => (
+                      <li key={`${spec.id}-${i}`}><span className="font-semibold">[{spec.name}]</span> {b.what}</li>
+                    ))
+                  ).slice(0, 8)}
+                </ul>
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" size="sm" onClick={() => setShowSendAdaptDialog(false)}>Cancel</Button>
-            <Button size="sm" onClick={handleAdaptForSend} disabled={adaptingForSend} className="bg-purple-600 hover:bg-purple-700 text-white">
+            <Button size="sm" onClick={handleAdaptForSend} disabled={adaptingForSend || (sendAdaptNeedIds.length === 0 && !sendAdaptNotes.trim())} className="bg-purple-600 hover:bg-purple-700 text-white">
               {adaptingForSend ? <><Loader2 className="w-3 h-3 mr-1 animate-spin" />Adapting...</> : <><Sparkles className="w-3 h-3 mr-1" />Generate Adapted Copy</>}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Refine Dialog — iterative refinement with conversation memory ──── */}
+      {/* Centrepiece feature from the teacher-framework guide: "Iterating with
+          specific feedback is more powerful than getting the perfect first
+          prompt. The AI remembers context within a conversation." */}
+      <Dialog open={showRefineDialog} onOpenChange={setShowRefineDialog}>
+        <DialogContent className="max-w-xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <span className="inline-block w-2 h-6 rounded bg-purple-600" />
+              {refineScope === "slide" ? "Refine this slide" : "Refine whole deck"}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            {refineScope === "slide" && presentation?.slides[refineTargetSlide] && (
+              <div className="rounded-lg border bg-gray-50 p-2 text-xs">
+                <span className="font-semibold">Editing: </span>
+                Slide {refineTargetSlide + 1} — {presentation.slides[refineTargetSlide].title}
+                <span className="text-gray-500"> ({SLIDE_LABELS[presentation.slides[refineTargetSlide].type] || presentation.slides[refineTargetSlide].type})</span>
+              </div>
+            )}
+            <div className="space-y-1">
+              <Label className="text-xs font-semibold text-gray-700">Quick-pick improvements</Label>
+              <div className="flex flex-wrap gap-1">
+                {REFINE_QUICK_PICKS.map(qp => (
+                  <button
+                    key={qp.label}
+                    type="button"
+                    onClick={() => {
+                      const slideLabel = refineScope === "slide"
+                        ? `slide ${refineTargetSlide + 1}`
+                        : "every slide";
+                      const addition = qp.template(slideLabel);
+                      setRefineText(prev => prev.trim() ? `${prev.trim()}\n\n${addition}` : addition);
+                    }}
+                    className="text-[10px] leading-tight rounded-full border border-purple-200 bg-purple-50 hover:bg-purple-100 text-purple-800 px-2 py-1 transition-all"
+                  >
+                    + {qp.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs font-semibold text-gray-700">Your refinement instruction</Label>
+              <Textarea
+                value={refineText}
+                onChange={e => setRefineText(e.target.value)}
+                placeholder="Describe what needs to change…"
+                className="text-xs resize-none h-36"
+              />
+              <div className="text-[10px] text-gray-500 italic">
+                Tip: be specific about WHAT was missing and WHAT should be added. The AI remembers the previous version and only changes what you ask for.
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" size="sm" onClick={() => setShowRefineDialog(false)}>Cancel</Button>
+            <Button size="sm" onClick={handleRefine} disabled={refining || !refineText.trim()} className="bg-purple-600 hover:bg-purple-700 text-white">
+              {refining ? <><Loader2 className="w-3 h-3 mr-1 animate-spin" />Refining…</> : <><Sparkles className="w-3 h-3 mr-1" />Apply refinement</>}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -2976,7 +4632,6 @@ Return JSON array of adapted slides with the same indices and structure.`;
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <span className="px-2 py-0.5 bg-purple-100 text-purple-700 rounded text-xs font-semibold">SEND Adapted</span>
-                <Accessibility className="w-3 h-3 text-purple-500" />
               </div>
               <FullSlideView slide={adaptedPresentation.slides[comparisonActiveSlide]} theme={theme} index={comparisonActiveSlide} total={adaptedPresentation.slides.length} />
               {adaptedPresentation.slides[comparisonActiveSlide]?.speakerNotes && (
