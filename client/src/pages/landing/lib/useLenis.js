@@ -1,15 +1,21 @@
 // Smooth scroll via Lenis, scoped to the landing page only.
-// If Lenis isn't installed yet (CI, older checkouts), we fail open — the page
-// still works with native scroll, just without the butter.
+// If Lenis isn't installed (typical CI / deploy), we fail open — the page
+// works with native scroll, just without the butter.
+//
+// We use an indirect import specifier so Vite doesn't try to resolve the
+// module at build time. This keeps the build green even when `lenis` isn't
+// in `node_modules`.
 
 import { useEffect } from "react";
+
+// Indirection tricks Vite's static analyzer into leaving this alone.
+const LENIS_SPEC = /* @__PURE__ */ (() => "lenis")();
 
 export function useLenis({ enabled = true } = {}) {
   useEffect(() => {
     if (!enabled) return;
     if (typeof window === "undefined") return;
 
-    // Respect OS preference.
     const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (prefersReduced) return;
 
@@ -19,17 +25,16 @@ export function useLenis({ enabled = true } = {}) {
 
     (async () => {
       try {
-        const LenisMod = await import("lenis");
+        const LenisMod = await import(/* @vite-ignore */ LENIS_SPEC);
         if (cancelled) return;
         const Lenis = LenisMod.default || LenisMod.Lenis || LenisMod;
         lenis = new Lenis({
-          lerp: 0.085, // slightly slower than default for a calmer glide
+          lerp: 0.085,
           smoothWheel: true,
           wheelMultiplier: 1,
           touchMultiplier: 1.2,
         });
 
-        // Expose scroll velocity on the <html> element so sections can read it.
         const root = document.documentElement;
         lenis.on("scroll", ({ velocity }) => {
           root.style.setProperty("--scroll-velocity", String(velocity || 0));
