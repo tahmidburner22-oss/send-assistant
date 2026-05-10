@@ -645,13 +645,14 @@ export default function Process() {
   }
 
   // ── Desktop — pinned scroll storytelling ─────────────────────
+  // Each step = 55vh of scroll (was 80vh — shortened to reduce dead space).
   return (
     <section
       ref={ref}
       id="process"
       data-testid="process-section"
       className="relative bg-gradient-to-b from-cream-100 via-cream-50 to-cream-100"
-      style={{ height: `${STEPS.length * 80}vh` }}
+      style={{ height: `${STEPS.length * 55}vh` }}
     >
       <div className="sticky top-0 h-screen overflow-hidden">
         {/* Decorative glows */}

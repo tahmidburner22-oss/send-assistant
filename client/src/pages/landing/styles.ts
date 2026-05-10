@@ -85,6 +85,25 @@ html[data-landing-variant="v3"] .adaptly-landing .glass {
   -webkit-backdrop-filter: blur(28px) saturate(150%);
 }
 
+/* V3 — hide native cursor on fine-pointer devices so our custom cursor can take over */
+html[data-landing-variant="v3"] .adaptly-landing { cursor: none; }
+@media (hover: none), (pointer: coarse) { html[data-landing-variant="v3"] .adaptly-landing { cursor: auto; } }
+html[data-landing-variant="v3"] .adaptly-landing a,
+html[data-landing-variant="v3"] .adaptly-landing button,
+html[data-landing-variant="v3"] .adaptly-landing input,
+html[data-landing-variant="v3"] .adaptly-landing textarea,
+html[data-landing-variant="v3"] .adaptly-landing [role="button"] { cursor: none; }
+@media (hover: none), (pointer: coarse) {
+  html[data-landing-variant="v3"] .adaptly-landing a,
+  html[data-landing-variant="v3"] .adaptly-landing button,
+  html[data-landing-variant="v3"] .adaptly-landing input,
+  html[data-landing-variant="v3"] .adaptly-landing textarea,
+  html[data-landing-variant="v3"] .adaptly-landing [role="button"] { cursor: pointer; }
+}
+
+/* Ensure large display text never clips descenders when animated into view */
+.adaptly-landing h1, .adaptly-landing h2, .adaptly-landing h3 { padding-bottom: 0.04em; }
+
 @media (prefers-reduced-motion: reduce) { .adaptly-landing * { animation-duration:.01ms !important; transition-duration:.01ms !important; } }
 `;
 
