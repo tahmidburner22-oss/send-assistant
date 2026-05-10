@@ -66,6 +66,25 @@ export const LANDING_CSS = `
 .adaptly-landing .tilt-card { transition: transform .4s cubic-bezier(.16,1,.3,1), box-shadow .4s; transform-style: preserve-3d; will-change: transform; }
 .adaptly-landing .hairline { background: linear-gradient(90deg,transparent,rgba(34,32,30,0.18),transparent); height:1px; }
 
+/* Lenis — hide native scrollbar jank when active */
+html.lenis-active, html.lenis-active body { height: auto; }
+html.lenis-active { scroll-behavior: auto; }
+
+/* Scroll-velocity reactive skew — cheap and only on opt-in elements */
+.adaptly-landing .velocity-skew {
+  transform: skewY(calc(var(--scroll-velocity,0) * 0.04deg));
+  transition: transform .2s cubic-bezier(.16,1,.3,1);
+  will-change: transform;
+}
+
+/* V3-only: subtly punchier section padding + dividers */
+html[data-landing-variant="v3"] .adaptly-landing section { scroll-margin-top: 96px; }
+html[data-landing-variant="v3"] .adaptly-landing .glass {
+  background: rgba(255,255,255,0.55);
+  backdrop-filter: blur(28px) saturate(150%);
+  -webkit-backdrop-filter: blur(28px) saturate(150%);
+}
+
 @media (prefers-reduced-motion: reduce) { .adaptly-landing * { animation-duration:.01ms !important; transition-duration:.01ms !important; } }
 `;
 
