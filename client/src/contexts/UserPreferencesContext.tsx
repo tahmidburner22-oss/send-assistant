@@ -217,7 +217,6 @@ export function UserPreferencesProvider({
     setPreferences(local);
     // Fetch server preferences and merge (server wins for sidebarCollapsed, local wins for everything else)
     fetch('/api/data/preferences', {
-      credentials: "include",
       credentials: 'include',
     })
       .then(r => r.ok ? r.json() : null)
