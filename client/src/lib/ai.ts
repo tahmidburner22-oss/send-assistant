@@ -589,7 +589,6 @@ export async function aiGenerateWorksheet(params: {
   isRevisionMat?: boolean; // When true, generate a revision mat instead of a standard worksheet
   selectedSections?: string[]; // Which sections to include (from the sections selector)
   subtopic?: string; // Optional subtopic for more specific generation
-  generateDiagram?: boolean; // Whether to include diagram sections (default: true for relevant subjects)
 }): Promise<AIWorksheetResult> {
 
   // ── REVISION MAT: completely separate prompt path ─────────────────────────
@@ -862,18 +861,32 @@ MANDATORY RULES — violating any rule is wrong:
 
   const variantIndex = topicSeed % SECTION_A_VARIANTS.length;
 
+  // ── Maths-specific block addenda ──────────────────────────────────────────
+  // When the subject is Maths, every question type needs to push for numerical,
+  // calculation-based content rather than essay-style writing.
+  const mathsTrueFalse = isMaths ? ` MATHS T/F RULE: Every statement MUST be a mathematical equality, inequality, or calculation (e.g. "1. \\(\\frac{3}{4} + \\frac{1}{8} = \\frac{7}{8}\\). TRUE"). Do NOT use worded statements like "Fractions can be added easily." — use concrete numeric facts the student can verify by calculation.` : "";
+  const mathsMcq = isMaths ? ` MATHS MCQ RULE: The question stem MUST be a calculation (e.g. "Calculate \\(2.4 \\times 10^{3} \\div 0.6\\)"). All four options MUST be numerical answers (e.g. "A  4000", "B  400", "C  40", "D  4000000"). Distractors MUST be believable results of common errors (wrong power of 10, sign error, order-of-operations slip, forgotten carry). NEVER use worded options.` : "";
+  const mathsGapFill = isMaths ? ` MATHS GAP FILL CRITICAL RULE: Write ALL numbers, expressions and symbols as PLAIN TEXT in the gap fill paragraph (e.g. "x squared", "square root of 16", "three-quarters", "2x + 3") — do NOT use LaTeX \\\\(...\\\\) delimiters inside gap fill paragraphs because they render as raw text and break the layout. Reserve LaTeX ONLY for Worked Examples and calculation questions. The gap fill should teach a method or procedure (e.g. "To solve a linear equation, first _____ both sides, then _____ both sides by the _____").` : "";
+  const mathsShortAnswer = isMaths ? ` MATHS SHORT ANSWER RULE (STRICT): Must be a PURE NUMERICAL / CALCULATION question.
+- START the question with an imperative calculation verb: "Calculate", "Work out", "Find the value of", "Solve", "Simplify", "Evaluate", "Factorise", "Expand", "Show that", or "Prove that".
+- NEVER start with "Explain", "Describe", "Discuss", "Why", "What is the meaning of", "Give reasons for", "Compare", "Suggest" — these are writing verbs and are FORBIDDEN in maths.
+- The question MUST contain at least one concrete number, variable expression, or equation (e.g. "Solve \\(3x - 7 = 2x + 5\\)" — not "Solve a linear equation").
+- Use REAL numbers appropriate to the specification level (e.g. for Y10 Higher: use \\(x^{2} + 5x - 14 = 0\\), not \\(x + 1 = 0\\)).
+- Answer must be a single number, fraction, exact surd, algebraic expression, or coordinate — NOT a paragraph of prose.` : "";
+  const mathsTable = isMaths ? ` MATHS TABLE RULE: The table MUST be a function table, frequency table, ratio table, or calculation table. Columns should be things like "x | y=2x+3 | y-value", "Number | Squared | Cubed", "Ratio A:B | Simplified | Decimal form". Blank cells (..........) must be calculated values the student fills in — NOT worded answers.` : "";
+
   const blockInstructions: Record<string, string> = {
-    TRUE_FALSE:         "Write exactly 4 numbered statements (1. 2. 3. 4.), each ending with TRUE or FALSE on the same line. Exactly 2 must be TRUE and 2 must be FALSE. Example: '1. Water boils at 100°C. TRUE'",
-    MCQ:                "One question stem, then options: 'A  option' 'B  option' 'C  option' 'D  option' on separate lines. Only ONE is correct.",
-    GAP_FILL:           `One paragraph 40-60 words with 5-7 blanks as _____. Next line: 'WORD BANK: word1 | word2 | word3 | word4 | word5 | word6 | word7'${isMaths ? '. MATHS GAP FILL CRITICAL RULE: Write ALL numbers, expressions and symbols as PLAIN TEXT in the gap fill paragraph (e.g. "x squared", "square root of 16", "three-quarters", "2x + 3") — do NOT use LaTeX \\\\(...\\\\) delimiters inside gap fill paragraphs because they render as raw text and break the layout. Reserve LaTeX ONLY for Worked Examples and calculation questions.' : ''}`,
-    ORDERING:           "6 items each on its own line starting with ☐. Instruction: 'Number the boxes 1–6 to show the correct order.'",
-    MATCHING:           "5 pairs. Each line: '1. [term] ←→ [definition]'. Pairs must be shuffled (term order ≠ definition order).",
-    SHORT_ANSWER:       `One focused question. Mark allocation in brackets: [X marks]. No answer given — student writes it.${isMaths ? ' MATHS SHORT ANSWER RULE: Must be a numerical/calculation question — show working space. Do NOT ask students to "explain", "describe" or "discuss" in maths short answer questions. Ask them to calculate, find, solve, or show working.' : ''}`,
-    TABLE:              "Markdown table with | separators. 3-4 columns. 4-5 rows. Blank cells use '...........' for students to fill in.",
-    ERROR_CORRECTION:   "Present a worked solution with a deliberate mistake — choose an error that is realistic and topic-specific (wrong formula, arithmetic slip, incorrect unit, missed step). Format exactly:\n'Worked Answer\n[step 1]\n[step 2 — contains the error]\n[step 3 if needed]\n\nMistake\n[teacher-only: describe the exact error]\n\nTask\n1. Identify the mistake\n2. Explain why it is wrong\n3. Write the correct answer'\nIMPORTANT: The error must be plausible — something a real student would do. Do NOT make it trivially obvious. Use layout tag: error_correction.",
-    RANKING:            "Present 4–6 items that can be meaningfully ordered by a clear criterion relevant to the topic. Format exactly:\n'Rank these from [highest/strongest/fastest/most] to [lowest/weakest/slowest/least]:\n- [item A]\n- [item B]\n- [item C]\n- [item D]\n\nExplain your reasoning:'\nThe criterion must be scientifically/factually correct and unambiguous. Do NOT use ranking for subjective opinions. Use layout tag: ranking.",
-    WHAT_CHANGED:       "Present a before/after or cause/effect comparison that is directly relevant to the topic. Format exactly:\n'Scenario A\n[describe the initial state clearly]\n\nScenario B\n[describe the changed state — change exactly ONE variable]\n\nTask\n1. What changed between A and B?\n2. Why did this happen? (use subject vocabulary)\n3. What effect does this have on [relevant outcome]?'\nThe change must be scientifically/factually grounded. Use layout tag: what_changed.",
-    CONSTRAINT_PROBLEM: "Present a design or problem-solving task with 2–4 specific constraints that require genuine understanding of the topic. Format exactly:\n'Goal\n[clear task description — what must be achieved]\n\nConstraints\n- [rule 1 — must be topic-specific]\n- [rule 2]\n- [rule 3]\n\nOutput\nShow your working / draw your solution below:'\nConstraints must be non-trivial and require topic knowledge to satisfy. Do NOT use for pure recall. Use layout tag: constraint_problem.",
+    TRUE_FALSE:         `Write exactly 4 numbered statements (1. 2. 3. 4.), each ending with TRUE or FALSE on the same line. Exactly 2 must be TRUE and 2 must be FALSE. Example: '1. Water boils at 100°C. TRUE'${mathsTrueFalse}`,
+    MCQ:                `One question stem, then options: 'A  option' 'B  option' 'C  option' 'D  option' on separate lines. Only ONE is correct.${mathsMcq}`,
+    GAP_FILL:           `One paragraph 40-60 words with 5-7 blanks as _____. Next line: 'WORD BANK: word1 | word2 | word3 | word4 | word5 | word6 | word7'${mathsGapFill}`,
+    ORDERING:           `6 items each on its own line starting with ☐. Instruction: 'Number the boxes 1–6 to show the correct order.'${isMaths ? ' MATHS ORDERING RULE: Items must be steps of a calculation method (e.g. "Subtract 5 from both sides", "Divide both sides by 3") OR numerical values to be ordered (e.g. "0.25", "3/8", "30%").' : ''}`,
+    MATCHING:           `5 pairs. Each line: '1. [term] ←→ [definition]'. Pairs must be shuffled (term order ≠ definition order).${isMaths ? ' MATHS MATCHING RULE: Prefer matching calculations to answers (e.g. "\\(5^{2}\\) ←→ 25", "\\(\\sqrt{49}\\) ←→ 7", "30% of 200 ←→ 60") OR matching equations to solutions.' : ''}`,
+    SHORT_ANSWER:       `One focused question. Mark allocation in brackets: [X marks]. No answer given — student writes it.${mathsShortAnswer}`,
+    TABLE:              `Markdown table with | separators. 3-4 columns. 4-5 rows. Blank cells use '...........' for students to fill in.${mathsTable}`,
+    ERROR_CORRECTION:   `Present a worked solution with a deliberate mistake — choose an error that is realistic and topic-specific (wrong formula, arithmetic slip, incorrect unit, missed step). Format exactly:\n'Worked Answer\n[step 1]\n[step 2 — contains the error]\n[step 3 if needed]\n\nMistake\n[teacher-only: describe the exact error]\n\nTask\n1. Identify the mistake\n2. Explain why it is wrong\n3. Write the correct answer'\nIMPORTANT: The error must be plausible — something a real student would do. Do NOT make it trivially obvious. Use layout tag: error_correction.${isMaths ? ' MATHS ERROR CORRECTION RULE: The worked solution must be a numerical calculation. The error must be a concrete mathematical slip (sign error, order of operations, incorrect rearranging, forgotten reciprocal on fraction division, etc.) — NOT a conceptual misunderstanding expressed in prose.' : ''}`,
+    RANKING:            `Present 4–6 items that can be meaningfully ordered by a clear criterion relevant to the topic. Format exactly:\n'Rank these from [highest/strongest/fastest/most] to [lowest/weakest/slowest/least]:\n- [item A]\n- [item B]\n- [item C]\n- [item D]\n\nExplain your reasoning:'\nThe criterion must be scientifically/factually correct and unambiguous. Do NOT use ranking for subjective opinions. Use layout tag: ranking.${isMaths ? ' MATHS RANKING RULE: Items must be numerical values, fractions, decimals, or expressions to be ordered (e.g. "Rank these from smallest to largest: 3/5, 0.65, 61%, 7/10, 0.58"). The student must calculate each to rank correctly — do NOT use a "reasoning" step.' : ''}`,
+    WHAT_CHANGED:       `Present a before/after or cause/effect comparison that is directly relevant to the topic. Format exactly:\n'Scenario A\n[describe the initial state clearly]\n\nScenario B\n[describe the changed state — change exactly ONE variable]\n\nTask\n1. What changed between A and B?\n2. Why did this happen? (use subject vocabulary)\n3. What effect does this have on [relevant outcome]?'\nThe change must be scientifically/factually grounded. Use layout tag: what_changed.${isMaths ? ' MATHS WHAT-CHANGED RULE: Scenario A and B must each contain a calculation, and the student must calculate the new value after the change (e.g. A: "A car travels 120 km in 2 hours. Calculate the average speed." B: "The same journey now takes 1.5 hours. Calculate the new average speed and the percentage change.").' : ''}`,
+    CONSTRAINT_PROBLEM: `Present a design or problem-solving task with 2–4 specific constraints that require genuine understanding of the topic. Format exactly:\n'Goal\n[clear task description — what must be achieved]\n\nConstraints\n- [rule 1 — must be topic-specific]\n- [rule 2]\n- [rule 3]\n\nOutput\nShow your working / draw your solution below:'\nConstraints must be non-trivial and require topic knowledge to satisfy. Do NOT use for pure recall. Use layout tag: constraint_problem.${isMaths ? ' MATHS CONSTRAINT RULE: Constraints must be numerical (e.g. "Budget must not exceed £500", "Area must be at least 20 m²", "Answer must be a positive integer"). The student must produce a numerical solution that satisfies every constraint, showing full working.' : ''}`,
   };
 
   const variantA = SECTION_A_VARIANTS[variantIndex];
@@ -943,13 +956,37 @@ Respond with valid JSON only — no markdown, no code blocks, no HTML tags insid
 
 SUBJECT TYPE: ${isSTEM ? 'STEM' : 'HUMANITIES'}
 
+PRINTED PAGE LAYOUT (MANDATORY ORDER — every worksheet must follow this exactly):
+  Page 1 (may span 1–2 pages if content is long): Learning Objective → ${params.recallTopic ? 'Retrieval → ' : ''}Key Vocabulary → Common Mistakes → Worked Example
+  Section 1 — Recall (Q1, Q2, Q3) — starts on its own fresh page
+  DIAGRAM A (full-page reference spread, own page)
+  Section 2 — Understanding (Q4, Q5, Q6) — starts on its own fresh page
+  DIAGRAM B (full-page task spread, own page — may be skipped if topic has no second visual)
+  Section 3 — Application & Analysis (Q7, Q8, Q9) + Challenge Question — starts on its own fresh page
+  Self Reflection + Exit Ticket — starts on its own fresh page
+  Teacher Copy — Answer Key (teacher view only) — starts on its own fresh page
+
+Emit sections IN THIS ORDER so printing matches the page layout. The intro block (LO, Retrieval if requested, Key Vocab, Common Mistakes, Worked Example) flows naturally — if it fits on one page it stays on one page; if it overflows it spans to a second page before Section 1 starts. Page breaks are CSS-driven: every Section divider, Diagram A, Diagram B, Self-Reflection, and Teacher-Key block starts a new printed page.
+
+DIAGRAM A — REFERENCE DIAGRAM (MANDATORY, placed BETWEEN Section 1 and Section 2):
+Every worksheet MUST include a REFERENCE diagram called "Diagram A" as its own full-page spread. This is a fully-labelled visual the student can refer back to while answering questions — it is NOT a task. Place it immediately AFTER the last question of Section 1 (Q3) and BEFORE the first question of Section 2 (Q4). Use format:
+  {"type":"diagram-a","title":"Diagram A — [brief title e.g. 'The Water Cycle']","content":"Diagram A — Reference. Refer back to this diagram as you work through Section 2 and Section 3.\n[[DIAGRAM:{"type":"...","title":"...","labels":[...]}]]","altText":"..."}
+
+DIAGRAM B — TASK DIAGRAM (place BETWEEN Section 2 and Section 3):
+Every worksheet SHOULD include a TASK diagram called "Diagram B" as its own full-page spread between Section 2 (Q6) and Section 3 (Q7). Students interpret, complete, or extract information from this diagram. If the topic has no genuinely valuable second diagram (e.g. pure algebra topics), emit a diagram-b section with content "[skipped — topic does not require a second visual]" so it can be dropped. Use format:
+  {"type":"diagram-b","title":"Diagram B — [brief title]","content":"Diagram B — Task. Use this diagram to answer the questions in Section 3.\n[[DIAGRAM:...]]\n(a) [interpretation question from diagram] [2 marks]\n(b) [calculation or application from diagram] [2 marks]\n(c) [extension question] [1 mark]","altText":"..."}
+
+⚠️ Diagram A MUST appear in EVERY worksheet. Diagram B should appear unless the topic genuinely has no second visual.
+
 SECTION 1 — RECALL (Q1–Q3):
 ${sectionAPrompt}
 
 SECTION 2 — UNDERSTANDING (Q4–Q6):
-  Q4 — VISUAL/DIAGRAM ACTIVITY [5 marks]: Generate a TOPIC-SPECIFIC diagram for "${params.topic}".
+  Q4 — SHORT EXPLANATION / CALCULATION [5 marks]: ${isMaths ? 'A multi-step calculation question appropriate to the topic.' : 'A focused short-answer question requiring genuine understanding.'}
+  Q5 — EXTRACT/STIMULUS RESPONSE [5 marks]: ${isSTEM ? 'Provide a scenario or data set (readings from an experiment, a word problem). Ask sub-questions: (a) Identify the relevant formula/law [1 mark] (b) Full worked calculation showing method [2 marks] (c) Explain what the result means in context [2 marks]' : 'Provide a 4–8 line extract from the primary text. Label with Act/Chapter/Section and speaker. Ask: (a) Identify ONE language/literary technique [1 mark] (b) What does this reveal about character/theme/author intent? [2 marks] (c) What does the key image/phrase/symbol represent? [2 marks]'}
+  Q6 — SEQUENCING/STRUCTURED RESPONSE [4 marks]: ${isSTEM ? 'Generate a structured question appropriate to the topic. IMPORTANT: Only use a formula triangle if the topic genuinely has a triangular formula relationship (e.g. speed/distance/time, V=IR, P=IV, pressure=force/area, density=mass/volume). For all other topics, use a method scaffold: present a worked scenario and ask (a) Identify the key rule or principle [1 mark] (b) Apply it to a given scenario with full working [2 marks] (c) State the unit or explain the result [1 mark].' : 'Provide 6 events/plot points/key moments from the topic in a scrambled order. Ask students to number boxes 1–6 in the correct chronological or logical sequence. [3 marks: all correct = 3, 4–5 correct = 2, 2–3 correct = 1]'}
 
-DIAGRAM RULES — MANDATORY:
+DIAGRAM RULES — MANDATORY (apply to BOTH Diagram A and Diagram B):
 The diagram type MUST match the specific topic. Choose the BEST type from:
 - "labeled" → structures (cells, organs, apparatus), character webs (literature), geographic features, theme maps
 - "circuit" → ONLY for electricity/circuits topics (include "layout": "series" or "parallel")
@@ -958,6 +995,10 @@ The diagram type MUST match the specific topic. Choose the BEST type from:
 - "number-line" → fractions, decimals, ordering, place value (include "start", "end", "marked")
 - "bar" → data/statistics questions (include "bars" array with real data, "xLabel", "yLabel")
 - "axes" → coordinate geometry, graph plotting (include "xLabel", "yLabel")
+- "fraction-bar" → primary fractions (include "numerator", "denominator")
+- "pyramid" → ecological/energy pyramids (include "levels" array)
+- "venn" → classification/comparison (include "setA", "setB", "onlyA", "overlap", "onlyB")
+- "timeline" → history, sequence of events (include "events" array with dates)
 
 CRITICAL: Every label, step, and title MUST use REAL terms specific to "${params.topic}".
 For literature: use actual character names, themes, or techniques from the text.
@@ -968,9 +1009,8 @@ For history: use real events, dates, or figures.
 Output format: [[DIAGRAM:{"type":"...","title":"...","labels":[...]}]]
 NEVER output a diagram with missing required fields. x/y values: 5-95 range. Max 8 labels.
 NEVER use generic placeholders like "Label 1" or "Step 1" — use real topic-specific terms.
-Show the diagram with questions about it underneath or beside it. Students answer questions ABOUT the diagram (identify, explain, apply) — do NOT ask them to label numbered blanks on the diagram itself. Format: diagram on left/top, sub-questions (a)(b)(c) on right/below with answer lines.
-  Q5 — EXTRACT/STIMULUS RESPONSE [5 marks]: ${isSTEM ? 'Provide a scenario or data set (readings from an experiment, a word problem). Ask sub-questions: (a) Identify the relevant formula/law [1 mark] (b) Full worked calculation showing method [2 marks] (c) Explain what the result means in context [2 marks]' : 'Provide a 4–8 line extract from the primary text. Label with Act/Chapter/Section and speaker. Ask: (a) Identify ONE language/literary technique [1 mark] (b) What does this reveal about character/theme/author intent? [2 marks] (c) What does the key image/phrase/symbol represent? [2 marks]'}
-  Q6 — SEQUENCING/STRUCTURED RESPONSE [4 marks]: ${isSTEM ? 'Generate a structured question appropriate to the topic. IMPORTANT: Only use a formula triangle if the topic genuinely has a triangular formula relationship (e.g. speed/distance/time, V=IR, P=IV, pressure=force/area, density=mass/volume). For all other topics, use a method scaffold: present a worked scenario and ask (a) Identify the key rule or principle [1 mark] (b) Apply it to a given scenario with full working [2 marks] (c) State the unit or explain the result [1 mark].' : 'Provide 6 events/plot points/key moments from the topic in a scrambled order. Ask students to number boxes 1–6 in the correct chronological or logical sequence. [3 marks: all correct = 3, 4–5 correct = 2, 2–3 correct = 1]'}
+For DIAGRAM A: the diagram must be FULLY LABELLED (every part has a real term shown).
+For DIAGRAM B: include 3 sub-questions beside/below it (do not leave labels blank on the diagram itself).
 
 SECTION 3 — APPLICATION & ANALYSIS (Q7–Q9):
 ${sectionBPrompt}
@@ -979,7 +1019,14 @@ CHALLENGE QUESTION [${isSTEM ? '8' : '12'} marks]: ${isMaths ? 'Present a challe
 
 SELF REFLECTION: Generate a 5-row confidence table (Topic | Not Yet | Getting There | Confident). Each row must be a specific skill relevant to the topic (not generic). Then 3 written reflection prompts. Then an Exit Ticket box.
 
-TEACHER COPY — ANSWER KEY: Provide answers for EVERY question. For Q9 and Challenge: reproduce full level descriptor bands. For STEM: show every step of working. For HUMANITIES: provide suggested quotes and page/act references. End with total mark breakdown: Section 1: Xm | Section 2: Xm | Section 3: Xm | Challenge: Xm | TOTAL: Xm
+TEACHER COPY — ANSWER KEY: Provide answers for EVERY question. ${isMaths ? `MATHS MARK SCHEME FORMAT (MANDATORY):
+For every maths question, break the mark scheme down as:
+  Q[n] [X marks total]:
+    Method (M marks): [show every working step as a separate line, one per method mark]
+    Accuracy (A marks): [final numerical answer with correct units/form]
+    Alternative methods accepted: [list any other valid methods]
+    Common errors to watch for: [2–3 typical student slips]
+Use M1, M2, A1, A2 notation to show where each mark is awarded. Do NOT collapse into prose.` : 'For Q9 and Challenge: reproduce full level descriptor bands. For STEM: show every step of working. For HUMANITIES: provide suggested quotes and page/act references.'} End with total mark breakdown: Section 1: Xm | Section 2: Xm | Section 3: Xm | Challenge: Xm | TOTAL: Xm
 
 DO NOT include a Reminder Box. DO NOT deviate from these formats. ABSOLUTELY NO EMOJIS in student-facing content.
 CRITICAL SEND RULE: SEND adaptations affect FORMATTING AND PRESENTATION ONLY — never the academic content or intellectual rigour of questions.
@@ -992,6 +1039,11 @@ CRITICAL SEND RULE: SEND adaptations affect FORMATTING AND PRESENTATION ONLY —
 - NEVER add SEND management instructions ('Complete the task in steps', 'Tick each step', 'Focus on one question', 'Take a break') as question content items.
 - SEND scaffolding (sentence starters, answer frames, worked examples) goes in SEPARATE support boxes AROUND the questions — not inside the question text itself.
 - Do NOT simplify the academic content or intellectual challenge of questions just because SEND adaptations are applied.
+- DIAGRAM A and DIAGRAM B MUST still be included with SEND applied — never omit them. SEND overlays may add alt-text, larger labels, or a word bank alongside the diagram, but the diagram itself is untouched.
+- PAGE LAYOUT (Page 1 intro → Section 1 → Diagram A → Section 2 → Diagram B → Section 3+Challenge → Reflection → Teacher Key) MUST be preserved under every SEND overlay.
+- MATHS under SEND: calculation-based rule still applies. SEND may add a method-step scaffold, a worked-example bridge, or a key-facts box — but questions must still be calculations, not prose.
+- SEND does NOT reduce the total mark count. Every question keeps its original marks.
+- NEVER merge or remove questions to simplify the sheet — Section 1 = 3 questions, Section 2 = 3 questions, Section 3 = 3 questions + Challenge. SEND adaptations add support AROUND each question, they never remove questions.
 Topic: "${params.topic}" | Year: ${params.yearGroup} (${phase})
 
 QUALITY STANDARDS — every question must meet professional UK teacher standards:
@@ -1217,8 +1269,82 @@ STRICT JSON OUTPUT: Respond with valid JSON only — no markdown, no code blocks
 
   // ── Maths-specific instruction ────────────────────────────────────────
   const isScienceOrMaths = isMaths || params.subject.toLowerCase().includes('science') || params.subject.toLowerCase().includes('physics') || params.subject.toLowerCase().includes('chemistry') || params.subject.toLowerCase().includes('biology');
+
+  // ── Maths topic → specification skill mapping ──
+  // This tells the AI exactly what calculation skill each topic should test,
+  // so it generates specification-aligned calculation questions rather than
+  // generic "explain" prose questions.
+  const mathsSpecSkillForTopic = (topic: string, yr: number): string => {
+    const t = topic.toLowerCase();
+    // Number & arithmetic
+    if (/fraction/.test(t)) return "adding, subtracting, multiplying, dividing fractions and mixed numbers; finding fractions of amounts; simplifying";
+    if (/decimal/.test(t)) return "ordering decimals; +,−,×,÷ with decimals; converting between decimals/fractions/percentages";
+    if (/percent/.test(t)) return "percentage of an amount; percentage increase/decrease using multipliers; reverse percentages; compound interest";
+    if (/ratio/.test(t)) return "simplifying ratios; sharing in a ratio; using ratios to solve word problems; converting ratios to fractions";
+    if (/proportion/.test(t)) return "direct and inverse proportion; best-buy problems; recipe scaling; unitary method";
+    if (/round|estim|significant/.test(t)) return "rounding to decimal places and significant figures; estimating calculations; error bounds";
+    if (/indices|power|standard form/.test(t)) return "laws of indices; negative and fractional indices; standard form × and ÷; converting to/from standard form";
+    if (/surd/.test(t)) return "simplifying surds; rationalising the denominator; adding/subtracting/multiplying surds";
+    if (/prime|hcf|lcm|factor|multiple/.test(t)) return "prime factorisation; HCF and LCM using Venn/product of primes";
+    // Algebra
+    if (/expand|bracket/.test(t)) return "expanding single, double and triple brackets; collecting like terms";
+    if (/factori[sz]/.test(t)) return "factorising linear expressions; factorising quadratics (including a>1); difference of two squares";
+    if (/solv.*equation|linear equation|equations/.test(t)) return "solving linear equations (1-step, 2-step, with brackets, with unknowns both sides, fractions)";
+    if (/quadratic/.test(t)) return "solving quadratics by factorising, completing the square, and the quadratic formula";
+    if (/simultaneous/.test(t)) return "solving simultaneous equations by substitution and elimination; solving one linear + one quadratic";
+    if (/inequalit/.test(t)) return "solving linear inequalities; representing solutions on a number line; quadratic inequalities";
+    if (/sequence|nth term/.test(t)) return "finding the nth term of a linear sequence; quadratic sequences; Fibonacci-type sequences";
+    if (/formula|rearrang|subject/.test(t)) return "substituting values into formulae; rearranging formulae to change the subject";
+    if (/straight line|y\s*=\s*mx|gradient|linear graph/.test(t)) return "finding the gradient and y-intercept; writing equations y=mx+c; parallel and perpendicular lines";
+    if (/quadratic graph|parabola/.test(t)) return "plotting quadratic graphs; finding roots, turning point and line of symmetry";
+    if (/graph.*function|cubic|reciprocal|exponential/.test(t)) return "plotting and interpreting non-linear graphs; recognising function shapes";
+    // Geometry & measure
+    if (/angle/.test(t)) return "angle rules (straight line, around a point, parallel lines, in polygons); reasons for each step";
+    if (/pythag/.test(t)) return "using Pythagoras' theorem to find missing sides in right-angled triangles; including 3D Pythagoras";
+    if (/trigon|sin|cos|tan/.test(t)) return "SOHCAHTOA — finding missing sides and angles; exact trig values; sine/cosine rule; area = ½ab sin C";
+    if (/area|perimeter/.test(t)) return "area and perimeter of rectangles, triangles, parallelograms, trapezia, compound shapes";
+    if (/circle|circumference/.test(t)) return "area and circumference of circles; arc length and sector area; circle theorems";
+    if (/volume|surface area|prism|cylinder|sphere|cone/.test(t)) return "volume and surface area of cubes, cuboids, prisms, cylinders, spheres, cones, pyramids";
+    if (/transform|translat|rotat|reflect|enlarg/.test(t)) return "describing and performing translations, rotations, reflections, enlargements (including negative/fractional scale factor)";
+    if (/similar|congruen/.test(t)) return "proving congruence; using similarity to find missing sides; ratio of areas and volumes";
+    if (/vector/.test(t)) return "column vectors; vector addition/subtraction; scalar multiplication; vector geometry proofs";
+    if (/bearing/.test(t)) return "measuring and calculating bearings; using bearings in combination with trigonometry";
+    if (/loci|construction/.test(t)) return "ruler-and-compass constructions; loci (equidistant from points/lines)";
+    // Statistics & probability
+    if (/mean|median|mode|range|average/.test(t)) return "calculating mean, median, mode, range from lists and frequency tables; estimated mean from grouped data";
+    if (/probabilit/.test(t)) return "calculating probabilities; tree diagrams; conditional probability; Venn diagram probability";
+    if (/histogram/.test(t)) return "frequency density (frequency ÷ class width); drawing and interpreting histograms";
+    if (/scatter|correlat/.test(t)) return "plotting scatter graphs; line of best fit; describing correlation; using to predict values";
+    if (/pie chart/.test(t)) return "calculating angles for a pie chart (frequency/total × 360); drawing pie charts; interpreting pie charts";
+    if (/cumulative/.test(t)) return "drawing cumulative frequency curves; finding median, quartiles, IQR; box plots";
+    // Primary topics
+    if (/multiply|division|addition|subtract|arithmetic/.test(t) && yr <= 6) return "column addition/subtraction; short/long multiplication; short/long division with numbers appropriate to year group";
+    if (/time|clock/.test(t) && yr <= 6) return "reading analogue/digital clocks; converting between 12/24 hour; calculating time intervals";
+    if (/money/.test(t) && yr <= 6) return "adding and subtracting money amounts; calculating change; solving multi-step money word problems";
+    if (/shape|2d|3d/.test(t) && yr <= 6) return "identifying and describing 2D/3D shapes by their properties (sides, vertices, faces, edges)";
+    return `specification-level calculation skills for "${topic}" appropriate to ${yr <= 6 ? "primary KS" + (yr <= 2 ? "1" : "2") : "GCSE/KS3"} level`;
+  };
+
+  const mathsSpecSkill = isMaths ? mathsSpecSkillForTopic(params.topic, yearNum) : "";
+
   const mathsNote = isMaths
-    ? `Maths: All questions must be numerical/calculation-based. Use LaTeX for all math expressions: wrap in \\(...\\) e.g. \\(\\dfrac{3}{4}\\), \\(x^{2}\\), \\(\\sqrt{x}\\), \\(\\times\\), \\(\\div\\), \\(\\pi\\). CRITICAL RULES: (1) NEVER use \\text{} or \\mathrm{} — write units as plain text OUTSIDE the math delimiters e.g. "\\(F = ma\\) where F is in N, m in kg, a in m/s²". (2) NEVER write \\textm/s or \\text{m/s} — just write "m/s" as plain text. (3) For chemical formulas use subscript numbers: H₂O, CO₂, H₂SO₄. (4) For scientific notation write e.g. "3 × 10⁻³" or \\(3 \\times 10^{-3}\\).`
+    ? `MATHS — SPECIFICATION-ALIGNED CALCULATION PRACTICE (MANDATORY):
+
+This is a MATHEMATICS worksheet. EVERY question (excluding vocabulary, worked example, and learning objective sections) MUST be a calculation question — never a "write an essay about..." or "explain in your own words..." question.
+
+TARGET SKILL for "${params.topic}": ${mathsSpecSkill}
+
+ABSOLUTE RULES:
+1. Every question must START with one of these calculation verbs: Calculate, Work out, Find, Solve, Evaluate, Simplify, Expand, Factorise, Substitute, Show that, Prove, Write, Express, Round.
+2. FORBIDDEN question stems in maths worksheets: "Explain why…", "Describe how…", "Discuss the…", "Give reasons for…", "What is the meaning of…", "In your own words…". These are writing questions — DO NOT use them.
+3. Every question must contain REAL NUMBERS or REAL EXPRESSIONS to work with. Not "a number" — always "24", "3.7", "\\(x^{2} + 5x - 14\\)", "(2, 5)", "£85".
+4. Use LaTeX \\(...\\) for ALL expressions: \\(\\dfrac{3}{4}\\) NOT 3/4; \\(x^{2}\\) NOT x²; \\(\\sqrt{16}\\) NOT √16; \\(\\times\\) NOT ×; \\(\\div\\) NOT ÷; \\(\\pi\\) NOT π.
+5. NEVER use \\text{} or \\mathrm{} — write units as plain text OUTSIDE math delimiters (e.g. "\\(F = ma\\) where F is in N, m in kg, a in m/s²").
+6. Every answer must be a NUMBER, EXACT FRACTION, SURD, ALGEBRAIC EXPRESSION or COORDINATE — NOT a paragraph of prose.
+7. Progression: Section 1 (Q1–3) uses single-step calculations with simple numbers; Section 2 (Q4–6) uses multi-step calculations in context; Section 3 (Q7–9) uses exam-style multi-step problems with worded context.
+8. Every mark-scheme entry must show the FULL method (M marks) and the correct final answer (A marks). Award method marks separately from accuracy marks.
+9. Context in word problems: use realistic UK contexts (shopping, distances, time, recipes, sports scores, surveys, building, travel) — make numbers genuinely meaningful, not arbitrary.
+10. Worked example MUST show step-by-step calculation with annotations explaining each step — no prose, just clearly numbered calculation steps.`
     : isScienceOrMaths
     ? `Science: Use LaTeX \\(...\\) for equations e.g. \\(F = ma\\), \\(E = mc^{2}\\), \\(v = u + at\\). CRITICAL RULES: (1) NEVER use \\text{} or \\mathrm{} — write units as plain text outside math e.g. "\\(F = ma\\) where F is in N". (2) Write chemical formulas with subscript numbers: H₂O, CO₂, H₂SO₄, NaCl. (3) For scientific notation write "6.02 × 10²³" or \\(6.02 \\times 10^{23}\\). (4) Units: write as plain text — m/s, m/s², N, kg, J, W, Pa, mol, dm³, cm³, °C, K.`
     : `Use LaTeX \\(...\\) for any math expressions. Write units as plain text (e.g. "25 m/s" not "\\text{m/s}").`;
@@ -2351,11 +2477,252 @@ Return EXACTLY this JSON (raw JSON only):
   // Diagram injection is handled automatically for diagram subjects via the inline [[DIAGRAM:...]] syntax.
   // The generateDiagram toggle has been removed — diagrams are always included for relevant subjects.
 
+  // ── Diagram A & Diagram B enforcement ───────────────────────────────────
+  // Spec requirement: EVERY worksheet must include both a reference diagram
+  // (Diagram A) between Section 1 and Section 2, and a task diagram
+  // (Diagram B) between Section 2 and Section 3 (unless topic has no second visual).
+  // If the AI failed to produce either, inject a minimal placeholder section.
+  try {
+    // First: honor an explicit "skipped" marker on a Diagram B section —
+    // if the AI emitted a diagram-b section but flagged it as skipped for this
+    // topic, remove it entirely so no empty full-page spread gets printed.
+    result.sections = (result.sections || []).filter((s: any) => {
+      const type = String(s.type || '').toLowerCase();
+      if (type !== 'diagram-b') return true;
+      const content = String(s.content || '').toLowerCase();
+      const skipped = /\bskipped\b|\bno second visual\b|\bnot applicable\b/.test(content) &&
+        !content.includes('[[diagram:'); // only skip if there's no actual diagram
+      if (skipped) {
+        console.info('[Diagrams] Dropped explicitly-skipped Diagram B section');
+        return false;
+      }
+      return true;
+    });
+
+    const sections = result.sections;
+    const hasDiagramA = sections.some((s: any) => {
+      const type = String(s.type || '').toLowerCase();
+      const title = String(s.title || '').toLowerCase();
+      const content = String(s.content || '').toLowerCase();
+      return type === 'diagram-a' ||
+        title.includes('diagram a') ||
+        content.includes('diagram a —') ||
+        content.includes('diagram a -');
+    });
+    const hasDiagramB = sections.some((s: any) => {
+      const type = String(s.type || '').toLowerCase();
+      const title = String(s.title || '').toLowerCase();
+      const content = String(s.content || '').toLowerCase();
+      return type === 'diagram-b' ||
+        title.includes('diagram b') ||
+        content.includes('diagram b —') ||
+        content.includes('diagram b -');
+    });
+
+    // Helpers to find the Q-number from a section title (e.g. "Q5. Calculate...")
+    const getQNum = (s: any): number | null => {
+      const t = String(s.title || s.content || '');
+      const m = t.match(/Q\s*(\d+)/i);
+      return m ? parseInt(m[1], 10) : null;
+    };
+
+    // If Diagram A is missing, inject it BETWEEN Q3 (end of Section 1) and Q4 (start of Section 2).
+    if (!hasDiagramA) {
+      // Try to find an existing diagram section first — re-label the first one as Diagram A.
+      const firstDiagramSection = sections.find((s: any) => {
+        const type = String(s.type || '').toLowerCase();
+        return type === 'diagram' || type === 'q-label-diagram' || String(s.content || '').includes('[[DIAGRAM:');
+      });
+      if (firstDiagramSection) {
+        (firstDiagramSection as any).type = 'diagram-a';
+        (firstDiagramSection as any).title = `Diagram A — ${params.topic}`;
+        if (!String(firstDiagramSection.content || '').toLowerCase().includes('diagram a')) {
+          firstDiagramSection.content = `Diagram A — Reference. Refer back to this diagram as you work through Section 2 and Section 3.\n\n${firstDiagramSection.content || ''}`;
+        }
+        // Move it to the correct position (between Q3 and Q4) if not already there.
+        const currentIdx = sections.indexOf(firstDiagramSection);
+        let insertIdx = sections.findIndex((s: any) => {
+          const qn = getQNum(s);
+          return qn !== null && qn >= 4;
+        });
+        if (insertIdx < 0) {
+          // Fallback: after last Section 1 question
+          insertIdx = sections.length;
+          for (let i = sections.length - 1; i >= 0; i--) {
+            const qn = getQNum(sections[i]);
+            if (qn !== null && qn <= 3) { insertIdx = i + 1; break; }
+          }
+        }
+        if (currentIdx !== insertIdx && currentIdx >= 0) {
+          sections.splice(currentIdx, 1);
+          // Adjust insertIdx if it was after the removed item
+          const adjustedIdx = currentIdx < insertIdx ? insertIdx - 1 : insertIdx;
+          sections.splice(adjustedIdx, 0, firstDiagramSection);
+        }
+        console.info('[Diagrams] Re-labelled and repositioned existing diagram section as Diagram A');
+      } else {
+        // No diagram at all — insert a placeholder Diagram A between Q3 and Q4.
+        const insertIdx = (() => {
+          const firstQ4 = sections.findIndex((s: any) => {
+            const qn = getQNum(s);
+            return qn !== null && qn >= 4;
+          });
+          if (firstQ4 > 0) return firstQ4;
+          // Fallback: after last Section-1 question (q-true-false, q-mcq, q-gap-fill)
+          const section1Types = new Set(['q-true-false', 'q-mcq', 'q-gap-fill', 'q-matching', 'q-ordering']);
+          for (let i = sections.length - 1; i >= 0; i--) {
+            if (section1Types.has(String(sections[i].type || '').toLowerCase())) {
+              return i + 1;
+            }
+          }
+          return sections.length;
+        })();
+        const diagramAPlaceholder = {
+          type: 'diagram-a',
+          title: `Diagram A — ${params.topic}`,
+          content: `Diagram A — Reference. Refer back to this diagram as you work through Section 2 and Section 3.\n\n[A labelled diagram for "${params.topic}" will be shown here. Teachers can replace this with their preferred reference image.]`,
+          altText: `Reference diagram for ${params.topic}`,
+        };
+        sections.splice(insertIdx, 0, diagramAPlaceholder as any);
+        console.info('[Diagrams] Inserted placeholder Diagram A between Section 1 and Section 2');
+      }
+    }
+
+    // If Diagram B is missing, inject a task diagram BETWEEN Q6 and Q7.
+    // Note: Diagram B is OPTIONAL — if the topic has no clear second visual,
+    // we skip insertion rather than force a placeholder.
+    const refreshedSections = result.sections || sections;
+    const hasDiagramBNow = refreshedSections.some((s: any) => {
+      const type = String(s.type || '').toLowerCase();
+      const title = String(s.title || '').toLowerCase();
+      return type === 'diagram-b' || title.includes('diagram b');
+    });
+    // Decide if this topic needs a Diagram B at all — rough heuristic: any
+    // subject in the diagram-subjects allow-list gets one.
+    const topicNeedsDiagramB = isDiagramSubject;
+    if (!hasDiagramBNow && topicNeedsDiagramB) {
+      // Find position between Q6 (last understanding Q) and Q7 (first application Q)
+      const q7Idx = refreshedSections.findIndex((s: any) => {
+        const qn = getQNum(s);
+        return qn !== null && qn >= 7;
+      });
+      const diagramBPlaceholder = {
+        type: 'diagram-b',
+        title: `Diagram B — ${params.topic}`,
+        content: `Diagram B — Task. Use this diagram to answer the questions in Section 3.\n\n[A task diagram for "${params.topic}" will be shown here.]\n\n(a) Describe what the diagram shows. [1 mark]\n(b) ${isMaths ? 'Calculate a value from the diagram, showing your working.' : 'Use the diagram to explain the key idea.'} [2 marks]\n(c) ${isMaths ? 'Apply the result to solve a related problem.' : 'Apply the idea to a new situation.'} [2 marks]`,
+        marks: 5,
+        altText: `Task diagram for ${params.topic}`,
+      };
+      if (q7Idx > 0) {
+        refreshedSections.splice(q7Idx, 0, diagramBPlaceholder as any);
+      } else {
+        // Fallback: append before teacher-key / self-reflection
+        const insertBeforeIdx = refreshedSections.findIndex((s: any) => {
+          const t = String(s.type || '').toLowerCase();
+          return t === 'teacher-key' || t === 'mark-scheme' || t === 'answers' ||
+                 t === 'self-reflection' || t === 'reflection' || (s as any).teacherOnly;
+        });
+        const insertAt = insertBeforeIdx > 0 ? insertBeforeIdx : refreshedSections.length;
+        refreshedSections.splice(insertAt, 0, diagramBPlaceholder as any);
+      }
+      console.info('[Diagrams] Inserted placeholder Diagram B between Section 2 and Section 3');
+    }
+
+    // Set diagram IDs in metadata for traceability
+    const diagramASection = (result.sections || []).find((s: any) =>
+      String(s.type || '').toLowerCase() === 'diagram-a' ||
+      String(s.title || '').toLowerCase().includes('diagram a')
+    );
+    const diagramBSection = (result.sections || []).find((s: any) =>
+      String(s.type || '').toLowerCase() === 'diagram-b' ||
+      String(s.title || '').toLowerCase().includes('diagram b')
+    );
+    if (diagramASection && !(result.metadata as any).diagramAId) {
+      (result.metadata as any).diagramAId = (diagramASection as any).sectionId || `diagram-a-${Date.now()}`;
+    }
+    if (diagramBSection && !(result.metadata as any).diagramBId) {
+      (result.metadata as any).diagramBId = (diagramBSection as any).sectionId || `diagram-b-${Date.now()}`;
+    }
+  } catch (diagramEnforceErr) {
+    console.warn('[Diagrams] Enforcement check failed:', diagramEnforceErr);
+  }
+
   // ── Post-generation quality gate ─────────────────────────────────────────
   // Run lightweight deterministic checks to catch obvious failures.
   // Does NOT make an extra AI call — pure string analysis.
   const qualityIssues: string[] = [];
   const studentSections = result.sections.filter(s => !s.teacherOnly);
+
+  // ── PAGE 1 ORDER ENFORCEMENT ────────────────────────────────────────────
+  // Spec: Page 1 must be
+  //   1. Learning Objective
+  //   2. Retrieval (only if user ticked it — otherwise skipped)
+  //   3. Key Vocabulary
+  //   4. Common Mistakes
+  //   5. Worked Example
+  // Diagram A comes AFTER these on Page 2, followed by Section 1 questions.
+  try {
+    const PAGE1_ORDER: Record<string, number> = {
+      'header': 0,
+      'objective': 1,
+      'learning-objective': 1,
+      'learning-objectives': 1,
+      'prior-knowledge': 2,   // Retrieval = prior-knowledge in canonical types
+      'retrieval': 2,
+      'vocabulary': 3,
+      'key-vocabulary': 3,
+      'key-terms': 3,
+      'common-mistakes': 4,
+      'misconceptions': 4,
+      'worked-example': 5,
+      'example': 5,
+    };
+
+    const sections = result.sections || [];
+    // Identify each section's page-1 slot (if any)
+    const p1Sections: Array<{ idx: number; slot: number }> = [];
+    const otherSections: Array<{ idx: number }> = [];
+    sections.forEach((s: any, idx: number) => {
+      const type = String(s.type || '').toLowerCase();
+      const slot = PAGE1_ORDER[type];
+      if (slot !== undefined) {
+        p1Sections.push({ idx, slot });
+      } else {
+        otherSections.push({ idx });
+      }
+    });
+
+    // If retrieval not explicitly requested (params.recallTopic is empty),
+    // drop retrieval/prior-knowledge sections from Page 1.
+    const retrievalRequested = !!(params.recallTopic && params.recallTopic.trim().length > 0);
+    const p1Keep = retrievalRequested
+      ? p1Sections
+      : p1Sections.filter(p => p.slot !== 2);
+    const p1Drop = retrievalRequested
+      ? []
+      : p1Sections.filter(p => p.slot === 2).map(p => p.idx);
+
+    // Reorder: sort p1Keep by slot, then keep otherSections in original order.
+    if (p1Keep.length > 0) {
+      const sortedP1 = [...p1Keep].sort((a, b) => a.slot - b.slot);
+      const p1Set = new Set(sortedP1.map(p => p.idx));
+      const newSections: any[] = [];
+      for (const p of sortedP1) newSections.push(sections[p.idx]);
+      for (let idx = 0; idx < sections.length; idx++) {
+        if (p1Set.has(idx) || p1Drop.includes(idx)) continue;
+        newSections.push(sections[idx]);
+      }
+      // Only update if the order actually changed
+      const changed = newSections.some((s: any, i: number) => s !== sections[i]) ||
+        newSections.length !== sections.length;
+      if (changed) {
+        result.sections = newSections;
+        console.info(`[Page 1] Reordered Page 1 sections: LO → ${retrievalRequested ? 'Retrieval → ' : ''}Vocab → Common Mistakes → Worked Example`);
+      }
+    }
+  } catch (page1Err) {
+    console.warn('[Page 1] Reorder failed:', page1Err);
+  }
 
   // 1. Check minimum section count
   if (studentSections.length < 3) {
@@ -2393,7 +2760,53 @@ Return EXACTLY this JSON (raw JSON only):
       // Auto-fix: add metadata flag so UI can warn teacher
       (result.metadata as any).qualityWarning = "Math expressions may not be properly formatted";
     }
+
+    // 4b. Check for forbidden writing verbs in maths questions.
+    // Only scan numbered questions (q-* sections) — skip worked examples / vocabulary / explanations.
+    const forbiddenVerbs = [
+      /\bexplain\s+(why|how|the)/i,
+      /\bdescribe\s+(in|how|why|the)/i,
+      /\bdiscuss\s+the/i,
+      /\bin your own words/i,
+      /\bgive reasons/i,
+      /\bwhat is the meaning of/i,
+      /\bwhy is .* important/i,
+    ];
+    const questionSections = studentSections.filter(s => {
+      const t = String(s.type || '').toLowerCase();
+      return t.startsWith('q-') || t === 'independent' || t === 'guided';
+    });
+    const violatingQuestions: string[] = [];
+    questionSections.forEach((s: any) => {
+      const content = String(s.content || "");
+      // Check each numbered sub-question within the content
+      const lines = content.split(/\n+/);
+      for (const line of lines) {
+        // Skip short lines and headers
+        if (line.length < 15) continue;
+        if (forbiddenVerbs.some(rx => rx.test(line))) {
+          violatingQuestions.push((s.title || s.type || 'question') + ': "' + line.substring(0, 60) + '..."');
+          break;
+        }
+      }
+    });
+    if (violatingQuestions.length > 0) {
+      qualityIssues.push(`Maths worksheet contains ${violatingQuestions.length} writing-style question(s) — should be calculation-based: ${violatingQuestions.slice(0, 3).join('; ')}`);
+      (result.metadata as any).mathsWritingVerbWarning = violatingQuestions;
+    }
   }
+
+  // 5. Diagram A + Diagram B presence check (separate from earlier enforcement)
+  const hasDiagramATag = studentSections.some((s: any) =>
+    String(s.type || '').toLowerCase() === 'diagram-a' ||
+    String(s.title || '').toLowerCase().includes('diagram a')
+  );
+  const hasDiagramBTag = studentSections.some((s: any) =>
+    String(s.type || '').toLowerCase() === 'diagram-b' ||
+    String(s.title || '').toLowerCase().includes('diagram b')
+  );
+  if (!hasDiagramATag) qualityIssues.push('Worksheet missing Diagram A (reference diagram)');
+  if (!hasDiagramBTag) qualityIssues.push('Worksheet missing Diagram B (task diagram)');
 
   // Log quality issues (visible in dev console, doesn't block rendering)
   if (qualityIssues.length > 0) {

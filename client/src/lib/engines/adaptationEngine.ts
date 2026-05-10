@@ -387,7 +387,37 @@ export function applySEND(
   const adaptedSections = worksheet.sections.map((section: any) => {
     if (!section || section.teacherOnly) return section;
 
+    // ── SEND AUDIT SAFEGUARDS ────────────────────────────────────────────
+    // Protect DIAGRAM sections and DIAGRAM markers from text replacement:
+    // the SIMPLIFY_MAP / UPGRADE_MAP must NEVER rewrite labels inside a
+    // diagram spec or remove the [[DIAGRAM:...]] marker — that would break
+    // rendering and wreck the Diagram A / Diagram B page layout.
+    const sectionType = String(section.type || "").toLowerCase();
+    const isDiagramSection = sectionType === "diagram" ||
+      sectionType === "diagram-a" || sectionType === "diagram-b" ||
+      sectionType === "q-label-diagram" ||
+      sectionType === "reference-diagram" || sectionType === "task-diagram";
+    // Skip all text-level rewrites for diagram sections — only allow scaffold
+    // APPENDING (at the very end of the section) which cannot corrupt the diagram.
+    if (isDiagramSection) {
+      return section;
+    }
+
+    // Protect worked examples from command-word simplification — their
+    // mark-scheme notation (M1, A1, etc.) and step labelling must be kept
+    // intact so students see the canonical method.
+    if (sectionType === "worked-example" || sectionType === "example") {
+      return section;
+    }
+
     let content = typeof section.content === "string" ? section.content : String(section.content || "");
+
+    // Extract and preserve [[DIAGRAM:...]] markers from content before rewrites
+    const diagramMarkers: string[] = [];
+    content = content.replace(/\[\[DIAGRAM:[\s\S]*?\]\]/g, (match) => {
+      diagramMarkers.push(match);
+      return `__DIAGRAM_MARKER_${diagramMarkers.length - 1}__`;
+    });
 
     if (isFoundation) {
       // ── Foundation: simplify + scaffold ──────────────────────────────────
@@ -435,6 +465,13 @@ export function applySEND(
         content = content + "\n\nStep 1: Write down what you know.\nStep 2: Choose the method.\nStep 3: Show your working.\nStep 4: Write your answer with units.";
       }
     }
+
+    // Restore [[DIAGRAM:...]] markers that were extracted before rewrites.
+    // This keeps diagrams rendering correctly even if SEND rewrites were applied
+    // to surrounding text (e.g. Diagram B's intro paragraph + sub-questions).
+    diagramMarkers.forEach((marker, idx) => {
+      content = content.replace(`__DIAGRAM_MARKER_${idx}__`, marker);
+    });
 
     return {
       ...section,
