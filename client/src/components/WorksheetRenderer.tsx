@@ -1161,7 +1161,7 @@ const SECTION_STYLES: Record<string, { border: string; bg: string; badge: string
   "questions":     { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Exam Questions",          headerBg: "#1a2744", headerText: "#ffffff" },
   "mark-scheme":   { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Mark Scheme",             headerBg: "#1a2744", headerText: "#ffffff" },
   "teacher-notes": { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Teacher Notes",           headerBg: "#1a2744", headerText: "#ffffff" },
-  "send-support":  { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "SEND Support",            headerBg: "#1a2744", headerText: "#ffffff" },
+  "send-support":  { border: "#7c3aed", bg: "#faf5ff", badge: "#7c3aed", badgeBg: "#7c3aed", icon: "", label: "SEND Support",            headerBg: "#7c3aed", headerText: "#ffffff" },
   "reading":       { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Reading Passage",         headerBg: "#1a2744", headerText: "#ffffff" },
   "passage":       { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Reading Passage",         headerBg: "#1a2744", headerText: "#ffffff" },
   "source-text":   { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Source Text",             headerBg: "#1a2744", headerText: "#ffffff" },
