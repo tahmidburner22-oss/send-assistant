@@ -2138,6 +2138,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
         html: el.outerHTML,
         height: el.getBoundingClientRect().height,
         isDiagram: el.classList.contains("ws-section-diagram"),
+        isGroupDivider: el.classList.contains("ws-section-group-divider"),
       }));
       document.body.removeChild(measureIframe);
       // Pack blocks into pages without ever emitting intermediate blank pages.
@@ -2161,6 +2162,13 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
           pages.push([blk.html]);
           pageIsDiagram.push(true);
           curPageH = 0;
+          continue;
+        }
+        // Section group dividers (e.g. "SECTION 3 — APPLICATION & ANALYSIS") must never
+        // appear alone on a page — always merge them with the next content block.
+        if (blk.isGroupDivider) {
+          currentPage.push(blk.html);
+          curPageH += blk.height;
           continue;
         }
         if (currentPage.length === 0 || curPageH + blk.height <= CONTENT_H + 10) {
@@ -2190,25 +2198,25 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
             padding:0!important; border:0!important; height:1px!important; width:1px!important; overflow:hidden!important; }
           .preview-page { position:relative; width:${A4_W}px; height:${A4_H}px; background:${bg}; overflow:hidden; margin:0; }
           .worksheet-print-root { background:${bg}; padding:${MARGIN}px; width:${A4_W}px; }
-          .diagram-page .worksheet-print-root { overflow:hidden!important; }
+          .diagram-page .worksheet-print-root { overflow:hidden!important; padding-top:0!important; padding-bottom:0!important; }
           .ws-section { margin-bottom:10px!important; border-radius:4px!important;
             -webkit-print-color-adjust:exact!important; print-color-adjust:exact!important; }
           .ws-section-diagram {
             margin:0!important;
             width:100%!important; max-width:100%!important;
-            height:${A4_H - MARGIN * 2}px!important;
-            min-height:${A4_H - MARGIN * 2}px!important;
+            height:${A4_H}px!important;
+            min-height:${A4_H}px!important;
             overflow:hidden!important;
             box-sizing:border-box!important;
             display:flex!important; flex-direction:column!important;
-            align-items:stretch!important; justify-content:center!important;
-            padding:8px!important; }
+            align-items:stretch!important; justify-content:flex-start!important;
+            padding:0!important; }
           .ws-section-diagram img, .ws-section-diagram svg,
           .ws-section-diagram > div,
           .ws-section-diagram > div > div, .ws-section-diagram > div > img {
             max-width:100%!important; width:100%!important;
-            height:${A4_H - MARGIN * 2 - 16}px!important;
-            max-height:${A4_H - MARGIN * 2 - 16}px!important;
+            height:${A4_H}px!important;
+            max-height:${A4_H}px!important;
             object-fit:contain!important; display:block!important; flex:1!important; }
           .ws-header { border-radius:4px!important; margin-bottom:10px!important; overflow:hidden!important;
             -webkit-print-color-adjust:exact!important; print-color-adjust:exact!important; }
@@ -2370,6 +2378,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
         height: el.getBoundingClientRect().height,
         // Detect diagram sections so they can be forced onto their own page
         isDiagram: el.classList.contains("ws-section-diagram"),
+        isGroupDivider: el.classList.contains("ws-section-group-divider"),
       }));
       document.body.removeChild(measureIframe);
 
@@ -2396,6 +2405,12 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
           pageIsDiagram.push(true);
           curPageH = 0;
           continue;
+        // Section group dividers must never appear alone on a page — merge with next block.
+        if (blk.isGroupDivider) {
+          currentPage.push(blk.html);
+          curPageH += blk.height;
+          continue;
+        }
         }
         if (currentPage.length === 0 || curPageH + blk.height <= CONTENT_H + 10) {
           currentPage.push(blk.html);
@@ -2447,9 +2462,11 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
             padding: ${MARGIN}px;
             width: ${A4_W}px;
           }
-          /* Diagram pages: keep normal padding — the diagram section handles its own layout */
+          /* Diagram pages: remove top/bottom padding so diagram starts from the black line */
           .diagram-page .worksheet-print-root {
             overflow: hidden !important;
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
           }
           .ws-section { margin-bottom: 10px !important; border-radius: 4px !important;
             -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
@@ -2458,15 +2475,15 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
             margin: 0 !important;
             width: 100% !important;
             max-width: 100% !important;
-            height: ${A4_H - MARGIN * 2}px !important;
-            min-height: ${A4_H - MARGIN * 2}px !important;
+            height: ${A4_H}px !important;
+            min-height: ${A4_H}px !important;
             overflow: hidden !important;
             box-sizing: border-box !important;
             display: flex !important;
             flex-direction: column !important;
             align-items: stretch !important;
-            justify-content: center !important;
-            padding: 8px !important;
+            justify-content: flex-start !important;
+            padding: 0 !important;
           }
           .ws-section-diagram img,
           .ws-section-diagram svg,
@@ -2475,8 +2492,8 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
           .ws-section-diagram > div > img {
             max-width: 100% !important;
             width: 100% !important;
-            height: ${A4_H - MARGIN * 2 - 16}px !important;
-            max-height: ${A4_H - MARGIN * 2 - 16}px !important;
+            height: ${A4_H}px !important;
+            max-height: ${A4_H}px !important;
             object-fit: contain !important;
             display: block !important;
             flex: 1 !important;
