@@ -1,11 +1,15 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { motion, useScroll, useTransform, useSpring } from "framer-motion";
 import { TOOLS } from "./lib/data";
 
 // Horizontal pinned scroll through all 24 tools on desktop (≥1024px).
-// Vertical scroll translates into horizontal translation of an inner rail.
-// On mobile/tablet we render a vertical grid to keep the scroll natural and
-// avoid any blank pinned space.
+// The rail's travel distance is MEASURED from the DOM (rail.scrollWidth -
+// viewport.clientWidth), not guessed in vw. The section height is
+// correspondingly sized so that scrollYProgress = 1 exactly when the rail
+// is fully scrolled through. Result: every card is seen before vertical
+// scroll advances past the section.
+//
+// On <1024px we render a vertical grid (ServicesStack) — no horizontal pin.
 
 export default function ServicesHorizontal() {
   const [isDesktop, setIsDesktop] = useState(false);
@@ -32,7 +36,8 @@ function ServicesStack() {
         <div className="text-xs uppercase tracking-[0.2em] text-terracotta font-semibold">
           24 specialist tools
         </div>
-        <h2 className="mt-4 font-heading text-ink-900 text-4xl sm:text-5xl font-bold tracking-tight leading-[0.95]"
+        <h2
+          className="mt-4 font-heading text-ink-900 text-4xl sm:text-5xl font-bold tracking-tight leading-[0.95]"
           style={{ paddingBottom: "0.08em" }}
         >
           Everything a school needs,{" "}
@@ -43,14 +48,10 @@ function ServicesStack() {
           purpose-built for UK schools and aligned with statutory guidance.
         </p>
 
-        {/* Marquee of tool names */}
         <div className="marquee-mask overflow-hidden mt-8 mb-10">
           <div className="flex gap-8 whitespace-nowrap animate-marquee">
             {[...TOOLS, ...TOOLS].map((t, i) => (
-              <span
-                key={i}
-                className="font-display text-2xl italic text-ink-700/70"
-              >
+              <span key={i} className="font-display text-2xl italic text-ink-700/70">
                 {t.t} <span className="text-terracotta">·</span>
               </span>
             ))}
@@ -85,9 +86,7 @@ function ServicesStack() {
                 <h3 className="mt-6 font-heading font-bold text-lg text-ink-900 tracking-[-0.02em] leading-tight">
                   {tool.t}
                 </h3>
-                <p className="mt-2 text-sm text-ink-500 leading-relaxed">
-                  {tool.d}
-                </p>
+                <p className="mt-2 text-sm text-ink-500 leading-relaxed">{tool.d}</p>
               </div>
             </motion.article>
           ))}
@@ -101,20 +100,60 @@ function ServicesStack() {
 
 function ServicesHorizontalDesktop() {
   const sectionRef = useRef(null);
+  const viewportRef = useRef(null);
   const railRef = useRef(null);
+
+  // Measured travel distance in pixels. Recomputed on resize and after the
+  // rail layout settles. Until the first measurement lands we use 0 so the
+  // rail sits flush-left.
+  const [travel, setTravel] = useState(0);
+
+  useLayoutEffect(() => {
+    const measure = () => {
+      const rail = railRef.current;
+      const viewport = viewportRef.current;
+      if (!rail || !viewport) return;
+      // rail.scrollWidth is the full content width; viewport.clientWidth is
+      // what fits on screen. The delta is how far left we must translate to
+      // reveal the last card.
+      const delta = rail.scrollWidth - viewport.clientWidth;
+      setTravel(Math.max(0, delta));
+    };
+    measure();
+    // Measure once fonts have likely loaded.
+    const raf1 = requestAnimationFrame(measure);
+    const raf2 = requestAnimationFrame(() => requestAnimationFrame(measure));
+    window.addEventListener("resize", measure);
+    // Re-measure if fonts change layout late.
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(measure).catch(() => {});
+    }
+    return () => {
+      cancelAnimationFrame(raf1);
+      cancelAnimationFrame(raf2);
+      window.removeEventListener("resize", measure);
+    };
+  }, []);
 
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ["start start", "end end"],
   });
   const smooth = useSpring(scrollYProgress, {
-    stiffness: 110,
-    damping: 28,
-    mass: 0.4,
+    stiffness: 140,
+    damping: 30,
+    mass: 0.3,
   });
 
-  // Rail travels ~210vw left as user scrolls. Matches 24 cards + intro panel.
-  const x = useTransform(smooth, [0, 1], ["0vw", "-210vw"]);
+  // Translate by the MEASURED pixel delta so every card is revealed before
+  // the section ends. `travel` is a plain number, so we compute pixel output.
+  const x = useTransform(smooth, (v) => -v * travel);
+
+  // Section height formula: we want exactly `travel` pixels of vertical
+  // scroll to move the rail end-to-end, plus one full viewport at the
+  // start and end for the pin entry/exit. That gives a total section
+  // height of (100vh + travel).
+  const sectionHeight = `calc(100vh + ${travel}px)`;
 
   return (
     <section
@@ -122,9 +161,12 @@ function ServicesHorizontalDesktop() {
       id="services"
       data-testid="services-section"
       className="relative"
-      style={{ height: "380vh" }}
+      style={{ height: sectionHeight }}
     >
-      <div className="sticky top-0 h-[100svh] overflow-hidden flex flex-col justify-center">
+      <div
+        ref={viewportRef}
+        className="sticky top-0 h-[100svh] w-full overflow-hidden flex flex-col justify-center"
+      >
         <div className="absolute inset-0 -z-10 pointer-events-none">
           <div className="absolute top-10 left-10 w-[420px] h-[420px] rounded-full bg-terracotta/10 blur-[120px]" />
           <div className="absolute bottom-10 right-10 w-[420px] h-[420px] rounded-full bg-honey/15 blur-[120px]" />
@@ -146,7 +188,7 @@ function ServicesHorizontalDesktop() {
         <motion.div
           ref={railRef}
           style={{ x }}
-          className="mt-10 flex items-stretch gap-5 md:gap-7 pl-6 md:pl-12 pr-20 will-change-transform"
+          className="mt-10 flex items-stretch gap-5 md:gap-7 pl-6 md:pl-12 will-change-transform"
         >
           {/* Lead pitch panel */}
           <div className="flex-shrink-0 w-[560px] flex items-center">
@@ -178,8 +220,8 @@ function ServicesHorizontalDesktop() {
             <ToolRailCard key={tool.t} tool={tool} index={i} />
           ))}
 
-          {/* Tail spacer so the last card gets breathing room */}
-          <div className="flex-shrink-0 w-[20vw]" />
+          {/* Tail spacer so the last card gets trailing breathing room */}
+          <div className="flex-shrink-0 w-[10vw] min-w-[120px]" />
         </motion.div>
 
         <ScrollProgressBar progress={smooth} />
@@ -223,7 +265,7 @@ function ToolRailCard({ tool, index }) {
 function ScrollProgressBar({ progress }) {
   const scaleX = useTransform(progress, [0, 1], [0, 1]);
   return (
-    <div className="absolute bottom-8 left-6 right-6 md:left-12 md:right-12 max-w-7xl mx-auto pointer-events-none">
+    <div className="absolute bottom-8 left-6 right-6 md:left-12 md:right-12 pointer-events-none">
       <div className="h-px bg-ink-900/10 relative overflow-hidden">
         <motion.div
           style={{ scaleX, transformOrigin: "left" }}
