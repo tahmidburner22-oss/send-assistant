@@ -99,15 +99,19 @@ html.lenis-active { scroll-behavior: auto; }
 }
 
 /* Hide the native cursor on pointer-fine devices so the custom one can shine.
-   Touch devices keep the default behaviour. */
+   Touch devices keep the default behaviour. We also leave inputs and
+   textareas with their native cursor so typing feels right. */
 @media (hover: hover) and (pointer: fine) and (min-width: 1024px) {
   .adaptly-landing,
   .adaptly-landing a,
   .adaptly-landing button,
-  .adaptly-landing input,
-  .adaptly-landing textarea,
   .adaptly-landing [role="button"] {
     cursor: none;
+  }
+  .adaptly-landing input,
+  .adaptly-landing textarea,
+  .adaptly-landing select {
+    cursor: text;
   }
 }
 

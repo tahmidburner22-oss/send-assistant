@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import {
+  AnimatePresence,
   motion,
   useScroll,
   useTransform,
   useMotionValue,
+  useMotionValueEvent,
   useSpring,
   useMotionTemplate,
   useReducedMotion,
@@ -23,14 +25,12 @@ import {
 
 // ────────────────────────────────────────────────────────────────
 // Hero — sticky scroll scene.
-// Desktop (≥1024px): 200vh of scroll — three messages morph through, engine
-//   rotates with scroll, orbit tiles disperse then fade.
-// Tablet (640-1023px): 160vh — one extra message, tighter motion.
-// Mobile (<640px):   120vh — single headline, smaller engine, 5 orbit tiles
-//   at a tight radius. No dead scroll.
-//
-// The engine glyph's rotation, counter-rotation, flare and stroke dash-offset
-// are all bound to scrollYProgress so the motion literally follows the user.
+// Desktop (≥1024px): 200vh of scroll. Three title messages cycle through
+//   as you scroll (only one in the DOM at a time so there's no overlap
+//   bleed). Engine glyph + orbit tiles share one parallax transform so
+//   the connecting lines always meet the wheel's centre.
+// Tablet (640-1023px): 160vh — same sequence, tighter.
+// Mobile (<640px): natural-flow section, single headline, no sticky.
 // ────────────────────────────────────────────────────────────────
 
 const PILLARS = [
@@ -46,16 +46,32 @@ const PILLARS = [
   { label: "Screener", icon: Compass, color: "#22201E" },
 ];
 
+const TITLES = [
+  {
+    a: "One platform for",
+    b: "teaching, support",
+    c: "and progress.",
+  },
+  {
+    a: "24 specialist",
+    b: "tools. one",
+    c: "quiet engine.",
+  },
+  {
+    a: "Built so every",
+    b: "child is seen,",
+    c: "not missed.",
+  },
+];
+
 function polar(angleDeg, r) {
   const a = (angleDeg * Math.PI) / 180;
   return { x: Math.cos(a) * r, y: Math.sin(a) * r };
 }
 
-// Pick viewport-appropriate sizes for the hero composition + scroll scene.
-// Mobile (<640px): the hero is a standard section with natural height — the
-// sticky trick is disabled so copy + engine + stats all fit naturally and
-// there is no clipping or blank space.
-// Tablet/desktop: sticky scroll scene as designed.
+// Layout picks viewport-appropriate sizes.
+// Mobile (<640px): natural-height section (no sticky) so copy + engine +
+// stats fit without clipping. Tablet/desktop: sticky scroll scene.
 function useHeroLayout() {
   const [layout, setLayout] = useState({
     sceneHeight: "200vh",
@@ -104,19 +120,19 @@ function useHeroLayout() {
   return layout;
 }
 
-// Reveal line that doesn't clip descenders. Generous line-height and a tiny
-// bottom pad keep g/p/y tails visible even when the outer span uses overflow
-// hidden.
-function RevealLine({ children, delay = 0 }) {
+// Reveal line that doesn't clip descenders.
+function RevealLine({ children, delay = 0, keyRef }) {
   return (
     <span
       className="block overflow-hidden"
       style={{ lineHeight: 1.05, paddingBottom: "0.1em" }}
     >
       <motion.span
+        key={keyRef}
         initial={{ y: "115%" }}
         animate={{ y: "0%" }}
-        transition={{ delay, duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
+        exit={{ y: "-115%" }}
+        transition={{ delay, duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
         className="block"
       >
         {children}
@@ -125,87 +141,45 @@ function RevealLine({ children, delay = 0 }) {
   );
 }
 
-// Three messages crossfade as the user scrolls the sticky hero.
-function ScrollTitle({ scrollYProgress, enableTitleMorph }) {
-  const a1 = useTransform(
-    scrollYProgress,
-    [0, 0.18, 0.32, 0.44],
-    enableTitleMorph ? [1, 1, 0, 0] : [1, 1, 1, 1]
-  );
-  const a2 = useTransform(
-    scrollYProgress,
-    [0.28, 0.42, 0.58, 0.68],
-    enableTitleMorph ? [0, 1, 1, 0] : [0, 0, 0, 0]
-  );
-  const a3 = useTransform(
-    scrollYProgress,
-    [0.6, 0.72, 0.85, 0.95],
-    enableTitleMorph ? [0, 1, 1, 0] : [0, 0, 0, 0]
-  );
-  const y1 = useTransform(scrollYProgress, [0, 0.5], [0, -60]);
-  const y2 = useTransform(scrollYProgress, [0.28, 0.7], [40, -40]);
-  const y3 = useTransform(scrollYProgress, [0.6, 1], [50, -30]);
-
+// Render a single title block. Switching activeIndex triggers a staggered
+// exit/enter via AnimatePresence. Only one block is ever in the DOM at a
+// time, so zero-opacity ghosts can't cause visual overlap.
+function ActiveTitle({ activeIndex }) {
   return (
-    <div className="relative min-h-[220px] sm:min-h-[280px] lg:min-h-[340px]">
-      <motion.h1
-        style={{ opacity: a1, y: y1 }}
-        className="absolute inset-0 font-heading text-ink-900 tracking-[-0.04em] text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold"
-        data-testid="hero-title"
+    <AnimatePresence mode="wait" initial={false}>
+      <motion.div
+        key={activeIndex}
+        initial={{ opacity: 1 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 1 }}
       >
-        <RevealLine delay={0.1}>One platform for</RevealLine>
-        <RevealLine delay={0.22}>
-          <span className="font-display italic font-normal text-terracotta">teaching, support</span>
-        </RevealLine>
-        <RevealLine delay={0.34}>and progress.</RevealLine>
-      </motion.h1>
-
-      {enableTitleMorph && (
-        <motion.h1
-          style={{ opacity: a2, y: y2 }}
-          aria-hidden
-          className="absolute inset-0 font-heading text-ink-900 tracking-[-0.04em] text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold"
-        >
-          <span className="block" style={{ lineHeight: 1.05, paddingBottom: "0.1em" }}>
-            24 specialist
-          </span>
-          <span
-            className="block font-display italic font-normal text-terracotta"
-            style={{ lineHeight: 1.05, paddingBottom: "0.1em" }}
-          >
-            tools. one
-          </span>
-          <span className="block" style={{ lineHeight: 1.05, paddingBottom: "0.1em" }}>
-            quiet engine.
-          </span>
-        </motion.h1>
-      )}
-
-      {enableTitleMorph && (
-        <motion.h1
-          style={{ opacity: a3, y: y3 }}
-          aria-hidden
-          className="absolute inset-0 font-heading text-ink-900 tracking-[-0.04em] text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold"
-        >
-          <span className="block" style={{ lineHeight: 1.05, paddingBottom: "0.1em" }}>
-            Built so every
-          </span>
-          <span
-            className="block font-display italic font-normal text-terracotta"
-            style={{ lineHeight: 1.05, paddingBottom: "0.1em" }}
-          >
-            child is seen,
-          </span>
-          <span className="block" style={{ lineHeight: 1.05, paddingBottom: "0.1em" }}>
-            not missed.
-          </span>
-        </motion.h1>
-      )}
-    </div>
+        <TitleBlock index={activeIndex} />
+      </motion.div>
+    </AnimatePresence>
   );
 }
 
-// The engine glyph — a rotating SVG mark whose motion is scroll-linked.
+function TitleBlock({ index }) {
+  const t = TITLES[index] || TITLES[0];
+  return (
+    <h1
+      className="font-heading text-ink-900 tracking-[-0.04em] text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold"
+      data-testid="hero-title"
+    >
+      <RevealLine delay={0.02} keyRef={`${index}-a`}>
+        {t.a}
+      </RevealLine>
+      <RevealLine delay={0.12} keyRef={`${index}-b`}>
+        <span className="font-display italic font-normal text-terracotta">{t.b}</span>
+      </RevealLine>
+      <RevealLine delay={0.22} keyRef={`${index}-c`}>
+        {t.c}
+      </RevealLine>
+    </h1>
+  );
+}
+
+// The engine glyph — rotates with scroll, counter-rotating inner wheel.
 function EngineGlyph({ scrollYProgress }) {
   const rotate = useTransform(scrollYProgress, [0, 1], [0, 540]);
   const innerRotate = useTransform(scrollYProgress, [0, 1], [0, -360]);
@@ -215,7 +189,6 @@ function EngineGlyph({ scrollYProgress }) {
 
   return (
     <div className="relative flex items-center justify-center w-[220px] h-[220px] sm:w-[280px] sm:h-[280px] lg:w-[320px] lg:h-[320px]">
-      {/* Soft warm halo that flares with scroll */}
       <motion.div
         style={{ opacity: flare, scale: warp }}
         className="absolute inset-0 rounded-full"
@@ -237,7 +210,6 @@ function EngineGlyph({ scrollYProgress }) {
         />
       </motion.div>
 
-      {/* Outer dashed ring */}
       <motion.svg
         style={{ rotate }}
         viewBox="-160 -160 320 320"
@@ -266,7 +238,6 @@ function EngineGlyph({ scrollYProgress }) {
           strokeDasharray="2 14"
           style={{ strokeDashoffset: dashOffset }}
         />
-        {/* Tick marks every ~7.5° */}
         {Array.from({ length: 48 }).map((_, i) => {
           const a = (i / 48) * 360;
           const p1 = polar(a, 146);
@@ -286,7 +257,6 @@ function EngineGlyph({ scrollYProgress }) {
         })}
       </motion.svg>
 
-      {/* Inner counter-rotating wheel */}
       <motion.svg
         style={{ rotate: innerRotate }}
         viewBox="-100 -100 200 200"
@@ -320,7 +290,6 @@ function EngineGlyph({ scrollYProgress }) {
         <circle cx="0" cy="0" r="3" fill="#E5B96E" />
       </motion.svg>
 
-      {/* Centre medallion */}
       <div className="relative z-10 w-[80px] h-[80px] sm:w-[100px] sm:h-[100px] lg:w-[112px] lg:h-[112px] rounded-full glass flex items-center justify-center shadow-[0_20px_50px_-15px_rgba(34,32,30,0.25)]">
         <div className="text-center">
           <div className="font-display text-2xl sm:text-3xl text-ink-900 leading-none">A</div>
@@ -331,16 +300,14 @@ function EngineGlyph({ scrollYProgress }) {
   );
 }
 
-function OrbitTiles({ scrollYProgress, orbitRadius, orbitCount, mouseSx, mouseSy }) {
+function OrbitTiles({ scrollYProgress, orbitRadius, orbitCount }) {
   const tiles = PILLARS.slice(0, orbitCount);
-
-  // Tiles drift outward and fade as the scene exits.
   const radiusMul = useTransform(scrollYProgress, [0, 0.55, 0.9], [1, 1.05, 1.5]);
   const tileOpacity = useTransform(scrollYProgress, [0, 0.75, 1], [1, 1, 0]);
 
   return (
     <motion.div
-      style={{ x: mouseSx, y: mouseSy, opacity: tileOpacity }}
+      style={{ opacity: tileOpacity }}
       className="absolute inset-0 flex items-center justify-center pointer-events-none"
       data-testid="hero-orbit"
     >
@@ -432,11 +399,15 @@ export default function Hero() {
   const reducedMotion = useReducedMotion();
   const layout = useHeroLayout();
 
-  // Mouse parallax (desktop only — touch devices have no cursor).
+  // Mouse parallax — applied to the WHOLE composition (engine + tiles)
+  // so their geometry stays consistent.
   const mx = useMotionValue(0);
   const my = useMotionValue(0);
   const sx = useSpring(mx, { stiffness: 60, damping: 18 });
   const sy = useSpring(my, { stiffness: 60, damping: 18 });
+  // Copy column uses a smaller parallax range so it reads as separate.
+  const copyX = useTransform(sx, (v) => v * 0.4);
+  const copyY = useTransform(sy, (v) => v * 0.4);
 
   useEffect(() => {
     if (reducedMotion || layout.mouseParallaxRange === 0) return;
@@ -452,6 +423,18 @@ export default function Hero() {
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ["start start", "end end"],
+  });
+
+  // Active title index driven by scroll buckets. Keeps exactly one title
+  // in the DOM — no opacity crossfade, no bleed, no overlap.
+  const [activeIndex, setActiveIndex] = useState(0);
+  useMotionValueEvent(scrollYProgress, "change", (v) => {
+    if (!layout.enableTitleMorph) {
+      if (activeIndex !== 0) setActiveIndex(0);
+      return;
+    }
+    const next = v < 0.38 ? 0 : v < 0.7 ? 1 : 2;
+    if (next !== activeIndex) setActiveIndex(next);
   });
 
   const stageScale = useTransform(scrollYProgress, [0, 1], [1, 0.92]);
@@ -505,9 +488,9 @@ export default function Hero() {
           }
         >
           <div className="max-w-7xl mx-auto w-full px-5 sm:px-6 md:px-10 grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-10 lg:gap-8 items-center">
-            {/* Copy column */}
+            {/* Copy column — lighter parallax */}
             <motion.div
-              style={{ x: sx, y: sy }}
+              style={{ x: copyX, y: copyY }}
               className="lg:col-span-5 order-2 lg:order-1"
             >
               <motion.div
@@ -521,11 +504,11 @@ export default function Hero() {
                 24 specialist tools, built for SEND excellence
               </motion.div>
 
-              <div className="mt-5 sm:mt-6">
-                <ScrollTitle
-                  scrollYProgress={scrollYProgress}
-                  enableTitleMorph={layout.enableTitleMorph}
-                />
+              {/* Fixed-height title container so swapping active title
+                  doesn't reflow the rest of the column. Sized for 3 lines
+                  at the largest breakpoint plus descender padding. */}
+              <div className="mt-5 sm:mt-6 relative min-h-[180px] sm:min-h-[220px] md:min-h-[260px] lg:min-h-[320px]">
+                <ActiveTitle activeIndex={activeIndex} />
               </div>
 
               <motion.p
@@ -593,8 +576,10 @@ export default function Hero() {
               </motion.div>
             </motion.div>
 
-            {/* Engine + orbit composition */}
-            <div
+            {/* Engine + orbit composition — shared parallax wrapper so
+                the connecting lines always point to the wheel's centre. */}
+            <motion.div
+              style={{ x: sx, y: sy }}
               className="lg:col-span-7 order-1 lg:order-2 relative h-[340px] sm:h-[460px] md:h-[540px] lg:h-[640px]"
               data-testid="hero-ecosystem"
             >
@@ -602,14 +587,11 @@ export default function Hero() {
                 scrollYProgress={scrollYProgress}
                 orbitRadius={layout.orbitRadius}
                 orbitCount={layout.orbitCount}
-                mouseSx={sx}
-                mouseSy={sy}
               />
               <div className="absolute inset-0 flex items-center justify-center">
                 <EngineGlyph scrollYProgress={scrollYProgress} />
               </div>
 
-              {/* Label chip */}
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -619,7 +601,7 @@ export default function Hero() {
                 <Sparkles size={12} className="text-terracotta" />
                 Adaptly engine · live
               </motion.div>
-            </div>
+            </motion.div>
           </div>
         </motion.div>
 
