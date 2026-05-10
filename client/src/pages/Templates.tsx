@@ -649,7 +649,7 @@ export default function Templates() {
         <TabsContent value="diagrams" className="mt-2">
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
             <p className="text-sm text-muted-foreground mb-4">
-              Full-page Nano Banana visual diagrams organised by year group and subject. Click any diagram to view full size.
+              Full-page visual diagrams organised by subject. Click any diagram to view full size.
             </p>
             <DiagramLibraryPanel />
           </motion.div>

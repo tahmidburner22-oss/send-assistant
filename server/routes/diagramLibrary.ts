@@ -50,29 +50,36 @@ router.get("/search", requireAuth, async (req: any, res) => {
       return res.status(400).json({ error: "subject or topic required" });
     }
 
-    // Map slot to diagram_type filter
+    // Map slot to diagram_type filter (primary + backup fallback)
     let typeFilter: string | null = null;
-    if (slot === "a") typeFilter = "diagram_a";
-    else if (slot === "b") typeFilter = "diagram_b";
-    else if (slot === "revision") typeFilter = "revision_map";
+    let backupTypeFilter: string | null = null;
+    if (slot === "a") { typeFilter = "diagram_a"; backupTypeFilter = "diagram_a_backup"; }
+    else if (slot === "b") { typeFilter = "diagram_b"; backupTypeFilter = "diagram_b_backup"; }
+    else if (slot === "revision") { typeFilter = "revision_map"; backupTypeFilter = "revision_map_backup"; }
 
-    // Fetch entries filtered by type when a slot is specified
-    const sqlParams: any[] = [];
-    let whereClause = "";
-    if (typeFilter) {
-      whereClause = "WHERE diagram_type = $1";
-      sqlParams.push(typeFilter);
-    }
+    // Helper to fetch entries by type(s)
+    const fetchByTypes = async (types: string[]) => {
+      const placeholders = types.map((_, i) => `$${i + 1}`).join(", ");
+      const r = await query(
+        `SELECT id, title, subject, topic, year_group, description, image_url, asset_ref,
+                tags, source, curated, diagram_type
+         FROM diagram_library
+         WHERE diagram_type IN (${placeholders})
+         ORDER BY curated DESC, subject ASC, title ASC`,
+        types
+      );
+      return r.rows;
+    };
 
-    const result = await query(
-      `SELECT id, title, subject, topic, year_group, description, image_url, asset_ref,
-              tags, source, curated, diagram_type
-       FROM diagram_library
-       ${whereClause}
-       ORDER BY curated DESC, subject ASC, title ASC`,
-      sqlParams.length ? sqlParams : undefined
-    );
-    const entries: any[] = result.rows;
+    // Fetch primary entries first
+    let entries: any[] = typeFilter
+      ? await fetchByTypes([typeFilter])
+      : (await query(
+          `SELECT id, title, subject, topic, year_group, description, image_url, asset_ref,
+                  tags, source, curated, diagram_type
+           FROM diagram_library
+           ORDER BY curated DESC, subject ASC, title ASC`
+        )).rows;
     if (!entries.length) {
       return res.json({ entry: null });
     }
@@ -126,8 +133,45 @@ router.get("/search", requireAuth, async (req: any, res) => {
     }).filter(s => s.passesGate);
 
     scored.sort((a, b) => b.score - a.score);
-    const best = scored[0];
+    let best = scored[0];
     if (!best || best.score < (topicRaw ? 75 : 25)) {
+      // No confident match in primary — try backup folder if available
+      if (backupTypeFilter) {
+        const backupEntries = await fetchByTypes([backupTypeFilter]);
+        if (backupEntries.length) {
+          const backupScored = backupEntries.map((e) => {
+            const eSubject = (e.subject || "").toLowerCase().trim();
+            const eTopic = (e.topic || "").toLowerCase().trim();
+            const eYearGroup = String(e.year_group || "").toLowerCase().trim();
+            const eTitle = (e.title || "").toLowerCase().trim();
+            const eTags: string[] = (() => { try { return JSON.parse(e.tags || "[]").map((t: string) => String(t).toLowerCase().trim()); } catch { return []; } })();
+            const searchable = [eTopic, eTitle, ...eTags].filter(Boolean).join(" ");
+            const entryTopicKey = canonicalTopicKey(eTopic || eTitle || eTags.join(" "));
+            const exactTopicMatch = !!topicRaw && (eTopic === topicRaw || topicsMatch(eTopic, topicRaw));
+            const subtopicMatch = !!subtopicRaw && (searchable.includes(subtopicRaw) || topicsMatch(searchable, subtopicRaw));
+            const canonicalMatch = !!topicRaw && (entryTopicKey === requestedTopicKey || exactTopicMatch || subtopicMatch);
+            const subjectMatch = !subjectRaw || !eSubject || eSubject === subjectRaw || subjectFamily(eSubject) === subjectFamily(subjectRaw) || eSubject.includes(subjectRaw) || subjectRaw.includes(eSubject);
+            const yearGroupMatch = !yearGroupRaw || !eYearGroup || eYearGroup === yearGroupRaw || eYearGroup.includes(yearGroupRaw);
+            let score = 0;
+            if (subjectMatch) score += 25; else score -= 50;
+            if (canonicalMatch) score += 70;
+            if (exactTopicMatch) score += 20;
+            if (subtopicMatch) score += 15;
+            if (yearGroupMatch) score += 8; else score -= 10;
+            if (topicRaw && eTitle.includes(topicRaw)) score += 10;
+            if (topicRaw) { const tw = topicRaw.split(/\s+/).filter(w => w.length > 3); score += Math.min(tw.filter(w => searchable.includes(w)).length * 4, 12); }
+            if (e.curated) score += 8;
+            const passesGate = subjectMatch && yearGroupMatch && (!topicRaw || canonicalMatch || exactTopicMatch || subtopicMatch);
+            return { entry: e, score, passesGate, reasons: { canonicalMatch, exactTopicMatch, subtopicMatch, subjectMatch, yearGroupMatch } };
+          }).filter(s => s.passesGate);
+          backupScored.sort((a, b) => b.score - a.score);
+          const backupBest = backupScored[0];
+          if (backupBest && backupBest.score >= (topicRaw ? 75 : 25)) {
+            console.log(`[DiagramLibrary] Using BACKUP match for "${topicRaw}" (${subjectRaw}) slot=${slot || "any"}: "${backupBest.entry.title}" score=${backupBest.score}`);
+            return res.json({ entry: backupBest.entry, confidence: backupBest.score, reasons: backupBest.reasons, isBackup: true });
+          }
+        }
+      }
       console.log(`[DiagramLibrary] No confident match for "${topicRaw}" (${subjectRaw}) slot=${slot || "any"}; bestScore=${best?.score ?? 0}`);
       return res.json({ entry: null, confidence: best?.score ?? 0 });
     }
@@ -202,7 +246,7 @@ router.patch("/entries/:id/curate", requireAuth, async (req: any, res) => {
 router.patch("/entries/:id/type", requireAuth, async (req: any, res) => {
   try {
     const { diagram_type } = req.body;
-    const validTypes = ["diagram_a", "diagram_b", "revision_map"];
+    const validTypes = ["diagram_a", "diagram_b", "revision_map", "diagram_a_backup", "diagram_b_backup", "revision_map_backup"];
     if (!validTypes.includes(diagram_type)) {
       return res.status(400).json({ error: "diagram_type must be one of: diagram_a, diagram_b, revision_map" });
     }

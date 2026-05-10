@@ -5231,18 +5231,12 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                         loading="eager"
                         onError={(e) => {
                           const target = e.currentTarget;
-                          target.style.display = "none";
-                          // Show a friendly fallback message instead of blank space
-                          const fallback = document.createElement("div");
-                          fallback.style.cssText = "display:flex;align-items:center;justify-content:center;width:100%;min-height:300px;background:#f8fafc;border:2px dashed #cbd5e1;border-radius:8px;color:#64748b;font-size:14px;font-family:Arial,sans-serif;text-align:center;padding:24px;";
-                          fallback.innerHTML = `<div><div style='font-size:32px;margin-bottom:8px;'>🖼️</div><div style='font-weight:600;margin-bottom:4px;'>Diagram not available</div><div style='font-size:12px;'>${section.caption || 'No diagram found for this topic'}</div></div>`;
-                          if (section.svg) {
-                            const svgWrapper = document.createElement("div");
-                            svgWrapper.style.cssText = "display:block;width:100%;max-width:100%;max-height:1020px;overflow:hidden;background:white;box-sizing:border-box;";
-                            svgWrapper.innerHTML = section.svg;
-                            target.parentNode?.insertBefore(svgWrapper, target.nextSibling);
+                          // Hide the entire diagram section wrapper — no placeholder box
+                          const sectionWrapper = target.closest(".ws-section");
+                          if (sectionWrapper) {
+                            (sectionWrapper as HTMLElement).style.display = "none";
                           } else {
-                            target.parentNode?.insertBefore(fallback, target.nextSibling);
+                            target.style.display = "none";
                           }
                         }}
                       />
@@ -5252,18 +5246,9 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                         dangerouslySetInnerHTML={{ __html: section.svg }}
                       />
                     ) : null}
-                    {section.caption && (
-                      <p style={{ fontSize: `${fmt.fontSize - 1}px`, color: "#374151", marginTop: "10px", fontStyle: "italic", fontFamily: fmt.fontFamily, textAlign: "center" }}>
-                        <strong>Figure:</strong> {section.caption}
-                      </p>
-                    )}
-                    {section.attribution && (
-                      <p style={{ fontSize: `${fmt.fontSize - 2}px`, color: "#9ca3af", marginTop: "4px", fontFamily: fmt.fontFamily }}>
-                        Source: {section.attribution}
-                      </p>
-                    )}
+                    {/* Caption and attribution removed — diagrams are self-contained */}
                   </div>
-                ) : (() => {
+                ) : section.type === "diagram" ? null : (() => {
                   // ── New individual question type dispatch ──
                   // These types come from the new AI prompt schema and each
                   // represent a single question with its own number badge.
@@ -6186,16 +6171,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                       dangerouslySetInnerHTML={{ __html: section.svg }}
                     />
                   ) : null}
-                  {section.caption && (
-                    <p style={{ fontSize: `${fmt.fontSize - 2}px`, color: "#6b7280", marginTop: "6px", fontStyle: "italic", fontFamily: fmt.fontFamily }}>
-                      Figure: {section.caption}
-                    </p>
-                  )}
-                  {section.attribution && (
-                    <p style={{ fontSize: `${fmt.fontSize - 3}px`, color: "#9ca3af", marginTop: "2px", fontFamily: fmt.fontFamily }}>
-                      Source: {section.attribution}
-                    </p>
-                  )}
+                  {/* Caption and attribution removed per product requirement — diagrams are self-contained */}
                 </div>
               )}
 
