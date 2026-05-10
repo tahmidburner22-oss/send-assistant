@@ -2147,40 +2147,75 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
       const pages: string[][] = [];
       const pageIsDiagram: boolean[] = [];
       let currentPage: string[] = [];
+      let currentPageDividerHtmls: Set<string> = new Set(); // track which htmls in currentPage are group dividers
       let curPageH = 0;
+      // Flush current page, but carry over any trailing group dividers to the next page
+      // to prevent them appearing alone on a blank page.
+      let carryOverDividers: Array<{ html: string; height: number }> = [];
       const flushCurrentPage = () => {
-        if (currentPage.join("").trim().length > 0) {
-          pages.push(currentPage);
+        // Separate real content from trailing dividers
+        const realContent = currentPage.filter(h => !currentPageDividerHtmls.has(h));
+        const trailingDividers = currentPage.filter(h => currentPageDividerHtmls.has(h));
+        if (realContent.join("").trim().length > 0) {
+          // Flush only real content (without trailing dividers)
+          pages.push(realContent);
           pageIsDiagram.push(false);
+          // Carry dividers to next page
+          carryOverDividers = trailingDividers.map(h => ({ html: h, height: 0 }));
+        } else if (trailingDividers.length > 0) {
+          // Page is ONLY dividers — carry them over instead of creating a blank page
+          carryOverDividers = [...carryOverDividers, ...trailingDividers.map(h => ({ html: h, height: 0 }))];
         }
         currentPage = [];
+        currentPageDividerHtmls = new Set();
         curPageH = 0;
+        // Restore carried-over dividers to the new page
+        if (carryOverDividers.length > 0) {
+          for (const d of carryOverDividers) { currentPage.push(d.html); currentPageDividerHtmls.add(d.html); }
+          carryOverDividers = [];
+        }
       };
       for (const blk of blocks) {
         if (blk.isDiagram) {
-          flushCurrentPage();
+          // Before diagram: flush without carrying dividers (section header before diagram is dropped)
+          const realContent = currentPage.filter(h => !currentPageDividerHtmls.has(h));
+          if (realContent.join("").trim().length > 0) {
+            pages.push(realContent);
+            pageIsDiagram.push(false);
+          }
+          currentPage = [];
+          currentPageDividerHtmls = new Set();
+          curPageH = 0;
+          carryOverDividers = [];
           pages.push([blk.html]);
           pageIsDiagram.push(true);
-          curPageH = 0;
           continue;
         }
         // Section group dividers (e.g. "SECTION 3 — APPLICATION & ANALYSIS") must never
-        // appear alone on a page — always merge them with the next content block.
+        // appear alone on a page — track them so they can be carried over if needed.
         if (blk.isGroupDivider) {
           currentPage.push(blk.html);
+          currentPageDividerHtmls.add(blk.html);
           curPageH += blk.height;
           continue;
         }
         if (currentPage.length === 0 || curPageH + blk.height <= CONTENT_H + 10) {
           currentPage.push(blk.html);
           curPageH += blk.height;
+          // Once real content is added, dividers are anchored — clear the carry-over set
+          currentPageDividerHtmls = new Set(currentPage.filter((_, i) => currentPage.slice(0, i + 1).every(h => currentPageDividerHtmls.has(h)) ? currentPageDividerHtmls.has(currentPage[i]) : false));
         } else {
           flushCurrentPage();
           currentPage.push(blk.html);
           curPageH = blk.height;
         }
       }
-      flushCurrentPage();
+      // Final flush — drop any trailing dividers (nothing follows them)
+      const finalRealContent = currentPage.filter(h => !currentPageDividerHtmls.has(h));
+      if (finalRealContent.join("").trim().length > 0) {
+        pages.push(finalRealContent);
+        pageIsDiagram.push(false);
+      }
       // Build self-contained page HTML (no oklch — uses only KaTeX CSS + explicit styles)
       const pageCards = pages.map((pageBlocks, i) => `
         <div class="preview-page${pageIsDiagram[i] ? " diagram-page" : ""}" id="page-${i}">
@@ -2389,28 +2424,48 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
       const pages: string[][] = [];
       const pageIsDiagram: boolean[] = [];
       let currentPage: string[] = [];
+      let currentPageDividerHtmls2: Set<string> = new Set();
       let curPageH = 0;
+      let carryOverDividers2: Array<{ html: string }> = [];
       const flushCurrentPage = () => {
-        if (currentPage.join("").trim().length > 0) {
-          pages.push(currentPage);
+        const realContent = currentPage.filter(h => !currentPageDividerHtmls2.has(h));
+        const trailingDividers = currentPage.filter(h => currentPageDividerHtmls2.has(h));
+        if (realContent.join("").trim().length > 0) {
+          pages.push(realContent);
           pageIsDiagram.push(false);
+          carryOverDividers2 = trailingDividers.map(h => ({ html: h }));
+        } else if (trailingDividers.length > 0) {
+          carryOverDividers2 = [...carryOverDividers2, ...trailingDividers.map(h => ({ html: h }))];
         }
         currentPage = [];
+        currentPageDividerHtmls2 = new Set();
         curPageH = 0;
+        if (carryOverDividers2.length > 0) {
+          for (const d of carryOverDividers2) { currentPage.push(d.html); currentPageDividerHtmls2.add(d.html); }
+          carryOverDividers2 = [];
+        }
       };
       for (const blk of blocks) {
         if (blk.isDiagram) {
-          flushCurrentPage();
+          const realContent = currentPage.filter(h => !currentPageDividerHtmls2.has(h));
+          if (realContent.join("").trim().length > 0) {
+            pages.push(realContent);
+            pageIsDiagram.push(false);
+          }
+          currentPage = [];
+          currentPageDividerHtmls2 = new Set();
+          curPageH = 0;
+          carryOverDividers2 = [];
           pages.push([blk.html]);
           pageIsDiagram.push(true);
-          curPageH = 0;
-          continue;
-        // Section group dividers must never appear alone on a page — merge with next block.
-        if (blk.isGroupDivider) {
-          currentPage.push(blk.html);
-          curPageH += blk.height;
           continue;
         }
+        // Section group dividers must never appear alone on a page — carry over if needed.
+        if (blk.isGroupDivider) {
+          currentPage.push(blk.html);
+          currentPageDividerHtmls2.add(blk.html);
+          curPageH += blk.height;
+          continue;
         }
         if (currentPage.length === 0 || curPageH + blk.height <= CONTENT_H + 10) {
           currentPage.push(blk.html);
@@ -2421,9 +2476,13 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
           curPageH = blk.height;
         }
       }
-      flushCurrentPage();
-
-      // Step 4: Build paginated preview HTML — each page is a white A4 card.
+      // Final flush — drop trailing dividers
+      const finalRealContent2 = currentPage.filter(h => !currentPageDividerHtmls2.has(h));
+      if (finalRealContent2.join("").trim().length > 0) {
+        pages.push(finalRealContent2);
+        pageIsDiagram.push(false);
+      }
+      // Step 4: Build paginated preview HTML — each page is a white A4 card..
       // Diagram pages get class "diagram-page" so CSS can remove the root padding.
       const pageCards = pages.map((pageBlocks, i) => `
         <div class="preview-page${pageIsDiagram[i] ? " diagram-page" : ""}">

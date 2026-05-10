@@ -1923,7 +1923,9 @@ NEVER add SEND management instructions as question content items ('Complete the 
 
     // 8. Section B Questions — Foundation / Guided Practice (subject-specific)
     if (wantSectionA) {
-      const sectionBContent = `Answer all questions. [8 marks]\n\n1. [${params.topic} recall or identification question] [1 mark]\n\n2. [${params.topic} short-answer question using a subject-specific skill] [2 marks]\n\n3. [${params.topic} application or process question — show working where needed] [3 marks]\n\n4. [${params.topic} describe or explain question using subject terminology] [2 marks]`;
+      const sectionBContent = isMaths
+        ? `Answer all questions. Show all working. [8 marks]\n\n1. [${params.topic} basic calculation — single step, real numbers] [1 mark]\n\n2. [${params.topic} two-step calculation — show method and answer] [2 marks]\n\n3. [${params.topic} multi-step calculation — show full working] [3 marks]\n\n4. [${params.topic} calculation applying the key rule or formula to a new set of numbers] [2 marks]`
+        : `Answer all questions. [8 marks]\n\n1. [${params.topic} recall or identification question] [1 mark]\n\n2. [${params.topic} short-answer question using a subject-specific skill] [2 marks]\n\n3. [${params.topic} application or process question — show working where needed] [3 marks]\n\n4. [${params.topic} describe or explain question using subject terminology] [2 marks]`;
       structuredSections.push(`{"title": "Section B — Foundation Questions", "type": "q-short-answer", "marks": 8, "content": "${sectionBContent.replace(/"/g, '\\"')}"}`);
     }
         // 9. Diagram B — full-page spread (between Section B and Section C Questions)
@@ -1942,12 +1944,16 @@ NEVER add SEND management instructions as question content items ('Complete the 
 
     // 10. Section C Questions — Core Practice (subject-specific)
     if (wantSectionC) {
-      const sectionCContent = `Answer all questions. [20 marks]\n\n1. [${params.topic} knowledge recall question] [1 mark]\n\n2. [${params.topic} comprehension or identification question] [2 marks]\n\n3. [${params.topic} application question — apply knowledge to a scenario] [3 marks]\n\n4. [${params.topic} analysis question — explain or describe with subject-specific detail] [4 marks]\n\n5. [${params.topic} evaluation or extended-response question — assess, discuss, or justify with evidence] [6 marks]\n   Your answer should include:\n   • [Point 1 with evidence]\n   • [Point 2 with evidence]\n   • [Point 3 with evidence]\n\n6. [${params.topic} synoptic or extended question linking to a wider concept] [4 marks]`;
+      const sectionCContent = isMaths
+        ? `Answer all questions. Show all working. [20 marks]\n\n1. [${params.topic} quick calculation — single step] [1 mark]\n\n2. [${params.topic} two-step calculation with real numbers] [2 marks]\n\n3. [${params.topic} multi-step calculation — apply the method to a new problem] [3 marks]\n\n4. [${params.topic} calculation requiring selection of the correct approach — show full working] [4 marks]\n\n5. [${params.topic} multi-part calculation problem — parts (a), (b), (c) each building on the previous] [6 marks]\n\n6. [${params.topic} challenging calculation linking to a related topic — show all steps] [4 marks]`
+        : `Answer all questions. [20 marks]\n\n1. [${params.topic} knowledge recall question] [1 mark]\n\n2. [${params.topic} comprehension or identification question] [2 marks]\n\n3. [${params.topic} application question — apply knowledge to a scenario] [3 marks]\n\n4. [${params.topic} analysis question — explain or describe with subject-specific detail] [4 marks]\n\n5. [${params.topic} evaluation or extended-response question — assess, discuss, or justify with evidence] [6 marks]\n   Your answer should include:\n   • [Point 1 with evidence]\n   • [Point 2 with evidence]\n   • [Point 3 with evidence]\n\n6. [${params.topic} synoptic or extended question linking to a wider concept] [4 marks]`;
       structuredSections.push(`{"title": "Section C \u2014 Core Practice", "type": "q-extended", "marks": 20, "content": "${sectionCContent.replace(/"/g, '\\"')}"}`);
     }
         // 11. Challenge Question (subject-specific)
     if (wantSectionC) {
-      const challengeContent = `Challenge yourself! [8 marks]\n\n1. [Higher-order ${params.topic} question requiring analysis, evaluation or synthesis — use subject-specific command words] [4 marks]\n\n2. [Synoptic or cross-topic question linking ${params.topic} to a wider concept or real-world application] [4 marks]`;
+      const challengeContent = isMaths
+        ? `Challenge yourself! Show all working. [8 marks]\n\n1. [${params.topic} multi-step problem requiring selection of method — real-world numerical context] [4 marks]\n\n2. [${params.topic} harder calculation linking to a related maths topic — show full working and check your answer] [4 marks]`
+        : `Challenge yourself! [8 marks]\n\n1. [Higher-order ${params.topic} question requiring analysis, evaluation or synthesis — use subject-specific command words] [4 marks]\n\n2. [Synoptic or cross-topic question linking ${params.topic} to a wider concept or real-world application] [4 marks]`;
       structuredSections.push(`{"title": "Challenge Question", "type": "challenge", "marks": 8, "content": "${challengeContent.replace(/"/g, '\\"')}"}`);
     }
         // 12. Self Reflection
@@ -1972,9 +1978,7 @@ RULES:
 3. Questions must escalate in difficulty (easiest first, hardest last).
 4. ABSOLUTELY NO EMOJIS anywhere in the output.
 5. No HTML, no markdown, no code fences in content strings.
-6. Each step, question, or item must be on its own line using \n.
-${isMaths ? '7. MATHS ONLY: All questions must be numerical/calculation-based. Never ask students to explain, describe, or write prose. Use LaTeX for all math expressions.' : ''}
-8. SPEC QUALITY: Every question must be at genuine ${params.yearGroup} exam standard — use real exam command words (describe, explain, evaluate, calculate, state, identify, compare, justify, analyse). Questions must test the actual curriculum content of "${params.topic}" — not generic or trivially easy questions.
+6. Each step, question, or item must be on its own line using \n.	1982	${isMaths ? '7. MATHS ONLY: All questions in EVERY section must be 100% calculation-based only. Never ask students to explain, describe, define, or write prose. Every question must require a numerical or algebraic calculation. Use LaTeX for all math expressions.' : ''}PEC QUALITY: Every question must be at genuine ${params.yearGroup} exam standard — use real exam command words (describe, explain, evaluate, calculate, state, identify, compare, justify, analyse). Questions must test the actual curriculum content of "${params.topic}" — not generic or trivially easy questions.
 9. MCQ RULE: Mark the correct MCQ option with \u2713 at the end of that option line ONLY. Do NOT write "CORRECT:", "NOTE:", or any meta-instruction text in the content string — output ONLY the question and four options.
 10. MATCH RULE: Write CORRECT pairs only — each term with its own accurate definition. Do NOT swap or shuffle definitions between terms.
 11. MARK SCHEME RULE: The mark scheme section MUST contain a complete, full answer for every single question. No placeholders. Write actual answers.
