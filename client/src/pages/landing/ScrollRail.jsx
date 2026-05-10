@@ -63,7 +63,7 @@ export default function ScrollRail() {
       initial={{ opacity: 0, x: -10 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: 1.6, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-      className="hidden xl:flex fixed left-6 top-1/2 -translate-y-1/2 z-40 flex-col items-start gap-4 pointer-events-none select-none"
+      className="hidden 2xl:flex fixed left-6 top-1/2 -translate-y-1/2 z-40 flex-col items-start gap-4 pointer-events-none select-none"
       data-testid="scroll-rail"
     >
       {/* Section counter */}
