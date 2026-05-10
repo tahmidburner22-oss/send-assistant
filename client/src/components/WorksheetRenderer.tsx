@@ -120,6 +120,18 @@ export function renderMath(text: string | any): string {
   // This fixes the "random backslash at end of sentences" rendering bug
   text = text.replace(/\\n/g, '\n').replace(/\\t/g, '\t');
 
+  // Strip legacy decorative pre-amble lines — "Study/Look at/Examine the diagram
+  // carefully, then answer the questions" (any capitalisation, with or without
+  // markdown bold, optional trailing punctuation). The worksheet generator no
+  // longer emits these phrases, but older AI responses or cached worksheets may
+  // still contain them. We remove them so they never reach the rendered page.
+  text = text.replace(
+    /^\s*\*{0,2}\s*(?:Study|Look at|Examine|Use)\s+the\s+(?:diagram|image|picture)[^\n]*?(?:then\s+)?answer[^\n]*\.?\s*\*{0,2}\s*$/gim,
+    ''
+  );
+  // Collapse the triple-blank-line that can result from removing the pre-amble
+  text = text.replace(/\n{3,}/g, '\n\n');
+
   const decodeHtmlEntities = (value: string) => value
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
