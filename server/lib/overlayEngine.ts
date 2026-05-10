@@ -337,22 +337,49 @@ function buildDyslexiaSupport(sections: WorksheetSection[]): WorksheetSection[] 
 
 function buildAdhdSupport(sections: WorksheetSection[]): WorksheetSection[] {
   const result: WorksheetSection[] = [];
-  // IMPROVEMENT: brain break cadence is now proportional to total question count.
-  // Short worksheets (<6 Qs) get one break halfway; longer worksheets get a
-  // break roughly every 25% of the way through, min 3 Qs apart.
+  // NOTE: inline '[ ]' checkboxes and bolded action verbs on each question
+  // are applied CLIENT-SIDE in client/src/lib/sendEnforcer.ts before the
+  // overlay engine sees the worksheet. So here we no longer duplicate a
+  // per-question checklist — that would double up on the page.
+  //
+  // What we still insert here: a one-off focus panel near the top, and
+  // BRAIN BREAK separators proportional to the question count. The brain
+  // break cadence matches the spec: roughly every 25% of the way through
+  // for long worksheets, at least 3 questions apart.
   const total = countQuestions(sections);
   const breakEvery = Math.max(3, Math.ceil(total / 4));
   let questionCount = 0;
+  let panelInserted = false;
+  const focusPanel = (): WorksheetSection => ({
+    id: `adhd-panel-${Date.now()}`,
+    type: "send-support",
+    title: "Focus Support Panel — ADHD",
+    content: [
+      "Tick each question [ ] as you finish it — this tracks your progress.",
+      "The bold word at the start of every question tells you what to do.",
+      "Section A has 3 questions. Section B has 5 questions, with a brain break in the middle.",
+      "The challenge is a BONUS — only try it if you want to.",
+    ].join("\n"),
+    isOverlay: true,
+    teacherOnly: false,
+  });
+
   for (const section of sections) {
     result.push(section);
+    if (!panelInserted && OBJECTIVE_TYPES.has(section.type)) {
+      result.push(focusPanel());
+      panelInserted = true;
+    }
     if (!QUESTION_TYPES.has(section.type) || !isTextualSection(section)) continue;
+    // No per-question cue box — inline '[ ]' handled client-side.
+    if (!panelInserted) {
+      // No learning objective found — insert panel once before the first question
+      const last = result.pop()!;
+      result.push(focusPanel());
+      result.push(last);
+      panelInserted = true;
+    }
     questionCount++;
-    result.push(buildSupportSection(section.id, "ADHD / Focus", [
-      "[ ] Read the question.",
-      "[ ] Underline the command word.",
-      "[ ] Write your answer.",
-      "[ ] Check your answer.",
-    ]));
     if (total >= 3 && questionCount < total && questionCount % breakEvery === 0) {
       result.push({
         id: `adhd-break-${questionCount}-${Date.now()}`,
