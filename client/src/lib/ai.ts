@@ -756,12 +756,27 @@ MANDATORY RULES — violating any rule is wrong:
                    "Questions: A-Level style — analysis, evaluation, synthesis. Include short (4 marks), medium (8 marks), and extended (12+ marks) questions. Total ≤ 60 marks.";
 
   // Worked example complexity
+  // IMPORTANT: ONLY the main steps are numbered in the rendered worksheet.
+  // Sub-steps (indented explanatory lines beneath a main step) must be
+  // indented with two spaces and must NOT have a leading number. The frontend
+  // parser treats any line with >= 2 leading spaces OR bullet/letter markers
+  // as a sub-step that sits underneath the preceding numbered step.
+  const stepFormatRule = [
+    "Format each worked example as follows:",
+    "  'Step 1: <main action>' (numbered)",
+    "    <any sub-step text indented with 2 spaces, no number>",
+    "    <another sub-step indented with 2 spaces>",
+    "  'Step 2: <next main action>' (numbered)",
+    "    <indented sub-step>",
+    "End with 'Answer: <final answer>'.",
+    "Do NOT put a number on sub-steps. Number ONLY the main steps."
+  ].join('\n');
   const exampleGuide =
-    yearNum <= 2  ? "Worked example: Very simple, 2–3 steps maximum. Use pictures or number lines if relevant." :
-    yearNum <= 6  ? "Worked example: Clear 3–4 step example. Use diagrams or visual aids where helpful. Annotate each step." :
-    yearNum <= 9  ? "Worked example: Detailed 4–6 step example showing full method. Annotate key steps. Include common mistakes to avoid." :
-    yearNum <= 11 ? "Worked example: Full exam-style worked solution. Show all method marks. Include examiner tips." :
-                   "Worked example: A-Level standard worked solution. Show all steps, justify each stage, reference relevant theory.";
+    yearNum <= 2  ? `Worked example: Very simple, 2–3 main steps maximum. Use pictures or number lines if relevant. ${stepFormatRule}` :
+    yearNum <= 6  ? `Worked example: Clear 3–4 main step example. Use diagrams or visual aids where helpful. Annotate each step with indented sub-steps. ${stepFormatRule}` :
+    yearNum <= 9  ? `Worked example: Detailed 4–6 main step example showing full method. Indent sub-step annotations. Include common mistakes to avoid. ${stepFormatRule}` :
+    yearNum <= 11 ? `Worked example: Full exam-style worked solution. Show all method marks across 4–6 numbered main steps, with indented sub-steps for working. Include examiner tips. ${stepFormatRule}` :
+                   `Worked example: A-Level standard worked solution. Show all numbered main steps (5–7), justify each stage with indented sub-step notes, reference relevant theory. ${stepFormatRule}`;
 
   // Challenge section calibration
   const challengeGuide =

@@ -275,16 +275,61 @@ function buildSupportSection(
 // Each function returns an array of support sections to insert after the
 // question sections. They NEVER modify question content.
 
+// Helper: "this section is a calculation-style question worth scaffolding with
+// a 5-step numeric recipe" — used by dyscalculia support so we don't append
+// the recipe to pure definition/recall questions.
+function isCalculationSection(section: WorksheetSection): boolean {
+  const content = String(section.content || "").toLowerCase();
+  // Type-level cues
+  if (section.type === "q-graph" || section.type === "q-circuit" || section.type === "q-data-table") return true;
+  // Content-level cues — command words that imply arithmetic
+  return /\b(calculate|work out|find|compute|solve|evaluate|simplify|round|estimate|convert)\b/i.test(content)
+      || /\b(how much|how many|what is the value|how far|how long|how fast)\b/i.test(content)
+      || /\d+\s*[+\-×÷\/\*]\s*\d+/.test(content);
+}
+
+// Helper: count the question sections so per-subject scaffolds can scale the
+// frequency of brain breaks / check-ins / take-a-breath prompts.
+function countQuestions(sections: WorksheetSection[]): number {
+  return sections.filter(s => QUESTION_TYPES.has(s.type) && isTextualSection(s)).length;
+}
+
 function buildDyslexiaSupport(sections: WorksheetSection[]): WorksheetSection[] {
   const result: WorksheetSection[] = [];
-  for (const section of sections) {
-    result.push(section);
-    if (!QUESTION_TYPES.has(section.type) || !isTextualSection(section)) continue;
-    result.push(buildSupportSection(section.id, "Dyslexia", [
+  // IMPROVEMENT: the full 4-line rubric is now a ONE-OFF panel that sits after
+  // the learning objective (or, failing that, at the top). Each question only
+  // carries a compact cue. This reduces visual clutter for dyslexic readers.
+  const panelInserted = { value: false };
+  const fullPanel = (): WorksheetSection => ({
+    id: `dyslexia-panel-${Date.now()}`,
+    type: "send-support",
+    title: "Support Panel — Dyslexia",
+    content: [
       "Sentence starters: One idea is... / I know this because... / The evidence shows...",
       "Work one line at a time — cover the rest with a piece of paper.",
       "Underline the command word before you start your answer.",
       "Bold key terms are there to help you — use them in your answer.",
+    ].join("\n"),
+    isOverlay: true,
+    teacherOnly: false,
+  });
+
+  for (const section of sections) {
+    result.push(section);
+    if (!panelInserted.value && OBJECTIVE_TYPES.has(section.type)) {
+      result.push(fullPanel());
+      panelInserted.value = true;
+    }
+    if (!QUESTION_TYPES.has(section.type) || !isTextualSection(section)) continue;
+    if (!panelInserted.value) {
+      // No learning objective found — insert panel once before the first question
+      const last = result.pop()!;
+      result.push(fullPanel());
+      result.push(last);
+      panelInserted.value = true;
+    }
+    result.push(buildSupportSection(section.id, "Dyslexia cue", [
+      "Cue: Cover the page, answer one line at a time.",
     ]));
   }
   return result;
@@ -292,6 +337,11 @@ function buildDyslexiaSupport(sections: WorksheetSection[]): WorksheetSection[] 
 
 function buildAdhdSupport(sections: WorksheetSection[]): WorksheetSection[] {
   const result: WorksheetSection[] = [];
+  // IMPROVEMENT: brain break cadence is now proportional to total question count.
+  // Short worksheets (<6 Qs) get one break halfway; longer worksheets get a
+  // break roughly every 25% of the way through, min 3 Qs apart.
+  const total = countQuestions(sections);
+  const breakEvery = Math.max(3, Math.ceil(total / 4));
   let questionCount = 0;
   for (const section of sections) {
     result.push(section);
@@ -303,8 +353,7 @@ function buildAdhdSupport(sections: WorksheetSection[]): WorksheetSection[] {
       "[ ] Write your answer.",
       "[ ] Check your answer.",
     ]));
-    // Insert a brain break every 3 questions
-    if (questionCount % 3 === 0) {
+    if (total >= 3 && questionCount < total && questionCount % breakEvery === 0) {
       result.push({
         id: `adhd-break-${questionCount}-${Date.now()}`,
         type: "send-support",
@@ -353,11 +402,12 @@ function buildMldSupport(sections: WorksheetSection[]): WorksheetSection[] {
   for (const section of sections) {
     result.push(section);
     if (!QUESTION_TYPES.has(section.type) || !isTextualSection(section)) continue;
+    // IMPROVEMENT: deduped "check Key Vocabulary" — it's in the key facts line
+    // and no longer repeated as its own bullet.
     result.push(buildSupportSection(section.id, "MLD Support", [
-      "Hint: Look at the worked example — it shows you the method.",
+      "Hint: The worked example shows you the method.",
       "Sentence starter: The answer is ___ because ___.",
-      "Key facts box: check the Key Vocabulary section if you are stuck.",
-      "You can use the word bank to help you.",
+      "Key facts: check the Key Vocabulary section if you are stuck.",
     ]));
   }
   return result;
@@ -380,6 +430,9 @@ function buildSlcnSupport(sections: WorksheetSection[]): WorksheetSection[] {
 
 function buildSemhSupport(sections: WorksheetSection[]): WorksheetSection[] {
   const result: WorksheetSection[] = [];
+  // IMPROVEMENT: check-in cadence scales to worksheet length.
+  const total = countQuestions(sections);
+  const checkInAt = Math.max(2, Math.ceil(total / 2));
   let questionCount = 0;
   for (const section of sections) {
     result.push(section);
@@ -390,7 +443,7 @@ function buildSemhSupport(sections: WorksheetSection[]): WorksheetSection[] {
       "There is no time pressure — work at your own pace.",
       "If you feel stuck, skip this question and come back to it.",
     ]));
-    if (questionCount === 3) {
+    if (total >= 3 && questionCount === checkInAt) {
       result.push({
         id: `semh-checkin-${Date.now()}`,
         type: "send-support",
@@ -465,26 +518,38 @@ function buildDyscalculiaSupport(sections: WorksheetSection[]): WorksheetSection
   for (const section of sections) {
     result.push(section);
     if (!QUESTION_TYPES.has(section.type) || !isTextualSection(section)) continue;
-    result.push(buildSupportSection(section.id, "Dyscalculia Support", [
-      "Step 1: Write down the formula or rule.",
-      "Step 2: Write down the numbers you are given.",
-      "Step 3: Substitute the numbers into the formula.",
-      "Step 4: Calculate the answer.",
-      "Step 5: Write the unit.",
-      "Use the number line or key facts box if you need it.",
-    ]));
+    // IMPROVEMENT: only attach the 5-step numeric recipe to calculation
+    // questions. Definition/recall questions get a lighter "vocabulary first"
+    // cue instead, so the support panel stays relevant to each question.
+    if (isCalculationSection(section)) {
+      result.push(buildSupportSection(section.id, "Dyscalculia Support", [
+        "Step 1: Write down the formula or rule.",
+        "Step 2: Write down the numbers you are given.",
+        "Step 3: Substitute the numbers into the formula.",
+        "Step 4: Calculate the answer.",
+        "Step 5: Write the unit.",
+        "Use the number line or key facts box if you need it.",
+      ]));
+    } else {
+      result.push(buildSupportSection(section.id, "Dyscalculia Support", [
+        "Before you answer: re-read the Key Vocabulary section for the bold terms.",
+        "Write your answer in words first, then check against the word bank.",
+      ]));
+    }
   }
   return result;
 }
 
 function buildTourettesSupport(sections: WorksheetSection[]): WorksheetSection[] {
   const result: WorksheetSection[] = [];
+  const total = countQuestions(sections);
+  const breakEvery = Math.max(3, Math.ceil(total / 4));
   let questionCount = 0;
   for (const section of sections) {
     result.push(section);
     if (!QUESTION_TYPES.has(section.type) || !isTextualSection(section)) continue;
     questionCount++;
-    if (questionCount % 3 === 0) {
+    if (total >= 3 && questionCount < total && questionCount % breakEvery === 0) {
       result.push({
         id: `tourettes-break-${questionCount}-${Date.now()}`,
         type: "send-support",
@@ -503,11 +568,12 @@ function buildWorkingMemorySupport(sections: WorksheetSection[]): WorksheetSecti
   for (const section of sections) {
     result.push(section);
     if (!QUESTION_TYPES.has(section.type) || !isTextualSection(section)) continue;
+    // IMPROVEMENT: deduped "check Key Vocabulary" — now single line with the
+    // key-facts note and the one-step-at-a-time cue merged.
     result.push(buildSupportSection(section.id, "Working Memory Support", [
-      "Key information: re-read the Key Vocabulary section before answering.",
-      "Write down the key facts you need before you start.",
-      "One step at a time — do not try to hold everything in your head.",
-      "Check your answer against the worked example when you finish.",
+      "Before you start: check the Key Vocabulary section for the bold terms.",
+      "Write down the key facts you need so you don't have to hold them in your head.",
+      "One step at a time — check your answer against the worked example when done.",
     ]));
   }
   return result;
@@ -599,6 +665,42 @@ export function computeStructuralHash(sections: WorksheetSection[]): string {
     hash >>>= 0;
   }
   return hash.toString(16).padStart(8, "0");
+}
+
+// ── Strong structural assertion ──────────────────────────────────────────────
+// Verifies that every non-overlay base section survives verbatim — same id,
+// type, content, marks, imageUrl, assetRef. If a SEND overlay ever mutated a
+// question the academic integrity contract would be broken. In development we
+// throw so the bug is loud; in production we log and continue so a single
+// regression doesn't take out the whole worksheet pipeline.
+export function assertBaseSectionsPreserved(
+  baseSections: WorksheetSection[],
+  finalSections: WorksheetSection[]
+): void {
+  const baseMap = new Map<string, WorksheetSection>();
+  for (const s of baseSections) if (!s.isOverlay) baseMap.set(s.id, s);
+
+  const finalMap = new Map<string, WorksheetSection>();
+  for (const s of finalSections) if (!s.isOverlay) finalMap.set(s.id, s);
+
+  const mismatches: string[] = [];
+  for (const [id, base] of Array.from(baseMap.entries())) {
+    const after = finalMap.get(id);
+    if (!after) { mismatches.push(`missing base section ${id}`); continue; }
+    const keys: Array<keyof WorksheetSection> = ["type", "content", "marks", "imageUrl", "assetRef", "title"];
+    for (const k of keys) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if ((after as any)[k] !== (base as any)[k]) {
+        mismatches.push(`${id}.${String(k)} changed`);
+      }
+    }
+  }
+  if (mismatches.length === 0) return;
+  const msg = `[overlayEngine] Base structure mutated by overlays: ${mismatches.join(", ")}`;
+  if (process.env.NODE_ENV !== "production") {
+    throw new Error(msg);
+  }
+  console.error(msg);
 }
 
 // ── Main overlay application function ────────────────────────────────────────
@@ -705,6 +807,10 @@ export function applyOverlays(baseSections: WorksheetSection[], overlays: Overla
 
   const finalStructuralHash = computeStructuralHash(result);
   const structurePreserved = finalStructuralHash === baseStructuralHash;
+
+  // Stronger post-condition: every non-overlay base section must survive
+  // verbatim. This catches any overlay that accidentally mutates a question.
+  assertBaseSectionsPreserved(baseSections, result);
 
   return {
     sections: result,
