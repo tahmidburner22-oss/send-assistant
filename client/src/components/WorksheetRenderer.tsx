@@ -5029,18 +5029,21 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
               Wrapped with the following question in a shared container with
               pageBreakInside: avoid so the divider never renders alone on its
               own page. The data-section attribute drives CSS page breaks at
-              Section 2 and Section 3 boundaries per the spec layout. */}
+              Section 1, Section 2 and Section 3 boundaries per the spec layout.
+              Page 1 (intro) flows naturally across 1 or 2 pages; Section 1
+              always starts on a fresh page AFTER the intro is complete. */}
           {isFirstOfGroupSection && groupInfo && (
             <div
               className="ws-section-group-divider"
-              data-section={groupInfo.label.includes("SECTION 2") ? "2" : groupInfo.label.includes("SECTION 3") ? "3" : "1"}
+              data-section={groupInfo.label.includes("SECTION 1") ? "1" : groupInfo.label.includes("SECTION 2") ? "2" : groupInfo.label.includes("SECTION 3") ? "3" : "other"}
               style={{
                 marginBottom: "10px",
                 marginTop: i > 0 ? "18px" : "0",
-                // Section 2 and Section 3 start a new printed page.
-                // Section 1 stays on the current page (follows Page 1 intro).
-                pageBreakBefore: groupInfo.label.includes("SECTION 2") || groupInfo.label.includes("SECTION 3") ? "always" : "auto",
-                breakBefore: groupInfo.label.includes("SECTION 2") || groupInfo.label.includes("SECTION 3") ? "page" : "auto",
+                // Every numbered section (1, 2, 3) begins on a new printed page.
+                // i > 0 ensures we don't force a break before the VERY first
+                // block of the worksheet — otherwise we'd get an empty leading page.
+                pageBreakBefore: i > 0 && (groupInfo.label.includes("SECTION 1") || groupInfo.label.includes("SECTION 2") || groupInfo.label.includes("SECTION 3")) ? "always" : "auto",
+                breakBefore: i > 0 && (groupInfo.label.includes("SECTION 1") || groupInfo.label.includes("SECTION 2") || groupInfo.label.includes("SECTION 3")) ? "page" : "auto",
                 // Keep the divider attached to the next question block — prevents
                 // the divider landing alone on a page and causing a blank page.
                 pageBreakAfter: "avoid",

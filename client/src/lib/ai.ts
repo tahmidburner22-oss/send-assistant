@@ -957,16 +957,16 @@ Respond with valid JSON only — no markdown, no code blocks, no HTML tags insid
 SUBJECT TYPE: ${isSTEM ? 'STEM' : 'HUMANITIES'}
 
 PRINTED PAGE LAYOUT (MANDATORY ORDER — every worksheet must follow this exactly):
-  Page 1: Learning Objective → ${params.recallTopic ? 'Retrieval → ' : ''}Key Vocabulary → Common Mistakes → Worked Example
-  Page 2: Section 1 — Recall (Q1, Q2, Q3)
-  Page 3: DIAGRAM A (full-page reference spread)
-  Page 4: Section 2 — Understanding (Q4, Q5, Q6)
-  Page 5: DIAGRAM B (full-page task spread — may be skipped if topic has no second visual)
-  Page 6: Section 3 — Application & Analysis (Q7, Q8, Q9) + Challenge Question
-  Page 7: Self Reflection + Exit Ticket
-  Page 8: Teacher Copy — Answer Key (teacher view only)
+  Page 1 (may span 1–2 pages if content is long): Learning Objective → ${params.recallTopic ? 'Retrieval → ' : ''}Key Vocabulary → Common Mistakes → Worked Example
+  Section 1 — Recall (Q1, Q2, Q3) — starts on its own fresh page
+  DIAGRAM A (full-page reference spread, own page)
+  Section 2 — Understanding (Q4, Q5, Q6) — starts on its own fresh page
+  DIAGRAM B (full-page task spread, own page — may be skipped if topic has no second visual)
+  Section 3 — Application & Analysis (Q7, Q8, Q9) + Challenge Question — starts on its own fresh page
+  Self Reflection + Exit Ticket — starts on its own fresh page
+  Teacher Copy — Answer Key (teacher view only) — starts on its own fresh page
 
-Emit sections IN THIS ORDER so printing matches the page layout. Page breaks are enforced by CSS page-break-before: always on Section 1 first question, on diagram-a, on first question of Section 2, on diagram-b, on first question of Section 3, on self-reflection, and on teacher-key.
+Emit sections IN THIS ORDER so printing matches the page layout. The intro block (LO, Retrieval if requested, Key Vocab, Common Mistakes, Worked Example) flows naturally — if it fits on one page it stays on one page; if it overflows it spans to a second page before Section 1 starts. Page breaks are CSS-driven: every Section divider, Diagram A, Diagram B, Self-Reflection, and Teacher-Key block starts a new printed page.
 
 DIAGRAM A — REFERENCE DIAGRAM (MANDATORY, placed BETWEEN Section 1 and Section 2):
 Every worksheet MUST include a REFERENCE diagram called "Diagram A" as its own full-page spread. This is a fully-labelled visual the student can refer back to while answering questions — it is NOT a task. Place it immediately AFTER the last question of Section 1 (Q3) and BEFORE the first question of Section 2 (Q4). Use format:
@@ -1039,6 +1039,11 @@ CRITICAL SEND RULE: SEND adaptations affect FORMATTING AND PRESENTATION ONLY —
 - NEVER add SEND management instructions ('Complete the task in steps', 'Tick each step', 'Focus on one question', 'Take a break') as question content items.
 - SEND scaffolding (sentence starters, answer frames, worked examples) goes in SEPARATE support boxes AROUND the questions — not inside the question text itself.
 - Do NOT simplify the academic content or intellectual challenge of questions just because SEND adaptations are applied.
+- DIAGRAM A and DIAGRAM B MUST still be included with SEND applied — never omit them. SEND overlays may add alt-text, larger labels, or a word bank alongside the diagram, but the diagram itself is untouched.
+- PAGE LAYOUT (Page 1 intro → Section 1 → Diagram A → Section 2 → Diagram B → Section 3+Challenge → Reflection → Teacher Key) MUST be preserved under every SEND overlay.
+- MATHS under SEND: calculation-based rule still applies. SEND may add a method-step scaffold, a worked-example bridge, or a key-facts box — but questions must still be calculations, not prose.
+- SEND does NOT reduce the total mark count. Every question keeps its original marks.
+- NEVER merge or remove questions to simplify the sheet — Section 1 = 3 questions, Section 2 = 3 questions, Section 3 = 3 questions + Challenge. SEND adaptations add support AROUND each question, they never remove questions.
 Topic: "${params.topic}" | Year: ${params.yearGroup} (${phase})
 
 QUALITY STANDARDS — every question must meet professional UK teacher standards:
