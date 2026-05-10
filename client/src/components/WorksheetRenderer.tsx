@@ -5188,9 +5188,9 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
               marginTop: undefined,
               marginLeft: undefined,
               marginRight: undefined,
-              background: isTeacherHeader ? "#fff8f8" : fmt.theme === "high-contrast" ? "#ffffff" : "#ffffff",
-              border: fmt.theme === "high-contrast" ? "2px solid #111827" : "none",
-              borderRadius: "0",
+              background: section.type === "send-support" ? "#faf5ff" : isTeacherHeader ? "#fff8f8" : fmt.theme === "high-contrast" ? "#ffffff" : "#ffffff",
+              border: fmt.theme === "high-contrast" ? "2px solid #111827" : section.type === "send-support" ? "2px solid #7c3aed" : "none",
+              borderRadius: section.type === "send-support" ? "8px" : "0",
               cursor: editMode ? "pointer" : "default",
               outline: editMode && editedSections[i] !== undefined ? "2px solid #2a7f8f" : "none",
               pageBreakInside: "avoid",
@@ -5214,7 +5214,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
             }}
           >
             {/* ── Section header: individual question OR section divider ── */}
-            {isIndividualQuestion ? (
+            {section.type === "send-support" ? null : isIndividualQuestion ? (
               /* Individual question: dark navy square badge + question text — matches reference PDF */
               <div style={{ display: "flex", alignItems: "flex-start", gap: "10px", marginBottom: "10px" }}>
                 <div style={{
@@ -5241,7 +5241,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                   </div>
                 </div>
               </div>
-            ) : section.type === "diagram" ? null : (
+            ) : section.type === "diagram" ? null : section.type === "send-support" ? null : (
               /* Section header: thick navy rule + teal label + thin grey rule — matches reference PDF */
               <div style={{ marginBottom: "12px" }}>
                 <div style={{ borderTop: isTeacherHeader ? "1.5px solid #8b1a1a" : "1.5px solid #1B2A4A", marginBottom: "4px" }} />
@@ -6151,6 +6151,116 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                     <div style={{ fontSize: "20px", fontWeight: 800, fontFamily: fmt.fontFamily, marginBottom: "4px" }}>{content.split("\n")[0].replace(/^#+\s*/, "")}</div>
                     <div style={{ fontSize: "10px", color: "#99BBBB", opacity: 0.9, textTransform: "uppercase", letterSpacing: "0.1em" }}>{content.split("\n").slice(1).join(" · ")}</div>
                   </div>
+                ) : section.type === "send-support" ? (
+                  // ── SEND Support Box — always visually enclosed, condition-label-free ──
+                  (() => {
+                    const supportTitle = (typeof section.title === "string" ? section.title : String(section.title || "Hint")).replace(/^\*{1,2}|\*{1,2}$/g, "").trim();
+                    const isBrainBreak = /brain break/i.test(supportTitle);
+                    const isCheckIn = /check in|check-in/i.test(supportTitle);
+                    const isPausePoint = /pause point/i.test(supportTitle);
+                    const isEncouragement = /encouragement/i.test(supportTitle);
+                    const accentColor = isBrainBreak ? "#6366f1" : isCheckIn ? "#0ea5e9" : isPausePoint ? "#8b5cf6" : isEncouragement ? "#10b981" : "#7c3aed";
+                    const bgColor = isBrainBreak ? "#eef2ff" : isCheckIn ? "#f0f9ff" : isPausePoint ? "#f5f3ff" : isEncouragement ? "#f0fdf4" : "#faf5ff";
+                    const lines = content.split("\n").map((l: string) => l.trim()).filter(Boolean);
+                    return (
+                      <div style={{
+                        border: `2px solid ${accentColor}`,
+                        borderRadius: "8px",
+                        overflow: "hidden",
+                        marginBottom: "4px",
+                        pageBreakInside: "avoid",
+                        breakInside: "avoid",
+                      }}>
+                        {/* Header bar */}
+                        <div style={{
+                          background: accentColor,
+                          padding: "7px 14px",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "8px",
+                        }}>
+                          <span style={{
+                            fontSize: `${fmt.fontSize - 1}px`,
+                            fontWeight: 800,
+                            color: "#ffffff",
+                            fontFamily: fmt.fontFamily,
+                            letterSpacing: "0.04em",
+                            textTransform: "uppercase" as const,
+                          }}>
+                            {isBrainBreak ? "★ BRAIN BREAK" : isCheckIn ? "✓ CHECK IN" : isPausePoint ? "◉ PAUSE POINT" : isEncouragement ? "★ ENCOURAGEMENT" : `▸ ${supportTitle}`}
+                          </span>
+                        </div>
+                        {/* Content area */}
+                        <div style={{
+                          background: bgColor,
+                          padding: "10px 14px",
+                        }}>
+                          {lines.map((line: string, li: number) => {
+                            // Numbered step lines (e.g. "1. ...", "Step 1: ...")
+                            const stepMatch = line.match(/^(\d+[.)\s]|Step\s*\d+:?)\s*(.*)/i);
+                            if (stepMatch) {
+                              return (
+                                <div key={li} style={{ display: "flex", alignItems: "flex-start", gap: "8px", marginBottom: "5px" }}>
+                                  <div style={{
+                                    minWidth: "22px", height: "22px",
+                                    background: accentColor,
+                                    color: "#ffffff",
+                                    borderRadius: "50%",
+                                    display: "flex", alignItems: "center", justifyContent: "center",
+                                    fontSize: `${fmt.fontSize - 3}px`,
+                                    fontWeight: 800,
+                                    fontFamily: fmt.fontFamily,
+                                    flexShrink: 0,
+                                    marginTop: "1px",
+                                  }}>
+                                    {stepMatch[1].replace(/[.)\s]/g, "")}
+                                  </div>
+                                  <span style={{ fontSize: `${fmt.fontSize - 1}px`, fontFamily: fmt.fontFamily, color: "#1e293b", lineHeight: "1.5" }}
+                                    dangerouslySetInnerHTML={{ __html: renderMath(stepMatch[2]) }} />
+                                </div>
+                              );
+                            }
+                            // Checkbox lines (e.g. "[ ] ...", "[x] ...")
+                            const cbMatch = line.match(/^\[[ xX]?\]\s*(.*)/i);
+                            if (cbMatch) {
+                              return (
+                                <div key={li} style={{ display: "flex", alignItems: "flex-start", gap: "8px", marginBottom: "5px" }}>
+                                  <div style={{
+                                    width: "16px", height: "16px", minWidth: "16px",
+                                    border: `2px solid ${accentColor}`,
+                                    borderRadius: "3px",
+                                    background: "#ffffff",
+                                    flexShrink: 0,
+                                    marginTop: "2px",
+                                  }} />
+                                  <span style={{ fontSize: `${fmt.fontSize - 1}px`, fontFamily: fmt.fontFamily, color: "#1e293b", lineHeight: "1.5" }}
+                                    dangerouslySetInnerHTML={{ __html: renderMath(cbMatch[1]) }} />
+                                </div>
+                              );
+                            }
+                            // Bold "What you need to do:" header line
+                            if (/^what you need to do/i.test(line)) {
+                              return (
+                                <div key={li} style={{ fontSize: `${fmt.fontSize - 1}px`, fontWeight: 800, color: accentColor, fontFamily: fmt.fontFamily, marginBottom: "6px", textTransform: "uppercase" as const, letterSpacing: "0.04em" }}>
+                                  {line}
+                                </div>
+                              );
+                            }
+                            // Bullet / plain line
+                            const bulletMatch = line.match(/^[-•*]\s*(.*)/i);
+                            const lineText = bulletMatch ? bulletMatch[1] : line;
+                            return (
+                              <div key={li} style={{ display: "flex", alignItems: "flex-start", gap: "6px", marginBottom: "4px" }}>
+                                <span style={{ color: accentColor, fontWeight: 700, fontSize: `${fmt.fontSize}px`, lineHeight: "1.5", flexShrink: 0 }}>•</span>
+                                <span style={{ fontSize: `${fmt.fontSize - 1}px`, fontFamily: fmt.fontFamily, color: "#1e293b", lineHeight: "1.5" }}
+                                  dangerouslySetInnerHTML={{ __html: renderMath(lineText) }} />
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })()
                 ) : section.type === "retrieval" || section.type === "prior-knowledge" ? (
                   <div style={{ background: "#f0fdf4", border: "1.5px solid #86efac", borderRadius: "6px", padding: "14px 16px" }}>
                     <div style={{ fontSize: "11px", fontWeight: 700, color: "#166534", letterSpacing: "0.05em", marginBottom: "8px", fontFamily: fmt.fontFamily, textTransform: "uppercase" }}>Retrieval Starter: Quick Quiz</div>

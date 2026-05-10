@@ -14,6 +14,14 @@
  * - access method = SEND overlay (dyslexia/ADHD/ASC/MLD/EAL/etc.)
  * - language complexity = reading age / EAL overlay
  * These three dimensions are INDEPENDENT.
+ *
+ * KEY DESIGN RULES (v2 — updated):
+ * 1. Support box titles NEVER name the SEND condition — they use neutral
+ *    pedagogical labels ("Hint", "Steps to Follow", "Focus Check", etc.).
+ * 2. Scaffolding is QUESTION-SPECIFIC — the overlay engine reads the section
+ *    type and content to generate relevant cues, not a generic fixed list.
+ * 3. Every support box is visually enclosed (type: "send-support") so the
+ *    renderer always draws a bordered, coloured box around it.
  */
 
 export interface WorksheetSection {
@@ -255,16 +263,17 @@ function applyBilingualVocabulary(
 // ── SEND overlay support box builder ─────────────────────────────────────────
 // Creates a separate teacher-visible / student-visible support section that is
 // inserted AFTER a question section. Never modifies question text itself.
+// NOTE: sendLabel is a NEUTRAL PEDAGOGICAL LABEL — never the condition name.
 function buildSupportSection(
   parentId: string,
-  sendLabel: string,
+  neutralLabel: string,
   lines: string[],
   teacherOnly = false
 ): WorksheetSection {
   return {
     id: `send-support-${parentId}-${Date.now()}`,
     type: "send-support",
-    title: `Support Box — ${sendLabel}`,
+    title: neutralLabel,
     content: lines.join("\n"),
     isOverlay: true,
     teacherOnly,
@@ -275,17 +284,95 @@ function buildSupportSection(
 // Each function returns an array of support sections to insert after the
 // question sections. They NEVER modify question content.
 
-// Helper: "this section is a calculation-style question worth scaffolding with
-// a 5-step numeric recipe" — used by dyscalculia support so we don't append
-// the recipe to pure definition/recall questions.
+// ── Question-type detection helpers ──────────────────────────────────────────
+
+// "This section is a calculation-style question" — used by dyscalculia support.
 function isCalculationSection(section: WorksheetSection): boolean {
   const content = String(section.content || "").toLowerCase();
-  // Type-level cues
   if (section.type === "q-graph" || section.type === "q-circuit" || section.type === "q-data-table") return true;
-  // Content-level cues — command words that imply arithmetic
   return /\b(calculate|work out|find|compute|solve|evaluate|simplify|round|estimate|convert)\b/i.test(content)
       || /\b(how much|how many|what is the value|how far|how long|how fast)\b/i.test(content)
       || /\d+\s*[+\-×÷\/\*]\s*\d+/.test(content);
+}
+
+function isMatchingSection(section: WorksheetSection): boolean {
+  return section.type === "q-matching" || /\b(match|connect|link|pair)\b/i.test(String(section.content || ""));
+}
+
+function isTrueFalseSection(section: WorksheetSection): boolean {
+  return section.type === "q-true-false" || /true.*false|false.*true/i.test(String(section.content || ""));
+}
+
+function isMcqSection(section: WorksheetSection): boolean {
+  return section.type === "q-mcq" || /^[A-D]\s+/m.test(String(section.content || ""));
+}
+
+function isGapFillSection(section: WorksheetSection): boolean {
+  return section.type === "q-gap-fill" || /word bank|_____/i.test(String(section.content || ""));
+}
+
+function isExtendedWritingSection(section: WorksheetSection): boolean {
+  return section.type === "q-extended" || section.type === "q-free-response" ||
+    /\b(explain|describe|discuss|evaluate|analyse|justify|assess|compare|contrast)\b/i.test(String(section.content || ""));
+}
+
+// Extract the first command verb from a section for question-specific cues
+function extractCommandVerb(section: WorksheetSection): string {
+  const content = String(section.content || "");
+  const match = content.match(/\b(Calculate|Work out|Find|Solve|Evaluate|Simplify|Expand|Factorise|Identify|Describe|Explain|Compare|Analyse|Justify|Assess|Discuss|State|Name|List|Define|Match|Circle|Tick|Fill in|Complete|Label|Sketch|Draw|Plot|Show that|Prove|Write|Express|Round|Estimate|Convert)\b/i);
+  return match ? match[1].toLowerCase() : "";
+}
+
+// Build question-specific hint lines based on section type and content
+function buildQuestionSpecificHint(section: WorksheetSection): string[] {
+  const verb = extractCommandVerb(section);
+  if (isGapFillSection(section)) {
+    return [
+      "Read each sentence carefully — the missing word is in the word bank below.",
+      "Cross out each word as you use it so you don't use it twice.",
+      "If you are unsure, try each word in the gap and see which makes sense.",
+    ];
+  }
+  if (isTrueFalseSection(section)) {
+    return [
+      "Read each statement carefully — look for key words like 'always', 'never', 'all'.",
+      "If any part of the statement is wrong, the whole statement is FALSE.",
+      "Check your answer against the Key Vocabulary section if unsure.",
+    ];
+  }
+  if (isMcqSection(section)) {
+    return [
+      "Read all four options before choosing — eliminate the ones you know are wrong first.",
+      "Look for the option that is most precise and uses subject vocabulary.",
+      "If two options seem similar, re-read the question to spot the key difference.",
+    ];
+  }
+  if (isMatchingSection(section)) {
+    return [
+      "Start with the terms you are most confident about — match those first.",
+      "Check the Key Vocabulary section if a term is unfamiliar.",
+      "Each term matches exactly one definition — cross out pairs as you go.",
+    ];
+  }
+  if (isCalculationSection(section)) {
+    return [
+      `${verb ? `'${verb.charAt(0).toUpperCase() + verb.slice(1)}'` : "This question"} means you need to show a calculation — write every step.`,
+      "Write the formula or method first, then substitute your numbers.",
+      "Check your answer: does the unit make sense? Is the size reasonable?",
+    ];
+  }
+  if (isExtendedWritingSection(section)) {
+    return [
+      `${verb ? `'${verb.charAt(0).toUpperCase() + verb.slice(1)}'` : "This question"} means you need to give reasons and use subject vocabulary.`,
+      "Use the sentence starter: 'This is because...' or 'This shows that...'",
+      "Aim for at least one specific example or piece of evidence in your answer.",
+    ];
+  }
+  return [
+    "Read the question carefully — underline the key instruction word.",
+    "Use the worked example above as a guide for how to structure your answer.",
+    "Check the Key Vocabulary section if you are unsure of any terms.",
+  ];
 }
 
 // Helper: count the question sections so per-subject scaffolds can scale the
@@ -294,20 +381,20 @@ function countQuestions(sections: WorksheetSection[]): number {
   return sections.filter(s => QUESTION_TYPES.has(s.type) && isTextualSection(s)).length;
 }
 
+// ── Dyslexia ──────────────────────────────────────────────────────────────────
 function buildDyslexiaSupport(sections: WorksheetSection[]): WorksheetSection[] {
   const result: WorksheetSection[] = [];
-  // IMPROVEMENT: the full 4-line rubric is now a ONE-OFF panel that sits after
-  // the learning objective (or, failing that, at the top). Each question only
-  // carries a compact cue. This reduces visual clutter for dyslexic readers.
+  // One-off reading support panel after the learning objective — neutral title,
+  // no condition label. Each question then gets a question-specific "Hint" box.
   const panelInserted = { value: false };
   const fullPanel = (): WorksheetSection => ({
-    id: `dyslexia-panel-${Date.now()}`,
+    id: `reading-support-panel-${Date.now()}`,
     type: "send-support",
-    title: "Support Panel — Dyslexia",
+    title: "Reading Support",
     content: [
       "Sentence starters: One idea is... / I know this because... / The evidence shows...",
-      "Work one line at a time — cover the rest with a piece of paper.",
-      "Underline the command word before you start your answer.",
+      "Work one line at a time — cover the rest of the page with a piece of paper.",
+      "Underline the key instruction word before you start your answer.",
       "Bold key terms are there to help you — use them in your answer.",
     ].join("\n"),
     isOverlay: true,
@@ -322,43 +409,38 @@ function buildDyslexiaSupport(sections: WorksheetSection[]): WorksheetSection[] 
     }
     if (!QUESTION_TYPES.has(section.type) || !isTextualSection(section)) continue;
     if (!panelInserted.value) {
-      // No learning objective found — insert panel once before the first question
       const last = result.pop()!;
       result.push(fullPanel());
       result.push(last);
       panelInserted.value = true;
     }
-    result.push(buildSupportSection(section.id, "Dyslexia cue", [
-      "Cue: Cover the page, answer one line at a time.",
-    ]));
+    // Question-specific hint box — neutral title "Hint"
+    result.push(buildSupportSection(section.id, "Hint", buildQuestionSpecificHint(section)));
   }
   return result;
 }
 
+// ── ADHD ──────────────────────────────────────────────────────────────────────
 function buildAdhdSupport(sections: WorksheetSection[]): WorksheetSection[] {
   const result: WorksheetSection[] = [];
-  // NOTE: inline '[ ]' checkboxes and bolded action verbs on each question
-  // are applied CLIENT-SIDE in client/src/lib/sendEnforcer.ts before the
-  // overlay engine sees the worksheet. So here we no longer duplicate a
-  // per-question checklist — that would double up on the page.
-  //
-  // What we still insert here: a one-off focus panel near the top, and
-  // BRAIN BREAK separators proportional to the question count. The brain
-  // break cadence matches the spec: roughly every 25% of the way through
-  // for long worksheets, at least 3 questions apart.
+  // Inline '[ ]' checkboxes and bolded action verbs are applied CLIENT-SIDE
+  // in sendEnforcer.ts. Here we insert:
+  //   1. A one-off focus panel after the learning objective (neutral title).
+  //   2. A question-specific "Steps to Follow" hint box after each question.
+  //   3. BRAIN BREAK separators proportional to question count.
   const total = countQuestions(sections);
   const breakEvery = Math.max(3, Math.ceil(total / 4));
   let questionCount = 0;
   let panelInserted = false;
   const focusPanel = (): WorksheetSection => ({
-    id: `adhd-panel-${Date.now()}`,
+    id: `focus-panel-${Date.now()}`,
     type: "send-support",
-    title: "Focus Support Panel — ADHD",
+    title: "How This Worksheet Works",
     content: [
-      "Tick each question [ ] as you finish it — this tracks your progress.",
-      "The bold word at the start of every question tells you what to do.",
-      "Section A has 3 questions. Section B has 5 questions, with a brain break in the middle.",
-      "The challenge is a BONUS — only try it if you want to.",
+      "Tick each question [ ] as you finish it — this helps you track your progress.",
+      "The bold word at the start of every question tells you exactly what to do.",
+      "Section A has 3 questions. Section B has 5 questions.",
+      "The Challenge is a BONUS — only try it if you want to.",
     ].join("\n"),
     isOverlay: true,
     teacherOnly: false,
@@ -371,18 +453,18 @@ function buildAdhdSupport(sections: WorksheetSection[]): WorksheetSection[] {
       panelInserted = true;
     }
     if (!QUESTION_TYPES.has(section.type) || !isTextualSection(section)) continue;
-    // No per-question cue box — inline '[ ]' handled client-side.
     if (!panelInserted) {
-      // No learning objective found — insert panel once before the first question
       const last = result.pop()!;
       result.push(focusPanel());
       result.push(last);
       panelInserted = true;
     }
     questionCount++;
+    // Question-specific "Steps to Follow" box
+    result.push(buildSupportSection(section.id, "Steps to Follow", buildQuestionSpecificHint(section)));
     if (total >= 3 && questionCount < total && questionCount % breakEvery === 0) {
       result.push({
-        id: `adhd-break-${questionCount}-${Date.now()}`,
+        id: `brain-break-${questionCount}-${Date.now()}`,
         type: "send-support",
         title: "BRAIN BREAK",
         content: "Stand up, stretch, take 3 deep breaths — then come back to the next question.",
@@ -394,70 +476,163 @@ function buildAdhdSupport(sections: WorksheetSection[]): WorksheetSection[] {
   return result;
 }
 
+// ── ASC / Autism Spectrum Condition ───────────────────────────────────────────
 function buildAscSupport(sections: WorksheetSection[]): WorksheetSection[] {
   const result: WorksheetSection[] = [];
+  // Every question section gets a "What you need to do" box with
+  // question-specific numbered steps. Title is neutral — no condition label.
   for (const section of sections) {
     result.push(section);
     if (!QUESTION_TYPES.has(section.type) || !isTextualSection(section)) continue;
-    result.push(buildSupportSection(section.id, "Autism Spectrum Support", [
-      "What you need to do: Read the instruction exactly as written.",
-      "Use the worked example first — copy the method step by step.",
-      "Write one clear answer for each question part.",
-      "If you are unsure, re-read the question — the answer is always in the question or worked example.",
-    ]));
+    const steps: string[] = ["What you need to do:"];
+    if (isGapFillSection(section)) {
+      steps.push("1. Read each sentence carefully.");
+      steps.push("2. Find the missing word in the word bank.");
+      steps.push("3. Write the word in the blank space.");
+      steps.push("4. Cross out each word after you use it.");
+    } else if (isTrueFalseSection(section)) {
+      steps.push("1. Read the statement exactly as written.");
+      steps.push("2. Decide if it is completely true or not.");
+      steps.push("3. Circle TRUE or FALSE.");
+      steps.push("4. If any part is wrong, the answer is FALSE.");
+    } else if (isMcqSection(section)) {
+      steps.push("1. Read the question exactly as written.");
+      steps.push("2. Read all four options A, B, C, D.");
+      steps.push("3. Cross out the options you know are wrong.");
+      steps.push("4. Circle the correct answer.");
+    } else if (isMatchingSection(section)) {
+      steps.push("1. Read all the terms on the left.");
+      steps.push("2. Read all the definitions on the right.");
+      steps.push("3. Match each term to its definition with a line.");
+      steps.push("4. Each term matches exactly one definition.");
+    } else if (isCalculationSection(section)) {
+      steps.push("1. Read the question exactly as written.");
+      steps.push("2. Write down the formula or method from the worked example.");
+      steps.push("3. Substitute the numbers from the question.");
+      steps.push("4. Calculate and write your answer with the correct unit.");
+    } else if (isExtendedWritingSection(section)) {
+      steps.push("1. Read the question exactly as written.");
+      steps.push("2. Underline the instruction word (e.g. Explain, Describe).");
+      steps.push("3. Write one clear sentence for each point.");
+      steps.push("4. Use subject vocabulary from the Key Vocabulary section.");
+    } else {
+      steps.push("1. Read the question exactly as written.");
+      steps.push("2. Look at the worked example — use the same method.");
+      steps.push("3. Write one clear answer for each question part.");
+      steps.push("4. If unsure, re-read the question — the answer is always there.");
+    }
+    result.push(buildSupportSection(section.id, "What you need to do", steps));
   }
   return result;
 }
 
+// ── EAL / English as an Additional Language ───────────────────────────────────
 function buildEalSupport(sections: WorksheetSection[]): WorksheetSection[] {
   const result: WorksheetSection[] = [];
   for (const section of sections) {
     result.push(section);
     if (!QUESTION_TYPES.has(section.type) || !isTextualSection(section)) continue;
     if (VOCAB_TYPES.has(section.type)) continue;
-    result.push(buildSupportSection(section.id, "EAL Language Support", [
-      "Key word bank: check the Key Vocabulary section for definitions before you answer.",
-      "You may answer in short, clear sentences — you do not need to write long paragraphs.",
-      "Command words: describe = say what you see. Explain = say why. Calculate = show working.",
-    ]));
+    // Question-specific language support — neutral title "Language Support"
+    const hints: string[] = [];
+    const verb = extractCommandVerb(section);
+    if (verb) {
+      const verbGuide: Record<string, string> = {
+        describe: "'Describe' = say what you can see or what happens.",
+        explain: "'Explain' = say why something happens. Use 'because'.",
+        calculate: "'Calculate' = show your working and write the answer.",
+        identify: "'Identify' = name or point to the correct answer.",
+        compare: "'Compare' = say what is the same and what is different.",
+        evaluate: "'Evaluate' = say how good or effective something is, with reasons.",
+        justify: "'Justify' = give reasons for your answer.",
+        analyse: "'Analyse' = break the topic into parts and explain each part.",
+        state: "'State' = write a short, direct answer — one sentence is enough.",
+        define: "'Define' = write the meaning of the word or term.",
+        name: "'Name' = write the correct word or term.",
+        list: "'List' = write several items, one per line.",
+        sketch: "'Sketch' = draw a simple diagram — labels are helpful.",
+      };
+      const guide = verbGuide[verb.toLowerCase()];
+      if (guide) hints.push(guide);
+    }
+    hints.push("Check the Key Vocabulary section for definitions before you answer.");
+    hints.push("You can answer in short, clear sentences — you do not need long paragraphs.");
+    result.push(buildSupportSection(section.id, "Language Support", hints));
   }
   return result;
 }
 
+// ── MLD / Moderate Learning Difficulties ─────────────────────────────────────
 function buildMldSupport(sections: WorksheetSection[]): WorksheetSection[] {
   const result: WorksheetSection[] = [];
   for (const section of sections) {
     result.push(section);
     if (!QUESTION_TYPES.has(section.type) || !isTextualSection(section)) continue;
-    // IMPROVEMENT: deduped "check Key Vocabulary" — it's in the key facts line
-    // and no longer repeated as its own bullet.
-    result.push(buildSupportSection(section.id, "MLD Support", [
-      "Hint: The worked example shows you the method.",
-      "Sentence starter: The answer is ___ because ___.",
-      "Key facts: check the Key Vocabulary section if you are stuck.",
-    ]));
+    // Question-specific hints — neutral title "Help Box"
+    const hints: string[] = [];
+    if (isGapFillSection(section)) {
+      hints.push("Hint: Each missing word is in the word bank — read each option carefully.");
+      hints.push("Sentence starter: The missing word is ___ because it fits the sentence.");
+    } else if (isTrueFalseSection(section)) {
+      hints.push("Hint: Check each statement against the Key Vocabulary section.");
+      hints.push("Sentence starter: This is TRUE / FALSE because ___.");
+    } else if (isMcqSection(section)) {
+      hints.push("Hint: Cross out the options you know are wrong first.");
+      hints.push("Sentence starter: The answer is ___ because ___.");
+    } else if (isCalculationSection(section)) {
+      hints.push("Hint: The worked example shows you the method — copy the steps.");
+      hints.push("Sentence starter: First I need to ___, then I ___.");
+    } else if (isExtendedWritingSection(section)) {
+      hints.push("Hint: Write one sentence for each point you want to make.");
+      hints.push("Sentence starter: The answer is ___ because ___.");
+    } else {
+      hints.push("Hint: The worked example shows you the method.");
+      hints.push("Sentence starter: The answer is ___ because ___.");
+    }
+    hints.push("Key facts: check the Key Vocabulary section if you are stuck.");
+    result.push(buildSupportSection(section.id, "Help Box", hints));
   }
   return result;
 }
 
+// ── SLCN / Speech, Language and Communication Needs ──────────────────────────
 function buildSlcnSupport(sections: WorksheetSection[]): WorksheetSection[] {
   const result: WorksheetSection[] = [];
   for (const section of sections) {
     result.push(section);
     if (!QUESTION_TYPES.has(section.type) || !isTextualSection(section)) continue;
-    result.push(buildSupportSection(section.id, "SLCN Support", [
-      "Sentence frame: ___ is important because ___.",
-      "Sentence frame: I think ___ because ___.",
-      "Sentence frame: The evidence shows ___ which means ___.",
-      "Use the Key Vocabulary section — match each term to the question.",
-    ]));
+    // Question-specific sentence frames — neutral title "Sentence Starters"
+    const frames: string[] = [];
+    if (isGapFillSection(section)) {
+      frames.push("The missing word is ___ because it describes ___.");
+      frames.push("I chose ___ because ___.");
+    } else if (isTrueFalseSection(section)) {
+      frames.push("This statement is TRUE / FALSE because ___.");
+      frames.push("I know this because ___.");
+    } else if (isCalculationSection(section)) {
+      frames.push("The method I used is ___.");
+      frames.push("My answer is ___ because ___.");
+    } else if (isMcqSection(section)) {
+      frames.push("The answer is ___ because ___.");
+      frames.push("I know this is correct because ___.");
+    } else if (isExtendedWritingSection(section)) {
+      frames.push("___ is important because ___.");
+      frames.push("I think ___ because ___.");
+      frames.push("The evidence shows ___ which means ___.");
+    } else {
+      frames.push("___ is important because ___.");
+      frames.push("I think ___ because ___.");
+    }
+    frames.push("Use the Key Vocabulary section — match each term to the question.");
+    result.push(buildSupportSection(section.id, "Sentence Starters", frames));
   }
   return result;
 }
 
+// ── SEMH / Social, Emotional and Mental Health ────────────────────────────────
 function buildSemhSupport(sections: WorksheetSection[]): WorksheetSection[] {
   const result: WorksheetSection[] = [];
-  // IMPROVEMENT: check-in cadence scales to worksheet length.
+  // Check-in cadence scales to worksheet length.
   const total = countQuestions(sections);
   const checkInAt = Math.max(2, Math.ceil(total / 2));
   let questionCount = 0;
@@ -465,14 +640,22 @@ function buildSemhSupport(sections: WorksheetSection[]): WorksheetSection[] {
     result.push(section);
     if (!QUESTION_TYPES.has(section.type) || !isTextualSection(section)) continue;
     questionCount++;
-    result.push(buildSupportSection(section.id, "Support", [
-      "You are doing well — take it one question at a time.",
-      "There is no time pressure — work at your own pace.",
-      "If you feel stuck, skip this question and come back to it.",
-    ]));
+    // Question-specific encouragement + practical tip — neutral title "Encouragement"
+    const hints: string[] = ["You are doing well — take it one question at a time."];
+    if (isCalculationSection(section)) {
+      hints.push("If the calculation feels tricky, write down what you know first — then try the next step.");
+    } else if (isExtendedWritingSection(section)) {
+      hints.push("Start with one sentence — you can always add more once you have begun.");
+    } else if (isGapFillSection(section)) {
+      hints.push("Start with the gaps you are most confident about — skip any you are unsure of and come back.");
+    } else {
+      hints.push("If you feel stuck, skip this question and come back to it.");
+    }
+    hints.push("There is no time pressure — work at your own pace.");
+    result.push(buildSupportSection(section.id, "Encouragement", hints));
     if (total >= 3 && questionCount === checkInAt) {
       result.push({
-        id: `semh-checkin-${Date.now()}`,
+        id: `check-in-${Date.now()}`,
         type: "send-support",
         title: "Check In",
         content: "How are you feeling right now?\n[ ] Calm   [ ] OK   [ ] Need a break\nIf you need a break, let your teacher know.",
@@ -484,81 +667,136 @@ function buildSemhSupport(sections: WorksheetSection[]): WorksheetSection[] {
   return result;
 }
 
+// ── Visual Impairment ─────────────────────────────────────────────────────────
 function buildViSupport(sections: WorksheetSection[]): WorksheetSection[] {
   const result: WorksheetSection[] = [];
   for (const section of sections) {
     result.push(section);
     if (!QUESTION_TYPES.has(section.type) || !isTextualSection(section)) continue;
-    result.push(buildSupportSection(section.id, "Visual Impairment Support", [
-      "All diagrams are described in text — read the description carefully.",
+    // Question-specific access note — neutral title "Access Note"
+    const hints: string[] = [
+      "All information needed to answer this question is written in the text.",
       "Use large print or screen reader settings as needed.",
-      "All questions can be answered from the text — no visual interpretation required.",
-    ]));
+    ];
+    if (isCalculationSection(section)) {
+      hints.push("All numbers and formulas are written out in full — no visual diagram is needed.");
+    } else {
+      hints.push("All diagrams are described in text — read the description carefully.");
+    }
+    result.push(buildSupportSection(section.id, "Access Note", hints));
   }
   return result;
 }
 
+// ── Hearing Impairment ────────────────────────────────────────────────────────
 function buildHiSupport(sections: WorksheetSection[]): WorksheetSection[] {
   const result: WorksheetSection[] = [];
   for (const section of sections) {
     result.push(section);
     if (!QUESTION_TYPES.has(section.type) || !isTextualSection(section)) continue;
-    result.push(buildSupportSection(section.id, "Hearing Impairment Support", [
-      "All instructions are written in full — no verbal explanation needed.",
-      "Every question is self-contained — all information is on the page.",
-      "Check the Key Vocabulary section for definitions of all key terms.",
-    ]));
+    // Question-specific written instruction note — neutral title "Written Instructions"
+    const hints: string[] = [
+      "All instructions are written in full — no verbal explanation is needed.",
+      "Every question is self-contained — all the information you need is on the page.",
+    ];
+    const verb = extractCommandVerb(section);
+    if (verb) {
+      hints.push(`The key instruction for this question is: '${verb.charAt(0).toUpperCase() + verb.slice(1)}'.`);
+    }
+    hints.push("Check the Key Vocabulary section for definitions of all key terms.");
+    result.push(buildSupportSection(section.id, "Written Instructions", hints));
   }
   return result;
 }
 
+// ── PDA / Demand Avoidance ────────────────────────────────────────────────────
 function buildPdaSupport(sections: WorksheetSection[]): WorksheetSection[] {
   const result: WorksheetSection[] = [];
   for (const section of sections) {
     result.push(section);
     if (!QUESTION_TYPES.has(section.type) || !isTextualSection(section)) continue;
-    result.push(buildSupportSection(section.id, "PDA Support", [
-      "You might like to try this question — you can choose where to start.",
-      "There are two options for this question — pick the one that feels right.",
-      "Take a break here if you need to — come back when you are ready.",
-    ]));
+    // Question-specific invitational language — neutral title "Your Choice"
+    const hints: string[] = [];
+    if (isGapFillSection(section)) {
+      hints.push("You might like to try filling in the gaps — start with the ones you know.");
+      hints.push("You can skip any gap and come back to it — there is no set order.");
+    } else if (isCalculationSection(section)) {
+      hints.push("You might like to try this calculation — start with the part that interests you.");
+      hints.push("You can choose to use the worked example as a guide, or try it your own way.");
+    } else if (isExtendedWritingSection(section)) {
+      hints.push("You might like to explore this question — you can write as much or as little as you want.");
+      hints.push("You can start anywhere in your answer — there is no set order.");
+    } else if (isMcqSection(section)) {
+      hints.push("You might like to try this question — choose the option that makes most sense to you.");
+      hints.push("There is no pressure — take your time reading each option.");
+    } else {
+      hints.push("You might like to try this question — you can choose where to start.");
+      hints.push("There is no pressure — work at your own pace.");
+    }
+    hints.push("Take a break here if you need to — come back when you are ready.");
+    result.push(buildSupportSection(section.id, "Your Choice", hints));
   }
   return result;
 }
 
+// ── Dyspraxia / DCD ───────────────────────────────────────────────────────────
 function buildDyspraxiaSupport(sections: WorksheetSection[]): WorksheetSection[] {
   const result: WorksheetSection[] = [];
   for (const section of sections) {
     result.push(section);
     if (!QUESTION_TYPES.has(section.type) || !isTextualSection(section)) continue;
-    result.push(buildSupportSection(section.id, "Dyspraxia / DCD Support", [
-      "You can circle, tick, or underline your answer instead of writing.",
-      "Use the answer frame below if you find writing difficult.",
-      "Large answer boxes are provided — use as much space as you need.",
-    ]));
+    // Question-specific alternative format options — neutral title "Answer Options"
+    const hints: string[] = [];
+    if (isTrueFalseSection(section) || isMcqSection(section)) {
+      hints.push("You can circle or tick your answer instead of writing it out.");
+      hints.push("Large answer spaces are provided — use as much room as you need.");
+    } else if (isMatchingSection(section)) {
+      hints.push("You can draw lines to match, or write the letter/number of your answer.");
+      hints.push("Large answer spaces are provided — use as much room as you need.");
+    } else if (isGapFillSection(section)) {
+      hints.push("You can write the word, or circle it in the word bank and draw an arrow to the gap.");
+      hints.push("Large answer spaces are provided — use as much room as you need.");
+    } else {
+      hints.push("You can circle, tick, or underline your answer instead of writing.");
+      hints.push("Large answer boxes are provided — use as much space as you need.");
+    }
+    hints.push("Use the answer frame if you find it easier to structure your response.");
+    result.push(buildSupportSection(section.id, "Answer Options", hints));
   }
   return result;
 }
 
+// ── Dyscalculia ───────────────────────────────────────────────────────────────
 function buildDyscalculiaSupport(sections: WorksheetSection[]): WorksheetSection[] {
   const result: WorksheetSection[] = [];
   for (const section of sections) {
     result.push(section);
     if (!QUESTION_TYPES.has(section.type) || !isTextualSection(section)) continue;
-    // IMPROVEMENT: only attach the 5-step numeric recipe to calculation
-    // questions. Definition/recall questions get a lighter "vocabulary first"
-    // cue instead, so the support panel stays relevant to each question.
+    // Question-specific number support — neutral title "Number Steps" or "Key Facts"
     if (isCalculationSection(section)) {
-      result.push(buildSupportSection(section.id, "Dyscalculia Support", [
-        "Step 1: Write down the formula or rule.",
+      const verb = extractCommandVerb(section);
+      result.push(buildSupportSection(section.id, "Number Steps", [
+        `Step 1: Write down the formula or rule for '${verb || "this calculation"}'.`,
         "Step 2: Write down the numbers you are given.",
         "Step 3: Substitute the numbers into the formula.",
-        "Step 4: Calculate the answer.",
-        "Step 5: Write the unit.",
-        "Use the number line or key facts box if you need it.",
+        "Step 4: Calculate the answer — use a number line or key facts box if you need it.",
+        "Step 5: Write your final answer with the correct unit.",
+        "Check: does the size of your answer make sense?",
+      ]));
+    } else if (isTrueFalseSection(section)) {
+      result.push(buildSupportSection(section.id, "Number Check", [
+        "Look for any numbers or values in the statement.",
+        "Check each number against the Key Vocabulary section or worked example.",
+        "If the number is wrong, the whole statement is FALSE.",
+      ]));
+    } else if (isMcqSection(section)) {
+      result.push(buildSupportSection(section.id, "Number Check", [
+        "Look for any numbers in the options — check which one matches the calculation.",
+        "Use the worked example to check your method if unsure.",
+        "Before you answer: re-read the Key Vocabulary section for the bold terms.",
       ]));
     } else {
-      result.push(buildSupportSection(section.id, "Dyscalculia Support", [
+      result.push(buildSupportSection(section.id, "Key Facts", [
         "Before you answer: re-read the Key Vocabulary section for the bold terms.",
         "Write your answer in words first, then check against the word bank.",
       ]));
@@ -567,6 +805,7 @@ function buildDyscalculiaSupport(sections: WorksheetSection[]): WorksheetSection
   return result;
 }
 
+// ── Tourette Syndrome ─────────────────────────────────────────────────────────
 function buildTourettesSupport(sections: WorksheetSection[]): WorksheetSection[] {
   const result: WorksheetSection[] = [];
   const total = countQuestions(sections);
@@ -576,11 +815,13 @@ function buildTourettesSupport(sections: WorksheetSection[]): WorksheetSection[]
     result.push(section);
     if (!QUESTION_TYPES.has(section.type) || !isTextualSection(section)) continue;
     questionCount++;
+    // Question-specific hint box — neutral title "Hint"
+    result.push(buildSupportSection(section.id, "Hint", buildQuestionSpecificHint(section)));
     if (total >= 3 && questionCount < total && questionCount % breakEvery === 0) {
       result.push({
-        id: `tourettes-break-${questionCount}-${Date.now()}`,
+        id: `pause-break-${questionCount}-${Date.now()}`,
         type: "send-support",
-        title: "Take a Breath",
+        title: "Pause Point",
         content: "Take a breath here if you need to — then continue when you are ready.",
         isOverlay: true,
         teacherOnly: false,
@@ -590,32 +831,60 @@ function buildTourettesSupport(sections: WorksheetSection[]): WorksheetSection[]
   return result;
 }
 
+// ── Working Memory ────────────────────────────────────────────────────────────
 function buildWorkingMemorySupport(sections: WorksheetSection[]): WorksheetSection[] {
   const result: WorksheetSection[] = [];
   for (const section of sections) {
     result.push(section);
     if (!QUESTION_TYPES.has(section.type) || !isTextualSection(section)) continue;
-    // IMPROVEMENT: deduped "check Key Vocabulary" — now single line with the
-    // key-facts note and the one-step-at-a-time cue merged.
-    result.push(buildSupportSection(section.id, "Working Memory Support", [
-      "Before you start: check the Key Vocabulary section for the bold terms.",
-      "Write down the key facts you need so you don't have to hold them in your head.",
-      "One step at a time — check your answer against the worked example when done.",
-    ]));
+    // Question-specific memory aids — neutral title "Memory Aid"
+    const hints: string[] = ["Before you start: check the Key Vocabulary section for the bold terms."];
+    if (isCalculationSection(section)) {
+      hints.push("Write down the formula before you substitute any numbers.");
+      hints.push("One step at a time — check each step against the worked example.");
+    } else if (isGapFillSection(section)) {
+      hints.push("Write down the key words from the word bank before you start.");
+      hints.push("Cross out each word as you use it so you don't lose track.");
+    } else if (isExtendedWritingSection(section)) {
+      hints.push("Write down the key points you want to make before you start writing.");
+      hints.push("One point per sentence — check each sentence makes sense before moving on.");
+    } else if (isTrueFalseSection(section)) {
+      hints.push("Write down the key fact you are checking before you decide TRUE or FALSE.");
+      hints.push("Check your answer against the worked example or Key Vocabulary section.");
+    } else {
+      hints.push("Write down the key facts you need so you don't have to hold them in your head.");
+      hints.push("One step at a time — check your answer against the worked example when done.");
+    }
+    result.push(buildSupportSection(section.id, "Memory Aid", hints));
   }
   return result;
 }
 
+// ── Older Learners / Adult Education ─────────────────────────────────────────
 function buildOlderLearnersSupport(sections: WorksheetSection[]): WorksheetSection[] {
   const result: WorksheetSection[] = [];
   for (const section of sections) {
     result.push(section);
     if (!QUESTION_TYPES.has(section.type) || !isTextualSection(section)) continue;
-    result.push(buildSupportSection(section.id, "Study Tips", [
-      "Study tip: Connect this topic to your own experience or prior knowledge.",
-      "Note-taking: Write down one key point from this question in your own words.",
-      "Exam technique: Use the command word to structure your answer.",
-    ]));
+    // Question-specific study tips — neutral title "Study Tip"
+    const hints: string[] = ["Connect this topic to your own experience or prior knowledge."];
+    const verb = extractCommandVerb(section);
+    if (verb) {
+      const verbTips: Record<string, string> = {
+        explain: "Exam technique: 'Explain' means give reasons using subject vocabulary.",
+        calculate: "Exam technique: 'Calculate' means show all working and write the answer with units.",
+        describe: "Exam technique: 'Describe' means say what you observe or what happens.",
+        evaluate: "Exam technique: 'Evaluate' means weigh up the evidence and give a conclusion.",
+        compare: "Exam technique: 'Compare' means state similarities AND differences.",
+        justify: "Exam technique: 'Justify' means give evidence to support your answer.",
+        analyse: "Exam technique: 'Analyse' means break the topic into parts and explain each.",
+      };
+      hints.push(verbTips[verb.toLowerCase()] || `Exam technique: Use the command word '${verb}' to structure your answer.`);
+    } else {
+      hints.push("Exam technique: Use the command word to structure your answer.");
+    }
+    hints.push("Note-taking: Write down one key point from this question in your own words.");
+    result.push(buildSupportSection(section.id, "Study Tip", hints));
   }
   return result;
 }
@@ -641,18 +910,14 @@ function applySendSupport(sections: WorksheetSection[], sendNeed?: string | null
   if (key === "working-memory" || key === "memory") return buildWorkingMemorySupport(sections);
   if (key === "older-learners" || key === "adult") return buildOlderLearnersSupport(sections);
 
-  // Default: generic support box for any unrecognised SEND need
-  return sections.map(section => {
-    if (!QUESTION_TYPES.has(section.type) || !isTextualSection(section)) return section;
-    return {
-      ...section,
-      content: appendDelimitedBlock(section.content as string, "Support:", [
-        "- Read the question carefully.",
-        "- Use the worked example if you need help.",
-        "- Write your answer clearly.",
-      ]),
-    };
-  });
+  // Default: generic question-specific support box for any unrecognised SEND need
+  const result: WorksheetSection[] = [];
+  for (const section of sections) {
+    result.push(section);
+    if (!QUESTION_TYPES.has(section.type) || !isTextualSection(section)) continue;
+    result.push(buildSupportSection(section.id, "Hint", buildQuestionSpecificHint(section)));
+  }
+  return result;
 }
 
 // ── Reading age support ───────────────────────────────────────────────────────
