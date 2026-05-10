@@ -5,7 +5,7 @@
 import { useEffect } from "react";
 import { injectLandingStyles } from "./landing/styles";
 // @ts-ignore
-import { VariantProvider } from "./landing/lib/useVariant";
+import { VariantProvider } from "./landing/lib/useVariant.jsx";
 // @ts-ignore
 import { useLenis } from "./landing/lib/useLenis";
 // @ts-ignore
