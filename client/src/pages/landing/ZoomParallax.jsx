@@ -21,7 +21,12 @@ export default function ZoomParallax() {
   const cardY = useTransform(scrollYProgress, [0, 1], ["0%", "-15%"]);
   const fgOpacity = useTransform(scrollYProgress, [0, 0.35, 0.5], [1, 1, 0]);
 
-  const sectionHeight = variant === "v3" ? "280vh" : "240vh";
+  // Outro curtain — cream plane slides up in the last 20% of scroll so the
+  // handoff into the next (cream-background) section feels continuous.
+  const outroY = useTransform(scrollYProgress, [0.8, 1], ["100%", "0%"]);
+  const outroOpacity = useTransform(scrollYProgress, [0.8, 0.92, 1], [0, 0.85, 1]);
+
+  const sectionHeight = variant === "v3" ? "220vh" : "200vh";
 
   return (
     <section
@@ -112,6 +117,15 @@ export default function ZoomParallax() {
         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-[10px] uppercase tracking-[0.3em] text-cream-100/30">
           Evidence · auto-generated · audit-ready
         </div>
+
+        {/* Outro curtain — cream panel slides up over the dark section in the
+            final scroll so the next cream-background section flows in without
+            a hard colour break. */}
+        <motion.div
+          style={{ y: outroY, opacity: outroOpacity }}
+          aria-hidden
+          className="absolute inset-0 pointer-events-none bg-gradient-to-b from-cream-100 via-cream-50 to-cream-100"
+        />
       </div>
     </section>
   );

@@ -1,6 +1,6 @@
 /**
  * Adaptly landing page.
- * Variant-aware: V2 Immersive / V3 Overdrive — toggle bottom-right.
+ * Variant-aware: V2 Immersive / V3 Overdrive. V3 is the default.
  */
 import { useEffect } from "react";
 import { injectLandingStyles } from "./landing/styles";
@@ -11,13 +11,17 @@ import { useLenis } from "./landing/lib/useLenis";
 // @ts-ignore
 import VariantSwitcher from "./landing/VariantSwitcher.jsx";
 // @ts-ignore
+import ScrollRail from "./landing/ScrollRail.jsx";
+// @ts-ignore
+import MagneticCursor from "./landing/MagneticCursor.jsx";
+// @ts-ignore
 import Nav from "./landing/Nav.jsx";
 // @ts-ignore
 import Hero from "./landing/Hero.jsx";
 // @ts-ignore
 import About from "./landing/About.jsx";
 // @ts-ignore
-import Services from "./landing/Services.jsx";
+import Services from "./landing/ServicesVariantGate.jsx";
 // @ts-ignore
 import LiveDifferentiate from "./landing/LiveDifferentiate.jsx";
 // @ts-ignore
@@ -48,6 +52,8 @@ function LandingInner() {
   return (
     <div className="adaptly-landing min-h-screen relative overflow-x-hidden">
       <Nav />
+      <ScrollRail />
+      <MagneticCursor />
       <main>
         <Hero />
         <About />
@@ -76,7 +82,7 @@ export default function LandingPage() {
   }, []);
 
   return (
-    <VariantProvider initial="v2">
+    <VariantProvider initial="v3">
       <LandingInner />
     </VariantProvider>
   );

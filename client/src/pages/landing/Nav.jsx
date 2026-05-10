@@ -2,8 +2,7 @@ import { useEffect, useState } from "react";
 import { motion, useScroll, useSpring } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { NAV_LINKS } from "./lib/data";
-
-const LOGO = "https://customer-assets.emergentagent.com/job_scroll-animate-hero-1/artifacts/936159wx_IMG-20260412-WA0001.jpg";
+import { AdaptlyMark } from "./AdaptlyWordmark";
 
 export default function Nav() {
   const [scrolled, setScrolled] = useState(false);
@@ -54,13 +53,11 @@ export default function Nav() {
               scrolled ? "glass" : "bg-transparent"
             }`}
           >
-            <a href="#top" data-testid="nav-logo" className="flex items-center gap-3 group pl-1">
-              <img
-                src={LOGO}
-                alt="Adaptly"
-                className="w-10 h-10 md:w-11 md:h-11 object-contain mix-blend-multiply"
-              />
-              <span className="font-heading font-bold text-xl md:text-2xl tracking-tight text-ink-900">Adaptly</span>
+            <a href="#top" data-testid="nav-logo" className="flex items-center gap-3 group pl-1" data-cursor="hover">
+              <AdaptlyMark size={40} className="text-ink-900 transition-transform duration-500 group-hover:rotate-[-8deg]" />
+              <span className="font-heading font-bold text-xl md:text-2xl tracking-[-0.04em] text-ink-900">
+                Adaptly
+              </span>
             </a>
 
             <nav className="hidden md:flex items-center gap-1 relative bg-cream-50/50 rounded-full p-1 backdrop-blur-sm">
