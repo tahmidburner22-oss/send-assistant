@@ -13,6 +13,7 @@ import { motion } from "framer-motion";
 import { useApp, type Child, type AttendanceRecord, type AttendanceStatus, type TimetableLesson } from "@/contexts/AppContext";
 import WorksheetRenderer, { renderMath } from "@/components/WorksheetRenderer";
 import { SendScreenerResultsView } from "@/components/SendScreenerResultsView";
+import PupilDocumentsPanel from "@/components/PupilDocumentsPanel";
 import { sendNeeds, storyGenres, storyLengths, readingLevels, colorOverlays, yearGroups } from "@/lib/send-data";
 import { generateStoryContent } from "@/lib/worksheet-generator";
 import {
@@ -705,9 +706,9 @@ Return EXACTLY this JSON:
               <div className="space-y-2">
                 <Label className="text-sm font-medium">Access Code</Label>
                 <Input value={code} onChange={e => setCode(e.target.value.toUpperCase())}
-                  placeholder="Enter 6-character code"
+                  placeholder="Enter 7-character code"
                   className="h-12 text-center text-lg font-mono tracking-widest uppercase"
-                  maxLength={6}
+                  maxLength={7}
                   onKeyDown={e => e.key === "Enter" && handleCodeEntry()} />
                 <p className="text-xs text-muted-foreground text-center">Ask your child's teacher for their unique code</p>
               </div>
@@ -766,6 +767,7 @@ Return EXACTLY this JSON:
     { id: "newsletters", label: "Newsletters", icon: Newspaper, color: "text-rose-600" },
     { id: "send-screener", label: "SEND Screener", icon: ScanSearch, color: "text-cyan-600" },
     { id: "messages", label: "Messages", icon: MessageSquare, color: "text-blue-600" },
+    { id: "documents", label: "CV & Statements", icon: BookMarked, color: "text-amber-600" },
   ];
 
   return (
@@ -1949,6 +1951,15 @@ Return EXACTLY this JSON:
           </div>
         )}
         {sec.id === "messages" && <ParentMessagesPanel childId={child.id} childName={child.name} />}
+        {sec.id === "documents" && (
+          <PupilDocumentsPanel
+            pupilId={child.id}
+            pupilName={child.name}
+            yearGroup={child.yearGroup}
+            mode="parent"
+            parentCode={child.code}
+          />
+        )}
         {sec.id === "send-screener" && (() => {
           const completedScreeners = child?.assignments?.filter(a => a.type === "send-screener") ?? [];
           const inProgressScreeners = child?.assignments?.filter(a => a.type === "send-screener-progress") ?? [];
