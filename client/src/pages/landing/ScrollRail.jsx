@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
 import { motion, useScroll, useSpring, useTransform } from "framer-motion";
-import { useVariant } from "./lib/useVariant";
 
-// Fixed left-edge companion rail (V3 only, desktop).
+// Fixed left-edge companion rail (desktop xl+ only).
 // Shows: section counter, current section name, vertical progress bar, and a
-// live scroll percentage. Inspired by awwwards / godly editorial sites.
-// Hidden on mobile and on V2 to keep V2 restrained.
+// live scroll percentage. Hidden on mobile/tablet because the viewport is too
+// narrow to spare the gutter.
 
 const SECTIONS = [
   { id: "top", label: "Intro" },
@@ -24,7 +23,6 @@ const SECTIONS = [
 ];
 
 export default function ScrollRail() {
-  const { variant } = useVariant();
   const [active, setActive] = useState(0);
   const [pct, setPct] = useState(0);
   const { scrollYProgress } = useScroll();
@@ -56,8 +54,6 @@ export default function ScrollRail() {
     });
     return () => obs.disconnect();
   }, []);
-
-  if (variant !== "v3") return null;
 
   const current = SECTIONS[active];
   const total = SECTIONS.length;
