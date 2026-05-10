@@ -696,6 +696,66 @@ export const sendNeeds: SendNeed[] = [
       ],
     },
   },
+  {
+    id: "working-memory",
+    name: "Working Memory Difficulties",
+    category: "Cognition & Learning",
+    description: "Difficulties holding and manipulating information in mind while completing tasks. Affects multi-step instructions, following complex directions, and retaining information during activities.",
+    strategies: [
+      "Chunk instructions into single steps",
+      "Provide written reference materials (word banks, key facts boxes)",
+      "Worked examples available throughout the task",
+      "Reduce the amount of information to hold at once",
+      "Repetition and review built into the task structure",
+    ],
+    worksheetAdaptations: [
+      "Memory Aid box before every question section",
+      "Step-by-step numbered sub-steps for every multi-step question",
+      "Visible word bank and key facts box on every section",
+      "Worked example immediately before every practice section",
+      "One instruction per line only",
+    ],
+    worksheetChanges: {
+      summary: "Memory Aid box before every section; step-by-step sub-steps for every question; visible word bank and key facts; worked example before every practice section; one instruction per line.",
+      changes: [
+        { what: "Memory Aid box before every question section with key facts and vocabulary", why: "Working memory difficulties mean students cannot hold multiple pieces of information simultaneously; externalising key facts removes this barrier" },
+        { what: "Every multi-step question broken into numbered sub-steps with blanks", why: "Sub-steps externalise the process so students do not need to hold the method in working memory" },
+        { what: "Visible word bank and key facts box at the top of every section", why: "Removes the need to recall vocabulary or formulas from memory, freeing cognitive resources for the task" },
+        { what: "Fully worked example immediately before every practice section", why: "Provides a reference model so students do not need to hold the method in memory while practising" },
+        { what: "One instruction per line — no multi-part questions", why: "Multi-part instructions overload working memory; single-step instructions are fully accessible" },
+      ],
+    },
+  },
+  {
+    id: "semh",
+    name: "Social, Emotional and Mental Health (SEMH)",
+    category: "Social, Emotional & Mental Health",
+    description: "Social, emotional and mental health difficulties affecting behaviour, emotional regulation, and engagement with learning. Includes a wide range of needs from attachment difficulties to depression and self-harm (SEND Code of Practice 2015).",
+    strategies: [
+      "Trauma-informed approaches and positive relationships",
+      "Zones of Regulation framework",
+      "Predictable routines and clear expectations",
+      "Safe space and de-escalation strategies",
+      "Restorative approaches and emotional literacy",
+    ],
+    worksheetAdaptations: [
+      "Emotional check-in at start and end",
+      "Positive, encouraging language throughout",
+      "Optional challenge — never mandatory",
+      "Natural break points built in",
+      "Encouragement box before every section",
+    ],
+    worksheetChanges: {
+      summary: "Emotional check-in at start and end; Section A renamed 'Warm-Up'; positive statements before every section; no pressure language; natural break points; optional challenge.",
+      changes: [
+        { what: "Emotional check-in at the start and end of the worksheet", why: "SEMH needs affect emotional regulation; check-ins normalise self-monitoring and help students identify when they need support" },
+        { what: "Positive, encouraging language throughout — no pressure or urgency", why: "Anxiety and low self-esteem are common in SEMH; supportive language reduces barriers and activates approach motivation" },
+        { what: "Challenge clearly labelled 'OPTIONAL BONUS — only if you want to!'", why: "Mandatory challenge tasks increase anxiety; optional framing maintains engagement without threat" },
+        { what: "Natural break points built into every section", why: "SEMH needs can affect concentration and emotional regulation; breaks allow self-regulation without disrupting the task" },
+        { what: "Encouragement box before every question section", why: "Explicit encouragement builds confidence and reduces avoidance behaviour" },
+      ],
+    },
+  },
 ];
 
 // ─── SEND-specific formatting specs ─────────────────────────────────────────
@@ -1104,6 +1164,50 @@ const SEND_FORMATTING_MAP: Record<string, Partial<SendFormatting>> = {
     headerTextSize: 0,
     showSectionNumbers: false,
   },
+  // ── WORKING MEMORY ────────────────────────────────────────────────────────────────────────────
+  // Chunked layout, generous spacing, visible reference materials at all times
+  "working-memory": {
+    fontFamily: "'Segoe UI', Arial, sans-serif",
+    fontSize: 14,
+    lineHeight: 1.85,
+    letterSpacing: "0.01em",
+    wordSpacing: "0.05em",
+    fontWeight: 400,
+    textAlign: "left",
+    paragraphSpacing: "10px",
+    theme: "chunked",
+    sectionBgColor: "#f0fdf4",    // soft green — calm and focused
+    accentColor: "#15803d",       // forest green
+    headerStyle: "gradient",
+    answerLineHeight: 30,
+    showCheckboxes: false,
+    borderRadius: 8,
+    sectionPadding: "12px 14px",
+    headerTextSize: 1,
+    showSectionNumbers: true,     // numbered steps help with sequencing
+  },
+  // ── SEMH ────────────────────────────────────────────────────────────────────────────────────────
+  // Calm palette, gentle encouragement, no pressure language
+  "semh": {
+    fontFamily: "'Segoe UI', Arial, sans-serif",
+    fontSize: 14,
+    lineHeight: 1.85,
+    letterSpacing: "0.01em",
+    wordSpacing: "0.05em",
+    fontWeight: 400,
+    textAlign: "left",
+    paragraphSpacing: "10px",
+    theme: "calm",
+    sectionBgColor: "#fdf4ff",    // very soft lavender — calming
+    accentColor: "#9333ea",       // gentle purple
+    headerStyle: "gradient",
+    answerLineHeight: 28,
+    showCheckboxes: false,
+    borderRadius: 10,             // softer corners — less clinical
+    sectionPadding: "12px 14px",
+    headerTextSize: 1,
+    showSectionNumbers: false,
+  },
 };
 
 // Map from display name → ID for cases where metadata stores the name instead of the ID
@@ -1149,6 +1253,14 @@ const SEND_NAME_TO_ID: Record<string, string> = {
   "english as an additional language (eal)": "eal",
   "english as an additional language": "eal",
   "eal": "eal",
+  "working memory difficulties": "working-memory",
+  "working memory": "working-memory",
+  "working-memory": "working-memory",
+  "memory difficulties": "working-memory",
+  "social, emotional and mental health (semh)": "semh",
+  "social, emotional and mental health": "semh",
+  "semh": "semh",
+  "social emotional mental health": "semh",
 };
 
 /**

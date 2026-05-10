@@ -567,6 +567,68 @@ const SEND_ADAPTATION_SPECS: SendAdaptationSpec[] = [
       "Show an estimated time on every section's opening slide (e.g. '≈ 10 min').",
     ],
   },
+  {
+    id: "working-memory",
+    name: "Working Memory Difficulties",
+    bullets: [
+      { what: "Memory Aid box before every question with key facts written out",
+        why: "Students with working memory difficulties cannot hold multiple pieces of information simultaneously." },
+      { what: "Step-by-step method broken into numbered sub-steps",
+        why: "Externalising the process reduces the load on working memory." },
+      { what: "Word bank and key vocabulary always visible on the page",
+        why: "Removes the need to recall vocabulary from memory." },
+      { what: "Worked example immediately before every practice section",
+        why: "Provides a reference model so students do not need to hold the method in memory." },
+      { what: "One instruction per line — no multi-part questions",
+        why: "Multi-part instructions overload working memory; single-step instructions are more accessible." },
+    ],
+    worksheetRules: [
+      "Every question section begins with a 'Memory Aid' box listing the key facts, formulas, or vocabulary needed for that section.",
+      "Break every multi-step question into numbered sub-steps: 'Step 1: ___ Step 2: ___ Step 3: ___'.",
+      "Include a visible word bank or key facts box at the top of every section.",
+      "Place a fully worked example immediately before every practice section.",
+      "One instruction per line only — never combine two instructions in one sentence.",
+      "Reflection uses a tick-box checklist — no open writing.",
+    ],
+    presentationRules: [
+      "Every practice slide opens with a 'Memory Aid' box listing the key facts needed.",
+      "Break every multi-step task into numbered sub-steps on the slide.",
+      "Include a visible key facts / word bank panel on every practice slide.",
+      "Place a worked-example slide immediately before every practice slide.",
+      "One instruction per bullet point — never combine two instructions.",
+    ],
+  },
+  {
+    id: "semh",
+    name: "Social, Emotional and Mental Health (SEMH)",
+    bullets: [
+      { what: "Emotional check-in at the start and end of the worksheet",
+        why: "SEMH needs affect emotional regulation; check-ins normalise self-monitoring." },
+      { what: "Positive, encouraging language throughout — no pressure or urgency",
+        why: "Anxiety and low self-esteem are common in SEMH; supportive language reduces barriers." },
+      { what: "Optional bonus challenge — never mandatory",
+        why: "Mandatory challenge tasks increase anxiety; optional framing maintains engagement." },
+      { what: "Natural break points built into every section",
+        why: "SEMH needs can affect concentration and emotional regulation; breaks allow self-regulation." },
+      { what: "Encouragement box before every question section",
+        why: "Explicit encouragement builds confidence and reduces avoidance." },
+    ],
+    worksheetRules: [
+      "Open with an emotional check-in: '[ ] Calm   [ ] OK   [ ] Need a break — let your teacher know'.",
+      "Rename Section A 'Warm-Up — no pressure!'. Rename challenge as 'OPTIONAL BONUS — only if you want to!'.",
+      "Add a positive statement at the start of each section (e.g. 'You can do this — take it one step at a time.').",
+      "Replace 'must', 'should', 'need to' with 'try to', 'have a go at', 'you might like to'.",
+      "Insert a natural break point after every 3 questions: 'Take a breath here — come back when you are ready.'.",
+      "Reflection uses a gentle emotional check-in: '[ ] Calm   [ ] OK   [ ] Need a break'.",
+    ],
+    presentationRules: [
+      "Open the deck with an emotional check-in slide.",
+      "Rename activity slides to 'Warm-Up', 'Have a Go', 'Explore'.",
+      "Add a positive statement at the start of every section of slides.",
+      "Replace all 'must'/'need to' language with 'try to'/'have a go at'.",
+      "Insert a 'Take a breath' slide every 3–4 practice slides.",
+    ],
+  },
 ];
 
 // ─── Public API ──────────────────────────────────────────────────────────────
@@ -600,6 +662,8 @@ export function resolveSendSpec(sendNeed: string | undefined | null): SendAdapta
     [/\b(pda|odd|demand avoid)\b/, "pda-odd"],
     [/\b(tourette)/, "tourettes"],
     [/\b(older|adult|ks4|ks5)\b/, "older-learners"],
+    [/\b(working.memory|working_memory|memory.difficulties)\b/, "working-memory"],
+    [/\b(semh|social.emotional|emotional.mental)\b/, "semh"],
   ];
 
   for (const [re, id] of matchers) {

@@ -2025,7 +2025,13 @@ CRITICAL STRUCTURE RULE: ALL questions come ONLY from Section A (True/False, MCQ
     }
 
     if (wantWordBankGapFill) {
-      structuredSections.push(`{"title": "Section A — Word Bank Gap Fill", "type": "q-gap-fill", "marks": 7, "content": "Complete the paragraph using words from the word bank below. [7 marks]\n[Write EXACTLY 7 sentences about ${params.topic}. Each sentence MUST contain exactly ONE blank shown as _____. The blank must replace a key subject term. Do NOT number the blanks. Do NOT put two blanks in one sentence. Result: 7 sentences = 7 blanks. ${isMaths ? 'Write all numbers and expressions as plain text \u2014 no LaTeX here.' : ''} Example format:\nThe _____ is the organelle where photosynthesis occurs.\nPlants absorb _____ from the air through their stomata.\n[continue for 5 more sentences, each with one _____ blank]]\nWORD BANK: [the 7 correct answers in shuffled order, plus 3 plausible distractors \u2014 total EXACTLY 10 words] [word1] | [word2] | [word3] | [word4] | [word5] | [word6] | [word7] | [word8] | [word9] | [word10]\nRULE: EXACTLY 7 sentences, EXACTLY 7 blanks (one per sentence), EXACTLY 10 words in word bank."}`);
+      if (isMaths) {
+        // MATHS: Replace vocabulary-based gap fill with a calculation-based number fill.
+        // Students fill in missing numbers/values in worked calculations, not vocabulary words.
+        structuredSections.push(`{"title": "Section A \u2014 Fill in the Missing Values", "type": "q-gap-fill", "marks": 7, "content": "Fill in the missing values to complete each calculation. [7 marks]\n[Write EXACTLY 7 incomplete calculations about ${params.topic}. Each calculation MUST have exactly ONE missing value shown as _____. The missing value must be a number, expression, or unit. Do NOT use vocabulary blanks. Use \\\\(...\\\\) LaTeX for all expressions. Example format:\n\\\\(3 + _____ = 7\\\\)\n\\\\(\\\\dfrac{1}{2} \\\\times 10 = _____\\\\)\n[continue for 5 more calculations, each with one _____ blank]]\nANSWER BOX: [the 7 correct answers in shuffled order, plus 3 plausible distractors \u2014 total EXACTLY 10 values] [val1] | [val2] | [val3] | [val4] | [val5] | [val6] | [val7] | [val8] | [val9] | [val10]\nRULE: EXACTLY 7 calculations, EXACTLY 7 blanks (one per calculation), EXACTLY 10 values in answer box. All values must be numerical or algebraic \u2014 no vocabulary words."}`);
+      } else {
+        structuredSections.push(`{"title": "Section A \u2014 Word Bank Gap Fill", "type": "q-gap-fill", "marks": 7, "content": "Complete the paragraph using words from the word bank below. [7 marks]\n[Write EXACTLY 7 sentences about ${params.topic}. Each sentence MUST contain exactly ONE blank shown as _____. The blank must replace a key subject term. Do NOT number the blanks. Do NOT put two blanks in one sentence. Result: 7 sentences = 7 blanks. Example format:\nThe _____ is the organelle where photosynthesis occurs.\nPlants absorb _____ from the air through their stomata.\n[continue for 5 more sentences, each with one _____ blank]]\nWORD BANK: [the 7 correct answers in shuffled order, plus 3 plausible distractors \u2014 total EXACTLY 10 words] [word1] | [word2] | [word3] | [word4] | [word5] | [word6] | [word7] | [word8] | [word9] | [word10]\nRULE: EXACTLY 7 sentences, EXACTLY 7 blanks (one per sentence), EXACTLY 10 words in word bank."}`);
+      }
     }
 
 
@@ -2079,9 +2085,36 @@ CRITICAL STRUCTURE RULE: ALL questions come ONLY from Section A (True/False, MCQ
         : `Challenge yourself! [8 marks]\n\n1. [Higher-order ${params.topic} question requiring analysis, evaluation or synthesis — use subject-specific command words] [4 marks]\n\n2. [Synoptic or cross-topic question linking ${params.topic} to a wider concept or real-world application] [4 marks]`;
       structuredSections.push(`{"title": "Challenge Question", "type": "challenge", "marks": 8, "content": "${challengeContent.replace(/"/g, '\\"')}"}`);
     }
-        // 12. Self Reflection
+        // 12. Self Reflection — SEND-specific format
     if (wantSelfReflection) {
-      structuredSections.push(`{"title": "Self Reflection", "type": "self-reflection", "teacherOnly": false, "content": "SUBTITLE: Review your understanding before moving on.\nCONFIDENCE_TABLE:\n[specific skill/concept 1 from ${params.topic}]\n[specific skill/concept 2 from ${params.topic}]\n[specific skill/concept 3 from ${params.topic}]\n[specific skill/concept 4 from ${params.topic}]\n[specific skill/concept 5 from ${params.topic}]\nWRITTEN_PROMPTS:\nOne concept I feel confident about is ...\nOne area I still need to practise is ...\nA question I still want to ask my teacher is ...\nEXIT_TICKET: Write ONE thing you learned today about ${params.topic} in one sentence:"}`);
+      const sendKey = hasSend ? (params.sendNeed || "").toLowerCase().replace(/[\s_]/g, "-") : "";
+      // SEND needs that require tick-box only (no open writing)
+      const isTickBoxOnly = ["asc", "autism", "asperger", "adhd", "dyslexia", "dyscalculia", "mld", "dyspraxia", "working-memory"].includes(sendKey);
+      // SEND needs that require sentence-starter format
+      const isSentenceStarter = ["slcn", "eal", "esl"].includes(sendKey);
+      // SEND needs that require emotional check-in format
+      const isEmotionalCheckin = ["semh", "anxiety", "mental-health", "pda", "pda-odd", "odd", "social-emotional"].includes(sendKey);
+      // SEND needs that require older-learner format
+      const isOlderLearner = ["older-learners", "adult"].includes(sendKey);
+
+      let selfReflectionContent: string;
+      if (isTickBoxOnly) {
+        // Tick-box checklist only — no open writing (ASC, ADHD, Dyslexia, Dyscalculia, MLD, Dyspraxia)
+        selfReflectionContent = `SUBTITLE: How did you get on?\nCOMPLETION_CHECKLIST:\n[ ] I completed Section A\n[ ] I completed Section B\n[ ] I completed Section C\n[ ] I tried the Challenge\nCONFIDENCE_TABLE:\n[specific skill/concept 1 from ${params.topic}]\n[specific skill/concept 2 from ${params.topic}]\n[specific skill/concept 3 from ${params.topic}]\n[specific skill/concept 4 from ${params.topic}]\n[specific skill/concept 5 from ${params.topic}]\nEXIT_TICKET: Tick ONE: [ ] I understand ${params.topic}   [ ] I mostly understand   [ ] I need more practice`;
+      } else if (isSentenceStarter) {
+        // Sentence-starter format (SLCN, EAL)
+        selfReflectionContent = `SUBTITLE: Review your understanding before moving on.\nCONFIDENCE_TABLE:\n[specific skill/concept 1 from ${params.topic}]\n[specific skill/concept 2 from ${params.topic}]\n[specific skill/concept 3 from ${params.topic}]\n[specific skill/concept 4 from ${params.topic}]\n[specific skill/concept 5 from ${params.topic}]\nWRITTEN_PROMPTS:\nI can ___.\nI need to practise ___.\nEXIT_TICKET: Write ONE thing you learned today about ${params.topic} in one sentence:`;
+      } else if (isEmotionalCheckin) {
+        // Emotional check-in format (SEMH, Anxiety, PDA)
+        selfReflectionContent = `SUBTITLE: How are you feeling?\nCHECK_IN: [ ] Calm   [ ] OK   [ ] Need a break\nCONFIDENCE_TABLE:\n[specific skill/concept 1 from ${params.topic}]\n[specific skill/concept 2 from ${params.topic}]\n[specific skill/concept 3 from ${params.topic}]\n[specific skill/concept 4 from ${params.topic}]\n[specific skill/concept 5 from ${params.topic}]\nWRITTEN_PROMPTS:\nI tried ___.\nI found ___.\nEXIT_TICKET: One thing I want to remember about ${params.topic} is:`;
+      } else if (isOlderLearner) {
+        // Older learner / adult education format
+        selfReflectionContent = `SUBTITLE: Review your learning.\nCONFIDENCE_TABLE:\n[specific skill/concept 1 from ${params.topic}]\n[specific skill/concept 2 from ${params.topic}]\n[specific skill/concept 3 from ${params.topic}]\n[specific skill/concept 4 from ${params.topic}]\n[specific skill/concept 5 from ${params.topic}]\nWRITTEN_PROMPTS:\nWhat went well?\nWhat do I need to revise further?\nEXIT_TICKET: Write ONE key point you will take away from today's lesson on ${params.topic}:`;
+      } else {
+        // Standard format (no SEND, or SEND needs with standard reflection)
+        selfReflectionContent = `SUBTITLE: Review your understanding before moving on.\nCONFIDENCE_TABLE:\n[specific skill/concept 1 from ${params.topic}]\n[specific skill/concept 2 from ${params.topic}]\n[specific skill/concept 3 from ${params.topic}]\n[specific skill/concept 4 from ${params.topic}]\n[specific skill/concept 5 from ${params.topic}]\nWRITTEN_PROMPTS:\nOne concept I feel confident about is ...\nOne area I still need to practise is ...\nA question I still want to ask my teacher is ...\nEXIT_TICKET: Write ONE thing you learned today about ${params.topic} in one sentence:`;
+      }
+      structuredSections.push(`{"title": "Self Reflection", "type": "self-reflection", "teacherOnly": false, "content": "${selfReflectionContent.replace(/"/g, '\\"')}"}`);
     }
 
     // Always add Teacher Key (teacher only)
@@ -2910,6 +2943,8 @@ const SEND_DIFF_RULES: Record<string, string> = {
   hi: "Write all instructions in full — no reliance on verbal explanation. Add a Word Bank with definitions for all key terms. Make every question fully self-contained with all necessary information. Include visual diagrams alongside every text question. Remove any audio-dependent content.",
   tourettes: "Use multiple response formats: tick, circle, fill-in, short answer. Add natural break points into every section. Reduce writing demands — avoid long written responses. Use a calm, supportive, non-judgmental tone. Remove all timed pressure language ('quickly', 'in 5 minutes').",
   "older-learners": "Provide a graphic organiser or table for extended responses. Add a Cornell-style note section at the end of each section. Use age-appropriate academic language and contexts. Include a study tip box at the start of each section. Add clear section breaks with estimated time for each section.",
+  "working-memory": "Add a 'Memory Aid' box before every question listing the key facts, formulas, or vocabulary needed. Break every multi-step question into numbered sub-steps with blanks. Include a visible word bank or key facts box at the top of every section. Place a fully worked example immediately before every practice section. One instruction per line only.",
+  "semh": "Open with an emotional check-in: '[ ] Calm   [ ] OK   [ ] Need a break'. Rename Section A 'Warm-Up — no pressure!'. Add a positive statement at the start of each section. Replace 'must'/'should'/'need to' with 'try to'/'have a go at'. Insert a natural break point after every 3 questions.",
 };
 
 export async function aiDifferentiateTask(params: {
