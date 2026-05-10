@@ -27,6 +27,13 @@ const LEGACY_SECTION_TYPE_ALIASES: Record<string, string> = {
   "table-fill": "q-data-table",
   "data-table": "q-data-table",
   "label-diagram": "q-label-diagram",
+  // ── Diagram A / B aliases (canonical spec §4.5) ──
+  // Diagram A (reference) and Diagram B (task) both render as diagram sections
+  // but are tracked separately in metadata via diagramAId / diagramBId.
+  "diagram-a": "diagram",
+  "diagram-b": "diagram",
+  "reference-diagram": "diagram",
+  "task-diagram": "diagram",
   // New question type aliases (from AI-generated worksheets)
   "q-worked-example": "example",
   "q-free-response": "q-extended",
@@ -4794,6 +4801,12 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
 
       {/* ── Sections (normal portrait layout — hidden when revision mat active) ── */}
       {!isRevisionMat && (worksheet.sections || []).map((section, i) => {
+        // Preserve the original type BEFORE normalisation so we can detect
+        // "diagram-a" vs "diagram-b" for page-layout purposes (both normalise
+        // to "diagram" but need different CSS classes).
+        const originalSectionType = String(section.type || "").toLowerCase();
+        const isDiagramA = originalSectionType === "diagram-a" || originalSectionType === "reference-diagram";
+        const isDiagramB = originalSectionType === "diagram-b" || originalSectionType === "task-diagram";
         const normalizedSectionType = normalizeWorksheetSectionType(section.type);
         if (normalizedSectionType !== section.type) {
           section = { ...section, type: normalizedSectionType };
@@ -5012,13 +5025,29 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
               </div>
             </div>
           )}
-          {/* ── Section group divider: shown before the first question of each group ── */}
+          {/* ── Section group divider: shown before the first question of each group ──
+              Wrapped with the following question in a shared container with
+              pageBreakInside: avoid so the divider never renders alone on its
+              own page. The data-section attribute drives CSS page breaks at
+              Section 2 and Section 3 boundaries per the spec layout. */}
           {isFirstOfGroupSection && groupInfo && (
-            <div className="ws-section-group-divider" style={{
-              marginBottom: "16px",
-              marginTop: i > 0 ? "24px" : "0",
-              pageBreakBefore: "auto",
-            }}>
+            <div
+              className="ws-section-group-divider"
+              data-section={groupInfo.label.includes("SECTION 2") ? "2" : groupInfo.label.includes("SECTION 3") ? "3" : "1"}
+              style={{
+                marginBottom: "10px",
+                marginTop: i > 0 ? "18px" : "0",
+                // Section 2 and Section 3 start a new printed page.
+                // Section 1 stays on the current page (follows Page 1 intro).
+                pageBreakBefore: groupInfo.label.includes("SECTION 2") || groupInfo.label.includes("SECTION 3") ? "always" : "auto",
+                breakBefore: groupInfo.label.includes("SECTION 2") || groupInfo.label.includes("SECTION 3") ? "page" : "auto",
+                // Keep the divider attached to the next question block — prevents
+                // the divider landing alone on a page and causing a blank page.
+                pageBreakAfter: "avoid",
+                breakAfter: "avoid",
+                pageBreakInside: "avoid",
+                breakInside: "avoid",
+              }}>
               <div style={{ borderTop: "2px solid #1a2744", marginBottom: "5px" }} />
               <div style={{
                 fontSize: "10px",
@@ -5038,6 +5067,9 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
               section.type === "diagram" && !hasDiagramContent
                 ? "ws-section ws-section-diagram-empty"
                 : `ws-section ws-section-${section.type}`,
+              // Mark Diagram A and Diagram B explicitly for CSS page-break rules
+              isDiagramA ? "ws-section-diagram-a" : "",
+              isDiagramB ? "ws-section-diagram-b" : "",
               // Only non-empty diagram sections receive ws-section-diagram; PDF pagination
               // uses that class to reserve a full page for a real diagram.
               // Only heavy teacher sections (Key/Mark-Scheme) get the break-before: page CSS class
@@ -5055,18 +5087,16 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
               background: isTeacherHeader ? "#fff8f8" : fmt.theme === "high-contrast" ? "#ffffff" : "#ffffff",
               border: fmt.theme === "high-contrast" ? "2px solid #111827" : "none",
               borderRadius: "0",
-              overflow: "visible",
               cursor: editMode ? "pointer" : "default",
               outline: editMode && editedSections[i] !== undefined ? "2px solid #2a7f8f" : "none",
               pageBreakInside: "avoid",
               breakInside: "avoid",
-              // Blank-page fix: remove inline page-break on diagram sections.
-              // CSS class .ws-section-diagram handles break-before: page —
-              // having BOTH inline + CSS caused a double page-break / blank page.
-              pageBreakBefore: "auto",
-              breakBefore: "auto",
-              pageBreakAfter: "auto",
-              breakAfter: "auto",
+              // Per spec page layout: Diagram A and Diagram B each occupy their
+              // own full printed page. Self-reflection starts a new page.
+              pageBreakBefore: isDiagramA || isDiagramB || section.type === "self-reflection" ? "always" : "auto",
+              breakBefore: isDiagramA || isDiagramB || section.type === "self-reflection" ? "page" : "auto",
+              pageBreakAfter: isDiagramA || isDiagramB ? "always" : "auto",
+              breakAfter: isDiagramA || isDiagramB ? "page" : "auto",
               // Blank-page fix: remove 900px fixed height — it inflated diagram sections
               // beyond one print page, creating overflow that appeared as blank page.
               minHeight: section.type === "diagram" ? (hasDiagramContent ? "400px" : undefined) : undefined,
@@ -5338,20 +5368,21 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                                 </div>
                               </div>
                               {isMathsQ ? (
-                                /* Maths: working-out box with grid dots + answer line at bottom */
-                                <div style={{ border: "1.5px solid #cbd5e1", borderRadius: "6px", background: "#fafafa", padding: "8px", marginTop: "4px" }}>
-                                  <div style={{ fontSize: "10px", color: "#94a3b8", fontFamily: fmt.fontFamily, marginBottom: "6px", letterSpacing: "0.04em" }}>WORKING OUT</div>
-                                  {/* Dot grid for working out */}
+                                /* Maths: clean working-out area with dot grid (no surrounding border) + single answer line.
+                                   User request: "answer boxes for maths shouldn't have lines above the answer line". */
+                                <div style={{ marginTop: "4px" }}>
+                                  <div style={{ fontSize: "9px", color: "#94a3b8", fontFamily: fmt.fontFamily, marginBottom: "6px", letterSpacing: "0.08em", textTransform: "uppercase" }}>Working out</div>
+                                  {/* Subtle dot grid for working out — no bordering box */}
                                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, 20px)", gap: "0", minHeight: `${Math.max(lineCount * lineHeight, 80)}px`, position: "relative" as const, overflow: "hidden" }}>
                                     {Array.from({ length: Math.ceil((Math.max(lineCount * lineHeight, 80) / 20)) * 30 }).map((_: unknown, di: number) => (
                                       <div key={di} style={{ width: "20px", height: "20px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                                        <div style={{ width: "2px", height: "2px", borderRadius: "50%", background: "#d1d5db" }} />
+                                        <div style={{ width: "2px", height: "2px", borderRadius: "50%", background: "#e5e7eb" }} />
                                       </div>
                                     ))}
                                   </div>
-                                  {/* Answer line at bottom of working box */}
-                                  <div style={{ marginTop: "8px", paddingTop: "4px", display: "flex", alignItems: "center", gap: "8px" }}>
-                                    <span style={{ fontSize: "11px", fontWeight: 700, color: "#1a2744", fontFamily: fmt.fontFamily, whiteSpace: "nowrap" as const }}>Answer:</span>
+                                  {/* Single answer line — ONLY the bottom border, no surrounding lines */}
+                                  <div style={{ marginTop: "10px", display: "flex", alignItems: "flex-end", gap: "8px" }}>
+                                    <span style={{ fontSize: "11px", fontWeight: 700, color: "#1a2744", fontFamily: fmt.fontFamily, whiteSpace: "nowrap" as const, paddingBottom: "2px" }}>Answer:</span>
                                     <div style={{ flex: 1, borderBottom: "1.5px solid #1a2744", height: "24px" }} />
                                   </div>
                                 </div>
@@ -5439,17 +5470,18 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                                 <span style={{ fontSize: "11px", color: "#6b7280", fontStyle: "italic", whiteSpace: "nowrap" as const }}>[{sq.marks}m]</span>
                               </div>
                               {isMathsSubject ? (
-                                <div style={{ border: "1.5px solid #cbd5e1", borderRadius: "6px", background: "#fafafa", padding: "8px" }}>
-                                  <div style={{ fontSize: "10px", color: "#94a3b8", fontFamily: fmt.fontFamily, marginBottom: "6px", letterSpacing: "0.04em" }}>WORKING OUT</div>
+                                /* Maths sub-question: clean working area (no surrounding border) + single answer line. */
+                                <div style={{ marginTop: "4px" }}>
+                                  <div style={{ fontSize: "9px", color: "#94a3b8", fontFamily: fmt.fontFamily, marginBottom: "6px", letterSpacing: "0.08em", textTransform: "uppercase" }}>Working out</div>
                                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, 20px)", gap: "0", minHeight: `${Math.max(sqLineCount * sqLineH, 60)}px`, overflow: "hidden" }}>
                                     {Array.from({ length: Math.ceil((Math.max(sqLineCount * sqLineH, 60) / 20)) * 30 }).map((_: unknown, di: number) => (
                                       <div key={di} style={{ width: "20px", height: "20px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                                        <div style={{ width: "2px", height: "2px", borderRadius: "50%", background: "#d1d5db" }} />
+                                        <div style={{ width: "2px", height: "2px", borderRadius: "50%", background: "#e5e7eb" }} />
                                       </div>
                                     ))}
                                   </div>
-                                  <div style={{ marginTop: "8px", paddingTop: "4px", display: "flex", alignItems: "center", gap: "8px" }}>
-                                    <span style={{ fontSize: "11px", fontWeight: 700, color: "#1a2744", fontFamily: fmt.fontFamily, whiteSpace: "nowrap" as const }}>Answer:</span>
+                                  <div style={{ marginTop: "10px", display: "flex", alignItems: "flex-end", gap: "8px" }}>
+                                    <span style={{ fontSize: "11px", fontWeight: 700, color: "#1a2744", fontFamily: fmt.fontFamily, whiteSpace: "nowrap" as const, paddingBottom: "2px" }}>Answer:</span>
                                     <div style={{ flex: 1, borderBottom: "1.5px solid #1a2744", height: "24px" }} />
                                   </div>
                                 </div>
@@ -5487,18 +5519,19 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                           [{marks} mark{marks !== 1 ? "s" : ""}]
                         </div>
                         {isMathsSubject ? (
-                          /* Maths: working-out box with dot grid */
-                          <div style={{ border: "1.5px solid #cbd5e1", borderRadius: "6px", background: "#fafafa", padding: "8px" }}>
-                            <div style={{ fontSize: "10px", color: "#94a3b8", fontFamily: fmt.fontFamily, marginBottom: "6px", letterSpacing: "0.04em" }}>WORKING OUT</div>
+                          /* Maths: clean working area (no surrounding border) + single answer line.
+                             User request: "answer boxes for maths shouldn't have lines above the answer line". */
+                          <div>
+                            <div style={{ fontSize: "9px", color: "#94a3b8", fontFamily: fmt.fontFamily, marginBottom: "6px", letterSpacing: "0.08em", textTransform: "uppercase" }}>Working out</div>
                             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, 20px)", gap: "0", minHeight: `${Math.max(lineCount * sqLineH, 80)}px`, overflow: "hidden" }}>
                               {Array.from({ length: Math.ceil((Math.max(lineCount * sqLineH, 80) / 20)) * 30 }).map((_: unknown, di: number) => (
                                 <div key={di} style={{ width: "20px", height: "20px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                                  <div style={{ width: "2px", height: "2px", borderRadius: "50%", background: "#d1d5db" }} />
+                                  <div style={{ width: "2px", height: "2px", borderRadius: "50%", background: "#e5e7eb" }} />
                                 </div>
                               ))}
                             </div>
-                            <div style={{ marginTop: "8px", paddingTop: "4px", display: "flex", alignItems: "center", gap: "8px" }}>
-                              <span style={{ fontSize: "11px", fontWeight: 700, color: "#1a2744", fontFamily: fmt.fontFamily, whiteSpace: "nowrap" as const }}>Answer:</span>
+                            <div style={{ marginTop: "10px", display: "flex", alignItems: "flex-end", gap: "8px" }}>
+                              <span style={{ fontSize: "11px", fontWeight: 700, color: "#1a2744", fontFamily: fmt.fontFamily, whiteSpace: "nowrap" as const, paddingBottom: "2px" }}>Answer:</span>
                               <div style={{ flex: 1, borderBottom: "1.5px solid #1a2744", height: "24px" }} />
                             </div>
                           </div>

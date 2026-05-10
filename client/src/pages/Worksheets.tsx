@@ -2156,22 +2156,31 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
         // Separate real content from trailing dividers
         const realContent = currentPage.filter(h => !currentPageDividerHtmls.has(h));
         const trailingDividers = currentPage.filter(h => currentPageDividerHtmls.has(h));
+        // Look up actual heights for the trailing divider htmls
+        const trailingWithHeights = trailingDividers.map(h => {
+          const blk = blocks.find(b => b.html === h);
+          return { html: h, height: blk ? blk.height : 0 };
+        });
         if (realContent.join("").trim().length > 0) {
           // Flush only real content (without trailing dividers)
           pages.push(realContent);
           pageIsDiagram.push(false);
           // Carry dividers to next page
-          carryOverDividers = trailingDividers.map(h => ({ html: h, height: 0 }));
+          carryOverDividers = trailingWithHeights;
         } else if (trailingDividers.length > 0) {
           // Page is ONLY dividers — carry them over instead of creating a blank page
-          carryOverDividers = [...carryOverDividers, ...trailingDividers.map(h => ({ html: h, height: 0 }))];
+          carryOverDividers = [...carryOverDividers, ...trailingWithHeights];
         }
         currentPage = [];
         currentPageDividerHtmls = new Set();
         curPageH = 0;
         // Restore carried-over dividers to the new page
         if (carryOverDividers.length > 0) {
-          for (const d of carryOverDividers) { currentPage.push(d.html); currentPageDividerHtmls.add(d.html); }
+          for (const d of carryOverDividers) {
+            currentPage.push(d.html);
+            currentPageDividerHtmls.add(d.html);
+            curPageH += d.height;
+          }
           carryOverDividers = [];
         }
       };
@@ -2202,12 +2211,18 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
         if (currentPage.length === 0 || curPageH + blk.height <= CONTENT_H + 10) {
           currentPage.push(blk.html);
           curPageH += blk.height;
-          // Once real content is added, dividers are anchored — clear the carry-over set
-          currentPageDividerHtmls = new Set(currentPage.filter((_, i) => currentPage.slice(0, i + 1).every(h => currentPageDividerHtmls.has(h)) ? currentPageDividerHtmls.has(currentPage[i]) : false));
+          // Once real content is added, any dividers preceding it on this page
+          // are now "anchored" — clear the divider set so they stay with this page
+          // instead of being treated as trailing dividers and carried over.
+          currentPageDividerHtmls = new Set();
         } else {
           flushCurrentPage();
+          // After flushCurrentPage, currentPage may already contain carried-over
+          // dividers, so push the new block on top and increment (don't overwrite)
+          // the page height.
           currentPage.push(blk.html);
-          curPageH = blk.height;
+          curPageH += blk.height;
+          currentPageDividerHtmls = new Set();
         }
       }
       // Final flush — drop any trailing dividers (nothing follows them)
@@ -2236,6 +2251,18 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
           .diagram-page .worksheet-print-root { overflow:hidden!important; padding-top:0!important; padding-bottom:0!important; }
           .ws-section { margin-bottom:10px!important; border-radius:4px!important;
             -webkit-print-color-adjust:exact!important; print-color-adjust:exact!important; }
+          /* Keep section group divider attached to the next question block — fixes
+             "SECTION 3 header alone on a page" bug that produced blank pages. */
+          .ws-section-group-divider {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+            page-break-after: avoid !important;
+            break-after: avoid !important;
+          }
+          .ws-section-group-divider + .ws-section {
+            page-break-before: avoid !important;
+            break-before: avoid !important;
+          }
           .ws-section-diagram {
             margin:0!important;
             width:100%!important; max-width:100%!important;
