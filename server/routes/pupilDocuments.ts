@@ -20,6 +20,46 @@ const router = Router();
 
 const ALLOWED_TYPES = new Set(["cv", "personal_statement", "cover_letter"]);
 
+let ensuredPupilDocuments = false;
+async function ensurePupilDocumentsTable() {
+  if (ensuredPupilDocuments) return;
+  await db.exec(`
+CREATE TABLE IF NOT EXISTS pupil_documents (
+  id TEXT PRIMARY KEY,
+  pupil_id TEXT NOT NULL REFERENCES pupils(id) ON DELETE CASCADE,
+  school_id TEXT REFERENCES schools(id) ON DELETE CASCADE,
+  doc_type TEXT NOT NULL,
+  title TEXT NOT NULL,
+  fields_json TEXT NOT NULL DEFAULT '{}',
+  content TEXT,
+  updated_by TEXT REFERENCES users(id),
+  updated_by_role TEXT NOT NULL DEFAULT 'parent',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_pupil_documents_pupil ON pupil_documents(pupil_id);
+CREATE INDEX IF NOT EXISTS idx_pupil_documents_school ON pupil_documents(school_id);
+`);
+  const migrations = [
+    `DO $$ BEGIN ALTER TABLE pupil_documents ADD COLUMN school_id TEXT REFERENCES schools(id) ON DELETE CASCADE; EXCEPTION WHEN duplicate_column THEN NULL; END $$`,
+    `DO $$ BEGIN ALTER TABLE pupil_documents ADD COLUMN doc_type TEXT; EXCEPTION WHEN duplicate_column THEN NULL; END $$`,
+    `DO $$ BEGIN ALTER TABLE pupil_documents ADD COLUMN title TEXT; EXCEPTION WHEN duplicate_column THEN NULL; END $$`,
+    `DO $$ BEGIN ALTER TABLE pupil_documents ADD COLUMN fields_json TEXT NOT NULL DEFAULT '{}'; EXCEPTION WHEN duplicate_column THEN NULL; END $$`,
+    `DO $$ BEGIN ALTER TABLE pupil_documents ADD COLUMN content TEXT; EXCEPTION WHEN duplicate_column THEN NULL; END $$`,
+    `DO $$ BEGIN ALTER TABLE pupil_documents ADD COLUMN updated_by TEXT REFERENCES users(id); EXCEPTION WHEN duplicate_column THEN NULL; END $$`,
+    `DO $$ BEGIN ALTER TABLE pupil_documents ADD COLUMN updated_by_role TEXT NOT NULL DEFAULT 'parent'; EXCEPTION WHEN duplicate_column THEN NULL; END $$`,
+    `DO $$ BEGIN ALTER TABLE pupil_documents ADD COLUMN created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(); EXCEPTION WHEN duplicate_column THEN NULL; END $$`,
+    `DO $$ BEGIN ALTER TABLE pupil_documents ADD COLUMN updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(); EXCEPTION WHEN duplicate_column THEN NULL; END $$`,
+  ];
+  for (const sql of migrations) await db.exec(sql);
+  ensuredPupilDocuments = true;
+}
+
+function handleRouteError(res: Response, label: string, err: any) {
+  console.error(`[pupil-documents] ${label}:`, err?.message || err);
+  if (!res.headersSent) res.status(500).json({ error: "Document tool is temporarily unavailable. Please try again." });
+}
+
 // ── Access helper ────────────────────────────────────────────────────────────
 async function resolvePupilAccess(req: Request): Promise<
   | { pupil: any; role: "teacher" | "parent"; userId: string | null }
@@ -81,6 +121,8 @@ function rowToDoc(r: any) {
 
 // ── GET /api/pupil-documents/:pupilId — list all docs for a pupil ────────────
 router.get("/:pupilId", tryAuth, async (req: Request, res: Response) => {
+  try {
+  await ensurePupilDocumentsTable();
   const access = await resolvePupilAccess(req);
   if ("error" in access) return res.status(access.status).json({ error: access.error });
 
@@ -88,10 +130,13 @@ router.get("/:pupilId", tryAuth, async (req: Request, res: Response) => {
     `SELECT * FROM pupil_documents WHERE pupil_id = ? ORDER BY updated_at DESC`
   ).all(access.pupil.id)) as any[];
   res.json(rows.map(rowToDoc));
+  } catch (err) { handleRouteError(res, "list", err); }
 });
 
 // ── GET /api/pupil-documents/:pupilId/:id — fetch a single doc ───────────────
 router.get("/:pupilId/:id", tryAuth, async (req: Request, res: Response) => {
+  try {
+  await ensurePupilDocumentsTable();
   const access = await resolvePupilAccess(req);
   if ("error" in access) return res.status(access.status).json({ error: access.error });
 
@@ -100,10 +145,13 @@ router.get("/:pupilId/:id", tryAuth, async (req: Request, res: Response) => {
   ).get(access.pupil.id, req.params.id)) as any;
   if (!row) return res.status(404).json({ error: "Document not found" });
   res.json(rowToDoc(row));
+  } catch (err) { handleRouteError(res, "get", err); }
 });
 
 // ── POST /api/pupil-documents/:pupilId — create a doc ────────────────────────
 router.post("/:pupilId", tryAuth, async (req: Request, res: Response) => {
+  try {
+  await ensurePupilDocumentsTable();
   const access = await resolvePupilAccess(req);
   if ("error" in access) return res.status(access.status).json({ error: access.error });
 
@@ -137,10 +185,13 @@ router.post("/:pupilId", tryAuth, async (req: Request, res: Response) => {
 
   const row = (await db.prepare(`SELECT * FROM pupil_documents WHERE id = ?`).get(id)) as any;
   res.status(201).json(rowToDoc(row));
+  } catch (err) { handleRouteError(res, "create", err); }
 });
 
 // ── PUT /api/pupil-documents/:pupilId/:id — update a doc ─────────────────────
 router.put("/:pupilId/:id", tryAuth, async (req: Request, res: Response) => {
+  try {
+  await ensurePupilDocumentsTable();
   const access = await resolvePupilAccess(req);
   if ("error" in access) return res.status(access.status).json({ error: access.error });
 
@@ -172,10 +223,13 @@ router.put("/:pupilId/:id", tryAuth, async (req: Request, res: Response) => {
 
   const row = (await db.prepare(`SELECT * FROM pupil_documents WHERE id = ?`).get(req.params.id)) as any;
   res.json(rowToDoc(row));
+  } catch (err) { handleRouteError(res, "update", err); }
 });
 
 // ── DELETE /api/pupil-documents/:pupilId/:id ─────────────────────────────────
 router.delete("/:pupilId/:id", tryAuth, async (req: Request, res: Response) => {
+  try {
+  await ensurePupilDocumentsTable();
   const access = await resolvePupilAccess(req);
   if ("error" in access) return res.status(access.status).json({ error: access.error });
 
@@ -183,6 +237,7 @@ router.delete("/:pupilId/:id", tryAuth, async (req: Request, res: Response) => {
     `DELETE FROM pupil_documents WHERE pupil_id = ? AND id = ?`
   ).run(access.pupil.id, req.params.id);
   res.json({ success: true });
+  } catch (err) { handleRouteError(res, "delete", err); }
 });
 
 export default router;
