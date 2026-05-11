@@ -73,34 +73,38 @@ export default function Competitor() {
           className="rounded-3xl bg-cream-50 border border-ink-900/5 overflow-hidden shadow-[0_30px_60px_-30px_rgba(34,32,30,0.2)]"
           data-testid="competitor-table"
         >
-          {/* Header */}
-          <div className="grid grid-cols-[1.5fr_1fr_1fr_1fr_1fr] md:grid-cols-[2fr_1fr_1fr_1fr_1fr] bg-ink-900 text-cream-100">
-            <div className="p-5 text-xs uppercase tracking-[0.2em] font-semibold">Feature</div>
-            <div className="p-5 text-center text-sm font-heading font-bold bg-terracotta">Adaptly</div>
-            <div className="p-5 text-center text-xs uppercase tracking-[0.15em] text-cream-100/70">AI worksheet tools</div>
-            <div className="p-5 text-center text-xs uppercase tracking-[0.15em] text-cream-100/70">Generic EHCP SaaS</div>
-            <div className="p-5 text-center text-xs uppercase tracking-[0.15em] text-cream-100/70">Manual / Word</div>
-          </div>
+          <div className="overflow-x-auto">
+            <div className="min-w-[640px]">
+              {/* Header */}
+              <div className="grid grid-cols-[1.5fr_1fr_1fr_1fr_1fr] md:grid-cols-[2fr_1fr_1fr_1fr_1fr] bg-ink-900 text-cream-100">
+                <div className="p-5 text-xs uppercase tracking-[0.2em] font-semibold">Feature</div>
+                <div className="p-5 text-center text-sm font-heading font-bold bg-terracotta">Adaptly</div>
+                <div className="p-5 text-center text-xs uppercase tracking-[0.15em] text-cream-100/70">AI worksheet tools</div>
+                <div className="p-5 text-center text-xs uppercase tracking-[0.15em] text-cream-100/70">Generic EHCP SaaS</div>
+                <div className="p-5 text-center text-xs uppercase tracking-[0.15em] text-cream-100/70">Manual / Word</div>
+              </div>
 
-          {/* Rows */}
-          <div className="divide-y divide-ink-900/5">
-            {ROWS.map((r, i) => (
-              <motion.div
-                key={r.f}
-                initial={{ opacity: 0, x: -10 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true, margin: "-40px" }}
-                transition={{ delay: i * 0.04, duration: 0.5 }}
-                className="grid grid-cols-[1.5fr_1fr_1fr_1fr_1fr] md:grid-cols-[2fr_1fr_1fr_1fr_1fr] items-center hover:bg-terracotta/5 transition-colors"
-                data-testid={`competitor-row-${i}`}
-              >
-                <div className="p-4 md:p-5 text-sm md:text-base text-ink-900 font-medium">{r.f}</div>
-                <div className="p-4 md:p-5 bg-terracotta/5"><Cell v={r.adaptly} highlight /></div>
-                <div className="p-4 md:p-5"><Cell v={r.sheet} /></div>
-                <div className="p-4 md:p-5"><Cell v={r.ehcp} /></div>
-                <div className="p-4 md:p-5"><Cell v={r.manual} /></div>
-              </motion.div>
-            ))}
+              {/* Rows */}
+              <div className="divide-y divide-ink-900/5">
+                {ROWS.map((r, i) => (
+                  <motion.div
+                    key={r.f}
+                    initial={{ opacity: 0, x: -10 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true, margin: "-40px" }}
+                    transition={{ delay: i * 0.04, duration: 0.5 }}
+                    className="grid grid-cols-[1.5fr_1fr_1fr_1fr_1fr] md:grid-cols-[2fr_1fr_1fr_1fr_1fr] items-center hover:bg-terracotta/5 transition-colors"
+                    data-testid={`competitor-row-${i}`}
+                  >
+                    <div className="p-4 md:p-5 text-sm md:text-base text-ink-900 font-medium">{r.f}</div>
+                    <div className="p-4 md:p-5 bg-terracotta/5"><Cell v={r.adaptly} highlight /></div>
+                    <div className="p-4 md:p-5"><Cell v={r.sheet} /></div>
+                    <div className="p-4 md:p-5"><Cell v={r.ehcp} /></div>
+                    <div className="p-4 md:p-5"><Cell v={r.manual} /></div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
           </div>
         </motion.div>
 
