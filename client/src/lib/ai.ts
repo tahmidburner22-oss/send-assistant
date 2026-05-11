@@ -20,6 +20,11 @@ import { allTopics as worksheetAllTopics } from './worksheet-generator';
 import { getSendNoteForWorksheet, getSendSectionTitles } from './sendPromptFragments';
 import { buildSubjectPromptFragments } from './subject-profiles';
 import { enforceSendAdaptations } from './sendEnforcer';
+// Deterministic post-generation validators — fix the specific content bugs
+// teachers flagged in scrutiny reviews (multi-tick MCQ, duplicate word bank,
+// irrelevant diagrams, year-group drift, overlong worked examples) even if
+// the LLM slipped past the prompt rules.
+import { runWorksheetPostValidators } from './worksheetPostValidator';
 
 // ─── Built-in keys — hardcoded server-side fallback (always available) ────────
 // These are the admin keys used as fallback when no user key is provided.
@@ -1106,7 +1111,7 @@ ${sectionBPrompt}
 
 CHALLENGE QUESTION [${isSTEM ? '8' : '12'} marks]: ${isMaths ? 'Present a challenging multi-step real-world maths problem on ' + '"' + params.topic + '"' + '. ALL parts must be numerical/calculation-based — NO written explanations or prose. (a) Set up the problem and identify the method [1 mark] (b) Perform 2–3 linked calculations showing ALL working [5 marks] (c) Give the final answer with correct units/form and check it [2 marks]. Mark scheme: method marks + accuracy marks only.' : isSTEM ? 'Present a multi-part real-world scenario requiring: (a) Choose and justify an approach/method/circuit/process (b) Perform at least 2–3 linked calculations showing all working (c) Explain what happens under a changed condition. Award: up to 3m for explanation + up to 5m for calculations.' : 'Present a short quotation from the text (3–8 words, with Act/scene reference). Instruction: "Starting with this extract, write about how [author] presents [concept/character/theme]." List what the answer must include. Award: Band 4 (10–12m) / Band 3 (7–9m) / Band 2 (4–6m) / Band 1 (1–3m). Describe each band in one sentence.'}
 
-SELF REFLECTION: Generate a 5-row confidence table (Topic | Not Yet | Getting There | Confident). Each row must be a specific skill relevant to the topic (not generic). Then 3 written reflection prompts. Then an Exit Ticket box.
+SELF REFLECTION (SLIM — pupil-facing only): Output exactly ONE exit question on its own line: 'Exit Ticket: Write one thing you learned today about ${params.topic} in a single sentence.' Do NOT emit a confidence grid, tick-box column, or multi-prompt reflection block on the pupil-facing page — those belong in the Teacher Copy below. The pupil sees one sentence only so the reflection does not overwhelm the page.
 
 TEACHER COPY — ANSWER KEY: Provide answers for EVERY question. ${isMaths ? `MATHS MARK SCHEME FORMAT (MANDATORY):
 For every maths question, break the mark scheme down as:
@@ -1329,6 +1334,98 @@ STRICT JSON OUTPUT: Respond with valid JSON only — no markdown, no code blocks
 
   const mathsSpecSkill = isMaths ? mathsSpecSkillForTopic(params.topic, yearNum) : "";
 
+  // ── Maths layout contract (Fluency / Reasoning / Problem Solving) ─────────
+  // Adds a layout spine to maths worksheets that teachers specifically asked
+  // for: Fluency → Reasoning → Problem Solving, section-level guidance (not
+  // per question), mixed-number subtraction rule for the worked example,
+  // year-group lock, and question wording cap. This block is appended to
+  // mathsNote below so the generator sees it INSIDE the main maths block.
+  const yearNumForLock = (parseInt((params.yearGroup || "").replace(/\D/g, ""), 10) || 0);
+  const yearLockClause = yearNumForLock > 0
+    ? `
+YEAR-GROUP LOCK (NON-NEGOTIABLE):
+- Every heading, worked example, real-world context, and teacher note must use exactly "${params.yearGroup}". Never mix year groups — do NOT reference another year on the same sheet (e.g. do not write "Year 9" then "Year 11" elsewhere).
+- Difficulty must match ${params.yearGroup} specifically. If you believe the topic fits a different year group, generate it at the level the user asked for; do NOT silently upgrade or downgrade.`
+    : "";
+
+  const mathsLayoutContract = isMaths ? `
+
+MATHS WORKSHEET LAYOUT CONTRACT (MANDATORY — applies to EVERY maths worksheet):
+
+SECTION SPINE — rename and rebalance sections:
+- Section 1 label on the pupil-facing page: "Fluency — Core Practice" (single-skill, no context, 3 questions).
+- Section 2 label on the pupil-facing page: "Reasoning — Show Your Thinking" (2–3 step questions that test the same skill in a new form or ask 'show that').
+- Section 3 label on the pupil-facing page: "Problem Solving — Apply It" (worded, multi-step, exam-style, 3 questions).
+- Do NOT keep the legacy labels "Recall / Understanding / Application / Analysis" on maths sheets — Fluency / Reasoning / Problem Solving is the White Rose / CGP convention UK teachers expect.
+
+INSTRUCTION BOX POLICY — reduce cognitive load:
+- Place the section instructions ONCE at the top of each section (two lines maximum). Do NOT repeat instruction language ('Read the question carefully…', 'Show all your working…') on every question.
+- Do NOT emit a "WORKING OUT" caption on every question. The renderer provides the working space automatically.
+- No "READING SUPPORT" or "HINTS" boxes in between questions. If a hint is needed put it in a single small panel at the top of the relevant section.
+- Each section's opening panel fits into 2 lines maximum; all other per-question text is the question itself.
+
+QUESTION WORDING CAP:
+- Every maths question (including worded problems) must be written in 25 words or fewer. Keep the numbers and the operation prominent in the first sentence. Canonical style: "A jacket costs £75. It has 20% off. Work out the sale price." Match that register.
+- Never re-state the method inside the question. The method belongs in the worked example at the top of the page, not inside each question.
+
+WORKED EXAMPLE — STRICT FORMAT:
+- The worked example shows at most 4 numbered steps. Each step is one short line (max 15 words). No narrative sentences, no "This is because…" paragraphs inside the worked example.
+- For MIXED-NUMBER ARITHMETIC (add / subtract / multiply / divide of mixed numbers) the worked example MUST use this canonical method, in this exact order:
+    Step 1: Convert every mixed number to a top-heavy fraction using "whole × denominator + numerator, over the same denominator". Show the calculation inline, e.g. \\(3\\tfrac{1}{4} = \\dfrac{3 \\times 4 + 1}{4} = \\dfrac{13}{4}\\).
+    Step 2: Put the fractions over a common denominator (if needed) and carry out the operation.
+    Step 3: Simplify and, if appropriate, convert back to a mixed number.
+    Step 4 (optional): State the answer with the correct form.
+- For OTHER topics (linear equations, percentages, area, etc.) the same 4-step cap applies — Identify / Substitute / Calculate / Answer — no narrative.
+- NEVER produce a worked example with a mathematical error. Double-check every substitution before emitting.
+
+PROGRESSION — smooth, not jumpy:
+- Within each section questions escalate in small increments. Do not jump from a 1-step Fluency question straight to a multi-step Problem Solving question inside the same section.
+- If a Problem Solving section would be too big a leap, add ONE medium 'bridge' question as the first item in Problem Solving.
+
+VISUAL DENSITY — print-ready polish:
+- No repeated headings, no decorative framing around every question, no duplicated footers or branding on mid-sheet pages.
+- Answer spaces: 3–4 ruled lines for Fluency, a small working-out area for Reasoning, and a larger working-out area only for Problem Solving.
+- Wide outer margins. Bold section headings. Aligned numbering.
+${yearLockClause}` : "";
+
+  // ── Science layout contract (applies to science/biology/chemistry/physics) ─
+  // Teachers flagged: duplicated 'WHAT YOU NEED TO DO' boxes, irrelevant
+  // computing diagrams, cluttered vocabulary tables, MCQ with multiple ticks,
+  // bloated word bank, and bloated reflection. This block addresses each.
+  const scienceLayoutContract = isScience ? `
+
+SCIENCE WORKSHEET LAYOUT CONTRACT (MANDATORY — applies to EVERY science worksheet):
+
+INSTRUCTION BOX POLICY — remove duplication:
+- Place section instructions ("Answer all questions. Show your working.") ONCE at the top of the section. NEVER repeat a 'WHAT YOU NEED TO DO' box under every question.
+- Do NOT include a 'Read the question exactly as written' or similar generic instruction under individual questions. Per-question instructions come only from the question itself.
+- If SEND scaffolding adds per-question support boxes they sit AFTER each question; the overlay engine owns those, not the prompt.
+
+VOCABULARY — simple two-column list:
+- Emit Key Vocabulary as a simple two-column list: one line per term in the format "Term — plain-English definition". Each definition fits on one line.
+- Do NOT emit an empty-cell grid or a 4-column table. Max 8 terms; no duplicates.
+
+MCQ — EXACTLY ONE CORRECT ANSWER:
+- Every MCQ has EXACTLY ONE correct option. Distractors must be plausible misconceptions, not obviously wrong.
+- Mark ONLY the correct option with ✓ at the end of its line. Do not tick more than one option. Never pre-fill any other option.
+
+GAP FILL / WORD BANK:
+- The word bank has EXACTLY 8–10 words. Every word appears at MOST ONCE. Do not include filler synonyms (e.g. 'push' and 'pull' must not both appear twice).
+- The gap fill paragraph uses exactly the same words that appear in the word bank — no extras, no repeats inside the paragraph.
+
+WORKED EXAMPLE — BULLET STEPS:
+- Worked example is a sequence of at most 5 bullet steps with bold labels: "**Forces acting:** …", "**Effect:** …", "**Calculation:** …", "**Answer:** …". No narrative paragraphs.
+
+EXTENDED ANSWER QUESTIONS — LEAN:
+- Give each extended answer question one sentence of instruction and 3–4 ruled lines for response. Do NOT place a 'WHAT YOU NEED TO DO' block under these questions.
+
+DIAGRAM SUBJECT-LOCK (CRITICAL — this is the bug the teacher flagged):
+- Every diagram emitted on a science worksheet MUST be from the science domain. ALLOWED diagram types for science: labeled (cell/organ/apparatus), circuit (electricity topics ONLY), flow (process/sequence), cycle (water/rock/nitrogen/life), bar/axes/number-line (data), pyramid (ecological/energy), venn (classification), timeline (history of science where topic genuinely warrants it).
+- FORBIDDEN diagram types on a science worksheet: anything that belongs to a different subject. In particular, do NOT emit "computer-architecture", "big-o-notation", "binary-representation", or any other computing / algorithm / programming diagram on a biology / chemistry / physics / combined-science sheet. If a topic does not have a relevant second diagram, emit Diagram B with content "[skipped — topic does not require a second visual]".
+
+REFLECTION — SINGLE EXIT QUESTION ONLY:
+- Pupil-facing reflection is exactly one question: "Write one thing you learned today about ${params.topic} in a single sentence." No confidence grid, no multi-prompt reflection, no exit ticket box in addition to the question. A confidence column is kept on the TEACHER COPY only.` : "";
+
   const mathsNote = isMaths
     ? `MATHS — SPECIFICATION-ALIGNED CALCULATION PRACTICE (MANDATORY):
 
@@ -1346,10 +1443,12 @@ ABSOLUTE RULES:
 7. Progression: Section 1 (Q1–3) uses single-step calculations with simple numbers; Section 2 (Q4–6) uses multi-step calculations in context; Section 3 (Q7–9) uses exam-style multi-step problems with worded context.
 8. Every mark-scheme entry must show the FULL method (M marks) and the correct final answer (A marks). Award method marks separately from accuracy marks.
 9. Context in word problems: use realistic UK contexts (shopping, distances, time, recipes, sports scores, surveys, building, travel) — make numbers genuinely meaningful, not arbitrary.
-10. Worked example MUST show step-by-step calculation with annotations explaining each step — no prose, just clearly numbered calculation steps.`
+10. Worked example MUST show step-by-step calculation with annotations explaining each step — no prose, just clearly numbered calculation steps.${mathsLayoutContract}`
+    : isScience
+    ? `Science: Use LaTeX \\(...\\) for equations e.g. \\(F = ma\\), \\(E = mc^{2}\\), \\(v = u + at\\). CRITICAL RULES: (1) NEVER use \\text{} or \\mathrm{} — write units as plain text outside math e.g. "\\(F = ma\\) where F is in N". (2) Write chemical formulas with subscript numbers: H₂O, CO₂, H₂SO₄, NaCl. (3) For scientific notation write "6.02 × 10²³" or \\(6.02 \\times 10^{23}\\). (4) Units: write as plain text — m/s, m/s², N, kg, J, W, Pa, mol, dm³, cm³, °C, K.${scienceLayoutContract}${yearLockClause}`
     : isScienceOrMaths
-    ? `Science: Use LaTeX \\(...\\) for equations e.g. \\(F = ma\\), \\(E = mc^{2}\\), \\(v = u + at\\). CRITICAL RULES: (1) NEVER use \\text{} or \\mathrm{} — write units as plain text outside math e.g. "\\(F = ma\\) where F is in N". (2) Write chemical formulas with subscript numbers: H₂O, CO₂, H₂SO₄, NaCl. (3) For scientific notation write "6.02 × 10²³" or \\(6.02 \\times 10^{23}\\). (4) Units: write as plain text — m/s, m/s², N, kg, J, W, Pa, mol, dm³, cm³, °C, K.`
-    : `Use LaTeX \\(...\\) for any math expressions. Write units as plain text (e.g. "25 m/s" not "\\text{m/s}").`;
+    ? `Science: Use LaTeX \\(...\\) for equations e.g. \\(F = ma\\), \\(E = mc^{2}\\), \\(v = u + at\\). CRITICAL RULES: (1) NEVER use \\text{} or \\mathrm{} — write units as plain text outside math e.g. "\\(F = ma\\) where F is in N". (2) Write chemical formulas with subscript numbers: H₂O, CO₂, H₂SO₄, NaCl. (3) For scientific notation write "6.02 × 10²³" or \\(6.02 \\times 10^{23}\\). (4) Units: write as plain text — m/s, m/s², N, kg, J, W, Pa, mol, dm³, cm³, °C, K.${yearLockClause}`
+    : `Use LaTeX \\(...\\) for any math expressions. Write units as plain text (e.g. "25 m/s" not "\\text{m/s}").${yearLockClause}`;
 
   // ── SVG Diagram injection note ──────────────────────────────────────────────
   // Subjects where inline diagrams add genuine value
@@ -2086,10 +2185,18 @@ CRITICAL STRUCTURE RULE: ALL questions come ONLY from Section A (True/False, MCQ
       structuredSections.push(`{"title": "Challenge Question", "type": "challenge", "marks": 8, "content": "${challengeContent.replace(/"/g, '\\"')}"}`);
     }
         // 12. Self Reflection — SEND-specific format
+    // Teacher feedback: the pupil-facing reflection was too long (5-row grid +
+    // 3 written prompts + exit ticket). Slim it to ONE exit question on the
+    // pupil page. The confidence grid and written prompts move to the teacher
+    // copy (see Teacher Key section below).
     if (wantSelfReflection) {
       const sendKey = hasSend ? (params.sendNeed || "").toLowerCase().replace(/[\s_]/g, "-") : "";
       // SEND needs that require tick-box only (no open writing)
-      const isTickBoxOnly = ["asc", "autism", "asperger", "adhd", "dyslexia", "dyscalculia", "mld", "dyspraxia", "working-memory"].includes(sendKey);
+      const isTickBoxOnly = [
+        "asc", "autism", "asperger",
+        "asc-social", "asc-demand-avoidant", "asc-sensory", "asc-rigid",
+        "adhd", "dyslexia", "dyscalculia", "mld", "dyspraxia", "working-memory",
+      ].some(id => sendKey === id || sendKey.startsWith(id + ":"));
       // SEND needs that require sentence-starter format
       const isSentenceStarter = ["slcn", "eal", "esl"].includes(sendKey);
       // SEND needs that require emotional check-in format
@@ -2099,20 +2206,23 @@ CRITICAL STRUCTURE RULE: ALL questions come ONLY from Section A (True/False, MCQ
 
       let selfReflectionContent: string;
       if (isTickBoxOnly) {
-        // Tick-box checklist only — no open writing (ASC, ADHD, Dyslexia, Dyscalculia, MLD, Dyspraxia)
-        selfReflectionContent = `SUBTITLE: How did you get on?\nCOMPLETION_CHECKLIST:\n[ ] I completed Section A\n[ ] I completed Section B\n[ ] I completed Section C\n[ ] I tried the Challenge\nCONFIDENCE_TABLE:\n[specific skill/concept 1 from ${params.topic}]\n[specific skill/concept 2 from ${params.topic}]\n[specific skill/concept 3 from ${params.topic}]\n[specific skill/concept 4 from ${params.topic}]\n[specific skill/concept 5 from ${params.topic}]\nEXIT_TICKET: Tick ONE: [ ] I understand ${params.topic}   [ ] I mostly understand   [ ] I need more practice`;
+        // Tick-box + single exit question (ASC family, ADHD, Dyslexia, Dyscalculia, MLD, Dyspraxia, Working Memory)
+        // Keep the completion checklist because ASC/ADHD pupils find it grounding,
+        // but drop the 5-row confidence table from the pupil page — that stays teacher-only.
+        selfReflectionContent = `SUBTITLE: How did you get on?\nCOMPLETION_CHECKLIST:\n[ ] I completed Section 1\n[ ] I completed Section 2\n[ ] I completed Section 3\n[ ] I tried the Challenge\nEXIT_TICKET: Write ONE thing you learned today about ${params.topic} in a single sentence:`;
       } else if (isSentenceStarter) {
-        // Sentence-starter format (SLCN, EAL)
-        selfReflectionContent = `SUBTITLE: Review your understanding before moving on.\nCONFIDENCE_TABLE:\n[specific skill/concept 1 from ${params.topic}]\n[specific skill/concept 2 from ${params.topic}]\n[specific skill/concept 3 from ${params.topic}]\n[specific skill/concept 4 from ${params.topic}]\n[specific skill/concept 5 from ${params.topic}]\nWRITTEN_PROMPTS:\nI can ___.\nI need to practise ___.\nEXIT_TICKET: Write ONE thing you learned today about ${params.topic} in one sentence:`;
+        // Sentence-starter format (SLCN, EAL) — one sentence-starter + exit question
+        selfReflectionContent = `SUBTITLE: Review your understanding.\nWRITTEN_PROMPTS:\nI can ___.\nEXIT_TICKET: Write ONE thing you learned today about ${params.topic} in a single sentence:`;
       } else if (isEmotionalCheckin) {
-        // Emotional check-in format (SEMH, Anxiety, PDA)
-        selfReflectionContent = `SUBTITLE: How are you feeling?\nCHECK_IN: [ ] Calm   [ ] OK   [ ] Need a break\nCONFIDENCE_TABLE:\n[specific skill/concept 1 from ${params.topic}]\n[specific skill/concept 2 from ${params.topic}]\n[specific skill/concept 3 from ${params.topic}]\n[specific skill/concept 4 from ${params.topic}]\n[specific skill/concept 5 from ${params.topic}]\nWRITTEN_PROMPTS:\nI tried ___.\nI found ___.\nEXIT_TICKET: One thing I want to remember about ${params.topic} is:`;
+        // Emotional check-in + exit question (SEMH, Anxiety, PDA) — the check-in
+        // is kept because it's primary support, not reflection bloat.
+        selfReflectionContent = `SUBTITLE: How are you feeling?\nCHECK_IN: [ ] Calm   [ ] OK   [ ] Need a break\nEXIT_TICKET: One thing I want to remember about ${params.topic} is:`;
       } else if (isOlderLearner) {
-        // Older learner / adult education format
-        selfReflectionContent = `SUBTITLE: Review your learning.\nCONFIDENCE_TABLE:\n[specific skill/concept 1 from ${params.topic}]\n[specific skill/concept 2 from ${params.topic}]\n[specific skill/concept 3 from ${params.topic}]\n[specific skill/concept 4 from ${params.topic}]\n[specific skill/concept 5 from ${params.topic}]\nWRITTEN_PROMPTS:\nWhat went well?\nWhat do I need to revise further?\nEXIT_TICKET: Write ONE key point you will take away from today's lesson on ${params.topic}:`;
+        // Older learner / adult — single reflective exit question
+        selfReflectionContent = `SUBTITLE: Review your learning.\nEXIT_TICKET: Write ONE key point you will take away from today's lesson on ${params.topic}:`;
       } else {
-        // Standard format (no SEND, or SEND needs with standard reflection)
-        selfReflectionContent = `SUBTITLE: Review your understanding before moving on.\nCONFIDENCE_TABLE:\n[specific skill/concept 1 from ${params.topic}]\n[specific skill/concept 2 from ${params.topic}]\n[specific skill/concept 3 from ${params.topic}]\n[specific skill/concept 4 from ${params.topic}]\n[specific skill/concept 5 from ${params.topic}]\nWRITTEN_PROMPTS:\nOne concept I feel confident about is ...\nOne area I still need to practise is ...\nA question I still want to ask my teacher is ...\nEXIT_TICKET: Write ONE thing you learned today about ${params.topic} in one sentence:`;
+        // Standard — single exit question, matches teacher feedback
+        selfReflectionContent = `SUBTITLE: Exit Ticket.\nEXIT_TICKET: Write ONE thing you learned today about ${params.topic} in a single sentence:`;
       }
       structuredSections.push(`{"title": "Self Reflection", "type": "self-reflection", "teacherOnly": false, "content": "${selfReflectionContent.replace(/"/g, '\\"')}"}`);
     }
@@ -2190,12 +2300,24 @@ Return EXACTLY this JSON (raw JSON only, no markdown fences):
           sendNeed: params.sendNeed || undefined,
         };
       }
+      // ── Post-validator: deterministic fixes for content bugs flagged in
+      // live scrutiny reviews (multi-tick MCQ, duplicate word bank, foreign
+      // diagrams on science sheets, year-group drift, overlong worked
+      // example). Runs BEFORE the SEND enforcer so its fixes are visible to
+      // downstream passes.
+      const postValidated = runWorksheetPostValidators(structuredJson, {
+        subject: params.subject,
+        yearGroup: params.yearGroup,
+      });
+      // Carry through the original shape — the post-validator preserves every
+      // field, it only rewrites content in-place.
+      const postValidatedWorksheet = postValidated.worksheet as typeof structuredJson;
       // ── SEND enforcer: deterministic post-process that guarantees the
       // adaptations the UI promised (ADHD inline checkboxes, 3-Q cap, brain
       // break, etc.) actually appear — even if the LLM skipped them. Runs on
       // the structured (primary) path before the overlay engine sees it.
-      const enforcedStructured = enforceSendAdaptations(structuredJson, params.sendNeed);
-      return { ...enforcedStructured.worksheet, isAI: true, provider: structuredProvider };
+      const enforcedStructured = enforceSendAdaptations(postValidatedWorksheet, params.sendNeed);
+      return { ...(enforcedStructured.worksheet as typeof structuredJson), isAI: true, provider: structuredProvider };
     }
     // If structured generation failed, fall through to legacy path
   }
@@ -2855,8 +2977,15 @@ Return EXACTLY this JSON (raw JSON only):
   //    bolded action verbs and a BRAIN BREAK mid-Section-B; strips dyslexia
   //    italics from question text. No-op for other SEND needs (their rules
   //    are fully delegated to the prompt + server overlay).
-  const legacyEnforced = enforceSendAdaptations(result, params.sendNeed);
-  return legacyEnforced.worksheet as AIWorksheetResult;
+  const legacyPostValidated = runWorksheetPostValidators(
+    result as unknown as import("./worksheetPostValidator").PostValidatorWorksheet,
+    {
+      subject: params.subject,
+      yearGroup: params.yearGroup,
+    },
+  );
+  const legacyEnforced = enforceSendAdaptations(legacyPostValidated.worksheet, params.sendNeed);
+  return legacyEnforced.worksheet as unknown as AIWorksheetResult;
 }
 
 export async function aiGenerateStory(params: {

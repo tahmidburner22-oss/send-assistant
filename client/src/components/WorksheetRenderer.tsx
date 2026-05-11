@@ -5473,10 +5473,12 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                               </div>
                               {isMathsQ ? (
                                 /* Maths: clean working-out area with dot grid (no surrounding border) + single answer line.
-                                   User request: "answer boxes for maths shouldn't have lines above the answer line". */
+                                   User request: "answer boxes for maths shouldn't have lines above the answer line".
+                                   Teacher scrutiny feedback: do NOT print the "Working out" caption on every question —
+                                   repetition makes the page feel cluttered. The dot grid alone is sufficient visual
+                                   signal for where to work. */
                                 <div style={{ marginTop: "4px" }}>
-                                  <div style={{ fontSize: "9px", color: "#94a3b8", fontFamily: fmt.fontFamily, marginBottom: "6px", letterSpacing: "0.08em", textTransform: "uppercase" }}>Working out</div>
-                                  {/* Subtle dot grid for working out — no bordering box */}
+                                  {/* Subtle dot grid for working out — no label, no bordering box */}
                                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, 20px)", gap: "0", minHeight: `${Math.max(lineCount * lineHeight, 80)}px`, position: "relative" as const, overflow: "hidden" }}>
                                     {Array.from({ length: Math.ceil((Math.max(lineCount * lineHeight, 80) / 20)) * 30 }).map((_: unknown, di: number) => (
                                       <div key={di} style={{ width: "20px", height: "20px", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -5574,9 +5576,9 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                                 <span style={{ fontSize: "11px", color: "#6b7280", fontStyle: "italic", whiteSpace: "nowrap" as const }}>[{sq.marks}m]</span>
                               </div>
                               {isMathsSubject ? (
-                                /* Maths sub-question: clean working area (no surrounding border) + single answer line. */
+                                /* Maths sub-question: clean working area (no surrounding border) + single answer line.
+                                   No 'Working out' caption per question — dot grid alone is sufficient. */
                                 <div style={{ marginTop: "4px" }}>
-                                  <div style={{ fontSize: "9px", color: "#94a3b8", fontFamily: fmt.fontFamily, marginBottom: "6px", letterSpacing: "0.08em", textTransform: "uppercase" }}>Working out</div>
                                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, 20px)", gap: "0", minHeight: `${Math.max(sqLineCount * sqLineH, 60)}px`, overflow: "hidden" }}>
                                     {Array.from({ length: Math.ceil((Math.max(sqLineCount * sqLineH, 60) / 20)) * 30 }).map((_: unknown, di: number) => (
                                       <div key={di} style={{ width: "20px", height: "20px", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -5624,9 +5626,9 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                         </div>
                         {isMathsSubject ? (
                           /* Maths: clean working area (no surrounding border) + single answer line.
-                             User request: "answer boxes for maths shouldn't have lines above the answer line". */
+                             User request: "answer boxes for maths shouldn't have lines above the answer line".
+                             Teacher scrutiny feedback: do NOT repeat a 'Working out' caption per question. */
                           <div>
-                            <div style={{ fontSize: "9px", color: "#94a3b8", fontFamily: fmt.fontFamily, marginBottom: "6px", letterSpacing: "0.08em", textTransform: "uppercase" }}>Working out</div>
                             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, 20px)", gap: "0", minHeight: `${Math.max(lineCount * sqLineH, 80)}px`, overflow: "hidden" }}>
                               {Array.from({ length: Math.ceil((Math.max(lineCount * sqLineH, 80) / 20)) * 30 }).map((_: unknown, di: number) => (
                                 <div key={di} style={{ width: "20px", height: "20px", display: "flex", alignItems: "center", justifyContent: "center" }}>

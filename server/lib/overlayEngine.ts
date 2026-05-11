@@ -477,52 +477,137 @@ function buildAdhdSupport(sections: WorksheetSection[]): WorksheetSection[] {
 }
 
 // ── ASC / Autism Spectrum Condition ───────────────────────────────────────────
+// Teacher feedback: the per-question 'What you need to do' boxes made the
+// worksheet feel duplicated. This version emits ONE box per section
+// (guided/independent/challenge or Section 1/2/3), placed before the first
+// question in each section, using steps derived from the dominant question
+// type in that section. This matches the ASC worksheetRule: "Each section
+// opens with ONE 'What you need to do:' box listing exact steps."
 function buildAscSupport(sections: WorksheetSection[]): WorksheetSection[] {
   const result: WorksheetSection[] = [];
-  // Every question section gets a "What you need to do" box with
-  // question-specific numbered steps. Title is neutral — no condition label.
-  for (const section of sections) {
-    result.push(section);
-    if (!QUESTION_TYPES.has(section.type) || !isTextualSection(section)) continue;
-    const steps: string[] = ["What you need to do:"];
-    if (isGapFillSection(section)) {
-      steps.push("1. Read each sentence carefully.");
-      steps.push("2. Find the missing word in the word bank.");
-      steps.push("3. Write the word in the blank space.");
-      steps.push("4. Cross out each word after you use it.");
-    } else if (isTrueFalseSection(section)) {
-      steps.push("1. Read the statement exactly as written.");
-      steps.push("2. Decide if it is completely true or not.");
-      steps.push("3. Circle TRUE or FALSE.");
-      steps.push("4. If any part is wrong, the answer is FALSE.");
-    } else if (isMcqSection(section)) {
-      steps.push("1. Read the question exactly as written.");
-      steps.push("2. Read all four options A, B, C, D.");
-      steps.push("3. Cross out the options you know are wrong.");
-      steps.push("4. Circle the correct answer.");
-    } else if (isMatchingSection(section)) {
-      steps.push("1. Read all the terms on the left.");
-      steps.push("2. Read all the definitions on the right.");
-      steps.push("3. Match each term to its definition with a line.");
-      steps.push("4. Each term matches exactly one definition.");
-    } else if (isCalculationSection(section)) {
-      steps.push("1. Read the question exactly as written.");
-      steps.push("2. Write down the formula or method from the worked example.");
-      steps.push("3. Substitute the numbers from the question.");
-      steps.push("4. Calculate and write your answer with the correct unit.");
-    } else if (isExtendedWritingSection(section)) {
-      steps.push("1. Read the question exactly as written.");
-      steps.push("2. Underline the instruction word (e.g. Explain, Describe).");
-      steps.push("3. Write one clear sentence for each point.");
-      steps.push("4. Use subject vocabulary from the Key Vocabulary section.");
-    } else {
-      steps.push("1. Read the question exactly as written.");
-      steps.push("2. Look at the worked example — use the same method.");
-      steps.push("3. Write one clear answer for each question part.");
-      steps.push("4. If unsure, re-read the question — the answer is always there.");
+
+  // Section-boundary detection: anything that looks like a new section header
+  // starts a new group. We also treat a 3-question gap (no question section
+  // between two question sections) as a section boundary.
+  const isSectionHeader = (s: WorksheetSection): boolean => {
+    const title = String(s.title || "").toLowerCase();
+    const type = String(s.type || "").toLowerCase();
+    return (
+      type === "section-a" || type === "section-b" || type === "section-c" ||
+      type === "header" ||
+      /^section\s*[abc123]/.test(title) ||
+      /^(fluency|reasoning|problem\s*solving|recall|understanding|application|challenge|warm[\s-]?up|quick\s*start|main\s*practice|explore|investigate|secret\s*mission)/.test(title)
+    );
+  };
+
+  const groupStepsFor = (group: WorksheetSection[]): string[] => {
+    // Build one set of steps per section by inspecting the dominant question
+    // type across the group's question sections. If the group is mixed, pick
+    // the type of the FIRST question section.
+    const firstQ = group.find(s => QUESTION_TYPES.has(s.type) && isTextualSection(s));
+    if (!firstQ) return [];
+    if (isGapFillSection(firstQ)) {
+      return [
+        "What you need to do:",
+        "1. Read each sentence carefully.",
+        "2. Find the missing word in the word bank.",
+        "3. Write the word in the blank space.",
+        "4. Cross out each word after you use it.",
+      ];
     }
-    result.push(buildSupportSection(section.id, "What you need to do", steps));
+    if (isTrueFalseSection(firstQ)) {
+      return [
+        "What you need to do:",
+        "1. Read the statement exactly as written.",
+        "2. Decide if it is completely true or not.",
+        "3. Circle TRUE or FALSE.",
+        "4. If any part is wrong, the answer is FALSE.",
+      ];
+    }
+    if (isMcqSection(firstQ)) {
+      return [
+        "What you need to do:",
+        "1. Read the question exactly as written.",
+        "2. Read all four options A, B, C, D.",
+        "3. Cross out the options you know are wrong.",
+        "4. Circle the correct answer.",
+      ];
+    }
+    if (isMatchingSection(firstQ)) {
+      return [
+        "What you need to do:",
+        "1. Read all the terms on the left.",
+        "2. Read all the definitions on the right.",
+        "3. Match each term to its definition with a line.",
+        "4. Each term matches exactly one definition.",
+      ];
+    }
+    if (isCalculationSection(firstQ)) {
+      return [
+        "What you need to do:",
+        "1. Read the question exactly as written.",
+        "2. Write down the formula or method from the worked example.",
+        "3. Substitute the numbers from the question.",
+        "4. Calculate and write your answer with the correct unit.",
+      ];
+    }
+    if (isExtendedWritingSection(firstQ)) {
+      return [
+        "What you need to do:",
+        "1. Read the question exactly as written.",
+        "2. Underline the instruction word (e.g. Explain, Describe).",
+        "3. Write one clear sentence for each point.",
+        "4. Use subject vocabulary from the Key Vocabulary section.",
+      ];
+    }
+    return [
+      "What you need to do:",
+      "1. Read the question exactly as written.",
+      "2. Look at the worked example — use the same method.",
+      "3. Write one clear answer for each question part.",
+      "4. If unsure, re-read the question — the answer is always there.",
+    ];
+  };
+
+  // Walk sections once, grouping by section boundary, emitting one support
+  // box per group immediately after the header (or immediately before the
+  // first question if there's no header). This guarantees at most one
+  // 'What you need to do' box per section — never per question.
+  let currentGroup: WorksheetSection[] = [];
+  let insertAfterIdx = -1; // index in `result` where the support box should go
+  const flushGroup = () => {
+    if (currentGroup.length === 0) return;
+    const steps = groupStepsFor(currentGroup);
+    if (steps.length > 0 && insertAfterIdx >= 0) {
+      const box = buildSupportSection(
+        `section-${insertAfterIdx}`,
+        "What you need to do",
+        steps,
+      );
+      result.splice(insertAfterIdx + 1, 0, box);
+    }
+    currentGroup = [];
+    insertAfterIdx = -1;
+  };
+
+  for (const section of sections) {
+    const isHeader = isSectionHeader(section);
+    if (isHeader) {
+      flushGroup();
+      result.push(section);
+      insertAfterIdx = result.length - 1;
+      continue;
+    }
+    if (QUESTION_TYPES.has(section.type) && isTextualSection(section)) {
+      if (insertAfterIdx === -1) {
+        // No explicit header; insert the box before this first question
+        insertAfterIdx = result.length - 1;
+      }
+      currentGroup.push(section);
+    }
+    result.push(section);
   }
+  flushGroup();
   return result;
 }
 
@@ -892,11 +977,20 @@ function buildOlderLearnersSupport(sections: WorksheetSection[]): WorksheetSecti
 // ── Master SEND dispatcher ────────────────────────────────────────────────────
 function applySendSupport(sections: WorksheetSection[], sendNeed?: string | null): WorksheetSection[] {
   if (!sendNeed || sendNeed === "none" || sendNeed === "none-selected") return sections;
-  const key = sendNeed.toLowerCase().replace(/[\s_]/g, "-");
+  // Normalise the key. The UI may emit compound forms like
+  // "asc:asc-demand-avoidant" when an autism sub-profile is picked — treat
+  // everything after the colon as the authoritative id so the profile is
+  // routed correctly and still falls back to the ASC overlay if the profile
+  // is unrecognised.
+  const rawKey = sendNeed.toLowerCase().replace(/[\s_]/g, "-");
+  const key = rawKey.includes(":") ? rawKey.split(":").pop() || rawKey : rawKey;
 
   if (key === "dyslexia") return buildDyslexiaSupport(sections);
   if (key === "adhd") return buildAdhdSupport(sections);
-  if (key === "asc" || key === "autism" || key === "asperger") return buildAscSupport(sections);
+  if (
+    key === "asc" || key === "autism" || key === "asperger" ||
+    key.startsWith("asc-")
+  ) return buildAscSupport(sections);
   if (key === "esl" || key === "eal") return buildEalSupport(sections);
   if (key === "mld") return buildMldSupport(sections);
   if (key === "slcn") return buildSlcnSupport(sections);
