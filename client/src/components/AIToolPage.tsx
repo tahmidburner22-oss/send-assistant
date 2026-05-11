@@ -16,6 +16,8 @@ import {
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { callAI } from "@/lib/ai";
+import { callAIStream, supportsStreaming } from "@/lib/callAIStream";
+import { StreamedOutput } from "@/components/StreamedOutput";
 import { renderMath } from "@/components/WorksheetRenderer";
 import { downloadHtmlAsPdf, printWorksheetElement } from "@/lib/pdf-generator-v2";
 import { useApp } from "@/contexts/AppContext";
@@ -26,6 +28,7 @@ import { useUserPreferences } from "@/contexts/UserPreferencesContext";
 import { useDraftAutosave } from "@/hooks/useDraftAutosave";
 import { useToolTelemetry } from "@/hooks/useToolTelemetry";
 import { scanFormValues, maxSeverity, summariseFindings } from "@/lib/piiScanner";
+import { AccessibilityPanel, type AccessibilityStyles } from "@/components/AccessibilityPanel";
 
 export interface AIToolField {
   id: string;
@@ -266,7 +269,17 @@ export default function AIToolPage({
       const hasContent = Object.values(saved).some(v => typeof v === "string" && v.trim() !== "");
       if (hasContent) {
         // Defer state update to avoid setting state during render
-        setTimeout(() => { setValues(prev => ({ ...prev, ...saved })); }, 0);
+        setTimeout(() => {
+          setValues(prev => ({ ...prev, ...saved }));
+          toast("Draft restored from your last session", {
+            duration: 5000,
+            action: {
+              label: "Discard",
+              onClick: () => { discardDraft(); setValues(mergedInitial); },
+            },
+          });
+          telemetry.fire("draft_restored");
+        }, 0);
       }
     }
     setDraftRestored(true);
@@ -274,6 +287,17 @@ export default function AIToolPage({
 
   // ── Phase 1: Telemetry ─────────────────────────────────────────────────────
   const telemetry = useToolTelemetry(toolSlug);
+
+  // ── Accessibility controls state ───────────────────────────────────────────
+  const [a11yStyles, setA11yStyles] = useState<AccessibilityStyles>({
+    fontSize: 14,
+    fontFamily: "inherit",
+    backgroundColor: "#FFFFFF",
+  });
+
+  // ── Streaming state ────────────────────────────────────────────────────────
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [streamedText, setStreamedText] = useState("");
 
   const handleAssign = (childId: string) => {
     if (!result) return;
@@ -310,17 +334,45 @@ export default function AIToolPage({
     const endTimer = telemetry.startTimer("generate_start");
     setLoading(true);
     setResult(null);
+    setStreamedText("");
+    setIsStreaming(false);
     setEditMode("none");
     try {
       const { system, user, maxTokens } = buildPrompt(values);
-      const { text, provider: p } = await callAI(system, user, maxTokens || 2500);
-      setResult(text);
-      setProvider(p);
-      onResult?.(text, values);
-      discardDraft(); // successful generation — clear the saved draft
-      endTimer("success", { provider: p });
-      toast.success("Generated successfully!");
+
+      // Use streaming if supported — gives ~3x perceived speed improvement
+      if (supportsStreaming()) {
+        setLoading(false); // Hide full-screen spinner — streaming shows progress inline
+        setIsStreaming(true);
+        let accumulated = "";
+        let streamProvider = "";
+        for await (const chunk of callAIStream(system, user, maxTokens || 2500)) {
+          if (chunk.provider) streamProvider = chunk.provider;
+          if (chunk.text) {
+            accumulated += chunk.text;
+            setStreamedText(accumulated);
+          }
+          if (chunk.done) break;
+        }
+        setIsStreaming(false);
+        setResult(accumulated);
+        setProvider(streamProvider);
+        onResult?.(accumulated, values);
+        discardDraft();
+        endTimer("success", { provider: streamProvider });
+        toast.success("Generated successfully!");
+      } else {
+        // Fallback: non-streaming
+        const { text, provider: p } = await callAI(system, user, maxTokens || 2500);
+        setResult(text);
+        setProvider(p);
+        onResult?.(text, values);
+        discardDraft();
+        endTimer("success", { provider: p });
+        toast.success("Generated successfully!");
+      }
     } catch (err) {
+      setIsStreaming(false);
       endTimer("fail", { errorCode: (err as any)?.message?.slice(0, 64) || "unknown" });
       toast.error("Generation failed. Please try again.");
       console.error(err);
@@ -435,7 +487,7 @@ export default function AIToolPage({
           </div>
         )}
 
-        {!result ? (
+        {!result && !isStreaming ? (
           <Card className="border-border/50">
             <CardContent className="p-4 space-y-4">
               <div className="grid grid-cols-2 gap-3">
@@ -492,11 +544,29 @@ export default function AIToolPage({
               </Button>
             </CardContent>
           </Card>
+        ) : isStreaming && !result ? (
+          /* Streaming in progress — show progressive text */
+          <div className="space-y-3">
+            <Card className="border-border/50">
+              <CardContent className="p-6">
+                <StreamedOutput
+                  text={streamedText}
+                  isStreaming={true}
+                  className="min-h-[120px]"
+                  style={{
+                    fontSize: `${a11yStyles.fontSize}px`,
+                    fontFamily: a11yStyles.fontFamily,
+                    backgroundColor: a11yStyles.backgroundColor,
+                  }}
+                />
+              </CardContent>
+            </Card>
+          </div>
         ) : (
           <div className="space-y-3">
             {/* Toolbar */}
             <div className="flex flex-wrap gap-2 items-center">
-              <Button variant="outline" size="sm" onClick={() => { setResult(null); setEditMode("none"); }}>
+              <Button variant="outline" size="sm" onClick={() => { setResult(null); setStreamedText(""); setEditMode("none"); }}>
                 <ChevronLeft className="w-3.5 h-3.5 mr-1" />New
               </Button>
               {provider && isPlatformAdmin && (
@@ -637,8 +707,18 @@ export default function AIToolPage({
 
             {/* Output — hidden in manual edit mode */}
             {editMode !== "manual" && (
+              <>
+              <AccessibilityPanel onChange={setA11yStyles} className="mb-2" />
               <Card className="border-border/50">
-                <CardContent className={isLessonPlan ? "p-6" : "p-6"} ref={outputRef}>
+                <CardContent
+                  className={isLessonPlan ? "p-6" : "p-6"}
+                  ref={outputRef}
+                  style={{
+                    fontSize: `${a11yStyles.fontSize}px`,
+                    fontFamily: a11yStyles.fontFamily,
+                    backgroundColor: a11yStyles.backgroundColor,
+                  }}
+                >
                   {isLessonPlan && result ? (
                     <LessonPlanRenderer
                       text={result}
@@ -668,6 +748,7 @@ export default function AIToolPage({
                   )}
                 </CardContent>
               </Card>
+              </>
             )}
 
             <Button variant="outline" onClick={handleGenerate} disabled={loading} className="w-full">
