@@ -7,7 +7,9 @@ export const LANDING_FONT_HREFS = [
 ];
 
 export const LANDING_CSS = `
-.adaptly-landing { background: linear-gradient(180deg,#F4F0E6 0%,#EFEADC 100%); color:#22201E; font-family:'Manrope',system-ui,sans-serif; -webkit-font-smoothing:antialiased; }
+/* Editorial Swiss Humanism: warm paper, precise evidence-led sections, restrained motion, and no artificial scroll dead zones. */
+html[data-landing-variant="overdrive"], html[data-landing-variant="overdrive"] body { overflow-x: clip; }
+.adaptly-landing { background: linear-gradient(180deg,#F4F0E6 0%,#EFEADC 100%); color:#22201E; font-family:'Manrope',system-ui,sans-serif; -webkit-font-smoothing:antialiased; overflow-x: clip; }
 .adaptly-landing::before { content:''; position:fixed; inset:0; pointer-events:none; z-index:1; opacity:0.05; mix-blend-mode:multiply; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.6'/%3E%3C/svg%3E"); }
 
 .adaptly-landing .font-display { font-family:'Instrument Serif',serif; font-weight:400; letter-spacing:-0.02em; }
@@ -83,8 +85,8 @@ html.lenis-active { scroll-behavior: auto; }
 /* Slightly punchier glass for the locked Overdrive look */
 .adaptly-landing .glass {
   background: rgba(255,255,255,0.55);
-  backdrop-filter: blur(28px) saturate(150%);
-  -webkit-backdrop-filter: blur(28px) saturate(150%);
+  backdrop-filter: blur(16px) saturate(135%);
+  -webkit-backdrop-filter: blur(16px) saturate(135%);
 }
 
 /* Mobile — tighten the default py-14 md:py-20 sections so we don't get long
@@ -98,11 +100,17 @@ html.lenis-active { scroll-behavior: auto; }
   }
 }
 
-@media (max-height: 500px) and (orientation: landscape) {
-  .adaptly-landing section[class*="py-14"] {
-    padding-top: 2.5rem !important;
-    padding-bottom: 2.5rem !important;
+@media (max-height: 900px) and (orientation: landscape) and (max-width: 1179px) {
+  .adaptly-landing section[class*="py-14"],
+  .adaptly-landing section[class*="py-20"],
+  .adaptly-landing section[class*="py-24"] {
+    padding-top: 2.75rem !important;
+    padding-bottom: 2.75rem !important;
   }
+  .adaptly-landing h1 { font-size: clamp(3.4rem, 8vw, 5.8rem) !important; line-height: .92 !important; }
+  .adaptly-landing h2 { font-size: clamp(2.4rem, 6vw, 4.2rem) !important; }
+  .adaptly-landing [data-testid="hero-ecosystem"] { max-height: 44vh; }
+  .adaptly-landing [data-testid="hero-stats"] { margin-top: 1rem !important; }
 }
 
 /* Hide the native cursor on pointer-fine devices so the custom one can shine.
@@ -125,7 +133,7 @@ html.lenis-active { scroll-behavior: auto; }
 /* Ensure large display text never clips descenders when animated into view */
 .adaptly-landing h1, .adaptly-landing h2, .adaptly-landing h3 { padding-bottom: 0.04em; }
 
-@media (prefers-reduced-motion: reduce) { .adaptly-landing * { animation-duration:.01ms !important; transition-duration:.01ms !important; } }
+@media (prefers-reduced-motion: reduce) { .adaptly-landing * { animation-duration:.01ms !important; transition-duration:.01ms !important; scroll-behavior:auto !important; } }
 `;
 
 export function injectLandingStyles() {

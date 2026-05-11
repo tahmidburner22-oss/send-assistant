@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 
 // ──────────────────────────────────────────────────────────────────
+// Editorial Swiss Humanism: the pupil journey should feel indexed and efficient, not padded.
 // Pinned vertical scroll storytelling — one pupil's journey through
 // Adaptly across 8 connected steps. Same visual language throughout.
 // ──────────────────────────────────────────────────────────────────
@@ -570,7 +571,12 @@ export default function Process() {
   const [isDesktop, setIsDesktop] = useState(true);
 
   useEffect(() => {
-    const check = () => setIsDesktop(window.innerWidth >= 1024 && !(window.innerHeight < 500 && window.innerWidth < 1200));
+    const check = () => {
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      const tabletLandscape = w < 1180 && h <= 900;
+      setIsDesktop(w >= 1180 && h >= 650 && !tabletLandscape);
+    };
     check();
     window.addEventListener("resize", check);
     return () => window.removeEventListener("resize", check);
@@ -645,14 +651,14 @@ export default function Process() {
   }
 
   // ── Desktop — pinned scroll storytelling ─────────────────────
-  // Each step = 55vh of scroll (was 80vh — shortened to reduce dead space).
+  // Each step = 38vh of scroll: enough for the pinned narrative to read, without dead scroll.
   return (
     <section
       ref={ref}
       id="process"
       data-testid="process-section"
       className="relative bg-gradient-to-b from-cream-100 via-cream-50 to-cream-100"
-      style={{ height: `${STEPS.length * 55}vh` }}
+      style={{ height: `${STEPS.length * 38 + 100}vh` }}
     >
       <div className="sticky top-0 h-screen overflow-hidden">
         {/* Decorative glows */}

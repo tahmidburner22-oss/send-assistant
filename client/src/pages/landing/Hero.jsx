@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 
 // ────────────────────────────────────────────────────────────────
+// Editorial Swiss Humanism: the hero is an editorial first impression, not an oversized scroll trap.
 // Hero — sticky scroll scene.
 // Desktop (≥1024px): 200vh of scroll. Three title messages cycle through
 //   as you scroll (only one in the DOM at a time so there's no overlap
@@ -85,6 +86,18 @@ function useHeroLayout() {
     const compute = () => {
       const w = window.innerWidth;
       const h = window.innerHeight;
+      const tabletLandscape = w >= 640 && w < 1180 && h <= 900;
+      if (tabletLandscape) {
+        setLayout({
+          sceneHeight: "auto",
+          orbitRadius: 172,
+          orbitCount: 8,
+          enableTitleMorph: false,
+          mouseParallaxRange: 0,
+          sticky: false,
+        });
+        return;
+      }
       if (h < 500 && w < 1200) {
         // Landscape phone — use mobile config
         setLayout({
@@ -108,7 +121,7 @@ function useHeroLayout() {
         });
       } else if (w < 1024) {
         setLayout({
-          sceneHeight: "160vh",
+          sceneHeight: "135vh",
           orbitRadius: 195,
           orbitCount: 8,
           enableTitleMorph: true,
@@ -117,7 +130,7 @@ function useHeroLayout() {
         });
       } else {
         setLayout({
-          sceneHeight: "200vh",
+          sceneHeight: "155vh",
           orbitRadius: 260,
           orbitCount: 10,
           enableTitleMorph: true,
@@ -496,8 +509,8 @@ export default function Hero() {
           }
           className={
             layout.sticky
-              ? "relative h-full flex items-center pt-24 sm:pt-28 pb-12 sm:pb-16"
-              : "relative flex items-center pt-24 pb-14 min-h-[100svh]"
+              ? "relative h-full flex items-center pt-20 sm:pt-24 pb-10 sm:pb-12"
+              : "relative flex items-center pt-20 sm:pt-22 pb-10 min-h-[auto] sm:min-h-[100svh]"
           }
         >
           <div className="max-w-7xl mx-auto w-full px-5 sm:px-6 md:px-10 grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-10 lg:gap-8 items-center">
@@ -520,7 +533,7 @@ export default function Hero() {
               {/* Fixed-height title container so swapping active title
                   doesn't reflow the rest of the column. Sized for 3 lines
                   at the largest breakpoint plus descender padding. */}
-              <div className="mt-5 sm:mt-6 relative min-h-[180px] sm:min-h-[220px] md:min-h-[260px] lg:min-h-[320px]">
+              <div className="mt-5 sm:mt-6 relative min-h-[170px] sm:min-h-[205px] md:min-h-[230px] lg:min-h-[285px]">
                 <ActiveTitle activeIndex={activeIndex} />
               </div>
 
@@ -593,7 +606,7 @@ export default function Hero() {
                 the connecting lines always point to the wheel's centre. */}
             <motion.div
               style={{ x: sx, y: sy }}
-              className="lg:col-span-7 order-1 lg:order-2 relative h-[340px] sm:h-[460px] md:h-[540px] lg:h-[640px]"
+              className="lg:col-span-7 order-1 lg:order-2 relative h-[300px] sm:h-[390px] md:h-[440px] lg:h-[560px]"
               data-testid="hero-ecosystem"
             >
               <OrbitTiles

@@ -45,7 +45,9 @@ import Contact from "./landing/Contact.jsx";
 import Footer from "./landing/Footer.jsx";
 
 function LandingInner() {
-  useLenis();
+  // Editorial Swiss Humanism: native scroll keeps the long evidence-led page precise, responsive, and predictable.
+  // Lenis added an extra RAF loop over many pinned Framer Motion scenes, causing noticeable landing-page lag.
+  useLenis({ enabled: false });
   return (
     <div className="adaptly-landing min-h-screen relative overflow-x-hidden">
       <Nav />
