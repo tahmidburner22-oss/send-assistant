@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef } from "react";
 import { callAI } from "@/lib/ai";
 import { downloadHtmlAsPdf } from "@/lib/pdf-generator-v2";
-import { Layers, RotateCcw, ChevronLeft, ChevronRight, Shuffle, Printer, Check, X, Download } from "lucide-react";
+import { Layers, RotateCcw, ChevronLeft, ChevronRight, Shuffle, Printer, Check, X, Download, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -13,6 +13,62 @@ const subjects = ["English","Maths","Science","History","Geography","RE","PSHE",
 const years = ["Reception","Year 1","Year 2","Year 3","Year 4","Year 5","Year 6","Year 7","Year 8","Year 9","Year 10","Year 11","Year 12","Year 13"].map(y => ({ value: y, label: y }));
 
 interface Card { front: string; back: string; hint?: string; }
+
+// --- SM-2 Spaced Repetition ---
+
+interface SM2Data {
+  ease: number;        // ease factor, default 2.5, min 1.3
+  interval: number;    // days until next review
+  repetitions: number; // consecutive correct answers
+  nextReview: number;  // timestamp (ms) when card is next due
+}
+
+interface SM2Card extends Card {
+  sm2: SM2Data;
+  cardKey: string; // unique key for localStorage lookup
+}
+
+const SM2_STORAGE_KEY = "adaptly_flashcards_sm2";
+
+function getStoredSM2(): Record<string, SM2Data> {
+  try {
+    const stored = localStorage.getItem(SM2_STORAGE_KEY);
+    return stored ? JSON.parse(stored) : {};
+  } catch {
+    return {};
+  }
+}
+
+function saveSM2(data: Record<string, SM2Data>) {
+  try {
+    localStorage.setItem(SM2_STORAGE_KEY, JSON.stringify(data));
+  } catch {}
+}
+
+function makeCardKey(subject: string, topic: string, front: string): string {
+  return `${subject}|${topic}|${front}`.toLowerCase().trim();
+}
+
+function sm2Update(data: SM2Data, quality: number): SM2Data {
+  let { ease, interval, repetitions } = data;
+
+  if (quality >= 3) {
+    if (repetitions === 0) interval = 1;
+    else if (repetitions === 1) interval = 6;
+    else interval = Math.round(interval * ease);
+    repetitions += 1;
+  } else {
+    interval = 1;
+    repetitions = 0;
+  }
+
+  ease = ease + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02));
+  if (ease < 1.3) ease = 1.3;
+
+  const nextReview = Date.now() + interval * 24 * 60 * 60 * 1000;
+
+  return { ease, interval, repetitions, nextReview };
+}
 
 /** Parse AI output into Card objects */
 function parseCards(text: string): Card[] {
@@ -43,7 +99,7 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 /** Interactive flip-card study mode */
-function StudyMode({ cards, onReset }: { cards: Card[]; onReset: () => void }) {
+function StudyMode({ cards, onReset, onSM2Update }: { cards: SM2Card[]; onReset: () => void; onSM2Update: (cardKey: string, sm2: SM2Data) => void }) {
   const [deck, setDeck]           = useState(cards);
   const [idx, setIdx]             = useState(0);
   const [flipped, setFlipped]     = useState(false);
@@ -51,22 +107,38 @@ function StudyMode({ cards, onReset }: { cards: Card[]; onReset: () => void }) {
   const [unsure, setUnsure]       = useState<Set<number>>(new Set());
   const [showHint, setShowHint]   = useState(false);
   const [pdfLoading, setPdfLoading] = useState(false);
+  const [showDueOnly, setShowDueOnly] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
 
-  const card = deck[idx];
-  const progress = `${idx + 1} / ${deck.length}`;
+  const filteredDeck = showDueOnly
+    ? deck.filter(c => c.sm2.nextReview <= Date.now())
+    : deck;
 
-  const next = useCallback(() => { setFlipped(false); setShowHint(false); setIdx(i => Math.min(i + 1, deck.length - 1)); }, [deck.length]);
+  const card = filteredDeck[idx];
+  const progress = filteredDeck.length > 0 ? `${idx + 1} / ${filteredDeck.length}` : "0 / 0";
+  const dueCount = deck.filter(c => c.sm2.nextReview <= Date.now()).length;
+
+  const next = useCallback(() => { setFlipped(false); setShowHint(false); setIdx(i => Math.min(i + 1, filteredDeck.length - 1)); }, [filteredDeck.length]);
   const prev = useCallback(() => { setFlipped(false); setShowHint(false); setIdx(i => Math.max(i - 1, 0)); }, []);
 
   const markKnown = () => {
     setKnown(s => new Set([...s, idx]));
     setUnsure(s => { const n = new Set(s); n.delete(idx); return n; });
+    if (card) {
+      const updated = sm2Update(card.sm2, 4);
+      onSM2Update(card.cardKey, updated);
+      card.sm2 = updated;
+    }
     next();
   };
   const markUnsure = () => {
     setUnsure(s => new Set([...s, idx]));
     setKnown(s => { const n = new Set(s); n.delete(idx); return n; });
+    if (card) {
+      const updated = sm2Update(card.sm2, 1);
+      onSM2Update(card.cardKey, updated);
+      card.sm2 = updated;
+    }
     next();
   };
 
@@ -84,18 +156,45 @@ function StudyMode({ cards, onReset }: { cards: Card[]; onReset: () => void }) {
     setPdfLoading(false);
   };
 
-  const knownPct  = Math.round((known.size  / deck.length) * 100);
-  const unsurePct = Math.round((unsure.size / deck.length) * 100);
+  const knownPct  = filteredDeck.length > 0 ? Math.round((known.size  / filteredDeck.length) * 100) : 0;
+  const unsurePct = filteredDeck.length > 0 ? Math.round((unsure.size / filteredDeck.length) * 100) : 0;
 
   return (
     <div className="space-y-4">
+      {/* Due today filter + review stats */}
+      <div className="flex items-center justify-between">
+        <Button
+          variant={showDueOnly ? "default" : "outline"}
+          size="sm"
+          onClick={() => { setShowDueOnly(d => !d); setIdx(0); setFlipped(false); setShowHint(false); setKnown(new Set()); setUnsure(new Set()); }}
+          className={`gap-1.5 text-xs font-semibold ${showDueOnly ? "bg-indigo-600 hover:bg-indigo-700 text-white" : "text-indigo-700 border-indigo-200 hover:bg-indigo-50"}`}
+        >
+          <Clock className="w-3.5 h-3.5" />
+          Due today ({dueCount})
+        </Button>
+        <div className="flex gap-3 text-xs text-gray-500">
+          <span>{deck.length} total cards</span>
+          <span className="text-indigo-600 font-medium">{dueCount} due</span>
+        </div>
+      </div>
+
+      {filteredDeck.length === 0 ? (
+        <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-6 text-center">
+          <p className="font-bold text-emerald-800 text-sm">All caught up! No cards due for review.</p>
+          <p className="text-xs text-emerald-600 mt-1">Come back later when more cards are due, or disable the filter to study all cards.</p>
+          <Button size="sm" variant="outline" onClick={() => setShowDueOnly(false)} className="mt-3 text-xs">
+            Show all cards
+          </Button>
+        </div>
+      ) : (
+      <>
       {/* Progress bar */}
       <div className="flex items-center justify-between text-sm text-gray-500">
         <span className="font-semibold text-gray-700">{progress}</span>
         <div className="flex gap-3 text-xs">
-          <span className="text-emerald-600 font-semibold">✓ Known: {known.size}</span>
+          <span className="text-emerald-600 font-semibold">&#10003; Known: {known.size}</span>
           <span className="text-amber-600 font-semibold">? Unsure: {unsure.size}</span>
-          <span className="text-gray-400">{deck.length - known.size - unsure.size} remaining</span>
+          <span className="text-gray-400">{filteredDeck.length - known.size - unsure.size} remaining</span>
         </div>
       </div>
 
@@ -165,7 +264,7 @@ function StudyMode({ cards, onReset }: { cards: Card[]; onReset: () => void }) {
           <Button variant="outline" size="sm" onClick={prev} disabled={idx === 0} className="gap-1">
             <ChevronLeft className="w-4 h-4" /> Prev
           </Button>
-          <Button variant="outline" size="sm" onClick={next} disabled={idx === deck.length - 1} className="gap-1">
+          <Button variant="outline" size="sm" onClick={next} disabled={idx === filteredDeck.length - 1} className="gap-1">
             Next <ChevronRight className="w-4 h-4" />
           </Button>
         </div>
@@ -186,19 +285,22 @@ function StudyMode({ cards, onReset }: { cards: Card[]; onReset: () => void }) {
       </div>
 
       {/* Completion message */}
-      {idx === deck.length - 1 && flipped && (
+      {idx === filteredDeck.length - 1 && flipped && (
         <div className="rounded-xl bg-indigo-50 border border-indigo-200 p-4 text-center">
           <p className="font-bold text-indigo-800 text-sm">End of deck! 🎉</p>
           <p className="text-xs text-indigo-600 mt-1">
-            Known: {known.size} · Still learning: {unsure.size} · Unreviewed: {deck.length - known.size - unsure.size}
+            Known: {known.size} · Still learning: {unsure.size} · Unreviewed: {filteredDeck.length - known.size - unsure.size}
           </p>
           {unsure.size > 0 && (
-            <Button size="sm" onClick={() => { setDeck(deck.filter((_, i) => unsure.has(i))); setIdx(0); setFlipped(false); setKnown(new Set()); setUnsure(new Set()); }}
+            <Button size="sm" onClick={() => { setDeck(filteredDeck.filter((_, i) => unsure.has(i))); setIdx(0); setFlipped(false); setKnown(new Set()); setUnsure(new Set()); setShowDueOnly(false); }}
               className="mt-2 bg-amber-500 hover:bg-amber-600 text-white text-xs gap-1">
               <RotateCcw className="w-3 h-3" /> Review {unsure.size} unsure card{unsure.size !== 1 ? "s" : ""}
             </Button>
           )}
         </div>
+      )}
+
+      </>
       )}
 
       {/* Printable + PDF card grid — each card split into QUESTION card + ANSWER card */}
@@ -241,7 +343,13 @@ export default function FlashCards() {
   const [sendAdapted,  setSendAdapted]  = useState("no");
   const [includeHints, setIncludeHints] = useState("yes");
   const [loading,      setLoading]      = useState(false);
-  const [cards,        setCards]        = useState<Card[] | null>(null);
+  const [cards,        setCards]        = useState<SM2Card[] | null>(null);
+
+  const handleSM2Update = useCallback((cardKey: string, sm2: SM2Data) => {
+    const store = getStoredSM2();
+    store[cardKey] = sm2;
+    saveSM2(store);
+  }, []);
 
   const handleGenerate = useCallback(async () => {
     if (!topic.trim()) { toast.error("Please enter a topic."); return; }
@@ -271,7 +379,17 @@ Requirements:
       );
       const parsed = parseCards(text);
       if (parsed.length === 0) throw new Error("No cards parsed");
-      setCards(parsed);
+      const sm2Store = getStoredSM2();
+      const enhancedCards: SM2Card[] = parsed.map(card => {
+        const cardKey = makeCardKey(subject, topic, card.front);
+        const existing = sm2Store[cardKey];
+        return {
+          ...card,
+          cardKey,
+          sm2: existing || { ease: 2.5, interval: 0, repetitions: 0, nextReview: 0 },
+        };
+      });
+      setCards(enhancedCards);
       toast.success(`${parsed.length} flash cards generated!`);
     } catch {
       toast.error("Failed to generate cards. Please try again.");
@@ -293,7 +411,7 @@ Requirements:
       </div>
 
       {cards ? (
-        <StudyMode cards={cards} onReset={() => setCards(null)} />
+        <StudyMode cards={cards} onReset={() => setCards(null)} onSM2Update={handleSM2Update} />
       ) : (
         <div className="space-y-4 bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
           <div className="grid grid-cols-2 gap-3">
