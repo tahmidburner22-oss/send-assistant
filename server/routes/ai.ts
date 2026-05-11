@@ -3319,15 +3319,16 @@ router.post("/cv", tryAuthForDocs, async (req: Request, res: Response) => {
   const access = await assertPupilDocAccess(req);
   if (!access.ok) return res.status(access.status).json({ error: access.message });
 
-  const { pupilName, yearGroup, schoolName, personalSummary, skills, achievements, workExperience, volunteering, interests, references } = req.body || {};
+  const { pupilName, yearGroup, schoolName, personalSummary, skills, achievements, workExperience, volunteering, interests, references, email, phone, location } = req.body || {};
 
-  const system = `You are a professional UK careers adviser who writes concise, high-impact single-page CVs for school-age students (Year 7–13). You write with specificity — no generic filler. You use action verbs and quantifiable outcomes where possible. British English spelling. Style must be clean and suitable for printing on one A4 page.`;
+  const system = `You are a professional UK careers adviser and CV editor. You write FlowCV-quality, ATS-friendly, single-page CVs for UK school-age students (Year 7–13). Use clean headings, relevant keywords, impact-focused bullets, honest evidence, and concise British English. The CV must work for first jobs, work experience, sixth-form, apprenticeships, or university enrichment applications without inventing facts.`;
 
   const user = `Generate a polished, printable, single-page CV for a UK school student.
 
 Pupil name: ${safeStr(pupilName, 120)}
 Year group: ${safeStr(yearGroup, 40)}
 School: ${safeStr(schoolName, 200)}
+Contact: ${[safeStr(email, 120), safeStr(phone, 80), safeStr(location, 120)].filter(Boolean).join(" | ")}
 
 Personal summary (rough notes):
 ${safeStr(personalSummary, 800)}
@@ -3348,7 +3349,7 @@ Interests: ${safeStr(interests, 400)}
 References: ${safeStr(references, 400)}
 
 OUTPUT RULES — follow strictly:
-- Return a single clean markdown document that fits on ONE A4 page when rendered.
+- Return a single clean markdown document designed for a polished one-page, FlowCV-style student CV preview.
 - Structure (use these exact H2 headings in this order):
   ## Profile
   ## Skills
@@ -3357,8 +3358,8 @@ OUTPUT RULES — follow strictly:
   ## Achievements
   ## Interests
   ## References
-- "Profile" is 2–3 punchy sentences.
-- "Skills" — 6–8 bullets, each a specific, evidenced skill (no empty adjectives).
+- "Profile" is 2 concise, specific sentences that summarise direction, strengths, and evidence.
+- "Skills" — 6–8 bullets, each a keyword-rich, evidenced skill suitable for ATS and human skim-reading.
 - "Experience" — each entry: bold role + organisation on one line, italic dates on next line, then 2–3 outcome-led bullets starting with an action verb.
 - "Education" — include the school and year group. If not provided, write a single line inviting the pupil to add their school.
 - "Achievements" — 3–5 specific bullets, include grades, awards, positions of responsibility.
@@ -3366,7 +3367,7 @@ OUTPUT RULES — follow strictly:
 - "References" — "Available on request" unless specific names given.
 - Use British English. No emojis. No markdown tables.
 - DO NOT invent experience or achievements that the user did not mention. If a section has no input, write "Ask ${safeStr(pupilName, 80) || "the pupil"} to add this." so it's visible but honest.
-- DO NOT exceed 550 words total — CV must fit on one page.
+- DO NOT exceed 470 words total — CV must fit on one page in a compact modern template.
 - Return ONLY the markdown, nothing else.`;
 
   try {
@@ -3389,7 +3390,7 @@ router.post("/personal-statement", tryAuthForDocs, async (req: Request, res: Res
   const targetLabel = safeStr(target, 40) || "sixth_form";
   const hardLimit = Math.min(Number(maxChars) || (targetLabel === "ucas" ? 4000 : 2000), 4000);
 
-  const system = `You are an expert UK careers and admissions adviser. You write clear, specific, genuine personal statements in British English for UK school students. No clichés ("I have always been passionate about…"), no hyperbole. Evidence every claim with a concrete example. Match the tone to the target audience (UCAS, sixth-form application, apprenticeship, school transition).`;
+  const system = `You are an expert UK careers, apprenticeship, sixth-form and admissions adviser. You write clear, specific, genuine personal statements for UK school students. Use British English, avoid clichés, and turn rough parent/student notes into structured, credible paragraphs. Every claim must be evidenced by a concrete detail from the notes, or omitted.`;
 
   const user = `Write a polished personal statement for a UK school student.
 
@@ -3415,12 +3416,12 @@ OUTPUT RULES — follow strictly:
 - Plain prose. No headings, no bullet points, no markdown.
 - British English.
 - Maximum ${hardLimit} characters INCLUDING spaces. If you exceed this, trim before returning.
-- Four paragraphs:
+- Four polished paragraphs with a natural admissions tone:
    1. Opening hook — a specific reason for pursuing this course/role/transition. No cliché openers.
    2. Academic/educational evidence — reference specific achievements from the notes.
    3. Broader experience — work, volunteering, extra-curricular — always tie back to the target.
    4. Forward-looking close — what the pupil will bring and what they want to learn.
-- Every paragraph must include at least one specific, checkable detail from the notes.
+- Every paragraph should include a specific, checkable detail from the notes where available; if notes are thin, be concise instead of generic.
 - Do NOT invent facts. If the notes are thin, keep the statement shorter and more focused rather than padding with generic claims.
 - Return ONLY the statement text, nothing else.`;
 
@@ -3442,7 +3443,7 @@ router.post("/cover-letter", tryAuthForDocs, async (req: Request, res: Response)
 
   const { pupilName, yearGroup, role, organisation, addressee, motivation, relevantExperience, skills, closing } = req.body || {};
 
-  const system = `You are an expert UK careers adviser who writes concise, specific cover letters for school-age students applying for work experience, apprenticeships, or Saturday jobs. Plain British English, professional tone, no filler.`;
+  const system = `You are an expert UK careers adviser and cover-letter editor. You write concise, specific one-page cover letters for school-age students applying for work experience, apprenticeships, Saturday jobs, and early career opportunities. Use plain British English, a professional but age-appropriate tone, and concrete evidence from the notes. No filler and no invented facts.`;
 
   const user = `Write a one-page cover letter for a UK school student.
 
@@ -3465,9 +3466,9 @@ Closing note:
 ${safeStr(closing, 400)}
 
 OUTPUT RULES:
-- Plain prose with standard letter layout (placeholder address block at top, date, addressee, body, sign-off).
+- Plain prose with standard UK letter layout: sender/contact placeholder, date, recipient/addressee, subject line if useful, body, and sign-off.
 - Use "Dear ${safeStr(addressee, 120) || "Hiring Manager"}," and end with "Yours sincerely" if the addressee is named, "Yours faithfully" otherwise.
-- Three body paragraphs: (1) what role you are applying for and why, (2) specific evidence you are a good fit, (3) courteous close with availability.
+- Three focused body paragraphs: (1) role and motivation, (2) specific evidence of fit using the notes, (3) courteous close with availability or next steps.
 - Maximum 350 words for the letter body (excluding address block).
 - British English. No markdown. No bullet points.
 - Do NOT invent facts beyond what is provided.
