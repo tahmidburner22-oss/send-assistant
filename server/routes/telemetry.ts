@@ -57,6 +57,7 @@ const ALLOWED_EVENTS = new Set([
   "pii_blocked",
   "tool_opened",
   "tool_closed",
+  "safeguarding_checkpoint_cleared",
 ]);
 
 // Slug validator: a-z, 0-9, dash — prevents injection and keeps analytics clean.

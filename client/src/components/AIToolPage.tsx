@@ -40,6 +40,8 @@ export interface AIToolField {
   span?: "full" | "half";
   maxLength?: number;
   hint?: string; // helper text shown below the field
+  disabled?: boolean;
+  onChange?: (value: string) => void;
 }
 
 interface AIToolPageProps {
@@ -499,8 +501,9 @@ export default function AIToolPage({
                     {field.type === "select" ? (
                       <select
                         value={values[field.id] || ""}
-                        onChange={e => setValue(field.id, e.target.value)}
-                        className="w-full h-10 px-3 text-sm border border-input rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-brand/30"
+                        disabled={field.disabled}
+                        onChange={e => { setValue(field.id, e.target.value); field.onChange?.(e.target.value); }}
+                        className={`w-full h-10 px-3 text-sm border border-input rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-brand/30 ${field.disabled ? "opacity-50 cursor-not-allowed" : ""}`}
                       >
                         <option value="">Select...</option>
                         {field.options?.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}

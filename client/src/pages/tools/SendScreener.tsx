@@ -20,10 +20,11 @@ import {
   CheckCircle2, Info, BookOpen, Brain, Eye, Activity,
   Calculator, MessageSquare, Heart, Lightbulb, ArrowRight,
   ExternalLink, Zap, Clock, FileDown, Printer, UserPlus, X,
-  Save, PlayCircle
+  Save, PlayCircle, BarChart3, FileText, Copy
 } from "lucide-react";
 import { useApp } from "@/contexts/AppContext";
-import { aiRewriteTextToReadingAge } from "@/lib/ai";
+import { aiRewriteTextToReadingAge, callAI } from "@/lib/ai";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface Question {
@@ -542,6 +543,15 @@ export default function SendScreener() {
   const [progressAssignmentId, setProgressAssignmentId] = useState<string | null>(null);
   const [progressAssignmentChildId, setProgressAssignmentChildId] = useState<string | null>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
+  // Pupil initials for longitudinal tracking
+  const [pupilInitials, setPupilInitials] = useState("");
+  // History view state
+  const [showHistory, setShowHistory] = useState(false);
+  const [historyData, setHistoryData] = useState<Array<{ pupilInitials: string; date: string; scores: Record<string, number>; overallScore: number; timestamp: number }>>([]);
+  // EP Referral Letter state
+  const [showEPLetter, setShowEPLetter] = useState(false);
+  const [epLetterText, setEpLetterText] = useState("");
+  const [epLetterLoading, setEpLetterLoading] = useState(false);
 
   // Active question set depends on mode
   const activeQuestions = screenerMode === "quick" ? QUICK_QUESTIONS : ALL_QUESTIONS;
@@ -550,6 +560,33 @@ export default function SendScreener() {
   const currentItem = activeQuestions[currentQuestionIndex];
   const currentAnswer = currentItem ? answers[currentItem.question.id] : undefined;
   const progress = (currentQuestionIndex / totalQ) * 100;
+
+  // Save results to localStorage when screener is completed
+  useEffect(() => {
+    if (step === "results" && pupilInitials) {
+      const scores: Record<string, number> = {};
+      let total = 0;
+      SECTIONS.forEach(section => {
+        const pct = getPercentage(answers, section);
+        scores[section.id] = pct;
+        total += pct;
+      });
+      const overallScore = Math.round(total / SECTIONS.length);
+      const result = {
+        pupilInitials,
+        date: new Date().toISOString(),
+        scores,
+        overallScore,
+        timestamp: Date.now(),
+      };
+      try {
+        const key = `sendscreener_results_${pupilInitials}`;
+        const existing = JSON.parse(localStorage.getItem(key) || "[]");
+        existing.push(result);
+        localStorage.setItem(key, JSON.stringify(existing));
+      } catch {}
+    }
+  }, [step]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Auto-advance after answering
   // Restore in-progress state from ?resume= URL param (set by parent portal)
@@ -870,6 +907,20 @@ export default function SendScreener() {
               </div>
             </div>
           )}
+          {/* Pupil Initials */}
+          <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
+            <h2 className="font-semibold text-gray-900 mb-3">Pupil Initials</h2>
+            <p className="text-sm text-gray-600 mb-3">Enter the pupil's initials to track results over time (used for longitudinal comparison).</p>
+            <input
+              type="text"
+              value={pupilInitials}
+              onChange={e => setPupilInitials(e.target.value.toUpperCase().slice(0, 5))}
+              placeholder="e.g. JB"
+              className="w-full h-10 px-3 text-sm border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-indigo-300 uppercase font-bold tracking-wider"
+              maxLength={5}
+            />
+          </div>
+
           <button
             onClick={() => setStep("mode-select")}
             className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-6 rounded-2xl transition-all flex items-center justify-center gap-2 text-base shadow-lg shadow-indigo-200 active:scale-95"
@@ -1622,6 +1673,70 @@ export default function SendScreener() {
             Start Again
           </button>
 
+          {/* Row 3b: View History */}
+          {pupilInitials && (
+            <button
+              onClick={() => {
+                try {
+                  const key = `sendscreener_results_${pupilInitials}`;
+                  const data = JSON.parse(localStorage.getItem(key) || "[]");
+                  setHistoryData(data);
+                  setShowHistory(true);
+                } catch { setHistoryData([]); setShowHistory(true); }
+              }}
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-cyan-600 hover:bg-cyan-700 text-white text-sm font-bold transition-colors shadow-lg shadow-cyan-200"
+            >
+              <BarChart3 className="w-4 h-4" />
+              View History ({pupilInitials})
+            </button>
+          )}
+
+          {/* Row 3c: Generate EP Referral Letter */}
+          {(highResults.length > 0 || moderateResults.length > 0) && (
+            <button
+              onClick={async () => {
+                setEpLetterLoading(true);
+                setShowEPLetter(true);
+                setEpLetterText("");
+                const sections = SECTIONS.map(s => ({
+                  title: s.title,
+                  score: getPercentage(answers, s),
+                }));
+                const highConcerns = sections.filter(s => s.score >= 55).map(s => s.title);
+                const system = "You are an experienced UK SENCO writing a formal referral letter to an Educational Psychologist. Use professional, evidence-based language and reference the SEND Code of Practice 2015.";
+                const user = `Generate a formal EP referral letter for a pupil with these screening results:
+Pupil Initials: ${pupilInitials || "N/A"}
+Screening Date: ${new Date().toLocaleDateString("en-GB")}
+
+Screening Scores (% indicates likelihood of need):
+${sections.map(s => `- ${s.title}: ${s.score}%`).join("\n")}
+
+High concern areas: ${highConcerns.length > 0 ? highConcerns.join(", ") : "None above threshold"}
+
+Please include:
+1. Reason for referral
+2. Screening evidence summary
+3. Observed indicators
+4. School-based interventions already tried
+5. What assessments are being requested
+6. Parent/carer views (placeholder for teacher to complete)
+
+Format as a formal letter with appropriate headers and professional tone.`;
+                try {
+                  const { text } = await callAI(system, user, 2500);
+                  setEpLetterText(text);
+                } catch (err) {
+                  setEpLetterText("Error generating letter. Please try again.");
+                }
+                setEpLetterLoading(false);
+              }}
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold transition-colors shadow-lg shadow-emerald-200"
+            >
+              <FileText className="w-4 h-4" />
+              Generate EP Referral Letter
+            </button>
+          )}
+
           {/* Row 4: Generate SMART Targets from high/moderate areas */}
           {(highResults.length > 0 || moderateResults.length > 0) && (
             <button
@@ -1720,6 +1835,124 @@ export default function SendScreener() {
                     >
                       Assign Results
                     </button>
+                  </>
+                )}
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* View History Dialog */}
+        <AnimatePresence>
+          {showHistory && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+              onClick={e => { if (e.target === e.currentTarget) setShowHistory(false); }}
+            >
+              <motion.div
+                initial={{ y: 60, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: 60, opacity: 0 }}
+                className="bg-white rounded-2xl p-6 w-full max-w-2xl shadow-2xl max-h-[80vh] overflow-y-auto"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-bold text-gray-900 text-lg">Score History: {pupilInitials}</h3>
+                  <button onClick={() => setShowHistory(false)} className="text-gray-400 hover:text-gray-600">
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+                {historyData.length < 2 ? (
+                  <div className="text-center py-8">
+                    <BarChart3 className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+                    <p className="text-gray-500 font-medium">Not enough data for a chart</p>
+                    <p className="text-sm text-gray-400 mt-1">Complete the screener at least twice for the same pupil to see trends over time.</p>
+                  </div>
+                ) : (
+                  <div className="w-full h-80">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={historyData.map(d => ({
+                        date: new Date(d.date).toLocaleDateString("en-GB", { day: "numeric", month: "short" }),
+                        ...d.scores,
+                      }))}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="date" fontSize={12} />
+                        <YAxis domain={[0, 100]} fontSize={12} tickFormatter={(v) => `${v}%`} />
+                        <Tooltip formatter={(value: number) => `${value}%`} />
+                        <Legend />
+                        <Line type="monotone" dataKey="dyslexia" stroke="#7c3aed" name="Dyslexia" strokeWidth={2} dot={{ r: 3 }} />
+                        <Line type="monotone" dataKey="adhd" stroke="#ea580c" name="ADHD" strokeWidth={2} dot={{ r: 3 }} />
+                        <Line type="monotone" dataKey="asc" stroke="#2563eb" name="Autism" strokeWidth={2} dot={{ r: 3 }} />
+                        <Line type="monotone" dataKey="dyspraxia" stroke="#16a34a" name="Dyspraxia" strokeWidth={2} dot={{ r: 3 }} />
+                        <Line type="monotone" dataKey="dyscalculia" stroke="#0d9488" name="Dyscalculia" strokeWidth={2} dot={{ r: 3 }} />
+                        <Line type="monotone" dataKey="slcn" stroke="#db2777" name="SLCN" strokeWidth={2} dot={{ r: 3 }} />
+                        <Line type="monotone" dataKey="anxiety" stroke="#e11d48" name="Anxiety" strokeWidth={2} dot={{ r: 3 }} />
+                        <Line type="monotone" dataKey="mld" stroke="#d97706" name="MLD" strokeWidth={2} dot={{ r: 3 }} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                )}
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* EP Referral Letter Dialog */}
+        <AnimatePresence>
+          {showEPLetter && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+              onClick={e => { if (e.target === e.currentTarget) { setShowEPLetter(false); } }}
+            >
+              <motion.div
+                initial={{ y: 60, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: 60, opacity: 0 }}
+                className="bg-white rounded-2xl p-6 w-full max-w-2xl shadow-2xl max-h-[80vh] overflow-y-auto"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-bold text-gray-900 text-lg">EP Referral Letter</h3>
+                  <button onClick={() => setShowEPLetter(false)} className="text-gray-400 hover:text-gray-600">
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+                {epLetterLoading ? (
+                  <div className="text-center py-12">
+                    <div className="w-8 h-8 border-3 border-emerald-200 border-t-emerald-600 rounded-full animate-spin mx-auto mb-3" />
+                    <p className="text-gray-500 font-medium">Generating referral letter...</p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 mb-4 whitespace-pre-wrap text-sm text-gray-700 leading-relaxed font-mono">
+                      {epLetterText}
+                    </div>
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => { navigator.clipboard.writeText(epLetterText); }}
+                        className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 border-gray-300 hover:border-gray-400 text-gray-700 text-sm font-semibold transition-colors"
+                      >
+                        <Copy className="w-4 h-4" />
+                        Copy
+                      </button>
+                      <button
+                        onClick={() => {
+                          const printWindow = window.open("", "_blank", "width=900,height=700");
+                          if (!printWindow) return;
+                          printWindow.document.write(`<!DOCTYPE html><html><head><title>EP Referral Letter</title><style>body{font-family:Arial,sans-serif;padding:40px;font-size:14px;line-height:1.8;color:#1f2937;white-space:pre-wrap;}@media print{@page{margin:20mm;}}</style></head><body>${epLetterText.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</body></html>`);
+                          printWindow.document.close();
+                          setTimeout(() => printWindow.print(), 500);
+                        }}
+                        className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-gray-800 hover:bg-gray-900 text-white text-sm font-semibold transition-colors"
+                      >
+                        <Printer className="w-4 h-4" />
+                        Print
+                      </button>
+                    </div>
                   </>
                 )}
               </motion.div>
