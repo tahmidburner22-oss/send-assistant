@@ -14,7 +14,7 @@
 import { Router, Request, Response } from "express";
 import { v4 as uuidv4 } from "uuid";
 import db from "../db/index.js";
-import { requireAuth } from "../middleware/auth.js";
+import { tryAuthOptional } from "../middleware/auth.js";
 
 const router = Router();
 
@@ -37,54 +37,28 @@ async function resolvePupilAccess(req: Request): Promise<
   }
 
   const parentCode = (req.headers["x-parent-code"] as string) || (req.query.code as string) || "";
-  if (parentCode && parentCode.toUpperCase().trim() === (pupil.code || "").toUpperCase()) {
-    return { pupil, role: "parent", userId: null };
+  if (parentCode) {
+    const normalised = parentCode.trim().toUpperCase();
+    const pupilCode = (pupil.code || "").toString().trim().toUpperCase();
+    const parentAccessCode = (pupil.parent_access_code || "").toString().trim().toUpperCase();
+    if (normalised && (normalised === pupilCode || normalised === parentAccessCode)) {
+      return { pupil, role: "parent", userId: null };
+    }
   }
 
   return { error: "Access denied", status: 403 };
 }
 
 // Parent routes don't require requireAuth (they use x-parent-code). Teacher
-// routes need a valid session. We try to authenticate without responding on
-// failure — if no valid token is present, req.user stays undefined and the
-// parent-code path is tried instead.
-async function tryAuth(req: Request, res: Response, next: () => void) {
-  // Only attempt JWT-based auth if there's a token. We can't call requireAuth
-  // directly because it responds with 401 on failure, which would prevent the
-  // parent-code fallback from running.
-  const hasCookie = typeof req.headers.cookie === "string" && /(?:^|;\s*)token=/.test(req.headers.cookie);
-  const hasAuthHeader = typeof req.headers.authorization === "string" && req.headers.authorization.startsWith("Bearer ");
-
-  if (!hasCookie && !hasAuthHeader) {
-    // No token provided — skip straight to parent-code fallback
-    return next();
-  }
-
-  // Create a fake response that swallows 401s so requireAuth doesn't short-circuit
-  const originalStatus = res.status.bind(res);
-  const originalJson = res.json.bind(res);
-  let intercepted = false;
-  (res as any).status = (code: number) => {
-    if (code === 401 || code === 403) { intercepted = true; return { json: () => res }; }
-    return originalStatus(code);
-  };
-  (res as any).json = (body: unknown) => {
-    if (intercepted) { return res; }
-    return originalJson(body);
-  };
-
-  try {
-    await new Promise<void>((resolve) => {
-      requireAuth(req, res, (() => resolve()) as any);
-    });
-  } catch {
-    /* ignore */
-  } finally {
-    (res as any).status = originalStatus;
-    (res as any).json = originalJson;
-  }
-  next();
-}
+// routes need a valid session — we populate req.user if a valid token is
+// present, but never respond with an error or hang the request if not. The
+// route handler then decides which auth path succeeded.
+//
+// Previous implementation wrapped `requireAuth` and monkey-patched `res.status`
+// to swallow 401s, but `requireAuth` never calls `next()` on failure, so the
+// wrapper hung until the client timed out. That broke the CV / Personal
+// Statement / Cover Letter builders entirely for parents.
+const tryAuth = tryAuthOptional;
 
 function rowToDoc(r: any) {
   if (!r) return null;

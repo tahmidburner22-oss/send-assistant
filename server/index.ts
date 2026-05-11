@@ -92,6 +92,7 @@ import diagramLibraryRouter from "./routes/diagramLibrary.js";
 import ehcpRouter from "./routes/ehcp.js";
 import pupilDocumentsRouter from "./routes/pupilDocuments.js";
 import schedulerRouter from "./routes/scheduler.js";
+import telemetryRouter from "./routes/telemetry.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -345,6 +346,7 @@ app.use("/api/diagram-library", diagramLibraryRouter);
 app.use("/api/ehcp", aiLimiter, ehcpRouter);
 app.use("/api/pupil-documents", pupilDocumentsRouter);
 app.use("/api/scheduler", schedulerRouter);
+app.use("/api/telemetry", telemetryRouter);
 
 // ── Health check ──────────────────────────────────────────────────────────────
 app.get("/api/health", (_, res) => {
