@@ -1,0 +1,322 @@
+[
+  {
+    "name": "Toe by Toe",
+    "eefRating": 4,
+    "ageRange": "6-16",
+    "sendArea": ["Dyslexia", "Moderate Learning Difficulties"],
+    "costTier": "low",
+    "description": "Structured daily reading programme using phonics-based approach for struggling readers"
+  },
+  {
+    "name": "Word Wasp",
+    "eefRating": 4,
+    "ageRange": "8-16",
+    "sendArea": ["Dyslexia", "Moderate Learning Difficulties"],
+    "costTier": "low",
+    "description": "Spelling and reading intervention using structured phonics and morphology for older pupils"
+  },
+  {
+    "name": "Precision Teaching",
+    "eefRating": 4,
+    "ageRange": "4-16",
+    "sendArea": ["Dyslexia", "Dyscalculia", "Moderate Learning Difficulties", "Severe Learning Difficulties"],
+    "costTier": "free",
+    "description": "Daily fluency-building technique using timed probes and charting to track progress in reading or maths"
+  },
+  {
+    "name": "Numicon",
+    "eefRating": 4,
+    "ageRange": "4-11",
+    "sendArea": ["Dyscalculia", "Moderate Learning Difficulties", "Severe Learning Difficulties"],
+    "costTier": "medium",
+    "description": "Multi-sensory maths programme using structured number shapes for conceptual understanding"
+  },
+  {
+    "name": "Power of 2",
+    "eefRating": 3,
+    "ageRange": "7-14",
+    "sendArea": ["Dyscalculia", "Moderate Learning Difficulties"],
+    "costTier": "low",
+    "description": "Paired maths intervention for pupils working below age-related expectations in numeracy"
+  },
+  {
+    "name": "Plus 1",
+    "eefRating": 3,
+    "ageRange": "5-11",
+    "sendArea": ["Dyscalculia", "Moderate Learning Difficulties"],
+    "costTier": "low",
+    "description": "Daily 10-minute maths intervention building foundational number skills for younger learners"
+  },
+  {
+    "name": "Zones of Regulation",
+    "eefRating": 3,
+    "ageRange": "4-18",
+    "sendArea": ["Social, Emotional & Mental Health", "Autism Spectrum Condition", "ADHD"],
+    "costTier": "low",
+    "description": "Framework teaching self-regulation using four colour zones to identify and manage emotional states"
+  },
+  {
+    "name": "ELSA (Emotional Literacy Support Assistant)",
+    "eefRating": 3,
+    "ageRange": "4-16",
+    "sendArea": ["Social, Emotional & Mental Health"],
+    "costTier": "low",
+    "description": "Trained TA-delivered programme supporting emotional literacy, self-esteem, and social skills"
+  },
+  {
+    "name": "Lego Therapy",
+    "eefRating": 3,
+    "ageRange": "5-16",
+    "sendArea": ["Autism Spectrum Condition", "Social, Emotional & Mental Health"],
+    "costTier": "low",
+    "description": "Collaborative building activity developing social communication, turn-taking, and joint attention"
+  },
+  {
+    "name": "Social Stories",
+    "eefRating": 3,
+    "ageRange": "3-18",
+    "sendArea": ["Autism Spectrum Condition", "Social, Emotional & Mental Health"],
+    "costTier": "free",
+    "description": "Short personalised narratives explaining social situations and expected responses for autistic pupils"
+  },
+  {
+    "name": "Talkabout",
+    "eefRating": 3,
+    "ageRange": "5-16",
+    "sendArea": ["Speech & Language Needs", "Autism Spectrum Condition", "Social, Emotional & Mental Health"],
+    "costTier": "medium",
+    "description": "Group intervention teaching social skills hierarchy from self-awareness to conversational skills"
+  },
+  {
+    "name": "Black Sheep Press",
+    "eefRating": 3,
+    "ageRange": "3-11",
+    "sendArea": ["Speech & Language Needs"],
+    "costTier": "medium",
+    "description": "SALT-designed language activity packs targeting specific speech and language targets in school settings"
+  },
+  {
+    "name": "Colourful Semantics",
+    "eefRating": 4,
+    "ageRange": "3-11",
+    "sendArea": ["Speech & Language Needs", "Autism Spectrum Condition"],
+    "costTier": "low",
+    "description": "Colour-coded sentence building approach developing sentence structure and vocabulary"
+  },
+  {
+    "name": "Speech Link",
+    "eefRating": 3,
+    "ageRange": "4-8",
+    "sendArea": ["Speech & Language Needs"],
+    "costTier": "medium",
+    "description": "Whole-school speech and language screening and intervention programme for primary pupils"
+  },
+  {
+    "name": "Language Link",
+    "eefRating": 3,
+    "ageRange": "4-11",
+    "sendArea": ["Speech & Language Needs"],
+    "costTier": "medium",
+    "description": "Assessment and intervention programme targeting receptive and expressive language skills"
+  },
+  {
+    "name": "Nessy",
+    "eefRating": 3,
+    "ageRange": "5-14",
+    "sendArea": ["Dyslexia"],
+    "costTier": "medium",
+    "description": "Online multi-sensory reading and spelling programme with game-based learning for dyslexic pupils"
+  },
+  {
+    "name": "IDL (Interactive Distance Learning)",
+    "eefRating": 3,
+    "ageRange": "6-16",
+    "sendArea": ["Dyslexia", "Moderate Learning Difficulties"],
+    "costTier": "medium",
+    "description": "Cloud-based literacy intervention with multi-sensory activities and progress tracking"
+  },
+  {
+    "name": "Read Write Inc",
+    "eefRating": 5,
+    "ageRange": "4-9",
+    "sendArea": ["Dyslexia", "Moderate Learning Difficulties", "Speech & Language Needs"],
+    "costTier": "high",
+    "description": "Systematic synthetic phonics programme with daily sessions for reading and writing development"
+  },
+  {
+    "name": "Catch Up Literacy",
+    "eefRating": 4,
+    "ageRange": "6-14",
+    "sendArea": ["Dyslexia", "Moderate Learning Difficulties"],
+    "costTier": "medium",
+    "description": "Structured 1:1 literacy intervention combining reading and writing for pupils behind peers"
+  },
+  {
+    "name": "Catch Up Numeracy",
+    "eefRating": 4,
+    "ageRange": "6-14",
+    "sendArea": ["Dyscalculia", "Moderate Learning Difficulties"],
+    "costTier": "medium",
+    "description": "Structured 1:1 numeracy intervention addressing gaps in mathematical understanding"
+  },
+  {
+    "name": "1stClass@Number",
+    "eefRating": 4,
+    "ageRange": "5-8",
+    "sendArea": ["Dyscalculia", "Moderate Learning Difficulties"],
+    "costTier": "medium",
+    "description": "Small-group maths intervention for KS1 pupils developing number sense and calculation strategies"
+  },
+  {
+    "name": "Success@Arithmetic",
+    "eefRating": 4,
+    "ageRange": "7-11",
+    "sendArea": ["Dyscalculia", "Moderate Learning Difficulties"],
+    "costTier": "medium",
+    "description": "Structured maths intervention for KS2 pupils addressing calculation and reasoning difficulties"
+  },
+  {
+    "name": "Motor Skills United",
+    "eefRating": 3,
+    "ageRange": "5-11",
+    "sendArea": ["Dyspraxia", "Physical Disability"],
+    "costTier": "low",
+    "description": "Group motor skills programme developing gross motor coordination through structured activities"
+  },
+  {
+    "name": "Write from the Start",
+    "eefRating": 3,
+    "ageRange": "4-11",
+    "sendArea": ["Dyspraxia"],
+    "costTier": "low",
+    "description": "Perceptuo-motor programme developing fine motor skills and handwriting readiness"
+  },
+  {
+    "name": "Speed Up!",
+    "eefRating": 3,
+    "ageRange": "8-14",
+    "sendArea": ["Dyspraxia", "Moderate Learning Difficulties"],
+    "costTier": "low",
+    "description": "Handwriting intervention improving speed and legibility through targeted fine motor practice"
+  },
+  {
+    "name": "Time to Talk",
+    "eefRating": 3,
+    "ageRange": "4-8",
+    "sendArea": ["Speech & Language Needs", "Social, Emotional & Mental Health"],
+    "costTier": "low",
+    "description": "Small group oral language programme building listening, vocabulary, and narrative skills"
+  },
+  {
+    "name": "Socially Speaking",
+    "eefRating": 3,
+    "ageRange": "7-14",
+    "sendArea": ["Autism Spectrum Condition", "Social, Emotional & Mental Health", "Speech & Language Needs"],
+    "costTier": "low",
+    "description": "Social skills group programme teaching conversational rules, body language, and friendship skills"
+  },
+  {
+    "name": "Friends for Life",
+    "eefRating": 4,
+    "ageRange": "7-16",
+    "sendArea": ["Social, Emotional & Mental Health"],
+    "costTier": "medium",
+    "description": "CBT-based anxiety prevention programme building resilience and emotional coping strategies"
+  },
+  {
+    "name": "Drawing and Talking",
+    "eefRating": 3,
+    "ageRange": "5-16",
+    "sendArea": ["Social, Emotional & Mental Health"],
+    "costTier": "low",
+    "description": "Therapeutic intervention using serial drawing to process difficult experiences and emotions"
+  },
+  {
+    "name": "Thrive",
+    "eefRating": 3,
+    "ageRange": "3-18",
+    "sendArea": ["Social, Emotional & Mental Health"],
+    "costTier": "high",
+    "description": "Whole-school approach to emotional development using neuroscience-informed assessment and activities"
+  },
+  {
+    "name": "Place2Be",
+    "eefRating": 3,
+    "ageRange": "4-14",
+    "sendArea": ["Social, Emotional & Mental Health"],
+    "costTier": "high",
+    "description": "School-based counselling service providing 1:1 and group therapeutic support for pupils"
+  },
+  {
+    "name": "SULP (Social Use of Language Programme)",
+    "eefRating": 3,
+    "ageRange": "5-16",
+    "sendArea": ["Speech & Language Needs", "Autism Spectrum Condition"],
+    "costTier": "medium",
+    "description": "Structured programme teaching pragmatic language skills including inference and conversational repair"
+  },
+  {
+    "name": "Clicker 8",
+    "eefRating": 3,
+    "ageRange": "4-16",
+    "sendArea": ["Dyslexia", "Moderate Learning Difficulties", "Physical Disability"],
+    "costTier": "medium",
+    "description": "Assistive writing software with word prediction, speech support, and customisable grids"
+  },
+  {
+    "name": "Read&Write",
+    "eefRating": 3,
+    "ageRange": "6-18",
+    "sendArea": ["Dyslexia", "Visual Impairment", "Moderate Learning Difficulties"],
+    "costTier": "medium",
+    "description": "Assistive technology toolbar providing text-to-speech, word prediction, and reading support"
+  },
+  {
+    "name": "Stareway to Spelling",
+    "eefRating": 3,
+    "ageRange": "7-14",
+    "sendArea": ["Dyslexia"],
+    "costTier": "low",
+    "description": "Multi-sensory spelling programme using visual strategies and mnemonics for persistent spelling difficulties"
+  },
+  {
+    "name": "Beat Dyslexia",
+    "eefRating": 3,
+    "ageRange": "5-14",
+    "sendArea": ["Dyslexia"],
+    "costTier": "low",
+    "description": "Multi-sensory programme using games and activities to develop reading and spelling skills"
+  },
+  {
+    "name": "Cued Articulation",
+    "eefRating": 3,
+    "ageRange": "3-11",
+    "sendArea": ["Speech & Language Needs"],
+    "costTier": "free",
+    "description": "Hand cue system supporting speech sound production and phonological awareness development"
+  },
+  {
+    "name": "Makaton",
+    "eefRating": 4,
+    "ageRange": "0-18",
+    "sendArea": ["Speech & Language Needs", "Severe Learning Difficulties", "Autism Spectrum Condition"],
+    "costTier": "medium",
+    "description": "Sign and symbol communication programme supporting language development alongside speech"
+  },
+  {
+    "name": "PECS (Picture Exchange Communication System)",
+    "eefRating": 4,
+    "ageRange": "2-18",
+    "sendArea": ["Autism Spectrum Condition", "Speech & Language Needs", "Severe Learning Difficulties"],
+    "costTier": "medium",
+    "description": "Augmentative communication system teaching functional communication through picture exchange"
+  },
+  {
+    "name": "Attention Autism",
+    "eefRating": 3,
+    "ageRange": "2-11",
+    "sendArea": ["Autism Spectrum Condition", "ADHD", "Speech & Language Needs"],
+    "costTier": "low",
+    "description": "Visually engaging group intervention developing shared attention, engagement, and spontaneous communication"
+  }
+]

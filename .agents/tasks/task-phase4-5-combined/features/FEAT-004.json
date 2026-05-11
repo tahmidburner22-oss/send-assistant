@@ -1,0 +1,28 @@
+{
+  "id": "FEAT-004",
+  "type": "feat",
+  "description": "Phase 5.1 - IEPGenerator Annual Review Diff Mode; Phase 5.2 - SmartTargets curated intervention library, progress charts, and SMART validator",
+  "status": "in_progress",
+  "steps": [
+    "1. In client/src/pages/tools/IEPGenerator.tsx: Add a 'Load Previous Plan for Review' button at the start of the wizard (info stage). This should let the teacher either upload/paste a previous EHCP text or load from localStorage where past plans are saved.",
+    "2. After new plan generation in IEPGenerator.tsx, show a side-by-side diff view comparing old and new plan. Highlight what changed (new outcomes in green, removed provisions in red, updated targets in yellow). Implement using a simple word-level diff similar to Differentiate.",
+    "3. Generate an 'Annual Review Summary' section at the end of the IEP output that lists: what has been achieved, what has changed, and what is new. Use AI to produce this summary by comparing old and new plan text.",
+    "4. Create client/src/data/interventions.json with ~40 evidence-based UK programmes. Each entry should have: name, eefRating (1-5), ageRange (e.g. '5-11'), sendArea (matching SEND need categories), costTier ('free'|'low'|'medium'|'high'), description.",
+    "5. In client/src/pages/tools/SmartTargets.tsx: Load the interventions data, filter to top 5 relevant ones based on selected SEND need + year group (approximate key stage from year group). Inject them into the AI prompt so the generated targets include intervention recommendations.",
+    "6. In SmartTargets.tsx: Add a 'Progress Chart' export button that generates a printable tracking template as HTML (rendered inline or downloadable). Template should include: target text, baseline score, 6 weekly check-in date columns, RAG rating row, and notes row.",
+    "7. In SmartTargets.tsx: Add a deterministic SMART validator that checks each generated target for: contains a number, contains a timeframe ('by [date]' or 'within [period]'), contains a measurable outcome ('from X to Y'). Show pass/fail badges next to each target in the output."
+  ],
+  "acceptance_criteria": [
+    "IEPGenerator has a 'Load Previous Plan for Review' button at the info stage",
+    "Side-by-side diff view shows changes between old and new EHCP",
+    "Annual Review Summary section is generated listing achievements, changes, and new items",
+    "client/src/data/interventions.json exists with ~40 UK intervention entries",
+    "SmartTargets injects top 5 relevant interventions into the AI prompt",
+    "SmartTargets has a Progress Chart export button generating a printable tracking template",
+    "SmartTargets has SMART validator badges (pass/fail) on each target",
+    "TypeScript compiles without errors"
+  ],
+  "verification": ["Run `npx tsc --noEmit` from the project root to confirm no type errors"],
+  "blocked_reason": null,
+  "findings": ""
+}
