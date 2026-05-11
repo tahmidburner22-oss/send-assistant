@@ -39,8 +39,9 @@ async function fetchComprehensionQuestions(
     ];
   }
 }
-import { BookOpen, Sparkles, Copy, Download, Save, RotateCcw, Plus, X, Users, FileDown, Printer, Palette, ZoomIn, ZoomOut, PenLine, Check, Loader2, Volume2, Play, Pause, Square, Info, CheckCircle, RefreshCw } from "lucide-react";
+import { BookOpen, Sparkles, Copy, Download, Save, RotateCcw, Plus, X, Users, FileDown, Printer, Palette, ZoomIn, ZoomOut, PenLine, Check, Loader2, Volume2, Play, Pause, Square, Info, CheckCircle, RefreshCw, ImagePlus } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { DiagramPicker } from "@/components/DiagramPicker";
 
 export default function Stories() {
   const { saveStory, children, assignWork, colorOverlay, setColorOverlay } = useApp();
@@ -67,6 +68,9 @@ export default function Stories() {
   const [scenarioSwapLoading, setScenarioSwapLoading] = useState(false);
   const [showScenarioDialog, setShowScenarioDialog] = useState(false);
   const [scenarioInput, setScenarioInput] = useState("");
+  // Diagram illustration state
+  const [diagramPickerOpen, setDiagramPickerOpen] = useState(false);
+  const [selectedDiagram, setSelectedDiagram] = useState<{ url: string; filename: string } | null>(null);
   // TTS state
   const [ttsActive, setTtsActive] = useState(false);
   const [ttsPlaying, setTtsPlaying] = useState(false);
@@ -565,6 +569,9 @@ export default function Stories() {
             <Button variant="outline" size="sm" onClick={() => setShowScenarioDialog(true)} className="gap-1.5 border-orange-300 text-orange-700 hover:bg-orange-50" disabled={scenarioSwapLoading}>
               {scenarioSwapLoading ? <><RefreshCw className="w-3.5 h-3.5 animate-spin" /> Swapping...</> : <><RefreshCw className="w-3.5 h-3.5" /> Scenario Swap</>}
             </Button>
+            <Button variant="outline" size="sm" onClick={() => setDiagramPickerOpen(true)} className="gap-1.5 border-indigo-300 text-indigo-700 hover:bg-indigo-50">
+              <ImagePlus className="w-3.5 h-3.5" /> {selectedDiagram ? "Change Illustration" : "Add Illustration"}
+            </Button>
             <Button variant="outline" size="sm" onClick={() => setResult(null)}>
               <RotateCcw className="w-3.5 h-3.5 mr-1.5" /> New Story
             </Button>
@@ -716,6 +723,34 @@ export default function Stories() {
 
           {/* Story output — ref captures entire story including book cover for PDF/print */}
           <div ref={storyContainerRef}>
+
+          {/* Selected illustration */}
+          {selectedDiagram && (
+            <div className="story-content mb-4">
+              <div className="relative p-4 rounded-lg border border-indigo-200 bg-indigo-50/50 text-center">
+                <button
+                  onClick={() => setSelectedDiagram(null)}
+                  className="absolute top-2 right-2 p-1 rounded-full bg-white border border-gray-200 hover:bg-red-50 hover:border-red-300 transition-colors no-print"
+                >
+                  <X className="w-3 h-3 text-gray-500 hover:text-red-500" />
+                </button>
+                <img
+                  src={selectedDiagram.url}
+                  alt={selectedDiagram.filename}
+                  className="max-w-full max-h-64 mx-auto rounded border bg-white"
+                />
+                <p className="text-xs text-indigo-600 font-medium mt-2">
+                  {selectedDiagram.filename.replace(/\.(png|svg)$/, "").split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")}
+                </p>
+              </div>
+            </div>
+          )}
+
+          <DiagramPicker
+            open={diagramPickerOpen}
+            onOpenChange={setDiagramPickerOpen}
+            onSelect={(url, filename) => setSelectedDiagram({ url, filename })}
+          />
 
           {/* Book Cover */}
           <div className="story-content">
