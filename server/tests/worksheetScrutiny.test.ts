@@ -31,6 +31,8 @@ import {
   stripForeignDiagrams,
   enforceYearGroupLock,
   capWorkedExampleSteps,
+  stripLeakedGeneratorInstructions,
+  reinforceDyscalculiaMathsScaffolding,
   runWorksheetPostValidators,
   type PostValidatorWorksheet,
 } from "../../client/src/lib/worksheetPostValidator";
@@ -507,5 +509,47 @@ describe("overlayEngine — ASC 'What you need to do' is per section", () => {
     const r = applyOverlays(baseSections as any, { sendNeed: "asc" });
     const wyntd = r.sections.filter(s => /what you need to do/i.test(String(s.title || "")));
     expect(wyntd.length).toBe(0);
+  });
+});
+
+
+describe("worksheetPostValidator — live gap regressions", () => {
+  it("removes foreign science diagrams by structured diagramType as well as text tokens", () => {
+    const ws: PostValidatorWorksheet = {
+      metadata: { subject: "Science", yearGroup: "Year 7" },
+      sections: [
+        { id: "bad", type: "diagram", title: "Reference image", diagramType: "computer-architecture", content: "A diagram placeholder." },
+        { id: "good", type: "q-short-answer", content: "What is a force?" },
+      ],
+    };
+    const r = stripForeignDiagrams(ws, { subject: "Science" });
+    expect(r.worksheet.sections!.map(s => s.id)).toEqual(["good"]);
+    expect(r.warnings.join(" ")).toMatch(/foreign diagram/i);
+  });
+
+  it("strips leaked prompt/schema instructions from student-facing worksheet content", () => {
+    const ws: PostValidatorWorksheet = {
+      metadata: { subject: "Maths", yearGroup: "Year 7" },
+      sections: [
+        { type: "q-gap-fill", content: "Complete the paragraph.\n[Write EXACTLY 7 sentences. Do NOT number the blanks.]\nRULE: EXACTLY 7 blanks.\nWORD BANK: numerator | denominator | fraction" },
+      ],
+    };
+    const r = stripLeakedGeneratorInstructions(ws);
+    const content = r.worksheet.sections![0].content || "";
+    expect(content).not.toMatch(/RULE:|EXACTLY|Do NOT|Write EXACTLY/i);
+    expect(content).toContain("WORD BANK: numerator | denominator | fraction");
+  });
+
+  it("adds concrete dyscalculia maths scaffolding instead of only generic working-out prompts", () => {
+    const ws: PostValidatorWorksheet = {
+      metadata: { subject: "Maths", yearGroup: "Year 7" },
+      sections: [
+        { type: "q-short-answer", content: "Calculate 3/4 + 1/8. Show all working." },
+      ],
+    };
+    const r = reinforceDyscalculiaMathsScaffolding(ws, { subject: "Maths", sendNeed: "dyscalculia" });
+    const content = r.worksheet.sections![0].content || "";
+    expect(content).toMatch(/Show one step per line/i);
+    expect(content).toMatch(/number line|place-value|estimate first/i);
   });
 });

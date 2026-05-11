@@ -66,6 +66,16 @@ function normalizeWorksheetSectionType(type: unknown): string {
   return LEGACY_SECTION_TYPE_ALIASES[rawType] || rawType;
 }
 
+
+function stripStudentFacingGeneratorLeaks(content: string): string {
+  return content
+    .split("\n")
+    .filter((line) => !/^\s*(RULE|INSTRUCTION|FORMAT|OUTPUT|SCHEMA|CONSTRAINT|CRITICAL|IMPORTANT)\s*:/i.test(line.trim()))
+    .map((line) => line.replace(/\[[^\]\n]*(?:EXACTLY|MUST|Do NOT|continue for|correct answers|plausible distractors|word\d+|Result:)[^\]\n]*\]/gi, "").trimEnd())
+    .filter((line) => line.trim().length > 0)
+    .join("\n");
+}
+
 function normalizeWorksheetTitleForDisplay(title: unknown, difficulty?: unknown): string {
   const rawTitle = typeof title === "string" ? title.trim() : String(title || "").trim();
   if (!rawTitle) return "";
@@ -4956,7 +4966,8 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
         // Also strip mark scheme lines and "[X marks]" labels that reveal answers.
         let content = rawContent as string;
         if (!isTeacherView && typeof content === 'string') {
-          content = content
+          content = stripStudentFacingGeneratorLeaks(content)
+          
             .split('\n')
             .filter(line => {
               const t = line.trim();
@@ -5382,7 +5393,20 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                     ) : null}
                     {/* Caption and attribution removed — diagrams are self-contained */}
                   </div>
-                ) : section.type === "diagram" ? null : (() => {
+                ) : section.type === "diagram" ? (
+                  <div style={{
+                    border: "1.5px dashed #94a3b8",
+                    background: "#f8fafc",
+                    color: "#334155",
+                    padding: "18px 20px",
+                    fontFamily: fmt.fontFamily,
+                    fontSize: `${fmt.fontSize}px`,
+                    lineHeight: "1.5",
+                    textAlign: "center",
+                  }}>
+                    Diagram unavailable for this worksheet. Use the written question information only; no diagram labels or placeholder image are required.
+                  </div>
+                ) : (() => {
                   // ── New individual question type dispatch ──
                   // These types come from the new AI prompt schema and each
                   // represent a single question with its own number badge.
