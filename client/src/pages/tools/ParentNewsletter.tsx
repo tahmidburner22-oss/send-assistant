@@ -1,9 +1,21 @@
+import { useState } from "react";
 import { useUserPreferences } from "@/contexts/UserPreferencesContext";
 import { formatToolOutput } from "@/lib/format-tool-output";
 import AIToolPage from "@/components/AIToolPage";
-import { Mail } from "lucide-react";
+import { Mail, Loader2, Languages } from "lucide-react";
 import { useApp } from "@/contexts/AppContext";
 import { toast } from "sonner";
+import { callAI } from "@/lib/ai";
+import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import DOMPurify from "dompurify";
 
 const tones = [
   { value: "warm", label: "Warm & Friendly" },
@@ -26,6 +38,122 @@ const commTypes = [
   { value: "attendance", label: "Attendance Concern Letter" },
   { value: "transition", label: "Transition / New Year Letter" },
 ];
+
+const translationLanguages = [
+  { value: "polish", label: "Polish" },
+  { value: "urdu", label: "Urdu" },
+  { value: "romanian", label: "Romanian" },
+  { value: "arabic", label: "Arabic" },
+  { value: "bengali", label: "Bengali" },
+];
+
+function TranslationPanel({ result }: { result: string }) {
+  const [selectedLanguage, setSelectedLanguage] = useState<string>("");
+  const [translatedText, setTranslatedText] = useState<string>("");
+  const [translating, setTranslating] = useState(false);
+  const [activeTab, setActiveTab] = useState<string>("english");
+  const [lastTranslatedLang, setLastTranslatedLang] = useState<string>("");
+
+  const handleTranslate = async (language: string) => {
+    setSelectedLanguage(language);
+    setTranslating(true);
+    setTranslatedText("");
+    setActiveTab(language);
+    try {
+      const langLabel = translationLanguages.find(l => l.value === language)?.label || language;
+      const { text } = await callAI(
+        `You are a professional translator specialising in school communications. Translate the following school letter accurately into ${langLabel}. Preserve all formatting, paragraph structure, dates, school name, teacher name, and proper nouns. The translation should be natural and fluent, not word-for-word.`,
+        result,
+        2000
+      );
+      setTranslatedText(text);
+      setLastTranslatedLang(language);
+      toast.success(`Translated to ${langLabel}`);
+    } catch {
+      toast.error("Translation failed. Please try again.");
+      setActiveTab("english");
+    }
+    setTranslating(false);
+  };
+
+  const onLanguageChange = (value: string) => {
+    if (value !== lastTranslatedLang) {
+      handleTranslate(value);
+    } else {
+      setSelectedLanguage(value);
+      setActiveTab(value);
+    }
+  };
+
+  const formatTranslation = (text: string): string => {
+    const paragraphs = text.split(/\n\n+/);
+    return paragraphs
+      .map(p => {
+        const trimmed = p.trim();
+        if (!trimmed) return "";
+        const formatted = trimmed
+          .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+          .replace(/\n/g, "<br/>");
+        return `<p style="margin-bottom:10px;line-height:1.7;color:#1f2937;font-size:13px;">${formatted}</p>`;
+      })
+      .filter(Boolean)
+      .join("");
+  };
+
+  const langLabel = translationLanguages.find(l => l.value === selectedLanguage)?.label || "";
+
+  return (
+    <Card className="border-border/50 mt-3">
+      <CardContent className="p-4 space-y-3">
+        <div className="flex items-center gap-2">
+          <Languages className="w-4 h-4 text-pink-600" />
+          <span className="text-sm font-medium text-foreground">Translate to...</span>
+          <Select value={selectedLanguage} onValueChange={onLanguageChange}>
+            <SelectTrigger className="w-[160px] h-8 text-sm">
+              <SelectValue placeholder="Select language" />
+            </SelectTrigger>
+            <SelectContent>
+              {translationLanguages.map(lang => (
+                <SelectItem key={lang.value} value={lang.value}>
+                  {lang.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {translating && <Loader2 className="w-4 h-4 animate-spin text-pink-600" />}
+        </div>
+
+        {(translatedText || translating) && selectedLanguage && (
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList>
+              <TabsTrigger value="english">English</TabsTrigger>
+              <TabsTrigger value={selectedLanguage}>{langLabel}</TabsTrigger>
+            </TabsList>
+            <TabsContent value="english">
+              <div
+                className="prose prose-sm max-w-none text-foreground/90 leading-relaxed mt-2"
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(formatTranslation(result)) }}
+              />
+            </TabsContent>
+            <TabsContent value={selectedLanguage}>
+              {translating ? (
+                <div className="flex items-center gap-2 py-6 justify-center text-sm text-muted-foreground">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Translating to {langLabel}...
+                </div>
+              ) : (
+                <div
+                  className="prose prose-sm max-w-none text-foreground/90 leading-relaxed mt-2"
+                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(formatTranslation(translatedText)) }}
+                />
+              )}
+            </TabsContent>
+          </Tabs>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
 
 export default function ParentNewsletter() {
   const { saveParentNewsletter } = useApp();
@@ -107,6 +235,7 @@ Write the complete communication, ready to print and send.`,
         saveParentNewsletter({ title, content: text, date: values.date || new Date().toLocaleDateString("en-GB"), type: values.type || "newsletter" });
         toast.success("Saved to Parent Portal history.");
       }}
+      renderPostActions={(result) => <TranslationPanel result={result} />}
     />
   );
 }
