@@ -7,3 +7,8 @@ data/
 dist/
 .DS_Store
 .env.local
+
+
+
+# Worksheet scrutiny verification script artefacts
+.verify-tmp/

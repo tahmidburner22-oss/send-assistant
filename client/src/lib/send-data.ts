@@ -237,6 +237,15 @@ export interface SendNeed {
   description: string;
   strategies: string[];
   worksheetAdaptations: string[];
+  // Structured, clinician-style description used by SENDInfoPanel and teacher-facing
+  // help text. When present, this is preferred over the flat `description` string —
+  // the info panel renders each field as a labelled block so teachers see the
+  // "How it presents / Barriers / What changes on the worksheet" breakdown.
+  descriptionBlocks?: {
+    presentation: string;    // How the need typically presents in the classroom
+    barriers: string;        // What makes a standard worksheet inaccessible
+    whatChanges: string;     // What the generator will change in response
+  };
   // What specifically changes in the generated worksheet when this need is selected
   worksheetChanges?: {
     summary: string;           // One-sentence summary shown in dropdown
@@ -245,6 +254,20 @@ export interface SendNeed {
       why: string;             // Why this helps
     }>;
   };
+  // Optional sub-profiles. Used primarily for autism, which covers a wide range of
+  // presentations — one uniform "ASC" prompt cannot capture them all. When the
+  // teacher picks a SEND need that has sub-profiles, the UI shows a second
+  // selector and the chosen profile id is appended to the sendNeed value as
+  // `${sendNeed.id}:${profile.id}` (e.g. "asc:asc-social"). The worksheet
+  // generator resolves the profile via resolveSendSpec() in sendPromptFragments.ts.
+  subProfiles?: SendSubProfile[];
+}
+
+export interface SendSubProfile {
+  id: string;                // e.g. "asc-social", "asc-demand-avoidant"
+  name: string;              // Short label shown in the picker
+  summary: string;           // One-line summary shown under the label
+  focus: string;             // Primary adaptation focus for the generator
 }
 
 export const sendNeeds: SendNeed[] = [
@@ -252,7 +275,12 @@ export const sendNeeds: SendNeed[] = [
     id: "asc",
     name: "Autism Spectrum Condition (ASC)",
     category: "Communication & Interaction",
-    description: "Affects social communication, social understanding, information processing, sensory processing. Four key areas: social communication, social understanding, information processing & interests, sensory processing (COBS Handbook).",
+    description: "Autism is a lifelong developmental condition that affects how a person communicates with others, processes information, experiences the sensory world, and manages change. It is a spectrum: two pupils with the same ASC diagnosis can present in very different ways, so a single 'autism-friendly' template is rarely enough (SEND Code of Practice 2015; COBS Handbook; NAS guidance).",
+    descriptionBlocks: {
+      presentation: "Pupils with ASC vary widely. Some find social and emotive language hard to decode; some need very predictable routines and struggle when instructions are ambiguous; some experience strong sensory responses to bright colour, clutter, or dense text; some cope best with short, bounded tasks and clear stopping points. Choose the sub-profile that best matches the pupil so the adaptation is targeted, not generic.",
+      barriers: "Standard worksheets often hide the expected steps (leaving the pupil to infer them), switch between synonyms for the same action ('find' / 'work out' / 'calculate'), embed social or emotive scenarios that require theory-of-mind processing, and pack dense visual information into small boxes. Each of these creates unnecessary friction that masks what the pupil actually knows.",
+      whatChanges: "Every section opens with an explicit 'What you need to do' box (once per section, not per question), the worked example mirrors the first practice question exactly, terminology is locked to one word per concept, contexts are neutral and factual, and the reflection becomes a tick-box checklist. The sub-profile further narrows the adaptation — e.g. more sensory control for a sensory-dominant profile, more choice for a demand-avoidant profile.",
+    },
     strategies: [
       "Structured routine with clear visual schedules",
       "Literal and unambiguous instructions",
@@ -267,10 +295,36 @@ export const sendNeeds: SendNeed[] = [
       "Visual supports alongside text",
       "Sans-serif font, uncluttered layout, generous spacing",
     ],
+    subProfiles: [
+      {
+        id: "asc-social",
+        name: "Social Communication profile",
+        summary: "Struggles most with inferred expectations, idioms, and socially-framed contexts",
+        focus: "literal language, neutral contexts, explicit steps",
+      },
+      {
+        id: "asc-demand-avoidant",
+        name: "Demand-Avoidant profile",
+        summary: "Anxiety around perceived demands; responds best to invitation and choice",
+        focus: "invitational language, choices, optional challenge",
+      },
+      {
+        id: "asc-sensory",
+        name: "Sensory-Dominant profile",
+        summary: "Sensitive to visual clutter, bright colour, dense layout, and unexpected change",
+        focus: "muted palette, generous spacing, minimal icons, predictable layout",
+      },
+      {
+        id: "asc-rigid",
+        name: "Rigid-Thinking / Routine profile",
+        summary: "Works best when every section has the same shape and order as the example",
+        focus: "identical layout across sections, worked example mirrors every practice question",
+      },
+    ],
     worksheetChanges: {
       summary: "Every instruction is literal and unambiguous; sections have a 'What you need to do' box; questions mirror the worked example exactly.",
       changes: [
-        { what: "'What you need to do' box added before every section", why: "ASC affects the ability to infer unstated expectations — explicit structure removes ambiguity and reduces anxiety" },
+        { what: "'What you need to do' box added once per section", why: "ASC affects the ability to infer unstated expectations — explicit structure removes ambiguity and reduces anxiety. One box per section (not per question) avoids repetition fatigue." },
         { what: "Worked example immediately precedes Section A with identical structure", why: "Students with ASC process information more reliably when new tasks closely mirror a known model" },
         { what: "Consistent terminology throughout — one word per concept, no synonyms", why: "Switching between 'calculate', 'find', 'work out' can be interpreted as different tasks; consistency prevents confusion" },
         { what: "Neutral, factual contexts only — no social or emotional scenarios", why: "Social scenarios require theory of mind processing which is an area of difficulty in ASC; neutral contexts keep focus on the subject" },
@@ -282,7 +336,12 @@ export const sendNeeds: SendNeed[] = [
     id: "asperger",
     name: "Asperger Syndrome",
     category: "Communication & Interaction",
-    description: "A form of autism characterised by difficulties with social interaction and non-verbal communication, alongside restricted interests and repetitive behaviours (COBS Handbook).",
+    description: "Asperger Syndrome is a profile within the autism spectrum marked by difficulties with social interaction and non-verbal communication alongside strong, focused interests and a preference for predictable structure. Pupils usually have age-appropriate or advanced vocabulary and subject knowledge, so the barrier is typically about how instructions are worded and laid out — not cognitive load (SEND Code of Practice 2015; COBS Handbook).",
+    descriptionBlocks: {
+      presentation: "Pupils often present as verbally articulate, logical, and rule-driven. They may take written instructions literally, struggle with figurative language, and find unpredictable formatting or changes of task mid-page stressful. They often have a deep area of interest that can be a powerful engagement lever.",
+      barriers: "Ambiguous wording, idioms ('find x', 'hit the numbers'), mixed synonyms, inconsistent layout between sections, and open-ended instructions. These barriers are presentation-based — the pupil typically has the knowledge, but the framing blocks access.",
+      whatChanges: "All instructions are direct and literal, layout is identical across every section, step-by-step numbered instructions are standard, and where the pupil's interest area is known it can be used as the real-world context. Reflection is a tick-box rather than open writing.",
+    },
     strategies: [
       "Structured environment with clear, predictable routines",
       "Clear, direct communication",
@@ -311,7 +370,12 @@ export const sendNeeds: SendNeed[] = [
     id: "pda-odd",
     name: "PDA / ODD",
     category: "Communication & Interaction",
-    description: "Pathological Demand Avoidance / Oppositional Defiant Disorder — anxiety-driven need to avoid demands and maintain control. PANDA approach (COBS Handbook).",
+    description: "Pathological Demand Avoidance (a profile within the autism spectrum) and Oppositional Defiant Disorder both involve anxiety-driven avoidance of perceived demands and a strong need to maintain control. The recommended approach is the PANDA framework: Pick battles, Anxiety management, Negotiation and collaboration, Disguise and manage demands, Adaptation (SEND Code of Practice 2015; COBS Handbook).",
+    descriptionBlocks: {
+      presentation: "Pupils experience high anxiety when they feel controlled, observed, or required to perform. Direct instructions ('You must…', 'Answer the following…') can trigger avoidance even when the pupil is capable of the task. Behaviour may look oppositional but is typically a self-protective response to overwhelm.",
+      barriers: "Demand-heavy language ('must', 'need to', 'complete all'), compulsory challenge questions, timed pressure, public-looking progress trackers, and dense tasks with no stopping points. All of these amplify the perceived demand and tip the pupil into avoidance.",
+      whatChanges: "Section names are reframed as invitations ('Explore', 'Investigate', 'Secret Mission'), 'must/need' language is replaced with 'you might like to', options are offered within questions, and explicit break points are built in. The challenge is always framed as a choice the pupil can accept or decline.",
+    },
     strategies: [
       "Build trusting relationship through a key worker",
       "Provide choices to give sense of control",
@@ -341,7 +405,12 @@ export const sendNeeds: SendNeed[] = [
     id: "slcn",
     name: "Speech, Language & Communication Needs (SLCN)",
     category: "Communication & Interaction",
-    description: "Difficulties with speech production, language comprehension, or communication (COBS Handbook).",
+    description: "SLCN covers a wide range of difficulties with speech production, language comprehension, expressive language, and pragmatic communication. Pupils often know more than they can show: the bottleneck is understanding complex instructions or producing written sentences, not the subject content itself (RCSLT guidelines; SEND Code of Practice 2015).",
+    descriptionBlocks: {
+      presentation: "Pupils may take longer to process multi-step or complex sentences, struggle to retrieve subject vocabulary under time pressure, and find it hard to organise a full written answer even when they understand the concept. Some also have difficulty with question-form language ('what', 'why', 'how') or with abstract connectives ('although', 'whereas').",
+      barriers: "Long, multi-clause instructions; high-density vocabulary without definitions; answer boxes that expect extended prose with no scaffolding; mixed question types without visual cues; and abstract comparison prompts ('compare and contrast') without a frame.",
+      whatChanges: "A plain-English Word Bank sits at the top of every section, every answer has a sentence frame, instructions are max 12 words in subject-verb-object form, Section B uses matching / labelling / MCQ where possible, and visual cues sit beside every text question. Reflection is 'I can…' tick-box.",
+    },
     strategies: [
       "Pre-teaching vocabulary before lessons",
       "Visual supports and word walls",
@@ -371,7 +440,12 @@ export const sendNeeds: SendNeed[] = [
     id: "dyslexia",
     name: "Dyslexia",
     category: "Cognition & Learning",
-    description: "A specific learning difficulty affecting reading, writing, and spelling. Strengths include creativity, problem-solving, and verbal reasoning (COBS Handbook).",
+    description: "Dyslexia is a specific learning difficulty primarily affecting decoding, reading fluency, spelling, and written expression. It is unrelated to intelligence and commonly co-occurs with strengths in verbal reasoning, creative thinking, and problem-solving. Typography, pacing, and working-memory demands — not subject difficulty — are the usual worksheet barriers (British Dyslexia Association Style Guide 2023; Rose Review; SEND Code of Practice 2015).",
+    descriptionBlocks: {
+      presentation: "Pupils often read more slowly than peers, may lose their place on dense pages, and need more working memory for decoding — leaving less for the subject content. Spelling and written expression can lag well behind oral understanding.",
+      barriers: "Small or tightly-kerned text, narrow line spacing, italicised or underlined emphasis, long sentences, multi-step instructions with no visible method, and high-density word lists without definitions all create disproportionate load for dyslexic readers.",
+      whatChanges: "Every question is one short sentence (max 12 words), every key term is bolded at first use, a Step-by-Step Method box sits immediately before Section A, a Word Bank runs at the top of each section, and line spacing / white space is generous. Italics and underlining are removed in favour of bold.",
+    },
     strategies: [
       "Dyslexia-friendly fonts (sans-serif, min 12pt)",
       "Cream/coloured paper backgrounds",
@@ -401,7 +475,12 @@ export const sendNeeds: SendNeed[] = [
     id: "dyscalculia",
     name: "Dyscalculia",
     category: "Cognition & Learning",
-    description: "A specific learning difficulty affecting understanding of numbers and mathematical concepts (COBS Handbook).",
+    description: "Dyscalculia is a specific learning difficulty affecting number sense — the ability to understand, manipulate, and reason with quantities. Pupils may reliably mis-estimate, struggle to sequence arithmetic steps, and find abstract notation inaccessible without a visible reference (BDA Dyscalculia Network; EEF guidance).",
+    descriptionBlocks: {
+      presentation: "Pupils often lose track of where they are in a multi-step calculation, rely on counting rather than number bonds, reverse digits, and find it hard to retrieve times-table facts quickly. They may understand the conceptual question but be blocked by the arithmetic machinery.",
+      barriers: "Questions written as dense prose, worked examples that skip method steps, implicit knowledge of times-tables or formulas, and abstract 'a number is chosen…' contexts all compound the difficulty and hide what the pupil actually understands.",
+      whatChanges: "Every Section A question is broken into explicit sub-steps with blanks, a number line or place-value chart sits before Section A, a Key Facts box (times-tables, number bonds, formulas) sits at the top of Section B, and all word problems use real-world concrete contexts. Reflection uses a Great / OK / Struggling tick-box.",
+    },
     strategies: [
       "Visual aids: number lines, charts, graphs",
       "Concrete manipulatives before abstract concepts",
@@ -431,7 +510,12 @@ export const sendNeeds: SendNeed[] = [
     id: "dyspraxia",
     name: "Dyspraxia (DCD)",
     category: "Cognition & Learning",
-    description: "Developmental Coordination Disorder affecting motor skills, coordination, and planning of movements (COBS Handbook).",
+    description: "Developmental Coordination Disorder (DCD / dyspraxia) affects the planning and execution of coordinated movement. In a classroom context this usually shows up as a handwriting and layout barrier: pupils know the answer but struggle to get it onto the page legibly and at pace (Dyspraxia Foundation guidance; COBS Handbook).",
+    descriptionBlocks: {
+      presentation: "Handwriting is often effortful, slow, and tiring; ruled lines may feel too narrow; organising a response on a blank page can be overwhelming; fine motor drawing tasks (graphs, diagrams) take disproportionately long.",
+      barriers: "Small answer spaces, expectations of extended prose, unlined or inconsistent answer areas, and challenge questions that require precise drawing or extensive writing all make it hard for DCD pupils to demonstrate what they know.",
+      whatChanges: "Section A uses multiple-choice, matching or circle-the-answer formats, every answer box is generously sized (3+ lines), Section B uses tables or fill-in-the-blank frames, the challenge uses tick / circle / label-the-diagram, and worked examples are brief bullet steps.",
+    },
     strategies: [
       "Occupational therapy support",
       "Regular physical breaks",
@@ -460,7 +544,12 @@ export const sendNeeds: SendNeed[] = [
     id: "mld",
     name: "Moderate Learning Difficulties (MLD)",
     category: "Cognition & Learning",
-    description: "Learning difficulties requiring additional support. Children may struggle with basic literacy and numeracy (COBS Handbook).",
+    description: "Moderate Learning Difficulties describes pupils whose attainment is significantly below age-expected levels across most areas of the curriculum, typically alongside difficulties with basic literacy, numeracy, and generalising from one task to another. The evidence base is clear: scaffolded release of responsibility (I do, we do, you do) and concrete-pictorial-abstract progression are the most effective approaches (EEF guidance; SEND Code of Practice 2015).",
+    descriptionBlocks: {
+      presentation: "Pupils often take longer to secure new concepts, benefit from repeated exposure in varied contexts, struggle with open-ended tasks, and find it hard to transfer a method from a worked example to a blank page without explicit scaffolding.",
+      barriers: "Worksheets that jump straight into independent practice, dense vocabulary without definitions, abstract-only representations, and multi-step problems without breakdown create a cliff edge that MLD pupils cannot cross unaided.",
+      whatChanges: "Question 1 is a fully completed model answer, every Section A question has a hint / sentence starter / partial answer, a Help Box sits at the top of Section B, reading level is held at KS2, and Section A progresses Concrete → Pictorial → Abstract. No multi-step problems in Section A; the challenge is always optional.",
+    },
     strategies: [
       "Scaffolded learning with gradual release",
       "Concrete-pictorial-abstract approach",
@@ -490,7 +579,12 @@ export const sendNeeds: SendNeed[] = [
     id: "adhd",
     name: "ADHD",
     category: "Social, Emotional & Mental Health",
-    description: "Attention Deficit Hyperactivity Disorder affecting concentration, impulsivity, and activity levels. Strengths include creativity and hyper-focus (COBS Handbook).",
+    description: "Attention Deficit Hyperactivity Disorder affects executive function — specifically sustained attention, impulse control, working memory, and time perception. Pupils can be highly creative and capable of hyper-focus on engaging tasks; the challenge is sustaining effort on tasks that are long, repetitive, or lack visible progress (CHADD; ADHD Foundation; COBS Handbook).",
+    descriptionBlocks: {
+      presentation: "Attention is variable rather than absent: pupils may complete the first two questions at pace, hit a wall, and struggle to restart without a visible cue. Boredom, repetition, and unclear expectations are disproportionate risks. Movement breaks genuinely restore attention capacity.",
+      barriers: "Long undifferentiated sections, identical question formats back-to-back, no visible progress markers, no stopping points, and instructions that bury the action verb in mid-sentence all accelerate loss of focus.",
+      whatChanges: "Section A is hard-capped at 3 questions and Section B at 5; every question gets a physical '[ ]' checkbox; question types are varied so no two in a row are the same; the action verb is bolded; a Brain Break prompt is inserted mid-Section B; and the challenge is framed as an optional bonus.",
+    },
     strategies: [
       "Structured routine with clear expectations",
       "Break tasks into small, manageable chunks",
@@ -520,7 +614,12 @@ export const sendNeeds: SendNeed[] = [
     id: "anxiety",
     name: "Anxiety / Mental Health",
     category: "Social, Emotional & Mental Health",
-    description: "Anxiety and mental health difficulties affecting engagement, concentration, and emotional regulation.",
+    description: "Anxiety and related mental health difficulties directly affect the brain's capacity to learn: threat-response activation reduces working memory, narrows attention, and triggers avoidance. Reducing perceived threat is not a 'soft' adjustment — it is a prerequisite for any cognitive work (Anna Freud Centre; Zones of Regulation; SEND Code of Practice 2015).",
+    descriptionBlocks: {
+      presentation: "Pupils may appear quiet and compliant but find it hard to begin, re-read the same question repeatedly, under-perform when asked to show working, or freeze on challenge questions. Physical signs include trembling, fidgeting, or avoidance of eye contact with the task.",
+      barriers: "High-stakes language ('must', 'quickly', 'only N minutes'), mandatory challenge questions, unpredictable formatting, and reflection prompts that require exposing uncertainty all amplify threat response and shut down learning.",
+      whatChanges: "Section A is renamed 'Warm-Up — no pressure!', the challenge is clearly 'Optional Bonus', each section opens with a positive priming line, obligation words are swapped for invitation words, and an emoji check-in bookends the worksheet. No time pressure language anywhere.",
+    },
     strategies: [
       "Safe space and calm-down strategies",
       "Predictable routines",
@@ -550,7 +649,12 @@ export const sendNeeds: SendNeed[] = [
     id: "vi",
     name: "Visual Impairment",
     category: "Sensory & Physical",
-    description: "A condition affecting a person's ability to see, requiring adaptations to visual materials (COBS Handbook).",
+    description: "Visual impairment covers a spectrum from mild low vision through to blindness. Worksheet access depends on three levers: font size, contrast ratio, and whether any information is conveyed by visuals alone. RNIB's 'Clear Print' guidelines are the authoritative reference (RNIB Clear Print; NICE NG41).",
+    descriptionBlocks: {
+      presentation: "Pupils may need significantly larger print, struggle with pale greys or low-contrast colour, experience eye strain on dense pages, and be unable to interpret fine diagrams without a described alternative. Pupils using screen readers require every visual to have a textual equivalent.",
+      barriers: "Font sizes below 18pt equivalent, low-contrast colour schemes, diagram-only questions, cramped layouts, and reliance on colour alone to convey information all create insurmountable barriers for VI pupils.",
+      whatChanges: "Minimum 18pt equivalent font throughout, high-contrast dark-on-light formatting, every diagram is described in text immediately alongside it, no question relies solely on visual interpretation, and generous spacing helps the pupil navigate independently.",
+    },
     strategies: [
       "Large print materials (min 18pt)",
       "High contrast formatting",
@@ -580,7 +684,12 @@ export const sendNeeds: SendNeed[] = [
     id: "hi",
     name: "Hearing Impairment",
     category: "Sensory & Physical",
-    description: "A condition affecting a person's ability to hear, requiring visual and written support.",
+    description: "Hearing impairment ranges from mild to profound. The core principle is that the worksheet must be fully self-contained in text and visuals — never relying on anything the pupil would only get by listening. Pupils may also have gaps in incidental vocabulary that hearing peers absorb from conversation (NDCS; COBS Handbook).",
+    descriptionBlocks: {
+      presentation: "Pupils read every instruction from the page rather than picking it up from the teacher's verbal explanation. Subject vocabulary that peers acquire through listening may be less secure. Lip-reading is tiring and incomplete.",
+      barriers: "Instructions like 'as I explained' or 'as your teacher said', audio-dependent tasks, references to listening stimuli, and undefined subject vocabulary all lock the pupil out of the task.",
+      whatChanges: "Every instruction is written in full, a Word Bank with plain-English definitions is standard, each question is fully self-contained with no cross-references, and visual diagrams support every text question. No audio-dependent content anywhere.",
+    },
     strategies: [
       "Visual instructions and demonstrations",
       "Written instructions alongside verbal",
@@ -610,7 +719,12 @@ export const sendNeeds: SendNeed[] = [
     id: "tourettes",
     name: "Tourette's Syndrome",
     category: "Sensory & Physical",
-    description: "A neurological condition causing involuntary movements and sounds (tics). Commonly co-occurs with ADHD. Strengths include creativity, hyper-focus, empathy (COBS Handbook).",
+    description: "Tourette's Syndrome is a neurological condition causing involuntary movements and sounds (tics). Tic suppression requires conscious effort and depletes the same cognitive resources needed for sustained task work. It commonly co-occurs with ADHD and anxiety (Tourettes Action; COBS Handbook).",
+    descriptionBlocks: {
+      presentation: "Tics vary day-to-day and are worsened by stress, concentration, or tiredness. Extended writing in particular is affected by motor tics. Pupils may work in short bursts, need movement breaks, and benefit from varied response formats that reduce the handwriting window.",
+      barriers: "Long written responses, timed pressure language, rigid single-format sections, and public-facing progress boards all increase anxiety and therefore tic frequency.",
+      whatChanges: "Response formats are varied (tick / circle / fill-in / short answer), natural break points are built into each section, extended writing is minimised, timing language is removed, and the tone is calm and supportive throughout.",
+    },
     strategies: [
       "Understanding and acceptance from school community",
       "Relaxation techniques",
@@ -640,7 +754,12 @@ export const sendNeeds: SendNeed[] = [
     id: "older-learners",
     name: "Older Learners (KS3/KS4/KS5)",
     category: "Cognition & Learning",
-    description: "Older pupils with SEND who struggle with lecture-based presentations, note-taking, concentration over longer lessons, and organising material (COBS Handbook).",
+    description: "Older pupils with SEND need age-appropriate content and register alongside scaffolded access. Resources pitched too young damage engagement and dignity; resources pitched at the wrong cognitive level leave the pupil unable to access the curriculum. The answer is adult-register language with embedded scaffolds, not simplified content (EEF guidance; COBS Handbook).",
+    descriptionBlocks: {
+      presentation: "Pupils respond well to real-world KS3–KS5 contexts (workplace, finance, media, technology, current affairs), benefit from explicit metacognitive strategies, and often struggle with note-taking and organising extended responses under lesson pressure.",
+      barriers: "Childish imagery and primary-coded design damage engagement; blank-page extended responses overwhelm without a graphic organiser; lack of visible time guides leads to pacing difficulties; and generic scaffolds feel patronising.",
+      whatChanges: "Extended-response questions include a graphic organiser or table frame, each section ends with a Cornell-style note box, age-appropriate academic language is used throughout, a Study Tips box opens each section with 1–2 exam technique reminders, and each section header shows an estimated time.",
+    },
     strategies: [
       "Structured note-taking frameworks",
       "Chunked lessons with varied activities",
@@ -670,7 +789,12 @@ export const sendNeeds: SendNeed[] = [
     id: "eal",
     name: "English as an Additional Language (EAL)",
     category: "Communication & Interaction",
-    description: "Students whose first language is not English. May have strong subject knowledge but need language support to access written tasks. NALDIC guidelines emphasise visual supports, simplified language, and culturally inclusive contexts.",
+    description: "EAL pupils are learning English alongside the curriculum. Subject knowledge may be strong in their home language; the barrier is almost always academic English, UK-specific cultural references, and idiomatic phrasing. NALDIC's evidence base emphasises visual supports, explicit vocabulary teaching, and culturally neutral contexts.",
+    descriptionBlocks: {
+      presentation: "Pupils can often tackle the underlying subject concept in their first language but struggle to decode the question itself, retrieve academic English vocabulary under time pressure, or generate extended written responses in English.",
+      barriers: "UK-specific idioms ('piece of cake', 'bob's your uncle'), cultural references (Premier League teams, UK food brands), complex grammar, and dense vocabulary without definitions all exclude EAL pupils.",
+      whatChanges: "A Key Vocabulary box with plain-English definitions sits at the start of every section, sentence frames scaffold every written response, contexts are culturally neutral, sentences are short and SVO, and visual supports sit beside every text question.",
+    },
     strategies: [
       "Pre-teach key vocabulary with visual supports before the lesson",
       "Use bilingual glossaries and word banks where appropriate",
@@ -700,7 +824,12 @@ export const sendNeeds: SendNeed[] = [
     id: "working-memory",
     name: "Working Memory Difficulties",
     category: "Cognition & Learning",
-    description: "Difficulties holding and manipulating information in mind while completing tasks. Affects multi-step instructions, following complex directions, and retaining information during activities.",
+    description: "Working memory is the ability to hold and manipulate information in mind while completing a task. Pupils with working memory difficulties may understand each step of a process but lose it before they can apply it — not a knowledge problem but a capacity problem. The evidence-based response is to externalise as much information as possible onto the page (Gathercole & Alloway research; EEF guidance).",
+    descriptionBlocks: {
+      presentation: "Pupils often forget multi-step instructions midway through, lose their place on longer questions, need vocabulary and formulas repeated, and can appear to 'know it yesterday, not today' because the information was never fully encoded.",
+      barriers: "Multi-part instructions in a single sentence, invisible formulas, worked examples placed too far from practice, and reliance on recalled facts all overload working memory.",
+      whatChanges: "A Memory Aid box with key facts and vocabulary opens every question section, multi-step questions are broken into numbered sub-steps with blanks, a word bank / key facts box is always visible, the worked example sits immediately before each practice block, and one instruction per line is enforced.",
+    },
     strategies: [
       "Chunk instructions into single steps",
       "Provide written reference materials (word banks, key facts boxes)",
@@ -730,7 +859,12 @@ export const sendNeeds: SendNeed[] = [
     id: "semh",
     name: "Social, Emotional and Mental Health (SEMH)",
     category: "Social, Emotional & Mental Health",
-    description: "Social, emotional and mental health difficulties affecting behaviour, emotional regulation, and engagement with learning. Includes a wide range of needs from attachment difficulties to depression and self-harm (SEND Code of Practice 2015).",
+    description: "SEMH is one of the four broad areas of need in the SEND Code of Practice (2015) and covers a wide spectrum — from attachment difficulties through ADHD-related regulation, to anxiety, depression, and self-harm. The shared thread is that emotional state directly mediates access to learning: a dysregulated pupil cannot learn regardless of cognitive ability.",
+    descriptionBlocks: {
+      presentation: "Pupils may present with withdrawal, volatility, avoidance, or rapid fluctuation between engagement and disengagement. Relationships with a trusted adult and predictable routines are primary access requirements. Emotional check-ins help both pupil and teacher identify when a pause is needed.",
+      barriers: "High-pressure or judgemental language, mandatory challenge, lack of stopping points, and open-ended reflection prompts that ask the pupil to expose difficulty all escalate rather than contain dysregulation.",
+      whatChanges: "An emotional check-in bookends the worksheet, Section A is renamed 'Warm-Up', every section opens with a positive priming line, obligation words are swapped for invitational words, natural breaks are built in, and an Encouragement box precedes each question section.",
+    },
     strategies: [
       "Trauma-informed approaches and positive relationships",
       "Zones of Regulation framework",
@@ -796,7 +930,7 @@ const DEFAULT_FORMATTING: SendFormatting = {
   theme: "standard",
   sectionBgColor: "#ffffff",
   accentColor: "#1B2A4A",
-  headerStyle: "flat",
+  headerStyle: "solid",
   answerLineHeight: 26,
   showCheckboxes: false,
   borderRadius: 8,

@@ -195,8 +195,8 @@ const SEND_ADAPTATION_SPECS: SendAdaptationSpec[] = [
     id: "asc",
     name: "Autism Spectrum Condition (ASC)",
     bullets: [
-      { what: "'What you need to do' box added before every section",
-        why: "Removes ambiguity and reduces anxiety caused by unstated expectations." },
+      { what: "One-time 'What you need to do' box opens every section",
+        why: "Removes ambiguity once per section without creating repetitive clutter." },
       { what: "Worked example immediately precedes Section A with identical structure",
         why: "New tasks process more reliably when they mirror a known model." },
       { what: "Consistent terminology throughout — one word per concept, no synonyms",
@@ -207,12 +207,12 @@ const SEND_ADAPTATION_SPECS: SendAdaptationSpec[] = [
         why: "Structured checklists are more accessible than open-ended reflection." },
     ],
     worksheetRules: [
-      "Every section begins with a 'What you need to do:' box listing exact steps.",
+      "Each section opens with ONE 'What you need to do:' box listing exact steps. Never repeat the box per question — one per section only.",
       "Place a fully worked example immediately before Section A, using identical wording and structure to Section A's questions.",
       "Use one word per concept. Never mix synonyms (pick either 'calculate' OR 'work out' — stick to it everywhere).",
       "Use literal, unambiguous language. No idioms, no figurative language (write 'calculate the value of x', not 'find x').",
       "Contexts must be neutral and factual. No social scenarios, no emotions.",
-      "Reflection is a tick-box checklist: '[ ] I completed Section A   [ ] I completed Section B   [ ] I tried the Challenge'.",
+      "Reflection is a tick-box checklist: '[ ] I completed Section A   [ ] I completed Section B   [ ] I tried the Challenge'. Plus ONE exit question: 'Write one thing you learned today.'",
       "Use identical layout across every section — predictable is the goal.",
     ],
     presentationRules: [
@@ -222,6 +222,139 @@ const SEND_ADAPTATION_SPECS: SendAdaptationSpec[] = [
       "Literal, unambiguous language. No idioms. No emotive contexts.",
       "Exit-ticket slide uses a tick-box checklist rather than open-ended reflection.",
       "Keep every slide's layout identical (same title position, same bullet area, same font size).",
+    ],
+  },
+  // ── Autism Spectrum Condition sub-profiles ─────────────────────────────────
+  // The feedback from teachers is that autism is a broad spectrum and a single
+  // uniform "ASC" prompt doesn't actually adapt to each presentation. These
+  // profiles narrow the adaptation. They inherit the base ASC rules and add
+  // profile-specific ones on top; resolveSendSpec() resolves the specific id
+  // first and falls back to `asc` when the profile is not recognised.
+  {
+    id: "asc-social",
+    name: "ASC — Social Communication profile",
+    bullets: [
+      { what: "Zero social or emotive wording in question content",
+        why: "Social framing requires theory-of-mind processing that is the core difficulty in this profile." },
+      { what: "Every abstract or figurative phrase rewritten literally",
+        why: "Literal processing is a reliable strength; figurative phrasing is not." },
+      { what: "All subject terms defined in plain English on first use",
+        why: "Inference from context is less reliable — definitions must be explicit." },
+      { what: "Step-by-step numbered instructions — no embedded sub-clauses",
+        why: "Sequential processing leverages a strength; embedded clauses hide the steps." },
+      { what: "'What you need to do' box opens every section",
+        why: "Removes unstated expectations that would otherwise need to be inferred." },
+    ],
+    worksheetRules: [
+      "All contexts are factual and literal — NO social scenarios (no 'Sarah is upset', no 'the team decides', no 'friends argue').",
+      "Rewrite every idiom or figurative phrase in literal form before emitting the question.",
+      "Every subject term the question uses must be defined in plain English at first use, either in-line or in the Key Vocabulary box.",
+      "Every multi-step instruction is broken into numbered steps (1. 2. 3.) on separate lines — no embedded clauses.",
+      "Each section opens with ONE 'What you need to do:' box that lists the exact numbered steps.",
+      "Reflection is a tick-box checklist ONLY. One exit question: 'Write one fact you learned today.'",
+    ],
+    presentationRules: [
+      "All slide contexts are factual and literal — no social framing.",
+      "Every idiom rewritten literally on the slide before it is shown.",
+      "Every slide defines its subject term in plain English on first use.",
+      "Every activity slide opens with a numbered 'What you need to do' box.",
+      "Exit-ticket slide is a tick-box checklist only.",
+    ],
+  },
+  {
+    id: "asc-demand-avoidant",
+    name: "ASC — Demand-Avoidant profile",
+    bullets: [
+      { what: "Invitational language throughout — 'you might like to', 'have a go at'",
+        why: "Direct demand language triggers anxiety-driven avoidance in this profile." },
+      { what: "Every section offers a choice of entry point",
+        why: "Choice restores the sense of control that removes the perceived demand." },
+      { what: "Challenge framed as an optional 'Secret Mission'",
+        why: "Optional missions preserve dignity and lower the perceived stakes." },
+      { what: "Natural break points after every 3 questions",
+        why: "Explicit permission to pause is more effective than implicit expectation." },
+      { what: "No progress trackers or visible ticking off",
+        why: "Public progress tracking is experienced as surveillance and triggers avoidance." },
+    ],
+    worksheetRules: [
+      "Replace 'You must' / 'You need to' / 'Answer the following' with 'You might like to try …' / 'Have a go at …' in every instruction.",
+      "Each section opens with ONE 'What you need to do' box, BUT the steps are framed as 'You might like to 1. … 2. … 3. …' rather than imperatives.",
+      "Offer two options within each practice question where possible ('Option A: calculation with whole numbers / Option B: calculation with decimals').",
+      "Rename Section A to 'Explore — choose where to start'. Section B to 'Investigate'. Challenge to 'Secret Mission — if you choose to accept it'.",
+      "Insert a horizontal rule + 'Take a break here if you need to — come back when you are ready.' after every 3 questions.",
+      "No checkboxes, no progress bars, no 'Questions completed: x/y' — remove any visible progress tracker.",
+      "Reflection is a single invitation: 'If you would like to, write one thing you noticed today.' — not a tick-box.",
+    ],
+    presentationRules: [
+      "Replace 'must'/'need to' language with 'might like to' / 'have a go at' on every slide.",
+      "Every activity slide opens with an invitational 'You might like to …' box.",
+      "Rename the challenge slide to 'Secret Mission — if you choose to accept it'.",
+      "Include two options on every practice slide.",
+      "Insert a 'Take a breath' slide every 3 practice slides.",
+      "No progress trackers anywhere in the deck.",
+    ],
+  },
+  {
+    id: "asc-sensory",
+    name: "ASC — Sensory-Dominant profile",
+    bullets: [
+      { what: "Muted, low-saturation palette — no bright primary colours",
+        why: "High-saturation colour is a sensory trigger for pupils with sensory-dominant ASC." },
+      { what: "Generous whitespace between every element",
+        why: "Visual density is experienced as sensory overload, shutting down task engagement." },
+      { what: "No icons, emojis, or decorative marks",
+        why: "Extra visual elements add load without adding information." },
+      { what: "Identical, predictable layout across every section",
+        why: "Unexpected visual changes between sections cause disorientation." },
+      { what: "Text-only diagrams where possible; labelled diagrams otherwise",
+        why: "Dense visual diagrams can overwhelm; text descriptions sit alongside every diagram." },
+    ],
+    worksheetRules: [
+      "Use a muted, low-saturation palette. No bright primary colours. No decorative gradients.",
+      "Leave generous whitespace between every section and between every question within a section.",
+      "NO icons, NO emojis, NO decorative marks (☆, ★, ✨). Keep the page visually clean.",
+      "Every section uses identical layout — same title position, same spacing, same question numbering style.",
+      "Every diagram has a plain-text description alongside it the pupil can use instead.",
+      "Each section opens with ONE calm 'What you need to do:' box in neutral grey, not coloured.",
+      "Reflection is a minimal tick-box checklist — no large emotional scale, no colour-coded confidence grid.",
+    ],
+    presentationRules: [
+      "Every slide uses a muted palette — no high-saturation brand colours.",
+      "Generous padding on every slide; never fill edge-to-edge.",
+      "No slide icons, emojis, or decorative marks.",
+      "Identical layout on every slide (same title position, same bullet area, same font size).",
+      "Every diagram slide has a text-description sidebar.",
+    ],
+  },
+  {
+    id: "asc-rigid",
+    name: "ASC — Rigid-Thinking / Routine profile",
+    bullets: [
+      { what: "Every section has the same shape as the worked example",
+        why: "Pupils with a rigid-thinking profile generalise best when every task mirrors a known model." },
+      { what: "Worked example shown IMMEDIATELY before every practice section",
+        why: "Re-anchoring the method before each section prevents mid-worksheet disorientation." },
+      { what: "Question stems use the identical verb and structure across the sheet",
+        why: "Changing the verb from 'Calculate' to 'Find' mid-sheet reads as a new task." },
+      { what: "Fixed question count per section, fixed order of types",
+        why: "Predictable numerical structure is itself a support — the pupil knows what to expect." },
+      { what: "No optional or bonus items hidden inside a section",
+        why: "'If there is time, also try Q8' is disorienting. Optional items are clearly separated." },
+    ],
+    worksheetRules: [
+      "Section A, Section B, and Section C each have a fixed number of questions that matches the worked example's structure exactly.",
+      "Place a fresh worked example immediately before every practice section — not just once at the top.",
+      "Every question stem in the worksheet uses the SAME imperative verb (pick one of 'Calculate' / 'Work out' / 'Find' and use it everywhere).",
+      "Every question follows the identical structure: [verb] [object] [context]. No 'For the next 4 questions, …' re-framing.",
+      "Optional / bonus items are placed in their own clearly labelled 'Optional' section, never hidden inside Section A / B / C.",
+      "Each section opens with ONE 'What you need to do' box whose steps match the worked example one-to-one.",
+      "Reflection is a tick-box checklist only.",
+    ],
+    presentationRules: [
+      "Every practice slide mirrors the worked-example slide's layout exactly.",
+      "Insert a worked-example slide immediately before every practice slide.",
+      "Every practice slide uses the identical imperative verb and stem structure.",
+      "Optional / bonus slides sit in their own clearly labelled section at the end of the deck.",
     ],
   },
   {
@@ -634,7 +767,17 @@ const SEND_ADAPTATION_SPECS: SendAdaptationSpec[] = [
 // ─── Public API ──────────────────────────────────────────────────────────────
 
 function normaliseSendKey(input: string | undefined | null): string {
-  return (input || "").toLowerCase().trim();
+  const raw = (input || "").toLowerCase().trim();
+  if (!raw) return "";
+  // Support a compound format like "asc:asc-demand-avoidant" emitted by the
+  // UI when an autism sub-profile is picked. Prefer the part after the colon
+  // so the specific profile resolves, but keep the base id appended so the
+  // fallback matchers still work if the profile is not recognised.
+  const parts = raw.split(":").map(p => p.trim()).filter(Boolean);
+  if (parts.length >= 2) {
+    return `${parts[1]} ${parts[0]}`;
+  }
+  return raw;
 }
 
 /**
@@ -645,11 +788,18 @@ export function resolveSendSpec(sendNeed: string | undefined | null): SendAdapta
   const sn = normaliseSendKey(sendNeed);
   if (!sn || sn === "none" || sn === "none-selected" || sn === "general") return null;
 
-  // Order matters — "asc" must beat the generic "autism" match for asperger etc.
+  // Order matters — exact sub-profile ids beat the generic "autism"/"asc" match.
   const matchers: Array<[RegExp, string]> = [
     [/\b(adhd)\b/, "adhd"],
     [/\b(dyslexia)\b/, "dyslexia"],
     [/\b(dyscalculia)\b/, "dyscalculia"],
+    // Autism sub-profiles — match BEFORE the generic asc/autism token so e.g.
+    // "asc:asc-demand-avoidant" or "asc-demand-avoidant" resolves to the
+    // specific profile rather than falling through to the generic asc block.
+    [/\b(asc-social|social-communication)\b/, "asc-social"],
+    [/\b(asc-demand-avoidant|demand-avoidant|asc-da)\b/, "asc-demand-avoidant"],
+    [/\b(asc-sensory|sensory-dominant|asc-sd)\b/, "asc-sensory"],
+    [/\b(asc-rigid|rigid-thinking|asc-routine)\b/, "asc-rigid"],
     [/\b(asperger)\b/, "asperger"],
     [/\b(asc|autism|autistic|asd)\b/, "asc"],
     [/\b(mld|moderate learning)\b/, "mld"],
