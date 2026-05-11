@@ -16,6 +16,8 @@ import {
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { callAI } from "@/lib/ai";
+import { callAIStream, supportsStreaming } from "@/lib/callAIStream";
+import { StreamedOutput } from "@/components/StreamedOutput";
 import { renderMath } from "@/components/WorksheetRenderer";
 import { downloadHtmlAsPdf, printWorksheetElement } from "@/lib/pdf-generator-v2";
 import { useApp } from "@/contexts/AppContext";
@@ -23,6 +25,10 @@ import { FunFactsCarousel } from "@/components/FunFactsCarousel";
 import { exportToDocx } from "@/lib/docx-export";
 import { useLocation } from "wouter";
 import { useUserPreferences } from "@/contexts/UserPreferencesContext";
+import { useDraftAutosave } from "@/hooks/useDraftAutosave";
+import { useToolTelemetry } from "@/hooks/useToolTelemetry";
+import { scanFormValues, maxSeverity, summariseFindings } from "@/lib/piiScanner";
+import { AccessibilityPanel, type AccessibilityStyles } from "@/components/AccessibilityPanel";
 
 export interface AIToolField {
   id: string;
@@ -251,12 +257,55 @@ export default function AIToolPage({
   const [aiEditLoading, setAiEditLoading] = useState(false);
   const [showAssignDialog, setShowAssignDialog] = useState(false);
 
+  // ── Phase 1: Draft autosave ────────────────────────────────────────────────
+  const toolSlug = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  const { restore: restoreDraft, discard: discardDraft } = useDraftAutosave(toolSlug, values);
+  const [draftRestored, setDraftRestored] = useState(false);
+
+  // Restore draft on first mount if values are empty
+  if (!draftRestored) {
+    const saved = restoreDraft();
+    if (saved && typeof saved === "object") {
+      const hasContent = Object.values(saved).some(v => typeof v === "string" && v.trim() !== "");
+      if (hasContent) {
+        // Defer state update to avoid setting state during render
+        setTimeout(() => {
+          setValues(prev => ({ ...prev, ...saved }));
+          toast("Draft restored from your last session", {
+            duration: 5000,
+            action: {
+              label: "Discard",
+              onClick: () => { discardDraft(); setValues(mergedInitial); },
+            },
+          });
+          telemetry.fire("draft_restored");
+        }, 0);
+      }
+    }
+    setDraftRestored(true);
+  }
+
+  // ── Phase 1: Telemetry ─────────────────────────────────────────────────────
+  const telemetry = useToolTelemetry(toolSlug);
+
+  // ── Accessibility controls state ───────────────────────────────────────────
+  const [a11yStyles, setA11yStyles] = useState<AccessibilityStyles>({
+    fontSize: 14,
+    fontFamily: "inherit",
+    backgroundColor: "#FFFFFF",
+  });
+
+  // ── Streaming state ────────────────────────────────────────────────────────
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [streamedText, setStreamedText] = useState("");
+
   const handleAssign = (childId: string) => {
     if (!result) return;
     const outputTitleStr = outputTitle ? outputTitle(values) : title;
     const assignContent = transformBeforeAssign ? transformBeforeAssign(result) : result;
     assignWork(childId, { title: outputTitleStr, type: title.toLowerCase().replace(/\s+/g, "-"), content: assignContent });
     setShowAssignDialog(false);
+    telemetry.fire("output_assigned");
     toast.success("Assigned to student!");
   };
 
@@ -268,17 +317,63 @@ export default function AIToolPage({
       toast.error(`Please fill in: ${missing.map(f => f.label).join(", ")}`);
       return;
     }
+    // ── Phase 1: PII pre-flight check ──────────────────────────────────────
+    const piiResult = scanFormValues(values, { ignoreFields: ["subject", "yearGroup", "year", "duration", "examBoard"] });
+    const severity = maxSeverity(piiResult);
+    if (severity === "high") {
+      const findings = summariseFindings(piiResult);
+      toast.error(`Blocked: personal data detected (${findings.join("; ")}). Use initials or remove before generating.`);
+      telemetry.fire("pii_blocked", { errorCode: severity });
+      return;
+    }
+    if (severity === "medium") {
+      const findings = summariseFindings(piiResult);
+      toast("Personal data warning: " + findings.join("; ") + ". Consider using initials.", { duration: 6000 });
+    }
+    // ── Generate ───────────────────────────────────────────────────────────
+    const endTimer = telemetry.startTimer("generate_start");
     setLoading(true);
     setResult(null);
+    setStreamedText("");
+    setIsStreaming(false);
     setEditMode("none");
     try {
       const { system, user, maxTokens } = buildPrompt(values);
-      const { text, provider: p } = await callAI(system, user, maxTokens || 2500);
-      setResult(text);
-      setProvider(p);
-      onResult?.(text, values);
-      toast.success("Generated successfully!");
+
+      // Use streaming if supported — gives ~3x perceived speed improvement
+      if (supportsStreaming()) {
+        setLoading(false); // Hide full-screen spinner — streaming shows progress inline
+        setIsStreaming(true);
+        let accumulated = "";
+        let streamProvider = "";
+        for await (const chunk of callAIStream(system, user, maxTokens || 2500)) {
+          if (chunk.provider) streamProvider = chunk.provider;
+          if (chunk.text) {
+            accumulated += chunk.text;
+            setStreamedText(accumulated);
+          }
+          if (chunk.done) break;
+        }
+        setIsStreaming(false);
+        setResult(accumulated);
+        setProvider(streamProvider);
+        onResult?.(accumulated, values);
+        discardDraft();
+        endTimer("success", { provider: streamProvider });
+        toast.success("Generated successfully!");
+      } else {
+        // Fallback: non-streaming
+        const { text, provider: p } = await callAI(system, user, maxTokens || 2500);
+        setResult(text);
+        setProvider(p);
+        onResult?.(text, values);
+        discardDraft();
+        endTimer("success", { provider: p });
+        toast.success("Generated successfully!");
+      }
     } catch (err) {
+      setIsStreaming(false);
+      endTimer("fail", { errorCode: (err as any)?.message?.slice(0, 64) || "unknown" });
       toast.error("Generation failed. Please try again.");
       console.error(err);
     }
@@ -288,11 +383,13 @@ export default function AIToolPage({
   const handleCopy = () => {
     if (!result) return;
     navigator.clipboard.writeText(result);
+    telemetry.fire("output_copied");
     toast.success("Copied to clipboard!");
   };
 
   const handlePrint = () => {
     if (!outputRef.current) return;
+    telemetry.fire("output_printed");
     printWorksheetElement(outputRef.current, { title: outputTitle?.(values) || title });
   };
 
@@ -301,6 +398,7 @@ export default function AIToolPage({
     try {
       const filename = `${(outputTitle?.(values) || title).replace(/\s+/g, "_")}.pdf`;
       await downloadHtmlAsPdf(outputRef.current, filename);
+      telemetry.fire("output_downloaded");
       toast.success("PDF downloaded!");
     } catch {
       toast.error("Could not generate PDF. Please try again.");
@@ -389,7 +487,7 @@ export default function AIToolPage({
           </div>
         )}
 
-        {!result ? (
+        {!result && !isStreaming ? (
           <Card className="border-border/50">
             <CardContent className="p-4 space-y-4">
               <div className="grid grid-cols-2 gap-3">
@@ -446,11 +544,29 @@ export default function AIToolPage({
               </Button>
             </CardContent>
           </Card>
+        ) : isStreaming && !result ? (
+          /* Streaming in progress — show progressive text */
+          <div className="space-y-3">
+            <Card className="border-border/50">
+              <CardContent className="p-6">
+                <StreamedOutput
+                  text={streamedText}
+                  isStreaming={true}
+                  className="min-h-[120px]"
+                  style={{
+                    fontSize: `${a11yStyles.fontSize}px`,
+                    fontFamily: a11yStyles.fontFamily,
+                    backgroundColor: a11yStyles.backgroundColor,
+                  }}
+                />
+              </CardContent>
+            </Card>
+          </div>
         ) : (
           <div className="space-y-3">
             {/* Toolbar */}
             <div className="flex flex-wrap gap-2 items-center">
-              <Button variant="outline" size="sm" onClick={() => { setResult(null); setEditMode("none"); }}>
+              <Button variant="outline" size="sm" onClick={() => { setResult(null); setStreamedText(""); setEditMode("none"); }}>
                 <ChevronLeft className="w-3.5 h-3.5 mr-1" />New
               </Button>
               {provider && isPlatformAdmin && (
@@ -591,8 +707,18 @@ export default function AIToolPage({
 
             {/* Output — hidden in manual edit mode */}
             {editMode !== "manual" && (
+              <>
+              <AccessibilityPanel onChange={setA11yStyles} className="mb-2" />
               <Card className="border-border/50">
-                <CardContent className={isLessonPlan ? "p-6" : "p-6"} ref={outputRef}>
+                <CardContent
+                  className={isLessonPlan ? "p-6" : "p-6"}
+                  ref={outputRef}
+                  style={{
+                    fontSize: `${a11yStyles.fontSize}px`,
+                    fontFamily: a11yStyles.fontFamily,
+                    backgroundColor: a11yStyles.backgroundColor,
+                  }}
+                >
                   {isLessonPlan && result ? (
                     <LessonPlanRenderer
                       text={result}
@@ -622,6 +748,7 @@ export default function AIToolPage({
                   )}
                 </CardContent>
               </Card>
+              </>
             )}
 
             <Button variant="outline" onClick={handleGenerate} disabled={loading} className="w-full">
