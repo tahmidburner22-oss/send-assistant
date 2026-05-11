@@ -16,7 +16,7 @@
  * @copyright 2026 Adaptly Ltd. All rights reserved.
  */
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -34,7 +34,7 @@ import {
   Shield, Target, Layers, PenLine, X, Check, Loader2,
   Users, BookOpen, Heart, Zap, FileDown, BarChart3, Info,
   ClipboardCheck, AlertTriangle, Star, ArrowRight, Eye, Link,
-  Calendar, School, BookMarked, Trash2, Plus,
+  Calendar, School, BookMarked, History, GitCompare, Trash2, Plus,
 } from "lucide-react";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -87,6 +87,52 @@ interface QAResult {
   suggestions: string[];
   ruleChecks: { label: string; pass: boolean; detail: string }[];
 }
+
+interface SavedPlan {
+  id: string;
+  initials: string;
+  date: string;
+  sections: EHCPSection[];
+}
+
+// ── Word-level diff (same pattern as Differentiate.tsx) ───────────────────────
+
+function computeWordDiff(original: string, modified: string): Array<{ type: "same" | "added" | "removed"; word: string }> {
+  const origWords = original.split(/\s+/).filter(Boolean);
+  const modWords = modified.split(/\s+/).filter(Boolean);
+  const m = origWords.length;
+  const n = modWords.length;
+  const dp: number[][] = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      if (origWords[i - 1] === modWords[j - 1]) {
+        dp[i][j] = dp[i - 1][j - 1] + 1;
+      } else {
+        dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+      }
+    }
+  }
+  const result: Array<{ type: "same" | "added" | "removed"; word: string }> = [];
+  let i = m, j = n;
+  const stack: Array<{ type: "same" | "added" | "removed"; word: string }> = [];
+  while (i > 0 || j > 0) {
+    if (i > 0 && j > 0 && origWords[i - 1] === modWords[j - 1]) {
+      stack.push({ type: "same", word: origWords[i - 1] });
+      i--; j--;
+    } else if (j > 0 && (i === 0 || dp[i][j - 1] >= dp[i - 1][j])) {
+      stack.push({ type: "added", word: modWords[j - 1] });
+      j--;
+    } else {
+      stack.push({ type: "removed", word: origWords[i - 1] });
+      i--;
+    }
+  }
+  stack.reverse();
+  result.push(...stack);
+  return result;
+}
+
+const SAVED_PLANS_KEY = "adaptly_ehcp_saved_plans";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -345,10 +391,102 @@ export default function EHCPPlanGenerator() {
   const [qaLoading, setQaLoading] = useState(false);
   const [qaResult, setQaResult] = useState<QAResult | null>(null);
 
+  // Annual Review Diff Mode state
+  const [previousPlan, setPreviousPlan] = useState<EHCPSection[] | null>(null);
+  const [showLoadPrevious, setShowLoadPrevious] = useState(false);
+  const [pastedPreviousText, setPastedPreviousText] = useState("");
+  const [showAnnualReview, setShowAnnualReview] = useState(false);
+  const [annualReviewSummary, setAnnualReviewSummary] = useState("");
+  const [annualReviewLoading, setAnnualReviewLoading] = useState(false);
+
   const mark = (s: Stage) => setCompleted(prev => new Set([...prev, s]));
+
+  // Auto-save plans to localStorage when output is generated
+  useEffect(() => {
+    if (sections.length > 0 && stage === "output") {
+      try {
+        const raw = localStorage.getItem(SAVED_PLANS_KEY);
+        const plans: SavedPlan[] = raw ? JSON.parse(raw) : [];
+        const newPlan: SavedPlan = {
+          id: `plan_${Date.now()}`,
+          initials: pupilInfo.initials,
+          date: new Date().toLocaleDateString("en-GB"),
+          sections,
+        };
+        const updated = [newPlan, ...plans.filter(p => p.initials !== pupilInfo.initials || p.date !== newPlan.date)].slice(0, 20);
+        localStorage.setItem(SAVED_PLANS_KEY, JSON.stringify(updated));
+      } catch {
+        // localStorage full or unavailable
+      }
+    }
+  }, [sections, stage, pupilInfo.initials]);
 
   const authHeaders = () => {
     return {};
+  };
+
+  // ── Load Previous Plan helpers ──────────────────────────────────────────────
+  const loadPreviousFromPaste = () => {
+    if (!pastedPreviousText.trim()) return toast.error("Please paste previous EHCP text");
+    const parsed: EHCPSection[] = [];
+    const sectionRegex = /(?:SECTION|===)\s*([A-K])[\s:—-]+(.+?)(?:===)?\n([\s\S]*?)(?=(?:(?:SECTION|===)\s*[A-K])|$)/gi;
+    let match;
+    while ((match = sectionRegex.exec(pastedPreviousText)) !== null) {
+      parsed.push({ id: `prev_${match[1]}`, code: match[1], title: match[2].trim(), content: match[3].trim() });
+    }
+    if (parsed.length === 0) {
+      parsed.push({ id: "prev_full", code: "B", title: "Previous Plan", content: pastedPreviousText.trim() });
+    }
+    setPreviousPlan(parsed);
+    setShowLoadPrevious(false);
+    setPastedPreviousText("");
+    toast.success(`Previous plan loaded (${parsed.length} section${parsed.length !== 1 ? "s" : ""})`);
+  };
+
+  const loadPreviousFromStorage = (plan: SavedPlan) => {
+    setPreviousPlan(plan.sections);
+    setShowLoadPrevious(false);
+    toast.success(`Loaded previous plan for ${plan.initials} (${plan.date})`);
+  };
+
+  const generateAnnualReviewSummary = async () => {
+    if (!previousPlan || !sections.length) return;
+    setAnnualReviewLoading(true);
+    try {
+      const oldText = previousPlan.map(s => `[Section ${s.code}] ${s.content}`).join("\n\n");
+      const newText = sections.map(s => `[Section ${s.code}] ${s.content}`).join("\n\n");
+      const { text } = await callAI(
+        `You are a senior SENCO producing an Annual Review Summary comparing an old EHCP with a new EHCP. Be specific, citing evidence from both plans. Write in professional UK SEND language.`,
+        `Compare this OLD EHCP plan with the NEW EHCP plan and produce an Annual Review Summary.
+
+OLD PLAN:
+${oldText.slice(0, 4000)}
+
+NEW PLAN:
+${newText.slice(0, 4000)}
+
+Write the summary under these headings:
+
+**What Has Been Achieved:**
+- List specific outcomes from the old plan that have been met or exceeded
+- Reference measurable progress where visible
+
+**What Has Changed:**
+- List provisions that have been modified (increased, decreased, or altered)
+- Note any changes to areas of need or professional input
+
+**What Is New:**
+- List any new outcomes, provisions, or needs not present in the old plan
+- Note new interventions or support strategies introduced
+
+Keep each section concise (3-5 bullet points). Be specific and reference content from both plans.`,
+        2000
+      );
+      setAnnualReviewSummary(text);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to generate annual review summary");
+    }
+    setAnnualReviewLoading(false);
   };
 
   // ── Step 1 ────────────────────────────────────────────────────────────────
@@ -919,6 +1057,59 @@ Return JSON:
                 <Button onClick={handleInfoNext} className="w-full h-11 bg-indigo-600 hover:bg-indigo-700 text-white gap-2">
                   Continue to Evidence Upload <ChevronRight className="w-4 h-4" />
                 </Button>
+
+                {/* Load Previous Plan for Annual Review */}
+                <div className="border-t pt-4 mt-2">
+                  <Button variant="outline" onClick={() => setShowLoadPrevious(!showLoadPrevious)} className="w-full gap-2 border-amber-300 text-amber-700 hover:bg-amber-50">
+                    <History className="w-4 h-4" />Load Previous Plan for Review
+                  </Button>
+                  {previousPlan && (
+                    <div className="mt-2 flex items-center gap-2 p-2 rounded-lg bg-green-50 border border-green-200">
+                      <Check className="w-3.5 h-3.5 text-green-600" />
+                      <span className="text-xs text-green-700 font-medium">Previous plan loaded ({previousPlan.length} sections) - diff view will be available after generation</span>
+                      <button onClick={() => setPreviousPlan(null)} className="ml-auto p-0.5 rounded hover:bg-red-100 text-muted-foreground hover:text-red-600"><X className="w-3 h-3" /></button>
+                    </div>
+                  )}
+                  {showLoadPrevious && (
+                    <div className="mt-3 space-y-3 p-3 rounded-lg border border-amber-200 bg-amber-50/50">
+                      <p className="text-xs font-bold text-amber-800">Option 1: Paste previous EHCP text</p>
+                      <Textarea
+                        value={pastedPreviousText}
+                        onChange={e => setPastedPreviousText(e.target.value)}
+                        placeholder="Paste the full text of the previous EHCP here..."
+                        rows={4}
+                        className="text-sm resize-none"
+                      />
+                      <Button size="sm" onClick={loadPreviousFromPaste} disabled={!pastedPreviousText.trim()} className="gap-1.5 bg-amber-600 hover:bg-amber-700 text-white">
+                        <Upload className="w-3.5 h-3.5" />Load Pasted Plan
+                      </Button>
+
+                      <div className="border-t border-amber-200 pt-3">
+                        <p className="text-xs font-bold text-amber-800 mb-2">Option 2: Load from saved plans</p>
+                        {(() => {
+                          try {
+                            const raw = localStorage.getItem(SAVED_PLANS_KEY);
+                            const plans: SavedPlan[] = raw ? JSON.parse(raw) : [];
+                            if (plans.length === 0) return <p className="text-xs text-muted-foreground italic">No saved plans found</p>;
+                            return (
+                              <div className="space-y-1.5 max-h-32 overflow-y-auto">
+                                {plans.map(plan => (
+                                  <button
+                                    key={plan.id}
+                                    onClick={() => loadPreviousFromStorage(plan)}
+                                    className="w-full text-left px-3 py-2 rounded-lg border border-amber-200 hover:bg-amber-100 transition-colors text-xs"
+                                  >
+                                    <span className="font-semibold">{plan.initials}</span> - {plan.date} ({plan.sections.length} sections)
+                                  </button>
+                                ))}
+                              </div>
+                            );
+                          } catch { return <p className="text-xs text-muted-foreground italic">Unable to load saved plans</p>; }
+                        })()}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </CardContent>
             </Card>
           </motion.div>
@@ -1289,6 +1480,11 @@ Return JSON:
               <div className="flex flex-wrap gap-2 items-center no-print">
                 <Button variant="outline" size="sm" onClick={() => setStage("qa")} className="gap-1.5"><ChevronLeft className="w-3.5 h-3.5" />Back to QA</Button>
                 {qaResult && <QABadge score={qaResult.complianceScore} />}
+                {previousPlan && (
+                  <Button variant="outline" size="sm" onClick={() => setShowAnnualReview(!showAnnualReview)} className="gap-1.5 border-amber-300 text-amber-700 hover:bg-amber-50">
+                    <GitCompare className="w-3.5 h-3.5" />{showAnnualReview ? "Hide" : "Show"} Annual Review
+                  </Button>
+                )}
                 <div className="ml-auto flex flex-wrap gap-2">
                   <Button variant="outline" size="sm" onClick={handleCopy} className="gap-1.5"><Copy className="w-3.5 h-3.5" />Copy</Button>
                   <Button variant="outline" size="sm" onClick={handlePrint} className="gap-1.5"><Printer className="w-3.5 h-3.5" />Print</Button>
@@ -1296,6 +1492,64 @@ Return JSON:
                   <Button variant="outline" size="sm" onClick={handleDocx} className="gap-1.5"><FileDown className="w-3.5 h-3.5" />Word</Button>
                 </div>
               </div>
+
+              {/* Annual Review Diff View */}
+              {showAnnualReview && previousPlan && (
+                <Card className="border-amber-200 no-print">
+                  <CardContent className="p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs font-bold flex items-center gap-1.5 text-amber-800"><GitCompare className="w-3.5 h-3.5" />Annual Review - Side-by-Side Comparison</p>
+                      <Button variant="outline" size="sm" onClick={generateAnnualReviewSummary} disabled={annualReviewLoading} className="gap-1.5 text-xs h-7 border-amber-300 text-amber-700">
+                        {annualReviewLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}Generate Summary
+                      </Button>
+                    </div>
+
+                    {sections.map(newSection => {
+                      const oldSection = previousPlan.find(s => s.code === newSection.code);
+                      if (!oldSection) return null;
+                      const diff = computeWordDiff(oldSection.content, newSection.content);
+                      const hasChanges = diff.some(d => d.type !== "same");
+                      if (!hasChanges) return null;
+                      return (
+                        <div key={newSection.id} className="border border-amber-200 rounded-lg overflow-hidden">
+                          <div className="bg-amber-50 px-3 py-2">
+                            <span className="text-xs font-bold text-amber-800">Section {newSection.code}: {newSection.title}</span>
+                          </div>
+                          <div className="grid grid-cols-2 divide-x divide-amber-200">
+                            <div className="p-3">
+                              <p className="text-[10px] font-bold text-red-600 mb-1.5 uppercase">Previous</p>
+                              <div className="text-[11px] leading-relaxed text-gray-700 max-h-40 overflow-y-auto">
+                                {diff.map((d, i) => {
+                                  if (d.type === "removed") return <span key={i} className="bg-red-100 text-red-800 line-through px-0.5 rounded">{d.word} </span>;
+                                  if (d.type === "same") return <span key={i}>{d.word} </span>;
+                                  return null;
+                                })}
+                              </div>
+                            </div>
+                            <div className="p-3">
+                              <p className="text-[10px] font-bold text-green-600 mb-1.5 uppercase">New</p>
+                              <div className="text-[11px] leading-relaxed text-gray-700 max-h-40 overflow-y-auto">
+                                {diff.map((d, i) => {
+                                  if (d.type === "added") return <span key={i} className="bg-green-100 text-green-800 px-0.5 rounded">{d.word} </span>;
+                                  if (d.type === "same") return <span key={i}>{d.word} </span>;
+                                  return null;
+                                })}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+
+                    {annualReviewSummary && (
+                      <div className="border border-green-200 rounded-lg p-4 bg-green-50/50">
+                        <p className="text-xs font-bold text-green-800 mb-2 flex items-center gap-1.5"><Star className="w-3.5 h-3.5" />Annual Review Summary</p>
+                        <div className="text-xs text-green-900 leading-relaxed whitespace-pre-wrap">{annualReviewSummary.replace(/\*\*(.+?)\*\*/g, '$1').replace(/\*/g, '')}</div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
 
               {/* Document */}
               <div ref={outputRef}>

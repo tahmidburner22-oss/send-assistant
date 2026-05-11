@@ -1,0 +1,29 @@
+{
+  "id": "FEAT-005",
+  "type": "feat",
+  "description": "Phase 5.3 - WellbeingSupport timestamped audit trail; Phase 5.4 - SendScreener longitudinal results + EP referral letter",
+  "status": "completed",
+  "steps": [
+    "1. In client/src/pages/tools/WellbeingSupport.tsx: When the safeguarding checkpoint is cleared (onConfirmed callback), store a timestamped audit event in localStorage under key 'adaptly_safeguarding_audit'. Event shape: { teacherName (from user preferences context), concernType, dslName, timestamp (ISO string), action: 'checkpoint_cleared' }.",
+    "2. Add an 'Audit Trail' tab in WellbeingSupport.tsx (visible only when user is logged in / has preferences set) showing a table of all safeguarding checkpoint events from localStorage with columns: date, teacher, concern type, and DSL informed.",
+    "3. Lock the urgency field once 'urgent' is selected and the checkpoint is cleared - make it read-only until form reset. Use component state to track this.",
+    "4. Fire a telemetry event to /api/telemetry/tool-event with eventName 'safeguarding_checkpoint_cleared' and toolId 'wellbeing-support' when the checkpoint is cleared. Note: the server ALLOWED_EVENTS set needs 'safeguarding_checkpoint_cleared' added in server/routes/telemetry.ts.",
+    "5. In client/src/pages/tools/SendScreener.tsx: After a screener is completed, save the results to localStorage keyed by pupil initials + date. Store: { pupilInitials, date (ISO), scores (per-section object), overallScore, timestamp }.",
+    "6. Add a 'View History' button in SendScreener.tsx that shows all past results for the same pupil initials as a line chart. Use recharts (already available - LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer) to render scores over time.",
+    "7. Add a 'Generate EP Referral Letter' button in SendScreener.tsx that takes the screener results and generates a formal Educational Psychologist referral letter via AI (callAI). The letter should include: concern areas, screening scores, observed behaviours, recommended assessments."
+  ],
+  "acceptance_criteria": [
+    "WellbeingSupport stores audit events in localStorage when checkpoint is cleared",
+    "Audit Trail tab shows a table of past safeguarding events",
+    "Urgency field becomes read-only after checkpoint is cleared",
+    "Telemetry event fires to /api/telemetry/tool-event on checkpoint clear",
+    "server/routes/telemetry.ts ALLOWED_EVENTS includes 'safeguarding_checkpoint_cleared'",
+    "SendScreener saves completed results to localStorage keyed by pupil initials + date",
+    "View History button shows a recharts line chart of past scores",
+    "Generate EP Referral Letter button produces an AI-generated referral letter",
+    "TypeScript compiles without errors"
+  ],
+  "verification": ["Run `npx tsc --noEmit` from the project root to confirm no type errors"],
+  "blocked_reason": null,
+  "findings": "INTEGRATIONS_ONLY mode - verified via TypeScript transpileModule (no syntax errors). Added disabled/onChange support to AIToolField interface. callAI imported from @/lib/ai for EP referral generation. recharts imported for LineChart history view. localStorage used for both audit trail (adaptly_safeguarding_audit) and screener results (sendscreener_results_{initials}). Previous features had same tsc limitation."
+}

@@ -1,9 +1,17 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AIToolPage from "@/components/AIToolPage";
 import { useUserPreferences } from "@/contexts/UserPreferencesContext";
 import { formatToolOutput } from "@/lib/format-tool-output";
-import { Heart, AlertTriangle, Phone, CheckCircle2, ArrowRight } from "lucide-react";
+import { Heart, AlertTriangle, Phone, CheckCircle2, ArrowRight, ClipboardList } from "lucide-react";
 import { Button } from "@/components/ui/button";
+
+interface SafeguardingAuditEvent {
+  teacherName: string;
+  concernType: string;
+  dslName: string;
+  timestamp: string;
+  action: "checkpoint_cleared";
+}
 
 const concerns = ["Anxiety","Low mood / depression","Bereavement","Friendship difficulties","Bullying","School refusal","Self-harm (risk)","Trauma","Family breakdown","Transition anxiety","Low self-esteem","Anger management","Social isolation","Eating concerns","Sleep difficulties","Academic pressure"].map(c => ({ value: c, label: c }));
 const years = ["Reception","Year 1","Year 2","Year 3","Year 4","Year 5","Year 6","Year 7","Year 8","Year 9","Year 10","Year 11","Year 12","Year 13"].map(y => ({ value: y, label: y }));
@@ -107,58 +115,178 @@ export default function WellbeingSupport() {
   const [showCheckpoint, setShowCheckpoint] = useState(false);
   const [checkpointCleared, setCheckpointCleared] = useState(false);
   const [pendingValues, setPendingValues] = useState<Record<string, string> | null>(null);
+  const [urgencyLocked, setUrgencyLocked] = useState(false);
+  const [showAuditTrail, setShowAuditTrail] = useState(false);
+  const [auditEvents, setAuditEvents] = useState<SafeguardingAuditEvent[]>([]);
+  const [currentConcern, setCurrentConcern] = useState("");
+
+  // Load audit events from localStorage
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("adaptly_safeguarding_audit");
+      if (stored) {
+        setAuditEvents(JSON.parse(stored));
+      }
+    } catch {}
+  }, []);
+
+  function handleCheckpointCleared() {
+    setCheckpointCleared(true);
+    setShowCheckpoint(false);
+    setUrgencyLocked(true);
+
+    // Store audit event
+    const event: SafeguardingAuditEvent = {
+      teacherName: preferences.teacherName || "Unknown",
+      concernType: currentConcern || "Not specified",
+      dslName: "DSL Informed",
+      timestamp: new Date().toISOString(),
+      action: "checkpoint_cleared",
+    };
+    try {
+      const existing = JSON.parse(localStorage.getItem("adaptly_safeguarding_audit") || "[]");
+      const updated = [...existing, event];
+      localStorage.setItem("adaptly_safeguarding_audit", JSON.stringify(updated));
+      setAuditEvents(updated);
+    } catch {}
+
+    // Fire telemetry event
+    fetch("/api/telemetry/tool-event", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({
+        toolId: "wellbeing-support",
+        eventName: "safeguarding_checkpoint_cleared",
+      }),
+    }).catch(() => {});
+  }
 
   // If urgent is selected and checkpoint not yet cleared, intercept
   if (showCheckpoint && !checkpointCleared) {
     return (
       <SafeguardingCheckpoint
-        onConfirmed={() => { setCheckpointCleared(true); setShowCheckpoint(false); }}
+        onConfirmed={handleCheckpointCleared}
         onBack={() => { setShowCheckpoint(false); setUrgency("monitoring"); }}
       />
     );
   }
 
+  // Audit trail view
+  if (showAuditTrail) {
+    return (
+      <div className="max-w-3xl mx-auto px-4 py-8">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-rose-100 flex items-center justify-center">
+              <ClipboardList className="w-5 h-5 text-rose-600" />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-gray-900">Safeguarding Audit Trail</h2>
+              <p className="text-sm text-gray-500">Record of all safeguarding checkpoint confirmations</p>
+            </div>
+          </div>
+          <Button variant="outline" onClick={() => setShowAuditTrail(false)}>
+            Back to Tool
+          </Button>
+        </div>
+
+        {auditEvents.length === 0 ? (
+          <div className="text-center py-12 bg-gray-50 rounded-2xl border border-gray-200">
+            <ClipboardList className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+            <p className="text-gray-500 font-medium">No safeguarding events recorded yet</p>
+            <p className="text-sm text-gray-400 mt-1">Events will appear here when a safeguarding checkpoint is cleared.</p>
+          </div>
+        ) : (
+          <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-gray-50 border-b border-gray-200">
+                  <th className="text-left px-4 py-3 font-semibold text-gray-700">Date</th>
+                  <th className="text-left px-4 py-3 font-semibold text-gray-700">Teacher</th>
+                  <th className="text-left px-4 py-3 font-semibold text-gray-700">Concern Type</th>
+                  <th className="text-left px-4 py-3 font-semibold text-gray-700">DSL Informed</th>
+                </tr>
+              </thead>
+              <tbody>
+                {auditEvents.slice().reverse().map((evt, i) => (
+                  <tr key={i} className="border-b border-gray-100 last:border-0 hover:bg-gray-50">
+                    <td className="px-4 py-3 text-gray-600">
+                      {new Date(evt.timestamp).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                    </td>
+                    <td className="px-4 py-3 text-gray-900 font-medium">{evt.teacherName}</td>
+                    <td className="px-4 py-3 text-gray-600">{evt.concernType}</td>
+                    <td className="px-4 py-3">
+                      <span className="inline-flex items-center gap-1 text-xs font-semibold bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
+                        <CheckCircle2 className="w-3 h-3" /> Yes
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
-    <AIToolPage
-      assignable={true}
-      title="Wellbeing Support Generator"
-      description="Generate evidence-based wellbeing strategies, scripts, and support plans"
-      icon={<Heart className="w-5 h-5 text-white" />}
-      accentColor="bg-rose-600"
-      fields={[
-        { id: "concern", label: "Wellbeing Concern", type: "select", options: concerns, required: true, span: "half" },
-        { id: "yearGroup", label: "Year Group", type: "select", options: years, required: true, span: "half" },
-        { id: "context", label: "Context / Situation", type: "textarea", placeholder: "Describe the situation, what you've observed, any relevant background...", required: true, span: "full" },
-        { id: "outputType", label: "What Do You Need?", type: "select", options: [
-          { value: "strategies", label: "Classroom strategies for teacher" },
-          { value: "script",     label: "Conversation script for talking to student" },
-          { value: "plan",       label: "Wellbeing support plan" },
-          { value: "parent-letter", label: "Letter to parents" },
-          { value: "referral",   label: "Referral summary" },
-        ], required: true, span: "half" },
-        { id: "urgency", label: "Urgency Level", type: "select", options: [
-          { value: "monitoring",  label: "Monitoring — low level concern" },
-          { value: "early-help",  label: "Early help — needs support" },
-          { value: "urgent",      label: "Urgent — significant concern (safeguarding checkpoint required)" },
-        ], span: "half",
-          // Use onChange to intercept urgent selection
-          onChange: (val: string) => {
-            setUrgency(val);
-            if (val === "urgent" && !checkpointCleared) {
-              setShowCheckpoint(true);
-            }
+    <div>
+      {/* Audit Trail button */}
+      <div className="max-w-3xl mx-auto px-4 pt-4 flex justify-end">
+        <Button variant="outline" size="sm" onClick={() => setShowAuditTrail(true)} className="flex items-center gap-1.5">
+          <ClipboardList className="w-4 h-4" />
+          Audit Trail
+          {auditEvents.length > 0 && (
+            <span className="ml-1 text-xs bg-rose-100 text-rose-700 px-1.5 py-0.5 rounded-full font-bold">{auditEvents.length}</span>
+          )}
+        </Button>
+      </div>
+      <AIToolPage
+        assignable={true}
+        title="Wellbeing Support Generator"
+        description="Generate evidence-based wellbeing strategies, scripts, and support plans"
+        icon={<Heart className="w-5 h-5 text-white" />}
+        accentColor="bg-rose-600"
+        fields={[
+          { id: "concern", label: "Wellbeing Concern", type: "select", options: concerns, required: true, span: "half",
+            onChange: (val: string) => { setCurrentConcern(val); },
           },
-        },
-      ]}
-      buildPrompt={(v) => {
-        // Double-check: if urgency is urgent and checkpoint wasn't cleared, refuse silently
-        if (v.urgency === "urgent" && !checkpointCleared) {
-          setShowCheckpoint(true);
-          return { system: "", user: "", maxTokens: 1 };
-        }
-        return {
-          system: `You are an experienced UK school pastoral lead, SENCO, and mental health first aider. You provide evidence-based, trauma-informed wellbeing support guidance. You follow UK safeguarding procedures, KCSIE (Keeping Children Safe in Education), and the Mental Health in Schools guidance. You always signpost to appropriate professional services. You never provide clinical diagnoses or replace professional mental health support.`,
-          user: `Generate wellbeing support guidance for:
+          { id: "yearGroup", label: "Year Group", type: "select", options: years, required: true, span: "half" },
+          { id: "context", label: "Context / Situation", type: "textarea", placeholder: "Describe the situation, what you've observed, any relevant background...", required: true, span: "full" },
+          { id: "outputType", label: "What Do You Need?", type: "select", options: [
+            { value: "strategies", label: "Classroom strategies for teacher" },
+            { value: "script",     label: "Conversation script for talking to student" },
+            { value: "plan",       label: "Wellbeing support plan" },
+            { value: "parent-letter", label: "Letter to parents" },
+            { value: "referral",   label: "Referral summary" },
+          ], required: true, span: "half" },
+          { id: "urgency", label: "Urgency Level", type: "select", options: [
+            { value: "monitoring",  label: "Monitoring — low level concern" },
+            { value: "early-help",  label: "Early help — needs support" },
+            { value: "urgent",      label: "Urgent — significant concern (safeguarding checkpoint required)" },
+          ], span: "half",
+            disabled: urgencyLocked,
+            // Use onChange to intercept urgent selection
+            onChange: (val: string) => {
+              if (urgencyLocked) return;
+              setUrgency(val);
+              if (val === "urgent" && !checkpointCleared) {
+                setShowCheckpoint(true);
+              }
+            },
+          },
+        ]}
+        buildPrompt={(v) => {
+          // Double-check: if urgency is urgent and checkpoint wasn't cleared, refuse silently
+          if (v.urgency === "urgent" && !checkpointCleared) {
+            setShowCheckpoint(true);
+            return { system: "", user: "", maxTokens: 1 };
+          }
+          return {
+            system: `You are an experienced UK school pastoral lead, SENCO, and mental health first aider. You provide evidence-based, trauma-informed wellbeing support guidance. You follow UK safeguarding procedures, KCSIE (Keeping Children Safe in Education), and the Mental Health in Schools guidance. You always signpost to appropriate professional services. You never provide clinical diagnoses or replace professional mental health support.`,
+            user: `Generate wellbeing support guidance for:
 
 Concern: ${v.concern}
 Year Group: ${v.yearGroup}
@@ -183,11 +311,12 @@ ${v.outputType === "referral" ? "Write a professional referral summary suitable 
 ${v.urgency === "urgent" ? `**SAFEGUARDING NOTE:** This has been flagged as an urgent significant concern. The DSL has been informed. Include at the top of this document: a clear safeguarding header, reminder that this document must be stored securely per your school's safeguarding policy, and the NSPCC helpline (0808 800 5000).` : ""}
 
 Always signpost to professional services. This guidance supports but does not replace professional mental health support.`,
-          maxTokens: 2500,
-        };
-      }}
-      outputTitle={(v) => `Wellbeing Support — ${v.concern} (${v.yearGroup})`}
-      formatOutput={(text) => formatToolOutput(text, { logoUrl: preferences.schoolLogoUrl, schoolName: preferences.schoolName, accentColor: "#e11d48", emoji: "❤️", title: "Wellbeing Support" })}
-    />
+            maxTokens: 2500,
+          };
+        }}
+        outputTitle={(v) => `Wellbeing Support — ${v.concern} (${v.yearGroup})`}
+        formatOutput={(text) => formatToolOutput(text, { logoUrl: preferences.schoolLogoUrl, schoolName: preferences.schoolName, accentColor: "#e11d48", emoji: "❤️", title: "Wellbeing Support" })}
+      />
+    </div>
   );
 }

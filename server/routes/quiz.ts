@@ -23,6 +23,13 @@ import path from "path";
 import { db } from "../db/index.js";
 import { requireAuth } from "../middleware/auth.js";
 import { z } from "zod";
+import {
+  broadcastQuestionReveal,
+  sendAnswerResult,
+  broadcastLeaderboard,
+  broadcastGameEnd,
+  broadcastToRoom,
+} from "../ws/quizWs.js";
 
 // Zod schema for AI-generated quiz questions (generate-from-doc route)
 const GeneratedQuizQuestionSchema = z.object({
@@ -330,6 +337,20 @@ router.post("/rooms/:code/start", requireAuth, async (req: Request, res: Respons
   room.phase = "question";
   room.currentQuestion = 0;
   room.questionStartedAt = Date.now();
+
+  // Broadcast question reveal via WebSocket
+  const q = room.questions[0];
+  if (q) {
+    broadcastQuestionReveal(room.code, {
+      questionIndex: 0,
+      totalQuestions: room.questions.length,
+      question: q.question,
+      options: q.options,
+      timeLimit: q.timeLimit,
+      questionStartedAt: room.questionStartedAt,
+    });
+  }
+
   res.json(sanitiseRoom(room));
 });
 
@@ -356,17 +377,41 @@ router.post("/rooms/:code/answer", async (req: Request, res: Response) => {
     player.answers[player.answers.length - 1] = false;
   }
 
+  // Send answer result to this player via WebSocket
+  sendAnswerResult(room.code, playerId, {
+    correct,
+    score: player.score,
+    streak: player.streak,
+  });
+
   // Auto-advance to reveal phase when ALL players have answered this question
   const playerList = Object.values(room.players);
   const allAnswered = playerList.length > 0 && playerList.every(
     (p: any) => p.answers.length > room.currentQuestion
   );
   if (allAnswered && room.phase === "question") {
+    // Broadcast leaderboard update to all players
+    const leaderboard = playerList
+      .sort((a, b) => b.score - a.score)
+      .map(p => ({ id: p.id, name: p.name, score: p.score, streak: p.streak }));
+    broadcastLeaderboard(room.code, leaderboard);
+
     // Delay 1.5s then move to reveal so clients can see the "all answered" state
     setTimeout(() => {
       if (room.phase === "question") {
         room.phase = "reveal";
         room.autoAdvancedAt = Date.now();
+        // Broadcast the phase change via WebSocket
+        broadcastToRoom(room.code, {
+          type: "leaderboard_update",
+          data: {
+            phase: "reveal",
+            correctIndex: room.questions[room.currentQuestion]?.correctIndex,
+            leaderboard: Object.values(room.players)
+              .sort((a, b) => b.score - a.score)
+              .map(p => ({ id: p.id, name: p.name, score: p.score, streak: p.streak })),
+          },
+        });
       }
     }, 1500);
   }
@@ -383,13 +428,40 @@ router.post("/rooms/:code/next", requireAuth, async (req: Request, res: Response
   if (room.phase === "question") {
     // Move to reveal
     room.phase = "reveal";
+    broadcastToRoom(room.code, {
+      type: "leaderboard_update",
+      data: {
+        phase: "reveal",
+        correctIndex: room.questions[room.currentQuestion]?.correctIndex,
+        leaderboard: Object.values(room.players)
+          .sort((a, b) => b.score - a.score)
+          .map(p => ({ id: p.id, name: p.name, score: p.score, streak: p.streak })),
+      },
+    });
   } else if (room.phase === "reveal") {
     if (room.currentQuestion + 1 >= room.questions.length) {
       room.phase = "ended";
+      // Broadcast game end
+      const finalLeaderboard = Object.values(room.players)
+        .sort((a, b) => b.score - a.score)
+        .map(p => ({ id: p.id, name: p.name, score: p.score }));
+      broadcastGameEnd(room.code, finalLeaderboard);
     } else {
       room.currentQuestion += 1;
       room.questionStartedAt = Date.now();
       room.phase = "question";
+      // Broadcast next question
+      const q = room.questions[room.currentQuestion];
+      if (q) {
+        broadcastQuestionReveal(room.code, {
+          questionIndex: room.currentQuestion,
+          totalQuestions: room.questions.length,
+          question: q.question,
+          options: q.options,
+          timeLimit: q.timeLimit,
+          questionStartedAt: room.questionStartedAt!,
+        });
+      }
     }
   }
   res.json(sanitiseRoom(room));
@@ -457,6 +529,11 @@ router.delete("/rooms/:code", requireAuth, async (req: Request, res: Response) =
   const room = rooms[req.params.code];
   if (!room) return res.status(404).json({ error: "Room not found" });
   if (room.hostId !== req.user!.id) return res.status(403).json({ error: "Only the host can close the room" });
+  // Broadcast game end via WebSocket before deleting
+  const finalLeaderboard = Object.values(room.players)
+    .sort((a, b) => b.score - a.score)
+    .map(p => ({ id: p.id, name: p.name, score: p.score }));
+  broadcastGameEnd(req.params.code, finalLeaderboard);
   delete rooms[req.params.code];
   res.json({ ok: true });
 });

@@ -2,7 +2,9 @@ import { useState } from "react";
 import { useUserPreferences } from "@/contexts/UserPreferencesContext";
 import { formatToolOutput } from "@/lib/format-tool-output";
 import AIToolPage from "@/components/AIToolPage";
-import { BookMarked, Printer } from "lucide-react";
+import { BookMarked, Printer, ImagePlus, X } from "lucide-react";
+import { DiagramPicker } from "@/components/DiagramPicker";
+import { Button } from "@/components/ui/button";
 
 const years = ["Reception","Year 1","Year 2","Year 3","Year 4","Year 5","Year 6","Year 7","Year 8","Year 9","Year 10","Year 11","Year 12","Year 13"].map(y => ({ value: y, label: y }));
 
@@ -135,8 +137,54 @@ function ThreeWayOutput({ parsed, rest, logoUrl, schoolName }: {
 export default function ComprehensionGenerator() {
   const { preferences } = useUserPreferences();
   const [lastDiff, setLastDiff] = useState<string>("3-way");
+  const [diagramPickerOpen, setDiagramPickerOpen] = useState(false);
+  const [selectedDiagram, setSelectedDiagram] = useState<{ url: string; filename: string } | null>(null);
 
   return (
+    <div className="space-y-0">
+      {/* Diagram attachment area */}
+      <div className="px-4 pt-4 max-w-3xl mx-auto">
+        <div className="flex items-center gap-2 flex-wrap mb-3">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setDiagramPickerOpen(true)}
+            className="gap-1.5 text-xs border-indigo-300 text-indigo-700 hover:bg-indigo-50"
+          >
+            <ImagePlus className="w-3.5 h-3.5" />
+            {selectedDiagram ? "Change Diagram" : "Attach Diagram"}
+          </Button>
+          {selectedDiagram && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSelectedDiagram(null)}
+              className="gap-1 text-xs text-red-600 hover:text-red-700 hover:bg-red-50"
+            >
+              <X className="w-3.5 h-3.5" /> Remove
+            </Button>
+          )}
+        </div>
+        {selectedDiagram && (
+          <div className="mb-4 p-3 rounded-lg border border-indigo-200 bg-indigo-50/50 flex items-center gap-3">
+            <img
+              src={selectedDiagram.url}
+              alt={selectedDiagram.filename}
+              className="w-20 h-20 object-contain rounded border bg-white"
+            />
+            <span className="text-xs text-indigo-700 font-medium">
+              {selectedDiagram.filename.replace(/\.(png|svg)$/, "").split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")}
+            </span>
+          </div>
+        )}
+      </div>
+
+      <DiagramPicker
+        open={diagramPickerOpen}
+        onOpenChange={setDiagramPickerOpen}
+        onSelect={(url, filename) => setSelectedDiagram({ url, filename })}
+      />
+
     <AIToolPage
       assignable={true}
       title="Comprehension Generator"
@@ -206,8 +254,12 @@ ${v.includeVocab !== "no" ? "\nAfter all levels: VOCABULARY ACTIVITY with 5-8 ke
             return `<div data-3way="${encodeURIComponent(JSON.stringify(parsed))}"></div>`;
           }
         }
-        return formatToolOutput(text, { logoUrl: preferences.schoolLogoUrl, schoolName: preferences.schoolName, accentColor: "#0284c7", emoji: "📖", title: "Comprehension" });
+        const diagramHtml = selectedDiagram
+          ? `<div style="text-align:center;margin-bottom:16px;"><img src="${selectedDiagram.url}" alt="${selectedDiagram.filename}" style="max-width:100%;max-height:300px;border-radius:8px;border:1px solid #e2e8f0;" /></div>`
+          : "";
+        return diagramHtml + formatToolOutput(text, { logoUrl: preferences.schoolLogoUrl, schoolName: preferences.schoolName, accentColor: "#0284c7", emoji: "📖", title: "Comprehension" });
       }}
     />
+    </div>
   );
 }

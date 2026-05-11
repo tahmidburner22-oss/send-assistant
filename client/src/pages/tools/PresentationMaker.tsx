@@ -9,6 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import { DiagramPicker } from "@/components/DiagramPicker";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
@@ -19,7 +21,7 @@ import {
   ArrowRight, List, Copy, Check, Plus, Users, AlertCircle,
   Pencil, Zap, Edit3, Calculator, GraduationCap, Sliders,
   Printer, Mail, Save, Maximize2, X, ChevronUp, ChevronDown,
-  Trash2, MoreVertical,
+  Trash2, MoreVertical, ImagePlus,
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -949,8 +951,9 @@ function buildSlidePrompt(params: {
   readingAge?: number;
   examBoard?: string;
   differentiationLevel?: "foundation" | "core" | "extension";
+  includeSpeakerNotes?: boolean;
 }): { system: string; user: string } {
-  const { subject, yearGroup, topic, lessonType, slideCount, objectives, additionalNotes, sendNeeds, readingAge, examBoard, differentiationLevel } = params;
+  const { subject, yearGroup, topic, lessonType, slideCount, objectives, additionalNotes, sendNeeds, readingAge, examBoard, differentiationLevel, includeSpeakerNotes = true } = params;
 
   const isSTEM = /maths|mathematics|physics|chemistry|biology|science|computing|computer|technology|engineering/i.test(subject);
   const isPrimary = /year [1-6]|ks1|ks2/i.test(yearGroup);
@@ -1110,7 +1113,7 @@ PRESENTATION DESIGN RULES:
 4. PROGRESSION: Difficulty escalates: recall → understand → apply → analyse → evaluate.
 5. INTERACTION: At least 30% of slides must be interactive (questions, activities, discussions).
 6. SPECIFICITY: Use real numbers, real contexts, real examples — never generic placeholders. If you write a worked example, SHOW the actual numbers. Do NOT write "solve this equation" — solve it yourself and show the solution. If you write a historical claim, cite the real date, real event, real named historian with their actual interpretation.
-7. CONCISENESS: Slide titles max 6 words. Speaker notes 2-4 sentences, practical and actionable.
+7. CONCISENESS: Slide titles max 6 words.${includeSpeakerNotes ? " Speaker notes 2-4 sentences, practical and actionable." : " Do NOT include speakerNotes in any slide."}
 8. IMAGE PROMPTS: For visual slides, include a specific image_prompt field describing an ideal photograph or diagram.
 
 TIMING (MANDATORY FOR EVERY ACTIVITY/TASK SLIDE):
@@ -3393,6 +3396,14 @@ export default function PresentationMaker() {
   const [comparisonActiveSlide, setComparisonActiveSlide] = useState(0);
   // Inline slide edit
   const [slideEditValues, setSlideEditValues] = useState<Partial<SlideContent>>({});
+  // Speaker notes toggle (default: on)
+  const [includeSpeakerNotes, setIncludeSpeakerNotes] = useState(true);
+  // Diagram picker state
+  const [diagramPickerOpen, setDiagramPickerOpen] = useState(false);
+  const [diagramTargetSlide, setDiagramTargetSlide] = useState<number>(0);
+  const [slideDiagrams, setSlideDiagrams] = useState<Record<number, { url: string; filename: string }>>({});
+  // Slide regeneration
+  const [regeneratingSlide, setRegeneratingSlide] = useState<number | null>(null);
 
   // ── Iterative refinement ─────────────────────────────────────────────────────
   // We keep the conversation history across generate → refine rounds so the
@@ -3437,6 +3448,7 @@ export default function PresentationMaker() {
         readingAge,
         examBoard,
         differentiationLevel,
+        includeSpeakerNotes,
       });
 
       const result = await callAI(system, userPrompt, 8000);
@@ -3610,6 +3622,46 @@ No markdown, no code fences, JSON only.`;
       toast.error(err.message || "Refinement failed. Please try again.");
     } finally {
       setRefining(false);
+    }
+  };
+
+  // ── Regenerate single slide ──────────────────────────────────────────────────
+  const handleRegenerateSlide = async (slideIndex: number) => {
+    if (!presentation) return;
+    setRegeneratingSlide(slideIndex);
+    try {
+      const slide = presentation.slides[slideIndex];
+      const system = `You are an expert UK teacher. You regenerate a single slide of a lesson presentation. Return ONLY a JSON object with the slide fields. No markdown, no code fences, just valid JSON.`;
+      const userMsg = `Regenerate this single slide for a ${presentation.subject} lesson on "${presentation.topic}" for ${presentation.yearGroup}.
+
+Slide type: "${slide.type}"
+Slide index: ${slideIndex + 1} of ${presentation.slides.length}
+Current title: "${slide.title}"
+
+Requirements:
+- Keep the same slide type ("${slide.type}")
+- Create fresh, different content from the original
+- Follow all the same quality rules (max 12 words per bullet, real examples, specificity)
+${includeSpeakerNotes ? "- Include speakerNotes (2-4 sentences of practical teaching guidance)" : "- Do NOT include speakerNotes"}
+- Include appropriate layout field
+- Return ONLY a valid JSON object with the slide fields`;
+
+      const result = await callAI(system, userMsg, 2000);
+      const rawText = typeof result === "string" ? result : (result as any).text || JSON.stringify(result);
+      const cleaned = rawText.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/, "").trim();
+      const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
+      const parsed = JSON.parse(jsonMatch ? jsonMatch[0] : cleaned);
+
+      const newSlides = [...presentation.slides];
+      newSlides[slideIndex] = { ...parsed, type: slide.type } as SlideContent;
+      setPresentation({ ...presentation, slides: newSlides });
+      setActiveSlide(slideIndex);
+      toast.success(`Slide ${slideIndex + 1} regenerated!`);
+    } catch (err: any) {
+      console.error("Slide regeneration failed:", err);
+      toast.error("Failed to regenerate slide. Please try again.");
+    } finally {
+      setRegeneratingSlide(null);
     }
   };
 
@@ -4251,6 +4303,17 @@ Return JSON array of adapted slides.`;
                       <Eye className="w-3 h-3 mr-1" />
                       {showNotes ? "Hide" : "Show"} Notes
                     </Button>
+                    <div className="flex items-center gap-1.5">
+                      <Switch
+                        id="speaker-notes-toggle"
+                        checked={includeSpeakerNotes}
+                        onCheckedChange={setIncludeSpeakerNotes}
+                        className="scale-75"
+                      />
+                      <Label htmlFor="speaker-notes-toggle" className="text-[10px] text-gray-500 cursor-pointer">
+                        Speaker Notes
+                      </Label>
+                    </div>
                     <Button
                       variant="outline"
                       size="sm"
@@ -4290,6 +4353,31 @@ Return JSON array of adapted slides.`;
                       index={activeSlide}
                       total={presentation.slides.length}
                     />
+                    {/* Attached diagram for current slide */}
+                    {slideDiagrams[activeSlide] && (
+                      <div className="mt-2 p-2 rounded-lg border border-indigo-200 bg-indigo-50/50 flex items-center gap-3">
+                        <img
+                          src={slideDiagrams[activeSlide].url}
+                          alt={slideDiagrams[activeSlide].filename}
+                          className="w-16 h-16 object-contain rounded border bg-white"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <span className="text-xs text-indigo-700 font-medium">
+                            {slideDiagrams[activeSlide].filename.replace(/\.(png|svg)$/, "").split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")}
+                          </span>
+                        </div>
+                        <button
+                          onClick={() => {
+                            const updated = { ...slideDiagrams };
+                            delete updated[activeSlide];
+                            setSlideDiagrams(updated);
+                          }}
+                          className="text-gray-400 hover:text-red-500 p-1"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    )}
                     {/* Navigation */}
                     <div className="flex items-center justify-between mt-3">
                       <Button
@@ -4316,7 +4404,7 @@ Return JSON array of adapted slides.`;
                     </div>
 
                     {/* Speaker notes */}
-                    {showNotes && currentSlide.speakerNotes && (
+                    {showNotes && includeSpeakerNotes && currentSlide.speakerNotes && (
                       <div className="mt-3 p-3 rounded-lg bg-amber-50 border border-amber-200">
                         <div className="text-xs font-semibold text-amber-800 mb-1">Speaker Notes</div>
                         <div className="text-xs text-amber-700 leading-relaxed">{currentSlide.speakerNotes}</div>
@@ -4347,9 +4435,17 @@ Return JSON array of adapted slides.`;
                         <div className="absolute top-0.5 right-0.5 hidden group-hover:flex gap-0.5 bg-white/90 rounded p-0.5 shadow">
                           <button onClick={(e) => { e.stopPropagation(); moveSlide(i, -1); }} disabled={i === 0} className="w-4 h-4 flex items-center justify-center hover:bg-gray-100 rounded disabled:opacity-30"><ChevronUp className="w-2.5 h-2.5" /></button>
                           <button onClick={(e) => { e.stopPropagation(); moveSlide(i, 1); }} disabled={i === presentation.slides.length - 1} className="w-4 h-4 flex items-center justify-center hover:bg-gray-100 rounded disabled:opacity-30"><ChevronDown className="w-2.5 h-2.5" /></button>
+                          <button onClick={(e) => { e.stopPropagation(); handleRegenerateSlide(i); }} disabled={regeneratingSlide === i} className="w-4 h-4 flex items-center justify-center hover:bg-green-50 rounded disabled:opacity-30" title="Regenerate this slide"><RefreshCw className={`w-2.5 h-2.5 text-green-600 ${regeneratingSlide === i ? "animate-spin" : ""}`} /></button>
+                          <button onClick={(e) => { e.stopPropagation(); setDiagramTargetSlide(i); setDiagramPickerOpen(true); }} className="w-4 h-4 flex items-center justify-center hover:bg-indigo-50 rounded" title="Add diagram"><ImagePlus className="w-2.5 h-2.5 text-indigo-600" /></button>
                           <button onClick={(e) => { e.stopPropagation(); startEditSlide(i); }} className="w-4 h-4 flex items-center justify-center hover:bg-blue-50 rounded"><Pencil className="w-2.5 h-2.5 text-blue-600" /></button>
                           <button onClick={(e) => { e.stopPropagation(); deleteSlide(i); }} disabled={presentation.slides.length <= 1} className="w-4 h-4 flex items-center justify-center hover:bg-red-50 rounded disabled:opacity-30"><Trash2 className="w-2.5 h-2.5 text-red-500" /></button>
                         </div>
+                        {/* Diagram indicator */}
+                        {slideDiagrams[i] && (
+                          <div className="absolute bottom-0.5 left-0.5 bg-indigo-100 rounded px-1 py-0.5">
+                            <ImagePlus className="w-2 h-2 text-indigo-600" />
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -4402,6 +4498,15 @@ Return JSON array of adapted slides.`;
                     </div>
                   </div>
                 )}
+
+                {/* DiagramPicker dialog */}
+                <DiagramPicker
+                  open={diagramPickerOpen}
+                  onOpenChange={setDiagramPickerOpen}
+                  onSelect={(url, filename) => {
+                    setSlideDiagrams(prev => ({ ...prev, [diagramTargetSlide]: { url, filename } }));
+                  }}
+                />
 
                 {/* Export buttons */}
                 <div className="flex gap-2 pt-2 border-t flex-wrap">

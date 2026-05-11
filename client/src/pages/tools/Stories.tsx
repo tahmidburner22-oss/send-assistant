@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { aiGenerateStory, callAI, aiScenarioSwapStory, aiGenerateComprehensionMCQ } from "@/lib/ai";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
@@ -8,7 +8,6 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
-import { Info, CheckCircle, Sparkles, RefreshCw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useApp } from "@/contexts/AppContext";
 import { yearGroups, sendNeeds, storyGenres, storyLengths, readingLevels, colorOverlays } from "@/lib/send-data";
@@ -40,8 +39,9 @@ async function fetchComprehensionQuestions(
     ];
   }
 }
-import { BookOpen, Sparkles, Copy, Download, Save, RotateCcw, Plus, X, Users, FileDown, Printer, Palette, ZoomIn, ZoomOut, PenLine, Check, Loader2 } from "lucide-react";
+import { BookOpen, Sparkles, Copy, Download, Save, RotateCcw, Plus, X, Users, FileDown, Printer, Palette, ZoomIn, ZoomOut, PenLine, Check, Loader2, Volume2, Play, Pause, Square, Info, CheckCircle, RefreshCw, ImagePlus } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { DiagramPicker } from "@/components/DiagramPicker";
 
 export default function Stories() {
   const { saveStory, children, assignWork, colorOverlay, setColorOverlay } = useApp();
@@ -68,6 +68,115 @@ export default function Stories() {
   const [scenarioSwapLoading, setScenarioSwapLoading] = useState(false);
   const [showScenarioDialog, setShowScenarioDialog] = useState(false);
   const [scenarioInput, setScenarioInput] = useState("");
+  // Diagram illustration state
+  const [diagramPickerOpen, setDiagramPickerOpen] = useState(false);
+  const [selectedDiagram, setSelectedDiagram] = useState<{ url: string; filename: string } | null>(null);
+  // TTS state
+  const [ttsActive, setTtsActive] = useState(false);
+  const [ttsPlaying, setTtsPlaying] = useState(false);
+  const [ttsSentenceIndex, setTtsSentenceIndex] = useState(-1);
+  const [ttsSpeed, setTtsSpeed] = useState(1);
+  const [ttsVoice, setTtsVoice] = useState("");
+  const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const ttsUtteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const ttsSentencesRef = useRef<string[]>([]);
+
+  // Load available English voices
+  useEffect(() => {
+    const loadVoices = () => {
+      const voices = window.speechSynthesis?.getVoices() || [];
+      const englishVoices = voices.filter(v => v.lang.startsWith("en"));
+      setAvailableVoices(englishVoices);
+      if (englishVoices.length > 0 && !ttsVoice) {
+        setTtsVoice(englishVoices[0].name);
+      }
+    };
+    loadVoices();
+    window.speechSynthesis?.addEventListener("voiceschanged", loadVoices);
+    return () => {
+      window.speechSynthesis?.removeEventListener("voiceschanged", loadVoices);
+    };
+  }, []);
+
+  // Split content into sentences for TTS
+  const getSentences = useCallback((content: string): string[] => {
+    if (!content) return [];
+    // Split by sentence-ending punctuation followed by space or end
+    return content
+      .replace(/\n+/g, " ")
+      .split(/(?<=[.!?])\s+/)
+      .filter(s => s.trim().length > 0);
+  }, []);
+
+  // TTS: speak a single sentence by index
+  const speakSentenceRef = useRef<(sentences: string[], index: number) => void>(() => {});
+  const speakSentence = useCallback((sentences: string[], index: number) => {
+    if (index >= sentences.length) {
+      // Done reading
+      setTtsActive(false);
+      setTtsPlaying(false);
+      setTtsSentenceIndex(-1);
+      return;
+    }
+    const utterance = new SpeechSynthesisUtterance(sentences[index]);
+    utterance.rate = ttsSpeed;
+    const voice = availableVoices.find(v => v.name === ttsVoice);
+    if (voice) utterance.voice = voice;
+    utterance.onend = () => {
+      const nextIdx = index + 1;
+      if (nextIdx < sentences.length) {
+        setTtsSentenceIndex(nextIdx);
+        speakSentenceRef.current(sentences, nextIdx);
+      } else {
+        setTtsActive(false);
+        setTtsPlaying(false);
+        setTtsSentenceIndex(-1);
+      }
+    };
+    ttsUtteranceRef.current = utterance;
+    setTtsSentenceIndex(index);
+    window.speechSynthesis.speak(utterance);
+  }, [ttsSpeed, ttsVoice, availableVoices]);
+
+  // Keep ref in sync
+  useEffect(() => {
+    speakSentenceRef.current = speakSentence;
+  }, [speakSentence]);
+
+  const handleTtsListen = () => {
+    if (!result) return;
+    const sentences = getSentences(result.content);
+    ttsSentencesRef.current = sentences;
+    window.speechSynthesis.cancel();
+    setTtsActive(true);
+    setTtsPlaying(true);
+    setTtsSentenceIndex(0);
+    speakSentence(sentences, 0);
+  };
+
+  const handleTtsPause = () => {
+    window.speechSynthesis.pause();
+    setTtsPlaying(false);
+  };
+
+  const handleTtsResume = () => {
+    window.speechSynthesis.resume();
+    setTtsPlaying(true);
+  };
+
+  const handleTtsStop = () => {
+    window.speechSynthesis.cancel();
+    setTtsActive(false);
+    setTtsPlaying(false);
+    setTtsSentenceIndex(-1);
+  };
+
+  // Clean up TTS on unmount
+  useEffect(() => {
+    return () => {
+      window.speechSynthesis?.cancel();
+    };
+  }, []);
 
   const addCharacter = () => setCharacters([...characters, ""]);
   const removeCharacter = (i: number) => setCharacters(characters.filter((_, idx) => idx !== i));
@@ -417,6 +526,27 @@ export default function Stories() {
             <Button variant="outline" size="sm" onClick={handlePrint}>
               <Printer className="w-3.5 h-3.5 mr-1.5" /> Print
             </Button>
+            {/* TTS Controls */}
+            {!ttsActive ? (
+              <Button variant="outline" size="sm" onClick={handleTtsListen} className="gap-1.5 border-teal-300 text-teal-700 hover:bg-teal-50">
+                <Volume2 className="w-3.5 h-3.5" /> Listen
+              </Button>
+            ) : (
+              <>
+                {ttsPlaying ? (
+                  <Button variant="outline" size="sm" onClick={handleTtsPause} className="gap-1.5 border-teal-300 text-teal-700 bg-teal-50">
+                    <Pause className="w-3.5 h-3.5" /> Pause
+                  </Button>
+                ) : (
+                  <Button variant="outline" size="sm" onClick={handleTtsResume} className="gap-1.5 border-teal-300 text-teal-700 hover:bg-teal-50">
+                    <Play className="w-3.5 h-3.5" /> Resume
+                  </Button>
+                )}
+                <Button variant="outline" size="sm" onClick={handleTtsStop} className="gap-1.5 border-red-300 text-red-700 hover:bg-red-50">
+                  <Square className="w-3.5 h-3.5" /> Stop
+                </Button>
+              </>
+            )}
             <Dialog open={showAssignDialog} onOpenChange={setShowAssignDialog}>
               <DialogTrigger asChild>
                 <Button variant="outline" size="sm"><Users className="w-3.5 h-3.5 mr-1.5" /> Assign</Button>
@@ -439,10 +569,44 @@ export default function Stories() {
             <Button variant="outline" size="sm" onClick={() => setShowScenarioDialog(true)} className="gap-1.5 border-orange-300 text-orange-700 hover:bg-orange-50" disabled={scenarioSwapLoading}>
               {scenarioSwapLoading ? <><RefreshCw className="w-3.5 h-3.5 animate-spin" /> Swapping...</> : <><RefreshCw className="w-3.5 h-3.5" /> Scenario Swap</>}
             </Button>
+            <Button variant="outline" size="sm" onClick={() => setDiagramPickerOpen(true)} className="gap-1.5 border-indigo-300 text-indigo-700 hover:bg-indigo-50">
+              <ImagePlus className="w-3.5 h-3.5" /> {selectedDiagram ? "Change Illustration" : "Add Illustration"}
+            </Button>
             <Button variant="outline" size="sm" onClick={() => setResult(null)}>
               <RotateCcw className="w-3.5 h-3.5 mr-1.5" /> New Story
             </Button>
           </div>
+
+          {/* TTS Speed & Voice Controls */}
+          {ttsActive && (
+            <div className="flex flex-wrap items-center gap-3 no-print rounded-lg border border-teal-200 bg-teal-50/50 p-2.5">
+              <div className="flex items-center gap-1.5">
+                <Label className="text-xs font-medium text-teal-700">Speed:</Label>
+                <div className="flex gap-0.5">
+                  {[0.75, 1, 1.25, 1.5].map(speed => (
+                    <button key={speed} onClick={() => setTtsSpeed(speed)}
+                      className={`px-2 py-1 rounded text-xs font-medium transition-all ${ttsSpeed === speed ? "bg-teal-600 text-white" : "bg-white text-teal-700 border border-teal-200 hover:bg-teal-100"}`}>
+                      {speed}x
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {availableVoices.length > 0 && (
+                <div className="flex items-center gap-1.5">
+                  <Label className="text-xs font-medium text-teal-700">Voice:</Label>
+                  <select
+                    value={ttsVoice}
+                    onChange={e => setTtsVoice(e.target.value)}
+                    className="text-xs border border-teal-200 rounded px-2 py-1 bg-white text-teal-700 max-w-[180px]"
+                  >
+                    {availableVoices.map(v => (
+                      <option key={v.name} value={v.name}>{v.name} ({v.lang})</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Scenario Swap Dialog */}
           <Dialog open={showScenarioDialog} onOpenChange={setShowScenarioDialog}>
@@ -560,6 +724,34 @@ export default function Stories() {
           {/* Story output — ref captures entire story including book cover for PDF/print */}
           <div ref={storyContainerRef}>
 
+          {/* Selected illustration */}
+          {selectedDiagram && (
+            <div className="story-content mb-4">
+              <div className="relative p-4 rounded-lg border border-indigo-200 bg-indigo-50/50 text-center">
+                <button
+                  onClick={() => setSelectedDiagram(null)}
+                  className="absolute top-2 right-2 p-1 rounded-full bg-white border border-gray-200 hover:bg-red-50 hover:border-red-300 transition-colors no-print"
+                >
+                  <X className="w-3 h-3 text-gray-500 hover:text-red-500" />
+                </button>
+                <img
+                  src={selectedDiagram.url}
+                  alt={selectedDiagram.filename}
+                  className="max-w-full max-h-64 mx-auto rounded border bg-white"
+                />
+                <p className="text-xs text-indigo-600 font-medium mt-2">
+                  {selectedDiagram.filename.replace(/\.(png|svg)$/, "").split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")}
+                </p>
+              </div>
+            </div>
+          )}
+
+          <DiagramPicker
+            open={diagramPickerOpen}
+            onOpenChange={setDiagramPickerOpen}
+            onSelect={(url, filename) => setSelectedDiagram({ url, filename })}
+          />
+
           {/* Book Cover */}
           <div className="story-content">
             <BookCover title={result.title} genre={genre} yearGroup={yearGroup} />
@@ -569,11 +761,23 @@ export default function Stories() {
           <div className="story-content" style={{ backgroundColor: overlayBg }}>
             <Card className="border-border/50 overflow-hidden shadow-md" style={{ backgroundColor: overlayBg }}>
               <CardContent className="px-6 sm:px-12 py-8 sm:py-10" style={{ backgroundColor: overlayBg }}>
-                <div
-                  className="prose prose-sm max-w-none"
-                  style={{ fontSize: `${textSize}px` }}
-                  dangerouslySetInnerHTML={{ __html: storyToHtml(result.content, textSize) }}
-                />
+                {ttsActive && ttsSentenceIndex >= 0 ? (
+                  <div className="prose prose-sm max-w-none" style={{ fontSize: `${textSize}px` }}>
+                    {getSentences(result.content).map((sentence, idx) => (
+                      <span key={idx}
+                        className={`${idx === ttsSentenceIndex ? "bg-yellow-200 rounded px-0.5" : ""}`}
+                        style={{ fontSize: `${textSize}px`, lineHeight: "1.8" }}>
+                        {sentence}{" "}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <div
+                    className="prose prose-sm max-w-none"
+                    style={{ fontSize: `${textSize}px` }}
+                    dangerouslySetInnerHTML={{ __html: storyToHtml(result.content, textSize) }}
+                  />
+                )}
               </CardContent>
             </Card>
           </div>

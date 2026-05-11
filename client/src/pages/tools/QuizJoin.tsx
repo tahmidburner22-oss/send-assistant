@@ -4,7 +4,7 @@
  * Players visit /quiz-join or /quiz-join/:code, enter their name,
  * then answer questions in real-time on their own device.
  */
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useRoute } from "wouter";
 import { Zap, CheckCircle, XCircle, Trophy, RefreshCw, Users, Settings, Type, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -28,6 +28,157 @@ interface RoomState {
   } | null;
   players: { id: string; name: string; score: number; streak: number; answers: (boolean | null)[]; }[];
   playerCount: number;
+}
+
+// ─── WebSocket Hook ─────────────────────────────────────────────────────────
+interface UseQuizWebSocketOptions {
+  roomCode: string;
+  playerId: string;
+  onQuestionReveal?: (data: any) => void;
+  onAnswerResult?: (data: any) => void;
+  onLeaderboardUpdate?: (data: any) => void;
+  onGameEnd?: (data: any) => void;
+}
+
+interface UseQuizWebSocketReturn {
+  connected: boolean;
+  sendMessage: (msg: any) => void;
+  wsFailedPermanently: boolean;
+}
+
+function useQuizWebSocket({
+  roomCode,
+  playerId,
+  onQuestionReveal,
+  onAnswerResult,
+  onLeaderboardUpdate,
+  onGameEnd,
+}: UseQuizWebSocketOptions): UseQuizWebSocketReturn {
+  const [connected, setConnected] = useState(false);
+  const [wsFailedPermanently, setWsFailedPermanently] = useState(false);
+  const wsRef = useRef<WebSocket | null>(null);
+  const retriesRef = useRef(0);
+  const maxRetries = 3;
+  const mountedRef = useRef(true);
+
+  // Store callbacks in refs to avoid reconnection on callback changes
+  const callbacksRef = useRef({
+    onQuestionReveal,
+    onAnswerResult,
+    onLeaderboardUpdate,
+    onGameEnd,
+  });
+  callbacksRef.current = {
+    onQuestionReveal,
+    onAnswerResult,
+    onLeaderboardUpdate,
+    onGameEnd,
+  };
+
+  const connect = useCallback(() => {
+    if (!roomCode || !playerId || !mountedRef.current) return;
+
+    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    const url = `${protocol}//${window.location.host}/ws/quiz?room=${roomCode}&player=${playerId}`;
+
+    try {
+      const ws = new WebSocket(url);
+      wsRef.current = ws;
+
+      ws.onopen = () => {
+        if (!mountedRef.current) { ws.close(); return; }
+        setConnected(true);
+        retriesRef.current = 0;
+        // Persist for session recovery
+        try {
+          localStorage.setItem("quiz_playerId", playerId);
+          localStorage.setItem("quiz_roomCode", roomCode);
+        } catch {}
+      };
+
+      ws.onmessage = (event) => {
+        try {
+          const msg = JSON.parse(event.data);
+          switch (msg.type) {
+            case "question_reveal":
+              callbacksRef.current.onQuestionReveal?.(msg.data);
+              break;
+            case "answer_result":
+              callbacksRef.current.onAnswerResult?.(msg.data);
+              break;
+            case "leaderboard_update":
+              callbacksRef.current.onLeaderboardUpdate?.(msg.data);
+              break;
+            case "game_end":
+              callbacksRef.current.onGameEnd?.(msg.data);
+              break;
+            case "pong":
+              // Heartbeat response, no action needed
+              break;
+          }
+        } catch {
+          // Ignore malformed messages
+        }
+      };
+
+      ws.onclose = () => {
+        if (!mountedRef.current) return;
+        setConnected(false);
+        wsRef.current = null;
+
+        // Attempt reconnection with exponential backoff
+        if (retriesRef.current < maxRetries) {
+          const delay = Math.pow(2, retriesRef.current) * 1000; // 1s, 2s, 4s
+          retriesRef.current += 1;
+          setTimeout(() => {
+            if (mountedRef.current) connect();
+          }, delay);
+        } else {
+          setWsFailedPermanently(true);
+        }
+      };
+
+      ws.onerror = () => {
+        // onclose will fire after this, handling reconnection
+        ws.close();
+      };
+    } catch {
+      setWsFailedPermanently(true);
+    }
+  }, [roomCode, playerId]);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    if (roomCode && playerId) {
+      connect();
+    }
+    return () => {
+      mountedRef.current = false;
+      if (wsRef.current) {
+        wsRef.current.close();
+        wsRef.current = null;
+      }
+    };
+  }, [connect, roomCode, playerId]);
+
+  // Heartbeat ping every 30s to keep connection alive
+  useEffect(() => {
+    if (!connected) return;
+    const interval = setInterval(() => {
+      if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+        wsRef.current.send(JSON.stringify({ type: "ping" }));
+      }
+    }, 30000);
+    return () => clearInterval(interval);
+  }, [connected]);
+
+  const sendMessage = useCallback((msg: any) => {
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify(msg));
+    }
+  }, []);
+
+  return { connected, sendMessage, wsFailedPermanently };
 }
 
 const ANSWER_COLOURS = [
@@ -72,8 +223,77 @@ export default function QuizJoin() {
   const prevQuestionRef = useRef(-1);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [usePollingFallback, setUsePollingFallback] = useState(false);
 
-  // Poll room state
+  // WebSocket hook - connects when player has joined
+  const { connected: wsConnected, wsFailedPermanently } = useQuizWebSocket({
+    roomCode: joinedCode,
+    playerId,
+    onQuestionReveal: (data) => {
+      setRoom(prev => prev ? {
+        ...prev,
+        phase: "question",
+        currentQuestion: data.questionIndex,
+        totalQuestions: data.totalQuestions,
+        questionStartedAt: data.questionStartedAt,
+        currentQ: {
+          id: `q-${data.questionIndex}`,
+          question: data.question,
+          options: data.options,
+          timeLimit: data.timeLimit,
+        },
+      } : prev);
+      // Reset answered state for new question
+      setHasAnswered(false);
+      setLastAnswerIndex(null);
+      setLastAnswerCorrect(null);
+      setShowA11yPanel(false);
+      prevQuestionRef.current = data.questionIndex;
+    },
+    onAnswerResult: (data) => {
+      setLastAnswerCorrect(data.correct);
+      setScore(data.score);
+      setStreak(data.streak);
+    },
+    onLeaderboardUpdate: (data) => {
+      if (data.phase === "reveal") {
+        setRoom(prev => prev ? {
+          ...prev,
+          phase: "reveal",
+          currentQ: prev.currentQ ? { ...prev.currentQ, correctIndex: data.correctIndex } : prev.currentQ,
+          players: data.leaderboard || prev.players,
+        } : prev);
+      } else if (data.leaderboard) {
+        setRoom(prev => prev ? { ...prev, players: data.leaderboard } : prev);
+      }
+    },
+    onGameEnd: (data) => {
+      setRoom(prev => prev ? {
+        ...prev,
+        phase: "ended",
+        players: data.leaderboard || prev?.players || [],
+      } : prev);
+      stopPolling();
+    },
+  });
+
+  // Fall back to polling if WebSocket fails permanently
+  useEffect(() => {
+    if (wsFailedPermanently && joinedCode && !usePollingFallback) {
+      setUsePollingFallback(true);
+      startPolling(joinedCode);
+    }
+  }, [wsFailedPermanently, joinedCode, usePollingFallback]);
+
+  // If WebSocket connects successfully after polling was started, stop polling
+  useEffect(() => {
+    if (wsConnected && usePollingFallback) {
+      stopPolling();
+      setUsePollingFallback(false);
+    }
+  }, [wsConnected, usePollingFallback]);
+
+  // Poll room state (used as fallback when WebSocket fails)
   async function pollRoom(code: string) {
     try {
       const res = await fetch(`/api/quiz/rooms/${code}`, { credentials: "include" });
@@ -86,7 +306,7 @@ export default function QuizJoin() {
         setHasAnswered(false);
         setLastAnswerIndex(null);
         setLastAnswerCorrect(null);
-        setShowA11yPanel(false); // Close settings panel on question change to prevent glitch
+        setShowA11yPanel(false);
       }
     } catch {}
   }
@@ -114,6 +334,13 @@ export default function QuizJoin() {
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [room?.phase, room?.currentQuestion]);
 
+  // Stop polling when WebSocket is connected (primary channel takes over)
+  useEffect(() => {
+    if (wsConnected && pollRef.current) {
+      stopPolling();
+    }
+  }, [wsConnected]);
+
   useEffect(() => () => { stopPolling(); }, []);
 
   async function handleJoin() {
@@ -134,6 +361,8 @@ export default function QuizJoin() {
       setPlayerId(data.playerId);
       setJoinedCode(code);
       await pollRoom(code);
+      // WebSocket will auto-connect via the hook when joinedCode and playerId are set.
+      // Start polling as initial sync - it will be stopped if WebSocket connects.
       startPolling(code);
     } catch { toast.error("Network error. Try again."); }
     finally { setJoining(false); }
