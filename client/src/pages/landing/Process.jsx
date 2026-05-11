@@ -570,7 +570,7 @@ export default function Process() {
   const [isDesktop, setIsDesktop] = useState(true);
 
   useEffect(() => {
-    const check = () => setIsDesktop(window.innerWidth >= 1024);
+    const check = () => setIsDesktop(window.innerWidth >= 1024 && !(window.innerHeight < 500 && window.innerWidth < 1200));
     check();
     window.addEventListener("resize", check);
     return () => window.removeEventListener("resize", check);

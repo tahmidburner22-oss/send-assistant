@@ -6,7 +6,7 @@ import { Bell, Check, TrendingUp } from "lucide-react";
 
 export default function ParentPortal() {
   return (
-    <section id="parent-portal" data-testid="parentportal-section" className="relative py-28 md:py-40 px-6 md:px-12">
+    <section id="parent-portal" data-testid="parentportal-section" className="relative py-14 md:py-20 px-6 md:px-12">
       <div className="max-w-7xl mx-auto">
         <div className="max-w-2xl mb-14">
           <div className="text-xs uppercase tracking-[0.2em] text-terracotta font-semibold">Parent portal</div>

@@ -52,7 +52,7 @@ export default function EhcpBuilder() {
       ref={ref}
       id="ehcp"
       data-testid="ehcp-section"
-      className="relative py-28 md:py-40 px-6 md:px-12"
+      className="relative py-14 md:py-20 px-6 md:px-12"
     >
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">

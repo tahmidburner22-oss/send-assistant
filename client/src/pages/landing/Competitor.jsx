@@ -48,7 +48,7 @@ function Cell({ v, highlight }) {
 
 export default function Competitor() {
   return (
-    <section id="why-adaptly" data-testid="competitor-section" className="relative py-28 md:py-40 px-6 md:px-12">
+    <section id="why-adaptly" data-testid="competitor-section" className="relative py-14 md:py-20 px-6 md:px-12">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-14">
           <div className="max-w-2xl">

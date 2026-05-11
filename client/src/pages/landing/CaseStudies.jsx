@@ -7,7 +7,7 @@ export default function CaseStudies() {
     <section
       id="case-studies"
       data-testid="casestudies-section"
-      className="relative py-28 md:py-40 px-6 md:px-12 bg-ink-900 text-cream-100 rounded-t-[2rem] md:rounded-t-[3rem] overflow-hidden"
+      className="relative py-14 md:py-20 px-6 md:px-12 bg-ink-900 text-cream-100 rounded-t-[2rem] md:rounded-t-[3rem] overflow-hidden"
     >
       {/* Texture */}
       <div className="absolute inset-0 opacity-[0.06] pointer-events-none"

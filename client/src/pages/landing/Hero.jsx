@@ -84,6 +84,19 @@ function useHeroLayout() {
   useEffect(() => {
     const compute = () => {
       const w = window.innerWidth;
+      const h = window.innerHeight;
+      if (h < 500 && w < 1200) {
+        // Landscape phone — use mobile config
+        setLayout({
+          sceneHeight: "auto",
+          orbitRadius: 135,
+          orbitCount: 5,
+          enableTitleMorph: false,
+          mouseParallaxRange: 0,
+          sticky: false,
+        });
+        return;
+      }
       if (w < 640) {
         setLayout({
           sceneHeight: "auto",

@@ -14,7 +14,7 @@ import { TOOLS } from "./lib/data";
 export default function ServicesHorizontal() {
   const [isDesktop, setIsDesktop] = useState(false);
   useEffect(() => {
-    const check = () => setIsDesktop(window.innerWidth >= 1024);
+    const check = () => setIsDesktop(window.innerWidth >= 1024 && !(window.innerHeight < 500 && window.innerWidth < 1200));
     check();
     window.addEventListener("resize", check);
     return () => window.removeEventListener("resize", check);
@@ -147,13 +147,13 @@ function ServicesHorizontalDesktop() {
 
   // Translate by the MEASURED pixel delta so every card is revealed before
   // the section ends. `travel` is a plain number, so we compute pixel output.
-  const x = useTransform(smooth, (v) => -v * travel);
+  const x = useTransform(smooth, [0, 0.85], [0, -travel]);
 
   // Section height formula: we want exactly `travel` pixels of vertical
   // scroll to move the rail end-to-end, plus one full viewport at the
   // start and end for the pin entry/exit. That gives a total section
   // height of (100vh + travel).
-  const sectionHeight = `calc(100vh + ${travel}px)`;
+  const sectionHeight = `calc(100vh + ${travel * 1.15}px)`;
 
   return (
     <section
