@@ -1,6 +1,7 @@
 import { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 
+// Editorial Swiss Humanism: pinned moments must hand off promptly once their evidence is understood.
 // Pinned scroll section. Worksheet card zooms into frame while the copy fades.
 // Closing 20% of scroll slides a cream curtain up so the next (cream) section
 // blends in with no hard colour break.
@@ -27,7 +28,7 @@ export default function ZoomParallax() {
       ref={ref}
       id="zoom"
       data-testid="zoom-section"
-      className="relative h-[170vh] sm:h-[200vh] lg:h-[220vh]"
+      className="relative h-[135vh] sm:h-[150vh] lg:h-[165vh]"
     >
       <div className="sticky top-0 h-[100svh] overflow-hidden bg-ink-900">
         <div className="absolute -top-40 -right-40 w-[700px] h-[700px] rounded-full bg-terracotta/20 blur-[160px] pointer-events-none" />

@@ -1,8 +1,9 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { motion, useScroll, useTransform, useSpring } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
 import { TOOLS } from "./lib/data";
 
-// Horizontal pinned scroll through all 24 tools on desktop (≥1024px).
+// Editorial Swiss Humanism: the services rail behaves like a measured evidence ledger, locking vertical progression until the horizontal story has completed.
+// Horizontal pinned scroll through all 24 tools on desktop-class viewports.
 // The rail's travel distance is MEASURED from the DOM (rail.scrollWidth -
 // viewport.clientWidth), not guessed in vw. The section height is
 // correspondingly sized so that scrollYProgress = 1 exactly when the rail
@@ -14,7 +15,12 @@ import { TOOLS } from "./lib/data";
 export default function ServicesHorizontal() {
   const [isDesktop, setIsDesktop] = useState(false);
   useEffect(() => {
-    const check = () => setIsDesktop(window.innerWidth >= 1024 && !(window.innerHeight < 500 && window.innerWidth < 1200));
+    const check = () => {
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      const tabletLandscape = w < 1180 && h <= 900;
+      setIsDesktop(w >= 1180 && h >= 650 && !tabletLandscape);
+    };
     check();
     window.addEventListener("resize", check);
     return () => window.removeEventListener("resize", check);
@@ -139,21 +145,14 @@ function ServicesHorizontalDesktop() {
     target: sectionRef,
     offset: ["start start", "end end"],
   });
-  const smooth = useSpring(scrollYProgress, {
-    stiffness: 140,
-    damping: 30,
-    mass: 0.3,
-  });
+  // Translate by the MEASURED pixel delta. The mapping is deliberately one-to-one
+  // with section progress so vertical movement stays pinned until the final card
+  // has reached its end position; no spring lag and no extra tail-scroll gap.
+  const x = useTransform(scrollYProgress, [0, 1], [0, -travel]);
 
-  // Translate by the MEASURED pixel delta so every card is revealed before
-  // the section ends. `travel` is a plain number, so we compute pixel output.
-  const x = useTransform(smooth, [0, 0.85], [0, -travel]);
-
-  // Section height formula: we want exactly `travel` pixels of vertical
-  // scroll to move the rail end-to-end, plus one full viewport at the
-  // start and end for the pin entry/exit. That gives a total section
-  // height of (100vh + travel).
-  const sectionHeight = `calc(100vh + ${travel * 1.15}px)`;
+  // One viewport for the sticky stage plus exactly the measured horizontal
+  // distance as vertical scroll. This is the browser-native vertical lock.
+  const sectionHeight = travel > 0 ? `calc(100svh + ${travel}px)` : "100svh";
 
   return (
     <section
@@ -224,7 +223,7 @@ function ServicesHorizontalDesktop() {
           <div className="flex-shrink-0 w-[10vw] min-w-[120px]" />
         </motion.div>
 
-        <ScrollProgressBar progress={smooth} />
+        <ScrollProgressBar progress={scrollYProgress} />
       </div>
     </section>
   );
