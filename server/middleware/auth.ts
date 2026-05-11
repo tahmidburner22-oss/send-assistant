@@ -78,6 +78,39 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
   }
 }
 
+/**
+ * Optional authentication — populates req.user if a valid token is present, but
+ * never responds with an error and always calls next(). Use this on routes that
+ * support both authenticated (teacher) and cookie-less (parent-code) access.
+ */
+export async function tryAuthOptional(req: Request, res: Response, next: NextFunction) {
+  const token = extractToken(req);
+  if (!token) return next();
+  try {
+    const payload = jwt.verify(token, JWT_SECRET) as AuthUser & { mfaVerified?: boolean };
+    const session = await db.prepare(
+      "SELECT * FROM sessions WHERE token = ? AND expires_at > NOW()"
+    ).get(token) as any;
+    if (!session) return next();
+    const user = await db.prepare("SELECT * FROM users WHERE id = ? AND is_active = 1").get(payload.id) as any;
+    if (!user) return next();
+    // If MFA is enabled and not verified, skip auth (don't block — parent-code fallback may still work)
+    if (user.mfa_enabled && !payload.mfaVerified) return next();
+    req.user = {
+      id: user.id,
+      email: user.email,
+      displayName: user.display_name,
+      role: user.role,
+      schoolId: user.school_id,
+      mfaEnabled: !!user.mfa_enabled,
+      mfaVerified: payload.mfaVerified,
+    };
+  } catch {
+    /* invalid token — continue unauthenticated */
+  }
+  next();
+}
+
 export function requireAdmin(req: Request, res: Response, next: NextFunction) {
   if (!req.user) return res.status(401).json({ error: "Authentication required" });
   const adminRoles = ["mat_admin", "school_admin"];

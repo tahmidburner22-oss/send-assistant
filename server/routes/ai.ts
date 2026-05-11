@@ -2,7 +2,7 @@ import { Router, Request, Response } from "express";
 import { v4 as uuidv4 } from "uuid";
 import multer from "multer";
 import db, { query as dbQuery } from "../db/index.js";
-import { requireAuth, requireAdmin, auditLog } from "../middleware/auth.js";
+import { requireAuth, requireAdmin, auditLog, tryAuthOptional } from "../middleware/auth.js";
 import { filterContent } from "../lib/contentFilter.js";
 import { getSchoolKey } from "./schoolApiKeys.js";
 import { canonicalTopicKey, topicsMatch } from "../lib/topicNormalizer.js";
@@ -3217,46 +3217,30 @@ router.post("/presentation/email", requireAuth, async (req: Request, res: Respon
 // ──────────────────────────────────────────────────────────────────────────────
 
 async function assertPupilDocAccess(req: Request): Promise<{ ok: true; schoolId: string | null } | { ok: false; status: number; message: string }> {
-  // If teacher is authenticated, allow. (req.user is only set after requireAuth.)
+  // If teacher is authenticated, allow. (req.user is only set after tryAuthOptional.)
   if (req.user?.id) return { ok: true, schoolId: req.user.schoolId || null };
-  // Otherwise require a parent code matching a real pupil.
+  // Otherwise require a parent code matching a real pupil (either `code` or
+  // `parent_access_code` — both columns are in use across the codebase).
   const parentCode = (req.headers["x-parent-code"] as string || "").trim().toUpperCase();
   if (!parentCode) return { ok: false, status: 401, message: "Sign in or provide X-Parent-Code." };
-  const pupil = await db.prepare("SELECT school_id FROM pupils WHERE UPPER(code) = ?").get(parentCode) as any;
+  const pupil = await db.prepare(
+    "SELECT school_id FROM pupils WHERE UPPER(code) = ? OR UPPER(parent_access_code) = ?"
+  ).get(parentCode, parentCode) as any;
   if (!pupil) return { ok: false, status: 403, message: "Invalid parent code." };
   return { ok: true, schoolId: pupil.school_id || null };
 }
 
 /**
- * Lightweight middleware: try to authenticate via JWT. If no token is present,
- * do not block — continue to the route and let it check X-Parent-Code instead.
- * If a token IS present but invalid, still continue (route will fall back).
+ * Delegates to the shared `tryAuthOptional` middleware: populates `req.user` if
+ * a valid session token is present, but never responds with an error and always
+ * continues — leaving the route free to fall back to the `X-Parent-Code` header.
+ *
+ * The previous implementation wrapped `requireAuth` and monkey-patched `res.status`
+ * to swallow 401s, but `requireAuth` never calls `next()` on failure, so the
+ * wrapper hung until the client timed out. That caused "CV builder doesn't work"
+ * — every parent-code request hung for ~30s before the browser aborted.
  */
-async function tryAuthForDocs(req: Request, res: Response, next: () => void) {
-  const hasCookie = typeof req.headers.cookie === "string" && /(?:^|;\s*)token=/.test(req.headers.cookie);
-  const hasAuthHeader = typeof req.headers.authorization === "string" && req.headers.authorization.startsWith("Bearer ");
-  if (!hasCookie && !hasAuthHeader) return next();
-
-  const originalStatus = res.status.bind(res);
-  const originalJson = res.json.bind(res);
-  let intercepted = false;
-  (res as any).status = (code: number) => {
-    if (code === 401 || code === 403) { intercepted = true; return { json: () => res }; }
-    return originalStatus(code);
-  };
-  (res as any).json = (body: unknown) => {
-    if (intercepted) return res;
-    return originalJson(body);
-  };
-  try {
-    await new Promise<void>((resolve) => { requireAuth(req, res, (() => resolve()) as any); });
-  } catch { /* ignore */ }
-  finally {
-    (res as any).status = originalStatus;
-    (res as any).json = originalJson;
-  }
-  next();
-}
+const tryAuthForDocs = tryAuthOptional;
 
 function safeStr(v: any, max = 400): string {
   if (v == null) return "";
