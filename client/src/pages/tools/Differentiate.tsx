@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { aiDifferentiateTask, callAI } from "@/lib/ai";
+import { callAI } from "@/lib/ai";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,15 +8,73 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
-import { Sparkles, Copy, RotateCcw, FileDown, Printer, Palette, ZoomIn, ZoomOut, PenLine, X, Check, Loader2, UserPlus, Info, CheckCircle } from "lucide-react";
+import { Sparkles, Copy, RotateCcw, FileDown, Printer, Palette, ZoomIn, ZoomOut, PenLine, X, Check, Loader2, UserPlus, Info, CheckCircle, Eye, RefreshCw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { subjects, yearGroups, sendNeeds, difficulties, colorOverlays } from "@/lib/send-data";
 import SENDInfoPanel from "@/components/SENDInfoPanel";
 import { downloadDifferentiatedPdf } from "@/lib/pdf-generator";
 import { renderMath } from "@/components/WorksheetRenderer";
 import { useApp } from "@/contexts/AppContext";
 import { useUserPreferences } from "@/contexts/UserPreferencesContext";
+
+// ─── Parse 3-way differentiated output ──────────────────────────────────────
+function parse3Way(text: string): { support: string; core: string; extension: string } | null {
+  const supportMatch = text.match(/\*\*Support\s*Level\*\*([^]*?)(?=\*\*Core\s*Level\*\*|\*\*Extension\s*Level\*\*|$)/i);
+  const coreMatch = text.match(/\*\*Core\s*Level\*\*([^]*?)(?=\*\*Extension\s*Level\*\*|$)/i);
+  const extensionMatch = text.match(/\*\*Extension\s*Level\*\*([^]*?)(?=$)/i);
+  if (!supportMatch && !coreMatch && !extensionMatch) return null;
+  return {
+    support: supportMatch?.[1]?.trim() || "",
+    core: coreMatch?.[1]?.trim() || "",
+    extension: extensionMatch?.[1]?.trim() || "",
+  };
+}
+
+// ─── Word-level diff algorithm ──────────────────────────────────────────────
+function computeWordDiff(original: string, modified: string): Array<{ type: "same" | "added" | "removed"; word: string }> {
+  const origWords = original.split(/\s+/).filter(Boolean);
+  const modWords = modified.split(/\s+/).filter(Boolean);
+
+  // LCS-based diff
+  const m = origWords.length;
+  const n = modWords.length;
+  const dp: number[][] = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
+
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      if (origWords[i - 1] === modWords[j - 1]) {
+        dp[i][j] = dp[i - 1][j - 1] + 1;
+      } else {
+        dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+      }
+    }
+  }
+
+  // Backtrack to build diff
+  const result: Array<{ type: "same" | "added" | "removed"; word: string }> = [];
+  let i = m, j = n;
+  const stack: Array<{ type: "same" | "added" | "removed"; word: string }> = [];
+
+  while (i > 0 || j > 0) {
+    if (i > 0 && j > 0 && origWords[i - 1] === modWords[j - 1]) {
+      stack.push({ type: "same", word: origWords[i - 1] });
+      i--;
+      j--;
+    } else if (j > 0 && (i === 0 || dp[i][j - 1] >= dp[i - 1][j])) {
+      stack.push({ type: "added", word: modWords[j - 1] });
+      j--;
+    } else {
+      stack.push({ type: "removed", word: origWords[i - 1] });
+      i--;
+    }
+  }
+
+  stack.reverse();
+  result.push(...stack);
+  return result;
+}
 
 export default function Differentiate() {
   const { colorOverlay, setColorOverlay, saveDifferentiation, children, assignWork } = useApp();
@@ -55,6 +113,14 @@ export default function Differentiate() {
   const [manualText, setManualText] = useState("");
   const [aiPrompt, setAiPrompt] = useState("");
   const [aiEditLoading, setAiEditLoading] = useState(false);
+  // 3-way output state
+  const [parsedLevels, setParsedLevels] = useState<{ support: string; core: string; extension: string } | null>(null);
+  const [activeTab, setActiveTab] = useState("core");
+  // Diff highlight state
+  const [showDiff, setShowDiff] = useState(false);
+  // Remix state
+  const [showRemixSelect, setShowRemixSelect] = useState(false);
+  const [remixLoading, setRemixLoading] = useState(false);
 
   
 
@@ -65,21 +131,63 @@ export default function Differentiate() {
     }
     setLoading(true);
     try {
-      const aiResult = await aiDifferentiateTask({
-        taskContent: originalTask,
-        sendNeed: sendNeed || undefined,
-        yearGroup,
-        subject,
-      });
-      setResult(aiResult.differentiatedContent);
-      saveDifferentiation({ taskContent: originalTask, differentiatedContent: aiResult.differentiatedContent, sendNeed: sendNeed || undefined, yearGroup, subject });
+      const system = `You are a SEND specialist teacher who differentiates tasks to make them accessible for all learners. You follow UK SEND Code of Practice guidelines precisely.`;
+      const user = `Differentiate this task for a ${yearGroup} ${subject} student${sendNeed ? ` with ${sendNeed}` : ""}.
+
+Provide THREE differentiated versions with these exact headings:
+**Support Level** - Simplified, scaffolded version with visual aids and reduced cognitive load
+**Core Level** - Standard differentiated version meeting expected standards
+**Extension Level** - Challenging version with deeper thinking and extension opportunities
+
+TASK TO DIFFERENTIATE:
+${originalTask}
+
+Return all three versions with the headings above. Use plain text with markdown formatting.`;
+
+      const { text } = await callAI(system, user, 3000);
+      setResult(text);
+      const parsed = parse3Way(text);
+      setParsedLevels(parsed);
+      setActiveTab("core");
+      setShowDiff(false);
+      saveDifferentiation({ taskContent: originalTask, differentiatedContent: text, sendNeed: sendNeed || undefined, yearGroup, subject });
       toast.success("Task differentiated with AI!");
     } catch (_err) {
-      // AI failed — show honest error, do NOT produce fake differentiated content
       toast.error("AI differentiation failed. Please check your connection and try again.");
-      setResult(null);
     }
     setLoading(false);
+  };
+
+  const handleRemix = async (newSendNeed: string) => {
+    if (!originalTask) return;
+    setRemixLoading(true);
+    try {
+      const system = `You are a SEND specialist teacher who differentiates tasks to make them accessible for all learners. You follow UK SEND Code of Practice guidelines precisely.`;
+      const user = `Differentiate this task for a ${yearGroup} ${subject} student with ${newSendNeed}.
+
+Provide THREE differentiated versions with these exact headings:
+**Support Level** - Simplified, scaffolded version with visual aids and reduced cognitive load
+**Core Level** - Standard differentiated version meeting expected standards
+**Extension Level** - Challenging version with deeper thinking and extension opportunities
+
+TASK TO DIFFERENTIATE:
+${originalTask}
+
+Return all three versions with the headings above. Use plain text with markdown formatting.`;
+
+      const { text } = await callAI(system, user, 3000);
+      setResult(text);
+      const parsed = parse3Way(text);
+      setParsedLevels(parsed);
+      setSendNeed(newSendNeed);
+      setActiveTab("core");
+      setShowDiff(false);
+      setShowRemixSelect(false);
+      toast.success(`Remixed for ${sendNeeds.find(n => n.id === newSendNeed)?.name || newSendNeed}!`);
+    } catch (_err) {
+      toast.error("Remix failed. Please try again.");
+    }
+    setRemixLoading(false);
   };
 
   const handleDownloadPdf = () => {
@@ -253,7 +361,14 @@ export default function Differentiate() {
             <Button variant="outline" size="sm" onClick={() => setShowAssignDialog(true)} className="gap-1.5 text-indigo-600 border-indigo-300 hover:bg-indigo-50">
               <UserPlus className="w-3.5 h-3.5" /> Assign to Pupil
             </Button>
-            <Button variant="outline" size="sm" onClick={() => setResult("")}>
+            <Button variant="outline" size="sm" onClick={() => setShowDiff(!showDiff)} className={`gap-1.5 ${showDiff ? "bg-amber-50 border-amber-300 text-amber-700" : ""}`}>
+              <Eye className="w-3.5 h-3.5" /> {showDiff ? "Hide Changes" : "Show Changes"}
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => setShowRemixSelect(!showRemixSelect)} disabled={remixLoading}
+              className="gap-1.5 border-purple-300 text-purple-700 hover:bg-purple-50">
+              {remixLoading ? <><RefreshCw className="w-3.5 h-3.5 animate-spin" /> Remixing...</> : <><RefreshCw className="w-3.5 h-3.5" /> Remix for another SEND profile</>}
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => { setResult(""); setParsedLevels(null); setShowDiff(false); }}>
               <RotateCcw className="w-3.5 h-3.5 mr-1.5" /> New Task
             </Button>
           </div>
@@ -353,7 +468,84 @@ export default function Differentiate() {
             </DialogContent>
           </Dialog>
 
-          {/* Content */}
+          {/* Remix SEND profile selector */}
+          {showRemixSelect && (
+            <Card className="border-purple-200 no-print">
+              <CardContent className="p-3 space-y-2">
+                <p className="text-xs font-medium text-purple-700">Select a different SEND profile to remix for:</p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {sendNeeds.map(n => (
+                    <button key={n.id} onClick={() => handleRemix(n.id)} disabled={remixLoading}
+                      className={`p-2 rounded-lg border text-left transition-all text-xs ${n.id === sendNeed ? "border-purple-400 bg-purple-50" : "border-border hover:border-purple-300 hover:bg-purple-50/50"}`}>
+                      <span className="font-medium">{n.name}</span>
+                    </button>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Diff Highlight View */}
+          {showDiff && (
+            <Card className="border-amber-200 no-print">
+              <CardContent className="p-4">
+                <p className="text-xs font-semibold text-amber-700 mb-2">Word-level changes (Original vs. {activeTab === "support" ? "Support" : activeTab === "extension" ? "Extension" : "Core"} Level)</p>
+                <div className="text-sm leading-relaxed">
+                  {(() => {
+                    const currentText = parsedLevels
+                      ? (activeTab === "support" ? parsedLevels.support : activeTab === "extension" ? parsedLevels.extension : parsedLevels.core)
+                      : result;
+                    const diff = computeWordDiff(originalTask, currentText);
+                    return diff.map((d, i) => {
+                      if (d.type === "added") return <span key={i} className="bg-green-100 text-green-800 px-0.5 rounded">{d.word} </span>;
+                      if (d.type === "removed") return <span key={i} className="bg-red-100 text-red-800 line-through px-0.5 rounded">{d.word} </span>;
+                      return <span key={i}>{d.word} </span>;
+                    });
+                  })()}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Content - Tabbed 3-way output */}
+          {parsedLevels ? (
+            <div className="diff-content" style={{ backgroundColor: overlayBg }}>
+              <Tabs value={activeTab} onValueChange={setActiveTab}>
+                <TabsList className="w-full">
+                  <TabsTrigger value="support" className="flex-1">Support Level</TabsTrigger>
+                  <TabsTrigger value="core" className="flex-1">Core Level</TabsTrigger>
+                  <TabsTrigger value="extension" className="flex-1">Extension Level</TabsTrigger>
+                </TabsList>
+                <TabsContent value="support">
+                  <Card className="border-border/50" style={{ backgroundColor: overlayBg }}>
+                    <CardContent className="p-5" style={{ backgroundColor: overlayBg, fontSize: `${textSize}px` }}>
+                      <Badge className="mb-3 bg-blue-100 text-blue-700 border-blue-200">Support Level</Badge>
+                      <div className="prose prose-sm max-w-none" style={{ fontSize: `${textSize}px` }}
+                        dangerouslySetInnerHTML={{ __html: markdownToHtml(parsedLevels.support, textSize) }} />
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+                <TabsContent value="core">
+                  <Card className="border-border/50" style={{ backgroundColor: overlayBg }}>
+                    <CardContent className="p-5" style={{ backgroundColor: overlayBg, fontSize: `${textSize}px` }}>
+                      <Badge className="mb-3 bg-green-100 text-green-700 border-green-200">Core Level</Badge>
+                      <div className="prose prose-sm max-w-none" style={{ fontSize: `${textSize}px` }}
+                        dangerouslySetInnerHTML={{ __html: markdownToHtml(parsedLevels.core, textSize) }} />
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+                <TabsContent value="extension">
+                  <Card className="border-border/50" style={{ backgroundColor: overlayBg }}>
+                    <CardContent className="p-5" style={{ backgroundColor: overlayBg, fontSize: `${textSize}px` }}>
+                      <Badge className="mb-3 bg-purple-100 text-purple-700 border-purple-200">Extension Level</Badge>
+                      <div className="prose prose-sm max-w-none" style={{ fontSize: `${textSize}px` }}
+                        dangerouslySetInnerHTML={{ __html: markdownToHtml(parsedLevels.extension, textSize) }} />
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+              </Tabs>
+            </div>
+          ) : (
           <div className="diff-content" style={{ backgroundColor: overlayBg }}>
             <Card className="border-border/50" style={{ backgroundColor: overlayBg }}>
               <CardContent className="p-5" style={{ backgroundColor: overlayBg, fontSize: `${textSize}px` }}>
@@ -362,29 +554,11 @@ export default function Differentiate() {
               </CardContent>
             </Card>
           </div>
+          )}
         </motion.div>
       )}
     </div>
   );
-}
-
-function generateDifferentiatedContent(task: string, difficulty: string, sendNeedId?: string): string {
-  const lines = task.split("\n").filter(l => l.trim());
-  let content = "";
-  if (difficulty === "basic") {
-    content += "**Step 1:** Read the task carefully.\n\n";
-    content += "**Step 2:** Look at the key words highlighted below.\n\n";
-    content += `**Step 3:** ${lines[0] || "Complete the activity"}\n\n`;
-    content += "**Step 4:** Check your work using the checklist above.\n\n";
-    content += "*Hint: Use the worked example to help you.*";
-  } else if (difficulty === "stretch") {
-    content += lines.map((l, i) => `**Task ${i + 1}:** ${l}`).join("\n\n");
-    content += "\n\n**Extension:** Explain your reasoning in full sentences. Can you create a similar problem for a partner?";
-  } else {
-    content += lines.map((l, i) => `**${i + 1}.** ${l}`).join("\n\n");
-    content += "\n\n*Complete as many tasks as you can. The final question is an optional challenge.*";
-  }
-  return content;
 }
 
 function markdownToHtml(md: string, textSize: number): string {
