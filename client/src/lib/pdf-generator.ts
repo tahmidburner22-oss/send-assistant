@@ -69,8 +69,18 @@ function convertLatexToText(text: string): string {
     .replace(/[{}]/g, ''); // Strip remaining braces
 }
 
-function sanitizeForPdf(text: string): string {
+
+function stripGeneratorInstructionLeaksForPdf(text: string): string {
   return text
+    .split("\n")
+    .filter(line => !/^\s*(RULE|INSTRUCTION|FORMAT|OUTPUT|SCHEMA|CONSTRAINT|CRITICAL|IMPORTANT)\s*:/i.test(line.trim()))
+    .map(line => line.replace(/\[[^\]\n]*(?:EXACTLY|MUST|Do NOT|continue for|correct answers|plausible distractors|word\d+|Result:)[^\]\n]*\]/gi, "").trimEnd())
+    .filter(line => line.trim().length > 0)
+    .join("\n");
+}
+
+function sanitizeForPdf(text: string): string {
+  return stripGeneratorInstructionLeaksForPdf(text)
     .replace(/\u2192|\u279C|\u2794/g, "->")
     .replace(/\u2190/g, "<-")
     .replace(/\u2014/g, " -- ")

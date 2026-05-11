@@ -207,7 +207,7 @@ const SEND_ADAPTATION_SPECS: SendAdaptationSpec[] = [
         why: "Structured checklists are more accessible than open-ended reflection." },
     ],
     worksheetRules: [
-      "Each section opens with ONE 'What you need to do:' box listing exact steps. Never repeat the box per question — one per section only.",
+      "Each section opens with ONE 'What you need to do' box listing exact steps. Add a single box at section level only; do not duplicate it inside individual questions.",
       "Place a fully worked example immediately before Section A, using identical wording and structure to Section A's questions.",
       "Use one word per concept. Never mix synonyms (pick either 'calculate' OR 'work out' — stick to it everywhere).",
       "Use literal, unambiguous language. No idioms, no figurative language (write 'calculate the value of x', not 'find x').",

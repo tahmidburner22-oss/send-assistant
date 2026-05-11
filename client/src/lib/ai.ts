@@ -2308,6 +2308,7 @@ Return EXACTLY this JSON (raw JSON only, no markdown fences):
       const postValidated = runWorksheetPostValidators(structuredJson, {
         subject: params.subject,
         yearGroup: params.yearGroup,
+        sendNeed: params.sendNeed,
       });
       // Carry through the original shape — the post-validator preserves every
       // field, it only rewrites content in-place.
@@ -2982,6 +2983,7 @@ Return EXACTLY this JSON (raw JSON only):
     {
       subject: params.subject,
       yearGroup: params.yearGroup,
+      sendNeed: params.sendNeed,
     },
   );
   const legacyEnforced = enforceSendAdaptations(legacyPostValidated.worksheet, params.sendNeed);

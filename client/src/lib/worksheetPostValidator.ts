@@ -62,6 +62,8 @@ export interface PostValidatorOptions {
   subject?: string;
   /** Year group string exactly as submitted. */
   yearGroup?: string;
+  /** SEND need/profile exactly as submitted, when available. */
+  sendNeed?: string;
 }
 
 export interface PostValidatorResult {
@@ -222,6 +224,9 @@ export function stripForeignDiagrams(
       String(s.content || ""),
       String(s.caption || ""),
       String(s.assetRef || ""),
+      String((s as any).diagramType || ""),
+      String((s as any).diagramId || ""),
+      String((s as any).kind || ""),
     ].join(" ");
     if (hasForeignToken(haystack)) {
       warnings.push(`Removed foreign diagram "${String(s.title || s.id || "").slice(0, 50)}" from science worksheet.`);
@@ -331,6 +336,90 @@ export function capWorkedExampleSteps(
   return { worksheet: { ...ws, sections }, warnings };
 }
 
+// ─── 6. Leaked generator-instruction sanitiser ───────────────────────────────
+// Live testing found that prompt/schema instructions such as "RULE: EXACTLY..."
+// and bracketed "[Write EXACTLY...]" text can leak into student-facing sections.
+// These lines are not learning content, so remove them before rendering/export.
+
+const LEAKED_INSTRUCTION_LINE_RE = /^\s*(?:RULE|INSTRUCTION|FORMAT|OUTPUT|SCHEMA|CONSTRAINT|CRITICAL|IMPORTANT)\s*:/i;
+const LEAKED_BRACKET_BLOCK_RE = /\[[^\]\n]*(?:EXACTLY|MUST|Do NOT|continue for|correct answers|plausible distractors|word\d+|Result:)[^\]\n]*\]/gi;
+const LEAKED_PHRASE_RE = /\b(?:Return EXACTLY this JSON|raw JSON only|no markdown fences|follow this EXACTLY)\b/i;
+
+function cleanLeakedGeneratorInstructions(content: string): { content: string; changed: boolean } {
+  let changed = false;
+  const lines = content.split("\n");
+  const kept: string[] = [];
+
+  for (const raw of lines) {
+    const line = raw.trim();
+    if (LEAKED_INSTRUCTION_LINE_RE.test(line) || LEAKED_PHRASE_RE.test(line)) {
+      changed = true;
+      continue;
+    }
+    const cleaned = raw.replace(LEAKED_BRACKET_BLOCK_RE, "").replace(/\s{2,}/g, " ").trimEnd();
+    if (cleaned !== raw) changed = true;
+    if (cleaned.trim().length > 0) kept.push(cleaned);
+  }
+
+  return { content: kept.join("\n").trim(), changed };
+}
+
+export function stripLeakedGeneratorInstructions(
+  ws: PostValidatorWorksheet,
+): PostValidatorResult {
+  const warnings: string[] = [];
+  const sections = (ws.sections || []).map((s): PostValidatorSection => {
+    if (s.teacherOnly || typeof s.content !== "string" || !s.content.trim()) return s;
+    const cleaned = cleanLeakedGeneratorInstructions(s.content);
+    if (!cleaned.changed) return s;
+    warnings.push(`Stripped leaked generator instructions from ${String(s.type || "worksheet")} section.`);
+    return { ...s, content: cleaned.content };
+  });
+  return { worksheet: { ...ws, sections }, warnings };
+}
+
+// ─── 7. Dyscalculia maths scaffold reinforcement ─────────────────────────────
+// Generic "show your working" is too vague for dyscalculia. Add a short,
+// concrete checklist to maths questions when a dyscalculia profile is selected.
+
+function isDyscalculiaNeed(sendNeed: string | undefined): boolean {
+  return /dyscalcul/i.test(sendNeed || "");
+}
+
+const MATHS_QUESTION_TYPES = new Set([
+  "q-short-answer", "q-extended", "q-data-table", "q-challenge", "q-graph", "q-mcq", "q-gap-fill",
+]);
+
+export function reinforceDyscalculiaMathsScaffolding(
+  ws: PostValidatorWorksheet,
+  opts: PostValidatorOptions = {},
+): PostValidatorResult {
+  const warnings: string[] = [];
+  const subject = opts.subject || String(ws.metadata?.subject || "");
+  if (!isMathsSubject(subject) || !isDyscalculiaNeed(opts.sendNeed)) {
+    return { worksheet: ws, warnings };
+  }
+
+  let changedCount = 0;
+  const scaffold = "\nScaffold: 1) Underline the numbers. 2) Choose the operation. 3) Estimate first. 4) Use a number line or place-value grid if helpful. 5) Write one step per line.";
+  const sections = (ws.sections || []).map((s): PostValidatorSection => {
+    const type = String(s.type || "").toLowerCase();
+    const content = String(s.content || "");
+    if (s.teacherOnly || !MATHS_QUESTION_TYPES.has(type) || !content.trim()) return s;
+    if (/number line|place-value|place value|one step per line|estimate first/i.test(content)) return s;
+
+    const updated = content
+      .replace(/\bshow all (?:of )?your working\b[.!]?/gi, "Show one step per line.")
+      .replace(/\bshow all working\b[.!]?/gi, "Show one step per line.")
+      .trimEnd() + scaffold;
+    if (updated !== content) changedCount++;
+    return { ...s, content: updated };
+  });
+
+  if (changedCount > 0) warnings.push(`Added dyscalculia maths working scaffold to ${changedCount} question section(s).`);
+  return { worksheet: { ...ws, sections }, warnings };
+}
+
 // ─── Top-level entry point ───────────────────────────────────────────────────
 
 /**
@@ -350,6 +439,8 @@ export function runWorksheetPostValidators(
     (ws: PostValidatorWorksheet) => stripForeignDiagrams(ws, opts),
     (ws: PostValidatorWorksheet) => enforceYearGroupLock(ws, opts),
     (ws: PostValidatorWorksheet) => capWorkedExampleSteps(ws, opts),
+    stripLeakedGeneratorInstructions,
+    (ws: PostValidatorWorksheet) => reinforceDyscalculiaMathsScaffolding(ws, opts),
   ]) {
     const r = fn(current);
     current = r.worksheet;
