@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { useUserPreferences } from "@/contexts/UserPreferencesContext";
 import { formatToolOutput } from "@/lib/format-tool-output";
 import AIToolPage from "@/components/AIToolPage";
-import { FileCheck } from "lucide-react";
+import { ReportCommentsBatch } from "@/components/ReportCommentsBatch";
+import { FileCheck, Users } from "lucide-react";
 
 const subjects = ["English","Maths","Science","History","Geography","RE","PSHE","Art","Music","PE","Computing","MFL","Design Technology","Drama","Business Studies","Economics","Psychology","Sociology","Physical Education","Overall Progress / Form Tutor"].map(s => ({ value: s, label: s }));
 const years = ["Reception","Year 1","Year 2","Year 3","Year 4","Year 5","Year 6","Year 7","Year 8","Year 9","Year 10","Year 11","Year 12","Year 13"].map(y => ({ value: y, label: y }));
@@ -22,7 +24,33 @@ const tones = [
 
 export default function ReportComments() {
   const { preferences } = useUserPreferences();
+  const [mode, setMode] = useState<"single" | "batch">("single");
+
   return (
+    <div className="px-4 py-6 max-w-2xl mx-auto space-y-4">
+      {/* Mode toggle */}
+      <div className="flex gap-1 p-1 bg-muted rounded-lg w-fit mx-auto">
+        <button
+          onClick={() => setMode("single")}
+          className={`px-4 py-1.5 rounded-md text-xs font-semibold transition-colors ${
+            mode === "single" ? "bg-white text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          <FileCheck className="w-3.5 h-3.5 inline mr-1.5" />Single Student
+        </button>
+        <button
+          onClick={() => setMode("batch")}
+          className={`px-4 py-1.5 rounded-md text-xs font-semibold transition-colors ${
+            mode === "batch" ? "bg-white text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          <Users className="w-3.5 h-3.5 inline mr-1.5" />Batch Mode (Whole Class)
+        </button>
+      </div>
+
+      {mode === "batch" ? (
+        <ReportCommentsBatch />
+      ) : (
     <AIToolPage
       title="Report Card Comments"
       assignable={true}
@@ -102,5 +130,7 @@ Write only the comment text — no preamble, no explanation, no notes.`,
       outputTitle={(v) => `Report Comments — ${v.studentName} (${v.subject}, ${v.yearGroup})`}
       formatOutput={(text) => formatToolOutput(text, { logoUrl: preferences.schoolLogoUrl, schoolName: preferences.schoolName, accentColor: "#059669", emoji: "📋", title: "Report Comments" })}
     />
+      )}
+    </div>
   );
 }
