@@ -34,7 +34,7 @@ import {
   Shield, Target, Layers, PenLine, X, Check, Loader2,
   Users, BookOpen, Heart, Zap, FileDown, BarChart3, Info,
   ClipboardCheck, AlertTriangle, Star, ArrowRight, Eye, Link,
-  Calendar, School, BookMarked, History, GitCompare,
+  Calendar, School, BookMarked, History, GitCompare, Trash2, Plus,
 } from "lucide-react";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -593,6 +593,30 @@ Rules:
       toast.success(`Extracted ${data.needs.length} needs, ${data.strengths.length} strengths`);
     } catch (err: any) { toast.error(err.message || "Extraction failed"); }
     setExtracting(false);
+  };
+
+  // ── Extract editing helpers ────────────────────────────────────────────────
+  const updateExtractedItem = (key: keyof Omit<ExtractedData, 'rawText'>, index: number, value: string) => {
+    setExtracted(prev => {
+      if (!prev) return prev;
+      const updated = [...prev[key]];
+      updated[index] = value;
+      return { ...prev, [key]: updated };
+    });
+  };
+
+  const removeExtractedItem = (key: keyof Omit<ExtractedData, 'rawText'>, index: number) => {
+    setExtracted(prev => {
+      if (!prev) return prev;
+      return { ...prev, [key]: prev[key].filter((_, i) => i !== index) };
+    });
+  };
+
+  const addExtractedItem = (key: keyof Omit<ExtractedData, 'rawText'>) => {
+    setExtracted(prev => {
+      if (!prev) return prev;
+      return { ...prev, [key]: [...prev[key], ""] };
+    });
   };
 
   // ── Step 4 ────────────────────────────────────────────────────────────────
@@ -1188,6 +1212,13 @@ Return JSON:
 
                 {extracted && !extracting && (
                   <div className="space-y-3">
+                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 flex gap-2">
+                      <PenLine className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                      <p className="text-xs text-amber-800">
+                        <strong>Review and edit</strong> the extracted data below. You can correct, add, or remove items before generating the plan. Accurate extraction leads to a better EHCP.
+                      </p>
+                    </div>
+
                     {([
                        { key: "needs" as const, label: "Identified Needs", icon: Brain, cls: "bg-blue-50 border-blue-200 text-blue-800" },
                        { key: "strengths" as const, label: "Identified Strengths", icon: Star, cls: "bg-green-50 border-green-200 text-green-800" },
@@ -1200,11 +1231,32 @@ Return JSON:
                           <p className="text-xs font-bold uppercase tracking-wide">{label} ({extracted[key].length})</p>
                         </div>
                         {extracted[key].length === 0
-                          ? <p className="text-xs text-muted-foreground italic">None identified — add more evidence or enter details manually</p>
-                          : <ul className="space-y-1">{extracted[key].map((item,i) => (
-                              <li key={i} className="text-xs flex items-start gap-1.5"><span className="font-bold flex-shrink-0 mt-0.5">{i+1}.</span><span className="leading-relaxed">{item}</span></li>
-                            ))}</ul>
+                          ? <p className="text-xs text-muted-foreground italic">None identified — add items below</p>
+                          : <div className="space-y-1.5">{extracted[key].map((item, i) => (
+                              <div key={i} className="flex items-start gap-2 group">
+                                <span className="text-xs font-bold text-gray-400 mt-2 w-4 flex-shrink-0">{i+1}.</span>
+                                <Textarea
+                                  value={item}
+                                  onChange={e => updateExtractedItem(key, i, e.target.value)}
+                                  rows={1}
+                                  className="flex-1 text-xs resize-none min-h-[32px] border-gray-200 focus:border-indigo-300"
+                                  placeholder="Enter detail..."
+                                />
+                                <button
+                                  onClick={() => removeExtractedItem(key, i)}
+                                  className="p-1 text-gray-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100 flex-shrink-0 mt-1"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            ))}</div>
                         }
+                        <button
+                          onClick={() => addExtractedItem(key)}
+                          className="flex items-center gap-1 text-xs text-indigo-600 hover:text-indigo-800 font-medium mt-2 px-1"
+                        >
+                          <Plus className="w-3 h-3" /> Add item
+                        </button>
                       </div>
                     ))}
 
@@ -1219,11 +1271,22 @@ Return JSON:
                       </details>
                     )}
 
+                    {(extracted.needs.length === 0 || extracted.strengths.length === 0) && (
+                      <p className="text-xs text-red-600 flex items-center gap-1">
+                        <AlertCircle className="w-3 h-3" />
+                        At least one need and one strength are required to generate a plan.
+                      </p>
+                    )}
+
                     <div className="flex gap-2">
                       <Button variant="outline" size="sm" onClick={handleExtract} disabled={extracting} className="gap-1.5">
                         <RefreshCw className="w-3.5 h-3.5" />Re-extract
                       </Button>
-                      <Button onClick={() => { mark("extract"); setStage("generate"); }} className="flex-1 h-10 bg-indigo-600 hover:bg-indigo-700 text-white gap-2">
+                      <Button
+                        onClick={() => { mark("extract"); setStage("generate"); }}
+                        disabled={extracted.needs.length === 0 || extracted.strengths.length === 0}
+                        className="flex-1 h-10 bg-indigo-600 hover:bg-indigo-700 text-white gap-2"
+                      >
                         Generate EHCP Draft <ChevronRight className="w-4 h-4" />
                       </Button>
                     </div>

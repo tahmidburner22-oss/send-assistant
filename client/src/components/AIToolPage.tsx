@@ -70,6 +70,11 @@ interface AIToolPageProps {
    * E.g. Exit Ticket uses this to strip the teacher answer key.
    */
   transformBeforeAssign?: (text: string) => string;
+  /**
+   * Optional render prop for post-generation actions (e.g. translation dropdown).
+   * Rendered below the output card in the results area.
+   */
+  renderPostActions?: (result: string, values: Record<string, string>) => React.ReactNode;
 }
 
 // ─── Lesson Plan Renderer ────────────────────────────────────────────────────
@@ -233,7 +238,7 @@ function formatAIText(text: string): string {
 type EditMode = "none" | "manual" | "ai";
 
 export default function AIToolPage({
-  title, description, icon, accentColor, fields, buildPrompt, formatOutput, outputTitle, onResult, assignable, worksheetLink, isLessonPlan, initialValues, renderCustomOutput, transformBeforeAssign,
+  title, description, icon, accentColor, fields, buildPrompt, formatOutput, outputTitle, onResult, assignable, worksheetLink, isLessonPlan, initialValues, renderCustomOutput, transformBeforeAssign, renderPostActions,
 }: AIToolPageProps) {
   const { children, assignWork, user } = useApp();
   const isPlatformAdmin = user?.email === "admin@adaptly.co.uk" || user?.email === "admin@sendassistant.app";
@@ -751,6 +756,7 @@ export default function AIToolPage({
                   )}
                 </CardContent>
               </Card>
+              {renderPostActions && result && renderPostActions(result, values)}
               </>
             )}
 
