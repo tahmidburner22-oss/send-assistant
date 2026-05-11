@@ -35,7 +35,7 @@ export default function Investors() {
       ref={ref}
       id="investors"
       data-testid="investors-section"
-      className="relative py-28 md:py-40 px-6 md:px-12"
+      className="relative py-14 md:py-20 px-6 md:px-12"
     >
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-14 md:mb-20">

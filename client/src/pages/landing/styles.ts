@@ -87,14 +87,21 @@ html.lenis-active { scroll-behavior: auto; }
   -webkit-backdrop-filter: blur(28px) saturate(150%);
 }
 
-/* Mobile — tighten the default py-28 md:py-40 sections so we don't get long
+/* Mobile — tighten the default py-14 md:py-20 sections so we don't get long
    dead stretches between content blocks on tall phone viewports. We target
    the two Tailwind padding classes used by every section. */
 @media (max-width: 639px) {
-  .adaptly-landing section.py-28,
-  .adaptly-landing section[class*="py-28"] {
-    padding-top: 4.5rem !important;
-    padding-bottom: 4.5rem !important;
+  .adaptly-landing section.py-14,
+  .adaptly-landing section[class*="py-14"] {
+    padding-top: 3.5rem !important;
+    padding-bottom: 3.5rem !important;
+  }
+}
+
+@media (max-height: 500px) and (orientation: landscape) {
+  .adaptly-landing section[class*="py-14"] {
+    padding-top: 2.5rem !important;
+    padding-bottom: 2.5rem !important;
   }
 }
 
