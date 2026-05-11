@@ -1,6 +1,21 @@
+import { useState, useCallback } from "react";
 import AIToolPage from "@/components/AIToolPage";
-import { IdCard } from "lucide-react";
+import { IdCard, QrCode } from "lucide-react";
 import { useUserPreferences } from "@/contexts/UserPreferencesContext";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import QRCode from "qrcode";
+
+// Simple string hash for creating unique share IDs
+function simpleHash(str: string): string {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  return Math.abs(hash).toString(36);
+}
 
 const sendNeeds = [
   "Autism Spectrum Condition","ADHD","Dyslexia","Dyscalculia","Dyspraxia",
@@ -123,28 +138,73 @@ function formatPassport(text: string, logoUrl?: string, schoolName?: string): st
 
 export default function PupilPassport() {
   const { preferences } = useUserPreferences();
+  const [qrDialogOpen, setQrDialogOpen] = useState(false);
+  const [qrDataUrl, setQrDataUrl] = useState<string>("");
+  const [shareUrl, setShareUrl] = useState<string>("");
+
+  const handleShare = useCallback(async (text: string) => {
+    const html = formatPassport(text, preferences.schoolLogoUrl, preferences.schoolName);
+    const hash = simpleHash(text);
+    const key = `passport_share_${hash}`;
+    try {
+      localStorage.setItem(key, html);
+    } catch {
+      // localStorage full - ignore gracefully
+    }
+    const url = `${window.location.origin}/passport/view/${hash}`;
+    setShareUrl(url);
+    try {
+      const dataUrl = await QRCode.toDataURL(url, { width: 256, margin: 2 });
+      setQrDataUrl(dataUrl);
+      setQrDialogOpen(true);
+    } catch {
+      // QR generation failed - just show the URL
+      setQrDataUrl("");
+      setQrDialogOpen(true);
+    }
+  }, [preferences.schoolLogoUrl, preferences.schoolName]);
 
   return (
-    <AIToolPage
-      title="Pupil Passport Generator"
-      assignable={true}
-      description="Create a one-page pupil passport that tells staff everything they need to know"
-      icon={<IdCard className="w-5 h-5 text-white" />}
-      accentColor="bg-amber-600"
-      fields={[
-        { id: "studentName", label: "Student Initials", type: "text", placeholder: "e.g. O.B.", required: true, span: "half", maxLength: 4, hint: "Initials only (max 4 chars) — do not enter full names (GDPR)" },
-        { id: "yearGroup", label: "Year Group", type: "text", placeholder: "e.g. Year 4", required: true, span: "half" },
-        { id: "sendNeed", label: "Primary SEND Need", type: "select", options: sendNeeds, required: true, span: "half" },
-        { id: "pronoun", label: "Pronoun", type: "select", options: [{ value: "She/her", label: "She/her" }, { value: "He/him", label: "He/him" }, { value: "They/them", label: "They/them" }], span: "half" },
-        { id: "strengths", label: "Strengths & Interests", type: "textarea", placeholder: "What does this student love? What are they good at?", required: true, span: "full" },
-        { id: "challenges", label: "Challenges & Barriers to Learning", type: "textarea", placeholder: "What do they find difficult? What triggers difficulties?", required: true, span: "full" },
-        { id: "strategies", label: "What Helps (Strategies that work)", type: "textarea", placeholder: "What strategies, adaptations, or support helps this student?", span: "full" },
-        { id: "communication", label: "Communication Style", type: "textarea", placeholder: "How does this student communicate best? Any AAC, visual supports?", span: "full" },
-        { id: "goals", label: "Current Targets / Goals", type: "textarea", placeholder: "Current IEP/EHCP targets or focus areas", span: "full" },
-      ]}
-      buildPrompt={(v) => ({
-        system: `You are an expert SENCO creating a professional, person-centred Pupil Passport. You have a strict rule: NEVER place the same information in two different sections. Section 4 (What Helps Me Learn) contains ONLY classroom strategies — specific teacher actions. Section 7 (Please Remember) contains ONLY the top 3-5 most critical facts that a supply teacher needs in the first 5 minutes. These two sections must have completely different content. If you find yourself writing the same point in both, delete it from the less appropriate section.`,
-        user: `Create a Pupil Passport for:
+    <>
+      <AIToolPage
+        title="Pupil Passport Generator"
+        assignable={true}
+        description="Create a one-page pupil passport that tells staff everything they need to know"
+        icon={<IdCard className="w-5 h-5 text-white" />}
+        accentColor="bg-amber-600"
+        fields={[
+          // Pupil Voice questions (optional, appear first)
+          { id: "pv_concentrate", label: "Pupil Voice: What helps you concentrate?", type: "textarea", placeholder: "e.g. sitting near the front, quiet music, fidget toy...", span: "full" },
+          { id: "pv_hard", label: "Pupil Voice: What makes learning hard for you?", type: "textarea", placeholder: "e.g. loud noises, too much writing, reading small text...", span: "full" },
+          { id: "pv_show_work", label: "Pupil Voice: How do you like to show your work?", type: "textarea", placeholder: "e.g. drawing, talking, typing, writing...", span: "full" },
+          { id: "pv_teachers_know", label: "Pupil Voice: What do you want teachers to know about you?", type: "textarea", placeholder: "e.g. I try really hard but sometimes need extra time...", span: "full" },
+          { id: "pv_good_at", label: "Pupil Voice: What are you good at?", type: "textarea", placeholder: "e.g. art, football, helping others, maths puzzles...", span: "full" },
+          // Main form fields
+          { id: "studentName", label: "Student Initials", type: "text", placeholder: "e.g. O.B.", required: true, span: "half", maxLength: 4, hint: "Initials only (max 4 chars) - do not enter full names (GDPR)" },
+          { id: "yearGroup", label: "Year Group", type: "text", placeholder: "e.g. Year 4", required: true, span: "half" },
+          { id: "sendNeed", label: "Primary SEND Need", type: "select", options: sendNeeds, required: true, span: "half" },
+          { id: "pronoun", label: "Pronoun", type: "select", options: [{ value: "She/her", label: "She/her" }, { value: "He/him", label: "He/him" }, { value: "They/them", label: "They/them" }], span: "half" },
+          { id: "strengths", label: "Strengths & Interests", type: "textarea", placeholder: "What does this student love? What are they good at?", required: true, span: "full" },
+          { id: "challenges", label: "Challenges & Barriers to Learning", type: "textarea", placeholder: "What do they find difficult? What triggers difficulties?", required: true, span: "full" },
+          { id: "strategies", label: "What Helps (Strategies that work)", type: "textarea", placeholder: "What strategies, adaptations, or support helps this student?", span: "full" },
+          { id: "communication", label: "Communication Style", type: "textarea", placeholder: "How does this student communicate best? Any AAC, visual supports?", span: "full" },
+          { id: "goals", label: "Current Targets / Goals", type: "textarea", placeholder: "Current IEP/EHCP targets or focus areas", span: "full" },
+        ]}
+        buildPrompt={(v) => {
+          // Collect pupil voice answers if provided
+          const pupilVoiceEntries: string[] = [];
+          if (v.pv_concentrate?.trim()) pupilVoiceEntries.push(`What helps me concentrate: ${v.pv_concentrate}`);
+          if (v.pv_hard?.trim()) pupilVoiceEntries.push(`What makes learning hard: ${v.pv_hard}`);
+          if (v.pv_show_work?.trim()) pupilVoiceEntries.push(`How I like to show my work: ${v.pv_show_work}`);
+          if (v.pv_teachers_know?.trim()) pupilVoiceEntries.push(`What I want teachers to know: ${v.pv_teachers_know}`);
+          if (v.pv_good_at?.trim()) pupilVoiceEntries.push(`What I am good at: ${v.pv_good_at}`);
+          const pupilVoiceSection = pupilVoiceEntries.length > 0
+            ? `\n\nPupil Voice (the student's own words):\n${pupilVoiceEntries.join("\n")}`
+            : "";
+
+          return {
+            system: `You are an expert SENCO creating a professional, person-centred Pupil Passport. You have a strict rule: NEVER place the same information in two different sections. Section 4 (What Helps Me Learn) contains ONLY classroom strategies — specific teacher actions. Section 7 (Please Remember) contains ONLY the top 3-5 most critical facts that a supply teacher needs in the first 5 minutes. These two sections must have completely different content. If you find yourself writing the same point in both, delete it from the less appropriate section.${pupilVoiceEntries.length > 0 ? " The pupil has provided their own voice/perspective - weave their words authentically into the relevant sections, especially About Me and My Strengths." : ""}`,
+            user: `Create a Pupil Passport for:
 
 Name: ${v.studentName}
 Year Group: ${v.yearGroup}
@@ -159,7 +219,7 @@ ${v.challenges}
 
 ${v.strategies ? `What Helps:\n${v.strategies}` : ""}
 ${v.communication ? `Communication:\n${v.communication}` : ""}
-${v.goals ? `Current Targets:\n${v.goals}` : ""}
+${v.goals ? `Current Targets:\n${v.goals}` : ""}${pupilVoiceSection}
 
 Format as a professional Pupil Passport with these exact section headings (use **bold** markdown).
 CRITICAL — the two most commonly confused sections are 4 and 7. Read these definitions carefully:
@@ -184,10 +244,66 @@ CRITICAL — the two most commonly confused sections are 4 and 7. Read these def
    Each point should be something a staff member could act on in the first 5 minutes of meeting this student.
 
 Write in a warm, positive, person-centred style. Keep the entire passport to one page.`,
-        maxTokens: 2000,
-      })}
-      formatOutput={(text) => formatPassport(text, preferences.schoolLogoUrl, preferences.schoolName)}
-      outputTitle={(v) => `Pupil Passport — ${v.studentName} (${v.yearGroup})`}
-    />
+            maxTokens: 2000,
+          };
+        }}
+        formatOutput={(text) => formatPassport(text, preferences.schoolLogoUrl, preferences.schoolName)}
+        outputTitle={(v) => `Pupil Passport — ${v.studentName} (${v.yearGroup})`}
+        onResult={(text) => handleShare(text)}
+        renderCustomOutput={(text) => {
+          const html = formatPassport(text, preferences.schoolLogoUrl, preferences.schoolName);
+          return (
+            <div>
+              <div dangerouslySetInnerHTML={{ __html: html }} />
+              <div className="mt-4 flex justify-center">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-2 border-purple-300 text-purple-600 hover:bg-purple-50"
+                  onClick={() => handleShare(text)}
+                >
+                  <QrCode className="w-4 h-4" />
+                  Share via QR Code
+                </Button>
+              </div>
+            </div>
+          );
+        }}
+      />
+
+      {/* QR Share Dialog */}
+      <Dialog open={qrDialogOpen} onOpenChange={setQrDialogOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <QrCode className="w-5 h-5 text-purple-600" />
+              Share Pupil Passport
+            </DialogTitle>
+          </DialogHeader>
+          <div className="text-center space-y-4">
+            {qrDataUrl && (
+              <img src={qrDataUrl} alt="QR Code for sharing passport" className="mx-auto rounded-lg border border-border" />
+            )}
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground">
+                Scan this QR code to view the passport on another device.
+              </p>
+              <div className="bg-muted rounded-md p-2">
+                <p className="text-xs text-muted-foreground break-all font-mono">{shareUrl}</p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  navigator.clipboard.writeText(shareUrl);
+                }}
+              >
+                Copy Link
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

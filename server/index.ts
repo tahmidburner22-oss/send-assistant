@@ -398,6 +398,7 @@ app.use((err: any, req: express.Request, res: express.Response, _next: express.N
 // ── Start ─────────────────────────────────────────────────────────────────────
 import { initDb } from "./db/index.js";
 import { initWebSocketServer } from "./lib/notifications.js";
+import { initQuizWebSocket, handleQuizUpgrade, isQuizWsPath } from "./ws/quizWs.js";
 import { startSchedulerWorker } from "./lib/schedulerWorker.js";
 import { checkEmailConfigOnBoot } from "./email/index.js";
 import http from "http";
@@ -405,6 +406,17 @@ import http from "http";
 initDb().then(() => {
   const httpServer = http.createServer(app);
   initWebSocketServer(httpServer);
+  initQuizWebSocket(httpServer);
+
+  // Handle WebSocket upgrade for quiz path separately from notifications
+  httpServer.on("upgrade", (req, socket, head) => {
+    if (isQuizWsPath(req.url)) {
+      handleQuizUpgrade(req, socket, head);
+    }
+    // The notification WebSocket (/api/ws) is handled by its own WebSocketServer
+    // which attaches to the httpServer directly via the `server` option
+  });
+
   httpServer.listen(PORT, "0.0.0.0", () => {
     console.log(`🚀 Adaptly API running on http://localhost:${PORT}`);
     console.log(`   Environment: ${process.env.NODE_ENV || "development"}`);
