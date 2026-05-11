@@ -16,11 +16,13 @@ import { useApp } from "@/contexts/AppContext";
 import { useUserPreferences } from "@/contexts/UserPreferencesContext";
 import { exportToDocx } from "@/lib/docx-export";
 import { downloadHtmlAsPdf } from "@/lib/pdf-generator-v2";
+import { callAI } from "@/lib/ai";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import {
   ClipboardList, ChevronRight, ChevronLeft, Plus, Trash2,
   Printer, FileDown, Check, AlertTriangle, Users, Wrench,
   MapPin, Car, Phone, User, Building2, Calendar, Clock,
-  Shield, X, Info, FileText
+  Shield, X, Info, FileText, Sparkles, Save, FolderOpen, Loader2
 } from "lucide-react";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -201,6 +203,37 @@ function Field({
 const RA_STORAGE_KEY = "adaptly_risk_assessment_v1";
 const RA_STEP_KEY = "adaptly_risk_assessment_step_v1";
 
+// ── Template Library ──────────────────────────────────────────────────────────
+
+const RA_TEMPLATES_KEY = "adaptly_risk_assessment_templates";
+
+interface RATemplate {
+  id: string;
+  name: string;
+  venue: string;
+  activity: string;
+  savedAt: string;
+  data: RiskAssessmentData;
+}
+
+function getTemplates(): RATemplate[] {
+  try {
+    const stored = localStorage.getItem(RA_TEMPLATES_KEY);
+    return stored ? JSON.parse(stored) : [];
+  } catch { return []; }
+}
+
+function saveTemplate(template: RATemplate) {
+  const templates = getTemplates();
+  templates.unshift(template);
+  localStorage.setItem(RA_TEMPLATES_KEY, JSON.stringify(templates));
+}
+
+function deleteTemplate(id: string) {
+  const templates = getTemplates().filter(t => t.id !== id);
+  localStorage.setItem(RA_TEMPLATES_KEY, JSON.stringify(templates));
+}
+
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function RiskAssessment() {
   const { school } = useApp();
@@ -227,6 +260,11 @@ export default function RiskAssessment() {
   });
 
   const [showPreview, setShowPreview] = useState(false);
+  const [suggestingHazards, setSuggestingHazards] = useState(false);
+  const [showTemplates, setShowTemplates] = useState(false);
+  const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const [templateName, setTemplateName] = useState("");
+  const [templates, setTemplates] = useState<RATemplate[]>(getTemplates());
   const printRef = useRef<HTMLDivElement>(null);
 
   // Persist data and step to localStorage whenever they change
@@ -391,6 +429,103 @@ export default function RiskAssessment() {
     }
   };
 
+  // ── AI Suggest Hazards ─────────────────────────────────────────────────────
+
+  const handleSuggestHazards = async () => {
+    if (!data.venueName && !data.activity) {
+      toast.error("Please fill in the venue name and activity first (Step 1)");
+      return;
+    }
+    setSuggestingHazards(true);
+    try {
+      const { text } = await callAI(
+        `You are an experienced UK school trip coordinator and health & safety officer specialising in educational visits. Generate relevant hazards and corresponding control measures for a school trip risk assessment.`,
+        `Generate hazards and control measures for this school trip:
+Venue: ${data.venueName || "Not specified"}
+Address: ${data.venueAddress || "Not specified"}
+Activity: ${data.activity || "Educational visit"}
+Transport: ${data.transportType || "Not specified"}
+Students: ${data.studentCount || "Unknown"} pupils
+
+Format your response EXACTLY like this:
+HAZARDS:
+[one hazard per line, 5-8 hazards relevant to this specific venue/activity]
+
+CONTROL MEASURES:
+[one measure per line, comprehensive measures for the hazards above, 8-12 measures]
+
+Focus on hazards specific to this venue type and activity. Include common educational visit hazards (slips/trips, road safety, behaviour, medical emergencies) but also any venue-specific risks.`,
+        1500
+      );
+
+      // Parse the response
+      const hazardsMatch = text.match(/HAZARDS:\s*\n([\s\S]*?)(?:\n\s*CONTROL MEASURES:|\n\s*$)/i);
+      const measuresMatch = text.match(/CONTROL MEASURES:\s*\n([\s\S]*?)$/i);
+
+      const newHazards = hazardsMatch?.[1]?.trim() || "";
+      const newMeasures = measuresMatch?.[1]?.trim() || "";
+
+      if (newHazards) {
+        const separator = data.venueHazards.trim() ? "\n" : "";
+        update("venueHazards", data.venueHazards.trim() + separator + newHazards);
+      }
+      if (newMeasures) {
+        const separator = data.venueMeasures.trim() ? "\n" : "";
+        update("venueMeasures", data.venueMeasures.trim() + separator + newMeasures);
+      }
+
+      toast.success("AI suggestions added! Review and edit as needed.");
+    } catch (err) {
+      toast.error("Failed to generate suggestions. Please try again.");
+      console.error("Suggest hazards error:", err);
+    }
+    setSuggestingHazards(false);
+  };
+
+  // ── Template handlers ─────────────────────────────────────────────────────
+
+  const handleSaveTemplate = () => {
+    if (!templateName.trim()) {
+      toast.error("Please enter a template name");
+      return;
+    }
+    const template: RATemplate = {
+      id: uid(),
+      name: templateName.trim(),
+      venue: data.venueName || "Unnamed venue",
+      activity: data.activity || "General visit",
+      savedAt: new Date().toISOString(),
+      data: { ...data },
+    };
+    saveTemplate(template);
+    setTemplates(getTemplates());
+    setTemplateName("");
+    setShowSaveDialog(false);
+    toast.success(`Template "${template.name}" saved!`);
+  };
+
+  const handleCloneTemplate = (template: RATemplate) => {
+    setData({
+      ...template.data,
+      date: "",
+      visitLeaderDate: "",
+      evcDate: "",
+      hocDate: "",
+      visitLeader: "",
+      evc: "",
+      hoc: "",
+    });
+    setStep(1);
+    setShowTemplates(false);
+    toast.success(`Template "${template.name}" loaded! Dates and signatures cleared.`);
+  };
+
+  const handleDeleteTemplate = (id: string) => {
+    deleteTemplate(id);
+    setTemplates(getTemplates());
+    toast.success("Template deleted");
+  };
+
   const canProceed = (): boolean => {
     if (step === 1) return !!(data.schoolName && data.venueName && data.date && data.activity);
     return true;
@@ -521,6 +656,28 @@ export default function RiskAssessment() {
       case 5:
         return (
           <div className="space-y-5">
+            {/* AI Suggest Hazards Button */}
+            <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-indigo-600 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-semibold text-indigo-800">AI Hazard Suggestions</p>
+                  <p className="text-xs text-indigo-600">Generate hazards and control measures based on your venue and activity</p>
+                </div>
+              </div>
+              <Button
+                onClick={handleSuggestHazards}
+                disabled={suggestingHazards}
+                size="sm"
+                className="bg-indigo-600 hover:bg-indigo-700 text-white gap-1.5 flex-shrink-0"
+              >
+                {suggestingHazards ? (
+                  <><Loader2 className="w-3.5 h-3.5 animate-spin" />Generating...</>
+                ) : (
+                  <><Sparkles className="w-3.5 h-3.5" />Suggest Hazards</>
+                )}
+              </Button>
+            </div>
             <Field label="Identified Hazards at Venue" required hint="List the significant hazards/risks at the venue (one per line)">
               <Textarea value={data.venueHazards} onChange={e => update("venueHazards", e.target.value)} rows={4} placeholder="e.g. Slips, trips, stairs&#10;Movement around unfamiliar campus&#10;Fire evacuation" />
             </Field>
@@ -1027,22 +1184,90 @@ export default function RiskAssessment() {
               <p className="text-xs text-gray-500">Educational Visit — COBS Format</p>
             </div>
           </div>
-          {step === 9 && (
-            <div className="flex gap-2 flex-wrap">
-              <Button onClick={() => setShowPreview(true)} size="sm" className="gap-1.5 bg-blue-600 hover:bg-blue-700 text-white">
-                <ClipboardList className="w-3.5 h-3.5" /> Preview
-              </Button>
-              <Button onClick={handlePrint} size="sm" variant="outline" className="gap-1.5">
-                <Printer className="w-3.5 h-3.5" /> Print
-              </Button>
-              <Button onClick={handleDownloadPdf} size="sm" variant="outline" className="gap-1.5 text-brand border-brand/30 hover:bg-brand-light">
-                <FileDown className="w-3.5 h-3.5" /> PDF
-              </Button>
-              <Button onClick={handleDownloadDocx} size="sm" variant="outline" className="gap-1.5 text-indigo-600 border-indigo-200 hover:bg-indigo-50">
-                <FileText className="w-3.5 h-3.5" /> Word
-              </Button>
-            </div>
-          )}
+          <div className="flex gap-2 flex-wrap">
+            <Dialog open={showTemplates} onOpenChange={setShowTemplates}>
+              <DialogTrigger asChild>
+                <Button size="sm" variant="outline" className="gap-1.5">
+                  <FolderOpen className="w-3.5 h-3.5" /> Templates
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Risk Assessment Templates</DialogTitle>
+                </DialogHeader>
+                {templates.length === 0 ? (
+                  <div className="text-center py-6 text-muted-foreground">
+                    <FolderOpen className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm">No templates saved yet</p>
+                    <p className="text-xs mt-1">Complete an assessment and save it as a template for reuse</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2 max-h-80 overflow-y-auto">
+                    {templates.map(t => (
+                      <div key={t.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">{t.name}</p>
+                          <p className="text-xs text-muted-foreground">{t.venue} - {t.activity}</p>
+                          <p className="text-xs text-muted-foreground">{new Date(t.savedAt).toLocaleDateString("en-GB")}</p>
+                        </div>
+                        <div className="flex gap-1.5 flex-shrink-0 ml-2">
+                          <Button size="sm" variant="outline" className="h-7 text-xs gap-1" onClick={() => handleCloneTemplate(t)}>
+                            Clone
+                          </Button>
+                          <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-red-500 hover:text-red-700 hover:bg-red-50" onClick={() => handleDeleteTemplate(t.id)}>
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </DialogContent>
+            </Dialog>
+            {step === 9 && (
+              <>
+                <Dialog open={showSaveDialog} onOpenChange={setShowSaveDialog}>
+                  <DialogTrigger asChild>
+                    <Button size="sm" variant="outline" className="gap-1.5 text-green-600 border-green-200 hover:bg-green-50">
+                      <Save className="w-3.5 h-3.5" /> Save Template
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-sm">
+                    <DialogHeader>
+                      <DialogTitle>Save as Template</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-3">
+                      <p className="text-sm text-muted-foreground">Save this assessment as a reusable template for recurring trips.</p>
+                      <div className="space-y-1.5">
+                        <Label>Template Name</Label>
+                        <Input
+                          value={templateName}
+                          onChange={e => setTemplateName(e.target.value)}
+                          placeholder="e.g. Weekly Library Visit"
+                          autoFocus
+                        />
+                      </div>
+                      <Button onClick={handleSaveTemplate} className="w-full bg-green-600 hover:bg-green-700 text-white gap-1.5">
+                        <Save className="w-4 h-4" /> Save Template
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+                <Button onClick={() => setShowPreview(true)} size="sm" className="gap-1.5 bg-blue-600 hover:bg-blue-700 text-white">
+                  <ClipboardList className="w-3.5 h-3.5" /> Preview
+                </Button>
+                <Button onClick={handlePrint} size="sm" variant="outline" className="gap-1.5">
+                  <Printer className="w-3.5 h-3.5" /> Print
+                </Button>
+                <Button onClick={handleDownloadPdf} size="sm" variant="outline" className="gap-1.5 text-brand border-brand/30 hover:bg-brand-light">
+                  <FileDown className="w-3.5 h-3.5" /> PDF
+                </Button>
+                <Button onClick={handleDownloadDocx} size="sm" variant="outline" className="gap-1.5 text-indigo-600 border-indigo-200 hover:bg-indigo-50">
+                  <FileText className="w-3.5 h-3.5" /> Word
+                </Button>
+              </>
+            )}
+          </div>
         </div>
       </div>
 

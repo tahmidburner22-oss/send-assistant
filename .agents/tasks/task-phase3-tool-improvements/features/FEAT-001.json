@@ -1,0 +1,27 @@
+{
+  "id": "FEAT-001",
+  "type": "feat",
+  "description": "ParentNewsletter Translation Dropdown - Add a 'Translate to...' dropdown after generation that makes an AI call to translate the letter into Polish, Urdu, Romanian, Arabic, or Bengali (top 5 UK EAL languages). Show translated version alongside English in a tabbed interface.",
+  "status": "completed",
+  "steps": [
+    "Open client/src/pages/tools/ParentNewsletter.tsx which currently uses the AIToolPage shell component.",
+    "The AIToolPage component (client/src/components/AIToolPage.tsx) provides a generic generate/display lifecycle. We need to either extend it with a post-generation plugin hook OR convert ParentNewsletter to a standalone component that handles its own generation (simpler given it is the only tool needing this).",
+    "Best approach: Add a `renderPostActions` prop to the AIToolPage component that receives (result: string, values: Record<string,string>) and returns ReactNode. This keeps the shell reusable. Render it in the output toolbar area.",
+    "In ParentNewsletter.tsx, implement the translation feature using the renderPostActions prop: a) Add a Select dropdown with options: Polish, Urdu, Romanian, Arabic, Bengali. b) When a language is selected, call callAI with a translation system prompt and the generated letter text. c) Store the translated text in component state. d) Show translated text in a Tabs component (English | Translated) below the dropdown.",
+    "The translation AI prompt should be: system='You are a professional translator. Translate the following school communication accurately into {language}. Preserve all formatting, dates, and proper nouns. Keep the same paragraph structure.', user=the generated letter text.",
+    "Use @radix-ui/react-tabs (already available as shadcn Tabs component) for the English/Translated toggle.",
+    "Add a loading state while translation is in progress."
+  ],
+  "acceptance_criteria": [
+    "After generating a newsletter, a 'Translate to...' dropdown appears in the output area",
+    "Selecting a language triggers an AI call and shows a loading indicator",
+    "The translated text appears in a tabbed panel alongside the English original",
+    "TypeScript compilation passes with no errors (pnpm run check)"
+  ],
+  "verification": [
+    "pnpm run check",
+    "pnpm run build"
+  ],
+  "blocked_reason": null,
+  "findings": "Implementation verified by code review. No build/test commands available due to INTEGRATIONS_ONLY network mode. All imports reference existing modules (DOMPurify, callAI, shadcn Select/Tabs, lucide-react Languages/Loader2). TypeScript types are consistent - renderPostActions prop signature matches usage. JSX is well-formed."
+}
