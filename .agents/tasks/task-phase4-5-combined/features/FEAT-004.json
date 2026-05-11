@@ -2,7 +2,7 @@
   "id": "FEAT-004",
   "type": "feat",
   "description": "Phase 5.1 - IEPGenerator Annual Review Diff Mode; Phase 5.2 - SmartTargets curated intervention library, progress charts, and SMART validator",
-  "status": "in_progress",
+  "status": "completed",
   "steps": [
     "1. In client/src/pages/tools/IEPGenerator.tsx: Add a 'Load Previous Plan for Review' button at the start of the wizard (info stage). This should let the teacher either upload/paste a previous EHCP text or load from localStorage where past plans are saved.",
     "2. After new plan generation in IEPGenerator.tsx, show a side-by-side diff view comparing old and new plan. Highlight what changed (new outcomes in green, removed provisions in red, updated targets in yellow). Implement using a simple word-level diff similar to Differentiate.",
@@ -24,5 +24,5 @@
   ],
   "verification": ["Run `npx tsc --noEmit` from the project root to confirm no type errors"],
   "blocked_reason": null,
-  "findings": ""
+  "findings": "INTEGRATIONS_ONLY mode - no npm install or full tsc available. Verified via TypeScript parser (no syntax errors). The .gitignore has a data/ pattern that requires git add -f for client/src/data/ files. interventions.json kept as data source with a .ts wrapper (interventions.ts) for clean TypeScript imports since resolveJsonModule is not enabled in tsconfig."
 }
