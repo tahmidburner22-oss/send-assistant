@@ -23,6 +23,9 @@ import { FunFactsCarousel } from "@/components/FunFactsCarousel";
 import { exportToDocx } from "@/lib/docx-export";
 import { useLocation } from "wouter";
 import { useUserPreferences } from "@/contexts/UserPreferencesContext";
+import { useDraftAutosave } from "@/hooks/useDraftAutosave";
+import { useToolTelemetry } from "@/hooks/useToolTelemetry";
+import { scanFormValues, maxSeverity, summariseFindings } from "@/lib/piiScanner";
 
 export interface AIToolField {
   id: string;
@@ -251,12 +254,34 @@ export default function AIToolPage({
   const [aiEditLoading, setAiEditLoading] = useState(false);
   const [showAssignDialog, setShowAssignDialog] = useState(false);
 
+  // ── Phase 1: Draft autosave ────────────────────────────────────────────────
+  const toolSlug = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  const { restore: restoreDraft, discard: discardDraft } = useDraftAutosave(toolSlug, values);
+  const [draftRestored, setDraftRestored] = useState(false);
+
+  // Restore draft on first mount if values are empty
+  if (!draftRestored) {
+    const saved = restoreDraft();
+    if (saved && typeof saved === "object") {
+      const hasContent = Object.values(saved).some(v => typeof v === "string" && v.trim() !== "");
+      if (hasContent) {
+        // Defer state update to avoid setting state during render
+        setTimeout(() => { setValues(prev => ({ ...prev, ...saved })); }, 0);
+      }
+    }
+    setDraftRestored(true);
+  }
+
+  // ── Phase 1: Telemetry ─────────────────────────────────────────────────────
+  const telemetry = useToolTelemetry(toolSlug);
+
   const handleAssign = (childId: string) => {
     if (!result) return;
     const outputTitleStr = outputTitle ? outputTitle(values) : title;
     const assignContent = transformBeforeAssign ? transformBeforeAssign(result) : result;
     assignWork(childId, { title: outputTitleStr, type: title.toLowerCase().replace(/\s+/g, "-"), content: assignContent });
     setShowAssignDialog(false);
+    telemetry.fire("output_assigned");
     toast.success("Assigned to student!");
   };
 
@@ -268,6 +293,21 @@ export default function AIToolPage({
       toast.error(`Please fill in: ${missing.map(f => f.label).join(", ")}`);
       return;
     }
+    // ── Phase 1: PII pre-flight check ──────────────────────────────────────
+    const piiResult = scanFormValues(values, { ignoreFields: ["subject", "yearGroup", "year", "duration", "examBoard"] });
+    const severity = maxSeverity(piiResult);
+    if (severity === "high") {
+      const findings = summariseFindings(piiResult);
+      toast.error(`Blocked: personal data detected (${findings.join("; ")}). Use initials or remove before generating.`);
+      telemetry.fire("pii_blocked", { errorCode: severity });
+      return;
+    }
+    if (severity === "medium") {
+      const findings = summariseFindings(piiResult);
+      toast("Personal data warning: " + findings.join("; ") + ". Consider using initials.", { duration: 6000 });
+    }
+    // ── Generate ───────────────────────────────────────────────────────────
+    const endTimer = telemetry.startTimer("generate_start");
     setLoading(true);
     setResult(null);
     setEditMode("none");
@@ -277,8 +317,11 @@ export default function AIToolPage({
       setResult(text);
       setProvider(p);
       onResult?.(text, values);
+      discardDraft(); // successful generation — clear the saved draft
+      endTimer("success", { provider: p });
       toast.success("Generated successfully!");
     } catch (err) {
+      endTimer("fail", { errorCode: (err as any)?.message?.slice(0, 64) || "unknown" });
       toast.error("Generation failed. Please try again.");
       console.error(err);
     }
@@ -288,11 +331,13 @@ export default function AIToolPage({
   const handleCopy = () => {
     if (!result) return;
     navigator.clipboard.writeText(result);
+    telemetry.fire("output_copied");
     toast.success("Copied to clipboard!");
   };
 
   const handlePrint = () => {
     if (!outputRef.current) return;
+    telemetry.fire("output_printed");
     printWorksheetElement(outputRef.current, { title: outputTitle?.(values) || title });
   };
 
@@ -301,6 +346,7 @@ export default function AIToolPage({
     try {
       const filename = `${(outputTitle?.(values) || title).replace(/\s+/g, "_")}.pdf`;
       await downloadHtmlAsPdf(outputRef.current, filename);
+      telemetry.fire("output_downloaded");
       toast.success("PDF downloaded!");
     } catch {
       toast.error("Could not generate PDF. Please try again.");
