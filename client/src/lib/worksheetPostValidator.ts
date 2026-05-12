@@ -246,7 +246,7 @@ export function stripForeignDiagrams(
 
 function isDiagramSectionType(type: string): boolean {
   const t = type.toLowerCase();
-  return t === "diagram" || t === "diagram-a" || t === "diagram-b" || t.startsWith("diagram-");
+  return t === "diagram" || t === "diagram-a" || t === "diagram-b" || t.startsWith("diagram-") || t.includes("diagram");
 }
 
 function normaliseDiagramPlaceholderText(text: string | undefined): string {
@@ -290,9 +290,10 @@ export function stripEmptyDiagramPlaceholders(
     const caption = String(s.caption || "");
     const allPlaceholder = [title, content, caption].every(value => isPlaceholderDiagramText(value));
     const genericTitleWithNoPayload = isGenericDiagramTitle(title) && isPlaceholderDiagramText(content) && isPlaceholderDiagramText(caption);
+    const placeholderHeaderWithDiagramQuestions = isPlaceholderDiagramText(title) && isPlaceholderDiagramText(caption) && /\bdiagram\b/i.test(content);
     const joinedPlaceholder = isPlaceholderDiagramText([title, content, caption].filter(Boolean).join(" "));
 
-    if (allPlaceholder || genericTitleWithNoPayload || joinedPlaceholder) {
+    if (allPlaceholder || genericTitleWithNoPayload || placeholderHeaderWithDiagramQuestions || joinedPlaceholder) {
       warnings.push("Removed unresolved diagram placeholder section before rendering/export.");
       return false;
     }
