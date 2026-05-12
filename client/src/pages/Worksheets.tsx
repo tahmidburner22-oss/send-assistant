@@ -1099,6 +1099,10 @@ export default function Worksheets() {
     if (!generated) return [];
     // Start with all sections, applying teacher/student visibility rules
     let sections = (generated.sections || []).filter((s) => {
+      // Never render unresolved diagram placeholders in the live worksheet view.
+      // These can arrive from library/fallback diagram-question payloads and must
+      // be suppressed before WorksheetRenderer receives the section list.
+      if (isUnresolvedDiagramSection(s)) return false;
       if (viewMode === "student") {
         // Always hide teacher-only, answers, mark-scheme, teacher-notes in student view
         if (s.teacherOnly || s.type === "answers" || s.type === "mark-scheme" || s.type === "teacher-notes" || s.type === "adaptations") return false;
