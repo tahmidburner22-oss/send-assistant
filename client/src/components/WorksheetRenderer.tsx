@@ -1265,6 +1265,8 @@ function formatContent(content: string | any, fmt: ReturnType<typeof getSendForm
     // Strip lines that are just "LABELS" or "ANSWERS" headers
     if (/^\|?\s*labels\s*\|?\s*$/i.test(t)) return false;
     if (/^\|?\s*answers\s*\|?\s*$/i.test(t)) return false;
+    if (/^\|?\s*diagram\s*[:—\-]?\s*(?:none|null|undefined|n\/a|not available)\s*\|?\s*$/i.test(t)) return false;
+    if (/^\|?\s*(?:none|null|undefined|n\/a|not available)\s*\|?\s*$/i.test(t)) return false;
     // Strip separator rows between LABELS/ANSWERS tables (e.g. |---|---|)
     if (/^\|[\s\-:]+\|/.test(t) && t.split('|').length >= 3) {
       const cells = t.split('|').filter((c: string) => c.trim());

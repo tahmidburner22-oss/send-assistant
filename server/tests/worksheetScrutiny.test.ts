@@ -29,6 +29,7 @@ import {
   enforceSingleMcqCorrect,
   dedupeWordBank,
   stripForeignDiagrams,
+  stripEmptyDiagramPlaceholders,
   enforceYearGroupLock,
   capWorkedExampleSteps,
   stripLeakedGeneratorInstructions,
@@ -288,6 +289,21 @@ describe("stripForeignDiagrams", () => {
     const r = stripForeignDiagrams(ws);
     expect(r.worksheet.sections!.length).toBe(1);
     expect(r.warnings).toHaveLength(0);
+  });
+
+
+  it("removes unresolved placeholder diagram sections that would render as 'Diagram None'", () => {
+    const ws: PostValidatorWorksheet = {
+      metadata: { subject: "science" },
+      sections: [
+        { type: "objective", content: "Understand forces." },
+        { type: "diagram", title: "Diagram", content: "None", caption: "None" },
+      ],
+    };
+    const r = stripEmptyDiagramPlaceholders(ws);
+    expect(r.worksheet.sections!.length).toBe(1);
+    expect(r.worksheet.sections!.map(s => `${s.title || ""} ${s.content || ""} ${s.caption || ""}`).join(" ")).not.toMatch(/Diagram\s+None/i);
+    expect(r.warnings.length).toBeGreaterThan(0);
   });
 
   it("does not remove a legitimate science diagram", () => {
