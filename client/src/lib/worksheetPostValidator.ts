@@ -238,6 +238,70 @@ export function stripForeignDiagrams(
   return { worksheet: { ...ws, sections }, warnings };
 }
 
+// ─── 3b. Empty / unresolved diagram placeholder removal ───────────────────────
+// Live verification found that an unresolved diagram-library lookup can still
+// produce a learner-visible section whose title/content/caption effectively read
+// "Diagram None". If there is no usable image/SVG/asset marker, remove the
+// placeholder section entirely rather than rendering a broken diagram block.
+
+function isDiagramSectionType(type: string): boolean {
+  const t = type.toLowerCase();
+  return t === "diagram" || t === "diagram-a" || t === "diagram-b" || t.startsWith("diagram-");
+}
+
+function normaliseDiagramPlaceholderText(text: string | undefined): string {
+  return String(text || "")
+    .replace(/\[\[DIAGRAM:\{[\s\S]*?\}\]\]/g, "")
+    .replace(/[—–-]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase();
+}
+
+function isPlaceholderDiagramText(text: string | undefined): boolean {
+  const normalised = normaliseDiagramPlaceholderText(text);
+  if (!normalised) return true;
+  return /^(?:diagram\s*)?(?:none|null|undefined|n\/a|not available|no diagram|unavailable)$/i.test(normalised)
+    || /^diagram\s+(?:none|null|undefined|n\/a|not available)$/i.test(normalised);
+}
+
+function isGenericDiagramTitle(text: string | undefined): boolean {
+  const normalised = normaliseDiagramPlaceholderText(text);
+  return !normalised || /^diagram(?:\s+[a-z])?$/.test(normalised);
+}
+
+export function stripEmptyDiagramPlaceholders(
+  ws: PostValidatorWorksheet,
+): PostValidatorResult {
+  const warnings: string[] = [];
+  const sections = (ws.sections || []).filter((s): boolean => {
+    const type = String(s.type || "").toLowerCase();
+    if (!isDiagramSectionType(type)) return true;
+
+    const hasRealVisual = Boolean(
+      String(s.svg || "").trim() ||
+      String(s.imageUrl || "").trim() ||
+      String(s.assetRef || "").trim()
+    );
+    if (hasRealVisual) return true;
+
+    const title = String(s.title || "");
+    const content = String(s.content || "");
+    const caption = String(s.caption || "");
+    const allPlaceholder = [title, content, caption].every(value => isPlaceholderDiagramText(value));
+    const genericTitleWithNoPayload = isGenericDiagramTitle(title) && isPlaceholderDiagramText(content) && isPlaceholderDiagramText(caption);
+    const joinedPlaceholder = isPlaceholderDiagramText([title, content, caption].filter(Boolean).join(" "));
+
+    if (allPlaceholder || genericTitleWithNoPayload || joinedPlaceholder) {
+      warnings.push("Removed unresolved diagram placeholder section before rendering/export.");
+      return false;
+    }
+    return true;
+  });
+
+  return { worksheet: { ...ws, sections }, warnings };
+}
+
 // ─── 4. Year-group lock ──────────────────────────────────────────────────────
 // Teacher feedback: the Maths worksheet mixed "Year 11" and "Year 9" in
 // different places. Fix: any reference to a DIFFERENT year group in a
@@ -437,6 +501,7 @@ export function runWorksheetPostValidators(
     enforceSingleMcqCorrect,
     dedupeWordBank,
     (ws: PostValidatorWorksheet) => stripForeignDiagrams(ws, opts),
+    stripEmptyDiagramPlaceholders,
     (ws: PostValidatorWorksheet) => enforceYearGroupLock(ws, opts),
     (ws: PostValidatorWorksheet) => capWorkedExampleSteps(ws, opts),
     stripLeakedGeneratorInstructions,
