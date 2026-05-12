@@ -5856,12 +5856,14 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                   }
                   if (section.type === "q-diagram") {
                     // Dynamic diagram questions section — generated from diagram library
-                    const diagImageUrl = (section as any).diagramImageUrl || resolveImageUrl(section);
+                    const rawDiagImageUrl = (section as any).diagramImageUrl || resolveImageUrl(section);
+                    const diagImageUrl = typeof rawDiagImageUrl === "string" ? rawDiagImageUrl.trim() : rawDiagImageUrl;
                     const diagTitle = (section as any).diagramTitle || section.title;
                     const accentColor = fmt.accentColor || "#1B2A4A";
-                    // If no diagram image is available, skip this section entirely —
+                    const isMissingDiagramImage = !diagImageUrl || (typeof diagImageUrl === "string" && /^(?:none|null|undefined|n\/a|na|no diagram|diagram none)$/i.test(diagImageUrl));
+                    // If no real diagram image is available, skip this section entirely —
                     // questions that reference a diagram make no sense without the diagram.
-                    if (!diagImageUrl) return null;
+                    if (isMissingDiagramImage) return null;
                     return (
                       <div>
                         {/* Diagram image */}

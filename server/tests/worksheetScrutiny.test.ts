@@ -326,6 +326,28 @@ describe("stripForeignDiagrams", () => {
     expect(r.warnings.length).toBeGreaterThan(0);
   });
 
+  it("removes unresolved q-diagram sections when diagramImageUrl is the string 'None'", () => {
+    const ws: PostValidatorWorksheet = {
+      metadata: { subject: "science" },
+      sections: [
+        { type: "objective", content: "Understand forces." },
+        {
+          type: "q-diagram",
+          title: "Diagram Questions",
+          caption: "Diagram None",
+          diagramTitle: "None",
+          diagramImageUrl: "None",
+          content: "Q1. Using the diagram, identify the force that opposes motion.",
+        },
+      ],
+    };
+    const r = stripEmptyDiagramPlaceholders(ws);
+    expect(r.worksheet.sections!.length).toBe(1);
+    expect(r.worksheet.sections![0].type).toBe("objective");
+    expect(r.worksheet.sections!.map(s => `${s.title || ""} ${s.content || ""} ${s.caption || ""} ${(s as any).diagramImageUrl || ""}`).join(" ")).not.toMatch(/Diagram\s+None|diagramImageUrl.*None/i);
+    expect(r.warnings.length).toBeGreaterThan(0);
+  });
+
   it("does not remove a legitimate science diagram", () => {
     const ws: PostValidatorWorksheet = {
       metadata: { subject: "physics" },

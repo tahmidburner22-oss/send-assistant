@@ -278,11 +278,11 @@ export function stripEmptyDiagramPlaceholders(
     const type = String(s.type || "").toLowerCase();
     if (!isDiagramSectionType(type)) return true;
 
-    const hasRealVisual = Boolean(
-      String(s.svg || "").trim() ||
-      String(s.imageUrl || "").trim() ||
-      String(s.assetRef || "").trim()
-    );
+    const visualFields = [s.svg, s.imageUrl, (s as any).diagramImageUrl, (s as any).diagramSvg, (s as any).image, s.assetRef, (s as any).assetUrl];
+    const hasRealVisual = visualFields.some(value => {
+      const text = String(value || "").trim();
+      return Boolean(text) && !isPlaceholderDiagramText(text);
+    });
     if (hasRealVisual) return true;
 
     const title = String(s.title || "");
@@ -291,9 +291,10 @@ export function stripEmptyDiagramPlaceholders(
     const allPlaceholder = [title, content, caption].every(value => isPlaceholderDiagramText(value));
     const genericTitleWithNoPayload = isGenericDiagramTitle(title) && isPlaceholderDiagramText(content) && isPlaceholderDiagramText(caption);
     const placeholderHeaderWithDiagramQuestions = isPlaceholderDiagramText(title) && isPlaceholderDiagramText(caption) && /\bdiagram\b/i.test(content);
+    const unresolvedDiagramQuestion = type.includes("diagram") && isPlaceholderDiagramText(caption) && /\bdiagram\b/i.test(content);
     const joinedPlaceholder = isPlaceholderDiagramText([title, content, caption].filter(Boolean).join(" "));
 
-    if (allPlaceholder || genericTitleWithNoPayload || placeholderHeaderWithDiagramQuestions || joinedPlaceholder) {
+    if (allPlaceholder || genericTitleWithNoPayload || placeholderHeaderWithDiagramQuestions || unresolvedDiagramQuestion || joinedPlaceholder) {
       warnings.push("Removed unresolved diagram placeholder section before rendering/export.");
       return false;
     }
