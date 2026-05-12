@@ -426,6 +426,41 @@ function normaliseLibrarySections(sections: any[]): any[] {
   return sections.map(normaliseLibrarySection);
 }
 
+const PLACEHOLDER_DIAGRAM_VALUE = /^(?:none|null|undefined|n\/a|na|no diagram|diagram none|no image|missing image)$/i;
+
+function isPlaceholderDiagramValue(value: unknown): boolean {
+  return typeof value === 'string' && PLACEHOLDER_DIAGRAM_VALUE.test(value.trim());
+}
+
+function hasUsableDiagramVisual(section: any): boolean {
+  const visualValues = [
+    section?.svg,
+    section?.diagramSvg,
+    section?.imageUrl,
+    section?.diagramImageUrl,
+    section?.assetRef,
+    section?.assetUrl,
+    section?.image,
+  ];
+  return visualValues.some((value) => {
+    if (typeof value !== 'string') return Boolean(value);
+    const trimmed = value.trim();
+    return Boolean(trimmed) && !isPlaceholderDiagramValue(trimmed);
+  });
+}
+
+function isUnresolvedDiagramSection(section: any): boolean {
+  const type = String(section?.type || '').toLowerCase();
+  const title = String(section?.title || section?.diagramTitle || '').trim();
+  const caption = String(section?.caption || '').trim();
+  const content = String(section?.content || '').trim();
+  const isDiagramLike = type.includes('diagram') || /\bdiagram\b/i.test(`${title} ${caption}`);
+  if (!isDiagramLike || hasUsableDiagramVisual(section)) return false;
+  const hasPlaceholderHeader = isPlaceholderDiagramValue(title) || isPlaceholderDiagramValue(caption) || /\bdiagram none\b/i.test(`${title} ${caption}`);
+  const diagramDependentQuestions = /\bdiagram\b/i.test(content) && /\b(?:q\d|identify|label|shown|illustrated|using the diagram|object in the diagram)\b/i.test(content);
+  return hasPlaceholderHeader || (type.includes('diagram') && diagramDependentQuestions);
+}
+
 // ─── Main Component ──────────────────────────────────────────────────────────
 export default function Worksheets() {
   const [location] = useLocation();
@@ -5156,6 +5191,7 @@ ${s.content}`).join("\n\n"),
                   <div className="mt-4 space-y-3">
                     {(generated.sections || []).map((section, i) => {
                       if (hiddenSections.has(i)) return null;
+                      if (isUnresolvedDiagramSection(section)) return null;
                       if (viewMode === "student" && (section.type === "answers" || section.type === "adaptations" || section.teacherOnly)) return null;
                       const currentContent = getSectionContent(i, section.content);
                       const isTeacher = (section as any).teacherOnly;
@@ -5387,7 +5423,8 @@ ${s.content}`).join("\n\n"),
                     })
                   : [];
 
-            const visibleSections = historyViewMode === "teacher" ? sections : sections.filter(s => !s.teacherOnly);
+            const visibleSections = (historyViewMode === "teacher" ? sections : sections.filter(s => !s.teacherOnly))
+              .filter((s: any) => !isUnresolvedDiagramSection(s));
 
             return (
               <div className="space-y-4">
@@ -5444,7 +5481,9 @@ ${s.content}`).join("\n\n"),
                         worksheet={{
                           title: ws.title || '',
                           subtitle: ws.subtitle || '',
-                          sections: sections.map((s: any, i: number) => ({
+                          sections: sections
+                          .filter((s: any) => !isUnresolvedDiagramSection(s))
+                          .map((s: any, i: number) => ({
                             ...s,
                             content: historyEditedSections[i] !== undefined ? historyEditedSections[i] : s.content,
                             type: s.type || 'text'
