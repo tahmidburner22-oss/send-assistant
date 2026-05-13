@@ -43,11 +43,11 @@ export default function About() {
             <div className="mt-8 space-y-6 text-ink-500 text-base md:text-lg leading-relaxed max-w-2xl">
               <AnimatedText
                 as="p"
-                text="1.6 million children in England are living with special educational needs. Behind each number is a pupil with autism, dyslexia, ADHD or complex needs — waiting years for an assessment, slipping through a classroom that wasn't designed for them."
+                text="1.6 million children in England are living with special educational needs. Behind each number is a pupil with autism, dyslexia, ADHD or complex needs — waiting years for an assessment, slipping through a classroom that was never designed for them."
               />
               <AnimatedText
                 as="p"
-                text="We built Adaptly because SENCOs shouldn't have to choose between legally compliant provisions and their weekends. Because teachers shouldn't need to stay until midnight to differentiate a single worksheet. And because children shouldn't fall behind waiting for the system to catch up."
+                text="Adaptly was built so that SENCOs no longer have to choose between legally compliant provisions and their weekends. Teachers deserve tools that let them differentiate a worksheet without staying until midnight — and every child deserves the support they are entitled to, this year rather than next."
               />
             </div>
 
