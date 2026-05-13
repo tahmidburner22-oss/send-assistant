@@ -4,35 +4,75 @@ import { Menu, X } from "lucide-react";
 import { NAV_LINKS } from "./lib/data";
 import { AdaptlyMark } from "./AdaptlyWordmark";
 
+// ────────────────────────────────────────────────────────────────────────────
+// Cinematic top nav.
+//
+// Sits above the cinematic hero on a transparent background, then picks up a
+// subtle dark surface once the user scrolls past the first viewport so the
+// links remain readable on the warm cream body below.
+//
+// Behaviour:
+//   • Logo + each link + the CTA + the user/menu glass icons fade in with a
+//     staggered .animate-blur-fade-up timing matching the hero's rhythm.
+//   • At <lg the centre links collapse into a dropdown driven by an animated
+//     hamburger ↔ X icon (rotate-180 + opacity + scale-50, duration-500).
+//   • Body scroll is locked while the mobile dropdown is open, so the user
+//     can't see the underlying page jump on iOS.
+//   • A 2px scroll-progress bar runs along the very top, kept from the prior
+//     nav so the scroll storytelling pages still get their progress hint.
+// ────────────────────────────────────────────────────────────────────────────
+
+const STAGGER = {
+  logo: "0ms",
+  links: ["100ms", "150ms", "200ms", "250ms", "300ms"],
+  cta: "350ms",
+  toggle: "350ms",
+};
+
 export default function Nav() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
-  const [active, setActive] = useState("");
   const { scrollYProgress } = useScroll();
   const progress = useSpring(scrollYProgress, { stiffness: 120, damping: 30, mass: 0.3 });
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 32);
-    window.addEventListener("scroll", onScroll);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  // Body scroll lock for the mobile dropdown.
   useEffect(() => {
-    const ids = NAV_LINKS.map((l) => l.href.slice(1));
-    const obs = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) setActive("#" + e.target.id);
-        });
-      },
-      { rootMargin: "-40% 0px -55% 0px" }
-    );
-    ids.forEach((id) => {
-      const el = document.getElementById(id);
-      if (el) obs.observe(el);
-    });
-    return () => obs.disconnect();
-  }, []);
+    if (!open) return;
+    const prevOverflow = document.body.style.overflow;
+    const prevTouch = document.body.style.touchAction;
+    document.body.style.overflow = "hidden";
+    document.body.style.touchAction = "none";
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      document.body.style.touchAction = prevTouch;
+    };
+  }, [open]);
+
+  // Close the dropdown on resize past lg so the desktop layout takes over.
+  useEffect(() => {
+    const onResize = () => {
+      if (window.innerWidth >= 1024 && open) setOpen(false);
+    };
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, [open]);
+
+  // Close on Escape.
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open]);
 
   return (
     <>
@@ -41,96 +81,151 @@ export default function Nav() {
         style={{ scaleX: progress }}
         className="fixed top-0 left-0 right-0 h-[2px] origin-left bg-terracotta z-[60]"
       />
+
       <header
         data-testid="nav-header"
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-          scrolled ? "py-3" : "py-6"
-        }`}
+        className="fixed top-0 left-0 right-0 z-50"
+        style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
       >
-        <div className="max-w-7xl mx-auto px-6 md:px-10">
-          <div
-            className={`flex items-center justify-between rounded-full pl-3 pr-3 md:pl-4 md:pr-4 py-2 transition-all duration-500 ${
-              scrolled ? "glass" : "bg-transparent"
-            }`}
-          >
-            <a href="#top" data-testid="nav-logo" className="flex items-center gap-3 group pl-1" data-cursor="hover">
-              <AdaptlyMark size={40} className="text-ink-900 transition-transform duration-500 group-hover:rotate-[-8deg]" />
-              <span className="font-heading font-bold text-xl md:text-2xl tracking-[-0.04em] text-ink-900">
+        <div
+          className={`px-4 sm:px-6 md:px-12 transition-all duration-500 ${
+            scrolled || open ? "py-3 bg-black/55 backdrop-blur-md" : "py-4 md:py-6"
+          }`}
+        >
+          <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
+            {/* Logo — 0ms */}
+            <a
+              href="#top"
+              data-testid="nav-logo"
+              data-cursor="hover"
+              className="flex items-center gap-2 sm:gap-3 group animate-blur-fade-up"
+              style={{ animationDelay: STAGGER.logo }}
+            >
+              <AdaptlyMark
+                size={36}
+                className="text-white transition-transform duration-500 group-hover:rotate-[-8deg]"
+              />
+              <span className="font-semibold text-lg sm:text-xl tracking-[-0.02em] text-white">
                 Adaptly
               </span>
             </a>
 
-            <nav className="hidden md:flex items-center gap-1 relative bg-cream-50/50 rounded-full p-1 backdrop-blur-sm">
-              {NAV_LINKS.map((l) => (
+            {/* Centre nav (lg+) — staggered */}
+            <nav className="hidden lg:flex items-center gap-1 absolute left-1/2 -translate-x-1/2">
+              {NAV_LINKS.map((l, i) => (
                 <a
                   key={l.href}
                   href={l.href}
-                  data-testid={`nav-link-${l.label.toLowerCase()}`}
-                  className="relative px-4 py-2 text-sm text-ink-700 hover:text-ink-900 transition-colors rounded-full"
+                  data-testid={`nav-link-${l.label.toLowerCase().replace(/\s+/g, "-")}`}
+                  className="px-3 xl:px-4 py-2 text-sm text-white/85 hover:text-white transition-colors animate-blur-fade-up"
+                  style={{ animationDelay: STAGGER.links[i] || "300ms" }}
                 >
-                  {active === l.href && (
-                    <motion.span
-                      layoutId="nav-pill"
-                      className="absolute inset-0 bg-ink-900 rounded-full"
-                      transition={{ type: "spring", stiffness: 380, damping: 32 }}
-                    />
-                  )}
-                  <span className={`relative z-10 ${active === l.href ? "text-cream-100" : ""}`}>{l.label}</span>
+                  {l.label}
                 </a>
               ))}
             </nav>
 
-            <div className="flex items-center gap-2">
+            {/* Right cluster */}
+            <div className="flex items-center gap-2 sm:gap-3">
+              {/* Start free CTA — 350ms (replaces the "Search" pill from the spec). */}
               <a
                 href="https://adaptly.co.uk/login"
                 data-testid="nav-cta-start"
-                className="hidden md:inline-flex items-center gap-2 rounded-full bg-ink-900 text-cream-100 px-5 py-2.5 text-sm font-medium hover:bg-terracotta transition-colors"
+                className="hidden sm:inline-flex items-center gap-2 rounded-full bg-white text-black font-medium text-xs sm:text-sm px-4 md:px-6 py-2 sm:py-2.5 hover:bg-white/85 transition-colors animate-blur-fade-up"
+                style={{ animationDelay: STAGGER.cta }}
               >
-                Start free <span aria-hidden>→</span>
+                Start free
+                <span aria-hidden>→</span>
               </a>
+
+              {/* Hamburger toggle (<lg) — 350ms */}
               <button
-                onClick={() => setOpen(!open)}
+                onClick={() => setOpen((v) => !v)}
                 data-testid="nav-mobile-toggle"
-                className="md:hidden w-10 h-10 rounded-full bg-ink-900 text-cream-100 flex items-center justify-center"
-                aria-label="Toggle menu"
+                aria-label={open ? "Close menu" : "Open menu"}
+                aria-expanded={open}
+                aria-controls="mobile-menu"
+                className="lg:hidden liquid-glass relative w-11 h-11 rounded-full flex items-center justify-center text-white animate-blur-fade-up"
+                style={{ animationDelay: STAGGER.toggle }}
               >
-                {open ? <X size={18} /> : <Menu size={18} />}
+                {/* Animated icon swap — rotate-180, opacity, scale-50, duration-500 */}
+                <span
+                  className={`absolute inset-0 flex items-center justify-center transition-all duration-500 ease-out ${
+                    open ? "rotate-180 opacity-0 scale-50" : "rotate-0 opacity-100 scale-100"
+                  }`}
+                  aria-hidden
+                >
+                  <Menu size={18} />
+                </span>
+                <span
+                  className={`absolute inset-0 flex items-center justify-center transition-all duration-500 ease-out ${
+                    open ? "rotate-0 opacity-100 scale-100" : "-rotate-180 opacity-0 scale-50"
+                  }`}
+                  aria-hidden
+                >
+                  <X size={18} />
+                </span>
               </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile dropdown — slides in from below the header (top-[72px]) */}
+        <div
+          id="mobile-menu"
+          data-testid="mobile-menu"
+          className={`lg:hidden absolute top-[64px] sm:top-[72px] left-0 right-0 z-40 transition-all duration-500 ease-out ${
+            open
+              ? "translate-y-0 opacity-100"
+              : "-translate-y-4 opacity-0 pointer-events-none"
+          }`}
+        >
+          <div className="bg-gray-900/95 backdrop-blur-lg border-t border-b border-gray-800 shadow-2xl">
+            <div className="px-4 sm:px-6 md:px-12 py-5 max-w-7xl mx-auto">
+              <nav className="flex flex-col gap-1" aria-label="Mobile">
+                {NAV_LINKS.map((l, i) => (
+                  <a
+                    key={l.href}
+                    href={l.href}
+                    onClick={() => setOpen(false)}
+                    data-testid={`nav-mobile-link-${l.label.toLowerCase().replace(/\s+/g, "-")}`}
+                    className={`block py-3 px-3 rounded-lg text-white/90 hover:bg-gray-800/50 hover:text-white text-base font-medium transition-all duration-500 ease-out ${
+                      open ? "translate-x-0 opacity-100" : "-translate-x-4 opacity-0"
+                    }`}
+                    style={{ transitionDelay: open ? `${i * 50}ms` : "0ms" }}
+                  >
+                    {l.label}
+                  </a>
+                ))}
+              </nav>
+
+              {/* CTA section visible on small screens where the inline CTA is hidden. */}
+              <div className="mt-4 pt-4 border-t border-gray-800 sm:hidden">
+                <a
+                  href="https://adaptly.co.uk/login"
+                  onClick={() => setOpen(false)}
+                  className="w-full inline-flex items-center justify-center gap-2 rounded-full bg-white text-black font-medium text-sm px-6 py-3"
+                >
+                  Start free
+                  <span aria-hidden>→</span>
+                </a>
+              </div>
             </div>
           </div>
         </div>
       </header>
 
-      <motion.div
-        initial={false}
-        animate={{ opacity: open ? 1 : 0, pointerEvents: open ? "auto" : "none" }}
-        transition={{ duration: 0.25 }}
-        className="fixed inset-0 z-40 md:hidden bg-cream-100/95 backdrop-blur-xl"
-        data-testid="mobile-menu"
-      >
-        <div className="pt-28 px-8 flex flex-col gap-6">
-          {NAV_LINKS.map((l, i) => (
-            <motion.a
-              key={l.href}
-              href={l.href}
-              onClick={() => setOpen(false)}
-              initial={{ opacity: 0, y: 20 }}
-              animate={open ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-              transition={{ delay: open ? 0.1 + i * 0.05 : 0 }}
-              className="font-display italic text-5xl text-ink-900"
-            >
-              {l.label}
-            </motion.a>
-          ))}
-          <a
-            href="https://adaptly.co.uk/login"
-            onClick={() => setOpen(false)}
-            className="mt-8 self-start inline-flex items-center gap-2 rounded-full bg-ink-900 text-cream-100 px-6 py-3 text-sm font-medium"
-          >
-            Start free →
-          </a>
-        </div>
-      </motion.div>
+      {/* Backdrop scrim that closes the menu when tapped. Below the dropdown
+          (z-30), above the page content. Pointer-events follow the open state. */}
+      <button
+        type="button"
+        aria-hidden={!open}
+        tabIndex={-1}
+        onClick={() => setOpen(false)}
+        className={`lg:hidden fixed inset-0 z-30 bg-black/40 transition-opacity duration-300 ${
+          open ? "opacity-100" : "opacity-0 pointer-events-none"
+        }`}
+      />
     </>
   );
 }

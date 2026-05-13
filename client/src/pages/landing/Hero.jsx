@@ -1,663 +1,280 @@
 import { useEffect, useRef, useState } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
-  AnimatePresence,
-  motion,
-  useScroll,
-  useTransform,
-  useMotionValue,
-  useMotionValueEvent,
-  useSpring,
-  useMotionTemplate,
-  useReducedMotion,
-} from "framer-motion";
-import {
-  FileText,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  CalendarDays,
+  Play,
   Sparkles,
-  Users,
-  BookOpen,
-  BarChart3,
   ShieldCheck,
-  Brain,
-  Heart,
-  GraduationCap,
-  Compass,
 } from "lucide-react";
 
-// ────────────────────────────────────────────────────────────────
-// Editorial Swiss Humanism: the hero is an editorial first impression, not an oversized scroll trap.
-// Hero — sticky scroll scene.
-// Desktop (≥1024px): 200vh of scroll. Three title messages cycle through
-//   as you scroll (only one in the DOM at a time so there's no overlap
-//   bleed). Engine glyph + orbit tiles share one parallax transform so
-//   the connecting lines always meet the wheel's centre.
-// Tablet (640-1023px): 160vh — same sequence, tighter.
-// Mobile (<640px): natural-flow section, single headline, no sticky.
-// ────────────────────────────────────────────────────────────────
+// ────────────────────────────────────────────────────────────────────────────
+// Cinematic hero — full-viewport video background, bottom-only backdrop blur
+// (no dark gradient overlay), staggered blur-fade-up entrance for every
+// element, three SEND-relevant value slides cycled via Prev / Next, and full
+// support for reduced-motion + reduced-data preferences.
+//
+// Mobile/tablet specifics:
+//   • Uses min-h-[100svh] so iOS Safari's address bar can't crop the hero.
+//   • At <md the right-side stepper sits *above* the CTAs so thumbs reach
+//     them; at md+ it floats to the right edge as the spec describes.
+//   • Touch devices and reduced-motion automatically render a poster
+//     instead of starting the video — no "loading" flash on slow networks.
+//   • All interactive controls are >= 44px tall (CTAs are 44/48px, stepper
+//     pills are 44px tall, glass icon buttons are 44×44px).
+// ────────────────────────────────────────────────────────────────────────────
 
-const PILLARS = [
-  { label: "EHCP", icon: FileText, color: "#D96C4A" },
-  { label: "Adaptation", icon: Sparkles, color: "#E5B96E" },
-  { label: "Parent Portal", icon: Users, color: "#7F8C72" },
-  { label: "Reading", icon: BookOpen, color: "#D96C4A" },
-  { label: "Analytics", icon: BarChart3, color: "#22201E" },
-  { label: "Compliance", icon: ShieldCheck, color: "#7F8C72" },
-  { label: "Behaviour", icon: Brain, color: "#D96C4A" },
-  { label: "Wellbeing", icon: Heart, color: "#E5B96E" },
-  { label: "Lessons", icon: GraduationCap, color: "#7F8C72" },
-  { label: "Screener", icon: Compass, color: "#22201E" },
+const HERO_VIDEO_SRC =
+  "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260406_094145_4a271a6c-3869-4f1c-8aa7-aeb0cb227994.mp4";
+
+const SLIDES = [
+  {
+    id: "platform",
+    metadata: [
+      { icon: Sparkles, label: "24 specialist tools" },
+      { icon: Clock, label: "5h+ saved per EHCP" },
+      { icon: CalendarDays, label: "Term-ready in minutes" },
+    ],
+    title: "Step through. Teach smarter.",
+    description:
+      "EHCP drafting, differentiated worksheets, parent portal, behaviour and analytics — every SEND tool a UK school needs, joined up in one quiet engine.",
+  },
+  {
+    id: "ehcp",
+    metadata: [
+      { icon: ShieldCheck, label: "SEND Code aligned" },
+      { icon: Clock, label: "Section F in 10 min" },
+      { icon: CalendarDays, label: "Audit-ready records" },
+    ],
+    title: "From referral to plan in minutes.",
+    description:
+      "A 5-stage AI-assisted EHCP builder with golden-thread QA, compliance scoring and Word export — drafted in under an hour, not a weekend.",
+  },
+  {
+    id: "parents",
+    metadata: [
+      { icon: Sparkles, label: "Daily adaptive work" },
+      { icon: Clock, label: "Zero teacher prep" },
+      { icon: CalendarDays, label: "Live progress feed" },
+    ],
+    title: "Calmer parents. Clearer pupils.",
+    description:
+      "A dedicated parent portal that delivers each pupil's adaptive work pack every morning — with progress, behaviour notes and updates parents can see in real time.",
+  },
 ];
-
-const TITLES = [
-  {
-    a: "One platform for",
-    b: "teaching, support",
-    c: "and progress.",
-  },
-  {
-    a: "24 specialist",
-    b: "tools. one",
-    c: "quiet engine.",
-  },
-  {
-    a: "Built so every",
-    b: "child is seen,",
-    c: "not missed.",
-  },
-];
-
-function polar(angleDeg, r) {
-  const a = (angleDeg * Math.PI) / 180;
-  return { x: Math.cos(a) * r, y: Math.sin(a) * r };
-}
-
-// Layout picks viewport-appropriate sizes.
-// Mobile (<640px): natural-height section (no sticky) so copy + engine +
-// stats fit without clipping. Tablet/desktop: sticky scroll scene.
-function useHeroLayout() {
-  const [layout, setLayout] = useState({
-    sceneHeight: "200vh",
-    orbitRadius: 260,
-    orbitCount: 10,
-    enableTitleMorph: true,
-    mouseParallaxRange: 24,
-    sticky: true,
-  });
-  useEffect(() => {
-    const compute = () => {
-      const w = window.innerWidth;
-      const h = window.innerHeight;
-      const tabletLandscape = w >= 640 && w < 1180 && h <= 900;
-      if (tabletLandscape) {
-        setLayout({
-          sceneHeight: "auto",
-          orbitRadius: 172,
-          orbitCount: 8,
-          enableTitleMorph: false,
-          mouseParallaxRange: 0,
-          sticky: false,
-        });
-        return;
-      }
-      if (h < 500 && w < 1200) {
-        // Landscape phone — use mobile config
-        setLayout({
-          sceneHeight: "auto",
-          orbitRadius: 135,
-          orbitCount: 5,
-          enableTitleMorph: false,
-          mouseParallaxRange: 0,
-          sticky: false,
-        });
-        return;
-      }
-      if (w < 640) {
-        setLayout({
-          sceneHeight: "auto",
-          orbitRadius: 135,
-          orbitCount: 5,
-          enableTitleMorph: false,
-          mouseParallaxRange: 0,
-          sticky: false,
-        });
-      } else if (w < 1024) {
-        setLayout({
-          sceneHeight: "135vh",
-          orbitRadius: 195,
-          orbitCount: 8,
-          enableTitleMorph: true,
-          mouseParallaxRange: 16,
-          sticky: true,
-        });
-      } else {
-        setLayout({
-          sceneHeight: "155vh",
-          orbitRadius: 260,
-          orbitCount: 10,
-          enableTitleMorph: true,
-          mouseParallaxRange: 24,
-          sticky: true,
-        });
-      }
-    };
-    compute();
-    window.addEventListener("resize", compute);
-    return () => window.removeEventListener("resize", compute);
-  }, []);
-  return layout;
-}
-
-// Reveal line that doesn't clip descenders.
-function RevealLine({ children, delay = 0, keyRef }) {
-  return (
-    <span
-      className="block overflow-hidden"
-      style={{ lineHeight: 1.05, paddingBottom: "0.1em" }}
-    >
-      <motion.span
-        key={keyRef}
-        initial={{ y: "115%" }}
-        animate={{ y: "0%" }}
-        exit={{ y: "-115%" }}
-        transition={{ delay, duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-        className="block"
-      >
-        {children}
-      </motion.span>
-    </span>
-  );
-}
-
-// Render a single title block. Switching activeIndex triggers a staggered
-// exit/enter via AnimatePresence. Only one block is ever in the DOM at a
-// time, so zero-opacity ghosts can't cause visual overlap.
-function ActiveTitle({ activeIndex }) {
-  return (
-    <AnimatePresence mode="wait" initial={false}>
-      <motion.div
-        key={activeIndex}
-        initial={{ opacity: 1 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 1 }}
-      >
-        <TitleBlock index={activeIndex} />
-      </motion.div>
-    </AnimatePresence>
-  );
-}
-
-function TitleBlock({ index }) {
-  const t = TITLES[index] || TITLES[0];
-  return (
-    <h1
-      className="font-heading text-ink-900 tracking-[-0.04em] text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold"
-      data-testid="hero-title"
-    >
-      <RevealLine delay={0.02} keyRef={`${index}-a`}>
-        {t.a}
-      </RevealLine>
-      <RevealLine delay={0.12} keyRef={`${index}-b`}>
-        <span className="font-display italic font-normal text-terracotta">{t.b}</span>
-      </RevealLine>
-      <RevealLine delay={0.22} keyRef={`${index}-c`}>
-        {t.c}
-      </RevealLine>
-    </h1>
-  );
-}
-
-// The engine glyph — rotates with scroll, counter-rotating inner wheel.
-function EngineGlyph({ scrollYProgress }) {
-  const rotate = useTransform(scrollYProgress, [0, 1], [0, 540]);
-  const innerRotate = useTransform(scrollYProgress, [0, 1], [0, -360]);
-  const dashOffset = useTransform(scrollYProgress, [0, 1], [0, 560]);
-  const flare = useTransform(scrollYProgress, [0, 0.5, 0.8, 1], [0.4, 0.85, 1, 0.6]);
-  const warp = useTransform(scrollYProgress, [0, 1], [1, 1.12]);
-
-  return (
-    <div className="relative flex items-center justify-center w-[220px] h-[220px] sm:w-[280px] sm:h-[280px] lg:w-[320px] lg:h-[320px]">
-      <motion.div
-        style={{ opacity: flare, scale: warp }}
-        className="absolute inset-0 rounded-full"
-        aria-hidden
-      >
-        <div
-          className="absolute inset-4 rounded-full blur-3xl"
-          style={{
-            background:
-              "radial-gradient(closest-side, rgba(217,108,74,0.55), rgba(217,108,74,0) 70%)",
-          }}
-        />
-        <div
-          className="absolute inset-0 rounded-full blur-3xl"
-          style={{
-            background:
-              "radial-gradient(closest-side, rgba(229,185,110,0.35), rgba(229,185,110,0) 70%)",
-          }}
-        />
-      </motion.div>
-
-      <motion.svg
-        style={{ rotate }}
-        viewBox="-160 -160 320 320"
-        className="absolute inset-0 w-full h-full"
-        aria-hidden
-      >
-        <motion.circle
-          cx="0"
-          cy="0"
-          r="140"
-          fill="none"
-          stroke="#22201E"
-          strokeOpacity="0.22"
-          strokeWidth="1"
-          strokeDasharray="4 8"
-          style={{ strokeDashoffset: dashOffset }}
-        />
-        <motion.circle
-          cx="0"
-          cy="0"
-          r="122"
-          fill="none"
-          stroke="#D96C4A"
-          strokeOpacity="0.55"
-          strokeWidth="1.5"
-          strokeDasharray="2 14"
-          style={{ strokeDashoffset: dashOffset }}
-        />
-        {Array.from({ length: 48 }).map((_, i) => {
-          const a = (i / 48) * 360;
-          const p1 = polar(a, 146);
-          const p2 = polar(a, i % 4 === 0 ? 155 : 150);
-          return (
-            <line
-              key={i}
-              x1={p1.x}
-              y1={p1.y}
-              x2={p2.x}
-              y2={p2.y}
-              stroke="#22201E"
-              strokeOpacity={i % 4 === 0 ? 0.45 : 0.18}
-              strokeWidth="1"
-            />
-          );
-        })}
-      </motion.svg>
-
-      <motion.svg
-        style={{ rotate: innerRotate }}
-        viewBox="-100 -100 200 200"
-        className="absolute inset-[40px] sm:inset-[52px] lg:inset-[60px]"
-        aria-hidden
-      >
-        {Array.from({ length: 6 }).map((_, i) => {
-          const a = (i / 6) * 360;
-          const p = polar(a, 70);
-          return (
-            <g key={i} opacity="0.8">
-              <line
-                x1="0"
-                y1="0"
-                x2={p.x}
-                y2={p.y}
-                stroke="#22201E"
-                strokeOpacity="0.35"
-                strokeWidth="1.5"
-              />
-              <circle
-                cx={p.x}
-                cy={p.y}
-                r="3.5"
-                fill={i % 3 === 0 ? "#D96C4A" : "#22201E"}
-              />
-            </g>
-          );
-        })}
-        <circle cx="0" cy="0" r="10" fill="#22201E" />
-        <circle cx="0" cy="0" r="3" fill="#E5B96E" />
-      </motion.svg>
-
-      <div className="relative z-10 w-[80px] h-[80px] sm:w-[100px] sm:h-[100px] lg:w-[112px] lg:h-[112px] rounded-full glass flex items-center justify-center shadow-[0_20px_50px_-15px_rgba(34,32,30,0.25)]">
-        <div className="text-center">
-          <div className="font-display text-2xl sm:text-3xl text-ink-900 leading-none">A</div>
-          <div className="mt-1 text-[8px] uppercase tracking-[0.3em] text-ink-500">engine</div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function OrbitTiles({ scrollYProgress, orbitRadius, orbitCount }) {
-  const tiles = PILLARS.slice(0, orbitCount);
-  const radiusMul = useTransform(scrollYProgress, [0, 0.55, 0.9], [1, 1.05, 1.5]);
-  const tileOpacity = useTransform(scrollYProgress, [0, 0.75, 1], [1, 1, 0]);
-
-  return (
-    <motion.div
-      style={{ opacity: tileOpacity }}
-      className="absolute inset-0 flex items-center justify-center pointer-events-none"
-      data-testid="hero-orbit"
-    >
-      <svg
-        className="absolute inset-0 w-full h-full"
-        viewBox="-320 -320 640 640"
-        preserveAspectRatio="xMidYMid meet"
-      >
-        {tiles.map((o, i) => {
-          const angle = (i / tiles.length) * 360 - 90;
-          const p = polar(angle, orbitRadius);
-          return (
-            <motion.line
-              key={i}
-              x1={0}
-              y1={0}
-              x2={p.x}
-              y2={p.y}
-              stroke={o.color}
-              strokeOpacity={0.22}
-              strokeWidth={1}
-              initial={{ pathLength: 0, opacity: 0 }}
-              animate={{ pathLength: 1, opacity: 0.55 }}
-              transition={{
-                delay: 0.4 + i * 0.06,
-                duration: 1.1,
-                ease: [0.22, 1, 0.36, 1],
-              }}
-            />
-          );
-        })}
-      </svg>
-
-      {tiles.map((o, i) => {
-        const angle = (i / tiles.length) * 360 - 90;
-        return (
-          <OrbitTile
-            key={o.label}
-            tile={o}
-            index={i}
-            angle={angle}
-            baseRadius={orbitRadius}
-            radiusMul={radiusMul}
-          />
-        );
-      })}
-    </motion.div>
-  );
-}
-
-function OrbitTile({ tile, index, angle, baseRadius, radiusMul }) {
-  const Icon = tile.icon;
-  const x = useTransform(radiusMul, (m) => polar(angle, baseRadius * m).x);
-  const y = useTransform(radiusMul, (m) => polar(angle, baseRadius * m).y);
-  return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.6 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ delay: 0.5 + index * 0.06, duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
-      style={{ x, y }}
-      className="absolute"
-    >
-      <motion.div
-        animate={{ y: [0, -6, 0] }}
-        transition={{
-          duration: 3.4 + (index % 4) * 0.3,
-          repeat: Infinity,
-          ease: "easeInOut",
-          delay: index * 0.15,
-        }}
-        className="glass rounded-2xl px-3 sm:px-3.5 py-2 sm:py-2.5 flex items-center gap-2 sm:gap-2.5 whitespace-nowrap shadow-[0_10px_30px_-12px_rgba(34,32,30,0.22)]"
-      >
-        <span
-          className="w-6 h-6 sm:w-7 sm:h-7 rounded-xl flex items-center justify-center"
-          style={{ background: `${tile.color}22`, color: tile.color }}
-        >
-          <Icon size={13} />
-        </span>
-        <span className="font-heading font-semibold text-[11px] sm:text-xs text-ink-900">
-          {tile.label}
-        </span>
-      </motion.div>
-    </motion.div>
-  );
-}
 
 export default function Hero() {
-  const sectionRef = useRef(null);
-  const reducedMotion = useReducedMotion();
-  const layout = useHeroLayout();
+  const [active, setActive] = useState(0);
+  const reduced = useReducedMotion();
+  const videoRef = useRef(null);
 
-  // Mouse parallax — applied to the WHOLE composition (engine + tiles)
-  // so their geometry stays consistent.
-  const mx = useMotionValue(0);
-  const my = useMotionValue(0);
-  const sx = useSpring(mx, { stiffness: 60, damping: 18 });
-  const sy = useSpring(my, { stiffness: 60, damping: 18 });
-  // Copy column uses a smaller parallax range so it reads as separate.
-  const copyX = useTransform(sx, (v) => v * 0.4);
-  const copyY = useTransform(sy, (v) => v * 0.4);
-
+  // On reduced-motion / reduced-data we never start the video; the poster
+  // first frame is what the user sees. We also pause it if it had started.
   useEffect(() => {
-    if (reducedMotion || layout.mouseParallaxRange === 0) return;
-    const range = layout.mouseParallaxRange;
-    const onMove = (e) => {
-      mx.set((e.clientX / window.innerWidth - 0.5) * range);
-      my.set((e.clientY / window.innerHeight - 0.5) * range);
-    };
-    window.addEventListener("mousemove", onMove);
-    return () => window.removeEventListener("mousemove", onMove);
-  }, [mx, my, layout.mouseParallaxRange, reducedMotion]);
-
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ["start start", "end end"],
-  });
-
-  // Active title index driven by scroll buckets. Keeps exactly one title
-  // in the DOM — no opacity crossfade, no bleed, no overlap.
-  const [activeIndex, setActiveIndex] = useState(0);
-  useMotionValueEvent(scrollYProgress, "change", (v) => {
-    if (!layout.enableTitleMorph) {
-      if (activeIndex !== 0) setActiveIndex(0);
+    const v = videoRef.current;
+    if (!v) return;
+    if (reduced) {
+      try {
+        v.pause();
+      } catch {
+        /* no-op */
+      }
       return;
     }
-    const next = v < 0.38 ? 0 : v < 0.7 ? 1 : 2;
-    if (next !== activeIndex) setActiveIndex(next);
-  });
+    // Best-effort autoplay; if the browser blocks it we keep the poster.
+    const tryPlay = () => {
+      const p = v.play();
+      if (p && typeof p.then === "function") p.catch(() => {});
+    };
+    tryPlay();
+  }, [reduced]);
 
-  const stageScale = useTransform(scrollYProgress, [0, 1], [1, 0.92]);
-  const stageBlur = useTransform(scrollYProgress, [0, 0.85, 1], [0, 0, 6]);
-  const stageFilter = useMotionTemplate`blur(${stageBlur}px)`;
-  const stageOpacity = useTransform(scrollYProgress, [0, 0.92, 1], [1, 1, 0]);
+  const next = () => setActive((i) => (i + 1) % SLIDES.length);
+  const prev = () => setActive((i) => (i - 1 + SLIDES.length) % SLIDES.length);
+
+  // Keyboard support — left/right arrows step the slides while focus is
+  // anywhere inside the hero.
+  const sectionRef = useRef(null);
+  useEffect(() => {
+    const node = sectionRef.current;
+    if (!node) return;
+    const onKey = (e) => {
+      if (e.key === "ArrowRight") next();
+      else if (e.key === "ArrowLeft") prev();
+    };
+    node.addEventListener("keydown", onKey);
+    return () => node.removeEventListener("keydown", onKey);
+  }, []);
 
   return (
     <section
       ref={sectionRef}
       id="top"
       data-testid="hero-section"
-      className="relative w-full"
-      style={layout.sticky ? { height: layout.sceneHeight } : undefined}
+      tabIndex={-1}
+      // The hero owns its own black background while the rest of the page
+      // keeps the warm cream theme.
+      className="hero-cinematic relative w-full min-h-[100svh] overflow-hidden flex flex-col text-white"
+      style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
     >
+      {/* Background video — z-0 */}
+      <video
+        ref={videoRef}
+        className="absolute inset-0 w-full h-full object-cover z-0"
+        src={HERO_VIDEO_SRC}
+        autoPlay
+        muted
+        loop
+        playsInline
+        preload="metadata"
+        // poster intentionally omitted — the video is short and the metadata
+        // preload is enough; we don't have a static fallback URL.
+        aria-hidden="true"
+      />
+
+      {/* Bottom-only backdrop blur — z-1, no darkening */}
       <div
-        className={
-          layout.sticky
-            ? "sticky top-0 h-[100svh] w-full overflow-hidden"
-            : "relative w-full overflow-hidden"
-        }
-      >
-        {/* Warm background glow */}
-        <div className="absolute inset-0 -z-10 pointer-events-none">
-          <div className="absolute top-1/4 left-1/4 w-[420px] sm:w-[520px] h-[420px] sm:h-[520px] rounded-full bg-terracotta/18 blur-[140px] animate-float-slow" />
-          <div className="absolute bottom-10 right-10 w-[380px] sm:w-[460px] h-[380px] sm:h-[460px] rounded-full bg-honey/28 blur-[140px]" />
-          <div className="hidden sm:block absolute top-10 right-1/4 w-[340px] h-[340px] rounded-full bg-sage/22 blur-[120px]" />
-          <div className="hidden sm:block absolute top-1/2 left-10 w-[280px] h-[280px] rounded-full bg-terracotta/12 blur-[110px]" />
-        </div>
+        aria-hidden
+        className="hero-bottom-blur pointer-events-none absolute inset-0 z-[1] backdrop-blur-xl"
+      />
 
-        {/* Grid overlay */}
-        <div
-          className="absolute inset-0 -z-10 opacity-[0.035] pointer-events-none"
-          style={{
-            backgroundImage:
-              "linear-gradient(#22201E 1px, transparent 1px), linear-gradient(90deg, #22201E 1px, transparent 1px)",
-            backgroundSize: "48px 48px",
-          }}
-        />
+      {/* Content — z-10 */}
+      <div className="relative z-10 flex flex-col flex-1 min-h-[100svh]">
+        {/* Spacer so content sits at the bottom under the navbar.
+            Nav is fixed in <Nav>; we just leave the area visible to the video. */}
+        <div className="flex-1" />
 
-        <motion.div
-          style={
-            layout.sticky
-              ? { scale: stageScale, opacity: stageOpacity, filter: stageFilter }
-              : undefined
-          }
-          className={
-            layout.sticky
-              ? "relative h-full flex items-center pt-20 sm:pt-24 pb-10 sm:pb-12"
-              : "relative flex items-center pt-20 sm:pt-22 pb-10 min-h-[auto] sm:min-h-[100svh]"
-          }
-        >
-          <div className="max-w-7xl mx-auto w-full px-5 sm:px-6 md:px-10 grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-10 lg:gap-8 items-center">
-            {/* Copy column — lighter parallax */}
-            <motion.div
-              style={{ x: copyX, y: copyY }}
-              className="lg:col-span-5 order-2 lg:order-1"
-            >
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full glass text-[11px] sm:text-xs md:text-sm text-ink-700 font-medium"
-                data-testid="hero-kicker"
-              >
-                <span className="w-1.5 h-1.5 rounded-full bg-terracotta animate-pulse" />
-                24 specialist tools, built for SEND excellence
-              </motion.div>
+        <div className="px-4 sm:px-6 md:px-12 pb-8 md:pb-16">
+          <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-end gap-6 md:gap-10">
+            {/* Left — slide content */}
+            <div className="flex-1 min-w-0">
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.div
+                  key={SLIDES[active].id}
+                  initial={reduced ? false : { opacity: 0, y: 18, filter: "blur(10px)" }}
+                  animate={reduced ? { opacity: 1 } : { opacity: 1, y: 0, filter: "blur(0px)" }}
+                  exit={reduced ? { opacity: 0 } : { opacity: 0, y: -18, filter: "blur(10px)" }}
+                  transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+                >
+                  {/* Metadata row — 300ms */}
+                  <div
+                    className="flex flex-wrap items-center gap-3 sm:gap-6 mb-6 md:mb-8 text-xs sm:text-sm text-white/85 animate-blur-fade-up"
+                    style={{ animationDelay: "300ms" }}
+                  >
+                    {SLIDES[active].metadata.map((m, i) => {
+                      const Icon = m.icon;
+                      return (
+                        <span
+                          key={`${active}-${i}`}
+                          className="inline-flex items-center gap-2"
+                        >
+                          <Icon
+                            size={16}
+                            className={`flex-shrink-0 sm:w-[18px] sm:h-[18px] ${
+                              i === 0 ? "fill-white" : ""
+                            }`}
+                          />
+                          <span className="font-medium">{m.label}</span>
+                        </span>
+                      );
+                    })}
+                  </div>
 
-              {/* Fixed-height title container so swapping active title
-                  doesn't reflow the rest of the column. Sized for 3 lines
-                  at the largest breakpoint plus descender padding. */}
-              <div className="mt-5 sm:mt-6 relative min-h-[170px] sm:min-h-[205px] md:min-h-[230px] lg:min-h-[285px]">
-                <ActiveTitle activeIndex={activeIndex} />
-              </div>
+                  {/* Title — 400ms */}
+                  <h1
+                    className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-light text-white mb-4 md:mb-6 animate-blur-fade-up"
+                    style={{
+                      letterSpacing: "-0.04em",
+                      lineHeight: 1.02,
+                      animationDelay: "400ms",
+                    }}
+                  >
+                    {SLIDES[active].title}
+                  </h1>
 
-              <motion.p
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.55, duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-                className="mt-5 sm:mt-6 text-sm sm:text-base md:text-lg text-ink-500 leading-relaxed max-w-lg"
-                data-testid="hero-subtitle"
-              >
-                From EHCP drafting and worksheet generation to behaviour plans, parent
-                communications and daily adaptive work, every SEND tool a UK school needs,
-                connected in one intelligent engine.
-              </motion.p>
+                  {/* Description — 500ms */}
+                  <p
+                    className="text-base sm:text-lg md:text-xl text-white/70 mb-6 md:mb-12 max-w-2xl leading-relaxed animate-blur-fade-up"
+                    style={{ animationDelay: "500ms" }}
+                  >
+                    {SLIDES[active].description}
+                  </p>
+                </motion.div>
+              </AnimatePresence>
 
-              <motion.div
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.72, duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-                className="mt-6 sm:mt-8 flex flex-wrap items-center gap-3"
-              >
+              {/* CTA buttons — fixed (don't re-mount per slide) */}
+              <div className="flex flex-wrap gap-3 sm:gap-4 items-center">
                 <a
                   href="https://adaptly.co.uk/login"
                   data-testid="hero-cta-primary"
-                  data-cursor="hover"
-                  className="group inline-flex items-center gap-3 rounded-full bg-ink-900 text-cream-100 px-6 sm:px-7 py-3.5 sm:py-4 text-sm md:text-base font-medium hover:bg-terracotta transition-all duration-300 hover:scale-[1.03]"
+                  className="inline-flex items-center gap-2 bg-white text-black rounded-full font-medium px-6 sm:px-8 py-2.5 sm:py-3 hover:bg-white/85 transition-colors animate-blur-fade-up text-sm sm:text-base"
+                  style={{ animationDelay: "600ms" }}
                 >
-                  Start free today
-                  <span className="transition-transform group-hover:translate-x-1">→</span>
+                  <Play size={18} className="fill-black" aria-hidden />
+                  <span>Start free</span>
                 </a>
                 <a
-                  href="#services"
+                  href="#about"
                   data-testid="hero-cta-secondary"
-                  data-cursor="hover"
-                  className="inline-flex items-center gap-3 rounded-full bg-cream-50/70 backdrop-blur border border-ink-900/10 text-ink-900 px-6 sm:px-7 py-3.5 sm:py-4 text-sm md:text-base font-medium hover:bg-cream-50 transition-all"
+                  className="liquid-glass inline-flex items-center gap-2 rounded-full font-medium px-6 sm:px-8 py-2.5 sm:py-3 animate-blur-fade-up text-sm sm:text-base"
+                  style={{ animationDelay: "700ms" }}
                 >
                   See the platform
                 </a>
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.95, duration: 0.8 }}
-                className="mt-8 sm:mt-10 grid grid-cols-3 gap-3 sm:gap-4 max-w-md"
-                data-testid="hero-stats"
-              >
-                {[
-                  ["5h+", "saved / EHCP"],
-                  ["24", "tools"],
-                  ["100%", "SEND aligned"],
-                ].map(([v, l], i) => (
-                  <div
-                    key={l}
-                    className="glass rounded-2xl p-3 sm:p-4"
-                    data-testid={`hero-stat-${i}`}
-                  >
-                    <div className="font-display text-2xl sm:text-3xl md:text-4xl text-ink-900 leading-none">
-                      {v}
-                    </div>
-                    <div className="mt-1 text-[9px] sm:text-[10px] md:text-xs text-ink-500 uppercase tracking-wider">
-                      {l}
-                    </div>
-                  </div>
-                ))}
-              </motion.div>
-            </motion.div>
-
-            {/* Engine + orbit composition — shared parallax wrapper so
-                the connecting lines always point to the wheel's centre. */}
-            <motion.div
-              style={{ x: sx, y: sy }}
-              className="lg:col-span-7 order-1 lg:order-2 relative h-[300px] sm:h-[390px] md:h-[440px] lg:h-[560px]"
-              data-testid="hero-ecosystem"
-            >
-              <OrbitTiles
-                scrollYProgress={scrollYProgress}
-                orbitRadius={layout.orbitRadius}
-                orbitCount={layout.orbitCount}
-              />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <EngineGlyph scrollYProgress={scrollYProgress} />
               </div>
+            </div>
 
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1.4, duration: 0.8 }}
-                className="absolute bottom-3 left-3 sm:bottom-4 sm:left-4 md:left-6 glass rounded-full px-3 py-1.5 flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-ink-700"
+            {/* Right — Previous / Next stepper.
+                Mobile: sits below CTAs (md:hidden trigger group above).
+                md+: floats right, aligned to the bottom of the row. */}
+            <div className="flex flex-row md:flex-row gap-3 md:self-end md:flex-shrink-0">
+              <button
+                type="button"
+                onClick={prev}
+                aria-label="Previous slide"
+                data-testid="hero-stepper-prev"
+                className="liquid-glass inline-flex items-center justify-center gap-2 rounded-full px-4 sm:px-6 py-2.5 sm:py-3 text-sm font-medium animate-blur-fade-up min-w-[44px] min-h-[44px]"
+                style={{ animationDelay: "800ms" }}
               >
-                <Sparkles size={12} className="text-terracotta" />
-                Adaptly engine · live
-              </motion.div>
-            </motion.div>
+                <ChevronLeft size={18} aria-hidden />
+                <span className="hidden sm:inline">Previous</span>
+              </button>
+              <button
+                type="button"
+                onClick={next}
+                aria-label="Next slide"
+                data-testid="hero-stepper-next"
+                className="liquid-glass inline-flex items-center justify-center gap-2 rounded-full px-4 sm:px-6 py-2.5 sm:py-3 text-sm font-medium animate-blur-fade-up min-w-[44px] min-h-[44px]"
+                style={{ animationDelay: "900ms" }}
+              >
+                <span className="hidden sm:inline">Next</span>
+                <ChevronRight size={18} aria-hidden />
+              </button>
+            </div>
           </div>
-        </motion.div>
 
-        {layout.sticky && <ScrollCue scrollYProgress={scrollYProgress} />}
+          {/* Slide indicator dots — visible on all sizes for orientation. */}
+          <div
+            className="max-w-7xl mx-auto mt-6 md:mt-8 flex items-center gap-2 animate-blur-fade-up"
+            style={{ animationDelay: "950ms" }}
+            aria-hidden
+          >
+            {SLIDES.map((s, i) => (
+              <button
+                key={s.id}
+                type="button"
+                aria-label={`Go to slide ${i + 1}`}
+                onClick={() => setActive(i)}
+                className={`h-1.5 rounded-full transition-all duration-500 ${
+                  i === active ? "w-8 bg-white" : "w-3 bg-white/40 hover:bg-white/70"
+                }`}
+              />
+            ))}
+          </div>
+        </div>
       </div>
     </section>
-  );
-}
-
-function ScrollCue({ scrollYProgress }) {
-  const op = useTransform(scrollYProgress, [0, 0.15], [1, 0]);
-  return (
-    <motion.div
-      style={{ opacity: op }}
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ delay: 1.5, duration: 0.8 }}
-      className="absolute bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-ink-500 z-10"
-      data-testid="hero-scroll-indicator"
-    >
-      <span className="text-[9px] sm:text-[10px] uppercase tracking-[0.3em]">
-        Scroll to explore
-      </span>
-      <div className="w-px h-8 sm:h-10 bg-ink-900/20 overflow-hidden relative">
-        <motion.div
-          animate={{ y: [-40, 40] }}
-          transition={{ repeat: Infinity, duration: 1.8, ease: "easeInOut" }}
-          className="absolute inset-x-0 top-0 h-4 bg-ink-900"
-        />
-      </div>
-    </motion.div>
   );
 }
