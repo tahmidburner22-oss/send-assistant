@@ -504,8 +504,7 @@ export default function Worksheets() {
   const ALL_SECTIONS = ['learning-objective', 'retrieval', 'key-vocabulary', 'common-mistakes', 'worked-example', 'diagram-a', 'true-false', 'mcq', 'word-bank-gap-fill', 'section-a', 'diagram-b', 'section-b', 'section-c', 'self-reflection'] as const;
   type SectionId = typeof ALL_SECTIONS[number];
   const defaultSections = ALL_SECTIONS.filter(s => s !== 'retrieval') as SectionId[];
-  const [selectedSections, setSelectedSections] = useState<SectionId[]>(defaultSections);
-  const [examBoard, setExamBoard] = useState("none");
+  const [selectedSections, setSelectedSections] = useState<SectionId[]>(defaultSections);  const [examBoard, setExamBoard] = useState("none");
   const [includeAnswers, setIncludeAnswers] = useState(true);
   const [examStyle, setExamStyle] = useState(false);
   const [recallTopic, setRecallTopic] = useState("");
@@ -640,6 +639,7 @@ export default function Worksheets() {
   const [showOverlayPicker, setShowOverlayPicker] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [hiddenSections, setHiddenSections] = useState<Set<number>>(new Set());
+  const [hideHeader, setHideHeader] = useState(false);
   const [showSectionPicker, setShowSectionPicker] = useState(false);
   const [editType, setEditType] = useState<"ai" | "manual" | "none">("none");
   const [editedSections, setEditedSections] = useState<Record<number, string>>({});
@@ -1407,6 +1407,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
             } as any;
             setGenerated(libWorksheet);
             setHiddenSections(new Set());
+            setHideHeader(false);
             setDiffVersions({});
             setLoading(false);
             setGenerationStatus("");
@@ -1721,6 +1722,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
 
       setGenerated(generatedWs);
       setHiddenSections(new Set());
+      setHideHeader(false);
       setDiffVersions({});
       // Show quality warnings if detected
       const qIssues = (generatedWs.metadata as any)?.qualityIssues;
@@ -4837,9 +4839,9 @@ ${s.content}`).join("\n\n"),
               className={showSectionPicker ? "border-brand text-brand bg-brand-light" : ""}
             >
               <Layers className="w-3.5 h-3.5 mr-1.5" /> Sections
-              {hiddenSections.size > 0 && (
+              {(hiddenSections.size > 0 || hideHeader) && (
                 <span className="ml-1 text-[10px] bg-brand text-white rounded-full w-4 h-4 flex items-center justify-center flex-shrink-0">
-                  {hiddenSections.size}
+                  {hiddenSections.size + (hideHeader ? 1 : 0)}
                 </span>
               )}
             </Button>
@@ -5061,7 +5063,7 @@ ${s.content}`).join("\n\n"),
                   </p>
                   <div className="flex gap-2">
                     <button
-                      onClick={() => setHiddenSections(new Set())}
+                      onClick={() => { setHiddenSections(new Set()); setHideHeader(false); }}
                       className="text-[10px] text-brand hover:underline"
                     >Show all</button>
                     <button
@@ -5070,12 +5072,29 @@ ${s.content}`).join("\n\n"),
                           .map((_, i) => i)
                           .filter(i => !(generated.sections[i] as any).teacherOnly);
                         setHiddenSections(new Set(nonTeacher.slice(0, -1)));
+                        setHideHeader(false);
                       }}
                       className="text-[10px] text-muted-foreground hover:underline"
                     >Reset</button>
                   </div>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                  {/* Header row — always first */}
+                  <button
+                    onClick={() => setHideHeader(h => !h)}
+                    className={`flex items-center gap-2 px-2.5 py-2 rounded-lg border text-left transition-all ${
+                      hideHeader
+                        ? "border-border/40 bg-muted/30 opacity-50"
+                        : "border-brand/30 bg-white"
+                    }`}
+                  >
+                    <div className={`w-4 h-4 rounded flex items-center justify-center flex-shrink-0 ${hideHeader ? "border border-border" : "bg-brand"}`}>
+                      {!hideHeader && <Check className="w-3 h-3 text-white" />}
+                    </div>
+                    <span className="text-xs text-foreground truncate flex-1">Worksheet Header</span>
+                    <span className="text-[9px] bg-purple-100 text-purple-700 px-1 rounded flex-shrink-0">H</span>
+                    {hideHeader && <EyeOff className="w-3 h-3 text-muted-foreground flex-shrink-0" />}
+                  </button>
                   {(generated.sections || []).map((section, i) => {
                     const isHidden = hiddenSections.has(i);
                     const isTeacher = (section as any).teacherOnly;
@@ -5107,9 +5126,9 @@ ${s.content}`).join("\n\n"),
                     );
                   })}
                 </div>
-                {hiddenSections.size > 0 && (
+                {(hiddenSections.size > 0 || hideHeader) && (
                   <p className="text-[10px] text-muted-foreground mt-2">
-                    {hiddenSections.size} section{hiddenSections.size !== 1 ? "s" : ""} hidden — excluded from PDF and print.
+                    {[hideHeader ? "Header" : null, hiddenSections.size > 0 ? `${hiddenSections.size} section${hiddenSections.size !== 1 ? "s" : ""}` : null].filter(Boolean).join(" + ")} hidden — excluded from PDF and print.
                   </p>
                 )}
               </CardContent>
@@ -5188,6 +5207,31 @@ ${s.content}`).join("\n\n"),
                       });
                       setGenerated((prev: any) => prev ? { ...prev, sections: newSections } : prev);
                     }}
+                    showSectionQuickActions={true}
+                    sectionOriginalIndices={(displaySections as any[])
+                      .map((_: any, i: number) => i)
+                      .filter((i: number) => !hiddenSections.has(i))}
+                    onSectionQuickHide={(originalIndex: number) => {
+                      setHiddenSections(prev => {
+                        const next = new Set(prev);
+                        next.add(originalIndex);
+                        return next;
+                      });
+                    }}
+                    onSectionQuickEdit={(originalIndex: number) => {
+                      setEditMode(true);
+                      setEditType("manual");
+                      // Scroll to / highlight the target section after entering edit mode
+                      setTimeout(() => {
+                        setAiEditSectionIndex(originalIndex);
+                      }, 50);
+                    }}
+                    onHeaderHide={() => setHideHeader(true)}
+                    onHeaderEdit={() => {
+                      setEditMode(true);
+                      setEditType("manual");
+                    }}
+                    hideHeader={hideHeader}
                   />
                 )}
                 {/* Inline section edit rendering (Manual + AI) */}
