@@ -9,6 +9,7 @@
  * Supports KaTeX math rendering for proper fractions, symbols, and expressions.
  */
 import React, { forwardRef, useState, useCallback } from "react";
+import { Eye, EyeOff, Pencil } from "lucide-react";
 import { getSendFormatting } from "@/lib/send-data";
 import { extractDiagramSpec, stripDiagramMarker } from "@/lib/ai";
 import SVGDiagram from "@/components/SVGDiagram";
@@ -1145,6 +1146,20 @@ interface WorksheetRendererProps {
   onDiagramChange?: (sectionIndex: number, newImageUrl: string, newCaption?: string) => void;
   /** When true, wraps the worksheet in a grey background with the content as a white A4 card (paginated on-screen view). Default: false. */
   paginated?: boolean;
+  /** Original indices for each section (so callbacks fire with original indices even after hidden-section filtering). */
+  sectionOriginalIndices?: number[];
+  /** Called when user clicks the quick-hide eye icon on a section. Receives the original section index. */
+  onSectionQuickHide?: (originalIndex: number) => void;
+  /** Called when user clicks the quick-edit pencil icon on a section. Receives the original section index. */
+  onSectionQuickEdit?: (originalIndex: number) => void;
+  /** When true, shows the eye + pencil quick-action icons on each section. */
+  showSectionQuickActions?: boolean;
+  /** When true, hides the worksheet header (title/name/date block). */
+  hideHeader?: boolean;
+  /** Called when user clicks the quick-hide eye icon on the header. */
+  onHeaderHide?: () => void;
+  /** Called when user clicks the quick-edit pencil icon on the header. */
+  onHeaderEdit?: () => void;
 }
 
 // Section type → visual config (clean white, dark navy accent, no gradients, no emojis)
@@ -3958,6 +3973,13 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
   isRevisionMat = false,
   onDiagramChange,
   paginated = false,
+  sectionOriginalIndices,
+  onSectionQuickHide,
+  onSectionQuickEdit,
+  showSectionQuickActions = false,
+  hideHeader = false,
+  onHeaderHide,
+  onHeaderEdit,
   }: WorksheetRendererProps, ref: React.Ref<HTMLDivElement>) {
   const isTeacherView = viewMode === "teacher";
 
@@ -4123,8 +4145,65 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
         />
       )}
       {/* ── Professional Header — hidden for revision mats ── */}
-      {!isRevisionMat && (
-        isPrimary ? (
+      {!isRevisionMat && !hideHeader && (
+        <div className="ws-header-wrapper no-print-icons" style={{ position: "relative" }}>
+          {showSectionQuickActions && (onHeaderHide || onHeaderEdit) && (
+            <div
+              className="ws-section-quick-actions no-print"
+              style={{
+                position: "absolute",
+                top: "6px",
+                right: "6px",
+                zIndex: 20,
+                display: "flex",
+                gap: "4px",
+              }}
+            >
+              {onHeaderEdit && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); onHeaderEdit(); }}
+                  title="Edit header manually"
+                  style={{
+                    width: "26px", height: "26px",
+                    borderRadius: "6px",
+                    background: "rgba(255,255,255,0.9)",
+                    border: "1px solid rgba(0,0,0,0.15)",
+                    cursor: "pointer",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    boxShadow: "0 1px 4px rgba(0,0,0,0.12)",
+                    color: "#374151",
+                    transition: "background 0.15s",
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.background = "#f3f4f6")}
+                  onMouseLeave={e => (e.currentTarget.style.background = "rgba(255,255,255,0.9)")}
+                >
+                  <Pencil size={12} />
+                </button>
+              )}
+              {onHeaderHide && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); onHeaderHide(); }}
+                  title="Hide header"
+                  style={{
+                    width: "26px", height: "26px",
+                    borderRadius: "6px",
+                    background: "rgba(255,255,255,0.9)",
+                    border: "1px solid rgba(0,0,0,0.15)",
+                    cursor: "pointer",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    boxShadow: "0 1px 4px rgba(0,0,0,0.12)",
+                    color: "#374151",
+                    transition: "background 0.15s",
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.background = "#f3f4f6")}
+                  onMouseLeave={e => (e.currentTarget.style.background = "rgba(255,255,255,0.9)")}
+                >
+                  <EyeOff size={12} />
+                </button>
+              )}
+            </div>
+          )}
+        {isPrimary ? (
           /* ── PRIMARY HEADER: bright, colourful, child-friendly ── */
           <div className="ws-header" style={{ marginBottom: "18px", fontFamily: fmt.fontFamily, borderRadius: "18px", overflow: "hidden", border: "3px solid #a855f7", boxShadow: "0 4px 16px rgba(168,85,247,0.25)" }}>
             {/* Rainbow gradient title bar */}
@@ -4273,10 +4352,12 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
             </div>
           </div>
         )
+        }
+        </div>
       )}
 
       {/* Primary encouragement banner — hidden for revision mats */}
-      {isPrimary && !isRevisionMat && (
+      {isPrimary && !isRevisionMat && !hideHeader && (
         <div style={{
           display: "flex",
           alignItems: "center",
@@ -5179,6 +5260,73 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
               <div style={{ borderTop: "1px solid #d1d5db", marginTop: "5px" }} />
             </div>
           )}
+          <div
+            style={{ position: "relative" }}
+            className="ws-section-outer"
+            onMouseEnter={showSectionQuickActions ? (e) => {
+              const actions = (e.currentTarget as HTMLElement).querySelector('.ws-section-quick-actions') as HTMLElement | null;
+              if (actions) actions.style.opacity = "1";
+            } : undefined}
+            onMouseLeave={showSectionQuickActions ? (e) => {
+              const actions = (e.currentTarget as HTMLElement).querySelector('.ws-section-quick-actions') as HTMLElement | null;
+              if (actions) actions.style.opacity = "0";
+            } : undefined}
+          >
+            {/* ── Quick-action eye + pencil icons — screen only, no-print ── */}
+            {showSectionQuickActions && (onSectionQuickHide || onSectionQuickEdit) && (
+              <div
+                className="ws-section-quick-actions no-print"
+                style={{
+                  position: "absolute",
+                  top: "4px",
+                  right: "4px",
+                  zIndex: 20,
+                  display: "flex",
+                  gap: "3px",
+                  opacity: 0,
+                  transition: "opacity 0.15s",
+                }}
+              >
+                {onSectionQuickEdit && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); onSectionQuickEdit(sectionOriginalIndices ? sectionOriginalIndices[i] : i); }}
+                    title="Edit this section manually"
+                    className="ws-quick-action-btn no-print"
+                    style={{
+                      width: "24px", height: "24px",
+                      borderRadius: "5px",
+                      background: "rgba(255,255,255,0.92)",
+                      border: "1px solid rgba(0,0,0,0.13)",
+                      cursor: "pointer",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      boxShadow: "0 1px 4px rgba(0,0,0,0.10)",
+                      color: "#374151",
+                    }}
+                  >
+                    <Pencil size={11} />
+                  </button>
+                )}
+                {onSectionQuickHide && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); onSectionQuickHide(sectionOriginalIndices ? sectionOriginalIndices[i] : i); }}
+                    title="Hide this section"
+                    className="ws-quick-action-btn no-print"
+                    style={{
+                      width: "24px", height: "24px",
+                      borderRadius: "5px",
+                      background: "rgba(255,255,255,0.92)",
+                      border: "1px solid rgba(0,0,0,0.13)",
+                      cursor: "pointer",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      boxShadow: "0 1px 4px rgba(0,0,0,0.10)",
+                      color: "#374151",
+                    }}
+                  >
+                    <EyeOff size={11} />
+                  </button>
+                )}
+              </div>
+            )}
           <div
             className={[
               section.type === "diagram" && !hasDiagramContent
@@ -6219,11 +6367,28 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                           }}>
                             {isBrainBreak ? "★ BRAIN BREAK" : isCheckIn ? "✓ CHECK IN" : isPausePoint ? "◉ PAUSE POINT" : isEncouragement ? "★ ENCOURAGEMENT" : `▸ ${supportTitle}`}
                           </span>
+                          {isTeacherView && (
+                            <span style={{
+                              marginLeft: "auto",
+                              fontSize: `${fmt.fontSize - 3}px`,
+                              fontWeight: 800,
+                              color: "rgba(255,255,255,0.9)",
+                              fontFamily: fmt.fontFamily,
+                              letterSpacing: "0.06em",
+                              textTransform: "uppercase" as const,
+                              background: "rgba(0,0,0,0.18)",
+                              padding: "2px 7px",
+                              borderRadius: "4px",
+                            }}>
+                              SEND ADJUSTMENT
+                            </span>
+                          )}
                         </div>
                         {/* Content area */}
                         <div style={{
                           background: bgColor,
                           padding: "10px 14px",
+                          fontWeight: isTeacherView ? 700 : undefined,
                         }}>
                           {lines.map((line: string, li: number) => {
                             // Numbered step lines (e.g. "1. ...", "Step 1: ...")
@@ -6507,6 +6672,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
               })()}
             </div>
           </div>
+          </div>{/* end ws-section-outer */}
           </React.Fragment>
         );
       })}
