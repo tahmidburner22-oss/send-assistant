@@ -31,7 +31,7 @@ export default function Contact() {
               <a
                 href="https://adaptly.co.uk/login"
                 data-testid="contact-cta-primary"
-                className="group inline-flex items-center gap-3 rounded-full bg-ink-900 text-cream-100 px-7 py-4 text-sm md:text-base font-medium hover:bg-terracotta transition-all duration-300 hover:scale-[1.02]"
+                className="gradient-pill group inline-flex items-center gap-3 rounded-full px-7 py-4 text-sm md:text-base font-medium uppercase tracking-widest"
               >
                 Get started free
                 <span className="transition-transform group-hover:translate-x-1">→</span>
@@ -39,7 +39,7 @@ export default function Contact() {
               <a
                 href="mailto:hello@adaptly.co.uk"
                 data-testid="contact-cta-secondary"
-                className="inline-flex items-center gap-3 rounded-full bg-cream-50 border border-ink-900/10 text-ink-900 px-7 py-4 text-sm md:text-base font-medium hover:bg-cream-100 transition-all"
+                className="inline-flex items-center gap-3 rounded-full border-2 border-ink-900/20 text-ink-900 bg-transparent px-7 py-4 text-sm md:text-base font-medium uppercase tracking-widest hover:bg-ink-900/5 hover:border-ink-900/40 transition-all"
               >
                 Talk to the team
               </a>
