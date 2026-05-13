@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { TOOLS } from "./lib/data";
+import { FadeIn } from "./lib/motion.jsx";
 
 // Editorial Swiss Humanism: the services rail behaves like a measured evidence ledger, locking vertical progression until the horizontal story has completed.
 // Horizontal pinned scroll through all 24 tools on desktop-class viewports.
@@ -66,16 +67,12 @@ function ServicesStack() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {TOOLS.map((tool, i) => (
-            <motion.article
+            <FadeIn
               key={tool.t}
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-40px" }}
-              transition={{
-                delay: (i % 6) * 0.04,
-                duration: 0.6,
-                ease: [0.22, 1, 0.36, 1],
-              }}
+              as="article"
+              delay={(i % 4) * 0.1}
+              y={30}
+              viewportMargin="-40px"
               className="rounded-3xl bg-cream-50 border border-ink-900/5 p-5 sm:p-6 relative overflow-hidden"
               data-testid={`tool-card-${i}`}
             >
@@ -94,7 +91,7 @@ function ServicesStack() {
                 </h3>
                 <p className="mt-2 text-sm text-ink-500 leading-relaxed">{tool.d}</p>
               </div>
-            </motion.article>
+            </FadeIn>
           ))}
         </div>
       </div>

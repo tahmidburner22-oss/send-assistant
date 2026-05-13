@@ -4,6 +4,8 @@
 export const LANDING_FONT_HREFS = [
   "https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@300;400;500;600;700&display=swap",
   "https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@400,500,700,800,900&display=swap",
+  // Inter — used by the cinematic hero and the liquid-glass nav pill.
+  "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap",
 ];
 
 export const LANDING_CSS = `
@@ -132,6 +134,116 @@ html.lenis-active { scroll-behavior: auto; }
 
 /* Ensure large display text never clips descenders when animated into view */
 .adaptly-landing h1, .adaptly-landing h2, .adaptly-landing h3 { padding-bottom: 0.04em; }
+
+/* ────────────────────────────────────────────────────────────────────────
+   Cinematic / Jack-inspired primitives
+   Scoped to .adaptly-landing so they never leak into the rest of the app.
+   ──────────────────────────────────────────────────────────────────────── */
+
+/* Inter is used by the cinematic hero + nav pill links. */
+.adaptly-landing .font-inter { font-family: 'Inter', system-ui, sans-serif; }
+
+/* Liquid-glass pill — translucent, blurred, with a thin gradient stroke. */
+.adaptly-landing .liquid-glass {
+  position: relative;
+  overflow: hidden;
+  border: none;
+  background: rgba(255,255,255,0.01);
+  background-blend-mode: luminosity;
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  box-shadow: inset 0 1px 1px rgba(255,255,255,0.1);
+  color: #fff;
+}
+.adaptly-landing .liquid-glass::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.4px;
+  pointer-events: none;
+  background: linear-gradient(180deg,
+    rgba(255,255,255,0.45) 0%,
+    rgba(255,255,255,0.15) 20%,
+    rgba(255,255,255,0)    40%,
+    rgba(255,255,255,0)    60%,
+    rgba(255,255,255,0.15) 80%,
+    rgba(255,255,255,0.45) 100%);
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+}
+.adaptly-landing .liquid-glass:hover { background: rgba(255,255,255,0.06); }
+
+/* Bottom blur mask — covers the full hero, blur fades to transparent above 45%. */
+.adaptly-landing .hero-bottom-blur {
+  -webkit-mask-image: linear-gradient(to top, black 0%, transparent 45%);
+          mask-image: linear-gradient(to top, black 0%, transparent 45%);
+}
+
+/* Blur-fade-up — used on every hero/nav element with staggered animationDelay. */
+@keyframes adaptly-blur-fade-up {
+  from { opacity: 0; filter: blur(20px); transform: translateY(40px); }
+  to   { opacity: 1; filter: blur(0);    transform: translateY(0);    }
+}
+.adaptly-landing .animate-blur-fade-up {
+  opacity: 0;
+  animation: adaptly-blur-fade-up 1s ease-out forwards;
+  will-change: opacity, transform, filter;
+}
+
+/* Jack gradient text — for the cinematic-stack heading. */
+.adaptly-landing .hero-heading {
+  background: linear-gradient(180deg, #646973 0%, #BBCCD7 100%);
+  -webkit-background-clip: text;
+          background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Jack gradient contact pill (used in Contact). */
+.adaptly-landing .gradient-pill {
+  background: linear-gradient(123deg, #18011F 7%, #B600A8 37%, #7621B0 72%, #BE4C00 100%);
+  box-shadow: 0px 4px 4px rgba(181,1,167,0.25), inset 4px 4px 12px #7721B1;
+  outline: 2px solid #fff;
+  outline-offset: -3px;
+  color: #fff;
+  border: none;
+  transition: transform .25s ease, filter .25s ease;
+}
+.adaptly-landing .gradient-pill:hover { transform: translateY(-1px); filter: brightness(1.08); }
+.adaptly-landing .gradient-pill:active { transform: translateY(0); filter: brightness(0.96); }
+
+/* Ghost pill (used as secondary CTA + Live Project on dark backgrounds). */
+.adaptly-landing .ghost-pill {
+  border: 2px solid #D7E2EA;
+  color: #D7E2EA;
+  background: transparent;
+  transition: background .25s ease;
+}
+.adaptly-landing .ghost-pill:hover { background: rgba(215,226,234,0.10); }
+
+/* Cinematic hero specific — hero owns the page background underneath the
+   nav, so we keep the scoped page background but the hero <section> sits on
+   pure black until its bg-cover video loads. */
+.adaptly-landing .hero-cinematic { background: #000; color: #fff; }
+
+/* iOS Safari: backdrop-filter inside masked containers is sometimes ignored.
+   Add a tiny opaque guard so the blur is forced to compose. */
+@supports not ((-webkit-backdrop-filter: blur(4px)) or (backdrop-filter: blur(4px))) {
+  .adaptly-landing .liquid-glass { background: rgba(255,255,255,0.12); }
+}
+
+/* Reduced motion / data — neutralise the cinematic stack so it stays readable. */
+@media (prefers-reduced-motion: reduce) {
+  .adaptly-landing .animate-blur-fade-up {
+    animation: none !important;
+    opacity: 1 !important;
+    filter: none !important;
+    transform: none !important;
+  }
+}
 
 @media (prefers-reduced-motion: reduce) { .adaptly-landing * { animation-duration:.01ms !important; transition-duration:.01ms !important; scroll-behavior:auto !important; } }
 `;

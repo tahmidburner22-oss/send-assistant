@@ -1,6 +1,7 @@
 import { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Heart } from "lucide-react";
+import { AnimatedText } from "./lib/motion.jsx";
 
 // Emotional "Why SEND matters" section – pulls heart-strings of investors and educators
 // with a focus on the child behind every EHCP, real stats, and a statement of purpose.
@@ -40,17 +41,14 @@ export default function About() {
             </h2>
 
             <div className="mt-8 space-y-6 text-ink-500 text-base md:text-lg leading-relaxed max-w-2xl">
-              <p>
-                1.6 million children in England are living with special educational needs. Behind
-                each number is a pupil with autism, dyslexia, ADHD or complex needs — waiting years
-                for an assessment, slipping through a classroom that wasn't designed for them.
-              </p>
-              <p>
-                We built Adaptly because SENCOs shouldn't have to choose between legally compliant
-                provisions and their weekends. Because teachers shouldn't need to stay until midnight
-                to differentiate a single worksheet. And because children shouldn't fall behind
-                waiting for the system to catch up.
-              </p>
+              <AnimatedText
+                as="p"
+                text="1.6 million children in England are living with special educational needs. Behind each number is a pupil with autism, dyslexia, ADHD or complex needs — waiting years for an assessment, slipping through a classroom that wasn't designed for them."
+              />
+              <AnimatedText
+                as="p"
+                text="We built Adaptly because SENCOs shouldn't have to choose between legally compliant provisions and their weekends. Because teachers shouldn't need to stay until midnight to differentiate a single worksheet. And because children shouldn't fall behind waiting for the system to catch up."
+              />
             </div>
 
             <div className="mt-10 p-6 md:p-8 rounded-3xl bg-gradient-to-br from-terracotta/10 via-cream-50 to-honey/10 border border-ink-900/5 max-w-2xl">
