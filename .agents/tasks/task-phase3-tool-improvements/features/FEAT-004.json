@@ -1,0 +1,26 @@
+{
+  "id": "FEAT-004",
+  "type": "feat",
+  "description": "Section-level 'regenerate just this part' for any AIToolPage tool that opts in via sectionable={true}. Parses the AI output into sections (## headings, **Section N:** bold lines, or numbered prefixes) and renders one button per section that re-prompts the AI with the rest-of-document as context to rewrite only that part. Halves credit usage for refinement passes and is especially valuable for the 12-section BehaviourPlan and the long IEP/RiskAssessment outputs.",
+  "status": "completed",
+  "steps": [
+    "Create client/src/lib/section-parser.ts with parseSections(text) and replaceSectionBody(text, index, newBody) helpers that recognise ATX headings, bold-only lines, and short numbered prefixes.",
+    "Add a sectionable?: boolean prop to AIToolPage.",
+    "On the result view, when sectionable && parsedSections.length > 1, render a small 'Regenerate just one section' panel listing each section as a chip-button.",
+    "On click, call AI with system='rewrite ONLY this section, do not echo heading' and other sections as read-only context, then splice the new body back into the result via replaceSectionBody.",
+    "Re-run validators after a section regenerate so quality checks stay current.",
+    "Opt SmartTargets and BehaviourPlan into sectionable={true}."
+  ],
+  "acceptance_criteria": [
+    "Tools opting in show one chip per detected section.",
+    "Clicking a chip rewrites only that section while leaving the rest untouched.",
+    "Tools that don't opt in see no UI change.",
+    "TypeScript syntax check passes."
+  ],
+  "verification": [
+    "pnpm run check",
+    "Manual: generate a Behaviour Plan, regenerate only the Response Strategies section, verify other sections are byte-identical."
+  ],
+  "blocked_reason": null,
+  "findings": "Section parser is intentionally lenient — it recognises three heading styles to handle AI output drift between runs. Verified via --noResolve syntax checks."
+}

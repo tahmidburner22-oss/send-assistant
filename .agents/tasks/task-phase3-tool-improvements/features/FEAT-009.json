@@ -1,0 +1,26 @@
+{
+  "id": "FEAT-009",
+  "type": "feat",
+  "description": "Pupil context picker — pre-fill tool fields from a saved pupil record, and (opt-in) inject the pupil's recent records into the AI prompt. Adds <PupilContextPicker> at the top of every AIToolPage form when at least one pupil exists. Selecting a pupil auto-fills matching field IDs (initials, year group, sendNeed). Toggling 'Use recent records' on injects a structured summary of the pupil's last assignments + observations into the AI prompt context block — a defensible moat against generic ChatGPT.",
+  "status": "completed",
+  "steps": [
+    "Create client/src/lib/pupil-context.ts with buildPupilContext(child) → { headline, promptBlock } and pupilToFormValues(child) → field ID map.",
+    "Create client/src/components/PupilContextPicker.tsx — a Card with a pupil select, 'Use recent records' switch, and a one-line headline.",
+    "In AIToolPage, render <PupilContextPicker> above the field grid when children.length > 0.",
+    "On pupil select, call pupilToFormValues and merge into form values (only fields the tool actually has).",
+    "When the toggle is ON, prepend buildPupilContext(child).promptBlock to the AI user prompt at generate time.",
+    "Default the toggle to OFF so a teacher must explicitly opt in to record injection."
+  ],
+  "acceptance_criteria": [
+    "Picker appears only when at least one pupil exists.",
+    "Selecting a pupil pre-fills initials/year/sendNeed when the tool has those field IDs.",
+    "When the toggle is ON, the AI receives a [Pupil Records] context block prepended to the prompt.",
+    "When the toggle is OFF, no record data is sent."
+  ],
+  "verification": [
+    "pnpm run check",
+    "Manual: register a pupil with a recent assignment, open BehaviourPlan, pick the pupil, toggle ON, generate."
+  ],
+  "blocked_reason": null,
+  "findings": "buildPupilContext deliberately includes only data the school already authored (titles, year group, SEND needs). It never includes free-text descriptions to avoid leaking incidental PII."
+}
