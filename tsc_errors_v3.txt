@@ -1,4 +1,0 @@
-npm warn Unknown project config "frozen-lockfile". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
-client/src/lib/worksheet-generator.ts(1941,14): error TS1005: ',' expected.
-client/src/lib/worksheet-generator.ts(1944,12): error TS1005: ',' expected.
-client/src/lib/worksheet-generator.ts(1945,1): error TS1137: Expression or comma expected.
