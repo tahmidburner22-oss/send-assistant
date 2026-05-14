@@ -3,9 +3,7 @@ import AIToolPage from "@/components/AIToolPage";
 import { useUserPreferences } from "@/contexts/UserPreferencesContext";
 import { formatToolOutput } from "@/lib/format-tool-output";
 import { CheckSquare } from "lucide-react";
-
-const sendNeeds = ["Autism Spectrum Condition","ADHD","Dyslexia","Dyscalculia","Dyspraxia","Speech & Language Needs","Social, Emotional & Mental Health","Hearing Impairment","Visual Impairment","Physical Disability","Moderate Learning Difficulties","Severe Learning Difficulties","EAL"].map(n => ({ value: n, label: n }));
-const areas = ["Reading","Writing","Maths","Communication","Social Skills","Behaviour & Self-Regulation","Independence","Fine Motor Skills","Gross Motor Skills","Attention & Focus","Emotional Regulation","Organisational Skills"].map(a => ({ value: a, label: a }));
+import { SEND_NEEDS as sendNeeds, TARGET_AREAS as areas } from "@/lib/tool-vocab";
 
 // Map screener section IDs to the sendNeeds options
 const SCREENER_ID_TO_SEND_NEED: Record<string, string> = {
@@ -43,6 +41,8 @@ export default function SmartTargets() {
   return (
     <AIToolPage
       assignable={true}
+      sectionable={true}
+      batchable={true}
       title="SMART Targets Generator"
       description="Generate specific, measurable, achievable SEND targets for any area of need"
       icon={<CheckSquare className="w-5 h-5 text-white" />}

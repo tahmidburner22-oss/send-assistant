@@ -1,0 +1,25 @@
+{
+  "id": "FEAT-007",
+  "type": "fix",
+  "description": "Form accessibility + responsive collapse on AIToolPage. The shared form previously used grid-cols-2 with no breakpoint, marked required fields only with a visual asterisk, and never linked field hints via aria-describedby. On submit, the toast listed missing fields but didn't move keyboard focus to the first one. This change fixes all four issues.",
+  "status": "completed",
+  "steps": [
+    "Change the form grid from grid-cols-2 to grid-cols-1 sm:grid-cols-2; full-span fields use sm:col-span-2.",
+    "Render aria-required on required inputs/selects/textareas.",
+    "Render id='hint-{field.id}' on each hint paragraph and aria-describedby on the matching input.",
+    "Capture refs to every input via fieldRefs.current[field.id] and focus the first missing required field on a failed submit.",
+    "Mark the visual red asterisk as aria-hidden so it is not double-announced."
+  ],
+  "acceptance_criteria": [
+    "Single-column on phones, two-column from sm: breakpoint upward.",
+    "Screen readers announce required state via aria-required (no reliance on the visual *).",
+    "Hints are read as part of the input description.",
+    "Failed submits move focus to the first missing required field."
+  ],
+  "verification": [
+    "pnpm run check",
+    "Manual: keyboard-only walkthrough; screen reader on iOS Safari."
+  ],
+  "blocked_reason": null,
+  "findings": "All AIToolPage tools inherit the fix automatically — no per-tool changes were required."
+}

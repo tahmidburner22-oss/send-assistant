@@ -1,13 +1,7 @@
 import AIToolPage from "@/components/AIToolPage";
 import { IdCard } from "lucide-react";
 import { useUserPreferences } from "@/contexts/UserPreferencesContext";
-
-const sendNeeds = [
-  "Autism Spectrum Condition","ADHD","Dyslexia","Dyscalculia","Dyspraxia",
-  "Speech & Language Needs","Social, Emotional & Mental Health","Hearing Impairment",
-  "Visual Impairment","Physical Disability","Moderate Learning Difficulties",
-  "Severe Learning Difficulties","Complex Needs","EAL",
-].map(n => ({ value: n, label: n }));
+import { SEND_NEEDS as sendNeeds } from "@/lib/tool-vocab";
 
 // Section colour map
 const SECTION_COLOURS: Record<string, string> = {
@@ -128,6 +122,7 @@ export default function PupilPassport() {
     <AIToolPage
       title="Pupil Passport Generator"
       assignable={true}
+      batchable={true}
       description="Create a one-page pupil passport that tells staff everything they need to know"
       icon={<IdCard className="w-5 h-5 text-white" />}
       accentColor="bg-amber-600"

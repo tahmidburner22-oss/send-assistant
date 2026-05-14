@@ -1,0 +1,25 @@
+{
+  "id": "FEAT-003",
+  "type": "feat",
+  "description": "Output history per tool (last 10 generations). Adds a useOutputHistory hook that persists each successful generation to localStorage (10 entries × 50KB cap, 14-day expiry), plus a 'Recent' button on the AIToolPage toolbar that opens a dialog where the teacher can restore any previous output. This is the single most-asked feature in any AI generator product: clicking Regenerate, finding the new output worse, and wanting the old one back.",
+  "status": "completed",
+  "steps": [
+    "Create client/src/hooks/useOutputHistory.ts — returns { entries, push, remove, clear, get }. Storage key adaptly_history_v1_<toolSlug>. De-dupes consecutive identical outputs. Auto-evicts oldest beyond 10.",
+    "Wire useOutputHistory(toolSlug) inside AIToolPage. Push every successful generation (streaming + non-streaming branches) and every Auto-fix.",
+    "Render a 'Recent' button on the toolbar after generation, and on the form (above the input fields) when entries exist.",
+    "Add a Recent dialog listing entries newest-first, with a one-click restore that re-populates form values and the result.",
+    "Add a 'Clear history' button inside the dialog."
+  ],
+  "acceptance_criteria": [
+    "After a successful generation, the entry appears in the Recent dialog.",
+    "Restoring an entry repopulates the form and output without re-calling the AI.",
+    "History caps at 10 entries; oldest is dropped on push.",
+    "History survives page reloads but never leaves the device."
+  ],
+  "verification": [
+    "pnpm run check",
+    "Manual: generate twice, click Recent, restore the older entry."
+  ],
+  "blocked_reason": null,
+  "findings": "Verified by --noResolve TS syntax checks. localStorage cap and best-effort eviction follow the same pattern as the existing useDraftAutosave hook."
+}
