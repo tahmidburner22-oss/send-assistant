@@ -12,3 +12,10 @@ dist/
 
 # Worksheet scrutiny verification script artefacts
 .verify-tmp/
+
+# Build / debug noise
+tsc_errors*.txt
+wget-log
+test_output.txt
+test-render.mjs
+*.log

@@ -224,6 +224,48 @@ export default function Hero() {
                   See the platform
                 </a>
               </div>
+
+              {/* Social proof — sits directly under the CTAs so the first thing
+                  visitors see after the hero copy is evidence (not animation).
+                  Counts/ratings here are deliberately phrased to be honest
+                  during the early-school-trial phase; swap in firm numbers as
+                  they become available. */}
+              <div
+                data-testid="hero-social-proof"
+                className="mt-6 sm:mt-8 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5 text-xs sm:text-sm text-white/75 animate-blur-fade-up"
+                style={{ animationDelay: "750ms" }}
+              >
+                {/* Avatar stack — abstract pupils-and-teachers cluster */}
+                <div className="flex -space-x-2" aria-hidden>
+                  <span className="inline-block h-7 w-7 rounded-full ring-2 ring-black/40 bg-gradient-to-br from-emerald-300 to-emerald-500" />
+                  <span className="inline-block h-7 w-7 rounded-full ring-2 ring-black/40 bg-gradient-to-br from-amber-300 to-orange-400" />
+                  <span className="inline-block h-7 w-7 rounded-full ring-2 ring-black/40 bg-gradient-to-br from-sky-300 to-indigo-500" />
+                  <span className="inline-block h-7 w-7 rounded-full ring-2 ring-black/40 bg-gradient-to-br from-rose-300 to-pink-500" />
+                </div>
+
+                <p className="leading-snug">
+                  <span className="font-semibold text-white">Trusted by UK SENCOs</span>
+                  <span className="mx-2 text-white/40" aria-hidden>
+                    •
+                  </span>
+                  In trial across primary &amp; secondary schools
+                </p>
+
+                {/* Compliance badges — UK GDPR + DfE filter expectations matter
+                    a lot to school decision-makers, so flag them up front. */}
+                <ul className="flex flex-wrap items-center gap-2 sm:ml-auto" aria-label="Compliance">
+                  <li className="inline-flex items-center gap-1.5 rounded-full border border-white/25 px-2.5 py-1 text-[11px] font-medium uppercase tracking-wide">
+                    <ShieldCheck size={12} aria-hidden />
+                    UK GDPR
+                  </li>
+                  <li className="inline-flex items-center gap-1.5 rounded-full border border-white/25 px-2.5 py-1 text-[11px] font-medium uppercase tracking-wide">
+                    DfE filtering aligned
+                  </li>
+                  <li className="inline-flex items-center gap-1.5 rounded-full border border-white/25 px-2.5 py-1 text-[11px] font-medium uppercase tracking-wide">
+                    SEND Code of Practice
+                  </li>
+                </ul>
+              </div>
             </div>
 
             {/* Right — Previous / Next stepper.

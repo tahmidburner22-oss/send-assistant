@@ -303,6 +303,59 @@
   }
 }
 
+/* ───────────────────────────────────────────────────────────────────────
+   Accessibility primitives
+   ─────────────────────────────────────────────────────────────────────── */
+
+/* Skip-to-content link — visually hidden until focused, then a clear
+   keyboard target at the top-left of the viewport. */
+.skip-to-content {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 100000;
+  margin: 0.5rem;
+  padding: 0.5rem 0.875rem;
+  background: var(--color-brand);
+  color: var(--color-brand-foreground);
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  text-decoration: none;
+  transform: translateY(-200%);
+  transition: transform 160ms ease;
+}
+.skip-to-content:focus,
+.skip-to-content:focus-visible {
+  transform: translateY(0);
+  outline: 3px solid var(--color-ring);
+  outline-offset: 2px;
+}
+
+/* A consistent, visible focus ring for keyboard users without
+   re-introducing a default outline for mouse clicks. */
+*:focus-visible {
+  outline: 2px solid var(--color-ring);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Honour OS-level reduced-motion preference. Disables Framer Motion
+   parallax, the magnetic cursor, and scroll-driven animations on the
+   landing page (and any other transitions/animations). */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  /* Hide the magnetic cursor entirely for vestibular-sensitive users */
+  .adaptly-magnetic-cursor,
+  [data-adaptly-magnetic-cursor] {
+    display: none !important;
+  }
+}
+
 /* Color overlay classes */
 .overlay-none { background-color: #ffffff !important; }
 .overlay-cream { background-color: #FFF8E7 !important; }

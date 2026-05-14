@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
 import { Route, Switch } from "wouter";
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { AppProvider } from "./contexts/AppContext";
@@ -15,6 +15,7 @@ import AppLayout from "./components/AppLayout";
 import { useApp } from "./contexts/AppContext";
 import { UserPreferencesProvider } from "./contexts/UserPreferencesContext";
 import { useLocation } from "wouter";
+import { installRoutePrefetch } from "./lib/prefetch";
 
 // Hub section pages
 const SENDHub = lazy(() => import("./pages/hubs/SENDHub"));
@@ -29,7 +30,6 @@ const Home = lazy(() => import("./pages/Home"));
 const Login = lazy(() => import("./pages/Login"));
 const Differentiate = lazy(() => import("./pages/Differentiate"));
 const Worksheets = lazy(() => import("./pages/Worksheets"));
-const Stories = lazy(() => import("./pages/Stories"));
 const Reading = lazy(() => import("./pages/Reading"));
 const Templates = lazy(() => import("./pages/Templates"));
 const PastPapers = lazy(() => import("./pages/PastPapers"));
@@ -90,31 +90,97 @@ const DailyBriefing = lazy(() => import("./pages/DailyBriefing"));
 const LandingPage = lazy(() => import("./pages/LandingPage"));
 
 function PageLoader() {
+  // Skeleton shell — feels closer to the real layout than a centred spinner,
+  // and removes the layout shift jolt when lazy chunks finish loading.
   return (
-    <div className="min-h-[60vh] flex items-center justify-center">
-      <div className="w-8 h-8 border-2 border-brand border-t-transparent rounded-full animate-spin" />
+    <div
+      className="min-h-[60vh] w-full px-4 sm:px-6 lg:px-8 py-8 animate-pulse"
+      role="status"
+      aria-live="polite"
+      aria-label="Loading content"
+    >
+      <div className="max-w-5xl mx-auto space-y-6">
+        <div className="h-8 w-1/3 rounded-md bg-muted" />
+        <div className="h-4 w-2/3 rounded bg-muted" />
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="h-32 rounded-lg bg-muted" />
+          <div className="h-32 rounded-lg bg-muted" />
+          <div className="h-32 rounded-lg bg-muted" />
+        </div>
+        <div className="h-4 w-1/2 rounded bg-muted" />
+        <div className="h-4 w-5/6 rounded bg-muted" />
+        <div className="h-4 w-3/4 rounded bg-muted" />
+      </div>
+      <span className="sr-only">Loading&hellip;</span>
     </div>
   );
+}
+
+function SessionLoader() {
+  // Full-screen skeleton shown while the auth session boots.
+  // Mimics the eventual app shell (top bar + sidebar + content) so the
+  // transition into the real layout is visually quiet.
+  return (
+    <div
+      className="min-h-screen flex bg-background animate-pulse"
+      role="status"
+      aria-live="polite"
+      aria-label="Loading your session"
+    >
+      <aside className="hidden lg:block w-60 border-r bg-muted/40 p-4 space-y-3">
+        <div className="h-8 w-32 rounded bg-muted" />
+        <div className="h-4 w-24 rounded bg-muted" />
+        <div className="space-y-2 pt-4">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="h-8 rounded bg-muted" />
+          ))}
+        </div>
+      </aside>
+      <div className="flex-1 flex flex-col">
+        <div className="h-14 border-b bg-muted/40 px-6 flex items-center gap-4">
+          <div className="h-6 w-24 rounded bg-muted" />
+          <div className="ml-auto h-8 w-8 rounded-full bg-muted" />
+        </div>
+        <div className="flex-1 p-6 space-y-4">
+          <div className="h-8 w-1/3 rounded bg-muted" />
+          <div className="h-4 w-2/3 rounded bg-muted" />
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 pt-4">
+            <div className="h-40 rounded-lg bg-muted" />
+            <div className="h-40 rounded-lg bg-muted" />
+            <div className="h-40 rounded-lg bg-muted" />
+          </div>
+        </div>
+      </div>
+      <span className="sr-only">Loading your session&hellip;</span>
+    </div>
+  );
+}
+
+/**
+ * Tiny client-side redirect that uses wouter's navigation rather than
+ * window.location.replace — avoids a full document reload and the white
+ * flash that comes with it.
+ */
+function ClientRedirect({ to }: { to: string }) {
+  const [, navigate] = useLocation();
+  useEffect(() => {
+    navigate(to, { replace: true });
+  }, [navigate, to]);
+  return <PageLoader />;
 }
 
 function ProtectedRoutes() {
   const { isLoggedIn, loading } = useApp();
   const [, navigate] = useLocation();
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center space-y-3">
-          <div className="w-10 h-10 border-2 border-brand border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-sm text-muted-foreground">Loading your session&hellip;</p>
-        </div>
-      </div>
-    );
-  }
+  useEffect(() => {
+    if (!loading && !isLoggedIn) {
+      navigate("/login", { replace: true });
+    }
+  }, [loading, isLoggedIn, navigate]);
 
-  if (!isLoggedIn) {
-    window.location.replace("/login");
-    return null;
+  if (loading || !isLoggedIn) {
+    return <SessionLoader />;
   }
 
   return (
@@ -135,10 +201,10 @@ function ProtectedRoutes() {
             <Route path="/differentiate" component={Differentiate} />
             <Route path="/worksheets" component={Worksheets} />
             <Route path="/reading" component={Reading} />
-            <Route path="/stories">{() => { window.location.replace("/reading"); return null; }}</Route>
+            <Route path="/stories">{() => <ClientRedirect to="/reading" />}</Route>
             <Route path="/templates" component={Templates} />
             <Route path="/pupils" component={Children} />
-            <Route path="/children">{() => { window.location.replace("/pupils"); return null; }}</Route>
+            <Route path="/children">{() => <ClientRedirect to="/pupils" />}</Route>
             <Route path="/history" component={History} />
             <Route path="/analytics" component={Analytics} />
             <Route path="/ideas" component={Ideas} />
@@ -230,11 +296,19 @@ function Router() {
 
 function AppWithPreferences() {
   const { user } = useApp();
+  // Install hover/focus route-chunk prefetcher once per app mount.
+  useEffect(() => installRoutePrefetch(), []);
   return (
     <UserPreferencesProvider userId={user?.id}>
       <TooltipProvider>
+        {/* Keyboard skip-to-content link — first focusable element on every page */}
+        <a href="#main-content" className="skip-to-content">
+          Skip to main content
+        </a>
         <Toaster />
-        <Router />
+        <div id="main-content" tabIndex={-1}>
+          <Router />
+        </div>
         <CookieBanner />
         <OnboardingTour />
         <AIBestPracticesGate />
