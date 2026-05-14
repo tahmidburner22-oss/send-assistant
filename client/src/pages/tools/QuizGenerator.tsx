@@ -2,9 +2,8 @@ import { useUserPreferences } from "@/contexts/UserPreferencesContext";
 import { formatToolOutput } from "@/lib/format-tool-output";
 import AIToolPage from "@/components/AIToolPage";
 import { HelpCircle } from "lucide-react";
+import { SUBJECTS_PRIMARY as subjects, YEAR_GROUPS as years } from "@/lib/tool-vocab";
 
-const subjects = ["English","Maths","Science","History","Geography","RE","PSHE","Art","Music","PE","Computing","MFL","Design Technology","Drama"].map(s => ({ value: s, label: s }));
-const years = ["Reception","Year 1","Year 2","Year 3","Year 4","Year 5","Year 6","Year 7","Year 8","Year 9","Year 10","Year 11","Year 12","Year 13"].map(y => ({ value: y, label: y }));
 const quizTypes = [{ value: "multiple-choice", label: "Multiple Choice" }, { value: "true-false", label: "True / False" }, { value: "short-answer", label: "Short Answer" }, { value: "mixed", label: "Mixed Format" }, { value: "fill-in-blanks", label: "Fill in the Blanks" }];
 
 export default function QuizGenerator() {

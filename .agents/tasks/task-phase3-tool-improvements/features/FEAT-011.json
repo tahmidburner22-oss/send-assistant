@@ -1,0 +1,24 @@
+{
+  "id": "FEAT-011",
+  "type": "fix",
+  "description": "Bonus cleanups bundled with the phase-3 PR: (a) delete the orphaned client/src/pages/tools/Stories.tsx (715 lines, 37 KB, no remaining references — App.tsx and prefetch.ts only reference SocialStories.tsx; the /stories route redirects to /reading which uses StoriesContent), (b) make StreamedOutput screen-reader-friendly by emitting aria-live updates only on word/sentence boundaries instead of every chunk.",
+  "status": "completed",
+  "steps": [
+    "Search all of client/src for imports of pages/tools/Stories — confirm zero references.",
+    "Delete client/src/pages/tools/Stories.tsx.",
+    "Rewrite client/src/components/StreamedOutput.tsx to maintain a separate aria-live span that updates only when a chunk crosses a sentence boundary or accumulates 8+ new words.",
+    "Mark the visible streaming div aria-hidden during streaming so it isn't double-announced; remove aria-hidden when streaming completes."
+  ],
+  "acceptance_criteria": [
+    "Stories.tsx no longer exists in the repo.",
+    "App still builds (no broken import paths).",
+    "Streaming output still appears smoothly to sighted users.",
+    "Screen readers announce sentence-sized chunks rather than every character."
+  ],
+  "verification": [
+    "pnpm run check",
+    "Manual screen-reader test on the Generate flow."
+  ],
+  "blocked_reason": null,
+  "findings": "Verified zero references to Stories.tsx (App.tsx only mentions SocialStories.tsx, and the /stories route redirects to /reading). StreamedOutput rewrite preserves the existing visual behaviour and prop surface."
+}

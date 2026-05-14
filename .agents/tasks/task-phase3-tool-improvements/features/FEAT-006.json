@@ -1,0 +1,26 @@
+{
+  "id": "FEAT-006",
+  "type": "feat",
+  "description": "Programmatic output validators. AIToolPage now runs tool-specific rules after every successful generation and surfaces failures as a yellow banner with a one-click Auto-fix button that re-prompts the AI with the specific failure. SmartTargets must contain a number + frequency word + date phrase per target; ReportComments enforces word count within ±25% and bans common clichés; ExitTicket must contain the teacher answer-key separator; BehaviourPlan must include at least 10 numbered sections.",
+  "status": "completed",
+  "steps": [
+    "Create client/src/lib/output-validators.ts with a Validator function shape, per-tool rule functions, and a TOOL_VALIDATORS registry keyed by tool slug.",
+    "Implement smartTargetsValidator (per-target measurable + time-bound checks), reportCommentsValidator (±25% word count + cliché blacklist), exitTicketValidator (separator presence), behaviourPlanValidator (≥10 numbered sections), and a generic minimumLengthValidator.",
+    "In AIToolPage, run runValidators(toolSlug, output, values) on every successful generation, every Auto-fix, and every section-regenerate.",
+    "Render a yellow banner above the output card listing up to five issues with severity-aware colours.",
+    "Add an Auto-fix button that calls AI with the validation's autoFixInstruction and re-runs the validators.",
+    "Add a dismiss button on the banner."
+  ],
+  "acceptance_criteria": [
+    "Tools without registered validators see no UI change.",
+    "Tools with validators show a banner only when issues are detected.",
+    "Auto-fix updates the output in place and re-runs validators.",
+    "Auto-fix output is also pushed into history (so the teacher can revert)."
+  ],
+  "verification": [
+    "pnpm run check",
+    "Manual: SmartTargets — generate without 'by [date]' phrasing, verify time-bound issue surfaces, click Auto-fix."
+  ],
+  "blocked_reason": null,
+  "findings": "Validator rules are intentionally lenient (warn rather than error) so a SENCO can ship a usable output even when one criterion is missing. Auto-fix instructions are concatenated when multiple rules fail."
+}

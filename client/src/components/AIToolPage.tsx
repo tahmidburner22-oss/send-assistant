@@ -1,8 +1,18 @@
 /**
  * AIToolPage — reusable shell for all AI tool pages.
  * Handles: form → generate → display → edit (AI or manual) → save/print/PDF/DOCX
+ *
+ * Phase-3 additions (this file):
+ *   - Pupil context picker (auto-fill + opt-in record injection)
+ *   - Output history (last 10 generations) + Restore
+ *   - Save-as-template + Start-from-template
+ *   - Programmatic output validators with one-click Auto-fix
+ *   - Section-level regenerate (for tools that opt in)
+ *   - Generic CSV batch runner (for tools that opt in)
+ *   - a11y + responsive form (grid-cols-1 sm:grid-cols-2, aria-required, focus-first-missing)
+ *   - Cmd/Ctrl+Enter to submit, soft min-input quality nudge
  */
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import DOMPurify from "dompurify";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,8 +23,13 @@ import { motion } from "framer-motion";
 import {
   Sparkles, RefreshCw, Printer, Download, Copy, Save, ChevronLeft,
   PenLine, X, Check, Loader2, Users, FileText, FileDown,
+  AlertTriangle, History, Bookmark, ListTree,
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
 import { callAI } from "@/lib/ai";
 import { callAIStream, supportsStreaming } from "@/lib/callAIStream";
 import { StreamedOutput } from "@/components/StreamedOutput";
@@ -27,8 +42,15 @@ import { useLocation } from "wouter";
 import { useUserPreferences } from "@/contexts/UserPreferencesContext";
 import { useDraftAutosave } from "@/hooks/useDraftAutosave";
 import { useToolTelemetry } from "@/hooks/useToolTelemetry";
+import { useOutputHistory } from "@/hooks/useOutputHistory";
+import { useToolTemplates } from "@/hooks/useToolTemplates";
 import { scanFormValues, maxSeverity, summariseFindings } from "@/lib/piiScanner";
 import { AccessibilityPanel, type AccessibilityStyles } from "@/components/AccessibilityPanel";
+import { runValidators, type ValidationResult } from "@/lib/output-validators";
+import { parseSections, replaceSectionBody, type ParsedSection } from "@/lib/section-parser";
+import { buildPupilContext, pupilToFormValues } from "@/lib/pupil-context";
+import { PupilContextPicker } from "@/components/PupilContextPicker";
+import { BatchToolRunner, type BatchToolSpec } from "@/components/BatchToolRunner";
 
 export interface AIToolField {
   id: string;
@@ -73,6 +95,23 @@ interface AIToolPageProps {
    * Rendered below the output card in the results area.
    */
   renderPostActions?: (result: string, values: Record<string, string>) => React.ReactNode;
+  /**
+   * If true and at least one pupil exists in useApp().children, render a
+   * Class-CSV batch tab above the form so the tool can be run over a class.
+   * The batch spec defaults to the tool's normal buildPrompt; pass
+   * `batchSpec` to customise required columns.
+   */
+  batchable?: boolean;
+  /**
+   * Optional explicit BatchToolSpec override. If omitted but batchable=true,
+   * a default spec is inferred from the field list.
+   */
+  batchSpec?: Partial<BatchToolSpec>;
+  /**
+   * If true, the output is parsed into sections (## headings or **Section N:**)
+   * and each section gets a "Regenerate this part" button.
+   */
+  sectionable?: boolean;
 }
 
 // ─── Lesson Plan Renderer ────────────────────────────────────────────────────
@@ -236,7 +275,7 @@ function formatAIText(text: string): string {
 type EditMode = "none" | "manual" | "ai";
 
 export default function AIToolPage({
-  title, description, icon, accentColor, fields, buildPrompt, formatOutput, outputTitle, onResult, assignable, worksheetLink, isLessonPlan, initialValues, renderCustomOutput, transformBeforeAssign, renderPostActions,
+  title, description, icon, accentColor, fields, buildPrompt, formatOutput, outputTitle, onResult, assignable, worksheetLink, isLessonPlan, initialValues, renderCustomOutput, transformBeforeAssign, renderPostActions, batchable, batchSpec, sectionable,
 }: AIToolPageProps) {
   const { children, assignWork, user } = useApp();
   const isPlatformAdmin = user?.email === "admin@adaptly.co.uk" || user?.email === "admin@sendassistant.app";
@@ -304,6 +343,60 @@ export default function AIToolPage({
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamedText, setStreamedText] = useState("");
 
+  // ── Phase-3: history / templates / validation / sections / pupil / batch ──
+  const history   = useOutputHistory(toolSlug);
+  const templates = useToolTemplates(toolSlug);
+
+  const [validation, setValidation] = useState<ValidationResult | null>(null);
+  const [autoFixing, setAutoFixing] = useState(false);
+
+  const [showHistoryDialog,  setShowHistoryDialog]  = useState(false);
+  const [showTemplateDialog, setShowTemplateDialog] = useState(false);
+  const [templateNameInput,  setTemplateNameInput]  = useState("");
+
+  const [selectedPupilId,    setSelectedPupilId]    = useState("");
+  const [injectPupilRecords, setInjectPupilRecords] = useState(false);
+
+  const [sectionRegenIdx, setSectionRegenIdx] = useState<number | null>(null);
+
+  const [showBatchMode, setShowBatchMode] = useState(false);
+
+  // Refs to first input of each field for focus-first-missing on submit.
+  const fieldRefs = useRef<Record<string, HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | null>>({});
+
+  // Focus the first missing required field if validation on submit fails.
+  const focusFirstMissing = useCallback((missingIds: string[]) => {
+    for (const id of missingIds) {
+      const el = fieldRefs.current[id];
+      if (el && typeof (el as any).focus === "function") {
+        (el as any).focus();
+        break;
+      }
+    }
+  }, []);
+
+  // Soft quality nudge — fired on submit when inputs look too short.
+  const qualityNudge = useCallback((vals: Record<string, string>): string | null => {
+    const issues: string[] = [];
+    for (const f of fields) {
+      const v = (vals[f.id] || "").trim();
+      if (!v) continue;
+      if (f.type === "text" && /topic|focus|lesson|task/i.test(f.label) && v.length < 8) {
+        issues.push(`"${f.label}" is very short — consider more detail.`);
+      }
+      if (f.type === "textarea" && v.length < 30) {
+        issues.push(`"${f.label}" is very short — fuller context produces stronger output.`);
+      }
+    }
+    return issues.length > 0 ? issues.join(" ") : null;
+  }, [fields]);
+
+  // Memoised parsed sections of the current result.
+  const parsedSections: ParsedSection[] = useMemo(
+    () => (sectionable && result ? parseSections(result) : []),
+    [sectionable, result],
+  );
+
   const handleAssign = (childId: string) => {
     if (!result) return;
     const outputTitleStr = outputTitle ? outputTitle(values) : title;
@@ -316,11 +409,26 @@ export default function AIToolPage({
 
   const setValue = (id: string, val: string) => setValues(prev => ({ ...prev, [id]: val }));
 
-  const handleGenerate = async () => {
+  const handleGenerate = async (opts: { skipNudge?: boolean } = {}) => {
     const missing = fields.filter(f => f.required && !values[f.id]?.trim());
     if (missing.length > 0) {
       toast.error(`Please fill in: ${missing.map(f => f.label).join(", ")}`);
+      focusFirstMissing(missing.map(f => f.id));
       return;
+    }
+    // Soft quality nudge — non-blocking.
+    if (!opts.skipNudge) {
+      const nudge = qualityNudge(values);
+      if (nudge) {
+        toast(nudge, {
+          duration: 6000,
+          action: {
+            label: "Generate anyway",
+            onClick: () => handleGenerate({ skipNudge: true }),
+          },
+        });
+        return;
+      }
     }
     // ── Phase 1: PII pre-flight check ──────────────────────────────────────
     const piiResult = scanFormValues(values, { ignoreFields: ["subject", "yearGroup", "year", "duration", "examBoard"] });
@@ -342,8 +450,20 @@ export default function AIToolPage({
     setStreamedText("");
     setIsStreaming(false);
     setEditMode("none");
+    setValidation(null);
     try {
-      const { system, user, maxTokens } = buildPrompt(values);
+      const promptParts = buildPrompt(values);
+      let { system, user } = promptParts;
+      const { maxTokens } = promptParts;
+
+      // Inject pupil-context block if a pupil is picked AND opt-in toggle is on.
+      const selectedPupil = injectPupilRecords && selectedPupilId
+        ? children.find(c => c.id === selectedPupilId)
+        : null;
+      if (selectedPupil) {
+        const ctx = buildPupilContext(selectedPupil);
+        user = `${ctx.promptBlock}\n\n${user}`;
+      }
 
       // Use streaming if supported — gives ~3x perceived speed improvement
       if (supportsStreaming()) {
@@ -365,6 +485,15 @@ export default function AIToolPage({
         onResult?.(accumulated, values);
         discardDraft();
         endTimer("success", { provider: streamProvider });
+        // Run programmatic output validators (no-op for tools without rules).
+        const v = runValidators(toolSlug, accumulated, values);
+        setValidation(v.ok ? null : v);
+        // Push to per-tool output history (best-effort, capped at 10).
+        history.push({
+          values: { ...values },
+          output: accumulated,
+          title: outputTitle ? outputTitle(values) : title,
+        });
         toast.success("Generated successfully!");
       } else {
         // Fallback: non-streaming
@@ -374,6 +503,13 @@ export default function AIToolPage({
         onResult?.(text, values);
         discardDraft();
         endTimer("success", { provider: p });
+        const v = runValidators(toolSlug, text, values);
+        setValidation(v.ok ? null : v);
+        history.push({
+          values: { ...values },
+          output: text,
+          title: outputTitle ? outputTitle(values) : title,
+        });
         toast.success("Generated successfully!");
       }
     } catch (err) {
@@ -444,6 +580,120 @@ export default function AIToolPage({
     setAiEditLoading(false);
   };
 
+  // ── Phase-3: Auto-fix on validation failure ──────────────────────────────
+  const handleAutoFix = async () => {
+    if (!result || !validation || validation.ok || !validation.autoFixInstruction) return;
+    setAutoFixing(true);
+    try {
+      const system = `You are an expert SEND teacher correcting a previously-generated piece of content. Apply the fix instruction precisely and return the FULL revised content. No commentary, no extra preamble.`;
+      const user = `Tool: ${title}\nCurrent content:\n${result}\n\nFix instruction: ${validation.autoFixInstruction}\n\nReturn the full revised content:`;
+      const { text } = await callAI(system, user, 3000);
+      const newText = text.trim();
+      setResult(newText);
+      const v = runValidators(toolSlug, newText, values);
+      setValidation(v.ok ? null : v);
+      history.push({ values: { ...values }, output: newText, title: outputTitle ? outputTitle(values) : title });
+      toast.success(v.ok ? "Auto-fix applied successfully!" : "Auto-fix applied — some checks still failing.");
+    } catch {
+      toast.error("Auto-fix failed. Please try again or edit manually.");
+    }
+    setAutoFixing(false);
+  };
+
+  // ── Phase-3: Section-level regenerate ─────────────────────────────────────
+  const handleRegenerateSection = async (sectionIndex: number) => {
+    if (!result) return;
+    const sections = parseSections(result);
+    const section  = sections[sectionIndex];
+    if (!section) return;
+
+    setSectionRegenIdx(sectionIndex);
+    try {
+      const system = `You are an expert SEND teacher refining one section of a previously-generated document. Rewrite ONLY the requested section, keeping its heading. Do not echo the heading line. Return ONLY the new body text — no commentary.`;
+      const otherSections = sections
+        .map((s, i) => i === sectionIndex ? null : `${s.heading}\n${s.body}`)
+        .filter(Boolean)
+        .join("\n\n");
+      const user = `Tool: ${title}\nSection to rewrite: ${section.title}\nKeep this section's tone and style consistent with the rest of the document.\n\n--- OTHER SECTIONS (for context, do not rewrite) ---\n${otherSections}\n\n--- CURRENT BODY OF SECTION TO REWRITE ---\n${section.body}\n\nReturn only the new body for "${section.title}":`;
+      const { text } = await callAI(system, user, 1500);
+      const newDoc   = replaceSectionBody(result, sectionIndex, text);
+      setResult(newDoc);
+      const v = runValidators(toolSlug, newDoc, values);
+      setValidation(v.ok ? null : v);
+      toast.success(`Regenerated: ${section.title}`);
+    } catch {
+      toast.error("Section regenerate failed. Please try again.");
+    }
+    setSectionRegenIdx(null);
+  };
+
+  // ── Phase-3: Templates / History / Pupil-picker handlers ─────────────────
+  const handleSaveTemplate = () => {
+    const name = templateNameInput.trim();
+    if (!name) { toast.error("Please enter a template name."); return; }
+    const saved = templates.save(name, values, result || undefined);
+    if (saved) {
+      setShowTemplateDialog(false);
+      setTemplateNameInput("");
+      toast.success(`Saved template: ${saved.name}`);
+    }
+  };
+
+  const handleLoadTemplate = (templateId: string) => {
+    const t = templates.get(templateId);
+    if (!t) return;
+    setValues(prev => ({ ...prev, ...t.values }));
+    if (t.output) setResult(t.output);
+    toast.success(`Loaded template: ${t.name}`);
+  };
+
+  const handleRestoreHistory = (id: string) => {
+    const entry = history.get(id);
+    if (!entry) return;
+    setValues(prev => ({ ...prev, ...entry.values }));
+    setResult(entry.output);
+    setShowHistoryDialog(false);
+    toast.success("Restored from history");
+  };
+
+  const handlePupilSelect = (childId: string) => {
+    setSelectedPupilId(childId);
+    if (!childId) return;
+    const c = children.find(ch => ch.id === childId);
+    if (!c) return;
+    const prefilled = pupilToFormValues(c);
+    // Only set fields that exist on this tool (avoid clobbering unrelated state).
+    const updates: Record<string, string> = {};
+    for (const [k, v] of Object.entries(prefilled)) {
+      if (fields.some(f => f.id === k)) updates[k] = String(v);
+    }
+    if (Object.keys(updates).length > 0) {
+      setValues(prev => ({ ...prev, ...updates }));
+      toast.success(`Pre-filled ${Object.keys(updates).length} field${Object.keys(updates).length === 1 ? "" : "s"} from pupil record`);
+    }
+  };
+
+  // Cmd/Ctrl+Enter from any field submits the form.
+  const handleFormKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+      e.preventDefault();
+      if (!loading && !isStreaming) handleGenerate();
+    }
+  };
+
+  // Build a default BatchToolSpec from this tool's fields, if user opted in.
+  const inferredBatchSpec: BatchToolSpec | null = useMemo(() => {
+    if (!batchable) return null;
+    const cols = fields.map(f => ({ id: f.id, label: f.label, required: f.required }));
+    return {
+      toolSlug,
+      title,
+      columns: cols,
+      buildPrompt: (row) => buildPrompt(row),
+      ...(batchSpec || {}),
+    };
+  }, [batchable, batchSpec, fields, toolSlug, title, buildPrompt]);
+
   const rawOutput = result ? (formatOutput ? formatOutput(result) : formatAIText(result)) : "";
   // Sanitize AI-generated HTML before rendering to prevent XSS
   const formattedOutput = rawOutput ? DOMPurify.sanitize(rawOutput, {
@@ -494,15 +744,99 @@ export default function AIToolPage({
 
         {!result && !isStreaming ? (
           <Card className="border-border/50">
-            <CardContent className="p-4 space-y-4">
-              <div className="grid grid-cols-2 gap-3">
-                {fields.map(field => (
-                  <div key={field.id} className={`space-y-1.5 ${field.span === "full" ? "col-span-2" : ""}`}>
-                    <label className="text-xs font-medium text-foreground">
-                      {field.label}{field.required && <span className="text-red-500 ml-0.5">*</span>}
+            <CardContent className="p-4 space-y-4" onKeyDown={handleFormKeyDown}>
+              {/* Batch-mode toggle when this tool opts into batch */}
+              {batchable && children && children.length > 0 && (
+                <div className="flex gap-1 p-1 bg-muted rounded-lg w-fit">
+                  <button
+                    type="button"
+                    onClick={() => setShowBatchMode(false)}
+                    className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-colors ${
+                      !showBatchMode ? "bg-white text-foreground shadow-sm" : "text-muted-foreground"
+                    }`}
+                    aria-pressed={!showBatchMode}
+                  >
+                    Single
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowBatchMode(true)}
+                    className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-colors ${
+                      showBatchMode ? "bg-white text-foreground shadow-sm" : "text-muted-foreground"
+                    }`}
+                    aria-pressed={showBatchMode}
+                  >
+                    <Users className="w-3 h-3 inline mr-1" />Batch (whole class)
+                  </button>
+                </div>
+              )}
+
+              {/* Batch runner takes over the form when active */}
+              {batchable && showBatchMode && inferredBatchSpec ? (
+                <BatchToolRunner spec={inferredBatchSpec} />
+              ) : (
+              <>
+
+              {/* Pupil context picker (auto-fill + opt-in record injection) */}
+              {children && children.length > 0 && (
+                <PupilContextPicker
+                  children={children}
+                  selectedId={selectedPupilId}
+                  onSelect={handlePupilSelect}
+                  injectRecords={injectPupilRecords}
+                  onToggleInject={setInjectPupilRecords}
+                />
+              )}
+
+              {/* Templates: pick saved + Save current */}
+              {(templates.templates.length > 0 || result) && (
+                <div className="flex flex-wrap items-center gap-2 -mt-1">
+                  {templates.templates.length > 0 && (
+                    <Select onValueChange={(v) => v && handleLoadTemplate(v)}>
+                      <SelectTrigger className="h-9 w-auto min-w-[200px] text-xs gap-2" aria-label="Start from a saved template">
+                        <Bookmark className="w-3.5 h-3.5" />
+                        <SelectValue placeholder="Start from a template…" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {templates.templates.map(t => (
+                          <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                  {history.entries.length > 0 && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowHistoryDialog(true)}
+                      className="gap-1.5 text-xs"
+                    >
+                      <History className="w-3.5 h-3.5" />Recent ({history.entries.length})
+                    </Button>
+                  )}
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {fields.map(field => {
+                  const hintId = field.hint ? `hint-${field.id}` : undefined;
+                  const inputId = `field-${field.id}`;
+                  const commonProps = {
+                    id: inputId,
+                    "aria-required": field.required ? true : undefined,
+                    "aria-describedby": hintId,
+                  } as const;
+                  return (
+                  <div key={field.id} className={`space-y-1.5 ${field.span === "full" ? "sm:col-span-2" : ""}`}>
+                    <label htmlFor={inputId} className="text-xs font-medium text-foreground">
+                      {field.label}
+                      {field.required && <span className="text-red-500 ml-0.5" aria-hidden="true">*</span>}
                     </label>
                     {field.type === "select" ? (
                       <select
+                        {...commonProps}
+                        ref={el => { fieldRefs.current[field.id] = el; }}
                         value={values[field.id] || ""}
                         onChange={e => setValue(field.id, e.target.value)}
                         className="w-full h-10 px-3 text-sm border border-input rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-brand/30"
@@ -512,6 +846,8 @@ export default function AIToolPage({
                       </select>
                     ) : field.type === "textarea" ? (
                       <textarea
+                        {...commonProps}
+                        ref={el => { fieldRefs.current[field.id] = el; }}
                         value={values[field.id] || ""}
                         onChange={e => setValue(field.id, e.target.value)}
                         placeholder={field.placeholder}
@@ -520,6 +856,8 @@ export default function AIToolPage({
                       />
                     ) : (
                       <input
+                        {...commonProps}
+                        ref={el => { fieldRefs.current[field.id] = el; }}
                         type="text"
                         value={values[field.id] || ""}
                         onChange={e => {
@@ -532,21 +870,28 @@ export default function AIToolPage({
                       />
                     )}
                     {field.hint && (
-                      <p className="text-[10px] text-muted-foreground mt-0.5">{field.hint}</p>
+                      <p id={hintId} className="text-[10px] text-muted-foreground mt-0.5">{field.hint}</p>
                     )}
                   </div>
-                ))}
+                  );
+                })}
               </div>
               <Button
-                onClick={handleGenerate}
+                onClick={() => handleGenerate()}
                 disabled={loading}
                 className="w-full h-11 bg-brand hover:bg-brand/90 text-white"
+                aria-keyshortcuts="Control+Enter Meta+Enter"
               >
                 {loading
                   ? <><RefreshCw className="w-4 h-4 mr-2 animate-spin" />Generating...</>
                   : <><Sparkles className="w-4 h-4 mr-2" />Generate with AI</>
                 }
               </Button>
+              <p className="text-[10px] text-muted-foreground text-center">
+                Tip: press <kbd className="px-1 rounded bg-muted">Cmd</kbd>/<kbd className="px-1 rounded bg-muted">Ctrl</kbd>+<kbd className="px-1 rounded bg-muted">Enter</kbd> from any field to generate
+              </p>
+              </>
+              )}
             </CardContent>
           </Card>
         ) : isStreaming && !result ? (
@@ -665,6 +1010,15 @@ export default function AIToolPage({
                 <Button variant="outline" size="sm" onClick={handleDocx} title="Download as Word document">
                   <FileDown className="w-3.5 h-3.5 mr-1" />Word
                 </Button>
+                {/* Save as template / Recent */}
+                <Button variant="outline" size="sm" onClick={() => setShowTemplateDialog(true)} title="Save current values as a reusable template">
+                  <Bookmark className="w-3.5 h-3.5 mr-1" />Save as template
+                </Button>
+                {history.entries.length > 0 && (
+                  <Button variant="outline" size="sm" onClick={() => setShowHistoryDialog(true)} title="Browse recent generations">
+                    <History className="w-3.5 h-3.5 mr-1" />Recent
+                  </Button>
+                )}
               </div>
             </div>
 
@@ -713,6 +1067,69 @@ export default function AIToolPage({
             {/* Output — hidden in manual edit mode */}
             {editMode !== "manual" && (
               <>
+              {/* Validation banner */}
+              {validation && !validation.ok && (
+                <div className="rounded-lg border border-amber-300 bg-amber-50 p-3 space-y-2" role="status" aria-live="polite">
+                  <div className="flex items-start gap-2">
+                    <AlertTriangle className="w-4 h-4 text-amber-700 flex-shrink-0 mt-0.5" />
+                    <div className="flex-1 space-y-1">
+                      <p className="text-xs font-semibold text-amber-900">Output quality check found {validation.issues.length} issue{validation.issues.length === 1 ? "" : "s"}:</p>
+                      <ul className="text-xs text-amber-800 list-disc ml-4 space-y-0.5">
+                        {validation.issues.slice(0, 5).map((iss, i) => (
+                          <li key={i}>{iss.message}</li>
+                        ))}
+                        {validation.issues.length > 5 && <li>…and {validation.issues.length - 5} more</li>}
+                      </ul>
+                    </div>
+                    <div className="flex gap-1.5 flex-shrink-0">
+                      {validation.autoFixInstruction && (
+                        <Button
+                          size="sm"
+                          className="bg-amber-600 hover:bg-amber-700 text-white gap-1.5 h-7"
+                          onClick={handleAutoFix}
+                          disabled={autoFixing}
+                        >
+                          {autoFixing
+                            ? <><Loader2 className="w-3.5 h-3.5 animate-spin" />Fixing…</>
+                            : <><Sparkles className="w-3.5 h-3.5" />Auto-fix</>}
+                        </Button>
+                      )}
+                      <Button size="sm" variant="ghost" className="h-7" onClick={() => setValidation(null)}>
+                        <X className="w-3.5 h-3.5" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Section-level regenerate panel (opt-in via sectionable) */}
+              {sectionable && parsedSections.length > 1 && (
+                <div className="rounded-lg border border-indigo-200 bg-indigo-50/50 p-3 space-y-2">
+                  <div className="flex items-center gap-2 text-indigo-700">
+                    <ListTree className="w-4 h-4" />
+                    <span className="text-xs font-semibold">Regenerate just one section</span>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {parsedSections.map((sec, i) => (
+                      <Button
+                        key={i}
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        className="h-7 text-[11px] gap-1.5 border-indigo-200 text-indigo-700 hover:bg-indigo-100"
+                        disabled={sectionRegenIdx !== null}
+                        onClick={() => handleRegenerateSection(i)}
+                        title={`Regenerate: ${sec.title}`}
+                      >
+                        {sectionRegenIdx === i
+                          ? <><Loader2 className="w-3 h-3 animate-spin" />Regenerating…</>
+                          : <><RefreshCw className="w-3 h-3" />{sec.title.slice(0, 40)}</>}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <AccessibilityPanel onChange={setA11yStyles} className="mb-2" />
               <Card className="border-border/50">
                 <CardContent
@@ -776,6 +1193,86 @@ export default function AIToolPage({
             )}
           </div>
         )}
+
+        {/* History dialog — restore a previous generation */}
+        <Dialog open={showHistoryDialog} onOpenChange={setShowHistoryDialog}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <History className="w-4 h-4" />Recent generations
+              </DialogTitle>
+            </DialogHeader>
+            <p className="text-xs text-muted-foreground mb-2">
+              Up to 10 recent generations are kept locally on this device. Select one to restore.
+            </p>
+            {history.entries.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-4 text-center">No history yet.</p>
+            ) : (
+              <div className="space-y-2 max-h-[60vh] overflow-y-auto">
+                {history.entries.map(entry => (
+                  <button
+                    key={entry.id}
+                    type="button"
+                    onClick={() => handleRestoreHistory(entry.id)}
+                    className="w-full text-left p-2 rounded-lg border border-border hover:bg-muted text-xs space-y-1"
+                  >
+                    <div className="font-semibold text-foreground line-clamp-1">{entry.title || "Untitled"}</div>
+                    <div className="text-muted-foreground text-[10px]">
+                      {new Date(entry.at).toLocaleString("en-GB", { dateStyle: "short", timeStyle: "short" })}
+                    </div>
+                    <div className="text-muted-foreground line-clamp-2">{entry.output.slice(0, 160)}…</div>
+                  </button>
+                ))}
+              </div>
+            )}
+            {history.entries.length > 0 && (
+              <Button variant="ghost" size="sm" className="text-red-600" onClick={() => { history.clear(); toast.success("History cleared"); }}>
+                Clear history
+              </Button>
+            )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Save-as-template dialog */}
+        <Dialog open={showTemplateDialog} onOpenChange={setShowTemplateDialog}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Bookmark className="w-4 h-4" />Save as template
+              </DialogTitle>
+            </DialogHeader>
+            <p className="text-xs text-muted-foreground">
+              Templates capture the current form values and (optionally) the latest output, ready to re-use later.
+            </p>
+            <Input
+              placeholder="Template name (e.g. Y4 PDA escalation plan)"
+              value={templateNameInput}
+              onChange={e => setTemplateNameInput(e.target.value)}
+              onKeyDown={e => { if (e.key === "Enter") handleSaveTemplate(); }}
+              autoFocus
+            />
+            {templates.templates.length > 0 && (
+              <div className="space-y-1 max-h-40 overflow-y-auto">
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wide font-semibold">Existing</p>
+                {templates.templates.map(t => (
+                  <div key={t.id} className="flex items-center gap-2 text-xs">
+                    <span className="flex-1 truncate">{t.name}</span>
+                    <button type="button" className="text-red-500 hover:underline text-[10px]"
+                      onClick={() => { templates.remove(t.id); toast.success("Template deleted"); }}>
+                      Delete
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div className="flex justify-end gap-2 pt-2">
+              <Button variant="ghost" size="sm" onClick={() => setShowTemplateDialog(false)}>Cancel</Button>
+              <Button size="sm" className="bg-brand text-white" onClick={handleSaveTemplate}>
+                <Save className="w-3.5 h-3.5 mr-1" />Save
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </motion.div>
     </div>
   );

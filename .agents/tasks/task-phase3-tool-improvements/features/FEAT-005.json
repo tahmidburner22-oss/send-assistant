@@ -1,0 +1,26 @@
+{
+  "id": "FEAT-005",
+  "type": "feat",
+  "description": "Generic <BatchToolRunner> component. Promotes the previous one-tool ReportCommentsBatch into a reusable CSV-driven batch generator. Any AIToolPage tool can opt in by passing batchable={true}; AIToolPage automatically infers a BatchToolSpec from the tool's field list. End-of-term Pupil Passport season for a SENCO with 200 children turns from a two-day slog into a 20-minute coffee break.",
+  "status": "completed",
+  "steps": [
+    "Create client/src/components/BatchToolRunner.tsx with a column-agnostic CSV parser, sequential-with-progress generation loop, abort button, and Copy-All / Download exports.",
+    "Expose BatchToolSpec interface with toolSlug, title, columns, buildPrompt, optional templateCsv and maxRows.",
+    "Add batchable?: boolean and batchSpec?: Partial<BatchToolSpec> props to AIToolPage.",
+    "When batchable && children.length > 0, render a Single | Batch (whole class) toggle above the form.",
+    "When Batch mode is active, render <BatchToolRunner> instead of the form. Default batchSpec is inferred from the tool's field list.",
+    "Opt SmartTargets and PupilPassport into batchable={true}."
+  ],
+  "acceptance_criteria": [
+    "Tools opting in show a Batch tab when at least one pupil is registered.",
+    "Pasting/uploading a CSV with the inferred columns generates outputs sequentially with a progress bar.",
+    "Existing ReportComments single/batch toggle continues to work — the legacy ReportCommentsBatch component is unchanged for backward compatibility.",
+    "Stop button cancels the in-flight batch."
+  ],
+  "verification": [
+    "pnpm run check",
+    "Manual: SmartTargets → Batch → Load Template → edit two rows → Generate All."
+  ],
+  "blocked_reason": null,
+  "findings": "Existing ReportCommentsBatch was left untouched to avoid behaviour regression for the report-comments flow. The new generic runner is a strict superset and could replace it in a follow-up."
+}

@@ -1,0 +1,25 @@
+{
+  "id": "FEAT-008",
+  "type": "feat",
+  "description": "Cmd/Ctrl+Enter to submit and a soft minimum-input quality nudge. Power users can now generate from any input with a keyboard shortcut. When a topic is fewer than 8 characters or a textarea is fewer than 30 characters, AIToolPage shows a non-blocking warning toast with a 'Generate anyway' link instead of immediately calling AI on a thin prompt.",
+  "status": "completed",
+  "steps": [
+    "Add a handleFormKeyDown handler on the form Card that calls handleGenerate() on Meta/Ctrl + Enter.",
+    "Add aria-keyshortcuts on the Generate button so assistive tech announces the shortcut.",
+    "Render a small 'Tip: press Cmd/Ctrl+Enter…' hint under the Generate button.",
+    "Implement a qualityNudge(values) helper that returns a human message when topic-style fields are <8 chars or textareas are <30 chars.",
+    "On submit, fire the nudge as a toast with a 'Generate anyway' action button that calls handleGenerate({ skipNudge: true })."
+  ],
+  "acceptance_criteria": [
+    "Cmd/Ctrl + Enter from any input triggers generation when the form is valid.",
+    "Short inputs trigger a soft warning, not a blocking error.",
+    "'Generate anyway' bypasses the nudge for the current click.",
+    "No regression for full-input flows."
+  ],
+  "verification": [
+    "pnpm run check",
+    "Manual: type 'Maths' into a topic field, press Cmd+Enter, observe the nudge with the action."
+  ],
+  "blocked_reason": null,
+  "findings": "Nudge heuristics use the field label (matches /topic|focus|lesson|task/i) so they apply uniformly across tools without per-tool config."
+}

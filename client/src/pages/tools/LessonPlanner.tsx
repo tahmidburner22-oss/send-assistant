@@ -17,8 +17,7 @@ import {
 
 // ── Data Options ──────────────────────────────────────────────────────────────
 
-const subjects = ["English","Maths","Science","History","Geography","RE","PSHE","Art","Music","PE","Computing","MFL","Design Technology","Drama","Citizenship","Business Studies","Economics","Psychology","Sociology","Law","Media Studies","Film Studies","Physical Education","Health & Social Care"].map(s => ({ value: s, label: s }));
-const years = ["Reception","Year 1","Year 2","Year 3","Year 4","Year 5","Year 6","Year 7","Year 8","Year 9","Year 10","Year 11","Year 12","Year 13"].map(y => ({ value: y, label: y }));
+import { SUBJECTS_ALL as subjects, YEAR_GROUPS as years } from "@/lib/tool-vocab";
 const durations = ["20 minutes","30 minutes","45 minutes","50 minutes","60 minutes","75 minutes","90 minutes","100 minutes"].map(d => ({ value: d, label: d }));
 const teachingStyles = [
   { value: "direct", label: "Direct Instruction" },
