@@ -5,6 +5,7 @@
  */
 import { useEffect } from "react";
 import { injectLandingStyles } from "./landing/styles";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 // @ts-ignore
 import { useLenis } from "./landing/lib/useLenis";
 // @ts-ignore
@@ -23,6 +24,8 @@ import Services from "./landing/ServicesHorizontal.jsx";
 import LiveDifferentiate from "./landing/LiveDifferentiate.jsx";
 // @ts-ignore
 import ZoomParallax from "./landing/ZoomParallax.jsx";
+// @ts-ignore
+import ZoomParallaxMobile from "./landing/ZoomParallaxMobile.jsx";
 // @ts-ignore
 import Process from "./landing/Process.jsx";
 // @ts-ignore
@@ -48,17 +51,25 @@ function LandingInner() {
   // Editorial Swiss Humanism: native scroll keeps the long evidence-led page precise, responsive, and predictable.
   // Lenis added an extra RAF loop over many pinned Framer Motion scenes, causing noticeable landing-page lag.
   useLenis({ enabled: false });
+
+  // Mobile-first: drop the heaviest scenes on small viewports and for users
+  // who've opted into reduced motion. ServicesHorizontal already has its own
+  // <ServicesStack /> fallback below 1180px, and ScrollRail is xl+ only.
+  const isDesktop = useMediaQuery("(min-width: 768px)");
+  const reducedMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
+  const heavyScenes = isDesktop && !reducedMotion;
+
   return (
     <div className="adaptly-landing min-h-screen relative overflow-x-hidden">
       <Nav />
-      <ScrollRail />
-      <MagneticCursor />
-      <main>
+      {heavyScenes && <ScrollRail />}
+      {heavyScenes && <MagneticCursor />}
+      <main id="adaptly-main" aria-label="Adaptly homepage main content">
         <Hero />
         <About />
         <Services />
         <LiveDifferentiate />
-        <ZoomParallax />
+        {heavyScenes ? <ZoomParallax /> : <ZoomParallaxMobile />}
         <Process />
         <EhcpBuilder />
         <ParentPortal />

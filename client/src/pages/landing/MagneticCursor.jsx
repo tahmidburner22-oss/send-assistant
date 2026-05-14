@@ -57,7 +57,7 @@ export default function MagneticCursor() {
   if (!enabled) return null;
 
   return (
-    <>
+    <div data-adaptly-magnetic-cursor className="adaptly-magnetic-cursor">
       <div
         ref={ringRef}
         aria-hidden
@@ -89,6 +89,6 @@ export default function MagneticCursor() {
           boxShadow: "0 0 0 1px rgba(255,255,255,0.4)",
         }}
       />
-    </>
+    </div>
   );
 }

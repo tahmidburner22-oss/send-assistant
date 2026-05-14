@@ -10,7 +10,8 @@
     <meta name="author" content="Adaptly" />
     <meta name="robots" content="index, follow" />
     <link rel="canonical" href="https://adaptly.co.uk/" />
-    <meta name="theme-color" content="#7C3AED" />
+    <meta name="theme-color" content="#10B981" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#065F46" media="(prefers-color-scheme: dark)" />
 
     <!-- PWA manifest -->
     <link rel="manifest" href="/manifest.json" />
@@ -66,11 +67,23 @@
       ]
     }
     </script>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet" />
   </head>
   <body>
+    <noscript>
+      <div style="max-width: 36rem; margin: 4rem auto; padding: 1.5rem 1.75rem; font-family: 'DM Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; color: #1f2933; background: #ffffff; border: 1px solid #e7e2d6; border-radius: 1rem; box-shadow: 0 12px 30px -20px rgba(0,0,0,.18); text-align: center;">
+        <h1 style="margin: 0 0 .5rem; font-size: 1.5rem; letter-spacing: -0.02em;">JavaScript is required</h1>
+        <p style="margin: 0 0 1rem; color: #4b5563; line-height: 1.5;">
+          Adaptly is an interactive AI tool for UK SEND teachers. To generate worksheets,
+          manage pupils and view the parent portal, please enable JavaScript and refresh this page.
+        </p>
+        <p style="margin: 0; color: #4b5563; line-height: 1.5;">
+          You can still read about us on the
+          <a href="/privacy" style="color: #047857;">privacy policy</a>,
+          <a href="/terms" style="color: #047857;">terms</a> and
+          <a href="/accessibility" style="color: #047857;">accessibility</a> pages.
+        </p>
+      </div>
+    </noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
