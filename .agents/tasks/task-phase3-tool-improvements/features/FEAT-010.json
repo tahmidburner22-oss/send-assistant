@@ -1,0 +1,25 @@
+{
+  "id": "FEAT-010",
+  "type": "feat",
+  "description": "Real template library — Save as my template + Start from a template. Adds a useToolTemplates hook + a Save-as-template dialog on the AIToolPage toolbar that captures field values and the latest output under a teacher-set name. Saved templates surface as a Start-from-a-template dropdown at the top of the same tool's form. SENCOs aren't writing 30 unique Behaviour Plans — they're writing 5 archetypes and adapting; this captures their best work for reuse.",
+  "status": "completed",
+  "steps": [
+    "Create client/src/hooks/useToolTemplates.ts — { templates, save, rename, remove, get }. Storage key adaptly_templates_v1_<toolSlug>. Cap 20 templates × 100 KB each. Replaces same-name templates in place.",
+    "Wire useToolTemplates(toolSlug) into AIToolPage.",
+    "Add a 'Save as template' button to the result toolbar that opens a dialog with a name input and existing-templates list (with delete).",
+    "Add a 'Start from a template…' Select dropdown above the form when templates exist. Selecting a template re-populates form values and (optionally) the cached output.",
+    "Show templates in the form area only when none are running already."
+  ],
+  "acceptance_criteria": [
+    "Saving a template captures values + output and persists across reloads.",
+    "Starting from a template re-populates the form (and output, if cached) without an AI call.",
+    "Renaming and deleting templates work from the dialog.",
+    "Templates are scoped per tool (a Behaviour Plan template never appears under Quiz Generator)."
+  ],
+  "verification": [
+    "pnpm run check",
+    "Manual: generate a SmartTargets output, click Save as template, name it 'Y4 PDA — Communication', reload, verify it appears in the dropdown."
+  ],
+  "blocked_reason": null,
+  "findings": "Templates are localStorage-only for now. A future server-backed 'Share with my school' is a one-method extension on top of this hook."
+}

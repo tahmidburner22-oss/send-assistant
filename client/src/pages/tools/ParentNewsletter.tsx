@@ -16,14 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import DOMPurify from "dompurify";
-
-const tones = [
-  { value: "warm", label: "Warm & Friendly" },
-  { value: "professional", label: "Professional & Formal" },
-  { value: "celebratory", label: "Celebratory & Upbeat" },
-  { value: "informative", label: "Informative & Clear" },
-  { value: "supportive", label: "Supportive & Empathetic" },
-];
+import { TONES_NEWSLETTER as tones } from "@/lib/tool-vocab";
 
 const commTypes = [
   { value: "newsletter", label: "Class Newsletter" },

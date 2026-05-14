@@ -1,0 +1,28 @@
+{
+  "id": "FEAT-002",
+  "type": "refactor",
+  "description": "Single source of truth for SEND/year/subject vocabulary. Extract the subject, year-group, SEND-need, target-area, tone, attainment, and pronoun option lists into client/src/lib/tool-vocab.ts and migrate inline definitions in QuizGenerator, SmartTargets, RubricGenerator, LessonPlanner, ExitTicket, ReportComments, ParentNewsletter, and PupilPassport to import from it. Also adds the previously-missing 'Pathological Demand Avoidance' and 'Complex Needs' SEND options.",
+  "status": "completed",
+  "steps": [
+    "Create client/src/lib/tool-vocab.ts exporting SUBJECTS_ALL, SUBJECTS_PRIMARY, SUBJECTS_WITH_OVERALL, YEAR_GROUPS, SEND_NEEDS, TARGET_AREAS, TONES_REPORT, TONES_NEWSLETTER, PRONOUNS, ATTAINMENT_LEVELS — each as { value: string; label: string }[].",
+    "Add 'Pathological Demand Avoidance' and 'Complex Needs' to SEND_NEEDS so they are available everywhere a SEND-need select is rendered.",
+    "Migrate QuizGenerator.tsx to import SUBJECTS_PRIMARY/YEAR_GROUPS via aliased renames (subjects/years).",
+    "Migrate SmartTargets.tsx to import SEND_NEEDS/TARGET_AREAS.",
+    "Migrate RubricGenerator.tsx, LessonPlanner.tsx, ExitTicket.tsx similarly.",
+    "Migrate ReportComments.tsx to use SUBJECTS_WITH_OVERALL (preserves the Overall Progress / Form Tutor option), YEAR_GROUPS, ATTAINMENT_LEVELS, TONES_REPORT.",
+    "Migrate ParentNewsletter.tsx to use TONES_NEWSLETTER.",
+    "Migrate PupilPassport.tsx to use SEND_NEEDS."
+  ],
+  "acceptance_criteria": [
+    "tool-vocab.ts is the only place subject/year/SEND-need lists are defined.",
+    "Adding a new SEND need requires a single edit in tool-vocab.ts.",
+    "Existing tool behaviour is unchanged for users.",
+    "TypeScript syntax check passes on every migrated tool."
+  ],
+  "verification": [
+    "pnpm run check",
+    "Visual inspection of each migrated tool's form."
+  ],
+  "blocked_reason": null,
+  "findings": "Verified by --noResolve TS syntax checks on all migrated tools (zero new errors versus main). No build/test commands available due to INTEGRATIONS_ONLY network mode."
+}
