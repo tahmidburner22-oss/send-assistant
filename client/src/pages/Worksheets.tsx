@@ -32,6 +32,12 @@ import { runFactCheck } from "@/lib/fact-checker";
 // Lexend / Atkinson Hyperlegible / Irlen / KS1-large). Profile id is stored
 // on metadata.accessibilityProfile so it follows the worksheet to print/PDF.
 import { DEFAULT_A11Y_PROFILES, getProfileById as getA11yProfileById, buildAccessibilityProfileCss as buildA11yProfileCss, ACTIVE_A11Y_PROFILE_KEY } from "@/lib/accessibility-profiles";
+// FEAT-005: EHCP/IEP evidence tagger + export pack. buildEvidenceLinks
+// auto-derives questionRef → outcome mappings from a worksheet + (optional)
+// pupil. buildEvidencePackHtml composes the printable annual-review pack.
+import { buildEvidenceLinks, buildEvidencePackHtml } from "@/lib/evidence-tagger";
+import { buildPupilContext } from "@/lib/pupil-context";
+import PupilContextPicker from "@/components/PupilContextPicker";
 import { runWorksheetPipeline } from "@/lib/engines/pipeline";
 import { applySEND } from "@/lib/engines/adaptationEngine";
 // examPaperBuilder is dynamically imported inside handlers to avoid loading the large question bank on initial page load
@@ -473,7 +479,7 @@ function isUnresolvedDiagramSection(section: any): boolean {
 // ─── Main Component ──────────────────────────────────────────────────────────
 export default function Worksheets() {
   const [location] = useLocation();
-  const { saveWorksheet, updateWorksheet, deleteWorksheet, worksheetHistory, children, assignWork, colorOverlay, setColorOverlay, refreshData, user } = useApp();
+  const { saveWorksheet, updateWorksheet, deleteWorksheet, worksheetHistory, children, assignWork, colorOverlay, setColorOverlay, refreshData, user, school } = useApp();
   const isPlatformAdmin = user?.email === "admin@adaptly.co.uk" || user?.email === "admin@sendassistant.app";
   const { preferences } = useUserPreferences();
   const showLibraryTab = preferences.showWorksheetLibrary === true;
@@ -653,6 +659,10 @@ export default function Worksheets() {
   const [activeA11yProfileId, setActiveA11yProfileId] = useState<string>(() => {
     try { return localStorage.getItem(ACTIVE_A11Y_PROFILE_KEY) || "standard"; } catch { return "standard"; }
   });
+  // FEAT-005: Pupil-context picker — selects a pupil to inject EHCP/IEP
+  // outcomes into the prompt and auto-tag evidenceLinks on generation.
+  const [pupilContextChildId, setPupilContextChildId] = useState<string>("");
+  const [usePupilContext, setUsePupilContext] = useState<boolean>(false);
   const [editMode, setEditMode] = useState(false);
   const [hiddenSections, setHiddenSections] = useState<Set<number>>(new Set());
   const [hideHeader, setHideHeader] = useState(false);
@@ -1276,6 +1286,18 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
       toast.error("Please fill in Subject, Year Group, and Topic.");
       return;
     }
+    // FEAT-005: prepend pupil-context block to the AI prompt's additionalInstructions
+    // when the teacher has explicitly opted in. We only do this for the AI generation
+    // path — library lookups stay vanilla (the library is not pupil-aware).
+    const selectedPupil = (usePupilContext && pupilContextChildId)
+      ? children.find(c => c.id === pupilContextChildId) || null
+      : null;
+    const pupilBlock = selectedPupil
+      ? buildPupilContext(selectedPupil).promptBlock
+      : "";
+    const additionalInstructionsForAI = pupilBlock
+      ? `${pupilBlock}\n\n${additionalInstructions || ""}`.trim()
+      : additionalInstructions;
     setLoading(true);
     setGenerationStatus("Checking worksheet library...");
     setEditedSections({});
@@ -1497,7 +1519,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
           examBoard: examBoard !== "none" ? examBoard : undefined,
           includeAnswers,
           examStyle: false, // Generate normal structure — we'll inject real exam questions
-          additionalInstructions,
+          additionalInstructions: additionalInstructionsForAI,
           isRevisionMat,
           generateDiagram: false, // No diagram in exam mode
           worksheetLength,
@@ -1541,7 +1563,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
             examBoard: examBoard !== "none" ? examBoard : undefined,
             includeAnswers,
             examStyle: true,
-            additionalInstructions,
+            additionalInstructions: additionalInstructionsForAI,
             isRevisionMat,
             generateDiagram: false,
             worksheetLength,
@@ -1566,7 +1588,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
           examBoard: examBoard !== "none" ? examBoard : undefined,
           includeAnswers,
           examStyle,
-          additionalInstructions,
+          additionalInstructions: additionalInstructionsForAI,
           isRevisionMat,
           generateDiagram,
           worksheetLength,
@@ -1601,7 +1623,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
             difficulty,
             examBoard: examBoard !== "none" ? examBoard : undefined,
             includeAnswers,
-            additionalInstructions,
+            additionalInstructions: additionalInstructionsForAI,
             readingAge: readingAge || undefined,
             recallTopic: (selectedSections.includes('retrieval') ? (recallTopic.trim() || topic) : recallTopic.trim()) || undefined,
             examStyle,
@@ -1626,7 +1648,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                 examBoard: examBoard !== "none" ? examBoard : undefined,
                 includeAnswers,
                 examStyle,
-                additionalInstructions,
+                additionalInstructions: additionalInstructionsForAI,
                 isRevisionMat,
                 generateDiagram: false,
                 worksheetLength,
@@ -1658,7 +1680,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
       }
     } else {
       await new Promise(r => setTimeout(r, 800));
-      generatedWs = generateWorksheet({ subject, topic, yearGroup, sendNeed: sendNeed || undefined, difficulty, examBoard, includeAnswers, additionalInstructions });
+      generatedWs = generateWorksheet({ subject, topic, yearGroup, sendNeed: sendNeed || undefined, difficulty, examBoard, includeAnswers, additionalInstructions: additionalInstructionsForAI });
       toast.success("Lesson generated!");
     }
 
@@ -1740,6 +1762,24 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
       setHiddenSections(new Set());
       setHideHeader(false);
       setDiffVersions({});
+      // FEAT-005: Auto-tag evidence links so the worksheet can be exported in
+      // an EHCP/IEP evidence pack later. If no pupil is selected we still tag
+      // NC references (so a SENCO can match outcomes manually post-hoc).
+      try {
+        const evidenceLinks = buildEvidenceLinks({
+          sections: (generatedWs.sections || []) as any[],
+          subject,
+          topic,
+          yearGroup,
+          child: selectedPupil,
+        });
+        if (evidenceLinks.length > 0) {
+          (generatedWs as any).metadata = { ...(generatedWs.metadata || {}), evidenceLinks };
+          setGenerated((prev: any) => prev ? { ...prev, metadata: { ...(prev.metadata || {}), evidenceLinks } } : prev);
+        }
+      } catch (evidenceErr) {
+        console.warn('[evidence-tagger] non-fatal:', evidenceErr instanceof Error ? evidenceErr.message : evidenceErr);
+      }
       // FEAT-010: stamp the active accessibility profile on the worksheet so
       // it follows through to print/PDF/share without requiring teachers to
       // re-pick it. Doesn't override an explicit per-worksheet profile if one
@@ -1811,7 +1851,12 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
         examBoard: ws.metadata?.examBoard,
         content, teacherContent, rating: 0, overlay: colorOverlay,
         sections: sectionsToSave,
-        metadata: (ws.metadata || {}) as any,
+        metadata: {
+          ...(ws.metadata || {}),
+          // FEAT-005: stamp the pupil for which this was generated so the
+          // evidence-pack export can find it later.
+          pupilContextChildId: selectedPupil ? selectedPupil.id : undefined,
+        } as any,
         sourceLibraryId: (ws as any).sourceLibraryId,
         sourceCanonicalTopicKey: (ws as any).sourceCanonicalTopicKey,
         isAI: isAIWorksheet(ws),
@@ -3542,6 +3587,18 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                     </div>
                   )}
                 </div>
+                {/* FEAT-005: Pupil context picker — selects a pupil so the
+                 * worksheet can carry EHCP/IEP evidence links + (optionally)
+                 * inject pupil-level records into the AI prompt. */}
+                {children.length > 0 && (
+                  <PupilContextPicker
+                    children={children}
+                    selectedId={pupilContextChildId}
+                    onSelect={setPupilContextChildId}
+                    injectRecords={usePupilContext}
+                    onToggleInject={setUsePupilContext}
+                  />
+                )}
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
                     <Label className="text-xs font-medium">Subject *</Label>
@@ -4909,6 +4966,64 @@ ${s.content}`).join("\n\n"),
                 </span>
               )}
             </Button>
+            {/* FEAT-005: SENCO evidence-pack export — gated on a selected pupil */}
+            {pupilContextChildId && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const child = children.find(c => c.id === pupilContextChildId);
+                  if (!child) { toast.error("Pupil not found"); return; }
+                  // Aggregate worksheetHistory for this pupil (any worksheet whose
+                  // sendNeed matches the pupil OR that was generated with this pupil
+                  // selected as context, i.e. has pupilContextChildId in metadata).
+                  const matched = worksheetHistory.filter((w: any) => {
+                    if (w?.metadata?.pupilContextChildId === child.id) return true;
+                    // Otherwise include worksheets whose sendNeed/yearGroup match
+                    if (w?.sendNeed && child.sendNeed && w.sendNeed === child.sendNeed) return true;
+                    return false;
+                  });
+                  // Also include the live `generated` worksheet so a teacher can
+                  // export immediately without saving first.
+                  const allForPupil = generated && (generated.metadata as any)?.evidenceLinks
+                    ? [
+                        ...matched,
+                        {
+                          id: "live",
+                          title: generated.title,
+                          createdAt: new Date().toISOString(),
+                          subject: (generated.metadata as any)?.subject,
+                          topic: (generated.metadata as any)?.topic,
+                          yearGroup: (generated.metadata as any)?.yearGroup,
+                          metadata: generated.metadata,
+                          sections: generated.sections as any,
+                        },
+                      ]
+                    : matched;
+                  if (allForPupil.length === 0) {
+                    toast.warning("No worksheets with evidence links found for this pupil yet — generate one with this pupil selected.");
+                    return;
+                  }
+                  const html = buildEvidencePackHtml({
+                    child,
+                    worksheets: allForPupil as any,
+                    schoolName: school?.name,
+                  });
+                  const popup = window.open("", "_blank", "width=900,height=900,scrollbars=yes,resizable=yes");
+                  if (!popup) {
+                    toast.error("Allow pop-ups to download the evidence pack.");
+                    return;
+                  }
+                  popup.document.open();
+                  popup.document.write(html);
+                  popup.document.close();
+                  toast.success(`Evidence pack opened for ${child.name} — print or save as PDF.`);
+                }}
+                title="Export an EHCP/IEP evidence pack for this pupil — opens a printable PDF"
+              >
+                <FileDown className="w-3.5 h-3.5 mr-1.5" /> Evidence Pack
+              </Button>
+            )}
             <Button
               variant="outline"
               size="sm"

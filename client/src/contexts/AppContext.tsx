@@ -39,6 +39,14 @@ export interface Child {
   parentEmail?: string; parentName?: string;
   assignments: Assignment[]; submissions: Submission[];
   timetable?: TimetableLesson[];
+  // FEAT-005: Optional EHCP / IEP outcome strings for evidence tagging.
+  // School-authored, free-text (no PII beyond what's already on the pupil
+  // record). buildPupilContext + buildEvidenceLinks read these when present;
+  // the worksheet generator anonymises them before sending to the AI.
+  ehcpOutcomes?: string[];
+  iepTargets?: string[];
+  /** Recent misconceptions surfaced by FEAT-001 marking (for the closed-loop pupil model). */
+  recentMisconceptions?: string[];
 }
 
 export type AttendanceStatus = "attended" | "absent" | "late" | "other" | "not-recorded";

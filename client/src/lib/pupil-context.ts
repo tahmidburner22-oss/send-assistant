@@ -69,6 +69,22 @@ export function buildPupilContext(child: Child): PupilContextSummary {
     }
   }
 
+  // FEAT-005: surface EHCP / IEP outcomes when present so the AI can target them.
+  // FEAT-003: surface recent misconceptions from the marking pipeline so the
+  // generator can adapt the next worksheet to close known gaps.
+  if (Array.isArray(child.ehcpOutcomes) && child.ehcpOutcomes.length > 0) {
+    lines.push(`- EHCP outcomes (annual review):`);
+    for (const o of child.ehcpOutcomes.slice(0, 5)) lines.push(`  • ${String(o).slice(0, 160)}`);
+  }
+  if (Array.isArray(child.iepTargets) && child.iepTargets.length > 0) {
+    lines.push(`- IEP / SMART targets:`);
+    for (const t of child.iepTargets.slice(0, 5)) lines.push(`  • ${String(t).slice(0, 160)}`);
+  }
+  if (Array.isArray(child.recentMisconceptions) && child.recentMisconceptions.length > 0) {
+    lines.push(`- Misconceptions surfaced by recent marking (close these):`);
+    for (const m of child.recentMisconceptions.slice(0, 5)) lines.push(`  • ${String(m).slice(0, 100)}`);
+  }
+
   if (recentAssignments.length === 0 && recentSubmissions.length === 0) {
     lines.push(`- No prior assignments or observations on file.`);
   }
