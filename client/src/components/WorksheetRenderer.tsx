@@ -12,6 +12,7 @@ import React, { forwardRef, useState, useCallback } from "react";
 import { Eye, EyeOff, Pencil } from "lucide-react";
 import { getSendFormatting } from "@/lib/send-data";
 import { extractDiagramSpec, stripDiagramMarker } from "@/lib/ai";
+import { getA11yProfileById, buildA11yProfileCss } from "@/lib/accessibility-profiles";
 import SVGDiagram from "@/components/SVGDiagram";
 import katex from "katex";
 import "katex/dist/katex.min.css";
@@ -4106,12 +4107,18 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
   const hasOverlay = overlayColor && overlayColor !== "white" && overlayColor !== "#ffffff"
     && overlayColor !== "transparent";
 
+  // ── Phase 4 / FEAT-010 — accessibility profile ──────────────────────────
+  // Read from worksheet.metadata.accessibilityProfile if set; fall back to "standard".
+  const a11yProfileId = (worksheet.metadata as any)?.accessibilityProfile || "standard";
+  const a11yProfile = a11yProfileId !== "standard" ? getA11yProfileById(a11yProfileId) : null;
+  const a11yProfileCss = a11yProfile ? buildA11yProfileCss(a11yProfile) : "";
+
   const worksheetCard = (
     <div
       ref={ref}
-      className="worksheet-print-root"
+      className={`worksheet-print-root ws-a11y-${a11yProfileId}`}
       style={{
-        backgroundColor: overlayColor || "white",
+        backgroundColor: a11yProfile?.background || overlayColor || "white",
         fontFamily: fmt.fontFamily,
         fontSize: `${fmt.fontSize}px`,
         lineHeight: fmt.lineHeight,
@@ -4129,6 +4136,9 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
         } : {}),
       }}
     >
+      {a11yProfileCss && (
+        <style>{a11yProfileCss}</style>
+      )}
       {/* Colour overlay — sits above all section backgrounds, covers all text boxes */}
       {hasOverlay && (
         <div
