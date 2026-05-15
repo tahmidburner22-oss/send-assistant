@@ -26,6 +26,11 @@ import { enforceSendAdaptations } from './sendEnforcer';
 // the LLM slipped past the prompt rules.
 import { runWorksheetPostValidators } from './worksheetPostValidator';
 
+// ─── Phase 4 — Misconception bank ──────────────────────────────────────────
+// UK-curriculum misconception library. Injected into the worksheet system
+// prompt so questions diagnose common pupil errors, not just test recall.
+import { formatMisconceptionsForPrompt, getMisconceptionsForTopic } from './misconception-bank';
+
 // ─── Built-in keys — hardcoded server-side fallback (always available) ────────
 // These are the admin keys used as fallback when no user key is provided.
 // The server-side /api/ai/generate endpoint uses these from env vars directly.
@@ -570,6 +575,8 @@ export interface AIWorksheetResult {
     totalMarks?: number;
     estimatedTime?: string;
     adaptations: string[];
+    /** Phase 4 / FEAT-002 — misconception IDs the AI deliberately targeted in this worksheet. */
+    misconceptionsTargeted?: string[];
   };
   isAI: true;
   provider?: string;
@@ -1996,6 +2003,18 @@ SUBJECT-SPECIFIC RULES — ${params.subject.toUpperCase()}:
 - Teacher Key MUST include model answers with mark allocations and acceptable alternatives.`;
     })();
 
+    // ── Phase 4 / FEAT-002 — misconception-aware question design ───────────
+    // Pull curated UK misconceptions matching this subject + topic + year group
+    // and inject them as a mandatory rule block. The AI must echo back which
+    // misconception IDs it targeted in metadata.misconceptionsTargeted, which
+    // we surface in the teacher view of the worksheet.
+    const misconceptionBlock = formatMisconceptionsForPrompt({
+      subject: params.subject,
+      topic: params.topic,
+      yearGroup: params.yearGroup,
+      limit: 5,
+    });
+
     const structuredSystem = `You are an expert UK teacher creating a professional, print-ready worksheet. You respond with valid raw JSON only — no markdown, no code blocks, no HTML. Every rule below is mandatory.
 SUBJECT TYPE: ${isSTEM ? 'STEM' : 'HUMANITIES'} | SUBJECT: ${params.subject}
 ${readingAgeNote}
@@ -2004,6 +2023,7 @@ ${subjectSpecNote}
 ${tierNote}
 ${ksGcseNote}
 ${subjectSpecificRules}
+${misconceptionBlock}
 QUALITY STANDARD: Every question must be fully usable — no placeholders, no ellipses, no unfinished sentences. Use real numbers, real contexts. Textbook quality. Every question must be at the correct curriculum level for ${params.yearGroup || 'the year group'} — GCSE/KS3/KS4 standard as appropriate.
 ${specExamples ? `\n${specExamples}\n` : ''}
 CRITICAL SEND SEPARATION RULE — READ CAREFULLY:
@@ -2257,7 +2277,14 @@ Return EXACTLY this JSON (raw JSON only, no markdown fences):
   "subtitle": "${params.yearGroup} | ${subjectDisplay} | ${params.difficulty || 'Standard'}",
   "sections": [
     ${structuredSections.join(',\n    ')}
-  ]
+  ],
+  "metadata": {
+    "subject": "${params.subject}",
+    "topic": "${params.topic}",
+    "yearGroup": "${params.yearGroup || ''}",
+    "difficulty": "${params.difficulty || 'standard'}",
+    "misconceptionsTargeted": ["array of misconception IDs from the MISCONCEPTION-AWARE block above that you actually designed distractors for, e.g. m-frac-01"]
+  }
 }`;
 
     const { text: structuredText, provider: structuredProvider } = await callAI(structuredSystem, structuredUser, 6500);
@@ -2277,6 +2304,15 @@ Return EXACTLY this JSON (raw JSON only, no markdown fences):
         ...s,
         title: typeof s.title === 'string' ? s.title.replace(/\*\*(.+?)\*\*/g, '$1').replace(/\*/g, '').trim() : s.title,
         content: typeof s.content === 'string' ? s.content.replace(/\*\*(.+?)\*\*/g, '$1').replace(/\*/g, '').trim() : s.content,
+      }));
+      // ── Phase 4 / FEAT-002 — strip [m-xxx] misconception ID markers from
+      // any visible content (the prompt forbids them in question text but
+      // some models still leak them; defensive strip).
+      structuredJson.sections = structuredJson.sections.map((s: any) => ({
+        ...s,
+        content: typeof s.content === 'string'
+          ? s.content.replace(/\s*\[m-[a-z0-9-]+\]\s*/gi, ' ').replace(/\s{2,}/g, ' ').trim()
+          : s.content,
       }));
       // Post-parse: inject pre-fetched svg into diagram sections that have no imageUrl
       // (svg was not embedded in the prompt to avoid token bloat)
@@ -2300,6 +2336,35 @@ Return EXACTLY this JSON (raw JSON only, no markdown fences):
           sendNeed: params.sendNeed || undefined,
         };
       }
+      // ── Phase 4 / FEAT-002 — capture & validate misconceptionsTargeted ──
+      // The AI is asked to return an array of misconception IDs it targeted.
+      // We sanity-check those IDs against the bank so only valid ones survive.
+      // If the AI omitted the field, fall back to the IDs we asked for.
+      try {
+        const candidateIds = getMisconceptionsForTopic({
+          subject: params.subject,
+          topic: params.topic,
+          yearGroup: params.yearGroup,
+          limit: 5,
+        }).map((e) => e.id);
+        const candidateSet = new Set(candidateIds);
+        const raw: unknown = structuredJson.metadata?.misconceptionsTargeted;
+        let valid: string[] = [];
+        if (Array.isArray(raw)) {
+          valid = raw
+            .filter((x: unknown): x is string => typeof x === 'string')
+            .map((x) => x.trim().toLowerCase())
+            .filter((x) => candidateSet.has(x));
+        }
+        if (valid.length === 0 && candidateIds.length > 0) {
+          // The AI did not echo back IDs — record what we asked it to target
+          // so the teacher view still surfaces useful information.
+          valid = candidateIds;
+        }
+        if (valid.length > 0) {
+          structuredJson.metadata.misconceptionsTargeted = valid;
+        }
+      } catch { /* never block worksheet generation on misconception metadata */ }
       // ── Post-validator: deterministic fixes for content bugs flagged in
       // live scrutiny reviews (multi-tick MCQ, duplicate word bank, foreign
       // diagrams on science sheets, year-group drift, overlong worked
