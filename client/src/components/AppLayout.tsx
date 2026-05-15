@@ -7,6 +7,8 @@ import { useUserPreferences, COLOUR_THEMES } from "@/contexts/UserPreferencesCon
 import { motion, AnimatePresence } from "framer-motion";
 import CommandPalette from "./CommandPalette";
 import FeedbackWidget from "./FeedbackWidget";
+import ApiKeyBanner from "./ApiKeyBanner";
+import DSLBanner from "./DSLBanner";
 import {
   Home, Brain, GraduationCap, Pencil, MessageCircle, Monitor,
   LogOut, Menu, X, Shield, Settings, ExternalLink,
@@ -202,6 +204,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen overflow-x-hidden" style={wallpaperStyle}>
       <CommandPalette />
       <FeedbackWidget />
+      {/* Improvement #2: Persistent banner when no AI keys configured */}
+      <ApiKeyBanner />
+      {/* Improvement #6: DSL unconfirmed banner */}
+      <DSLBanner />
 
       <header
         className="sticky top-0 z-40 backdrop-blur-md border-b"

@@ -108,6 +108,7 @@ export const auth = {
 // ── Schools ───────────────────────────────────────────────────────────────────
 export const schools = {
   onboard: (data: any) => apiFetch<any>("/schools/onboard", { method: "POST", body: JSON.stringify(data) }),
+  urnLookup: (urn: string) => apiFetch<{ name: string; address: string; phase: string; domain: string }>(`/schools/urn-lookup/${urn}`),
   mySchool: () => apiFetch<any>("/schools/my"),
   updateSchool: (data: any) => apiFetch<any>("/schools/my", { method: "PUT", body: JSON.stringify(data) }),
   listAll: () => apiFetch<any[]>("/schools"),

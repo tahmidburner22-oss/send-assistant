@@ -222,6 +222,8 @@ CREATE TABLE IF NOT EXISTS schools (
   dsl_email TEXT,
   dsl_phone TEXT,
   onboarding_complete INTEGER NOT NULL DEFAULT 0,
+  dsl_confirmed INTEGER NOT NULL DEFAULT 0,
+  dsl_confirm_token TEXT,
   trial_ends_at TIMESTAMPTZ,
   licence_type TEXT DEFAULT 'trial',
   stripe_customer_id TEXT UNIQUE,
@@ -903,6 +905,9 @@ export async function initDb() {
     `DO $$ BEGIN ALTER TABLE pupil_documents ADD COLUMN updated_by_role TEXT NOT NULL DEFAULT 'parent'; EXCEPTION WHEN duplicate_column THEN NULL; END $$`,
     `DO $$ BEGIN ALTER TABLE pupil_documents ADD COLUMN created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(); EXCEPTION WHEN duplicate_column THEN NULL; END $$`,
     `DO $$ BEGIN ALTER TABLE pupil_documents ADD COLUMN updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(); EXCEPTION WHEN duplicate_column THEN NULL; END $$`,
+    // Improvement #6: DSL confirmation columns
+    `DO $$ BEGIN ALTER TABLE schools ADD COLUMN dsl_confirmed INTEGER NOT NULL DEFAULT 0; EXCEPTION WHEN duplicate_column THEN NULL; END $$`,
+    `DO $$ BEGIN ALTER TABLE schools ADD COLUMN dsl_confirm_token TEXT; EXCEPTION WHEN duplicate_column THEN NULL; END $$`,
     `CREATE INDEX IF NOT EXISTS idx_assignments_source_subject ON assignments(source, scheduler_subject)`,
     `CREATE INDEX IF NOT EXISTS idx_pupil_documents_pupil ON pupil_documents(pupil_id)`,
     `CREATE INDEX IF NOT EXISTS idx_pupil_documents_school ON pupil_documents(school_id)`,
