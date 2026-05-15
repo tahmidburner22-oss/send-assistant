@@ -98,6 +98,7 @@ const Scheduler = lazy(() => import("./pages/Scheduler"));
 const SkillLadder = lazy(() => import("./pages/SkillLadder"));
 const DailyWork = lazy(() => import("./pages/DailyWork"));
 const PupilPassportShare = lazy(() => import("./pages/PupilPassportShare"));
+const PupilCompanion = lazy(() => import("./pages/PupilCompanion"));
 
 function PageLoader() {
   // Skeleton shell — feels closer to the real layout than a centred spinner,
@@ -296,6 +297,7 @@ function Router() {
         <Route path="/quiz-join/:code" component={QuizJoin} />
         <Route path="/shared/:token" component={SharedWorksheet} />
         <Route path="/share/passport/:token" component={PupilPassportShare} />
+        <Route path="/share/companion/:token" component={PupilCompanion} />
         <Route path="/privacy" component={PrivacyPolicy} />
         <Route path="/terms" component={Terms} />
         <Route path="/cookie-policy" component={CookiePolicy} />

@@ -86,6 +86,17 @@ export const WorksheetOutputSchema = z.object({
     provider: z.string().optional(),
     /** Phase 4 / FEAT-002 — misconception IDs the AI deliberately targeted. */
     misconceptionsTargeted: z.array(z.string()).optional(),
+    /** Phase 4 / FEAT-005 — three-step hint ladder per question id (e.g. s0q3). */
+    hintLadders: z.array(z.object({
+      questionId: z.string(),
+      question: z.string(),
+      hints: z.tuple([z.string(), z.string(), z.string()]),
+    })).optional(),
+    /** Phase 4 / FEAT-005 — token + expiry for the issued /share/companion/:token link. */
+    companionShare: z.object({
+      token: z.string(),
+      expiresAt: z.string(),
+    }).optional(),
   }).optional(),
   isAI: z.boolean().optional(),
   provider: z.string().optional(),

@@ -6792,6 +6792,79 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
         </div>
       )}
 
+      {/* ── Phase 4 / FEAT-005 — teacher-only hint-ladder preview ── */}
+      {isTeacherView &&
+        Array.isArray((worksheet.metadata as any)?.hintLadders) &&
+        ((worksheet.metadata as any).hintLadders as Array<{ questionId: string; question: string; hints: [string, string, string] }>).length > 0 && (
+        <div
+          className="ws-teacher-section ws-no-print-on-student"
+          style={{
+            marginTop: "12px",
+            padding: "10px 14px",
+            background: "#ecfdf5",
+            border: "1.5px solid #10b981",
+            borderRadius: "6px",
+            fontSize: `${fmt.fontSize - 2}px`,
+            fontFamily: fmt.fontFamily,
+            color: "#064e3b",
+          }}
+        >
+          <div style={{ fontWeight: 700, marginBottom: "4px", display: "flex", alignItems: "center", gap: "6px" }}>
+            <span aria-hidden>📱</span>
+            <span>Pupil-mode hint ladder (teacher reference)</span>
+          </div>
+          <div style={{ fontSize: "11px", color: "#065f46", marginBottom: "8px", fontStyle: "italic" }}>
+            Pupils tap "Show next hint" to escalate. Hints stop before the answer.
+          </div>
+          <ol style={{ margin: 0, paddingLeft: "20px", lineHeight: 1.45 }}>
+            {((worksheet.metadata as any).hintLadders as Array<{ questionId: string; question: string; hints: [string, string, string] }>).slice(0, 8).map((l) => (
+              <li key={l.questionId} style={{ marginBottom: "6px" }}>
+                <div style={{ fontWeight: 600, marginBottom: "2px" }}>{l.question.slice(0, 120)}</div>
+                <div style={{ fontSize: "11px" }}>
+                  <span style={{ color: "#92400e" }}>Nudge:</span> {l.hints[0]}<br />
+                  <span style={{ color: "#9a3412" }}>Strategy:</span> {l.hints[1]}<br />
+                  <span style={{ color: "#9f1239" }}>Worked:</span> {l.hints[2]}
+                </div>
+              </li>
+            ))}
+          </ol>
+        </div>
+      )}
+
+      {/* ── Phase 4 / FEAT-005 — printable Pupil-Companion QR badge ── */}
+      {(worksheet.metadata as any)?.companionShare?.token && (
+        <div
+          style={{
+            marginTop: "10px",
+            padding: "8px 12px",
+            background: "#f0fdf4",
+            border: "1.5px dashed #10b981",
+            borderRadius: "6px",
+            fontSize: `${Math.max(10, fmt.fontSize - 3)}px`,
+            fontFamily: fmt.fontFamily,
+            color: "#065f46",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: "8px",
+          }}
+        >
+          <div>
+            <span style={{ fontWeight: 700 }}>Pupil mode:</span> scan the QR card from Pupil mode →
+            Print A6 card, or open{" "}
+            <span style={{ fontFamily: "monospace", fontSize: "11px" }}>
+              /share/companion/{((worksheet.metadata as any).companionShare.token as string).slice(0, 6)}…
+            </span>
+          </div>
+          <span style={{ fontSize: "10px", color: "#059669" }}>
+            Expires{" "}
+            {new Date(
+              (worksheet.metadata as any).companionShare.expiresAt,
+            ).toLocaleDateString("en-GB")}
+          </span>
+        </div>
+      )}
+
       {/* ── Footer ── */}
       {isRevisionMat ? (
         <div style={{ marginTop: "6px", padding: "4px 8px", display: "flex", justifyContent: "space-between", fontSize: "9px", color: "#9ca3af", fontFamily: fmt.fontFamily }}>
