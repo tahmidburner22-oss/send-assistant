@@ -6677,6 +6677,77 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
         );
       })}
 
+      {/* ── Phase 4 / FEAT-008 — teacher-only fact-check + citations ── */}
+      {isTeacherView && (worksheet.metadata as any)?.factCheck && (() => {
+        const fc = (worksheet.metadata as any).factCheck as {
+          status?: string;
+          summary?: string;
+          citations?: Array<{ sectionIndex: number; claim: string; sourceId: string; detail?: string }>;
+          unverified?: Array<{ sectionIndex: number; claim: string; reason: string }>;
+        };
+        const sourceNames: Record<string, string> = {
+          "aqa": "AQA",
+          "ocr": "OCR",
+          "edexcel": "Pearson Edexcel",
+          "wjec": "WJEC / Eduqas",
+          "ccea": "CCEA",
+          "sqa": "SQA",
+          "national-curriculum": "UK National Curriculum (DfE)",
+          "oak": "Oak National Academy",
+          "bbc-bitesize": "BBC Bitesize",
+          "stem-learning": "STEM Learning",
+          "ncetm": "NCETM",
+        };
+        const hasContent = (fc.citations && fc.citations.length > 0) || (fc.unverified && fc.unverified.length > 0);
+        if (!hasContent) return null;
+        return (
+          <div
+            className="ws-teacher-section ws-no-print-on-student"
+            style={{
+              marginTop: "12px",
+              padding: "10px 14px",
+              background: fc.status === "warnings" ? "#fef3c7" : "#ecfdf5",
+              border: `1.5px solid ${fc.status === "warnings" ? "#d97706" : "#059669"}`,
+              borderRadius: "6px",
+              fontSize: `${fmt.fontSize - 2}px`,
+              fontFamily: fmt.fontFamily,
+              color: fc.status === "warnings" ? "#78350f" : "#064e3b",
+            }}
+          >
+            <div style={{ fontWeight: 700, marginBottom: "6px", display: "flex", alignItems: "center", gap: "6px" }}>
+              <span aria-hidden>{fc.status === "warnings" ? "⚠" : "✓"}</span>
+              <span>Source check (teacher reference)</span>
+            </div>
+            {fc.summary && <div style={{ marginBottom: "6px" }}>{fc.summary}</div>}
+            {fc.citations && fc.citations.length > 0 && (
+              <div style={{ marginBottom: "6px" }}>
+                <div style={{ fontWeight: 600, marginBottom: "2px" }}>Cited:</div>
+                <ul style={{ margin: 0, paddingLeft: "18px", lineHeight: 1.5 }}>
+                  {fc.citations.map((c, i) => (
+                    <li key={i} style={{ marginBottom: "2px" }}>
+                      <span style={{ fontStyle: "italic" }}>"{c.claim}"</span> — {sourceNames[c.sourceId] || c.sourceId}
+                      {c.detail ? ` (${c.detail})` : ""}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {fc.unverified && fc.unverified.length > 0 && (
+              <div>
+                <div style={{ fontWeight: 600, marginBottom: "2px", color: "#92400e" }}>Flagged for review:</div>
+                <ul style={{ margin: 0, paddingLeft: "18px", lineHeight: 1.5 }}>
+                  {fc.unverified.map((u, i) => (
+                    <li key={i} style={{ marginBottom: "2px" }}>
+                      <span style={{ fontStyle: "italic" }}>"{u.claim}"</span> — {u.reason}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        );
+      })()}
+
       {/* ── Phase 4 / FEAT-002 — teacher-only misconception callout ── */}
       {isTeacherView &&
         Array.isArray((worksheet.metadata as any)?.misconceptionsTargeted) &&

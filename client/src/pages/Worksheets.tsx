@@ -23,6 +23,7 @@ import { worksheetBank, type BankWorksheet } from "@/lib/worksheet-bank";
 import { getSyllabusTopics, type SyllabusTopic } from "@/lib/syllabus-data";
 import { getSubtopics } from "@/lib/subtopics-data";
 import { aiGenerateWorksheet, aiEditSection, aiScaffoldExistingWorksheet, aiDifferentiateExistingWorksheet, parseNaturalLanguageInput, aiScenarioSwap, aiAdjustReadingLevel } from "@/lib/ai";
+import { runFactCheck } from "@/lib/fact-checker";
 import { runWorksheetPipeline } from "@/lib/engines/pipeline";
 import { applySEND } from "@/lib/engines/adaptationEngine";
 // examPaperBuilder is dynamically imported inside handlers to avoid loading the large question bank on initial page load
@@ -1724,6 +1725,28 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
       setHiddenSections(new Set());
       setHideHeader(false);
       setDiffVersions({});
+      // ── Phase 4 / FEAT-008 — non-blocking citation pass ──────────────────
+      // Run a separate AI call against the UK whitelist to tag claims with
+      // citations and flag unverified content. Fires-and-forgets so the UI
+      // renders the worksheet immediately, then patches metadata.factCheck
+      // when the result returns. Failures are silent (best-effort enrichment).
+      try {
+        const wsForCheck = generatedWs;
+        runFactCheck({
+          worksheet: {
+            title: wsForCheck.title,
+            metadata: wsForCheck.metadata as any,
+            sections: (wsForCheck.sections as any) || [],
+          },
+        }).then((factCheck) => {
+          setGenerated((prev: any) => {
+            if (!prev) return prev;
+            // Only attach if the user is still viewing the same worksheet
+            if (prev !== wsForCheck && prev.title !== wsForCheck.title) return prev;
+            return { ...prev, metadata: { ...(prev.metadata || {}), factCheck } };
+          });
+        }).catch(() => { /* best-effort */ });
+      } catch { /* best-effort */ }
       // Show quality warnings if detected
       const qIssues = (generatedWs.metadata as any)?.qualityIssues;
       if (qIssues && qIssues.length > 0) {
