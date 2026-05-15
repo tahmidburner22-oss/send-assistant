@@ -6712,6 +6712,66 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
         </div>
       )}
 
+      {/* ── FEAT-008: Citations footnote (visible to everyone) ──
+       * If the fact-checker attached citations to metadata, render them as a
+       * numbered Sources block at the bottom of the worksheet. Pupils + parents
+       * see the same trust signal teachers do. Designed to print.
+       */}
+      {Array.isArray((worksheet.metadata as any)?.citations) && ((worksheet.metadata as any).citations as Array<any>).length > 0 && !isRevisionMat && (
+        <div className="ws-citations" style={{
+          marginTop: "14px",
+          padding: "10px 14px",
+          background: "#f8fafc",
+          border: "1px solid #cbd5e1",
+          borderRadius: "6px",
+          fontFamily: fmt.fontFamily,
+          fontSize: `${Math.max(fmt.fontSize - 3, 10)}px`,
+          color: "#334155",
+        }}>
+          <div style={{ fontWeight: 700, marginBottom: "4px", color: "#0f172a", display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
+            <span>Sources</span>
+            {isTeacherView && (worksheet.metadata as any)?.factCheck && (
+              <span style={{
+                fontSize: "0.85em",
+                fontWeight: 600,
+                background: ((worksheet.metadata as any).factCheck.flaggedCount === 0) ? "#dcfce7" : "#fef9c3",
+                color: ((worksheet.metadata as any).factCheck.flaggedCount === 0) ? "#166534" : "#854d0e",
+                padding: "1px 8px",
+                borderRadius: "999px",
+              }}>
+                {(worksheet.metadata as any).factCheck.verifiedCount} verified
+                {(worksheet.metadata as any).factCheck.flaggedCount > 0 && ` · ${(worksheet.metadata as any).factCheck.flaggedCount} flagged`}
+              </span>
+            )}
+          </div>
+          <ol style={{ margin: 0, paddingLeft: "20px" }}>
+            {((worksheet.metadata as any).citations as Array<{ ref: number; claim: string; source: string; url?: string; verified: boolean }>).map((c) => (
+              <li key={c.ref} style={{ marginBottom: "3px", lineHeight: 1.45 }}>
+                <span>{c.claim}</span>
+                <span style={{ color: "#64748b" }}> — </span>
+                {c.url ? (
+                  <a href={c.url} target="_blank" rel="noopener noreferrer" style={{ color: "#2563eb", textDecoration: "underline" }}>
+                    {c.source}
+                  </a>
+                ) : (
+                  <span style={{ color: "#475569", fontWeight: 500 }}>{c.source}</span>
+                )}
+                {!c.verified && isTeacherView && (
+                  <span title="Closest match — not confidently verified" style={{
+                    marginLeft: "6px",
+                    fontSize: "0.85em",
+                    color: "#a16207",
+                    background: "#fef9c3",
+                    padding: "0 5px",
+                    borderRadius: "3px",
+                  }}>flagged</span>
+                )}
+              </li>
+            ))}
+          </ol>
+        </div>
+      )}
+
       {/* ── Footer ── */}
       {isRevisionMat ? (
         <div style={{ marginTop: "6px", padding: "4px 8px", display: "flex", justifyContent: "space-between", fontSize: "9px", color: "#9ca3af", fontFamily: fmt.fontFamily }}>

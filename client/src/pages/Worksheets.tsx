@@ -23,6 +23,11 @@ import { worksheetBank, type BankWorksheet } from "@/lib/worksheet-bank";
 import { getSyllabusTopics, type SyllabusTopic } from "@/lib/syllabus-data";
 import { getSubtopics } from "@/lib/subtopics-data";
 import { aiGenerateWorksheet, aiEditSection, aiScaffoldExistingWorksheet, aiDifferentiateExistingWorksheet, parseNaturalLanguageInput, aiScenarioSwap, aiAdjustReadingLevel } from "@/lib/ai";
+// FEAT-008: Citation-backed verifiable generation. Runs as a non-blocking
+// background pass after the worksheet is generated; on success, appends
+// metadata.citations + metadata.factCheck which the renderer surfaces as a
+// numbered footnote list and a teacher-only "verified" pill.
+import { runFactCheck } from "@/lib/fact-checker";
 import { runWorksheetPipeline } from "@/lib/engines/pipeline";
 import { applySEND } from "@/lib/engines/adaptationEngine";
 // examPaperBuilder is dynamically imported inside handlers to avoid loading the large question bank on initial page load
@@ -1724,6 +1729,46 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
       setHiddenSections(new Set());
       setHideHeader(false);
       setDiffVersions({});
+      // ── FEAT-008: Background citation pass ──────────────────────────────
+      // Runs asynchronously so it doesn't delay the user seeing their
+      // worksheet. On success, patches metadata.citations + metadata.factCheck
+      // into the live `generated` state which triggers the WorksheetRenderer
+      // citations footer to fade in. Silent on failure — worksheet still works.
+      const fcWs = generatedWs;
+      const fcSubject = subject;
+      const fcTopic = topic;
+      const fcYearGroup = yearGroup;
+      void (async () => {
+        try {
+          const fc = await runFactCheck({
+            title: fcWs.title || `${fcSubject} — ${fcTopic}`,
+            subject: fcSubject,
+            topic: fcTopic,
+            yearGroup: fcYearGroup,
+            sections: (fcWs.sections || []).map((s: any) => ({
+              title: s.title,
+              content: s.content,
+              type: s.type,
+              teacherOnly: s.teacherOnly,
+            })),
+          });
+          if (!fc) return;
+          setGenerated((prev: any) => prev ? {
+            ...prev,
+            metadata: {
+              ...(prev.metadata || {}),
+              citations: fc.citations,
+              factCheck: {
+                verifiedCount: fc.verifiedCount,
+                flaggedCount: fc.flaggedCount,
+                ranAt: fc.ranAt,
+              },
+            },
+          } : prev);
+        } catch (fcErr) {
+          console.warn('[fact-check] non-fatal:', fcErr instanceof Error ? fcErr.message : fcErr);
+        }
+      })();
       // Show quality warnings if detected
       const qIssues = (generatedWs.metadata as any)?.qualityIssues;
       if (qIssues && qIssues.length > 0) {
