@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useLocation } from "wouter";
+import { useApp } from "@/contexts/AppContext";
+import { PIPELINES } from "@/lib/pipelines";
 import {
   CommandDialog,
   CommandEmpty,
@@ -15,7 +17,7 @@ import {
   Shield, IdCard, CheckSquare, ShieldAlert, Heart, CalendarDays, Calendar,
   Table2, BookMarked, Ticket, Layers, BookType, ClipboardList,
   Mail, AlignLeft, TrendingUp, MessageSquare, ExternalLink, FileCheck,
-  Map, Gamepad2, UserCog, BarChart2, Lock,
+  Map, Gamepad2, UserCog, BarChart2, Lock, Workflow, Gauge,
 } from "lucide-react";
 
 const hubItems = [
@@ -44,6 +46,10 @@ const coreItems = [
   { path: "/analytics",      label: "Analytics",           icon: BarChart3,   group: "Core", keywords: ["analytics", "stats", "usage", "data", "insights"] },
   { path: "/ideas",          label: "Ideas & Feedback",    icon: Lightbulb,   group: "Core", keywords: ["ideas", "feedback", "suggestions", "feature request"] },
   { path: "/settings",       label: "Settings",            icon: Settings,    group: "Core", keywords: ["settings", "preferences", "account", "school", "logo"] },
+  { path: "/pipelines",      label: "Pipelines",           icon: Workflow,    group: "Core", keywords: ["pipelines", "workflow", "annual review", "report season"] },
+  { path: "/scheduler",      label: "Scheduler",           icon: Calendar,    group: "Core", keywords: ["scheduler", "meetings", "annual review", "deadline", "parent booking"] },
+  { path: "/skill-ladder",   label: "Skill Ladder",        icon: Gauge,       group: "Core", keywords: ["skill", "ladder", "mastery", "progression", "cohort gap"] },
+  { path: "/daily-work",     label: "Daily Adaptive Work", icon: BookMarked,  group: "Core", keywords: ["daily", "adaptive", "work", "pack", "send", "differentiation"] },
 ];
 
 const sendItems = [
@@ -99,6 +105,29 @@ export default function CommandPalette() {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [, setLocation] = useLocation();
+  const { children } = useApp();
+
+  const pupilItems = useMemo(() => (children || []).map(c => ({
+    path: `/pupils/${c.id}`,
+    label: c.name,
+    icon: Users,
+    group: "Pupils",
+    keywords: [c.yearGroup, c.code, ...(c.sendNeeds || []), c.sendNeed].filter(Boolean) as string[],
+  })), [children]);
+
+  const pipelineItems = useMemo(() => PIPELINES.map(p => ({
+    path: `/pipelines/${p.id}`,
+    label: p.label,
+    icon: Workflow,
+    group: "Pipelines",
+    keywords: [p.audience, p.description],
+  })), []);
+
+  const allGroupsRuntime = useMemo(() => [
+    ...(pupilItems.length > 0 ? [{ label: "Pupils", items: pupilItems }] : []),
+    { label: "Pipelines", items: pipelineItems },
+    ...allGroups,
+  ], [pupilItems, pipelineItems]);
 
   useEffect(() => {
     // Listen for keyboard shortcut Ctrl+K / Cmd+K
@@ -134,7 +163,7 @@ export default function CommandPalette() {
       />
       <CommandList>
         <CommandEmpty>No results found for "{query}".</CommandEmpty>
-        {allGroups.map(group => (
+        {allGroupsRuntime.map(group => (
           <CommandGroup key={group.label} heading={group.label}>
             {group.items.map((item) => {
               const Icon = item.icon;

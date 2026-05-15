@@ -51,6 +51,14 @@ import { parseSections, replaceSectionBody, type ParsedSection } from "@/lib/sec
 import { buildPupilContext, pupilToFormValues } from "@/lib/pupil-context";
 import { PupilContextPicker } from "@/components/PupilContextPicker";
 import { BatchToolRunner, type BatchToolSpec } from "@/components/BatchToolRunner";
+import { usePupilScope } from "@/contexts/PupilScopeContext";
+import { recordEvent } from "@/lib/timeline-events";
+import { getToolBySlug } from "@/lib/tool-registry";
+import SendToMenu from "@/components/SendToMenu";
+import { consumeHandoff } from "@/components/SendToMenu";
+import ProvenanceCard, { type ProvenanceFacts } from "@/components/ProvenanceCard";
+import { estimateTokens, estimateCost, logGeneration } from "@/lib/credit-meter";
+import { cacheGeneration, isOnline, enqueueGeneration } from "@/lib/offline-queue";
 
 export interface AIToolField {
   id: string;
@@ -357,6 +365,41 @@ export default function AIToolPage({
   const [selectedPupilId,    setSelectedPupilId]    = useState("");
   const [injectPupilRecords, setInjectPupilRecords] = useState(false);
 
+  // ── Connectivity: read/write the global pupil scope ───────────────────────
+  const { pupilId: globalPupilId, setPupilId: setGlobalPupilId } = usePupilScope();
+  // Sync global → local on mount and when scope changes elsewhere.
+  useEffect(() => {
+    if (globalPupilId && globalPupilId !== selectedPupilId) {
+      setSelectedPupilId(globalPupilId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [globalPupilId]);
+  // Sync local → global when teacher picks one inside the tool.
+  useEffect(() => {
+    if (selectedPupilId && selectedPupilId !== globalPupilId) {
+      setGlobalPupilId(selectedPupilId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedPupilId]);
+
+  // ── Connectivity: consume "Send to…" handoff from a previous tool ─────────
+  useEffect(() => {
+    const incoming = consumeHandoff(toolSlug);
+    if (!incoming) return;
+    if (incoming.values && Object.keys(incoming.values).length > 0) {
+      const matched: Record<string, string> = {};
+      for (const [k, v] of Object.entries(incoming.values)) {
+        if (typeof v !== "string") continue;
+        if (fields.some(f => f.id === k)) matched[k] = v;
+      }
+      if (Object.keys(matched).length > 0) {
+        setValues(prev => ({ ...prev, ...matched }));
+        toast(`Picked up ${Object.keys(matched).length} field${Object.keys(matched).length === 1 ? "" : "s"} from the previous tool`, { duration: 4000 });
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const [sectionRegenIdx, setSectionRegenIdx] = useState<number | null>(null);
 
   const [showBatchMode, setShowBatchMode] = useState(false);
@@ -408,6 +451,67 @@ export default function AIToolPage({
   };
 
   const setValue = (id: string, val: string) => setValues(prev => ({ ...prev, [id]: val }));
+
+  // Connectivity: write a structured event to the pupil timeline whenever a
+  // generation succeeds while a pupil is in scope. Best-effort, never throws.
+  // Also logs to credit-meter, caches the output for offline read, and
+  // records facts the ProvenanceCard renders.
+  const [provenance, setProvenance] = useState<ProvenanceFacts | null>(null);
+  const writeTimelineEvent = useCallback((output: string, providerName?: string, systemPromptHead?: string) => {
+    const registryEntry = getToolBySlug(toolSlug);
+    const fieldsUsed = Object.keys(values).filter(k => values[k]?.trim());
+    const tokens = estimateTokens(output) + estimateTokens(JSON.stringify(values));
+    const cost   = estimateCost(tokens);
+
+    // Credit-meter
+    logGeneration({
+      toolId: registryEntry?.id || toolSlug,
+      toolLabel: registryEntry?.label || title,
+      pupilId: selectedPupilId || undefined,
+      tokens,
+      cost,
+    });
+
+    // Offline read-cache
+    cacheGeneration({
+      toolId: registryEntry?.id || toolSlug,
+      toolLabel: registryEntry?.label || title,
+      title: outputTitle ? outputTitle(values) : title,
+      output,
+      pupilId: selectedPupilId || undefined,
+    });
+
+    // Provenance facts for the "Why this output?" card.
+    setProvenance({
+      toolLabel: registryEntry?.label || title,
+      systemPromptHead: (systemPromptHead || "").slice(0, 240) || `${title} default system prompt`,
+      fieldsUsed,
+      validators: validation
+        ? { ok: validation.ok, ruleCount: validation.issues.length, failures: validation.issues.map(i => i.message) }
+        : { ok: true, ruleCount: 0, failures: [] },
+      pupilContextInjected: !!(injectPupilRecords && selectedPupilId),
+      tokens,
+      cost,
+      generatedAt: Date.now(),
+      provider: providerName,
+    });
+
+    if (selectedPupilId) {
+      recordEvent(selectedPupilId, {
+        toolId: registryEntry?.id || toolSlug,
+        toolLabel: registryEntry?.label || title,
+        title: outputTitle ? outputTitle(values) : title,
+        summary: undefined,
+        outputPreview: output.slice(0, 500),
+        link: registryEntry?.path,
+      });
+    }
+
+    try {
+      window.dispatchEvent(new CustomEvent("adaptly:timeline-changed"));
+      window.dispatchEvent(new CustomEvent("adaptly:credit-changed"));
+    } catch {}
+  }, [selectedPupilId, toolSlug, title, outputTitle, values, validation, injectPupilRecords]);
 
   const handleGenerate = async (opts: { skipNudge?: boolean } = {}) => {
     const missing = fields.filter(f => f.required && !values[f.id]?.trim());
@@ -494,6 +598,8 @@ export default function AIToolPage({
           output: accumulated,
           title: outputTitle ? outputTitle(values) : title,
         });
+        // Connectivity: per-pupil timeline write-back.
+        writeTimelineEvent(accumulated, streamProvider, system);
         toast.success("Generated successfully!");
       } else {
         // Fallback: non-streaming
@@ -510,12 +616,28 @@ export default function AIToolPage({
           output: text,
           title: outputTitle ? outputTitle(values) : title,
         });
+        writeTimelineEvent(text, p, system);
         toast.success("Generated successfully!");
       }
     } catch (err) {
       setIsStreaming(false);
       endTimer("fail", { errorCode: (err as any)?.message?.slice(0, 64) || "unknown" });
-      toast.error("Generation failed. Please try again.");
+      // If we're offline, queue the generation so it runs when we're back.
+      if (!isOnline()) {
+        const registryEntry = getToolBySlug(toolSlug);
+        const promptParts = buildPrompt(values);
+        enqueueGeneration({
+          toolId: registryEntry?.id || toolSlug,
+          toolLabel: registryEntry?.label || title,
+          system: promptParts.system,
+          user: promptParts.user,
+          values: { ...values },
+          pupilId: selectedPupilId || undefined,
+        });
+        toast("You appear to be offline — your generation is queued and will run when you're back online.", { duration: 7000 });
+      } else {
+        toast.error("Generation failed. Please try again.");
+      }
       console.error(err);
     }
     setLoading(false);
@@ -1010,6 +1132,14 @@ export default function AIToolPage({
                 <Button variant="outline" size="sm" onClick={handleDocx} title="Download as Word document">
                   <FileDown className="w-3.5 h-3.5 mr-1" />Word
                 </Button>
+                {/* Connectivity: continue the work in another tool */}
+                <SendToMenu
+                  fromToolId={getToolBySlug(toolSlug)?.id || toolSlug}
+                  values={values}
+                  output={result || undefined}
+                />
+                {/* Provenance — "Why this output?" */}
+                {provenance && <ProvenanceCard facts={provenance} />}
                 {/* Save as template / Recent */}
                 <Button variant="outline" size="sm" onClick={() => setShowTemplateDialog(true)} title="Save current values as a reusable template">
                   <Bookmark className="w-3.5 h-3.5 mr-1" />Save as template

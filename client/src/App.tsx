@@ -14,6 +14,7 @@ import SubscriptionGate from "./components/SubscriptionGate";
 import AppLayout from "./components/AppLayout";
 import { useApp } from "./contexts/AppContext";
 import { UserPreferencesProvider } from "./contexts/UserPreferencesContext";
+import { PupilScopeProvider } from "./contexts/PupilScopeContext";
 import { useLocation } from "wouter";
 import { installRoutePrefetch } from "./lib/prefetch";
 
@@ -88,6 +89,15 @@ const SharedWorksheet = lazy(() => import("./pages/SharedWorksheet"));
 const QuizBuilder = lazy(() => import("./pages/QuizBuilder"));
 const DailyBriefing = lazy(() => import("./pages/DailyBriefing"));
 const LandingPage = lazy(() => import("./pages/LandingPage"));
+
+// Connectivity (pupil profile, pipelines, scheduler, skill ladder, daily work)
+const PupilProfile = lazy(() => import("./pages/PupilProfile"));
+const PipelinesIndex = lazy(() => import("./pages/Pipelines"));
+const PipelineDetail = lazy(() => import("./pages/Pipelines").then(m => ({ default: m.PipelineDetail })));
+const Scheduler = lazy(() => import("./pages/Scheduler"));
+const SkillLadder = lazy(() => import("./pages/SkillLadder"));
+const DailyWork = lazy(() => import("./pages/DailyWork"));
+const PupilPassportShare = lazy(() => import("./pages/PupilPassportShare"));
 
 function PageLoader() {
   // Skeleton shell — feels closer to the real layout than a centred spinner,
@@ -204,6 +214,7 @@ function ProtectedRoutes() {
             <Route path="/stories">{() => <ClientRedirect to="/reading" />}</Route>
             <Route path="/templates" component={Templates} />
             <Route path="/pupils" component={Children} />
+            <Route path="/pupils/:id" component={PupilProfile} />
             <Route path="/children">{() => <ClientRedirect to="/pupils" />}</Route>
             <Route path="/history" component={History} />
             <Route path="/analytics" component={Analytics} />
@@ -217,6 +228,13 @@ function ProtectedRoutes() {
             <Route path="/pupil-comments" component={PupilComments} />
             <Route path="/admin" component={AdminPanel} />
             <Route path="/super-admin/users" component={SuperAdminUsers} />
+
+            {/* Connectivity: pipelines, scheduler, skill ladder, daily work */}
+            <Route path="/pipelines" component={PipelinesIndex} />
+            <Route path="/pipelines/:id" component={PipelineDetail} />
+            <Route path="/scheduler" component={Scheduler} />
+            <Route path="/skill-ladder" component={SkillLadder} />
+            <Route path="/daily-work" component={DailyWork} />
 
             {/* SEND Screener */}
             <Route path="/send-screener" component={SendScreener} />
@@ -277,6 +295,7 @@ function Router() {
         <Route path="/quiz-join" component={QuizJoin} />
         <Route path="/quiz-join/:code" component={QuizJoin} />
         <Route path="/shared/:token" component={SharedWorksheet} />
+        <Route path="/share/passport/:token" component={PupilPassportShare} />
         <Route path="/privacy" component={PrivacyPolicy} />
         <Route path="/terms" component={Terms} />
         <Route path="/cookie-policy" component={CookiePolicy} />
@@ -300,20 +319,22 @@ function AppWithPreferences() {
   useEffect(() => installRoutePrefetch(), []);
   return (
     <UserPreferencesProvider userId={user?.id}>
-      <TooltipProvider>
-        {/* Keyboard skip-to-content link — first focusable element on every page */}
-        <a href="#main-content" className="skip-to-content">
-          Skip to main content
-        </a>
-        <Toaster />
-        <div id="main-content" tabIndex={-1}>
-          <Router />
-        </div>
-        <CookieBanner />
-        <OnboardingTour />
-        <AIBestPracticesGate />
-        <SessionTimeout />
-      </TooltipProvider>
+      <PupilScopeProvider>
+        <TooltipProvider>
+          {/* Keyboard skip-to-content link — first focusable element on every page */}
+          <a href="#main-content" className="skip-to-content">
+            Skip to main content
+          </a>
+          <Toaster />
+          <div id="main-content" tabIndex={-1}>
+            <Router />
+          </div>
+          <CookieBanner />
+          <OnboardingTour />
+          <AIBestPracticesGate />
+          <SessionTimeout />
+        </TooltipProvider>
+      </PupilScopeProvider>
     </UserPreferencesProvider>
   );
 }
