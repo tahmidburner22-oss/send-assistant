@@ -20,6 +20,7 @@ import { downloadWorksheetPdf } from "@/lib/pdf-generator";
 import { downloadHtmlAsPdf, printWorksheetElement, serialiseElement, buildPopupHtml, getKatexCssInline } from "@/lib/pdf-generator-v2";
 import { DEFAULT_A11Y_PROFILES, getA11yProfileById, buildA11yProfileCss } from "@/lib/accessibility-profiles";
 import WorksheetRenderer, { renderMath, stripKatexToPlainText } from "@/components/WorksheetRenderer";
+import ProgressionStrip from "@/components/ProgressionStrip";
 import { worksheetBank, type BankWorksheet } from "@/lib/worksheet-bank";
 import { getSyllabusTopics, type SyllabusTopic } from "@/lib/syllabus-data";
 import { getSubtopics } from "@/lib/subtopics-data";
@@ -5251,6 +5252,35 @@ ${s.content}`).join("\n\n"),
                 <MicOff className="h-4 w-4 mr-1" />Stop
               </Button>
             </div>
+          )}
+
+          {/* Phase 4 / FEAT-006 — Curriculum progression strip */}
+          {generated && (
+            <ProgressionStrip
+              subject={generated.metadata?.subject}
+              topic={generated.metadata?.topic}
+              onGeneratePrerequisite={(step) => {
+                // Re-trigger generation with the prerequisite step's title as topic
+                setTopic(step.title);
+                if (step.description) {
+                  setAdditionalInstructions((prev) =>
+                    [prev, `5-minute starter recap of: ${step.description}`].filter(Boolean).join("\n")
+                  );
+                }
+                toast.info(`Topic set to "${step.title}". Click Generate.`);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+              onGenerateExtension={(step) => {
+                setTopic(step.title);
+                if (step.description) {
+                  setAdditionalInstructions((prev) =>
+                    [prev, `Extension worksheet: ${step.description}`].filter(Boolean).join("\n")
+                  );
+                }
+                toast.info(`Topic set to "${step.title}". Click Generate.`);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+            />
           )}
 
           {/* Worksheet content — uses new WorksheetRenderer for pixel-perfect print/PDF */}
