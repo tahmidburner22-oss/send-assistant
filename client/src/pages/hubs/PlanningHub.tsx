@@ -9,6 +9,16 @@ import {
 
 const tools = [
   {
+    path: "/tools/lesson-bundle",
+    label: "Lesson Bundle",
+    icon: Sparkles,
+    color: "bg-brand/10 text-brand",
+    border: "border-brand/20",
+    description: "One learning intention → six aligned outputs. Worksheet + slide deck + exit ticket + 30-second hook + next-week starter + parent note. Same vocabulary across all six.",
+    badge: "New",
+    badgeColor: "bg-brand/15 text-brand",
+  },
+  {
     path: "/tools/presentation-maker",
     label: "Presentation Maker",
     icon: Monitor,
