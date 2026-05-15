@@ -38,6 +38,9 @@ import { DEFAULT_A11Y_PROFILES, getProfileById as getA11yProfileById, buildAcces
 import { buildEvidenceLinks, buildEvidencePackHtml } from "@/lib/evidence-tagger";
 import { buildPupilContext } from "@/lib/pupil-context";
 import PupilContextPicker from "@/components/PupilContextPicker";
+// FEAT-006: Curriculum progression strip — prerequisite / extension CTAs
+// above the rendered worksheet so the generator becomes a planner's brain.
+import ProgressionStrip from "@/components/ProgressionStrip";
 import { runWorksheetPipeline } from "@/lib/engines/pipeline";
 import { applySEND } from "@/lib/engines/adaptationEngine";
 // examPaperBuilder is dynamically imported inside handlers to avoid loading the large question bank on initial page load
@@ -5409,6 +5412,34 @@ ${s.content}`).join("\n\n"),
           <div ref={worksheetRef} className="worksheet-content" style={{ backgroundColor: overlayBg }}>
             <Card className="border-border/50 overflow-hidden" style={{ backgroundColor: overlayBg }}>
               <CardContent className="p-2 sm:p-3" style={{ backgroundColor: overlayBg }}>
+                {/* FEAT-006: Curriculum progression ladder — clickable
+                 * prerequisite/extension CTAs hand the chosen step's title back
+                 * to handleGenerate as a new topic. Has the no-print class so
+                 * it never appears in the printed worksheet. */}
+                {!editMode && generated && (
+                  <ProgressionStrip
+                    subject={subject || ((generated.metadata as any)?.subject ?? "")}
+                    topic={topic || ((generated.metadata as any)?.topic ?? "")}
+                    onJumpToStep={(step, mode) => {
+                      const prevTopic = topic;
+                      // Switch the form topic + tweak difficulty heuristically
+                      setTopic(step.title);
+                      if (mode === "prerequisite" && difficulty !== "foundation") setDifficulty("foundation");
+                      if (mode === "extension" && difficulty === "foundation") setDifficulty("standard");
+                      // Tag the regeneration so we can show a subtle toast and
+                      // clear the active worksheet so the new one takes its place.
+                      const verb = mode === "prerequisite" ? "starter" : mode === "extension" ? "extension" : "worksheet";
+                      toast.info(`Generating ${verb}: ${step.title}`, { duration: 3500 });
+                      // Stash the previous topic so the user can return easily —
+                      // we just reset the worksheet state, then trigger generate.
+                      setGenerated(null);
+                      // Defer to next tick so React commits the new topic state
+                      // before handleGenerate reads it.
+                      setTimeout(() => { void handleGenerate(); }, 60);
+                      void prevTopic;
+                    }}
+                  />
+                )}
                 {/* Show WorksheetRenderer only when NOT in edit mode */}
                 {!editMode && (
                   <WorksheetRenderer
