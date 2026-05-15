@@ -607,6 +607,13 @@ router.get("/shared/:token", async (req: Request, res: Response) => {
   // Increment view count
   await db.prepare("UPDATE worksheet_share_links SET view_count=view_count+1 WHERE share_token=?").run(req.params.token);
 
+  // Merge stored metadata_json (contains hintLadders, accessibilityProfile, citations, misconceptionsTargeted, etc.)
+  let storedMeta: Record<string, any> = {};
+  if (ws.metadata_json) {
+    try { storedMeta = JSON.parse(ws.metadata_json) || {}; }
+    catch { storedMeta = {}; }
+  }
+
   res.json({
     title: ws.title,
     subject: ws.subject,
@@ -622,11 +629,14 @@ router.get("/shared/:token", async (req: Request, res: Response) => {
       caption: s.caption,
     })).filter((s: any) => !s.teacherOnly), // public view: hide teacher sections
     metadata: {
+      ...storedMeta,
       subject: ws.subject,
       topic: ws.topic,
       yearGroup: ws.year_group,
       difficulty: ws.difficulty,
       examBoard: ws.exam_board,
+      sendNeed: ws.send_need,
+      sendNeedId: ws.send_need,
     },
   });
 });

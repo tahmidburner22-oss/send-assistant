@@ -11,6 +11,7 @@ import { subjects, sendNeeds } from "@/lib/send-data";
 import { FileText, BookOpen, Star, Eye, EyeOff, Trash2, Clock, Edit3, Save, X, GraduationCap, CheckCircle, Sparkles, PenLine, Loader2, UserPlus, Layers, Copy, Share2, Link, Check } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
+import PupilModeQr from "@/components/PupilModeQr";
 import type { Worksheet, Story, Differentiation } from "@/contexts/AppContext";
 import WorksheetRenderer, { renderMath } from "@/components/WorksheetRenderer";
 import WorksheetErrorBoundary from "@/components/WorksheetErrorBoundary";
@@ -242,6 +243,7 @@ export default function History() {
   const [shareToken, setShareToken] = useState<string | null>(null);
   const [sharingId, setSharingId] = useState<string | null>(null);
   const [shareCopied, setShareCopied] = useState(false);
+  const [pupilCopied, setPupilCopied] = useState(false);
 
   // ── SEND filter + bulk delete + content type + subject ───────────────────────
   const [filterSendNeed, setFilterSendNeed] = useState<string>("all");
@@ -1141,22 +1143,70 @@ export default function History() {
       </Dialog>
 
       {/* ── Share Link dialog ── */}
-      <Dialog open={!!shareToken} onOpenChange={open => { if (!open) { setShareToken(null); setShareCopied(false); } }}>
-        <DialogContent className="max-w-sm">
+      <Dialog open={!!shareToken} onOpenChange={open => { if (!open) { setShareToken(null); setShareCopied(false); setPupilCopied(false); } }}>
+        <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2"><Share2 className="w-4 h-4 text-brand" /> Share Worksheet</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 pt-1">
-            <p className="text-sm text-muted-foreground">Anyone with this link can view the student-facing worksheet (teacher notes are hidden).</p>
-            <div className="flex gap-2">
-              <div className="flex-1 px-3 py-2 bg-muted rounded-lg text-xs font-mono text-muted-foreground truncate">
-                {shareToken ? `${window.location.origin}/shared/${shareToken}` : "Generating…"}
+          <div className="space-y-5 pt-1">
+            {/* Standard student view link */}
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground">Standard student view (teacher notes hidden):</p>
+              <div className="flex gap-2">
+                <div className="flex-1 px-3 py-2 bg-muted rounded-lg text-xs font-mono text-muted-foreground truncate">
+                  {shareToken ? `${window.location.origin}/shared/${shareToken}` : "Generating…"}
+                </div>
+                <Button size="sm" onClick={copyShareLink} className="bg-brand hover:bg-brand/90 text-white shrink-0">
+                  {shareCopied ? <><Check className="w-3.5 h-3.5 mr-1" />Copied!</> : <><Link className="w-3.5 h-3.5 mr-1" />Copy</>}
+                </Button>
               </div>
-              <Button size="sm" onClick={copyShareLink} className="bg-brand hover:bg-brand/90 text-white shrink-0">
-                {shareCopied ? <><Check className="w-3.5 h-3.5 mr-1" />Copied!</> : <><Link className="w-3.5 h-3.5 mr-1" />Copy</>}
-              </Button>
             </div>
-            <p className="text-[10px] text-muted-foreground">Link does not expire. You can revoke it from the History page.</p>
+
+            {/* Pupil-mode link with hint ladder */}
+            {shareToken && (
+              <div className="space-y-2 pt-2 border-t border-border/50">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-medium text-foreground flex items-center gap-1.5">
+                    <span className="text-brand">⚡</span> Pupil mode (read-aloud + clue ladder)
+                  </p>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-brand/10 text-brand font-semibold uppercase">
+                    No live AI
+                  </span>
+                </div>
+                <p className="text-[11px] text-muted-foreground leading-tight">
+                  Pupils tap a clue if stuck. Up to 3 clues per question, pre-baked at print time. Safeguarding-clean — no chatbot.
+                </p>
+                <div className="flex gap-2">
+                  <div className="flex-1 px-3 py-2 bg-muted rounded-lg text-xs font-mono text-muted-foreground truncate">
+                    {`${window.location.origin}/shared/${shareToken}?mode=pupil`}
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="shrink-0"
+                    onClick={() => {
+                      const url = `${window.location.origin}/shared/${shareToken}?mode=pupil`;
+                      navigator.clipboard.writeText(url).then(() => {
+                        setPupilCopied(true);
+                        setTimeout(() => setPupilCopied(false), 2000);
+                        toast.success("Pupil-mode link copied!");
+                      });
+                    }}
+                  >
+                    {pupilCopied ? <><Check className="w-3.5 h-3.5 mr-1" />Copied!</> : <><Link className="w-3.5 h-3.5 mr-1" />Copy</>}
+                  </Button>
+                </div>
+                <div className="flex justify-center pt-2">
+                  <PupilModeQr
+                    url={`${window.location.origin}/shared/${shareToken}?mode=pupil`}
+                    size={160}
+                    caption="Pupils scan to open the pupil-companion view"
+                  />
+                </div>
+              </div>
+            )}
+
+            <p className="text-[10px] text-muted-foreground">Links do not expire. You can revoke them from the History page.</p>
           </div>
         </DialogContent>
       </Dialog>

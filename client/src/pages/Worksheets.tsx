@@ -1831,6 +1831,40 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
           console.warn('[fact-check] non-fatal:', fcErr instanceof Error ? fcErr.message : fcErr);
         }
       })();
+      // ── FEAT-007: Background hint-ladder bake ───────────────────────────
+      // Pre-generates 3 hints per question so the public pupil-companion
+      // view (?mode=pupil) never needs to call an LLM at runtime
+      // (safeguarding-clean, offline-resilient). Patches into metadata
+      // when ready; silent on failure.
+      const hlWs = generatedWs;
+      const hlSubject = subject;
+      const hlTopic = topic;
+      const hlYearGroup = yearGroup;
+      const hlSendNeed = (generatedWs.metadata as any)?.sendNeedId || (generatedWs.metadata as any)?.sendNeed;
+      void (async () => {
+        try {
+          const { buildHintLadders } = await import("@/lib/hint-ladder");
+          const ladders = await buildHintLadders({
+            sections: (hlWs.sections || []).map((s: any) => ({
+              title: s.title,
+              content: s.content,
+              type: s.type,
+              teacherOnly: s.teacherOnly,
+            })),
+            subject: hlSubject,
+            topic: hlTopic,
+            yearGroup: hlYearGroup,
+            sendNeed: hlSendNeed,
+          });
+          if (!ladders.length) return;
+          setGenerated((prev: any) => prev ? {
+            ...prev,
+            metadata: { ...(prev.metadata || {}), hintLadders: ladders },
+          } : prev);
+        } catch (hlErr) {
+          console.warn('[hint-ladder] non-fatal:', hlErr instanceof Error ? hlErr.message : hlErr);
+        }
+      })();
       // Show quality warnings if detected
       const qIssues = (generatedWs.metadata as any)?.qualityIssues;
       if (qIssues && qIssues.length > 0) {
