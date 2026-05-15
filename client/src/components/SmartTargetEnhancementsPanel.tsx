@@ -11,8 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  CheckSquare, GitMerge, Stopwatch, FileDown, ShieldCheck, AlertTriangle,
-  Plus, TrendingUp,
+  CheckSquare, GitMerge, FileDown, ShieldCheck, AlertTriangle,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
