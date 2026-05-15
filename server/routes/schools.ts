@@ -1,14 +1,81 @@
 import { Router, Request, Response } from "express";
-import { randomBytes } from "crypto";
+import { randomBytes, createHash } from "crypto";
 import { v4 as uuidv4 } from "uuid";
 import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 import db from "../db/index.js";
-import { requireAuth, requireMinRole, auditLog } from "../middleware/auth.js";
-import { sendWelcomeEmail } from "../email/index.js";
+import { requireAuth, requireMinRole, auditLog, JWT_SECRET, SESSION_TIMEOUT_MS } from "../middleware/auth.js";
+import { sendWelcomeEmail, sendEmailVerification, sendDSLConfirmation } from "../email/index.js";
 
 const router = Router();
 
+// ── Helper: create session token (mirrors auth.ts logic) ─────────────────────
+function createOnboardSessionToken(user: { id: string; email: string; display_name: string; role: string; school_id: string }): string {
+  return jwt.sign(
+    {
+      id: user.id,
+      email: user.email,
+      displayName: user.display_name,
+      role: user.role,
+      schoolId: user.school_id,
+      mfaEnabled: false,
+      mfaVerified: true,
+    },
+    JWT_SECRET,
+    { expiresIn: "30d" }
+  );
+}
+
+// GDPR: Hash IPs before storing in sessions table
+function hashIp(ip: string | undefined): string | null {
+  if (!ip) return null;
+  return createHash("sha256").update(ip + (process.env.IP_HASH_SALT || "adaptly-ip-salt")).digest("hex").slice(0, 16);
+}
+
+// ── URN Lookup (DfE Get Information About Schools proxy) ─────────────────────
+// Improvement #7: Auto-fill school details from URN
+router.get("/urn-lookup/:urn", async (req: Request, res: Response) => {
+  const { urn } = req.params;
+  if (!/^\d{6}$/.test(urn)) {
+    return res.status(400).json({ error: "URN must be exactly 6 digits" });
+  }
+  try {
+    // Use the DfE GIAS public API to look up school details
+    const response = await fetch(
+      `https://www.get-information-schools.service.gov.uk/api/establishments?urn=${urn}`,
+      { headers: { Accept: "application/json" }, signal: AbortSignal.timeout(5000) }
+    );
+    if (!response.ok) {
+      return res.status(404).json({ error: "School not found for this URN" });
+    }
+    const data = await response.json();
+    const school = Array.isArray(data) ? data[0] : data;
+    if (!school || !school.EstablishmentName) {
+      return res.status(404).json({ error: "School not found for this URN" });
+    }
+    // Map the GIAS response to our expected format
+    const phaseMap: Record<string, string> = {
+      "Primary": "primary", "Secondary": "secondary", "All-through": "all-through",
+      "Special": "special", "Not applicable": "other",
+    };
+    const rawPhase = school.PhaseOfEducation?.DisplayName || school.TypeOfEstablishment?.DisplayName || "";
+    const phase = phaseMap[rawPhase] || "other";
+    const addressParts = [school.Street, school.Town, school.County, school.Postcode].filter(Boolean);
+    res.json({
+      name: school.EstablishmentName,
+      address: addressParts.join(", "),
+      phase,
+      domain: "", // DfE doesn't provide email domain
+    });
+  } catch (err: any) {
+    // If the external API is unavailable, return gracefully
+    console.warn("[urn-lookup] DfE API error:", err?.message);
+    res.status(502).json({ error: "Unable to reach DfE school database. Please enter details manually." });
+  }
+});
+
 // ── School Onboarding Wizard ──────────────────────────────────────────────────
+// Improvements #1 (auto-sign-in), #5 (email verification), #6 (DSL confirmation)
 router.post("/onboard", async (req: Request, res: Response) => {
   try {
     const {
@@ -20,6 +87,27 @@ router.post("/onboard", async (req: Request, res: Response) => {
 
     if (!schoolName || !adminEmail || !adminName || !adminPassword) {
       return res.status(400).json({ error: "School name, admin email, name and password are required" });
+    }
+
+    // Improvement #4: Server-side validation
+    if (urn && !/^\d{6}$/.test(urn)) {
+      return res.status(400).json({ error: "URN must be exactly 6 digits" });
+    }
+
+    // Block personal email domains for admin account
+    const PERSONAL_DOMAINS = new Set([
+      "gmail.com", "googlemail.com", "yahoo.com", "yahoo.co.uk", "hotmail.com",
+      "hotmail.co.uk", "outlook.com", "live.com", "live.co.uk", "icloud.com",
+      "me.com", "mac.com", "aol.com", "protonmail.com", "proton.me",
+    ]);
+    const emailDomain = adminEmail.split("@")[1]?.toLowerCase();
+    if (domain && PERSONAL_DOMAINS.has(domain.toLowerCase())) {
+      return res.status(400).json({ error: "School domain cannot be a personal email provider (e.g. gmail.com, outlook.com)" });
+    }
+
+    // Validate DSL email is not the same as admin email
+    if (dslEmail && dslEmail.toLowerCase() === adminEmail.toLowerCase()) {
+      return res.status(400).json({ error: "DSL email should be different from the admin email for KCSIE compliance" });
     }
 
     // Check URN not already registered
@@ -35,31 +123,72 @@ router.post("/onboard", async (req: Request, res: Response) => {
     const schoolId = uuidv4();
     const adminId = uuidv4();
     const trialEndsAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(); // 30-day trial
+    const dslConfirmToken = dslEmail ? uuidv4() : null; // Improvement #6: DSL confirmation token
 
-    await db.prepare(`INSERT INTO schools (id, mat_id, name, urn, address, phase, domain, dsl_name, dsl_email, dsl_phone, onboarding_complete, trial_ends_at, licence_type)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)`).run(
+    await db.prepare(`INSERT INTO schools (id, mat_id, name, urn, address, phase, domain, dsl_name, dsl_email, dsl_phone, onboarding_complete, trial_ends_at, licence_type, dsl_confirmed, dsl_confirm_token)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, 0, ?)`).run(
       schoolId, matId || null, schoolName, urn || null, address || null,
       phase || null, domain || null, dslName || null, dslEmail || null,
-      dslPhone || null, trialEndsAt, licenceType
+      dslPhone || null, trialEndsAt, licenceType, dslConfirmToken
     );
 
+    // Improvement #5: Don't set email_verified=1 immediately. Send verification email instead.
+    const emailVerifyToken = uuidv4();
     const hash = await bcrypt.hash(adminPassword, 12);
-    await db.prepare(`INSERT INTO users (id, school_id, email, display_name, password_hash, role, email_verified)
-      VALUES (?, ?, ?, ?, ?, 'school_admin', 1)`).run(adminId, schoolId, adminEmail, adminName, hash);
+    await db.prepare(`INSERT INTO users (id, school_id, email, display_name, password_hash, role, email_verified, email_verify_token)
+      VALUES (?, ?, ?, ?, ?, 'school_admin', 0, ?)`).run(adminId, schoolId, adminEmail, adminName, hash, emailVerifyToken);
 
     auditLog(adminId, schoolId, "school.onboarded", "school", schoolId, { schoolName, urn }, req.ip);
     sendWelcomeEmail(adminEmail, adminName, schoolName).catch(console.error);
+    // Improvement #5: Send email verification
+    sendEmailVerification(adminEmail, emailVerifyToken).catch(console.error);
+    // Improvement #6: Send DSL confirmation email
+    if (dslEmail && dslConfirmToken) {
+      sendDSLConfirmation(dslEmail, dslName || "Designated Safeguarding Lead", schoolName, dslConfirmToken).catch(console.error);
+    }
+
+    // Improvement #1: Auto-sign-in — create session and return token + cookie
+    const userRecord = { id: adminId, email: adminEmail, display_name: adminName, role: "school_admin", school_id: schoolId };
+    const token = createOnboardSessionToken(userRecord);
+    const sessionExpiresAt = new Date(Date.now() + SESSION_TIMEOUT_MS).toISOString();
+    await db.prepare(`INSERT INTO sessions (id, user_id, token, ip_address, user_agent, expires_at)
+      VALUES (?, ?, ?, ?, ?, ?)`).run(
+      uuidv4(), adminId, token, hashIp(req.ip), req.headers["user-agent"] || null, sessionExpiresAt
+    );
+
+    // Set httpOnly auth cookie
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: SESSION_TIMEOUT_MS,
+      path: "/",
+    });
 
     res.status(201).json({
       message: "School registered successfully",
       schoolId,
       adminId,
       trialEndsAt,
+      token, // Improvement #1: return token for auto-sign-in
+      phase: phase || null, // Improvement #10: pass phase back for worksheet pre-fill
     });
   } catch (err) {
     console.error("Onboarding error:", err);
     res.status(500).json({ error: "Onboarding failed" });
   }
+});
+
+// ── DSL Confirmation Endpoint ─────────────────────────────────────────────────
+// Improvement #6: DSL confirms their role via email link
+router.get("/dsl-confirm", async (req: Request, res: Response) => {
+  const { token } = req.query as { token: string };
+  if (!token) return res.status(400).json({ error: "Confirmation token required" });
+  const school = await db.prepare("SELECT id, name FROM schools WHERE dsl_confirm_token = ?").get(token) as any;
+  if (!school) return res.status(404).json({ error: "Invalid or expired confirmation link" });
+  await db.prepare("UPDATE schools SET dsl_confirmed = 1, dsl_confirm_token = NULL WHERE id = ?").run(school.id);
+  auditLog(null, school.id, "dsl.confirmed", "school", school.id, {}, req.ip);
+  res.json({ message: `You have confirmed your role as DSL for ${school.name}. Thank you.` });
 });
 
 // ── Get My School ─────────────────────────────────────────────────────────────

@@ -153,6 +153,27 @@ export async function sendEmailVerification(to: string, token: string) {
   );
 }
 
+// Improvement #6: DSL Confirmation email
+export async function sendDSLConfirmation(to: string, dslName: string, schoolName: string, token: string) {
+  const link = `${BASE_URL}/api/schools/dsl-confirm?token=${token}`;
+  await send(
+    to,
+    `Confirm your DSL role for ${schoolName} on Adaptly`,
+    `<div style="font-family:sans-serif;max-width:600px;margin:auto">
+      <h2 style="color:#059669">Adaptly — DSL Confirmation</h2>
+      <p>Dear ${dslName},</p>
+      <p>You have been listed as the <strong>Designated Safeguarding Lead (DSL)</strong> for <strong>${schoolName}</strong> on Adaptly.</p>
+      <p>As DSL, you will receive email alerts when Adaptly's AI content filter detects safeguarding concerns in student interactions.</p>
+      <p>Please confirm your role by clicking the button below:</p>
+      <a href="${link}" style="display:inline-block;background:#059669;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;margin:16px 0">Confirm DSL Role</a>
+      <p style="color:#666;font-size:14px">If you were not expecting this email or are not the DSL for this school, please ignore it or contact your school administrator.</p>
+      <hr style="border:none;border-top:1px solid #eee;margin:24px 0">
+      <p style="color:#999;font-size:12px">Adaptly · AI-powered tools for UK SEND educators</p>
+    </div>`,
+    "dsl_confirmation"
+  );
+}
+
 export async function sendDSLIncidentAlert(dslEmail: string, incident: {
   id: string; severity: string; description: string; reportedBy: string; pupilName?: string;
 }) {
