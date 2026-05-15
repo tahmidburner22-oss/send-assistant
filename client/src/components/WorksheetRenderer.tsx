@@ -12,6 +12,7 @@ import React, { forwardRef, useState, useCallback } from "react";
 import { Eye, EyeOff, Pencil } from "lucide-react";
 import { getSendFormatting } from "@/lib/send-data";
 import { extractDiagramSpec, stripDiagramMarker } from "@/lib/ai";
+import { getA11yProfileById, buildA11yProfileCss } from "@/lib/accessibility-profiles";
 import SVGDiagram from "@/components/SVGDiagram";
 import katex from "katex";
 import "katex/dist/katex.min.css";
@@ -4106,12 +4107,18 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
   const hasOverlay = overlayColor && overlayColor !== "white" && overlayColor !== "#ffffff"
     && overlayColor !== "transparent";
 
+  // ── Phase 4 / FEAT-010 — accessibility profile ──────────────────────────
+  // Read from worksheet.metadata.accessibilityProfile if set; fall back to "standard".
+  const a11yProfileId = (worksheet.metadata as any)?.accessibilityProfile || "standard";
+  const a11yProfile = a11yProfileId !== "standard" ? getA11yProfileById(a11yProfileId) : null;
+  const a11yProfileCss = a11yProfile ? buildA11yProfileCss(a11yProfile) : "";
+
   const worksheetCard = (
     <div
       ref={ref}
-      className="worksheet-print-root"
+      className={`worksheet-print-root ws-a11y-${a11yProfileId}`}
       style={{
-        backgroundColor: overlayColor || "white",
+        backgroundColor: a11yProfile?.background || overlayColor || "white",
         fontFamily: fmt.fontFamily,
         fontSize: `${fmt.fontSize}px`,
         lineHeight: fmt.lineHeight,
@@ -4129,6 +4136,9 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
         } : {}),
       }}
     >
+      {a11yProfileCss && (
+        <style>{a11yProfileCss}</style>
+      )}
       {/* Colour overlay — sits above all section backgrounds, covers all text boxes */}
       {hasOverlay && (
         <div
@@ -6676,6 +6686,111 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
           </React.Fragment>
         );
       })}
+
+      {/* ── Phase 4 / FEAT-008 — teacher-only fact-check + citations ── */}
+      {isTeacherView && (worksheet.metadata as any)?.factCheck && (() => {
+        const fc = (worksheet.metadata as any).factCheck as {
+          status?: string;
+          summary?: string;
+          citations?: Array<{ sectionIndex: number; claim: string; sourceId: string; detail?: string }>;
+          unverified?: Array<{ sectionIndex: number; claim: string; reason: string }>;
+        };
+        const sourceNames: Record<string, string> = {
+          "aqa": "AQA",
+          "ocr": "OCR",
+          "edexcel": "Pearson Edexcel",
+          "wjec": "WJEC / Eduqas",
+          "ccea": "CCEA",
+          "sqa": "SQA",
+          "national-curriculum": "UK National Curriculum (DfE)",
+          "oak": "Oak National Academy",
+          "bbc-bitesize": "BBC Bitesize",
+          "stem-learning": "STEM Learning",
+          "ncetm": "NCETM",
+        };
+        const hasContent = (fc.citations && fc.citations.length > 0) || (fc.unverified && fc.unverified.length > 0);
+        if (!hasContent) return null;
+        return (
+          <div
+            className="ws-teacher-section ws-no-print-on-student"
+            style={{
+              marginTop: "12px",
+              padding: "10px 14px",
+              background: fc.status === "warnings" ? "#fef3c7" : "#ecfdf5",
+              border: `1.5px solid ${fc.status === "warnings" ? "#d97706" : "#059669"}`,
+              borderRadius: "6px",
+              fontSize: `${fmt.fontSize - 2}px`,
+              fontFamily: fmt.fontFamily,
+              color: fc.status === "warnings" ? "#78350f" : "#064e3b",
+            }}
+          >
+            <div style={{ fontWeight: 700, marginBottom: "6px", display: "flex", alignItems: "center", gap: "6px" }}>
+              <span aria-hidden>{fc.status === "warnings" ? "⚠" : "✓"}</span>
+              <span>Source check (teacher reference)</span>
+            </div>
+            {fc.summary && <div style={{ marginBottom: "6px" }}>{fc.summary}</div>}
+            {fc.citations && fc.citations.length > 0 && (
+              <div style={{ marginBottom: "6px" }}>
+                <div style={{ fontWeight: 600, marginBottom: "2px" }}>Cited:</div>
+                <ul style={{ margin: 0, paddingLeft: "18px", lineHeight: 1.5 }}>
+                  {fc.citations.map((c, i) => (
+                    <li key={i} style={{ marginBottom: "2px" }}>
+                      <span style={{ fontStyle: "italic" }}>"{c.claim}"</span> — {sourceNames[c.sourceId] || c.sourceId}
+                      {c.detail ? ` (${c.detail})` : ""}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {fc.unverified && fc.unverified.length > 0 && (
+              <div>
+                <div style={{ fontWeight: 600, marginBottom: "2px", color: "#92400e" }}>Flagged for review:</div>
+                <ul style={{ margin: 0, paddingLeft: "18px", lineHeight: 1.5 }}>
+                  {fc.unverified.map((u, i) => (
+                    <li key={i} style={{ marginBottom: "2px" }}>
+                      <span style={{ fontStyle: "italic" }}>"{u.claim}"</span> — {u.reason}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        );
+      })()}
+
+      {/* ── Phase 4 / FEAT-002 — teacher-only misconception callout ── */}
+      {isTeacherView &&
+        Array.isArray((worksheet.metadata as any)?.misconceptionsTargeted) &&
+        ((worksheet.metadata as any).misconceptionsTargeted as string[]).length > 0 && (
+        <div
+          className="ws-teacher-section ws-no-print-on-student"
+          style={{
+            marginTop: "12px",
+            padding: "10px 14px",
+            background: "#fef9c3",
+            border: "1.5px solid #ca8a04",
+            borderRadius: "6px",
+            fontSize: `${fmt.fontSize - 2}px`,
+            fontFamily: fmt.fontFamily,
+            color: "#713f12",
+          }}
+        >
+          <div style={{ fontWeight: 700, marginBottom: "4px", display: "flex", alignItems: "center", gap: "6px" }}>
+            <span aria-hidden>⚠</span>
+            <span>Misconceptions targeted (teacher reference)</span>
+          </div>
+          <ul style={{ margin: 0, paddingLeft: "18px", lineHeight: 1.5 }}>
+            {((worksheet.metadata as any).misconceptionsTargeted as string[]).map((id) => (
+              <li key={id} style={{ marginBottom: "2px" }}>
+                <code style={{ background: "#fde68a", padding: "1px 4px", borderRadius: "3px", fontSize: "11px" }}>{id}</code>
+              </li>
+            ))}
+          </ul>
+          <div style={{ marginTop: "6px", fontSize: "11px", color: "#854d0e", fontStyle: "italic" }}>
+            Distractors in the questions above are designed to expose these specific pupil errors. Use marking to identify which pupils held which misconception.
+          </div>
+        </div>
+      )}
 
       {/* ── Footer ── */}
       {isRevisionMat ? (
