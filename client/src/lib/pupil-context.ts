@@ -43,15 +43,36 @@ export function buildPupilContext(child: Child): PupilContextSummary {
     .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1))
     .slice(0, MAX_RECENT_SUBMISSIONS);
 
+  const ehcp = (child.ehcpOutcomes || []).filter(s => typeof s === "string" && s.trim().length > 0);
+  const iep = (child.iepTargets || []).filter(s => typeof s === "string" && s.trim().length > 0);
+  const recentMisconceptions = (child.recentMisconceptions || []).filter(s => typeof s === "string" && s.trim().length > 0);
+
   const headline = [
     child.yearGroup,
     sendList.join(", "),
+    ehcp.length > 0 ? `${ehcp.length} EHCP outcome${ehcp.length === 1 ? "" : "s"}` : "",
+    iep.length > 0 ? `${iep.length} IEP target${iep.length === 1 ? "" : "s"}` : "",
   ].filter(Boolean).join(" · ") || "No SEND need recorded";
 
   const lines: string[] = [];
   lines.push("[Pupil Records — use as context, do NOT name the pupil in the output]");
   lines.push(`- Year group: ${child.yearGroup || "(not set)"}`);
   if (sendList.length > 0) lines.push(`- SEND need(s): ${sendList.join(", ")}`);
+
+  if (ehcp.length > 0) {
+    lines.push(`- EHCP outcomes (design tasks that move pupil toward these):`);
+    for (const o of ehcp.slice(0, 6)) lines.push(`  • ${o.slice(0, 200)}`);
+  }
+
+  if (iep.length > 0) {
+    lines.push(`- IEP targets (current SMART targets — embed practice opportunities):`);
+    for (const t of iep.slice(0, 6)) lines.push(`  • ${t.slice(0, 200)}`);
+  }
+
+  if (recentMisconceptions.length > 0) {
+    lines.push(`- Recent misconceptions from past mark-scan results — explicitly address these:`);
+    for (const m of recentMisconceptions.slice(0, 5)) lines.push(`  • ${m.slice(0, 200)}`);
+  }
 
   if (recentAssignments.length > 0) {
     lines.push(`- Recent assignments (most recent first):`);
@@ -69,8 +90,14 @@ export function buildPupilContext(child: Child): PupilContextSummary {
     }
   }
 
-  if (recentAssignments.length === 0 && recentSubmissions.length === 0) {
-    lines.push(`- No prior assignments or observations on file.`);
+  if (
+    recentAssignments.length === 0 &&
+    recentSubmissions.length === 0 &&
+    ehcp.length === 0 &&
+    iep.length === 0 &&
+    recentMisconceptions.length === 0
+  ) {
+    lines.push(`- No prior assignments, observations, or recorded outcomes on file.`);
   }
 
   return { headline, promptBlock: lines.join("\n") };

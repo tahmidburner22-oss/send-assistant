@@ -39,6 +39,12 @@ export interface Child {
   parentEmail?: string; parentName?: string;
   assignments: Assignment[]; submissions: Submission[];
   timetable?: TimetableLesson[];
+  /** EHCP outcomes — short outcome statements (e.g. "Communication: respond to 2-step instructions"). Optional, frontend-only for now (persisted via metadata bag pattern in localStorage; DB column is a future migration). */
+  ehcpOutcomes?: string[];
+  /** IEP targets — short SMART targets (e.g. "Read 50 high-frequency words by July"). */
+  iepTargets?: string[];
+  /** Recent misconceptions distilled from past mark-scan results (FEAT-11 closed-loop). */
+  recentMisconceptions?: string[];
 }
 
 export type AttendanceStatus = "attended" | "absent" | "late" | "other" | "not-recorded";
@@ -291,6 +297,19 @@ export function AppProvider({ children: childrenProp }: { children: React.ReactN
       ? updates.sendNeeds.join(",")
       : updates.sendNeed;
     await pupilsApi.update(id, { name: updates.name, yearGroup: updates.yearGroup, sendNeed: sendNeedValue, timetable: updates.timetable, parentEmail: updates.parentEmail, parentName: updates.parentName });
+    // FEAT-6: persist EHCP/IEP/misconception fields locally (no DB column yet).
+    if (updates.ehcpOutcomes !== undefined || updates.iepTargets !== undefined || updates.recentMisconceptions !== undefined) {
+      try {
+        const key = `adaptly_pupil_evidence_${id}`;
+        const existing = (() => { try { return JSON.parse(localStorage.getItem(key) || "{}"); } catch { return {}; } })();
+        const merged = {
+          ehcpOutcomes: updates.ehcpOutcomes ?? existing.ehcpOutcomes ?? [],
+          iepTargets: updates.iepTargets ?? existing.iepTargets ?? [],
+          recentMisconceptions: updates.recentMisconceptions ?? existing.recentMisconceptions ?? [],
+        };
+        localStorage.setItem(key, JSON.stringify(merged));
+      } catch { /* localStorage quota — ignore */ }
+    }
     setState(s => ({ ...s, children: s.children.map(c => c.id === id ? { ...c, ...updates } : c) }));
   }, []);
 
@@ -430,5 +449,19 @@ function mapPupil(p: any): Child {
   const rawSendNeed = p.send_need || "";
   const sendNeedsArr = rawSendNeed ? rawSendNeed.split(",").map((s: string) => s.trim()).filter(Boolean) : [];
   const primarySendNeed = sendNeedsArr[0] || "";
-  return { id: p.id, name: p.name, yearGroup: p.year_group || "", sendNeed: primarySendNeed, sendNeeds: sendNeedsArr, code: p.code || "", upn: p.upn, dob: p.dob, createdAt: p.created_at, parentEmail: p.parent_email || undefined, parentName: p.parent_name || undefined, assignments, submissions };
+  // FEAT-6: EHCP outcomes / IEP targets are stored client-side (localStorage) until
+  // a DB migration is added. Keyed by pupil id so they survive refresh.
+  let ehcpOutcomes: string[] | undefined;
+  let iepTargets: string[] | undefined;
+  let recentMisconceptions: string[] | undefined;
+  try {
+    const raw = localStorage.getItem(`adaptly_pupil_evidence_${p.id}`);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed.ehcpOutcomes)) ehcpOutcomes = parsed.ehcpOutcomes;
+      if (Array.isArray(parsed.iepTargets)) iepTargets = parsed.iepTargets;
+      if (Array.isArray(parsed.recentMisconceptions)) recentMisconceptions = parsed.recentMisconceptions;
+    }
+  } catch { /* ignore parse errors */ }
+  return { id: p.id, name: p.name, yearGroup: p.year_group || "", sendNeed: primarySendNeed, sendNeeds: sendNeedsArr, code: p.code || "", upn: p.upn, dob: p.dob, createdAt: p.created_at, parentEmail: p.parent_email || undefined, parentName: p.parent_name || undefined, assignments, submissions, ehcpOutcomes, iepTargets, recentMisconceptions };
 }

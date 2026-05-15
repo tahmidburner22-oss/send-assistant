@@ -26,6 +26,9 @@ import { getSyllabusTopics, type SyllabusTopic } from "@/lib/syllabus-data";
 import { getSubtopics } from "@/lib/subtopics-data";
 import { aiGenerateWorksheet, aiEditSection, aiScaffoldExistingWorksheet, aiDifferentiateExistingWorksheet, parseNaturalLanguageInput, aiScenarioSwap, aiAdjustReadingLevel } from "@/lib/ai";
 import { runFactCheck } from "@/lib/fact-checker";
+import { tagWorksheetForPupil } from "@/lib/evidence-tagger";
+import EvidencePackDialog from "@/components/EvidencePackDialog";
+import { usePupilScope } from "@/contexts/PupilScopeContext";
 import { runWorksheetPipeline } from "@/lib/engines/pipeline";
 import { applySEND } from "@/lib/engines/adaptationEngine";
 // examPaperBuilder is dynamically imported inside handlers to avoid loading the large question bank on initial page load
@@ -471,6 +474,9 @@ export default function Worksheets() {
   const isPlatformAdmin = user?.email === "admin@adaptly.co.uk" || user?.email === "admin@sendassistant.app";
   const { preferences } = useUserPreferences();
   const showLibraryTab = preferences.showWorksheetLibrary === true;
+  // FEAT-6 — Evidence Pack dialog (EHCP/IEP tagger + Annual-Review export).
+  const { pupilId: scopedPupilId } = usePupilScope();
+  const [evidencePackOpen, setEvidencePackOpen] = useState(false);
 
   // Re-fetch data from server on mount so history count is always current
   useEffect(() => { refreshData(); }, []);
@@ -1737,6 +1743,24 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
           return { ...prev, metadata: { ...(prev.metadata || {}), accessibilityProfile: activeA11yProfileId } };
         });
       }
+      // ── FEAT-6 — auto-tag against scoped pupil's EHCP outcomes / IEP targets.
+      // Synchronous heuristic (no LLM call). We mutate generatedWs.metadata in
+      // place BEFORE the saveWorksheet call below, so the DB record carries
+      // the evidenceTags block and the Evidence Pack export still finds it on
+      // refresh. Also pushes the patched metadata into the live UI state.
+      try {
+        if (scopedPupilId) {
+          const scopedChild = children.find(c => c.id === scopedPupilId);
+          if (scopedChild) {
+            const evidenceTags = tagWorksheetForPupil(generatedWs as any, scopedChild);
+            (generatedWs as any).metadata = { ...((generatedWs as any).metadata || {}), evidenceTags };
+            setGenerated((prev: any) => {
+              if (!prev) return prev;
+              return { ...prev, metadata: { ...(prev.metadata || {}), evidenceTags } };
+            });
+          }
+        }
+      } catch { /* best-effort enrichment */ }
       // ── Phase 4 / FEAT-008 — non-blocking citation pass ──────────────────
       // Run a separate AI call against the UK whitelist to tag claims with
       // citations and flag unverified content. Fires-and-forgets so the UI
@@ -1928,6 +1952,18 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
       setGenerated(generatedWs);
       setDiffVersions({}); // Clear old diff versions when a new worksheet is generated
       setActiveTab("generate");
+
+      // FEAT-6 — auto-tag against scoped pupil before save (diagnostic flow).
+      try {
+        if (scopedPupilId) {
+          const scopedChild = children.find(c => c.id === scopedPupilId);
+          if (scopedChild) {
+            const evidenceTags = tagWorksheetForPupil(generatedWs as any, scopedChild);
+            (generatedWs as any).metadata = { ...((generatedWs as any).metadata || {}), evidenceTags };
+            setGenerated((prev: any) => prev ? { ...prev, metadata: { ...(prev.metadata || {}), evidenceTags } } : prev);
+          }
+        }
+      } catch { /* best-effort */ }
 
       // Auto-save
       const sectionsToSave = generatedWs.sections.map(s => ({ ...s }));
@@ -3053,6 +3089,17 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
     if (generatedWs) {
       setGenerated(generatedWs);
       const ws = generatedWs;
+      // FEAT-6 — auto-tag against scoped pupil (NL flow).
+      try {
+        if (scopedPupilId) {
+          const scopedChild = children.find(c => c.id === scopedPupilId);
+          if (scopedChild) {
+            const evidenceTags = tagWorksheetForPupil(ws as any, scopedChild);
+            (ws as any).metadata = { ...((ws as any).metadata || {}), evidenceTags };
+            setGenerated((prev: any) => prev ? { ...prev, metadata: { ...(prev.metadata || {}), evidenceTags } } : prev);
+          }
+        }
+      } catch { /* best-effort */ }
       const sectionsToSave = ws.sections.map(s => ({ ...s }));
       const content = sectionsToSave.filter(s => !s.teacherOnly).map(s => `## ${s.title}\n${s.content}`).join("\n\n");
       const teacherContent = sectionsToSave.map(s => `## ${s.title}\n${s.content}`).join("\n\n");
@@ -4748,7 +4795,7 @@ ${s.content}`).join("\n\n"),
           {/* ─── HISTORY TAB ──────────────────────────────────────────────────────────────────────── */}
           <TabsContent value="history" className="mt-4 space-y-3">
             <Card className="border-border/50">
-              <CardContent className="p-3">
+              <CardContent className="p-3 space-y-2">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <input
@@ -4758,6 +4805,25 @@ ${s.content}`).join("\n\n"),
                     className="w-full pl-9 pr-3 h-9 text-sm border border-input rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-brand/30"
                   />
                 </div>
+                {/* FEAT-6 — Export Evidence Pack: groups every tagged worksheet
+                    under the pupil's EHCP outcomes / IEP targets for Annual Reviews. */}
+                {children.length > 0 && (
+                  <div className="flex items-center justify-between gap-2 border-t pt-2">
+                    <p className="text-xs text-muted-foreground flex-1">
+                      Need an Annual Review pack? Group every tagged worksheet under each EHCP outcome and IEP target.
+                    </p>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setEvidencePackOpen(true)}
+                      className="shrink-0"
+                    >
+                      <FileDown className="w-3.5 h-3.5 mr-1.5" />
+                      Export Evidence Pack
+                    </Button>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -6194,6 +6260,12 @@ ${s.content}`).join("\n\n"),
           </div>
         </div>
       )}
+      {/* FEAT-6 — Evidence Pack dialog (mount once at component root). */}
+      <EvidencePackDialog
+        open={evidencePackOpen}
+        onOpenChange={setEvidencePackOpen}
+        initialChildId={scopedPupilId || undefined}
+      />
     </div>
   );
 }
