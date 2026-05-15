@@ -28,6 +28,10 @@ import { aiGenerateWorksheet, aiEditSection, aiScaffoldExistingWorksheet, aiDiff
 // metadata.citations + metadata.factCheck which the renderer surfaces as a
 // numbered footnote list and a teacher-only "verified" pill.
 import { runFactCheck } from "@/lib/fact-checker";
+// FEAT-010: Accessibility profiles for adaptive typography (OpenDyslexic /
+// Lexend / Atkinson Hyperlegible / Irlen / KS1-large). Profile id is stored
+// on metadata.accessibilityProfile so it follows the worksheet to print/PDF.
+import { DEFAULT_A11Y_PROFILES, getProfileById as getA11yProfileById, buildAccessibilityProfileCss as buildA11yProfileCss, ACTIVE_A11Y_PROFILE_KEY } from "@/lib/accessibility-profiles";
 import { runWorksheetPipeline } from "@/lib/engines/pipeline";
 import { applySEND } from "@/lib/engines/adaptationEngine";
 // examPaperBuilder is dynamically imported inside handlers to avoid loading the large question bank on initial page load
@@ -38,7 +42,7 @@ import DiagnosticStarterSheet from "@/components/DiagnosticStarterSheet";
 import { FunFactsCarousel } from "@/components/FunFactsCarousel";
 import {
   FileText, Upload, Library, Sparkles, Download, Printer, Save, Star,
-  Eye, EyeOff, GraduationCap, Palette, Edit3, Users, Check, ZoomIn, ZoomOut,
+  Eye, EyeOff, GraduationCap, Palette, Edit3, Users, Check, ZoomIn, ZoomOut, Type,
   Mic, MicOff, Image, Search, Clock, Award, ChevronRight, ChevronDown,
   AlertCircle, CheckCircle, RefreshCw, FileDown, X, Wand2, History, Trash2, Info, PenLine, Square, CheckSquare, ListChecks, ClipboardCheck,
   MessageSquare, Send, RotateCcw, Layers, Volume2, VolumeX, Loader2,
@@ -642,6 +646,13 @@ export default function Worksheets() {
   }, [subject, topic, yearGroup, sendNeed, difficulty, examBoard]);
   const [viewMode, setViewMode] = useState<"teacher" | "student">("student");
   const [showOverlayPicker, setShowOverlayPicker] = useState(false);
+  // FEAT-010: Active accessibility profile picker state. The profile id is
+  // persisted in localStorage and on metadata.accessibilityProfile so it
+  // follows the worksheet to print/PDF + survives reloads.
+  const [showA11yPicker, setShowA11yPicker] = useState(false);
+  const [activeA11yProfileId, setActiveA11yProfileId] = useState<string>(() => {
+    try { return localStorage.getItem(ACTIVE_A11Y_PROFILE_KEY) || "standard"; } catch { return "standard"; }
+  });
   const [editMode, setEditMode] = useState(false);
   const [hiddenSections, setHiddenSections] = useState<Set<number>>(new Set());
   const [hideHeader, setHideHeader] = useState(false);
@@ -1729,6 +1740,14 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
       setHiddenSections(new Set());
       setHideHeader(false);
       setDiffVersions({});
+      // FEAT-010: stamp the active accessibility profile on the worksheet so
+      // it follows through to print/PDF/share without requiring teachers to
+      // re-pick it. Doesn't override an explicit per-worksheet profile if one
+      // is already set in metadata.
+      if (activeA11yProfileId && activeA11yProfileId !== "standard" && !(generatedWs.metadata as any)?.accessibilityProfile) {
+        (generatedWs as any).metadata = { ...(generatedWs.metadata || {}), accessibilityProfile: activeA11yProfileId };
+        setGenerated((prev: any) => prev ? { ...prev, metadata: { ...(prev.metadata || {}), accessibilityProfile: activeA11yProfileId } } : prev);
+      }
       // ── FEAT-008: Background citation pass ──────────────────────────────
       // Runs asynchronously so it doesn't delay the user seeing their
       // worksheet. On success, patches metadata.citations + metadata.factCheck
@@ -2409,6 +2428,9 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
   const handlePrintWithOptions = (options: PrintOptions) => {
     const container = worksheetRef.current || (document.querySelector(".worksheet-content") as HTMLElement);
     if (!container) return;
+    // FEAT-010: pass active accessibility profile through to print/PDF.
+    const a11yProfile = getA11yProfileById(activeA11yProfileId);
+    const a11yProfileCss = activeA11yProfileId !== "standard" ? buildA11yProfileCss(a11yProfile) : undefined;
     printWorksheetElement(container, {
       overlayColor: overlayBg,
       viewMode: options.view,
@@ -2417,6 +2439,8 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
       title: generated?.title,
       sendNeedId: generated?.metadata?.sendNeed || sendNeed || undefined,
       landscape: isRevisionMat,
+      accessibilityProfileCss: a11yProfileCss,
+      accessibilityProfileId: activeA11yProfileId,
     });
   };
   // ─── Paginated Print Preview ────────────────────────────────────────────────
@@ -4877,6 +4901,14 @@ ${s.content}`).join("\n\n"),
             <Button variant="outline" size="sm" onClick={() => setShowOverlayPicker(!showOverlayPicker)}>
               <Palette className="w-3.5 h-3.5 mr-1.5" /> Overlay
             </Button>
+            <Button variant="outline" size="sm" onClick={() => setShowA11yPicker(p => !p)} title="Adaptive typography — OpenDyslexic, Lexend, Atkinson Hyperlegible & more (FEAT-010)">
+              <Type className="w-3.5 h-3.5 mr-1.5" /> Typography
+              {activeA11yProfileId !== "standard" && (
+                <span className="ml-1 text-[10px] bg-brand text-white rounded-full px-1.5 leading-4">
+                  {getA11yProfileById(activeA11yProfileId).label.split(" ")[0]}
+                </span>
+              )}
+            </Button>
             <Button
               variant="outline"
               size="sm"
@@ -5093,6 +5125,47 @@ ${s.content}`).join("\n\n"),
                       <div className="text-[9px] text-gray-600 mt-0.5 leading-tight">{o.description}</div>
                     </button>
                   ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* FEAT-010: Adaptive typography (accessibility profile) picker */}
+          {showA11yPicker && (
+            <Card className="border-brand/30 bg-brand-light/10 no-print">
+              <CardContent className="p-3">
+                <p className="text-xs text-muted-foreground mb-2">
+                  Adaptive typography — applied to screen, print and PDF. Each profile is evidence-based and Ofsted-defensible.
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                  {DEFAULT_A11Y_PROFILES.map(p => {
+                    const active = activeA11yProfileId === p.id;
+                    return (
+                      <button
+                        key={p.id}
+                        onClick={() => {
+                          setActiveA11yProfileId(p.id);
+                          try { localStorage.setItem(ACTIVE_A11Y_PROFILE_KEY, p.id); } catch { /* ignore */ }
+                          // Patch the live worksheet so the renderer + PDF pick it up immediately.
+                          setGenerated((prev: any) => prev ? {
+                            ...prev,
+                            metadata: { ...(prev.metadata || {}), accessibilityProfile: p.id },
+                          } : prev);
+                        }}
+                        className={`flex flex-col gap-0.5 px-3 py-2 rounded-lg border text-left transition-all ${
+                          active ? "border-brand bg-white shadow-sm" : "border-border/40 bg-white/60 hover:border-border"
+                        }`}
+                        style={{ fontFamily: p.fontFamily.split(",")[0].replace(/['"]/g, "").trim() }}
+                      >
+                        <div className="flex items-center gap-2">
+                          <div className={`w-3 h-3 rounded-full flex-shrink-0 ${active ? "bg-brand" : "bg-muted"}`} />
+                          <span className="text-xs font-semibold text-foreground">{p.label}</span>
+                        </div>
+                        <span className="text-[10px] text-muted-foreground leading-tight">{p.description}</span>
+                        <span className="text-[9px] text-muted-foreground/70 italic leading-tight">{p.basis}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               </CardContent>
             </Card>

@@ -39,6 +39,12 @@ export function buildPopupHtml(
     sendNeedId?: string;
     isPdf?: boolean;
     landscape?: boolean;
+    /** FEAT-010: extra CSS to inject (e.g. accessibility profile rules) */
+    accessibilityProfileCss?: string;
+    /** FEAT-010: id of the active accessibility profile (sets the wrapper class) */
+    accessibilityProfileId?: string;
+    /** FEAT-010: extra <head> markup (e.g. font preconnects + Google Fonts <link>) */
+    extraHeadHtml?: string;
   }
 ): string {
   const {
@@ -50,6 +56,9 @@ export function buildPopupHtml(
     sendNeedId,
     isPdf = false,
     landscape = false,
+    accessibilityProfileCss,
+    accessibilityProfileId,
+    extraHeadHtml,
   } = options;
 
   const fmt = getSendFormatting(sendNeedId, textSize);
@@ -91,10 +100,20 @@ export function buildPopupHtml(
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${escapeHtml(title)}</title>
+  ${extraHeadHtml || `
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+    <style>
+      @font-face { font-family: "OpenDyslexic"; font-style: normal; font-weight: 400; font-display: swap; src: url("https://cdn.jsdelivr.net/npm/opendyslexic@1.0.3/woff/OpenDyslexic-Regular.woff") format("woff"); }
+      @font-face { font-family: "OpenDyslexic"; font-style: normal; font-weight: 700; font-display: swap; src: url("https://cdn.jsdelivr.net/npm/opendyslexic@1.0.3/woff/OpenDyslexic-Bold.woff") format("woff"); }
+    </style>
+  `}
   <style>
     /* ── KaTeX (inlined to avoid race condition with <link> tag) ── */
     ${katexCss}
   </style>
+  ${accessibilityProfileCss ? `<style>${accessibilityProfileCss}</style>` : ""}
   <style>
     /* ── Reset ── */
     *, *::before, *::after {
@@ -376,7 +395,7 @@ export function buildPopupHtml(
     ${viewMode === "student" ? ".ws-teacher-section { display: none !important; }" : ""}
   </style>
 </head>
-<body>
+<body${accessibilityProfileId && accessibilityProfileId !== "standard" ? ` class="ws-a11y-${accessibilityProfileId}"` : ""}>
   ${contentHtml}
   ${printScript}
 </body>
@@ -463,6 +482,9 @@ export function printWorksheetElement(
     title?: string;
     sendNeedId?: string;
     landscape?: boolean;
+    accessibilityProfileCss?: string;
+    accessibilityProfileId?: string;
+    extraHeadHtml?: string;
   } = {}
 ): void {
   const viewMode = options.viewMode || "student";
@@ -499,6 +521,9 @@ export async function downloadHtmlAsPdf(
     title?: string;
     sendNeedId?: string;
     landscape?: boolean;
+    accessibilityProfileCss?: string;
+    accessibilityProfileId?: string;
+    extraHeadHtml?: string;
   } = {}
 ): Promise<void> {
   const viewMode = options.viewMode || "student";

@@ -20,6 +20,34 @@
     <meta name="apple-mobile-web-app-title" content="Adaptly" />
     <link rel="apple-touch-icon" href="/logo.png" />
 
+    <!-- ── FEAT-010: Accessibility-grade fonts ──
+         Lexend + Atkinson Hyperlegible via Google Fonts (free, evidence-based for
+         dyslexia + low-vision readers). OpenDyslexic via the SIL Open Font License
+         (self-hosted later if needed; CDN below is a free CORS-safe mirror).
+         Pre-connect lets the browser warm DNS+TLS while the React bundle parses,
+         eliminating layout shift when a teacher selects an accessibility profile. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=Atkinson+Hyperlegible:wght@400;700&display=swap" />
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+    <style>
+      /* OpenDyslexic via jsDelivr's free CDN (SIL OFL, redistributable). */
+      @font-face {
+        font-family: "OpenDyslexic";
+        font-style: normal;
+        font-weight: 400;
+        font-display: swap;
+        src: url("https://cdn.jsdelivr.net/npm/opendyslexic@1.0.3/woff/OpenDyslexic-Regular.woff") format("woff");
+      }
+      @font-face {
+        font-family: "OpenDyslexic";
+        font-style: normal;
+        font-weight: 700;
+        font-display: swap;
+        src: url("https://cdn.jsdelivr.net/npm/opendyslexic@1.0.3/woff/OpenDyslexic-Bold.woff") format("woff");
+      }
+    </style>
+
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://adaptly.co.uk/" />

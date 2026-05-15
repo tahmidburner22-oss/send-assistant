@@ -11,6 +11,9 @@
 import React, { forwardRef, useState, useCallback } from "react";
 import { Eye, EyeOff, Pencil } from "lucide-react";
 import { getSendFormatting } from "@/lib/send-data";
+// FEAT-010: Accessibility profiles for adaptive typography (OpenDyslexic,
+// Lexend, Atkinson Hyperlegible, Irlen, KS1 large, EAL-supported, etc.)
+import { getProfileById as getA11yProfileById, buildAccessibilityProfileCss as buildA11yProfileCss } from "@/lib/accessibility-profiles";
 import { extractDiagramSpec, stripDiagramMarker } from "@/lib/ai";
 import SVGDiagram from "@/components/SVGDiagram";
 import katex from "katex";
@@ -4106,10 +4109,20 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
   const hasOverlay = overlayColor && overlayColor !== "white" && overlayColor !== "#ffffff"
     && overlayColor !== "transparent";
 
+  // ── FEAT-010: Accessibility profile resolution ────────────────────────────
+  // Read from metadata.accessibilityProfile so existing call sites (which pass
+  // the worksheet through unchanged) can opt in by setting that field.
+  const a11yProfileId = (worksheet.metadata as any)?.accessibilityProfile as string | undefined;
+  const a11yProfile = getA11yProfileById(a11yProfileId || null);
+  const a11yProfileCss = a11yProfileId && a11yProfileId !== "standard"
+    ? buildA11yProfileCss(a11yProfile)
+    : null;
+  const a11yClass = a11yProfileId ? `ws-a11y-${a11yProfile.id}` : "";
+
   const worksheetCard = (
     <div
       ref={ref}
-      className="worksheet-print-root"
+      className={`worksheet-print-root ${a11yClass}`.trim()}
       style={{
         backgroundColor: overlayColor || "white",
         fontFamily: fmt.fontFamily,
@@ -4129,6 +4142,10 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
         } : {}),
       }}
     >
+      {/* FEAT-010: per-profile typography CSS — scoped to this worksheet only via the .ws-a11y-{id} class. */}
+      {a11yProfileCss && (
+        <style dangerouslySetInnerHTML={{ __html: a11yProfileCss }} />
+      )}
       {/* Colour overlay — sits above all section backgrounds, covers all text boxes */}
       {hasOverlay && (
         <div
