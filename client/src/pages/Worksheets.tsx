@@ -28,6 +28,8 @@ import { aiGenerateWorksheet, aiEditSection, aiScaffoldExistingWorksheet, aiDiff
 import { runFactCheck } from "@/lib/fact-checker";
 import { tagWorksheetForPupil } from "@/lib/evidence-tagger";
 import EvidencePackDialog from "@/components/EvidencePackDialog";
+import { CompanionQRDialog } from "@/components/CompanionQRDialog";
+import { runHintLadder } from "@/lib/hint-ladder";
 import { usePupilScope } from "@/contexts/PupilScopeContext";
 import { runWorksheetPipeline } from "@/lib/engines/pipeline";
 import { applySEND } from "@/lib/engines/adaptationEngine";
@@ -42,7 +44,7 @@ import {
   Eye, EyeOff, GraduationCap, Palette, Edit3, Users, Check, ZoomIn, ZoomOut,
   Mic, MicOff, Image, Search, Clock, Award, ChevronRight, ChevronDown,
   AlertCircle, CheckCircle, RefreshCw, FileDown, X, Wand2, History, Trash2, Info, PenLine, Square, CheckSquare, ListChecks, ClipboardCheck,
-  MessageSquare, Send, RotateCcw, Layers, Volume2, VolumeX, Loader2,
+  MessageSquare, Send, RotateCcw, Layers, Volume2, VolumeX, Loader2, QrCode,
 } from "lucide-react";
 
 // ─── Debounce hook ──────────────────────────────────────────────────────────
@@ -477,6 +479,8 @@ export default function Worksheets() {
   // FEAT-6 — Evidence Pack dialog (EHCP/IEP tagger + Annual-Review export).
   const { pupilId: scopedPupilId } = usePupilScope();
   const [evidencePackOpen, setEvidencePackOpen] = useState(false);
+  // FEAT-005 — Pupil Companion (QR + hint ladder) dialog.
+  const [companionDialogOpen, setCompanionDialogOpen] = useState(false);
 
   // Re-fetch data from server on mount so history count is always current
   useEffect(() => { refreshData(); }, []);
@@ -1783,7 +1787,27 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
           });
         }).catch(() => { /* best-effort */ });
       } catch { /* best-effort */ }
-      // Show quality warnings if detected
+      // ── Phase 4 / FEAT-005 — non-blocking hint-ladder pass ──────────────
+      // Pre-builds the 3-step (nudge → strategy → worked example) hint
+      // ladder that the Pupil Companion view consumes. Fires-and-forgets so
+      // the worksheet renders immediately and the ladders patch into
+      // metadata when the AI returns. Caps at the first 8 questions.
+      try {
+        const wsForLadder = generatedWs;
+        runHintLadder({
+          subject: wsForLadder.metadata?.subject,
+          topic: wsForLadder.metadata?.topic,
+          yearGroup: wsForLadder.metadata?.yearGroup,
+          sections: (wsForLadder.sections as any) || [],
+        }).then((res) => {
+          if (!res?.ladders?.length) return;
+          setGenerated((prev: any) => {
+            if (!prev) return prev;
+            if (prev !== wsForLadder && prev.title !== wsForLadder.title) return prev;
+            return { ...prev, metadata: { ...(prev.metadata || {}), hintLadders: res.ladders } };
+          });
+        }).catch(() => { /* best-effort */ });
+      } catch { /* best-effort */ }
       const qIssues = (generatedWs.metadata as any)?.qualityIssues;
       if (qIssues && qIssues.length > 0) {
         setTimeout(() => {
@@ -4948,6 +4972,19 @@ ${s.content}`).join("\n\n"),
                 <span className="ml-1 text-[10px] bg-brand text-white rounded-full px-1.5 py-0.5 flex-shrink-0">on</span>
               )}
             </Button>
+            {/* FEAT-005 — Pupil Companion mode (QR + hint ladder) */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCompanionDialogOpen(true)}
+              className={(generated?.metadata as any)?.companionShare ? "border-emerald-500 text-emerald-700 bg-emerald-50" : ""}
+              title="Issue a QR code for pupils to open a hint-scaffolded view of this worksheet"
+            >
+              <QrCode className="w-3.5 h-3.5 mr-1.5" /> Pupil mode
+              {(generated?.metadata as any)?.companionShare && (
+                <span className="ml-1 text-[10px] bg-emerald-500 text-white rounded-full px-1.5 py-0.5 flex-shrink-0">live</span>
+              )}
+            </Button>
             <Button
               variant="outline"
               size="sm"
@@ -6266,6 +6303,28 @@ ${s.content}`).join("\n\n"),
         onOpenChange={setEvidencePackOpen}
         initialChildId={scopedPupilId || undefined}
       />
+      {/* FEAT-005 — Pupil Companion QR + hint-ladder dialog. */}
+      {generated && (
+        <CompanionQRDialog
+          open={companionDialogOpen}
+          onOpenChange={setCompanionDialogOpen}
+          worksheet={{
+            title: generated.title,
+            metadata: generated.metadata as any,
+            sections: (generated.sections as any) || [],
+          }}
+          issuedBy={user?.email}
+          onShareIssued={(s) => {
+            setGenerated((prev: any) => {
+              if (!prev) return prev;
+              return {
+                ...prev,
+                metadata: { ...(prev.metadata || {}), companionShare: s },
+              };
+            });
+          }}
+        />
+      )}
     </div>
   );
 }
