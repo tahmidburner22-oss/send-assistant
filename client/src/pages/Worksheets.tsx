@@ -30,6 +30,7 @@ import { tagWorksheetForPupil } from "@/lib/evidence-tagger";
 import EvidencePackDialog from "@/components/EvidencePackDialog";
 import { CompanionQRDialog } from "@/components/CompanionQRDialog";
 import { ClassPackDialog } from "@/components/ClassPackDialog";
+import { LessonBundleDialog } from "@/components/LessonBundleDialog";
 import { runHintLadder } from "@/lib/hint-ladder";
 import { usePupilScope } from "@/contexts/PupilScopeContext";
 import { runWorksheetPipeline } from "@/lib/engines/pipeline";
@@ -45,7 +46,7 @@ import {
   Eye, EyeOff, GraduationCap, Palette, Edit3, Users, Check, ZoomIn, ZoomOut,
   Mic, MicOff, Image, Search, Clock, Award, ChevronRight, ChevronDown,
   AlertCircle, CheckCircle, RefreshCw, FileDown, X, Wand2, History, Trash2, Info, PenLine, Square, CheckSquare, ListChecks, ClipboardCheck,
-  MessageSquare, Send, RotateCcw, Layers, Volume2, VolumeX, Loader2, QrCode,
+  MessageSquare, Send, RotateCcw, Layers, Volume2, VolumeX, Loader2, QrCode, BookOpenCheck,
 } from "lucide-react";
 
 // ─── Debounce hook ──────────────────────────────────────────────────────────
@@ -484,6 +485,8 @@ export default function Worksheets() {
   const [companionDialogOpen, setCompanionDialogOpen] = useState(false);
   // FEAT-004 — Class-pack one-click differentiation dialog.
   const [classPackOpen, setClassPackOpen] = useState(false);
+  // FEAT-009 — Multi-modal lesson bundle dialog.
+  const [lessonBundleOpen, setLessonBundleOpen] = useState(false);
 
   // Re-fetch data from server on mount so history count is always current
   useEffect(() => { refreshData(); }, []);
@@ -5005,6 +5008,16 @@ ${s.content}`).join("\n\n"),
                 <span className="ml-1 text-[10px] bg-muted rounded-full px-1.5 py-0.5 flex-shrink-0">{children.length}</span>
               )}
             </Button>
+            {/* FEAT-009 — Multi-modal lesson bundle (starter + Now/Next/Then + exit ticket) */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setLessonBundleOpen(true)}
+              disabled={!generated}
+              title="Auto-pair this worksheet with a starter slide, Now/Next/Then visual, and exit ticket"
+            >
+              <BookOpenCheck className="w-3.5 h-3.5 mr-1.5" /> Lesson bundle
+            </Button>
             <Button
               variant="outline"
               size="sm"
@@ -6361,6 +6374,21 @@ ${s.content}`).join("\n\n"),
             : null
         }
         initialSelectedIds={scopedPupilId ? [scopedPupilId] : undefined}
+      />
+      {/* FEAT-009 — Multi-modal lesson bundle dialog. */}
+      <LessonBundleDialog
+        open={lessonBundleOpen}
+        onOpenChange={setLessonBundleOpen}
+        worksheet={
+          generated
+            ? {
+                title: generated.title,
+                subtitle: (generated as any).subtitle,
+                sections: (generated.sections as any) || [],
+                metadata: (generated.metadata as any) || {},
+              }
+            : null
+        }
       />
     </div>
   );
