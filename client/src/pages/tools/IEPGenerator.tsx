@@ -28,6 +28,8 @@ import { callAI, parseWithFixes } from "@/lib/ai";
 import { exportToDocx } from "@/lib/docx-export";
 import { downloadHtmlAsPdf, printWorksheetElement } from "@/lib/pdf-generator-v2";
 import { useUserPreferences } from "@/contexts/UserPreferencesContext";
+import EhcpEnhancementsPanel from "@/components/EhcpEnhancementsPanel";
+import { laPackAsPromptInstruction } from "@/lib/ehcp-enhancements";
 import {
   Brain, Upload, FileText, CheckCircle, AlertCircle, ChevronRight,
   ChevronLeft, Sparkles, RefreshCw, Download, Printer, Copy,
@@ -337,7 +339,7 @@ export default function EHCPPlanGenerator() {
 
   const [extracting, setExtracting] = useState(false);
   const [extracted, setExtracted] = useState<ExtractedData | null>(null);
-
+  const [laPackId, setLaPackId] = useState<string>("default");
   const [generating, setGenerating] = useState(false);
   const [genProgress, setGenProgress] = useState("");
   const [sections, setSections] = useState<EHCPSection[]>([]);
@@ -1362,6 +1364,16 @@ Return JSON:
                   {sections.map(section => (
                     <SectionCard key={section.id} section={section} onEdit={editSection} />
                   ))}
+                </div>
+
+                {/* Phase-4 enhancements: golden thread, tribunal score, AR delta, LA pack, redaction */}
+                <div className="mt-4 no-print">
+                  <EhcpEnhancementsPanel
+                    sections={Object.fromEntries(sections.map(s => [s.code, s.content]))}
+                    pupilName={pupilInfo.namedCaseworker || ""}
+                    laPackId={laPackId}
+                    setLaPackId={setLaPackId}
+                  />
                 </div>
 
                 {/* Footer */}

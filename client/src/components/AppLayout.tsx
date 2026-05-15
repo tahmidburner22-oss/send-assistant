@@ -7,6 +7,9 @@ import { useUserPreferences, COLOUR_THEMES } from "@/contexts/UserPreferencesCon
 import { motion, AnimatePresence } from "framer-motion";
 import CommandPalette from "./CommandPalette";
 import FeedbackWidget from "./FeedbackWidget";
+import GlobalPupilPicker from "./GlobalPupilPicker";
+import GlobalRecent from "./GlobalRecent";
+import CreditMeterChip from "./CreditMeterChip";
 import ApiKeyBanner from "./ApiKeyBanner";
 import DSLBanner from "./DSLBanner";
 import {
@@ -221,6 +224,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             {currentPage?.label || "Adaptly"}
           </h1>
           <div className="flex items-center gap-1">
+            <GlobalPupilPicker />
+            <CreditMeterChip />
+            <GlobalRecent />
             <div className="relative">
               <button onClick={() => setNotifOpen(o => !o)} className="p-2 rounded-lg hover:bg-muted transition-colors relative" title={wsConnected ? "Notifications (live)" : "Notifications (reconnecting…)"}>
                 <Bell className="w-4 h-4 text-muted-foreground" />
