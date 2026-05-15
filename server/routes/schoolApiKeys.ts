@@ -177,4 +177,63 @@ router.get("/status", requireAuth, async (req: Request, res: Response) => {
   res.json({ hasKeys: count > 0, count });
 });
 
+// ── POST /api/school-keys/validate — Improvement #2: Validate an API key ────
+router.post("/validate", async (req: Request, res: Response) => {
+  const { provider, apiKey, model, baseUrl } = req.body;
+  if (!provider || !apiKey) return res.status(400).json({ error: "Provider and apiKey required" });
+
+  try {
+    let url: string;
+    let headers: Record<string, string> = {};
+
+    switch (provider) {
+      case "groq":
+        url = "https://api.groq.com/openai/v1/models";
+        headers = { Authorization: `Bearer ${apiKey}` };
+        break;
+      case "gemini":
+        url = `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`;
+        break;
+      case "openai":
+        url = "https://api.openai.com/v1/models";
+        headers = { Authorization: `Bearer ${apiKey}` };
+        break;
+      case "openrouter":
+        url = "https://openrouter.ai/api/v1/models";
+        headers = { Authorization: `Bearer ${apiKey}` };
+        break;
+      case "claude":
+        url = "https://api.anthropic.com/v1/models";
+        headers = { "x-api-key": apiKey, "anthropic-version": "2023-06-01" };
+        break;
+      case "huggingface":
+        url = "https://huggingface.co/api/whoami-v2";
+        headers = { Authorization: `Bearer ${apiKey}` };
+        break;
+      default:
+        // Custom provider — try OpenAI-compatible /models endpoint
+        if (baseUrl) {
+          url = `${baseUrl.replace(/\/+$/, "")}/models`;
+          headers = { Authorization: `Bearer ${apiKey}` };
+        } else {
+          return res.json({ valid: true, message: "Cannot validate custom provider without base URL" });
+        }
+    }
+
+    const response = await fetch(url, {
+      headers,
+      signal: AbortSignal.timeout(8000),
+    });
+
+    if (response.ok || response.status === 200) {
+      res.json({ valid: true, message: "Key is valid" });
+    } else {
+      const errorData = await response.text().catch(() => "");
+      res.status(400).json({ valid: false, error: `Key validation failed (HTTP ${response.status})` });
+    }
+  } catch (err: any) {
+    res.status(400).json({ valid: false, error: err?.message || "Validation request failed" });
+  }
+});
+
 export default router;
