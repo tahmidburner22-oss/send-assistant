@@ -25,6 +25,10 @@ import { enforceSendAdaptations } from './sendEnforcer';
 // irrelevant diagrams, year-group drift, overlong worked examples) even if
 // the LLM slipped past the prompt rules.
 import { runWorksheetPostValidators } from './worksheetPostValidator';
+// Curated UK National Curriculum misconception bank — used to seed
+// diagnostic distractors and target common pupil errors at generation time.
+// See client/src/lib/misconception-bank.ts for the registry + lookup helpers.
+import { buildMisconceptionPromptBlock } from './misconception-bank';
 
 // ─── Built-in keys — hardcoded server-side fallback (always available) ────────
 // These are the admin keys used as fallback when no user key is provided.
@@ -570,6 +574,11 @@ export interface AIWorksheetResult {
     totalMarks?: number;
     estimatedTime?: string;
     adaptations: string[];
+    /** IDs of misconceptions targeted by this worksheet (FEAT-002).
+     *  Populated from the curated bank in misconception-bank.ts and used by
+     *  the marking pipeline to map wrong answers back to the underlying
+     *  misbelief. Optional so existing call sites don't break. */
+    misconceptionsTargeted?: string[];
   };
   isAI: true;
   provider?: string;
@@ -1996,6 +2005,18 @@ SUBJECT-SPECIFIC RULES — ${params.subject.toUpperCase()}:
 - Teacher Key MUST include model answers with mark allocations and acceptable alternatives.`;
     })();
 
+    // ── FEAT-002: Diagnostic misconception targeting ────────────────────────
+    // Curated UK misconception bank seeds the worksheet's distractors and
+    // common-mistakes box with REAL student errors (not random plausible
+    // distractors). The IDs returned here are echoed back in metadata so
+    // the marking pipeline can map a wrong answer to the underlying misbelief.
+    const { block: misconceptionBlock, ids: candidateMisconceptionIds } = buildMisconceptionPromptBlock({
+      subject: params.subject,
+      topic: params.topic,
+      yearGroup: params.yearGroup,
+      limit: 3,
+    });
+
     const structuredSystem = `You are an expert UK teacher creating a professional, print-ready worksheet. You respond with valid raw JSON only — no markdown, no code blocks, no HTML. Every rule below is mandatory.
 SUBJECT TYPE: ${isSTEM ? 'STEM' : 'HUMANITIES'} | SUBJECT: ${params.subject}
 ${readingAgeNote}
@@ -2004,6 +2025,7 @@ ${subjectSpecNote}
 ${tierNote}
 ${ksGcseNote}
 ${subjectSpecificRules}
+${misconceptionBlock}
 QUALITY STANDARD: Every question must be fully usable — no placeholders, no ellipses, no unfinished sentences. Use real numbers, real contexts. Textbook quality. Every question must be at the correct curriculum level for ${params.yearGroup || 'the year group'} — GCSE/KS3/KS4 standard as appropriate.
 ${specExamples ? `\n${specExamples}\n` : ''}
 CRITICAL SEND SEPARATION RULE — READ CAREFULLY:
@@ -2278,6 +2300,33 @@ Return EXACTLY this JSON (raw JSON only, no markdown fences):
         title: typeof s.title === 'string' ? s.title.replace(/\*\*(.+?)\*\*/g, '$1').replace(/\*/g, '').trim() : s.title,
         content: typeof s.content === 'string' ? s.content.replace(/\*\*(.+?)\*\*/g, '$1').replace(/\*/g, '').trim() : s.content,
       }));
+      // ── FEAT-002: strip diagnostic misconception markers from printable
+      // distractors. Markers like "[m-decimal-longer-bigger]" are baked into
+      // distractor lines so the marking pipeline can identify which
+      // misconception a wrong answer maps to. Strip them from the printed
+      // student copy here. They survive in metadata.distractorMap below for
+      // the closed-loop FEAT-003 scan-and-mark flow.
+      const distractorMap: Record<string, string> = {};
+      const MISCO_TAG = /\s*\[(m-[a-z0-9-]+|s-[a-z0-9-]+|c-[a-z0-9-]+|b-[a-z0-9-]+|e-[a-z0-9-]+|h-[a-z0-9-]+|g-[a-z0-9-]+|co-[a-z0-9-]+)\]/g;
+      structuredJson.sections = structuredJson.sections.map((s: any) => {
+        if (typeof s.content !== 'string') return s;
+        const found = Array.from(s.content.matchAll(MISCO_TAG)) as RegExpMatchArray[];
+        if (found.length === 0) return s;
+        // Map distractor letter -> misconception id (best-effort — pulls the line text containing the tag)
+        for (const match of found) {
+          const id = match[1];
+          // Look at the line containing this match
+          const idx = match.index ?? 0;
+          const lineStart = s.content.lastIndexOf('\n', idx) + 1;
+          const lineEnd = s.content.indexOf('\n', idx);
+          const line = s.content.slice(lineStart, lineEnd === -1 ? undefined : lineEnd);
+          const letterMatch = line.match(/^\s*([A-Da-d])[\s.)]/);
+          if (letterMatch) {
+            distractorMap[`${s.title}::${letterMatch[1].toUpperCase()}`] = id;
+          }
+        }
+        return { ...s, content: s.content.replace(MISCO_TAG, '') };
+      });
       // Post-parse: inject pre-fetched svg into diagram sections that have no imageUrl
       // (svg was not embedded in the prompt to avoid token bloat)
       let diagramSlotsFound = 0;
@@ -2299,6 +2348,22 @@ Return EXACTLY this JSON (raw JSON only, no markdown fences):
           examBoard: params.examBoard || 'General',
           sendNeed: params.sendNeed || undefined,
         };
+      }
+      // ── FEAT-002: persist misconception targeting in metadata so the
+      // scan-and-mark pipeline (FEAT-001) and closed-loop pupil model
+      // (FEAT-003) can read it back. Prefer the AI's own list if it returned
+      // one; otherwise fall back to the candidate IDs we sent it.
+      const aiSelected: string[] = Array.isArray(structuredJson.metadata?.misconceptionsTargeted)
+        ? (structuredJson.metadata.misconceptionsTargeted as any[]).filter((x: any) => typeof x === 'string')
+        : [];
+      const finalMisconceptions = aiSelected.length > 0
+        ? aiSelected
+        : (Object.values(distractorMap).length > 0
+          ? Array.from(new Set(Object.values(distractorMap)))
+          : candidateMisconceptionIds);
+      structuredJson.metadata.misconceptionsTargeted = finalMisconceptions;
+      if (Object.keys(distractorMap).length > 0) {
+        (structuredJson.metadata as any).distractorMap = distractorMap;
       }
       // ── Post-validator: deterministic fixes for content bugs flagged in
       // live scrutiny reviews (multi-tick MCQ, duplicate word bank, foreign

@@ -84,6 +84,36 @@ export const WorksheetOutputSchema = z.object({
     qualityWarning: z.string().optional(),
     generatedAt: z.string().optional(),
     provider: z.string().optional(),
+    // FEAT-002: misconceptions deliberately targeted by this worksheet's
+    // distractors and common-mistakes box. Used by FEAT-001 marking + FEAT-003
+    // closed-loop pupil model.
+    misconceptionsTargeted: z.array(z.string()).optional(),
+    // Map of "<sectionTitle>::<distractorLetter>" -> misconception id.
+    // Optional, populated when MCQ distractors are tagged at generation time.
+    distractorMap: z.record(z.string()).optional(),
+    // FEAT-005: EHCP / IEP outcome links (added in a later batch but reserved here).
+    evidenceLinks: z.array(z.object({
+      questionRef: z.string(),
+      outcomeId: z.string().optional(),
+      target: z.string().optional(),
+      strand: z.string().optional(),
+      ncRef: z.string().optional(),
+    })).optional(),
+    // FEAT-008: citation-backed claims (reserved here for the next batch).
+    citations: z.array(z.object({
+      ref: z.number(),
+      claim: z.string(),
+      source: z.string(),
+      url: z.string().optional(),
+      verified: z.boolean(),
+    })).optional(),
+    factCheck: z.object({
+      verifiedCount: z.number(),
+      flaggedCount: z.number(),
+      ranAt: z.string(),
+    }).optional(),
+    // FEAT-007: pre-baked hint ladders for pupil-companion mode.
+    hintLadders: z.record(z.array(z.string()).max(5)).optional(),
   }).optional(),
   isAI: z.boolean().optional(),
   provider: z.string().optional(),

@@ -6677,6 +6677,41 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
         );
       })}
 
+      {/* ── FEAT-002: Teacher-only diagnostic misconception callout ──
+       * Surfaces the misconception ids deliberately targeted by this
+       * worksheet's distractors and common-mistakes box. Lets the teacher
+       * see at a glance which misbeliefs the questions are designed to
+       * diagnose, and is consumed by the marking pipeline (FEAT-001).
+       * Hidden in student view + print to keep the printed worksheet clean.
+       */}
+      {isTeacherView && Array.isArray((worksheet.metadata as any)?.misconceptionsTargeted) && ((worksheet.metadata as any).misconceptionsTargeted as string[]).length > 0 && !isRevisionMat && (
+        <div className="ws-misconception-callout no-print" style={{
+          marginTop: "12px",
+          padding: "10px 14px",
+          background: "#fef3c7",
+          border: "1.5px solid #f59e0b",
+          borderRadius: "6px",
+          fontFamily: fmt.fontFamily,
+          fontSize: `${fmt.fontSize - 2}px`,
+          color: "#78350f",
+        }}>
+          <div style={{ fontWeight: 700, marginBottom: "4px", display: "flex", alignItems: "center", gap: "6px" }}>
+            <span aria-hidden="true">🎯</span>
+            <span>Diagnostic targets — teacher only</span>
+          </div>
+          <p style={{ margin: "0 0 6px 0", lineHeight: 1.4 }}>
+            This worksheet's distractors and common-mistakes box are designed to surface these misconceptions:
+          </p>
+          <ul style={{ margin: 0, paddingLeft: "18px" }}>
+            {((worksheet.metadata as any).misconceptionsTargeted as string[]).map((id) => (
+              <li key={id} style={{ marginBottom: "2px" }}>
+                <code style={{ background: "rgba(120,53,15,0.1)", padding: "1px 5px", borderRadius: "3px", fontSize: "0.92em" }}>{id}</code>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       {/* ── Footer ── */}
       {isRevisionMat ? (
         <div style={{ marginTop: "6px", padding: "4px 8px", display: "flex", justifyContent: "space-between", fontSize: "9px", color: "#9ca3af", fontFamily: fmt.fontFamily }}>
