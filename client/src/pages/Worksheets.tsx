@@ -18,11 +18,14 @@ import { subjects, yearGroups, sendNeeds, examBoards, difficulties, colorOverlay
 import { generateWorksheet, type GeneratedWorksheet } from "@/lib/worksheet-generator";
 import { downloadWorksheetPdf } from "@/lib/pdf-generator";
 import { downloadHtmlAsPdf, printWorksheetElement, serialiseElement, buildPopupHtml, getKatexCssInline } from "@/lib/pdf-generator-v2";
+import { DEFAULT_A11Y_PROFILES, getA11yProfileById, buildA11yProfileCss } from "@/lib/accessibility-profiles";
 import WorksheetRenderer, { renderMath, stripKatexToPlainText } from "@/components/WorksheetRenderer";
+import ProgressionStrip from "@/components/ProgressionStrip";
 import { worksheetBank, type BankWorksheet } from "@/lib/worksheet-bank";
 import { getSyllabusTopics, type SyllabusTopic } from "@/lib/syllabus-data";
 import { getSubtopics } from "@/lib/subtopics-data";
 import { aiGenerateWorksheet, aiEditSection, aiScaffoldExistingWorksheet, aiDifferentiateExistingWorksheet, parseNaturalLanguageInput, aiScenarioSwap, aiAdjustReadingLevel } from "@/lib/ai";
+import { runFactCheck } from "@/lib/fact-checker";
 import { runWorksheetPipeline } from "@/lib/engines/pipeline";
 import { applySEND } from "@/lib/engines/adaptationEngine";
 // examPaperBuilder is dynamically imported inside handlers to avoid loading the large question bank on initial page load
@@ -637,6 +640,8 @@ export default function Worksheets() {
   }, [subject, topic, yearGroup, sendNeed, difficulty, examBoard]);
   const [viewMode, setViewMode] = useState<"teacher" | "student">("student");
   const [showOverlayPicker, setShowOverlayPicker] = useState(false);
+  const [showA11yPicker, setShowA11yPicker] = useState(false);
+  const [activeA11yProfileId, setActiveA11yProfileId] = useState<string>("standard");
   const [editMode, setEditMode] = useState(false);
   const [hiddenSections, setHiddenSections] = useState<Set<number>>(new Set());
   const [hideHeader, setHideHeader] = useState(false);
@@ -1724,6 +1729,36 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
       setHiddenSections(new Set());
       setHideHeader(false);
       setDiffVersions({});
+      // ── Phase 4 / FEAT-010 — preserve teacher's chosen typography profile
+      // across regenerations by writing it into the new worksheet's metadata.
+      if (activeA11yProfileId && activeA11yProfileId !== "standard") {
+        setGenerated((prev: any) => {
+          if (!prev) return prev;
+          return { ...prev, metadata: { ...(prev.metadata || {}), accessibilityProfile: activeA11yProfileId } };
+        });
+      }
+      // ── Phase 4 / FEAT-008 — non-blocking citation pass ──────────────────
+      // Run a separate AI call against the UK whitelist to tag claims with
+      // citations and flag unverified content. Fires-and-forgets so the UI
+      // renders the worksheet immediately, then patches metadata.factCheck
+      // when the result returns. Failures are silent (best-effort enrichment).
+      try {
+        const wsForCheck = generatedWs;
+        runFactCheck({
+          worksheet: {
+            title: wsForCheck.title,
+            metadata: wsForCheck.metadata as any,
+            sections: (wsForCheck.sections as any) || [],
+          },
+        }).then((factCheck) => {
+          setGenerated((prev: any) => {
+            if (!prev) return prev;
+            // Only attach if the user is still viewing the same worksheet
+            if (prev !== wsForCheck && prev.title !== wsForCheck.title) return prev;
+            return { ...prev, metadata: { ...(prev.metadata || {}), factCheck } };
+          });
+        }).catch(() => { /* best-effort */ });
+      } catch { /* best-effort */ }
       // Show quality warnings if detected
       const qIssues = (generatedWs.metadata as any)?.qualityIssues;
       if (qIssues && qIssues.length > 0) {
@@ -2364,6 +2399,8 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
   const handlePrintWithOptions = (options: PrintOptions) => {
     const container = worksheetRef.current || (document.querySelector(".worksheet-content") as HTMLElement);
     if (!container) return;
+    const a11yId = (generated?.metadata as any)?.accessibilityProfile || activeA11yProfileId;
+    const a11yProfile = a11yId && a11yId !== "standard" ? getA11yProfileById(a11yId) : null;
     printWorksheetElement(container, {
       overlayColor: overlayBg,
       viewMode: options.view,
@@ -2372,6 +2409,8 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
       title: generated?.title,
       sendNeedId: generated?.metadata?.sendNeed || sendNeed || undefined,
       landscape: isRevisionMat,
+      accessibilityProfileId: a11yId !== "standard" ? a11yId : undefined,
+      accessibilityProfileCss: a11yProfile ? buildA11yProfileCss(a11yProfile) : undefined,
     });
   };
   // ─── Paginated Print Preview ────────────────────────────────────────────────
@@ -4835,6 +4874,17 @@ ${s.content}`).join("\n\n"),
             <Button
               variant="outline"
               size="sm"
+              onClick={() => setShowA11yPicker(!showA11yPicker)}
+              className={activeA11yProfileId !== "standard" ? "border-brand text-brand bg-brand-light" : ""}
+            >
+              <Eye className="w-3.5 h-3.5 mr-1.5" /> Typography
+              {activeA11yProfileId !== "standard" && (
+                <span className="ml-1 text-[10px] bg-brand text-white rounded-full px-1.5 py-0.5 flex-shrink-0">on</span>
+              )}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => setShowSectionPicker(p => !p)}
               className={showSectionPicker ? "border-brand text-brand bg-brand-light" : ""}
             >
@@ -5053,6 +5103,38 @@ ${s.content}`).join("\n\n"),
             </Card>
           )}
 
+          {/* Phase 4 / FEAT-010 — Accessibility typography picker */}
+          {showA11yPicker && (
+            <Card className="border-border/50 no-print">
+              <CardContent className="p-3">
+                <p className="text-xs text-muted-foreground mb-2">
+                  Adaptive typography for dyslexia, low vision, EAL, and visual stress. Applies to screen, print, and PDF — the worksheet is regenerated visually but the questions stay the same.
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {DEFAULT_A11Y_PROFILES.map(p => (
+                    <button
+                      key={p.id}
+                      onClick={() => {
+                        setActiveA11yProfileId(p.id);
+                        setShowA11yPicker(false);
+                        // Persist to the live worksheet metadata so the renderer + PDF pick it up
+                        setGenerated((prev: any) => {
+                          if (!prev) return prev;
+                          return { ...prev, metadata: { ...(prev.metadata || {}), accessibilityProfile: p.id } };
+                        });
+                      }}
+                      className={`p-2 rounded-lg border-2 transition-all text-left ${activeA11yProfileId === p.id ? "border-brand bg-brand-light/30" : "border-border/50 hover:border-border"}`}
+                      style={p.background ? { backgroundColor: p.background } : undefined}
+                    >
+                      <div className="text-xs font-semibold text-foreground">{p.label}</div>
+                      <div className="text-[10px] text-muted-foreground mt-0.5 leading-tight">{p.description}</div>
+                    </button>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Section visibility picker */}
           {showSectionPicker && generated && (
             <Card className="border-brand/30 bg-brand-light/10 no-print">
@@ -5170,6 +5252,35 @@ ${s.content}`).join("\n\n"),
                 <MicOff className="h-4 w-4 mr-1" />Stop
               </Button>
             </div>
+          )}
+
+          {/* Phase 4 / FEAT-006 — Curriculum progression strip */}
+          {generated && (
+            <ProgressionStrip
+              subject={generated.metadata?.subject}
+              topic={generated.metadata?.topic}
+              onGeneratePrerequisite={(step) => {
+                // Re-trigger generation with the prerequisite step's title as topic
+                setTopic(step.title);
+                if (step.description) {
+                  setAdditionalInstructions((prev) =>
+                    [prev, `5-minute starter recap of: ${step.description}`].filter(Boolean).join("\n")
+                  );
+                }
+                toast.info(`Topic set to "${step.title}". Click Generate.`);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+              onGenerateExtension={(step) => {
+                setTopic(step.title);
+                if (step.description) {
+                  setAdditionalInstructions((prev) =>
+                    [prev, `Extension worksheet: ${step.description}`].filter(Boolean).join("\n")
+                  );
+                }
+                toast.info(`Topic set to "${step.title}". Click Generate.`);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+            />
           )}
 
           {/* Worksheet content — uses new WorksheetRenderer for pixel-perfect print/PDF */}

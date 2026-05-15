@@ -39,6 +39,10 @@ export function buildPopupHtml(
     sendNeedId?: string;
     isPdf?: boolean;
     landscape?: boolean;
+    /** Phase 4 / FEAT-010 — accessibility profile id (e.g. "dyslexia-lexend"). */
+    accessibilityProfileId?: string;
+    /** Phase 4 / FEAT-010 — pre-built CSS for the active accessibility profile. */
+    accessibilityProfileCss?: string;
   }
 ): string {
   const {
@@ -50,6 +54,8 @@ export function buildPopupHtml(
     sendNeedId,
     isPdf = false,
     landscape = false,
+    accessibilityProfileId,
+    accessibilityProfileCss,
   } = options;
 
   const fmt = getSendFormatting(sendNeedId, textSize);
@@ -91,10 +97,17 @@ export function buildPopupHtml(
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${escapeHtml(title)}</title>
+  <!-- Phase 4 / FEAT-010 — Accessibility fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/opendyslexic@1.0.3/font/css/opendyslexic.css" rel="stylesheet">
   <style>
     /* ── KaTeX (inlined to avoid race condition with <link> tag) ── */
     ${katexCss}
   </style>
+  ${accessibilityProfileCss ? `<style>\n    /* ── Phase 4 / FEAT-010 — Accessibility profile overrides ── */\n    ${accessibilityProfileCss}\n  </style>` : ""}
   <style>
     /* ── Reset ── */
     *, *::before, *::after {
@@ -376,7 +389,7 @@ export function buildPopupHtml(
     ${viewMode === "student" ? ".ws-teacher-section { display: none !important; }" : ""}
   </style>
 </head>
-<body>
+<body class="${accessibilityProfileId ? `ws-a11y-${escapeHtml(accessibilityProfileId)}` : ""}">
   ${contentHtml}
   ${printScript}
 </body>
@@ -463,6 +476,8 @@ export function printWorksheetElement(
     title?: string;
     sendNeedId?: string;
     landscape?: boolean;
+    accessibilityProfileId?: string;
+    accessibilityProfileCss?: string;
   } = {}
 ): void {
   const viewMode = options.viewMode || "student";
@@ -499,6 +514,8 @@ export async function downloadHtmlAsPdf(
     title?: string;
     sendNeedId?: string;
     landscape?: boolean;
+    accessibilityProfileId?: string;
+    accessibilityProfileCss?: string;
   } = {}
 ): Promise<void> {
   const viewMode = options.viewMode || "student";
