@@ -29,6 +29,7 @@ import { runFactCheck } from "@/lib/fact-checker";
 import { tagWorksheetForPupil } from "@/lib/evidence-tagger";
 import EvidencePackDialog from "@/components/EvidencePackDialog";
 import { CompanionQRDialog } from "@/components/CompanionQRDialog";
+import { ClassPackDialog } from "@/components/ClassPackDialog";
 import { runHintLadder } from "@/lib/hint-ladder";
 import { usePupilScope } from "@/contexts/PupilScopeContext";
 import { runWorksheetPipeline } from "@/lib/engines/pipeline";
@@ -481,6 +482,8 @@ export default function Worksheets() {
   const [evidencePackOpen, setEvidencePackOpen] = useState(false);
   // FEAT-005 — Pupil Companion (QR + hint ladder) dialog.
   const [companionDialogOpen, setCompanionDialogOpen] = useState(false);
+  // FEAT-004 — Class-pack one-click differentiation dialog.
+  const [classPackOpen, setClassPackOpen] = useState(false);
 
   // Re-fetch data from server on mount so history count is always current
   useEffect(() => { refreshData(); }, []);
@@ -4985,6 +4988,23 @@ ${s.content}`).join("\n\n"),
                 <span className="ml-1 text-[10px] bg-emerald-500 text-white rounded-full px-1.5 py-0.5 flex-shrink-0">live</span>
               )}
             </Button>
+            {/* FEAT-004 — Class pack: build a per-pupil differentiated booklet */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setClassPackOpen(true)}
+              disabled={!generated || children.length === 0}
+              title={
+                children.length === 0
+                  ? "Register pupils first to build a class pack"
+                  : "Differentiate this worksheet for every pupil in your class — one booklet, one click"
+              }
+            >
+              <Users className="w-3.5 h-3.5 mr-1.5" /> Class pack
+              {children.length > 0 && (
+                <span className="ml-1 text-[10px] bg-muted rounded-full px-1.5 py-0.5 flex-shrink-0">{children.length}</span>
+              )}
+            </Button>
             <Button
               variant="outline"
               size="sm"
@@ -6325,6 +6345,23 @@ ${s.content}`).join("\n\n"),
           }}
         />
       )}
+      {/* FEAT-004 — Class-pack one-click differentiation dialog. */}
+      <ClassPackDialog
+        open={classPackOpen}
+        onOpenChange={setClassPackOpen}
+        pupils={children}
+        worksheet={
+          generated
+            ? {
+                title: generated.title,
+                subtitle: (generated as any).subtitle,
+                sections: (generated.sections as any) || [],
+                metadata: (generated.metadata as any) || {},
+              }
+            : null
+        }
+        initialSelectedIds={scopedPupilId ? [scopedPupilId] : undefined}
+      />
     </div>
   );
 }
