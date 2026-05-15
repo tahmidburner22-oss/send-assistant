@@ -493,6 +493,100 @@ export const SUBJECT_PROFILES: Record<SubjectKey, SubjectProfile> = {
   },
 };
 
+// ─── Worksheet Blueprints ─────────────────────────────────────────────────────
+/**
+ * Per-subject worksheet skeleton blueprints.
+ * These define the structure, question DNA, worked-example shapes, and
+ * section divider labels so Maths worksheets are genuinely different from
+ * English, History, Geography, etc.
+ */
+export interface WorksheetBlueprint {
+  /** Ordered list of section blocks the worksheet emits. */
+  blocks: string[];
+  /** Short description of how questions should be shaped. */
+  questionDNA: string;
+  /** Shape of the worked example for this subject. */
+  workedExampleShape: string;
+  /** Section divider labels (3 tiers). */
+  dividerLabels: [string, string, string];
+  /** Whether Key Vocabulary should be suppressed. */
+  suppressVocab?: boolean;
+}
+
+export const WORKSHEET_BLUEPRINTS: Partial<Record<SubjectKey, WorksheetBlueprint>> = {
+  mathematics: {
+    blocks: ["header", "lo", "worked-example", "fluency(8q numerical)", "reasoning(3q)", "problem-solving(2q)", "challenge", "answers"],
+    questionDNA: "ALL questions must be 100% calculation-based. Never ask students to explain, describe, define, or write prose. Every question requires a numerical or algebraic answer with full working shown.",
+    workedExampleShape: "Formula → Substitute values → Calculate step-by-step → Answer with correct units",
+    dividerLabels: ["SECTION 1 — FLUENCY", "SECTION 2 — REASONING", "SECTION 3 — PROBLEM SOLVING"],
+    suppressVocab: true,
+  },
+  english: {
+    blocks: ["header", "lo", "source-text-with-line-numbers", "glossary", "retrieval(line refs)", "language-analysis", "structure", "evaluation", "writing-task", "model-paragraph", "answers"],
+    questionDNA: "Questions must require close textual analysis. Students must quote from the source text using line references. Focus on writer's methods, language effects, and structural choices.",
+    workedExampleShape: "PEEL chain: Point (identify technique) → Evidence (embedded quotation with line ref) → Explain (effect on reader + AO breakdown) → Link (to writer's intention/context)",
+    dividerLabels: ["SECTION 1 — RETRIEVAL & LANGUAGE", "SECTION 2 — STRUCTURE & EVALUATION", "SECTION 3 — EXTENDED WRITING"],
+  },
+  history: {
+    blocks: ["header", "lo", "timeline", "key-individuals", "source-extract", "source-utility", "knowledge", "explain", "extended-judgement", "answers"],
+    questionDNA: "Questions must use official GCSE command words (Describe, Explain why, How far do you agree, How useful). Extended answers require a supported judgement with evidence from multiple factors.",
+    workedExampleShape: "Because/therefore chain: Claim → Supporting evidence (specific date/name/event) → Explanation of significance → Link to question/provenance note",
+    dividerLabels: ["SECTION 1 — KNOWLEDGE & SOURCE ANALYSIS", "SECTION 2 — EXPLAIN & CAUSATION", "SECTION 3 — JUDGEMENT & EVALUATION"],
+  },
+  geography: {
+    blocks: ["header", "lo", "case-study-fast-facts", "map-or-graph", "process-explain", "data-Q", "evaluation", "answers"],
+    questionDNA: "Questions must reference named case studies with real places, dates, and figures. Data questions require interpretation of statistics. Evaluation questions require balanced assessment of strategies.",
+    workedExampleShape: "Case study application: Identify process → Apply to named location → Use specific data/figures → Evaluate effectiveness/impact",
+    dividerLabels: ["SECTION 1 — KNOWLEDGE & PROCESSES", "SECTION 2 — APPLICATION & DATA", "SECTION 3 — EVALUATION"],
+  },
+  biology: {
+    blocks: ["header", "lo", "vocabulary", "common-mistakes", "worked-example", "diagram", "questions", "challenge", "answers"],
+    questionDNA: "Mix of recall, application, and extended response. Required practical questions must identify IV/DV/CV. Extended answers use the command word hierarchy: State(1m) → Describe(2-3m) → Explain(4-6m).",
+    workedExampleShape: "Scientific method: State principle/equation → Apply to context → Show calculation with units → State conclusion with scientific reasoning",
+    dividerLabels: ["SECTION 1 — RECALL & DEFINITIONS", "SECTION 2 — APPLICATION", "SECTION 3 — ANALYSIS & EVALUATION"],
+  },
+  chemistry: {
+    blocks: ["header", "lo", "vocabulary", "common-mistakes", "worked-example", "diagram", "questions", "challenge", "answers"],
+    questionDNA: "Calculations must show formula → substitution → answer with units. Chemical equations must be balanced with state symbols. Required practical questions must reference real methods.",
+    workedExampleShape: "Balanced equation with state symbols → Moles calculation (formula triangle) → Substitution → Answer with correct units and significant figures",
+    dividerLabels: ["SECTION 1 — RECALL & EQUATIONS", "SECTION 2 — CALCULATIONS & APPLICATION", "SECTION 3 — ANALYSIS & EVALUATION"],
+  },
+  physics: {
+    blocks: ["header", "lo", "vocabulary", "common-mistakes", "worked-example", "diagram", "questions", "challenge", "answers"],
+    questionDNA: "Every calculation must show formula → rearrangement → substitution → answer with SI units. Formula triangles for key relationships. Required practicals must identify variables.",
+    workedExampleShape: "State formula → Rearrange if needed → Substitute values with units → Calculate → State answer with correct SI units and appropriate significant figures",
+    dividerLabels: ["SECTION 1 — RECALL & QUANTITIES", "SECTION 2 — CALCULATIONS & APPLICATION", "SECTION 3 — ANALYSIS & EVALUATION"],
+  },
+  computer_science: {
+    blocks: ["header", "lo", "vocabulary", "common-mistakes", "worked-example", "diagram", "questions", "challenge", "answers"],
+    questionDNA: "Pseudocode in CAPITALS for keywords. Trace tables for algorithms. Binary/hex conversions shown step-by-step. Extended answers explain HOW systems work, not just WHAT they do.",
+    workedExampleShape: "Problem statement → Pseudocode solution (indented, CAPITALISED keywords) → Trace table showing execution → Output with explanation",
+    dividerLabels: ["SECTION 1 — RECALL & DEFINITIONS", "SECTION 2 — APPLICATION & ALGORITHMS", "SECTION 3 — DESIGN & EVALUATION"],
+  },
+  science: {
+    blocks: ["header", "lo", "vocabulary", "common-mistakes", "worked-example", "diagram", "questions", "challenge", "answers"],
+    questionDNA: "Use command word hierarchy: State(1m), Describe(2-3m), Explain(4-6m). Required practicals must identify variables. Calculations show formula → substitute → answer with units.",
+    workedExampleShape: "State principle → Apply to context → Calculate with units (if applicable) → Conclude with scientific reasoning",
+    dividerLabels: ["SECTION 1 — RECALL", "SECTION 2 — UNDERSTANDING", "SECTION 3 — APPLICATION & ANALYSIS"],
+  },
+};
+
+/**
+ * Returns the worksheet blueprint for a subject, with a sensible default fallback.
+ */
+export function getWorksheetBlueprint(subjectOrKey: string | SubjectKey | undefined): WorksheetBlueprint {
+  const profile = getSubjectProfile(subjectOrKey);
+  const blueprint = WORKSHEET_BLUEPRINTS[profile.key];
+  if (blueprint) return blueprint;
+  // Default fallback for subjects without a dedicated blueprint
+  return {
+    blocks: ["header", "lo", "vocabulary", "common-mistakes", "worked-example", "diagram", "questions", "challenge", "answers"],
+    questionDNA: "Use official GCSE command words. Questions must test genuine understanding at the appropriate year group level.",
+    workedExampleShape: "Clear step-by-step demonstration of the key skill or concept",
+    dividerLabels: ["SECTION 1 — RECALL", "SECTION 2 — UNDERSTANDING", "SECTION 3 — APPLICATION & ANALYSIS"],
+  };
+}
+
 // ─── Auto-detection ───────────────────────────────────────────────────────────
 
 /**

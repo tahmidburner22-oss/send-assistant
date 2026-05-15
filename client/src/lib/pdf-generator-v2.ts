@@ -118,8 +118,9 @@ export function buildPopupHtml(
     /* ── Page setup ── */
     @page {
       size: A4 ${landscape ? "landscape" : "portrait"};
-      margin: ${landscape ? "6mm" : "12mm 12mm 12mm 12mm"};
+      margin: ${landscape ? "6mm" : "12mm 12mm 14mm 12mm"};
     }
+    /* Phase 2.4: Page numbers in print footer (rendered by browser print engine) */
 
     /* ── Screen preview ── */
     @media screen {

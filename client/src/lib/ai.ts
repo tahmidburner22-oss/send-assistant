@@ -18,7 +18,7 @@ import { allTopics as worksheetAllTopics } from './worksheet-generator';
 // (client/src/pages/tools/PresentationMaker.tsx). One source of truth
 // prevents the two generators drifting apart and guarantees content matches.
 import { getSendNoteForWorksheet, getSendSectionTitles } from './sendPromptFragments';
-import { buildSubjectPromptFragments } from './subject-profiles';
+import { buildSubjectPromptFragments, getWorksheetBlueprint } from './subject-profiles';
 import { enforceSendAdaptations } from './sendEnforcer';
 // Deterministic post-generation validators — fix the specific content bugs
 // teachers flagged in scrutiny reviews (multi-tick MCQ, duplicate word bank,
@@ -666,6 +666,8 @@ export async function aiGenerateWorksheet(params: {
   isRevisionMat?: boolean; // When true, generate a revision mat instead of a standard worksheet
   selectedSections?: string[]; // Which sections to include (from the sections selector)
   subtopic?: string; // Optional subtopic for more specific generation
+  wantHandwriting?: boolean; // Phase 4: When true, include handwriting trace section (EYFS–Year 2)
+  handwritingVariant?: "trace-only" | "trace-copy" | "look-cover-write" | "sound-write"; // Phase 4: handwriting activity type
 }): Promise<AIWorksheetResult> {
 
   // ── REVISION MAT: completely separate prompt path ─────────────────────────
@@ -1839,6 +1841,11 @@ ABSOLUTE RULES:
     const wantSectionC = secs.includes('section-c');
     const wantSelfReflection = secs.includes('self-reflection');
 
+    // ── Blueprint-driven subject divergence (Phase 1) ─────────────────────────
+    const blueprint = getWorksheetBlueprint(params.subject);
+    // Suppress vocabulary for Maths (blueprint.suppressVocab = true)
+    const effectiveWantKeyVocab = wantKeyVocab && !blueprint.suppressVocab;
+
     // Retrieve spec-aligned example questions for this topic (if available)
     const specExamples = getSpecQuestions(params.subject, params.topic);
 
@@ -2006,6 +2013,7 @@ ${ksGcseNote}
 ${subjectSpecificRules}
 QUALITY STANDARD: Every question must be fully usable — no placeholders, no ellipses, no unfinished sentences. Use real numbers, real contexts. Textbook quality. Every question must be at the correct curriculum level for ${params.yearGroup || 'the year group'} — GCSE/KS3/KS4 standard as appropriate.
 ${specExamples ? `\n${specExamples}\n` : ''}
+${blueprintAnchor}
 CRITICAL SEND SEPARATION RULE — READ CAREFULLY:
 SEND adaptations affect FORMATTING AND PRESENTATION ONLY. They must NEVER lower the academic challenge or change what is being assessed.
 - challenge level = ability tier (Foundation/Standard/Higher/Scaffolded)
@@ -2085,6 +2093,21 @@ CRITICAL STRUCTURE RULE: ALL questions come ONLY from Section A (True/False, MCQ
     //         Diagram B → Section C Questions → Challenge → Self Reflection → Teacher Key
     const structuredSections: string[] = [];
 
+    // Blueprint-driven question DNA injection (subject-specific question shaping)
+    const blueprintAnchor = `
+SUBJECT BLUEPRINT — QUESTION DNA:
+${blueprint.questionDNA}
+
+WORKED EXAMPLE SHAPE:
+${blueprint.workedExampleShape}
+
+SECTION DIVIDER LABELS (use these exact labels when referring to sections):
+- ${blueprint.dividerLabels[0]}
+- ${blueprint.dividerLabels[1]}
+- ${blueprint.dividerLabels[2]}
+`;
+
+
     // 1. Learning Objective
     if (wantLO) {
       structuredSections.push(`{"title": "Learning Objective", "type": "objective", "content": "By the end of this lesson, students will be able to [one clear, specific learning objective for ${params.topic}]"}`);
@@ -2096,7 +2119,7 @@ CRITICAL STRUCTURE RULE: ALL questions come ONLY from Section A (True/False, MCQ
     }
 
     // 3. Key Vocabulary
-    if (wantKeyVocab) {
+    if (effectiveWantKeyVocab) {
       structuredSections.push(`{"title": "Key Vocabulary", "type": "vocabulary", "content": "[key term 1 for ${params.topic}] — [precise, curriculum-accurate definition in one sentence]\n[key term 2 for ${params.topic}] — [precise, curriculum-accurate definition in one sentence]\n[key term 3 for ${params.topic}] — [precise, curriculum-accurate definition in one sentence]\n[key term 4 for ${params.topic}] — [precise, curriculum-accurate definition in one sentence]\n[key term 5 for ${params.topic}] — [precise, curriculum-accurate definition in one sentence]"}`);
     }
 
@@ -2110,8 +2133,20 @@ CRITICAL STRUCTURE RULE: ALL questions come ONLY from Section A (True/False, MCQ
       if (isMaths) {
         structuredSections.push(`{"title": "Worked Example", "type": "example", "content": "Study this worked example carefully before attempting the questions.\n\nQuestion: [A specific ${params.topic} problem with real numbers]\n\nStep 1: [First step \u2014 state the method or formula used]\nStep 2: [Substitute values and show calculation]\nStep 3: [Complete the calculation]\nAnswer: [Final answer with correct units/form]\n\n\u2713 Key point: [One sentence explaining the key method or rule]"}`);
       } else {
-        structuredSections.push(`{"title": "Worked Example", "type": "example", "content": "Study this example carefully.\n\n[A clear, specific example demonstrating the key concept of ${params.topic}]\n\nStep 1: [First step]\nStep 2: [Second step]\nStep 3: [Third step \u2014 conclusion or result]\n\n\u2713 Key point: [One sentence explaining the main principle]"}`);
+        structuredSections.push(`{"title": "Worked Example", "type": "example", "content": "Study this example carefully.\n\n[A clear, specific example demonstrating the key concept of ${params.topic}]\n\nFollow this shape: ${blueprint.workedExampleShape}\n\nStep 1: [First step]\nStep 2: [Second step]\nStep 3: [Third step \u2014 conclusion or result]\n\n\u2713 Key point: [One sentence explaining the main principle]"}`);
       }
+    }
+
+    // 5b. Subject-specific blocks (blueprint-driven, emitted between Worked Example and Section A)
+    if (isEnglishLang) {
+      structuredSections.push(`{"title": "Source Text", "type": "source-text", "content": "[Write a high-quality source text of 12-20 lines on or related to ${params.topic}. Include line numbers (Line 1, Line 2, etc.) in the margin. The text should be engaging, age-appropriate for ${params.yearGroup}, and contain clear examples of language techniques for analysis. Genre: fiction OR non-fiction as appropriate to the topic.]"}`);
+    }
+    if (isHistory) {
+      structuredSections.push(`{"title": "Key Chronology", "type": "timeline", "content": "[Create a timeline of 5-7 key dates/events for ${params.topic}. Format: DATE — EVENT — SIGNIFICANCE (one line each). Dates must be historically accurate.]"}`);
+      structuredSections.push(`{"title": "Key Individuals", "type": "key-individuals", "content": "[List 3-4 key historical figures relevant to ${params.topic}. Format: NAME (dates) — ROLE — KEY CONTRIBUTION/ACTION. Each must be factually accurate.]"}`);
+    }
+    if (isGeography) {
+      structuredSections.push(`{"title": "Case Study — Fast Facts", "type": "case-study-fast-facts", "content": "[Provide fast facts for a real named case study relevant to ${params.topic}. Include: Location, Date(s), Scale/magnitude, Key statistics (deaths/GDP impact/area affected), Category (HIC/LIC/NEE). All data must be factually accurate.]"}`);
     }
 
     // 6. Section A Questions (True/False, MCQ, Word Bank, Match) — BEFORE Diagram A
@@ -2353,6 +2388,7 @@ Structure required:
 6. ${isPrimary ? (yearNum <= 2 ? "Let's Practise" : "Let's Practise More") : "SECTION 2 — UNDERSTANDING (Q4 Label/Diagram, Q5 Source/Extract, Q6 Table Completion)"}
 7. ${isPrimary ? "Think About It (real-life questions)" : "SECTION 3 — APPLICATION & ANALYSIS (Q7 Extended, Q8 Diagram+Answer, Q9 Evaluative)"}
 8. ${isPrimary ? "Super Challenge!" : "Challenge Question"}
+${isPrimary && yearNum <= 2 && params.wantHandwriting ? `8b. Handwriting Practice — "Trace and Write" section with 5-8 spelling words from the topic. Each word on its own line. Type: "handwriting-trace". Config: { "rows": 3, "lineHeight": "20mm", "opacity": 0.35, "variant": "${params.handwritingVariant || 'trace-copy'}" }` : ''}
 9. ${isPrimary ? "How Did I Do?" : "Self Reflection"}
 10. Mark Scheme (teacher only)
 11. Teacher Notes (teacher only)
