@@ -8,10 +8,12 @@
  * Applies SEND-specific formatting (font, line-height, spacing) per COBS Handbook.
  * Supports KaTeX math rendering for proper fractions, symbols, and expressions.
  */
-import React, { forwardRef, useState, useCallback } from "react";
+import React, { forwardRef, useState, useCallback, useEffect } from "react";
 import { Eye, EyeOff, Pencil } from "lucide-react";
 import { getSendFormatting } from "@/lib/send-data";
 import { extractDiagramSpec, stripDiagramMarker } from "@/lib/ai";
+import { getSubjectProfile, getWorksheetBlueprint } from "@/lib/subject-profiles";
+import { getTopicIcon } from "@/lib/diagram-manifest";
 import SVGDiagram from "@/components/SVGDiagram";
 import katex from "katex";
 import "katex/dist/katex.min.css";
@@ -1160,6 +1162,8 @@ interface WorksheetRendererProps {
   onHeaderHide?: () => void;
   /** Called when user clicks the quick-edit pencil icon on the header. */
   onHeaderEdit?: () => void;
+  /** Worksheet density: compact | standard | spacious. Affects padding and spacing. */
+  density?: "compact" | "standard" | "spacious";
 }
 
 // Section type → visual config (clean white, dark navy accent, no gradients, no emojis)
@@ -1201,11 +1205,25 @@ const SECTION_STYLES: Record<string, { border: string; bg: string; badge: string
   "teacher-note":   { border: "#1a2744", bg: "#fffbeb", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Teacher Note",             headerBg: "#1a2744", headerText: "#ffffff" },
   "question":       { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Question",                 headerBg: "#1a2744", headerText: "#ffffff" },
   "prior-knowledge":{ border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Prior Knowledge Check",    headerBg: "#1a2744", headerText: "#ffffff" },
+  // Phase 1.3: New subject-specific section types
+  "timeline":       { border: "#C0622F", bg: "#fffdf7", badge: "#C0622F", badgeBg: "#C0622F", icon: "", label: "Key Chronology",          headerBg: "#C0622F", headerText: "#ffffff" },
+  "key-individuals":{ border: "#C0622F", bg: "#f8f5f0", badge: "#C0622F", badgeBg: "#C0622F", icon: "", label: "Key Individuals",         headerBg: "#C0622F", headerText: "#ffffff" },
+  "case-study-fast-facts": { border: "#27AE60", bg: "#f0fbf4", badge: "#27AE60", badgeBg: "#27AE60", icon: "", label: "Case Study",       headerBg: "#27AE60", headerText: "#ffffff" },
+  "handwriting-trace": { border: "#6366f1", bg: "#f5f3ff", badge: "#6366f1", badgeBg: "#6366f1", icon: "", label: "Trace and Write",      headerBg: "#6366f1", headerText: "#ffffff" },
 };
-function getSectionStyle(type: string, _yearNum?: number) {
+function getSectionStyle(type: string, _yearNum?: number, subjectKey?: string) {
   // All section types are now locked to the indigo/blue/violet palette —
   // teal, sky, and slate have been removed from SECTION_STYLES entirely.
-  return SECTION_STYLES[type] || SECTION_STYLES["default"];
+  const base = SECTION_STYLES[type] || SECTION_STYLES["default"];
+  // Phase 2.1: Subject palette tinting — override headerBg and badge colors
+  if (subjectKey) {
+    const profile = getSubjectProfile(subjectKey);
+    if (profile && profile.palette.accent1 !== "00C8FF") { // Skip generic science blue
+      const accent = `#${profile.palette.accent1}`;
+      return { ...base, headerBg: accent, badge: accent, badgeBg: accent, border: accent };
+    }
+  }
+  return base;
 }
 
 function stripLatexFromPlainText(text: string): string {
@@ -3980,6 +3998,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
   hideHeader = false,
   onHeaderHide,
   onHeaderEdit,
+  density = "standard",
   }: WorksheetRendererProps, ref: React.Ref<HTMLDivElement>) {
   const isTeacherView = viewMode === "teacher";
 
@@ -4053,6 +4072,19 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
   const yrNumMatch = yg.match(/(\d+)/);
   const yrNum = yrNumMatch ? parseInt(yrNumMatch[1]) : (isPrimary ? 5 : 8);
 
+  // Resolve worksheet blueprint for subject-specific divider labels and palette
+  const worksheetBlueprint = getWorksheetBlueprint(metadata.subject);
+  const subjectProfile = getSubjectProfile(metadata.subject);
+
+  // Phase 2.3: Topic icon in worksheet header
+  const [topicIconUrl, setTopicIconUrl] = useState<string | null>(null);
+  useEffect(() => {
+    const topic = metadata.topic || metadata.title || '';
+    if (topic) {
+      getTopicIcon(topic, metadata.subject).then(url => setTopicIconUrl(url));
+    }
+  }, [metadata.topic, metadata.title, metadata.subject]);
+
   // Primary colour palette — each section gets a different cheerful colour
   const PRIMARY_SECTION_COLOURS = [
     { border: "#4f46e5", bg: "#f5f3ff", badge: "#4f46e5", badgeBg: "#ede9fe" }, // indigo
@@ -4110,6 +4142,8 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
     <div
       ref={ref}
       className="worksheet-print-root"
+      data-subject={metadata.subject || ""}
+      data-density={density}
       style={{
         backgroundColor: overlayColor || "white",
         fontFamily: fmt.fontFamily,
@@ -4308,12 +4342,24 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                 </span>
               </div>
             </div>
-            {/* Main header block: full dark navy filled rectangle — matches reference PDF exactly */}
+            {/* Main header block: full dark filled rectangle with subject accent */}
             <div style={{
-              background: "#1B2A4A",
+              background: `#${subjectProfile.palette.darkBg || '1B2A4A'}`,
               padding: "10px 14px 12px 14px",
               marginBottom: "10px",
+              display: "flex",
+              alignItems: "center",
+              gap: "14px",
             }}>
+              {/* Topic icon thumbnail (Phase 2.3) */}
+              {topicIconUrl && (
+                <img
+                  src={topicIconUrl}
+                  alt=""
+                  style={{ width: "48px", height: "48px", objectFit: "contain", borderRadius: "6px", background: "rgba(255,255,255,0.1)", padding: "4px", flexShrink: 0 }}
+                />
+              )}
+              <div style={{ flex: 1 }}>
               {/* Subject/year line above title */}
               <div style={{ fontSize: "9px", color: "#99BBBB", fontFamily: fmt.fontFamily, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: "4px", fontWeight: 400 }}>
                 {[worksheet.metadata?.subject, worksheet.metadata?.yearGroup, worksheet.metadata?.examBoard && worksheet.metadata?.examBoard !== "General" && worksheet.metadata?.examBoard !== "none" ? worksheet.metadata?.examBoard.toUpperCase() : null].filter(Boolean).join(" · ")}
@@ -4330,6 +4376,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                 <div style={{ fontSize: `${fmt.fontSize}px`, color: "rgba(255,255,255,0.75)", fontFamily: fmt.fontFamily, marginTop: "2px" }}>{worksheet.subtitle}</div>
               )}
               {/* SEND badge removed — accessibility adaptations are applied invisibly */}
+              </div>{/* close flex:1 wrapper */}
             </div>
             {/* Name / Date / Class bar */}
             <div style={{
@@ -5068,7 +5115,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
         }
         const style = isPrimary
           ? { ...(PRIMARY_SECTION_COLOURS[i % PRIMARY_SECTION_COLOURS.length]), icon: ["A","B","C","D","E","F","G","H"][i % 8], label: section.title as string || "", badgeText: "" }
-          : getSectionStyle(section.type, yrNum);
+          : getSectionStyle(section.type, yrNum, metadata.subject);
         // Teacher-only sections: mark-scheme, teacher-notes, answers, and any explicitly flagged teacherOnly
         const isTeacherSection = section.teacherOnly || section.type === "teacher-notes" || section.type === "teacher-note" || section.type === "mark-scheme" || section.type === "answers";
 
@@ -5097,8 +5144,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
         }
 
         // ── SECONDARY: clean professional layout ──
-        // (style variable kept for potential future use; isSectionDivider inlined below)
-        void style; // suppress unused-variable warning — style used by primary branch above
+        // style is used for subject-accent-tinted section headers
         const isTeacherHeader = isTeacherSection && (section.type === "mark-scheme" || section.type === "answers");
         const sectionTitle = (typeof section.title === 'string' ? section.title : String(section.title || '')).replace(/^\*{1,2}|\*{1,2}$/g, '').replace(/^_{1,2}|_{1,2}$/g, '').trim();
 
@@ -5110,26 +5156,28 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
           return m ? parseInt(m[1]) : null;
         })();
         const getGroupByQNum = (qn: number | null, type: string): { label: string; qStart: number; qEnd: number } | undefined => {
+          // Use blueprint-driven divider labels (Phase 1.4)
+          const labels = worksheetBlueprint.dividerLabels;
           if (qn !== null) {
-            if (qn >= 1 && qn <= 3) return { label: "SECTION 1 — RECALL", qStart: 1, qEnd: 3 };
-            if (qn >= 4 && qn <= 6) return { label: "SECTION 2 — UNDERSTANDING", qStart: 4, qEnd: 6 };
-            if (qn >= 7 && qn <= 9) return { label: "SECTION 3 — APPLICATION & ANALYSIS", qStart: 7, qEnd: 9 };
+            if (qn >= 1 && qn <= 3) return { label: labels[0], qStart: 1, qEnd: 3 };
+            if (qn >= 4 && qn <= 6) return { label: labels[1], qStart: 4, qEnd: 6 };
+            if (qn >= 7 && qn <= 9) return { label: labels[2], qStart: 7, qEnd: 9 };
           }
           // Fallback by type
           const QUESTION_GROUP_MAP: Record<string, { label: string; qStart: number; qEnd: number }> = {
-            "q-true-false":  { label: "SECTION 1 — RECALL",           qStart: 1, qEnd: 3 },
-            "q-mcq":         { label: "SECTION 1 — RECALL",           qStart: 1, qEnd: 3 },
-            "q-gap-fill":    { label: "SECTION 1 — RECALL",           qStart: 1, qEnd: 3 },
-            "q-short-answer":{ label: "SECTION 2 — UNDERSTANDING",           qStart: 4, qEnd: 6 },
-            "q-extended":    { label: "SECTION 3 — APPLICATION & ANALYSIS",  qStart: 7, qEnd: 9 },
-            "q-circuit":     { label: "SECTION 3 — APPLICATION & ANALYSIS",  qStart: 7, qEnd: 9 },
-            "q-draw":        { label: "SECTION 3 — APPLICATION & ANALYSIS",  qStart: 7, qEnd: 9 },
-            "q-graph":       { label: "SECTION 3 — APPLICATION & ANALYSIS",  qStart: 7, qEnd: 9 },
-            "q-data-table":  { label: "SECTION 2 — UNDERSTANDING",           qStart: 4, qEnd: 6 },
-            "q-label-diagram":{ label: "SECTION 2 — UNDERSTANDING",          qStart: 4, qEnd: 6 },
-            "q-ordering":    { label: "SECTION 1 — RECALL",           qStart: 1, qEnd: 3 },
-            "q-matching":    { label: "SECTION 1 — RECALL",           qStart: 1, qEnd: 3 },
-            "q-challenge":   { label: "CHALLENGE QUESTION",                    qStart: 10, qEnd: 12 },
+            "q-true-false":  { label: labels[0], qStart: 1, qEnd: 3 },
+            "q-mcq":         { label: labels[0], qStart: 1, qEnd: 3 },
+            "q-gap-fill":    { label: labels[0], qStart: 1, qEnd: 3 },
+            "q-short-answer":{ label: labels[1], qStart: 4, qEnd: 6 },
+            "q-extended":    { label: labels[2], qStart: 7, qEnd: 9 },
+            "q-circuit":     { label: labels[2], qStart: 7, qEnd: 9 },
+            "q-draw":        { label: labels[2], qStart: 7, qEnd: 9 },
+            "q-graph":       { label: labels[2], qStart: 7, qEnd: 9 },
+            "q-data-table":  { label: labels[1], qStart: 4, qEnd: 6 },
+            "q-label-diagram":{ label: labels[1], qStart: 4, qEnd: 6 },
+            "q-ordering":    { label: labels[0], qStart: 1, qEnd: 3 },
+            "q-matching":    { label: labels[0], qStart: 1, qEnd: 3 },
+            "q-challenge":   { label: "CHALLENGE QUESTION", qStart: 10, qEnd: 12 },
           };
           return QUESTION_GROUP_MAP[type];
         };
@@ -5144,9 +5192,9 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
           const headerTitle = (typeof s.title === "string" ? s.title : String(s.title || "")).toUpperCase();
           const headerContent = (typeof s.content === "string" ? s.content : String(s.content || "")).toUpperCase();
           // Match if the section-header title/content contains the group name
-          if (myGroupLabel === "SECTION 1 \u2014 RECALL") return /SECTION\s*1|RECALL|KNOWLEDGE.CHECK/i.test(headerTitle + headerContent);
-          if (myGroupLabel === "SECTION 2 \u2014 UNDERSTANDING") return /SECTION\s*2|UNDERSTANDING/i.test(headerTitle + headerContent);
-          if (myGroupLabel === "SECTION 3 \u2014 APPLICATION") return /SECTION\s*3|APPLICATION/i.test(headerTitle + headerContent);
+          if (myGroupLabel === worksheetBlueprint.dividerLabels[0]) return /SECTION\s*1|RECALL|KNOWLEDGE|FLUENCY|RETRIEVAL/i.test(headerTitle + headerContent);
+          if (myGroupLabel === worksheetBlueprint.dividerLabels[1]) return /SECTION\s*2|UNDERSTANDING|REASONING|APPLICATION|STRUCTURE/i.test(headerTitle + headerContent);
+          if (myGroupLabel === worksheetBlueprint.dividerLabels[2]) return /SECTION\s*3|APPLICATION|PROBLEM|JUDGEMENT|EVALUATION|WRITING/i.test(headerTitle + headerContent);
           return false;
         });
         const isFirstTeacherSection = isTeacherSection && !(worksheet.sections || []).slice(0, i).some((s: any) => {
@@ -5246,11 +5294,11 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                 pageBreakInside: "avoid",
                 breakInside: "avoid",
               }}>
-              <div style={{ borderTop: "2px solid #1a2744", marginBottom: "5px" }} />
+              <div style={{ borderTop: `2px solid #${subjectProfile.palette.accent1}`, marginBottom: "5px" }} />
               <div style={{
                 fontSize: "10px",
                 fontWeight: 700,
-                color: "#2a7f8f",
+                color: `#${subjectProfile.palette.accent1}`,
                 fontFamily: fmt.fontFamily,
                 textTransform: "uppercase",
                 letterSpacing: "0.08em",
@@ -5403,14 +5451,14 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                 </div>
               </div>
             ) : section.type === "diagram" ? null : section.type === "send-support" ? null : (
-              /* Section header: thick navy rule + teal label + thin grey rule — matches reference PDF */
+              /* Section header: thick rule + label + thin grey rule — subject-tinted */
               <div style={{ marginBottom: "12px" }}>
-                <div style={{ borderTop: isTeacherHeader ? "1.5px solid #8b1a1a" : "1.5px solid #1B2A4A", marginBottom: "4px" }} />
+                <div style={{ borderTop: isTeacherHeader ? "1.5px solid #8b1a1a" : `1.5px solid ${style.headerBg}`, marginBottom: "4px" }} />
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                   <span style={{
                     fontSize: "8.5px",
                     fontWeight: 700,
-                    color: isTeacherHeader ? "#8b1a1a" : "#2A6F6F",
+                    color: isTeacherHeader ? "#8b1a1a" : style.headerBg,
                     fontFamily: fmt.fontFamily,
                     textTransform: "uppercase",
                     letterSpacing: "0.12em",
@@ -5421,7 +5469,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                     <span style={{ background: "#8b1a1a", color: "#fff", padding: "1px 7px", borderRadius: "2px", fontSize: "9px", fontWeight: 700, fontFamily: fmt.fontFamily, letterSpacing: "0.05em" }}>TEACHER ONLY</span>
                   )}
                 </div>
-                <div style={{ borderTop: isTeacherHeader ? "0.4px solid #8b1a1a" : "0.4px solid #cccccc", marginTop: "4px" }} />
+                <div style={{ borderTop: isTeacherHeader ? "0.4px solid #8b1a1a" : `0.4px solid ${style.border}`, marginTop: "4px" }} />
               </div>
             )}
 
@@ -6573,6 +6621,106 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                               </div>
                             );
                           })}
+                        </div>
+                      </div>
+                    );
+                  })()
+                ) : (section.type === "timeline") ? (
+                  (() => {
+                    const lines = content.split("\n").filter((l: string) => l.trim());
+                    return (
+                      <div style={{ border: `2px solid #${subjectProfile.palette.accent1}`, borderRadius: "6px", overflow: "hidden" }}>
+                        <div style={{ background: `#${subjectProfile.palette.accent1}`, padding: "6px 14px" }}>
+                          <span style={{ fontSize: "11px", fontWeight: 700, color: "#ffffff", fontFamily: fmt.fontFamily, letterSpacing: "0.08em", textTransform: "uppercase" as const }}>Key Chronology</span>
+                        </div>
+                        <div style={{ padding: "12px 16px", background: "#fffdf7" }}>
+                          {lines.map((line: string, li: number) => (
+                            <div key={li} style={{ display: "flex", alignItems: "flex-start", gap: "12px", marginBottom: "8px", paddingLeft: "8px", borderLeft: `3px solid #${subjectProfile.palette.accent1}` }}>
+                              <span style={{ fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, lineHeight: String(fmt.lineHeight) }}>{line}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })()
+                ) : (section.type === "key-individuals") ? (
+                  (() => {
+                    const lines = content.split("\n").filter((l: string) => l.trim());
+                    return (
+                      <div style={{ border: `2px solid #${subjectProfile.palette.accent1}`, borderRadius: "6px", overflow: "hidden" }}>
+                        <div style={{ background: `#${subjectProfile.palette.accent1}`, padding: "6px 14px" }}>
+                          <span style={{ fontSize: "11px", fontWeight: 700, color: "#ffffff", fontFamily: fmt.fontFamily, letterSpacing: "0.08em", textTransform: "uppercase" as const }}>Key Individuals</span>
+                        </div>
+                        <div style={{ padding: "12px 16px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                          {lines.map((line: string, li: number) => (
+                            <div key={li} style={{ padding: "8px 12px", background: "#f8f5f0", borderRadius: "4px", border: "1px solid #e5ddd3", fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, lineHeight: String(fmt.lineHeight) }}>
+                              {line}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })()
+                ) : (section.type === "case-study-fast-facts") ? (
+                  (() => {
+                    const lines = content.split("\n").filter((l: string) => l.trim());
+                    return (
+                      <div style={{ border: `2px solid #${subjectProfile.palette.accent1}`, borderRadius: "6px", overflow: "hidden" }}>
+                        <div style={{ background: `#${subjectProfile.palette.accent1}`, padding: "6px 14px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                          <span style={{ fontSize: "11px", fontWeight: 700, color: "#ffffff", fontFamily: fmt.fontFamily, letterSpacing: "0.08em", textTransform: "uppercase" as const }}>Case Study - Fast Facts</span>
+                        </div>
+                        <div style={{ padding: "12px 16px", background: "#f0fbf4", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
+                          {lines.map((line: string, li: number) => (
+                            <div key={li} style={{ padding: "6px 10px", background: "#ffffff", borderRadius: "4px", border: "1px solid #d1fae5", fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, lineHeight: String(fmt.lineHeight), fontWeight: line.includes(":") ? 500 : 400 }}>
+                              {line}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })()
+                ) : (section.type === "handwriting-trace") ? (
+                  (() => {
+                    const words = content.split("\n").filter((l: string) => l.trim());
+                    const rows = (section as any).config?.rows || 3;
+                    const lineHeight = (section as any).config?.lineHeight || "20mm";
+                    const opacity = (section as any).config?.opacity || 0.35;
+                    return (
+                      <div style={{ border: "2px solid #6366f1", borderRadius: "6px", overflow: "hidden" }}>
+                        <div style={{ background: "#6366f1", padding: "6px 14px" }}>
+                          <span style={{ fontSize: "11px", fontWeight: 700, color: "#ffffff", fontFamily: fmt.fontFamily, letterSpacing: "0.08em", textTransform: "uppercase" as const }}>Trace and Write</span>
+                        </div>
+                        <div style={{ padding: "16px" }}>
+                          {words.map((word: string, wi: number) => (
+                            <div key={wi} style={{ marginBottom: "16px" }}>
+                              {Array.from({ length: rows }).map((_, ri) => (
+                                <div key={ri} style={{
+                                  height: lineHeight,
+                                  borderBottom: "2px solid #dc2626",
+                                  borderTop: ri === 0 ? "1px solid #dc2626" : "none",
+                                  position: "relative" as const,
+                                  display: "flex",
+                                  alignItems: "center",
+                                  paddingLeft: "8px",
+                                }}>
+                                  {/* Dashed midline */}
+                                  <div style={{ position: "absolute" as const, top: "50%", left: 0, right: 0, borderTop: "1px dashed #3b82f6", opacity: 0.6 }} />
+                                  {/* Ghost letter (first row only) */}
+                                  {ri === 0 && (
+                                    <span style={{
+                                      fontSize: "28px",
+                                      fontFamily: "'Comic Sans MS', 'Sassoon Primary', cursive",
+                                      color: "#1a2744",
+                                      opacity: opacity,
+                                      letterSpacing: "6px",
+                                      position: "relative" as const,
+                                      zIndex: 1,
+                                    }}>{word}</span>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          ))}
                         </div>
                       </div>
                     );

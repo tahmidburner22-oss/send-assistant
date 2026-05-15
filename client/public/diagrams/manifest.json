@@ -1,0 +1,1246 @@
+{
+  "generated": "2026-05-15T20:26:21.808Z",
+  "count": 124,
+  "entries": [
+    {
+      "file": "3d-shapes.png",
+      "path": "/diagrams/3d-shapes.png",
+      "topicKeys": [
+        "3d-shapes"
+      ],
+      "subject": "mathematics"
+    },
+    {
+      "file": "accuracy-number-line.png",
+      "path": "/diagrams/accuracy-number-line.png",
+      "topicKeys": [
+        "accuracy-number-line",
+        "accuracy",
+        "number",
+        "line"
+      ],
+      "subject": "mathematics"
+    },
+    {
+      "file": "acids-bases.png",
+      "path": "/diagrams/acids-bases.png",
+      "topicKeys": [
+        "acids-bases",
+        "acids",
+        "bases"
+      ],
+      "subject": "chemistry"
+    },
+    {
+      "file": "algebra-blank-axes.png",
+      "path": "/diagrams/algebra-blank-axes.png",
+      "topicKeys": [
+        "algebra-blank-axes",
+        "algebra",
+        "blank",
+        "axes"
+      ],
+      "subject": "mathematics"
+    },
+    {
+      "file": "algebra-blank-grid.png",
+      "path": "/diagrams/algebra-blank-grid.png",
+      "topicKeys": [
+        "algebra-blank-grid",
+        "algebra",
+        "blank",
+        "grid"
+      ],
+      "subject": "mathematics"
+    },
+    {
+      "file": "algebra-function-machine.png",
+      "path": "/diagrams/algebra-function-machine.png",
+      "topicKeys": [
+        "algebra-function-machine",
+        "algebra",
+        "function",
+        "machine"
+      ],
+      "subject": "mathematics"
+    },
+    {
+      "file": "algebra-inequality-region.png",
+      "path": "/diagrams/algebra-inequality-region.png",
+      "topicKeys": [
+        "algebra-inequality-region",
+        "algebra",
+        "inequality",
+        "region"
+      ],
+      "subject": "mathematics"
+    },
+    {
+      "file": "algebra-linear-graph-reference.png",
+      "path": "/diagrams/algebra-linear-graph-reference.png",
+      "topicKeys": [
+        "algebra-linear-graph-reference",
+        "algebra",
+        "linear",
+        "graph",
+        "reference"
+      ],
+      "subject": "mathematics"
+    },
+    {
+      "file": "algebra-parabola-reference.png",
+      "path": "/diagrams/algebra-parabola-reference.png",
+      "topicKeys": [
+        "algebra-parabola-reference",
+        "algebra",
+        "parabola",
+        "reference"
+      ],
+      "subject": "mathematics"
+    },
+    {
+      "file": "algebra-sequence-dot-pattern.png",
+      "path": "/diagrams/algebra-sequence-dot-pattern.png",
+      "topicKeys": [
+        "algebra-sequence-dot-pattern",
+        "algebra",
+        "sequence",
+        "dot",
+        "pattern"
+      ],
+      "subject": "mathematics"
+    },
+    {
+      "file": "algebra-straight-line-reference.png",
+      "path": "/diagrams/algebra-straight-line-reference.png",
+      "topicKeys": [
+        "algebra-straight-line-reference",
+        "algebra",
+        "straight",
+        "line",
+        "reference"
+      ],
+      "subject": "mathematics"
+    },
+    {
+      "file": "ancient-egypt.png",
+      "path": "/diagrams/ancient-egypt.png",
+      "topicKeys": [
+        "ancient-egypt",
+        "ancient",
+        "egypt"
+      ],
+      "subject": "history"
+    },
+    {
+      "file": "angles-types.png",
+      "path": "/diagrams/angles-types.png",
+      "topicKeys": [
+        "angles-types",
+        "angles",
+        "types"
+      ],
+      "subject": "mathematics"
+    },
+    {
+      "file": "animal-cell.png",
+      "path": "/diagrams/animal-cell.png",
+      "topicKeys": [
+        "animal-cell",
+        "animal",
+        "cell"
+      ],
+      "subject": "biology"
+    },
+    {
+      "file": "area-perimeter.png",
+      "path": "/diagrams/area-perimeter.png",
+      "topicKeys": [
+        "area-perimeter",
+        "area",
+        "perimeter"
+      ],
+      "subject": "mathematics"
+    },
+    {
+      "file": "atomic-structure.png",
+      "path": "/diagrams/atomic-structure.png",
+      "topicKeys": [
+        "atomic-structure",
+        "atomic",
+        "structure"
+      ],
+      "subject": "chemistry"
+    },
+    {
+      "file": "battle-of-hastings.png",
+      "path": "/diagrams/battle-of-hastings.png",
+      "topicKeys": [
+        "battle-of-hastings",
+        "battle",
+        "hastings"
+      ],
+      "subject": "history"
+    },
+    {
+      "file": "bearings.png",
+      "path": "/diagrams/bearings.png",
+      "topicKeys": [
+        "bearings"
+      ],
+      "subject": "mathematics"
+    },
+    {
+      "file": "big-o-notation.png",
+      "path": "/diagrams/big-o-notation.png",
+      "topicKeys": [
+        "big-o-notation",
+        "big",
+        "notation"
+      ],
+      "subject": "computer_science"
+    },
+    {
+      "file": "binary-representation.png",
+      "path": "/diagrams/binary-representation.png",
+      "topicKeys": [
+        "binary-representation",
+        "binary",
+        "representation"
+      ],
+      "subject": "computer_science"
+    },
+    {
+      "file": "butterfly-lifecycle.png",
+      "path": "/diagrams/butterfly-lifecycle.png",
+      "topicKeys": [
+        "butterfly-lifecycle",
+        "butterfly",
+        "lifecycle"
+      ],
+      "subject": "biology"
+    },
+    {
+      "file": "cells-biology.png",
+      "path": "/diagrams/cells-biology.png",
+      "topicKeys": [
+        "cells-biology",
+        "cells",
+        "biology"
+      ],
+      "subject": "biology"
+    },
+    {
+      "file": "circle-parts.png",
+      "path": "/diagrams/circle-parts.png",
+      "topicKeys": [
+        "circle-parts",
+        "circle",
+        "parts"
+      ],
+      "subject": "mathematics"
+    },
+    {
+      "file": "circle-theorems.png",
+      "path": "/diagrams/circle-theorems.png",
+      "topicKeys": [
+        "circle-theorems",
+        "circle",
+        "theorems"
+      ],
+      "subject": "mathematics"
+    },
+    {
+      "file": "coastal-features.png",
+      "path": "/diagrams/coastal-features.png",
+      "topicKeys": [
+        "coastal-features",
+        "coastal",
+        "features"
+      ],
+      "subject": "geography"
+    },
+    {
+      "file": "computer-architecture.png",
+      "path": "/diagrams/computer-architecture.png",
+      "topicKeys": [
+        "computer-architecture",
+        "computer",
+        "architecture"
+      ],
+      "subject": "computer_science"
+    },
+    {
+      "file": "coordinate-system.png",
+      "path": "/diagrams/coordinate-system.png",
+      "topicKeys": [
+        "coordinate-system",
+        "coordinate",
+        "system"
+      ],
+      "subject": "mathematics"
+    },
+    {
+      "file": "coordinates.png",
+      "path": "/diagrams/coordinates.png",
+      "topicKeys": [
+        "coordinates"
+      ],
+      "subject": "mathematics"
+    },
+    {
+      "file": "covalent-bonding.png",
+      "path": "/diagrams/covalent-bonding.png",
+      "topicKeys": [
+        "covalent-bonding",
+        "covalent",
+        "bonding"
+      ],
+      "subject": "chemistry"
+    },
+    {
+      "file": "digestive-system.png",
+      "path": "/diagrams/digestive-system.png",
+      "topicKeys": [
+        "digestive-system",
+        "digestive",
+        "system"
+      ],
+      "subject": "biology"
+    },
+    {
+      "file": "distillation.png",
+      "path": "/diagrams/distillation.png",
+      "topicKeys": [
+        "distillation"
+      ],
+      "subject": "chemistry"
+    },
+    {
+      "file": "dna-structure.png",
+      "path": "/diagrams/dna-structure.png",
+      "topicKeys": [
+        "dna-structure",
+        "dna",
+        "structure"
+      ],
+      "subject": "biology"
+    },
+    {
+      "file": "electrical-circuit.png",
+      "path": "/diagrams/electrical-circuit.png",
+      "topicKeys": [
+        "electrical-circuit",
+        "electrical",
+        "circuit"
+      ],
+      "subject": "physics"
+    },
+    {
+      "file": "electrolysis.png",
+      "path": "/diagrams/electrolysis.png",
+      "topicKeys": [
+        "electrolysis"
+      ],
+      "subject": "chemistry"
+    },
+    {
+      "file": "electromagnetic-spectrum.png",
+      "path": "/diagrams/electromagnetic-spectrum.png",
+      "topicKeys": [
+        "electromagnetic-spectrum",
+        "electromagnetic",
+        "spectrum"
+      ],
+      "subject": "physics"
+    },
+    {
+      "file": "energy-stores.png",
+      "path": "/diagrams/energy-stores.png",
+      "topicKeys": [
+        "energy-stores",
+        "energy",
+        "stores"
+      ],
+      "subject": "physics"
+    },
+    {
+      "file": "energy-transfer.png",
+      "path": "/diagrams/energy-transfer.png",
+      "topicKeys": [
+        "energy-transfer",
+        "energy",
+        "transfer"
+      ],
+      "subject": "physics"
+    },
+    {
+      "file": "enzyme-activity.png",
+      "path": "/diagrams/enzyme-activity.png",
+      "topicKeys": [
+        "enzyme-activity",
+        "enzyme",
+        "activity"
+      ],
+      "subject": "biology"
+    },
+    {
+      "file": "equation-triangle-density.png",
+      "path": "/diagrams/equation-triangle-density.png",
+      "topicKeys": [
+        "equation-triangle-density",
+        "equation",
+        "triangle",
+        "density"
+      ],
+      "subject": "general"
+    },
+    {
+      "file": "equation-triangle-pressure.png",
+      "path": "/diagrams/equation-triangle-pressure.png",
+      "topicKeys": [
+        "equation-triangle-pressure",
+        "equation",
+        "triangle",
+        "pressure"
+      ],
+      "subject": "general"
+    },
+    {
+      "file": "equation-triangle-sdt.png",
+      "path": "/diagrams/equation-triangle-sdt.png",
+      "topicKeys": [
+        "equation-triangle-sdt",
+        "equation",
+        "triangle",
+        "sdt"
+      ],
+      "subject": "general"
+    },
+    {
+      "file": "flower-structure.png",
+      "path": "/diagrams/flower-structure.png",
+      "topicKeys": [
+        "flower-structure",
+        "flower",
+        "structure"
+      ],
+      "subject": "general"
+    },
+    {
+      "file": "food-chain.png",
+      "path": "/diagrams/food-chain.png",
+      "topicKeys": [
+        "food-chain",
+        "food",
+        "chain"
+      ],
+      "subject": "biology"
+    },
+    {
+      "file": "food-web.png",
+      "path": "/diagrams/food-web.png",
+      "topicKeys": [
+        "food-web",
+        "food",
+        "web"
+      ],
+      "subject": "biology"
+    },
+    {
+      "file": "forces.png",
+      "path": "/diagrams/forces.png",
+      "topicKeys": [
+        "forces"
+      ],
+      "subject": "physics"
+    },
+    {
+      "file": "fractions.png",
+      "path": "/diagrams/fractions.png",
+      "topicKeys": [
+        "fractions"
+      ],
+      "subject": "mathematics"
+    },
+    {
+      "file": "graph-distance-time.png",
+      "path": "/diagrams/graph-distance-time.png",
+      "topicKeys": [
+        "graph-distance-time",
+        "graph",
+        "distance",
+        "time"
+      ],
+      "subject": "mathematics"
+    },
+    {
+      "file": "graph-velocity-time.png",
+      "path": "/diagrams/graph-velocity-time.png",
+      "topicKeys": [
+        "graph-velocity-time",
+        "graph",
+        "velocity",
+        "time"
+      ],
+      "subject": "mathematics"
+    },
+    {
+      "file": "great-fire-london.png",
+      "path": "/diagrams/great-fire-london.png",
+      "topicKeys": [
+        "great-fire-london",
+        "great",
+        "fire",
+        "london"
+      ],
+      "subject": "general"
+    },
+    {
+      "file": "greenhouse-effect.png",
+      "path": "/diagrams/greenhouse-effect.png",
+      "topicKeys": [
+        "greenhouse-effect",
+        "greenhouse",
+        "effect"
+      ],
+      "subject": "general"
+    },
+    {
+      "file": "hadrians-wall.png",
+      "path": "/diagrams/hadrians-wall.png",
+      "topicKeys": [
+        "hadrians-wall",
+        "hadrians",
+        "wall"
+      ],
+      "subject": "general"
+    },
+    {
+      "file": "human-ear.png",
+      "path": "/diagrams/human-ear.png",
+      "topicKeys": [
+        "human-ear",
+        "human",
+        "ear"
+      ],
+      "subject": "general"
+    },
+    {
+      "file": "human-eye.png",
+      "path": "/diagrams/human-eye.png",
+      "topicKeys": [
+        "human-eye",
+        "human",
+        "eye"
+      ],
+      "subject": "general"
+    },
+    {
+      "file": "human-heart.png",
+      "path": "/diagrams/human-heart.png",
+      "topicKeys": [
+        "human-heart",
+        "human",
+        "heart"
+      ],
+      "subject": "biology"
+    },
+    {
+      "file": "human-skeleton.png",
+      "path": "/diagrams/human-skeleton.png",
+      "topicKeys": [
+        "human-skeleton",
+        "human",
+        "skeleton"
+      ],
+      "subject": "general"
+    },
+    {
+      "file": "ionic-bonding.png",
+      "path": "/diagrams/ionic-bonding.png",
+      "topicKeys": [
+        "ionic-bonding",
+        "ionic",
+        "bonding"
+      ],
+      "subject": "chemistry"
+    },
+    {
+      "file": "light-reflection.png",
+      "path": "/diagrams/light-reflection.png",
+      "topicKeys": [
+        "light-reflection",
+        "light",
+        "reflection"
+      ],
+      "subject": "physics"
+    },
+    {
+      "file": "magnetic-field.png",
+      "path": "/diagrams/magnetic-field.png",
+      "topicKeys": [
+        "magnetic-field",
+        "magnetic",
+        "field"
+      ],
+      "subject": "physics"
+    },
+    {
+      "file": "metallic-bonding.png",
+      "path": "/diagrams/metallic-bonding.png",
+      "topicKeys": [
+        "metallic-bonding",
+        "metallic",
+        "bonding"
+      ],
+      "subject": "chemistry"
+    },
+    {
+      "file": "mitosis.png",
+      "path": "/diagrams/mitosis.png",
+      "topicKeys": [
+        "mitosis"
+      ],
+      "subject": "biology"
+    },
+    {
+      "file": "natural-selection.png",
+      "path": "/diagrams/natural-selection.png",
+      "topicKeys": [
+        "natural-selection",
+        "natural",
+        "selection"
+      ],
+      "subject": "general"
+    },
+    {
+      "file": "neuron.png",
+      "path": "/diagrams/neuron.png",
+      "topicKeys": [
+        "neuron"
+      ],
+      "subject": "general"
+    },
+    {
+      "file": "number-line.png",
+      "path": "/diagrams/number-line.png",
+      "topicKeys": [
+        "number-line",
+        "number",
+        "line"
+      ],
+      "subject": "mathematics"
+    },
+    {
+      "file": "number-standard-form-place-value.png",
+      "path": "/diagrams/number-standard-form-place-value.png",
+      "topicKeys": [
+        "number-standard-form-place-value",
+        "number",
+        "standard",
+        "form",
+        "place",
+        "value"
+      ],
+      "subject": "general"
+    },
+    {
+      "file": "ohms-law.png",
+      "path": "/diagrams/ohms-law.png",
+      "topicKeys": [
+        "ohms-law",
+        "ohms",
+        "law"
+      ],
+      "subject": "general"
+    },
+    {
+      "file": "parallel-circuit.png",
+      "path": "/diagrams/parallel-circuit.png",
+      "topicKeys": [
+        "parallel-circuit",
+        "parallel",
+        "circuit"
+      ],
+      "subject": "physics"
+    },
+    {
+      "file": "percentages.png",
+      "path": "/diagrams/percentages.png",
+      "topicKeys": [
+        "percentages"
+      ],
+      "subject": "general"
+    },
+    {
+      "file": "periodic-table.png",
+      "path": "/diagrams/periodic-table.png",
+      "topicKeys": [
+        "periodic-table",
+        "periodic",
+        "table"
+      ],
+      "subject": "chemistry"
+    },
+    {
+      "file": "ph-scale.png",
+      "path": "/diagrams/ph-scale.png",
+      "topicKeys": [
+        "ph-scale"
+      ],
+      "subject": "general"
+    },
+    {
+      "file": "photosynthesis.png",
+      "path": "/diagrams/photosynthesis.png",
+      "topicKeys": [
+        "photosynthesis"
+      ],
+      "subject": "biology"
+    },
+    {
+      "file": "plant-cell.png",
+      "path": "/diagrams/plant-cell.png",
+      "topicKeys": [
+        "plant-cell",
+        "plant",
+        "cell"
+      ],
+      "subject": "biology"
+    },
+    {
+      "file": "polygons.png",
+      "path": "/diagrams/polygons.png",
+      "topicKeys": [
+        "polygons"
+      ],
+      "subject": "general"
+    },
+    {
+      "file": "probability-sample-space-grid.svg",
+      "path": "/diagrams/probability-sample-space-grid.svg",
+      "topicKeys": [
+        "probability-sample-space-grid",
+        "probability",
+        "sample",
+        "space",
+        "grid"
+      ],
+      "subject": "mathematics"
+    },
+    {
+      "file": "probability-scale-spinner.svg",
+      "path": "/diagrams/probability-scale-spinner.svg",
+      "topicKeys": [
+        "probability-scale-spinner",
+        "probability",
+        "scale",
+        "spinner"
+      ],
+      "subject": "mathematics"
+    },
+    {
+      "file": "probability-tree-independent.svg",
+      "path": "/diagrams/probability-tree-independent.svg",
+      "topicKeys": [
+        "probability-tree-independent",
+        "probability",
+        "tree",
+        "independent"
+      ],
+      "subject": "mathematics"
+    },
+    {
+      "file": "probability-tree-no-replacement.svg",
+      "path": "/diagrams/probability-tree-no-replacement.svg",
+      "topicKeys": [
+        "probability-tree-no-replacement",
+        "probability",
+        "tree",
+        "replacement"
+      ],
+      "subject": "mathematics"
+    },
+    {
+      "file": "probability-two-way-table.svg",
+      "path": "/diagrams/probability-two-way-table.svg",
+      "topicKeys": [
+        "probability-two-way-table",
+        "probability",
+        "two",
+        "way",
+        "table"
+      ],
+      "subject": "mathematics"
+    },
+    {
+      "file": "probability-venn-sets.svg",
+      "path": "/diagrams/probability-venn-sets.svg",
+      "topicKeys": [
+        "probability-venn-sets",
+        "probability",
+        "venn",
+        "sets"
+      ],
+      "subject": "mathematics"
+    },
+    {
+      "file": "probability.png",
+      "path": "/diagrams/probability.png",
+      "topicKeys": [
+        "probability"
+      ],
+      "subject": "mathematics"
+    },
+    {
+      "file": "pythagoras.png",
+      "path": "/diagrams/pythagoras.png",
+      "topicKeys": [
+        "pythagoras"
+      ],
+      "subject": "mathematics"
+    },
+    {
+      "file": "quadratic-graph.png",
+      "path": "/diagrams/quadratic-graph.png",
+      "topicKeys": [
+        "quadratic-graph",
+        "quadratic",
+        "graph"
+      ],
+      "subject": "mathematics"
+    },
+    {
+      "file": "quadratics.png",
+      "path": "/diagrams/quadratics.png",
+      "topicKeys": [
+        "quadratics"
+      ],
+      "subject": "mathematics"
+    },
+    {
+      "file": "radiation-types.png",
+      "path": "/diagrams/radiation-types.png",
+      "topicKeys": [
+        "radiation-types",
+        "radiation",
+        "types"
+      ],
+      "subject": "general"
+    },
+    {
+      "file": "rates-of-reaction.png",
+      "path": "/diagrams/rates-of-reaction.png",
+      "topicKeys": [
+        "rates-of-reaction",
+        "rates",
+        "reaction"
+      ],
+      "subject": "chemistry"
+    },
+    {
+      "file": "ratio.png",
+      "path": "/diagrams/ratio.png",
+      "topicKeys": [
+        "ratio"
+      ],
+      "subject": "mathematics"
+    },
+    {
+      "file": "real-life-conversion-graph.png",
+      "path": "/diagrams/real-life-conversion-graph.png",
+      "topicKeys": [
+        "real-life-conversion-graph",
+        "real",
+        "life",
+        "conversion",
+        "graph"
+      ],
+      "subject": "mathematics"
+    },
+    {
+      "file": "refraction-lens.png",
+      "path": "/diagrams/refraction-lens.png",
+      "topicKeys": [
+        "refraction-lens",
+        "refraction",
+        "lens"
+      ],
+      "subject": "mathematics"
+    },
+    {
+      "file": "respiration.png",
+      "path": "/diagrams/respiration.png",
+      "topicKeys": [
+        "respiration"
+      ],
+      "subject": "mathematics"
+    },
+    {
+      "file": "respiratory-system.png",
+      "path": "/diagrams/respiratory-system.png",
+      "topicKeys": [
+        "respiratory-system",
+        "respiratory",
+        "system"
+      ],
+      "subject": "general"
+    },
+    {
+      "file": "river-meander.png",
+      "path": "/diagrams/river-meander.png",
+      "topicKeys": [
+        "river-meander",
+        "river",
+        "meander"
+      ],
+      "subject": "geography"
+    },
+    {
+      "file": "rock-cycle.png",
+      "path": "/diagrams/rock-cycle.png",
+      "topicKeys": [
+        "rock-cycle",
+        "rock",
+        "cycle"
+      ],
+      "subject": "general"
+    },
+    {
+      "file": "roman-empire.png",
+      "path": "/diagrams/roman-empire.png",
+      "topicKeys": [
+        "roman-empire",
+        "roman",
+        "empire"
+      ],
+      "subject": "history"
+    },
+    {
+      "file": "scale-grid.png",
+      "path": "/diagrams/scale-grid.png",
+      "topicKeys": [
+        "scale-grid",
+        "scale",
+        "grid"
+      ],
+      "subject": "general"
+    },
+    {
+      "file": "simultaneous-equations.png",
+      "path": "/diagrams/simultaneous-equations.png",
+      "topicKeys": [
+        "simultaneous-equations",
+        "simultaneous",
+        "equations"
+      ],
+      "subject": "general"
+    },
+    {
+      "file": "solar-system.png",
+      "path": "/diagrams/solar-system.png",
+      "topicKeys": [
+        "solar-system",
+        "solar",
+        "system"
+      ],
+      "subject": "general"
+    },
+    {
+      "file": "specific-heat-capacity.png",
+      "path": "/diagrams/specific-heat-capacity.png",
+      "topicKeys": [
+        "specific-heat-capacity",
+        "specific",
+        "heat",
+        "capacity"
+      ],
+      "subject": "general"
+    },
+    {
+      "file": "standard-form-place-value.png",
+      "path": "/diagrams/standard-form-place-value.png",
+      "topicKeys": [
+        "standard-form-place-value",
+        "standard",
+        "form",
+        "place",
+        "value"
+      ],
+      "subject": "general"
+    },
+    {
+      "file": "states-of-matter.png",
+      "path": "/diagrams/states-of-matter.png",
+      "topicKeys": [
+        "states-of-matter",
+        "states",
+        "matter"
+      ],
+      "subject": "general"
+    },
+    {
+      "file": "states-particles.png",
+      "path": "/diagrams/states-particles.png",
+      "topicKeys": [
+        "states-particles",
+        "states",
+        "particles"
+      ],
+      "subject": "general"
+    },
+    {
+      "file": "statistics-averages-raw-data.svg",
+      "path": "/diagrams/statistics-averages-raw-data.svg",
+      "topicKeys": [
+        "statistics-averages-raw-data",
+        "statistics",
+        "averages",
+        "raw",
+        "data"
+      ],
+      "subject": "mathematics"
+    },
+    {
+      "file": "statistics-bar-pie-charts.svg",
+      "path": "/diagrams/statistics-bar-pie-charts.svg",
+      "topicKeys": [
+        "statistics-bar-pie-charts",
+        "statistics",
+        "bar",
+        "pie",
+        "charts"
+      ],
+      "subject": "mathematics"
+    },
+    {
+      "file": "statistics-box-plots.svg",
+      "path": "/diagrams/statistics-box-plots.svg",
+      "topicKeys": [
+        "statistics-box-plots",
+        "statistics",
+        "box",
+        "plots"
+      ],
+      "subject": "mathematics"
+    },
+    {
+      "file": "statistics-cumulative-frequency.svg",
+      "path": "/diagrams/statistics-cumulative-frequency.svg",
+      "topicKeys": [
+        "statistics-cumulative-frequency",
+        "statistics",
+        "cumulative",
+        "frequency"
+      ],
+      "subject": "mathematics"
+    },
+    {
+      "file": "statistics-grouped-frequency-table.svg",
+      "path": "/diagrams/statistics-grouped-frequency-table.svg",
+      "topicKeys": [
+        "statistics-grouped-frequency-table",
+        "statistics",
+        "grouped",
+        "frequency",
+        "table"
+      ],
+      "subject": "mathematics"
+    },
+    {
+      "file": "statistics-histogram.svg",
+      "path": "/diagrams/statistics-histogram.svg",
+      "topicKeys": [
+        "statistics-histogram",
+        "statistics",
+        "histogram"
+      ],
+      "subject": "mathematics"
+    },
+    {
+      "file": "statistics-questionnaire-results.svg",
+      "path": "/diagrams/statistics-questionnaire-results.svg",
+      "topicKeys": [
+        "statistics-questionnaire-results",
+        "statistics",
+        "questionnaire",
+        "results"
+      ],
+      "subject": "mathematics"
+    },
+    {
+      "file": "statistics-sampling-methods.svg",
+      "path": "/diagrams/statistics-sampling-methods.svg",
+      "topicKeys": [
+        "statistics-sampling-methods",
+        "statistics",
+        "sampling",
+        "methods"
+      ],
+      "subject": "mathematics"
+    },
+    {
+      "file": "statistics-scatter-graph.svg",
+      "path": "/diagrams/statistics-scatter-graph.svg",
+      "topicKeys": [
+        "statistics-scatter-graph",
+        "statistics",
+        "scatter",
+        "graph"
+      ],
+      "subject": "mathematics"
+    },
+    {
+      "file": "statistics.png",
+      "path": "/diagrams/statistics.png",
+      "topicKeys": [
+        "statistics"
+      ],
+      "subject": "mathematics"
+    },
+    {
+      "file": "stone-age.png",
+      "path": "/diagrams/stone-age.png",
+      "topicKeys": [
+        "stone-age",
+        "stone",
+        "age"
+      ],
+      "subject": "general"
+    },
+    {
+      "file": "tectonic-plates.png",
+      "path": "/diagrams/tectonic-plates.png",
+      "topicKeys": [
+        "tectonic-plates",
+        "tectonic",
+        "plates"
+      ],
+      "subject": "geography"
+    },
+    {
+      "file": "transformations.png",
+      "path": "/diagrams/transformations.png",
+      "topicKeys": [
+        "transformations"
+      ],
+      "subject": "mathematics"
+    },
+    {
+      "file": "triangle-properties.png",
+      "path": "/diagrams/triangle-properties.png",
+      "topicKeys": [
+        "triangle-properties",
+        "triangle",
+        "properties"
+      ],
+      "subject": "general"
+    },
+    {
+      "file": "trigonometry.png",
+      "path": "/diagrams/trigonometry.png",
+      "topicKeys": [
+        "trigonometry"
+      ],
+      "subject": "mathematics"
+    },
+    {
+      "file": "unit-circle.png",
+      "path": "/diagrams/unit-circle.png",
+      "topicKeys": [
+        "unit-circle",
+        "unit",
+        "circle"
+      ],
+      "subject": "mathematics"
+    },
+    {
+      "file": "vectors.png",
+      "path": "/diagrams/vectors.png",
+      "topicKeys": [
+        "vectors"
+      ],
+      "subject": "mathematics"
+    },
+    {
+      "file": "venn-diagram.png",
+      "path": "/diagrams/venn-diagram.png",
+      "topicKeys": [
+        "venn-diagram",
+        "venn",
+        "diagram"
+      ],
+      "subject": "mathematics"
+    },
+    {
+      "file": "viking-longship.png",
+      "path": "/diagrams/viking-longship.png",
+      "topicKeys": [
+        "viking-longship",
+        "viking",
+        "longship"
+      ],
+      "subject": "history"
+    },
+    {
+      "file": "volcano-cross-section.png",
+      "path": "/diagrams/volcano-cross-section.png",
+      "topicKeys": [
+        "volcano-cross-section",
+        "volcano",
+        "cross",
+        "section"
+      ],
+      "subject": "geography"
+    },
+    {
+      "file": "water-cycle.png",
+      "path": "/diagrams/water-cycle.png",
+      "topicKeys": [
+        "water-cycle",
+        "water",
+        "cycle"
+      ],
+      "subject": "geography"
+    },
+    {
+      "file": "wave-types.png",
+      "path": "/diagrams/wave-types.png",
+      "topicKeys": [
+        "wave-types",
+        "wave",
+        "types"
+      ],
+      "subject": "physics"
+    },
+    {
+      "file": "waves.png",
+      "path": "/diagrams/waves.png",
+      "topicKeys": [
+        "waves"
+      ],
+      "subject": "physics"
+    },
+    {
+      "file": "world-biomes.png",
+      "path": "/diagrams/world-biomes.png",
+      "topicKeys": [
+        "world-biomes",
+        "world",
+        "biomes"
+      ],
+      "subject": "general"
+    },
+    {
+      "file": "ww1-trenches.png",
+      "path": "/diagrams/ww1-trenches.png",
+      "topicKeys": [
+        "ww1-trenches",
+        "ww1",
+        "trenches"
+      ],
+      "subject": "history"
+    }
+  ]
+}

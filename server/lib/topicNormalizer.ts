@@ -81,6 +81,44 @@ const CANONICAL_TOPIC_MAP: Array<[string[], string]> = [
   [["climate change", "global warming", "greenhouse effect", "carbon footprint"], "climate_change"],
   [["urbanisation", "cities", "urban growth", "megacities"], "urbanisation"],
   [["development", "gdp", "hdi", "inequality", "global development"], "global_development"],
+  // ── Phase 3.5: Extended synonym mappings for diagram coverage ──────────────
+  // Physics expansions
+  [["distance time graph", "speed time graph", "velocity time graph", "motion graphs"], "forces_and_motion"],
+  [["electromagnetic spectrum", "em spectrum", "radio waves", "microwaves", "infrared", "visible light", "ultraviolet", "x-rays", "gamma rays"], "light_and_optics"],
+  [["circuit symbols", "series circuit", "parallel circuit", "resistance", "ammeter", "voltmeter"], "electricity"],
+  // Biology expansions
+  [["digestive system", "digestion", "enzymes in digestion", "villi", "small intestine", "large intestine"], "digestive_system"],
+  [["animal cell", "animal cells", "cell membrane", "cytoplasm", "nucleus", "mitochondria"], "cell_biology"],
+  [["plant cell", "plant cells", "cell wall", "chloroplast", "vacuole"], "plant_biology"],
+  [["nervous system", "reflex arc", "synapse", "neurones", "receptor"], "homeostasis"],
+  [["human body", "organ systems", "organ system"], "human_body"],
+  // Chemistry expansions
+  [["separation techniques", "distillation", "filtration", "chromatography", "crystallisation"], "separation_techniques"],
+  [["periodic table groups", "group 1", "group 7", "noble gases", "halogens", "alkali metals", "transition metals"], "periodic_table"],
+  // Maths expansions
+  [["pythagoras", "pythagoras theorem", "pythagorean theorem", "finding the hypotenuse", "right-angled triangle"], "trigonometry"],
+  [["coordinates", "plotting coordinates", "coordinate grid", "cartesian plane", "x and y axes"], "coordinates"],
+  [["fractions decimals percentages", "fdp", "converting fractions", "fraction decimal percent"], "number"],
+  [["area and perimeter", "area of shapes", "perimeter of shapes", "compound shapes area"], "geometry"],
+  [["circle theorems", "tangent theorem", "angle in semicircle", "angles in same segment"], "geometry"],
+  [["transformations", "rotation", "reflection", "translation", "enlargement"], "geometry"],
+  [["3d shapes", "prisms", "nets", "surface area", "volume of shapes"], "geometry"],
+  [["sequences", "nth term", "arithmetic sequence", "geometric sequence", "sequence patterns"], "algebra"],
+  // History expansions
+  [["battle of hastings", "1066", "william the conqueror", "harold godwinson", "norman conquest"], "norman_conquest"],
+  [["medieval", "medieval life", "black death", "feudal system", "middle ages"], "medieval"],
+  [["tudor", "tudors", "henry viii", "elizabeth i", "reformation"], "tudors"],
+  [["roman", "romans", "roman empire", "roman britain"], "roman_empire"],
+  // Geography expansions
+  [["coastal erosion", "coastal features", "headlands bays", "stacks stumps", "longshore drift", "coastal management"], "coastal_geography"],
+  [["water cycle", "hydrological cycle", "evaporation", "condensation", "precipitation"], "water_cycle"],
+  [["population", "population growth", "population pyramid", "demographic transition"], "population"],
+  // Computer Science expansions
+  [["binary", "binary number", "binary to denary", "denary to binary", "binary addition"], "binary"],
+  [["logic gates", "and gate", "or gate", "not gate", "truth table"], "logic_gates"],
+  [["sorting algorithms", "bubble sort", "merge sort", "insertion sort", "algorithm efficiency"], "sorting_algorithms"],
+  [["computer architecture", "cpu", "von neumann", "fetch decode execute", "ram rom"], "computer_architecture"],
+  [["networking", "network topology", "star network", "protocols", "tcp ip", "packets"], "networking"],
 ];
 
 /**

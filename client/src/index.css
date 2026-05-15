@@ -374,3 +374,91 @@
 }
 
 /* deploy trigger v3 — auto-save all worksheets + larger diagrams */
+
+
+/* ─── Phase 2.2: Subject-aware typography upgrade ──────────────────────────── */
+:root {
+  --ws-display-font: 'Source Serif Pro', 'Newsreader', Georgia, serif;
+  --ws-body-font: 'DM Sans', system-ui, sans-serif;
+  --ws-mono-font: 'JetBrains Mono', 'Source Code Pro', Consolas, monospace;
+}
+
+/* Maths/Physics/CS: monospace for equations and code */
+.worksheet-print-root[data-subject*="math"] .katex,
+.worksheet-print-root[data-subject*="physics"] .katex,
+.worksheet-print-root[data-subject*="computer"] pre,
+.worksheet-print-root[data-subject*="computer"] code {
+  font-family: var(--ws-mono-font);
+}
+
+/* English Literature: serif for extracts and titles */
+.worksheet-print-root[data-subject*="english"] [class*="passage"],
+.worksheet-print-root[data-subject*="english"] [class*="source"],
+.worksheet-print-root[data-subject*="literature"] [class*="passage"],
+.worksheet-print-root[data-subject*="literature"] [class*="source"] {
+  font-family: var(--ws-display-font);
+  font-style: italic;
+}
+
+/* History: serif for source extracts */
+.worksheet-print-root[data-subject*="history"] [class*="source"],
+.worksheet-print-root[data-subject*="history"] [class*="passage"] {
+  font-family: var(--ws-display-font);
+}
+
+/* ─── Phase 2.4: Page numbers in print footer ──────────────────────────────── */
+@media print {
+  @page {
+    margin: 12mm 10mm 14mm 10mm;
+  }
+  .worksheet-print-root {
+    counter-reset: page-counter;
+  }
+  .worksheet-print-root::after {
+    content: "";
+    display: block;
+  }
+}
+
+/* ─── Phase 4.3: Handwriting practice school lines ─────────────────────────── */
+.ws-handwriting-line {
+  height: 25mm;
+  border-bottom: 2px solid #dc2626;
+  border-top: 1px solid #dc2626;
+  position: relative;
+}
+.ws-handwriting-line::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  border-top: 1px dashed #3b82f6;
+  opacity: 0.6;
+}
+.ws-handwriting-line::after {
+  content: "";
+  position: absolute;
+  bottom: -6px;
+  left: 0;
+  right: 0;
+  border-top: 1px solid #d1d5db;
+  opacity: 0.4;
+}
+
+/* ─── Phase 2.6: Density classes ───────────────────────────────────────────── */
+.worksheet-print-root[data-density="compact"] {
+  --ws-section-padding: 8px;
+  --ws-paragraph-spacing: 4px;
+  --ws-answer-line-height: 18px;
+}
+.worksheet-print-root[data-density="standard"] {
+  --ws-section-padding: 14px;
+  --ws-paragraph-spacing: 8px;
+  --ws-answer-line-height: 24px;
+}
+.worksheet-print-root[data-density="spacious"] {
+  --ws-section-padding: 20px;
+  --ws-paragraph-spacing: 14px;
+  --ws-answer-line-height: 32px;
+}

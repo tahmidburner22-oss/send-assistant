@@ -108,6 +108,19 @@ router.get("/search", requireAuth, async (req: any, res) => {
       // Explicit compatibility table for subject → umbrella mappings.
       const scienceFamily = new Set(["science", "biology", "chemistry", "physics"]);
       if (scienceFamily.has(fa) && scienceFamily.has(fb)) return true;
+      // Phase 3.6: Cross-curricular topics that legitimately appear in multiple subjects
+      // e.g. water cycle (geography + science), carbon cycle (geography + biology + chemistry)
+      const crossCurricularPairs: Array<[string, string]> = [
+        ["science", "geography"],  // water cycle, carbon cycle, weather
+        ["geography", "science"],
+        ["history", "english"],    // source analysis skills overlap
+        ["english", "history"],
+        ["maths", "science"],      // graphs, data, calculations
+        ["science", "maths"],
+        ["computing", "maths"],    // binary, logic, algorithms
+        ["maths", "computing"],
+      ];
+      if (crossCurricularPairs.some(([x, y]) => fa === x && fb === y)) return true;
       return false;
     };
     const requestedTopicKey = canonicalTopicKey([topicRaw, subtopicRaw].filter(Boolean).join(" ") || topicRaw);
@@ -132,7 +145,9 @@ router.get("/search", requireAuth, async (req: any, res) => {
       const familyOk = !subjectRaw || !eSubject || familiesCompatible(eSubject, subjectRaw);
       const subjectMatch = familyOk && (!subjectRaw || !eSubject ||
         eSubject === subjectRaw || subjectFamily(eSubject) === subjectFamily(subjectRaw) ||
-        eSubject.includes(subjectRaw) || subjectRaw.includes(eSubject));
+        eSubject.includes(subjectRaw) || subjectRaw.includes(eSubject) ||
+        // Phase 3.6: Check if the entry's tags include the requested subject (cross-curricular)
+        eTags.some(t => t === subjectRaw || subjectFamily(t) === subjectFamily(subjectRaw)));
       const yearGroupMatch = !yearGroupRaw || !eYearGroup || eYearGroup === yearGroupRaw || eYearGroup.includes(yearGroupRaw);
 
       let score = 0;

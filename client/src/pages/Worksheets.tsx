@@ -665,6 +665,9 @@ export default function Worksheets() {
   const [rating, setRating] = useState(0);
   const [savedWorksheetId, setSavedWorksheetId] = useState<string | null>(null);
   const [textSize, setTextSize] = useState(14);
+  const [density, setDensity] = useState<"compact" | "standard" | "spacious">("standard");
+  const [wantHandwriting, setWantHandwriting] = useState(false);
+  const [handwritingVariant, setHandwritingVariant] = useState<"trace-only" | "trace-copy" | "look-cover-write" | "sound-write">("trace-copy");
   const [voiceTargetSection, setVoiceTargetSection] = useState<number | null>(null);
   const [voiceAnswers, setVoiceAnswers] = useState<Record<number, string>>({});
 
@@ -1559,6 +1562,8 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
           targetPages: targetPages || undefined,
           readingAge: readingAge || undefined,
           selectedSections: selectedSections as string[], // Pass selected sections for structured generation
+          wantHandwriting: wantHandwriting || undefined,
+          handwritingVariant: wantHandwriting ? handwritingVariant : undefined,
         });
         generatedWs = { ...result, isAI: true } as AIWorksheet;
         toast.success(generateDiagram ? "Worksheet with diagram generated!" : "Worksheet generated with AI!");
@@ -1590,6 +1595,8 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
             recallTopic: (selectedSections.includes('retrieval') ? (recallTopic.trim() || topic) : recallTopic.trim()) || undefined,
             examStyle,
             selectedSections: selectedSections as string[],
+            wantHandwriting: wantHandwriting || undefined,
+            handwritingVariant: wantHandwriting ? handwritingVariant : undefined,
           });
         } else {
           // Retry across all available providers — server tries Groq→Cerebras→Gemini→OpenRouter→OpenAI→Claude→Mistral→DeepSeek
@@ -3782,6 +3789,41 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                   <p className="text-[10px] text-muted-foreground">Any specific instructions or requirements for the worksheet. These will be applied as a priority override during generation.</p>
                 </div>
 
+                {/* ── Phase 4: Handwriting Practice Toggle (EYFS–Year 2 only) ─ */}
+                {/year [012]|reception|nursery|ks1/i.test(yearGroup) && (
+                  <div className="space-y-2 p-3 rounded-lg bg-violet-50 border border-violet-200">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                        Handwriting Practice
+                      </Label>
+                      <button
+                        type="button"
+                        onClick={() => setWantHandwriting(!wantHandwriting)}
+                        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${wantHandwriting ? 'bg-violet-500' : 'bg-gray-300'}`}
+                      >
+                        <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${wantHandwriting ? 'translate-x-4.5' : 'translate-x-0.5'}`} />
+                      </button>
+                    </div>
+                    {wantHandwriting && (
+                      <div className="space-y-1.5">
+                        <p className="text-[10px] text-muted-foreground">Adds faint tracing words with school-line guides for spelling and handwriting practice.</p>
+                        <div className="flex gap-1 flex-wrap">
+                          {(["trace-only", "trace-copy", "look-cover-write", "sound-write"] as const).map(v => (
+                            <button
+                              key={v}
+                              type="button"
+                              onClick={() => setHandwritingVariant(v)}
+                              className={`px-2 py-0.5 rounded text-[10px] font-medium border transition-all ${handwritingVariant === v ? 'bg-violet-500 text-white border-violet-500' : 'bg-white text-gray-600 border-gray-300 hover:border-violet-300'}`}
+                            >
+                              {v.replace(/-/g, ' ')}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {/* ── Class Presets ────────────────────────────────────────── */}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
@@ -4060,6 +4102,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                           worksheet={uploadedWorksheet as any}
                           viewMode="student"
                           textSize={textSize}
+                          density={density}
                           overlayColor={overlayBg || colorOverlays.find(o => o.id === "cream")?.color || ""}
                           editedSections={{}}
                           schoolLogoUrl={preferences.schoolLogoUrl}
@@ -4244,6 +4287,7 @@ ${s.content}`).join("\n\n"),
                               worksheet={slidesWorksheet as any}
                               viewMode="student"
                               textSize={textSize}
+                          density={density}
                               overlayColor={overlayBg || colorOverlays.find(o => o.id === "cream")?.color || ""}
                               editedSections={{}}
                               schoolLogoUrl={preferences.schoolLogoUrl}
@@ -4819,6 +4863,18 @@ ${s.content}`).join("\n\n"),
               <span className="text-xs font-medium px-1.5 min-w-[32px] text-center">{textSize}px</span>
               <button onClick={() => setTextSize(Math.min(24, textSize + 2))} className="p-1.5 rounded-md hover:bg-white/80 text-muted-foreground hover:text-foreground"><ZoomIn className="w-3.5 h-3.5" /></button>
             </div>
+            {/* Phase 2.6: Density toggle */}
+            <div className="flex items-center gap-0.5 bg-muted rounded-lg p-0.5">
+              {(["compact", "standard", "spacious"] as const).map(d => (
+                <button
+                  key={d}
+                  onClick={() => setDensity(d)}
+                  className={`px-2 py-1 rounded-md text-xs font-medium transition-all ${density === d ? "bg-white shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground hover:bg-white/50"}`}
+                >
+                  {d.charAt(0).toUpperCase() + d.slice(1)}
+                </button>
+              ))}
+            </div>
             <button
               onClick={() => handleOpenPrintPreview(viewMode)}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted hover:bg-white/80 text-xs font-medium text-muted-foreground hover:text-foreground border border-border/50 transition-all"
@@ -5191,6 +5247,7 @@ ${s.content}`).join("\n\n"),
                     }}
                     viewMode={viewMode}
                     textSize={textSize}
+                          density={density}
                     overlayColor={overlayBg}
                     editedSections={editedSections}
                     onSectionClick={undefined}
@@ -5540,6 +5597,7 @@ ${s.content}`).join("\n\n"),
                         }}
                         viewMode={historyViewMode === "teacher" ? "teacher" : "student"}
                         textSize={textSize}
+                          density={density}
                         editMode={false}
                         overlayColor=""
                         editedSections={historyEditedSections}
@@ -5964,6 +6022,7 @@ ${s.content}`).join("\n\n"),
                 questions={diagnosticResult.questions}
                 sendNeedId={sendNeed && sendNeed !== "none-selected" ? sendNeed : undefined}
                 textSize={textSize}
+                          density={density}
                 overlayColor="#ffffff"
               />
             )}
