@@ -84,6 +84,8 @@ export const WorksheetOutputSchema = z.object({
     qualityWarning: z.string().optional(),
     generatedAt: z.string().optional(),
     provider: z.string().optional(),
+    /** Phase 4 / FEAT-002 — misconception IDs the AI deliberately targeted. */
+    misconceptionsTargeted: z.array(z.string()).optional(),
   }).optional(),
   isAI: z.boolean().optional(),
   provider: z.string().optional(),

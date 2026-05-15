@@ -6677,6 +6677,40 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
         );
       })}
 
+      {/* ── Phase 4 / FEAT-002 — teacher-only misconception callout ── */}
+      {isTeacherView &&
+        Array.isArray((worksheet.metadata as any)?.misconceptionsTargeted) &&
+        ((worksheet.metadata as any).misconceptionsTargeted as string[]).length > 0 && (
+        <div
+          className="ws-teacher-section ws-no-print-on-student"
+          style={{
+            marginTop: "12px",
+            padding: "10px 14px",
+            background: "#fef9c3",
+            border: "1.5px solid #ca8a04",
+            borderRadius: "6px",
+            fontSize: `${fmt.fontSize - 2}px`,
+            fontFamily: fmt.fontFamily,
+            color: "#713f12",
+          }}
+        >
+          <div style={{ fontWeight: 700, marginBottom: "4px", display: "flex", alignItems: "center", gap: "6px" }}>
+            <span aria-hidden>⚠</span>
+            <span>Misconceptions targeted (teacher reference)</span>
+          </div>
+          <ul style={{ margin: 0, paddingLeft: "18px", lineHeight: 1.5 }}>
+            {((worksheet.metadata as any).misconceptionsTargeted as string[]).map((id) => (
+              <li key={id} style={{ marginBottom: "2px" }}>
+                <code style={{ background: "#fde68a", padding: "1px 4px", borderRadius: "3px", fontSize: "11px" }}>{id}</code>
+              </li>
+            ))}
+          </ul>
+          <div style={{ marginTop: "6px", fontSize: "11px", color: "#854d0e", fontStyle: "italic" }}>
+            Distractors in the questions above are designed to expose these specific pupil errors. Use marking to identify which pupils held which misconception.
+          </div>
+        </div>
+      )}
+
       {/* ── Footer ── */}
       {isRevisionMat ? (
         <div style={{ marginTop: "6px", padding: "4px 8px", display: "flex", justifyContent: "space-between", fontSize: "9px", color: "#9ca3af", fontFamily: fmt.fontFamily }}>
