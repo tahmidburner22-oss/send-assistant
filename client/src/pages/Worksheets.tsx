@@ -666,6 +666,12 @@ export default function Worksheets() {
   // outcomes into the prompt and auto-tag evidenceLinks on generation.
   const [pupilContextChildId, setPupilContextChildId] = useState<string>("");
   const [usePupilContext, setUsePupilContext] = useState<boolean>(false);
+  // FEAT-004 / batch-8: Class Pack state — multi-select pupils to print one
+  // personalised page per pupil from the same base worksheet.
+  const [showClassPackDialog, setShowClassPackDialog] = useState(false);
+  const [classPackSelectedIds, setClassPackSelectedIds] = useState<Set<string>>(new Set());
+  const [classPackBuilding, setClassPackBuilding] = useState(false);
+  const [classPackProgress, setClassPackProgress] = useState<{ done: number; total: number; status: string } | null>(null);
   const [editMode, setEditMode] = useState(false);
   const [hiddenSections, setHiddenSections] = useState<Set<number>>(new Set());
   const [hideHeader, setHideHeader] = useState(false);
@@ -2505,6 +2511,52 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
   // ─── Print (opens PrintOptionsDialog) ─────────────────────────────────
   const handlePrint = () => {
     setShowPrintDialog(true);
+  };
+
+  // ─── Batch-8: Class Pack build (per-pupil booklet) ────────────────────
+  // Personalises the live worksheet for each selected pupil and opens a
+  // single printable booklet (one pupil per page). Uses only the existing
+  // free-tier AI providers — no paid services.
+  const handleBuildClassPack = async () => {
+    if (!generated) { toast.error("Generate a worksheet first."); return; }
+    const selected = children.filter(c => classPackSelectedIds.has(c.id));
+    if (selected.length === 0) { toast.error("Select at least one pupil."); return; }
+    setClassPackBuilding(true);
+    setClassPackProgress({ done: 0, total: selected.length, status: "Starting…" });
+    try {
+      const { buildClassPack, openClassPackInPopup } = await import("@/lib/class-pack");
+      const result = await buildClassPack({
+        baseWorksheet: {
+          title: generated.title || "Worksheet",
+          subtitle: (generated as any).subtitle,
+          sections: (generated.sections || []) as any[],
+          metadata: generated.metadata || {},
+        },
+        pupils: selected,
+        subject,
+        topic,
+        defaultTier: difficulty === "higher" ? "higher" : "foundation",
+        onProgress: (i, total, status) => setClassPackProgress({ done: i, total, status }),
+      });
+      const popup = openClassPackInPopup(result.popupHtml, `${result.baseTitle} — class pack`);
+      if (!popup) {
+        toast.error("Allow pop-ups to open the class pack.");
+      } else {
+        const errCount = result.errors.length;
+        if (errCount > 0) {
+          toast.warning(`Class pack ready — ${result.pages.length} page${result.pages.length === 1 ? "" : "s"} (${errCount} pupil${errCount === 1 ? "" : "s"} fell back to base content).`);
+        } else {
+          toast.success(`Class pack ready — ${result.pages.length} personalised page${result.pages.length === 1 ? "" : "s"}.`);
+        }
+        setShowClassPackDialog(false);
+      }
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      toast.error(msg.length < 140 ? msg : "Could not build class pack — try again.");
+    } finally {
+      setClassPackBuilding(false);
+      setClassPackProgress(null);
+    }
   };
 
   const handlePrintWithOptions = (options: PrintOptions) => {
@@ -5003,6 +5055,20 @@ ${s.content}`).join("\n\n"),
                 </span>
               )}
             </Button>
+            {/* Batch-8: Class Pack — one personalised page per pupil */}
+            {generated && children.length > 0 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setClassPackSelectedIds(new Set(children.map(c => c.id)));
+                  setShowClassPackDialog(true);
+                }}
+                title="Generate a printable booklet with one page personalised per pupil"
+              >
+                <Users className="w-3.5 h-3.5 mr-1.5" /> Class Pack
+              </Button>
+            )}
             {/* FEAT-005: SENCO evidence-pack export — gated on a selected pupil */}
             {pupilContextChildId && (
               <Button
@@ -6047,6 +6113,130 @@ ${s.content}`).join("\n\n"),
         onClose={() => setShowPrintDialog(false)}
         onPrint={handlePrintWithOptions}
       />
+
+      {/* Batch-8: Class Pack dialog */}
+      <Dialog open={showClassPackDialog} onOpenChange={open => { if (!classPackBuilding) setShowClassPackDialog(open); }}>
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5 text-brand" />
+              Class Pack — one personalised page per pupil
+            </DialogTitle>
+            <p className="text-sm text-muted-foreground">
+              Same learning intention. Different scaffolds, fonts, and reading ages — one page per pupil.
+              Print once, hand out. Uses only your free-tier AI providers.
+            </p>
+          </DialogHeader>
+          <div className="space-y-4 mt-2">
+            {/* Select-all + count */}
+            <div className="flex items-center justify-between rounded-md border border-border bg-muted/30 px-3 py-2">
+              <span className="text-xs font-medium">
+                {classPackSelectedIds.size} of {children.length} pupils selected
+              </span>
+              <div className="flex gap-1.5">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setClassPackSelectedIds(new Set(children.map(c => c.id)))}
+                  disabled={classPackBuilding}
+                >
+                  Select all
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setClassPackSelectedIds(new Set())}
+                  disabled={classPackBuilding}
+                >
+                  Clear
+                </Button>
+              </div>
+            </div>
+
+            {/* Pupil list */}
+            <div className="max-h-72 overflow-y-auto space-y-1.5 pr-1">
+              {children.map(c => {
+                const checked = classPackSelectedIds.has(c.id);
+                const sendList = (c.sendNeeds && c.sendNeeds.length > 0) ? c.sendNeeds : (c.sendNeed ? [c.sendNeed] : []);
+                return (
+                  <label
+                    key={c.id}
+                    className={`flex items-center gap-3 px-3 py-2 rounded-md border cursor-pointer transition ${checked ? "border-brand bg-brand-light/20" : "border-border bg-card hover:bg-muted/40"}`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      disabled={classPackBuilding}
+                      onChange={() => {
+                        setClassPackSelectedIds(prev => {
+                          const next = new Set(prev);
+                          if (next.has(c.id)) next.delete(c.id);
+                          else next.add(c.id);
+                          return next;
+                        });
+                      }}
+                      className="w-4 h-4"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{c.name}</p>
+                      <p className="text-[11px] text-muted-foreground truncate">
+                        Year {c.yearGroup}{sendList.length > 0 ? ` · ${sendList.join(", ")}` : ""}
+                      </p>
+                    </div>
+                  </label>
+                );
+              })}
+            </div>
+
+            {/* Progress */}
+            {classPackProgress && (
+              <div className="rounded-md border border-brand/30 bg-brand-light/20 px-3 py-2 text-xs text-brand">
+                <div className="flex items-center justify-between">
+                  <span className="font-medium">{classPackProgress.status}</span>
+                  <span>
+                    {classPackProgress.done}/{classPackProgress.total}
+                  </span>
+                </div>
+                <div className="mt-1.5 h-1.5 bg-white/60 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-brand transition-all duration-500"
+                    style={{ width: `${classPackProgress.total > 0 ? (classPackProgress.done / classPackProgress.total) * 100 : 0}%` }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Actions */}
+            <div className="flex gap-2 justify-end pt-1 border-t border-border/50">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowClassPackDialog(false)}
+                disabled={classPackBuilding}
+              >
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                onClick={handleBuildClassPack}
+                disabled={classPackBuilding || classPackSelectedIds.size === 0}
+                className="bg-brand hover:bg-brand/90 text-white gap-1.5"
+              >
+                {classPackBuilding ? (
+                  <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Building…</>
+                ) : (
+                  <><Users className="w-3.5 h-3.5" /> Build & print</>
+                )}
+              </Button>
+            </div>
+
+            <p className="text-[10px] text-muted-foreground leading-relaxed">
+              Each pupil gets one A4 page personalised to their SEND profile, reading age, and accessibility font.
+              The booklet opens in a new window — your browser handles the print dialog.
+            </p>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* One-click Differentiation Dialog */}
       <Dialog open={showDiffDialog} onOpenChange={setShowDiffDialog}>

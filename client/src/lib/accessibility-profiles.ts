@@ -236,3 +236,37 @@ ${sel} .katex-mathml {
  * Per-user keying is done by the caller (it's a UI concern, not a profile concern).
  */
 export const ACTIVE_A11Y_PROFILE_KEY = "adaptly_active_a11y_profile";
+
+
+/**
+ * Re-usable <head> HTML that loads the same web fonts as client/index.html.
+ * Use this when you build a fresh document (e.g. a print popup or class-pack
+ * booklet) — it keeps font choices consistent between the live app and any
+ * detached print window.
+ *
+ * The chosen fonts are all free / open licence:
+ *   - Lexend, Atkinson Hyperlegible — Google Fonts (free, OFL)
+ *   - OpenDyslexic — SIL OFL via jsDelivr (free, redistributable)
+ */
+export const GOOGLE_FONTS_HEAD_HTML = `
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&family=Atkinson+Hyperlegible:wght@400;700&display=swap" />
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+<style>
+  @font-face {
+    font-family: "OpenDyslexic";
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url("https://cdn.jsdelivr.net/npm/opendyslexic@1.0.3/woff/OpenDyslexic-Regular.woff") format("woff");
+  }
+  @font-face {
+    font-family: "OpenDyslexic";
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url("https://cdn.jsdelivr.net/npm/opendyslexic@1.0.3/woff/OpenDyslexic-Bold.woff") format("woff");
+  }
+</style>
+`.trim();
