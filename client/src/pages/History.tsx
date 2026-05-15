@@ -8,7 +8,7 @@ import { motion } from "framer-motion";
 import { useApp } from "@/contexts/AppContext";
 import { callAI, parseWithFixes, repairTruncatedJson } from "@/lib/ai";
 import { subjects, sendNeeds } from "@/lib/send-data";
-import { FileText, BookOpen, Star, Eye, Trash2, Clock, Edit3, Save, X, GraduationCap, CheckCircle, Sparkles, PenLine, Loader2, UserPlus, Layers, Copy, Share2, Link, Check } from "lucide-react";
+import { FileText, BookOpen, Star, Eye, EyeOff, Trash2, Clock, Edit3, Save, X, GraduationCap, CheckCircle, Sparkles, PenLine, Loader2, UserPlus, Layers, Copy, Share2, Link, Check } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import type { Worksheet, Story, Differentiation } from "@/contexts/AppContext";
@@ -355,6 +355,10 @@ export default function History() {
   const [aiEditPrompt, setAiEditPrompt] = useState("");
   const [aiEditLoading, setAiEditLoading] = useState(false);
   const [aiEditSectionIndex, setAiEditSectionIndex] = useState<number | null>(null);
+  // Quick hide/edit state — mirrors Worksheets.tsx so teachers can prune sections
+  // (e.g. drop the success-criteria box for a quick assessment) before printing.
+  const [hiddenSections, setHiddenSections] = useState<Set<number>>(new Set());
+  const [hideHeader, setHideHeader] = useState(false);
   const [storyEditType, setStoryEditType] = useState<"none" | "manual" | "ai">("none");
   const [storyAiPrompt, setStoryAiPrompt] = useState("");
   const [storyAiLoading, setStoryAiLoading] = useState(false);
@@ -375,6 +379,8 @@ export default function History() {
     setViewMode("teacher");
     setEditType("none");
     setAiEditPrompt("");
+    setHiddenSections(new Set());
+    setHideHeader(false);
   }
 
   // ── Save worksheet edits ────────────────────────────────────────────────────
@@ -618,7 +624,7 @@ export default function History() {
       </Tabs>
 
       {/* ── Worksheet viewer / editor dialog ── */}
-      <Dialog open={!!selectedWs} onOpenChange={open => { if (!open) { setSelectedWs(null); setEditMode(false); setEditedSections({}); } }}>
+      <Dialog open={!!selectedWs} onOpenChange={open => { if (!open) { setSelectedWs(null); setEditMode(false); setEditedSections({}); setHiddenSections(new Set()); setHideHeader(false); } }}>
         <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 pr-8">
@@ -913,14 +919,51 @@ export default function History() {
                     onReset={() => { setSelectedWs(null); }}
                     resetLabel="Close worksheet"
                   >
+                    {(hiddenSections.size > 0 || hideHeader) && (
+                      <div className="flex items-center justify-between gap-2 mb-3 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+                        <span className="flex items-center gap-1.5">
+                          <EyeOff className="w-3.5 h-3.5" />
+                          {[hideHeader ? "Header" : null, hiddenSections.size > 0 ? `${hiddenSections.size} section${hiddenSections.size !== 1 ? "s" : ""}` : null].filter(Boolean).join(" + ")} hidden — excluded from the printed worksheet.
+                        </span>
+                        <Button size="sm" variant="outline" className="h-7 gap-1.5 text-amber-700 border-amber-300 bg-white hover:bg-amber-100"
+                          onClick={() => { setHiddenSections(new Set()); setHideHeader(false); }}>
+                          <Eye className="w-3.5 h-3.5" />Restore all
+                        </Button>
+                      </div>
+                    )}
                     <WorksheetRenderer
-                      worksheet={toWorksheetData(selectedWs)}
+                      worksheet={(() => {
+                        const wd = toWorksheetData(selectedWs);
+                        return {
+                          ...wd,
+                          sections: (wd.sections as any[]).filter((_: any, i: number) => !hiddenSections.has(i)) as any,
+                        };
+                      })()}
                       viewMode={viewMode}
                       textSize={15}
                       overlayColor="transparent"
                       editedSections={editedSections}
                       editMode={false}
                       isRevisionMat={sections.some(s => s.type === "revision-mat-box" || s.type === "revision-mat-lo" || s.type === "revision-mat-title")}
+                      showSectionQuickActions={true}
+                      sectionOriginalIndices={sections
+                        .map((_, i) => i)
+                        .filter((i) => !hiddenSections.has(i))}
+                      onSectionQuickHide={(originalIndex: number) => {
+                        setHiddenSections(prev => {
+                          const next = new Set(prev);
+                          next.add(originalIndex);
+                          return next;
+                        });
+                      }}
+                      onSectionQuickEdit={(originalIndex: number) => {
+                        setEditMode(true);
+                        setEditType("manual");
+                        setTimeout(() => setAiEditSectionIndex(originalIndex), 50);
+                      }}
+                      onHeaderHide={() => setHideHeader(true)}
+                      onHeaderEdit={() => { setEditMode(true); setEditType("manual"); }}
+                      hideHeader={hideHeader}
                     />
                   </WorksheetErrorBoundary>
                 )}
