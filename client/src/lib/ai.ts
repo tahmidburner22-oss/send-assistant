@@ -58,6 +58,19 @@ import { applyCoverageMap } from './coverageMapBuilder';
 // prompt so questions diagnose common pupil errors, not just test recall.
 import { formatMisconceptionsForPrompt, getMisconceptionsForTopic } from './misconception-bank';
 
+// ─── Pillar A — Exam-style questions for Year 9+ (FEAT-PA-001/002/003/004) ─
+// PA#1 — AO/Paper/Calculator-aware exam-stem anchor retrieval; planner picks
+// 1–2 anchor stems and seeds them as exemplars in the prompt.
+// PA#2 — buildLorBlock forces a 6-mark Levelled Open Response with a 3-band
+// level grid on Y10/Y11 science / humanities / English.
+// PA#4 — getExamPaperTemplate replaces the generic Section 1/2/3 template
+// with a real (subject, board, paper) sequence for Y10/Y11 exam-style mode.
+// pillarAValidator runs the AO histogram, LOR-presence and synoptic-link
+// audits *after* generation so metadata is always populated.
+import { getExamStemAnchors, buildExamStemAnchorBlock } from './pastPaperQuestions';
+import { buildLorBlock, buildExamPaperTemplateBlock } from './subject-profiles';
+import { applyPillarAAudits } from './pillarAValidator';
+
 // ─── Built-in keys — hardcoded server-side fallback (always available) ────────
 // These are the admin keys used as fallback when no user key is provided.
 // The server-side /api/ai/generate endpoint uses these from env vars directly.
@@ -671,6 +684,25 @@ export interface AIWorksheetResult {
       yearGroup?: string;
       topic?: string;
     };
+    // ── Pillar A — Exam-style questions for Year 9+ ────────────────────────
+    /** PA#1 — UK GCSE paper code (P1/P2/P3). */
+    paper?: "P1" | "P2" | "P3";
+    /** PA#1 — calculator allowed on the source paper. */
+    calculator?: boolean;
+    /** PA#1 — Assessment Objective histogram. Counts every question on the sheet. */
+    aoHistogram?: Record<"AO1" | "AO2" | "AO3" | "AO4", number>;
+    /** PA#2 — flag set by assertLorPresent (Y10/Y11 sci/hum/Eng only). */
+    lorPresent?: boolean;
+    lorMarks?: number;
+    lorBands?: string[];
+    /** PA#3 — synoptic question links to prior topics. */
+    synopticLinks?: Array<{ sectionIndex: number; priorTopic: string; sectionTitle?: string }>;
+    /** PA#3 — prior topics injected into the prompt (echoed for the renderer). */
+    priorTopics?: string[];
+    /** PA#4 — exam-paper template key, e.g. "aqa:english_lang:P1". */
+    examPaperTemplate?: string;
+    /** Pillar A — non-blocking warnings raised by the post-validators. */
+    postValidatorWarnings?: string[];
   };
   isAI: true;
   provider?: string;
@@ -767,6 +799,14 @@ export async function aiGenerateWorksheet(params: {
   isRevisionMat?: boolean; // When true, generate a revision mat instead of a standard worksheet
   selectedSections?: string[]; // Which sections to include (from the sections selector)
   subtopic?: string; // Optional subtopic for more specific generation
+  // ── Pillar A — Exam-style questions for Year 9+ ─────────────────────────
+  /** PA#1 — UK GCSE paper code: P1 (typically non-calc maths) / P2 / P3. */
+  paper?: "P1" | "P2" | "P3";
+  /** PA#1 — calculator allowed on this paper? Maths P1 = false; P2/P3 = true. */
+  calculator?: boolean;
+  /** PA#3 — 1–3 prior topics to interleave as synoptic questions. Replaces
+   *  recallTopic on Y10/Y11 sheets; recallTopic still works for KS3. */
+  priorTopics?: string[];
 }): Promise<AIWorksheetResult> {
 
   // ── REVISION MAT: completely separate prompt path ─────────────────────────
@@ -1925,6 +1965,92 @@ ABSOLUTE RULES:
     ? `Exam-style mode: Format like a real ${params.examBoard && params.examBoard !== "none" ? params.examBoard : "GCSE"} paper. Number questions Q1, Q2... with sub-parts (a)(b)(c). Show mark allocations [1 mark]. Use command words. Include answer lines. No worked example section.`
     : "";
 
+  // ── Pillar A — Exam-style instruction blocks for Year 9+ ─────────────────
+  // PA#1 — Paper / calculator note. Threads through to the prompt so a Y10
+  // maths Paper-1 sheet never emits a calculator-only question.
+  const paperCalcNote = (() => {
+    const code = params.paper;
+    if (!code && typeof params.calculator !== "boolean") return "";
+    const parts: string[] = [];
+    if (code) parts.push(`Paper code: ${code}.`);
+    if (typeof params.calculator === "boolean") {
+      parts.push(
+        params.calculator
+          ? `Calculator: ALLOWED. Questions may require numerical calculation that needs a calculator.`
+          : `Calculator: NOT ALLOWED. Every numerical question must be solvable without a calculator (whole numbers, simple fractions, exact surds).`,
+      );
+    }
+    return `Pillar A — paper context: ${parts.join(" ")}`;
+  })();
+
+  // PA#1 — exam-stem anchors retrieved from the past-paper bank by
+  // (subject, topic, yearGroup, paperCode, calculator). These exemplars
+  // anchor the AO/calc/paper conventions of real exams in the prompt so
+  // every emitted stem matches the paper's tone.
+  const examStemAnchorsBlock = (() => {
+    if (!params.examStyle || yearNum < 9) return "";
+    try {
+      const anchors = getExamStemAnchors({
+        subject: params.subject,
+        topic: params.topic,
+        yearGroup: yearNum,
+        paperCode: params.paper,
+        calculator: params.calculator,
+        board: params.examBoard,
+        limit: 2,
+      });
+      return buildExamStemAnchorBlock(anchors);
+    } catch (err) {
+      console.warn("[Pillar A] Exam stem anchor fetch failed:", err);
+      return "";
+    }
+  })();
+
+  // PA#2 — 6-mark Levelled Open Response. Forces ONE 6-mark LOR with a
+  // Level 1/2/3 grid in the teacher key on Y10/Y11 sci/hum/Eng worksheets.
+  const lorBlock = (() => {
+    if (yearNum < 10 || yearNum > 11) return "";
+    return buildLorBlock({ subject: params.subject, topic: params.topic, board: params.examBoard });
+  })();
+
+  // PA#3 — Synoptic / interleaved prior-topic block. Mandates one synoptic
+  // question in Section 2 and one in Section 3, each with a metadata.
+  // synopticLink field. priorTopics fall back to the legacy recallTopic
+  // string for backwards compatibility.
+  const effectivePriorTopics = (() => {
+    if (params.priorTopics && params.priorTopics.length > 0) {
+      return params.priorTopics.slice(0, 3);
+    }
+    if (params.recallTopic && params.recallTopic.trim().length > 0) {
+      return [params.recallTopic.trim()];
+    }
+    return [] as string[];
+  })();
+  const synopticBlock = (() => {
+    if (yearNum < 10 || yearNum > 11) return "";
+    if (effectivePriorTopics.length === 0) return "";
+    return [
+      `### Pillar A — Synoptic / interleaved prior-topic questions — REQUIRED`,
+      `Prior topics (most-recent first): ${effectivePriorTopics.join(", ")}.`,
+      `Place ONE synoptic question in Section 2 (Understanding) and ONE in Section 3 (Application & Analysis) that explicitly links the current topic ("${params.topic}") to a prior topic.`,
+      `Each synoptic section MUST set a metadata field "synopticLink" to the prior topic name (e.g. "synopticLink": "${effectivePriorTopics[0]}").`,
+      `Begin each synoptic question with the phrase "Link to prior learning — ${effectivePriorTopics[0]}:" so teachers can spot them at a glance.`,
+    ].join("\n");
+  })();
+
+  // PA#4 — Subject-specific exam-paper template. Replaces the generic
+  // Section 1/2/3 / Challenge layout for Y10/Y11 exam-style sheets. Only
+  // applies when examStyle is true.
+  const examPaperTemplateBlock = (() => {
+    if (!params.examStyle || yearNum < 10 || yearNum > 11 || !params.paper) return "";
+    return buildExamPaperTemplateBlock({
+      subject: params.subject,
+      yearGroup: params.yearGroup,
+      paper: params.paper,
+      board: params.examBoard,
+    });
+  })();
+
   // ── Reminder box note — DISABLED (not in reference PDFs) ─────────────────
   const reminderBoxNote = "";
 
@@ -2157,6 +2283,11 @@ ${tierNote}
 ${ksGcseNote}
 ${subjectSpecificRules}
 ${misconceptionBlock}
+${paperCalcNote}
+${examStemAnchorsBlock}
+${lorBlock}
+${synopticBlock}
+${examPaperTemplateBlock}
 QUALITY STANDARD: Every question must be fully usable — no placeholders, no ellipses, no unfinished sentences. Use real numbers, real contexts. Textbook quality. Every question must be at the correct curriculum level for ${params.yearGroup || 'the year group'} — GCSE/KS3/KS4 standard as appropriate.
 ${specExamples ? `\n${specExamples}\n` : ''}
 CRITICAL SEND SEPARATION RULE — READ CAREFULLY:
@@ -2544,7 +2675,25 @@ Return EXACTLY this JSON (raw JSON only, no markdown fences):
         topic: params.topic,
         yearGroup: params.yearGroup,
       });
-      return { ...coverageTaggedStructured, isAI: true, provider: structuredProvider };
+      // FEAT-PA — Pillar A audits (AO histogram, 6-mark LOR, synoptic links).
+      // Stamps metadata.aoHistogram / lorPresent / synopticLinks and pushes
+      // non-blocking warnings onto metadata.postValidatorWarnings. Echoes
+      // paper / calculator / priorTopics back to metadata for the renderer.
+      const pillarATaggedStructured = applyPillarAAudits(coverageTaggedStructured as any, {
+        subject: params.subject,
+        topic: params.topic,
+        yearGroup: params.yearGroup,
+        examBoard: params.examBoard,
+        examStyle: params.examStyle,
+        priorTopics: effectivePriorTopics,
+      }) as typeof coverageTaggedStructured;
+      pillarATaggedStructured.metadata = {
+        ...(pillarATaggedStructured.metadata ?? {}),
+        ...(params.paper ? { paper: params.paper } : {}),
+        ...(typeof params.calculator === "boolean" ? { calculator: params.calculator } : {}),
+        ...(effectivePriorTopics.length > 0 ? { priorTopics: effectivePriorTopics } : {}),
+      };
+      return { ...pillarATaggedStructured, isAI: true, provider: structuredProvider };
     }
     // If structured generation failed, fall through to legacy path
   }
@@ -2559,6 +2708,11 @@ ${mathsNote}
 ${sendNote}
 ${stemPreservationNote}
 ${requiredPracticalNote}
+${paperCalcNote}
+${examStemAnchorsBlock}
+${lorBlock}
+${synopticBlock}
+${examPaperTemplateBlock}
 ${subjectSpecNote}
 ${tierNote}
 ${examStyleNote}
@@ -3235,7 +3389,22 @@ Return EXACTLY this JSON (raw JSON only):
     topic: params.topic,
     yearGroup: params.yearGroup,
   });
-  return coverageTaggedLegacy as unknown as AIWorksheetResult;
+  // FEAT-PA — Pillar A audits (legacy path mirror).
+  const pillarATaggedLegacy = applyPillarAAudits(coverageTaggedLegacy as any, {
+    subject: params.subject,
+    topic: params.topic,
+    yearGroup: params.yearGroup,
+    examBoard: params.examBoard,
+    examStyle: params.examStyle,
+    priorTopics: effectivePriorTopics,
+  }) as typeof coverageTaggedLegacy;
+  pillarATaggedLegacy.metadata = {
+    ...(pillarATaggedLegacy.metadata ?? {}),
+    ...(params.paper ? { paper: params.paper } : {}),
+    ...(typeof params.calculator === "boolean" ? { calculator: params.calculator } : {}),
+    ...(effectivePriorTopics.length > 0 ? { priorTopics: effectivePriorTopics } : {}),
+  };
+  return pillarATaggedLegacy as unknown as AIWorksheetResult;
 }
 
 export async function aiGenerateStory(params: {

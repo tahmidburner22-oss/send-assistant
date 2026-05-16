@@ -583,3 +583,340 @@ Content MUST match real GCSE specification points — use genuine examples, real
     profile,
   };
 }
+
+
+// ────────────────────────────────────────────────────────────────────────────
+// Pillar A — 6-mark Levelled Open-Response (LOR) block (FEAT-PA-002)
+// ────────────────────────────────────────────────────────────────────────────
+//
+// AQA / Edexcel / OCR Science 6-mark LOR has a specific Level 1 (1–2m basic) /
+// Level 2 (3–4m linked) / Level 3 (5–6m evaluative) format with indicative-
+// content bullets. Humanities + English follow the same three-band shape but
+// with subject-specific assessment objectives and indicative content.
+//
+// buildLorBlock returns a prompt fragment the worksheet generator injects
+// once per Y10/Y11 sheet for biology/chemistry/physics/history/geography/
+// English. The model is told to emit:
+//   - one 3-line stem with an explicit "linking words required" cue
+//   - exactly 6 marks
+//   - a teacher-key 3-band level grid with indicative content per level
+
+/** Maps a subject string onto the LOR persona used in the prompt. */
+function lorSubjectFamily(subject: string | undefined): "science" | "history" | "geography" | "english" | "rs" | "other" {
+  const s = (subject || "").toLowerCase();
+  if (s.includes("biology") || s.includes("chemistry") || s.includes("physics") || s.includes("science")) return "science";
+  if (s.includes("history")) return "history";
+  if (s.includes("geograph")) return "geography";
+  if (s.includes("english")) return "english";
+  if (s.includes("religious") || /\brs\b/.test(s)) return "rs";
+  return "other";
+}
+
+/** Subject-specific level-grid descriptors for 6-mark LOR. */
+const LOR_LEVEL_DESCRIPTORS: Record<
+  "science" | "history" | "geography" | "english" | "rs" | "other",
+  { level1: string; level2: string; level3: string; ao: string }
+> = {
+  science: {
+    level1: "Basic — 1–2 marks. Simple statements, no linking. Some relevant points but not developed.",
+    level2: "Clear — 3–4 marks. Linked points using scientific vocabulary. Cause-and-effect described.",
+    level3: "Detailed — 5–6 marks. Logical, evaluative answer. Uses key terms accurately, links cause to effect, draws an evidence-based conclusion.",
+    ao: "AO1 (recall) + AO2 (apply) + AO3 (analyse / evaluate)",
+  },
+  history: {
+    level1: "Basic — 1–2 marks. Single point with little support; little awareness of context.",
+    level2: "Developed — 3–4 marks. Two or more points with relevant detail and linking phrases. Some judgement implied.",
+    level3: "Sustained — 5–6 marks. Coherent argument with specific evidence (dates, names, places). Reaches a clear, supported judgement on the question.",
+    ao: "AO1 (knowledge) + AO2 (concepts) + AO3/AO4 (evidence + interpretation)",
+  },
+  geography: {
+    level1: "Basic — 1–2 marks. Simple description, vague locations, minimal use of geographical terminology.",
+    level2: "Clear — 3–4 marks. Specific examples and place names. Some explanation of processes; identifies links between cause and effect.",
+    level3: "Detailed — 5–6 marks. Sustained explanation using a named case study. Explicit links between physical and human processes; reasoned conclusion.",
+    ao: "AO1 (knowledge) + AO2 (understanding) + AO3 (application) + AO4 (skills)",
+  },
+  english: {
+    level1: "Basic — 1–2 marks. Simple references to the text. Generalisations; little use of subject terminology.",
+    level2: "Clear — 3–4 marks. Relevant references and quotations. Some analysis of writer's methods and effects.",
+    level3: "Detailed — 5–6 marks. Perceptive analysis of writer's methods. Judicious choice of references; sustained personal response.",
+    ao: "AO1 (read + interpret) + AO2 (analyse language) + AO3 (context where required)",
+  },
+  rs: {
+    level1: "Basic — 1–2 marks. One viewpoint with limited reasoning.",
+    level2: "Developed — 3–4 marks. Two viewpoints with reasoning and religious teaching reference.",
+    level3: "Detailed — 5–6 marks. Balanced argument with religious + non-religious viewpoints, reasoned judgement and supporting evidence.",
+    ao: "AO1 (knowledge) + AO2 (evaluation)",
+  },
+  other: {
+    level1: "Basic — 1–2 marks. Simple, unlinked points with limited specialist vocabulary.",
+    level2: "Clear — 3–4 marks. Linked points with relevant evidence and specialist vocabulary.",
+    level3: "Detailed — 5–6 marks. Sustained, evaluative response with clear conclusion.",
+    ao: "AO1 + AO2 + AO3",
+  },
+};
+
+/** Subject-family-specific stem/linking-word guidance. */
+function lorStemHint(family: keyof typeof LOR_LEVEL_DESCRIPTORS, topic: string): string {
+  switch (family) {
+    case "science":
+      return `Write a 3-line scenario about "${topic}" then ask: "Explain how [concept from the scenario] affects [outcome]. Use linking words such as because, therefore and as a result. [6 marks]"`;
+    case "history":
+      return `Provide a 3-line source / context paragraph related to "${topic}" then ask: "How far do you agree that [interpretation about ${topic}]? Explain your answer using your knowledge of the period. [6 marks]"`;
+    case "geography":
+      return `Provide a 3-line scenario / case-study reference for "${topic}" then ask: "Assess the [physical or human] impact of ${topic}. Use a named case study to support your answer. [6 marks]"`;
+    case "english":
+      return `Provide a 3-line stimulus extract or quotation linked to "${topic}" then ask: "Analyse how the writer presents [theme or character] in the extract. Refer to language and structure. [6 marks]"`;
+    case "rs":
+      return `Provide a 3-line ethical scenario about "${topic}" then ask: "Evaluate the statement: \\"[viewpoint about ${topic}]\\". Refer to religious and non-religious arguments in your answer. [6 marks]"`;
+    default:
+      return `Provide a 3-line stimulus paragraph about "${topic}" then ask the student to evaluate / analyse / explain a related claim using linking words. [6 marks]`;
+  }
+}
+
+export interface BuildLorBlockOptions {
+  subject: string;
+  topic: string;
+  /** Optional exam-board hint (AQA / Edexcel / OCR / WJEC). */
+  board?: string;
+}
+
+/**
+ * Returns a prompt fragment that forces exactly one 6-mark Levelled Open
+ * Response question into the worksheet, with a 3-band level grid in the
+ * teacher key. Returns "" for non-LOR subjects.
+ */
+export function buildLorBlock({ subject, topic, board }: BuildLorBlockOptions): string {
+  const family = lorSubjectFamily(subject);
+  if (family === "other") return "";
+
+  const desc = LOR_LEVEL_DESCRIPTORS[family];
+  const stemHint = lorStemHint(family, topic);
+  const boardLine = board && board !== "none" ? `Board: ${board}.` : "";
+
+  return [
+    `### Pillar A — Six-mark Levelled Open Response (LOR) — REQUIRED`,
+    `${boardLine} Subject family: ${family}. Topic: ${topic}.`,
+    `Include EXACTLY ONE 6-mark extended-answer question in the Application section (Section 3).`,
+    `Stem requirement: ${stemHint}`,
+    `Mark scheme requirement: include a teacher-key Level 1 / Level 2 / Level 3 grid using these descriptors verbatim:`,
+    `- Level 1 (1–2 marks): ${desc.level1}`,
+    `- Level 2 (3–4 marks): ${desc.level2}`,
+    `- Level 3 (5–6 marks): ${desc.level3}`,
+    `AO mapping for the LOR: ${desc.ao}.`,
+    `Indicative content: list 4–6 specific bullet points the student is expected to mention (real facts, named examples, formulae or quotes — never placeholders).`,
+    `Tag the section with type "extended-answer", marks 6, ao "AO3" and levelDescriptor "Level 3".`,
+  ].join("\n");
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// Pillar A — Subject-specific exam-paper templates (FEAT-PA-004)
+// ────────────────────────────────────────────────────────────────────────────
+//
+// Real GCSE papers don't use a generic Recall / Understanding / Application /
+// Challenge template. AQA English Lang Paper 1 is 1m identify → 4m language →
+// 8m structure → 12m evaluate → 40m write. AQA History is Source A vs B +
+// "How far…" 16m. AQA Geography is case study + 9-mark AO3/AO4.
+//
+// getExamPaperTemplate returns a typed sequence of question slots. ai.ts
+// dispatches to this template (instead of the generic 1/2/3-section
+// template) when examStyle:true and yearGroup ≥ 10.
+
+export type ExamPaperLayoutFamily =
+  | "short-answer"
+  | "extended-answer"
+  | "essay"
+  | "source-comparison"
+  | "case-study"
+  | "fieldwork-data"
+  | "language-analysis"
+  | "structure-analysis"
+  | "evaluation"
+  | "creative-writing"
+  | "calc"
+  | "mcq";
+
+export interface ExamPaperSlot {
+  /** 1-based question number on the paper. */
+  qNum: number;
+  /** Layout family for the planner / renderer to dispatch on. */
+  layoutFamily: ExamPaperLayoutFamily;
+  /** Total marks for the question. */
+  marks: number;
+  /** Assessment Objective (AO1/AO2/AO3/AO4). */
+  ao: "AO1" | "AO2" | "AO3" | "AO4";
+  /** Canonical command word for the slot. */
+  commandWord: string;
+  /** Format hint shown in the prompt to anchor the LLM (e.g. "1m identify"). */
+  format: string;
+}
+
+export interface GetExamPaperTemplateOptions {
+  subject: string;
+  yearGroup: string;
+  paper: "P1" | "P2" | "P3";
+  board?: string;
+}
+
+/** Lower-cased subject + paper key used as the template lookup. */
+function templateKey(subject: string, paper: "P1" | "P2" | "P3", board?: string): string {
+  const subj = (subject || "").toLowerCase();
+  const b = (board || "aqa").toLowerCase();
+  let family = "other";
+  if (subj.includes("english")) {
+    if (subj.includes("lit")) family = "english_lit";
+    else family = "english_lang";
+  } else if (subj.includes("history")) family = "history";
+  else if (subj.includes("geograph")) family = "geography";
+  else if (subj.includes("biology")) family = "biology";
+  else if (subj.includes("chemistry")) family = "chemistry";
+  else if (subj.includes("physics")) family = "physics";
+  else if (subj.includes("science")) family = "science";
+  else if (subj.includes("math")) family = "mathematics";
+  return `${b}:${family}:${paper}`;
+}
+
+const EXAM_PAPER_TEMPLATES: Record<string, ExamPaperSlot[]> = {
+  // ── AQA English Language Paper 1 — Explorations in Creative Reading & Writing
+  // Reference: 1m identify → 4m language → 8m structure → 12m evaluate → 40m write.
+  "aqa:english_lang:P1": [
+    { qNum: 1, layoutFamily: "short-answer", marks: 1, ao: "AO1", commandWord: "Identify",   format: "List 4 things from the source about [topic]. (4 x 1 mark = 4)" },
+    { qNum: 2, layoutFamily: "language-analysis",  marks: 8, ao: "AO2", commandWord: "Analyse",    format: "Comment on language — how the writer uses words / phrases / techniques. [8 marks]" },
+    { qNum: 3, layoutFamily: "structure-analysis", marks: 8, ao: "AO2", commandWord: "Analyse",    format: "Comment on structure — beginning / middle / end + shifts in focus. [8 marks]" },
+    { qNum: 4, layoutFamily: "evaluation",         marks: 20, ao: "AO4", commandWord: "Evaluate", format: "To what extent do you agree with [statement about source]? Use the whole source. [20 marks]" },
+    { qNum: 5, layoutFamily: "creative-writing",   marks: 40, ao: "AO3", commandWord: "Describe / Narrate", format: "Either describe the scene shown OR write a story suggested by the title [...]. [24 + 16 marks]" },
+  ],
+
+  // ── AQA English Language Paper 2 — Writers' Viewpoints & Perspectives
+  "aqa:english_lang:P2": [
+    { qNum: 1, layoutFamily: "short-answer",       marks: 4, ao: "AO1", commandWord: "Identify", format: "Choose the four statements that are TRUE about Source A. [4 marks]" },
+    { qNum: 2, layoutFamily: "source-comparison",  marks: 8, ao: "AO1", commandWord: "Summarise", format: "Use details from BOTH Source A and Source B. Summarise the differences. [8 marks]" },
+    { qNum: 3, layoutFamily: "language-analysis",  marks: 12, ao: "AO2", commandWord: "Analyse",  format: "How does the writer of Source B use language to [effect]? [12 marks]" },
+    { qNum: 4, layoutFamily: "evaluation",         marks: 16, ao: "AO3", commandWord: "Compare",  format: "Compare how the two writers convey their different attitudes to [topic]. [16 marks]" },
+    { qNum: 5, layoutFamily: "creative-writing",   marks: 40, ao: "AO4", commandWord: "Write",   format: "Write an article / letter / leaflet on [topic]. AQA spec maps this slot to AO5 (content/organisation) + AO6 (technical accuracy). [24 + 16 marks]" },
+  ],
+
+  // ── AQA History — Paper 1 (Period Study + Wider World Depth)
+  "aqa:history:P1": [
+    { qNum: 1, layoutFamily: "source-comparison", marks: 4,  ao: "AO3", commandWord: "Describe",  format: "Source A: describe the message of the source. [4 marks]" },
+    { qNum: 2, layoutFamily: "extended-answer",   marks: 8,  ao: "AO1", commandWord: "Explain",   format: "Explain two consequences of [event]. [4 + 4 = 8 marks]" },
+    { qNum: 3, layoutFamily: "essay",             marks: 8,  ao: "AO2", commandWord: "Account for", format: "Write an account of how [event] affected [group]. [8 marks]" },
+    { qNum: 4, layoutFamily: "essay",             marks: 16, ao: "AO2", commandWord: "How far",   format: "How far do you agree with this statement about [topic]? Explain your answer. [16 + 4 SPaG]" },
+  ],
+
+  // ── AQA History — Paper 2 (British Depth + Thematic)
+  "aqa:history:P2": [
+    { qNum: 1, layoutFamily: "source-comparison", marks: 4,  ao: "AO3", commandWord: "Identify",   format: "Source A: how useful is the source for studying [topic]? [4 marks]" },
+    { qNum: 2, layoutFamily: "source-comparison", marks: 8,  ao: "AO3", commandWord: "Compare",    format: "Compare Source A and Source B as evidence about [topic]. [8 marks]" },
+    { qNum: 3, layoutFamily: "essay",             marks: 8,  ao: "AO1", commandWord: "Explain",    format: "Explain the significance of [individual / event]. [8 marks]" },
+    { qNum: 4, layoutFamily: "essay",             marks: 16, ao: "AO2", commandWord: "How far",    format: "Has [factor] been the main reason for [change]? Explain your answer. [16 + 4 SPaG]" },
+  ],
+
+  // ── AQA Geography — Paper 1 (Living with the Physical Environment)
+  "aqa:geography:P1": [
+    { qNum: 1, layoutFamily: "mcq",            marks: 1, ao: "AO1", commandWord: "Identify",  format: "MCQ identifying a physical process. [1 mark]" },
+    { qNum: 2, layoutFamily: "short-answer",   marks: 2, ao: "AO1", commandWord: "Define",    format: "Define [physical geography term]. [2 marks]" },
+    { qNum: 3, layoutFamily: "fieldwork-data", marks: 4, ao: "AO4", commandWord: "Calculate", format: "Use Figure 1 (data table / graph) to calculate / describe a trend. [4 marks]" },
+    { qNum: 4, layoutFamily: "extended-answer", marks: 6, ao: "AO2", commandWord: "Explain",  format: "Explain how [physical process] affects [landform / hazard]. [6 marks]" },
+    { qNum: 5, layoutFamily: "case-study",     marks: 9, ao: "AO3", commandWord: "Assess",    format: "Using a named case study, assess [physical impact]. [9 + 3 SPaG]" },
+  ],
+
+  // ── AQA Geography — Paper 2 (Challenges in the Human Environment)
+  "aqa:geography:P2": [
+    { qNum: 1, layoutFamily: "mcq",            marks: 1, ao: "AO1", commandWord: "Identify",  format: "MCQ identifying a human-environment fact. [1 mark]" },
+    { qNum: 2, layoutFamily: "fieldwork-data", marks: 3, ao: "AO4", commandWord: "Describe",  format: "Use Figure 2 to describe the pattern shown. [3 marks]" },
+    { qNum: 3, layoutFamily: "extended-answer", marks: 6, ao: "AO2", commandWord: "Suggest",  format: "Suggest reasons for [human-geography pattern]. [6 marks]" },
+    { qNum: 4, layoutFamily: "case-study",     marks: 9, ao: "AO3", commandWord: "Evaluate",  format: "Using a named case study, evaluate management strategies for [topic]. [9 marks]" },
+  ],
+
+  // ── AQA Biology — Paper 1
+  "aqa:biology:P1": [
+    { qNum: 1, layoutFamily: "mcq",             marks: 4,  ao: "AO1", commandWord: "Tick",      format: "Multiple-choice on [topic]. (4 x 1 mark)" },
+    { qNum: 2, layoutFamily: "short-answer",    marks: 4,  ao: "AO1", commandWord: "Describe",  format: "Describe the structure / process of [topic]. [4 marks]" },
+    { qNum: 3, layoutFamily: "fieldwork-data",  marks: 4,  ao: "AO4", commandWord: "Calculate", format: "Use the data table to calculate [quantity]. Show your working. [4 marks]" },
+    { qNum: 4, layoutFamily: "extended-answer", marks: 6,  ao: "AO3", commandWord: "Explain",   format: "Required practical: explain how [variable] affects [outcome]. [6 marks LOR with Level 1/2/3]" },
+  ],
+
+  // ── AQA Chemistry — Paper 1
+  "aqa:chemistry:P1": [
+    { qNum: 1, layoutFamily: "mcq",             marks: 4,  ao: "AO1", commandWord: "Tick",      format: "Multiple-choice on [topic]. (4 x 1 mark)" },
+    { qNum: 2, layoutFamily: "short-answer",    marks: 4,  ao: "AO2", commandWord: "Calculate", format: "Balance the equation / calculate moles / Mr. [4 marks]" },
+    { qNum: 3, layoutFamily: "fieldwork-data",  marks: 4,  ao: "AO4", commandWord: "Plot",      format: "Plot the data on the grid and draw a line of best fit. [4 marks]" },
+    { qNum: 4, layoutFamily: "extended-answer", marks: 6,  ao: "AO3", commandWord: "Explain",   format: "Required practical: explain how [reactant] affects [outcome]. [6 marks LOR with Level 1/2/3]" },
+  ],
+
+  // ── AQA Physics — Paper 1
+  "aqa:physics:P1": [
+    { qNum: 1, layoutFamily: "mcq",             marks: 4,  ao: "AO1", commandWord: "Tick",      format: "Multiple-choice on [topic]. (4 x 1 mark)" },
+    { qNum: 2, layoutFamily: "calc",            marks: 4,  ao: "AO2", commandWord: "Calculate", format: "Use the equation [F = ma / E = mcΔθ / V = IR] to calculate [quantity]. [4 marks]" },
+    { qNum: 3, layoutFamily: "fieldwork-data",  marks: 4,  ao: "AO4", commandWord: "Plot",      format: "Plot the data and describe the relationship. [4 marks]" },
+    { qNum: 4, layoutFamily: "extended-answer", marks: 6,  ao: "AO3", commandWord: "Explain",   format: "Required practical: evaluate the effect of [variable] on [outcome]. [6 marks LOR with Level 1/2/3]" },
+  ],
+
+  // ── AQA Maths — Paper 1 (Non-Calculator)
+  "aqa:mathematics:P1": [
+    { qNum: 1, layoutFamily: "calc",  marks: 1, ao: "AO1", commandWord: "Work out",  format: "Number — non-calc fluency. [1 mark]" },
+    { qNum: 2, layoutFamily: "calc",  marks: 3, ao: "AO1", commandWord: "Calculate", format: "Number / fractions — non-calc, must show working. [3 marks]" },
+    { qNum: 3, layoutFamily: "calc",  marks: 4, ao: "AO2", commandWord: "Solve",     format: "Algebra — solve linear equation / expand brackets. [4 marks]" },
+    { qNum: 4, layoutFamily: "calc",  marks: 4, ao: "AO2", commandWord: "Show",      format: "Reasoning — show that [statement] is true. [4 marks]" },
+    { qNum: 5, layoutFamily: "extended-answer", marks: 5, ao: "AO3", commandWord: "Prove",       format: "Problem-solving — multi-step real-world context. [5 marks, no calculator]" },
+  ],
+
+  // ── AQA Maths — Paper 2 (Calculator)
+  "aqa:mathematics:P2": [
+    { qNum: 1, layoutFamily: "calc",  marks: 2, ao: "AO1", commandWord: "Calculate", format: "Calculator fluency — % / interest / standard form. [2 marks]" },
+    { qNum: 2, layoutFamily: "calc",  marks: 3, ao: "AO2", commandWord: "Calculate", format: "Geometry — Pythagoras / trig / area. [3 marks]" },
+    { qNum: 3, layoutFamily: "calc",  marks: 4, ao: "AO2", commandWord: "Calculate", format: "Statistics — mean / median / range from a table. [4 marks]" },
+    { qNum: 4, layoutFamily: "extended-answer", marks: 5, ao: "AO3", commandWord: "Justify", format: "Problem-solving — calculator question with context. [5 marks]" },
+  ],
+};
+
+/**
+ * Returns the canonical question sequence for the requested
+ * (subject, paper, board) combination. Falls back to a generic Y10/Y11
+ * 1m → 3m → 6m → 9m sequence when no specific template exists.
+ */
+export function getExamPaperTemplate(opts: GetExamPaperTemplateOptions): ExamPaperSlot[] {
+  const yearNum = parseInt((opts.yearGroup || "").replace(/[^0-9]/g, ""), 10) || 0;
+  if (yearNum < 9) return [];
+
+  const key = templateKey(opts.subject, opts.paper, opts.board);
+  const direct = EXAM_PAPER_TEMPLATES[key];
+  if (direct) return direct;
+
+  // Try without board (fall back from "edexcel:..." → "aqa:...").
+  const subjectKey = key.split(":").slice(1).join(":");
+  for (const board of ["aqa", "edexcel", "ocr", "wjec"]) {
+    const candidate = EXAM_PAPER_TEMPLATES[`${board}:${subjectKey}`];
+    if (candidate) return candidate;
+  }
+
+  // Generic fallback — always returns a sensible 4-slot Y10/Y11 sequence.
+  return [
+    { qNum: 1, layoutFamily: "short-answer",    marks: 1, ao: "AO1", commandWord: "Identify", format: "Recall / definition. [1 mark]" },
+    { qNum: 2, layoutFamily: "short-answer",    marks: 3, ao: "AO1", commandWord: "Describe", format: "Apply key knowledge. [3 marks]" },
+    { qNum: 3, layoutFamily: "extended-answer", marks: 6, ao: "AO3", commandWord: "Explain",  format: "6-mark LOR with Level 1/2/3 grid." },
+    { qNum: 4, layoutFamily: "extended-answer", marks: 9, ao: "AO3", commandWord: "Evaluate", format: "Sustained extended response. [9 marks]" },
+  ];
+}
+
+/**
+ * Builds a prompt fragment that lists the chosen template's question slots
+ * so the LLM emits a real exam-paper structure instead of the generic
+ * Section 1/2/3 template. Returns "" if no template is available.
+ */
+export function buildExamPaperTemplateBlock(opts: GetExamPaperTemplateOptions): string {
+  const slots = getExamPaperTemplate(opts);
+  if (slots.length === 0) return "";
+  const subjectFamily = templateKey(opts.subject, opts.paper, opts.board).split(":")[1];
+  const lines = slots.map(s =>
+    `Q${s.qNum}: layoutFamily=${s.layoutFamily}, marks=${s.marks}, ao=${s.ao}, commandWord=${s.commandWord}. Format: ${s.format}`,
+  );
+  const totalMarks = slots.reduce((acc, s) => acc + s.marks, 0);
+  return [
+    `### Pillar A — Exam-paper template — REQUIRED`,
+    `Board: ${opts.board || "AQA"}. Subject: ${subjectFamily}. Paper: ${opts.paper}. Year: ${opts.yearGroup}.`,
+    `Use this question sequence VERBATIM in question count, marks, AO and command word. Do NOT use the generic Section 1/2/3 template.`,
+    ...lines,
+    `Total target marks: ${totalMarks}. Stamp metadata.examPaperTemplate = "${templateKey(opts.subject, opts.paper, opts.board)}".`,
+  ].join("\n");
+}
