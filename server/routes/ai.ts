@@ -3520,4 +3520,203 @@ router.post("/apply-send-overlay", requireAuth, async (req: Request, res: Respon
   }
 });
 
+// ────────────────────────────────────────────────────────────────────────────────
+// POST /api/ai/scan-mark   (FEAT-010 — Scan-and-mark + closed-loop adaptive)
+// ────────────────────────────────────────────────────────────────────────────────
+// Accepts a photo of a completed worksheet (jpeg/png/webp/heic/pdf-page). Sends
+// the image to Gemini 2.5 Flash with a structured marking prompt. Returns
+// per-question {questionText, pupilAnswer, correct, modelAnswer, marks,
+// misconceptionTag} that the client uses to (a) display a marking grid and
+// (b) push the misconceptionTag list back onto Child.recentMisconceptions so
+// the next worksheet auto-injects remediation via pupil-context.ts.
+//
+// Vision is only available on Gemini in this codebase, so we go straight to
+// the Gemini API rather than the multi-provider fallback.
+// ────────────────────────────────────────────────────────────────────────────────
+router.post(
+  "/scan-mark",
+  requireAuth,
+  worksheetUpload.single("image"),
+  async (req: Request, res: Response) => {
+    if (!req.file) return res.status(400).json({ error: "No image uploaded" });
+
+    const mime = req.file.mimetype || "image/jpeg";
+    const isImage = mime.startsWith("image/");
+    const isPdf = mime === "application/pdf" || (req.file.originalname || "").toLowerCase().endsWith(".pdf");
+    if (!isImage && !isPdf) {
+      return res.status(415).json({ error: "Upload a JPEG, PNG, WebP, HEIC, or single-page PDF." });
+    }
+
+    let title = "";
+    let subject = "";
+    let topic = "";
+    let yearGroup = "";
+    let expectedAnswers: Array<{ questionText: string; modelAnswer?: string; marks?: number }> = [];
+    try {
+      title = String(req.body.title || "").slice(0, 200);
+      subject = String(req.body.subject || "").slice(0, 80);
+      topic = String(req.body.topic || "").slice(0, 200);
+      yearGroup = String(req.body.yearGroup || "").slice(0, 40);
+      if (req.body.expectedAnswers) {
+        const parsed = typeof req.body.expectedAnswers === "string"
+          ? JSON.parse(req.body.expectedAnswers)
+          : req.body.expectedAnswers;
+        if (Array.isArray(parsed)) {
+          expectedAnswers = parsed
+            .filter((q: any) => q && typeof q.questionText === "string")
+            .slice(0, 30)
+            .map((q: any) => ({
+              questionText: String(q.questionText).slice(0, 600),
+              modelAnswer: q.modelAnswer ? String(q.modelAnswer).slice(0, 600) : undefined,
+              marks: typeof q.marks === "number" ? q.marks : undefined,
+            }));
+        }
+      }
+    } catch { /* tolerate malformed metadata */ }
+
+    const user = (req as any).user;
+    const schoolId = user?.schoolId;
+    const key = await getEffectiveKey("gemini", undefined, schoolId);
+    if (!key) {
+      return res.status(503).json({
+        error: "Gemini API key not configured. Add a Gemini key in Settings to use scan-and-mark.",
+      });
+    }
+
+    const expectedBlock = expectedAnswers.length
+      ? `\n\nFor reference, these are the questions and (where known) the model answers:\n${expectedAnswers
+          .map((q, i) => `Q${i + 1}: ${q.questionText}${q.modelAnswer ? `\n  Model answer: ${q.modelAnswer}` : ""}${q.marks ? `\n  Marks available: ${q.marks}` : ""}`)
+          .join("\n")}`
+      : "";
+
+    const system = `You are a careful UK secondary teacher marking a pupil's completed worksheet from a photograph. You always respond with valid raw JSON only — no prose, no markdown, no code fences.`;
+
+    const userPrompt = `Worksheet context:
+- Title: ${title || "(unknown)"}
+- Subject: ${subject || "(unknown)"}
+- Topic: ${topic || "(unknown)"}
+- Year group: ${yearGroup || "(unknown)"}${expectedBlock}
+
+Read the photograph carefully. For every numbered question that has a pupil answer written on the page (skip blank ones), return one entry. Be tolerant of messy handwriting; if a digit could be 1 or 7, choose the more likely option in context. Award full marks for answers that are mathematically equivalent or semantically equivalent to a correct answer (e.g. "1/2" === "0.5", "carbon dioxide" === "CO2"). Award part marks where the working shows partial understanding.
+
+For every question, infer a short misconceptionTag of the form "<topic>: <specific error>" when the pupil is wrong (e.g. "fractions: did not find common denominator", "photosynthesis: confused inputs and outputs"). Leave misconceptionTag as null when the answer is correct.
+
+Return EXACTLY this JSON shape:
+{
+  "questions": [
+    {
+      "questionNumber": 1,
+      "questionText": "Short copy of the question stem (max 240 chars)",
+      "pupilAnswer": "Verbatim transcription of the pupil's written answer (max 240 chars)",
+      "correct": true,
+      "marksAwarded": 2,
+      "marksAvailable": 2,
+      "modelAnswer": "What a correct answer looks like (max 240 chars)",
+      "misconceptionTag": null
+    }
+  ],
+  "summary": {
+    "totalAwarded": 0,
+    "totalAvailable": 0,
+    "overallNote": "One short sentence the teacher can use as feedback (max 200 chars)"
+  }
+}
+
+Strict rules:
+1. Output raw JSON only — no markdown, no commentary.
+2. Cap "questions" to at most 20 entries.
+3. "marksAwarded" must never exceed "marksAvailable".
+4. "correct" is true only when marksAwarded === marksAvailable.
+5. If you cannot read the page at all, return { "questions": [], "summary": { "totalAwarded": 0, "totalAvailable": 0, "overallNote": "Could not read the photograph clearly." } }.`;
+
+    const base64 = req.file.buffer.toString("base64");
+    const visionMime = isPdf ? "application/pdf" : mime;
+    const body = {
+      contents: [
+        {
+          role: "user",
+          parts: [
+            { text: userPrompt },
+            { inlineData: { mimeType: visionMime, data: base64 } },
+          ],
+        },
+      ],
+      systemInstruction: { parts: [{ text: system }] },
+      generationConfig: { maxOutputTokens: 2200, temperature: 0.1 },
+    };
+
+    try {
+      const aiRes = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        }
+      );
+      if (aiRes.status === 429) {
+        return res.status(429).json({ error: "Gemini rate limit hit. Wait a few seconds and try again." });
+      }
+      if (!aiRes.ok) {
+        const txt = (await aiRes.text()).slice(0, 200);
+        return res.status(502).json({ error: `Gemini ${aiRes.status}: ${txt}` });
+      }
+      const data: any = await aiRes.json();
+      const raw: string | undefined = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!raw) {
+        return res.status(502).json({ error: "Gemini returned an empty response." });
+      }
+      const cleaned = raw
+        .replace(/^```(?:json)?\s*/i, "")
+        .replace(/\s*```\s*$/, "")
+        .trim();
+      const match = cleaned.match(/\{[\s\S]*\}/);
+      let parsed: any;
+      try {
+        parsed = JSON.parse(match ? match[0] : cleaned);
+      } catch (parseErr: any) {
+        return res.status(502).json({ error: "Gemini returned malformed JSON.", raw: cleaned.slice(0, 400) });
+      }
+
+      // Normalise the response so the client can rely on the shape.
+      const questions = Array.isArray(parsed.questions) ? parsed.questions.slice(0, 20) : [];
+      const normalised = questions.map((q: any, idx: number) => {
+        const marksAvailable = typeof q.marksAvailable === "number" ? Math.max(0, Math.round(q.marksAvailable)) : 1;
+        let marksAwarded = typeof q.marksAwarded === "number" ? Math.max(0, Math.round(q.marksAwarded)) : 0;
+        if (marksAwarded > marksAvailable) marksAwarded = marksAvailable;
+        const correct = typeof q.correct === "boolean"
+          ? q.correct
+          : marksAvailable > 0 && marksAwarded === marksAvailable;
+        const tag = typeof q.misconceptionTag === "string" && q.misconceptionTag.trim()
+          ? q.misconceptionTag.trim().slice(0, 160)
+          : null;
+        return {
+          questionNumber: typeof q.questionNumber === "number" ? q.questionNumber : idx + 1,
+          questionText: typeof q.questionText === "string" ? q.questionText.slice(0, 600) : "",
+          pupilAnswer: typeof q.pupilAnswer === "string" ? q.pupilAnswer.slice(0, 600) : "",
+          correct,
+          marksAwarded,
+          marksAvailable,
+          modelAnswer: typeof q.modelAnswer === "string" ? q.modelAnswer.slice(0, 600) : "",
+          misconceptionTag: correct ? null : tag,
+        };
+      });
+      const totalAwarded = normalised.reduce((t: number, q: any) => t + q.marksAwarded, 0);
+      const totalAvailable = normalised.reduce((t: number, q: any) => t + q.marksAvailable, 0);
+      const overallNote = typeof parsed?.summary?.overallNote === "string"
+        ? parsed.summary.overallNote.slice(0, 240)
+        : "";
+
+      return res.json({
+        questions: normalised,
+        summary: { totalAwarded, totalAvailable, overallNote },
+        provider: "gemini",
+      });
+    } catch (err: any) {
+      console.error("[scan-mark] failed:", err?.message || err);
+      return res.status(500).json({ error: "Could not mark the worksheet. Please try again." });
+    }
+  }
+);
+
 export default router;
