@@ -381,8 +381,30 @@ export function getMisconceptionsForTopic(opts: {
 }
 
 /**
+ * Look up a single bank entry by id. Returns undefined if not found.
+ * Used by the worksheet renderer's teacher view to expand short ids
+ * (e.g. `m-frac-01`) into full misconception + correct-understanding text.
+ */
+export function findMisconceptionById(id: string): MisconceptionEntry | undefined {
+  if (!id) return undefined;
+  const key = id.trim().toLowerCase();
+  return MISCONCEPTION_BANK.find((e) => e.id === key);
+}
+
+/**
  * Format a misconception block for injection into the worksheet system prompt.
  * Returns an empty string if no misconceptions match.
+ *
+ * The block now also instructs the model to emit a single, machine-parseable
+ * teacher-only marker right after the correct option line of each MCQ:
+ *
+ *   TEACHER_DIAGNOSES: A=m-frac-02, C=m-frac-01
+ *
+ * which the post-validator (worksheetPostValidator.extractMisconceptionLinks)
+ * lifts into `metadata.misconceptionLinks` and then strips from the student
+ * content. The marker pattern is deliberately fenced (TEACHER_DIAGNOSES:) so
+ * we never accidentally show it to pupils even if a model leaks it into
+ * student-visible HTML.
  */
 export function formatMisconceptionsForPrompt(opts: {
   subject?: string;
@@ -404,7 +426,12 @@ export function formatMisconceptionsForPrompt(opts: {
     lines.push(`- [${e.id}] ${e.misconception} (Correct: ${e.correctUnderstanding})`);
   }
   lines.push("");
-  lines.push("After generation, return an array of misconception IDs you targeted in metadata.misconceptionsTargeted (e.g. \"misconceptionsTargeted\": [\"m-frac-01\", \"m-pct-01\"]). Do NOT include any [m-id] markers in question text — those IDs are for metadata only.");
+  lines.push("PER-MCQ DIAGNOSIS LINKAGE (mandatory):");
+  lines.push("For every MCQ you emit whose distractors target one of the misconceptions above, append a single teacher-only line at the END of that MCQ's content string in this exact format:");
+  lines.push("  TEACHER_DIAGNOSES: A=m-frac-02, C=m-frac-01");
+  lines.push("Notes: (1) use the option letter (A/B/C/D) of each WRONG answer, never the correct option; (2) the right of '=' is one of the misconception ids above; (3) only include letters whose distractor genuinely diagnoses a listed misconception — omit the line entirely if none do; (4) the marker must be on its own line, no trailing punctuation.");
+  lines.push("");
+  lines.push("After generation, also return an array of misconception IDs you targeted in metadata.misconceptionsTargeted (e.g. \"misconceptionsTargeted\": [\"m-frac-01\", \"m-pct-01\"]). Do NOT include any [m-id] markers in question text — those IDs are for metadata and the TEACHER_DIAGNOSES line only.");
   lines.push("");
   return lines.join("\n");
 }
