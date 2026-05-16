@@ -26,6 +26,11 @@ import { enforceSendAdaptations } from './sendEnforcer';
 // the LLM slipped past the prompt rules.
 import { runWorksheetPostValidators } from './worksheetPostValidator';
 
+// FEAT-PB6 — SEND fidelity audit. Probes every worksheetRules entry for the
+// pupil's SEND profile and emits a per-rule pass/fail report so teachers can
+// see at a glance which adaptations actually landed.
+import { applySendFidelityAudit } from './sendFidelityAudit';
+
 // FEAT-PC8 — Maths Fluency / Reasoning / Problem-Solving (FRP) strand tagger.
 // Runs after generation on maths worksheets only; classifies each question
 // by command-word + structural fingerprints, stamps metadata.mathsStrandBalance,
@@ -599,6 +604,28 @@ export interface AIWorksheetResult {
     adaptations: string[];
     /** Phase 4 / FEAT-002 — misconception IDs the AI deliberately targeted in this worksheet. */
     misconceptionsTargeted?: string[];
+    /** FEAT-PB7 — per-MCQ misconception linkage (one entry per diagnosed distractor). */
+    misconceptionLinks?: Array<{
+      sectionIndex: number;
+      sectionTitle?: string;
+      distractor: string;
+      misconceptionId: string;
+    }>;
+    /** FEAT-PB6 — per-rule SEND adaptation fidelity report. */
+    sendFidelityReport?: {
+      sendNeedId: string;
+      sendNeedName: string;
+      rules: Array<{
+        ruleIndex: number;
+        rule: string;
+        status: "applied" | "missing" | "not-checked";
+        evidence?: string;
+      }>;
+      appliedCount: number;
+      totalCount: number;
+      fidelityRatio: number;
+      warnings: string[];
+    };
     /** FEAT-PC8 — Fluency / Reasoning / Problem-Solving balance audit (maths only). */
     mathsStrandBalance?: {
       assignments: Array<{
@@ -867,6 +894,16 @@ MANDATORY RULES — violating any rule is wrong:
   // Parse the year number from strings like "Year 1", "Year 5", "Year 10", "Year 13"
   const is11Plus = (params.yearGroup || "").toLowerCase().includes("11+") || (params.yearGroup || "").toLowerCase().includes("eleven plus");
   const yearNum = is11Plus ? 6 : (parseInt((params.yearGroup || "").replace(/[^0-9]/g, ""), 10) || 7);
+
+  // ── FEAT-PB5 — stem-preserving SEND mode ──────────────────────────────────
+  // For exam-style worksheets at Year 9 and above the SEND adaptations must
+  // never mutate question stems. We pass this flag to enforceSendAdaptations
+  // so it skips question-content rewrites and to the prompt builder so the
+  // LLM is told to keep the stem text unchanged. Section TITLE renames and
+  // additive support boxes (sentence frames in the margin, key-formula
+  // panels, larger answer-line height) are still permitted; the protected
+  // surface is the question text and command words.
+  const preserveStemsForSend = Boolean(params.examStyle) && yearNum >= 9;
 
   // Key Stage and phase
   const phase = is11Plus ? "11+ Preparation (ages 9–11, KS2 level)" :
@@ -1271,6 +1308,15 @@ STRICT JSON OUTPUT: Respond with valid JSON only — no markdown, no code blocks
   // what the AI is told matches what the teacher was promised in the UI.
   const hasSend = params.sendNeed && params.sendNeed !== "none" && params.sendNeed !== "none-selected" && params.sendNeed !== "general";
   const sendNote = hasSend ? getSendNoteForWorksheet(params.sendNeed!) : "";
+
+  // FEAT-PB5 — when the exam-style flag is set on a Y9+ worksheet, append a
+  // hard rule that SEND adaptations must NEVER alter the question stem text
+  // or the exam command words. Support (sentence frames, key-formula box,
+  // word bank, larger answer space) goes in SEPARATE boxes around the
+  // question — not inside the stem.
+  const stemPreservationNote = preserveStemsForSend && hasSend
+    ? `\nSTEM-PRESERVING SEND OVERLAY (mandatory for Y9+ exam-style worksheets):\nThe SEND adaptations above MUST NOT modify the wording of any question stem, the exam command word, the mark allocation, or the order of questions. The stem must read identically to the un-adapted exam-style version. Apply SEND support EXCLUSIVELY through:\n  - a separate "Sentence frame" / "Answer frame" box rendered ALONGSIDE the question (not inside it);\n  - a margin "Definitions" / "Key terms" panel referencing the stem's vocabulary;\n  - a "Key formulas" / "Method reminder" box at the top of the section;\n  - larger answer-line height / generous spacing (the renderer applies this — never mention it in content).\nDo NOT prepend "[ ]", "Tip:", "BRAIN BREAK", or any SEND-style marker to the stem. Do NOT shorten, simplify, or rewrite the stem. Keep every command word ('Calculate', 'Explain', 'Evaluate', 'Compare', 'Justify') byte-identical to a standard worksheet.\n`
+    : "";
 
   // FEAT-PC9 — Required Practical / Working-Scientifically block. Resolves
   // the matching anchor practical from requiredPractical-bank.ts (KS4 science
@@ -2104,6 +2150,7 @@ SUBJECT-SPECIFIC RULES — ${params.subject.toUpperCase()}:
 SUBJECT TYPE: ${isSTEM ? 'STEM' : 'HUMANITIES'} | SUBJECT: ${params.subject}
 ${readingAgeNote}
 ${sendNote}
+${stemPreservationNote}
 ${requiredPracticalNote}
 ${subjectSpecNote}
 ${tierNote}
@@ -2468,10 +2515,16 @@ Return EXACTLY this JSON (raw JSON only, no markdown fences):
       // adaptations the UI promised (ADHD inline checkboxes, 3-Q cap, brain
       // break, etc.) actually appear — even if the LLM skipped them. Runs on
       // the structured (primary) path before the overlay engine sees it.
-      const enforcedStructured = enforceSendAdaptations(postValidatedWorksheet, params.sendNeed);
+      const enforcedStructured = enforceSendAdaptations(postValidatedWorksheet, params.sendNeed, { preserveStems: preserveStemsForSend });
+      // FEAT-PB6 — non-blocking SEND fidelity audit: probes every adaptation
+      // rule and stamps a per-rule report onto metadata.sendFidelityReport.
+      const auditedStructured = applySendFidelityAudit(
+        enforcedStructured.worksheet as typeof structuredJson,
+        params.sendNeed,
+      );
       // FEAT-PC8 — non-blocking maths FRP strand audit (no-op for non-maths).
       const strandTaggedStructured = applyMathsStrandTagging(
-        enforcedStructured.worksheet as typeof structuredJson,
+        auditedStructured as typeof structuredJson,
         { subject: params.subject, yearGroup: params.yearGroup },
       );
       // FEAT-PC9 — non-blocking Required-Practical tagging (KS4 science only).
@@ -2485,9 +2538,7 @@ Return EXACTLY this JSON (raw JSON only, no markdown fences):
         },
       );
       // FEAT-PC10 — coverage map (Y9+ only). Runs last so misconceptionLinks
-      // populated by FEAT-PB7 are visible (even though PB#7 isn't on this
-      // branch — when both ship, the coverage map automatically picks up
-      // misconception links without further wiring).
+      // populated by FEAT-PB7 are visible.
       const coverageTaggedStructured = applyCoverageMap(practicalTaggedStructured, {
         subject: params.subject,
         topic: params.topic,
@@ -2506,6 +2557,7 @@ ${readingAgeNote}
 ${primaryLayoutNote}
 ${mathsNote}
 ${sendNote}
+${stemPreservationNote}
 ${requiredPracticalNote}
 ${subjectSpecNote}
 ${tierNote}
@@ -3162,9 +3214,11 @@ Return EXACTLY this JSON (raw JSON only):
       sendNeed: params.sendNeed,
     },
   );
-  const legacyEnforced = enforceSendAdaptations(legacyPostValidated.worksheet, params.sendNeed);
+  const legacyEnforced = enforceSendAdaptations(legacyPostValidated.worksheet, params.sendNeed, { preserveStems: preserveStemsForSend });
+  // FEAT-PB6 — non-blocking SEND fidelity audit (legacy path).
+  const auditedLegacy = applySendFidelityAudit(legacyEnforced.worksheet, params.sendNeed);
   // FEAT-PC8 — non-blocking maths FRP strand audit (no-op for non-maths).
-  const strandTaggedLegacy = applyMathsStrandTagging(legacyEnforced.worksheet, {
+  const strandTaggedLegacy = applyMathsStrandTagging(auditedLegacy, {
     subject: params.subject,
     yearGroup: params.yearGroup,
   });

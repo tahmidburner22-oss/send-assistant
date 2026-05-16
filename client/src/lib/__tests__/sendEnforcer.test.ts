@@ -131,3 +131,60 @@ describe("sendEnforcer — no-op cases", () => {
     expect(result.enforcedFor).toBeNull();
   });
 });
+
+// FEAT-PB5 — exam-style Y9+ stem-preserving SEND mode
+describe("sendEnforcer — preserveStems (FEAT-PB5)", () => {
+  it("does not prepend '[ ]' to question stems for ADHD when preserveStems=true", () => {
+    const result = enforceSendAdaptations(sampleWorksheet, "adhd", { preserveStems: true });
+    const sectionA = result.worksheet.sections!.find((s: any) => s.id === "a")!;
+    expect(String(sectionA.content)).not.toMatch(/\[\s\]\s+Calculate/);
+  });
+
+  it("does not insert BRAIN BREAK in Section B when preserveStems=true", () => {
+    const result = enforceSendAdaptations(sampleWorksheet, "adhd", { preserveStems: true });
+    const sectionB = result.worksheet.sections!.find((s: any) => s.id === "b")!;
+    expect(String(sectionB.content)).not.toMatch(/BRAIN\s*BREAK/i);
+  });
+
+  it("does not bold action verbs when preserveStems=true", () => {
+    const result = enforceSendAdaptations(sampleWorksheet, "adhd", { preserveStems: true });
+    const sectionA = result.worksheet.sections!.find((s: any) => s.id === "a")!;
+    expect(String(sectionA.content)).not.toMatch(/\*\*Calculate\*\*/);
+  });
+
+  it("still renames the challenge to BONUS when preserveStems=true (title-only is allowed)", () => {
+    const result = enforceSendAdaptations(sampleWorksheet, "adhd", { preserveStems: true });
+    const challenge = result.worksheet.sections!.find((s: any) => s.id === "c")!;
+    expect(String(challenge.title)).toMatch(/BONUS/);
+  });
+
+  it("does not strip dyslexia italics from question stems when preserveStems=true", () => {
+    const ws = {
+      ...sampleWorksheet,
+      sections: [
+        ...sampleWorksheet.sections.slice(0, 2),
+        { id: "a", type: "recall", title: "Section A", content: "1. Read *the passage* carefully" },
+      ],
+    };
+    const result = enforceSendAdaptations(ws, "dyslexia", { preserveStems: true });
+    const a = result.worksheet.sections!.find((s: any) => s.id === "a")!;
+    expect(String(a.content)).toMatch(/\*the passage\*/);
+  });
+
+  it("records preserveStems on metadata", () => {
+    const result = enforceSendAdaptations(sampleWorksheet, "adhd", { preserveStems: true });
+    expect((result.worksheet.metadata as any)?.sendEnforcerPreserveStems).toBe(true);
+    expect(result.preserveStems).toBe(true);
+  });
+
+  it("preserves the SHA of question content under preserveStems=true (no rewrites)", () => {
+    const ws = {
+      ...sampleWorksheet,
+      sections: sampleWorksheet.sections.map((s) => ({ ...s })),
+    };
+    const before = ws.sections.find((s: any) => s.id === "a")!.content;
+    const result = enforceSendAdaptations(ws, "adhd", { preserveStems: true });
+    const after = result.worksheet.sections!.find((s: any) => s.id === "a")!.content;
+    expect(after).toBe(before);
+  });
+});
