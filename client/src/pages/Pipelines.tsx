@@ -169,7 +169,7 @@ export function PipelineDetail() {
                       ? "bg-violet-600 text-white"
                       : "bg-muted text-muted-foreground"
                 }`}>
-                  {done ? <CheckCircle2 className="w-4 h-4" /> : step.n.replace(/[^0-9]/g, "") || (idx + 1)}
+                  {done ? <CheckCircle2 className="w-4 h-4" /> : (idx + 1)}
                 </div>
                 {idx < steps.length - 1 && (
                   <div className={`flex-1 w-px ${done ? "bg-emerald-300" : "bg-border"} my-1`} />

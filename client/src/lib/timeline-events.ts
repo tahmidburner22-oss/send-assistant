@@ -101,6 +101,7 @@ export function recordEvent(
   const next = [event, ...existing].slice(0, MAX_PER_PUPIL);
   store[pupilId] = next;
   write(store);
+  window.dispatchEvent(new CustomEvent("adaptly:timeline-changed"));
   return event;
 }
 
