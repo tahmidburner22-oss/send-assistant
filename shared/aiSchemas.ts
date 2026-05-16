@@ -86,6 +86,28 @@ export const WorksheetOutputSchema = z.object({
     provider: z.string().optional(),
     /** Phase 4 / FEAT-002 — misconception IDs the AI deliberately targeted. */
     misconceptionsTargeted: z.array(z.string()).optional(),
+    /** FEAT-PB7 — per-MCQ misconception linkage; one entry per diagnosed distractor. */
+    misconceptionLinks: z.array(z.object({
+      sectionIndex: z.number().int().min(0),
+      sectionTitle: z.string().optional(),
+      distractor: z.string().min(1).max(2),
+      misconceptionId: z.string().min(1).max(40),
+    })).optional(),
+    /** FEAT-PB6 — per-rule SEND adaptation fidelity report. */
+    sendFidelityReport: z.object({
+      sendNeedId: z.string(),
+      sendNeedName: z.string(),
+      rules: z.array(z.object({
+        ruleIndex: z.number().int().min(1),
+        rule: z.string(),
+        status: z.enum(["applied", "missing", "not-checked"]),
+        evidence: z.string().optional(),
+      })),
+      appliedCount: z.number().int().min(0),
+      totalCount: z.number().int().min(0),
+      fidelityRatio: z.number().min(0).max(1),
+      warnings: z.array(z.string()),
+    }).optional(),
     /** FEAT-PC8 — Fluency / Reasoning / Problem-Solving balance audit. */
     mathsStrandBalance: z.object({
       assignments: z.array(z.object({

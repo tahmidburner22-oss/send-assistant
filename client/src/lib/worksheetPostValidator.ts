@@ -53,8 +53,26 @@ export interface PostValidatorWorksheet {
     topic?: string;
     yearGroup?: string;
     postValidatorWarnings?: string[];
+    /** FEAT-PB7 — per-MCQ misconception linkage (one entry per diagnosed distractor). */
+    misconceptionLinks?: PostValidatorMisconceptionLink[];
   };
   [key: string]: unknown;
+}
+
+/**
+ * One link between a specific MCQ distractor and the misconception it
+ * diagnoses. Populated deterministically by extractMisconceptionLinks
+ * from `TEACHER_DIAGNOSES: A=m-id, …` markers the LLM is asked to emit.
+ */
+export interface PostValidatorMisconceptionLink {
+  /** 0-based index into worksheet.sections. */
+  sectionIndex: number;
+  /** Section title at extraction time (helpful in teacher views). */
+  sectionTitle?: string;
+  /** Distractor option letter (A | B | C | D | …). Upper-case, single char. */
+  distractor: string;
+  /** Misconception bank id, e.g. "m-frac-01". Lower-case. */
+  misconceptionId: string;
 }
 
 export interface PostValidatorOptions {
@@ -486,7 +504,103 @@ export function reinforceDyscalculiaMathsScaffolding(
   return { worksheet: { ...ws, sections }, warnings };
 }
 
-// ─── Top-level entry point ───────────────────────────────────────────────────
+// ─── 8. Per-MCQ misconception linkage (FEAT-PB7) ─────────────────────────────
+// The misconception-bank prompt asks the LLM to append a single teacher-only
+// marker line to each MCQ whose distractors target a known pupil error:
+//
+//   TEACHER_DIAGNOSES: A=m-frac-02, C=m-frac-01
+//
+// This validator parses those markers, deduplicates them, lifts them onto
+// `metadata.misconceptionLinks` as structured records, and strips the marker
+// line from the section's content so it never reaches the pupil. Pure +
+// idempotent — running twice yields the same metadata array and an unchanged
+// content string on the second pass.
+
+const TEACHER_DIAGNOSES_LINE_RE = /^\s*TEACHER[_\s]?DIAGNOSES\s*:\s*(.+?)\s*$/im;
+const TEACHER_DIAGNOSES_PAIR_RE = /\b([A-Da-d])\s*=\s*(m-[a-z0-9-]{2,})\b/g;
+
+export function extractMisconceptionLinks(
+  ws: PostValidatorWorksheet,
+): PostValidatorResult {
+  const warnings: string[] = [];
+  const collected: PostValidatorMisconceptionLink[] = [];
+  // Preserve any links already present (idempotent re-runs) so we can
+  // dedupe against them rather than blindly re-appending.
+  const existing = Array.isArray(ws.metadata?.misconceptionLinks)
+    ? (ws.metadata!.misconceptionLinks as PostValidatorMisconceptionLink[])
+    : [];
+  const seen = new Set<string>();
+  const keyFor = (l: PostValidatorMisconceptionLink) =>
+    `${l.sectionIndex}|${l.distractor}|${l.misconceptionId}`;
+  for (const l of existing) seen.add(keyFor(l));
+
+  const sections = (ws.sections || []).map((s, idx): PostValidatorSection => {
+    const type = String(s.type || "").toLowerCase();
+    if (type !== "q-mcq" && type !== "mcq") return s;
+    const content = String(s.content || "");
+    if (!content) return s;
+
+    const lineMatch = content.match(TEACHER_DIAGNOSES_LINE_RE);
+    if (!lineMatch) return s;
+
+    // Parse pairs from the marker line. Reset the regex state because it has
+    // the `g` flag.
+    TEACHER_DIAGNOSES_PAIR_RE.lastIndex = 0;
+    let pair: RegExpExecArray | null;
+    let foundAny = false;
+    while ((pair = TEACHER_DIAGNOSES_PAIR_RE.exec(lineMatch[1])) !== null) {
+      foundAny = true;
+      const link: PostValidatorMisconceptionLink = {
+        sectionIndex: idx,
+        sectionTitle: typeof s.title === "string" ? s.title : undefined,
+        distractor: pair[1].toUpperCase(),
+        misconceptionId: pair[2].toLowerCase(),
+      };
+      const k = keyFor(link);
+      if (!seen.has(k)) {
+        seen.add(k);
+        collected.push(link);
+      }
+    }
+
+    if (!foundAny) {
+      // Marker line present but unparseable — strip it so it doesn't reach
+      // pupils, but record a warning for diagnostics.
+      warnings.push(`Stripped malformed TEACHER_DIAGNOSES line from MCQ at section ${idx}.`);
+    }
+
+    // Strip the marker line from student-visible content regardless. It is
+    // teacher-only data; the parsed links live on metadata.misconceptionLinks
+    // and are surfaced by the renderer's teacher view.
+    const cleaned = content
+      .split("\n")
+      .filter((ln) => !TEACHER_DIAGNOSES_LINE_RE.test(ln))
+      .join("\n")
+      .trimEnd();
+    return { ...s, content: cleaned };
+  });
+
+  if (collected.length > 0) {
+    warnings.push(`Linked ${collected.length} MCQ distractor(s) to misconception bank entries.`);
+  }
+
+  // Always re-stamp the merged misconceptionLinks array (even if no new ones
+  // were extracted) so the shape is stable for downstream consumers.
+  const mergedLinks = [...existing, ...collected];
+  return {
+    worksheet: {
+      ...ws,
+      sections,
+      metadata: {
+        ...(ws.metadata || {}),
+        misconceptionLinks: mergedLinks,
+      },
+    },
+    warnings,
+  };
+}
+
+
 
 /**
  * Runs every post-generation validator in order. Collects warnings and
@@ -508,6 +622,9 @@ export function runWorksheetPostValidators(
     (ws: PostValidatorWorksheet) => capWorkedExampleSteps(ws, opts),
     stripLeakedGeneratorInstructions,
     (ws: PostValidatorWorksheet) => reinforceDyscalculiaMathsScaffolding(ws, opts),
+    // FEAT-PB7 — extract per-MCQ misconception linkage AFTER all other
+    // content rewrites so we work against the final, sanitised MCQ text.
+    extractMisconceptionLinks,
   ]) {
     const r = fn(current);
     current = r.worksheet;
