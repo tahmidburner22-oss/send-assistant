@@ -12,6 +12,7 @@ import React, { forwardRef, useState, useCallback } from "react";
 import { Eye, EyeOff, Pencil } from "lucide-react";
 import { getSendFormatting } from "@/lib/send-data";
 import { extractDiagramSpec, stripDiagramMarker } from "@/lib/ai";
+import { findMisconceptionById } from "@/lib/misconception-bank";
 import { getA11yProfileById, buildA11yProfileCss } from "@/lib/accessibility-profiles";
 import SVGDiagram from "@/components/SVGDiagram";
 import katex from "katex";
@@ -6780,17 +6781,155 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
             <span>Misconceptions targeted (teacher reference)</span>
           </div>
           <ul style={{ margin: 0, paddingLeft: "18px", lineHeight: 1.5 }}>
-            {((worksheet.metadata as any).misconceptionsTargeted as string[]).map((id) => (
-              <li key={id} style={{ marginBottom: "2px" }}>
-                <code style={{ background: "#fde68a", padding: "1px 4px", borderRadius: "3px", fontSize: "11px" }}>{id}</code>
-              </li>
-            ))}
+            {((worksheet.metadata as any).misconceptionsTargeted as string[]).map((id) => {
+              const entry = findMisconceptionById(id);
+              return (
+                <li key={id} style={{ marginBottom: "4px" }}>
+                  <code style={{ background: "#fde68a", padding: "1px 4px", borderRadius: "3px", fontSize: "11px" }}>{id}</code>
+                  {entry ? (
+                    <span style={{ marginLeft: "6px" }}>
+                      <span style={{ fontStyle: "italic" }}>{entry.misconception}</span>{" "}
+                      <span style={{ color: "#854d0e" }}>(Correct: {entry.correctUnderstanding})</span>
+                    </span>
+                  ) : null}
+                </li>
+              );
+            })}
           </ul>
+
+          {/* FEAT-PB7 — per-MCQ distractor → misconception linkage */}
+          {(() => {
+            const links = ((worksheet.metadata as any)?.misconceptionLinks ?? []) as Array<{
+              sectionIndex: number;
+              sectionTitle?: string;
+              distractor: string;
+              misconceptionId: string;
+            }>;
+            if (!Array.isArray(links) || links.length === 0) return null;
+            // Group links by section so the teacher view reads "MCQ A → option B diagnoses x"
+            const grouped = new Map<string, typeof links>();
+            for (const l of links) {
+              const key = `${l.sectionIndex}|${l.sectionTitle || ""}`;
+              const arr = grouped.get(key) ?? [];
+              arr.push(l);
+              grouped.set(key, arr);
+            }
+            return (
+              <div style={{ marginTop: "10px", paddingTop: "8px", borderTop: "1px dashed #ca8a04" }}>
+                <div style={{ fontWeight: 700, marginBottom: "4px" }}>
+                  Per-question diagnosis (which distractor reveals which error)
+                </div>
+                <ul style={{ margin: 0, paddingLeft: "18px", lineHeight: 1.5 }}>
+                  {Array.from(grouped.entries()).map(([key, sectionLinks]) => {
+                    const first = sectionLinks[0];
+                    const label = first.sectionTitle?.trim() || `Section ${first.sectionIndex + 1}`;
+                    return (
+                      <li key={key} style={{ marginBottom: "4px" }}>
+                        <span style={{ fontWeight: 600 }}>{label}:</span>{" "}
+                        {sectionLinks.map((l, i) => {
+                          const entry = findMisconceptionById(l.misconceptionId);
+                          return (
+                            <span key={i}>
+                              {i > 0 ? "; " : ""}
+                              option <code style={{ background: "#fde68a", padding: "0 3px", borderRadius: "2px", fontSize: "11px" }}>{l.distractor}</code>{" "}
+                              → <code style={{ background: "#fde68a", padding: "0 3px", borderRadius: "2px", fontSize: "11px" }}>{l.misconceptionId}</code>
+                              {entry ? (
+                                <span style={{ marginLeft: "4px", fontStyle: "italic" }}>
+                                  ({entry.misconception})
+                                </span>
+                              ) : null}
+                            </span>
+                          );
+                        })}
+                      </li>
+                    );
+                  })}
+                </ul>
+                <div style={{ marginTop: "6px", fontSize: "11px", color: "#854d0e", fontStyle: "italic" }}>
+                  When a pupil picks one of these distractors, the misconception in italics is the most likely cause.
+                </div>
+              </div>
+            );
+          })()}
+
           <div style={{ marginTop: "6px", fontSize: "11px", color: "#854d0e", fontStyle: "italic" }}>
             Distractors in the questions above are designed to expose these specific pupil errors. Use marking to identify which pupils held which misconception.
           </div>
         </div>
       )}
+
+      {/* ── FEAT-PB6 — teacher-only SEND fidelity audit panel ── */}
+      {isTeacherView &&
+        (worksheet.metadata as any)?.sendFidelityReport && (() => {
+        const report = (worksheet.metadata as any).sendFidelityReport as {
+          sendNeedId: string;
+          sendNeedName: string;
+          rules: Array<{ ruleIndex: number; rule: string; status: "applied" | "missing" | "not-checked"; evidence?: string }>;
+          appliedCount: number;
+          totalCount: number;
+          fidelityRatio: number;
+          warnings: string[];
+        };
+        const probeable = report.rules.filter(r => r.status !== "not-checked").length;
+        const ratioPct = probeable === 0 ? 0 : Math.round(report.fidelityRatio * 100);
+        const allGreen = report.warnings.length === 0 && report.appliedCount > 0;
+        const headlineColor = allGreen ? "#15803d" : ratioPct >= 50 ? "#a16207" : "#b91c1c";
+        const headlineBg = allGreen ? "#ecfdf5" : ratioPct >= 50 ? "#fef9c3" : "#fee2e2";
+        const headlineBorder = allGreen ? "#10b981" : ratioPct >= 50 ? "#ca8a04" : "#dc2626";
+        return (
+          <div
+            className="ws-teacher-section ws-no-print-on-student"
+            style={{
+              marginTop: "12px",
+              padding: "10px 14px",
+              background: headlineBg,
+              border: `1.5px solid ${headlineBorder}`,
+              borderRadius: "6px",
+              fontSize: `${fmt.fontSize - 2}px`,
+              fontFamily: fmt.fontFamily,
+              color: headlineColor,
+            }}
+          >
+            <div style={{ fontWeight: 700, marginBottom: "4px", display: "flex", alignItems: "center", gap: "6px" }}>
+              <span aria-hidden>{allGreen ? "✓" : "⚠"}</span>
+              <span>SEND adaptation fidelity — {report.sendNeedName}</span>
+              <span
+                style={{
+                  marginLeft: "auto",
+                  background: headlineBorder,
+                  color: "white",
+                  fontSize: "11px",
+                  padding: "1px 6px",
+                  borderRadius: "10px",
+                  fontWeight: 700,
+                }}
+              >
+                {report.appliedCount}/{probeable} applied
+              </span>
+            </div>
+            <ul style={{ margin: 0, paddingLeft: "18px", lineHeight: 1.45 }}>
+              {report.rules.map((r) => {
+                const tick = r.status === "applied" ? "✓" : r.status === "missing" ? "✗" : "·";
+                const colour = r.status === "applied" ? "#15803d" : r.status === "missing" ? "#b91c1c" : "#6b7280";
+                return (
+                  <li key={r.ruleIndex} style={{ marginBottom: "3px", color: colour }}>
+                    <strong style={{ marginRight: "4px" }}>{tick}</strong>
+                    <span>Rule {r.ruleIndex}: {r.rule}</span>
+                    {r.evidence ? (
+                      <span style={{ display: "block", fontSize: "10px", color: "#52525b", marginLeft: "16px" }}>
+                        {r.evidence}
+                      </span>
+                    ) : null}
+                  </li>
+                );
+              })}
+            </ul>
+            <div style={{ marginTop: "6px", fontSize: "11px", fontStyle: "italic", color: "#374151" }}>
+              Probes are deterministic — a missing tick means the corresponding adaptation was not detected in the rendered worksheet, even if the rest looks fine.
+            </div>
+          </div>
+        );
+      })()}
 
       {/* ── Phase 4 / FEAT-005 — teacher-only hint-ladder preview ── */}
       {isTeacherView &&
