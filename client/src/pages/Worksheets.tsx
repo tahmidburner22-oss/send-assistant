@@ -31,6 +31,7 @@ import EvidencePackDialog from "@/components/EvidencePackDialog";
 import { CompanionQRDialog } from "@/components/CompanionQRDialog";
 import { ClassPackDialog } from "@/components/ClassPackDialog";
 import { LessonBundleDialog } from "@/components/LessonBundleDialog";
+import { ScanMarkDialog } from "@/components/ScanMarkDialog";
 import { runHintLadder } from "@/lib/hint-ladder";
 import { usePupilScope } from "@/contexts/PupilScopeContext";
 import { runWorksheetPipeline } from "@/lib/engines/pipeline";
@@ -46,7 +47,7 @@ import {
   Eye, EyeOff, GraduationCap, Palette, Edit3, Users, Check, ZoomIn, ZoomOut,
   Mic, MicOff, Image, Search, Clock, Award, ChevronRight, ChevronDown,
   AlertCircle, CheckCircle, RefreshCw, FileDown, X, Wand2, History, Trash2, Info, PenLine, Square, CheckSquare, ListChecks, ClipboardCheck,
-  MessageSquare, Send, RotateCcw, Layers, Volume2, VolumeX, Loader2, QrCode, BookOpenCheck,
+  MessageSquare, Send, RotateCcw, Layers, Volume2, VolumeX, Loader2, QrCode, BookOpenCheck, Camera,
 } from "lucide-react";
 
 // ─── Debounce hook ──────────────────────────────────────────────────────────
@@ -474,7 +475,7 @@ function isUnresolvedDiagramSection(section: any): boolean {
 // ─── Main Component ──────────────────────────────────────────────────────────
 export default function Worksheets() {
   const [location] = useLocation();
-  const { saveWorksheet, updateWorksheet, deleteWorksheet, worksheetHistory, children, assignWork, colorOverlay, setColorOverlay, refreshData, user } = useApp();
+  const { saveWorksheet, updateWorksheet, deleteWorksheet, worksheetHistory, children, assignWork, updateChild, colorOverlay, setColorOverlay, refreshData, user } = useApp();
   const isPlatformAdmin = user?.email === "admin@adaptly.co.uk" || user?.email === "admin@sendassistant.app";
   const { preferences } = useUserPreferences();
   const showLibraryTab = preferences.showWorksheetLibrary === true;
@@ -487,6 +488,8 @@ export default function Worksheets() {
   const [classPackOpen, setClassPackOpen] = useState(false);
   // FEAT-009 — Multi-modal lesson bundle dialog.
   const [lessonBundleOpen, setLessonBundleOpen] = useState(false);
+  // FEAT-010 — Scan-and-mark dialog.
+  const [scanMarkOpen, setScanMarkOpen] = useState(false);
 
   // Re-fetch data from server on mount so history count is always current
   useEffect(() => { refreshData(); }, []);
@@ -1281,6 +1284,31 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
       toast.error("Please fill in Subject, Year Group, and Topic.");
       return;
     }
+
+    // ── FEAT-010 (closed loop) ──────────────────────────────────────────────
+    // If a pupil is scoped and they have recentMisconceptions logged from
+    // scan-and-mark, prepend a remediation block to additionalInstructions so
+    // the next worksheet auto-targets those errors. Library lookup is left
+    // alone (uses raw additionalInstructions) so its cache key stays stable.
+    let effectiveAdditionalInstructions = additionalInstructions || "";
+    try {
+      if (scopedPupilId) {
+        const scopedChild = children.find(c => c.id === scopedPupilId);
+        const tags = (scopedChild?.recentMisconceptions || []).filter(
+          (t: any) => typeof t === "string" && t.trim().length > 0,
+        );
+        if (tags.length > 0) {
+          const block =
+            `Recent misconceptions to remediate for this pupil:\n` +
+            tags.slice(0, 5).map((t: string) => `- ${t.slice(0, 200)}`).join("\n") +
+            `\n\nWeave at least one short scaffolded question per tag into the early exercises that targets the underlying error directly. Keep the rest of the worksheet on-topic for the requested objective.`;
+          effectiveAdditionalInstructions = effectiveAdditionalInstructions
+            ? `${effectiveAdditionalInstructions}\n\n${block}`
+            : block;
+        }
+      }
+    } catch { /* best-effort */ }
+
     setLoading(true);
     setGenerationStatus("Checking worksheet library...");
     setEditedSections({});
@@ -1502,7 +1530,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
           examBoard: examBoard !== "none" ? examBoard : undefined,
           includeAnswers,
           examStyle: false, // Generate normal structure — we'll inject real exam questions
-          additionalInstructions,
+          additionalInstructions: effectiveAdditionalInstructions,
           isRevisionMat,
           generateDiagram: false, // No diagram in exam mode
           worksheetLength,
@@ -1546,7 +1574,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
             examBoard: examBoard !== "none" ? examBoard : undefined,
             includeAnswers,
             examStyle: true,
-            additionalInstructions,
+            additionalInstructions: effectiveAdditionalInstructions,
             isRevisionMat,
             generateDiagram: false,
             worksheetLength,
@@ -1571,7 +1599,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
           examBoard: examBoard !== "none" ? examBoard : undefined,
           includeAnswers,
           examStyle,
-          additionalInstructions,
+          additionalInstructions: effectiveAdditionalInstructions,
           isRevisionMat,
           generateDiagram,
           worksheetLength,
@@ -1606,7 +1634,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
             difficulty,
             examBoard: examBoard !== "none" ? examBoard : undefined,
             includeAnswers,
-            additionalInstructions,
+            additionalInstructions: effectiveAdditionalInstructions,
             readingAge: readingAge || undefined,
             recallTopic: (selectedSections.includes('retrieval') ? (recallTopic.trim() || topic) : recallTopic.trim()) || undefined,
             examStyle,
@@ -1631,7 +1659,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                 examBoard: examBoard !== "none" ? examBoard : undefined,
                 includeAnswers,
                 examStyle,
-                additionalInstructions,
+                additionalInstructions: effectiveAdditionalInstructions,
                 isRevisionMat,
                 generateDiagram: false,
                 worksheetLength,
@@ -1663,7 +1691,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
       }
     } else {
       await new Promise(r => setTimeout(r, 800));
-      generatedWs = generateWorksheet({ subject, topic, yearGroup, sendNeed: sendNeed || undefined, difficulty, examBoard, includeAnswers, additionalInstructions });
+      generatedWs = generateWorksheet({ subject, topic, yearGroup, sendNeed: sendNeed || undefined, difficulty, examBoard, includeAnswers, additionalInstructions: effectiveAdditionalInstructions });
       toast.success("Lesson generated!");
     }
 
@@ -5018,6 +5046,20 @@ ${s.content}`).join("\n\n"),
             >
               <BookOpenCheck className="w-3.5 h-3.5 mr-1.5" /> Lesson bundle
             </Button>
+            {/* FEAT-010 — Scan-and-mark + closed-loop adaptive */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setScanMarkOpen(true)}
+              disabled={children.length === 0}
+              title={
+                children.length === 0
+                  ? "Register pupils first to use scan-and-mark"
+                  : "Photograph a completed worksheet — AI marks it and remembers misconceptions for next time"
+              }
+            >
+              <Camera className="w-3.5 h-3.5 mr-1.5" /> Scan &amp; mark
+            </Button>
             <Button
               variant="outline"
               size="sm"
@@ -6389,6 +6431,29 @@ ${s.content}`).join("\n\n"),
               }
             : null
         }
+      />
+      {/* FEAT-010 — Scan-and-mark + closed-loop adaptive */}
+      <ScanMarkDialog
+        open={scanMarkOpen}
+        onOpenChange={setScanMarkOpen}
+        worksheet={
+          generated
+            ? {
+                title: generated.title,
+                sections: (generated.sections as any) || [],
+                metadata: (generated.metadata as any) || {},
+              }
+            : null
+        }
+        pupils={children.map(c => ({
+          id: c.id,
+          name: c.name,
+          recentMisconceptions: c.recentMisconceptions || [],
+        }))}
+        defaultPupilId={scopedPupilId || null}
+        onSaveMisconceptions={async (pupilId, recentMisconceptions) => {
+          await updateChild(pupilId, { recentMisconceptions });
+        }}
       />
     </div>
   );
