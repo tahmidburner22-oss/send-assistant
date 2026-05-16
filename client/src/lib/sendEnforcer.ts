@@ -253,7 +253,10 @@ function sectionLooksLikeChallenge(s: EnforceableSection): boolean {
 }
 
 /** ADHD end-to-end enforcer. */
-function enforceAdhd(ws: EnforceableWorksheet): { worksheet: EnforceableWorksheet; warnings: string[] } {
+function enforceAdhd(
+  ws: EnforceableWorksheet,
+  preserveStems: boolean,
+): { worksheet: EnforceableWorksheet; warnings: string[] } {
   const warnings: string[] = [];
   const sectionTitles = getSendSectionTitles("adhd");
 
@@ -265,12 +268,23 @@ function enforceAdhd(ws: EnforceableWorksheet): { worksheet: EnforceableWorkshee
 
     // Rename canonical sections to the agreed ADHD titles so the overlay
     // engine and the renderer can find them.
+    // (Section-title rewrites are ADDITIVE — they never touch question content
+    // — so we apply them in both rewrite and preserve-stem modes.)
     if (sectionLooksLikeSectionA(s) && !title.includes("Quick Start")) {
       title = sectionTitles.sectionA;
     } else if (sectionLooksLikeSectionB(s) && !title.includes("Main Practice")) {
       title = sectionTitles.sectionB;
     } else if (sectionLooksLikeChallenge(s) && !/BONUS/i.test(title)) {
       title = sectionTitles.challenge;
+    }
+
+    // Stem-preserving guard: under exam-style Y9+, SEND adaptations must
+    // never mutate question stems — checkbox prefixes, action-verb bolding,
+    // section caps, and BRAIN BREAK insertion all rewrite question content,
+    // so we skip them. Renaming the section title (above) is the only
+    // permitted ADHD adjustment in this mode.
+    if (preserveStems) {
+      return { ...s, title, content };
     }
 
     if (isQuestionSection(s) || sectionLooksLikeSectionA(s) || sectionLooksLikeSectionB(s)) {
@@ -308,7 +322,15 @@ function enforceAdhd(ws: EnforceableWorksheet): { worksheet: EnforceableWorkshee
 // cannot rewrite inside diagram specs or answer keys, but inside question
 // content we convert italic *foo* to plain text and keep **bold** as-is.
 
-function enforceDyslexia(ws: EnforceableWorksheet): { worksheet: EnforceableWorksheet; warnings: string[] } {
+function enforceDyslexia(
+  ws: EnforceableWorksheet,
+  preserveStems: boolean,
+): { worksheet: EnforceableWorksheet; warnings: string[] } {
+  // Stripping italic emphasis IS a stem mutation — even if mostly cosmetic —
+  // so under preserve-stem mode we leave the LLM's output untouched.
+  if (preserveStems) {
+    return { worksheet: ws, warnings: [] };
+  }
   const sections = (ws.sections || []).map((s): EnforceableSection => {
     if (s.teacherOnly) return s;
     if (!isQuestionSection(s)) return s;
@@ -326,6 +348,22 @@ export interface SendEnforcementResult {
   worksheet: EnforceableWorksheet;
   warnings: string[];
   enforcedFor: string | null;
+  /** Whether the enforcer ran in stem-preserving mode (no question-content mutations). */
+  preserveStems: boolean;
+}
+
+/**
+ * Optional flags that change how aggressively the enforcer rewrites content.
+ *
+ *  - `preserveStems`: when true, the enforcer is forbidden from touching any
+ *    student-facing question text. Section TITLE renames are still applied
+ *    (they are presentation-only) but ADHD checkbox prefixes, action-verb
+ *    bolding, hard caps, BRAIN BREAK insertion, and dyslexia italic stripping
+ *    are all skipped. Used for exam-style Y9+ sheets where the academic
+ *    rigour of the stem must remain byte-identical to the un-adapted version.
+ */
+export interface SendEnforcementOptions {
+  preserveStems?: boolean;
 }
 
 /**
@@ -336,11 +374,13 @@ export interface SendEnforcementResult {
  */
 export function enforceSendAdaptations(
   worksheet: EnforceableWorksheet,
-  sendNeed: string | undefined | null
+  sendNeed: string | undefined | null,
+  options: SendEnforcementOptions = {},
 ): SendEnforcementResult {
+  const preserveStems = Boolean(options.preserveStems);
   const spec = resolveSendSpec(sendNeed);
   if (!spec) {
-    return { worksheet, warnings: [], enforcedFor: null };
+    return { worksheet, warnings: [], enforcedFor: null, preserveStems };
   }
 
   let out: EnforceableWorksheet = worksheet;
@@ -348,11 +388,11 @@ export function enforceSendAdaptations(
 
   // Dispatch by canonical id (resolveSendSpec already normalised it).
   if (spec.id === "adhd") {
-    const r = enforceAdhd(out);
+    const r = enforceAdhd(out, preserveStems);
     out = r.worksheet;
     warnings.push(...r.warnings);
   } else if (spec.id === "dyslexia") {
-    const r = enforceDyslexia(out);
+    const r = enforceDyslexia(out, preserveStems);
     out = r.worksheet;
     warnings.push(...r.warnings);
   }
@@ -365,8 +405,9 @@ export function enforceSendAdaptations(
       ...(out.metadata || {}),
       sendEnforcerApplied: spec.id,
       sendEnforcerWarnings: warnings,
+      sendEnforcerPreserveStems: preserveStems,
     },
   };
 
-  return { worksheet: out, warnings, enforcedFor: spec.id };
+  return { worksheet: out, warnings, enforcedFor: spec.id, preserveStems };
 }
