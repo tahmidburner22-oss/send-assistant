@@ -26,6 +26,14 @@ import { getSyllabusTopics, type SyllabusTopic } from "@/lib/syllabus-data";
 import { getSubtopics } from "@/lib/subtopics-data";
 import { aiGenerateWorksheet, aiEditSection, aiScaffoldExistingWorksheet, aiDifferentiateExistingWorksheet, parseNaturalLanguageInput, aiScenarioSwap, aiAdjustReadingLevel } from "@/lib/ai";
 import { runFactCheck } from "@/lib/fact-checker";
+import { tagWorksheetForPupil } from "@/lib/evidence-tagger";
+import EvidencePackDialog from "@/components/EvidencePackDialog";
+import { CompanionQRDialog } from "@/components/CompanionQRDialog";
+import { ClassPackDialog } from "@/components/ClassPackDialog";
+import { LessonBundleDialog } from "@/components/LessonBundleDialog";
+import { ScanMarkDialog } from "@/components/ScanMarkDialog";
+import { runHintLadder } from "@/lib/hint-ladder";
+import { usePupilScope } from "@/contexts/PupilScopeContext";
 import { runWorksheetPipeline } from "@/lib/engines/pipeline";
 import { applySEND } from "@/lib/engines/adaptationEngine";
 // examPaperBuilder is dynamically imported inside handlers to avoid loading the large question bank on initial page load
@@ -39,7 +47,7 @@ import {
   Eye, EyeOff, GraduationCap, Palette, Edit3, Users, Check, ZoomIn, ZoomOut,
   Mic, MicOff, Image, Search, Clock, Award, ChevronRight, ChevronDown,
   AlertCircle, CheckCircle, RefreshCw, FileDown, X, Wand2, History, Trash2, Info, PenLine, Square, CheckSquare, ListChecks, ClipboardCheck,
-  MessageSquare, Send, RotateCcw, Layers, Volume2, VolumeX, Loader2,
+  MessageSquare, Send, RotateCcw, Layers, Volume2, VolumeX, Loader2, QrCode, BookOpenCheck, Camera,
 } from "lucide-react";
 
 // ─── Debounce hook ──────────────────────────────────────────────────────────
@@ -467,10 +475,21 @@ function isUnresolvedDiagramSection(section: any): boolean {
 // ─── Main Component ──────────────────────────────────────────────────────────
 export default function Worksheets() {
   const [location] = useLocation();
-  const { saveWorksheet, updateWorksheet, deleteWorksheet, worksheetHistory, children, assignWork, colorOverlay, setColorOverlay, refreshData, user } = useApp();
+  const { saveWorksheet, updateWorksheet, deleteWorksheet, worksheetHistory, children, assignWork, updateChild, colorOverlay, setColorOverlay, refreshData, user } = useApp();
   const isPlatformAdmin = user?.email === "admin@adaptly.co.uk" || user?.email === "admin@sendassistant.app";
   const { preferences } = useUserPreferences();
   const showLibraryTab = preferences.showWorksheetLibrary === true;
+  // FEAT-6 — Evidence Pack dialog (EHCP/IEP tagger + Annual-Review export).
+  const { pupilId: scopedPupilId } = usePupilScope();
+  const [evidencePackOpen, setEvidencePackOpen] = useState(false);
+  // FEAT-005 — Pupil Companion (QR + hint ladder) dialog.
+  const [companionDialogOpen, setCompanionDialogOpen] = useState(false);
+  // FEAT-004 — Class-pack one-click differentiation dialog.
+  const [classPackOpen, setClassPackOpen] = useState(false);
+  // FEAT-009 — Multi-modal lesson bundle dialog.
+  const [lessonBundleOpen, setLessonBundleOpen] = useState(false);
+  // FEAT-010 — Scan-and-mark dialog.
+  const [scanMarkOpen, setScanMarkOpen] = useState(false);
 
   // Re-fetch data from server on mount so history count is always current
   useEffect(() => { refreshData(); }, []);
@@ -1265,6 +1284,31 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
       toast.error("Please fill in Subject, Year Group, and Topic.");
       return;
     }
+
+    // ── FEAT-010 (closed loop) ──────────────────────────────────────────────
+    // If a pupil is scoped and they have recentMisconceptions logged from
+    // scan-and-mark, prepend a remediation block to additionalInstructions so
+    // the next worksheet auto-targets those errors. Library lookup is left
+    // alone (uses raw additionalInstructions) so its cache key stays stable.
+    let effectiveAdditionalInstructions = additionalInstructions || "";
+    try {
+      if (scopedPupilId) {
+        const scopedChild = children.find(c => c.id === scopedPupilId);
+        const tags = (scopedChild?.recentMisconceptions || []).filter(
+          (t: any) => typeof t === "string" && t.trim().length > 0,
+        );
+        if (tags.length > 0) {
+          const block =
+            `Recent misconceptions to remediate for this pupil:\n` +
+            tags.slice(0, 5).map((t: string) => `- ${t.slice(0, 200)}`).join("\n") +
+            `\n\nWeave at least one short scaffolded question per tag into the early exercises that targets the underlying error directly. Keep the rest of the worksheet on-topic for the requested objective.`;
+          effectiveAdditionalInstructions = effectiveAdditionalInstructions
+            ? `${effectiveAdditionalInstructions}\n\n${block}`
+            : block;
+        }
+      }
+    } catch { /* best-effort */ }
+
     setLoading(true);
     setGenerationStatus("Checking worksheet library...");
     setEditedSections({});
@@ -1486,7 +1530,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
           examBoard: examBoard !== "none" ? examBoard : undefined,
           includeAnswers,
           examStyle: false, // Generate normal structure — we'll inject real exam questions
-          additionalInstructions,
+          additionalInstructions: effectiveAdditionalInstructions,
           isRevisionMat,
           generateDiagram: false, // No diagram in exam mode
           worksheetLength,
@@ -1530,7 +1574,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
             examBoard: examBoard !== "none" ? examBoard : undefined,
             includeAnswers,
             examStyle: true,
-            additionalInstructions,
+            additionalInstructions: effectiveAdditionalInstructions,
             isRevisionMat,
             generateDiagram: false,
             worksheetLength,
@@ -1555,7 +1599,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
           examBoard: examBoard !== "none" ? examBoard : undefined,
           includeAnswers,
           examStyle,
-          additionalInstructions,
+          additionalInstructions: effectiveAdditionalInstructions,
           isRevisionMat,
           generateDiagram,
           worksheetLength,
@@ -1590,7 +1634,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
             difficulty,
             examBoard: examBoard !== "none" ? examBoard : undefined,
             includeAnswers,
-            additionalInstructions,
+            additionalInstructions: effectiveAdditionalInstructions,
             readingAge: readingAge || undefined,
             recallTopic: (selectedSections.includes('retrieval') ? (recallTopic.trim() || topic) : recallTopic.trim()) || undefined,
             examStyle,
@@ -1615,7 +1659,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                 examBoard: examBoard !== "none" ? examBoard : undefined,
                 includeAnswers,
                 examStyle,
-                additionalInstructions,
+                additionalInstructions: effectiveAdditionalInstructions,
                 isRevisionMat,
                 generateDiagram: false,
                 worksheetLength,
@@ -1647,7 +1691,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
       }
     } else {
       await new Promise(r => setTimeout(r, 800));
-      generatedWs = generateWorksheet({ subject, topic, yearGroup, sendNeed: sendNeed || undefined, difficulty, examBoard, includeAnswers, additionalInstructions });
+      generatedWs = generateWorksheet({ subject, topic, yearGroup, sendNeed: sendNeed || undefined, difficulty, examBoard, includeAnswers, additionalInstructions: effectiveAdditionalInstructions });
       toast.success("Lesson generated!");
     }
 
@@ -1737,6 +1781,24 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
           return { ...prev, metadata: { ...(prev.metadata || {}), accessibilityProfile: activeA11yProfileId } };
         });
       }
+      // ── FEAT-6 — auto-tag against scoped pupil's EHCP outcomes / IEP targets.
+      // Synchronous heuristic (no LLM call). We mutate generatedWs.metadata in
+      // place BEFORE the saveWorksheet call below, so the DB record carries
+      // the evidenceTags block and the Evidence Pack export still finds it on
+      // refresh. Also pushes the patched metadata into the live UI state.
+      try {
+        if (scopedPupilId) {
+          const scopedChild = children.find(c => c.id === scopedPupilId);
+          if (scopedChild) {
+            const evidenceTags = tagWorksheetForPupil(generatedWs as any, scopedChild);
+            (generatedWs as any).metadata = { ...((generatedWs as any).metadata || {}), evidenceTags };
+            setGenerated((prev: any) => {
+              if (!prev) return prev;
+              return { ...prev, metadata: { ...(prev.metadata || {}), evidenceTags } };
+            });
+          }
+        }
+      } catch { /* best-effort enrichment */ }
       // ── Phase 4 / FEAT-008 — non-blocking citation pass ──────────────────
       // Run a separate AI call against the UK whitelist to tag claims with
       // citations and flag unverified content. Fires-and-forgets so the UI
@@ -1759,7 +1821,27 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
           });
         }).catch(() => { /* best-effort */ });
       } catch { /* best-effort */ }
-      // Show quality warnings if detected
+      // ── Phase 4 / FEAT-005 — non-blocking hint-ladder pass ──────────────
+      // Pre-builds the 3-step (nudge → strategy → worked example) hint
+      // ladder that the Pupil Companion view consumes. Fires-and-forgets so
+      // the worksheet renders immediately and the ladders patch into
+      // metadata when the AI returns. Caps at the first 8 questions.
+      try {
+        const wsForLadder = generatedWs;
+        runHintLadder({
+          subject: wsForLadder.metadata?.subject,
+          topic: wsForLadder.metadata?.topic,
+          yearGroup: wsForLadder.metadata?.yearGroup,
+          sections: (wsForLadder.sections as any) || [],
+        }).then((res) => {
+          if (!res?.ladders?.length) return;
+          setGenerated((prev: any) => {
+            if (!prev) return prev;
+            if (prev !== wsForLadder && prev.title !== wsForLadder.title) return prev;
+            return { ...prev, metadata: { ...(prev.metadata || {}), hintLadders: res.ladders } };
+          });
+        }).catch(() => { /* best-effort */ });
+      } catch { /* best-effort */ }
       const qIssues = (generatedWs.metadata as any)?.qualityIssues;
       if (qIssues && qIssues.length > 0) {
         setTimeout(() => {
@@ -1928,6 +2010,18 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
       setGenerated(generatedWs);
       setDiffVersions({}); // Clear old diff versions when a new worksheet is generated
       setActiveTab("generate");
+
+      // FEAT-6 — auto-tag against scoped pupil before save (diagnostic flow).
+      try {
+        if (scopedPupilId) {
+          const scopedChild = children.find(c => c.id === scopedPupilId);
+          if (scopedChild) {
+            const evidenceTags = tagWorksheetForPupil(generatedWs as any, scopedChild);
+            (generatedWs as any).metadata = { ...((generatedWs as any).metadata || {}), evidenceTags };
+            setGenerated((prev: any) => prev ? { ...prev, metadata: { ...(prev.metadata || {}), evidenceTags } } : prev);
+          }
+        }
+      } catch { /* best-effort */ }
 
       // Auto-save
       const sectionsToSave = generatedWs.sections.map(s => ({ ...s }));
@@ -3053,6 +3147,17 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
     if (generatedWs) {
       setGenerated(generatedWs);
       const ws = generatedWs;
+      // FEAT-6 — auto-tag against scoped pupil (NL flow).
+      try {
+        if (scopedPupilId) {
+          const scopedChild = children.find(c => c.id === scopedPupilId);
+          if (scopedChild) {
+            const evidenceTags = tagWorksheetForPupil(ws as any, scopedChild);
+            (ws as any).metadata = { ...((ws as any).metadata || {}), evidenceTags };
+            setGenerated((prev: any) => prev ? { ...prev, metadata: { ...(prev.metadata || {}), evidenceTags } } : prev);
+          }
+        }
+      } catch { /* best-effort */ }
       const sectionsToSave = ws.sections.map(s => ({ ...s }));
       const content = sectionsToSave.filter(s => !s.teacherOnly).map(s => `## ${s.title}\n${s.content}`).join("\n\n");
       const teacherContent = sectionsToSave.map(s => `## ${s.title}\n${s.content}`).join("\n\n");
@@ -4748,7 +4853,7 @@ ${s.content}`).join("\n\n"),
           {/* ─── HISTORY TAB ──────────────────────────────────────────────────────────────────────── */}
           <TabsContent value="history" className="mt-4 space-y-3">
             <Card className="border-border/50">
-              <CardContent className="p-3">
+              <CardContent className="p-3 space-y-2">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <input
@@ -4758,6 +4863,25 @@ ${s.content}`).join("\n\n"),
                     className="w-full pl-9 pr-3 h-9 text-sm border border-input rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-brand/30"
                   />
                 </div>
+                {/* FEAT-6 — Export Evidence Pack: groups every tagged worksheet
+                    under the pupil's EHCP outcomes / IEP targets for Annual Reviews. */}
+                {children.length > 0 && (
+                  <div className="flex items-center justify-between gap-2 border-t pt-2">
+                    <p className="text-xs text-muted-foreground flex-1">
+                      Need an Annual Review pack? Group every tagged worksheet under each EHCP outcome and IEP target.
+                    </p>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setEvidencePackOpen(true)}
+                      className="shrink-0"
+                    >
+                      <FileDown className="w-3.5 h-3.5 mr-1.5" />
+                      Export Evidence Pack
+                    </Button>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -4881,6 +5005,60 @@ ${s.content}`).join("\n\n"),
               {activeA11yProfileId !== "standard" && (
                 <span className="ml-1 text-[10px] bg-brand text-white rounded-full px-1.5 py-0.5 flex-shrink-0">on</span>
               )}
+            </Button>
+            {/* FEAT-005 — Pupil Companion mode (QR + hint ladder) */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCompanionDialogOpen(true)}
+              className={(generated?.metadata as any)?.companionShare ? "border-emerald-500 text-emerald-700 bg-emerald-50" : ""}
+              title="Issue a QR code for pupils to open a hint-scaffolded view of this worksheet"
+            >
+              <QrCode className="w-3.5 h-3.5 mr-1.5" /> Pupil mode
+              {(generated?.metadata as any)?.companionShare && (
+                <span className="ml-1 text-[10px] bg-emerald-500 text-white rounded-full px-1.5 py-0.5 flex-shrink-0">live</span>
+              )}
+            </Button>
+            {/* FEAT-004 — Class pack: build a per-pupil differentiated booklet */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setClassPackOpen(true)}
+              disabled={!generated || children.length === 0}
+              title={
+                children.length === 0
+                  ? "Register pupils first to build a class pack"
+                  : "Differentiate this worksheet for every pupil in your class — one booklet, one click"
+              }
+            >
+              <Users className="w-3.5 h-3.5 mr-1.5" /> Class pack
+              {children.length > 0 && (
+                <span className="ml-1 text-[10px] bg-muted rounded-full px-1.5 py-0.5 flex-shrink-0">{children.length}</span>
+              )}
+            </Button>
+            {/* FEAT-009 — Multi-modal lesson bundle (starter + Now/Next/Then + exit ticket) */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setLessonBundleOpen(true)}
+              disabled={!generated}
+              title="Auto-pair this worksheet with a starter slide, Now/Next/Then visual, and exit ticket"
+            >
+              <BookOpenCheck className="w-3.5 h-3.5 mr-1.5" /> Lesson bundle
+            </Button>
+            {/* FEAT-010 — Scan-and-mark + closed-loop adaptive */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setScanMarkOpen(true)}
+              disabled={children.length === 0}
+              title={
+                children.length === 0
+                  ? "Register pupils first to use scan-and-mark"
+                  : "Photograph a completed worksheet — AI marks it and remembers misconceptions for next time"
+              }
+            >
+              <Camera className="w-3.5 h-3.5 mr-1.5" /> Scan &amp; mark
             </Button>
             <Button
               variant="outline"
@@ -6194,6 +6372,89 @@ ${s.content}`).join("\n\n"),
           </div>
         </div>
       )}
+      {/* FEAT-6 — Evidence Pack dialog (mount once at component root). */}
+      <EvidencePackDialog
+        open={evidencePackOpen}
+        onOpenChange={setEvidencePackOpen}
+        initialChildId={scopedPupilId || undefined}
+      />
+      {/* FEAT-005 — Pupil Companion QR + hint-ladder dialog. */}
+      {generated && (
+        <CompanionQRDialog
+          open={companionDialogOpen}
+          onOpenChange={setCompanionDialogOpen}
+          worksheet={{
+            title: generated.title,
+            metadata: generated.metadata as any,
+            sections: (generated.sections as any) || [],
+          }}
+          issuedBy={user?.email}
+          onShareIssued={(s) => {
+            setGenerated((prev: any) => {
+              if (!prev) return prev;
+              return {
+                ...prev,
+                metadata: { ...(prev.metadata || {}), companionShare: s },
+              };
+            });
+          }}
+        />
+      )}
+      {/* FEAT-004 — Class-pack one-click differentiation dialog. */}
+      <ClassPackDialog
+        open={classPackOpen}
+        onOpenChange={setClassPackOpen}
+        pupils={children}
+        worksheet={
+          generated
+            ? {
+                title: generated.title,
+                subtitle: (generated as any).subtitle,
+                sections: (generated.sections as any) || [],
+                metadata: (generated.metadata as any) || {},
+              }
+            : null
+        }
+        initialSelectedIds={scopedPupilId ? [scopedPupilId] : undefined}
+      />
+      {/* FEAT-009 — Multi-modal lesson bundle dialog. */}
+      <LessonBundleDialog
+        open={lessonBundleOpen}
+        onOpenChange={setLessonBundleOpen}
+        worksheet={
+          generated
+            ? {
+                title: generated.title,
+                subtitle: (generated as any).subtitle,
+                sections: (generated.sections as any) || [],
+                metadata: (generated.metadata as any) || {},
+              }
+            : null
+        }
+      />
+      {/* FEAT-010 — Scan-and-mark + closed-loop adaptive */}
+      <ScanMarkDialog
+        open={scanMarkOpen}
+        onOpenChange={setScanMarkOpen}
+        worksheet={
+          generated
+            ? {
+                title: generated.title,
+                sections: (generated.sections as any) || [],
+                metadata: (generated.metadata as any) || {},
+              }
+            : null
+        }
+        pupils={children.map(c => ({
+          id: c.id,
+          name: c.name,
+          recentMisconceptions: c.recentMisconceptions || [],
+        }))}
+        defaultPupilId={scopedPupilId || null}
+        onSaveMisconceptions={async (pupilId, recentMisconceptions) => {
+          await updateChild(pupilId, { recentMisconceptions });
+        }}
+      />
     </div>
   );
 }

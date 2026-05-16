@@ -517,6 +517,19 @@ export default function History() {
                       <p className="text-xs text-muted-foreground mt-0.5">
                         {subjectName} · {ws.yearGroup} · {ws.difficulty}{needName ? ` · ${needName}` : ""}
                       </p>
+                      {/* FEAT-6 — evidence-tag pills (shows pupil + count of EHCP/IEP outcomes evidenced) */}
+                      {(() => {
+                        const ev = (ws.metadata as any)?.evidenceTags;
+                        if (!ev || !Array.isArray(ev.tags) || ev.tags.length === 0) return null;
+                        const pupilLabel = ev.pupilDisplayName || "Pupil";
+                        return (
+                          <div className="flex flex-wrap gap-1 mt-1" title={`Tagged for ${pupilLabel} — evidences ${ev.tags.length} outcome${ev.tags.length === 1 ? "" : "s"}.`}>
+                            <span className="text-[10px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200 rounded px-1.5 py-0.5">
+                              Evidence · {pupilLabel} · {ev.tags.length} outcome{ev.tags.length === 1 ? "" : "s"}
+                            </span>
+                          </div>
+                        );
+                      })()}
                       <div className="flex items-center gap-2 mt-1.5">
                         <span className="text-[10px] text-muted-foreground">{new Date(ws.createdAt).toLocaleDateString()}</span>
                         {ws.rating != null && ws.rating > 0 && (
