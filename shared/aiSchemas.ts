@@ -86,6 +86,65 @@ export const WorksheetOutputSchema = z.object({
     provider: z.string().optional(),
     /** Phase 4 / FEAT-002 — misconception IDs the AI deliberately targeted. */
     misconceptionsTargeted: z.array(z.string()).optional(),
+    /** FEAT-PC8 — Fluency / Reasoning / Problem-Solving balance audit. */
+    mathsStrandBalance: z.object({
+      assignments: z.array(z.object({
+        sectionIndex: z.number().int().min(0),
+        sectionTitle: z.string().optional(),
+        sectionType: z.string().optional(),
+        strand: z.enum(["fluency", "reasoning", "problem_solving"]),
+        evidence: z.string(),
+      })),
+      counts: z.object({
+        fluency: z.number().int().min(0),
+        reasoning: z.number().int().min(0),
+        problem_solving: z.number().int().min(0),
+      }),
+      targets: z.object({
+        fluency: z.number().int().min(0),
+        reasoning: z.number().int().min(0),
+        problem_solving: z.number().int().min(0),
+      }),
+      totalQuestions: z.number().int().min(0),
+      meetsTarget: z.boolean(),
+      warnings: z.array(z.string()),
+    }).optional(),
+    /** FEAT-PC9 — KS4 Required Practical anchor (science only). */
+    requiredPractical: z.object({
+      id: z.string(),
+      title: z.string(),
+      specCode: z.string(),
+      wsSkills: z.array(z.string()),
+      detected: z.boolean(),
+      evidence: z.string().optional(),
+    }).optional(),
+    /** FEAT-PC10 — per-question coverage map (Y9+ only). */
+    coverageMap: z.object({
+      rows: z.array(z.object({
+        qNum: z.number().int().min(1),
+        sectionIndex: z.number().int().min(0),
+        sectionTitle: z.string().optional(),
+        sectionType: z.string().optional(),
+        marks: z.number().int().min(0),
+        bloom: z.enum(["recall", "understanding", "application", "challenge", "uncategorised"]),
+        commandWord: z.string(),
+        specRef: z.string(),
+        misconceptionIds: z.array(z.string()),
+      })),
+      totalQuestions: z.number().int().min(0),
+      totalMarks: z.number().int().min(0),
+      bloomDistribution: z.object({
+        recall: z.number().int().min(0),
+        understanding: z.number().int().min(0),
+        application: z.number().int().min(0),
+        challenge: z.number().int().min(0),
+        uncategorised: z.number().int().min(0),
+      }),
+      commandWords: z.array(z.string()),
+      subject: z.string().optional(),
+      yearGroup: z.string().optional(),
+      topic: z.string().optional(),
+    }).optional(),
     /** Phase 4 / FEAT-005 — three-step hint ladder per question id (e.g. s0q3). */
     hintLadders: z.array(z.object({
       questionId: z.string(),
