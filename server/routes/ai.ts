@@ -3314,12 +3314,140 @@ function safeStr(v: any, max = 400): string {
   return String(v).slice(0, max);
 }
 
+// Multer for CV uploads (PDF/DOCX only, 10MB cap — same memory pattern as worksheetUpload above)
+const cvUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
+
+// ── POST /api/ai/cv/parse — parse an uploaded CV (PDF/DOCX) into structured fields ──
+// Used by the CV builder's "Upload existing CV" button. Returns a JSON object
+// shaped exactly like the front-end form `fields` so it can be merged in.
+router.post("/cv/parse", tryAuthForDocs, cvUpload.single("file"), async (req: Request, res: Response) => {
+  const access = await assertPupilDocAccess(req);
+  if (!access.ok) return res.status(access.status).json({ error: access.message });
+  if (!req.file) return res.status(400).json({ error: "No file uploaded." });
+
+  const { mimetype, originalname, buffer } = req.file;
+  const isPdf  = mimetype === "application/pdf" || /\.pdf$/i.test(originalname || "");
+  const isDocx = mimetype === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" || /\.docx$/i.test(originalname || "");
+  if (!isPdf && !isDocx) {
+    return res.status(400).json({ error: "Only PDF or DOCX files are supported." });
+  }
+
+  // Extract text
+  let rawText = "";
+  try {
+    if (isPdf) {
+      try {
+        const { PDFParse } = await import("pdf-parse" as any);
+        const parser = new PDFParse({ data: buffer, verbosity: 0 });
+        await parser.load();
+        const result = await parser.getText();
+        if (result?.pages && Array.isArray(result.pages)) {
+          rawText = result.pages.map((p: any) => p.text || "").join("\n\n");
+        } else if (typeof result?.text === "string") {
+          rawText = result.text;
+        }
+      } catch {
+        // Fall back to v1-style default export
+        const pdfParse = (await import("pdf-parse" as any)).default;
+        const result = await pdfParse(buffer);
+        rawText = result?.text || "";
+      }
+    } else {
+      const mammoth = await import("mammoth" as any);
+      const lib = mammoth.default || mammoth;
+      const result = await lib.extractRawText({ buffer });
+      rawText = result?.value || "";
+    }
+  } catch (err: any) {
+    console.error("[ai/cv/parse] extract error:", err?.message);
+    return res.status(422).json({ error: "Could not read that file. Try a different PDF or DOCX." });
+  }
+
+  rawText = (rawText || "").trim().slice(0, 12000);
+  if (rawText.length < 40) {
+    return res.status(422).json({ error: "We couldn't extract enough text from that file." });
+  }
+
+  const system = `You are an expert UK CV parser. Given the raw text of a CV, return a strict JSON object matching the requested schema. Do NOT invent facts: if a field is not present, use an empty string or empty array. British English. No commentary.`;
+
+  const user = `Parse this CV text and return a JSON object with EXACTLY these keys (omit none):
+{
+  "pupilName": string,
+  "personalSummary": string,
+  "email": string,
+  "phone": string,
+  "location": string,
+  "skills": string[],
+  "languages": [{ "language": string, "level": string }],
+  "education": [{ "school": string, "qualification": string, "dates": string, "grades": string }],
+  "workExperience": [{ "role": string, "organisation": string, "dates": string, "description": string }],
+  "achievements": string[],
+  "interests": string,
+  "references": string
+}
+
+Rules:
+- Skills: 4–10 short keyword-rich items.
+- Languages "level": e.g. "Native", "Fluent", "Conversational", "Basic" — keep verbatim if stated.
+- Education "grades": e.g. "GCSEs: 9–7" or "A-levels predicted A*AB". Empty string if unknown.
+- Experience "description": 1–2 sentences summarising responsibilities and outcomes.
+- "interests" is a single comma-separated line, not an array.
+- "references" — copy any reference contact details verbatim, or "Available on request" if none given.
+- DO NOT include any keys other than the ones above.
+- Return ONLY the JSON. No prose. No \`\`\` fences.
+
+CV TEXT:
+"""
+${rawText}
+"""`;
+
+  try {
+    const { content, provider } = await callWithFallback(system, user, 2200, undefined, access.schoolId || undefined);
+    // Strip any code fences just in case
+    const cleaned = content.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/i, "").trim();
+    let parsed: any = {};
+    try {
+      parsed = JSON.parse(cleaned);
+    } catch {
+      // Try to find the first balanced JSON object
+      const m = cleaned.match(/\{[\s\S]*\}/);
+      if (m) {
+        try { parsed = JSON.parse(m[0]); } catch { parsed = {}; }
+      }
+    }
+    if (!parsed || typeof parsed !== "object") {
+      return res.status(422).json({ error: "We couldn't read that CV. Try again or fill it in manually." });
+    }
+    // Light sanitisation
+    const ensureArr = (v: any) => Array.isArray(v) ? v : [];
+    const ensureStr = (v: any) => typeof v === "string" ? v : "";
+    const fields = {
+      pupilName:       ensureStr(parsed.pupilName),
+      personalSummary: ensureStr(parsed.personalSummary),
+      email:           ensureStr(parsed.email),
+      phone:           ensureStr(parsed.phone),
+      location:        ensureStr(parsed.location),
+      skills:          ensureArr(parsed.skills).map((s: any) => ensureStr(s)).filter(Boolean),
+      languages:       ensureArr(parsed.languages).map((l: any) => ({ language: ensureStr(l?.language), level: ensureStr(l?.level) })).filter((l: any) => l.language),
+      education:       ensureArr(parsed.education).map((e: any) => ({ school: ensureStr(e?.school), qualification: ensureStr(e?.qualification), dates: ensureStr(e?.dates), grades: ensureStr(e?.grades) })).filter((e: any) => e.school || e.qualification),
+      workExperience:  ensureArr(parsed.workExperience).map((w: any) => ({ role: ensureStr(w?.role), organisation: ensureStr(w?.organisation), dates: ensureStr(w?.dates), description: ensureStr(w?.description) })).filter((w: any) => w.role || w.organisation),
+      achievements:    ensureArr(parsed.achievements).map((a: any) => ensureStr(a)).filter(Boolean),
+      interests:       ensureStr(parsed.interests),
+      references:      ensureStr(parsed.references),
+    };
+    res.json({ fields, provider });
+  } catch (err: any) {
+    console.error("[ai/cv/parse] AI error:", err?.message);
+    res.status(502).json({ error: "AI is temporarily unavailable. Please try again." });
+  }
+});
+
 // ── POST /api/ai/cv — generate a polished single-page CV ─────────────────────
 router.post("/cv", tryAuthForDocs, async (req: Request, res: Response) => {
   const access = await assertPupilDocAccess(req);
   if (!access.ok) return res.status(access.status).json({ error: access.message });
 
-  const { pupilName, yearGroup, schoolName, personalSummary, skills, achievements, workExperience, volunteering, interests, references, email, phone, location } = req.body || {};
+  const { pupilName, yearGroup, schoolName, personalSummary, skills, achievements, workExperience, volunteering, interests, references, email, phone, location, education, languages } = req.body || {};
 
   const system = `You are a professional UK careers adviser and CV editor. You write FlowCV-quality, ATS-friendly, single-page CVs for UK school-age students (Year 7–13). Use clean headings, relevant keywords, impact-focused bullets, honest evidence, and concise British English. The CV must work for first jobs, work experience, sixth-form, apprenticeships, or university enrichment applications without inventing facts.`;
 
@@ -3342,6 +3470,12 @@ ${Array.isArray(achievements) ? achievements.map((a: any) => "- " + safeStr(a, 2
 Work experience:
 ${Array.isArray(workExperience) ? workExperience.map((w: any) => `- ${safeStr(w.role, 120)} at ${safeStr(w.organisation, 150)}${w.dates ? ` (${safeStr(w.dates, 40)})` : ""}: ${safeStr(w.description, 400)}`).join("\n") : safeStr(workExperience, 1600)}
 
+Education:
+${Array.isArray(education) ? education.map((e: any) => `- ${safeStr(e.qualification, 200)} — ${safeStr(e.school, 200)}${e.dates ? ` (${safeStr(e.dates, 60)})` : ""}${e.grades ? ` — ${safeStr(e.grades, 200)}` : ""}`).join("\n") : safeStr(education, 1200)}
+
+Languages:
+${Array.isArray(languages) ? languages.map((l: any) => `- ${safeStr(l.language, 60)}${l.level ? ` (${safeStr(l.level, 40)})` : ""}`).join("\n") : safeStr(languages, 400)}
+
 Volunteering:
 ${Array.isArray(volunteering) ? volunteering.map((v: any) => `- ${safeStr(v.role, 120)} at ${safeStr(v.organisation, 150)}: ${safeStr(v.description, 300)}`).join("\n") : safeStr(volunteering, 1200)}
 
@@ -3355,13 +3489,15 @@ OUTPUT RULES — follow strictly:
   ## Skills
   ## Experience
   ## Education
+  ## Languages
   ## Achievements
   ## Interests
   ## References
 - "Profile" is 2 concise, specific sentences that summarise direction, strengths, and evidence.
 - "Skills" — 6–8 bullets, each a keyword-rich, evidenced skill suitable for ATS and human skim-reading.
 - "Experience" — each entry: bold role + organisation on one line, italic dates on next line, then 2–3 outcome-led bullets starting with an action verb.
-- "Education" — include the school and year group. If not provided, write a single line inviting the pupil to add their school.
+- "Education" — list each entry on its own line as: **qualification** — school (dates) — grades. Use only the provided data; if none provided, write "Add your school and qualifications."
+- "Languages" — one bullet per language as "Language — Level". Skip the section entirely if none provided.
 - "Achievements" — 3–5 specific bullets, include grades, awards, positions of responsibility.
 - "Interests" — one concise line (not a bullet list).
 - "References" — "Available on request" unless specific names given.
