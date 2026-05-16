@@ -6792,6 +6792,285 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
         </div>
       )}
 
+      {/* ── FEAT-PC8 — teacher-only Fluency / Reasoning / Problem-Solving balance ── */}
+      {isTeacherView &&
+        (worksheet.metadata as any)?.mathsStrandBalance && (() => {
+        const balance = (worksheet.metadata as any).mathsStrandBalance as {
+          assignments: Array<{ sectionIndex: number; sectionTitle?: string; strand: "fluency" | "reasoning" | "problem_solving"; evidence: string }>;
+          counts: Record<"fluency" | "reasoning" | "problem_solving", number>;
+          targets: Record<"fluency" | "reasoning" | "problem_solving", number>;
+          totalQuestions: number;
+          meetsTarget: boolean;
+          warnings: string[];
+        };
+        if (balance.totalQuestions === 0) return null;
+        const headlineColor = balance.meetsTarget ? "#15803d" : "#a16207";
+        const headlineBg = balance.meetsTarget ? "#ecfdf5" : "#fef9c3";
+        const headlineBorder = balance.meetsTarget ? "#10b981" : "#ca8a04";
+        const strandLabel = (s: "fluency" | "reasoning" | "problem_solving") =>
+          s === "fluency" ? "Fluency" : s === "reasoning" ? "Reasoning" : "Problem-solving";
+        const strandColor = (s: "fluency" | "reasoning" | "problem_solving") =>
+          s === "fluency" ? "#0891b2" : s === "reasoning" ? "#7c3aed" : "#c2410c";
+        return (
+          <div
+            className="ws-teacher-section ws-no-print-on-student"
+            style={{
+              marginTop: "12px",
+              padding: "10px 14px",
+              background: headlineBg,
+              border: `1.5px solid ${headlineBorder}`,
+              borderRadius: "6px",
+              fontSize: `${fmt.fontSize - 2}px`,
+              fontFamily: fmt.fontFamily,
+              color: headlineColor,
+            }}
+          >
+            <div style={{ fontWeight: 700, marginBottom: "4px", display: "flex", alignItems: "center", gap: "6px" }}>
+              <span aria-hidden>{balance.meetsTarget ? "✓" : "⚠"}</span>
+              <span>Maths strand balance — Fluency / Reasoning / Problem-solving</span>
+            </div>
+            <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", marginBottom: "6px" }}>
+              {(["fluency", "reasoning", "problem_solving"] as const).map((s) => {
+                const got = balance.counts[s];
+                const want = balance.targets[s];
+                const ok = got >= want;
+                return (
+                  <div
+                    key={s}
+                    style={{
+                      padding: "4px 8px",
+                      border: `1px solid ${ok ? "#10b981" : "#dc2626"}`,
+                      borderRadius: "4px",
+                      background: "white",
+                      color: strandColor(s),
+                      fontSize: "11px",
+                      fontWeight: 600,
+                    }}
+                  >
+                    {strandLabel(s)}: <strong>{got}</strong> / target {want}
+                    <span style={{ marginLeft: "4px", color: ok ? "#15803d" : "#b91c1c" }}>{ok ? "✓" : "✗"}</span>
+                  </div>
+                );
+              })}
+            </div>
+            <details style={{ marginTop: "4px" }}>
+              <summary style={{ cursor: "pointer", fontSize: "11px", color: "#374151" }}>
+                Per-question strand assignments ({balance.totalQuestions} questions)
+              </summary>
+              <ul style={{ margin: "4px 0 0", paddingLeft: "18px", lineHeight: 1.5 }}>
+                {balance.assignments.map((a, i) => (
+                  <li key={i} style={{ marginBottom: "2px", color: "#374151" }}>
+                    <span style={{ fontWeight: 600, color: strandColor(a.strand) }}>{strandLabel(a.strand)}</span>
+                    {": "}
+                    <span style={{ fontStyle: "italic" }}>{a.sectionTitle || `Section ${a.sectionIndex + 1}`}</span>
+                    <span style={{ color: "#6b7280", fontSize: "10px", marginLeft: "6px" }}>({a.evidence})</span>
+                  </li>
+                ))}
+              </ul>
+            </details>
+            <div style={{ marginTop: "6px", fontSize: "11px", fontStyle: "italic", color: "#374151" }}>
+              UK NC + AQA/Edexcel/OCR GCSE specifications require a balanced FRP mix. A red ✗ means the strand is below the target — add a "Show that…" / "Explain why…" reasoning question or a multi-step real-world problem-solving question.
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* ── FEAT-PC9 — teacher-only Required Practical anchor (KS4 science only) ── */}
+      {isTeacherView &&
+        (worksheet.metadata as any)?.requiredPractical && (() => {
+        const rp = (worksheet.metadata as any).requiredPractical as {
+          id: string;
+          title: string;
+          specCode: string;
+          wsSkills: string[];
+          detected: boolean;
+          evidence?: string;
+        };
+        const headlineColor = rp.detected ? "#15803d" : "#b91c1c";
+        const headlineBg = rp.detected ? "#ecfdf5" : "#fee2e2";
+        const headlineBorder = rp.detected ? "#10b981" : "#dc2626";
+        return (
+          <div
+            className="ws-teacher-section ws-no-print-on-student"
+            style={{
+              marginTop: "12px",
+              padding: "10px 14px",
+              background: headlineBg,
+              border: `1.5px solid ${headlineBorder}`,
+              borderRadius: "6px",
+              fontSize: `${fmt.fontSize - 2}px`,
+              fontFamily: fmt.fontFamily,
+              color: headlineColor,
+            }}
+          >
+            <div style={{ fontWeight: 700, marginBottom: "4px", display: "flex", alignItems: "center", gap: "6px" }}>
+              <span aria-hidden>{rp.detected ? "✓" : "⚠"}</span>
+              <span>Required Practical anchor — {rp.title}</span>
+            </div>
+            <div style={{ fontSize: "11px", color: "#374151", marginBottom: "4px" }}>
+              <strong>Spec reference:</strong> {rp.specCode}
+            </div>
+            <div style={{ fontSize: "11px", color: "#374151" }}>
+              <strong>Working-Scientifically skills assessed:</strong>{" "}
+              {rp.wsSkills.map((s, i) => (
+                <code
+                  key={s}
+                  style={{
+                    background: "#e5e7eb",
+                    padding: "0 4px",
+                    borderRadius: "3px",
+                    fontSize: "10px",
+                    marginRight: "4px",
+                    marginBottom: "2px",
+                    display: "inline-block",
+                  }}
+                >
+                  {s}
+                </code>
+              ))}
+            </div>
+            {!rp.detected && rp.evidence ? (
+              <div style={{ marginTop: "6px", fontSize: "11px", color: "#b91c1c", fontStyle: "italic" }}>
+                Detection: {rp.evidence}. Add a Working-Scientifically question that references the IV / DV variables explicitly.
+              </div>
+            ) : (
+              <div style={{ marginTop: "6px", fontSize: "11px", color: "#374151", fontStyle: "italic" }}>
+                Pupils on AQA / Edexcel / OCR GCSE Science are explicitly examined on this practical (typically Paper 2). Use the teacher key to mark Working-Scientifically skill marks separately.
+              </div>
+            )}
+          </div>
+        );
+      })()}
+
+      {/* ── FEAT-PC10 — teacher-only coverage map (Y9+ only) ── */}
+      {isTeacherView &&
+        (worksheet.metadata as any)?.coverageMap && (() => {
+        const cm = (worksheet.metadata as any).coverageMap as {
+          rows: Array<{
+            qNum: number;
+            sectionIndex: number;
+            sectionTitle?: string;
+            sectionType?: string;
+            marks: number;
+            bloom: "recall" | "understanding" | "application" | "challenge" | "uncategorised";
+            commandWord: string;
+            specRef: string;
+            misconceptionIds: string[];
+          }>;
+          totalQuestions: number;
+          totalMarks: number;
+          bloomDistribution: Record<"recall" | "understanding" | "application" | "challenge" | "uncategorised", number>;
+          commandWords: string[];
+          subject?: string;
+          yearGroup?: string;
+          topic?: string;
+        };
+        if (cm.totalQuestions === 0) return null;
+        const bloomColor = (b: string) =>
+          b === "recall" ? "#0891b2" :
+          b === "understanding" ? "#7c3aed" :
+          b === "application" ? "#c2410c" :
+          b === "challenge" ? "#b91c1c" :
+          "#6b7280";
+        return (
+          <div
+            className="ws-teacher-section ws-no-print-on-student"
+            style={{
+              marginTop: "12px",
+              padding: "10px 14px",
+              background: "#f9fafb",
+              border: "1.5px solid #6b7280",
+              borderRadius: "6px",
+              fontSize: `${fmt.fontSize - 2}px`,
+              fontFamily: fmt.fontFamily,
+              color: "#1f2937",
+            }}
+          >
+            <div style={{ fontWeight: 700, marginBottom: "6px", display: "flex", alignItems: "center", gap: "6px" }}>
+              <span aria-hidden>🗺</span>
+              <span>Curriculum coverage map — {cm.subject ?? ""} {cm.yearGroup ?? ""}</span>
+              <span
+                style={{
+                  marginLeft: "auto",
+                  background: "#374151",
+                  color: "white",
+                  fontSize: "11px",
+                  padding: "1px 6px",
+                  borderRadius: "10px",
+                  fontWeight: 700,
+                }}
+              >
+                {cm.totalQuestions} Qs · {cm.totalMarks} marks
+              </span>
+            </div>
+            <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", marginBottom: "6px" }}>
+              {(["recall", "understanding", "application", "challenge"] as const).map((b) => {
+                const count = cm.bloomDistribution[b];
+                if (!count) return null;
+                return (
+                  <span
+                    key={b}
+                    style={{
+                      padding: "1px 6px",
+                      borderRadius: "10px",
+                      background: bloomColor(b) + "1a",
+                      color: bloomColor(b),
+                      fontSize: "10px",
+                      fontWeight: 600,
+                      border: `1px solid ${bloomColor(b)}`,
+                    }}
+                  >
+                    {b}: {count}
+                  </span>
+                );
+              })}
+            </div>
+            <div style={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "11px" }}>
+                <thead>
+                  <tr style={{ background: "#e5e7eb", textAlign: "left" }}>
+                    <th style={{ padding: "4px 6px", border: "1px solid #d1d5db" }}>Q#</th>
+                    <th style={{ padding: "4px 6px", border: "1px solid #d1d5db" }}>Bloom</th>
+                    <th style={{ padding: "4px 6px", border: "1px solid #d1d5db" }}>Command word</th>
+                    <th style={{ padding: "4px 6px", border: "1px solid #d1d5db" }}>Marks</th>
+                    <th style={{ padding: "4px 6px", border: "1px solid #d1d5db" }}>Spec reference</th>
+                    <th style={{ padding: "4px 6px", border: "1px solid #d1d5db" }}>Misconception</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {cm.rows.map((r) => (
+                    <tr key={r.qNum} style={{ borderBottom: "1px solid #e5e7eb" }}>
+                      <td style={{ padding: "3px 6px", border: "1px solid #d1d5db", fontWeight: 600 }}>Q{r.qNum}</td>
+                      <td style={{ padding: "3px 6px", border: "1px solid #d1d5db", color: bloomColor(r.bloom) }}>{r.bloom}</td>
+                      <td style={{ padding: "3px 6px", border: "1px solid #d1d5db" }}>
+                        {r.commandWord || <span style={{ color: "#9ca3af", fontStyle: "italic" }}>—</span>}
+                      </td>
+                      <td style={{ padding: "3px 6px", border: "1px solid #d1d5db" }}>{r.marks || ""}</td>
+                      <td style={{ padding: "3px 6px", border: "1px solid #d1d5db", fontStyle: "italic" }}>{r.specRef}</td>
+                      <td style={{ padding: "3px 6px", border: "1px solid #d1d5db" }}>
+                        {r.misconceptionIds.length > 0
+                          ? r.misconceptionIds.map((id) => (
+                              <code
+                                key={id}
+                                style={{ background: "#fde68a", padding: "0 3px", borderRadius: "2px", fontSize: "10px", marginRight: "3px" }}
+                              >
+                                {id}
+                              </code>
+                            ))
+                          : <span style={{ color: "#9ca3af" }}>—</span>}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div style={{ marginTop: "6px", fontSize: "11px", color: "#374151", fontStyle: "italic" }}>
+              Use this map to audit the worksheet against your scheme of work or exam-board specification. Spec references are best-match against the UK National Curriculum / DfE programme of study; verify against the official board specification for high-stakes use.
+            </div>
+          </div>
+        );
+      })()}
+
       {/* ── Phase 4 / FEAT-005 — teacher-only hint-ladder preview ── */}
       {isTeacherView &&
         Array.isArray((worksheet.metadata as any)?.hintLadders) &&
