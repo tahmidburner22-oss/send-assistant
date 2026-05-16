@@ -26,6 +26,28 @@ import { enforceSendAdaptations } from './sendEnforcer';
 // the LLM slipped past the prompt rules.
 import { runWorksheetPostValidators } from './worksheetPostValidator';
 
+// FEAT-PC8 — Maths Fluency / Reasoning / Problem-Solving (FRP) strand tagger.
+// Runs after generation on maths worksheets only; classifies each question
+// by command-word + structural fingerprints, stamps metadata.mathsStrandBalance,
+// and surfaces warnings when the spec-mandated balance is not met.
+import { applyMathsStrandTagging } from './mathsStrandTagger';
+
+// FEAT-PC9 — Required Practical / Working-Scientifically bank. Curated UK
+// GCSE practicals with spec codes, real variables, sample data and
+// common errors. Inject the matching practical into the AI prompt for
+// KS4 science worksheets and stamp the chosen entry onto metadata so the
+// teacher view can surface the spec reference.
+import {
+  formatRequiredPracticalForPrompt,
+  applyRequiredPracticalTagging,
+} from './requiredPractical-bank';
+
+// FEAT-PC10 — Coverage map. Builds a teacher-only summary table for every
+// Y9+ worksheet showing per-question Bloom level, command word, marks,
+// best-match spec ref, and any linked misconception. Runs LAST so it sees
+// the populated misconceptionLinks / requiredPractical / strand metadata.
+import { applyCoverageMap } from './coverageMapBuilder';
+
 // ─── Phase 4 — Misconception bank ──────────────────────────────────────────
 // UK-curriculum misconception library. Injected into the worksheet system
 // prompt so questions diagnose common pupil errors, not just test recall.
@@ -577,6 +599,51 @@ export interface AIWorksheetResult {
     adaptations: string[];
     /** Phase 4 / FEAT-002 — misconception IDs the AI deliberately targeted in this worksheet. */
     misconceptionsTargeted?: string[];
+    /** FEAT-PC8 — Fluency / Reasoning / Problem-Solving balance audit (maths only). */
+    mathsStrandBalance?: {
+      assignments: Array<{
+        sectionIndex: number;
+        sectionTitle?: string;
+        sectionType?: string;
+        strand: "fluency" | "reasoning" | "problem_solving";
+        evidence: string;
+      }>;
+      counts: Record<"fluency" | "reasoning" | "problem_solving", number>;
+      targets: Record<"fluency" | "reasoning" | "problem_solving", number>;
+      totalQuestions: number;
+      meetsTarget: boolean;
+      warnings: string[];
+    };
+    /** FEAT-PC9 — KS4 Required Practical / Working-Scientifically anchor (science only). */
+    requiredPractical?: {
+      id: string;
+      title: string;
+      specCode: string;
+      wsSkills: string[];
+      detected: boolean;
+      evidence?: string;
+    };
+    /** FEAT-PC10 — per-question coverage map (Y9+ only). */
+    coverageMap?: {
+      rows: Array<{
+        qNum: number;
+        sectionIndex: number;
+        sectionTitle?: string;
+        sectionType?: string;
+        marks: number;
+        bloom: "recall" | "understanding" | "application" | "challenge" | "uncategorised";
+        commandWord: string;
+        specRef: string;
+        misconceptionIds: string[];
+      }>;
+      totalQuestions: number;
+      totalMarks: number;
+      bloomDistribution: Record<"recall" | "understanding" | "application" | "challenge" | "uncategorised", number>;
+      commandWords: string[];
+      subject?: string;
+      yearGroup?: string;
+      topic?: string;
+    };
   };
   isAI: true;
   provider?: string;
@@ -1205,6 +1272,17 @@ STRICT JSON OUTPUT: Respond with valid JSON only — no markdown, no code blocks
   const hasSend = params.sendNeed && params.sendNeed !== "none" && params.sendNeed !== "none-selected" && params.sendNeed !== "general";
   const sendNote = hasSend ? getSendNoteForWorksheet(params.sendNeed!) : "";
 
+  // FEAT-PC9 — Required Practical / Working-Scientifically block. Resolves
+  // the matching anchor practical from requiredPractical-bank.ts (KS4 science
+  // only — empty string for everything else) and injects it into both the
+  // structured and legacy prompt strings.
+  const requiredPracticalNote = formatRequiredPracticalForPrompt({
+    subject: params.subject,
+    topic: params.topic,
+    yearGroup: params.yearGroup,
+    examBoard: params.examBoard,
+  });
+
   // ── Subject profile (shared with the presentation generator) ──────────────
   // Injecting the subject spec-anchor here is what keeps the worksheet and
   // presentation generators producing matching spec-aligned content.
@@ -1440,13 +1518,20 @@ This is a MATHEMATICS worksheet. EVERY question (excluding vocabulary, worked ex
 
 TARGET SKILL for "${params.topic}": ${mathsSpecSkill}
 
+FLUENCY / REASONING / PROBLEM-SOLVING (FRP) BALANCE — MANDATORY (FEAT-PC8):
+National Curriculum and AQA/Edexcel/OCR GCSE specifications require an explicit FRP mix on every Y9+ maths sheet. Across the 9 main questions you MUST include AT LEAST:
+  - 4 fluency questions  — pure procedural calculation; "Calculate", "Work out", "Simplify", "Round", "Convert".
+  - 3 reasoning questions — "Show that …", "Explain why …", "Justify …", "Prove …", "Give a reason …". The pupil must defend a mathematical claim, not just compute.
+  - 2 problem-solving questions — multi-step real-world problems where the pupil chooses the method (multi-part (a)(b)(c), "Hence", "Use your answer from part (a) to find …", monetary / distance / recipe contexts).
+Do NOT collapse all 9 questions into procedural calculation; a pure-fluency sheet fails the spec. Spread the strands across Sections 1–3 (recall + understanding + application) — Section 1 may be heavier on fluency, Section 2 on reasoning, Section 3 on problem-solving.
+
 ABSOLUTE RULES:
 1. Every question must START with one of these calculation verbs: Calculate, Work out, Find, Solve, Evaluate, Simplify, Expand, Factorise, Substitute, Show that, Prove, Write, Express, Round.
-2. FORBIDDEN question stems in maths worksheets: "Explain why…", "Describe how…", "Discuss the…", "Give reasons for…", "What is the meaning of…", "In your own words…". These are writing questions — DO NOT use them.
+2. FORBIDDEN question stems in maths worksheets: "Explain why…", "Describe how…", "Discuss the…", "Give reasons for…", "What is the meaning of…", "In your own words…". These are writing questions — DO NOT use them. EXCEPTION: the FRP reasoning strand allows the specific mathematical command words "Show that", "Prove", "Justify", and "Give a reason" — these are mathematical reasoning, not prose.
 3. Every question must contain REAL NUMBERS or REAL EXPRESSIONS to work with. Not "a number" — always "24", "3.7", "\\(x^{2} + 5x - 14\\)", "(2, 5)", "£85".
 4. Use LaTeX \\(...\\) for ALL expressions: \\(\\dfrac{3}{4}\\) NOT 3/4; \\(x^{2}\\) NOT x²; \\(\\sqrt{16}\\) NOT √16; \\(\\times\\) NOT ×; \\(\\div\\) NOT ÷; \\(\\pi\\) NOT π.
 5. NEVER use \\text{} or \\mathrm{} — write units as plain text OUTSIDE math delimiters (e.g. "\\(F = ma\\) where F is in N, m in kg, a in m/s²").
-6. Every answer must be a NUMBER, EXACT FRACTION, SURD, ALGEBRAIC EXPRESSION or COORDINATE — NOT a paragraph of prose.
+6. Every answer must be a NUMBER, EXACT FRACTION, SURD, ALGEBRAIC EXPRESSION or COORDINATE — NOT a paragraph of prose. (Reasoning answers are short sentences anchored to a calculation, not free essay.)
 7. Progression: Section 1 (Q1–3) uses single-step calculations with simple numbers; Section 2 (Q4–6) uses multi-step calculations in context; Section 3 (Q7–9) uses exam-style multi-step problems with worded context.
 8. Every mark-scheme entry must show the FULL method (M marks) and the correct final answer (A marks). Award method marks separately from accuracy marks.
 9. Context in word problems: use realistic UK contexts (shopping, distances, time, recipes, sports scores, surveys, building, travel) — make numbers genuinely meaningful, not arbitrary.
@@ -2019,6 +2104,7 @@ SUBJECT-SPECIFIC RULES — ${params.subject.toUpperCase()}:
 SUBJECT TYPE: ${isSTEM ? 'STEM' : 'HUMANITIES'} | SUBJECT: ${params.subject}
 ${readingAgeNote}
 ${sendNote}
+${requiredPracticalNote}
 ${subjectSpecNote}
 ${tierNote}
 ${ksGcseNote}
@@ -2383,7 +2469,31 @@ Return EXACTLY this JSON (raw JSON only, no markdown fences):
       // break, etc.) actually appear — even if the LLM skipped them. Runs on
       // the structured (primary) path before the overlay engine sees it.
       const enforcedStructured = enforceSendAdaptations(postValidatedWorksheet, params.sendNeed);
-      return { ...(enforcedStructured.worksheet as typeof structuredJson), isAI: true, provider: structuredProvider };
+      // FEAT-PC8 — non-blocking maths FRP strand audit (no-op for non-maths).
+      const strandTaggedStructured = applyMathsStrandTagging(
+        enforcedStructured.worksheet as typeof structuredJson,
+        { subject: params.subject, yearGroup: params.yearGroup },
+      );
+      // FEAT-PC9 — non-blocking Required-Practical tagging (KS4 science only).
+      const practicalTaggedStructured = applyRequiredPracticalTagging(
+        strandTaggedStructured,
+        {
+          subject: params.subject,
+          topic: params.topic,
+          yearGroup: params.yearGroup,
+          examBoard: params.examBoard,
+        },
+      );
+      // FEAT-PC10 — coverage map (Y9+ only). Runs last so misconceptionLinks
+      // populated by FEAT-PB7 are visible (even though PB#7 isn't on this
+      // branch — when both ship, the coverage map automatically picks up
+      // misconception links without further wiring).
+      const coverageTaggedStructured = applyCoverageMap(practicalTaggedStructured, {
+        subject: params.subject,
+        topic: params.topic,
+        yearGroup: params.yearGroup,
+      });
+      return { ...coverageTaggedStructured, isAI: true, provider: structuredProvider };
     }
     // If structured generation failed, fall through to legacy path
   }
@@ -2396,6 +2506,7 @@ ${readingAgeNote}
 ${primaryLayoutNote}
 ${mathsNote}
 ${sendNote}
+${requiredPracticalNote}
 ${subjectSpecNote}
 ${tierNote}
 ${examStyleNote}
@@ -3052,7 +3163,25 @@ Return EXACTLY this JSON (raw JSON only):
     },
   );
   const legacyEnforced = enforceSendAdaptations(legacyPostValidated.worksheet, params.sendNeed);
-  return legacyEnforced.worksheet as unknown as AIWorksheetResult;
+  // FEAT-PC8 — non-blocking maths FRP strand audit (no-op for non-maths).
+  const strandTaggedLegacy = applyMathsStrandTagging(legacyEnforced.worksheet, {
+    subject: params.subject,
+    yearGroup: params.yearGroup,
+  });
+  // FEAT-PC9 — non-blocking Required-Practical tagging (KS4 science only).
+  const practicalTaggedLegacy = applyRequiredPracticalTagging(strandTaggedLegacy, {
+    subject: params.subject,
+    topic: params.topic,
+    yearGroup: params.yearGroup,
+    examBoard: params.examBoard,
+  });
+  // FEAT-PC10 — coverage map (Y9+ only).
+  const coverageTaggedLegacy = applyCoverageMap(practicalTaggedLegacy, {
+    subject: params.subject,
+    topic: params.topic,
+    yearGroup: params.yearGroup,
+  });
+  return coverageTaggedLegacy as unknown as AIWorksheetResult;
 }
 
 export async function aiGenerateStory(params: {
