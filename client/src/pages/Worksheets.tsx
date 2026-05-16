@@ -530,6 +530,11 @@ export default function Worksheets() {
   const [includeAnswers, setIncludeAnswers] = useState(true);
   const [examStyle, setExamStyle] = useState(false);
   const [recallTopic, setRecallTopic] = useState("");
+  // ── Pillar A — Exam-style flags for Year 9+ (FEAT-PA-001) ─────────────────
+  // paper:      "" | "P1" | "P2" | "P3" — '' means unset (board default).
+  // calculator: undefined => paper-default (Maths P1=false, P2/P3=true).
+  const [paper, setPaper] = useState<"" | "P1" | "P2" | "P3">("");
+  const [calculator, setCalculator] = useState<boolean | undefined>(undefined);
 
   // ── Class Presets ─────────────────────────────────────────────────────────
   interface ClassPreset {
@@ -1537,6 +1542,9 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
           introOnly: true, // Only generate intro sections (objectives, vocab, worked example) — exam questions will be injected from the bank
           targetPages: targetPages || undefined,
           readingAge: readingAge || undefined,
+          // Pillar A — paper / calculator flags (Y9+ exam-style mode).
+          paper: paper || undefined,
+          calculator,
         });
 
         // Step 2: Replace exercise sections with real exam questions from the bank
@@ -1580,6 +1588,9 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
             worksheetLength,
             targetPages: targetPages || undefined,
             readingAge: readingAge || undefined,
+            // Pillar A — paper / calculator flags (Y9+ exam-style mode).
+            paper: paper || undefined,
+            calculator,
           });
           generatedWs = { ...result, isAI: true } as AIWorksheet;
           toast.success("Exam-style worksheet generated with AI!");
@@ -1608,6 +1619,9 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
           targetPages: targetPages || undefined,
           readingAge: readingAge || undefined,
           selectedSections: selectedSections as string[], // Pass selected sections for structured generation
+          // Pillar A — paper / calculator flags (Y9+ exam-style mode).
+          paper: paper || undefined,
+          calculator,
         });
         generatedWs = { ...result, isAI: true } as AIWorksheet;
         toast.success(generateDiagram ? "Worksheet with diagram generated!" : "Worksheet generated with AI!");
@@ -1669,6 +1683,9 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                 targetPages: targetPages || undefined,
                 readingAge: readingAge || undefined,
                 selectedSections: selectedSections as string[], // Fix: pass selectedSections so retries use the structured path
+                // Pillar A — paper / calculator flags (Y9+ exam-style mode).
+                paper: paper || undefined,
+                calculator,
               });
               generatedWs = { ...retryResult, isAI: true } as AIWorksheet;
               if (isPlatformAdmin) toast.success(`Worksheet generated via ${providerLabel}!`, { id: "ai-retry" });
@@ -3088,6 +3105,9 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
           targetPages: undefined,
           readingAge: parsed.readingAge || readingAge || undefined,
           recallTopic: recallTopic || undefined,
+          // Pillar A — paper / calculator flags (Y9+ exam-style mode).
+          paper: paper || undefined,
+          calculator,
         });
         generatedWs = { ...result, isAI: true } as AIWorksheet;
         toast.success("Worksheet generated!");
@@ -3908,6 +3928,57 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                   </div>
 
                 </div>
+
+                {/* ── Pillar A — Exam paper / calculator (Y9+ only) ──────── */}
+                {(() => {
+                  const yearN = parseInt((yearGroup || "").replace(/[^0-9]/g, ""), 10) || 0;
+                  if (yearN < 9) return null;
+                  return (
+                    <div className="space-y-2 pt-1 border-t border-border/30">
+                      <Label className="text-xs font-medium flex items-center gap-1.5">
+                        <span>📄</span> Exam paper (GCSE — Y9+)
+                      </Label>
+                      <div className="flex flex-wrap gap-1.5" data-testid="pillar-a-paper-toggle">
+                        {([
+                          { id: "" as const, label: "Auto" },
+                          { id: "P1" as const, label: "Paper 1" },
+                          { id: "P2" as const, label: "Paper 2" },
+                          { id: "P3" as const, label: "Paper 3" },
+                        ]).map(p => (
+                          <button
+                            key={p.id || "auto"}
+                            type="button"
+                            onClick={() => {
+                              setPaper(p.id);
+                              // Maths convention: P1 = non-calc; P2/P3 = calc.
+                              const isMaths = (subject || "").toLowerCase().includes("math");
+                              if (isMaths && p.id === "P1") setCalculator(false);
+                              else if (isMaths && (p.id === "P2" || p.id === "P3")) setCalculator(true);
+                              else if (p.id === "") setCalculator(undefined);
+                            }}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${paper === p.id ? "bg-brand text-white border-brand" : "bg-white text-foreground border-border hover:border-brand/30"}`}
+                          >
+                            {p.label}
+                          </button>
+                        ))}
+                      </div>
+                      <div className="flex items-center gap-2 pt-1" data-testid="pillar-a-calc-toggle">
+                        <Switch
+                          checked={calculator === true}
+                          onCheckedChange={v => setCalculator(v)}
+                          id="pillar-a-calc-sw"
+                        />
+                        <Label htmlFor="pillar-a-calc-sw" className="text-xs">
+                          Calculator allowed
+                          {calculator === undefined && <span className="text-muted-foreground"> (auto from paper)</span>}
+                        </Label>
+                      </div>
+                      <p className="text-[10px] text-muted-foreground">
+                        Tags every emitted question with an Assessment Objective (AO) and forces a non-calc Maths Paper-1 sheet to never include calculator-only questions.
+                      </p>
+                    </div>
+                  );
+                })()}
                   </div>{/* End advanced options content */}
                 </details>
 

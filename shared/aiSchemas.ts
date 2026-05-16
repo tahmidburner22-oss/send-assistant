@@ -178,6 +178,34 @@ export const WorksheetOutputSchema = z.object({
       token: z.string(),
       expiresAt: z.string(),
     }).optional(),
+    // ── Pillar A — Exam-style questions for Year 9+ ─────────────────────────
+    /** PA#1 — UK GCSE paper code. */
+    paper: z.enum(["P1", "P2", "P3"]).optional(),
+    /** PA#1 — calculator allowed on the source paper. */
+    calculator: z.boolean().optional(),
+    /** PA#1 — Assessment Objective histogram across all questions on the sheet. */
+    aoHistogram: z.object({
+      AO1: z.number().int().min(0),
+      AO2: z.number().int().min(0),
+      AO3: z.number().int().min(0),
+      AO4: z.number().int().min(0),
+    }).partial().optional(),
+    /** PA#2 — 6-mark LOR detection result. */
+    lorPresent: z.boolean().optional(),
+    lorMarks: z.number().int().min(0).max(20).optional(),
+    lorBands: z.array(z.string()).max(5).optional(),
+    /** PA#3 — synoptic question links to prior topics. */
+    synopticLinks: z.array(z.object({
+      sectionIndex: z.number().int().min(0),
+      priorTopic: z.string().min(1).max(200),
+      sectionTitle: z.string().optional(),
+    })).optional(),
+    /** PA#3 — prior topics injected into the prompt. */
+    priorTopics: z.array(z.string().min(1).max(200)).max(10).optional(),
+    /** PA#4 — exam-paper template key (e.g. "aqa:english_lang:P1"). */
+    examPaperTemplate: z.string().max(100).optional(),
+    /** Pillar A — non-blocking warnings raised by the post-validators. */
+    postValidatorWarnings: z.array(z.string()).optional(),
   }).optional(),
   isAI: z.boolean().optional(),
   provider: z.string().optional(),
