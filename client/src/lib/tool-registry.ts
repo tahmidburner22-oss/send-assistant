@@ -19,7 +19,7 @@ import type { LucideIcon } from "lucide-react";
 import {
   FileCheck, FileText, Sparkles, BookOpen, Zap, Headphones, ShieldAlert,
   IdCard, CheckSquare, Heart, Mail, BarChart3, CalendarDays, ScrollText,
-  ScanSearch, Calendar, ExternalLink, Layers, Brain, Table2, Map,
+  ScanSearch, Calendar, ExternalLink, Layers, Brain, Table2, Map as MapIcon,
   BookMarked, Gauge,
 } from "lucide-react";
 
@@ -284,7 +284,7 @@ export const TOOLS: ToolEntry[] = [
     label: "Visual Timetable",
     path: "/visual-timetable",
     hub: "send",
-    icon: Map,
+    icon: MapIcon,
     colour: "text-sky-600 bg-sky-50",
     description: "Symbol + audio-cue daily timetables.",
     sendTo: ["pupil-passport", "daily-adaptive-work"],
@@ -314,7 +314,7 @@ export const TOOLS: ToolEntry[] = [
   },
 ];
 
-const BY_ID = new Map(TOOLS.map(t => [t.id, t]));
+const BY_ID = new globalThis.Map(TOOLS.map(t => [t.id, t]));
 
 export function getTool(id: string): ToolEntry | undefined {
   return BY_ID.get(id);
