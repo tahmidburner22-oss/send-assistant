@@ -37,9 +37,23 @@ export interface PastPaperSubPart {
   marks: number;
   answerLines?: number;
   commandWord?: string;
+  /** Pillar A — Assessment Objective tag for the sub-part (AO1/AO2/AO3/AO4). */
+  ao?: AssessmentObjective;
 }
 
 export type ExamStage = "ks1" | "ks2" | "11plus" | "ks3" | "gcse" | "alevel";
+
+/** Pillar A — Assessment Objective. AQA/Edexcel/OCR all use AO1/AO2/AO3 (English Lang adds AO4). */
+export type AssessmentObjective = "AO1" | "AO2" | "AO3" | "AO4";
+
+/** Pillar A — UK GCSE paper code. */
+export type ExamPaperCode = "P1" | "P2" | "P3";
+
+/** Pillar A — Mark scheme broken down by AO so the teacher key can show AO per question. */
+export interface MarkBreakdownEntry {
+  ao: AssessmentObjective;
+  marks: number;
+}
 
 export interface PastPaperQuestion {
   id: string;
@@ -67,6 +81,19 @@ export interface PastPaperQuestion {
   hint?: string;         // genuine step-by-step scaffolding
   stage?: ExamStage;     // ks1 | ks2 | 11plus | ks3 | gcse
   yearGroups?: number[]; // e.g. [10, 11]
+  // ── Pillar A — exam-paper metadata (FEAT-PA-001) ──────────────────────────
+  /** Assessment Objective: AO1 (recall) / AO2 (apply) / AO3 (analyse/evaluate) / AO4 (English Lang only). */
+  ao?: AssessmentObjective;
+  /** UK GCSE paper code — Paper 1 / Paper 2 / Paper 3. */
+  paperCode?: ExamPaperCode;
+  /** Whether a calculator is permitted on the source paper. Maths P1 = false; P2/P3 = true. */
+  calculator?: boolean;
+  /** Maths spec strand (Number / Algebra / Ratio / Geometry / Probability / Statistics). */
+  strand?: string;
+  /** 6-mark LOR level descriptor band (Level 1 / Level 2 / Level 3) when this is a levelled response. */
+  levelDescriptor?: string;
+  /** Per-AO mark breakdown for the question (sums to .marks). */
+  markBreakdown?: MarkBreakdownEntry[];
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1996,4 +2023,181 @@ export function getDatabaseSummary() {
     boards: Object.keys(byBoard).length,
     years: Object.keys(byYear).length,
   };
+}
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Pillar A — exam-stem anchor retrieval (FEAT-PA-001)
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// The Pillar A planner picks 1–2 anchor stems by (subject, topic, yearGroup,
+// ao, paper, calculator, tier) and seeds them as exemplars in the AI prompt
+// so emitted questions match the AO/Paper-1-vs-Paper-2 / calc-vs-non-calc
+// conventions of the real exam — instead of every stem being hallucinated
+// fresh and a Y10 maths sheet mixing non-calc and calc questions on one page.
+//
+// Returns the ANCHORS only (no shuffle padding) so the caller can decide how
+// many exemplars to inject.
+
+/**
+ * Heuristic AO inference for legacy questions that pre-date the Pillar A
+ * `ao` field. Most question banks were authored before AO tagging — this
+ * back-fills based on command word + marks so the planner never sees
+ * untagged anchors.
+ */
+function inferAo(q: PastPaperQuestion): AssessmentObjective {
+  if (q.ao) return q.ao;
+  const cmd = String(q.commandWord || "").toLowerCase();
+  const marks = q.marks ?? 0;
+  // AO3: high-mark evaluative / analytical command words.
+  if (/^(evaluate|analyse|assess|compare|justify|to what extent|how far|discuss)/.test(cmd)) return "AO3";
+  if (marks >= 6) return "AO3";
+  // AO2: applied calculation, problem-solving, explanation
+  if (/^(calculate|apply|solve|work out|determine|explain|show|prove|suggest)/.test(cmd)) return "AO2";
+  if (marks >= 3) return "AO2";
+  // AO1: recall, identify, state, define, name
+  return "AO1";
+}
+
+/**
+ * Heuristic Paper-code inference for legacy maths questions where the
+ * `paper` field carries a long string like "Paper 1 (Non-Calculator)".
+ */
+function inferPaperCode(q: PastPaperQuestion): ExamPaperCode | undefined {
+  if (q.paperCode) return q.paperCode;
+  const p = String(q.paper || "").toLowerCase();
+  if (!p) return undefined;
+  if (/(paper\s*1|p1)/.test(p)) return "P1";
+  if (/(paper\s*2|p2)/.test(p)) return "P2";
+  if (/(paper\s*3|p3)/.test(p)) return "P3";
+  return undefined;
+}
+
+/**
+ * Heuristic calculator inference. Maths Paper 1 is non-calculator at AQA,
+ * Edexcel and OCR; Papers 2 and 3 are calculator.
+ */
+function inferCalculator(q: PastPaperQuestion): boolean | undefined {
+  if (typeof q.calculator === "boolean") return q.calculator;
+  const p = String(q.paper || "").toLowerCase();
+  if (!p) return undefined;
+  if (/non-?calc/.test(p)) return false;
+  if (/calc/.test(p)) return true;
+  // Maths convention: Paper 1 = non-calc.
+  const code = inferPaperCode(q);
+  if (q.subject === "mathematics" && code === "P1") return false;
+  if (q.subject === "mathematics" && (code === "P2" || code === "P3")) return true;
+  return undefined;
+}
+
+/**
+ * FEAT-PA-001 — pick 1–2 anchor stems for the AI prompt by
+ * (subject, topic, yearGroup, ao, paper, calculator, tier). Returns at
+ * most `limit` questions, and falls back to topic-only matches if no
+ * AO/paper-specific exemplars exist for the requested filter.
+ */
+export function getExamStemAnchors(options: {
+  subject: string;
+  topic?: string;
+  yearGroup?: number;
+  ao?: AssessmentObjective | AssessmentObjective[];
+  paperCode?: ExamPaperCode;
+  calculator?: boolean;
+  tier?: "Higher" | "Foundation";
+  board?: string;
+  limit?: number;
+}): PastPaperQuestion[] {
+  const {
+    subject,
+    topic,
+    yearGroup,
+    ao,
+    paperCode,
+    calculator,
+    tier,
+    board,
+    limit = 2,
+  } = options;
+
+  // Stage 1: hard match all filters.
+  const aoSet = ao ? (Array.isArray(ao) ? new Set(ao) : new Set([ao])) : null;
+
+  const matchesTopicLocal = (q: PastPaperQuestion): boolean => {
+    if (!topic) return true;
+    const t = topic.toLowerCase();
+    if ((q.topic || "").toLowerCase().includes(t)) return true;
+    if ((q.text || q.question || "").toLowerCase().includes(t)) return true;
+    return false;
+  };
+
+  const matchesYear = (q: PastPaperQuestion): boolean => {
+    if (yearGroup === undefined) return true;
+    if (q.yearGroups && q.yearGroups.length > 0) return q.yearGroups.includes(yearGroup);
+    if (yearGroup <= 9) return q.stage === "ks3" || (q.stage === "gcse" && q.tier !== "Higher");
+    if (yearGroup <= 11) return q.stage === "gcse";
+    return q.stage !== "ks1" && q.stage !== "ks2";
+  };
+
+  const hardMatches = allPastPaperQuestions.filter(q => {
+    if (q.subject !== subject) return false;
+    if (board && board !== "none" && board !== "Any" && q.board !== board) return false;
+    if (tier && q.tier && q.tier !== tier) return false;
+    if (!matchesTopicLocal(q)) return false;
+    if (!matchesYear(q)) return false;
+    if (aoSet && !aoSet.has(inferAo(q))) return false;
+    if (paperCode && inferPaperCode(q) !== paperCode) return false;
+    if (typeof calculator === "boolean" && inferCalculator(q) !== calculator) return false;
+    return true;
+  });
+
+  if (hardMatches.length > 0) {
+    return hardMatches.sort(() => Math.random() - 0.5).slice(0, limit);
+  }
+
+  // Stage 2: soft fallback — drop AO + calculator, keep subject + topic + paper.
+  const softMatches = allPastPaperQuestions.filter(q => {
+    if (q.subject !== subject) return false;
+    if (board && board !== "none" && board !== "Any" && q.board !== board) return false;
+    if (!matchesTopicLocal(q)) return false;
+    if (!matchesYear(q)) return false;
+    if (paperCode && inferPaperCode(q) && inferPaperCode(q) !== paperCode) return false;
+    return true;
+  });
+
+  return softMatches.sort(() => Math.random() - 0.5).slice(0, limit);
+}
+
+/**
+ * Format a single exam-stem anchor as a compact one-line exemplar for the
+ * AI prompt. Includes AO, paper, calculator, marks, command word and the
+ * stem text — never the mark scheme (we want the model to write its own
+ * answers in the same style, not to copy).
+ */
+export function formatExamStemAnchorForPrompt(q: PastPaperQuestion, index: number): string {
+  const ao = inferAo(q);
+  const paperCode = inferPaperCode(q);
+  const calc = inferCalculator(q);
+  const calcLabel = typeof calc === "boolean" ? (calc ? "calculator" : "non-calc") : "";
+  const paperLabel = paperCode ? `${paperCode}${calcLabel ? ` (${calcLabel})` : ""}` : (q.paper || "");
+  const cmd = q.commandWord ? ` ${q.commandWord}` : "";
+  const marks = q.marks ? ` [${q.marks} marks]` : "";
+  const stem = (q.text || q.question || "").replace(/\s+/g, " ").trim();
+  const tierLabel = q.tier ? ` ${q.tier}` : "";
+  const meta = [ao, paperLabel, tierLabel].filter(Boolean).join(" / ").trim();
+  return `Exemplar ${index + 1} (${meta}):${cmd}${marks} — ${stem}`;
+}
+
+/**
+ * Convenience: render N anchors as a single prompt block. Returns "" if
+ * there are no anchors (the caller can simply omit the block).
+ */
+export function buildExamStemAnchorBlock(anchors: PastPaperQuestion[]): string {
+  if (!anchors || anchors.length === 0) return "";
+  const lines = anchors.map((q, i) => formatExamStemAnchorForPrompt(q, i));
+  return [
+    "### Exam-stem anchors (use as STYLE exemplars only — do NOT copy verbatim)",
+    "Match the AO, calculator status, paper code, command word and mark count of these exemplars.",
+    "Every emitted question MUST carry an `ao` field on its metadata.",
+    ...lines,
+  ].join("\n");
 }

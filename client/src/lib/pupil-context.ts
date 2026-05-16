@@ -21,6 +21,10 @@ export interface PupilContextSummary {
   headline: string;
   /** Full block to inject into the AI user prompt. */
   promptBlock: string;
+  /** Pillar A (FEAT-PA-003) — last 3 distinct worksheet topics, most-recent first.
+   *  Used by aiGenerateWorksheet to auto-fill the priorTopics[] param so the
+   *  planner can interleave 1–2 synoptic questions without teacher input. */
+  priorTopics: string[];
 }
 
 const MAX_RECENT_ASSIGNMENTS = 3;
@@ -82,6 +86,36 @@ export function buildPupilContext(child: Child): PupilContextSummary {
     }
   }
 
+  // ── Pillar A (FEAT-PA-003) — derive prior topics from recent assignments ─
+  // We surface the last 3 distinct worksheet topics on the prompt block AND
+  // return them as `priorTopics` so the worksheet generator can auto-fill its
+  // synoptic-interleave slots without the teacher having to retype each
+  // previous lesson. Ordering: most-recent first; deduped case-insensitively.
+  const priorTopicsRaw: string[] = [];
+  for (const a of recentAssignments) {
+    if (a.type !== "worksheet" && a.type !== "story" && a.type !== "differentiation") {
+      // Only assignments that actually carry a curriculum topic are useful.
+      continue;
+    }
+    const topic = (a as any)?.metadata?.topic;
+    if (typeof topic === "string" && topic.trim().length > 0) {
+      priorTopicsRaw.push(topic.trim());
+    }
+  }
+  const priorTopics: string[] = [];
+  const seen = new Set<string>();
+  for (const t of priorTopicsRaw) {
+    const key = t.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    priorTopics.push(t);
+    if (priorTopics.length >= 3) break;
+  }
+  if (priorTopics.length > 0) {
+    lines.push(`- Prior topics covered (most recent first — interleave 1–2 synoptic questions linking to these):`);
+    for (const t of priorTopics) lines.push(`  • ${t.slice(0, 120)}`);
+  }
+
   if (recentSubmissions.length > 0) {
     lines.push(`- Recent observations / submissions:`);
     for (const s of recentSubmissions) {
@@ -100,7 +134,7 @@ export function buildPupilContext(child: Child): PupilContextSummary {
     lines.push(`- No prior assignments, observations, or recorded outcomes on file.`);
   }
 
-  return { headline, promptBlock: lines.join("\n") };
+  return { headline, promptBlock: lines.join("\n"), priorTopics };
 }
 
 /** Map common Child properties onto AIToolPage field IDs. */
