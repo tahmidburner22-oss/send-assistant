@@ -6429,23 +6429,50 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                   <div style={{ background: "#fff1f2", border: "1.5px solid #fecdd3", borderRadius: "6px", padding: "18px 20px" }}>
                     <div style={{ fontSize: "12px", fontWeight: 800, color: "#9f1239", letterSpacing: "0.06em", marginBottom: "12px", fontFamily: fmt.fontFamily, textTransform: "uppercase", borderBottom: "1px solid #fecdd3", paddingBottom: "8px" }}>⚠️ Common Mistakes to Avoid</div>
                     <div style={{ fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, lineHeight: "1.6", color: "#1e293b" }}>
-                      {content.split('\n').filter(line => line.trim()).map((line, idx) => {
-                        const isMistakeLabel = /Mistake \d+:/i.test(line);
-                        const isCorrection = /How to do it right:/i.test(line) || /Correct way:/i.test(line);
-                        const isExplanation = /Why that's wrong/i.test(line);
-                        
-                        return (
-                          <div key={idx} style={{ marginBottom: "12px" }}>
-                            <div dangerouslySetInnerHTML={{ 
-                              __html: renderMath(line)
-                                .replace(/(Mistake \d+:)/gi, '<strong>$1</strong>')
-                                .replace(/(Why that's wrong \(in plain words\):|Why that's wrong:)/gi, '<br/><strong>$1</strong>')
-                                .replace(/(How to do it right:|Correct way:)/gi, '<br/><strong>$1</strong>')
-                                .replace(/(Quick check:)/gi, '<br/><strong>$1</strong>')
-                            }} />
-                          </div>
-                        );
-                      })}
+                      {(() => {
+                        // First, normalize the content to handle potential AI formatting quirks
+                        const normalizedContent = content
+                          .replace(/(Mistake \d+:)/gi, '\n$1')
+                          .replace(/(Why that's wrong \(in plain words\):|Why that's wrong:)/gi, '\n$1')
+                          .replace(/(How to do it right:|Correct way:)/gi, '\n$1')
+                          .replace(/(Quick check:)/gi, '\n$1');
+
+                        return normalizedContent.split('\n').filter(line => line.trim()).map((line, idx) => {
+                          const labels = [
+                            /Mistake \d+:/i,
+                            /Why that's wrong \(in plain words\):/i,
+                            /Why that's wrong:/i,
+                            /How to do it right:/i,
+                            /Correct way:/i,
+                            /Quick check:/i
+                          ];
+
+                          let labelMatch = null;
+                          for (const regex of labels) {
+                            const match = line.match(regex);
+                            if (match) {
+                              labelMatch = match[0];
+                              break;
+                            }
+                          }
+
+                          if (labelMatch) {
+                            const textPart = line.substring(line.indexOf(labelMatch) + labelMatch.length).trim();
+                            return (
+                              <div key={idx} style={{ marginBottom: "8px" }}>
+                                <strong>{labelMatch}</strong>{" "}
+                                <span dangerouslySetInnerHTML={{ __html: renderMath(textPart) }} />
+                              </div>
+                            );
+                          }
+
+                          return (
+                            <div key={idx} style={{ marginBottom: "8px" }}>
+                              <span dangerouslySetInnerHTML={{ __html: renderMath(line) }} />
+                            </div>
+                          );
+                        });
+                      })()}
                     </div>
                   </div>
                 ) : section.type === "header" ? (
