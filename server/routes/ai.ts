@@ -6,6 +6,10 @@ import { requireAuth, requireAdmin, auditLog, tryAuthOptional } from "../middlew
 import { filterContent } from "../lib/contentFilter.js";
 import { getSchoolKey } from "./schoolApiKeys.js";
 import { canonicalTopicKey, topicsMatch } from "../lib/topicNormalizer.js";
+// Reuse the dependency-free SVG layout audit from the client. The module is
+// pure (no DOM, no fetch, no React) so it bundles cleanly into the server
+// build via esbuild.
+import { checkSvgLayout } from "../../client/src/lib/svgLayoutChecker.js";
 
 const router = Router();
 const worksheetUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 25 * 1024 * 1024 } });
@@ -1388,14 +1392,18 @@ router.post("/diagram", requireAuth, async (req: Request, res: Response) => {
     provider: string;
     type?: string;
     imageKind?: string;
+    /** Optional inline SVG markup (used by AI-SVG path). When present the
+     *  client renderer prefers `svg` over `imageUrl`. */
+    svg?: string;
   }) => ({
     imageUrl: payload.imageUrl,
     caption: payload.caption || `${topic} — ${subject} (${yr})`,
     attribution: payload.attribution || null,
     provider: payload.provider,
-    type: payload.type || (payload.imageUrl ? "image" : "none"),
+    type: payload.type || (payload.svg ? "svg" : payload.imageUrl ? "image" : "none"),
     imageKind: payload.imageKind || "diagram",
     fit: fitMeta,
+    ...(payload.svg ? { svg: payload.svg } : {}),
   });
 
   // ── Step 0: SVG templates DISABLED — all diagrams must come from the admin library ──────
@@ -1511,6 +1519,108 @@ router.post("/diagram", requireAuth, async (req: Request, res: Response) => {
 
   // ── Steps 2 & 3: Local static banks DISABLED — only admin library images are used ──────
   // (Local static bank fallbacks removed per product requirement)
+
+  // ── Step 4: AI SVG generation (MATHS-ONLY, env-gated) ─────────────────────
+  // PR-M4-followup. After every other source has missed, maths worksheets
+  // can fall through to a freeform AI-generated SVG, gated by the strong
+  // layout audit. If the audit fails, we retry ONCE with the failure detail
+  // injected into the prompt; if the retry also fails, we fall back to
+  // type:"none" so the renderer omits the diagram section entirely. Bad
+  // diagrams never reach a teacher under any code path on this branch.
+  //
+  // Kill switch: set MATHS_AI_SVG_ENABLED=false to disable the AI SVG path
+  // immediately without redeploying the rest of the stack. Default is
+  // enabled. Non-maths subjects are unaffected regardless.
+  const aiSvgEnabled = (process.env.MATHS_AI_SVG_ENABLED ?? "true").toLowerCase() !== "false";
+  const isMathsRequest =
+    subjectLower === "maths" ||
+    subjectLower === "math" ||
+    subjectLower === "mathematics";
+  if (aiSvgEnabled && isMathsRequest) {
+    const { system, user: baseUser } = buildDiagramPrompt(
+      String(subject),
+      String(topic),
+      yr,
+      typeof sendNeed === "string" && sendNeed.trim().length > 0 ? sendNeed : undefined,
+    );
+    // Pull both attempts inside a single try so any provider-side failure
+    // collapses to the type:"none" fallback below.
+    try {
+      const schoolId = (req as any).user?.schoolId || undefined;
+
+      // Returns { svg, caption, raw, provider } — never throws on parse.
+      const callOnce = async (userPrompt: string) => {
+        const { content, provider } = await callWithFallback(
+          system,
+          userPrompt,
+          4000,
+          undefined,
+          schoolId,
+        );
+        let raw = String(content || "").trim();
+        raw = raw.replace(/^```(?:svg|xml|html)?\s*/i, "").replace(/\s*```\s*$/i, "");
+        const svgMatch = /<svg[\s\S]*?<\/svg>/i.exec(raw);
+        const svg = svgMatch ? svgMatch[0] : "";
+        let caption = "";
+        const capMatch = /CAPTION\s*:\s*(.+?)\s*$/im.exec(raw);
+        if (capMatch) caption = capMatch[1].trim();
+        return { svg, caption, raw, provider };
+      };
+
+      // Compact summary the LLM can act on. Cap to 8 lines so the retry
+      // prompt stays tight; anything beyond that is usually a knock-on of
+      // the earlier issues.
+      const summariseIssuesForRetry = (issues: { severity: string; message: string }[]) => {
+        const top = issues.slice(0, 8);
+        const lines = top.map((it, i) => `${i + 1}. [${it.severity}] ${it.message}`);
+        if (issues.length > top.length) lines.push(`...and ${issues.length - top.length} more.`);
+        return lines.join("\n");
+      };
+
+      const first = await callOnce(baseUser);
+      if (first.svg) {
+        const firstReport = checkSvgLayout(first.svg);
+        if (firstReport.pass) {
+          console.log(`[Diagram] AI SVG generated for "${topic}" (${subject}) provider=${first.provider} attempt=1`);
+          return res.json(buildImageResponse({
+            imageUrl: null,
+            caption: first.caption || `${topic} — ${subject} (${yr})`,
+            attribution: null,
+            provider: `ai-svg:${first.provider}`,
+            type: "svg",
+            imageKind: "diagram",
+            svg: first.svg,
+          }));
+        }
+        // Retry ONCE with the audit summary appended verbatim so the LLM
+        // can act on the specific failure detail.
+        const retryUser = `${baseUser}\n\nPREVIOUS ATTEMPT FAILED THE LAYOUT AUDIT WITH THE FOLLOWING ISSUES — fix every one of them in the next attempt:\n${summariseIssuesForRetry(firstReport.issues)}`;
+        const second = await callOnce(retryUser);
+        if (second.svg) {
+          const secondReport = checkSvgLayout(second.svg);
+          if (secondReport.pass) {
+            console.log(`[Diagram] AI SVG generated for "${topic}" (${subject}) provider=${second.provider} attempt=2 (retry)`);
+            return res.json(buildImageResponse({
+              imageUrl: null,
+              caption: second.caption || `${topic} — ${subject} (${yr})`,
+              attribution: null,
+              provider: `ai-svg:${second.provider}:retry`,
+              type: "svg",
+              imageKind: "diagram",
+              svg: second.svg,
+            }));
+          }
+          console.warn(`[Diagram] AI SVG retry still failed audit for "${topic}" — falling through to none. issues=${secondReport.issues.length}`);
+        } else {
+          console.warn(`[Diagram] AI SVG retry returned no parseable <svg> for "${topic}" — falling through to none.`);
+        }
+      } else {
+        console.warn(`[Diagram] AI SVG first attempt returned no parseable <svg> for "${topic}" — falling through to none.`);
+      }
+    } catch (svgErr: any) {
+      console.warn(`[Diagram] AI SVG generation failed for "${topic}":`, svgErr?.message || svgErr);
+    }
+  }
 
   console.log(`[Diagram] No diagram found for "${topic}" (${subject}) — returning not-available`);
   return res.json(buildImageResponse({
@@ -3960,5 +4070,91 @@ Strict rules:
     }
   }
 );
+
+// ── POST /api/ai/diagram-probe — MATHS-ONLY developer probe ─────────────────
+// A throwaway-by-design endpoint that lets the product owner eyeball whether
+// AI-generated SVG diagrams are good enough to re-enable in the maths
+// pipeline. Production /api/ai/diagram is unchanged — it still serves
+// admin-library images only.
+//
+// What this endpoint does:
+//   1. Server-side guard: rejects non-maths subjects with 400. The probe is
+//      a maths-quality decision; allowing other subjects would muddy the
+//      signal and re-introduce a path the product team hasn't asked for.
+//   2. Calls buildDiagramPrompt + callWithFallback with the existing
+//      free-tier provider chain.
+//   3. Parses the SVG + caption out of the LLM response, tolerating the
+//      common failure modes (markdown fences, leading prose, no caption).
+//   4. Returns a structured result so the client can render and audit it.
+//      The audit itself runs on the client so we don't pay for two copies
+//      of the audit code (it lives in client/src/lib/svgLayoutChecker.ts).
+//
+// `auditFeedback`, when present, is appended to the user prompt verbatim —
+// this is the "retry with failure detail" path. Keeps the retry policy
+// shape on the client where the rest of the SVG audit code lives.
+router.post("/diagram-probe", requireAuth, async (req: Request, res: Response) => {
+  const { subject, topic, yearGroup, sendNeed, auditFeedback } = req.body || {};
+  if (!subject || !topic) {
+    return res.status(400).json({ error: "subject and topic required" });
+  }
+  const subjectLower = String(subject).toLowerCase().trim();
+  const isMaths =
+    subjectLower === "maths" ||
+    subjectLower === "math" ||
+    subjectLower === "mathematics";
+  if (!isMaths) {
+    return res.status(400).json({
+      error: "diagram-probe is maths-only by design. Set subject to Maths.",
+    });
+  }
+
+  const yr = String(yearGroup || "Year 9");
+  const { system, user: baseUser } = buildDiagramPrompt(
+    String(subject),
+    String(topic),
+    yr,
+    typeof sendNeed === "string" && sendNeed.trim().length > 0 ? sendNeed : undefined,
+  );
+
+  // When auditFeedback is supplied (retry path) inject it verbatim into the
+  // user prompt so the LLM can act on the specific failure detail.
+  const user =
+    typeof auditFeedback === "string" && auditFeedback.trim().length > 0
+      ? `${baseUser}\n\nPREVIOUS ATTEMPT FAILED THE LAYOUT AUDIT WITH THE FOLLOWING ISSUES — fix every one of them in the next attempt:\n${auditFeedback.trim()}`
+      : baseUser;
+
+  try {
+    const schoolId = (req as any).user?.schoolId || undefined;
+    const { content, provider } = await callWithFallback(
+      system,
+      user,
+      4000,
+      undefined,
+      schoolId,
+    );
+
+    // Parse: tolerate ```svg fences, prose preambles, and missing caption.
+    let raw = String(content || "").trim();
+    raw = raw.replace(/^```(?:svg|xml|html)?\s*/i, "").replace(/\s*```\s*$/i, "");
+    const svgMatch = /<svg[\s\S]*?<\/svg>/i.exec(raw);
+    const svg = svgMatch ? svgMatch[0] : "";
+    let caption = "";
+    const capMatch = /CAPTION\s*:\s*(.+?)\s*$/im.exec(raw);
+    if (capMatch) caption = capMatch[1].trim();
+
+    return res.json({
+      svg,
+      caption,
+      provider,
+      raw, // surfaced so the probe page can show what came back when parsing fails
+      retried: typeof auditFeedback === "string" && auditFeedback.trim().length > 0,
+    });
+  } catch (err: any) {
+    console.error("[diagram-probe] failed:", err?.message || err);
+    return res
+      .status(502)
+      .json({ error: err?.message || "All providers failed. Try again." });
+  }
+});
 
 export default router;
