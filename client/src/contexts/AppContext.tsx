@@ -45,6 +45,10 @@ export interface Child {
   iepTargets?: string[];
   /** Recent misconceptions distilled from past mark-scan results (FEAT-11 closed-loop). */
   recentMisconceptions?: string[];
+  /** FEAT-PC6 — preferred language for EAL bilingual worksheets. ISO 639-1 code (e.g. "pl", "ar"); "en" or undefined means English-only. */
+  preferredLanguage?: string;
+  /** FEAT-PC6 — per-pupil reading-age override (UK reading age in years, 5–18). When set, generation/adaptation honours this instead of yearGroup-derived default. */
+  readingAgeOverride?: number | null;
 }
 
 export type AttendanceStatus = "attended" | "absent" | "late" | "other" | "not-recorded";
@@ -298,7 +302,14 @@ export function AppProvider({ children: childrenProp }: { children: React.ReactN
       : updates.sendNeed;
     await pupilsApi.update(id, { name: updates.name, yearGroup: updates.yearGroup, sendNeed: sendNeedValue, timetable: updates.timetable, parentEmail: updates.parentEmail, parentName: updates.parentName });
     // FEAT-6: persist EHCP/IEP/misconception fields locally (no DB column yet).
-    if (updates.ehcpOutcomes !== undefined || updates.iepTargets !== undefined || updates.recentMisconceptions !== undefined) {
+    // FEAT-PC6: also persist preferredLanguage and readingAgeOverride locally; DB column added in PC2's MIS migration.
+    if (
+      updates.ehcpOutcomes !== undefined ||
+      updates.iepTargets !== undefined ||
+      updates.recentMisconceptions !== undefined ||
+      updates.preferredLanguage !== undefined ||
+      updates.readingAgeOverride !== undefined
+    ) {
       try {
         const key = `adaptly_pupil_evidence_${id}`;
         const existing = (() => { try { return JSON.parse(localStorage.getItem(key) || "{}"); } catch { return {}; } })();
@@ -306,6 +317,8 @@ export function AppProvider({ children: childrenProp }: { children: React.ReactN
           ehcpOutcomes: updates.ehcpOutcomes ?? existing.ehcpOutcomes ?? [],
           iepTargets: updates.iepTargets ?? existing.iepTargets ?? [],
           recentMisconceptions: updates.recentMisconceptions ?? existing.recentMisconceptions ?? [],
+          preferredLanguage: updates.preferredLanguage ?? existing.preferredLanguage ?? undefined,
+          readingAgeOverride: updates.readingAgeOverride ?? existing.readingAgeOverride ?? null,
         };
         localStorage.setItem(key, JSON.stringify(merged));
       } catch { /* localStorage quota — ignore */ }
@@ -451,9 +464,12 @@ function mapPupil(p: any): Child {
   const primarySendNeed = sendNeedsArr[0] || "";
   // FEAT-6: EHCP outcomes / IEP targets are stored client-side (localStorage) until
   // a DB migration is added. Keyed by pupil id so they survive refresh.
+  // FEAT-PC6: preferredLanguage and readingAgeOverride share the same evidence bag.
   let ehcpOutcomes: string[] | undefined;
   let iepTargets: string[] | undefined;
   let recentMisconceptions: string[] | undefined;
+  let preferredLanguage: string | undefined;
+  let readingAgeOverride: number | null | undefined;
   try {
     const raw = localStorage.getItem(`adaptly_pupil_evidence_${p.id}`);
     if (raw) {
@@ -461,7 +477,13 @@ function mapPupil(p: any): Child {
       if (Array.isArray(parsed.ehcpOutcomes)) ehcpOutcomes = parsed.ehcpOutcomes;
       if (Array.isArray(parsed.iepTargets)) iepTargets = parsed.iepTargets;
       if (Array.isArray(parsed.recentMisconceptions)) recentMisconceptions = parsed.recentMisconceptions;
+      if (typeof parsed.preferredLanguage === "string" && parsed.preferredLanguage.trim()) {
+        preferredLanguage = parsed.preferredLanguage;
+      }
+      if (typeof parsed.readingAgeOverride === "number" && parsed.readingAgeOverride > 0) {
+        readingAgeOverride = parsed.readingAgeOverride;
+      }
     }
   } catch { /* ignore parse errors */ }
-  return { id: p.id, name: p.name, yearGroup: p.year_group || "", sendNeed: primarySendNeed, sendNeeds: sendNeedsArr, code: p.code || "", upn: p.upn, dob: p.dob, createdAt: p.created_at, parentEmail: p.parent_email || undefined, parentName: p.parent_name || undefined, assignments, submissions, ehcpOutcomes, iepTargets, recentMisconceptions };
+  return { id: p.id, name: p.name, yearGroup: p.year_group || "", sendNeed: primarySendNeed, sendNeeds: sendNeedsArr, code: p.code || "", upn: p.upn, dob: p.dob, createdAt: p.created_at, parentEmail: p.parent_email || undefined, parentName: p.parent_name || undefined, assignments, submissions, ehcpOutcomes, iepTargets, recentMisconceptions, preferredLanguage, readingAgeOverride };
 }

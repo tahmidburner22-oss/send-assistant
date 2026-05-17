@@ -3090,6 +3090,105 @@ Return a JSON array of sections with adjusted language \u2014 start with [ and e
   }
 });
 
+// ── POST /api/ai/translate — FEAT-PC6 (EAL parity) ───────────────────────────
+// Translates a single block of text into one of the supported UK EAL
+// languages. The client batches per-section text using a sentinel separator
+// and asks for a single round-trip; we honour that by leaving the input
+// untouched apart from the system instruction.
+//
+// Input  { text, targetLang, targetLangName?, sourceLang?, context? }
+// Output { text, lang, provider }
+router.post("/translate", requireAuth, async (req: Request, res: Response) => {
+  const { text, targetLang, targetLangName, sourceLang, context } = req.body || {};
+  if (typeof text !== "string" || !text.trim()) {
+    return res.status(400).json({ error: "text is required" });
+  }
+  if (typeof targetLang !== "string" || !targetLang.trim()) {
+    return res.status(400).json({ error: "targetLang is required" });
+  }
+  // Passthrough for English — no AI hop.
+  if (targetLang === "en") {
+    return res.json({ text, lang: "en", provider: "passthrough" });
+  }
+  const schoolId = (req as any).user?.schoolId;
+
+  const langName = (targetLangName || targetLang).toString();
+  const fromLang = (sourceLang || "en").toString();
+
+  const system = `You are a professional UK educational translator. You translate worksheet content from ${fromLang} into ${langName} for an English-as-Additional-Language (EAL) pupil in a UK school.
+
+CRITICAL RULES:
+- Translate ONLY the natural-language text. Do NOT translate or alter:
+  - numbers, mathematical expressions, formulas, units (kg, cm, °C, etc.)
+  - blank spaces written as underscores ("_____")
+  - checkbox markers like "[ ]" or "[x]"
+  - section IDs, IDs in brackets, or any code-like tokens
+  - HTML tags or markdown formatting
+- Preserve every line break, list marker, and the order of content exactly.
+- If the input contains the literal sentinel "<<<§ADAPTLY_TRANSLATE_BREAK§>>>", reproduce it verbatim wherever it appears — translate the surrounding text but never the sentinel itself.
+- Use plain, everyday vocabulary suitable for a school child; avoid academic/literary register.
+- Output the translation only — no commentary, no quotation marks around the output, no "Here is your translation:" preamble.`;
+
+  const user = `Translate the following ${fromLang} worksheet text into ${langName}.${context ? "\n\nAdditional context: " + String(context).slice(0, 400) : ""}\n\n--- BEGIN TEXT ---\n${text}\n--- END TEXT ---`;
+
+  try {
+    const { content, provider } = await callWithFallback(system, user, 4000, undefined, schoolId);
+    const cleaned = content
+      .replace(/^\s*--- BEGIN TEXT ---\s*/i, "")
+      .replace(/\s*--- END TEXT ---\s*$/i, "")
+      .replace(/^["']|["']$/g, "")
+      .trim();
+    if (!cleaned) {
+      return res.status(500).json({ error: "Translation returned empty result." });
+    }
+    return res.json({ text: cleaned, lang: targetLang, provider });
+  } catch (err: any) {
+    console.error("[ai/translate] failed:", err?.message);
+    return res.status(500).json({ error: "Translation failed. Please try again." });
+  }
+});
+
+// ── POST /api/ai/braille — FEAT-PC7 (Grade 2 UEB transcription) ──────────────
+// Server-side fallback for the Braille pipeline. Uses the AI provider chain
+// to produce a Grade 2 Unified English Braille (UEB) transcription rather
+// than bundling liblouis-wasm into the client. The client wraps the result
+// in BRF formatting (page breaks, line wrapping) before download.
+//
+// Input  { text, grade? }
+// Output { brl, grade, provider }
+router.post("/braille", requireAuth, async (req: Request, res: Response) => {
+  const { text, grade } = req.body || {};
+  if (typeof text !== "string" || !text.trim()) {
+    return res.status(400).json({ error: "text is required" });
+  }
+  const targetGrade = grade === 1 || grade === "1" ? 1 : 2;
+  const schoolId = (req as any).user?.schoolId;
+
+  const system = `You are an expert transcriber of UK educational material into Unified English Braille (UEB), Grade ${targetGrade}.
+
+CRITICAL RULES:
+- Output Braille using the Unicode Braille range (U+2800–U+28FF) — one Unicode code point per Braille cell.
+- Apply the standard UEB capital indicator (⠠) before each capitalised letter and the number sign (⠼) before digit runs.
+- Preserve every line break in the input. Do NOT add running headers/footers.
+- Do NOT translate the source text into another language — transcribe English text into Braille glyphs.
+- For untranscribable symbols (emoji, decorative glyphs), substitute a sensible word (e.g. ★ → "star").
+- Output the Braille only — no commentary, no markdown code fences, no preamble.${targetGrade === 2 ? "\n- Apply the standard Grade 2 contractions (e.g. 'and' → ⠯, 'the' → ⠮) where appropriate." : "\n- Use Grade 1 (uncontracted) — every letter expanded."}`;
+
+  const user = `Transcribe the following text into UEB Grade ${targetGrade} Braille:\n\n${text}`;
+
+  try {
+    const { content, provider } = await callWithFallback(system, user, 4000, undefined, schoolId);
+    const cleaned = content.replace(/^```[a-zA-Z]*\s*/i, "").replace(/\s*```$/i, "").trim();
+    if (!cleaned) {
+      return res.status(500).json({ error: "Braille transcription returned empty result." });
+    }
+    return res.json({ brl: cleaned, grade: targetGrade, provider });
+  } catch (err: any) {
+    console.error("[ai/braille] failed:", err?.message);
+    return res.status(500).json({ error: "Braille transcription failed. Please try again." });
+  }
+});
+
 // POST /api/ai/generate-retrieval
 // Generates 3 short retrieval questions on a previous topic.
 // Called by the library path in Worksheets.tsx when recallTopic is set and retrieval is selected.
