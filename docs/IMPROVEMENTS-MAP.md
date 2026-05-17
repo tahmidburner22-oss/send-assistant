@@ -15,7 +15,7 @@ in the same commit.
 
 | Status         | Count |
 | -------------- | ----- |
-| Shipped        | 7     |
+| Shipped        | 10    |
 | Re-applied (PR-2 recovery) | 1 |
 | Specced (ready for fresh-chat execution) | 20 |
 | Total improvements | 20 |
@@ -57,7 +57,7 @@ Every spec ties back to one of these three shifts.
 | 1 | "Tomorrow's lesson is already done" — proactive home screen | A · PR-4 | [`phase-a-class-aware/features/FEAT-PR4.json`](../.agents/tasks/phase-a-class-aware/features/FEAT-PR4.json) | **Shipped — PR #48** |
 | 2 | Pupil-aware auto-generation                | A · PR-1 + PR-2 | [`phase-a-class-aware/features/FEAT-PR1.json`](../.agents/tasks/phase-a-class-aware/features/FEAT-PR1.json) + [`FEAT-PR2.json`](../.agents/tasks/phase-a-class-aware/features/FEAT-PR2.json) | **Shipped — PR #46 + #47 (re-applied PR #50)** |
 | 3 | Curriculum coverage map ("Ofsted view")    | C · PC4 | [`phase-c-fit-your-school/features/FEAT-PC4.json`](../.agents/tasks/phase-c-fit-your-school/features/FEAT-PC4.json) | Specced     |
-| 4 | Misconception-driven re-teach loop         | B · PB3 | [`phase-b-close-the-loop/features/FEAT-PB3.json`](../.agents/tasks/phase-b-close-the-loop/features/FEAT-PB3.json) | Specced     |
+| 4 | Misconception-driven re-teach loop         | B · PB3 | [`phase-b-close-the-loop/features/FEAT-PB3.json`](../.agents/tasks/phase-b-close-the-loop/features/FEAT-PB3.json) | **Shipped** |
 | 5 | Spec-point provenance + AO tag             | B · PB1 | [`phase-b-close-the-loop/features/FEAT-PB1.json`](../.agents/tasks/phase-b-close-the-loop/features/FEAT-PB1.json) | **Shipped** |
 | 6 | Bulk scheme-of-work generation             | C · PC5 | [`phase-c-fit-your-school/features/FEAT-PC5.json`](../.agents/tasks/phase-c-fit-your-school/features/FEAT-PC5.json) | Specced     |
 | 7a | LMS push: Google Classroom + Teams + Satchel | C · PC1 | [`phase-c-fit-your-school/features/FEAT-PC1.json`](../.agents/tasks/phase-c-fit-your-school/features/FEAT-PC1.json) | Specced     |
@@ -96,7 +96,7 @@ Every spec ties back to one of these three shifts.
 | Phase | Theme                                             | PRs (shipped / total) | Folder                                                                                              |
 | ----- | ------------------------------------------------- | --------------------- | --------------------------------------------------------------------------------------------------- |
 | A     | "We know your class"                              | 5 / 6                 | [`.agents/tasks/phase-a-class-aware/`](../.agents/tasks/phase-a-class-aware/)                       |
-| B     | "We close the loop"                               | 2 / 4                 | [`.agents/tasks/phase-b-close-the-loop/`](../.agents/tasks/phase-b-close-the-loop/)                 |
+| B     | "We close the loop"                               | 3 / 4                 | [`.agents/tasks/phase-b-close-the-loop/`](../.agents/tasks/phase-b-close-the-loop/)                 |
 | C     | "We fit your school"                              | 0 / 7                 | [`.agents/tasks/phase-c-fit-your-school/`](../.agents/tasks/phase-c-fit-your-school/)               |
 | D     | Quality bets + habit hooks                        | 0 / 12                | [`.agents/tasks/phase-d-quality-and-habit/`](../.agents/tasks/phase-d-quality-and-habit/)           |
 

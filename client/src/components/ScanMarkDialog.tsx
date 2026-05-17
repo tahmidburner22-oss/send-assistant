@@ -35,6 +35,10 @@ import {
   buildExpectedAnswersFromWorksheet,
   type ScanMarkResult,
 } from "@/lib/scan-mark";
+// FEAT-PB3 — Re-teach gap panel. Mounted after a successful 'Save to pupil'
+// so the teacher sees class-wide gaps without leaving the dialog.
+import { ReteachGapPanel } from "@/components/ReteachGapPanel";
+import type { ReteachBrief, ScanBatchEntry, ScanBatchResult } from "@/lib/reteachPlanner";
 
 interface PupilLite {
   id: string;
@@ -51,6 +55,19 @@ interface Props {
   defaultPupilId?: string | null;
   /** Persists merged recentMisconceptions back to the Child via AppContext.updateChild. */
   onSaveMisconceptions: (pupilId: string, recentMisconceptions: string[]) => Promise<void> | void;
+  // ── FEAT-PB3 — Class-level re-teach loop ──────────────────────────────────
+  /** All ScanMarkResults accumulated for this worksheet so far (across pupils).
+   *  When ≥ 1 entry is present after a save, the dialog renders ReteachGapPanel
+   *  beneath the marking grid. */
+  reteachBatch?: ScanBatchResult;
+  /** Notifies the parent when this dialog produced a new batch entry. */
+  onBatchEntryAdded?: (entry: ScanBatchEntry) => void;
+  /** Threshold (0..100) above which a question is treated as a class-wide
+   *  re-teach gap. Default 40% per FEAT-PB3 spec. */
+  reteachThresholdPct?: number;
+  /** Called when the teacher clicks 'Re-teach this gap'. The parent should
+   *  hand off to aiGenerateReteachWorksheet via the sessionStorage handoff. */
+  onReteach?: (brief: ReteachBrief) => void;
 }
 
 const ACCEPTED = "image/jpeg,image/png,image/webp,image/heic,image/heif,application/pdf";
@@ -63,6 +80,10 @@ export function ScanMarkDialog({
   pupils,
   defaultPupilId,
   onSaveMisconceptions,
+  reteachBatch = [],
+  onBatchEntryAdded,
+  reteachThresholdPct = 40,
+  onReteach,
 }: Props) {
   const [pupilId, setPupilId] = useState<string>(defaultPupilId || "");
   const [file, setFile] = useState<File | null>(null);
@@ -156,6 +177,17 @@ export function ScanMarkDialog({
     try {
       await onSaveMisconceptions(selectedPupil.id, merged);
       setSaved(true);
+      // FEAT-PB3 — push this scan into the class re-teach batch so the gap
+      // panel below this dialog can aggregate (questionIdx, misconception)
+      // counts across every pupil the teacher has scanned.
+      if (onBatchEntryAdded) {
+        onBatchEntryAdded({
+          pupilId: selectedPupil.id,
+          pupilName: selectedPupil.name,
+          result,
+          scannedAt: new Date().toISOString(),
+        });
+      }
       if (fresh.length === 0) {
         toast.success(`No new misconceptions to log — ${selectedPupil.name} got everything right!`);
       } else {
@@ -389,6 +421,22 @@ export function ScanMarkDialog({
                 ))}
               </div>
             </div>
+          )}
+
+          {/* FEAT-PB3 — Class-wide re-teach gap panel. Visible whenever the
+              parent has accumulated at least one scan for the current
+              worksheet. The dialog stays open so the teacher can keep
+              scanning more pupils and watch the gaps consolidate. */}
+          {reteachBatch.length > 0 && worksheet && onReteach && (
+            <ReteachGapPanel
+              batch={reteachBatch}
+              sourceWorksheet={worksheet}
+              thresholdPct={reteachThresholdPct}
+              onReteach={(brief) => {
+                onReteach(brief);
+                onOpenChange(false);
+              }}
+            />
           )}
         </div>
 

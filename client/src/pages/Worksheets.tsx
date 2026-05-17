@@ -34,6 +34,15 @@ import { ClassPackDialog } from "@/components/ClassPackDialog";
 import AutoFromClassPanel from "@/components/AutoFromClassPanel";
 import { LessonBundleDialog } from "@/components/LessonBundleDialog";
 import { ScanMarkDialog } from "@/components/ScanMarkDialog";
+// FEAT-PB3 — Misconception-driven re-teach loop. Aggregates a Scan & Mark
+// batch, builds a re-teach brief, and threads it through to the existing
+// generation pipeline via aiGenerateReteachWorksheet.
+import {
+  aiGenerateReteachWorksheet,
+  type ReteachBrief,
+  type ScanBatchEntry,
+  type ScanBatchResult,
+} from "@/lib/reteachPlanner";
 import { runHintLadder } from "@/lib/hint-ladder";
 import { usePupilScope } from "@/contexts/PupilScopeContext";
 import { runWorksheetPipeline } from "@/lib/engines/pipeline";
@@ -549,6 +558,13 @@ export default function Worksheets() {
   const [lessonBundleOpen, setLessonBundleOpen] = useState(false);
   // FEAT-010 — Scan-and-mark dialog.
   const [scanMarkOpen, setScanMarkOpen] = useState(false);
+  // FEAT-PB3 — Class-wide re-teach batch. ScanMarkDialog accumulates one
+  // entry per pupil scan into this state via the onBatchEntryAdded callback;
+  // the dialog then renders ReteachGapPanel beneath the marking grid.
+  // Cleared whenever the rendered worksheet is replaced (e.g. after a re-
+  // teach handoff or a fresh generate) so the panel always reflects the
+  // currently-rendered worksheet.
+  const [reteachBatch, setReteachBatch] = useState<ScanBatchResult>([]);
 
   // Re-fetch data from server on mount so history count is always current
   useEffect(() => { refreshData(); }, []);
@@ -752,6 +768,51 @@ export default function Worksheets() {
     } finally {
       try { sessionStorage.removeItem("weekAheadHandoff"); } catch { /* ignore */ }
     }
+    // Run once on mount only.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // ── Phase B · PB3 — Re-teach handoff ──────────────────────────────────────
+  // When the teacher clicks 'Re-teach this gap' inside ScanMarkDialog the
+  // dialog stores the brief in sessionStorage and we navigate here with
+  // `?reteach=1`. On mount we pick the brief up, call
+  // aiGenerateReteachWorksheet, and seed the rendered slot directly. Mirrors
+  // the WeekAhead handoff above, including the 30-minute staleness check.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("reteach") !== "1") return;
+    let raw: string | null = null;
+    try { raw = sessionStorage.getItem("reteachHandoff"); } catch { return; }
+    if (!raw) return;
+    let parsed: { brief: ReteachBrief; source: any; ts: number } | null = null;
+    try {
+      parsed = JSON.parse(raw) as { brief: ReteachBrief; source: any; ts: number };
+    } catch {
+      try { sessionStorage.removeItem("reteachHandoff"); } catch { /* ignore */ }
+      return;
+    }
+    if (!parsed || Date.now() - parsed.ts > 30 * 60 * 1000) {
+      try { sessionStorage.removeItem("reteachHandoff"); } catch { /* ignore */ }
+      return;
+    }
+    // Pop the handoff before we await the generate so a refresh during
+    // generation can't double-fire.
+    try { sessionStorage.removeItem("reteachHandoff"); } catch { /* ignore */ }
+    const { brief, source } = parsed;
+    toast.info(`Generating re-teach worksheet for "${brief.misconceptionLabel}"…`);
+    (async () => {
+      try {
+        const ws = await aiGenerateReteachWorksheet(brief, source);
+        setGenerated(ws as unknown as AnyWorksheet);
+        setHiddenSections(new Set());
+        setHideHeader(false);
+        setReteachBatch([]); // start fresh — this is a new worksheet
+        toast.success(`Re-teach worksheet ready — addresses "${brief.misconceptionLabel}".`);
+      } catch (err: any) {
+        toast.error(err?.message || "Could not generate re-teach worksheet.");
+      }
+    })();
     // Run once on mount only.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -6761,6 +6822,50 @@ ${s.content}`).join("\n\n"),
         defaultPupilId={scopedPupilId || null}
         onSaveMisconceptions={async (pupilId, recentMisconceptions) => {
           await updateChild(pupilId, { recentMisconceptions });
+        }}
+        // FEAT-PB3 — Class-wide re-teach loop wiring.
+        reteachBatch={reteachBatch}
+        onBatchEntryAdded={(entry: ScanBatchEntry) => {
+          setReteachBatch((prev) => {
+            // Replace any prior entry from the same pupil so re-scans don't
+            // double-count. Aggregation already dedupes within a question,
+            // but keeping the batch tidy avoids surprising pupil counts.
+            const filtered = prev.filter((e) => e.pupilId !== entry.pupilId);
+            return [...filtered, entry];
+          });
+        }}
+        reteachThresholdPct={40}
+        onReteach={(brief: ReteachBrief) => {
+          // Persist the brief + a lightweight source snapshot to
+          // sessionStorage and navigate. The page-level useEffect picks it
+          // up and runs aiGenerateReteachWorksheet, mirroring the WeekAhead
+          // handoff pattern. Doing the AI call on the destination route
+          // keeps the dialog responsive and the URL shareable.
+          if (typeof window === "undefined") return;
+          const sourceLite = generated
+            ? {
+                id: (generated as any).id,
+                title: generated.title,
+                metadata: (generated.metadata as any) || {},
+              }
+            : null;
+          if (!sourceLite) {
+            toast.error("Generate a worksheet before triggering a re-teach.");
+            return;
+          }
+          try {
+            sessionStorage.setItem(
+              "reteachHandoff",
+              JSON.stringify({ brief, source: sourceLite, ts: Date.now() }),
+            );
+          } catch {
+            toast.error("Could not stage the re-teach handoff (storage unavailable).");
+            return;
+          }
+          // Same-page navigation — the destination useEffect mounts and
+          // generates the worksheet. We use replace so the back button
+          // doesn't bounce the teacher into a stale dialog state.
+          window.location.assign("/worksheets?reteach=1");
         }}
       />
     </div>
