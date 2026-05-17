@@ -62,6 +62,7 @@ import {
   Mic, MicOff, Image, Search, Clock, Award, ChevronRight, ChevronDown,
   AlertCircle, CheckCircle, RefreshCw, FileDown, X, Wand2, History, Trash2, Info, PenLine, Square, CheckSquare, ListChecks, ClipboardCheck,
   MessageSquare, Send, RotateCcw, Layers, Volume2, VolumeX, Loader2, QrCode, BookOpenCheck, Camera,
+  Languages,
 } from "lucide-react";
 
 /* ════════════════════════════════════════════════════════════════════════════
@@ -679,6 +680,16 @@ export default function Worksheets() {
   const [scenarioInput, setScenarioInput] = useState("");
   // Reading level adjustment (post-generation)
   const [readingLevelLoading, setReadingLevelLoading] = useState(false);
+  // ── FEAT-PC6 — EAL bilingual translation state ─────────────────────────────
+  const [showTranslateDialog, setShowTranslateDialog] = useState(false);
+  const [translateLoading, setTranslateLoading] = useState(false);
+  const [translateStatus, setTranslateStatus] = useState("");
+  const [translateLang, setTranslateLang] = useState<string>("en");
+  // ── FEAT-PC7 — WCAG 2.2 AA audit + Braille pipeline state ──────────────────
+  const [auditLoading, setAuditLoading] = useState(false);
+  const [auditResult, setAuditResult] = useState<import("@/lib/wcagAuditor").WcagAuditResult | null>(null);
+  const [showAuditPanel, setShowAuditPanel] = useState(false);
+  const [brailleLoading, setBrailleLoading] = useState(false);
   // Diagnostic Starter state
   const [diagnosticLoading, setDiagnosticLoading] = useState(false);
   const [diagnosticResult, setDiagnosticResult] = useState<{ questions: string[]; topic: string } | null>(null);
@@ -2522,6 +2533,150 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
       toast.success("QTI 3.0 XML exported — import into Canvas, Moodle, or any QTI-compatible LMS.");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "QTI export failed.");
+    }
+  };
+
+  // ═══ §HANDLE-TRANSLATE · FEAT-PC6 EAL bilingual translation ════════════════
+  const handleTranslateWorksheet = async (targetLang: string) => {
+    if (!generated) { toast.error("No worksheet loaded"); return; }
+    if (!targetLang || targetLang === "en") {
+      // English chosen → restore originals from the bilingual sidecar.
+      setGenerated((prev: any) => {
+        if (!prev) return prev;
+        const next = { ...prev };
+        const bilingualSections: any[] | undefined = next.bilingualSections;
+        if (Array.isArray(bilingualSections) && Array.isArray(next.sections)) {
+          next.sections = next.sections.map((s: any, i: number) => {
+            const bs = bilingualSections[i];
+            if (!bs) return s;
+            return {
+              ...s,
+              title: bs.titleEn ?? bs.title ?? s.title,
+              content: bs.contentEn ?? bs.content ?? s.content,
+            };
+          });
+        }
+        if (typeof next.titleEn === "string") next.title = next.titleEn;
+        if (typeof next.subtitleEn === "string") next.subtitle = next.subtitleEn;
+        delete next.bilingual;
+        delete next.bilingualSections;
+        delete next.titleTranslated;
+        delete next.subtitleTranslated;
+        delete next.titleEn;
+        delete next.subtitleEn;
+        return next;
+      });
+      setShowTranslateDialog(false);
+      toast.success("Switched back to English.");
+      return;
+    }
+    setTranslateLoading(true);
+    try {
+      const { translateWorksheet, getEalLanguage, shouldAutoSimplifyForEal } = await import("@/lib/worksheetTranslator");
+      const lang = getEalLanguage(targetLang);
+      if (!lang) throw new Error(`Unsupported language: ${targetLang}`);
+
+      // EAL hand-off to the reading-level simplifier when the target pupil's
+      // reading age is flagged. Auto-pre-simplifies to age 9 before translation.
+      // If the worksheet is already bilingual (e.g. user is switching language),
+      // re-base off the preserved English originals — never translate-of-translate.
+      let sourceWs = generated as any;
+      if (Array.isArray(sourceWs.bilingualSections)) {
+        const restoredSections = (sourceWs.sections || []).map((s: any, i: number) => {
+          const bs = sourceWs.bilingualSections[i];
+          if (!bs) return s;
+          return {
+            ...s,
+            title: bs.titleEn ?? bs.title ?? s.title,
+            content: bs.contentEn ?? bs.content ?? s.content,
+          };
+        });
+        sourceWs = {
+          ...sourceWs,
+          sections: restoredSections,
+          title: sourceWs.titleEn ?? sourceWs.title,
+          subtitle: sourceWs.subtitleEn ?? sourceWs.subtitle,
+        };
+        delete sourceWs.bilingualSections;
+        delete sourceWs.bilingual;
+        delete sourceWs.titleTranslated;
+        delete sourceWs.subtitleTranslated;
+        delete sourceWs.titleEn;
+        delete sourceWs.subtitleEn;
+      }
+      const targetChild = children.find(c => c.preferredLanguage === targetLang);
+      if (targetChild && shouldAutoSimplifyForEal(targetChild)) {
+        try {
+          setTranslateStatus("Simplifying English to reading age 9 first…");
+          const adjusted = await aiAdjustReadingLevel({
+            sections: (sourceWs.sections || []) as any,
+            targetAge: 9,
+            subject: sourceWs.metadata?.subject,
+            yearGroup: sourceWs.metadata?.yearGroup,
+            sendNeed: sourceWs.metadata?.sendNeed,
+          });
+          if (adjusted && Array.isArray(adjusted.sections)) {
+            sourceWs = { ...sourceWs, sections: adjusted.sections };
+          }
+        } catch (simplifyErr) {
+          // Non-fatal — proceed with original English.
+          console.warn("[translate] reading-level simplifier failed:", simplifyErr);
+        }
+      }
+
+      setTranslateStatus(`Translating to ${lang.name}…`);
+      const bilingual = await translateWorksheet(sourceWs, targetLang);
+      setGenerated(bilingual as unknown as AnyWorksheet);
+      setShowTranslateDialog(false);
+      toast.success(`Bilingual ${lang.name} version ready.`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message.slice(0, 160) : "Translation failed.");
+    } finally {
+      setTranslateLoading(false);
+      setTranslateStatus("");
+    }
+  };
+
+  // ═══ §HANDLE-A11Y · FEAT-PC7 WCAG 2.2 AA audit ═════════════════════════════
+  const handleRunAccessibilityAudit = async () => {
+    const container = worksheetRef.current || (document.querySelector(".worksheet-content") as HTMLElement | null);
+    if (!container) { toast.error("Worksheet not found — render it first."); return; }
+    setAuditLoading(true);
+    try {
+      const { auditWorksheetElement } = await import("@/lib/wcagAuditor");
+      const result = await auditWorksheetElement(container);
+      setAuditResult(result);
+      setShowAuditPanel(true);
+      if (result.passed) {
+        toast.success(`WCAG 2.2 AA · pass (${result.engine === "fallback" ? "heuristic" : "axe-core"}).`);
+      } else {
+        toast.error(`${result.violations.length} accessibility issue${result.violations.length === 1 ? "" : "s"} found — see panel.`);
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Audit failed.");
+    } finally {
+      setAuditLoading(false);
+    }
+  };
+
+  // ═══ §HANDLE-BRAILLE · FEAT-PC7 BRF export ═════════════════════════════════
+  const handleExportBraille = async () => {
+    if (!generated) { toast.error("No worksheet loaded"); return; }
+    setBrailleLoading(true);
+    try {
+      const { worksheetToBrl, downloadBrf } = await import("@/lib/braillePipeline");
+      const result = await worksheetToBrl(generated as any, {});
+      const safeName = (generated.title || "worksheet").replace(/[^a-zA-Z0-9\s]/g, "").replace(/\s+/g, "_");
+      downloadBrf(result.brf, `${safeName}_${result.grade === "2" ? "ueb-g2" : "ueb-g1-fallback"}.brf`);
+      if (result.source === "fallback") {
+        toast.error("Server transcription unavailable — Grade 1 fallback exported.");
+      } else {
+        toast.success("UEB Grade 2 BRF exported — load in any Braille embosser.");
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Braille export failed.");
+    } finally {
+      setBrailleLoading(false);
     }
   };
 
@@ -5545,6 +5700,60 @@ ${s.content}`).join("\n\n"),
             </Button>
             <Button variant="outline" size="sm" onClick={handlePrint}><Printer className="w-3.5 h-3.5 mr-1.5" /> Print</Button>
             <Button variant="outline" size="sm" onClick={handleExportQti} title="Export as QTI 3.0 (for Canvas, Moodle, etc.)"><FileDown className="w-3.5 h-3.5 mr-1.5" /> QTI</Button>
+            {/* FEAT-PC6 — Translate (EAL bilingual) */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                // Auto-pre-select language from any pupil in the class with preferredLanguage set.
+                const fromClass = children.find(c => c.preferredLanguage && c.preferredLanguage !== "en");
+                setTranslateLang(fromClass?.preferredLanguage || (generated as any)?.bilingual?.lang || "en");
+                setShowTranslateDialog(true);
+              }}
+              disabled={translateLoading}
+              className="gap-1.5 border-emerald-300 text-emerald-700 hover:bg-emerald-50"
+              title="Translate worksheet to a UK EAL language (bilingual side-by-side)"
+            >
+              {translateLoading ? (
+                <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Translating…</>
+              ) : (
+                <><Languages className="w-3.5 h-3.5" /> Translate</>
+              )}
+            </Button>
+            {/* FEAT-PC7 — WCAG 2.2 AA accessibility audit */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRunAccessibilityAudit}
+              disabled={auditLoading}
+              className={`gap-1.5 ${auditResult?.passed ? "border-green-400 text-green-700 bg-green-50" : auditResult ? "border-amber-400 text-amber-700 bg-amber-50" : "border-sky-300 text-sky-700 hover:bg-sky-50"}`}
+              title="Run a WCAG 2.2 AA accessibility audit on the rendered worksheet"
+            >
+              {auditLoading ? (
+                <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Auditing…</>
+              ) : auditResult?.passed ? (
+                <><CheckCircle className="w-3.5 h-3.5" /> WCAG 2.2 AA</>
+              ) : auditResult ? (
+                <><AlertCircle className="w-3.5 h-3.5" /> A11y · {auditResult.violations.length}</>
+              ) : (
+                <><CheckCircle className="w-3.5 h-3.5" /> A11y audit</>
+              )}
+            </Button>
+            {/* FEAT-PC7 — Braille (.brf) export */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExportBraille}
+              disabled={brailleLoading}
+              className="gap-1.5 border-purple-300 text-purple-700 hover:bg-purple-50"
+              title="Export UEB Grade 2 Braille (.brf) — server-side transcription"
+            >
+              {brailleLoading ? (
+                <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Braille…</>
+              ) : (
+                <><FileDown className="w-3.5 h-3.5" /> Braille (.brf)</>
+              )}
+            </Button>
             <Button variant="outline" size="sm" onClick={handleSave}><Save className="w-3.5 h-3.5 mr-1.5" /> Save</Button>
             {/* Read Aloud — neural TTS reads the full worksheet */}
             <Button
@@ -6479,6 +6688,146 @@ ${s.content}`).join("\n\n"),
         onClose={() => setShowPrintDialog(false)}
         onPrint={handlePrintWithOptions}
       />
+
+      {/* FEAT-PC6 — Translate (EAL bilingual) Dialog */}
+      <Dialog open={showTranslateDialog} onOpenChange={(open) => { if (!translateLoading) setShowTranslateDialog(open); }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Languages className="h-5 w-5 text-emerald-600" />
+              Bilingual translation
+            </DialogTitle>
+            <p className="text-sm text-muted-foreground">Pick a UK EAL language. Pupil-facing sections render side-by-side; teacher answer keys stay in English.</p>
+          </DialogHeader>
+          <div className="space-y-3 mt-2">
+            {(() => {
+              // Inlined to avoid pulling another import at module scope; the module is tiny.
+              const langs: Array<{ code: string; name: string; nativeName: string; rtl: boolean }> = [
+                { code: "en", name: "English (off)", nativeName: "English", rtl: false },
+                { code: "pl", name: "Polish",   nativeName: "Polski",       rtl: false },
+                { code: "ur", name: "Urdu",     nativeName: "اردو",         rtl: true  },
+                { code: "ro", name: "Romanian", nativeName: "Română",       rtl: false },
+                { code: "ar", name: "Arabic",   nativeName: "العربية",      rtl: true  },
+                { code: "bn", name: "Bengali",  nativeName: "বাংলা",        rtl: false },
+                { code: "gu", name: "Gujarati", nativeName: "ગુજરાતી",      rtl: false },
+                { code: "pa", name: "Punjabi",  nativeName: "ਪੰਜਾਬੀ",       rtl: false },
+                { code: "zh", name: "Mandarin", nativeName: "中文 (简体)",   rtl: false },
+                { code: "es", name: "Spanish",  nativeName: "Español",      rtl: false },
+              ];
+              return (
+                <div className="grid grid-cols-2 gap-2">
+                  {langs.map((l) => {
+                    const selected = translateLang === l.code;
+                    return (
+                      <button
+                        key={l.code}
+                        type="button"
+                        onClick={() => setTranslateLang(l.code)}
+                        disabled={translateLoading}
+                        className={`text-left p-3 rounded-lg border transition-all ${selected ? "border-emerald-500 bg-emerald-50" : "border-border hover:border-emerald-300 hover:bg-emerald-50/40"}`}
+                      >
+                        <div className="text-sm font-medium text-foreground">{l.name}</div>
+                        <div className={`text-xs text-muted-foreground ${l.rtl ? "text-right" : ""}`} dir={l.rtl ? "rtl" : "ltr"}>{l.nativeName}{l.rtl ? "  ·  RTL" : ""}</div>
+                      </button>
+                    );
+                  })}
+                </div>
+              );
+            })()}
+            {translateStatus && (
+              <p className="text-xs text-muted-foreground flex items-center gap-2">
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                {translateStatus}
+              </p>
+            )}
+            <div className="flex justify-end gap-2 pt-2">
+              <Button variant="outline" size="sm" onClick={() => setShowTranslateDialog(false)} disabled={translateLoading}>Cancel</Button>
+              <Button
+                size="sm"
+                className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                disabled={translateLoading || !translateLang}
+                onClick={() => handleTranslateWorksheet(translateLang)}
+              >
+                {translateLoading ? (
+                  <><Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" /> Working…</>
+                ) : translateLang === "en" ? "Switch to English-only" : "Translate"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* FEAT-PC7 — WCAG audit panel */}
+      <Dialog open={showAuditPanel} onOpenChange={setShowAuditPanel}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              {auditResult?.passed ? (
+                <CheckCircle className="h-5 w-5 text-green-600" />
+              ) : (
+                <AlertCircle className="h-5 w-5 text-amber-600" />
+              )}
+              Accessibility audit
+              {auditResult && (
+                <span className="text-xs font-normal text-muted-foreground">
+                  · engine: {auditResult.engine} · {new Date(auditResult.ranAt).toLocaleTimeString()}
+                </span>
+              )}
+            </DialogTitle>
+            <p className="text-sm text-muted-foreground">
+              {auditResult?.passed
+                ? "This worksheet passes the WCAG 2.2 AA checks we run client-side."
+                : "Issues found. Fix or annotate before sharing — see the WCAG 2.2 AA conformance statement."}
+            </p>
+          </DialogHeader>
+          <div className="space-y-3 mt-2">
+            {!auditResult ? (
+              <p className="text-sm text-muted-foreground">No audit run yet.</p>
+            ) : (
+              <>
+                {auditResult.violations.length === 0 ? (
+                  <div className="p-3 rounded-lg border border-green-200 bg-green-50 text-sm text-green-800">
+                    Zero violations across {auditResult.inspected} checks. {auditResult.warnings.length > 0 && `(${auditResult.warnings.length} soft warning${auditResult.warnings.length === 1 ? "" : "s"} below.)`}
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {auditResult.violations.map((v) => (
+                      <div key={v.id + (v.firstTarget || "")} className="p-3 rounded-lg border border-amber-200 bg-amber-50/60">
+                        <div className="flex items-center justify-between">
+                          <div className="text-sm font-semibold text-amber-900">{v.id} <span className="text-xs font-normal text-amber-700">({v.impact})</span></div>
+                          <div className="text-xs text-amber-700">{v.occurrences} occurrence{v.occurrences === 1 ? "" : "s"}</div>
+                        </div>
+                        <p className="text-sm text-amber-800 mt-1">{v.description}</p>
+                        {v.firstTarget && <p className="text-xs text-amber-700 mt-1 font-mono">first: {v.firstTarget}</p>}
+                        {v.helpUrl && (
+                          <a href={v.helpUrl} target="_blank" rel="noreferrer" className="text-xs text-emerald-700 underline">Rule docs</a>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {auditResult.warnings.length > 0 && (
+                  <div className="space-y-1 pt-2 border-t">
+                    <div className="text-xs uppercase tracking-wide text-muted-foreground">Warnings (review manually)</div>
+                    {auditResult.warnings.map((w) => (
+                      <div key={w.id} className="p-2 rounded border border-sky-200 bg-sky-50/60 text-xs text-sky-900">
+                        <span className="font-semibold">{w.id}</span> · {w.description} · {w.occurrences} occurrence{w.occurrences === 1 ? "" : "s"}
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <div className="flex justify-end gap-2 pt-2">
+                  <Button variant="outline" size="sm" onClick={handleRunAccessibilityAudit} disabled={auditLoading}>
+                    {auditLoading ? <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5 mr-1.5" />}
+                    Re-run audit
+                  </Button>
+                  <Button size="sm" onClick={() => setShowAuditPanel(false)}>Close</Button>
+                </div>
+              </>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* One-click Differentiation Dialog */}
       <Dialog open={showDiffDialog} onOpenChange={setShowDiffDialog}>
