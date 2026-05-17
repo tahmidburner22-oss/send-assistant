@@ -6682,6 +6682,33 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                 );
               })()}
             </div>
+            {/* ── PB1 — Provenance chip (teacher view only) ──────────────────── */}
+            {isTeacherView && isIndividualQuestion && ((section as any).ao || (section as any).specRef || (section as any).bloomLevel) && (
+              <div
+                className="ws-prov-chip ws-no-print-on-student"
+                style={{
+                  marginTop: "6px",
+                  padding: "2px 8px",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  background: "#f0f9ff",
+                  border: "1px solid #bae6fd",
+                  borderRadius: "3px",
+                  fontSize: "10px",
+                  fontFamily: fmt.fontFamily,
+                  color: "#0369a1",
+                  letterSpacing: "0.02em",
+                  fontWeight: 500,
+                }}
+              >
+                {(section as any).ao && <span style={{ fontWeight: 700 }}>{String((section as any).ao)}</span>}
+                {(section as any).ao && (section as any).specRef && <span style={{ color: "#7dd3fc" }}>·</span>}
+                {(section as any).specRef && <span>{String((section as any).specRef)}</span>}
+                {((section as any).ao || (section as any).specRef) && (section as any).bloomLevel && <span style={{ color: "#7dd3fc" }}>·</span>}
+                {(section as any).bloomLevel && <span>Bloom: {String((section as any).bloomLevel)}</span>}
+              </div>
+            )}
           </div>
           </div>{/* end ws-section-outer */}
           </React.Fragment>
