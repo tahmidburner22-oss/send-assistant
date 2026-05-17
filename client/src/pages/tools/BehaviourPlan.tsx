@@ -309,20 +309,16 @@ Use positive, strengths-based language throughout. Be specific and practical. Ca
       />
       <div className="max-w-2xl mx-auto px-4 pb-8 space-y-3">
         <SaveToPupilPortal result={latestResult} values={latestValues} />
-        {(scopedPupilId || latestResult) && (
-          <>
-            <BSPEnhancementsPanel
-              pupilId={scopedPupilId || ""}
-              pupilName={scopedPupilName}
-              bspText={latestResult || ""}
-            />
-            <BehaviourPlanV2Panel
-              pupilId={scopedPupilId || ""}
-              pupilName={scopedPupilName}
-              bspText={latestResult || ""}
-            />
-          </>
-        )}
+        <BSPEnhancementsPanel
+          pupilId={scopedPupilId || ""}
+          pupilName={scopedPupilName}
+          bspText={latestResult || ""}
+        />
+        <BehaviourPlanV2Panel
+          pupilId={scopedPupilId || ""}
+          pupilName={scopedPupilName}
+          bspText={latestResult || ""}
+        />
       </div>
     </div>
   );

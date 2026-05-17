@@ -426,6 +426,15 @@ Regenerate the section: ${sectionName}. Return ONLY the JSON value for that sect
             </Button>
           </CardContent>
         </Card>
+        {/* PR #43 V2 Panel — always visible so 5-min slot timeline, adaptive matrix, TA brief tabs are accessible */}
+        <LessonPlannerV2Panel
+          topic={values.topic || ""}
+          yearGroup={values.yearGroup || ""}
+          subject={values.subject || ""}
+          sendNeeds={values.sendNeeds || ""}
+          phases={[]}
+          planText={""}
+        />
       </div>
     );
   }

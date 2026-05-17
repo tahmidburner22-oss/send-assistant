@@ -4472,6 +4472,10 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                             type="button"
                             onClick={() => {
                               setPaper(p.id);
+                              // Selecting a specific paper activates Pillar A exam-style mode
+                              // so AO chips, LOR grids, and synoptic links are generated.
+                              if (p.id !== "") setExamStyle(true);
+                              else setExamStyle(false);
                               // Maths convention: P1 = non-calc; P2/P3 = calc.
                               const isMaths = (subject || "").toLowerCase().includes("math");
                               if (isMaths && p.id === "P1") setCalculator(false);
