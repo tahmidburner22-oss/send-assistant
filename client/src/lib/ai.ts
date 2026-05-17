@@ -1222,6 +1222,7 @@ BLOCK 3 — ${blockInstructions[variantA[2]]}`;
 BLOCK 1 — ${blockInstructions[variantB[0]]}
 BLOCK 2 — ${blockInstructions[variantB[1]]}
 BLOCK 3 — ${blockInstructions[variantB[2]]}`;
+  const examStylePrompt = (yearNum >= 9) ? `\nMANDATORY FOR YEAR 9-11: Section 3 MUST consist entirely of "Exam Style" questions. Use realistic marks [3 marks], [4 marks] and exam board phrasing.` : "";
 
   // ── Primary (KS1/KS2) layout enhancement ──────────────────────────────────
   const isPrimary = yearNum <= 6;
@@ -1272,6 +1273,12 @@ FORMAT: Activity-based, NOT a secondary school handout. Lots of variety: circle,
 
 Respond with valid JSON only — no markdown, no code blocks, no HTML tags inside content strings. Use plain text only.`
     : `You are an expert GCSE/curriculum worksheet designer creating a complete, print-ready, professionally structured student worksheet AND matching teacher answer key.
+${(() => {
+  const diagramA = getDiagramForTopic(params.subject, params.topic);
+  const diagramB = getDiagramForTopic(params.subject, "comparison or secondary process for " + params.topic);
+  return `MANDATORY: You MUST include "Diagram A" in your response. Use this exact marker in the content field: ${diagramA.example}\nMANDATORY: You MUST include "Diagram B" in your response. Use this exact marker in the content field: ${diagramB.example}`;
+})()}
+
 
 ⚠️ CRITICAL FORMAT RULES — THESE OVERRIDE EVERYTHING ELSE:
 
@@ -1336,7 +1343,7 @@ For DIAGRAM A: the diagram must be FULLY LABELLED (every part has a real term sh
 For DIAGRAM B: the diagram must be FULLY LABELLED — it is a visual reference only with NO questions attached.
 
 SECTION 3 — APPLICATION & ANALYSIS (Q7–Q9):
-${sectionBPrompt}
+${sectionBPrompt}${examStylePrompt}${examStylePrompt}
 
 CHALLENGE QUESTION [${isSTEM ? '8' : '12'} marks]: ${isMaths ? 'Present a challenging multi-step real-world maths problem on ' + '"' + params.topic + '"' + '. ALL parts must be numerical/calculation-based — NO written explanations or prose. (a) Set up the problem and identify the method [1 mark] (b) Perform 2–3 linked calculations showing ALL working [5 marks] (c) Give the final answer with correct units/form and check it [2 marks]. Mark scheme: method marks + accuracy marks only.' : isSTEM ? 'Present a multi-part real-world scenario requiring: (a) Choose and justify an approach/method/circuit/process (b) Perform at least 2–3 linked calculations showing all working (c) Explain what happens under a changed condition. Award: up to 3m for explanation + up to 5m for calculations.' : 'Present a short quotation from the text (3–8 words, with Act/scene reference). Instruction: "Starting with this extract, write about how [author] presents [concept/character/theme]." List what the answer must include. Award: Band 4 (10–12m) / Band 3 (7–9m) / Band 2 (4–6m) / Band 1 (1–3m). Describe each band in one sentence.'}
 
