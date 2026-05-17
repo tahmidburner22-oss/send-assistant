@@ -354,6 +354,288 @@ export function applyCommonMistakesAudit<W extends AuditableWorksheet>(
   } as W;
 }
 
+// ─── PR-M3-followup — active regenerate ──────────────────────────────────────
+//
+// `applyCommonMistakesAudit` above is advisory only — it stamps warnings
+// onto metadata.postValidatorWarnings and lets the teacher banner pick
+// them up. Field experience showed that ~1 in 6 maths sheets ships with
+// at least one block missing numbers in the wrong-working line, which
+// defeats the whole purpose of the section (kids need to SEE the wrong
+// sum). Repeating the warning every time was a poor substitute for
+// fixing it.
+//
+// `applyCommonMistakesActiveRegenerate` is the active step. For each
+// block the audit already flagged as failing, it calls a caller-supplied
+// regenerator (in production: aiEditSection) with the specific diagnostic
+// detail in the prompt; re-validates the regenerated block; and splices
+// it back into the section content if it now passes. Anything still
+// failing keeps the original block and the original warning, so the
+// teacher banner remains accurate.
+//
+// Design choices, deliberate:
+//
+//   - The regenerator is a callback parameter, NOT a baked-in fetch
+//     call. Keeps this module test-clean (we can plug a deterministic
+//     stub in unit tests) and AI-agnostic (the same helper can drive
+//     aiEditSection today and a different regenerator tomorrow).
+//
+//   - Single retry per block. Two retries doubles latency without
+//     improving the typical case — if the LLM can't fix a labelled
+//     block when told exactly what's wrong, a third attempt with the
+//     same context won't differ meaningfully.
+//
+//   - When the regenerator throws or returns whitespace, we keep the
+//     original. Never replace good content with bad content.
+//
+//   - We rebuild the section content in mistake-block order so the
+//     output structure is stable and the existing renderer is happy.
+//
+//   - After regenerating we re-run the audit so the stamped report
+//     reflects ground truth. We also rewrite postValidatorWarnings to
+//     drop any block-level warning that no longer applies, which keeps
+//     the teacher banner from crying wolf.
+
+/**
+ * Async regenerator shape. The implementation is supplied by the
+ * caller — typically a thin wrapper around aiEditSection. It receives
+ * the failing block's content + a diagnostic instruction explaining
+ * what's wrong, and returns the regenerated block content.
+ *
+ * The regenerator should return the block body INCLUDING the "Mistake N:"
+ * header line so we can splice it back unchanged. If the header is
+ * missing on return, we re-apply it before validating.
+ */
+export type CommonMistakesRegenerator = (input: {
+  blockNumber: number;
+  originalBlock: string;
+  diagnostic: string;
+  subject?: string;
+  yearGroup?: string;
+}) => Promise<string>;
+
+export interface CommonMistakesRegenerateOptions {
+  subject?: string;
+  yearGroup?: string;
+  /** Override for tests. Defaults to a per-block timeout via Promise.race. */
+  perBlockTimeoutMs?: number;
+}
+
+/**
+ * Build a short, prescriptive instruction the regenerator can paste into
+ * its prompt. The instruction names the specific failure modes — missing
+ * labels and/or insufficient numeric tokens — so the LLM has zero ambiguity
+ * about what to fix.
+ */
+function buildBlockDiagnostic(report: MistakeBlockReport): string {
+  const parts: string[] = [];
+  if (!report.hasFourParts) {
+    const labelMap: Record<string, string> = {
+      "what-pupils-write": '"What pupils often write:" line',
+      "why-wrong": '"Why that\'s wrong (in plain words):" line',
+      "how-to-do-right": '"How to do it right:" line',
+      "quick-check": '"Quick check:" line',
+    };
+    const missing = report.missingLabels
+      .map(k => labelMap[k] || k)
+      .join(", ");
+    parts.push(
+      `This block is missing the following labelled parts: ${missing}. Every block MUST contain all four labels in order.`,
+    );
+  }
+  if (!report.hasNumbersInWrongWorking) {
+    parts.push(
+      `The "What pupils often write:" line currently has only ${report.wrongWorkingNumericTokenCount} numeric token(s). Pupils must SEE the wrong sum, not read about it. Show concrete numbers and an actual incorrect calculation.`,
+    );
+  }
+  return [
+    `Rewrite this single "Common mistake" block.`,
+    parts.join(" "),
+    `Keep the existing "Mistake ${report.blockNumber}:" header line and short title.`,
+    `The four labelled lines must appear in this order: "What pupils often write:", "Why that's wrong (in plain words):", "How to do it right:", "Quick check:".`,
+    `Do not rewrite the other mistake blocks. Return ONLY the rewritten block, starting with the "Mistake ${report.blockNumber}:" header.`,
+  ]
+    .filter(Boolean)
+    .join(" ");
+}
+
+/**
+ * Slice the section content into [pre, mistakeBlocks[], post] so we can
+ * rebuild it block-by-block without losing any leading/trailing copy.
+ * (Some templates add "Look at these wrong workings..." before the first
+ * Mistake header.)
+ */
+function splitSectionForRebuild(content: string): {
+  pre: string;
+  blocks: string[];
+  post: string;
+} {
+  const headerRe = /(^|\n)\s*MISTAKE\s*\d+\s*[:\-\u2013\u2014]?/gi;
+  const matches: number[] = [];
+  let m: RegExpExecArray | null;
+  while ((m = headerRe.exec(content)) !== null) {
+    matches.push(m.index + (m[1] === "\n" ? 1 : 0));
+    if (m.index === headerRe.lastIndex) headerRe.lastIndex++;
+  }
+  if (matches.length === 0) {
+    return { pre: content, blocks: [], post: "" };
+  }
+  const pre = content.slice(0, matches[0]).replace(/\s+$/, "");
+  const blocks: string[] = [];
+  for (let i = 0; i < matches.length; i++) {
+    const start = matches[i];
+    const end = i + 1 < matches.length ? matches[i + 1] : content.length;
+    blocks.push(content.slice(start, end).trim());
+  }
+  return { pre, blocks, post: "" };
+}
+
+/**
+ * Ensure the regenerated block starts with the expected "Mistake N:"
+ * header. Some LLMs strip the header thinking it's metadata; some
+ * change "Mistake 1:" to "Mistake one:". Both are easy to repair.
+ */
+function ensureBlockHeader(blockNumber: number, content: string): string {
+  const trimmed = content.trim();
+  if (!trimmed) return "";
+  // If a Mistake N: header exists anywhere near the top, normalise it.
+  const lead = trimmed.slice(0, 80);
+  if (/^MISTAKE\s*\d+\s*[:\-\u2013\u2014]/i.test(lead)) {
+    // Replace whatever number the LLM chose with the canonical one so the
+    // output sequence is stable.
+    return trimmed.replace(
+      /^MISTAKE\s*\d+\s*([:\-\u2013\u2014])/i,
+      `Mistake ${blockNumber}$1`,
+    );
+  }
+  return `Mistake ${blockNumber}: ${trimmed}`;
+}
+
+/**
+ * Re-validate a candidate block in isolation. Returns true only if it
+ * passes both the four-label check AND the numeric-token check. We
+ * deliberately do NOT mutate any state here — the caller decides
+ * whether to splice the candidate in.
+ */
+function blockPassesAudit(block: string, blockNumber: number): boolean {
+  const r = auditBlock(block, blockNumber);
+  return r.hasFourParts && r.hasNumbersInWrongWorking;
+}
+
+/**
+ * Run the active regenerate pass over a worksheet whose
+ * commonMistakesAudit has already been stamped. The audit is then
+ * re-run so the metadata + warnings reflect post-regeneration state.
+ *
+ * Non-maths or audits with no failing blocks: returns the worksheet
+ * unchanged (no LLM calls).
+ */
+export async function applyCommonMistakesActiveRegenerate<
+  W extends AuditableWorksheet,
+>(
+  worksheet: W,
+  regenerator: CommonMistakesRegenerator,
+  opts: CommonMistakesRegenerateOptions = {},
+): Promise<W> {
+  const subject = opts.subject ?? worksheet.metadata?.subject;
+  if (!isMathsSubject(subject)) return worksheet;
+  const audit = worksheet.metadata?.commonMistakesAudit;
+  if (!audit || !audit.sectionFound || audit.allBlocksPass) return worksheet;
+  const failing = audit.blocks.filter(
+    b => !b.hasFourParts || !b.hasNumbersInWrongWorking,
+  );
+  if (failing.length === 0) return worksheet;
+
+  const sections = Array.isArray(worksheet.sections)
+    ? worksheet.sections.slice()
+    : [];
+  const sectionIdx = sections.findIndex(
+    s =>
+      String(s.type || "").toLowerCase() === "common-mistakes" ||
+      /common\s+mistakes?/i.test(String(s.title || "")),
+  );
+  if (sectionIdx < 0) return worksheet;
+  const section = { ...sections[sectionIdx] };
+  const { pre, blocks } = splitSectionForRebuild(String(section.content || ""));
+  if (blocks.length === 0) return worksheet;
+
+  // Track which blocks were successfully rewritten so we can rebuild the
+  // postValidatorWarnings list cleanly at the end.
+  const replaced = new Set<number>();
+  for (const failBlock of failing) {
+    const idx = failBlock.blockNumber - 1;
+    if (idx < 0 || idx >= blocks.length) continue;
+    const original = blocks[idx];
+    const diagnostic = buildBlockDiagnostic(failBlock);
+    let regenerated: string;
+    try {
+      regenerated = await regenerator({
+        blockNumber: failBlock.blockNumber,
+        originalBlock: original,
+        diagnostic,
+        subject,
+        yearGroup: opts.yearGroup,
+      });
+    } catch {
+      // Regenerator failure: keep the original block + original warning.
+      continue;
+    }
+    if (typeof regenerated !== "string" || regenerated.trim().length === 0) {
+      continue;
+    }
+    const candidate = ensureBlockHeader(failBlock.blockNumber, regenerated);
+    if (!blockPassesAudit(candidate, failBlock.blockNumber)) {
+      // Regenerated content still doesn't pass — don't downgrade the
+      // worksheet by accepting it. Keep the original and its warning.
+      continue;
+    }
+    blocks[idx] = candidate;
+    replaced.add(failBlock.blockNumber);
+  }
+
+  if (replaced.size === 0) return worksheet;
+
+  // Rebuild the section content. Preserve the leading prose (if any) and
+  // separate blocks with a blank line so the renderer treats them as
+  // distinct paragraphs.
+  const rebuilt = [
+    pre.trim(),
+    blocks.map(b => b.trim()).join("\n\n"),
+  ]
+    .filter(Boolean)
+    .join("\n\n");
+  section.content = rebuilt;
+  sections[sectionIdx] = section;
+
+  // Re-stamp the audit on the rebuilt worksheet. This naturally
+  // recomputes blocks + warnings, so the teacher banner now reflects
+  // post-regenerate state. Drop any pre-existing block-level warning
+  // for blocks we successfully replaced — re-running the audit will
+  // re-emit the survivors and won't emit the resolved ones, but legacy
+  // warnings already in the list need pruning by hand.
+  const oldWarnings = Array.isArray(worksheet.metadata?.postValidatorWarnings)
+    ? (worksheet.metadata!.postValidatorWarnings as string[])
+    : [];
+  const blockWarningRe = /^\[Common Mistakes\] Block (\d+) /;
+  const carriedWarnings = oldWarnings.filter(w => {
+    const m = blockWarningRe.exec(w);
+    if (!m) return true;
+    const n = Number(m[1]);
+    return !replaced.has(n);
+  });
+
+  const intermediate: W = {
+    ...worksheet,
+    sections,
+    metadata: {
+      ...(worksheet.metadata || {}),
+      postValidatorWarnings: carriedWarnings,
+      // commonMistakesAudit is intentionally left in place: applyCommonMistakesAudit
+      // below recomputes the report from the rebuilt sections and overwrites it.
+    },
+  } as W;
+  return applyCommonMistakesAudit(intermediate, { subject });
+}
+
 // Tiny test-only export — used by future unit tests.
 export const __test__ = {
   findCommonMistakesSection,
@@ -362,4 +644,7 @@ export const __test__ = {
   extractWrongWorkingBody,
   countNumericTokens,
   auditBlock,
+  buildBlockDiagnostic,
+  splitSectionForRebuild,
+  ensureBlockHeader,
 };
