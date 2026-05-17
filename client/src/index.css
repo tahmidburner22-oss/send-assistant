@@ -301,6 +301,12 @@
     break-before: auto !important;
     page-break-before: auto !important;
   }
+
+  /* PB1 — Provenance chips: hide on print for student mode; show inline for teacher print */
+  .ws-prov-chip {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
 }
 
 /* ───────────────────────────────────────────────────────────────────────
