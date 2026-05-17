@@ -4240,6 +4240,37 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                 )}
               </div>
               <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "2px", flexShrink: 0 }}>
+                {/* FEAT-PB3 — Re-teach worksheet badge (teacher view only).
+                    Surfaces the lineage so the teacher sees at a glance that
+                    this worksheet was generated from a Scan & Mark gap. */}
+                {isTeacherView && (worksheet.metadata as any)?.reteach?.misconceptionId && (
+                  <div
+                    data-testid="reteach-badge"
+                    style={{
+                      background: "#facc15",
+                      color: "#1f2937",
+                      fontSize: "10px",
+                      fontWeight: 900,
+                      padding: "2px 8px",
+                      borderRadius: "12px",
+                      marginBottom: "4px",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "4px",
+                      boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+                      fontFamily: fmt.fontFamily,
+                      letterSpacing: "0.04em",
+                    }}
+                    title={(worksheet.metadata as any)?.reteach?.misconceptionText || "Re-teach worksheet"}
+                  >
+                    <span>RE-TEACH</span>
+                    {typeof (worksheet.metadata as any)?.reteach?.pctWrong === "number" && (
+                      <span style={{ fontSize: "8px", opacity: 0.85 }}>
+                        [{Math.round((worksheet.metadata as any).reteach.pctWrong)}% wrong]
+                      </span>
+                    )}
+                  </div>
+                )}
                 {isTeacherView && worksheet.metadata?.qaScore && (
                   <div style={{
                     background: worksheet.metadata?.validationStatus === "fail" ? "#ef4444" : worksheet.metadata?.validationStatus === "warn" ? "#f59e0b" : "#10b981",
@@ -4299,6 +4330,34 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                 </span>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                {/* FEAT-PB3 — Re-teach badge (teacher view only). */}
+                {isTeacherView && (worksheet.metadata as any)?.reteach?.misconceptionId && (
+                  <div
+                    data-testid="reteach-badge"
+                    style={{
+                      background: "#a16207",
+                      color: "#fff",
+                      fontSize: "9px",
+                      fontWeight: 800,
+                      padding: "2px 10px",
+                      borderRadius: "4px",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "6px",
+                      fontFamily: fmt.fontFamily,
+                      letterSpacing: "0.04em",
+                    }}
+                    title={(worksheet.metadata as any)?.reteach?.misconceptionText || "Re-teach worksheet"}
+                  >
+                    <span>RE-TEACH</span>
+                    {typeof (worksheet.metadata as any)?.reteach?.pctWrong === "number" && (
+                      <>
+                        <div style={{ width: "1px", height: "10px", background: "rgba(255,255,255,0.3)" }} />
+                        <span>{Math.round((worksheet.metadata as any).reteach.pctWrong)}% WRONG</span>
+                      </>
+                    )}
+                  </div>
+                )}
                 {isTeacherView && worksheet.metadata?.qaScore && (
                   <div style={{
                     background: worksheet.metadata?.validationStatus === "fail" ? "#7f1d1d" : worksheet.metadata?.validationStatus === "warn" ? "#92400e" : "#064e3b",
@@ -7413,6 +7472,52 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
       )}
 
       {/* ── Footer ── */}
+      {/* FEAT-PB3 — Re-teach lineage line (teacher view only). Sits right
+          above the existing per-page footer so the lineage prints alongside
+          the standard footer in teacher mode and never bleeds into pupil
+          prints. */}
+      {isTeacherView && (worksheet.metadata as any)?.reteach?.misconceptionId && (
+        <div
+          data-testid="reteach-lineage"
+          style={{
+            marginTop: "12px",
+            padding: "6px 10px",
+            background: "#fef3c7",
+            border: "1px solid #fcd34d",
+            borderRadius: "4px",
+            fontSize: "10px",
+            color: "#78350f",
+            fontFamily: fmt.fontFamily,
+            lineHeight: 1.45,
+          }}
+        >
+          <strong>Re-teach worksheet</strong>
+          {" "}— addresses{" "}
+          <em>"{(worksheet.metadata as any)?.reteach?.misconceptionText || "an unspecified misconception"}"</em>
+          {(worksheet.metadata as any)?.reteach?.sourceWorksheetTitle && (
+            <>
+              {" "}· originated from{" "}
+              <strong>{(worksheet.metadata as any).reteach.sourceWorksheetTitle}</strong>
+            </>
+          )}
+          {(worksheet.metadata as any)?.reteach?.generatedAt && (
+            <>
+              {" "}on{" "}
+              {new Date((worksheet.metadata as any).reteach.generatedAt).toLocaleDateString("en-GB")}
+            </>
+          )}
+          {Array.isArray((worksheet.metadata as any)?.reteach?.pupilsTargeted)
+            && (worksheet.metadata as any).reteach.pupilsTargeted.length > 0 && (
+            <>
+              {" "}· targets{" "}
+              {(worksheet.metadata as any).reteach.pupilsTargeted.length} pupil
+              {(worksheet.metadata as any).reteach.pupilsTargeted.length === 1 ? "" : "s"}
+            </>
+          )}
+          .
+        </div>
+      )}
+
       {isRevisionMat ? (
         <div style={{ marginTop: "6px", padding: "4px 8px", display: "flex", justifyContent: "space-between", fontSize: "9px", color: "#9ca3af", fontFamily: fmt.fontFamily }}>
           <span>Generated by Adaptly · adaptly.co.uk</span>
