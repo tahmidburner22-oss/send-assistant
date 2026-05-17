@@ -64,6 +64,10 @@ export interface UserPreferences {
   // auto-from-class). Persists per-user so a teacher who prefers Auto
   // doesn't have to re-toggle on every visit.
   worksheetGenerationMode?: "manual" | "auto-class";
+  // Phase B · PR-4 — last-used Scan & Mark dialog tab. Persisted so a
+  // teacher who lives in the class-set tab on a Sunday-evening marking
+  // session doesn't have to re-select it every time the dialog reopens.
+  lastScanMarkTab?: "single" | "class" | "voice";
 }
 
 // ─── Preset themes ────────────────────────────────────────────────────────────
