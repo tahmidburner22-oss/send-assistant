@@ -1,0 +1,56 @@
+{
+  "id": "FEAT-PR3",
+  "type": "feat",
+  "title": "Class Pack as default for class-scoped generations",
+  "description": "When a worksheet is generated in Auto-from-class mode (PR-2), automatically run it through the existing Class Pack pipeline so each pupil receives a tier-appropriate, named copy in one printable PDF. Add A5 booklet imposition and a greyscale-friendly print theme to pdf-generator-v2.",
+  "rationale": "The everyday teacher motion is: print once, walk to the photocopier once, hand out in register order. Today Class Pack exists but is opt-in and several clicks deep. Making it the default for class-scoped generations completes the 'we know your class' promise.",
+  "depends_on": ["FEAT-PR0", "FEAT-PR1", "FEAT-PR2"],
+  "steps": [
+    "In client/src/pages/worksheets/useWorksheetGeneration.ts (from PR-0/PR-2), after a successful generateFromBrief call, automatically chain into runClassPack from client/src/lib/class-pack.ts. Do NOT auto-chain for manual generations — only for class-scoped Auto generations.",
+    "Defaults applied automatically (teacher can still tweak before printing):",
+    "  - Differentiate per pupil = ON (use brief.pupilSummaries to set per-pupil tier)",
+    "  - Print as named booklet = ON (pupil name on cover, register order)",
+    "  - Tier mode = matches brief.tierMix",
+    "Surface the result via the existing ClassPackDialog (do not auto-open the print window — open the dialog so the teacher confirms).",
+    "Extend client/src/lib/pdf-generator-v2.ts (or whichever module renders the printable HTML — grep for buildClassPackHtml in client/src/lib/class-pack.ts and trace from there) with two new options:",
+    "  - imposition: 'A4' | 'A5-booklet'  (A5-booklet halves the page and reorders for saddle-stitch)",
+    "  - theme: 'colour' | 'greyscale-print'  (greyscale-print swaps coloured backgrounds for hatched fills and removes background tints; tested at 300dpi photocopier)",
+    "Add toggles for both new options to ClassPackDialog under a 'Print options' collapsible. Default: A4 + colour, matching today.",
+    "Persist the teacher's last-used imposition + theme in UserPreferencesContext (`classPackImposition`, `classPackTheme`).",
+    "Update client/src/components/WorksheetActionsBar.tsx (introduced by PR-0) so the Class Pack button is visually de-emphasised in Auto mode (tooltip: 'Already prepared'), and prominent in Manual mode.",
+    "Add a test client/src/lib/__tests__/pdfImposition.test.ts that asserts A5-booklet ordering for an 8-page input matches the expected saddle-stitch sequence (1,8,2,7,...).",
+    "Add a Storybook-style visual regression spec or snapshot for the greyscale theme if one is already configured (search for `*.stories.*` and `*.snap`); skip if none."
+  ],
+  "files_to_touch": [
+    "client/src/pages/worksheets/useWorksheetGeneration.ts",
+    "client/src/components/ClassPackDialog.tsx",
+    "client/src/components/WorksheetActionsBar.tsx (from PR-0)",
+    "client/src/lib/class-pack.ts (small additions only — pass-through for new options)",
+    "client/src/lib/pdf-generator-v2.ts",
+    "client/src/contexts/UserPreferencesContext.tsx",
+    "client/src/lib/__tests__/pdfImposition.test.ts (new)"
+  ],
+  "do_not_touch": [
+    "buildClassAutoBrief or aiGenerateWorksheetFromClassBrief (already shipped in PR-1)",
+    "AutoFromClassPanel.tsx (already shipped in PR-2 — only consume its result)"
+  ],
+  "acceptance_criteria": [
+    "Auto-mode generation auto-runs the Class Pack pipeline and opens ClassPackDialog with sensible defaults; teacher can still cancel.",
+    "Manual-mode generation behaviour is identical to before this PR.",
+    "A5-booklet imposition produces a correctly-ordered saddle-stitch PDF for a 4 / 8 / 16 / 24 page input.",
+    "Greyscale-print theme has zero coloured backgrounds and is legible at 300dpi photocopier output (manual visual check).",
+    "Last-used imposition and theme persist across reloads.",
+    "pnpm run check + pnpm run build pass; new test passes."
+  ],
+  "verification": [
+    "pnpm run check",
+    "pnpm test --run pdfImposition",
+    "pnpm run build",
+    "Manual: generate from Auto for a real class; print to PDF in greyscale + A5-booklet; verify pages collate correctly."
+  ],
+  "size_estimate": {
+    "files_touched": 7,
+    "net_lines_changed": 400
+  },
+  "context_budget_for_fresh_chat": "MEDIUM. ClassPackDialog is 475 lines (read in full). class-pack.ts is the heaviest existing file you'll touch — read its exports list with grep first, then read only the buildClassPackHtml + runClassPack ranges."
+}

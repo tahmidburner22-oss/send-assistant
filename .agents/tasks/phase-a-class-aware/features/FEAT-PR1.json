@@ -1,0 +1,64 @@
+{
+  "id": "FEAT-PR1",
+  "type": "feat",
+  "title": "Schema + helpers for Auto-from-class generation (no UI yet)",
+  "description": "Add the data layer required for class-aware worksheet generation. Introduce a GenerationMode type, a buildClassAutoBrief() helper that aggregates pupil context for a whole class, and aiGenerateWorksheetFromClassBrief() that wraps the existing aiGenerateWorksheet call with that brief. No UI changes — the next PR consumes these.",
+  "rationale": "We want the form-vs-auto switch in PR-2 to be a thin UI on top of well-tested data and AI helpers. Doing the schema and pure functions in their own PR lets us add unit tests and keeps PR-2 small.",
+  "depends_on": ["FEAT-PR0"],
+  "steps": [
+    "In client/src/lib/pupil-context.ts, add a new function buildClassAutoBrief(classId: string): ClassAutoBrief that aggregates over all pupils in the class. ClassAutoBrief shape:",
+    "  {",
+    "    classId: string;",
+    "    classLabel: string;            // human-readable, e.g. '7B2 Maths'",
+    "    suggestedTopic: string;        // from scheduler-store next-due topic, fall back to last-taught",
+    "    pupilCount: number;",
+    "    tierMix: { foundation: number; core: number; higher: number; send: number };  // counts",
+    "    readingAgeRange: { min: number; max: number };",
+    "    recentMisconceptions: string[]; // pulled from the most recent ScanMark batch for this class, top 5",
+    "    sendNeeds: string[];           // distinct EHCP/SEND tags across the class",
+    "    pupilSummaries: Array<{ pupilId: string; tier: 'foundation'|'core'|'higher'|'send'; readingAge: number; topNeed: string|null }>;",
+    "  }",
+    "Source data: read pupils via the existing children store (search for `useChildren` or `children-store.ts`), recent scan results via lib/scan-mark.ts (look for `getRecentScanResults` or similar), scheduler via lib/scheduler-store.ts loadScheduler().",
+    "Make buildClassAutoBrief synchronous and pure (no AI calls, no fetches). All inputs come from in-memory stores. If a class has no scan history, recentMisconceptions = []. If a class has no scheduler entry, suggestedTopic = '' and the caller is expected to surface that.",
+    "Add a sibling helper classAutoBriefIsUsable(brief): boolean that returns true iff pupilCount >= 1 and (suggestedTopic !== '' OR caller will provide a topic). PR-2 uses this to decide whether to show the auto panel as actionable.",
+    "In client/src/lib/ai/generate.ts (introduced by PR-0), add a new exported wrapper:",
+    "  export async function aiGenerateWorksheetFromClassBrief(",
+    "    brief: ClassAutoBrief,",
+    "    overrides: Partial<Parameters<typeof aiGenerateWorksheet>[0]> = {}",
+    "  ): Promise<ReturnType<typeof aiGenerateWorksheet>>",
+    "It must derive subject/yearGroup/topic/sendNeed from the brief, then merge `overrides` on top, then delegate to aiGenerateWorksheet. It must NOT introduce a new prompt — only an additional 'Class context' system message appended to the existing prompt array, summarising tierMix, readingAgeRange, and the top 3 recentMisconceptions.",
+    "Re-export ClassAutoBrief and aiGenerateWorksheetFromClassBrief from client/src/lib/ai/index.ts.",
+    "Add tests:",
+    "  - client/src/lib/__tests__/buildClassAutoBrief.test.ts — covers: no pupils returns pupilCount=0; mixed tiers compute correct counts; recentMisconceptions are deduped and capped at 5; missing scheduler entry yields empty suggestedTopic.",
+    "  - client/src/lib/__tests__/aiGenerateWorksheetFromClassBrief.test.ts — mocks aiGenerateWorksheet, asserts it is called once with the expected merged params and that overrides win over brief-derived values."
+  ],
+  "files_to_touch": [
+    "client/src/lib/pupil-context.ts (add buildClassAutoBrief, classAutoBriefIsUsable, ClassAutoBrief type)",
+    "client/src/lib/ai/generate.ts (add aiGenerateWorksheetFromClassBrief)",
+    "client/src/lib/ai/index.ts (re-export new symbols)",
+    "client/src/lib/__tests__/buildClassAutoBrief.test.ts (new)",
+    "client/src/lib/__tests__/aiGenerateWorksheetFromClassBrief.test.ts (new)"
+  ],
+  "do_not_touch": [
+    "Worksheets.tsx or any UI",
+    "The aiGenerateWorksheet prompt itself — only append a class-context message",
+    "shared/aiSchemas.ts (no schema change required)"
+  ],
+  "acceptance_criteria": [
+    "buildClassAutoBrief is pure, synchronous, returns the documented shape, and is unit-tested for: empty class, mixed tiers, missing scheduler entry, no scan history, top-5 misconception cap.",
+    "aiGenerateWorksheetFromClassBrief delegates to aiGenerateWorksheet exactly once and respects override precedence.",
+    "No existing import path breaks. pnpm run check + pnpm run build pass.",
+    "Tests pass: pnpm test --run buildClassAutoBrief aiGenerateWorksheetFromClassBrief."
+  ],
+  "verification": [
+    "pnpm run check",
+    "pnpm test --run buildClassAutoBrief",
+    "pnpm test --run aiGenerateWorksheetFromClassBrief",
+    "pnpm run build"
+  ],
+  "size_estimate": {
+    "files_touched": 5,
+    "net_lines_changed": 350
+  },
+  "context_budget_for_fresh_chat": "LOW. PR-0 has already shrunk ai.ts. Read only generate.ts (small after split), pupil-context.ts (currently 141 lines, fully readable), and the test files. No need to read Worksheets.tsx at all."
+}

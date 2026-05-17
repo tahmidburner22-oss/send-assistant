@@ -1,0 +1,59 @@
+{
+  "id": "FEAT-PR5",
+  "type": "infra",
+  "title": "Worksheet eval harness (internal, no UI)",
+  "description": "Add a nightly evaluation harness that runs 50 canonical UK National Curriculum + GCSE prompts through aiGenerateWorksheet, applies runWorksheetPostValidators, and writes a structured eval-report.json artefact. Provides regression protection against silent quality drift when prompts, models, or validators change.",
+  "rationale": "Quality is the single attribute that cannot recover from an outage. An eval harness lets Phase B and Phase C land confidently — every PR can run `pnpm eval:worksheets` locally and CI can gate on regression. No product code changes; pure infra.",
+  "depends_on": ["FEAT-PR0"],
+  "steps": [
+    "Create server/tests/worksheet-eval/ folder with:",
+    "  - fixtures/ — 50 JSON files, each shape:",
+    "      {",
+    "        id: 'eval-001',",
+    "        title: 'Y7 Maths — fractions of amounts',",
+    "        params: <args to aiGenerateWorksheet>,",
+    "        rules: ['mcq-single-correct','word-bank-deduped','no-foreign-diagrams','reading-age-in-range','spec-ref-present'],",
+    "        readingAgeRange: [10, 12]",
+    "      }",
+    "  - 50 fixtures spanning: 10 maths (Y3, Y6, Y7, Y9, Y10, Y11), 10 English, 10 science, 10 humanities, 10 SEND-specific (dyslexia, dyscalculia, autism, ADHD, EAL).",
+    "  - runner.ts — iterates fixtures, calls aiGenerateWorksheet, applies runWorksheetPostValidators, scores against `rules`, writes eval-report.json with per-fixture { passed, failedRules[], warnings[], generationMs, costUsd }.",
+    "  - rules.ts — small registry mapping rule name → predicate (most rules already exist as post-validator behaviours; this is just an assertion layer that reads worksheet + postValidatorWarnings and decides pass/fail).",
+    "Add a pnpm script: `\"eval:worksheets\": \"tsx server/tests/worksheet-eval/runner.ts\"`. Add a `--bail` flag for CI.",
+    "Add a GitHub Actions workflow .github/workflows/worksheet-eval.yml that runs nightly (cron '0 3 * * *') and on demand (workflow_dispatch). Uploads eval-report.json as an artefact. Does NOT block PRs — that comes later when we have a baseline.",
+    "Add a small Markdown summariser that reads eval-report.json and prints a one-screen pass/fail table to stdout. CI calls this in the job summary so failures are visible without downloading the artefact.",
+    "Cost guard: the runner aborts if estimated cost (params.length * tokensPerRun * pricePerToken) exceeds $1.00. Budget configurable via env `EVAL_BUDGET_USD`.",
+    "Add docs/eval-harness.md (one page) explaining: how to add a fixture, what the rules mean, how to interpret the report.",
+    "Do NOT introduce eval as a PR-blocking gate yet — that requires a stable baseline (target: PR-7 in Phase B once symbolic-maths verification has settled the maths quality)."
+  ],
+  "files_to_touch": [
+    "server/tests/worksheet-eval/fixtures/*.json (50 new)",
+    "server/tests/worksheet-eval/runner.ts (new)",
+    "server/tests/worksheet-eval/rules.ts (new)",
+    "package.json (one script)",
+    ".github/workflows/worksheet-eval.yml (new)",
+    "docs/eval-harness.md (new)"
+  ],
+  "do_not_touch": [
+    "Any product code under client/src/ except importing from it read-only",
+    "Existing tests under server/tests/"
+  ],
+  "acceptance_criteria": [
+    "`pnpm eval:worksheets` runs all 50 fixtures locally and writes server/tests/worksheet-eval/eval-report.json.",
+    "Cost guard aborts cleanly if estimated cost exceeds budget.",
+    "GitHub Actions workflow runs nightly and uploads the artefact.",
+    "Job summary shows a per-rule pass/fail table.",
+    "Adding a new fixture is a one-file change documented in docs/eval-harness.md."
+  ],
+  "verification": [
+    "pnpm run check",
+    "pnpm eval:worksheets (with EVAL_BUDGET_USD=0.01 — should abort cleanly)",
+    "pnpm eval:worksheets (with full budget — should produce a report)",
+    "Trigger workflow_dispatch on the new GitHub Actions workflow"
+  ],
+  "size_estimate": {
+    "files_touched": 56,
+    "net_lines_changed": 400,
+    "notes": "50 of those files are tiny JSON fixtures (~5 lines each)."
+  },
+  "context_budget_for_fresh_chat": "LOW. The agent only needs to read worksheetPostValidator.ts (608 lines) once, plus aiGenerateWorksheet's parameter shape from generate.ts. Fixtures are written from a small template."
+}
