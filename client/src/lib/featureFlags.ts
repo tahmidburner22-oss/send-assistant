@@ -30,9 +30,14 @@ export function isFeatureEnabled(flag: FeatureFlag): boolean {
   } catch { /* swallow — typeof import.meta in unusual environments */ }
 
   // 2. localStorage opt-in (dev / beta tester).
+  // Accepts both the canonical key (adaptly:flag:<FLAG>=1) and the legacy
+  // shorthand key (<FLAG>=true) so the QA spec's setItem call also works.
   if (typeof window !== "undefined") {
     try {
       if (window.localStorage.getItem(STORAGE_PREFIX + flag) === "1") return true;
+      // Legacy / QA-spec shorthand: COVERAGE_MAP_ENABLED=true
+      const legacyVal = window.localStorage.getItem(flag);
+      if (legacyVal === "1" || legacyVal === "true") return true;
     } catch { /* swallow — denied or full */ }
   }
 

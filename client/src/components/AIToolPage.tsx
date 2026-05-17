@@ -1016,6 +1016,8 @@ export default function AIToolPage({
               )}
             </CardContent>
           </Card>
+          {/* Render V2 panel tabs even before generation so they are always accessible */}
+          {renderPostActions && !result && renderPostActions("", values)}
         ) : isStreaming && !result ? (
           /* Streaming in progress — show progressive text */
           <div className="space-y-3">
