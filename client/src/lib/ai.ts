@@ -1218,11 +1218,14 @@ BLOCK 1 — ${blockInstructions[variantA[0]]}
 BLOCK 2 — ${blockInstructions[variantA[1]]}
 BLOCK 3 — ${blockInstructions[variantA[2]]}`;
 
-  const sectionBPrompt = `Section B must contain exactly 3 blocks separated by a blank line:
+  const sectionBPrompt =
+    yearNum >= 9 ? `SECTION 3 — EXAM STYLE QUESTIONS: For this year group, this section MUST be strictly 'Exam Style Questions'. Provide 3 multi-step exam-style questions (labeled Q7, Q8, Q9) that mirror actual GCSE/A-Level papers. Every question MUST include a realistic mark allocation (e.g. [4 marks]) and use exam-style phrasing like 'Calculate...', 'Show that...', 'Solve...'. Questions must require evaluation or multi-step reasoning. Do NOT use simple recall questions here.` :
+    `Section B must contain exactly 3 blocks separated by a blank line:
 BLOCK 1 — ${blockInstructions[variantB[0]]}
 BLOCK 2 — ${blockInstructions[variantB[1]]}
 BLOCK 3 — ${blockInstructions[variantB[2]]}`;
-  const examStylePrompt = (yearNum >= 9) ? `\nMANDATORY FOR YEAR 9-11: Section 3 MUST consist entirely of "Exam Style" questions. Use realistic marks [3 marks], [4 marks] and exam board phrasing.` : "";
+
+  const examStylePrompt = (yearNum >= 9) ? `\nCRITICAL: Section 3 MUST be titled 'SECTION 3 — EXAM STYLE QUESTIONS'. Every single question in Section 3 MUST be an exam-style question with marks shown at the end. Also, ensure that Diagram A and Diagram B are always generated and included in the worksheet, even if not explicitly referenced in the questions. They should be relevant to the topic.` : "";
 
   // ── Primary (KS1/KS2) layout enhancement ──────────────────────────────────
   const isPrimary = yearNum <= 6;
