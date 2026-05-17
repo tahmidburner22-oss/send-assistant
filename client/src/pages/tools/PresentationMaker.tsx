@@ -29,6 +29,7 @@ import { useApp } from "@/contexts/AppContext";
 import { useLocation } from "wouter";
 
 import { FunFactsCarousel } from "@/components/FunFactsCarousel";
+import PresentationMakerEnhancementsPanel from "@/components/PresentationMakerEnhancementsPanel";
 import { resolvePresentationTemplate } from "@/lib/presentation-templates";
 import { buildSubjectPromptFragments } from "@/lib/subject-profiles";
 import { resolveSendSpecs, composeSendNoteForPresentation, getSendReadingAgeCeiling, getAppliedAdaptations, getSendThemeOverride } from "@/lib/sendPromptFragments";
@@ -4415,6 +4416,40 @@ Return JSON array of adapted slides.`;
                     {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                   </Button>
                 </div>
+
+                {/* PR5 v2 panel — speaker notes / regenerate slide / images / pace / Google Slides */}
+                <PresentationMakerEnhancementsPanel
+                  deck={{
+                    title: presentation.title,
+                    subject: presentation.subject,
+                    yearGroup: presentation.yearGroup,
+                    topic: presentation.topic,
+                    theme: presentation.theme,
+                    slides: presentation.slides as unknown as import("@/lib/presentation-maker-enhancements").SlideLite[],
+                    totalSlides: presentation.totalSlides,
+                  }}
+                  activeSlideIndex={activeSlide}
+                  onSlideRegenerated={(idx, slide) => {
+                    setPresentation((curr) => {
+                      if (!curr) return curr;
+                      const newSlides = curr.slides.slice();
+                      newSlides[idx] = { ...newSlides[idx], ...(slide as unknown as SlideContent) };
+                      return { ...curr, slides: newSlides };
+                    });
+                  }}
+                  onApplyPace={(newDeck) => {
+                    setPresentation((curr) => {
+                      if (!curr) return curr;
+                      // Preserve original slides' fields, only override timingMinutes from the paced deck
+                      const newSlides = curr.slides.map((s, i) => {
+                        const paced = newDeck.slides[i] as { timingMinutes?: number } | undefined;
+                        return paced ? { ...s, timingMinutes: paced.timingMinutes } : s;
+                      });
+                      return { ...curr, slides: newSlides };
+                    });
+                    toast.success("Deck timings updated.");
+                  }}
+                />
               </div>
             )}
           </div>
