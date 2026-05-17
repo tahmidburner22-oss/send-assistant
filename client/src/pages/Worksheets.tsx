@@ -37,6 +37,9 @@ import { ScanMarkDialog } from "@/components/ScanMarkDialog";
 // FEAT-PB3 — Misconception-driven re-teach loop. Aggregates a Scan & Mark
 // batch, builds a re-teach brief, and threads it through to the existing
 // generation pipeline via aiGenerateReteachWorksheet.
+// FEAT-PC4 (UI half) — Tee each scan into the persistent attempt log so
+// the Curriculum Coverage page can read it across reloads.
+import { appendAttempt as appendCoverageAttempt, buildAttemptFromScan } from "@/lib/attemptLog";
 import {
   aiGenerateReteachWorksheet,
   type ReteachBrief,
@@ -6833,6 +6836,26 @@ ${s.content}`).join("\n\n"),
             const filtered = prev.filter((e) => e.pupilId !== entry.pupilId);
             return [...filtered, entry];
           });
+          // FEAT-PC4 (UI half) — also persist the attempt for the
+          // Curriculum Coverage page so it survives reloads. We swallow
+          // any storage error in the helper itself; the live page never
+          // depends on the persisted copy succeeding.
+          if (generated) {
+            try {
+              appendCoverageAttempt(
+                buildAttemptFromScan({
+                  pupil: { id: entry.pupilId, name: entry.pupilName },
+                  worksheet: {
+                    id: (generated as any).id,
+                    title: generated.title,
+                    metadata: (generated.metadata as any) || {},
+                  },
+                  result: entry.result,
+                  attemptedAt: entry.scannedAt,
+                }),
+              );
+            } catch { /* swallow — coverage page is best-effort */ }
+          }
         }}
         reteachThresholdPct={40}
         onReteach={(brief: ReteachBrief) => {
