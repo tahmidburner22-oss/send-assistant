@@ -55,7 +55,7 @@ Every spec ties back to one of these three shifts.
 | # | Improvement                                | Phase | Spec file                                                                          | Status      |
 | - | ------------------------------------------ | ----- | ---------------------------------------------------------------------------------- | ----------- |
 | 1 | "Tomorrow's lesson is already done" — proactive home screen | A · PR-4 | [`phase-a-class-aware/features/FEAT-PR4.json`](../.agents/tasks/phase-a-class-aware/features/FEAT-PR4.json) | **Shipped — PR #48** |
-| 2 | Pupil-aware auto-generation                | A · PR-1 + PR-2 | [`phase-a-class-aware/features/FEAT-PR1.json`](../.agents/tasks/phase-a-class-aware/features/FEAT-PR1.json) + [`FEAT-PR2.json`](../.agents/tasks/phase-a-class-aware/features/FEAT-PR2.json) | **Shipped — PR #46 + #47 (re-applied)** |
+| 2 | Pupil-aware auto-generation                | A · PR-1 + PR-2 | [`phase-a-class-aware/features/FEAT-PR1.json`](../.agents/tasks/phase-a-class-aware/features/FEAT-PR1.json) + [`FEAT-PR2.json`](../.agents/tasks/phase-a-class-aware/features/FEAT-PR2.json) | **Shipped — PR #46 + #47 (re-applied PR #50)** |
 | 3 | Curriculum coverage map ("Ofsted view")    | C · PC4 | [`phase-c-fit-your-school/features/FEAT-PC4.json`](../.agents/tasks/phase-c-fit-your-school/features/FEAT-PC4.json) | Specced     |
 | 4 | Misconception-driven re-teach loop         | B · PB3 | [`phase-b-close-the-loop/features/FEAT-PB3.json`](../.agents/tasks/phase-b-close-the-loop/features/FEAT-PB3.json) | Specced     |
 | 5 | Spec-point provenance + AO tag             | B · PB1 | [`phase-b-close-the-loop/features/FEAT-PB1.json`](../.agents/tasks/phase-b-close-the-loop/features/FEAT-PB1.json) | Specced     |
