@@ -5,6 +5,41 @@
  * Multi-provider AI engine for Adaptly.
  * Priority order: Groq → Gemini → OpenRouter → OpenAI → Local fallback
  * API keys stored in localStorage so users can update without redeploying.
+ *
+ * ════════════════════════════════════════════════════════════════════════════
+ * NAVIGATION INDEX (this file is ~4,500 lines — grep `// §` to jump)
+ * ════════════════════════════════════════════════════════════════════════════
+ *   §JSON      L121   repairTruncatedJson, parseWithFixes
+ *   §KEYS      L261   AI_KEY_STORAGE, getStoredKey, setStoredKey
+ *   §PROVIDERS L292   callGroq / callGemini / callOpenRouter / callOpenAI / callClaude / callHuggingFace
+ *   §CALL      L479   AIProvider, AIChatMessage, callAIMessages, callAI
+ *   §TYPES-WS  L629   AIWorksheetSection, AIWorksheetResult
+ *   §SPEC      L746   getSpecQuestions (private prompt helper)
+ *   §GENERATE  L817   aiGenerateWorksheet                        ← MAIN ENTRY POINT
+ *   §STORY     L3446  aiGenerateStory
+ *   §DIFF-TASK L3535  aiDifferentiateTask
+ *   §EDIT      L3560  aiEditSection
+ *   §REPORT    L3588  aiGenerateParentReport
+ *   §DIAGRAM   L3649  aiGenerateDiagram
+ *   §DIAG-WS   L3705  aiGenerateWorksheetDiagram
+ *   §MCQ       L3729  aiGenerateComprehensionMCQ (+ ComprehensionMCQ)
+ *   §SCAFFOLD  L3771  aiScaffoldExistingWorksheet
+ *   §DIFF-WS   L3821  aiDifferentiateExistingWorksheet
+ *   §NL-PARSE  L3879  parseNaturalLanguageInput
+ *   §SCENARIO  L4200  aiScenarioSwap, aiScenarioSwapStory (L4342)
+ *   §READAGE   L4251  aiAdjustReadingLevel, aiRewriteTextToReadingAge (L4529)
+ *   §DIAG-SPEC L4396  DiagramSpec types, validateDiagramSpec, extractDiagramSpec, stripDiagramMarker
+ *   §BATCH     L4572  aiBatchGenerateWorksheet
+ *
+ * For Phase A refactor (see .agents/tasks/phase-a-class-aware/features/FEAT-PR0.json):
+ *   - Most callers import only callAI, parseWithFixes, repairTruncatedJson, aiGenerateStory,
+ *     aiScenarioSwapStory, aiGenerateComprehensionMCQ, aiDifferentiateTask, parseWithFixes.
+ *   - The Worksheets page additionally imports aiGenerateWorksheet, aiEditSection,
+ *     aiScaffoldExistingWorksheet, aiDifferentiateExistingWorksheet, parseNaturalLanguageInput,
+ *     aiScenarioSwap, aiAdjustReadingLevel.
+ *   - Splitting must preserve every export name; create client/src/lib/ai/<topic>.ts files
+ *     and turn this file into a barrel of re-exports.
+ * ════════════════════════════════════════════════════════════════════════════
  */
 
 // ─── Spec-aligned question banks ────────────────────────────────────────────
@@ -83,7 +118,7 @@ const BUILT_IN_KEYS: Record<string, string> = {
   huggingface: "",
 };
 
-// ─── Robust JSON parser (exported for use across the app) ──────────────────────
+// ═══ §JSON · robust JSON parser (exported for use across the app) ══════════
 /**
  * Attempt to repair a truncated JSON string by closing any open arrays/objects.
  * Returns the repaired string if it could be fixed, or null if not recoverable.
@@ -223,7 +258,7 @@ export function parseWithFixes(s: string): any {
   throw new Error('parseWithFixes: all strategies failed');
 }
 
-// ─── Key storage helpers ─────────────────────────────────────────────────────
+// ═══ §KEYS · key storage helpers ═══════════════════════════════════════════
 export const AI_KEY_STORAGE = {
   groq: "adaptly_groq_key",
   gemini: "adaptly_gemini_key",
@@ -254,7 +289,7 @@ export function setStoredKey(provider: keyof typeof AI_KEY_STORAGE, key: string)
   }
 }
 
-// ─── Provider implementations ────────────────────────────────────────────────
+// ═══ §PROVIDERS · provider implementations ═════════════════════════════════
 
 async function callGroq(systemPrompt: string, userPrompt: string, maxTokens: number): Promise<string> {
   const key = getStoredKey("groq");
@@ -441,7 +476,7 @@ async function callHuggingFace(systemPrompt: string, userPrompt: string, maxToke
   throw new Error("HuggingFace: all models failed");
 }
 
-// ─── Main fallback chain ─────────────────────────────────────────────────────
+// ═══ §CALL · main fallback chain ═══════════════════════════════════════════
 
 export type AIProvider = "groq" | "gemini" | "openrouter" | "openai" | "claude" | "huggingface";
 
@@ -591,7 +626,7 @@ export async function callAI(
   throw new Error(`All AI providers failed:\n${errors.join("\n")}`);
 }
 
-// ─── Worksheet generation ────────────────────────────────────────────────────
+// ═══ §TYPES-WS · worksheet generation types ════════════════════════════════
 
 export interface AIWorksheetSection {
   title: string;
@@ -708,7 +743,7 @@ export interface AIWorksheetResult {
   provider?: string;
 }
 
-// ─── Spec-aligned question injection helper ─────────────────────────────────
+// ═══ §SPEC · spec-aligned question injection helper ═══════════════════════
 /**
  * Returns a block of real specification-aligned example questions for the given
  * subject + topic, formatted for injection into the AI system prompt as few-shot
@@ -779,6 +814,7 @@ function getSpecQuestions(subject: string, topic: string): string {
   return lines.join('\n');
 }
 
+// ═══ §GENERATE · aiGenerateWorksheet — MAIN WORKSHEET ENTRY POINT ═════════
 export async function aiGenerateWorksheet(params: {
   subject: string;
   topic: string;
@@ -3407,6 +3443,7 @@ Return EXACTLY this JSON (raw JSON only):
   return pillarATaggedLegacy as unknown as AIWorksheetResult;
 }
 
+// ═══ §STORY · aiGenerateStory ═════════════════════════════════════════════
 export async function aiGenerateStory(params: {
   genre: string;
   yearGroup: string;
@@ -3495,6 +3532,7 @@ const SEND_DIFF_RULES: Record<string, string> = {
   "semh": "Open with an emotional check-in: '[ ] Calm   [ ] OK   [ ] Need a break'. Rename Section A 'Warm-Up — no pressure!'. Add a positive statement at the start of each section. Replace 'must'/'should'/'need to' with 'try to'/'have a go at'. Insert a natural break point after every 3 questions.",
 };
 
+// ═══ §DIFF-TASK · aiDifferentiateTask ═════════════════════════════════════
 export async function aiDifferentiateTask(params: {
   taskContent: string;
   sendNeed?: string;
@@ -3519,6 +3557,7 @@ Provide a clearly differentiated version applying all the mandatory adaptations 
 
 // ─── Edit section with AI ────────────────────────────────────────────────────
 
+// ═══ §EDIT · aiEditSection ════════════════════════════════════════════════
 export async function aiEditSection(params: {
   sectionTitle: string;
   currentContent: string;
@@ -3546,6 +3585,7 @@ Return only the updated content text:`;
 
 // ─── Parent report generation ────────────────────────────────────────────────
 
+// ═══ §REPORT · aiGenerateParentReport ═════════════════════════════════════
 export async function aiGenerateParentReport(params: {
   childName: string;
   subject?: string;
@@ -3606,6 +3646,7 @@ function getDiagramHint(subject: string, topic: string): string {
   return "Draw a clear, well-labelled educational diagram most relevant to this topic for UK school students.";
 }
 
+// ═══ §DIAGRAM · aiGenerateDiagram ═════════════════════════════════════════
 export async function aiGenerateDiagram(params: {
   subject: string;
   topic: string;
@@ -3661,6 +3702,7 @@ export async function aiGenerateDiagram(params: {
  * Generates a diagram section to be inserted into a worksheet.
  * Returns an AIWorksheetSection with type "diagram" and SVG content.
  */
+// ═══ §DIAG-WS · aiGenerateWorksheetDiagram ════════════════════════════════
 export async function aiGenerateWorksheetDiagram(params: {
   subject: string;
   topic: string;
@@ -3684,6 +3726,7 @@ export async function aiGenerateWorksheetDiagram(params: {
 }
 
 // ─── Story Comprehension MCQ Generator ──────────────────────────────────────
+// ═══ §MCQ · aiGenerateComprehensionMCQ ════════════════════════════════════
 export interface ComprehensionMCQ {
   question: string;
   options: [string, string, string, string];
@@ -3725,6 +3768,7 @@ Return JSON array only:
  *
  * Uses the dedicated /api/ai/scaffold-worksheet server endpoint.
  */
+// ═══ §SCAFFOLD · aiScaffoldExistingWorksheet ══════════════════════════════
 export async function aiScaffoldExistingWorksheet(params: {
   sections: Array<{ title: string; content: string; type?: string; teacherOnly?: boolean }>;
   sendNeed: string;
@@ -3774,6 +3818,7 @@ export async function aiScaffoldExistingWorksheet(params: {
 // Uses the dedicated /api/ai/differentiate-worksheet endpoint which transforms
 // the existing worksheet to a different difficulty tier — much faster than
 // regenerating from scratch.
+// ═══ §DIFF-WS · aiDifferentiateExistingWorksheet ══════════════════════════
 export async function aiDifferentiateExistingWorksheet(params: {
   sections: Array<{ title: string; content: string; type?: string; teacherOnly?: boolean }>;
   tier: 'foundation' | 'higher';
@@ -3831,6 +3876,7 @@ export async function aiDifferentiateExistingWorksheet(params: {
  * and extracts structured fields to auto-fill the worksheet generator form.
  * Uses pattern matching — no AI call required, so it's instant.
  */
+// ═══ §NL-PARSE · parseNaturalLanguageInput ════════════════════════════════
 export function parseNaturalLanguageInput(input: string): {
   subject?: string;
   yearGroup?: string;
@@ -4151,6 +4197,7 @@ export function parseNaturalLanguageInput(input: string): {
  * Recontextualizes worksheet questions to a new scenario/theme (e.g., shopping → football)
  * while keeping the academic skill and difficulty identical.
  */
+// ═══ §SCENARIO · aiScenarioSwap ═══════════════════════════════════════════
 export async function aiScenarioSwap(params: {
   sections: Array<{ title: string; content: string; type?: string; teacherOnly?: boolean }>;
   newScenario: string;
@@ -4201,6 +4248,7 @@ Return JSON array of sections with updated content:
  * Rewrites worksheet instructions and vocabulary to match a target reading age
  * without changing the mathematical/academic difficulty.
  */
+// ═══ §READAGE · aiAdjustReadingLevel ══════════════════════════════════════
 export async function aiAdjustReadingLevel(params: {
   sections: Array<{ title: string; content: string; type?: string; teacherOnly?: boolean }>;
   targetAge: number; // e.g., 7, 9, 11, 13
@@ -4291,6 +4339,7 @@ Return a JSON array (NOT an object) of sections with adjusted language — start
  * Recontextualizes a story to use a new scenario/theme while keeping the same
  * reading level, structure, and educational value.
  */
+// ═══ §SCENARIO (story variant) · aiScenarioSwapStory ══════════════════════
 export async function aiScenarioSwapStory(params: {
   title: string;
   content: string;
@@ -4344,6 +4393,7 @@ Return JSON: {"title": "new title", "content": "full recontextualized story"}`;
 // [[DIAGRAM:{"type":"labeled","title":"...","labels":[{"text":"...","x":50,"y":40}],...}]]
 // This function extracts and renders them as clean SVG without any extra AI call.
 
+// ═══ §DIAG-SPEC · DiagramSpec types and helpers ═══════════════════════════
 export interface DiagramSpec {
   type: "labeled" | "flow" | "cycle" | "bar" | "number-line" | "axes" | "circuit" | "venn" | "timeline" | "pyramid" | "fraction-bar";
   /** For circuit diagrams: "series" | "parallel" | "series-ammeter" | "parallel-voltmeter" */
@@ -4476,6 +4526,7 @@ export function stripDiagramMarker(content: string): string {
  * Rewrites a single piece of text (e.g., a screener question) to match a target reading age.
  * Preserves meaning and intent — only changes vocabulary and sentence structure.
  */
+// ═══ §READAGE (rewrite variant) · aiRewriteTextToReadingAge ═══════════════
 export async function aiRewriteTextToReadingAge(params: {
   text: string;
   targetAge: number;
@@ -4518,6 +4569,7 @@ ${params.text}`;
 // Calls POST /api/ai/batch-generate-worksheet to generate all 4 differentiation
 // tiers (Base, Foundation, Higher, SEND) in a single AI call.
 // This is ~4x more efficient than calling aiGenerateWorksheet three separate times.
+// ═══ §BATCH · aiBatchGenerateWorksheet ════════════════════════════════════
 export async function aiBatchGenerateWorksheet(params: {
   subject: string;
   topic: string;
