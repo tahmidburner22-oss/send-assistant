@@ -1,13 +1,27 @@
 import { useState, useCallback, useRef } from "react";
 import { callAI } from "@/lib/ai";
 import { downloadHtmlAsPdf } from "@/lib/pdf-generator-v2";
-import { Layers, RotateCcw, ChevronLeft, ChevronRight, Shuffle, Printer, Check, X, Download, Clock } from "lucide-react";
+import { Layers, RotateCcw, ChevronLeft, ChevronRight, Shuffle, Printer, Check, X, Download, Clock, Volume2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
+import FlashCardsV2Panel from "@/components/FlashCardsV2Panel";
+import {
+  loadLeitner,
+  saveLeitner,
+  newLeitnerEntry,
+  leitnerReview,
+  speakText,
+  speechSupported,
+  recordPupilProgress,
+  getImageCard,
+  imageCardHtml,
+} from "@/lib/flashcards-v2-enhancements";
+import { useApp } from "@/contexts/AppContext";
+import { usePupilScope } from "@/contexts/PupilScopeContext";
 
 const subjects = ["English","Maths","Science","History","Geography","RE","PSHE","Art","Music","Computing","MFL","Design Technology","Drama"].map(s => ({ value: s, label: s }));
 const years = ["Reception","Year 1","Year 2","Year 3","Year 4","Year 5","Year 6","Year 7","Year 8","Year 9","Year 10","Year 11","Year 12","Year 13"].map(y => ({ value: y, label: y }));
@@ -99,7 +113,7 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 /** Interactive flip-card study mode */
-function StudyMode({ cards, onReset, onSM2Update }: { cards: SM2Card[]; onReset: () => void; onSM2Update: (cardKey: string, sm2: SM2Data) => void }) {
+function StudyMode({ cards, onReset, onSM2Update, pupilId, pupilName }: { cards: SM2Card[]; onReset: () => void; onSM2Update: (cardKey: string, sm2: SM2Data) => void; pupilId?: string; pupilName?: string }) {
   const [deck, setDeck]           = useState(cards);
   const [idx, setIdx]             = useState(0);
   const [flipped, setFlipped]     = useState(false);
@@ -121,6 +135,28 @@ function StudyMode({ cards, onReset, onSM2Update }: { cards: SM2Card[]; onReset:
   const next = useCallback(() => { setFlipped(false); setShowHint(false); setIdx(i => Math.min(i + 1, filteredDeck.length - 1)); }, [filteredDeck.length]);
   const prev = useCallback(() => { setFlipped(false); setShowHint(false); setIdx(i => Math.max(i - 1, 0)); }, []);
 
+  // Update Leitner state and class progress on each mark.
+  const updateLeitnerAndClass = (correct: boolean) => {
+    if (!card) return;
+    const leitner = loadLeitner();
+    const entry = leitner[card.cardKey] || newLeitnerEntry(card.cardKey);
+    const updated = leitnerReview(entry, correct);
+    leitner[card.cardKey] = updated;
+    saveLeitner(leitner);
+    if (pupilId && pupilName) {
+      recordPupilProgress({
+        pupilId,
+        pupilName,
+        cardKey: card.cardKey,
+        cardFront: card.front,
+        ease: card.sm2.ease,
+        leitnerBox: updated.box,
+        attempts: card.sm2.repetitions + 1,
+        correctRate: correct ? 1 : 0,
+      });
+    }
+  };
+
   const markKnown = () => {
     setKnown(s => new Set([...s, idx]));
     setUnsure(s => { const n = new Set(s); n.delete(idx); return n; });
@@ -128,6 +164,7 @@ function StudyMode({ cards, onReset, onSM2Update }: { cards: SM2Card[]; onReset:
       const updated = sm2Update(card.sm2, 4);
       onSM2Update(card.cardKey, updated);
       card.sm2 = updated;
+      updateLeitnerAndClass(true);
     }
     next();
   };
@@ -138,11 +175,18 @@ function StudyMode({ cards, onReset, onSM2Update }: { cards: SM2Card[]; onReset:
       const updated = sm2Update(card.sm2, 1);
       onSM2Update(card.cardKey, updated);
       card.sm2 = updated;
+      updateLeitnerAndClass(false);
     }
     next();
   };
 
   const reshuffleDeck = () => { setDeck(shuffle(deck)); setIdx(0); setFlipped(false); setShowHint(false); };
+
+  const speakCurrent = () => {
+    if (!card) return;
+    const text = flipped ? `${card.back}` : `${card.front}`;
+    speakText(text);
+  };
 
   const handleDownloadPdf = async () => {
     if (!printRef.current) return;
@@ -222,6 +266,9 @@ function StudyMode({ cards, onReset, onSM2Update }: { cards: SM2Card[]; onReset:
                 ${known.has(idx) ? "border-emerald-400 bg-emerald-50" : unsure.has(idx) ? "border-amber-400 bg-amber-50" : "border-indigo-200 bg-white"}`}>
               <div className="text-xs font-semibold text-indigo-400 uppercase tracking-wide mb-3">Question / Term</div>
               <p className="text-xl font-bold text-gray-900 leading-snug">{card?.front}</p>
+              {card && getImageCard(card.cardKey) && (
+                <div dangerouslySetInnerHTML={{ __html: imageCardHtml(getImageCard(card.cardKey)!, 80) }} />
+              )}
               <div className="mt-4 text-xs text-gray-400">Tap to reveal answer</div>
             </div>
             {/* Back */}
@@ -240,6 +287,15 @@ function StudyMode({ cards, onReset, onSM2Update }: { cards: SM2Card[]; onReset:
           </motion.div>
         </div>
       </div>
+
+      {/* Read aloud */}
+      {speechSupported() && (
+        <div className="flex justify-center">
+          <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); speakCurrent(); }} className="gap-1.5 text-violet-600 border-violet-300">
+            <Volume2 className="w-3.5 h-3.5" /> Read aloud
+          </Button>
+        </div>
+      )}
 
       {/* Mark buttons */}
       <AnimatePresence>
@@ -335,6 +391,9 @@ function StudyMode({ cards, onReset, onSM2Update }: { cards: SM2Card[]; onReset:
 }
 
 export default function FlashCards() {
+  const { children } = useApp();
+  const { pupilId } = usePupilScope();
+  const scopedPupil = children.find((c) => c.id === pupilId);
   const [subject,      setSubject]      = useState("Science");
   const [yearGroup,    setYearGroup]    = useState("Year 10");
   const [topic,        setTopic]        = useState("");
@@ -411,7 +470,13 @@ Requirements:
       </div>
 
       {cards ? (
-        <StudyMode cards={cards} onReset={() => setCards(null)} onSM2Update={handleSM2Update} />
+        <>
+          <StudyMode cards={cards} onReset={() => setCards(null)} onSM2Update={handleSM2Update} pupilId={pupilId || undefined} pupilName={scopedPupil?.name} />
+          <FlashCardsV2Panel
+            cards={cards.map((c) => ({ front: c.front, back: c.back, hint: c.hint }))}
+            cardKey={(front) => makeCardKey(subject, topic, front)}
+          />
+        </>
       ) : (
         <div className="space-y-4 bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
           <div className="grid grid-cols-2 gap-3">

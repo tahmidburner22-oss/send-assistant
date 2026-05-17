@@ -29,6 +29,7 @@ import { exportToDocx } from "@/lib/docx-export";
 import { downloadHtmlAsPdf, printWorksheetElement } from "@/lib/pdf-generator-v2";
 import { useUserPreferences } from "@/contexts/UserPreferencesContext";
 import EhcpEnhancementsPanel from "@/components/EhcpEnhancementsPanel";
+import IepV2Panel from "@/components/IepV2Panel";
 import { laPackAsPromptInstruction } from "@/lib/ehcp-enhancements";
 import {
   Brain, Upload, FileText, CheckCircle, AlertCircle, ChevronRight,
@@ -1373,6 +1374,17 @@ Return JSON:
                     pupilName={pupilInfo.namedCaseworker || ""}
                     laPackId={laPackId}
                     setLaPackId={setLaPackId}
+                  />
+                </div>
+
+                {/* Phase-5 v2 enhancements: reviewer checklist, evidence pins, costing,
+                    One Page Profile, plain-English co-prod pack */}
+                <div className="mt-4 no-print">
+                  <IepV2Panel
+                    pupilId={pupilInfo.initials || `iep_${pupilInfo.dateOfPlan || "draft"}`}
+                    pupilName={pupilInfo.initials || "Pupil"}
+                    sections={Object.fromEntries(sections.map(s => [s.code, s.content]))}
+                    sourceText={extracted?.rawText || extractedText || manualNotes || ""}
                   />
                 </div>
 
