@@ -1162,6 +1162,8 @@ interface WorksheetRendererProps {
   onHeaderHide?: () => void;
   /** Called when user clicks the quick-edit pencil icon on the header. */
   onHeaderEdit?: () => void;
+  /** FEAT-PB2 — Called when teacher clicks "Regenerate" on a CAS mismatch. */
+  onRegenerateQuestion?: (sectionIndex: number, reason: string) => void;
 }
 
 // Section type → visual config (clean white, dark navy accent, no gradients, no emojis)
@@ -3982,6 +3984,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
   hideHeader = false,
   onHeaderHide,
   onHeaderEdit,
+  onRegenerateQuestion,
   }: WorksheetRendererProps, ref: React.Ref<HTMLDivElement>) {
   const isTeacherView = viewMode === "teacher";
 
@@ -6954,6 +6957,105 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
             <div style={{ marginTop: "6px", fontSize: "11px", fontStyle: "italic", color: "#374151" }}>
               Probes are deterministic — a missing tick means the corresponding adaptation was not detected in the rendered worksheet, even if the rest looks fine.
             </div>
+          </div>
+        );
+      })()}
+
+      {/* ── FEAT-PB2 — teacher-only symbolic maths verification (CAS) panel ── */}
+      {isTeacherView && (worksheet.metadata as any)?.mathsVerification && (() => {
+        const verif = (worksheet.metadata as any).mathsVerification as {
+          perQuestion: Array<{
+            sectionIndex: number;
+            sectionTitle?: string;
+            kind: "numeric" | "expression" | "equation" | "unknown";
+            raw: string;
+            expected: string;
+            status: "ok" | "mismatch" | "unverified";
+            cas?: string;
+            reason?: string;
+          }>;
+          counts: { ok: number; mismatch: number; unverified: number };
+          durationMs?: number;
+        };
+        if (verif.perQuestion.length === 0) return null;
+        const hasMismatch = verif.counts.mismatch > 0;
+        const headlineColor = hasMismatch ? "#a16207" : "#15803d";
+        const headlineBg = hasMismatch ? "#fef9c3" : "#ecfdf5";
+        const headlineBorder = hasMismatch ? "#ca8a04" : "#10b981";
+        const mismatches = verif.perQuestion.filter((q) => q.status === "mismatch");
+        return (
+          <div
+            className="ws-teacher-section ws-no-print-on-student ws-cas-panel"
+            style={{
+              marginTop: "12px",
+              padding: "10px 14px",
+              background: headlineBg,
+              border: `1.5px solid ${headlineBorder}`,
+              borderRadius: "6px",
+              fontSize: `${fmt.fontSize - 2}px`,
+              fontFamily: fmt.fontFamily,
+              color: headlineColor,
+            }}
+          >
+            <div style={{ fontWeight: 700, marginBottom: "6px", display: "flex", alignItems: "center", gap: "6px" }}>
+              <span aria-hidden>{hasMismatch ? "\u26A0" : "\u2713"}</span>
+              <span>Maths CAS verification</span>
+              <span
+                style={{
+                  marginLeft: "auto",
+                  background: headlineBorder,
+                  color: "white",
+                  fontSize: "11px",
+                  padding: "1px 6px",
+                  borderRadius: "10px",
+                  fontWeight: 700,
+                }}
+              >
+                {verif.counts.ok} ok · {verif.counts.mismatch} mismatch · {verif.counts.unverified} unverified
+              </span>
+            </div>
+            {hasMismatch ? (
+              <ul style={{ margin: 0, paddingLeft: "18px", lineHeight: 1.5 }}>
+                {mismatches.map((q, idx) => (
+                  <li key={idx} style={{ marginBottom: "6px" }}>
+                    <strong style={{ marginRight: "4px" }}>{q.sectionTitle || `Section ${q.sectionIndex + 1}`}:</strong>
+                    <span style={{ fontStyle: "italic" }}>{q.raw}</span>
+                    <span style={{ display: "block", fontSize: "11px", color: "#374151", marginTop: "2px" }}>
+                      AI says <code>{q.expected}</code>; CAS says <code>{q.cas ?? "?"}</code>{q.reason ? ` — ${q.reason}` : ""}.
+                    </span>
+                    {onRegenerateQuestion && (
+                      <button
+                        type="button"
+                        onClick={() => onRegenerateQuestion(q.sectionIndex, q.reason || "CAS mismatch")}
+                        className="ws-cas-regenerate"
+                        style={{
+                          marginTop: "3px",
+                          padding: "2px 10px",
+                          background: "#1a2744",
+                          color: "white",
+                          border: "none",
+                          borderRadius: "4px",
+                          fontSize: "11px",
+                          fontWeight: 600,
+                          cursor: "pointer",
+                        }}
+                      >
+                        Regenerate question
+                      </button>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div style={{ fontSize: "11px", fontStyle: "italic", color: "#15803d" }}>
+                Every numeric and equation answer round-trips through the CAS. {verif.counts.unverified > 0 ? `${verif.counts.unverified} questions are out of CAS scope (e.g. extended prose, geometry).` : ""}
+              </div>
+            )}
+            {typeof verif.durationMs === "number" && (
+              <div style={{ marginTop: "4px", fontSize: "10px", color: "#6b7280" }}>
+                CAS pass: {verif.durationMs}ms
+              </div>
+            )}
           </div>
         );
       })()}

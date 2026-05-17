@@ -217,6 +217,26 @@ export const WorksheetOutputSchema = z.object({
     examPaperTemplate: z.string().max(100).optional(),
     /** Pillar A — non-blocking warnings raised by the post-validators. */
     postValidatorWarnings: z.array(z.string()).optional(),
+    /** FEAT-PB2 — symbolic maths verification report (CAS round-trip). */
+    mathsVerification: z.object({
+      perQuestion: z.array(z.object({
+        sectionIndex: z.number().int().min(0),
+        sectionTitle: z.string().optional(),
+        kind: z.enum(["numeric", "expression", "equation", "unknown"]),
+        raw: z.string().max(2000),
+        expected: z.string().max(500),
+        status: z.enum(["ok", "mismatch", "unverified"]),
+        cas: z.string().max(500).optional(),
+        reason: z.string().max(500).optional(),
+      })),
+      counts: z.object({
+        ok: z.number().int().min(0),
+        mismatch: z.number().int().min(0),
+        unverified: z.number().int().min(0),
+      }),
+      ranAt: z.string().optional(),
+      durationMs: z.number().min(0).optional(),
+    }).optional(),
   }).optional(),
   isAI: z.boolean().optional(),
   provider: z.string().optional(),
