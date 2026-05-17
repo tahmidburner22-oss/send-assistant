@@ -2473,7 +2473,11 @@ CRITICAL STRUCTURE RULE: ALL questions come ONLY from Section A (True/False, MCQ
     }
 
     // 6. Section A Questions (True/False, MCQ, Word Bank, Match) — BEFORE Diagram A
-    if (wantTrueFalse) {
+    // PR-M1: True/False is hard-removed for maths regardless of any caller's
+    //        selectedSections / saved preset / API state — maths sheets must
+    //        never show True/False. MCQ remains gated only at the form layer
+    //        (default-off for maths, opt-in toggle preserved).
+    if (wantTrueFalse && !isMaths) {
       structuredSections.push(`{"title": "Section A — True or False", "type": "q-true-false", "marks": 4, "content": "Circle TRUE or FALSE for each statement. [4 marks]\n1. [Statement about ${params.topic} \u2014 TRUE]  TRUE  /  FALSE\n2. [Statement about ${params.topic} \u2014 FALSE]  TRUE  /  FALSE\n3. [Statement about ${params.topic} \u2014 TRUE]  TRUE  /  FALSE\n4. [Statement about ${params.topic} \u2014 FALSE]  TRUE  /  FALSE"}`);
     }
 
