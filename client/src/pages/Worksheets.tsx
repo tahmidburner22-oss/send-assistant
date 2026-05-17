@@ -820,6 +820,52 @@ export default function Worksheets() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // ── Phase C · PC4 — Curriculum Coverage handoff ───────────────────────────
+  // CurriculumCoverage.tsx writes a payload to sessionStorage and navigates
+  // here with `?autoFromCoverage=1` whenever a teacher clicks an *unseen*
+  // cell. Mirror the WeekAhead handoff pattern: pre-fill the form so the
+  // teacher lands on the right Auto-from-class context, but DO NOT auto-
+  // trigger generation — the auto-from-class panel is the right surface for
+  // the user to confirm pupil selection and click 'Generate' themselves.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("autoFromCoverage") !== "1") return;
+    let raw: string | null = null;
+    try { raw = sessionStorage.getItem("autoFromCoverageHandoff"); } catch { return; }
+    if (!raw) return;
+    try {
+      const parsed = JSON.parse(raw) as {
+        pupilId?: string;
+        pupilName?: string;
+        classId?: string;
+        subject?: string;
+        yearGroup?: string;
+        board?: string;
+        specRef?: string;
+        specTitle?: string;
+        ts?: number;
+      };
+      // 30-minute staleness check, same as the other handoffs.
+      if (parsed.ts && Date.now() - parsed.ts > 30 * 60 * 1000) return;
+      if (parsed.subject) setSubject(parsed.subject);
+      if (parsed.yearGroup) setYearGroup(parsed.yearGroup);
+      // Use the spec title as the topic seed so the worksheet aligns with
+      // the spec point the teacher just clicked on the coverage grid.
+      if (parsed.specTitle) setTopic(parsed.specTitle);
+      if (parsed.board) setExamBoard(parsed.board);
+      const ref = parsed.specRef ? ` (${parsed.specRef})` : "";
+      const who = parsed.pupilName ? ` for ${parsed.pupilName}` : "";
+      toast.info(`Pre-filled from coverage map${who}${ref}. Pick pupils + click Generate.`);
+    } catch {
+      // Corrupt handoff — ignore.
+    } finally {
+      try { sessionStorage.removeItem("autoFromCoverageHandoff"); } catch { /* ignore */ }
+    }
+    // Run once on mount only.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const [viewMode, setViewMode] = useState<"teacher" | "student">("student");
   const [showOverlayPicker, setShowOverlayPicker] = useState(false);
   const [showA11yPicker, setShowA11yPicker] = useState(false);
