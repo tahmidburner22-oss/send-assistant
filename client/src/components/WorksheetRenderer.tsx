@@ -432,12 +432,14 @@ export function renderMath(text: string | any): string {
   // IMPORTANT: Process \(...\), \[...\], and $...$ BEFORE bare \dfrac, \frac,
   // \sqrt etc. Otherwise \dfrac inside \(\dfrac{a}{b}\) gets converted to KaTeX
   // HTML first, leaving orphaned \( and \) delimiters that never match.
-  result = result.replace(/\\\[(\s*[\s\S]+?\s*)\\\]/g, (_, expr) => {
+
+  // Robust delimiter matching: handle cases where AI injects spaces (e.g. \ ( ... \ ) or \ [ ... \ ])
+  // Also handle cases where backslashes are doubled or escaped.
+  result = result.replace(/\\+\s*\[([\s\S]+?)\\+\s*\]/g, (_, expr) => {
     try { return katex.renderToString(expr.trim(), { displayMode: true, throwOnError: false }); }
     catch { return expr; }
   });
-  // Match `\(...\)` non-greedy; allow newlines inside for parity with `\[...\]`.
-  result = result.replace(/\\\((\s*[\s\S]+?\s*)\\\)/g, (_, expr) => {
+  result = result.replace(/\\+\s*\(([\s\S]+?)\\+\s*\)/g, (_, expr) => {
     try { return katex.renderToString(expr.trim(), { displayMode: false, throwOnError: false }); }
     catch { return expr; }
   });
@@ -5739,35 +5741,46 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                                   <span style={{ fontSize: "11px", color: "#6b7280", fontStyle: "italic" }}>[{nq.marks} mark{nq.marks !== 1 ? "s" : ""}]</span>
                                 </div>
                               </div>
-                              {isMathsQ ? (
-                                /* Maths: clean working-out area with dot grid (no surrounding border) + single answer line.
-                                   User request: "answer boxes for maths shouldn't have lines above the answer line".
-                                   Teacher scrutiny feedback: do NOT print the "Working out" caption on every question —
-                                   repetition makes the page feel cluttered. The dot grid alone is sufficient visual
-                                   signal for where to work. */
-                                <div style={{ marginTop: "4px" }}>
-                                  {/* Subtle dot grid for working out — no label, no bordering box */}
-                                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, 20px)", gap: "0", minHeight: `${Math.max(lineCount * lineHeight, 80)}px`, position: "relative" as const, overflow: "hidden" }}>
-                                    {Array.from({ length: Math.ceil((Math.max(lineCount * lineHeight, 80) / 20)) * 30 }).map((_: unknown, di: number) => (
-                                      <div key={di} style={{ width: "20px", height: "20px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                                        <div style={{ width: "2px", height: "2px", borderRadius: "50%", background: "#e5e7eb" }} />
-                                      </div>
+                              {/* Individual working out box for every question/sub-question */}
+                              <div style={{ 
+                                marginTop: "12px", 
+                                marginBottom: "16px",
+                                border: isMathsQ ? "1.5px solid #1a2744" : "none",
+                                borderRadius: "4px",
+                                background: isMathsQ ? "#fafafa" : "transparent",
+                                padding: isMathsQ ? "12px" : "0"
+                              }}>
+                                {isMathsQ ? (
+                                  /* Maths: clean working-out area with dot grid inside a border + single answer line */
+                                  <div>
+                                    <div style={{ 
+                                      display: "grid", 
+                                      gridTemplateColumns: "repeat(auto-fill, 20px)", 
+                                      gap: "0", 
+                                      minHeight: `${Math.max(lineCount * lineHeight, 100)}px`, 
+                                      position: "relative" as const, 
+                                      overflow: "hidden" 
+                                    }}>
+                                      {Array.from({ length: Math.ceil((Math.max(lineCount * lineHeight, 100) / 20)) * 30 }).map((_: unknown, di: number) => (
+                                        <div key={di} style={{ width: "20px", height: "20px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                          <div style={{ width: "2px", height: "2px", borderRadius: "50%", background: "#e5e7eb" }} />
+                                        </div>
+                                      ))}
+                                    </div>
+                                    <div style={{ marginTop: "12px", display: "flex", alignItems: "flex-end", gap: "8px" }}>
+                                      <span style={{ fontSize: "11px", fontWeight: 700, color: "#1a2744", fontFamily: fmt.fontFamily, whiteSpace: "nowrap" as const, paddingBottom: "2px" }}>Answer:</span>
+                                      <div style={{ flex: 1, borderBottom: "1.5px solid #1a2744", height: "24px" }} />
+                                    </div>
+                                  </div>
+                                ) : (
+                                  /* Writing/humanities: ruled answer lines */
+                                  <div>
+                                    {Array.from({ length: lineCount }).map((_: unknown, li: number) => (
+                                      <div key={li} style={{ borderBottom: "1px solid #d1d5db", height: `${lineHeight}px`, width: "100%", marginBottom: "2px" }} />
                                     ))}
                                   </div>
-                                  {/* Single answer line — ONLY the bottom border, no surrounding lines */}
-                                  <div style={{ marginTop: "10px", display: "flex", alignItems: "flex-end", gap: "8px" }}>
-                                    <span style={{ fontSize: "11px", fontWeight: 700, color: "#1a2744", fontFamily: fmt.fontFamily, whiteSpace: "nowrap" as const, paddingBottom: "2px" }}>Answer:</span>
-                                    <div style={{ flex: 1, borderBottom: "1.5px solid #1a2744", height: "24px" }} />
-                                  </div>
-                                </div>
-                              ) : (
-                                /* Writing/humanities: ruled answer lines */
-                                <div style={{ marginTop: "4px" }}>
-                                  {Array.from({ length: lineCount }).map((_: unknown, li: number) => (
-                                    <div key={li} style={{ borderBottom: "1px solid #d1d5db", height: `${lineHeight}px`, width: "100%", marginBottom: "2px" }} />
-                                  ))}
-                                </div>
-                              )}
+                                )}
+                              </div>
                             </div>
                               );
                             })}

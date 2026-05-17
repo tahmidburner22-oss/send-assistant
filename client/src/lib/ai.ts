@@ -3953,29 +3953,36 @@ export async function aiGenerateDiagram(params: {
       const data = await res.json();
       // If server explicitly says no diagram is available, return null (do NOT fall back to AI SVG)
       if (data.type === 'none' || (!data.imageUrl && !data.svg)) {
-        console.info(`[Diagram] No verified diagram available for "${params.topic}" — diagram section omitted`);
-        return null;
+        console.info(`[Diagram] No verified diagram available for "${params.topic}" — falling back to AI SVG`);
+        // We continue to the AI SVG fallback below
+      } else {
+        // Route any external imageUrl through the server proxy to avoid CORS/rate-limiting
+        let imageUrl = data.imageUrl;
+        if (imageUrl && (imageUrl.startsWith('http://') || imageUrl.startsWith('https://'))) {
+          imageUrl = `/api/diagram-proxy?url=${encodeURIComponent(imageUrl)}`;
+        }
+        return {
+          svg: data.svg || '',
+          caption: data.caption || `${params.topic} diagram`,
+          imageUrl,
+          attribution: data.attribution,
+          provider: data.provider,
+        };
       }
-      // Route any external imageUrl through the server proxy to avoid CORS/rate-limiting
-      let imageUrl = data.imageUrl;
-      if (imageUrl && (imageUrl.startsWith('http://') || imageUrl.startsWith('https://'))) {
-        imageUrl = `/api/diagram-proxy?url=${encodeURIComponent(imageUrl)}`;
-      }
-      return {
-        svg: data.svg || '',
-        caption: data.caption || `${params.topic} diagram`,
-        imageUrl,
-        attribution: data.attribution,
-        provider: data.provider,
-      };
     }
   } catch (e) {
     console.warn('[Diagram] Server /api/ai/diagram failed:', e);
   }
-  // No AI SVG fallback — only verified, legally licensed images from Wikimedia Commons are used.
-  // If the server cannot find a diagram, we return null so the diagram section is omitted entirely.
-  console.info(`[Diagram] No verified diagram available for "${params.topic}" (${params.subject}) — diagram section omitted`);
-  return null;
+  // AI SVG fallback — if server has no verified image, we generate a clean inline SVG
+  // using the dedicated AI SVG generator.
+  console.info(`[Diagram] Falling back to AI SVG for "${params.topic}" (${params.subject})`);
+  const aiDiagram = await aiGenerateWorksheetDiagram({
+    subject: params.subject,
+    topic: params.topic,
+    yearGroup: params.yearGroup,
+    sendNeed: params.sendNeed,
+  });
+  return aiDiagram;
 }
 
 /**
