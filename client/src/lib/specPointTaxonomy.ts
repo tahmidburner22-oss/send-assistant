@@ -20,6 +20,8 @@
  */
 
 import aqaMathsY10 from "@/data/spec-points/aqa-maths-y10.json";
+import edexcelMathsY10 from "@/data/spec-points/edexcel-maths-y10.json";
+import aqaCombinedScienceY10 from "@/data/spec-points/aqa-combined-science-y10.json";
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
@@ -72,6 +74,8 @@ function register(dataset: SpecPointDataset) {
 }
 
 register(aqaMathsY10 as SpecPointDataset);
+register(edexcelMathsY10 as SpecPointDataset);
+register(aqaCombinedScienceY10 as SpecPointDataset);
 
 // ─── Public API ─────────────────────────────────────────────────────────────
 

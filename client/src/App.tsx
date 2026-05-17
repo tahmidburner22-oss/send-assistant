@@ -100,6 +100,11 @@ const DailyWork = lazy(() => import("./pages/DailyWork"));
 const PupilPassportShare = lazy(() => import("./pages/PupilPassportShare"));
 const PupilCompanion = lazy(() => import("./pages/PupilCompanion"));
 
+// FEAT-PC4 — Curriculum coverage map ("Ofsted view"). Behind the
+// COVERAGE_MAP_ENABLED feature flag; when off, the page itself renders an
+// opt-in panel rather than 404, so the route can stay registered safely.
+const CurriculumCoverage = lazy(() => import("./pages/CurriculumCoverage"));
+
 function PageLoader() {
   // Skeleton shell — feels closer to the real layout than a centred spinner,
   // and removes the layout shift jolt when lazy chunks finish loading.
@@ -219,6 +224,7 @@ function ProtectedRoutes() {
             <Route path="/children">{() => <ClientRedirect to="/pupils" />}</Route>
             <Route path="/history" component={History} />
             <Route path="/analytics" component={Analytics} />
+            <Route path="/coverage" component={CurriculumCoverage} />
             <Route path="/ideas" component={Ideas} />
             <Route path="/past-papers" component={PastPapers} />
             <Route path="/revision-hub" component={RevisionHub} />
