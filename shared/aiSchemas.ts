@@ -477,3 +477,82 @@ export const ComprehensionSchema = z.object({
 });
 
 export type Comprehension = z.infer<typeof ComprehensionSchema>;
+
+
+// ── Bulk Scan-and-Mark Schemas — FEAT-PB4 ─────────────────────────────────────
+// Class-set scanning (multiple pupil photos) goes through the same per-image
+// /api/ai/scan-mark endpoint, so the per-question shape mirrors the existing
+// scan-mark response. These schemas validate the *aggregated* class-set
+// payload that the UI persists in memory and that the marksheet CSV exporter
+// consumes. They are intentionally permissive: missing optional fields fall
+// back to defaults rather than tripping the exporter, because a single bad
+// scan in a 30-pupil run shouldn't dynamite the whole marksheet.
+
+export const ScanMarkQuestionSchema = z.object({
+  questionNumber: z.number().int().min(1),
+  questionText: z.string().max(2000).default(""),
+  pupilAnswer: z.string().max(2000).default(""),
+  correct: z.boolean(),
+  marksAwarded: z.number().min(0).max(100),
+  marksAvailable: z.number().min(0).max(100),
+  modelAnswer: z.string().max(2000).default(""),
+  misconceptionTag: z.string().max(300).nullable(),
+});
+
+export type ScanMarkQuestionShape = z.infer<typeof ScanMarkQuestionSchema>;
+
+export const ScanMarkResultSchema = z.object({
+  questions: z.array(ScanMarkQuestionSchema).max(50),
+  summary: z.object({
+    totalAwarded: z.number().min(0),
+    totalAvailable: z.number().min(0),
+    overallNote: z.string().max(2000).default(""),
+  }),
+  provider: z.string().max(50).default("unknown"),
+});
+
+export type ScanMarkResultShape = z.infer<typeof ScanMarkResultSchema>;
+
+export const BatchScanResultSchema = z.object({
+  pupilId: z.string().min(1).max(64),
+  pupilName: z.string().min(1).max(120),
+  upn: z.string().max(64).optional(),
+  result: ScanMarkResultSchema,
+  scannedAt: z.string().min(1),
+  feedbackComment: z.string().max(2000).optional(),
+  error: z.string().max(500).optional(),
+});
+
+export type BatchScanResultShape = z.infer<typeof BatchScanResultSchema>;
+
+/**
+ * The full bulk-scan payload as it lives in the dialog's state and as it is
+ * passed to exportToCsv. Validated once after a batch completes so a
+ * teacher-facing CSV export never silently drops a malformed pupil row.
+ */
+export const BulkScanResultSchema = z.object({
+  worksheetTitle: z.string().min(1).max(300),
+  className: z.string().max(120).optional(),
+  /** ISO 8601 timestamp when the batch finished. */
+  completedAt: z.string().min(1),
+  results: z.array(BatchScanResultSchema).max(50),
+  /** Aggregated stats pulled in via aggregateBatch — optional so callers
+   *  can validate just the raw batch ahead of computing aggregates. */
+  aggregate: z
+    .object({
+      totalPupils: z.number().int().min(0),
+      totalQuestions: z.number().int().min(0),
+      classAccuracyPct: z.number().min(0).max(100),
+      topMisconceptions: z
+        .array(
+          z.object({
+            label: z.string().min(1).max(300),
+            pupilCount: z.number().int().min(0),
+          }),
+        )
+        .max(10),
+    })
+    .optional(),
+});
+
+export type BulkScanResult = z.infer<typeof BulkScanResultSchema>;
