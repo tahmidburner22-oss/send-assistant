@@ -16,8 +16,9 @@ import {
   Home, Brain, GraduationCap, Pencil, MessageCircle, Monitor,
   LogOut, Menu, X, Shield, Settings, ExternalLink,
   Search, Bell, ChevronRight, Users, FileCheck, Mail, MessageSquare,
-  ClipboardList,
+  ClipboardList, Grid3x3,
 } from "lucide-react";
+import { isFeatureEnabled } from "@/lib/featureFlags";
 
 const ehcpHub = {
   path: "/tools/iep-generator",
@@ -83,7 +84,7 @@ const hubs = [
     color: "text-blue-600",
     bg: "bg-blue-50",
     description: "Pupils, QuizBlast, analytics & daily briefing",
-    toolPrefixes: ["/daily-briefing","/analytics","/pupils","/ideas","/history","/reading","/quiz-game"],
+    toolPrefixes: ["/daily-briefing","/analytics","/coverage","/pupils","/ideas","/history","/reading","/quiz-game"],
   },
 ];
 
@@ -136,6 +137,7 @@ const allKnownPaths: { path: string; label: string }[] = [
   { path: "/attendance", label: "Attendance Tracker" },
   { path: "/daily-briefing", label: "Daily Briefing" },
   { path: "/analytics", label: "Analytics" },
+  { path: "/coverage", label: "Curriculum Coverage" },
   { path: "/pupils", label: "Pupil Profiles" },
   { path: "/history", label: "History" },
   { path: "/ideas", label: "Ideas" },
@@ -149,6 +151,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const { user, logout, children: pupils } = useApp();
   const { preferences, wallpaperStyle } = useUserPreferences();
+  // FEAT-PC4 — sidebar entry hidden until the flag is on. Computed at
+  // render time so a localStorage opt-in (set by a beta tester) takes
+  // effect on the next mount without needing a redeploy.
+  const coverageMapEnabled = isFeatureEnabled("COVERAGE_MAP_ENABLED");
 
   // ── Real-time WebSocket notifications (via useNotificationWS hook) ───────────
   const {
@@ -452,6 +458,24 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                     );
                   })}
                 </div>
+
+                {coverageMapEnabled && (
+                  <>
+                    <div className="px-3 pt-3 pb-1">
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Curriculum (pilot)</span>
+                    </div>
+                    <div className="px-2">
+                      <Link href="/coverage" onClick={() => setSidebarOpen(false)}>
+                        <div className={`px-3 py-2.5 rounded-lg flex items-center gap-3 transition-all text-sm ${
+                          location.startsWith("/coverage") ? "bg-brand-light text-brand font-medium" : "text-foreground hover:bg-muted"
+                        }`}>
+                          <Grid3x3 className="w-[18px] h-[18px] text-muted-foreground" />
+                          Curriculum Coverage
+                        </div>
+                      </Link>
+                    </div>
+                  </>
+                )}
 
                 <div className="mx-3 mt-4 mb-2 pt-3 border-t border-border/40">
                   <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Account</span>
