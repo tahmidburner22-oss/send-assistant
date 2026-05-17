@@ -93,6 +93,12 @@ import { applyCoverageMap } from './coverageMapBuilder';
 // Runs after Pillar A audits to fill any remaining gaps deterministically.
 import { applyQuestionProvenance } from './questionProvenance';
 
+// FEAT-PB2 — Symbolic maths verification (CAS round-trip). Re-evaluates every
+// numeric/algebraic answer with a self-contained mini-CAS. Populates
+// metadata.mathsVerification and pushes mismatch warnings onto
+// metadata.postValidatorWarnings. No-op for non-maths subjects.
+import { applyMathsVerification } from './mathsVerifier';
+
 // ─── Phase 4 — Misconception bank ──────────────────────────────────────────
 // UK-curriculum misconception library. Injected into the worksheet system
 // prompt so questions diagnose common pupil errors, not just test recall.
@@ -743,6 +749,22 @@ export interface AIWorksheetResult {
     examPaperTemplate?: string;
     /** Pillar A — non-blocking warnings raised by the post-validators. */
     postValidatorWarnings?: string[];
+    /** FEAT-PB2 — symbolic maths verification (CAS round-trip) report. */
+    mathsVerification?: {
+      perQuestion: Array<{
+        sectionIndex: number;
+        sectionTitle?: string;
+        kind: "numeric" | "expression" | "equation" | "unknown";
+        raw: string;
+        expected: string;
+        status: "ok" | "mismatch" | "unverified";
+        cas?: string;
+        reason?: string;
+      }>;
+      counts: { ok: number; mismatch: number; unverified: number };
+      ranAt?: string;
+      durationMs?: number;
+    };
   };
   isAI: true;
   provider?: string;
@@ -2740,7 +2762,13 @@ Return EXACTLY this JSON (raw JSON only, no markdown fences):
         topic: params.topic,
         yearGroup: params.yearGroup,
       });
-      return { ...provenanceTaggedStructured, isAI: true, provider: structuredProvider };
+      // FEAT-PB2 — Symbolic maths verification (CAS round-trip). No-op for
+      // non-maths subjects; for maths sheets stamps metadata.mathsVerification
+      // and pushes any mismatch warnings into metadata.postValidatorWarnings.
+      const casTaggedStructured = applyMathsVerification(provenanceTaggedStructured, {
+        subject: params.subject,
+      });
+      return { ...casTaggedStructured, isAI: true, provider: structuredProvider };
     }
     // If structured generation failed, fall through to legacy path
   }
@@ -3457,7 +3485,11 @@ Return EXACTLY this JSON (raw JSON only):
     topic: params.topic,
     yearGroup: params.yearGroup,
   });
-  return provenanceTaggedLegacy as unknown as AIWorksheetResult;
+  // FEAT-PB2 — Symbolic maths verification (legacy path mirror).
+  const casTaggedLegacy = applyMathsVerification(provenanceTaggedLegacy, {
+    subject: params.subject,
+  });
+  return casTaggedLegacy as unknown as AIWorksheetResult;
 }
 
 // ═══ §CLASS-BRIEF · aiGenerateWorksheetFromClassBrief (Phase A · PR-1) ═════

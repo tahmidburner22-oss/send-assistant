@@ -15,9 +15,9 @@ in the same commit.
 
 | Status         | Count |
 | -------------- | ----- |
-| Shipped        | 6     |
+| Shipped        | 7     |
 | Re-applied (PR-2 recovery) | 1 |
-| Specced (ready for fresh-chat execution) | 21 |
+| Specced (ready for fresh-chat execution) | 20 |
 | Total improvements | 20 |
 
 The "Specced" count is higher than the improvement count because larger
@@ -81,7 +81,7 @@ Every spec ties back to one of these three shifts.
 | # | Quality bet                                | Phase | Spec file                                                                          | Status      |
 | - | ------------------------------------------ | ----- | ---------------------------------------------------------------------------------- | ----------- |
 | 13 | Versioning + diff                          | D · PD7 | [`phase-d-quality-and-habit/features/FEAT-PD7.json`](../.agents/tasks/phase-d-quality-and-habit/features/FEAT-PD7.json) | Specced     |
-| 14 | Symbolic maths verification (CAS round-trip) | B · PB2 | [`phase-b-close-the-loop/features/FEAT-PB2.json`](../.agents/tasks/phase-b-close-the-loop/features/FEAT-PB2.json) | Specced     |
+| 14 | Symbolic maths verification (CAS round-trip) | B · PB2 | [`phase-b-close-the-loop/features/FEAT-PB2.json`](../.agents/tasks/phase-b-close-the-loop/features/FEAT-PB2.json) | **Shipped** |
 | 15 | Bias & sensitivity audit on examples       | D · PD9 | [`phase-d-quality-and-habit/features/FEAT-PD9.json`](../.agents/tasks/phase-d-quality-and-habit/features/FEAT-PD9.json) | Specced     |
 | 16 | Knowledge organiser per topic              | D · PD10 | [`phase-d-quality-and-habit/features/FEAT-PD10.json`](../.agents/tasks/phase-d-quality-and-habit/features/FEAT-PD10.json) | Specced     |
 | 17 | Anchor-poster & Now/Next/Then card outputs | D · PD11 | [`phase-d-quality-and-habit/features/FEAT-PD11.json`](../.agents/tasks/phase-d-quality-and-habit/features/FEAT-PD11.json) | Specced     |
@@ -96,7 +96,7 @@ Every spec ties back to one of these three shifts.
 | Phase | Theme                                             | PRs (shipped / total) | Folder                                                                                              |
 | ----- | ------------------------------------------------- | --------------------- | --------------------------------------------------------------------------------------------------- |
 | A     | "We know your class"                              | 5 / 6                 | [`.agents/tasks/phase-a-class-aware/`](../.agents/tasks/phase-a-class-aware/)                       |
-| B     | "We close the loop"                               | 1 / 4                 | [`.agents/tasks/phase-b-close-the-loop/`](../.agents/tasks/phase-b-close-the-loop/)                 |
+| B     | "We close the loop"                               | 2 / 4                 | [`.agents/tasks/phase-b-close-the-loop/`](../.agents/tasks/phase-b-close-the-loop/)                 |
 | C     | "We fit your school"                              | 0 / 7                 | [`.agents/tasks/phase-c-fit-your-school/`](../.agents/tasks/phase-c-fit-your-school/)               |
 | D     | Quality bets + habit hooks                        | 0 / 12                | [`.agents/tasks/phase-d-quality-and-habit/`](../.agents/tasks/phase-d-quality-and-habit/)           |
 
