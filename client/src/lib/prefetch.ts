@@ -136,6 +136,117 @@ export function prefetchRoute(pathname: string): void {
   });
 }
 
+// ═════════════════════════════════════════════════════════════════════════
+// Phase A · PR-4 — Week Ahead prefetch
+// ─────────────────────────────────────────────────────────────────────────
+// Pure helper used by the WeekAheadPanel to warm sessionStorage during idle
+// time, so clicking a "Your week, ready to print" card on Monday morning
+// renders a worksheet near-instantly. Lives in this file (rather than its
+// own) so the prefetch surface area is greppable in one place.
+//
+// Cache contract:
+//   - key:   `weekAhead:{classId}:{yyyy-mm-dd}`
+//   - value: JSON-stringified `AIWorksheetResult`
+//   - TTL:   one calendar day (key changes at local midnight rollover)
+//   - scope: sessionStorage (cleared on tab close)
+//
+// The helper is intentionally tolerant: every failure mode (sessionStorage
+// denied, network down, AI provider 429) is silently absorbed because the
+// click path will retry live. We never want a prefetch failure to surface.
+// ═════════════════════════════════════════════════════════════════════════
+
+export const WEEK_AHEAD_CACHE_PREFIX = "weekAhead:";
+
+export interface WeekAheadPrefetchTarget {
+  /** classId === Child.yearGroup, matching `lib/class-auto-brief.ts`. */
+  classId: string;
+  /** Subject hint for the brief — empty string means "let the brief decide". */
+  subject?: string;
+}
+
+function todayCacheStamp(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
+export function weekAheadCacheKey(classId: string, date = todayCacheStamp()): string {
+  return `${WEEK_AHEAD_CACHE_PREFIX}${classId}:${date}`;
+}
+
+/**
+ * Drop every cached entry that doesn't match today's date stamp. Called by
+ * the panel on midnight rollover so stale Monday cards aren't served on
+ * Tuesday morning. Returns the count of evictions for testability.
+ */
+export function evictStaleWeekAhead(): number {
+  if (typeof sessionStorage === "undefined") return 0;
+  const today = todayCacheStamp();
+  let evicted = 0;
+  try {
+    const keys: string[] = [];
+    for (let i = 0; i < sessionStorage.length; i++) {
+      const k = sessionStorage.key(i);
+      if (k && k.startsWith(WEEK_AHEAD_CACHE_PREFIX) && !k.endsWith(`:${today}`)) {
+        keys.push(k);
+      }
+    }
+    for (const k of keys) {
+      try { sessionStorage.removeItem(k); evicted += 1; } catch { /* ignore */ }
+    }
+  } catch {
+    // sessionStorage unavailable — nothing to do.
+  }
+  return evicted;
+}
+
+/**
+ * Schedule an idle-time prefetch for each target. The provided
+ * `generateOne` callback is responsible for actually building the
+ * worksheet (the panel injects `aiGenerateWorksheetFromClassBrief` here so
+ * `lib/prefetch.ts` doesn't gain a hard dependency on `lib/ai.ts`).
+ *
+ * The caller can pass an `AbortSignal` to cancel mid-run.
+ *
+ * Returns a Promise that resolves once all prefetches have settled. Errors
+ * from individual targets are swallowed — see file header.
+ */
+export async function prefetchWeekAhead(
+  targets: WeekAheadPrefetchTarget[],
+  generateOne: (target: WeekAheadPrefetchTarget) => Promise<unknown>,
+  options: { signal?: AbortSignal } = {},
+): Promise<void> {
+  if (typeof window === "undefined") return;
+  if (typeof sessionStorage === "undefined") return;
+  if (!shouldPrefetch()) return;
+
+  // First — make space for today.
+  evictStaleWeekAhead();
+
+  await new Promise<void>(resolve => {
+    const ric = (window as unknown as {
+      requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
+    }).requestIdleCallback;
+    if (ric) ric(() => resolve(), { timeout: 5000 });
+    else setTimeout(resolve, 0);
+  });
+
+  for (const target of targets) {
+    if (options.signal?.aborted) return;
+    const key = weekAheadCacheKey(target.classId);
+    try {
+      if (sessionStorage.getItem(key)) continue;
+    } catch { /* ignore */ }
+    try {
+      const ws = await generateOne(target);
+      if (options.signal?.aborted) return;
+      try {
+        sessionStorage.setItem(key, JSON.stringify(ws));
+      } catch { /* quota — silently drop */ }
+    } catch {
+      // Live click will retry — keep prefetch quiet.
+    }
+  }
+}
+
 export function installRoutePrefetch(): () => void {
   if (typeof window === "undefined") return () => {};
 

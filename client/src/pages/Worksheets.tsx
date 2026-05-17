@@ -707,6 +707,41 @@ export default function Worksheets() {
       return next ? normaliseWorksheetForRender(next, { subject, topic, yearGroup, sendNeed, difficulty, examBoard }) : next;
     });
   }, [subject, topic, yearGroup, sendNeed, difficulty, examBoard]);
+
+  // ── Phase A · PR-4 — Week Ahead handoff ───────────────────────────────────
+  // When the user clicks a card in WeekAheadPanel we navigate here with
+  // `?weekAhead=1`. The panel has already pre-generated (or live-generated)
+  // a worksheet and stored it in `sessionStorage.weekAheadHandoff`. Pick
+  // it up exactly once on mount and seed the rendered slot directly so the
+  // teacher lands on a finished worksheet, not an empty form.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("weekAhead") !== "1") return;
+    let raw: string | null = null;
+    try { raw = sessionStorage.getItem("weekAheadHandoff"); } catch { return; }
+    if (!raw) return;
+    try {
+      const parsed = JSON.parse(raw) as {
+        classId: string;
+        ws: AnyWorksheet;
+        ts: number;
+      };
+      // Treat anything > 30 minutes as stale to avoid surprising the user
+      // with a worksheet they generated hours ago in a different tab.
+      if (Date.now() - parsed.ts > 30 * 60 * 1000) return;
+      setGenerated(parsed.ws);
+      setHiddenSections(new Set());
+      setHideHeader(false);
+    } catch {
+      // Corrupt handoff — ignore.
+    } finally {
+      try { sessionStorage.removeItem("weekAheadHandoff"); } catch { /* ignore */ }
+    }
+    // Run once on mount only.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const [viewMode, setViewMode] = useState<"teacher" | "student">("student");
   const [showOverlayPicker, setShowOverlayPicker] = useState(false);
   const [showA11yPicker, setShowA11yPicker] = useState(false);

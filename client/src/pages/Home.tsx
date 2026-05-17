@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useState, useMemo, useEffect, useRef } from "react";
 import { callAI } from "@/lib/ai";
+import WeekAheadPanel from "@/components/WeekAheadPanel";
 
 const subjectIcons: Record<string, any> = {
   english: BookOpen, mathematics: Calculator, science: FlaskConical,
@@ -379,6 +380,12 @@ Rules:
         <h2 className="text-xl font-bold text-foreground">Welcome back, {user?.displayName || "Teacher"}</h2>
         <p className="text-sm text-muted-foreground mt-1">Here's your Adaptly overview</p>
       </motion.div>
+
+      {/* Phase A · PR-4 — Your week, ready to print */}
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.03 }}>
+        <WeekAheadPanel />
+      </motion.div>
+
 
       {/* Stats */}
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
