@@ -2503,6 +2503,28 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
     toast.success("Lesson saved to history!");
   };
 
+  // ─── QTI 3.0 Export ─────────────────────────────────────────────────────────
+  const handleExportQti = async () => {
+    if (!generated) { toast.error("No worksheet loaded"); return; }
+    try {
+      const { exportWorksheetToQti } = await import("@/lib/exporters/qti");
+      const qtiXml = exportWorksheetToQti(generated as any, { includeMetadata: true });
+      const blob = new Blob([qtiXml], { type: "application/xml" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      const safeName = (generated.title || "worksheet").replace(/[^a-zA-Z0-9\s]/g, "").replace(/\s+/g, "_");
+      a.download = `${safeName}_qti3.xml`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      toast.success("QTI 3.0 XML exported — import into Canvas, Moodle, or any QTI-compatible LMS.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "QTI export failed.");
+    }
+  };
+
   // ═══ §HANDLE-PDF · PDF download (pixel-perfect HTML-to-PDF) ════════════════
   // ─── PDF Download (pixel-perfect HTML-to-PDF) ─────────────────────────────
   const handleDownloadPdf = async () => {
@@ -5522,6 +5544,7 @@ ${s.content}`).join("\n\n"),
               <FileDown className="w-3.5 h-3.5 mr-1.5" /> PDF
             </Button>
             <Button variant="outline" size="sm" onClick={handlePrint}><Printer className="w-3.5 h-3.5 mr-1.5" /> Print</Button>
+            <Button variant="outline" size="sm" onClick={handleExportQti} title="Export as QTI 3.0 (for Canvas, Moodle, etc.)"><FileDown className="w-3.5 h-3.5 mr-1.5" /> QTI</Button>
             <Button variant="outline" size="sm" onClick={handleSave}><Save className="w-3.5 h-3.5 mr-1.5" /> Save</Button>
             {/* Read Aloud — neural TTS reads the full worksheet */}
             <Button

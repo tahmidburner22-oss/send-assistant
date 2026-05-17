@@ -35,6 +35,7 @@ import {
   type AbilityTier,
   type UnitPlan,
   type UnitLessonResult,
+  type UnitBundleFormat,
 } from "@/lib/unitPack";
 import type { ExamBoard } from "@/lib/specPointTaxonomy";
 
@@ -91,7 +92,6 @@ export default function UnitPackDialog({
   const [results, setResults] = useState<UnitLessonResult[]>([]);
   const [statuses, setStatuses] = useState<Record<number, "pending" | "running" | "ok" | "failed">>({});
   const [bundling, setBundling] = useState(false);
-  const [bundleBlob, setBundleBlob] = useState<Blob | null>(null);
   const [aborted, setAborted] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
 
@@ -105,7 +105,6 @@ export default function UnitPackDialog({
       setPlan(null);
       setResults([]);
       setStatuses({});
-      setBundleBlob(null);
       setAborted(false);
     } else {
       if (initialSubject) setSubject(initialSubject);
@@ -149,7 +148,6 @@ export default function UnitPackDialog({
     setPlan(newPlan);
     setResults([]);
     setStatuses(Object.fromEntries(newPlan.lessons.map((l) => [l.index, "pending" as const])));
-    setBundleBlob(null);
     setAborted(false);
     setRunning(true);
 
@@ -197,26 +195,29 @@ export default function UnitPackDialog({
   }, []);
 
   // ── Bundle + download ──────────────────────────────────────────────────
-  const handleDownload = useCallback(async () => {
+  const handleDownload = useCallback(async (format: UnitBundleFormat = "zip") => {
     if (!plan || results.length === 0) return;
     setBundling(true);
     try {
-      const blob = bundleBlob ?? (await bundleUnit(plan, results, "zip"));
-      setBundleBlob(blob);
+      const blob = await bundleUnit(plan, results, format);
+      const ext = format === "cc" ? "imscc" : "zip";
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `${slug(plan.unitTitle)}.zip`;
+      a.download = `${slug(plan.unitTitle)}.${ext}`;
       document.body.appendChild(a);
       a.click();
       a.remove();
       URL.revokeObjectURL(url);
+      if (format === "cc") {
+        toast.success("Common Cartridge (.imscc) downloaded — import into your LMS.");
+      }
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Could not build the ZIP.");
+      toast.error(err instanceof Error ? err.message : "Could not build the package.");
     } finally {
       setBundling(false);
     }
-  }, [plan, results, bundleBlob]);
+  }, [plan, results]);
 
   // ── Render ─────────────────────────────────────────────────────────────
   return (
@@ -355,13 +356,27 @@ export default function UnitPackDialog({
                 <Button variant="ghost" size="sm" onClick={() => onOpenChange(false)}>
                   Close
                 </Button>
-                <Button variant="outline" size="sm" onClick={() => { setPlan(null); setResults([]); setStatuses({}); setBundleBlob(null); setAborted(false); }}>
+                <Button variant="outline" size="sm" onClick={() => { setPlan(null); setResults([]); setStatuses({}); setAborted(false); }}>
                   Build another
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleDownload("cc")}
+                  disabled={bundling}
+                  title="Export as Common Cartridge (.imscc) for Canvas, Moodle, etc."
+                >
+                  {bundling ? (
+                    <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                  ) : (
+                    <Download className="w-3.5 h-3.5 mr-1.5" />
+                  )}
+                  Export .imscc
                 </Button>
                 <Button
                   size="sm"
                   className="bg-emerald-600 hover:bg-emerald-700 text-white"
-                  onClick={handleDownload}
+                  onClick={() => handleDownload("zip")}
                   disabled={bundling}
                 >
                   {bundling ? (
