@@ -2,6 +2,7 @@
  * Shared formatter for AIToolPage output that injects school logo + branding.
  * Used by BehaviourPlan, SmartTargets, WellbeingSupport and similar tools.
  */
+import { renderMath } from "@/components/WorksheetRenderer";
 
 export function formatToolOutput(
   text: string,
@@ -31,24 +32,35 @@ export function formatToolOutput(
     const t = p.trim();
     if (!t) return "";
     if (t.startsWith("##")) {
-      return `<h3 style="font-size:14px;font-weight:700;color:${accentColor};margin:16px 0 6px;border-left:3px solid ${accentColor};padding-left:8px;">${t.replace(/^##\s*/, "")}</h3>`;
+      const inner = renderMath(t.replace(/^##\s*/, ""));
+      return `<h3 style="font-size:14px;font-weight:700;color:${accentColor};margin:16px 0 6px;border-left:3px solid ${accentColor};padding-left:8px;">${inner}</h3>`;
     }
     if (t.startsWith("#")) {
-      return `<h2 style="font-size:17px;font-weight:800;color:${accentColor};margin:20px 0 8px;">${t.replace(/^#\s*/, "")}</h2>`;
+      const inner = renderMath(t.replace(/^#\s*/, ""));
+      return `<h2 style="font-size:17px;font-weight:800;color:${accentColor};margin:20px 0 8px;">${inner}</h2>`;
     }
     // Bullet lists
     if (t.startsWith("- ") || t.startsWith("• ")) {
       const items = t.split("\n").filter(l => l.trim());
-      const lis = items.map(l => `<li style="margin:3px 0;color:#374151;">${l.replace(/^[-•]\s*/, "").replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")}</li>`).join("");
+      const lis = items.map(l => {
+        const inner = renderMath(l.replace(/^[-•]\s*/, "")).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+        return `<li style="margin:3px 0;color:#374151;">${inner}</li>`;
+      }).join("");
       return `<ul style="margin:8px 0 8px 16px;padding:0;">${lis}</ul>`;
     }
     // Numbered lists
     if (/^\d+\./.test(t)) {
       const items = t.split("\n").filter(l => l.trim());
-      const lis = items.map(l => `<li style="margin:4px 0;color:#374151;">${l.replace(/^\d+\.\s*/, "").replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")}</li>`).join("");
+      const lis = items.map(l => {
+        const inner = renderMath(l.replace(/^\d+\.\s*/, "")).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+        return `<li style="margin:4px 0;color:#374151;">${inner}</li>`;
+      }).join("");
       return `<ol style="margin:8px 0 8px 18px;padding:0;">${lis}</ol>`;
     }
-    const formatted = t.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/\n/g, "<br/>");
+    // Plain paragraph — render math inside before bold/newline post-processing.
+    const formatted = renderMath(t)
+      .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+      .replace(/\n/g, "<br/>");
     return `<p style="font-size:13px;color:#1f2937;line-height:1.7;margin:0 0 10px;">${formatted}</p>`;
   }).filter(Boolean).join("");
 

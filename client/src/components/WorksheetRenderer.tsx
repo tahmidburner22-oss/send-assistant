@@ -436,7 +436,8 @@ export function renderMath(text: string | any): string {
     try { return katex.renderToString(expr.trim(), { displayMode: true, throwOnError: false }); }
     catch { return expr; }
   });
-  result = result.replace(/\\\((\s*.+?\s*)\\\)/g, (_, expr) => {
+  // Match `\(...\)` non-greedy; allow newlines inside for parity with `\[...\]`.
+  result = result.replace(/\\\((\s*[\s\S]+?\s*)\\\)/g, (_, expr) => {
     try { return katex.renderToString(expr.trim(), { displayMode: false, throwOnError: false }); }
     catch { return expr; }
   });
@@ -836,6 +837,9 @@ export function renderMath(text: string | any): string {
   //    Pattern A: (expr) / (expr) with spaces around slash
   result = result.replace(/\(([^()]+)\)\s+\/\s+\(([^()]+)\)/g, (full, num, den) => {
     if (hasHTML(num) || hasHTML(den)) return full;
+    // Reject pure-letter/acronym pairs like "(BIDMAS) / (BODMAS)" — that's prose.
+    const isPureLetters = (s: string) => /^[A-Za-z]{2,}$/.test(s.trim());
+    if (isPureLetters(num) && isPureLetters(den)) return full;
     try { return katex.renderToString(`\\dfrac{${num}}{${den}}`, { displayMode: false, throwOnError: false }); }
     catch { return full; }
   });
@@ -950,6 +954,23 @@ export function renderMath(text: string | any): string {
         const numL = num.toLowerCase();
         const denL = den.toLowerCase();
         if (proseBlocklist.has(numL) || proseBlocklist.has(denL)) return full;
+        // Structural prose guard (replaces the hand-curated blocklist for the most
+        // common false-positive: acronym pairs like "BIDMAS/BODMAS", "KS3/KS4",
+        // "SEN/SEND", "AQA/Edexcel", "GCSE/IGCSE", "AND/OR", "Y8/Y9"). If BOTH
+        // sides are pure letters AND ≥ 2 characters long, it's overwhelmingly
+        // prose. Single-letter algebraic numerators/denominators (a/b, x/y) are
+        // still allowed because they fail the length check.
+        const isPureWord = (s: string) => /^[A-Za-z]{2,}$/.test(s);
+        if (isPureWord(num) && isPureWord(den)) return full;
+        // Reject all-caps acronym pairs of length ≥ 2 (e.g. "EU/UK", "AND/OR").
+        const isAcronym = (s: string) => /^[A-Z]{2,}$/.test(s);
+        if (isAcronym(num) || isAcronym(den)) return full;
+        // Reject uppercase-letters-then-digits identifier codes (KS3, Y8, GCSE9,
+        // BTEC2). Pattern: one or more uppercase letters followed by digits, with
+        // no lowercase letters or other characters. These are year/qualification
+        // codes, never fractions.
+        const isIdentifierCode = (s: string) => /^[A-Z]+\d+$/.test(s);
+        if (isIdentifierCode(num) || isIdentifierCode(den)) return full;
         // Only render as a fraction when the pair is unambiguously mathematical.
         const isNumeric = (s: string) => /^\d+$/.test(s);
         const isSingleVar = (s: string) => /^[A-Za-z]$/.test(s);
