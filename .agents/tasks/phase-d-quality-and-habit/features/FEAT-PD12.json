@@ -1,0 +1,52 @@
+{
+  "id": "FEAT-PD12",
+  "type": "feat",
+  "title": "Department library with HOD moderation",
+  "description": "A school-level worksheet library separate from a teacher's personal templates. HODs curate which worksheets become 'department-approved'; teachers see them under a 'Department library' tab. Drives MAT/site licences because it's the artefact a HOD owns.",
+  "rationale": "User's improvement #18. Department-level governance is the gap between 'enthusiastic teacher uses it' and 'whole school uses it'. A two-tier library (personal + department) with a moderation queue is the smallest amount of governance that earns site licence sign-off.",
+  "depends_on": ["FEAT-PC2"],
+  "steps": [
+    "Schema: add `department_library` table (id, schoolId, departmentName, worksheetSnapshotId, status: 'draft'|'in-review'|'approved'|'rejected', curatedBy, approvedBy, notes). Drizzle migration.",
+    "Roles: extend the user role enum to include `HOD` (Head of Department). HOD-of-X manages the X department's library.",
+    "Server routes (requireAuth + role checks):",
+    "  - POST /api/dept-library — submit a worksheet (snapshot the current version into the library, status: 'in-review' if submitter is teacher, 'approved' if HOD).",
+    "  - GET  /api/dept-library?dept=… — list approved + (if HOD) in-review entries.",
+    "  - POST /api/dept-library/:id/decision — HOD approves / rejects with notes.",
+    "Client:",
+    "  - New /department page (gated by school-membership).",
+    "  - Tabs: 'Approved' (default), 'In review' (HOD only).",
+    "  - On Worksheets toolbar: 'Submit to department' button.",
+    "  - On History rows: 'In department library' badge if part of dept library.",
+    "Notifications: in-app + transactional email when a submission is decided on (reuse PD4/PD5 email infra).",
+    "Tests:",
+    "  - server/tests/routes/dept-library.test.ts — role enforcement, status transitions.",
+    "  - Snapshot of /department list + decision modal."
+  ],
+  "files_to_touch": [
+    "drizzle/<timestamp>_dept_library.sql (new)",
+    "server/routes/deptLibrary.ts (new)",
+    "server/lib/auth/roles.ts (extend with HOD)",
+    "client/src/pages/DepartmentLibrary.tsx (new)",
+    "client/src/App.tsx (route)",
+    "client/src/pages/Worksheets.tsx (Submit to department button — ≤ 30 LOC delta)",
+    "client/src/pages/History.tsx (badge)",
+    "server/tests/routes/dept-library.test.ts (new)"
+  ],
+  "do_not_touch": [
+    "Personal templates infra (read-only sibling)"
+  ],
+  "acceptance_criteria": [
+    "A teacher submits a worksheet → it appears in the HOD's 'In review' tab.",
+    "HOD approves → it appears in everyone's 'Approved' list and the submitter receives notification.",
+    "Non-HOD users cannot see the decision tab.",
+    "Tests + check + build pass."
+  ],
+  "verification": [
+    "pnpm run check",
+    "pnpm test --run dept-library",
+    "pnpm run build",
+    "Manual: as a teacher submit a sheet; as the HOD approve; confirm visibility."
+  ],
+  "size_estimate": { "files_touched": 8, "net_lines_changed": 550 },
+  "context_budget_for_fresh_chat": "MEDIUM."
+}

@@ -1,0 +1,59 @@
+{
+  "id": "FEAT-PC5",
+  "type": "feat",
+  "title": "Bulk scheme-of-work generation",
+  "description": "'Make me 6 lessons on Romeo & Juliet for Y9 mixed ability' → outputs (a) MTP overview, (b) 6 paired worksheets + answer keys, (c) end-of-unit assessment, (d) knowledge organiser, (e) parent letter. All shareable as one ZIP, or pushed to LMS / Common Cartridge as a single unit. Moves Adaptly from per-lesson tool to per-unit tool — the unit teachers actually plan in.",
+  "rationale": "User's improvement #6. The existing tools each output one artefact; the unit pack wires them into the planning cycle a department actually uses. Defensible because it's the lowest-friction way to fill an MTP slot in a SoW.",
+  "depends_on": ["FEAT-PR1", "FEAT-PB1", "FEAT-PC1"],
+  "steps": [
+    "Audit existing pieces: Lesson Planner (already shipped), MediumTermPlanner v2 (PR #43), Worksheet generator, knowledge organiser builder (mtp-v2-enhancements.ts deriveKnowledgeOrganiser), Parent Newsletter generator. Each is callable as a function — confirm and list call signatures.",
+    "Create client/src/lib/unitPack.ts:",
+    "  - planUnit({ subject, yearGroup, topic, weeks, ability, board? }): UnitPlan",
+    "    AI call producing the unit shape: { unitTitle; lessons: { week; title; objectives[]; specRefs[]; assessmentSlots? }[]; finalAssessmentSpec; knowledgeOrganiserOutline; parentLetterTopic }.",
+    "  - executeUnit(plan, opts): AsyncGenerator<UnitProgress, UnitArtefacts>",
+    "    Iterates lessons sequentially, calling aiGenerateWorksheet with the same brief used by Auto-from-class (PR-1) so each lesson aligns with the class.",
+    "    After all lessons: one call for the end-of-unit assessment (uses the unit's specRefs + assessmentSpec); one call for the KO; one call for the parent letter.",
+    "    Yields per-step progress so the UI can render a checklist.",
+    "  - bundleUnit(artefacts, opts: { format: 'zip'|'cc'|'lms-push' }): Promise<Blob | { lmsUrl }>.",
+    "    'zip' uses JSZip (already a dep, see existing exports), 'cc' delegates to PC3's commonCartridge exporter, 'lms-push' delegates to PC1's push.",
+    "Create client/src/components/UnitPackDialog.tsx:",
+    "  - Single form: subject, year group, topic, weeks (slider 2–12), ability (mixed default), board (auto if previously set), output destination (zip / classroom / teams / .imscc).",
+    "  - On Generate: live progress checklist (1/6 lesson plans, 2/6, ..., MTP, KO, parent letter, package). Abort button. Failed steps surface inline; the unit ships with whatever succeeded.",
+    "  - After completion: download button + 'Open in /history' link.",
+    "Wire entry points:",
+    "  - Add 'New unit pack' button on /tools/medium-term-planner top bar (consumes the existing MTP context for pre-fill).",
+    "  - Add a row on /home next to WeekAheadPanel: 'This week's units → Plan a unit' link.",
+    "Tests:",
+    "  - client/src/lib/__tests__/unitPack.test.ts — covers planUnit shape stability, executeUnit progress events, bundleUnit('zip') ZIP structure (extract + verify file names), abort mid-run.",
+    "Output cap: refuse to produce unit packs of > 20 lessons (token budget); show clear error."
+  ],
+  "files_to_touch": [
+    "client/src/lib/unitPack.ts (new)",
+    "client/src/components/UnitPackDialog.tsx (new)",
+    "client/src/pages/tools/MediumTermPlanner.tsx (entry point button)",
+    "client/src/pages/Home.tsx (Plan a unit link)",
+    "shared/aiSchemas.ts (UnitPlanSchema)",
+    "client/src/lib/__tests__/unitPack.test.ts (new)"
+  ],
+  "do_not_touch": [
+    "Individual generators (LessonPlanner, KO builder) — only consume them",
+    "Worksheets.tsx — UnitPackDialog opens worksheets via /history/:id when the teacher wants to view one",
+    "PC3 commonCartridge exporter — only invoke"
+  ],
+  "acceptance_criteria": [
+    "UnitPackDialog can plan + execute a 6-lesson Y9 R&J unit in < 4 minutes wall clock on a typical setup.",
+    "Output ZIP contains: 1 MTP markdown, 6 worksheets PDF (pupil + teacher key), 1 end-of-unit assessment PDF, 1 KO A3 PDF, 1 parent letter PDF.",
+    "Aborting mid-run preserves whatever finished and surfaces partial download.",
+    "Pushing as a Common Cartridge produces a valid .imscc that imports into Canvas.",
+    "Output cap honoured.",
+    "pnpm run check + pnpm run build + pnpm test --run pass."
+  ],
+  "verification": [
+    "pnpm run check",
+    "pnpm test --run unitPack UnitPackDialog",
+    "pnpm run build",
+    "Manual: 6-lesson Y9 R&J + 4-lesson Y4 fractions; verify ZIPs."
+  ],
+  "size_estimate": { "files_touched": 6, "net_lines_changed": 600 },
+  "context_budget_for_fresh_chat": "MEDIUM. MTP + LessonPlanner are already split files; read narrowly only."
+}

@@ -1,0 +1,40 @@
+{
+  "id": "FEAT-PD3",
+  "type": "feat",
+  "title": "2-tap mobile generate from staffroom",
+  "description": "On phones, the Home page renders a single 'Generate for [class] [topic]' tile per recent class. Tap the tile → Generate runs immediately (using the WeekAhead prefetch cache when warm) → renders. Two taps, no form, while waiting for the kettle.",
+  "rationale": "User's improvement #12 (c). The Web App on mobile currently surfaces the same desktop layout. A staffroom-specific surface that reduces every interaction to one tap dramatically lifts daily-use frequency.",
+  "depends_on": ["FEAT-PR2", "FEAT-PR4"],
+  "steps": [
+    "Audit: confirm there's a mobile breakpoint detection helper (`useMediaQuery` or similar). Otherwise add one.",
+    "Add MobileTwoTapPanel.tsx: shown only at < 640px; renders up to 4 large tiles (one per top recently-used class as derived from useApp().worksheetHistory + class-auto-brief).",
+    "Each tile shows: classLabel, last-used topic (from history), pupil count. Tap → calls aiGenerateWorksheetFromClassBrief on the fly (with prefetch cache from PR-4 if available) and routes via the same weekAheadHandoff pattern.",
+    "Mounted in Home.tsx ABOVE WeekAheadPanel on mobile only (and hidden on desktop — the WeekAhead panel already serves desktop).",
+    "Telemetry: 'mobile.twoTap.generated' (classId).",
+    "Tests:",
+    "  - client/src/components/__tests__/MobileTwoTapPanel.test.tsx — fixture with 0 / 1 / 4 history entries; mobile vs desktop render boundaries."
+  ],
+  "files_to_touch": [
+    "client/src/components/MobileTwoTapPanel.tsx (new)",
+    "client/src/hooks/useMediaQuery.ts (new or extend)",
+    "client/src/pages/Home.tsx (conditional mount)",
+    "client/src/components/__tests__/MobileTwoTapPanel.test.tsx (new)"
+  ],
+  "do_not_touch": [
+    "WeekAheadPanel — sibling component, no shared state mutation"
+  ],
+  "acceptance_criteria": [
+    "On mobile viewport ≤ 640px, Home shows 1–4 large tiles above WeekAheadPanel (which is hidden on mobile to avoid duplication).",
+    "Tapping a tile generates within 5s (prefetched) or shows a spinner up to 30s otherwise.",
+    "Desktop layout unchanged.",
+    "Tests + build pass."
+  ],
+  "verification": [
+    "pnpm run check",
+    "pnpm test --run MobileTwoTap",
+    "pnpm run build",
+    "Manual: simulate mobile viewport; tap a tile; confirm worksheet renders."
+  ],
+  "size_estimate": { "files_touched": 4, "net_lines_changed": 280 },
+  "context_budget_for_fresh_chat": "LOW."
+}

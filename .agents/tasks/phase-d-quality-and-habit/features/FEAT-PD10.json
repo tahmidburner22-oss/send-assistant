@@ -1,0 +1,41 @@
+{
+  "id": "FEAT-PD10",
+  "type": "feat",
+  "title": "Knowledge organiser auto-generated per topic",
+  "description": "Every generated worksheet ships with a one-pager Knowledge Organiser: vocab + diagrams + key questions, mirrored from the same prompt context. Many schools mandate KOs; this makes Adaptly the source.",
+  "rationale": "User's improvement #16. PR #43 (LessonPlanner v2) added `deriveKnowledgeOrganiser` for MTPs. This PR ships it for every worksheet, available next to the worksheet via a single 'Knowledge organiser' tab in the renderer.",
+  "depends_on": [],
+  "steps": [
+    "Reuse mtp-v2-enhancements.ts deriveKnowledgeOrganiser: extend it to take a worksheet (instead of an MTP) and derive a KO from it directly. Move to client/src/lib/knowledgeOrganiser.ts as a shared module.",
+    "After worksheet generation, async-fire-and-forget a deriveKnowledgeOrganiserFromWorksheet pass; stamp metadata.knowledgeOrganiser = { vocab, keyFacts, stickyQuestions, diagramHints }.",
+    "WorksheetRenderer.tsx: add a 'Knowledge organiser' tab (alongside 'Worksheet' / 'Teacher key' if those exist; otherwise a separate button). Renders A3-landscape printable.",
+    "Add 'Print KO' to the toolbar. Reuse buildPopupHtml.",
+    "Tests:",
+    "  - client/src/lib/__tests__/knowledgeOrganiser.test.ts — fixture worksheet → expected vocab/keyFacts shape.",
+    "  - Snapshot of the KO tab."
+  ],
+  "files_to_touch": [
+    "client/src/lib/knowledgeOrganiser.ts (new — extracted)",
+    "client/src/lib/mtp-v2-enhancements.ts (re-export from new module)",
+    "client/src/lib/ai/generate.ts (chain KO derivation post-validation)",
+    "client/src/components/WorksheetRenderer.tsx (KO tab/button)",
+    "client/src/lib/__tests__/knowledgeOrganiser.test.ts (new)",
+    "shared/aiSchemas.ts (metadata.knowledgeOrganiser)"
+  ],
+  "do_not_touch": [
+    "MTP generator behaviour (read-only consumer)"
+  ],
+  "acceptance_criteria": [
+    "Every freshly-generated worksheet has metadata.knowledgeOrganiser populated within 3s of render.",
+    "KO tab renders the four sections; Print KO opens an A3 popup.",
+    "Tests + check + build pass."
+  ],
+  "verification": [
+    "pnpm run check",
+    "pnpm test --run knowledgeOrganiser",
+    "pnpm run build",
+    "Manual: generate, switch to KO tab, print."
+  ],
+  "size_estimate": { "files_touched": 6, "net_lines_changed": 360 },
+  "context_budget_for_fresh_chat": "LOW–MEDIUM."
+}
