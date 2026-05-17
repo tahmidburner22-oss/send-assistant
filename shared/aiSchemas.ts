@@ -237,6 +237,20 @@ export const WorksheetOutputSchema = z.object({
       ranAt: z.string().optional(),
       durationMs: z.number().min(0).optional(),
     }).optional(),
+    /** FEAT-PB3 — re-teach worksheet provenance (set when this worksheet was
+     * generated from a misconception detected in a Scan & Mark batch on a
+     * source worksheet). The renderer surfaces a header badge and footer
+     * sentence so the teacher can see the lineage at a glance. */
+    reteach: z.object({
+      sourceWorksheetId: z.string().min(1).max(200).optional(),
+      sourceWorksheetTitle: z.string().max(300).optional(),
+      misconceptionId: z.string().min(1).max(40),
+      misconceptionText: z.string().max(500).optional(),
+      pupilsTargeted: z.array(z.string().max(200)).max(60).optional(),
+      pctWrong: z.number().min(0).max(100).optional(),
+      questionIdx: z.number().int().min(0).optional(),
+      generatedAt: z.string().optional(),
+    }).optional(),
   }).optional(),
   isAI: z.boolean().optional(),
   provider: z.string().optional(),
