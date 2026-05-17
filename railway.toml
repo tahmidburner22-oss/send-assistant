@@ -1,6 +1,6 @@
 [build]
 builder = "NIXPACKS"
-buildCommand = "pnpm install --no-frozen-lockfile && pnpm build"
+buildCommand = "pnpm install --no-frozen-lockfile && VITE_COVERAGE_MAP_ENABLED=1 pnpm build"
 
 [deploy]
 startCommand = "node dist/server/index.js"
