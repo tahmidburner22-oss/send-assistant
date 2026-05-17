@@ -865,6 +865,7 @@ export default function AIToolPage({
         )}
 
         {!result && !isStreaming ? (
+          <>
           <Card className="border-border/50">
             <CardContent className="p-4 space-y-4" onKeyDown={handleFormKeyDown}>
               {/* Batch-mode toggle when this tool opts into batch */}
@@ -1017,7 +1018,8 @@ export default function AIToolPage({
             </CardContent>
           </Card>
           {/* Render V2 panel tabs even before generation so they are always accessible */}
-          {renderPostActions && !result && renderPostActions("", values)}
+          {renderPostActions && renderPostActions("", values)}
+          </>
         ) : isStreaming && !result ? (
           /* Streaming in progress — show progressive text */
           <div className="space-y-3">
