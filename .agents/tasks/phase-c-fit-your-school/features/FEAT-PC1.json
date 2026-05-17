@@ -1,0 +1,72 @@
+{
+  "id": "FEAT-PC1",
+  "type": "feat",
+  "title": "LMS push: Google Classroom + Microsoft Teams + Satchel One",
+  "description": "One-click 'Push to Google Classroom' / 'Push to Microsoft Teams' / 'Push to Satchel One' from any worksheet. Creates an assignment with the worksheet attached as PDF, the answer key hidden from pupils, the due date inferred from the scheduler, and the assignee list pulled from the class roster. Removes the 'but our admin uses Teams' procurement objection.",
+  "rationale": "User's improvement #7 part 1. Today the only way for a pupil to receive a worksheet electronically is the Companion QR code (PR #32). Schools require the worksheet to land in the same channel they're already on (Classroom/Teams/Satchel). This PR is the single biggest unlock for school-level adoption.",
+  "depends_on": [],
+  "constraints": [
+    "OAuth flow lives entirely server-side. No tokens in the browser. The browser only sees a per-user `lms_connections` record indicating which providers are linked.",
+    "PDF used for the push is the SAME PDF the print path produces (pdf-generator-v2.buildPopupHtml + headless render). No new layout.",
+    "Answer key is stripped from the pupil-facing PDF before upload. Use the existing `viewMode: 'student'` switch.",
+    "Each provider's API rate limits must be respected — push uses a single bulk-create call where the API supports it (Classroom courseWork.create with multiple assignees), otherwise rate-limit-aware queue."
+  ],
+  "steps": [
+    "Add to `server/integrations/`:",
+    "  - googleClassroom.ts — OAuth 2.0 with the `classroom.coursework.students` + `classroom.rosters.readonly` + `classroom.profile.emails` scopes. Token storage in the existing `users.lmsConnections` JSON column (add migration).",
+    "  - microsoftTeams.ts — Microsoft Graph `EduAssignments.ReadWriteBasic` scope. Same token storage shape.",
+    "  - satchelOne.ts — Satchel partner API (Show My Homework). Currently only OAuth — token store same shape.",
+    "  - common.ts — shared OAuth dance (state cookie, PKCE, callback handling, refresh-token rotation). Re-uses the existing `passport-google-oauth20` infra patterns where possible.",
+    "Add server routes (all behind requireAuth):",
+    "  - POST /api/integrations/:provider/connect  → returns the OAuth URL.",
+    "  - GET  /api/integrations/:provider/callback → completes OAuth, stores token.",
+    "  - DELETE /api/integrations/:provider/disconnect → revoke + delete.",
+    "  - GET  /api/integrations/:provider/courses  → list courses the teacher can post to.",
+    "  - POST /api/integrations/:provider/push    → body: { worksheetId, courseId, dueAt?, hideAnswerKey?: true }. Server renders pupil-facing PDF, uploads to provider, creates assignment, returns provider URL.",
+    "Client UI:",
+    "  - In Settings → Integrations, list the three providers with connect/disconnect rows. Re-use the existing Settings tab pattern.",
+    "  - In Worksheets toolbar (next to Class Pack / Companion), add a single 'Push to LMS' button. Click → dropdown with each connected provider; clicking a provider opens a course picker, the inferred due date (editable), and a 'Hide answer key from pupils' toggle (default ON).",
+    "  - On success, toast with the provider URL link (opens in new tab).",
+    "Database migration: add `lms_connections JSONB DEFAULT '{}'::jsonb` to users. Drizzle migration in `drizzle/`.",
+    "Tests:",
+    "  - server/tests/integrations/googleClassroom.test.ts — mocks the Google API client, verifies push request shape (resource type Material vs Assignment, dueDate timezone correctness, role: STUDENT visibility flag).",
+    "  - server/tests/integrations/microsoftTeams.test.ts + satchelOne.test.ts — equivalent.",
+    "  - End-to-end client smoke: open Push to LMS modal with a fake connected provider, confirm course picker renders, confirm push button posts the right body shape (mock fetch).",
+    "Docs: docs/integrations/lms.md — one page per provider explaining the IT admin steps (consent screen, scopes, redirect URIs).",
+    "Feature flag: every provider sits behind `process.env.LMS_<PROVIDER>_ENABLED`. Default off; ops enables per tenant."
+  ],
+  "files_to_touch": [
+    "server/integrations/common.ts (new)",
+    "server/integrations/googleClassroom.ts (new)",
+    "server/integrations/microsoftTeams.ts (new)",
+    "server/integrations/satchelOne.ts (new)",
+    "server/routes/integrations.ts (new — mounts all 5 routes)",
+    "server/index.ts (mount router)",
+    "drizzle/<timestamp>_lms_connections.sql (new)",
+    "client/src/pages/Settings.tsx (Integrations tab additions)",
+    "client/src/components/PushToLmsDialog.tsx (new)",
+    "client/src/pages/Worksheets.tsx (toolbar button — ≤ 30 LOC delta)",
+    "docs/integrations/lms.md (new)"
+  ],
+  "do_not_touch": [
+    "Existing OAuth login (passport-google-oauth20) — separate scope, separate route prefix",
+    "Companion QR / passport public routes — completely separate flow",
+    "Worksheet rendering — reuse the existing student PDF path"
+  ],
+  "acceptance_criteria": [
+    "Each provider can be connected + disconnected from Settings.",
+    "Push to Google Classroom creates an assignment in a real test course with the PDF attached, due date set, and answer key NOT visible in the pupil-facing PDF.",
+    "Push to Teams + Satchel achieves the equivalent (manual verification on a test tenant).",
+    "If the provider's API rate-limits, push retries with exponential backoff up to 3 times, then surfaces the error with a 'Retry' button.",
+    "All 3 provider clients have unit tests covering happy path + token-refresh + 401 + 429.",
+    "pnpm run check + pnpm run build + pnpm test --run pass."
+  ],
+  "verification": [
+    "pnpm run check",
+    "pnpm test --run integrations",
+    "pnpm run build",
+    "Manual: connect a real Google Workspace test tenant + a Microsoft 365 test tenant; push 1 worksheet to each; confirm pupil view shows the PDF without answer key."
+  ],
+  "size_estimate": { "files_touched": 11, "net_lines_changed": 600 },
+  "context_budget_for_fresh_chat": "MEDIUM. Read each provider's API docs page on first use; repository code reads are narrow."
+}

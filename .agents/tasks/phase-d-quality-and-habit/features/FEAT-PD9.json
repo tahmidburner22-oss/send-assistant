@@ -1,0 +1,47 @@
+{
+  "id": "FEAT-PD9",
+  "type": "feat",
+  "title": "Bias & sensitivity audit on examples",
+  "description": "Auto-audit every generated worksheet for bias / sensitivity issues: name distribution (no all-Anglo, no skew), scenario assumptions (e.g. 'family holiday to Spain'), cultural references, gendered profession defaults, dietary assumptions. Surface findings as a teacher-only banner with one-click 'Re-roll names' / 'Soften assumption' fixes.",
+  "rationale": "User's improvement #15. Important for diverse contexts (Tower Hamlets, Trafford, etc.). Current AI worksheets default to Anglo names + middle-class scenarios because the underlying training data does. A deterministic audit + one-click fix keeps the output usable everywhere.",
+  "depends_on": [],
+  "steps": [
+    "Create client/src/lib/biasAuditor.ts:",
+    "  - auditWorksheet(worksheet, locale: 'uk-default' | 'uk-multilingual' | 'custom-school'): { findings: { kind; severity; questionIdx; evidence; suggestion }[] }",
+    "    Checks (deterministic):",
+    "    - Name distribution: extract first names, compare to ONS UK baby-names distribution OR a school-uploaded roster baseline. Flag if all from one ethnic group.",
+    "    - Scenario red-flags via a curated word list: 'family holiday', 'private tutor', specific religious holidays referenced as default, gendered professions (nurse → female default, etc.).",
+    "    - Currency assumptions: pure £ scenarios in a class with a high EAL ratio — suggest contextualising.",
+    "  - The lookup tables ship as JSON under client/src/data/bias/.",
+    "WorksheetRenderer.tsx: teacher-only 'Sensitivity check' banner. Each finding has a 'Re-roll' button that calls a small AI swap (e.g. swapNamesInWorksheet using the existing aiScenarioSwap path).",
+    "Tests:",
+    "  - client/src/lib/__tests__/biasAuditor.test.ts — fixtures: all-Anglo names flagged, mixed names not flagged, religious-holiday scenario flagged, etc.",
+    "Docs: docs/bias-audit.md describing the lookup table format + how schools customise."
+  ],
+  "files_to_touch": [
+    "client/src/lib/biasAuditor.ts (new)",
+    "client/src/data/bias/uk-name-distribution.json (new)",
+    "client/src/data/bias/sensitive-terms.json (new)",
+    "client/src/components/WorksheetRenderer.tsx (banner + re-roll wires)",
+    "client/src/lib/ai/scenario.ts (swapNames helper if not already present)",
+    "client/src/lib/__tests__/biasAuditor.test.ts (new)",
+    "docs/bias-audit.md (new)"
+  ],
+  "do_not_touch": [
+    "AI prompts (audit is post-process)"
+  ],
+  "acceptance_criteria": [
+    "A worksheet with all-Anglo names produces a banner with a 'Re-roll names' button.",
+    "Clicking the button preserves question structure but swaps names to a more representative set.",
+    "Tests pass for at least 6 fixture cases.",
+    "pnpm check + build pass."
+  ],
+  "verification": [
+    "pnpm run check",
+    "pnpm test --run biasAuditor",
+    "pnpm run build",
+    "Manual: generate a worksheet; confirm banner; click Re-roll; verify content otherwise unchanged."
+  ],
+  "size_estimate": { "files_touched": 7, "net_lines_changed": 500 },
+  "context_budget_for_fresh_chat": "LOW–MEDIUM."
+}

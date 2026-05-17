@@ -1,0 +1,37 @@
+{
+  "id": "FEAT-PD11",
+  "type": "feat",
+  "title": "Anchor-poster + Now/Next/Then card outputs",
+  "description": "From the same generation, also output (a) an A3 Anchor Poster (the topic's key concepts as a printable display) and (b) a Now / Next / Then card (already exists for MTP — bring it to worksheets). Primary teachers will use these daily even on days they don't generate a worksheet.",
+  "rationale": "User's improvement #17. Surfacing the existing Now/Next/Then helper at the worksheet level + a new Anchor Poster output means primary classrooms have a daily artefact regardless of whether the teacher hits Generate.",
+  "depends_on": ["FEAT-PD10"],
+  "steps": [
+    "Reuse mtp-v2-enhancements.ts buildNowNextThen (already deterministic, already shipped). Extract to client/src/lib/lessonOutputs.ts so worksheets can call it.",
+    "New helper buildAnchorPoster(worksheet, ko: KnowledgeOrganiser): { titleBlock; conceptMap; visualSlots; vocabRing }. Pure function, takes the worksheet + the KO from PD10. Renders to HTML.",
+    "WorksheetRenderer.tsx: add two more outputs to the existing 'Outputs' menu (or create one): Anchor Poster (A3) + Now/Next/Then card (A6 print).",
+    "Print routing through buildPopupHtml as elsewhere.",
+    "Tests:",
+    "  - client/src/lib/__tests__/lessonOutputs.test.ts — buildAnchorPoster and buildNowNextThen against fixtures."
+  ],
+  "files_to_touch": [
+    "client/src/lib/lessonOutputs.ts (new — extracted + extended)",
+    "client/src/components/WorksheetRenderer.tsx (Outputs menu wires)",
+    "client/src/lib/__tests__/lessonOutputs.test.ts (new)"
+  ],
+  "do_not_touch": [
+    "MTP renderer (read-only consumer of the extraction)"
+  ],
+  "acceptance_criteria": [
+    "Outputs menu surfaces Anchor Poster + Now/Next/Then.",
+    "Both print as the right paper sizes (A3 landscape and A6).",
+    "Tests + check + build pass."
+  ],
+  "verification": [
+    "pnpm run check",
+    "pnpm test --run lessonOutputs",
+    "pnpm run build",
+    "Manual: generate, click each output, confirm print preview."
+  ],
+  "size_estimate": { "files_touched": 3, "net_lines_changed": 280 },
+  "context_budget_for_fresh_chat": "LOW."
+}

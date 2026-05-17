@@ -1,0 +1,62 @@
+{
+  "id": "FEAT-PB2",
+  "type": "feat",
+  "title": "Symbolic maths verification (CAS round-trip)",
+  "description": "Re-evaluate every numeric/algebraic answer with a CAS engine before the worksheet renders. Mismatches surface as a teacher-only banner: the question, the AI's answer, the CAS evaluation, and a 'regenerate' affordance. Kills the #1 trust issue with AI-generated maths sheets.",
+  "rationale": "User's improvement #14. Today the AI says '2x + 6 = 14 → x = 5' and is rarely audited. A nightly eval harness (Phase A · PR-5) catches systematic drift, but doesn't help the teacher who clicks Generate at 7:45am. A per-render CAS pass is cheap (mathjs is already a transitive dep — the worksheet bank uses it for unit conversions), runs in 50–200ms for a typical sheet, and is the only quality bar that genuinely changes the trust narrative.",
+  "depends_on": ["FEAT-PR0", "FEAT-PB1"],
+  "constraints": [
+    "Must work fully client-side. No new server endpoint. The CAS pass cannot block worksheet render — it runs after `setGenerated` and patches metadata when it returns.",
+    "Must NOT regenerate the worksheet automatically — the teacher decides. Auto-regenerating would mask the underlying prompt bug.",
+    "Must NOT touch question content — only annotate metadata.mathsVerification.",
+    "Must NOT throw — every CAS error is captured and reported as 'unverified', not as a failure."
+  ],
+  "steps": [
+    "Add `mathjs` to the explicit deps list (it's already a transitive dep via katex's tooling, but list it so a future tree-shake doesn't drop it). Confirm the bundle stays under +60kb gzipped.",
+    "Create client/src/lib/mathsVerifier.ts with:",
+    "  - extractAnswerExpressions(question): { kind: 'numeric'|'expression'|'equation'|'unknown'; lhs?: string; rhs?: string; expected: string; raw: string }[]",
+    "    Parses the AI-emitted answer text to find: numeric only ('= 5'), simplifiable expression ('= 3x + 6'), full equation ('x = 5'), or 'unknown' for prose.",
+    "  - verifyOne({lhs, rhs, expected, kind}, question): { status: 'ok'|'mismatch'|'unverified'; cas?: string; reason?: string }.",
+    "    Use mathjs's `simplify`, `evaluate`, and `solve` (custom — mathjs has no built-in solve, write a thin shim using algebra-rules-engine fallback OR mark as unverified). For numeric checks: substitute given values into the question's expression, compare to expected with a relative tolerance of 1e-9.",
+    "  - runMathsVerification(worksheet): VerificationReport — iterates every question whose section.type is in {'numeric','algebra','calculation','wordprob'}, returns { perQuestion: {...}; counts: { ok, mismatch, unverified } }. Pure function, no I/O.",
+    "Wire it: in `client/src/lib/ai/generate.ts`, after the existing post-validator chain, run `runMathsVerification` only when `subject` matches /maths|mathematics/i and the worksheet has any of those section types. Stamp `metadata.mathsVerification` with the report. ALSO push individual mismatch warnings into `metadata.postValidatorWarnings` (so the existing teacher banner picks them up).",
+    "WorksheetRenderer.tsx: under the existing teacher-banner area, add a new compact panel `MathsVerificationPanel` that renders the report. If counts.mismatch > 0, the header is amber and lists each failing question with: 'Q3: 4x = 12 → AI says x = 4, CAS says x = 3'. A 'Regenerate' button next to each entry calls a new `regenerateQuestion(questionIndex)` callback (passed as prop from Worksheets.tsx). If no mismatches, the panel is collapsed by default with a small green tick.",
+    "Add `regenerateQuestion` in Worksheets.tsx: takes questionIndex, calls aiEditSection on that single section with a system instruction 'A CAS pass detected a mismatch — produce a corrected question + answer and explain the error in the teacher key.' Keeps the rest of the worksheet untouched.",
+    "Eval-harness integration: extend FEAT-PR5's runner.ts (Phase A · PR-5) so any maths fixture also reports counts.mismatch. Treat counts.mismatch > 0 as a soft fail (warning, not error) — the eval baseline is meant to surface trends, not block PRs.",
+    "Tests:",
+    "  - client/src/lib/__tests__/mathsVerifier.test.ts — covers: numeric ok, numeric mismatch, equation solve, simplifiable expression, malformed answer (graceful 'unverified'), units passthrough.",
+    "  - Snapshot of WorksheetRenderer with a 1-mismatch fixture confirming the amber banner + Regenerate button render."
+  ],
+  "files_to_touch": [
+    "package.json (mathjs explicit dep)",
+    "client/src/lib/mathsVerifier.ts (new, ≈ 350 LOC)",
+    "client/src/lib/ai/generate.ts (chain runMathsVerification)",
+    "client/src/components/WorksheetRenderer.tsx (MathsVerificationPanel)",
+    "client/src/pages/Worksheets.tsx (regenerateQuestion handler — minimal, ≤ 40 LOC delta)",
+    "shared/aiSchemas.ts (metadata.mathsVerification field)",
+    "client/src/lib/__tests__/mathsVerifier.test.ts (new)",
+    "server/tests/worksheet-eval/rules.ts (add maths-cas-mismatch rule, soft)"
+  ],
+  "do_not_touch": [
+    "questionPostValidator.ts (already runs — chain via the same registry)",
+    "Any AI prompt string (CAS is a deterministic post-process; prompt unchanged)",
+    "ClassPackDialog or any class-pack flow (CAS runs once on generate; class-pack reuses the same metadata)"
+  ],
+  "acceptance_criteria": [
+    "Generating a maths worksheet with a deliberately wrong answer (test fixture) surfaces an amber teacher banner listing the mismatch.",
+    "Regenerate-question button on the panel produces a corrected question + answer without re-rolling the entire worksheet.",
+    "Non-maths worksheets (English / Geography / etc.) skip CAS entirely (no metadata.mathsVerification).",
+    "CAS pass adds < 250ms to a 12-question maths sheet on a mid-range Chromebook.",
+    "Bundle delta < 60kb gzipped.",
+    "Tests: mathsVerifier.test.ts passes; WorksheetRenderer snapshot updated.",
+    "pnpm run check + pnpm run build + pnpm test --run pass."
+  ],
+  "verification": [
+    "pnpm run check",
+    "pnpm test --run mathsVerifier",
+    "pnpm run build (check bundle size diff)",
+    "Manual: Y9 quadratic worksheet — confirm green tick. Inject a wrong answer via fixture — confirm amber banner."
+  ],
+  "size_estimate": { "files_touched": 8, "net_lines_changed": 550 },
+  "context_budget_for_fresh_chat": "MEDIUM. Read mathjs docs link from package-lock; otherwise narrow ranges only."
+}

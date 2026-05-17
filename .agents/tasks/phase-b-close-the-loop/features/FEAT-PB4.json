@@ -1,0 +1,63 @@
+{
+  "id": "FEAT-PB4",
+  "type": "feat",
+  "title": "Bulk scan-and-mark + per-pupil feedback comments + MIS export",
+  "description": "Push ScanMark from one stack to: auto-mark a class set in 90 seconds with whole-class analytics afterwards; per-pupil feedback comments generated from each pupil's actual answers (not generic — uses the misconceptions they made); a marksheet that exports straight to the school's MIS (SIMS / Bromcom / Arbor / Edukey / Provision Map) so the teacher never re-types a grade; an optional voice-marking mode for phone use.",
+  "rationale": "User's improvement #11 — 'the marking ends here' promise. The single-page ScanMarkDialog (PR #32) already proves the per-pupil pipeline works. Going from one to thirty is the change that earns the SENCO/HOD endorsement. MIS export is the integration that removes the last manual step.",
+  "depends_on": ["FEAT-PR1", "FEAT-PB1", "FEAT-PB3"],
+  "constraints": [
+    "Must reuse the existing /api/ai/scan-mark Gemini Vision endpoint. No new paid Vision API.",
+    "Must not block the UI on bulk scan — show progress, allow cancel.",
+    "Voice marking is desktop-side speech only (Web Speech API). No paid TTS, no server-side audio.",
+    "MIS export is CSV-first (every UK MIS imports CSV). Native MIS APIs (Wonde, GroupCall) come in Phase C — this PR only emits the file."
+  ],
+  "steps": [
+    "Create client/src/lib/scanMarkBatch.ts:",
+    "  - scanBatch(images: File[], expectedAnswers, opts): AsyncGenerator<ScanBatchProgress, ScanBatchResult[]>",
+    "    Iterates images sequentially (Vision endpoint has a 25MB cap per call already). Yields {processed, total, currentPupilName, perPupilResult, error?} so the UI can drive a progress bar without polling.",
+    "  - aggregateBatch(results): { perQuestion: { idx; pctCorrect; meanMarks; commonMisconceptions: string[] }[]; perPupil: { pupilId; pctCorrect; gaps: misconceptionId[] }[] } — pure.",
+    "  - generateBulkFeedback(results, worksheet): Promise<{ pupilId; comment: string }[]> — one AI call per pupil, ≤ 80 words, references the actual wrong answers and the matching misconception entry. Cached on result.summary so reruns don't pay twice.",
+    "  - exportToCsv(results, worksheet): string — CSV with columns: PupilName, UPN, Mark, OutOf, Pct, Comment, Misconceptions, Date. UK MIS conventions: ISO date, no Excel auto-formatting traps.",
+    "Replace ScanMarkDialog with a tabbed dialog:",
+    "  - Tab 'Single' — today's behaviour, untouched (one image at a time).",
+    "  - Tab 'Class set' — drop-zone for ≤ 35 images at once, progress bar, live per-pupil tick/cross row, abort button. After completion: aggregate stats, per-pupil mark grid, 'Generate comments' button (calls generateBulkFeedback), 'Export CSV' button.",
+    "  - Tab 'Voice' — phone-friendly. The teacher holds the camera over a sheet, taps Speak; on result the page reads aloud 'Aisha 8/10, missed Q4 — strong on factorising, slipped on negative coefficients.' via SpeechSynthesis. Opt-in toggle.",
+    "Wire it: existing 'Scan & mark' toolbar button on Worksheets.tsx now opens the tabbed dialog; default tab honours the user's last choice via UserPreferencesContext.",
+    "Wire Phase B · PB3 reteach: when bulk scan completes, automatically pass `aggregatedResults` to ReteachGapPanel so the re-teach cards render below the marking grid. No extra click.",
+    "MIS export: CSV download named `{worksheetTitle}_{className}_{yyyy-mm-dd}.csv`. Include a small modal explaining how to import into SIMS / Bromcom / Arbor (one-line steps for each, sourced from the official import docs URLs — link only, no scraped content).",
+    "Tests:",
+    "  - client/src/lib/__tests__/scanMarkBatch.test.ts — covers aggregateBatch counts, exportToCsv format stability (snapshot), generateBulkFeedback fallback when AI fails (returns generic comment).",
+    "  - Snapshot for the 'Class set' tab in 0 / 5 / 30 image states."
+  ],
+  "files_to_touch": [
+    "client/src/lib/scanMarkBatch.ts (new)",
+    "client/src/components/ScanMarkDialog.tsx (rebuild as tabbed dialog)",
+    "client/src/lib/scan-mark.ts (extend with batch helpers — re-export from scanMarkBatch)",
+    "client/src/contexts/UserPreferencesContext.tsx (lastScanMarkTab pref)",
+    "client/src/lib/__tests__/scanMarkBatch.test.ts (new)",
+    "shared/aiSchemas.ts (BulkScanResult shape)",
+    "docs/mis-csv-import.md (new — three short paragraphs + links to AQA/Bromcom/Arbor docs)"
+  ],
+  "do_not_touch": [
+    "POST /api/ai/scan-mark endpoint logic (already 25MB-capped, free-tier Gemini)",
+    "ReteachGapPanel internals (PB3 already shipped — only consume aggregatedResults)",
+    "Any other dialog (ClassPackDialog, EvidencePackDialog, etc.)"
+  ],
+  "acceptance_criteria": [
+    "Class-set tab processes 30 photos sequentially with progress bar. Each photo's per-question result is appended live; abort button works mid-run.",
+    "Aggregate panel shows whole-class accuracy %, top 3 misconceptions, per-pupil traffic-light mark grid.",
+    "Generate comments produces one ≤80-word comment per pupil that references at least one wrong answer when there is one. Comments are downloadable as part of the CSV.",
+    "CSV export validates against the import preview of at least one of SIMS / Bromcom / Arbor (manual check — note in PR body which MIS was tested).",
+    "Voice tab reads a result correctly on Chrome desktop; gracefully degrades to silent on browsers without SpeechSynthesis.",
+    "Bulk completion auto-mounts ReteachGapPanel.",
+    "pnpm run check + pnpm run build + pnpm test --run pass."
+  ],
+  "verification": [
+    "pnpm run check",
+    "pnpm test --run scanMarkBatch ScanMarkDialog",
+    "pnpm run build",
+    "Manual: scan 6 photos in Class set tab, generate comments, export CSV, open in LibreOffice + a sample MIS import preview."
+  ],
+  "size_estimate": { "files_touched": 7, "net_lines_changed": 600 },
+  "context_budget_for_fresh_chat": "MEDIUM. ScanMarkDialog (~280 LOC) and scan-mark.ts (~140 LOC) can be read in full. Avoid Worksheets.tsx full-read — wire only via existing toolbar button."
+}

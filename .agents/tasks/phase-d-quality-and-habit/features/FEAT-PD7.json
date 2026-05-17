@@ -1,0 +1,47 @@
+{
+  "id": "FEAT-PD7",
+  "type": "feat",
+  "title": "Worksheet versioning + diff history",
+  "description": "Every worksheet carries v1, v2, v3 stamps; teachers can see what changed between AI re-edits. Side-by-side diff renderer (similar to the Differentiate diff already shipped in PR #39) with per-section change highlights.",
+  "rationale": "User's improvement #13. AI edits today silently overwrite. A trust-restoring upgrade — the teacher can revert, compare, or send the diff to a HOD as evidence.",
+  "depends_on": [],
+  "steps": [
+    "Schema: add `worksheets.versions JSONB` (array of { v: number; createdAt; trigger: 'manual-save'|'ai-edit'|'reteach'|'differentiate'; sections; metadata }) — keep current state in `content`/`sections` and snapshot to `versions` on every change. Drizzle migration.",
+    "Server: PUT /api/worksheets/:id appends to versions before applying the new content; cap at 20 versions, drop oldest.",
+    "Client lib client/src/lib/worksheetVersioning.ts: diffWorksheets(a, b): { sections: { idx; status: 'unchanged'|'edited'|'added'|'removed'; before?; after? }[] }. Reuse the wordlevel diff algorithm from differentiate-v2-enhancements.ts.",
+    "Client UI:",
+    "  - History.tsx row gains a 'v3' badge; clicking opens a Versions drawer.",
+    "  - Versions drawer: timeline of versions, diff panel between any two, 'Revert to this version' button (issues a PUT that appends current as a new version with trigger 'revert' + restores the chosen one).",
+    "Tests:",
+    "  - client/src/lib/__tests__/worksheetVersioning.test.ts — diff correctness, revert math.",
+    "  - server/tests/routes/worksheets-versions.test.ts — PUT appends, cap respected."
+  ],
+  "files_to_touch": [
+    "drizzle/<timestamp>_worksheet_versions.sql (new)",
+    "server/routes/worksheets.ts (PUT append behaviour)",
+    "client/src/lib/worksheetVersioning.ts (new)",
+    "client/src/components/WorksheetVersionsDrawer.tsx (new)",
+    "client/src/pages/History.tsx (v badge + drawer hook)",
+    "client/src/lib/__tests__/worksheetVersioning.test.ts (new)",
+    "server/tests/routes/worksheets-versions.test.ts (new)"
+  ],
+  "do_not_touch": [
+    "Worksheet generator pipeline",
+    "Existing Differentiate diff renderer (we reuse the diff helper)"
+  ],
+  "acceptance_criteria": [
+    "Editing a worksheet via AI edit produces a v2 in History.",
+    "Versions drawer shows all versions; selecting two highlights changed sections.",
+    "Revert restores the chosen version and increments to vN+1.",
+    "Cap at 20 versions enforced; oldest dropped.",
+    "Tests + check + build pass."
+  ],
+  "verification": [
+    "pnpm run check",
+    "pnpm test --run worksheetVersioning",
+    "pnpm run build",
+    "Manual: generate, AI-edit twice, open versions drawer, diff and revert."
+  ],
+  "size_estimate": { "files_touched": 7, "net_lines_changed": 480 },
+  "context_budget_for_fresh_chat": "LOW–MEDIUM."
+}

@@ -1,0 +1,55 @@
+{
+  "id": "FEAT-PD1",
+  "type": "feat",
+  "title": "Email-to-generate (worksheets@adaptly.co.uk)",
+  "description": "Accept a forwarded email at worksheets@adaptly.co.uk; reply with a generated worksheet PDF as an attachment. The teacher's school email is verified against their account; the email subject + body becomes the topic + additional instructions; the parsed Year group from the email signature drives yearGroup.",
+  "rationale": "User's improvement #12 (a). Lowest-friction inbound channel — the teacher already has a textbook page open in Outlook, forwards it, gets a worksheet back. No app open required.",
+  "depends_on": [],
+  "constraints": [
+    "Inbound email goes through the existing transactional sender's inbound webhook (Postmark / SendGrid / Resend — confirm which the repo uses; grep `transactionalEmail`).",
+    "Sender email MUST match a verified Adaptly account; otherwise the inbound bounces with a polite explainer.",
+    "Attachments (PDF / image) are forwarded through Tesseract.js OCR (already lazy-loaded for Differentiate) before becoming the topic source — no new OCR dep.",
+    "Cap: 5 inbound generates per teacher per hour to defend against accidental loops."
+  ],
+  "steps": [
+    "Audit existing email infra: grep `inbound`, `webhook`, `email-receiver` in server/. Locate the transactional provider config.",
+    "Add server/routes/email-inbound.ts:",
+    "  - POST /webhooks/email/inbound (provider-signed; verify HMAC).",
+    "  - Resolves sender → User; rejects if unverified.",
+    "  - Parses subject + body for topic, year group, subject; falls back to AI-extracted fields via parseNaturalLanguageInput (already exists in ai.ts — §NL-PARSE).",
+    "  - Calls aiGenerateWorksheet, renders to PDF via pdf-generator-v2, replies with the PDF attachment + a one-line link to the saved worksheet in /history.",
+    "Rate limit middleware (server/middleware/rateLimit.ts already exists — confirm and reuse).",
+    "Settings → Integrations → Email-to-generate row: shows the inbound address, last 5 inbound emails (timestamp + subject + status), 'Pause inbound' toggle.",
+    "Tests:",
+    "  - server/tests/routes/email-inbound.test.ts — happy path, unverified sender, rate-limit, malformed body, attachment OCR fallback.",
+    "Docs: docs/integrations/email-inbound.md — how to set up the MX record, sender verification.",
+    "Feature flag: `EMAIL_INBOUND_ENABLED`."
+  ],
+  "files_to_touch": [
+    "server/routes/email-inbound.ts (new)",
+    "server/index.ts (mount route)",
+    "server/middleware/rateLimit.ts (extend bucket if needed)",
+    "client/src/pages/Settings.tsx (Inbound email panel)",
+    "server/tests/routes/email-inbound.test.ts (new)",
+    "docs/integrations/email-inbound.md (new)"
+  ],
+  "do_not_touch": [
+    "Outbound transactional templates (PD4 / PD5 own those)",
+    "AI prompts or worksheet generator behaviour"
+  ],
+  "acceptance_criteria": [
+    "Forwarding a real email with subject 'Fractions of amounts Y6' to worksheets@adaptly.co.uk returns a PDF reply within 30s for a verified sender.",
+    "Unverified sender bounces with the explainer.",
+    "Rate-limit returns a polite 'Slow down' reply on attempt 6 within an hour.",
+    "Settings panel shows the latest 5 inbound emails.",
+    "All tests pass; pnpm run check + pnpm run build pass."
+  ],
+  "verification": [
+    "pnpm run check",
+    "pnpm test --run email-inbound",
+    "pnpm run build",
+    "Manual: forward an email through the production-like inbound provider; receive PDF."
+  ],
+  "size_estimate": { "files_touched": 6, "net_lines_changed": 380 },
+  "context_budget_for_fresh_chat": "LOW–MEDIUM."
+}
