@@ -817,11 +817,42 @@ export default function AIToolPage({
   }, [batchable, batchSpec, fields, toolSlug, title, buildPrompt]);
 
   const rawOutput = result ? (formatOutput ? formatOutput(result) : formatAIText(result)) : "";
-  // Sanitize AI-generated HTML before rendering to prevent XSS
+  // Sanitize AI-generated HTML before rendering to prevent XSS.
+  // The allowlist must include KaTeX's MathML + SVG output, otherwise math
+  // rendered by renderMath() reaches DOMPurify intact and gets stripped to
+  // plain text — bug #2 of the math-rendering fix.
   const formattedOutput = rawOutput ? DOMPurify.sanitize(rawOutput, {
-    ALLOWED_TAGS: ["p", "br", "strong", "em", "b", "i", "h3", "h4", "ul", "ol", "li",
-      "span", "div", "sup", "sub", "table", "thead", "tbody", "tr", "th", "td"],
-    ALLOWED_ATTR: ["class", "style"],
+    ALLOWED_TAGS: [
+      // Core text
+      "p", "br", "strong", "em", "b", "i", "h3", "h4", "ul", "ol", "li",
+      "span", "div", "sup", "sub", "table", "thead", "tbody", "tr", "th", "td",
+      // KaTeX MathML (annotations + structure used by KaTeX HTML output)
+      "math", "semantics", "mrow", "mi", "mn", "mo", "ms", "mtext",
+      "mfrac", "msup", "msub", "msubsup", "msqrt", "mroot",
+      "mover", "munder", "munderover", "mspace", "mstyle", "merror",
+      "mtable", "mtr", "mtd", "mpadded", "mphantom", "menclose",
+      "annotation", "annotation-xml",
+      // KaTeX SVG fallback (delimiters, big operators, accents)
+      "svg", "path", "g", "defs", "use", "line", "polyline", "polygon",
+      "rect", "circle", "ellipse", "text", "tspan",
+    ],
+    ALLOWED_ATTR: [
+      "class", "style", "id",
+      // KaTeX-specific
+      "aria-hidden", "aria-label", "role",
+      // MathML attrs
+      "mathvariant", "mathsize", "mathcolor", "mathbackground",
+      "displaystyle", "scriptlevel", "stretchy", "separator", "accent",
+      "accentunder", "lspace", "rspace", "fence", "form", "linethickness",
+      "encoding", "definitionURL", "minsize", "maxsize",
+      // SVG attrs
+      "viewBox", "preserveAspectRatio", "xmlns", "xmlns:xlink",
+      "width", "height", "x", "y", "x1", "x2", "y1", "y2",
+      "cx", "cy", "r", "rx", "ry", "d", "fill", "stroke", "stroke-width",
+      "stroke-linecap", "stroke-linejoin", "transform", "points",
+      "text-anchor", "font-family", "font-size", "dominant-baseline",
+      "focusable",
+    ],
   }) : "";
 
   return (

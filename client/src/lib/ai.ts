@@ -186,14 +186,19 @@ export function parseWithFixes(s: string): any {
   // \frac, \frown, \times, \text etc. (LaTeX commands) which must be doubled.
   const preProcess = (raw: string): string => {
     // Scan inside JSON strings and double backslashes before LaTeX-like sequences.
-    // We ONLY handle \f and \t here:
-    //   \f = form feed (\x0c) — NEVER used in worksheet content, but \frac is very common
-    //   \t = tab (\x09) — rarely used in worksheet content, but \times/\text/\theta are common
-    // We do NOT handle \n, \r, \b because those are legitimately used as control chars
-    // in JSON strings (e.g. \nStep 1: is a newline before "Step 1:").
-    // LaTeX commands starting with n/r/b (\neq, \rightarrow, \begin) are handled
-    // by the renderMath function which can detect them from context.
+    // Two distinct repair classes:
+    //   1) JSON-conflict escapes — \f and \t. JSON treats these as form feed / tab,
+    //      but the AI uses them as the start of LaTeX commands like \frac and \times.
+    //      We double the backslash only when the next char is a letter (so it really
+    //      is a LaTeX command, not a deliberate control char).
+    //   2) JSON-invalid escapes for math delimiters — \(, \), \[, \]. JSON.parse
+    //      with these silently *drops* the backslash on tolerant browsers, so
+    //      "\(b^2-4ac\)" arrives at the renderer as "(b^2-4ac)" and KaTeX never
+    //      fires. We always double the backslash so the delimiters survive intact.
+    // We do NOT touch \n, \r, \b because those are legitimately used as control
+    // chars in JSON strings.
     const latexEscapeChars = new Set(['f', 't']);
+    const mathDelimiters = new Set(['(', ')', '[', ']']);
     const out: string[] = [];
     let inStr = false;
     let i = 0;
@@ -206,8 +211,11 @@ export function parseWithFixes(s: string): any {
       if (ch === '\\') {
         const next = raw[i + 1];
         const afterNext = raw[i + 2];
-        // If this is \X where X is a LaTeX escape char AND the char after X is a letter,
-        // it's a LaTeX command (e.g. \frac, \times) — double the backslash.
+        // Class 2: math delimiter. Always double — these are NEVER valid JSON escapes.
+        if (next && mathDelimiters.has(next)) {
+          out.push('\\\\'); i++; continue;
+        }
+        // Class 1: \f / \t followed by a letter → LaTeX command, double it.
         if (next && latexEscapeChars.has(next) && afterNext && /[a-zA-Z]/.test(afterNext)) {
           out.push('\\\\'); i++; continue;
         }
