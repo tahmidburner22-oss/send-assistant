@@ -14,6 +14,7 @@ import {
   BookOpen, RefreshCw, Sparkles, Copy, Printer, Download,
   ChevronLeft, Loader2, Clock, FileDown,
 } from "lucide-react";
+import LessonPlannerV2Panel from "@/components/LessonPlannerV2Panel";
 
 // ── Data Options ──────────────────────────────────────────────────────────────
 
@@ -567,6 +568,15 @@ Regenerate the section: ${sectionName}. Return ONLY the JSON value for that sect
           <p className="text-sm leading-relaxed">{plan.homework}</p>
         </SectionCard>
       </div>
+
+      {/* v2 enhancements panel: timeline, resources, matrix, TA briefing, MTP back-ref */}
+      <LessonPlannerV2Panel
+        plan={plan}
+        rawText={buildExportText()}
+        topic={values.topic || ""}
+        yearGroup={values.yearGroup || ""}
+        subject={values.subject || ""}
+      />
     </div>
   );
 }
