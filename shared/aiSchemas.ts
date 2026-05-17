@@ -61,6 +61,17 @@ export const WorksheetSectionSchema = z.object({
   label: z.string().optional(),
   // QA fields
   qualityIssues: z.array(z.string()).optional(),
+  // ── PB1 — Per-question provenance fields ──────────────────────────────────
+  /** PB1 — Curriculum spec reference, e.g. "KS4 Physics — Forces". */
+  specRef: z.string().max(200).optional(),
+  /** PB1 — Assessment Objective tag (AO1–AO4). */
+  ao: z.enum(["AO1", "AO2", "AO3", "AO4"]).optional(),
+  /** PB1 — Bloom's taxonomy level. */
+  bloomLevel: z.enum(["remember", "understand", "apply", "analyse", "evaluate", "create"]).optional(),
+  /** PB1 — Expected reading age for the question text (Flesch-Kincaid). */
+  expectedReadingAge: z.number().min(5).max(18).optional(),
+  /** PB1 — Optional source citation (e.g. past paper year). */
+  sourceCitation: z.string().max(300).optional(),
 });
 
 export type WorksheetSection = z.infer<typeof WorksheetSectionSchema>;
