@@ -1,8 +1,15 @@
+import { useMemo, useState } from "react";
 import DOMPurify from "dompurify";
 import { useUserPreferences } from "@/contexts/UserPreferencesContext";
 import AIToolPage from "@/components/AIToolPage";
+import ExitTicketEnhancementsPanel from "@/components/ExitTicketEnhancementsPanel";
 import { Ticket } from "lucide-react";
 import { SUBJECTS_PRIMARY as subjects, YEAR_GROUPS as years } from "@/lib/tool-vocab";
+import {
+  buildLessonHeaderHtml,
+  CONFIDENCE_ROW_HTML,
+  buildMisconceptionPromptFragment,
+} from "@/lib/exit-ticket-enhancements";
 
 const ANSWER_KEY_SEPARATOR = "--- TEACHER ANSWER KEY ---";
 
@@ -37,15 +44,11 @@ function splitExitTicket(text: string): { student: string; teacher: string | nul
 
 /** Minimal markdown → HTML conversion that also turns `[ ]` / `- [ ]` into real checkboxes. */
 function mdToHtml(text: string): string {
-  // Render tickbox markers that the AI produces when SEND-adapted is on
-  // e.g. "- [ ] I can add fractions" → checkbox + label
   const withBoxes = text
-    // list checkbox form ("- [ ] ..." or "- [x] ...")
     .replace(/^[-*•]\s*\[\s*([ xX])\s*\]\s+(.+)$/gm, (_, mark, label) => {
       const checked = /x/i.test(mark) ? "checked" : "";
       return `<label style='display:flex;align-items:flex-start;gap:8px;margin:4px 0'><input type='checkbox' ${checked} disabled style='margin-top:3px;flex-shrink:0' /><span>${label}</span></label>`;
     })
-    // standalone inline "[ ]" anywhere in a line
     .replace(/\[\s*([ xX])\s*\]/g, (_, mark) => {
       const checked = /x/i.test(mark) ? "checked" : "";
       return `<input type='checkbox' ${checked} disabled style='margin:0 4px;vertical-align:middle' />`;
@@ -60,24 +63,31 @@ function mdToHtml(text: string): string {
 }
 
 const SANITIZE_OPTS = {
-  ALLOWED_TAGS: ["strong", "em", "br", "li", "ul", "ol", "label", "input", "span", "div", "p", "h3", "h4"],
-  ALLOWED_ATTR: ["style", "type", "checked", "disabled", "class"],
+  ALLOWED_TAGS: ["strong", "em", "br", "li", "ul", "ol", "label", "input", "span", "div", "p", "h3", "h4", "img", "code"],
+  ALLOWED_ATTR: ["style", "type", "checked", "disabled", "class", "src", "alt", "width", "height"],
 };
 
-function ExitTicketOutput({ text }: { text: string }) {
+function ExitTicketOutput({ text, header, withConfidence }: { text: string; header: string; withConfidence: boolean }) {
   const { student, teacher } = splitExitTicket(text);
+  const studentHtmlBody = mdToHtml(student);
+  const studentHtml = withConfidence
+    ? `${studentHtmlBody}<br/>${CONFIDENCE_ROW_HTML}`
+    : studentHtmlBody;
 
   return (
     <div className="space-y-4">
       {/* Student section */}
       <div style={{ border: "2px solid #a855f7", borderRadius: "12px", overflow: "hidden", pageBreakInside: "avoid" }}>
+        {header && (
+          <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(header, SANITIZE_OPTS) }} />
+        )}
         <div style={{ background: "linear-gradient(135deg,#a855f7,#7c3aed)", padding: "8px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ fontWeight: 800, fontSize: "14px", color: "#fff" }}>Exit Ticket — Student Copy</div>
-          <span style={{ background: "rgba(255,255,255,0.25)", color: "#fff", padding: "2px 10px", borderRadius: "20px", fontSize: "11px", fontWeight: 700 }}>Print & give to students</span>
+          <span style={{ background: "rgba(255,255,255,0.25)", color: "#fff", padding: "2px 10px", borderRadius: "20px", fontSize: "11px", fontWeight: 700 }}>Print &amp; give to students</span>
         </div>
         <div
           style={{ padding: "14px 16px", background: "#faf5ff", fontSize: "13px", lineHeight: "1.7" }}
-          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(mdToHtml(student), SANITIZE_OPTS) }}
+          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(studentHtml, SANITIZE_OPTS) }}
         />
       </div>
 
@@ -99,8 +109,22 @@ function ExitTicketOutput({ text }: { text: string }) {
 }
 
 export default function ExitTicket() {
-  // Preferences kept for parity with other tools — currently unused after refactor
   useUserPreferences();
+  const [latestText, setLatestText] = useState<string>("");
+  const [latestValues, setLatestValues] = useState<Record<string, string>>({});
+
+  const lessonHeader = useMemo(() => {
+    if (!latestValues.learningObjective) return "";
+    return buildLessonHeaderHtml({
+      date: new Date().toISOString().slice(0, 10),
+      subject: latestValues.subject || "",
+      yearGroup: latestValues.yearGroup || "",
+      lessonTitle: latestValues.learningObjective,
+    });
+  }, [latestValues]);
+
+  const withConfidence = (latestValues.includeConfidence ?? "yes") !== "no";
+
   return (
     <AIToolPage
       assignable={true}
@@ -122,16 +146,25 @@ export default function ExitTicket() {
         ], span: "half" },
         { id: "sendAdapted", label: "SEND Adapted", type: "select", options: [{ value: "yes", label: "Yes — visual supports, simple language" }, { value: "no", label: "Standard" }], span: "half" },
         { id: "numVariants", label: "Variants", type: "select", options: [{ value: "1", label: "1 version" }, { value: "2", label: "2 versions (standard + support)" }, { value: "3", label: "3 versions (support/core/extension)" }], span: "half" },
+        { id: "includeConfidence", label: "Append 1-2-3 confidence row", type: "select", options: [
+          { value: "yes", label: "Yes — auto-append confidence scale" },
+          { value: "no",  label: "No" },
+        ], span: "half" },
       ]}
-      buildPrompt={(v) => ({
-        system: `You are an expert UK teacher specialising in formative assessment. You create effective exit tickets that quickly reveal what students have understood. Exit tickets must be quick to complete (under 5 minutes), easy to mark, and give actionable information for the next lesson.`,
-        user: `Create ${v.numVariants || "1"} exit ticket(s) for:
+      buildPrompt={(v) => {
+        setLatestValues(v);
+        const observed = buildMisconceptionPromptFragment(v.learningObjective || "");
+        return {
+          system: `You are an expert UK teacher specialising in formative assessment. You create effective exit tickets that quickly reveal what students have understood. Exit tickets must be quick to complete (under 5 minutes), easy to mark, and give actionable information for the next lesson.`,
+          user: `Create ${v.numVariants || "1"} exit ticket(s) for:
 
 Subject: ${v.subject}
 Year Group: ${v.yearGroup}
 Learning Objective: ${v.learningObjective}
 Format: ${v.format || "questions"}
 SEND Adapted: ${v.sendAdapted === "yes" ? "Yes" : "No"}
+
+${observed}
 
 ${parseInt(v.numVariants || "1") > 1 ? `Create ${v.numVariants} differentiated versions:
 - Version 1: Support (scaffolded, simpler language, visual prompts)
@@ -148,14 +181,22 @@ Student ticket requirements:
 CRITICAL — output structure (follow EXACTLY):
 1. First output the complete student-facing exit ticket(s) with NO answers embedded.
 2. Then output EXACTLY this separator on its own line: ${ANSWER_KEY_SEPARATOR}
-3. Then output the teacher answer key with: model answers for each question, marking guidance, and a "What to do next lesson" note based on common responses.
+3. Then output the teacher answer key with: model answers for each question, marking guidance, a "What to do next lesson" note based on common responses, AND a "Common wrong answer" line for any misconception you targeted from the OBSERVED MISCONCEPTIONS list above.
 
 Do not substitute the separator. Do not wrap it in a markdown heading.`,
-        maxTokens: 2000,
-      })}
+          maxTokens: 2000,
+        };
+      }}
+      onResult={(text, vals) => {
+        setLatestText(text);
+        setLatestValues(vals);
+      }}
       outputTitle={(v) => `Exit Ticket — ${v.subject}: ${v.learningObjective}`}
-      renderCustomOutput={(text) => <ExitTicketOutput text={text} />}
+      renderCustomOutput={(text) => <ExitTicketOutput text={text} header={lessonHeader} withConfidence={withConfidence} />}
       transformBeforeAssign={(text) => splitExitTicket(text).student}
+      renderPostActions={(result, values) => (
+        <ExitTicketEnhancementsPanel values={values} ticketText={result} />
+      )}
     />
   );
 }
