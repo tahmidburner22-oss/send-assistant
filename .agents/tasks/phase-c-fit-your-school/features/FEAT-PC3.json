@@ -1,0 +1,74 @@
+{
+  "id": "FEAT-PC3",
+  "type": "feat",
+  "title": "LTI 1.3 launch + QTI 3.0 export + Common Cartridge unit packs",
+  "description": "Make Adaptly an LTI 1.3 tool provider so departments using Promethean / SMART / Canvas / Moodle / itslearning can launch a worksheet from inside their existing tool. Add QTI 3.0 export so any worksheet drops into any QTI-importing platform as a graded assessment. Add Common Cartridge export so a unit (the multi-worksheet bundle from Phase C · PR-5) ships as a single .imscc file.",
+  "rationale": "User's improvement #7 part 3. The MAT/college tier requires standards-compliant export, not bespoke API per provider. LTI + QTI + CC are the three IMS Global standards every approved-list LMS supports.",
+  "depends_on": ["FEAT-PC1"],
+  "constraints": [
+    "LTI 1.3 requires JWT signing; key pair lives in env, NEVER committed.",
+    "QTI 3.0 export must validate against the IMS Global QTI 3.0 XSD (bundle the XSD, validate at build time + at export time).",
+    "Common Cartridge 1.3+ only — earlier versions not worth the surface area.",
+    "Tests use canonical IMS sample resources where available."
+  ],
+  "steps": [
+    "LTI 1.3:",
+    "  - Add `server/integrations/lti/` with: keyset.ts (JWKS endpoint), launch.ts (deep-link + resource-link request handling), grades.ts (Assignment & Grade Services 2.0 score posting).",
+    "  - Routes: GET /lti/.well-known/jwks.json, POST /lti/launch, POST /lti/deeplink, POST /lti/grades.",
+    "  - Tool config JSON for the major platforms (Canvas / Moodle / itslearning) committed to docs/integrations/lti/.",
+    "  - On launch, map LTI's user_id + context_id to an Adaptly user/class via a tenant-scoped lookup table.",
+    "QTI 3.0 export:",
+    "  - Create client/src/lib/exporters/qti.ts: exportWorksheetToQti(worksheet) → string (XML). Maps:",
+    "    - MCQ → choiceInteraction with correctResponse",
+    "    - True/False → choiceInteraction (2 options)",
+    "    - Short answer → extendedTextInteraction with patternMask",
+    "    - Numeric → textEntryInteraction with response-condition baseValue match",
+    "    - Word-bank gap-fill → gapMatchInteraction",
+    "  - Bundle assessmentSection per worksheet section. metadata.specRef + metadata.ao (from PB1) flow into qtiMetadata extensions.",
+    "  - XML validated against the IMS QTI 3.0 XSD on export — failure = toast + downloadable error log.",
+    "  - 'Export QTI' added to the Worksheets toolbar (next to 'Print' / 'Push to LMS') and to History row actions.",
+    "Common Cartridge:",
+    "  - Create client/src/lib/exporters/commonCartridge.ts: exportUnitToCommonCartridge(unit) → Blob (.imscc). Wraps:",
+    "    - One QTI assessment per worksheet in the unit",
+    "    - The unit MTP + parent letter + knowledge organiser as cc-resource items",
+    "    - Linked together via a top-level imsmanifest.xml with organizations + resources",
+    "  - 'Export unit (.imscc)' button added to the unit pack dialog (Phase C · PC5 produces the unit).",
+    "Tests:",
+    "  - server/tests/integrations/lti/launch.test.ts — verifies JWT validation against IMS canonical examples.",
+    "  - client/src/lib/exporters/__tests__/qti.test.ts — round-trip a worksheet → QTI XML → validate against bundled XSD; covers each interaction kind.",
+    "  - client/src/lib/exporters/__tests__/commonCartridge.test.ts — extract the .imscc, verify imsmanifest structure and resource hrefs.",
+    "Docs: docs/integrations/lti.md, docs/exporters/qti.md, docs/exporters/cc.md."
+  ],
+  "files_to_touch": [
+    "server/integrations/lti/keyset.ts (new)",
+    "server/integrations/lti/launch.ts (new)",
+    "server/integrations/lti/grades.ts (new)",
+    "server/routes/lti.ts (new)",
+    "client/src/lib/exporters/qti.ts (new)",
+    "client/src/lib/exporters/commonCartridge.ts (new)",
+    "client/src/lib/exporters/qti3.xsd (new — bundled IMS schema)",
+    "client/src/pages/Worksheets.tsx (toolbar export buttons — ≤ 30 LOC delta)",
+    "client/src/pages/History.tsx (export action on row)",
+    "server/tests/integrations/lti/* + client/src/lib/exporters/__tests__/* (new)",
+    "docs/integrations/lti.md + docs/exporters/qti.md + docs/exporters/cc.md (new)"
+  ],
+  "do_not_touch": [
+    "LMS push routes from PC1 — LTI is a separate launch flow",
+    "Worksheet schema beyond reading metadata.ao + metadata.specRef from PB1"
+  ],
+  "acceptance_criteria": [
+    "Adaptly registers as an LTI 1.3 tool with a Canvas test instance and a Moodle test instance; launching from either lands on the worksheet page authenticated as the right user.",
+    "QTI 3.0 export produces XML that validates against the bundled XSD for every interaction kind covered by the worksheet schema.",
+    "Common Cartridge export imports successfully into Canvas + Moodle (manual test with a real .imscc).",
+    "Round-trip: import the QTI export back into Adaptly via a tiny QTI parser test (round-trip integrity test).",
+    "All tests pass; pnpm run check + pnpm run build pass."
+  ],
+  "verification": [
+    "pnpm run check",
+    "pnpm test --run lti qti commonCartridge",
+    "pnpm run build",
+    "Manual: Canvas + Moodle test imports."
+  ],
+  "size_estimate": { "files_touched": 14, "net_lines_changed": 800, "notes": "above 600 — split into PC3a (LTI launch) + PC3b (QTI export) + PC3c (Common Cartridge) for fresh chats. Each sub-PR <300 LOC." },
+  "context_budget_for_fresh_chat": "MEDIUM. Read IMS Global LTI 1.3 + QTI 3.0 spec sections on first use only; the rest is template-driven."
+}

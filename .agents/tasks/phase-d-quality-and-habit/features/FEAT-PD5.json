@@ -1,0 +1,43 @@
+{
+  "id": "FEAT-PD5",
+  "type": "feat",
+  "title": "Streak / weekly summary email",
+  "description": "Every Friday afternoon, email the teacher a summary: 'You taught 14 lessons with Adaptly this week. 92 pupils received differentiated work. 3 misconceptions re-taught.' Provides HOD/SENCO morale + the leverage to upsell to leadership.",
+  "rationale": "User's improvement #12 (e). Without an end-of-week beat, daily use produces no felt return. The summary turns invisible labour into evidence the teacher can show their HOD / SENCO / line manager.",
+  "depends_on": ["FEAT-PR4", "FEAT-PD4"],
+  "steps": [
+    "Add server/jobs/weeklySummary.ts: cron `0 15 * * 5`. Aggregates the user's last-7-days activity (worksheets generated, pupils impacted from class-pack history, scan-and-mark batches, re-teaches if PB3 shipped).",
+    "Email body: stat cards + a streak badge (consecutive weeks with ≥ 3 lessons generated). Link to a /summary/:weekId page with full breakdown.",
+    "Build /summary/:weekId page that re-uses the same aggregator so a teacher can deep-link to past weeks.",
+    "Settings → Notifications → 'Weekly summary' toggle.",
+    "Tests:",
+    "  - server/tests/jobs/weeklySummary.test.ts — counts, opt-out, streak math.",
+    "Telemetry: 'weeklySummary.email.opened' (via tracking pixel)."
+  ],
+  "files_to_touch": [
+    "server/jobs/weeklySummary.ts (new)",
+    "server/lib/weeklyStats.ts (new — aggregator)",
+    "server/lib/email/templates/weekly-summary.tsx (new)",
+    "client/src/pages/WeeklySummary.tsx (new — /summary/:weekId)",
+    "client/src/App.tsx (route)",
+    "client/src/pages/Settings.tsx (toggle)",
+    "server/tests/jobs/weeklySummary.test.ts (new)"
+  ],
+  "do_not_touch": [
+    "PD4 monday-morning email — separate template + cron"
+  ],
+  "acceptance_criteria": [
+    "A user with at least 1 lesson this week receives a Friday email at 15:00.",
+    "Streak badge increments correctly week over week.",
+    "Deep-link /summary/2026-W18 shows the same numbers as the email.",
+    "Tests + check + build pass."
+  ],
+  "verification": [
+    "pnpm run check",
+    "pnpm test --run weeklySummary",
+    "pnpm run build",
+    "Manual: trigger via admin route; click into deep-link page."
+  ],
+  "size_estimate": { "files_touched": 7, "net_lines_changed": 400 },
+  "context_budget_for_fresh_chat": "LOW–MEDIUM."
+}

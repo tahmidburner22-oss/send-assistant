@@ -1,0 +1,51 @@
+{
+  "id": "FEAT-PB1",
+  "type": "feat",
+  "title": "Spec-point provenance + AO tag on every question",
+  "description": "Stamp every generated question with structured metadata: { specRef, AO, bloomLevel, expectedReadingAge, sourceCitation }. Render a small 'AO1 · 4.1.1.2 · Y8 baseline' chip under each question in the teacher view (hidden in pupil view). Two wins: (a) Ofsted/department evidence falls out for free, (b) reliable analytics become possible because every question now self-describes its place on the curriculum.",
+  "rationale": "User's improvement #5. The AI prompt already produces structured sections — formalise the schema so callers can rely on it. Pillar A (PR #36) added AO histograms and partial spec-ref support; this PR finishes the job and makes the data per-question, schema-validated, and visible.",
+  "depends_on": ["FEAT-PR0", "FEAT-PR1", "FEAT-PR2"],
+  "steps": [
+    "Audit existing schema: grep `metadata.aoHistogram`, `metadata.coverageMap`, `metadata.misconceptionLinks` in shared/aiSchemas.ts and client/src/lib/ai.ts. The per-question spec/AO data already partially exists via the coverage map (PC#10 from PR #35) — this PR formalises it into the question schema rather than only the post-validator metadata.",
+    "Extend `WorksheetQuestionSchema` in shared/aiSchemas.ts with optional fields: { specRef?: string; ao?: 'AO1'|'AO2'|'AO3'|'AO4'|'AO5'; bloomLevel?: 'remember'|'understand'|'apply'|'analyse'|'evaluate'|'create'; expectedReadingAge?: number; sourceCitation?: string }. All optional so legacy worksheets keep validating.",
+    "Update `client/src/lib/ai/generate.ts` system prompt to require the four fields above on every question. Specify the AO grade-band rules (AO1 50-60% Y7-9, AO1 30% Y10-11; AO2 30%; AO3 20%) so the model doesn't drift.",
+    "After generation, run a new post-validator `assertQuestionProvenance` (in client/src/lib/questionProvenance.ts):",
+    "  - For any question missing `ao`, infer from command word + marks via the inferAo() helper that already lives in ai.ts (PR #36). Move it to a shared module so both bank-retrieval and provenance-stamp can reuse.",
+    "  - For any question missing `specRef`, best-match against syllabus-data.ts using the same algorithm coverageMapBuilder.ts already runs (extract a helper). If no match within threshold, leave specRef undefined and emit a postValidatorWarning.",
+    "  - For any question missing `bloomLevel`, derive from section type (already mapped in coverageMapBuilder).",
+    "  - For any question missing `expectedReadingAge`, run the existing fk()/Flesch-Kincaid helper from comprehension-enhancements.ts.",
+    "  - `sourceCitation` is always optional — the AI may leave it blank; warning, never error.",
+    "In WorksheetRenderer.tsx, render a small chip under each question in teacher view only: `[AO1 · 4.1.1.2 · Y8 · Bloom: apply]`. Use the existing `ws-teacher-section` class so pupil view + print + PDF respect the hide. Put the chip under a CSS class `ws-prov-chip` so accessibility profiles can override.",
+    "Add tests:",
+    "  - client/src/lib/__tests__/questionProvenance.test.ts — covers: AO inference from command words, specRef best-match against a fixture, bloom mapping, reading-age fallback, missing-field warnings.",
+    "  - WorksheetRenderer snapshot for teacher vs pupil mode confirming chip visibility."
+  ],
+  "files_to_touch": [
+    "shared/aiSchemas.ts",
+    "client/src/lib/questionProvenance.ts (new)",
+    "client/src/lib/ai/generate.ts (prompt update + post-validator chaining)",
+    "client/src/lib/ai/index.ts (re-export inferAo if it became shared)",
+    "client/src/components/WorksheetRenderer.tsx (chip render)",
+    "client/src/lib/__tests__/questionProvenance.test.ts (new)"
+  ],
+  "do_not_touch": [
+    "coverageMapBuilder.ts (already produces the per-question coverage table — provenance complements it)",
+    "Worksheets.tsx (pure post-validator; no UI handler change needed)",
+    "Existing prompt strings beyond the new explicit AO + spec-ref rules"
+  ],
+  "acceptance_criteria": [
+    "Every generated question on a Y9+ worksheet carries `ao` and `bloomLevel`. ≥80% carry `specRef` (the rest emit a postValidatorWarning).",
+    "Teacher view shows an `AO1 · 4.1.1.2 · Y8 · Bloom: apply` chip under each question; pupil view + print pupil view + PDF pupil view all hide it.",
+    "WorksheetOutputSchema validates the new fields; existing fixtures still parse (optional fields).",
+    "questionProvenance.test.ts and WorksheetRenderer snapshots pass.",
+    "pnpm run check + pnpm run build + pnpm test --run pass."
+  ],
+  "verification": [
+    "pnpm run check",
+    "pnpm test --run questionProvenance WorksheetRenderer",
+    "pnpm run build",
+    "Manual: generate one Y10 AQA Maths worksheet and one Y8 Geography sheet; confirm chips render in teacher view, hidden in pupil view, present in printed teacher key, absent from printed pupil version."
+  ],
+  "size_estimate": { "files_touched": 6, "net_lines_changed": 450 },
+  "context_budget_for_fresh_chat": "MEDIUM. Read shared/aiSchemas.ts (small), the relevant 200-line range around aiGenerateWorksheet's structured-call site, and coverageMapBuilder.ts in full (~360 lines). Avoid full reads of Worksheets.tsx or ai.ts."
+}

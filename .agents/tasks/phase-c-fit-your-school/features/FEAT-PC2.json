@@ -1,0 +1,70 @@
+{
+  "id": "FEAT-PC2",
+  "type": "feat",
+  "title": "MIS roster import: Wonde + GroupCall",
+  "description": "Auto-import pupils, classes, year groups, and SEND flags from the school's MIS via Wonde or GroupCall. Removes the day-1 'register every pupil' friction completely. After this PR a SENCO connects Wonde once, gets every EHCP-flagged pupil pre-populated, and never re-types a UPN.",
+  "rationale": "User's improvement #7 part 2. The current Children page requires manual entry which collapses adoption with rosters > 30. Wonde already aggregates SIMS / Bromcom / Arbor / iSAMS / Engage / Pass — connecting Wonde once gives Adaptly access to ~95% of UK schools' MIS data. GroupCall covers the Capita SIMS estate that doesn't go through Wonde.",
+  "depends_on": ["FEAT-PC1"],
+  "constraints": [
+    "MIS data is highly sensitive (UPN, DOB, EHCP status). Reads only — never write back.",
+    "Sync runs server-side on a schedule; no MIS data is exposed to the browser beyond what's already in Children/Pupils.",
+    "Pupil records imported from MIS are flagged read-only for fields that come from the MIS (name, UPN, DOB, year group); the teacher can still edit Adaptly-added fields (SEND need overrides, EHCP outcomes, IEP targets).",
+    "Wonde token sits in env. Per-school API key is stored encrypted in `schools.misConnection`."
+  ],
+  "steps": [
+    "Add `server/integrations/mis/` with:",
+    "  - wonde.ts — REST client. Endpoints used: GET /v1.0/schools/:id/students, GET /v1.0/schools/:id/classes (deep), GET /v1.0/schools/:id/employees. Pagination via `next_url`.",
+    "  - groupCall.ts — Same shape against the Xporter on Demand API.",
+    "  - mapper.ts — pure function MisStudent → AdaptlyChild. Maps: legalName, knownAs, UPN, DOB, yearGroup, registrationGroup, SEN status (CoP K/E codes), EHCP flag, primary need code, HD primary, secondary needs.",
+    "Database:",
+    "  - Add `schools` table (multi-tenant scaffolding) if not present: id, name, mis_provider, mis_credentials_encrypted, last_sync_at.",
+    "  - Add `pupils.mis_id` + `pupils.mis_synced_at` + `pupils.mis_locked_fields jsonb` to mark MIS-sourced fields as read-only.",
+    "  - Drizzle migration.",
+    "Server routes (requireAuth + role 'admin' for the school):",
+    "  - POST /api/integrations/mis/connect → body: { provider: 'wonde'|'groupcall'; apiKey: string }. Validates by hitting the provider's status endpoint; encrypts and stores.",
+    "  - POST /api/integrations/mis/sync   → enqueues a sync job; returns syncId.",
+    "  - GET  /api/integrations/mis/sync/:id → status + summary { added, updated, deactivated, errors }.",
+    "  - GET  /api/integrations/mis/preview → dry-run sync (returns a diff without writing).",
+    "Background job: nightly sync via the existing `node-cron` infrastructure (grep for `cron`); manual sync via the route. Soft-delete pupils that disappear from MIS (set `mis_synced_at = null`, do NOT hard-delete).",
+    "Client:",
+    "  - Settings → Integrations → 'MIS roster' card with provider picker, API key input, 'Test connection' button, 'Run sync now' button, last-sync summary.",
+    "  - Children page: small 'Wonde-synced' badge on imported pupils; mis-locked fields render with a lock icon and a tooltip.",
+    "Tests:",
+    "  - server/tests/integrations/mis/wonde.test.ts — mocks the Wonde HTTP client, verifies pagination, SEND flag mapping, soft-delete behaviour.",
+    "  - server/tests/integrations/mis/mapper.test.ts — pure mapper unit tests against fixture MIS payloads (Wonde + GroupCall).",
+    "Docs: docs/integrations/mis.md — IT admin onboarding steps for both providers.",
+    "Feature flag: `MIS_WONDE_ENABLED`, `MIS_GROUPCALL_ENABLED`. Default off."
+  ],
+  "files_to_touch": [
+    "server/integrations/mis/wonde.ts (new)",
+    "server/integrations/mis/groupCall.ts (new)",
+    "server/integrations/mis/mapper.ts (new)",
+    "server/jobs/misSync.ts (new)",
+    "server/routes/integrations.ts (extend from PC1 router)",
+    "drizzle/<timestamp>_mis.sql (new)",
+    "client/src/pages/Settings.tsx (MIS card)",
+    "client/src/pages/Children.tsx (synced badge + lock icons)",
+    "server/tests/integrations/mis/* (new)",
+    "docs/integrations/mis.md (new)"
+  ],
+  "do_not_touch": [
+    "LMS push routes from PC1 (separate concern)",
+    "Existing manual pupil add/edit flow on Children.tsx — keep working unchanged for non-MIS pupils"
+  ],
+  "acceptance_criteria": [
+    "A teacher with admin role on a school can connect Wonde, run a sync, and see all MIS pupils appear in Children with correct year group + SEND flags.",
+    "Re-running sync is idempotent (no duplicates, updates apply, missing pupils soft-delete).",
+    "MIS-locked fields cannot be edited from the UI.",
+    "Sync handles ≥ 2,000 pupils without crashing the request (background job).",
+    "All Wonde + GroupCall mapper unit tests pass.",
+    "pnpm run check + pnpm run build + pnpm test --run pass."
+  ],
+  "verification": [
+    "pnpm run check",
+    "pnpm test --run mis",
+    "pnpm run build",
+    "Manual: connect Wonde sandbox, run sync, verify ≥ 100 sample pupils import correctly with SEND flags."
+  ],
+  "size_estimate": { "files_touched": 10, "net_lines_changed": 700, "notes": "above the 600 budget — split into PC2a (Wonde + mapper) + PC2b (GroupCall + sync UI) if a fresh chat needs to" },
+  "context_budget_for_fresh_chat": "MEDIUM. Read Wonde API docs first call; reuse PC1's OAuth scaffold."
+}

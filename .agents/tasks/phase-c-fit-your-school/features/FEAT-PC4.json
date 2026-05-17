@@ -1,0 +1,62 @@
+{
+  "id": "FEAT-PC4",
+  "type": "feat",
+  "title": "Curriculum coverage map (\"Ofsted view\")",
+  "description": "A coloured grid: rows = pupils, columns = NC / GCSE spec points (AQA / Edexcel / OCR / CIE / SQA / CCEA / White Rose). Cell colour = mastery from worksheet results. Click an empty cell → generates a targeted worksheet. Click a red cell → re-teach. Turns generated worksheets into evidenced curriculum coverage and is the single biggest reason a Head of Department buys site-wide.",
+  "rationale": "User's improvement #3. PC10 (PR #35) already produces per-question coverage data inside `metadata.coverageMap`. PB1 (Phase B · PR-1) per-question provenance fills the rest. This PR builds the cross-pupil aggregation layer + the interactive grid UI.",
+  "depends_on": ["FEAT-PB1"],
+  "steps": [
+    "Audit data sources: each worksheet's metadata.coverageMap + metadata.questionProvenance (PB1) + assignment submissions + scan-mark per-question correctness. Confirm pupil_id × spec_ref × mastery is reconstructable.",
+    "Create client/src/lib/coverageAggregator.ts:",
+    "  - aggregateCoverage(pupils, worksheets, scanResults, opts: { board: 'aqa'|'edexcel'|'ocr'|'cie'|'sqa'|'ccea'|'white-rose'|'all'; subject; yearGroup }): CoverageMatrix",
+    "    Returns: { rows: pupilId[]; cols: { specRef; specTitle; ao; bloomLevel }[]; cells: Record<pupilId, Record<specRef, { status: 'unseen'|'green'|'amber'|'red'; lastSeenAt: string; evidence: { worksheetId; questionIdx; markPct }[] }>> }.",
+    "  - Mastery rules: green ≥80% across last 3 attempts, amber 50–79%, red <50%, unseen = no question on that spec ever served to the pupil.",
+    "Create client/src/lib/specPointTaxonomy.ts:",
+    "  - Static taxonomy generators per board: getSpecPointsAQA(subject, yearGroup) → { specRef; specTitle; ao; tier?; band? }[].",
+    "  - Bundled JSON files committed under client/src/data/spec-points/ — one per (board, subject, yearGroup). Bootstrap with AQA Maths, AQA English Language, AQA Combined Science (Y10–11) since Pillar A already has anchor data for those.",
+    "  - Add a small CLI script tools/import-spec-points.ts that ingests a CSV of spec points (DfE / awarding-body PDF tables converted) into the JSON files; document the input format.",
+    "Create client/src/pages/CurriculumCoverage.tsx (new route /coverage):",
+    "  - Filter bar: board (AQA default), subject, year group, class.",
+    "  - Renders the coverage matrix as a sticky-header / sticky-first-column grid. Cells colour-coded; tooltip shows last-seen date + evidence count.",
+    "  - Click an unseen cell → opens the worksheet Auto-from-class panel (Phase A) pre-filled with that pupil + that spec ref → Generate.",
+    "  - Click a red cell → opens a re-teach worksheet generator (Phase B PB3) pre-filled with the pupil + the misconception ids associated with that spec.",
+    "  - 'Export coverage CSV' button — useful for evidence packs / Ofsted deep dives.",
+    "  - Performance: virtualise the grid with @tanstack/react-virtual for ≥ 200 pupils × ≥ 80 specs.",
+    "Wire navigation: add /coverage to App.tsx and the Settings → Tools list. Hide behind feature flag `COVERAGE_MAP_ENABLED` while spec-point taxonomy is bootstrapping.",
+    "Tests:",
+    "  - client/src/lib/__tests__/coverageAggregator.test.ts — coverage rules, last-3 window, unseen vs green vs red, multi-board filtering.",
+    "  - Snapshot of CurriculumCoverage.tsx with a 5-pupil × 10-spec fixture."
+  ],
+  "files_to_touch": [
+    "client/src/lib/coverageAggregator.ts (new)",
+    "client/src/lib/specPointTaxonomy.ts (new)",
+    "client/src/data/spec-points/aqa-maths-y10.json (new)",
+    "client/src/data/spec-points/aqa-english-y10.json (new)",
+    "client/src/data/spec-points/aqa-combined-science-y10.json (new)",
+    "tools/import-spec-points.ts (new)",
+    "client/src/pages/CurriculumCoverage.tsx (new)",
+    "client/src/App.tsx (route)",
+    "client/src/lib/__tests__/coverageAggregator.test.ts (new)"
+  ],
+  "do_not_touch": [
+    "Worksheet generation pipeline — coverage is read-only consumer of metadata",
+    "Existing /analytics page (different scope)",
+    "PB3 re-teach planner — PC4 only routes into it"
+  ],
+  "acceptance_criteria": [
+    "/coverage renders for an AQA Maths Y10 class with at least 30 pupils and 60 spec points without lag.",
+    "Clicking an unseen cell opens Auto-from-class with the right pupil + spec pre-fill.",
+    "Clicking a red cell opens a PB3 re-teach for that misconception.",
+    "Export CSV produces one row per (pupil, spec) with status + last-seen + evidence count.",
+    "coverageAggregator.test.ts passes with the documented mastery thresholds.",
+    "pnpm run check + pnpm run build + pnpm test --run pass."
+  ],
+  "verification": [
+    "pnpm run check",
+    "pnpm test --run coverageAggregator CurriculumCoverage",
+    "pnpm run build",
+    "Manual: /coverage on a real-looking dataset; click each cell colour at least once."
+  ],
+  "size_estimate": { "files_touched": 9, "net_lines_changed": 700, "notes": "above 600 — bundle the spec-point JSONs as a separate sibling PR if a fresh chat needs to" },
+  "context_budget_for_fresh_chat": "MEDIUM. coverageMapBuilder.ts (PC10) + class-auto-brief.ts are the only existing files needing a read."
+}

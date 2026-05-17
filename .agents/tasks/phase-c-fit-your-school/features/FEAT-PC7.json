@@ -1,0 +1,67 @@
+{
+  "id": "FEAT-PC7",
+  "type": "feat",
+  "title": "Accessibility certification (WCAG 2.2 AA + Braille pipeline + dyslexia/Irlen presets visible)",
+  "description": "Make the existing accessibility infra defensible: ship a WCAG 2.2 AA conformance audit + visible badge on every worksheet; surface Plain-English Flesch–Kincaid score with a one-click rewrite; bake dyslexia / Irlen / ADHD / autism overlay presets into print + digital with school-wide defaults; add one-click large-print (24pt single-column) AND a UEB Braille pipeline.",
+  "rationale": "User's improvement #10. The accessibility-profiles infra already exists (PR #30 FEAT-010); this PR turns 'we have profiles' into 'we are the only UK generator that ships WCAG-certified output and a Braille pipeline.' That distinction is decisive for SEND/EHCP procurement.",
+  "depends_on": [],
+  "constraints": [
+    "WCAG audit MUST run client-side with no third-party tooling (axe-core is fine — already MIT — but no SaaS).",
+    "Braille pipeline uses liblouis-wasm bundled (Apache-2.0); no external API.",
+    "Conformance badge ONLY shown when the per-render audit passes; never a static claim.",
+    "School-wide defaults stored on the school record (PC2 added schools table); falls back to org-default if not set."
+  ],
+  "steps": [
+    "Add `axe-core` as a dep (already used by some test suites — verify; otherwise add). Create client/src/lib/wcagAuditor.ts: auditWorksheetElement(element): { passed: boolean; violations: { id; impact; description; nodes }[] }. Runs axe against the rendered WorksheetRenderer DOM in pupil view + teacher view modes.",
+    "Add audit pass to WorksheetRenderer post-mount: useEffect runs auditWorksheetElement, stamps result onto a context (so other components can read it). When passed, render a small 'WCAG 2.2 AA' chip in the footer (pupil view + teacher view); when failed, render an amber chip with click-to-expand violations. Print + PDF show only the passing badge or no badge.",
+    "Plain-English helper:",
+    "  - client/src/lib/plainEnglishCheck.ts: { fk: number; level: 'easy'|'ok'|'difficult'; suggestions: string[] } from existing FK helper.",
+    "  - WorksheetRenderer: small chip 'Reading age 14 · Grade 9' next to the WCAG badge. Click → opens a 'Rewrite at lower reading age' dialog that calls aiAdjustReadingLevel (already exists in ai.ts) on the visible content.",
+    "Overlay presets:",
+    "  - accessibility-profiles.ts already has 8 profiles. Promote the Irlen-stress, ADHD, and autism presets to first-class entries (currently buried). Add a 'School default profile' setting on Settings → Tenant. Apply on every page load if no per-user override is set.",
+    "Large-print:",
+    "  - One-click '24pt single-column' button on the Worksheet Typography picker. Renders the same content with `accessibility-profiles.ts` 'large-print' profile applied AND triggers print/PDF in single-column layout (override pdf-generator-v2's grid).",
+    "UEB Braille pipeline:",
+    "  - client/src/lib/braillePipeline.ts: worksheetToBrl(worksheet): Promise<string> using liblouis-wasm with the 'unified-english-braille' table. Diagrams produce TACTILE-DESCRIBE prose alternatives (hooked to existing accessibility-profiles 'screen-reader-clean' pass).",
+    "  - 'Export Braille (BRF)' button on the Typography picker. BRF is the standard Braille embosser format — ships as a downloadable file, named .brf.",
+    "Conformance statement:",
+    "  - docs/accessibility/conformance-statement.md — WCAG 2.2 AA conformance statement template referencing the per-render audit + the per-tenant school defaults. Linked from the badge tooltip.",
+    "Tests:",
+    "  - client/src/lib/__tests__/wcagAuditor.test.ts — covers: passing render vs. fixture with deliberately-low contrast vs. missing-label fixture.",
+    "  - client/src/lib/__tests__/braillePipeline.test.ts — round-trips a simple worksheet through liblouis-wasm and asserts BRF byte signature.",
+    "  - Snapshot of the badge in passed vs failed states."
+  ],
+  "files_to_touch": [
+    "client/src/lib/wcagAuditor.ts (new)",
+    "client/src/lib/plainEnglishCheck.ts (new)",
+    "client/src/lib/braillePipeline.ts (new)",
+    "client/src/lib/accessibility-profiles.ts (extend with school-default + new presets)",
+    "client/src/components/WorksheetRenderer.tsx (badges + audit hook)",
+    "client/src/components/A11yPickerDialog.tsx (Large print + Braille buttons; rename if a different file already exists)",
+    "client/src/pages/Settings.tsx (Tenant accessibility default)",
+    "docs/accessibility/conformance-statement.md (new)",
+    "client/src/lib/__tests__/wcagAuditor.test.ts (new)",
+    "client/src/lib/__tests__/braillePipeline.test.ts (new)"
+  ],
+  "do_not_touch": [
+    "Existing accessibility-profiles 8-profile registry (only add — never remove)",
+    "Pupil Companion accessibility hookups (PR #32) — surfacing the audit there is a follow-up"
+  ],
+  "acceptance_criteria": [
+    "Every successful worksheet render shows a WCAG 2.2 AA badge.",
+    "Deliberate violations (axe-core fixtures) flip the badge to amber and surface the rule that failed.",
+    "FK plain-English chip appears + the rewrite dialog produces lower-reading-age content.",
+    "Large-print mode renders 24pt single-column in print preview.",
+    "Braille BRF export downloads a valid file that loads in a free Braille viewer (manual check).",
+    "School-default accessibility profile applies to a new pupil in that school.",
+    "pnpm run check + pnpm run build + pnpm test --run pass."
+  ],
+  "verification": [
+    "pnpm run check",
+    "pnpm test --run wcagAuditor braillePipeline",
+    "pnpm run build (check bundle delta — liblouis-wasm is ~ 200kb gzipped, lazy-load it)",
+    "Manual: open a worksheet, confirm badge; open Typography picker, click Large print → print preview; click Braille → BRF downloads."
+  ],
+  "size_estimate": { "files_touched": 10, "net_lines_changed": 700, "notes": "Above 600 — split into PC7a (audit + plain English) + PC7b (Braille + Large print) for fresh chats." },
+  "context_budget_for_fresh_chat": "MEDIUM. accessibility-profiles.ts is small. WorksheetRenderer must be touched only via additive footer chips."
+}

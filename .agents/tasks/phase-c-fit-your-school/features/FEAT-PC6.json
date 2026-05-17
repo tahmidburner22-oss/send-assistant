@@ -1,0 +1,59 @@
+{
+  "id": "FEAT-PC6",
+  "type": "feat",
+  "title": "EAL parity (bilingual side-by-side + per-pupil reading age memory)",
+  "description": "Bring the bilingual print mode the Parent Newsletter has to every worksheet: side-by-side Polish / Urdu / Romanian / Arabic / Bengali / Gujarati / Punjabi / Mandarin / Spanish (the actual top 9 UK EAL languages). Add a per-pupil reading-age override that the tool remembers so every worksheet that pupil receives is automatically tuned without the teacher choosing.",
+  "rationale": "User's improvement #9. EAL is currently a manual chore in every other UK SEND tool — owning this category is realistic with the existing ParentNewsletter translation infra and AI translation pass.",
+  "depends_on": ["FEAT-PR1"],
+  "constraints": [
+    "RTL languages (Arabic, Urdu) require correct page direction in print, not just text dir — page columns must mirror.",
+    "Translation runs as a non-blocking post-process. Pupil-view print path always honours both columns when the worksheet has a translation; teacher key remains English-only.",
+    "No paid translation API. Use the existing free-tier AI providers; cap per-pupil translations to one per worksheet to control cost."
+  ],
+  "steps": [
+    "Audit ParentNewsletter's translation flow (grep `translate` + `targetLanguage` in client/src/pages/tools/ParentNewsletter.tsx). Extract its `aiTranslate` helper to client/src/lib/aiTranslate.ts so worksheets can reuse it.",
+    "Extend Child schema (already-additive fields are safe): add `Child.readingAgeOverride: number | null`, `Child.preferredLanguage: 'en'|'pl'|'ur'|'ro'|'ar'|'bn'|'gu'|'pa'|'zh'|'es' | null`. Persist in localStorage; DB column migration is deferred to PC2's MIS migration.",
+    "Create client/src/lib/worksheetTranslator.ts:",
+    "  - translateWorksheet(worksheet, targetLang): Promise<TranslatedWorksheet> — produces a parallel sections array with translated content. Caches per (worksheetId, targetLang) in localStorage so repeated views don't re-pay.",
+    "  - getEffectiveReadingAge(child, fallback) — reads override, then yearGroup-derived default.",
+    "Generate-time: when a class brief contains a child with `preferredLanguage !== 'en'` AND class-pack mode is active (PR-3), the class-pack pipeline auto-fires translateWorksheet per such pupil and inserts the bilingual side-by-side into THAT pupil's named copy only.",
+    "Render: WorksheetRenderer learns a `bilingual?: { lang; sections }` prop. When present, it renders each section in two columns (CSS grid-template-columns: 1fr 1fr) with `dir='rtl'` applied to the RTL column. Print + PDF respect the same layout — pdf-generator-v2's options gain `bilingual?: { lang }`.",
+    "Per-pupil reading-age override:",
+    "  - Add a field on the pupil profile page + class-pack pupil row.",
+    "  - aiGenerateWorksheetFromClassBrief (and aiGenerateWorksheet directly) honour the override when generating per-pupil tier in class-pack — the ReadingAge slider in advanced options shows the override as the default for that pupil.",
+    "Tests:",
+    "  - client/src/lib/__tests__/worksheetTranslator.test.ts — cache hit/miss, RTL flag pass-through, error fallback returns English-only.",
+    "  - Snapshot: WorksheetRenderer with bilingual: {lang: 'ar'} fixture produces dir=rtl on the second column.",
+    "Docs: docs/eal.md listing the supported languages + the script the teacher uses."
+  ],
+  "files_to_touch": [
+    "client/src/lib/aiTranslate.ts (new — extracted from ParentNewsletter)",
+    "client/src/lib/worksheetTranslator.ts (new)",
+    "client/src/contexts/AppContext.tsx (Child.readingAgeOverride, Child.preferredLanguage)",
+    "client/src/pages/tools/ParentNewsletter.tsx (refactor to use shared aiTranslate)",
+    "client/src/components/WorksheetRenderer.tsx (bilingual prop + RTL CSS)",
+    "client/src/lib/pdf-generator-v2.ts (bilingual option)",
+    "client/src/components/ClassPackDialog.tsx (chain translation per pupil)",
+    "client/src/pages/Children.tsx (override fields on pupil row)",
+    "docs/eal.md (new)"
+  ],
+  "do_not_touch": [
+    "Existing ParentNewsletter behaviour (we extract the helper without changing the page's flow)",
+    "Worksheet schema beyond optional bilingual sidecar field"
+  ],
+  "acceptance_criteria": [
+    "A class-pack run on a class with one Polish-preferred pupil produces a Class Pack PDF where that pupil's named copy has the worksheet in EN + PL side-by-side; other pupils' copies are unchanged.",
+    "Arabic-preferred renders the right column with dir=rtl correctly in print preview.",
+    "Per-pupil reading-age override is persisted and consumed by Auto-from-class generation.",
+    "Translation cache prevents re-translating the same (worksheet, lang) pair twice in a session.",
+    "pnpm run check + pnpm run build + pnpm test --run pass."
+  ],
+  "verification": [
+    "pnpm run check",
+    "pnpm test --run worksheetTranslator",
+    "pnpm run build",
+    "Manual: print a 4-pupil class pack with one Polish + one Arabic preferred; verify both bilingual layouts."
+  ],
+  "size_estimate": { "files_touched": 9, "net_lines_changed": 600 },
+  "context_budget_for_fresh_chat": "MEDIUM. ParentNewsletter (~350 LOC) read in full to extract the helper; ClassPackDialog (475 LOC) read in full."
+}

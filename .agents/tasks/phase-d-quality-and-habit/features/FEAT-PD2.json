@@ -1,0 +1,50 @@
+{
+  "id": "FEAT-PD2",
+  "type": "feat",
+  "title": "iOS / Android share-sheet ('Share to Adaptly')",
+  "description": "Register Adaptly as a share target on iOS + Android so a teacher can take a photo of a textbook page (or screenshot a BBC Bitesize article), tap Share, pick Adaptly, and land on /worksheets with the OCR-parsed text already in the topic field.",
+  "rationale": "User's improvement #12 (b). The share sheet is the moment of intent on mobile — the lowest-friction generation path that exists. iOS + Android both expose this for installed PWAs via the Web Share Target API.",
+  "depends_on": ["FEAT-PR1"],
+  "constraints": [
+    "PWA-only — no native app build. The repo already has a manifest.json (or doesn't — confirm and add).",
+    "Web Share Target API requires a registered service worker with a fetch handler for the /share-target route.",
+    "Privacy: shared content is processed client-side; never uploaded as a separate doc. OCR runs in Tesseract.js as elsewhere."
+  ],
+  "steps": [
+    "Audit: grep `manifest.json`, `service-worker`, `serviceWorker` in client/. Confirm if a PWA scaffold exists.",
+    "If no manifest: add client/public/manifest.webmanifest with icons + name + start_url + share_target spec:",
+    "  share_target: { action: '/share-target', method: 'POST', enctype: 'multipart/form-data', params: { title, text, url, files: [{ name: 'image', accept: ['image/*', '.pdf'] }] } }.",
+    "Service worker: register one if absent (Vite plugin: vite-plugin-pwa). On /share-target POST: deserialise the multipart, persist to IndexedDB under a one-shot key, navigate to /worksheets?shared=1.",
+    "Worksheets.tsx: when ?shared=1 is present on mount, read from IndexedDB, OCR any image/PDF via the lazy-loaded Tesseract worker (already used by Differentiate), pre-fill subject (best-guess from text), topic (first 80 chars), additionalInstructions (full OCR'd text capped at 4kb).",
+    "Add an 'Install Adaptly' prompt in Settings explaining how to add to home screen on iOS Safari + Android Chrome (different flows).",
+    "Tests:",
+    "  - client/src/__tests__/share-target.test.ts — covers manifest schema validity, IndexedDB hand-off shape, query-string trigger.",
+    "Docs: docs/integrations/share-target.md."
+  ],
+  "files_to_touch": [
+    "client/public/manifest.webmanifest (new or extend)",
+    "client/src/service-worker.ts (new or extend)",
+    "vite.config.ts (vite-plugin-pwa registration)",
+    "client/src/pages/Worksheets.tsx (?shared=1 handoff — ≤ 40 LOC delta)",
+    "client/src/pages/Settings.tsx (Install Adaptly section)",
+    "client/src/__tests__/share-target.test.ts (new)",
+    "docs/integrations/share-target.md (new)"
+  ],
+  "do_not_touch": [
+    "WeekAhead handoff in Worksheets.tsx (Phase A · PR-4) — share-target is a separate one-shot useEffect; do not interleave"
+  ],
+  "acceptance_criteria": [
+    "After installing as PWA on iOS + Android, sharing an image or text to Adaptly opens /worksheets with the topic pre-filled.",
+    "Sharing a PDF triggers OCR fallback.",
+    "Manifest validates against W3C web app manifest schema.",
+    "Tests pass; pnpm check + build pass."
+  ],
+  "verification": [
+    "pnpm run check",
+    "pnpm test --run share-target",
+    "pnpm run build",
+    "Manual: install PWA on real iOS + Android device; share an image; confirm landing experience."
+  ],
+  "size_estimate": { "files_touched": 7, "net_lines_changed": 350 },
+  "context_budget_for_fresh_chat": "LOW–MEDIUM."
+}
