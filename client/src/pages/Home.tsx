@@ -10,11 +10,12 @@ import {
   Wrench, Heart, Languages, UserCheck, Briefcase, Theater, Lightbulb,
   GraduationCap, BarChart2, CalendarDays, Brain, ScrollText, Gamepad2, Settings,
   ArrowRight, PlayCircle, ClipboardList, Stethoscope, Pencil, MessageSquare, ChevronRight,
-  Send, Loader2, Wand2, X,
+  Send, Loader2, Wand2, X, Layers,
 } from "lucide-react";
 import { useState, useMemo, useEffect, useRef } from "react";
 import { callAI } from "@/lib/ai";
 import WeekAheadPanel from "@/components/WeekAheadPanel";
+import UnitPackDialog from "@/components/UnitPackDialog";
 
 const subjectIcons: Record<string, any> = {
   english: BookOpen, mathematics: Calculator, science: FlaskConical,
@@ -104,6 +105,9 @@ export default function Home() {
 
   useEffect(() => { refreshData(); }, []);
   const [tip] = useState(() => cobsTips[Math.floor(Math.random() * cobsTips.length)]);
+  // Phase C · PC5 (pack-1) — controls the unit-pack dialog launched from the
+  // "Plan a unit" tile rendered next to WeekAheadPanel.
+  const [unitPackOpen, setUnitPackOpen] = useState(false);
 
   const totalWorksheets = worksheetHistory.length;
   const totalStories = storyHistory.length;
@@ -385,6 +389,30 @@ Rules:
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.03 }}>
         <WeekAheadPanel />
       </motion.div>
+
+      {/* Phase C · PC5 (pack-1) — Plan a unit */}
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.04 }}>
+        <Card
+          className={`${cardClass} cursor-pointer hover:shadow-md transition-shadow`}
+          onClick={() => setUnitPackOpen(true)}
+          role="button"
+          aria-label="Plan a unit — generate a full scheme of work as one ZIP"
+        >
+          <CardContent className="p-3 flex items-center gap-3">
+            <div className="w-9 h-9 rounded-lg bg-emerald-100 flex items-center justify-center shrink-0">
+              <Layers className="w-4 h-4 text-emerald-700" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-semibold">Plan a unit</div>
+              <div className="text-[11px] text-muted-foreground">
+                Generate every worksheet for a 1–6 week unit in one ZIP. Pupil + teacher PDFs per lesson.
+              </div>
+            </div>
+            <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
+          </CardContent>
+        </Card>
+      </motion.div>
+      <UnitPackDialog open={unitPackOpen} onOpenChange={setUnitPackOpen} />
 
 
       {/* Stats */}

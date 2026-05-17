@@ -1,8 +1,11 @@
+import { useState } from "react";
 import { useUserPreferences } from "@/contexts/UserPreferencesContext";
 import { formatToolOutput } from "@/lib/format-tool-output";
 import AIToolPage from "@/components/AIToolPage";
 import MediumTermPlannerV2Panel from "@/components/MediumTermPlannerV2Panel";
-import { CalendarDays } from "lucide-react";
+import UnitPackDialog from "@/components/UnitPackDialog";
+import { Button } from "@/components/ui/button";
+import { CalendarDays, Layers } from "lucide-react";
 
 const subjects = ["English","Maths","Science","History","Geography","RE","PSHE","Art","Music","PE","Computing","MFL","Design Technology","Drama"].map(s => ({ value: s, label: s }));
 const years = ["Reception","Year 1","Year 2","Year 3","Year 4","Year 5","Year 6","Year 7","Year 8","Year 9","Year 10","Year 11","Year 12","Year 13"].map(y => ({ value: y, label: y }));
@@ -10,8 +13,34 @@ const terms = [{ value: "Autumn 1", label: "Autumn 1" }, { value: "Autumn 2", la
 
 export default function MediumTermPlanner() {
   const { preferences } = useUserPreferences();
+  // FEAT-PC5 (pack-1) entry point. The MTP form is the natural surface for
+  // "I've planned my half-term — now I want every worksheet in one ZIP", so
+  // we ship the dialog launcher as a small banner above the AIToolPage.
+  // The dialog itself is fully self-contained (planUnit + executeUnit +
+  // bundleUnit live in lib/unitPack.ts), so it never has to round-trip
+  // through this page's state.
+  const [unitPackOpen, setUnitPackOpen] = useState(false);
   return (
-    <AIToolPage
+    <>
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-4">
+        <div className="flex items-center justify-between gap-3 rounded-lg border bg-emerald-50/60 border-emerald-200 px-3 py-2">
+          <div className="text-xs text-emerald-900">
+            <strong>New:</strong> bulk scheme-of-work generation. Generate every
+            worksheet for a whole unit in one click — pupil + teacher PDFs per
+            lesson, all in a single ZIP.
+          </div>
+          <Button
+            size="sm"
+            className="bg-emerald-600 hover:bg-emerald-700 text-white"
+            onClick={() => setUnitPackOpen(true)}
+          >
+            <Layers className="w-3.5 h-3.5 mr-1.5" />
+            New unit pack
+          </Button>
+        </div>
+      </div>
+      <UnitPackDialog open={unitPackOpen} onOpenChange={setUnitPackOpen} />
+      <AIToolPage
       title="Medium Term Planner"
       assignable={true}
       worksheetLink={true}
@@ -93,5 +122,6 @@ Be specific about activities — name actual tasks, not just "discuss the topic"
         <MediumTermPlannerV2Panel result={result} values={values} />
       )}
     />
+    </>
   );
 }
