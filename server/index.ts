@@ -93,6 +93,7 @@ import ehcpRouter from "./routes/ehcp.js";
 import pupilDocumentsRouter from "./routes/pupilDocuments.js";
 import schedulerRouter from "./routes/scheduler.js";
 import telemetryRouter from "./routes/telemetry.js";
+import ltiRouter from "./routes/lti.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -347,6 +348,7 @@ app.use("/api/ehcp", aiLimiter, ehcpRouter);
 app.use("/api/pupil-documents", pupilDocumentsRouter);
 app.use("/api/scheduler", schedulerRouter);
 app.use("/api/telemetry", telemetryRouter);
+app.use("/lti", ltiRouter);
 
 // ── Health check ──────────────────────────────────────────────────────────────
 app.get("/api/health", (_, res) => {
