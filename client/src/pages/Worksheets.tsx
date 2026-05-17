@@ -50,6 +50,51 @@ import {
   MessageSquare, Send, RotateCcw, Layers, Volume2, VolumeX, Loader2, QrCode, BookOpenCheck, Camera,
 } from "lucide-react";
 
+/* ════════════════════════════════════════════════════════════════════════════
+ * NAVIGATION INDEX (this file is ~6,500 lines — grep `// §` to jump)
+ * ════════════════════════════════════════════════════════════════════════════
+ *   §HOOK-DEBOUNCE      L 98   useDebounce
+ *   §HOOK-VOICE         L108   useVoiceToText
+ *   §UTIL-FORMAT        L142   formatContent
+ *   §TYPE-WS            L183   AIWorksheet, AnyWorksheet, WorksheetMetadataFallback
+ *   §LOADING            L251   LoadingStageMessage, AnimatedProgressBar
+ *   §TEACHER-KEY        L281   buildTeacherKey (private auto-generator)
+ *   §LIB-NORM           L374   library section normaliser
+ *   §MAIN               L520   default export Worksheets()        ← MAIN COMPONENT
+ *
+ * Inside the Worksheets() component the major sub-sections (also marked with
+ * `// §` so they are searchable):
+ *   §PAGE-COUNT         L1141  page-count enforcement for student view
+ *   §HANDLE-GENERATE    L1209  generate worksheet (calls aiGenerateWorksheet)
+ *   §HANDLE-DIAG-START  L1975  generate diagnostic starter
+ *   §HANDLE-DIAG-CHAT   L2004  diagnostic starter chat → worksheet
+ *   §HANDLE-EXAM-BUILD  L2044  build worksheet from exam Hub multi-select
+ *   §HANDLE-UPLOAD      L2124  upload & adapt
+ *   §HANDLE-FROM-SLIDES L2186  generate worksheet from slides
+ *   §HANDLE-SAVE        L2232  save
+ *   §HANDLE-PDF         L2280  PDF download (pixel-perfect HTML-to-PDF)
+ *   §HANDLE-PRINT       L2552  print (opens PrintOptionsDialog)
+ *   §HANDLE-PRINT-PREV  L2574  paginated print preview
+ *   §HANDLE-AI-EDIT     L2814  AI edit section
+ *   §HANDLE-ASSIGN      L2851  assign worksheet
+ *   §HANDLE-SCENARIO    L2872  scenario swap
+ *   §HANDLE-READAGE     L2924  reading-level adjustment (post-generation)
+ *   §HANDLE-NL-INPUT    L2974  natural-language input parser
+ *   §HANDLE-DIFF        L3255  one-click differentiation (local engine)
+ *   §FILTERED-BANK      L3502  filtered bank
+ *   §RENDER             L3511  JSX render                          ← UI starts here
+ *
+ * For Phase A refactor (see .agents/tasks/phase-a-class-aware/features/FEAT-PR0.json):
+ *   - DO NOT read this file in full from a fresh chat — grep `// §` for the
+ *     section you need and read a 200-line range around it.
+ *   - The default export Worksheets() owns most state with deep `useState`
+ *     hooks. Extracting requires lifting state into a `useWorksheetGeneration`
+ *     hook before splitting JSX into WorksheetForm / WorksheetActionsBar /
+ *     WorksheetPreviewPane. Don't try to extract JSX without lifting state
+ *     first or the props surface explodes.
+ * ════════════════════════════════════════════════════════════════════════════
+ */
+
 // ─── Debounce hook ──────────────────────────────────────────────────────────
 function useDebounce<T>(value: T, delay: number): T {
   const [debounced, setDebounced] = React.useState(value);
@@ -472,7 +517,7 @@ function isUnresolvedDiagramSection(section: any): boolean {
   return hasPlaceholderHeader || (type.includes('diagram') && diagramDependentQuestions);
 }
 
-// ─── Main Component ──────────────────────────────────────────────────────────
+// ═══ §MAIN · default export Worksheets() — MAIN COMPONENT ═════════════════
 export default function Worksheets() {
   const [location] = useLocation();
   const { saveWorksheet, updateWorksheet, deleteWorksheet, worksheetHistory, children, assignWork, updateChild, colorOverlay, setColorOverlay, refreshData, user } = useApp();
@@ -1161,6 +1206,7 @@ export default function Worksheets() {
     return sections;
   }, [generated, viewMode, targetPages, editedSections]);
 
+  // ═══ §HANDLE-GENERATE · generate worksheet (calls aiGenerateWorksheet) ═════
   // ─── Generate worksheet ────────────────────────────────────────────────────
 
   // Revision Mat instruction injected when toggle is on
@@ -2231,6 +2277,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
     toast.success("Lesson saved to history!");
   };
 
+  // ═══ §HANDLE-PDF · PDF download (pixel-perfect HTML-to-PDF) ════════════════
   // ─── PDF Download (pixel-perfect HTML-to-PDF) ─────────────────────────────
   const handleDownloadPdf = async () => {
     if (!generated) { toast.error("No worksheet loaded"); return; }
@@ -2764,6 +2811,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
     }
   };
 
+  // ═══ §HANDLE-AI-EDIT · AI edit section ═════════════════════════════════════
   // ─── AI Edit Section ────────────────────────────────────────────────────────
   const handleAiEditSection = async () => {
     if (aiEditSectionIndex === null || !aiEditPrompt.trim() || !generated) return;
@@ -2923,6 +2971,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
     setReadingLevelLoading(false);
   };
 
+  // ═══ §HANDLE-NL-INPUT · natural-language input parser ══════════════════════
   // ─── Natural Language Input handler ───────────────────────────────────────────
   // The NL bar is a shortcut: type freely and generate immediately.
   // Everything NOT mentioned in the prompt gets a clean standard default —
@@ -3203,6 +3252,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
     }
   };
 
+  // ═══ §HANDLE-DIFF · one-click differentiation (local engine) ═══════════════
   // ─── One-click differentiation (local adaptation engine — no AI call) ──────────────────
   //
   // All 3 tiers are handled by applySEND() in adaptationEngine.ts:
@@ -3458,6 +3508,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
     return matchSearch && matchSubject && matchYear;
   });
 
+  // ═══ §RENDER · JSX render ══════════════════════════════════════════════════
   // ─── Render ────────────────────────────────────────────────────────────────
   return (
     <div className="px-4 py-6 max-w-4xl mx-auto space-y-6">
