@@ -1,5 +1,9 @@
 node_modules/
 data/
+# But allow the bundled curriculum spec-point taxonomies (FEAT-PC4) — they
+# are static JSON committed alongside the code.
+!client/src/data/
+!client/src/data/**
 .env
 *.db
 *.db-shm
