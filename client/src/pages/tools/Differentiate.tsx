@@ -17,6 +17,8 @@ import { downloadDifferentiatedPdf } from "@/lib/pdf-generator";
 import { renderMath } from "@/components/WorksheetRenderer";
 import { useApp } from "@/contexts/AppContext";
 import { useUserPreferences } from "@/contexts/UserPreferencesContext";
+import DifferentiateV2Panel from "@/components/DifferentiateV2Panel";
+import { differentiateDual } from "@/lib/differentiate-v2-enhancements";
 
 export default function Differentiate() {
   const { colorOverlay, setColorOverlay, saveDifferentiation, children, assignWork } = useApp();
@@ -55,6 +57,34 @@ export default function Differentiate() {
   const [manualText, setManualText] = useState("");
   const [aiPrompt, setAiPrompt] = useState("");
   const [aiEditLoading, setAiEditLoading] = useState(false);
+  // Dual-output (Support + Stretch) state
+  const [stretchVersion, setStretchVersion] = useState("");
+  const [dualLoading, setDualLoading] = useState(false);
+
+  const handleDualGeneration = async () => {
+    if (!subject || !yearGroup || !topic || !originalTask) {
+      toast.error("Please fill the form first.");
+      return;
+    }
+    setDualLoading(true);
+    try {
+      const merged = await differentiateDual({
+        taskContent: originalTask,
+        yearGroup,
+        subject,
+        sendNeed: sendNeed || undefined,
+      });
+      setResult(merged);
+      // Capture only the stretch portion for the panel preview
+      const m = merged.match(/## Stretch version[\s\S]*$/);
+      setStretchVersion(m ? m[0] : "");
+      saveDifferentiation({ taskContent: originalTask, differentiatedContent: merged, sendNeed: sendNeed || undefined, yearGroup, subject });
+      toast.success("Generated both Support and Stretch versions.");
+    } catch {
+      toast.error("Dual generation failed.");
+    }
+    setDualLoading(false);
+  };
 
   
 
@@ -77,7 +107,7 @@ export default function Differentiate() {
     } catch (_err) {
       // AI failed — show honest error, do NOT produce fake differentiated content
       toast.error("AI differentiation failed. Please check your connection and try again.");
-      setResult(null);
+      setResult("");
     }
     setLoading(false);
   };
@@ -184,6 +214,16 @@ export default function Differentiate() {
 
               <Button onClick={handleDifferentiate} disabled={loading} className="w-full h-11 bg-brand hover:bg-brand/90 text-white">
                 {loading ? <><Sparkles className="w-4 h-4 mr-2 animate-spin" /> Differentiating...</> : <><Sparkles className="w-4 h-4 mr-2" /> Differentiate Task</>}
+              </Button>
+              <Button
+                onClick={handleDualGeneration}
+                disabled={dualLoading || loading}
+                variant="outline"
+                className="w-full h-11"
+              >
+                {dualLoading
+                  ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Generating Support + Stretch…</>
+                  : <><Sparkles className="w-4 h-4 mr-2" /> Generate Support + Stretch (mixed-attainment)</>}
               </Button>
             </CardContent>
           </Card>
@@ -362,6 +402,15 @@ export default function Differentiate() {
               </CardContent>
             </Card>
           </div>
+
+          {/* v2 enhancements panel — diff, rationale, dual, overlay preview, symbols */}
+          <DifferentiateV2Panel
+            before={originalTask}
+            after={result}
+            stretchVersion={stretchVersion}
+            onGenerateDual={handleDualGeneration}
+            dualLoading={dualLoading}
+          />
         </motion.div>
       )}
     </div>
