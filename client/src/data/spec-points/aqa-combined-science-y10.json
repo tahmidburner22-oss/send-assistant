@@ -1,0 +1,58 @@
+{
+  "board": "aqa",
+  "subject": "Combined Science",
+  "yearGroup": "Year 10",
+  "qualification": "GCSE 8464 Trilogy",
+  "source": "AQA GCSE Combined Science: Trilogy 8464 specification (2016 onwards) — Y10 covered topics across Biology / Chemistry / Physics",
+  "specPoints": [
+    { "specRef": "B4.1.1", "specTitle": "Cell structure: animal and plant cells, prokaryotic vs eukaryotic, cell organelles and functions", "ao": "AO1", "tier": "both" },
+    { "specRef": "B4.1.2", "specTitle": "Cell division: chromosomes, the cell cycle, mitosis and stem cells", "ao": "AO1", "tier": "both" },
+    { "specRef": "B4.1.3", "specTitle": "Transport in cells: diffusion, osmosis and active transport", "ao": "AO1", "tier": "both" },
+    { "specRef": "B4.2.1", "specTitle": "Principles of organisation: tissues, organs and organ systems", "ao": "AO1", "tier": "both" },
+    { "specRef": "B4.2.2", "specTitle": "Animal tissues, organs and organ systems: digestive enzymes, the heart, the lungs, blood vessels", "ao": "AO1", "tier": "both" },
+    { "specRef": "B4.2.3", "specTitle": "Plant tissues, organs and systems: plant tissues, transpiration and translocation", "ao": "AO1", "tier": "both" },
+    { "specRef": "B4.3.1", "specTitle": "Communicable diseases: viral, bacterial, fungal and protist diseases; human defence systems and vaccination", "ao": "AO1", "tier": "both" },
+    { "specRef": "B4.3.2", "specTitle": "Non-communicable diseases: risk factors, cancer and tumour types", "ao": "AO2", "tier": "both" },
+    { "specRef": "B4.4.1", "specTitle": "Photosynthesis: reaction, factors affecting rate, uses of glucose", "ao": "AO1", "tier": "both" },
+    { "specRef": "B4.4.2", "specTitle": "Respiration: aerobic and anaerobic respiration, response to exercise, metabolism", "ao": "AO1", "tier": "both" },
+
+    { "specRef": "B-RP1", "specTitle": "Required Practical 1: Use of a light microscope to observe, draw and label biological specimens", "ao": "AO3", "tier": "both" },
+    { "specRef": "B-RP2", "specTitle": "Required Practical 2: Investigate the effect of antiseptics or antibiotics on bacterial growth using agar plates", "ao": "AO3", "tier": "both" },
+    { "specRef": "B-RP3", "specTitle": "Required Practical 3: Use qualitative reagents (Benedict's, iodine, biuret) to test for sugars, starch and protein in food", "ao": "AO3", "tier": "both" },
+    { "specRef": "B-RP4", "specTitle": "Required Practical 4: Investigate the effect of pH on the rate of reaction of amylase enzyme", "ao": "AO3", "tier": "both" },
+    { "specRef": "B-RP5", "specTitle": "Required Practical 5: Investigate the effect of light intensity on the rate of photosynthesis using pondweed", "ao": "AO3", "tier": "both" },
+
+    { "specRef": "C5.1.1", "specTitle": "A simple model of the atom; symbols, relative atomic mass, electronic charge and isotopes", "ao": "AO1", "tier": "both" },
+    { "specRef": "C5.1.2", "specTitle": "The periodic table: development, structure, electronic structure and trends in groups", "ao": "AO1", "tier": "both" },
+    { "specRef": "C5.1.3", "specTitle": "Properties of transition metals (HT only): typical properties of transition metals compared with Group 1", "ao": "AO1", "tier": "higher" },
+    { "specRef": "C5.2.1", "specTitle": "Bonding, structure and the properties of matter: ionic, covalent and metallic bonding", "ao": "AO1", "tier": "both" },
+    { "specRef": "C5.2.2", "specTitle": "Structure and bonding of carbon: diamond, graphite, graphene and fullerenes", "ao": "AO1", "tier": "both" },
+    { "specRef": "C5.3.1", "specTitle": "Chemical measurements, conservation of mass and quantitative interpretation of chemical equations", "ao": "AO2", "tier": "both" },
+    { "specRef": "C5.3.2", "specTitle": "Use of moles to balance equations (HT only); concentrations of solutions", "ao": "AO2", "tier": "higher" },
+    { "specRef": "C5.4.1", "specTitle": "Reactivity of metals: the reactivity series, extraction of metals and reduction", "ao": "AO1", "tier": "both" },
+    { "specRef": "C5.4.2", "specTitle": "Reactions of acids: with metals, alkalis, metal carbonates; pH and neutralisation", "ao": "AO1", "tier": "both" },
+    { "specRef": "C5.4.3", "specTitle": "Electrolysis: electrolysis of molten ionic compounds; electrolysis of aqueous solutions", "ao": "AO2", "tier": "both" },
+    { "specRef": "C5.5.1", "specTitle": "Energy changes in chemical reactions: exothermic and endothermic reactions, reaction profiles", "ao": "AO1", "tier": "both" },
+
+    { "specRef": "C-RP1", "specTitle": "Required Practical 1: Make a pure, dry sample of a soluble salt from an insoluble oxide or carbonate", "ao": "AO3", "tier": "both" },
+    { "specRef": "C-RP2", "specTitle": "Required Practical 2: Determine the reacting volumes of solutions of a strong acid and a strong alkali by titration", "ao": "AO3", "tier": "both" },
+    { "specRef": "C-RP3", "specTitle": "Required Practical 3: Investigate the variables that affect temperature changes in reacting solutions", "ao": "AO3", "tier": "both" },
+    { "specRef": "C-RP4", "specTitle": "Required Practical 4: Investigate electrolysis using inert electrodes and aqueous solutions", "ao": "AO3", "tier": "both" },
+
+    { "specRef": "P6.1.1", "specTitle": "Energy changes in a system: kinetic energy, elastic potential energy, gravitational potential energy stores", "ao": "AO1", "tier": "both" },
+    { "specRef": "P6.1.2", "specTitle": "Conservation and dissipation of energy: efficiency, ways to reduce unwanted energy transfers", "ao": "AO1", "tier": "both" },
+    { "specRef": "P6.1.3", "specTitle": "National and global energy resources: renewable and non-renewable resources, patterns of use", "ao": "AO1", "tier": "both" },
+    { "specRef": "P6.2.1", "specTitle": "Current, potential difference and resistance: standard circuit symbols, Ohm's law, I-V characteristics", "ao": "AO2", "tier": "both" },
+    { "specRef": "P6.2.2", "specTitle": "Series and parallel circuits: rules for current, potential difference and resistance", "ao": "AO2", "tier": "both" },
+    { "specRef": "P6.2.3", "specTitle": "Domestic uses and safety: direct vs alternating potential difference, mains electricity, the National Grid", "ao": "AO1", "tier": "both" },
+    { "specRef": "P6.3.1", "specTitle": "Particle model of matter: density of materials, changes of state, internal energy and specific latent heat", "ao": "AO1", "tier": "both" },
+    { "specRef": "P6.3.2", "specTitle": "Particle motion in gases: temperature, motion and pressure (HT links to gas pressure)", "ao": "AO2", "tier": "both" },
+    { "specRef": "P6.4.1", "specTitle": "Atomic structure: structure of the atom, isotopes and the development of the model of the atom", "ao": "AO1", "tier": "both" },
+    { "specRef": "P6.4.2", "specTitle": "Atoms and nuclear radiation: alpha, beta, gamma; nuclear equations, half-life and contamination vs irradiation", "ao": "AO2", "tier": "both" },
+
+    { "specRef": "P-RP1", "specTitle": "Required Practical 1: Investigate the specific heat capacity of one or more materials", "ao": "AO3", "tier": "both" },
+    { "specRef": "P-RP2", "specTitle": "Required Practical 2: Investigate the I-V characteristics of a filament lamp, a diode and a resistor at constant temperature", "ao": "AO3", "tier": "both" },
+    { "specRef": "P-RP3", "specTitle": "Required Practical 3: Use circuit diagrams to set up and check appropriate circuits to investigate factors affecting the resistance of components", "ao": "AO3", "tier": "both" },
+    { "specRef": "P-RP4", "specTitle": "Required Practical 4: Investigate the densities of regular and irregular solid objects and liquids", "ao": "AO3", "tier": "both" }
+  ]
+}
