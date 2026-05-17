@@ -16,12 +16,23 @@ in the same commit.
 | Status         | Count |
 | -------------- | ----- |
 | Shipped        | 4     |
-| Specced (ready for fresh-chat execution) | 24 |
+| Re-applied (PR-2 recovery) | 1 |
+| Specced (ready for fresh-chat execution) | 23 |
 | Total improvements | 20 |
 
 The "Specced" count is higher than the improvement count because larger
 improvements (#7 LMS/MIS/LTI; #10 accessibility; #12 habit hooks) are
 intentionally split across multiple PR-sized specs.
+
+> **Note (May 2026):** PR #47 (Phase A · PR-2 — Auto-from-class
+> segmented control) was originally merged into the side branch
+> `feat/pr1-class-auto-brief` instead of `main`. PR #46 then fast-
+> forwarded that branch (without #47's commit, which was authored
+> 12 seconds later) into `main`, so PR-2's `AutoFromClassPanel.tsx`,
+> segmented control, and `worksheetGenerationMode` preference never
+> reached `main`. The recovery PR re-applies commit `ecb88a83` byte-
+> identically on top of current `main`. Improvement #2 below now
+> points at the recovery PR.
 
 ---
 
@@ -44,7 +55,7 @@ Every spec ties back to one of these three shifts.
 | # | Improvement                                | Phase | Spec file                                                                          | Status      |
 | - | ------------------------------------------ | ----- | ---------------------------------------------------------------------------------- | ----------- |
 | 1 | "Tomorrow's lesson is already done" — proactive home screen | A · PR-4 | [`phase-a-class-aware/features/FEAT-PR4.json`](../.agents/tasks/phase-a-class-aware/features/FEAT-PR4.json) | **Shipped — PR #48** |
-| 2 | Pupil-aware auto-generation                | A · PR-1 + PR-2 | [`phase-a-class-aware/features/FEAT-PR1.json`](../.agents/tasks/phase-a-class-aware/features/FEAT-PR1.json) + [`FEAT-PR2.json`](../.agents/tasks/phase-a-class-aware/features/FEAT-PR2.json) | **Shipped — PR #46 + #47** |
+| 2 | Pupil-aware auto-generation                | A · PR-1 + PR-2 | [`phase-a-class-aware/features/FEAT-PR1.json`](../.agents/tasks/phase-a-class-aware/features/FEAT-PR1.json) + [`FEAT-PR2.json`](../.agents/tasks/phase-a-class-aware/features/FEAT-PR2.json) | **Shipped — PR #46 + #47 (re-applied)** |
 | 3 | Curriculum coverage map ("Ofsted view")    | C · PC4 | [`phase-c-fit-your-school/features/FEAT-PC4.json`](../.agents/tasks/phase-c-fit-your-school/features/FEAT-PC4.json) | Specced     |
 | 4 | Misconception-driven re-teach loop         | B · PB3 | [`phase-b-close-the-loop/features/FEAT-PB3.json`](../.agents/tasks/phase-b-close-the-loop/features/FEAT-PB3.json) | Specced     |
 | 5 | Spec-point provenance + AO tag             | B · PB1 | [`phase-b-close-the-loop/features/FEAT-PB1.json`](../.agents/tasks/phase-b-close-the-loop/features/FEAT-PB1.json) | Specced     |
