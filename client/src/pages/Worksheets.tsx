@@ -24,12 +24,14 @@ import ProgressionStrip from "@/components/ProgressionStrip";
 import { worksheetBank, type BankWorksheet } from "@/lib/worksheet-bank";
 import { getSyllabusTopics, type SyllabusTopic } from "@/lib/syllabus-data";
 import { getSubtopics } from "@/lib/subtopics-data";
-import { aiGenerateWorksheet, aiEditSection, aiScaffoldExistingWorksheet, aiDifferentiateExistingWorksheet, parseNaturalLanguageInput, aiScenarioSwap, aiAdjustReadingLevel } from "@/lib/ai";
+import { aiGenerateWorksheet, aiEditSection, aiScaffoldExistingWorksheet, aiDifferentiateExistingWorksheet, parseNaturalLanguageInput, aiScenarioSwap, aiAdjustReadingLevel, aiGenerateWorksheetFromClassBrief } from "@/lib/ai";
+import type { ClassAutoBrief } from "@/lib/class-auto-brief";
 import { runFactCheck } from "@/lib/fact-checker";
 import { tagWorksheetForPupil } from "@/lib/evidence-tagger";
 import EvidencePackDialog from "@/components/EvidencePackDialog";
 import { CompanionQRDialog } from "@/components/CompanionQRDialog";
 import { ClassPackDialog } from "@/components/ClassPackDialog";
+import AutoFromClassPanel from "@/components/AutoFromClassPanel";
 import { LessonBundleDialog } from "@/components/LessonBundleDialog";
 import { ScanMarkDialog } from "@/components/ScanMarkDialog";
 import { runHintLadder } from "@/lib/hint-ladder";
@@ -522,8 +524,20 @@ export default function Worksheets() {
   const [location] = useLocation();
   const { saveWorksheet, updateWorksheet, deleteWorksheet, worksheetHistory, children, assignWork, updateChild, colorOverlay, setColorOverlay, refreshData, user } = useApp();
   const isPlatformAdmin = user?.email === "admin@adaptly.co.uk" || user?.email === "admin@sendassistant.app";
-  const { preferences } = useUserPreferences();
+  const { preferences, updatePreference } = useUserPreferences();
   const showLibraryTab = preferences.showWorksheetLibrary === true;
+  // Phase A · PR-2 — Manual / Auto-from-class segmented control inside the
+  // Generate tab. The form is never hidden behind a feature flag; Auto is
+  // an optional fast path on top of it. The teacher's last choice persists
+  // via UserPreferencesContext.worksheetGenerationMode.
+  const [generationMode, setGenerationModeState] = useState<"manual" | "auto-class">(
+    preferences.worksheetGenerationMode === "auto-class" ? "auto-class" : "manual"
+  );
+  const setGenerationMode = useCallback((next: "manual" | "auto-class") => {
+    setGenerationModeState(next);
+    try { updatePreference("worksheetGenerationMode", next); } catch { /* swallow */ }
+  }, [updatePreference]);
+  const [autoSelectedClassId, setAutoSelectedClassId] = useState<string>("");
   // FEAT-6 — Evidence Pack dialog (EHCP/IEP tagger + Annual-Review export).
   const { pupilId: scopedPupilId } = usePupilScope();
   const [evidencePackOpen, setEvidencePackOpen] = useState(false);
@@ -1970,6 +1984,73 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
     clearInterval(statusInterval);
     setGenerationStatus("");
     setLoading(false);
+  };
+
+  // ─── Phase A · PR-2 — Auto-from-class generation ────────────────────────────
+  // Wraps lib/ai's aiGenerateWorksheetFromClassBrief (PR-1) and feeds the
+  // result into the same `generated` state slot the manual flow uses, so
+  // every downstream feature (save / print / assign / scan-mark / class-pack)
+  // works on auto-generated worksheets without any further plumbing.
+  //
+  // Honest scope: this path does NOT run the library lookup or the multi-
+  // provider retry loop that the manual `handleGenerate` does. Auto is a
+  // fast path — if it fails, the user can click "Edit in form" to fall
+  // back to Manual with the brief's values pre-filled. Folding the retry
+  // loop in is a follow-up PR.
+  const handleGenerateFromClassBrief = async (brief: ClassAutoBrief) => {
+    if (!brief || brief.pupilCount < 1) {
+      toast.error("Pick a class with at least one pupil first.");
+      return;
+    }
+    if (!brief.suggestedTopic) {
+      toast.error("No topic on file for this class. Use \"Edit in form\" to enter one manually.");
+      return;
+    }
+
+    setLoading(true);
+    setGenerationStatus("Generating from class brief...");
+    setEditedSections({});
+    setEditMode(false);
+    setRating(0);
+    setSavedWorksheetId(null);
+    setVoiceAnswers({});
+
+    try {
+      const result = await aiGenerateWorksheetFromClassBrief(brief, {
+        // Caller-side overrides: any fields the teacher has already chosen in
+        // the manual form take precedence over the brief defaults so flipping
+        // between Manual ↔ Auto feels coherent.
+        subject: subject || brief.suggestedSubject || "",
+        yearGroup: yearGroup || brief.classLabel,
+        difficulty,
+        examBoard: examBoard !== "none" ? examBoard : undefined,
+        includeAnswers,
+        examStyle,
+        worksheetLength,
+        targetPages: targetPages || undefined,
+        readingAge: readingAge || undefined,
+        selectedSections: selectedSections as string[],
+      });
+
+      const generatedWs = { ...result, isAI: true } as AIWorksheet;
+      setGenerated(generatedWs);
+      setHiddenSections(new Set());
+      setHideHeader(false);
+      setDiffVersions({});
+      toast.success(`Worksheet generated for ${brief.classLabel}!`);
+    } catch (err: any) {
+      const errMsg = err?.message || String(err);
+      console.error("[Auto-from-class] generation failed:", errMsg);
+      if (errMsg.startsWith("AUTH_REQUIRED") || errMsg.includes("Session expired") || errMsg.includes("Authentication required")) {
+        toast.error("Your session has expired. Redirecting to login...", { duration: 4000 });
+        setTimeout(() => { window.location.href = "/login"; }, 2000);
+        return;
+      }
+      toast.error("Auto generation failed. Try again, or click \"Edit in form\" to refine the inputs.");
+    } finally {
+      setGenerationStatus("");
+      setLoading(false);
+    }
   };
 
   // ─── Generate Diagnostic Starter ────────────────────────────────────────────
@@ -3600,6 +3681,47 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
           <TabsContent value="generate" className="mt-4">
             <Card className="border-border/40 shadow-sm">
               <CardContent className="p-6 space-y-5">
+
+                {/* Phase A · PR-2 — Manual / Auto-from-class segmented control.
+                    The form is never hidden behind a flag: Auto is an optional
+                    fast path. The teacher's last choice persists in
+                    UserPreferencesContext.worksheetGenerationMode. */}
+                <Tabs value={generationMode} onValueChange={(v) => setGenerationMode(v === "auto-class" ? "auto-class" : "manual")}>
+                  <TabsList className="grid grid-cols-2 w-full max-w-md mx-auto h-9">
+                    <TabsTrigger value="manual" className="text-xs gap-1" data-testid="ws-mode-manual">
+                      <PenLine className="w-3 h-3" /> Manual
+                    </TabsTrigger>
+                    <TabsTrigger value="auto-class" className="text-xs gap-1" data-testid="ws-mode-auto-class">
+                      <Users className="w-3 h-3" /> Auto from class
+                    </TabsTrigger>
+                  </TabsList>
+                </Tabs>
+
+                {generationMode === "auto-class" && (
+                  <AutoFromClassPanel
+                    pupils={children}
+                    subject={subject}
+                    selectedClassId={autoSelectedClassId}
+                    onClassChange={setAutoSelectedClassId}
+                    busy={loading}
+                    onGenerate={(brief) => { void handleGenerateFromClassBrief(brief); }}
+                    onEditInForm={(prefill) => {
+                      // Pre-fill manual form fields, then flip back to Manual.
+                      if (prefill.subject) setSubject(prefill.subject);
+                      if (prefill.yearGroup) setYearGroup(prefill.yearGroup);
+                      if (prefill.topic) setTopic(prefill.topic);
+                      if (prefill.sendNeed) setSendNeed(prefill.sendNeed);
+                      if (prefill.readingAge) setReadingAge(prefill.readingAge);
+                      setGenerationMode("manual");
+                    }}
+                  />
+                )}
+
+                {/* Manual form — wrapped in a <div hidden> so all useState
+                    values stay alive when the teacher flips into Auto. This
+                    is what makes "Edit in form" feel instant. */}
+                <div className={generationMode === "auto-class" ? "hidden" : "space-y-5"} data-testid="ws-manual-form">
+
                 {/* Page heading */}
                 <div>
                   <h2 className="text-lg font-semibold text-foreground flex items-center gap-2"><Sparkles className="h-5 w-5 text-brand" /> Worksheet Generator</h2>
@@ -4179,6 +4301,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                     ? <><RefreshCw className="w-3.5 h-3.5 animate-spin" />Generating Diagnostic...</>
                     : <><ClipboardCheck className="w-3.5 h-3.5" />Generate Diagnostic Starter</>}
                 </Button>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
