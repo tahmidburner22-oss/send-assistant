@@ -744,3 +744,44 @@ export function autoGenerateCircuitDiagram(topic: string, boxWidth = 400, boxHei
 
   return { spec, svg: renderDiagramToSVG(spec) };
 }
+
+
+// ─── PR-M4 — AI-generated SVG audit (Layer 2) ─────────────────────────────────
+// The five existing diagram checks above run on diagrams BUILT from the
+// fixed symbol library. They never see the freeform SVG that comes back
+// from the diagram-generation LLM endpoint.
+//
+// PR-M4 adds an advisory audit that does see those AI-generated SVGs.
+// The audit runs without blocking — if it finds overlaps or out-of-bounds
+// elements, the caller decides whether to retry, fall back, or render
+// anyway with a warning. That decision lives in the caller because the
+// right answer differs by surface (worksheet preview vs. lesson PDF vs.
+// admin-library uploader). PR-M4 just makes the report available.
+//
+// Implementation lives in svgLayoutChecker.ts so it's testable in
+// isolation; this file just re-exports the entry point under a name that
+// fits the existing diagram-engine vocabulary.
+
+import {
+  checkSvgLayout,
+  type SvgLayoutCheckOptions,
+  type SvgLayoutReport,
+} from "../svgLayoutChecker";
+
+/**
+ * Audit a freeform AI-generated SVG for the embarrassing failure modes
+ * (out-of-bounds elements, text-on-line crashes, font-too-small,
+ * missing text-anchor). Advisory — never throws, never blocks.
+ *
+ * Returns an `SvgLayoutReport`. Inspect `report.pass` first, then walk
+ * `report.issues` for actionable diagnostics.
+ */
+export function auditAiSvg(
+  svg: string,
+  options: SvgLayoutCheckOptions = {},
+): SvgLayoutReport {
+  return checkSvgLayout(svg, options);
+}
+
+// Re-exports for callers who want the typed building blocks directly.
+export type { SvgLayoutCheckOptions, SvgLayoutReport } from "../svgLayoutChecker";
