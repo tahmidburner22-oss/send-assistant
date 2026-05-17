@@ -16,7 +16,8 @@
  *   §TYPES-WS  L629   AIWorksheetSection, AIWorksheetResult
  *   §SPEC      L746   getSpecQuestions (private prompt helper)
  *   §GENERATE  L817   aiGenerateWorksheet                        ← MAIN ENTRY POINT
- *   §STORY     L3446  aiGenerateStory
+ *   §CLASS-BRIEF L3446 aiGenerateWorksheetFromClassBrief (Phase A · PR-1)
+ *   §STORY     L3510  aiGenerateStory
  *   §DIFF-TASK L3535  aiDifferentiateTask
  *   §EDIT      L3560  aiEditSection
  *   §REPORT    L3588  aiGenerateParentReport
@@ -3441,6 +3442,66 @@ Return EXACTLY this JSON (raw JSON only):
     ...(effectivePriorTopics.length > 0 ? { priorTopics: effectivePriorTopics } : {}),
   };
   return pillarATaggedLegacy as unknown as AIWorksheetResult;
+}
+
+// ═══ §CLASS-BRIEF · aiGenerateWorksheetFromClassBrief (Phase A · PR-1) ═════
+/**
+ * Thin wrapper around `aiGenerateWorksheet` that takes a `ClassAutoBrief`
+ * (built synchronously in `lib/class-auto-brief.ts`) and turns it into the
+ * arguments the underlying generator already understands.
+ *
+ * Key design choices, kept deliberately conservative:
+ *
+ * 1. We do NOT introduce a new prompt path. The brief is rendered into a
+ *    short instruction block via `renderClassBriefForPrompt` and prepended
+ *    to whatever `additionalInstructions` the caller passes. The model
+ *    treats it the same way it already treats teacher-typed instructions,
+ *    so no new prompt engineering is needed.
+ *
+ * 2. Override precedence is "explicit caller wins": brief-derived defaults
+ *    are applied first, then `overrides` is spread on top. This lets PR-2's
+ *    "Edit in form" flow override topic/yearGroup/sendNeed while still
+ *    benefiting from the brief's class-context block.
+ *
+ * 3. The function delegates to `aiGenerateWorksheet` exactly once. No
+ *    retry, no fallback. The Worksheets page already wraps it in its own
+ *    multi-provider retry; we don't want to duplicate that here.
+ */
+export async function aiGenerateWorksheetFromClassBrief(
+  brief: import("./class-auto-brief").ClassAutoBrief,
+  overrides: Partial<Parameters<typeof aiGenerateWorksheet>[0]> = {},
+): Promise<AIWorksheetResult> {
+  // Lazy-import to avoid a static dependency cycle (class-auto-brief is
+  // pure data and shouldn't pull ai.ts on import).
+  const { renderClassBriefForPrompt } = await import("./class-auto-brief");
+
+  const briefBlock = renderClassBriefForPrompt(brief);
+  const callerInstructions = (overrides.additionalInstructions || "").trim();
+  const additionalInstructions = callerInstructions
+    ? `${briefBlock}\n\n${callerInstructions}`
+    : briefBlock;
+
+  // Derive sensible defaults from the brief, then let overrides win.
+  const briefDerived: Parameters<typeof aiGenerateWorksheet>[0] = {
+    subject: overrides.subject || brief.suggestedSubject || "",
+    topic: overrides.topic || brief.suggestedTopic || "",
+    yearGroup: overrides.yearGroup || brief.classLabel || "",
+    // Only auto-pick a sendNeed when the entire class shares the same one;
+    // otherwise the per-pupil differentiation belongs to PR-3 (Class Pack).
+    sendNeed: brief.sendNeeds.length === 1 ? brief.sendNeeds[0] : undefined,
+    // Reading age — use the upper end of the range as the target so the
+    // worksheet doesn't underchallenge the strongest readers; SEND
+    // adaptations are layered on top per-pupil by Class Pack later.
+    readingAge: brief.readingAgeRange.max > 0 ? brief.readingAgeRange.max : undefined,
+  };
+
+  const merged: Parameters<typeof aiGenerateWorksheet>[0] = {
+    ...briefDerived,
+    ...overrides,
+    additionalInstructions,
+  };
+
+  return aiGenerateWorksheet(merged);
 }
 
 // ═══ §STORY · aiGenerateStory ═════════════════════════════════════════════
