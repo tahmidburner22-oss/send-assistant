@@ -6426,10 +6426,27 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                       dangerouslySetInnerHTML={{ __html: renderMath(content) }} />
                   </div>
                 ) : section.type === "common-mistakes" ? (
-                  <div style={{ background: "#fff1f2", border: "1.5px solid #fecdd3", borderRadius: "6px", padding: "14px 16px" }}>
-                    <div style={{ fontSize: "11px", fontWeight: 700, color: "#9f1239", letterSpacing: "0.05em", marginBottom: "8px", fontFamily: fmt.fontFamily, textTransform: "uppercase" }}>⚠️ Watch Out! Common Mistakes</div>
-                    <div style={{ fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, lineHeight: String(fmt.lineHeight), color: "#1e293b" }}
-                      dangerouslySetInnerHTML={{ __html: renderMath(content) }} />
+                  <div style={{ background: "#fff1f2", border: "1.5px solid #fecdd3", borderRadius: "6px", padding: "18px 20px" }}>
+                    <div style={{ fontSize: "12px", fontWeight: 800, color: "#9f1239", letterSpacing: "0.06em", marginBottom: "12px", fontFamily: fmt.fontFamily, textTransform: "uppercase", borderBottom: "1px solid #fecdd3", paddingBottom: "8px" }}>⚠️ Common Mistakes to Avoid</div>
+                    <div style={{ fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, lineHeight: "1.6", color: "#1e293b" }}>
+                      {content.split('\n').filter(line => line.trim()).map((line, idx) => {
+                        const isMistakeLabel = /Mistake \d+:/i.test(line);
+                        const isCorrection = /How to do it right:/i.test(line) || /Correct way:/i.test(line);
+                        const isExplanation = /Why that's wrong/i.test(line);
+                        
+                        return (
+                          <div key={idx} style={{ marginBottom: "12px" }}>
+                            <div dangerouslySetInnerHTML={{ 
+                              __html: renderMath(line)
+                                .replace(/(Mistake \d+:)/gi, '<strong>$1</strong>')
+                                .replace(/(Why that's wrong \(in plain words\):|Why that's wrong:)/gi, '<br/><strong>$1</strong>')
+                                .replace(/(How to do it right:|Correct way:)/gi, '<br/><strong>$1</strong>')
+                                .replace(/(Quick check:)/gi, '<br/><strong>$1</strong>')
+                            }} />
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 ) : section.type === "header" ? (
                   <div style={{ background: "#1B2A4A", padding: "16px 20px", marginBottom: "20px", color: "white", borderRadius: "2px" }}>
