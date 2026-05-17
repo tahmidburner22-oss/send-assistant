@@ -5,6 +5,12 @@ import { cn } from "@/lib/utils";
 import { Loader2, Send, User, Sparkles } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { Streamdown } from "streamdown";
+import { renderMath } from "@/components/WorksheetRenderer";
+
+/** True when the text contains LaTeX math delimiters that Streamdown will not render. */
+function hasMathDelimiters(text: string): boolean {
+  return /\\\(|\\\[|\$[^$\n]+\$/.test(text);
+}
 
 /**
  * Message type matching server-side LLM Message interface
@@ -262,7 +268,21 @@ export function AIChatBox({
                     >
                       {message.role === "assistant" ? (
                         <div className="prose prose-sm dark:prose-invert max-w-none">
-                          <Streamdown>{message.content}</Streamdown>
+                          {hasMathDelimiters(message.content) ? (
+                            // Math-aware renderer: KaTeX handles \(...\), \[...\], $...$.
+                            // Streamdown does not, so for STEM chats we route content
+                            // through renderMath. Markdown features (lists, bold, code)
+                            // are not Streamdown-rich here, but math correctness wins.
+                            <span
+                              className="whitespace-pre-wrap"
+                              dangerouslySetInnerHTML={{
+                                __html: renderMath(message.content)
+                                  .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>"),
+                              }}
+                            />
+                          ) : (
+                            <Streamdown>{message.content}</Streamdown>
+                          )}
                         </div>
                       ) : (
                         <p className="whitespace-pre-wrap text-sm">
