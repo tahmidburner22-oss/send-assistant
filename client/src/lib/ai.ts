@@ -78,7 +78,7 @@ import { applyMathsProgressionAudit } from './mathsProgressionAudit';
 // PR-M3 — Common Mistakes child-friendly format audit. Confirms each maths
 // mistake block has the four labelled parts AND ≥2 numeric tokens in the
 // wrong-working line. No-op for non-maths.
-import { applyCommonMistakesAudit } from './commonMistakesValidator';
+import { applyCommonMistakesAudit, applyCommonMistakesActiveRegenerate, type CommonMistakesRegenerator } from './commonMistakesValidator';
 
 // FEAT-PC9 — Required Practical / Working-Scientifically bank. Curated UK
 // GCSE practicals with spec codes, real variables, sample data and
@@ -2835,9 +2835,36 @@ Return EXACTLY this JSON (raw JSON only, no markdown fences):
         progressionTaggedStructured,
         { subject: params.subject },
       );
+      // PR-M3-followup — active regenerate. The audit above is advisory;
+      // this step takes its report and rewrites each failing block via
+      // aiEditSection with the diagnostic detail in the prompt. Blocks
+      // that still fail after one retry keep the original + warning, so
+      // the teacher banner stays accurate. No-op for non-maths and for
+      // sheets where every block already passes.
+      const commonMistakesRegenerator: CommonMistakesRegenerator = async ({
+        originalBlock,
+        diagnostic,
+        subject: blockSubject,
+        yearGroup: blockYearGroup,
+      }) => {
+        const result = await aiEditSection({
+          sectionTitle: 'Common Mistakes to Avoid',
+          currentContent: originalBlock,
+          instruction: diagnostic,
+          subject: blockSubject,
+          yearGroup: blockYearGroup,
+        });
+        return result.newContent;
+      };
+      const commonMistakesRegeneratedStructured =
+        await applyCommonMistakesActiveRegenerate(
+          commonMistakesTaggedStructured,
+          commonMistakesRegenerator,
+          { subject: params.subject, yearGroup: params.yearGroup },
+        );
       // FEAT-PC9 — non-blocking Required-Practical tagging (KS4 science only).
       const practicalTaggedStructured = applyRequiredPracticalTagging(
-        commonMistakesTaggedStructured,
+        commonMistakesRegeneratedStructured,
         {
           subject: params.subject,
           topic: params.topic,
@@ -3574,8 +3601,29 @@ Return EXACTLY this JSON (raw JSON only):
   const commonMistakesTaggedLegacy = applyCommonMistakesAudit(progressionTaggedLegacy, {
     subject: params.subject,
   });
+  // PR-M3-followup — active regenerate (legacy path mirror).
+  const commonMistakesRegeneratorLegacy: CommonMistakesRegenerator = async ({
+    originalBlock,
+    diagnostic,
+    subject: blockSubject,
+    yearGroup: blockYearGroup,
+  }) => {
+    const result = await aiEditSection({
+      sectionTitle: 'Common Mistakes to Avoid',
+      currentContent: originalBlock,
+      instruction: diagnostic,
+      subject: blockSubject,
+      yearGroup: blockYearGroup,
+    });
+    return result.newContent;
+  };
+  const commonMistakesRegeneratedLegacy = await applyCommonMistakesActiveRegenerate(
+    commonMistakesTaggedLegacy,
+    commonMistakesRegeneratorLegacy,
+    { subject: params.subject, yearGroup: params.yearGroup },
+  );
   // FEAT-PC9 — non-blocking Required-Practical tagging (KS4 science only).
-  const practicalTaggedLegacy = applyRequiredPracticalTagging(commonMistakesTaggedLegacy, {
+  const practicalTaggedLegacy = applyRequiredPracticalTagging(commonMistakesRegeneratedLegacy, {
     subject: params.subject,
     topic: params.topic,
     yearGroup: params.yearGroup,

@@ -105,6 +105,12 @@ const PupilCompanion = lazy(() => import("./pages/PupilCompanion"));
 // opt-in panel rather than 404, so the route can stay registered safely.
 const CurriculumCoverage = lazy(() => import("./pages/CurriculumCoverage"));
 
+// PR-M4-followup — maths-only AI SVG probe. Direct-URL access only at
+// /diagram-probe; deliberately not added to the sidebar. Used to decide
+// whether to re-enable AI SVG in the production maths pipeline. The
+// server endpoint enforces maths-only.
+const DiagramProbe = lazy(() => import("./pages/DiagramProbe"));
+
 function PageLoader() {
   // Skeleton shell — feels closer to the real layout than a centred spinner,
   // and removes the layout shift jolt when lazy chunks finish loading.
@@ -225,6 +231,7 @@ function ProtectedRoutes() {
             <Route path="/history" component={History} />
             <Route path="/analytics" component={Analytics} />
             <Route path="/coverage" component={CurriculumCoverage} />
+            <Route path="/diagram-probe" component={DiagramProbe} />
             <Route path="/ideas" component={Ideas} />
             <Route path="/past-papers" component={PastPapers} />
             <Route path="/revision-hub" component={RevisionHub} />
