@@ -101,7 +101,7 @@ export interface ExecuteUnitOptions {
   minGapMs?: number;
 }
 
-export type UnitBundleFormat = "zip"; // 'cc' / 'lms-push' arrive in sibling PRs.
+export type UnitBundleFormat = "zip" | "cc"; // 'lms-push' arrives in PC1.
 
 // ─── planUnit ──────────────────────────────────────────────────────────────
 
@@ -337,11 +337,14 @@ export async function bundleUnit(
   results: UnitLessonResult[],
   format: UnitBundleFormat = "zip",
 ): Promise<Blob> {
+  if (format === "cc") {
+    const { exportUnitToCommonCartridge } = await import("./exporters/commonCartridge");
+    return exportUnitToCommonCartridge(plan, results);
+  }
   if (format !== "zip") {
     throw new Error(
-      `bundleUnit: '${format}' format is not supported in this build. Common ` +
-        `Cartridge ('cc') and 'lms-push' arrive in sibling PRs (PC5-pack-2 and ` +
-        `PC1).`,
+      `bundleUnit: '${format}' format is not supported in this build. ` +
+        `'lms-push' arrives in a sibling PR (PC1).`,
     );
   }
   // Lazy-load PdfBuilder so test environments that mock pdf-generator don't
