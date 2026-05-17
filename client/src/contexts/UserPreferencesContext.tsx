@@ -60,6 +60,10 @@ export interface UserPreferences {
   schoolName?: string;
   // Feature toggles
   show11Plus?: boolean;
+  // Phase A · PR-2 — last-used worksheet generator mode (manual form vs.
+  // auto-from-class). Persists per-user so a teacher who prefers Auto
+  // doesn't have to re-toggle on every visit.
+  worksheetGenerationMode?: "manual" | "auto-class";
 }
 
 // ─── Preset themes ────────────────────────────────────────────────────────────
