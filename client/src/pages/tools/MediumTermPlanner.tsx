@@ -1,6 +1,7 @@
 import { useUserPreferences } from "@/contexts/UserPreferencesContext";
 import { formatToolOutput } from "@/lib/format-tool-output";
 import AIToolPage from "@/components/AIToolPage";
+import MediumTermPlannerV2Panel from "@/components/MediumTermPlannerV2Panel";
 import { CalendarDays } from "lucide-react";
 
 const subjects = ["English","Maths","Science","History","Geography","RE","PSHE","Art","Music","PE","Computing","MFL","Design Technology","Drama"].map(s => ({ value: s, label: s }));
@@ -88,6 +89,9 @@ Be specific about activities — name actual tasks, not just "discuss the topic"
       }}
       outputTitle={(v) => `Medium Term Plan — ${v.subject} (${v.yearGroup})`}
       formatOutput={(text) => formatToolOutput(text, { logoUrl: preferences.schoolLogoUrl, schoolName: preferences.schoolName, accentColor: "#15803d", emoji: "📅", title: "Medium Term Planner" })}
+      renderPostActions={(result, values) => (
+        <MediumTermPlannerV2Panel result={result} values={values} />
+      )}
     />
   );
 }
