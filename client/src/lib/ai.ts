@@ -2353,6 +2353,17 @@ ${synopticBlock}
 ${examPaperTemplateBlock}
 QUALITY STANDARD: Every question must be fully usable — no placeholders, no ellipses, no unfinished sentences. Use real numbers, real contexts. Textbook quality. Every question must be at the correct curriculum level for ${params.yearGroup || 'the year group'} — GCSE/KS3/KS4 standard as appropriate.
 ${specExamples ? `\n${specExamples}\n` : ''}
+PB1 — PER-QUESTION PROVENANCE (mandatory for Year 9, 10, 11 sheets — optional for KS3/KS2):
+Stamp every question section (any section whose type starts with "q-", "challenge", "extended-answer", "lor", or "exam-question") with these structured fields ALONGSIDE the existing content/marks fields:
+- "ao": one of "AO1", "AO2", "AO3", "AO4". Knowledge / recall = AO1. Application / explain / calculate = AO2. Analyse / evaluate / extended reasoning = AO3. Practical or skill questions (where the spec defines AO4) = AO4.
+- "specRef": a short curriculum reference, e.g. "KS4 Physics — Forces" or "AQA GCSE Maths 4.1.1.2 — Algebraic notation". Pull the closest match from "${params.subject || 'the subject'} ${params.yearGroup || ''} — ${params.topic || ''}".
+- "bloomLevel": one of "remember", "understand", "apply", "analyse", "evaluate", "create". Match the cognitive demand of the question.
+- "expectedReadingAge": integer 5–18 representing the UK reading age the question text is pitched at. Match it to ${params.yearGroup || 'the year group'} (Year 9 ≈ 13, Year 10 ≈ 14, Year 11 ≈ 15) unless the SEND overlay lowers it.
+- "sourceCitation": optional. Past-paper reference (e.g. "AQA Nov 2022 P2 Q5") if you adapted from one. Leave blank if not applicable — never invent a citation.
+AO grade-band targets across the whole sheet (post-validator will warn if you drift):
+- Year 7–9: AO1 ~ 50–60% · AO2 ~ 30% · AO3 ~ 10–20%.
+- Year 10–11: AO1 ~ 30% · AO2 ~ 30–40% · AO3 ~ 20–30% · AO4 (if applicable) ~ 10–20%.
+A deterministic post-validator will fill any of these fields you omit (best-match against the syllabus + reading-age estimator), so prefer to set them yourself for accuracy. NEVER fabricate a sourceCitation — leave it out instead.
 CRITICAL SEND SEPARATION RULE — READ CAREFULLY:
 SEND adaptations affect FORMATTING AND PRESENTATION ONLY. They must NEVER lower the academic challenge or change what is being assessed.
 - challenge level = ability tier (Foundation/Standard/Higher/Scaffolded)
