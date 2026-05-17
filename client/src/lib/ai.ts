@@ -71,7 +71,10 @@ import { applySendFidelityAudit } from './sendFidelityAudit';
 // Runs after generation on maths worksheets only; classifies each question
 // by command-word + structural fingerprints, stamps metadata.mathsStrandBalance,
 // and surfaces warnings when the spec-mandated balance is not met.
+// PR-M2 — non-blocking maths progression audit (Section A/B/C mark
+// progression + Section C calculation-only command words).
 import { applyMathsStrandTagging } from './mathsStrandTagger';
+import { applyMathsProgressionAudit } from './mathsProgressionAudit';
 
 // FEAT-PC9 — Required Practical / Working-Scientifically bank. Curated UK
 // GCSE practicals with spec codes, real variables, sample data and
@@ -2485,14 +2488,12 @@ CRITICAL STRUCTURE RULE: ALL questions come ONLY from Section A (True/False, MCQ
       structuredSections.push(`{"title": "Section A — Multiple Choice", "type": "q-mcq", "marks": 1, "content": "[A specific question about ${params.topic} at ${params.yearGroup} curriculum level — use real subject-specific language] [1 mark]\nA  [plausible incorrect option — a common misconception]\nB  [correct answer \u2014 mark with \u2713 at the end of this line] \u2713\nC  [plausible incorrect option]\nD  [plausible incorrect option]"}`);
     }
 
-    if (wantWordBankGapFill) {
-      if (isMaths) {
-        // MATHS: Replace vocabulary-based gap fill with a calculation-based number fill.
-        // Students fill in missing numbers/values in worked calculations, not vocabulary words.
-        structuredSections.push(`{"title": "Section A \u2014 Fill in the Missing Values", "type": "q-gap-fill", "marks": 7, "content": "Fill in the missing values to complete each calculation. [7 marks]\n[Write EXACTLY 7 incomplete calculations about ${params.topic}. Each calculation MUST have exactly ONE missing value shown as _____. The missing value must be a number, expression, or unit. Do NOT use vocabulary blanks. Use \\\\(...\\\\) LaTeX for all expressions. Example format:\n\\\\(3 + _____ = 7\\\\)\n\\\\(\\\\dfrac{1}{2} \\\\times 10 = _____\\\\)\n[continue for 5 more calculations, each with one _____ blank]]\nANSWER BOX: [the 7 correct answers in shuffled order, plus 3 plausible distractors \u2014 total EXACTLY 10 values] [val1] | [val2] | [val3] | [val4] | [val5] | [val6] | [val7] | [val8] | [val9] | [val10]\nRULE: EXACTLY 7 calculations, EXACTLY 7 blanks (one per calculation), EXACTLY 10 values in answer box. All values must be numerical or algebraic \u2014 no vocabulary words."}`);
-      } else {
-        structuredSections.push(`{"title": "Section A \u2014 Word Bank Gap Fill", "type": "q-gap-fill", "marks": 7, "content": "Complete the paragraph using words from the word bank below. [7 marks]\n[Write EXACTLY 7 sentences about ${params.topic}. Each sentence MUST contain exactly ONE blank shown as _____. The blank must replace a key subject term. Do NOT number the blanks. Do NOT put two blanks in one sentence. Result: 7 sentences = 7 blanks. Example format:\nThe _____ is the organelle where photosynthesis occurs.\nPlants absorb _____ from the air through their stomata.\n[continue for 5 more sentences, each with one _____ blank]]\nWORD BANK: [the 7 correct answers in shuffled order, plus 3 plausible distractors \u2014 total EXACTLY 10 words] [word1] | [word2] | [word3] | [word4] | [word5] | [word6] | [word7] | [word8] | [word9] | [word10]\nRULE: EXACTLY 7 sentences, EXACTLY 7 blanks (one per sentence), EXACTLY 10 words in word bank."}`);
-      }
+    // PR-M2: Gap-fill is hard-removed for maths — same pattern as True/False
+    //        in PR-M1. The maths spine is now fixed at three numbered-question
+    //        sections (A → B → C); a gap-fill warm-up no longer fits.
+    //        Non-maths subjects: behaviour unchanged.
+    if (wantWordBankGapFill && !isMaths) {
+      structuredSections.push(`{"title": "Section A \u2014 Word Bank Gap Fill", "type": "q-gap-fill", "marks": 7, "content": "Complete the paragraph using words from the word bank below. [7 marks]\n[Write EXACTLY 7 sentences about ${params.topic}. Each sentence MUST contain exactly ONE blank shown as _____. The blank must replace a key subject term. Do NOT number the blanks. Do NOT put two blanks in one sentence. Result: 7 sentences = 7 blanks. Example format:\nThe _____ is the organelle where photosynthesis occurs.\nPlants absorb _____ from the air through their stomata.\n[continue for 5 more sentences, each with one _____ blank]]\nWORD BANK: [the 7 correct answers in shuffled order, plus 3 plausible distractors \u2014 total EXACTLY 10 words] [word1] | [word2] | [word3] | [word4] | [word5] | [word6] | [word7] | [word8] | [word9] | [word10]\nRULE: EXACTLY 7 sentences, EXACTLY 7 blanks (one per sentence), EXACTLY 10 words in word bank."}`);
     }
 
 
@@ -2511,12 +2512,22 @@ CRITICAL STRUCTURE RULE: ALL questions come ONLY from Section A (True/False, MCQ
       structuredSections.push(JSON.stringify(diagASection));
     }
 
-    // 8. Section B Questions — Foundation / Guided Practice (subject-specific)
+    // 8. Section B Questions — non-maths: Foundation / Guided Practice.
+    //    Maths: PR-M2 reshape — this slot becomes the new SECTION A
+    //    (warm-up fluency: 7 single-step calculations, 1–2 marks each).
     if (wantSectionA) {
-      const sectionBContent = isMaths
-        ? `Answer all questions. Show all working. [8 marks]\n\n1. [${params.topic} basic calculation — single step, real numbers] [1 mark]\n\n2. [${params.topic} two-step calculation — show method and answer] [2 marks]\n\n3. [${params.topic} multi-step calculation — show full working] [3 marks]\n\n4. [${params.topic} calculation applying the key rule or formula to a new set of numbers] [2 marks]`
-        : `Answer all questions. [8 marks]\n\n1. [${params.topic} recall or identification question] [1 mark]\n\n2. [${params.topic} short-answer question using a subject-specific skill] [2 marks]\n\n3. [${params.topic} application or process question — show working where needed] [3 marks]\n\n4. [${params.topic} describe or explain question using subject terminology] [2 marks]`;
-      structuredSections.push(`{"title": "Section B — Foundation Questions", "type": "q-short-answer", "marks": 8, "content": "${sectionBContent.replace(/"/g, '\\"')}"}`);
+      if (isMaths) {
+        // ── PR-M2 — Section A (Warm-Up Fluency) ───────────────────────────
+        // 7 single-step calculation questions. Mark spread: 1,1,1,2,1,2,2 →
+        // total 10 marks, avg 1.43 marks/Q. Numbers are deliberately "clean"
+        // (whole numbers, simple fractions, no negatives unless the topic IS
+        // negatives) to build confidence. Always strictly easier than B.
+        const sectionAMaths = `Answer all questions. Show all working. [10 marks]\n\n1. [${params.topic} single-step calculation \u2014 clean whole-number values, hit the technique once] [1 mark]\n\n2. [${params.topic} single-step calculation \u2014 different clean values applying the same rule] [1 mark]\n\n3. [${params.topic} single-step calculation \u2014 simple fraction or decimal where appropriate] [1 mark]\n\n4. [${params.topic} single-step calculation \u2014 slightly larger numbers, still one operation] [2 marks]\n\n5. [${params.topic} single-step calculation \u2014 vary the form (e.g. word phrasing of the same operation)] [1 mark]\n\n6. [${params.topic} single-step calculation \u2014 apply the formula or rule directly to new values] [2 marks]\n\n7. [${params.topic} single-step calculation \u2014 final fluency check, still one operation only] [2 marks]`;
+        structuredSections.push(`{"title": "Section A \u2014 Warm-Up Fluency", "type": "q-short-answer", "marks": 10, "content": "${sectionAMaths.replace(/"/g, '\\"')}"}`);
+      } else {
+        const sectionBContent = `Answer all questions. [8 marks]\n\n1. [${params.topic} recall or identification question] [1 mark]\n\n2. [${params.topic} short-answer question using a subject-specific skill] [2 marks]\n\n3. [${params.topic} application or process question \u2014 show working where needed] [3 marks]\n\n4. [${params.topic} describe or explain question using subject terminology] [2 marks]`;
+        structuredSections.push(`{"title": "Section B \u2014 Foundation Questions", "type": "q-short-answer", "marks": 8, "content": "${sectionBContent.replace(/"/g, '\\"')}"}`);
+      }
     }
         // 9. Diagram B — full-page spread (between Section B and Section C Questions)
     // Only include Diagram B if it has a unique image URL from the admin library (no SVG fallbacks)
@@ -2532,19 +2543,49 @@ CRITICAL STRUCTURE RULE: ALL questions come ONLY from Section A (True/False, MCQ
       structuredSections.push(JSON.stringify(diagBSection));
     }
 
-    // 10. Section C Questions — Core Practice (subject-specific)
+    // 10. Section C Questions — non-maths: Core Practice.
+    //     Maths: PR-M2 reshape — this slot becomes the new SECTION B
+    //     (procedural, harder: 7 multi-step calculations, 2–3 marks each).
     if (wantSectionC) {
-      const sectionCContent = isMaths
-        ? `Answer all questions. Show all working. [20 marks]\n\n1. [${params.topic} quick calculation — single step] [1 mark]\n\n2. [${params.topic} two-step calculation with real numbers] [2 marks]\n\n3. [${params.topic} multi-step calculation — apply the method to a new problem] [3 marks]\n\n4. [${params.topic} calculation requiring selection of the correct approach — show full working] [4 marks]\n\n5. [${params.topic} multi-part calculation problem — parts (a), (b), (c) each building on the previous] [6 marks]\n\n6. [${params.topic} challenging calculation linking to a related topic — show all steps] [4 marks]`
-        : `Answer all questions. [20 marks]\n\n1. [${params.topic} knowledge recall question] [1 mark]\n\n2. [${params.topic} comprehension or identification question] [2 marks]\n\n3. [${params.topic} application question — apply knowledge to a scenario] [3 marks]\n\n4. [${params.topic} analysis question — explain or describe with subject-specific detail] [4 marks]\n\n5. [${params.topic} evaluation or extended-response question — assess, discuss, or justify with evidence] [6 marks]\n   Your answer should include:\n   • [Point 1 with evidence]\n   • [Point 2 with evidence]\n   • [Point 3 with evidence]\n\n6. [${params.topic} synoptic or extended question linking to a wider concept] [4 marks]`;
-      structuredSections.push(`{"title": "Section C \u2014 Core Practice", "type": "q-extended", "marks": 20, "content": "${sectionCContent.replace(/"/g, '\\"')}"}`);
+      if (isMaths) {
+        // ── PR-M2 — Section B (Procedural, Harder) ────────────────────────
+        // 7 multi-step calculation questions. Mark spread: 2,2,3,2,3,2,3 →
+        // total 17 marks, avg 2.43 marks/Q. Each question MUST require at
+        // least one more step than its Section A equivalent (decimals, mixed
+        // fractions, sign changes, harder order-of-operations).
+        const sectionBMaths = `Answer all questions. Show all working. [17 marks]\n\n1. [${params.topic} two-step calculation \u2014 mixed numbers or decimals, show method then answer] [2 marks]\n\n2. [${params.topic} two-step calculation \u2014 introduces a sign change or order-of-operations decision] [2 marks]\n\n3. [${params.topic} three-step calculation \u2014 combine the rule with a related skill, full working required] [3 marks]\n\n4. [${params.topic} two-step calculation \u2014 trickier numbers (negatives, fractions, surds where appropriate)] [2 marks]\n\n5. [${params.topic} three-step calculation \u2014 rearrange before substituting, then evaluate] [3 marks]\n\n6. [${params.topic} two-step calculation \u2014 unit conversion or place-value shift built in] [2 marks]\n\n7. [${params.topic} three-step calculation \u2014 final stretch, must select correct method] [3 marks]`;
+        structuredSections.push(`{"title": "Section B \u2014 Procedural Practice", "type": "q-short-answer", "marks": 17, "content": "${sectionBMaths.replace(/"/g, '\\"')}"}`);
+      } else {
+        const sectionCContent = `Answer all questions. [20 marks]\n\n1. [${params.topic} knowledge recall question] [1 mark]\n\n2. [${params.topic} comprehension or identification question] [2 marks]\n\n3. [${params.topic} application question \u2014 apply knowledge to a scenario] [3 marks]\n\n4. [${params.topic} analysis question \u2014 explain or describe with subject-specific detail] [4 marks]\n\n5. [${params.topic} evaluation or extended-response question \u2014 assess, discuss, or justify with evidence] [6 marks]\n   Your answer should include:\n   \u2022 [Point 1 with evidence]\n   \u2022 [Point 2 with evidence]\n   \u2022 [Point 3 with evidence]\n\n6. [${params.topic} synoptic or extended question linking to a wider concept] [4 marks]`;
+        structuredSections.push(`{"title": "Section C \u2014 Core Practice", "type": "q-extended", "marks": 20, "content": "${sectionCContent.replace(/"/g, '\\"')}"}`);
+      }
     }
-        // 11. Challenge Question (subject-specific)
+        // 11. Challenge Question — non-maths: synoptic challenge.
+        //     Maths: PR-M2 reshape — this slot becomes the new SECTION C
+        //     (problem-solving). Y7-8 → exam-style word problems with
+        //     calculation answers. Y9-11 → exam-style past-paper-shaped
+        //     questions matching tier + paper + AO mix. Both are
+        //     CALCULATION-ONLY: no "describe / explain" command words.
     if (wantSectionC) {
-      const challengeContent = isMaths
-        ? `Challenge yourself! Show all working. [8 marks]\n\n1. [${params.topic} multi-step problem requiring selection of method — real-world numerical context] [4 marks]\n\n2. [${params.topic} harder calculation linking to a related maths topic — show full working and check your answer] [4 marks]`
-        : `Challenge yourself! [8 marks]\n\n1. [Higher-order ${params.topic} question requiring analysis, evaluation or synthesis — use subject-specific command words] [4 marks]\n\n2. [Synoptic or cross-topic question linking ${params.topic} to a wider concept or real-world application] [4 marks]`;
-      structuredSections.push(`{"title": "Challenge Question", "type": "challenge", "marks": 8, "content": "${challengeContent.replace(/"/g, '\\"')}"}`);
+      if (isMaths) {
+        // ── Year-group routing ────────────────────────────────────────────
+        const yearMatch = /year\s*(\d+)/i.exec(params.yearGroup || "");
+        const yearNum = yearMatch ? Number(yearMatch[1]) : 9;
+        const isLowerSecondary = yearNum >= 7 && yearNum <= 8;
+        // ── PR-M2 — Section C (Problem-Solving / Exam-Style) ──────────────
+        // 5 questions, marks: 3,4,4,4,5 → total 20 marks, avg 4.0 marks/Q.
+        // Strict avg progression A(1.43) < B(2.43) < C(4.0) ✔
+        // Every question MUST start with an allowed calculation verb
+        // (Calculate / Work out / Find / Solve / Show that / Determine /
+        // Hence find / How much / How many / How long).
+        const sectionCMaths = isLowerSecondary
+          ? `Answer all questions. Show all working. Every answer is a number. [20 marks]\n\n1. Work out [${params.topic} problem set in a real-world context \u2014 money, recipe, journey, ratio in a shop \u2014 single quantity to find] [3 marks]\n\n2. Calculate [${params.topic} two-step word problem \u2014 must extract values from the context, then compute] [4 marks]\n\n3. Find [${params.topic} multi-step word problem \u2014 distance / time / cost / ratio context, parts (a) and (b) building on each other] [4 marks]\n\n4. Show that [${params.topic} numerical claim is correct \u2014 pupil works out the value and verifies it equals the stated number] [4 marks]\n\n5. How many / How much [${params.topic} extended word problem \u2014 chooses the method, calculates, gives the final number with units] [5 marks]`
+          : `Answer all questions. Show all working. Every answer is calculation-based. [20 marks]\n\n1. Calculate [${params.topic} GCSE-style 3-mark question matching ${params.yearGroup} tier \u2014 method, substitution, answer] [3 marks]\n\n2. Solve [${params.topic} GCSE-style 4-mark question \u2014 multi-step, AO1/AO2 weighting] [4 marks]\n\n3. Find [${params.topic} GCSE-style 4-mark question with parts (a) and (b) \u2014 part (a) sets up, part (b) uses the result] [4 marks]\n\n4. Show that [${params.topic} GCSE-style 4-mark "show that" question \u2014 pupil derives the stated numerical result, full working only] [4 marks]\n\n5. Determine [${params.topic} GCSE-style 5-mark AO3 problem-solving question \u2014 chooses method, calculates, states answer with units] [5 marks]`;
+        structuredSections.push(`{"title": "Section C \u2014 ${isLowerSecondary ? 'Problem Solving' : 'Exam-Style Practice'}", "type": "q-extended", "marks": 20, "content": "${sectionCMaths.replace(/"/g, '\\"')}"}`);
+      } else {
+        const challengeContent = `Challenge yourself! [8 marks]\n\n1. [Higher-order ${params.topic} question requiring analysis, evaluation or synthesis \u2014 use subject-specific command words] [4 marks]\n\n2. [Synoptic or cross-topic question linking ${params.topic} to a wider concept or real-world application] [4 marks]`;
+        structuredSections.push(`{"title": "Challenge Question", "type": "challenge", "marks": 8, "content": "${challengeContent.replace(/"/g, '\\"')}"}`);
+      }
     }
         // 12. Self Reflection — SEND-specific format
     // Teacher feedback: the pupil-facing reflection was too long (5-row grid +
@@ -2612,6 +2653,14 @@ RULES:
 11. MARK SCHEME RULE: The mark scheme section MUST contain a complete, full answer for every single question. No placeholders. Write actual answers.
 12. VOCAB RULE: Key Vocabulary must contain EXACTLY 5 terms — no more, no fewer.
 13. GAP FILL RULE: The gap fill paragraph MUST contain EXACTLY 7 blanks (shown as _____). Before you finish, count every _____ in your paragraph — if there are fewer than 7, add more sentences until you reach exactly 7. The word bank MUST have EXACTLY 10 words (7 correct answers + 3 distractors).
+${isMaths ? `14. MATHS PROGRESSION RULE (mandatory for every maths worksheet — checked by post-validator):
+   - Section A is the WARM-UP. Every question is single-step. Numbers are clean (whole numbers, simple fractions). Mark range per Q: 1–2.
+   - Section B is HARDER than A. Every question is multi-step (at least one more step than its Section A equivalent). Trickier numbers (decimals, mixed fractions, sign changes). Mark range per Q: 2–3.
+   - Section C is HARDER than B. ${/year\s*[7-8]\b/i.test(params.yearGroup || "") ? "Real-world problem-solving (money, recipes, journeys, ratios)." : "Exam-style past-paper-shaped questions matching tier and AO mix."} Mark range per Q: 3–6.
+   - Average marks-per-question MUST satisfy strict progression: avg(A) < avg(B) < avg(C). Count and verify before returning.
+   - Section C COMMAND WORDS — every question MUST start with one of: Calculate, Work out, Find, Solve, Show that, Prove that, Determine, Hence find, How much, How many, How long, How far. FORBIDDEN: describe, explain, discuss, comment on, compare, evaluate-in-words, justify-in-words, outline, give reasons. Every Section C answer MUST be a number or algebraic value reached by calculation — never an essay.
+15. MATHS-ONLY HARD REMOVALS: Do NOT generate any True/False section, MCQ section (unless explicitly requested), or word-bank/gap-fill section for maths worksheets — these are blocked at the form layer and must not appear under any spec drift.
+` : ""}
 
 Return EXACTLY this JSON (raw JSON only, no markdown fences):
 {
@@ -2736,9 +2785,16 @@ Return EXACTLY this JSON (raw JSON only, no markdown fences):
         auditedStructured as typeof structuredJson,
         { subject: params.subject, yearGroup: params.yearGroup },
       );
+      // PR-M2 — non-blocking maths progression audit (Section A/B/C mark
+      // progression + Section C calculation-only command-word audit).
+      // No-op for non-maths.
+      const progressionTaggedStructured = applyMathsProgressionAudit(
+        strandTaggedStructured,
+        { subject: params.subject, yearGroup: params.yearGroup },
+      );
       // FEAT-PC9 — non-blocking Required-Practical tagging (KS4 science only).
       const practicalTaggedStructured = applyRequiredPracticalTagging(
-        strandTaggedStructured,
+        progressionTaggedStructured,
         {
           subject: params.subject,
           topic: params.topic,
@@ -3466,8 +3522,13 @@ Return EXACTLY this JSON (raw JSON only):
     subject: params.subject,
     yearGroup: params.yearGroup,
   });
+  // PR-M2 — non-blocking maths progression audit (legacy path mirror).
+  const progressionTaggedLegacy = applyMathsProgressionAudit(strandTaggedLegacy, {
+    subject: params.subject,
+    yearGroup: params.yearGroup,
+  });
   // FEAT-PC9 — non-blocking Required-Practical tagging (KS4 science only).
-  const practicalTaggedLegacy = applyRequiredPracticalTagging(strandTaggedLegacy, {
+  const practicalTaggedLegacy = applyRequiredPracticalTagging(progressionTaggedLegacy, {
     subject: params.subject,
     topic: params.topic,
     yearGroup: params.yearGroup,
