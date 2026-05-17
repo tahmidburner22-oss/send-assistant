@@ -1,6 +1,13 @@
 /**
  * Behaviour Support Plan Tool
  * Generates a PBS plan via AI and optionally saves it to a pupil's Parent Portal.
+ *
+ * Five "v2" improvements (in addition to the original BSP enhancements panel):
+ *   1. Function-of-behaviour structured picker — drives the prompt
+ *   2. Green/Amber/Red reactive strategies hierarchy — opt-in toggle
+ *   3. Pupil-voice mini intake — quotes injected verbatim into Section 1
+ *   4. One-page staff briefing card — printable distillation
+ *   5. ABC heatmap — day × period visualisation of incidents
  */
 import { useState } from "react";
 import AIToolPage from "@/components/AIToolPage";
@@ -10,6 +17,17 @@ import { pupils as pupilsApi } from "@/lib/api";
 import { toast } from "sonner";
 import { useUserPreferences } from "@/contexts/UserPreferencesContext";
 import { formatToolOutput } from "@/lib/format-tool-output";
+import BSPEnhancementsPanel from "@/components/BSPEnhancementsPanel";
+import BehaviourPlanV2Panel from "@/components/BehaviourPlanV2Panel";
+import { usePupilScope } from "@/contexts/PupilScopeContext";
+import {
+  buildFunctionPromptFragment,
+  buildPupilVoicePromptFragment,
+  loadPupilVoice,
+  REACTIVE_TIER_PROMPT_FRAGMENT,
+  FUNCTION_LABELS,
+  type BehaviourFunction,
+} from "@/lib/behaviour-plan-v2-enhancements";
 
 // ── Save-to-Portal widget ─────────────────────────────────────────────────────
 function SaveToPupilPortal({
@@ -33,25 +51,18 @@ function SaveToPupilPortal({
     }
     setSaving(true);
     try {
-      // Short summary for the portal card (strip markdown)
       const plain = result.replace(/\*\*/g, "").replace(/#{1,3} /g, "");
       const summary = plain.slice(0, 300) + (plain.length > 300 ? "…" : "");
 
-      // Extract strategies section
       const strategiesMatch = plain.match(
-        /(?:Preventative Strategies|Teaching Replacement|Response Strategies)[^\n]*\n([\s\S]{0,500}?)(?:\n\d+\.|\n#{1,3})/i
+        /(?:Preventative Strategies|Teaching Replacement|Response Strategies)[^\n]*\n([\s\S]{0,500}?)(?:\n\d+\.|\n#{1,3})/i,
       );
-      const strategies = strategiesMatch
-        ? strategiesMatch[1].trim().slice(0, 400)
-        : undefined;
+      const strategies = strategiesMatch ? strategiesMatch[1].trim().slice(0, 400) : undefined;
 
-      // Extract positive targets / reward section
       const targetsMatch = plain.match(
-        /(?:Reward|Positive Targets?|Reinforcement)[^\n]*\n([\s\S]{0,300}?)(?:\n\d+\.|\n#{1,3})/i
+        /(?:Reward|Positive Targets?|Reinforcement)[^\n]*\n([\s\S]{0,300}?)(?:\n\d+\.|\n#{1,3})/i,
       );
-      const positiveTargets = targetsMatch
-        ? targetsMatch[1].trim().slice(0, 300)
-        : undefined;
+      const positiveTargets = targetsMatch ? targetsMatch[1].trim().slice(0, 300) : undefined;
 
       await pupilsApi.saveSupportPlan(selectedPupilId, {
         title: `Behaviour Support Plan — ${values.studentName || "Pupil"} (${values.yearGroup || ""})`,
@@ -64,8 +75,9 @@ function SaveToPupilPortal({
       });
       setSaved(true);
       toast.success("Plan saved to Parent Portal!");
-    } catch (err: any) {
-      toast.error(err?.message || "Failed to save plan.");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to save plan.";
+      toast.error(message);
     }
     setSaving(false);
   };
@@ -115,8 +127,13 @@ function SaveToPupilPortal({
 // ── Main component ────────────────────────────────────────────────────────────
 export default function BehaviourPlan() {
   const { preferences } = useUserPreferences();
+  const { children } = useApp();
+  const { pupilId: scopedPupilId } = usePupilScope();
   const [latestResult, setLatestResult] = useState<string | null>(null);
   const [latestValues, setLatestValues] = useState<Record<string, string>>({});
+
+  const scopedPupil = children.find((c) => c.id === scopedPupilId);
+  const scopedPupilName = scopedPupil?.name || latestValues.studentName || "Pupil";
 
   return (
     <div>
@@ -156,6 +173,24 @@ export default function BehaviourPlan() {
             span: "full",
           },
           {
+            id: "behaviourFunctions",
+            label: "Function of Behaviour (select all that apply)",
+            type: "select",
+            options: [
+              { value: "", label: "Not sure — let AI infer" },
+              { value: "escape", label: FUNCTION_LABELS.escape },
+              { value: "sensory", label: FUNCTION_LABELS.sensory },
+              { value: "attention", label: FUNCTION_LABELS.attention },
+              { value: "tangible", label: FUNCTION_LABELS.tangible },
+              { value: "escape,sensory", label: "Escape + Sensory" },
+              { value: "escape,attention", label: "Escape + Attention" },
+              { value: "sensory,attention", label: "Sensory + Attention" },
+              { value: "escape,sensory,attention", label: "Escape + Sensory + Attention" },
+            ],
+            span: "full",
+            hint: "Anchors Section 3 and the Replacement Behaviour strategies — pick if you've completed the FBA.",
+          },
+          {
             id: "triggers",
             label: "Known Triggers / Antecedents",
             type: "textarea",
@@ -188,9 +223,34 @@ export default function BehaviourPlan() {
             ],
             span: "half",
           },
+          {
+            id: "useGarTiers",
+            label: "Use Green/Amber/Red response tiers",
+            type: "select",
+            options: [
+              { value: "yes", label: "Yes — format Section 7 as 3 tiers" },
+              { value: "no", label: "No — keep as flat list" },
+            ],
+            span: "half",
+            hint: "Recommended for TA-friendly visual response card.",
+          },
         ]}
         buildPrompt={(v) => {
           setLatestValues(v);
+
+          const fns = (v.behaviourFunctions || "")
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean) as BehaviourFunction[];
+          const functionFragment = fns.length > 0 ? buildFunctionPromptFragment(fns) : "";
+
+          const useGar = v.useGarTiers === "yes" || v.useGarTiers === undefined;
+          const garFragment = useGar ? REACTIVE_TIER_PROMPT_FRAGMENT : "";
+
+          // Pupil voice — pulled from local store keyed on the in-scope pupil.
+          const voice = scopedPupilId ? loadPupilVoice(scopedPupilId) : null;
+          const voiceFragment = buildPupilVoicePromptFragment(voice);
+
           return {
             system: `You are an expert SENCO and behaviour specialist with 20 years of experience in UK schools. You write positive behaviour support plans (BSPs) that are evidence-based, compassionate, and practical. You use the ABC (Antecedent-Behaviour-Consequence) framework and Positive Behaviour Support (PBS) principles. Your plans are strengths-based and focus on teaching replacement behaviours, not just managing challenging ones.`,
             user: `Create a Positive Behaviour Support Plan for:
@@ -206,6 +266,10 @@ ${v.triggers ? `Known Triggers:\n${v.triggers}` : ""}
 ${v.strengths ? `Strengths & Motivators:\n${v.strengths}` : ""}
 ${v.background ? `Background:\n${v.background}` : ""}
 
+${functionFragment}
+
+${voiceFragment}
+
 IMPORTANT — The review period is "${v.reviewPeriod || "6 weeks"}". This MUST shape the entire plan:
 ${(v.reviewPeriod || "6 weeks") === "4 weeks" ? `- 4-week plan: This is a SHORT, FOCUSED plan. Set 1-2 very specific, immediately measurable targets only. Weekly check-ins are essential. Keep strategies to 2-3 maximum — manageable in one month. Include specific week-by-week milestones (Week 1: baseline, Week 2: introduce strategy, Week 3: monitor, Week 4: review). The plan should be concise and laser-focused.` : ""}
 ${(v.reviewPeriod || "6 weeks") === "6 weeks" ? `- 6-week plan: Set 2-3 focused targets. Fortnightly check-in points. Include a mid-point review note at week 3. Strategies should be established within the first 2 weeks, then consistently applied.` : ""}
@@ -217,13 +281,13 @@ Section 10 (Monitoring & Review) MUST include:
 - A clear success threshold — what improvement would indicate the plan is working?
 
 Structure the plan with these sections:
-1. **Student Profile** — brief strengths-based summary
+1. **Student Profile** — brief strengths-based summary${voiceFragment ? " (incorporate the pupil-voice quotes verbatim)" : ""}
 2. **Behaviour Description** — clear, objective description (avoid judgmental language)
-3. **Function of Behaviour** — what need is the behaviour meeting? (attention, escape, sensory, tangible)
+3. **Function of Behaviour** — what need is the behaviour meeting? (attention, escape, sensory, tangible)${functionFragment ? " — anchor on the teacher-confirmed function above" : ""}
 4. **Triggers & Warning Signs** — early indicators and antecedents
 5. **Preventative Strategies** — environmental and proactive changes to reduce triggers
 6. **Teaching Replacement Behaviours** — what to teach instead, with specific strategies
-7. **Response Strategies** — how staff should respond when behaviour occurs (de-escalation steps)
+7. **Response Strategies** — how staff should respond when behaviour occurs (de-escalation steps)${garFragment ? "\n\n" + garFragment : ""}
 8. **Reward & Reinforcement System** — personalised to student's motivators
 9. **Crisis Response** — if behaviour escalates, clear step-by-step protocol
 10. **Monitoring & Review** — review date, ${(v.reviewPeriod || "6 weeks") === "4 weeks" ? "weekly" : (v.reviewPeriod || "6 weeks") === "6 weeks" ? "fortnightly" : "half-termly"} check-in schedule, success indicators
@@ -243,8 +307,22 @@ Use positive, strengths-based language throughout. Be specific and practical. Ca
         }
         formatOutput={(text) => formatToolOutput(text, { logoUrl: preferences.schoolLogoUrl, schoolName: preferences.schoolName, accentColor: "#ea580c", emoji: "⚡", title: "Behaviour Support Plan" })}
       />
-      <div className="max-w-2xl mx-auto px-4 pb-8">
+      <div className="max-w-2xl mx-auto px-4 pb-8 space-y-3">
         <SaveToPupilPortal result={latestResult} values={latestValues} />
+        {(scopedPupilId || latestResult) && (
+          <>
+            <BSPEnhancementsPanel
+              pupilId={scopedPupilId || ""}
+              pupilName={scopedPupilName}
+              bspText={latestResult || ""}
+            />
+            <BehaviourPlanV2Panel
+              pupilId={scopedPupilId || ""}
+              pupilName={scopedPupilName}
+              bspText={latestResult || ""}
+            />
+          </>
+        )}
       </div>
     </div>
   );
