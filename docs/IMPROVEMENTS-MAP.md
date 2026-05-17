@@ -15,9 +15,9 @@ in the same commit.
 
 | Status         | Count |
 | -------------- | ----- |
-| Shipped        | 4     |
+| Shipped        | 6     |
 | Re-applied (PR-2 recovery) | 1 |
-| Specced (ready for fresh-chat execution) | 23 |
+| Specced (ready for fresh-chat execution) | 21 |
 | Total improvements | 20 |
 
 The "Specced" count is higher than the improvement count because larger
@@ -58,12 +58,12 @@ Every spec ties back to one of these three shifts.
 | 2 | Pupil-aware auto-generation                | A · PR-1 + PR-2 | [`phase-a-class-aware/features/FEAT-PR1.json`](../.agents/tasks/phase-a-class-aware/features/FEAT-PR1.json) + [`FEAT-PR2.json`](../.agents/tasks/phase-a-class-aware/features/FEAT-PR2.json) | **Shipped — PR #46 + #47 (re-applied PR #50)** |
 | 3 | Curriculum coverage map ("Ofsted view")    | C · PC4 | [`phase-c-fit-your-school/features/FEAT-PC4.json`](../.agents/tasks/phase-c-fit-your-school/features/FEAT-PC4.json) | Specced     |
 | 4 | Misconception-driven re-teach loop         | B · PB3 | [`phase-b-close-the-loop/features/FEAT-PB3.json`](../.agents/tasks/phase-b-close-the-loop/features/FEAT-PB3.json) | Specced     |
-| 5 | Spec-point provenance + AO tag             | B · PB1 | [`phase-b-close-the-loop/features/FEAT-PB1.json`](../.agents/tasks/phase-b-close-the-loop/features/FEAT-PB1.json) | Specced     |
+| 5 | Spec-point provenance + AO tag             | B · PB1 | [`phase-b-close-the-loop/features/FEAT-PB1.json`](../.agents/tasks/phase-b-close-the-loop/features/FEAT-PB1.json) | **Shipped** |
 | 6 | Bulk scheme-of-work generation             | C · PC5 | [`phase-c-fit-your-school/features/FEAT-PC5.json`](../.agents/tasks/phase-c-fit-your-school/features/FEAT-PC5.json) | Specced     |
 | 7a | LMS push: Google Classroom + Teams + Satchel | C · PC1 | [`phase-c-fit-your-school/features/FEAT-PC1.json`](../.agents/tasks/phase-c-fit-your-school/features/FEAT-PC1.json) | Specced     |
 | 7b | MIS roster: Wonde + GroupCall             | C · PC2 | [`phase-c-fit-your-school/features/FEAT-PC2.json`](../.agents/tasks/phase-c-fit-your-school/features/FEAT-PC2.json) | Specced     |
 | 7c | LTI 1.3 + QTI 3.0 + Common Cartridge      | C · PC3 | [`phase-c-fit-your-school/features/FEAT-PC3.json`](../.agents/tasks/phase-c-fit-your-school/features/FEAT-PC3.json) | Specced     |
-| 8 | Differentiation that prints on one stack — Class Pack as default | A · PR-3 | [`phase-a-class-aware/features/FEAT-PR3.json`](../.agents/tasks/phase-a-class-aware/features/FEAT-PR3.json) | Specced     |
+| 8 | Differentiation that prints on one stack — Class Pack as default | A · PR-3 | [`phase-a-class-aware/features/FEAT-PR3.json`](../.agents/tasks/phase-a-class-aware/features/FEAT-PR3.json) | **Shipped** |
 | 9 | EAL parity (bilingual side-by-side + reading-age memory) | C · PC6 | [`phase-c-fit-your-school/features/FEAT-PC6.json`](../.agents/tasks/phase-c-fit-your-school/features/FEAT-PC6.json) | Specced     |
 | 10 | Accessibility certification (WCAG 2.2 AA + Braille + Large print + Plain English) | C · PC7 | [`phase-c-fit-your-school/features/FEAT-PC7.json`](../.agents/tasks/phase-c-fit-your-school/features/FEAT-PC7.json) | Specced     |
 | 11 | "The marking ends here" — bulk ScanMark + per-pupil feedback + MIS export | B · PB4 | [`phase-b-close-the-loop/features/FEAT-PB4.json`](../.agents/tasks/phase-b-close-the-loop/features/FEAT-PB4.json) | Specced     |
@@ -95,8 +95,8 @@ Every spec ties back to one of these three shifts.
 
 | Phase | Theme                                             | PRs (shipped / total) | Folder                                                                                              |
 | ----- | ------------------------------------------------- | --------------------- | --------------------------------------------------------------------------------------------------- |
-| A     | "We know your class"                              | 4 / 6                 | [`.agents/tasks/phase-a-class-aware/`](../.agents/tasks/phase-a-class-aware/)                       |
-| B     | "We close the loop"                               | 0 / 4                 | [`.agents/tasks/phase-b-close-the-loop/`](../.agents/tasks/phase-b-close-the-loop/)                 |
+| A     | "We know your class"                              | 5 / 6                 | [`.agents/tasks/phase-a-class-aware/`](../.agents/tasks/phase-a-class-aware/)                       |
+| B     | "We close the loop"                               | 1 / 4                 | [`.agents/tasks/phase-b-close-the-loop/`](../.agents/tasks/phase-b-close-the-loop/)                 |
 | C     | "We fit your school"                              | 0 / 7                 | [`.agents/tasks/phase-c-fit-your-school/`](../.agents/tasks/phase-c-fit-your-school/)               |
 | D     | Quality bets + habit hooks                        | 0 / 12                | [`.agents/tasks/phase-d-quality-and-habit/`](../.agents/tasks/phase-d-quality-and-habit/)           |
 

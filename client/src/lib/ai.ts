@@ -89,6 +89,10 @@ import {
 // the populated misconceptionLinks / requiredPractical / strand metadata.
 import { applyCoverageMap } from './coverageMapBuilder';
 
+// FEAT-PB1 — Per-question provenance stamps (specRef, AO, bloomLevel, readingAge).
+// Runs after Pillar A audits to fill any remaining gaps deterministically.
+import { applyQuestionProvenance } from './questionProvenance';
+
 // ─── Phase 4 — Misconception bank ──────────────────────────────────────────
 // UK-curriculum misconception library. Injected into the worksheet system
 // prompt so questions diagnose common pupil errors, not just test recall.
@@ -2730,7 +2734,13 @@ Return EXACTLY this JSON (raw JSON only, no markdown fences):
         ...(typeof params.calculator === "boolean" ? { calculator: params.calculator } : {}),
         ...(effectivePriorTopics.length > 0 ? { priorTopics: effectivePriorTopics } : {}),
       };
-      return { ...pillarATaggedStructured, isAI: true, provider: structuredProvider };
+      // FEAT-PB1 — Per-question provenance (specRef, AO, bloomLevel, readingAge).
+      const provenanceTaggedStructured = applyQuestionProvenance(pillarATaggedStructured, {
+        subject: params.subject,
+        topic: params.topic,
+        yearGroup: params.yearGroup,
+      });
+      return { ...provenanceTaggedStructured, isAI: true, provider: structuredProvider };
     }
     // If structured generation failed, fall through to legacy path
   }
@@ -3441,7 +3451,13 @@ Return EXACTLY this JSON (raw JSON only):
     ...(typeof params.calculator === "boolean" ? { calculator: params.calculator } : {}),
     ...(effectivePriorTopics.length > 0 ? { priorTopics: effectivePriorTopics } : {}),
   };
-  return pillarATaggedLegacy as unknown as AIWorksheetResult;
+  // FEAT-PB1 — Per-question provenance (legacy path mirror).
+  const provenanceTaggedLegacy = applyQuestionProvenance(pillarATaggedLegacy, {
+    subject: params.subject,
+    topic: params.topic,
+    yearGroup: params.yearGroup,
+  });
+  return provenanceTaggedLegacy as unknown as AIWorksheetResult;
 }
 
 // ═══ §CLASS-BRIEF · aiGenerateWorksheetFromClassBrief (Phase A · PR-1) ═════
