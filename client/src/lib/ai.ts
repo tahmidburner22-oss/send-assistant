@@ -75,6 +75,10 @@ import { applySendFidelityAudit } from './sendFidelityAudit';
 // progression + Section C calculation-only command words).
 import { applyMathsStrandTagging } from './mathsStrandTagger';
 import { applyMathsProgressionAudit } from './mathsProgressionAudit';
+// PR-M3 — Common Mistakes child-friendly format audit. Confirms each maths
+// mistake block has the four labelled parts AND ≥2 numeric tokens in the
+// wrong-working line. No-op for non-maths.
+import { applyCommonMistakesAudit } from './commonMistakesValidator';
 
 // FEAT-PC9 — Required Practical / Working-Scientifically bank. Curated UK
 // GCSE practicals with spec codes, real variables, sample data and
@@ -2470,8 +2474,32 @@ CRITICAL STRUCTURE RULE: ALL questions come ONLY from Section A (True/False, MCQ
     }
 
     // 4. Common Mistakes
+    // ── PR-M3: child-friendly Common Mistakes for MATHS only ─────────────
+    //    Maths sheets get a four-part labelled structure with REAL numbers
+    //    in every block (the wrong working, plain-English reason, the right
+    //    working, and a quick self-check). Reading-age constraint baked
+    //    into the prompt; deterministically post-validated by
+    //    commonMistakesValidator.ts.
+    //    Non-maths subjects keep the existing simpler template — no change.
     if (wantCommonMistakes) {
-      structuredSections.push(`{"title": "Common Mistakes to Avoid", "type": "common-mistakes", "teacherOnly": false, "content": "Watch out for these common errors:\n\nMISTAKE 1: [Name of mistake]\n\u2192 [Explanation of the mistake and how to avoid it]\n\nMISTAKE 2: [Name of mistake]\n\u2192 [Explanation of the mistake and how to avoid it]\n\nMISTAKE 3: [Name of mistake]\n\u2192 [Explanation of the mistake and how to avoid it]"}`);
+      if (isMaths) {
+        // Reading-age guidance string varies by year: Y7-8 → ≤11, Y9+ → ≤13.
+        const yearMatch = /year\s*(\d+)/i.exec(params.yearGroup || "");
+        const yearNum = yearMatch ? Number(yearMatch[1]) : 9;
+        const readingAge = yearNum <= 8 ? 11 : 13;
+        const mistakeBlock = (n: number) =>
+          `Mistake ${n}: [Short, plain-English name of the mistake \u2014 max 8 words, no jargon]\n\nWhat pupils often write:\n   [Realistic WRONG working for a ${params.topic} question. MUST contain at least two real numbers shown as a calculation, e.g. \"1/2 + 1/3 = 2/5\". No placeholders.]\n\nWhy that's wrong (in plain words):\n   [Two short sentences explaining the slip in everyday language. No words longer than 3 syllables. Reading age \u2264 ${readingAge}. If a maths term is needed, define it in the same sentence.]\n\nHow to do it right:\n   [Numbered steps showing the CORRECT working for the same question, ending with the right answer marked \u2713]\n\nQuick check: [One short \"try-it-yourself\" sentence with a fresh tiny calculation the pupil can do in their head to feel the rule.]`;
+        const mathsContent =
+          `Watch out for these common slip-ups. Each one shows the wrong working, why it goes wrong, and how to fix it.\n\n` +
+          mistakeBlock(1) +
+          `\n\n` +
+          mistakeBlock(2) +
+          `\n\n` +
+          mistakeBlock(3);
+        structuredSections.push(`{"title": "Common Mistakes to Avoid", "type": "common-mistakes", "teacherOnly": false, "content": "${mathsContent.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n')}"}`);
+      } else {
+        structuredSections.push(`{"title": "Common Mistakes to Avoid", "type": "common-mistakes", "teacherOnly": false, "content": "Watch out for these common errors:\n\nMISTAKE 1: [Name of mistake]\n\u2192 [Explanation of the mistake and how to avoid it]\n\nMISTAKE 2: [Name of mistake]\n\u2192 [Explanation of the mistake and how to avoid it]\n\nMISTAKE 3: [Name of mistake]\n\u2192 [Explanation of the mistake and how to avoid it]"}`);
+      }
     }
 
     // 5. Worked Example
@@ -2800,9 +2828,16 @@ Return EXACTLY this JSON (raw JSON only, no markdown fences):
         strandTaggedStructured,
         { subject: params.subject, yearGroup: params.yearGroup },
       );
+      // PR-M3 — non-blocking Common Mistakes audit. Confirms every maths
+      // mistake block has the four labelled parts AND ≥2 numeric tokens in
+      // the wrong-working line. No-op for non-maths.
+      const commonMistakesTaggedStructured = applyCommonMistakesAudit(
+        progressionTaggedStructured,
+        { subject: params.subject },
+      );
       // FEAT-PC9 — non-blocking Required-Practical tagging (KS4 science only).
       const practicalTaggedStructured = applyRequiredPracticalTagging(
-        progressionTaggedStructured,
+        commonMistakesTaggedStructured,
         {
           subject: params.subject,
           topic: params.topic,
@@ -3535,8 +3570,12 @@ Return EXACTLY this JSON (raw JSON only):
     subject: params.subject,
     yearGroup: params.yearGroup,
   });
+  // PR-M3 — non-blocking Common Mistakes audit (legacy path mirror).
+  const commonMistakesTaggedLegacy = applyCommonMistakesAudit(progressionTaggedLegacy, {
+    subject: params.subject,
+  });
   // FEAT-PC9 — non-blocking Required-Practical tagging (KS4 science only).
-  const practicalTaggedLegacy = applyRequiredPracticalTagging(progressionTaggedLegacy, {
+  const practicalTaggedLegacy = applyRequiredPracticalTagging(commonMistakesTaggedLegacy, {
     subject: params.subject,
     topic: params.topic,
     yearGroup: params.yearGroup,

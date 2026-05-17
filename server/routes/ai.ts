@@ -1339,7 +1339,14 @@ RULES (non-negotiable):
 9. ${sendAdapt}
 10. SPECIAL CHARACTERS — use HTML entities ONLY: &#178; (superscript 2), &#179; (superscript 3), &#176; (degree), &#955; (lambda), &#960; (pi), &#8594; (right arrow), &#8592; (left arrow). For subscripts use <tspan baseline-shift="sub" font-size="10">2</tspan>.
 11. SCIENTIFIC ACCURACY: correct labels, proportions, and relationships for UK school level.
-12. After </svg> write: CAPTION: [one sentence describing the diagram]`;
+12. After </svg> write: CAPTION: [one sentence describing the diagram]
+
+PR-M4 — OVERLAP & READABILITY HARD RULES (zero tolerance):
+13. Every <text> element MUST set text-anchor explicitly ("start" / "middle" / "end") and MUST sit fully inside Zone B, C, D or E. Never inside Zone A except axis tick labels and inline formula tokens.
+14. Every <text> MUST have font-size >= 12 (>= 16 if SEND adaptations apply). No rotated labels: rotation is only allowed for Y-axis tick labels on graphs.
+15. Maintain a >= 8px clear margin between any two <text> elements AND between any <text> and any <line>, <path>, <rect>, <circle>, <polygon> or <ellipse> stroke. If a label would otherwise overlap, push it further into its zone and use a leader line instead.
+16. Labels referring to a Zone-A element MUST connect via a thin leader line (stroke-width 1) ending at the element's anchor point — they must NEVER sit on top of the element.
+17. No element may extend outside the 700×500 viewBox. No coordinate may be negative.`;
 
   const user = `Draw a professional educational SVG diagram for a UK school worksheet.
 
