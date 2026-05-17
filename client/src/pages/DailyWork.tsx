@@ -24,6 +24,7 @@ import {
 import { callAI } from "@/lib/ai";
 import { toast } from "sonner";
 import { recordEvent } from "@/lib/timeline-events";
+import WeekAheadPanel from "@/components/WeekAheadPanel";
 
 interface DailyPack {
   date: string;
@@ -129,6 +130,10 @@ export default function DailyWork() {
         <ChevronRight className="w-3 h-3" />
         <span className="text-foreground font-medium">Daily Adaptive Work</span>
       </div>
+
+      {/* Phase A · PR-4 — Your week, ready to print */}
+      <WeekAheadPanel variant="compact" />
+
       <div className="flex items-start gap-3">
         <div className="w-10 h-10 rounded-2xl bg-fuchsia-600 flex items-center justify-center shadow-lg shadow-fuchsia-200">
           <BookMarked className="w-5 h-5 text-white" />
