@@ -613,12 +613,17 @@ export default function Worksheets() {
   //   - 'mcq' is OFF by default but the toggle remains available so a teacher
   //     can opt-in for a low-stakes diagnostic warm-up. The existing
   //     calculation-only MCQ rule (ai.ts ~L1174 `mathsMcq`) is preserved.
+  //   - PR-M2: 'word-bank-gap-fill' is OFF by default AND hard-removed at the
+  //     generator layer. The new maths spine (Section A → B → C) leaves no
+  //     room for a vocabulary/number gap-fill warm-up.
   //
   // For non-maths sheets: behaviour is unchanged.
   const computeDefaultSections = useCallback((forSubject: string): SectionId[] => {
     let base = ALL_SECTIONS.filter(s => s !== 'retrieval') as SectionId[];
     if (isMathsSubject(forSubject)) {
-      base = base.filter(s => s !== 'true-false' && s !== 'mcq');
+      base = base.filter(s =>
+        s !== 'true-false' && s !== 'mcq' && s !== 'word-bank-gap-fill'
+      );
     }
     return base;
   }, []);
@@ -730,17 +735,21 @@ export default function Worksheets() {
   // Reset subtopic when topic changes
   useEffect(() => { setSubtopic(""); }, [topic]);
 
-  // PR-M1 — When the user switches INTO a maths subject, strip 'true-false' and
-  // 'mcq' from the active selection so the form mirrors the new defaults.
+  // PR-M1 / PR-M2 — When the user switches INTO a maths subject, strip
+  // 'true-false', 'mcq' (PR-M1) and 'word-bank-gap-fill' (PR-M2) from the
+  // active selection so the form mirrors the new defaults.
   // Switching OUT of maths leaves the user's current selection alone — we
   // never silently re-add sections they may have deliberately turned off.
-  // Note: this is purely a UX nicety. The generator-layer guard in ai.ts
-  // (`wantTrueFalse && !isMaths`) is the source of truth that prevents T/F
-  // from ever reaching a maths worksheet, regardless of form state.
+  // Note: this is purely a UX nicety. The generator-layer guards in ai.ts
+  // (`wantTrueFalse && !isMaths` and `wantWordBankGapFill && !isMaths`) are
+  // the source of truth that prevents these sections from ever reaching a
+  // maths worksheet, regardless of form state.
   useEffect(() => {
     if (!isMathsSubject(subject)) return;
     setSelectedSections(prev => {
-      const filtered = prev.filter(s => s !== 'true-false' && s !== 'mcq');
+      const filtered = prev.filter(s =>
+        s !== 'true-false' && s !== 'mcq' && s !== 'word-bank-gap-fill'
+      );
       return filtered.length === prev.length ? prev : filtered;
     });
   }, [subject]);
