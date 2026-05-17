@@ -1,0 +1,58 @@
+{
+  "id": "FEAT-PR4",
+  "type": "feat",
+  "title": "Home screen — Your week, ready to print",
+  "description": "Add a WeekAheadPanel to the Home and DailyWork pages that shows up to 5 upcoming lesson cards (one per period in the user's timetable / scheduler), each pre-filled from buildClassAutoBrief, with one-click Generate per card and Print all at the bottom. Background prefetch warms the cards so Monday morning is instant.",
+  "rationale": "Move the product from 'tool I open when I have time' to 'tool I open first thing Monday'. This is the single highest-leverage UI change once PR-1/PR-2 have shipped — it surfaces class-aware generation without requiring the teacher to open the form at all.",
+  "depends_on": ["FEAT-PR0", "FEAT-PR1", "FEAT-PR2"],
+  "steps": [
+    "Audit upstream data first: grep for `loadAllSchedulers`, `nextFireAt`, `isDue` in client/src/lib/scheduler.ts and scheduler-store.ts. Build an in-memory list of the next ≤5 due-or-recently-due scheduler entries across all classes the user owns.",
+    "Create client/src/components/WeekAheadPanel.tsx (~250 lines):",
+    "  - Lists up to 5 lesson cards: { classLabel, when, suggestedTopic, pupilCount }",
+    "  - Each card has a primary 'Generate' button that runs aiGenerateWorksheetFromClassBrief for that class (use the helper from PR-1) and routes to /worksheets in Auto mode showing the result.",
+    "  - Footer 'Print all' button: kicks off all 5 generations in parallel (Promise.allSettled), then calls buildClassPackHtml for each successful one, concatenates the HTML, and opens a single print window with the lot.",
+    "  - Empty state: if no scheduled lessons, show a small CTA 'Schedule your week →' linking to whichever existing settings page configures the scheduler.",
+    "Mount WeekAheadPanel at the top of:",
+    "  - client/src/pages/Home.tsx (above the tool grid)",
+    "  - client/src/pages/DailyWork.tsx (above the existing daily list)",
+    "Background prefetch: extend client/src/lib/prefetch.ts with a new export prefetchWeekAhead() that, on user idle (use `requestIdleCallback` with setTimeout fallback), pre-builds the brief for each card and caches the *generated worksheet* in sessionStorage keyed by `weekAhead:{classId}:{date}` so clicking Generate is near-instant if the user is online and has been on the page for ≥10s.",
+    "Cache invalidation: invalidate the prefetch entry whenever (a) the scheduler config for that class changes, (b) the generation succeeds and the user opens it (one-shot — don't keep a generated worksheet stale beyond the day), (c) midnight rollover (compare date string to today on Panel mount).",
+    "Telemetry: 'weekAhead.viewed', 'weekAhead.card.generated' (classId), 'weekAhead.printAll' (count). Use the same util pattern as PR-2.",
+    "Add tests:",
+    "  - client/src/components/__tests__/WeekAheadPanel.test.tsx — covers: 0/1/5 cards, empty state CTA, Generate click invokes the right helper, Print all uses Promise.allSettled (one failure does not block the rest).",
+    "  - client/src/lib/__tests__/prefetchWeekAhead.test.ts — covers cache key, idle scheduling, and invalidation on scheduler change."
+  ],
+  "files_to_touch": [
+    "client/src/components/WeekAheadPanel.tsx (new)",
+    "client/src/pages/Home.tsx",
+    "client/src/pages/DailyWork.tsx",
+    "client/src/lib/prefetch.ts (add prefetchWeekAhead)",
+    "client/src/components/__tests__/WeekAheadPanel.test.tsx (new)",
+    "client/src/lib/__tests__/prefetchWeekAhead.test.ts (new)"
+  ],
+  "do_not_touch": [
+    "Worksheets.tsx (the panel routes to /worksheets but does not import from it)",
+    "AI prompts",
+    "Class Pack rendering — reuse buildClassPackHtml from PR-3"
+  ],
+  "acceptance_criteria": [
+    "Home page shows WeekAheadPanel above the tool grid.",
+    "DailyWork page shows WeekAheadPanel above the existing daily list.",
+    "Each card's Generate button produces a worksheet keyed off buildClassAutoBrief and lands in Worksheets in Auto mode with the result rendered.",
+    "Print all generates all up to 5 worksheets in parallel and opens a single print window; one failed generation does not block the others (toast lists failures).",
+    "Prefetch primes sessionStorage on idle and clicking Generate is < 200ms when prefetched.",
+    "Empty state renders a CTA when no scheduler entries exist.",
+    "pnpm run check + pnpm run build pass; both new tests pass."
+  ],
+  "verification": [
+    "pnpm run check",
+    "pnpm test --run WeekAheadPanel prefetchWeekAhead",
+    "pnpm run build",
+    "Manual: configure 2 scheduler entries, open Home, confirm cards appear; click Generate; click Print all."
+  ],
+  "size_estimate": {
+    "files_touched": 6,
+    "net_lines_changed": 500
+  },
+  "context_budget_for_fresh_chat": "MEDIUM. Home.tsx and DailyWork.tsx are likely small; read in full. scheduler.ts and scheduler-store.ts are small. The new component is ~250 lines."
+}
