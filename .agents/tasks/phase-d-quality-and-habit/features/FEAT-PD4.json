@@ -1,0 +1,46 @@
+{
+  "id": "FEAT-PD4",
+  "type": "feat",
+  "title": "Monday-morning email ('Your week ready to print')",
+  "description": "Every Monday at 06:30 local, send the teacher an email summarising 'Your week ready to print: Mon Y7 Forces, Tue Y8 Algebra…' with a single 'Print all' deep link that opens /home and fires the existing PrintAll handler immediately.",
+  "rationale": "User's improvement #12 (d). The email is the trigger; the WeekAheadPanel is the destination. Combined, it converts intention into action before the bell.",
+  "depends_on": ["FEAT-PR4"],
+  "steps": [
+    "Add server/jobs/mondayMail.ts: cron `30 6 * * 1` (configurable). For each user with `mondayEmailEnabled = true`, build the same up-to-5 cards the WeekAheadPanel builds (extract the aggregator from PR-4 into a shared module so server can call it — `server/lib/weekAheadAggregator.ts`).",
+    "Render the email with the existing transactional template engine (re-use ParentNewsletter's renderer scaffold, or whichever lives at server/lib/email/).",
+    "Subject: 'Your Adaptly week — 5 lessons ready to print'.",
+    "Body: list of 5 rows + a single 'Print all 30 booklets' button that links to https://app.adaptly.co.uk/home?action=printAll&hash=…",
+    "Home.tsx: when query carries `action=printAll`, on mount validates the hash + auto-fires WeekAheadPanel.handlePrintAll (lift the handler to a ref or imperative method).",
+    "Settings → Notifications → 'Monday-morning email' toggle (default ON for new accounts; respect existing email-prefs row).",
+    "Tests:",
+    "  - server/tests/jobs/mondayMail.test.ts — covers: per-user dispatch, opt-out respected, no schedulers = no email.",
+    "  - client/__tests__/printAllAction.test.tsx — covers query → action wiring."
+  ],
+  "files_to_touch": [
+    "server/jobs/mondayMail.ts (new)",
+    "server/lib/weekAheadAggregator.ts (new — extracted)",
+    "server/lib/email/templates/monday-morning.tsx (new)",
+    "client/src/pages/Home.tsx (action=printAll hook)",
+    "client/src/components/WeekAheadPanel.tsx (expose imperative print-all)",
+    "client/src/pages/Settings.tsx (notification toggle)",
+    "server/tests/jobs/mondayMail.test.ts (new)"
+  ],
+  "do_not_touch": [
+    "Existing email templates",
+    "Cron registration outside server/jobs/ (use the existing scheduler)"
+  ],
+  "acceptance_criteria": [
+    "A user with 3 scheduled classes receives the Monday email at 06:30 local with 3 listed lessons.",
+    "Clicking 'Print all' opens /home and immediately triggers print-all without an extra click.",
+    "Opting out via Settings prevents the email.",
+    "Tests + check + build pass."
+  ],
+  "verification": [
+    "pnpm run check",
+    "pnpm test --run mondayMail printAllAction",
+    "pnpm run build",
+    "Manual: send a test email via the admin route; click; confirm print window opens."
+  ],
+  "size_estimate": { "files_touched": 7, "net_lines_changed": 380 },
+  "context_budget_for_fresh_chat": "LOW–MEDIUM."
+}

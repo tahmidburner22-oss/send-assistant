@@ -1,0 +1,50 @@
+{
+  "id": "FEAT-PD6",
+  "type": "feat",
+  "title": "Browser extension ('Make worksheet from this')",
+  "description": "Chrome + Firefox + Edge extension: select any text on a webpage (BBC Bitesize, Tes, Twinkl, etc.), right-click, 'Make worksheet from this' → opens app.adaptly.co.uk/worksheets in a new tab with the selected text pre-filled as the topic source and the URL captured as sourceCitation.",
+  "rationale": "User's improvement #12 (f). Captures the moment a teacher reads a great article and wishes a worksheet existed. Two seconds of friction removed from a daily motion.",
+  "depends_on": ["FEAT-PR1"],
+  "constraints": [
+    "Manifest V3 only (Chrome's V2 sunset). Firefox is MV3-compatible enough for our context-menu + tabs usage.",
+    "Extension runs entirely in the user's browser; the only network call it makes is opening the Adaptly tab via window.open with the selection encoded into a URL fragment (avoids hitting any extension store privacy review tripwires).",
+    "Extension ships as its own repo subfolder `/extension/` with its own build script; not bundled into the main Vite build."
+  ],
+  "steps": [
+    "Add /extension/ workspace with: manifest.json (MV3), background.ts (context menu registration), content.ts (listens for context-menu click, captures selection, opens new tab).",
+    "On click → window.open(`https://app.adaptly.co.uk/worksheets?sharedFrom=ext&topic=${encodeURIComponent(selection.slice(0,200))}#srcText=${encodeURIComponent(selection)}#srcUrl=${encodeURIComponent(location.href)}`).",
+    "App side: Worksheets.tsx checks for `?sharedFrom=ext`; if present, reads the fragment (encoded so we don't hit URL-length limits in the query), pre-fills topic + additionalInstructions, sets sourceCitation field for PB1's provenance pass.",
+    "Add /extension/README.md + /extension/build.sh (zip + signing instructions).",
+    "Submit to Chrome Web Store + Firefox AMO via separate ops process — out of scope for the code PR.",
+    "Tests:",
+    "  - /extension/tests/extension.test.ts — happy-path mock of chrome.contextMenus + window.open call assertion.",
+    "  - client/src/__tests__/extensionHandoff.test.ts — Worksheets.tsx receives ?sharedFrom=ext + fragment, sets state."
+  ],
+  "files_to_touch": [
+    "/extension/manifest.json (new)",
+    "/extension/background.ts (new)",
+    "/extension/content.ts (new)",
+    "/extension/build.sh (new)",
+    "/extension/README.md (new)",
+    "/extension/tests/extension.test.ts (new)",
+    "client/src/pages/Worksheets.tsx (?sharedFrom=ext handoff — ≤ 30 LOC delta)",
+    "client/src/__tests__/extensionHandoff.test.ts (new)"
+  ],
+  "do_not_touch": [
+    "Vite config — extension is a separate build pipeline",
+    "WeekAhead handoff or Share-Target handoff in Worksheets.tsx — distinct one-shot useEffect each"
+  ],
+  "acceptance_criteria": [
+    "Extension loads in Chrome, Firefox, Edge as MV3 unpacked.",
+    "Right-clicking a selection on a webpage shows 'Make worksheet from this' in the context menu.",
+    "Clicking it opens a new tab with /worksheets pre-filled.",
+    "Tests pass; main app build still passes (extension build is independent)."
+  ],
+  "verification": [
+    "Build extension via /extension/build.sh; load unpacked.",
+    "Manual: select text on bbc.co.uk/bitesize; right-click; confirm new tab opens with topic pre-filled.",
+    "pnpm run check + pnpm run build (main app)."
+  ],
+  "size_estimate": { "files_touched": 8, "net_lines_changed": 350 },
+  "context_budget_for_fresh_chat": "LOW–MEDIUM. Extension is greenfield; no repo reads required other than Worksheets.tsx URL-param logic."
+}

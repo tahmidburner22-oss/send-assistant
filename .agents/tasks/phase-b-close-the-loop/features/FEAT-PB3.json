@@ -1,0 +1,56 @@
+{
+  "id": "FEAT-PB3",
+  "type": "feat",
+  "title": "Misconception-driven re-teach loop",
+  "description": "After a Scan & Mark batch (PR #32 · FEAT-010), surface a 'Re-teach this gap' card per question that >40% of the class got wrong. One click → new worksheet that explicitly addresses the misconception via a worked example, contrast pair, and a fresh practice set. Closes the assess→re-teach loop entirely inside the product without the teacher leaving the page.",
+  "rationale": "User's improvement #4. The assets already exist: ScanMarkDialog produces per-question correctness; misconception-bank.ts has 30+ curated UK misconceptions; PB7 (PR #33) added per-question misconception linkage; PC10 added a coverage map with misconception ids per question. This PR is the connective tissue — group misconceptions by frequency, build a re-teach prompt that references the specific misconception bank entry, generate, route the result through the existing render pipeline.",
+  "depends_on": ["FEAT-PR1", "FEAT-PB1"],
+  "steps": [
+    "Audit upstream: grep `extractMisconceptions`, `mergeMisconceptions`, `findMisconceptionById` to confirm how scan results expose misconception ids per question. Confirm `metadata.misconceptionLinks` is populated end-to-end before this PR runs.",
+    "Create client/src/lib/reteachPlanner.ts:",
+    "  - aggregateClassErrors(scanBatch: ScanBatchResult[]): { questionIdx; misconceptionId; pctWrong; pupilsWrong: string[] }[]",
+    "    Pure function. ScanBatchResult is the existing per-pupil result shape from scan-mark.ts. Returns one row per (question, misconception), filtered to pctWrong >= threshold (default 40%, configurable).",
+    "  - buildReteachBrief(row, sourceWorksheet, classRoster): { topic; misconceptionEntry; pupilsToTarget; instructions }. The instructions block hard-codes: 'This worksheet addresses ONE misconception specifically: <full text>. Open with a worked example that contrasts the correct method with the misconception. Provide 2 contrast pairs (one correct, one demonstrating the misconception with the error annotated). End with 6 fresh practice questions, increasing in complexity, with the answer key showing the diagnostic step.'",
+    "  - aiGenerateReteachWorksheet(brief): wraps aiGenerateWorksheet with the brief's instructions appended. Stamps metadata.reteach = { sourceWorksheetId, misconceptionId, pupilsTargeted: [...] }.",
+    "Create client/src/components/ReteachGapPanel.tsx:",
+    "  - Mounted by ScanMarkDialog AFTER the marking grid. Props: scanResults: ScanBatchResult[], sourceWorksheet, onReteach(brief).",
+    "  - Lists each gap row sorted by pctWrong desc. Each row shows: question stem, misconception text, pct wrong, names of affected pupils, and a single 'Re-teach this gap' button.",
+    "  - Clicking the button calls onReteach(brief), which the parent threads through to a new aiGenerateReteachWorksheet call.",
+    "Wire ScanMarkDialog: after `Save to pupil` succeeds, render ReteachGapPanel below the dialog (or in a follow-on step). The dialog's existing close behaviour stays.",
+    "Wire Worksheets.tsx: add a `pendingReteachBrief` query param + sessionStorage handoff, mirroring the WeekAhead handoff from PR-4. When a teacher clicks 'Re-teach this gap' the dialog navigates to /worksheets?reteach=1 with the brief in sessionStorage; the page reads it on mount, calls aiGenerateReteachWorksheet, and renders.",
+    "Render: WorksheetRenderer already handles metadata.misconceptionLinks via the PB7 panel. Add a small 'Re-teach worksheet' badge in the header so the teacher sees the lineage. Footer: 'Re-teach for: <misconception text> · originated from <source worksheet title> on <date>'.",
+    "Tests:",
+    "  - client/src/lib/__tests__/reteachPlanner.test.ts — covers: aggregation thresholding, sort order, missing misconception id (skipped), buildReteachBrief instruction template stability.",
+    "  - ReteachGapPanel snapshot for 0 / 1 / 5 gaps.",
+    "Telemetry-soft: emit `reteach.suggested` (count) and `reteach.generated` (misconceptionId) via the same window.__adaptlyTelemetry pattern from Phase A · PR-4."
+  ],
+  "files_to_touch": [
+    "client/src/lib/reteachPlanner.ts (new)",
+    "client/src/components/ReteachGapPanel.tsx (new)",
+    "client/src/components/ScanMarkDialog.tsx (mount panel after save)",
+    "client/src/pages/Worksheets.tsx (reteach handoff useEffect, ≤ 40 LOC delta)",
+    "client/src/components/WorksheetRenderer.tsx (re-teach header badge + footer)",
+    "shared/aiSchemas.ts (metadata.reteach field)",
+    "client/src/lib/__tests__/reteachPlanner.test.ts (new)"
+  ],
+  "do_not_touch": [
+    "ScanMarkDialog's existing marking grid logic",
+    "misconception-bank.ts (read-only consumer)",
+    "Any AI prompt path; the brief is passed via additionalInstructions only"
+  ],
+  "acceptance_criteria": [
+    "Saving a 30-pupil scan batch where 14 pupils got Q3 wrong (47%) surfaces a 'Re-teach this gap' card on the same screen, naming the misconception.",
+    "Clicking the card lands on /worksheets with a re-teach worksheet rendered, NOT the original.",
+    "The re-teach worksheet's metadata carries reteach: { sourceWorksheetId, misconceptionId, pupilsTargeted: [...] }.",
+    "Threshold is configurable via UserPreferencesContext (default 40%).",
+    "pnpm run check + pnpm run build + pnpm test --run pass."
+  ],
+  "verification": [
+    "pnpm run check",
+    "pnpm test --run reteachPlanner ReteachGapPanel",
+    "pnpm run build",
+    "Manual: scan 6 photos with 3 deliberate Q3 errors; confirm a re-teach card appears; click it; confirm rendered worksheet addresses the right misconception."
+  ],
+  "size_estimate": { "files_touched": 7, "net_lines_changed": 500 },
+  "context_budget_for_fresh_chat": "LOW–MEDIUM. ScanMarkDialog (~280 LOC) + scan-mark.ts can be read in full. Worksheets.tsx is touched only via a small handoff useEffect — grep §HANDLE-GENERATE area, do not load the file."
+}

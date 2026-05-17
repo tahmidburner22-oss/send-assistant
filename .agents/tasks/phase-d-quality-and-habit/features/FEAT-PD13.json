@@ -1,0 +1,50 @@
+{
+  "id": "FEAT-PD13",
+  "type": "feat",
+  "title": "Generation cost transparency + caching",
+  "description": "Show '<3s, £0.0006' on every generation so a cost-conscious bursar can defend the licence. Add a deduplicating cache so identical (subject, topic, yearGroup, sendNeed, board, length) inputs in a 24h window return the same worksheet without paying the AI provider twice.",
+  "rationale": "User's improvement #19. Schools with FSM-funded budgets need a defensible per-pupil cost model. Visible cost + measurable savings via dedup is the data point that closes the procurement conversation.",
+  "depends_on": [],
+  "steps": [
+    "Cost capture: every callAI invocation already returns provider + tokensIn + tokensOut (grep `tokensIn`). Stamp `metadata.generation = { provider, ms, tokensIn, tokensOut, costUsd }` on every result. costUsd is computed from a static price table per provider in client/src/lib/aiPricing.ts.",
+    "Show in WorksheetRenderer's footer: a tiny chip 'Generated in 2.4s · £0.0006 · groq-llama'. Click → modal with the breakdown.",
+    "Settings → Tenant → 'Show generation cost' toggle (default ON).",
+    "Cache layer:",
+    "  - server/lib/generationCache.ts: keyed by sha256(subject|topic|yearGroup|sendNeed|board|worksheetLength|extraInstructions); TTL 24h; backed by an existing Redis if available, otherwise an in-process LRU.",
+    "  - aiGenerateWorksheet (or its server proxy) checks cache first; on hit, stamps metadata.generation = { ..., cached: true, costUsd: 0 }.",
+    "Stats: monthly aggregate per tenant in /admin showing total spend + total saved by cache.",
+    "Tests:",
+    "  - client/src/lib/__tests__/aiPricing.test.ts — pricing math.",
+    "  - server/tests/lib/generationCache.test.ts — hit / miss / TTL / dedup.",
+    "Docs: docs/cost-transparency.md."
+  ],
+  "files_to_touch": [
+    "client/src/lib/aiPricing.ts (new)",
+    "server/lib/generationCache.ts (new)",
+    "server/routes/ai.ts (cache check around aiGenerateWorksheet)",
+    "client/src/components/WorksheetRenderer.tsx (cost chip)",
+    "client/src/pages/admin/AdminPanel.tsx (or AdminCostPanel if separate)",
+    "shared/aiSchemas.ts (metadata.generation)",
+    "client/src/lib/__tests__/aiPricing.test.ts (new)",
+    "server/tests/lib/generationCache.test.ts (new)",
+    "docs/cost-transparency.md (new)"
+  ],
+  "do_not_touch": [
+    "AI prompts",
+    "Existing eval harness (PR-5) — but this PR's metadata.generation feeds future eval cost reports"
+  ],
+  "acceptance_criteria": [
+    "Every newly-generated worksheet shows a cost + duration chip.",
+    "Generating an identical worksheet twice in a row returns the cached version with cost £0 and a 'cached' indicator.",
+    "Admin panel shows monthly tenant spend.",
+    "Tests + check + build pass."
+  ],
+  "verification": [
+    "pnpm run check",
+    "pnpm test --run aiPricing generationCache",
+    "pnpm run build",
+    "Manual: generate twice with identical inputs; second one shows cached: true."
+  ],
+  "size_estimate": { "files_touched": 9, "net_lines_changed": 480 },
+  "context_budget_for_fresh_chat": "LOW–MEDIUM."
+}
