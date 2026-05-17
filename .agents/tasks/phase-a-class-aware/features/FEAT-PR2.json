@@ -1,0 +1,59 @@
+{
+  "id": "FEAT-PR2",
+  "type": "feat",
+  "title": "Auto-from-class mode toggle in the worksheet form",
+  "description": "Add a 2-tab segmented control above the worksheet form: 'Manual' (today's behaviour, untouched) and 'Auto from class' (new). Both modes remain available at all times — the form is NOT removed or hidden behind feature flags. Auto mode lets the teacher pick a class, see the inferred topic/tier-mix/misconceptions as read-only chips, and either generate directly or click 'Edit in form' to switch to Manual with all values prefilled.",
+  "rationale": "User explicitly asked for pupil-aware auto-generation as an OPTION while preserving the form. A segmented control makes both modes equally first-class. Pre-fill on switch makes Auto a productive starting point, not a black box.",
+  "depends_on": ["FEAT-PR0", "FEAT-PR1"],
+  "steps": [
+    "Create client/src/pages/worksheets/AutoFromClassPanel.tsx (~250 lines):",
+    "  - Inputs: selectedClassId (string|null), onClassChange, onGenerate(brief), onEditInForm(prefill)",
+    "  - Uses the existing PupilContextPicker pattern but in 'class' mode (one class, not one pupil). If a 'class picker' subcomponent does not yet exist, reuse the children store grouped by classLabel.",
+    "  - Calls buildClassAutoBrief(classId) from PR-1 on every classId change. If classAutoBriefIsUsable returns false, render an inline empty-state explaining what is missing (e.g. 'No upcoming lesson scheduled for 7B2 — pick a topic manually').",
+    "  - Shows the brief as read-only chips: topic, pupil count, tier-mix bar, reading-age range, and a small 'Class will see' list (top 3 misconceptions to address).",
+    "  - Two primary buttons: 'Generate for {classLabel}' and 'Edit in form' (secondary).",
+    "Update client/src/pages/worksheets/WorksheetForm.tsx (introduced by PR-0) to:",
+    "  - Accept a new prop `mode: 'manual' | 'auto-class'` and `onModeChange`.",
+    "  - At the top, render a 2-tab segmented control (use the existing shadcn Tabs primitive — see how Worksheets.tsx and ParentNewsletter.tsx already use Tabs).",
+    "  - When mode === 'manual', render the form exactly as today.",
+    "  - When mode === 'auto-class', render <AutoFromClassPanel/> instead. Form fields are hidden but their state persists so 'Edit in form' from the panel can flip mode back and pre-fill them.",
+    "  - The 'Edit in form' callback receives a prefill object derived from the brief (subject, yearGroup, topic, sendNeed, readingAge slider). Apply it to the form state, then setMode('manual').",
+    "Update useWorksheetGeneration.ts (introduced by PR-0) to expose generateFromBrief(brief: ClassAutoBrief, overrides) which calls aiGenerateWorksheetFromClassBrief from PR-1 and routes the result through the same post-processing pipeline as manual generation (history append, validators, render).",
+    "Persist last-used mode per user. Extend client/src/contexts/UserPreferencesContext.tsx with `worksheetGenerationMode: 'manual' | 'auto-class'` (default 'manual') and a setter. Read it on mount of WorksheetForm; write it whenever mode changes.",
+    "Telemetry hooks: emit 'worksheet.mode.toggled' (with from/to) and 'worksheet.auto.generated' (with classId, pupilCount). Use the existing telemetry/analytics util — search for `track(` or `logEvent(` first; if no util exists, skip silently rather than introduce one in this PR.",
+    "Add a test client/src/pages/worksheets/__tests__/AutoFromClassPanel.test.tsx covering: empty-state when no scheduled lesson, chips render from brief, 'Edit in form' calls onEditInForm with the expected prefill."
+  ],
+  "files_to_touch": [
+    "client/src/pages/worksheets/AutoFromClassPanel.tsx (new)",
+    "client/src/pages/worksheets/WorksheetForm.tsx (add mode prop, segmented control, mode-aware rendering)",
+    "client/src/pages/worksheets/useWorksheetGeneration.ts (add generateFromBrief)",
+    "client/src/pages/Worksheets.tsx (wire mode state + persistence)",
+    "client/src/contexts/UserPreferencesContext.tsx (worksheetGenerationMode pref)",
+    "client/src/pages/worksheets/__tests__/AutoFromClassPanel.test.tsx (new)"
+  ],
+  "do_not_touch": [
+    "client/src/lib/ai/* (PR-1 already added the helper)",
+    "Any prompt string",
+    "ClassPackDialog or any other dialog (PR-3 handles class-pack default)"
+  ],
+  "acceptance_criteria": [
+    "Manual tab renders today's form unchanged; existing manual generation flow works identically.",
+    "Auto tab shows class picker; selecting a class with a scheduled lesson populates chips and enables 'Generate'.",
+    "Auto tab with no scheduled lesson shows an actionable empty state and does not throw.",
+    "'Edit in form' switches to Manual with subject/year/topic/sendNeed prefilled.",
+    "Last-used mode persists across reloads via UserPreferencesContext.",
+    "pnpm run check + pnpm run build pass.",
+    "AutoFromClassPanel.test.tsx passes."
+  ],
+  "verification": [
+    "pnpm run check",
+    "pnpm test --run AutoFromClassPanel",
+    "pnpm run build",
+    "Manual: open Worksheets, toggle to Auto, pick a real class, click Generate; confirm worksheet renders. Reload and confirm Auto is still selected."
+  ],
+  "size_estimate": {
+    "files_touched": 6,
+    "net_lines_changed": 450
+  },
+  "context_budget_for_fresh_chat": "MEDIUM. After PR-0, WorksheetForm.tsx is < 600 lines so it can be read in full. AutoFromClassPanel.tsx is new. Do not read the original Worksheets.tsx — read only the post-PR-0 shell."
+}

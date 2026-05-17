@@ -1,0 +1,72 @@
+{
+  "id": "FEAT-PR0",
+  "type": "refactor",
+  "title": "Carve up Worksheets.tsx and ai.ts",
+  "description": "Split the two largest files in the codebase into focused modules so subsequent PRs can be picked up by fresh chats without exhausting context. ZERO behaviour change. The existing public surface (default-exported Worksheets page, exported AI functions used elsewhere) must remain bit-for-bit compatible.",
+  "rationale": "client/src/pages/Worksheets.tsx is 6,531 lines and client/src/lib/ai.ts is 4,568 lines. Reading either in full burns ~40 percent of a fresh chat's context just on file loading, leaving no room for actual work. Every later phase-A PR needs to touch these files; if they are not split first, those PRs cannot fit in a single chat.",
+  "constraints": [
+    "DO NOT change any prompt strings, validator behaviour, retry logic, or schema shapes.",
+    "DO NOT rename any exported symbol. All current imports of aiGenerateWorksheet, aiEditSection, aiScaffoldExistingWorksheet, aiDifferentiateExistingWorksheet, parseNaturalLanguageInput, aiScenarioSwap, aiAdjustReadingLevel, aiGenerateWorksheetDiagram, aiScenarioSwapStory MUST keep working with no edits at the call sites.",
+    "DO NOT alter the default export of Worksheets.tsx. It must remain `export default function Worksheets()` and the route in App.tsx must keep working.",
+    "Each new file must be < 800 lines. If a single function is larger than that, leave it where it is and just extract neighbours."
+  ],
+  "steps": [
+    "Run grep_search to enumerate the top-level functions in client/src/pages/Worksheets.tsx. Confirmed boundaries (do not re-derive): line 207 LoadingStageMessage, line 219 AnimatedProgressBar, line 476 default export Worksheets. Use grep_search with patterns like '^function ' and '^const [A-Z]' inside Worksheets.tsx to enumerate the rest before extracting; do NOT read the file in full.",
+    "Create client/src/pages/worksheets/ as a sibling folder. Move into it (one file per concern, narrow imports only):",
+    "  - WorksheetForm.tsx — the generation form JSX + its local state hooks",
+    "  - WorksheetActionsBar.tsx — Differentiate / Class Pack / Lesson Bundle / Scan / Evidence / Companion buttons",
+    "  - WorksheetHistoryPanel.tsx — history sidebar",
+    "  - WorksheetTemplatesPanel.tsx — template chooser",
+    "  - WorksheetPreviewPane.tsx — the rendered worksheet pane",
+    "  - useWorksheetGeneration.ts — the orchestration hook (calls aiGenerateWorksheet, manages loading, applies post-validators)",
+    "  - LoadingStageMessage.tsx and AnimatedProgressBar.tsx — already standalone, just extract verbatim.",
+    "Keep client/src/pages/Worksheets.tsx as the route entry. After extraction it should be a thin shell (~150 lines) that composes the pieces above. Its default export name stays Worksheets.",
+    "For client/src/lib/ai.ts, create client/src/lib/ai/ folder with:",
+    "  - generate.ts — aiGenerateWorksheet (line 782) and its private helpers (prompt builders, retry wrappers, post-validator invocation around line 2630–2660)",
+    "  - edit.ts — aiEditSection (line 3522) and aiGenerateWorksheetDiagram (line 3664)",
+    "  - scaffold.ts — aiScaffoldExistingWorksheet (line 3728)",
+    "  - differentiate.ts — aiDifferentiateExistingWorksheet (line 3777)",
+    "  - parse.ts — parseNaturalLanguageInput (line 3834)",
+    "  - scenario.ts — aiScenarioSwap (line 4154) and aiScenarioSwapStory (line 4294)",
+    "  - reading-level.ts — aiAdjustReadingLevel (line 4204)",
+    "  - shared.ts — anything used by ≥2 of the above (callAI wrappers, JSON repair, prompt fragments)",
+    "  - index.ts — barrel that re-exports every public symbol so existing imports `from '@/lib/ai'` continue to resolve.",
+    "Replace client/src/lib/ai.ts with a one-line re-export: `export * from './ai/index';` so the import path `@/lib/ai` keeps working for any caller that imports it.",
+    "After both splits, run `pnpm run check` and grep for any remaining import of the old paths to confirm none are broken.",
+    "Commit message: 'refactor: split Worksheets.tsx and ai.ts into focused modules (no behaviour change)'."
+  ],
+  "files_to_touch": [
+    "client/src/pages/Worksheets.tsx (shrink)",
+    "client/src/pages/worksheets/* (new)",
+    "client/src/lib/ai.ts (becomes re-export)",
+    "client/src/lib/ai/* (new)"
+  ],
+  "do_not_touch": [
+    "Any *.test.ts file (their imports must keep working unchanged)",
+    "client/src/lib/worksheetPostValidator.ts",
+    "client/src/lib/output-validators.ts",
+    "client/src/lib/pillarAValidator.ts",
+    "shared/aiSchemas.ts",
+    "Any prompt string or validator rule"
+  ],
+  "acceptance_criteria": [
+    "pnpm run check passes with zero TypeScript errors.",
+    "pnpm run build passes.",
+    "Every existing import path that resolved before still resolves (greppable: '@/lib/ai', '@/pages/Worksheets').",
+    "Worksheets.tsx is < 600 lines after the split.",
+    "Each new file under client/src/pages/worksheets/ and client/src/lib/ai/ is < 800 lines.",
+    "Server-side test server/tests/worksheetScrutiny.test.ts still passes (it imports worksheetPostValidator, which we are not touching).",
+    "Running the dev server and generating one worksheet manually produces visually identical output to main."
+  ],
+  "verification": [
+    "pnpm run check",
+    "pnpm run build",
+    "Manual smoke: generate one Y7 maths worksheet and one Y10 science worksheet on the running app; confirm output identical to main."
+  ],
+  "size_estimate": {
+    "files_touched": 14,
+    "net_lines_changed": 500,
+    "notes": "Almost entirely cut/paste, no logic edits."
+  },
+  "context_budget_for_fresh_chat": "MEDIUM. Do reads in this order: (1) grep top-level signatures inside Worksheets.tsx and ai.ts, (2) read 200-line ranges around each extraction boundary, (3) write the new files, (4) replace originals with shells. Never read either file in full."
+}
