@@ -25,6 +25,7 @@ import { worksheetBank, type BankWorksheet } from "@/lib/worksheet-bank";
 import { getSyllabusTopics, type SyllabusTopic } from "@/lib/syllabus-data";
 import { getSubtopics } from "@/lib/subtopics-data";
 import { aiGenerateWorksheet, aiEditSection, aiScaffoldExistingWorksheet, aiDifferentiateExistingWorksheet, parseNaturalLanguageInput, aiScenarioSwap, aiAdjustReadingLevel, aiGenerateWorksheetFromClassBrief } from "@/lib/ai";
+import { isMathsSubject } from "@/lib/mathsVerifier";
 import type { ClassAutoBrief } from "@/lib/class-auto-brief";
 import { runFactCheck } from "@/lib/fact-checker";
 import { tagWorksheetForPupil } from "@/lib/evidence-tagger";
@@ -604,7 +605,24 @@ export default function Worksheets() {
   // Diagram B → Section 3 (Core) → Challenge → Self Reflection → Teacher Key
   const ALL_SECTIONS = ['learning-objective', 'retrieval', 'key-vocabulary', 'common-mistakes', 'worked-example', 'diagram-a', 'true-false', 'mcq', 'word-bank-gap-fill', 'section-a', 'diagram-b', 'section-b', 'section-c', 'self-reflection'] as const;
   type SectionId = typeof ALL_SECTIONS[number];
-  const defaultSections = ALL_SECTIONS.filter(s => s !== 'retrieval') as SectionId[];
+  // PR-M1 — Subject-aware defaults.
+  //
+  // For maths sheets:
+  //   - 'true-false' is OFF by default AND hard-removed at the generator layer
+  //     (ai.ts ~L2476). It can never appear on a maths worksheet.
+  //   - 'mcq' is OFF by default but the toggle remains available so a teacher
+  //     can opt-in for a low-stakes diagnostic warm-up. The existing
+  //     calculation-only MCQ rule (ai.ts ~L1174 `mathsMcq`) is preserved.
+  //
+  // For non-maths sheets: behaviour is unchanged.
+  const computeDefaultSections = useCallback((forSubject: string): SectionId[] => {
+    let base = ALL_SECTIONS.filter(s => s !== 'retrieval') as SectionId[];
+    if (isMathsSubject(forSubject)) {
+      base = base.filter(s => s !== 'true-false' && s !== 'mcq');
+    }
+    return base;
+  }, []);
+  const defaultSections = computeDefaultSections(subject);
   const [selectedSections, setSelectedSections] = useState<SectionId[]>(defaultSections);  const [examBoard, setExamBoard] = useState("none");
   const [includeAnswers, setIncludeAnswers] = useState(true);
   const [examStyle, setExamStyle] = useState(false);
@@ -711,6 +729,22 @@ export default function Worksheets() {
 
   // Reset subtopic when topic changes
   useEffect(() => { setSubtopic(""); }, [topic]);
+
+  // PR-M1 — When the user switches INTO a maths subject, strip 'true-false' and
+  // 'mcq' from the active selection so the form mirrors the new defaults.
+  // Switching OUT of maths leaves the user's current selection alone — we
+  // never silently re-add sections they may have deliberately turned off.
+  // Note: this is purely a UX nicety. The generator-layer guard in ai.ts
+  // (`wantTrueFalse && !isMaths`) is the source of truth that prevents T/F
+  // from ever reaching a maths worksheet, regardless of form state.
+  useEffect(() => {
+    if (!isMathsSubject(subject)) return;
+    setSelectedSections(prev => {
+      const filtered = prev.filter(s => s !== 'true-false' && s !== 'mcq');
+      return filtered.length === prev.length ? prev : filtered;
+    });
+  }, [subject]);
+
   // Auto-disable Revision Mat if the newly selected topic has no Revision Map in the library
   useEffect(() => {
     if (!isRevisionMat) return;
