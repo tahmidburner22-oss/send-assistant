@@ -77,23 +77,18 @@ export default function BSPEnhancementsPanel({ pupilId, pupilName, bspText }: Pr
     toast.success(`Review scheduled for ${reviewDate}. Reminder will fire 7 days before.`);
   }
 
-  if (!pupilId) {
-    return (
-      <Card className="border-orange-200 mt-4 border-dashed">
-        <CardContent className="p-4 text-xs text-muted-foreground">
-          Pick a pupil from the top bar to enable Behaviour Plan enhancements (ABC log, lanyard card, share-with-TAs).
-        </CardContent>
-      </Card>
-    );
-  }
-
   return (
     <Card className="border-orange-200 mt-4">
       <CardContent className="p-4 space-y-3">
         <div className="flex items-center gap-2">
           <ShieldAlert className="w-4 h-4 text-orange-600" />
-          <p className="text-sm font-bold">Behaviour Plan Enhancements — {pupilName}</p>
+          <p className="text-sm font-bold">Behaviour Plan Enhancements{pupilName ? ` — ${pupilName}` : ""}</p>
         </div>
+        {!pupilId && (
+          <p className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1">
+            ⚠️ Scope a pupil from the top bar to save ABC logs and enable TA-share links.
+          </p>
+        )}
 
         <Tabs defaultValue="abc">
           <TabsList className="flex flex-wrap gap-1 h-auto">

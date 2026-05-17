@@ -65,8 +65,7 @@ export default function BehaviourPlanV2Panel({ pupilId, pupilName, bspText }: Pr
     toast.success("Pupil voice saved — it will be injected next time you generate.");
   }
 
-  if (!pupilId && !bspText) return null;
-
+  // Always render so tabs are visible — content is empty-state when no pupil scoped.
   return (
     <Card className="border-amber-200 mt-4">
       <CardContent className="p-4 space-y-3">
