@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/select";
 import DOMPurify from "dompurify";
 import { TONES_NEWSLETTER as tones } from "@/lib/tool-vocab";
+import ParentNewsletterEnhancementsPanel from "@/components/ParentNewsletterEnhancementsPanel";
 
 const commTypes = [
   { value: "newsletter", label: "Class Newsletter" },
@@ -228,7 +229,12 @@ Write the complete communication, ready to print and send.`,
         saveParentNewsletter({ title, content: text, date: values.date || new Date().toLocaleDateString("en-GB"), type: values.type || "newsletter" });
         toast.success("Saved to Parent Portal history.");
       }}
-      renderPostActions={(result) => <TranslationPanel result={result} />}
+      renderPostActions={(result, values) => (
+        <>
+          <TranslationPanel result={result} />
+          <ParentNewsletterEnhancementsPanel result={result} values={values} />
+        </>
+      )}
     />
   );
 }
