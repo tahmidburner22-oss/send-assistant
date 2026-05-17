@@ -2964,6 +2964,33 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
     setAiEditLoading(false);
   };
 
+  // ═══ §HANDLE-REGENERATE-QUESTION · FEAT-PB2 CAS-mismatch regen ═════════════
+  // Single-question regenerate triggered from the CAS verification panel.
+  // Calls aiEditSection on just the failing section with a corrective
+  // instruction; the rest of the worksheet is untouched. Failures fall back
+  // to a toast — never block the page.
+  const handleRegenerateQuestion = async (sectionIndex: number, reason: string) => {
+    if (!generated || sectionIndex < 0 || sectionIndex >= (generated.sections?.length ?? 0)) return;
+    const section = generated.sections[sectionIndex];
+    const currentContent = getSectionContent(sectionIndex, section.content);
+    const instruction = `A symbolic-maths verifier (CAS) detected a mismatch between the question stem and the stated answer. ${reason ? `Detail: ${reason}.` : ""} Produce a corrected question and matching answer with full working. Use simple integer arithmetic so the result is unambiguous. Keep the same difficulty and command word.`;
+    try {
+      toast.message("Regenerating question with corrected answer...");
+      const { newContent } = await aiEditSection({
+        sectionTitle: section.title,
+        currentContent,
+        instruction,
+        subject: generated.metadata?.subject,
+        yearGroup: generated.metadata?.yearGroup,
+        sendNeed: generated.metadata?.sendNeed,
+      });
+      setEditedSections((prev) => ({ ...prev, [sectionIndex]: newContent }));
+      toast.success("Question regenerated. Re-run CAS to confirm.");
+    } catch (err) {
+      toast.error("Regenerate failed. Please try again.");
+    }
+  };
+
   // ─── Assign ──────────────────────────────────────────────────────────────────────
   const handleAssign = (childId: string) => {
     if (!generated) return;
@@ -5801,6 +5828,7 @@ ${s.content}`).join("\n\n"),
                       setEditType("manual");
                     }}
                     hideHeader={hideHeader}
+                    onRegenerateQuestion={handleRegenerateQuestion}
                   />
                 )}
                 {/* Inline section edit rendering (Manual + AI) */}
