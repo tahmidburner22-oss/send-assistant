@@ -168,3 +168,30 @@ export function buildExpectedAnswersFromWorksheet(ws: any): ScanMarkExpected[] {
   }
   return out;
 }
+
+
+// ── FEAT-PB4 — Batch helpers re-export ───────────────────────────────────────
+//
+// Phase B · PR-4 introduces a bulk class-set workflow. Its helpers live in a
+// sibling module (lib/scanMarkBatch.ts) so the single-image surface here
+// stays small. We re-export the public API so existing callers can keep
+// importing from "@/lib/scan-mark" without learning about the new file, and
+// new callers can pick whichever path reads best.
+export {
+  scanBatch,
+  aggregateBatch,
+  generateBulkFeedback,
+  exportToCsv,
+  csvFilename,
+  downloadCsv,
+} from "./scanMarkBatch";
+export type {
+  BatchImageInput,
+  BatchScanResult,
+  ScanBatchProgress,
+  ScanBatchOptions,
+  PerQuestionAggregate,
+  PerPupilAggregate,
+  BatchAggregate,
+  BulkFeedbackEntry,
+} from "./scanMarkBatch";
