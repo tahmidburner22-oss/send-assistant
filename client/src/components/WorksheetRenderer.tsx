@@ -5971,7 +5971,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                       <div style={{ display: "flex", flexDirection: "column" as const, gap: "12px" }}>
                         {mistakes.map((m, mi) => (
                           <div key={mi}>
-                            <div style={{ fontWeight: 700, fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, color: "#1a2744", marginBottom: "3px" }}>{m.title}</div>
+                            <div style={{ fontWeight: 700, fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, color: "#1a2744", marginBottom: "3px" }} dangerouslySetInnerHTML={{ __html: renderMath(m.title) }} />
                             {m.explanation && (
                               <div style={{ fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, color: "#374151", paddingLeft: "16px" }}>
                                 <span style={{ color: "#2a7f8f", fontWeight: 700, marginRight: "6px" }}>→</span>
