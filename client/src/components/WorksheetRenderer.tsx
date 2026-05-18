@@ -5954,27 +5954,106 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                     );
                   }
                   if (section.type === "common-mistakes") {
-                    const lines = content.split("\n").filter(Boolean);
-                    const mistakes: { title: string; explanation: string }[] = [];
-                    let current: { title: string; explanation: string } | null = null;
-                    for (const line of lines) {
+                    // Parse content into mistake blocks with labelled parts
+                    const rawCM = content || "";
+                    const normCM = rawCM
+                      .replace(/\\n/g, "\n")
+                      .replace(/(Mistake\s*\d+\s*:)/gi, "\n$1")
+                      .replace(/(What pupils often write\s*:)/gi, "\n$1")
+                      .replace(/(Why that'?s wrong[^:]*:)/gi, "\n$1")
+                      .replace(/(How to do it right\s*:|Correct way\s*:)/gi, "\n$1")
+                      .replace(/(Quick check\s*:)/gi, "\n$1")
+                      .replace(/(MISTAKE\s*\d+\s*[:\-\u2013\u2014])/gi, "\n$1");
+                    const cmHeaderRe = /(?:^|\n)\s*(?:Mistake|MISTAKE)\s*\d+\s*[:\-\u2013\u2014]/gi;
+                    const cmHeaderIdxs: number[] = [];
+                    let cmHm: RegExpExecArray | null;
+                    while ((cmHm = cmHeaderRe.exec(normCM)) !== null) {
+                      cmHeaderIdxs.push(cmHm.index);
+                      if (cmHm.index === cmHeaderRe.lastIndex) cmHeaderRe.lastIndex++;
+                    }
+                    if (cmHeaderIdxs.length > 0) {
+                      const cmBlocks: string[] = [];
+                      for (let bi = 0; bi < cmHeaderIdxs.length; bi++) {
+                        cmBlocks.push(normCM.slice(cmHeaderIdxs[bi], bi + 1 < cmHeaderIdxs.length ? cmHeaderIdxs[bi + 1] : normCM.length).trim());
+                      }
+                      const cmIntro = normCM.slice(0, cmHeaderIdxs[0]).trim();
+                      const cmLabelPatterns = [
+                        { re: /^(Mistake\s*\d+\s*[:\-\u2013\u2014])/i, key: "header" },
+                        { re: /^(What pupils often write\s*:)/i, key: "wrong" },
+                        { re: /^(Why that'?s wrong[^:]*:)/i, key: "why" },
+                        { re: /^(How to do it right\s*:|Correct way\s*:)/i, key: "right" },
+                        { re: /^(Quick check\s*:)/i, key: "check" },
+                      ];
+                      return (
+                        <div style={{ border: "1.5px solid #1a2744", borderRadius: "6px", background: "#ffffff", padding: "0" }}>
+                          {cmIntro && (
+                            <div style={{ padding: "10px 14px 0 14px", fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, color: "#374151", fontStyle: "italic" }}
+                              dangerouslySetInnerHTML={{ __html: renderMath(cmIntro) }} />
+                          )}
+                          {cmBlocks.map((blk, bi) => {
+                            const blkLines = blk.split("\n").map(l => l.trim()).filter(Boolean);
+                            const blkParts: Array<{ key: string; label: string; text: string; lines: string[] }> = [];
+                            let blkCur: { key: string; label: string; text: string; lines: string[] } | null = null;
+                            for (const bl of blkLines) {
+                              let blMatched = false;
+                              for (const { re, key } of cmLabelPatterns) {
+                                const bm = bl.match(re);
+                                if (bm) {
+                                  if (blkCur) blkParts.push(blkCur);
+                                  const lbl = bm[1]; const rst = bl.slice(lbl.length).trim();
+                                  blkCur = { key, label: lbl, text: rst, lines: rst ? [rst] : [] };
+                                  blMatched = true; break;
+                                }
+                              }
+                              if (!blMatched && blkCur) { blkCur.lines.push(bl); blkCur.text = blkCur.lines.join("\n"); }
+                            }
+                            if (blkCur) blkParts.push(blkCur);
+                            const hdrPart = blkParts.find(p => p.key === "header");
+                            const bodyParts = blkParts.filter(p => p.key !== "header");
+                            return (
+                              <div key={bi} style={{ borderTop: bi > 0 ? "1px solid #1a2744" : undefined }}>
+                                {hdrPart && (
+                                  <div style={{ background: "#1a2744", color: "#ffffff", padding: "5px 14px", fontSize: `${fmt.fontSize - 1}px`, fontWeight: 700, fontFamily: fmt.fontFamily }}>
+                                    <span dangerouslySetInnerHTML={{ __html: renderMath(hdrPart.label + (hdrPart.text ? " " + hdrPart.text : "")) }} />
+                                  </div>
+                                )}
+                                <div style={{ padding: "8px 14px 10px 14px" }}>
+                                  {bodyParts.map((bp, bpi) => (
+                                    <div key={bpi} style={{ marginBottom: bpi < bodyParts.length - 1 ? "8px" : "0", paddingBottom: bpi < bodyParts.length - 1 ? "8px" : "0", borderBottom: bpi < bodyParts.length - 1 ? "1px dashed #e2e8f0" : "none" }}>
+                                      <div style={{ fontSize: `${fmt.fontSize - 1}px`, fontWeight: 700, color: "#1a2744", fontFamily: fmt.fontFamily, marginBottom: "2px", textTransform: "uppercase" as const, letterSpacing: "0.04em" }}>{bp.label}</div>
+                                      <div style={{ fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, color: bp.key === "wrong" ? "#dc2626" : bp.key === "right" ? "#166534" : "#374151", fontWeight: bp.key === "wrong" ? 600 : 400, lineHeight: "1.5", paddingLeft: "8px", borderLeft: bp.key === "wrong" ? "3px solid #dc2626" : bp.key === "right" ? "3px solid #166534" : bp.key === "check" ? "3px solid #1a2744" : "none" }}>
+                                        {bp.text.split("\n").map((tl, tli) => (<div key={tli} dangerouslySetInnerHTML={{ __html: renderMath(tl) }} />))}
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      );
+                    }
+                    // Fallback: simple arrow-list format
+                    const cmLines = content.split("\n").filter(Boolean);
+                    const cmMistakes: { title: string; explanation: string }[] = [];
+                    let cmCurrent: { title: string; explanation: string } | null = null;
+                    for (const line of cmLines) {
                       const trimmed = line.trim();
                       if (trimmed.startsWith("→") || trimmed.startsWith("->")) {
-                        if (current) current.explanation = trimmed.replace(/^(→|->)+\s*/, "");
+                        if (cmCurrent) cmCurrent.explanation = trimmed.replace(/^(→|->)+\s*/, "");
                       } else if (trimmed.length > 0) {
-                        if (current) mistakes.push(current);
-                        current = { title: trimmed.replace(/^\*+|\*+$/g, "").trim(), explanation: "" };
+                        if (cmCurrent) cmMistakes.push(cmCurrent);
+                        cmCurrent = { title: trimmed.replace(/^\*+|\*+$/g, "").trim(), explanation: "" };
                       }
                     }
-                    if (current) mistakes.push(current);
+                    if (cmCurrent) cmMistakes.push(cmCurrent);
                     return (
-                      <div style={{ display: "flex", flexDirection: "column" as const, gap: "12px" }}>
-                        {mistakes.map((m, mi) => (
-                          <div key={mi}>
-                            <div style={{ fontWeight: 700, fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, color: "#1a2744", marginBottom: "3px" }} dangerouslySetInnerHTML={{ __html: renderMath(m.title) }} />
+                      <div style={{ border: "1.5px solid #1a2744", borderRadius: "6px", background: "#ffffff", padding: "12px 14px", display: "flex", flexDirection: "column" as const, gap: "12px" }}>
+                        {cmMistakes.map((m, mi) => (
+                          <div key={mi} style={{ paddingBottom: mi < cmMistakes.length - 1 ? "12px" : "0", borderBottom: mi < cmMistakes.length - 1 ? "1px dashed #e2e8f0" : "none" }}>
+                            <div style={{ fontWeight: 700, fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, color: "#1a2744", marginBottom: "4px" }} dangerouslySetInnerHTML={{ __html: renderMath(m.title) }} />
                             {m.explanation && (
-                              <div style={{ fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, color: "#374151", paddingLeft: "16px" }}>
-                                <span style={{ color: "#2a7f8f", fontWeight: 700, marginRight: "6px" }}>→</span>
+                              <div style={{ fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, color: "#374151", paddingLeft: "12px", borderLeft: "3px solid #1a2744" }}>
                                 <span dangerouslySetInnerHTML={{ __html: renderMath(m.explanation) }} />
                               </div>
                             )}
@@ -6426,54 +6505,197 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                       dangerouslySetInnerHTML={{ __html: renderMath(content) }} />
                   </div>
                 ) : section.type === "common-mistakes" ? (
-                  <div style={{ background: "#fff1f2", border: "1.5px solid #fecdd3", borderRadius: "6px", padding: "18px 20px" }}>
-                    <div style={{ fontSize: "12px", fontWeight: 800, color: "#9f1239", letterSpacing: "0.06em", marginBottom: "12px", fontFamily: fmt.fontFamily, textTransform: "uppercase", borderBottom: "1px solid #fecdd3", paddingBottom: "8px" }}>⚠️ Common Mistakes to Avoid</div>
-                    <div style={{ fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, lineHeight: "1.6", color: "#1e293b" }}>
-                      {(() => {
-                        // First, normalize the content to handle potential AI formatting quirks
-                        const normalizedContent = content
-                          .replace(/(Mistake \d+:)/gi, '\n$1')
-                          .replace(/(Why that's wrong \(in plain words\):|Why that's wrong:)/gi, '\n$1')
-                          .replace(/(How to do it right:|Correct way:)/gi, '\n$1')
-                          .replace(/(Quick check:)/gi, '\n$1');
+                  <div style={{ background: "#ffffff", border: "1.5px solid #1a2744", borderRadius: "6px", padding: "0" }}>
+                    {(() => {
+                      // Split content into individual mistake blocks for structured rendering
+                      const rawContent = content || "";
 
-                        return normalizedContent.split('\n').filter(line => line.trim()).map((line, idx) => {
-                          const labels = [
-                            /Mistake \d+:/i,
-                            /Why that's wrong \(in plain words\):/i,
-                            /Why that's wrong:/i,
-                            /How to do it right:/i,
-                            /Correct way:/i,
-                            /Quick check:/i
-                          ];
+                      // Normalise the content: ensure each Mistake N: header starts on its own line
+                      const normalizedContent = rawContent
+                        .replace(/\\n/g, "\n")
+                        .replace(/(Mistake\s*\d+\s*:)/gi, "\n$1")
+                        .replace(/(What pupils often write\s*:)/gi, "\n$1")
+                        .replace(/(Why that'?s wrong[^:]*:)/gi, "\n$1")
+                        .replace(/(How to do it right\s*:)/gi, "\n$1")
+                        .replace(/(Correct way\s*:)/gi, "\n$1")
+                        .replace(/(Quick check\s*:)/gi, "\n$1")
+                        .replace(/(MISTAKE\s*\d+\s*[:\-\u2013\u2014])/gi, "\n$1");
 
-                          let labelMatch = null;
-                          for (const regex of labels) {
-                            const match = line.match(regex);
-                            if (match) {
-                              labelMatch = match[0];
-                              break;
+                      // Split into mistake blocks
+                      const mistakeHeaderRe = /(?:^|\n)\s*(?:Mistake|MISTAKE)\s*\d+\s*[:\-\u2013\u2014]/gi;
+                      const headerMatches: number[] = [];
+                      let hm: RegExpExecArray | null;
+                      const contentForSplit = normalizedContent;
+                      while ((hm = mistakeHeaderRe.exec(contentForSplit)) !== null) {
+                        headerMatches.push(hm.index);
+                        if (hm.index === mistakeHeaderRe.lastIndex) mistakeHeaderRe.lastIndex++;
+                      }
+
+                      // If we found mistake blocks, render them as individual bordered boxes
+                      if (headerMatches.length > 0) {
+                        const blocks: string[] = [];
+                        for (let bi = 0; bi < headerMatches.length; bi++) {
+                          const start = headerMatches[bi];
+                          const end = bi + 1 < headerMatches.length ? headerMatches[bi + 1] : contentForSplit.length;
+                          blocks.push(contentForSplit.slice(start, end).trim());
+                        }
+
+                        // Check if there's introductory text before the first block
+                        const introText = contentForSplit.slice(0, headerMatches[0]).trim();
+
+                        return (
+                          <>
+                            {introText && (
+                              <div style={{ padding: "12px 16px 0 16px", fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, color: "#374151", fontStyle: "italic" }}
+                                dangerouslySetInnerHTML={{ __html: renderMath(introText) }} />
+                            )}
+                            {blocks.map((block, bi) => {
+                              // Parse the block into labelled parts
+                              const lines = block.split("\n").map(l => l.trim()).filter(Boolean);
+                              const labelPatterns = [
+                                { re: /^(Mistake\s*\d+\s*[:\-\u2013\u2014])/i, key: "header" },
+                                { re: /^(What pupils often write\s*:)/i, key: "wrong" },
+                                { re: /^(Why that'?s wrong[^:]*:)/i, key: "why" },
+                                { re: /^(How to do it right\s*:|Correct way\s*:)/i, key: "right" },
+                                { re: /^(Quick check\s*:)/i, key: "check" },
+                              ];
+
+                              const parts: Array<{ key: string; label: string; text: string; lines: string[] }> = [];
+                              let currentPart: { key: string; label: string; text: string; lines: string[] } | null = null;
+
+                              for (const line of lines) {
+                                let matched = false;
+                                for (const { re, key } of labelPatterns) {
+                                  const m = line.match(re);
+                                  if (m) {
+                                    if (currentPart) parts.push(currentPart);
+                                    const label = m[1];
+                                    const rest = line.slice(label.length).trim();
+                                    currentPart = { key, label, text: rest, lines: rest ? [rest] : [] };
+                                    matched = true;
+                                    break;
+                                  }
+                                }
+                                if (!matched && currentPart) {
+                                  currentPart.lines.push(line);
+                                  currentPart.text = currentPart.lines.join("\n");
+                                }
+                              }
+                              if (currentPart) parts.push(currentPart);
+
+                              // If no labelled parts found, render as plain text block
+                              if (parts.length === 0) {
+                                return (
+                                  <div key={bi} style={{ padding: "12px 16px", borderTop: bi > 0 ? "1px solid #1a2744" : undefined }}>
+                                    <div style={{ fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, color: "#374151" }}
+                                      dangerouslySetInnerHTML={{ __html: renderMath(block) }} />
+                                  </div>
+                                );
+                              }
+
+                              const headerPart = parts.find(p => p.key === "header");
+                              const bodyParts = parts.filter(p => p.key !== "header");
+
+                              return (
+                                <div key={bi} style={{
+                                  borderTop: bi > 0 ? "1px solid #1a2744" : undefined,
+                                  padding: "0",
+                                }}>
+                                  {/* Mistake header bar */}
+                                  {headerPart && (
+                                    <div style={{
+                                      background: "#1a2744",
+                                      color: "#ffffff",
+                                      padding: "6px 16px",
+                                      fontSize: `${fmt.fontSize - 1}px`,
+                                      fontWeight: 700,
+                                      fontFamily: fmt.fontFamily,
+                                      letterSpacing: "0.03em",
+                                    }}>
+                                      <span dangerouslySetInnerHTML={{ __html: renderMath(headerPart.label + (headerPart.text ? " " + headerPart.text : "")) }} />
+                                    </div>
+                                  )}
+                                  {/* Body parts */}
+                                  <div style={{ padding: "10px 16px 12px 16px" }}>
+                                    {bodyParts.map((part, pi) => (
+                                      <div key={pi} style={{
+                                        marginBottom: pi < bodyParts.length - 1 ? "10px" : "0",
+                                        paddingBottom: pi < bodyParts.length - 1 ? "10px" : "0",
+                                        borderBottom: pi < bodyParts.length - 1 ? "1px dashed #e2e8f0" : "none",
+                                      }}>
+                                        <div style={{
+                                          fontSize: `${fmt.fontSize - 1}px`,
+                                          fontWeight: 700,
+                                          color: "#1a2744",
+                                          fontFamily: fmt.fontFamily,
+                                          marginBottom: "3px",
+                                          textTransform: "uppercase" as const,
+                                          letterSpacing: "0.04em",
+                                        }}>
+                                          {part.label}
+                                        </div>
+                                        <div style={{
+                                          fontSize: `${fmt.fontSize}px`,
+                                          fontFamily: fmt.fontFamily,
+                                          color: part.key === "wrong" ? "#dc2626" : part.key === "right" ? "#166534" : "#374151",
+                                          fontWeight: part.key === "wrong" ? 600 : 400,
+                                          lineHeight: "1.5",
+                                          paddingLeft: "8px",
+                                          borderLeft: part.key === "wrong" ? "3px solid #dc2626" : part.key === "right" ? "3px solid #166534" : part.key === "check" ? "3px solid #1a2744" : "none",
+                                        }}>
+                                          {part.text.split("\n").map((tline, tli) => (
+                                            <div key={tli} dangerouslySetInnerHTML={{ __html: renderMath(tline) }} />
+                                          ))}
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </>
+                        );
+                      }
+
+                      // Fallback: no mistake blocks found — render line-by-line with label detection
+                      const fallbackLines = normalizedContent.split("\n").filter(line => line.trim());
+                      const fallbackLabelPatterns = [
+                        /^(Mistake\s*\d+\s*[:\-\u2013\u2014])/i,
+                        /^(What pupils often write\s*:)/i,
+                        /^(Why that'?s wrong[^:]*:)/i,
+                        /^(How to do it right\s*:|Correct way\s*:)/i,
+                        /^(Quick check\s*:)/i,
+                        /^(MISTAKE\s*\d+\s*[:\-])/i,
+                        /^(→|->)/,
+                      ];
+
+                      return (
+                        <div style={{ padding: "12px 16px" }}>
+                          {fallbackLines.map((line, idx) => {
+                            let labelMatch: string | null = null;
+                            let rest = line;
+                            for (const re of fallbackLabelPatterns) {
+                              const m = line.match(re);
+                              if (m) { labelMatch = m[1]; rest = line.slice(m[1].length).trim(); break; }
                             }
-                          }
-
-                          if (labelMatch) {
-                            const textPart = line.substring(line.indexOf(labelMatch) + labelMatch.length).trim();
+                            if (labelMatch) {
+                              return (
+                                <div key={idx} style={{ marginBottom: "8px", marginTop: idx > 0 ? "4px" : "0" }}>
+                                  <strong style={{ color: "#1a2744", fontFamily: fmt.fontFamily }}>{labelMatch}</strong>{" "}
+                                  <span style={{ fontFamily: fmt.fontFamily, fontSize: `${fmt.fontSize}px` }}
+                                    dangerouslySetInnerHTML={{ __html: renderMath(rest) }} />
+                                </div>
+                              );
+                            }
                             return (
-                              <div key={idx} style={{ marginBottom: "8px" }}>
-                                <strong>{labelMatch}</strong>{" "}
-                                <span dangerouslySetInnerHTML={{ __html: renderMath(textPart) }} />
+                              <div key={idx} style={{ marginBottom: "6px", fontFamily: fmt.fontFamily, fontSize: `${fmt.fontSize}px`, color: "#374151" }}>
+                                <span dangerouslySetInnerHTML={{ __html: renderMath(line) }} />
                               </div>
                             );
-                          }
-
-                          return (
-                            <div key={idx} style={{ marginBottom: "8px" }}>
-                              <span dangerouslySetInnerHTML={{ __html: renderMath(line) }} />
-                            </div>
-                          );
-                        });
-                      })()}
-                    </div>
+                          })}
+                        </div>
+                      );
+                    })()}
                   </div>
                 ) : section.type === "header" ? (
                   <div style={{ background: "#1B2A4A", padding: "16px 20px", marginBottom: "20px", color: "white", borderRadius: "2px" }}>
