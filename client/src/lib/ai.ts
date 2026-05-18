@@ -2729,13 +2729,33 @@ Return EXACTLY this JSON (raw JSON only, no markdown fences):
     const { text: structuredText, provider: structuredProvider } = await callAI(structuredSystem, structuredUser, 6500);
     const structuredCleaned = structuredText.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/i, '').trim();
     let structuredJson: any;
+    let structuredParseError: unknown = null;
     try {
       structuredJson = parseWithFixes(structuredCleaned);
-    } catch (_) {
+    } catch (firstErr) {
+      structuredParseError = firstErr;
       const repaired = repairTruncatedJson(structuredCleaned);
       if (repaired) {
-        try { structuredJson = parseWithFixes(repaired); } catch { /* fall through to legacy path */ }
+        try {
+          structuredJson = parseWithFixes(repaired);
+          structuredParseError = null;
+          console.info("[Adaptly AI] Recovered structured JSON via repair");
+        } catch (repairErr) {
+          structuredParseError = repairErr;
+        }
       }
+    }
+    if (structuredParseError) {
+      // Was previously swallowed silently — now log so silent failures across
+      // every provider are visible in the browser console and Sentry.
+      console.warn(
+        "[Adaptly AI] Structured path JSON parse failed (provider=" + structuredProvider + "), falling back to legacy generator. Raw:",
+        structuredText.slice(0, 240)
+      );
+    } else if (!structuredJson || !Array.isArray(structuredJson?.sections) || structuredJson.sections.length === 0) {
+      console.warn(
+        "[Adaptly AI] Structured path returned empty/invalid sections (provider=" + structuredProvider + "), falling back to legacy generator."
+      );
     }
     if (structuredJson && structuredJson.sections && Array.isArray(structuredJson.sections) && structuredJson.sections.length > 0) {
       // Strip asterisks from all content

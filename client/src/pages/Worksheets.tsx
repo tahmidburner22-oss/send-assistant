@@ -1914,54 +1914,67 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
             selectedSections: selectedSections as string[],
           });
         } else {
-          // Retry across all available providers — server tries Groq→Cerebras→Gemini→OpenRouter→OpenAI→Claude→Mistral→DeepSeek
-          const providerNames = ["Groq", "Gemini", "OpenRouter", "OpenAI", "Claude", "Mistral", "DeepSeek", "Fallback"];
+          // Single, meaningful retry. The server's /api/ai/generate already
+          // fans across all 14 providers internally (Groq×3 → Cerebras →
+          // Gemini → ... → Mistral) before returning, so re-invoking it 8
+          // times with identical args was pure noise — every retry hit the
+          // same exhausted/cooldown providers, no toast told the truth, and
+          // generatedWs ended up undefined: that is the silent failure the
+          // user reports. We now do ONE retry after a short pause (long
+          // enough for Groq's per-minute window to clear), then surface the
+          // real underlying error.
+          const lastErrMsg: string = errMsg;
+          const isRateLimited =
+            lastErrMsg.toLowerCase().includes('rate-limited') ||
+            lastErrMsg.toLowerCase().includes('rate limited') ||
+            lastErrMsg.toLowerCase().includes('all ai providers');
+          const retryDelayMs = isRateLimited ? 8000 : 1500;
+          if (isPlatformAdmin) {
+            setGenerationStatus(`Provider issue — retrying in ${Math.round(retryDelayMs / 1000)}s…`);
+            toast(`Retrying in ${Math.round(retryDelayMs / 1000)}s…`, { icon: "⏳", id: "ai-retry" });
+          } else {
+            setGenerationStatus("Retrying...");
+          }
+          await new Promise(r => setTimeout(r, retryDelayMs));
           let retrySuccess = false;
-          for (let attempt = 1; attempt <= 8; attempt++) {
-            const providerLabel = providerNames[attempt - 1] ?? `Provider ${attempt}`;
-            if (isPlatformAdmin) {
-              setGenerationStatus(`Trying ${providerLabel}…`);
-              toast(`Trying ${providerLabel}…`, { icon: "🔄", id: "ai-retry" });
+          try {
+            const retryResult = await aiGenerateWorksheet({
+              subject, topic, subtopic: subtopic || undefined, yearGroup,
+              sendNeed: sendNeed && sendNeed !== "none-selected" ? sendNeed : undefined,
+              difficulty,
+              examBoard: examBoard !== "none" ? examBoard : undefined,
+              includeAnswers,
+              examStyle,
+              additionalInstructions: effectiveAdditionalInstructions,
+              isRevisionMat,
+              generateDiagram: false,
+              worksheetLength,
+              recallTopic: (selectedSections.includes('retrieval') ? (recallTopic.trim() || topic) : recallTopic.trim()) || undefined,
+              targetPages: targetPages || undefined,
+              readingAge: readingAge || undefined,
+              selectedSections: selectedSections as string[],
+              paper: paper || undefined,
+              calculator,
+            });
+            generatedWs = { ...retryResult, isAI: true } as AIWorksheet;
+            retrySuccess = true;
+            if (isPlatformAdmin) toast.success("Worksheet generated on retry!", { id: "ai-retry" });
+          } catch (retryErr: any) {
+            if (retryErr?.message?.startsWith('AUTH_REQUIRED')) {
+              toast.error("Your session has expired. Redirecting to login...", { duration: 4000 });
+              setTimeout(() => { window.location.href = '/login'; }, 2000);
+              return;
             }
-            await new Promise(r => setTimeout(r, 300));
-            try {
-              const retryResult = await aiGenerateWorksheet({
-                subject, topic, subtopic: subtopic || undefined, yearGroup,
-                sendNeed: sendNeed && sendNeed !== "none-selected" ? sendNeed : undefined,
-                difficulty,
-                examBoard: examBoard !== "none" ? examBoard : undefined,
-                includeAnswers,
-                examStyle,
-                additionalInstructions: effectiveAdditionalInstructions,
-                isRevisionMat,
-                generateDiagram: false,
-                worksheetLength,
-                // Bug fix: recallTopic was missing from retry attempts
-                // If retrieval checkbox is selected but no topic entered, use the current topic as fallback
-                recallTopic: (selectedSections.includes('retrieval') ? (recallTopic.trim() || topic) : recallTopic.trim()) || undefined,
-                targetPages: targetPages || undefined,
-                readingAge: readingAge || undefined,
-                selectedSections: selectedSections as string[], // Fix: pass selectedSections so retries use the structured path
-                // Pillar A — paper / calculator flags (Y9+ exam-style mode).
-                paper: paper || undefined,
-                calculator,
-              });
-              generatedWs = { ...retryResult, isAI: true } as AIWorksheet;
-              if (isPlatformAdmin) toast.success(`Worksheet generated via ${providerLabel}!`, { id: "ai-retry" });
-              retrySuccess = true;
-              break;
-            } catch (retryErr: any) {
-              // Stop retrying if it's an auth error
-              if (retryErr?.message?.startsWith('AUTH_REQUIRED')) {
-                toast.error("Your session has expired. Redirecting to login...", { duration: 4000 });
-                setTimeout(() => { window.location.href = '/login'; }, 2000);
-                return;
-              }
-              console.error(`Retry ${attempt} (${providerLabel}) failed:`, retryErr?.message);
-            }
+            console.error('[ADAPTLY] Retry failed:', retryErr?.message);
           }
           if (!retrySuccess) {
-            toast.error("AI generation failed. Please refresh the page and try again.", { duration: 8000, id: "ai-retry" });
+            // Surface the real reason so users stop seeing the generic
+            // "AI generation failed" with nothing else. Server now returns
+            // providerErrors / allRateLimited from /api/ai/generate.
+            const friendly = isRateLimited
+              ? "All AI providers are rate-limited right now. Please wait ~30 seconds and try again."
+              : `AI generation failed: ${errMsg.replace(/^Error:\s*/, '').slice(0, 160)}`;
+            toast.error(friendly, { duration: 9000, id: "ai-retry" });
           }
         }
       }
