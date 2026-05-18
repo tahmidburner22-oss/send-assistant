@@ -752,6 +752,194 @@ export const SUBTOPICS_MAP: Record<string, string[]> = {
     "ATP and energy release",
     "Investigating respiration",
   ],
+  // ── Bioenergetics (AQA GCSE 4.4) — parent of Photosynthesis & Respiration.
+  // Until now this returned [] from getSubtopics, so the "Subtopic" dropdown
+  // silently disappeared and the AI prompt only saw a broad topic name.
+  "Bioenergetics": [
+    "Photosynthesis — equation and reactants",
+    "Factors affecting the rate of photosynthesis",
+    "Limiting factors and inverse-square law",
+    "Uses of glucose in plants",
+    "Aerobic respiration",
+    "Anaerobic respiration in animals (lactic acid)",
+    "Anaerobic respiration in plants and yeast (fermentation)",
+    "Response of the body to exercise",
+    "Metabolism and ATP",
+  ],
+  "Eukaryotic Cells": [
+    "Structure of an animal cell",
+    "Structure of a plant cell",
+    "Nucleus and genetic material",
+    "Mitochondria and respiration",
+    "Ribosomes and protein synthesis",
+    "Chloroplasts and photosynthesis",
+    "Cell wall, vacuole and membrane",
+  ],
+  "Prokaryotic Cells": [
+    "Bacterial cell structure",
+    "Cell wall and plasmids",
+    "Comparing prokaryotes and eukaryotes",
+    "Size and scale of cells",
+    "Binary fission",
+  ],
+  "Plant Cells": [
+    "Specialised plant cells (root hair, palisade, xylem, phloem)",
+    "Chloroplasts and photosynthesis",
+    "Vacuole and turgor",
+    "Cell wall and support",
+    "Stomata and gas exchange",
+  ],
+  "Mitosis": [
+    "The cell cycle",
+    "Stages of mitosis",
+    "Chromosome behaviour",
+    "Growth, repair and asexual reproduction",
+    "Stem cells and differentiation",
+  ],
+  "Meiosis": [
+    "Why meiosis is needed",
+    "Stages of meiosis",
+    "Genetic variation in gametes",
+    "Comparing mitosis and meiosis",
+    "Fertilisation and chromosome number",
+  ],
+  "Infection and Response": [
+    "Pathogens (bacteria, viruses, fungi, protists)",
+    "How pathogens spread",
+    "The body's first line of defence",
+    "White blood cells, antibodies and antitoxins",
+    "Vaccination and herd immunity",
+    "Antibiotics and antibiotic resistance",
+    "Drug development and clinical trials",
+  ],
+  "Enzymes": [
+    "Enzyme structure and active site",
+    "Lock-and-key model",
+    "Effect of temperature on enzyme activity",
+    "Effect of pH on enzyme activity",
+    "Effect of substrate concentration",
+    "Required practical: investigating enzymes",
+  ],
+  "The Heart": [
+    "Structure of the heart (chambers and valves)",
+    "Double circulatory system",
+    "Coronary arteries",
+    "Heart rate and the cardiac cycle",
+    "Coronary heart disease and treatments",
+  ],
+  "The Kidney": [
+    "Structure and function of the kidney",
+    "Filtration and selective reabsorption",
+    "Role of ADH and water balance",
+    "Kidney failure and dialysis",
+    "Kidney transplants",
+  ],
+  "The Eye": [
+    "Structure of the eye",
+    "Accommodation (focusing on near and far objects)",
+    "Defects of vision (myopia and hyperopia)",
+    "Correcting vision with lenses",
+    "The pupil reflex",
+  ],
+  "DNA and Genetics": [
+    "Genes, alleles and chromosomes",
+    "Dominant and recessive alleles",
+    "Genotype and phenotype",
+    "Monohybrid crosses and Punnett squares",
+    "Inherited disorders",
+    "Sex determination",
+  ],
+  "DNA Structure": [
+    "The double helix",
+    "Bases and base pairing (A-T, C-G)",
+    "Nucleotides",
+    "DNA replication (overview)",
+    "Protein synthesis (transcription and translation)",
+  ],
+  "The Digestive System": [
+    "Organs of the digestive system",
+    "Carbohydrases, proteases and lipases",
+    "Bile and emulsification",
+    "Absorption in the small intestine",
+    "Required practical: food tests",
+  ],
+  "Hormones": [
+    "The endocrine system",
+    "Insulin, glucagon and blood glucose",
+    "Type 1 and Type 2 diabetes",
+    "Adrenaline and the fight-or-flight response",
+    "Thyroxine and negative feedback",
+    "Reproductive hormones and the menstrual cycle",
+    "Contraception and fertility treatment",
+  ],
+  "The Reflex Arc": [
+    "Sensory, relay and motor neurones",
+    "Synapses and neurotransmitters",
+    "The reflex pathway (stimulus → response)",
+    "Comparing reflex and voluntary actions",
+  ],
+  "Plant Biology": [
+    "Photosynthesis and limiting factors",
+    "Transpiration and the role of stomata",
+    "Xylem and phloem (transport tissues)",
+    "Translocation of sugars",
+    "Plant hormones (auxins, gibberellins, ethene)",
+    "Plant defences against pathogens and pests",
+  ],
+  "Homeostasis and Response": [
+    "What homeostasis is and why it matters",
+    "Control of body temperature",
+    "Control of blood glucose",
+    "Control of water and ion balance",
+    "The nervous system and reflex arcs",
+    "The endocrine system and hormonal control",
+  ],
+  "Inheritance, Variation and Evolution": [
+    "Sexual and asexual reproduction",
+    "Meiosis and genetic variation",
+    "DNA, genes and the genome",
+    "Inheritance and genetic crosses",
+    "Variation and mutations",
+    "Natural selection and evolution",
+    "Selective breeding and genetic engineering",
+    "Classification and evolutionary trees",
+  ],
+  "Ecosystems and Food Webs": [
+    "Producers, consumers and decomposers",
+    "Food chains and food webs",
+    "Energy flow and biomass",
+    "Predator-prey relationships",
+    "Interdependence in ecosystems",
+  ],
+  "Cells and Organisation": [
+    "Levels of organisation (cell → tissue → organ → system)",
+    "Animal cell structure",
+    "Plant cell structure",
+    "Specialised cells",
+    "Microscopy and magnification",
+  ],
+  "Breathing and Gas Exchange": [
+    "The respiratory system",
+    "Mechanism of breathing (inhalation and exhalation)",
+    "Gas exchange in the alveoli",
+    "Effect of exercise on breathing",
+    "Smoking and lung disease",
+  ],
+  "Health and Lifestyle": [
+    "Balanced diet and food groups",
+    "Energy requirements",
+    "Effects of poor diet (deficiency, obesity)",
+    "Smoking, alcohol and drugs",
+    "Communicable and non-communicable diseases",
+  ],
+  "Reproduction in Plants and Animals": [
+    "Sexual reproduction in flowering plants",
+    "Pollination and fertilisation",
+    "Seed and fruit formation",
+    "Human reproductive systems",
+    "The menstrual cycle",
+    "Pregnancy and birth",
+  ],
   "Space Physics": [
     "The Solar System",
     "Gravity and orbits",
@@ -1156,6 +1344,11 @@ export const SUBTOPICS_MAP: Record<string, string[]> = {
 /**
  * Get subtopics for a given topic name.
  * Returns an empty array if no subtopics are defined.
+ *
+ * Match precedence: exact → case-insensitive → safe partial.
+ * Partial matching is restricted to multi-word keys (≥2 words) so short
+ * topic names like "Hormones" or "Mitosis" never accidentally match a
+ * different parent topic that happens to contain the same fragment.
  */
 export function getSubtopics(topicName: string): string[] {
   if (!topicName) return [];
@@ -1165,11 +1358,16 @@ export function getSubtopics(topicName: string): string[] {
   const lower = topicName.toLowerCase();
   const key = Object.keys(SUBTOPICS_MAP).find(k => k.toLowerCase() === lower);
   if (key) return SUBTOPICS_MAP[key];
-  // Try partial match (topic name contains a known key)
-  const partialKey = Object.keys(SUBTOPICS_MAP).find(k =>
-    topicName.toLowerCase().includes(k.toLowerCase()) ||
-    k.toLowerCase().includes(topicName.toLowerCase())
-  );
+  // Safe partial match — only trigger when EITHER side is a multi-word phrase
+  // (≥2 words OR ≥10 chars). Stops "Cells" silently picking up "Plant Cells"
+  // / "Eukaryotic Cells" / "Prokaryotic Cells" by alphabetical order, which
+  // is how a wrong subtopic list could attach to a topic.
+  const isMeaningful = (s: string) => s.trim().split(/\s+/).length >= 2 || s.trim().length >= 10;
+  const partialKey = Object.keys(SUBTOPICS_MAP).find(k => {
+    const kLower = k.toLowerCase();
+    if (!isMeaningful(k) && !isMeaningful(topicName)) return false;
+    return lower.includes(kLower) || kLower.includes(lower);
+  });
   if (partialKey) return SUBTOPICS_MAP[partialKey];
   return [];
 }

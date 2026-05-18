@@ -609,7 +609,24 @@ router.post("/generate", requireAuth, async (req: Request, res: Response) => {
         noKeysConfigured: true,
       });
     }
-    res.status(502).json({ error: "AI is temporarily unavailable. Please try again in a moment." });
+    // Surface per-provider failure reasons so the client can show a useful
+    // message instead of a generic "temporarily unavailable". Without this
+    // the front-end has no way to distinguish rate-limit cooldowns from
+    // parse failures or timeouts, which is the #1 cause of the worksheet
+    // generator looking like it "silently fails after cycling providers".
+    const providerErrors: string[] = errMsg.startsWith("All AI providers failed:")
+      ? errMsg.split("\n").slice(1).filter(Boolean)
+      : [];
+    const allRateLimited = providerErrors.length > 0 && providerErrors.every((l: string) =>
+      l.includes("rate limited") || l.includes("near RPM cap") || l.includes("cooldown")
+    );
+    res.status(502).json({
+      error: allRateLimited
+        ? "All AI providers are currently rate-limited. Please wait ~30 seconds and try again."
+        : "AI is temporarily unavailable. Please try again in a moment.",
+      providerErrors: providerErrors.slice(0, 14),
+      allRateLimited,
+    });
   }
 });
 
