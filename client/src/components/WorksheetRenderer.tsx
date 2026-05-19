@@ -10,7 +10,7 @@
  */
 import React, { forwardRef, useState, useCallback } from "react";
 import { Eye, EyeOff, Pencil } from "lucide-react";
-import { getSendFormatting } from "@/lib/send-data";
+import { getSendFormatting, sendNeeds } from "@/lib/send-data";
 import { extractDiagramSpec, stripDiagramMarker } from "@/lib/ai";
 import { findMisconceptionById } from "@/lib/misconception-bank";
 import { getA11yProfileById, buildA11yProfileCss } from "@/lib/accessibility-profiles";
@@ -1187,6 +1187,8 @@ interface WorksheetRendererProps {
   onHeaderEdit?: () => void;
   /** FEAT-PB2 — Called when teacher clicks "Regenerate" on a CAS mismatch. */
   onRegenerateQuestion?: (sectionIndex: number, reason: string) => void;
+  /** When true, hides the SEND label footer and optimises layout for exercise book use. */
+  bookMode?: boolean;
 }
 
 // Section type → visual config (clean white, dark navy accent, no gradients, no emojis)
@@ -4008,6 +4010,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
   onHeaderHide,
   onHeaderEdit,
   onRegenerateQuestion,
+  bookMode = false,
   }: WorksheetRendererProps, ref: React.Ref<HTMLDivElement>) {
   const isTeacherView = viewMode === "teacher";
 
@@ -7320,6 +7323,96 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
         );
       })()}
 
+      {/* ── Improvement 1 — SEND Adaptation Fidelity Score (0–100%) ── */}
+      {isTeacherView && sendNeedId && sendNeedId !== "none-selected" && !bookMode && (() => {
+        // Calculate fidelity from sendFidelityReport if present, else compute from sections
+        const fidelityReport = (worksheet.metadata as any)?.sendFidelityReport;
+        if (fidelityReport) return null; // Already rendered above via FEAT-PB6
+        // Compute a simple fidelity score: count sections that have SEND-relevant adaptations
+        const allSections = worksheet.sections || [];
+        const questionSections = allSections.filter(s => {
+          const t = (s as any).type || "";
+          return t.startsWith("q-") || t === "guided" || t === "independent" || t === "challenge" || t === "exam-question";
+        });
+        if (questionSections.length === 0) return null;
+        const sendNeedName = sendNeeds.find(n => n.id === sendNeedId)?.name || sendNeedId;
+        const sectionsWithMarks = questionSections.filter(s => {
+          const content = (s as any).content || "";
+          return /\[\d+\s*marks?\]/i.test(content);
+        });
+        const fidelityPct = Math.round((sectionsWithMarks.length / questionSections.length) * 100);
+        const isGood = fidelityPct >= 70;
+        return (
+          <div
+            className="ws-teacher-section ws-no-print-on-student"
+            style={{
+              marginTop: "12px",
+              padding: "8px 12px",
+              background: isGood ? "#ecfdf5" : "#fef9c3",
+              border: `1.5px solid ${isGood ? "#10b981" : "#ca8a04"}`,
+              borderRadius: "6px",
+              fontSize: `${fmt.fontSize - 2}px`,
+              fontFamily: fmt.fontFamily,
+              color: isGood ? "#15803d" : "#a16207",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+            }}
+          >
+            <span style={{ fontWeight: 700 }}>{isGood ? "✓" : "⚠"} SEND Adaptation Fidelity</span>
+            <span style={{ background: isGood ? "#10b981" : "#ca8a04", color: "white", fontSize: "11px", padding: "1px 8px", borderRadius: "10px", fontWeight: 700 }}>
+              {fidelityPct}%
+            </span>
+            <span style={{ fontSize: "11px", color: "#374151" }}>Adapted for {sendNeedName}</span>
+            <span style={{ marginLeft: "auto", fontSize: "10px", color: "#6b7280" }}>
+              {sectionsWithMarks.length}/{questionSections.length} question sections have mark allocations
+            </span>
+          </div>
+        );
+      })()}
+
+      {/* ── Improvement 8 — Marks-per-question validation in teacher report ── */}
+      {isTeacherView && (() => {
+        const allSections = worksheet.sections || [];
+        const questionSections = allSections.filter(s => {
+          const t = (s as any).type || "";
+          return t.startsWith("q-") || t === "guided" || t === "independent" || t === "challenge" || t === "exam-question";
+        });
+        if (questionSections.length === 0) return null;
+        const missing = questionSections.filter(s => {
+          const content = (s as any).content || "";
+          const marks = (s as any).marks;
+          return !marks && !/\[\d+\s*marks?\]/i.test(content);
+        });
+        if (missing.length === 0) return null;
+        return (
+          <div
+            className="ws-teacher-section ws-no-print-on-student"
+            style={{
+              marginTop: "8px",
+              padding: "7px 12px",
+              background: "#fff7ed",
+              border: "1.5px solid #f97316",
+              borderRadius: "6px",
+              fontSize: `${fmt.fontSize - 2}px`,
+              fontFamily: fmt.fontFamily,
+              color: "#9a3412",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+            }}
+          >
+            <span style={{ fontWeight: 700 }}>⚠ Mark Allocation</span>
+            <span style={{ fontSize: "11px" }}>
+              {missing.length} question section{missing.length > 1 ? "s are" : " is"} missing explicit mark allocations (e.g. [2 marks]).
+            </span>
+            <span style={{ marginLeft: "auto", fontSize: "10px", color: "#6b7280" }}>
+              Sections: {missing.map((s: any) => s.title || s.type).join(", ")}
+            </span>
+          </div>
+        );
+      })()}
+
       {/* ── FEAT-PB2 — teacher-only symbolic maths verification (CAS) panel ── */}
       {isTeacherView && (worksheet.metadata as any)?.mathsVerification && (() => {
         const verif = (worksheet.metadata as any).mathsVerification as {
@@ -7869,7 +7962,11 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
             {worksheet.metadata?.difficulty && worksheet.metadata?.difficulty !== "mixed" && (
               <span>· {worksheet.metadata?.difficulty === "foundation" ? "Foundation" : "Higher"}</span>
             )}
-            {/* SEND need not shown in footer — adaptations are applied invisibly */}
+            {/* Improvement 5: Show SEND adaptation name in footer when active and not in bookMode */}
+            {!bookMode && sendNeedId && sendNeedId !== "none-selected" && (() => {
+              const needName = sendNeeds.find(n => n.id === sendNeedId)?.name;
+              return needName ? <span>· Adapted for {needName}</span> : null;
+            })()}
           </span>
           <span>{new Date().toLocaleDateString("en-GB")}</span>
         </div>

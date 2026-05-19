@@ -1397,7 +1397,8 @@ QUALITY STANDARDS — every question must meet professional UK teacher standards
    - EXTENDED ANSWER: structured essay/explain prompt. Use for challenge only.
    RULE: Section A (guided) must use at least 2 different formats. Section B (independent) must use at least 2 different formats. No adjacent questions may use the same format.
 
-STRICT JSON OUTPUT: Respond with valid JSON only — no markdown, no code blocks. NEVER use HTML tags inside content strings. Use plain text and LaTeX notation only.`;
+STRICT JSON OUTPUT: Respond with valid JSON only — no markdown, no code blocks. NEVER use HTML tags inside content strings. Use plain text and LaTeX notation only.
+MARK ALLOCATION RULE (mandatory): Every question section MUST include an explicit mark allocation in the format [X marks] or [X mark] at the end of the question text. This applies to ALL question types: Short Answer, MCQ, True/False, Gap Fill, Matching, Ordering, Table, and Extended Answer. Only exception: if the section already has a numeric "marks" field set. Never omit mark allocations.`;
 
   const examBoardNote = params.examBoard && params.examBoard !== "N/A" && params.examBoard !== "none"
     ? (() => {
