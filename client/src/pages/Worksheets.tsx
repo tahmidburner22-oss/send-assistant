@@ -4009,7 +4009,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
       </motion.div>
 
-      {loading && !generated && (() => {
+      {(loading || generationError) && !generated && (() => {
         const STAGES = [
           "Connecting to AI (Groq)…",
           "Building worksheet structure…",
@@ -4031,14 +4031,24 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                 {generationError ? (
                   <div className="mt-2 p-3 rounded-lg bg-red-50 border border-red-100">
                     <p className="text-xs text-red-600 font-medium">{generationError}</p>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => { setGenerationError(null); handleGenerate(); }}
-                      className="mt-2 h-7 text-[10px] border-red-200 text-red-700 hover:bg-red-100"
-                    >
-                      <RefreshCw className="w-3 h-3 mr-1" /> Try Again
-                    </Button>
+                    <div className="flex gap-2 mt-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => { setGenerationError(null); handleGenerate(); }}
+                        className="h-7 text-[10px] border-red-200 text-red-700 hover:bg-red-100"
+                      >
+                        <RefreshCw className="w-3 h-3 mr-1" /> Try Again
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setGenerationError(null)}
+                        className="h-7 text-[10px] text-muted-foreground hover:bg-muted"
+                      >
+                        Dismiss
+                      </Button>
+                    </div>
                   </div>
                 ) : (
                   isPlatformAdmin ? (
