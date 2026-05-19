@@ -344,3 +344,37 @@ export async function sendPresentationEmail(
   );
 }
 
+
+// ── Improvement 11 — Provider health alert email ──────────────────────────────
+export async function sendProviderHealthAlert(unhealthyProviders: Array<{
+  provider: string;
+  reason: string;
+  consecutiveFailures: number;
+}>) {
+  const ADMIN_TO = process.env.FEEDBACK_EMAIL || "hello@adaptly.co.uk";
+  const providerRows = unhealthyProviders.map(p =>
+    `<tr>
+      <td style="padding:8px;font-weight:bold;background:#fef2f2">${p.provider}</td>
+      <td style="padding:8px;background:#fef2f2;color:#b91c1c">${p.reason}</td>
+      <td style="padding:8px;background:#fef2f2;color:#7f1d1d">${p.consecutiveFailures} consecutive failures</td>
+    </tr>`
+  ).join("");
+  await send(
+    ADMIN_TO,
+    `[Adaptly Alert] AI Provider Health Issue — ${unhealthyProviders.length} provider(s) unhealthy`,
+    `<div style="font-family:sans-serif;max-width:600px;margin:auto">
+      <h2 style="color:#dc2626">⚠ Adaptly — AI Provider Health Alert</h2>
+      <p style="color:#374151">The following AI providers have been flagged as unhealthy at <strong>${new Date().toISOString()}</strong>:</p>
+      <table style="border-collapse:collapse;width:100%;margin:16px 0">
+        <tr>
+          <th style="padding:8px;text-align:left;background:#f9fafb;border-bottom:2px solid #e5e7eb">Provider</th>
+          <th style="padding:8px;text-align:left;background:#f9fafb;border-bottom:2px solid #e5e7eb">Reason</th>
+          <th style="padding:8px;text-align:left;background:#f9fafb;border-bottom:2px solid #e5e7eb">Failures</th>
+        </tr>
+        ${providerRows}
+      </table>
+      <p style="color:#6b7280;font-size:13px">Check the Admin Panel → AI Keys tab for details. Providers on cooldown will auto-recover when the cooldown expires.</p>
+      <p style="color:#999;font-size:11px">Adaptly · adaptly.co.uk · Automated health monitoring</p>
+    </div>`
+  );
+}

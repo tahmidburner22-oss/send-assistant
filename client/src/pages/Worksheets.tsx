@@ -10,6 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { useApp, type Worksheet } from "@/contexts/AppContext";
@@ -786,6 +787,8 @@ export default function Worksheets() {
   const [useAI, setUseAI] = useState(true);
 
   const [loading, setLoading] = useState(false);
+  const [generationError, setGenerationError] = useState<string | null>(null);
+  const [bookMode, setBookMode] = useState(false);
   const [generationStatus, setGenerationStatus] = useState(""); // live status during generation
   const [generated, setGeneratedRaw] = useState<AnyWorksheet | null>(null);
   const setGenerated = useCallback((value: React.SetStateAction<AnyWorksheet | null>) => {
@@ -1574,6 +1577,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
     } catch { /* best-effort */ }
 
     setLoading(true);
+    setGenerationError(null);
     setGenerationStatus("Checking worksheet library...");
     setEditedSections({});
     setEditMode(false);
@@ -1975,6 +1979,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
               ? "All AI providers are rate-limited right now. Please wait ~30 seconds and try again."
               : `AI generation failed: ${errMsg.replace(/^Error:\s*/, '').slice(0, 160)}`;
             toast.error(friendly, { duration: 9000, id: "ai-retry" });
+            setGenerationError(friendly);
           }
         }
       }
@@ -2195,6 +2200,9 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
 
     clearInterval(statusInterval);
     setGenerationStatus("");
+    if (!generatedWs && !generationError) {
+      setGenerationError("Worksheet generation failed to return content. Please try again.");
+    }
     setLoading(false);
   };
 
@@ -4017,15 +4025,31 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                 <Sparkles className="w-6 h-6 text-brand absolute inset-0 m-auto" />
               </div>
               <div className="text-center">
-                <h3 className="font-semibold text-foreground text-lg">Generating your worksheet</h3>
-                {isPlatformAdmin ? (
-                  generationStatus && generationStatus.startsWith("Trying") ? (
-                    <p className="text-sm text-muted-foreground mt-1 min-h-[40px]">{generationStatus}</p>
-                  ) : (
-                    <LoadingStageMessage stages={STAGES} />
-                  )
+                <h3 className="font-semibold text-foreground text-lg">
+                  {generationError ? "Generation Failed" : "Generating your worksheet"}
+                </h3>
+                {generationError ? (
+                  <div className="mt-2 p-3 rounded-lg bg-red-50 border border-red-100">
+                    <p className="text-xs text-red-600 font-medium">{generationError}</p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => { setGenerationError(null); handleGenerate(); }}
+                      className="mt-2 h-7 text-[10px] border-red-200 text-red-700 hover:bg-red-100"
+                    >
+                      <RefreshCw className="w-3 h-3 mr-1" /> Try Again
+                    </Button>
+                  </div>
                 ) : (
-                  <p className="text-sm text-muted-foreground mt-1">Crafting your personalised resource…</p>
+                  isPlatformAdmin ? (
+                    generationStatus && generationStatus.startsWith("Trying") ? (
+                      <p className="text-sm text-muted-foreground mt-1 min-h-[40px]">{generationStatus}</p>
+                    ) : (
+                      <LoadingStageMessage stages={STAGES} />
+                    )
+                  ) : (
+                    <p className="text-sm text-muted-foreground mt-1">Crafting your personalised resource…</p>
+                  )
                 )}
               </div>
               <div className="w-full bg-muted rounded-full h-1.5 overflow-hidden">
@@ -4279,6 +4303,18 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                                     {groups[ks].map((st, i) => (
                                       <SelectItem key={ks + i} value={st.topic}>
                                         <span>{st.topic}</span>
+                                        {st.yearGroup && yearGroup && st.yearGroup !== yearGroup && (
+                                          <TooltipProvider>
+                                            <Tooltip>
+                                              <TooltipTrigger asChild>
+                                                <span className="ml-2 text-[10px] text-muted-foreground font-medium opacity-70">({st.yearGroup})</span>
+                                              </TooltipTrigger>
+                                              <TooltipContent>
+                                                <p className="text-xs">This topic is from {st.yearGroup} curriculum</p>
+                                              </TooltipContent>
+                                            </Tooltip>
+                                          </TooltipProvider>
+                                        )}
                                       </SelectItem>
                                     ))}
                                   </SelectGroup>
@@ -4487,7 +4523,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
 
                 {/* Page Count removed per user request — sections selector now controls content */}
 
-                <div className="hidden">
+                <div className="space-y-1.5">
                   <Label className="text-xs font-medium">Exam Board (GCSE / A-Level)</Label>
                   <div className="flex flex-wrap gap-1.5">
                     {examBoards.map(eb => (
@@ -4504,7 +4540,22 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                     <Switch checked={includeAnswers} onCheckedChange={setIncludeAnswers} id="answers-sw" />
                     <Label htmlFor="answers-sw" className="text-xs">Include answers & mark scheme</Label>
                   </div>
-
+                  <div className="flex items-center gap-2">
+                    <Switch checked={bookMode} onCheckedChange={setBookMode} id="book-mode-sw" />
+                    <Label htmlFor="book-mode-sw" className="text-xs flex items-center gap-1">
+                      Book Mode
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Info className="w-3 h-3 text-muted-foreground cursor-help" />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="text-xs max-w-[200px]">Optimises for exercise books: removes the "SEND Label" footer and ensures questions can be completed directly in their books.</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </Label>
+                  </div>
                 </div>
 
                 {/* ── Pillar A — Exam paper / calculator (Y9+ only) ──────── */}
@@ -6197,6 +6248,7 @@ ${s.content}`).join("\n\n"),
                     schoolLogoUrl={preferences.schoolLogoUrl}
                     schoolName={preferences.schoolName}
                     isRevisionMat={isRevisionMat}
+                    bookMode={bookMode}
                     paginated={true}
                     onDiagramChange={(sectionIndex, newImageUrl, newCaption) => {
                       const newSections = (generated.sections || []).map((s: any, idx: number) => {

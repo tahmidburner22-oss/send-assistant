@@ -1,5 +1,6 @@
 import { Router, Request, Response } from "express";
 import { v4 as uuidv4 } from "uuid";
+import { sendProviderHealthAlert } from "../email/index.js";
 import multer from "multer";
 import db, { query as dbQuery } from "../db/index.js";
 import { requireAuth, requireAdmin, auditLog, tryAuthOptional } from "../middleware/auth.js";
@@ -75,6 +76,11 @@ function getNextCerebrasKey(): string {
 // This prevents cascading failures where every provider gets exhausted at once.
 const COOLDOWN_MS = 30_000; // 30 seconds per provider — shorter cooldown since we now have 6 providers + quick retry
 const providerCooldowns = new Map<string, number>(); // provider → timestamp when cooldown expires
+// Improvement 7 & 11: Track consecutive failures per provider for health monitoring and alerts
+const providerFailureCounts = new Map<string, number>(); // provider → consecutive failure count
+const HEALTH_ALERT_THRESHOLD = 3; // alert after this many consecutive failures
+const lastHealthAlertTime = new Map<string, number>(); // provider → last alert timestamp
+const HEALTH_ALERT_COOLDOWN_MS = 5 * 60 * 1000; // only alert once per 5 minutes per provider
 
 function isOnCooldown(provider: string): boolean {
   const expiresAt = providerCooldowns.get(provider);
@@ -84,11 +90,26 @@ function isOnCooldown(provider: string): boolean {
   return false;
 }
 
-function setCooldown(provider: string): void {
+function setCooldown(provider: string, reason = "rate limited (429)"): void {
   const expiresAt = Date.now() + COOLDOWN_MS;
   providerCooldowns.set(provider, expiresAt);
-  // FIX: log message now reflects the actual COOLDOWN_MS value (was hardcoded "60s" before)
   console.warn(`[AI] ${provider} put on cooldown for ${COOLDOWN_MS / 1000}s (until ${new Date(expiresAt).toISOString()})`);
+  // Improvement 7 & 11: Track consecutive failures and send health alert if threshold exceeded
+  const failures = (providerFailureCounts.get(provider) || 0) + 1;
+  providerFailureCounts.set(provider, failures);
+  if (failures >= HEALTH_ALERT_THRESHOLD) {
+    const lastAlert = lastHealthAlertTime.get(provider) || 0;
+    if (Date.now() - lastAlert > HEALTH_ALERT_COOLDOWN_MS) {
+      lastHealthAlertTime.set(provider, Date.now());
+      sendProviderHealthAlert([{ provider, reason, consecutiveFailures: failures }]).catch((e: any) =>
+        console.error(`[AI] Failed to send health alert for ${provider}:`, e?.message)
+      );
+    }
+  }
+}
+
+function clearProviderFailures(provider: string): void {
+  providerFailureCounts.delete(provider);
 }
 
 // ── Per-provider RPM (requests-per-minute) tracking ────────────────────────────────────────
@@ -512,6 +533,7 @@ export async function callWithFallback(
       if (content && content.trim()) {
         console.log(`[AI] Success via ${provider}`);
         recordRpm(provider); // track successful request for RPM window
+        clearProviderFailures(provider); // reset failure count on success
         return { content, provider };
       }
       errors.push(`${provider}: empty response`);
@@ -857,6 +879,38 @@ router.post("/clear-cooldowns", requireAuth, requireAdmin, (_req: Request, res: 
   providerCooldowns.clear();
   console.log(`[AI] Admin cleared all provider cooldowns: ${cleared.join(", ") || "none"}`);
   res.json({ success: true, cleared });
+});
+
+// ── Improvement 7 — Admin provider health endpoint ────────────────────────────
+// Returns per-provider health status including consecutive failure counts.
+router.get("/admin/provider-health", requireAuth, requireAdmin, async (_req: Request, res: Response) => {
+  const now = Date.now();
+  const health = await Promise.all((PROVIDER_ORDER as readonly string[]).map(async p => {
+    const hasKey = !!await getEffectiveKey(p);
+    const cooldownExpires = providerCooldowns.get(p);
+    const onCooldown = cooldownExpires ? now < cooldownExpires : false;
+    const cooldownRemainingMs = onCooldown && cooldownExpires ? cooldownExpires - now : 0;
+    const consecutiveFailures = providerFailureCounts.get(p) || 0;
+    const status: "healthy" | "degraded" | "unhealthy" =
+      !hasKey ? "unhealthy" :
+      onCooldown && consecutiveFailures >= HEALTH_ALERT_THRESHOLD ? "unhealthy" :
+      onCooldown ? "degraded" :
+      consecutiveFailures > 0 ? "degraded" : "healthy";
+    return {
+      provider: p,
+      hasKey,
+      status,
+      onCooldown,
+      cooldownRemainingSeconds: Math.ceil(cooldownRemainingMs / 1000),
+      consecutiveFailures,
+    };
+  }));
+  const summary = {
+    healthy: health.filter(h => h.status === "healthy").length,
+    degraded: health.filter(h => h.status === "degraded").length,
+    unhealthy: health.filter(h => h.status === "unhealthy").length,
+  };
+  res.json({ providers: health, summary, alertThreshold: HEALTH_ALERT_THRESHOLD });
 });
 
 // ── Admin: manage server-side API keys ────────────────────────────────────────
