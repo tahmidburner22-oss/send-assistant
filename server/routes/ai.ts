@@ -14,35 +14,35 @@ import { checkSvgLayout } from "../../client/src/lib/svgLayoutChecker.js";
 const router = Router();
 const worksheetUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 25 * 1024 * 1024 } });
 
-// ── Provider priority order — 14 providers, ~90,000+ RPD combined ──────────────
+// ── Provider priority order — 17 providers, ~130,000+ RPD combined ──────────────
 //
 // Priority rationale (May 2026):
 //   1. Groq (×3 keys, Llama 4 Scout) — fastest inference, 43,200 RPD combined
-//   2. Cerebras (gpt-oss-120b) — same speed as Groq, separate 14,400 RPD limit
+//   2. Cerebras (×3 keys, llama3.1-8b) — same speed as Groq, 43,200 RPD combined
 //   3. Gemini 2.5 Flash — high quality, 250 RPD free
 //   4. Gemini 2.5 Flash-Lite — fast, 1,000 RPD free
 //   5. Gemini 3.1 Flash-Lite — newest Google model, 500 RPD free
 //   6. NVIDIA NIM — ~40 RPM, Llama 405B / Nemotron 253B quality
-//   7. SambaNova — good quality, 1,000 RPD free tier
+//   7. SambaNova (×2 keys) — good quality, 2,000 RPD combined
 //   8. Cohere Command A — 111B model, 20 RPM, no daily cap
 //   9. HuggingFace — variable quality, good backup
-//  10. OpenRouter — 200 RPD (low, last resort before Mistral)
+//  10. OpenRouter (×2 keys) — 400 RPD combined (last resort before Mistral)
 //  11. Mistral — unlimited RPD but only ~1 RPS, last resort
 // DeepSeek/Perplexity/OpenAI/Claude intentionally excluded (paid or unreliable free tier).
 const PROVIDER_ORDER = [
   "groq_1", "groq_2", "groq_3",
-  "cerebras",
+  "cerebras_1", "cerebras_2", "cerebras_3",
   "gemini", "gemini_lite", "gemini_3lite",
   "nvidia_nim",
-  "sambanova",
+  "sambanova_1", "sambanova_2",
   "cohere",
   "huggingface",
-  "openrouter",
+  "openrouter_1", "openrouter_2",
   "mistral",
 ] as const;
 
-// ── Round-robin counter for Groq keys ────────────────────────────────────────
-// Distributes requests evenly across the 3 Groq keys to maximise throughput.
+// ── Round-robin counters for multi-key providers ─────────────────────────────
+// Distributes requests evenly across all keys of each provider to maximise throughput.
 let groqRoundRobinIndex = 0;
 function getNextGroqKey(): string {
   const keys = [
@@ -53,6 +53,19 @@ function getNextGroqKey(): string {
   if (keys.length === 0) return "";
   const key = keys[groqRoundRobinIndex % keys.length];
   groqRoundRobinIndex = (groqRoundRobinIndex + 1) % keys.length;
+  return key;
+}
+
+let cerebrasRoundRobinIndex = 0;
+function getNextCerebrasKey(): string {
+  const keys = [
+    process.env.CEREBRAS_API_KEY || "",
+    process.env.CEREBRAS_API_KEY_2 || "",
+    process.env.CEREBRAS_API_KEY_3 || "",
+  ].filter(k => k.trim() !== "");
+  if (keys.length === 0) return "";
+  const key = keys[cerebrasRoundRobinIndex % keys.length];
+  cerebrasRoundRobinIndex = (cerebrasRoundRobinIndex + 1) % keys.length;
   return key;
 }
 
@@ -83,20 +96,27 @@ function setCooldown(provider: string): void {
 // preventing 429s before they happen rather than reacting after.
 const rpmWindows: Record<string, number[]> = {};
 const PROVIDER_RPM_CAPS: Record<string, number> = {
-  groq_1:      28,  // Groq free: 30 RPM — 2 headroom
-  groq_2:      28,
-  groq_3:      28,
-  cerebras:    28,  // Cerebras free: 30 RPM
-  gemini:       8,  // Gemini 2.5 Flash free: 10 RPM
-  gemini_lite: 13,  // Gemini 2.5 Flash-Lite free: 15 RPM
-  gemini_3lite:13,  // Gemini 3.1 Flash-Lite free: 15 RPM
-  nvidia_nim:  35,  // NVIDIA NIM free: ~40 RPM
-  sambanova:   28,  // SambaNova free: 30 RPM
-  openrouter:  18,  // OpenRouter free: 20 RPM
-  deepseek:    18,  // DeepSeek free: ~20 RPM
-  cohere:      18,  // Cohere free: ~20 RPM
-  huggingface:  8,  // HuggingFace: conservative
-  mistral:      1,  // Mistral free: 2 RPM (very conservative)
+  groq_1:       28,  // Groq free: 30 RPM per key — 2 headroom
+  groq_2:       28,
+  groq_3:       28,
+  cerebras:     28,  // Cerebras free: 30 RPM per key
+  cerebras_1:   28,
+  cerebras_2:   28,
+  cerebras_3:   28,
+  gemini:        8,  // Gemini 2.5 Flash free: 10 RPM
+  gemini_lite:  13,  // Gemini 2.5 Flash-Lite free: 15 RPM
+  gemini_3lite: 13,  // Gemini 3.1 Flash-Lite free: 15 RPM
+  nvidia_nim:   35,  // NVIDIA NIM free: ~40 RPM
+  sambanova:    28,  // SambaNova free: 30 RPM per key
+  sambanova_1:  28,
+  sambanova_2:  28,
+  openrouter:   18,  // OpenRouter free: 20 RPM per key
+  openrouter_1: 18,
+  openrouter_2: 18,
+  deepseek:     18,  // DeepSeek free: ~20 RPM
+  cohere:       18,  // Cohere free: ~20 RPM
+  huggingface:   8,  // HuggingFace: conservative
+  mistral:       1,  // Mistral free: 2 RPM (very conservative)
 };
 function recordRpm(provider: string): void {
   const now = Date.now();
@@ -137,10 +157,20 @@ function getAvailableProviders(order: string[]): string[] {
 // Each school's keys are completely isolated — one school cannot use another's keys.
 async function getEffectiveKey(provider: string, userKey?: string, schoolId?: string): Promise<string> {
   if (userKey && userKey.trim()) return userKey.trim();
-  // groq_1/groq_2/groq_3 are virtual providers — each maps to a specific env var key
+  // groq_1/2/3 are virtual providers — each maps to a specific env var key
   if (provider === "groq_1") return process.env.GROQ_API_KEY || "";
   if (provider === "groq_2") return process.env.GROQ_API_KEY_2 || "";
   if (provider === "groq_3") return process.env.GROQ_API_KEY_3 || "";
+  // cerebras_1/2/3 — each maps to a specific env var key
+  if (provider === "cerebras_1") return process.env.CEREBRAS_API_KEY || "";
+  if (provider === "cerebras_2") return process.env.CEREBRAS_API_KEY_2 || "";
+  if (provider === "cerebras_3") return process.env.CEREBRAS_API_KEY_3 || "";
+  // sambanova_1/2 — each maps to a specific env var key
+  if (provider === "sambanova_1") return process.env.SAMBANOVA_API_KEY || "";
+  if (provider === "sambanova_2") return process.env.SAMBANOVA_API_KEY_2 || "";
+  // openrouter_1/2 — each maps to a specific env var key
+  if (provider === "openrouter_1") return process.env.OPENROUTER_API_KEY || "";
+  if (provider === "openrouter_2") return process.env.OPENROUTER_API_KEY_2 || "";
   // 1. School-level encrypted key (primary source — each school brings their own)
   if (schoolId) {
     const schoolEntry = await getSchoolKey(schoolId, provider);
@@ -172,9 +202,16 @@ async function getEffectiveKey(provider: string, userKey?: string, schoolId?: st
     groq:        process.env.GROQ_API_KEY || "",
     gemini:      process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || "",
     cerebras:    process.env.CEREBRAS_API_KEY || "",
+    cerebras_1:  process.env.CEREBRAS_API_KEY || "",
+    cerebras_2:  process.env.CEREBRAS_API_KEY_2 || "",
+    cerebras_3:  process.env.CEREBRAS_API_KEY_3 || "",
     nvidia_nim:  process.env.NVIDIA_NIM || process.env.NVIDIA_NIM_API_KEY || "",
     sambanova:   process.env.SAMBANOVA_API_KEY || "",
+    sambanova_1: process.env.SAMBANOVA_API_KEY || "",
+    sambanova_2: process.env.SAMBANOVA_API_KEY_2 || "",
     openrouter:  process.env.OPENROUTER_API_KEY || "",
+    openrouter_1: process.env.OPENROUTER_API_KEY || "",
+    openrouter_2: process.env.OPENROUTER_API_KEY_2 || "",
     deepseek:    process.env.DEEPSEEK_API_KEY || "",
     cohere:      process.env.COHERE_API_KEY || "",
     huggingface: process.env.HUGGINGFACE_API_KEY || "",
@@ -191,16 +228,23 @@ async function getAdminModel(provider: string, schoolId?: string): Promise<strin
   // Default model map for all providers
   const defaultModels: Record<string, string> = {
     groq:        "meta-llama/llama-4-scout-17b-16e-instruct",  // Llama 4 Scout — best free on Groq
-    groq_1:      "meta-llama/llama-4-scout-17b-16e-instruct",
-    groq_2:      "meta-llama/llama-4-scout-17b-16e-instruct",
-    groq_3:      "meta-llama/llama-4-scout-17b-16e-instruct",
-    cerebras:    "gpt-oss-120b",                               // OpenAI 120B on Cerebras hardware
-    gemini:      "gemini-2.5-flash",
-    gemini_lite: "gemini-2.5-flash-lite",
-    gemini_3lite:"gemini-3.1-flash-lite-preview",
-    nvidia_nim:  "nvidia/llama-3.1-nemotron-ultra-253b-v1",   // Best free NVIDIA NIM model
-    sambanova:   "Meta-Llama-3.3-70B-Instruct",
-    openrouter:  "meta-llama/llama-4-scout:free",
+    groq_1:       "meta-llama/llama-4-scout-17b-16e-instruct",
+    groq_2:       "meta-llama/llama-4-scout-17b-16e-instruct",
+    groq_3:       "meta-llama/llama-4-scout-17b-16e-instruct",
+    cerebras:     "llama3.1-8b",  // Cerebras wafer-scale — llama3.1-8b is fast and reliable
+    cerebras_1:   "llama3.1-8b",
+    cerebras_2:   "llama3.1-8b",
+    cerebras_3:   "llama3.1-8b",
+    gemini:       "gemini-2.5-flash",
+    gemini_lite:  "gemini-2.5-flash-lite",
+    gemini_3lite: "gemini-3.1-flash-lite-preview",
+    nvidia_nim:   "nvidia/llama-3.1-nemotron-ultra-253b-v1",   // Best free NVIDIA NIM model
+    sambanova:    "Meta-Llama-3.3-70B-Instruct",
+    sambanova_1:  "Meta-Llama-3.3-70B-Instruct",
+    sambanova_2:  "Meta-Llama-3.3-70B-Instruct",
+    openrouter:   "google/gemma-4-31b-it:free",  // Gemma 4 31B — reliable free model on OpenRouter
+    openrouter_1: "google/gemma-4-31b-it:free",
+    openrouter_2: "google/gemma-4-31b-it:free",
     deepseek:    "deepseek-chat",
     cohere:      "command-a-03-2025",                         // Cohere Command A 111B — best free
     huggingface: "Qwen/Qwen2.5-72B-Instruct",
@@ -240,7 +284,9 @@ async function callProvider(
   // NVIDIA NIM / others: 20s
   // Worst case: 3×12 + 15 + 15 + 15 + 20 + 18 = 119s but cooldowns skip most providers
   const timeoutMs =
-    provider === "groq" || provider === "groq_1" || provider === "groq_2" || provider === "groq_3" || provider === "cerebras" || provider === "sambanova"
+    provider === "groq" || provider === "groq_1" || provider === "groq_2" || provider === "groq_3" ||
+    provider === "cerebras" || provider === "cerebras_1" || provider === "cerebras_2" || provider === "cerebras_3" ||
+    provider === "sambanova" || provider === "sambanova_1" || provider === "sambanova_2"
       ? 12_000
       : provider === "gemini" || provider === "gemini_lite" || provider === "gemini_3lite"
       ? 15_000
@@ -290,15 +336,22 @@ async function callProvider(
       // These are stored in school_api_keys with a base_url field and a custom provider name.
       // The baseUrl is passed in via the options parameter below.
       case "cerebras":
-        // Cerebras wafer-scale inference — 14,400 RPD, 30 RPM free tier
-        // Same quota as one Groq key but separate provider = separate limit
-        result = await callCerebras(system, user, key, model || "llama3.3-70b", maxTokens, controller.signal);
+      case "cerebras_1":
+      case "cerebras_2":
+      case "cerebras_3":
+        // Cerebras wafer-scale inference — 14,400 RPD, 30 RPM free tier per key
+        // With 3 keys in round-robin we get 43,200 RPD combined
+        result = await callCerebras(system, user, key, model || "llama3.1-8b", maxTokens, controller.signal);
         break;
       case "sambanova":
-        // SambaNova Cloud — 1,000 RPD, 30 RPM free tier, OpenAI-compatible
+      case "sambanova_1":
+      case "sambanova_2":
+        // SambaNova Cloud — 1,000 RPD, 30 RPM free tier per key, OpenAI-compatible
         result = await callSambaNova(system, user, key, model || "Meta-Llama-3.3-70B-Instruct", maxTokens, controller.signal);
         break;
       case "openrouter":
+      case "openrouter_1":
+      case "openrouter_2":
         result = await callOpenRouter(system, user, key, model, maxTokens, controller.signal);
         break;
       case "claude":
@@ -380,10 +433,12 @@ export async function callWithFallback(
   // hit rate limits first, and keys 2+3 were barely used.
   // Now we rotate the starting Groq key on each call so ~⅓ of requests start on each key.
   const groqProviders = ["groq_1", "groq_2", "groq_3"] as const;
+  const cerebrasProviders = ["cerebras_1", "cerebras_2", "cerebras_3"] as const;
   const rotatedOrder = order.map(p => p); // shallow copy
+
+  // Rotate Groq keys so load is spread evenly across all 3
   const firstGroqIdx = rotatedOrder.findIndex(p => groqProviders.includes(p as any));
   if (firstGroqIdx !== -1) {
-    // Extract the groq block, rotate it, and splice it back in
     const groqBlock = groqProviders.filter(p => rotatedOrder.includes(p));
     if (groqBlock.length > 1) {
       const offset = groqRoundRobinIndex % groqBlock.length;
@@ -393,6 +448,23 @@ export async function callWithFallback(
       for (let i = 0; i < rotatedOrder.length; i++) {
         if (groqProviders.includes(rotatedOrder[i] as any)) {
           rotatedOrder[i] = rotated[gi++];
+        }
+      }
+    }
+  }
+
+  // Rotate Cerebras keys so load is spread evenly across all 3
+  const firstCerebrasIdx = rotatedOrder.findIndex(p => cerebrasProviders.includes(p as any));
+  if (firstCerebrasIdx !== -1) {
+    const cerebrasBlock = cerebrasProviders.filter(p => rotatedOrder.includes(p));
+    if (cerebrasBlock.length > 1) {
+      const offset = cerebrasRoundRobinIndex % cerebrasBlock.length;
+      cerebrasRoundRobinIndex = (cerebrasRoundRobinIndex + 1) % cerebrasBlock.length;
+      const rotated = [...cerebrasBlock.slice(offset), ...cerebrasBlock.slice(0, offset)];
+      let ci = 0;
+      for (let i = 0; i < rotatedOrder.length; i++) {
+        if (cerebrasProviders.includes(rotatedOrder[i] as any)) {
+          rotatedOrder[i] = rotated[ci++];
         }
       }
     }
@@ -448,11 +520,10 @@ export async function callWithFallback(
       // Rate limit (429) or quota exceeded
       const isRateLimit = msg.includes("429") || msg.toLowerCase().includes("rate limit") || msg.toLowerCase().includes("quota") || msg.toLowerCase().includes("too many requests");
       if (isRateLimit) {
-        // For Groq providers, do a quick 2s retry before giving up — Groq rate limits
-        // often clear within seconds (per-minute window resets). This avoids unnecessarily
-        // falling through to slower providers when a brief pause would suffice.
-        const isGroq = provider.startsWith("groq");
-        if (isGroq) {
+        // Groq and Cerebras rate limits often clear within seconds (per-minute window resets).
+        // A quick 2s retry avoids unnecessarily falling through to slower providers.
+        const isQuickRetryProvider = provider.startsWith("groq") || provider.startsWith("cerebras");
+        if (isQuickRetryProvider) {
           try {
             console.log(`[AI] ${provider} rate limited — quick 2s retry...`);
             await new Promise(r => setTimeout(r, 2000));
@@ -972,16 +1043,16 @@ async function callOpenAI(system: string, user: string, key: string, model: stri
 }
 
 async function callOpenRouter(system: string, user: string, key: string, model: string, maxTokens: number, signal?: AbortSignal): Promise<string> {
-  // Best free models on OpenRouter as of March 2026 — ordered by quality and reliability.
-  // All have 1,000 RPD / 20 RPM on the free tier.
+  // Best free models on OpenRouter as of May 2026 — ordered by reliability and quality.
+  // Prioritise models with stable upstream providers (not Venice-routed Llama which rate-limits).
   const fallbackModels = [
     model,
-    "meta-llama/llama-4-scout:free",          // Meta Llama 4 Scout — best free model
-    "google/gemini-2.5-flash-exp:free",        // Gemini 2.5 Flash experimental — very fast
-    "mistralai/mistral-small-3.1-24b-instruct:free", // Mistral Small 3.1 — strong instruction following
-    "nvidia/llama-3.1-nemotron-70b-instruct:free",   // NVIDIA Nemotron 70B — high quality
-    "meta-llama/llama-3.3-70b-instruct:free",  // Llama 3.3 70B — reliable fallback
-    "qwen/qwen3-30b-a3b:free",                 // Qwen3 30B — good for structured JSON
+    "google/gemma-4-31b-it:free",              // Gemma 4 31B — reliable, good instruction following
+    "qwen/qwen3-30b-a3b:free",                 // Qwen3 30B — excellent for structured JSON output
+    "openai/gpt-oss-20b:free",                 // GPT OSS 20B — OpenAI open-source model
+    "nvidia/nemotron-nano-12b-v2:free",        // NVIDIA Nemotron Nano — fast and reliable
+    "meta-llama/llama-4-scout:free",           // Llama 4 Scout — when upstream is available
+    "meta-llama/llama-3.3-70b-instruct:free",  // Llama 3.3 70B — last resort
   ].filter(Boolean);
 
   for (const m of fallbackModels) {
