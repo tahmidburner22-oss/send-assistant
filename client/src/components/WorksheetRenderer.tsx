@@ -2168,25 +2168,7 @@ function LabelDiagramSection({
           )}
         </div>
       )}
-      {/* SVG diagram fallback if no imageUrl */}
-      {!imageUrl && diagramSpec && (
-        <div style={{ textAlign: "center", marginBottom: "14px" }}>
-          <SVGDiagram
-            spec={diagramSpec}
-            width={420}
-            height={220}
-            fontFamily={fmt.fontFamily}
-            fontSize={fmt.fontSize - 1}
-            accentColor={accentColor}
-            showCallouts={isTeacher}
-          />
-          {caption && (
-            <p style={{ fontSize: `${fmt.fontSize - 2}px`, color: "#6b7280", marginTop: "4px", fontStyle: "italic", fontFamily: fmt.fontFamily, textAlign: "center" }}>
-              {caption}
-            </p>
-          )}
-        </div>
-      )}
+      {/* SVG diagram fallback has been removed. Only real images are rendered. */}
       {/* Word bank header + grid table */}
       {rawLabels.length > 0 && (
         <>
@@ -5448,9 +5430,9 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
               marginTop: undefined,
               marginLeft: undefined,
               marginRight: undefined,
-              background: section.type === "send-support" ? "#faf5ff" : isTeacherHeader ? "#fff8f8" : fmt.theme === "high-contrast" ? "#ffffff" : "#ffffff",
-              border: fmt.theme === "high-contrast" ? "2px solid #111827" : section.type === "send-support" ? "2px solid #7c3aed" : "none",
-              borderRadius: section.type === "send-support" ? "8px" : "0",
+              background: isTeacherHeader ? "#fff8f8" : fmt.theme === "high-contrast" ? "#ffffff" : "#ffffff",
+              border: fmt.theme === "high-contrast" ? "2px solid #111827" : "none",
+              borderRadius: "0",
               cursor: editMode ? "pointer" : "default",
               outline: editMode && editedSections[i] !== undefined ? "2px solid #2a7f8f" : "none",
               pageBreakInside: "avoid",
@@ -6604,16 +6586,18 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                                   borderTop: bi > 0 ? "1px solid #1a2744" : undefined,
                                   padding: "0",
                                 }}>
-                                  {/* Mistake header bar */}
+                                  {/* Mistake header bar — plain style, no background fill */}
                                   {headerPart && (
                                     <div style={{
-                                      background: "#1a2744",
-                                      color: "#ffffff",
-                                      padding: "6px 16px",
+                                      borderLeft: "4px solid #1a2744",
+                                      background: "transparent",
+                                      color: "#1a2744",
+                                      padding: "8px 16px 6px 12px",
                                       fontSize: `${fmt.fontSize - 1}px`,
                                       fontWeight: 700,
                                       fontFamily: fmt.fontFamily,
                                       letterSpacing: "0.03em",
+                                      marginTop: bi > 0 ? "0" : "0",
                                     }}>
                                       <span dangerouslySetInnerHTML={{ __html: renderMath(headerPart.label + (headerPart.text ? " " + headerPart.text : "")) }} />
                                     </div>

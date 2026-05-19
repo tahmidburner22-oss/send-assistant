@@ -323,19 +323,43 @@ function extractCommandVerb(section: WorksheetSection): string {
   return match ? match[1].toLowerCase() : "";
 }
 
+// Extract a key noun/topic phrase from the question to make hints feel tailored
+function extractTopicNoun(section: WorksheetSection): string {
+  const content = String(section.content || "");
+  // Remove the verb and common stop words to find a noun phrase
+  const cleanContent = content.replace(/\b(Calculate|Work out|Find|Solve|Evaluate|Simplify|Expand|Factorise|Identify|Describe|Explain|Compare|Analyse|Justify|Assess|Discuss|State|Name|List|Define|Match|Circle|Tick|Fill in|Complete|Label|Sketch|Draw|Plot|Show that|Prove|Write|Express|Round|Estimate|Convert|the|a|an|in|on|at|to|for|of|with|and|or|is|are|was|were|what|how|why|when|where)\b/gi, "").replace(/[0-9.]+/g, "").trim();
+  
+  // Try to find a capitalized word that isn't at the start of a sentence
+  const capitalizedMatch = cleanContent.match(/\b[A-Z][a-z]{3,}\b/g);
+  if (capitalizedMatch && capitalizedMatch.length > 0) {
+    // Pick the first interesting capitalized word (excluding common names if possible, but good enough for a hint)
+    return capitalizedMatch[0];
+  }
+  
+  // Otherwise just grab the first significant word (4+ chars)
+  const wordMatch = cleanContent.match(/\b[a-zA-Z]{5,}\b/g);
+  if (wordMatch && wordMatch.length > 0) {
+    return wordMatch[0].toLowerCase();
+  }
+  
+  return "this topic";
+}
+
 // Build question-specific hint lines based on section type and content
 function buildQuestionSpecificHint(section: WorksheetSection): string[] {
   const verb = extractCommandVerb(section);
+  const topicNoun = extractTopicNoun(section);
+  
   if (isGapFillSection(section)) {
     return [
-      "Read each sentence carefully — the missing word is in the word bank below.",
+      `Read each sentence about ${topicNoun} carefully — the missing word is in the word bank below.`,
       "Cross out each word as you use it so you don't use it twice.",
       "If you are unsure, try each word in the gap and see which makes sense.",
     ];
   }
   if (isTrueFalseSection(section)) {
     return [
-      "Read each statement carefully — look for key words like 'always', 'never', 'all'.",
+      `Read each statement about ${topicNoun} carefully — look for key words like 'always', 'never', 'all'.`,
       "If any part of the statement is wrong, the whole statement is FALSE.",
       "Check your answer against the Key Vocabulary section if unsure.",
     ];
@@ -343,33 +367,33 @@ function buildQuestionSpecificHint(section: WorksheetSection): string[] {
   if (isMcqSection(section)) {
     return [
       "Read all four options before choosing — eliminate the ones you know are wrong first.",
-      "Look for the option that is most precise and uses subject vocabulary.",
+      `Look for the option that is most precise about ${topicNoun} and uses subject vocabulary.`,
       "If two options seem similar, re-read the question to spot the key difference.",
     ];
   }
   if (isMatchingSection(section)) {
     return [
       "Start with the terms you are most confident about — match those first.",
-      "Check the Key Vocabulary section if a term is unfamiliar.",
+      `Check the Key Vocabulary section if a term related to ${topicNoun} is unfamiliar.`,
       "Each term matches exactly one definition — cross out pairs as you go.",
     ];
   }
   if (isCalculationSection(section)) {
     return [
       `${verb ? `'${verb.charAt(0).toUpperCase() + verb.slice(1)}'` : "This question"} means you need to show a calculation — write every step.`,
-      "Write the formula or method first, then substitute your numbers.",
+      `Write the formula or method for ${topicNoun} first, then substitute your numbers.`,
       "Check your answer: does the unit make sense? Is the size reasonable?",
     ];
   }
   if (isExtendedWritingSection(section)) {
     return [
       `${verb ? `'${verb.charAt(0).toUpperCase() + verb.slice(1)}'` : "This question"} means you need to give reasons and use subject vocabulary.`,
-      "Use the sentence starter: 'This is because...' or 'This shows that...'",
+      `Use the sentence starter: 'One key point about ${topicNoun} is...' or 'This shows that...'`,
       "Aim for at least one specific example or piece of evidence in your answer.",
     ];
   }
   return [
-    "Read the question carefully — underline the key instruction word.",
+    `Read the question about ${topicNoun} carefully — underline the key instruction word.`,
     "Use the worked example above as a guide for how to structure your answer.",
     "Check the Key Vocabulary section if you are unsure of any terms.",
   ];
