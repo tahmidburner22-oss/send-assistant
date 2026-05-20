@@ -399,10 +399,15 @@ export function enforceSendAdaptations(
   // Other SEND needs are enforced purely via prompt + server overlay.
 
   // Record the enforcement in metadata for traceability (spec §31).
+  // FIX-SEND-02: Also stamp the canonical sendNeed and sendNeedId so that
+  // the renderer, footer, and audit tools all read a consistent value
+  // regardless of what the LLM returned in its metadata block.
   out = {
     ...out,
     metadata: {
       ...(out.metadata || {}),
+      sendNeed: spec.id,
+      sendNeedId: spec.id,
       sendEnforcerApplied: spec.id,
       sendEnforcerWarnings: warnings,
       sendEnforcerPreserveStems: preserveStems,

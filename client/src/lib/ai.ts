@@ -2796,6 +2796,18 @@ Return EXACTLY this JSON (raw JSON only, no markdown fences):
           sendNeed: params.sendNeed || undefined,
         };
       }
+      // FIX-SEND-01: Unconditionally stamp the user-selected SEND need into
+      // metadata so that LLM-returned null/stale values can never override it.
+      // The enforcer and renderer both read metadata.sendNeed / metadata.sendNeedId
+      // so both fields must be set here, before any downstream pass runs.
+      if (params.sendNeed && params.sendNeed !== 'none-selected') {
+        structuredJson.metadata.sendNeed = params.sendNeed;
+        structuredJson.metadata.sendNeedId = params.sendNeed;
+      } else {
+        // Explicitly clear stale LLM-provided values when no SEND need was selected.
+        structuredJson.metadata.sendNeed = null;
+        structuredJson.metadata.sendNeedId = null;
+      }
       // ── Phase 4 / FEAT-002 — capture & validate misconceptionsTargeted ──
       // The AI is asked to return an array of misconception IDs it targeted.
       // We sanity-check those IDs against the bank so only valid ones survive.

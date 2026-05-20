@@ -181,6 +181,10 @@ function toWorksheetData(ws: Worksheet) {
     subtitle: (ws as any).subtitle,
     sections: sections as any,
     metadata: {
+      // FIX-SEND-03: Spread the saved metadata blob FIRST so that the
+      // authoritative DB-backed fields (sendNeed, sendNeedId) always
+      // override any stale/null values that were persisted in the blob.
+      ...(ws.metadata || {}),
       subject: ws.subject,
       topic: ws.topic,
       yearGroup: ws.yearGroup,
@@ -188,7 +192,6 @@ function toWorksheetData(ws: Worksheet) {
       sendNeedId: ws.sendNeed,
       difficulty: ws.difficulty,
       examBoard: ws.examBoard,
-      ...(ws.metadata || {}),
     },
     libraryAssets: (ws as any).libraryAssets || (ws as any).library_assets || [],
     canonicalTopicKey: (ws as any).canonicalTopicKey || (ws as any).canonical_topic_key,
