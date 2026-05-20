@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Cookie, X, Settings2, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
+import { Switch } from "@/components/ui/inline-switch";
 import { Label } from "@/components/ui/label";
 import { data as dataApi } from "@/lib/api";
 
