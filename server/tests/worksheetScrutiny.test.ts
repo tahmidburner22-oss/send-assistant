@@ -636,6 +636,35 @@ describe("worksheetPostValidator — live gap regressions", () => {
     expect(content).toContain("WORD BANK: numerator | denominator | fraction");
   });
 
+  it("strips inline live-generation formatting-rule leakage from content, questions, and options", () => {
+    const ws: PostValidatorWorksheet = {
+      metadata: { subject: "Biology", yearGroup: "Year 10" },
+      sections: [
+        {
+          type: "q-mcq",
+          content: "Circle the best answer. CRITICAL FORMATTING RULE: You MUST write exactly one correct answer and three distractors.",
+          questions: [
+            {
+              question: "What happens in mitosis? RULE: EXACTLY one sentence only.",
+              options: [
+                "A two identical daughter cells ✓",
+                "B one gamete [plausible distractor]",
+                "C four different cells",
+                "D no cells",
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const r = runWorksheetPostValidators(ws, { subject: "biology", yearGroup: "Year 10" });
+    const section: any = r.worksheet.sections![0];
+    const rendered = [section.content, section.questions?.[0]?.question, ...(section.questions?.[0]?.options || [])].join("\n");
+    expect(rendered).not.toMatch(/CRITICAL FORMATTING RULE|RULE:\s*EXACTLY|MUST write|plausible distractor|✓/i);
+    expect(rendered).toMatch(/Circle the best answer/i);
+    expect(rendered).toMatch(/What happens in mitosis/i);
+  });
+
   it("adds concrete dyscalculia maths scaffolding instead of only generic working-out prompts", () => {
     const ws: PostValidatorWorksheet = {
       metadata: { subject: "Maths", yearGroup: "Year 7" },

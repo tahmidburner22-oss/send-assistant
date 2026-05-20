@@ -425,9 +425,10 @@ export function capWorkedExampleSteps(
 // and bracketed "[Write EXACTLY...]" text can leak into student-facing sections.
 // These lines are not learning content, so remove them before rendering/export.
 
-const LEAKED_INSTRUCTION_LINE_RE = /^\s*(?:RULE|INSTRUCTION|FORMAT|OUTPUT|SCHEMA|CONSTRAINT|CRITICAL|IMPORTANT)\s*:/i;
+const LEAKED_INSTRUCTION_LINE_RE = /^\s*(?:(?:CRITICAL\s+)?(?:FORMATTING\s+)?RULE|INSTRUCTION|FORMAT|OUTPUT|SCHEMA|CONSTRAINT|CRITICAL|IMPORTANT)\s*:/i;
 const LEAKED_BRACKET_BLOCK_RE = /\[[^\]\n]*(?:EXACTLY|MUST|Do NOT|continue for|correct answers|plausible distractors|word\d+|Result:)[^\]\n]*\]/gi;
 const LEAKED_PHRASE_RE = /\b(?:Return EXACTLY this JSON|raw JSON only|no markdown fences|follow this EXACTLY)\b/i;
+const LEAKED_INLINE_INSTRUCTION_RE = /\b(?:(?:CRITICAL\s+)?FORMATTING\s+RULE|CRITICAL\s+RULE|RULE|INSTRUCTION|OUTPUT\s+RULE)\s*:\s*(?:You\s+MUST|MUST|EXACTLY|Do\s+NOT|Return|Write|Use|Include|Only)[^\n.!?]*(?:[.!?]|$)/gi;
 
 function cleanLeakedGeneratorInstructions(content: string): { content: string; changed: boolean } {
   let changed = false;
@@ -440,7 +441,12 @@ function cleanLeakedGeneratorInstructions(content: string): { content: string; c
       changed = true;
       continue;
     }
-    const cleaned = raw.replace(LEAKED_BRACKET_BLOCK_RE, "").replace(/\s{2,}/g, " ").trimEnd();
+    const cleaned = raw
+      .replace(LEAKED_BRACKET_BLOCK_RE, "")
+      .replace(LEAKED_INLINE_INSTRUCTION_RE, "")
+      .replace(/\s{2,}/g, " ")
+      .replace(/\s+([?.!,;:])/g, "$1")
+      .trimEnd();
     if (cleaned !== raw) changed = true;
     if (cleaned.trim().length > 0) kept.push(cleaned);
   }
@@ -452,12 +458,50 @@ export function stripLeakedGeneratorInstructions(
   ws: PostValidatorWorksheet,
 ): PostValidatorResult {
   const warnings: string[] = [];
+  const cleanField = (value: unknown): { value: unknown; changed: boolean } => {
+    if (typeof value !== "string" || !value.trim()) return { value, changed: false };
+    const cleaned = cleanLeakedGeneratorInstructions(value);
+    return { value: cleaned.content, changed: cleaned.changed };
+  };
+
   const sections = (ws.sections || []).map((s): PostValidatorSection => {
-    if (s.teacherOnly || typeof s.content !== "string" || !s.content.trim()) return s;
-    const cleaned = cleanLeakedGeneratorInstructions(s.content);
-    if (!cleaned.changed) return s;
+    if (s.teacherOnly) return s;
+    let changed = false;
+    const next: any = { ...s };
+
+    for (const key of ["title", "subtitle", "content", "prompt", "question", "text", "stem", "caption"]) {
+      const cleaned = cleanField(next[key]);
+      if (cleaned.changed) {
+        next[key] = cleaned.value;
+        changed = true;
+      }
+    }
+
+    if (Array.isArray(next.questions)) {
+      next.questions = next.questions.map((q: any) => {
+        if (!q || typeof q !== "object") return q;
+        const nq = { ...q };
+        for (const key of ["text", "prompt", "question", "stem", "content", "answer", "feedback"]) {
+          const cleaned = cleanField(nq[key]);
+          if (cleaned.changed) {
+            nq[key] = cleaned.value;
+            changed = true;
+          }
+        }
+        if (Array.isArray(nq.options)) {
+          nq.options = nq.options.map((o: any) => {
+            const cleaned = cleanField(o);
+            if (cleaned.changed) changed = true;
+            return cleaned.value;
+          });
+        }
+        return nq;
+      });
+    }
+
+    if (!changed) return s;
     warnings.push(`Stripped leaked generator instructions from ${String(s.type || "worksheet")} section.`);
-    return { ...s, content: cleaned.content };
+    return next as PostValidatorSection;
   });
   return { worksheet: { ...ws, sections }, warnings };
 }
@@ -608,7 +652,11 @@ function stripVisiblePlaceholdersAndAnswerLeakage(ws: PostValidatorWorksheet): P
   const cleanText = (value: unknown): string => {
     let text = String(value ?? "");
     const before = text;
-    text = text.replace(PLACEHOLDER_RE, "");
+    text = text
+      .replace(PLACEHOLDER_RE, "")
+      .replace(LEAKED_BRACKET_BLOCK_RE, "")
+      .replace(LEAKED_INLINE_INSTRUCTION_RE, "")
+      .replace(/^\s*[✓✔]\s*(?=Key\s+point\b)/gim, "Key point: ");
     text = text
       .split("\n")
       .map(line => {
