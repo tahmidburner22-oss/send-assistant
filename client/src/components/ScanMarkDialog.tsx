@@ -31,7 +31,7 @@ import {
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Switch } from "@/components/ui/switch";
+import { Switch } from "@/components/ui/inline-switch";
 import {
   Camera, Upload, CheckCircle2, XCircle, Loader2, FileImage, X, RefreshCcw,
   BrainCircuit, Users, Mic, Download, FileSpreadsheet, MessageSquare, StopCircle,

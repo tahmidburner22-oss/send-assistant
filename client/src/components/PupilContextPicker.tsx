@@ -14,7 +14,7 @@
  */
 import { useMemo } from "react";
 import { Card } from "@/components/ui/card";
-import { Switch } from "@/components/ui/switch";
+import { Switch } from "@/components/ui/inline-switch";
 import { Label } from "@/components/ui/label";
 import {
   Select,

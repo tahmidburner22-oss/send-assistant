@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
-import { Switch } from "@/components/ui/switch";
+import { Switch } from "@/components/ui/inline-switch";
 import { Label } from "@/components/ui/label";
 import {
   Sparkles, Camera, GitCompare, Layers as LayersIcon, Lock, BookOpen,

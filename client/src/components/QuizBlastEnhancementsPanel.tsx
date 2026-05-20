@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
+import { Switch } from "@/components/ui/inline-switch";
 import { Label } from "@/components/ui/label";
 import {
   Zap, Clock, ShieldCheck, Eye, Activity, AlertTriangle, BookOpen,
