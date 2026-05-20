@@ -40,6 +40,7 @@ const PROVIDER_ORDER = [
   "huggingface",
   "openrouter_1", "openrouter_2",
   "mistral",
+  "openai",
 ] as const;
 
 // ── Round-robin counters for multi-key providers ─────────────────────────────
@@ -138,6 +139,7 @@ const PROVIDER_RPM_CAPS: Record<string, number> = {
   cohere:       18,  // Cohere free: ~20 RPM
   huggingface:   8,  // HuggingFace: conservative
   mistral:       1,  // Mistral free: 2 RPM (very conservative)
+  openai:       45,  // Platform paid fallback; kept last in provider order
 };
 function recordRpm(provider: string): void {
   const now = Date.now();
@@ -237,6 +239,7 @@ async function getEffectiveKey(provider: string, userKey?: string, schoolId?: st
     cohere:      process.env.COHERE_API_KEY || "",
     huggingface: process.env.HUGGINGFACE_API_KEY || "",
     mistral:     process.env.MISTRAL_API_KEY || "",
+    openai:      process.env.OPENAI_API_KEY || "",
   };
   return envMap[provider] || "";
 }
@@ -270,6 +273,7 @@ async function getAdminModel(provider: string, schoolId?: string): Promise<strin
     cohere:      "command-a-03-2025",                         // Cohere Command A 111B — best free
     huggingface: "Qwen/Qwen2.5-72B-Instruct",
     mistral:     "mistral-small-latest",
+    openai:      "gpt-4.1-mini",
   };
   if (schoolId) {
     const schoolEntry = await getSchoolKey(schoolId, provider);
@@ -1712,9 +1716,9 @@ router.post("/diagram", requireAuth, async (req: Request, res: Response) => {
       // Compact summary the LLM can act on. Cap to 8 lines so the retry
       // prompt stays tight; anything beyond that is usually a knock-on of
       // the earlier issues.
-      const summariseIssuesForRetry = (issues: { severity: string; message: string }[]) => {
+      const summariseIssuesForRetry = (issues: Array<{ severity?: string; code?: string; message: string }>) => {
         const top = issues.slice(0, 8);
-        const lines = top.map((it, i) => `${i + 1}. [${it.severity}] ${it.message}`);
+        const lines = top.map((it, i) => `${i + 1}. [${it.severity || it.code || 'layout'}] ${it.message}`);
         if (issues.length > top.length) lines.push(`...and ${issues.length - top.length} more.`);
         return lines.join("\n");
       };

@@ -1992,6 +1992,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
     if (generatedWs) {
       // ── Run the 10-stage validation pipeline ────────────────────────────────
       try {
+        const pipelineInput = normaliseWorksheetForRender(generatedWs, { subject, topic, yearGroup, sendNeed, difficulty, examBoard }) as GeneratedWorksheet;
         const pipelineResult = runWorksheetPipeline(
           {
             topic,
@@ -2007,7 +2008,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
             priorTopic: recallTopic?.trim() || undefined,
             difficulty,
           },
-          generatedWs
+          pipelineInput
         );
         // Use the pipeline-validated worksheet
         generatedWs = pipelineResult.worksheet as typeof generatedWs;
@@ -5609,7 +5610,15 @@ ${s.content}`).join("\n\n"),
             ) : (
               <div className="space-y-2">
                 {worksheetHistory
-                  .filter(w => !historySearch || w.title.toLowerCase().includes(historySearch.toLowerCase()) || w.subject.toLowerCase().includes(historySearch.toLowerCase()) || w.topic.toLowerCase().includes(historySearch.toLowerCase()))
+                  .filter(w => {
+                    const q = historySearch.trim().toLowerCase();
+                    if (!q) return true;
+                    const haystack = [w.title, w.subject, w.topic, w.yearGroup, w.metadata?.subject, w.metadata?.topic, w.metadata?.yearGroup]
+                      .filter(Boolean)
+                      .map(v => String(v).toLowerCase())
+                      .join(" ");
+                    return haystack.includes(q);
+                  })
                   .map(ws => (
                     <Card key={ws.id} className="hover:shadow-md transition-shadow cursor-pointer border-border/50" onClick={() => {
                       setActiveTab("history");
