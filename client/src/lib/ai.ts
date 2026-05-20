@@ -1729,7 +1729,7 @@ ABSOLUTE RULES:
   // Comprehensive topic-specific mapping covering all subjects (primary + secondary).
   // New types: venn, timeline, pyramid, fraction-bar.
   // Diagrams are for LABELLING — students see numbered blanks, not answers.
-  const getDiagramForTopic = (subject: string, topic: string): { type: string; instruction: string; example: string } => {
+  function getDiagramForTopic(subject: string, topic: string): { type: string; instruction: string; example: string } {
     const s = subject.toLowerCase();
     const t = topic.toLowerCase();
 
@@ -2010,7 +2010,7 @@ ABSOLUTE RULES:
       instruction: `Label the diagram. Write the correct term next to each number.`,
       example: `[[DIAGRAM:{"type":"labeled","title":"${topic}","labels":[{"text":"Real concept from ${topic}","x":50,"y":10},{"text":"Real belief","x":88,"y":35},{"text":"Real practice","x":75,"y":80},{"text":"Real term","x":25,"y":80}]}]]`
     };
-  };
+  }
 
   const diagramSelection = getDiagramForTopic(params.subject, params.topic);
 
@@ -4234,6 +4234,12 @@ export function parseNaturalLanguageInput(input: string): {
   }
 
   // ── Subject extraction ──
+  // Explicit science disciplines must win before broad keywords such as
+  // "reading" in "reading age" or topic words shared across subjects.
+  if (/\bbiology\b|\bbiological\b/i.test(text)) result.subject = "biology";
+  else if (/\bchemistry\b|\bchemical\b/i.test(text)) result.subject = "chemistry";
+  else if (/\bphysics\b|\bphysical\b/i.test(text)) result.subject = "physics";
+
   const subjectMap: Record<string, string[]> = {
     mathematics: [
       "math", "maths", "mathematics", "algebra", "geometry", "arithmetic", "calculus",
@@ -4258,7 +4264,7 @@ export function parseNaturalLanguageInput(input: string): {
       "newspaper", "speech", "letter writing", "essay", "analysis",
     ],
     science: [
-      "science", "biology", "chemistry", "physics", "atoms", "atom", "cells", "cell",
+      "science", "atoms", "atom", "cells", "cell",
       "forces", "energy", "electricity", "magnetism", "waves", "light", "sound",
       "periodic table", "elements", "compounds", "mixtures", "reactions", "reaction",
       "evolution", "genetics", "dna", "photosynthesis", "respiration", "digestion",
@@ -4292,14 +4298,17 @@ export function parseNaturalLanguageInput(input: string): {
     business: ["business", "economics", "enterprise", "marketing", "finance", "accounting", "supply and demand"],
     drama: ["drama", "theatre", "acting", "performance", "script", "stagecraft"],
   };
-  for (const [id, keywords] of Object.entries(subjectMap)) {
-    for (const kw of keywords) {
-      if (text.includes(kw)) {
-        result.subject = id;
-        break;
+  if (!result.subject) {
+    for (const [id, keywords] of Object.entries(subjectMap)) {
+      for (const kw of keywords) {
+        if (kw === "reading" && /\breading\s+age\b/i.test(text)) continue;
+        if (text.includes(kw)) {
+          result.subject = id;
+          break;
+        }
       }
+      if (result.subject) break;
     }
-    if (result.subject) break;
   }
 
   // ── SEND Need extraction ──
@@ -4362,11 +4371,16 @@ export function parseNaturalLanguageInput(input: string): {
     [/sine\s+rule/i,                  "Sine Rule",                    "mathematics"],
     [/cosine\s+rule/i,                "Cosine Rule",                  "mathematics"],
     [/equation\s+of\s+a\s+circle/i,  "Equation of a Circle",         "mathematics"],
-    [/periodic\s+table/i,             "Periodic Table",               "science"],
-    [/atomic\s+structure/i,           "Atomic Structure",             "science"],
-    [/covalent\s+bond/i,              "Covalent Bonding",             "science"],
-    [/ionic\s+bond/i,                 "Ionic Bonding",                "science"],
-    [/natural\s+selection/i,          "Natural Selection",            "science"],
+    [/periodic\s+table/i,             "Periodic Table",               "chemistry"],
+    [/atomic\s+structure/i,           "Atomic Structure",             "chemistry"],
+    [/covalent\s+bond/i,              "Covalent Bonding",             "chemistry"],
+    [/ionic\s+bond/i,                 "Ionic Bonding",                "chemistry"],
+    [/natural\s+selection/i,          "Natural Selection",            "biology"],
+    [/photosynthesis/i,                "Photosynthesis",               "biology"],
+    [/respiration/i,                   "Respiration",                  "biology"],
+    [/mitosis/i,                       "Mitosis",                      "biology"],
+    [/nuclear\s+(decay|radiation)/i,  "Nuclear Decay",                "physics"],
+    [/forces?\s+and\s+motion/i,      "Forces and Motion",            "physics"],
     [/industrial\s+revolution/i,      "Industrial Revolution",        "history"],
     [/world\s+war\s+[12one two]/i,   text.includes("ww1") || text.includes("world war 1") || text.includes("world war one") || text.includes("first world war") ? "World War One" : "World War Two", "history"],
     [/civil\s+rights/i,               "Civil Rights Movement",        "history"],
@@ -4477,10 +4491,16 @@ export function parseNaturalLanguageInput(input: string): {
   if (result.topic && !result.subject) {
     const topicLower = result.topic.toLowerCase();
     const mathKeywords = ["fraction","decimal","percentage","algebra","equation","graph","geometry","trigonometry","calculus","statistic","probability","ratio","proportion","vector","matrix","sequence","polynomial","differentiation","integration","pythagoras","angle","area","perimeter","volume","circle","triangle","quadratic","linear","simultaneous","inequality","surd","index","prime","factor","multiple","arithmetic","multiplication","division","addition","subtraction","number","shape","coordinate","symmetry","transformation","bearing","loci"];
-    const scienceKeywords = ["cell","dna","evolution","photosynthesis","respiration","atom","molecule","element","compound","reaction","force","energy","wave","electricity","magnetism","circuit","periodic","osmosis","enzyme","organ","system","genetics","ecology","climate","particle","nuclear","acid","alkali","bonding","titration","electrolysis"];
+    const biologyKeywords = ["cell","cells","mitosis","meiosis","dna","genetic","genetics","evolution","photosynthesis","respiration","osmosis","diffusion","enzyme","organ","ecosystem","ecology","infection","disease","homeostasis","hormone","plant","animal","protein","chromosome"];
+    const chemistryKeywords = ["atom","molecule","element","compound","reaction","periodic","acid","alkali","base","bonding","titration","electrolysis","salt","rate","equilibrium","hydrocarbon","organic","metal","ion","ionic","covalent","particle"];
+    const physicsKeywords = ["force","motion","speed","velocity","acceleration","energy","wave","electricity","magnetism","circuit","nuclear","radioactive","decay","pressure","momentum","power","current","voltage","resistance","light","sound","emf"];
+    const scienceKeywords = [...biologyKeywords, ...chemistryKeywords, ...physicsKeywords, "climate", "matter"];
     const historyKeywords = ["war","revolution","empire","tudor","victorian","roman","medieval","cold war","slavery","holocaust","civil","industrial","world war","henry","elizabeth","parliament","democracy","monarch"];
     const geographyKeywords = ["river","volcano","earthquake","climate","weather","tectonic","biome","rainforest","urbanisation","globalisation","migration","coast","glacier","population","development","map","landform","erosion","flood"];
     if (mathKeywords.some(k => topicLower.includes(k))) result.subject = "mathematics";
+    else if (biologyKeywords.some(k => topicLower.includes(k))) result.subject = "biology";
+    else if (chemistryKeywords.some(k => topicLower.includes(k))) result.subject = "chemistry";
+    else if (physicsKeywords.some(k => topicLower.includes(k))) result.subject = "physics";
     else if (scienceKeywords.some(k => topicLower.includes(k))) result.subject = "science";
     else if (historyKeywords.some(k => topicLower.includes(k))) result.subject = "history";
     else if (geographyKeywords.some(k => topicLower.includes(k))) result.subject = "geography";
@@ -4491,6 +4511,7 @@ export function parseNaturalLanguageInput(input: string): {
   if (result.subject && !result.topic) {
     const defaultTopics: Record<string, string> = {
       mathematics: "Number", english: "Reading Comprehension", science: "Cells",
+      biology: "Cells", chemistry: "Atomic Structure", physics: "Forces and Motion",
       history: "World War II", geography: "Rivers", computing: "Algorithms",
       art: "Drawing", music: "Theory", pe: "Health", dt: "Design Process",
       re: "World Religions", mfl: "Vocabulary", pshe: "Wellbeing",

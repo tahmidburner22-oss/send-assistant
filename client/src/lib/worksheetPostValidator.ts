@@ -600,6 +600,50 @@ export function extractMisconceptionLinks(
   };
 }
 
+function stripVisiblePlaceholdersAndAnswerLeakage(ws: PostValidatorWorksheet): PostValidatorResult {
+  const warnings: string[] = [];
+  const PLACEHOLDER_RE = /\[(?:specific|plausible|correct answer|incorrect option|continue|word\d+|point \d+|name of mistake|explanation|short|realistic|final answer|first step|second step|third step|key point|statement about|.*?placeholder.*?).*?\]/gi;
+  const CORRECT_ANSWER_HINT_RE = /\s*(?:✓|✔|\(correct\)|correct answer|mark with\s*[✓✔])\s*$/i;
+
+  const cleanText = (value: unknown): string => {
+    let text = String(value ?? "");
+    const before = text;
+    text = text.replace(PLACEHOLDER_RE, "");
+    text = text
+      .split("\n")
+      .map(line => {
+        if (/^\s*[A-D][\).\s]/.test(line)) return line.replace(CORRECT_ANSWER_HINT_RE, "").trimEnd();
+        return line;
+      })
+      .join("\n")
+      .replace(/[ \t]{2,}/g, " ")
+      .replace(/\n{3,}/g, "\n\n")
+      .trim();
+    if (text !== before) warnings.push("Removed visible placeholders or student-facing answer hints from generated content.");
+    return text || String(value ?? "");
+  };
+
+  const sections = (ws.sections || []).map((section: any) => {
+    if (!section || section.teacherOnly || section.type === "answers" || section.type === "mark-scheme") return section;
+    const next = { ...section };
+    if (typeof next.content === "string") next.content = cleanText(next.content);
+    if (Array.isArray(next.questions)) {
+      next.questions = next.questions.map((q: any) => {
+        if (!q || typeof q !== "object") return q;
+        const nq = { ...q };
+        for (const key of ["text", "prompt", "question", "stem", "content"]) {
+          if (typeof nq[key] === "string") nq[key] = cleanText(nq[key]);
+        }
+        if (Array.isArray(nq.options)) nq.options = nq.options.map((o: any) => typeof o === "string" ? cleanText(o) : o);
+        return nq;
+      });
+    }
+    return next;
+  });
+
+  return { worksheet: { ...ws, sections }, warnings };
+}
+
 
 
 /**
@@ -621,6 +665,7 @@ export function runWorksheetPostValidators(
     (ws: PostValidatorWorksheet) => enforceYearGroupLock(ws, opts),
     (ws: PostValidatorWorksheet) => capWorkedExampleSteps(ws, opts),
     stripLeakedGeneratorInstructions,
+    stripVisiblePlaceholdersAndAnswerLeakage,
     (ws: PostValidatorWorksheet) => reinforceDyscalculiaMathsScaffolding(ws, opts),
     // FEAT-PB7 — extract per-MCQ misconception linkage AFTER all other
     // content rewrites so we work against the final, sanitised MCQ text.

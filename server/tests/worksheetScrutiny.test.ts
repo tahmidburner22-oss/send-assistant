@@ -39,6 +39,7 @@ import {
 } from "../../client/src/lib/worksheetPostValidator";
 
 import { applyOverlays } from "../lib/overlayEngine";
+import { parseNaturalLanguageInput } from "../../client/src/lib/ai";
 
 // ─── SEND / autism sub-profiles ──────────────────────────────────────────────
 
@@ -493,9 +494,10 @@ describe("runWorksheetPostValidators end-to-end", () => {
     };
     const r = runWorksheetPostValidators(ws, { subject: "physics", yearGroup: "Year 9" });
     expect(r.warnings.length).toBeGreaterThan(0);
-    // MCQ: only one tick
+    // MCQ: the full pipeline removes pupil-facing answer hints entirely.
     const mcq = r.worksheet.sections!.find(s => s.type === "q-mcq")!;
-    expect((mcq.content!.match(/✓/g) || []).length).toBe(1);
+    expect((mcq.content!.match(/✓/g) || []).length).toBe(0);
+    expect(mcq.content).not.toMatch(/correct answer|\(correct\)/i);
     // Word bank: no duplicates, capped
     const bank = r.worksheet.sections!.find(s => s.type === "q-gap-fill")!;
     const bankLine = bank.content!.split("\n").find(l => /WORD\s*BANK:/i.test(l))!;
@@ -571,6 +573,42 @@ describe("overlayEngine — ASC 'What you need to do' is per section", () => {
 });
 
 
+describe("parseNaturalLanguageInput — worksheet quick prompt regressions", () => {
+  it("keeps explicit biology/chemistry/physics subjects rather than collapsing them to generic science", () => {
+    expect(parseNaturalLanguageInput("Create a Year 10 GCSE Biology mitosis worksheet with dyslexia support and reading age 9")).toMatchObject({
+      subject: "biology",
+      yearGroup: "Year 10",
+      topic: "Mitosis",
+      sendNeed: "dyslexia",
+      readingAge: 9,
+    });
+    expect(parseNaturalLanguageInput("Year 11 Chemistry atomic structure higher reading age 10 ADHD")).toMatchObject({
+      subject: "chemistry",
+      yearGroup: "Year 11",
+      topic: "Atomic Structure",
+      sendNeed: "adhd",
+      readingAge: 10,
+      difficulty: "higher",
+    });
+    expect(parseNaturalLanguageInput("Make Year 11 Physics nuclear decay worksheet for ASC reading age 8")).toMatchObject({
+      subject: "physics",
+      yearGroup: "Year 11",
+      topic: "Nuclear Decay",
+      sendNeed: "asc",
+      readingAge: 8,
+    });
+  });
+
+  it("does not misclassify reading-age-only prompts as English just because they contain the word reading", () => {
+    const parsed = parseNaturalLanguageInput("Create Year 11 maths ratio and proportion worksheet reading age 8 dyscalculia foundation");
+    expect(parsed.subject).toBe("mathematics");
+    expect(parsed.readingAge).toBe(8);
+    expect(parsed.sendNeed).toBe("dyscalculia");
+    expect(parsed.topic).toMatch(/ratio|proportion/i);
+  });
+});
+
+
 describe("worksheetPostValidator — live gap regressions", () => {
   it("removes foreign science diagrams by structured diagramType as well as text tokens", () => {
     const ws: PostValidatorWorksheet = {
@@ -609,5 +647,20 @@ describe("worksheetPostValidator — live gap regressions", () => {
     const content = r.worksheet.sections![0].content || "";
     expect(content).toMatch(/Show one step per line/i);
     expect(content).toMatch(/number line|place-value|estimate first/i);
+  });
+
+  it("removes visible answer hints and placeholder instructions from pupil-facing content while leaving teacher sections intact", () => {
+    const ws: PostValidatorWorksheet = {
+      metadata: { subject: "physics", yearGroup: "Year 11" },
+      sections: [
+        { type: "q-mcq", content: "Which radiation is stopped by paper?\nA alpha ✓\nB beta (correct)\nC gamma\nD neutron\n[plausible distractor]" },
+        { type: "answers", teacherOnly: true, content: "A alpha ✓\nB beta (correct)" },
+      ],
+    };
+    const r = runWorksheetPostValidators(ws, { subject: "physics", yearGroup: "Year 11" });
+    const student = r.worksheet.sections![0].content || "";
+    expect(student).not.toMatch(/✓|\(correct\)|plausible distractor/i);
+    expect(r.worksheet.sections![1].content).toMatch(/✓|\(correct\)/);
+    expect((r.worksheet.metadata as any).postValidatorWarnings.join(" ")).toMatch(/answer hints|placeholders/i);
   });
 });
