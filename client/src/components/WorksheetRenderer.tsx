@@ -70,11 +70,20 @@ function normalizeWorksheetSectionType(type: unknown): string {
 }
 
 
+const STUDENT_LEAKED_INSTRUCTION_LINE_RE = /^\s*(?:(?:CRITICAL\s+)?(?:FORMATTING\s+)?RULE|INSTRUCTION|FORMAT|OUTPUT|SCHEMA|CONSTRAINT|CRITICAL|IMPORTANT)\s*:/i;
+const STUDENT_LEAKED_BRACKET_BLOCK_RE = /\[[^\]\n]*(?:EXACTLY|MUST|Do NOT|continue for|correct answers|plausible distractors|word\d+|Result:)[^\]\n]*\]/gi;
+const STUDENT_LEAKED_INLINE_INSTRUCTION_RE = /\b(?:(?:CRITICAL\s+)?FORMATTING\s+RULE|CRITICAL\s+RULE|RULE|INSTRUCTION|OUTPUT\s+RULE)\s*:\s*(?:You\s+MUST|MUST|EXACTLY|Do\s+NOT|Return|Write|Use|Include|Only)[^\n.!?]*(?:[.!?]|$)/gi;
+
 function stripStudentFacingGeneratorLeaks(content: string): string {
   return content
     .split("\n")
-    .filter((line) => !/^\s*(RULE|INSTRUCTION|FORMAT|OUTPUT|SCHEMA|CONSTRAINT|CRITICAL|IMPORTANT)\s*:/i.test(line.trim()))
-    .map((line) => line.replace(/\[[^\]\n]*(?:EXACTLY|MUST|Do NOT|continue for|correct answers|plausible distractors|word\d+|Result:)[^\]\n]*\]/gi, "").trimEnd())
+    .filter((line) => !STUDENT_LEAKED_INSTRUCTION_LINE_RE.test(line.trim()))
+    .map((line) => line
+      .replace(STUDENT_LEAKED_BRACKET_BLOCK_RE, "")
+      .replace(STUDENT_LEAKED_INLINE_INSTRUCTION_RE, "")
+      .replace(/\s{2,}/g, " ")
+      .replace(/\s+([?.!,;:])/g, "$1")
+      .trimEnd())
     .filter((line) => line.trim().length > 0)
     .join("\n");
 }
