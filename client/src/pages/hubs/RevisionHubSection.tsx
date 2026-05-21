@@ -3,6 +3,7 @@
  * Routine: pick the topic → consume in the right modality → drill → assess.
  */
 import HubStoryboard from "@/components/HubStoryboard";
+import { GraduationCap } from "lucide-react";
 
 export default function RevisionHubSection() {
   return (
@@ -11,6 +12,8 @@ export default function RevisionHubSection() {
       hubBlurb="Pick a topic, consume in any modality, drill it, then assess on a real past paper."
       breadcrumb="Revision Hub"
       accent="indigo"
+      hubId="revision"
+      heroIcon={GraduationCap}
       steps={[
         {
           n: "1",
