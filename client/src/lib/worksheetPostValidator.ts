@@ -32,6 +32,16 @@
  */
 
 import { reconcileMarkScheme } from "./markSchemeReconciler";
+import {
+  SECTION_QUESTION_TARGETS,
+  getSectionQuestionRange,
+} from "./worksheetSectionTargets";
+import {
+  getSpecPoints,
+  getSpecPointsAcrossBoards,
+  matchSpecPoint,
+  type ExamBoard as TaxonomyExamBoard,
+} from "./specPointTaxonomy";
 
 export interface PostValidatorSection {
   id?: string;
@@ -84,6 +94,12 @@ export interface PostValidatorOptions {
   yearGroup?: string;
   /** SEND need/profile exactly as submitted, when available. */
   sendNeed?: string;
+  /** Phase 1 — Awarding-body code (aqa | edexcel | ocr | wjec | ccea | …)
+   *  exactly as submitted to the generator. Used by enforceSpecAnchorPresence
+   *  to look up the published spec-point taxonomy and best-match unverified
+   *  specRef strings. Empty / unknown boards trigger the cross-board union
+   *  fallback. */
+  examBoard?: string;
 }
 
 export interface PostValidatorResult {
@@ -696,6 +712,228 @@ function stripVisiblePlaceholdersAndAnswerLeakage(ws: PostValidatorWorksheet): P
 
 
 
+// ─── Phase 1 / curriculum-aligned structure ─────────────────────────────────
+
+/**
+ * Returns the section group ("recall" | "understanding" | "application" |
+ * "challenge") a worksheet section belongs to, by inferring the question
+ * number from the explicit `questionNumber` field, then the section title
+ * (matches `Q\d+` patterns), then the section type (`challenge`).
+ *
+ * Returns null for non-question sections (header, vocabulary, worked-example,
+ * diagram-a, diagram-b, retrieval, common-mistakes, self-reflection, …) so
+ * the count enforcer can skip them cleanly.
+ */
+function inferSectionGroup(
+  section: PostValidatorSection,
+): "recall" | "understanding" | "application" | "challenge" | null {
+  const type = String(section.type || "").toLowerCase();
+  // Strong signals first — explicit challenge type wins.
+  if (type === "challenge" || type === "q-challenge") return "challenge";
+  // Only consider question sections for recall/understanding/application.
+  const isQuestion =
+    type.startsWith("q-") ||
+    type === "extended-answer" ||
+    type === "lor" ||
+    type === "exam-question";
+  if (!isQuestion) return null;
+
+  // Phase 1 schema field wins over title heuristics.
+  const explicitN = (section as any).questionNumber;
+  let qn: number | null = null;
+  if (typeof explicitN === "number" && Number.isFinite(explicitN)) qn = explicitN;
+  if (qn === null) {
+    const title = typeof section.title === "string" ? section.title : "";
+    const m = title.match(/Q(\d+)/i);
+    qn = m ? parseInt(m[1], 10) : null;
+  }
+  if (qn === null) return null;
+
+  const recall = getSectionQuestionRange("recall", false);
+  const understanding = getSectionQuestionRange("understanding", false);
+  const application = getSectionQuestionRange("application", false);
+  if (qn >= recall.firstQ && qn <= recall.lastQ) return "recall";
+  if (qn >= understanding.firstQ && qn <= understanding.lastQ) return "understanding";
+  if (qn >= application.firstQ && qn <= application.lastQ) return "application";
+  // Anything beyond the application range is treated as challenge so we
+  // don't lose it — the count enforcer will simply find 1 challenge
+  // (target) or warn if there are extras.
+  return "challenge";
+}
+
+/**
+ * Phase 1 — Enforce the 7-7-5 + 1 section question counts.
+ *
+ * Counts question sections per group via inferSectionGroup() and emits a
+ * warning when a section is outside SECTION_QUESTION_TARGETS[group].{min,max}.
+ *
+ * Pure / idempotent. NEVER mutates content — warnings only — so an off-by-
+ * one count never blocks a worksheet from rendering. The legacy 3-3-3
+ * Q1-Q9 worksheet template will warn on every section here until the AI
+ * has fully migrated; that is intentional and gives us an observability
+ * signal in metadata.postValidatorWarnings to track migration progress.
+ */
+export function enforceSectionQuestionCounts(
+  ws: PostValidatorWorksheet,
+  _opts: PostValidatorOptions = {},
+): PostValidatorResult {
+  const warnings: string[] = [];
+  const counts: Record<"recall" | "understanding" | "application" | "challenge", number> = {
+    recall: 0,
+    understanding: 0,
+    application: 0,
+    challenge: 0,
+  };
+  for (const section of ws.sections || []) {
+    const group = inferSectionGroup(section);
+    if (group) counts[group]++;
+  }
+  // If every count is zero, this is almost certainly not a question-bearing
+  // worksheet (e.g. a vocabulary-only library asset). Skip silently.
+  const totalQuestionSections = counts.recall + counts.understanding + counts.application + counts.challenge;
+  if (totalQuestionSections === 0) {
+    return { worksheet: ws, warnings: [] };
+  }
+  for (const group of ["recall", "understanding", "application", "challenge"] as const) {
+    const got = counts[group];
+    const targets = SECTION_QUESTION_TARGETS[group];
+    if (got < targets.min) {
+      warnings.push(
+        `Section "${group}" has ${got} question${got === 1 ? "" : "s"} — below the minimum of ${targets.min} (target ${targets.target}).`,
+      );
+    } else if (got > targets.max) {
+      warnings.push(
+        `Section "${group}" has ${got} questions — above the maximum of ${targets.max} (target ${targets.target}).`,
+      );
+    }
+  }
+  return { worksheet: ws, warnings };
+}
+
+/**
+ * Phase 1 — Curriculum + GCSE spec lock.
+ *
+ * For every question section (type starts with "q-", or is "challenge" /
+ * "extended-answer" / "lor" / "exam-question"), enforces a populated
+ * `specRef` field that matches a published awarding-body code:
+ *
+ *   1. If `specRef` is already set and matches a code in the bundled
+ *      taxonomy for (examBoard, subject, yearGroup), leave it alone.
+ *   2. If `specRef` is empty / missing, attempt a best-match against the
+ *      taxonomy (using the section's `ncRef` or title as the search hint)
+ *      and stamp the matched code.
+ *   3. If `specRef` is set but does NOT match any published code, warn —
+ *      that's almost always an invented code. We DO NOT silently overwrite
+ *      a non-empty value because doing so would mask a generation bug.
+ *   4. If no taxonomy is bundled for the request, warn once at the worksheet
+ *      level and leave specRef untouched.
+ *
+ * Pure / idempotent. Never invents a code; the post-validator only ever
+ * surfaces a code that already exists in the published list.
+ */
+export function enforceSpecAnchorPresence(
+  ws: PostValidatorWorksheet,
+  opts: PostValidatorOptions = {},
+): PostValidatorResult {
+  const warnings: string[] = [];
+  const subject = opts.subject || String(ws.metadata?.subject || "");
+  const yearGroup = opts.yearGroup || String(ws.metadata?.yearGroup || "");
+  const board = (opts.examBoard || String(ws.metadata?.examBoard || ""))
+    .toLowerCase()
+    .replace(/\s+/g, "");
+  if (!subject || !yearGroup) {
+    return { worksheet: ws, warnings };
+  }
+
+  // Resolve the per-board dataset, falling back to the cross-board union so
+  // we still catch invented codes when the school's specific board isn't
+  // bundled. matchSpecPoint expects a SpecPointDataset — we synthesise a
+  // tiny one from the union when needed.
+  let dataset = board
+    ? getSpecPoints(board as TaxonomyExamBoard, subject, yearGroup)
+    : null;
+  let pool = dataset?.specPoints || [];
+  if (pool.length === 0) {
+    pool = getSpecPointsAcrossBoards(subject, yearGroup);
+  }
+  if (pool.length === 0) {
+    warnings.push(
+      `No spec-point taxonomy bundled for board="${board || "unspecified"}" subject="${subject}" year="${yearGroup}"; skipping specRef enforcement.`,
+    );
+    return { worksheet: ws, warnings };
+  }
+
+  // Synthesise a dataset shape compatible with matchSpecPoint when we
+  // fell through to the cross-board union (matchSpecPoint signature
+  // requires a dataset, not a bare specPoints list).
+  const effectiveDataset = dataset ?? {
+    board: (board || "aqa") as TaxonomyExamBoard,
+    subject,
+    yearGroup,
+    source: "cross-board-union",
+    specPoints: pool,
+  };
+  const knownRefs = new Set(pool.map(sp => sp.specRef.toLowerCase()));
+  // For cross-board entries the specRefs are prefixed with "<board>:" by
+  // getSpecPointsAcrossBoards — accept those too.
+  for (const sp of pool) knownRefs.add(sp.specRef.split(":").pop()!.toLowerCase());
+
+  let filledCount = 0;
+  let invalidCount = 0;
+  const sections = (ws.sections || []).map((s): PostValidatorSection => {
+    if (s.teacherOnly) return s;
+    const type = String(s.type || "").toLowerCase();
+    const isQuestion =
+      type === "challenge" ||
+      type === "q-challenge" ||
+      type === "extended-answer" ||
+      type === "lor" ||
+      type === "exam-question" ||
+      type.startsWith("q-");
+    if (!isQuestion) return s;
+
+    const sec = s as any;
+    const existing = typeof sec.specRef === "string" ? sec.specRef.trim() : "";
+    if (existing) {
+      const matched = matchSpecPoint(existing, effectiveDataset);
+      if (matched) return s;
+      // The AI stamped a code that does not exist in the published list —
+      // almost always an invented code. Warn but DO NOT silently overwrite,
+      // so the bug stays visible in the teacher-facing warnings panel.
+      invalidCount++;
+      warnings.push(
+        `Question "${s.title || "(untitled)"}" carries specRef="${existing}" which does not match any published code in the ${effectiveDataset.board.toUpperCase()} ${subject} ${yearGroup} taxonomy.`,
+      );
+      return s;
+    }
+
+    // Try to fill from ncRef → title → content. matchSpecPoint does
+    // case-insensitive id and substring matching against specTitle.
+    const hint =
+      (typeof sec.ncRef === "string" && sec.ncRef.trim()) ||
+      (typeof s.title === "string" && s.title.trim()) ||
+      (typeof s.content === "string" && s.content.slice(0, 200).trim()) ||
+      "";
+    if (!hint) return s;
+    const matched = matchSpecPoint(hint, effectiveDataset);
+    if (!matched) return s;
+    filledCount++;
+    return { ...s, specRef: matched.specRef } as PostValidatorSection;
+  });
+
+  if (filledCount > 0) {
+    warnings.push(
+      `Filled missing specRef on ${filledCount} question${filledCount === 1 ? "" : "s"} from the ${effectiveDataset.board.toUpperCase()} ${subject} ${yearGroup} taxonomy.`,
+    );
+  }
+  if (invalidCount > 0) {
+    warnings.push(
+      `${invalidCount} question${invalidCount === 1 ? "" : "s"} carry an invented specRef. Investigate and remove from generation prompt.`,
+    );
+  }
+  return { worksheet: { ...ws, sections }, warnings };
+}
+
 /**
  * Runs every post-generation validator in order. Collects warnings and
  * stamps them onto worksheet.metadata.postValidatorWarnings.
@@ -725,6 +963,16 @@ export function runWorksheetPostValidators(
     // FEAT-PB7 — extract per-MCQ misconception linkage AFTER all other
     // content rewrites so we work against the final, sanitised MCQ text.
     extractMisconceptionLinks,
+    // Phase 1 — section-count contract enforcement (7-7-5 + 1).
+    // Counts question sections per group and warns when outside the
+    // SECTION_QUESTION_TARGETS[section].{min,max} window. No mutation —
+    // warnings only — so an off-by-one count never blocks a worksheet.
+    (ws: PostValidatorWorksheet) => enforceSectionQuestionCounts(ws, opts),
+    // Phase 1 — curriculum + GCSE spec lock. Fills missing specRef on
+    // every question section by best-matching against the awarding-body
+    // taxonomy. Never invents codes; warns when no taxonomy is bundled
+    // for the (board, subject, year) combination.
+    (ws: PostValidatorWorksheet) => enforceSpecAnchorPresence(ws, opts),
   ]) {
     const r = fn(current);
     current = r.worksheet;

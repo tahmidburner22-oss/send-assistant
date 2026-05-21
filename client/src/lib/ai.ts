@@ -3051,6 +3051,9 @@ Return EXACTLY this JSON (raw JSON only, no markdown fences):
         subject: params.subject,
         yearGroup: params.yearGroup,
         sendNeed: params.sendNeed,
+        // Phase 1 — needed by enforceSpecAnchorPresence to resolve the
+        // matching awarding-body taxonomy.
+        examBoard: params.examBoard,
       });
       // Carry through the original shape — the post-validator preserves every
       // field, it only rewrites content in-place.
@@ -3832,6 +3835,8 @@ Return EXACTLY this JSON (raw JSON only):
       subject: params.subject,
       yearGroup: params.yearGroup,
       sendNeed: params.sendNeed,
+      // Phase 1 — needed by enforceSpecAnchorPresence on the legacy path.
+      examBoard: params.examBoard,
     },
   );
   const legacyEnforced = enforceSendAdaptations(legacyPostValidated.worksheet, params.sendNeed, { preserveStems: preserveStemsForSend });
