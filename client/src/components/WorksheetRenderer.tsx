@@ -1263,7 +1263,8 @@ function stripLatexFromPlainText(text: string): string {
   return out.trim();
 }
 
-function formatContent(content: string | any, fmt: ReturnType<typeof getSendFormatting>): React.ReactNode {
+function formatContent(content: string | any, fmt: ReturnType<typeof getSendFormatting>, options?: { bookMode?: boolean }): React.ReactNode {
+  const bookMode = options?.bookMode === true;
   // Robust type guard: normalize any non-string input
   if (content === null || content === undefined) return null;
   if (typeof content !== 'string') {
@@ -1651,7 +1652,10 @@ function formatContent(content: string | any, fmt: ReturnType<typeof getSendForm
       return;
     }
 
-    // Mark allocation — render question with mark badge AND a mark-weighted answer box
+    // Mark allocation — render question with mark badge AND a mark-weighted answer box.
+    // Steering: each question must have its own answer lines on every worksheet,
+    //   EXCEPT when Book Mode is on (then no working/answer lines are emitted at all
+    //   so the worksheet is intended to be answered in an exercise book).
     const markMatch = trimmed.match(/^(.+?)(\[(\d+) marks?\])(.*)$/i);
     if (markMatch) {
       const markCount = parseInt(markMatch[3], 10);
@@ -1660,23 +1664,26 @@ function formatContent(content: string | any, fmt: ReturnType<typeof getSendForm
       const answerLines = markCount <= 1 ? 1 : markCount <= 3 ? 3 : 6;
       elements.push(
         <div key={idx} style={{ marginBottom: paragraphSpacing }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", fontSize: `${textSize}px`, lineHeight, letterSpacing, wordSpacing, fontFamily, marginBottom: "6px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", fontSize: `${textSize}px`, lineHeight, letterSpacing, wordSpacing, fontFamily, marginBottom: bookMode ? "2px" : "6px" }}>
             <span dangerouslySetInnerHTML={{ __html: renderMath(markMatch[1]) }} />
             <span style={{ background: "#374151", color: "white", fontSize: `${textSize - 3}px`, padding: "1px 6px", borderRadius: "4px", whiteSpace: "nowrap", marginLeft: "8px", fontWeight: 700, flexShrink: 0 }}>{markMatch[2]}</span>
           </div>
-          {/* Mark-weighted answer box */}
-          <div style={{ border: "1px solid #d1d5db", borderRadius: "4px", padding: "4px 8px", background: "#fafafa" }}>
-            {Array.from({ length: answerLines }).map((_, li) => (
-              <div key={li} style={{ borderBottom: li < answerLines - 1 ? "1px solid #e5e7eb" : "none", height: "28px" }} />
-            ))}
-          </div>
+          {/* Mark-weighted answer box — suppressed in Book Mode */}
+          {!bookMode && (
+            <div style={{ border: "1px solid #d1d5db", borderRadius: "4px", padding: "4px 8px", background: "#fafafa" }}>
+              {Array.from({ length: answerLines }).map((_, li) => (
+                <div key={li} style={{ borderBottom: li < answerLines - 1 ? "1px solid #e5e7eb" : "none", height: "28px" }} />
+              ))}
+            </div>
+          )}
         </div>
       );
       return;
     }
 
-    // Answer line (underscores)
+    // Answer line (underscores) — suppressed in Book Mode
     if (trimmed.match(/^_{5,}$/)) {
+      if (bookMode) return;
       elements.push(
         <div key={idx} style={{ borderBottom: "1px solid #9ca3af", margin: "8px 0", height: "24px" }} />
       );
@@ -3676,7 +3683,7 @@ function ReminderBoxSection({ content, fmt, overlayColor = "white" }: { content:
   );
 }
 
-function WordProblemsSection({ content, fmt, overlayColor = "white" }: { content: string; fmt: ReturnType<typeof getSendFormatting>; overlayColor?: string }) {
+function WordProblemsSection({ content, fmt, overlayColor = "white", bookMode = false }: { content: string; fmt: ReturnType<typeof getSendFormatting>; overlayColor?: string; bookMode?: boolean }) {
   const { fontSize: textSize, fontFamily, lineHeight } = fmt;
   // Pre-process: split concatenated numbered problems onto separate lines.
   // The AI sometimes outputs problems separated by " . " (space-period-space)
@@ -3731,7 +3738,7 @@ function WordProblemsSection({ content, fmt, overlayColor = "white" }: { content
           ))}
           <div style={{ marginTop: "10px", borderTop: "1px dashed #ddd6fe", paddingTop: "8px" }}>
             <div style={{ fontSize: `${textSize - 2}px`, color: "#9ca3af", marginBottom: "4px", fontFamily }}>Working space &amp; answer:</div>
-            {[1, 2].map(n => (
+            {!bookMode && [1, 2].map(n => (
               <div key={n} style={{ borderBottom: "1px solid #d1d5db", height: "26px", marginBottom: "6px" }} />
             ))}
           </div>
@@ -3800,6 +3807,7 @@ function PrimarySection({
   onAnswerBoxSizeChange,
   onAnswerBoxRemove,
   isTeacherSection,
+  bookMode = false,
 }: {
   section: any;
   sectionIndex: number;
@@ -3814,6 +3822,7 @@ function PrimarySection({
   onAnswerBoxSizeChange?: (i: number, n: number) => void;
   onAnswerBoxRemove?: (i: number) => void;
   isTeacherSection: boolean;
+  bookMode?: boolean;
 }) {
   const palette = PRIMARY_BRIGHT_PALETTE[paletteIndex % PRIMARY_BRIGHT_PALETTE.length];
   const titleText = (typeof section.title === "string" ? section.title : String(section.title || ""))
@@ -3936,10 +3945,12 @@ function PrimarySection({
         color: palette.text,
         background: palette.bg,
       }}>
-        {formatContent(content, fmt)}
+        {formatContent(content, fmt, { bookMode })}
 
-        {/* Exercise-book style writing lines */}
-        {needsWritingLines && answerLines > 0 && (
+        {/* Exercise-book style writing lines — suppressed when Book Mode is on
+         *  (steering: Book Mode = no working-out lines anywhere on the sheet,
+         *  pupils answer in their exercise book instead). */}
+        {!bookMode && needsWritingLines && answerLines > 0 && (
           <div style={{ marginTop: "14px" }}>
             {/* Edit controls */}
             {editMode && (
@@ -5181,6 +5192,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
               onAnswerBoxSizeChange={onAnswerBoxSizeChange}
               onAnswerBoxRemove={onAnswerBoxRemove}
               isTeacherSection={isTeacherSection}
+              bookMode={bookMode}
             />
             </React.Fragment>
           );
@@ -5532,7 +5544,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                           {section.type === "vocabulary" ? (
                             <VocabSection content={textContent} fmt={fmt} overlayColor={overlayColor} />
                           ) : (
-                            formatContent(textContent, fmt)
+                            formatContent(textContent, fmt, { bookMode })
                           )}
                         </div>
                       )}
@@ -6210,7 +6222,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                         </div>
                         {/* Questions */}
                         <div style={{ fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, lineHeight: String(fmt.lineHeight), color: "#1e293b" }}>
-                          {formatContent(content, fmt)}
+                          {formatContent(content, fmt, { bookMode })}
                         </div>
                       </div>
                     );
@@ -6473,7 +6485,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                               if (bTF) return <TrueFalseSection key={bi} content={block} fmt={fmt} overlayColor={overlayColor} isTeacher={isTeacherView} />;
                               if (bMCQ) return <MCQSection key={bi} content={block} fmt={fmt} overlayColor={overlayColor} isTeacher={isTeacherView} />;
                               if (bGap) return <GapFillInlineSection key={bi} content={block} fmt={fmt} overlayColor={overlayColor} />;
-                              return <div key={bi}>{formatContent(block, fmt)}</div>;
+                              return <div key={bi}>{formatContent(block, fmt, { bookMode })}</div>;
                             })}
                           </div>
                         );
@@ -6864,7 +6876,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                     )}
                   </div>
                 ) : section.type === "word-problems" ? (
-                  <WordProblemsSection content={content} fmt={fmt} overlayColor={overlayColor} />
+                  <WordProblemsSection content={content} fmt={fmt} overlayColor={overlayColor} bookMode={bookMode} />
                 ) : (section.type === "mark-scheme" || section.type === "answers") ? (
                   <MarkSchemeSection content={content} fmt={fmt} />
                 ) : section.type === "question" ? (
@@ -6892,14 +6904,15 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                             dangerouslySetInnerHTML={{ __html: renderMath(supportText) }} />
                         )}
                         <div style={{ fontSize: "11px", color: "#6b7280", fontStyle: "italic", marginBottom: "6px" }}>[{marks} mark{marks !== 1 ? "s" : ""}]</div>
-                        {Array.from({ length: lineCount }).map((_: unknown, li: number) => (
+                        {/* Per-question ruled answer lines — suppressed in Book Mode (steering) */}
+                        {!bookMode && Array.from({ length: lineCount }).map((_: unknown, li: number) => (
                           <div key={li} style={{ borderBottom: "1px solid #d1d5db", height: "30px", width: "100%", marginBottom: "3px" }} />
                         ))}
                       </div>
                     );
                   })()
                 ) : section.type === "questions" ? (
-                  <div>{formatContent(content, fmt)}</div>
+                  <div>{formatContent(content, fmt, { bookMode })}</div>
                 ) : (section.type === "reading" || section.type === "passage" || section.type === "source-text" || section.type === "comprehension" || /reading.?passage|source.?text|comprehension.?text/i.test(section.title || "")) ? (
                   (() => {
                     // Split passage into paragraphs and add line numbers
@@ -6947,7 +6960,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                     );
                   })()
                 ) : (
-                  <div>{formatContent(content, fmt)}</div>
+                  <div>{formatContent(content, fmt, { bookMode })}</div>
                 ))
               )}
 
