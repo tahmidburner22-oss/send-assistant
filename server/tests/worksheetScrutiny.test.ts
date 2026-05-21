@@ -35,8 +35,25 @@ import {
   stripLeakedGeneratorInstructions,
   reinforceDyscalculiaMathsScaffolding,
   runWorksheetPostValidators,
+  enforceSectionQuestionCounts,
+  enforceSpecAnchorPresence,
   type PostValidatorWorksheet,
 } from "../../client/src/lib/worksheetPostValidator";
+
+import {
+  linesForMarks,
+  shouldRenderWorkingOutBox,
+  workingOutRowsForMarks,
+  SECTION_QUESTION_TARGETS,
+  TOTAL_QUESTIONS_TARGET,
+  TOTAL_QUESTIONS_HARD_CAP,
+  EAL_L1_LANGUAGES,
+} from "../../client/src/lib/worksheetSectionTargets";
+
+import {
+  buildWorksheetPlan,
+  validateWorksheetPlan,
+} from "../../client/src/lib/worksheetConstraints";
 
 import { applyOverlays } from "../lib/overlayEngine";
 import { parseNaturalLanguageInput } from "../../client/src/lib/ai";
@@ -691,5 +708,434 @@ describe("worksheetPostValidator — live gap regressions", () => {
     expect(student).not.toMatch(/✓|\(correct\)|plausible distractor/i);
     expect(r.worksheet.sections![1].content).toMatch(/✓|\(correct\)/);
     expect((r.worksheet.metadata as any).postValidatorWarnings.join(" ")).toMatch(/answer hints|placeholders/i);
+  });
+});
+
+
+// ─── Phase 1 — Curriculum-aligned worksheet structure ──────────────────────
+
+describe("Phase 1 / linesForMarks — exam-paper aligned ramp", () => {
+  it("emits 0 lines for layouts that own their own answer affordance", () => {
+    expect(linesForMarks(2, "q-mcq")).toBe(0);
+    expect(linesForMarks(4, "q-true-false")).toBe(0);
+    expect(linesForMarks(3, "q-gap-fill")).toBe(0);
+    expect(linesForMarks(2, "q-matching")).toBe(0);
+    expect(linesForMarks(2, "q-ordering")).toBe(0);
+    expect(linesForMarks(4, "q-data-table")).toBe(0);
+    expect(linesForMarks(2, "q-label-diagram")).toBe(0);
+  });
+
+  it("scales lines by mark tariff for written-answer questions", () => {
+    expect(linesForMarks(1)).toBe(2);
+    expect(linesForMarks(2)).toBe(3);
+    expect(linesForMarks(3)).toBe(4);
+    expect(linesForMarks(4)).toBe(6);
+    expect(linesForMarks(5)).toBe(8);
+    expect(linesForMarks(6)).toBe(8);
+    expect(linesForMarks(7)).toBe(12);
+    expect(linesForMarks(8)).toBe(12);
+    expect(linesForMarks(9)).toBe(14);
+    expect(linesForMarks(12)).toBe(14);
+  });
+
+  it("never returns a negative or NaN line count for malformed inputs", () => {
+    expect(linesForMarks(0)).toBe(2);
+    expect(linesForMarks(-1)).toBeGreaterThanOrEqual(0);
+    expect(Number.isFinite(linesForMarks(0))).toBe(true);
+  });
+
+  it("exposes a sane working-out box height ramp", () => {
+    expect(workingOutRowsForMarks(1)).toBe(6);
+    expect(workingOutRowsForMarks(3)).toBe(10);
+    expect(workingOutRowsForMarks(5)).toBe(14);
+    expect(workingOutRowsForMarks(8)).toBe(18);
+  });
+});
+
+describe("Phase 1 / shouldRenderWorkingOutBox — MATHS ONLY (steering-locked)", () => {
+  it("returns true for maths calculate-stems", () => {
+    expect(shouldRenderWorkingOutBox({
+      stem: "Calculate the value of x when 2x + 3 = 11.",
+      marks: 3,
+      subject: "Mathematics",
+    })).toBe(true);
+    expect(shouldRenderWorkingOutBox({
+      stem: "Solve 4x = 12.",
+      marks: 2,
+      subject: "Maths",
+    })).toBe(true);
+    expect(shouldRenderWorkingOutBox({
+      stem: "Show that the area is 24 cm².",
+      marks: 4,
+      subject: "Mathematics",
+    })).toBe(true);
+  });
+
+  it("returns true for high-mark maths stems even without an explicit calc verb", () => {
+    expect(shouldRenderWorkingOutBox({
+      stem: "Find the perimeter of the shape.",
+      marks: 4,
+      subject: "Mathematics",
+    })).toBe(true);
+  });
+
+  it("returns FALSE for science calculate-stems — sciences use writing lines, not dot-grid", () => {
+    expect(shouldRenderWorkingOutBox({
+      stem: "Calculate the resultant force on the trolley.",
+      marks: 3,
+      subject: "Physics",
+    })).toBe(false);
+    expect(shouldRenderWorkingOutBox({
+      stem: "Calculate the relative formula mass of CO2.",
+      marks: 2,
+      subject: "Chemistry",
+    })).toBe(false);
+    expect(shouldRenderWorkingOutBox({
+      stem: "Calculate the rate of reaction.",
+      marks: 4,
+      subject: "Combined Science",
+    })).toBe(false);
+  });
+
+  it("returns FALSE for English / humanities extended writing", () => {
+    expect(shouldRenderWorkingOutBox({
+      stem: "Explain how the writer builds tension in this extract.",
+      marks: 6,
+      subject: "English",
+    })).toBe(false);
+    expect(shouldRenderWorkingOutBox({
+      stem: "Evaluate the impact of the Treaty of Versailles.",
+      marks: 8,
+      subject: "History",
+    })).toBe(false);
+  });
+
+  it("respects the explicit workingOutBox override", () => {
+    // Maths stem explicitly opted-out
+    expect(shouldRenderWorkingOutBox({
+      stem: "Calculate the area.",
+      marks: 4,
+      subject: "Mathematics",
+      workingOutBox: false,
+    })).toBe(false);
+    // Non-maths stem explicitly opted-in (rare but supported)
+    expect(shouldRenderWorkingOutBox({
+      stem: "Describe the process.",
+      marks: 2,
+      subject: "English",
+      workingOutBox: true,
+    })).toBe(true);
+  });
+
+  it("returns FALSE when subject is unknown / empty (renderer fail-safe)", () => {
+    expect(shouldRenderWorkingOutBox({
+      stem: "Calculate 3 + 4.",
+      marks: 2,
+      subject: "",
+    })).toBe(false);
+  });
+});
+
+describe("Phase 1 / EAL_L1_LANGUAGES", () => {
+  it("includes the top UK EAL L1s and the explicit Mirpuri (Pahari-Pothwari) entry", () => {
+    expect(EAL_L1_LANGUAGES).toContain("Urdu");
+    expect(EAL_L1_LANGUAGES).toContain("Polish");
+    expect(EAL_L1_LANGUAGES).toContain("Bengali");
+    expect(EAL_L1_LANGUAGES).toContain("Arabic");
+    expect(EAL_L1_LANGUAGES).toContain("Panjabi");
+    // Steering-locked: Mirpuri must appear as its own entry, not subsumed
+    // into Panjabi/Urdu.
+    expect(EAL_L1_LANGUAGES).toContain("Mirpuri (Pahari-Pothwari)");
+    expect(EAL_L1_LANGUAGES.length).toBeGreaterThanOrEqual(10);
+    // No duplicates (case-insensitive).
+    const lowered = new Set(EAL_L1_LANGUAGES.map(l => l.toLowerCase()));
+    expect(lowered.size).toBe(EAL_L1_LANGUAGES.length);
+  });
+});
+
+describe("Phase 1 / buildWorksheetPlan — 7-7-5 + 1 secondary structure", () => {
+  it("produces 7+7+5+1 = 20 questions for a Year 10 secondary worksheet", () => {
+    const plan = buildWorksheetPlan(
+      "Mathematics",
+      "Algebraic notation",
+      "Year 10",
+      "mixed",
+      "aqa",
+      undefined,
+    );
+    const total = plan.sections.reduce((acc, s) => acc + s.questions.length, 0);
+    expect(total).toBe(TOTAL_QUESTIONS_TARGET);
+    expect(total).toBe(20);
+
+    const recall = plan.sections.find(s => s.name === "recall")!;
+    const understanding = plan.sections.find(s => s.name === "understanding")!;
+    const application = plan.sections.find(s => s.name === "application")!;
+    const challenge = plan.sections.find(s => s.name === "challenge")!;
+
+    expect(recall.questions.length).toBe(SECTION_QUESTION_TARGETS.recall.target);
+    expect(understanding.questions.length).toBe(SECTION_QUESTION_TARGETS.understanding.target);
+    expect(application.questions.length).toBe(SECTION_QUESTION_TARGETS.application.target);
+    expect(challenge.questions.length).toBe(SECTION_QUESTION_TARGETS.challenge.target);
+    // Challenge question is now Q20 (was hard-coded "Question 10" pre-Phase 1).
+    expect(challenge.questionRange).toBe(`Question ${TOTAL_QUESTIONS_TARGET}`);
+  });
+
+  it("produces 3-3-3 for primary worksheets (KS2)", () => {
+    const plan = buildWorksheetPlan(
+      "Mathematics",
+      "Place value",
+      "Year 4",
+      "mixed",
+      undefined,
+      undefined,
+    );
+    const total = plan.sections.reduce((acc, s) => acc + s.questions.length, 0);
+    expect(total).toBe(9);
+    // Primary has no challenge section.
+    expect(plan.sections.find(s => s.name === "challenge")).toBeUndefined();
+  });
+});
+
+describe("Phase 1 / validateWorksheetPlan — cap lifted to 25", () => {
+  it("accepts a 20-question secondary plan without a TOO_MANY_QUESTIONS error", () => {
+    const plan = buildWorksheetPlan(
+      "Mathematics",
+      "Algebraic notation",
+      "Year 10",
+      "mixed",
+      "aqa",
+      undefined,
+    );
+    const result = validateWorksheetPlan(plan);
+    const tooManyError = result.errors.find(e => e.code === "TOO_MANY_QUESTIONS");
+    expect(tooManyError).toBeUndefined();
+  });
+
+  it("rejects a plan with more than TOTAL_QUESTIONS_HARD_CAP questions", () => {
+    const plan = buildWorksheetPlan(
+      "Mathematics",
+      "Algebraic notation",
+      "Year 10",
+      "mixed",
+      "aqa",
+      undefined,
+    );
+    // Synthesise an oversized plan by cloning the first section's questions
+    // until we cross the cap.
+    const inflate: any = JSON.parse(JSON.stringify(plan));
+    while (inflate.sections.flatMap((s: any) => s.questions).length <= TOTAL_QUESTIONS_HARD_CAP) {
+      inflate.sections[0].questions.push(JSON.parse(JSON.stringify(inflate.sections[0].questions[0])));
+    }
+    const result = validateWorksheetPlan(inflate);
+    const tooMany = result.errors.find(e => e.code === "TOO_MANY_QUESTIONS");
+    expect(tooMany).toBeDefined();
+    expect(tooMany!.message).toContain(String(TOTAL_QUESTIONS_HARD_CAP));
+  });
+});
+
+// ─── Phase 1 / enforceSectionQuestionCounts ─────────────────────────────────
+
+describe("Phase 1 / enforceSectionQuestionCounts", () => {
+  function qSection(qn: number, type = "q-short-answer", title?: string): any {
+    return {
+      type,
+      title: title ?? `Q${qn} — Practice`,
+      content: `Question ${qn} body. [2 marks]`,
+      questionNumber: qn,
+    };
+  }
+
+  it("emits no warning when every section group hits its target count", () => {
+    const sections: any[] = [];
+    // Recall 7
+    for (let i = 1; i <= 7; i++) sections.push(qSection(i));
+    // Understanding 7
+    for (let i = 8; i <= 14; i++) sections.push(qSection(i));
+    // Application 5
+    for (let i = 15; i <= 19; i++) sections.push(qSection(i));
+    // Challenge 1
+    sections.push(qSection(20, "challenge", "Challenge"));
+    const ws: PostValidatorWorksheet = { sections };
+    const r = enforceSectionQuestionCounts(ws);
+    expect(r.warnings).toHaveLength(0);
+  });
+
+  it("warns when a section is below its minimum", () => {
+    const sections: any[] = [];
+    // Recall only 4 — under min of 6
+    for (let i = 1; i <= 4; i++) sections.push(qSection(i));
+    for (let i = 8; i <= 14; i++) sections.push(qSection(i));
+    for (let i = 15; i <= 19; i++) sections.push(qSection(i));
+    sections.push(qSection(20, "challenge", "Challenge"));
+    const ws: PostValidatorWorksheet = { sections };
+    const r = enforceSectionQuestionCounts(ws);
+    expect(r.warnings.join(" ")).toMatch(/Section "recall".*below the minimum/);
+  });
+
+  it("warns when a section is above its maximum", () => {
+    const sections: any[] = [];
+    for (let i = 1; i <= 7; i++) sections.push(qSection(i));
+    for (let i = 8; i <= 14; i++) sections.push(qSection(i));
+    // Application: 7 — above max of 5 (we pad with overflow numbers)
+    for (let i = 15; i <= 21; i++) sections.push(qSection(i));
+    sections.push(qSection(22, "challenge", "Challenge"));
+    const ws: PostValidatorWorksheet = { sections };
+    const r = enforceSectionQuestionCounts(ws);
+    expect(r.warnings.join(" ")).toMatch(/Section "application".*above the maximum/);
+  });
+
+  it("never mutates the worksheet (warnings only)", () => {
+    const sections: any[] = [];
+    for (let i = 1; i <= 4; i++) sections.push(qSection(i));
+    const ws: PostValidatorWorksheet = { sections };
+    const before = JSON.stringify(ws);
+    const r = enforceSectionQuestionCounts(ws);
+    expect(JSON.stringify(r.worksheet)).toBe(before);
+  });
+
+  it("is a no-op when the worksheet has no question sections at all", () => {
+    const ws: PostValidatorWorksheet = {
+      sections: [
+        { type: "vocabulary", content: "term: def" },
+        { type: "objective", content: "Describe..." },
+      ],
+    };
+    const r = enforceSectionQuestionCounts(ws);
+    expect(r.warnings).toHaveLength(0);
+  });
+});
+
+// ─── Phase 1 / enforceSpecAnchorPresence ────────────────────────────────────
+
+describe("Phase 1 / enforceSpecAnchorPresence — curriculum + GCSE spec lock", () => {
+  it("fills missing specRef on a question by best-matching against the AQA Maths Y10 taxonomy", () => {
+    const ws: PostValidatorWorksheet = {
+      metadata: { subject: "Mathematics", yearGroup: "Year 10", examBoard: "aqa" },
+      sections: [
+        {
+          type: "q-short-answer",
+          title: "Q1 — Algebra",
+          content: "Simplify 3a + 5a. [1 mark]",
+          ncRef: "Simplify and manipulate algebraic expressions",
+        } as any,
+      ],
+    };
+    const r = enforceSpecAnchorPresence(ws, {
+      subject: "Mathematics",
+      yearGroup: "Year 10",
+      examBoard: "aqa",
+    });
+    const filled = r.worksheet.sections![0] as any;
+    // AQA Maths Y10 A4 = "Simplify and manipulate algebraic expressions"
+    expect(filled.specRef).toBe("A4");
+  });
+
+  it("warns when an existing specRef is invented (does not match any published code)", () => {
+    const ws: PostValidatorWorksheet = {
+      metadata: { subject: "Mathematics", yearGroup: "Year 10", examBoard: "aqa" },
+      sections: [
+        {
+          type: "q-short-answer",
+          title: "Q1",
+          content: "Solve 2x + 1 = 9. [2 marks]",
+          specRef: "Z99-INVENTED",
+        } as any,
+      ],
+    };
+    const r = enforceSpecAnchorPresence(ws, {
+      subject: "Mathematics",
+      yearGroup: "Year 10",
+      examBoard: "aqa",
+    });
+    expect(r.warnings.join(" ")).toMatch(/Z99-INVENTED.*does not match/i);
+    // Must NOT silently overwrite — bug-visibility wins over auto-correct.
+    const sec = r.worksheet.sections![0] as any;
+    expect(sec.specRef).toBe("Z99-INVENTED");
+  });
+
+  it("leaves a valid specRef untouched", () => {
+    const ws: PostValidatorWorksheet = {
+      metadata: { subject: "Mathematics", yearGroup: "Year 10", examBoard: "aqa" },
+      sections: [
+        {
+          type: "q-short-answer",
+          title: "Q1",
+          content: "Substitute x = 4 into 3x + 2. [1 mark]",
+          specRef: "A2",
+        } as any,
+      ],
+    };
+    const r = enforceSpecAnchorPresence(ws, {
+      subject: "Mathematics",
+      yearGroup: "Year 10",
+      examBoard: "aqa",
+    });
+    expect(r.warnings).toHaveLength(0);
+    expect((r.worksheet.sections![0] as any).specRef).toBe("A2");
+  });
+
+  it("warns once and skips when no taxonomy is bundled for the (board, subject, year)", () => {
+    const ws: PostValidatorWorksheet = {
+      metadata: { subject: "Sociology", yearGroup: "Year 12", examBoard: "aqa" },
+      sections: [
+        {
+          type: "q-short-answer",
+          title: "Q1",
+          content: "Explain anomie. [4 marks]",
+        } as any,
+      ],
+    };
+    const r = enforceSpecAnchorPresence(ws, {
+      subject: "Sociology",
+      yearGroup: "Year 12",
+      examBoard: "aqa",
+    });
+    expect(r.warnings.join(" ")).toMatch(/No spec-point taxonomy bundled/i);
+    // Question is left untouched — no fabricated code.
+    expect((r.worksheet.sections![0] as any).specRef).toBeUndefined();
+  });
+
+  it("falls back to the cross-board union when the per-board dataset is missing", () => {
+    // OCR Maths Y10 isn't bundled, so the validator should union across
+    // boards (AQA + Edexcel are bundled) and still find a match for an
+    // algebra question.
+    const ws: PostValidatorWorksheet = {
+      metadata: { subject: "Mathematics", yearGroup: "Year 10", examBoard: "ocr" },
+      sections: [
+        {
+          type: "q-short-answer",
+          title: "Q1 — Algebra",
+          content: "Simplify 3a + 5a. [1 mark]",
+          ncRef: "Simplify and manipulate algebraic expressions",
+        } as any,
+      ],
+    };
+    const r = enforceSpecAnchorPresence(ws, {
+      subject: "Mathematics",
+      yearGroup: "Year 10",
+      examBoard: "ocr",
+    });
+    // The validator should have surfaced a code from the union (board-prefixed).
+    const sec = r.worksheet.sections![0] as any;
+    expect(sec.specRef).toBeDefined();
+  });
+
+  it("never invents a code when there is no usable hint at all", () => {
+    const ws: PostValidatorWorksheet = {
+      metadata: { subject: "Mathematics", yearGroup: "Year 10", examBoard: "aqa" },
+      sections: [
+        {
+          type: "q-short-answer",
+          title: "",
+          content: "",
+        } as any,
+      ],
+    };
+    const r = enforceSpecAnchorPresence(ws, {
+      subject: "Mathematics",
+      yearGroup: "Year 10",
+      examBoard: "aqa",
+    });
+    expect((r.worksheet.sections![0] as any).specRef).toBeUndefined();
   });
 });
