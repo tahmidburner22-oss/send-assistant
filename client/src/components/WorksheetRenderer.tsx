@@ -15,6 +15,11 @@ import { extractDiagramSpec, stripDiagramMarker } from "@/lib/ai";
 import { findMisconceptionById } from "@/lib/misconception-bank";
 import { getA11yProfileById, buildA11yProfileCss } from "@/lib/accessibility-profiles";
 import SVGDiagram from "@/components/SVGDiagram";
+import {
+  linesForMarks,
+  shouldRenderWorkingOutBox,
+  workingOutRowsForMarks,
+} from "@/lib/worksheetSectionTargets";
 import katex from "katex";
 import "katex/dist/katex.min.css";
 
@@ -1276,12 +1281,20 @@ function formatContent(
      * of the section). Suppressed automatically when bookMode is on.
      */
     perQuestionLines?: number;
+    /**
+     * Subject of the parent worksheet (e.g. "Mathematics", "Physics",
+     * "English"). Used by the per-question marks branch to decide whether
+     * to render a maths-only dot-grid Working-Out box. When omitted, only
+     * stems carrying an explicit `[WORKING_OUT]` marker get the box.
+     */
+    subject?: string;
   },
 ): React.ReactNode {
   const bookMode = options?.bookMode === true;
   const perQuestionLines = !bookMode && typeof options?.perQuestionLines === "number"
     ? Math.max(0, Math.floor(options!.perQuestionLines))
     : 0;
+  const parentSubject = typeof options?.subject === "string" ? options!.subject : "";
   // Robust type guard: normalize any non-string input
   if (content === null || content === undefined) return null;
   if (typeof content !== 'string') {
@@ -1688,29 +1701,74 @@ function formatContent(
       return;
     }
 
-    // Mark allocation — render question with mark badge AND a mark-weighted answer box.
+    // Mark allocation — render question with mark badge, optional dot-grid
+    // Working-Out box (MATHS only — sciences use standard writing lines),
+    // the per-question writing lines (count from linesForMarks), and a
+    // capped "Final answer:" row when the working-out box is present.
+    //
     // Steering: each question must have its own answer lines on every worksheet,
-    //   EXCEPT when Book Mode is on (then no working/answer lines are emitted at all
-    //   so the worksheet is intended to be answered in an exercise book).
+    //   EXCEPT when Book Mode is on (then no working/answer lines are emitted at
+    //   all so the worksheet is intended to be answered in an exercise book).
+    //
+    // The AI may also opt-in to a working-out box per-question by appending
+    // `[WORKING_OUT]` after the marks tag — used when the parent subject is
+    // not maths but a specific question genuinely needs a dot-grid (rare).
     const markMatch = trimmed.match(/^(.+?)(\[(\d+) marks?\])(.*)$/i);
     if (markMatch) {
       const markCount = parseInt(markMatch[3], 10);
-      // Determine answer box height based on mark count
-      // 1 mark → 1 line, 2-3 marks → 3 lines, 4+ marks → 6 lines
-      const answerLines = markCount <= 1 ? 1 : markCount <= 3 ? 3 : 6;
+      const stemText = markMatch[1] || "";
+      const trailing = markMatch[4] || "";
+      const explicitWorkingOpt = /\[\s*WORKING[_\s-]?OUT\s*\]/i.test(trailing);
+      // Phase 1 ramp — exam-paper aligned (1m=2, 2m=3, 3m=4, 4m=6, 5-6m=8, 7-8m=12, 9+m=14).
+      const answerLines = linesForMarks(markCount);
+      // Trigger the dot-grid working-out box. Maths-only by default; the
+      // explicit `[WORKING_OUT]` marker overrides on a per-question basis.
+      const workingOutBox = explicitWorkingOpt || shouldRenderWorkingOutBox({
+        stem: stemText,
+        marks: markCount,
+        subject: parentSubject,
+      });
+      const workingRows = workingOutBox ? workingOutRowsForMarks(markCount) : 0;
       elements.push(
         <div key={idx} style={{ marginBottom: paragraphSpacing }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", fontSize: `${textSize}px`, lineHeight, letterSpacing, wordSpacing, fontFamily, marginBottom: bookMode ? "2px" : "6px" }}>
-            <span dangerouslySetInnerHTML={{ __html: renderMath(markMatch[1]) }} />
+            <span dangerouslySetInnerHTML={{ __html: renderMath(stemText) }} />
             <span style={{ background: "#374151", color: "white", fontSize: `${textSize - 3}px`, padding: "1px 6px", borderRadius: "4px", whiteSpace: "nowrap", marginLeft: "8px", fontWeight: 700, flexShrink: 0 }}>{markMatch[2]}</span>
           </div>
-          {/* Mark-weighted answer box — suppressed in Book Mode */}
+          {/* Per-question answer affordances — suppressed in Book Mode */}
           {!bookMode && (
-            <div style={{ border: "1px solid #d1d5db", borderRadius: "4px", padding: "4px 8px", background: "#fafafa" }}>
-              {Array.from({ length: answerLines }).map((_, li) => (
-                <div key={li} style={{ borderBottom: li < answerLines - 1 ? "1px solid #e5e7eb" : "none", height: "28px" }} />
-              ))}
-            </div>
+            <>
+              {/* Dot-grid Working-Out box (calculation stems only) */}
+              {workingOutBox && (
+                <div style={{
+                  border: "1px solid #d1d5db",
+                  borderRadius: "4px",
+                  padding: "6px 10px",
+                  background: "repeating-radial-gradient(circle at 6px 6px, #d1d5db 0 1px, transparent 1px 12px)",
+                  marginBottom: "6px",
+                }}>
+                  <div style={{ fontSize: `${textSize - 3}px`, color: "#6b7280", fontWeight: 600, fontFamily, marginBottom: "4px", textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                    Working out
+                  </div>
+                  <div style={{ height: `${workingRows * 22}px` }} />
+                </div>
+              )}
+              {/* Writing lines — sized by marks via linesForMarks() */}
+              {answerLines > 0 && (
+                <div style={{ border: "1px solid #d1d5db", borderRadius: "4px", padding: "4px 8px", background: "#fafafa" }}>
+                  {Array.from({ length: answerLines }).map((_, li) => (
+                    <div key={li} style={{ borderBottom: li < answerLines - 1 ? "1px solid #e5e7eb" : "none", height: "28px" }} />
+                  ))}
+                </div>
+              )}
+              {/* "Final answer:" capped row, only when a working-out box is present */}
+              {workingOutBox && (
+                <div style={{ display: "flex", alignItems: "center", marginTop: "6px", gap: "8px" }}>
+                  <span style={{ fontSize: `${textSize - 1}px`, color: "#374151", fontFamily, fontWeight: 700, whiteSpace: "nowrap" }}>Final answer:</span>
+                  <div style={{ flex: 1, borderBottom: "1.5px solid #1f2937", height: "26px" }} />
+                </div>
+              )}
+            </>
           )}
         </div>
       );
@@ -3844,6 +3902,7 @@ function PrimarySection({
   onAnswerBoxRemove,
   isTeacherSection,
   bookMode = false,
+  subject = "",
 }: {
   section: any;
   sectionIndex: number;
@@ -3859,6 +3918,9 @@ function PrimarySection({
   onAnswerBoxRemove?: (i: number) => void;
   isTeacherSection: boolean;
   bookMode?: boolean;
+  /** Phase 1 — parent worksheet subject; threaded into formatContent so the
+   *  per-question Working-Out box can be gated to maths only. */
+  subject?: string;
 }) {
   const palette = PRIMARY_BRIGHT_PALETTE[paletteIndex % PRIMARY_BRIGHT_PALETTE.length];
   const titleText = (typeof section.title === "string" ? section.title : String(section.title || ""))
@@ -4012,6 +4074,8 @@ function PrimarySection({
           // section has 2+ numbered questions — replaces the old single bunched
           // bottom block which forced pupils to share one set of lines.
           perQuestionLines: usePerQuestionAnswerLines ? perQuestionLineCount : 0,
+          // Phase 1 — gate maths-only Working-Out box rendering by subject.
+          subject,
         })}
 
         {/* Editor hint when per-question lines are active — replaces the
@@ -5271,6 +5335,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
               onAnswerBoxRemove={onAnswerBoxRemove}
               isTeacherSection={isTeacherSection}
               bookMode={bookMode}
+              subject={worksheet.metadata?.subject || ""}
             />
             </React.Fragment>
           );
@@ -5622,7 +5687,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                           {section.type === "vocabulary" ? (
                             <VocabSection content={textContent} fmt={fmt} overlayColor={overlayColor} />
                           ) : (
-                            formatContent(textContent, fmt, { bookMode })
+                            formatContent(textContent, fmt, { bookMode, subject: worksheet.metadata?.subject || "" })
                           )}
                         </div>
                       )}
@@ -6300,7 +6365,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                         </div>
                         {/* Questions */}
                         <div style={{ fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, lineHeight: String(fmt.lineHeight), color: "#1e293b" }}>
-                          {formatContent(content, fmt, { bookMode })}
+                          {formatContent(content, fmt, { bookMode, subject: worksheet.metadata?.subject || "" })}
                         </div>
                       </div>
                     );
@@ -6563,7 +6628,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                               if (bTF) return <TrueFalseSection key={bi} content={block} fmt={fmt} overlayColor={overlayColor} isTeacher={isTeacherView} />;
                               if (bMCQ) return <MCQSection key={bi} content={block} fmt={fmt} overlayColor={overlayColor} isTeacher={isTeacherView} />;
                               if (bGap) return <GapFillInlineSection key={bi} content={block} fmt={fmt} overlayColor={overlayColor} />;
-                              return <div key={bi}>{formatContent(block, fmt, { bookMode })}</div>;
+                              return <div key={bi}>{formatContent(block, fmt, { bookMode, subject: worksheet.metadata?.subject || "" })}</div>;
                             })}
                           </div>
                         );
@@ -7044,7 +7109,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                     );
                   })()
                 ) : (
-                  <div>{formatContent(content, fmt, { bookMode })}</div>
+                  <div>{formatContent(content, fmt, { bookMode, subject: worksheet.metadata?.subject || "" })}</div>
                 ))
               )}
 
