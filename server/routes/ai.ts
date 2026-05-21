@@ -1325,14 +1325,7 @@ async function callCohere(system: string, user: string, key: string, model: stri
     method: "POST",
     signal,
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
-    body: JSON.stringify({
-      model,
-      messages: [
-        { role: "system", content: system || "You are a helpful SEND education assistant." },
-        { role: "user", content: user },
-      ],
-      max_tokens: maxTokens,
-    }),
+    body: JSON.stringify(body),
   });
   if (res.status === 429) throw new Error(`Cohere 429: rate limited`);
   if (!res.ok) throw new Error(`Cohere ${res.status}: ${(await res.text()).slice(0, 200)}`);
