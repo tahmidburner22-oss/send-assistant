@@ -206,6 +206,10 @@ export function pickCommandWords(
 export function extractTopicNounPhrase(topic: string): string {
   const t = (topic || "").trim();
   if (!t) return "";
+  // All-caps acronyms (≤8 chars, letters / digits) stay uppercase. These
+  // are domain proper nouns (GDPR, NHS, BBC, GCSE, AQA, KS3, …) and read
+  // wrong as "I can describe gdpr".
+  if (/^[A-Z][A-Z0-9]{1,7}$/.test(t)) return t;
   // Strip leading article-prefixes that read awkwardly inside "about X".
   // Keep the full string for proper-noun-led topics (Macbeth, Newton's Laws).
   const startsWithProperNoun = /^[A-Z]/.test(t) && /^[A-Z][a-z]+(\s|$)/.test(t)
