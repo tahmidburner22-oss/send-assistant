@@ -1263,8 +1263,25 @@ function stripLatexFromPlainText(text: string): string {
   return out.trim();
 }
 
-function formatContent(content: string | any, fmt: ReturnType<typeof getSendFormatting>, options?: { bookMode?: boolean }): React.ReactNode {
+function formatContent(
+  content: string | any,
+  fmt: ReturnType<typeof getSendFormatting>,
+  options?: {
+    bookMode?: boolean;
+    /**
+     * When set to a positive number, each numbered question rendered by this
+     * pass will be followed by exactly this many ruled answer lines. This is
+     * how the section renderer asks formatContent to give every question its
+     * own answer space inline (instead of one bunched answer block at the end
+     * of the section). Suppressed automatically when bookMode is on.
+     */
+    perQuestionLines?: number;
+  },
+): React.ReactNode {
   const bookMode = options?.bookMode === true;
+  const perQuestionLines = !bookMode && typeof options?.perQuestionLines === "number"
+    ? Math.max(0, Math.floor(options!.perQuestionLines))
+    : 0;
   // Robust type guard: normalize any non-string input
   if (content === null || content === undefined) return null;
   if (typeof content !== 'string') {
@@ -1626,14 +1643,33 @@ function formatContent(content: string | any, fmt: ReturnType<typeof getSendForm
     if (numberedMatch && !fmt.showCheckboxes) {
       const qNum = numberedMatch[1].trim();
       const qText = numberedMatch[2];
-      // Use a minimum of 10px bottom margin regardless of theme paragraphSpacing
-      const qMargin = `0 0 max(${paragraphSpacing}, 10px) 0`;
+      // When the section requests per-question answer lines we use a larger
+      // bottom margin so the answer block sits clearly inside this question's
+      // group, with breathing room before the next question begins.
+      const baseSpacing = perQuestionLines > 0 ? "16px" : `max(${paragraphSpacing}, 10px)`;
+      const qMargin = `0 0 ${baseSpacing} 0`;
       elements.push(
-        <div key={idx} style={{ display: "flex", gap: "6px", alignItems: "flex-start", margin: qMargin }}>
-          <span style={{ fontWeight: 700, fontSize: `${textSize}px`, color: "#374151", fontFamily, flexShrink: 0, minWidth: "20px" }}>{qNum}</span>
-          <span style={{ fontSize: `${textSize}px`, lineHeight, color: "#1f2937", fontFamily, letterSpacing, wordSpacing }} dangerouslySetInnerHTML={{ __html: renderMath(qText) }} />
+        <div key={idx} style={{ marginBottom: baseSpacing }}>
+          <div style={{ display: "flex", gap: "8px", alignItems: "flex-start", margin: 0 }}>
+            <span style={{ fontWeight: 700, fontSize: `${textSize}px`, color: "#374151", fontFamily, flexShrink: 0, minWidth: "20px" }}>{qNum}</span>
+            <span style={{ fontSize: `${textSize}px`, lineHeight, color: "#1f2937", fontFamily, letterSpacing, wordSpacing }} dangerouslySetInnerHTML={{ __html: renderMath(qText) }} />
+          </div>
+          {perQuestionLines > 0 && (
+            <div style={{ marginTop: "8px", marginLeft: "28px" }}>
+              {Array.from({ length: perQuestionLines }).map((_, li) => (
+                <div key={li} style={{
+                  borderBottom: "1px solid #9ca3af",
+                  height: "26px",
+                  marginBottom: li < perQuestionLines - 1 ? "4px" : "0",
+                }} />
+              ))}
+            </div>
+          )}
         </div>
       );
+      // qMargin retained as legacy variable for backwards compatibility — no
+      // longer applied directly because the new wrapper div owns the margin.
+      void qMargin;
       return;
     }
 
@@ -3860,6 +3896,31 @@ function PrimarySection({
     (section.type === "independent" || section.type === "guided" || section.type === "challenge" || section.type === "q-primary-activity") &&
     !/sentence starter:|steps to follow:|quick start:|what you need to do:|help box|key facts|word bank/i.test(content || "");
 
+  // ── Per-question answer lines (steering) ─────────────────────────────────
+  // When a section has 2+ numbered questions, each question should get its
+  // own writing space inline rather than one bunched answer block at the end.
+  // We count questions, decide an appropriate per-question line count, and
+  // then suppress the single bottom answer block so we don't render both.
+  const numberedQuestionMatches = needsWritingLines
+    ? (content || "").match(/^\s*\d+[a-z]?[.):]/gm) || []
+    : [];
+  const numberedQuestionCount = numberedQuestionMatches.length;
+  const usePerQuestionAnswerLines = needsWritingLines && !bookMode && numberedQuestionCount >= 2;
+  // Per-question line count: heavier for extended responses, lighter for
+  // recall / short answer. Capped to keep print pages reasonable.
+  const perQuestionLineCount = (() => {
+    if (!usePerQuestionAnswerLines) return 0;
+    const lower = (content || "").toLowerCase();
+    if (/explain|describe|discuss|analyse|evaluate|justify|compare|contrast|to what extent/.test(lower)) {
+      return section.type === "challenge" ? 5 : 4;
+    }
+    if (/calculat|show your working|work out|find the value|solve/.test(lower)) return 3;
+    if (/^(name|state|give|list|identify|define|circle|tick|label|true or false)/im.test(content || "")) return 2;
+    return 3;
+  })();
+  // Skip the single bunched bottom answer block when per-question lines render.
+  const renderBottomAnswerBlock = needsWritingLines && !usePerQuestionAnswerLines;
+
   return (
     <div
       onClick={() => editMode && onSectionClick?.(sectionIndex)}
@@ -3945,12 +4006,29 @@ function PrimarySection({
         color: palette.text,
         background: palette.bg,
       }}>
-        {formatContent(content, fmt, { bookMode })}
+        {formatContent(content, fmt, {
+          bookMode,
+          // Each numbered question gets its own writing space inline when the
+          // section has 2+ numbered questions — replaces the old single bunched
+          // bottom block which forced pupils to share one set of lines.
+          perQuestionLines: usePerQuestionAnswerLines ? perQuestionLineCount : 0,
+        })}
+
+        {/* Editor hint when per-question lines are active — replaces the
+            bottom Writing-lines slider since each question now owns its
+            answer space. */}
+        {editMode && usePerQuestionAnswerLines && (
+          <div className="no-print" style={{ marginTop: "10px", fontSize: "11px", color: palette.border, fontFamily: fmt.fontFamily, fontStyle: "italic" }}>
+            Each numbered question above has {perQuestionLineCount} answer line{perQuestionLineCount === 1 ? "" : "s"} of its own.
+          </div>
+        )}
 
         {/* Exercise-book style writing lines — suppressed when Book Mode is on
          *  (steering: Book Mode = no working-out lines anywhere on the sheet,
-         *  pupils answer in their exercise book instead). */}
-        {!bookMode && needsWritingLines && answerLines > 0 && (
+         *  pupils answer in their exercise book instead).
+         *  Also suppressed when per-question answer lines are already rendered
+         *  inline above, to avoid double answer space at the section's foot. */}
+        {!bookMode && renderBottomAnswerBlock && answerLines > 0 && (
           <div style={{ marginTop: "14px" }}>
             {/* Edit controls */}
             {editMode && (
@@ -6912,7 +6990,13 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                     );
                   })()
                 ) : section.type === "questions" ? (
-                  <div>{formatContent(content, fmt, { bookMode })}</div>
+                  // "questions" sections: emit answer lines per numbered question
+                  // (suppressed in Book Mode, which expects exercise-book answering).
+                  (() => {
+                    const numCount = (content.match(/^\s*\d+[a-z]?[.):]/gm) || []).length;
+                    const perQ = !bookMode && numCount >= 2 ? 3 : 0;
+                    return <div>{formatContent(content, fmt, { bookMode, perQuestionLines: perQ })}</div>;
+                  })()
                 ) : (section.type === "reading" || section.type === "passage" || section.type === "source-text" || section.type === "comprehension" || /reading.?passage|source.?text|comprehension.?text/i.test(section.title || "")) ? (
                   (() => {
                     // Split passage into paragraphs and add line numbers

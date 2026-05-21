@@ -1,8 +1,9 @@
 /**
  * Communications Hub — numbered storyboard.
- * Routine: write → schedule → push → log consent → measure read-rate.
+ * Routine: write → adapt the language → schedule → push → measure read-rate.
  */
 import HubStoryboard from "@/components/HubStoryboard";
+import { MessageCircle } from "lucide-react";
 
 export default function CommunicationsHub() {
   return (
@@ -11,6 +12,8 @@ export default function CommunicationsHub() {
       hubBlurb="Reach parents, log consent, schedule meetings — auditable end-to-end."
       breadcrumb="Communications Hub"
       accent="pink"
+      hubId="communications"
+      heroIcon={MessageCircle}
       steps={[
         {
           n: "1",
@@ -20,18 +23,24 @@ export default function CommunicationsHub() {
         },
         {
           n: "2",
+          title: "Adapt the language",
+          blurb: "Rewrite any text for a target reading age, or simplify jargon for parent-facing copy.",
+          toolIds: ["text-rewriter"],
+        },
+        {
+          n: "3",
           title: "Make it personal",
           blurb: "Per-pupil report comments — house-style calibrated, gendered-language flagged, evidence quotes injected.",
           toolIds: ["report-comments"],
         },
         {
-          n: "3",
+          n: "4",
           title: "Schedule the meetings",
           blurb: "EHCP reviews / parent meetings / interventions, with statutory-deadline guardrails and parent-self-booking links.",
           toolIds: ["scheduler"],
         },
         {
-          n: "4",
+          n: "5",
           title: "Deliver to parents",
           blurb: "Push to the Parent Portal in their language — read-receipts logged, unread items auto-nudged after 7 days.",
           toolIds: ["parent-portal"],
