@@ -59,37 +59,44 @@ Goal: complete Phase 1 (counts 7-7-5+1, per-Q answer lines, maths working-out
     workingOutBox **maths only** + specRef + ncRef + AO + bloomLevel +
     expectedReadingAge), and the QUALITY STANDARD line was upgraded with
     a curriculum-traceability clause.
+  * Both `runWorksheetPostValidators(...)` callsites (structured + legacy)
+    now pass `examBoard` so the spec-anchor validator can resolve the
+    matching awarding-body taxonomy.
+- `client/src/lib/worksheetPostValidator.ts`:
+  * `PostValidatorOptions` extended with `examBoard?: string`.
+  * New `inferSectionGroup()` helper — maps a question section to recall /
+    understanding / application / challenge using `questionNumber` (Phase 1
+    schema field) > `Q\d+` title heuristic > section type.
+  * New `enforceSectionQuestionCounts(ws, opts)` — pure / idempotent.
+    Counts question sections per group; warns when outside
+    `SECTION_QUESTION_TARGETS[group].{min,max}`. Never mutates content.
+  * New `enforceSpecAnchorPresence(ws, opts)` — pure / idempotent. Fills
+    missing `specRef` from `matchSpecPoint()` against the taxonomy. Warns
+    on invented codes (does NOT silently overwrite). Falls back to
+    `getSpecPointsAcrossBoards()` union when the per-board dataset is
+    missing. Warns once at worksheet level when no taxonomy at all.
+  * Both new validators plumbed into `runWorksheetPostValidators` chain
+    after the existing FEAT-PB7 misconception-link extractor.
+- `server/tests/worksheetScrutiny.test.ts` — new Phase 1 test suites:
+  * `linesForMarks` ramp (zero for MCQ/T-F/etc., scales 1m→2..9m+→14).
+  * `shouldRenderWorkingOutBox` maths-only steering check.
+  * `EAL_L1_LANGUAGES` includes Mirpuri.
+  * `buildWorksheetPlan` 7-7-5+1 = 20 secondary, 3-3-3 primary.
+  * `validateWorksheetPlan` accepts 20, rejects 26+.
+  * `enforceSectionQuestionCounts` happy path + below-min + above-max +
+    no-mutation invariant + empty-worksheet no-op.
+  * `enforceSpecAnchorPresence` fills missing AQA Maths Y10 codes,
+    warns on invented codes without overwriting, leaves valid codes
+    untouched, falls back to cross-board union, never invents on
+    unhinted questions, warns when no taxonomy bundled.
 
 ## What is left (in this branch)
 
-- **Task 7 — Post-validators.** Two pure idempotent functions added to
-  `client/src/lib/worksheetPostValidator.ts` and plumbed into
-  `runWorksheetPostValidators`:
-  * `enforceSectionQuestionCounts(ws, opts)` — counts question sections
-    per section group via title heuristics + `[N marks]` markers; warns when
-    outside `SECTION_QUESTION_TARGETS[section].{min,max}`. No mutation
-    beyond appending `metadata.postValidatorWarnings`.
-  * `enforceSpecAnchorPresence(ws, opts)` — for every question section
-    whose type starts with `q-` / `challenge` / `extended-answer` /
-    `lor` / `exam-question`, fills missing `specRef` via
-    `matchSpecPoint(rawRef, dataset)` against `getSpecPoints(board, subject,
-    yearGroup)`. Warns (doesn't fail) when no taxonomy is bundled for the
-    request. Never invents codes.
+- **Task 9 — CI run.** `npm test` + `tsc --noEmit` will run on PR push.
+  Sandbox cannot run them locally (`INTEGRATIONS_ONLY`). If CI raises any
+  TypeScript or test failures, fix them on this branch.
 
-- **Task 8 — Tests.** Add to `server/tests/worksheetScrutiny.test.ts`:
-  * `linesForMarks` ramp sanity (1m=2, 4m=6, 8m=12, 9m=14; MCQ→0).
-  * `shouldRenderWorkingOutBox` maths-only behaviour: returns true for
-    "Calculate" + maths, false for "Calculate" + Physics/Chemistry.
-  * `buildWorksheetPlan` produces 7-7-5+1 = 20 secondary, 3-3-3 primary.
-  * `validateWorksheetPlan` accepts up to 25, rejects 26+.
-  * `enforceSectionQuestionCounts` warns when a section has < min or > max.
-  * `enforceSpecAnchorPresence` fills `specRef` for AQA Maths Y10 topic
-    matches and never fabricates for unknown subjects.
-
-- **Task 9 — Run CI.** `npm test` + `tsc --noEmit` will run on the PR push;
-  fix anything it raises.
-
-- **Task 10 — Open the PR.** Title:
+- **Task 10 — Open / update the PR.** Title:
   `Phase 1 — Curriculum-aligned structure (7-7-5 counts, per-Q answer lines, maths working-out, spec anchor)`
 
 ## Conventions established (do not break)
