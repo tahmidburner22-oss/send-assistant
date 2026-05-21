@@ -297,23 +297,40 @@ export default function Hero() {
             </div>
           </div>
 
-          {/* Slide indicator dots — visible on all sizes for orientation. */}
+          {/* Slide indicator dots — visible on all sizes for orientation.
+              Active dot widens to a pill, gains a subtle white-glow ring and
+              an inner shimmer to feel premium without being distracting.
+              Inactive dots gently scale on hover for affordance. */}
           <div
             className="max-w-7xl mx-auto mt-6 md:mt-8 flex items-center gap-2 animate-blur-fade-up"
             style={{ animationDelay: "950ms" }}
-            aria-hidden
           >
-            {SLIDES.map((s, i) => (
-              <button
-                key={s.id}
-                type="button"
-                aria-label={`Go to slide ${i + 1}`}
-                onClick={() => setActive(i)}
-                className={`h-1.5 rounded-full transition-all duration-500 ${
-                  i === active ? "w-8 bg-white" : "w-3 bg-white/40 hover:bg-white/70"
-                }`}
-              />
-            ))}
+            {SLIDES.map((s, i) => {
+              const isActive = i === active;
+              return (
+                <button
+                  key={s.id}
+                  type="button"
+                  aria-label={`Go to slide ${i + 1}`}
+                  aria-current={isActive ? "true" : undefined}
+                  onClick={() => setActive(i)}
+                  className={`relative h-1.5 rounded-full transition-all duration-500 ease-out ${
+                    isActive
+                      ? "w-10 bg-white shadow-[0_0_18px_rgba(255,255,255,0.45)]"
+                      : "w-3 bg-white/35 hover:bg-white/70 hover:scale-110"
+                  }`}
+                >
+                  {/* Subtle inner highlight on the active pill — gives it a
+                      faint glassy gradient instead of flat white. */}
+                  {isActive && (
+                    <span
+                      aria-hidden
+                      className="absolute inset-0 rounded-full bg-gradient-to-r from-white/50 via-white to-white/70"
+                    />
+                  )}
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>
