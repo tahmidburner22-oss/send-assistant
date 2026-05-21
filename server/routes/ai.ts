@@ -298,7 +298,7 @@ async function callProvider(
   key: string,
   model: string,
   maxTokens: number,
-  options?: { baseUrl?: string }
+  options?: { baseUrl?: string; responseFormat?: ProviderResponseFormat }
 ): Promise<string> {
   // Per-provider timeouts — chosen so the full fallback chain fits inside Railway's 60s limit.
   // With 14 providers, cooldowns ensure most are skipped; only 2-3 are tried per request.
@@ -327,6 +327,7 @@ async function callProvider(
 
   try {
     let result: string;
+    const responseFormat = options?.responseFormat;
     switch (provider) {
       case "groq":
       case "groq_1":
@@ -335,27 +336,27 @@ async function callProvider(
         // llama-3.3-70b-versatile: 131K TPM per key.
         // With 3 keys in round-robin we get 393K effective TPM.
         // FIX: signal passed so the 18s timeout actually fires.
-        result = await callGroq(system, user, key, model || "llama-3.3-70b-versatile", maxTokens, controller.signal);
+        result = await callGroq(system, user, key, model || "llama-3.3-70b-versatile", maxTokens, controller.signal, responseFormat);
         break;
       case "gemini":
         // FIX: signal passed so the 18s timeout actually fires.
         // FIX: Now uses gemini-2.5-flash (gemini-2.0-flash has quota=0 on free tier)
-        result = await callGemini(system, user, key, maxTokens, controller.signal, "gemini-2.5-flash");
+        result = await callGemini(system, user, key, maxTokens, controller.signal, "gemini-2.5-flash", responseFormat);
         break;
       case "gemini_lite":
         // Gemini 2.5 Flash Lite — separate quota from 2.5 Flash, used as additional fallback
-        result = await callGemini(system, user, key, maxTokens, controller.signal, "gemini-2.5-flash-lite");
+        result = await callGemini(system, user, key, maxTokens, controller.signal, "gemini-2.5-flash-lite", responseFormat);
         break;
       case "gemini_3lite":
         // Gemini 3.1 Flash Lite Preview — newest Google model, 500 RPD / 15 RPM free tier
-        result = await callGemini(system, user, key, maxTokens, controller.signal, "gemini-3.1-flash-lite-preview");
+        result = await callGemini(system, user, key, maxTokens, controller.signal, "gemini-3.1-flash-lite-preview", responseFormat);
         break;
       case "nvidia_nim":
         // NVIDIA NIM — ~40 RPM free, access to Llama 3.1 Nemotron Ultra 253B and others
-        result = await callNvidiaNim(system, user, key, model || "nvidia/llama-3.1-nemotron-ultra-253b-v1", maxTokens, controller.signal);
+        result = await callNvidiaNim(system, user, key, model || "nvidia/llama-3.1-nemotron-ultra-253b-v1", maxTokens, controller.signal, responseFormat);
         break;
       case "openai":
-        result = await callOpenAI(system, user, key, model || "gpt-4o-mini", maxTokens, controller.signal);
+        result = await callOpenAI(system, user, key, model || "gpt-4o-mini", maxTokens, controller.signal, undefined, responseFormat);
         break;
       // Custom OpenAI-compatible providers (added via Settings → AI Providers with a base URL)
       // These are stored in school_api_keys with a base_url field and a custom provider name.
@@ -366,43 +367,45 @@ async function callProvider(
       case "cerebras_3":
         // Cerebras wafer-scale inference — 14,400 RPD, 30 RPM free tier per key
         // With 3 keys in round-robin we get 43,200 RPD combined
-        result = await callCerebras(system, user, key, model || "llama3.1-8b", maxTokens, controller.signal);
+        result = await callCerebras(system, user, key, model || "llama3.1-8b", maxTokens, controller.signal, responseFormat);
         break;
       case "sambanova":
       case "sambanova_1":
       case "sambanova_2":
         // SambaNova Cloud — 1,000 RPD, 30 RPM free tier per key, OpenAI-compatible
-        result = await callSambaNova(system, user, key, model || "Meta-Llama-3.3-70B-Instruct", maxTokens, controller.signal);
+        result = await callSambaNova(system, user, key, model || "Meta-Llama-3.3-70B-Instruct", maxTokens, controller.signal, responseFormat);
         break;
       case "openrouter":
       case "openrouter_1":
       case "openrouter_2":
-        result = await callOpenRouter(system, user, key, model, maxTokens, controller.signal);
+        result = await callOpenRouter(system, user, key, model, maxTokens, controller.signal, responseFormat);
         break;
       case "claude":
+        // Claude does not expose a stable JSON-mode flag — relies on prompt-level instruction.
         result = await callClaude(system, user, key, maxTokens, controller.signal);
         break;
       case "huggingface":
+        // HuggingFace router has no consistent JSON-mode support — relies on prompt-level instruction.
         result = await callHuggingFace(system, user, key, maxTokens, controller.signal);
         break;
       case "mistral":
         // mistral-small-latest: free tier = unlimited RPD but only 2 RPM.
         // Used as fallback when all Groq keys + Gemini are rate-limited simultaneously.
-        result = await callMistral(system, user, key, model || "mistral-small-latest", maxTokens, controller.signal);
+        result = await callMistral(system, user, key, model || "mistral-small-latest", maxTokens, controller.signal, responseFormat);
         break;
       case "deepseek":
-        result = await callDeepSeek(system, user, key, model || "deepseek-chat", maxTokens, controller.signal);
+        result = await callDeepSeek(system, user, key, model || "deepseek-chat", maxTokens, controller.signal, responseFormat);
         break;
       case "cohere":
-        result = await callCohere(system, user, key, model || "command-r-plus", maxTokens, controller.signal);
+        result = await callCohere(system, user, key, model || "command-r-plus", maxTokens, controller.signal, responseFormat);
         break;
       case "perplexity":
-        result = await callPerplexity(system, user, key, model || "llama-3.1-sonar-large-128k-online", maxTokens, controller.signal);
+        result = await callPerplexity(system, user, key, model || "llama-3.1-sonar-large-128k-online", maxTokens, controller.signal, responseFormat);
         break;
       default:
         // Custom OpenAI-compatible provider — requires baseUrl to be passed
         if (options?.baseUrl) {
-          result = await callOpenAI(system, user, key, model || "gpt-4o-mini", maxTokens, controller.signal, options.baseUrl);
+          result = await callOpenAI(system, user, key, model || "gpt-4o-mini", maxTokens, controller.signal, options.baseUrl, responseFormat);
         } else {
           throw new Error(`Unknown provider: ${provider}`);
         }
@@ -433,7 +436,8 @@ export async function callWithFallback(
   user: string,
   maxTokens: number,
   preferredProvider?: string,
-  schoolId?: string
+  schoolId?: string,
+  opts?: { responseFormat?: ProviderResponseFormat }
 ): Promise<{ content: string; provider: string }> {
   // Build ordered list: school providers first, then global
   let order: string[];
@@ -533,7 +537,10 @@ export async function callWithFallback(
       } catch (_) {}
     }
     try {
-      const content = await callProvider(provider, system, user, key, model, maxTokens, baseUrl ? { baseUrl } : undefined);
+      const content = await callProvider(provider, system, user, key, model, maxTokens, {
+        ...(baseUrl ? { baseUrl } : {}),
+        ...(opts?.responseFormat ? { responseFormat: opts.responseFormat } : {}),
+      });
       if (content && content.trim()) {
         console.log(`[AI] Success via ${provider}`);
         recordRpm(provider); // track successful request for RPM window
@@ -553,7 +560,7 @@ export async function callWithFallback(
           try {
             console.log(`[AI] ${provider} rate limited — quick 2s retry...`);
             await new Promise(r => setTimeout(r, 2000));
-            const retryContent = await callProvider(provider, system, user, key, model, maxTokens);
+            const retryContent = await callProvider(provider, system, user, key, model, maxTokens, opts?.responseFormat ? { responseFormat: opts.responseFormat } : undefined);
             if (retryContent && retryContent.trim()) {
               console.log(`[AI] Quick retry success via ${provider}`);
               return { content: retryContent, provider };
@@ -586,7 +593,7 @@ export async function callWithFallback(
     try {
       providerCooldowns.delete(provider); // force clear cooldown for this last-ditch attempt
       const model = await getAdminModel(provider, schoolId);
-      const content = await callProvider(provider, system, user, key, model, maxTokens);
+      const content = await callProvider(provider, system, user, key, model, maxTokens, opts?.responseFormat ? { responseFormat: opts.responseFormat } : undefined);
       if (content && content.trim()) {
         console.log(`[AI] Last-resort success via ${provider} (was on cooldown)`);
         return { content, provider };
@@ -601,9 +608,14 @@ export async function callWithFallback(
 
 // ── AI Proxy — auto-fallback, no manual key needed ───────────────────────────
 router.post("/generate", requireAuth, async (req: Request, res: Response) => {
-  const { prompt, systemPrompt, provider, model, apiKey, maxTokens = 2000 } = req.body;
+  const { prompt, systemPrompt, provider, model, apiKey, maxTokens = 2000, responseFormat } = req.body;
 
   if (!prompt) return res.status(400).json({ error: "Prompt required" });
+
+  // Validate responseFormat — only accept "json_object" | "text" | undefined.
+  // Anything else is silently ignored so a malformed client never blocks generation.
+  const safeResponseFormat: ProviderResponseFormat | undefined =
+    responseFormat === "json_object" || responseFormat === "text" ? responseFormat : undefined;
 
   // Content filtering
   const promptFilter = filterContent(prompt);
@@ -659,14 +671,14 @@ router.post("/generate", requireAuth, async (req: Request, res: Response) => {
       // User supplied their own key — try that provider first, then auto-fallback
       try {
         const model = await getAdminModel(provider);
-        const content = await callProvider(provider, systemPrompt || "", prompt, apiKey, model, maxTokens);
+        const content = await callProvider(provider, systemPrompt || "", prompt, apiKey, model, maxTokens, safeResponseFormat ? { responseFormat: safeResponseFormat } : undefined);
         result = { content, provider };
       } catch (_) {
-        result = await callWithFallback(systemPrompt || "", prompt, maxTokens, provider, req.user!.schoolId || undefined);
+        result = await callWithFallback(systemPrompt || "", prompt, maxTokens, provider, req.user!.schoolId || undefined, safeResponseFormat ? { responseFormat: safeResponseFormat } : undefined);
       }
     } else {
       // No user key — auto-fallback using school keys first, then global
-      result = await callWithFallback(systemPrompt || "", prompt, maxTokens, provider, req.user!.schoolId || undefined);
+      result = await callWithFallback(systemPrompt || "", prompt, maxTokens, provider, req.user!.schoolId || undefined, safeResponseFormat ? { responseFormat: safeResponseFormat } : undefined);
     }
 
     const responseFilter = filterContent(result.content);
@@ -977,20 +989,38 @@ router.get("/stats", requireAuth, requireAdmin, async (req: Request, res: Respon
 // can actually cancel the in-flight network request. Previously callGroq and callGemini
 // had no signal parameter — the AbortController in callProvider was silently ignored
 // and both providers could hang for Railway's full 60s request limit.
-async function callGroq(system: string, user: string, key: string, model: string, maxTokens: number, signal?: AbortSignal): Promise<string> {
+//
+// PR worksheet-gen-efficiency #3 — native JSON mode threading.
+// Every provider that supports a native "respond as raw JSON" flag (Groq,
+// Cerebras, SambaNova, Gemini, OpenAI, OpenRouter, Mistral, DeepSeek,
+// Cohere, NVIDIA NIM, Perplexity) now accepts an optional `responseFormat`
+// argument. When set to "json_object" the provider request adds the
+// appropriate native field (`response_format: { type: "json_object" }` for
+// OpenAI-compatible APIs, `responseMimeType: "application/json"` for
+// Gemini). This lets us delete the JSON-repair fallback path on the worksheet
+// generator over time and reduces parse-failure → fallback bleed-through.
+// Claude and HuggingFace ignore the flag (they don't expose a stable JSON
+// mode on their free tiers) and continue to rely on the prompt-level
+// "respond with valid raw JSON only" instruction.
+export type ProviderResponseFormat = "json_object" | "text";
+async function callGroq(system: string, user: string, key: string, model: string, maxTokens: number, signal?: AbortSignal, responseFormat?: ProviderResponseFormat): Promise<string> {
+  const body: Record<string, unknown> = {
+    model,
+    messages: [
+      { role: "system", content: system || "You are a helpful SEND education assistant." },
+      { role: "user", content: user },
+    ],
+    max_tokens: maxTokens,
+    temperature: 0.3,
+  };
+  if (responseFormat === "json_object") {
+    body.response_format = { type: "json_object" };
+  }
   const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
     method: "POST",
     signal,
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
-    body: JSON.stringify({
-      model,
-      messages: [
-        { role: "system", content: system || "You are a helpful SEND education assistant." },
-        { role: "user", content: user },
-      ],
-      max_tokens: maxTokens,
-      temperature: 0.3,
-    }),
+    body: JSON.stringify(body),
   });
   if (res.status === 429) throw new Error(`Groq 429: rate limited`);
   if (!res.ok) throw new Error(`Groq ${res.status}: ${(await res.text()).slice(0, 200)}`);
@@ -1004,20 +1034,24 @@ async function callGroq(system: string, user: string, key: string, model: string
 // Cerebras uses wafer-scale silicon for ultra-fast inference.
 // Free tier: 14,400 RPD, 30 RPM, 60K TPM — same RPD as Groq but often faster.
 // OpenAI-compatible API, so the same request format works.
-async function callCerebras(system: string, user: string, key: string, model: string, maxTokens: number, signal?: AbortSignal): Promise<string> {
+async function callCerebras(system: string, user: string, key: string, model: string, maxTokens: number, signal?: AbortSignal, responseFormat?: ProviderResponseFormat): Promise<string> {
+  const body: Record<string, unknown> = {
+    model,
+    messages: [
+      { role: "system", content: system || "You are a helpful SEND education assistant." },
+      { role: "user", content: user },
+    ],
+    max_completion_tokens: maxTokens,
+    temperature: 0.1,
+  };
+  if (responseFormat === "json_object") {
+    body.response_format = { type: "json_object" };
+  }
   const res = await fetch("https://api.cerebras.ai/v1/chat/completions", {
     method: "POST",
     signal,
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
-    body: JSON.stringify({
-      model,
-      messages: [
-        { role: "system", content: system || "You are a helpful SEND education assistant." },
-        { role: "user", content: user },
-      ],
-      max_completion_tokens: maxTokens,
-      temperature: 0.1,
-    }),
+    body: JSON.stringify(body),
   });
   if (res.status === 429) throw new Error(`Cerebras 429: rate limited`);
   if (!res.ok) throw new Error(`Cerebras ${res.status}: ${(await res.text()).slice(0, 200)}`);
@@ -1028,20 +1062,24 @@ async function callCerebras(system: string, user: string, key: string, model: st
 // ── SambaNova Cloud ──────────────────────────────────────────────────────────────────────────────────
 // Wafer-scale inference with Llama 3.3 70B and 405B.
 // Free tier: 1,000 RPD, 30 RPM — OpenAI-compatible API.
-async function callSambaNova(system: string, user: string, key: string, model: string, maxTokens: number, signal?: AbortSignal): Promise<string> {
+async function callSambaNova(system: string, user: string, key: string, model: string, maxTokens: number, signal?: AbortSignal, responseFormat?: ProviderResponseFormat): Promise<string> {
+  const body: Record<string, unknown> = {
+    model: model || "Meta-Llama-3.3-70B-Instruct",
+    messages: [
+      { role: "system", content: system || "You are a helpful SEND education assistant." },
+      { role: "user", content: user },
+    ],
+    max_tokens: maxTokens,
+    temperature: 0.1,
+  };
+  if (responseFormat === "json_object") {
+    body.response_format = { type: "json_object" };
+  }
   const res = await fetch("https://api.sambanova.ai/v1/chat/completions", {
     method: "POST",
     signal,
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
-    body: JSON.stringify({
-      model: model || "Meta-Llama-3.3-70B-Instruct",
-      messages: [
-        { role: "system", content: system || "You are a helpful SEND education assistant." },
-        { role: "user", content: user },
-      ],
-      max_tokens: maxTokens,
-      temperature: 0.1,
-    }),
+    body: JSON.stringify(body),
   });
   if (res.status === 429) throw new Error(`SambaNova 429: rate limited`);
   if (!res.ok) throw new Error(`SambaNova ${res.status}: ${(await res.text()).slice(0, 200)}`);
@@ -1055,10 +1093,14 @@ async function callSambaNova(system: string, user: string, key: string, model: s
 // concatenating system+user into a single contents message. Using systemInstruction
 // produces significantly better structured JSON output (the system prompt is processed
 // separately by the model, not mixed into the conversation context).
-async function callGemini(system: string, user: string, key: string, maxTokens: number, signal?: AbortSignal, model: string = "gemini-2.5-flash"): Promise<string> {
+async function callGemini(system: string, user: string, key: string, maxTokens: number, signal?: AbortSignal, model: string = "gemini-2.5-flash", responseFormat?: ProviderResponseFormat): Promise<string> {
+  const generationConfig: Record<string, unknown> = { maxOutputTokens: maxTokens, temperature: 0.1 };
+  if (responseFormat === "json_object") {
+    generationConfig.responseMimeType = "application/json";
+  }
   const body: any = {
     contents: [{ role: "user", parts: [{ text: user }] }],
-    generationConfig: { maxOutputTokens: maxTokens, temperature: 0.1 },
+    generationConfig,
   };
   if (system) {
     body.systemInstruction = { parts: [{ text: system }] };
@@ -1080,19 +1122,23 @@ async function callGemini(system: string, user: string, key: string, maxTokens: 
   return content;
 }
 
-async function callOpenAI(system: string, user: string, key: string, model: string, maxTokens: number, signal?: AbortSignal, baseUrl?: string): Promise<string> {
+async function callOpenAI(system: string, user: string, key: string, model: string, maxTokens: number, signal?: AbortSignal, baseUrl?: string, responseFormat?: ProviderResponseFormat): Promise<string> {
+  const body: Record<string, unknown> = {
+    model,
+    messages: [
+      { role: "system", content: system || "You are a helpful SEND education assistant." },
+      { role: "user", content: user },
+    ],
+    max_tokens: maxTokens,
+  };
+  if (responseFormat === "json_object") {
+    body.response_format = { type: "json_object" };
+  }
   const res = await fetch(`${baseUrl || "https://api.openai.com/v1"}/chat/completions`, {
     method: "POST",
     signal,
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
-    body: JSON.stringify({
-      model,
-      messages: [
-        { role: "system", content: system || "You are a helpful SEND education assistant." },
-        { role: "user", content: user },
-      ],
-      max_tokens: maxTokens,
-    }),
+    body: JSON.stringify(body),
   });
   if (res.status === 429) throw new Error(`OpenAI 429: rate limited`);
   if (!res.ok) throw new Error(`OpenAI ${res.status}: ${(await res.text()).slice(0, 200)}`);
@@ -1100,7 +1146,7 @@ async function callOpenAI(system: string, user: string, key: string, model: stri
   return data.choices[0].message.content;
 }
 
-async function callOpenRouter(system: string, user: string, key: string, model: string, maxTokens: number, signal?: AbortSignal): Promise<string> {
+async function callOpenRouter(system: string, user: string, key: string, model: string, maxTokens: number, signal?: AbortSignal, responseFormat?: ProviderResponseFormat): Promise<string> {
   // Best free models on OpenRouter as of May 2026 — ordered by reliability and quality.
   // Prioritise models with stable upstream providers (not Venice-routed Llama which rate-limits).
   const fallbackModels = [
@@ -1115,6 +1161,17 @@ async function callOpenRouter(system: string, user: string, key: string, model: 
 
   for (const m of fallbackModels) {
     try {
+      const body: Record<string, unknown> = {
+        model: m,
+        messages: [
+          { role: "system", content: system || "You are a helpful SEND education assistant." },
+          { role: "user", content: user },
+        ],
+        max_tokens: maxTokens,
+      };
+      if (responseFormat === "json_object") {
+        body.response_format = { type: "json_object" };
+      }
       const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
         method: "POST",
         signal,
@@ -1124,14 +1181,7 @@ async function callOpenRouter(system: string, user: string, key: string, model: 
           "HTTP-Referer": "https://adaptly.co.uk",
           "X-Title": "Adaptly",
         },
-        body: JSON.stringify({
-          model: m,
-          messages: [
-            { role: "system", content: system || "You are a helpful SEND education assistant." },
-            { role: "user", content: user },
-          ],
-          max_tokens: maxTokens,
-        }),
+        body: JSON.stringify(body),
       });
       if (!res.ok) continue;
       const data = await res.json() as any;
@@ -1207,20 +1257,24 @@ async function callHuggingFace(system: string, user: string, key: string, maxTok
 }
 
 // ── Mistral AI ───────────────────────────────────────────────────────────────
-async function callMistral(system: string, user: string, key: string, model: string, maxTokens: number, signal?: AbortSignal): Promise<string> {
+async function callMistral(system: string, user: string, key: string, model: string, maxTokens: number, signal?: AbortSignal, responseFormat?: ProviderResponseFormat): Promise<string> {
+  const body: Record<string, unknown> = {
+    model,
+    messages: [
+      { role: "system", content: system || "You are a helpful SEND education assistant." },
+      { role: "user", content: user },
+    ],
+    max_tokens: maxTokens,
+    temperature: 0.3,
+  };
+  if (responseFormat === "json_object") {
+    body.response_format = { type: "json_object" };
+  }
   const res = await fetch("https://api.mistral.ai/v1/chat/completions", {
     method: "POST",
     signal,
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
-    body: JSON.stringify({
-      model,
-      messages: [
-        { role: "system", content: system || "You are a helpful SEND education assistant." },
-        { role: "user", content: user },
-      ],
-      max_tokens: maxTokens,
-      temperature: 0.3,
-    }),
+    body: JSON.stringify(body),
   });
   if (res.status === 429) throw new Error(`Mistral 429: rate limited`);
   if (!res.ok) throw new Error(`Mistral ${res.status}: ${(await res.text()).slice(0, 200)}`);
@@ -1229,20 +1283,24 @@ async function callMistral(system: string, user: string, key: string, model: str
 }
 
 // ── DeepSeek ─────────────────────────────────────────────────────────────────
-async function callDeepSeek(system: string, user: string, key: string, model: string, maxTokens: number, signal?: AbortSignal): Promise<string> {
+async function callDeepSeek(system: string, user: string, key: string, model: string, maxTokens: number, signal?: AbortSignal, responseFormat?: ProviderResponseFormat): Promise<string> {
+  const body: Record<string, unknown> = {
+    model,
+    messages: [
+      { role: "system", content: system || "You are a helpful SEND education assistant." },
+      { role: "user", content: user },
+    ],
+    max_tokens: maxTokens,
+    temperature: 0.3,
+  };
+  if (responseFormat === "json_object") {
+    body.response_format = { type: "json_object" };
+  }
   const res = await fetch("https://api.deepseek.com/v1/chat/completions", {
     method: "POST",
     signal,
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
-    body: JSON.stringify({
-      model,
-      messages: [
-        { role: "system", content: system || "You are a helpful SEND education assistant." },
-        { role: "user", content: user },
-      ],
-      max_tokens: maxTokens,
-      temperature: 0.3,
-    }),
+    body: JSON.stringify(body),
   });
   if (res.status === 429) throw new Error(`DeepSeek 429: rate limited`);
   if (!res.ok) throw new Error(`DeepSeek ${res.status}: ${(await res.text()).slice(0, 200)}`);
@@ -1251,7 +1309,18 @@ async function callDeepSeek(system: string, user: string, key: string, model: st
 }
 
 // ── Cohere ───────────────────────────────────────────────────────────────────
-async function callCohere(system: string, user: string, key: string, model: string, maxTokens: number, signal?: AbortSignal): Promise<string> {
+async function callCohere(system: string, user: string, key: string, model: string, maxTokens: number, signal?: AbortSignal, responseFormat?: ProviderResponseFormat): Promise<string> {
+  const body: Record<string, unknown> = {
+    model,
+    messages: [
+      { role: "system", content: system || "You are a helpful SEND education assistant." },
+      { role: "user", content: user },
+    ],
+    max_tokens: maxTokens,
+  };
+  if (responseFormat === "json_object") {
+    body.response_format = { type: "json_object" };
+  }
   const res = await fetch("https://api.cohere.com/v2/chat", {
     method: "POST",
     signal,
@@ -1278,7 +1347,7 @@ async function callCohere(system: string, user: string, key: string, model: stri
 // NVIDIA NIM free tier: ~40 RPM, access to Llama 3.1 Nemotron Ultra 253B and others.
 // OpenAI-compatible API — same interface as callOpenAI.
 // Sign up at: https://build.nvidia.com/explore/discover
-async function callNvidiaNim(system: string, user: string, key: string, model: string, maxTokens: number, signal?: AbortSignal): Promise<string> {
+async function callNvidiaNim(system: string, user: string, key: string, model: string, maxTokens: number, signal?: AbortSignal, responseFormat?: ProviderResponseFormat): Promise<string> {
   const fallbackModels = [
     model,
     "nvidia/llama-3.1-nemotron-ultra-253b-v1",  // Best quality — 253B params
@@ -1288,6 +1357,18 @@ async function callNvidiaNim(system: string, user: string, key: string, model: s
   ].filter(Boolean);
   for (const m of fallbackModels) {
     try {
+      const body: Record<string, unknown> = {
+        model: m,
+        messages: [
+          { role: "system", content: system || "You are a helpful SEND education assistant." },
+          { role: "user", content: user },
+        ],
+        max_tokens: maxTokens,
+        temperature: 0.1,
+      };
+      if (responseFormat === "json_object") {
+        body.response_format = { type: "json_object" };
+      }
       const res = await fetch("https://integrate.api.nvidia.com/v1/chat/completions", {
         method: "POST",
         signal,
@@ -1295,15 +1376,7 @@ async function callNvidiaNim(system: string, user: string, key: string, model: s
           "Content-Type": "application/json",
           Authorization: `Bearer ${key}`,
         },
-        body: JSON.stringify({
-          model: m,
-          messages: [
-            { role: "system", content: system || "You are a helpful SEND education assistant." },
-            { role: "user", content: user },
-          ],
-          max_tokens: maxTokens,
-          temperature: 0.1,
-        }),
+        body: JSON.stringify(body),
       });
       if (res.status === 429) throw new Error(`NVIDIA NIM 429: rate limited`);
       if (!res.ok) { const t = await res.text(); continue; }
@@ -1317,20 +1390,24 @@ async function callNvidiaNim(system: string, user: string, key: string, model: s
   }
   throw new Error("NVIDIA NIM: all models failed");
 }
-async function callPerplexity(system: string, user: string, key: string, model: string, maxTokens: number, signal?: AbortSignal): Promise<string> {
+async function callPerplexity(system: string, user: string, key: string, model: string, maxTokens: number, signal?: AbortSignal, responseFormat?: ProviderResponseFormat): Promise<string> {
+  const body: Record<string, unknown> = {
+    model,
+    messages: [
+      { role: "system", content: system || "You are a helpful SEND education assistant." },
+      { role: "user", content: user },
+    ],
+    max_tokens: maxTokens,
+    temperature: 0.3,
+  };
+  if (responseFormat === "json_object") {
+    body.response_format = { type: "json_object" };
+  }
   const res = await fetch("https://api.perplexity.ai/chat/completions", {
     method: "POST",
     signal,
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
-    body: JSON.stringify({
-      model,
-      messages: [
-        { role: "system", content: system || "You are a helpful SEND education assistant." },
-        { role: "user", content: user },
-      ],
-      max_tokens: maxTokens,
-      temperature: 0.3,
-    }),
+    body: JSON.stringify(body),
   });
   if (res.status === 429) throw new Error(`Perplexity 429: rate limited`);
   if (!res.ok) throw new Error(`Perplexity ${res.status}: ${(await res.text()).slice(0, 200)}`);

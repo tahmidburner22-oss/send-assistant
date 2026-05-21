@@ -521,7 +521,8 @@ export interface AIChatMessage {
 
 export async function callAIMessages(
   messages: AIChatMessage[],
-  maxTokens = 2000
+  maxTokens = 2000,
+  opts?: { responseFormat?: "json_object" | "text" },
 ): Promise<{ text: string; provider: AIProvider }> {
   // Derive (systemPrompt, userPrompt) for the single-prompt providers in the
   // fallback branch. System = all system messages concatenated. User =
@@ -544,7 +545,13 @@ export async function callAIMessages(
       signal: controller?.signal,
       // Send BOTH shapes so the server can use messages[] (preferred) but
       // falls back to prompt/systemPrompt for older server builds.
-      body: JSON.stringify({ messages, prompt: userPrompt, systemPrompt, maxTokens }),
+      body: JSON.stringify({
+        messages,
+        prompt: userPrompt,
+        systemPrompt,
+        maxTokens,
+        ...(opts?.responseFormat ? { responseFormat: opts.responseFormat } : {}),
+      }),
     });
     if (timeoutId) window.clearTimeout(timeoutId);
     if (res.ok) {
@@ -567,13 +574,14 @@ export async function callAIMessages(
     console.warn("[Adaptly AI] callAIMessages server error:", serverErr?.message);
   }
   // Client-keys fallback: collapses the conversation into a single prompt.
-  return callAI(systemPrompt, userPrompt, maxTokens);
+  return callAI(systemPrompt, userPrompt, maxTokens, opts);
 }
 
 export async function callAI(
   systemPrompt: string,
   userPrompt: string,
-  maxTokens = 2000
+  maxTokens = 2000,
+  opts?: { responseFormat?: "json_object" | "text" },
 ): Promise<{ text: string; provider: AIProvider }> {
   // Primary: route through server so admin API keys are used automatically for all users
   try {
@@ -592,7 +600,12 @@ export async function callAI(
       credentials: "include",
       signal: controller?.signal,
       // Server expects 'prompt' (not 'userPrompt') per the /api/ai/generate endpoint
-      body: JSON.stringify({ prompt: userPrompt, systemPrompt, maxTokens }),
+      body: JSON.stringify({
+        prompt: userPrompt,
+        systemPrompt,
+        maxTokens,
+        ...(opts?.responseFormat ? { responseFormat: opts.responseFormat } : {}),
+      }),
     });
     if (timeoutId) window.clearTimeout(timeoutId);
     if (res.ok) {
@@ -947,7 +960,7 @@ MANDATORY RULES — violating any rule is wrong:
    - 6-mark box: max 40 words (this box is the largest).
 10. Every vocab definition in the title section must be max 8 words.`;
 
-    const { text: rmText, provider: rmProvider } = await callAI(rmSystem, rmUser, 3500);
+    const { text: rmText, provider: rmProvider } = await callAI(rmSystem, rmUser, 3500, { responseFormat: "json_object" });
     const rmCleaned = rmText.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/i, '').trim();
     let rmJson: any;
     try {
@@ -1355,7 +1368,7 @@ For DIAGRAM A: the diagram must be FULLY LABELLED (every part has a real term sh
 For DIAGRAM B: the diagram must be FULLY LABELLED — it is a visual reference only with NO questions attached.
 
 SECTION 3 — APPLICATION & ANALYSIS (Q7–Q9):
-${sectionBPrompt}${examStylePrompt}${examStylePrompt}
+${sectionBPrompt}${examStylePrompt}
 
 CHALLENGE QUESTION [${isSTEM ? '8' : '12'} marks]: ${isMaths ? 'Present a challenging multi-step real-world maths problem on ' + '"' + params.topic + '"' + '. ALL parts must be numerical/calculation-based — NO written explanations or prose. (a) Set up the problem and identify the method [1 mark] (b) Perform 2–3 linked calculations showing ALL working [5 marks] (c) Give the final answer with correct units/form and check it [2 marks]. Mark scheme: method marks + accuracy marks only.' : isSTEM ? 'Present a multi-part real-world scenario requiring: (a) Choose and justify an approach/method/circuit/process (b) Perform at least 2–3 linked calculations showing all working (c) Explain what happens under a changed condition. Award: up to 3m for explanation + up to 5m for calculations.' : 'Present a short quotation from the text (3–8 words, with Act/scene reference). Instruction: "Starting with this extract, write about how [author] presents [concept/character/theme]." List what the answer must include. Award: Band 4 (10–12m) / Band 3 (7–9m) / Band 2 (4–6m) / Band 1 (1–3m). Describe each band in one sentence.'}
 
@@ -2403,24 +2416,38 @@ SUBJECT-SPECIFIC RULES — ${params.subject.toUpperCase()}:
       limit: 5,
     });
 
-    const structuredSystem = `You are an expert UK teacher creating a professional, print-ready worksheet. You respond with valid raw JSON only — no markdown, no code blocks, no HTML. Every rule below is mandatory.
-SUBJECT TYPE: ${isSTEM ? 'STEM' : 'HUMANITIES'} | SUBJECT: ${params.subject}
-${readingAgeNote}
-${sendNote}
-${stemPreservationNote}
-${requiredPracticalNote}
-${subjectSpecNote}
-${tierNote}
-${ksGcseNote}
-${subjectSpecificRules}
-${misconceptionBlock}
-${paperCalcNote}
-${examStemAnchorsBlock}
-${lorBlock}
-${synopticBlock}
-${examPaperTemplateBlock}
-QUALITY STANDARD: Every question must be fully usable — no placeholders, no ellipses, no unfinished sentences. Use real numbers, real contexts. Textbook quality. Every question must be at the correct curriculum level for ${params.yearGroup || 'the year group'} — GCSE/KS3/KS4 standard as appropriate.
-${specExamples ? `\n${specExamples}\n` : ''}
+    // ── PR #2 (worksheet-gen-efficiency) — strip empty conditional blocks
+    //   Many of the blocks below (paperCalcNote, lorBlock, synopticBlock,
+    //   examStemAnchorsBlock, examPaperTemplateBlock, requiredPracticalNote,
+    //   stemPreservationNote, sendNote, tierNote, misconceptionBlock,
+    //   subjectSpecNote, ksGcseNote, subjectSpecificRules) return "" under
+    //   common conditions (e.g. KS3 sheets, no SEND, no exam style). Joining
+    //   them with raw newlines used to leave 6–10 blank lines in every
+    //   prompt — wasted input tokens that count against TPM-bound providers
+    //   like Groq and Cerebras. We now filter to non-empty trimmed blocks
+    //   and join with single newlines so the prompt stays compact.
+    const structuredSystemSections: string[] = [
+      `You are an expert UK teacher creating a professional, print-ready worksheet. You respond with valid raw JSON only — no markdown, no code blocks, no HTML. Every rule below is mandatory.`,
+      `SUBJECT TYPE: ${isSTEM ? 'STEM' : 'HUMANITIES'} | SUBJECT: ${params.subject}`,
+      readingAgeNote,
+      sendNote,
+      stemPreservationNote,
+      requiredPracticalNote,
+      subjectSpecNote,
+      tierNote,
+      ksGcseNote,
+      subjectSpecificRules,
+      misconceptionBlock,
+      paperCalcNote,
+      examStemAnchorsBlock,
+      lorBlock,
+      synopticBlock,
+      examPaperTemplateBlock,
+      `QUALITY STANDARD: Every question must be fully usable — no placeholders, no ellipses, no unfinished sentences. Use real numbers, real contexts. Textbook quality. Every question must be at the correct curriculum level for ${params.yearGroup || 'the year group'} — GCSE/KS3/KS4 standard as appropriate.`,
+      specExamples,
+    ].map(s => (typeof s === 'string' ? s.trim() : '')).filter(Boolean);
+
+    const structuredSystem = `${structuredSystemSections.join('\n')}
 PB1 — PER-QUESTION PROVENANCE (mandatory for Year 9, 10, 11 sheets — optional for KS3/KS2):
 Stamp every question section (any section whose type starts with "q-", "challenge", "extended-answer", "lor", or "exam-question") with these structured fields ALONGSIDE the existing content/marks fields:
 - "ao": one of "AO1", "AO2", "AO3", "AO4". Knowledge / recall = AO1. Application / explain / calculate = AO2. Analyse / evaluate / extended reasoning = AO3. Practical or skill questions (where the spec defines AO4) = AO4.
@@ -2727,34 +2754,68 @@ CRITICAL STRUCTURE RULE: ALL questions come ONLY from Section A (True/False, MCQ
     // Always add Teacher Key (teacher only)
     structuredSections.push(`{"title": "Teacher Key", "type": "mark-scheme", "teacherOnly": true, "content": "TEACHER KEY — TEACHER USE ONLY\n\nWrite a COMPLETE model answer for EVERY question above. No placeholders. Include mark allocations. For each section:\n• Retrieval: Q1/Q2/Q3 answers\n• Section A: True/False answers with brief reason; MCQ correct letter + answer; Gap Fill words in order; Match correct pairs\n• Section B: Full model answer per question with mark allocation\n• Section C: Full model answer per question; for extended answers list marking points explicitly\n• Challenge: Full model answer with method/working where required\n${isMaths ? 'Show full working for every calculation: method → substitution → answer → units.' : 'State command word requirement and what a full-mark answer must include.'}"}`);
 
-    const structuredUser = `Create a professional, print-ready worksheet in valid raw JSON only.
-Subject: ${params.subject} | Year: ${params.yearGroup} (${phase}) | Topic: ${params.topic} | Difficulty: ${params.difficulty || "mixed"}
-${examBoardNote}
-${mathsNote}
-${topicEnforcementNote}
-${dataCompletenessNote}
-${params.additionalInstructions ? `\nADDITIONAL REQUIREMENTS (Priority override — must be followed):\n${params.additionalInstructions}\n` : ""}
-
-RULES:
-1. Every question must be COMPLETE and fully usable — no placeholders, no "...", no unfinished sentences.
-2. Use REAL numbers and REAL contexts — never "a number", always "24", "3.7", "Birmingham".
-3. Questions must escalate in difficulty (easiest first, hardest last).
-4. ABSOLUTELY NO EMOJIS anywhere in the output.
-5. No HTML, no markdown, no code fences in content strings.
-6. Each step, question, or item must be on its own line using \n.	1982	${isMaths ? '7. MATHS ONLY: All questions in EVERY section must be 100% calculation-based only. Never ask students to explain, describe, define, or write prose. Every question must require a numerical or algebraic calculation. Use LaTeX for all math expressions.' : ''}PEC QUALITY: Every question must be at genuine ${params.yearGroup} exam standard — use real exam command words (describe, explain, evaluate, calculate, state, identify, compare, justify, analyse). Questions must test the actual curriculum content of "${params.topic}" — not generic or trivially easy questions.
-9. MCQ RULE: Mark the correct MCQ option with \u2713 at the end of that option line ONLY. Do NOT write "CORRECT:", "NOTE:", or any meta-instruction text in the content string — output ONLY the question and four options.
-10. MATCH RULE: Write CORRECT pairs only — each term with its own accurate definition. Do NOT swap or shuffle definitions between terms.
-11. MARK SCHEME RULE: The mark scheme section MUST contain a complete, full answer for every single question. No placeholders. Write actual answers.
-12. VOCAB RULE: Key Vocabulary must contain EXACTLY 5 terms — no more, no fewer.
-13. GAP FILL RULE: The gap fill paragraph MUST contain EXACTLY 7 blanks (shown as _____). Before you finish, count every _____ in your paragraph — if there are fewer than 7, add more sentences until you reach exactly 7. The word bank MUST have EXACTLY 10 words (7 correct answers + 3 distractors).
-${isMaths ? `14. MATHS PROGRESSION RULE (mandatory for every maths worksheet — checked by post-validator):
+    // ── PR #2 (worksheet-gen-efficiency) — gate per-section rules
+    //   Previously the RULES list always included MCQ/MATCH/VOCAB/GAP-FILL
+    //   rules even when those sections weren't emitted (e.g. maths sheets
+    //   never have T/F/MCQ/gap-fill, but the prompt still told the model
+    //   how to format them). Now only the relevant rules ship. Also
+    //   repairs two pre-existing typos in the rule list: a stray
+    //   `\t1982\t` token between rules 6 and 7, and "PEC QUALITY" → "SPEC
+    //   QUALITY" on rule 8.
+    const structuredUserRules: string[] = [
+      `1. Every question must be COMPLETE and fully usable — no placeholders, no "...", no unfinished sentences.`,
+      `2. Use REAL numbers and REAL contexts — never "a number", always "24", "3.7", "Birmingham".`,
+      `3. Questions must escalate in difficulty (easiest first, hardest last).`,
+      `4. ABSOLUTELY NO EMOJIS anywhere in the output.`,
+      `5. No HTML, no markdown, no code fences in content strings.`,
+      `6. Each step, question, or item must be on its own line using \\n.`,
+    ];
+    if (isMaths) {
+      structuredUserRules.push(`7. MATHS ONLY: All questions in EVERY section must be 100% calculation-based only. Never ask students to explain, describe, define, or write prose. Every question must require a numerical or algebraic calculation. Use LaTeX for all math expressions.`);
+    }
+    structuredUserRules.push(
+      `8. SPEC QUALITY: Every question must be at genuine ${params.yearGroup} exam standard — use real exam command words (describe, explain, evaluate, calculate, state, identify, compare, justify, analyse). Questions must test the actual curriculum content of "${params.topic}" — not generic or trivially easy questions.`,
+    );
+    if (wantMCQ && !isMaths) {
+      structuredUserRules.push(`9. MCQ RULE: Mark the correct MCQ option with \\u2713 at the end of that option line ONLY. Do NOT write "CORRECT:", "NOTE:", or any meta-instruction text in the content string — output ONLY the question and four options.`);
+    }
+    structuredUserRules.push(
+      `10. MARK SCHEME RULE: The mark scheme section MUST contain a complete, full answer for every single question. No placeholders. Write actual answers.`,
+    );
+    if (wantKeyVocab) {
+      structuredUserRules.push(`11. VOCAB RULE: Key Vocabulary must contain EXACTLY 5 terms — no more, no fewer.`);
+    }
+    if (wantWordBankGapFill && !isMaths) {
+      structuredUserRules.push(`12. GAP FILL RULE: The gap fill paragraph MUST contain EXACTLY 7 blanks (shown as _____). Before you finish, count every _____ in your paragraph — if there are fewer than 7, add more sentences until you reach exactly 7. The word bank MUST have EXACTLY 10 words (7 correct answers + 3 distractors).`);
+    }
+    if (isMaths) {
+      structuredUserRules.push(
+        `13. MATHS PROGRESSION RULE (mandatory for every maths worksheet — checked by post-validator):
    - Section A is the WARM-UP. Every question is single-step. Numbers are clean (whole numbers, simple fractions). Mark range per Q: 1–2.
    - Section B is HARDER than A. Every question is multi-step (at least one more step than its Section A equivalent). Trickier numbers (decimals, mixed fractions, sign changes). Mark range per Q: 2–3.
    - Section C is HARDER than B. ${/year\s*[7-8]\b/i.test(params.yearGroup || "") ? "Real-world problem-solving (money, recipes, journeys, ratios)." : "Exam-style past-paper-shaped questions matching tier and AO mix."} Mark range per Q: 3–6.
    - Average marks-per-question MUST satisfy strict progression: avg(A) < avg(B) < avg(C). Count and verify before returning.
    - Section C COMMAND WORDS — every question MUST start with one of: Calculate, Work out, Find, Solve, Show that, Prove that, Determine, Hence find, How much, How many, How long, How far. FORBIDDEN: describe, explain, discuss, comment on, compare, evaluate-in-words, justify-in-words, outline, give reasons. Every Section C answer MUST be a number or algebraic value reached by calculation — never an essay.
-15. MATHS-ONLY HARD REMOVALS: Do NOT generate any True/False section, MCQ section (unless explicitly requested), or word-bank/gap-fill section for maths worksheets — these are blocked at the form layer and must not appear under any spec drift.
-` : ""}
+14. MATHS-ONLY HARD REMOVALS: Do NOT generate any True/False section, MCQ section (unless explicitly requested), or word-bank/gap-fill section for maths worksheets — these are blocked at the form layer and must not appear under any spec drift.`,
+      );
+    }
+
+    const structuredUserHeaderLines = [
+      `Create a professional, print-ready worksheet in valid raw JSON only.`,
+      `Subject: ${params.subject} | Year: ${params.yearGroup} (${phase}) | Topic: ${params.topic} | Difficulty: ${params.difficulty || "mixed"}`,
+      examBoardNote,
+      mathsNote,
+      topicEnforcementNote,
+      dataCompletenessNote,
+      params.additionalInstructions
+        ? `\nADDITIONAL REQUIREMENTS (Priority override — must be followed):\n${params.additionalInstructions}\n`
+        : '',
+    ].map(s => (typeof s === 'string' ? s.trim() : '')).filter(Boolean);
+
+    const structuredUser = `${structuredUserHeaderLines.join('\n')}
+
+RULES:
+${structuredUserRules.join('\n')}
 
 Return EXACTLY this JSON (raw JSON only, no markdown fences):
 {
@@ -2772,7 +2833,7 @@ Return EXACTLY this JSON (raw JSON only, no markdown fences):
   }
 }`;
 
-    const { text: structuredText, provider: structuredProvider } = await callAI(structuredSystem, structuredUser, 6500);
+    const { text: structuredText, provider: structuredProvider } = await callAI(structuredSystem, structuredUser, 6500, { responseFormat: "json_object" });
     const structuredCleaned = structuredText.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/i, '').trim();
     let structuredJson: any;
     let structuredParseError: unknown = null;
@@ -3114,7 +3175,7 @@ Return EXACTLY this JSON (raw JSON only):
   // Groq llama-3.3-70b handles 4000 tokens reliably without truncating the JSON closing braces.
   // Going higher risks truncation → parse failure → fallback generator.
   const maxTokensForLength = params.introOnly ? 1800 : (lengthMins >= 60 ? 4000 : lengthMins <= 10 ? 2200 : 3500);
-  const { text, provider } = await callAI(system, user, maxTokensForLength);
+  const { text, provider } = await callAI(system, user, maxTokensForLength, { responseFormat: "json_object" });
   const cleaned = text
     .replace(/^```json\s*/i, "")
     .replace(/^```\s*/i, "")
