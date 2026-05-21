@@ -3046,6 +3046,10 @@ Return EXACTLY this JSON (raw JSON only, no markdown fences):
         // Phase 1 — needed by enforceSpecAnchorPresence to resolve the
         // matching awarding-body taxonomy.
         examBoard: params.examBoard,
+        // Phase 2 — needed by enforceSelfReflectionTopicAnchor so the
+        // builder can anchor reflection statements to the actual topic
+        // and the generic-content detector can verify topic mentions.
+        topic: params.topic,
       });
       // Carry through the original shape — the post-validator preserves every
       // field, it only rewrites content in-place.
@@ -3829,6 +3833,9 @@ Return EXACTLY this JSON (raw JSON only):
       sendNeed: params.sendNeed,
       // Phase 1 — needed by enforceSpecAnchorPresence on the legacy path.
       examBoard: params.examBoard,
+      // Phase 2 — needed by enforceSelfReflectionTopicAnchor on the
+      // legacy path. Same rationale as the structured-path callsite.
+      topic: params.topic,
     },
   );
   const legacyEnforced = enforceSendAdaptations(legacyPostValidated.worksheet, params.sendNeed, { preserveStems: preserveStemsForSend });
