@@ -129,8 +129,29 @@ function WorksheetPreview({ reduced }) {
       onMouseMove={onMove}
       onMouseLeave={onLeave}
       initial={reduced ? false : { opacity: 0, y: 30, scale: 0.96 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ duration: 0.95, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
+      // Continuous "breathing" — a 1.0 ↔ 1.012 pulse on a 6s loop. Small enough
+      // to feel ambient rather than jittery, but enough to signal the card is
+      // alive even when the cursor isn't over it.
+      animate={
+        reduced
+          ? { opacity: 1, y: 0, scale: 1 }
+          : { opacity: 1, y: [30, 0, 0], scale: [0.96, 1.012, 1, 1.012, 1] }
+      }
+      transition={
+        reduced
+          ? { duration: 0.6 }
+          : {
+              opacity: { duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.15 },
+              y: { duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.15 },
+              scale: {
+                duration: 6,
+                times: [0, 0.25, 0.5, 0.75, 1],
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: 1.2, // wait until the entrance settles
+              },
+            }
+      }
       style={{
         transform: `perspective(1400px) rotateX(${tilt.rx}deg) rotateY(${tilt.ry}deg)`,
         transition: "transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)",
@@ -140,14 +161,41 @@ function WorksheetPreview({ reduced }) {
       data-testid="hero-product-preview"
       className="relative w-full max-w-[460px] mx-auto"
     >
-      {/* Soft glow behind the card — picks up the warm orb palette */}
-      <div
+      {/* Soft glow behind the card — picks up the warm orb palette and
+          gently pulses with the breathing motion. */}
+      <motion.div
         aria-hidden
-        className="absolute -inset-8 rounded-[3rem] bg-gradient-to-br from-terracotta/30 via-honey/15 to-sage/20 blur-3xl opacity-70 pointer-events-none"
+        className="absolute -inset-8 rounded-[3rem] bg-gradient-to-br from-terracotta/30 via-honey/15 to-sage/20 blur-3xl pointer-events-none"
+        animate={reduced ? { opacity: 0.7 } : { opacity: [0.55, 0.85, 0.55] }}
+        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 1.2 }}
       />
 
       {/* Browser frame */}
       <div className="relative rounded-[1.75rem] bg-cream-50 shadow-[0_40px_100px_-30px_rgba(0,0,0,0.55)] ring-1 ring-white/10 overflow-hidden">
+        {/* Periodic glass shimmer — a diagonal highlight band that sweeps
+            across the whole card every 7s. Pure CSS gradient + motion.div
+            translateX so it's GPU-friendly. Off entirely under reduced-motion.
+            Pointer-events disabled so it never intercepts hover. */}
+        {!reduced && (
+          <motion.div
+            aria-hidden
+            className="absolute inset-0 pointer-events-none z-10"
+            style={{
+              background:
+                "linear-gradient(115deg, transparent 35%, rgba(255,255,255,0.55) 50%, transparent 65%)",
+              mixBlendMode: "overlay",
+            }}
+            initial={{ x: "-120%" }}
+            animate={{ x: ["-120%", "120%"] }}
+            transition={{
+              duration: 1.4,
+              repeat: Infinity,
+              repeatDelay: 5.6,
+              ease: "easeInOut",
+              delay: 2.0,
+            }}
+          />
+        )}
         {/* Top chrome */}
         <div className="flex items-center gap-2 px-4 py-3 border-b border-ink-900/10 bg-cream-100">
           <span className="w-2.5 h-2.5 rounded-full bg-[#FF5F57]" />
@@ -175,9 +223,10 @@ function WorksheetPreview({ reduced }) {
             </span>
           </div>
 
-          {/* Question list */}
+          {/* Question list — answer lines reveal in sequence after the card
+              lands, mimicking a teacher watching Adaptly fill them in. */}
           <div className="space-y-4">
-            {PREVIEW.questions.map((q) => (
+            {PREVIEW.questions.map((q, qi) => (
               <div key={q.n} className="text-[13px] leading-relaxed text-ink-900">
                 <p className="font-medium">
                   <span className="text-terracotta mr-1">{q.n}.</span>
@@ -185,7 +234,19 @@ function WorksheetPreview({ reduced }) {
                 </p>
                 <div className="mt-2 space-y-2">
                   {Array.from({ length: q.lines }).map((_, i) => (
-                    <span key={i} className="block h-px bg-ink-900/15" />
+                    <motion.span
+                      key={i}
+                      className="block h-px bg-ink-900/15 origin-left"
+                      initial={reduced ? false : { scaleX: 0, opacity: 0.4 }}
+                      animate={{ scaleX: 1, opacity: 1 }}
+                      transition={{
+                        // Stagger across both questions so the eye sees the
+                        // lines being "drawn" left-to-right.
+                        duration: 0.7,
+                        ease: [0.22, 1, 0.36, 1],
+                        delay: 1.05 + qi * 0.35 + i * 0.18,
+                      }}
+                    />
                   ))}
                 </div>
               </div>
@@ -204,7 +265,16 @@ function WorksheetPreview({ reduced }) {
         {/* Bottom action bar */}
         <div className="flex items-center justify-between gap-2 px-5 py-3 border-t border-ink-900/10 bg-cream-50">
           <div className="flex items-center gap-1.5 text-[10px] text-ink-500">
-            <CheckCircle2 size={12} className="text-sage" />
+            {/* Auto-save dot pulse — signals the worksheet is "live". */}
+            <motion.span
+              aria-hidden
+              className="relative flex w-2 h-2"
+              animate={reduced ? {} : { opacity: [0.6, 1, 0.6] }}
+              transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
+            >
+              <span className="absolute inset-0 rounded-full bg-sage/60 blur-[2px]" />
+              <span className="relative inline-block w-2 h-2 rounded-full bg-sage" />
+            </motion.span>
             <span>Auto-saved · 2 sec ago</span>
           </div>
           <div className="flex items-center gap-1.5">
@@ -363,19 +433,41 @@ export default function Hero() {
           >
             Step through.<br />
             Teach{" "}
-            <span
-              className="font-display italic"
+            <motion.span
+              className="font-display italic inline-block"
               style={{
+                // 200%-wide gradient → background-position animation slides
+                // the warm honey/terracotta highlight across the word in a
+                // perpetual but unhurried 6s loop. Reduced-motion users get
+                // a static gradient at 0% position.
                 background:
-                  "linear-gradient(95deg, #E5B96E 0%, #D96C4A 55%, #E5B96E 100%)",
+                  "linear-gradient(95deg, #E5B96E 0%, #D96C4A 30%, #F4D9A8 50%, #D96C4A 70%, #E5B96E 100%)",
+                backgroundSize: "220% 100%",
                 WebkitBackgroundClip: "text",
                 backgroundClip: "text",
                 color: "transparent",
                 fontWeight: 400,
               }}
+              animate={
+                reduced
+                  ? { backgroundPosition: "0% 50%" }
+                  : { backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"] }
+              }
+              transition={
+                reduced
+                  ? { duration: 0 }
+                  : {
+                      duration: 6,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                      // Wait for the headline's own entrance to finish so the
+                      // sweep doesn't fight the rise-up.
+                      delay: 0.9,
+                    }
+              }
             >
               smarter.
-            </span>
+            </motion.span>
           </motion.h1>
 
           {/* Subhead */}
