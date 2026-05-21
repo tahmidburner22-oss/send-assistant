@@ -107,6 +107,26 @@ import { applyQuestionProvenance } from './questionProvenance';
 // metadata.postValidatorWarnings. No-op for non-maths subjects.
 import { applyMathsVerification } from './mathsVerifier';
 
+// ─── Phase 1 — Curriculum-aligned structure ─────────────────────────────────
+// Single source of truth for per-section question counts (7-7-5 + 1) and
+// the marks → answer-lines ramp. Imported here so the prompt always asks
+// the AI for the same counts the plan builder, post-validator and renderer
+// expect — no more drift between literals across files.
+import {
+  SECTION_QUESTION_TARGETS,
+  TOTAL_QUESTIONS_TARGET,
+} from './worksheetSectionTargets';
+
+// Phase 1 — UK awarding-body spec-point taxonomy. Used to inject a
+// curated list of valid specRef values for the topic so the AI cannot
+// invent spec codes; it must pick from the published list (or leave the
+// field blank for the post-validator to fill).
+import {
+  getSpecPoints,
+  getSpecPointsAcrossBoards,
+  type ExamBoard as TaxonomyExamBoard,
+} from './specPointTaxonomy';
+
 // ─── Phase 4 — Misconception bank ──────────────────────────────────────────
 // UK-curriculum misconception library. Injected into the worksheet system
 // prompt so questions diagnose common pupil errors, not just test recall.
@@ -1486,6 +1506,55 @@ MARK ALLOCATION RULE (mandatory): Every question section MUST include an explici
   const subjectFragments = buildSubjectPromptFragments(params.subject);
   const subjectSpecNote = `${subjectFragments.specAnchorBlock}\n\n${subjectFragments.domainRulesBlock}`;
 
+  // ── Phase 1 — Spec-point anchor (curriculum + GCSE spec lock) ────────────
+  // Pulls the published list of spec points for (board, subject, year) from
+  // specPointTaxonomy.ts and tells the AI: "these are the only valid
+  // specRef values you may stamp on questions; do not invent codes". When
+  // the topic is in a known dataset (e.g. AQA Maths Y10) we narrow further
+  // to the rows whose specTitle overlaps with the topic; otherwise we list
+  // up to ~12 spec points so the AI has at least a curated whitelist.
+  const specPointAnchorBlock = (() => {
+    if (!params.subject || !params.yearGroup) return "";
+    const boardKey = (params.examBoard || "").toLowerCase().replace(/\s+/g, "") as TaxonomyExamBoard;
+    let dataset = boardKey ? getSpecPoints(boardKey, params.subject, params.yearGroup) : null;
+    let pool = dataset?.specPoints || [];
+    if (pool.length === 0) {
+      // Fallback: union across boards for this subject/year. Keeps the
+      // AI grounded even when the school's specific board isn't bundled.
+      pool = getSpecPointsAcrossBoards(params.subject, params.yearGroup);
+    }
+    if (pool.length === 0) return "";
+    const topicLc = (params.topic || "").toLowerCase();
+    const subtopicLc = (params.subtopic || "").toLowerCase();
+    const matched = topicLc
+      ? pool.filter(sp => {
+          const title = sp.specTitle.toLowerCase();
+          return (
+            title.includes(topicLc) ||
+            topicLc.includes(title) ||
+            (subtopicLc && (title.includes(subtopicLc) || subtopicLc.includes(title)))
+          );
+        })
+      : [];
+    const finalSet = (matched.length > 0 ? matched : pool).slice(0, 12);
+    const lines = finalSet.map(sp => {
+      const tier = sp.tier && sp.tier !== "both" ? ` [${sp.tier}]` : "";
+      const ao = sp.ao ? ` (${sp.ao})` : "";
+      return `  - ${sp.specRef}: ${sp.specTitle}${tier}${ao}`;
+    });
+    const boardLabel = dataset?.board?.toUpperCase()
+      ?? (boardKey ? boardKey.toUpperCase() : "MULTI-BOARD");
+    return `CURRICULUM + SPEC LOCK — these are the ONLY valid specRef values for this worksheet:
+Board: ${boardLabel} | Subject: ${params.subject} | ${params.yearGroup} | Topic: ${params.topic || "(unspecified)"}
+${lines.join("\n")}
+
+Rules:
+- Every question section MUST stamp a "specRef" matching one of the codes above EXACTLY (e.g. "${finalSet[0]?.specRef ?? "N1"}"). Never invent a spec code.
+- Every question section MUST stamp an "ncRef" — the verbatim National Curriculum Programme-of-Study statement this question assesses (gov.uk Programmes of Study). Quote the wording, do not paraphrase.
+- If you cannot match a published spec point, leave specRef as an empty string — the post-validator will fill the closest match. Do NOT fabricate a code.
+- Source whitelist for facts, dates, equations, statutes, mark-scheme conventions: gov.uk Programmes of Study, the named exam board's published specification + assessment objectives + mark schemes, BBC Bitesize, Oak National Academy. No other sources.`;
+  })();
+
   // ── Difficulty tier (secondary only) ─────────────────────────────────────
   const isSecondary = yearNum >= 7;
   const difficultyTier = params.difficulty || "mixed";
@@ -2434,6 +2503,7 @@ SUBJECT-SPECIFIC RULES — ${params.subject.toUpperCase()}:
       stemPreservationNote,
       requiredPracticalNote,
       subjectSpecNote,
+      specPointAnchorBlock,
       tierNote,
       ksGcseNote,
       subjectSpecificRules,
@@ -2443,7 +2513,36 @@ SUBJECT-SPECIFIC RULES — ${params.subject.toUpperCase()}:
       lorBlock,
       synopticBlock,
       examPaperTemplateBlock,
-      `QUALITY STANDARD: Every question must be fully usable — no placeholders, no ellipses, no unfinished sentences. Use real numbers, real contexts. Textbook quality. Every question must be at the correct curriculum level for ${params.yearGroup || 'the year group'} — GCSE/KS3/KS4 standard as appropriate.`,
+      // Phase 1 — section-count contract (7-7-5 + 1). Single source of truth
+      // for the question counts every other layer expects.
+      `SECTION QUESTION COUNTS — you must hit exactly:
+- SECTION 1 — RECALL: ${SECTION_QUESTION_TARGETS.recall.target} questions (acceptable range ${SECTION_QUESTION_TARGETS.recall.min}–${SECTION_QUESTION_TARGETS.recall.max}).
+  AO1 dominant. 1–2 marks each. Layouts: True/False, MCQ, gap-fill, matching, ordering, short-answer.
+- SECTION 2 — UNDERSTANDING: ${SECTION_QUESTION_TARGETS.understanding.target} questions (acceptable range ${SECTION_QUESTION_TARGETS.understanding.min}–${SECTION_QUESTION_TARGETS.understanding.max}).
+  AO1/AO2 mix. 2–4 marks each. Multi-step on at least 4 of the 7. Layouts: label-diagram, gap-fill, diagram-subquestions, table-complete, short-answer.
+- SECTION 3 — APPLICATION: ${SECTION_QUESTION_TARGETS.application.target} exam-style questions (fixed).
+  AO2/AO3 dominant. 4–8 marks each. At least one in an unfamiliar context. At least one calculation / "show that" question on STEM sheets.
+  Layouts: extended-answer, diagram-subquestions, draw-box.
+- CHALLENGE: ${SECTION_QUESTION_TARGETS.challenge.target} question (6–8 marks; grade 8–9 demand on Higher).
+- TOTAL: ${TOTAL_QUESTIONS_TARGET} questions across the worksheet. Number them 1..${TOTAL_QUESTIONS_TARGET} with the "questionNumber" field.`,
+      // Phase 1 — per-question contract that drives the renderer's per-Q
+      // answer affordances (lines + working-out box) and the curriculum
+      // post-validator.
+      `PER-QUESTION CONTRACT — every question section (any section whose type starts with "q-", or is "challenge" / "extended-answer" / "lor" / "exam-question") MUST carry:
+- "questionNumber" (int 1..${TOTAL_QUESTIONS_TARGET}): the question's position on the worksheet.
+- "marks" (int): mark tariff. Match the section ranges above. Always include "[N marks]" inline at the end of the stem so the renderer can position the badge.
+- "answerLines" (int): writing lines the renderer should draw per question. Use this ramp:
+    1m → 2 lines       2m → 3 lines       3m → 4 lines       4m → 6 lines
+    5–6m → 8 lines     7–8m → 12 lines    9+m → 14 lines
+    True/False, MCQ, gap-fill, matching, ordering, label-diagram, table → 0 (the layout owns the answer affordance).
+- "commandWord": the exam-board command word that opens the stem (Calculate, Explain, Describe, Evaluate, Compare, Justify, State, Identify, Show that, Analyse, Discuss). Match the named board's command-word list (AQA / Pearson Edexcel / OCR / WJEC-Eduqas / CCEA). Do NOT soften ("Talk about", "Have a think about" — banned).
+- "workingOutBox" (boolean): MATHS ONLY. Set true on maths Application questions and any maths "calculate / work out / show that / find the value / solve / evaluate <number>" stem so the renderer prepends a dot-grid working area and a "Final answer:" capped row. Set FALSE on Science (Physics / Chemistry / Biology / Combined Science), English, Humanities, MFL, and any extended-writing question — sciences use standard writing lines sized by mark tariff (the dot-grid is a maths-specific affordance).
+- "specRef": one of the published codes listed in the SPEC LOCK block above. Never invent.
+- "ncRef": verbatim National Curriculum Programme-of-Study statement (gov.uk).
+- "ao": "AO1" | "AO2" | "AO3" | "AO4". Match the cognitive demand.
+- "bloomLevel": "remember" | "understand" | "apply" | "analyse" | "evaluate" | "create".
+- "expectedReadingAge": integer 5–18 matched to ${params.yearGroup || 'the year group'} (Y9 ≈ 13, Y10 ≈ 14, Y11 ≈ 15) unless a SEND overlay lowers it.`,
+      `QUALITY STANDARD: Every question must be fully usable — no placeholders, no ellipses, no unfinished sentences. Use real numbers, real contexts. Textbook quality. Every question must be at the correct curriculum level for ${params.yearGroup || 'the year group'} — GCSE/KS3/KS4 standard as appropriate. Questions must be traceable to the NC Programme-of-Study + the named exam-board specification — do not invent content the curriculum does not assess.`,
       specExamples,
     ].map(s => (typeof s === 'string' ? s.trim() : '')).filter(Boolean);
 

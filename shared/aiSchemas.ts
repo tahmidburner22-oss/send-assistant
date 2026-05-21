@@ -72,6 +72,25 @@ export const WorksheetSectionSchema = z.object({
   expectedReadingAge: z.number().min(5).max(18).optional(),
   /** PB1 — Optional source citation (e.g. past paper year). */
   sourceCitation: z.string().max(300).optional(),
+  // ── Phase 1 — Curriculum-aligned structure fields ─────────────────────────
+  /** Phase 1 — Number of writing lines the renderer should emit for this
+   *  question. When omitted the renderer falls back to linesForMarks(marks). */
+  answerLines: z.number().int().min(0).max(40).optional(),
+  /** Phase 1 — UK exam-board command word that opens the stem
+   *  (e.g. "Calculate", "Explain", "Evaluate", "Describe"). */
+  commandWord: z.string().max(40).optional(),
+  /** Phase 1 — National Curriculum Programme-of-Study reference, verbatim
+   *  where possible (e.g. "KS4 Mathematics — Algebra A4: Simplify and
+   *  manipulate algebraic expressions"). Distinct from `specRef` which is
+   *  the awarding-body spec point. */
+  ncRef: z.string().max(300).optional(),
+  /** Phase 1 — When true, the renderer prepends a dot-grid working-out box
+   *  ABOVE the answer lines and a single capped "Final answer:" row BELOW.
+   *  Used for maths / science calculation questions. */
+  workingOutBox: z.boolean().optional(),
+  /** Phase 1 — 1-based question number within the worksheet (1..20 for a
+   *  standard secondary sheet). Set by the AI; validated by the post-validator. */
+  questionNumber: z.number().int().min(1).max(40).optional(),
 });
 
 export type WorksheetSection = z.infer<typeof WorksheetSectionSchema>;

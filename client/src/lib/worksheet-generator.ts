@@ -1,5 +1,9 @@
 import { sendNeeds, examBoards } from "./send-data";
 import { expandedMathTopics } from './mathTopicsExpanded';
+import {
+  SECTION_QUESTION_TARGETS,
+  PRIMARY_SECTION_QUESTION_TARGETS,
+} from "./worksheetSectionTargets";
 
 interface WorksheetParams {
   subject: string;
@@ -55,6 +59,24 @@ export interface WorksheetSection {
   altText?: string;            // spec §8.3 — accessibility alt text for diagram sections
   layoutFamily?: string;       // layout hint for renderer
   marks?: number;
+  // ── Phase 1 — Curriculum-aligned structure fields ───────────────────────
+  /** 1-based question number within the worksheet (1..20 secondary). */
+  questionNumber?: number;
+  /** Number of writing lines the renderer should emit for this question.
+   *  When omitted, falls back to linesForMarks(marks). */
+  answerLines?: number;
+  /** UK exam-board command word that opens the stem (Calculate, Explain …). */
+  commandWord?: string;
+  /** National Curriculum Programme-of-Study reference, verbatim where
+   *  possible. Distinct from `specRef` (awarding-body spec point). */
+  ncRef?: string;
+  /** When true, the renderer prepends a dot-grid working-out box ABOVE the
+   *  answer lines and a single capped "Final answer:" row BELOW. */
+  workingOutBox?: boolean;
+  /** Awarding-body spec point reference (e.g. "AQA 8300 N3"). */
+  specRef?: string;
+  /** Assessment Objective tag (AO1–AO4). */
+  ao?: "AO1" | "AO2" | "AO3" | "AO4";
 }
 
 // ── QA scorecard weights (spec §29) ──────────────────────────────────────────
@@ -2385,16 +2407,24 @@ export function generateWorksheet(params: WorksheetParams): GeneratedWorksheet {
   interface PlanEntry { section: string; layout: LayoutFamily; marks: number; requiresDiagram: boolean; }
   const questionPlan: PlanEntry[] = [];
 
+  // Phase 1 (curriculum-aligned structure): per-section question counts
+  // come from the central SECTION_QUESTION_TARGETS table so a teacher-driven
+  // change to "make Recall 8 questions" is one edit and the AI prompt,
+  // plan validator, and renderer all stay in sync.
+  const secTargets = isPrimary
+    ? PRIMARY_SECTION_QUESTION_TARGETS
+    : SECTION_QUESTION_TARGETS;
+
   const sectionDefs = isPrimary
     ? [
-        { key: "recall",      qs: 3 },
-        { key: "understanding", qs: 3 },
-        { key: "application", qs: 3 },
+        { key: "recall",        qs: secTargets.recall.target },
+        { key: "understanding", qs: secTargets.understanding.target },
+        { key: "application",   qs: secTargets.application.target },
       ]
     : [
-        { key: "recall",      qs: 3 },
-        { key: "understanding", qs: 3 },
-        { key: "application", qs: 3 },
+        { key: "recall",        qs: secTargets.recall.target },
+        { key: "understanding", qs: secTargets.understanding.target },
+        { key: "application",   qs: secTargets.application.target },
       ];
 
   for (const sec of sectionDefs) {
