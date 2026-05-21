@@ -12,6 +12,13 @@
  *   page-fit-check → accessibility-check → lock-output
  */
 
+import {
+  SECTION_QUESTION_TARGETS,
+  PRIMARY_SECTION_QUESTION_TARGETS,
+  TOTAL_QUESTIONS_HARD_CAP,
+  getSectionQuestionRange,
+} from "./worksheetSectionTargets";
+
 // ─────────────────────────────────────────────────────────────────────────────
 // TYPES
 // ─────────────────────────────────────────────────────────────────────────────
@@ -206,6 +213,18 @@ const SECTION_ALLOWED_LAYOUTS: Record<string, LayoutFamily[]> = {
 // PLANNER — builds a locked WorksheetPlan before any content is generated
 // ─────────────────────────────────────────────────────────────────────────────
 
+/**
+ * Build an inclusive integer range as an array. Used to translate
+ * SECTION_QUESTION_TARGETS (firstQ..lastQ) into the `qs: number[]` shape
+ * the existing planner consumes.
+ */
+function rangeArray(first: number, last: number): number[] {
+  if (!Number.isFinite(first) || !Number.isFinite(last) || last < first) return [];
+  const out: number[] = [];
+  for (let i = first; i <= last; i++) out.push(i);
+  return out;
+}
+
 export function buildWorksheetPlan(
   subject: string,
   topic: string,
@@ -230,16 +249,40 @@ export function buildWorksheetPlan(
     yearNum <= 11 ? "50–60 mins" : "60–75 mins";
 
   // Pick section structure
+  // Phase 1 (curriculum-aligned structure): question counts come from
+  // SECTION_QUESTION_TARGETS. Secondary worksheets use 7-7-5 + 1 challenge
+  // = 20 questions; primary keeps 3-3-3 (or up to 4 each) because page
+  // density and reading load are different at KS1/KS2.
+  const recallTargets = isPrimary
+    ? PRIMARY_SECTION_QUESTION_TARGETS.recall
+    : SECTION_QUESTION_TARGETS.recall;
+  const understandingTargets = isPrimary
+    ? PRIMARY_SECTION_QUESTION_TARGETS.understanding
+    : SECTION_QUESTION_TARGETS.understanding;
+  const applicationTargets = isPrimary
+    ? PRIMARY_SECTION_QUESTION_TARGETS.application
+    : SECTION_QUESTION_TARGETS.application;
+
+  const recallRange = getSectionQuestionRange("recall", isPrimary);
+  const understandingRange = getSectionQuestionRange("understanding", isPrimary);
+  const applicationRange = getSectionQuestionRange("application", isPrimary);
+
+  const recallQs        = rangeArray(recallRange.firstQ,        recallRange.lastQ);
+  const understandingQs = rangeArray(understandingRange.firstQ, understandingRange.lastQ);
+  const applicationQs   = rangeArray(applicationRange.firstQ,   applicationRange.lastQ);
+
+  void recallTargets; void understandingTargets; void applicationTargets;
+
   const sectionDefs = isPrimary
     ? [
-        { key: "recall",      heading: "SECTION A — REMEMBER",    bloom: "remember"  as BloomLevel, qs: [1,2,3] },
-        { key: "understanding",heading: "SECTION B — UNDERSTAND", bloom: "understand" as BloomLevel, qs: [4,5,6] },
-        { key: "application", heading: "SECTION C — APPLY",       bloom: "apply"     as BloomLevel, qs: [7,8,9] },
+        { key: "recall",        heading: "SECTION A — REMEMBER",     bloom: "remember"   as BloomLevel, qs: recallQs },
+        { key: "understanding", heading: "SECTION B — UNDERSTAND",   bloom: "understand" as BloomLevel, qs: understandingQs },
+        { key: "application",   heading: "SECTION C — APPLY",        bloom: "apply"      as BloomLevel, qs: applicationQs },
       ]
     : [
-        { key: "recall",      heading: "SECTION 1 — RECALL",        bloom: "remember"  as BloomLevel, qs: [1,2,3] },
-        { key: "understanding",heading: "SECTION 2 — UNDERSTANDING",        bloom: "understand" as BloomLevel, qs: [4,5,6] },
-        { key: "application", heading: "SECTION 3 — APPLICATION & ANALYSIS",bloom: "apply"     as BloomLevel, qs: [7,8,9] },
+        { key: "recall",        heading: "SECTION 1 — RECALL",                   bloom: "remember"   as BloomLevel, qs: recallQs },
+        { key: "understanding", heading: "SECTION 2 — UNDERSTANDING",            bloom: "understand" as BloomLevel, qs: understandingQs },
+        { key: "application",   heading: "SECTION 3 — APPLICATION & ANALYSIS",   bloom: "apply"      as BloomLevel, qs: applicationQs },
       ];
 
   // Build question plans with layout assignment
@@ -276,7 +319,7 @@ export function buildWorksheetPlan(
       name: "challenge",
       heading: "★ CHALLENGE",
       bloomLevel: "evaluate",
-      questionRange: "Question 10",
+      questionRange: `Question ${questionId}`,
       questions: [challengeLayout],
     });
   }
@@ -451,10 +494,11 @@ export function validateWorksheetPlan(plan: WorksheetPlan): ValidationResult {
   }
 
   // ── Question count limits ─────────────────────────────────────────────────
-  if (allQuestions.length > 10) {
+  // ── Question count limits (Phase 1: lifted from 10 → TOTAL_QUESTIONS_HARD_CAP) ──
+  if (allQuestions.length > TOTAL_QUESTIONS_HARD_CAP) {
     errors.push({
       code: "TOO_MANY_QUESTIONS",
-      message: `${allQuestions.length} questions exceeds maximum of 10.`,
+      message: `${allQuestions.length} questions exceeds maximum of ${TOTAL_QUESTIONS_HARD_CAP}.`,
       fix: "regenerate_plan",
     });
   }
