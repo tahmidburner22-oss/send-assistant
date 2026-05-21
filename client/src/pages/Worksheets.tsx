@@ -784,6 +784,20 @@ export default function Worksheets() {
     if (!subject || !yearGroup) return [];
     return getSyllabusTopics(subject, yearGroup);
   }, [subject, yearGroup]);
+
+  // Topic combobox bug fix (audit): if a topic value is set (e.g. via URL
+  // prefill, curriculum-progression chip, or saved preset) but it is NOT one
+  // of the current syllabus topics, switch the picker into custom-input mode
+  // so the user can see and edit their typed value. Without this the Select
+  // renders with no selection and the typed topic is invisible — exactly the
+  // "Macbeth defaults back to Descriptive Writing" symptom flagged in the
+  // audit.
+  useEffect(() => {
+    if (!topic) return;
+    if (!syllabusTopics.length) return;
+    const isInList = syllabusTopics.some(st => st.topic === topic);
+    if (!isInList) setShowTopicSuggestions(true);
+  }, [topic, syllabusTopics]);
   const [useAI, setUseAI] = useState(true);
 
   const [loading, setLoading] = useState(false);
@@ -4275,8 +4289,34 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                   <Label className="text-xs font-medium">Topic *</Label>
                   {syllabusTopics.length > 0 ? (
                     <div className="space-y-1">
-                      <Select value={topic} onValueChange={(val) => { if (val === "__custom__") { setTopic(""); setShowTopicSuggestions(true); } else { setTopic(val); setShowTopicSuggestions(false); } }}>
-                        <SelectTrigger className="h-10"><SelectValue placeholder="Select a curriculum topic" /></SelectTrigger>
+                      {/*
+                       * Topic combobox bug fix: when the user picks "Enter custom topic..."
+                       * the Select used to remain mounted with `value={topic}`. As soon as
+                       * the typed value (e.g. "Macbeth") didn't match any SelectItem, Radix
+                       * would silently revert `topic` back to the previous list value on
+                       * the next reconcile — the bug flagged in the audit ("Macbeth input
+                       * defaulted back to Descriptive Writing"). Fix: render the Input
+                       * INSTEAD OF the Select while in custom mode, and keep the Select's
+                       * value bound only when `topic` is one of its known options.
+                       */}
+                      {showTopicSuggestions ? (
+                        <Input
+                          value={topic}
+                          onChange={e => setTopic(e.target.value)}
+                          placeholder="Type your custom topic (e.g. Macbeth Act 1 Scene 5)..."
+                          className="h-10"
+                          autoFocus
+                          onBlur={() => { if (!topic.trim()) setShowTopicSuggestions(false); }}
+                        />
+                      ) : (
+                        <Select
+                          value={syllabusTopics.some(st => st.topic === topic) ? topic : ""}
+                          onValueChange={(val) => {
+                            if (val === "__custom__") { setTopic(""); setShowTopicSuggestions(true); }
+                            else { setTopic(val); setShowTopicSuggestions(false); }
+                          }}
+                        >
+                          <SelectTrigger className="h-10"><SelectValue placeholder="Select a curriculum topic" /></SelectTrigger>
                         <SelectContent className="max-h-64">
                           {(() => {
                             const useKsGroups = subject === 'mathematics' || subject === 'science';
@@ -4336,8 +4376,15 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                           })()}
                         </SelectContent>
                       </Select>
+                      )}
                       {showTopicSuggestions && (
-                        <Input value={topic} onChange={e => setTopic(e.target.value)} placeholder="Type your custom topic..." className="h-10" autoFocus />
+                        <button
+                          type="button"
+                          onClick={() => setShowTopicSuggestions(false)}
+                          className="text-[10px] text-muted-foreground hover:text-foreground underline"
+                        >
+                          ← Back to curriculum topics
+                        </button>
                       )}
                     </div>
                   ) : (

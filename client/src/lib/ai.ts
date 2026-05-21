@@ -79,6 +79,7 @@ import { applyMathsProgressionAudit } from './mathsProgressionAudit';
 // mistake block has the four labelled parts AND ≥2 numeric tokens in the
 // wrong-working line. No-op for non-maths.
 import { applyCommonMistakesAudit, applyCommonMistakesActiveRegenerate, type CommonMistakesRegenerator } from './commonMistakesValidator';
+import { findExtract as findSourceExtract, renderExtractForPrompt } from './sourceTextLibrary';
 
 // FEAT-PC9 — Required Practical / Working-Scientifically bank. Curated UK
 // GCSE practicals with spec codes, real variables, sample data and
@@ -534,7 +535,8 @@ export async function callAIMessages(
 
   try {
     const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
-    const timeoutId = controller ? window.setTimeout(() => controller.abort(), 55000) : null;
+    // Bumped from 55s → 90s — see callAI() for rationale. Keeps both paths in sync.
+    const timeoutId = controller ? window.setTimeout(() => controller.abort(), 90000) : null;
     const res = await fetch("/api/ai/generate", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -577,7 +579,12 @@ export async function callAI(
   try {
     const reqHeaders: Record<string, string> = { "Content-Type": "application/json" };
     const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
-    const timeoutMs = 55000; // 55s — just under Railway's 60s limit; triggers fast retry instead of hanging
+    // Bumped from 55s → 90s so Extended-difficulty / long worksheets don't get
+    // killed mid-fallback. The server cycles through up to ~14 providers each
+    // with their own 12–20s timeout; with cooldowns the realistic worst-case
+    // is ~70s. 90s gives the chain enough headroom to finish before the
+    // client aborts. (Audit fix: "Groq Timeouts on Extended difficulty".)
+    const timeoutMs = 90000;
     const timeoutId = controller ? window.setTimeout(() => controller.abort(), timeoutMs) : null;
     const res = await fetch("/api/ai/generate", {
       method: "POST",
@@ -1559,7 +1566,7 @@ MARK ALLOCATION RULE (mandatory): Every question section MUST include an explici
     if (/expand|bracket/.test(t)) return "expanding single, double and triple brackets; collecting like terms";
     if (/factori[sz]/.test(t)) return "factorising linear expressions; factorising quadratics (including a>1); difference of two squares";
     if (/solv.*equation|linear equation|equations/.test(t)) return "solving linear equations (1-step, 2-step, with brackets, with unknowns both sides, fractions)";
-    if (/quadratic/.test(t)) return "solving quadratics by factorising, completing the square, and the quadratic formula";
+    if (/quadratic/.test(t)) return "solving quadratics by factorising, completing the square, and the quadratic formula; using the discriminant b\u00b2\u22124ac to determine the number of real roots; finding roots from a sketched or plotted parabola (graphical solutions, AQA A18)";
     if (/simultaneous/.test(t)) return "solving simultaneous equations by substitution and elimination; solving one linear + one quadratic";
     if (/inequalit/.test(t)) return "solving linear inequalities; representing solutions on a number line; quadratic inequalities";
     if (/sequence|nth term/.test(t)) return "finding the nth term of a linear sequence; quadratic sequences; Fibonacci-type sequences";
@@ -1639,6 +1646,15 @@ WORKED EXAMPLE — STRICT FORMAT:
     Step 4 (optional): State the answer with the correct form.
 - For OTHER topics (linear equations, percentages, area, etc.) the same 4-step cap applies — Identify / Substitute / Calculate / Answer — no narrative.
 - NEVER produce a worked example with a mathematical error. Double-check every substitution before emitting.
+${(params.difficulty === 'higher' || params.difficulty === 'stretch') ? `
+EXTENDED-TIER WORKED EXAMPLE — THOUGHT-PROCESS COLUMN (MANDATORY for "${params.yearGroup}" Higher / Extended sheets):
+- Render the worked example as a TWO-COLUMN structure. Left column: the calculation step (as above, max 15 words, LaTeX-wrapped). Right column header: "Thought Process".
+- Each Thought-Process cell answers WHY this method was chosen, not how it works. Examples teachers expect to see:
+    * Quadratics: "Coefficient of \\(x^{2}\\) is 1 and the constant factorises cleanly into a pair that sums to b — factorising is faster than the formula here."
+    * Quadratics: "The discriminant \\(b^{2}-4ac\\) is not a perfect square, so factorising will fail. Use the quadratic formula."
+    * Completing the square: "We need the vertex form \\((x+p)^{2}+q\\) to find the turning point — completing the square is the only method that exposes \\((p, q)\\)."
+- Render the two columns as a markdown-style table OR as paragraph pairs labelled "Step n:" and "Why:". Do NOT collapse to a single column on Extended sheets.
+- This column is REQUIRED on Higher / Extended worksheets and FORBIDDEN on Foundation / Access worksheets (where the simpler 4-step format is correct).` : ''}
 
 PROGRESSION — smooth, not jumpy:
 - Within each section questions escalate in small increments. Do not jump from a 1-step Fluency question straight to a multi-step Problem Solving question inside the same section.
@@ -1706,7 +1722,7 @@ ABSOLUTE RULES:
 1. Every question must START with one of these calculation verbs: Calculate, Work out, Find, Solve, Evaluate, Simplify, Expand, Factorise, Substitute, Show that, Prove, Write, Express, Round.
 2. FORBIDDEN question stems in maths worksheets: "Explain why…", "Describe how…", "Discuss the…", "Give reasons for…", "What is the meaning of…", "In your own words…". These are writing questions — DO NOT use them. EXCEPTION: the FRP reasoning strand allows the specific mathematical command words "Show that", "Prove", "Justify", and "Give a reason" — these are mathematical reasoning, not prose.
 3. Every question must contain REAL NUMBERS or REAL EXPRESSIONS to work with. Not "a number" — always "24", "3.7", "\\(x^{2} + 5x - 14\\)", "(2, 5)", "£85".
-4. Use LaTeX \\(...\\) for ALL expressions: \\(\\dfrac{3}{4}\\) NOT 3/4; \\(x^{2}\\) NOT x²; \\(\\sqrt{16}\\) NOT √16; \\(\\times\\) NOT ×; \\(\\div\\) NOT ÷; \\(\\pi\\) NOT π.
+4. Use LaTeX \\(...\\) for ALL expressions: \\(\\dfrac{3}{4}\\) NOT 3/4; \\(x^{2}\\) NOT x²; \\(\\sqrt{16}\\) NOT √16; \\(\\times\\) NOT ×; \\(\\div\\) NOT ÷; \\(\\pi\\) NOT π. STRICT LATEX RULE: NEVER write x^2, x**2, x squared as plain text — even inside the Common Mistakes section, Teacher Notes, or any prose block. The ONLY accepted form for "x squared" anywhere on the worksheet is \\(x^{2}\\). Same for cubes (\\(x^{3}\\)), square roots (\\(\\sqrt{x}\\)), fractions (\\(\\dfrac{a}{b}\\)) and the quadratic-formula discriminant (\\(b^{2}-4ac\\)). Treat any caret (^) outside math delimiters as a generation error.
 5. NEVER use \\text{} or \\mathrm{} — write units as plain text OUTSIDE math delimiters (e.g. "\\(F = ma\\) where F is in N, m in kg, a in m/s²").
 6. Every answer must be a NUMBER, EXACT FRACTION, SURD, ALGEBRAIC EXPRESSION or COORDINATE — NOT a paragraph of prose. (Reasoning answers are short sentences anchored to a calculation, not free essay.)
 7. Progression: Section 1 (Q1–3) uses single-step calculations with simple numbers; Section 2 (Q4–6) uses multi-step calculations in context; Section 3 (Q7–9) uses exam-style multi-step problems with worded context.
@@ -2227,7 +2243,16 @@ SUBJECT-SPECIFIC RULES — MATHEMATICS:
 - Teacher Key MUST show full working for every calculation, state the method used, and show substitution and simplification steps separately.
 - Ability tier guidance: Foundation = smaller numbers, clear steps, more worked scaffolds. Higher = algebraic generalisation, proof, surds, bounds, compound reasoning.`;
 
-      if (isEnglishLit) return `
+      if (isEnglishLit) {
+        const litExtract = findSourceExtract({
+          subject: params.subject,
+          topic: params.topic,
+          additionalInstructions: params.additionalInstructions,
+        });
+        const extractBlock = litExtract
+          ? `\nCANONICAL EXTRACT — required source text for this worksheet:\n${renderExtractForPrompt(litExtract)}\n\nUSE THIS EXACT WORDING. Do not paraphrase, do not invent your own extract, and do not substitute a different scene. Quote from these line numbers in retrieval and language-analysis questions.\n`
+          : '';
+        return `
 SUBJECT-SPECIFIC RULES — ENGLISH LITERATURE:
 - Every worksheet MUST include: an extract or poem section, a context link, a key quotation focus, methods/language/form/structure analysis, a whole-text connection, and a mini exam-style question.
 - Include a model paragraph with AO breakdown (AO1: ideas, AO2: methods, AO3: context).
@@ -2236,7 +2261,8 @@ SUBJECT-SPECIFIC RULES — ENGLISH LITERATURE:
 - Section C MUST include at least one 8+ mark evaluation question with level descriptors (Level 1-4).
 - Teacher Key MUST include: AO1/AO2/AO3 breakdown, context note, alternative interpretations, and level descriptor guidance.
 - Diagram A = extract, poem or key passage. Diagram B = comparison poem, context timeline, methods bank or model answer annotation.
-- SEND notes: provide quotation banks for dyslexia/working-memory; use context timelines for EAL/SLCN; keep challenge through interpretation, not reading density.`;
+- SEND notes: provide quotation banks for dyslexia/working-memory; use context timelines for EAL/SLCN; keep challenge through interpretation, not reading density.${extractBlock}`;
+      }
 
       if (isEnglishLang) return `
 SUBJECT-SPECIFIC RULES — ENGLISH LANGUAGE:
@@ -2247,7 +2273,21 @@ SUBJECT-SPECIFIC RULES — ENGLISH LANGUAGE:
 - Section C MUST include: (a) an evaluation question, (b) a writing task with a clear purpose and audience.
 - Teacher Key MUST include: model answer features, quotation use, method analysis, and band descriptors for extended questions.
 - Diagram A = source extract with line numbers. Diagram B = writing stimulus image, second source, model answer, or planning frame.
-- SEND notes: dyslexia = avoid dense extracts, increase spacing; EAL = glossary difficult words, avoid idioms in instructions; SLCN = sentence starters and analysis frames; ASC = make questions literal, avoid vague prompts.`;
+- SEND notes: dyslexia = avoid dense extracts, increase spacing; EAL = glossary difficult words, avoid idioms in instructions; SLCN = sentence starters and analysis frames; ASC = make questions literal, avoid vague prompts.
+
+DESCRIPTIVE / NARRATIVE WRITING (AQA Paper 1 Section B, AQA 8700) — STRUCTURAL FRAMEWORK MANDATORY:
+- If the topic is descriptive writing, narrative writing, creative writing, image-based writing, or any AQA Paper 1 §B style task, you MUST teach an explicit structural framework. Pick ONE of the following models and reference it by name in BOTH the planning section and the model paragraph:
+    (a) "Zoom In / Zoom Out" — open with a wide establishing shot, zoom in on one sensory detail, zoom out to a reflective conclusion.
+    (b) "Cinematic Lens" — five short cinematic frames (wide → mid → close-up → close-up → wide), each anchored to a different sense.
+    (c) "Five-Sense Sweep" — one paragraph per sense (sight, sound, smell, touch, taste), with deliberate sentence-length variation.
+- The planning frame MUST give the pupil a labelled outline (e.g. "Para 1 — Zoom Out: …"; "Para 2 — Zoom In: …") so the structure is explicit, not implied.
+- The model paragraph MUST use the chosen framework AND annotate it: tag each sentence with its structural role.
+
+AO5 / AO6 PUNCTUATION VARIETY (MANDATORY for any writing task):
+- AQA AO6 explicitly rewards "a wide range of punctuation accurately used". The worksheet MUST scaffold this — do NOT rely on full stops and commas alone.
+- Sentence-craft / SEND scaffolding panel must include at least three of: colon, semi-colon, dash (em-dash or pair), ellipsis, parenthetical brackets. For each, give a one-line teaching rule and a worked sentence anchored to the topic.
+- The model paragraph MUST contain at least one colon AND one semi-colon (or at minimum one colon and one well-placed dash) — flag them in the teacher annotation.
+- Vocabulary panel must explicitly encourage ambitious lexis (e.g. "embers smouldered", "the silence congealed") rather than generic adjectives. AO5 marks "vocabulary chosen for effect" — make the worksheet train it.`;
 
       if (isBiology) return `
 SUBJECT-SPECIFIC RULES — BIOLOGY:
@@ -2533,7 +2573,12 @@ CRITICAL STRUCTURE RULE: ALL questions come ONLY from Section A (True/False, MCQ
       structuredSections.push(`{"title": "Section A — True or False", "type": "q-true-false", "marks": 4, "content": "Circle TRUE or FALSE for each statement. [4 marks]\n1. [Statement about ${params.topic} \u2014 TRUE]  TRUE  /  FALSE\n2. [Statement about ${params.topic} \u2014 FALSE]  TRUE  /  FALSE\n3. [Statement about ${params.topic} \u2014 TRUE]  TRUE  /  FALSE\n4. [Statement about ${params.topic} \u2014 FALSE]  TRUE  /  FALSE"}`);
     }
 
-    if (wantMCQ) {
+    // PR-M1 / steering: MCQ is hard-removed for maths to match the same
+    //        treatment as True/False (PR-M1) and Word-Bank Gap-Fill (PR-M2).
+    //        Maths sheets must never auto-emit MCQ regardless of any caller's
+    //        selectedSections / saved preset / API state. The form-layer
+    //        toggle is also default-off for maths in Worksheets.tsx.
+    if (wantMCQ && !isMaths) {
       structuredSections.push(`{"title": "Section A — Multiple Choice", "type": "q-mcq", "marks": 1, "content": "[A specific question about ${params.topic} at ${params.yearGroup} curriculum level — use real subject-specific language] [1 mark]\nA  [plausible incorrect option — a common misconception]\nB  [correct answer \u2014 mark with \u2713 at the end of this line] \u2713\nC  [plausible incorrect option]\nD  [plausible incorrect option]"}`);
     }
 
