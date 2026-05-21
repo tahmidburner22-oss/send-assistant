@@ -31,6 +31,8 @@
  *                                steps; later steps are clipped.
  */
 
+import { reconcileMarkScheme } from "./markSchemeReconciler";
+
 export interface PostValidatorSection {
   id?: string;
   type?: string;
@@ -715,6 +717,11 @@ export function runWorksheetPostValidators(
     stripLeakedGeneratorInstructions,
     stripVisiblePlaceholdersAndAnswerLeakage,
     (ws: PostValidatorWorksheet) => reinforceDyscalculiaMathsScaffolding(ws, opts),
+    // PR worksheet-gen-efficiency #7 — deterministic mark-scheme reconciler.
+    // Runs AFTER MCQ/word-bank fixes so we work against sanitised content,
+    // and BEFORE the misconception-link extractor so the mark scheme is
+    // settled before any teacher-facing diagnostics are emitted.
+    (ws: PostValidatorWorksheet) => reconcileMarkScheme(ws, opts),
     // FEAT-PB7 — extract per-MCQ misconception linkage AFTER all other
     // content rewrites so we work against the final, sanitised MCQ text.
     extractMisconceptionLinks,
