@@ -1,0 +1,26 @@
+{
+  "id": "humanities-y10-re-ethics",
+  "title": "Year 10 Religious Education — Religion and life - abortion",
+  "bucket": "humanities",
+  "params": {
+    "subject": "Religious Education",
+    "topic": "Religion and life - abortion",
+    "yearGroup": "Year 10",
+    "examBoard": "AQA",
+    "difficulty": "medium",
+    "includeAnswers": true
+  },
+  "rules": [
+    "mcq-single-correct",
+    "word-bank-deduped",
+    "no-foreign-diagrams",
+    "spec-ref-present",
+    "qa-score-floor",
+    "reading-age-in-range"
+  ],
+  "readingAgeRange": [
+    13,
+    17
+  ],
+  "estimatedTokens": 4000
+}

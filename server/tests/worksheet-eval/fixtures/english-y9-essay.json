@@ -1,0 +1,26 @@
+{
+  "id": "english-y9-essay",
+  "title": "Year 9 English — Persuasive essay structure",
+  "bucket": "english",
+  "params": {
+    "subject": "English",
+    "topic": "Persuasive essay structure",
+    "yearGroup": "Year 9",
+    "examBoard": "Edexcel",
+    "difficulty": "medium",
+    "includeAnswers": true
+  },
+  "rules": [
+    "mcq-single-correct",
+    "word-bank-deduped",
+    "no-foreign-diagrams",
+    "spec-ref-present",
+    "qa-score-floor",
+    "reading-age-in-range"
+  ],
+  "readingAgeRange": [
+    12,
+    16
+  ],
+  "estimatedTokens": 4000
+}

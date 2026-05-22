@@ -1,0 +1,27 @@
+{
+  "id": "send-dyscalculia-y6-maths",
+  "title": "Year 6 Mathematics (dyscalculia) — Place value",
+  "bucket": "send",
+  "params": {
+    "subject": "Mathematics",
+    "topic": "Place value",
+    "yearGroup": "Year 6",
+    "examBoard": "AQA",
+    "sendNeed": "dyscalculia",
+    "difficulty": "medium",
+    "includeAnswers": true
+  },
+  "rules": [
+    "mcq-single-correct",
+    "word-bank-deduped",
+    "no-foreign-diagrams",
+    "spec-ref-present",
+    "qa-score-floor",
+    "send-fidelity-floor"
+  ],
+  "readingAgeRange": [
+    9,
+    13
+  ],
+  "estimatedTokens": 4000
+}

@@ -1,0 +1,27 @@
+{
+  "id": "send-adhd-y7-english",
+  "title": "Year 7 English (adhd) — Identifying poetic devices",
+  "bucket": "send",
+  "params": {
+    "subject": "English",
+    "topic": "Identifying poetic devices",
+    "yearGroup": "Year 7",
+    "examBoard": "AQA",
+    "sendNeed": "adhd",
+    "difficulty": "medium",
+    "includeAnswers": true
+  },
+  "rules": [
+    "mcq-single-correct",
+    "word-bank-deduped",
+    "no-foreign-diagrams",
+    "spec-ref-present",
+    "qa-score-floor",
+    "send-fidelity-floor"
+  ],
+  "readingAgeRange": [
+    10,
+    14
+  ],
+  "estimatedTokens": 4000
+}
