@@ -23,6 +23,7 @@ import { describe, it, expect } from "vitest";
 import {
   resolveSendSpec,
   getSendNoteForWorksheet,
+  getAllSendSpecs,
 } from "../../client/src/lib/sendPromptFragments";
 
 import {
@@ -158,6 +159,135 @@ describe("shared asc worksheetRule text", () => {
     expect(joined).toMatch(/one 'what you need to do'|one per section|once per section/);
     // Sanity: must NOT instruct the generator to repeat the box per question
     expect(joined).not.toMatch(/per question|every question begins with a 'what you need to do'/);
+  });
+});
+
+// ─── Phase 4 — SEND content rules (worksheetRulesContent) ───────────────────
+
+describe("worksheetRulesContent — Phase 4 parity", () => {
+  it("every SEND profile carries a worksheetRulesContent array with at least 3 entries", () => {
+    const specs = getAllSendSpecs();
+    expect(specs.length).toBe(21);
+    for (const spec of specs) {
+      expect(Array.isArray(spec.worksheetRulesContent)).toBe(true);
+      expect(spec.worksheetRulesContent.length).toBeGreaterThanOrEqual(3);
+      // Every entry is a non-trivial imperative string
+      for (const rule of spec.worksheetRulesContent) {
+        expect(typeof rule).toBe("string");
+        expect(rule.trim().length).toBeGreaterThan(40);
+      }
+    }
+  });
+
+  it("content rules are distinct from presentation rules within a profile", () => {
+    // The Phase 4 expansion only delivers value if content rules don't
+    // duplicate the presentation rules verbatim. Allow incidental
+    // word-overlap; require zero exact-duplicate lines.
+    for (const spec of getAllSendSpecs()) {
+      const presentation = new Set(spec.worksheetRules.map(r => r.trim()));
+      for (const rule of spec.worksheetRulesContent) {
+        expect(presentation.has(rule.trim())).toBe(false);
+      }
+    }
+  });
+
+  it("each profile's content rules read as imperatives — they start with a recognisable command verb", () => {
+    // Imperative-mood smoke test — guards against future contributors writing
+    // descriptive prose instead of an instruction. The opener whitelist is the
+    // union of verbs actually used across the 21 profiles' content rules.
+    const imperativeOpener = /^(every|use|avoid|replace|frame|pre-teach|pre-draw|open|introduce|lock|cap|limit|restrict|pull|frontload|pair|anchor|carry|add|offer|where|strip|embed|choose|present|reference|number|keep|q\d|all|each|favour|when|never|define|write)\b/i;
+    for (const spec of getAllSendSpecs()) {
+      for (const rule of spec.worksheetRulesContent) {
+        expect(rule).toMatch(imperativeOpener);
+      }
+    }
+  });
+});
+
+describe("worksheetRulesContent — pedagogy anchors", () => {
+  it("ADHD content rules emphasise novelty and demand-variation, not just bolding", () => {
+    const spec = resolveSendSpec("adhd")!;
+    const joined = spec.worksheetRulesContent.join(" ").toLowerCase();
+    expect(joined).toMatch(/novelty|novel|high-novelty|change|cognitive demand|attention|spaced/);
+  });
+
+  it("dyscalculia content rules require Concrete-Pictorial-Abstract progression", () => {
+    const spec = resolveSendSpec("dyscalculia")!;
+    const joined = spec.worksheetRulesContent.join(" ");
+    expect(joined).toMatch(/Concrete\s*→\s*Pictorial\s*→\s*Abstract/i);
+    // Small-number scaffolding: explicit upper bound on the introductory question
+    expect(joined.toLowerCase()).toMatch(/small whole numbers/);
+  });
+
+  it("ASC base content rules ban inferred context and lock the question schema", () => {
+    const spec = resolveSendSpec("asc")!;
+    const joined = spec.worksheetRulesContent.join(" ").toLowerCase();
+    expect(joined).toMatch(/decodable|inference|never require/);
+    expect(joined).toMatch(/schema|template/);
+  });
+
+  it("EAL content rules call for cognate vocabulary and forbid UK-only colloquialisms", () => {
+    const spec = resolveSendSpec("eal")!;
+    const joined = spec.worksheetRulesContent.join(" ").toLowerCase();
+    expect(joined).toMatch(/cognate/);
+    // Forbid phrasal verbs / UK-specific contexts
+    expect(joined).toMatch(/phrasal verb|idiom|uniquely-british|culturally neutral/);
+  });
+
+  it("older-learners content rules use adult contexts and reference an awarding body", () => {
+    const spec = resolveSendSpec("older-learners")!;
+    const joined = spec.worksheetRulesContent.join(" ").toLowerCase();
+    expect(joined).toMatch(/workplace|finance|adult/);
+    expect(joined).toMatch(/aqa|awarding[-\s]body|edexcel|ocr|ao1|ao2|gcse/);
+  });
+
+  it("working-memory content rules carry forward values and limit demand per question", () => {
+    const spec = resolveSendSpec("working-memory")!;
+    const joined = spec.worksheetRulesContent.join(" ").toLowerCase();
+    expect(joined).toMatch(/carry forward|values? from the previous question|previous question/);
+    expect(joined).toMatch(/one new fact|one recall|one new operation|split into/);
+  });
+
+  it("SEMH content rules open with a confidence-builder while preserving year-group rigour", () => {
+    const spec = resolveSendSpec("semh")!;
+    const joined = spec.worksheetRulesContent.join(" ").toLowerCase();
+    expect(joined).toMatch(/confidence-builder|confidence builder|low-stakes/);
+    // Must explicitly preserve curriculum demand
+    expect(joined).toMatch(/year-group curriculum demand|does not lower the rigour/);
+  });
+});
+
+describe("getSendNoteForWorksheet — Phase 4 prompt block", () => {
+  it("renders BOTH the presentation-rules block and the content-rules block when a profile is selected", () => {
+    const note = getSendNoteForWorksheet("dyscalculia");
+    expect(note).toMatch(/PRESENTATION RULES/);
+    expect(note).toMatch(/CONTENT RULES/);
+    // Each block carries at least one numbered rule
+    expect(note).toMatch(/PRESENTATION RULES[\s\S]*?\(1\)/);
+    expect(note).toMatch(/CONTENT RULES[\s\S]*?\(1\)/);
+  });
+
+  it("the dyscalculia content block carries a Concrete-Pictorial-Abstract instruction", () => {
+    const note = getSendNoteForWorksheet("dyscalculia");
+    // Pull the content block specifically and check the pedagogy lands there
+    const contentMatch = note.match(/CONTENT RULES[\s\S]*?(?=The 'What will change|$)/);
+    expect(contentMatch).not.toBeNull();
+    expect(contentMatch![0]).toMatch(/Concrete\s*→\s*Pictorial\s*→\s*Abstract/i);
+  });
+
+  it("the CRITICAL closing line acknowledges content adaptations while preserving curriculum rigour", () => {
+    const note = getSendNoteForWorksheet("adhd");
+    expect(note).toMatch(/CRITICAL/);
+    // No longer claims content never changes (the Phase 1-3 wording).
+    expect(note).not.toMatch(/never the academic rigour\b/);
+    // But still locks year-group level / mark allocations / awarding-body fidelity
+    expect(note.toLowerCase()).toMatch(/year[-\s]group/);
+    expect(note.toLowerCase()).toMatch(/curriculum (content|demand)|academic rigour|awarding[-\s]body/);
+  });
+
+  it("returns an empty string when no SEND need is supplied (regression guard from Phase 1)", () => {
+    expect(getSendNoteForWorksheet(undefined)).toBe("");
+    expect(getSendNoteForWorksheet("none")).toBe("");
   });
 });
 
