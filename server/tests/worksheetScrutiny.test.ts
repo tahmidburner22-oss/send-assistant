@@ -38,6 +38,7 @@ import {
   enforceSectionQuestionCounts,
   enforceSpecAnchorPresence,
   enforceSelfReflectionTopicAnchor,
+  enforceRevisionTipsPresence,
   type PostValidatorWorksheet,
 } from "../../client/src/lib/worksheetPostValidator";
 
@@ -69,6 +70,15 @@ import {
   extractTopicNounPhrase,
   pickCommandWords,
 } from "../../client/src/lib/selfReflectionBuilder";
+
+// Phase 3 — Examiner-voice Revision Tips builder. Imported here for the
+// Phase 3 test suites at the bottom of this file. Pure / deterministic
+// so every assertion is repeatable.
+import {
+  buildRevisionTips,
+  renderRevisionTipsAsMarkerBlock,
+  isGenericRevisionTips,
+} from "../../client/src/lib/revisionTipsBuilder";
 
 // ─── SEND / autism sub-profiles ──────────────────────────────────────────────
 
@@ -1593,5 +1603,372 @@ describe("Phase 2 / enforceSelfReflectionTopicAnchor", () => {
     const replaced = r.worksheet.sections![0].content || "";
     // Sentence-starter register's lead frame.
     expect(replaced).toMatch(/I can talk about adding fractions/);
+  });
+});
+
+// ─── Phase 3 — Revision Tips builder ─────────────────────────────────────────
+
+describe("Phase 3 / buildRevisionTips — examiner-voice 5-tip output", () => {
+  it("returns exactly 5 tips in the canonical category order", () => {
+    const out = buildRevisionTips({ topic: "Adding fractions", subject: "Mathematics" });
+    expect(out.tips).toHaveLength(5);
+    expect(out.tips.map(t => t.category)).toEqual([
+      "command-word",
+      "misconception",
+      "method",
+      "mark-scheme",
+      "time",
+    ]);
+    expect(out.tips.map(t => t.label)).toEqual([
+      "COMMAND WORD",
+      "WATCH OUT",
+      "METHOD",
+      "MARK SCHEME",
+      "TIME",
+    ]);
+  });
+
+  it("topic-anchors the misconception tip on Year 9 Mathematics 'Adding fractions'", () => {
+    const out = buildRevisionTips({ topic: "Adding fractions", subject: "Mathematics", year: "Year 9" });
+    const misconception = out.tips.find(t => t.category === "misconception")!;
+    // Topic noun should appear lower-cased inside the misconception tip.
+    expect(misconception.text.toLowerCase()).toContain("adding fractions");
+    // Maths default mentions skipping a method line / converting units.
+    expect(misconception.text).toMatch(/method line|convert(ing)? units/i);
+  });
+
+  it("topic-anchors on Year 10 English Literature 'Macbeth Act 1 Scene 5'", () => {
+    const out = buildRevisionTips({
+      topic: "Macbeth Act 1 Scene 5",
+      subject: "English Literature",
+      year: "Year 10",
+    });
+    const misconception = out.tips.find(t => t.category === "misconception")!;
+    expect(misconception.text).toContain("Macbeth Act 1 Scene 5");
+    // Literature method tip mentions embedding quotations.
+    const method = out.tips.find(t => t.category === "method")!;
+    expect(method.text).toMatch(/quotation|quote/i);
+  });
+
+  it("topic-anchors on Year 11 Biology 'Bioenergetics'", () => {
+    const out = buildRevisionTips({
+      topic: "Bioenergetics",
+      subject: "Biology",
+      year: "Year 11",
+    });
+    const misconception = out.tips.find(t => t.category === "misconception")!;
+    // Lower-cased noun phrase ("bioenergetics") is what the noun
+    // extractor returns for single-word common-noun topics.
+    expect(misconception.text.toLowerCase()).toContain("bioenergetics");
+    const method = out.tips.find(t => t.category === "method")!;
+    expect(method.text).toMatch(/SI unit|formula|substitut/i);
+  });
+
+  it("topic-anchors on KS3 History 'Norman Conquest'", () => {
+    const out = buildRevisionTips({
+      topic: "Norman Conquest",
+      subject: "History",
+      year: "Year 8",
+    });
+    const misconception = out.tips.find(t => t.category === "misconception")!;
+    // History uses the proper-noun-led casing path (Norman is whitelisted).
+    expect(misconception.text).toContain("Norman Conquest");
+    const method = out.tips.find(t => t.category === "method")!;
+    expect(method.text).toMatch(/date|source|named figure/i);
+  });
+
+  it("echoes the FIRST command word actually used on the worksheet", () => {
+    const out = buildRevisionTips({
+      topic: "Quadratic equations",
+      subject: "Mathematics",
+      commandWordsUsed: ["solve", "Show that", "Find"],
+    });
+    const cw = out.tips.find(t => t.category === "command-word")!;
+    // pickCommandWords canonicalises to "Solve" (title case).
+    expect(cw.text).toContain("\"Solve");
+  });
+
+  it("falls back to the per-subject default command word when no list is supplied", () => {
+    const mathsOut = buildRevisionTips({ topic: "Pythagoras", subject: "Mathematics" });
+    const enLitOut = buildRevisionTips({ topic: "Macbeth", subject: "English Literature" });
+    // Maths default ladder leads with Calculate.
+    expect(mathsOut.tips[0].text).toContain("\"Calculate");
+    // EnglishLit default ladder leads with Identify.
+    expect(enLitOut.tips[0].text).toContain("\"Identify");
+  });
+
+  it("surfaces a supplied misconception verbatim (sentence-cased, bullet-stripped, capped)", () => {
+    const out = buildRevisionTips({
+      topic: "Adding fractions",
+      subject: "Mathematics",
+      misconceptions: [
+        "• common mistake: pupils add the numerators AND denominators instead of finding a common denominator first.",
+      ],
+    });
+    const m = out.tips.find(t => t.category === "misconception")!;
+    expect(m.text).toMatch(/^Pupils add the numerators/);
+    expect(m.text).not.toContain("•");
+    expect(m.text).not.toMatch(/^common mistake/i);
+  });
+
+  it("anchors the time tip to the worksheet's total marks", () => {
+    const out = buildRevisionTips({
+      topic: "Algebra",
+      subject: "Mathematics",
+      marksUsed: [1, 1, 1, 2, 2, 3, 4, 5, 6, 8],
+    });
+    const time = out.tips.find(t => t.category === "time")!;
+    // Total = 33 marks → ~33 minutes budget; tip mentions one minute per mark.
+    expect(time.text).toMatch(/about\s+33\s+minutes/);
+    expect(time.text).toMatch(/one minute per mark/i);
+    // The 8-mark stretch question is name-checked.
+    expect(time.text).toMatch(/8-mark stretch question/);
+  });
+
+  it("anchors the mark-scheme tip to the longest tariff and the awarding body", () => {
+    const out = buildRevisionTips({
+      topic: "Photosynthesis",
+      subject: "Biology",
+      examBoard: "AQA",
+      marksUsed: [1, 1, 2, 6, 4],
+    });
+    const ms = out.tips.find(t => t.category === "mark-scheme")!;
+    expect(ms.text).toContain("6-mark question");
+    expect(ms.text).toContain("AQA");
+  });
+
+  it("falls back to a topic-only mark-scheme tip when no marks are supplied", () => {
+    const out = buildRevisionTips({ topic: "Adding fractions", subject: "Mathematics" });
+    const ms = out.tips.find(t => t.category === "mark-scheme")!;
+    expect(ms.text).toContain("the longest question on adding fractions");
+  });
+
+  it("shortens tips on sentence-starter SEND register", () => {
+    const standard = buildRevisionTips({ topic: "Adding fractions", subject: "Mathematics" });
+    const eal = buildRevisionTips({ topic: "Adding fractions", subject: "Mathematics", sendKey: "eal" });
+    // Sentence-starter register reads aloud — tips should be shorter
+    // than the equivalent standard-register tip.
+    for (let i = 0; i < 5; i++) {
+      expect(eal.tips[i].text.length).toBeLessThanOrEqual(standard.tips[i].text.length);
+    }
+    // Subtitle is the read-aloud variant.
+    expect(eal.subtitle).toMatch(/read\s+these\s+tips\s+out\s+loud/i);
+  });
+
+  it("uses the older-learner subtitle for adult-mode worksheets", () => {
+    const out = buildRevisionTips({ topic: "Adding fractions", subject: "Mathematics", sendKey: "older-learners" });
+    expect(out.subtitle).toMatch(/examiner tips before you attempt/i);
+  });
+
+  it("is pure — same inputs always yield the same output", () => {
+    const a = buildRevisionTips({ topic: "Adding fractions", subject: "Mathematics", year: "Year 9" });
+    const b = buildRevisionTips({ topic: "Adding fractions", subject: "Mathematics", year: "Year 9" });
+    expect(a).toEqual(b);
+  });
+});
+
+describe("Phase 3 / renderRevisionTipsAsMarkerBlock — marker block format", () => {
+  it("emits SUBTITLE: + TIPS: + 5 numbered LABEL: lines", () => {
+    const out = buildRevisionTips({ topic: "Adding fractions", subject: "Mathematics" });
+    const text = renderRevisionTipsAsMarkerBlock(out);
+    expect(text).toMatch(/^SUBTITLE: /m);
+    expect(text).toMatch(/^TIPS:/m);
+    expect(text).toMatch(/^1\. COMMAND WORD: /m);
+    expect(text).toMatch(/^2\. WATCH OUT: /m);
+    expect(text).toMatch(/^3\. METHOD: /m);
+    expect(text).toMatch(/^4\. MARK SCHEME: /m);
+    expect(text).toMatch(/^5\. TIME: /m);
+  });
+
+  it("round-trips a builder output through the marker-block format unchanged on isGenericRevisionTips", () => {
+    const out = buildRevisionTips({ topic: "Adding fractions", subject: "Mathematics" });
+    const text = renderRevisionTipsAsMarkerBlock(out);
+    expect(isGenericRevisionTips(text, "Adding fractions")).toBe(false);
+  });
+});
+
+describe("Phase 3 / isGenericRevisionTips — generic-content detection", () => {
+  it("flags empty content", () => {
+    expect(isGenericRevisionTips("", "Adding fractions")).toBe(true);
+    expect(isGenericRevisionTips("   ", "Adding fractions")).toBe(true);
+  });
+
+  it("flags placeholder stems", () => {
+    expect(isGenericRevisionTips("Make sure you revise carefully and study hard. Good luck!", "Adding fractions")).toBe(true);
+    expect(isGenericRevisionTips("Make sure you understand the topic before the test.", "Adding fractions")).toBe(true);
+    expect(isGenericRevisionTips("TIPS:\n1. [Tip 1]\n2. [Tip 2]\n3. [Tip 3]\n4. [Tip 4]\n5. [Tip 5]", "Adding fractions")).toBe(true);
+    expect(isGenericRevisionTips("TIPS:\n1. _________\n2. _________\n3. _________\n4. _________\n5. _________", "Adding fractions")).toBe(true);
+  });
+
+  it("flags content with fewer than 5 tip-shaped lines", () => {
+    expect(isGenericRevisionTips("TIPS:\n1. COMMAND WORD: Calculate carefully on adding fractions.", "Adding fractions")).toBe(true);
+  });
+
+  it("flags content that does not name the topic noun", () => {
+    const offTopic = `TIPS:
+1. COMMAND WORD: Calculate carefully — show every step.
+2. WATCH OUT: Pupils often skip a method line.
+3. METHOD: Always include the units.
+4. MARK SCHEME: Top-band answers reach a clear judgement.
+5. TIME: Spend about one minute per mark.`;
+    expect(isGenericRevisionTips(offTopic, "Adding fractions")).toBe(true);
+  });
+
+  it("flags content that contains no UK awarding-body command word", () => {
+    const noVerb = `TIPS:
+1. THINK: Read the question on adding fractions.
+2. PLAN: Write a sentence about adding fractions.
+3. WORK: Try the adding fractions question.
+4. CHECK: Look back at adding fractions.
+5. RELAX: Take your time with adding fractions.`;
+    expect(isGenericRevisionTips(noVerb, "Adding fractions")).toBe(true);
+  });
+
+  it("does NOT flag a builder-quality output", () => {
+    const out = buildRevisionTips({ topic: "Adding fractions", subject: "Mathematics" });
+    const text = renderRevisionTipsAsMarkerBlock(out);
+    expect(isGenericRevisionTips(text, "Adding fractions")).toBe(false);
+  });
+
+  it("does NOT flag a teacher-edited variant that still has 5 tips, the topic and a command word", () => {
+    const teacherEdited = `SUBTITLE: My own examiner notes for the class.
+TIPS:
+1. COMMAND WORD: When the question says "Calculate ...", just give the number.
+2. WATCH OUT: Common slip on adding fractions — denominators are not added.
+3. METHOD: Find the LCD first on adding fractions.
+4. MARK SCHEME: One mark for the LCD, one for the answer in lowest terms.
+5. TIME: Save 8 minutes for the longest adding-fractions question.`;
+    expect(isGenericRevisionTips(teacherEdited, "Adding fractions")).toBe(false);
+  });
+});
+
+describe("Phase 3 / enforceRevisionTipsPresence — validator behaviour", () => {
+  it("no-ops when no revision-tips section is present (Phase 3 is opt-in)", () => {
+    const ws: PostValidatorWorksheet = {
+      metadata: { subject: "Mathematics", topic: "Adding fractions", yearGroup: "Year 9" },
+      sections: [
+        { type: "learning-objective", title: "LO", teacherOnly: false, content: "I can add fractions." },
+      ],
+    };
+    const r = enforceRevisionTipsPresence(ws, { topic: "Adding fractions", subject: "Mathematics" });
+    expect(r.warnings).toHaveLength(0);
+    expect(r.worksheet.sections).toHaveLength(1);
+    expect(r.worksheet.sections![0].content).toBe("I can add fractions.");
+  });
+
+  it("warns and skips when no topic is supplied (and metadata.topic is missing)", () => {
+    const ws: PostValidatorWorksheet = {
+      metadata: { subject: "Mathematics" },
+      sections: [
+        { type: "revision-tips", title: "Examiner Tips", teacherOnly: false, content: "revise carefully" },
+      ],
+    };
+    const r = enforceRevisionTipsPresence(ws);
+    expect(r.warnings.some(w => /no topic supplied/.test(w))).toBe(true);
+    expect(r.worksheet.sections![0].content).toBe("revise carefully");
+  });
+
+  it("rewrites generic content with builder output", () => {
+    const ws: PostValidatorWorksheet = {
+      metadata: { subject: "Mathematics", topic: "Adding fractions", yearGroup: "Year 9" },
+      sections: [
+        { type: "revision-tips", title: "Examiner Tips", teacherOnly: false, content: "Make sure you revise carefully and study hard. Good luck!" },
+      ],
+    };
+    const r = enforceRevisionTipsPresence(ws, {
+      topic: "Adding fractions",
+      subject: "Mathematics",
+      yearGroup: "Year 9",
+    });
+    expect(r.warnings.some(w => /Revision-Tips content was generic/.test(w))).toBe(true);
+    const rewritten = r.worksheet.sections![0].content || "";
+    expect(rewritten).toMatch(/^TIPS:/m);
+    expect(rewritten).toMatch(/^1\. COMMAND WORD: /m);
+    expect(rewritten.toLowerCase()).toContain("adding fractions");
+  });
+
+  it("never overwrites good topic-anchored content", () => {
+    const good = renderRevisionTipsAsMarkerBlock(buildRevisionTips({
+      topic: "Adding fractions",
+      subject: "Mathematics",
+    }));
+    const ws: PostValidatorWorksheet = {
+      metadata: { subject: "Mathematics", topic: "Adding fractions", yearGroup: "Year 9" },
+      sections: [
+        { type: "revision-tips", title: "Examiner Tips", teacherOnly: false, content: good },
+      ],
+    };
+    const r = enforceRevisionTipsPresence(ws, { topic: "Adding fractions", subject: "Mathematics" });
+    expect(r.warnings).toHaveLength(0);
+    expect(r.worksheet.sections![0].content).toBe(good);
+  });
+
+  it("is idempotent — running twice produces the same worksheet as running once", () => {
+    const ws: PostValidatorWorksheet = {
+      metadata: { subject: "Mathematics", topic: "Adding fractions", yearGroup: "Year 9" },
+      sections: [
+        { type: "revision-tips", title: "Examiner Tips", teacherOnly: false, content: "study hard, good luck" },
+      ],
+    };
+    const once = enforceRevisionTipsPresence(ws, { topic: "Adding fractions", subject: "Mathematics" });
+    const twice = enforceRevisionTipsPresence(once.worksheet, { topic: "Adding fractions", subject: "Mathematics" });
+    expect(twice.warnings).toHaveLength(0);
+    expect(twice.worksheet.sections![0].content).toBe(once.worksheet.sections![0].content);
+  });
+
+  it("scrapes the worksheet's actual command words and uses them in the rewrite", () => {
+    const ws: PostValidatorWorksheet = {
+      metadata: { subject: "Mathematics", topic: "Adding fractions", yearGroup: "Year 9" },
+      sections: [
+        { type: "q-extended", title: "Q1", teacherOnly: false, content: "Show that the sum of 1/2 and 1/3 is 5/6. [3 marks]", marks: 3 },
+        { type: "q-short-answer", title: "Q2", teacherOnly: false, content: "Calculate 1/4 + 2/5. [2 marks]", marks: 2 },
+        { type: "revision-tips", title: "Examiner Tips", teacherOnly: false, content: "revise carefully and good luck" },
+      ],
+    };
+    const r = enforceRevisionTipsPresence(ws, { topic: "Adding fractions", subject: "Mathematics" });
+    const rewritten = String(r.worksheet.sections![2].content || "");
+    // First question's leading verb is "Show that" — should appear in
+    // the COMMAND WORD tip rather than the default "Calculate".
+    expect(rewritten).toMatch(/COMMAND WORD: When the question says "Show that/);
+  });
+
+  it("scrapes a misconception from the Common Mistakes section and surfaces it in the rewrite", () => {
+    const ws: PostValidatorWorksheet = {
+      metadata: { subject: "Mathematics", topic: "Adding fractions", yearGroup: "Year 9" },
+      sections: [
+        { type: "common-mistakes", title: "Common Mistakes", teacherOnly: false, content: "• Pupils add both numerators AND denominators when adding two fractions, instead of finding a common denominator first." },
+        { type: "revision-tips", title: "Examiner Tips", teacherOnly: false, content: "study hard for the test, good luck" },
+      ],
+    };
+    const r = enforceRevisionTipsPresence(ws, { topic: "Adding fractions", subject: "Mathematics" });
+    const rewritten = String(r.worksheet.sections![1].content || "");
+    expect(rewritten).toMatch(/WATCH OUT: Pupils add both numerators AND denominators/);
+  });
+
+  it("scrapes the largest mark tariff and uses it in the rewrite", () => {
+    const ws: PostValidatorWorksheet = {
+      metadata: { subject: "Biology", topic: "Photosynthesis", yearGroup: "Year 11", examBoard: "AQA" },
+      sections: [
+        { type: "q-short-answer", title: "Q1", teacherOnly: false, content: "Describe photosynthesis. [2 marks]", marks: 2 },
+        { type: "q-extended", title: "Q5", teacherOnly: false, content: "Evaluate the role of chlorophyll. [6 marks]", marks: 6 },
+        { type: "revision-tips", title: "Examiner Tips", teacherOnly: false, content: "make sure you revise carefully" },
+      ],
+    };
+    const r = enforceRevisionTipsPresence(ws, { topic: "Photosynthesis", subject: "Biology", examBoard: "AQA" });
+    const rewritten = String(r.worksheet.sections![2].content || "");
+    expect(rewritten).toContain("6-mark question");
+    expect(rewritten).toContain("AQA");
+  });
+
+  it("ignores teacher-only revision-tips sections", () => {
+    const ws: PostValidatorWorksheet = {
+      metadata: { subject: "Mathematics", topic: "Adding fractions", yearGroup: "Year 9" },
+      sections: [
+        { type: "revision-tips", title: "Teacher Tips", teacherOnly: true, content: "internal teacher notes" },
+      ],
+    };
+    const r = enforceRevisionTipsPresence(ws, { topic: "Adding fractions", subject: "Mathematics" });
+    expect(r.warnings).toHaveLength(0);
+    expect(r.worksheet.sections![0].content).toBe("internal teacher notes");
   });
 });
