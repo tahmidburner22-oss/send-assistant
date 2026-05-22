@@ -21,6 +21,11 @@ import {
   workingOutRowsForMarks,
 } from "@/lib/worksheetSectionTargets";
 import { buildSelfReflection } from "@/lib/selfReflectionBuilder";
+// Phase 3 — Revision Tips. The pupil-facing pad-fallback in
+// RevisionTipsSection routes through buildRevisionTips so the panel
+// always renders a five-tip examiner-voice surface even when the AI
+// payload is empty / malformed.
+import { buildRevisionTips, type RevisionTip } from "@/lib/revisionTipsBuilder";
 import katex from "katex";
 import "katex/dist/katex.min.css";
 
@@ -1225,6 +1230,10 @@ const SECTION_STYLES: Record<string, { border: string; bg: string; badge: string
   "sentence-starters": { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Sentence Starters",  headerBg: "#1a2744", headerText: "#ffffff" },
   "self-assessment": { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Self Assessment",       headerBg: "#1a2744", headerText: "#ffffff" },
   "self-reflection": { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "How Did I Do?",         headerBg: "#1a2744", headerText: "#ffffff" },
+  // Phase 3 — Revision Tips. Examiner-voice 5-tip panel rendered just
+  // before Self-Reflection. House style: same accent palette as the
+  // other student-facing panels; no icon.
+  "revision-tips": { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Examiner Tips",          headerBg: "#1a2744", headerText: "#ffffff" },
   "diagram":       { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Diagram",                 headerBg: "#1a2744", headerText: "#ffffff" },
   "answers":       { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Answers",                 headerBg: "#1a2744", headerText: "#ffffff" },
   "questions":     { border: "#1a2744", bg: "#ffffff", badge: "#1a2744", badgeBg: "#1a2744", icon: "", label: "Exam Questions",          headerBg: "#1a2744", headerText: "#ffffff" },
@@ -3416,6 +3425,183 @@ function SelfReflectionSection({
   );
 }
 
+/**
+ * Phase 3 — Revision Tips section.
+ *
+ * Renders a five-tip examiner-voice panel: numbered cards with an
+ * accent rule on the left and a uppercase category label per tip. The
+ * order of categories is fixed by the builder
+ * (`revisionTipsBuilder.ts:buildRevisionTips`):
+ *   1. COMMAND WORD
+ *   2. WATCH OUT (misconception)
+ *   3. METHOD
+ *   4. MARK SCHEME
+ *   5. TIME
+ *
+ * Parser
+ * ------
+ * Accepts the marker-block format the builder emits:
+ *   SUBTITLE: …
+ *   TIPS:
+ *   1. COMMAND WORD: …
+ *   2. WATCH OUT: …
+ *   …
+ * Falls back to a line-based parser for legacy / library content that
+ * may have arrived without markers (e.g. a teacher-edited block).
+ *
+ * Pad-fallback
+ * ------------
+ * When the parsed output has fewer than 5 tips and topic + subject are
+ * available from the parent worksheet metadata, we run
+ * `buildRevisionTips({ topic, subject })` and append non-duplicate
+ * tips so the pupil never sees a half-built panel. When topic is
+ * unknown (e.g. a stand-alone library asset), we render whatever was
+ * parsed — never inventing topic-free filler.
+ *
+ * Conventions
+ * -----------
+ *   - House style accent palette (border #1a2744, no icon).
+ *   - No working-out box. Phase 1 lock — that affordance is maths-only
+ *     and lives on question sections.
+ *   - Subject-aware via the parent `worksheet.metadata.subject` prop
+ *     threaded from the dispatch site, so the builder pad-fallback
+ *     produces the right method-tip text per subject family.
+ */
+function RevisionTipsSection({
+  content,
+  fmt,
+  topic,
+  subject,
+}: {
+  content: string;
+  fmt: ReturnType<typeof getSendFormatting>;
+  topic?: string;
+  subject?: string;
+}) {
+  const { fontSize: textSize, fontFamily, lineHeight } = fmt;
+
+  // ── Parse marker-block content ────────────────────────────────────────
+  let subtitle = "";
+  const parsedTips: { label: string; text: string }[] = [];
+
+  const subtitleMatch = content.match(/SUBTITLE:\s*([^\n]+)/i);
+  if (subtitleMatch) subtitle = subtitleMatch[1].trim();
+
+  const tipsBlock = content.match(/TIPS:\s*([\s\S]*)$/i);
+  const lines = (tipsBlock ? tipsBlock[1] : content)
+    .split("\n")
+    .map(l => l.trim())
+    .filter(l => l && !/^SUBTITLE:/i.test(l));
+
+  // Each tip line is one of:
+  //   "1. COMMAND WORD: <text>"
+  //   "1) COMMAND WORD: <text>"
+  //   "COMMAND WORD: <text>"  (no number — accept too)
+  // Capture LABEL (1–3 uppercase / hyphenated words) and TEXT.
+  const TIP_LINE_RE = /^(?:\d+[.)]\s*)?([A-Z][A-Z\s/&-]{1,40}?):\s*(.+)$/;
+  for (const line of lines) {
+    const m = line.match(TIP_LINE_RE);
+    if (m) {
+      parsedTips.push({ label: m[1].trim().replace(/\s+/g, " ").toUpperCase(), text: m[2].trim() });
+    }
+  }
+
+  // Pad-fallback — when the AI emitted fewer than 5 tips and we can
+  // safely build deterministic ones (topic available), append the
+  // missing categories. When topic is unknown we render whatever was
+  // parsed.
+  if (parsedTips.length < 5) {
+    const t = (topic || "").trim();
+    if (t) {
+      const built = buildRevisionTips({ topic: t, subject });
+      const existingLabels = new Set(parsedTips.map(p => p.label));
+      for (const tip of built.tips as RevisionTip[]) {
+        if (parsedTips.length >= 5) break;
+        if (existingLabels.has(tip.label)) continue;
+        parsedTips.push({ label: tip.label, text: tip.text });
+      }
+      if (!subtitle) subtitle = built.subtitle;
+    }
+  }
+
+  // Last-resort fallback when there is genuinely no usable content (no
+  // markers, no recognisable tip lines, no topic to rebuild from).
+  if (parsedTips.length === 0) {
+    return (
+      <div style={{ fontFamily, fontSize: `${textSize}px`, color: "#374151", lineHeight }}>
+        {content}
+      </div>
+    );
+  }
+
+  const accentColor = "#1a2744";
+
+  return (
+    <div style={{ fontFamily }}>
+      {subtitle && (
+        <div style={{ fontSize: `${textSize}px`, color: "#4b5563", fontFamily, marginBottom: "12px", fontStyle: "italic" }}>
+          {subtitle}
+        </div>
+      )}
+      <div style={{ display: "flex", flexDirection: "column" as const, gap: "10px" }}>
+        {parsedTips.slice(0, 5).map((tip, i) => (
+          <div
+            key={i}
+            style={{
+              display: "flex",
+              alignItems: "stretch",
+              border: `1px solid ${accentColor}`,
+              borderLeftWidth: "4px",
+              borderRadius: "4px",
+              background: "#f8fafc",
+              overflow: "hidden",
+            }}
+          >
+            {/* Number badge */}
+            <div
+              style={{
+                background: accentColor,
+                color: "#ffffff",
+                fontSize: `${textSize}px`,
+                fontWeight: 700,
+                fontFamily,
+                padding: "8px 10px",
+                minWidth: "32px",
+                textAlign: "center",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              {i + 1}
+            </div>
+            {/* Body */}
+            <div style={{ flex: 1, padding: "8px 12px" }}>
+              <div
+                style={{
+                  fontSize: `${textSize - 2}px`,
+                  fontWeight: 700,
+                  color: accentColor,
+                  fontFamily,
+                  textTransform: "uppercase" as const,
+                  letterSpacing: "0.06em",
+                  marginBottom: "4px",
+                }}
+              >
+                {tip.label}
+              </div>
+              <div style={{ fontSize: `${textSize}px`, color: "#1e293b", fontFamily, lineHeight }}>
+                {tip.text}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+
 function WordBankSection({ content, fmt, overlayColor = "white" }: { content: string; fmt: ReturnType<typeof getSendFormatting>; overlayColor?: string }) {
   const { fontSize: textSize, fontFamily } = fmt;
   // Strip any WORD BANK header line and split into words
@@ -3938,6 +4124,7 @@ function getPrimaryBadge(type: string): string {
     "sentence-starters": "How to Start",
     "self-assessment": "How Did I Do?",
     "self-reflection": "My Thinking",
+    "revision-tips": "Examiner Tips",
     answers: "Answers",
     "mark-scheme": "Mark Scheme",
     "teacher-notes": "Teacher Notes",
@@ -4756,6 +4943,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
               s.type !== "revision-mat-title" && s.type !== "revision-mat-lo" &&
               s.type !== "objective" && s.type !== "self-reflection" &&
               s.type !== "vocabulary" && s.type !== "revision-mat-vocab" &&
+              s.type !== "revision-tips" && // Phase 3 — Examiner Tips panel is not a question section
               s.type !== "diagram" // Diagrams are handled separately for full-page landscape
             );
 
@@ -5312,8 +5500,9 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
           section = { ...section, type: normalizedSectionType };
         }
         // Hide teacher sections in student view
-        // self-reflection, objective, and vocabulary are ALWAYS shown to students
-        const isAlwaysStudentVisible = section.type === "self-reflection" || section.type === "objective" || section.type === "vocabulary";
+        // self-reflection, objective, vocabulary, and revision-tips are
+        // ALWAYS shown to students (Phase 3 — examiner-voice tips panel)
+        const isAlwaysStudentVisible = section.type === "self-reflection" || section.type === "objective" || section.type === "vocabulary" || section.type === "revision-tips";
         if (!isTeacherView && !isAlwaysStudentVisible && (section.teacherOnly || section.type === "answers" || section.type === "mark-scheme" || section.type === "teacher-notes" || section.type === "teacher-note")) {
           return null;
         }
@@ -5665,9 +5854,11 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
               pageBreakInside: "avoid",
               breakInside: "avoid",
               // Per spec page layout: Diagram A and Diagram B each occupy their
-              // own full printed page. Self-reflection starts a new page.
-              pageBreakBefore: isDiagramA || isDiagramB || section.type === "self-reflection" ? "always" : "auto",
-              breakBefore: isDiagramA || isDiagramB || section.type === "self-reflection" ? "page" : "auto",
+              // own full printed page. Self-reflection starts a new page. Phase 3
+              // — Revision Tips also starts a new page so the examiner-voice
+              // panel is the first thing the pupil sees on its sheet.
+              pageBreakBefore: isDiagramA || isDiagramB || section.type === "self-reflection" || section.type === "revision-tips" ? "always" : "auto",
+              breakBefore: isDiagramA || isDiagramB || section.type === "self-reflection" || section.type === "revision-tips" ? "page" : "auto",
               pageBreakAfter: isDiagramA || isDiagramB ? "always" : "auto",
               breakAfter: isDiagramA || isDiagramB ? "page" : "auto",
               // Blank-page fix: remove 900px fixed height — it inflated diagram sections
@@ -7051,6 +7242,13 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                   </div>
                 ) : section.type === "self-assessment" ? (
                   <SelfAssessmentSection content={content} fmt={fmt} />
+                ) : section.type === "revision-tips" ? (
+                  <RevisionTipsSection
+                    content={content}
+                    fmt={fmt}
+                    topic={worksheet.metadata?.topic}
+                    subject={worksheet.metadata?.subject}
+                  />
                 ) : section.type === "self-reflection" ? (
                   <SelfReflectionSection
                     content={content}

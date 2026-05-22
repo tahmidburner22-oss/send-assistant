@@ -604,7 +604,7 @@ export default function Worksheets() {
   // Header → LO → Retrieval → Key Vocabulary → Common Mistakes → Worked Example →
   // Diagram A → Section 1 (T/F, MCQ, Word Bank, Match) → Section 2 (Foundation) →
   // Diagram B → Section 3 (Core) → Challenge → Self Reflection → Teacher Key
-  const ALL_SECTIONS = ['learning-objective', 'retrieval', 'key-vocabulary', 'common-mistakes', 'worked-example', 'diagram-a', 'true-false', 'mcq', 'word-bank-gap-fill', 'section-a', 'diagram-b', 'section-b', 'section-c', 'self-reflection'] as const;
+  const ALL_SECTIONS = ['learning-objective', 'retrieval', 'key-vocabulary', 'common-mistakes', 'worked-example', 'diagram-a', 'true-false', 'mcq', 'word-bank-gap-fill', 'section-a', 'diagram-b', 'section-b', 'section-c', 'revision-tips', 'self-reflection'] as const;
   type SectionId = typeof ALL_SECTIONS[number];
   // PR-M1 — Subject-aware defaults.
   //
@@ -1384,6 +1384,7 @@ export default function Worksheets() {
     // Remove first (least important for student learning)
     "self-reflection",    // How Did I Do? reflection box
     "self-assessment",    // Self Assessment (alias)
+    "revision-tips",      // Phase 3 — Examiner Tips panel (deterministic, but optional under page pressure)
     "adaptations",        // SEND Adaptations — teacher copy only
     "teacher-notes",      // Teacher Notes
     "mark-scheme",        // Mark Scheme
@@ -4462,6 +4463,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                           'true-false': 0.4, 'mcq': 0.5,
                           'word-bank-gap-fill': 0.4,
                           'section-a': 0.8, 'section-b': 1.0, 'section-c': 0.8,
+                          'revision-tips': 0.5,
                           'self-reflection': 0.2,
                         };
                         const total = selectedSections.reduce((sum, s) => sum + (pageWeights[s] || 0.4), 0);
@@ -4485,6 +4487,7 @@ REMEMBER: Every question must be COMPLETE, CORRECT, and SPECIFIC to the topic. D
                       { id: 'diagram-b', label: 'Diagram B — Full Page Spread' },
                       { id: 'section-b', label: 'Section 3 — Core Practice' },
                       { id: 'section-c', label: 'Challenge Question' },
+                      { id: 'revision-tips', label: 'Examiner Tips' },
                       { id: 'self-reflection', label: 'Self Reflection' },
                     ] as const).map(sec => (
                       <label key={sec.id} className="flex items-center gap-2 cursor-pointer select-none">

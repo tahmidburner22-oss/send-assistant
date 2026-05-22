@@ -48,6 +48,15 @@ import {
   isGenericSelfReflection,
 } from "./selfReflectionBuilder";
 
+// Phase 3 — Revision Tips. Single source of truth for the examiner-
+// voice 5-tip panel. The validator below uses these helpers to detect
+// generic / off-topic AI output and rewrite it deterministically.
+import {
+  buildRevisionTips,
+  renderRevisionTipsAsMarkerBlock,
+  isGenericRevisionTips,
+} from "./revisionTipsBuilder";
+
 export interface PostValidatorSection {
   id?: string;
   type?: string;
@@ -1035,6 +1044,205 @@ export function enforceSelfReflectionTopicAnchor(
   return { worksheet: { ...ws, sections: newSections }, warnings };
 }
 
+// ─── Phase 3 — Revision Tips presence enforcement ───────────────────────────
+
+/**
+ * Scrape command words actually used on the question sections of a
+ * worksheet. We look in two places:
+ *   1. The structured `commandWord` field on each section (Phase 1
+ *      schema field — populated by the AI when present).
+ *   2. The first word of the section content's first non-blank line,
+ *      restricted to a curated awarding-body command-word list.
+ *
+ * Returns at most 8 distinct entries, in order of first appearance.
+ * Used by the revision-tips builder to anchor the COMMAND WORD tip to
+ * the verbs the pupil is about to see.
+ */
+function collectCommandWordsUsed(ws: PostValidatorWorksheet): string[] {
+  const KNOWN_VERBS = new Set([
+    "calculate", "work out", "solve", "find", "show that", "prove that",
+    "determine", "evaluate", "estimate", "describe", "explain", "compare",
+    "contrast", "analyse", "identify", "state", "list", "outline",
+    "suggest", "discuss", "justify", "assess", "interpret", "deduce",
+    "predict", "define", "draw", "sketch", "plot", "label",
+  ]);
+  const out: string[] = [];
+  const seen = new Set<string>();
+  for (const s of ws.sections || []) {
+    if (s.teacherOnly) continue;
+    const t = String(s.type || "").toLowerCase();
+    if (!/^(q-|question$|challenge$|extended-answer$|exam-question$|lor$)/.test(t)) continue;
+    // Schema-shaped commandWord first.
+    const explicit = (s as PostValidatorSection & { commandWord?: string }).commandWord;
+    if (explicit) {
+      const key = explicit.trim().toLowerCase();
+      if (key && !seen.has(key)) { seen.add(key); out.push(explicit.trim()); }
+      continue;
+    }
+    // Fall back to the leading word(s) of the section content.
+    const content = typeof s.content === "string" ? s.content : "";
+    const firstLine = content.split("\n").map(l => l.trim()).find(l => l && !/^answer\s+all\s+questions/i.test(l)) || "";
+    if (!firstLine) continue;
+    const lower = firstLine.toLowerCase();
+    // Match longest first so "show that" wins over "show".
+    const matched = Array.from(KNOWN_VERBS).sort((a, b) => b.length - a.length).find(v => lower.startsWith(v));
+    if (matched && !seen.has(matched)) {
+      seen.add(matched);
+      out.push(matched.charAt(0).toUpperCase() + matched.slice(1));
+    }
+    if (out.length >= 8) break;
+  }
+  return out;
+}
+
+/**
+ * Scrape a topic-specific misconception from a worksheet's existing
+ * Common Mistakes section. Returns the first non-empty line, with
+ * bullet markers and "Common mistake:" prefixes stripped, capped at
+ * 200 chars. Returns an empty array when no usable content is present
+ * — the builder will then fall back to its per-subject default text.
+ */
+function collectMisconceptions(ws: PostValidatorWorksheet): string[] {
+  const out: string[] = [];
+  for (const s of ws.sections || []) {
+    if (s.teacherOnly) continue;
+    const t = String(s.type || "").toLowerCase();
+    if (t !== "common-mistakes" && t !== "misconceptions") continue;
+    const content = typeof s.content === "string" ? s.content : "";
+    if (!content.trim()) continue;
+    for (const raw of content.split("\n")) {
+      const line = raw.trim();
+      if (!line) continue;
+      // Skip stem / heading lines.
+      if (/^common\s+mistakes?\s*[:\-—]?\s*$/i.test(line)) continue;
+      const stripped = line
+        .replace(/^[\u2022\-\*\d.)\s]+/, "")
+        .replace(/^(common\s+mistake|misconception|watch\s+out)\s*[:\-—]\s*/i, "")
+        .trim();
+      if (!stripped) continue;
+      out.push(stripped.length > 200 ? stripped.slice(0, 197) + "…" : stripped);
+      if (out.length >= 4) break;
+    }
+    if (out.length > 0) break;
+  }
+  return out;
+}
+
+/**
+ * Scrape per-question marks tariffs from a worksheet so the time-tip
+ * and mark-scheme-tip can anchor to the actual paper. Looks at
+ * `section.marks` first (Phase 1 schema field), then falls back to
+ * matching `[N marks]` inline in the content. Returns an array, in
+ * order, of every positive integer found.
+ */
+function collectMarksUsed(ws: PostValidatorWorksheet): number[] {
+  const out: number[] = [];
+  for (const s of ws.sections || []) {
+    if (s.teacherOnly) continue;
+    const t = String(s.type || "").toLowerCase();
+    if (!/^(q-|question$|challenge$|extended-answer$|exam-question$|lor$)/.test(t)) continue;
+    const explicit = (s as PostValidatorSection & { marks?: number }).marks;
+    if (typeof explicit === "number" && explicit > 0) {
+      out.push(explicit);
+      continue;
+    }
+    const content = typeof s.content === "string" ? s.content : "";
+    const m = content.match(/\[(\d+)\s*marks?\]/i);
+    if (m) {
+      const n = parseInt(m[1], 10);
+      if (Number.isFinite(n) && n > 0) out.push(n);
+    }
+  }
+  return out;
+}
+
+/**
+ * Phase 3 — examiner-voice Revision Tips enforcement.
+ *
+ * Walks the worksheet looking for the pupil-facing Revision-Tips
+ * section (type "revision-tips", not teacher-only). When found, runs
+ * `isGenericRevisionTips` on its content. If the content reads as
+ * generic placeholder text (fewer than 5 numbered/labelled tips, no
+ * topic anchor, no UK awarding-body command word, generic stems like
+ * "revise carefully" / "study hard", literal placeholders like `[Tip
+ * 1]` / `___`), the section content is replaced with the deterministic
+ * builder output.
+ *
+ * When the section is missing entirely the validator does NOT auto-
+ * insert it — Phase 3 is opt-in via the section toggle, mirroring how
+ * `enforceSelfReflectionTopicAnchor` behaves.
+ *
+ * Pure / idempotent — running the validator twice on the same
+ * worksheet yields the same result (a rewrite from the builder always
+ * passes `isGenericRevisionTips`, so the second pass is a no-op).
+ *
+ * The builder is fed `topic / subject / year / examBoard / sendKey`,
+ * plus `commandWordsUsed`, `misconceptions` and `marksUsed` scraped
+ * from the worksheet itself, so the rewrite mirrors the actual
+ * questions the pupil is about to attempt.
+ */
+export function enforceRevisionTipsPresence(
+  ws: PostValidatorWorksheet,
+  opts: PostValidatorOptions = {},
+): PostValidatorResult {
+  const warnings: string[] = [];
+  const sections = ws.sections || [];
+
+  // 1. Find the pupil-facing Revision-Tips section. Teacher copies
+  //    (if any) are skipped.
+  const idx = sections.findIndex(
+    s => String(s.type || "").toLowerCase() === "revision-tips" && !s.teacherOnly,
+  );
+  if (idx < 0) {
+    return { worksheet: ws, warnings };
+  }
+  const section = sections[idx];
+
+  // 2. Resolve topic. Required for any meaningful rewrite — the whole
+  //    point of this validator is the topic anchor.
+  const topic = (opts.topic || String(ws.metadata?.topic || "")).trim();
+  if (!topic) {
+    warnings.push(
+      `Revision-Tips presence enforcement skipped: no topic supplied (neither opts.topic nor metadata.topic).`,
+    );
+    return { worksheet: ws, warnings };
+  }
+
+  // 3. Already topic-anchored and well-formed? No-op.
+  const content = typeof section.content === "string" ? section.content : "";
+  if (!isGenericRevisionTips(content, topic)) {
+    return { worksheet: ws, warnings };
+  }
+
+  // 4. Rewrite via the deterministic builder. The builder is fed the
+  //    actual command words, misconceptions and mark tariffs from the
+  //    rest of the worksheet so the rewrite mirrors what the pupil
+  //    sees on the questions.
+  const sendKey = (opts.sendNeed || "").toLowerCase().replace(/[\s_]/g, "-");
+  const commandWordsUsed = collectCommandWordsUsed(ws);
+  const misconceptions = collectMisconceptions(ws);
+  const marksUsed = collectMarksUsed(ws);
+  const built = buildRevisionTips({
+    topic,
+    subject: opts.subject || String(ws.metadata?.subject || ""),
+    year: opts.yearGroup || String(ws.metadata?.yearGroup || ""),
+    examBoard: opts.examBoard || String(ws.metadata?.examBoard || ""),
+    sendKey,
+    commandWordsUsed,
+    misconceptions,
+    marksUsed,
+  });
+  const rebuilt = renderRevisionTipsAsMarkerBlock(built);
+
+  warnings.push(
+    `Revision-Tips content was generic / not topic-anchored (fewer than 5 tip-shaped lines, no command-word reference, or generic stems like "revise carefully"). Replaced with deterministic builder output (5 tips: command-word, misconception, method, mark-scheme, time — all naming "${topic}").`,
+  );
+
+  const newSections = sections.slice();
+  newSections[idx] = { ...section, content: rebuilt };
+  return { worksheet: { ...ws, sections: newSections }, warnings };
+}
+
 /**
  * Runs every post-generation validator in order. Collects warnings and
  * stamps them onto worksheet.metadata.postValidatorWarnings.
@@ -1083,6 +1291,18 @@ export function runWorksheetPostValidators(
     // last so it sees the final post-validated section list (e.g. after
     // any earlier passes have settled the section types and titles).
     (ws: PostValidatorWorksheet) => enforceSelfReflectionTopicAnchor(ws, opts),
+    // Phase 3 — examiner-voice Revision Tips. Detects generic placeholder
+    // content (fewer than 5 tip-shaped lines, no command-word reference,
+    // no topic anchor, generic stems like "revise carefully", literal
+    // placeholders like `[Tip 1]` / `___`) on the pupil-facing
+    // Revision-Tips section and rewrites it with deterministic builder
+    // output that names "${opts.topic}" / metadata.topic, mirrors the
+    // worksheet's actual command words and mark tariffs, and surfaces a
+    // real misconception when the Common Mistakes section is populated.
+    // Pure / idempotent. Runs last so it sees the final post-validated
+    // section list — including any reconciled mark-scheme that the
+    // earlier reconcileMarkScheme pass has settled.
+    (ws: PostValidatorWorksheet) => enforceRevisionTipsPresence(ws, opts),
   ]) {
     const r = fn(current);
     current = r.worksheet;

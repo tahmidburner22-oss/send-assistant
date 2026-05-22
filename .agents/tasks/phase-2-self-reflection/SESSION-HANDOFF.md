@@ -1,7 +1,9 @@
 # Phase 2 — Session Handoff
 
-This file is the **resume point** for any fresh chat picking up Phase 2.
-Read it first, then `PHASE-PLAN.md`, then proceed.
+> **Status: SHIPPED.** Merged to `main` as PR #75 / commit `6688c31` on
+> 2026-05-22. This file is kept for the historical record so subsequent
+> phases can see exactly which conventions were locked in. Do not edit
+> the conventions block — Phase 3+ inherits it verbatim.
 
 Last updated: see `git log -1 --format=%cI -- .agents/tasks/phase-2-self-reflection/SESSION-HANDOFF.md`
 
@@ -92,12 +94,9 @@ Goal: complete Phase 2 (topic-specific Self-Reflection — builder +
 
 ## What is left (in this branch)
 
-- **Task G — CI run.** `npm test` + `tsc --noEmit` will run on PR push.
-  Sandbox cannot run them locally (`INTEGRATIONS_ONLY`). If CI raises
-  any failures, fix them on this branch.
-
-- **Task H — Open the PR.** Title:
-  `Phase 2 — Topic-specific Self-Reflection (builder + prompt + post-validator)`
+Nothing. PR #75 is merged. Phase 3 picks up the next slice (Revision
+Tips — examiner-voice 5-tip panel) on a fresh branch off `main` — see
+`.agents/tasks/phase-3-revision-tips/`.
 
 ## Codex review feedback addressed (PR #75)
 
