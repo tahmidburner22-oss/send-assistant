@@ -5600,7 +5600,10 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
         const sectionTitle = (typeof section.title === 'string' ? section.title : String(section.title || '')).replace(/^\*{1,2}|\*{1,2}$/g, '').replace(/^_{1,2}|_{1,2}$/g, '').trim();
 
         // ── Section group dividers: inject "SECTION N — NAME — Questions X–Y" before first question in each group ──
-        // Determine section group by question number from title (Q1-Q3 = Recall, Q4-Q6 = Understanding, Q7-Q9 = Application)
+        // Updated question structure (Phase 1):
+        //   Section 1 — Recall:                Q1-Q3 (T/F, MCQ, Gap Fill) + Q4-Q9 (short recall)
+        //   Section 2 — Understanding:          Q10-Q15 (harder understanding questions)
+        //   Section 3 — Application & Analysis: Q16-Q20 (exam-style questions)
         const titleQNum = (() => {
           const t = typeof section.title === "string" ? section.title : "";
           const m = t.match(/Q(\d+)/i);
@@ -5608,25 +5611,25 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
         })();
         const getGroupByQNum = (qn: number | null, type: string): { label: string; qStart: number; qEnd: number } | undefined => {
           if (qn !== null) {
-            if (qn >= 1 && qn <= 3) return { label: "SECTION 1 — RECALL", qStart: 1, qEnd: 3 };
-            if (qn >= 4 && qn <= 6) return { label: "SECTION 2 — UNDERSTANDING", qStart: 4, qEnd: 6 };
-            if (qn >= 7 && qn <= 9) return { label: "SECTION 3 — APPLICATION & ANALYSIS", qStart: 7, qEnd: 9 };
+            if (qn >= 1  && qn <= 9)  return { label: "SECTION 1 — RECALL",                         qStart: 1,  qEnd: 9  };
+            if (qn >= 10 && qn <= 15) return { label: "SECTION 2 — UNDERSTANDING",                  qStart: 10, qEnd: 15 };
+            if (qn >= 16 && qn <= 20) return { label: "SECTION 3 — APPLICATION & ANALYSIS",         qStart: 16, qEnd: 20 };
           }
           // Fallback by type
           const QUESTION_GROUP_MAP: Record<string, { label: string; qStart: number; qEnd: number }> = {
-            "q-true-false":  { label: "SECTION 1 — RECALL",           qStart: 1, qEnd: 3 },
-            "q-mcq":         { label: "SECTION 1 — RECALL",           qStart: 1, qEnd: 3 },
-            "q-gap-fill":    { label: "SECTION 1 — RECALL",           qStart: 1, qEnd: 3 },
-            "q-short-answer":{ label: "SECTION 2 — UNDERSTANDING",           qStart: 4, qEnd: 6 },
-            "q-extended":    { label: "SECTION 3 — APPLICATION & ANALYSIS",  qStart: 7, qEnd: 9 },
-            "q-circuit":     { label: "SECTION 3 — APPLICATION & ANALYSIS",  qStart: 7, qEnd: 9 },
-            "q-draw":        { label: "SECTION 3 — APPLICATION & ANALYSIS",  qStart: 7, qEnd: 9 },
-            "q-graph":       { label: "SECTION 3 — APPLICATION & ANALYSIS",  qStart: 7, qEnd: 9 },
-            "q-data-table":  { label: "SECTION 2 — UNDERSTANDING",           qStart: 4, qEnd: 6 },
-            "q-label-diagram":{ label: "SECTION 2 — UNDERSTANDING",          qStart: 4, qEnd: 6 },
-            "q-ordering":    { label: "SECTION 1 — RECALL",           qStart: 1, qEnd: 3 },
-            "q-matching":    { label: "SECTION 1 — RECALL",           qStart: 1, qEnd: 3 },
-            "q-challenge":   { label: "CHALLENGE QUESTION",                    qStart: 10, qEnd: 12 },
+            "q-true-false":   { label: "SECTION 1 — RECALL",                         qStart: 1,  qEnd: 9  },
+            "q-mcq":          { label: "SECTION 1 — RECALL",                         qStart: 1,  qEnd: 9  },
+            "q-gap-fill":     { label: "SECTION 1 — RECALL",                         qStart: 1,  qEnd: 9  },
+            "q-short-answer": { label: "SECTION 2 — UNDERSTANDING",                  qStart: 10, qEnd: 15 },
+            "q-extended":     { label: "SECTION 3 — APPLICATION & ANALYSIS",         qStart: 16, qEnd: 20 },
+            "q-circuit":      { label: "SECTION 3 — APPLICATION & ANALYSIS",         qStart: 16, qEnd: 20 },
+            "q-draw":         { label: "SECTION 3 — APPLICATION & ANALYSIS",         qStart: 16, qEnd: 20 },
+            "q-graph":        { label: "SECTION 3 — APPLICATION & ANALYSIS",         qStart: 16, qEnd: 20 },
+            "q-data-table":   { label: "SECTION 2 — UNDERSTANDING",                  qStart: 10, qEnd: 15 },
+            "q-label-diagram":{ label: "SECTION 2 — UNDERSTANDING",                  qStart: 10, qEnd: 15 },
+            "q-ordering":     { label: "SECTION 1 — RECALL",                         qStart: 1,  qEnd: 9  },
+            "q-matching":     { label: "SECTION 1 — RECALL",                         qStart: 1,  qEnd: 9  },
+            "q-challenge":    { label: "CHALLENGE QUESTION",                              qStart: 21, qEnd: 23 },
           };
           return QUESTION_GROUP_MAP[type];
         };
