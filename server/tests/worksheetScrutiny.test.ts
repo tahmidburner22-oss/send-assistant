@@ -1188,6 +1188,31 @@ describe("Phase 2 / extractTopicNounPhrase", () => {
     expect(extractTopicNounPhrase("Quadratic Equations")).toBe("quadratic equations");
   });
 
+  it("lower-cases single-word common-noun topics that are not whitelisted proper nouns", () => {
+    // Fix for the over-greedy startsWithProperNoun heuristic flagged in
+    // PR #75 — these are common-noun curriculum titles that previously
+    // leaked title case into mid-sentence templates.
+    expect(extractTopicNounPhrase("Photosynthesis")).toBe("photosynthesis");
+    expect(extractTopicNounPhrase("Respiration")).toBe("respiration");
+    expect(extractTopicNounPhrase("Mitosis")).toBe("mitosis");
+    expect(extractTopicNounPhrase("Bioenergetics")).toBe("bioenergetics");
+    expect(extractTopicNounPhrase("Trigonometry")).toBe("trigonometry");
+  });
+
+  it("preserves apostrophe-led possessive proper nouns even when not whitelisted", () => {
+    // Structural cue: any Title-Case first word ending in apostrophe-s is
+    // treated as a proper noun ("Murphy's Law", "O'Brien's Castle").
+    expect(extractTopicNounPhrase("Murphy's Law")).toBe("Murphy's Law");
+    expect(extractTopicNounPhrase("Pythagoras' Theorem")).toBe("Pythagoras' Theorem");
+  });
+
+  it("preserves Act / Scene / Chapter references even when the head word isn't whitelisted", () => {
+    // Structural cue: literary or historical works with a numbered Act /
+    // Scene / Chapter / Volume / Part keep their casing.
+    expect(extractTopicNounPhrase("Animal Farm Chapter 4")).toBe("Animal Farm Chapter 4");
+    expect(extractTopicNounPhrase("The Tempest Act 2 Scene 1")).toBe("The Tempest Act 2 Scene 1");
+  });
+
   it("returns a usable value for empty / whitespace topics", () => {
     expect(extractTopicNounPhrase("")).toBe("");
     expect(extractTopicNounPhrase("   ")).toBe("");
@@ -1381,6 +1406,41 @@ describe("Phase 2 / isGenericSelfReflection — generic-content detector", () =>
   it("returns true for empty content (so the validator builds something)", () => {
     expect(isGenericSelfReflection("", "Adding fractions")).toBe(true);
     expect(isGenericSelfReflection("   ", "Adding fractions")).toBe(true);
+  });
+
+  it("does not falsely anchor short topic acronyms against incidental substrings", () => {
+    // Fix for the substring-anchor false positive flagged in PR #75:
+    // topic="IT" used to substring-match "write" / "explain", and
+    // topic="AI" used to substring-match "explain" / "fail" / "wait",
+    // letting generic placeholder content sneak through as "topic-
+    // anchored". Word-boundary matching for short needles closes that.
+    const generic =
+      "CONFIDENCE_TABLE:\n" +
+      "I can write something interesting.\n" +
+      "I can explain my thinking clearly.\n" +
+      "I can find a good example.\n" +
+      "I can show that I have understood.\n" +
+      "I can determine my next step.\n" +
+      "EXIT_TICKET: Write ONE thing you learned today.";
+    expect(isGenericSelfReflection(generic, "IT")).toBe(true);
+    expect(isGenericSelfReflection(generic, "AI")).toBe(true);
+    expect(isGenericSelfReflection(generic, "UK")).toBe(true);
+  });
+
+  it("still anchors correctly when the short acronym is genuinely present as a word", () => {
+    // The fix should not over-correct: when "IT" / "AI" appear as actual
+    // standalone tokens (which is how the topic word would appear in a
+    // genuine reflection statement), the validator should still treat
+    // the content as topic-anchored.
+    const ok =
+      "CONFIDENCE_TABLE:\n" +
+      "I can describe how IT is used in classrooms.\n" +
+      "I can explain the role of IT in modern teaching.\n" +
+      "I can identify IT systems used in primary schools.\n" +
+      "I can compare different IT tools for SEND learners.\n" +
+      "I can evaluate the benefits of IT for accessibility.\n" +
+      "EXIT_TICKET: Write ONE thing you learned today about IT in a single sentence.";
+    expect(isGenericSelfReflection(ok, "IT")).toBe(false);
   });
 });
 

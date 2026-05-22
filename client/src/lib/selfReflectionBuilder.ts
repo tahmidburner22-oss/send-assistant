@@ -193,6 +193,106 @@ export function pickCommandWords(
 // ─── Topic-noun extraction ──────────────────────────────────────────────────
 
 /**
+ * Curated set of genuine proper-noun heads that lead UK KS3 / GCSE / KS5
+ * curriculum topics. When the FIRST WORD of a topic (case-insensitive,
+ * with possessive `'s` / `'` stripped) matches one of these, the topic is
+ * preserved in its given casing so reflection statements like
+ * "I can analyse Macbeth's tragic flaw" read correctly.
+ *
+ * Conservative on purpose. Anything not listed (and without a structural
+ * proper-noun cue — possessive apostrophe, Act/Scene reference, X-and-Y
+ * pattern) falls through to lowercase, which is the safe default for
+ * common-noun curriculum titles like "Adding Fractions" or
+ * "Quadratic Equations" so they read naturally in mid-sentence templates.
+ */
+const PROPER_NOUN_HEADS = new Set<string>([
+  // English Literature — texts and authors
+  "macbeth", "hamlet", "othello", "lear", "tempest", "romeo", "juliet",
+  "shakespeare", "shakespearean", "shakespeare's",
+  "frankenstein", "jekyll", "hyde", "dracula", "godot", "gatsby",
+  "crucible", "mockingbird", "1984",
+  "dickens", "stevenson", "orwell", "priestley", "atwood", "austen",
+  "brontë", "bronte", "wilde", "heaney", "duffy", "armitage", "blake",
+  // Religions and belief systems
+  "christianity", "christian", "christians", "christ", "jesus",
+  "islam", "islamic", "muslim", "muslims",
+  "judaism", "jewish", "jews",
+  "hinduism", "hindu", "hindus",
+  "buddhism", "buddhist", "buddhists", "buddha",
+  "sikhism", "sikh", "sikhs",
+  "humanism", "humanist", "humanists",
+  "god", "allah", "muhammad", "krishna",
+  // History — periods, peoples, individuals
+  "norman", "normans", "saxon", "saxons", "viking", "vikings",
+  "anglo", "anglo-saxon", "anglo-saxons",
+  "tudor", "tudors", "stuart", "stuarts", "georgian", "victorian",
+  "edwardian", "elizabethan",
+  "british", "english", "european", "american", "russian", "german",
+  "french", "spanish", "italian", "japanese", "chinese", "indian",
+  "roman", "romans", "greek", "greeks", "egyptian", "egyptians", "mayan",
+  "aztec", "aztecs", "inca", "incas",
+  "nazi", "nazis", "soviet", "soviets", "ottoman", "ottomans", "holocaust",
+  "henry", "elizabeth", "victoria", "edward", "george", "william",
+  "richard", "mary",
+  "hitler", "stalin", "lenin", "napoleon", "churchill", "cromwell",
+  "gandhi", "mandela",
+  "world", "wwi", "wwii",
+  // Geography — places and major regions
+  "africa", "africa's", "asia", "europe", "americas", "antarctica", "arctic",
+  "britain", "britain's", "england", "england's", "scotland", "wales",
+  "ireland", "uk", "us", "usa", "russia", "china", "india",
+  "germany", "france", "japan", "brazil", "kenya", "egypt",
+  "amazon", "sahara", "himalayas",
+  "london", "paris", "rome", "tokyo", "mumbai", "delhi",
+  // Sciences — eponyms
+  "newton", "einstein", "darwin", "mendel", "watson", "crick",
+  "hooke", "kelvin", "celsius", "fahrenheit",
+  "faraday", "ohm", "boyle", "charles",
+  "pythagoras", "pythagorean", "fibonacci", "euler",
+  // Computing — languages and platforms
+  "python", "java", "javascript", "html", "css", "sql", "linux", "windows",
+]);
+
+/**
+ * Returns true when the topic is led by a genuine proper noun and should
+ * have its original casing preserved. Combines a curated whitelist of
+ * common UK-curriculum proper-noun heads with structural cues (possessive
+ * apostrophe-s, Act / Scene / Chapter / Volume references, "X and Y"
+ * pattern between two Title-Case words).
+ *
+ * Common-noun curriculum titles like "Adding Fractions" or "Quadratic
+ * Equations" or "Photosynthesis" return false — they fall through to the
+ * lowercase fallback so they read naturally inside mid-sentence "I can …"
+ * templates ("I can describe photosynthesis", not "I can describe
+ * Photosynthesis").
+ */
+function isProperNounLed(t: string): boolean {
+  if (!t) return false;
+  const tokens = t.split(/\s+/);
+  const firstWord = tokens[0] || "";
+  if (!firstWord) return false;
+  // Possessive apostrophe-s on a capitalised first word ("Newton's",
+  // "Murphy's", "Pythagoras'") is a high-confidence proper-noun signal.
+  if (/^[A-Z][a-zA-Zà-ÿ]+['’](s)?$/.test(firstWord)) return true;
+  // Curated whitelist match (case-insensitive, with possessive suffix
+  // stripped so "Newton's" and "Newton" both lookup as "newton").
+  const key = firstWord.toLowerCase().replace(/['’]s?$/, "");
+  if (PROPER_NOUN_HEADS.has(key)) return true;
+  // Act / Scene / Chapter / Book / Volume / Part references with a
+  // numeral suffix indicate a literary or historical proper noun
+  // ("Macbeth Act 1 Scene 5", "Of Mice and Men Chapter 2") even when
+  // the first word isn't whitelisted.
+  if (/\b(Act|Scene|Chapter|Book|Volume|Part|Canto|Stanza)\s+(\d+|[IVX]+)\b/i.test(t)) {
+    return true;
+  }
+  // "X and Y" between two Title-Case words ("Romeo and Juliet",
+  // "Watson and Crick", "Marx and Engels") — preserves the canonical
+  // casing of paired proper nouns even when only one is whitelisted.
+  if (/^[A-Z][a-zA-Z]+\s+(and|&)\s+[A-Z][a-zA-Z]+/.test(t)) return true;
+  return false;
+}
+
+/**
  * Strips a topic string down to its essential noun phrase so it reads
  * naturally inside an "I can …" statement.
  *
@@ -200,6 +300,10 @@ export function pickCommandWords(
  *   "Quadratic Equations"             → "quadratic equations"
  *   "The Heart"                       → "the heart"
  *   "Macbeth Act 1 Scene 5"           → "Macbeth Act 1 Scene 5"
+ *   "Newton's Laws"                   → "Newton's Laws"
+ *   "Romeo and Juliet"                → "Romeo and Juliet"
+ *   "Photosynthesis"                  → "photosynthesis"
+ *   "Adding Fractions"                → "adding fractions"
  *   "An Introduction to Photosynthesis" → "photosynthesis"
  *   "Adding fractions"                → "adding fractions"
  */
@@ -210,11 +314,12 @@ export function extractTopicNounPhrase(topic: string): string {
   // are domain proper nouns (GDPR, NHS, BBC, GCSE, AQA, KS3, …) and read
   // wrong as "I can describe gdpr".
   if (/^[A-Z][A-Z0-9]{1,7}$/.test(t)) return t;
-  // Strip leading article-prefixes that read awkwardly inside "about X".
-  // Keep the full string for proper-noun-led topics (Macbeth, Newton's Laws).
-  const startsWithProperNoun = /^[A-Z]/.test(t) && /^[A-Z][a-z]+(\s|$)/.test(t)
-    && !/^(The|An|A|Introduction|An Introduction|The Introduction)\b/i.test(t);
-  if (startsWithProperNoun) return t;
+  // Genuine proper-noun-led topics keep their given casing. Common-noun
+  // titles (the default) fall through to the lowercase strip below — so
+  // "Adding Fractions" / "Quadratic Equations" / "Photosynthesis" become
+  // reading-natural noun phrases rather than leaking title case into
+  // mid-sentence templates.
+  if (isProperNounLed(t)) return t;
   const stripped = t
     .replace(/^An Introduction to\s+/i, "")
     .replace(/^Introduction to\s+/i, "")
@@ -401,13 +506,32 @@ export function isGenericSelfReflection(content: string, topic: string): boolean
   const nounWords = nounRoot.split(/\s+/).filter(w => w.length >= 3);
   const textLower = text.toLowerCase();
 
+  // For short topic roots (< 4 chars) like "IT", "AI", "UK", "EU" the
+  // substring `nounRoot` appears incidentally in many unrelated words
+  // ("write" contains "it", "explain" contains "ai"). Substring-matching
+  // those would let generic content sneak through as "topic-anchored".
+  // We therefore require a word-boundary match for short needles.
+  // Longer needles keep substring matching so plurals and possessives
+  // ("fraction" → "fractions", "Macbeth" → "Macbeth's") still anchor.
+  const needsBoundary = (needle: string): boolean => needle.length < 4;
+  const escapeForRegex = (s: string): string => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const containsNeedle = (haystack: string, needle: string): boolean => {
+    if (!needle) return false;
+    if (needsBoundary(needle)) {
+      const re = new RegExp(`\\b${escapeForRegex(needle)}\\b`);
+      return re.test(haystack);
+    }
+    return haystack.includes(needle);
+  };
+
   const mentionsTopic = (s: string): boolean => {
     if (!nounRoot) return false;
     const lower = s.toLowerCase();
-    if (lower.includes(nounRoot)) return true;
-    // Allow partial-word matches (≥3 chars) for multi-word topics so
-    // "fraction" matches "fractions", "Macbeth" matches "Macbeth's".
-    return nounWords.some(w => lower.includes(w));
+    if (containsNeedle(lower, nounRoot)) return true;
+    // Allow partial-word matches (≥3 chars, with word-boundary safety on
+    // 3-char tokens) for multi-word topics so "fraction" matches
+    // "fractions", "Macbeth" matches "Macbeth's".
+    return nounWords.some(w => containsNeedle(lower, w));
   };
 
   // Find the I-can statement region (CONFIDENCE_TABLE: marker, or all

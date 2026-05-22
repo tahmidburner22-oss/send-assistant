@@ -99,6 +99,47 @@ Goal: complete Phase 2 (topic-specific Self-Reflection — builder +
 - **Task H — Open the PR.** Title:
   `Phase 2 — Topic-specific Self-Reflection (builder + prompt + post-validator)`
 
+## Codex review feedback addressed (PR #75)
+
+Two P2 review comments on `client/src/lib/selfReflectionBuilder.ts`:
+
+- **`startsWithProperNoun` was too greedy.** The original heuristic
+  treated every Title-Case-led topic as a proper noun, so common
+  curriculum titles like "Adding Fractions", "Quadratic Equations"
+  and "Photosynthesis" were preserved in title case and leaked into
+  mid-sentence "I can …" templates. Replaced with `isProperNounLed(t)`
+  combining a curated whitelist of UK-curriculum proper-noun heads
+  (Macbeth / Newton / Pythagoras / Christianity / Norman / …) with
+  structural cues (possessive apostrophe-s, Act/Scene/Chapter/Volume
+  references, "X and Y" between Title-Case words). Default is now
+  lowercase — proper-noun preservation is the explicit case.
+- **Substring topic-anchor false positives on short acronyms.** Topic
+  `"IT"` substring-matched `write`/`explain`; topic `"AI"` substring-
+  matched `explain`/`fail`. Generic content slipped through as
+  topic-anchored. Added a `containsNeedle` helper that requires a
+  word-boundary match for needles `< 4` chars and keeps substring
+  matching for longer needles (so plurals/possessives like
+  `fraction`→`fractions`, `Macbeth`→`Macbeth's` still anchor).
+  Applied in both the `nounRoot` and `nounWords` paths of
+  `isGenericSelfReflection`.
+
+Tests added in `server/tests/worksheetScrutiny.test.ts`:
+
+- `extractTopicNounPhrase` lower-cases single-word common-noun topics
+  (`Photosynthesis`, `Respiration`, `Mitosis`, `Bioenergetics`,
+  `Trigonometry`).
+- `extractTopicNounPhrase` preserves apostrophe-led possessive proper
+  nouns even outside the whitelist (`Murphy's Law`,
+  `Pythagoras' Theorem`).
+- `extractTopicNounPhrase` preserves Act/Scene/Chapter references even
+  when the head word isn't whitelisted (`Animal Farm Chapter 4`,
+  `The Tempest Act 2 Scene 1`).
+- `isGenericSelfReflection` does not falsely anchor short acronym
+  topics (`IT`, `AI`, `UK`) against incidental substrings in
+  `write`/`explain`/`find`.
+- `isGenericSelfReflection` still anchors correctly when the short
+  acronym appears as a genuine standalone token.
+
 ## Conventions to honour (inherited from Phase 1)
 
 - **Single source of truth.** The Self-Reflection surface lives in
