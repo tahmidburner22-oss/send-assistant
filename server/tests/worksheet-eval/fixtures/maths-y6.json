@@ -1,0 +1,26 @@
+{
+  "id": "maths-y6",
+  "title": "Year 6 Maths — Long multiplication",
+  "bucket": "maths",
+  "params": {
+    "subject": "Mathematics",
+    "topic": "Long multiplication",
+    "yearGroup": "Year 6",
+    "examBoard": "AQA",
+    "difficulty": "medium",
+    "includeAnswers": true
+  },
+  "rules": [
+    "mcq-single-correct",
+    "word-bank-deduped",
+    "no-foreign-diagrams",
+    "spec-ref-present",
+    "qa-score-floor",
+    "reading-age-in-range"
+  ],
+  "readingAgeRange": [
+    9,
+    13
+  ],
+  "estimatedTokens": 4000
+}

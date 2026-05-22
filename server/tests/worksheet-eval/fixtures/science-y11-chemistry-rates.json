@@ -1,0 +1,26 @@
+{
+  "id": "science-y11-chemistry-rates",
+  "title": "Year 11 Chemistry — Rates of reaction",
+  "bucket": "science",
+  "params": {
+    "subject": "Chemistry",
+    "topic": "Rates of reaction",
+    "yearGroup": "Year 11",
+    "examBoard": "AQA",
+    "difficulty": "medium",
+    "includeAnswers": true
+  },
+  "rules": [
+    "mcq-single-correct",
+    "word-bank-deduped",
+    "no-foreign-diagrams",
+    "spec-ref-present",
+    "qa-score-floor",
+    "reading-age-in-range"
+  ],
+  "readingAgeRange": [
+    14,
+    18
+  ],
+  "estimatedTokens": 4000
+}

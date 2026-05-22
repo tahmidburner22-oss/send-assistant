@@ -1,0 +1,27 @@
+{
+  "id": "send-autism-y10-history",
+  "title": "Year 10 History (autism) — Elizabethan religious settlement",
+  "bucket": "send",
+  "params": {
+    "subject": "History",
+    "topic": "Elizabethan religious settlement",
+    "yearGroup": "Year 10",
+    "examBoard": "AQA",
+    "sendNeed": "autism",
+    "difficulty": "medium",
+    "includeAnswers": true
+  },
+  "rules": [
+    "mcq-single-correct",
+    "word-bank-deduped",
+    "no-foreign-diagrams",
+    "spec-ref-present",
+    "qa-score-floor",
+    "send-fidelity-floor"
+  ],
+  "readingAgeRange": [
+    13,
+    17
+  ],
+  "estimatedTokens": 4000
+}

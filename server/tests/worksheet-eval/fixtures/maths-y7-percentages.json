@@ -1,0 +1,26 @@
+{
+  "id": "maths-y7-percentages",
+  "title": "Year 7 Maths — Percentages of amounts",
+  "bucket": "maths",
+  "params": {
+    "subject": "Mathematics",
+    "topic": "Percentages of amounts",
+    "yearGroup": "Year 7",
+    "examBoard": "Edexcel",
+    "difficulty": "medium",
+    "includeAnswers": true
+  },
+  "rules": [
+    "mcq-single-correct",
+    "word-bank-deduped",
+    "no-foreign-diagrams",
+    "spec-ref-present",
+    "qa-score-floor",
+    "reading-age-in-range"
+  ],
+  "readingAgeRange": [
+    10,
+    14
+  ],
+  "estimatedTokens": 4000
+}

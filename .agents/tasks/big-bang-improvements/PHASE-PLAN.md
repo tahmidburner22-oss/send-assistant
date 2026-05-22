@@ -84,7 +84,7 @@ PRs are ordered so that:
 | PR-2   | New pure post-validators — command-word fidelity, SI-unit normaliser, reading-age budget           | #1 #2 #11 #14 #18                            | shipped — PR #86 |
 | PR-3   | Diagram dependency integrity, distractor pedagogy probe, Tier-3 vocabulary audit, notation hygiene | #4 #10 #13 #15                               | shipped — PR #87 |
 | PR-4   | Quality scorecard — wire WorksheetQAScore (already in schema, never computed)                      | #50                                          | shipped — PR #88 |
-| PR-5   | Eval harness FEAT-PR5 — 200 canonical UK NC + GCSE prompts + golden-output runner                  | #44                                          | not started |
+| PR-5   | Eval harness FEAT-PR5 — 200 canonical UK NC + GCSE prompts + golden-output runner                  | #44                                          | shipped — PR pending |
 | PR-6   | Audit-trail panel — surface coverageMap / aoHistogram / fidelityReport in one teacher-facing view  | #79                                          | not started |
 | PR-7   | Server-prompt unification — port curriculumAuthorityPrompt to server/routes/ai.ts                  | #39                                          | not started |
 | PR-8   | Data-driven post-validator chain — array-of-fn registration, per-validator enable / disable        | #74                                          | not started |

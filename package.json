@@ -13,6 +13,7 @@
     "check": "tsc --noEmit",
     "format": "prettier --write .",
     "test": "vitest run",
+    "eval:worksheets": "tsx server/tests/worksheet-eval/runner.ts",
     "db:push": "drizzle-kit generate && drizzle-kit migrate",
     "dev:server": "NODE_ENV=development tsx watch server/index.ts",
     "dev:client": "vite",

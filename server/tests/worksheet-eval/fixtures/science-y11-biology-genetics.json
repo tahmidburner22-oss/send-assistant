@@ -1,0 +1,26 @@
+{
+  "id": "science-y11-biology-genetics",
+  "title": "Year 11 Biology — Mendelian genetics",
+  "bucket": "science",
+  "params": {
+    "subject": "Biology",
+    "topic": "Mendelian genetics",
+    "yearGroup": "Year 11",
+    "examBoard": "AQA",
+    "difficulty": "medium",
+    "includeAnswers": true
+  },
+  "rules": [
+    "mcq-single-correct",
+    "word-bank-deduped",
+    "no-foreign-diagrams",
+    "spec-ref-present",
+    "qa-score-floor",
+    "reading-age-in-range"
+  ],
+  "readingAgeRange": [
+    14,
+    18
+  ],
+  "estimatedTokens": 4000
+}

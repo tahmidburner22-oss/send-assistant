@@ -1,0 +1,27 @@
+{
+  "id": "send-dyscalculia-y8-maths",
+  "title": "Year 8 Mathematics (dyscalculia) — Equivalent fractions",
+  "bucket": "send",
+  "params": {
+    "subject": "Mathematics",
+    "topic": "Equivalent fractions",
+    "yearGroup": "Year 8",
+    "examBoard": "AQA",
+    "sendNeed": "dyscalculia",
+    "difficulty": "medium",
+    "includeAnswers": true
+  },
+  "rules": [
+    "mcq-single-correct",
+    "word-bank-deduped",
+    "no-foreign-diagrams",
+    "spec-ref-present",
+    "qa-score-floor",
+    "send-fidelity-floor"
+  ],
+  "readingAgeRange": [
+    10,
+    14
+  ],
+  "estimatedTokens": 4000
+}
