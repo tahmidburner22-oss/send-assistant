@@ -11,8 +11,9 @@ then `LEDGER.md` for the per-item detail.
 > design decisions, open questions). Keep it ~200 lines or under.
 
 Last updated: 2026-05-22 (PR-6 in flight on branch
-`big-bang/pr-6-audit-trail-panel`; PR-1 (#85) and PR-4 (#88) merged;
-PR-2 (#86), PR-3 (#87) and PR-5 (#89) open).
+`big-bang/pr-6-audit-trail-panel`, PR #90; PR-1 (#85), PR-2 (#86),
+PR-4 (#88) and PR-5 (#89) merged; PR-3 (#87) open with conflicts
+re-resolved against current main).
 
 ## Quick-resume header (paste into a fresh chat)
 
@@ -102,7 +103,7 @@ Goal: complete the next un-shipped PR in the "What is next" section
   lands in PR-22.
 
 - **PR-6 — Audit-trail panel: "Why this looks like this" teacher
-  view** (branch `big-bang/pr-6-audit-trail-panel`, PR pending push).
+  view** (branch `big-bang/pr-6-audit-trail-panel`, PR #90).
   Audit item **#79**. Single consolidated read-only panel that
   surfaces the audit metadata the chain already stamps —
   `metadata.qaScore` (PR-4), `metadata.coverageMap` (FEAT-PC10),
@@ -144,8 +145,7 @@ Goal: complete the next un-shipped PR in the "What is next" section
 
 ## What is in flight
 
-- **PR-2 (#86), PR-3 (#87), PR-5 (#89), PR-6** push + open / merge
-  bookkeeping.
+- **PR-3 (#87), PR-6 (#90)** push + open / merge bookkeeping.
 
 ## What is next
 
@@ -217,6 +217,59 @@ Branch name: `big-bang/pr-7-server-prompt-unification`.
    files you read, gotchas, open questions for the next chat.
 
 ## Notes (transient, per-session scratchpad)
+
+### PR-5 design decisions
+
+**Fixture count: 50, not 200.** The PHASE-PLAN headline copy says
+"200 canonical UK NC + GCSE prompts" but the upstream FEAT-PR5 spec
+([`.agents/tasks/phase-a-class-aware/features/FEAT-PR5.json`](../phase-a-class-aware/features/FEAT-PR5.json))
+calls for **50** fixtures — explicitly enumerated as 10 maths / 10
+English / 10 science / 10 humanities / 10 SEND. Followed the spec.
+Expanding to 200 is additive — re-run `scripts/_gen-eval-fixtures.mjs`
+with more cases per bucket. Not blocked by anything in this PR.
+
+**Mock generator is the default.** The sandbox is `INTEGRATIONS_ONLY`
+and CI on PR push runs without API keys. The mock produces a
+deterministic well-formed worksheet (LO + Word-Bank + worked-example
++ 7 valid q-* sections + mark-scheme + self-reflection +
+revision-tips + populated metadata.generatorVersion) so the harness
+wiring can be exercised end-to-end at $0. Live mode requires
+`EVAL_MODE=live` plus at least one of `EVAL_OPENAI_KEY` /
+`EVAL_ANTHROPIC_KEY` / `EVAL_GROQ_KEY` / `EVAL_GEMINI_KEY` /
+`EVAL_OPENROUTER_KEY`. The live generator dynamically imports
+`aiGenerateWorksheet` and shims `localStorage` so the
+browser-coupled module runs under Node. Both modes return identical
+shapes downstream.
+
+**Cost guard runs before any generation call.** Pre-flight estimate
+is `fixtures.length × generator.estimatedCostUsd`. Mock estimates $0,
+so the guard is a no-op in mock mode. Live mode estimates $0.008 per
+call (≈ GPT-4o-mini at 4k tokens), giving ~$0.40 for the 50-fixture
+corpus — comfortably under the $1.00 default budget.
+
+**Rule registry is open-set, not enum.** Adding a rule is a single
+function in `rules.ts`. Fixtures can list any subset of rule names;
+unknown names fail with reason "rule not registered" rather than
+silently passing. The 7 built-ins cover the post-validator surfaces
+shipped through PR-4. Future PRs can add rules without touching the
+runner (e.g. PR-13's mark-scheme reconciler will register
+`mark-scheme-reconciled`; PR-23's diagram pipeline will register
+`diagram-page-fit`).
+
+**Workflow does NOT block PRs.** Per the FEAT-PR5 spec, this PR ships
+the harness but not the gate. The blocking gate lands in **PR-22**
+once a stable baseline has settled. The nightly cron uploads
+`eval-report.json` as an artefact and writes a markdown table to
+`$GITHUB_STEP_SUMMARY` so regressions are visible without downloading
+the JSON.
+
+**One-shot fixture generator** lives at
+`scripts/_gen-eval-fixtures.mjs`. The leading underscore matches the
+convention the runner uses to skip non-fixture files in the
+fixtures directory. Re-run it any time the case lists need to be
+regenerated (subject coverage, year-group bands, SEND profile mix).
+
+### Pre-existing notes
 
 ### Resolver-order bug: `semh` masked behind `anxiety`
 

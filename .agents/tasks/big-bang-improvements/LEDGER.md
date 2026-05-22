@@ -11,8 +11,8 @@ Last bulk-updated: 2026-05-22 (initial seed).
 
 | #  | Item                                                                                  | PR     | Status      |
 | -- | ------------------------------------------------------------------------------------- | ------ | ----------- |
-| 1  | Per-question reading-age enforcement                                                  | PR-2   | not started |
-| 2  | Awarding-body command-word fidelity audit                                             | PR-2   | not started |
+| 1  | Per-question reading-age enforcement                                                  | PR-2   | shipped — PR #86 |
+| 2  | Awarding-body command-word fidelity audit                                             | PR-2   | shipped — PR #86 |
 | 3  | Past-paper verbatim / fingerprint detection                                           | PR-15  | not started |
 | 4  | Distractor pedagogy audit on MCQs                                                     | PR-3   | not started |
 | 5  | Synonym / equivalent-answer expansion in mark schemes                                 | PR-13  | not started |
@@ -21,14 +21,14 @@ Last bulk-updated: 2026-05-22 (initial seed).
 | 8  | Question-difficulty Bloom-monotonicity check                                          | PR-14  | not started |
 | 9  | Sciences "Working:" stub on calc questions                                            | PR-14  | not started |
 | 10 | Vocabulary tier audit (Tier 3 words declared in Word Bank)                            | PR-3   | not started |
-| 11 | Cross-curricular UK context whitelist                                                 | PR-2   | not started |
+| 11 | Cross-curricular UK context whitelist                                                 | PR-2   | shipped — PR #86 |
 | 12 | Cultural-context bias audit (PD9)                                                     | PR-12  | not started |
 | 13 | Mathematical notation hygiene (× vs x, − vs -, ° vs o)                                | PR-3   | not started |
-| 14 | SI unit normalisation (mph → km/h, lbs → kg, °F → °C, in/ft → cm/m)                   | PR-2   | not started |
+| 14 | SI unit normalisation (mph → km/h, lbs → kg, °F → °C, in/ft → cm/m)                   | PR-2   | shipped — PR #86 |
 | 15 | Diagram-question coupling check                                                       | PR-3   | not started |
 | 16 | Common Mistakes for non-maths                                                         | PR-3   | not started |
 | 17 | Misconception bank backing (formal registry)                                          | PR-13  | not started |
-| 18 | Self-Reflection: command-word echo guarantee                                          | PR-2   | not started |
+| 18 | Self-Reflection: command-word echo guarantee                                          | PR-2   | shipped — PR #86 |
 | 19 | Revision-Tips: time-budget reconcile with estimatedTime                               | PR-13  | not started |
 | 20 | Knowledge organiser auto-extract per topic (PD10)                                     | PR-10  | not started |
 | 21 | Anchor-poster + Now/Next/Then card outputs (PD11)                                     | PR-10  | not started |
@@ -59,7 +59,7 @@ Last bulk-updated: 2026-05-22 (initial seed).
 | 41 | Structured-output retry with diagnostic-only re-prompt                                | PR-9   | not started |
 | 42 | Token budget transparency (PD13)                                                      | PR-9   | not started |
 | 43 | Generation cache by hash key (PD13)                                                   | PR-9   | not started |
-| 44 | Eval harness FEAT-PR5 (200 canonical UK NC + GCSE prompts)                            | PR-5   | not started |
+| 44 | Eval harness FEAT-PR5 (200 canonical UK NC + GCSE prompts)                            | PR-5   | shipped — PR #89 |
 | 45 | A/B prompt experiment framework                                                       | PR-20  | not started |
 | 46 | Per-subject prompt families refactor                                                  | PR-20  | not started |
 | 47 | Self-consistency sampling on extended-answer questions                                | PR-20  | not started |
@@ -99,7 +99,7 @@ Last bulk-updated: 2026-05-22 (initial seed).
 
 | #  | Item                                                                                  | PR     | Status      |
 | -- | ------------------------------------------------------------------------------------- | ------ | ----------- |
-| 79 | "Why this worksheet looks like this" teacher-facing audit panel                       | PR-6   | shipped — PR pending |
+| 79 | "Why this worksheet looks like this" teacher-facing audit panel                       | PR-6   | shipped — PR #90 pending |
 | 80 | "Edit my worksheet" surface that learns                                               | PR-25  | not started |
 | 81 | Pupil-facing companion app (consumes companionShare / hint ladders)                   | PR-26  | not started |
 | 82 | Stack multiple SEND profiles per worksheet (sendNeed → sendNeeds[])                   | PR-16  | not started |

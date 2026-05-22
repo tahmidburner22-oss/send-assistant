@@ -1,0 +1,26 @@
+{
+  "id": "english-y11-dickens",
+  "title": "Year 11 English — A Christmas Carol — Stave 1",
+  "bucket": "english",
+  "params": {
+    "subject": "English",
+    "topic": "A Christmas Carol — Stave 1",
+    "yearGroup": "Year 11",
+    "examBoard": "AQA",
+    "difficulty": "medium",
+    "includeAnswers": true
+  },
+  "rules": [
+    "mcq-single-correct",
+    "word-bank-deduped",
+    "no-foreign-diagrams",
+    "spec-ref-present",
+    "qa-score-floor",
+    "reading-age-in-range"
+  ],
+  "readingAgeRange": [
+    14,
+    18
+  ],
+  "estimatedTokens": 4000
+}

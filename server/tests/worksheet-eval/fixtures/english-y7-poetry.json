@@ -1,0 +1,26 @@
+{
+  "id": "english-y7-poetry",
+  "title": "Year 7 English — Identifying poetic devices",
+  "bucket": "english",
+  "params": {
+    "subject": "English",
+    "topic": "Identifying poetic devices",
+    "yearGroup": "Year 7",
+    "examBoard": "AQA",
+    "difficulty": "medium",
+    "includeAnswers": true
+  },
+  "rules": [
+    "mcq-single-correct",
+    "word-bank-deduped",
+    "no-foreign-diagrams",
+    "spec-ref-present",
+    "qa-score-floor",
+    "reading-age-in-range"
+  ],
+  "readingAgeRange": [
+    10,
+    14
+  ],
+  "estimatedTokens": 4000
+}
