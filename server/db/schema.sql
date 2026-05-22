@@ -546,3 +546,23 @@ CREATE TABLE IF NOT EXISTS platform_stats (
   value INTEGER NOT NULL DEFAULT 0,
   updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
+
+
+-- ── PR-9 — audit item #43 — Generation cache by hash key (PD13) ──────────────
+-- Server-side content-addressable store for expensive worksheet generations.
+-- Keys come from `client/src/lib/aiCacheKey.ts:buildCacheKey` so the client,
+-- the server and the eval harness agree on canonical request shape.
+--
+-- The wrapper in `server/lib/generationCache.ts` defaults to an in-memory
+-- LRU; production can swap the backend to a SQL adapter that reads/writes
+-- this table without touching any caller code. Migration is idempotent so
+-- it stays safe to run on every boot.
+CREATE TABLE IF NOT EXISTS generation_cache (
+  key TEXT PRIMARY KEY,
+  payload TEXT NOT NULL,
+  inserted_at TEXT NOT NULL DEFAULT (datetime('now')),
+  expires_at TEXT,
+  hits INTEGER NOT NULL DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS idx_generation_cache_expires
+  ON generation_cache(expires_at);

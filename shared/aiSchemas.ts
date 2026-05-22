@@ -270,6 +270,33 @@ export const WorksheetOutputSchema = z.object({
       questionIdx: z.number().int().min(0).optional(),
       generatedAt: z.string().optional(),
     }).optional(),
+    /** PR-9 / audit item #42 — token + cost transparency (PD13).
+     *  Stamped by the generator wrapper when the upstream LLM provider
+     *  returns usage metadata. All fields optional because providers
+     *  (and lower-tier model paths) report different shapes — `provider`
+     *  + `model` always present when this block is set; token counts
+     *  and `estimatedUsd` filled when the upstream gave them. The
+     *  per-provider unit-price table lives in
+     *  `client/src/lib/aiCostEstimate.ts` so prompt callers and audit
+     *  surfaces share one source of truth. */
+    costEstimate: z.object({
+      provider: z.string().min(1).max(60),
+      model: z.string().min(1).max(120),
+      promptTokens: z.number().int().min(0).max(500_000).optional(),
+      completionTokens: z.number().int().min(0).max(500_000).optional(),
+      estimatedUsd: z.number().min(0).max(100).optional(),
+      pricedAt: z.string().optional(),
+    }).optional(),
+    /** PR-9 / audit item #43 — generation cache by hash key (PD13).
+     *  `cacheKey` is the deterministic hash of the cache-relevant
+     *  request fields (subject / topic / yearGroup / examBoard / sendNeed
+     *  / generatorVersion / etc.) computed by
+     *  `client/src/lib/aiCacheKey.ts`. `cacheHit` is `true` when the
+     *  worksheet was served from the server-side cache and `false`
+     *  when it was a fresh generation; absent on legacy worksheets
+     *  generated before the cache scaffolding shipped. */
+    cacheKey: z.string().min(1).max(200).optional(),
+    cacheHit: z.boolean().optional(),
   }).optional(),
   isAI: z.boolean().optional(),
   provider: z.string().optional(),

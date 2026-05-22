@@ -56,9 +56,9 @@ Last bulk-updated: 2026-05-22 (initial seed).
 | -- | ------------------------------------------------------------------------------------- | ------ | ----------- |
 | 39 | Server-side prompt unification (port manifesto into server/routes/ai.ts)              | PR-7   | not started |
 | 40 | Prompt versioning + diff store                                                        | PR-11  | not started |
-| 41 | Structured-output retry with diagnostic-only re-prompt                                | PR-9   | not started |
-| 42 | Token budget transparency (PD13)                                                      | PR-9   | not started |
-| 43 | Generation cache by hash key (PD13)                                                   | PR-9   | not started |
+| 41 | Structured-output retry with diagnostic-only re-prompt                                | PR-9   | shipped — PR pending |
+| 42 | Token budget transparency (PD13)                                                      | PR-9   | shipped — PR pending |
+| 43 | Generation cache by hash key (PD13)                                                   | PR-9   | shipped — PR pending |
 | 44 | Eval harness FEAT-PR5 (200 canonical UK NC + GCSE prompts)                            | PR-5   | shipped — PR #89 |
 | 45 | A/B prompt experiment framework                                                       | PR-20  | not started |
 | 46 | Per-subject prompt families refactor                                                  | PR-20  | not started |
@@ -91,7 +91,7 @@ Last bulk-updated: 2026-05-22 (initial seed).
 | 73 | ai.ts second carve-up by prompt section                                               | PR-21  | not started |
 | 74 | Data-driven post-validator chain                                                      | PR-8   | not started |
 | 75 | Property-based tests on builders                                                      | PR-21  | not started |
-| 76 | Logging redaction for pupil names + IEP content                                       | PR-9   | not started |
+| 76 | Logging redaction for pupil names + IEP content                                       | PR-9   | shipped — PR pending (partial; remainder in PR-22) |
 | 77 | Snapshot tests by (subject × year × send-need × ability tier) matrix                  | PR-21  | not started |
 | 78 | Crash-free render rate metric                                                         | PR-22  | not started |
 

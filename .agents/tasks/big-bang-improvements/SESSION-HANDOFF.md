@@ -10,10 +10,10 @@ then `LEDGER.md` for the per-item detail.
 > any context the next chat will need (file paths, function names,
 > design decisions, open questions). Keep it ~200 lines or under.
 
-Last updated: 2026-05-22 (PR-6 in flight on branch
-`big-bang/pr-6-audit-trail-panel`, PR #90; PR-1 (#85), PR-2 (#86),
-PR-4 (#88) and PR-5 (#89) merged; PR-3 (#87) open with conflicts
-re-resolved against current main).
+Last updated: 2026-05-22 (PR-9 in flight on branch
+`big-bang/pr-9-cost-transparency-cache`; PR-1 (#85), PR-2 (#86),
+PR-3 (#87), PR-4 (#88), PR-5 (#89) and PR-6 (#90) merged; PR-7
+(#91), PR-8 (#92) open in parallel).
 
 ## Quick-resume header (paste into a fresh chat)
 
@@ -143,71 +143,148 @@ Goal: complete the next un-shipped PR in the "What is next" section
   Files touched: 2 source files (1 new) + 3 tracker docs. Net source
   diff: ~ +570 lines.
 
+- **PR-7 — Server-prompt unification: port curriculumAuthorityPrompt
+  to server/routes/ai.ts** (PR #91 — open in parallel). Audit item
+  **#39**. Server-side shim re-exports the named-section helpers
+  from the client-side curriculum-authority module; nine
+  worksheet-content endpoints in `server/routes/ai.ts` prepend the
+  manifesto via `buildServerWorksheetSystemPrompt`.
+
+- **PR-8 — Data-driven post-validator chain** (PR #92 — open in
+  parallel). Audit item **#74**. The 22-step validator chain is now
+  a frozen ordered registry (`WORKSHEET_POST_VALIDATORS`) with
+  stable kebab-case names. Callers can disable individual validators
+  per-tenant via `PostValidatorOptions.validatorOverrides` without
+  forking the chain.
+
+- **PR-9 — PD13 cost transparency + generation cache scaffolding**
+  (this PR, branch `big-bang/pr-9-cost-transparency-cache`). Audit
+  items **#41**, **#42**, **#43**, partial **#76**.
+
+  What changed:
+  - `shared/aiSchemas.ts` — additive optional fields on
+    `WorksheetOutputSchema.metadata`: `costEstimate`
+    (provider / model / promptTokens / completionTokens / estimatedUsd
+    / pricedAt), `cacheKey` (the deterministic hash), `cacheHit`.
+    All fields optional so older worksheets keep rendering.
+  - `client/src/lib/aiCostEstimate.ts` (new) — pure
+    `estimateCost({ provider, model, promptTokens, completionTokens })`
+    plus the per-provider unit-price table
+    (`LLM_UNIT_PRICES` for OpenAI / Anthropic / Groq / Gemini /
+    OpenRouter / Cerebras / SambaNova) and a conservative
+    `FALLBACK_UNIT_PRICE` for unknown rows so unrecognised
+    (provider, model) pairs never report `$0`.
+  - `client/src/lib/aiCacheKey.ts` (new) — pure
+    `buildCacheKey(req)` deterministic hash (FNV-1a 64-bit, hex)
+    over the canonical `CACHE_KEY_FIELDS` slice of the request.
+    Trim + lower-case for strings, sorted-set for `sendNeeds[]`.
+    Schema version `wsv1:fnv64:<16-hex>` so future canonicalisation
+    changes don't collide with old keys. `redactPII(req)` strips
+    pupil-name fields and replaces IEP / EHCP phrases in the
+    prompt with `[REDACTED]` (audit item #76, partial).
+  - `client/src/lib/aiRetryPrompt.ts` (new) —
+    `buildDiagnosticRetryPrompt(failure)` returns a one-turn
+    diagnostic re-prompt the caller hands back to the LLM.
+    Diagnostic-only — does NOT re-state the system prompt or the
+    user request, so retries stay cheap and avoid the
+    "double-prompt amplification" effect. Inlines the first 5
+    Zod issues; truncates raw output to 2k chars.
+  - `server/lib/generationCache.ts` (new) — pluggable wrapper
+    with a default `InMemoryCacheBackend` (LRU + TTL) and a
+    `BackendAdapter` interface for the SQL-backed adapter
+    landing in PR-22. Public API:
+    `getCached(req)`, `setCached(req, payload, opts)`,
+    `withGenerationCache(req, generator)`, `getCacheStats()`,
+    `setBackend(b)`, `resetCacheForTests()`. OFF by default —
+    a request only hits the cache when
+    `GENERATION_CACHE_ENABLED=1`. Defence-in-depth re-runs PII
+    redaction on every write.
+  - `server/db/schema.sql` — idempotent `generation_cache`
+    table (key, payload, inserted_at, expires_at, hits) plus
+    `idx_generation_cache_expires` index. Migration is
+    `CREATE TABLE IF NOT EXISTS` so it's safe to run on every
+    boot.
+  - `server/tests/generationCache.test.ts` (new) — 9 describe
+    blocks covering: unit-price lookup (exact / prefix / longest-
+    prefix / fallback / provider-default rows), cost estimator
+    purity + missing-token handling + price-floor behaviour,
+    cache-key determinism + field-sensitivity + sendNeeds
+    set semantics + `cacheKeyOverride` clamp,
+    PII redaction (drops pupil names; redacts IEP phrases;
+    no-mutation), retry-prompt diagnostic format + Zod issue
+    inlining + raw-output truncation + Zod-success short-circuit,
+    in-memory backend (TTL expiry, LRU eviction), end-to-end
+    cache module (env-flag gate, round-trip, stats counters,
+    `withGenerationCache` miss-then-hit, backend swap, PII
+    defence).
+
+  Out of scope (deferred):
+  - Wiring the cache into `server/routes/ai.ts` worksheet endpoints
+    — the route file is 1,000+ lines and the integration is risky
+    with PR-7 in flight on the same module. The scaffolding is
+    complete; the wiring lands as a follow-up once PR-7 merges.
+    The route can opt in by calling `withGenerationCache(req, ...)`
+    around the upstream model call.
+  - SQL-backed cache adapter (PR-22 SLA work). The migration this
+    PR adds is idempotent so the table is ready when the adapter
+    ships.
+  - A/B traffic split (PR-20).
+  - Per-tenant cache namespacing (PR-22).
+  - The telemetry dashboard surface (PR-27).
+
+  Files touched: 5 new source files (aiCostEstimate, aiCacheKey,
+  aiRetryPrompt, generationCache, generationCache.test) +
+  `shared/aiSchemas.ts` + `server/db/schema.sql` + 3 tracker docs.
+  Net source diff: ~ +680 lines, under the ≤ ~700 net source line
+  budget.
+
 ## What is in flight
 
-- **PR-3 (#87), PR-6 (#90)** push + open / merge bookkeeping.
+- **PR-7 (#91), PR-8 (#92), PR-9** push + open / merge bookkeeping.
 
 ## Related sibling PRs
 
-- **PR-3 (#87) — Diagram coupling + distractor pedagogy + Tier-3
-  vocab + notation hygiene** is currently open in parallel with this
-  PR-6 (#90). PR-3 stamps four new bucket-prefixed warning families
-  on `metadata.postValidatorWarnings`
-  (`[Phase 1 — Notation hygiene]`, `[Phase 1 — Diagram integrity]`,
-  `[Phase 1 — Distractor pedagogy]`, `[Phase 1 — Vocabulary tier]`)
-  which this PR's audit-trail panel surfaces in its
-  "Warnings rolled up by bucket" tab — once PR-3 lands, the new
-  buckets render automatically because the panel keys off the
-  `[Phase N — <label>]` prefix the validator chain already uses.
-  No file overlap with this PR (PR-3 is validator + tests; PR-6 is
-  renderer-side panel). Either PR can ship first. See
-  `.agents/tasks/big-bang-improvements/SESSION-HANDOFF.md` on
-  `big-bang/pr-3-diagram-distractor-vocab-notation` for PR-3's own
-  context.
-
-## Related sibling PRs
-
-- **PR-6 (#90) — Audit-trail panel** is currently open in parallel
-  with this PR-3 (#87). PR-6 surfaces the metadata fields the
-  PR-3 validators stamp (`postValidatorWarnings` rolled up by bucket
-  prefix, including the new `[Phase 1 — Notation hygiene]`,
-  `[Phase 1 — Diagram integrity]`, `[Phase 1 — Distractor pedagogy]`,
-  `[Phase 1 — Vocabulary tier]` buckets emitted by this PR's four
-  validators) into a single read-only "Why this looks like this"
-  teacher view. The two PRs do not touch overlapping files (PR-3 is
-  validator + tests; PR-6 is renderer-side panel) and can ship in
-  either order. See `.agents/tasks/big-bang-improvements/SESSION-HANDOFF.md`
-  on `big-bang/pr-6-audit-trail-panel` for PR-6's own context.
+- **PR-7 (#91), PR-8 (#92)** are open in parallel with this PR-9.
+  None of the three touch overlapping files (PR-7 is `server/lib/`
+  + `server/routes/ai.ts` + `server/tests/aiServerPrompt.test.ts`;
+  PR-8 is `client/src/lib/worksheetPostValidator{,Registry}.ts` +
+  `server/tests/worksheetScrutiny.test.ts`; PR-9 is
+  `client/src/lib/ai{CostEstimate,CacheKey,RetryPrompt}.ts`,
+  `server/lib/generationCache.ts`, `server/db/schema.sql`,
+  `shared/aiSchemas.ts`, `server/tests/generationCache.test.ts`)
+  so they can ship in any order. Each branch carries its own
+  3-file tracker update; the merger of the second / third sibling
+  will hit a small mechanical conflict in
+  `LEDGER.md`/`PHASE-PLAN.md`/`SESSION-HANDOFF.md` resolved by
+  keeping both rows / both bullets.
 
 ## What is next
 
-**PR-7 — Server-prompt unification: port curriculumAuthorityPrompt to
-server/routes/ai.ts.**
+**PR-10 — Knowledge organiser (PD10) + Anchor poster + Now/Next/Then
+cards (PD11) — derived, no extra LLM.**
 
-Audit item: #39.
+Audit items: #20 (Knowledge organiser auto-extract per topic),
+#21 (Anchor poster + Now/Next/Then cards).
 
 Files to touch:
-- `server/routes/ai.ts` — port the curriculum-authority prompt
-  sections + Phase 5 manifesto from
-  `client/src/lib/curriculumAuthorityPrompt.ts` so server-side AI
-  calls use the same system prompt as the client-side path. Today
-  server has its own legacy prompt; client and server have drifted.
-- `server/lib/curriculumAuthorityPromptServer.ts` (new) — thin
-  server-side shim that re-exports the named-section helpers from the
-  shared client lib. Avoids forking the prompt; client stays the
-  source of truth.
-- `server/tests/aiServerPrompt.test.ts` (new) — pure assertion that
-  the server-emitted system prompt contains every named section the
-  client manifesto declares.
+- `client/src/lib/knowledgeOrganiserBuilder.ts` (new) — pure
+  builder that derives a one-pager from an existing worksheet
+  (Word Bank, key facts, worked example, common mistakes).
+- `client/src/lib/anchorPosterBuilder.ts` (new) — pure builder
+  that derives an anchor-poster + Now/Next/Then card pack from
+  the same worksheet.
+- `client/src/components/KnowledgeOrganiser.tsx` (new),
+  `client/src/components/AnchorPoster.tsx` (new) — print-ready
+  surfaces.
+- `server/tests/worksheetScrutiny.test.ts` — extend with
+  builder + idempotency tests.
 
-Out of scope for PR-7:
-- Per-tenant prompt feature flags (PR-22 SLA work).
-- A/B traffic split (PR-20).
+Out of scope for PR-10:
+- LLM-generated knowledge organisers (extra cost) — derive only.
+- New routing entries (PR-25 cross-cutting).
 
-Sizing budget: ≤ ~700 net lines, ≤ ~6 files. Sandbox is
-INTEGRATIONS_ONLY; never run `npm install`. Read narrow ranges of
-`server/routes/ai.ts` (1,000+ lines).
-Branch name: `big-bang/pr-7-server-prompt-unification`.
+Sizing budget: ≤ ~700 net lines, ≤ ~6 files.
+Branch name: `big-bang/pr-10-knowledge-organiser-anchor-poster`.
 
 ## Definition-of-done for every PR (mirrors PHASE-PLAN.md)
 

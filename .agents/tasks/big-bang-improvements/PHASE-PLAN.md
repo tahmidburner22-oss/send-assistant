@@ -88,7 +88,7 @@ PRs are ordered so that:
 | PR-6   | Audit-trail panel — surface coverageMap / aoHistogram / fidelityReport in one teacher-facing view  | #79                                          | shipped — PR #90 pending |
 | PR-7   | Server-prompt unification — port curriculumAuthorityPrompt to server/routes/ai.ts                  | #39                                          | not started |
 | PR-8   | Data-driven post-validator chain — array-of-fn registration, per-validator enable / disable        | #74                                          | not started |
-| PR-9   | PD13 cost transparency + generation cache scaffolding                                              | #42 #43                                      | not started |
+| PR-9   | PD13 cost transparency + generation cache scaffolding                                              | #42 #43                                      | shipped — PR pending |
 | PR-10  | Knowledge organiser (PD10) + Anchor poster + Now/Next/Then cards (PD11) — derived, no extra LLM    | #20 #21                                      | not started |
 | PR-11  | Versioning + diff history (PD7)                                                                    | #66                                          | not started |
 | PR-12  | Bias & sensitivity audit (PD9) — pure heuristics over names, contexts, settings                    | #12                                          | not started |
