@@ -10,8 +10,9 @@ then `LEDGER.md` for the per-item detail.
 > any context the next chat will need (file paths, function names,
 > design decisions, open questions). Keep it ~200 lines or under.
 
-Last updated: 2026-05-22 (PR-1 in flight on branch
-`big-bang/pr-1-send-fidelity-probes`; PR-0 merged into PR #84).
+Last updated: 2026-05-22 (PR-4 in flight on branch
+`big-bang/pr-4-quality-scorecard`; PR-1 (#85) merged; PR-2 (#86) and
+PR-3 (#87) open with conflicts resolved by re-merging origin/main).
 
 ## Quick-resume header (paste into a fresh chat)
 
@@ -33,86 +34,88 @@ Goal: complete the next un-shipped PR in the "What is next" section
 
 ## What is done
 
-- **PR-0 — Tracker scaffolding** (PR #84, branch
-  `big-bang/pr-0-tracker-scaffolding`).
-  Created the umbrella `.agents/tasks/big-bang-improvements/` directory
-  with `PHASE-PLAN.md`, `LEDGER.md`, and this `SESSION-HANDOFF.md`.
-  Mirrors the existing Phase 1–5 / A–D convention.
-
-- **PR-1 — SEND fidelity probes for the 10 previously-unprobed profiles**
-  (branch `big-bang/pr-1-send-fidelity-probes`, PR pending push).
-
-  Audit item: **#28**.
+- **PR-0 — Tracker scaffolding** (PR #84 merged).
+- **PR-1 — SEND fidelity probes for the 10 previously-unprobed
+  profiles** (PR #85 merged). Audit item #28.
+- **PR-2 — Pure post-validators: command-word fidelity, SI-unit
+  normaliser, reading-age budget** (PR #86 open). Audit items #1, #2,
+  #11, #14, #18. Three new pure / idempotent validators in
+  `worksheetPostValidator.ts`, with the supporting data + helpers
+  (`SI_UNIT_*`, `COMMAND_WORDS_BY_BOARD`, `computeReadingAge`) added
+  to `curriculumAuthorityPrompt.ts` so the curriculum-authority
+  surface stays a single source of truth.
+- **PR-3 — Diagram dependency integrity, distractor pedagogy probe,
+  Tier-3 vocabulary audit, mathematical notation hygiene** (PR #87
+  open). Audit items #4, #10, #13, #15. Four new validators wired into
+  the chain. Notation hygiene rewriter lives in
+  `notationHygieneNormaliser.ts` so callers can use it standalone.
+- **PR-4 — Quality scorecard** (branch
+  `big-bang/pr-4-quality-scorecard`, PR pending push). Audit item
+  **#50**. The schema (`WorksheetQAScore` in
+  `worksheet-generator.ts`, mirrored in `shared/aiSchemas.ts`) has
+  carried a `qaScore` field since the worksheet pipeline was first
+  designed, but only the legacy template-based generator at
+  `worksheet-generator.ts:scoreWorksheet` ever computed a value, and
+  the AI-driven path (`ai.ts`) never called it — so every
+  AI-generated worksheet shipped without a `qaScore` and the
+  teacher-view banner in `WorksheetRenderer.tsx:4705 / 4792` (which
+  hides itself behind `worksheet.metadata?.qaScore`) never appeared on
+  any AI worksheet.
 
   What changed:
-  - `client/src/lib/sendFidelityAudit.ts`: extended `PROBES` table with
-    deterministic probe arrays for the 10 profiles previously in
-    `NOT_PROBED_PROFILES`: `asc-social`, `asc-demand-avoidant`,
-    `asc-sensory`, `asc-rigid`, `asperger`, `mld`, `dyspraxia`,
-    `tourettes`, `older-learners`, `semh`. Each probe is high-precision
-    (returns `not-checked` rather than `missing` for narrative rules
-    that can't be fingerprinted reliably). `NOT_PROBED_PROFILES` is
-    retained as an empty `Set<string>` for future profiles whose rules
-    are genuinely all narrative.
-  - Tightened the existing `asc-sensory` emoji probe regex to exclude
-    the U+2600–27BF dingbats range (which contains the legitimate ✓
-    MCQ tick marker — was a false-positive risk).
-  - Tightened the SEMH demand-language probe to anchor "you must /
-    need to / should" at start-of-sentence so it does not false-trigger
-    on the legitimate "What you need to do:" header.
-  - Same anchoring fix on the `asc-demand-avoidant` rule-1 probe.
-  - `server/tests/worksheetScrutiny.test.ts`: appended a
-    `Phase 4 follow-up — SEND fidelity probes` block with happy-path
-    + at-least-one-violation tests per profile, an
-    audit-covers-all-21-profiles parametric test, an idempotency
-    guarantee, and a postValidatorWarnings accumulation test.
+  - `client/src/lib/qaScoreBuilder.ts` (new): single source of truth
+    for the scorer. `computeQaScore`, `applyQaScore`,
+    `mapStatusToValidation`. Pure / deterministic / idempotent. Reads
+    `metadata.postValidatorWarnings` (categorised into 18 buckets
+    covering every validator surface — curriculum / command-word /
+    diagram / SEND / notation / UK-English / common-mistakes /
+    mark-scheme / softener / AO / placeholder / section-count /
+    reading-age / distractor / Tier-3 vocab / SI-unit /
+    self-reflection / revision-tips), the structured
+    `metadata.sendFidelityReport` (from PR-1) and
+    `metadata.commonMistakesAudit` (from PR-M3), plus structural
+    signals (question section count, distinct section types, presence
+    of teacher key / learning objective / diagram). Deductions are
+    bucket-targeted so the same warning never costs two components.
+  - `client/src/lib/worksheetPostValidator.ts`: wires `applyQaScore`
+    as the LAST step in `runWorksheetPostValidators` so the score
+    sees every warning every prior validator stamped, plus all
+    structured reports earlier audits attached to metadata.
+  - `server/tests/worksheetScrutiny.test.ts`: 10 new test cases
+    across 6 describe blocks — happy-path publish-ready score,
+    bucket-targeted deductions (command-word / notation /
+    placeholder), three fail conditions (no questions / no teacher
+    key / SEND > 50% missing), purity + idempotency, legacy
+    `validationStatus` mapping, end-to-end through the full chain.
 
-  Files touched: 2.
-  Net diff: ~ +600 lines (mostly the test fixtures + 10 probe arrays).
+  Files touched: 4 (1 new). Net diff: ~ +700 lines.
 
 ## What is in flight
 
-- **PR-1** push + open (next step: push branch, open PR, flip status to
-  `shipped — PR #NN` in LEDGER.md and PHASE-PLAN.md when CI is green).
+- **PR-2 (#86), PR-3 (#87), PR-4** push + open / merge bookkeeping.
 
 ## What is next
 
-**PR-2 — New pure post-validators: command-word fidelity, SI-unit
-normaliser, reading-age budget.**
+**PR-5 — Eval harness FEAT-PR5: 200 canonical UK NC + GCSE prompts +
+golden-output runner.**
 
-Audit items: #1, #2, #11, #14, #18.
+Audit item: #44.
 
 Files to touch:
-- `client/src/lib/curriculumAuthorityPrompt.ts` — extend with two
-  exports: `SI_UNIT_SUBSTITUTIONS` (frozen list mirroring
-  `UK_ENGLISH_SUBSTITUTIONS` shape) and `COMMAND_WORDS_BY_BOARD` (per
-  awarding-body command-word lists, sourced from `pastPapers.ts`).
-- `client/src/lib/worksheetPostValidator.ts` — three new pure /
-  idempotent validators wired into the chain:
-  - `enforceCommandWordFidelity` (audit #2): walks question sections;
-    the leading verb of every stem must be on the named board's
-    published command-word list. Warns when not.
-  - `enforceSiUnitNormalisation` (audit #14): silent rewrite of
-    `mph → km/h with conversion footnote`, `lbs → kg`, `°F → °C`,
-    `inch / foot → cm / m`. Idempotent. Warning per rewrite.
-  - `enforceReadingAgeBudget` (audit #1): computes Flesch-Kincaid per
-    question stem and warns when actual reading age > declared
-    `expectedReadingAge` + 1.5 years.
-- `server/tests/worksheetScrutiny.test.ts` — extend with happy-path,
-  unhappy-path, and idempotency tests for each.
+- `scripts/eval-harness/` (new directory) — 200 canonical prompts as
+  JSON fixtures spanning every (subject × year × ability tier) the
+  worksheet generator handles. One golden output per fixture, locked
+  to a generator-version. Diff runner that flags > 5% drift.
+- `package.json` — `npm run eval` script.
 
-Out of scope for PR-2:
-- Fixing the `resolveSendSpec` matcher-order bug that masks `semh`
-  behind `anxiety` — separate PR (target: PR-21 ai.ts carve-up,
-  see "Notes" below).
-- The `applySendFidelityAudit` warning-doubling on second invocation
-  (running it twice currently appends the same warnings twice). Not
-  a real-world bug because the chain runs the audit once, but the
-  function isn't strictly idempotent on the warnings array. Note for
-  PR-22 idempotency-test sweep.
+Out of scope for PR-5:
+- Connecting the eval harness to CI (PR-22 schema deprecation policy
+  introduces the regression-detector wiring).
+- A/B prompt experiments on the harness (PR-20).
 
-Sizing budget: ≤ ~700 net lines, ≤ ~6 files.
-Branch name: `big-bang/pr-2-pure-validators`.
+Sizing budget: ≤ ~700 net lines, ≤ ~6 files (data fixtures excluded
+from line count — 200 JSON files are not source).
+Branch name: `big-bang/pr-5-eval-harness`.
 
 ## Definition-of-done for every PR (mirrors PHASE-PLAN.md)
 
