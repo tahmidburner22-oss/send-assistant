@@ -99,7 +99,7 @@ Last bulk-updated: 2026-05-22 (initial seed).
 
 | #  | Item                                                                                  | PR     | Status      |
 | -- | ------------------------------------------------------------------------------------- | ------ | ----------- |
-| 79 | "Why this worksheet looks like this" teacher-facing audit panel                       | PR-6   | not started |
+| 79 | "Why this worksheet looks like this" teacher-facing audit panel                       | PR-6   | shipped — PR pending |
 | 80 | "Edit my worksheet" surface that learns                                               | PR-25  | not started |
 | 81 | Pupil-facing companion app (consumes companionShare / hint ladders)                   | PR-26  | not started |
 | 82 | Stack multiple SEND profiles per worksheet (sendNeed → sendNeeds[])                   | PR-16  | not started |
