@@ -1379,7 +1379,18 @@ function formatContent(
     .replace(/\?\s+\.\s+/g, '?\n')
     .replace(/\.\s+(\d+[a-z]?[.)\s]\s*)/g, '.\n$1')
     .replace(/(,\s*)(\d+[a-z]?[.)\s]\s*)/g, '\n$2')
-    .replace(/(;\s*)(\d+[a-z]?[.)\s]\s*)/g, '\n$2');
+    .replace(/(;\s*)(\d+[a-z]?[.)\s]\s*)/g, '\n$2')
+    // Steering — every question on its own line, never bunched.
+    // Question-mark and exclamation also act as sentence enders before
+    // a numbered prefix ("Why is this?  2. ...").
+    .replace(/\?\s+(\d+[a-z]?[.)\s]\s*)/g, '?\n$1')
+    .replace(/!\s+(\d+[a-z]?[.)\s]\s*)/g, '!\n$1')
+    // After a colon ("Answer the following: 1. ..." / "questions: 1. ...")
+    .replace(/:\s+(\d+[a-z]?[.)\s]\s*)/g, ':\n$1')
+    // After a closing bracket ("(Atomic number 12). 3. ...") — already handled
+    // by the period rule above when a period is present, but bunched output
+    // sometimes drops the period entirely ("...12) 3. ...").
+    .replace(/(\))\s+(\d+[a-z]?[.)\s]\s*\S)/g, '$1\n$2');
 
   // Pass 2: join orphaned number-only lines with the next non-empty line.
   // Covers patterns like: "1.\n+ 2 ="  or  "2.\n\nWhat is..." or "3)\nFill in"
@@ -6077,6 +6088,26 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                     return <GapFillInlineSection content={content} fmt={fmt} overlayColor={overlayColor} />;
                   }
                   if (section.type === "q-short-answer" || section.type === "q-extended") {
+                    // De-bunch numbered questions before any pattern test.
+                    // The AI sometimes emits all questions as a single line:
+                    //   "Answer all questions. 1. State the relative charge of a neutron.
+                    //    2. Identify the number of electrons. 3. Calculate ..."
+                    // The numbered-question splitter below needs each "N." prefix to be at
+                    // the start of its own line. Normalise here so bunched output is split
+                    // back out and every question gets its own row + marks badge + answer
+                    // lines, matching the teacher steering ("questions should never be
+                    // bunched together; every question must have its own answer lines").
+                    content = String(content || "")
+                      .replace(/\\n/g, "\n")
+                      // ". 2." or "? 2." etc → newline before the numeral
+                      .replace(/([.?!])\s+(?=\d{1,2}[.)]\s+\S)/g, "$1\n")
+                      // Comma- or semicolon-separated numbered prefixes
+                      .replace(/([,;])\s+(?=\d{1,2}[.)]\s+\S)/g, "$1\n")
+                      // Bunched after a closing bracket, e.g. "...(Atomic number 12). 3. ..."
+                      .replace(/(\))\s+(?=\d{1,2}[.)]\s+\S)/g, "$1\n")
+                      // "questions: 1. ..." or "follow: 1. ..."
+                      .replace(/(:)\s+(?=\d{1,2}[.)]\s+\S)/g, "$1\n");
+
                     // Check if content has numbered questions (1. 2. 3.) format — each needs its own answer lines
                     const numberedQPattern = /^\s*\d+\.\s+/m;
                     const hasNumberedQuestions = numberedQPattern.test(content);
@@ -6417,13 +6448,17 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                             const hdrPart = blkParts.find(p => p.key === "header");
                             const bodyParts = blkParts.filter(p => p.key !== "header");
                             return (
-                              <div key={bi} style={{ borderTop: bi > 0 ? "1px solid #1a2744" : undefined }}>
+                              // Per-mistake card. No dark/coloured background — white card
+                              // with a slight (light-grey) divider between mistakes, per
+                              // teacher steering: "common mistakes shouldn't have a dark
+                              // background; every worksheet should have slight dividers".
+                              <div key={bi} style={{ borderTop: bi > 0 ? "1px solid #e5e7eb" : undefined }}>
                                 {hdrPart && (
-                                  <div style={{ background: "#1a2744", color: "#ffffff", padding: "5px 14px", fontSize: `${fmt.fontSize - 1}px`, fontWeight: 700, fontFamily: fmt.fontFamily }}>
+                                  <div style={{ background: "#ffffff", color: "#1a2744", padding: "8px 14px 4px 14px", fontSize: `${fmt.fontSize - 1}px`, fontWeight: 700, fontFamily: fmt.fontFamily, textTransform: "uppercase" as const, letterSpacing: "0.04em" }}>
                                     <span dangerouslySetInnerHTML={{ __html: renderMath(hdrPart.label + (hdrPart.text ? " " + hdrPart.text : "")) }} />
                                   </div>
                                 )}
-                                <div style={{ padding: "8px 14px 10px 14px" }}>
+                                <div style={{ padding: "4px 14px 10px 14px" }}>
                                   {bodyParts.map((bp, bpi) => (
                                     <div key={bpi} style={{ marginBottom: bpi < bodyParts.length - 1 ? "8px" : "0", paddingBottom: bpi < bodyParts.length - 1 ? "8px" : "0", borderBottom: bpi < bodyParts.length - 1 ? "1px dashed #e2e8f0" : "none" }}>
                                       <div style={{ fontSize: `${fmt.fontSize - 1}px`, fontWeight: 700, color: "#1a2744", fontFamily: fmt.fontFamily, marginBottom: "2px", textTransform: "uppercase" as const, letterSpacing: "0.04em" }}>{bp.label}</div>
@@ -6992,7 +7027,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
                               // If no labelled parts found, render as plain text block
                               if (parts.length === 0) {
                                 return (
-                                  <div key={bi} style={{ padding: "12px 16px", borderTop: bi > 0 ? "1px solid #1a2744" : undefined }}>
+                                  <div key={bi} style={{ padding: "12px 16px", borderTop: bi > 0 ? "1px solid #e5e7eb" : undefined }}>
                                     <div style={{ fontSize: `${fmt.fontSize}px`, fontFamily: fmt.fontFamily, color: "#374151" }}
                                       dangerouslySetInnerHTML={{ __html: renderMath(block) }} />
                                   </div>
@@ -7004,7 +7039,7 @@ const WorksheetRenderer = forwardRef<HTMLDivElement, WorksheetRendererProps>(fun
 
                               return (
                                 <div key={bi} style={{
-                                  borderTop: bi > 0 ? "1px solid #1a2744" : undefined,
+                                  borderTop: bi > 0 ? "1px solid #e5e7eb" : undefined,
                                   padding: "0",
                                 }}>
                                   {/* Mistake header bar — plain style, no background fill */}
