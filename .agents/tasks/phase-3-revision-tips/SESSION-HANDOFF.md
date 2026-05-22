@@ -1,7 +1,9 @@
 # Phase 3 — Session Handoff
 
-This file is the **resume point** for any fresh chat picking up Phase 3.
-Read it first, then `PHASE-PLAN.md`, then proceed.
+> **Status: SHIPPED.** Merged to `main` as PR #76 / commit `5795034` on
+> 2026-05-22. This file is kept for the historical record so subsequent
+> phases can see exactly which conventions were locked in. Do not edit
+> the conventions block — Phase 4+ inherits it verbatim.
 
 Last updated: see `git log -1 --format=%cI -- .agents/tasks/phase-3-revision-tips/SESSION-HANDOFF.md`
 
@@ -133,11 +135,9 @@ Goal: complete Phase 3 (revision-tips section type — builder + prompt +
 
 ## What is left (in this branch)
 
-- **Task G — CI run.** `npm test` + `tsc --noEmit` will run on PR push.
-  Sandbox cannot run them locally (`INTEGRATIONS_ONLY`). If CI raises
-  any failures, fix them on this branch.
-
-- **Task H — PR open.** PR opened — see PR link in chat.
+Nothing. PR #76 is merged. Phase 4 picks up the next slice (SEND content
+rules — non-cosmetic pedagogical adaptations across the 21 profiles) on
+a fresh branch off `main` — see `.agents/tasks/phase-4-send-content-rules/`.
 
 ## Diff size note
 
